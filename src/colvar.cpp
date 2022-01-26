@@ -742,15 +742,99 @@ int colvar::init_output_flags(std::string const &conf)
   return COLVARS_OK;
 }
 
+#if (__cplusplus >= 201103L)
+// C++11
+template<typename def_class_name> int colvar::init_components_type(std::string const &,
+                                                                   char const * /* def_desc */,
+                                                                   char const *def_config_key) {
+  // global_cvc_map is only supported in the C++11 case
+  global_cvc_map[def_config_key] = [](const std::string& cvc_conf){return new def_class_name(cvc_conf);};
+  // TODO: maybe it is better to do more check to avoid duplication in the map?
+  return COLVARS_OK;
+}
+
+int colvar::init_components_type_from_global_map(const std::string& conf,
+                                                 const char* def_config_key) {
+  size_t def_count = 0;
+  std::string def_conf = "";
+  size_t pos = 0;
+  while ( this->key_lookup(conf,
+                           def_config_key,
+                           &def_conf,
+                           &pos) ) {
+    if (!def_conf.size()) continue;
+    cvm::log("Initializing "
+             "a new \""+std::string(def_config_key)+"\" component"+
+             (cvm::debug() ? ", with configuration:\n"+def_conf
+              : ".\n"));
+    cvm::increase_depth();
+    // only the following line is different from init_components_type
+    // in the non-C++11 case
+    cvc *cvcp = global_cvc_map.at(def_config_key)(def_conf);
+    if (cvcp != NULL) {
+      cvcs.push_back(cvcp);
+      cvcp->check_keywords(def_conf, def_config_key);
+      cvcp->set_function_type(def_config_key);
+      if (cvm::get_error()) {
+        cvm::error("Error: in setting up component \""+
+                   std::string(def_config_key)+"\".\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+      cvm::decrease_depth();
+    } else {
+      cvm::decrease_depth();
+      cvm::error("Error: in allocating component \""+
+                   std::string(def_config_key)+"\".\n",
+                 MEMORY_ERROR);
+      return MEMORY_ERROR;
+    }
+
+    if ( (cvcp->period != 0.0) || (cvcp->wrap_center != 0.0) ) {
+      if (! cvcp->is_enabled(f_cvc_periodic)) {
+        cvm::error("Error: invalid use of period and/or "
+                   "wrapAround in a \""+
+                   std::string(def_config_key)+
+                   "\" component.\n"+
+                   "Period: "+cvm::to_str(cvcp->period) +
+                   " wrapAround: "+cvm::to_str(cvcp->wrap_center),
+                   INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    }
+
+    if ( ! cvcs.back()->name.size()) {
+      std::ostringstream s;
+      s << def_config_key << std::setfill('0') << std::setw(4) << ++def_count;
+      cvcs.back()->name = s.str();
+      /* pad cvc number for correct ordering when sorting by name */
+    }
+
+    cvcs.back()->setup();
+    if (cvm::debug()) {
+      cvm::log("Done initializing a \""+
+               std::string(def_config_key)+
+               "\" component"+
+               (cvm::debug() ?
+                ", named \""+cvcs.back()->name+"\""
+                : "")+".\n");
+    }
+    def_conf = "";
+    if (cvm::debug()) {
+      cvm::log("Parsed "+cvm::to_str(cvcs.size())+
+               " components at this time.\n");
+    }
+  }
+
+  return COLVARS_OK;
+}
+#else
+// non-C++11
 // read the configuration and set up corresponding instances, for
 // each type of component implemented
 template<typename def_class_name> int colvar::init_components_type(std::string const &conf,
                                                                    char const * /* def_desc */,
                                                                    char const *def_config_key)
 {
-#if (__cplusplus >= 201103L)
-  global_cvc_map[def_config_key] = [](const std::string& cvc_conf){return new def_class_name(cvc_conf);};
-#endif
   size_t def_count = 0;
   std::string def_conf = "";
   size_t pos = 0;
@@ -821,13 +905,16 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
 
   return COLVARS_OK;
 }
-
+#endif
 
 int colvar::init_components(std::string const &conf)
 {
   int error_code = COLVARS_OK;
   size_t i = 0, j = 0;
 
+  // in the non-C++11 case, the components are initialized directly by init_components_type;
+  // in the C++11 case, the components are stored in the global_cvc_map at first
+  // by init_components_type, and then the map is iterated to initialize all components.
   error_code |= init_components_type<distance>(conf, "distance", "distance");
   error_code |= init_components_type<distance_vec>(conf, "distance vector", "distanceVec");
   error_code |= init_components_type<cartesian>(conf, "Cartesian coordinates", "cartesian");
@@ -886,15 +973,24 @@ int colvar::init_components(std::string const &conf)
   error_code |= init_components_type<euler_phi>(conf, "euler phi angle of the optimal orientation", "eulerPhi");
   error_code |= init_components_type<euler_psi>(conf, "euler psi angle of the optimal orientation", "eulerPsi");
   error_code |= init_components_type<euler_theta>(conf, "euler theta angle of the optimal orientation", "eulerTheta");
-  #if (__cplusplus >= 201103L)
-  #ifdef LEPTON
+#ifdef LEPTON
   error_code |= init_components_type<customColvar>(conf, "CV with support of the lepton custom function", "customColvar");
-  #endif
-  #endif
+#endif
   error_code |= init_components_type<neuralNetwork>(conf, "neural network CV for other CVs", "NeuralNetwork");
 
   error_code |= init_components_type<map_total>(conf, "total value of atomic map", "mapTotal");
-
+#if (__cplusplus >= 201103L)
+  // iterate over all available CVC in the map
+  for (auto it = global_cvc_map.begin(); it != global_cvc_map.end(); ++it) {
+    error_code |= init_components_type_from_global_map(conf, it->first.c_str());
+    // TODO: is it better to check the error code here?
+    if (error_code != COLVARS_OK) {
+      cvm::log("Failed to initialize " + it->first + " with the following configuration:\n");
+      cvm::log(conf);
+      // TODO: should it stop here?
+    }
+  }
+#endif
   if (!cvcs.size() || (error_code != COLVARS_OK)) {
     cvm::error("Error: no valid components were provided "
                "for this collective variable.\n",
