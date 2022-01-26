@@ -755,6 +755,11 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
 
 int colvar::init_components_type_from_global_map(const std::string& conf,
                                                  const char* def_config_key) {
+#else
+template<typename def_class_name> int colvar::init_components_type(std::string const & conf,
+                                                                   char const * /* def_desc */,
+                                                                   char const *def_config_key) {
+#endif
   size_t def_count = 0;
   std::string def_conf = "";
   size_t pos = 0;
@@ -770,85 +775,11 @@ int colvar::init_components_type_from_global_map(const std::string& conf,
     cvm::increase_depth();
     // only the following line is different from init_components_type
     // in the non-C++11 case
+#if (__cplusplus >= 201103L)
     cvc *cvcp = global_cvc_map.at(def_config_key)(def_conf);
-    if (cvcp != NULL) {
-      cvcs.push_back(cvcp);
-      cvcp->check_keywords(def_conf, def_config_key);
-      cvcp->set_function_type(def_config_key);
-      if (cvm::get_error()) {
-        cvm::error("Error: in setting up component \""+
-                   std::string(def_config_key)+"\".\n", INPUT_ERROR);
-        return INPUT_ERROR;
-      }
-      cvm::decrease_depth();
-    } else {
-      cvm::decrease_depth();
-      cvm::error("Error: in allocating component \""+
-                   std::string(def_config_key)+"\".\n",
-                 MEMORY_ERROR);
-      return MEMORY_ERROR;
-    }
-
-    if ( (cvcp->period != 0.0) || (cvcp->wrap_center != 0.0) ) {
-      if (! cvcp->is_enabled(f_cvc_periodic)) {
-        cvm::error("Error: invalid use of period and/or "
-                   "wrapAround in a \""+
-                   std::string(def_config_key)+
-                   "\" component.\n"+
-                   "Period: "+cvm::to_str(cvcp->period) +
-                   " wrapAround: "+cvm::to_str(cvcp->wrap_center),
-                   INPUT_ERROR);
-        return INPUT_ERROR;
-      }
-    }
-
-    if ( ! cvcs.back()->name.size()) {
-      std::ostringstream s;
-      s << def_config_key << std::setfill('0') << std::setw(4) << ++def_count;
-      cvcs.back()->name = s.str();
-      /* pad cvc number for correct ordering when sorting by name */
-    }
-
-    cvcs.back()->setup();
-    if (cvm::debug()) {
-      cvm::log("Done initializing a \""+
-               std::string(def_config_key)+
-               "\" component"+
-               (cvm::debug() ?
-                ", named \""+cvcs.back()->name+"\""
-                : "")+".\n");
-    }
-    def_conf = "";
-    if (cvm::debug()) {
-      cvm::log("Parsed "+cvm::to_str(cvcs.size())+
-               " components at this time.\n");
-    }
-  }
-
-  return COLVARS_OK;
-}
 #else
-// non-C++11
-// read the configuration and set up corresponding instances, for
-// each type of component implemented
-template<typename def_class_name> int colvar::init_components_type(std::string const &conf,
-                                                                   char const * /* def_desc */,
-                                                                   char const *def_config_key)
-{
-  size_t def_count = 0;
-  std::string def_conf = "";
-  size_t pos = 0;
-  while ( this->key_lookup(conf,
-                           def_config_key,
-                           &def_conf,
-                           &pos) ) {
-    if (!def_conf.size()) continue;
-    cvm::log("Initializing "
-             "a new \""+std::string(def_config_key)+"\" component"+
-             (cvm::debug() ? ", with configuration:\n"+def_conf
-              : ".\n"));
-    cvm::increase_depth();
     cvc *cvcp = new def_class_name(def_conf);
+#endif
     if (cvcp != NULL) {
       cvcs.push_back(cvcp);
       cvcp->check_keywords(def_conf, def_config_key);
@@ -905,7 +836,6 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
 
   return COLVARS_OK;
 }
-#endif
 
 int colvar::init_components(std::string const &conf)
 {

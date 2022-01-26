@@ -272,14 +272,16 @@ public:
 
 private:
   /// Parse the CVC configuration for all components of a certain type
-  template<typename def_class_name> int init_components_type(std::string const &,
+  template<typename def_class_name> int init_components_type(std::string const & conf,
                                                              char const *def_desc,
                                                              char const *def_config_key);
+#if (__cplusplus >= 201103L)
   /// For the C++11 case, the names of all available components are
   /// registered in the global map at first, and then the CVC configuration
   /// is parsed by this function
   int init_components_type_from_global_map(const std::string& conf,
                                            const char* def_config_key);
+#endif
 
 public:
 
