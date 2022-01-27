@@ -275,6 +275,7 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
     // expect the three numbers are equal
     if ((num_layers_weight != num_layers_bias) || (num_layers_bias != num_activation_functions)) {
         cvm::error("Error: the numbers of weights, biases and activation functions do not match.\n");
+        return;
     }
     for (size_t i_layer = 0; i_layer < num_layers_weight; ++i_layer) {
         denseLayer d;
@@ -305,6 +306,7 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
             }
         } else {
             cvm::error("Error: error on adding a new dense layer.\n");
+            return;
         }
     }
     nn.input().resize(cv.size());
@@ -323,6 +325,7 @@ void colvar::neuralNetwork::calc_value() {
             nn.input()[i_cv] = cv[i_cv]->sup_coeff * (cvm::pow(current_cv_value.real_value, cv[i_cv]->sup_np));
         } else {
             cvm::error("Error: using of non-scaler component.\n");
+            return;
         }
     }
     nn.compute();

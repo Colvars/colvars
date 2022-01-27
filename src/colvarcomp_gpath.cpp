@@ -147,6 +147,7 @@ colvar::gspath::gspath(std::string const &conf): CartesianBasedPath(conf) {
     }
     if (total_reference_frames < 2) {
         cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) + " reference frames, but gspath requires at least 2 frames.\n");
+        return;
     }
     GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::S>::initialize(atoms->size(), cvm::atom_pos(), total_reference_frames, use_second_closest_frame, use_third_closest_frame);
     cvm::log(std::string("Geometric pathCV(s) is initialized.\n"));
@@ -293,6 +294,7 @@ colvar::gzpath::gzpath(std::string const &conf): CartesianBasedPath(conf) {
     }
     if (total_reference_frames < 2) {
         cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) + " reference frames, but gzpath requires at least 2 frames.\n");
+        return;
     }
     GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::Z>::initialize(atoms->size(), cvm::atom_pos(), total_reference_frames, use_second_closest_frame, use_third_closest_frame, b_use_z_square);
     // Logging
@@ -424,6 +426,7 @@ colvar::linearCombination::linearCombination(std::string const &conf): cvc(conf)
     if (cv.size() == 0) {
         cvm::error("Error: the CV " + name +
                    " expects one or more nesting components.\n");
+        return;
     } else {
         // TODO: Maybe we can add an option to allow mixing scalar and vector types,
         //       but that's a bit complicated so we just require a consistent type
@@ -438,6 +441,7 @@ colvar::linearCombination::linearCombination(std::string const &conf): cvc(conf)
                           "different to the type of the first sub-CVC. Currently "
                           "only sub-CVCs of the same type are supported to be "
                           "nested.\n");
+                return;
             }
         }
     }
@@ -560,6 +564,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     std::ifstream ifs_path(path_filename);
     if (!ifs_path.is_open()) {
         cvm::error("Error: failed to open path file.\n");
+        return;
     }
     std::string line;
     const std::string token(" ");
@@ -581,6 +586,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
                 }
             } else {
                 cvm::error("Error: incorrect format of path file.\n");
+                return;
             }
         }
         if (!fields.empty()) {
@@ -590,10 +596,12 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     }
     if (total_reference_frames <= 1) {
 	cvm::error("Error: there is only 1 or 0 reference frame, which doesn't constitute a path.\n");
+        return;
     }
     if (cv.size() == 0) {
         cvm::error("Error: the CV " + name +
                    " expects one or more nesting components.\n");
+        return;
     }
     x.type(colvarvalue::type_scalar);
     use_explicit_gradients = true;
@@ -692,6 +700,7 @@ colvar::gspathCV::gspathCV(std::string const &conf): CVBasedPath(conf) {
     }
     if (total_reference_frames < 2) {
         cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) + " reference frames, but gspathCV requires at least 2 frames.\n");
+        return;
     }
     GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::S>::initialize(cv.size(), ref_cv[0], total_reference_frames, use_second_closest_frame, use_third_closest_frame);
     x.type(colvarvalue::type_scalar);
@@ -821,6 +830,7 @@ colvar::gzpathCV::gzpathCV(std::string const &conf): CVBasedPath(conf) {
     }
     if (total_reference_frames < 2) {
         cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) + " reference frames, but gzpathCV requires at least 2 frames.\n");
+        return;
     }
     GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::Z>::initialize(cv.size(), ref_cv[0], total_reference_frames, use_second_closest_frame, use_third_closest_frame, b_use_z_square);
     x.type(colvarvalue::type_scalar);
