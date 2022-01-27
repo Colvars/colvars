@@ -1857,7 +1857,7 @@ int cvm::read_index_file(char const *filename)
 {
   std::ifstream is(filename, std::ios::binary);
   if (!is.good()) {
-    cvm::error("Error: in opening index file \""+
+    return cvm::error("Error: in opening index file \""+
                std::string(filename)+"\".\n",
                FILE_ERROR);
   } else {
