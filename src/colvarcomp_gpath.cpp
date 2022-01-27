@@ -109,6 +109,9 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
 }
 
 colvar::CartesianBasedPath::~CartesianBasedPath() {
+    // TODO: I don't know if this is necessary since register_atom_group is 
+    // not used in the constructor. This is different from nesting CVCs.
+    remove_all_children();
     for (auto it_comp_atoms = comp_atoms.begin(); it_comp_atoms != comp_atoms.end(); ++it_comp_atoms) {
         if (*it_comp_atoms != nullptr) {
             delete (*it_comp_atoms);
@@ -117,7 +120,6 @@ colvar::CartesianBasedPath::~CartesianBasedPath() {
     }
     // Avoid double-freeing due to CVC-in-CVC construct
     atom_groups.clear();
-    remove_all_children();
 }
 
 void colvar::CartesianBasedPath::computeDistanceToReferenceFrames(std::vector<cvm::real>& result) {
@@ -445,12 +447,23 @@ cvm::real colvar::linearCombination::getPolynomialFactorOfCVGradient(size_t i_cv
 }
 
 colvar::linearCombination::~linearCombination() {
+    // Recall the steps we initialize the sub-CVCs:
+    // 1. Lookup all sub-CVCs and then register the atom groups for sub-CVCs 
+    //    in their constructors;
+    // 2. Iterate over all sub-CVCs, get the pointers of their atom groups 
+    //    groups, and register again in the parent (current) CVC.
+    // That being said, the atom groups become children of the sub-CVCs at 
+    // first, and then become children of the parent CVC. 
+    // So, to destruct this class (parent CVC class), we need to remove the 
+    // dependencies of the atom groups to the parent CVC at first.
+    remove_all_children();
+    // Then we remove the dependencies of the atom groups to the sub-CVCs 
+    // in their destructors.
     for (auto it = cv.begin(); it != cv.end(); ++it) {
         delete (*it);
     }
-    // Avoid double-freeing due to CVC-in-CVC construct
+    // The last step is cleaning up the list of atom groups.
     atom_groups.clear();
-    remove_all_children();
 }
 
 void colvar::linearCombination::calc_value() {
@@ -622,12 +635,23 @@ cvm::real colvar::CVBasedPath::getPolynomialFactorOfCVGradient(size_t i_cv) cons
 }
 
 colvar::CVBasedPath::~CVBasedPath() {
+    // Recall the steps we initialize the sub-CVCs:
+    // 1. Lookup all sub-CVCs and then register the atom groups for sub-CVCs 
+    //    in their constructors;
+    // 2. Iterate over all sub-CVCs, get the pointers of their atom groups 
+    //    groups, and register again in the parent (current) CVC.
+    // That being said, the atom groups become children of the sub-CVCs at 
+    // first, and then become children of the parent CVC. 
+    // So, to destruct this class (parent CVC class), we need to remove the 
+    // dependencies of the atom groups to the parent CVC at first.
+    remove_all_children();
+    // Then we remove the dependencies of the atom groups to the sub-CVCs 
+    // in their destructors.
     for (auto it = cv.begin(); it != cv.end(); ++it) {
         delete (*it);
     }
-    // Avoid double-freeing due to CVC-in-CVC construct
+    // The last step is cleaning up the list of atom groups.
     atom_groups.clear();
-    remove_all_children();
 }
 
 colvar::gspathCV::gspathCV(std::string const &conf): CVBasedPath(conf) {
