@@ -420,8 +420,27 @@ colvar::linearCombination::linearCombination(std::string const &conf): cvc(conf)
             register_atom_group(*it_atom_group);
         }
     }
-    x.type(cv[0]->value());
-    x.reset();
+    // Show useful error messages and prevent crashes if no sub CVC is found
+    if (cv.size() == 0) {
+        cvm::error("Error: the CV " + name +
+                   " expects one or more nesting components.\n");
+    } else {
+        // TODO: Maybe we can add an option to allow mixing scalar and vector types,
+        //       but that's a bit complicated so we just require a consistent type
+        //       of nesting CVs.
+        x.type(cv[0]->value());
+        x.reset();
+        for (size_t i_cv = 1; i_cv < cv.size(); ++i_cv) {
+            const auto type_i = cv[i_cv]->value().type();
+            if (type_i != x.type()) {
+                cvm::error("Error: the type of sub-CVC " + cv[i_cv]->name +
+                          " is " + colvarvalue::type_desc(type_i) + ", which is "
+                          "different to the type of the first sub-CVC. Currently "
+                          "only sub-CVCs of the same type are supported to be "
+                          "nested.\n");
+            }
+        }
+    }
     use_explicit_gradients = true;
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
@@ -571,6 +590,10 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     }
     if (total_reference_frames <= 1) {
 	cvm::error("Error: there is only 1 or 0 reference frame, which doesn't constitute a path.\n");
+    }
+    if (cv.size() == 0) {
+        cvm::error("Error: the CV " + name +
+                   " expects one or more nesting components.\n");
     }
     x.type(colvarvalue::type_scalar);
     use_explicit_gradients = true;
