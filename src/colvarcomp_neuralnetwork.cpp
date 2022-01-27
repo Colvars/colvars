@@ -253,6 +253,10 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
             // Ok, this is not a custom function
             std::string function_name;
             get_keyval(conf, lookup_key.c_str(), function_name, std::string(""));
+            if (activation_function_map.find(function_name) == activation_function_map.end()) {
+                cvm::error("Unknown activation function name: \"" + function_name + "\".\n");
+                return;
+            }
             activation_functions.push_back(std::make_pair(false, function_name));
             cvm::log(std::string{"The activation function for layer["} + cvm::to_str(num_activation_functions + 1) + std::string{"] is "} + function_name + '\n');
             ++num_activation_functions;
@@ -289,13 +293,15 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
 #endif
         // add a new dense layer to network
         if (nn.addDenseLayer(d)) {
-            // show information about the neural network
-            cvm::log("Layer " + cvm::to_str(i_layer) + " : has " + cvm::to_str(d.getInputSize()) + " input nodes and " + cvm::to_str(d.getOutputSize()) + " output nodes.\n");
-            for (size_t i_output = 0; i_output < d.getOutputSize(); ++i_output) {
-                for (size_t j_input = 0; j_input < d.getInputSize(); ++j_input) {
-                    cvm::log("    weights[" + cvm::to_str(i_output) + "][" + cvm::to_str(j_input) + "] = " + cvm::to_str(d.getWeight(i_output, j_input)));
+            if (cvm::debug()) {
+                // show information about the neural network
+                cvm::log("Layer " + cvm::to_str(i_layer) + " : has " + cvm::to_str(d.getInputSize()) + " input nodes and " + cvm::to_str(d.getOutputSize()) + " output nodes.\n");
+                for (size_t i_output = 0; i_output < d.getOutputSize(); ++i_output) {
+                    for (size_t j_input = 0; j_input < d.getInputSize(); ++j_input) {
+                        cvm::log("    weights[" + cvm::to_str(i_output) + "][" + cvm::to_str(j_input) + "] = " + cvm::to_str(d.getWeight(i_output, j_input)));
+                    }
+                    cvm::log("    biases[" + cvm::to_str(i_output) + "] = " + cvm::to_str(d.getBias(i_output)) + "\n");
                 }
-                cvm::log("    biases[" + cvm::to_str(i_output) + "] = " + cvm::to_str(d.getBias(i_output)) + "\n");
             }
         } else {
             cvm::error("Error: error on adding a new dense layer.\n");
