@@ -4777,6 +4777,18 @@ All biasing and analysis methods implemented recognize the following options:
     \cvnamdonly{Note that in some cases the bias may require data from previous simulation steps: for example, TI requires total atomic forces (see \refkey{outputTotalForce}{colvar|outputTotalForce}) which are only available at the following step in NAMD; turning on this flag in those cases will raise an error.}
   }
 
+\item %
+  \labelkey{colvarbias|scaledBiasingForce}
+  \keydef{scaledBiasingForce}{colvar bias}{Scale biasing force by a factor in an external histogram}{boolean}{\texttt{off}}{%
+    If this option is set to \texttt{on}, the biasing force at each step will be scaled by a factor provided in the grid of an external histogram. The histogram file is provided by \texttt{scaledBiasingForceFactorsGrid}. It ought to be noted that if the variables are not in any grids of the histogram, the scaling factor is 1.0.
+  }
+
+\item %
+  \labelkey{colvarbias|scaledBiasingForceFactorsGrid}
+  \key{scaledBiasingForceFactorsGrid}{colvar bias}{A histogram file with the scaling factor of biasing force in each bin}{string}{%
+    If \texttt{scaledBiasingForce} is set to \texttt{on}, this option accepts the filename of the histogram file that contains the scaling factors. The format of the histogram file is the same as the PMF files written by \texttt{metadynamics} or \texttt{ABF}.
+  }
+
 \end{itemize}
 
 
