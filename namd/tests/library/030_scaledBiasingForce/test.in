@@ -1,0 +1,46 @@
+colvarsTrajFrequency            1
+colvarsRestartFrequency         10
+
+colvar {
+    name end_to_end_distance
+
+    lowerboundary 13.0
+    lowerWall 13.0
+    upperboundary 15.0
+    upperWall 15.0
+    lowerWallConstant 10.0
+    upperWallConstant 10.0
+    width 0.01
+    expandBoundaries on
+
+    outputAppliedForce on
+    subtractAppliedForce on
+
+    distance {
+        group1 {atomNumbers {2}}
+        group2 {atomNumbers {39}}
+    }
+}
+
+abf {
+    name production_abf
+    colvars end_to_end_distance
+    scaledBiasingForce on
+    scaledBiasingForceFactorsGrid factors.grid
+    fullSamples 1000
+    historyFreq 10
+}
+
+metadynamics {
+    name production_mtd
+    colvars end_to_end_distance
+    scaledBiasingForce on
+    scaledBiasingForceFactorsGrid factors.grid
+    hillWeight 2.0
+    hillWidth 5.0
+    newHillFrequency 2
+    wellTempered on
+    biasTemperature 3000
+    keepFreeEnergyFiles off
+    writeHillsTrajectory on
+}
