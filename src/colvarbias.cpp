@@ -118,15 +118,29 @@ int colvarbias::init(std::string const &conf)
   }
 
   // Use the scaling factors from a grid?
-  get_keyval(conf, "scaledBiasingForce", b_scaled_biasing_force, b_scaled_biasing_force);
+  get_keyval(conf, "scaledBiasingForce", b_scaled_biasing_force,
+             b_scaled_biasing_force);
   if (b_scaled_biasing_force) {
-    cvm::log("scaledBiasingForce is set to on");
     std::string biasing_force_scaling_factors_in_filename;
-    get_keyval(conf, "scaledBiasingForceFactorsGrid", biasing_force_scaling_factors_in_filename, std::string());
+    get_keyval(conf, "scaledBiasingForceFactorsGrid",
+               biasing_force_scaling_factors_in_filename, std::string());
     std::ifstream is;
-    cvm::log("Reading scaling factors for the forces of bias " + name + " from " + biasing_force_scaling_factors_in_filename);
+    cvm::log("Reading scaling factors for the forces of bias " +
+             name + " from " + biasing_force_scaling_factors_in_filename);
     is.open(biasing_force_scaling_factors_in_filename.c_str());
-    if (!is.is_open()) cvm::error("Error opening the grid file " + biasing_force_scaling_factors_in_filename + " for reading");
+    if (!is.is_open()) {
+      cvm::error("Error opening the grid file " +
+      biasing_force_scaling_factors_in_filename + " for reading");
+    }
+    // check if all CVs support grids
+    for (i = 0; i < num_variables(); i++) {
+      if (variables(i)->enable(f_cv_grid) == COLVARS_ERROR) {
+        cvm::error("scaledBiasingForceFactorsGrid requires grids for "
+                   "component " + variables(i)->name + ", which is not "
+                   "available.\n");
+        return COLVARS_ERROR;
+      }
+    }
     biasing_force_scaling_factors = new colvar_grid_scalar(colvars);
     biasing_force_scaling_factors->read_multicol(is, true);
     biasing_force_scaling_factors_bin.assign(num_variables(), 0);
