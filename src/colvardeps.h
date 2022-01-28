@@ -251,6 +251,8 @@ public:
     f_cvb_write_ti_samples,
     /// \brief whether this bias should write the TI PMF
     f_cvb_write_ti_pmf,
+    /// \brief whether this bias uses an external grid to scale the biasing forces
+    f_cvb_scale_biasing_force,
     f_cvb_ntot
   };
 
