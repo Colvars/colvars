@@ -38,12 +38,13 @@
 #include "universe.h"
 #include "update.h"
 
-#include "colvarproxy_lammps.h"
-#include "colvarmodule.h"
-
 #include <cstring>
 #include <iostream>
 #include <memory>
+#include <vector>
+
+#include "colvarproxy_lammps.h"
+#include "colvarmodule.h"
 
 
 /* struct for packed data communication of coordinates and forces. */
