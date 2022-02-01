@@ -16,6 +16,7 @@ obj/colvar.o: \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarscript_commands.h \
@@ -176,7 +177,8 @@ obj/colvarcomp.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp.o $(COPTC) colvars/src/colvarcomp.cpp
 obj/colvarcomp_angles.o: \
 	obj/.exists \
@@ -195,7 +197,8 @@ obj/colvarcomp_angles.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_angles.o $(COPTC) colvars/src/colvarcomp_angles.cpp
 obj/colvarcomp_alchlambda.o: \
 	obj/.exists \
@@ -214,7 +217,8 @@ obj/colvarcomp_alchlambda.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_alchlambda.o $(COPTC) colvars/src/colvarcomp_alchlambda.cpp
 obj/colvarcomp_apath.o: \
 	obj/.exists \
@@ -233,7 +237,8 @@ obj/colvarcomp_apath.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_apath.o $(COPTC) colvars/src/colvarcomp_apath.cpp
 obj/colvarcomp_coordnums.o: \
 	obj/.exists \
@@ -252,7 +257,8 @@ obj/colvarcomp_coordnums.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_coordnums.o $(COPTC) colvars/src/colvarcomp_coordnums.cpp
 obj/colvarcomp_distances.o: \
 	obj/.exists \
@@ -271,7 +277,8 @@ obj/colvarcomp_distances.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_distances.o $(COPTC) colvars/src/colvarcomp_distances.cpp
 obj/colvarcomp_gpath.o: \
 	obj/.exists \
@@ -290,7 +297,8 @@ obj/colvarcomp_gpath.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_gpath.o $(COPTC) colvars/src/colvarcomp_gpath.cpp
 obj/colvarcomp_protein.o: \
 	obj/.exists \
@@ -309,7 +317,8 @@ obj/colvarcomp_protein.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_protein.o $(COPTC) colvars/src/colvarcomp_protein.cpp
 obj/colvarcomp_rotations.o: \
 	obj/.exists \
@@ -328,28 +337,9 @@ obj/colvarcomp_rotations.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_rotations.o $(COPTC) colvars/src/colvarcomp_rotations.cpp
-obj/colvarcomp_neuralnetwork.o: \
-	obj/.exists \
-	colvars/src/colvarcomp_neuralnetwork.cpp \
-	colvars/src/colvarcomp_neuralnetwork.h \
-	colvars/src/colvar.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_neuralnetwork.o $(COPTC) colvars/src/colvarcomp_neuralnetwork.cpp
-obj/colvar_neuralnetworkcompute.o: \
-	obj/.exists \
-	colvars/src/colvar_neuralnetworkcompute.cpp \
-	colvars/src/colvar_neuralnetworkcompute.h \
-	colvars/src/colvar.h \
-	colvars/src/colvardeps.h \
-	colvars/src/colvarcomp.h \
-	colvars/src/colvartypes.h \
-	colvars/src/colvarparse.h \
-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvar_neuralnetworkcompute.o $(COPTC) colvars/src/colvar_neuralnetworkcompute.cpp
 obj/colvarcomp_volmaps.o: \
 	obj/.exists \
 	colvars/src/colvarcomp_volmaps.cpp \
@@ -367,8 +357,40 @@ obj/colvarcomp_volmaps.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_volmaps.o $(COPTC) colvars/src/colvarcomp_volmaps.cpp
+obj/colvarcomp_neuralnetwork.o: \
+	obj/.exists \
+	colvars/src/colvarcomp_neuralnetwork.cpp \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvar.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvar_arithmeticpath.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_neuralnetwork.o $(COPTC) colvars/src/colvarcomp_neuralnetwork.cpp
+obj/colvar_neuralnetworkcompute.o: \
+	obj/.exists \
+	colvars/src/colvar_neuralnetworkcompute.cpp \
+	colvars/src/colvar_neuralnetworkcompute.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarparams.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvar_neuralnetworkcompute.o $(COPTC) colvars/src/colvar_neuralnetworkcompute.cpp
 obj/colvardeps.o: \
 	obj/.exists \
 	colvars/src/colvardeps.cpp \
@@ -401,6 +423,7 @@ obj/colvargrid.o: \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h \
 	colvars/src/colvargrid.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvargrid.o $(COPTC) colvars/src/colvargrid.cpp
 obj/colvarmodule.o: \
@@ -434,6 +457,7 @@ obj/colvarmodule.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_neuralnetworkcompute.h \
 	colvars/src/colvarmodule_refs.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarmodule.o $(COPTC) colvars/src/colvarmodule.cpp
 obj/colvarparams.o: \
