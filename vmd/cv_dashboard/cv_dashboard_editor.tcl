@@ -281,10 +281,9 @@ proc ::cv_dashboard::atoms_from_sel { source } {
     return
   }
   set sel [atomselect $::cv_dashboard::mol $seltext]
-  set serials [$sel get serial]
   $sel delete
 
-  if {[llength $serials] == 0 } {
+  if {[$sel num] == 0 } {
     tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
       -message "Selection text \"${seltext}\" matches zero atoms."
     return
@@ -295,7 +294,7 @@ proc ::cv_dashboard::atoms_from_sel { source } {
   editor_replace $w.editor.fr.text \
 "${indent3}# \"auto-updating\" keyword updates atom IDs when applying cfg or changing molecule
 ${indent3}#$auto selection: \"$seltext\"
-${indent3}atomNumbers $serials\n"
+${indent3}[sel2cvatoms $sel]\n"
 }
 
 
@@ -656,105 +655,136 @@ proc ::cv_dashboard::cvs_from_labels {} {
 }
 
 
-proc ::cv_dashboard::protein_cvs {} {
+# Create Colvars-style atom selection from VMD atomselect object
+# Many optimizations are possible by detecting special cases
+# e.g. multiple contiguous ranges and atomNamesResidueRange
+proc ::cv_dashboard::sel2cvatoms { sel } {
+
+  set ids [$sel get serial]
+  set n [$sel num]
+  if { [expr [lindex $ids end] - [lindex $ids 0] == $n - 1] } {
+    return "atomNumbersRange [lindex $ids 0]-[lindex $ids end]"
+  } else {
+    return "atomNumbers [$sel get serial]"
+  }
+}
+
+
+proc ::cv_dashboard::auto_cvs {} {
 
   set molid $::cv_dashboard::mol
+
+  # Protein
+  # Use alpha carbons as ref
+  set ref_atoms [atomselect $molid alpha]
+  if { [$ref_atoms num] > 0 } {
+    set all_atoms [atomselect $molid protein]
+    create_cvs $ref_atoms $all_atoms protein
+    $all_atoms delete
+  }
+  $ref_atoms delete
+
+  # Nucleic acids
+  set all_atoms [atomselect $molid nucleic]
+  if { [$all_atoms num] > 0 } {
+    set ref_atoms [atomselect $molid "name P C4'"]
+    create_cvs $ref_atoms $all_atoms NA
+    $ref_atoms delete
+  }
+  $all_atoms delete
+}
+
+
+proc ::cv_dashboard::create_cvs { ref_atoms all_atoms description } {
+  set molid $::cv_dashboard::mol
   set indent $::cv_dashboard::indent
+  $ref_atoms frame 0
+  set refFile ""
+  set refFileName "Colvars_${description}_ref.xyz"
+  set refFilePath ""
 
-  # alpha carbon RMSD from first frame
-  # Write XYZ file for just alpha carbons
-  set alpha [atomselect $molid alpha]
-  if { [$alpha num] > 0 } {
-    $alpha frame 0
-    set refFile ""
-    set refFileName "cv_dashboard_protein_rmsd_ref.xyz"
-    set refFilePath ""
-
-    # Try to write to current directory first
-    if [catch {set refFile [open $refFileName w]}] {
-      # If not find the first existing environment variable in a list of possible temp dirs
-      foreach var { TMPDIR TMP TEMP HOME } {
-        if {[info exists ::env($var)]} {
-          set refFilePath $::env($var)
-          if {![catch {set refFile [open "$refFilePath/$refFileName" w]}]} {
-            break
-          }
+  # Try to write to current directory first
+  if [catch {set refFile [open $refFileName w]}] {
+    # If not find the first existing environment variable in a list of possible temp dirs
+    foreach var { TMPDIR TMP TEMP HOME } {
+      if {[info exists ::env($var)]} {
+        set refFilePath $::env($var)
+        if {![catch {set refFile [open "$refFilePath/$refFileName" w]}]} {
+          break
         }
       }
     }
-    if { $refFilePath != "" } {
-      set refFileName "$refFilePath/$refFileName"
+  }
+  if { $refFilePath != "" } {
+    set refFileName "$refFilePath/$refFileName"
+  }
+  if { $refFile != "" } {
+    puts $refFile "[$ref_atoms num]"
+    puts $refFile "Created by Colvars Dashboard: reference atoms in frame 0 of molecule [molinfo $molid get name]"
+    foreach coords [$ref_atoms get {x y z}] name [$ref_atoms get name] {
+      lassign $coords x y z
+      puts $refFile [format "%s %8.3f %8.3f %8.3f" $name $x $y $z]
     }
-    if { $refFile != "" } {
-      puts $refFile "[$alpha num]"
-      puts $refFile "Created by Colvars Dashboard: alpha carbons in frame 0 of molecule [molinfo $molid get name]"
-      foreach coords [$alpha get {x y z}] {
-        lassign $coords x y z
-        puts $refFile [format "CA  %8.3f %8.3f %8.3f" $x $y $z]
-      }
-      close $refFile
-    }
-    set cfg "colvar {
+    close $refFile
+  }
+  set cfg "colvar {
 ${indent}# alpha carbon RMSD with respect to frame 0 of molecule [molinfo $molid get name]
-${indent}name auto_prot_rmsd
+${indent}name ${description}_rmsd
 ${indent}rmsd {
 ${indent}${indent}atoms {
-${indent}${indent}${indent}atomNumbers [$alpha get serial]
+${indent}${indent}${indent}[sel2cvatoms $ref_atoms]
 ${indent}${indent}}
 ${indent}${indent}refPositionsFile $refFileName
 ${indent}}
 }"
-    apply_config $cfg
+  apply_config $cfg
 
-
-    set cfg "colvar {
+  set cfg "colvar {
 ${indent}# alpha carbon radius of gyration
-${indent}name auto_prot_rgyr
+${indent}name ${description}_rgyr
 ${indent}gyration {
 ${indent}${indent}atoms {
-${indent}${indent}${indent}atomNumbers [$alpha get serial]
+${indent}${indent}${indent}[sel2cvatoms $ref_atoms]
 ${indent}${indent}}
 ${indent}}
 }"
-    apply_config $cfg
+  apply_config $cfg
 
-    set cfg "colvar {
-${indent}# orientation quaternion of protein with respect to first frame
-${indent}name auto_prot_orientation
+  set cfg "colvar {
+${indent}# orientation quaternion of ${description} with respect to first frame
+${indent}name ${description}_orientation
 ${indent}orientation {
 ${indent}${indent}atoms {
-${indent}${indent}${indent}atomNumbers [$alpha get serial]
+${indent}${indent}${indent}[sel2cvatoms $ref_atoms]
 ${indent}${indent}}
 ${indent}${indent}refPositionsFile $refFileName
 ${indent}}
 }"
-    apply_config $cfg
+  apply_config $cfg
 
-    set cfg "colvar {
-${indent}# orientation angle of protein with respect to first frame
-${indent}name auto_prot_orientation_angle
+  set cfg "colvar {
+${indent}# orientation angle of ${description} with respect to first frame
+${indent}name ${description}_orientation_angle
 ${indent}orientationAngle {
 ${indent}${indent}atoms {
-${indent}${indent}${indent}atomNumbers [$alpha get serial]
+${indent}${indent}${indent}[sel2cvatoms $ref_atoms]
 ${indent}${indent}}
 ${indent}${indent}refPositionsFile $refFileName
 ${indent}}
 }"
-    apply_config $cfg
-  }
-  $alpha delete
-  set prot [atomselect $molid protein]
-  if { [$prot num] > 0 } {
+  apply_config $cfg
+
+  # Check that we have atoms and their charges are defined
+  if { [$all_atoms num] > 0  && [veclength2 [$all_atoms get charge]] > 0} {
     set cfg "colvar {
-${indent}# magnitude of protein dipole (if charges are defined)
-${indent}name auto_prot_dipole_magnitude
+${indent}# magnitude of ${description} dipole
+${indent}name ${description}_dipole_magnitude
 ${indent}dipoleMagnitude {
 ${indent}${indent}atoms {
-${indent}${indent}${indent}atomNumbers [$prot get serial]
+${indent}${indent}${indent}[sel2cvatoms $all_atoms]
 ${indent}${indent}}
 ${indent}}
 }"
     apply_config $cfg
   }
-  $prot delete
 }
