@@ -30,6 +30,22 @@
     "  url = {https://doi.org/10.1021/acs.jctc.1c00103}\n"
     "}\n";
 
+  paper_count_[std::string("Chen2022")] = 0;
+  paper_url_[std::string("Chen2022")] = "https://doi.org/10.1021/acs.jcim.1c01010";
+  paper_bibtex_[std::string("Chen2022")] =
+    "\n"
+    "@article{Chen2022,\n"
+    "  author = {Chen, Haochuan and Liu, Han and Feng, Heying and Fu, Haohao and Cai, Wensheng and Shao, Xueguang and Chipot, Christophe},\n"
+    "  title = {MLCV: {Bridging} {Machine-Learning-Based} {Dimensionality} {Reduction} and {Free-Energy} {Calculation}},\n"
+    "  journal = {J. Chem. Inf. Model.},\n"
+    "  volume = {62},\n"
+    "  number = {1},\n"
+    "  pages = {1-8},\n"
+    "  year = {2022},\n"
+    "  doi = {10.1021/acs.jcim.1c01010},\n"
+    "  URL = {https://doi.org/10.1021/acs.jcim.1c01010}\n"
+    "}\n";
+
   paper_count_[std::string("Comer2014c")] = 0;
   paper_url_[std::string("Comer2014c")] = "https://doi.org/10.1021/ct500874p";
   paper_bibtex_[std::string("Comer2014c")] =
@@ -306,6 +322,9 @@
 
   feature_count_[std::string("reweightaMD colvar bias implementation (NAMD)")] = 0;
   feature_paper_map_[std::string("reweightaMD colvar bias implementation (NAMD)")] = "Chen2021";
+
+  feature_count_[std::string("neuralNetwork colvar component")] = 0;
+  feature_paper_map_[std::string("neuralNetwork colvar component")] = "Chen2022";
 
   feature_count_[std::string("Multiple-walker ABF implementation")] = 0;
   feature_paper_map_[std::string("Multiple-walker ABF implementation")] = "Comer2014c";
