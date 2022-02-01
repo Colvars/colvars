@@ -122,7 +122,7 @@ jobs:
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
         run: |
-          singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh ${{ inputs.backend_name }}-source
+          singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
           CCACHE_DIR=~/ccache_CentOS7-devel \
           singularity exec devel-tools/CentOS7-devel.sif \
           bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
