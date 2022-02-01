@@ -138,7 +138,7 @@ jobs:
         working-directory: ${{ inputs.test_lib_directory }}
         run: |
           singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 000_*
+          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
 
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
         if: ${{ inputs.test_interface_directory }}
