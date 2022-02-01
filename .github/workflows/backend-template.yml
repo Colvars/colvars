@@ -2,10 +2,10 @@
 # It generalize the test procedure to be applied by a generic MD engine
 
 # This workflow:
-#  - checkout colvars code
-#  - checkout the MD engine
-#  - build the MD engine with Singularity
-#  - run the colvars regression tests written for the MD engine
+#  - Checkout Colvars code
+#  - Checkout the MD engine
+#  - Build the MD engine with Singularity
+#  - Run the Colvars regression tests written for the MD engine
 
 name: "Test a backend with Colvars"
 
@@ -60,7 +60,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Colvars
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Configure Ccache
         uses: actions/cache@v2

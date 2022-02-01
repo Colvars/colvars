@@ -1,6 +1,6 @@
 name: "Library"
 
-on: [push, pull_request_target]
+on: [pull_request_target]
 
 
 jobs:
@@ -12,7 +12,11 @@ jobs:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Colvars
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Test build recipes
         run: bash devel-tools/check_build_recipes

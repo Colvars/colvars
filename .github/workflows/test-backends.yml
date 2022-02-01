@@ -1,6 +1,6 @@
 name: "Backends"
 
-on: [push, pull_request_target]
+on: [pull_request_target]
 
 
 # The jobs call a template workflow `backend-template.yml` which performs
