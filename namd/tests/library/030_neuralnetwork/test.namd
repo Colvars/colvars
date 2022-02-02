@@ -1,31 +1,24 @@
-# Trialanine
+# Deca-alanine
 seed 1
 
 # Variables
-set outName	        test
+set outName         test
 
-# Use amber ff
-parmfile            trialanine.parm7
-coordinates         trialanine.pdb
+structure           ../Common/da.psf
+coordinates         ../Common/da.pdb
+parameters          ../Common/par_all22_prot.inp
+paraTypeCharmm      on
 temperature         300.0
 
 ## SIMULATION PARAMETERS                                  
-# AMBER FF settings
-amber               on
-rigidBonds          water
-useSettle           on
-rigidTolerance      1.0e-8
-rigidIterations     100
-cutoff              9.0
-pairlistdist        11.0
-switching           off
+hgroupcutoff        2.8
+switching           on
+switchdist          10.0
+cutoff              12.0
+pairlistdist        14.0
+rigidbonds          none
 exclude             scaled1-4
-readexclusions      yes
-1-4scaling          0.83333333
-scnb                2.0
-zeromomentum        on
-ljcorrection        off
-watermodel          tip3
+1-4scaling          1.0
 
 # Integrator Parameters 
 timestep            0.5 
@@ -33,7 +26,7 @@ nonbondedFreq       1
 fullElectFrequency  1 
 stepspercycle       10
 splitpatch          hydrogen
-hgroupcutoff        2.8
+margin              2.0
 
 # Output
 outputenergies          1000
@@ -56,6 +49,5 @@ commotion               no
 
 colvars                 on
 colvarsConfig           test.in
-#colvarsInput            $inputName.colvars.state
 
 numSteps                20

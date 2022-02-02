@@ -49,7 +49,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5972.
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -62,7 +62,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.007, total charge = -0.47.
 colvars:       Initializing atom group "group3".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -75,7 +75,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group4".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -88,7 +88,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:     This colvar uses a custom function.
@@ -118,7 +118,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -131,7 +131,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.007, total charge = -0.47.
 colvars:       Initializing atom group "group3".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -144,7 +144,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group4".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -157,7 +157,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:     This colvar uses a custom function.
@@ -187,7 +187,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -200,7 +200,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.007, total charge = -0.47.
 colvars:       Initializing atom group "group3".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -213,7 +213,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group4".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -226,7 +226,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:     This colvar uses a custom function.
@@ -256,7 +256,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 14.007, total charge = -0.47.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -269,7 +269,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group3".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -282,7 +282,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:       Initializing atom group "group4".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -295,7 +295,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 14.007, total charge = -0.47.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:     This colvar uses a custom function.
@@ -325,7 +325,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 14.007, total charge = -0.47.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -338,7 +338,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group3".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -351,7 +351,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:       Initializing atom group "group4".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -364,7 +364,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 14.007, total charge = -0.47.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:     This colvar uses a custom function.
@@ -394,7 +394,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 14.007, total charge = -0.47.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -407,7 +407,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group3".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -420,7 +420,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.011, total charge = 0.51.
 colvars:       Initializing atom group "group4".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
@@ -433,7 +433,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 14.007, total charge = -0.47.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:     This colvar uses a custom function.
@@ -627,30 +627,30 @@ colvars:
 colvars: - NAMD engine:
 colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
 colvars: 
-colvars: Re-initialized atom group for variable "nn_output_1":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
-colvars: Re-initialized atom group for variable "nn_output_1":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/12. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/13. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/14. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/15. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/16. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/17. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/18. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/19. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/20. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/21. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/22. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/23. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "nn_output_1":0/0. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/1. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/3. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/4. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/5. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/6. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/7. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/8. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/9. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/10. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/11. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/12. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/13. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/14. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/15. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/16. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/17. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/18. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/19. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/20. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/21. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/22. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/23. 1 atoms: total mass = 14.007, total charge = -0.47.
 colvars: The restart output state file will be "test.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
 colvars: Opening trajectory file "test.colvars.traj".
@@ -659,30 +659,30 @@ colvars: Updating NAMD interface:
 colvars: updating atomic data (11 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
-colvars: Re-initialized atom group for variable "nn_output_1":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
-colvars: Re-initialized atom group for variable "nn_output_1":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/4. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/5. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/6. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/7. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/8. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/9. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/10. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/11. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/12. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/13. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/14. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/15. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/16. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/17. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/18. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/19. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/20. 1 atoms: total mass = 14.01, total charge = -0.4157.
-colvars: Re-initialized atom group for variable "nn_output_1":0/21. 1 atoms: total mass = 12.01, total charge = 0.0337.
-colvars: Re-initialized atom group for variable "nn_output_1":0/22. 1 atoms: total mass = 12.01, total charge = 0.5973.
-colvars: Re-initialized atom group for variable "nn_output_1":0/23. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "nn_output_1":0/0. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/1. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/3. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/4. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/5. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/6. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/7. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/8. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/9. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/10. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/11. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/12. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/13. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/14. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/15. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/16. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/17. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/18. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/19. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/20. 1 atoms: total mass = 14.007, total charge = -0.47.
+colvars: Re-initialized atom group for variable "nn_output_1":0/21. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "nn_output_1":0/22. 1 atoms: total mass = 12.011, total charge = 0.51.
+colvars: Re-initialized atom group for variable "nn_output_1":0/23. 1 atoms: total mass = 14.007, total charge = -0.47.
 colvars: The restart output state file will be "test.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
 colvars:   Prepared sample and gradient buffers at step 0.
