@@ -1,12 +1,5 @@
 #if (__cplusplus >= 201103L)
 
-#include <numeric>
-#include <algorithm>
-#include <cmath>
-#include <cstdlib>
-#include <limits>
-#include <utility>
-
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
@@ -113,7 +106,7 @@ void colvar::customColvar::calc_value() {
     size_t l = 0;
     for (size_t i = 0; i < x.size(); ++i) {
         for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-            colvarvalue current_cv_value(cv[i_cv]->value());
+            const colvarvalue& current_cv_value = cv[i_cv]->value();
             for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) {
                 if (current_cv_value.type() == colvarvalue::type_scalar) {
                     *(value_eval_var_refs[l++]) = cv[i_cv]->sup_coeff * (cvm::pow(current_cv_value.real_value, cv[i_cv]->sup_np));
@@ -140,7 +133,7 @@ void colvar::customColvar::calc_gradients() {
             !cv[i_cv]->is_enabled(f_cvc_scalable) &&
             !cv[i_cv]->is_enabled(f_cvc_scalable_com)
         ) {
-            colvarvalue current_cv_value(cv[i_cv]->value());
+            const colvarvalue& current_cv_value = cv[i_cv]->value();
             const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
             for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) { // for each element in this CV
                 for (size_t c = 0; c < x.size(); ++c) { // for each custom function expression
@@ -181,7 +174,7 @@ void colvar::customColvar::apply_force(colvarvalue const &force) {
                 (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
             }
         } else {
-            colvarvalue current_cv_value(cv[i_cv]->value());
+            const colvarvalue& current_cv_value = cv[i_cv]->value();
             colvarvalue cv_force(current_cv_value.type());
             const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
             for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) {
@@ -322,7 +315,7 @@ void colvar::neuralNetwork::calc_value() {
     x.reset();
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         cv[i_cv]->calc_value();
-        colvarvalue current_cv_value(cv[i_cv]->value());
+        const colvarvalue& current_cv_value = cv[i_cv]->value();
         // for current nn implementation we have to assume taht types are always scaler
         if (current_cv_value.type() == colvarvalue::type_scalar) {
             nn->input()[i_cv] = cv[i_cv]->sup_coeff * (cvm::pow(current_cv_value.real_value, cv[i_cv]->sup_np));

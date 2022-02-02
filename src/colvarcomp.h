@@ -1753,8 +1753,6 @@ protected:
     std::unique_ptr<neuralnetworkCV::neuralNetworkCompute> nn;
     /// the index of nn output components
     size_t m_output_index;
-    /// input vector of nn
-    std::vector<double> m_nn_input;
 public:
     neuralNetwork(std::string const &conf);
     virtual ~neuralNetwork();
