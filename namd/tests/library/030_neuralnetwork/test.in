@@ -28,10 +28,10 @@ colvar {
             customFunction sin(phi_1/180.0*3.1415926535897)
             dihedral {
                 name phi_1
-                group1 {atomNumbers {5}}
-                group2 {atomNumbers {7}}
-                group3 {atomNumbers {9}}
-                group4 {atomNumbers {15}}
+                group1 {atomNumbers {10}}
+                group2 {atomNumbers {12}}
+                group3 {atomNumbers {14}}
+                group4 {atomNumbers {20}}
                 scalable off
             }
         }
@@ -40,10 +40,10 @@ colvar {
             customFunction sin(phi_2/180.0*3.1415926535897)
             dihedral {
                 name phi_2
-                group1 {atomNumbers {15}}
-                group2 {atomNumbers {17}}
-                group3 {atomNumbers {19}}
-                group4 {atomNumbers {25}}
+                group1 {atomNumbers {20}}
+                group2 {atomNumbers {22}}
+                group3 {atomNumbers {24}}
+                group4 {atomNumbers {30}}
                 scalable off
             }
         }
@@ -52,10 +52,10 @@ colvar {
             customFunction sin(phi_3/180.0*3.1415926535897)
             dihedral {
                 name phi_3
-                group1 {atomNumbers {25}}
-                group2 {atomNumbers {27}}
-                group3 {atomNumbers {29}}
-                group4 {atomNumbers {35}}
+                group1 {atomNumbers {30}}
+                group2 {atomNumbers {32}}
+                group3 {atomNumbers {34}}
+                group4 {atomNumbers {40}}
                 scalable off
             }
         }
@@ -64,10 +64,10 @@ colvar {
             customFunction sin(psi_1/180.0*3.1415926535897)
             dihedral {
                 name psi_1
-                group1 {atomNumbers {7}}
-                group2 {atomNumbers {9}}
-                group3 {atomNumbers {15}}
-                group4 {atomNumbers {17}}
+                group1 {atomNumbers {12}}
+                group2 {atomNumbers {14}}
+                group3 {atomNumbers {20}}
+                group4 {atomNumbers {22}}
                 scalable off
             }
         }
@@ -76,10 +76,10 @@ colvar {
             customFunction sin(psi_2/180.0*3.1415926535897)
             dihedral {
                 name psi_2
-                group1 {atomNumbers {17}}
-                group2 {atomNumbers {19}}
-                group3 {atomNumbers {25}}
-                group4 {atomNumbers {27}}
+                group1 {atomNumbers {22}}
+                group2 {atomNumbers {24}}
+                group3 {atomNumbers {30}}
+                group4 {atomNumbers {32}}
                 scalable off
             }
         }
@@ -88,10 +88,10 @@ colvar {
             customFunction sin(psi_3/180.0*3.1415926535897)
             dihedral {
                 name psi_3
-                group1 {atomNumbers {27}}
-                group2 {atomNumbers {29}}
-                group3 {atomNumbers {35}}
-                group4 {atomNumbers {37}}
+                group1 {atomNumbers {32}}
+                group2 {atomNumbers {34}}
+                group3 {atomNumbers {40}}
+                group4 {atomNumbers {42}}
                 scalable off
             }
         }
