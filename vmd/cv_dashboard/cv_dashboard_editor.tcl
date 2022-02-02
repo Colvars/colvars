@@ -619,21 +619,17 @@ proc ::cv_dashboard::cvs_from_labels {} {
   set cvc(Bonds) distance
   set cvc(Angles) angle
   set cvc(Dihedrals) dihedral
-  foreach obj { "Bonds" "Angles" "Dihedrals" } {
+  set short(Bonds) d
+  set short(Angles) angle
+  set short(Dihedrals) dihed
+  foreach obj { Bonds Angles Dihedrals } {
     foreach l [label list $obj] {
       # Skip hidden labels
       if { [lindex $l 2] == "hide" } { continue }
       set ok true
+      set cv_name "$short($obj)"
+      set cfg ""
 
-      # Look for first available name
-      set id 1
-      set name "auto_$cvc($obj)${id}"
-      set cvs [run_cv list]
-      while { [lsearch $cvs $name] > -1 } {
-        incr id
-        set name "auto_$cvc($obj)${id}"
-      }
-      set cfg "colvar \{\n${indent}name $name\n${indent}$cvc($obj) \{\n"
       for {set i 0} { $i < $n($obj) } {incr i} {
         set a [lindex $l $i]
         set m [lindex $a 0]
@@ -642,12 +638,28 @@ proc ::cv_dashboard::cvs_from_labels {} {
           set ok false
           break
         }
-        set serial [expr [lindex $a 1] + 1]
+        set sel [atomselect $molid "index [lindex $a 1]"]
+        set serial [$sel get serial]
+        set resname [$sel get resname]
+        set resid [$sel get resid]
+        set name [$sel get name]
+        $sel delete
+
+        if { $name == "" || $resname == "" } {
+          append cv_name "_$serial"
+        } else {
+          append cv_name "_$resname$resid:$name"
+        }
+
         append cfg "${indent2}group[expr $i+1] \{\n${indent2}${indent}atomNumbers $serial\n${indent2}\}\n"
       }
       if { $ok } {
         append cfg "$indent\}\n\}"
-        puts $cfg
+        # See if cv with same name already exists
+        while { [lsearch [run_cv list] $cv_name] > -1 } {
+          append cv_name "_"
+        }
+        set cfg "colvar \{\n${indent}name $cv_name\n${indent}$cvc($obj) \{\n$cfg"
         apply_config $cfg
       }
     }
