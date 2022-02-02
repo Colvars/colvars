@@ -28,7 +28,7 @@
 #if (__cplusplus >= 201103L)
 // C++11-only functions
 #include "colvar_geometricpath.h"
-#include "colvar_neuralnetworkcompute.h"
+#include <memory>
 #include <functional>
 #endif
 
@@ -1740,12 +1740,17 @@ public:
     virtual void apply_force(colvarvalue const &force);
 };
 
+// forward declaration
+namespace neuralnetworkCV {
+    class neuralNetworkCompute;
+}
+
 class colvar::neuralNetwork
   : public linearCombination
 {
 protected:
-    /// actual computation happens in this object
-    neuralnetworkCV::neuralNetworkCompute nn;
+    /// actual computation happens in neuralnetworkCV::neuralNetworkCompute
+    std::unique_ptr<neuralnetworkCV::neuralNetworkCompute> nn;
     /// the index of nn output components
     size_t m_output_index;
     /// input vector of nn
