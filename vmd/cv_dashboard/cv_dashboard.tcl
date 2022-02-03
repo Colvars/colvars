@@ -388,9 +388,7 @@ proc ::cv_dashboard::substitute_atomselects { cfg_in } {
     # 2) are processing a line starting with "atom" (atom selection keyword)
     if { $seltext != "" && [regexp -nocase {^(\s*)atom} $line match spaces] } {
       set sel [atomselect $::cv_dashboard::mol $seltext]
-      set serials [$sel get serial]
-      $sel delete
-      if {[llength $serials] == 0 } {
+      if {[$sel num] == 0 } {
         tk_messageBox -icon error -title "Colvars warning" -parent .cv_dashboard_window\
           -message "Selection text \"${seltext}\" for automatic atom selection matches zero atoms. \
 Keeping atom numbers from existing configuration."
@@ -400,10 +398,11 @@ Keeping atom numbers from existing configuration."
         set seltext ""
       } else {
         # Replace keyword, keeping indenting spaces
-        append cfg "${spaces}atomNumbers $serials\n"
+        append cfg "${spaces}[sel2cvatoms $sel]\n"
         # Forget seltext for next lines
         set seltext ""
       }
+      $sel delete
     } else {
       append cfg $line "\n"
     }

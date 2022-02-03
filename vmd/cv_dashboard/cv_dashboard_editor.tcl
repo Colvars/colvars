@@ -281,7 +281,6 @@ proc ::cv_dashboard::atoms_from_sel { source } {
     return
   }
   set sel [atomselect $::cv_dashboard::mol $seltext]
-  $sel delete
 
   if {[$sel num] == 0 } {
     tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
@@ -295,6 +294,7 @@ proc ::cv_dashboard::atoms_from_sel { source } {
 "${indent3}# \"auto-updating\" keyword updates atom IDs when applying cfg or changing molecule
 ${indent3}#$auto selection: \"$seltext\"
 ${indent3}[sel2cvatoms $sel]\n"
+  $sel delete
 }
 
 
@@ -312,6 +312,7 @@ proc ::cv_dashboard::insert_labels {obj} {
   set w .cv_dashboard_window
   set indent ${::cv_dashboard::indent}
   set indent2 "${indent}${indent}"
+  set indent3 "${indent2}${indent}"
 
   if {$obj == "combo"} {
     set obj [$w.editor.fl.helpers.labels get]
@@ -326,7 +327,7 @@ proc ::cv_dashboard::insert_labels {obj} {
       lappend serials [expr [lindex $a 1] + 1] ;# going from VMD 0-based to 1-based atomNumbers
     }
     if {[llength $serials] > 0} {
-      editor_replace $w.editor.fr.text "${indent2}# Atom labels\n${indent2}atomNumbers $serials\n"
+      editor_replace $w.editor.fr.text "${indent3}# Atom labels\n${indent3}atomNumbers $serials\n"
     }
   } else {
     set n(Bonds) 2
@@ -342,7 +343,7 @@ proc ::cv_dashboard::insert_labels {obj} {
       for {set i 0} { $i < $n($obj) } {incr i} {
         set a [lindex $l $i]
         set serial [expr [lindex $a 1] + 1]
-        append cfg "${indent2}group[expr $i+1] \{\n${indent2}${indent}atomNumbers $serial\n${indent2}\}\n"
+        append cfg "${indent2}group[expr $i+1] \{\n${indent3}atomNumbers $serial\n${indent2}\}\n"
       }
       append cfg "${indent}\}\n"
       editor_replace $w.editor.fr.text $cfg

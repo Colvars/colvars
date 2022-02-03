@@ -451,6 +451,7 @@ Running Tcl/Tk [info patchlevel]
 Jérôme Hénin (henin@ibpc.fr) and the Colvars developers.
 
 J. Hénin, L. J. S. Lopes, and G. Fiorin. Human learning for molecular simulations: the Collective Variables Dashboard in VMD.
+J. Chem. Theo. Comput. (2022)
 http://arxiv.org/abs/2110.08758
 "
 }
