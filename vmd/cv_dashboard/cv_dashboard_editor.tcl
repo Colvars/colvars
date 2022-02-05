@@ -53,7 +53,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
 
 
   ############# Templates #########################################
-  labelframe  $w.editor.fl.templates -bd 2 -text "Templates" -padx 2 -pady 2
+  tk::labelframe  $w.editor.fl.templates -bd 2 -text "Templates" -padx 2 -pady 2
   set templates $w.editor.fl.templates
 
   # One line per subdirectory
@@ -64,7 +64,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
       # Map pretty template name to file name
       dict set ::cv_dashboard::templates_$d [regsub -all {_} [file rootname [file tail $f]] " "] $f
     }
-    label $templates.template_label_$d -font $::cv_dashboard::font -text "$d templates:"
+    tk::label $templates.template_label_$d -font $::cv_dashboard::font -text "$d templates:"
     ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no
     $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
     bind $templates.pick_template_$d <<keyb_enter>> \
@@ -84,11 +84,11 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   grid columnconfigure $templates 2 -weight 0
 
   ############# Various helpers ###################################
-  labelframe  $w.editor.fl.helpers -bd 2 -text "Editing helpers" -padx 2 -pady 2
+  tk::labelframe  $w.editor.fl.helpers -bd 2 -text "Editing helpers" -padx 2 -pady 2
   set helpers $w.editor.fl.helpers
 
   ############# Atoms from seltext ################################
-  label $helpers.seltext_label -font $::cv_dashboard::font -text "Atoms from selection text:"
+  tk::label $helpers.seltext_label -font $::cv_dashboard::font -text "Atoms from selection text:"
   ttk::entry $helpers.seltext
   # Bind Return key in seltext entry to proc creating the atomNumbers line
   bind $helpers.seltext <<keyb_enter>> "::cv_dashboard::atoms_from_sel textbox"
@@ -101,7 +101,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   incr gridrow
 
   ############# Atoms from representation ################################
-  label $helpers.rep_label -font $::cv_dashboard::font -text "Atoms from representation:"
+  tk::label $helpers.rep_label -font $::cv_dashboard::font -text "Atoms from representation:"
   ttk::combobox $helpers.reps -justify left -state readonly -exportselection no
   ttk::button $helpers.refresh_reps -text "Refresh list" -command ::cv_dashboard::refresh_reps
   bind $helpers.reps <<ComboboxSelected>> "::cv_dashboard::atoms_from_sel reps"
@@ -143,7 +143,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
 
 
   ############# Doc links #########################################
-  labelframe  $w.editor.fl.docs -bd 2 -text "Links to online documentation" -padx 2 -pady 2
+  tk::labelframe  $w.editor.fl.docs -bd 2 -text "Links to online documentation" -padx 2 -pady 2
   set docs $w.editor.fl.docs
 
   ttk::button $docs.onlinedoc1 -text "Collective variables" -style cv_link.TButton -padding "4 2 4 2"\
@@ -336,7 +336,7 @@ proc ::cv_dashboard::insert_labels {obj} {
 
   if { $obj == "Atoms" } {
     set serials [list]
-    foreach l [label list -font $::cv_dashboard::font $obj] {
+    foreach l [label list $obj] {
       # Skip hidden labels
       if { [lindex $l 2] == "hide" } { continue }
       set a [lindex $l 0]
@@ -352,7 +352,7 @@ proc ::cv_dashboard::insert_labels {obj} {
     set cvc(Bonds) distance
     set cvc(Angles) angle
     set cvc(Dihedrals) dihedral
-    foreach l [label list -font $::cv_dashboard::font $obj] {
+    foreach l [label list $obj] {
       # Skip hidden labels
       if { [lindex $l 2] == "hide" } { continue }
       set cfg "${indent}$cvc($obj) \{\n"
@@ -640,7 +640,7 @@ proc ::cv_dashboard::cvs_from_labels {} {
   set short(Angles) angle
   set short(Dihedrals) dihed
   foreach obj { Bonds Angles Dihedrals } {
-    foreach l [label list -font $::cv_dashboard::font $obj] {
+    foreach l [label list $obj] {
       # Skip hidden labels
       if { [lindex $l 2] == "hide" } { continue }
       set ok true

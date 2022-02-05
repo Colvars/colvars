@@ -15,22 +15,22 @@ proc ::cv_dashboard::createSettingsWindow { } {
   grid [ttk::separator $settings.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   incr gridrow
-  grid [label $settings.graphics_text -font $::cv_dashboard::font -text "Graphics settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.graphics_text -font $::cv_dashboard::font -text "Graphics settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [label $settings.material_text -font $::cv_dashboard::font -text "Display material:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.material_text -font $::cv_dashboard::font -text "Display material:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   ttk::combobox $settings.material -justify left -state readonly
   $settings.material configure -values [material list]
   grid $settings.material -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   $settings.material set "Opaque"
 
   incr gridrow
-  grid [label $settings.atom_radius_text -font $::cv_dashboard::font -text "Sphere radius:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.atom_radius_text -font $::cv_dashboard::font -text "Sphere radius:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $settings.atom_radius -textvariable ::cv_dashboard::atom_radius] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   set ::cv_dashboard::atom_radius 0.5
 
   incr gridrow
-  grid [label $settings.sel_text_label -font $::cv_dashboard::font -text "Intersect sel. text:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.sel_text_label -font $::cv_dashboard::font -text "Intersect sel. text:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $settings.sel_text -textvariable ::cv_dashboard::sel_text] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   set ::cv_dashboard::sel_text "all"
 
@@ -40,14 +40,14 @@ proc ::cv_dashboard::createSettingsWindow { } {
   grid [ttk::separator $settings.sepgradients -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   incr gridrow
-  grid [label $settings.gradients_text -font $::cv_dashboard::font -text "Gradients / Forces settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.gradients_text -font $::cv_dashboard::font -text "Gradients / Forces settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
   grid [ttk::radiobutton $settings.grad_scale_choice_norm -text "Max. arrow length" -value "norm" -variable ::cv_dashboard::grad_scale_choice \
     -command {::cv_dashboard::update_shown_gradients; ::cv_dashboard::update_shown_forces} -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $settings.grad_norm -textvariable ::cv_dashboard::grad_norm] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [label $settings.grad_norm_unit -font $::cv_dashboard::font -text "Angstrom"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.grad_norm_unit -font $::cv_dashboard::font -text "Angstrom"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   bind $settings.grad_norm <<keyb_enter>> "$settings.grad_scale_choice_norm invoke; ::cv_dashboard::update_shown_gradients"
 
   incr gridrow
@@ -55,15 +55,15 @@ proc ::cv_dashboard::createSettingsWindow { } {
     -command {::cv_dashboard::update_shown_gradients; ::cv_dashboard::update_shown_forces} -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $settings.grad_scale -textvariable ::cv_dashboard::grad_scale] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [label $settings.grad_scale_unit -font $::cv_dashboard::font -text "gradient: A*L/(cv/width)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.grad_scale_unit -font $::cv_dashboard::font -text "gradient: A*L/(cv/width)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   bind $settings.grad_scale <<keyb_enter>> "$settings.grad_scale_choice_scale invoke; ::cv_dashboard::update_shown_gradients"
 
   $settings.grad_scale_choice_norm invoke ;# Default to norm
 
   incr gridrow
-  grid [label $settings.grad_radius_text -font $::cv_dashboard::font -text "Arrow radius:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.grad_radius_text -font $::cv_dashboard::font -text "Arrow radius:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $settings.grad_radius -textvariable ::cv_dashboard::grad_radius] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [label $settings.grad_radius_unit -font $::cv_dashboard::font -text "Angstrom"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.grad_radius_unit -font $::cv_dashboard::font -text "Angstrom"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   set ::cv_dashboard::grad_radius 0.3
 
   # Rotation display settings
@@ -72,15 +72,15 @@ proc ::cv_dashboard::createSettingsWindow { } {
   grid [ttk::separator $settings.seprotations -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   incr gridrow
-  grid [label $settings.rot_text -font $::cv_dashboard::font -text "Rotation display settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.rot_text -font $::cv_dashboard::font -text "Rotation display settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [label $settings.rot_scale_text -font $::cv_dashboard::font -text "Rotation object scale:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.rot_scale_text -font $::cv_dashboard::font -text "Rotation object scale:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $settings.rot_scale -textvariable ::cv_dashboard::rot_scale] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   set ::cv_dashboard::rot_scale 1.0
 
   incr gridrow
-  grid [label $settings.rot_color_text -font $::cv_dashboard::font -text "Rotation object color:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.rot_color_text -font $::cv_dashboard::font -text "Rotation object color:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::combobox $settings.rot_color -justify left -state readonly] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   $settings.rot_color configure -values [colorinfo colors]
   $settings.rot_color set "yellow"
@@ -91,13 +91,13 @@ proc ::cv_dashboard::createSettingsWindow { } {
   grid [ttk::separator $settings.sepvolmap -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   incr gridrow
-  grid [label $settings.volmap_text -font $::cv_dashboard::font -text "Volmaps settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.volmap_text -font $::cv_dashboard::font -text "Volmaps settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [label $settings.volmap_contour_text -font $::cv_dashboard::font -text "Contour level:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.volmap_contour_text -font $::cv_dashboard::font -text "Contour level:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $settings.volmap_contour -textvariable ::cv_dashboard::volmap_contour] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   set ::cv_dashboard::volmap_contour 0.5
-  grid [label $settings.volmap_contour_unit -font $::cv_dashboard::font -text "(% of min-max range)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [tk::label $settings.volmap_contour_unit -font $::cv_dashboard::font -text "(% of min-max range)"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
   grid [ttk::checkbutton $settings.volmap_periodic_x -text "+/-X images" -variable ::cv_dashboard::volmap_periodic_x] \
