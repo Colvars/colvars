@@ -90,6 +90,16 @@ proc ::cv_dashboard::plot { { type timeline } } {
     set xname [lindex $name_list 0]
     # Save list of values for navigating
     set ::cv_dashboard::histogram_time_series $y($xname)
+    set ::cv_dashboard::histogram_sorted_frames [lsort -real -indices $y($xname)]
+    set ::cv_dashboard::histogram_sorted_values [list]
+
+    set i 0
+    foreach f $::cv_dashboard::histogram_sorted_frames {
+      set ::cv_dashboard::histogram_frame_rank($f) $i
+      lappend ::cv_dashboard::histogram_sorted_values [lindex $::cv_dashboard::histogram_time_series $f]
+      incr i
+    }
+
     lassign [compute_histogram $y($xname)] centers frequencies
 
     set nbins [llength $centers]
@@ -98,20 +108,18 @@ proc ::cv_dashboard::plot { { type timeline } } {
 
     # Create plot with real freq data to enable exports
     # do not display lines but call plot to compute sizes
-    set plothandle [multiplot -title "Histogram for colvar $cvs \[click to navigate\]" \
+    set plothandle [multiplot -title "Histogram for colvar $cvs \[click, keyb arrows (+ Shift/Ctrl) to navigate to navigate\]" \
       -xlabel $xname -ylabel "N samples" -nostats \
       -xmin [expr [lindex $centers 0] - (0.5*$delta)] -xmax [expr [lindex $centers end] + (0.5*$delta)] \
       -x $centers -y $frequencies -nolines -plot]
-    # set HistPlot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel $ylabel
-    # -nolines -marker square -fill black -xmin [expr [lindex $xlist 0] - (0.5*$delta)] -xmax [expr [lindex $xlist end] + (0.5*$delta)]]
-  
+
     set ns [namespace qualifiers $plothandle]
     set ymin [set ${ns}::ymin]
 
     for {set j 0} {$j < $nbins} {incr j} {
       set left [expr [lindex $centers $j] - (0.5 * $delta)]
       set right [expr [lindex $centers $j] + (0.5 * $delta)]
-      $plothandle draw rectangle $left $ymin $right [lindex $frequencies $j] -outline "" -fill "#c0c0c0" -tags rect$j
+      $plothandle draw rectangle $left $ymin $right [lindex $frequencies $j] -fill "#c0c0c0" -tags rect$j
     }
     $plothandle replot
     # $plothandle add $bin_centers $frequencies
@@ -121,20 +129,29 @@ proc ::cv_dashboard::plot { { type timeline } } {
   # bind mouse and keyboard events to callbacks
   set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
 
+  set w [set ${plot_ns}::w]
 
   if { $type == "timeline" } {
-    traj_animation_bindings [set ${plot_ns}::w]
-    bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
-    bind [set ${plot_ns}::w] <Up>             { ::cv_dashboard::zoom 0.25 }
-    bind [set ${plot_ns}::w] <Down>           { ::cv_dashboard::zoom 4 }
-    bind [set ${plot_ns}::w] <Shift-Up>       { ::cv_dashboard::zoom 0.0625 }
-    bind [set ${plot_ns}::w] <Shift-Down>     { ::cv_dashboard::zoom 16 }
-    bind [set ${plot_ns}::w] <v>              { ::cv_dashboard::fit_vertically }
-    bind [set ${plot_ns}::w] <h>              { ::cv_dashboard::fit_horizontally }
+    traj_animation_bindings $w
+    bind $w <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
+    bind $w <Up>             { ::cv_dashboard::zoom 0.25 }
+    bind $w <Down>           { ::cv_dashboard::zoom 4 }
+    bind $w <Shift-Up>       { ::cv_dashboard::zoom 0.0625 }
+    bind $w <Shift-Down>     { ::cv_dashboard::zoom 16 }
+    bind $w <v>              { ::cv_dashboard::fit_vertically }
+    bind $w <h>              { ::cv_dashboard::fit_horizontally }
   } elseif { $type == "2cv" } {
-    traj_animation_bindings [set ${plot_ns}::w]
+    traj_animation_bindings $w
   } elseif { $type == "histogram" } {
-    bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
+    bind $w <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
+    bind $w <Left>           { ::cv_dashboard::chg_frame -1 sorted }
+    bind $w <Right>          { ::cv_dashboard::chg_frame 1 sorted }
+    bind $w <Shift-Left>     { ::cv_dashboard::chg_frame -10 sorted }
+    bind $w <Shift-Right>    { ::cv_dashboard::chg_frame 10 sorted }
+    bind $w <Control-Left>   { ::cv_dashboard::chg_frame -50 sorted }
+    bind $w <Control-Right>  { ::cv_dashboard::chg_frame 50 sorted }
+    bind $w <Home>           { ::cv_dashboard::chg_frame start sorted }
+    bind $w <End>            { ::cv_dashboard::chg_frame end sorted }
   }
 
   # Update frame to display frame marker in new plot
@@ -190,15 +207,16 @@ proc ::cv_dashboard::plot_bias_energy { } {
   $plothandle replot
   # bind mouse and keyboard events to callbacks
   set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
+  set w [set ${plot_ns}::w]
 
-  traj_animation_bindings [set ${plot_ns}::w]
-  bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
-  bind [set ${plot_ns}::w] <Up>             { ::cv_dashboard::zoom 0.25 }
-  bind [set ${plot_ns}::w] <Down>           { ::cv_dashboard::zoom 4 }
-  bind [set ${plot_ns}::w] <Shift-Up>       { ::cv_dashboard::zoom 0.0625 }
-  bind [set ${plot_ns}::w] <Shift-Down>     { ::cv_dashboard::zoom 16 }
-  bind [set ${plot_ns}::w] <v>              { ::cv_dashboard::fit_vertically }
-  bind [set ${plot_ns}::w] <h>              { ::cv_dashboard::fit_horizontally }
+  traj_animation_bindings $w
+  bind $w <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
+  bind $w <Up>             { ::cv_dashboard::zoom 0.25 }
+  bind $w <Down>           { ::cv_dashboard::zoom 4 }
+  bind $w <Shift-Up>       { ::cv_dashboard::zoom 0.0625 }
+  bind $w <Shift-Down>     { ::cv_dashboard::zoom 16 }
+  bind $w <v>              { ::cv_dashboard::fit_vertically }
+  bind $w <h>              { ::cv_dashboard::fit_horizontally }
 
 
   # Update frame to display frame marker in new plot
@@ -228,18 +246,7 @@ proc ::cv_dashboard::plot_clicked { x y } {
   } elseif { $::cv_dashboard::plottype == "histogram" } {
     set val [expr {($x - $xplotmin) / $scalex + $xmin}]
     # Find frame with closest value
-    set i 0
-    set min_i 0
-    set min_d2 [expr $val*$val]
-    foreach v $::cv_dashboard::histogram_time_series {
-      set d2 [expr {($val-$v)*($val-$v)}]
-      if { $d2 < $min_d2 } {
-        set min_d2 $d2
-        set min_i $i
-      }
-      incr i
-    }
-    set newframe $min_i
+    set newframe [lindex $::cv_dashboard::histogram_sorted_frames [bisect $::cv_dashboard::histogram_sorted_values $val]]
   }
   animate goto $newframe
   if { $::cv_dashboard::track_frame == 0 } {
@@ -261,7 +268,7 @@ proc ::cv_dashboard::marker_clicked { index x y color marker } {
 
 
 # Change frame in reaction to user input (arrow keys)
-proc ::cv_dashboard::chg_frame { shift } {
+proc ::cv_dashboard::chg_frame { shift { order "traj" } } {
 
   set nf [molinfo $::cv_dashboard::mol get numframes]
 
@@ -270,12 +277,22 @@ proc ::cv_dashboard::chg_frame { shift } {
   } elseif { $shift == "end" } {
     set f [expr $nf - 1]
   } else {
-    set f [expr $::cv_dashboard::current_frame + $shift]
+    set f [expr $::cv_dashboard::current_frame]
+    if { $order == "sorted" } {
+      # Work with frame rank instead of frame ID
+      set f [expr $::cv_dashboard::histogram_frame_rank($f) + $shift]
+    } else {
+      set f [expr $f + $shift]
+    }
   }
 
   # Keep within bounds [[O, numframes[[
   if { $f < 0 } { set f 0 }
   if { $f >= $nf } { set f [expr $nf - 1] }
+  if { $order == "sorted" } {
+    # Convert back to frame ID
+    set f [lindex $::cv_dashboard::histogram_sorted_frames $f]
+  }
 
   animate goto $f
   if { $::cv_dashboard::track_frame == 0 } {
@@ -423,7 +440,8 @@ proc ::cv_dashboard::display_marker { f } {
 
 # Create plot window for energy of biases
 proc ::cv_dashboard::compute_histogram { values } {
-  set nbins 100
+  set nbins 60
+
   if {[llength $values] < 1} { return "" "" }
   set min [lindex $values 0]
   set max $min
@@ -431,7 +449,12 @@ proc ::cv_dashboard::compute_histogram { values } {
     if { $v < $min } { set min $v }
     if { $v > $max } { set max $v }
   }
-  set delta [expr ($max - $min) / $nbins]
+  set delta [expr ($max - $min) / ($nbins - 1)]
+  # Adjust to something round in decimal terms
+  set factor [expr 10**(floor(log10($delta))-2)]
+  set delta [expr floor($delta / $factor) * $factor]
+  set min [expr floor($min / $delta) * $delta]
+
   for {set i 0} {$i < $nbins} {incr i} {
     set c($i) 0
   }

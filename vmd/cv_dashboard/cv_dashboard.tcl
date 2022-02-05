@@ -664,3 +664,33 @@ proc ::cv_dashboard::set_viewpoints { vp } {
     }
   }
 }
+
+# Find closest value in sorted list
+proc ::cv_dashboard::bisect { lst val } {
+  set len [llength $lst]
+  set start 0
+  set end [expr $len - 1]
+
+  if { $len < 2 || $val <= [lindex $lst 0] } { return 0 }
+  if { $val >= [lindex $lst $end] } { return $end }
+
+  set mid [expr $len / 2]
+  while { $start != $end } {
+    if { [expr {$val <= [lindex $lst $mid]}] } {
+      set end $mid
+    } else {
+      set start [expr {$mid + 1}]
+    }
+    set mid [expr {($start + $end ) / 2}]
+  }
+  if { $end == 0 } { return 0 }
+  set start [expr $start - 1]
+
+  set left [expr abs([lindex $lst $start] - $val)]
+  set right [expr abs([lindex $lst $end] - $val)]
+  if { $left <= $right } {
+    return $start
+  } else {
+    return $end
+  }
+}
