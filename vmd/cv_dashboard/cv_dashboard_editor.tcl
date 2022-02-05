@@ -51,21 +51,6 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   frame $w.editor.fl
   set gridrow 0
 
-  labelframe  $w.editor.fl.docs -bd 2 -text "Online documentation" -padx 2 -pady 2
-  set docs $w.editor.fl.docs
-  ttk::button $docs.onlinedoc1 -text "Collective variables" -padding "4 2 4 2"\
-    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar"]
-  ttk::button $docs.onlinedoc3 -text "Basis functions (components)" -padding "4 2 4 2"\
-    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:cvc_list"]
-  ttk::button $docs.onlinedoc2 -text "Atom groups" -padding "4 2 4 2"\
-    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar_atom_groups"]
-
-  grid $docs.onlinedoc1 -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
-  grid $docs.onlinedoc2 -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
-  grid $docs.onlinedoc3 -row $gridrow -column 2 -pady 5 -padx 2 -sticky nsew
-  grid columnconfigure $docs 0 -weight 1
-  grid columnconfigure $docs 1 -weight 1
-  grid columnconfigure $docs 2 -weight 1
 
   ############# Templates #########################################
   labelframe  $w.editor.fl.templates -bd 2 -text "Templates" -padx 2 -pady 2
@@ -104,7 +89,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
 
   ############# Atoms from seltext ################################
   tk::label $helpers.seltext_label -text "Atoms from selection text:"
-  tk::entry $helpers.seltext -bg white
+  ttk::entry $helpers.seltext
   # Bind Return key in seltext entry to proc creating the atomNumbers line
   bind $helpers.seltext <<keyb_enter>> "::cv_dashboard::atoms_from_sel textbox"
   ttk::button $helpers.fromsel -text "Insert \[Enter\]" \
@@ -156,10 +141,29 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   grid columnconfigure $helpers 1 -weight 1
   grid columnconfigure $helpers 2 -weight 0
 
+
+  ############# Doc links #########################################
+  labelframe  $w.editor.fl.docs -bd 2 -text "Links to online documentation" -padx 2 -pady 2
+  set docs $w.editor.fl.docs
+
+  ttk::button $docs.onlinedoc1 -text "Collective variables" -style cv_link.TButton -padding "4 2 4 2"\
+    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar"]
+  ttk::button $docs.onlinedoc3 -text "Basis functions (components)" -style cv_link.TButton -padding "4 2 4 2"\
+    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:cvc_list"]
+  ttk::button $docs.onlinedoc2 -text "Atom groups" -style cv_link.TButton -padding "4 2 4 2"\
+    -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvar_atom_groups"]
+
+  grid $docs.onlinedoc1 -row $gridrow -column 0 -pady 5 -padx 2 -sticky nsew
+  grid $docs.onlinedoc2 -row $gridrow -column 1 -pady 5 -padx 2 -sticky nsew
+  grid $docs.onlinedoc3 -row $gridrow -column 2 -pady 5 -padx 2 -sticky nsew
+  grid columnconfigure $docs 0 -weight 1
+  grid columnconfigure $docs 1 -weight 1
+  grid columnconfigure $docs 2 -weight 1
+
   # Layout of all frames
-  grid $docs -sticky ew
   grid $templates -sticky ew
   grid $helpers -sticky ew
+  grid $docs -sticky ew
   grid columnconfigure $w.editor.fl 0 -weight 1
 
 
@@ -320,7 +324,7 @@ proc ::cv_dashboard::insert_labels {obj} {
 
   if { $obj == "Atoms" } {
     set serials [list]
-    foreach l [label list $obj] {
+    foreach l [label list -font $::cv_dashboard::font $obj] {
       # Skip hidden labels
       if { [lindex $l 2] == "hide" } { continue }
       set a [lindex $l 0]
@@ -336,7 +340,7 @@ proc ::cv_dashboard::insert_labels {obj} {
     set cvc(Bonds) distance
     set cvc(Angles) angle
     set cvc(Dihedrals) dihedral
-    foreach l [label list $obj] {
+    foreach l [label list -font $::cv_dashboard::font $obj] {
       # Skip hidden labels
       if { [lindex $l 2] == "hide" } { continue }
       set cfg "${indent}$cvc($obj) \{\n"
@@ -624,7 +628,7 @@ proc ::cv_dashboard::cvs_from_labels {} {
   set short(Angles) angle
   set short(Dihedrals) dihed
   foreach obj { Bonds Angles Dihedrals } {
-    foreach l [label list $obj] {
+    foreach l [label list -font $::cv_dashboard::font $obj] {
       # Skip hidden labels
       if { [lindex $l 2] == "hide" } { continue }
       set ok true

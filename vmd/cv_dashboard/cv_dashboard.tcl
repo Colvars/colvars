@@ -54,6 +54,7 @@ namespace eval ::cv_dashboard {
   variable mol -1       ;# ID of molecule currently associated with Colvars
 
   variable indent "    " ;# indentation for config strings
+  variable font   {normal 9} ;# default font for labels
 
   variable units
   variable units_to_text
@@ -596,7 +597,7 @@ proc ::cv_dashboard::switch_to_top_mol {} {
 proc ::cv_dashboard::help_window { parent wtitle title text } {
   set h [toplevel $parent.helpWindow]
   wm title $h $wtitle
-  tk::text $h.text -yscrollcommand [list $h.vsb set]
+  tk::text $h.text -yscrollcommand [list $h.vsb set] -bg white
   ttk::scrollbar $h.vsb -orient vertical -command [list $h.text yview]
 
   $h.text insert insert ${title}\n\n title

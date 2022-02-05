@@ -52,6 +52,11 @@ proc ::cv_dashboard::plot { { type timeline } } {
       -message "Select exactly 2 scalar quantities for pairwise plot.\n"
     return
   }
+  if { $type == "histogram" && $total_dim != 1 } {
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+      -message "Select exactly 1 scalar quantity for a histogram plot.\n"
+    return
+  }
 
   set nf [molinfo $::cv_dashboard::mol get numframes]
   # Get list of values for all frames
@@ -81,14 +86,44 @@ proc ::cv_dashboard::plot { { type timeline } } {
     set plothandle [multiplot -title {Colvars trajectory   [click on markers, keyb arrows (+ Shift/Ctrl) to navigate]} \
     -xlabel $xname -ylabel $yname -nostats -marker circle -fill white -radius 4 -callback ::cv_dashboard::marker_clicked]
     $plothandle add $y($xname) $y($yname)
+  } elseif { $type == "histogram"} {
+    set xname [lindex $name_list 0]
+    # Save list of values for navigating
+    set ::cv_dashboard::histogram_time_series $y($xname)
+    lassign [compute_histogram $y($xname)] centers frequencies
+
+    set nbins [llength $centers]
+    if { $nbins < 2 } { return }
+    set delta [expr [lindex $centers 1] - [lindex $centers 0]]
+
+    # Create plot with real freq data to enable exports
+    # do not display lines but call plot to compute sizes
+    set plothandle [multiplot -title "Histogram for colvar $cvs \[click to navigate\]" \
+      -xlabel $xname -ylabel "N samples" -nostats \
+      -xmin [expr [lindex $centers 0] - (0.5*$delta)] -xmax [expr [lindex $centers end] + (0.5*$delta)] \
+      -x $centers -y $frequencies -nolines -plot]
+    # set HistPlot [multiplot -x $xlist -y $histogram -title "Density histogram" -xlabel "Density" -ylabel $ylabel
+    # -nolines -marker square -fill black -xmin [expr [lindex $xlist 0] - (0.5*$delta)] -xmax [expr [lindex $xlist end] + (0.5*$delta)]]
+  
+    set ns [namespace qualifiers $plothandle]
+    set ymin [set ${ns}::ymin]
+
+    for {set j 0} {$j < $nbins} {incr j} {
+      set left [expr [lindex $centers $j] - (0.5 * $delta)]
+      set right [expr [lindex $centers $j] + (0.5 * $delta)]
+      $plothandle draw rectangle $left $ymin $right [lindex $frequencies $j] -outline "" -fill "#c0c0c0" -tags rect$j
+    }
+    $plothandle replot
+    # $plothandle add $bin_centers $frequencies
   }
 
   $plothandle replot
   # bind mouse and keyboard events to callbacks
   set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
 
-  traj_animation_bindings [set ${plot_ns}::w]
+
   if { $type == "timeline" } {
+    traj_animation_bindings [set ${plot_ns}::w]
     bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
     bind [set ${plot_ns}::w] <Up>             { ::cv_dashboard::zoom 0.25 }
     bind [set ${plot_ns}::w] <Down>           { ::cv_dashboard::zoom 4 }
@@ -96,6 +131,10 @@ proc ::cv_dashboard::plot { { type timeline } } {
     bind [set ${plot_ns}::w] <Shift-Down>     { ::cv_dashboard::zoom 16 }
     bind [set ${plot_ns}::w] <v>              { ::cv_dashboard::fit_vertically }
     bind [set ${plot_ns}::w] <h>              { ::cv_dashboard::fit_horizontally }
+  } elseif { $type == "2cv" } {
+    traj_animation_bindings [set ${plot_ns}::w]
+  } elseif { $type == "histogram" } {
+    bind [set ${plot_ns}::w] <Button-1>       { ::cv_dashboard::plot_clicked %x %y }
   }
 
   # Update frame to display frame marker in new plot
@@ -183,8 +222,26 @@ proc ::cv_dashboard::plot_clicked { x y } {
     return
   }
 
-  # Round to nearest frame number
-  animate goto [expr { round(($x - $xplotmin) / $scalex + $xmin)}]
+  if { $::cv_dashboard::plottype == "timeline" } {
+    # Round to nearest frame number
+    set newframe [expr {round(($x - $xplotmin) / $scalex + $xmin)}]
+  } elseif { $::cv_dashboard::plottype == "histogram" } {
+    set val [expr {($x - $xplotmin) / $scalex + $xmin}]
+    # Find frame with closest value
+    set i 0
+    set min_i 0
+    set min_d2 [expr $val*$val]
+    foreach v $::cv_dashboard::histogram_time_series {
+      set d2 [expr {($val-$v)*($val-$v)}]
+      if { $d2 < $min_d2 } {
+        set min_d2 $d2
+        set min_i $i
+      }
+      incr i
+    }
+    set newframe $min_i
+  }
+  animate goto $newframe
   if { $::cv_dashboard::track_frame == 0 } {
     # frame change doesn't trigger refresh, so we refresh manually
     refresh_values
@@ -344,7 +401,48 @@ proc ::cv_dashboard::display_marker { f } {
         set canv "[set ${ns}::w].f.cf"
         $canv delete frame_marker
         $canv create oval $x1 $y1 $x2 $y2 -outline white -fill blue -tags frame_marker
+      } elseif { $::cv_dashboard::plottype == "histogram" } {
+        set xmin [set ${ns}::xmin]
+        set xmax [set ${ns}::xmax]
+
+        set y1 [set ${ns}::yplotmin]
+        set y2 [set ${ns}::yplotmax]
+        set v [lindex $cv_dashboard::histogram_time_series $f]
+
+        set xplotmin [set ${ns}::xplotmin]
+        set scalex [set ${ns}::scalex]
+        set x [expr $xplotmin+($scalex*($v-$xmin))]
+
+        set canv "[set ${ns}::w].f.cf"
+        $canv delete frame_marker
+        $canv create line  $x $y1 $x $y2 -fill blue -tags frame_marker
       }
     }
   }
+}
+
+# Create plot window for energy of biases
+proc ::cv_dashboard::compute_histogram { values } {
+  set nbins 100
+  if {[llength $values] < 1} { return "" "" }
+  set min [lindex $values 0]
+  set max $min
+  foreach v $values {
+    if { $v < $min } { set min $v }
+    if { $v > $max } { set max $v }
+  }
+  set delta [expr ($max - $min) / $nbins]
+  for {set i 0} {$i < $nbins} {incr i} {
+    set c($i) 0
+  }
+  foreach v $values {
+    incr c([expr {int(floor(($v-$min)/$delta))}])
+  }
+  set centers [list]
+  set freqs [list]
+  for {set i 0} {$i < $nbins} {incr i} {
+    lappend centers [expr {$min + $delta * ($i + 0.5)}]
+    lappend freqs $c($i)
+  }
+  return [list $centers $freqs]
 }
