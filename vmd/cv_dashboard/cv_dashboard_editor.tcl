@@ -64,7 +64,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
       # Map pretty template name to file name
       dict set ::cv_dashboard::templates_$d [regsub -all {_} [file rootname [file tail $f]] " "] $f
     }
-    tk::label $templates.template_label_$d -text "$d templates:"
+    label $templates.template_label_$d -font $::cv_dashboard::font -text "$d templates:"
     ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no
     $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
     bind $templates.pick_template_$d <<keyb_enter>> \
@@ -88,7 +88,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   set helpers $w.editor.fl.helpers
 
   ############# Atoms from seltext ################################
-  tk::label $helpers.seltext_label -text "Atoms from selection text:"
+  label $helpers.seltext_label -font $::cv_dashboard::font -text "Atoms from selection text:"
   ttk::entry $helpers.seltext
   # Bind Return key in seltext entry to proc creating the atomNumbers line
   bind $helpers.seltext <<keyb_enter>> "::cv_dashboard::atoms_from_sel textbox"
@@ -101,7 +101,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   incr gridrow
 
   ############# Atoms from representation ################################
-  tk::label $helpers.rep_label -text "Atoms from representation:"
+  label $helpers.rep_label -font $::cv_dashboard::font -text "Atoms from representation:"
   ttk::combobox $helpers.reps -justify left -state readonly -exportselection no
   ttk::button $helpers.refresh_reps -text "Refresh list" -command ::cv_dashboard::refresh_reps
   bind $helpers.reps <<ComboboxSelected>> "::cv_dashboard::atoms_from_sel reps"
@@ -169,12 +169,12 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
 
   # Right frame: text widget w scrollbar and Apply/Cancel buttons
   frame $w.editor.fr
-  tk::text $w.editor.fr.text -undo 1 -yscrollcommand [list $w.editor.fr.vsb set] -background white -font "Helvetica -14"
+  tk::text $w.editor.fr.text -undo 1 -yscrollcommand [list $w.editor.fr.vsb set] -background white -font "Helvetica -14" -wrap "none"
   ttk::scrollbar $w.editor.fr.vsb -orient vertical -command [list $w.editor.fr.text yview]
   $w.editor.fr.text insert 1.0 $cfg
   set ::cv_dashboard::being_edited $cvs
-  grid $w.editor.fr.text -row 0 -columnspan 3 -sticky nsew
-  grid $w.editor.fr.vsb -row 0 -column 3 -sticky nsew
+  grid $w.editor.fr.text -row 0 -columnspan 4 -sticky nsew
+  grid $w.editor.fr.vsb -row 0 -column 4 -sticky nsew
 
   # Ctrl-s anywhere in the window saves/applies
   bind $w.editor <Control-s> {::cv_dashboard::edit_apply colvar}
@@ -191,19 +191,31 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   ttk::button $w.editor.fr.cancel -text "Cancel" -command {::cv_dashboard::edit_cancel colvar} -padding "2 0 2 0"
   ttk::button $w.editor.fr.clear -text "Clear" -command "$w.editor.fr.text delete 1.0 end" -padding "2 0 2 0"
 
-  grid $w.editor.fr.apply -row $gridrow -column 0 -sticky e -pady 2 -padx 2
-  grid $w.editor.fr.cancel -row $gridrow -column 1 -sticky w -pady 2 -padx 2
-  grid $w.editor.fr.clear -row $gridrow -column 2 -sticky w -pady 2 -padx 2
+  ttk::checkbutton $w.editor.fr.wrap -text "Wrap lines" \
+    -command ::cv_dashboard::change_wrap \
+    -variable ::cv_dashboard::wrap -onvalue "word" -offvalue "none"
+  set ::cv_dashboard::wrap "none"
+
+  grid $w.editor.fr.wrap -row $gridrow -column 0 -sticky w -pady 2 -padx 2
+  grid $w.editor.fr.apply -row $gridrow -column 1 -sticky e -pady 2 -padx 2
+  grid $w.editor.fr.cancel -row $gridrow -column 2 -sticky w -pady 2 -padx 2
+  grid $w.editor.fr.clear -row $gridrow -column 3 -sticky w -pady 2 -padx 2
+
 
   grid columnconfigure $w.editor.fr 0 -weight 1
   grid columnconfigure $w.editor.fr 1 -weight 1
   grid columnconfigure $w.editor.fr 2 -weight 1
+  grid columnconfigure $w.editor.fr 3 -weight 1
   grid rowconfigure $w.editor.fr 0 -weight 1
 
   pack $w.editor.fl -fill both -side left
   pack $w.editor.fr -fill both -expand yes -padx 2 -pady 2
 }
 
+proc ::cv_dashboard::change_wrap {} {
+  set text .cv_dashboard_window.editor.fr.text
+  $text configure -wrap $::cv_dashboard::wrap
+}
 
 #################################################################
 # Helper functions for editor
