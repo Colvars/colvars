@@ -518,6 +518,7 @@ proc ::cv_dashboard::update_frame { name molid op } {
   set f [molinfo $molid get frame]
   set ::cv_dashboard::current_frame $f
 
+  if { $f < 0 } { return }
   # set Colvars Module to requested frame
   run_cv frame $f
   # refresh dashboard table

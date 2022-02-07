@@ -480,7 +480,7 @@ proc ::cv_dashboard::refresh_table {} {
     $w.cvtable delete $i
   }
 
-  if [catch { set ::cv_dashboard::cvs [cv list]}] {
+  if { [catch { cv molid }] || [cv molid] == -1 || [catch { set ::cv_dashboard::cvs [cv list]}] } {
     # We were unable to fetch the list of colvars
     # CVM is probably not initialized or there is no molecule loaded
     set ::cv_dashboard::cvs {}
@@ -734,7 +734,7 @@ proc ::cv_dashboard::del_cv { {cvs "" } } {
 # Reset cvm: hard delete
 proc ::cv_dashboard::reset {} {
   set molid $::cv_dashboard::mol
-  if { $::vmd_initialize_structure($molid) == 1 } {
+  if { $molid != -1 && $::vmd_initialize_structure($molid) == 1 } {
     # If our molecule still exists,
     # remove all graphical objects which would be orphaned
     ::cv_dashboard::hide_all_atoms
@@ -978,6 +978,9 @@ proc ::cv_dashboard::update_shown_gradients {} {
 
   set id 0
   set molid $::cv_dashboard::mol
+  set f [molinfo $molid get frame]
+  if { $f < 0 } { return }
+
   foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
 
     # Delete out-of-date graphical objects (arrows)
@@ -1059,6 +1062,8 @@ proc ::cv_dashboard::update_shown_forces {} {
   # Start IDs for force objects after those of gradient objects
   set id [array size ::cv_dashboard::grad_objects]
   set molid $::cv_dashboard::mol
+  set f [molinfo $molid get frame]
+  if { $f < 0 } { return }
   set atomids [run_cv getatomids]
 
   foreach { bias objs } [array get ::cv_dashboard::force_objects] {

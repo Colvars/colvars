@@ -100,11 +100,10 @@ proc ::cv_dashboard::plot { { type timeline } } {
       incr i
     }
 
-    lassign [compute_histogram $y($xname)] centers frequencies
+    lassign [compute_histogram $y($xname)] delta centers frequencies
 
     set nbins [llength $centers]
-    if { $nbins < 2 } { return }
-    set delta [expr [lindex $centers 1] - [lindex $centers 0]]
+    if { $nbins == 0 } { return }
 
     # Create plot with real freq data to enable exports
     # do not display lines but call plot to compute sizes
@@ -447,7 +446,11 @@ proc ::cv_dashboard::display_marker { f } {
 proc ::cv_dashboard::compute_histogram { values } {
   set nbins $::cv_dashboard::nbins
 
-  if {[llength $values] < 1} { return "" "" }
+  if {[llength $values] < 2} {
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+      -message "At least two frames are necessary to compute a histogram.\n"
+    return "" ""
+  }
   set min [lindex $values 0]
   set max $min
   foreach v $values {
@@ -455,11 +458,15 @@ proc ::cv_dashboard::compute_histogram { values } {
     if { $v > $max } { set max $v }
   }
   set delta [expr ($max - $min) / ($nbins - 1)]
-  # Adjust to something round in decimal terms
-  set delta [simplify $delta]
+  if { $delta == 0. } {
+    set delta 1.
+  } else {
+    # Adjust to something round in decimal terms
+    set delta [simplify $delta]
+  }
   # Align bin boundaries on integer multiples of delta
   set min [expr floor($min / $delta) * $delta]
-  # Add bins as required
+  # Adjust bins as required
   set nbins [expr int(($max - $min) / $delta) + 1]
 
   for {set i 0} {$i < $nbins} {incr i} {
@@ -474,11 +481,11 @@ proc ::cv_dashboard::compute_histogram { values } {
     lappend centers [expr {$min + $delta * ($i + 0.5)}]
     lappend freqs $c($i)
   }
-  return [list $centers $freqs]
+  return [list $delta $centers $freqs]
 }
 
 
-proc simplify x {
+proc ::cv_dashboard::simplify x {
   #Compute nearest "round" number, with first 2 decimals:
   # 1, 1.5, 2, 2.5, 3, 4, 5, ..., 9
 
