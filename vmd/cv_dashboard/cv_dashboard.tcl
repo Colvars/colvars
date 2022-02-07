@@ -42,7 +42,7 @@ namespace eval ::cv_dashboard {
 
   # Handle to keep track of interactive plot
   variable plothandle
-  variable plottype      ;# either timeline or 2cv
+  variable plottype      ;# timeline, 2cv, histogram
 
   variable atom_rep      ;# hash array of: list of macro names, list of atom representations, indexed by colvar name
   variable grad_objects  ;# hash array ids of graphical objects displaying gradients, indexed by colvar name

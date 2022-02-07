@@ -110,6 +110,16 @@ proc ::cv_dashboard::createSettingsWindow { } {
   set ::cv_dashboard::volmap_periodic_y 0
   set ::cv_dashboard::volmap_periodic_z 0
 
+  incr gridrow
+  grid [ttk::separator $settings.sephist -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
+
+  incr gridrow
+  grid [tk::label $settings.hist_text -font $::cv_dashboard::font -text "Histogram settings"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  incr gridrow
+  grid [tk::label $settings.nbins_text -font $::cv_dashboard::font -text "Number of bins:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::entry $settings.nbins -textvariable ::cv_dashboard::nbins] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  set ::cv_dashboard::nbins 60
+
   grid columnconfigure $settings 0 -weight 1
   grid columnconfigure $settings 1 -weight 1
   grid columnconfigure $settings 2 -weight 1

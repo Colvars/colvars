@@ -108,8 +108,8 @@ proc ::cv_dashboard::plot { { type timeline } } {
 
     # Create plot with real freq data to enable exports
     # do not display lines but call plot to compute sizes
-    set plothandle [multiplot -title "Histogram for colvar $cvs \[click, keyb arrows (+ Shift/Ctrl) to navigate to navigate\]" \
-      -xlabel $xname -ylabel "N samples" -nostats \
+    set plothandle [multiplot -title "Histogram for colvar $cvs \[click, keyb arrows (+ Shift/Ctrl) to navigate\]" \
+      -xlabel $xname -ylabel "N" -nostats \
       -xmin [expr [lindex $centers 0] - (0.5*$delta)] -xmax [expr [lindex $centers end] + (0.5*$delta)] \
       -x $centers -y $frequencies -nolines -plot]
 
@@ -119,7 +119,7 @@ proc ::cv_dashboard::plot { { type timeline } } {
     for {set j 0} {$j < $nbins} {incr j} {
       set left [expr [lindex $centers $j] - (0.5 * $delta)]
       set right [expr [lindex $centers $j] + (0.5 * $delta)]
-      $plothandle draw rectangle $left $ymin $right [lindex $frequencies $j] -fill "#c0c0c0" -tags rect$j
+      $plothandle draw rectangle $left $ymin $right [lindex $frequencies $j] -fill "#ecf6ff" -tags rect$j
     }
     $plothandle replot
     # $plothandle add $bin_centers $frequencies
@@ -363,6 +363,10 @@ proc ::cv_dashboard::fit_horizontally {} {
 # Display frame marker in plot at given frame
 proc ::cv_dashboard::display_marker { f } {
   variable ::cv_dashboard::plothandle
+  set timeline_color "blue"
+  set histogram_color "red"
+  set 2cv_color "red"
+
   if [info exists plothandle] {
     # detect if plot was closed
     if [catch {$plothandle getpath}] {
@@ -396,7 +400,7 @@ proc ::cv_dashboard::display_marker { f } {
 
         set canv "[set ${ns}::w].f.cf"
         $canv delete frame_marker
-        $canv create line  $x $y1 $x $y2 -fill blue -tags frame_marker
+        $canv create line  $x $y1 $x $y2 -fill $timeline_color -tags frame_marker
       } elseif { $::cv_dashboard::plottype == "2cv" } {
         set x [lindex [ lindex [$plothandle xdata] 0] $f]
         set y [lindex [ lindex [$plothandle ydata] 0] $f]
@@ -417,7 +421,7 @@ proc ::cv_dashboard::display_marker { f } {
 
         set canv "[set ${ns}::w].f.cf"
         $canv delete frame_marker
-        $canv create oval $x1 $y1 $x2 $y2 -outline white -fill blue -tags frame_marker
+        $canv create oval $x1 $y1 $x2 $y2 -outline white -fill $2cv_color -tags frame_marker
       } elseif { $::cv_dashboard::plottype == "histogram" } {
         set xmin [set ${ns}::xmin]
         set xmax [set ${ns}::xmax]
@@ -432,15 +436,16 @@ proc ::cv_dashboard::display_marker { f } {
 
         set canv "[set ${ns}::w].f.cf"
         $canv delete frame_marker
-        $canv create line  $x $y1 $x $y2 -fill blue -tags frame_marker
+        $canv create line  $x $y1 $x $y2 -fill $histogram_color -tags frame_marker
       }
     }
   }
 }
 
+
 # Create plot window for energy of biases
 proc ::cv_dashboard::compute_histogram { values } {
-  set nbins 60
+  set nbins $::cv_dashboard::nbins
 
   if {[llength $values] < 1} { return "" "" }
   set min [lindex $values 0]
@@ -451,9 +456,11 @@ proc ::cv_dashboard::compute_histogram { values } {
   }
   set delta [expr ($max - $min) / ($nbins - 1)]
   # Adjust to something round in decimal terms
-  set factor [expr 10**(floor(log10($delta))-2)]
-  set delta [expr floor($delta / $factor) * $factor]
+  set delta [simplify $delta]
+  # Align bin boundaries on integer multiples of delta
   set min [expr floor($min / $delta) * $delta]
+  # Add bins as required
+  set nbins [expr int(($max - $min) / $delta) + 1]
 
   for {set i 0} {$i < $nbins} {incr i} {
     set c($i) 0
@@ -468,4 +475,19 @@ proc ::cv_dashboard::compute_histogram { values } {
     lappend freqs $c($i)
   }
   return [list $centers $freqs]
+}
+
+
+proc simplify x {
+  #Compute nearest "round" number, with first 2 decimals:
+  # 1, 1.5, 2, 2.5, 3, 4, 5, ..., 9
+
+  # Factor has two components:
+  set pow10 [expr 10**(floor(log10($x)))]  ;# -> bring x between 1 and 10
+  set xn [expr $x / $pow10]
+  set half_int [expr floor(log10(3.4 * $xn) + 1) / 2]  ;#-> use half-integer steps until .3, integer steps above
+
+  set factor [expr $pow10 * $half_int]
+  set x [expr round($x / $factor) * $factor]
+  return $x
 }
