@@ -311,16 +311,23 @@ Hidden labels are not used for inserting components.
 
 \cvsubsec{Plotting and visualizing collective variables}{sec:dashboard_visualization}
 
-Timeline plots show the selected variables as a function of time. A vertical bar indicates the current frame, which can be changed either using VMD's trajectory animation controls, or directly in the plot window by clicking the mouse inside the graph, or using the keyboard left/right arrows.
-Shift+arrow skips frames for faster animation, and Ctrl+arrow skips more frames.
+\paragraph{Timeline plots} show the selected variables as a function of time. A vertical bar indicates the current frame, which can be changed either using VMD's trajectory animation controls, or directly in the plot window by clicking the mouse inside the graph, or using the keyboard left/right arrows.
+Shift+arrow steps by 10 frames for faster animation, and Ctrl+arrow steps over 50 frames.
+The Home/End keys jump to the first and last frames, respectively.
 The up/down arrows operate a zoom/unzoom along the time axis.
 Visible data can be fitted vertically using the h key. All data can be fitted horizontally using the h key.
 
-Pairwise scatterplots are useful to identify correlation between variables. To create a pairwise plot, select exactly two scalar variables (or scalar components of vector variables), and click ``Pairwise plot''.
+\paragraph{Pairwise scatterplots} are useful to identify correlation between variables. To create a pairwise plot, select exactly two scalar variables (or scalar components of vector variables), and click ``Pairwise plot''.
 Frames are represented by circles, and lines connect consecutive frames.
-The blue dot tracks the current frame.
-Arrow keys animate the trajectory as in the timeline plot.
-Clicking a circle jumps to the corresponding frame.
+The blue dot tracks the current frame: clicking a circle jumps to the corresponding frame.
+Arrow keys and Home/End animate the trajectory as in the timeline plot.
+
+\paragraph{Histogram} displays a histogram of the selected scalar variable over the trajectory, using approximately the number of bins specified in the Settings tab (adjusted after selecting a round number for the bin width).
+The current value of the colvar is indicated by a vertical bar.
+Clicking anywhere in the plot jumps to the frame with the nearest value of the colvar.
+Keyboard navigation of the trajectory is similar to the other plots, except that the trajectory is traversed according to colvar values rather than frame numbers.
+This enables exploration of frames corresponding to a neighborhood of colvar values, even when they are not contiguous in time.
+
 
 ``Show atoms'' creates representations of the atoms involved in the definition of the selected colvars.
 Each atom group is shown in a different color.
