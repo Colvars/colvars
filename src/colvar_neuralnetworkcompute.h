@@ -75,7 +75,7 @@ public:
 #ifdef LEPTON
     /*! @param[in]  weights_file                 filename of the weights file
      *  @param[in]  biases_file                  filename of the biases file
-     *  @param[in]  custom_activation_expression the expression of the custom activation function 
+     *  @param[in]  custom_activation_expression the expression of the custom activation function
      */
     denseLayer(const std::string& weights_file, const std::string& biases_file, const std::string& custom_activation_expression);
 #endif
@@ -86,7 +86,7 @@ public:
     /// compute the value of this layer
     void compute(const std::vector<double>& input, std::vector<double>& output) const;
     /// compute the gradient of i-th output wrt j-th input
-    double computeGradient(const std::vector<double>& input, const size_t i, const size_t j) const;
+    double computeGradientElement(const std::vector<double>& input, const size_t i, const size_t j) const;
     /// output[i][j] is the gradient of i-th output wrt j-th input
     void computeGradient(const std::vector<double>& input, std::vector<std::vector<double>>& output_grad) const;
     /// get the input size
