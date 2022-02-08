@@ -126,12 +126,12 @@ void denseLayer::readFromFile(const std::string& weights_file, const std::string
     std::string line;
     std::ifstream ifs_weights(weights_file.c_str());
     while (std::getline(ifs_weights, line)) {
-        std::vector<std::string> splited_data;
-        colvarparse::split_string(line, std::string{" "}, splited_data);
-        if (splited_data.size() > 0) {
-            std::vector<double> weights_tmp(splited_data.size());
-            for (size_t i = 0; i < splited_data.size(); ++i) {
-                weights_tmp[i] = std::stod(splited_data[i]);
+        std::vector<std::string> splitted_data;
+        colvarparse::split_string(line, std::string{" "}, splitted_data);
+        if (splitted_data.size() > 0) {
+            std::vector<double> weights_tmp(splitted_data.size());
+            for (size_t i = 0; i < splitted_data.size(); ++i) {
+                weights_tmp[i] = std::stod(splitted_data[i]);
             }
             m_weights.push_back(weights_tmp);
         }
@@ -139,10 +139,10 @@ void denseLayer::readFromFile(const std::string& weights_file, const std::string
     // parse biases file
     std::ifstream ifs_biases(biases_file.c_str());
     while (std::getline(ifs_biases, line)) {
-        std::vector<std::string> splited_data;
-        colvarparse::split_string(line, std::string{" "}, splited_data);
-        if (splited_data.size() > 0) {
-            m_biases.push_back(std::stod(splited_data[0]));
+        std::vector<std::string> splitted_data;
+        colvarparse::split_string(line, std::string{" "}, splitted_data);
+        if (splitted_data.size() > 0) {
+            m_biases.push_back(std::stod(splitted_data[0]));
         }
     }
     m_input_size = m_weights[0].size();
@@ -173,7 +173,7 @@ void denseLayer::compute(const std::vector<double>& input, std::vector<double>& 
     }
 }
 
-double denseLayer::computeGradient(const std::vector<double>& input, const size_t i, const size_t j) const {
+double denseLayer::computeGradientElement(const std::vector<double>& input, const size_t i, const size_t j) const {
     double sum_with_bias = 0;
     for (size_t j_in = 0; j_in < m_input_size; ++j_in) {
         sum_with_bias += input[j_in] * m_weights[i][j_in];
@@ -195,7 +195,7 @@ double denseLayer::computeGradient(const std::vector<double>& input, const size_
 void denseLayer::computeGradient(const std::vector<double>& input, std::vector<std::vector<double>>& output_grad) const {
     for (size_t j = 0; j < m_input_size; ++j) {
         for (size_t i = 0; i < m_output_size; ++i) {
-            output_grad[i][j] = computeGradient(input, i, j);
+            output_grad[i][j] = computeGradientElement(input, i, j);
         }
     }
 }
