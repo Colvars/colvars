@@ -633,6 +633,9 @@ public:
   }
 #endif
 
+  /// \brief function for sorting cvcs by their names
+  static bool compare_cvc(const colvar::cvc* const i, const colvar::cvc* const j);
+
 protected:
 
   /// \brief Array of \link colvar::cvc \endlink objects

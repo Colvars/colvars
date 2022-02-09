@@ -26,6 +26,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarcomp_alchlambda.C',
                     'colvarcomp_angles.C',
                     'colvarcomp_apath.C',
+                    'colvarcomp_combination.C',
                     'colvarcomp_coordnums.C',
                     'colvarcomp_distances.C',
                     'colvarcomp_gpath.C',
