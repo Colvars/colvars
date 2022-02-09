@@ -42,13 +42,11 @@ colvar::colvar()
 }
 
 
-namespace {
-  /// Compare two cvcs using their names
-  /// Used to sort CVC array in scripted coordinates
-  bool compare(colvar::cvc *i, colvar::cvc *j)
-  {
-    return i->name < j->name;
-  }
+/// Compare two cvcs using their names
+/// Used to sort CVC array in scripted coordinates
+bool colvar::compare_cvc(const colvar::cvc* const i, const colvar::cvc* const j)
+{
+  return i->name < j->name;
 }
 
 
@@ -132,7 +130,7 @@ int colvar::init(std::string const &conf)
 
     // Sort array of cvcs based on their names
     // Note: default CVC names are in input order for same type of CVC
-    std::sort(cvcs.begin(), cvcs.end(), compare);
+    std::sort(cvcs.begin(), cvcs.end(), colvar::compare_cvc);
 
     if(cvcs.size() > 1) {
       cvm::log("Sorted list of components for this scripted colvar:\n");
