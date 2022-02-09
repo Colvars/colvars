@@ -68,7 +68,7 @@ public:
     /// The call is being executed from a read_restart() function
     parse_restart = (1<<18),
     /// Alias for old default behavior (should be phased out)
-    parse_normal = (1<<2) | (1<<1) | (1<<17),
+    parse_normal = (1<<1) | (1<<2) | (1<<17),
     /// Settings for a deprecated keyword
     parse_deprecated = (1<<1) | (1<<3) | (1<<17)
   };
