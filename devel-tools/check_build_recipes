@@ -24,6 +24,7 @@ for f in src/colvar*.cpp src/colvar*.h ; do
         fi
         if ! grep -q "\$(COLVARS_OBJ_DIR)${prefix}.o" lammps/lib/colvars/Makefile.deps ; then
             echo "Error: \$(COLVARS_OBJ_DIR)${prefix}.o missing from lammps/lib/colvars/Makefile.deps" >&2
+            retcode=1
         fi
     else
         prefix=${f%.h}
