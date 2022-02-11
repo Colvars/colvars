@@ -445,6 +445,7 @@ proc ::cv_dashboard::tableClicked { table x y } {
 
 # Display help window with basic information
 proc ::cv_dashboard::about {} {
+  catch {set feature_report "\n\n[cv featurereport]"}
   help_window .cv_dashboard_window "About the Colvars Dashboard" "About the Colvars Dashboard" \
 "Colvars Dashboard, version [package require cv_dashboard]
 
@@ -456,7 +457,7 @@ Jérôme Hénin (henin@ibpc.fr), Giacomo Fiorin (giacomo.fiorin@nih.gov) and the
 
 Please cite: J. Hénin, L. J. S. Lopes, and G. Fiorin. Human learning for molecular simulations: the Collective Variables Dashboard in VMD.
 J. Chem. Theo. Comput. (2022)
-http://arxiv.org/abs/2110.08758
+http://arxiv.org/abs/2110.08758$feature_report
 "
 }
 
