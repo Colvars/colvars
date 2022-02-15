@@ -1267,6 +1267,9 @@ The following components implement functions with a scalar value (i.e.{} a real 
 \item \refkey{dipoleMagnitude}{colvar|dipoleMagnitude}: magnitude of the dipole of a group of atoms;
 \item \refkey{polarTheta}{colvar|polarTheta}: polar angle of a group in spherical coordinates;
 \item \refkey{polarPhi}{colvar|polarPhi}: azimuthal angle of a group in spherical coordinates;
+\item \refkey{eulerPhi}{colvar|eulerPhi}: Roll angle of rotation from references coordinates;
+\item \refkey{eulerTheta}{colvar|eulerTheta}: Pitch angle of rotation from references coordinates;
+\item \refkey{eulerPsi}{colvar|eulerPsi}: Yaw angle of rotation from references coordinates;
 \item \refkey{coordNum}{colvar|coordNum}: coordination number between two groups;
 \item \refkey{selfCoordNum}{colvar|selfCoordNum}: coordination number of atoms within a
   group;
@@ -1291,8 +1294,8 @@ The following components implement functions with a scalar value (i.e.{} a real 
 \item \refkey{dihedralPC}{colvar|dihedralPC}: projection of protein backbone dihedrals onto a dihedral principal component.
 }
 \cvalchlambdaonly{
-\item \refkey{alchLambda}{colvar|alchLambda}
-\item \refkey{alchFlambda}{colvar|alchFlambda}
+\item \refkey{alchLambda}{colvar|alchLambda}: alchemical lambda parameter (for controlling the back-end).
+\item \refkey{alchFlambda}{colvar|alchFlambda}: force along alchLambda.
 }
 \end{itemize}
 
@@ -1533,12 +1536,13 @@ $|\mathbf{d}| = 1$.
 \cvsubsubsec{\texttt{distanceInv}: mean distance between two groups of atoms.}{sec:cvc_distanceInv}
 \labelkey{colvar|distanceInv}
 
-The \texttt{distanceInv~\{...\}} block defines a generalized mean distance between two groups of atoms 1 and 2, weighted with exponent $1/n$:
+The \texttt{distanceInv~\{...\}} block defines a generalized mean distance between two groups of atoms 1 and 2,
+where each distance is taken to the power $-n$:
 \begin{equation}
   \label{eq:distanceInv}
-  d_{\mathrm{1,2}}^{[n]} \; = \;   \left(\frac{1}{N_{\mathrm{1}}N_{\mathrm{2}}}\sum_{i,j} \left(\frac{1}{\Vert\mathbf{d}^{ij}\Vert}\right)^{n} \right)^{-1/n}
+  d_{\mathrm{1,2}}^{[n]} \; = \;   \left(\frac{1}{N_{\mathrm{1}}N_{\mathrm{2}}}\sum_{i,j} d_{ij}^{-n} \right)^{-1/n}
 \end{equation}
-where $\Vert\mathbf{d}^{ij}\Vert$ is the distance between atoms $i$ and $j$ in groups 1 and 2 respectively, and $n$ is an even integer.
+where $d_{ij}$ is the distance between atoms $i$ and $j$ in groups 1 and 2 respectively, and $n$ is an even integer.
 
 \begin{cvcoptions}
 \item %
@@ -2822,7 +2826,7 @@ of \MDENGINE{}. This coordinate is obtained from the back-end at the beginning o
 synchronized from Colvars to \MDENGINE{} at every time step. This enables lambda-dynamics simulations.
 The \texttt{alchLambda} block itself takes no parameters, it should be left empty.
 In contrast, the \texttt{colvar} block containing it should define the relevant extended-system parameters
-to enable lambda dynamics, primarily \refkey{extendedMass}{colvar:extendedMass}:
+to enable lambda dynamics, primarily \refkey{extendedMass}{colvar|extendedMass}:
 
 \begin{cvexampleinput}
 \-colvar~\{\\
@@ -3284,6 +3288,7 @@ All distances are calculated every \texttt{freq} timesteps to update the list of
 
 
 \cvsubsec{Dense neural network in CV space}{sec:cvc_neuralNetwork}
+\labelkey{colvar|NeuralNetwork}
 
 This colvar computes a non-linear combination of other scalar colvar components, and the non-linear transformation is defined by a dense neural network.\cite{Chen2022}
 
@@ -3305,9 +3310,6 @@ y_{k,j}=f_{k}\left(\sum_{i=1}^{N_{k-1}} w_{(k,j),(k-1,i)} y_{k-1,i} + b_{k,j}\ri
 
 where $f_{k}$ is the activation function of the $k$-th layer, $w_{(k,j),(k-1,i)}$ is the weight of $j$-th node with respect to the $i$-th output of previous layer, and $b_{k,j}$ is the bias of $j$-th node of $k$-th layer.
 
-\cvsubsubsec{\texttt{NeuralNetwork}: Dense neural network.}{sec:cvc_neuralNetwork}
-
-\labelkey{colvar|NeuralNetwork}
 
 \begin{cvcoptions}
 
@@ -4195,6 +4197,7 @@ coordinates and act directly on the actual colvars.
 
 \cvalchlambdaonly{
 \item %
+  \labelkey{colvar|extendedMass}
   \key
     {extendedMass}{%
     \texttt{colvar}}{%
