@@ -2,7 +2,6 @@ name: "Backends"
 
 on: [pull_request]
 
-
 # The jobs call a template workflow `backend-template.yml` which performs
 # all the necessary steps to run the regression tests of the backend.
 # Variables need to be filled accordingly. See `backend-template.yml`
@@ -11,7 +10,6 @@ jobs:
   lammps:
     name: LAMMPS
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     with:
       backend_name: LAMMPS
       backend_repo: lammps/lammps
@@ -23,8 +21,6 @@ jobs:
   namd:
     name: NAMD
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
-    # Prevent running this job on fork repos due to the secrets variable
-    if: ${{ github.repository_owner == 'Colvars' }} && ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository }}
     with:
       backend_name: NAMD
       backend_repo: Colvars/namd
@@ -34,14 +30,12 @@ jobs:
       test_interface_directory: namd/tests/interface
       rpath_exe: Linux-x86_64-g++.multicore/namd2
     secrets:
-      # Per-repository secret (sharing a secret from the org with all
-      # repositories turned out to be too complex)
+      # Choice of license by UIUC prevents sharing the code, hence the secret
       private_key: ${{ secrets.PULL_NAMD_KEY }}
 
   vmd:
     name: VMD
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
-    if: ${{ github.repository_owner == 'Colvars' }} && ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository }}
     with:
       backend_name: VMD
       backend_repo: Colvars/vmd
@@ -60,7 +54,6 @@ jobs:
   gromacs-2020:
     name: GROMACS 2020
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     with:
       backend_name: GROMACS-2020
       backend_repo: gromacs/gromacs
