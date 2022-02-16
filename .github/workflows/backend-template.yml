@@ -137,6 +137,7 @@ jobs:
       # Note to be run, test_lib_directory or test_interface_directory must be set by the caller workflow
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }}
+        if: ${{ inputs.test_lib_directory }}
         shell: bash
         working-directory: ${{ inputs.test_lib_directory }}
         run: |
@@ -144,6 +145,7 @@ jobs:
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
 
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
+        if: ${{ inputs.test_interface_directory }}
         shell: bash
         working-directory: ${{ inputs.test_interface_directory }}
         run: |
