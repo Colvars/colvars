@@ -33,7 +33,7 @@ class Colvar_traj(object):
         """Sets the name of the variable"""
         self._name = name
         self._step = np.zeros(shape=(0), dtype=np.int64)
-        self._colvar = np.zeros(shape=(0), dtype=np.float)
+        self._colvar = np.zeros(shape=(0), dtype=np.float64)
 
     def __len__(self):
         """Returns the length of the trajectory"""
