@@ -93,7 +93,6 @@ jobs:
           sudo dpkg -i singularity_3.8.5-2_amd64.deb
 
       - name: Get container image of backends' dependencies
-        if: ${{ inputs.backend_name == 'NAMD' && env.PULL_NAMD_KEY != '' }} || ${{ inputs.backend_name == 'VMD' && env.PULL_VMD_KEY != '' }} || ${{ inputs.backend_name != 'NAMD' && inputs.backend_name != 'VMD' }}
         shell: bash
         working-directory: devel-tools
         run: |
@@ -108,8 +107,6 @@ jobs:
 
       - name: Checkout ${{ inputs.backend_name }}
         uses: actions/checkout@v2
-        # NAMD and VMD have restrictive licenses
-        if: ${{ inputs.backend_name == 'NAMD' && env.PULL_NAMD_KEY != '' }} || ${{ inputs.backend_name == 'VMD' && env.PULL_VMD_KEY != '' }} || ${{ inputs.backend_name != 'NAMD' && inputs.backend_name != 'VMD' }}
         with:
           repository: ${{ inputs.backend_repo }}
           ref: ${{ inputs.backend_repo_ref }}
@@ -118,7 +115,7 @@ jobs:
 
       # Only used for VMD test case
       - name: Checkout VMD plugins
-        if: ${{ inputs.backend_name == 'VMD' && env.PULL_VMD_KEY != '' }}
+        if: ${{ inputs.backend_name == 'VMD' }}
         uses: actions/checkout@v2
         with:
           repository: ${{ inputs.vmd_plugins_repo }}
@@ -127,7 +124,6 @@ jobs:
           ssh-key: ${{ secrets.private_key_vmd_plugins }}
 
       - name: Update and build ${{ inputs.backend_name }}
-        if: ${{ inputs.backend_name == 'NAMD' && env.PULL_NAMD_KEY != '' }} || ${{ inputs.backend_name == 'VMD' && env.PULL_VMD_KEY != '' }} || ${{ inputs.backend_name != 'NAMD' && inputs.backend_name != 'VMD' }}
         shell: bash
         run: |
           singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
@@ -141,7 +137,6 @@ jobs:
       # Note to be run, test_lib_directory or test_interface_directory must be set by the caller workflow
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }}
-        if: ${{ inputs.test_lib_directory }} && (${{ inputs.backend_name == 'NAMD' && env.PULL_NAMD_KEY != '' }} || ${{ inputs.backend_name == 'VMD' && env.PULL_VMD_KEY != '' }} || ${{ inputs.backend_name != 'NAMD' && inputs.backend_name != 'VMD' }})
         shell: bash
         working-directory: ${{ inputs.test_lib_directory }}
         run: |
@@ -149,7 +144,6 @@ jobs:
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
 
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
-        if: ${{ inputs.test_interface_directory }} && (${{ inputs.backend_name == 'NAMD' && env.PULL_NAMD_KEY != '' }} || ${{ inputs.backend_name == 'VMD' && env.PULL_VMD_KEY != '' }} || ${{ inputs.backend_name != 'NAMD' && inputs.backend_name != 'VMD' }})
         shell: bash
         working-directory: ${{ inputs.test_interface_directory }}
         run: |
