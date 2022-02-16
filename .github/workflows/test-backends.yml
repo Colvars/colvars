@@ -67,6 +67,7 @@ jobs:
       backend_repo_ref: release-2020
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
+      test_interface_directory: gromacs/tests/interface
       # Gromacs need to be compiled in double precision to pass the tests
       rpath_exe: install/bin/gmx_d
 
@@ -79,5 +80,6 @@ jobs:
       backend_repo_ref: release-2021
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
+      test_interface_directory: gromacs/tests/interface
       rpath_exe: install/bin/gmx_d
 
