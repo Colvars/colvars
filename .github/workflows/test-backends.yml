@@ -6,6 +6,12 @@ on: [pull_request]
 # all the necessary steps to run the regression tests of the backend.
 # Variables need to be filled accordingly. See `backend-template.yml`
 
+# Set environment variables to make secrets available to the template steps
+env:
+  PULL_NAMD_KEY: secrets.PULL_NAMD_KEY
+  PULL_VMD_KEY: secrets.PULL_VMD_KEY
+  PULL_VMD_PLUGINS_KEY: secrets.PULL_VMD_PLUGINS_KEY
+
 jobs:
   lammps:
     name: LAMMPS
