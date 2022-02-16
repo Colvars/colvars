@@ -13,6 +13,7 @@ env:
   PULL_VMD_PLUGINS_KEY: secrets.PULL_VMD_PLUGINS_KEY
 
 jobs:
+
   lammps:
     name: LAMMPS
     uses: Colvars/colvars/.github/workflows/backend-template.yml@master
@@ -66,6 +67,17 @@ jobs:
       backend_repo_ref: release-2020
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
-      # Gromacs need to be complied in double precision to pass the tests
+      # Gromacs need to be compiled in double precision to pass the tests
+      rpath_exe: install/bin/gmx_d
+
+  gromacs-2021:
+    name: GROMACS 2021
+    uses: Colvars/colvars/.github/workflows/backend-template.yml@master
+    with:
+      backend_name: GROMACS-2021
+      backend_repo: gromacs/gromacs
+      backend_repo_ref: release-2021
+      path_compile_script: devel-tools/compile-gromacs.sh
+      test_lib_directory: gromacs/tests/library
       rpath_exe: install/bin/gmx_d
 
