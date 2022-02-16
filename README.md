@@ -11,7 +11,7 @@ The module itself implements a variety of functions and algorithms, including fr
 The easiest way to obtain pre-compiled versions of Colvars is via one of following:
 - the molecular simulation program [LAMMPS](https://lammps.sandia.gov/download.html);
 - the molecular simulation program [NAMD](https://www.ks.uiuc.edu/Research/namd/);
-- the molecular visualization program [VMD](https://www.ks.uiuc.edu/Research/vmd/) (version 1.9.4 alpha and later).
+- the molecular visualization program [VMD](https://www.ks.uiuc.edu/Research/vmd/).
 
 Please check [here](https://github.com/Colvars/colvars/wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages) to see which version of Colvars is included with the round-number or "stable" versions of each code.
 
