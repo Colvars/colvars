@@ -597,22 +597,50 @@ proc ::cv_dashboard::switch_to_top_mol {} {
 
 # Displays a non-blocking help window with the provided info
 proc ::cv_dashboard::help_window { parent wtitle title text } {
+  catch { destroy $parent.helpWindow }
   set h [toplevel $parent.helpWindow]
   wm title $h $wtitle
   tk::text $h.text -yscrollcommand [list $h.vsb set] -bg white
   ttk::scrollbar $h.vsb -orient vertical -command [list $h.text yview]
 
   $h.text insert insert ${title}\n\n title
-  $h.text tag configure title -font "Helvetica -14 bold" -justify center
+  $h.text tag configure title -font "Helvetica 12 bold" -justify center
   $h.text insert insert $text
+
+  add_tag $h.text {https?://\S+} URL
+  $h.text tag configure URL -font "Mono 9" -foreground blue -underline true
+  $h.text tag bind URL <Button-1> "::cv_dashboard::clickLink $h.text %x %y"
+
+  add_tag $h.text {^#.*$} subtitle
+  $h.text tag configure subtitle -font "Helvetica 12 bold"
+
   $h.text configure -state disabled
-  ttk::button $h.close -text "Close" -command " destroy $h " -padding "2 0 2 0"
+  ttk::button $h.close -text "Close" -command "destroy $h" -padding "2 0 2 0"
 
   grid $h.text -row 0 -column 0 -sticky nsew
   grid $h.vsb -row 0 -column 1 -sticky nsew
   grid $h.close -row 1
   grid columnconfigure $h 0 -weight 1
   grid rowconfigure $h 0 -weight 1
+}
+
+proc ::cv_dashboard::add_tag { t re tag } {
+  set cnt 0
+  set cur 0.0
+  while 1 {
+    set cur [$t search -count length -regexp -- $re $cur end]
+    if {$cur == ""} { break }
+    $t tag add $tag $cur "$cur + $length char"
+    set cur [$t index "$cur + $length char"]
+    incr cnt
+  }
+}
+
+proc ::cv_dashboard::clickLink { text xpos ypos } {
+  set i [$text index @$xpos,$ypos]
+  set range [$text tag prevrange URL $i]
+  set url [eval $text get $range]
+  invokeBrowser $url
 }
 
 
