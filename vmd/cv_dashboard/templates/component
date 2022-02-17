@@ -1,0 +1,237 @@
+#_angle
+    angle {
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+        group3 {
+            atomNumbers 3
+        }
+    }
+
+#_coordNum
+    coordNum {
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+
+        ## Anisotropic cutoffs
+        # cutoff3 (0.3, 0.6, 0.4)
+
+        ## Pair lists
+        # tolerance 0.01
+        # pairListFrequency 2
+    }
+
+#_dihedral
+    dihedral {
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+        group3 {
+            atomNumbers 3
+        }
+        group4 {
+            atomNumbers 4
+        }
+    }
+
+#_dihedralPC
+    dihedralPC {
+        ## Projection onto a dihedral principal component
+        psfSegID @
+        residueRange @-@
+        vectorFile @
+        vectorNumber @
+    }
+
+#_dipoleAngle
+    dipoleAngle {
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+        group3 {
+            atomNumbers 3
+        }
+    }
+
+#_dipoleMagnitude
+    dipoleMagnitude {
+        atoms {
+            atomNumbers 1 2 3
+        }
+    }
+
+#_distancedir
+    distanceDir {
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+    }
+
+#_distance
+    distance {
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+    }
+
+#_distanceInv
+    distanceInv {
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+        exponent 4
+    }
+
+#_distancePairs
+    distancePairs {
+        group1 {
+            atomNumbers 1 2 3
+        }
+        group2 {
+            atomNumbers 4 5
+        }
+    }
+
+#_distanceVec
+    distanceVec {
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+    }
+
+#_distanceXY
+    distanceXY {
+        ## Default axis is z, (0, 0, 1)
+        # axis (0.3, -0.4, 0.5)
+        main {
+            atomNumbers 1
+        }
+        ref {
+            atomNumbers 2
+        }
+    }
+
+#_distanceZ
+    distanceZ {
+        ## Default axis is z, (0, 0, 1)
+        # axis (0.3, -0.4, 0.5)
+        main {
+            atomNumbers 1
+        }
+        ref {
+            atomNumbers 2
+        }
+    }
+
+#_groupCoord
+    groupCoord {
+        # cutoff3 (0.3, 0.6, 0.4)
+        group1 {
+            atomNumbers 1
+        }
+        group2 {
+            atomNumbers 2
+        }
+    }
+
+#_gyration
+    gyration {
+        atoms {
+            atomNumbers 1 2 3
+        }
+    }
+
+#_hbond
+    hBond {
+        donor 1
+        acceptor 2
+        cutoff 5.0
+    }
+
+#_inertia
+    inertia {
+        atoms {
+            atomNumbers 1 2 3
+        }
+    }
+
+#_mapTotal
+    mapTotal {
+        mapID 0
+        atoms {
+            atomNumbers 1 2 3
+        }
+    }
+#_orientation
+    orientation {
+        atoms {
+            atomNumbers 1 2 3 4
+            # centerToReference yes
+            # rotateToReference yes
+            # enableFitGradients no # Not available because gradients are implicit
+            # fittingGroup {
+            #     atomNumbers 5 6 7 8
+            # }
+            # refPositionsFile @
+        }
+        refPositionsFile @
+    }
+
+#_rmsd
+    rmsd {
+        atoms {
+            atomNumbers 1 2 3
+        }
+        refPositionsFile @
+    }
+
+#_selfCoordNum
+    selfCoordNum {
+        group1 {
+            atomnumbers 1 2 3
+        }
+    }
+
+#_spinAngle
+    spinAngle {
+        atoms {
+            atomNumbers 1 2 3
+        }
+        refPositionsFile @
+        # axis (1.0, -3.0, 4.0)
+    }
+
+#_tilt
+    tilt {
+        atoms {
+            atomNumbers 1 2 3
+        }
+        refPositionsFile @
+        # axis (1.0, -3.0, 4.0)
+    }
+

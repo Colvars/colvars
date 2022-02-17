@@ -1,0 +1,144 @@
+#_basic colvar
+colvar {
+    name myColvar
+
+    # Insert one or several components below (see templates/components)
+
+    distance {
+        group1 {
+            atomNumbers 1 2
+        }
+        group2 {
+            atomNumbers 3 4
+        }
+    }
+}
+
+#_colvar with analysis
+colvar {
+    name myColvar
+
+    ## Uncomment optional parameters as needed, replace '@' with value
+    # width @
+    # lowerBoundary @
+    # upperBoundary @
+
+    ## (auto-)correlation function
+    # corrFunc yes
+    # corrFuncType velocity
+    # corrFuncLength @
+    # corrFuncStride @
+    # corrFuncWithColvar @
+
+    ## running average
+    # runAve yes
+    # runAveLength 4
+    # runAveStride 2
+    
+    ## Insert one or several components below
+    # (see templates in components directory)
+
+    distance {
+      ## Optional coeff and exponent for polynomial combinations
+      # componentCoeff @
+      # componentExp @
+      group1 { atomNumbers 1 2 }
+      group2 { atomNumbers 3 4 }
+    }
+}
+
+#_colvar with grid parameters
+colvar {
+    name myColvar
+
+    ## Uncomment optional parameters as needed, replace '@' with value
+
+    ## Grid parameters
+    # width @
+    # lowerBoundary @
+    # upperBoundary @
+
+    ## Insert one or several components below
+    # (see templates in components/ directory)
+
+    distance {
+        ## Optional coeff and exponent for polynomial combinations
+        # componentCoeff @
+        # componentExp @
+        group1 {
+            ## The group can be defined by several atom selection keywords
+            atomNumbers 1 2
+            #indexGroup @
+        }
+        group2 {
+            atomNumbers 3 4
+            #indexGroup @
+        }
+    }
+}
+
+#_DBC (ligand RMSD)
+## Optionally, import GROMACS-style index file here
+# indexFile @.ndx
+
+colvar {
+    # A "distance to bound configuration" (DBC) coordinate for ligand binding restraints
+    # see Salari, Joseph, Lohia, Hénin and Brannigan, J. Chem. Theory Comput. 2018, 14, 12, 6560-6573
+    # https://arxiv.org/abs/1801.04901
+
+    name DBC
+
+    rmsd {
+        # Reference coordinates (for ligand RMSD computation)
+        refpositionsfile reference.pdb # PDB or XYZ file
+
+        atoms {
+            # Define ligand atoms used for RMSD calculation
+            atomNumbers 1 2 3 4
+
+            # Moving frame of reference is defined below
+            centerToReference yes
+            rotateToReference yes
+            fittingGroup {
+                # Define binding site atoms used for fitting
+                atomNumbers 6 7 8 9
+            }
+            # Reference coordinates for binding site atoms
+            # (can be the same file as ligand coordinates above)
+            refPositionsFile reference.pdb # PDB or XYZ file
+        }
+    }
+}
+
+#_extended-Lagrangian colvar
+colvar {
+    name extended-Lagrangian_colvar
+
+    ## Uncomment optional parameters as needed, replace '@' with value
+    # width @
+    # lowerBoundary @
+    # upperBoundary @
+
+
+    ## The options below are only useful during specific simulations eg. eABF
+    ## they have no effect in VMD analysis
+    extendedLagrangian      on
+    extendedFluctuation     @
+    extendedTimeConstant    200.0
+    extendedTemp            300.0
+    extendedLangevinDamping 0.1
+
+
+    ## Insert one or several components below
+    # (see templates in components directory)
+
+    distance {
+      ## Optional coeff and exponent for polynomial combinations
+      # componentCoeff @
+      # componentExp @
+      group1 { atomNumbers 1 2 }
+      group2 { atomNumbers 3 4 }
+    }
+}
+
+
