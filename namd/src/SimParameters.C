@@ -3635,6 +3635,10 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
        iout << iWARN << "Undefined 'drudeDamping' will be set to "
          "value of 'langevinDamping'\n" << endi;
      }
+     if ( alchOn ) {
+       NAMD_die("Drude implementation is incompatible with alchemical "
+           "free energy calculation.");
+     }
    }
 
    //  Set up load balancing variables
