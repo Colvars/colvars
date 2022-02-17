@@ -489,7 +489,6 @@ proc ::cv_dashboard::refresh_table {} {
     set ::cv_dashboard::cvs {}
     return
   }
-
   # Get fresh coordinates from VMD
   run_cv update
 
@@ -499,7 +498,7 @@ proc ::cv_dashboard::refresh_table {} {
     set parity [expr 1-$parity]
     $w.cvtable insert {} end -id $cv -text $cv -tag parity$parity
 
-    set val [run_cv colvar $cv update]
+    set val [run_cv colvar $cv value]
     $w.cvtable set $cv val [format_value $val]
 
     # Add sub-elements for vector colvars
@@ -529,7 +528,7 @@ proc ::cv_dashboard::refresh_values {} {
   set w .cv_dashboard_window
 
   foreach cv [$w.cvtable children {}] {
-    set val [run_cv colvar $cv update]
+    set val [run_cv colvar $cv value]
     $w.cvtable set $cv val [format_value $val]
 
     set size [llength $val]
@@ -1063,6 +1062,11 @@ proc ::cv_dashboard::show_forces { list } {
 
 
 proc ::cv_dashboard::update_shown_forces {} {
+
+  # Skip needless updates if nothing is requested
+  if { [array size ::cv_dashboard::force_objects] == 0 } {
+    return
+  }
 
   # Start IDs for force objects after those of gradient objects
   set id [array size ::cv_dashboard::grad_objects]

@@ -163,11 +163,11 @@ check any parameters with the dimension of a length or a force constant."
     }
   }
   cv units $new
-
   # Remember in global config
   dict set ::cv_dashboard::global_config units $new
 
-  # Refresh Combo box
-  refresh_units
-  refresh_values
+  # Do a full reset to parse colvars again, in particular reading ref position files
+  set cfg [get_whole_config]
+  run_cv reset
+  apply_config $cfg
 }
