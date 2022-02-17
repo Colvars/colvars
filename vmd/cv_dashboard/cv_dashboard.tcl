@@ -23,7 +23,7 @@
 # TODO maybe:
 # - index group builder
 
-package provide cv_dashboard 1.4
+package provide cv_dashboard 1.5
 
 namespace eval ::cv_dashboard {
   # General UI state
@@ -65,6 +65,7 @@ namespace eval ::cv_dashboard {
   foreach { text units } [array get text_to_units] {
     set units_to_text($units) $text
   }
+  dict set global_config units "real"
 
   variable template_dir
   variable template_base_dir

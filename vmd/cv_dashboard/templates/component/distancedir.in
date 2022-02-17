@@ -1,8 +1,0 @@
-    distanceDir {
-        group1 {
-            atomNumbers 1
-        }
-        group2 {
-            atomNumbers 2
-        }
-    }

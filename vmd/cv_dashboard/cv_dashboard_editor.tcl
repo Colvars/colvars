@@ -13,15 +13,15 @@ proc ::cv_dashboard::add_cv {} {
 proc ::cv_dashboard::edit_cv { {add false} {cvs ""} } {
 
   set indent $::cv_dashboard::indent
+  parse_templates
+
   if $add {
     # do not remove existing vars
     set cvs {}
     set ::cv_dashboard::backup_cfg ""
-    if { [info exists ::cv_dashboard::template_base_dir] } {
-      # Open "official" colvar template
-      set in [open ${::cv_dashboard::template_base_dir}/colvar/basic_colvar.in r]
-      set cfg [read $in]
-      close $in
+    if { [dict exists $::cv_dashboard::templates_colvar "basic colvar"] } {
+      # "official" colvar template
+      set cfg [dict get $::cv_dashboard::templates_colvar "basic colvar"]
     } else {
       # Provide simple template
       set cfg "colvar {\n${indent}name d\n${indent}distance {\n${indent}${indent}group1 { atomNumbers 1 2 }
@@ -56,14 +56,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   tk::labelframe  $w.editor.fl.templates -bd 2 -text "Templates" -padx 2 -pady 2
   set templates $w.editor.fl.templates
 
-  # One line per subdirectory
-  foreach d { colvar component other } {
-    set ::cv_dashboard::templates_$d [dict create]
-
-    foreach f [lsort -dictionary [glob -nocomplain "${::cv_dashboard::template_dir}/$d/*.in"]] {
-      # Map pretty template name to file name
-      dict set ::cv_dashboard::templates_$d [regsub -all {_} [file rootname [file tail $f]] " "] $f
-    }
+  foreach d { colvar component other custom } {
     tk::label $templates.template_label_$d -font $::cv_dashboard::font -text "$d templates:"
     ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no
     $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
@@ -215,6 +208,46 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
 proc ::cv_dashboard::change_wrap {} {
   set text .cv_dashboard_window.editor.fr.text
   $text configure -wrap $::cv_dashboard::wrap
+}
+
+
+proc ::cv_dashboard::parse_templates {} {
+  foreach d { colvar component other user } {
+    set ::cv_dashboard::templates_$d [dict create]
+
+    set path [file join $::cv_dashboard::template_dir $d]
+
+    # Single-file template DBs
+    if [catch {set db_file [open $path]}] {
+      puts "No file $d"
+      continue
+    }
+
+    set name ""
+    while { [gets $db_file line] >= 0 } {
+      if { [regexp "^#_(.+)" $line match newname] } {
+        if { $name != "" } {
+          dict set ::cv_dashboard::templates_$d $name $cfg
+        }
+        set name $newname
+        set cfg ""
+      } else {
+        append cfg "$line\n"
+      }
+    }
+    # Last config
+    if { $name != "" } {
+      dict set ::cv_dashboard::templates_$d $name $cfg
+    }
+    close $db_file
+    # Old-style templates
+    foreach f [lsort -dictionary [glob -nocomplain "${::cv_dashboard::template_dir}/$d/*.in"]] {
+      # Map pretty template name to file contents
+      set file [open $f "r"]
+      dict set ::cv_dashboard::templates_$d [regsub -all "_" [file rootname [file tail $f]] " "] [read $file]
+      close $file
+    }
+  }
 }
 
 #################################################################
@@ -371,10 +404,8 @@ proc ::cv_dashboard::insert_labels {obj} {
 # Insert contents of template file
 proc ::cv_dashboard::insert_template { source map } {
   set w .cv_dashboard_window
-  set path [dict get $map [$source get]]
-  set in [open $path r]
-  editor_replace $w.editor.fr.text [read $in]
-  close $in
+
+  editor_replace $w.editor.fr.text [dict get $map [$source get]]
 }
 
 
@@ -738,14 +769,14 @@ proc ::cv_dashboard::create_cvs { ref_atoms all_atoms description } {
     foreach var { TMPDIR TMP TEMP HOME } {
       if {[info exists ::env($var)]} {
         set refFilePath $::env($var)
-        if {![catch {set refFile [open "$refFilePath/$refFileName" w]}]} {
+        if {![catch {set refFile [open [file join $refFilePath $refFileName] w]}]} {
           break
         }
       }
     }
   }
   if { $refFilePath != "" } {
-    set refFileName "$refFilePath/$refFileName"
+    set refFileName [file join $refFilePath $refFileName]
   }
   if { $refFile != "" } {
     puts $refFile "[$ref_atoms num]"

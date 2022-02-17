@@ -44,8 +44,9 @@ proc ::cv_dashboard::createWindow {} {
   bind $w.cvtable <Button-1> {::cv_dashboard::tableClicked cvtable %x %y}
   bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   bind $w.cvtable <Control-Button-1> {::cv_dashboard::cvContextMenu %x %y %X %Y}
-
+  
   bind $w.cvtable <Control-e> ::cv_dashboard::edit_cv
+  bind $w.cvtable <Double-Button-1>  ::cv_dashboard::edit_cv
   bind $w.cvtable <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
   bind $w.cvtable <Control-n> ::cv_dashboard::add_cv
 
@@ -216,7 +217,8 @@ proc ::cv_dashboard::createBiasesTab {} {
   $biases.bias_table heading val -text "energy"
   $biases.bias_table heading colvars -text "colvars"
 
-  bind $biases.bias_table <Control-e> ::cv_dashboard::edit_bias
+  bind $biases.bias_table <Control-e>    ::cv_dashboard::edit_bias
+  bind $biases.bias_table <Double-Button-1> ::cv_dashboard::edit_bias
   bind $biases.bias_table <Control-n> ::cv_dashboard::add_bias
   bind $biases.bias_table <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
   bind $biases.bias_table <Button-1> {::cv_dashboard::tableClicked tabs.biases.bias_table %x %y}
@@ -751,6 +753,8 @@ proc ::cv_dashboard::reset {} {
   set ::cv_dashboard::colvar_configs [dict create]
   set ::cv_dashboard::bias_configs [dict create]
   set ::cv_dashboard::global_config [dict create]
+  dict set ::cv_dashboard::global_config units "real"
+
   set ::cv_dashboard::global_comments ""
   refresh_table
   refresh_units
