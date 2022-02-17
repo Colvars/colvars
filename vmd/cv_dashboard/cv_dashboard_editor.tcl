@@ -212,7 +212,7 @@ proc ::cv_dashboard::change_wrap {} {
 
 
 proc ::cv_dashboard::parse_templates {} {
-  foreach d { colvar component other user } {
+  foreach d { colvar component other } {
     set ::cv_dashboard::templates_$d [dict create]
 
     set path [file join $::cv_dashboard::template_dir $d]
