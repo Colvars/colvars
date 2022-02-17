@@ -13,7 +13,6 @@ proc ::cv_dashboard::add_cv {} {
 proc ::cv_dashboard::edit_cv { {add false} {cvs ""} } {
 
   set indent $::cv_dashboard::indent
-  parse_templates
 
   if $add {
     # do not remove existing vars
@@ -61,9 +60,9 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
     ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no
     $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
     bind $templates.pick_template_$d <<keyb_enter>> \
-      "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]"
+      "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]] $w.editor.fr.text"
     ttk::button $templates.insert_template_$d -text "Insert \[Enter\]" \
-      -command "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]]" \
+      -command "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]] $w.editor.fr.text" \
       -padding "2 0 2 0"
 
     grid $templates.template_label_$d -row $gridrow -column 0 -pady 2 -padx 2
@@ -210,45 +209,6 @@ proc ::cv_dashboard::change_wrap {} {
   $text configure -wrap $::cv_dashboard::wrap
 }
 
-
-proc ::cv_dashboard::parse_templates {} {
-  foreach d { colvar component other } {
-    set ::cv_dashboard::templates_$d [dict create]
-
-    set path [file join $::cv_dashboard::template_dir $d]
-
-    # Single-file template DBs
-    if [catch {set db_file [open $path]}] {
-      puts "No file $d"
-      continue
-    }
-
-    set name ""
-    while { [gets $db_file line] >= 0 } {
-      if { [regexp "^#_(.+)" $line match newname] } {
-        if { $name != "" } {
-          dict set ::cv_dashboard::templates_$d $name $cfg
-        }
-        set name $newname
-        set cfg ""
-      } else {
-        append cfg "$line\n"
-      }
-    }
-    # Last config
-    if { $name != "" } {
-      dict set ::cv_dashboard::templates_$d $name $cfg
-    }
-    close $db_file
-    # Old-style templates
-    foreach f [lsort -dictionary [glob -nocomplain "${::cv_dashboard::template_dir}/$d/*.in"]] {
-      # Map pretty template name to file contents
-      set file [open $f "r"]
-      dict set ::cv_dashboard::templates_$d [regsub -all "_" [file rootname [file tail $f]] " "] [read $file]
-      close $file
-    }
-  }
-}
 
 #################################################################
 # Helper functions for editor
@@ -402,10 +362,9 @@ proc ::cv_dashboard::insert_labels {obj} {
 
 
 # Insert contents of template file
-proc ::cv_dashboard::insert_template { source map } {
-  set w .cv_dashboard_window
+proc ::cv_dashboard::insert_template { source map target } {
 
-  editor_replace $w.editor.fr.text [dict get $map [$source get]]
+  editor_replace $target [dict get $map [$source get]]
 }
 
 
@@ -442,7 +401,7 @@ proc ::cv_dashboard::edit_apply { type } {
     set text $w.editor.fr.text
   } elseif { $type == "bias" } {
     set window $w.bias_editor
-    set text $w.bias_editor.fr.text
+    set text $w.bias_editor.text
   } else {
     puts "Error: called edit_apply $type"
     return
@@ -608,49 +567,67 @@ proc ::cv_dashboard::edit_bias { {add false} {biases ""} {cvs ""} } {
 
   set gridrow 0
 
-  # Right frame: text widget w scrollbar and Apply/Cancel buttons
-  frame $w.bias_editor.fr
-
   # Help link
-  ttk::button $w.bias_editor.fr.onlinedoc1 -text "Manual: collective variable biases" -padding "4 2 4 2"\
+  ttk::button $w.bias_editor.onlinedoc1 -text "Manual: collective variable biases" -padding "4 2 4 2"\
     -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvarbias"]
-  grid $w.bias_editor.fr.onlinedoc1 -row $gridrow -columnspan 3 -pady 5 -padx 2 -sticky nsew
-
-  tk::text $w.bias_editor.fr.text -undo 1 -yscrollcommand [list $w.bias_editor.fr.vsb set] -background white -font "Helvetica -14"
-  ttk::scrollbar $w.bias_editor.fr.vsb -orient vertical -command [list $w.bias_editor.fr.text yview]
-  $w.bias_editor.fr.text insert 1.0 $cfg
-  set ::cv_dashboard::being_edited $biases
+  grid $w.bias_editor.onlinedoc1 -row $gridrow -columnspan 3 -pady 5 -padx 2 -sticky nsew
   incr gridrow
-  grid $w.bias_editor.fr.text -row $gridrow -columnspan 3 -sticky nsew
-  grid $w.bias_editor.fr.vsb -row $gridrow -column 3 -sticky nsew
+
+  ############# Templates #########################################
+  # tk::labelframe  $w.editor.fl.templates -bd 2 -text "Templates" -padx 2 -pady 2
+  set templates $w.bias_editor
+
+  set d "bias"
+  tk::label $templates.template_label_$d -font $::cv_dashboard::font -text "$d templates:"
+  ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no
+  $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
+  bind $templates.pick_template_$d <<keyb_enter>> \
+    "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]] $w.bias_editor.text"
+  ttk::button $templates.insert_template_$d -text "Insert \[Enter\]" \
+    -command "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]] $w.bias_editor.text" \
+    -padding "2 0 2 0"
+
+  grid $templates.template_label_$d -row $gridrow -column 0 -pady 2 -padx 2
+  grid $templates.pick_template_$d -row $gridrow -sticky ew -column 1 -pady 2 -padx 2
+  grid $templates.insert_template_$d -row $gridrow -column 2 -pady 2 -padx 2
+  incr gridrow
+
+  grid columnconfigure $templates 0 -weight 0
+  grid columnconfigure $templates 1 -weight 1
+  grid columnconfigure $templates 2 -weight 0
+
+  tk::text $w.bias_editor.text -undo 1 -yscrollcommand [list $w.bias_editor.vsb set] -background white -font "Helvetica -14"
+  ttk::scrollbar $w.bias_editor.vsb -orient vertical -command [list $w.bias_editor.text yview]
+  $w.bias_editor.text insert 1.0 $cfg
+  set ::cv_dashboard::being_edited $biases
+
+  grid $w.bias_editor.text -row $gridrow -columnspan 3 -sticky nsew
+  grid $w.bias_editor.vsb -row $gridrow -column 3 -sticky nsew
+  incr gridrow
 
   # Ctrl-s anywhere in the window saves/applies
   bind $w.bias_editor <Control-s> {::cv_dashboard::edit_apply bias}
   # Custom bindings for the text widget
-  bind $w.bias_editor.fr.text <Control-a> "$w.bias_editor.fr.text tag add sel 1.0 end-1c; break"
-  bind $w.bias_editor.fr.text <Tab> "::cv_dashboard::tab_pressed $w.bias_editor.fr.text"
+  bind $w.bias_editor.text <Control-a> "$w.bias_editor.text tag add sel 1.0 end-1c; break"
+  bind $w.bias_editor.text <Tab> "::cv_dashboard::tab_pressed $w.bias_editor.text"
   # Bind several possible mappings for Shift-Tab
   # ISO_Left_Tab is undefined on some platforms and will fail
-  catch { bind $w.bias_editor.fr.text <ISO_Left_Tab> "::cv_dashboard::tab_pressed $w.bias_editor.fr.text true" }
-  bind $w.bias_editor.fr.text <Shift-Tab> "::cv_dashboard::tab_pressed $w.bias_editor.fr.text true"
+  catch { bind $w.bias_editor.text <ISO_Left_Tab> "::cv_dashboard::tab_pressed $w.bias_editor.text true" }
+  bind $w.bias_editor.text <Shift-Tab> "::cv_dashboard::tab_pressed $w.bias_editor.text true"
 
+  ttk::button $w.bias_editor.apply -text "Apply \[Ctrl-s\]" -command {::cv_dashboard::edit_apply bias} -padding "2 0 2 0"
+  ttk::button $w.bias_editor.cancel -text "Cancel" -command {::cv_dashboard::edit_cancel bias} -padding "2 0 2 0"
+  ttk::button $w.bias_editor.clear -text "Clear" -command "$w.bias_editor.text delete 1.0 end" -padding "2 0 2 0"
+
+  grid $w.bias_editor.apply -row $gridrow -column 0 -sticky e -pady 2 -padx 2
+  grid $w.bias_editor.cancel -row $gridrow -column 1 -sticky w -pady 2 -padx 2
+  grid $w.bias_editor.clear -row $gridrow -column 2 -sticky w -pady 2 -padx 2
   incr gridrow
-  ttk::button $w.bias_editor.fr.apply -text "Apply \[Ctrl-s\]" -command {::cv_dashboard::edit_apply bias} -padding "2 0 2 0"
-  ttk::button $w.bias_editor.fr.cancel -text "Cancel" -command {::cv_dashboard::edit_cancel bias} -padding "2 0 2 0"
-  ttk::button $w.bias_editor.fr.clear -text "Clear" -command "$w.bias_editor.fr.text delete 1.0 end" -padding "2 0 2 0"
 
-  grid $w.bias_editor.fr.apply -row $gridrow -column 0 -sticky e -pady 2 -padx 2
-  grid $w.bias_editor.fr.cancel -row $gridrow -column 1 -sticky w -pady 2 -padx 2
-  grid $w.bias_editor.fr.clear -row $gridrow -column 2 -sticky w -pady 2 -padx 2
-
-  grid columnconfigure $w.bias_editor.fr 0 -weight 1
-  grid columnconfigure $w.bias_editor.fr 1 -weight 1
-  grid columnconfigure $w.bias_editor.fr 2 -weight 1
-  grid rowconfigure $w.bias_editor.fr 0 -weight 1
-
-  # No left frame for now
-  # pack $w.bias_editor.fl -fill both -side left
-  pack $w.bias_editor.fr -fill both -expand yes -padx 2 -pady 2
+  grid columnconfigure $w.bias_editor 0 -weight 1
+  grid columnconfigure $w.bias_editor 1 -weight 1
+  grid columnconfigure $w.bias_editor 2 -weight 1
+  grid rowconfigure $w.bias_editor 0 -weight 1
 }
 
 

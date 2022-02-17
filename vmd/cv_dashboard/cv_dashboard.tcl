@@ -667,6 +667,7 @@ proc ::cv_dashboard::set_viewpoints { vp } {
   }
 }
 
+
 # Find closest value in sorted list
 proc ::cv_dashboard::bisect { lst val } {
   set len [llength $lst]
@@ -694,5 +695,39 @@ proc ::cv_dashboard::bisect { lst val } {
     return $start
   } else {
     return $end
+  }
+}
+
+
+# Extract templates from files into dictionaries
+proc ::cv_dashboard::parse_templates {} {
+  foreach d { colvar component other bias } {
+    set ::cv_dashboard::templates_$d [dict create]
+
+    set path [file join $::cv_dashboard::template_dir $d]
+
+    # Single-file template DBs
+    if [catch {set db_file [open $path]}] {
+      puts "No file $d"
+      continue
+    }
+
+    set name ""
+    while { [gets $db_file line] >= 0 } {
+      if { [regexp "^#_(.+)" $line match newname] } {
+        if { $name != "" } {
+          dict set ::cv_dashboard::templates_$d $name $cfg
+        }
+        set name $newname
+        set cfg ""
+      } else {
+        append cfg "$line\n"
+      }
+    }
+    # Last config
+    if { $name != "" } {
+      dict set ::cv_dashboard::templates_$d $name $cfg
+    }
+    close $db_file
   }
 }

@@ -1,0 +1,138 @@
+#_abf
+abf {
+    # Colvar must define grid parameters:
+    # width, lowerBoundary, upperBoundary
+    colvars        @
+    fullSamples    500
+}
+#_metadynamics
+metadynamics {
+    colvars        @
+    hillWeight     0.001
+    writeTIPMF     yes
+}
+#_harmonic bias
+harmonic {
+    colvars        @
+    centers        0.1
+    forceConstant  10.0
+}
+#_moving harmonic bias (SMD)
+harmonic {
+    colvars        @
+    # Start from:
+    centers        0.1
+    # move towards:
+    targetCenters  0.2
+    # in this many MD steps:
+    targetNumSteps 1000
+
+    forceConstant  10.0
+
+    outputEnergy   yes
+    outputCenters  yes
+    outputAccumulatedWork yes
+}
+#_moving harmonic bias with discrete stages
+harmonic {
+    colvars        @
+    centers        0.1
+    forceConstant  10.0
+
+    targetCenters  0.2
+    targetNumSteps 8
+    targetNumStages 4
+
+    outputEnergy   yes
+    outputCenters  yes
+}
+#_moving harmonic bias with TI
+harmonic {
+    colvars        @
+    centers        0.1
+    forceConstant  10.0
+
+    targetCenters  0.2
+    targetNumSteps 10
+
+    outputEnergy   yes
+    outputCenters  yes
+    outputAccumulatedWork yes
+    writeTIPMF     yes
+}
+#_harmonic bias with changing force constant
+harmonic {
+    colvars        @
+    centers        0.1
+    forceConstant  10.0
+
+    targetForceconstant 0.0001
+    targetNumSteps 10
+
+    outputEnergy   yes
+}
+#_harmonic walls
+harmonicWalls {
+    colvars        @
+    lowerWalls     0.1
+    upperWalls     0.2
+    forceConstant  10.0
+}
+#_harmonic walls with diff. k
+harmonicWalls {
+    colvars        @
+    lowerWalls     0.1
+    lowerWallConstant  0.002
+    upperWalls     0.2
+    upperWallConstant  0.001
+}
+#_moving harmonic walls
+harmonicWalls {
+    colvars        @
+    lowerWalls     0.1
+    upperWalls     0.2
+
+    lowerWallConstant  0.002
+    upperWallConstant  0.001
+
+    targetForceconstant 0.0001
+    targetNumSteps 10
+
+    outputEnergy   yes
+    outputAccumulatedWork yes
+}
+#_harmonic walls with changing force constant
+harmonicWalls {
+    colvars        @
+
+    lowerWalls     0.1
+    upperWalls     0.2
+    forceConstant  10.0
+
+    targetForceconstant 0.0001
+    targetNumSteps 10
+    outputEnergy   yes
+    outputAccumulatedWork yes
+}
+#_histogram
+histogram {
+    colvars    @
+    # If the colvars don't include grid parameters, they can be specified below
+    histogramGrid {
+        lowerBoundaries 0
+        upperBoundaries 10
+        widths 0.1
+    }
+}
+#_linear
+linear {
+    colvars        @
+    centers        0.1
+    forceConstant  10.0
+
+    targetForceconstant -0.1
+    targetNumSteps 10
+
+    outputEnergy   yes
+    outputAccumulatedWork yes
+}

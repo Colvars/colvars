@@ -12,6 +12,8 @@ proc ::cv_dashboard::createWindow {} {
   wm title $w "Colvars dashboard"
   wm protocol $w WM_DELETE_WINDOW { ::cv_dashboard::quit }
 
+  parse_templates
+
   # TTK styles
   ttk::style configure cv_link.TButton -foreground blue
 
