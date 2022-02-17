@@ -21,10 +21,12 @@ proc ::cv_dashboard::createWindow {} {
   set gridrow 0
   grid [ttk::button $w.helpB -text "Online Help" -command {::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:dashboard"} -padding "2 0 2 0"] \
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.aboutB -text "About" -command ::cv_dashboard::about -padding "2 0 2 0"] \
+  grid [ttk::button $w.shortB -text "Shortcuts \[F1\]" -command ::cv_dashboard::shortcuts -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.quit -text "Quit" -command ::cv_dashboard::quit -padding "2 0 2 0"] \
+  grid [ttk::button $w.aboutB -text "About" -command ::cv_dashboard::about -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  bind $w <F1> ::cv_dashboard::shortcuts
 
   incr gridrow
   grid [ttk::button $w.load -text "Load" -command ::cv_dashboard::load -padding "2 0 2 0"] \
@@ -49,8 +51,9 @@ proc ::cv_dashboard::createWindow {} {
   
   bind $w.cvtable <Control-e> ::cv_dashboard::edit_cv
   bind $w.cvtable <Double-Button-1>  ::cv_dashboard::edit_cv
-  bind $w.cvtable <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
   bind $w.cvtable <Control-n> ::cv_dashboard::add_cv
+  bind $w.cvtable <Control-Delete> ::cv_dashboard::del_cv
+  bind $w.cvtable <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
@@ -219,17 +222,16 @@ proc ::cv_dashboard::createBiasesTab {} {
   $biases.bias_table heading val -text "energy"
   $biases.bias_table heading colvars -text "colvars"
 
-  bind $biases.bias_table <Control-e>    ::cv_dashboard::edit_bias
-  bind $biases.bias_table <Double-Button-1> ::cv_dashboard::edit_bias
-  bind $biases.bias_table <Control-n> ::cv_dashboard::add_bias
-  bind $biases.bias_table <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
   bind $biases.bias_table <Button-1> {::cv_dashboard::tableClicked tabs.biases.bias_table %x %y}
   bind $biases.bias_table <Button-3> {::cv_dashboard::biasContextMenu %x %y %X %Y}
   bind $biases.bias_table <Control-Button-1> {::cv_dashboard::biasContextMenu %x %y %X %Y}
 
+  bind $biases.bias_table <Control-e>    ::cv_dashboard::edit_bias
+  bind $biases.bias_table <Double-Button-1> ::cv_dashboard::edit_bias
+  bind $biases.bias_table <Control-n> ::cv_dashboard::add_bias
+  bind $biases.bias_table <Control-Delete> ::cv_dashboard::del_bias
+  bind $biases.bias_table <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
 
-  event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
-  event add <<keyb_enter>> <KP_Enter>
 
   if { [info patchlevel] != "8.5.6" } {
     $biases.bias_table tag configure parity0 -background white
@@ -444,6 +446,30 @@ proc ::cv_dashboard::tableClicked { table x y } {
   if { [llength $item] == 0 } {
     $t selection set [list]
   }
+}
+
+
+# Display help window with keyboard shortcuts
+proc ::cv_dashboard::shortcuts {} {
+
+  help_window .cv_dashboard_window "Keyboard and mouse shortcuts" "Keyboard and mouse shortcuts" \
+"#Main window
+Home: \t\tMove to first frame
+End: \t\tMove to last frame
+Left: \t\tBack 1 frame
+Shift-Left: \t\tBack 10 frames
+Ctrl-Left: \t\tBack 50 frames
+Right: \t\tForward 1 frame
+Shift-Right: \t\tForward 10 frames
+Ctrl-Right: \t\tForward 50 frames
+
+#Colvar / bias table
+Ctrl-a: \t\tSelect all
+Double-click: \t\tEdit
+Ctrl-e: \t\tEdit selected
+Ctrl-n: \t\tNew colvar/bias
+Ctrl-Del: \t\tDelete selected
+Right-click/Ctrl-click: \t\tOpen context menu"
 }
 
 

@@ -161,7 +161,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
 
   # Right frame: text widget w scrollbar and Apply/Cancel buttons
   frame $w.editor.fr
-  tk::text $w.editor.fr.text -undo 1 -yscrollcommand [list $w.editor.fr.vsb set] -background white -font "Helvetica -14" -wrap "none"
+  tk::text $w.editor.fr.text -undo 1 -yscrollcommand [list $w.editor.fr.vsb set] -background white -font "Helvetica 12" -wrap "none"
   ttk::scrollbar $w.editor.fr.vsb -orient vertical -command [list $w.editor.fr.text yview]
   $w.editor.fr.text insert 1.0 $cfg
   set ::cv_dashboard::being_edited $cvs
@@ -568,7 +568,7 @@ proc ::cv_dashboard::edit_bias { {add false} {biases ""} {cvs ""} } {
   set gridrow 0
 
   # Help link
-  ttk::button $w.bias_editor.onlinedoc1 -text "Manual: collective variable biases" -padding "4 2 4 2"\
+  ttk::button $w.bias_editor.onlinedoc1 -style cv_link.TButton -text "Manual: collective variable biases" -padding "4 2 4 2"\
     -command [list ::cv_dashboard::invokeBrowser "http://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvarbias"]
   grid $w.bias_editor.onlinedoc1 -row $gridrow -columnspan 3 -pady 5 -padx 2 -sticky nsew
   incr gridrow
@@ -596,7 +596,7 @@ proc ::cv_dashboard::edit_bias { {add false} {biases ""} {cvs ""} } {
   grid columnconfigure $templates 1 -weight 1
   grid columnconfigure $templates 2 -weight 0
 
-  tk::text $w.bias_editor.text -undo 1 -yscrollcommand [list $w.bias_editor.vsb set] -background white -font "Helvetica -14"
+  tk::text $w.bias_editor.text -undo 1 -yscrollcommand [list $w.bias_editor.vsb set] -background white -font "Helvetica 12"
   ttk::scrollbar $w.bias_editor.vsb -orient vertical -command [list $w.bias_editor.text yview]
   $w.bias_editor.text insert 1.0 $cfg
   set ::cv_dashboard::being_edited $biases
