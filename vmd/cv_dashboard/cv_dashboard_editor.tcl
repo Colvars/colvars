@@ -56,7 +56,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   tk::labelframe  $w.editor.fl.templates -bd 2 -text "Templates" -padx 2 -pady 2
   set templates $w.editor.fl.templates
 
-  foreach d { colvar component other custom } {
+  foreach d { colvar component other } {
     tk::label $templates.template_label_$d -font $::cv_dashboard::font -text "$d templates:"
     ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no
     $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
