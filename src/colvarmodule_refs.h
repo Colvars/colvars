@@ -102,7 +102,7 @@
   paper_bibtex_[std::string("Fu2016")] =
     "\n"
     "@article{Fu2016,\n"
-    "  author = {Fu, Haohao and Shao, Xueguang and Chipot, Cristophe and Cai, Wensheng},\n"
+    "  author = {Fu, Haohao and Shao, Xueguang and Chipot, Christophe and Cai, Wensheng},\n"
     "  title = {Extended adaptive biasing force algorithm. {An} on--the--fly implementation for accurate free--energy calculations},\n"
     "  journal = {J. Chem. Theory Comput.},\n"
     "  year = {2016},\n"
@@ -154,7 +154,7 @@
   paper_bibtex_[std::string("Henin2010")] =
     "\n"
     "@article{Henin2010,\n"
-    "  author = {H\\'enin, J\\'er\\^ome and Fiorin, Giacomo and Chipot, Cristophe and Klein, Michael L.},\n"
+    "  author = {H\\'enin, J\\'er\\^ome and Fiorin, Giacomo and Chipot, Christophe and Klein, Michael L.},\n"
     "  title = {Exploring multidimensional free energy landscapes using time-dependent biases on collective variables},\n"
     "  journal = {J. Chem. Theory Comput.},\n"
     "  year = {2010},\n"
@@ -317,194 +317,128 @@
   paper_url_[std::string("n/a")] = "";
   paper_bibtex_[std::string("n/a")] = "";
 
-  feature_count_[std::string("GROMACS engine")] = 0;
-  feature_paper_map_[std::string("GROMACS engine")] = "Abraham2015";
-
-  feature_count_[std::string("reweightaMD colvar bias implementation (NAMD)")] = 0;
-  feature_paper_map_[std::string("reweightaMD colvar bias implementation (NAMD)")] = "Chen2021";
-
-  feature_count_[std::string("neuralNetwork colvar component")] = 0;
-  feature_paper_map_[std::string("neuralNetwork colvar component")] = "Chen2022";
-
-  feature_count_[std::string("Multiple-walker ABF implementation")] = 0;
-  feature_paper_map_[std::string("Multiple-walker ABF implementation")] = "Comer2014c";
-
-  feature_count_[std::string("Colvars module")] = 0;
-  feature_paper_map_[std::string("Colvars module")] = "Fiorin2013";
-
-  feature_count_[std::string("Colvars-NAMD interface")] = 0;
-  feature_paper_map_[std::string("Colvars-NAMD interface")] = "Fiorin2013";
-
   feature_count_[std::string("Colvars-LAMMPS interface")] = 0;
   feature_paper_map_[std::string("Colvars-LAMMPS interface")] = "Fiorin2013";
-
-  feature_count_[std::string("Colvars-VMD interface (command line)")] = 0;
-  feature_paper_map_[std::string("Colvars-VMD interface (command line)")] = "Fiorin2013";
-
-  feature_count_[std::string("distance colvar component")] = 0;
-  feature_paper_map_[std::string("distance colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("distanceXY colvar component (derived from distanceZ)")] = 0;
-  feature_paper_map_[std::string("distanceXY colvar component (derived from distanceZ)")] = "Fiorin2013";
-
-  feature_count_[std::string("distanceZ colvar component")] = 0;
-  feature_paper_map_[std::string("distanceZ colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("distanceVec colvar component (derived from distance)")] = 0;
-  feature_paper_map_[std::string("distanceVec colvar component (derived from distance)")] = "Fiorin2013";
-
-  feature_count_[std::string("distanceDir colvar component (derived from distance)")] = 0;
-  feature_paper_map_[std::string("distanceDir colvar component (derived from distance)")] = "Fiorin2013";
-
-  feature_count_[std::string("distanceInv colvar component")] = 0;
-  feature_paper_map_[std::string("distanceInv colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("angle colvar component")] = 0;
-  feature_paper_map_[std::string("angle colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("dihedral colvar component")] = 0;
-  feature_paper_map_[std::string("dihedral colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("coordNum colvar component")] = 0;
-  feature_paper_map_[std::string("coordNum colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("selfCoordNum colvar component")] = 0;
-  feature_paper_map_[std::string("selfCoordNum colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("groupCoord colvar component (derived from distance)")] = 0;
-  feature_paper_map_[std::string("groupCoord colvar component (derived from distance)")] = "Fiorin2013";
-
-  feature_count_[std::string("hBond colvar component")] = 0;
-  feature_paper_map_[std::string("hBond colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("rmsd colvar component")] = 0;
-  feature_paper_map_[std::string("rmsd colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("eigenvector colvar component")] = 0;
-  feature_paper_map_[std::string("eigenvector colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("gyration colvar component")] = 0;
-  feature_paper_map_[std::string("gyration colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("inertia colvar component (derived from gyration)")] = 0;
-  feature_paper_map_[std::string("inertia colvar component (derived from gyration)")] = "Fiorin2013";
-
-  feature_count_[std::string("inertiaZ colvar component (derived from inertia)")] = 0;
-  feature_paper_map_[std::string("inertiaZ colvar component (derived from inertia)")] = "Fiorin2013";
-
-  feature_count_[std::string("orientation colvar component")] = 0;
-  feature_paper_map_[std::string("orientation colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("Moving frame of reference")] = 0;
-  feature_paper_map_[std::string("Moving frame of reference")] = "Fiorin2013";
-
-  feature_count_[std::string("Optimal rotation via flexible fitting")] = 0;
-  feature_paper_map_[std::string("Optimal rotation via flexible fitting")] = "Fiorin2013";
-
-  feature_count_[std::string("orientationAngle colvar component (derived from orientation)")] = 0;
-  feature_paper_map_[std::string("orientationAngle colvar component (derived from orientation)")] = "Fiorin2013";
-
-  feature_count_[std::string("orientationProj colvar component (derived from orientation)")] = 0;
-  feature_paper_map_[std::string("orientationProj colvar component (derived from orientation)")] = "Fiorin2013";
-
-  feature_count_[std::string("spinAngle colvar component (derived from orientation)")] = 0;
-  feature_paper_map_[std::string("spinAngle colvar component (derived from orientation)")] = "Fiorin2013";
-
-  feature_count_[std::string("tilt colvar component (derived from orientation)")] = 0;
-  feature_paper_map_[std::string("tilt colvar component (derived from orientation)")] = "Fiorin2013";
-
-  feature_count_[std::string("alpha colvar component")] = 0;
-  feature_paper_map_[std::string("alpha colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("dihedralPC colvar component")] = 0;
-  feature_paper_map_[std::string("dihedralPC colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("cartesian colvar component")] = 0;
-  feature_paper_map_[std::string("cartesian colvar component")] = "Fiorin2013";
-
-  feature_count_[std::string("Linear and polynomial combination of colvar components")] = 0;
-  feature_paper_map_[std::string("Linear and polynomial combination of colvar components")] = "Fiorin2013";
-
-  feature_count_[std::string("Metadynamics colvar bias implementation")] = 0;
-  feature_paper_map_[std::string("Metadynamics colvar bias implementation")] = "Fiorin2013";
-
-  feature_count_[std::string("Multiple-walker metadynamics colvar bias implementation")] = 0;
-  feature_paper_map_[std::string("Multiple-walker metadynamics colvar bias implementation")] = "Fiorin2013";
-
-  feature_count_[std::string("Harmonic colvar bias implementation")] = 0;
-  feature_paper_map_[std::string("Harmonic colvar bias implementation")] = "Fiorin2013";
-
-  feature_count_[std::string("harmonicWalls colvar bias implementation")] = 0;
-  feature_paper_map_[std::string("harmonicWalls colvar bias implementation")] = "Fiorin2013";
-
-  feature_count_[std::string("Linear colvar bias implementation")] = 0;
-  feature_paper_map_[std::string("Linear colvar bias implementation")] = "Fiorin2013";
-
-  feature_count_[std::string("Histogram colvar bias implementation")] = 0;
-  feature_paper_map_[std::string("Histogram colvar bias implementation")] = "Fiorin2013";
-
-  feature_count_[std::string("mapTotal colvar component")] = 0;
-  feature_paper_map_[std::string("mapTotal colvar component")] = "Fiorin2020";
-
-  feature_count_[std::string("Volumetric map-based collective variables")] = 0;
-  feature_paper_map_[std::string("Volumetric map-based collective variables")] = "Fiorin2020";
-
-  feature_count_[std::string("Multi-Map collective variables")] = 0;
-  feature_paper_map_[std::string("Multi-Map collective variables")] = "Fiorin2020";
-
-  feature_count_[std::string("Umbrella-integration eABF estimator")] = 0;
-  feature_paper_map_[std::string("Umbrella-integration eABF estimator")] = "Fu2016";
 
   feature_count_[std::string("polarTheta colvar component")] = 0;
   feature_paper_map_[std::string("polarTheta colvar component")] = "Fu2017";
 
-  feature_count_[std::string("polarPhi colvar component")] = 0;
-  feature_paper_map_[std::string("polarPhi colvar component")] = "Fu2017";
+  feature_count_[std::string("orientationAngle colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("orientationAngle colvar component (derived from orientation)")] = "Fiorin2013";
+
+  feature_count_[std::string("ALB colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("ALB colvar bias implementation")] = "White2014";
+
+  feature_count_[std::string("Colvars Dashboard (Colvars-VMD graphical user interface)")] = 0;
+  feature_paper_map_[std::string("Colvars Dashboard (Colvars-VMD graphical user interface)")] = "n/a";
+
+  feature_count_[std::string("aspathCV colvar component")] = 0;
+  feature_paper_map_[std::string("aspathCV colvar component")] = "n/a";
+
+  feature_count_[std::string("distance colvar component")] = 0;
+  feature_paper_map_[std::string("distance colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("linearCombination colvar component")] = 0;
+  feature_paper_map_[std::string("linearCombination colvar component")] = "n/a";
+
+  feature_count_[std::string("inertia colvar component (derived from gyration)")] = 0;
+  feature_paper_map_[std::string("inertia colvar component (derived from gyration)")] = "Fiorin2013";
+
+  feature_count_[std::string("Colvars-NAMD interface")] = 0;
+  feature_paper_map_[std::string("Colvars-NAMD interface")] = "Fiorin2013";
+
+  feature_count_[std::string("Scripted functions (Tcl)")] = 0;
+  feature_paper_map_[std::string("Scripted functions (Tcl)")] = "n/a";
+
+  feature_count_[std::string("inertiaZ colvar component (derived from inertia)")] = 0;
+  feature_paper_map_[std::string("inertiaZ colvar component (derived from inertia)")] = "Fiorin2013";
+
+  feature_count_[std::string("Optimal rotation via flexible fitting")] = 0;
+  feature_paper_map_[std::string("Optimal rotation via flexible fitting")] = "Fiorin2013";
+
+  feature_count_[std::string("gspathCV colvar component")] = 0;
+  feature_paper_map_[std::string("gspathCV colvar component")] = "n/a";
 
   feature_count_[std::string("eulerPhi colvar component (derived from orientation)")] = 0;
   feature_paper_map_[std::string("eulerPhi colvar component (derived from orientation)")] = "Fu2017";
 
-  feature_count_[std::string("eulerTheta colvar component (derived from orientation)")] = 0;
-  feature_paper_map_[std::string("eulerTheta colvar component (derived from orientation)")] = "Fu2017";
+  feature_count_[std::string("Moving frame of reference")] = 0;
+  feature_paper_map_[std::string("Moving frame of reference")] = "Fiorin2013";
 
-  feature_count_[std::string("eulerPsi colvar component (derived from orientation)")] = 0;
-  feature_paper_map_[std::string("eulerPsi colvar component (derived from orientation)")] = "Fu2017";
-
-  feature_count_[std::string("dipoleAngle colvar component")] = 0;
-  feature_paper_map_[std::string("dipoleAngle colvar component")] = "Garate2019";
-
-  feature_count_[std::string("dipoleMagnitude colvar component")] = 0;
-  feature_paper_map_[std::string("dipoleMagnitude colvar component")] = "Garate2019";
-
-  feature_count_[std::string("ABF colvar bias implementation")] = 0;
-  feature_paper_map_[std::string("ABF colvar bias implementation")] = "Henin2010";
-
-  feature_count_[std::string("Internal-forces free energy estimator")] = 0;
-  feature_paper_map_[std::string("Internal-forces free energy estimator")] = "Henin2010";
-
-  feature_count_[std::string("VMD engine")] = 0;
-  feature_paper_map_[std::string("VMD engine")] = "Humphrey1996";
-
-  feature_count_[std::string("eABF implementation")] = 0;
-  feature_paper_map_[std::string("eABF implementation")] = "Lesage2017";
-
-  feature_count_[std::string("CZAR eABF estimator")] = 0;
-  feature_paper_map_[std::string("CZAR eABF estimator")] = "Lesage2017";
+  feature_count_[std::string("Linear and polynomial combination of colvar components")] = 0;
+  feature_paper_map_[std::string("Linear and polynomial combination of colvar components")] = "Fiorin2013";
 
   feature_count_[std::string("Poisson integration of 2D/3D free energy surfaces")] = 0;
   feature_paper_map_[std::string("Poisson integration of 2D/3D free energy surfaces")] = "Henin2021";
 
-  feature_count_[std::string("Ensemble-biased metadynamics (ebMetaD)")] = 0;
-  feature_paper_map_[std::string("Ensemble-biased metadynamics (ebMetaD)")] = "Marinelli2015";
+  feature_count_[std::string("alpha colvar component")] = 0;
+  feature_paper_map_[std::string("alpha colvar component")] = "Fiorin2013";
 
-  feature_count_[std::string("NAMD engine")] = 0;
-  feature_paper_map_[std::string("NAMD engine")] = "Phillips2020";
+  feature_count_[std::string("orientation colvar component")] = 0;
+  feature_paper_map_[std::string("orientation colvar component")] = "Fiorin2013";
 
-  feature_count_[std::string("Scalable center-of-mass computation (NAMD)")] = 0;
-  feature_paper_map_[std::string("Scalable center-of-mass computation (NAMD)")] = "Phillips2020";
+  feature_count_[std::string("distanceDir colvar component (derived from distance)")] = 0;
+  feature_paper_map_[std::string("distanceDir colvar component (derived from distance)")] = "Fiorin2013";
 
-  feature_count_[std::string("LAMMPS engine")] = 0;
-  feature_paper_map_[std::string("LAMMPS engine")] = "Plimpton1995";
+  feature_count_[std::string("coordNum colvar component")] = 0;
+  feature_paper_map_[std::string("coordNum colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("dipoleMagnitude colvar component")] = 0;
+  feature_paper_map_[std::string("dipoleMagnitude colvar component")] = "Garate2019";
+
+  feature_count_[std::string("distanceZ colvar component")] = 0;
+  feature_paper_map_[std::string("distanceZ colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("gzpathCV colvar component")] = 0;
+  feature_paper_map_[std::string("gzpathCV colvar component")] = "n/a";
+
+  feature_count_[std::string("Custom functions (Lepton)")] = 0;
+  feature_paper_map_[std::string("Custom functions (Lepton)")] = "n/a";
+
+  feature_count_[std::string("distanceVec colvar component (derived from distance)")] = 0;
+  feature_paper_map_[std::string("distanceVec colvar component (derived from distance)")] = "Fiorin2013";
+
+  feature_count_[std::string("distanceXY colvar component (derived from distanceZ)")] = 0;
+  feature_paper_map_[std::string("distanceXY colvar component (derived from distanceZ)")] = "Fiorin2013";
+
+  feature_count_[std::string("polarPhi colvar component")] = 0;
+  feature_paper_map_[std::string("polarPhi colvar component")] = "Fu2017";
+
+  feature_count_[std::string("rmsd colvar component")] = 0;
+  feature_paper_map_[std::string("rmsd colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("Umbrella-integration eABF estimator")] = 0;
+  feature_paper_map_[std::string("Umbrella-integration eABF estimator")] = "Fu2016";
+
+  feature_count_[std::string("reweightaMD colvar bias implementation (NAMD)")] = 0;
+  feature_paper_map_[std::string("reweightaMD colvar bias implementation (NAMD)")] = "Chen2021";
+
+  feature_count_[std::string("Volumetric map-based collective variables")] = 0;
+  feature_paper_map_[std::string("Volumetric map-based collective variables")] = "Fiorin2020";
+
+  feature_count_[std::string("eigenvector colvar component")] = 0;
+  feature_paper_map_[std::string("eigenvector colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("orientationProj colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("orientationProj colvar component (derived from orientation)")] = "Fiorin2013";
+
+  feature_count_[std::string("angle colvar component")] = 0;
+  feature_paper_map_[std::string("angle colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("Metadynamics colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("Metadynamics colvar bias implementation")] = "Fiorin2013";
+
+  feature_count_[std::string("dihedralPC colvar component")] = 0;
+  feature_paper_map_[std::string("dihedralPC colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("Multiple-walker ABF implementation")] = 0;
+  feature_paper_map_[std::string("Multiple-walker ABF implementation")] = "Comer2014c";
+
+  feature_count_[std::string("selfCoordNum colvar component")] = 0;
+  feature_paper_map_[std::string("selfCoordNum colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("tilt colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("tilt colvar component (derived from orientation)")] = "Fiorin2013";
 
   feature_count_[std::string("distancePairs colvar component")] = 0;
   feature_paper_map_[std::string("distancePairs colvar component")] = "Shen2015";
@@ -512,44 +446,110 @@
   feature_count_[std::string("histogramRestraint colvar bias implementation")] = 0;
   feature_paper_map_[std::string("histogramRestraint colvar bias implementation")] = "Shen2015";
 
+  feature_count_[std::string("dipoleAngle colvar component")] = 0;
+  feature_paper_map_[std::string("dipoleAngle colvar component")] = "Garate2019";
+
   feature_count_[std::string("GridForces volumetric map implementation for NAMD")] = 0;
   feature_paper_map_[std::string("GridForces volumetric map implementation for NAMD")] = "Wells2007";
 
-  feature_count_[std::string("ALB colvar bias implementation")] = 0;
-  feature_paper_map_[std::string("ALB colvar bias implementation")] = "White2014";
+  feature_count_[std::string("LAMMPS engine")] = 0;
+  feature_paper_map_[std::string("LAMMPS engine")] = "Plimpton1995";
 
-  feature_count_[std::string("Colvars-GROMACS interface")] = 0;
-  feature_paper_map_[std::string("Colvars-GROMACS interface")] = "n/a";
+  feature_count_[std::string("Internal-forces free energy estimator")] = 0;
+  feature_paper_map_[std::string("Internal-forces free energy estimator")] = "Henin2010";
 
-  feature_count_[std::string("Colvars Dashboard (Colvars-VMD graphical user interface)")] = 0;
-  feature_paper_map_[std::string("Colvars Dashboard (Colvars-VMD graphical user interface)")] = "n/a";
+  feature_count_[std::string("NAMD engine")] = 0;
+  feature_paper_map_[std::string("NAMD engine")] = "Phillips2020";
 
-  feature_count_[std::string("gspath colvar component")] = 0;
-  feature_paper_map_[std::string("gspath colvar component")] = "n/a";
+  feature_count_[std::string("groupCoord colvar component (derived from distance)")] = 0;
+  feature_paper_map_[std::string("groupCoord colvar component (derived from distance)")] = "Fiorin2013";
 
-  feature_count_[std::string("gzpath colvar component")] = 0;
-  feature_paper_map_[std::string("gzpath colvar component")] = "n/a";
-
-  feature_count_[std::string("linearCombination colvar component")] = 0;
-  feature_paper_map_[std::string("linearCombination colvar component")] = "n/a";
-
-  feature_count_[std::string("gspathCV colvar component")] = 0;
-  feature_paper_map_[std::string("gspathCV colvar component")] = "n/a";
-
-  feature_count_[std::string("gzpathCV colvar component")] = 0;
-  feature_paper_map_[std::string("gzpathCV colvar component")] = "n/a";
-
-  feature_count_[std::string("aspathCV colvar component")] = 0;
-  feature_paper_map_[std::string("aspathCV colvar component")] = "n/a";
+  feature_count_[std::string("eulerTheta colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("eulerTheta colvar component (derived from orientation)")] = "Fu2017";
 
   feature_count_[std::string("azpathCV colvar component")] = 0;
   feature_paper_map_[std::string("azpathCV colvar component")] = "n/a";
 
+  feature_count_[std::string("Multiple-walker metadynamics colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("Multiple-walker metadynamics colvar bias implementation")] = "Fiorin2013";
+
+  feature_count_[std::string("GROMACS engine")] = 0;
+  feature_paper_map_[std::string("GROMACS engine")] = "Abraham2015";
+
+  feature_count_[std::string("Ensemble-biased metadynamics (ebMetaD)")] = 0;
+  feature_paper_map_[std::string("Ensemble-biased metadynamics (ebMetaD)")] = "Marinelli2015";
+
+  feature_count_[std::string("Scalable center-of-mass computation (NAMD)")] = 0;
+  feature_paper_map_[std::string("Scalable center-of-mass computation (NAMD)")] = "Phillips2020";
+
+  feature_count_[std::string("Colvars module")] = 0;
+  feature_paper_map_[std::string("Colvars module")] = "Fiorin2013";
+
+  feature_count_[std::string("harmonicWalls colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("harmonicWalls colvar bias implementation")] = "Fiorin2013";
+
+  feature_count_[std::string("gzpath colvar component")] = 0;
+  feature_paper_map_[std::string("gzpath colvar component")] = "n/a";
+
+  feature_count_[std::string("VMD engine")] = 0;
+  feature_paper_map_[std::string("VMD engine")] = "Humphrey1996";
+
+  feature_count_[std::string("gyration colvar component")] = 0;
+  feature_paper_map_[std::string("gyration colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("hBond colvar component")] = 0;
+  feature_paper_map_[std::string("hBond colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("ABF colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("ABF colvar bias implementation")] = "Henin2010";
+
+  feature_count_[std::string("dihedral colvar component")] = 0;
+  feature_paper_map_[std::string("dihedral colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("Histogram colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("Histogram colvar bias implementation")] = "Fiorin2013";
+
+  feature_count_[std::string("spinAngle colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("spinAngle colvar component (derived from orientation)")] = "Fiorin2013";
+
+  feature_count_[std::string("neuralNetwork colvar component")] = 0;
+  feature_paper_map_[std::string("neuralNetwork colvar component")] = "Chen2022";
+
+  feature_count_[std::string("gspath colvar component")] = 0;
+  feature_paper_map_[std::string("gspath colvar component")] = "n/a";
+
+  feature_count_[std::string("Colvars-VMD interface (command line)")] = 0;
+  feature_paper_map_[std::string("Colvars-VMD interface (command line)")] = "Fiorin2013";
+
+  feature_count_[std::string("cartesian colvar component")] = 0;
+  feature_paper_map_[std::string("cartesian colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("mapTotal colvar component")] = 0;
+  feature_paper_map_[std::string("mapTotal colvar component")] = "Fiorin2020";
+
+  feature_count_[std::string("Harmonic colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("Harmonic colvar bias implementation")] = "Fiorin2013";
+
+  feature_count_[std::string("Linear colvar bias implementation")] = 0;
+  feature_paper_map_[std::string("Linear colvar bias implementation")] = "Fiorin2013";
+
   feature_count_[std::string("coordNum pairlist")] = 0;
   feature_paper_map_[std::string("coordNum pairlist")] = "n/a";
 
-  feature_count_[std::string("Custom functions (Lepton)")] = 0;
-  feature_paper_map_[std::string("Custom functions (Lepton)")] = "n/a";
+  feature_count_[std::string("Multi-Map collective variables")] = 0;
+  feature_paper_map_[std::string("Multi-Map collective variables")] = "Fiorin2020";
 
-  feature_count_[std::string("Scripted functions (Tcl)")] = 0;
-  feature_paper_map_[std::string("Scripted functions (Tcl)")] = "n/a";
+  feature_count_[std::string("Colvars-GROMACS interface")] = 0;
+  feature_paper_map_[std::string("Colvars-GROMACS interface")] = "n/a";
+
+  feature_count_[std::string("distanceInv colvar component")] = 0;
+  feature_paper_map_[std::string("distanceInv colvar component")] = "Fiorin2013";
+
+  feature_count_[std::string("eABF implementation")] = 0;
+  feature_paper_map_[std::string("eABF implementation")] = "Lesage2017";
+
+  feature_count_[std::string("eulerPsi colvar component (derived from orientation)")] = 0;
+  feature_paper_map_[std::string("eulerPsi colvar component (derived from orientation)")] = "Fu2017";
+
+  feature_count_[std::string("CZAR eABF estimator")] = 0;
+  feature_paper_map_[std::string("CZAR eABF estimator")] = "Lesage2017";
