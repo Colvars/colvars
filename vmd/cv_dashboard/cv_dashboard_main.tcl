@@ -46,6 +46,8 @@ proc ::cv_dashboard::createWindow {} {
   $w.cvtable heading val -text "value"
 
   bind $w.cvtable <Button-1> {::cv_dashboard::tableClicked cvtable %x %y}
+  # Right-click is Button 2 on MacOS
+  bind $w.cvtable <Button-2> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   bind $w.cvtable <Control-Button-1> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   
@@ -223,6 +225,8 @@ proc ::cv_dashboard::createBiasesTab {} {
   $biases.bias_table heading colvars -text "colvars"
 
   bind $biases.bias_table <Button-1> {::cv_dashboard::tableClicked tabs.biases.bias_table %x %y}
+  # Right-click is Button 2 on MacOS
+  bind $biases.bias_table <Button-2> {::cv_dashboard::biasContextMenu %x %y %X %Y}
   bind $biases.bias_table <Button-3> {::cv_dashboard::biasContextMenu %x %y %X %Y}
   bind $biases.bias_table <Control-Button-1> {::cv_dashboard::biasContextMenu %x %y %X %Y}
 
