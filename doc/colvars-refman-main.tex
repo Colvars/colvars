@@ -162,7 +162,7 @@ The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded througho
 colvar \{\\
 \-~~\# difference of two distances\\
 \-~~name d \\
-\-~~width 0.2  \# 0.2 \AA{} of estimated fluctuation width \\
+\-~~width 0.2  \# estimated fluctuation width \\
 \-~~distance \{\\
 \-~~~~componentCoeff  1.0\\
 \-~~~~group1 \{ atomNumbers 1 2 \}\\
@@ -440,7 +440,9 @@ The ``internal units'' of the Colvars module are the units in which values are e
 Generally \textbf{the Colvars module uses internally the same units as its back-end MD engine, with the exception of VMD}, where different unit sets are supported to allow for easy setup, visualization and analysis of Colvars simulations performed with any simulation engine.
 
 Note that \textbf{angles} are expressed in degrees, and derived quantites such as force constants are based on degrees as well.
-Atomic coordinates read from \textbf{XYZ files} (and PDB files where applicable) are expected to be expressed in \AA{}ngstr\"om, no matter what unit system is in use by the back-end (\MDENGINE) or the Colvars Module.
+Some colvar components have default values, expressed in \AA{}ngstr\"om in this documentation. They are converted to the current length unit as needed.
+Atomic coordinates read from \textbf{XYZ files} (and PDB files where applicable) are expected to be expressed in \AA{}ngstr\"om, no matter what unit system is in use by the back-end (\MDENGINE) or the Colvars Module. They are converted internally to the current length unit as needed.
+Note that force constants in \texttt{harmonic} and \texttt{harmonicWalls} biases (\ref{sec:colvarbias_harmonic}) are rescaled according to the \refkey{width}{colvar|width} parameter of colvars, so that they are formally in energy units, although if \refkey{width}{colvar|width} is given its default value of 1.0, force constants are effectively expressed in \energyunit/\textit{(colvar unit)}$^2$.
 
 To avoid errors due to reading configuration files written in a different unit system, it can be specified within the input:
 
@@ -1380,7 +1382,7 @@ The \texttt{distance \{...\}} block defines a distance component between the two
 
 \end{cvcoptions}
 
-The value returned is a positive number (in \AA), ranging from $0$
+The value returned is a positive number (in \lengthunit), ranging from $0$
 to the largest possible interatomic distance within the chosen
 boundary conditions (with PBCs, the minimum image convention is used
 unless the \texttt{forceNoPBC} option is set).
@@ -1437,10 +1439,10 @@ One of the groups can be set to a dummy atom to allow the use of an absolute Car
   \keydef
     {axis}{%
     \texttt{distanceZ}}{%
-    Projection axis (\AA{})}{%
+    Projection axis}{%
     \texttt{(x, y, z)} triplet}{%
     \texttt{(0.0, 0.0, 1.0)}}{%
-    The three components of this vector define a
+    This vector will be normalized to define a
     projection axis $\bm{e}$ for the distance vector $\bm{r} -
     \bm{r}_1$ joining the centers of groups \texttt{ref} and
     \texttt{main}. The value of the component is then $\bm{e} \cdot
@@ -1453,7 +1455,7 @@ One of the groups can be set to a dummy atom to allow the use of an absolute Car
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceZ}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
-This component returns a number (in \AA{}) whose range is determined
+This component returns a number (in \lengthunit) whose range is determined
 by the chosen boundary conditions.  For instance, if the $z$ axis is
 used in a simulation with periodic boundaries, the returned value ranges
 between $-b_{z}/2$ and $b_{z}/2$, where $b_{z}$ is the box length
@@ -1559,7 +1561,7 @@ where $d_{ij}$ is the distance between atoms $i$ and $j$ in groups 1 and 2 respe
     positive even integer}{%
     6}{Defines the exponent to which the individual distances are elevated before averaging.  The default value of 6 is useful for example to applying restraints based on NOE-measured distances.}
 \end{cvcoptions}
-This component returns a number in \AA{}, ranging from $0$ to the largest possible distance within the chosen boundary conditions.
+This component returns a number ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
 
 \cvsubsec{Angles}{sec:cvc_angles}
@@ -1728,9 +1730,9 @@ function is summed over all pairs of atoms in \texttt{group1} and
   \keydef
     {cutoff}{%
     \texttt{coordNum}}{%
-    ``Interaction'' distance (\AA)}{%
+    ``Interaction'' distance (\lengthunit)}{%
     positive decimal}{%
-    4.0}{%
+    4.0~\AA{}}{%
     This number defines the switching distance to define an
     interatomic contact: for $d \ll d_0$, the switching function
     $(1-(d/d_0)^{n})/(1-(d/d_0)^{m})$ is close to 1, at $d = d_0$ it
@@ -1743,9 +1745,9 @@ function is summed over all pairs of atoms in \texttt{group1} and
   \keydef
     {cutoff3}{%
     \texttt{coordNum}}{%
-    Reference distance vector (\AA)}{%
+    Reference distance vector (\lengthunit)}{%
     ``\texttt{(x, y, z)}'' triplet of positive decimals}{%
-    \texttt{(4.0, 4.0, 4.0)}}{%
+    \texttt{(4.0, 4.0, 4.0)~\AA}}{%
     The three components of this vector define three different cutoffs
     $d_{0}$ for each direction.  This option is mutually exclusive with
     \texttt{cutoff}.}
@@ -2018,7 +2020,7 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     is disabled altogether.
   }
 \end{cvcoptions}
-This component returns a positive real number (in \AA).
+This component returns a positive real number (in \lengthunit).
 
 
 \cvsubsubsec{Advanced usage of the \texttt{rmsd} component.}{sec:cvc_rmsd_advanced}
@@ -2149,7 +2151,7 @@ This allows to conveniently define a colvar $\xi$ as a projection on the linear 
 For convenience, the vector is also normalized so that $\xi = 0$ when the atoms are at the set of positions ``A'' and $\xi = 1$ at the set of positions ``B''.
 }
 \end{cvcoptions}
-This component returns a number (in \AA), whose value ranges between
+This component returns a number (in \lengthunit), whose value ranges between
 the smallest and largest absolute positions in the unit cell during
 the simulations (see also \texttt{distanceZ}).  Due to the
 normalization in eq.~\ref{eq:cvc_eigenvector}, this range does not
@@ -2172,7 +2174,7 @@ $\mathbf{x}_{\mathrm{cog}}(t)$:
 \end{equation}
 This component must contain one \texttt{atoms~\{...\}} block to
 define the atom group, and returns a positive number, expressed in
-\AA{}.
+\lengthunit.
 
 \begin{cvcoptions}
 \item %
@@ -2196,7 +2198,7 @@ $\mathbf{x}_{\mathrm{cog}}(t)$:
 \emph{Note that all atomic masses are set to 1 for simplicity.}
 This component must contain one \texttt{atoms~\{...\}} block to
 define the atom group, and returns a positive number, expressed in
-\AA{}$^{2}$.
+\lengthunit$^{2}$.
 
 \begin{cvcoptions}
 \item %
@@ -2207,7 +2209,7 @@ define the atom group, and returns a positive number, expressed in
 \cvsubsubsec{\texttt{dipoleMagnitude}: dipole magnitude of a group of atoms.}{sec:cvc_dipoleMagnitude}
 \labelkey{colvar|dipoleMagnitude}
 The \texttt{dipoleMagnitude~\{...\}} block defines the dipole magnitude of a group of atoms (norm of the dipole moment's vector), being \texttt{atoms} the group where dipole magnitude is calculated.
-It returns the magnitude in elementary charge $e$ times \cvnamdonly{\AA}\cvvmdonly{\AA}\cvlammpsonly{(length unit)}.
+It returns the magnitude in elementary charge $e$ times \lengthunit.
 
 \begin{cvcoptions}
 \item %
@@ -2231,7 +2233,7 @@ $\mathbf{x}_{\mathrm{cog}}(t)$:
 \emph{Note that all atomic masses are set to 1 for simplicity.}
 This component must contain one \texttt{atoms~\{...\}} block to
 define the atom group, and returns a positive number, expressed in
-\AA{}$^{2}$.
+\lengthunit$^{2}$.
 
 
 \begin{cvcoptions}
@@ -2241,7 +2243,7 @@ define the atom group, and returns a positive number, expressed in
   \keydef
     {axis}{%
     \texttt{inertiaZ}}{%
-    Projection axis (\AA{})}{%
+    Projection axis}{%
     \texttt{(x, y, z)} triplet}{%
     \texttt{(0.0, 0.0, 1.0)}}{%
     The three components of this vector define (when normalized) the
@@ -2419,7 +2421,7 @@ The component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation
   \keydef
     {axis}{%
     \texttt{tilt}}{%
-    Special rotation axis (\AA{})}{%
+    Special rotation axis}{%
     \texttt{(x, y, z)} triplet}{%
     \texttt{(0.0, 0.0, 1.0)}}{%
     The three components of this vector define (when normalized) the special rotation axis used to calculate the \texttt{tilt} and \texttt{spinAngle} components.}
@@ -4105,7 +4107,7 @@ The parameters described below offer a way to specify these parameters only once
     \cvnamdonly{Due to design constraints, the total force reported by NAMD to Colvars was computed at the previous simulation step.}
     \cvlammpsonly{This force includes all of the forces computed by the force field, as well as any forces by fixes defined prior to \texttt{fix colvars}.}
     \textbf{Note:} not all components support this option.  The
-    physical unit for this force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}}, divided by the colvar unit U.}
+    physical unit for this force is \energyunit/\textit{(colvar unit)}.}
 
 \item %
   \labelkey{colvar|outputAppliedForce}
@@ -4123,7 +4125,7 @@ The parameters described below offer a way to specify these parameters only once
     For extended Lagrangian colvars, this force is actually applied to the
     extended degree of freedom rather than the geometric colvar itself.
     The physical unit for this
-    force is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
+    force is \energyunit/\textit{(colvar unit)}.}
 
 \end{itemize}
 
@@ -4577,7 +4579,7 @@ The complete list of selection keywords available in \MDENGINE{} is:
   \key
     {dummyAtom}{%
     atom group}{%
-    Dummy atom position (\AA{})}{%
+    Dummy atom position (\lengthunit)}{%
     \texttt{(x, y, z)} triplet}{%
     Instead of selecting any atom, this option makes the group a virtual particle at a fixed position in space.  This is useful e.g.~to replace a group's center of geometry with a user-defined position.}
 
@@ -4652,7 +4654,7 @@ Be careful when using these options in ABF simulations or when using total force
   \key%
     {refPositions}{%
     atom group}{%
-    Reference positions for fitting (\AA)}{%
+    Reference positions for fitting (\lengthunit)}{%
     space-separated list of \texttt{(x, y, z)} triplets}{%
     \label{key:colvars:atom_group:refPositions}
     This option provides a list of reference coordinates for \texttt{centerToReference} and/or \texttt{rotateToReference}, and is mutually exclusive with \texttt{refPositionsFile}.
@@ -5180,7 +5182,7 @@ The following specific parameters can be set in the ABF configuration block:
    in the PMF such as hard walls, where the discretization of the average force becomes
    very inaccurate, causing the colvar's diffusion to get ``stuck'' at the singularity.
    To enable this cap, provide one non-negative value for each colvar. The unit of force
-   is \cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{the unit of energy specified by \texttt{units}} divided by the colvar unit.}
+   is \energyunit/\textit{(colvar unit)}.}
 
 \item \keydef{hideJacobian}{\texttt{abf}}{%
     Remove geometric entropy term from calculated
@@ -5353,7 +5355,7 @@ They are described below, with their default value in square brackets:
 \item \texttt{-n}: number of M-C steps to be performed; by default, a minimal number of
 steps is chosen based on the size of the grid, and the integration runs until a convergence
 criterion is satisfied (based on the RMSD between the target gradient and the real PMF gradient)
-\item \texttt{-t}: temperature for M-C sampling (unrelated to the simulation temperature)
+\item \texttt{-t}: temperature for M-C sampling; expects kcal/mol as energy unit (unrelated to the simulation temperature)
   [500~K]
 \item \texttt{-s}: scaling factor for the gradients; when using a histogram of total forces obtained from \refkey{outputTotalForce}{colvar|outputTotalForce} or the \texttt{.force} file written by \refkey{writeTISamples}{colvarbias|writeTISamples}, a scaling factor of -1 should be used [1.0]
 \item \texttt{-m}: use metadynamics-like biased sampling? (0 = false) [1]
@@ -5634,7 +5636,7 @@ In general, it is a good idea to \emph{define a repulsive potential to avoid hil
 \-\}
 \end{cvexampleinput}
 
-In the colvar \texttt{r}, the \texttt{distance} function used has a \texttt{lowerBoundary} automatically set to 0~\AA{} by default, thus the keyword \texttt{lowerBoundary} itself is not mandatory and \texttt{hardLowerBoundary} is set to \texttt{yes} internally.
+In the colvar \texttt{r}, the \texttt{distance} function used has a \texttt{lowerBoundary} automatically set to 0 by default, thus the keyword \texttt{lowerBoundary} itself is not mandatory and \texttt{hardLowerBoundary} is set to \texttt{yes} internally.
 However, \texttt{upperBoundary} does not have such a ``natural'' choice of value.
 The metadynamics potential \texttt{meta\_r} will individually process any hill whose center is too close to the \texttt{upperBoundary}, more precisely within fewer grid points than 6 times the Gaussian $\sigma$ parameter plus one.
 It goes without saying that if the colvar \texttt{r} represents a distance between two freely-moving molecules, it will cross this ``threshold'' rather frequently.
@@ -5678,7 +5680,7 @@ Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, the variables i
   \key
     {hillWeight}{%
     \texttt{metadynamics}}{%
-    Height of each hill (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Height of each hill (\energyunit)}{%
     positive decimal}{%
     This option sets the height $W$ of the Gaussian hills that are added during this run.
     Lower values provide more accurate sampling of the system's degrees of freedom at the price of longer simulation times to complete a PMF calculation based on metadynamics.}
@@ -6120,7 +6122,7 @@ A harmonic restraint is defined by a \texttt{harmonic~\{...\}} block, which may 
   \keydef
     {forceConstant}{%
     \texttt{harmonic}}{%
-    Scaled force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Scaled force constant (\energyunit)}{%
     positive decimal}{%
     \texttt{1.0}}{%
     This option defines a \emph{scaled} force constant $k$ for the harmonic potential (eq.~\ref{eq:colvarbias_harmonic_multi}).
@@ -6492,7 +6494,7 @@ using \cite{Pitera2012}.
   \keydef
     {forceConstant}{%
     \texttt{linear}}{%
-    Scaled force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Scaled force constant (\energyunit)}{%
     positive decimal}{%
     \texttt{1.0}}{%
     This option defines a \emph{scaled} force constant for the linear bias.
@@ -6823,7 +6825,7 @@ The list of options is as follows:
   \keydef
     {forceConstant}{%
     \texttt{histogramRestraint}}{%
-    Force constant (\cvnamdonly{kcal/mol}\cvvmdonly{kcal/mol}\cvlammpsonly{unit of energy specified by \texttt{units}})}{%
+    Force constant (\energyunit)}{%
     positive decimal}{%
     \texttt{1.0}}{%
     Defines the parameter $k$ in eq.~\ref{eq:colvarbias_restraint_histogram}.
