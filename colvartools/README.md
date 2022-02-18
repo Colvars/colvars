@@ -10,6 +10,7 @@ This directory contains both standalone tools and Colvars scripts.
 | **plot_colvars_traj.py** | Select variables from a Colvars trajectory file and optionally plot them as a 1D graph as a function of time or of one of the variables.|
 | **quaternion2rmatrix.tcl** | As the name says.|
 | **test_scripted_gradients.tcl** | When implementing [colvars as scripted functions of components](http://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html#sec:colvar_scripted), use this to test numerically the correctness of the analytical gradient. |
+| **extract_weights_biases.py** | Script to read the weights and biases from a trained dense neural network model, and output them to plain text files suitable for the [NeuralNetwork CV](http://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html#sec:neuralnetwork). |
 ## Colvars scripts
 
 | File name | Summary |
