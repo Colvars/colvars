@@ -453,9 +453,9 @@ proc ::cv_dashboard::tableClicked { table x y } {
 proc ::cv_dashboard::shortcuts {} {
 
   help_window .cv_dashboard_window "Keyboard and mouse shortcuts" "Keyboard and mouse shortcuts" \
-"#Main window
-Home: \t\tMove to first frame
-End: \t\tMove to last frame
+"#Main window, Interactive plots
+Home: \t\Go to first frame
+End: \t\tGo to last frame
 Left: \t\tBack 1 frame
 Shift-Left: \t\tBack 10 frames
 Ctrl-Left: \t\tBack 50 frames
@@ -464,12 +464,20 @@ Shift-Right: \t\tForward 10 frames
 Ctrl-Right: \t\tForward 50 frames
 
 #Colvar / bias table
+F5: \t\tRecompute colvars and biases and update tables
 Ctrl-a: \t\tSelect all
 Double-click: \t\tEdit
 Ctrl-e: \t\tEdit selected
 Ctrl-n: \t\tNew colvar/bias
 Ctrl-Del: \t\tDelete selected
-Right-click/Ctrl-click: \t\tOpen context menu"
+Right-click/Ctrl-click: \t\tOpen context menu
+
+#VMD OpenGL Display
+Home: \t\tMove to first frame
+End: \t\tMove to last frame
+Left: \t\tBack 1 frame
+Right: \t\tForward 1 frame
+"
 }
 
 

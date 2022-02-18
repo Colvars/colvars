@@ -156,7 +156,7 @@ proc ::cv_dashboard::change_units {} {
   refresh_units
   if {$new != $::cv_dashboard::units} {
     if {[run_cv list] != {}} {
-      tk_messageBox -icon error -title "Colvars Dashboard Warning"\
+      tk_messageBox -icon warning -title "Colvars Dashboard Warning"\
         -message "Warning: Changing units while colvars are defined.
 Make sure the configuration of all variables is compatible with the new unit system. In particular, \
 check any parameters with the dimension of a length or a force constant."
