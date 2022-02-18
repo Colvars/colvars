@@ -491,7 +491,7 @@ proc ::cv_dashboard::about {} {
   help_window .cv_dashboard_window "About the Colvars Dashboard" "About the Colvars Dashboard" \
 "Colvars Dashboard, version [package require cv_dashboard]
 
-Based on the Colvars Module version [run_cv version]
+Graphical user interface for the Colvars Module, version [run_cv version] https://colvars.github.io/
 In [vmdinfo versionmsg]
 Running Tcl/Tk [info patchlevel]
 
