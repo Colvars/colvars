@@ -98,8 +98,7 @@ Please upgrade to VMD 1.9.4 alpha or later."
 
   if {[molinfo num] == 0 } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
-      -message "No molecule loaded. Please load a molecule before starting the Colvars Dashboard.\n"
-    return
+      -message "No molecule loaded. Please load a molecule and use the Reset button.\n"
   } else {
 
     set cv_mol -1
@@ -545,7 +544,7 @@ proc ::cv_dashboard::update_mol_list { name molid op } {
   # Did we just lose the molecule Colvars was connected to?
   if { ($molid == $::cv_dashboard::mol) && ($::vmd_initialize_structure($molid) == 0) } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
-      -message "The molecule associated to the Colvars Module was deleted.\nSave the configuration if necessary, load a molecule and use the Reset button.\n"
+      -message "The molecule associated to the Colvars Module was deleted.\nSave the configuration if necessary before loading a molecule.\n"
     # remove tracking of deleted molecule
     trace remove variable ::vmd_frame($molid) write ::cv_dashboard::update_frame
     set ::cv_dashboard::mol -1
@@ -555,6 +554,9 @@ proc ::cv_dashboard::update_mol_list { name molid op } {
   if { ($::cv_dashboard::mol == -1) && ($::vmd_initialize_structure($molid) == 1)} {
     set ::cv_dashboard::mol $molid
     $main.mol set $molid
+    catch {cv delete}
+    run_cv molid $molid
+    refresh_table
   }
 }
 

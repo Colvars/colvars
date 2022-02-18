@@ -1019,6 +1019,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
 
   set id 0
   set molid $::cv_dashboard::mol
+  if { $molid < 0 } { return }
   set f [molinfo $molid get frame]
   if { $f < 0 } { return }
 
