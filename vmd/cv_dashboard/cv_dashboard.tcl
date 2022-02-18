@@ -98,7 +98,8 @@ Please upgrade to VMD 1.9.4 alpha or later."
 
   if {[molinfo num] == 0 } {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
-      -message "No molecule loaded. Please load a molecule and use the Reset button.\n"
+      -message "No molecule loaded. Please load a molecule before starting the Colvars Dashboard.\n"
+    return
   } else {
 
     set cv_mol -1
