@@ -27,6 +27,9 @@ jobs:
 
   namd:
     name: NAMD
+    # Prevent running this job on PRs across different accounts, because
+    # secrets wouldn't be shared
+    if: ${{ github.repository_owner == github.event.pull_request.head.repo.owner.login }}
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: NAMD
@@ -42,6 +45,9 @@ jobs:
 
   vmd:
     name: VMD
+    # Prevent running this job on PRs across different accounts, because
+    # secrets wouldn't be shared
+    if: ${{ github.repository_owner == github.event.pull_request.head.repo.owner.login }}
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: VMD
