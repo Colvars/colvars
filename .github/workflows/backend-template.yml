@@ -78,6 +78,24 @@ jobs:
             ${{ runner.os }}-build-
             -build-
 
+      - name: Checkout ${{ inputs.backend_name }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ inputs.backend_repo }}
+          ref: ${{ inputs.backend_repo_ref }}
+          path: '${{ inputs.backend_name }}-source'
+          ssh-key: ${{ secrets.private_key }}
+
+      # Only used for VMD test case
+      - name: Checkout VMD plugins
+        if: ${{ inputs.backend_name == 'VMD' }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ inputs.vmd_plugins_repo }}
+          ref: master
+          path: 'vmd-plugins-source'
+          ssh-key: ${{ secrets.private_key_vmd_plugins }}
+
       - name: Get small downloadable packages
         uses: actions/checkout@v2
         with:
@@ -104,24 +122,6 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: sudo cp -f $(singularity exec CentOS7-devel.sif ./get_spiff) /usr/local/bin
-
-      - name: Checkout ${{ inputs.backend_name }}
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ inputs.backend_repo }}
-          ref: ${{ inputs.backend_repo_ref }}
-          path: '${{ inputs.backend_name }}-source'
-          ssh-key: ${{ secrets.private_key }}
-
-      # Only used for VMD test case
-      - name: Checkout VMD plugins
-        if: ${{ inputs.backend_name == 'VMD' }}
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ inputs.vmd_plugins_repo }}
-          ref: master
-          path: 'vmd-plugins-source'
-          ssh-key: ${{ secrets.private_key_vmd_plugins }}
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
