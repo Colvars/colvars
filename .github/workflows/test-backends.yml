@@ -16,7 +16,7 @@ jobs:
 
   lammps:
     name: LAMMPS
-    uses: Colvars/colvars/.github/workflows/backend-template.yml@master
+    uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: LAMMPS
       backend_repo: lammps/lammps
@@ -27,7 +27,7 @@ jobs:
 
   namd:
     name: NAMD
-    uses: Colvars/colvars/.github/workflows/backend-template.yml@master
+    uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: NAMD
       backend_repo: Colvars/namd
@@ -42,7 +42,7 @@ jobs:
 
   vmd:
     name: VMD
-    uses: Colvars/colvars/.github/workflows/backend-template.yml@master
+    uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: VMD
       backend_repo: Colvars/vmd
@@ -60,7 +60,7 @@ jobs:
 
   gromacs-2020:
     name: GROMACS 2020
-    uses: Colvars/colvars/.github/workflows/backend-template.yml@master
+    uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: GROMACS-2020
       backend_repo: gromacs/gromacs
@@ -73,7 +73,7 @@ jobs:
 
   gromacs-2021:
     name: GROMACS 2021
-    uses: Colvars/colvars/.github/workflows/backend-template.yml@master
+    uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: GROMACS-2021
       backend_repo: gromacs/gromacs
