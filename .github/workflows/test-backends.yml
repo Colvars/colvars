@@ -16,7 +16,7 @@ jobs:
 
   lammps:
     name: LAMMPS
-    if: ${{ github.event_name == 'pull_request' }} || contains(github.event.head_commit.message, 'test-lammps')
+    if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, 'test-lammps')
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: LAMMPS
@@ -30,7 +30,7 @@ jobs:
     name: NAMD
     # Prevent running this job on PRs across different accounts, because
     # secrets wouldn't be shared
-    if: ${{ github.repository_owner == github.event.pull_request.head.repo.owner.login }} && ${{ ${{ github.event_name == 'pull_request' }} || contains(github.event.head_commit.message, 'test-namd') }}
+    if: github.repository_owner == github.event.pull_request.head.repo.owner.login && ${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, 'test-namd') }}
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: NAMD
@@ -48,7 +48,7 @@ jobs:
     name: VMD
     # Prevent running this job on PRs across different accounts, because
     # secrets wouldn't be shared
-    if: ${{ github.repository_owner == github.event.pull_request.head.repo.owner.login }} && ${{ ${{ github.event_name == 'pull_request' }} || contains(github.event.head_commit.message, 'test-vmd') }}
+    if: github.repository_owner == github.event.pull_request.head.repo.owner.login && ${{ github.event_name == 'pull_request' || contains(github.event.head_commit.message, 'test-vmd') }}
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: VMD
@@ -67,7 +67,7 @@ jobs:
 
   gromacs-2020:
     name: GROMACS 2020
-    if: ${{ github.event_name == 'pull_request' }} || contains(github.event.head_commit.message, 'test-gromacs-2020')
+    if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, 'test-gromacs-2020')
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: GROMACS-2020
@@ -81,7 +81,7 @@ jobs:
 
   gromacs-2021:
     name: GROMACS 2021
-    if: ${{ github.event_name == 'pull_request' }} || contains(github.event.head_commit.message, 'test-gromacs-2021')
+    if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, 'test-gromacs-2021')
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: GROMACS-2021
