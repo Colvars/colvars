@@ -63,7 +63,7 @@ simple_scalar_dist_functions(alch_lambda)
 colvar::alch_Flambda::alch_Flambda(std::string const &conf)
   : cvc(conf)
 {
-  function_type = "alch_Flambda";
+  set_function_type("alch_Flambda");
 
   disable(f_cvc_explicit_gradient);
   disable(f_cvc_gradient);

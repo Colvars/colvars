@@ -10,7 +10,7 @@
 using namespace neuralnetworkCV;
 
 colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination(conf) {
-    function_type = "neuralNetwork";
+    set_function_type("neuralNetwork");
     // the output of neural network consists of multiple values
     // read "output_component" key to determine it
     get_keyval(conf, "output_component", m_output_index);
