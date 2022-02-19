@@ -31,7 +31,7 @@ protected:
     vector<scalar_type> weights;
     size_t num_elements;
     size_t total_frames;
-    vector< vector<element_type> > frame_element_distances;
+    vector<vector<element_type> > frame_element_distances;
     scalar_type s;
     scalar_type z;
     vector<element_type> dsdx;
