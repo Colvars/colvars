@@ -485,20 +485,29 @@ Right: \t\tForward 1 frame
 
 # Display help window with basic information
 proc ::cv_dashboard::about {} {
-  catch {set feature_report "\n\n#[cv featurereport]"}
+  set feature_report ""
+  catch {set feature_report "[cv featurereport]"}
+  # Delete first 2 lines
+  set l [split $feature_report "\n"]
+  set feature_report [join [lrange $l 2 end] "\n"]
+
   help_window .cv_dashboard_window "About the Colvars Dashboard" "About the Colvars Dashboard" \
 "Colvars Dashboard, version [package require cv_dashboard]
 
-Graphical user interface for the Colvars Module, version [run_cv version] https://colvars.github.io/
+Graphical user interface for the Colvars Module, version [run_cv version]
+https://colvars.github.io
+
 In [vmdinfo versionmsg]
 Running Tcl/Tk [info patchlevel]
 
 Jérôme Hénin (henin@ibpc.fr), Giacomo Fiorin (giacomo.fiorin@nih.gov) and the Colvars developers.
 
-Please cite: J. Hénin, L. J. S. Lopes, and G. Fiorin. Human learning for molecular simulations: the Collective Variables Dashboard in VMD.
-J. Chem. Theo. Comput. (2022)
-https://doi.org/10.1021/acs.jctc.1c01081
-http://arxiv.org/abs/2110.08758$feature_report
+#Please cite the following references for features currently in use:
+
+- Colvars Dashboard:
+ Henin2022 https://doi.org/10.1021/acs.jctc.1c01081
+
+$feature_report
 "
 }
 

@@ -187,7 +187,9 @@ proc ::cv_dashboard::apply_config { cfg } {
   # Extract config for individual colvars and biases
   lassign [extract_configs $cfg] cv_configs bias_configs global_config comments
 
-  append ::cv_dashboard::global_comments "\n${comments}"
+  if { $comments != "" } {
+    append ::cv_dashboard::global_comments "${comments}\n"
+  }
 
   set ::cv_dashboard::global_config [dict merge $::cv_dashboard::global_config $global_config]
 
@@ -445,7 +447,7 @@ proc ::cv_dashboard::get_bias_keyword_config { bias } {
 proc ::cv_dashboard::get_whole_config { } {
 
   set cfg $::cv_dashboard::global_comments
-  append cfg "\n"
+  if { $cfg != "" } {append cfg "\n"}
 
   dict for {key value} $::cv_dashboard::global_config {
     # Exclude index files, written separately below
@@ -461,7 +463,7 @@ proc ::cv_dashboard::get_whole_config { } {
     append cfg "indexFile $ndx\n"
   }
 
-  append cfg "\n"
+  if { $cfg != "" } {append cfg "\n"}
 
   foreach cv [run_cv list] {
     append cfg "colvar {[get_cv_config $cv]}\n\n"
@@ -605,6 +607,7 @@ proc ::cv_dashboard::help_window { parent wtitle title text } {
   wm title $h $wtitle
   tk::text $h.text -yscrollcommand [list $h.vsb set] -bg white
   ttk::scrollbar $h.vsb -orient vertical -command [list $h.text yview]
+  $h.text configure -cursor arrow
 
   $h.text insert insert ${title}\n\n title
   $h.text tag configure title -font "Helvetica 12 bold" -justify center
