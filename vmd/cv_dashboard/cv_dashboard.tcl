@@ -558,6 +558,7 @@ proc ::cv_dashboard::update_mol_list { name molid op } {
     $main.mol set $molid
     catch {cv delete}
     run_cv molid $molid
+    change_track_frame ;# activate tracking of new molecule if requested
     refresh_table
   }
 }
