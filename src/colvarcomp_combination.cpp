@@ -108,9 +108,7 @@ void colvar::linearCombination::calc_value() {
 void colvar::linearCombination::calc_gradients() {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         cv[i_cv]->calc_gradients();
-        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable_com)) {
+        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
             for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
                 for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
@@ -127,10 +125,7 @@ void colvar::linearCombination::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         // If this CV us explicit gradients, then atomic gradients is already calculated
         // We can apply the force to atom groups directly
-        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable_com)
-        ) {
+        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
                 (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
             }
@@ -263,10 +258,7 @@ void colvar::customColvar::calc_gradients() {
     size_t e = 0; // index of the gradient evaluator
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) { // for each CV
         cv[i_cv]->calc_gradients();
-        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable_com)
-        ) {
+        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             const colvarvalue& current_cv_value = cv[i_cv]->value();
             const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
             for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) { // for each element in this CV
@@ -300,10 +292,7 @@ void colvar::customColvar::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         // If this CV us explicit gradients, then atomic gradients is already calculated
         // We can apply the force to atom groups directly
-        if ( cv[i_cv]->is_enabled(f_cvc_explicit_gradient) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable) &&
-            !cv[i_cv]->is_enabled(f_cvc_scalable_com)
-        ) {
+        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
                 (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
             }
