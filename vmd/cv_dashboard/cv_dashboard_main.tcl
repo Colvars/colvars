@@ -1019,7 +1019,7 @@ proc ::cv_dashboard::show_gradients { list } {
       run_cv colvar $cv set collect_gradient 1
       if { [run_cv colvar $cv get collect_gradient] != 1 } {
         tk_messageBox -icon error -title "Colvars Dashboard Error"\
-          -message "Colvar $cv does not support explicit gradient computation.\n"
+          -message "Colvar $cv does not support explicit gradient computation.\nSee console for details."
         continue
       }
       run_cv colvar $cv update ;# required to get initial values of gradients
@@ -1058,7 +1058,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
       run_cv colvar $cv set collect_gradient 1
       if { [run_cv colvar $cv get collect_gradient] != 1 } {
         tk_messageBox -icon error -title "Colvars Dashboard Error"\
-          -message "Colvar $cv does not support explicit gradient computation.\n"
+          -message "Colvar $cv does not support explicit gradient computation.\nSee console for details."
         unset ::cv_dashboard::grad_objects($cv)
         continue
       }

@@ -612,6 +612,10 @@ proc ::cv_dashboard::help_window { parent wtitle title text } {
 
   $h.text insert insert ${title}\n\n title
   $h.text tag configure title -font "Helvetica 12 bold" -justify center
+  if { [encoding system] != "utf-8" } {
+    # Necessary to get special characters on Windows
+    set text [encoding convertfrom "utf-8" $text]
+  }
   $h.text insert insert $text
 
   add_tag $h.text {https?://\S+} URL
