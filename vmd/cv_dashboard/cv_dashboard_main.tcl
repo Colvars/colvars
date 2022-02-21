@@ -500,7 +500,7 @@ https://colvars.github.io
 In [vmdinfo versionmsg]
 Running Tcl/Tk [info patchlevel]
 
-Jérôme Hénin (henin@ibpc.fr), Giacomo Fiorin (giacomo.fiorin@nih.gov) and the Colvars developers.
+Jérôme Hénin (jerome.henin@ibpc.fr), Giacomo Fiorin (giacomo.fiorin@nih.gov) and the Colvars developers.
 
 #Please cite the following references for features currently in use:
 
@@ -870,7 +870,7 @@ proc ::cv_dashboard::show_atoms { colvars } {
         }
         lappend macros $group
         atomselect macro $group "($::cv_dashboard::sel_text) and (index $list)"
-        mol color ColorID $color
+        mol color ColorID [expr ($color % 32) + 1]
         mol representation VDW [$w.tabs.settings.atom_radius get] 12
         mol selection "$group"
         mol material [$w.tabs.settings.material get]
@@ -948,7 +948,7 @@ proc ::cv_dashboard::show_volmaps { colvars } {
       if { $volid >= 0 } {
         set threshold [expr $::cv_dashboard::volmap_contour * [vecsum \
           [voltool info minmax -mol $::cv_dashboard::mol -vol ${volid}]]]
-        mol color ColorID $color
+        mol color ColorID [expr ($color % 32) + 1]
         mol selection all  ;# Must provide some selection text
         mol representation Isosurface ${threshold} ${volid} 2 0 0 1
         mol material [$w.tabs.settings.material get]

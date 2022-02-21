@@ -699,7 +699,7 @@ proc ::cv_dashboard::sel2cvatoms { sel } {
 
   set ids [$sel get serial]
   set n [$sel num]
-  if { [expr [lindex $ids end] - [lindex $ids 0] == $n - 1] } {
+  if { ($n > 2) &&  [expr [lindex $ids end] - [lindex $ids 0] == $n - 1] } {
     return "atomNumbersRange [lindex $ids 0]-[lindex $ids end]"
   } else {
     return "atomNumbers [$sel get serial]"
