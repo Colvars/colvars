@@ -396,7 +396,9 @@ int colvar::init_custom_function(std::string const &conf)
             catch (...) { // Variable is absent from derivative
               // To keep the same workflow, we use a pointer to a double here
               // that will receive CVC values - even though none was allocated by Lepton
-              cvm::log("Warning: Variable " + vvn + " is absent from derivative of \"" + expr + "\" wrt " + vn + ".\n");
+              if (cvm::debug()) {
+                cvm::log("Warning: Variable " + vvn + " is absent from derivative of \"" + expr + "\" wrt " + vn + ".\n");
+              }
               ref = &dev_null;
             }
             grad_eval_var_refs.push_back(ref);
