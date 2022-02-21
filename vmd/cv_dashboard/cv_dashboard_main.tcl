@@ -50,7 +50,7 @@ proc ::cv_dashboard::createWindow {} {
   bind $w.cvtable <Button-2> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   bind $w.cvtable <Control-Button-1> {::cv_dashboard::cvContextMenu %x %y %X %Y}
-  
+
   bind $w.cvtable <Control-e> ::cv_dashboard::edit_cv
   bind $w.cvtable <Double-Button-1>  ::cv_dashboard::edit_cv
   bind $w.cvtable <Control-n> ::cv_dashboard::add_cv
@@ -1009,7 +1009,12 @@ proc ::cv_dashboard::show_gradients { list } {
 
   foreach cv $list {
     if { ![info exists ::cv_dashboard::grad_objects($cv)] } {
-      if { [run_cv colvar $cv set collect_gradient 1] == -1 } { continue }
+      run_cv colvar $cv set collect_gradient 1
+      if { [run_cv colvar $cv get collect_gradient] != 1 } {
+        tk_messageBox -icon error -title "Colvars Dashboard Error"\
+          -message "Colvar $cv does not support explicit gradient computation.\n"
+        continue
+      }
       run_cv colvar $cv update ;# required to get initial values of gradients
       # Associate empty list of objects to cv to request its update
       set ::cv_dashboard::grad_objects($cv) {}
@@ -1043,7 +1048,13 @@ proc ::cv_dashboard::update_shown_gradients {} {
     set atomids [run_cv colvar $cv getatomids]
     if { [llength $atomids] == 0 } {
       # Variable was reinitialized and lost its gradient feature
-      if { [run_cv colvar $cv set collect_gradient 1] == -1 } { continue }
+      run_cv colvar $cv set collect_gradient 1
+      if { [run_cv colvar $cv get collect_gradient] != 1 } {
+        tk_messageBox -icon error -title "Colvars Dashboard Error"\
+          -message "Colvar $cv does not support explicit gradient computation.\n"
+        unset ::cv_dashboard::grad_objects($cv)
+        continue
+      }
       run_cv colvar $cv update
       set atomids [run_cv colvar $cv getatomids]
       # If that didn't work then gradients are not supported
