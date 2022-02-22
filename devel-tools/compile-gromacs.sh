@@ -82,6 +82,10 @@ compile_gromacs_target() {
         ${CMAKE} --build "${GMX_BUILD_DIR}" --parallel $(nproc --all)
     ret_code=$?
 
+    # Now build the tests
+    ${CMAKE} --build "${GMX_BUILD_DIR}" --target tests --parallel $(nproc --all)
+    ret_code=$((${ret_code} || $?))
+
     if [ ${ret_code} = 0 ] ; then
         pushd "${GMX_BUILD_DIR}"
         ${CTEST} --output-on-failure
