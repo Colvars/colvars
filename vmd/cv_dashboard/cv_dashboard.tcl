@@ -240,6 +240,8 @@ proc ::cv_dashboard::apply_config { cfg } {
 
   refresh_table
   refresh_units
+  # Refresh map in case list of Colvars atoms has changed
+  catch { unset ::cv_dashboard::atom_id_map }
   return $res
 }
 

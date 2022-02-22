@@ -1015,19 +1015,46 @@ proc ::cv_dashboard::hide_all_volmaps {} {
 proc ::cv_dashboard::show_gradients { list } {
 
   foreach cv $list {
-    if { ![info exists ::cv_dashboard::grad_objects($cv)] } {
-      run_cv colvar $cv set collect_gradient 1
-      if { [run_cv colvar $cv get collect_gradient] != 1 } {
-        tk_messageBox -icon error -title "Colvars Dashboard Error"\
-          -message "Colvar $cv does not support explicit gradient computation.\nSee console for details."
-        continue
+    set n [llength [run_cv colvar $cv value]]
+    foreach i [selected_comps $cv] {
+      set cv_n_i [list $cv $n $i]
+      if { ![info exists ::cv_dashboard::grad_objects($cv_n_i)] } {
+        run_cv colvar $cv set gradient 1
+        run_cv colvar $cv set collect_gradient 1
+        if { [run_cv colvar $cv get gradient] != 1 } {
+          tk_messageBox -icon error -title "Colvars Dashboard Error"\
+            -message "Colvar $cv does not support gradient computation.\nSee console for details."
+          continue
+        }
+        run_cv colvar $cv update ;# required to get initial values of gradients
+        # Associate empty list of objects to cv to request its update
+        foreach i [selected_comps $cv] {
+          set ::cv_dashboard::grad_objects($cv_n_i) {}
+        }
       }
-      run_cv colvar $cv update ;# required to get initial values of gradients
-      # Associate empty list of objects to cv to request its update
-      set ::cv_dashboard::grad_objects($cv) {}
     }
   }
   update_shown_gradients
+}
+
+
+# Look for given atom ids within list of all Colvars atoms
+proc ::cv_dashboard::map_atom_ids { atomids } {
+  set i_cv 0
+  set all_ids [cv getatomids]
+  set map [list]
+  for { set i_global 0 } { $i_global < [llength $all_ids] } { incr i_global } {
+    if { [lindex $all_ids $i_global] == [lindex $atomids $i_cv]} {
+      lappend map $i_global
+      incr i_cv
+    }
+    if { $i_cv == [llength $atomids] } { break }
+  }
+  if { $i_cv != [llength $atomids] } {
+    puts "Error: could not find all atom ids $atomids in $all_ids"
+    return {}
+  }
+  return $map
 }
 
 
@@ -1039,7 +1066,10 @@ proc ::cv_dashboard::update_shown_gradients {} {
   set f [molinfo $molid get frame]
   if { $f < 0 } { return }
 
-  foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
+  foreach { cv_n_i objs } [array get ::cv_dashboard::grad_objects] {
+
+    # CV name, number of scalar components, index of the requested scalar
+    lassign $cv_n_i cv n_comps i_comp
 
     # Delete out-of-date graphical objects (arrows)
     foreach obj $objs {
@@ -1048,27 +1078,63 @@ proc ::cv_dashboard::update_shown_gradients {} {
 
     # Forget variables that have been deleted (*after* deleting the graphics above)
     if { [lsearch [run_cv list] $cv] == -1 } {
-      unset ::cv_dashboard::grad_objects($cv)
+      unset ::cv_dashboard::grad_objects($cv_n_i)
       continue
     }
 
     set atomids [run_cv colvar $cv getatomids]
     if { [llength $atomids] == 0 } {
       # Variable was reinitialized and lost its gradient feature
+      run_cv colvar $cv set gradient 1
       run_cv colvar $cv set collect_gradient 1
-      if { [run_cv colvar $cv get collect_gradient] != 1 } {
+      if { [run_cv colvar $cv get gradient] != 1 } {
         tk_messageBox -icon error -title "Colvars Dashboard Error"\
-          -message "Colvar $cv does not support explicit gradient computation.\nSee console for details."
-        unset ::cv_dashboard::grad_objects($cv)
+          -message "Colvar $cv does not support gradient computation.\nSee console for details."
         continue
       }
-      run_cv colvar $cv update
       set atomids [run_cv colvar $cv getatomids]
-      # If that didn't work then gradients are not supported
-      if { [llength $atomids] == 0 } { continue }
+      if { [llength $atomids] == 0 } {
+        puts "Error getting atomids for colvar $cv"
+        continue
+      }
+      # Update after enabling gradient computation (unnecessary outside this condition)
+      run_cv colvar $cv update
     }
 
-    set grads [run_cv colvar $cv getgradients]
+    if { [run_cv colvar $cv get collect_gradient] == 1 } {
+      # Easy way: collect gradient is already enabled
+      set grads [run_cv colvar $cv getgradients]
+    } else {
+      # Use the force, Luke!
+
+      if { [info exists ::cv_dashboard::atom_id_map($cv)] } {
+        set atom_id_map $::cv_dashboard::atom_id_map($cv)
+      } else {
+        set atom_id_map [map_atom_ids $atomids]
+        if { [llength $atom_id_map] == 0 } {
+          return
+        }
+        set ::cv_dashboard::atom_id_map($cv) $atom_id_map
+      }
+
+      cv resetatomappliedforces
+      cv colvar $cv resetbiasforce
+      set F [list]
+      for { set i 0 } { $i < $n_comps } { incr i } {
+        # force of 1 on the requested scalar component
+        lappend F [expr $i == $i_comp]
+      }
+      cv colvar $cv addforce $F
+      cv colvar $cv update  ;# propagate biasing force to total colvar force
+      cv colvar $cv communicateforces
+      set forces [cv getatomappliedforces]
+
+      set grads [list]
+      foreach i $atom_id_map {
+        lappend grads [lindex $forces $i]
+      }
+    }
+
     # Get width if provided in colvar config
     set width 1.
     regexp -nocase -line {^\s*width\s+([\d\.e]*)} [get_cv_config $cv] match width
@@ -1077,7 +1143,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
     incr id
 
     if { [llength $new_objs] > 0 } {
-      set ::cv_dashboard::grad_objects($cv) $new_objs
+      set ::cv_dashboard::grad_objects($cv_n_i) $new_objs
     }
   }
 }
@@ -1085,19 +1151,23 @@ proc ::cv_dashboard::update_shown_gradients {} {
 
 proc ::cv_dashboard::hide_gradients {} {
   foreach cv [selected_colvars] {
-    if [info exists ::cv_dashboard::grad_objects($cv)] {
-      set objs $::cv_dashboard::grad_objects($cv)
-      foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
-      run_cv colvar $cv set collect_gradient 0
-      unset ::cv_dashboard::grad_objects($cv)
+    set n [llength [run_cv colvar $cv value]]
+    foreach i [selected_comps $cv] {
+      set cv_n_i [list $cv $n $i]
+      if [info exists ::cv_dashboard::grad_objects($cv_n_i)] {
+        set objs $::cv_dashboard::grad_objects($cv_n_i)
+        foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
+        unset ::cv_dashboard::grad_objects($cv_n_i)
+      }
     }
   }
 }
 
 
 proc ::cv_dashboard::hide_all_gradients {} {
-  foreach { cv objs } [array get ::cv_dashboard::grad_objects] {
+  foreach { cv_n_i objs } [array get ::cv_dashboard::grad_objects] {
     foreach obj $objs { graphics $::cv_dashboard::mol delete $obj }
+    set cv [lindex $cv_n_i 0]
     run_cv colvar $cv set collect_gradient 0
   }
   array unset ::cv_dashboard::grad_objects *
