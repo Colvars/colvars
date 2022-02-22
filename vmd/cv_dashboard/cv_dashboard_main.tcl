@@ -1043,16 +1043,13 @@ proc ::cv_dashboard::map_atom_ids { atomids } {
   set i_cv 0
   set all_ids [cv getatomids]
   set map [list]
-  for { set i_global 0 } { $i_global < [llength $all_ids] } { incr i_global } {
-    if { [lindex $all_ids $i_global] == [lindex $atomids $i_cv]} {
-      lappend map $i_global
-      incr i_cv
+  foreach aid $atomids {
+    set pos [lsearch $all_ids $aid]
+    if { $pos <  0 } {
+      puts "Error: could not find atom id $aid in $all_ids"
+      return {}
     }
-    if { $i_cv == [llength $atomids] } { break }
-  }
-  if { $i_cv != [llength $atomids] } {
-    puts "Error: could not find all atom ids $atomids in $all_ids"
-    return {}
+    lappend map $pos
   }
   return $map
 }
