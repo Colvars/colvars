@@ -8,10 +8,10 @@
 gen_ref_output=''
 TMPDIR=/tmp
 DIRLIST=''
-BINARY=gmx_d
+export BINARY=gmx_d
 # Default binary name when the option -DGMX_BUILD_MDRUN_ONLY=on is set during cmake.
 # gmx_mpi_d should work too
-BINARY_MPI=mdrun_mpi_d
+export BINARY_MPI=mdrun_mpi_d
 SPIFF=spiff
 
 
@@ -35,6 +35,16 @@ while [ $# -ge 1 ]; do
   fi
   shift
 done
+
+GMX_BASE=$(basename ${BINARY})
+GMX_SUFFIX=${GMX#gmx_}
+GMX_SUFFIX=${GMX_SUFFIX#mdrun_}
+export GMX_SUFFIX=${GMX_SUFFIX%_d} # TODO prevent running single precision?
+echo "GROMACS suffix = \"\""
+
+if [ "${GMX_SUFFIX}" == "mpi" ] ; then
+  export BINARY_MPI="${GMX} mdrun"
+fi
 
 TOPDIR=$(git rev-parse --show-toplevel)
 if [ ! -d ${TOPDIR} ] ; then
@@ -103,7 +113,41 @@ cleanup_files() {
 for dir in ${DIRLIST} ; do
 
   if [ -f ${dir}/disabled ] ; then
+    echo "Skipping $dir because $dir/disabled exists."
     continue
+  fi
+
+  # Handle MPI cases
+  if [[ $dir == *"_MPI"* ]]; then
+    if [ "${GMX_SUFFIX}" != "mpi" ] ; then
+      echo "Skipping $dir because the selected GROMACS build is not MPI enabled."
+      COMMAND=""
+    else
+      COMMAND="mpirun -np 2 ${BINARY_MPI}"
+      options="-ntomp 2"
+    fi
+  elif [[ $dir == *"_tmpi"* ]]; then
+    if [ "${GMX_SUFFIX}" == "mpi" ] ; then
+      echo "Skipping $dir because the selected GROMACS build is MPI enabled."
+      COMMAND=""
+    else
+      COMMAND="${BINARY} mdrun"
+      options="-ntmpi 2 -ntomp 2"
+    fi
+  else # serial
+    if [[ "${GMX_SUFFIX}" == "mpi" ]] ; then
+      COMMAND="mpirun -n 1 ${BINARY} mdrun"
+      options="-ntomp 2"
+    else
+      COMMAND="${BINARY} mdrun"
+      options="-ntmpi 1 -ntomp 2"
+    fi
+  fi
+
+  if [ -z "${COMMAND}" ]; then
+    continue
+  else
+    echo "Command = ${COMMAND}"
   fi
 
   echo -ne "Entering $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) ..."
@@ -163,21 +207,6 @@ for dir in ${DIRLIST} ; do
     # Input files
     # Symbolink link to the colvars input file
     ln -sf ../Common/test.in test.dat
-
-    # Handle MPI cases
-    if [[ $dir  == *"tmpi"* ]]
-    then
-      COMMAND="${BINARY} mdrun"
-      options="-ntmpi 2 -ntomp 2"
-    elif [[ $dir == *"MPI"* ]]
-    then
-      COMMAND="mpirun -np 2 ${BINARY_MPI}"
-      options="-ntomp 2"
-    else # serial
-      COMMAND="${BINARY} mdrun"
-      options="-ntmpi 1 -ntomp 2"
-    fi
-
 
     if [ -f "run.sh" ]
     then
