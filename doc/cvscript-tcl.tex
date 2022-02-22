@@ -78,6 +78,9 @@
 \texttt{-------}
 \\
 \texttt{force : float - RMS atomic force}
+\item \texttt{cv resetatomappliedforces}
+\\
+\texttt{Reset forces applied by Colvars to atoms}
 \item \texttt{cv getatomids}
 \\
 \texttt{Get the list of indices of atoms used in Colvars}
@@ -86,7 +89,7 @@
 \\
 \texttt{-------}
 \\
-\texttt{indices : array of ints - Atomic indices}
+\texttt{indices : array of ints - Atom indices}
 \item \texttt{cv getatomcharges}
 \\
 \texttt{Get the list of charges of atoms used in Colvars}
@@ -280,6 +283,9 @@
 \texttt{-------}
 \\
 \texttt{force : float or array - Applied force; matches colvar dimensionality}
+\item \texttt{cv colvar name communicateforces}
+\\
+\texttt{Communicate bias forces from this colvar to atoms}
 \item \texttt{cv colvar name cvcflags <flags>}
 \\
 \texttt{Enable or disable individual components by setting their active flags}
@@ -312,6 +318,9 @@
 \texttt{-------}
 \\
 \texttt{force : float - Applied force; matches the colvar dimensionality}
+\item \texttt{cv colvar name resetbiasforce}
+\\
+\texttt{Return the total of the forces applied to this colvar}
 \item \texttt{cv colvar name getatomgroups}
 \\
 \texttt{Return the atom indices used by this colvar as a list of lists}
