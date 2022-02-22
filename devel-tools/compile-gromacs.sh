@@ -71,6 +71,7 @@ compile_gromacs_target() {
     local ret_code=0
 
     ${CMAKE} \
+        -DREGRESSIONTEST_DOWNLOAD=ON \
         -DCMAKE_INSTALL_PREFIX="${GMX_INSTALL_DIR}" \
         -DCMAKE_BUILD_TYPE=${GMX_BUILD_TYPE:-Release} \
         ${GMX_BUILD_OPTS[@]} \
@@ -84,9 +85,9 @@ compile_gromacs_target() {
         pushd "${GMX_BUILD_DIR}"
         make install
         ret_code=$?
-        if [ $ret_code = 0 ] ; then
-            rm -fr "${GMX_BUILD_DIR}"
-        fi
+        # if [ $ret_code = 0 ] ; then
+        #     rm -fr "${GMX_BUILD_DIR}"
+        # fi
         popd
     fi
 
