@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1.3)
 
 project(colvars CXX)
-get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
+get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
