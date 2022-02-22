@@ -81,13 +81,14 @@ compile_gromacs_target() {
         ${CMAKE} --build "${GMX_BUILD_DIR}" --parallel $(nproc --all)
     ret_code=$?
 
-    if [ $ret_code = 0 ] && [ -n "${GMX_INSTALL_DIR}" ] ; then
+    if [ ${ret_code} = 0 ] ; then
         pushd "${GMX_BUILD_DIR}"
-        make install
-        ret_code=$?
-        # if [ $ret_code = 0 ] ; then
-        #     rm -fr "${GMX_BUILD_DIR}"
-        # fi
+        ctest --output-on-failure
+        retcode=$?
+        if [ ${retcode} = 0 ] && [ -n "${GMX_INSTALL_DIR}" ] ; then
+            make install
+            ret_code=$?
+        fi
         popd
     fi
 
