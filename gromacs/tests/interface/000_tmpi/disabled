@@ -1,0 +1,2 @@
+This test passes with a reduced precision of 1.0e-4 (CentOS 7, GCC 10): sort
+it out, and then re-enable.
