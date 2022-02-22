@@ -234,9 +234,21 @@ CVSCRIPT(cv_getatomappliedforcesrms,
          return COLVARS_OK;
          )
 
+CVSCRIPT(cv_resetatomappliedforces,
+         "Reset forces applied by Colvars to atoms",
+         0, 0,
+         "",
+            size_t i;
+            std::vector<cvm::rvector> *f = script->proxy()->modify_atom_applied_forces();
+            for (i = 0; i < f->size(); i++) {
+              (*f)[i].reset();
+            }
+            return COLVARS_OK;
+         )
+
 CVSCRIPT(cv_getatomids,
          "Get the list of indices of atoms used in Colvars\n"
-         "indices : array of ints - Atomic indices",
+         "indices : array of ints - Atom indices",
          0, 0,
          "",
          script->set_result_int_vec(*(script->proxy()->get_atom_ids()));

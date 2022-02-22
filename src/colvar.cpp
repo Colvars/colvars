@@ -958,7 +958,7 @@ void colvar::do_feature_side_effects(int id)
     case f_cv_total_force_calc:
       cvm::request_total_force();
       break;
-    case f_cv_collect_gradient:
+    case f_cv_gradient: // Needed for getting gradients via atomic forces in VMD
       if (atom_ids.size() == 0) {
         build_atom_list();
       }
