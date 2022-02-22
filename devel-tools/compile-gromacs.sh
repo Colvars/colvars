@@ -9,9 +9,10 @@ source $(dirname $0)/set-ccache.sh
 
 compile_gromacs_target() {
 
-    local CMAKE=cmake
+    local CMAKE=cmake CTEST=ctest
     if hash cmake3 >& /dev/null ; then
         CMAKE=cmake3
+        CTEST=ctest3
     fi
     if hash ${CMAKE} >& /dev/null ; then
         CMAKE_VERSION=$(${CMAKE} --version | head -1 | cut -d' ' -f3)
@@ -83,11 +84,11 @@ compile_gromacs_target() {
 
     if [ ${ret_code} = 0 ] ; then
         pushd "${GMX_BUILD_DIR}"
-        ctest --output-on-failure
+        ${CTEST} --output-on-failure
         retcode=$?
-        if [ ${retcode} = 0 ] && [ -n "${GMX_INSTALL_DIR}" ] ; then
+        if [ -n "${GMX_INSTALL_DIR}" ] ; then
             make install
-            ret_code=$?
+            ret_code=$((${ret_code} || $?))
         fi
         popd
     fi
