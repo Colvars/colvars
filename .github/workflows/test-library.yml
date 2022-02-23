@@ -307,8 +307,19 @@ jobs:
           CXX: ${{github.workspace}}/oracle/developerstudio12.6/bin/CC
         run: |
           singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          cmake3 -E make_directory ${{github.workspace}}/build-sunpro
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          cmake3 -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-sunpro
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          cmake3 --build ${{github.workspace}}/build-sunpro --parallel $(nproc --all)
+          cmake3 -D CMAKE_CXX_STANDARD=11 -P devel-tools/build_test_library.cmake
+
+
+  build-windows-64-msvc:
+    name: Windows 64-bit (MSVC)
+    runs-on: windows-latest
+    needs: basic-checks
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Build library with CMake
+        # We need to set CMAKE_SYSTEM_NAME manually in script mode
+        run: cmake -D CMAKE_SYSTEM_NAME=Windows -P devel-tools/build_test_library.cmake
