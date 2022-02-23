@@ -1,16 +1,16 @@
 configuration {
-  step           40
+  step           80
   dt 1.000000e+00
 }
 
 colvar {
   name rgyr
-  x  6.79623847172641e+00
+  x  6.79057632779113e+00
 }
 
 restraint {
   configuration {
-    step 40
+    step 80
     name harmonic1
   }
 }
