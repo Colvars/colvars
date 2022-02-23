@@ -14,9 +14,17 @@ jobs:
     steps:
       - name: Checkout Colvars
         uses: actions/checkout@v2
+
+      - name: Configure Ccache
+        uses: actions/cache@v2
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.sha }}
+          path: ~/.ccache
+          key: ${{ runner.os }}-build-basic-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-basic-
+
+      - name: Install build dependencies for library
+        run: |
+          sudo apt-get -y install ccache tcl8.6-dev
 
       - name: Test build recipes
         run: bash devel-tools/check_build_recipes
@@ -31,9 +39,22 @@ jobs:
               exit 1
           fi
 
+      - name: Build library with CMake
+        run: cmake -P devel-tools/build_test_library.cmake
 
-  build:
-    name: Build Colvars & CodeQL Analysis
+      - name: Check documentation of command-line scripting interface
+        shell: bash
+        working-directory: doc
+        run: |
+          make update-cvscript-cmdline-doc
+          if [ -n "$(git status --porcelain cvscript-tcl.tex)" ] ; then
+              echo "Command-line scripting doc out of date; please run make update-cvscript-cmdline-doc and commit changes" >& 2
+              exit 1
+          fi
+
+
+  codeql:
+    name: CodeQL Analysis
     runs-on: ubuntu-latest
     needs: basic-checks
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -44,8 +65,6 @@ jobs:
       - name: Install build dependencies for library
         run: |
           sudo apt-get -y install tcl8.6-dev
-          # OpenMM contains the latest Lepton
-          git clone --single-branch --depth=1 https://github.com/openmm/openmm openmm-source
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
@@ -53,23 +72,64 @@ jobs:
           languages: cpp
 
       - name: Build Colvars library with CMake
-        shell: bash
-        run: |
-          cmake -D CMAKE_CXX_STANDARD=11 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -D LEPTON_DIR=${{github.workspace}}/openmm-source/libraries/lepton -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build
-          cmake --build ${{github.workspace}}/build --parallel $(nproc --all)
-
-      - name: Update documentation of command-line interface
-        shell: bash
-        working-directory: doc
-        run: |
-          make update-cvscript-cmdline-doc
-          if [ -n "$(git status --porcelain cvscript-tcl.tex)" ] ; then
-              echo "Command-line scripting doc out of date; please run make update-cvscript-cmdline-doc and commit changes" >& 2
-              exit 1
-          fi
+        run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
+
+
+  build-linux-x86_64:
+    name: Linux x86_64
+    runs-on: ubuntu-latest
+    needs: basic-checks
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure Ccache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ${{ runner.os }}-build-multiple-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-multiple-
+
+      - name: Get small downloadable packages
+        uses: actions/checkout@v2
+        with:
+          repository: 'Colvars/build-tools-packages'
+          ref: 'master'
+          path: 'devel-tools/packages'
+
+      - name: Install Singularity
+        shell: bash
+        working-directory: devel-tools/packages
+        run: |
+          sudo apt-get -y install squashfs-tools containernetworking-plugins
+          sudo dpkg -i singularity_3.8.5-2_amd64.deb
+
+      - name: Get container image of backends' dependencies
+        shell: bash
+        working-directory: devel-tools
+        run: |
+          singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+
+      - name: GCC 11, C++20
+        env:
+          CMAKE_CXX_STANDARD: "20"
+          CMAKE: "cmake3"
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          scl enable devtoolset-11 -- \
+          ${CMAKE} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 4.8, C++98
+        env:
+          CMAKE_CXX_STANDARD: "98"
+          CMAKE: "cmake3"
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          ${CMAKE} -P devel-tools/build_test_library.cmake
 
 
   build-legacy:
