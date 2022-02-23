@@ -80,7 +80,7 @@ jobs:
         uses: github/codeql-action/analyze@v1
 
 
-  build-linux-x86_64:
+  build-linux-x86_64-many:
     name: Linux x86_64 (many compilers)
     runs-on: ubuntu-latest
     needs: basic-checks
@@ -116,14 +116,134 @@ jobs:
         run: |
           singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 
+      - name: GCC 4.8, C++11
+        env:
+          CXX_STANDARD: 11
+          CXX: g++
+          CXX_VERSION: 4.8
+          CC: gcc
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 8, C++17
+        env:
+          CXX_STANDARD: 17
+          CXX: g++
+          CXX_VERSION: 8
+          CC: gcc
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          scl enable devtoolset-${CXX_VERSION} -- \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
       - name: GCC 11, C++20
         env:
           CXX_STANDARD: 20
           CXX: g++
           CXX_VERSION: 11
+          CC: gcc
         run: |
           singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          scl enable devtoolset-11 -- \
+          scl enable devtoolset-${CXX_VERSION} -- \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: Clang 3.4, C++11
+        env:
+          CXX_STANDARD: 11
+          CXX: clang++
+          CXX_VERSION: 11
+          CC: clang
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: Clang 7, C++17
+        env:
+          CXX_STANDARD: 17
+          CXX: clang++
+          CXX_VERSION: 7
+          CC: clang
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          scl enable llvm-toolset-${CXX_VERSION} -- \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 11, C++17
+        env:
+          CXX_STANDARD: 17
+          CXX: g++
+          CXX_VERSION: 11
+          CC: gcc
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          scl enable devtoolset-${CXX_VERSION} -- \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 10, C++17
+        env:
+          CXX_STANDARD: 17
+          CXX: g++
+          CXX_VERSION: 10
+          CC: gcc
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          scl enable devtoolset-${CXX_VERSION} -- \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 9, C++14
+        env:
+          CXX_STANDARD: 14
+          CXX: g++
+          CXX_VERSION: 9
+          CC: gcc
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          scl enable devtoolset-${CXX_VERSION} -- \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 8, C++14
+        env:
+          CXX_STANDARD: 14
+          CXX: g++
+          CXX_VERSION: 8
+          CC: gcc
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          scl enable devtoolset-${CXX_VERSION} -- \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 8, C++11
+        env:
+          CXX_STANDARD: 11
+          CXX: g++
+          CXX_VERSION: 8
+          CC: gcc
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          scl enable devtoolset-${CXX_VERSION} -- \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 7, C++14
+        env:
+          CXX_STANDARD: 14
+          CXX: g++
+          CXX_VERSION: 7
+          CC: gcc
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          scl enable devtoolset-${CXX_VERSION} -- \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 7, C++11
+        env:
+          CXX_STANDARD: 11
+          CXX: g++
+          CXX_VERSION: 7
+          CC: gcc
+        run: |
+          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: GCC 4.8, C++98
@@ -131,6 +251,7 @@ jobs:
           CXX_STANDARD: 98
           CXX: g++
           CXX_VERSION: 4.8
+          CC: gcc
         run: |
           singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
