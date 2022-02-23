@@ -81,7 +81,7 @@ jobs:
 
 
   build-linux-x86_64:
-    name: Linux x86_64
+    name: Linux x86_64 (many compilers)
     runs-on: ubuntu-latest
     needs: basic-checks
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -118,20 +118,22 @@ jobs:
 
       - name: GCC 11, C++20
         env:
-          CMAKE_CXX_STANDARD: "20"
-          CMAKE: "cmake3"
+          CXX_STANDARD: 20
+          CXX: g++
+          CXX_VERSION: 11
         run: |
           singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-11 -- \
-          ${CMAKE} -P devel-tools/build_test_library.cmake
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: GCC 4.8, C++98
         env:
-          CMAKE_CXX_STANDARD: "98"
-          CMAKE: "cmake3"
+          CXX_STANDARD: 98
+          CXX: g++
+          CXX_VERSION: 4.8
         run: |
           singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          ${CMAKE} -P devel-tools/build_test_library.cmake
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
 
   build-legacy:
