@@ -11,6 +11,30 @@ else()
   endif()
 endif()
 
+if(DEFINED CMAKE_SYSTEM_NAME)
+
+  # Download OS-specific pre-built TCL
+
+  if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    file(DOWNLOAD
+      "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-linux-x86_64.tar.gz"
+      ./tcl.tar.gz SHOW_PROGRESS)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./tcl.tar.gz)
+    set(DEFINE_TCL_DIR "-DTCL_DIR=tcl8.5.9-linux-x86_64")
+    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=tcl8.5")
+  endif()
+
+  if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    file(DOWNLOAD
+      "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-win64.zip"
+      ./tcl.zip SHOW_PROGRESS)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./tcl.zip)
+    set(DEFINE_TCL_DIR "-DTCL_DIR=tcl8.5.9-win64")
+    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=tcl8.5")
+  endif()
+
+endif()
+
 if(NOT DEFINED LEPTON_DIR)
   set(LEPTON_DIR "${COLVARS_SOURCE_DIR}/openmm-source/libraries/lepton")
   if(NOT EXISTS ${LEPTON_DIR})
@@ -41,6 +65,8 @@ execute_process(
   ${DEFINE_CC_CCACHE}
   ${DEFINE_CXX_CCACHE}
   -D COLVARS_TCL=ON
+  ${DEFINE_TCL_DIR}
+  ${DEFINE_TCL_LIBRARY}
   -D COLVARS_LEPTON=${COLVARS_LEPTON}
   -D LEPTON_DIR=${LEPTON_DIR}
   RESULT_VARIABLE result
