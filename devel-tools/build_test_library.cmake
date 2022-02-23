@@ -11,6 +11,10 @@ else()
   endif()
 endif()
 
+if(NOT DEFINED COLVARS_TCL)
+  set(COLVARS_TCL ON)
+endif()
+
 if(DEFINED CMAKE_SYSTEM_NAME)
 
   # Download OS-specific pre-built TCL
@@ -25,6 +29,8 @@ if(DEFINED CMAKE_SYSTEM_NAME)
   endif()
 
   if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    # Temporarily disable
+    set(COLVARS_TCL OFF)
     file(DOWNLOAD
       "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-win64.zip"
       ./tcl.zip SHOW_PROGRESS)
@@ -35,15 +41,16 @@ if(DEFINED CMAKE_SYSTEM_NAME)
 
 endif()
 
-if(NOT DEFINED LEPTON_DIR)
-  set(LEPTON_DIR "${COLVARS_SOURCE_DIR}/openmm-source/libraries/lepton")
-  if(NOT EXISTS ${LEPTON_DIR})
-    execute_process(COMMAND git clone --depth=1 https://github.com/openmm/openmm.git "${COLVARS_SOURCE_DIR}/openmm-source")
+if(COLVARS_LEPTON)
+  if(NOT DEFINED LEPTON_DIR)
+    set(LEPTON_DIR "${COLVARS_SOURCE_DIR}/openmm-source/libraries/lepton")
+    if(NOT EXISTS ${LEPTON_DIR})
+      execute_process(COMMAND git clone --depth=1 https://github.com/openmm/openmm.git "${COLVARS_SOURCE_DIR}/openmm-source")
+    endif()
+    message(STATUS "Using Lepton library from: ${LEPTON_DIR}")
   endif()
-  message(STATUS "Using Lepton library from: ${LEPTON_DIR}")
 endif()
 
-# Many compilers test
 if(DEFINED ENV{CXX_VERSION})
   set(BUILD_DIR build_$ENV{CXX}$ENV{CXX_VERSION}_C++${CMAKE_CXX_STANDARD})
 else()
@@ -65,7 +72,7 @@ execute_process(
   -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
   ${DEFINE_CC_CCACHE}
   ${DEFINE_CXX_CCACHE}
-  -D COLVARS_TCL=ON
+  -D COLVARS_TCL=${COLVARS_TCL}
   ${DEFINE_TCL_DIR}
   ${DEFINE_TCL_LIBRARY}
   -D COLVARS_LEPTON=${COLVARS_LEPTON}
