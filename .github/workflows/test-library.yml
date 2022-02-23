@@ -264,11 +264,6 @@ jobs:
     # Prevent running this job on fork repos due to the secrets variable
     if: ${{ github.repository_owner == 'Colvars' }} && ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository }}
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'cpp' ]
-
     steps:
       - uses: actions/checkout@v2
 
