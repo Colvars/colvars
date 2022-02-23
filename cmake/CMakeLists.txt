@@ -49,11 +49,17 @@ add_library(colvars_shared SHARED $<TARGET_OBJECTS:colvars_obj>)
 set_property(TARGET colvars_shared PROPERTY OUTPUT_NAME colvars)
 
 target_compile_options(colvars_obj PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
+
 target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-long-long>)
 target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-c++11-long-long>)
+
 target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w>)
 # # Uncomment the line below to enable more thorough checks with Sun Compiler
 # target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w2>)
+
+# Tell MSVC to actually report the C++ version
+target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W2 /Zc:__cplusplus>
+
 if(WARNINGS_ARE_ERRORS)
   target_compile_options(colvars_obj PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Werror>)
   target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:SunPro>:-xwe>)
