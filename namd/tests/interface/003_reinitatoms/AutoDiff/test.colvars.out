@@ -1,24 +1,26 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
-colvars: in any publication based on this calculation.
-colvars: SMP parallelism is available.
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
+colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars: This version was built with the C++11 standard or higher.
 colvars: The restart output state file will be "test.tmp.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: The restart output state file will be "test.tmp.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".
 colvars: Resetting the Collective Variables module.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
-colvars: # indexFile = "" [default]
+colvars: # units = "" [default]
 colvars: # smp = on [default]
-colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
-colvars: # colvarsRestartFrequency = 100 [default]
+colvars: # colvarsRestartFrequency = 10 [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
 colvars: Warning: no collective variables defined.
 colvars: Collective variables initialized, 0 in total.
 colvars: No collective variables biases were defined.
@@ -27,17 +29,17 @@ colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: # indexFile = "" [default]
+colvars: # units = "" [default]
 colvars: # smp = on [default]
-colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1 [default]
-colvars: # colvarsRestartFrequency = 100 [default]
+colvars: # colvarsRestartFrequency = 10 [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rgyr"
 colvars:   Initializing a new "gyration" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
@@ -46,21 +48,24 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { HA }
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 15 atoms initialized: total mass = 180.165, total charge = 1.05.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 15 atoms requested.
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0 [default]
+colvars:   # upperBoundary = 1 [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -68,13 +73,17 @@ colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = on
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { rgyr }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
@@ -83,6 +92,7 @@ colvars:   # targetCenters = { 6 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 1
 colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "rgyr" will be rescaled to 1 according to the specified width (1).
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -91,17 +101,39 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (15 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - Colvars module:
+colvars: - Colvars-NAMD interface:
+colvars: - Harmonic colvar bias implementation:
+colvars: - Optimal rotation via flexible fitting:
+colvars: - gyration colvar component:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - NAMD engine:
+colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
+colvars: 
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".
 colvars: Resetting the Collective Variables module.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
-colvars: # indexFile = "" [default]
+colvars: # units = "" [default]
 colvars: # smp = on [default]
-colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1
-colvars: # colvarsRestartFrequency = 100 [default]
+colvars: # colvarsRestartFrequency = 10 [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
 colvars: Warning: no collective variables defined.
 colvars: Collective variables initialized, 0 in total.
 colvars: No collective variables biases were defined.
@@ -110,17 +142,17 @@ colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: # indexFile = "" [default]
+colvars: # units = "" [default]
 colvars: # smp = on [default]
-colvars: # analysis = off [default]
 colvars: # colvarsTrajFrequency = 1 [default]
-colvars: # colvarsRestartFrequency = 100 [default]
+colvars: # colvarsRestartFrequency = 10 [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rgyr"
 colvars:   Initializing a new "gyration" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
@@ -129,21 +161,24 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { HA }
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 15 atoms initialized: total mass = 180.165, total charge = 1.05.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 15 atoms requested.
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0 [default]
+colvars:   # upperBoundary = 1 [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -151,13 +186,17 @@ colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = on
 colvars:   # outputAppliedForce = on
 colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { rgyr }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
@@ -166,6 +205,7 @@ colvars:   # targetCenters = { 6 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 1
 colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "rgyr" will be rescaled to 1 according to the specified width (1).
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -174,4 +214,15 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (15 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".

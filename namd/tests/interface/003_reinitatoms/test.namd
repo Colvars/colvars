@@ -26,6 +26,9 @@ colvars on
 
 run 0
 
+# Need a longer run than stepspercycle to avoid GlobalMaster bugs
+set numsteps [expr 2*[stepspercycle]]
+
 foreach mol_name [list "15ala2x" "15leu2x"] {
     structure "../Common/${mol_name}.psf" pdb "../Common/${mol_name}.pdb"
     reinitatoms "../Common/${mol_name}.init"
