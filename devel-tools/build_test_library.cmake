@@ -42,6 +42,15 @@ if(DEFINED CMAKE_SYSTEM_NAME)
     set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=tcl8.5")
   endif()
 
+  if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    file(DOWNLOAD
+      "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-macosx-x86_64-threaded.tar.gz"
+      ./tcl.zip SHOW_PROGRESS)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./tcl.zip)
+    set(DEFINE_TCL_DIR "-DTCL_DIR=${COLVARS_SOURCE_DIR}/tcl8.5.9-macosx-x86_64-threaded")
+    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=tcl8.5")
+  endif()
+
 endif()
 
 if(COLVARS_LEPTON)

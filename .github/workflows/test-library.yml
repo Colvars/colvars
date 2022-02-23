@@ -309,8 +309,8 @@ jobs:
           cmake3 -D CMAKE_CXX_STANDARD=11 -P devel-tools/build_test_library.cmake
 
 
-  build-windows-64-msvc:
-    name: Windows 64-bit (MSVC)
+  build-windows-x86_64-msvc:
+    name: Windows x86_64 (MSVC)
     runs-on: windows-latest
     needs: basic-checks
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -322,3 +322,18 @@ jobs:
       - name: Build library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Windows -P devel-tools/build_test_library.cmake
+
+
+  build-macos-x86_64-clang:
+    name: macOS x86_64 (AppleClang)
+    runs-on: macos-latest
+    needs: basic-checks
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Build library with CMake
+        # We need to set CMAKE_SYSTEM_NAME manually in script mode
+        run: cmake -D CMAKE_SYSTEM_NAME=Darwin -P devel-tools/build_test_library.cmake
