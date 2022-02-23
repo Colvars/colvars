@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Colvars
         uses: actions/checkout@v2
 
-      - name: Configure Ccache
+      - name: Reload cache
         uses: actions/cache@v2
         with:
           path: ~/.ccache
@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Configure Ccache
+      - name: Reload ccache
         uses: actions/cache@v2
         with:
           path: ~/.ccache
