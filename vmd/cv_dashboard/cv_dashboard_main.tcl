@@ -1020,12 +1020,16 @@ proc ::cv_dashboard::show_gradients { list } {
       set cv_n_i [list $cv $n $i]
       if { ![info exists ::cv_dashboard::grad_objects($cv_n_i)] } {
         run_cv colvar $cv set gradient 1
-        run_cv colvar $cv set collect_gradient 1
         if { [run_cv colvar $cv get gradient] != 1 } {
           tk_messageBox -icon error -title "Colvars Dashboard Error"\
             -message "Colvar $cv does not support gradient computation.\nSee console for details."
           continue
         }
+        if { ([cv colvar $cv get scalar] == 1) && ([cv colvar $cv get scripted] == 0) &&  ([cv colvar $cv get custom_function] == 0)} {
+          # Only attempt to enable collect_gradients if usual conditions are met
+          run_cv colvar $cv set collect_gradient 1
+        }
+
         run_cv colvar $cv update ;# required to get initial values of gradients
         # Associate empty list of objects to cv to request its update
         foreach i [selected_comps $cv] {
