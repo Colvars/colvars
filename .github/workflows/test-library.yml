@@ -136,27 +136,8 @@ jobs:
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
 
-  build-legacy:
-    name: Legacy build (pre-C++11 code for VMD)
-    runs-on: ubuntu-latest
-    needs: basic-checks
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Install tcl
-        run: sudo apt-get -y install tcl8.6-dev
-
-      - name: Build Colvars
-        shell: bash
-        run: |
-          cmake -D CMAKE_CXX_STANDARD=98 -D WARNINGS_ARE_ERRORS=ON -D CMAKE_VERBOSE_MAKEFILE=ON -D COLVARS_TCL=ON -S ${{github.workspace}}/cmake -B ${{github.workspace}}/build-legacy
-          cmake --build ${{github.workspace}}/build-legacy --parallel $(nproc --all)
-
-
-  build-sunpro:
-    name: Sun compiler
+  build-linux-x86_64-sun:
+    name: Linux x86_64 (Sun compiler)
     runs-on: ubuntu-latest
     needs: basic-checks
     # Prevent running this job on fork repos due to the secrets variable
