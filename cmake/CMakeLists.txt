@@ -11,10 +11,6 @@ option(WARNINGS_ARE_ERRORS "Treats warnings as errors" OFF)
 
 if(NOT DEFINED LEPTON_DIR)
   set(LEPTON_DIR ${COLVARS_SOURCE_DIR}/lepton)
-else()
-  if(NOT EXISTS ${LEPTON_DIR})
-    message(FATAL_ERROR "Could not access ${LEPTON_DIR}")
-  endif()
 endif()
 
 if(EXISTS ${LEPTON_DIR})
