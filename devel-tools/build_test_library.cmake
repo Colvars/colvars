@@ -25,21 +25,27 @@ else()
   set(BUILD_DIR build)
 endif()
 
+if(COMMAND ccache)
+  set(DEFINE_CC_CCACHE "-DCMAKE_C_COMPILER_LAUNCHER=ccache")
+  set(DEFINE_CXX_CCACHE "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache")
+endif()
+
 execute_process(
   COMMAND ${CMAKE_COMMAND}
   -S cmake
   -B ${BUILD_DIR}
   -D CMAKE_BUILD_TYPE=RelWithDebinfo
-  -D CMAKE_C_COMPILER_LAUNCHER=ccache
-  -D CMAKE_CXX_COMPILER_LAUNCHER=ccache
   -D WARNINGS_ARE_ERRORS=ON
   -D CMAKE_VERBOSE_MAKEFILE=ON
   -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+  ${DEFINE_CC_CCACHE}
+  ${DEFINE_CXX_CCACHE}
   -D COLVARS_TCL=ON
   -D COLVARS_LEPTON=${COLVARS_LEPTON}
   -D LEPTON_DIR=${LEPTON_DIR}
   RESULT_VARIABLE result
   )
+
 if (NOT result EQUAL 0)
   message(FATAL_ERROR "Error generating CMake buildsystem.")
 endif()
@@ -49,6 +55,7 @@ execute_process(
   --build ${BUILD_DIR}
   --parallel
   )
+
 if (NOT result EQUAL 0)
   message(FATAL_ERROR "Error building library.")
 endif()
