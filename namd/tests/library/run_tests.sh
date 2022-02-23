@@ -153,10 +153,16 @@ for dir in ${DIRLIST} ; do
     script=`basename ${script}`
     basename=${script%.namd}
 
+    # Don't do multithreading for reinitatoms
+    NUM_THREADS_THIS=${NUM_THREADS}
+    if [ ${dir} == 003_reinitatoms ] ; then
+      NUM_THREADS_THIS=1
+    fi
+
     # Run the test (use a subshell to avoid cluttering stdout)
     # Use --source to avoid letting NAMD change its working directory
     # Use multiple threads to test SMP code (TODO: move SMP tests to interface?)
-    $BINARY +p ${NUM_THREADS} $script > ${basename}.out
+    $BINARY +p ${NUM_THREADS_THIS} $script > ${basename}.out
 
     # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
