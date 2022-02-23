@@ -58,7 +58,7 @@ target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w>)
 # target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w2>)
 
 # Tell MSVC to actually report the C++ version
-target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W2 /Zc:__cplusplus>
+target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W2 /Zc:__cplusplus>)
 
 if(WARNINGS_ARE_ERRORS)
   target_compile_options(colvars_obj PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Werror>)

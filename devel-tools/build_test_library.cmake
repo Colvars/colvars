@@ -20,7 +20,7 @@ if(DEFINED CMAKE_SYSTEM_NAME)
       "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-linux-x86_64.tar.gz"
       ./tcl.tar.gz SHOW_PROGRESS)
     execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./tcl.tar.gz)
-    set(DEFINE_TCL_DIR "-DTCL_DIR=tcl8.5.9-linux-x86_64")
+    set(DEFINE_TCL_DIR "-DTCL_DIR=${COLVARS_SOURCE_DIR}/tcl8.5.9-linux-x86_64")
     set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=tcl8.5")
   endif()
 
@@ -29,7 +29,7 @@ if(DEFINED CMAKE_SYSTEM_NAME)
       "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-win64.zip"
       ./tcl.zip SHOW_PROGRESS)
     execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./tcl.zip)
-    set(DEFINE_TCL_DIR "-DTCL_DIR=tcl8.5.9-win64")
+    set(DEFINE_TCL_DIR "-DTCL_DIR=${COLVARS_SOURCE_DIR}/tcl8.5.9-win64")
     set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=tcl8.5")
   endif()
 
@@ -43,15 +43,16 @@ if(NOT DEFINED LEPTON_DIR)
   message(STATUS "Using Lepton library from: ${LEPTON_DIR}")
 endif()
 
+# Many compilers test
 if(DEFINED ENV{CXX_VERSION})
   set(BUILD_DIR build_$ENV{CXX}$ENV{CXX_VERSION}_C++${CMAKE_CXX_STANDARD})
 else()
   set(BUILD_DIR build)
 endif()
 
-if(COMMAND ccache)
-  set(DEFINE_CC_CCACHE "-DCMAKE_C_COMPILER_LAUNCHER=ccache")
-  set(DEFINE_CXX_CCACHE "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache")
+if(DEFINED ENV{CCACHE})
+  set(DEFINE_CC_CCACHE "-DCMAKE_C_COMPILER_LAUNCHER=$ENV{CCACHE}")
+  set(DEFINE_CXX_CCACHE "-DCMAKE_CXX_COMPILER_LAUNCHER=$ENV{CCACHE}")
 endif()
 
 execute_process(
@@ -72,7 +73,7 @@ execute_process(
   RESULT_VARIABLE result
   )
 
-if (NOT result EQUAL 0)
+if(NOT result EQUAL 0)
   message(FATAL_ERROR "Error generating CMake buildsystem.")
 endif()
 
@@ -80,8 +81,9 @@ execute_process(
   COMMAND ${CMAKE_COMMAND}
   --build ${BUILD_DIR}
   --parallel
+  RESULT_VARIABLE result
   )
 
-if (NOT result EQUAL 0)
+if(NOT result EQUAL 0)
   message(FATAL_ERROR "Error building library.")
 endif()

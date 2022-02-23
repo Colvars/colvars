@@ -40,6 +40,8 @@ jobs:
           fi
 
       - name: Build library with CMake
+        env:
+          CCACHE: ccache
         run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Check documentation of command-line scripting interface
@@ -85,6 +87,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: basic-checks
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    env:
+      CCACHE: ccache
 
     steps:
       - uses: actions/checkout@v2
