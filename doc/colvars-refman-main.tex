@@ -6474,13 +6474,53 @@ The \texttt{harmonicWalls} bias implements the following options:
 
 \cvsubsec{Linear restraints}{sec:colvarbias_linear}
 
-The linear restraint biasing method is used to minimally bias a
-simulation. There is generally a unique strength of bias for each CV
-center, which means you must know the bias force constant specifically
-for the center of the CV. This force constant may be found by using
-experiment directed simulation described in
-section \ref{sec:colvarbias_alb}. Please cite Pitera and Chodera when
-using \cite{Pitera2012}.
+The \texttt{linear} keyword defines a linear potential:
+\begin{equation}
+  \label{eq:colvarbias_linear}
+  V(\xi) = k \left(\frac{\xi - \xi_0}{w_{\xi}}\right)
+\end{equation}
+\noindent{}whose force is simply given by the constant $k/w_\xi$ itself:
+\begin{equation}
+  \label{eq:colvarbias_linear_force}
+  f(\xi) = k/w_\xi
+\end{equation}
+\noindent{}This type of bias is therefore most useful in situations where a \emph{constant force} is desired.  As all other restraints, it can be defined on one or more CVs, with each contribution added to the total potential and the parameters $w_\xi$ determining the relative magnitude for each.
+
+\noindent\textbf{Example:} A possible use case of the \texttt{linear} bias is mimicking a constant electric field acting on a specific particle, or the center of mass of many particles.  In the following example, a linear restraint is applied on a \texttt{distanceZ} variable (\ref{sec:cvc_distanceZ}), generating a constant force parallel to the Z axis of magnitude 5~\energyunit/\lengthunit{}:
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~z\\
+\-~~distanceZ~\{\\
+\-~~~~...\\
+\-~~\}\\
+\-\}\\
+\-\\
+\-linear~\{\\
+\-~~colvars~z\\
+\-~~forceConstant~5.0\\
+\-~~centers~0.0\\
+\}
+\end{cvexampleinput}
+
+\cvnamdonly{
+\noindent\textbf{Example 2:} Another possible use case of a linear restraint is when the variable itself is a function with well-defined minima or maxima, i.e.{} the CV itself is a restraint function, whose strength is given by the chosen $k$.  For example, consider a \texttt{mapTotal} variable (\ref{sec:cvc_map_total}), constructed from a 3D density map whose minima and maxima are 0 and 1, and loaded into \href{https://www.ks.uiuc.edu/Research/namd/2.14/ug/node43.html}{GridForces}.  The following configuration produces an energy minimum of 10~\energyunit/\lengthunit{} for each atom, located at the maxima of the map.  This type of restraint is similar to the MDFF protocol, but it also allows to evaluate the biasing energy introduced in the simulation:
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~densitymap\\
+\-~~mapTotal~\{\\
+\-~~~~...\\
+\-~~\}\\
+\-\}\\
+\-\\
+\-linear~\{\\
+\-~~colvars~z\\
+\-~~forceConstant~-10.0\\
+\-~~centers~0.0\\
+\}
+\end{cvexampleinput}
+}
+
+Another useful application of a linear restraint is to enforce experimental constraints in a simulation, with a lower non-equilibrium work than e.g.\ harmonic restraints \cite{Pitera2012}. There is generally a unique strength of bias for each CV center, which means you must know the bias force constant specifically for the center of the CV.  This force constant may be found by using experiment directed simulation described in section \ref{sec:colvarbias_alb}.
 
 \begin{itemize}
 
@@ -6495,12 +6535,11 @@ using \cite{Pitera2012}.
     {forceConstant}{%
     \texttt{linear}}{%
     Scaled force constant (\energyunit)}{%
-    positive decimal}{%
+    Decimal}{%
     \texttt{1.0}}{%
-    This option defines a \emph{scaled} force constant for the linear bias.
+    This option defines a \emph{scaled} force constant $k$ for the linear bias. 
     To ensure consistency for multidimensional restraints, it is divided internally by the specific \texttt{width} of each variable (which is 1 by default), so that all variables are effectively dimensionless and of commensurate size.
-    See also the equivalent keyword for the harmonic restraint, \refkey{forceConstant}{harmonic|forceConstant}.
-    \emph{The values of the actual force constants $k/w_{\xi}$ are always printed when the restraint is defined.}
+    \emph{The values of $k/w_{\xi}$ are always printed when the restraint is defined.}
 }
 
 \item %
