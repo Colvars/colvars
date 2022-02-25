@@ -3546,7 +3546,7 @@ To track transitions between states, the contribution of each map to $\xi$ shoul
 The ``Multi-Map'' progress variable \cite{Fiorin2020} uses a weight sum of these components, using linearly-increasing weights:
 \begin{equation}
   \label{eq:cvc_multi_map}
-    \xi(\mathbf{X}) = \sum_{k=1}^{K} \Phi_{k}(\mathbf{X}) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}(\mathbf{x}_{i})
+    \xi(\mathbf{X}) = \sum_{k=1}^{K} k \Phi_{k}(\mathbf{X}) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}(\mathbf{x}_{i})
 \end{equation}
 \noindent{}where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal} component.
 
