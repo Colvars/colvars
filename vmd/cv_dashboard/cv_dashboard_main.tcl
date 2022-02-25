@@ -49,7 +49,9 @@ proc ::cv_dashboard::createWindow {} {
   # Right-click is Button 2 on MacOS
   bind $w.cvtable <Button-2> {::cv_dashboard::cvContextMenu %x %y %X %Y}
   bind $w.cvtable <Button-3> {::cv_dashboard::cvContextMenu %x %y %X %Y}
-  
+  # For touchpads and other systems with compatibility issues
+  bind $w.cvtable <Alt-Button-1> {::cv_dashboard::cvContextMenu %x %y %X %Y}
+
   bind $w.cvtable <Control-e> ::cv_dashboard::edit_cv
   bind $w.cvtable <Double-Button-1>  ::cv_dashboard::edit_cv
   bind $w.cvtable <Control-n> ::cv_dashboard::add_cv
@@ -473,6 +475,7 @@ Ctrl-e: \t\tEdit selected
 Ctrl-n: \t\tNew colvar/bias
 Ctrl-Del: \t\tDelete selected
 Right-click: \t\tOpen context menu
+Alt-click: \t\tOpen context menu
 
 #VMD OpenGL Display
 Home: \t\tMove to first frame
