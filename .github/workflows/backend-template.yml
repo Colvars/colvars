@@ -66,7 +66,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Configure Ccache
+      - name: Load compiler cache
         uses: actions/cache@v2
         with:
           path: |
@@ -77,6 +77,14 @@ jobs:
             ${{ runner.os }}-build-${{ inputs.backend_name }}-
             ${{ runner.os }}-build-
             -build-
+
+      # Using an exact key to forgo saving it in case of a match (tarring up
+      # is expensive); also including a date to allow a force-update.
+      - name: Load Singularity containers cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.singularity
+          key: Linux-x86_64-containers-build-2022-03-03
 
       - name: Checkout ${{ inputs.backend_name }}
         uses: actions/checkout@v2

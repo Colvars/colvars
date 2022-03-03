@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Colvars
         uses: actions/checkout@v2
 
-      - name: Reload cache
+      - name: Load compiler cache
         uses: actions/cache@v2
         with:
           path: ~/.ccache
@@ -93,12 +93,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Reload ccache
+      - name: Load compiler ccache
         uses: actions/cache@v2
         with:
           path: ~/.ccache
           key: ${{ runner.os }}-build-multiple-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-multiple-
+
+      # Using an exact key to forgo saving it in case of a match (tarring up
+      # is expensive); also including a date to allow a force-update.
+      - name: Load Singularity containers cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.singularity
+          key: Linux-x86_64-containers-build-2022-03-03
 
       - name: Get small downloadable packages
         uses: actions/checkout@v2
