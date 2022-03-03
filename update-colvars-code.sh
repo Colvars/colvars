@@ -481,6 +481,11 @@ then
     echo "  *******************************************"
   fi
 
+  if [ ${GMX_VERSION} == '2021.x' ] ; then
+    # Ad-hoc fix for CI build until 2021.6 is released
+    sed -i -e 's/windows-latest/windows-2019/' "${target}/.github/workflows/build_cmake.yml"
+  fi
+
   # Update the proxy version if needed
   shared_gmx_proxy_version=$(grep '^#define' "${source}/gromacs/src/colvarproxy_gromacs_version.h" | cut -d' ' -f 3)
 
