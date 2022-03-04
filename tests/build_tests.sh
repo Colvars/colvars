@@ -36,6 +36,9 @@ write_colvars_config() {
     local colvar=$1
     local bias=$2
     local filename=$3
+    if [ -z "${filename}" ] ; then
+        filename=${dirname}/test.in
+    fi
     echo 'colvarsTrajFrequency 1' > ${filename}
     echo 'colvarsRestartFrequency 10' >> ${filename}
     cat indexfile.in >> ${filename}
@@ -77,55 +80,55 @@ for colvar in "distance" ; do
         "linear-k-moving" \
         ; do
         create_test_dir ${colvar}_${bias}
-        write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+        write_colvars_config ${colvar} ${bias}
     done
 done
 
 create_test_dir "distance_histogram-customgrid"
-write_colvars_config "distance" "histogram-customgrid" ${dirname}/test.in
+write_colvars_config "distance" "histogram-customgrid"
 
 create_test_dir "dihedral_histogram-customgrid-periodic"
-write_colvars_config "dihedral" "histogram-customgrid-periodic" ${dirname}/test.in
+write_colvars_config "dihedral" "histogram-customgrid-periodic"
 
 create_test_dir "distancewalls"
-write_colvars_config "distance" "harmonicwalls-fixed" ${dirname}/test.in
+write_colvars_config "distance" "harmonicwalls-fixed"
 write_colvars_config "distancewalls" "" ${dirname}/test.legacy.in
 
 create_test_dir "distancewalls-compatible"
-write_colvars_config "distancewalls" "" ${dirname}/test.in
+write_colvars_config "distancewalls" ""
 
 create_test_dir "dihedralwalls"
-write_colvars_config "dihedral" "harmonicwalls360angle-fixed" ${dirname}/test.in
+write_colvars_config "dihedral" "harmonicwalls360angle-fixed"
 write_colvars_config "dihedralwalls" "" ${dirname}/test.legacy.in
 
 create_test_dir "distance-wall-bypassExtended-off"
-write_colvars_config "distance-extended" "harmonicwalls-bypassExtended-off" ${dirname}/test.in
+write_colvars_config "distance-extended" "harmonicwalls-bypassExtended-off"
 
 # Tests for each colvar without a bias
 for colvar in \
     "distance" \
     ; do
     create_test_dir ${colvar}
-    write_colvars_config ${colvar} "" ${dirname}/test.in
+    write_colvars_config ${colvar} ""
     # if [ -f ${colvar}-fitgroup.in ] ; then
     #     create_test_dir ${colvar}-fitgroup_${bias}
-    #     write_colvars_config ${colvar}-fitgroup ${bias} ${dirname}/test.in
+    #     write_colvars_config ${colvar}-fitgroup ${bias}
     #     m4 -DfittingGroup=refPositionsGroup < ${colvar}-fitgroup.in > ${colvar}-refposgroup.in
     #     write_colvars_config ${colvar}-refposgroup ${bias} ${dirname}/test.legacy.in
     # fi
 done
 
 create_test_dir "distance-extended"
-write_colvars_config "distance-extended" "" ${dirname}/test.in
+write_colvars_config "distance-extended" ""
 
 create_test_dir "distance-runave"
-write_colvars_config "distance-runave" "" ${dirname}/test.in
+write_colvars_config "distance-runave" ""
 
 create_test_dir "distance-autocorrfunc"
-write_colvars_config "distance-autocorrfunc" "" ${dirname}/test.in
+write_colvars_config "distance-autocorrfunc" ""
 
 create_test_dir "distance-corrfunc"
-write_colvars_config "distance-corrfunc" "" ${dirname}/test.in
+write_colvars_config "distance-corrfunc" ""
 
 
 for colvar in "distance-grid" ; do
@@ -144,25 +147,25 @@ for colvar in "distance-grid" ; do
         "metadynamics-ti" \
         ; do
         create_test_dir ${colvar}_${bias}
-        write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+        write_colvars_config ${colvar} ${bias}
     done
 done
 
 create_test_dir "distance-grid-expand_metadynamics"
-write_colvars_config "distance-grid-expand" "metadynamics" ${dirname}/test.in
+write_colvars_config "distance-grid-expand" "metadynamics"
 
 create_test_dir "distance-grid_metadynamics-rebin"
-write_colvars_config "distance-grid" "metadynamics-keephills" ${dirname}/test.in
+write_colvars_config "distance-grid" "metadynamics-keephills"
 write_colvars_config "distance-grid-finer" "metadynamics-keephills-rebingrids" ${dirname}/test.restart.in
 
 create_test_dir "distance-grid_metadynamics-rebinfromgrids"
-write_colvars_config "distance-grid" "metadynamics-new" ${dirname}/test.in
+write_colvars_config "distance-grid" "metadynamics-new"
 write_colvars_config "distance-grid-finer" "metadynamics-rebingrids" ${dirname}/test.restart.in
 
 colvar="distance-extended-grid"
 for bias in "histogram" "histogram-bypassExtended"; do
     create_test_dir ${colvar}_${bias}
-    write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+    write_colvars_config ${colvar} ${bias}
 done
 
 m4 -Daxis < distancez.in.m4 > distancez-axis.in
@@ -204,10 +207,10 @@ for colvar in \
         "harmonic-fixed" \
         ; do
         create_test_dir ${colvar}_${bias}
-        write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+        write_colvars_config ${colvar} ${bias}
         if [ -f ${colvar}-fitgroup.in ] ; then
             create_test_dir ${colvar}-fitgroup_${bias}
-            write_colvars_config ${colvar}-fitgroup ${bias} ${dirname}/test.in
+            write_colvars_config ${colvar}-fitgroup ${bias}
             m4 -DfittingGroup=refPositionsGroup < ${colvar}-fitgroup.in > ${colvar}-refposgroup.in
             write_colvars_config ${colvar}-refposgroup ${bias} ${dirname}/test.legacy.in
         fi
@@ -217,22 +220,25 @@ done
 colvar="orientation"
 for bias in "harmonic-ori-fixed" "harmonic-ori-moving" ; do
 create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+write_colvars_config ${colvar} ${bias}
 if [ -f ${colvar}-fitgroup.in ] ; then
     create_test_dir ${colvar}-fitgroup_${bias}
-    write_colvars_config ${colvar}-fitgroup ${bias} ${dirname}/test.in
+    write_colvars_config ${colvar}-fitgroup ${bias}
     m4 -DfittingGroup=refPositionsGroup < ${colvar}-fitgroup.in > ${colvar}-refposgroup.in
     write_colvars_config ${colvar}-refposgroup ${bias} ${dirname}/test.legacy.in
 fi
 done
 
+create_test_dir customfunction_harmonic-fixed
+write_colvars_config customfunction_harmonic-fixed ""
+
 colvar="distancevec"
 bias="harmonic-dvec-fixed"
 create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+write_colvars_config ${colvar} ${bias}
 if [ -f ${colvar}-fitgroup.in ] ; then
     create_test_dir ${colvar}-fitgroup_${bias}
-    write_colvars_config ${colvar}-fitgroup ${bias} ${dirname}/test.in
+    write_colvars_config ${colvar}-fitgroup ${bias}
     m4 -DfittingGroup=refPositionsGroup < ${colvar}-fitgroup.in > ${colvar}-refposgroup.in
     write_colvars_config ${colvar}-refposgroup ${bias} ${dirname}/test.legacy.in
 fi
@@ -240,37 +246,37 @@ fi
 colvar="distancedir"
 for bias in "harmonic-ddir-fixed" "harmonic-ddir-moving" ; do
     create_test_dir ${colvar}_${bias}
-    write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+    write_colvars_config ${colvar} ${bias}
 done
 bias="harmonic-ddir-fixed"
 create_test_dir ${colvar}-fitgroup_${bias}
-write_colvars_config ${colvar}-fitgroup ${bias} ${dirname}/test.in
+write_colvars_config ${colvar}-fitgroup ${bias}
 
 
 colvar="dihedralPC"
 bias="abf2d"
 create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+write_colvars_config ${colvar} ${bias}
 
 colvar="dihedralPC"
 bias="metadynamics-2d"
 create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+write_colvars_config ${colvar} ${bias}
 
 colvar="distancepairs"
 bias="linear-distancepairs"
 create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+write_colvars_config ${colvar} ${bias}
 
 colvar="distancepairs"
 bias="histogramrestraint-dp"
 create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+write_colvars_config ${colvar} ${bias}
 
 colvar="eulerangles"
 bias="harmonic-fixed-euler"
 create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias} ${dirname}/test.in
+write_colvars_config ${colvar} ${bias}
 
 
 # TODO uncomment this and the add two-dimensional regtests
