@@ -99,7 +99,7 @@ jobs:
         working-directory: website
         env:
           COLVARSDIR: ${{ github.workspace }}
-        run: singularity exec devel-tools/Fedora35-texlive.sif make -C website
+        run: singularity exec ${COLVARSDIR}/devel-tools/Fedora35-texlive.sif make
 
 
   codeql:
