@@ -287,4 +287,3 @@ write_colvars_config ${colvar} ${bias} ${dirname}/test.in
 #         | sed 's/targetCenters  0.1/targetCenters  0.1 0.1/' \
 #         > ${bias}-2.in
 
-unset -f n_test dirname
