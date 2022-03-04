@@ -96,9 +96,10 @@ jobs:
           path: 'website'
 
       - name: Build doc
-        run: |
-          ln -s . colvars
-          singularity exec devel-tools/Fedora35-texlive.sif make -C website
+        working-directory: website
+        env:
+          COLVARSDIR: ${{ github.workspace }}
+        run: singularity exec devel-tools/Fedora35-texlive.sif make -C website
 
 
   codeql:
