@@ -87,7 +87,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          singularity pull Fedora35-texlive.sif --arch amd64 library://giacomofiorin/default/colvars_development:fedora35_texlive
+          singularity pull Fedora35-texlive.sif library://giacomofiorin/default/colvars_development:fedora35_texlive
 
       - name: Checkout website repository
         uses: actions/checkout@v2
