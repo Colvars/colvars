@@ -620,7 +620,13 @@ colvarproxy_script::colvarproxy_script()
 }
 
 
-colvarproxy_script::~colvarproxy_script() {}
+colvarproxy_script::~colvarproxy_script()
+{
+  if (script != NULL) {
+    delete script;
+    script = NULL;
+  }
+}
 
 
 int colvarproxy_script::run_force_callback()
@@ -769,6 +775,10 @@ colvarproxy::colvarproxy()
 colvarproxy::~colvarproxy()
 {
   close_files();
+  if (colvars != NULL) {
+    delete colvars;
+    colvars = NULL;
+  }
 }
 
 
