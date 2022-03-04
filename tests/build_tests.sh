@@ -13,30 +13,20 @@ if [ -n "${1}" ] ; then
     fi
 fi
 
-TPUT_RED='true'
-TPUT_GREEN='true'
-TPUT_BLUE='true'
-TPUT_CLEAR='true'
-if hash tput >& /dev/null ; then
-  TPUT_RED='tput setaf 1'
-  TPUT_GREEN='tput setaf 2'
-  TPUT_BLUE='tput setaf 4'
-  TPUT_CLEAR='tput sgr 0'
-fi
-
 # Create a directory (or find an existing one) and set the variable $dirname
 create_test_dir() {
 
-    if ls $WORKDIR/ | grep -q "^[0-9]\{3\}_${1}$" ; then
+    local workdir=${WORKDIR%/}
+
+    if ls $workdir/ | grep -q "^[0-9]\{3\}_${1}$" ; then
         dirname=`ls $WORKDIR/ | grep "^[0-9]\{3\}_${1}$"`
-        echo "$dirname already exists"
         dirname=${WORKDIR}/${dirname}
         return
     fi
 
     dirname=`printf %03d ${n_test}`_$1
-    echo "$(${TPUT_BLUE}) * $dirname was just created now * $(${TPUT_CLEAR})"
-    dirname="${WORKDIR}/$dirname"
+    echo "Created new directory $workdir/$dirname"
+    dirname="${workdir}/$dirname"
     if [ ! -d ${dirname} ] ; then
         mkdir ${dirname}
     fi
@@ -138,8 +128,6 @@ create_test_dir "distance-corrfunc"
 write_colvars_config "distance-corrfunc" "" ${dirname}/test.in
 
 
-# NOTE: abf is not included because total/system force calculations
-# should be tested separately
 for colvar in "distance-grid" ; do
     for bias in \
         "harmonic-fixed" \
