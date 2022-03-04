@@ -55,6 +55,52 @@ jobs:
           fi
 
 
+  build-doc:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    needs: basic-checks
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Load Singularity containers cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.singularity
+          key: Linux-x86_64-containers-build-doc-2022-03-04
+
+      - name: Get small downloadable packages
+        uses: actions/checkout@v2
+        with:
+          repository: 'Colvars/build-tools-packages'
+          ref: 'master'
+          path: 'devel-tools/packages'
+
+      - name: Install Singularity
+        shell: bash
+        working-directory: devel-tools/packages
+        run: |
+          sudo apt-get -y install squashfs-tools containernetworking-plugins
+          sudo dpkg -i singularity_3.8.5-2_amd64.deb
+
+      - name: Get container image
+        shell: bash
+        working-directory: devel-tools
+        run: |
+          singularity pull Fedora35-texlive.sif --arch amd64 library://giacomofiorin/default/colvars_development:fedora35_texlive
+
+      - name: Checkout website repository
+        uses: actions/checkout@v2
+        with:
+          repository: 'Colvars/colvars.github.io'
+          path: 'website'
+
+      - name: Build doc
+        run: |
+          ln -s . colvars
+          singularity exec devel-tools/Fedora35-texlive.sif make -C website
+
+
   codeql:
     name: CodeQL analysis
     runs-on: ubuntu-latest
@@ -122,7 +168,7 @@ jobs:
           sudo apt-get -y install squashfs-tools containernetworking-plugins
           sudo dpkg -i singularity_3.8.5-2_amd64.deb
 
-      - name: Get container image of backends' dependencies
+      - name: Get container image
         shell: bash
         working-directory: devel-tools
         run: |
@@ -307,7 +353,7 @@ jobs:
           sudo apt-get -y install squashfs-tools containernetworking-plugins
           sudo dpkg -i singularity_3.8.5-2_amd64.deb
 
-      - name: Get container image of backends' dependencies
+      - name: Get container image
         shell: bash
         working-directory: devel-tools
         run: |
