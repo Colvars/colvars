@@ -229,8 +229,10 @@ if [ -f ${colvar}-fitgroup.in ] ; then
 fi
 done
 
+
 create_test_dir customfunction_harmonic-fixed
 write_colvars_config customfunction_harmonic-fixed ""
+
 
 colvar="distancevec"
 bias="harmonic-dvec-fixed"
