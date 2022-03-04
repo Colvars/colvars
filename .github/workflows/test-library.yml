@@ -99,6 +99,7 @@ jobs:
         working-directory: website
         env:
           COLVARSDIR: ${{ github.workspace }}
+          FORCE: 1  # Ignore error if branch isn't master
         run: singularity exec ${COLVARSDIR}/devel-tools/Fedora35-texlive.sif make
 
 
