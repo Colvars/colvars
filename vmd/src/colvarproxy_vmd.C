@@ -135,16 +135,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 
 
 colvarproxy_vmd::~colvarproxy_vmd()
-{
-  if (script != NULL) {
-    delete script;
-    script = NULL;
-  }
-  if (colvars != NULL) {
-    delete colvars;
-    colvars = NULL;
-  }
-}
+{}
 
 
 int colvarproxy_vmd::request_deletion()

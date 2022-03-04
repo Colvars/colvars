@@ -165,14 +165,6 @@ colvarproxy_namd::colvarproxy_namd()
 colvarproxy_namd::~colvarproxy_namd()
 {
   delete reduction;
-  if (script != NULL) {
-    delete script;
-    script = NULL;
-  }
-  if (colvars != NULL) {
-    delete colvars;
-    colvars = NULL;
-  }
 }
 
 
