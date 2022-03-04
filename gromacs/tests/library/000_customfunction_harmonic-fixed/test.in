@@ -1,0 +1,31 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    # This is a 2-vector function of a 4-vector
+    customFunction x
+    customFunction cos(x) + r1 + r3
+
+    distance {
+        name x
+        group1 { indexGroup group1 }
+        group2 { indexGroup group2 }
+    }
+
+    distanceVec {
+        name r
+        group1 { indexGroup group3 }
+        group2 { indexGroup group4 }
+    }
+}
+
+
+harmonic {
+    colvars one
+    centers (20, -5)
+    forceConstant 1.0
+}
