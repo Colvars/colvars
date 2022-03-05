@@ -104,7 +104,22 @@ if(BUILD_TOOLS)
   add_subdirectory(${COLVARS_SOURCE_DIR}/colvartools colvartools)
 endif()
 
-if(BUILD_UNITTESTS)
-  add_subdirectory(${COLVARS_SOURCE_DIR}/tests/unittests unittests)
+option(BUILD_TESTS "Build tests" ON)
+
+if(BUILD_TESTS)
+  add_subdirectory(${COLVARS_SOURCE_DIR}/tests/functional tests/functional)
+  if(DEFINED CMAKE_SYSTEM_NAME)
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+      message(STATUS "Copying input files for tests")
+      # TODO make this portable outside Linux, and part of the build step
+      execute_process(COMMAND bash build_tests.sh
+        ${CMAKE_BINARY_DIR}/tests/functional
+        WORKING_DIRECTORY ${COLVARS_SOURCE_DIR}/tests)
+    endif()
+  endif()
 endif()
 
+option(BUILD_UNITTESTS "Build unit tests" ${BUILD_TESTS})
+if(BUILD_UNITTESTS)
+  add_subdirectory(${COLVARS_SOURCE_DIR}/tests/unittests tests/unittests)
+endif()
