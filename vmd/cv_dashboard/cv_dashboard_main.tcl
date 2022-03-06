@@ -58,6 +58,11 @@ proc ::cv_dashboard::createWindow {} {
   bind $w.cvtable <Control-Delete> ::cv_dashboard::del_cv
   bind $w.cvtable <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
 
+  bind $w.cvtable <Control-c> ::cv_dashboard::copy_cv
+  bind $w.cvtable <Control-v> ::cv_dashboard::paste_cv
+  bind $w.cvtable <Control-x> { ::cv_dashboard::copy_cv; ::cv_dashboard::del_cv }
+
+
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
 
@@ -144,7 +149,7 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [tk::label $main.auto_text -font $::cv_dashboard::font -text "Automatic colvars"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
   incr gridrow
-  grid [ttk::button $main.cvfromprotein -text "Protein/NA auto-colvars" -command ::cv_dashboard::auto_cvs -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.cvfromprotein -text "Protein/NA auto-colvars" -command ::cv_dashboard::auto_cv -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $main.cvfromlabels -text "Colvars from VMD labels" -command ::cv_dashboard::cvs_from_labels -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
   # General options
@@ -236,6 +241,9 @@ proc ::cv_dashboard::createBiasesTab {} {
   bind $biases.bias_table <Control-Delete> ::cv_dashboard::del_bias
   bind $biases.bias_table <Control-a> { .cv_dashboard_window.tabs.biases.bias_table selection set $::cv_dashboard::biases }
 
+  bind $biases.bias_table <Control-c> ::cv_dashboard::copy_bias
+  bind $biases.bias_table <Control-v> ::cv_dashboard::paste_bias
+  bind $biases.bias_table <Control-x> { ::cv_dashboard::copy_bias; ::cv_dashboard::del_bias }
 
   if { [info patchlevel] != "8.5.6" } {
     $biases.bias_table tag configure parity0 -background white
@@ -433,6 +441,7 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
     }
     $menu add command -label Edit -command [list ::cv_dashboard::edit_cv false $cvs]
     $menu add command -label Delete -command [list ::cv_dashboard::del_cv $cvs]
+    $menu add command -label Duplicate -command [list ::cv_dashboard::duplicate_cv $cvs]
     $menu add command -label "Add harmonic bias" -command [list ::cv_dashboard::add_bias $cvs]
   }
   tk_popup $menu $wX $wY
@@ -476,6 +485,9 @@ Ctrl-n: \t\tNew colvar/bias
 Ctrl-Del: \t\tDelete selected
 Right-click: \t\tOpen context menu
 Alt-click: \t\tOpen context menu
+Ctrl-c: \t\tCopy
+Ctrl-x: \t\tCut
+Ctrl-v: \t\tPaste
 
 #VMD OpenGL Display
 Home: \t\tMove to first frame
@@ -784,6 +796,51 @@ proc ::cv_dashboard::del_cv { {cvs "" } } {
 }
 
 
+proc ::cv_dashboard::copy_cv {} {
+
+  set cfgs [dict create]
+  foreach cv [selected_colvars] {
+    dict set cfgs $cv [get_cv_config $cv]
+  }
+
+  set ::cv_dashboard::cv_clipboard $cfgs
+}
+
+
+proc ::cv_dashboard::paste_cv {} {
+
+  set indent $::cv_dashboard::indent
+  foreach cv [dict keys $::cv_dashboard::cv_clipboard] cfg [dict values $::cv_dashboard::cv_clipboard] {
+
+    set newname [make_unique_name $cv [run_cv list]]
+    if { $newname != $cv } {
+      set subst "${indent}name $newname"
+      set cfg [regsub -nocase -line "^\\s+name\\s+$cv" $cfg $subst]
+    }
+    apply_config "colvar {\n${cfg}\n}"
+  }
+}
+
+
+proc ::cv_dashboard::duplicate_cv { {cvs "" } } {
+  if { [llength $cvs] < 1 } {
+    set cvs [selected_colvars]
+  }
+  set indent $::cv_dashboard::indent
+
+  foreach cv $cvs {
+    set cfg [get_cv_config $cv]
+    set newname [make_unique_name $cv [run_cv list]]
+
+    if { $newname != $cv } {
+      set subst "${indent}name $newname"
+      set cfg [regsub -nocase -line "^\\s+name\\s+$cv" $cfg $subst]
+    }
+    apply_config "colvar {\n${cfg}\n}"
+  }
+}
+
+
 # Reset cvm: hard delete
 proc ::cv_dashboard::reset {} {
   set molid $::cv_dashboard::mol
@@ -830,6 +887,36 @@ proc ::cv_dashboard::del_bias { {biases "" } } {
     run_cv bias $bias delete
   }
   refresh_bias_table
+}
+
+
+
+proc ::cv_dashboard::copy_bias {} {
+
+  set cfgs [dict create]
+  foreach bias [selected_biases] {
+    lassign [get_bias_keyword_config $bias] keyword config
+    dict set cfgs $bias [list $keyword $config]
+  }
+
+  set ::cv_dashboard::bias_clipboard $cfgs
+}
+
+
+proc ::cv_dashboard::paste_bias {} {
+  set indent $::cv_dashboard::indent
+
+  foreach bias [dict keys $::cv_dashboard::bias_clipboard] key_cfg [dict values $::cv_dashboard::bias_clipboard] {
+    lassign $key_cfg keyword cfg
+
+    set newname [make_unique_name $bias [run_cv list biases]]
+    if { $newname != $bias } {
+      set subst "${indent}name $newname"
+      # The following line only has an effect if bias has an explicit name
+      set cfg [regsub -nocase -line "^\\s+name\\s+$bias" $cfg $subst]
+    }
+    apply_config "$keyword {\n${cfg}\n}"
+  }
 }
 
 

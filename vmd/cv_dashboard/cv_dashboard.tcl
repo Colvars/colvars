@@ -39,6 +39,8 @@ namespace eval ::cv_dashboard {
   variable bias_configs    [dict create]
   variable global_config   [dict create]
   variable global_comments ""
+  variable cv_clipboard    [dict create]
+  variable bias_clipboard    [dict create]
 
   # Handle to keep track of interactive plot
   variable plothandle
@@ -273,7 +275,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
   set brace_depth 0
   set cv_map [dict create]        ;# cv name -> config (with comments)
   set bias_map [dict create]      ;# bias name -> config (with comments)
-  set global_cfg_map [dict create]  ;# keyword -> rest of the line (value + comments)
+  set global_cfg_map [dict create] ;# keyword -> rest of the line (value + comments)
   set comment_lines ""            ;# lines with only comments
   set name ""
   set keyword ""
@@ -771,4 +773,22 @@ proc ::cv_dashboard::parse_templates {} {
     }
     close $db_file
   }
+}
+
+
+# Create a variant of a provided name that is not in the list of reserved identifiers
+proc ::cv_dashboard::make_unique_name { name reserved } {
+  if { [lsearch $reserved $name] == -1 } { return $name }
+
+  if { ![regexp {(.*)~(\d+)$} $name match base num] } {
+    set base $name
+    set num 0
+  }
+
+  set newname "${base}~${num}"
+  while { [lsearch $reserved $newname] > -1 } {
+    incr num
+    set newname "${base}~${num}"
+  }
+  return $newname
 }
