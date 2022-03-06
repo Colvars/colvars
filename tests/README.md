@@ -11,7 +11,7 @@ Only a Colvars configuration file must be created: in each engine's test folder,
 
 The configuration files included in this folder use index groups with one or more of these:
 - Groups named `group1`, `group2` ... `group10`, which are suitable when a variable is defined from multiple groups; each contains 4 atoms or more.
-- The `RMSD_atoms` group, which is suitable for variables that require a set of reference coordinates (either directly or indirectly, e.g. through `fittinGroup` and similar).
+- The `RMSD_atoms` group, which is suitable for variables that require a set of reference coordinates (either directly or indirectly, e.g. through `fittingGroup` and similar).
 - The `heavy_atoms` group, which is a suitable choice for most cases.  Note that at least in biomolecular systems, leaving out hydrogen atoms from a variable's definition minimizes the chance of tests failing due to large fluctuations.
 
 For the above two groups, please use the file names `rmsd_atoms_refpos.xyz` and `rmsd_atoms_refpos.xyz` to supply reference coordinates, since these files are already set up in each engine's test folder.
@@ -34,7 +34,7 @@ Please keep the above in mind if you plan on running tests in your own environme
 
 Some Colvars features are specific to a certain engine: for example, not all codes implement atom name-based or PDB file-based selections, or Colvars may be using code from that engine to perform a computation.  For those cases, additional tests are also found in the `<engine>/tests/library` folder.  There is also a `<engine>/tests/interface` folder to test functionality that is unique to that code.
 
-*Aside from the above exceptions, it is highly recommended to create test inputs in this folder, so that they may be reused and their features tested in every scenario.*
+*Aside from the above exceptions, it is highly recommended to create test inputs at the top level, i.e. inside this folder, so that they may be reused and their features tested in every scenario.*
 
 
 ### Adding a new test
