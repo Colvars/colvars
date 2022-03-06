@@ -50,7 +50,25 @@ int colvarproxy_stub::setup()
 }
 
 
-int colvarproxy_stub::set_unit_system(std::string const &units_in, 
+void colvarproxy_stub::request_total_force(bool yesno)
+{
+  total_force_requested = yesno;
+}
+
+
+bool colvarproxy_stub::total_forces_enabled() const
+{
+  return total_force_requested;
+}
+
+
+bool colvarproxy_stub::total_forces_same_step() const
+{
+  return total_force_requested;
+}
+
+
+int colvarproxy_stub::set_unit_system(std::string const &units_in,
                                             bool check_only)
 {
   return COLVARS_OK;

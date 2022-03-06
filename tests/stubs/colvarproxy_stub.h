@@ -25,6 +25,12 @@ public:
 
   int setup() override;
 
+  void request_total_force(bool yesno) override;
+
+  bool total_forces_enabled() const override;
+
+  bool total_forces_same_step() const override;
+
   void log(std::string const &message) override;
 
   void error(std::string const &message) override;
