@@ -430,6 +430,12 @@ public:
   /// \brief print all enabled features and those of children, for debugging
   void print_state();
 
+  /// Write the state of available features to a string
+  virtual std::string const get_features_state() const;
+
+  /// Read the state of available features from a string
+  virtual int set_features_state(std::string const &state_conf);
+
   /// \brief Check that a feature is enabled, raising COLVARS_BUG_ERROR if not
   inline void check_enabled(int f, std::string const &reason) const
   {

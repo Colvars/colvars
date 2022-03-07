@@ -287,6 +287,12 @@ public:
     cvb_features.clear();
   }
 
+  /// Write the state of available features to a string
+  virtual std::string const get_features_state() const /* override */ ;
+
+  /// Read the state of available features from a string
+  virtual int set_features_state(std::string const &state_conf) /* override */ ;
+
 protected:
 
   /// \brief Pointers to collective variables to which the bias is

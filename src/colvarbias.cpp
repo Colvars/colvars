@@ -479,15 +479,20 @@ std::string const colvarbias::get_state_params() const
   std::ostringstream os;
   os << "    step " << cvm::step_absolute() << "\n"
      << "    name " << this->name << "\n";
+  os << get_features_state();
   return os.str();
 }
 
 
 int colvarbias::check_matching_state(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
+
+  matching_state = false;
+
   std::string check_name = "";
   colvarparse::get_keyval(conf, "name", check_name,
-                          std::string(""), colvarparse::parse_silent);
+                          std::string(""), colvarparse::parse_restart);
 
   if (check_name.size() == 0) {
     return cvm::error("Error: \""+bias_type+"\" block within the state file "
@@ -504,16 +509,19 @@ int colvarbias::check_matching_state(std::string const &conf)
     matching_state = true;
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
 int colvarbias::set_state_params(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
   colvarparse::get_keyval(conf, "step", state_file_step,
-                          cvm::step_absolute(), colvarparse::parse_silent);
+                          cvm::step_absolute(), colvarparse::parse_restart);
 
-  return COLVARS_OK;
+  error_code |= set_features_state(conf);
+
+  return error_code;
 }
 
 
@@ -767,6 +775,25 @@ std::ostream & colvarbias::write_traj(std::ostream &os)
        << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
        << bias_energy;
   return os;
+}
+
+
+std::string const colvarbias::get_features_state() const {
+  std::ostringstream os;
+  os << "active " << (is_enabled(f_cv_active) ? std::string("on") :
+                      std::string("off")) << "\n";
+  return os.str();
+}
+
+
+int colvarbias::set_features_state(std::string const &state_conf) {
+  int error_code = COLVARS_OK;
+  bool flag = is_enabled(f_cvb_active);
+  if (get_keyval(state_conf, "active", flag, flag,
+                 colvarparse::parse_restart)) {
+    set_enabled(f_cvb_active, flag);
+  }
+  return error_code;
 }
 
 

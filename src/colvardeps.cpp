@@ -452,6 +452,16 @@ void colvardeps::print_state() {
 }
 
 
+std::string const colvardeps::get_features_state() const {
+  return std::string("");
+}
+
+
+int colvardeps::set_features_state(std::string const &state_conf) {
+  return COLVARS_OK;
+}
+
+
 void colvardeps::add_child(colvardeps *child) {
 
   children.push_back(child);
