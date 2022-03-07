@@ -680,9 +680,23 @@ proc ::cv_dashboard::cvs_from_labels {} {
       }
       if { $ok } {
         append cfg "$indent\}\n\}"
+        set old_name $cv_name
         set cv_name [make_unique_name $cv_name [run_cv list]]
+
         set cfg "colvar \{\n${indent}name $cv_name\n${indent}$cvc($obj) \{\n$cfg"
         apply_config $cfg
+
+        if { $cv_name != $old_name } {
+          # Detect and remove duplicates (need to create it first to check atoms)
+          run_cv colvar $cv_name set atom_list 1
+          set newatoms [run_cv colvar $cv_name getatomids]
+          run_cv colvar $old_name set atom_list 1
+          set oldatoms [run_cv colvar $old_name getatomids]
+          if { $newatoms == $oldatoms } {
+            run_cv colvar $cv_name delete
+            refresh_table
+          }
+        }
       }
     }
   }
