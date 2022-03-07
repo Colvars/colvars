@@ -761,8 +761,11 @@ proc ::cv_dashboard::create_cvs { ref_atoms all_atoms description } {
     }
     close $refFile
   }
-  set name [make_unique_name "${description}_rmsd" [run_cv list]]
-  set cfg "colvar {
+  set all_cvs [run_cv list]
+
+  set name "${description}_rmsd"
+  if { [lsearch $all_cvs $name] == -1 } {
+    set cfg "colvar {
 ${indent}# alpha carbon RMSD with respect to frame 0 of molecule [molinfo $molid get name]
 ${indent}name $name
 ${indent}rmsd {
@@ -772,10 +775,12 @@ ${indent}${indent}}
 ${indent}${indent}refPositionsFile $refFileName
 ${indent}}
 }"
-  apply_config $cfg
+    apply_config $cfg
+  }
 
-  set name [make_unique_name "${description}_rgyr" [run_cv list]]
-  set cfg "colvar {
+  set name "${description}_rgyr"
+  if { [lsearch $all_cvs $name] == -1 } {
+    set cfg "colvar {
 ${indent}# alpha carbon radius of gyration
 ${indent}name $name
 ${indent}gyration {
@@ -784,10 +789,12 @@ ${indent}${indent}${indent}[sel2cvatoms $ref_atoms]
 ${indent}${indent}}
 ${indent}}
 }"
-  apply_config $cfg
+    apply_config $cfg
+  }
 
-  set name [make_unique_name "${description}_orientation" [run_cv list]]
-  set cfg "colvar {
+  set name "${description}_orientation"
+  if { [lsearch $all_cvs $name] == -1 } {
+    set cfg "colvar {
 ${indent}# orientation quaternion of ${description} with respect to first frame
 ${indent}name $name
 ${indent}orientation {
@@ -797,10 +804,12 @@ ${indent}${indent}}
 ${indent}${indent}refPositionsFile $refFileName
 ${indent}}
 }"
-  apply_config $cfg
+    apply_config $cfg
+  }
 
-  set name [make_unique_name "${description}_orientation_angle" [run_cv list]]
-  set cfg "colvar {
+  set name "${description}_orientation_angle"
+  if { [lsearch $all_cvs $name] == -1 } {
+    set cfg "colvar {
 ${indent}# orientation angle of ${description} with respect to first frame
 ${indent}name $name
 ${indent}orientationAngle {
@@ -810,12 +819,14 @@ ${indent}${indent}}
 ${indent}${indent}refPositionsFile $refFileName
 ${indent}}
 }"
-  apply_config $cfg
+    apply_config $cfg
+  }
 
   # Check that we have atoms and their charges are defined
   if { [$all_atoms num] > 0  && [veclength2 [$all_atoms get charge]] > 0} {
-    set name [make_unique_name "${description}_dipole_magnitude" [run_cv list]]
-    set cfg "colvar {
+    set name "${description}_dipole_magnitude"
+    if { [lsearch $all_cvs $name] == -1 } {
+      set cfg "colvar {
 ${indent}# magnitude of ${description} dipole
 ${indent}name $name
 ${indent}dipoleMagnitude {
@@ -824,6 +835,7 @@ ${indent}${indent}${indent}[sel2cvatoms $all_atoms]
 ${indent}${indent}}
 ${indent}}
 }"
-    apply_config $cfg
+      apply_config $cfg
+    }
   }
 }
