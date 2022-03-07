@@ -1173,31 +1173,34 @@ proc ::cv_dashboard::update_shown_gradients {} {
       continue
     }
 
-    set atomids [run_cv colvar $cv getatomids]
-    if { [llength $atomids] == 0 } {
-      # Variable was reinitialized and lost its gradient feature
+    if { [run_cv colvar $cv get atom_list] != 1 } {
+      # Variable was reinitialized and may have lost its collect_gradient feature
       run_cv colvar $cv set gradient 1
-      run_cv colvar $cv set collect_gradient 1
       if { [run_cv colvar $cv get gradient] != 1 } {
         tk_messageBox -icon error -title "Colvars Dashboard Error"\
           -message "Colvar $cv does not support gradient computation.\nSee console for details."
+        unset ::cv_dashboard::grad_objects($cv_n_i)
         continue
       }
-      set atomids [run_cv colvar $cv getatomids]
-      if { [llength $atomids] == 0 } {
-        puts "Error getting atomids for colvar $cv"
+      run_cv colvar $cv set atom_list 1
+      if { [run_cv colvar $cv get atom_list] != 1 } {
+        tk_messageBox -icon error -title "Colvars Dashboard Error"\
+          -message "Colvar $cv cannot provide atom IDs.\nSee console for details."
+        unset ::cv_dashboard::grad_objects($cv_n_i)
         continue
       }
+      # Try to enable collect_gradient but don't throw an error if that fails
+      run_cv colvar $cv set collect_gradient 1
       # Update after enabling gradient computation (unnecessary outside this condition)
       run_cv colvar $cv update
     }
+    set atomids [run_cv colvar $cv getatomids]
 
     if { [run_cv colvar $cv get collect_gradient] == 1 } {
       # Easy way: collect gradient is already enabled
       set grads [run_cv colvar $cv getgradients]
     } else {
       # Use the force, Luke!
-
       if { [info exists ::cv_dashboard::atom_id_map($cv)] } {
         set atom_id_map $::cv_dashboard::atom_id_map($cv)
       } else {

@@ -263,6 +263,8 @@ int colvar::cvc::init_dependencies() {
     // CVC cannot compute atom-level gradients if computed on atom group COM
     exclude_feature_self(f_cvc_scalable_com, f_cvc_explicit_gradient);
 
+    init_feature(f_cvc_atom_list, "atom_list", f_type_dynamic);
+    require_feature_children(f_cvc_atom_list, f_ag_atom_list);
 
     // TODO only enable this when f_ag_scalable can be turned on for a pre-initialized group
     // require_feature_children(f_cvc_scalable, f_ag_scalable);
@@ -289,17 +291,15 @@ int colvar::cvc::init_dependencies() {
   // Each cvc specifies what other features are available
   feature_states[f_cvc_active].available = true;
   feature_states[f_cvc_gradient].available = true;
+  feature_states[f_cvc_atom_list].available = true;
 
   // CVCs are enabled from the start - get disabled based on flags
   enable(f_cvc_active);
-  // feature_states[f_cvc_active].enabled = true;
 
-  // Explicit gradients are implemented in mosts CVCs. Exceptions must be specified explicitly.
-  // feature_states[f_cvc_explicit_gradient].enabled = true;
+  // Explicit gradients are implemented in most CVCs. Exceptions must be specified explicitly.
   enable(f_cvc_explicit_gradient);
 
   // Use minimum-image distances by default
-  // feature_states[f_cvc_pbc_minimum_image].enabled = true;
   enable(f_cvc_pbc_minimum_image);
 
   // Features that are implemented by default if their requirements are
