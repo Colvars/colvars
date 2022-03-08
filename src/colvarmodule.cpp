@@ -1928,7 +1928,16 @@ std::ostream &colvarmodule::write_traj_label(std::ostream &os)
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
        cvi != colvars.end();
        cvi++) {
-    (*cvi)->write_traj_label(os);
+
+    if (!(*cvi)->is_enabled(colvardeps::f_cv_active)) {
+      // Re-enable inactive variable just for the sake of output
+      (*cvi)->enable(colvardeps::f_cv_active);
+      (*cvi)->write_traj_label(os);
+      (*cvi)->disable(colvardeps::f_cv_active);
+    } else {
+      (*cvi)->write_traj_label(os);
+    }
+
   }
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
@@ -1953,7 +1962,16 @@ std::ostream & colvarmodule::write_traj(std::ostream &os)
   for (std::vector<colvar *>::iterator cvi = colvars.begin();
        cvi != colvars.end();
        cvi++) {
-    (*cvi)->write_traj(os);
+
+    if (!(*cvi)->is_enabled(colvardeps::f_cv_active)) {
+      // Re-enable inactive variable just for the sake of output
+      (*cvi)->enable(colvardeps::f_cv_active);
+      (*cvi)->write_traj(os);
+      (*cvi)->disable(colvardeps::f_cv_active);
+    } else {
+      (*cvi)->write_traj(os);
+    }
+
   }
   for (std::vector<colvarbias *>::iterator bi = biases.begin();
        bi != biases.end();
