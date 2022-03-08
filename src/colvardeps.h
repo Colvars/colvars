@@ -268,7 +268,7 @@ public:
     /// atomic_gradient
     f_cv_collect_gradient,
     /// \brief Build list of atoms involved in CV calculation
-    f_cv_atom_list,
+    f_cv_collect_atom_ids,
     /// \brief Calculate the velocity with finite differences
     f_cv_fdiff_velocity,
     /// \brief The total force is calculated, projecting the atomic
@@ -377,7 +377,7 @@ public:
     /// Centers-of-mass used in this CVC can be computed in parallel
     f_cvc_scalable_com,
     /// \brief Build list of atoms involved in CVC calculation
-    f_cvc_atom_list,
+    f_cvc_collect_atom_ids,
     /// Number of CVC features
     f_cvc_ntot
   };
@@ -398,7 +398,7 @@ public:
     f_ag_scalable,
     f_ag_scalable_com,
     /// \brief Build list of atoms involved in atom group
-    f_ag_atom_list,
+    f_ag_collect_atom_ids,
     f_ag_ntot
   };
 

@@ -268,8 +268,8 @@ int cvm::atom_group::init_dependencies() {
     init_feature(f_ag_scalable_com, "scalable_group_center_of_mass", f_type_static);
     require_feature_self(f_ag_scalable, f_ag_scalable_com);
 
-    init_feature(f_ag_atom_list, "atom_list", f_type_dynamic);
-    exclude_feature_self(f_ag_atom_list, f_ag_scalable_com);
+    init_feature(f_ag_collect_atom_ids, "collect_atom_ids", f_type_dynamic);
+    exclude_feature_self(f_ag_collect_atom_ids, f_ag_scalable_com);
 
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_ag_ntot; i++) {
@@ -299,7 +299,7 @@ int cvm::atom_group::init_dependencies() {
   feature_states[f_ag_fit_gradients].available = true;
   feature_states[f_ag_fitting_group].available = true;
   feature_states[f_ag_explicit_gradient].available = true;
-  feature_states[f_ag_atom_list].available = true;
+  feature_states[f_ag_collect_atom_ids].available = true;
 
   return COLVARS_OK;
 }

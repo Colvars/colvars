@@ -1173,7 +1173,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
       continue
     }
 
-    if { [run_cv colvar $cv get atom_list] != 1 } {
+    if { [run_cv colvar $cv get collect_atom_ids] != 1 } {
       # Variable was reinitialized and may have lost its collect_gradient feature
       run_cv colvar $cv set gradient 1
       if { [run_cv colvar $cv get gradient] != 1 } {
@@ -1182,8 +1182,8 @@ proc ::cv_dashboard::update_shown_gradients {} {
         unset ::cv_dashboard::grad_objects($cv_n_i)
         continue
       }
-      run_cv colvar $cv set atom_list 1
-      if { [run_cv colvar $cv get atom_list] != 1 } {
+      run_cv colvar $cv set collect_atom_ids 1
+      if { [run_cv colvar $cv get collect_atom_ids] != 1 } {
         tk_messageBox -icon error -title "Colvars Dashboard Error"\
           -message "Colvar $cv cannot provide atom IDs, possibly because it is computed in parallel or in an implicit way.\nSee console for details."
         unset ::cv_dashboard::grad_objects($cv_n_i)

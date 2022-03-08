@@ -958,7 +958,7 @@ void colvar::do_feature_side_effects(int id)
     case f_cv_total_force_calc:
       cvm::request_total_force();
       break;
-    case f_cv_atom_list:
+    case f_cv_collect_atom_ids:
       // Needed for getting gradients vias collect_gradients
       // or via atomic forces e.g. in Colvars Dashboard in VMD
       if (atom_ids.size() == 0) {
@@ -1103,14 +1103,14 @@ int colvar::init_dependencies() {
     init_feature(f_cv_collect_gradient, "collect_gradient", f_type_dynamic);
     require_feature_self(f_cv_collect_gradient, f_cv_gradient);
     require_feature_self(f_cv_collect_gradient, f_cv_scalar);
-    require_feature_self(f_cv_collect_gradient, f_cv_atom_list);
+    require_feature_self(f_cv_collect_gradient, f_cv_collect_atom_ids);
     // The following exclusions could be lifted by implementing the feature
     exclude_feature_self(f_cv_collect_gradient, f_cv_scripted);
     exclude_feature_self(f_cv_collect_gradient, f_cv_custom_function);
     require_feature_children(f_cv_collect_gradient, f_cvc_explicit_gradient);
 
-    init_feature(f_cv_atom_list, "atom_list", f_type_dynamic);
-    require_feature_children(f_cv_atom_list, f_cvc_atom_list);
+    init_feature(f_cv_collect_atom_ids, "collect_atom_ids", f_type_dynamic);
+    require_feature_children(f_cv_collect_atom_ids, f_cvc_collect_atom_ids);
 
     init_feature(f_cv_fdiff_velocity, "velocity_from_finite_differences", f_type_dynamic);
 
