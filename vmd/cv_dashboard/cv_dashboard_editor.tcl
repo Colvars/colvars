@@ -688,9 +688,9 @@ proc ::cv_dashboard::cvs_from_labels {} {
 
         if { $cv_name != $old_name } {
           # Detect and remove duplicates (need to create it first to check atoms)
-          run_cv colvar $cv_name set atom_list 1
+          run_cv colvar $cv_name set collect_atom_ids 1
           set newatoms [run_cv colvar $cv_name getatomids]
-          run_cv colvar $old_name set atom_list 1
+          run_cv colvar $old_name set collect_atom_ids 1
           set oldatoms [run_cv colvar $old_name getatomids]
           if { $newatoms == $oldatoms } {
             run_cv colvar $cv_name delete
