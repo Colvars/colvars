@@ -264,12 +264,13 @@ int cvm::atom_group::init_dependencies() {
 
     // parallel calculation implies that we have at least a scalable center of mass,
     // but f_ag_scalable is kept as a separate feature to deal with future dependencies
-    init_feature(f_ag_scalable, "scalable_group", f_type_static);
+    init_feature(f_ag_scalable, "scalable_group", f_type_dynamic);
+
     init_feature(f_ag_scalable_com, "scalable_group_center_of_mass", f_type_static);
-    require_feature_self(f_ag_scalable, f_ag_scalable_com);
+    require_feature_self(f_ag_scalable_com, f_ag_scalable);
 
     init_feature(f_ag_collect_atom_ids, "collect_atom_ids", f_type_dynamic);
-    exclude_feature_self(f_ag_collect_atom_ids, f_ag_scalable_com);
+    exclude_feature_self(f_ag_collect_atom_ids, f_ag_scalable);
 
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_ag_ntot; i++) {
@@ -428,7 +429,6 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
   if (is_available(f_ag_scalable_com) && !is_enabled(f_ag_rotate) && !is_enabled(f_ag_center)) {
     enable(f_ag_scalable_com);
-    enable(f_ag_scalable);
   }
 
   {
