@@ -74,7 +74,6 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
             cvm::atom_group* tmp_fitting_atoms = new cvm::atom_group(fitting_group_name.c_str());
             tmp_fitting_atoms->parse(fitting_conf);
             tmp_fitting_atoms->disable(f_ag_scalable);
-            tmp_fitting_atoms->disable(f_ag_scalable_com);
             tmp_fitting_atoms->fit_gradients.assign(tmp_fitting_atoms->size(), cvm::atom_pos(0.0, 0.0, 0.0));
             std::string reference_position_file_lookup = "refPositionsFile" + cvm::to_str(i_frame + 1);
             std::string reference_position_filename;
@@ -86,7 +85,6 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
             tmp_atoms->enable(f_ag_rotate);
             tmp_atoms->b_user_defined_fit = true;
             tmp_atoms->disable(f_ag_scalable);
-            tmp_atoms->disable(f_ag_scalable_com);
             tmp_atoms->ref_pos = reference_fitting_position;
             tmp_atoms->center_ref_pos();
             tmp_atoms->enable(f_ag_fit_gradients);
