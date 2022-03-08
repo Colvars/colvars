@@ -169,7 +169,6 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
           && !is_enabled(f_cvc_debug_gradient)) {
         disable(f_cvc_explicit_gradient);
         enable(f_cvc_scalable_com);
-        enable(f_cvc_scalable);
         // The CVC makes the feature available;
         // the atom group will enable it unless it needs to compute a rotational fit
         group->provide(f_ag_scalable_com);
@@ -253,8 +252,8 @@ int colvar::cvc::init_dependencies() {
 
     init_feature(f_cvc_pbc_minimum_image, "use_minimum-image_with_PBCs", f_type_user);
 
-    init_feature(f_cvc_scalable, "scalable_calculation", f_type_static);
-    require_feature_self(f_cvc_scalable, f_cvc_scalable_com);
+    init_feature(f_cvc_scalable, "scalable_calculation", f_type_dynamic);
+    require_feature_self(f_cvc_scalable_com, f_cvc_scalable);
     // CVC cannot compute atom-level gradients on rank 0 if colvar computation is distributed
     exclude_feature_self(f_cvc_scalable, f_cvc_explicit_gradient);
 
