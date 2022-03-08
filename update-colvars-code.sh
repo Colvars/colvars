@@ -147,7 +147,7 @@ then
     *)
     if [ $force_update = 0 ] ; then
       echo " ******************************************************************************"
-      echo "  ERROR: Support for GROMACS version ${GMX_VERSION} has not been tested."
+      echo "  ERROR: Support for GROMACS version ${GMX_VERSION} has not been tested yet."
       echo "  You may override with -f, but be mindful of compilation or runtime problems."
       echo " ******************************************************************************"
       exit 3
@@ -448,25 +448,34 @@ fi
 # Update GROMACS tree
 if [ ${code} = "GROMACS" ]
 then
+
+  target_folder=${target}/src/external/colvars
+  patch_opts="-p1 --forward -s"
+  if [ ${GMX_VERSION} \< '2021.x' ] ; then
+    # Legacy path, we now target src/external
+    target_folder=${target}/src/gromacs/colvars
+    patch_opts="-p0 --forward -s"
+  fi
+
   echo ""
-  if [ -d ${target}/src/gromacs/colvars ]
+  if [ -d ${target_folder} ]
   then
     echo "Your ${target} source tree seems to have already been patched."
     echo "Update with the last Colvars source."
   else
-    mkdir ${target}/src/gromacs/colvars
+    mkdir ${target_folder}
   fi
 
-  # copy library files and proxy files to the "colvars" folder
+  # Copy library files and proxy files to the "src/external/colvars" folder
   for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target}/src/gromacs/colvars/${tgt}" "${cpp_patch}"
+    condcopy "${src}" "${target_folder}/${tgt}" "${cpp_patch}"
   done
   echo ""
 
   # Apply patch for Gromacs files
-  patch --forward -s -p0 -d ${target} < ${source}/gromacs/gromacs-${GMX_VERSION}.patch
+  patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-${GMX_VERSION}.patch
   ret_val=$?
   if [ $ret_val -ne 0 ]
   then
@@ -489,7 +498,7 @@ then
   # Update the proxy version if needed
   shared_gmx_proxy_version=$(grep '^#define' "${source}/gromacs/src/colvarproxy_gromacs_version.h" | cut -d' ' -f 3)
 
-  patch_gmx_proxy_version=$(grep '^#define' "${target}/src/gromacs/colvars/colvarproxy_gromacs_version.h" | cut -d' ' -f 3)
+  patch_gmx_proxy_version=$(grep '^#define' "${target_folder}/colvarproxy_gromacs_version.h" | cut -d' ' -f 3)
 
   if [ ${shared_gmx_proxy_version} \> ${patch_gmx_proxy_version} ] ; then
     condcopy ${source}/gromacs/src/colvarproxy_gromacs_version.h \
