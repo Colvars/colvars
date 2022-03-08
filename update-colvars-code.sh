@@ -8,6 +8,11 @@
 LC_ALL=C
 export LC_ALL
 
+if [ -z "${GIT}" ] ; then
+  hash git
+  GIT=$(hash -t git)
+fi
+
 if [ $# -lt 1 ]
 then
     cat <<EOF
@@ -468,6 +473,17 @@ then
   else
     mkdir ${target_folder}
   fi
+
+  # Copy Lepton
+  if [ ! -d /tmp/openmm-source/libraries/lepton ] ; then
+    if [ -z "${GIT}" ] ; then
+      echo "Error: Git not available" >&2
+      exit 1
+    fi
+    echo "Downloading Lepton library (used in Colvars) via the OpenMM repository"
+    ${GIT} clone --depth=1 https://github.com/openmm/openmm.git /tmp/openmm-source
+  fi
+  cp -f -p -R /tmp/openmm-source/libraries/lepton ${target}/src/external/
 
   # Copy library files and proxy files to the "src/external/colvars" folder
   for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*
