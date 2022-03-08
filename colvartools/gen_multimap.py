@@ -290,7 +290,7 @@ def init_z_profiles(origin, length, dz, args):
         for input_file in args.input_profiles:
             # Load 1D profiles from file
             z_profile = np.loadtxt(input_file,
-                                   dtype=[('z', np.float), ('p', np.float)])
+                                   dtype=[('z', np.float64), ('p', np.float64)])
             z_profiles += [z_profile]
 
     elif (len(args.input_centers)):
@@ -902,7 +902,7 @@ Generate input files for Multi-Map computations with VMD and NAMD.  Reference ar
                        'in the same format as --deformation-map. '
                        'May be used together with other masking functions.')
     group.add_argument('--mask-by-amplitude',
-                       type=np.float,
+                       type=float,
                        help='Mask out regions that move less than this '
                        'fraction of the maximum amplitude.  '
                        'May be used together with other masking functions.',
@@ -1091,7 +1091,7 @@ def check_prep_args(args):
               "\"; values of this 2D map will be multiplied by "
               "the deformation amplitudes.  "
               "The mean is automatically subtracted.")
-        args.deformation_map = np.loadtxt(args.deformation_map, dtype=np.float)
+        args.deformation_map = np.loadtxt(args.deformation_map, dtype=np.float64)
         if args.deformation_map_mask is None:
             args.deformation_map_mask = np.ones(shape=args.deformation_map.shape)
         print("Subtracting the mean Z-coordinate of the map; before =",
@@ -1107,7 +1107,7 @@ def check_prep_args(args):
     if type(args.deformation_map_mask) == str:
         print("Loading the mask from file \""+args.deformation_map_mask+"\"")
         args.deformation_map_mask = np.loadtxt(args.deformation_map_mask,
-                                               dtype=np.float)
+                                               dtype=np.float64)
         print("Mean value of the mask map =", args.deformation_map_mask.mean())
 
     if args.mask_by_amplitude > 0.0:
@@ -1216,7 +1216,7 @@ def generate_maps_from_profiles(args):
 
             if not args.deformation_map_mask is None:
                 factor = args.deformation_map_mask.sum() / \
-                         np.float(args.deformation_map_mask.size)
+                         np.float64(args.deformation_map_mask.size)
                 print("  Masking the map (fraction = %.1f%%)" % (factor*100))
                 np.multiply(map_output.grid,
                             args.deformation_map_mask[:,:,np.newaxis],
