@@ -265,7 +265,6 @@ int cvm::atom_group::init_dependencies() {
     // parallel calculation implies that we have at least a scalable center of mass,
     // but f_ag_scalable is kept as a separate feature to deal with future dependencies
     init_feature(f_ag_scalable, "scalable_group", f_type_dynamic);
-
     init_feature(f_ag_scalable_com, "scalable_group_center_of_mass", f_type_static);
     require_feature_self(f_ag_scalable_com, f_ag_scalable);
 
@@ -295,7 +294,6 @@ int cvm::atom_group::init_dependencies() {
 
   // f_ag_scalable_com is provided by the CVC iff it is COM-based
   feature_states[f_ag_scalable_com].available = false;
-  // TODO make f_ag_scalable depend on f_ag_scalable_com (or something else)
   feature_states[f_ag_scalable].available = true;
   feature_states[f_ag_fit_gradients].available = true;
   feature_states[f_ag_fitting_group].available = true;
