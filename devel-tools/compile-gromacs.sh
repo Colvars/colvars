@@ -34,6 +34,11 @@ compile_gromacs_target() {
     local GMX_BUILD_TYPE=Release
     local GMX_INSTALL_DIR="${GMX_SRC_DIR}/install"
 
+    if [ -n "${GITHUB_ACTION}" ] ; then
+        # We don't want to let the "dirty" flag constantly invalidate the cache
+        GMX_BUILD_OPTS+=("-DGMX_GIT_VERSION_INFO=OFF")
+    fi
+
     GMX_BUILD_OPTS+=("-DGMX_DOUBLE=ON")
 
     while [ $# -ge 1 ]; do
