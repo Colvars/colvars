@@ -36,9 +36,6 @@ if(DEFINED CMAKE_SYSTEM_NAME)
   if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     # Temporarily disable to debug issues
     set(COLVARS_TCL OFF)
-    # The current build recipe for Colvars builds both static and shared with
-    # the same flags, which won't work for MSVC
-    set(COLVARS_LEPTON OFF)
     file(DOWNLOAD
       "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-win64.zip"
       ./tcl.zip SHOW_PROGRESS)
