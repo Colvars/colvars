@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.1.3)
 project(colvars CXX)
 get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -23,18 +25,6 @@ option(COLVARS_LEPTON "Build and link the Lepton library" ${COLVARS_LEPTON_DEFAU
 
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
-if(COLVARS_LEPTON)
-  if(NOT EXISTS ${LEPTON_DIR})
-    message(FATAL_ERROR "With -DCOLVARS_LEPTON=ON, the lepton folder must be copied into ${COLVARS_SOURCE_DIR} or provided by -DLEPTON_DIR=xxx")
-  endif()
-  if(${CMAKE_CXX_STANDARD} GREATER 70) # Yet another Y2K idiosyncrasy
-    message(FATAL_ERROR "With -DCOLVARS_LEPTON=ON, CMAKE_CXX_STANDARD must be 11 or later")
-  endif()
-  file(GLOB LEPTON_SOURCES ${LEPTON_DIR}/src/[^.]*.cpp)
-  add_library(lepton STATIC ${LEPTON_SOURCES})
-  set_property(TARGET lepton PROPERTY POSITION_INDEPENDENT_CODE 1)
-  target_include_directories(lepton PRIVATE ${LEPTON_DIR}/include)
-endif()
 
 # Object library to be used by both static and shared versions to avoid compiling every object twice
 add_library(colvars_obj OBJECT ${COLVARS_SOURCES})
@@ -61,15 +51,7 @@ if(WARNINGS_ARE_ERRORS)
   target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:SunPro>:-xwe>)
 endif()
 
-
-if(COLVARS_LEPTON)
-  target_compile_options(colvars_obj PRIVATE -DLEPTON)
-  target_include_directories(colvars_obj PRIVATE ${LEPTON_DIR}/include)
-  target_link_libraries(colvars lepton)
-  target_link_libraries(colvars_shared lepton)
-  # Silence warning
-  target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare -Wno-unknown-warning-option>)
-endif()
+include(buildColvarsLepton)
 
 option(COLVARS_TCL "Link against the Tcl library" OFF)
 
