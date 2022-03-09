@@ -96,21 +96,26 @@ The `update-colvars-code.sh` script support patching the latest development vers
 - the [NAMD GitLab repository](https://gitlab.com/tcbgUIUC/namd);
 - the [CVS repositories of VMD and its plugins](https://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html).
 
-**Note:** For [GROMACS](http://www.gromacs.org/), support for specific release series is currently maintained; pre-patched versions of specific releases are provided [below](#gromacs-colvars-releases).
+For [GROMACS](http://www.gromacs.org/), support for specific release series is currently maintained; pre-patched versions of specific releases are provided [below](#gromacs-colvars-releases).
 
-## Gromacs-Colvars releases
+All of the above MD engine versions are automatically tested as part of GitHub Actions [workflows](https://github.com/Colvars/colvars/actions?query=branch%3Amaster).
 
-The following links allow to download several versions of Gromacs already patched to include the latest available version of Colvars:
+## GROMACS-Colvars releases
 
- - **Gromacs version 2021.4-colvars** in [Tar.gz](https://github.com/Colvars/gromacs/archive/v2021.4-colvars.tar.gz) and [Zip](https://github.com/Colvars/gromacs/archive/v2021.4-colvars.zip) formats
+The following links provide specific versions of GROMACS that are already patched with the latest available version of Colvars:
 
- - **Gromacs version 2020.6-colvars** in [Tar.gz](https://github.com/Colvars/gromacs/archive/v2020.6-colvars.tar.gz) and [Zip](https://github.com/Colvars/gromacs/archive/v2020.6-colvars.zip) formats
+ - **GROMACS [2021.5-colvars](https://github.com/Colvars/gromacs/releases/tag/v2021.5-colvars)**;
 
- - **Gromacs version 2018.8-colvars** in [Tar.gz](https://github.com/Colvars/gromacs/archive/v2018.8-colvars.tar.gz) and [Zip](https://github.com/Colvars/gromacs/archive/v2018.8-colvars.zip) formats
+ - **GROMACS [2020.7-colvars](https://github.com/Colvars/gromacs/releases/tag/v2020.7-colvars)**.
 
-Gromacs-Colvars versions not listed above are not supported, but the same [patching procedure](#updating-to-the-latest-version) is generally portable across the same Gromacs release series (i.e. labeled with the same year).
+Other patched releases within the 2020.x or 2021.x series may be produced using the same [patching procedure](#updating-to-the-latest-version) described above.  Unless there is a specific reason not to, it is a good idea to use the latest revision of each release series, available as [Git branches](https://github.com/Colvars/gromacs/branches).  Gromacs versions outside of 2020.x or 2021.x are not supported at this time.
 
-When using the [Gromacs forum](https://gromacs.bioexcel.eu/) to discuss usage of any Colvars-patched version of GROMACS, please specify "GROMACS modification: **Yes**" and use the [`colvars` tag](https://gromacs.bioexcel.eu/tag/colvars) when posting your forum message.
+In Colvars-patched versions of GROMACS, the Colvars version is included in the GROMACS version string, for example:
+```
+   :-) GROMACS - gmx_d, 2021.5-Colvars-2022-02-20-dev (double precision) (-:
+```
+
+When using the [Gromacs forum](https://gromacs.bioexcel.eu/) to discuss usage of any Colvars-patched version of GROMACS, please specify "GROMACS modification: **Yes**" and use the [`colvars` tag](https://gromacs.bioexcel.eu/tag/colvars) when posting your forum message.  If possible, please include the Colvars version as well.
 
 ## Which version of Colvars is recommended?
 
