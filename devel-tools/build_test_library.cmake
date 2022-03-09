@@ -11,6 +11,11 @@ else()
   endif()
 endif()
 
+if(NOT DEFINED BUILD_SHARED_LIBS)
+  # We need a shared library to load the Tcl package
+  set(BUILD_SHARED_LIBS ON)
+endif()
+
 if(NOT DEFINED COLVARS_TCL)
   set(COLVARS_TCL ON)
 endif()
@@ -79,6 +84,7 @@ execute_process(
   -S cmake
   -B ${BUILD_DIR}
   -D CMAKE_BUILD_TYPE=RelWithDebinfo
+  -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
   -D WARNINGS_ARE_ERRORS=ON
   -D CMAKE_VERBOSE_MAKEFILE=ON
   -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}

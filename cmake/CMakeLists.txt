@@ -5,6 +5,8 @@ get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -25,30 +27,26 @@ option(COLVARS_LEPTON "Build and link the Lepton library" ${COLVARS_LEPTON_DEFAU
 
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
+add_library(colvars ${COLVARS_SOURCES})
+if(BUILD_SHARED_LIBS)
+  set_property(TARGET colvars PROPERTY POSITION_INDEPENDENT_CODE 1)
+endif()
 
-# Object library to be used by both static and shared versions to avoid compiling every object twice
-add_library(colvars_obj OBJECT ${COLVARS_SOURCES})
-set_property(TARGET colvars_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
 
-add_library(colvars STATIC $<TARGET_OBJECTS:colvars_obj>)
-add_library(colvars_shared SHARED $<TARGET_OBJECTS:colvars_obj>)
-set_property(TARGET colvars_shared PROPERTY OUTPUT_NAME colvars)
+target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-long-long>)
+target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-c++11-long-long>)
 
-target_compile_options(colvars_obj PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
-
-target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-long-long>)
-target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-c++11-long-long>)
-
-target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w>)
+target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w>)
 # # Uncomment the line below to enable more thorough checks with Sun Compiler
-# target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w2>)
+# target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w2>)
 
 # Tell MSVC to actually report the C++ version
-target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W2 /Zc:__cplusplus>)
+target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W2 /Zc:__cplusplus>)
 
 if(WARNINGS_ARE_ERRORS)
-  target_compile_options(colvars_obj PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Werror>)
-  target_compile_options(colvars_obj PRIVATE $<$<CXX_COMPILER_ID:SunPro>:-xwe>)
+  target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Werror>)
+  target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:-xwe>)
 endif()
 
 include(buildColvarsLepton)
@@ -70,10 +68,13 @@ if(COLVARS_TCL)
       message(FATAL_ERROR "Tcl package not found.")
     endif()
   endif()
-  target_include_directories(colvars_obj PRIVATE ${TCL_INCLUDE_PATH})
-  target_compile_options(colvars_obj PRIVATE -DCOLVARS_TCL)
+  target_include_directories(colvars PRIVATE ${TCL_INCLUDE_PATH})
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(colvars PRIVATE /DCOLVARS_TCL)
+  else()
+    target_compile_options(colvars PRIVATE -DCOLVARS_TCL)
+  endif()
   target_link_libraries(colvars ${TCL_LIBRARY})
-  target_link_libraries(colvars_shared ${TCL_LIBRARY})
 endif()
 
 option(BUILD_TOOLS "Build standalone tools" ON)
