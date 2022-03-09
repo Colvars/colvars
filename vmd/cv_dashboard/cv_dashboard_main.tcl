@@ -1173,7 +1173,11 @@ proc ::cv_dashboard::update_shown_gradients {} {
       continue
     }
 
-    if { [run_cv colvar $cv get collect_atom_ids] != 1 } {
+    if [catch {set atom_ids_enabled [cv colvar $cv get collect_atom_ids]}] {
+      # Legacy back-end: assume things work to avoid flood of error messages
+      set atom_ids_enabled 1
+    }
+    if { ! $atom_ids_enabled } {
       # Variable was reinitialized and may have lost its collect_gradient feature
       run_cv colvar $cv set gradient 1
       if { [run_cv colvar $cv get gradient] != 1 } {
@@ -1182,8 +1186,7 @@ proc ::cv_dashboard::update_shown_gradients {} {
         unset ::cv_dashboard::grad_objects($cv_n_i)
         continue
       }
-      run_cv colvar $cv set collect_atom_ids 1
-      if { [run_cv colvar $cv get collect_atom_ids] != 1 } {
+      if { [catch {cv colvar $cv set collect_atom_ids 1}] == 0 && [cv colvar $cv get collect_atom_ids] != 1 } {
         tk_messageBox -icon error -title "Colvars Dashboard Error"\
           -message "Colvar $cv cannot provide atom IDs, possibly because it is computed in parallel or in an implicit way.\nSee console for details."
         unset ::cv_dashboard::grad_objects($cv_n_i)
@@ -1191,6 +1194,9 @@ proc ::cv_dashboard::update_shown_gradients {} {
       }
       # Try to enable collect_gradient but don't throw an error if that fails
       run_cv colvar $cv set collect_gradient 1
+      if { [run_cv colvar $cv get collect_gradient] == 0 } {
+        puts "\[Colvars Dashboard\] Using alternate method to compute gradients: \"Failed dependency\" message above can be safely ignored."
+      }
       # Update after enabling gradient computation (unnecessary outside this condition)
       run_cv colvar $cv update
     }
