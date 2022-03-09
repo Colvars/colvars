@@ -77,13 +77,20 @@ if(COLVARS_TCL)
   target_link_libraries(colvars ${TCL_LIBRARY})
 endif()
 
-option(BUILD_TOOLS "Build standalone tools" ON)
-if(BUILD_TOOLS)
-  add_subdirectory(${COLVARS_SOURCE_DIR}/colvartools ./colvartools)
+option(BUILD_TOOLS "Build standalone tools" OFF)
+option(BUILD_UNITTESTS "Build unit tests" OFF)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # TODO fix linkage errors with Visual Studio...
+  set(BUILD_TOOLS OFF)
+  set(BUILD_UNITTESTS OFF)
 endif()
 
-option(BUILD_UNITTESTS "Build unit tests" ON)
+if(BUILD_TOOLS)
+  add_subdirectory(${COLVARS_SOURCE_DIR}/colvartools colvartools)
+endif()
+
 if(BUILD_UNITTESTS)
-  add_subdirectory(${COLVARS_SOURCE_DIR}/tests/unittests ./unittests)
+  add_subdirectory(${COLVARS_SOURCE_DIR}/tests/unittests unittests)
 endif()
 
