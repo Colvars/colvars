@@ -686,9 +686,9 @@ proc ::cv_dashboard::cvs_from_labels {} {
         set cfg "colvar \{\n${indent}name $cv_name\n${indent}$cvc($obj) \{\n$cfg"
         apply_config $cfg
 
-        if { $cv_name != $old_name } {
+        if { $cv_name != $old_name && [catch {cv colvar $cv_name set collect_atom_ids 1}] == 0 } {
           # Detect and remove duplicates (need to create it first to check atoms)
-          run_cv colvar $cv_name set collect_atom_ids 1
+          # Only if collect_atom_ids feature exists (Colvars library after 03-2022)
           set newatoms [run_cv colvar $cv_name getatomids]
           run_cv colvar $old_name set collect_atom_ids 1
           set oldatoms [run_cv colvar $old_name getatomids]
