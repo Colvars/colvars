@@ -1,6 +1,11 @@
 # General build script suitable for cross-platform CI tests
 
-get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+if(DEFINED CMAKE_SCRIPT_MODE_FILE)
+  get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_SCRIPT_MODE_FILE} DIRECTORY)
+  get_filename_component(COLVARS_SOURCE_DIR ${COLVARS_SOURCE_DIR} DIRECTORY)
+else()
+  get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+endif()
 
 set(COLVARS_LEPTON ON)
 if(NOT DEFINED CMAKE_CXX_STANDARD)
