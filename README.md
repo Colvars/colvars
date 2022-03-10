@@ -23,9 +23,21 @@ For the molecular simulation program [GROMACS](http://www.gromacs.org/), code ma
 
 The [Colvars webpage](https://colvars.github.io/) includes user documentation for the four codes, as well as a Doxygen-based [developer documentation](https://colvars.github.io/doxygen/html/).
 
+To reflect the different availability of features in each engine, the Colvars reference manual comes in several flavors:
+- [GROMACS version](https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html);
+- [LAMMPS version](https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html);
+- [NAMD version](https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html);
+- [VMD version](https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html).
+
+## Citing
+
 The reference article is:
-G. Fiorin, M. L. Klein, and J. Hénin, Molecular Physics 111, 3345 (2013).
-https://dx.doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.bib?raw=true)\] \[[Endnote file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.ciw?raw=true)\]
+G. Fiorin, M. L. Klein, and J. Hénin, Mol. Phys. **111** (22-23), 3345-3362 (2013).
+https://doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.bib?raw=true)\] \[[Endnote file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.ciw?raw=true)\]
+
+*Additional references for the implementation of specific features are listed in the [documentation](#documentation).*  Beginning with Colvars 2021-08-30, these references, including acknowledgments of specific code from the MD engine, are also printed to the screen/logfile when they are used.
+
+*Note to NAMD users:* the NAMD reference papers (Phillips *et al*, [2005](https://doi.org/10.1002/jcc.20289) and [2020](https://doi.org/10.1063/5.0014475)) are used in some publications to acknowledge Colvars features.  This is incomplete.  When possible, please consider identifying and acknowledging all development efforts that supported your project.  As an important clarification, most of the Colvars code was developed *outside* of the NAMD/VMD funding grants.
 
 ## Example input
 
@@ -135,8 +147,10 @@ If you are using a stable release of any of the codes mentioned above, feel free
 
 ## Feedback
 
-Please use the "Issues" tab of this page to submit new bug reports or to suggest new features.
+Please use the "[Issues](https://github.com/Colvars/colvars/issues)" tab of this page to submit new bug reports or to suggest new features.
 
 ## License
 
-This software is distributed under the GNU Lesser General Public License, version 3.  See COPYING.LESSER for complete licensing terms.
+This software is distributed under the GNU Lesser General Public License (LGPL), version 3.  See COPYING.LESSER for complete licensing terms.
+
+In the interest of broad distribution, copies of this code are also distributed together with LAMMPS (LGPL version 2), NAMD and VMD (UIUC license).  However, the terms of the LGPLv3 license still apply to code originating from this repository.
