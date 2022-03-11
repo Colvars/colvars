@@ -1143,7 +1143,7 @@ int cvm::atom_group::calc_center_of_geometry()
     for (cvm::atom_const_iter ai = this->begin(); ai != this->end(); ai++) {
       cog += ai->pos;
     }
-    cog /= this->size();
+    cog /= cvm::real(this->size());
   }
   return COLVARS_OK;
 }

@@ -165,8 +165,8 @@ void colvar::gspath::prepareVectors() {
             reference_cog_1 += reference_frames[min_frame_index_1][i_atom];
             reference_cog_2 += reference_frames[min_frame_index_2][i_atom];
         }
-        reference_cog_1 /= reference_frames[min_frame_index_1].size();
-        reference_cog_2 /= reference_frames[min_frame_index_2].size();
+        reference_cog_1 /= cvm::real(reference_frames[min_frame_index_1].size());
+        reference_cog_2 /= cvm::real(reference_frames[min_frame_index_2].size());
         std::vector<cvm::atom_pos> tmp_reference_frame_1(reference_frames[min_frame_index_1].size());
         std::vector<cvm::atom_pos> tmp_reference_frame_2(reference_frames[min_frame_index_2].size());
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
@@ -179,8 +179,8 @@ void colvar::gspath::prepareVectors() {
                 reference_fitting_cog_1 += reference_fitting_frames[min_frame_index_1][i_atom];
                 reference_fitting_cog_2 += reference_fitting_frames[min_frame_index_2][i_atom];
             }
-            reference_fitting_cog_1 /= reference_fitting_frames[min_frame_index_1].size();
-            reference_fitting_cog_2 /= reference_fitting_frames[min_frame_index_2].size();
+            reference_fitting_cog_1 /= cvm::real(reference_fitting_frames[min_frame_index_1].size());
+            reference_fitting_cog_2 /= cvm::real(reference_fitting_frames[min_frame_index_2].size());
             std::vector<cvm::atom_pos> tmp_reference_fitting_frame_1(reference_fitting_frames[min_frame_index_1].size());
             std::vector<cvm::atom_pos> tmp_reference_fitting_frame_2(reference_fitting_frames[min_frame_index_2].size());
             for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_1].size(); ++i_atom) {
@@ -200,8 +200,8 @@ void colvar::gspath::prepareVectors() {
             reference_cog_1 += reference_frames[min_frame_index_1][i_atom];
             reference_cog_3 += reference_frames[min_frame_index_3][i_atom];
         }
-        reference_cog_1 /= reference_frames[min_frame_index_1].size();
-        reference_cog_3 /= reference_frames[min_frame_index_3].size();
+        reference_cog_1 /= cvm::real(reference_frames[min_frame_index_1].size());
+        reference_cog_3 /= cvm::real(reference_frames[min_frame_index_3].size());
         std::vector<cvm::atom_pos> tmp_reference_frame_1(reference_frames[min_frame_index_1].size());
         std::vector<cvm::atom_pos> tmp_reference_frame_3(reference_frames[min_frame_index_3].size());
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
@@ -214,8 +214,8 @@ void colvar::gspath::prepareVectors() {
                 reference_fitting_cog_1 += reference_fitting_frames[min_frame_index_1][i_atom];
                 reference_fitting_cog_3 += reference_fitting_frames[min_frame_index_3][i_atom];
             }
-            reference_fitting_cog_1 /= reference_fitting_frames[min_frame_index_1].size();
-            reference_fitting_cog_3 /= reference_fitting_frames[min_frame_index_3].size();
+            reference_fitting_cog_1 /= cvm::real(reference_fitting_frames[min_frame_index_1].size());
+            reference_fitting_cog_3 /= cvm::real(reference_fitting_frames[min_frame_index_3].size());
             std::vector<cvm::atom_pos> tmp_reference_fitting_frame_1(reference_fitting_frames[min_frame_index_1].size());
             std::vector<cvm::atom_pos> tmp_reference_fitting_frame_3(reference_fitting_frames[min_frame_index_3].size());
             for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_1].size(); ++i_atom) {
@@ -306,8 +306,8 @@ void colvar::gzpath::prepareVectors() {
         reference_cog_1 += reference_frames[min_frame_index_1][i_atom];
         reference_cog_2 += reference_frames[min_frame_index_2][i_atom];
     }
-    reference_cog_1 /= reference_frames[min_frame_index_1].size();
-    reference_cog_2 /= reference_frames[min_frame_index_2].size();
+    reference_cog_1 /= cvm::real(reference_frames[min_frame_index_1].size());
+    reference_cog_2 /= cvm::real(reference_frames[min_frame_index_2].size());
     std::vector<cvm::atom_pos> tmp_reference_frame_1(reference_frames[min_frame_index_1].size());
     std::vector<cvm::atom_pos> tmp_reference_frame_2(reference_frames[min_frame_index_2].size());
     for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
@@ -322,8 +322,8 @@ void colvar::gzpath::prepareVectors() {
             reference_fitting_cog_1 += reference_fitting_frames[min_frame_index_1][i_atom];
             reference_fitting_cog_2 += reference_fitting_frames[min_frame_index_2][i_atom];
         }
-        reference_fitting_cog_1 /= reference_fitting_frames[min_frame_index_1].size();
-        reference_fitting_cog_2 /= reference_fitting_frames[min_frame_index_2].size();
+        reference_fitting_cog_1 /= cvm::real(reference_fitting_frames[min_frame_index_1].size());
+        reference_fitting_cog_2 /= cvm::real(reference_fitting_frames[min_frame_index_2].size());
         tmp_reference_fitting_frame_1.resize(reference_fitting_frames[min_frame_index_1].size());
         tmp_reference_fitting_frame_2.resize(reference_fitting_frames[min_frame_index_2].size());
         for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_1].size(); ++i_atom) {
@@ -348,7 +348,7 @@ void colvar::gzpath::prepareVectors() {
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             reference_cog_3 += reference_frames[min_frame_index_3][i_atom];
         }
-        reference_cog_3 /= reference_frames[min_frame_index_3].size();
+        reference_cog_3 /= cvm::real(reference_frames[min_frame_index_3].size());
         std::vector<cvm::atom_pos> tmp_reference_frame_3(reference_frames[min_frame_index_3].size());
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             tmp_reference_frame_3[i_atom] = reference_frames[min_frame_index_3][i_atom] - reference_cog_3;
@@ -358,7 +358,7 @@ void colvar::gzpath::prepareVectors() {
             for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_3].size(); ++i_atom) {
                 reference_fitting_cog_3 += reference_fitting_frames[min_frame_index_3][i_atom];
             }
-            reference_fitting_cog_3 /= reference_fitting_frames[min_frame_index_3].size();
+            reference_fitting_cog_3 /= cvm::real(reference_fitting_frames[min_frame_index_3].size());
             std::vector<cvm::atom_pos> tmp_reference_fitting_frame_3(reference_fitting_frames[min_frame_index_3].size());
             for (i_atom = 0; i_atom < reference_fitting_frames[min_frame_index_3].size(); ++i_atom) {
                 tmp_reference_fitting_frame_3[i_atom] =  reference_fitting_frames[min_frame_index_3][i_atom] - reference_fitting_cog_3;
