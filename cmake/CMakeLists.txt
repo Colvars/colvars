@@ -42,7 +42,9 @@ target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w>)
 # target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w2>)
 
 # Tell MSVC to actually report the C++ version
-target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W2 /Zc:__cplusplus>)
+target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
+# Use "production level" warnings, but silence those known to be harmless
+target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W3 /wd4244 /wd4267>)
 
 if(WARNINGS_ARE_ERRORS)
   target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Werror>)
