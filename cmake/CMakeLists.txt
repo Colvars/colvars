@@ -49,6 +49,7 @@ target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W3 /wd4244 /wd
 if(WARNINGS_ARE_ERRORS)
   target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Werror>)
   target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:-xwe>)
+  target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/WX>)
 endif()
 
 include(buildColvarsLepton)
