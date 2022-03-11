@@ -177,8 +177,10 @@ colvar::coordnum::coordnum(std::string const &conf)
     }
   }
 
-  init_scalar_boundaries(0.0, b_group2_center_only ? group1->size() :
-                         group1->size() * group2->size());
+  init_scalar_boundaries(0.0, b_group2_center_only ?
+                         static_cast<cvm::real>(group1->size()) :
+                         static_cast<cvm::real>(group1->size() *
+                                                group2->size()));
 }
 
 
@@ -433,7 +435,8 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
     pairlist = new bool[(group1->size()-1) * (group1->size()-1)];
   }
 
-  init_scalar_boundaries(0.0, (group1->size()-1) * (group1->size()-1));
+  init_scalar_boundaries(0.0, static_cast<cvm::real>((group1->size()-1) *
+                                                     (group1->size()-1)));
 }
 
 
