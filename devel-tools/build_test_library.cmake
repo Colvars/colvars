@@ -25,7 +25,7 @@ if(NOT DEFINED COLVARS_TCL)
   set(COLVARS_TCL ON)
 endif()
 
-if(DEFINED CMAKE_SYSTEM_NAME)
+if(DEFINED CMAKE_SYSTEM_NAME AND COLVARS_TCL)
 
   # Download OS-specific pre-built TCL
 
@@ -33,29 +33,27 @@ if(DEFINED CMAKE_SYSTEM_NAME)
     file(DOWNLOAD
       "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-linux-x86_64.tar.gz"
       ./tcl.tar.gz SHOW_PROGRESS)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./tcl.tar.gz)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ./tcl.tar.gz)
     set(DEFINE_TCL_DIR "-DTCL_DIR=${COLVARS_SOURCE_DIR}/tcl8.5.9-linux-x86_64")
-    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=tcl8.5")
+    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=${COLVARS_SOURCE_DIR}/tcl8.5.9-linux-x86_64/lib/libtcl8.5.a")
   endif()
 
   if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    # Temporarily disable to debug issues
-    set(COLVARS_TCL OFF)
     file(DOWNLOAD
       "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-win64.zip"
       ./tcl.zip SHOW_PROGRESS)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./tcl.zip)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ./tcl.zip)
     set(DEFINE_TCL_DIR "-DTCL_DIR=${COLVARS_SOURCE_DIR}/tcl8.5.9-win64")
-    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=tcl8.5")
+    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=${COLVARS_SOURCE_DIR}/tcl8.5.9-win64/lib/tcl85.lib")
   endif()
 
   if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     file(DOWNLOAD
       "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-macosx-x86_64-threaded.tar.gz"
       ./tcl.zip SHOW_PROGRESS)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./tcl.zip)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ./tcl.zip)
     set(DEFINE_TCL_DIR "-DTCL_DIR=${COLVARS_SOURCE_DIR}/tcl8.5.9-macosx-x86_64-threaded")
-    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=tcl8.5")
+    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=${COLVARS_SOURCE_DIR}/tcl8.5.9-macosx-x86_64-threaded/lib/libtcl8.5.a")
   endif()
 
 endif()
