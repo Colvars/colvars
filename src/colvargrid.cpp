@@ -426,7 +426,7 @@ void integrate_potential::get_grad(cvm::real * g, std::vector<int> &ix)
 
 void integrate_potential::update_div_local(const std::vector<int> &ix0)
 {
-  const int linear_index = address(ix0);
+  const size_t linear_index = address(ix0);
   int i, j, k;
   std::vector<int> ix = ix0;
 
