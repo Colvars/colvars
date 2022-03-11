@@ -225,7 +225,7 @@ int colvarbias_abf::init(std::string const &conf)
       czar_pmf = new integrate_potential(colvars, czar_gradients);
     }
     // Parameters for integrating initial (and final) gradient data
-    get_keyval(conf, "integrateMaxIterations", integrate_iterations, 1e4, colvarparse::parse_silent);
+    get_keyval(conf, "integrateMaxIterations", integrate_iterations, 10000, colvarparse::parse_silent);
     get_keyval(conf, "integrateTol", integrate_tol, 1e-6, colvarparse::parse_silent);
     // Projected ABF, updating the integrated PMF on the fly
     get_keyval(conf, "pABFintegrateFreq", pabf_freq, 0, colvarparse::parse_silent);
@@ -424,7 +424,7 @@ int colvarbias_abf::update()
   // Compute and apply the new bias, if applicable
   if (is_enabled(f_cvb_apply_force) && samples->index_ok(bin)) {
 
-    cvm::real count = samples->value(bin);
+    cvm::real count = cvm::real(samples->value(bin));
     cvm::real fact = 1.0;
 
     // Factor that ensures smooth introduction of the force

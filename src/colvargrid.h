@@ -1488,7 +1488,7 @@ public:
       }
     } else {
       // edge: use 2nd order derivative
-      cvm::real increment = (ix[n] == 0 ? 1.0 : -1.0);
+      int increment = (ix[n] == 0 ? 1.0 : -1.0);
       // move right from left edge, or the other way around
       A0 = value(ix);
       ix[n] += increment; A1 = value(ix);
