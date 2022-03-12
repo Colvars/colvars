@@ -42,7 +42,6 @@ if(BUILD_TESTS)
   enable_testing()
 endif()
 
-option(BUILD_UNITTESTS "Build unit tests" ${BUILD_TESTS})
 if(BUILD_UNITTESTS)
   # Build unit tests executables
   add_subdirectory(${COLVARS_SOURCE_DIR}/tests/unittests tests/unittests)

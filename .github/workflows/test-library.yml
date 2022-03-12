@@ -44,6 +44,10 @@ jobs:
           CCACHE: ccache
         run: cmake -P devel-tools/build_test_library.cmake
 
+      - name: Run functional tests (dependencies only so far)
+        working-directory: build
+        run: ctest
+
       - name: Check documentation of command-line scripting interface
         shell: bash
         working-directory: doc
