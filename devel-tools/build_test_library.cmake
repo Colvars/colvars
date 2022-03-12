@@ -112,14 +112,3 @@ execute_process(
 if(NOT result EQUAL 0)
   message(FATAL_ERROR "Error building library.")
 endif()
-
-
-execute_process(
-  COMMAND ${CMAKE_CTEST_COMMAND}
-  --test-dir ${BUILD_DIR}
-  RESULT_VARIABLE result
-  )
-
-if(NOT result EQUAL 0)
-  message(FATAL_ERROR "Error running tests.")
-endif()
