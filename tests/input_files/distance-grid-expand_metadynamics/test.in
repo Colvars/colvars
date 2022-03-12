@@ -1,0 +1,33 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.1
+    # lowerBoundary 0.0 (default for distance)
+    upperBoundary 0.1
+
+    expandBoundaries yes
+    hardLowerBoundary yes
+
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+metadynamics {
+    colvars        one
+    hillWeight     0.001
+    hillWidth      1.2533141373155001  # Old default
+    newHillFrequency 10
+}

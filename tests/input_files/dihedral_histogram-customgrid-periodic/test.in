@@ -1,0 +1,36 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    dihedral {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+        group3 {
+            indexGroup group3
+        }
+        group4 {
+            indexGroup group4
+        }
+    }
+} 
+
+histogram {
+    colvars    one
+    histogramGrid {
+        widths 5
+        lowerBoundaries -60
+        upperBoundaries 300
+    }
+}
