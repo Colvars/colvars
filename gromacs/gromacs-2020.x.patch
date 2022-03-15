@@ -1,16 +1,30 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0911eb2a45..5530c1576a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -200,6 +200,9 @@ option(GMX_USE_OPENCL "Enable OpenCL acceleration" OFF)
+ 
+ option(GMX_INSTALL_LEGACY_API "Install legacy headers" OFF)
+ 
++include(gmxManageColvars)
++include(gmxManageLepton)
++
+ # The earliest version of the CUDA toolkit that supports c++14 is 9.0
+ set(REQUIRED_CUDA_VERSION 9.0)
+ set(REQUIRED_CUDA_COMPUTE_CAPABILITY 3.0)
 diff --git a/src/gromacs/CMakeLists.txt b/src/gromacs/CMakeLists.txt
-index 9249a7a08f..4a99df101e 100644
+index 9249a7a08f..18b45ff01f 100644
 --- a/src/gromacs/CMakeLists.txt
 +++ b/src/gromacs/CMakeLists.txt
 @@ -137,6 +137,12 @@ if (WIN32)
  endif()
  list(APPEND libgromacs_object_library_dependencies thread_mpi)
  
-+file(GLOB COLVARS_SOURCES ${PROJECT_SOURCE_DIR}/src/external/colvars/*.cpp)
-+add_library(colvars OBJECT ${COLVARS_SOURCES})
-+# Colvars requires a correct definition of __cplusplus, which MSVC doesn't give by default
-+target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
++# Add Colvars and Lepton targets, embed their object code in libgromacs
++gmx_manage_colvars()
++gmx_manage_lepton()
 +list(APPEND libgromacs_object_library_dependencies colvars)
++list(APPEND libgromacs_object_library_dependencies lepton)
 +
  configure_file(version.h.cmakein version.h)
  if(GMX_INSTALL_LEGACY_API)
@@ -19,7 +33,7 @@ index 9249a7a08f..4a99df101e 100644
      add_library(libgromacs ${LIBGROMACS_SOURCES})
  endif()
  
-+target_include_directories(libgromacs PRIVATE ${PROJECT_SOURCE_DIR}/src/external/colvars)
++gmx_include_colvars_headers()
 +
  # Add these contents first because linking their tests can take a lot
  # of time, so we want lots of parallel work still available after
