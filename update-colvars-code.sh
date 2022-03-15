@@ -474,16 +474,28 @@ then
     mkdir ${target_folder}
   fi
 
-  # Copy Lepton
-  if [ ! -d /tmp/openmm-source/libraries/lepton ] ; then
-    if [ -z "${GIT}" ] ; then
-      echo "Error: Git not available" >&2
-      exit 1
-    fi
-    echo "Downloading Lepton library (used in Colvars) via the OpenMM repository"
-    ${GIT} clone --depth=1 https://github.com/openmm/openmm.git /tmp/openmm-source
+  if [ -z "${OPENMM_SOURCE}" ] ; then
+    OPENMM_SOURCE=/tmp/openmm-source
   fi
-  cp -f -p -R /tmp/openmm-source/libraries/lepton ${target}/src/external/
+
+  # Download Lepton if needed
+  if [ ! -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
+    if [ -n "${GIT}" ] ; then
+      echo "Downloading Lepton library (used in Colvars) via the OpenMM repository"
+      ${GIT} clone --depth=1 https://github.com/openmm/openmm.git ${OPENMM_SOURCE}
+    fi
+  fi
+
+  # Copy Lepton into GROMACS tree
+  if [ -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
+    cp -f -p -R ${OPENMM_SOURCE}/libraries/lepton ${target}/src/external/
+  else
+    echo "ERROR: could not download the Lepton library automatically." >&2
+    echo "       Please clone the OpenMM repository () " >&2
+    echo "       in a directory of your choice, and set the environment variable OPENMM_SOURCE " >&2
+    echo "       to the absolute path of that directory." >&2
+    exit 1
+  fi
 
   # Copy library files and proxy files to the "src/external/colvars" folder
   for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*
