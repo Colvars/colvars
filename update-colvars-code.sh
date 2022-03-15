@@ -491,7 +491,7 @@ then
     cp -f -p -R ${OPENMM_SOURCE}/libraries/lepton ${target}/src/external/
   else
     echo "ERROR: could not download the Lepton library automatically." >&2
-    echo "       Please clone the OpenMM repository () " >&2
+    echo "       Please clone the OpenMM repository (https://github.com/openmm/openmm) " >&2
     echo "       in a directory of your choice, and set the environment variable OPENMM_SOURCE " >&2
     echo "       to the absolute path of that directory." >&2
     exit 1
