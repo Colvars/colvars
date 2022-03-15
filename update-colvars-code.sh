@@ -498,7 +498,7 @@ then
   fi
 
   # Copy library files and proxy files to the "src/external/colvars" folder
-  for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*
+  for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*{cpp,h}
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/${tgt}"
