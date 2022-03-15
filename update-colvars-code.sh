@@ -530,8 +530,10 @@ then
   fi
 
   if [ ${GMX_VERSION} == '2021.x' ] ; then
-    # Ad-hoc fix for CI build until 2021.6 is released
-    sed -i -e 's/windows-latest/windows-2019/' "${target}/.github/workflows/build_cmake.yml"
+    if [ -f "${target}/.github/workflows/build_cmake.yml" ] ; then
+      # Ad-hoc fix for CI build until 2021.6 is released
+      sed -i -e 's/windows-latest/windows-2019/' "${target}/.github/workflows/build_cmake.yml"
+    fi
   fi
 
   # Update the proxy version if needed
