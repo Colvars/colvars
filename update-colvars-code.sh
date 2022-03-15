@@ -489,7 +489,15 @@ then
   for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${target_folder}/${tgt}" "${cpp_patch}"
+    condcopy "${src}" "${target_folder}/${tgt}"
+  done
+  echo ""
+
+  # Copy CMake files
+  for src in ${source}/gromacs/cmake/gmxManage{Colvars,Lepton}.cmake
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/cmake/${tgt}"
   done
   echo ""
 
