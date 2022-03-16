@@ -90,6 +90,12 @@ write_colvars_config "distance" "histogram-customgrid"
 create_test_dir "dihedral_histogram-customgrid-periodic"
 write_colvars_config "dihedral" "histogram-customgrid-periodic"
 
+create_test_dir "distance-dihedral_histogram2d-periodic"
+write_colvars_config "distance-dihedral_histogram2d-periodic"
+
+create_test_dir "distance-dihedral_histogram2d-periodic-customgrid"
+write_colvars_config "distance-dihedral_histogram2d-periodic-customgrid"
+
 create_test_dir "distancewalls"
 write_colvars_config "distance" "harmonicwalls-fixed"
 write_colvars_config "distancewalls" "" ${dirname}/test.legacy.in

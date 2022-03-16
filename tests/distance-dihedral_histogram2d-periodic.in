@@ -1,0 +1,37 @@
+
+colvar {
+    name r
+    upperBoundary 20.0
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+}
+
+
+colvar {
+    name phi
+    dihedral {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+        group3 {
+            indexGroup group3
+        }
+        group4 {
+            indexGroup group4
+        }
+    }
+}
+
+
+histogram {
+    colvars r phi
+}
