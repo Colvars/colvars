@@ -6654,16 +6654,98 @@ an optimization algorithm until the bias has converged}.
 
 \cvsubsec{Multidimensional histograms}{sec:colvarbias_histogram}
 
-The \texttt{histogram} feature is used to record the distribution of a set of collective
-variables in the form of a N-dimensional histogram. A \texttt{histogram} block may define the following parameters:
+The \texttt{histogram} feature is used to record the distribution of a set of collective variables in the form of a N-dimensional histogram.  Defining such a histogram is generally useful for analysis purposes, but it has no effect on the simulation.
+
+\noindent\textbf{Example 1:} the two-dimensional histogram of a distance and an angle can be generated using the configuration below.  The histogram code requires that each variable is a scalar number that is confined within a pre-defined interval.  The interval's boundaries may be specified by hand (e.g.{} through \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary} in the variable definition), or auto-detected based on the type of function.  In this example, the lower boundary for the distance variable ``\texttt{r}'' is automatically set to zero, and interval for the three-body angle ``\texttt{theta}'' is $0^\circ$ and $180^\circ$: however, that an upper boundary for the distance ``\texttt{r}'' still needs to be specified manually.  The grid spacings for the two variables are $0.2$~\lengthunit and $3.0^\circ$, respectively.
+% Note: a three-body angle is used to support NAMD users, because the
+% init_as_periodic_angle() function was added after the NAMD 2.14 release.
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-\-~~name~r\\
+\-\-~~width~0.2\\
+\-\-~~upperBoundary~20.0\\
+\-\-~~distance~\{~...~\}\\
+\-\}\\
+\\
+\-colvar~\{\\
+\-\-~~name~theta\\
+\-\-~~width~3.0\\
+\-\-~~dihedral~\{~...~\}\\
+\-\}\\
+\\
+\-histogram~\{\\
+\-\-~~name~hist2d\\
+\-\-~~colvars~r~theta\\
+\-\}\\
+\end{cvexampleinput}
+
+\noindent\textbf{Example 2:} This example is similar to the previous one, but with the important difference that the parameters for the histogram's grid are defined \emph{explicitly} for this histogram instance.  Therefore, this histogram's grid may differ from the one defined from parameters embedded in the \texttt{colvar~\{~...~\}} block (for example, narrower intervals and finer grid spacings may be selected).
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-\-~~name~r\\
+\-\-~~upperBoundary~20.0\\
+\-\-~~distance~\{~...~\}\\
+\-\}\\
+\\
+\-colvar~\{\\
+\-\-~~name~theta\\
+\-\-~~dihedral~\{~...~\}\\
+\-\}\\
+\\
+\-histogram~\{\\
+\-\-~~name~hist2d\\
+\-\-~~colvars~r~theta\\
+\-\-~~histogramGrid~\{\\
+\-\-~~~~widths~~0.1~1.0\\
+\-\-~~~~lowerBoundaries~~~2.0~30.0\\
+\-\-~~~~upperBoundaries~~10.0~90.0\\
+\-\-~~\}\\
+\-\}\\
+\end{cvexampleinput}
+
+
+The standard keywords below are used to control the histogram's computation and to select the variables that are sampled.  See also \ref{sec:colvarbias_histogram_grid} for keywords used to define the grid, \ref{sec:colvarbias_histogram_output} for output parameters and \ref{sec:colvarbias_histogram_vectors} for more advanced keywords.
 
 \begin{itemize}
 
 \item \dupkey{name}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 % \item \dupkey{outputEnergy}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
-\item \dupkey{outputFreq}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{stepZeroData}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
+
+\end{itemize}
+
+
+\cvsubsubsec{Defining grids for multidimensional histograms}{sec:colvarbias_histogram_grid}
+
+Grid parameters for the histogram may be provided at the level of the individual variables, or via a dedicated configuration block \texttt{histogramGrid \{ \ldots \}} inside the configuration of this \texttt{histogram}.
+The options supported \emph{inside this block} are:
+
+\begin{itemize}
+
+\item %
+  \key{%
+    lowerBoundaries}{%
+    \texttt{histogramGrid}}{%
+    Lower boundaries of the grid}{%
+    list of space-separated decimals}{%
+    This option defines the lower boundaries of the grid, overriding any values defined by the \texttt{lowerBoundary} keyword of each colvar.
+    Note that when \texttt{gatherVectorColvars} is \texttt{on}, each vector variable is automatically treated as a scalar, and a single value should be provided for it.
+  }
+\item %
+  \simkey{upperBoundaries}{\texttt{histogramGrid}}{lowerBoundaries}
+\item %
+  \simkey{widths}{\texttt{histogramGrid}}{lowerBoundaries}
+\end{itemize}
+
+
+\cvsubsubsec{Output options for multi-dimensional histograms}{sec:colvarbias_histogram_output}
+
+The accumulated histogram is written in the Colvars state file, allowing for its accumulation across continued runs.  Additionally, the following files are written depending on the histogram's dimensionality:
+
+\begin{itemize}
+
+\item \dupkey{outputFreq}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 
 \item %
   \keydef{%
@@ -6672,8 +6754,7 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
     Write the histogram to a file}{%
     UNIX filename}{%
     \outputName\texttt{.$<$name$>$.dat}}{%
-    Name of the file containing histogram data (multicolumn format), which is written every \refkey{outputFreq}{colvarbias|outputFreq} steps.
-    For the special case of 2 variables, Gnuplot may be used to visualize this file.
+    Name of the file containing histogram data (multicolumn format, see~\ref{sec:colvar_multicolumn_grid}), which is written every \refkey{outputFreq}{colvarbias|outputFreq} steps.
     If \texttt{outputFile} is set to \texttt{none}, the file is not written.
   }
 
@@ -6686,7 +6767,7 @@ variables in the form of a N-dimensional histogram. A \texttt{histogram} block m
     \outputName\texttt{.$<$name$>$.dx}}{%
     Name of the file containing histogram data (OpenDX format), which is written every \refkey{outputFreq}{colvarbias|outputFreq} steps.
     For the special case of 3 variables, VMD may be used to visualize this file.
-    This file is written by default if the dimension is 3 or more.
+    This file is written by default if the dimension is 3 or more (you cannot visualize it easily for dimensions 4 and above, but the DX format is still more compact than the multicolumn format).
     If \texttt{outputFileDX} is set to \texttt{none}, the file is not written.
 }
 
@@ -6730,26 +6811,6 @@ actual colvar, and the second, as the extended coordinate.
   \item \dupkey{bypassExtendedLagrangian}{\texttt{histogram}}{colvarbias|bypassExtendedLagrangian}{biasing and analysis methods}
 \end{itemize}
 
-\cvsubsubsec{Grid definition for multidimensional histograms}{sec:colvarbias_histogram_grid}
-
-Like the ABF and metadynamics biases, \texttt{histogram} uses the parameters \texttt{lowerBoundary}, \texttt{upperBoundary}, and \texttt{width} to define its grid.
-These values can be overridden if a configuration block \texttt{histogramGrid \{ \ldots \}} is provided inside the configuration of \texttt{histogram}.
-The options supported inside this configuration block are:
-\begin{itemize}
-\item %
-  \key{%
-    lowerBoundaries}{%
-    \texttt{histogramGrid}}{%
-    Lower boundaries of the grid}{%
-    list of space-separated decimals}{%
-    This option defines the lower boundaries of the grid, overriding any values defined by the \texttt{lowerBoundary} keyword of each colvar.
-    Note that when \texttt{gatherVectorColvars} is \texttt{on}, each vector variable is automatically treated as a scalar, and a single value should be provided for it.
-  }
-\item %
-  \simkey{upperBoundaries}{\texttt{histogramGrid}}{lowerBoundaries}
-\item %
-  \simkey{widths}{\texttt{histogramGrid}}{lowerBoundaries}
-\end{itemize}
 
 \cvnamdonly{
 \cvsubsec{Reweighted free-energy landscapes from accelerated MD}{sec:reweighted_fel_from_aMD}
