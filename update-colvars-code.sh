@@ -140,9 +140,6 @@ then
   echo "Detected GROMACS version ${GMX_VERSION}."
 
   case ${GMX_VERSION} in
-    2018*)
-      GMX_VERSION='2018.x'
-      ;;
     2020*)
       GMX_VERSION='2020.x'
       ;;
