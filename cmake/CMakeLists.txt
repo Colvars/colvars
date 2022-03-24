@@ -25,6 +25,17 @@ endif()
 
 option(COLVARS_LEPTON "Build and link the Lepton library" ${COLVARS_LEPTON_DEFAULT})
 
+if(COLVARS_LEPTON)
+  if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  else()
+    if(${CMAKE_CXX_STANDARD} STREQUAL "98")
+      message(FATAL_ERROR "With -DCOLVARS_LEPTON=ON, CMAKE_CXX_STANDARD must be 11 or later")
+    endif()
+  endif()
+endif()
+
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
 add_library(colvars ${COLVARS_SOURCES})
