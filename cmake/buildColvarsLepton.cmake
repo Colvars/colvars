@@ -7,6 +7,7 @@ if(COLVARS_LEPTON)
   # Lepton requires C++11 or later
   if(NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 11)
+    set_property(TARGET colvars PROPERTY CXX_STANDARD 11)
   endif()
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
