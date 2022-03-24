@@ -4,9 +4,11 @@ if(COLVARS_LEPTON)
     message(FATAL_ERROR "With -DCOLVARS_LEPTON=ON, the lepton folder must be copied into ${COLVARS_SOURCE_DIR} or provided by -DLEPTON_DIR=xxx")
   endif()
 
-  if(${CMAKE_CXX_STANDARD} GREATER 70) # Yet another Y2K idiosyncrasy
-    message(FATAL_ERROR "With -DCOLVARS_LEPTON=ON, CMAKE_CXX_STANDARD must be 11 or later")
+  # Lepton requires C++11 or later
+  if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 11)
   endif()
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
   file(GLOB LEPTON_SOURCES ${LEPTON_DIR}/src/[^.]*.cpp)
   add_library(lepton OBJECT ${LEPTON_SOURCES})
