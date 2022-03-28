@@ -1039,7 +1039,7 @@ Other than with GROMACS, an index group may also be generated from the VMD comma
 
 
 \cvsubsubsec{XYZ coordinate files}{sec:colvars_xyz_format}
-XYZ coordinate files are text files, which are read by the Colvars module using an internal reader, and expect the following format:
+XYZ coordinate files are text files with the extension ``\texttt{.xyz}''. They are read by the Colvars module using an internal reader, and expect the following format:
 
 \noindent\begin{tabular}{r r r r}
 $N$\\
@@ -2116,7 +2116,7 @@ automatically when reading them from the configuration.
     \texttt{eigenvector}}{%
     file containing vector components}{%
     UNIX filename}{%
-    This option (mutually exclusive with \texttt{vector}) sets the name of a coordinate file containing the vector components; the file is read according to the same format used for \texttt{refPositionsFile}.
+    This option (mutually exclusive with \texttt{vector}) sets the name of an XYZ (\ref{sec:colvars_xyz_format}) \cvnamebasedonly{ or PDB } coordinate file containing the vector components.
     \cvnamebasedonly{For a PDB file specifically, the components are read from the X, Y and Z fields.
       \textbf{Note:} \emph{The PDB file has limited precision and fixed-point numbers: in some cases, the vector components may not be accurately represented; a XYZ file should be used instead, containing floating-point numbers.}}
   }
@@ -4670,7 +4670,7 @@ Be careful when using these options in ABF simulations or when using total force
     UNIX filename}{%
     \label{key:colvars:atom_group:refPositionsFile}
     This option provides a list of reference coordinates for \texttt{centerToReference} and/or \texttt{rotateToReference}, and is mutually exclusive with \texttt{refPositions}.
-    The acceptable file format is XYZ (see \ref{sec:colvars_xyz_format}), which is read in double precision.
+    The acceptable file format is XYZ (\ref{sec:colvars_xyz_format}), which is read in double precision.
     \cvnamebasedonly{Alternatively, a PDB file may be read (see \ref{sec:colvars_pdb_format}) using \MDENGINE{}'s reader; however, due to the constraints of the PDB format \emph{PDB files are discouraged if the precision of the reference coordinates is a concern}}.
 }
 
