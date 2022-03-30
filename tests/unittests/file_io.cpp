@@ -9,10 +9,8 @@ extern "C" int main(int argc, char *argv[]) {
 
   colvarproxy *proxy = new colvarproxy();
   proxy->colvars = new colvarmodule(proxy);
-  proxy->script = new colvarscript(proxy);
 
   proxy->backup_file("nonexistent.txt");
-
   proxy->remove_file("nonexistent.txt");
 
   // Produce an (almost) empty state file, twice (uses proxy->backup_file())
