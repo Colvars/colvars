@@ -17,10 +17,6 @@
 #include "Inform.h"
 #include "utilities.h"
 
-#if !defined(COLVARS_TCL)
-#define COLVARS_TCL
-#endif
-
 #include "colvarmodule.h"
 #include "colvarscript.h"
 #include "colvaratoms.h"
@@ -38,6 +34,7 @@ namespace {
 
 // Copy of declaration from colvarscript.cpp (this alone doesn't warrant a
 // new header file)
+// COLVARS_TCL is defined when relevant in colvarproxy_tcl.h, included via colvarproxy.h
 #ifdef COLVARS_TCL
 extern "C" int tcl_run_colvarscript_command(ClientData clientData,
                                             Tcl_Interp *interp_in,

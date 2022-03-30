@@ -16,6 +16,9 @@
 
 #ifdef COLVARS_TCL
 #include <tcl.h>
+#else
+// Allow for placeholders Tcl_Interp* variables
+typedef void Tcl_Interp;
 #endif
 
 #include <vector>
@@ -44,9 +47,9 @@ public:
   /// Get a string representation of the Tcl object pointed to by obj
   char const *tcl_get_str(void *obj);
 
-  int tcl_run_script(std::string script);
+  int tcl_run_script(std::string const &script);
 
-  int tcl_run_file(std::string fileName);
+  int tcl_run_file(std::string const &fileName);
 
   /// Tcl implementation of run_force_callback()
   int tcl_run_force_callback();
@@ -63,7 +66,6 @@ public:
               std::vector<const colvarvalue *> const &cvcs,
               std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
-#ifdef COLVARS_TCL
   /// Get a pointer to the Tcl interpreter
   inline Tcl_Interp *get_tcl_interp()
   {
@@ -75,17 +77,13 @@ public:
   {
     tcl_interp_ = interp;
   }
-#endif
 
   /// Set Tcl pointers
   virtual void init_tcl_pointers();
 
 protected:
-
-#ifdef COLVARS_TCL
   /// Pointer to Tcl interpreter object
   Tcl_Interp *tcl_interp_;
-#endif
 };
 
 #endif
