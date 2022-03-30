@@ -61,7 +61,7 @@ char const *colvarproxy_tcl::tcl_get_str(void *obj)
 }
 
 
-int colvarproxy_tcl::tcl_run_script(std::string script)
+int colvarproxy_tcl::tcl_run_script(std::string const &script)
 {
 #if defined(COLVARS_TCL)
   Tcl_Interp *const interp = get_tcl_interp();
@@ -78,7 +78,7 @@ int colvarproxy_tcl::tcl_run_script(std::string script)
 }
 
 
-int colvarproxy_tcl::tcl_run_file(std::string fileName)
+int colvarproxy_tcl::tcl_run_file(std::string const &fileName)
 {
 #if defined(COLVARS_TCL)
   Tcl_Interp *const interp = get_tcl_interp();

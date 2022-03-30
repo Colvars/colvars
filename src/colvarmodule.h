@@ -10,10 +10,6 @@
 #ifndef COLVARMODULE_H
 #define COLVARMODULE_H
 
-#if defined(NAMD_TCL) || defined(VMDTCL)
-#define COLVARS_TCL
-#endif
-
 #include <cmath>
 
 #include "colvars_version.h"
@@ -413,10 +409,8 @@ private:
   /// on error, delete new bias
   bool check_new_bias(std::string &conf, char const *key);
 
-#ifdef COLVARS_TCL
   /// Initialization Tcl script, user-provided
   std::string source_Tcl_script;
-#endif
 
 public:
 
