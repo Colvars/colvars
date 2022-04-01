@@ -125,24 +125,46 @@ void denseLayer::readFromFile(const std::string& weights_file, const std::string
     m_biases.clear();
     std::string line;
     std::ifstream ifs_weights(weights_file.c_str());
+    if (!ifs_weights) {
+        throw std::runtime_error("Cannot open file " + weights_file);
+    }
     while (std::getline(ifs_weights, line)) {
+        if (ifs_weights.bad()) {
+            throw std::runtime_error("I/O error while reading " + weights_file);
+        }
         std::vector<std::string> splitted_data;
         colvarparse::split_string(line, std::string{" "}, splitted_data);
         if (splitted_data.size() > 0) {
             std::vector<double> weights_tmp(splitted_data.size());
             for (size_t i = 0; i < splitted_data.size(); ++i) {
-                weights_tmp[i] = std::stod(splitted_data[i]);
+                try {
+                    weights_tmp[i] = std::stod(splitted_data[i]);
+                } catch (...) {
+                    throw std::runtime_error("Cannot convert " + splitted_data[i] + " to a number while reading file " + weights_file);
+                }
             }
             m_weights.push_back(weights_tmp);
         }
     }
     // parse biases file
     std::ifstream ifs_biases(biases_file.c_str());
+    if (!ifs_biases) {
+        throw std::runtime_error("Cannot open file " + biases_file);
+    }
     while (std::getline(ifs_biases, line)) {
+        if (ifs_biases.bad()) {
+            throw std::runtime_error("I/O error while reading " + biases_file);
+        }
         std::vector<std::string> splitted_data;
         colvarparse::split_string(line, std::string{" "}, splitted_data);
         if (splitted_data.size() > 0) {
-            m_biases.push_back(std::stod(splitted_data[0]));
+            double bias = 0;
+            try {
+                bias = std::stod(splitted_data[0]);
+            } catch (...) {
+                throw std::runtime_error("Cannot convert " + splitted_data[0] + " to a number while reading file " + biases_file);
+            }
+            m_biases.push_back(bias);
         }
     }
     m_input_size = m_weights[0].size();
