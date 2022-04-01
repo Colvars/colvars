@@ -90,13 +90,21 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
 #ifdef LEPTON
         if (activation_functions[i_layer].first) {
             // use custom function as activation function
-            d = denseLayer(weight_files[i_layer], bias_files[i_layer], activation_functions[i_layer].second);
+            try {
+                d = denseLayer(weight_files[i_layer], bias_files[i_layer], activation_functions[i_layer].second);
+            } catch (std::exception &ex) {
+                cvm::error("Error on initializing layer " + cvm::to_str(i_layer) + " (" + ex.what() + ")\n", FATAL_ERROR);
+            }
         } else {
 #endif
             // query the map of supported activation functions
             const auto& f = activation_function_map[activation_functions[i_layer].second].first;
             const auto& df = activation_function_map[activation_functions[i_layer].second].second;
-            d = denseLayer(weight_files[i_layer], bias_files[i_layer], f, df);
+            try {
+                d = denseLayer(weight_files[i_layer], bias_files[i_layer], f, df);
+            } catch (std::exception &ex) {
+                cvm::error("Error on initializing layer " + cvm::to_str(i_layer) + " (" + ex.what() + ")\n", FATAL_ERROR);
+            }
 #ifdef LEPTON
         }
 #endif
