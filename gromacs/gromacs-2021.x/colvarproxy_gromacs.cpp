@@ -251,12 +251,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
 
 
 colvarproxy_gromacs::~colvarproxy_gromacs()
-{
-  if (colvars != NULL) {
-    delete colvars;
-    colvars = NULL;
-  }
-}
+{}
 
 void colvarproxy_gromacs::finish(const t_commrec *cr)
 {
