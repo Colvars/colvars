@@ -13,9 +13,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(WARNINGS_ARE_ERRORS "Treats warnings as errors" OFF)
 
-# message(STATUS "Enabling sanitize-address")
-# add_compile_options(-fsanitize=address)
-# add_link_options(-fsanitize=address)
+option(ADDRESS_SANITIZER "Build with Address Sanitizer for memory debugging" OFF)
+if(ADDRESS_SANITIZER)
+  add_compile_options(-fsanitize=address)
+  add_link_options(-fsanitize=address)
+endif()
 
 if(NOT DEFINED LEPTON_DIR)
   set(LEPTON_DIR ${COLVARS_SOURCE_DIR}/lepton)

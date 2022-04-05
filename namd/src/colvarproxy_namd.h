@@ -61,7 +61,7 @@ protected:
 
 public:
 
-  virtual void init_tcl_pointers();
+  void init_tcl_pointers() override;
 
   friend class cvm::atom;
 
@@ -122,7 +122,7 @@ public:
     return simparams->dt;
   }
 
-  virtual cvm::real get_accelMD_factor() const {
+  cvm::real get_accelMD_factor() const override {
     return amd_weight_factor;
   }
 
@@ -184,12 +184,12 @@ public:
 
 #endif // #if CMK_SMP && USE_CKLOOP
 
-  virtual int replica_enabled();
-  virtual int replica_index();
-  virtual int num_replicas();
-  virtual void replica_comm_barrier();
-  virtual int replica_comm_recv(char* msg_data, int buf_len, int src_rep);
-  virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep);
+  int replica_enabled() override;
+  int replica_index() override;
+  int num_replicas() override;
+  void replica_comm_barrier() override;
+  int replica_comm_recv(char* msg_data, int buf_len, int src_rep) override;
+  int replica_comm_send(char* msg_data, int msg_len, int dest_rep) override;
 
   int init_atom(int atom_number);
   int check_atom_id(int atom_number);
@@ -228,24 +228,24 @@ public:
 
 #if NAMD_VERSION_NUMBER >= 34471681
 
-  virtual int init_volmap_by_id(int volmap_id);
+  int init_volmap_by_id(int volmap_id) override;
 
-  virtual int init_volmap_by_name(const char *volmap_name);
+  int init_volmap_by_name(const char *volmap_name) override;
 
-  virtual int check_volmap_by_id(int volmap_id);
+  int check_volmap_by_id(int volmap_id) override;
 
-  virtual int check_volmap_by_name(char const *volmap_name);
+  int check_volmap_by_name(char const *volmap_name) override;
 
-  virtual int get_volmap_id_from_name(char const *volmap_name);
+  int get_volmap_id_from_name(char const *volmap_name) override;
 
-  virtual void clear_volmap(int index);
+  void clear_volmap(int index) override;
 
-  virtual int compute_volmap(int flags,
+  int compute_volmap(int flags,
                              int volmap_id,
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
                              cvm::real *value,
-                             cvm::real *atom_field);
+                             cvm::real *atom_field) override;
 
   /// Abstraction of the two types of NAMD volumetric maps
   template<class T>

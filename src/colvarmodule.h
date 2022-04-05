@@ -378,8 +378,8 @@ public:
   /// Parse and initialize collective variables
   int parse_colvars(std::string const &conf);
 
-  /// Run provided startup script
-  int run_script();
+  /// Run provided script
+  int run_script(std::string const &filename);
 
   /// Parse and initialize collective variable biases
   int parse_biases(std::string const &conf);
