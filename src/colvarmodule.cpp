@@ -303,7 +303,7 @@ int colvarmodule::parse_config(std::string &conf)
   proxy->setup();
 
   if (source_Tcl_script.size() > 0) {
-    run_script(source_Tcl_script);
+    run_tcl_script(source_Tcl_script);
   }
 
   return get_error();
@@ -403,7 +403,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
 }
 
 
-int colvarmodule::run_script(std::string const &filename) {
+int colvarmodule::run_tcl_script(std::string const &filename) {
 
   int result = COLVARS_OK;
 
