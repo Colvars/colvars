@@ -5,11 +5,13 @@ on: [push, pull_request]
 
 jobs:
 
-  basic-checks:
+  basicchecks:
 
     name: Basic checks
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    outputs:
+      hassecrets: ${{ steps.checksecrets.outputs.hassecrets }}
 
     steps:
       - name: Checkout Colvars
@@ -58,11 +60,18 @@ jobs:
               exit 1
           fi
 
+      - name: Check whether secrets are available
+        id: checksecrets
+        env:
+          PULL_ORACLE_DEVELOPER_STUDIO: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
+        run: |
+          echo "::set-output name=hassecrets::${{ env.PULL_ORACLE_DEVELOPER_STUDIO != '' }}"
+
 
   build-doc:
     name: Build documentation
     runs-on: ubuntu-latest
-    needs: basic-checks
+    needs: basicchecks
 
     steps:
       - uses: actions/checkout@v2
@@ -110,7 +119,7 @@ jobs:
   codeql:
     name: CodeQL analysis
     runs-on: ubuntu-latest
-    needs: basic-checks
+    needs: basicchecks
     if: ${{ ! github.event.repository.private }}
 
     steps:
@@ -137,7 +146,7 @@ jobs:
   build-linux-x86_64-many:
     name: Linux x86_64 (many compilers)
     runs-on: ubuntu-latest
-    needs: basic-checks
+    needs: basicchecks
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     env:
       CCACHE: ccache
@@ -324,10 +333,8 @@ jobs:
   build-linux-x86_64-sun:
     name: Linux x86_64 (Sun compiler)
     runs-on: ubuntu-latest
-    needs: basic-checks
-    # Prevent running this job on fork repos due to the secrets variable
-    if: ${{ github.repository_owner == 'Colvars' }} && ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository }}
-
+    needs: basicchecks
+    if: needs.basicchecks.outputs.hassecrets == 'true'
     steps:
       - uses: actions/checkout@v2
 
@@ -378,7 +385,7 @@ jobs:
   build-windows-x86_64-msvc:
     name: Windows x86_64 (MSVC)
     runs-on: windows-latest
-    needs: basic-checks
+    needs: basicchecks
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
@@ -393,7 +400,7 @@ jobs:
   build-macos-x86_64-clang:
     name: macOS x86_64 (AppleClang)
     runs-on: macos-latest
-    needs: basic-checks
+    needs: basicchecks
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
