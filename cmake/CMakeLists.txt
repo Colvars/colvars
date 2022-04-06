@@ -17,6 +17,9 @@ option(ADDRESS_SANITIZER "Build with Address Sanitizer for memory debugging" OFF
 if(ADDRESS_SANITIZER)
   add_compile_options(-fsanitize=address)
   add_link_options(-fsanitize=address)
+  if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+    message(WARNING "-DADDRESS_SANITIZER flag not tested yet for this compiler.")
+  endif()
 endif()
 
 if(NOT DEFINED LEPTON_DIR)
