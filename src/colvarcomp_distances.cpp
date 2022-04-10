@@ -1403,7 +1403,8 @@ colvar::eigenvector::eigenvector(std::string const &conf)
       eigenvec[i] *= eigenvec_invnorm2;
     }
   } else {
-    cvm::log("The norm of the vector is |v| = "+cvm::to_str(eigenvec_invnorm2)+".\n");
+    cvm::log("The norm of the vector is |v| = \\sqrt{\\sum_i |v_i|^2} = "+
+             cvm::to_str(1.0/cvm::sqrt(eigenvec_invnorm2))+".\n");
   }
 }
 
