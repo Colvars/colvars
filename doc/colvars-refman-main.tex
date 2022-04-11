@@ -2141,6 +2141,16 @@ automatically when reading them from the configuration.
 
 \item %
   \keydef
+    {normalizeVector}{%
+    \texttt{eigenvector}}{%
+    Normalize the vector components when reading them?}{%
+    boolean}{%
+    \texttt{off}}{%
+    If this flag is activated, the norm of the vector $|\mathbf{v}| = \sqrt{\sum_{i} \left|\mathbf{v}_i\right|^2}$ is set equal to 1 by automatically rescaling all the components $\mathbf{v}_i$; alternatively, the value of $|\mathbf{v}|$ is printed.
+  }
+
+\item %
+  \keydef
     {differenceVector}{%
     \texttt{eigenvector}}{%
     The $3n$-dimensional vector is the difference between \texttt{vector} and \texttt{refPositions}}{%
@@ -2148,7 +2158,7 @@ automatically when reading them from the configuration.
     \texttt{off}}{%
     If this option is \texttt{on}, the numbers provided by \texttt{vector}\cvnamebasedonly{ or \texttt{vectorFile}} are interpreted as another set of positions, $\mathbf{x}_{i}'$: the vector $\mathbf{v}_{i}$ is then defined as $\mathbf{v}_{i} = \left(\mathbf{x}_{i}' - \mathbf{x}_{i}^{\mathrm{(ref)}}\right)$.
 This allows to conveniently define a colvar $\xi$ as a projection on the linear transformation between two sets of positions, ``A'' and ``B''.
-For convenience, the vector is also normalized so that $\xi = 0$ when the atoms are at the set of positions ``A'' and $\xi = 1$ at the set of positions ``B''.
+If this flag is \texttt{on}, the default value of \texttt{normalizeVector} is also set to \texttt{on}, resulting in $\xi = 0$ when the atoms are at the set of positions ``A'' and $\xi = 1$ at the set of positions ``B''.
 }
 \end{cvcoptions}
 This component returns a number (in \lengthunit), whose value ranges between

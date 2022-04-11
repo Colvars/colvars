@@ -1397,11 +1397,15 @@ colvar::eigenvector::eigenvector(std::string const &conf)
   }
   eigenvec_invnorm2 = 1.0 / eigenvec_invnorm2;
 
-  if (b_difference_vector) {
-    cvm::log("\"differenceVector\" is on: normalizing the vector.\n");
+  bool normalize = b_difference_vector;
+  get_keyval(conf, "normalizeVector", normalize, normalize);
+
+  if (normalize) {
+    cvm::log("Normalizing the vector so that |v| = \\sqrt{\\sum_i |v_i|^2} = 1.\n");
     for (size_t i = 0; i < atoms->size(); i++) {
-      eigenvec[i] *= eigenvec_invnorm2;
+      eigenvec[i] *= cvm::sqrt(eigenvec_invnorm2);
     }
+    eigenvec_invnorm2 = 1.0;
   } else {
     cvm::log("The norm of the vector is |v| = \\sqrt{\\sum_i |v_i|^2} = "+
              cvm::to_str(1.0/cvm::sqrt(eigenvec_invnorm2))+".\n");
@@ -1563,4 +1567,3 @@ void colvar::cartesian::apply_force(colvarvalue const &force)
     }
   }
 }
-
