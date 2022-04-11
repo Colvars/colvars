@@ -159,7 +159,9 @@ for dir in ${DIRLIST} ; do
     ln -sf ../Common/da.ndx index.ndx
     if grep -q "refPositionsFile rmsd_" test.dat
     then
-        ln -fs ../Common/rmsd_atoms_refpos.xyz rmsd_atoms_refpos.xyz
+        ln -fs ../Common/rmsd_atoms_refpos.xyz ./
+        ln -fs ../Common/rmsd_atoms_refpos2.xyz ./
+        ln -fs ../Common/rmsd_atoms_random.xyz ./
     fi
     if grep -q "refPositionsFile heavy_" test.dat
     then

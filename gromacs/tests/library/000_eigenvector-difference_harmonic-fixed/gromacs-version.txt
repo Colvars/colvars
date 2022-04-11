@@ -1,0 +1,3 @@
+ :-) GROMACS - gmx mdrun, 2020.7-Colvars-2022-04-14-dev-20220203-a727f42e8e-dirty-unknown (double precision) (-:
+colvars: Initializing the collective variables module, version 2022-04-14.
+colvars: Using GROMACS interface, version "2022-04-06".

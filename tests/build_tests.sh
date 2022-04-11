@@ -198,6 +198,8 @@ for colvar in \
     "inertiaz" \
     "rmsd" \
     "eigenvector" \
+    "eigenvector-difference" \
+    "eigenvector-normalized" \
     "tilt" \
     "spinangle" \
     "selfcoordnum" "selfcoordnum-pairlist" \
