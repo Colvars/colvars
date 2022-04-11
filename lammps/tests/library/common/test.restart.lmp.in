@@ -15,4 +15,5 @@ write_data test.restart.lmp.data
 shell rm -f "index.ndx"
 shell rm -f "rmsd_atoms_refpos.xyz"
 shell rm -f "heavy_atoms_refpos.xyz"
+shell rm -f "heavy_atoms_refpos2.xyz"
 shell rm -f "rmsd_atoms_random.xyz"
