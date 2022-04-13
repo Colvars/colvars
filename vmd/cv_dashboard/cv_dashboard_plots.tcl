@@ -99,7 +99,7 @@ proc ::cv_dashboard::plot { { type timeline } } {
       incr i
     }
 
-    lassign [compute_histogram $y($xname)] delta centers frequencies
+    lassign [compute_histogram $::cv_dashboard::histogram_sorted_values] delta centers frequencies
 
     set nbins [llength $centers]
     if { $nbins == 0 } { return }
@@ -109,24 +109,44 @@ proc ::cv_dashboard::plot { { type timeline } } {
     set plothandle [multiplot -title "Histogram for colvar $cvs \[click, keyb arrows (+ Shift/Ctrl) to navigate\]" \
       -xlabel $xname -ylabel "N" -nostats \
       -xmin [expr [lindex $centers 0] - (0.5*$delta)] -xmax [expr [lindex $centers end] + (0.5*$delta)] \
-      -x $centers -y $frequencies -nolines -plot]
+      -ymin 0.0 -x $centers -y $frequencies -nolines -plot]
 
     set ns [namespace qualifiers $plothandle]
-    set ymin [set ${ns}::ymin]
+    # force bars to start at zero
+    set ymin 0.0
 
     for {set j 0} {$j < $nbins} {incr j} {
       set left [expr [lindex $centers $j] - (0.5 * $delta)]
       set right [expr [lindex $centers $j] + (0.5 * $delta)]
       $plothandle draw rectangle $left $ymin $right [lindex $frequencies $j] -fill "#ecf6ff" -tags rect$j
     }
-    $plothandle replot
-    # $plothandle add $bin_centers $frequencies
+
+    set maxfreq 0
+    foreach f $frequencies {
+      if { $f > $maxfreq } { set maxfreq $f }
+    }
+
+    # Compute and plot cumulative distribution
+    set delta [expr {$maxfreq * 1.0 / $nf}] ;# 1.0 to force floating-point operation
+    set cumul_dist_x [list]
+    set cumul_dist_y [list]
+    set npoints 200 ;# target number of points (plot will have at most twice that number)
+    set stride [expr {$nf < $npoints ? 1 : int($nf / $npoints)}]
+    for { set i 0 } { $i < $nf } { incr i $stride } {
+      lappend cumul_dist_x [lindex $::cv_dashboard::histogram_sorted_values $i]
+      lappend cumul_dist_y [expr {($i + 1) * $delta}]
+    }
+    # Add missing final point if stride is not a divisor of nf
+    if {[lindex $cumul_dist_y end] < $maxfreq } {
+      lappend cumul_dist_x [lindex $::cv_dashboard::histogram_sorted_values end]
+      lappend cumul_dist_y $maxfreq
+    }
+    $plothandle add $cumul_dist_x $cumul_dist_y -linecolor black -legend "Cumulative distribution"
   }
 
   $plothandle replot
   # bind mouse and keyboard events to callbacks
-  set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
-
+  set plot_ns [$plothandle namespace]
   set w [set ${plot_ns}::w]
 
   if { $type == "timeline" } {
@@ -204,7 +224,7 @@ proc ::cv_dashboard::plot_bias_energy { } {
 
   $plothandle replot
   # bind mouse and keyboard events to callbacks
-  set plot_ns [namespace qualifiers $::cv_dashboard::plothandle]
+  set plot_ns [$plothandle namespace]
   set w [set ${plot_ns}::w]
 
   traj_animation_bindings $w
@@ -225,7 +245,7 @@ proc ::cv_dashboard::plot_bias_energy { } {
 # Callback for click inside plot window, at coords x y
 proc ::cv_dashboard::plot_clicked { x y } {
 
-  set ns [namespace qualifiers $::cv_dashboard::plothandle]
+  set ns [$::cv_dashboard::plothandle namespace]
   set xplotmin [set ${ns}::xplotmin]
   set xplotmax [set ${ns}::xplotmax]
   set yplotmin [set ${ns}::yplotmin]
@@ -442,20 +462,16 @@ proc ::cv_dashboard::display_marker { f } {
 
 
 # Create plot window for energy of biases
-proc ::cv_dashboard::compute_histogram { values } {
+proc ::cv_dashboard::compute_histogram { sorted_values } {
   set nbins $::cv_dashboard::nbins
 
-  if {[llength $values] < 2} {
+  if {[llength $sorted_values] < 2} {
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
       -message "At least two frames are necessary to compute a histogram.\n"
     return "" ""
   }
-  set min [lindex $values 0]
-  set max $min
-  foreach v $values {
-    if { $v < $min } { set min $v }
-    if { $v > $max } { set max $v }
-  }
+  set min [lindex $sorted_values 0]
+  set max [lindex $sorted_values end]
   set delta [expr ($max - $min) / ($nbins - 1)]
   if { $delta == 0. } {
     set delta 1.
@@ -471,7 +487,7 @@ proc ::cv_dashboard::compute_histogram { values } {
   for {set i 0} {$i < $nbins} {incr i} {
     set c($i) 0
   }
-  foreach v $values {
+  foreach v $sorted_values {
     incr c([expr {int(floor(($v-$min)/$delta))}])
   }
   set centers [list]
