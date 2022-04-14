@@ -1701,7 +1701,8 @@ int colvar::calc_colvar_properties()
 
     // initialize the restraint center in the first step to the value
     // just calculated from the cvcs
-    if ((cvm::step_relative() == 0 && !after_restart) || x_ext.type() == colvarvalue::type_notset) {
+    // Do the same if no simulation is running (eg. VMD postprocessing)
+    if ((cvm::step_relative() == 0 && !after_restart) || x_ext.type() == colvarvalue::type_notset || !cvm::proxy->simulation_running()) {
       x_ext = x;
       if (is_enabled(f_cv_reflecting_lower_boundary) && x_ext < lower_boundary) {
         cvm::log("Warning: initializing extended coordinate to reflective lower boundary, as colvar value is below.");
@@ -1780,119 +1781,113 @@ cvm::real colvar::update_forces_energy()
   // At this point f is the force f from external biases that will be applied to the
   // extended variable if there is one
 
-  if (is_enabled(f_cv_extended_Lagrangian)) {
-    if (cvm::proxy->simulation_running()) {
-      // Only integrate the extended equations of motion in running MD simulations
-      if (cvm::debug()) {
-        cvm::log("Updating extended-Lagrangian degree of freedom.\n");
+  if (is_enabled(f_cv_extended_Lagrangian) && cvm::proxy->simulation_running()) {
+    // Only integrate the extended equations of motion in running MD simulations
+    if (cvm::debug()) {
+      cvm::log("Updating extended-Lagrangian degree of freedom.\n");
+    }
+
+    if (prev_timestep > -1L) {
+      // Keep track of slow timestep to integrate MTS colvars
+      // the colvar checks the interval after waking up twice
+      cvm::step_number n_timesteps = cvm::step_relative() - prev_timestep;
+      if (n_timesteps != 0 && n_timesteps != time_step_factor) {
+        cvm::error("Error: extended-Lagrangian " + description + " has timeStepFactor " +
+          cvm::to_str(time_step_factor) + ", but was activated after " + cvm::to_str(n_timesteps) +
+          " steps at timestep " + cvm::to_str(cvm::step_absolute()) + " (relative step: " +
+          cvm::to_str(cvm::step_relative()) + ").\n" +
+          "Make sure that this colvar is requested by biases at multiples of timeStepFactor.\n");
+        return 0.;
       }
+    }
 
-      if (prev_timestep > -1L) {
-        // Keep track of slow timestep to integrate MTS colvars
-        // the colvar checks the interval after waking up twice
-        cvm::step_number n_timesteps = cvm::step_relative() - prev_timestep;
-        if (n_timesteps != 0 && n_timesteps != time_step_factor) {
-          cvm::error("Error: extended-Lagrangian " + description + " has timeStepFactor " +
-            cvm::to_str(time_step_factor) + ", but was activated after " + cvm::to_str(n_timesteps) +
-            " steps at timestep " + cvm::to_str(cvm::step_absolute()) + " (relative step: " +
-            cvm::to_str(cvm::step_relative()) + ").\n" +
-            "Make sure that this colvar is requested by biases at multiples of timeStepFactor.\n");
-          return 0.;
-        }
-      }
+    // Integrate with slow timestep (if time_step_factor != 1)
+    cvm::real dt = cvm::dt() * cvm::real(time_step_factor);
 
-      // Integrate with slow timestep (if time_step_factor != 1)
-      cvm::real dt = cvm::dt() * cvm::real(time_step_factor);
+    colvarvalue f_ext(fr.type()); // force acting on the extended variable
+    f_ext.reset();
 
-      colvarvalue f_ext(fr.type()); // force acting on the extended variable
-      f_ext.reset();
+    if (is_enabled(f_cv_external)) {
+      // There are no forces on the "actual colvar" bc there is no gradient wrt atomic coordinates
+      // So we apply this to the extended DOF
+      f += fb_actual;
+    }
 
-      if (is_enabled(f_cv_external)) {
-        // There are no forces on the "actual colvar" bc there is no gradient wrt atomic coordinates
-        // So we apply this to the extended DOF
-        f += fb_actual;
-      }
+    fr    = f;
+    // External force has been scaled for a 1-timestep impulse, scale it back because we will
+    // integrate it with the colvar's own timestep factor
+    f_ext = f / cvm::real(time_step_factor);
 
-      fr    = f;
-      // External force has been scaled for a 1-timestep impulse, scale it back because we will
-      // integrate it with the colvar's own timestep factor
-      f_ext = f / cvm::real(time_step_factor);
+    colvarvalue f_system(fr.type()); // force exterted by the system on the extended DOF
 
-      colvarvalue f_system(fr.type()); // force exterted by the system on the extended DOF
+    if (is_enabled(f_cv_external)) {
+      // Add "alchemical" force from external variable
+      f_system = cvcs[0]->total_force();
+      // f is now irrelevant because we are not applying atomic forces in the simulation
+      // just driving the external variable lambda
+    } else {
+      // the total force is applied to the fictitious mass, while the
+      // atoms only feel the harmonic force + wall force
+      // fr: bias force on extended variable (without harmonic spring), for output in trajectory
+      // f_ext: total force on extended variable (including harmonic spring)
+      // f: - initially, external biasing force
+      //    - after this code block, colvar force to be applied to atomic coordinates
+      //      ie. spring force (fb_actual will be added just below)
+      f_system = (-0.5 * ext_force_k) * this->dist2_lgrad(x_ext, x);
+      f        = -1.0 * f_system;
+      // Coupling force is a slow force, to be applied to atomic coords impulse-style
+      // over a single MD timestep
+      f *= cvm::real(time_step_factor);
+    }
+    f_ext += f_system;
 
-      if (is_enabled(f_cv_external)) {
-        // Add "alchemical" force from external variable
-        f_system = cvcs[0]->total_force();
-        // f is now irrelevant because we are not applying atomic forces in the simulation
-        // just driving the external variable lambda
-      } else {
-        // the total force is applied to the fictitious mass, while the
-        // atoms only feel the harmonic force + wall force
-        // fr: bias force on extended variable (without harmonic spring), for output in trajectory
-        // f_ext: total force on extended variable (including harmonic spring)
-        // f: - initially, external biasing force
-        //    - after this code block, colvar force to be applied to atomic coordinates
-        //      ie. spring force (fb_actual will be added just below)
-        f_system = (-0.5 * ext_force_k) * this->dist2_lgrad(x_ext, x);
-        f        = -1.0 * f_system;
-        // Coupling force is a slow force, to be applied to atomic coords impulse-style
-        // over a single MD timestep
-        f *= cvm::real(time_step_factor);
-      }
-      f_ext += f_system;
+    if (is_enabled(f_cv_subtract_applied_force)) {
+      // Report a "system" force without the biases on this colvar
+      // that is, just the spring force (or alchemical force)
+      ft_reported = f_system;
+    } else {
+      // The total force acting on the extended variable is f_ext
+      // This will be used in the next timestep
+      ft_reported = f_ext;
+    }
 
-      if (is_enabled(f_cv_subtract_applied_force)) {
-        // Report a "system" force without the biases on this colvar
-        // that is, just the spring force (or alchemical force)
-        ft_reported = f_system;
-      } else {
-        // The total force acting on the extended variable is f_ext
-        // This will be used in the next timestep
-        ft_reported = f_ext;
-      }
+    // backup in case we need to revert this integration timestep
+    // if the same MD timestep is re-run
+    prev_x_ext = x_ext;
+    prev_v_ext = v_ext;
 
-      // backup in case we need to revert this integration timestep
-      // if the same MD timestep is re-run
-      prev_x_ext = x_ext;
-      prev_v_ext = v_ext;
+    // leapfrog: starting from x_i, f_i, v_(i-1/2)
+    v_ext  += (0.5 * dt) * f_ext / ext_mass;
+    // Because of leapfrog, kinetic energy at time i is approximate
+    kinetic_energy = 0.5 * ext_mass * v_ext * v_ext;
+    potential_energy = 0.5 * ext_force_k * this->dist2(x_ext, x);
+    // leap to v_(i+1/2)
+    if (is_enabled(f_cv_Langevin)) {
+      v_ext -= dt * ext_gamma * v_ext;
+      colvarvalue rnd(x);
+      rnd.set_random();
+      v_ext += dt * ext_sigma * rnd / ext_mass;
+    }
+    v_ext  += (0.5 * dt) * f_ext / ext_mass;
+    x_ext  += dt * v_ext;
 
-      // leapfrog: starting from x_i, f_i, v_(i-1/2)
-      v_ext  += (0.5 * dt) * f_ext / ext_mass;
-      // Because of leapfrog, kinetic energy at time i is approximate
-      kinetic_energy = 0.5 * ext_mass * v_ext * v_ext;
-      potential_energy = 0.5 * ext_force_k * this->dist2(x_ext, x);
-      // leap to v_(i+1/2)
-      if (is_enabled(f_cv_Langevin)) {
-        v_ext -= dt * ext_gamma * v_ext;
-        colvarvalue rnd(x);
-        rnd.set_random();
-        v_ext += dt * ext_sigma * rnd / ext_mass;
-      }
-      v_ext  += (0.5 * dt) * f_ext / ext_mass;
-      x_ext  += dt * v_ext;
-
-      cvm::real delta = 0; // Length of overshoot past either reflecting boundary
+    cvm::real delta = 0; // Length of overshoot past either reflecting boundary
+    if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext - lower_boundary) < 0) ||
+        (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext - upper_boundary) > 0)) {
+      x_ext -= 2.0 * delta;
+      v_ext *= -1.0;
       if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext - lower_boundary) < 0) ||
           (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext - upper_boundary) > 0)) {
-        x_ext -= 2.0 * delta;
-        v_ext *= -1.0;
-        if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext - lower_boundary) < 0) ||
-            (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext - upper_boundary) > 0)) {
-          cvm::error("Error: extended coordinate value " + cvm::to_str(x_ext) + " is still outside boundaries after reflection.\n");
-        }
+        cvm::error("Error: extended coordinate value " + cvm::to_str(x_ext) + " is still outside boundaries after reflection.\n");
       }
+    }
 
-      x_ext.apply_constraints();
-      this->wrap(x_ext);
-      if (is_enabled(f_cv_external)) {
-        // Colvar value is constrained to the extended value
-        x = x_ext;
-        cvcs[0]->set_value(x_ext);
-      }
-    } else {
-      // If this is a postprocessing run (eg. in VMD), the extended DOF
-      // is equal to the actual coordinate
-      x_ext = x;
+    x_ext.apply_constraints();
+    this->wrap(x_ext);
+    if (is_enabled(f_cv_external)) {
+      // Colvar value is constrained to the extended value
+      x = x_ext;
+      cvcs[0]->set_value(x_ext);
     }
   }
 
