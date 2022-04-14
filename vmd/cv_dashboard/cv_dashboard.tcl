@@ -120,6 +120,11 @@ Please upgrade to VMD 1.9.4 alpha or later."
     return .cv_dashboard_window
   }
 
+  if {[llength [info procs calc_colvar_forces]] == 0} {
+    # Create dummy proc to avoid error messages is scriptedColvarForces is enabled
+    proc calc_colvar_forces { ts } {}
+  }
+
   return [eval ::cv_dashboard::createWindow]
 }
 
