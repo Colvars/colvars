@@ -353,6 +353,9 @@ public:
   /// return colvar energy if extended Lagrandian active
   cvm::real update_forces_energy();
 
+  /// \brief Integrate equations of motion of extended Lagrangian coordinate if needed
+  void update_extended_Lagrangian();
+
   /// \brief Communicate forces (previously calculated in
   /// colvar::update()) to the external degrees of freedom
   void communicate_forces();
