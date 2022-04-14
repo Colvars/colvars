@@ -1811,7 +1811,7 @@ void colvar::update_extended_Lagrangian()
         " steps at timestep " + cvm::to_str(cvm::step_absolute()) + " (relative step: " +
         cvm::to_str(cvm::step_relative()) + ").\n" +
         "Make sure that this colvar is requested by biases at multiples of timeStepFactor.\n");
-      return 0.;
+      return;
     }
   }
 
