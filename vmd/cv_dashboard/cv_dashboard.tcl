@@ -752,7 +752,7 @@ proc ::cv_dashboard::parse_templates {} {
   foreach d { colvar component other bias } {
     set ::cv_dashboard::templates_$d [dict create]
 
-    set path [file join $::cv_dashboard::template_dir $d]
+    set path [file join $::cv_dashboard::template_dir "$d.colvars"]
 
     # Single-file template DBs
     if [catch {set db_file [open $path]}] {
