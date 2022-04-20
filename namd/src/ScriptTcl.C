@@ -483,10 +483,10 @@ int ScriptTcl::Tcl_exit(ClientData clientData,
     script->initcheck();
   }
   CkPrintf("TCL: Exiting due to exit command.\n");
+  if ( script->runWasCalled ) script->runController(SCRIPT_END);
 #if CMK_HAS_PARTITION
   replica_barrier();
 #endif
-  if ( script->runWasCalled ) script->runController(SCRIPT_END);
   if (argc > 2) {
     Tcl_SetResult(interp,(char*)"wrong # args: should be \"exit ?returnCode?\"",TCL_VOLATILE);
     return TCL_ERROR;
@@ -2335,10 +2335,10 @@ void ScriptTcl::run(char *scriptFile) {
     runWasCalled = 1;
   }
 
+  runController(SCRIPT_END);
 #if CMK_HAS_PARTITION
   replica_barrier();
 #endif
-  runController(SCRIPT_END);
 
 }
 
