@@ -7,5 +7,5 @@ endif
 
 install:
 	mkdir -p ${DESTINATION} && \
-	  rsync -avL --delete --exclude=Makefile.local ./ ${DESTINATION}/
+	  rsync -avL --delete --exclude CVS --exclude Root --exclude=Makefile.local ./ ${DESTINATION}/
 
