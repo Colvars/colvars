@@ -472,7 +472,7 @@ then
   fi
 
   if [ -z "${OPENMM_SOURCE}" ] ; then
-    OPENMM_SOURCE=/tmp/openmm-source
+    OPENMM_SOURCE=$(mktemp -d /tmp/openmm-source-XXXXXX)
   fi
 
   # Download Lepton if needed
