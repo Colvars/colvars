@@ -68,6 +68,11 @@ compile_gromacs_target() {
         fi
     fi
 
+    # When on GitHub Actions, download the tests as well
+    if [ -n "${GITHUB_ACTION}" ] ; then
+        GMX_BUILD_OPTS+=(-DREGRESSIONTEST_DOWNLOAD=ON)
+    fi
+
     if [ -z "${GMX_BUILD_DIR}" ] ; then
         GMX_BUILD_DIR="${GMX_SRC_DIR}/build"
     fi
@@ -77,7 +82,6 @@ compile_gromacs_target() {
     local ret_code=0
 
     ${CMAKE} \
-        -DREGRESSIONTEST_DOWNLOAD=ON \
         -DCMAKE_INSTALL_PREFIX="${GMX_INSTALL_DIR}" \
         -DCMAKE_BUILD_TYPE=${GMX_BUILD_TYPE:-Release} \
         ${GMX_BUILD_OPTS[@]} \
@@ -87,9 +91,11 @@ compile_gromacs_target() {
         ${CMAKE} --build "${GMX_BUILD_DIR}" --parallel $(nproc --all)
     ret_code=$?
 
-    # Now build the tests
-    ${CMAKE} --build "${GMX_BUILD_DIR}" --target tests --parallel $(nproc --all)
-    ret_code=$((${ret_code} || $?))
+    if [ -n "${GITHUB_ACTION}" ] ; then
+        # On GitHub Actions, build the tests as well
+        ${CMAKE} --build "${GMX_BUILD_DIR}" --target tests --parallel $(nproc --all)
+        ret_code=$((${ret_code} || $?))
+    fi
 
     if [ ${ret_code} = 0 ] ; then
         pushd "${GMX_BUILD_DIR}"
