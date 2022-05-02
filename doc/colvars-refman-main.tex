@@ -2119,6 +2119,7 @@ automatically when reading them from the configuration.
     This option (mutually exclusive with \texttt{vector}) sets the name of an XYZ (\ref{sec:colvars_xyz_format}) \cvnamebasedonly{ or PDB } coordinate file containing the vector components.
     \cvnamebasedonly{For a PDB file specifically, the components are read from the X, Y and Z fields.
       \textbf{Note:} \emph{The PDB file has limited precision and fixed-point numbers: in some cases, the vector components may not be accurately represented; a XYZ file should be used instead, containing floating-point numbers.}}
+    \textbf{Note:} \emph{Reading data from a coordinate file may entail an automatic unit conversion if the current length unit is not \AA{}. If this is not the desired behavior, this can be remedied using the \texttt{normalizeVector} option described below.}
   }
 
 \cvnamebasedonly{
@@ -2158,7 +2159,7 @@ automatically when reading them from the configuration.
     \texttt{off}}{%
     If this option is \texttt{on}, the numbers provided by \texttt{vector}\cvnamebasedonly{ or \texttt{vectorFile}} are interpreted as another set of positions, $\mathbf{x}_{i}'$: the vector $\mathbf{v}_{i}$ is then defined as $\mathbf{v}_{i} = \left(\mathbf{x}_{i}' - \mathbf{x}_{i}^{\mathrm{(ref)}}\right)$.
 This allows to conveniently define a colvar $\xi$ as a projection on the linear transformation between two sets of positions, ``A'' and ``B''.
-If this flag is \texttt{on}, the default value of \texttt{normalizeVector} is also set to \texttt{on}, resulting in $\xi = 0$ when the atoms are at the set of positions ``A'' and $\xi = 1$ at the set of positions ``B''.
+If this flag is \texttt{on}, the vector is normalized so that $\xi = 0$ when the atoms are at the set of positions ``A'' and $\xi = 1$ at the set of positions ``B''. Setting \texttt{normalizeVector} \texttt{on} overrides this behavior.
 }
 \end{cvcoptions}
 
