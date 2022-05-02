@@ -1370,7 +1370,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
         eigenvec[i] = atoms->rot.rotate(eigenvec[i]);
       }
     }
-    cvm::log("\"differenceVector\" is on: subtracting the reference positions from the provided vector: v = v - x0.\n");
+    cvm::log("\"differenceVector\" is on: subtracting the reference positions from the provided vector: v = x_vec - x_ref.\n");
     for (size_t i = 0; i < atoms->size(); i++) {
       eigenvec[i] -= ref_pos[i];
     }
@@ -1388,26 +1388,31 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     }
   }
 
-  // cvm::log("The first three components(v1x, v1y, v1z) of the resulting vector are: "+cvm::to_str (eigenvec[0])+".\n");
-
-  // for inverse gradients
+  // eigenvec_invnorm2 is used when computing inverse gradients
   eigenvec_invnorm2 = 0.0;
   for (size_t ein = 0; ein < atoms->size(); ein++) {
     eigenvec_invnorm2 += eigenvec[ein].norm2();
   }
   eigenvec_invnorm2 = 1.0 / eigenvec_invnorm2;
 
-  bool normalize = b_difference_vector;
+  // Vector normalization overrides the default normalization for differenceVector
+  bool normalize = false;
   get_keyval(conf, "normalizeVector", normalize, normalize);
 
   if (normalize) {
-    cvm::log("Normalizing the vector so that |v| = \\sqrt{\\sum_i |v_i|^2} = 1.\n");
+    cvm::log("Normalizing the vector so that |v| = 1.\n");
     for (size_t i = 0; i < atoms->size(); i++) {
       eigenvec[i] *= cvm::sqrt(eigenvec_invnorm2);
     }
     eigenvec_invnorm2 = 1.0;
+  } else if (b_difference_vector) {
+    cvm::log("Normalizing the vector so that the norm of the projection |v ⋅ (x_vec - x_ref)| = 1.\n");
+    for (size_t i = 0; i < atoms->size(); i++) {
+      eigenvec[i] *= eigenvec_invnorm2;
+    }
+    eigenvec_invnorm2 = 1.0/eigenvec_invnorm2;
   } else {
-    cvm::log("The norm of the vector is |v| = \\sqrt{\\sum_i |v_i|^2} = "+
+    cvm::log("The norm of the vector is |v| = "+
              cvm::to_str(1.0/cvm::sqrt(eigenvec_invnorm2))+".\n");
   }
 }

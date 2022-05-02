@@ -160,7 +160,6 @@ for dir in ${DIRLIST} ; do
     fi
 
     # Run the test (use a subshell to avoid cluttering stdout)
-    # Use --source to avoid letting NAMD change its working directory
     # Use multiple threads to test SMP code (TODO: move SMP tests to interface?)
     $BINARY +p ${NUM_THREADS_THIS} $script > ${basename}.out
 
