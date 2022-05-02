@@ -2119,7 +2119,7 @@ automatically when reading them from the configuration.
     This option (mutually exclusive with \texttt{vector}) sets the name of an XYZ (\ref{sec:colvars_xyz_format}) \cvnamebasedonly{ or PDB } coordinate file containing the vector components.
     \cvnamebasedonly{For a PDB file specifically, the components are read from the X, Y and Z fields.
       \textbf{Note:} \emph{The PDB file has limited precision and fixed-point numbers: in some cases, the vector components may not be accurately represented; a XYZ file should be used instead, containing floating-point numbers.}}
-    \textbf{Note:} \emph{Reading data from a coordinate file may entail an automatic unit conversion if the current length unit is not \AA{}. If this is not the desired behavior, this can be remedied using the \texttt{normalizeVector} option described below.}
+    \textbf{Note:} \emph{Reading data from a coordinate file may entail an automatic unit conversion if the length unit currently used by the MD engine is not \AA{}. If this is not the desired behavior, this can be remedied using the \texttt{normalizeVector} option described below.}
   }
 
 \cvnamebasedonly{
