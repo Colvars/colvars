@@ -454,7 +454,7 @@ void colvarproxy_gromacs::calculateForces(
     bias_energy = 0.0;
     // Call the collective variable module to fill atoms_new_colvar_forces
     if (colvars->calc() != COLVARS_OK) {
-      cvm::fatal_error("Error calling colvars->calc()\n");
+      cvm::error("Error calling colvars->calc()\n");
     }
 
     // Copy the forces to C array for broadcasting

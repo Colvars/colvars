@@ -255,7 +255,7 @@ int colvarbias_meta::init_well_tempered_params(std::string const &conf)
   get_keyval(conf, "wellTempered", well_tempered, false);
   get_keyval(conf, "biasTemperature", bias_temperature, -1.0);
   if ((bias_temperature == -1.0) && well_tempered) {
-    cvm::fatal_error("Error: biasTemperature is not set.\n");
+    cvm::error("Error: biasTemperature is not set.\n");
   }
   if (well_tempered) {
     cvm::log("Well-tempered metadynamics is used.\n");
@@ -273,7 +273,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
   if(ebmeta){
     cvm::main()->cite_feature("Ensemble-biased metadynamics (ebMetaD)");
     if (use_grids && expand_grids) {
-      cvm::fatal_error("Error: expandBoundaries is not supported with "
+      cvm::error("Error: expandBoundaries is not supported with "
                        "ebMeta please allocate wide enough boundaries for "
                        "each colvar ahead of time and set targetdistfile "
                        "accordingly. \n");
@@ -1338,7 +1338,7 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
       is.seekg(hills_energy_pos, std::ios::beg);
       if (!rebin_grids) {
         if (hills_energy_backup == NULL)
-          cvm::fatal_error("Error: couldn't read the free energy grid for metadynamics bias \""+
+          cvm::error("Error: couldn't read the free energy grid for metadynamics bias \""+
                            this->name+"\""+
                            ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                            "; if useGrids was off when the state file was written, "
@@ -1375,7 +1375,7 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
       is.seekg(hills_energy_gradients_pos, std::ios::beg);
       if (!rebin_grids) {
         if (hills_energy_backup == NULL)
-          cvm::fatal_error("Error: couldn't read the free energy gradients grid for metadynamics bias \""+
+          cvm::error("Error: couldn't read the free energy gradients grid for metadynamics bias \""+
                            this->name+"\""+
                            ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                            "; if useGrids was off when the state file was written, "
@@ -1632,7 +1632,7 @@ int colvarbias_meta::setup_output()
     // TODO: one may want to specify the path manually for intricated filesystems?
     char *pwd = new char[3001];
     if (GETCWD(pwd, 3000) == NULL)
-      cvm::fatal_error("Error: cannot get the path of the current working directory.\n");
+      cvm::error("Error: cannot get the path of the current working directory.\n");
     replica_list_file =
       (std::string(pwd)+std::string(PATHSEP)+
        this->name+"."+replica_id+".files.txt");

@@ -44,7 +44,4 @@ private:
 
   /// Print a message to the main log and let the rest of the program handle the error
   void error(std::string const &message) { std::cout << "colvars: " << message << std::endl; }
-
-  /// Print a message to the main log and exit with error code
-  void fatal_error(std::string const &message) { std::cout << "colvars: " <<  message << std::endl; exit(1); }
 };

@@ -1827,7 +1827,7 @@ size_t & colvarmodule::depth()
 void colvarmodule::set_error_bits(int code)
 {
   if (code < 0) {
-    cvm::fatal_error("Error: set_error_bits() received negative error code.\n");
+    cvm::log("Error: set_error_bits() received negative error code.\n");
     return;
   }
   proxy->smp_lock();
@@ -1856,12 +1856,6 @@ int colvarmodule::error(std::string const &message, int code)
   set_error_bits(code);
   proxy->error(message);
   return get_error();
-}
-
-
-int colvarmodule::fatal_error(std::string const &message)
-{
-  return error(message, FATAL_ERROR);
 }
 
 

@@ -93,7 +93,7 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
             try {
                 d = denseLayer(weight_files[i_layer], bias_files[i_layer], activation_functions[i_layer].second);
             } catch (std::exception &ex) {
-                cvm::error("Error on initializing layer " + cvm::to_str(i_layer) + " (" + ex.what() + ")\n", FATAL_ERROR);
+                cvm::error("Error on initializing layer " + cvm::to_str(i_layer) + " (" + ex.what() + ")\n", INPUT_ERROR);
                 return;
             }
         } else {
@@ -104,7 +104,7 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
             try {
                 d = denseLayer(weight_files[i_layer], bias_files[i_layer], f, df);
             } catch (std::exception &ex) {
-                cvm::error("Error on initializing layer " + cvm::to_str(i_layer) + " (" + ex.what() + ")\n", FATAL_ERROR);
+                cvm::error("Error on initializing layer " + cvm::to_str(i_layer) + " (" + ex.what() + ")\n", INPUT_ERROR);
                 return;
             }
 #ifdef LEPTON
