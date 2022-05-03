@@ -457,7 +457,7 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
   }
 
   if (pdb_field == e_pdb_none) {
-    cvm::fatal_error("Error: unsupported PDB field, \""+
+    cvm::error("Error: unsupported PDB field, \""+
                      pdb_field_str+"\".\n");
   }
 

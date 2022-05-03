@@ -40,9 +40,7 @@ You can browse the class hierarchy or the list of source files.
 #define BUG_ERROR       (1<<3) // Inconsistent state indicating bug
 #define FILE_ERROR      (1<<4)
 #define MEMORY_ERROR    (1<<5)
-#define FATAL_ERROR     (1<<6) // Should be set, or not, together with other bits
-//#define DELETE_COLVARS  (1<<7) // Instruct the caller to delete cvm
-#define COLVARS_NO_SUCH_FRAME (1<<8) // Cannot load the requested frame
+#define COLVARS_NO_SUCH_FRAME (1<<6) // Cannot load the requested frame
 
 #include <iostream>
 #include <iomanip>
@@ -658,9 +656,6 @@ public:
   /// \param message Message to print
   /// \param min_log_level Only print if cvm::log_level() >= min_log_level
   static void log(std::string const &message, int min_log_level = 10);
-
-  /// Print a message to the main log and exit with error code
-  static int fatal_error(std::string const &message);
 
   /// Print a message to the main log and set global error code
   static int error(std::string const &message, int code = COLVARS_ERROR);

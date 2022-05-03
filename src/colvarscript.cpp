@@ -33,8 +33,7 @@ extern "C" int tcl_run_colvarscript_command(ClientData clientData,
 
 colvarscript::colvarscript(colvarproxy *p, colvarmodule *m)
  : proxy_(p),
-   colvars(m),
-   proxy_error(0)
+   colvars(m)
 {
   cmd_names = NULL;
   init_commands();
@@ -741,8 +740,8 @@ extern "C" int tcl_run_colvarscript_command(ClientData /* clientData */,
   Tcl_SetResult(interp, const_cast<char *>(result.c_str()),
                 TCL_VOLATILE);
 
-  if (proxy->delete_requested() || cvm::get_error_bit(FATAL_ERROR)) {
-    if (proxy->delete_requested() && !proxy->simulation_running()) {
+  if (proxy->delete_requested()) {
+    if (!proxy->simulation_running()) {
       // Running in VMD
       Tcl_SetResult(interp,
                     const_cast<char *>("Deleting Colvars module"
