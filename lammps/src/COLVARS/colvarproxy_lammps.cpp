@@ -369,8 +369,8 @@ int colvarproxy_lammps::check_atom_id(int atom_number)
   // TODO add upper boundary check?
   if ((aid < 0)) {
     cvm::error("Error: invalid atom number specified, "+
-               cvm::to_str(atom_number)+"\n", INPUT_ERROR);
-    return INPUT_ERROR;
+               cvm::to_str(atom_number)+"\n", COLVARS_INPUT_ERROR);
+    return COLVARS_INPUT_ERROR;
   }
 
   return aid;

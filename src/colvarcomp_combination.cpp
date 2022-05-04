@@ -158,7 +158,7 @@ colvar::customColvar::customColvar(std::string const &conf): linearCombination(c
                 pexpr = Lepton::Parser::parse(expr);
                 pexprs.push_back(pexpr);
             } catch (...) {
-                cvm::error("Error parsing expression \"" + expr + "\".\n", INPUT_ERROR);
+                cvm::error("Error parsing expression \"" + expr + "\".\n", COLVARS_INPUT_ERROR);
             }
             try {
                 value_evaluators.push_back(new Lepton::CompiledExpression(pexpr.createCompiledExpression()));
@@ -176,7 +176,7 @@ colvar::customColvar::customColvar(std::string const &conf): linearCombination(c
                     }
                 }
             } catch (...) {
-                cvm::error("Error compiling expression \"" + expr + "\".\n", INPUT_ERROR);
+                cvm::error("Error compiling expression \"" + expr + "\".\n", COLVARS_INPUT_ERROR);
             }
         } while (key_lookup(conf, "customFunction", &expr_in, &pos));
         // Now define derivative with respect to each scalar sub-component
@@ -201,7 +201,7 @@ colvar::customColvar::customColvar(std::string const &conf): linearCombination(c
             }
         }
         if (value_evaluators.size() == 0) {
-            cvm::error("Error: no custom function defined.\n", INPUT_ERROR);
+            cvm::error("Error: no custom function defined.\n", COLVARS_INPUT_ERROR);
         }
         if (value_evaluators.size() != 1) {
             x.type(colvarvalue::type_vector);

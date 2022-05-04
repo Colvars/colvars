@@ -82,7 +82,7 @@ int colvar::cvc::init(std::string const &conf)
     if ((name != old_name) && (old_name.size() > 0)) {
       cvm::error("Error: cannot rename component \""+old_name+
                  "\" after initialization (new name = \""+name+"\")",
-                 INPUT_ERROR);
+                 COLVARS_INPUT_ERROR);
       name = old_name;
     }
   }
@@ -180,7 +180,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
     if (group_conf.size() == 0) {
       cvm::error("Error: atom group \""+group->key+
                  "\" is set, but has no definition.\n",
-                 INPUT_ERROR);
+                 COLVARS_INPUT_ERROR);
       return group;
     }
 
@@ -191,7 +191,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
     group->check_keywords(group_conf, group_key);
     if (cvm::get_error()) {
       cvm::error("Error parsing definition for atom group \""+
-                 std::string(group_key)+"\".", INPUT_ERROR);
+                 std::string(group_key)+"\".", COLVARS_INPUT_ERROR);
     }
     cvm::decrease_depth();
 

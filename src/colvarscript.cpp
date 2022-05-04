@@ -134,7 +134,7 @@ int colvarscript::init_command(colvarscript::command const &comm,
     for (int iarg = 0; iarg < n_args_max; iarg++) {
       if (! std::getline(is, line)) {
         return cvm::error("Error: could not initialize help string for scripting "
-                          "command \""+std::string(name)+"\".\n", BUG_ERROR);
+                          "command \""+std::string(name)+"\".\n", COLVARS_BUG_ERROR);
       }
       cmd_arghelp[comm].push_back(line);
     }
@@ -178,7 +178,7 @@ std::string colvarscript::get_cmd_prefix(colvarscript::Object_type t)
   case use_bias:
     return std::string("bias_"); break;
   default:
-    cvm::error("Error: undefined colvarscript object type.", BUG_ERROR);
+    cvm::error("Error: undefined colvarscript object type.", COLVARS_BUG_ERROR);
     return std::string("");
   }
 }
@@ -192,7 +192,7 @@ char const *colvarscript::get_command_help(char const *cmd)
     return cmd_help[c].c_str();
   }
   cvm::error("Error: command "+std::string(cmd)+
-             " is not implemented.\n", INPUT_ERROR);
+             " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
 
@@ -204,7 +204,7 @@ char const *colvarscript::get_command_rethelp(char const *cmd)
     return cmd_rethelp[c].c_str();
   }
   cvm::error("Error: command "+std::string(cmd)+
-             " is not implemented.\n", INPUT_ERROR);
+             " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
 
@@ -216,7 +216,7 @@ char const *colvarscript::get_command_arghelp(char const *cmd, int i)
     return cmd_arghelp[c][i].c_str();
   }
   cvm::error("Error: command "+std::string(cmd)+
-             " is not implemented.\n", INPUT_ERROR);
+             " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
 
@@ -228,7 +228,7 @@ int colvarscript::get_command_n_args_min(char const *cmd)
     return cmd_n_args_min[c];
   }
   cvm::error("Error: command "+std::string(cmd)+
-             " is not implemented.\n", INPUT_ERROR);
+             " is not implemented.\n", COLVARS_INPUT_ERROR);
   return -1;
 }
 
@@ -240,7 +240,7 @@ int colvarscript::get_command_n_args_max(char const *cmd)
     return cmd_n_args_max[c];
   }
   cvm::error("Error: command "+std::string(cmd)+
-             " is not implemented.\n", INPUT_ERROR);
+             " is not implemented.\n", COLVARS_INPUT_ERROR);
   return -1;
 }
 
@@ -252,7 +252,7 @@ char const *colvarscript::get_command_full_help(char const *cmd)
     return cmd_full_help[c].c_str();
   }
   cvm::error("Error: command "+std::string(cmd)+
-             " is not implemented.\n", INPUT_ERROR);
+             " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
 
@@ -336,7 +336,7 @@ std::string colvarscript::get_command_cmdline_help(colvarscript::Object_type t,
     return get_command_cmdline_syntax(t, c)+"\n\n"+
       get_command_full_help(cmd_names[c]);
   }
-  cvm::set_error_bits(INPUT_ERROR);
+  cvm::set_error_bits(COLVARS_INPUT_ERROR);
   return std::string("Could not find scripting command \""+cmd+"\".");
 }
 
@@ -474,7 +474,7 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
       i++;
       if (i >= str.length()) {
         cvm::error("Error: could not split the following string:\n"+
-                   str+"\n", INPUT_ERROR);
+                   str+"\n", COLVARS_INPUT_ERROR);
         break;
       }
       new_result.push_back(std::string(""));
@@ -482,7 +482,7 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
         new_result.back().append(1, str[i]);
         if (i >= str.length()) {
           cvm::error("Error: could not split the following string:\n"+
-                     str+"\n", INPUT_ERROR);
+                     str+"\n", COLVARS_INPUT_ERROR);
           break;
         } else {
           i++;
@@ -613,7 +613,7 @@ int run_colvarscript_command(int objc, unsigned char *const objv[])
   colvarscript *script = cv ? cv->proxy->script : NULL;
   if (!script) {
     cvm::error("Called run_colvarscript_command without a script object.\n",
-               BUG_ERROR);
+               COLVARS_BUG_ERROR);
     return -1;
   }
   int retval = script->run(objc, objv);

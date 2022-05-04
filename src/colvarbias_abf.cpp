@@ -82,11 +82,11 @@ int colvarbias_abf::init(std::string const &conf)
   if (history_freq != 0) {
     if (output_freq == 0) {
       cvm::error("Error: historyFreq must be a multiple of outputFreq.\n",
-                 INPUT_ERROR);
+                 COLVARS_INPUT_ERROR);
     } else {
       if ((history_freq % output_freq) != 0) {
         cvm::error("Error: historyFreq must be a multiple of outputFreq.\n",
-                   INPUT_ERROR);
+                   COLVARS_INPUT_ERROR);
       }
     }
   }
@@ -99,7 +99,7 @@ int colvarbias_abf::init(std::string const &conf)
     if ((proxy->replica_enabled() != COLVARS_OK) ||
         (proxy->num_replicas() <= 1)) {
       return cvm::error("Error: shared ABF requires more than one replica.",
-                        INPUT_ERROR);
+                        COLVARS_INPUT_ERROR);
     }
     cvm::log("shared ABF will be applied among "+
              cvm::to_str(proxy->num_replicas()) + " replicas.\n");
@@ -601,7 +601,7 @@ template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
                                                           bool close) {
   std::ostream *os = cvm::proxy->output_stream(filename);
   if (!os) {
-    return cvm::error("Error opening file " + filename + " for writing.\n", COLVARS_ERROR | FILE_ERROR);
+    return cvm::error("Error opening file " + filename + " for writing.\n", COLVARS_ERROR | COLVARS_FILE_ERROR);
   }
   grid->write_multicol(*os);
   if (close) {
@@ -619,7 +619,7 @@ template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
     std::string  dx = filename + ".dx";
     std::ostream *dx_os = cvm::proxy->output_stream(dx);
     if (!dx_os)  {
-      return cvm::error("Error opening file " + dx + " for writing.\n", COLVARS_ERROR | FILE_ERROR);
+      return cvm::error("Error opening file " + dx + " for writing.\n", COLVARS_ERROR | COLVARS_FILE_ERROR);
     }
     grid->write_opendx(*dx_os);
     // if (close) {
@@ -721,7 +721,7 @@ void colvarbias_abf::read_gradients_samples()
     is.open(gradients_in_name.c_str());
     if (!is.is_open()) {
       cvm::error("Error opening ABF gradient file " +
-                 gradients_in_name + " for reading", INPUT_ERROR);
+                 gradients_in_name + " for reading", COLVARS_INPUT_ERROR);
     } else {
       gradients->read_multicol(is, true);
       is.close();
@@ -777,7 +777,7 @@ std::ostream & colvarbias_abf::write_state_data(std::ostream& os)
 std::istream & colvarbias_abf::read_state_data(std::istream& is)
 {
   if ( input_prefix.size() > 0 ) {
-    cvm::error("ERROR: cannot provide both inputPrefix and a colvars state file.\n", INPUT_ERROR);
+    cvm::error("ERROR: cannot provide both inputPrefix and a colvars state file.\n", COLVARS_INPUT_ERROR);
   }
 
   if (! read_state_data_key(is, "samples")) {

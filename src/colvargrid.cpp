@@ -170,7 +170,7 @@ colvar_grid_gradient::colvar_grid_gradient(std::string &filename)
   if (nd > 50) {
     cvm::error("Error: excessive number of dimensions in file \""+
                filename+"\".  Please ensure that the file is not corrupt.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
     return;
   }
 

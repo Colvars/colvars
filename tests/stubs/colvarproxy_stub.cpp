@@ -111,7 +111,7 @@ int colvarproxy_stub::init_atom(int atom_number)
   aid = check_atom_id(atom_number);
 
   if (aid < 0) {
-    return INPUT_ERROR;
+    return COLVARS_INPUT_ERROR;
   }
 
   int const index = add_atom_slot(aid);

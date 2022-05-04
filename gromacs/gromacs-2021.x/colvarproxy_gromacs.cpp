@@ -541,8 +541,8 @@ int colvarproxy_gromacs::check_atom_id(int atom_number)
 
   if ( (aid < 0) || (aid >= gmx_atoms.nr) ) {
     cvm::error("Error: invalid atom number specified, "+
-               cvm::to_str(atom_number)+"\n", INPUT_ERROR);
-    return INPUT_ERROR;
+               cvm::to_str(atom_number)+"\n", COLVARS_INPUT_ERROR);
+    return COLVARS_INPUT_ERROR;
   }
 
   return aid;
@@ -565,7 +565,7 @@ int colvarproxy_gromacs::init_atom(int atom_number)
   aid = check_atom_id(atom_number);
 
   if(aid < 0) {
-    return INPUT_ERROR;
+    return COLVARS_INPUT_ERROR;
   }
 
   int const index = add_atom_slot(aid);

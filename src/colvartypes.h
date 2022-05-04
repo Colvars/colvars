@@ -385,7 +385,7 @@ protected:
     {
       if (v.size() != length) {
         return cvm::error("Error: setting a matrix row from a vector of "
-                          "incompatible size.\n", BUG_ERROR);
+                          "incompatible size.\n", COLVARS_BUG_ERROR);
       }
       for (size_t i = 0; i < length; i++) data[i] = v[i];
       return COLVARS_OK;

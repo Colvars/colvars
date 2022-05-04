@@ -62,7 +62,7 @@ protected:
       addr += ix[i]*static_cast<size_t>(nxc[i]);
       if (cvm::debug()) {
         if (ix[i] >= nx[i]) {
-          cvm::error("Error: exceeding bounds in colvar_grid.\n", BUG_ERROR);
+          cvm::error("Error: exceeding bounds in colvar_grid.\n", COLVARS_BUG_ERROR);
           return 0;
         }
       }
@@ -170,7 +170,7 @@ public:
     for (int i = nd-1; i >= 0; i--) {
       if (nx[i] <= 0) {
         cvm::error("Error: providing an invalid number of grid points, "+
-                   cvm::to_str(nx[i])+".\n", BUG_ERROR);
+                   cvm::to_str(nx[i])+".\n", COLVARS_BUG_ERROR);
         return COLVARS_ERROR;
       }
       nxc[i] = nt;
@@ -283,13 +283,13 @@ public:
         cvm::error("Colvar grids can only be automatically "
                    "constructed for scalar variables.  "
                    "ABF and histogram can not be used; metadynamics "
-                   "can be used with useGrids disabled.\n", INPUT_ERROR);
+                   "can be used with useGrids disabled.\n", COLVARS_INPUT_ERROR);
         return COLVARS_ERROR;
       }
 
       if (cv[i]->width <= 0.0) {
         cvm::error("Tried to initialize a grid on a "
-                   "variable with negative or zero width.\n", INPUT_ERROR);
+                   "variable with negative or zero width.\n", COLVARS_INPUT_ERROR);
         return COLVARS_ERROR;
       }
 
@@ -378,7 +378,7 @@ public:
       } else {
         if (ix[i] < 0 || ix[i] >= nx[i]) {
           cvm::error("Trying to wrap illegal index vector (non-PBC) for a grid point: "
-                     + cvm::to_str(ix), BUG_ERROR);
+                     + cvm::to_str(ix), COLVARS_BUG_ERROR);
           return;
         }
       }

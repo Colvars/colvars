@@ -301,7 +301,7 @@ int colvarproxy_vmd::update_atomic_properties()
 
   if (masses == NULL) {
     error("Error: masses are undefined for the molecule being used.\n");
-    error_code |= BUG_ERROR;
+    error_code |= COLVARS_BUG_ERROR;
   } else {
     for (size_t i = 0; i < atoms_ids.size(); i++) {
       atoms_masses[i]  = masses[atoms_ids[i]];
@@ -310,7 +310,7 @@ int colvarproxy_vmd::update_atomic_properties()
 
   if (charges == NULL) {
     error("Error: charges are undefined for the molecule being used.\n");
-    error_code |= BUG_ERROR;
+    error_code |= COLVARS_BUG_ERROR;
   } else {
     for (size_t i = 0; i < atoms_ids.size(); i++) {
       atoms_charges[i] = charges[atoms_ids[i]];
@@ -474,7 +474,7 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
   if (pdb_field_str.size() == 0 && indices.size() == 0) {
     cvm::error("Bug alert: either PDB field should be defined or list of "
                "atom IDs should be available when loading atom coordinates!\n",
-               BUG_ERROR);
+               COLVARS_BUG_ERROR);
     return COLVARS_ERROR;
   }
 
@@ -493,7 +493,7 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
   delete tmpspec;
   if (tmpmolid < 0) {
     cvm::error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
-               FILE_ERROR);
+               COLVARS_FILE_ERROR);
     return COLVARS_ERROR;
   }
   DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id(tmpmolid);
@@ -555,7 +555,7 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
         cvm::error("Error: the PDB file \""+
                    std::string(pdb_filename)+
                    "\" contains coordinates for "
-                   "more atoms than needed.\n", INPUT_ERROR);
+                   "more atoms than needed.\n", COLVARS_INPUT_ERROR);
         return COLVARS_ERROR;
       }
 
@@ -572,7 +572,7 @@ int colvarproxy_vmd::load_coords(char const *pdb_filename,
       cvm::error("Error: number of matching records in the PDB file \""+
                  std::string(pdb_filename)+"\" ("+cvm::to_str(ipos)+
                  ") does not match the number of requested coordinates ("+
-                 cvm::to_str(n_requested)+").\n", INPUT_ERROR);
+                 cvm::to_str(n_requested)+").\n", COLVARS_INPUT_ERROR);
       return COLVARS_ERROR;
     }
   } else {
@@ -599,7 +599,7 @@ int colvarproxy_vmd::load_atoms(char const *pdb_filename,
   if (pdb_field_str.size() == 0) {
     cvm::log("Error: must define which PDB field to use "
              "in order to define atoms from a PDB file.\n");
-    cvm::set_error_bits(INPUT_ERROR);
+    cvm::set_error_bits(COLVARS_INPUT_ERROR);
     return COLVARS_ERROR;
   }
 
@@ -610,7 +610,7 @@ int colvarproxy_vmd::load_atoms(char const *pdb_filename,
 
   if (tmpmolid < 0) {
     cvm::error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
-               FILE_ERROR);
+               COLVARS_FILE_ERROR);
     return COLVARS_ERROR;
   }
   DrawMolecule *tmpmol = vmd->moleculeList->mol_from_id(tmpmolid);
@@ -672,7 +672,7 @@ int colvarproxy_vmd::check_atom_id(int atom_number)
   if ( (aid < 0) || (aid >= vmdmol->nAtoms) ) {
     cvm::error("Error: invalid atom number specified, "+
                cvm::to_str(atom_number)+"\n");
-    return INPUT_ERROR;
+    return COLVARS_INPUT_ERROR;
   }
 
   return aid;
@@ -696,7 +696,7 @@ int colvarproxy_vmd::init_atom(int atom_number)
   aid = check_atom_id(atom_number);
 
   if (aid < 0) {
-    return INPUT_ERROR;
+    return COLVARS_INPUT_ERROR;
   }
 
   int const index = add_atom_slot(aid);
@@ -740,8 +740,8 @@ int colvarproxy_vmd::check_atom_id(cvm::residue_id const &resid,
                ( (segment_id.size()) ?
                  (", segment \""+segment_id+"\"") :
                  ("") )+
-               "\n", INPUT_ERROR);
-    return INPUT_ERROR;
+               "\n", COLVARS_INPUT_ERROR);
+    return COLVARS_INPUT_ERROR;
   }
 
   return aid;
@@ -805,7 +805,7 @@ int colvarproxy_vmd::check_volmap_by_id(int volmap_id)
 {
   if ((volmap_id < 0) || (volmap_id >= vmdmol->num_volume_data())) {
     return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
-                      ") for map.\n", INPUT_ERROR);
+                      ") for map.\n", COLVARS_INPUT_ERROR);
   }
   return COLVARS_OK;
 }

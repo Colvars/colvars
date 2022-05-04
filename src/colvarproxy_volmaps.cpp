@@ -92,7 +92,7 @@ void colvarproxy_volmaps::clear_volmap(int index)
 {
   if (((size_t) index) >= volmaps_ids.size()) {
     cvm::error("Error: trying to unrequest a volumetric map that was not "
-               "previously requested.\n", INPUT_ERROR);
+               "previously requested.\n", COLVARS_INPUT_ERROR);
   }
 
   if (volmaps_ncopies[index] > 0) {

@@ -104,19 +104,19 @@ colvar::coordnum::coordnum(std::string const &conf)
 
   if (group1 == NULL || group2 == NULL) {
     cvm::error("Error: failed to initialize atom groups.\n",
-                INPUT_ERROR);
+                COLVARS_INPUT_ERROR);
     return;
   }
 
   if (int atom_number = cvm::atom_group::overlap(*group1, *group2)) {
     cvm::error("Error: group1 and group2 share a common atom (number: " +
-               cvm::to_str(atom_number) + ")\n", INPUT_ERROR);
+               cvm::to_str(atom_number) + ")\n", COLVARS_INPUT_ERROR);
     return;
   }
 
   if (group1->b_dummy) {
     cvm::error("Error: only group2 is allowed to be a dummy atom\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
     return;
   }
 
@@ -130,7 +130,7 @@ colvar::coordnum::coordnum(std::string const &conf)
     if (b_isotropic) {
       cvm::error("Error: cannot specify \"cutoff\" and \"cutoff3\" "
                  "at the same time.\n",
-                 INPUT_ERROR);
+                 COLVARS_INPUT_ERROR);
       return;
     }
 
@@ -146,12 +146,12 @@ colvar::coordnum::coordnum(std::string const &conf)
 
   if ( (en%2) || (ed%2) ) {
     cvm::error("Error: odd exponent(s) provided, can only use even ones.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
   }
 
   if ( (en <= 0) || (ed <= 0) ) {
     cvm::error("Error: negative exponent(s) provided.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
   }
 
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
@@ -166,7 +166,7 @@ colvar::coordnum::coordnum(std::string const &conf)
     get_keyval(conf, "pairListFrequency", pairlist_freq, 100);
     if ( ! (pairlist_freq > 0) ) {
       cvm::error("Error: non-positive pairlistfrequency provided.\n",
-                 INPUT_ERROR);
+                 COLVARS_INPUT_ERROR);
       return; // and do not allocate the pairlists below
     }
     if (b_group2_center_only) {
@@ -334,12 +334,12 @@ colvar::h_bond::h_bond(std::string const &conf)
 
   if ( (en%2) || (ed%2) ) {
     cvm::error("Error: odd exponent(s) provided, can only use even ones.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
   }
 
   if ( (en <= 0) || (ed <= 0) ) {
     cvm::error("Error: negative exponent(s) provided.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
   }
 
   if (cvm::debug())
@@ -412,12 +412,12 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
 
   if ( (en%2) || (ed%2) ) {
     cvm::error("Error: odd exponent(s) provided, can only use even ones.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
   }
 
   if ( (en <= 0) || (ed <= 0) ) {
     cvm::error("Error: negative exponent(s) provided.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
   }
 
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
@@ -429,7 +429,7 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
     get_keyval(conf, "pairListFrequency", pairlist_freq, 100);
     if ( ! (pairlist_freq > 0) ) {
       cvm::error("Error: non-positive pairlistfrequency provided.\n",
-                 INPUT_ERROR);
+                 COLVARS_INPUT_ERROR);
       return;
     }
     pairlist = new bool[(group1->size()-1) * (group1->size()-1)];
@@ -578,12 +578,12 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
 
   if ( (en%2) || (ed%2) ) {
     cvm::error("Error: odd exponent(s) provided, can only use even ones.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
   }
 
   if ( (en <= 0) || (ed <= 0) ) {
     cvm::error("Error: negative exponent(s) provided.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
   }
 
   if (!is_enabled(f_cvc_pbc_minimum_image)) {

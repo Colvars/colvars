@@ -633,7 +633,7 @@ colvarvalue const colvarvalue::interpolate(colvarvalue const &x1,
 
   if ((lambda < 0.0) || (lambda > 1.0)) {
     cvm::error("Error: trying to interpolate between two colvarvalues with a "
-               "lamdba outside [0:1].\n", BUG_ERROR);
+               "lamdba outside [0:1].\n", COLVARS_BUG_ERROR);
   }
 
   colvarvalue interp = ((1.0-lambda)*x1 + lambda*x2);
@@ -653,7 +653,7 @@ colvarvalue const colvarvalue::interpolate(colvarvalue const &x1,
       cvm::error("Error: interpolation between "+cvm::to_str(x1)+" and "+
                  cvm::to_str(x2)+" with lambda = "+cvm::to_str(lambda)+
                  " is undefined: result = "+cvm::to_str(interp)+"\n",
-                 INPUT_ERROR);
+                 COLVARS_INPUT_ERROR);
     }
     interp.apply_constraints();
     return interp;
