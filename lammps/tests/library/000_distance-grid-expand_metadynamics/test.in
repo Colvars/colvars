@@ -8,9 +8,8 @@ colvar {
 
     outputAppliedForce on
 
-    # use a non-trivial width to test bias behavior
     width 0.1
-    lowerBoundary 0.0
+    # lowerBoundary 0.0 (default for distance)
     upperBoundary 0.1
 
     expandBoundaries yes

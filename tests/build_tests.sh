@@ -24,13 +24,11 @@ create_test_dir() {
         return
     fi
 
-    dirname=`printf %03d ${n_test}`_$1
-    echo "Created new directory $workdir/$dirname"
-    dirname="${workdir}/$dirname"
-    if [ ! -d ${dirname} ] ; then
-        mkdir ${dirname}
-    fi
+    dirname="${workdir}/"`printf %03d ${n_test}`_$1
+    mkdir -p ${dirname}/AutoDiff && \
+        echo "Created new directory $dirname"
 }
+
 
 write_colvars_config() {
     local colvar=$1

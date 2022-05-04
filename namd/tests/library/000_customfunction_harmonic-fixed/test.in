@@ -8,7 +8,7 @@ colvar {
 
     # This is a 2-vector function of a 4-vector
     customFunction x
-    customFunction cos(x) + r1 + r3 
+    customFunction cos(x) + r1 + r3
 
     distance {
         name x
