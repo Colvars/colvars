@@ -255,7 +255,8 @@ int colvarbias_meta::init_well_tempered_params(std::string const &conf)
   get_keyval(conf, "wellTempered", well_tempered, false);
   get_keyval(conf, "biasTemperature", bias_temperature, -1.0);
   if ((bias_temperature == -1.0) && well_tempered) {
-    cvm::error("Error: biasTemperature is not set.\n");
+    cvm::error("Error: biasTemperature must be set to a positive value.\n",
+               INPUT_ERROR);
   }
   if (well_tempered) {
     cvm::log("Well-tempered metadynamics is used.\n");
@@ -274,9 +275,9 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
     cvm::main()->cite_feature("Ensemble-biased metadynamics (ebMetaD)");
     if (use_grids && expand_grids) {
       cvm::error("Error: expandBoundaries is not supported with "
-                       "ebMeta please allocate wide enough boundaries for "
-                       "each colvar ahead of time and set targetdistfile "
-                       "accordingly. \n");
+                 "ebMeta please allocate wide enough boundaries for "
+                 "each colvar ahead of time and set targetdistfile "
+                 "accordingly.\n", INPUT_ERROR);
     }
     target_dist = new colvar_grid_scalar();
     target_dist->init_from_colvars(colvars);
@@ -1337,16 +1338,13 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
       is.clear();
       is.seekg(hills_energy_pos, std::ios::beg);
       if (!rebin_grids) {
-        if (hills_energy_backup == NULL)
-          cvm::error("Error: couldn't read the free energy grid for metadynamics bias \""+
-                           this->name+"\""+
-                           ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                           "; if useGrids was off when the state file was written, "
-                           "enable rebinGrids now to regenerate the grids.\n");
-        else {
-          if (comm == single_replica)
-            cvm::log("Error: couldn't read the free energy grid for metadynamics bias \""+
-                     this->name+"\".\n");
+        if ((hills_energy_backup == NULL) || (comm == single_replica)) {
+          cvm::error("Error: couldn't read the energy grid for metadynamics bias \""+
+                     this->name+"\""+
+                     ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                     "; if useGrids was off when the state file was written, "
+                     "enable rebinGrids now to regenerate the grids.\n");
+        } else {
           delete hills_energy;
           delete hills_energy_gradients;
           hills_energy           = hills_energy_backup;
@@ -1374,16 +1372,13 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
       is.clear();
       is.seekg(hills_energy_gradients_pos, std::ios::beg);
       if (!rebin_grids) {
-        if (hills_energy_backup == NULL)
-          cvm::error("Error: couldn't read the free energy gradients grid for metadynamics bias \""+
-                           this->name+"\""+
-                           ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                           "; if useGrids was off when the state file was written, "
-                           "enable rebinGrids now to regenerate the grids.\n");
-        else {
-          if (comm == single_replica)
-            cvm::log("Error: couldn't read the free energy gradients grid for metadynamics bias \""+
-                     this->name+"\".\n");
+        if ((hills_energy_backup == NULL) || (comm == single_replica)) {
+          cvm::error("Error: couldn't read the gradients grid for metadynamics bias \""+
+                     this->name+"\""+
+                     ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                     "; if useGrids was off when the state file was written, "
+                     "enable rebinGrids now to regenerate the grids.\n");
+        } else {
           delete hills_energy;
           delete hills_energy_gradients;
           hills_energy           = hills_energy_backup;
