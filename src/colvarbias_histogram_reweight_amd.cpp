@@ -50,7 +50,7 @@ colvarbias_reweightaMD::~colvarbias_reweightaMD() {
 
 int colvarbias_reweightaMD::init(std::string const &conf) {
   if (cvm::proxy->accelMD_enabled() == false) {
-    cvm::error("Error: accelerated MD in your MD engine is not enabled.\n", INPUT_ERROR);
+    cvm::error("Error: accelerated MD in your MD engine is not enabled.\n", COLVARS_INPUT_ERROR);
   }
   cvm::main()->cite_feature("reweightaMD colvar bias implementation (NAMD)");
   int baseclass_init_code = colvarbias_histogram::init(conf);
@@ -188,7 +188,7 @@ int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
   std::ostream *pmf_grid_os = cvm::proxy->output_stream(output_pmf, mode);
   if (!pmf_grid_os) {
     return cvm::error("Error opening PMF file " + output_pmf +
-                      " for writing.\n", FILE_ERROR);
+                      " for writing.\n", COLVARS_FILE_ERROR);
   }
   pmf_grid_exp_avg->copy_grid(*grid);
   // compute the average
@@ -212,7 +212,7 @@ int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
     std::ostream *grad_grid_os = cvm::proxy->output_stream(output_grad, mode);
     if (!grad_grid_os) {
       return cvm::error("Error opening grad file " + output_grad +
-                        " for writing.\n", FILE_ERROR);
+                        " for writing.\n", COLVARS_FILE_ERROR);
     }
     for (std::vector<int> ix = grad_grid_exp_avg->new_index();
           grad_grid_exp_avg->index_ok(ix); grad_grid_exp_avg->incr(ix)) {
@@ -236,7 +236,7 @@ int colvarbias_reweightaMD::write_cumulant_expansion_pmf(
   std::ostream *pmf_grid_cumulant_os = cvm::proxy->output_stream(output_pmf, mode);
   if (!pmf_grid_cumulant_os) {
     return cvm::error("Error opening PMF file " + output_pmf +
-                      " for writing.\n", FILE_ERROR);
+                      " for writing.\n", COLVARS_FILE_ERROR);
   }
   compute_cumulant_expansion_factor(grid_dV, grid_dV_square,
                                     grid_count, pmf_grid_cumulant);
@@ -252,7 +252,7 @@ int colvarbias_reweightaMD::write_cumulant_expansion_pmf(
     std::ostream *grad_grid_os = cvm::proxy->output_stream(output_grad, mode);
     if (!grad_grid_os) {
       return cvm::error("Error opening grad file " + output_grad +
-                        " for writing.\n", FILE_ERROR);
+                        " for writing.\n", COLVARS_FILE_ERROR);
     }
     for (std::vector<int> ix = grad_grid_cumulant->new_index();
           grad_grid_cumulant->index_ok(ix); grad_grid_cumulant->incr(ix)) {
@@ -275,7 +275,7 @@ int colvarbias_reweightaMD::write_count(const std::string& p_output_prefix, bool
   std::ostream *grid_count_os = cvm::proxy->output_stream(output_name, mode);
   if (!grid_count_os) {
     return cvm::error("Error opening count file "+output_name+
-                      " for writing.\n", FILE_ERROR);
+                      " for writing.\n", COLVARS_FILE_ERROR);
   }
   grid_count->write_multicol(*grid_count_os);
   cvm::proxy->close_output_stream(output_name);

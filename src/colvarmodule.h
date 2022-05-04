@@ -36,10 +36,10 @@ You can browse the class hierarchy or the list of source files.
 #define COLVARS_OK 0
 #define COLVARS_ERROR   1
 #define COLVARS_NOT_IMPLEMENTED (1<<1)
-#define INPUT_ERROR     (1<<2) // out of bounds or inconsistent input
-#define BUG_ERROR       (1<<3) // Inconsistent state indicating bug
-#define FILE_ERROR      (1<<4)
-#define MEMORY_ERROR    (1<<5)
+#define COLVARS_INPUT_ERROR     (1<<2) // out of bounds or inconsistent input
+#define COLVARS_BUG_ERROR       (1<<3) // Inconsistent state indicating bug
+#define COLVARS_FILE_ERROR      (1<<4)
+#define COLVARS_MEMORY_ERROR    (1<<5)
 #define COLVARS_NO_SUCH_FRAME (1<<6) // Cannot load the requested frame
 
 #include <iostream>

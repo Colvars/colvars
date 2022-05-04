@@ -911,7 +911,7 @@ colvar::inertia_z::inertia_z(std::string const &conf)
   init_as_distance();
   if (get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0))) {
     if (axis.norm2() == 0.0) {
-      cvm::error("Axis vector is zero!", INPUT_ERROR);
+      cvm::error("Axis vector is zero!", COLVARS_INPUT_ERROR);
       return;
     }
     if (axis.norm2() != 1.0) {
@@ -1265,13 +1265,13 @@ colvar::eigenvector::eigenvector(std::string const &conf)
   }
 
   if (ref_pos.size() == 0) {
-    cvm::error("Error: reference positions were not provided.\n", INPUT_ERROR);
+    cvm::error("Error: reference positions were not provided.\n", COLVARS_INPUT_ERROR);
     return;
   }
 
   if (ref_pos.size() != atoms->size()) {
     cvm::error("Error: reference positions do not "
-               "match the number of requested atoms.\n", INPUT_ERROR);
+               "match the number of requested atoms.\n", COLVARS_INPUT_ERROR);
     return;
   }
 

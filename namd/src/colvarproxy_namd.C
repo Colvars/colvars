@@ -387,7 +387,7 @@ void colvarproxy_namd::calculate()
 
     // The following had to be relaxed because some atoms may be forced without their position being requested
     // if (n_positions < atoms_ids.size()) {
-    //   cvm::error("Error: did not receive the positions of all atoms.\n", BUG_ERROR);
+    //   cvm::error("Error: did not receive the positions of all atoms.\n", COLVARS_BUG_ERROR);
     // }
   }
 
@@ -415,7 +415,7 @@ void colvarproxy_namd::calculate()
                    "were not received for all atoms.\n"
                    "The most probable cause is combination of energy "
                    "minimization with a biasing method that requires MD (e.g. ABF).\n"
-                   "Always run minimization and ABF separately.", INPUT_ERROR);
+                   "Always run minimization and ABF separately.", COLVARS_INPUT_ERROR);
       }
     }
 
@@ -431,7 +431,7 @@ void colvarproxy_namd::calculate()
                    "but they are not in the same number from the number of groups.\n"
                    "The most probable cause is combination of energy "
                    "minimization with a biasing method that requires MD (e.g. ABF).\n"
-                   "Always run minimization and ABF separately.", INPUT_ERROR);
+                   "Always run minimization and ABF separately.", COLVARS_INPUT_ERROR);
       }
       for ( ; f_i != f_e; f_i++, i++) {
         atom_groups_total_forces[i] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
@@ -607,11 +607,11 @@ void colvarproxy_namd::error(std::string const &message)
 {
   log(message);
   switch (cvm::get_error()) {
-  case FILE_ERROR:
+  case COLVARS_FILE_ERROR:
     errno = EIO; break;
   case COLVARS_NOT_IMPLEMENTED:
     errno = ENOSYS; break;
-  case MEMORY_ERROR:
+  case COLVARS_MEMORY_ERROR:
     errno = ENOMEM; break;
   }
   char const *msg = "Error in the collective variables module "
@@ -642,8 +642,8 @@ int colvarproxy_namd::check_atom_id(int atom_number)
 
   if ( (aid < 0) || (aid >= Node::Object()->molecule->numAtoms) ) {
     cvm::error("Error: invalid atom number specified, "+
-               cvm::to_str(atom_number)+"\n", INPUT_ERROR);
-    return INPUT_ERROR;
+               cvm::to_str(atom_number)+"\n", COLVARS_INPUT_ERROR);
+    return COLVARS_INPUT_ERROR;
   }
 
   return aid;
@@ -667,7 +667,7 @@ int colvarproxy_namd::init_atom(int atom_number)
   aid = check_atom_id(atom_number);
 
   if (aid < 0) {
-    return INPUT_ERROR;
+    return COLVARS_INPUT_ERROR;
   }
 
   int const index = add_atom_slot(aid);
@@ -698,8 +698,8 @@ int colvarproxy_namd::check_atom_id(cvm::residue_id const &residue,
                ( (segment_id != "MAIN") ?
                  (", segment \""+segment_id+"\"") :
                  ("") )+
-               "\n", INPUT_ERROR);
-    return INPUT_ERROR;
+               "\n", COLVARS_INPUT_ERROR);
+    return COLVARS_INPUT_ERROR;
   }
 
   return aid;
@@ -816,7 +816,7 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
 
   if (pdb_field == e_pdb_none) {
     cvm::error("Error: unsupported PDB field, \""+
-               pdb_field_str+"\".\n", INPUT_ERROR);
+               pdb_field_str+"\".\n", COLVARS_INPUT_ERROR);
   }
 
   return pdb_field;
@@ -831,7 +831,7 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
 {
   if (pdb_field_str.size() == 0 && indices.size() == 0) {
     cvm::error("Bug alert: either PDB field should be defined or list of "
-               "atom IDs should be available when loading atom coordinates!\n", BUG_ERROR);
+               "atom IDs should be available when loading atom coordinates!\n", COLVARS_BUG_ERROR);
   }
 
   e_pdb_field pdb_field_index;
@@ -900,7 +900,7 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
         cvm::error("Error: the PDB file \""+
                    std::string(pdb_filename)+
                    "\" contains coordinates for "
-                   "more atoms than needed.\n", BUG_ERROR);
+                   "more atoms than needed.\n", COLVARS_BUG_ERROR);
       }
 
       pos[ipos] = cvm::atom_pos((pdb->atom(ipdb))->xcoor(),
@@ -916,7 +916,7 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
       cvm::error("Error: number of matching records in the PDB file \""+
                  std::string(pdb_filename)+"\" ("+cvm::to_str(ipos)+
                  ") does not match the number of requested coordinates ("+
-                 cvm::to_str(n_requested)+").\n", INPUT_ERROR);
+                 cvm::to_str(n_requested)+").\n", COLVARS_INPUT_ERROR);
       return COLVARS_ERROR;
     }
   } else {
@@ -942,7 +942,7 @@ int colvarproxy_namd::load_atoms(char const *pdb_filename,
 {
   if (pdb_field_str.size() == 0)
     cvm::error("Error: must define which PDB field to use "
-               "in order to define atoms from a PDB file.\n", INPUT_ERROR);
+               "in order to define atoms from a PDB file.\n", COLVARS_INPUT_ERROR);
 
   PDB *pdb = new PDB(pdb_filename);
   size_t const pdb_natoms = pdb->num_atoms();
@@ -1008,7 +1008,7 @@ std::ostream * colvarproxy_namd::output_stream(std::string const &output_name,
   ofstream_namd *osf = new ofstream_namd(output_name.c_str(), mode);
   if (!osf->is_open()) {
     cvm::error("Error: cannot write to file \""+output_name+"\".\n",
-               FILE_ERROR);
+               COLVARS_FILE_ERROR);
     return NULL;
   }
   output_stream_names.push_back(output_name);
@@ -1115,7 +1115,7 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
           " for collective variables calculation.\n");
     if ( (aid < 0) || (aid >= n_all_atoms) ) {
       cvm::error("Error: invalid atom number specified, "+
-                 cvm::to_str(aid+1)+"\n", INPUT_ERROR);
+                 cvm::to_str(aid+1)+"\n", COLVARS_INPUT_ERROR);
       return -1;
     }
     namd_group[ia] = aid;
@@ -1203,7 +1203,7 @@ int colvarproxy_namd::init_volmap_by_id(int volmap_id)
 int colvarproxy_namd::init_volmap_by_name(char const *volmap_name)
 {
   if (volmap_name == NULL) {
-    return cvm::error("Error: no grid object name provided.", INPUT_ERROR);
+    return cvm::error("Error: no grid object name provided.", COLVARS_INPUT_ERROR);
   }
 
   int error_code = COLVARS_OK;
@@ -1223,7 +1223,7 @@ int colvarproxy_namd::init_volmap_by_name(char const *volmap_name)
       error_code |= cvm::error("Error: GridForce map \""+
                                std::string(volmap_name)+
                                "\" has non-zero scale factors.\n",
-                               INPUT_ERROR);
+                               COLVARS_INPUT_ERROR);
     }
 
     for (size_t i = 0; i < volmaps_ids.size(); i++) {
@@ -1247,7 +1247,7 @@ int colvarproxy_namd::check_volmap_by_id(int volmap_id)
   Molecule *mol = Node::Object()->molecule;
   if ((volmap_id < 0) || (volmap_id >= mol->numGridforceGrids)) {
     return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
-                      ") for map.\n", INPUT_ERROR);
+                      ") for map.\n", COLVARS_INPUT_ERROR);
   }
   colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   return COLVARS_OK;
@@ -1257,12 +1257,12 @@ int colvarproxy_namd::check_volmap_by_id(int volmap_id)
 int colvarproxy_namd::check_volmap_by_name(char const *volmap_name)
 {
   if (volmap_name == NULL) {
-    return cvm::error("Error: no grid object name provided.", INPUT_ERROR);
+    return cvm::error("Error: no grid object name provided.", COLVARS_INPUT_ERROR);
   }
   int volmap_id = simparams->mgridforcelist.index_for_key(volmap_name);
   if (volmap_id < 0) {
     return cvm::error("Error: invalid map name \""+std::string(volmap_name)+
-                      "\".\n", INPUT_ERROR);
+                      "\".\n", COLVARS_INPUT_ERROR);
   }
   colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   return COLVARS_OK;

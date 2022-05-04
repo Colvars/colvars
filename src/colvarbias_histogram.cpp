@@ -49,27 +49,27 @@ int colvarbias_histogram::init(std::string const &conf)
     if (colvar_array) {
       for (i = 0; i < num_variables(); i++) { // should be all vector
         if (colvars[i]->value().type() != colvarvalue::type_vector) {
-          cvm::error("Error: used gatherVectorColvars with non-vector colvar.\n", INPUT_ERROR);
-          return INPUT_ERROR;
+          cvm::error("Error: used gatherVectorColvars with non-vector colvar.\n", COLVARS_INPUT_ERROR);
+          return COLVARS_INPUT_ERROR;
         }
         if (i == 0) {
           colvar_array_size = colvars[i]->value().size();
           if (colvar_array_size < 1) {
-            cvm::error("Error: vector variable has dimension less than one.\n", INPUT_ERROR);
-            return INPUT_ERROR;
+            cvm::error("Error: vector variable has dimension less than one.\n", COLVARS_INPUT_ERROR);
+            return COLVARS_INPUT_ERROR;
           }
         } else {
           if (colvar_array_size != colvars[i]->value().size()) {
-            cvm::error("Error: trying to combine vector colvars of different lengths.\n", INPUT_ERROR);
-            return INPUT_ERROR;
+            cvm::error("Error: trying to combine vector colvars of different lengths.\n", COLVARS_INPUT_ERROR);
+            return COLVARS_INPUT_ERROR;
           }
         }
       }
     } else {
       for (i = 0; i < num_variables(); i++) { // should be all scalar
         if (colvars[i]->value().type() != colvarvalue::type_scalar) {
-          cvm::error("Error: only scalar colvars are supported when gatherVectorColvars is off.\n", INPUT_ERROR);
-          return INPUT_ERROR;
+          cvm::error("Error: only scalar colvars are supported when gatherVectorColvars is off.\n", COLVARS_INPUT_ERROR);
+          return COLVARS_INPUT_ERROR;
         }
       }
     }
@@ -185,7 +185,7 @@ int colvarbias_histogram::write_output_files()
     std::ostream *grid_os = cvm::proxy->output_stream(out_name);
     if (!grid_os) {
       return cvm::error("Error opening histogram file "+out_name+
-                        " for writing.\n", FILE_ERROR);
+                        " for writing.\n", COLVARS_FILE_ERROR);
     }
     grid->write_multicol(*grid_os);
     cvm::proxy->close_output_stream(out_name);
@@ -197,7 +197,7 @@ int colvarbias_histogram::write_output_files()
     std::ostream *grid_os = cvm::proxy->output_stream(out_name_dx);
     if (!grid_os) {
       return cvm::error("Error opening histogram file "+out_name_dx+
-                        " for writing.\n", FILE_ERROR);
+                        " for writing.\n", COLVARS_FILE_ERROR);
     }
     grid->write_opendx(*grid_os);
     cvm::proxy->close_output_stream(out_name_dx);

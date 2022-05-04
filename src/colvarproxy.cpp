@@ -125,7 +125,7 @@ void colvarproxy_system::update_pbc_lattice()
   if (boundaries_type == boundaries_unsupported ||
       boundaries_type == boundaries_non_periodic) {
     cvm::error("Error: setting PBC lattice with unsupported boundaries.\n",
-               BUG_ERROR);
+               COLVARS_BUG_ERROR);
     return;
   }
 
@@ -160,7 +160,7 @@ cvm::rvector colvarproxy_system::position_distance(cvm::atom_pos const &pos1,
   const
 {
   if (boundaries_type == boundaries_unsupported) {
-    cvm::error("Error: unsupported boundary conditions.\n", INPUT_ERROR);
+    cvm::error("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
   }
 
   cvm::rvector diff = (pos2 - pos1);
@@ -307,7 +307,7 @@ void colvarproxy_atoms::clear_atom(int index)
 {
   if (((size_t) index) >= atoms_ids.size()) {
     cvm::error("Error: trying to disable an atom that was not previously requested.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
   }
   if (atoms_ncopies[index] > 0) {
     atoms_ncopies[index] -= 1;
@@ -425,7 +425,7 @@ void colvarproxy_atom_groups::clear_atom_group(int index)
   if (((size_t) index) >= atom_groups_ids.size()) {
     cvm::error("Error: trying to disable an atom group "
                "that was not previously requested.\n",
-               INPUT_ERROR);
+               COLVARS_INPUT_ERROR);
   }
   if (atom_groups_ncopies[index] > 0) {
     atom_groups_ncopies[index] -= 1;
@@ -717,7 +717,7 @@ int colvarproxy_io::remove_file(char const *filename)
   while ((rename_exit_code = std::rename(filename,
                                          renamed_file.c_str())) != 0) {
     if (errno == EINTR) continue;
-    error_code |= FILE_ERROR;
+    error_code |= COLVARS_FILE_ERROR;
     break;
   }
   // Ask to remove filename.old, but ignore any errors raised
@@ -725,7 +725,7 @@ int colvarproxy_io::remove_file(char const *filename)
 #else
   if (std::remove(filename)) {
     if (errno != ENOENT) {
-      error_code |= FILE_ERROR;
+      error_code |= COLVARS_FILE_ERROR;
     }
   }
 #endif
@@ -751,7 +751,7 @@ int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
     // Call log() instead of error to allow the next try
     cvm::log("Error: in renaming file \""+std::string(filename)+"\" to \""+
              std::string(newfilename)+"\".\n.");
-    error_code |= FILE_ERROR;
+    error_code |= COLVARS_FILE_ERROR;
     if (errno == EXDEV) continue;
     break;
   }
@@ -992,7 +992,7 @@ void colvarproxy::smp_stream_error()
 {
   cvm::error("Error: trying to access an output stream from a "
              "multi-threaded region (bug).  For a quick workaround, use "
-             "\"smp off\" in the Colvars config.\n", BUG_ERROR);
+             "\"smp off\" in the Colvars config.\n", COLVARS_BUG_ERROR);
 }
 
 
@@ -1012,7 +1012,7 @@ std::ostream * colvarproxy::output_stream(std::string const &output_name,
   std::ofstream *osf = new std::ofstream(output_name.c_str(), mode);
   if (!osf->is_open()) {
     cvm::error("Error: cannot write to file/channel \""+output_name+"\".\n",
-               FILE_ERROR);
+               COLVARS_FILE_ERROR);
     return NULL;
   }
   output_stream_names.push_back(output_name);
@@ -1052,7 +1052,7 @@ int colvarproxy::flush_output_stream(std::ostream *os)
     }
   }
   return cvm::error("Error: trying to flush an output file/channel "
-                    "that wasn't open.\n", BUG_ERROR);
+                    "that wasn't open.\n", COLVARS_BUG_ERROR);
 }
 
 
@@ -1086,5 +1086,5 @@ int colvarproxy::close_output_stream(std::string const &output_name)
     }
   }
   return cvm::error("Error: trying to close an output file/channel "
-                    "that wasn't open.\n", BUG_ERROR);
+                    "that wasn't open.\n", COLVARS_BUG_ERROR);
 }

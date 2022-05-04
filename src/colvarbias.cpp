@@ -60,8 +60,8 @@ int colvarbias::init(std::string const &conf)
       if ((bias_with_name->rank != this->rank) ||
           (bias_with_name->bias_type != this->bias_type)) {
         cvm::error("Error: this bias cannot have the same name, \""+this->name+
-                   "\", as another bias.\n", INPUT_ERROR);
-        return INPUT_ERROR;
+                   "\", as another bias.\n", COLVARS_INPUT_ERROR);
+        return COLVARS_INPUT_ERROR;
       }
     }
     description = "bias " + name;
@@ -72,8 +72,8 @@ int colvarbias::init(std::string const &conf)
       if (get_keyval(conf, "colvars", colvar_names)) {
         if (num_variables()) {
           cvm::error("Error: cannot redefine the colvars that a bias was already defined on.\n",
-                     INPUT_ERROR);
-          return INPUT_ERROR;
+                     COLVARS_INPUT_ERROR);
+          return COLVARS_INPUT_ERROR;
         }
         for (i = 0; i < colvar_names.size(); i++) {
           add_colvar(colvar_names[i]);
@@ -82,8 +82,8 @@ int colvarbias::init(std::string const &conf)
     }
 
     if (!num_variables()) {
-      cvm::error("Error: no collective variables specified.\n", INPUT_ERROR);
-      return INPUT_ERROR;
+      cvm::error("Error: no collective variables specified.\n", COLVARS_INPUT_ERROR);
+      return COLVARS_INPUT_ERROR;
     }
 
   } else {
@@ -320,8 +320,8 @@ int colvarbias::add_colvar(std::string const &cv_name)
 
   } else {
     cvm::error("Error: cannot find a colvar named \""+
-               cv_name+"\".\n", INPUT_ERROR);
-    return INPUT_ERROR;
+               cv_name+"\".\n", COLVARS_INPUT_ERROR);
+    return COLVARS_INPUT_ERROR;
   }
 
   return COLVARS_OK;
@@ -476,7 +476,7 @@ int colvarbias::set_state_params(std::string const &conf)
 
   if (check_name.size() == 0) {
     cvm::error("Error: \""+bias_type+"\" block within the restart file "
-               "has no identifiers.\n", INPUT_ERROR);
+               "has no identifiers.\n", COLVARS_INPUT_ERROR);
   }
 
   if (check_name != this->name) {
@@ -530,7 +530,7 @@ std::istream & colvarbias::read_state(std::istream &is)
                "\" bias \""+
                this->name+"\" at position "+
                cvm::to_str(static_cast<size_t>(is.tellg()))+
-               " in stream.\n", INPUT_ERROR);
+               " in stream.\n", COLVARS_INPUT_ERROR);
     is.clear();
     is.seekg(start_pos, std::ios::beg);
     is.setstate(std::ios::failbit);
@@ -550,7 +550,7 @@ std::istream & colvarbias::read_state(std::istream &is)
     cvm::error("Error: in reading state data for \""+bias_type+"\" bias \""+
                this->name+"\" at position "+
                cvm::to_str(static_cast<size_t>(is.tellg()))+
-               " in stream.\n", INPUT_ERROR);
+               " in stream.\n", COLVARS_INPUT_ERROR);
     is.clear();
     is.seekg(start_pos, std::ios::beg);
     is.setstate(std::ios::failbit);
@@ -577,9 +577,9 @@ int colvarbias::write_state_prefix(std::string const &prefix)
   int error_code = COLVARS_OK;
   if (os != NULL) {
     os->setf(std::ios::scientific, std::ios::floatfield);
-    error_code = write_state(*os).good() ? COLVARS_OK : FILE_ERROR;
+    error_code = write_state(*os).good() ? COLVARS_OK : COLVARS_FILE_ERROR;
   } else {
-    error_code = FILE_ERROR;
+    error_code = COLVARS_FILE_ERROR;
   }
   cvm::proxy->close_output_stream(filename.c_str());
   return error_code;
@@ -591,7 +591,7 @@ int colvarbias::write_state_string(std::string &output)
   std::ostringstream os;
   if (!write_state(os)) {
     return cvm::error("Error: in writing state of bias \""+name+
-                      "\" to buffer.\n", FILE_ERROR);
+                      "\" to buffer.\n", COLVARS_FILE_ERROR);
   }
   output = os.str();
   return COLVARS_OK;
@@ -610,7 +610,7 @@ int colvarbias::read_state_prefix(std::string const &prefix)
   }
   return read_state(is).good() ? COLVARS_OK :
     cvm::error("Error: in reading state for \""+name+"\" from input file \""+
-               std::string(filename)+"\".\n", FILE_ERROR);
+               std::string(filename)+"\".\n", COLVARS_FILE_ERROR);
 }
 
 
@@ -628,12 +628,12 @@ int colvarbias::read_state_string(char const *buffer)
       is.rdbuf()->pubsetbuf(const_cast<char *>(buffer), buffer_size);
       return read_state(is).good() ? COLVARS_OK :
         cvm::error("Error: in reading state for \""+name+"\" from buffer.\n",
-                   FILE_ERROR);
+                   COLVARS_FILE_ERROR);
     }
     return COLVARS_OK;
   }
   return cvm::error("Error: NULL pointer for colvarbias::read_state_string()",
-                    BUG_ERROR);
+                    COLVARS_BUG_ERROR);
 }
 
 
@@ -646,7 +646,7 @@ std::istream & colvarbias::read_state_data_key(std::istream &is, char const *key
     cvm::error("Error: in reading restart configuration for "+
                bias_type+" bias \""+this->name+"\" at position "+
                cvm::to_str(static_cast<size_t>(is.tellg()))+
-               " in stream.\n", INPUT_ERROR);
+               " in stream.\n", COLVARS_INPUT_ERROR);
     is.clear();
     is.seekg(start_pos, std::ios::beg);
     is.setstate(std::ios::failbit);
@@ -749,7 +749,7 @@ int colvarbias_ti::init(std::string const &conf)
             return cvm::error("Error: cannot collect TI samples while other "
                               "time-dependent biases are active and not all "
                               "variables have subtractAppliedForces on.\n",
-                              INPUT_ERROR);
+                              COLVARS_INPUT_ERROR);
           }
         }
       }

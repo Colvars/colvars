@@ -61,31 +61,31 @@ void customActivationFunction::setExpression(const std::string& expression_strin
     try {
         parsed_expression = Lepton::Parser::parse(expression);
     } catch (...) {
-        cvm::error("Error parsing or compiling expression \"" + expression + "\".\n", INPUT_ERROR);
+        cvm::error("Error parsing or compiling expression \"" + expression + "\".\n", COLVARS_INPUT_ERROR);
     }
     // compile the expression
     try {
         value_evaluator = std::unique_ptr<Lepton::CompiledExpression>(new Lepton::CompiledExpression(parsed_expression.createCompiledExpression()));
     } catch (...) {
-        cvm::error("Error compiling expression \"" + expression + "\".\n", INPUT_ERROR);
+        cvm::error("Error compiling expression \"" + expression + "\".\n", COLVARS_INPUT_ERROR);
     }
     // create a compiled expression for the derivative
     try {
         gradient_evaluator = std::unique_ptr<Lepton::CompiledExpression>(new Lepton::CompiledExpression(parsed_expression.differentiate(activation_input_variable).createCompiledExpression()));
     } catch (...) {
-        cvm::error("Error creating compiled expression for variable \"" + activation_input_variable + "\".\n", INPUT_ERROR);
+        cvm::error("Error creating compiled expression for variable \"" + activation_input_variable + "\".\n", COLVARS_INPUT_ERROR);
     }
     // get the reference to the input variable in the compiled expression
     try {
         input_reference = &(value_evaluator->getVariableReference(activation_input_variable));
     } catch (...) {
-        cvm::error("Error on getting the reference to variable \"" + activation_input_variable + "\" in the compiled expression.\n", INPUT_ERROR);
+        cvm::error("Error on getting the reference to variable \"" + activation_input_variable + "\" in the compiled expression.\n", COLVARS_INPUT_ERROR);
     }
     // get the reference to the input variable in the compiled derivative expression
     try {
         derivative_reference = &(gradient_evaluator->getVariableReference(activation_input_variable));
     } catch (...) {
-        cvm::error("Error on getting the reference to variable \"" + activation_input_variable + "\" in the compiled derivative exprssion.\n", INPUT_ERROR);
+        cvm::error("Error on getting the reference to variable \"" + activation_input_variable + "\" in the compiled derivative exprssion.\n", COLVARS_INPUT_ERROR);
     }
 }
 

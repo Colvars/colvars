@@ -174,12 +174,12 @@ int cvm::atom_group::add_atom_id(int aid)
 int cvm::atom_group::remove_atom(cvm::atom_iter ai)
 {
   if (is_enabled(f_ag_scalable)) {
-    cvm::error("Error: cannot remove atoms from a scalable group.\n", INPUT_ERROR);
+    cvm::error("Error: cannot remove atoms from a scalable group.\n", COLVARS_INPUT_ERROR);
     return COLVARS_ERROR;
   }
 
   if (!this->size()) {
-    cvm::error("Error: trying to remove an atom from an empty group.\n", INPUT_ERROR);
+    cvm::error("Error: trying to remove an atom from an empty group.\n", COLVARS_INPUT_ERROR);
     return COLVARS_ERROR;
   } else {
     total_mass -= ai->mass;
@@ -197,7 +197,7 @@ int cvm::atom_group::set_dummy()
   if (atoms_ids.size() > 0) {
     return cvm::error("Error: setting group with keyword \""+key+
                       "\" and name \""+name+"\" as dummy, but it already "
-                      "contains atoms.\n", INPUT_ERROR);
+                      "contains atoms.\n", COLVARS_INPUT_ERROR);
   }
   b_dummy = true;
   return COLVARS_OK;
@@ -211,7 +211,7 @@ int cvm::atom_group::set_dummy_pos(cvm::atom_pos const &pos)
   } else {
     return cvm::error("Error: setting dummy position for group with keyword \""+
                       key+"\" and name \""+name+
-                      "\", but it is not dummy.\n", INPUT_ERROR);
+                      "\", but it is not dummy.\n", COLVARS_INPUT_ERROR);
   }
   return COLVARS_OK;
 }
@@ -395,8 +395,8 @@ int cvm::atom_group::parse(std::string const &group_conf)
         (cvm::atom_group_by_name(this->name) != this)) {
       cvm::error("Error: this atom group cannot have the same name, \""+this->name+
                         "\", as another atom group.\n",
-                INPUT_ERROR);
-      return INPUT_ERROR;
+                COLVARS_INPUT_ERROR);
+      return COLVARS_INPUT_ERROR;
     }
     cvm::main()->register_named_atom_group(this);
     description = "atom group " + name;
@@ -411,7 +411,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
   if (is_enabled(f_ag_center_origin) && ! is_enabled(f_ag_center)) {
     return cvm::error("centerToReference may not be disabled if centerToOrigin"
-                      "is enabled.\n", INPUT_ERROR);
+                      "is enabled.\n", COLVARS_INPUT_ERROR);
   }
   // Legacy alias
   bool b_defined_rotate = get_keyval_feature(this, group_conf, "rotateReference", f_ag_rotate, false, parse_deprecated);
@@ -481,7 +481,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
     for (psii = psf_segids.begin(); psii < psf_segids.end(); ++psii) {
       if ( (psii->size() == 0) || (psii->size() > 4) ) {
         cvm::error("Error: invalid PSF segment identifier provided, \""+
-                   (*psii)+"\".\n", INPUT_ERROR);
+                   (*psii)+"\".\n", COLVARS_INPUT_ERROR);
       }
     }
 
@@ -494,7 +494,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
       range_count++;
       if (psf_segids.size() && (range_count > psf_segids.size())) {
         cvm::error("Error: more instances of \"atomNameResidueRange\" than "
-                   "values of \"psfSegID\".\n", INPUT_ERROR);
+                   "values of \"psfSegID\".\n", COLVARS_INPUT_ERROR);
       } else {
         parse_error |= add_atom_name_residue_range(psf_segids.size() ?
           *psii : std::string(""), range_conf);
@@ -512,13 +512,13 @@ int cvm::atom_group::parse(std::string const &group_conf)
       std::string atoms_col;
       if (!get_keyval(group_conf, "atomsCol", atoms_col, std::string(""))) {
         cvm::error("Error: parameter atomsCol is required if atomsFile is set.\n",
-                   INPUT_ERROR);
+                   COLVARS_INPUT_ERROR);
       }
 
       double atoms_col_value;
       bool const atoms_col_value_defined = get_keyval(group_conf, "atomsColValue", atoms_col_value, 0.0);
       if (atoms_col_value_defined && (!atoms_col_value)) {
-        cvm::error("Error: atomsColValue, if provided, must be non-zero.\n", INPUT_ERROR);
+        cvm::error("Error: atomsColValue, if provided, must be non-zero.\n", COLVARS_INPUT_ERROR);
       }
 
       // NOTE: calls to add_atom() and/or add_atom_id() are in the proxy-implemented function
@@ -540,7 +540,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
     if (!(atoms_ids.size())) {
       parse_error |= cvm::error("Error: no atoms defined for atom group \""+
-                                key+"\".\n", INPUT_ERROR);
+                                key+"\".\n", COLVARS_INPUT_ERROR);
     }
 
     // whether these atoms will ever receive forces or not
@@ -614,7 +614,7 @@ int cvm::atom_group::add_atoms_of_group(atom_group const *ag)
 
     if (cvm::get_error()) return COLVARS_ERROR;
   } else {
-    cvm::error("Error: source atom group contains no atoms\".\n", INPUT_ERROR);
+    cvm::error("Error: source atom group contains no atoms\".\n", COLVARS_INPUT_ERROR);
     return COLVARS_ERROR;
   }
 
@@ -652,7 +652,7 @@ int cvm::atom_group::add_atom_numbers(std::string const &numbers_conf)
     if (cvm::get_error()) return COLVARS_ERROR;
   } else {
     cvm::error("Error: no numbers provided for \""
-               "atomNumbers\".\n", INPUT_ERROR);
+               "atomNumbers\".\n", COLVARS_INPUT_ERROR);
     return COLVARS_ERROR;
   }
 
@@ -676,7 +676,7 @@ int cvm::atom_group::add_index_group(std::string const &index_group_name)
   if (i_group >= index_group_names.size()) {
     return cvm::error("Error: could not find index group "+
                       index_group_name+" among those already provided.\n",
-                      INPUT_ERROR);
+                      COLVARS_INPUT_ERROR);
   }
 
   int error_code = COLVARS_OK;
@@ -728,7 +728,7 @@ int cvm::atom_group::add_atom_numbers_range(std::string const &range_conf)
     if (cvm::get_error()) return COLVARS_ERROR;
   } else {
     cvm::error("Error: no valid definition for \"atomNumbersRange\", \""+
-               range_conf+"\".\n", INPUT_ERROR);
+               range_conf+"\".\n", COLVARS_INPUT_ERROR);
     return COLVARS_ERROR;
   }
 
@@ -814,16 +814,16 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
                    key+"\" has already a reference group "
                    "for the rototranslational fit, which was communicated by the "
                    "colvar component.  You should not use fittingGroup "
-                   "in this case.\n", INPUT_ERROR);
-        return INPUT_ERROR;
+                   "in this case.\n", COLVARS_INPUT_ERROR);
+        return COLVARS_INPUT_ERROR;
       }
       cvm::log("Within atom group \""+key+"\":\n");
       fitting_group = new atom_group("fittingGroup");
       if (fitting_group->parse(fitting_group_conf) == COLVARS_OK) {
         fitting_group->check_keywords(fitting_group_conf, "fittingGroup");
         if (cvm::get_error()) {
-          cvm::error("Error setting up atom group \"fittingGroup\".", INPUT_ERROR);
-          return INPUT_ERROR;
+          cvm::error("Error setting up atom group \"fittingGroup\".", COLVARS_INPUT_ERROR);
+          return COLVARS_INPUT_ERROR;
         }
       }
       enable(f_ag_fitting_group);
@@ -849,7 +849,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
         bool found = get_keyval(group_conf, "refPositionsColValue", ref_pos_col_value, 0.0);
         if (found && ref_pos_col_value == 0.0) {
           cvm::error("Error: refPositionsColValue, "
-                     "if provided, must be non-zero.\n", INPUT_ERROR);
+                     "if provided, must be non-zero.\n", COLVARS_INPUT_ERROR);
           return COLVARS_ERROR;
         }
       }
@@ -869,14 +869,14 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
                      key+
                      "\" ("+cvm::to_str(group_for_fit->size())+
                      "): to perform a rotational fit, "+
-                     "these numbers should be equal.\n", INPUT_ERROR);
+                     "these numbers should be equal.\n", COLVARS_INPUT_ERROR);
       }
 
       // save the center of geometry of ref_pos and subtract it
       center_ref_pos();
 
     } else {
-      cvm::error("Error: no reference positions provided.\n", INPUT_ERROR);
+      cvm::error("Error: no reference positions provided.\n", COLVARS_INPUT_ERROR);
       return COLVARS_ERROR;
     }
 
@@ -940,7 +940,7 @@ int cvm::atom_group::create_sorted_ids()
     return cvm::error("Error: duplicate atom IDs in atom group? (found " +
                       cvm::to_str(sorted_atoms_ids_list.size()) +
                       " unique atom IDs instead of " +
-                      cvm::to_str(atoms_ids.size()) + ").\n", BUG_ERROR);
+                      cvm::to_str(atoms_ids.size()) + ").\n", COLVARS_BUG_ERROR);
   }
 
   // Compute map between sorted and unsorted elements
@@ -1078,12 +1078,12 @@ void cvm::atom_group::calc_apply_roto_translation()
 void cvm::atom_group::apply_translation(cvm::rvector const &t)
 {
   if (b_dummy) {
-    cvm::error("Error: cannot translate the coordinates of a dummy atom group.\n", INPUT_ERROR);
+    cvm::error("Error: cannot translate the coordinates of a dummy atom group.\n", COLVARS_INPUT_ERROR);
     return;
   }
 
   if (is_enabled(f_ag_scalable)) {
-    cvm::error("Error: cannot translate the coordinates of a scalable atom group.\n", INPUT_ERROR);
+    cvm::error("Error: cannot translate the coordinates of a scalable atom group.\n", COLVARS_INPUT_ERROR);
     return;
   }
 
@@ -1173,7 +1173,7 @@ int cvm::atom_group::calc_dipole(cvm::atom_pos const &dipole_center)
 {
   if (b_dummy) {
     return cvm::error("Error: trying to compute the dipole "
-                      "of a dummy group.\n", INPUT_ERROR);
+                      "of a dummy group.\n", COLVARS_INPUT_ERROR);
   }
   dip.reset();
   for (cvm::atom_const_iter ai = this->begin(); ai != this->end(); ai++) {
@@ -1254,12 +1254,12 @@ std::vector<cvm::atom_pos> cvm::atom_group::positions() const
 {
   if (b_dummy) {
     cvm::error("Error: positions are not available "
-               "from a dummy atom group.\n", INPUT_ERROR);
+               "from a dummy atom group.\n", COLVARS_INPUT_ERROR);
   }
 
   if (is_enabled(f_ag_scalable)) {
     cvm::error("Error: atomic positions are not available "
-               "from a scalable atom group.\n", INPUT_ERROR);
+               "from a scalable atom group.\n", COLVARS_INPUT_ERROR);
   }
 
   std::vector<cvm::atom_pos> x(this->size(), 0.0);
@@ -1275,12 +1275,12 @@ std::vector<cvm::atom_pos> cvm::atom_group::positions_shifted(cvm::rvector const
 {
   if (b_dummy) {
     cvm::error("Error: positions are not available "
-               "from a dummy atom group.\n", INPUT_ERROR);
+               "from a dummy atom group.\n", COLVARS_INPUT_ERROR);
   }
 
   if (is_enabled(f_ag_scalable)) {
     cvm::error("Error: atomic positions are not available "
-               "from a scalable atom group.\n", INPUT_ERROR);
+               "from a scalable atom group.\n", COLVARS_INPUT_ERROR);
   }
 
   std::vector<cvm::atom_pos> x(this->size(), 0.0);
@@ -1296,12 +1296,12 @@ std::vector<cvm::rvector> cvm::atom_group::velocities() const
 {
   if (b_dummy) {
     cvm::error("Error: velocities are not available "
-               "from a dummy atom group.\n", INPUT_ERROR);
+               "from a dummy atom group.\n", COLVARS_INPUT_ERROR);
   }
 
   if (is_enabled(f_ag_scalable)) {
     cvm::error("Error: atomic velocities are not available "
-               "from a scalable atom group.\n", INPUT_ERROR);
+               "from a scalable atom group.\n", COLVARS_INPUT_ERROR);
   }
 
   std::vector<cvm::rvector> v(this->size(), 0.0);
@@ -1317,12 +1317,12 @@ std::vector<cvm::rvector> cvm::atom_group::total_forces() const
 {
   if (b_dummy) {
     cvm::error("Error: total forces are not available "
-               "from a dummy atom group.\n", INPUT_ERROR);
+               "from a dummy atom group.\n", COLVARS_INPUT_ERROR);
   }
 
   if (is_enabled(f_ag_scalable)) {
     cvm::error("Error: atomic total forces are not available "
-               "from a scalable atom group.\n", INPUT_ERROR);
+               "from a scalable atom group.\n", COLVARS_INPUT_ERROR);
   }
 
   std::vector<cvm::rvector> f(this->size(), 0.0);
@@ -1340,7 +1340,7 @@ cvm::rvector cvm::atom_group::total_force() const
 {
   if (b_dummy) {
     cvm::error("Error: total total forces are not available "
-               "from a dummy atom group.\n", INPUT_ERROR);
+               "from a dummy atom group.\n", COLVARS_INPUT_ERROR);
   }
 
   if (is_enabled(f_ag_scalable)) {

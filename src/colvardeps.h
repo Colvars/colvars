@@ -426,12 +426,12 @@ public:
   /// \brief print all enabled features and those of children, for debugging
   void print_state();
 
-  /// \brief Check that a feature is enabled, raising BUG_ERROR if not
+  /// \brief Check that a feature is enabled, raising COLVARS_BUG_ERROR if not
   inline void check_enabled(int f, std::string const &reason) const
   {
     if (! is_enabled(f)) {
       cvm::error("Error: "+reason+" requires that the feature \""+
-                 features()[f]->description+"\" is active.\n", BUG_ERROR);
+                 features()[f]->description+"\" is active.\n", COLVARS_BUG_ERROR);
     }
   }
 
