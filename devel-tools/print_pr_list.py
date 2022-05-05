@@ -7,6 +7,25 @@ from dateutil import parser as date_parser
 import subprocess
 
 
+backends = set(['GROMACS', 'LAMMPS', 'NAMD', 'TinkerHP', 'VMD'])
+
+
+def affects_backend(labels, backend=None):
+    if backend is None:
+        # Without a backend specified, this PR affects everything
+        return True
+    if not backend in backends:
+        raise Exception("Invalid backend:", backend)
+    if 'testing' in labels:
+        return False
+    has_backend_labels = False
+    for label in labels:
+        if label in backends:
+            has_backend_labels = True
+    if (not has_backend_labels) or (backend in labels):
+        return True
+    return False
+
 
 def get_pr_list(state='merged'):
     # 10,000 sounds like a reasonable limit for the Colvars repo
@@ -32,12 +51,10 @@ def get_pr_commits(number):
 
 
 def get_commits_authors(commits):
-    unique_authors = []
+    authors = []
     for commit in commits:
-        for author in commit['authors']:
-            if not ("@"+author['login']) in unique_authors:
-                unique_authors += ["@"+author['login']]
-    return sorted(unique_authors, key=str.casefold)
+        authors += [("@"+author['login']) for author in commit['authors']]
+    return sorted(list(set(authors)), key=str.casefold)
 
 
 def get_pr_authors(pr):
@@ -53,7 +70,9 @@ def get_pr_authors(pr):
     return pr_authors
 
 
-def print_pr_report(ref_date=None):
+def print_pr_report(kwargs):
+
+    ref_date = kwargs.get('since')
 
     if not ref_date is None:
         print()
@@ -65,20 +84,43 @@ def print_pr_report(ref_date=None):
         print()
         print("The following is a list of all pull requests:")
 
-    pr_db = get_pr_list()
+    pr_db = get_pr_list(kwargs.get('state'))
+    all_authors = []
     for pr in pr_db:
         pr['mergedAt'] = date_parser.parse(pr['mergedAt']).timestamp()
-        if pr['mergedAt'] > ref_date_ts:
-            pr_authors = "("+", ".join(get_pr_authors(pr))+")"
+        pr_labels = [label['name'] for label in pr['labels']]
+        if pr['mergedAt'] > ref_date_ts and affects_backend(
+                pr_labels, kwargs.get('backend')):
+            pr_authors = get_pr_authors(pr)
+            all_authors += pr_authors
             print()
             print("-", pr['number'], pr['title'])
-            print(" ", pr['url'], pr_authors)
+            print(" ", pr['url'], "("+", ".join(pr_authors)+")")
+
+    print()
+    print("Authors:", ", ".join(sorted(list(set(all_authors)),
+                                       key=str.casefold)))
 
 
 if __name__ == '__main__':
 
-    ref_date = None
-    if len(sys.argv) > 1:
-        ref_date = sys.argv[1]
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='''List of Colvars PRs with the given constraints''',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--since',
+                        type=str,
+                        help="List PRs merged this date; default is all")
+    parser.add_argument('--backend',
+                        type=str,
+                        choices=backends,
+                        help="List PRs that affect only this backend; "
+                        "default is all")
+    parser.add_argument('--state',
+                        type=str,
+                        default='merged',
+                        choices=['open', 'closed', 'merged', 'all'],
+                        help="List PRs in this state")
+    kwargs = vars(parser.parse_args())
 
-    print_pr_report(ref_date)
+    print_pr_report(kwargs)
