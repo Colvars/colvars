@@ -73,6 +73,9 @@ compile_gromacs_target() {
         GMX_BUILD_OPTS+=(-DREGRESSIONTEST_DOWNLOAD=ON)
     fi
 
+    # Let GROMACS know explicitly when ccache is available
+    GMX_BUILD_OPTS+=(-DGMX_ENABLE_CCACHE=ON)
+
     if [ -z "${GMX_BUILD_DIR}" ] ; then
         GMX_BUILD_DIR="${GMX_SRC_DIR}/build"
     fi
