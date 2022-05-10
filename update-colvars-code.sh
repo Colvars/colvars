@@ -279,7 +279,7 @@ then
   for src in ${source}/doc/colvars-refman-lammps.pdf
   do \
     tgt=$(basename ${src})
-    condcopy "${src}" "${docdir}/src/PDF/${tgt}"
+    condcopy "${src}" "${target}/doc/src/PDF/${tgt}"
   done
 
   echo ' done.'
