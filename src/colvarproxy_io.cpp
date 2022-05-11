@@ -16,10 +16,9 @@
 #endif
 
 #include <cerrno>
+#include <cstdio>
 
 #include <sstream>
-#include <cstring>
-#include <cstdio>
 
 #include "colvarmodule.h"
 #include "colvarproxy_io.h"
