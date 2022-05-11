@@ -553,7 +553,7 @@ int colvarproxy_smp::smp_thread_id()
 #if defined(_OPENMP)
   return omp_get_thread_num();
 #else
-  return COLVARS_NOT_IMPLEMENTED;
+  return -1;
 #endif
 }
 
@@ -563,7 +563,7 @@ int colvarproxy_smp::smp_num_threads()
 #if defined(_OPENMP)
   return omp_get_max_threads();
 #else
-  return COLVARS_NOT_IMPLEMENTED;
+  return -1;
 #endif
 }
 
