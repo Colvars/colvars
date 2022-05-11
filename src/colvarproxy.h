@@ -11,7 +11,6 @@
 #define COLVARPROXY_H
 
 #include <fstream>
-#include <list>
 
 #include "colvarmodule.h"
 #include "colvartypes.h"
