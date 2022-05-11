@@ -872,11 +872,3 @@ int colvarproxy::get_version_from_string(char const *version_string)
 }
 
 
-void colvarproxy::smp_stream_error()
-{
-  cvm::error("Error: trying to access an output stream from a "
-             "multi-threaded region (bug).  For a quick workaround, use "
-             "\"smp off\" in the Colvars config.\n", COLVARS_BUG_ERROR);
-}
-
-
