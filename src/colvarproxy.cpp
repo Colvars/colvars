@@ -784,7 +784,7 @@ colvarproxy::~colvarproxy()
 int colvarproxy::close_files()
 {
   if (smp_enabled() == COLVARS_OK && smp_thread_id() > 0) {
-    // Nothing to do on non-master threads
+    // Nothing to do on threads other than the main one
     return COLVARS_OK;
   }
   std::list<std::string>::iterator    osni = output_stream_names.begin();
