@@ -723,6 +723,8 @@ public:
   /// Destructor
   virtual ~colvarproxy();
 
+  virtual bool io_available() /* override */;
+
   /// Request deallocation of the module (currently only implemented by VMD)
   virtual int request_deletion();
 
@@ -798,24 +800,6 @@ public:
   {
     return version_int;
   }
-
-  /// \brief Returns a reference to the given output channel;
-  /// if this is not open already, then open it
-  virtual std::ostream *output_stream(std::string const &output_name,
-                                      std::ios_base::openmode mode =
-                                      std::ios_base::out);
-
-  /// Returns a reference to output_name if it exists, NULL otherwise
-  virtual std::ostream *get_output_stream(std::string const &output_name);
-
-  /// \brief Flushes the given output channel
-  virtual int flush_output_stream(std::ostream *os);
-
-  /// \brief Flushes all output channels
-  virtual int flush_output_streams();
-
-  /// \brief Closes the given output channel
-  virtual int close_output_stream(std::string const &output_name);
 
 protected:
 
