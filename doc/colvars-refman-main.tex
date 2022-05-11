@@ -29,40 +29,8 @@
 }
 
 
-\cvnamdugonly{
-\section{Collective Variable-based Calculations (Colvars)}
-\label{section:colvars}
-
-The features described in this section were originally contributed to NAMD by Giacomo Fiorin (NIH) and J\'er\^ome H\'enin (CNRS, France) and are currently developed at this external repository:\\
-\cvurl{https://github.com/Colvars/colvars}\\
-An updated version of this section can also be downloaded as a separate manual: \\
-HTML: \cvurl{https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html} \\
-PDF: \cvurl{https://colvars.github.io/pdf/colvars-refman-namd.pdf}\\
-
-See section~\ref{sec:colvars_config_changes} for specific changes that affect compatibility between versions.
-Please ask any usage questions through the NAMD mailing list, and development questions through GitHub.
-
-\subsection*{Overview}
-}
-
-\cvvmdugonly{
-\chapter{Collective Variables Interface (Colvars)}
-\label{section:colvars}Colvars
-
-The features described in this section were originally contributed to VMD by Giacomo Fiorin (NIH) and J\'er\^ome H\'enin (CNRS, France) and are currently developed at this external repository:\\
-\cvurl{https://github.com/Colvars/colvars}\\
-An updated version of this section can also be downloaded as a separate manual: \\
-HTML: \cvurl{https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html} \\
-PDF: \cvurl{https://colvars.github.io/pdf/colvars-refman-vmd.pdf}\\
-
-See section~\ref{sec:colvars_config_changes} for specific changes that affect compatibility between versions.
-Please ask any usage questions through the VMD mailing list, and development questions through GitHub.
-
-\subsection*{Overview}
-}
-\cvrefmanonly{
 \cvsec{Overview}{sec:colvars_intro}
-}
+
 
 In molecular dynamics simulations, it is often useful to reduce the large number of degrees of freedom of a physical system into few parameters whose statistical distributions can be analyzed individually, or used to define biasing potentials to alter the dynamics of the system in a controlled manner.
 These have been called `order parameters', `collective variables', `(surrogate) reaction coordinates', and many other terms.
@@ -74,10 +42,7 @@ number of atoms:
   \xi(t) \; = \xi(\bm{X}(t)) \; = \xi\left(\bm{x}_{i}(t), \bm{x}_{j}(t), \bm{x}_{k}(t),
   \ldots \right)\;, \;\; 1 \leq i,j,k\ldots \leq N
 \end{equation}
-\cvvmdugonly{%
-The Colvars module in VMD may be used to calculate these functions over a molecular structure, and to analyze the results of previous simulations.}
-\cvrefmanonly{%
-This manual documents the collective variables module (\textbf{Colvars}), a software that provides an implementation for the functions $\xi(\bm{X})$ with a focus on flexibility, robustness and high performance.}
+This manual documents the collective variables module (\textbf{Colvars}), a software that provides an implementation for the functions $\xi(\bm{X})$ with a focus on flexibility, robustness and high performance.
 The module is designed to perform multiple tasks concurrently during or after a simulation, the most common of which are:
 \begin{itemize}
 
@@ -85,13 +50,13 @@ The module is designed to perform multiple tasks concurrently during or after a 
 
 \item calculate potentials of mean force (PMFs) along any set of variables, using different enhanced sampling methods, such as Adaptive Biasing Force (ABF), metadynamics, steered MD and umbrella sampling; variants of these methods that make use of an ensemble of replicas are supported as well;
 
-\item calculate statistical properties of the variables, such as running averages and standard deviations, correlation functions of pairs of variables, and multidimensional histograms: this can be done either at run-time without the need to save very large trajectory files, or after a simulation has been completed using VMD and the \texttt{cv} command\cvnamdugonly{ or NAMD and the \texttt{coorfile read} command as illustrated in \ref{section:sample}}.
+\item calculate statistical properties of the variables, such as running averages and standard deviations, correlation functions of pairs of variables, and multidimensional histograms: this can be done either at run-time without the need to save very large trajectory files, or after a simulation has been completed (post-processing).
 
 \end{itemize}
 
 \cvvmdonly{\textbf{Note:} although restraints and PMF algorithms are primarily used during simulations, they are also available in VMD to test a new input for a simulation, or to evaluate the relative free energy of a new structure based on data from a previous calculation.  \emph{Options that only have an effect during a simulation are also included for compatibility purposes.}}
 
-Detailed explanations of the design of the Colvars module are provided in reference~\cite{Fiorin2013}. Please cite this reference whenever publishing work that makes use of this module.
+Detailed explanations of the design of the Colvars module are provided in reference~\cite{Fiorin2013}.  Please cite this reference whenever publishing work that makes use of this module, alongside any other publications for specific features being, according to the usage summary printed when running a Colvars-enabled MD simulation or analysis.
 
 
 \cvvmdonly{
@@ -617,7 +582,6 @@ To enable Colvars within a Tinker-HP run, just provide a Colvars configuration f
 
 \ifdefined\cvscriptapi{
 \cvsubsec{Using the scripting interface to control the Colvars module}{sec:cv_scripting}
-\cvvmdugonly{\index{Colvars!\texttt{cv} command}}
 
 After the first initialization of the Colvars module\cvlammpsonly{ (in LAMMPS, this means after defining an instance of \texttt{fix colvars} and the first \texttt{run} command for any number of steps including 0)}, the internal state of Colvars objects may be queried or modified in a \MDENGINE{} script:
 \cvscriptexampleinputcv{$<$\emph{method}$>$}{arg1\cvscriptargsep{}arg2\cvscriptargsep{}...}
@@ -879,7 +843,7 @@ The following formatting rules apply:
 
 \item A long value, or a list of multiple values, can be distributed across multiple lines by using \emph{curly braces}, ``\texttt{\{}'' and ``\texttt{\}}'': the opening brace ``\texttt{\{}'' must occur on the same line as the keyword, following at least one space character; the closing brace ``\texttt{\}}'' may be at any position after that; any keywords following the closing brace on the same line are not valid (they should appear instead on a different line).
 
-\item Many keywords are nested, and are only meaningful within the specific context of another keyword; for example, the keyword  \texttt{name} is available inside the block of the keyword \texttt{colvar \{...\}}, but not outside of it; for every keyword documented in the following, the \emph{``parent'' keyword} that defines such context is also indicated\cvnamdugonly{ in parentheses}.
+\item Many keywords are nested, and are only meaningful within the specific context of another keyword; for example, the keyword  \texttt{name} is available inside the block of the keyword \texttt{colvar \{...\}}, but not outside of it; for every keyword documented in the following, the \emph{``parent'' keyword} that defines such context is also indicated.
 
 \item If a keyword requiring a boolean value (\texttt{yes|on|true} or \texttt{no|off|false}) is provided without an explicit value, it defaults to `\texttt{yes|on|true}'; for example, `\texttt{outputAppliedForce}' may be used as shorthand for `\texttt{outputAppliedForce on}'.
 
@@ -3302,9 +3266,7 @@ This colvar computes a non-linear combination of other scalar colvar components,
 
 \begin{figure}[!ht]
 	\centering
-	\cvnamdugonly{\includegraphics[width=9cm]{figures/dense_nn}}
-	\cvvmdugonly{\includegraphics[width=9cm]{pictures/dense_nn}}
-	\cvrefmanonly{\ifdefined\HCode{\HCode{<img class="neural_network" src="dense_nn.png" alt="Dense neural network">}}\else\includegraphics[width=9cm]{dense_nn}\fi}
+	\ifdefined\HCode{\HCode{<img class="neural_network" src="dense_nn.png" alt="Dense neural network">}}\else\includegraphics[width=9cm]{dense_nn}\fi
 	\caption[Graphical representation of an example dense neural network.]{Graphical representation of an example dense neural network with two hidden layers $y_1$ and $y_2$. Both the input layer $x$ and the output layer $z$ have two nodes. The input nodes can be any existing scalar CVs.
 	}
 	\label{fig:dense_nn}
@@ -5072,7 +5034,7 @@ are orthogonal to the directions along which the free energy gradient is
 measured, so that the measurement is effectively performed on unconstrained
 degrees of freedom.
 \cvnamdonly{In NAMD, constraints are typically applied to the lengths of
-bonds involving hydrogen atoms, for example in TIP3P water molecules (parameter \texttt{rigidBonds}\cvnamdugonly{, section~\ref{section:rigidBonds}}).}
+bonds involving hydrogen atoms, for example in TIP3P water molecules (parameter \texttt{rigidBonds}).}
 
 In the framework of ABF,
 ${\bf F}_\xi$ is accumulated in bins of finite size $\delta \xi$,
@@ -7036,9 +6998,7 @@ The following options allow to fine-tune this schedule:
 \cvsec{Scripting interface (Tcl): list of commands}{sec:cvscript_tcl}
 This section lists all the commands used in \MDENGINE{} to control the behavior of the Colvars module from within a run script.
 
-\cvrefmanonly{\input{cvscript-tcl.tex}}
-\cvnamdugonly{\input{ug_colvars_tclref_namd.tex}}
-\cvvmdugonly{\input{ug_colvars_tclref_vmd.tex}}
+\input{cvscript-tcl.tex}
 }
 
 
@@ -7088,12 +7048,12 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 \end{itemize}
 
 \noindent{}Up-to-date documentation can always be accessed at:\\
-\cvnamdonly{\cvurl{https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html}}
+\cvgromacsonly{\cvurl{https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html}}
 \cvlammpsonly{\cvurl{https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html}}
+\cvnamdonly{\cvurl{https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html}}
 \cvvmdonly{\cvurl{https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html}}
 
 
-\cvrefmanonly{
 
 \cvsec{Compilation notes}{sec:compilation_notes}
 
@@ -7111,4 +7071,3 @@ This section lists the few cases where the choice of compilation settings affect
   \cvurl{https://colvars.github.io/README-c++11.html}
 \end{itemize}
 
-}
