@@ -27,9 +27,10 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarparams.o \
 	$(DSTDIR)/colvarparse.o \
 	$(DSTDIR)/colvarproxy.o \
-	$(DSTDIR)/colvarproxy_volmaps.o \
+	$(DSTDIR)/colvarproxy_io.o \
 	$(DSTDIR)/colvarproxy_replicas.o \
 	$(DSTDIR)/colvarproxy_tcl.o \
+	$(DSTDIR)/colvarproxy_volmaps.o \
 	$(DSTDIR)/colvarscript.o \
 	$(DSTDIR)/colvarscript_commands.o \
 	$(DSTDIR)/colvarscript_commands_bias.o \

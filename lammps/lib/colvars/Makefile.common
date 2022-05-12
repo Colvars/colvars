@@ -50,6 +50,7 @@ COLVARS_SRCS = \
         colvarparams.cpp \
         colvarparse.cpp \
         colvarproxy.cpp \
+        colvarproxy_io.cpp \
         colvarproxy_replicas.cpp \
         colvarproxy_tcl.cpp \
         colvarproxy_volmaps.cpp \
