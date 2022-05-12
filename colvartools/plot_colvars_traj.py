@@ -11,6 +11,7 @@ import os
 import sys
 
 import numpy as np
+import re
 
 
 class Colvar_traj(object):
@@ -151,9 +152,11 @@ class Colvars_traj(object):
         self._keys = new_keys
         # Find the boundaries of each column
         for i in range(1, len(self._keys)):
-            self._start[self._keys[i]] = line.find(' '+self._keys[i]+' ')
-            self._end[self._keys[i-1]] = line.find(' '+self._keys[i]+' ')
-            self._end[self._keys[-1]] = -1
+            prog = re.compile(f' {self._keys[i]}\\S?')
+            match_result = prog.search(line)
+            self._start[self._keys[i]] = match_result.start()
+            self._end[self._keys[i-1]] = match_result.start()
+        self._end[self._keys[-1]] = -1
 
     def _parse_line(self, line, dict_buffer):
         """
@@ -161,20 +164,18 @@ class Colvars_traj(object):
         """
 
         step = np.int64(line[0:self._end['step']])
-
         for v in self._keys[1:]:
-            text = line[self._start[v]:self._end[v]].strip()
+            text = line[self._start[v]:self._end[v]]
             if (v not in dict_buffer):
                 dict_buffer[v] = {'cv_step': list(), 'cv_values': list()}
-            # got deprecation warning of using np.fromstring with sep
-            if text.startswith('('):
-                v_v = list(map(np.float64, text[1:-1].split(',')))
+            v_v = np.fromstring(text.lstrip(' (').rstrip(') '), sep=',')
+            if len(v_v) > 1:
+                dict_buffer[v]['cv_values'].append(v_v)
                 dict_buffer[v]['dimension'] = len(v_v)
             else:
-                v_v = np.float64(text)
+                dict_buffer[v]['cv_values'].append(v_v[0])
                 dict_buffer[v]['dimension'] = 1
             dict_buffer[v]['cv_step'].append(step)
-            dict_buffer[v]['cv_values'].append(v_v)
 
     def read_files(self, filenames, list_variables=False,
                    first=0, last=-1, every=1):
