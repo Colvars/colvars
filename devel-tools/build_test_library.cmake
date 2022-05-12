@@ -27,33 +27,26 @@ endif()
 
 if(DEFINED CMAKE_SYSTEM_NAME AND COLVARS_TCL)
 
-  # Download OS-specific pre-built TCL
+  # If available, use pre-downloaded OS-specific TCL libraries
 
-  if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    file(DOWNLOAD
-      "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-linux-x86_64.tar.gz"
-      ./tcl.tar.gz SHOW_PROGRESS)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ./tcl.tar.gz)
-    set(DEFINE_TCL_DIR "-DTCL_DIR=${COLVARS_SOURCE_DIR}/tcl8.5.9-linux-x86_64")
-    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=${COLVARS_SOURCE_DIR}/tcl8.5.9-linux-x86_64/lib/libtcl8.5.a")
-  endif()
+  if(EXISTS "${COLVARS_SOURCE_DIR}/devel-tools/packages")
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+      set(TCL_DIR "${COLVARS_SOURCE_DIR}/devel-tools/packages/tcl8.5.9-linux-x86_64")
+      set(TCL_LIBRARY "libtcl8.5.a")
+    endif()
 
-  if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    file(DOWNLOAD
-      "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-win64.zip"
-      ./tcl.zip SHOW_PROGRESS)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ./tcl.zip)
-    set(DEFINE_TCL_DIR "-DTCL_DIR=${COLVARS_SOURCE_DIR}/tcl8.5.9-win64")
-    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=${COLVARS_SOURCE_DIR}/tcl8.5.9-win64/lib/tcl85.lib")
-  endif()
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+      set(TCL_DIR "${COLVARS_SOURCE_DIR}/devel-tools/packages/tcl8.5.9-win64")
+      set(TCL_LIBRARY "tcl85.lib")
+    endif()
 
-  if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    file(DOWNLOAD
-      "https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.5.9-macosx-x86_64-threaded.tar.gz"
-      ./tcl.zip SHOW_PROGRESS)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ./tcl.zip)
-    set(DEFINE_TCL_DIR "-DTCL_DIR=${COLVARS_SOURCE_DIR}/tcl8.5.9-macosx-x86_64-threaded")
-    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=${COLVARS_SOURCE_DIR}/tcl8.5.9-macosx-x86_64-threaded/lib/libtcl8.5.a")
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+      set(TCL_DIR "${COLVARS_SOURCE_DIR}/devel-tools/packages/tcl8.5.9-macosx-x86_64-threaded")
+      set(TCL_LIBRARY "libtcl8.5.a")
+    endif()
+
+    set(DEFINE_TCL_DIR "-DTCL_DIR=${TCL_DIR}")
+    set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=${TCL_DIR}/lib/${TCL_LIBRARY}")
   endif()
 
 endif()

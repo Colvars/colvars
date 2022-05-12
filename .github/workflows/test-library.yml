@@ -24,6 +24,13 @@ jobs:
           key: ${{ runner.os }}-build-basic-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-basic-
 
+      - name: Get small downloadable packages
+        uses: actions/checkout@v2
+        with:
+          repository: 'Colvars/build-tools-packages'
+          ref: 'master'
+          path: 'devel-tools/packages'
+
       - name: Install build dependencies for library
         run: |
           sudo apt-get -y install ccache tcl8.6-dev
@@ -392,6 +399,13 @@ jobs:
 
       - uses: actions/checkout@v2
 
+      - name: Get small downloadable packages
+        uses: actions/checkout@v2
+        with:
+          repository: 'Colvars/build-tools-packages'
+          ref: 'master'
+          path: 'devel-tools/packages'
+
       - name: Build library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Windows -P devel-tools/build_test_library.cmake
@@ -406,6 +420,13 @@ jobs:
     steps:
 
       - uses: actions/checkout@v2
+
+      - name: Get small downloadable packages
+        uses: actions/checkout@v2
+        with:
+          repository: 'Colvars/build-tools-packages'
+          ref: 'master'
+          path: 'devel-tools/packages'
 
       - name: Build library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
