@@ -10,11 +10,6 @@ from __future__ import print_function
 import os
 import sys
 
-if (sys.version_info[:2] < (2, 7)):
-    # Save some explanations
-    print("Python versions prior to 2.7 are no longer supported.")
-    sys.exit(1)
-
 import numpy as np
 
 
