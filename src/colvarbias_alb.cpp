@@ -7,6 +7,8 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+#include <iostream>
+#include <iomanip>
 #include <cstdlib>
 
 #include "colvarmodule.h"

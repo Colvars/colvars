@@ -10,8 +10,9 @@
 #ifndef COLVARPROXY_IO_H
 #define COLVARPROXY_IO_H
 
+#include <map>
 #include <string>
-#include <iostream>
+#include <iosfwd>
 
 
 /// Methods for data input/output
