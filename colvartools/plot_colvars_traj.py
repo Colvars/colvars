@@ -168,16 +168,16 @@ class Colvars_traj(object):
 
         step = np.int64(line[0:self._end['step']])
         for v in self._keys[1:]:
-            text = line[self._start[v]:self._end[v]]
+            text = line[self._start[v]:self._end[v]].strip()
             if (v not in dict_buffer):
                 dict_buffer[v] = {'cv_step': list(), 'cv_values': list()}
-            v_v = np.fromstring(text.lstrip(' (').rstrip(') '), sep=',')
-            if len(v_v) > 1:
-                dict_buffer[v]['cv_values'].append(v_v)
+            if text.startswith('('):
+                v_v = np.fromstring(text[1:-1], sep=',')
                 dict_buffer[v]['dimension'] = len(v_v)
             else:
-                dict_buffer[v]['cv_values'].append(v_v[0])
+                v_v = np.float64(text)
                 dict_buffer[v]['dimension'] = 1
+            dict_buffer[v]['cv_values'].append(v_v)
             dict_buffer[v]['cv_step'].append(step)
 
     def read_files(self, filenames, list_variables=False,
