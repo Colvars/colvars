@@ -32,6 +32,12 @@
 #include <functional>
 #endif
 
+
+#ifdef TORCH
+#include <torch/torch.h>
+#include <torch/script.h>
+#endif
+
 #include <map>
 
 
@@ -1761,6 +1767,8 @@ public:
     virtual void apply_force(colvarvalue const &force);
 };
 
+
+
 #else // if the compiler doesn't support C++11
 
 class colvar::linearCombination
@@ -1833,8 +1841,36 @@ public:
     neuralNetwork(std::string const &conf) : componentDisabled(conf) {}
 };
 
+
 #endif // C++11 checking
 
+#ifdef TORCH 
+
+// only when LibTorch is available
+class colvar::torchANN
+  : public colvar::cvc
+{
+protected:
+    /// the index of nn output components
+    size_t m_output_index;
+public:
+    torchANN(std::string const &conf);
+    virtual ~torchANN();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
+#else
+
+class colvar::torchANN
+  : public colvar::componentDisabled
+{
+public:
+    torchANN(std::string const &conf) : componentDisabled(conf) {}
+};
+
+#endif // TORCH checking
 
 // \brief Colvar component: total value of a scalar map
 // (usually implemented as a grid by the simulation engine)
