@@ -11,7 +11,6 @@ import os
 import sys
 
 import numpy as np
-import re
 
 
 class Colvar_traj(object):
@@ -152,11 +151,15 @@ class Colvars_traj(object):
         self._keys = new_keys
         # Find the boundaries of each column
         for i in range(1, len(self._keys)):
-            prog = re.compile(f' {self._keys[i]}\\S?')
-            match_result = prog.search(line)
-            self._start[self._keys[i]] = match_result.start()
-            self._end[self._keys[i-1]] = match_result.start()
+            if i == 1:
+                pos = line.find(' '+self._keys[i]+' ')
+            else:
+                pos = line.find(' '+self._keys[i],
+                                self._start[self._keys[i-1]]+len(self._keys[i-1]))
+            self._start[self._keys[i]] = pos
+            self._end[self._keys[i-1]] = pos
         self._end[self._keys[-1]] = -1
+
 
     def _parse_line(self, line, dict_buffer):
         """
