@@ -141,6 +141,55 @@ int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
 }
 
 
+std::istream *colvarproxy_io::input_stream(std::string const &input_name,
+                                           std::string const description,
+                                           bool error_on_fail)
+{
+  if (!io_available()) {
+    cvm::error("Error: trying to access an input file/channel "
+               "from the wrong thread.\n", COLVARS_BUG_ERROR);
+    return NULL;
+  }
+  std::istream *is = get_input_stream(input_name);
+  if (is != NULL) {
+    return is;
+  }
+
+  std::ifstream *isf = new std::ifstream(input_name.c_str());
+  if (!isf->is_open()) {
+    if (error_on_fail) {
+      cvm::error("Error: cannot open "+description+" \""+input_name+"\".\n",
+                 COLVARS_FILE_ERROR);
+    }
+    return NULL;
+  }
+
+  input_streams_[input_name] = isf;
+
+  return isf;
+}
+
+
+std::istream *colvarproxy_io::get_input_stream(std::string const &input_name)
+{
+  if (input_streams_.count(input_name) > 0) {
+    return input_streams_[input_name];
+  }
+  return NULL;
+}
+
+
+int colvarproxy_io::close_input_stream(std::string const &input_name)
+{
+  if (input_streams_.count(input_name) > 0) {
+    input_streams_.erase(input_name);
+    return COLVARS_OK;
+  }
+  return cvm::error("Error: input file/channel \""+input_name+
+                    "\" does not exist.\n", COLVARS_FILE_ERROR);
+}
+
+
 std::ostream * colvarproxy_io::output_stream(std::string const &output_name,
                                              std::ios_base::openmode mode)
 {
