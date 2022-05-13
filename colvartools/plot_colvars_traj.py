@@ -138,7 +138,7 @@ class Colvars_traj(object):
     @property
     def variables(self):
         """Names of variables defined"""
-        return self._keys[1:] # The first entry is "step"
+        return list(self._colvars.keys())
 
     def _parse_comment_line(self, line):
         """
