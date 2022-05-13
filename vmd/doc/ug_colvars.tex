@@ -1,15 +1,21 @@
 \section{Collective Variable-based Calculations (Colvars)}
 \label{section:colvars}
 
-The collective variables module (Colvars) is a library distributed together with VMD that allows setting up, visualizing and analyzing enhanced sampling simulations.
-The documentation for the module, including any syntax and features specific to this version of VMD, can be accessed at the following links:
+The collective variables module (Colvars) is an independently-developed library for enhanced sampling simulations, licensed under the GNU lesser general public license (\url{https://www.gnu.org/licenses/lgpl-3.0.en.html}) and distributed together with VMD.
+Full documentation and examples for this software, including any syntax and features specific to this version of VMD, can be accessed at the following links:
 \begin{itemize}
 \item (HTML) \url{https://colvars.github.io/vmd-1.9.4/colvars-refman-vmd/colvars-refman-vmd.html}
 \item (PDF) \url{https://colvars.github.io/vmd-1.9.4/pdf/colvars-refman-vmd.pdf}
-\end{itemize}
-\noindent{}See in particular the section about the interactive Dashboard GUI:\\
+
+See in particular the section about the interactive Dashboard GUI:\\
 \url{https://colvars.github.io/vmd-1.9.4/colvars-refman-vmd/colvars-refman-vmd.html#sec:dashboard}\\
 \noindent{}and the section regarding compatibility between versions of VMD:\\
 \url{https://colvars.github.io/vmd-1.9.4/colvars-refman-vmd/colvars-refman-vmd.html#sec:colvars_config_changes}
- 
+
+When using the Colvars module please cite the following publication, alongside other publications for specific features as listed in the code's documentation and in the runtime usage summary.  (Such summary can be obtained at any time through the ``About'' Dashboard button, or the ``\texttt{cv featurereport}'' Tcl command.)
+
+\begin{quote}
+  G.\ Fiorin, M.\ L.\ Klein, and J.\ H\'enin, {\it Molecular Physics} {\bf 111} (22-23), 3345-3362 (2013). \url{https://doi.org/10.1080/00268976.2013.813594}
+\end{quote}
+
 Please ask any usage questions through the VMD mailing list, and any development questions through the Colvars GitHub repository at \url{https://github.com/Colvars/colvars}.

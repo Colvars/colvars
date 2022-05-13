@@ -11,8 +11,8 @@ auto
 *.toc
 
 # Compiled documentation
+colvars-refman-gromacs.pdf
 colvars-refman-lammps.pdf
 colvars-refman-namd.pdf
+colvars-refman-tinkerhp.pdf
 colvars-refman-vmd.pdf
-colvars-refman-gromacs.pdf
-

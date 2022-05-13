@@ -24,6 +24,13 @@ jobs:
           key: ${{ runner.os }}-build-basic-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-basic-
 
+      - name: Get small downloadable packages
+        uses: actions/checkout@v2
+        with:
+          repository: 'Colvars/build-tools-packages'
+          ref: 'master'
+          path: 'devel-tools/packages'
+
       - name: Install build dependencies for library
         run: |
           sudo apt-get -y install ccache tcl8.6-dev
@@ -132,7 +139,7 @@ jobs:
           git clone --single-branch --depth=1 https://github.com/openmm/openmm openmm-source
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v2
         with:
           languages: cpp
 
@@ -140,7 +147,7 @@ jobs:
         run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v2
 
 
   build-linux-x86_64-many:
@@ -392,6 +399,13 @@ jobs:
 
       - uses: actions/checkout@v2
 
+      - name: Get small downloadable packages
+        uses: actions/checkout@v2
+        with:
+          repository: 'Colvars/build-tools-packages'
+          ref: 'master'
+          path: 'devel-tools/packages'
+
       - name: Build library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Windows -P devel-tools/build_test_library.cmake
@@ -406,6 +420,13 @@ jobs:
     steps:
 
       - uses: actions/checkout@v2
+
+      - name: Get small downloadable packages
+        uses: actions/checkout@v2
+        with:
+          repository: 'Colvars/build-tools-packages'
+          ref: 'master'
+          path: 'devel-tools/packages'
 
       - name: Build library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
