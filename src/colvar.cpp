@@ -10,6 +10,8 @@
 #include <list>
 #include <vector>
 #include <algorithm>
+#include <iostream>
+#include <iomanip>
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"

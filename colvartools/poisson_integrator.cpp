@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "colvargrid.h"
 #include "colvarproxy.h"
 

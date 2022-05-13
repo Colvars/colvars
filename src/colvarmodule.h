@@ -42,13 +42,11 @@ You can browse the class hierarchy or the list of source files.
 #define COLVARS_MEMORY_ERROR    (1<<5)
 #define COLVARS_NO_SUCH_FRAME (1<<6) // Cannot load the requested frame
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <list>
+#include <iosfwd>
 
 class colvarparse;
 class colvar;
@@ -765,9 +763,6 @@ public:
   static real rand_gaussian(void);
 
 protected:
-
-  /// Configuration file
-  std::ifstream config_s;
 
   /// Configuration file parser object
   colvarparse *parse;

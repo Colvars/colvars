@@ -18,7 +18,10 @@
 #include <cerrno>
 #include <cstdio>
 
+#include <list>
+#include <map>
 #include <sstream>
+#include <fstream>
 
 #include "colvarmodule.h"
 #include "colvarproxy_io.h"

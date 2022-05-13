@@ -7,6 +7,9 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+#include <ctime>
+#include <fstream>
+
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
@@ -14,7 +17,6 @@
 #include "colvarcomp.h"
 #include "colvargrid.h"
 
-#include <ctime>
 
 colvar_grid_count::colvar_grid_count()
   : colvar_grid<size_t>()

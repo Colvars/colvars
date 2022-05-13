@@ -7,7 +7,10 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+#include <iostream>
+#include <iomanip>
 #include <sstream>
+#include <fstream>
 #include <cstring>
 #include <vector>
 #include <map>
@@ -190,12 +193,11 @@ int colvarmodule::read_config_file(char const  *config_filename)
            std::string(config_filename)+"\":\n");
 
   // open the configfile
-  config_s.open(config_filename);
+  std::ifstream config_s(config_filename);
   if (!config_s.is_open()) {
-    cvm::error("Error: in opening configuration file \""+
-               std::string(config_filename)+"\".\n",
-               COLVARS_FILE_ERROR);
-    return COLVARS_ERROR;
+    return cvm::error("Error: in opening configuration file \""+
+                      std::string(config_filename)+"\".\n",
+                      COLVARS_FILE_ERROR);
   }
 
   // read the config file into a string

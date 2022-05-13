@@ -12,8 +12,7 @@
 
 #include <vector>
 #include <list>
-#include <sstream>
-#include <fstream>
+#include <iosfwd>
 
 #include "colvarbias.h"
 #include "colvargrid.h"
