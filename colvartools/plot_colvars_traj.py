@@ -236,9 +236,14 @@ class Colvars_traj(object):
         tmp_dict = dict()
         if keys is None:
             keys = self.variables
+        series = list()
         for key in keys:
-            tmp_dict[key] = self.__getitem__(key).values.tolist()
-        return pd.DataFrame(data=tmp_dict)
+            series.append(pd.Series(data=self.__getitem__(key).values.tolist(),
+                                    index=self.__getitem__(key).steps,
+                                    name=key))
+        df = pd.concat(series, axis=1).reset_index()
+        df.rename(columns={'index': 'step'}, inplace=True)
+        return df
 
 
 if (__name__ == '__main__'):
