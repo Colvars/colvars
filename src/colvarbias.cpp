@@ -7,7 +7,7 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
-#include <fstream>
+#include <iostream>
 #include <cstring>
 
 #include "colvarmodule.h"
@@ -124,18 +124,15 @@ int colvarbias::init(std::string const &conf)
     std::string biasing_force_scaling_factors_in_filename;
     get_keyval(conf, "scaledBiasingForceFactorsGrid",
                biasing_force_scaling_factors_in_filename, std::string());
-    std::ifstream is;
-    cvm::log("Reading scaling factors for the forces of bias " +
-             name + " from " + biasing_force_scaling_factors_in_filename);
-    is.open(biasing_force_scaling_factors_in_filename.c_str());
-    if (!is.is_open()) {
-      cvm::error("Error opening the grid file " +
-      biasing_force_scaling_factors_in_filename + " for reading");
+    std::istream *is = cvm::main()->proxy->input_stream(biasing_force_scaling_factors_in_filename,
+                                                        "grid file");
+    if (is == NULL) {
+      return COLVARS_FILE_ERROR;
     }
     biasing_force_scaling_factors = new colvar_grid_scalar(colvars);
-    biasing_force_scaling_factors->read_multicol(is, true);
+    biasing_force_scaling_factors->read_multicol(*is, true);
     biasing_force_scaling_factors_bin.assign(num_variables(), 0);
-    is.close();
+    cvm::main()->proxy->close_input_stream(biasing_force_scaling_factors_in_filename);
   }
 
   // Now that children are defined, we can solve dependencies
@@ -600,17 +597,22 @@ int colvarbias::write_state_string(std::string &output)
 
 int colvarbias::read_state_prefix(std::string const &prefix)
 {
-  std::string filename((prefix+std::string(".colvars.state")).c_str());
-  std::ifstream is(filename.c_str());
-  if (!is.good()) {
-    // try without the suffix
-    is.clear();
+  std::string filename(prefix+std::string(".colvars.state"));
+  std::istream *is = cvm::main()->proxy->input_stream(filename,
+                                                      "bias state file",
+                                                      false);
+  if (is == NULL) {
     filename = prefix;
-    is.open(filename.c_str());
+    is = cvm::main()->proxy->input_stream(filename, "bias state file");
   }
-  return read_state(is).good() ? COLVARS_OK :
-    cvm::error("Error: in reading state for \""+name+"\" from input file \""+
-               std::string(filename)+"\".\n", COLVARS_FILE_ERROR);
+  if (is == NULL) {
+    return COLVARS_FILE_ERROR;
+  }
+
+  if (read_state(*is).good()) {
+    return cvm::main()->proxy->close_input_stream(filename);
+  }
+  return COLVARS_FILE_ERROR;
 }
 
 
