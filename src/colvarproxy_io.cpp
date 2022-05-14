@@ -155,7 +155,10 @@ std::istream *colvarproxy_io::input_stream(std::string const &input_name,
     return is;
   }
 
-  std::ifstream *isf = new std::ifstream(input_name.c_str());
+  // Using binary to work around differences in line termination conventions
+  // See https://github.com/Colvars/colvars/commit/8236879f7de4
+  std::ifstream *isf = new std::ifstream(input_name.c_str(), std::ios::binary);
+
   if (!isf->is_open()) {
     if (error_on_fail) {
       cvm::error("Error: cannot open "+description+" \""+input_name+"\".\n",
