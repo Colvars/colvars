@@ -39,10 +39,10 @@ void colvar::torchANN::calc_value() {
   // change to torch Tensor 
   torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(true));
   std::vector<torch::jit::IValue> inputs = {arg_tensor};
+
   // evaluate the value of function
-  //auto outputs = module.forward(inputs).toTensor() ;
-  //
-  // x.real_value = (180.0/PI) * cvm::acos(cos_theta);
+  auto outputs = module.forward(inputs).toTensor()[0] ;
+  x = outputs[m_output_index].item<double>() ;
 }
 
 void colvar::torchANN::calc_gradients() {
@@ -59,15 +59,25 @@ void colvar::torchANN::calc_gradients() {
   torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(true));
   std::vector<torch::jit::IValue> inputs = {arg_tensor};
   // evaluate the value of function
-  //auto outputs = module.forward(inputs).toTensor() ;
+  //
+  auto outputs = module.forward(inputs).toTensor()[0] ;
 
-    //outputs.backward({}, retain_graph, false);
   arg_tensor.grad().zero_();
 
+  outputs[m_output_index].backward({}, false, false);
+
   torch::Tensor grad = arg_tensor.grad();
+
+  ia = 0 ;
+  for (cvm::atom_iter ai = atoms->begin() ; ai != atoms->end(); ai++, ia++) 
+    for (size_t j = 0; j < 3; j ++)
+      ai->grad[j] = grad[ia][j].item<double>();
 }
 
 void colvar::torchANN::apply_force(colvarvalue const &force) {
+  if (!atoms->noforce) {
+    atoms->apply_colvar_force(force.real_value);
+  }
 }
 
 #endif
