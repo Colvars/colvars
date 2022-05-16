@@ -1,4 +1,4 @@
-// -*- c++ -*-
+// -*- Mode:c++; c-basic-offset: 4; -*-
 
 // This file is part of the Collective Variables module (Colvars).
 // The original version of Colvars and its updates are located at:
@@ -677,6 +677,7 @@ namespace UIestimator {
             int dimension_temp;
             int i, j, k, l, m;
 
+            colvarproxy *proxy = cvm::main()->proxy;
             std::vector<double> loop_bin_size(dimension, 0);
             std::vector<double> position_temp(dimension, 0);
             std::vector<double> grad_temp(dimension, 0);
@@ -687,8 +688,17 @@ namespace UIestimator {
                 std::string count_filename = filename[i] + ".UI.count";
                 std::string grad_filename = filename[i] + ".UI.grad";
 
-                std::ifstream count_file(count_filename.c_str(), std::ios::in);
-                std::ifstream grad_file(grad_filename.c_str(), std::ios::in);
+                std::istream *count_file_p =
+                    proxy->input_stream(count_filename, "count filename");
+                std::istream *grad_file_p =
+                    proxy->input_stream(grad_filename, "gradient filename");
+
+                if (count_file_p == NULL || grad_file_p == NULL) {
+                    return;
+                }
+
+                std::istream &count_file = *count_file_p;
+                std::istream &grad_file = *grad_file_p;
 
                 count_file >> sharp >> dimension_temp;
                 grad_file >> sharp >> dimension_temp;
@@ -724,8 +734,8 @@ namespace UIestimator {
                     input_count.increase_value(position_temp, count_temp);
                 }
 
-                count_file.close();
-                grad_file.close();
+                proxy->close_input_stream(count_filename);
+                proxy->close_input_stream(grad_filename);
             }
         }
     };

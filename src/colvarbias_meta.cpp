@@ -268,6 +268,7 @@ int colvarbias_meta::init_well_tempered_params(std::string const &conf)
 
 int colvarbias_meta::init_ebmeta_params(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
   // for ebmeta
   target_dist = NULL;
   get_keyval(conf, "ebMeta", ebmeta, false);
@@ -280,11 +281,11 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
                  "accordingly.\n", COLVARS_INPUT_ERROR);
     }
     target_dist = new colvar_grid_scalar();
-    target_dist->init_from_colvars(colvars);
+    error_code |= target_dist->init_from_colvars(colvars);
     std::string target_dist_file;
     get_keyval(conf, "targetDistFile", target_dist_file);
-    std::ifstream targetdiststream(target_dist_file.c_str());
-    target_dist->read_multicol(targetdiststream);
+    error_code |= target_dist->read_multicol(target_dist_file,
+                                             "ebMeta target histogram");
     cvm::real min_val = target_dist->minimum_value();
     cvm::real max_val = target_dist->maximum_value();
     if(min_val<0){
