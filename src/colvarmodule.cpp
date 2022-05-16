@@ -1306,12 +1306,13 @@ int colvarmodule::setup_input()
     } else {
       cvm::log(cvm::line_marker);
       cvm::log("Loading state from file \""+restart_in_name+"\".\n");
-      read_restart(*input_is);
-      cvm::log(cvm::line_marker);
       if (input_is->good()) {
-        // Now that the file has been read, clear this for the next round
+        // Now that the file has been opened, clear this field so that it
+        // won't be read again automatically
         proxy->input_prefix().clear();
       }
+      read_restart(*input_is);
+      cvm::log(cvm::line_marker);
       proxy->close_input_stream(restart_in_name);
       input_is = NULL;
 

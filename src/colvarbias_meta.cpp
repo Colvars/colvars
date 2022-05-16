@@ -1414,6 +1414,10 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
   size_t const old_hills_size = hills.size();
   hill_iter old_hills_end = hills.end();
   hill_iter old_hills_off_grid_end = hills_off_grid.end();
+  if (cvm::debug()) {
+    cvm::log("Before reading hills from the state file, there are "+
+             cvm::to_str(hills.size())+" hills in memory.\n");
+  }
 
   // Read any hills following the grid data (if any)
   while (read_hill(is)) {
@@ -1432,6 +1436,10 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
   if (existing_hills) {
     hills.erase(hills.begin(), old_hills_end);
     hills_off_grid.erase(hills_off_grid.begin(), old_hills_off_grid_end);
+    if (cvm::debug()) {
+      cvm::log("After pruning the old hills, there are now "+
+               cvm::to_str(hills.size())+" hills in memory.\n");
+    }
   }
 
   if (rebin_grids) {
