@@ -317,7 +317,7 @@ $(COLVARS_OBJ_DIR)colvargrid.o: colvargrid.cpp colvarmodule.h \
  lepton/include/lepton/ParsedExpression.h lepton/include/lepton/Parser.h \
  colvarcomp.h colvaratoms.h colvarproxy.h colvarproxy_io.h \
  colvarproxy_tcl.h colvarproxy_volmaps.h colvar_arithmeticpath.h \
- colvar_geometricpath.h colvargrid.h
+ colvar_geometricpath.h colvargrid.h colvargrid_def.h
 $(COLVARS_OBJ_DIR)colvarmodule.o: colvarmodule.cpp colvarmodule.h \
  colvars_version.h colvarparse.h colvarvalue.h colvartypes.h \
  colvarparams.h colvarproxy.h colvarproxy_io.h colvarproxy_tcl.h \
@@ -450,4 +450,5 @@ $(COLVARS_OBJ_DIR)colvar_neuralnetworkcompute.o: \
  lepton/include/lepton/Exception.h \
  lepton/include/lepton/ParsedExpression.h lepton/include/lepton/Parser.h \
  colvarparse.h colvarmodule.h colvars_version.h colvarvalue.h \
- colvartypes.h colvarparams.h
+ colvartypes.h colvarparams.h colvarproxy.h colvarproxy_io.h \
+ colvarproxy_tcl.h colvarproxy_volmaps.h

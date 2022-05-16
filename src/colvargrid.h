@@ -1070,104 +1070,13 @@ public:
     }
   }
 
-  /// \brief Read a grid written by colvar_grid::write_multicol()
-  /// Adding data if add is true, replacing if false
-  std::istream & read_multicol(std::istream &is, bool add = false)
-  {
-    // Data in the header: nColvars, then for each
-    // xiMin, dXi, nPoints, periodic flag
+  /// Read a grid written by write_multicol(), incrementin if data is true
+  std::istream & read_multicol(std::istream &is, bool add = false);
 
-    std::string   hash;
-    cvm::real     lower, width, x;
-    size_t        n, periodic_flag;
-    bool          remap;
-    std::vector<T>        new_value;
-    std::vector<int>      nx_read;
-    std::vector<int>      bin;
-
-    if ( cv.size() > 0 && cv.size() != nd ) {
-      cvm::error("Cannot read grid file: number of variables in file differs from number referenced by grid.\n");
-      return is;
-    }
-
-    if ( !(is >> hash) || (hash != "#") ) {
-      cvm::error("Error reading grid at position "+
-                 cvm::to_str(static_cast<size_t>(is.tellg()))+
-                 " in stream(read \"" + hash + "\")\n");
-      return is;
-    }
-
-    is >> n;
-    if ( n != nd ) {
-      cvm::error("Error reading grid: wrong number of collective variables.\n");
-      return is;
-    }
-
-    nx_read.resize(n);
-    bin.resize(n);
-    new_value.resize(mult);
-
-    if (this->has_parent_data && add) {
-      new_data.resize(data.size());
-    }
-
-    remap = false;
-    for (size_t i = 0; i < nd; i++ ) {
-      if ( !(is >> hash) || (hash != "#") ) {
-        cvm::error("Error reading grid at position "+
-                   cvm::to_str(static_cast<size_t>(is.tellg()))+
-                   " in stream(read \"" + hash + "\")\n");
-        return is;
-      }
-
-      is >> lower >> width >> nx_read[i] >> periodic_flag;
-
-
-      if ( (cvm::fabs(lower - lower_boundaries[i].real_value) > 1.0e-10) ||
-           (cvm::fabs(width - widths[i] ) > 1.0e-10) ||
-           (nx_read[i] != nx[i]) ) {
-        cvm::log("Warning: reading from different grid definition (colvar "
-                 + cvm::to_str(i+1) + "); remapping data on new grid.\n");
-        remap = true;
-      }
-    }
-
-    if ( remap ) {
-      // re-grid data
-      while (is.good()) {
-        bool end_of_file = false;
-
-        for (size_t i = 0; i < nd; i++ ) {
-          if ( !(is >> x) ) end_of_file = true;
-          bin[i] = value_to_bin_scalar(x, i);
-        }
-        if (end_of_file) break;
-
-        for (size_t imult = 0; imult < mult; imult++) {
-          is >> new_value[imult];
-        }
-
-        if ( index_ok(bin) ) {
-          for (size_t imult = 0; imult < mult; imult++) {
-            value_input(bin, new_value[imult], imult, add);
-          }
-        }
-      }
-    } else {
-      // do not re-grid the data but assume the same grid is used
-      for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix) ) {
-        for (size_t i = 0; i < nd; i++ ) {
-          is >> x;
-        }
-        for (size_t imult = 0; imult < mult; imult++) {
-          is >> new_value[imult];
-          value_input(ix, new_value[imult], imult, add);
-        }
-      }
-    }
-    has_data = true;
-    return is;
-  }
+  /// Read a grid written by write_multicol(), incrementin if data is true
+  int read_multicol(std::string const &filename,
+                    std::string description = "grid file",
+                    bool add = false);
 
   /// \brief Write the grid data without labels, as they are
   /// represented in memory
@@ -1248,6 +1157,14 @@ public:
   {
     return new_data[address(ix) + imult];
   }
+
+  /// Read a grid written by write_multicol(), incrementin if data is true
+  std::istream & read_multicol(std::istream &is, bool add = false);
+
+  /// Read a grid written by write_multicol(), incrementin if data is true
+  int read_multicol(std::string const &filename,
+                    std::string description = "grid file",
+                    bool add = false);
 
   /// \brief Get the value from a formatted output and transform it
   /// into the internal representation (it may have been rescaled or
@@ -1401,6 +1318,14 @@ public:
       samples->incr_count(ix);
     has_data = true;
   }
+
+  /// Read a grid written by write_multicol(), incrementin if data is true
+  std::istream & read_multicol(std::istream &is, bool add = false);
+
+  /// Read a grid written by write_multicol(), incrementin if data is true
+  int read_multicol(std::string const &filename,
+                    std::string description = "grid file",
+                    bool add = false);
 
   /// \brief Return the gradient of the scalar field from finite differences
   /// Input coordinates are those of gradient grid, shifted wrt scalar grid
@@ -1591,6 +1516,14 @@ public:
 
   /// Constructor from a multicol file
   colvar_grid_gradient(std::string &filename);
+
+  /// Read a grid written by write_multicol(), incrementin if data is true
+  std::istream & read_multicol(std::istream &is, bool add = false);
+
+  /// Read a grid written by write_multicol(), incrementin if data is true
+  int read_multicol(std::string const &filename,
+                    std::string description = "grid file",
+                    bool add = false);
 
   /// \brief Get a vector with the binned value(s) indexed by ix, normalized if applicable
   inline void vector_value(std::vector<int> const &ix, std::vector<cvm::real> &v) const

@@ -417,7 +417,11 @@ obj/colvar_neuralnetworkcompute.o: \
 	colvars/src/colvars_version.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
-	colvars/src/colvarparams.h
+	colvars/src/colvarparams.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvar_neuralnetworkcompute.o $(COPTC) colvars/src/colvar_neuralnetworkcompute.cpp
 obj/colvardeps.o: \
 	obj/.exists \
@@ -453,7 +457,8 @@ obj/colvargrid.o: \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvargrid.h
+	colvars/src/colvargrid.h \
+	colvars/src/colvargrid_def.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvargrid.o $(COPTC) colvars/src/colvargrid.cpp
 obj/colvarmodule.o: \
 	obj/.exists \
