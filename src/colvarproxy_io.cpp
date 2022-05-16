@@ -164,6 +164,7 @@ std::istream *colvarproxy_io::input_stream(std::string const &input_name,
       cvm::error("Error: cannot open "+description+" \""+input_name+"\".\n",
                  COLVARS_FILE_ERROR);
     }
+    delete isf;
     return NULL;
   }
 
