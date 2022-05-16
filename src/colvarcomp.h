@@ -1853,6 +1853,7 @@ class colvar::torchANN
 protected:
     /// the index of nn output components
     size_t m_output_index;
+    cvm::atom_group  *atoms;
     torch::jit::script::Module module;
 public:
     torchANN(std::string const &conf);

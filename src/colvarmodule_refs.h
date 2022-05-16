@@ -326,6 +326,9 @@
   feature_count_[std::string("neuralNetwork colvar component")] = 0;
   feature_paper_map_[std::string("neuralNetwork colvar component")] = "Chen2022";
 
+  feature_count_[std::string("torchANN colvar component")] = 0;
+  feature_paper_map_[std::string("torchANN colvar component")] = "Chen2022";
+
   feature_count_[std::string("Multiple-walker ABF implementation")] = 0;
   feature_paper_map_[std::string("Multiple-walker ABF implementation")] = "Comer2014c";
 
