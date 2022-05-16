@@ -700,8 +700,10 @@ int colvarbias_abf::bin_count(int bin_index) {
 }
 
 
-void colvarbias_abf::read_gradients_samples()
+int colvarbias_abf::read_gradients_samples()
 {
+  int error_code = COLVARS_OK;
+
   std::string samples_in_name, gradients_in_name, z_samples_in_name, z_gradients_in_name;
 
   for ( size_t i = 0; i < input_prefix.size(); i++ ) {
@@ -710,43 +712,30 @@ void colvarbias_abf::read_gradients_samples()
     z_samples_in_name = input_prefix[i] + ".zcount";
     z_gradients_in_name = input_prefix[i] + ".zgrad";
     // For user-provided files, the per-bias naming scheme may not apply
+    cvm::log("Reading sample count from " + samples_in_name +
+             " and gradient from " + gradients_in_name);
 
-    std::ifstream is;
+    error_code |= samples->read_multicol(samples_in_name,
+                                         "ABF samples file",
+                                         true);
 
-    cvm::log("Reading sample count from " + samples_in_name + " and gradient from " + gradients_in_name);
-    is.open(samples_in_name.c_str());
-    if (!is.is_open()) cvm::error("Error opening ABF samples file " + samples_in_name + " for reading");
-    samples->read_multicol(is, true);
-    is.close();
-    is.clear();
-
-    is.open(gradients_in_name.c_str());
-    if (!is.is_open()) {
-      cvm::error("Error opening ABF gradient file " +
-                 gradients_in_name + " for reading", COLVARS_INPUT_ERROR);
-    } else {
-      gradients->read_multicol(is, true);
-      is.close();
-    }
+    error_code |= gradients->read_multicol(gradients_in_name,
+                                           "ABF gradient file",
+                                           true);
 
     if (b_CZAR_estimator) {
       // Read eABF z-averaged data for CZAR
       cvm::log("Reading z-histogram from " + z_samples_in_name + " and z-gradient from " + z_gradients_in_name);
-
-      is.clear();
-      is.open(z_samples_in_name.c_str());
-      if (!is.is_open())  cvm::error("Error opening eABF z-histogram file " + z_samples_in_name + " for reading");
-      z_samples->read_multicol(is, true);
-      is.close();
-      is.clear();
-
-      is.open(z_gradients_in_name.c_str());
-      if (!is.is_open())  cvm::error("Error opening eABF z-gradient file " + z_gradients_in_name + " for reading");
-      z_gradients->read_multicol(is, true);
-      is.close();
+      error_code |= z_samples->read_multicol(z_samples_in_name,
+                                             "eABF z-histogram file",
+                                             true);
+      error_code |= z_gradients->read_multicol(z_gradients_in_name,
+                                               "eABF z-gradient file",
+                                               true);
     }
   }
-  return;
+
+  return error_code;
 }
 
 
