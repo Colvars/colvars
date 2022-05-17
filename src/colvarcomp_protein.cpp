@@ -7,7 +7,6 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
-#include <fstream>
 #include <algorithm>
 
 #include "colvarmodule.h"
@@ -334,10 +333,10 @@ colvar::dihedPC::dihedPC(std::string const &conf)
       return;
     }
 
-    std::istream *vecFile =
+    std::istream &vecFile =
       cvm::main()->proxy->input_stream(vecFileName,
                                        "dihedral PCA vector file");
-    if (vecFile == NULL) {
+    if (vecFile.bad()) {
       return;
     }
 
@@ -348,8 +347,8 @@ colvar::dihedPC::dihedPC(std::string const &conf)
       // Carma-style dPCA file
       std::string line;
       cvm::real c;
-      while (vecFile->good()) {
-        getline(*vecFile, line);
+      while (vecFile.good()) {
+        getline(vecFile, line);
         if (line.length() < 2) break;
         std::istringstream ls(line);
         for (int i=0; i<vecNumber; i++) ls >> c;

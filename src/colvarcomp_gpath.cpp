@@ -427,14 +427,14 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     std::string path_filename;
     get_keyval(conf, "pathFile", path_filename);
     cvm::log(std::string("Reading path file: ") + path_filename + std::string("\n"));
-    std::istream *ifs_path = cvm::main()->proxy->input_stream(path_filename);
-    if (ifs_path == NULL) {
+    auto &ifs_path = cvm::main()->proxy->input_stream(path_filename);
+    if (ifs_path.bad()) {
         return;
     }
     std::string line;
     const std::string token(" ");
     total_reference_frames = 0;
-    while (std::getline(*ifs_path, line)) {
+    while (std::getline(ifs_path, line)) {
         std::vector<std::string> fields;
         split_string(line, token, fields);
         size_t num_value_required = 0;

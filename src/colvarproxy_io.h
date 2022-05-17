@@ -99,12 +99,9 @@ public:
   /// \param input_name File name (later only a handle)
   /// \param description Purpose of the file
   /// \param error_on_fail Raise error when failing to open (allow testing)
-  virtual std::istream *input_stream(std::string const &input_name,
+  virtual std::istream &input_stream(std::string const &input_name,
                                      std::string const description = "file/channel",
                                      bool error_on_fail = true);
-
-  /// Returns a reference to given input stream, null otherwise
-  virtual std::istream *get_input_stream(std::string const &input_name);
 
   /// Closes the given input stream
   virtual int close_input_stream(std::string const &input_name);
@@ -147,7 +144,11 @@ protected:
   /// \brief Identifiers for output_stream objects: by default, these are the names of the files
   std::list<std::string>    output_stream_names;
 
+  /// Container of input files/channels indexed by path name
   std::map<std::string, std::istream *> input_streams_;
+
+  /// Object whose reference is returned when read errors occur
+  std::istream *input_stream_error_;
 
   /// Buffer from which the input state information may be read
   char const *input_buffer_;

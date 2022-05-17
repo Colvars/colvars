@@ -193,9 +193,9 @@ int colvarmodule::read_config_file(char const  *config_filename)
            std::string(config_filename)+"\":\n");
 
   // open the configfile
-  std::istream *config_s = proxy->input_stream(config_filename,
+  std::istream &config_s = proxy->input_stream(config_filename,
                                                "configuration file/string");
-  if (config_s == NULL) {
+  if (config_s.bad()) {
     return cvm::error("Error: in opening configuration file \""+
                       std::string(config_filename)+"\".\n",
                       COLVARS_FILE_ERROR);
@@ -204,7 +204,7 @@ int colvarmodule::read_config_file(char const  *config_filename)
   // read the config file into a string
   std::string conf = "";
   std::string line;
-  while (parse->read_config_line(*config_s, line)) {
+  while (parse->read_config_line(config_s, line)) {
     // Delete lines that contain only white space after removing comments
     if (line.find_first_not_of(colvarparse::white_space) != std::string::npos)
       conf.append(line+"\n");
@@ -1292,16 +1292,17 @@ int colvarmodule::setup_input()
     // Read a state file
     std::string restart_in_name(proxy->input_prefix()+
                                 std::string(".colvars.state"));
-    std::istream *input_is = proxy->input_stream(restart_in_name,
-                                                 "restart file/channel",
-                                                 false);
-    if (input_is == NULL) {
+    std::istream *input_is = &(proxy->input_stream(restart_in_name,
+                                                   "restart file/channel",
+                                                   false));
+    if (input_is->bad()) {
       // Try without the suffix
       restart_in_name = proxy->input_prefix();
-      input_is = proxy->input_stream(restart_in_name, "restart file/channel");
+      input_is = &(proxy->input_stream(restart_in_name,
+                                       "restart file/channel"));
     }
 
-    if (input_is == NULL) {
+    if (input_is->bad()) {
       return COLVARS_FILE_ERROR;
     } else {
       cvm::log(cvm::line_marker);
@@ -1314,7 +1315,6 @@ int colvarmodule::setup_input()
       read_restart(*input_is);
       cvm::log(cvm::line_marker);
       proxy->close_input_stream(restart_in_name);
-      input_is = NULL;
 
       return cvm::get_error();
     }
@@ -1872,15 +1872,14 @@ int colvarmodule::error(std::string const &message, int code)
 
 int cvm::read_index_file(char const *filename)
 {
-  std::istream *isp = proxy->input_stream(filename, "index file");
+  std::istream &is = proxy->input_stream(filename, "index file");
 
-  if (isp == NULL) {
+  if (is.bad()) {
     return COLVARS_FILE_ERROR;
   } else {
     index_file_names.push_back(std::string(filename));
   }
 
-  std::istream &is = *isp;
   while (is.good()) {
     char open, close;
     std::string group_name;
@@ -2029,10 +2028,7 @@ int cvm::load_coords_xyz(char const *filename,
                          std::vector<rvector> *pos,
                          cvm::atom_group *atoms)
 {
-  std::istream *isp = proxy->input_stream(filename, "XYZ file");
-  if (isp == NULL) {
-    return COLVARS_FILE_ERROR;
-  }
+  std::istream &xyz_is = proxy->input_stream(filename, "XYZ file");
   unsigned int natoms;
   char symbol[256];
   std::string line;
@@ -2041,7 +2037,6 @@ int cvm::load_coords_xyz(char const *filename,
   std::string const error_msg("Error: cannot parse XYZ file \""+
                               std::string(filename)+"\".\n");
 
-  std::istream &xyz_is = *isp;
   if ( ! (xyz_is >> natoms) ) {
     return cvm::error(error_msg, COLVARS_INPUT_ERROR);
   }

@@ -126,15 +126,10 @@ int colvarbias::init(std::string const &conf)
     std::string biasing_force_scaling_factors_in_filename;
     get_keyval(conf, "scaledBiasingForceFactorsGrid",
                biasing_force_scaling_factors_in_filename, std::string());
-    std::istream *is = cvm::main()->proxy->input_stream(biasing_force_scaling_factors_in_filename,
-                                                        "grid file");
-    if (is == NULL) {
-      return COLVARS_FILE_ERROR;
-    }
     biasing_force_scaling_factors = new colvar_grid_scalar(colvars);
-    biasing_force_scaling_factors->read_multicol(*is, true);
+    error_code |= biasing_force_scaling_factors->read_multicol(biasing_force_scaling_factors_in_filename,
+                                                               "grid file");
     biasing_force_scaling_factors_bin.assign(num_variables(), 0);
-    cvm::main()->proxy->close_input_stream(biasing_force_scaling_factors_in_filename);
   }
 
   // Now that children are defined, we can solve dependencies
@@ -600,18 +595,15 @@ int colvarbias::write_state_string(std::string &output)
 int colvarbias::read_state_prefix(std::string const &prefix)
 {
   std::string filename(prefix+std::string(".colvars.state"));
-  std::istream *is = cvm::main()->proxy->input_stream(filename,
-                                                      "bias state file",
-                                                      false);
-  if (is == NULL) {
+  std::istream *is = &(cvm::main()->proxy->input_stream(filename,
+                                                        "bias state file",
+                                                        false));
+  if (is->bad()) {
     filename = prefix;
-    is = cvm::main()->proxy->input_stream(filename, "bias state file");
-  }
-  if (is == NULL) {
-    return COLVARS_FILE_ERROR;
+    is = &(cvm::main()->proxy->input_stream(filename, "bias state file"));
   }
 
-  if (read_state(*is).good()) {
+  if (read_state(*is)) {
     return cvm::main()->proxy->close_input_stream(filename);
   }
   return COLVARS_FILE_ERROR;

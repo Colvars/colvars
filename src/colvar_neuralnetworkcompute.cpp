@@ -138,13 +138,9 @@ void denseLayer::readFromFile(const std::string& weights_file, const std::string
     m_biases.clear();
     std::string line;
     colvarproxy *proxy = cvm::main()->proxy;
-    std::istream *ifs_weights = proxy->input_stream(weights_file,
-                                                    "weights file");
-    if (ifs_weights == NULL) {
-        return;
-    }
-    while (std::getline(*ifs_weights, line)) {
-        if (ifs_weights->bad()) {
+    auto &ifs_weights = proxy->input_stream(weights_file, "weights file");
+    while (std::getline(ifs_weights, line)) {
+        if (ifs_weights.bad()) {
             throw std::runtime_error("I/O error while reading " + weights_file);
         }
         std::vector<std::string> splitted_data;
@@ -164,12 +160,9 @@ void denseLayer::readFromFile(const std::string& weights_file, const std::string
     proxy->close_input_stream(weights_file);
 
     // parse biases file
-    std::istream *ifs_biases = proxy->input_stream(biases_file, "biases file");
-    if (ifs_biases == NULL) {
-        return;
-    }
-    while (std::getline(*ifs_biases, line)) {
-        if (ifs_biases->bad()) {
+    auto &ifs_biases = proxy->input_stream(biases_file, "biases file");
+    while (std::getline(ifs_biases, line)) {
+        if (ifs_biases.bad()) {
             throw std::runtime_error("I/O error while reading " + biases_file);
         }
         std::vector<std::string> splitted_data;

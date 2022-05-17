@@ -174,12 +174,11 @@ colvar_grid_gradient::colvar_grid_gradient(std::string &filename)
     samples(NULL),
     weights(NULL)
 {
-  std::istream *isp = cvm::main()->proxy->input_stream(filename,
-                                                       "gradient file");
-  if (isp == NULL) {
+  std::istream &is = cvm::main()->proxy->input_stream(filename,
+                                                      "gradient file");
+  if (is.bad()) {
     return;
   }
-  std::istream &is = *isp;
 
   // Data in the header: nColvars, then for each
   // xiMin, dXi, nPoints, periodic flag
