@@ -1358,24 +1358,21 @@ int colvarbias_restraint_histogram::init(std::string const &conf)
                                COLVARS_INPUT_ERROR);
     } else {
 
-      std::istream *is =
+      std::istream &is =
         cvm::main()->proxy->input_stream(ref_p_file,
                                          "reference histogram file");
 
       std::string data_s = "";
-      if (is == NULL) {
-        error_code |= COLVARS_FILE_ERROR;
-      } else {
-
-        std::string line;
-        while (getline_nocomments(*is, line)) {
-          data_s.append(line+"\n");
-        }
-        if (data_s.size() == 0) {
-          cvm::error("Error: file \""+ref_p_file+"\" empty or unreadable.\n", COLVARS_FILE_ERROR);
-        }
-        error_code |= cvm::main()->proxy->close_input_stream(ref_p_file);
+      std::string line;
+      while (getline_nocomments(is, line)) {
+        data_s.append(line+"\n");
       }
+      if (data_s.size() == 0) {
+        error_code |= cvm::error("Error: file \""+ref_p_file+
+                                 "\" empty or unreadable.\n",
+                                 COLVARS_FILE_ERROR);
+      }
+      error_code |= cvm::main()->proxy->close_input_stream(ref_p_file);
 
       cvm::vector1d<cvm::real> data;
       if (data.from_simple_string(data_s) != 0) {

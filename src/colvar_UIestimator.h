@@ -688,17 +688,14 @@ namespace UIestimator {
                 std::string count_filename = filename[i] + ".UI.count";
                 std::string grad_filename = filename[i] + ".UI.grad";
 
-                std::istream *count_file_p =
+                std::istream &count_file =
                     proxy->input_stream(count_filename, "count filename");
-                std::istream *grad_file_p =
+                std::istream &grad_file =
                     proxy->input_stream(grad_filename, "gradient filename");
 
-                if (count_file_p == NULL || grad_file_p == NULL) {
+                if (count_file.bad() || grad_file.bad()) {
                     return;
                 }
-
-                std::istream &count_file = *count_file_p;
-                std::istream &grad_file = *grad_file_p;
 
                 count_file >> sharp >> dimension_temp;
                 grad_file >> sharp >> dimension_temp;

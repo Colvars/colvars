@@ -121,15 +121,15 @@ std::istream & colvar_grid<T>::read_multicol(std::istream &is, bool add)
 
 
 template <class T>
-int colvar_grid<T>::read_multicol(std::string const &filename, 
+int colvar_grid<T>::read_multicol(std::string const &filename,
                                   std::string description,
                                   bool add)
 {
-  std::istream *is = cvm::main()->proxy->input_stream(filename, description);
-  if (is == NULL) {
+  std::istream &is = cvm::main()->proxy->input_stream(filename, description);
+  if (is.bad()) {
     return COLVARS_FILE_ERROR;
   }
-  if (colvar_grid<T>::read_multicol(*is, add)) {
+  if (colvar_grid<T>::read_multicol(is, add)) {
     cvm::main()->proxy->close_input_stream(filename);
     return COLVARS_OK;
   }

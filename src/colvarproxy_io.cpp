@@ -31,10 +31,15 @@ colvarproxy_io::colvarproxy_io()
 {
   input_buffer_ = NULL;
   restart_frequency_engine = 0;
+  input_stream_error_ = new std::istringstream();
+  input_stream_error_->setstate(std::ios::badbit);
 }
 
 
-colvarproxy_io::~colvarproxy_io() {}
+colvarproxy_io::~colvarproxy_io()
+{
+  delete input_stream_error_;
+}
 
 
 bool colvarproxy_io::io_available()
@@ -141,51 +146,37 @@ int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
 }
 
 
-std::istream *colvarproxy_io::input_stream(std::string const &input_name,
+std::istream &colvarproxy_io::input_stream(std::string const &input_name,
                                            std::string const description,
                                            bool error_on_fail)
 {
   if (!io_available()) {
     cvm::error("Error: trying to access an input file/channel "
                "from the wrong thread.\n", COLVARS_BUG_ERROR);
-    return NULL;
+    return *input_stream_error_;
   }
-  std::istream *is = get_input_stream(input_name);
-  if (is != NULL) {
-    return is;
+
+  if (input_streams_.count(input_name) > 0) {
+    return *(input_streams_[input_name]);
   }
 
   // Using binary to work around differences in line termination conventions
   // See https://github.com/Colvars/colvars/commit/8236879f7de4
-  std::ifstream *isf = new std::ifstream(input_name.c_str(), std::ios::binary);
-
-  if (!isf->is_open()) {
-    if (error_on_fail) {
-      cvm::error("Error: cannot open "+description+" \""+input_name+"\".\n",
-                 COLVARS_FILE_ERROR);
-    }
-    delete isf;
-    return NULL;
+  input_streams_[input_name] = new std::ifstream(input_name.c_str(),
+                                                 std::ios::binary);
+  if (!(input_streams_[input_name])->good() && error_on_fail) {
+    cvm::error("Error: cannot open "+description+" \""+input_name+"\".\n",
+               COLVARS_FILE_ERROR);
   }
 
-  input_streams_[input_name] = isf;
-
-  return isf;
-}
-
-
-std::istream *colvarproxy_io::get_input_stream(std::string const &input_name)
-{
-  if (input_streams_.count(input_name) > 0) {
-    return input_streams_[input_name];
-  }
-  return NULL;
+  return *(input_streams_[input_name]);
 }
 
 
 int colvarproxy_io::close_input_stream(std::string const &input_name)
 {
   if (input_streams_.count(input_name) > 0) {
+    delete input_streams_[input_name];
     input_streams_.erase(input_name);
     return COLVARS_OK;
   }
