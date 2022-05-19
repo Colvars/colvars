@@ -1,5 +1,5 @@
 #!/bin/bash
-CHARM_VERSION=6.10.2
+CHARM_VERSION=v7.0.0
 
 function error_syntax {
   echo ''
