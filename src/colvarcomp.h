@@ -1861,6 +1861,19 @@ public:
     virtual void calc_value();
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
+
+    /// Redefined to handle the 2*PI periodicity
+    virtual cvm::real dist2(colvarvalue const &x1,
+			    colvarvalue const &x2) const;
+    /// Redefined to handle the 2*PI periodicity
+    virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
+				    colvarvalue const &x2) const;
+    /// Redefined to handle the 2*PI periodicity
+    virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
+				    colvarvalue const &x2) const;
+    /// Redefined to handle the 2*PI periodicity
+    virtual void wrap(colvarvalue &x_unwrapped) const;
+
 };
 
 #else
