@@ -25,6 +25,7 @@ colvar::torchANN::torchANN(std::string const &conf)
 
   std::string model_file ;
   get_keyval(conf, "model_file", model_file, std::string(""));
+  get_keyval(conf, "m_output_index", m_output_index, 0);
 
   module = torch::jit::load(model_file);
 
@@ -52,7 +53,7 @@ void colvar::torchANN::calc_value() {
   // evaluate the value of function
   auto outputs = module.forward(inputs).toTensor()[0] ;
 
-  x = outputs[0].item<double>() ;
+  x = outputs[m_output_index].item<double>() ;
 
   this->wrap(x);
 }
@@ -74,7 +75,7 @@ void colvar::torchANN::calc_gradients() {
   // evaluate the value of function
   auto outputs = module.forward(inputs).toTensor()[0] ;
 
-  outputs[0].backward({}, false, false);
+  outputs[m_output_index].backward({}, false, false);
 
   torch::Tensor grad = arg_tensor.grad();
 
