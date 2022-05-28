@@ -884,6 +884,8 @@ public:
 	int outputEnergies;		//  Number of timesteps between energy
 					//  outputs
 
+	int outputEnergiesPrecision;	//  Precision of energy outputs
+
 	int outputMomenta;		//  Number of timesteps between momentum
 					//  outputs
 
@@ -990,6 +992,7 @@ public:
 
         // AMBER options
         Bool amberOn; // FLAG TRUE-> amber force field is used
+        Bool oldParmReader; // FLAG TRUE -> use the old Amber parm/parm7 reader
         Bool readExclusions; // FLAG TRUE-> Read exclusions from parm file
         BigReal vdwscale14; //  Scaling factor for 1-4 VDW interactions
 

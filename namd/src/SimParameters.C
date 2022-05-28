@@ -244,6 +244,7 @@ void SimParameters::scriptSet(const char *param, const char *value) {
   SCRIPT_PARSE_FLOAT("drudeBondLen",drudeBondLen)
   SCRIPT_PARSE_STRING("outputname",outputFilename)
   SCRIPT_PARSE_INT("outputEnergies",outputEnergies)
+  SCRIPT_PARSE_INT("outputEnergiesPrecision",outputEnergiesPrecision)
   SCRIPT_PARSE_STRING("restartname",restartFilename)
   SCRIPT_PARSE_INT("DCDfreq",dcdFrequency)
   if ( ! strncasecmp(param,"DCDfile",MAX_SCRIPT_PARAM_SIZE) ) {
@@ -570,6 +571,10 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
      &outputEnergies, 1);
    opts.range("outputEnergies", POSITIVE);
 
+   opts.optional("main", "outputEnergiesPrecision", "Output energy precision",
+     &outputEnergiesPrecision, 4);
+   opts.range("outputEnergiesPrecision", POSITIVE);
+     
    opts.optional("main", "outputMomenta", "How often to print linear and angular momenta in timesteps",
      &outputMomenta, 0);
    opts.range("outputMomenta", NOT_NEGATIVE);
@@ -794,6 +799,7 @@ void SimParameters::config_parser_fileio(ParseOptions &opts) {
 
    opts.optionalB("main", "amber", "Is it AMBER force field?",
        &amberOn, FALSE);
+   opts.optionalB("amber", "oldParmReader", "Use the old AMBER parm/parm7 reader?", &oldParmReader, FALSE);
    opts.optionalB("amber", "readexclusions", "Read exclusions from parm file?",
        &readExclusions, TRUE);
    opts.require("amber", "scnb", "1-4 VDW interactions are divided by scnb",
@@ -4819,6 +4825,8 @@ if ( openatomOn )
          << outputEnergies << "\n";
       iout << endi;
    }
+
+   iout << iINFO << "OUPUT ENERGY PRECISION " << outputEnergiesPrecision << "\n";
 
    if (mergeCrossterms) {
       iout << iINFO << "CROSSTERM ENERGY INCLUDED IN DIHEDRAL\n" << endi;

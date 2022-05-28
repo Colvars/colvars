@@ -269,6 +269,7 @@ OBJS = \
 	$(DSTDIR)/Rebalancer.o \
 	$(DSTDIR)/RecBisection.o \
 	$(DSTDIR)/ReductionMgr.o \
+	$(DSTDIR)/ReadAmberParm.o \
 	$(DSTDIR)/RefineOnly.o \
 	$(DSTDIR)/RefineTorusLB.o \
 	$(DSTDIR)/ScriptTcl.o \
