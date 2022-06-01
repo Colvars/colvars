@@ -1,0 +1,8 @@
+LEPTONOBJS = \
+	$(DSTDIR)/CompiledExpression.o \
+	$(DSTDIR)/CompiledVectorExpression.o \
+	$(DSTDIR)/ExpressionProgram.o \
+	$(DSTDIR)/ExpressionTreeNode.o \
+	$(DSTDIR)/Operation.o \
+	$(DSTDIR)/ParsedExpression.o \
+	$(DSTDIR)/Parser.o 

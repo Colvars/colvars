@@ -1,0 +1,80 @@
+obj/CompiledExpression.o: \
+	obj/.exists \
+	lepton/src/CompiledExpression.cpp \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ParsedExpression.h
+	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/CompiledExpression.o $(COPTC) lepton/src/CompiledExpression.cpp
+obj/CompiledVectorExpression.o: \
+	obj/.exists \
+	lepton/src/CompiledVectorExpression.cpp \
+	lepton/include/lepton/CompiledVectorExpression.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ParsedExpression.h
+	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/CompiledVectorExpression.o $(COPTC) lepton/src/CompiledVectorExpression.cpp
+obj/ExpressionProgram.o: \
+	obj/.exists \
+	lepton/src/ExpressionProgram.cpp \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ParsedExpression.h
+	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/ExpressionProgram.o $(COPTC) lepton/src/ExpressionProgram.cpp
+obj/ExpressionTreeNode.o: \
+	obj/.exists \
+	lepton/src/ExpressionTreeNode.cpp \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h
+	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/ExpressionTreeNode.o $(COPTC) lepton/src/ExpressionTreeNode.cpp
+obj/Operation.o: \
+	obj/.exists \
+	lepton/src/Operation.cpp \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/src/MSVC_erfc.h
+	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/Operation.o $(COPTC) lepton/src/Operation.cpp
+obj/ParsedExpression.o: \
+	obj/.exists \
+	lepton/src/ParsedExpression.cpp \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CompiledVectorExpression.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h
+	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/ParsedExpression.o $(COPTC) lepton/src/ParsedExpression.cpp
+obj/Parser.o: \
+	obj/.exists \
+	lepton/src/Parser.cpp \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/ExpressionTreeNode.h
+	$(CXX) $(LEPTONCXXFLAGS) $(COPTO)obj/Parser.o $(COPTC) lepton/src/Parser.cpp
