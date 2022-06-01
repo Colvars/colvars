@@ -496,11 +496,6 @@ then
 
   target_folder=${target}/src/external/colvars
   patch_opts="-p1 --forward -s"
-  if [ ${GMX_VERSION} \< '2020.x' ] ; then
-    # Legacy path, we now target src/external
-    target_folder=${target}/src/gromacs/colvars
-    patch_opts="-p0 --forward -s"
-  fi
 
   echo ""
   if [ -d ${target_folder} ]
