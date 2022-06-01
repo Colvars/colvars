@@ -272,7 +272,7 @@ then
   done
 
   # Update makefiles for library
-  for src in ${source}/lammps/lib/colvars/Makefile.{common,deps}
+  for src in ${source}/lammps/lib/colvars/Makefile.{common,deps,lepton.deps}
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
@@ -335,6 +335,14 @@ then
   NAMD_VERSION=$(grep ^NAMD_VERSION ${target}/Makefile | cut -d' ' -f3)
 
   copy_lepton ${target}/ || exit 1
+  condcopy "${source}/namd/lepton/Make.depends" \
+           "${target}/lepton/Make.depends"
+  condcopy "${source}/namd/lepton/Makefile.namd" \
+           "${target}/lepton/Makefile.namd"
+
+  if ! grep -q lepton/Makefile.namd "${target}/lepton/Makefile.namd" ; then
+    condcopy "${source}/namd/Makefile" "${target}/Makefile"
+  fi
 
   # Copy library files to the "colvars" folder
   for src in ${source}/src/*.h ${source}/src/*.cpp
