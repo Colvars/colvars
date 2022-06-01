@@ -350,15 +350,6 @@ then
   condcopy "${source}/namd/colvars/Make.depends" \
            "${target}/colvars/Make.depends"
 
-  # Update abf_integrate
-  for src in ${source}/colvartools/*h ${source}/colvartools/*cpp
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/lib/abf_integrate/${tgt}"
-  done
-  condcopy "${source}/colvartools/Makefile" \
-           "${target}/lib/abf_integrate/Makefile"
-
   # Update NAMD interface files
   for src in \
       ${source}/namd/src/colvarproxy_namd.h \
@@ -368,6 +359,15 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
+
+  # Update abf_integrate
+  for src in ${source}/colvartools/*h ${source}/colvartools/*cpp
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/lib/abf_integrate/${tgt}"
+  done
+  condcopy "${source}/colvartools/Makefile" \
+           "${target}/lib/abf_integrate/Makefile"
 
   # Is this a devel branch of NAMD 3?
   if echo $NAMD_VERSION | grep -q '3.0a'
