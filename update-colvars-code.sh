@@ -124,6 +124,40 @@ get_gromacs_minor_version_cmake() {
     sed -e 's/set(GMX_VERSION_PATCH //' -e 's/)//'
 }
 
+
+copy_lepton() {
+
+  local target_path=${1}
+
+  if [ -z "${GIT}" ] && hash git 2> /dev/null ; then
+    local GIT=$(hash -t git)
+  fi
+
+  if [ -z "${OPENMM_SOURCE}" ] ; then
+    OPENMM_SOURCE=$(mktemp -d /tmp/openmm-source-XXXXXX)
+  fi
+
+  # Download Lepton if needed
+  if [ ! -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
+    if [ -n "${GIT}" ] ; then
+      echo "Downloading Lepton library (used in Colvars) via the OpenMM repository"
+      ${GIT} clone --depth=1 https://github.com/openmm/openmm.git ${OPENMM_SOURCE}
+    fi
+  fi
+
+  # Copy Lepton into GROMACS tree
+  if [ -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
+    cp -f -p -R ${OPENMM_SOURCE}/libraries/lepton ${target_path}
+  else
+    echo "ERROR: could not download the Lepton library automatically." >&2
+    echo "       Please clone the OpenMM repository (https://github.com/openmm/openmm) " >&2
+    echo "       in a directory of your choice, and set the environment variable OPENMM_SOURCE " >&2
+    echo "       to the absolute path of that directory." >&2
+    return 1
+  fi
+}
+
+
 echo "Detected ${code} source tree in ${target}"
 if [ ${code} = "GROMACS" ]
 then
@@ -228,6 +262,8 @@ checkfile() {
 if [ ${code} = "LAMMPS" ]
 then
 
+  copy_lepton ${target}/lib/colvars/ || exit 1
+
   # Update code-independent headers and sources
   for src in ${source}/src/colvar*.h ${source}/src/colvar*.cpp
   do \
@@ -298,7 +334,9 @@ if [ ${code} = "NAMD" ]
 then
   NAMD_VERSION=$(grep ^NAMD_VERSION ${target}/Makefile | cut -d' ' -f3)
 
-  # New layout: copy library files to the "colvars" folder
+  copy_lepton ${target}/ || exit 1
+
+  # Copy library files to the "colvars" folder
   for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
@@ -454,6 +492,8 @@ fi
 if [ ${code} = "GROMACS" ]
 then
 
+  copy_lepton ${target}/src/external/ || exit 1
+
   target_folder=${target}/src/external/colvars
   patch_opts="-p1 --forward -s"
   if [ ${GMX_VERSION} \< '2020.x' ] ; then
@@ -469,29 +509,6 @@ then
     echo "Update with the last Colvars source."
   else
     mkdir ${target_folder}
-  fi
-
-  if [ -z "${OPENMM_SOURCE}" ] ; then
-    OPENMM_SOURCE=$(mktemp -d /tmp/openmm-source-XXXXXX)
-  fi
-
-  # Download Lepton if needed
-  if [ ! -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
-    if [ -n "${GIT}" ] ; then
-      echo "Downloading Lepton library (used in Colvars) via the OpenMM repository"
-      ${GIT} clone --depth=1 https://github.com/openmm/openmm.git ${OPENMM_SOURCE}
-    fi
-  fi
-
-  # Copy Lepton into GROMACS tree
-  if [ -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
-    cp -f -p -R ${OPENMM_SOURCE}/libraries/lepton ${target}/src/external/
-  else
-    echo "ERROR: could not download the Lepton library automatically." >&2
-    echo "       Please clone the OpenMM repository (https://github.com/openmm/openmm) " >&2
-    echo "       in a directory of your choice, and set the environment variable OPENMM_SOURCE " >&2
-    echo "       to the absolute path of that directory." >&2
-    exit 1
   fi
 
   # Copy library files and proxy files to the "src/external/colvars" folder
