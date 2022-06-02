@@ -86,6 +86,13 @@ jobs:
           path: ~/.singularity
           key: Linux-x86_64-containers-build-2022-03-03
 
+      - name: Checkout OpenMM (for Lepton library)
+        uses: actions/checkout@v2
+        with:
+          repository: 'openmm/openmm'
+          ref: 'master'
+          path: 'openmm-source'
+
       - name: Checkout ${{ inputs.backend_name }}
         uses: actions/checkout@v2
         with:
@@ -133,6 +140,8 @@ jobs:
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
+        env:
+          OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
         run: |
           singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
           CCACHE_DIR=~/ccache_CentOS7-devel \

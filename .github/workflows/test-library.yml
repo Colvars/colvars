@@ -135,8 +135,13 @@ jobs:
       - name: Install build dependencies for library
         run: |
           sudo apt-get -y install tcl8.6-dev
-          # OpenMM contains the latest Lepton
-          git clone --single-branch --depth=1 https://github.com/openmm/openmm openmm-source
+
+      - name: Checkout OpenMM (for Lepton library)
+        uses: actions/checkout@v2
+        with:
+          repository: 'openmm/openmm'
+          ref: 'master'
+          path: 'openmm-source'
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
