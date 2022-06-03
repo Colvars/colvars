@@ -117,6 +117,7 @@ Please upgrade to VMD 1.9.4 alpha or later."
 
   if {[winfo exists .cv_dashboard_window]} {
     wm deiconify .cv_dashboard_window
+    ::cv_dashboard::change_track_frame ;# Restart tracking frames when re-opening
     return .cv_dashboard_window
   }
 
