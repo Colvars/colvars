@@ -67,7 +67,6 @@ namespace eval ::cv_dashboard {
   foreach { text units } [array get text_to_units] {
     set units_to_text($units) $text
   }
-  dict set global_config units "real"
 
   variable template_dir
   variable template_base_dir
@@ -159,7 +158,7 @@ proc ::cv_dashboard::run_cv args  {
   if [catch { cv {*}$args } res] {
     set short_cmd [string range $args 0 200]
     set short_message [string range $res 0 200]
-    tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
+    tk_messageBox -icon error -title "Colvars Library Error" -parent .cv_dashboard_window\
       -message "Error running command:\n$short_cmd" -detail "$short_message\n\nSee console for further details."
     return -1
   }
@@ -403,7 +402,7 @@ proc ::cv_dashboard::substitute_atomselects { cfg_in } {
     if { $seltext != "" && [regexp -nocase {^(\s*)atom} $line match spaces] } {
       set sel [atomselect $::cv_dashboard::mol $seltext]
       if {[$sel num] == 0 } {
-        tk_messageBox -icon error -title "Colvars warning" -parent .cv_dashboard_window\
+        tk_messageBox -icon warning -title "Colvars Dashboard Warning" -parent .cv_dashboard_window\
           -message "Selection text \"${seltext}\" for automatic atom selection matches zero atoms. \
 Keeping atom numbers from existing configuration."
         # Keep existing atom definition line

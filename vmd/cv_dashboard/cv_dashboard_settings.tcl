@@ -159,7 +159,7 @@ proc ::cv_dashboard::change_units {} {
       tk_messageBox -icon warning -title "Colvars Dashboard Warning"\
         -message "Warning: Changing units while colvars are defined.
 Make sure the configuration of all variables is compatible with the new unit system. In particular, \
-check any parameters with the dimension of a length or a force constant."
+check any parameters with the dimension of a length, an energy, or a force constant."
     }
   }
   cv units $new

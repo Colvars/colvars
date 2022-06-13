@@ -769,6 +769,16 @@ proc ::cv_dashboard::save {} {
     set ::cv_dashboard::config_dir [file dirname $path]
 
     set o [open $path w]
+
+    if { ![dict exists $::cv_dashboard::global_config "units"] } {
+      # Default value in VMD. Add to config for information purposes
+      # keep as comment only for compatibility with NAMD 2.14
+      puts $o "#units real\n"
+      tk_messageBox -icon warning -title "Colvars Dashboard Warning"\
+        -message "Warning: Saving configuration with default unit settings (Angstrom, kcal/mol). Using this file in Gromacs or LAMMPS may \
+result in different values. To obtain identical values in VMD, set the appropriate unit system in the main Colvars Dashboard dialog (Actions/General Options)."
+    }
+
     puts $o [get_whole_config]
     close $o
   }
@@ -860,7 +870,6 @@ proc ::cv_dashboard::reset {} {
   set ::cv_dashboard::colvar_configs [dict create]
   set ::cv_dashboard::bias_configs [dict create]
   set ::cv_dashboard::global_config [dict create]
-  dict set ::cv_dashboard::global_config units "real"
 
   set ::cv_dashboard::global_comments ""
   refresh_table
