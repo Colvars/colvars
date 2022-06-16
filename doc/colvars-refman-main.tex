@@ -3933,27 +3933,12 @@ form of path-based collective variables as defined by Branduardi et al\cite{Bran
 
 
 
-\cvsubsec{Defining grid parameters}{sec:colvar_grid_params}
+\cvsubsec{Defining grid parameters for a colvar}{sec:colvar_grid_params}
 
-Many algorithms require the definition of boundaries and/or characteristic spacings that can be used to define discrete ``states'' in the collective variable, or to combine variables with very different units.
-The parameters described below offer a way to specify these parameters only once for each variable, while using them multiple times in restraints, time-dependent biases or analysis methods.
+Many algorithms require the definition of two boundaries and a bin width for each colvar, which are necessary to compute discrete ``states'' for a collective variable's otherwise continuous values.
+The following keywords define these parameters for a specific variable, and will be used by all bias that refer to that variable unless otherwise specified.
 
 \begin{itemize}
-
-\item %
-  \labelkey{colvar|width}
-  \keydef
-    {width}{%
-    \texttt{colvar}}{%
-    Unit of the variable, or grid spacing}{%
-    positive decimal}{%
-    1.0}{%
-    This number defines the effective unit of measurement for the collective variable, and is used by the biasing methods for the following purposes.
-    Harmonic (\ref{sec:colvarbias_harmonic}), harmonic walls (\ref{sec:colvarbias_harmonic_walls}) and linear restraints (\ref{sec:colvarbias_linear}) use it to set the physical unit of the force constant, which is useful for multidimensional restraints involving multiple variables with very different units (for examples, \lengthunit{} or degrees $^\circ$) with a single, scaled force constant.
-    The values of the scaled force constant in the units of each variable are printed at initialization time.
-    Histograms (\ref{sec:colvarbias_histogram}), ABF (\ref{sec:colvarbias_abf}) and metadynamics (\ref{sec:colvarbias_meta}) all use this number as the initial choice for the grid spacing along this variable: for this reason, \texttt{width} should generally be no larger than the standard deviation of the colvar in an unbiased simulation.
-    Unless it is required to control the spacing, it is usually simplest to keep the default value of 1, so that restraint force constants are provided with their full physical unit.
-  }
 
 \item %
   \labelkey{colvar|lowerBoundary}
@@ -3978,6 +3963,22 @@ The parameters described below offer a way to specify these parameters only once
     decimal}{%
     natural boundary of the function}{%
     Similarly to \texttt{lowerBoundary}, defines the highest of the ``relevant'' values of the variable.}
+
+\item %
+  \labelkey{colvar|width}
+  \keydef
+    {width}{%
+    \texttt{colvar}}{%
+    grid spacing, or unit of the variable}{%
+    positive decimal}{%
+    1.0}{%
+    This number defines the width of a discrete ``state'' for a collective variable, and is used by the many biasing methods to achieve different purposes.
+    Histograms (\ref{sec:colvarbias_histogram}), ABF (\ref{sec:colvarbias_abf}) and metadynamics (\ref{sec:colvarbias_meta}) all use this number as the initial choice for the grid spacing along this variable.
+    As a typical rule of thumb, \texttt{width} should be no larger than the standard deviation of the colvar in an unbiased simulation (to characterize a local free-energy minimum with at least two points).
+
+    Further, many restraints such as harmonic potentials (\ref{sec:colvarbias_harmonic}), harmonic walls (\ref{sec:colvarbias_harmonic_walls}) and linear restraints (\ref{sec:colvarbias_linear}) also use this parameter to define the \emph{expected fluctuations} of the colvar, alowing to express the force constant in terms of this unit.
+    This is most useful with multi-dimensional restraints acting on variables that have very different units (for examples, working with \lengthunit{} and degrees $^\circ$ simultaneously): a single force constant can be used for all, which is converted to the respective unit of each variable when forces are applied (the  are printed at initialization time.
+  }
 
 \item %
   \labelkey{colvar|hardLowerBoundary} %
@@ -4011,11 +4012,9 @@ The parameters described below offer a way to specify these parameters only once
     boolean}{%
     \texttt{off}}{%
     If defined, \texttt{lowerBoundary} and \texttt{upperBoundary} may be automatically expanded to accommodate colvar values that do not fit in the initial range.
-    Currently, this option is used by the metadynamics bias
-    (\ref{sec:colvarbias_meta}) to keep all of its hills fully within
-    the grid.  This option cannot be used when
-      the initial boundaries already span the full period of a periodic
-      colvar.}
+    Currently, this option is used by the metadynamics bias (\ref{sec:colvarbias_meta}) to keep all of its hills fully within the grid.
+    Enabling this option does not affect any boundaries that are defined as ``hard'' (see above), or any boundaries that span the full period of a periodic colvar.
+    }
 
 \end{itemize}
 
@@ -5119,11 +5118,8 @@ group used in a \texttt{distance} component.
 
 \cvsubsubsec{Parameters for ABF}{sec:colvarbias_abf_params}
 
-ABF depends on parameters from collective variables to define the grid on which free
-energy gradients are computed. In the direction of each colvar, the grid ranges from
-\texttt{lowerBoundary} to \texttt{upperBoundary}, and the bin width (grid spacing)
-is set by the \refkey{width}{colvar|width} parameter.
-The following specific parameters can be set in the ABF configuration block:
+ABF depends on parameters from each collective variable to define the grid on which free energy gradients are computed: see \ref{sec:colvar_grid_params} for detauls.
+Other parameters to control the ABF runtime can be set in the ABF configuration block:
 
 \begin{itemize}
 
@@ -5607,6 +5603,7 @@ by eq. \ref{eq:colvars_meta_fes} oscillates on time around the ``real'' free ene
 \end{equation}
 where $t_{e}$ is the time after which the bias potential grows (approximately) evenly during the simulation and $t_{tot}$ is the total simulation time. The free energy calculated according to eq.~\ref{eq:colvars_meta_fes_av} can thus be obtained averaging on time mutiple time-dependent free energy estimates, that can be printed out through the keyword \texttt{keepFreeEnergyFiles}. An alternative is to obtain the free energy profiles by summing the hills added during the simulation; the hills trajectory can be printed out by enabling the option \texttt{writeHillsTrajectory}.
 
+
 \cvsubsubsec{Treatment of the PMF boundaries}{sec:colvarbias_meta_boundaries}
 
 In typical scenarios the Gaussian hills of a metadynamics potential are interpolated and summed together onto a grid, which is much more efficient than computing each hill independently at every step (the keyword \refkey{useGrids}{metadynamics|useGrids} is \texttt{on} by default).
@@ -5667,10 +5664,13 @@ Keep in mind, however, that the statistical convergence of metadynamics may be l
 In summary, although it would be simpler to set the wall's position \texttt{upperWall} and the grid's boundary \texttt{upperBoundary} to the same number, the finite width of the Gaussian hills calls for setting the former strictly within the latter.
 
 
-\cvsubsubsec{Basic configuration keywords}{sec:colvarbias_meta_basics}
+\cvsubsubsec{Required metadynamics keywords}{sec:colvarbias_meta_basics}
 
-To enable a metadynamics calculation, a \texttt{metadynamics \{...\}} block must be defined in the Colvars configuration file.
-Its mandatory keywords are \refkey{colvars}{colvarbias|colvars}, the variables involved, \refkey{hillWeight}{metadynamics|hillWeight}, the weight parameter $W$, and the widths $2\sigma$ of the Gaussian hills in each dimension given by the single dimensionless parameter \refkey{hillWidth}{metadynamics|hillWidth}, or more explicitly by the \refkey{gaussianSigmas}{metadynamics|gaussianSigmas}.
+To enable a metadynamics-based calculation, a \texttt{metadynamics \{...\}} block must be included in the Colvars configuration file.
+
+By default, metadynamics bias energy and forces will be recorded onto a grid, the parameters of which can be defined within the definition of each \texttt{colvar}, as described in \ref{sec:colvar_grid_params}.
+
+Other required keywords will be specified within the \texttt{metadynamics} block: these are \refkey{colvars}{colvarbias|colvars} (the names of the variables involved), \refkey{hillWeight}{metadynamics|hillWeight} (the weight parameter $W$), and the widths $2\sigma$ of the Gaussian hills in each dimension that can be given either as the single dimensionless parameter \refkey{hillWidth}{metadynamics|hillWidth}, or explicitly for each colvar with \refkey{gaussianSigmas}{metadynamics|gaussianSigmas}.
 
 \begin{itemize}
 
