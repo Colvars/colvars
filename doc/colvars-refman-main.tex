@@ -922,7 +922,9 @@ The following keywords are available in the global context of the Colvars config
 
 \cvsubsec{Input state file}{sec:colvars_input}
 
-Because many of the methods implemented in Colvars are history-dependent, a \emph{state file} is often needed to continue a long simulation over consecutive runs.
+A \emph{state file} contains the information produced during a Colvars-based simulation besides atomic data, which is provided by \MDENGINE{}.
+
+Because many of the methods implemented in Colvars are history-dependent, this file is often needed to continue a long simulation over consecutive runs.
 Such state file is written automatically at the end of any simulation with Colvars, and contains data accumulated during that simulation along with the step number at the end of it.
 The step number read from the state file is then used to control such time-dependent biases: because of this essential role, the step number internal to Colvars may not always match the step number reported by the MD program that carried during the simulation (which may instead restart from zero each time).
 \cvnamdonly{If a state file is not given, the NAMD command \texttt{firstTimestep} may be used to control the Colvars step number.}
@@ -930,15 +932,15 @@ The step number read from the state file is then used to control such time-depen
 Depending on the configuration, a state file may need to be loaded issued at the beginning of a new simulation when time-dependent biasing methods are applied (moving restraints, metadynamics, ABF, ...).
 \cvnamdonly{When the Colvars module is initialized in NAMD, the \texttt{colvarsInput} keyword can be used to give the name of the state file}.
 \cvlammpsonly{When the Colvars fix is defined in LAMMPS, the keyword \texttt{input} can be used to load the state file, although it is typically easier to use the LAMMPS \texttt{read\_restart} to re-initialize Colvars together with other fixes.}
-After initialization, a state file may be loaded at any time \cvnamdonly{with the Tcl command \texttt{cv load}}%
+After initialization of the Colvars module, a state file may be loaded at any time \cvnamdonly{with the Tcl command \texttt{cv load}}%
 \cvvmdonly{with the Tcl command \texttt{cv load}}%
 \cvlammpsonly{with the \texttt{fix\_modify <fix-ID> load <filename>} LAMMPS command}.
 
 It is possible to load a state file even if the configuration has changed:
 for example, new variables may be defined or restraints be added in between consecutive runs.
 For each newly defined variable or bias, no information will be read from the state file if this is unavailable: such new objects will remain uninitialized until the first compute step.
-Conversely, any information that the state file has about variables or biases that are not defined any longer is silently ignored.
-\emph{Because these checks are done by the names of variables or biases, it is the user's responsibility to ensure that these are consistent between runs.}
+Conversely, any information that the state file has about variables or biases that are no longer defined is silently ignored.
+\emph{Because these checks are performed based on the names of variables and biases, it is the user's responsibility to ensure that these definitions are consistent between runs.}
 
 
 
@@ -968,6 +970,8 @@ All such files' names also begin with the prefix \outputName.
 
 
 \cvsubsec{File formats}{sec:colvars_file_formats}
+
+This section summarizes the file formats of various files that Colvars may be reading or writing.
 
 \cvsubsubsec{Configuration and state files.}{sec:colvars_text_format}
 
@@ -1089,9 +1093,11 @@ In most situations:
 \item $\mathtt{npoints}(\xi_{i})$ is calculated from the two above numbers and the \refkey{upperBoundary}{colvar|upperBoundary} keyword;
 \item $\mathtt{periodic}(\xi_{i})$ is set to 1 if and only if $\xi_{i}$ is periodic and the grids' boundaries cover its period.
 \end{itemize}
-\textbf{Exception:} there is a slightly different header in PMF files computed by ABF (\ref{sec:colvarbias_abf}) or by other biases with an optional thermodynamic integration (TI) estimator (\ref{sec:colvarbias_ti}).
-In this case, free-energy gradients are accumulated on an \texttt{(npoints)}-long grid along each variable $\xi$: after these gradients are integrated, the resulting PMF is discretized on a grid with \texttt{(npoints+1)} points along $\xi$.
-Therefore, the edges of the PMF's grid extend $\mathtt{width}/2$ above and below the original boundaries (unless these are periodic).  The format of the file's header is otherwise unchanged.
+
+How the grid's boundaries affect the sequence of points depends on how the contents of the file were computed.  In many cases, such as histograms and PMFs computed by metadynamics (\ref{sec:colvarbias_ebmeta}), the values of $\xi_i$ in the first few columns correspond to the \emph{midpoints} of the corresponing bins, i.e.\ $\xi^{1}_{1} = \mathtt{min}(\xi_{i}) + \mathtt{width}(\xi_{i})/2$.
+However, there is a slightly different format in PMF files computed by ABF (\ref{sec:colvarbias_abf}) or other biases that use thermodynamic integration (\ref{sec:colvarbias_ti}).
+In these cases, it is free-energy gradients that are accumulated on an \texttt{(npoints)}-long grid along each variable $\xi$: after these gradients are integrated, the resulting PMF is discretized on a slightly larger grid with \texttt{(npoints+1)} points along $\xi$ (unless the interval is periodic).
+Therefore, the grid's outer edges extend by $\mathtt{width}(\xi_{i})/2$ above and below the specified boundaries, so that for instance $\mathtt{min}(\xi_{i})$ in the header appears to be shifted back by $\mathtt{width}(\xi_{i})/2$ compared to what would be expected.  \emph{Please keep this difference in mind when comparing PMFs computed by different methods.}
 
 After the header, the rest of the file contains values of the tabulated function
 $f(\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}})$, one for each line.
