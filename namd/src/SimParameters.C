@@ -1166,9 +1166,9 @@ void SimParameters::config_parser_methods(ParseOptions &opts) {
    opts.optionalB("main", "soluteScaling",
        "Is replica exchange solute tempering enabled?",
        &soluteScalingOn, FALSE);
-   opts.require("soluteScaling", "soluteScalingFactor",
+   opts.optional("soluteScaling", "soluteScalingFactor",
        "Solute scaling factor",
-       &soluteScalingFactor);
+       &soluteScalingFactor, 1.0);
    opts.range("soluteScalingFactor", NOT_NEGATIVE);
    opts.optional("soluteScaling", "soluteScalingFactorCharge",
        "Solute scaling factor for electrostatic interactions",
