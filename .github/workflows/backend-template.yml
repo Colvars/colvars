@@ -75,8 +75,6 @@ jobs:
           key: ${{ runner.os }}-build-${{ inputs.backend_name }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-build-${{ inputs.backend_name }}-
-            ${{ runner.os }}-build-
-            -build-
 
       # Using an exact key to forgo saving it in case of a match (tarring up
       # is expensive); also including a date to allow a force-update.
