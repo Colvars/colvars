@@ -81,6 +81,8 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   {
     colvars_restart = true;
     input_prefix_str = filename_restart;
+    input_prefix_str.erase(input_prefix_str.rfind(".dat"));
+    input_prefix_str.erase(input_prefix_str.rfind(".colvars.state"));
   }
 
   // Retrieve masses and charges from input file
