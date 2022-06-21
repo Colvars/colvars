@@ -164,7 +164,8 @@ std::istream &colvarproxy_io::input_stream(std::string const &input_name,
   // See https://github.com/Colvars/colvars/commit/8236879f7de4
   input_streams_[input_name] = new std::ifstream(input_name.c_str(),
                                                  std::ios::binary);
-  if (!(input_streams_[input_name])->good() && error_on_fail) {
+
+  if (!(input_streams_[input_name]->good()) && error_on_fail) {
     cvm::error("Error: cannot open "+description+" \""+input_name+"\".\n",
                COLVARS_FILE_ERROR);
   }
