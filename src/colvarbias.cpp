@@ -42,6 +42,8 @@ colvarbias::colvarbias(char const *key)
 
 int colvarbias::init(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
+
   name = bias_type + cvm::to_str(rank);
   colvarparse::set_string(conf);
 
@@ -59,9 +61,9 @@ int colvarbias::init(std::string const &conf)
     if (bias_with_name != NULL) {
       if ((bias_with_name->rank != this->rank) ||
           (bias_with_name->bias_type != this->bias_type)) {
-        cvm::error("Error: this bias cannot have the same name, \""+this->name+
-                   "\", as another bias.\n", COLVARS_INPUT_ERROR);
-        return COLVARS_INPUT_ERROR;
+        error_code |= cvm::error("Error: this bias cannot have the same name, \""+
+                                 this->name+"\", as another bias.\n",
+                                 COLVARS_INPUT_ERROR);
       }
     }
     description = "bias " + name;
@@ -71,9 +73,9 @@ int colvarbias::init(std::string const &conf)
       std::vector<std::string> colvar_names;
       if (get_keyval(conf, "colvars", colvar_names)) {
         if (num_variables()) {
-          cvm::error("Error: cannot redefine the colvars that a bias was already defined on.\n",
-                     COLVARS_INPUT_ERROR);
-          return COLVARS_INPUT_ERROR;
+          error_code |= cvm::error("Error: cannot redefine the colvars that "
+                                   "a bias was already defined on.\n",
+                                   COLVARS_INPUT_ERROR);
         }
         for (i = 0; i < colvar_names.size(); i++) {
           add_colvar(colvar_names[i]);
@@ -82,8 +84,8 @@ int colvarbias::init(std::string const &conf)
     }
 
     if (!num_variables()) {
-      cvm::error("Error: no collective variables specified.\n", COLVARS_INPUT_ERROR);
-      return COLVARS_INPUT_ERROR;
+      error_code |= cvm::error("Error: no collective variables specified.\n",
+                               COLVARS_INPUT_ERROR);
     }
 
   } else {
@@ -112,8 +114,8 @@ int colvarbias::init(std::string const &conf)
 
   get_keyval(conf, "timeStepFactor", time_step_factor, time_step_factor);
   if (time_step_factor < 1) {
-    cvm::error("Error: timeStepFactor must be 1 or greater.\n");
-    return COLVARS_ERROR;
+    error_code |= cvm::error("Error: timeStepFactor must be 1 or greater.\n",
+                             COLVARS_INPUT_ERROR);
   }
 
   // Use the scaling factors from a grid?
@@ -139,7 +141,7 @@ int colvarbias::init(std::string const &conf)
   enable(f_cvb_active);
   if (cvm::debug()) print_state();
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
