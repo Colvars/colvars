@@ -1296,28 +1296,27 @@ int colvarmodule::setup_input()
                                                    "restart file/channel",
                                                    false));
     if (input_is->bad()) {
-      // Try without the suffix
+      // Try without the suffix ".colvars.state"
       restart_in_name = proxy->input_prefix();
       input_is = &(proxy->input_stream(restart_in_name,
                                        "restart file/channel"));
-    }
-
-    if (input_is->bad()) {
-      return COLVARS_FILE_ERROR;
-    } else {
-      cvm::log(cvm::line_marker);
-      cvm::log("Loading state from file \""+restart_in_name+"\".\n");
-      if (input_is->good()) {
-        // Now that the file has been opened, clear this field so that it
-        // won't be read again automatically
-        proxy->input_prefix().clear();
+      if (input_is->bad()) {
+        return COLVARS_FILE_ERROR;
       }
-      read_restart(*input_is);
-      cvm::log(cvm::line_marker);
-      proxy->close_input_stream(restart_in_name);
-
-      return cvm::get_error();
     }
+
+    // Now that the file has been opened, clear this field so that this
+    // function will not be called twice
+    proxy->input_prefix().clear();
+
+    cvm::log(cvm::line_marker);
+    cvm::log("Loading state from file \""+restart_in_name+"\".\n");
+    read_restart(*input_is);
+    cvm::log(cvm::line_marker);
+
+    proxy->close_input_stream(restart_in_name);
+
+    return cvm::get_error();
   }
 
   // TODO This could soon be redundant
