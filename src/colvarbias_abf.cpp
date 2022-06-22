@@ -601,17 +601,17 @@ int colvarbias_abf::replica_share() {
 template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
                                                           std::string const &filename,
                                                           bool close) {
-  std::ostream *os = cvm::proxy->output_stream(filename);
+  std::ostream &os = cvm::proxy->output_stream(filename);
   if (!os) {
     return cvm::error("Error opening file " + filename + " for writing.\n", COLVARS_ERROR | COLVARS_FILE_ERROR);
   }
-  grid->write_multicol(*os);
+  grid->write_multicol(os);
   if (close) {
     cvm::proxy->close_output_stream(filename);
   } else {
     // Insert empty line between frames in history files
-    *os << std::endl;
-    cvm::proxy->flush_output_stream(os);
+    os << std::endl;
+    cvm::proxy->flush_output_stream(filename);
   }
 
   // In dimension higher than 2, dx is easier to handle and visualize
@@ -619,11 +619,11 @@ template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
   // (could be implemented as multiple dx files)
   if (num_variables() > 2 && close) {
     std::string  dx = filename + ".dx";
-    std::ostream *dx_os = cvm::proxy->output_stream(dx);
+    std::ostream &dx_os = cvm::proxy->output_stream(dx);
     if (!dx_os)  {
       return cvm::error("Error opening file " + dx + " for writing.\n", COLVARS_ERROR | COLVARS_FILE_ERROR);
     }
-    grid->write_opendx(*dx_os);
+    grid->write_opendx(dx_os);
     // if (close) {
       cvm::proxy->close_output_stream(dx);
     // }

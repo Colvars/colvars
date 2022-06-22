@@ -737,9 +737,6 @@ public:
   /// \brief Reset proxy state, e.g. requested atoms
   virtual int reset();
 
-  /// Close any open files to prevent data loss
-  int close_files();
-
   /// (Re)initialize required member data after construction
   virtual int setup();
 

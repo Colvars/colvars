@@ -1539,27 +1539,29 @@ int colvarbias_restraint_histogram::update()
 int colvarbias_restraint_histogram::write_output_files()
 {
   if (b_write_histogram) {
+    colvarproxy *proxy = cvm::main()->proxy;
     std::string file_name(cvm::output_prefix()+"."+this->name+".hist.dat");
-    std::ostream *os = cvm::proxy->output_stream(file_name);
-    *os << "# " << cvm::wrap_string(variables(0)->name, cvm::cv_width)
-        << "  " << "p(" << cvm::wrap_string(variables(0)->name, cvm::cv_width-3)
-        << ")\n";
+    std::ostream &os = proxy->output_stream(file_name,
+                                            "histogram output file");
+    os << "# " << cvm::wrap_string(variables(0)->name, cvm::cv_width)
+       << "  " << "p(" << cvm::wrap_string(variables(0)->name, cvm::cv_width-3)
+       << ")\n";
 
-    os->setf(std::ios::fixed, std::ios::floatfield);
+    os.setf(std::ios::fixed, std::ios::floatfield);
 
     size_t igrid;
     for (igrid = 0; igrid < p.size(); igrid++) {
       cvm::real const x_grid = (lower_boundary + (igrid+1)*width);
-      *os << "  "
-          << std::setprecision(cvm::cv_prec)
-          << std::setw(cvm::cv_width)
-          << x_grid
-          << "  "
-          << std::setprecision(cvm::cv_prec)
-          << std::setw(cvm::cv_width)
-          << p[igrid] << "\n";
+      os << "  "
+         << std::setprecision(cvm::cv_prec)
+         << std::setw(cvm::cv_width)
+         << x_grid
+         << "  "
+         << std::setprecision(cvm::cv_prec)
+         << std::setw(cvm::cv_width)
+         << p[igrid] << "\n";
     }
-    cvm::proxy->close_output_stream(file_name);
+    proxy->close_output_stream(file_name);
   }
   return COLVARS_OK;
 }

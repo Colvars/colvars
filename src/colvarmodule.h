@@ -770,12 +770,6 @@ protected:
   /// Name of the trajectory file
   std::string cv_traj_name;
 
-  /// Collective variables output trajectory file
-  std::ostream *cv_traj_os;
-
-  /// Appending to the existing trajectory file?
-  bool cv_traj_append;
-
   /// Write labels at the next iteration
   bool cv_traj_write_labels;
 

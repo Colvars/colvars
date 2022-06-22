@@ -652,7 +652,7 @@ colvarproxy::colvarproxy()
 
 colvarproxy::~colvarproxy()
 {
-  close_files();
+  close_output_streams();
   if (colvars != NULL) {
     delete colvars;
     colvars = NULL;
@@ -664,24 +664,6 @@ bool colvarproxy::io_available()
 {
   return (smp_enabled() == COLVARS_OK && smp_thread_id() == 0) ||
     (smp_enabled() != COLVARS_OK);
-}
-
-
-int colvarproxy::close_files()
-{
-  if (! io_available()) {
-    // Nothing to do on threads other than the main one
-    return COLVARS_OK;
-  }
-  std::list<std::string>::iterator    osni = output_stream_names.begin();
-  std::list<std::ostream *>::iterator osi  = output_files.begin();
-  for ( ; osi != output_files.end(); osi++, osni++) {
-    ((std::ofstream *) (*osi))->close();
-    delete *osi;
-  }
-  output_files.clear();
-  output_stream_names.clear();
-  return COLVARS_OK;
 }
 
 

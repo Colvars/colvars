@@ -137,4 +137,120 @@ int colvar_grid<T>::read_multicol(std::string const &filename,
 }
 
 
+template <class T>
+std::ostream & colvar_grid<T>::write_multicol(std::ostream &os) const
+{
+  std::streamsize const w = os.width();
+  std::streamsize const p = os.precision();
+
+  // Data in the header: nColvars, then for each
+  // xiMin, dXi, nPoints, periodic
+
+  os << std::setw(2) << "# " << nd << "\n";
+  for (size_t i = 0; i < nd; i++) {
+    os << "# "
+       << std::setw(10) << lower_boundaries[i]
+       << std::setw(10) << widths[i]
+       << std::setw(10) << nx[i] << "  "
+       << periodic[i] << "\n";
+  }
+
+
+  for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix) ) {
+
+    if (ix.back() == 0) {
+      // if the last index is 0, add a new line to mark the new record
+      os << "\n";
+    }
+
+    for (size_t i = 0; i < nd; i++) {
+      os << " "
+         << std::setw(w) << std::setprecision(p)
+         << bin_to_value_scalar(ix[i], i);
+    }
+    os << " ";
+    for (size_t imult = 0; imult < mult; imult++) {
+      os << " "
+         << std::setw(w) << std::setprecision(p)
+         << value_output(ix, imult);
+    }
+    os << "\n";
+  }
+  return os;
+}
+
+
+template <class T>
+int colvar_grid<T>::write_multicol(std::string const &filename,
+                                   std::string description) const
+{
+  int error_code = COLVARS_OK;
+  std::ostream &os = cvm::main()->proxy->output_stream(filename, description);
+  if (os.bad()) {
+    return COLVARS_FILE_ERROR;
+  }
+  error_code |= colvar_grid<T>::write_multicol(os) ? COLVARS_OK :
+    COLVARS_FILE_ERROR;
+  cvm::main()->proxy->close_output_stream(filename);
+  return error_code;
+}
+
+
+template <class T>
+std::ostream & colvar_grid<T>::write_opendx(std::ostream &os) const
+{
+  // write the header
+  os << "object 1 class gridpositions counts";
+  size_t icv;
+  for (icv = 0; icv < num_variables(); icv++) {
+    os << " " << number_of_points(icv);
+  }
+  os << "\n";
+
+  os << "origin";
+  for (icv = 0; icv < num_variables(); icv++) {
+    os << " " << (lower_boundaries[icv].real_value + 0.5 * widths[icv]);
+  }
+  os << "\n";
+
+  for (icv = 0; icv < num_variables(); icv++) {
+    os << "delta";
+    for (size_t icv2 = 0; icv2 < num_variables(); icv2++) {
+      if (icv == icv2) os << " " << widths[icv];
+      else os << " " << 0.0;
+    }
+    os << "\n";
+  }
+
+  os << "object 2 class gridconnections counts";
+  for (icv = 0; icv < num_variables(); icv++) {
+    os << " " << number_of_points(icv);
+  }
+  os << "\n";
+
+  os << "object 3 class array type double rank 0 items "
+     << number_of_points() << " data follows\n";
+
+  write_raw(os);
+
+  os << "object \"collective variables scalar field\" class field\n";
+  return os;
+}
+
+
+template <class T>
+int colvar_grid<T>::write_opendx(std::string const &filename,
+                                 std::string description) const
+{
+  int error_code = COLVARS_OK;
+  std::ostream &os = cvm::main()->proxy->output_stream(filename, description);
+  if (os.bad()) {
+    return COLVARS_FILE_ERROR;
+  }
+  error_code |= colvar_grid<T>::write_opendx(os) ? COLVARS_OK :
+    COLVARS_FILE_ERROR;
+  cvm::main()->proxy->close_output_stream(filename);
+  return error_code;
+}
+
 #endif

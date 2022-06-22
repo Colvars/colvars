@@ -156,7 +156,7 @@ int colvarbias_reweightaMD::write_output_files() {
                              (cvm::step_absolute() % history_freq) == 0;
   if (write_history) {
     error_code |= write_exponential_reweighted_pmf(
-      out_name_pmf + ".hist", (cvm::step_relative() > 0));
+      out_name_pmf + ".hist", true);
     error_code |= write_count(out_count_prefix + ".hist",
                               (cvm::step_relative() > 0));
   }
@@ -166,7 +166,7 @@ int colvarbias_reweightaMD::write_output_files() {
     error_code |= write_cumulant_expansion_pmf(out_name_cumulant_pmf);
     if (write_history) {
       error_code |= write_cumulant_expansion_pmf(
-        out_name_cumulant_pmf + ".hist", (cvm::step_relative() > 0));
+        out_name_cumulant_pmf + ".hist", true);
     }
   }
   error_code |= cvm::get_error();
@@ -174,17 +174,13 @@ int colvarbias_reweightaMD::write_output_files() {
 }
 
 int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
-  const std::string& p_output_prefix, bool append) {
+  const std::string& p_output_prefix, bool keep_open) {
   const std::string output_pmf = p_output_prefix + ".pmf";
+
   cvm::log("Writing the accelerated MD PMF file \"" + output_pmf + "\".\n");
-  if (!append) {
-    cvm::backup_file(output_pmf.c_str());
-  }
-  const std::ios::openmode mode = (append ? std::ios::app : std::ios::out);
-  std::ostream *pmf_grid_os = cvm::proxy->output_stream(output_pmf, mode);
-  if (!pmf_grid_os) {
-    return cvm::error("Error opening PMF file " + output_pmf +
-                      " for writing.\n", COLVARS_FILE_ERROR);
+  std::ostream &pmf_grid_os = cvm::proxy->output_stream(output_pmf, "PMF file");
+  if (pmf_grid_os.bad()) {
+    return COLVARS_FILE_ERROR;
   }
   pmf_grid_exp_avg->copy_grid(*grid);
   // compute the average
@@ -196,19 +192,18 @@ int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
     }
   }
   hist_to_pmf(pmf_grid_exp_avg, grid_count);
-  pmf_grid_exp_avg->write_multicol(*pmf_grid_os);
-  cvm::proxy->close_output_stream(output_pmf);
+  pmf_grid_exp_avg->write_multicol(pmf_grid_os);
+  if (!keep_open) {
+    cvm::proxy->close_output_stream(output_pmf);
+  }
+
   if (b_write_gradients) {
     const std::string output_grad = p_output_prefix + ".grad";
     cvm::log("Writing the accelerated MD gradients file \"" + output_grad +
              "\".\n");
-    if (!append) {
-      cvm::backup_file(output_grad.c_str());
-    }
-    std::ostream *grad_grid_os = cvm::proxy->output_stream(output_grad, mode);
-    if (!grad_grid_os) {
-      return cvm::error("Error opening grad file " + output_grad +
-                        " for writing.\n", COLVARS_FILE_ERROR);
+    std::ostream &grad_grid_os = cvm::proxy->output_stream(output_grad, "gradient file");
+    if (grad_grid_os.bad()) {
+      return COLVARS_FILE_ERROR;
     }
     for (std::vector<int> ix = grad_grid_exp_avg->new_index();
           grad_grid_exp_avg->index_ok(ix); grad_grid_exp_avg->incr(ix)) {
@@ -217,38 +212,37 @@ int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
           ix, pmf_grid_exp_avg->gradient_finite_diff(ix, n), n);
       }
     }
-    grad_grid_exp_avg->write_multicol(*grad_grid_os);
-    cvm::proxy->close_output_stream(output_grad);
+    grad_grid_exp_avg->write_multicol(grad_grid_os);
+    if (!keep_open) {
+      cvm::proxy->close_output_stream(output_grad);
+    }
   }
+
   return COLVARS_OK;
 }
 
 int colvarbias_reweightaMD::write_cumulant_expansion_pmf(
-  const std::string& p_output_prefix, bool append) {
+  const std::string& p_output_prefix, bool keep_open) {
   const std::string output_pmf = p_output_prefix + ".pmf";
   cvm::log("Writing the accelerated MD PMF file using cumulant expansion: \"" + output_pmf + "\".\n");
-  if (!append) cvm::backup_file(output_pmf.c_str());
-  const std::ios::openmode mode = (append ? std::ios::app : std::ios::out);
-  std::ostream *pmf_grid_cumulant_os = cvm::proxy->output_stream(output_pmf, mode);
-  if (!pmf_grid_cumulant_os) {
-    return cvm::error("Error opening PMF file " + output_pmf +
-                      " for writing.\n", COLVARS_FILE_ERROR);
+  std::ostream &pmf_grid_cumulant_os = cvm::proxy->output_stream(output_pmf, "PMF file");
+  if (pmf_grid_cumulant_os.bad()) {
+    return COLVARS_FILE_ERROR;
   }
   compute_cumulant_expansion_factor(grid_dV, grid_dV_square,
                                     grid_count, pmf_grid_cumulant);
   hist_to_pmf(pmf_grid_cumulant, grid_count);
-  pmf_grid_cumulant->write_multicol(*pmf_grid_cumulant_os);
-  cvm::proxy->close_output_stream(output_pmf);
+  pmf_grid_cumulant->write_multicol(pmf_grid_cumulant_os);
+  if (!keep_open) {
+    cvm::proxy->close_output_stream(output_pmf);
+  }
+
   if (b_write_gradients) {
     const std::string output_grad = p_output_prefix + ".grad";
     cvm::log("Writing the accelerated MD gradients file \"" + output_grad + "\".\n");
-    if (!append) {
-      cvm::backup_file(output_grad.c_str());
-    }
-    std::ostream *grad_grid_os = cvm::proxy->output_stream(output_grad, mode);
-    if (!grad_grid_os) {
-      return cvm::error("Error opening grad file " + output_grad +
-                        " for writing.\n", COLVARS_FILE_ERROR);
+    std::ostream &grad_grid_os = cvm::proxy->output_stream(output_grad, "grad file");
+    if (grad_grid_os.bad()) {
+      return COLVARS_FILE_ERROR;
     }
     for (std::vector<int> ix = grad_grid_cumulant->new_index();
           grad_grid_cumulant->index_ok(ix); grad_grid_cumulant->incr(ix)) {
@@ -257,24 +251,23 @@ int colvarbias_reweightaMD::write_cumulant_expansion_pmf(
           ix, pmf_grid_cumulant->gradient_finite_diff(ix, n), n);
       }
     }
-    grad_grid_cumulant->write_multicol(*grad_grid_os);
+    grad_grid_cumulant->write_multicol(grad_grid_os);
     cvm::proxy->close_output_stream(output_grad);
   }
   return COLVARS_OK;
 }
 
-int colvarbias_reweightaMD::write_count(const std::string& p_output_prefix, bool append) {
+int colvarbias_reweightaMD::write_count(const std::string& p_output_prefix, bool keep_open) {
   const std::string output_name = p_output_prefix + ".count";
   cvm::log("Writing the accelerated MD count file \""+output_name+"\".\n");
-  if (!append) cvm::backup_file(output_name.c_str());
-  const std::ios::openmode mode = (append ? std::ios::app : std::ios::out);
-  std::ostream *grid_count_os = cvm::proxy->output_stream(output_name, mode);
-  if (!grid_count_os) {
-    return cvm::error("Error opening count file "+output_name+
-                      " for writing.\n", COLVARS_FILE_ERROR);
+  std::ostream &grid_count_os = cvm::proxy->output_stream(output_name, "count file");
+  if (grid_count_os.bad()) {
+    return COLVARS_FILE_ERROR;
   }
-  grid_count->write_multicol(*grid_count_os);
-  cvm::proxy->close_output_stream(output_name);
+  grid_count->write_multicol(grid_count_os);
+  if (!keep_open) {
+    cvm::proxy->close_output_stream(output_name);
+  }
   return COLVARS_OK;
 }
 

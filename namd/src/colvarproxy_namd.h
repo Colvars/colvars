@@ -266,11 +266,20 @@ public:
 
 #endif
 
-  std::ostream * output_stream(std::string const &output_name,
-                               std::ios_base::openmode mode);
-  int flush_output_stream(std::ostream *os);
-  int close_output_stream(std::string const &output_name);
-  int backup_file(char const *filename);
+  std::ostream &output_stream(std::string const &output_name,
+                              std::string const description = "file/channel") override;
+
+  bool output_stream_exists(std::string const &output_name);
+
+  int flush_output_stream(std::string const &output_name) override;
+
+  int flush_output_streams() override;
+
+  int close_output_stream(std::string const &output_name) override;
+
+  int close_output_streams() override;
+
+  int backup_file(char const *filename) override;
 
 };
 

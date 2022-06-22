@@ -109,23 +109,26 @@ public:
   /// Closes all input streams
   virtual int close_input_streams();
 
-  /// \brief Returns a reference to the given output channel;
-  /// if this is not open already, then open it
-  virtual std::ostream *output_stream(std::string const &output_name,
-                                      std::ios_base::openmode mode =
-                                      std::ios_base::out);
+  /// Returns a reference to the named output file/channel (open it if needed)
+  /// \param output_name File name or identifier
+  /// \param description Purpose of the file
+  virtual std::ostream &output_stream(std::string const &output_name,
+                                      std::string const description = "file/channel");
 
-  /// Returns a reference to output_name if it exists, NULL otherwise
-  virtual std::ostream *get_output_stream(std::string const &output_name);
+  /// Check if the file/channel is open (without opening it if not)
+  virtual bool output_stream_exists(std::string const &output_name);
 
-  /// \brief Flushes the given output channel
-  virtual int flush_output_stream(std::ostream *os);
+  /// Flushes the given output file/channel
+  virtual int flush_output_stream(std::string const &output_name);
 
-  /// \brief Flushes all output channels
+  /// Flushes all output files/channels
   virtual int flush_output_streams();
 
-  /// \brief Closes the given output channel
+  /// Closes the given output file/channel
   virtual int close_output_stream(std::string const &output_name);
+
+  /// Close all open files/channels to prevent data loss
+  virtual int close_output_streams();
 
 protected:
 
@@ -141,17 +144,17 @@ protected:
   /// How often the simulation engine will write its own restart
   int restart_frequency_engine;
 
-  /// \brief Currently opened output files: by default, these are ofstream objects.
-  /// Allows redefinition to implement different output mechanisms
-  std::list<std::ostream *> output_files;
-  /// \brief Identifiers for output_stream objects: by default, these are the names of the files
-  std::list<std::string>    output_stream_names;
-
   /// Container of input files/channels indexed by path name
   std::map<std::string, std::istream *> input_streams_;
 
   /// Object whose reference is returned when read errors occur
   std::istream *input_stream_error_;
+
+  /// Currently open output files/channels
+  std::map<std::string, std::ostream *> output_streams_;
+
+  /// Object whose reference is returned when write errors occur
+  std::ostream *output_stream_error_;
 
   /// Buffer from which the input state information may be read
   char const *input_buffer_;
