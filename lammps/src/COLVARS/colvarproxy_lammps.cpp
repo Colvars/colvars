@@ -227,8 +227,10 @@ double colvarproxy_lammps::compute()
     cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
   }
 
-  // call the collective variable module
-  colvars->calc();
+  // Call the collective variable module
+  if (colvars->calc() != COLVARS_OK) {
+    cvm::error("Error in the collective variables module.\n", COLVARS_ERROR);
+  }
 
   if (cvm::debug()) {
     cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");

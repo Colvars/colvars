@@ -26,8 +26,6 @@ std::map<std::string, std::function<colvar::cvc* (const std::string& subcv_conf)
 
 colvar::colvar()
 {
-  runave_os = NULL;
-
   prev_timestep = -1L;
   after_restart = false;
   kinetic_energy = 0.0;
@@ -2412,8 +2410,10 @@ std::ostream & colvar::write_state(std::ostream &os) {
 
   os << "}\n\n";
 
-  if (runave_os) {
-    cvm::main()->proxy->flush_output_stream(runave_os);
+  if (runave_outfile.size() > 0) {
+    if (cvm::main()->proxy->output_stream_exists(runave_outfile)) {
+      cvm::main()->proxy->flush_output_stream(runave_outfile);
+    }
   }
 
   return os;
@@ -2537,9 +2537,13 @@ int colvar::write_output_files()
       }
       cvm::log("Writing correlation function to file \""+acf_outfile+"\".\n");
       cvm::backup_file(acf_outfile.c_str());
-      std::ostream *acf_os = cvm::proxy->output_stream(acf_outfile);
-      if (!acf_os) return cvm::get_error();
-      error_code |= write_acf(*acf_os);
+      std::ostream &acf_os = cvm::proxy->output_stream(acf_outfile,
+                                                       "colvar ACF file");
+      if (acf_os.bad()) {
+        error_code |= COLVARS_FILE_ERROR;
+      } else {
+        error_code |= write_acf(acf_os);
+      }
       cvm::proxy->close_output_stream(acf_outfile);
     }
   }
@@ -2808,6 +2812,7 @@ int colvar::write_acf(std::ostream &os)
 int colvar::calc_runave()
 {
   int error_code = COLVARS_OK;
+  colvarproxy *proxy = cvm::main()->proxy;
 
   if (x_history.empty()) {
 
@@ -2832,22 +2837,22 @@ int colvar::calc_runave()
 
       if ((*x_history_p).size() >= runave_length-1) {
 
-        if (runave_os == NULL) {
-          if (runave_outfile.size() == 0) {
-            runave_outfile = std::string(cvm::output_prefix()+"."+
-                                         this->name+".runave.traj");
-          }
+        if (runave_outfile.size() == 0) {
+          runave_outfile = std::string(cvm::output_prefix()+"."+
+                                       this->name+".runave.traj");
+        }
 
+        if (! proxy->output_stream_exists(runave_outfile)) {
           size_t const this_cv_width = x.output_width(cvm::cv_width);
-          cvm::proxy->backup_file(runave_outfile);
-          runave_os = cvm::proxy->output_stream(runave_outfile);
-          runave_os->setf(std::ios::scientific, std::ios::floatfield);
-          *runave_os << "# " << cvm::wrap_string("step", cvm::it_width-2)
-                     << "   "
-                     << cvm::wrap_string("running average", this_cv_width)
-                     << " "
-                     << cvm::wrap_string("running stddev", this_cv_width)
-                     << "\n";
+          std::ostream &runave_os = proxy->output_stream(runave_outfile,
+                                                         "colvar running average");
+          runave_os.setf(std::ios::scientific, std::ios::floatfield);
+          runave_os << "# " << cvm::wrap_string("step", cvm::it_width-2)
+                    << "   "
+                    << cvm::wrap_string("running average", this_cv_width)
+                    << " "
+                    << cvm::wrap_string("running stddev", this_cv_width)
+                    << "\n";
         }
 
         runave = x;
@@ -2867,12 +2872,17 @@ int colvar::calc_runave()
         }
         runave_variance *= 1.0 / cvm::real(runave_length-1);
 
-        *runave_os << std::setw(cvm::it_width) << cvm::step_relative()
-                   << "   "
-                   << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-                   << runave << " "
-                   << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-                   << cvm::sqrt(runave_variance) << "\n";
+        if (runave_outfile.size() > 0) {
+          std::ostream &runave_os = proxy->output_stream(runave_outfile);
+          runave_os << std::setw(cvm::it_width) << cvm::step_relative()
+                    << "   "
+                    << std::setprecision(cvm::cv_prec)
+                    << std::setw(cvm::cv_width)
+                    << runave << " "
+                    << std::setprecision(cvm::cv_prec)
+                    << std::setw(cvm::cv_width)
+                    << cvm::sqrt(runave_variance) << "\n";
+        }
       }
 
       history_add_value(runave_length, *x_history_p, x);

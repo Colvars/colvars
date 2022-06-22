@@ -36,7 +36,6 @@ colvarbias_meta::colvarbias_meta(char const *key)
   : colvarbias(key), colvarbias_ti(key)
 {
   new_hills_begin = hills.end();
-  hills_traj_os = NULL;
 
   hill_weight = 0.0;
   hill_width = 0.0;
@@ -335,13 +334,12 @@ colvarbias_meta::~colvarbias_meta()
   colvarbias_meta::clear_state_data();
   colvarproxy *proxy = cvm::proxy;
 
-  if (proxy->get_output_stream(replica_hills_file)) {
+  if (proxy->output_stream_exists(replica_hills_file)) {
     proxy->close_output_stream(replica_hills_file);
   }
 
-  if (hills_traj_os) {
+  if (proxy->output_stream_exists(hills_traj_file_name())) {
     proxy->close_output_stream(hills_traj_file_name());
-    hills_traj_os = NULL;
   }
 
   if (target_dist) {
@@ -397,9 +395,12 @@ colvarbias_meta::add_hill(colvarbias_meta::hill const &h)
   }
 
   // output to trajectory (if specified)
-  if (hills_traj_os) {
-    *hills_traj_os << (hills.back()).output_traj();
-    cvm::proxy->flush_output_stream(hills_traj_os);
+  if (b_hills_traj) {
+    // Open trajectory file or access the one already open
+    std::ostream &hills_traj_os =
+      cvm::proxy->output_stream(hills_traj_file_name());
+    hills_traj_os << (hills.back()).output_traj();
+    cvm::proxy->flush_output_stream(hills_traj_file_name());
   }
 
   has_data = true;
@@ -429,12 +430,14 @@ colvarbias_meta::delete_hill(hill_iter &h)
     }
   }
 
-  if (hills_traj_os) {
+  if (b_hills_traj) {
     // output to the trajectory
-    *hills_traj_os << "# DELETED this hill: "
-                   << (hills.back()).output_traj()
-                   << "\n";
-    cvm::proxy->flush_output_stream(hills_traj_os);
+    std::ostream &hills_traj_os =
+      cvm::proxy->output_stream(hills_traj_file_name());
+    hills_traj_os << "# DELETED this hill: "
+                  << (hills.back()).output_traj()
+                  << "\n";
+    cvm::proxy->flush_output_stream(hills_traj_file_name());
   }
 
   return hills.erase(h);
@@ -623,10 +626,10 @@ int colvarbias_meta::update_bias()
     case multiple_replicas:
       add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
                     colvar_values, colvar_sigmas, replica_id));
-      std::ostream *replica_hills_os =
-        cvm::proxy->get_output_stream(replica_hills_file);
+      std::ostream &replica_hills_os =
+        cvm::proxy->output_stream(replica_hills_file);
       if (replica_hills_os) {
-        *replica_hills_os << hills.back();
+        replica_hills_os << hills.back();
       } else {
         return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
                           ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
@@ -984,25 +987,24 @@ void colvarbias_meta::recount_hills_off_grid(colvarbias_meta::hill_iter  h_first
 
 int colvarbias_meta::replica_share()
 {
+  int error_code = COLVARS_OK;
   colvarproxy *proxy = cvm::proxy;
   // sync with the other replicas (if needed)
   if (comm == multiple_replicas) {
     // reread the replicas registry
-    update_replicas_registry();
+    error_code |= update_replicas_registry();
     // empty the output buffer
-    std::ostream *replica_hills_os =
-      proxy->get_output_stream(replica_hills_file);
-    if (replica_hills_os) {
-      proxy->flush_output_stream(replica_hills_os);
-    }
-    read_replica_files();
+    error_code |= proxy->flush_output_stream(replica_hills_file);
+    error_code |= read_replica_files();
   }
-  return COLVARS_OK;
+  return error_code;
 }
 
 
-void colvarbias_meta::update_replicas_registry()
+int colvarbias_meta::update_replicas_registry()
 {
+  int error_code = COLVARS_OK;
+
   if (cvm::debug())
     cvm::log("Metadynamics bias \""+this->name+"\""+
              ": updating the list of replicas, currently containing "+
@@ -1017,8 +1019,9 @@ void colvarbias_meta::update_replicas_registry()
       while (colvarparse::getline_nocomments(reg_file, line))
         replicas_registry.append(line+"\n");
     } else {
-      cvm::error("Error: failed to open file \""+replicas_registry_file+
-                 "\" for reading.\n", COLVARS_FILE_ERROR);
+      error_code |= cvm::error("Error: failed to open file \""+
+                               replicas_registry_file+"\" for reading.\n",
+                               COLVARS_FILE_ERROR);
     }
   }
 
@@ -1086,8 +1089,8 @@ void colvarbias_meta::update_replicas_registry()
       }
     }
   } else {
-    cvm::error("Error: cannot read the replicas registry file \""+
-               replicas_registry+"\".\n", COLVARS_FILE_ERROR);
+    error_code |= cvm::error("Error: cannot read the replicas registry file \""+
+                             replicas_registry+"\".\n", COLVARS_FILE_ERROR);
   }
 
   // now (re)read the list file of each replica
@@ -1127,10 +1130,12 @@ void colvarbias_meta::update_replicas_registry()
   if (cvm::debug())
     cvm::log("Metadynamics bias \""+this->name+"\": the list of replicas contains "+
              cvm::to_str(replicas.size())+" elements.\n");
+
+  return error_code;
 }
 
 
-void colvarbias_meta::read_replica_files()
+int colvarbias_meta::read_replica_files()
 {
   // Note: we start from the 2nd replica.
   for (size_t ir = 1; ir < replicas.size(); ir++) {
@@ -1255,6 +1260,7 @@ void colvarbias_meta::read_replica_files()
                " steps.  Ensure that it is still running.\n");
     }
   }
+  return COLVARS_OK;
 }
 
 
@@ -1627,6 +1633,8 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
 
 int colvarbias_meta::setup_output()
 {
+  int error_code = COLVARS_OK;
+
   output_prefix = cvm::output_prefix();
   if (cvm::main()->num_biases_feature(colvardeps::f_cvb_calc_pmf) > 1) {
     // if this is not the only free energy integrator, append
@@ -1639,8 +1647,11 @@ int colvarbias_meta::setup_output()
 
     // TODO: one may want to specify the path manually for intricated filesystems?
     char *pwd = new char[3001];
-    if (GETCWD(pwd, 3000) == NULL)
-      cvm::error("Error: cannot get the path of the current working directory.\n");
+    if (GETCWD(pwd, 3000) == NULL) {
+      return cvm::error("Error: cannot get the path of the current working directory.\n",
+                        COLVARS_BUG_ERROR);
+    }
+
     replica_list_file =
       (std::string(pwd)+std::string(PATHSEP)+
        this->name+"."+replica_id+".files.txt");
@@ -1693,38 +1704,35 @@ int colvarbias_meta::setup_output()
 
     // if we're running without grids, use a growing list of "hills" files
     // otherwise, just one state file and one "hills" file as buffer
-    std::ostream *list_os =
-      cvm::proxy->output_stream(replica_list_file,
-                                (use_grids ? std::ios_base::trunc :
-                                 std::ios_base::app));
-    if (!list_os) {
-      return cvm::get_error();
+    std::ostream &list_os = cvm::proxy->output_stream(replica_list_file);
+    if (list_os) {
+      list_os << "stateFile " << replica_state_file << "\n";
+      list_os << "hillsFile " << replica_hills_file << "\n";
+      cvm::proxy->close_output_stream(replica_list_file);
+    } else {
+      error_code |= COLVARS_FILE_ERROR;
     }
-    *list_os << "stateFile " << replica_state_file << "\n";
-    *list_os << "hillsFile " << replica_hills_file << "\n";
-    cvm::proxy->close_output_stream(replica_list_file);
 
     // finally, add a new record for this replica to the registry
     if (! registered_replica) {
-      std::ostream *reg_os =
-        cvm::proxy->output_stream(replicas_registry_file,
-                                  std::ios::app);
+      std::ofstream reg_os(replicas_registry_file.c_str(), std::ios::app);
       if (!reg_os) {
         return cvm::get_error();
       }
-      *reg_os << replica_id << " " << replica_list_file << "\n";
+      reg_os << replica_id << " " << replica_list_file << "\n";
       cvm::proxy->close_output_stream(replicas_registry_file);
     }
   }
 
   if (b_hills_traj) {
+    std::ostream &hills_traj_os =
+      cvm::proxy->output_stream(hills_traj_file_name());
     if (!hills_traj_os) {
-      hills_traj_os = cvm::proxy->output_stream(hills_traj_file_name());
-      if (!hills_traj_os) return cvm::get_error();
+      error_code |= COLVARS_FILE_ERROR;
     }
   }
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return error_code;
 }
 
 
@@ -1852,10 +1860,7 @@ void colvarbias_meta::write_pmf()
                                       (dump_fes_save ?
                                        "."+cvm::to_str(cvm::step_absolute()) : "") +
                                       ".pmf");
-      cvm::proxy->backup_file(fes_file_name);
-      std::ostream *fes_os = cvm::proxy->output_stream(fes_file_name);
-      pmf->write_multicol(*fes_os);
-      cvm::proxy->close_output_stream(fes_file_name);
+      pmf->write_multicol(fes_file_name, "PMF file");
     }
   }
 
@@ -1891,10 +1896,7 @@ void colvarbias_meta::write_pmf()
                                     (dump_fes_save ?
                                      "."+cvm::to_str(cvm::step_absolute()) : "") +
                                     ".pmf");
-    cvm::proxy->backup_file(fes_file_name);
-    std::ostream *fes_os = cvm::proxy->output_stream(fes_file_name);
-    pmf->write_multicol(*fes_os);
-    cvm::proxy->close_output_stream(fes_file_name);
+    pmf->write_multicol(fes_file_name, "partial PMF file");
   }
 
   delete pmf;
@@ -1915,9 +1917,9 @@ int colvarbias_meta::write_replica_state_file()
   // Write to temporary state file
   std::string const tmp_state_file(replica_state_file+".tmp");
   error_code |= proxy->remove_file(tmp_state_file);
-  std::ostream *rep_state_os = cvm::proxy->output_stream(tmp_state_file);
+  std::ostream &rep_state_os = cvm::proxy->output_stream(tmp_state_file);
   if (rep_state_os) {
-    if (!write_state(*rep_state_os)) {
+    if (!write_state(rep_state_os)) {
       error_code |= cvm::error("Error: in writing to temporary file \""+
                                tmp_state_file+"\".\n", COLVARS_FILE_ERROR);
     }
@@ -1934,13 +1936,13 @@ int colvarbias_meta::reopen_replica_buffer_file()
 {
   int error_code = COLVARS_OK;
   colvarproxy *proxy = cvm::proxy;
-  if (proxy->get_output_stream(replica_hills_file) != NULL) {
+  if (proxy->output_stream(replica_hills_file)) {
     error_code |= proxy->close_output_stream(replica_hills_file);
   }
   error_code |= proxy->remove_file(replica_hills_file);
-  std::ostream *replica_hills_os = proxy->output_stream(replica_hills_file);
+  std::ostream &replica_hills_os = proxy->output_stream(replica_hills_file);
   if (replica_hills_os) {
-    replica_hills_os->setf(std::ios::scientific, std::ios::floatfield);
+    replica_hills_os.setf(std::ios::scientific, std::ios::floatfield);
   } else {
     error_code |= COLVARS_FILE_ERROR;
   }

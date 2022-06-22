@@ -33,6 +33,8 @@ colvarproxy_io::colvarproxy_io()
   restart_frequency_engine = 0;
   input_stream_error_ = new std::istringstream();
   input_stream_error_->setstate(std::ios::badbit);
+  output_stream_error_ = new std::ostringstream();
+  output_stream_error_->setstate(std::ios::badbit);
 }
 
 
@@ -40,6 +42,8 @@ colvarproxy_io::~colvarproxy_io()
 {
   delete input_stream_error_;
   close_input_streams();
+  delete output_stream_error_;
+  close_output_streams();
 }
 
 
@@ -199,8 +203,8 @@ int colvarproxy_io::close_input_streams()
 }
 
 
-std::ostream * colvarproxy_io::output_stream(std::string const &output_name,
-                                             std::ios_base::openmode mode)
+std::ostream & colvarproxy_io::output_stream(std::string const &output_name,
+                                             std::string const description)
 {
   if (cvm::debug()) {
     cvm::log("Using colvarproxy_io::output_stream()\n");
@@ -209,60 +213,43 @@ std::ostream * colvarproxy_io::output_stream(std::string const &output_name,
   if (!io_available()) {
     cvm::error("Error: trying to access an output file/channel "
                "from the wrong thread.\n", COLVARS_BUG_ERROR);
-    return NULL;
+    return *output_stream_error_;
   }
 
-  std::ostream *os = get_output_stream(output_name);
-  if (os != NULL) return os;
-
-  if (!(mode & (std::ios_base::app | std::ios_base::ate))) {
-    backup_file(output_name);
+  if (output_streams_.count(output_name) > 0) {
+    return *(output_streams_[output_name]);
   }
-  std::ofstream *osf = new std::ofstream(output_name.c_str(), mode);
-  if (!osf->is_open()) {
-    cvm::error("Error: cannot write to file/channel \""+output_name+"\".\n",
+
+  backup_file(output_name.c_str());
+
+  output_streams_[output_name] = new std::ofstream(output_name.c_str());
+  if (! output_streams_[output_name]->good()) {
+    cvm::error("Error: cannot write to "+description+" \""+output_name+"\".\n",
                COLVARS_FILE_ERROR);
-    return NULL;
   }
-  output_stream_names.push_back(output_name);
-  output_files.push_back(osf);
-  return osf;
+
+  return *(output_streams_[output_name]);
 }
 
 
-std::ostream *colvarproxy_io::get_output_stream(std::string const &output_name)
+bool colvarproxy_io::output_stream_exists(std::string const &output_name)
 {
-  if (!io_available()) {
-    cvm::error("Error: trying to access an output file/channel "
-               "from the wrong thread.\n", COLVARS_BUG_ERROR);
-    return NULL;
-  }
-  std::list<std::ostream *>::iterator osi  = output_files.begin();
-  std::list<std::string>::iterator    osni = output_stream_names.begin();
-  for ( ; osi != output_files.end(); osi++, osni++) {
-    if (*osni == output_name) {
-      return *osi;
-    }
-  }
-  return NULL;
+  return (output_streams_.count(output_name) > 0);
 }
 
 
-
-int colvarproxy_io::flush_output_stream(std::ostream *os)
+int colvarproxy_io::flush_output_stream(std::string const &output_name)
 {
   if (!io_available()) {
     // No-op
     return COLVARS_OK;
   }
-  std::list<std::ostream *>::iterator osi  = output_files.begin();
-  std::list<std::string>::iterator    osni = output_stream_names.begin();
-  for ( ; osi != output_files.end(); osi++, osni++) {
-    if (*osi == os) {
-      ((std::ofstream *) (*osi))->flush();
-      return COLVARS_OK;
-    }
+
+  if (output_streams_.count(output_name) > 0) {
+    (reinterpret_cast<std::ofstream *>(output_streams_[output_name]))->flush();
+    return COLVARS_OK;
   }
+
   return cvm::error("Error: trying to flush an output file/channel "
                     "that wasn't open.\n", COLVARS_BUG_ERROR);
 }
@@ -274,10 +261,12 @@ int colvarproxy_io::flush_output_streams()
     return COLVARS_OK;
   }
 
-  std::list<std::ostream *>::iterator osi  = output_files.begin();
-  for ( ; osi != output_files.end(); osi++) {
-    ((std::ofstream *) (*osi))->flush();
+  for (std::map<std::string, std::ostream *>::iterator osi = output_streams_.begin();
+       osi != output_streams_.end();
+       osi++) {
+    (reinterpret_cast<std::ofstream *>(osi->second))->flush();
   }
+
   return COLVARS_OK;
 }
 
@@ -288,17 +277,29 @@ int colvarproxy_io::close_output_stream(std::string const &output_name)
     return cvm::error("Error: trying to access an output file/channel "
                       "from the wrong thread.\n", COLVARS_BUG_ERROR);
   }
-  std::list<std::ostream *>::iterator osi  = output_files.begin();
-  std::list<std::string>::iterator    osni = output_stream_names.begin();
-  for ( ; osi != output_files.end(); osi++, osni++) {
-    if (*osni == output_name) {
-      ((std::ofstream *) (*osi))->close();
-      delete *osi;
-      output_files.erase(osi);
-      output_stream_names.erase(osni);
-      return COLVARS_OK;
-    }
+
+  if (output_streams_.count(output_name) > 0) {
+    (reinterpret_cast<std::ofstream *>(output_streams_[output_name]))->close();
+    delete output_streams_[output_name];
+    output_streams_.erase(output_name);
   }
-  return cvm::error("Error: trying to close an output file/channel "
-                    "that wasn't open.\n", COLVARS_BUG_ERROR);
+
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_io::close_output_streams()
+{
+  if (! io_available()) {
+    return COLVARS_OK;
+  }
+
+  for (std::map<std::string, std::ostream *>::iterator osi = output_streams_.begin();
+       osi != output_streams_.end();
+       osi++) {
+    (reinterpret_cast<std::ofstream *>(osi->second))->close();
+  }
+  output_streams_.clear();
+
+  return COLVARS_OK;
 }

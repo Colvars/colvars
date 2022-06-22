@@ -569,11 +569,11 @@ int colvarbias::write_state_prefix(std::string const &prefix)
 {
   std::string const filename =
     cvm::state_file_prefix(prefix.c_str())+".colvars.state";
-  std::ostream *os = cvm::proxy->output_stream(filename.c_str());
+  std::ostream &os = cvm::proxy->output_stream(filename.c_str(), "bias state file");
   int error_code = COLVARS_OK;
-  if (os != NULL) {
-    os->setf(std::ios::scientific, std::ios::floatfield);
-    error_code = write_state(*os).good() ? COLVARS_OK : COLVARS_FILE_ERROR;
+  if (os) {
+    os.setf(std::ios::scientific, std::ios::floatfield);
+    error_code = write_state(os) ? COLVARS_OK : COLVARS_FILE_ERROR;
   } else {
     error_code = COLVARS_FILE_ERROR;
   }
@@ -897,6 +897,8 @@ std::istream & colvarbias_ti::read_state_data(std::istream &is)
 
 int colvarbias_ti::write_output_files()
 {
+  int error_code = COLVARS_OK;
+
   if (!has_data) {
     // nothing to write
     return COLVARS_OK;
@@ -904,38 +906,30 @@ int colvarbias_ti::write_output_files()
 
   std::string const ti_output_prefix = cvm::output_prefix()+"."+this->name;
 
-  std::ostream *os = NULL;
-
   if (is_enabled(f_cvb_write_ti_samples)) {
     std::string const ti_count_file_name(ti_output_prefix+".ti.count");
-    os = cvm::proxy->output_stream(ti_count_file_name);
-    if (os) {
-      ti_count->write_multicol(*os);
-      cvm::proxy->close_output_stream(ti_count_file_name);
-    }
+    error_code |= ti_count->write_multicol(ti_count_file_name, "TI count file");
 
     std::string const ti_grad_file_name(ti_output_prefix+".ti.force");
-    os = cvm::proxy->output_stream(ti_grad_file_name);
-    if (os) {
-      ti_avg_forces->write_multicol(*os);
-      cvm::proxy->close_output_stream(ti_grad_file_name);
-    }
+    error_code |= ti_avg_forces->write_multicol(ti_grad_file_name, "TI gradient file");
   }
 
   if (is_enabled(f_cvb_write_ti_pmf)) {
     std::string const pmf_file_name(ti_output_prefix+".ti.pmf");
     cvm::log("Writing TI PMF to file \""+pmf_file_name+"\".\n");
-    os = cvm::proxy->output_stream(pmf_file_name);
+    std::ostream &os = cvm::proxy->output_stream(pmf_file_name, "TI PMF");
     if (os) {
       // get the FE gradient
       ti_avg_forces->multiply_constant(-1.0);
-      ti_avg_forces->write_1D_integral(*os);
+      ti_avg_forces->write_1D_integral(os);
       ti_avg_forces->multiply_constant(-1.0);
       cvm::proxy->close_output_stream(pmf_file_name);
+    } else {
+      error_code |= COLVARS_FILE_ERROR;
     }
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 

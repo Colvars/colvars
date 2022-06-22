@@ -49,6 +49,29 @@ int colvar_grid_count::read_multicol(std::string const &filename,
   return colvar_grid<size_t>::read_multicol(filename, description, add);
 }
 
+std::ostream & colvar_grid_count::write_multicol(std::ostream &os) const
+{
+  return colvar_grid<size_t>::write_multicol(os);
+}
+
+int colvar_grid_count::write_multicol(std::string const &filename,
+                                      std::string description) const
+{
+  return colvar_grid<size_t>::write_multicol(filename, description);
+}
+
+std::ostream & colvar_grid_count::write_opendx(std::ostream &os) const
+{
+  return colvar_grid<size_t>::write_opendx(os);
+}
+
+int colvar_grid_count::write_opendx(std::string const &filename,
+                                    std::string description) const
+{
+  return colvar_grid<size_t>::write_opendx(filename, description);
+}
+
+
 
 colvar_grid_scalar::colvar_grid_scalar()
   : colvar_grid<cvm::real>(), samples(NULL)
@@ -84,6 +107,29 @@ int colvar_grid_scalar::read_multicol(std::string const &filename,
 {
   return colvar_grid<cvm::real>::read_multicol(filename, description, add);
 }
+
+std::ostream & colvar_grid_scalar::write_multicol(std::ostream &os) const
+{
+  return colvar_grid<cvm::real>::write_multicol(os);
+}
+
+int colvar_grid_scalar::write_multicol(std::string const &filename,
+                                       std::string description) const
+{
+  return colvar_grid<cvm::real>::write_multicol(filename, description);
+}
+
+std::ostream & colvar_grid_scalar::write_opendx(std::ostream &os) const
+{
+  return colvar_grid<cvm::real>::write_opendx(os);
+}
+
+int colvar_grid_scalar::write_opendx(std::string const &filename,
+                                     std::string description) const
+{
+  return colvar_grid<cvm::real>::write_opendx(filename, description);
+}
+
 
 cvm::real colvar_grid_scalar::maximum_value() const
 {
@@ -246,6 +292,29 @@ int colvar_grid_gradient::read_multicol(std::string const &filename,
 {
   return colvar_grid<cvm::real>::read_multicol(filename, description, add);
 }
+
+std::ostream & colvar_grid_gradient::write_multicol(std::ostream &os) const
+{
+  return colvar_grid<cvm::real>::write_multicol(os);
+}
+
+int colvar_grid_gradient::write_multicol(std::string const &filename,
+                                         std::string description) const
+{
+  return colvar_grid<cvm::real>::write_multicol(filename, description);
+}
+
+std::ostream & colvar_grid_gradient::write_opendx(std::ostream &os) const
+{
+  return colvar_grid<cvm::real>::write_opendx(os);
+}
+
+int colvar_grid_gradient::write_opendx(std::string const &filename,
+                                       std::string description) const
+{
+  return colvar_grid<cvm::real>::write_opendx(filename, description);
+}
+
 
 void colvar_grid_gradient::write_1D_integral(std::ostream &os)
 {
