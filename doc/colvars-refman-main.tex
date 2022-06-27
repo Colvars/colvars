@@ -3265,10 +3265,12 @@ All distances are calculated every \texttt{freq} timesteps to update the list of
 }\fi
 
 
-\cvsubsec{Dense neural network in CV space}{sec:cvc_neuralNetwork}
+\cvsubsec{Dense neural network in CV space (MLCV)}{sec:cvc_neuralNetwork}
 \labelkey{colvar|NeuralNetwork}
 
-This colvar computes a non-linear combination of other scalar colvar components, and the non-linear transformation is defined by a dense neural network.\cite{Chen2022}
+This colvar component computes a non-linear combination of other scalar colvar components, where the transformation is defined by a dense neural network.\cite{Chen2022}
+The network can be optimized using any framework, and its parameters are provided to Colvars in plain text files, as detailed below.
+An example Python script to export the parameters of a TensorFlow model is provided in \texttt{colvartools/extract\_weights\_biases.py} in the Colvars source tree.
 
 \begin{figure}[!ht]
 	\centering
@@ -3352,8 +3354,9 @@ where $f_{k}$ is the activation function of the $k$-th layer, $w_{(k,j),(k-1,i)}
   {Mathematical expression to define the activation function from layer $i-1$
    to layer $i$. The input value must be written as \texttt{x}. For example,
    the ELU activation function can be expressed as
-   \texttt{select(step(x), alpha*(exp(x)-1), x)}. It should be noted that this option
-   is mutually exclusive with the option
+   \texttt{select(step(x), alpha*(exp(x)-1), x)}.
+   For details of the expression syntax, see \refkey{customFunction}{colvar|customFunction}.
+   This option is mutually exclusive with
    \refkey{colvar|NeuralNetwork|layeri\_activation}.}
 
 \end{cvcoptions}
@@ -3733,7 +3736,8 @@ following parameters, which are common to all components:
     Defines the power at which the value of this component is raised
     before being added to the sum.  When this exponent is
     different than 1 (non-linear sum), total forces and the Jacobian
-    force are not available, making the colvar unsuitable for ABF calculations.}
+    force are not available, making the colvar unsuitable for ABF calculations
+    (eABF remains possible).}
 \end{itemize}
 
 \textbf{Example:} To define the \emph{average} of a colvar across
@@ -6825,7 +6829,7 @@ where $\beta$ is $1/k_{B}T$. If the distribution of $\Delta V(\mathbf{X})\delta[
 \begin{equation}\label{eq:cumulant-expansion}
 	A(\xi)=-C_1(\xi)-\frac{1}{2}\beta C_2(\xi),
 \end{equation}
-where $C_1(\xi)$ and $C_2(\xi)$ are the average and the variance of $\Delta V(\mathbf{X})\delta[\xi(\mathbf{X})-\xi]$, respectively. It should be noted that this implementation is initially intended for the combination of aMD/GaMD with other CV-based methods such as eABF\cite{Chen2021}, where the term associated with the biasing distribution $\tilde{\rho}(\xi)$, namely $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$, is included, so users are expected to add the output from Eq. (\ref{eq:amd-reweighting}) or (\ref{eq:cumulant-expansion}) with those from CZAR (see Eq. (\ref{eq:czar})) \cite{Lesage2017} directly. Consequently, in Eq. (\ref{eq:amd-reweighting}) and (\ref{eq:cumulant-expansion}) the term $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$ is not included. Therefore, if users want to perform just aMD/GaMD simulations with this on-the-fly reweighting implementation, the term $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$ should be manually computed by post-processing.
+where $C_1(\xi)$ and $C_2(\xi)$ are the average and the variance of $\Delta V(\mathbf{X})\delta[\xi(\mathbf{X})-\xi]$, respectively. It should be noted that this implementation is initially intended for the combination of aMD/GaMD with other CV-based methods such as eABF\cite{Chen2021}, where the term associated with the biasing distribution $\tilde{\rho}(\xi)$, namely $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$, is included, so users are expected to add the output from Eq.~(\ref{eq:amd-reweighting}) or (\ref{eq:cumulant-expansion}) with those from CZAR (see Eq.~(\ref{eq:czar})) \cite{Lesage2017} directly. Consequently, in Eq.~(\ref{eq:amd-reweighting}) and (\ref{eq:cumulant-expansion}) the term $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$ is not included. Therefore, if users want to perform just aMD/GaMD simulations with this on-the-fly reweighting implementation, the term $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$ should be manually computed by post-processing.
 
 Currently, in all MD engines that Colvars supports, only NAMD implements aMD/GaMD, so this component is basically exclusive to NAMD.
 
@@ -6855,17 +6859,17 @@ The list of options is as follows:
 	Enable the cumulant expansion estimator}{%
 	boolean}{%
 	\texttt{yes}}{%
-	If this option is set to \texttt{yes}, the cumulant expansion in Eq. (\ref{cumulant-expansion}) will be used. The output file have a suffix of \texttt{.cumulant.*}.
+	If this option is set to \texttt{yes}, the cumulant expansion in Eq.~(\ref{eq:cumulant-expansion}) will be used. The output file have a suffix of \texttt{.cumulant.*}.
 }
 
 \item %
 \keydef{%
 	writePMFGradients}{%
 	\texttt{reweightaMD}}{%
-	Calculate the numerical gradients of Eq. (\ref{amd-reweighting}) and (\ref{cumulant-expansion})}{%
+	Calculate the numerical gradients of Eq.~(\ref{eq:amd-reweighting}) and (\ref{eq:cumulant-expansion})}{%
 	boolean}{%
 	\texttt{yes}}{%
-	If this option is set to \texttt{yes}, the numerical gradients Eq. (\ref{amd-reweighting}) and (\ref{cumulant-expansion}) with respect to $\xi$ are calculated. This option is generally used when $\xi$ is stratified into windows, and the corresponding free-energies are required to merge afterwards.
+	If this option is set to \texttt{yes}, the numerical gradients Eq.~(\ref{eq:amd-reweighting}) and (\ref{eq:cumulant-expansion}) with respect to $\xi$ are calculated. This option is generally used when $\xi$ is stratified into windows, and the corresponding free-energies are required to merge afterwards.
 }
 
 \end{itemize}
