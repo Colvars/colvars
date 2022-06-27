@@ -504,7 +504,7 @@ colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(char const *key)
   target_equil_steps = 0;
   target_force_k = -1.0;
   starting_force_k = -1.0;
-  force_k_exp = 1.0;
+  lambda_exp = 1.0;
   restraint_FE = 0.0;
   force_k_incr = 0.0;
 }
@@ -550,12 +550,13 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
     target_nstages = lambda_schedule.size() - 1;
   }
 
-  if (get_keyval(conf, "targetForceExponent", force_k_exp, force_k_exp)) {
-    if (! b_chg_force_k)
-      cvm::log("Warning: not changing force constant: targetForceExponent will be ignored\n");
+  if ((get_keyval(conf, "targetForceExponent", lambda_exp, lambda_exp, parse_deprecated)
+    || get_keyval(conf, "lambdaExponent", lambda_exp, lambda_exp))
+    && !b_chg_force_k) {
+    cvm::error("Error: cannot set lambdaExponent unless a changing force constant is active.\n");
   }
-  if (force_k_exp < 1.0) {
-    cvm::log("Warning: for all practical purposes, targetForceExponent should be 1.0 or greater.\n");
+  if (lambda_exp < 1.0) {
+    cvm::log("Warning: for all practical purposes, lambdaExponent should be 1.0 or greater.\n");
   }
 
   return COLVARS_OK;
@@ -578,7 +579,7 @@ int colvarbias_restraint_k_moving::update()
           lambda = (b_decoupling ? 1.0 : 0.0);
         }
         force_k = starting_force_k + (target_force_k - starting_force_k)
-          * cvm::pow(lambda, force_k_exp);
+          * cvm::pow(lambda, lambda_exp);
           cvm::log("Restraint " + this->name + ", stage " + cvm::to_str(stage)
                   + " : lambda = " + cvm::to_str(lambda)
                   + ", k = " + cvm::to_str(force_k));
@@ -601,7 +602,7 @@ int colvarbias_restraint_k_moving::update()
         for (size_t i = 0; i < num_variables(); i++) {
           dU_dk += d_restraint_potential_dk(i);
         }
-        restraint_FE += force_k_exp * cvm::pow(lambda, force_k_exp - 1.0)
+        restraint_FE += lambda_exp * cvm::pow(lambda, lambda_exp - 1.0)
           * (target_force_k - starting_force_k) * dU_dk;
       }
 
@@ -625,7 +626,7 @@ int colvarbias_restraint_k_moving::update()
             if (b_decoupling) lambda = 1.0 - lambda;
           }
           force_k = starting_force_k + (target_force_k - starting_force_k)
-            * cvm::pow(lambda, force_k_exp);
+            * cvm::pow(lambda, lambda_exp);
           cvm::log("Restraint " + this->name + ", stage " + cvm::to_str(stage)
                   + " : lambda = " + cvm::to_str(lambda)
                   + ", k = " + cvm::to_str(force_k));
@@ -639,7 +640,7 @@ int colvarbias_restraint_k_moving::update()
       if (b_decoupling) lambda = 1.0 - lambda;
       cvm::real const force_k_old = force_k;
       force_k = starting_force_k + (target_force_k - starting_force_k)
-        * cvm::pow(lambda, force_k_exp);
+        * cvm::pow(lambda, lambda_exp);
       force_k_incr = force_k - force_k_old;
     }
   }

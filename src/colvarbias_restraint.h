@@ -210,7 +210,7 @@ protected:
   cvm::real starting_force_k;
 
   /// \brief Exponent for varying the force constant
-  cvm::real force_k_exp;
+  cvm::real lambda_exp;
 
   /// \brief Intermediate quantity to compute the restraint free energy
   /// (in TI, would be the accumulating FE derivative)
