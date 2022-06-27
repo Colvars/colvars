@@ -500,6 +500,7 @@ colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(char const *key)
     colvarbias_restraint_moving(key)
 {
   b_chg_force_k = false;
+  b_decoupling = false;
   target_equil_steps = 0;
   target_force_k = -1.0;
   starting_force_k = -1.0;
@@ -513,7 +514,18 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
 {
   colvarbias_restraint_k::init(conf);
 
+  get_keyval(conf, "decoupling", b_decoupling, b_decoupling);
+  if (b_decoupling) {
+    starting_force_k = 0.0;
+    target_force_k = force_k;
+    b_chg_force_k = true;
+  }
+
   if (get_keyval(conf, "targetForceConstant", target_force_k, target_force_k)) {
+    if (b_decoupling) {
+      cvm::error("Error: targetForceConstant may not be specified together with decoupling.\n");
+      return COLVARS_ERROR;
+    }
     starting_force_k = force_k;
     b_chg_force_k = true;
   }
@@ -563,7 +575,7 @@ int colvarbias_restraint_k_moving::update()
         if (lambda_schedule.size()) {
           lambda = lambda_schedule[0];
         } else {
-          lambda = 0.0;
+          lambda = (b_decoupling ? 1.0 : 0.0);
         }
         force_k = starting_force_k + (target_force_k - starting_force_k)
           * cvm::pow(lambda, force_k_exp);
@@ -578,6 +590,7 @@ int colvarbias_restraint_k_moving::update()
         lambda = lambda_schedule[stage];
       } else {
         lambda = cvm::real(stage) / cvm::real(target_nstages);
+        if (b_decoupling) lambda = 1.0 - lambda;
       }
 
       if (target_equil_steps == 0 || cvm::step_absolute() % target_nsteps >= target_equil_steps) {
@@ -609,6 +622,7 @@ int colvarbias_restraint_k_moving::update()
             lambda = lambda_schedule[stage];
           } else {
             lambda = cvm::real(stage) / cvm::real(target_nstages);
+            if (b_decoupling) lambda = 1.0 - lambda;
           }
           force_k = starting_force_k + (target_force_k - starting_force_k)
             * cvm::pow(lambda, force_k_exp);
@@ -620,9 +634,9 @@ int colvarbias_restraint_k_moving::update()
 
     } else if (cvm::step_absolute() <= target_nsteps) {
 
-
       // update force constant (slow growth)
       lambda = cvm::real(cvm::step_absolute()) / cvm::real(target_nsteps);
+      if (b_decoupling) lambda = 1.0 - lambda;
       cvm::real const force_k_old = force_k;
       force_k = starting_force_k + (target_force_k - starting_force_k)
         * cvm::pow(lambda, force_k_exp);
@@ -984,7 +998,7 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
   }
 
   // Initialize starting value of the force constant (in case it's changing)
-  starting_force_k = force_k;
+  starting_force_k = (b_decoupling ? 0.0 : force_k);
 
   if (lower_walls.size() > 0) {
     for (i = 0; i < num_variables(); i++) {

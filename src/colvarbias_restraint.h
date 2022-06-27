@@ -123,6 +123,9 @@ protected:
   /// \brief Changing force constant?
   bool b_chg_force_k;
 
+  /// \brief Perform decoupling of the restraint?
+  bool b_decoupling;
+
   /// \brief Number of stages over which to perform the change
   /// If zero, perform a continuous change
   int target_nstages;
