@@ -8,11 +8,13 @@ all: pdf
 pdf: $(PDF)
 
 %.pdf: %.tex $(BIBTEX) colvars-refman-main.tex colvars-refman.tex
-	pdflatex $<
-	bibtex $(basename $<)
-	makeindex $(basename $<).idx
-	pdflatex $<
-	pdflatex $<
+	latexmk -pdf $<
+## Use the lines below if latexmk is not available (better install latexmk!)
+# pdflatex $<
+# bibtex $(basename $<)
+# makeindex $(basename $<).idx
+# pdflatex $<
+# pdflatex $<
 
 clean: 
 	rm -f *.aux *.blg *.log *.toc *.out *.idx *.ilg *.ind *.brf *.4tc *.4ct *.css *.dvi *.html *.idv *.lg *.xref *.tmp eulerangles-512px.png
