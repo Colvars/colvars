@@ -106,6 +106,9 @@ public:
   /// Closes the given input stream
   virtual int close_input_stream(std::string const &input_name);
 
+  /// Closes all input streams
+  virtual int close_input_streams();
+
   /// \brief Returns a reference to the given output channel;
   /// if this is not open already, then open it
   virtual std::ostream *output_stream(std::string const &output_name,
