@@ -200,6 +200,8 @@ int colvarbias_restraint_moving::init(std::string const &conf)
 
   if (b_chg_centers || b_chg_force_k) {
 
+    first_step = cvm::step_absolute();
+
     get_keyval(conf, "targetNumSteps", target_nsteps, target_nsteps);
     if (!target_nsteps) {
       cvm::error("Error: targetNumSteps must be non-zero.\n", COLVARS_INPUT_ERROR);
@@ -345,7 +347,7 @@ int colvarbias_restraint_centers_moving::update()
       // Staged update
       if (stage <= target_nstages) {
         if ((cvm::step_relative() > 0) &&
-            ((cvm::step_absolute() % target_nsteps) == 1)) {
+            (((cvm::step_absolute() - first_step) % target_nsteps) == 1)) {
           cvm::real const lambda =
             cvm::real(stage)/cvm::real(target_nstages);
           update_centers(lambda);
@@ -362,9 +364,9 @@ int colvarbias_restraint_centers_moving::update()
       }
     } else {
       // Continuous update
-      if (cvm::step_absolute() <= target_nsteps) {
+      if (cvm::step_absolute() - first_step <= target_nsteps) {
         cvm::real const lambda =
-          cvm::real(cvm::step_absolute())/cvm::real(target_nsteps);
+          cvm::real(cvm::step_absolute() - first_step)/cvm::real(target_nsteps);
         update_centers(lambda);
       } else {
         for (size_t i = 0; i < num_variables(); i++) {
@@ -396,7 +398,7 @@ int colvarbias_restraint_centers_moving::update_acc_work()
   if (b_chg_centers) {
     if (is_enabled(f_cvb_output_acc_work)) {
       if ((cvm::step_relative() > 0) &&
-          (cvm::step_absolute() <= target_nsteps)) {
+          (cvm::step_absolute() - first_step <= target_nsteps)) {
         for (size_t i = 0; i < num_variables(); i++) {
           // project forces on the calculated increments at this step
           acc_work += colvar_forces[i] * centers_incr[i];
@@ -528,14 +530,12 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
     }
     starting_force_k = force_k;
     b_chg_force_k = true;
-  }
-
-  if (b_chg_force_k) {
-    // parse moving restraint options
-    colvarbias_restraint_moving::init(conf);
   } else {
     return COLVARS_OK;
   }
+
+  // parse moving restraint options
+  colvarbias_restraint_moving::init(conf);
 
   get_keyval(conf, "targetEquilSteps", target_equil_steps, target_equil_steps);
 
@@ -571,7 +571,7 @@ int colvarbias_restraint_k_moving::update()
 
     if (target_nstages) {
 
-      if (cvm::step_absolute() == 0) {
+      if (cvm::step_absolute() == first_step) {
         // Setup first stage of staged variable force constant calculation
         if (lambda_schedule.size()) {
           lambda = lambda_schedule[0];
@@ -594,7 +594,7 @@ int colvarbias_restraint_k_moving::update()
         if (b_decoupling) lambda = 1.0 - lambda;
       }
 
-      if (target_equil_steps == 0 || cvm::step_absolute() % target_nsteps >= target_equil_steps) {
+      if (target_equil_steps == 0 || (cvm::step_absolute() - first_step) % target_nsteps >= target_equil_steps) {
         // Start averaging after equilibration period, if requested
 
         // Derivative of energy with respect to force_k
@@ -607,8 +607,8 @@ int colvarbias_restraint_k_moving::update()
       }
 
       // Finish current stage...
-      if (cvm::step_absolute() % target_nsteps == 0 &&
-          cvm::step_absolute() > 0) {
+      if ((cvm::step_absolute() - first_step) % target_nsteps == 0 &&
+           cvm::step_absolute() > first_step) {
 
         cvm::log("Restraint " + this->name + " Lambda= "
                  + cvm::to_str(lambda) + " dA/dLambda= "
@@ -633,10 +633,10 @@ int colvarbias_restraint_k_moving::update()
         }
       }
 
-    } else if (cvm::step_absolute() <= target_nsteps) {
+    } else if (cvm::step_absolute() - first_step <= target_nsteps) {
 
       // update force constant (slow growth)
-      lambda = cvm::real(cvm::step_absolute()) / cvm::real(target_nsteps);
+      lambda = cvm::real(cvm::step_absolute() - first_step) / cvm::real(target_nsteps);
       if (b_decoupling) lambda = 1.0 - lambda;
       cvm::real const force_k_old = force_k;
       force_k = starting_force_k + (target_force_k - starting_force_k)

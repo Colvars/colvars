@@ -140,6 +140,9 @@ protected:
   /// or restraint centers
   cvm::step_number target_nsteps;
 
+  /// \brief Timestep at which the restraint starts moving
+  cvm::step_number first_step;
+
   /// \brief Accumulated work (computed when outputAccumulatedWork == true)
   cvm::real acc_work;
 };
