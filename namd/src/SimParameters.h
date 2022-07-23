@@ -120,6 +120,7 @@ public:
   int watmodel; // integer code for the water model in use
                 // choices are defined in common.h
   Bool LJcorrection; // flag for whether water tail corrections should be used
+  Bool LJcorrectionAlt; // flag for whether alternative tail corrections should be used
 	BigReal dt;	   		//  Timestep size
 	int N;		   		//  Number of steps to be performed
 	int stepsPerCycle;		//  Number of timesteps per cycle

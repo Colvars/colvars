@@ -661,6 +661,7 @@ void SimParameters::config_parser_basic(ParseOptions &opts) {
 #endif
    opts.optional("main", "waterModel", "Water model to use", PARSE_STRING);
    opts.optionalB("main", "LJcorrection", "Apply analytical tail corrections for energy and virial", &LJcorrection, FALSE);
+   opts.optionalB("main", "LJcorrectionAlt", "Apply alternative analytical tail corrections for energy and virial", &LJcorrectionAlt, FALSE);
 #ifdef TIMER_COLLECTION
    opts.optional("main", "TimerBinWidth",
        "Bin width of timer histogram collection in microseconds",
@@ -2823,6 +2824,9 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
   initialTemp = -1.0;
    }
 
+  if (LJcorrection && LJcorrectionAlt) {
+    NAMD_die("Only one method for LJ tail correction must be used.");
+  }
    ///// periodic cell parameters
 
    if ( opts.defined("extendedSystem") ) readExtendedSystem(config->find("extendedSystem")->data);
@@ -2831,10 +2835,17 @@ void SimParameters::check_config(ParseOptions &opts, ConfigList *config, char *&
    if ( LJcorrection ) {
       NAMD_die("LJ tail corrections not yet available for memory optimized builds");
    }
+   if ( LJcorrectionAlt ) {
+      NAMD_die("Alternative LJ tail corrections not yet available for memory optimized builds");
+   }
 #endif
 
    if ( LJcorrection && ! cellBasisVector3.length2() ) {
      NAMD_die("Can't use LJ tail corrections without periodic boundary conditions!");
+   }
+
+   if ( LJcorrectionAlt && ! cellBasisVector3.length2() ) {
+     NAMD_die("Can't use alternative LJ tail corrections without periodic boundary conditions!");
    }
 
    if ( cellBasisVector3.length2() && ! cellBasisVector2.length2() ) {
