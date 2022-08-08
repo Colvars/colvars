@@ -1041,8 +1041,8 @@ public:
     os << std::setw(2) << "# " << nd << "\n";
     for (size_t i = 0; i < nd; i++) {
       os << "# "
-         << std::setw(10) << lower_boundaries[i]
-         << std::setw(10) << widths[i]
+         << std::setw(10) << lower_boundaries[i] << " "
+         << std::setw(10) << widths[i] << " "
          << std::setw(10) << nx[i] << "  "
          << periodic[i] << "\n";
     }
