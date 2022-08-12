@@ -3994,8 +3994,7 @@ The following keywords define these parameters for a specific variable, and will
     provided by the component}{%
     When the colvar has a ``natural'' boundary (for example, a \texttt{distance} colvar cannot go below 0) this flag is automatically enabled.
     For more complex variable definitions, or when \refkey{lowerBoundary}{colvar|lowerBoundary} is provided directly by the user, it may be useful to set this flag explicitly.
-    This option does not affect simulation results, but enables some internal optimizations by letting the code know that the variable is unable to cross the lower boundary, regardless of whether restraints are applied to it.
-}
+    This option does not affect simulation results, but enables some internal optimizations by letting the code know that the variable is unable to cross the lower boundary, regardless of whether restraints are applied to it.}
 
 \item %
   \labelkey{colvar|hardUpperBoundary} %
@@ -4017,8 +4016,7 @@ The following keywords define these parameters for a specific variable, and will
     \texttt{off}}{%
     If defined, \texttt{lowerBoundary} and \texttt{upperBoundary} may be automatically expanded to accommodate colvar values that do not fit in the initial range.
     Currently, this option is used by the metadynamics bias (\ref{sec:colvarbias_meta}) to keep all of its hills fully within the grid.
-    Enabling this option does not affect any boundaries that are defined as ``hard'' (see above), or any boundaries that span the full period of a periodic colvar.
-    }
+    Enabling this option does not affect any boundaries that are defined as ``hard'' (see above), or any boundaries that span the full period of a periodic colvar.}
 
 \end{itemize}
 
@@ -4143,8 +4141,7 @@ coordinates and act directly on the actual colvars.
     used in some metadynamics simulations~\cite{Iannuzzi2003}.
     \cvnamdonly{The energy associated with the extended degree of freedom is reported
     along with bias energies
-    under the MISC title in NAMD's energy output}.
-    }
+    under the MISC title in NAMD's energy output}.}
 
 \item %
   \key
@@ -4218,6 +4215,28 @@ coordinates and act directly on the actual colvars.
     viscous friction (potentially slowing down diffusive sampling) and stochastic
     noise (increasing the variance of statistical measurements). In
     doubt, use the default value.}
+
+\item %
+\labelkey{colvar|reflectingLowerBoundary} %
+\keydef
+  {reflectingLowerBoundary}{%
+  \texttt{colvar}}{%
+  Whether the lower boundary reflects the extended Lagrangian particle}{%
+  boolean}{%
+  \texttt{off}}{%
+  This turns the specified \refkey{lowerBoundary}{colvar|lowerBoundary} into a reflecting wall for the extended particle:
+  upon collision, the particle is reflected with opposite momentum.}
+
+\item %
+\labelkey{colvar|reflectingUpperBoundary} %
+\keydef
+{reflectingUpperBoundary}{%
+\texttt{colvar}}{%
+Whether the upper boundary reflects the extended Lagrangian particle}{%
+boolean}{%
+\texttt{off}}{%
+This turns the specified \refkey{upperBoundary}{colvar|upperBoundary} into a reflecting wall for the extended particle:
+upon collision, the particle is reflected with opposite momentum.}
 \end{itemize}
 
 
