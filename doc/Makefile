@@ -1,9 +1,11 @@
-.PHONY: all pdf clean clean-all update-code-refs update-cvscript-cmdline-doc
+.PHONY: all pdf clean clean-all update-code-refs update-cvscript-cmdline-doc updates
 
 PDF=colvars-refman-lammps.pdf colvars-refman-namd.pdf colvars-refman-vmd.pdf colvars-refman-gromacs.pdf colvars-refman-tinkerhp.pdf
 BIBTEX=colvars-refman.bib
 
 all: pdf
+
+updates: version-list update-code-refs update-cvscript-cmdline-doc
 
 pdf: $(PDF)
 
@@ -25,10 +27,8 @@ clean-all: clean
 version-list:
 	./print_engine_versions.sh > ../README-versions.md
 
-
 update-code-refs:
 	python3 extract_code_refs.py > ../src/colvarmodule_refs.h
-
 
 update-cvscript-cmdline-doc:
 	tclsh gen_cvscript_doc.tcl

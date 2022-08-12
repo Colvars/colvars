@@ -63,6 +63,22 @@
     "  url = {https://doi.org/10.1021/ct500874p}\n"
     "}\n";
 
+  paper_count_[std::string("Ebrahimi2022")] = 0;
+  paper_url_[std::string("Ebrahimi2022")] = "https://doi.org/10.1021/acs.jctc.1c01235";
+  paper_bibtex_[std::string("Ebrahimi2022")] =
+    "\n"
+    "@article {Ebrahimi2022,\n"
+    "  author = {Ebrahimi, Mina and H\\'enin, J\\'er\\^ome},\n"
+    "  title = {Symmetry-Adapted Restraints for Binding Free Energy Calculations},\n"
+    "  journal = {Journal of Chemical Theory and Computation},\n"
+    "  volume = {18},\n"
+    "  number = {4},\n"
+    "  pages = {2494-2502},\n"
+    "  year = {2022},\n"
+    "  doi = {10.1021/acs.jctc.1c01235},\n"
+    "  url = {https://doi.org/10.1021/acs.jctc.1c01235}\n"
+    "}\n";
+
   paper_count_[std::string("Fiorin2013")] = 0;
   paper_url_[std::string("Fiorin2013")] = "https://doi.org/10.1080/00268976.2013.813594";
   paper_bibtex_[std::string("Fiorin2013")] =
@@ -328,6 +344,9 @@
 
   feature_count_[std::string("Multiple-walker ABF implementation")] = 0;
   feature_paper_map_[std::string("Multiple-walker ABF implementation")] = "Comer2014c";
+
+  feature_count_[std::string("Symmetry-adapted RMSD")] = 0;
+  feature_paper_map_[std::string("Symmetry-adapted RMSD")] = "Ebrahimi2022";
 
   feature_count_[std::string("Colvars module")] = 0;
   feature_paper_map_[std::string("Colvars module")] = "Fiorin2013";

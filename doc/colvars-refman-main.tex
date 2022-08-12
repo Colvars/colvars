@@ -1982,12 +1982,11 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     symmetry-adapted RMSD would be obtained by adding:\\
     \texttt{atomPermutation 6 8 9 7}\\
     \texttt{atomPermutation 6 9 7 8}\\
-    Note that \textit{this does not affect the least-squares roto-translational fit},
-    which is done using the topology ordering of atoms, and the reference
-    positions in the order provided.
+    This will result in these 2 atom orders being considered \emph{in addition to the order used when defining the atom group}.
+    Note that this does not affect the least-squares roto-translational fit.
     Therefore, this feature is mostly useful when using custom fitting parameters within the
     atom group, such as \refkey{fittingGroup}{atom-group|fittingGroup}, or when fitting
-    is disabled altogether.
+    is disabled altogether. For details, see reference~\cite{Ebrahimi2022}.
   }
 \end{cvcoptions}
 This component returns a positive real number (in \lengthunit).
