@@ -125,46 +125,16 @@ std::ostream & operator << (std::ostream &os, colvarmodule::quaternion const &q)
 std::istream & operator >> (std::istream &is, colvarmodule::quaternion &q)
 {
   std::streampos const start_pos = is.tellg();
-
-  std::string euler("");
-
-  if ( (is >> euler) && (colvarparse::to_lower_cppstr(euler) ==
-                         std::string("euler")) ) {
-
-    // parse the Euler angles
-
-    char sep;
-    cvm::real phi, theta, psi;
-    if ( !(is >> sep)   || !(sep == '(') ||
-         !(is >> phi)   || !(is >> sep)  || !(sep == ',') ||
-         !(is >> theta) || !(is >> sep)  || !(sep == ',') ||
-         !(is >> psi)   || !(is >> sep)  || !(sep == ')') ) {
-      is.clear();
-      is.seekg(start_pos, std::ios::beg);
-      is.setstate(std::ios::failbit);
-      return is;
-    }
-
-    q = colvarmodule::quaternion(phi, theta, psi);
-
-  } else {
-
-    // parse the quaternion components
-
+  char sep;
+  if ( !(is >> sep)  || !(sep == '(') ||
+       !(is >> q.q0) || !(is >> sep)  || !(sep == ',') ||
+       !(is >> q.q1) || !(is >> sep)  || !(sep == ',') ||
+       !(is >> q.q2) || !(is >> sep)  || !(sep == ',') ||
+       !(is >> q.q3) || !(is >> sep)  || !(sep == ')') ) {
+    is.clear();
     is.seekg(start_pos, std::ios::beg);
-    char sep;
-    if ( !(is >> sep)  || !(sep == '(') ||
-         !(is >> q.q0) || !(is >> sep)  || !(sep == ',') ||
-         !(is >> q.q1) || !(is >> sep)  || !(sep == ',') ||
-         !(is >> q.q2) || !(is >> sep)  || !(sep == ',') ||
-         !(is >> q.q3) || !(is >> sep)  || !(sep == ')') ) {
-      is.clear();
-      is.seekg(start_pos, std::ios::beg);
-      is.setstate(std::ios::failbit);
-      return is;
-    }
+    is.setstate(std::ios::failbit);
   }
-
   return is;
 }
 
