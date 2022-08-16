@@ -1,0 +1,12 @@
+harmonicWalls {
+    colvars        one
+
+    upperWalls     0.2
+    upperWallConstant  0.001
+
+    decoupling yes
+    lambdaExponent  4
+    targetNumStages 2
+    targetNumSteps  10
+    outputEnergy   yes
+}

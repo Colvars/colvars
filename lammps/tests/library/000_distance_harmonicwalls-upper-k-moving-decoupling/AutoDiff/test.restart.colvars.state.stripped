@@ -1,0 +1,19 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name one
+  x  3.19386105086959e+00
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonicwalls1
+    stage            2
+    forceConstant  0.00000000000000e+00
+  }
+}
+
