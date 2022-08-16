@@ -6297,7 +6297,7 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     positive decimal}{%
     When defined, the current \texttt{forceConstant} will be moved towards
     this value during the simulation. Time evolution of the force constant
-    is dictated by the \texttt{targetForceExponent} parameter (see below).
+    is dictated by the \texttt{lambdaExponent} parameter (see below).
     By default, the force constant is changed smoothly over a total of
     \texttt{targetNumSteps} steps. This is useful to introduce or
     remove restraints in a progressive manner.
@@ -6319,7 +6319,7 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
 
 \item %
   \keydef
-    {targetForceExponent}{%
+    {lambdaExponent}{%
       \texttt{harmonic}}{%
       Exponent in the time-dependence of the force constant}{%
       decimal equal to or greater than 1.0}{%
@@ -6338,7 +6338,25 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     restraint more smoothly over time than a linear dependence, and
     ensures that there is no singularity in the derivative of the
     restraint free energy with respect to lambda. A value of 4 has
-    been found to give good results in some tests.}
+    been found to give good results in some tests.
+    To remove the restraint over time rather than introduce it, use the
+    \texttt{decoupling} option.}
+
+    \item %
+    \keydef
+    {decoupling}{%
+      \texttt{harmonic}}{%
+      Perform a restraint decoupling transformation}{%
+      boolean}{%
+    \texttt{off}}{%
+    When this option is enabled, the restraint is decoupled by changing the force constant
+    from \texttt{forceConstant} to 0.0 over the course of the simulation, as specified
+    by \texttt{targetNumSteps} and, optionally, \texttt{targetNumStages}.
+    The force constant is then varied as:
+    $ k_\lambda = (1 - \lambda)^\alpha k$,
+    where $\alpha$ is the value of \texttt{lambdaExponent}.
+    Setting \texttt{lambdaExponent} to a value greater than 1 (e.g. 4) ensures a smoother
+    dependence of the energy on $\lambda$ around $k_\lambda = 0$.}
 
 \item %
   \key
@@ -6456,7 +6474,7 @@ The \texttt{harmonicWalls} bias implements the following options:
   }
 
 \item \dupkey{targetNumSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
-\item \dupkey{targetForceExponent}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
+\item \dupkey{lambdaExponent}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
 \item \dupkey{targetEquilSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
 \item \dupkey{targetNumStages}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
 \item \dupkey{lambdaSchedule}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
@@ -6585,7 +6603,7 @@ Another useful application of a linear restraint is to enforce experimental cons
 
 \item \dupkey{targetForceConstant}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{targetNumSteps}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
-\item \dupkey{targetForceExponent}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
+\item \dupkey{lambdaExponent}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{targetEquilSteps}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{targetNumStages}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
 \item \dupkey{lambdaSchedule}{\texttt{linear}}{sec:colvarbias_harmonic}{Harmonic restraints}
