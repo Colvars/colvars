@@ -766,16 +766,20 @@ int colvarbias_restraint_harmonic::update()
   // update the TI estimator (if defined)
   error_code |= colvarbias_ti::update();
 
-  // update parameters (centers or force constant)
-  error_code |= colvarbias_restraint_centers_moving::update();
-  error_code |= colvarbias_restraint_k_moving::update();
+  if (cvm::main()->proxy->simulation_running()) {
+    // update parameters (centers or force constant)
+    error_code |= colvarbias_restraint_centers_moving::update();
+    error_code |= colvarbias_restraint_k_moving::update();
+  }
 
   // update restraint energy and forces
   error_code |= colvarbias_restraint::update();
 
-  // update accumulated work using the current forces
-  error_code |= colvarbias_restraint_centers_moving::update_acc_work();
-  error_code |= colvarbias_restraint_k_moving::update_acc_work();
+  if (cvm::main()->proxy->simulation_running()) {
+    // update accumulated work using the current forces
+    error_code |= colvarbias_restraint_centers_moving::update_acc_work();
+    error_code |= colvarbias_restraint_k_moving::update_acc_work();
+  }
 
   return error_code;
 }

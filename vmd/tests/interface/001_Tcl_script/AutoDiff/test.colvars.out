@@ -1,131 +1,167 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  http://dx.doi.org/10.1080/00268976.2013.813594
-colvars: in any publication based on this calculation.
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
+colvars: This version was built with the C++11 standard or higher.
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
-colvars: # indexFile = "" [default]
-colvars: # analysis = off [default]
+colvars: # units = "" [default]
+colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0
-colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsd"
 colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
-colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID = { BH }
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 10 atoms initialized: total mass = 120.11, total charge = 0.53.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 120.11, total charge = 0.53.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/da.pdb"
 colvars:     # refPositionsCol = "" [default]
-colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   All components initialized.
-colvars:   # width = 0.01
-colvars:   # lowerBoundary = 0
-colvars:   # lowerWallConstant = 10
-colvars:   # lowerWall = 0 [default]
-colvars:   # upperBoundary = 0.1
-colvars:   # upperWallConstant = 10
-colvars:   # upperWall = 0.1 [default]
-colvars:   # hardLowerBoundary = on
-colvars:   # hardUpperBoundary = off [default]
-colvars:   # expandBoundaries = on
 colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 0.01
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0.1
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
+colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { rmsd }
+colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = on
-colvars:   # forceConstant = 1 [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
 colvars:   # centers = { 0 }
 colvars:   # targetCenters = { 0.2 }
-colvars:   # targetForceConstant = 0 [default]
 colvars:   # targetNumSteps = 20
 colvars:   # targetNumStages = 0 [default]
-colvars:   # targetForceExponent = 1 [default]
-colvars:   # outputCenters = on
 colvars:   # outputAccumulatedWork = on
-colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width.
+colvars:   # outputCenters = on
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width (0.01).
 colvars: ----------------------------------------------------------------------
-colvars: Collective variables biases initialized, 1 in total.
+colvars:   Initializing a new "harmonicwalls" instance.
+colvars:   # name = "wall_rmsd"
+colvars:   # colvars = { rmsd }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # forceConstant = 1 [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   # lowerWalls = { 0 } [default]
+colvars:   Lower walls were not provided.
+colvars:   # upperWalls = { 0.1 }
+colvars:   # upperWallConstant = 10
+colvars:   The upper wall force constant for colvar "rmsd" will be rescaled to 100000 according to the specified width (0.01).
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 2 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Re-initialized atom group for variable "rmsd":0/0. 10 atoms: total mass = 120.11, total charge = 0.53.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
-colvars: # indexFile = "" [default]
-colvars: # analysis = off [default]
+colvars: # units = "" [default]
+colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1 [default]
 colvars: # colvarsRestartFrequency = 0 [default]
-colvars: # colvarsTrajAppend = off [default]
 colvars: # scriptedColvarForces = off [default]
-colvars: # scriptingAfterBiases = on [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "rmsd-all"
 colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
 colvars:     # period = 0 [default]
 colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
-colvars:     Scalable calculation is not available for group "atoms" with the current configuration.
 colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
 colvars:       # enableFitGradients = on [default]
-colvars:       Atom group "atoms" defined, 51 atoms initialized: total mass = 674.397, total charge = -7.64.
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 51 atoms requested: total mass = 674.397, total charge = -7.64.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/da.pdb"
 colvars:     # refPositionsCol = "" [default]
-colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # lowerWallConstant = 0 [default]
-colvars:   # upperBoundary = 0 [default]
-colvars:   # upperWallConstant = 0 [default]
+colvars:   # upperBoundary = 1 [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
-colvars:   # outputSystemForce = off [default]
+colvars:   # outputTotalForce = off [default]
 colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 2 in total.
 colvars: ----------------------------------------------------------------------
-colvars: Collective variables biases initialized, 1 in total.
+colvars: Collective variables biases initialized, 2 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Re-initialized atom group for variable "rmsd":0/0. 10 atoms: total mass = 120.11, total charge = 0.53.
+colvars: Re-initialized atom group for variable "rmsd-all":0/0. 51 atoms: total mass = 674.397, total charge = -7.64.
