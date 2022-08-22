@@ -156,6 +156,8 @@ int colvarbias_meta::init(std::string const &conf)
 
   error_code |= init_replicas_params(conf);
   error_code |= init_well_tempered_params(conf);
+  error_code |= init_reflection_params(conf);
+  error_code |= init_interval_params(conf);
   error_code |= init_ebmeta_params(conf);
 
   if (cvm::debug())
