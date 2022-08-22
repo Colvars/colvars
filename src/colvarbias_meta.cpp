@@ -313,6 +313,213 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
   return error_code;
 }
 
+int colvarbias_meta::init_reflection_params(std::string const &conf)
+{
+  bool use_reflection;
+  nrefvarsl=0;
+  nrefvarsu=0;
+  reflection_type = rt_none;
+  get_keyval(conf, "useHillsReflection", use_reflection, false);
+  if (use_reflection) {
+
+    reflection_type = rt_monod;
+    std::string reflection_type_str;
+    get_keyval(conf, "reflectionType", reflection_type_str, to_lower_cppstr(std::string("monoDimensional")));
+    reflection_type_str = to_lower_cppstr(reflection_type_str);
+    if (reflection_type_str == to_lower_cppstr(std::string("monoDimensional"))) {
+      reflection_type = rt_monod;
+    } else if (reflection_type_str == to_lower_cppstr(std::string("multiDimensional"))) {
+      reflection_type = rt_multid;
+    }
+
+    get_keyval(conf, "reflectionLowLimitNCVs", nrefvarsl, num_variables());
+    get_keyval(conf, "reflectionUpLimitNCVs", nrefvarsu, num_variables());
+    if (reflection_llimit_cv.size()==0) {
+      reflection_llimit_cv.resize(nrefvarsl);
+      for (size_t i = 0; i < nrefvarsl; i++) {
+         reflection_llimit_cv[i]=i;
+      }
+    }
+    if (reflection_ulimit_cv.size()==0) {
+      reflection_ulimit_cv.resize(nrefvarsu);
+      for (size_t i = 0; i < nrefvarsu; i++) {
+         reflection_ulimit_cv[i]=i;
+      }
+    }
+    if (nrefvarsl>0 || nrefvarsu>0) {
+      get_keyval(conf, "reflectionRange", reflection_int, 6.0);
+      cvm::log("Reflection range is "+cvm::to_str(reflection_int)+".\n");
+    }
+    if(nrefvarsl>0) {
+      if (get_keyval(conf, "reflectionLowLimitUseCVs", reflection_llimit_cv, reflection_llimit_cv)) {
+        if (reflection_llimit.size()==0) {
+          reflection_llimit.resize(nrefvarsl);
+        }
+      } else {
+        cvm::log("Using all variables for lower limits of reflection \n");
+      }
+      if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {
+        for (size_t i = 0; i < nrefvarsl; i++) {
+           if (use_grids) {
+             size_t ii=reflection_llimit_cv[i];
+             cvm:: real sigma=0.5*variables(ii)->width*hill_width;
+             cvm:: real bound=variables(ii)->lower_boundary;
+             cvm:: real ref_r=reflection_llimit[i]-reflection_int*sigma;
+             if (ref_r < bound) {
+               cvm::error("Error: When using grids, lower boundary for CV"+cvm::to_str(ii)+" must be smaller than"+cvm::to_str(ref_r)+".\n", INPUT_ERROR);
+             }
+           }
+           cvm::log("Reflection condition is applied on a lower limit for CV "+cvm::to_str(reflection_llimit_cv[i])+".\n");
+           cvm::log("Reflection condition lower limit for this CV is "+cvm::to_str(reflection_llimit[i])+".\n");
+        }
+      } else {
+        cvm::error("Error: Lower limits for reflection not provided.\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    }
+
+    if(nrefvarsu>0) {
+      if (get_keyval(conf, "reflectionUpLimitUseCVs", reflection_ulimit_cv, reflection_ulimit_cv)) {
+        if (reflection_ulimit.size()==0) {
+          reflection_ulimit.resize(nrefvarsu);
+        }
+      } else {
+        cvm::log("Using all variables for upper limits of reflection \n");
+      }
+
+      if (get_keyval(conf, "reflectionUpLimit", reflection_ulimit, reflection_ulimit)) {
+        for (size_t i = 0; i < nrefvarsu; i++) {
+           if (use_grids) {
+             size_t ii=reflection_ulimit_cv[i];
+             cvm:: real sigma=0.5*variables(ii)->width*hill_width;
+             cvm:: real bound=variables(ii)->upper_boundary;
+             cvm:: real ref_r=reflection_ulimit[i]+reflection_int*sigma;
+             if (ref_r > bound) {
+               cvm::error("Error: When using grids, upper boundary for CV"+cvm::to_str(ii)+" must be larger than"+cvm::to_str(ref_r)+".\n", INPUT_ERROR);
+             }
+           }
+           cvm::log("Reflection condition is applied on an upper limit for CV "+cvm::to_str(reflection_ulimit_cv[i])+".\n");
+           cvm::log("Reflection condition upper limit for this CV is "+cvm::to_str(reflection_ulimit[i])+".\n");
+        }
+      } else {
+        cvm::error("Error: Upper limits for reflection not provided.\n", INPUT_ERROR);
+        return INPUT_ERROR;
+      }
+    }
+  }
+  // use reflection only with scalar variables
+
+  for (size_t i = 0; i < nrefvarsl; i++) {
+     if (reflection_llimit_cv[i]>=num_variables() || reflection_llimit_cv[i]<0) {
+       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+     int j=reflection_llimit_cv[i];
+     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+       cvm::error("Error: Hills reflection can be used only with scalar variables.\n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+  }
+
+  for (size_t i = 0; i < nrefvarsu; i++) {
+     if (reflection_ulimit_cv[i]>=num_variables() || reflection_ulimit_cv[i]<0) {
+       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+     int j=reflection_ulimit_cv[i];
+     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+       cvm::error("Error: Hills reflection can be used only with scalar variables.\n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+  }
+  // mono vs multimensional reflection
+
+  switch (reflection_type) {
+  case rt_none:
+    break;
+  case rt_monod:
+    cvm::log("Using monodimensional reflection \n");
+    break;
+  case rt_multid:
+    // generate reflection states
+    cvm::log("Using multidimensional reflection \n");
+    int sum=1;
+    int nstates;
+    int nvars=num_variables();
+    if (reflection_usel.size()==0) {
+      reflection_usel.resize(nvars,std::vector<bool>(2));
+    }
+
+    if (reflection_l.size()==0) {
+      reflection_l.resize(nvars,std::vector<cvm::real>(2));
+    }
+
+    for (size_t j = 1; j < nvars; j++) {
+       reflection_usel[j][0]=false;
+       reflection_l[j][0]=0.0;
+       reflection_usel[j][1]=false;
+       reflection_l[j][1]=0.0;
+    }
+
+    for (size_t i = 0; i < nrefvarsl; i++) {
+       int j=reflection_llimit_cv[i];
+       reflection_usel[j][0]=true;
+       reflection_l[j][0]=reflection_llimit[i];
+    }
+
+    for (size_t i = 0; i < nrefvarsu; i++) {
+       int j=reflection_ulimit_cv[i];
+       reflection_usel[j][1]=true;
+       reflection_l[j][1]=reflection_ulimit[i];
+    }
+
+//  Generate all possible reflection states (e.g. through faces, edges and vertex).
+//  Consider for example a cube, the states are:
+//  [0,0,1]
+//  [0,1,0] [0,1,1] 
+//  [1,0,0] [1,0,1] [1,1,0] [1,1,1]
+//  where 1 means reflect on that coordinate and 0 do not reflect.
+//  These states can be generated as: 
+//  ref_state[0][0]=1
+//  ref_state[1][0]=10  ref_state[1][1]=11
+//  ref_state[2][0]=100 ref_state[2][1]=101 ref_state[2][2]=110 ref_state[2][3]=111
+//  going down along the rows the size ref_state[j].size() is the number of previous states
+//  (j-1) plus one.
+//  A specific state instead can be generated starting from a power of 10 and then summing 
+//  the states of the previous rows:
+//  ref_state[1][1]=ref_state[1][0]+ref_state[0][0] 
+//  ref_state[2][1]=ref_state[2][0]+ref_state[0][0]
+//  ref_state[2][2]=ref_state[2][0]+ref_state[1][0] 
+//  ref_state[2][3]=ref_state[2][0]+ref_state[1][1]  
+
+    if (ref_state.size()==0) {
+      ref_state.resize(nvars,std::vector<int>(1));
+    }
+    ref_state[0][0]=1;
+    for (size_t j = 1; j < nvars; j++) {
+      sum*=10;
+      nstates=0;
+      for (size_t jj = 0; jj < j; jj++) {
+            nstates+=ref_state[j].size();
+      }
+      nstates++;
+      ref_state[j].resize(nstates);
+      ref_state[j][0]=sum;
+      int count=0;
+      for (size_t jj = 0; jj < j; jj++) {
+         for (size_t ii = 0; ii < ref_state[jj].size(); ii++) {
+            count++;
+            ref_state[j][count]=ref_state[j][0]+ref_state[jj][ii];
+         }
+      }
+    }
+
+    break;
+  }
+
+  return COLVARS_OK;
+}
+
 
 colvarbias_meta::~colvarbias_meta()
 {
