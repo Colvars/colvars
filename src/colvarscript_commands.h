@@ -309,6 +309,24 @@ CVSCRIPT(cv_getenergy,
          return COLVARS_OK;
          )
 
+CVSCRIPT(cv_getstepabsolute,
+         "Get the current step number of the simulation (including restarts)\n"
+         "step : int - Absolute step number",
+         0, 0,
+         "",
+         script->set_result_int(cvm::step_absolute());
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_getsteprelative,
+         "Get the current step number from the start of this job\n"
+         "step : int - Relative step number",
+         0, 0,
+         "",
+         script->set_result_int(cvm::step_relative());
+         return COLVARS_OK;
+         )
+
 CVSCRIPT(cv_help,
          "Get the help string of the Colvars scripting interface\n"
          "help : string - Help string",
