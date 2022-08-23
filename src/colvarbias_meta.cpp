@@ -520,6 +520,139 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   return COLVARS_OK;
 }
 
+int colvarbias_meta::init_interval_params(std::string const &conf)
+{
+  bool use_interval;
+  use_interval=false;
+  nintvarsl=0;
+  nintvarsu=0;
+  std::vector<int> interval_llimit_cv;
+  std::vector<int> interval_ulimit_cv;
+  if (get_keyval(conf, "useHillsInterval", use_interval, use_interval)) {
+    if (use_interval) {
+      get_keyval(conf, "intervalLowLimitNCVs", nintvarsl, num_variables());
+      get_keyval(conf, "intervalUpLimitNCVs", nintvarsu, num_variables());
+      interval_llimit_cv.resize(nintvarsl);
+      for (size_t i = 0; i < nintvarsl; i++) {
+         interval_llimit_cv[i]=i;
+      }
+      interval_ulimit_cv.resize(nintvarsu);
+      for (size_t i = 0; i < nintvarsu; i++) {
+         interval_ulimit_cv[i]=i;
+      }
+      if(nintvarsl>0) {
+        if (get_keyval(conf, "intervalLowLimitUseCVs", interval_llimit_cv, interval_llimit_cv)) {
+          if (interval_llimit.size()==0) {
+            interval_llimit.resize(nintvarsl);
+          }
+        } else {
+          cvm::log("Using all variables for lower limits of interval \n");
+        }
+        if (get_keyval(conf, "intervalLowLimit", interval_llimit, interval_llimit)) {
+          for (size_t i = 0; i < nintvarsl; i++) {
+             cvm::log("Hills forces will be removed beyond a lower limit for CV "+cvm::to_str(interval_llimit_cv[i])+".\n");
+             cvm::log("Interval condition lower limit for this CV is "+cvm::to_str(interval_llimit[i])+".\n");
+          }
+        } else {
+          cvm::error("Error: Lower limits for interval not provided.\n", INPUT_ERROR);
+          return INPUT_ERROR;
+        }
+      }
+
+      if(nintvarsu>0) {
+        if (get_keyval(conf, "intervalUpLimitUseCVs", interval_ulimit_cv, interval_ulimit_cv)) {
+          if (interval_ulimit.size()==0) {
+            interval_ulimit.resize(nintvarsu);
+          }
+        } else {
+          cvm::log("Using all variables for upper limits of interval \n");
+        }
+
+        if (get_keyval(conf, "intervalUpLimit", interval_ulimit, interval_ulimit)) {
+          for (size_t i = 0; i < nintvarsu; i++) {
+             cvm::log("Hills forces will be removed beyond an upper limit for CV "+cvm::to_str(interval_ulimit_cv[i])+".\n");
+             cvm::log("Interval condition upper limit for this CV is "+cvm::to_str(interval_ulimit[i])+".\n");
+          }
+        } else {
+          cvm::error("Error: Upper limits for interval not provided.\n", INPUT_ERROR);
+          return INPUT_ERROR;
+        }
+      }
+    }
+  } else {
+    if (nrefvarsl>0 || nrefvarsu>0) {
+      cvm::log("Reflection active: Using by default reflection variables and limits for interval \n");
+      nintvarsl=nrefvarsl;
+      nintvarsu=nrefvarsu;
+      interval_llimit_cv.resize(nintvarsl);
+      if (interval_llimit.size()==0) {
+        interval_llimit.resize(nintvarsl);
+      }
+      for (size_t i = 0; i < nintvarsl; i++) {
+         interval_llimit_cv[i]=reflection_llimit_cv[i];
+         interval_llimit[i]=reflection_llimit[i];
+      }
+      interval_ulimit_cv.resize(nintvarsu);
+      if (interval_ulimit.size()==0) {
+        interval_ulimit.resize(nintvarsu);
+      }
+      for (size_t i = 0; i < nintvarsu; i++) {
+         interval_ulimit_cv[i]=reflection_ulimit_cv[i];
+         interval_ulimit[i]=reflection_ulimit[i];
+      }
+    }
+  }
+
+  if (which_int_llimit_cv.size()==0) {
+    which_int_llimit_cv.resize(num_variables());
+  }
+  for (size_t i = 0; i < num_variables(); i++) {
+     which_int_llimit_cv[i]=-1;
+  }
+  for (size_t i = 0; i < nintvarsl; i++) {
+     int j=interval_llimit_cv[i];
+     which_int_llimit_cv[j]=i;
+  }
+
+  if (which_int_ulimit_cv.size()==0) {
+    which_int_ulimit_cv.resize(num_variables());
+  }
+  for (size_t i = 0; i < num_variables(); i++) {
+     which_int_ulimit_cv[i]=-1;
+  }
+  for (size_t i = 0; i < nintvarsu; i++) {
+     int j=interval_ulimit_cv[i];
+     which_int_ulimit_cv[j]=i;
+  }
+  // use interval only with scalar variables
+
+  for (size_t i = 0; i < nintvarsl; i++) {
+     if (interval_llimit_cv[i]>=num_variables() || interval_llimit_cv[i]<0) {
+       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+     int j=interval_llimit_cv[i];
+     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+       cvm::error("Error: Hills interval can be used only with scalar variables.\n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+  }
+
+  for (size_t i = 0; i < nintvarsu; i++) {
+     if (interval_ulimit_cv[i]>=num_variables() || interval_ulimit_cv[i]<0) {
+       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+     int j=interval_ulimit_cv[i];
+     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+       cvm::error("Error: Hills interval can be used only with scalar variables.\n", INPUT_ERROR);
+       return INPUT_ERROR;
+     }
+  }
+
+  return COLVARS_OK;
+}
+
 
 colvarbias_meta::~colvarbias_meta()
 {
