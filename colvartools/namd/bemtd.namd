@@ -1,0 +1,38 @@
+# -*- tcl -*-
+
+# Standard NAMD input file here
+
+colvars on
+# Define all variables and biases
+cv configfile ${mol_name}-bemtd.colvars.in
+
+if { ${ijob} > 0 } {
+    # Load state file when the job is being restarted
+    cv load ${run_path_prefix}${old}.colvars.state
+}
+
+# Load BE functions
+source colvars_replica_utils.tcl
+
+# Simple definition of 1D biases (must all be named "mtd_<colvar>").
+# Alternatively, other choices may be specified manually.
+init_be_metadynamics_1d
+
+# Detect or initialize which bias is active at the beginning of the job.
+# MUST BE CALLED *AFTER* RESTARTING with "cv load" to work correctly
+set_bias_index
+
+set exchange_freq 120000
+
+# Save state files at the same frequency to not risk losing information
+cv config "colvarsRestartFrequency ${exchange_freq}"
+# TODO enforce consistency with NAMD restartFreq
+
+# Main loop
+set i_run 0
+set n_runs [expr ${numsteps}/${exchange_freq}]
+while { ${i_run} < ${n_runs} } {
+    # Short run followed by exchange
+    run_be_segment ${exchange_freq}
+    incr i_run
+}
