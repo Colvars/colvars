@@ -1102,29 +1102,66 @@ int colvarbias_meta::update_bias()
       hills_scale *= cvm::exp(-1.0*hills_energy_sum_here/(bias_temperature*proxy->boltzmann()));
     }
 
-    switch (comm) {
+    // Whether add a hill
+    bool add_a_hill=true;
 
-    case single_replica:
+    // Do not add hills beyond reflection borders
+    // as just reflected hills must be present
+    // beyond those boundaries
 
-      add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
-                    colvar_values, colvar_sigmas));
+    // Check reflection borders: if beyond borders do not add hill
 
-      break;
+    add_a_hill=check_reflection_limits(add_a_hill);
 
-    case multiple_replicas:
-      add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
-                    colvar_values, colvar_sigmas, replica_id));
-      std::ostream &replica_hills_os =
-        cvm::proxy->output_stream(replica_hills_file, "replica hills file");
-      if (replica_hills_os) {
-        write_hill(replica_hills_os, hills.back());
-      } else {
-        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
-                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                          " while writing hills for the other replicas.\n", COLVARS_FILE_ERROR);
+    if (add_a_hill) {
+
+      switch (comm) {
+      
+      case single_replica:
+      
+        add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
+                      colvar_values, colvar_sigmas));
+      
+        break;
+      
+      case multiple_replicas:
+        add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
+                      colvar_values, colvar_sigmas, replica_id));
+        std::ostream &replica_hills_os =
+          cvm::proxy->output_stream(replica_hills_file, "replica hills file");
+        if (replica_hills_os) {
+          replica_hills_os << hills.back();
+        } else {
+          return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                            ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                            " while writing hills for the other replicas.\n", COLVARS_FILE_ERROR);
+        }
+        break;
       }
-      break;
+
+      // add reflected hills if required
+
+      switch (reflection_type) {
+      case rt_none:
+        break;
+      case rt_monod:
+        for (size_t i = 0; i < nrefvarsl; i++) {
+           size_t ii=reflection_llimit_cv[i];
+           reflect_hill_monod(ii, hills_scale, reflection_llimit[i]);
+        }
+
+        for (size_t i = 0; i < nrefvarsu; i++) {
+           size_t ii=reflection_ulimit_cv[i];
+           reflect_hill_monod(ii, hills_scale, reflection_ulimit[i]);
+        }
+        break;
+      case rt_multid:
+        reflect_hill_multid(hills_scale);
+        break;
+      }
+    
     }
+
   }
 
   return COLVARS_OK;
