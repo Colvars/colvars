@@ -707,6 +707,195 @@ colvarbias_meta::add_hill(colvarbias_meta::hill const &h)
   return hills.end();
 }
 
+bool colvarbias_meta::check_reflection_limits(bool &ah)
+{
+  for (size_t i = 0; i < nrefvarsl; i++) {
+     int ii=reflection_llimit_cv[i];
+     cvm:: real cv_value=variables(ii)->value();
+     if (cv_value<reflection_llimit[i]) {
+       ah=false;
+     }
+  }
+  for (size_t i = 0; i < nrefvarsu; i++) {
+     int ii=reflection_ulimit_cv[i];
+     cvm:: real cv_value=variables(ii)->value();
+     if (cv_value>reflection_ulimit[i]) {
+       ah=false;
+     }
+  }
+  return ah;
+}
+
+int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
+{
+  size_t i = 0;
+  std::vector<colvarvalue> curr_cv_values(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+    curr_cv_values[i].type(variables(i)->value());
+  }
+  std::vector<cvm::real> h_w(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+      curr_cv_values[i] = variables(i)->value();
+      h_w[i]=variables(i)->width*hill_width;
+  }
+
+  // sum over all possible reflection states previously generated,
+  // see init
+
+  for (size_t j = 0; j < num_variables(); j++) {
+     int startsum=1;
+     for (size_t i = 0; i < j; i++) {
+        startsum*=10;
+     }
+     for (size_t jj = 0; jj < ref_state[j].size(); jj++) {
+           int getsum=startsum;
+           int check_val=ref_state[j][jj];
+           int numberref=0;
+           int startsumk=1;
+           for (size_t i = 0; i <= j; i++) {
+              int upordown=std::floor(check_val/getsum);
+              check_val=check_val-getsum;
+              getsum=getsum/10;
+              if (upordown==1) {
+                numberref++;
+                if(numberref>1) startsumk*=10;
+              }
+           }
+
+           // sum over all possible lower and upper boudary combinations
+           // exploiting kstate=ref_state[k][kk]:
+           // for just one reflection these are 0(lower boundary) and 1(upper boundary)
+           // for two reflections these are 0 1 10 11 (0,0 0,1 1,0 1,1)
+           // where 0 is reflect on the two lower boudaries of the two coordinates etc.
+
+           int nkstates=2;
+           int kstate=0;
+           for (size_t k = 0; k <numberref; k++) {
+              if (k>0)  nkstates=ref_state[k].size();
+              for (size_t kk = 0; kk < nkstates; kk++) {
+                 if (k==0 && kk==1) {
+                   kstate=1;
+                 } else if (k>0) {
+                   kstate=ref_state[k][kk];
+                 }
+
+                 int getsum=startsum;
+                 int countstate=0;
+                 int check_val=ref_state[j][jj];
+                 bool hill_add=true;
+                 int getsumk=startsumk;
+                 int checkk=kstate;
+                 for (size_t i = 0; i <= j; i++) {
+                    int upordown=std::floor(check_val/getsum);
+                    int state=num_variables()-1-j+countstate;
+                    countstate++;
+                    check_val=check_val-getsum;
+                    getsum=getsum/10;
+                    if (upordown==1) {
+                      cvm:: real tmps=0.5*h_w[state];
+                      colvarvalue tmp=curr_cv_values[state]; // store original current cv value
+                      colvarvalue unitary=curr_cv_values[state];
+                      unitary.set_to_one();
+                      int valk=std::floor(checkk/getsumk);
+                      if(checkk-getsumk>=0) checkk=checkk-getsumk;
+                      getsumk=getsumk/10;
+                      cvm:: real reflection_limit=reflection_l[state][valk];
+                      cvm:: real tmpd=reflection_limit-cvm::real(curr_cv_values[state]);
+                      tmpd=std::sqrt(tmpd*tmpd);
+                      if (tmpd<reflection_int*tmps && reflection_usel[state][valk] ) { // do mirror within selected range in case upordown=1
+                        curr_cv_values[state]=2.0*reflection_limit*unitary-tmp; // reflected cv value
+                      } else {
+                        hill_add=false;
+                      }
+                    }
+                 }
+                 if (hill_add) {
+                   std::string h_replica = "";
+                   switch (comm) {
+
+                   case single_replica:
+
+                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, h_replica));
+
+                     break;
+
+                   case multiple_replicas:
+                     h_replica=replica_id;
+                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, replica_id));
+                     if (replica_hills_os) {
+                       *replica_hills_os << hills.back();
+                     } else {
+                       return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                                         ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                                         " while writing hills for the other replicas.\n", FILE_ERROR);
+                     }
+                     break;
+                   }
+
+                   for (size_t i = 0; i < num_variables(); i++) {
+                      curr_cv_values[i] = variables(i)->value(); // go back to previous values
+                   }
+                 } else {
+                   for (size_t i = 0; i < num_variables(); i++) {
+                      curr_cv_values[i] = variables(i)->value(); // go back to previous values
+                   }
+                 }
+              }
+           }
+     }
+  }
+  return COLVARS_OK;
+}
+
+int colvarbias_meta::reflect_hill_monod(int const &aa,
+                                   cvm::real const &h_scale,
+                                   cvm::real const &ref_lim)
+
+{
+  size_t i = 0;
+  std::vector<colvarvalue> curr_cv_values(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+    curr_cv_values[i].type(variables(i)->value());
+  }
+  std::vector<cvm::real> h_w(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+      curr_cv_values[i] = variables(i)->value();
+      h_w[i]=variables(i)->width*hill_width;
+  }
+  cvm:: real tmps=0.5*h_w[aa];
+  colvarvalue tmp=curr_cv_values[aa]; // store original current cv value
+  colvarvalue unitary=curr_cv_values[aa];
+  unitary.set_to_one();
+  cvm:: real tmpd=ref_lim-cvm::real(curr_cv_values[aa]);
+  tmpd=std::sqrt(tmpd*tmpd);
+  if (tmpd<reflection_int*tmps ) { // do mirror within selected range
+    curr_cv_values[aa]=2.0*ref_lim*unitary-tmp; // reflected cv value
+    std::string h_replica = "";
+    switch (comm) {
+
+    case single_replica:
+
+      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, h_replica));
+
+      break;
+
+    case multiple_replicas:
+      h_replica=replica_id;
+      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, h_replica));
+      if (replica_hills_os) {
+        *replica_hills_os << hills.back();
+      } else {
+        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                          " while writing hills for the other replicas.\n", FILE_ERROR);
+      }
+      break;
+    }
+    curr_cv_values[aa]=tmp; // go back to previous value
+  }
+  return COLVARS_OK;
+}
+
 
 std::list<colvarbias_meta::hill>::const_iterator
 colvarbias_meta::delete_hill(hill_iter &h)
