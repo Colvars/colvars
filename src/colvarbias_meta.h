@@ -48,6 +48,8 @@ public:
   virtual int init_replicas_params(std::string const &conf);
   virtual int init_well_tempered_params(std::string const &conf);
   virtual int init_ebmeta_params(std::string const &conf);
+  virtual int init_reflection_params(std::string const &conf);
+  virtual int init_interval_params(std::string const &conf);
 
   virtual int clear_state_data();
 
@@ -209,6 +211,45 @@ protected:
 
   /// \brief Biasing temperature in well-tempered metadynamics
   cvm::real  bias_temperature;
+
+  // hills reflection 
+
+  /// \brief For which variables reflection limits are on  
+
+  std::vector<int> reflection_llimit_cv;
+  std::vector<int> reflection_ulimit_cv;
+  cvm::real reflection_int;
+  int nrefvarsl;
+  int nrefvarsu;
+
+  /// \brief Limits for reflection 
+  std::vector<cvm::real> reflection_llimit;
+  std::vector<cvm::real> reflection_ulimit;
+
+  /// \brief Whether reflection are of mono or multidimensional type
+  enum reflection_type_e {
+    rt_monod,
+    rt_multid,
+    rt_none
+  };
+  int reflection_type;
+
+  /// \brief Multidimensional reflection : store cvs to use and pointers to the limits
+  std::vector<std::vector<bool> > reflection_usel;
+  std::vector<std::vector<cvm::real>> reflection_l;
+
+  /// \brief Multidimensional reflection or inversion states
+  std::vector<std::vector<int> > ref_state;
+
+  /// \brief For which variables hills forces beyond the boundaries(interval) must be removed
+
+  std::vector<int> which_int_llimit_cv;
+  std::vector<int> which_int_ulimit_cv;
+  int nintvarsl;
+  int nintvarsu;
+  /// \brief Limits for interval 
+  std::vector<cvm::real> interval_llimit;
+  std::vector<cvm::real> interval_ulimit;
 
   /// Ensemble-biased metadynamics (EBmeta) flag
   bool       ebmeta;
