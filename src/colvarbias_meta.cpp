@@ -1374,9 +1374,22 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
       if (h->value() == 0.0) continue;
       colvarvalue const &center = h->centers[i];
       cvm::real const sigma = h->sigmas[i];
-      forces[i].real_value +=
-        ( h->weight() * h->value() * (0.5 / (sigma*sigma)) *
-          (variables(i)->dist2_lgrad(x, center)).real_value );
+
+      // if outside interval boundaries do not add force
+      bool add_force=true;
+      int ii=which_int_llimit_cv[i];
+      if (ii>-1 && x[i]<interval_llimit[ii] ) {
+        add_force=false;
+      }
+      ii=which_int_ulimit_cv[i];
+      if (ii>-1 && x[i]>interval_ulimit[ii] ) {
+        add_force=false;
+      }
+      if (add_force) {
+        forces[i].real_value +=
+          ( h->weight() * h->value() * (0.5 / (sigma*sigma)) *
+            (variables(i)->dist2_lgrad(x, center)).real_value );
+      }
     }
     break;
 
