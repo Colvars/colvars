@@ -366,15 +366,15 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
              cvm:: real bound=variables(ii)->lower_boundary;
              cvm:: real ref_r=reflection_llimit[i]-reflection_int*sigma;
              if (ref_r < bound) {
-               cvm::error("Error: When using grids, lower boundary for CV"+cvm::to_str(ii)+" must be smaller than"+cvm::to_str(ref_r)+".\n", INPUT_ERROR);
+               cvm::error("Error: When using grids, lower boundary for CV"+cvm::to_str(ii)+" must be smaller than"+cvm::to_str(ref_r)+".\n", COLVARS_INPUT_ERROR);
              }
            }
            cvm::log("Reflection condition is applied on a lower limit for CV "+cvm::to_str(reflection_llimit_cv[i])+".\n");
            cvm::log("Reflection condition lower limit for this CV is "+cvm::to_str(reflection_llimit[i])+".\n");
         }
       } else {
-        cvm::error("Error: Lower limits for reflection not provided.\n", INPUT_ERROR);
-        return INPUT_ERROR;
+        cvm::error("Error: Lower limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+        return COLVARS_INPUT_ERROR;
       }
     }
 
@@ -395,15 +395,15 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
              cvm:: real bound=variables(ii)->upper_boundary;
              cvm:: real ref_r=reflection_ulimit[i]+reflection_int*sigma;
              if (ref_r > bound) {
-               cvm::error("Error: When using grids, upper boundary for CV"+cvm::to_str(ii)+" must be larger than"+cvm::to_str(ref_r)+".\n", INPUT_ERROR);
+               cvm::error("Error: When using grids, upper boundary for CV"+cvm::to_str(ii)+" must be larger than"+cvm::to_str(ref_r)+".\n", COLVARS_INPUT_ERROR);
              }
            }
            cvm::log("Reflection condition is applied on an upper limit for CV "+cvm::to_str(reflection_ulimit_cv[i])+".\n");
            cvm::log("Reflection condition upper limit for this CV is "+cvm::to_str(reflection_ulimit[i])+".\n");
         }
       } else {
-        cvm::error("Error: Upper limits for reflection not provided.\n", INPUT_ERROR);
-        return INPUT_ERROR;
+        cvm::error("Error: Upper limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+        return COLVARS_INPUT_ERROR;
       }
     }
   }
@@ -411,25 +411,25 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
 
   for (size_t i = 0; i < nrefvarsl; i++) {
      if (reflection_llimit_cv[i]>=num_variables() || reflection_llimit_cv[i]<0) {
-       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
-       return INPUT_ERROR;
+       cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
+       return COLVARS_INPUT_ERROR;
      }
      int j=reflection_llimit_cv[i];
      if (variables(j)->value().type()!=colvarvalue::type_scalar) {
-       cvm::error("Error: Hills reflection can be used only with scalar variables.\n", INPUT_ERROR);
-       return INPUT_ERROR;
+       cvm::error("Error: Hills reflection can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
+       return COLVARS_INPUT_ERROR;
      }
   }
 
   for (size_t i = 0; i < nrefvarsu; i++) {
      if (reflection_ulimit_cv[i]>=num_variables() || reflection_ulimit_cv[i]<0) {
-       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
-       return INPUT_ERROR;
+       cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
+       return COLVARS_INPUT_ERROR;
      }
      int j=reflection_ulimit_cv[i];
      if (variables(j)->value().type()!=colvarvalue::type_scalar) {
-       cvm::error("Error: Hills reflection can be used only with scalar variables.\n", INPUT_ERROR);
-       return INPUT_ERROR;
+       cvm::error("Error: Hills reflection can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
+       return COLVARS_INPUT_ERROR;
      }
   }
   // mono vs multimensional reflection
@@ -554,8 +554,8 @@ int colvarbias_meta::init_interval_params(std::string const &conf)
              cvm::log("Interval condition lower limit for this CV is "+cvm::to_str(interval_llimit[i])+".\n");
           }
         } else {
-          cvm::error("Error: Lower limits for interval not provided.\n", INPUT_ERROR);
-          return INPUT_ERROR;
+          cvm::error("Error: Lower limits for interval not provided.\n", COLVARS_INPUT_ERROR);
+          return COLVARS_INPUT_ERROR;
         }
       }
 
@@ -574,8 +574,8 @@ int colvarbias_meta::init_interval_params(std::string const &conf)
              cvm::log("Interval condition upper limit for this CV is "+cvm::to_str(interval_ulimit[i])+".\n");
           }
         } else {
-          cvm::error("Error: Upper limits for interval not provided.\n", INPUT_ERROR);
-          return INPUT_ERROR;
+          cvm::error("Error: Upper limits for interval not provided.\n", COLVARS_INPUT_ERROR);
+          return COLVARS_INPUT_ERROR;
         }
       }
     }
@@ -628,25 +628,25 @@ int colvarbias_meta::init_interval_params(std::string const &conf)
 
   for (size_t i = 0; i < nintvarsl; i++) {
      if (interval_llimit_cv[i]>=num_variables() || interval_llimit_cv[i]<0) {
-       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
-       return INPUT_ERROR;
+       cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
+       return COLVARS_INPUT_ERROR;
      }
      int j=interval_llimit_cv[i];
      if (variables(j)->value().type()!=colvarvalue::type_scalar) {
-       cvm::error("Error: Hills interval can be used only with scalar variables.\n", INPUT_ERROR);
-       return INPUT_ERROR;
+       cvm::error("Error: Hills interval can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
+       return COLVARS_INPUT_ERROR;
      }
   }
 
   for (size_t i = 0; i < nintvarsu; i++) {
      if (interval_ulimit_cv[i]>=num_variables() || interval_ulimit_cv[i]<0) {
-       cvm::error("Error: CV number is negative or >= num_variables  \n", INPUT_ERROR);
-       return INPUT_ERROR;
+       cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
+       return COLVARS_INPUT_ERROR;
      }
      int j=interval_ulimit_cv[i];
      if (variables(j)->value().type()!=colvarvalue::type_scalar) {
-       cvm::error("Error: Hills interval can be used only with scalar variables.\n", INPUT_ERROR);
-       return INPUT_ERROR;
+       cvm::error("Error: Hills interval can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
+       return COLVARS_INPUT_ERROR;
      }
   }
 
