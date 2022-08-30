@@ -815,19 +815,19 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
 
                    case single_replica:
 
-                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, h_replica));
+                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, 0.5*h_w));
 
                      break;
 
                    case multiple_replicas:
                      h_replica=replica_id;
-                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, replica_id));
+                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, 0.5*h_w, replica_id));
                      if (replica_hills_os) {
                        *replica_hills_os << hills.back();
                      } else {
                        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
                                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                                         " while writing hills for the other replicas.\n", FILE_ERROR);
+                                         " while writing hills for the other replicas.\n", COLVARS_FILE_ERROR);
                      }
                      break;
                    }
@@ -875,19 +875,19 @@ int colvarbias_meta::reflect_hill_monod(int const &aa,
 
     case single_replica:
 
-      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, h_replica));
+      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, 0.5*h_w));
 
       break;
 
     case multiple_replicas:
       h_replica=replica_id;
-      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, h_replica));
+      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, 0.5*h_w, h_replica));
       if (replica_hills_os) {
         *replica_hills_os << hills.back();
       } else {
         return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
                           ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                          " while writing hills for the other replicas.\n", FILE_ERROR);
+                          " while writing hills for the other replicas.\n", COLVARS_FILE_ERROR);
       }
       break;
     }
