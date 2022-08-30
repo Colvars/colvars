@@ -156,6 +156,19 @@ protected:
   /// the next hill in the list)
   std::list<hill>::const_iterator delete_hill(hill_iter &h);
 
+
+  /// \brief Check is current colvar value is within inversion or 
+  /// reflection limits to assess whether to add a hill
+  bool check_reflection_limits(bool &ah);
+
+  /// \brief Multidimensional routine to reflect hills
+  int reflect_hill_multid(cvm::real const &h_scale);
+
+  /// \brief Monodimensional routine to reflect hills
+  int reflect_hill_monod(int const &aa,
+                         cvm::real const &h_scale,
+                         cvm::real const &ref_lim);
+
   /// \brief Calculate the values of the hills, incrementing
   /// bias_energy
   virtual void calc_hills(hill_iter  h_first,
