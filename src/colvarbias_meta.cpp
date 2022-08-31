@@ -736,7 +736,7 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
   std::vector<cvm::real> h_w(num_variables());
   for (i = 0; i < num_variables(); i++) {
       curr_cv_values[i] = variables(i)->value();
-      h_w[i]=variables(i)->width*hill_width;
+      h_w[i]=variables(i)->width*hill_width*0.5;
   }
 
   // sum over all possible reflection states previously generated,
@@ -792,10 +792,10 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
                     check_val=check_val-getsum;
                     getsum=getsum/10;
                     if (upordown==1) {
-                      cvm:: real tmps=0.5*h_w[state];
+                      cvm:: real tmps=h_w[state];
                       colvarvalue tmp=curr_cv_values[state]; // store original current cv value
                       colvarvalue unitary=curr_cv_values[state];
-                      unitary.set_to_one();
+                      unitary.set_ones();
                       int valk=std::floor(checkk/getsumk);
                       if(checkk-getsumk>=0) checkk=checkk-getsumk;
                       getsumk=getsumk/10;
@@ -815,13 +815,15 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
 
                    case single_replica:
 
-                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, 0.5*h_w));
+                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w));
 
                      break;
 
                    case multiple_replicas:
                      h_replica=replica_id;
-                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, 0.5*h_w, replica_id));
+                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, replica_id));
+                     std::ostream *replica_hills_os =
+                       cvm::proxy->get_output_stream(replica_hills_file);
                      if (replica_hills_os) {
                        *replica_hills_os << hills.back();
                      } else {
@@ -860,12 +862,12 @@ int colvarbias_meta::reflect_hill_monod(int const &aa,
   std::vector<cvm::real> h_w(num_variables());
   for (i = 0; i < num_variables(); i++) {
       curr_cv_values[i] = variables(i)->value();
-      h_w[i]=variables(i)->width*hill_width;
+      h_w[i]=variables(i)->width*hill_width*0.5;
   }
-  cvm:: real tmps=0.5*h_w[aa];
+  cvm:: real tmps=h_w[aa];
   colvarvalue tmp=curr_cv_values[aa]; // store original current cv value
   colvarvalue unitary=curr_cv_values[aa];
-  unitary.set_to_one();
+  unitary.set_ones();
   cvm:: real tmpd=ref_lim-cvm::real(curr_cv_values[aa]);
   tmpd=std::sqrt(tmpd*tmpd);
   if (tmpd<reflection_int*tmps ) { // do mirror within selected range
@@ -875,13 +877,15 @@ int colvarbias_meta::reflect_hill_monod(int const &aa,
 
     case single_replica:
 
-      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, 0.5*h_w));
+      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w));
 
       break;
 
     case multiple_replicas:
       h_replica=replica_id;
-      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, 0.5*h_w, h_replica));
+      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, h_w, h_replica));
+      std::ostream *replica_hills_os =
+        cvm::proxy->get_output_stream(replica_hills_file);
       if (replica_hills_os) {
         *replica_hills_os << hills.back();
       } else {
