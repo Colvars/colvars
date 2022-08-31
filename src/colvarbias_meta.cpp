@@ -445,7 +445,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
     cvm::log("Using multidimensional reflection \n");
     int sum=1;
     int nstates;
-    int nvars=num_variables();
+    size_t nvars=num_variables();
     if (reflection_usel.size()==0) {
       reflection_usel.resize(nvars,std::vector<bool>(2));
     }
