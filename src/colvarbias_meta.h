@@ -249,7 +249,7 @@ protected:
 
   /// \brief Multidimensional reflection : store cvs to use and pointers to the limits
   std::vector<std::vector<bool> > reflection_usel;
-  std::vector<std::vector<cvm::real>> reflection_l;
+  std::vector<std::vector<cvm::real> > reflection_l;
 
   /// \brief Multidimensional reflection or inversion states
   std::vector<std::vector<int> > ref_state;
