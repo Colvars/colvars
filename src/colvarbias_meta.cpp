@@ -743,7 +743,7 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
 
   for (size_t j = 0; j < num_variables(); j++) {
      int startsum=1;
-     for (size_t i = 0; i < j; i++) {
+     for (i = 0; i < j; i++) {
         startsum*=10;
      }
      for (size_t jj = 0; jj < ref_state[j].size(); jj++) {
@@ -751,7 +751,7 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
            int check_val=ref_state[j][jj];
            int numberref=0;
            int startsumk=1;
-           for (size_t i = 0; i <= j; i++) {
+           for (i = 0; i <= j; i++) {
               int upordown=std::floor(check_val/getsum);
               check_val=check_val-getsum;
               getsum=getsum/10;
@@ -778,13 +778,13 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
                    kstate=ref_state[k][kk];
                  }
 
-                 int getsum=startsum;
+                 getsum=startsum;
                  int countstate=0;
-                 int check_val=ref_state[j][jj];
+                 check_val=ref_state[j][jj];
                  bool hill_add=true;
                  int getsumk=startsumk;
                  int checkk=kstate;
-                 for (size_t i = 0; i <= j; i++) {
+                 for (i = 0; i <= j; i++) {
                     int upordown=std::floor(check_val/getsum);
                     int state=num_variables()-1-j+countstate;
                     countstate++;
@@ -833,11 +833,11 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
                      break;
                    }
 
-                   for (size_t i = 0; i < num_variables(); i++) {
+                   for (i = 0; i < num_variables(); i++) {
                       curr_cv_values[i] = variables(i)->value(); // go back to previous values
                    }
                  } else {
-                   for (size_t i = 0; i < num_variables(); i++) {
+                   for (i = 0; i < num_variables(); i++) {
                       curr_cv_values[i] = variables(i)->value(); // go back to previous values
                    }
                  }
