@@ -341,7 +341,7 @@ then
            "${target}/lepton/Makefile.namd"
 
   if ! grep -q lepton/Makefile.namd "${target}/lepton/Makefile.namd" ; then
-    condcopy "${source}/namd/Makefile" "${target}/Makefile"
+    patch -p1 -d ${target} < namd/Makefile.patch
   fi
 
   # Copy library files to the "colvars" folder
