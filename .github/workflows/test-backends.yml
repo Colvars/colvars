@@ -46,6 +46,26 @@ jobs:
       # Choice of license by UIUC prevents sharing the code, hence the secret
       private_key: ${{ secrets.PULL_NAMD_KEY }}
 
+  namd3:
+    name: NAMD3 (no CUDA)
+    # Prevent running this job on PRs across different accounts, because
+    # secrets wouldn't be shared
+    if: |
+      (github.event_name == 'pull_request' && github.repository_owner == github.event.pull_request.head.repo.owner.login) ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, 'test-namd'))
+    uses: ./.github/workflows/backend-template.yml
+    with:
+      backend_name: NAMD3
+      backend_repo: Colvars/namd
+      backend_repo_ref: devel
+      path_compile_script: devel-tools/compile-namd.sh
+      test_lib_directory: namd/tests/library
+      test_interface_directory: namd/tests/interface
+      rpath_exe: Linux-x86_64-g++.multicore/namd3
+    secrets:
+      # Choice of license by UIUC prevents sharing the code, hence the secret
+      private_key: ${{ secrets.PULL_NAMD_KEY }}
+
   vmd:
     name: VMD
     # Prevent running this job on PRs across different accounts, because
