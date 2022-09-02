@@ -15,7 +15,7 @@ export TMPDIR=${TMPDIR:-/tmp}
 DIRLIST=''
 BINARY=namd2
 while [ $# -ge 1 ]; do
-  if { echo $1 | grep -q namd2 ; }; then
+  if { echo $1 | grep -q namd ; }; then
     echo "Using NAMD executable from $1"
     BINARY=$1
   elif [ "x$1" = 'x-g' ]; then
