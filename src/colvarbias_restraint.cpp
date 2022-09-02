@@ -523,7 +523,7 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
 
   if (get_keyval(conf, "targetForceConstant", target_force_k, target_force_k)) {
     if (b_decoupling) {
-      cvm::error("Error: targetForceConstant may not be specified together with decoupling.\n");
+      cvm::error("Error: targetForceConstant may not be specified together with decoupling.\n", COLVARS_INPUT_ERROR);
       return COLVARS_ERROR;
     }
     starting_force_k = force_k;
@@ -553,7 +553,7 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
   if ((get_keyval(conf, "targetForceExponent", lambda_exp, lambda_exp, parse_deprecated)
     || get_keyval(conf, "lambdaExponent", lambda_exp, lambda_exp))
     && !b_chg_force_k) {
-    cvm::error("Error: cannot set lambdaExponent unless a changing force constant is active.\n");
+    cvm::error("Error: cannot set lambdaExponent unless a changing force constant is active.\n", COLVARS_INPUT_ERROR);
   }
   if (lambda_exp < 1.0) {
     cvm::log("Warning: for all practical purposes, lambdaExponent should be 1.0 or greater.\n");
