@@ -83,31 +83,23 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Load Singularity containers cache
+      - name: Load containers cache
         uses: actions/cache@v2
         with:
-          path: ~/.singularity
-          key: Linux-x86_64-containers-build-doc-2022-03-04
+          path: ~/.apptainer
+          key: Linux-x86_64-containers-build-doc-2022-09-03
 
-      - name: Get small downloadable packages
-        uses: actions/checkout@v2
-        with:
-          repository: 'Colvars/build-tools-packages'
-          ref: 'master'
-          path: 'devel-tools/packages'
-
-      - name: Install Singularity
+      - name: Install Apptainer
         shell: bash
-        working-directory: devel-tools/packages
         run: |
-          sudo apt-get -y install squashfs-tools containernetworking-plugins
-          sudo dpkg -i singularity_3.8.5-2_amd64.deb
+          wget https://github.com/apptainer/apptainer/releases/download/v1.0.3/apptainer_1.0.3_amd64.deb
+          sudo apt-get -y install ./apptainer_1.0.3_amd64.deb
 
       - name: Get container image
         shell: bash
         working-directory: devel-tools
         run: |
-          singularity pull Fedora35-texlive.sif library://giacomofiorin/default/colvars_development:fedora35_texlive
+          apptainer pull Fedora35-texlive.sif library://giacomofiorin/default/colvars_development:fedora35_texlive
 
       - name: Checkout website repository
         uses: actions/checkout@v2
@@ -120,7 +112,7 @@ jobs:
         env:
           COLVARSDIR: ${{ github.workspace }}
           FORCE: 1  # Ignore error if branch isn't master
-        run: singularity exec ${COLVARSDIR}/devel-tools/Fedora35-texlive.sif make
+        run: apptainer exec ${COLVARSDIR}/devel-tools/Fedora35-texlive.sif make
 
 
   codeql:
@@ -175,11 +167,11 @@ jobs:
 
       # Using an exact key to forgo saving it in case of a match (tarring up
       # is expensive); also including a date to allow a force-update.
-      - name: Load Singularity containers cache
+      - name: Load containers cache
         uses: actions/cache@v2
         with:
-          path: ~/.singularity
-          key: Linux-x86_64-containers-build-2022-03-03
+          path: ~/.apptainer
+          key: Linux-x86_64-containers-build-2022-09-03
 
       - name: Get small downloadable packages
         uses: actions/checkout@v2
@@ -188,18 +180,17 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Install Singularity
+      - name: Install Apptainer
         shell: bash
-        working-directory: devel-tools/packages
         run: |
-          sudo apt-get -y install squashfs-tools containernetworking-plugins
-          sudo dpkg -i singularity_3.8.5-2_amd64.deb
+          wget https://github.com/apptainer/apptainer/releases/download/v1.0.3/apptainer_1.0.3_amd64.deb
+          sudo apt-get -y install ./apptainer_1.0.3_amd64.deb
 
       - name: Get container image
         shell: bash
         working-directory: devel-tools
         run: |
-          singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+          apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 
       - name: GCC 4.8, C++11
         env:
@@ -208,7 +199,7 @@ jobs:
           CXX_VERSION: 4.8
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: GCC 8, C++17
@@ -218,7 +209,7 @@ jobs:
           CXX_VERSION: 8
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -229,7 +220,7 @@ jobs:
           CXX_VERSION: 11
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -240,7 +231,7 @@ jobs:
           CXX_VERSION: 11
           CC: clang
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: Clang 7, C++17
@@ -250,7 +241,7 @@ jobs:
           CXX_VERSION: 7
           CC: clang
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable llvm-toolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -261,7 +252,7 @@ jobs:
           CXX_VERSION: 11
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -272,7 +263,7 @@ jobs:
           CXX_VERSION: 10
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -283,7 +274,7 @@ jobs:
           CXX_VERSION: 9
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -294,7 +285,7 @@ jobs:
           CXX_VERSION: 8
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -305,7 +296,7 @@ jobs:
           CXX_VERSION: 8
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -316,7 +307,7 @@ jobs:
           CXX_VERSION: 7
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -327,7 +318,7 @@ jobs:
           CXX_VERSION: 7
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -338,7 +329,7 @@ jobs:
           CXX_VERSION: 4.8
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
 
@@ -350,11 +341,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Load Singularity containers cache
+      - name: Load containers cache
         uses: actions/cache@v2
         with:
-          path: ~/.singularity
-          key: Linux-x86_64-containers-build-2022-03-03
+          path: ~/.apptainer
+          key: Linux-x86_64-containers-build-2022-09-03
 
       - name: Checkout Sun compiler (Oracle Developer Studio)
         uses: actions/checkout@v2
@@ -371,18 +362,17 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Install Singularity
+      - name: Install Apptainer
         shell: bash
-        working-directory: devel-tools/packages
         run: |
-          sudo apt-get -y install squashfs-tools containernetworking-plugins
-          sudo dpkg -i singularity_3.8.5-2_amd64.deb
+          wget https://github.com/apptainer/apptainer/releases/download/v1.0.3/apptainer_1.0.3_amd64.deb
+          sudo apt-get -y install ./apptainer_1.0.3_amd64.deb
 
       - name: Get container image
         shell: bash
         working-directory: devel-tools
         run: |
-          singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+          apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 
       - name: Build library with Sun compiler (Oracle Developer Studio)
         shell: bash
@@ -390,7 +380,7 @@ jobs:
           CC: ${{github.workspace}}/oracle/developerstudio12.6/bin/cc
           CXX: ${{github.workspace}}/oracle/developerstudio12.6/bin/CC
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=11 -P devel-tools/build_test_library.cmake
 
 

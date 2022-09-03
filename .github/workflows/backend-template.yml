@@ -4,7 +4,7 @@
 # This workflow:
 #  - Checkout Colvars code
 #  - Checkout the MD engine
-#  - Build the MD engine with Singularity
+#  - Build the MD engine in a container
 #  - Run the Colvars regression tests written for the MD engine
 
 name: "Test a backend with Colvars"
@@ -78,11 +78,11 @@ jobs:
 
       # Using an exact key to forgo saving it in case of a match (tarring up
       # is expensive); also including a date to allow a force-update.
-      - name: Load Singularity containers cache
+      - name: Load containers cache
         uses: actions/cache@v2
         with:
-          path: ~/.singularity
-          key: Linux-x86_64-containers-build-2022-03-03
+          path: ~/.apptainer
+          key: Linux-x86_64-containers-build-2022-09-03
 
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v2
@@ -116,12 +116,11 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Install Singularity
+      - name: Install Apptainer
         shell: bash
-        working-directory: devel-tools/packages
         run: |
-          sudo apt-get -y install squashfs-tools containernetworking-plugins
-          sudo dpkg -i singularity_3.8.5-2_amd64.deb
+          wget https://github.com/apptainer/apptainer/releases/download/v1.0.3/apptainer_1.0.3_amd64.deb
+          sudo apt-get -y install ./apptainer_1.0.3_amd64.deb
 
       - name: Get container image of backends' dependencies
         shell: bash
@@ -129,21 +128,21 @@ jobs:
         run: |
           # Pull CentOS 7 container used to build backends
           # (contains build tools, OpenMPI, FFTW, Tcl/Tk and Charm++)
-          singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+          apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 
       - name : Get spiff
         shell: bash
         working-directory: devel-tools
-        run: sudo cp -f $(singularity exec CentOS7-devel.sif ./get_spiff) /usr/local/bin
+        run: sudo cp -f $(apptainer exec CentOS7-devel.sif ./get_spiff) /usr/local/bin
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
         env:
           OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
         run: |
-          singularity exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
+          apptainer exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
           CCACHE_DIR=~/ccache_CentOS7-devel \
-          singularity exec devel-tools/CentOS7-devel.sif \
+          apptainer exec devel-tools/CentOS7-devel.sif \
           bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
 
 
@@ -156,7 +155,7 @@ jobs:
         shell: bash
         working-directory: ${{ inputs.test_lib_directory }}
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
 
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
@@ -164,5 +163,5 @@ jobs:
         shell: bash
         working-directory: ${{ inputs.test_interface_directory }}
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}
