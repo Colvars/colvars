@@ -2,12 +2,16 @@ name: "Backends"
 
 on: [push, pull_request]
 
-# The jobs call a template workflow `backend-template.yml` which performs
+# These jobs call a template workflow `backend-template.yml`, which performs
 # all the necessary steps to run the regression tests of the backend.
-# Variables need to be filled accordingly. See `backend-template.yml`
 
-# Set environment variables to make secrets available to the template steps
+# Variables listed under `with` are mandatory, except `test_lib_directory`
+# and `test_interface_directory`, which are optional.  `backend_name` must be
+# unique, as it is used to identify the cache.
+# See `backend-template.yml` for more details.
+
 env:
+  # Set environment variables to make secrets available to the template steps
   PULL_NAMD_KEY: secrets.PULL_NAMD_KEY
   PULL_VMD_KEY: secrets.PULL_VMD_KEY
   PULL_VMD_PLUGINS_KEY: secrets.PULL_VMD_PLUGINS_KEY
