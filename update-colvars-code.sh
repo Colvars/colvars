@@ -391,27 +391,6 @@ then
 
   echo ' done.'
 
-  # Check for changes in related NAMD files
-  for src in \
-      ${source}/namd/src/GlobalMasterColvars.h \
-      ${source}/namd/src/ScriptTcl.h \
-      ${source}/namd/src/ScriptTcl.C \
-      ${source}/namd/src/SimParameters.h \
-      ${source}/namd/src/SimParameters.C \
-      ;
-  do \
-    tgt=$(basename ${src})
-    checkfile "${src}" "${target}/src/${tgt}"
-  done
-  for src in ${source}/namd/Makefile ${source}/namd/config
-  do
-    tgt=$(basename ${src})
-    checkfile "${src}" "${target}/${tgt}"
-    if [ $updated_file = 1 ] ; then
-      updated_makefile=1
-    fi
-  done
-
   # One last check that each file is correctly included in the dependencies
   for file in ${target}/colvars/src/*.{cpp,h} ; do
     if [ ! -f ${target}/colvars/Make.depends ] || \
