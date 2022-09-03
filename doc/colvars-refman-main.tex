@@ -6083,12 +6083,12 @@ The following are the multiple-walkers related options:
   \keydef
     {replicaID}{%
     \texttt{metadynamics}}{%
-    Set the identifier for this replica}{%
+    Set the identifier for this replica (required only for independent jobs)}{%
     string}{%
-    replica index (only if a shared communicator is used)}{%
+    replica index (only if MPI\cvnamdonly{or Charm++} is used)}{%
     If \texttt{multipleReplicas} is \texttt{on}, this option sets a unique identifier for this replicas.
-    When the replicas are launched in a single command (i.e.{} they share a parallel communicator and are tightly synchronized) this value is optional, and defaults to the replica's numeric index (starting at zero).
-    However, when the replicas are launched as independent runs this option is required.
+    Specifying this option is thus only required when the replicas are launched as independent computations:
+    when the replicas share a common parallel communication framework (i.e.\ they are all launched together as a single message-passing computation via MPI\cvnamdonly{or Charm++}) the default value of this keyword is the replica's numeric index (zero-based).
 }
 
 \item %
