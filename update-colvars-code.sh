@@ -341,7 +341,7 @@ then
            "${target}/lepton/Makefile.namd"
 
   if ! grep -q lepton/Makefile.namd "${target}/lepton/Makefile.namd" ; then
-    patch -p1 -d ${target} < namd/Makefile.patch
+    patch -p1 -N -d ${target} < namd/Makefile.patch
   fi
 
   # Copy library files to the "colvars" folder
