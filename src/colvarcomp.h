@@ -70,10 +70,6 @@ class colvar::cvc
 {
 public:
 
-  /// \brief The name of the object (helps to identify this
-  /// cvc instance when debugging)
-  std::string name;
-
   /// String identifier for the type of collective variable
   std::string function_type() const;
 

@@ -37,6 +37,9 @@ public:
   colvardeps();
   virtual ~colvardeps();
 
+  /// Name of this object instance (can be variable, bias, or atom group)
+  std::string name;
+
   // Subclasses should initialize the following members:
 
   std::string description; // reference to object name (cv, cvc etc.)
