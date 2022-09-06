@@ -107,6 +107,12 @@ int colvarbias::init(std::string const &conf)
   // Write energy to traj file?
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
 
+  // Trajectory output of feature flags
+  std::vector<std::string> feature_names;
+  if (get_keyval(conf, "outputFeatures", feature_names)) {
+    error_code |= colvardeps::init_features_output(feature_names);
+  }
+
   // How often to write full output files?
   get_keyval(conf, "outputFreq", output_freq, output_freq);
 
@@ -760,9 +766,14 @@ cvm::memory_stream & colvarbias::read_state_data_key(cvm::memory_stream &is, std
 std::ostream & colvarbias::write_traj_label(std::ostream &os)
 {
   os << " ";
-  if (b_output_energy)
+
+  if (b_output_energy) {
     os << " E_"
        << cvm::wrap_string(this->name, cvm::en_width-2);
+  }
+
+  colvardeps::write_traj_label(os);
+
   return os;
 }
 
@@ -770,10 +781,15 @@ std::ostream & colvarbias::write_traj_label(std::ostream &os)
 std::ostream & colvarbias::write_traj(std::ostream &os)
 {
   os << " ";
-  if (b_output_energy)
+
+  if (b_output_energy) {
     os << " "
        << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
        << bias_energy;
+  }
+
+  colvardeps::write_traj(os);
+
   return os;
 }
 

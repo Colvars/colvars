@@ -90,6 +90,9 @@ protected:
     f_type_static
   };
 
+  /// Output the states of these features
+  std::vector<int> features_output;
+
 public:
   /// \brief returns time_step_factor
   inline int get_time_step_factor() const {return time_step_factor;}
@@ -131,6 +134,9 @@ public:
     /// Type of this feature, from the enum feature_type
     feature_type type;
   };
+
+  /// Get the numeric ID of a feature from its name
+  int get_feature_id(std::string const &name);
 
   inline bool is_not_set(int id) { return features()[id]->type == f_type_not_set; }
   inline bool is_dynamic(int id) { return features()[id]->type == f_type_dynamic; }
@@ -447,6 +453,15 @@ public:
                  features()[f]->description+"\" is active.\n", COLVARS_BUG_ERROR);
     }
   }
+
+  /// Parse keywords controlling the output of object features
+  int init_features_output(std::vector<std::string> const &feature_names);
+
+  /// Write labels to the trajectory file for features being reported
+  virtual std::ostream & write_traj_label(std::ostream &os);
+
+  /// Write to the trajectory file current states of specific features
+  virtual std::ostream & write_traj(std::ostream &os);
 
 };
 

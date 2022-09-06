@@ -451,9 +451,9 @@ public:
   std::istream & read_traj(std::istream &is);
 
   /// Output formatted values to the trajectory file
-  std::ostream & write_traj(std::ostream &os);
+  virtual std::ostream & write_traj(std::ostream &os) /* override */;
   /// Write a label to the trajectory file (comment line)
-  std::ostream & write_traj_label(std::ostream &os);
+  virtual std::ostream & write_traj_label(std::ostream &os) /* override */;
 
   /// Read the colvar's state from a formatted input stream
   std::istream & read_state(std::istream &is);
