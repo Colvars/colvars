@@ -94,8 +94,8 @@ compile_gromacs_target() {
         ${CMAKE} --build "${GMX_BUILD_DIR}" --parallel $(nproc --all)
     ret_code=$?
 
-    if [ -n "${GITHUB_ACTION}" ] ; then
-        # On GitHub Actions, build the tests as well
+    if [ -n "${GROMACS_REGRESSION_TESTS}" ] ; then
+        # Build the tests as well
         ${CMAKE} --build "${GMX_BUILD_DIR}" --target tests --parallel $(nproc --all)
         ret_code=$((${ret_code} || $?))
     fi
