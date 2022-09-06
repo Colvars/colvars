@@ -23,9 +23,6 @@ class colvarbias
   : public virtual colvarparse, public virtual colvardeps {
 public:
 
-  /// Name of this bias
-  std::string name;
-
   /// Keyword indicating the type of this bias
   std::string bias_type;
 

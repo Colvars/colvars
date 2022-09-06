@@ -54,9 +54,6 @@ class colvar : public colvarparse, public colvardeps {
 
 public:
 
-  /// Name
-  std::string name;
-
   /// \brief Current value (previously set by calc() or by read_traj())
   colvarvalue const & value() const;
 
