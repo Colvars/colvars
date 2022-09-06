@@ -517,19 +517,10 @@ int colvarscript::proc_features(colvardeps *obj,
   }
 
   if ((subcmd == "get") || (subcmd == "set")) {
-    std::vector<colvardeps::feature *> const &features = obj->features();
     std::string const req_feature(obj_to_str(objv[4]));
-    colvardeps::feature *f = NULL;
-    int fid = 0;
-    for (fid = 0; fid < int(features.size()); fid++) {
-      if (features[fid]->description ==
-          colvarparse::to_lower_cppstr(req_feature)) {
-        f = features[fid];
-        break;
-      }
-    }
+    int const fid = obj->get_feature_id(req_feature);
 
-    if (f == NULL) {
+    if (fid < 0) {
 
       add_error_msg("Error: feature \""+req_feature+"\" does not exist.\n");
       return COLVARSCRIPT_ERROR;

@@ -730,6 +730,8 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
 
 int colvar::init_output_flags(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
+
   {
     bool b_output_value;
     get_keyval(conf, "outputValue", b_output_value, true);
@@ -758,6 +760,12 @@ int colvar::init_output_flags(std::string const &conf)
   get_keyval_feature(this, conf, "outputTotalForce", f_cv_output_total_force, false);
   get_keyval_feature(this, conf, "outputAppliedForce", f_cv_output_applied_force, false);
   get_keyval_feature(this, conf, "subtractAppliedForce", f_cv_subtract_applied_force, false);
+
+  // Trajectory output of feature flags
+  std::vector<std::string> feature_names;
+  if (get_keyval(conf, "outputFeatures", feature_names)) {
+    error_code |= colvardeps::init_features_output(feature_names);
+  }
 
   return COLVARS_OK;
 }
@@ -2579,6 +2587,8 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
        << cvm::wrap_string(this->name, this_cv_width-3);
   }
 
+  colvardeps::write_traj_label(os);
+
   return os;
 }
 
@@ -2632,6 +2642,8 @@ std::ostream & colvar::write_traj(std::ostream &os)
        << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
        << applied_force();
   }
+
+  colvardeps::write_traj(os);
 
   return os;
 }
