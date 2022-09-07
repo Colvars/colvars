@@ -78,6 +78,9 @@ proc set_bias_index {} {
             set bias_index [expr ${n_replicas} - 1]
         }
 
+        # Variables may have been deactivated when reading the initial state
+        reactivate_all_variables
+
         print "BE: REPLICA [myReplica] STEP ${be_simulation_step} BIAS INDEX ${bias_index} READ FROM STATE FILES"
 
     }
@@ -148,6 +151,16 @@ proc select_bias { i_bias } {
     foreach bias_name $bias_names(${i_bias}) {
         cv bias ${bias_name} set active 1
         cv bias ${bias_name} update
+    }
+
+    # The dependency system may have turned off some variables, reactivate them
+    reactivate_all_variables
+}
+
+
+proc reactivate_all_variables {} {
+    foreach colvar_name [cv list colvars] {
+        cv colvar ${colvar_name} set active 1
     }
 }
 
