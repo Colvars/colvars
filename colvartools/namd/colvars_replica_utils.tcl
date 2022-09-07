@@ -7,6 +7,7 @@ set temperature [langevinTemp]
 set n_replicas [numReplicas]
 
 set be_simulation_step [cv getstepabsolute]
+set be_exchange_freq 0
 
 
 # Create data structures (if not done already)
@@ -21,6 +22,17 @@ if { [info exists bias_names] == 0 } {
 }
 
 
+proc set_exchange_frequency { exchange_freq } {
+    global be_exchange_freq
+    # Save state files at the same frequency to not risk losing information
+    if { ([restartFreq] > 0) && [restartFreq] != ${exchange_freq} } {
+        abort "NAMD's restartFreq, when defined must be equal to the BE exchange frequency."
+    }
+    cv config "colvarsRestartFrequency ${exchange_freq}"
+    set be_exchange_freq ${exchange_freq}
+}
+
+
 # Use current values of the active flag to detect which set of biases is active
 proc set_bias_index {} {
 
@@ -28,7 +40,7 @@ proc set_bias_index {} {
     global bias_index
 
     if { [info exists be_simulation_step] == 0 } {
-        abort "Variable be_simulation_step undefined"
+        abort "Global variable be_simulation_step is undefined"
     }
 
     # Find out which set of biases is active on this replica
@@ -37,6 +49,8 @@ proc set_bias_index {} {
         # Initialize the index and the active flags for the first time
         set bias_index [myReplica]
         select_bias ${bias_index}
+
+        print "BE: REPLICA [myReplica] STEP ${be_simulation_step} BIAS INDEX ${bias_index} INITIALIZED FROM DEFAULT"
 
     } else {
 
@@ -55,17 +69,18 @@ proc set_bias_index {} {
             }
         }
 
+        if { ${n_active_indices} > 1 } {
+            abort "Number of active biases is ${n_active_indices}, should be 1 or 0"
+        }
+
         if { ${n_active_indices} == 0 } {
             # This is the unbiased replica
             set bias_index [expr ${n_replicas} - 1]
         }
 
-        if { ${n_active_indices} > 1 } {
-            abort "Number of active biases is ${n_active_indices}, should be 1 or 0"
-        }
-    }
+        print "BE: REPLICA [myReplica] STEP ${be_simulation_step} BIAS INDEX ${bias_index} READ FROM STATE FILES"
 
-    print "BE: REPLICA [myReplica] STEP ${be_simulation_step} BIAS INDEX ${bias_index}"
+    }
 }
 
 
@@ -328,11 +343,12 @@ proc attempt_exchanges {} {
 
 
 # Run a MD segment followed by bias exchange attempts
-proc run_be_segment { n_steps_segment } {
+proc run_be_segment { } {
     global be_simulation_step
+    global be_exchange_freq
     print_biases_active_state
-    run norepeat ${n_steps_segment}
-    incr be_simulation_step ${n_steps_segment}
+    run norepeat ${be_exchange_freq}
+    incr be_simulation_step ${be_exchange_freq}
     replicaBarrier
     attempt_exchanges
 }
@@ -342,5 +358,4 @@ proc run_be_segment { n_steps_segment } {
 
 if { [info exists bias_index] == 0 } {
     set bias_index -1
-    set be_simulation_step 0
 }
