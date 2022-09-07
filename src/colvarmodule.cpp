@@ -858,11 +858,13 @@ int colvarmodule::calc_colvars()
   // so they can activate colvars as needed
   std::vector<colvarbias *>::iterator bi;
   for (bi = biases.begin(); bi != biases.end(); bi++) {
-    int tsf = (*bi)->get_time_step_factor();
-    if (tsf > 0 && (step_absolute() % tsf == 0)) {
-      (*bi)->enable(colvardeps::f_cvb_awake);
-    } else {
-      (*bi)->disable(colvardeps::f_cvb_awake);
+    int const tsf = (*bi)->get_time_step_factor();
+    if (tsf > 1) {
+      if (step_absolute() % tsf == 0) {
+        (*bi)->enable(colvardeps::f_cvb_awake);
+      } else {
+        (*bi)->disable(colvardeps::f_cvb_awake);
+      }
     }
   }
 
@@ -873,12 +875,14 @@ int colvarmodule::calc_colvars()
   variables_active()->clear();
   variables_active()->reserve(variables()->size());
   for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
-    // Wake up or put to sleep variables
+    // Wake up or put to sleep variables with MTS
     int tsf = (*cvi)->get_time_step_factor();
-    if (tsf > 0 && (step_absolute() % tsf == 0)) {
-      (*cvi)->enable(colvardeps::f_cv_awake);
-    } else {
-      (*cvi)->disable(colvardeps::f_cv_awake);
+    if (tsf > 1) {
+      if (step_absolute() % tsf == 0) {
+        (*cvi)->enable(colvardeps::f_cv_awake);
+      } else {
+        (*cvi)->disable(colvardeps::f_cv_awake);
+      }
     }
 
     if ((*cvi)->is_enabled()) {
