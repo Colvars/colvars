@@ -293,7 +293,6 @@ int colvar::init(std::string const &conf)
     enable(f_cv_multiple_ts);
   }
 
-  // TODO use here information from the CVCs' own natural boundaries
   error_code |= init_grid_parameters(conf);
 
   // Detect if we have a single component that is an alchemical lambda
