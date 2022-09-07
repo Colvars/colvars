@@ -1,9 +1,10 @@
 # -*- tcl -*-
 
-# Standard NAMD input file here
+# Standard NAMD script here
 
 colvars on
-# Define all variables and biases
+
+# Define all variables and biases (same config for all replicas)
 cv configfile ${mol_name}-bemtd.colvars.in
 
 if { ${ijob} > 0 } {
@@ -22,17 +23,15 @@ init_be_metadynamics_1d
 # MUST BE CALLED *AFTER* RESTARTING with "cv load" to work correctly
 set_bias_index
 
-set exchange_freq 120000
-
-# Save state files at the same frequency to not risk losing information
-cv config "colvarsRestartFrequency ${exchange_freq}"
-# TODO enforce consistency with NAMD restartFreq
+# Set bias-exchange frequency, check dependencies internally
+set exchange_freq [restartFreq]
+set_exchange_frequency ${exchange_freq}
 
 # Main loop
 set i_run 0
 set n_runs [expr ${numsteps}/${exchange_freq}]
 while { ${i_run} < ${n_runs} } {
     # Short run followed by exchange
-    run_be_segment ${exchange_freq}
+    run_be_segment
     incr i_run
 }
