@@ -128,6 +128,19 @@ proc init_be_metadynamics_1d {} {
 }
 
 
+# Add a bias to the list of biases that are used by a single replica at a time
+# (Typically it's either a list with a one element, or an empty list)
+proc add_bias_to_index { bias_index bias_name } {
+    global bias_names
+    global stateful_bias_names
+    set bias_type [cv bias ${bias_name} type]
+    lappend bias_names(${bias_index}) ${bias_name}
+    if { (${bias_type} == "abf") || (${bias_type} == "metadynamics") } {
+        lappend stateful_bias_names(${bias_index}) ${bias_name}
+    }
+}
+
+
 # Sum up all the energies of the given biases
 proc get_total_bias_energy { bias_names } {
     set result 0.0
