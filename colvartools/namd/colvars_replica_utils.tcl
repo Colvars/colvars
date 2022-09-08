@@ -1,13 +1,24 @@
+# Scripting functions used by Colvars to perform replica-exchange based
+# computations in NAMD
+
+# Last updated: 2022-09-08
+
 
 # Initialize global variables
 
 set boltzmann_kB 0.001987191
+# TODO add a Colvars scripting function to get the correct temperature
 set temperature [langevinTemp]
 
 set n_replicas [numReplicas]
 
 set be_simulation_step [cv getstepabsolute]
 set be_exchange_freq 0
+
+if { [info exists bias_index] == 0 } {
+    # First-time only
+    set bias_index -1
+}
 
 
 # Create data structures (if not done already)
@@ -379,9 +390,3 @@ proc run_be_segment { } {
     attempt_exchanges
 }
 
-
-# Initialization
-
-if { [info exists bias_index] == 0 } {
-    set bias_index -1
-}

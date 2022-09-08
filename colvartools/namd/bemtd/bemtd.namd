@@ -1,6 +1,21 @@
 # -*- tcl -*-
 
-# Standard NAMD script here
+set mol_name $env(mol_name)
+set ijob $env(ijob)
+
+set job replica-[format "%03d" [myReplica]]/${mol_name}.bemtd.replica-[format "%03d" [myReplica]].[format "%04d" ${ijob}]
+
+if { ${ijob} > 0 } {
+    # Define NAMD restart files if needed
+    set old replica-[format "%03d" [myReplica]]/${mol_name}.bemtd.replica-[format "%03d" [myReplica]].[format "%04d" [expr ${ijob} - 1]]
+    set coor_bin_file ${old}.coor
+    set vel_bin_file ${old}.vel
+}
+
+set numsteps $env(numsteps)
+set restart_freq 25000 ; # This will be used as exchange frequency as well
+
+source ../Common/common.namd
 
 colvars on
 
@@ -9,11 +24,11 @@ cv configfile ${mol_name}-bemtd.colvars.in
 
 if { ${ijob} > 0 } {
     # Load state file when the job is being restarted
-    cv load ${run_path_prefix}${old}.colvars.state
+    cv load ${old}.colvars.state
 }
 
 # Load BE functions
-source colvars_replica_utils.tcl
+source ../colvars_replica_utils.tcl
 
 # Automatic assignment of 1D biases (must all be named "mtd_<colvar>").
 # Alternatively, other choices may be specified manually (see down below)

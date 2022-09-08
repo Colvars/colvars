@@ -1,0 +1,88 @@
+# -*- tcl -*-
+
+if { [info exists mol_name] == 0 } {
+    set mol_name "ammonia_water"
+}
+
+if { [info exists coor_pdb_file] == 0 } {
+    set coor_pdb_file "../Common/${mol_name}.pdb"
+}
+
+set ff_folder "../Common/charmm-ff"
+set par_files [list \
+                   "${ff_folder}/par_all36_prot.prm" \
+                   "${ff_folder}/par_all36_cgenff.prm" \
+                   "${ff_folder}/par_all36_carb.prm" \
+                   "${ff_folder}/par_all36_lipid.prm" \
+                   "${ff_folder}/par_all36_na.prm" \
+                   "${ff_folder}/par_water_ions.prm"]
+
+if { [info exists job] == 0 } {
+    abort "Undefined variable job"
+}
+
+paraTypeCharmm          on
+structure               ../Common/${mol_name}.psf
+foreach par_file ${par_files} {
+    parameters          ${par_file}
+}
+1-4scaling              1.0
+exclude                 scaled1-4
+rigidBonds              all
+useSettle               on
+
+switchdist              10.0
+cutoff                  12.0
+pairlistdist            14.0
+vdwForceSwitching       on
+fullElectFrequency      1
+nonBondedFreq           1
+
+seed                    87654321
+
+if { [info exists NVT] } {
+  langevin on
+  langevinTemp 300
+  langevinDamping 10
+}
+
+coordinates             ${coor_pdb_file}
+if { [info exists coor_bin_file] > 0 } {
+    binCoordinates      ${coor_bin_file}
+}
+if { [info exists vel_bin_file] > 0 } {
+    binVelocities       ${vel_bin_file}
+} else {
+    if { [info exists vel_pdb_file] > 0 } {
+        velocities      ${vel_pdb_file}
+    } else {
+        temperature     300.0
+    }
+}
+if { [info exists xsc_file] > 0 } {
+    extendedSystem      ${xsc_file}
+}
+
+COMmotion               no
+zeroMomentum            yes
+
+timestep                1.0
+
+outputName              ${job}
+restartName             ${job}.tmp
+restartFreq             ${restart_freq}
+if { [info exists pdb_restart] > 0 } {
+    binaryRestart       no
+    binaryOutput        no
+} else {
+    binaryRestart       yes
+    binaryOutput        yes
+}
+DCDFile                 ${job}.coor.dcd
+DCDFreq                 2500
+DCDUnitCell             yes
+
+outputEnergies          500
+outputMomenta           500
+outputPressure          500
+outputTiming            500
