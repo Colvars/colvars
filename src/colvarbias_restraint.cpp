@@ -530,7 +530,9 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
     }
     starting_force_k = force_k;
     b_chg_force_k = true;
-  } else {
+  }
+
+  if (!b_chg_force_k) {
     return COLVARS_OK;
   }
 
