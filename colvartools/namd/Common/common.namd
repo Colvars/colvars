@@ -8,14 +8,19 @@ if { [info exists coor_pdb_file] == 0 } {
     set coor_pdb_file "../Common/${mol_name}.pdb"
 }
 
-set ff_folder "../Common/charmm-ff"
-set par_files [list \
-                   "${ff_folder}/par_all36_prot.prm" \
-                   "${ff_folder}/par_all36_cgenff.prm" \
-                   "${ff_folder}/par_all36_carb.prm" \
-                   "${ff_folder}/par_all36_lipid.prm" \
-                   "${ff_folder}/par_all36_na.prm" \
-                   "${ff_folder}/par_water_ions.prm"]
+if { ${mol_name} == "ammonia_water" } { 
+    set par_files [list "../Common/par_all36_ammonia_water.prm"]
+}
+
+# Uncomment below to use full C36 force field (needs NAMD-compatible water_ions)
+# set ff_folder "../Common/charmm-ff"
+# set par_files [list \
+#                    "${ff_folder}/par_all36_prot.prm" \
+#                    "${ff_folder}/par_all36_cgenff.prm" \
+#                    "${ff_folder}/par_all36_carb.prm" \
+#                    "${ff_folder}/par_all36_lipid.prm" \
+#                    "${ff_folder}/par_all36_na.prm" \
+#                    "${ff_folder}/par_water_ions.prm"]
 
 if { [info exists job] == 0 } {
     abort "Undefined variable job"

@@ -1,0 +1,25 @@
+# -*- tcl -*-
+
+set mol_name $env(mol_name)
+set ijob $env(ijob)
+
+set job replica-[format "%03d" [myReplica]]/${mol_name}.eq.replica-[format "%03d" [myReplica]].[format "%04d" ${ijob}]
+
+if { ${ijob} > 0 } {
+    # Define NAMD restart files if needed
+    set old replica-[format "%03d" [myReplica]]/${mol_name}.eq.replica-[format "%03d" [myReplica]].[format "%04d" [expr ${ijob} - 1]]
+    set coor_bin_file ${old}.coor
+    set vel_bin_file ${old}.vel
+}
+
+set numsteps $env(numsteps)
+set restart_freq 25000
+
+source ../Common/common.namd
+
+colvars on
+
+# Define all variables and biases (same config for all replicas)
+cv configfile ${mol_name}-eq.colvars.in
+
+run ${numsteps}
