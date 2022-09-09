@@ -45,11 +45,9 @@ nonBondedFreq           1
 
 seed                    87654321
 
-if { [info exists NVT] } {
-  langevin on
-  langevinTemp 300
-  langevinDamping 10
-}
+langevin                on
+langevinTemp            300.0
+langevinDamping         10.0
 
 coordinates             ${coor_pdb_file}
 if { [info exists coor_bin_file] > 0 } {
