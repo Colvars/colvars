@@ -3,6 +3,7 @@
 # Invoke this script with --help for documentation.
 
 # Download link: https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true
+# This version was modified on: 2022-09-12
 # Contact: giacomo.fiorin@gmail.com
 
 from __future__ import print_function
@@ -19,10 +20,6 @@ class Colvar_traj(object):
     The series of step numbers are included as well, because collective
     variables may be added or deleted during a simulation.
     """
-
-    _name = ""
-    _step = np.empty(shape=(0))
-    _colvar = np.empty(shape=(0))
 
     def __init__(self, name):
         """Sets the name of the variable"""
@@ -96,23 +93,18 @@ class Colvars_traj(object):
     Can be accessed as a dictionary using a variable's name as key; each
     variable's trajectory is an instance of colvars_traj"""
 
-    _keys = []
-    _start = {}
-    _end = {}
-    _colvars = {}
-    _found = {}
-    _frame = -1
-
     def __init__(self, filenames=None, first=0, last=-1, every=1):
         """
         Initialize from the given list of colvars.traj files
         Any optional arguments are passed to read_files()
         """
         self._keys = ['step']
-        self._start['step'] = 0
-        self._end['step'] = -1
+        self._colvars = {}
+        self._start = { 'step' : 0 }
+        self._end = { 'step' : -1 }
         self._count = 0
-        self._frame = 0
+        self._frame = -1
+
         if type(filenames) == str:
             filenames = [filenames]
         if filenames:
