@@ -96,6 +96,9 @@ cleanup_files() {
   tclsh ../Common/delete_tmp_files.tcl
 }
 
+declare -a failed_tests
+declare -a failed_tests_low_prec
+
 
 for dir in ${DIRLIST} ; do
 
@@ -258,8 +261,10 @@ for dir in ${DIRLIST} ; do
         done
         if [ $RETVAL -eq 0 ]
         then
+          failed_tests_low_prec+=($dir)
           echo " --> Passes at reduced precision 1e-${LOW_PREC}"
         else
+          failed_tests+=($dir)
           echo " --> Fails at minimum tested precision 1e-${LOW_PREC}"
         fi
       fi
@@ -289,5 +294,13 @@ then
   exit 0
 else
   echo "$(${TPUT_RED})There were failed tests.$(${TPUT_CLEAR})"
+  if [ ${#failed_tests[@]} -gt 0 ]; then
+    echo "The following tests are failed:"
+    printf "%s\n" "${failed_tests[@]}"
+  fi
+  if [ ${#failed_tests_low_prec[@]} -gt 0 ]; then
+    echo "The following tests are failed, but passed at low precisions:"
+    printf "%s\n" "${failed_tests_low_prec[@]}"
+  fi
   exit 1
 fi
