@@ -93,7 +93,7 @@ class Colvars_traj(object):
     Can be accessed as a dictionary using a variable's name as key; each
     variable's trajectory is an instance of colvars_traj"""
 
-    def __init__(self, filenames=None, first=0, last=-1, every=1):
+    def __init__(self, filenames=None, first=0, last=None, every=1):
         """
         Initialize from the given list of colvars.traj files
         Any optional arguments are passed to read_files()
@@ -173,7 +173,7 @@ class Colvars_traj(object):
             dict_buffer[v]['cv_step'].append(step)
 
     def read_files(self, filenames, list_variables=False,
-                   first=0, last=-1, every=1):
+                   first=0, last=None, every=1):
         """
         Read a series of colvars.traj files.
         filenames : list of strings
@@ -184,31 +184,47 @@ class Colvars_traj(object):
         first : int
             skip all records before this index (see also mol load in VMD)
         last : int
-            stop reading after this record
+            stop reading after this record (default: don't stop)
         every : int
             read every these many records
         """
-        last = np.int64(last)
-        if (last == -1):
+
+        if last == None or last == -1:
             last = np.int64(np.iinfo(np.int64).max)
+        else:
+            last = np.int64(last)
+
         last_step = -1
         for f in [open(filename) for filename in filenames]:
+
             dict_buffer = dict()
+
             for line in f:
-                if (len(line) == 0): continue
-                if (line[:1] == "@"): continue # xmgr file metadata
-                if (line[:1] == "#"):
+
+                if len(line) == 0:
+                    continue
+
+                if line[:1] == "#":
                     self._parse_comment_line(line)
                     continue
+
                 if list_variables:
+                    # After parsing the last comment line, return if listing
+                    # the variables
                     return self.variables
+
                 step = np.int64(line[0:self._end['step']])
-                if (step == last_step): continue
+
+                if step == last_step:
+                    # Detect duplicated frames (upon restart)
+                    continue
+
                 if ((self._frame >= first) and (self._frame <= last) and
                     (self._frame % every == 0)):
                     self._parse_line(line, dict_buffer)
                 self._frame += 1
                 last_step = step
+
             for key in dict_buffer:
                 if (key not in self._colvars):
                     self._colvars[key] = Colvar_traj(key)
