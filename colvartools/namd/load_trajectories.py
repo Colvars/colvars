@@ -39,7 +39,10 @@ def compute_traj_masks(traj, biases):
 
     traj_mask['neutral'] = 1 - traj_mask['neutral']
     for bias in traj_mask.keys():
-        print(bias, "has", np.sum(traj_mask[bias]), "frames")
+        prefix = "Bias \"" + bias + "\" has"
+        if bias == 'neutral':
+            prefix = "No bias for"
+        print(prefix, np.sum(traj_mask[bias]), "frames")
 
     return traj_mask
 
@@ -65,7 +68,7 @@ def write_constant_bias_trajs(trajs, output_prefix="colvars_traj"):
 
 def extract_constant_bias_trajs(pattern="replica-%03d/*.colvars.traj",
                                 variables=[], biases=[],
-                                first=0, last=None, skip=10):
+                                first=0, last=None, skip=1):
 
     constant_bias_trajs = { }
 
@@ -73,12 +76,13 @@ def extract_constant_bias_trajs(pattern="replica-%03d/*.colvars.traj",
 
     while True:
 
-        print()
-
+        # Loop over replicas
         traj_files = sorted(glob.glob(pattern % replica_index))
         if len(traj_files) == 0:
             break
         traj = Colvars_traj(traj_files, first=first, last=last, every=skip)
+
+        print()
 
         # Defaults: metadynamics biases, one for each CV
         if len(variables) == 0:
@@ -88,9 +92,10 @@ def extract_constant_bias_trajs(pattern="replica-%03d/*.colvars.traj",
             biases = [('mtd_' + v) for v in variables
                       if ('E_mtd_' + v) in traj.variables]
 
-        traj_mask = compute_traj_masks(traj, biases)
+        print("Replica", replica_index, "has",
+              traj[traj.variables[0]].steps.size, "frames")
 
-        print("Replica", replica_index, "has", traj_mask['neutral'].size, "frames")
+        traj_mask = compute_traj_masks(traj, biases)
 
         for bias in ['neutral']:
 
@@ -119,4 +124,51 @@ def extract_constant_bias_trajs(pattern="replica-%03d/*.colvars.traj",
     compute_histograms(constant_bias_trajs)
 
 
-extract_constant_bias_trajs()
+if __name__ == '__main__':
+
+    import argparse
+
+    parser = \
+        argparse.ArgumentParser(description='Script to process trajectories from Colvars-based bias-exchange simulations.', \
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--variables',
+                        type=str, nargs='*',
+                        help="Which collective variables to analyze "
+                        "(default: all that are found in colvars.traj files",
+                        default=[])
+
+    parser.add_argument('--biases',
+                        type=str, nargs='*',
+                        help="Which biases to analyze"
+                        "(default: all biases named \"mtd_<variable>\")",
+                        default=[])
+
+    parser.add_argument('--pattern',
+                        type=str,
+                        help="Filename pattern to use for each replica; "
+                        "must contain a format specifier within which to place "
+                        "the replica index",
+                        default="replica-%03d/*.colvars.traj")
+
+    parser.add_argument('--first',
+                        dest='first',
+                        type=np.int64,
+                        help='First frame to read',
+                        default=-1)
+
+    parser.add_argument('--last',
+                        dest='last',
+                        type=np.int64,
+                        help='Last frame to read',
+                        default=-1)
+
+    parser.add_argument('--skip',
+                        dest='skip',
+                        type=np.int64,
+                        help='Read every these many frames',
+                        default=1)
+
+    kwargs = vars(parser.parse_args())
+
+    extract_constant_bias_trajs(**kwargs)
