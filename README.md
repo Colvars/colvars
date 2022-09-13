@@ -116,18 +116,16 @@ All of the above MD engine versions are automatically tested as part of GitHub A
 
 The following links provide specific versions of GROMACS that are already patched with the latest available version of Colvars:
 
- - **GROMACS [2021.5-colvars](https://github.com/Colvars/gromacs/releases/tag/v2021.5-colvars)**;
+ - **GROMACS [2021.6-colvars](https://github.com/Colvars/gromacs/releases/tag/v2021.6-colvars)**;
 
  - **GROMACS [2020.7-colvars](https://github.com/Colvars/gromacs/releases/tag/v2020.7-colvars)**.
 
 Other patched releases within the 2020.x or 2021.x series may be produced using the same [patching procedure](#updating-to-the-latest-version) described above.  Unless there is a specific reason not to, it is a good idea to use the latest revision of each release series, available as [Git branches](https://github.com/Colvars/gromacs/branches).  Gromacs versions outside of 2020.x or 2021.x are not supported at this time.
 
-In Colvars-patched versions of GROMACS, the Colvars version is included in the GROMACS version string, for example:
+When posting a message to the [Gromacs forum](https://gromacs.bioexcel.eu/) related to any Colvars-patched version of GROMACS please always specify "GROMACS modification: **Yes**" and use the [`colvars` tag](https://gromacs.bioexcel.eu/tag/colvars).  Whenver possible please also reference the Colvars version: this is included in the version string that is reported by the patched GROMACS (right after the GROMACS version), for example:
 ```
    :-) GROMACS - gmx_d, 2021.5-Colvars-2022-02-20-dev (double precision) (-:
 ```
-
-When using the [Gromacs forum](https://gromacs.bioexcel.eu/) to discuss usage of any Colvars-patched version of GROMACS, please specify "GROMACS modification: **Yes**" and use the [`colvars` tag](https://gromacs.bioexcel.eu/tag/colvars) when posting your forum message.  If possible, please include the Colvars version as well.
 
 ## Which version of Colvars is recommended?
 
