@@ -4,6 +4,7 @@ The Tcl script `colvars_replica_utils.tcl` can be sourced at any time during a N
 
 Unlike in the Tcl scripts in the `lib/replica` folder of a NAMD distribution tree, no `.history` files are written and un-shuffling the DCD trajectory files with `sortreplicas` is not yet supported.  This may change in the future.
 
+In theory, any types of bias can be exchanged, but so far only metadynamics biases have been tested.
 
 ### Examples
 
