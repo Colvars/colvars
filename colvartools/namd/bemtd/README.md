@@ -4,6 +4,17 @@ The `bemtd` folder contains an example input to run a bias-exchange metadynamics
 
 The script `run.sh` will run two consecutive jobs, about an hour long each.  To change this, feel free to adjust the environment variable `numsteps` or range of values for the variable `ijob`.
 
+### Input requirements
+
+The file `ammonia_water-bemtd.colvars.in` contains the Colvars configuration for all biases, including three metadynamics biases that can be exchanged, and one walls restraint that remains fixed.
+
+Besides the required keywords, each metadynamics bias should contain also the following:
+- `outputEnergy yes`, so that the biasing energy can be easily be read during post-processing of the `.colvars.traj` file under the column `E_<bias name>`;
+- `outputFeatures active`, so that the active/inactive status of each bias is reported as 1/0 values in the `<bias name>_active` column; *when the value of this column is 0 for a given bias, its reported energy is out of date and should be ignored even if positive*.
+
+The comments in the NAMD script `bemtd.namd` describe in more detail how to define the biases are subject to being exchanged.  The current implementation requires that *no more than one replica at a time is without biases*.
+
+
 ### Analysis
 
 Each replica runs continuously in Cartesian space, with the biasing potential switching from time to time.  This is *different* from what e.g. GROMACS+PLUMED uses, where the coordinates of the replicas are exchanged and represent trajectorioes with a constant bias instead.
