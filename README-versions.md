@@ -7,6 +7,7 @@
 ### Versions included in LAMMPS
 LAMMPS version | Colvars version
 -------------- | ---------------
+stable_23Jun2022 | [2022-05-24](https://github.com/Colvars/colvars/releases/tag/lammps-stable_23Jun2022)
 stable_29Sep2021 | [2021-09-13](https://github.com/Colvars/colvars/releases/tag/lammps-stable_29Sep2021)
 stable_29Oct2020 | [2020-09-17](https://github.com/Colvars/colvars/releases/tag/lammps-stable_29Oct2020)
 stable_3Mar2020 | [2020-01-27](https://github.com/Colvars/colvars/releases/tag/lammps-stable_3Mar2020)
@@ -37,8 +38,8 @@ NAMD version | Colvars version
 ### Versions included in VMD
 VMD version | Colvars version
 -------------- | ---------------
+1.9.4a58 | [2022-04-14](https://github.com/Colvars/colvars/releases/tag/vmd-1.9.4a58)
 1.9.4a49 | [2020-10-22](https://github.com/Colvars/colvars/releases/tag/vmd-1.9.4a49)
-1.9.4a12 | [2017-10-11](https://github.com/Colvars/colvars/releases/tag/vmd-1.9.4a12)
 1.9.3 | [2016-10-26](https://github.com/Colvars/colvars/releases/tag/vmd-1.9.3)
 1.9.2 | [2014-10-13](https://github.com/Colvars/colvars/releases/tag/vmd-1.9.2)
 
