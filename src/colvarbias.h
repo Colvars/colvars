@@ -383,6 +383,10 @@ public:
 
   virtual int init(std::string const &conf) /* override */;
 
+  virtual std::string const get_state_params() const;
+
+  virtual int set_state_params(std::string const &state_conf);
+
 };
 
 

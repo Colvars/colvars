@@ -1113,6 +1113,21 @@ int colvarbias_neutral::init(std::string const &conf)
 }
 
 
+std::string const colvarbias_neutral::get_state_params() const
+{
+  return colvarbias::get_state_params() + colvarbias_ti::get_state_params();
+}
+
+
+int colvarbias_neutral::set_state_params(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+  error_code |= colvarbias::set_state_params(conf);
+  error_code |= colvarbias_ti::set_state_params(conf);
+  return error_code;
+}
+
+
 // Static members
 
 std::vector<colvardeps::feature *> colvarbias::cvb_features;
