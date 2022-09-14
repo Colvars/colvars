@@ -30,15 +30,18 @@ if { ${ijob} > 0 } {
 # Load BE functions
 source ../colvars_replica_utils.tcl
 
-# Automatic assignment of 1D biases (must all be named "mtd_<colvar>").
-# Alternatively, other choices may be specified manually (see down below)
-init_be_metadynamics_1d
+# # Automatic assignment of 1D biases (must all be named "mtd_<colvar>").
+# # Alternatively, other choices may be specified manually (see down below)
+# init_be_metadynamics_1d
 
-# # Example: specifying manually the biases (equivalent to syntax right above)
-# # *** IF THERE IS A NEUTRAL REPLICA, IT MUST HAVE THE LAST INDEX ***
-# add_bias_to_index 0 mtd_dist_N_O
-# add_bias_to_index 1 mtd_dist_N_H1
-# add_bias_to_index 2 mtd_dist_N_H2
+# Example: specifying manually the biases (equivalent to syntax right
+# above) There may only be one replica without biases, and must be added to
+# the last index (3 in this example); alternatively, one or more neutral
+# "biases" may be defined to allow multiple neutral replicas
+add_bias_to_index 0 mtd_dist_N_O
+add_bias_to_index 1 mtd_dist_N_H1
+add_bias_to_index 2 mtd_dist_N_H2
+add_bias_to_index 3 neutral
 
 # Detect or initialize which bias is active at the beginning of the job.
 # MUST BE CALLED *AFTER* RESTARTING with "cv load" to work correctly
