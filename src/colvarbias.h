@@ -332,7 +332,7 @@ protected:
 class colvar_grid_gradient;
 class colvar_grid_count;
 
-/// \brief Base class for unconstrained thermodynamic-integration FE estimator
+/// Base class for unconstrained thermodynamic-integration FE estimator
 class colvarbias_ti : public virtual colvarbias {
 public:
 
@@ -371,5 +371,19 @@ protected:
   /// store the index of the variables then
   std::vector<int> ti_bin;
 };
+
+
+/// Class for a bias with no biasing forces (may still collect TI samples)
+class colvarbias_neutral : public virtual colvarbias_ti {
+public:
+
+  colvarbias_neutral(char const *key);
+
+  virtual ~colvarbias_neutral();
+
+  virtual int init(std::string const &conf) /* override */;
+
+};
+
 
 #endif

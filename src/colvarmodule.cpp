@@ -598,6 +598,9 @@ int colvarmodule::parse_biases(std::string const &conf)
   /// initialize metadynamics instances
   parse_biases_type<colvarbias_meta>(conf, "metadynamics");
 
+  /// initialize neutral bias instances
+  parse_biases_type<colvarbias_neutral>(conf, "neutral");
+
   /// initialize reweightaMD instances
   parse_biases_type<colvarbias_reweightaMD>(conf, "reweightaMD");
 
