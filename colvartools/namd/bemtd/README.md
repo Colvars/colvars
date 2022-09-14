@@ -21,7 +21,7 @@ Each replica runs continuously in Cartesian space, with the biasing potential sw
 
 To obtain the latter from the former, the `load_trajectories.py` script in the parent folder can be used to extract histograms and time series of selected variables with a constant bias, for example:
 ```
-python3 ../load_trajectories.py --first 100000 --skip 10 --variables dist_N_O
+python3 ../load_trajectories.py --first 100000 --skip 10 --variables dist_N_O --biases neutral
 ```
 
 Histogram files computed over trajectory segments without bias (e.g. `histogram.neutral-dist_N_O.dat`) can be compared directly with the equivalent files computed on simulations of the same systems without bias (example input in the `eq` folder).

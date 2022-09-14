@@ -7,7 +7,6 @@ import sys
 import glob
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Add "colvartools" folder to import path
 sys.path += [os.path.dirname(os.path.dirname(os.path.realpath(__file__)))]
@@ -40,33 +39,42 @@ def compute_traj_masks(traj, biases):
     traj_mask['neutral'] = 1 - traj_mask['neutral']
     for bias in traj_mask.keys():
         prefix = "Bias \"" + bias + "\" has"
-        if bias == 'neutral':
-            prefix = "No bias for"
         print(prefix, np.sum(traj_mask[bias]), "frames")
 
     return traj_mask
 
 
-def compute_histograms(trajs, bins=120, range=[0.0, 12.0],
+def compute_histograms(trajs, bins, range,
+                       biases=[], variables=[],
                        output_prefix="histogram"):
-    for bias in trajs.keys():
-        for variable in trajs[bias].keys():
+    if len(biases) == 0:
+        biases = trajs.keys()
+    for bias in biases:
+        if len(variables) == 0:
+            variables = trajs[bias].keys()
+        for variable in variables:
             hist, edges = np.histogram(
-                trajs[bias][variable].values, bins=bins, range=[0.0, 12.0],
+                trajs[bias][variable].values, bins=bins, range=range,
                 density=True)
             np.savetxt("%s.%s-%s.dat" % (output_prefix, bias, variable),
                        np.c_[(edges[1:]+edges[:-1])/2.0, hist])
 
 
-def write_constant_bias_trajs(trajs, output_prefix="colvars_traj"):
-    for bias in trajs.keys():
-        for variable in trajs[bias].keys():
+def write_constant_bias_trajs(trajs, biases=[], variables=[],
+                              output_prefix="colvars_traj"):
+    if len(biases) == 0:
+        biases = trajs.keys()
+    for bias in biases:
+        if len(variables) == 0:
+            variables = trajs[bias].keys()
+        for variable in variables:
             np.savetxt("%s.%s-%s.dat" % (output_prefix, bias, variable),
                        np.c_[trajs[bias][variable].steps,
                              trajs[bias][variable].values])
 
 
-def extract_constant_bias_trajs(pattern="replica-%03d/*.colvars.traj",
+def extract_constant_bias_trajs(histogram_bins, histogram_range,
+                                pattern="replica-%03d/*.colvars.traj",
                                 variables=[], biases=[],
                                 first=0, last=None, skip=1):
 
@@ -92,12 +100,15 @@ def extract_constant_bias_trajs(pattern="replica-%03d/*.colvars.traj",
             biases = [('mtd_' + v) for v in variables
                       if ('E_mtd_' + v) in traj.variables]
 
+        print("Analyzing variables:", variables)
+        print("Analyzing biases:", biases)
+
         print("Replica", replica_index, "has",
               traj[traj.variables[0]].steps.size, "frames")
 
         traj_mask = compute_traj_masks(traj, biases)
 
-        for bias in ['neutral']:
+        for bias in biases:
 
             if not bias in constant_bias_trajs:
                 constant_bias_trajs[bias] = {}
@@ -121,7 +132,12 @@ def extract_constant_bias_trajs(pattern="replica-%03d/*.colvars.traj",
 
         replica_index += 1
 
-    compute_histograms(constant_bias_trajs)
+    compute_histograms(
+        trajs=constant_bias_trajs,
+        biases=biases, variables=variables,
+        bins=histogram_bins, range=histogram_range,
+        output_prefix="histogram"
+    )
 
 
 if __name__ == '__main__':
@@ -168,6 +184,17 @@ if __name__ == '__main__':
                         type=np.int64,
                         help='Read every these many frames',
                         default=1)
+
+    parser.add_argument('--histogram-bins',
+                        type=int,
+                        help='Number of bins in the histograms',
+                        default=120)
+
+    parser.add_argument('--histogram-range',
+                        type=float, nargs=2,
+                        metavar=('xi_min', 'xi_max'),
+                        help='Range of the histograms',
+                        default=[0.0, 12.0])
 
     kwargs = vars(parser.parse_args())
 
