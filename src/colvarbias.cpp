@@ -245,8 +245,10 @@ int colvarbias::reset()
 
 
 colvarbias::colvarbias()
-  : colvarparse(), has_data(false)
-{}
+  : colvarparse()
+{
+  has_data = false;
+}
 
 
 colvarbias::~colvarbias()
@@ -1089,6 +1091,24 @@ int colvarbias_ti::write_output_files()
     }
   }
 
+  return error_code;
+}
+
+
+colvarbias_neutral::colvarbias_neutral(char const *key)
+  : colvarbias(key), colvarbias_ti(key)
+{}
+
+
+colvarbias_neutral::~colvarbias_neutral()
+{}
+
+
+int colvarbias_neutral::init(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+  error_code |= colvarbias::init(conf);
+  error_code |= colvarbias_ti::init(conf);
   return error_code;
 }
 
