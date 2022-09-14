@@ -91,3 +91,11 @@ harmonicWalls {
     forceConstant 0.6
     upperWalls 8.0
 }
+
+
+neutral {
+    name neutral
+    colvars dist_N_O
+    outputEnergy yes
+    outputFeatures active
+}
