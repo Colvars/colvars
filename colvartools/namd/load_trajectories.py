@@ -14,29 +14,35 @@ from plot_colvars_traj import Colvars_traj, Colvar_traj
 
 
 
-def compute_traj_masks(traj, biases):
+def compute_traj_masks(traj):
     """
     Compute arrays with values 1 or 0 marking frames where each bias is active
     """
 
     traj_mask = { }
     num_frames = traj[traj.variables[0]].steps.size
-    traj_mask['neutral'] = np.zeros(shape=(num_frames), dtype=np.int32)
+    if not 'neutral_active' in traj.variables:
+        traj_mask['neutral'] = np.zeros(shape=(num_frames), dtype=np.int32)
 
-    for bias in biases:
-        if bias+'_active' in traj:
-            # Check that all bias trajs have consistent numbers of frames
-            assert num_frames == traj[bias+'_active'].values.size
-            traj_mask[bias] = np.zeros(shape=(num_frames), dtype=np.int32)
-            traj_mask[bias][traj[bias+'_active'].values > 0] = 1
+    biases_active = [v for v in traj.variables if v[-7:] == '_active']
+
+    if len(biases_active) == 0:
+        print("Warning: Cannot find any columns \"*_active\" in Colvars trajectory.")
+        print("    For a BE run, \"outputFeatures active\" must be set for each bias;")
+        print("    without it, all trajectories are assumed to be *unbiased*.")
+
+    for col in biases_active:
+        bias = col[:-7]
+        # Check that all bias trajs have consistent numbers of frames
+        assert num_frames == traj[col].values.size
+        traj_mask[bias] = np.zeros(shape=(num_frames), dtype=np.int32)
+        traj_mask[bias][traj[col].values > 0] = 1
+        if not 'neutral_active' in traj.variables:
             traj_mask['neutral'] = np.add(traj_mask['neutral'], traj_mask[bias])
-        else:
-            print("Warning: Cannot find column \""+bias+
-                  "_active\" in Colvars trajectory.")
-            print("    For a BE run, \"outputFeatures active\" must be set for each bias, but")
-            print("    without it trajectories are assumed to be *unbiased*.")
 
-    traj_mask['neutral'] = 1 - traj_mask['neutral']
+    if not 'neutral_active' in traj.variables:
+        traj_mask['neutral'] = 1 - traj_mask['neutral']
+
     for bias in traj_mask.keys():
         prefix = "Bias \"" + bias + "\" has"
         print(prefix, np.sum(traj_mask[bias]), "frames")
@@ -106,7 +112,7 @@ def extract_constant_bias_trajs(histogram_bins, histogram_range,
         print("Replica", replica_index, "has",
               traj[traj.variables[0]].steps.size, "frames")
 
-        traj_mask = compute_traj_masks(traj, biases)
+        traj_mask = compute_traj_masks(traj)
 
         for bias in biases:
 
