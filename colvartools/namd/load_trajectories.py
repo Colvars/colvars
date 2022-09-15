@@ -21,27 +21,25 @@ def compute_traj_masks(traj):
 
     traj_mask = { }
     num_frames = traj[traj.variables[0]].steps.size
-    if not 'neutral_active' in traj.variables:
-        traj_mask['neutral'] = np.zeros(shape=(num_frames), dtype=np.int32)
 
     biases_active = [v for v in traj.variables if v[-7:] == '_active']
 
     if len(biases_active) == 0:
-        print("Warning: Cannot find any columns \"*_active\" in Colvars trajectory.")
+
+        print("Warning: Cannot find any columns labeled \"*_active\" in the Colvars trajectory.")
         print("    For a BE run, \"outputFeatures active\" must be set for each bias;")
         print("    without it, all trajectories are assumed to be *unbiased*.")
 
-    for col in biases_active:
-        bias = col[:-7]
-        # Check that all bias trajs have consistent numbers of frames
-        assert num_frames == traj[col].values.size
-        traj_mask[bias] = np.zeros(shape=(num_frames), dtype=np.int32)
-        traj_mask[bias][traj[col].values > 0] = 1
-        if not 'neutral_active' in traj.variables:
-            traj_mask['neutral'] = np.add(traj_mask['neutral'], traj_mask[bias])
+        traj_mask['neutral'] = np.ones(shape=(num_frames), dtype=np.int32)
 
-    if not 'neutral_active' in traj.variables:
-        traj_mask['neutral'] = 1 - traj_mask['neutral']
+    else:
+
+        for col in biases_active:
+            bias = col[:-7]
+            # Check that all bias trajs have consistent numbers of frames
+            assert num_frames == traj[col].values.size
+            traj_mask[bias] = np.zeros(shape=(num_frames), dtype=np.int32)
+            traj_mask[bias][traj[col].values > 0] = 1
 
     for bias in traj_mask.keys():
         prefix = "Bias \"" + bias + "\" has"

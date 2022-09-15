@@ -1,5 +1,6 @@
 # -*- tcl -*-
 
+# Preamble; variables used in input/output file names
 set mol_name $env(mol_name)
 set ijob $env(ijob)
 
@@ -15,6 +16,7 @@ if { ${ijob} > 0 } {
 set numsteps $env(numsteps)
 set restart_freq 25000 ; # This will be used as exchange frequency as well
 
+# Include standard NAMD simulation parameters
 source ../Common/common.namd
 
 colvars on
@@ -30,14 +32,11 @@ if { ${ijob} > 0 } {
 # Load BE functions
 source ../colvars_replica_utils.tcl
 
-# # Automatic assignment of 1D biases (must all be named "mtd_<colvar>").
-# # Alternatively, other choices may be specified manually (see down below)
-# init_be_metadynamics_1d
-
-# Example: specifying manually the biases (equivalent to syntax right
-# above) There may only be one replica without biases, and must be added to
-# the last index (3 in this example); alternatively, one or more neutral
-# "biases" may be defined to allow multiple neutral replicas
+# Define and index the biases that should be exchanged.  No more than one
+# replica may be without biases, and if so it should have the last index (3
+# in this example).
+# A cleaner approach is to define one or more neutral "biases" may be defined
+# to identify multiple neutral replicas.
 add_bias_to_index 0 mtd_dist_N_O
 add_bias_to_index 1 mtd_dist_N_H1
 add_bias_to_index 2 mtd_dist_N_H2
