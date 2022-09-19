@@ -323,16 +323,6 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   get_keyval(conf, "useHillsReflection", use_reflection, false);
   if (use_reflection) {
 
-    reflection_type = rt_monod;
-    std::string reflection_type_str;
-    get_keyval(conf, "reflectionType", reflection_type_str, to_lower_cppstr(std::string("monoDimensional")));
-    reflection_type_str = to_lower_cppstr(reflection_type_str);
-    if (reflection_type_str == to_lower_cppstr(std::string("monoDimensional"))) {
-      reflection_type = rt_monod;
-    } else if (reflection_type_str == to_lower_cppstr(std::string("multiDimensional"))) {
-      reflection_type = rt_multid;
-    }
-
     get_keyval(conf, "reflectionLowLimitNCVs", nrefvarsl, nvars);
     get_keyval(conf, "reflectionUpLimitNCVs", nrefvarsu, nvars);
     if (reflection_llimit_cv.size()==0) {
@@ -433,45 +423,37 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
        return COLVARS_INPUT_ERROR;
      }
   }
-  // mono vs multimensional reflection
+  // multimensional reflection
 
-  switch (reflection_type) {
-  case rt_none:
-    break;
-  case rt_monod:
-    cvm::log("Using monodimensional reflection \n");
-    break;
-  case rt_multid:
-    // generate reflection states
-    cvm::log("Using multidimensional reflection \n");
-    int sum=1;
-    int nstates;
-    if (reflection_usel.size()==0) {
-      reflection_usel.resize(nvars,std::vector<bool>(2));
-    }
+  // generate reflection states
+  int sum=1;
+  int nstates;
+  if (reflection_usel.size()==0) {
+    reflection_usel.resize(nvars,std::vector<bool>(2));
+  }
 
-    if (reflection_l.size()==0) {
-      reflection_l.resize(nvars,std::vector<cvm::real>(2));
-    }
+  if (reflection_l.size()==0) {
+    reflection_l.resize(nvars,std::vector<cvm::real>(2));
+  }
 
-    for (int j = 1; j < nvars; j++) {
-       reflection_usel[j][0]=false;
-       reflection_l[j][0]=0.0;
-       reflection_usel[j][1]=false;
-       reflection_l[j][1]=0.0;
-    }
+  for (int j = 1; j < nvars; j++) {
+     reflection_usel[j][0]=false;
+     reflection_l[j][0]=0.0;
+     reflection_usel[j][1]=false;
+     reflection_l[j][1]=0.0;
+  }
 
-    for (int i = 0; i < nrefvarsl; i++) {
-       int j=reflection_llimit_cv[i];
-       reflection_usel[j][0]=true;
-       reflection_l[j][0]=reflection_llimit[i];
-    }
+  for (int i = 0; i < nrefvarsl; i++) {
+     int j=reflection_llimit_cv[i];
+     reflection_usel[j][0]=true;
+     reflection_l[j][0]=reflection_llimit[i];
+  }
 
-    for (int i = 0; i < nrefvarsu; i++) {
-       int j=reflection_ulimit_cv[i];
-       reflection_usel[j][1]=true;
-       reflection_l[j][1]=reflection_ulimit[i];
-    }
+  for (int i = 0; i < nrefvarsu; i++) {
+     int j=reflection_ulimit_cv[i];
+     reflection_usel[j][1]=true;
+     reflection_l[j][1]=reflection_ulimit[i];
+  }
 
 //  Generate all possible reflection states (e.g. through faces, edges and vertex).
 //  Consider for example a cube, the states are:
@@ -492,30 +474,28 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
 //  ref_state[2][2]=ref_state[2][0]+ref_state[1][0] 
 //  ref_state[2][3]=ref_state[2][0]+ref_state[1][1]  
 
-    if (ref_state.size()==0) {
-      ref_state.resize(nvars,std::vector<int>(1));
-    }
-    ref_state[0][0]=1;
-    for (int j = 1; j < nvars; j++) {
-      sum*=10;
-      nstates=0;
-      for (int jj = 0; jj < j; jj++) {
-            nstates+=ref_state[j].size();
-      }
-      nstates++;
-      ref_state[j].resize(nstates);
-      ref_state[j][0]=sum;
-      int count=0;
-      for (int jj = 0; jj < j; jj++) {
-         for (size_t ii = 0; ii < ref_state[jj].size(); ii++) {
-            count++;
-            ref_state[j][count]=ref_state[j][0]+ref_state[jj][ii];
-         }
-      }
-    }
-
-    break;
+  if (ref_state.size()==0) {
+    ref_state.resize(nvars,std::vector<int>(1));
   }
+  ref_state[0][0]=1;
+  for (int j = 1; j < nvars; j++) {
+    sum*=10;
+    nstates=0;
+    for (int jj = 0; jj < j; jj++) {
+          nstates+=ref_state[j].size();
+    }
+    nstates++;
+    ref_state[j].resize(nstates);
+    ref_state[j][0]=sum;
+    int count=0;
+    for (int jj = 0; jj < j; jj++) {
+       for (size_t ii = 0; ii < ref_state[jj].size(); ii++) {
+          count++;
+          ref_state[j][count]=ref_state[j][0]+ref_state[jj][ii];
+       }
+    }
+  }
+
 
   return COLVARS_OK;
 }
@@ -848,56 +828,6 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
   return COLVARS_OK;
 }
 
-int colvarbias_meta::reflect_hill_monod(int const &aa,
-                                   cvm::real const &h_scale,
-                                   cvm::real const &ref_lim)
-
-{
-  size_t i = 0;
-  std::vector<colvarvalue> curr_cv_values(num_variables());
-  for (i = 0; i < num_variables(); i++) {
-    curr_cv_values[i].type(variables(i)->value());
-  }
-  for (i = 0; i < num_variables(); i++) {
-      curr_cv_values[i] = variables(i)->value();
-  }
-  cvm:: real tmps=colvar_sigmas[aa];
-  colvarvalue tmp=curr_cv_values[aa]; // store original current cv value
-  colvarvalue unitary=curr_cv_values[aa];
-  unitary.set_ones();
-  cvm:: real tmpd=ref_lim-cvm::real(curr_cv_values[aa]);
-  tmpd=std::sqrt(tmpd*tmpd);
-  if (tmpd<reflection_int*tmps ) { // do mirror within selected range
-    curr_cv_values[aa]=2.0*ref_lim*unitary-tmp; // reflected cv value
-    std::string h_replica = "";
-    switch (comm) {
-
-    case single_replica:
-
-      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, colvar_sigmas));
-
-      break;
-
-    case multiple_replicas:
-      h_replica=replica_id;
-      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, colvar_sigmas, h_replica));
-      std::ostream *replica_hills_os =
-        cvm::proxy->get_output_stream(replica_hills_file);
-      if (replica_hills_os) {
-        *replica_hills_os << hills.back();
-      } else {
-        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
-                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                          " while writing hills for the other replicas.\n", COLVARS_FILE_ERROR);
-      }
-      break;
-    }
-    curr_cv_values[aa]=tmp; // go back to previous value
-  }
-  return COLVARS_OK;
-}
-
-
 std::list<colvarbias_meta::hill>::const_iterator
 colvarbias_meta::delete_hill(hill_iter &h)
 {
@@ -1142,24 +1072,7 @@ int colvarbias_meta::update_bias()
 
       // add reflected hills if required
 
-      switch (reflection_type) {
-      case rt_none:
-        break;
-      case rt_monod:
-        for (int i = 0; i < nrefvarsl; i++) {
-           int ii=reflection_llimit_cv[i];
-           reflect_hill_monod(ii, hills_scale, reflection_llimit[i]);
-        }
-
-        for (int i = 0; i < nrefvarsu; i++) {
-           int ii=reflection_ulimit_cv[i];
-           reflect_hill_monod(ii, hills_scale, reflection_ulimit[i]);
-        }
-        break;
-      case rt_multid:
-        reflect_hill_multid(hills_scale);
-        break;
-      }
+      reflect_hill_multid(hills_scale);
     
     }
 

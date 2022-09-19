@@ -164,11 +164,6 @@ protected:
   /// \brief Multidimensional routine to reflect hills
   int reflect_hill_multid(cvm::real const &h_scale);
 
-  /// \brief Monodimensional routine to reflect hills
-  int reflect_hill_monod(int const &aa,
-                         cvm::real const &h_scale,
-                         cvm::real const &ref_lim);
-
   /// \brief Calculate the values of the hills, incrementing
   /// bias_energy
   virtual void calc_hills(hill_iter  h_first,
@@ -239,19 +234,11 @@ protected:
   std::vector<cvm::real> reflection_llimit;
   std::vector<cvm::real> reflection_ulimit;
 
-  /// \brief Whether reflection are of mono or multidimensional type
-  enum reflection_type_e {
-    rt_monod,
-    rt_multid,
-    rt_none
-  };
-  int reflection_type;
-
   /// \brief Multidimensional reflection : store cvs to use and pointers to the limits
   std::vector<std::vector<bool> > reflection_usel;
   std::vector<std::vector<cvm::real> > reflection_l;
 
-  /// \brief Multidimensional reflection or inversion states
+  /// \brief Multidimensional reflection states
   std::vector<std::vector<int> > ref_state;
 
   /// \brief For which variables hills forces beyond the boundaries(interval) must be removed
