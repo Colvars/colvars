@@ -4933,7 +4933,8 @@ All biasing and analysis methods implemented recognize the following options:
 \item %
   \labelkey{colvarbias|scaledBiasingForceFactorsGrid}
   \key{scaledBiasingForceFactorsGrid}{colvar bias}{A histogram file with the scaling factor of biasing force in each bin}{string}{%
-    If \texttt{scaledBiasingForce} is set to \texttt{on}, this option accepts the filename of the histogram file that contains the scaling factors. The format of the histogram file is the same as the PMF files written by \texttt{metadynamics} or \texttt{ABF}.
+    If \texttt{scaledBiasingForce} is set to \texttt{on}, this option accepts the filename of the histogram file that contains the scaling factors.
+    The histogram file is expected to be in ``multicolumn'' format (\ref{sec:colvar_multicolumn_grid}), similar to the low-dimensional the PMF files written by \texttt{metadynamics} and \texttt{ABF}.
   }
 
 \end{itemize}
