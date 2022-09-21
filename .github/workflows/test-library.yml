@@ -99,7 +99,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer remote add --no-login SylabsCloud cloud.sylabs.io
+          apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
           apptainer remote use SylabsCloud
           apptainer pull Fedora35-texlive.sif library://giacomofiorin/default/colvars_development:fedora35_texlive
 
@@ -192,7 +192,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer remote add --no-login SylabsCloud cloud.sylabs.io
+          apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
           apptainer remote use SylabsCloud
           apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 
@@ -376,7 +376,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer remote add --no-login SylabsCloud cloud.sylabs.io
+          apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
           apptainer remote use SylabsCloud
           apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 

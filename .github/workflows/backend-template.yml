@@ -128,7 +128,7 @@ jobs:
         run: |
           # Pull CentOS 7 container used to build backends
           # (contains build tools, OpenMPI, FFTW, Tcl/Tk and Charm++)
-          apptainer remote add --no-login SylabsCloud cloud.sylabs.io
+          apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
           apptainer remote use SylabsCloud
           apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 
