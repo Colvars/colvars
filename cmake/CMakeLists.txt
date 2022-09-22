@@ -116,4 +116,10 @@ if(BUILD_TOOLS)
   add_subdirectory(${COLVARS_SOURCE_DIR}/colvartools colvartools)
 endif()
 
+option(COLVARS_DEBUG "Build debugging binaries" OFF)
+
+if(COLVARS_DEBUG)
+  target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-DCOLVARS_DEBUG -g -O0>)
+endif()
+
 include(buildColvarsTests)
