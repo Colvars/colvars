@@ -67,6 +67,11 @@ jobs:
               exit 1
           fi
 
+      - name: Build library with debug flags enabled
+        env:
+          CCACHE: ccache
+        run: cmake -D COLVARS_DEBUG=ON -P devel-tools/build_test_library.cmake
+
       - name: Check whether secrets are available
         id: checksecrets
         env:
