@@ -141,8 +141,6 @@ jobs:
         uses: github/codeql-action/init@v2
         with:
           languages: cpp
-        paths-ignore:
-          - 'openmm-source'
 
       - name: Build Colvars library with CMake
         run: cmake -P devel-tools/build_test_library.cmake
