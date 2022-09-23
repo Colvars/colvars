@@ -145,7 +145,7 @@ copy_lepton() {
     fi
   fi
 
-  # Copy Lepton into GROMACS tree
+  # Copy Lepton into target source tree
   if [ -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
     cp -f -p -R ${OPENMM_SOURCE}/libraries/lepton ${target_path}
   else
