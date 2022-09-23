@@ -120,6 +120,7 @@ option(COLVARS_DEBUG "Build debugging binaries" OFF)
 
 if(COLVARS_DEBUG)
   target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-DCOLVARS_DEBUG -g -O0>)
+  target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/DCOLVARS_DEBUG /DEBUG:FULL>)
 endif()
 
 include(buildColvarsTests)
