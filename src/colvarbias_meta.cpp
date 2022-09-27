@@ -318,7 +318,6 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   bool use_reflection;
   nrefvarsl=0;
   nrefvarsu=0;
-  reflection_type = rt_none;
   int nvars=num_variables();
   get_keyval(conf, "useHillsReflection", use_reflection, false);
   if (use_reflection) {
