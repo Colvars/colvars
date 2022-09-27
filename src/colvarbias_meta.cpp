@@ -359,44 +359,71 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
       reflection_ulimit.resize(nrefvarsu);
     }
 
-    // if grids and hard boundaries are defined set by default reflection boundaries as grid boundaries
+    // use reflection only with scalar variables
+  
+    for (int i = 0; i < nrefvarsl; i++) {
+       if (reflection_llimit_cv[i]>=nvars || reflection_llimit_cv[i]<0) {
+         cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
+         return COLVARS_INPUT_ERROR;
+       }
+       int j=reflection_llimit_cv[i];
+       if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+         cvm::error("Error: Hills reflection can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
+         return COLVARS_INPUT_ERROR;
+       }
+    }
+   
+    for (int i = 0; i < nrefvarsu; i++) {
+       if (reflection_ulimit_cv[i]>=nvars || reflection_ulimit_cv[i]<0) {
+         cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
+         return COLVARS_INPUT_ERROR;
+       }
+       int j=reflection_ulimit_cv[i];
+       if (variables(j)->value().type()!=colvarvalue::type_scalar) {
+         cvm::error("Error: Hills reflection can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
+         return COLVARS_INPUT_ERROR;
+       }
+    }
+
+    // if grids and hard boundaries are defined, set by default reflection boundaries as grid boundaries
     if (use_grids) {
-      std::vector<colvarvalue> ref_lower_boundaries(hills_energy->lower_boundaries);
-      std::vector<colvarvalue> ref_upper_boundaries(hills_energy->upper_boundaries);
       for (int i = 0; i < nrefvarsl; i++) {
          int ii=reflection_llimit_cv[i];
          if (variables(ii)->is_enabled(f_cv_hard_lower_boundary)) {
-           reflection_llimit[i]=ref_lower_boundaries[ii].real_value;
+           reflection_llimit[i]=hills_energy->lower_boundaries[ii].real_value;
          }  
       }
       for (int i = 0; i < nrefvarsu; i++) {
          int ii=reflection_ulimit_cv[i];
          if (variables(ii)->is_enabled(f_cv_hard_upper_boundary)) {
-           reflection_ulimit[i]=ref_upper_boundaries[ii].real_value; 
+           reflection_ulimit[i]=hills_energy->upper_boundaries[ii].real_value; 
          }
       }
     }
 
-    if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {
-      for (int i = 0; i < nrefvarsl; i++) {
-         if (use_grids) {
-           int ii=reflection_llimit_cv[i];
-           cvm:: real bound=ref_lower_boundaries[ii].real_value;
-           if (reflection_llimit[i] < bound) {
-             cvm::error("Error: When using grids, grid lower boundary for CV"+cvm::to_str(ii)+" must be equal or smaller than"+cvm::to_str(reflection_llimit[i])+".\n", COLVARS_INPUT_ERROR);
-           }
-         }
-      }
-    } else {
-      if (use_grids) {
+   
+    if (nrefvarsl>0) {
+      if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {
         for (int i = 0; i < nrefvarsl; i++) {
-           int ii=reflection_llimit_cv[i]; 
-           if (!variables(ii)->is_enabled(f_cv_hard_lower_boundary)) {
-             cvm::error("Error: Lower limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
-           } 
-        } 
+           if (use_grids) {
+             int ii=reflection_llimit_cv[i];
+             cvm:: real bound=ref_lower_boundaries[ii].real_value;
+             if (reflection_llimit[i] < bound) {
+               cvm::error("Error: When using grids, grid lower boundary for CV"+cvm::to_str(ii)+" must be equal or smaller than"+cvm::to_str(reflection_llimit[i])+".\n", COLVARS_INPUT_ERROR);
+             }
+           }
+        }
       } else {
-        cvm::error("Error: Lower limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+        if (use_grids) {
+          for (int i = 0; i < nrefvarsl; i++) {
+             int ii=reflection_llimit_cv[i]; 
+             if (!variables(ii)->is_enabled(f_cv_hard_lower_boundary)) {
+               cvm::error("Error: Lower limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+             } 
+          } 
+        } else {
+          cvm::error("Error: Lower limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+        }
       }
     }
 
@@ -405,26 +432,28 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
        cvm::log("Reflection condition lower limit for this CV is "+cvm::to_str(reflection_llimit[i])+".\n"); 
     }
 
-    if (get_keyval(conf, "reflectionUpLimit", reflection_ulimit, reflection_ulimit)) {
-      for (int i = 0; i < nrefvarsu; i++) {
-         if (use_grids) { 
-           int ii=reflection_ulimit_cv[i];
-           cvm:: real bound=ref_upper_boundaries[ii].real_value;
-           if (reflection_ulimit[i] > bound) {
-             cvm::error("Error: When using grids, upper boundary for CV"+cvm::to_str(ii)+" must be larger than"+cvm::to_str(reflection_ulimit[i])+".\n", COLVARS_INPUT_ERROR);
-           }
-         }
-      } 
-    } else {
-      if (use_grids) {
+    if (nrefvarsu>0) {
+      if (get_keyval(conf, "reflectionUpLimit", reflection_ulimit, reflection_ulimit)) {
         for (int i = 0; i < nrefvarsu; i++) {
-           int ii=reflection_ulimit_cv[i];
-           if (!variables(ii)->is_enabled(f_cv_hard_upper_boundary)) {
-             cvm::error("Error: Upper limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
-           }  
+           if (use_grids) { 
+             int ii=reflection_ulimit_cv[i];
+             cvm:: real bound=ref_upper_boundaries[ii].real_value;
+             if (reflection_ulimit[i] > bound) {
+               cvm::error("Error: When using grids, upper boundary for CV"+cvm::to_str(ii)+" must be larger than"+cvm::to_str(reflection_ulimit[i])+".\n", COLVARS_INPUT_ERROR);
+             }
+           }
         } 
       } else {
-        cvm::error("Error: Upper limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+        if (use_grids) {
+          for (int i = 0; i < nrefvarsu; i++) {
+             int ii=reflection_ulimit_cv[i];
+             if (!variables(ii)->is_enabled(f_cv_hard_upper_boundary)) {
+               cvm::error("Error: Upper limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+             }  
+          } 
+        } else {
+          cvm::error("Error: Upper limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+        }
       }
     }
 
@@ -432,63 +461,38 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
        cvm::log("Reflection condition is applied on an upper limit for CV "+cvm::to_str(reflection_ulimit_cv[i])+".\n");
        cvm::log("Reflection condition upper limit for this CV is "+cvm::to_str(reflection_ulimit[i])+".\n");
     } 
-  }
-  // use reflection only with scalar variables
 
-  for (int i = 0; i < nrefvarsl; i++) {
-     if (reflection_llimit_cv[i]>=nvars || reflection_llimit_cv[i]<0) {
-       cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
-       return COLVARS_INPUT_ERROR;
-     }
-     int j=reflection_llimit_cv[i];
-     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
-       cvm::error("Error: Hills reflection can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
-       return COLVARS_INPUT_ERROR;
-     }
-  }
+    // multimensional reflection
 
-  for (int i = 0; i < nrefvarsu; i++) {
-     if (reflection_ulimit_cv[i]>=nvars || reflection_ulimit_cv[i]<0) {
-       cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
-       return COLVARS_INPUT_ERROR;
-     }
-     int j=reflection_ulimit_cv[i];
-     if (variables(j)->value().type()!=colvarvalue::type_scalar) {
-       cvm::error("Error: Hills reflection can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
-       return COLVARS_INPUT_ERROR;
-     }
-  }
-  // multimensional reflection
-
-  // generate reflection states
-  int sum=1;
-  int nstates;
-  if (reflection_usel.size()==0) {
-    reflection_usel.resize(nvars,std::vector<bool>(2));
-  }
-
-  if (reflection_l.size()==0) {
-    reflection_l.resize(nvars,std::vector<cvm::real>(2));
-  }
-
-  for (int j = 1; j < nvars; j++) {
-     reflection_usel[j][0]=false;
-     reflection_l[j][0]=0.0;
-     reflection_usel[j][1]=false;
-     reflection_l[j][1]=0.0;
-  }
-
-  for (int i = 0; i < nrefvarsl; i++) {
-     int j=reflection_llimit_cv[i];
-     reflection_usel[j][0]=true;
-     reflection_l[j][0]=reflection_llimit[i];
-  }
-
-  for (int i = 0; i < nrefvarsu; i++) {
-     int j=reflection_ulimit_cv[i];
-     reflection_usel[j][1]=true;
-     reflection_l[j][1]=reflection_ulimit[i];
-  }
+    // generate reflection states
+    int sum=1;
+    int nstates;
+    if (reflection_usel.size()==0) {
+      reflection_usel.resize(nvars,std::vector<bool>(2));
+    }
+   
+    if (reflection_l.size()==0) {
+      reflection_l.resize(nvars,std::vector<cvm::real>(2));
+    }
+   
+    for (int j = 1; j < nvars; j++) {
+       reflection_usel[j][0]=false;
+       reflection_l[j][0]=0.0;
+       reflection_usel[j][1]=false;
+       reflection_l[j][1]=0.0;
+    }
+   
+    for (int i = 0; i < nrefvarsl; i++) {
+       int j=reflection_llimit_cv[i];
+       reflection_usel[j][0]=true;
+       reflection_l[j][0]=reflection_llimit[i];
+    }
+   
+    for (int i = 0; i < nrefvarsu; i++) {
+       int j=reflection_ulimit_cv[i];
+       reflection_usel[j][1]=true;
+       reflection_l[j][1]=reflection_ulimit[i];
+    }
 
 //  Generate all possible reflection states (e.g. through faces, edges and vertex).
 //  Consider for example a cube, the states are:
@@ -509,29 +513,28 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
 //  ref_state[2][2]=ref_state[2][0]+ref_state[1][0] 
 //  ref_state[2][3]=ref_state[2][0]+ref_state[1][1]  
 
-  if (ref_state.size()==0) {
-    ref_state.resize(nvars,std::vector<int>(1));
-  }
-  ref_state[0][0]=1;
-  for (int j = 1; j < nvars; j++) {
-    sum*=10;
-    nstates=0;
-    for (int jj = 0; jj < j; jj++) {
-          nstates+=ref_state[j].size();
+    if (ref_state.size()==0) {
+      ref_state.resize(nvars,std::vector<int>(1));
     }
-    nstates++;
-    ref_state[j].resize(nstates);
-    ref_state[j][0]=sum;
-    int count=0;
-    for (int jj = 0; jj < j; jj++) {
-       for (size_t ii = 0; ii < ref_state[jj].size(); ii++) {
-          count++;
-          ref_state[j][count]=ref_state[j][0]+ref_state[jj][ii];
-       }
+    ref_state[0][0]=1;
+    for (int j = 1; j < nvars; j++) {
+      sum*=10;
+      nstates=0;
+      for (int jj = 0; jj < j; jj++) {
+            nstates+=ref_state[j].size();
+      }
+      nstates++;
+      ref_state[j].resize(nstates);
+      ref_state[j][0]=sum;
+      int count=0;
+      for (int jj = 0; jj < j; jj++) {
+         for (size_t ii = 0; ii < ref_state[jj].size(); ii++) {
+            count++;
+            ref_state[j][count]=ref_state[j][0]+ref_state[jj][ii];
+         }
+      }
     }
   }
-
-
   return COLVARS_OK;
 }
 
