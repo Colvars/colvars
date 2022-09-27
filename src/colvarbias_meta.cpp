@@ -349,6 +349,10 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
       } else {
         cvm::log("Using all variables for lower limits of reflection \n");
       }
+      // if grids are defined define reflection boundaries as grid boundaries
+      if (use_grids) {
+        
+      }
       if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {
         for (int i = 0; i < nrefvarsl; i++) {
            if (use_grids) {
@@ -1284,22 +1288,21 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
   switch (x.type()) {
 
   case colvarvalue::type_scalar:
-    for (h = h_first; h != h_last; h++) {
-      if (h->value() == 0.0) continue;
-      colvarvalue const &center = h->centers[i];
-      cvm::real const sigma = h->sigmas[i];
-
-      // if outside interval boundaries do not add force
-      bool add_force=true;
-      int ii=which_int_llimit_cv[i];
-      if (ii>-1 && x[i]<interval_llimit[ii] ) {
-        add_force=false;
-      }
-      ii=which_int_ulimit_cv[i];
-      if (ii>-1 && x[i]>interval_ulimit[ii] ) {
-        add_force=false;
-      }
-      if (add_force) {
+    // if outside interval boundaries do not add force
+    bool add_force=true;
+    int ii=which_int_llimit_cv[i];
+    if (ii>-1 && x[i]<interval_llimit[ii] ) {
+      add_force=false;
+    }
+    ii=which_int_ulimit_cv[i];
+    if (ii>-1 && x[i]>interval_ulimit[ii] ) {
+      add_force=false;
+    }
+    if (add_force) {
+      for (h = h_first; h != h_last; h++) {
+        if (h->value() == 0.0) continue;
+        colvarvalue const &center = h->centers[i];
+        cvm::real const sigma = h->sigmas[i];
         forces[i].real_value +=
           ( h->weight() * h->value() * (0.5 / (sigma*sigma)) *
             (variables(i)->dist2_lgrad(x, center)).real_value );
