@@ -323,84 +323,116 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   get_keyval(conf, "useHillsReflection", use_reflection, false);
   if (use_reflection) {
 
-    get_keyval(conf, "reflectionLowLimitNCVs", nrefvarsl, nvars);
-    get_keyval(conf, "reflectionUpLimitNCVs", nrefvarsu, nvars);
-    if (reflection_llimit_cv.size()==0) {
-      reflection_llimit_cv.resize(nrefvarsl);
-      for (int i = 0; i < nrefvarsl; i++) {
-         reflection_llimit_cv[i]=i;
+    get_keyval(conf, "reflectionRange", reflection_int, 6.0);
+    cvm::log("Reflection range is "+cvm::to_str(reflection_int)+".\n");
+
+    if (get_keyval(conf, "reflectionLowLimitUseCVs", reflection_llimit_cv, reflection_llimit_cv)) {
+      nrefvarsl=reflection_llimit_cv.size();
+      cvm::log("Using lower limits reflection on "+cvm::to_str(nrefvarsl)+" variables.\n");
+    } else {
+      nrefvarsl=nvars;
+      if (reflection_llimit_cv.size()==0) {
+        reflection_llimit_cv.resize(nrefvarsl);
+        for (int i = 0; i < nrefvarsl; i++) {
+           reflection_llimit_cv[i]=i;
+        }
       }
+      cvm::log("Using all variables for lower limits of reflection \n");
     }
-    if (reflection_ulimit_cv.size()==0) {
+
+    if (reflection_llimit.size()==0) {
+      reflection_llimit.resize(nrefvarsl);
+    }
+
+    if (get_keyval(conf, "reflectionUpLimitUseCVs", reflection_ulimit_cv, reflection_ulimit_cv)) {
+      nrefvarsu=reflection_ulimit_cv.size();
+      cvm::log("Using upper limits reflection on "+cvm::to_str(nrefvarsu)+" variables.\n");
+    } else {
+      nrefvarsu=nvars;
       reflection_ulimit_cv.resize(nrefvarsu);
       for (int i = 0; i < nrefvarsu; i++) {
          reflection_ulimit_cv[i]=i;
       }
+      cvm::log("Using all variables for upper limits of reflection \n");      
     }
-    if (nrefvarsl>0 || nrefvarsu>0) {
-      get_keyval(conf, "reflectionRange", reflection_int, 6.0);
-      cvm::log("Reflection range is "+cvm::to_str(reflection_int)+".\n");
+
+    if (reflection_ulimit.size()==0) {
+      reflection_ulimit.resize(nrefvarsu);
     }
-    if(nrefvarsl>0) {
-      if (get_keyval(conf, "reflectionLowLimitUseCVs", reflection_llimit_cv, reflection_llimit_cv)) {
-        if (reflection_llimit.size()==0) {
-          reflection_llimit.resize(nrefvarsl);
-        }
-      } else {
-        cvm::log("Using all variables for lower limits of reflection \n");
+
+    // if grids and hard boundaries are defined set by default reflection boundaries as grid boundaries
+    if (use_grids) {
+      std::vector<colvarvalue> ref_lower_boundaries(hills_energy->lower_boundaries);
+      std::vector<colvarvalue> ref_upper_boundaries(hills_energy->upper_boundaries);
+      for (int i = 0; i < nrefvarsl; i++) {
+         int ii=reflection_llimit_cv[i];
+         if (variables(ii)->is_enabled(f_cv_hard_lower_boundary)) {
+           reflection_llimit[i]=ref_lower_boundaries[ii].real_value;
+         }  
       }
-      // if grids are defined define reflection boundaries as grid boundaries
-      if (use_grids) {
-        
+      for (int i = 0; i < nrefvarsu; i++) {
+         int ii=reflection_ulimit_cv[i];
+         if (variables(ii)->is_enabled(f_cv_hard_upper_boundary)) {
+           reflection_ulimit[i]=ref_upper_boundaries[ii].real_value; 
+         }
       }
-      if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {
-        for (int i = 0; i < nrefvarsl; i++) {
-           if (use_grids) {
-             int ii=reflection_llimit_cv[i];
-             cvm:: real sigma=0.5*variables(ii)->width*hill_width;
-             cvm:: real bound=variables(ii)->lower_boundary;
-             cvm:: real ref_r=reflection_llimit[i]-reflection_int*sigma;
-             if (ref_r < bound) {
-               cvm::error("Error: When using grids, lower boundary for CV"+cvm::to_str(ii)+" must be smaller than"+cvm::to_str(ref_r)+".\n", COLVARS_INPUT_ERROR);
-             }
+    }
+
+    if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {
+      for (int i = 0; i < nrefvarsl; i++) {
+         if (use_grids) {
+           int ii=reflection_llimit_cv[i];
+           cvm:: real bound=ref_lower_boundaries[ii].real_value;
+           if (reflection_llimit[i] < bound) {
+             cvm::error("Error: When using grids, grid lower boundary for CV"+cvm::to_str(ii)+" must be equal or smaller than"+cvm::to_str(reflection_llimit[i])+".\n", COLVARS_INPUT_ERROR);
            }
-           cvm::log("Reflection condition is applied on a lower limit for CV "+cvm::to_str(reflection_llimit_cv[i])+".\n");
-           cvm::log("Reflection condition lower limit for this CV is "+cvm::to_str(reflection_llimit[i])+".\n");
-        }
+         }
+      }
+    } else {
+      if (use_grids) {
+        for (int i = 0; i < nrefvarsl; i++) {
+           int ii=reflection_llimit_cv[i]; 
+           if (!variables(ii)->is_enabled(f_cv_hard_lower_boundary)) {
+             cvm::error("Error: Lower limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+           } 
+        } 
       } else {
         cvm::error("Error: Lower limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
-        return COLVARS_INPUT_ERROR;
       }
     }
 
-    if(nrefvarsu>0) {
-      if (get_keyval(conf, "reflectionUpLimitUseCVs", reflection_ulimit_cv, reflection_ulimit_cv)) {
-        if (reflection_ulimit.size()==0) {
-          reflection_ulimit.resize(nrefvarsu);
-        }
-      } else {
-        cvm::log("Using all variables for upper limits of reflection \n");
-      }
+    for (int i = 0; i < nrefvarsl; i++) {
+       cvm::log("Reflection condition is applied on a lower limit for CV "+cvm::to_str(reflection_llimit_cv[i])+".\n");
+       cvm::log("Reflection condition lower limit for this CV is "+cvm::to_str(reflection_llimit[i])+".\n"); 
+    }
 
-      if (get_keyval(conf, "reflectionUpLimit", reflection_ulimit, reflection_ulimit)) {
-        for (int i = 0; i < nrefvarsu; i++) {
-           if (use_grids) {
-             int ii=reflection_ulimit_cv[i];
-             cvm:: real sigma=0.5*variables(ii)->width*hill_width;
-             cvm:: real bound=variables(ii)->upper_boundary;
-             cvm:: real ref_r=reflection_ulimit[i]+reflection_int*sigma;
-             if (ref_r > bound) {
-               cvm::error("Error: When using grids, upper boundary for CV"+cvm::to_str(ii)+" must be larger than"+cvm::to_str(ref_r)+".\n", COLVARS_INPUT_ERROR);
-             }
+    if (get_keyval(conf, "reflectionUpLimit", reflection_ulimit, reflection_ulimit)) {
+      for (int i = 0; i < nrefvarsu; i++) {
+         if (use_grids) { 
+           int ii=reflection_ulimit_cv[i];
+           cvm:: real bound=ref_upper_boundaries[ii].real_value;
+           if (reflection_ulimit[i] > bound) {
+             cvm::error("Error: When using grids, upper boundary for CV"+cvm::to_str(ii)+" must be larger than"+cvm::to_str(reflection_ulimit[i])+".\n", COLVARS_INPUT_ERROR);
            }
-           cvm::log("Reflection condition is applied on an upper limit for CV "+cvm::to_str(reflection_ulimit_cv[i])+".\n");
-           cvm::log("Reflection condition upper limit for this CV is "+cvm::to_str(reflection_ulimit[i])+".\n");
-        }
+         }
+      } 
+    } else {
+      if (use_grids) {
+        for (int i = 0; i < nrefvarsu; i++) {
+           int ii=reflection_ulimit_cv[i];
+           if (!variables(ii)->is_enabled(f_cv_hard_upper_boundary)) {
+             cvm::error("Error: Upper limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+           }  
+        } 
       } else {
         cvm::error("Error: Upper limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
-        return COLVARS_INPUT_ERROR;
       }
     }
+
+    for (int i = 0; i < nrefvarsu; i++) {
+       cvm::log("Reflection condition is applied on an upper limit for CV "+cvm::to_str(reflection_ulimit_cv[i])+".\n");
+       cvm::log("Reflection condition upper limit for this CV is "+cvm::to_str(reflection_ulimit[i])+".\n");
+    } 
   }
   // use reflection only with scalar variables
 
