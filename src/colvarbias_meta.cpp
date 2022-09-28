@@ -1282,6 +1282,38 @@ void colvarbias_meta::calc_hills(colvarbias_meta::hill_iter      h_first,
 {
   size_t i = 0;
 
+  std::vector<colvarvalue> curr_values(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+    curr_values[i].type(variables(i)->value());
+  }
+
+  if (colvar_values.size()) {
+    for (i = 0; i < num_variables(); i++) {
+      curr_values[i] = colvar_values[i];
+    }
+  } else { 
+    for (i = 0; i < num_variables(); i++) {
+      curr_values[i] = variables(i)->value();
+    }
+  }
+ 
+  // modifications for interval: if curr_value is out of the border assign value at the border 
+
+  for (i = 0; i < num_variables(); i++) {
+     int ii=which_int_llimit_cv[i];
+     if (ii>-1) {
+       if (curr_values[i]<interval_llimit[ii]) {
+         curr_values[i]=interval_llimit[ii];
+       }
+     }
+     ii=which_int_ulimit_cv[i];
+     if (ii>-1) { 
+       if (curr_values[i]>interval_ulimit[ii]){
+         curr_values[i]=interval_ulimit[ii];
+       }
+     }   
+  }
+
   for (hill_iter h = h_first; h != h_last; h++) {
 
     // compute the gaussian exponent
