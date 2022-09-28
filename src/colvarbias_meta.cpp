@@ -1319,7 +1319,7 @@ void colvarbias_meta::calc_hills(colvarbias_meta::hill_iter      h_first,
     // compute the gaussian exponent
     cvm::real cv_sqdev = 0.0;
     for (i = 0; i < num_variables(); i++) {
-      colvarvalue const &x  = values ? (*values)[i] : colvar_values[i];
+      colvarvalue const &x  = curr_values[i];
       colvarvalue const &center = h->centers[i];
       cvm::real const sigma = h->sigmas[i];
       cv_sqdev += (variables(i)->dist2(x, center)) / (sigma*sigma);
