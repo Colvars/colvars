@@ -341,6 +341,18 @@ jobs:
           apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
+      - name: GCC 4.8, C++98, no-for-scope (VMD uses it)
+        env:
+          CXX_STANDARD: 98
+          CXX: g++
+          CXX_VERSION: 4.8
+          CC: gcc
+          CXXFLAGS: -fno-for-scope
+          CMAKE_BUILD_DIR: build_g++4.8_C++98_no-for-scope
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
 
   build-linux-x86_64-sun:
     name: Linux x86_64 (Sun compiler)
