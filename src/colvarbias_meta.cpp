@@ -1325,11 +1325,11 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
     // if outside interval boundaries do not add force
     bool add_force=true;
     int ii=which_int_llimit_cv[i];
-    if (ii>-1 && x[i]<interval_llimit[ii] ) {
+    if (ii>-1 && x<interval_llimit[ii] ) {
       add_force=false;
     }
     ii=which_int_ulimit_cv[i];
-    if (ii>-1 && x[i]>interval_ulimit[ii] ) {
+    if (ii>-1 && x>interval_ulimit[ii] ) {
       add_force=false;
     }
     if (add_force) {
