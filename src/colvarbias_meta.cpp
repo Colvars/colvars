@@ -407,7 +407,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
         for (int i = 0; i < nrefvarsl; i++) {
            if (use_grids) {
              int ii=reflection_llimit_cv[i];
-             cvm:: real bound=ref_lower_boundaries[ii].real_value;
+             cvm:: real bound=hills_energy->lower_boundaries[ii].real_value;
              if (reflection_llimit[i] < bound) {
                cvm::error("Error: When using grids, grid lower boundary for CV"+cvm::to_str(ii)+" must be equal or smaller than"+cvm::to_str(reflection_llimit[i])+".\n", COLVARS_INPUT_ERROR);
              }
@@ -437,7 +437,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
         for (int i = 0; i < nrefvarsu; i++) {
            if (use_grids) { 
              int ii=reflection_ulimit_cv[i];
-             cvm:: real bound=ref_upper_boundaries[ii].real_value;
+             cvm:: real bound=hills_energy->upper_boundaries[ii].real_value;
              if (reflection_ulimit[i] > bound) {
                cvm::error("Error: When using grids, upper boundary for CV"+cvm::to_str(ii)+" must be larger than"+cvm::to_str(reflection_ulimit[i])+".\n", COLVARS_INPUT_ERROR);
              }
@@ -1355,8 +1355,10 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
 
   case colvarvalue::type_scalar:
     // if outside interval boundaries do not add force
-    bool add_force=true;
-    int ii=which_int_llimit_cv[i];
+    bool add_force;
+    add_force=true;
+    int ii;
+    ii=which_int_llimit_cv[i];
     if (ii>-1 && x<interval_llimit[ii] ) {
       add_force=false;
     }
