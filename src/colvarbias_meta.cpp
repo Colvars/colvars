@@ -385,23 +385,18 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
        }
     }
 
-    // if grids and hard boundaries are defined, set by default reflection boundaries as grid boundaries
+    // if grids are defined, set by default reflection boundaries as grid boundaries
     if (use_grids) {
       for (int i = 0; i < nrefvarsl; i++) {
          int ii=reflection_llimit_cv[i];
-         if (variables(ii)->is_enabled(f_cv_hard_lower_boundary)) {
-           reflection_llimit[i]=hills_energy->lower_boundaries[ii].real_value;
-         }  
+         reflection_llimit[i]=hills_energy->lower_boundaries[ii].real_value;
       }
       for (int i = 0; i < nrefvarsu; i++) {
          int ii=reflection_ulimit_cv[i];
-         if (variables(ii)->is_enabled(f_cv_hard_upper_boundary)) {
-           reflection_ulimit[i]=hills_energy->upper_boundaries[ii].real_value; 
-         }
+         reflection_ulimit[i]=hills_energy->upper_boundaries[ii].real_value; 
       }
     }
 
-   
     if (nrefvarsl>0) {
       if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {
         for (int i = 0; i < nrefvarsl; i++) {
@@ -414,14 +409,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
            }
         }
       } else {
-        if (use_grids) {
-          for (int i = 0; i < nrefvarsl; i++) {
-             int ii=reflection_llimit_cv[i]; 
-             if (!variables(ii)->is_enabled(f_cv_hard_lower_boundary)) {
-               cvm::error("Error: Lower limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
-             } 
-          } 
-        } else {
+        if (!use_grids) {
           cvm::error("Error: Lower limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
         }
       }
@@ -444,14 +432,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
            }
         } 
       } else {
-        if (use_grids) {
-          for (int i = 0; i < nrefvarsu; i++) {
-             int ii=reflection_ulimit_cv[i];
-             if (!variables(ii)->is_enabled(f_cv_hard_upper_boundary)) {
-               cvm::error("Error: Upper limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
-             }  
-          } 
-        } else {
+        if (!use_grids) {
           cvm::error("Error: Upper limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
         }
       }
