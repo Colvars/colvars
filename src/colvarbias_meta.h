@@ -241,6 +241,8 @@ protected:
   /// \brief Multidimensional reflection states
   std::vector<std::vector<int> > ref_state;
 
+  /// \brief whether using interval
+  bool use_interval; 
   /// \brief For which variables hills forces beyond the boundaries(interval) must be removed
 
   std::vector<int> which_int_llimit_cv;

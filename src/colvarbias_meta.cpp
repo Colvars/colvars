@@ -540,7 +540,6 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
 
 int colvarbias_meta::init_interval_params(std::string const &conf)
 {
-  bool use_interval;
   use_interval=false;
   nintvarsl=0;
   nintvarsu=0;
@@ -600,6 +599,7 @@ int colvarbias_meta::init_interval_params(std::string const &conf)
     }
   } else {
     if (nrefvarsl>0 || nrefvarsu>0) {
+      use_interval=true;
       cvm::log("Reflection active: Using by default reflection variables and limits for interval \n");
       nintvarsl=nrefvarsl;
       nintvarsu=nrefvarsu;
@@ -1148,12 +1148,43 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
 {
   size_t ir = 0;
 
+  // interval
+  if (use_interval) {
+    size_t i;
+    size_t ii;
+    std::vector<colvarvalue> curr_values(num_variables());
+    for (i = 0; i < num_variables(); i++) {
+      curr_values[i].type(variables(i)->value());
+    }
+   
+    if ((*values).size()) {
+      for (i = 0; i < num_variables(); i++) {
+        curr_values[i] = (*values)[i];
+      }
+    } else {
+      for (i = 0; i < num_variables(); i++) {
+        curr_values[i] = variables(i)->value();
+      }
+    }
+    for (i = 0; i < num_variables(); i++) { 
+       ii=which_int_llimit_cv[i];       
+       if (ii>-1 && curr_values[i]<interval_llimit[ii] ) {
+         curr_values[i]=interval_llimit[ii];
+       }
+       ii=which_int_ulimit_cv[i];
+       if (ii>-1 && curr_values[i]>interval_ulimit[ii] ) {
+         curr_values[i]=interval_ulimit[ii];
+       }
+    }
+  } else {
+    std::vector<colvarvalue> const &curr_values=values ? (*values) : colvar_values;
+  }
+ 
   for (ir = 0; ir < replicas.size(); ir++) {
     replicas[ir]->bias_energy = 0.0;
   }
 
-  bool index_ok = false;
-  std::vector<int> curr_bin;
+  std::vector<int> const curr_bin = hills_energy->get_colvars_index(curr_values);
 
   if (use_grids) {
 
@@ -1184,7 +1215,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
       calc_hills(replicas[ir]->hills_off_grid.begin(),
                  replicas[ir]->hills_off_grid.end(),
                  bias_energy,
-                 values);
+                 curr_values);
     }
   }
 
@@ -1195,7 +1226,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     calc_hills(replicas[ir]->new_hills_begin,
                replicas[ir]->hills.end(),
                bias_energy,
-               values);
+               curr_values);
     if (cvm::debug()) {
       cvm::log("Hills energy = "+cvm::to_str(bias_energy)+".\n");
     }
@@ -1282,44 +1313,12 @@ void colvarbias_meta::calc_hills(colvarbias_meta::hill_iter      h_first,
 {
   size_t i = 0;
 
-  std::vector<colvarvalue> curr_values(num_variables());
-  for (i = 0; i < num_variables(); i++) {
-    curr_values[i].type(variables(i)->value());
-  }
-
-  if (colvar_values.size()) {
-    for (i = 0; i < num_variables(); i++) {
-      curr_values[i] = colvar_values[i];
-    }
-  } else { 
-    for (i = 0; i < num_variables(); i++) {
-      curr_values[i] = variables(i)->value();
-    }
-  }
- 
-  // modifications for interval: if curr_value is out of the border assign value at the border 
-
-  for (i = 0; i < num_variables(); i++) {
-     int ii=which_int_llimit_cv[i];
-     if (ii>-1) {
-       if (curr_values[i]<interval_llimit[ii]) {
-         curr_values[i]=interval_llimit[ii];
-       }
-     }
-     ii=which_int_ulimit_cv[i];
-     if (ii>-1) { 
-       if (curr_values[i]>interval_ulimit[ii]){
-         curr_values[i]=interval_ulimit[ii];
-       }
-     }   
-  }
-
   for (hill_iter h = h_first; h != h_last; h++) {
 
     // compute the gaussian exponent
     cvm::real cv_sqdev = 0.0;
     for (i = 0; i < num_variables(); i++) {
-      colvarvalue const &x  = curr_values[i];
+      colvarvalue const &x  = values ? (*values)[i] : colvar_values[i];
       colvarvalue const &center = h->centers[i];
       cvm::real const sigma = h->sigmas[i];
       cv_sqdev += (variables(i)->dist2(x, center)) / (sigma*sigma);
@@ -1440,6 +1439,9 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
   // TODO: improve it by looping over a small subgrid instead of the whole grid
 
   std::vector<colvarvalue> new_colvar_values(num_variables());
+  // vector defined to account for reflection+interval
+  std::vector<colvarvalue> new_hcolvar_values(num_variables());
+  
   std::vector<cvm::real> colvar_forces_scalar(num_variables());
 
   std::vector<int> he_ix = he->new_index();
@@ -1453,17 +1455,31 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
   if (hg != NULL) {
 
     // loop over the points of the grid
+    size_t i;
+    size_t ii;
     for ( ;
           (he->index_ok(he_ix)) && (hg->index_ok(hg_ix));
           count++) {
-      size_t i;
       for (i = 0; i < num_variables(); i++) {
         new_colvar_values[i] = he->bin_to_value_scalar(he_ix[i], i);
+        new_hcolvar_values[i] = he->bin_to_value_scalar(he_ix[i], i);
+        ii=which_int_llimit_cv[i];
+        if (ii>-1 ){ 
+          if ( new_hcolvar_values[i]<interval_llimit[ii] ) {
+            new_hcolvar_values[i]=interval_llimit[ii];
+          }
+        }
+        ii=which_int_ulimit_cv[i];
+        if (ii>-1){ 
+          if( new_hcolvar_values[i]>interval_ulimit[ii] ) {
+            new_hcolvar_values[i]=interval_ulimit[ii];
+          }
+        }
       }
 
       // loop over the hills and increment the energy grid locally
       hills_energy_here = 0.0;
-      calc_hills(h_first, h_last, hills_energy_here, &new_colvar_values);
+      calc_hills(h_first, h_last, hills_energy_here, &new_hcolvar_values);
       he->acc_value(he_ix, hills_energy_here);
 
       for (i = 0; i < num_variables(); i++) {
