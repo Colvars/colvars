@@ -1142,7 +1142,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     }
   } else {
     for (i = 0; i < num_variables(); i++) {
-      curr_values[i] = variables(i)->value();
+      curr_values[i] = colvar_values[i];
     }
   }
   if (use_interval) {
