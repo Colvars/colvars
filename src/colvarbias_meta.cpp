@@ -318,7 +318,21 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   bool use_reflection;
   nrefvarsl=0;
   nrefvarsu=0;
-  int nvars=num_variables();
+  size_t nvars;
+  nvars=num_variables();
+  size_t nonpvars;
+  size_t i;
+  size_t ii;
+  size_t j;
+  size_t jj,
+  ii=0;
+  for (i = 0; i < nvars; i++) {
+     if (!variables(i)->is_enabled(f_cv_periodic)) {
+       ii++;
+     }
+  }
+  nonpvars=ii;
+
   get_keyval(conf, "useHillsReflection", use_reflection, false);
   if (use_reflection) {
 
@@ -327,16 +341,19 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
 
     if (get_keyval(conf, "reflectionLowLimitUseCVs", reflection_llimit_cv, reflection_llimit_cv)) {
       nrefvarsl=reflection_llimit_cv.size();
+      if(nrefvarsl>nvars) cvm::error("Error: number CVs with active lower reflection limit is > num_variables  \n", COLVARS_INPUT_ERROR);
       cvm::log("Using lower limits reflection on "+cvm::to_str(nrefvarsl)+" variables.\n");
     } else {
-      nrefvarsl=nvars;
-      if (reflection_llimit_cv.size()==0) {
-        reflection_llimit_cv.resize(nrefvarsl);
-        for (int i = 0; i < nrefvarsl; i++) {
-           reflection_llimit_cv[i]=i;
-        }
+      nrefvarsl=nonpvars;
+      reflection_llimit_cv.resize(nrefvarsl);
+      ii=0;
+      for (i = 0; i < nvars; i++) {
+         if (!variables(i)->is_enabled(f_cv_periodic)) {
+           reflection_llimit_cv[ii]=i;
+           ii++;
+         }
       }
-      cvm::log("Using all variables for lower limits of reflection \n");
+      cvm::log("Using all non-periodic variables for lower limits of reflection \n");
     }
 
     if (reflection_llimit.size()==0) {
@@ -345,14 +362,19 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
 
     if (get_keyval(conf, "reflectionUpLimitUseCVs", reflection_ulimit_cv, reflection_ulimit_cv)) {
       nrefvarsu=reflection_ulimit_cv.size();
+      if(nrefvarsu>nvars) cvm::error("Error: number CVs with active upper reflection limit is > num_variables  \n", COLVARS_INPUT_ERROR);
       cvm::log("Using upper limits reflection on "+cvm::to_str(nrefvarsu)+" variables.\n");
     } else {
-      nrefvarsu=nvars;
+      nrefvarsu=nonpvars;
       reflection_ulimit_cv.resize(nrefvarsu);
-      for (int i = 0; i < nrefvarsu; i++) {
-         reflection_ulimit_cv[i]=i;
+      ii=0; 
+      for (i = 0; i < nvars; i++) {
+         if (!variables(i)->is_enabled(f_cv_periodic)) {
+           reflection_ulimit_cv[ii]=i;
+           ii++; 
+         }
       }
-      cvm::log("Using all variables for upper limits of reflection \n");      
+      cvm::log("Using all non-periodic variables for upper limits of reflection \n");      
     }
 
     if (reflection_ulimit.size()==0) {
@@ -361,47 +383,49 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
 
     // use reflection only with scalar variables
   
-    for (int i = 0; i < nrefvarsl; i++) {
+    for (i = 0; i < nrefvarsl; i++) {
        if (reflection_llimit_cv[i]>=nvars || reflection_llimit_cv[i]<0) {
          cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
-         return COLVARS_INPUT_ERROR;
        }
-       int j=reflection_llimit_cv[i];
+       j=reflection_llimit_cv[i];
        if (variables(j)->value().type()!=colvarvalue::type_scalar) {
          cvm::error("Error: Hills reflection can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
-         return COLVARS_INPUT_ERROR;
        }
+       if (variables(j)->is_enabled(f_cv_periodic)) {
+         cvm::log("Warning: you are using hills reflection with a periodic variable, make sure you are using it far from periodic boundaries \n");
+       } 
     }
    
-    for (int i = 0; i < nrefvarsu; i++) {
+    for (i = 0; i < nrefvarsu; i++) {
        if (reflection_ulimit_cv[i]>=nvars || reflection_ulimit_cv[i]<0) {
          cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
-         return COLVARS_INPUT_ERROR;
        }
-       int j=reflection_ulimit_cv[i];
+       j=reflection_ulimit_cv[i];
        if (variables(j)->value().type()!=colvarvalue::type_scalar) {
          cvm::error("Error: Hills reflection can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
-         return COLVARS_INPUT_ERROR;
+       }
+       if (variables(j)->is_enabled(f_cv_periodic)) {
+         cvm::log("Warning: you are using hills reflection with a periodic variable, make sure you are using it far from periodic boundaries \n"); 
        }
     }
 
     // if grids are defined, set by default reflection boundaries as grid boundaries
     if (use_grids) {
-      for (int i = 0; i < nrefvarsl; i++) {
-         int ii=reflection_llimit_cv[i];
+      for (i = 0; i < nrefvarsl; i++) {
+         ii=reflection_llimit_cv[i];
          reflection_llimit[i]=hills_energy->lower_boundaries[ii].real_value;
       }
-      for (int i = 0; i < nrefvarsu; i++) {
-         int ii=reflection_ulimit_cv[i];
+      for (i = 0; i < nrefvarsu; i++) {
+         ii=reflection_ulimit_cv[i];
          reflection_ulimit[i]=hills_energy->upper_boundaries[ii].real_value; 
       }
     }
 
     if (nrefvarsl>0) {
-      if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {
-        for (int i = 0; i < nrefvarsl; i++) {
+      if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {        
+        for (i = 0; i < nrefvarsl; i++) {
            if (use_grids) {
-             int ii=reflection_llimit_cv[i];
+             ii=reflection_llimit_cv[i];
              cvm:: real bound=hills_energy->lower_boundaries[ii].real_value;
              if (reflection_llimit[i] < bound) {
                cvm::error("Error: When using grids, grid lower boundary for CV"+cvm::to_str(ii)+" must be equal or smaller than"+cvm::to_str(reflection_llimit[i])+".\n", COLVARS_INPUT_ERROR);
@@ -415,16 +439,16 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
       }
     }
 
-    for (int i = 0; i < nrefvarsl; i++) {
+    for (i = 0; i < nrefvarsl; i++) {
        cvm::log("Reflection condition is applied on a lower limit for CV "+cvm::to_str(reflection_llimit_cv[i])+".\n");
        cvm::log("Reflection condition lower limit for this CV is "+cvm::to_str(reflection_llimit[i])+".\n"); 
     }
 
     if (nrefvarsu>0) {
       if (get_keyval(conf, "reflectionUpLimit", reflection_ulimit, reflection_ulimit)) {
-        for (int i = 0; i < nrefvarsu; i++) {
+        for (i = 0; i < nrefvarsu; i++) {
            if (use_grids) { 
-             int ii=reflection_ulimit_cv[i];
+             ii=reflection_ulimit_cv[i];
              cvm:: real bound=hills_energy->upper_boundaries[ii].real_value;
              if (reflection_ulimit[i] > bound) {
                cvm::error("Error: When using grids, upper boundary for CV"+cvm::to_str(ii)+" must be larger than"+cvm::to_str(reflection_ulimit[i])+".\n", COLVARS_INPUT_ERROR);
@@ -438,7 +462,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
       }
     }
 
-    for (int i = 0; i < nrefvarsu; i++) {
+    for (i = 0; i < nrefvarsu; i++) {
        cvm::log("Reflection condition is applied on an upper limit for CV "+cvm::to_str(reflection_ulimit_cv[i])+".\n");
        cvm::log("Reflection condition upper limit for this CV is "+cvm::to_str(reflection_ulimit[i])+".\n");
     } 
@@ -446,8 +470,11 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
     // multimensional reflection
 
     // generate reflection states
-    int sum=1;
-    int nstates;
+    int sum;
+    sum=1;
+    size_t nstates;
+    size_t count;
+    
     if (reflection_usel.size()==0) {
       reflection_usel.resize(nvars,std::vector<bool>(2));
     }
@@ -456,21 +483,21 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
       reflection_l.resize(nvars,std::vector<cvm::real>(2));
     }
    
-    for (int j = 1; j < nvars; j++) {
+    for (j = 1; j < nvars; j++) {
        reflection_usel[j][0]=false;
        reflection_l[j][0]=0.0;
        reflection_usel[j][1]=false;
        reflection_l[j][1]=0.0;
     }
    
-    for (int i = 0; i < nrefvarsl; i++) {
-       int j=reflection_llimit_cv[i];
+    for (i = 0; i < nrefvarsl; i++) {
+       j=reflection_llimit_cv[i];
        reflection_usel[j][0]=true;
        reflection_l[j][0]=reflection_llimit[i];
     }
    
-    for (int i = 0; i < nrefvarsu; i++) {
-       int j=reflection_ulimit_cv[i];
+    for (i = 0; i < nrefvarsu; i++) {
+       j=reflection_ulimit_cv[i];
        reflection_usel[j][1]=true;
        reflection_l[j][1]=reflection_ulimit[i];
     }
@@ -498,18 +525,18 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
       ref_state.resize(nvars,std::vector<int>(1));
     }
     ref_state[0][0]=1;
-    for (int j = 1; j < nvars; j++) {
+    for (j = 1; j < nvars; j++) {
       sum*=10;
       nstates=0;
-      for (int jj = 0; jj < j; jj++) {
+      for (jj = 0; jj < j; jj++) {
             nstates+=ref_state[j].size();
       }
       nstates++;
       ref_state[j].resize(nstates);
       ref_state[j][0]=sum;
-      int count=0;
-      for (int jj = 0; jj < j; jj++) {
-         for (size_t ii = 0; ii < ref_state[jj].size(); ii++) {
+      count=0;
+      for (jj = 0; jj < j; jj++) {
+         for ( ii = 0; ii < ref_state[jj].size(); ii++) {
             count++;
             ref_state[j][count]=ref_state[j][0]+ref_state[jj][ii];
          }
@@ -524,20 +551,44 @@ int colvarbias_meta::init_interval_params(std::string const &conf)
   use_interval=false;
   nintvarsl=0;
   nintvarsu=0;
-  std::vector<int> interval_llimit_cv;
-  std::vector<int> interval_ulimit_cv;
-  int nvars=num_variables();
+  std::vector<size_t> interval_llimit_cv;
+  std::vector<size_t> interval_ulimit_cv;
+  size_t nvars;
+  size_t nonpvars;
+  nvars=num_variables();
+  size_t i;
+  size_t ii;
+  ii=0;
+  for (i = 0; i < nvars; i++) {
+     if (!variables(i)->is_enabled(f_cv_periodic)) {
+       ii++;
+     }
+  }
+  nonpvars=ii;
+
   if (get_keyval(conf, "useHillsInterval", use_interval, use_interval)) {
     if (use_interval) {
-      get_keyval(conf, "intervalLowLimitNCVs", nintvarsl, nvars);
-      get_keyval(conf, "intervalUpLimitNCVs", nintvarsu, nvars);
-      interval_llimit_cv.resize(nintvarsl);
-      for (int i = 0; i < nintvarsl; i++) {
-         interval_llimit_cv[i]=i;
+      if (get_keyval(conf, "intervalLowLimitUseCVs", interval_llimit_cv, interval_llimit_cv)) {
+        nintvarsl=interval_llimit_cv.size();
+        cvm::log("Using lower limits interval on "+cvm::to_str(nintvarsl)+" variables.\n");
+      } else {
+        nintvarsl=nvars;
+        interval_llimit_cv.resize(nintvarsl);
+        for (int i = 0; i < nintvarsl; i++) {
+           interval_llimit_cv[i]=i;
+        }
+        cvm::log("Using all variables for lower limits of interval \n");
       }
-      interval_ulimit_cv.resize(nintvarsu);
-      for (int i = 0; i < nintvarsu; i++) {
-         interval_ulimit_cv[i]=i;
+      if (get_keyval(conf, "intervalUpLimitUseCVs", interval_ulimit_cv, interval_ulimit_cv)) {
+        nintvarsu=interval_ulimit_cv.size();
+        cvm::log("Using upper limits interval on "+cvm::to_str(nintvarsu)+" variables.\n"); 
+      } else {
+        nintvarsu=nvars;
+        interval_ulimit_cv.resize(nintvarsu);
+        for (int i = 0; i < nintvarsu; i++) {
+           interval_ulimit_cv[i]=i;
+        }
+        cvm::log("Using all variables for upper limits of interval \n");
       }
       if(nintvarsl>0) {
         if (get_keyval(conf, "intervalLowLimitUseCVs", interval_llimit_cv, interval_llimit_cv)) {
