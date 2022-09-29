@@ -1129,24 +1129,23 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
 {
   size_t ir = 0;
 
-  // interval
-  if (use_interval) {
-    size_t i;
-    size_t ii;
-    std::vector<colvarvalue> curr_values(num_variables());
+  size_t i;
+  size_t ii;
+  std::vector<colvarvalue> curr_values(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+    curr_values[i].type(variables(i)->value());
+  }
+ 
+  if ((*values).size()) {
     for (i = 0; i < num_variables(); i++) {
-      curr_values[i].type(variables(i)->value());
+      curr_values[i] = (*values)[i];
     }
-   
-    if ((*values).size()) {
-      for (i = 0; i < num_variables(); i++) {
-        curr_values[i] = (*values)[i];
-      }
-    } else {
-      for (i = 0; i < num_variables(); i++) {
-        curr_values[i] = variables(i)->value();
-      }
+  } else {
+    for (i = 0; i < num_variables(); i++) {
+      curr_values[i] = variables(i)->value();
     }
+  }
+  if (use_interval) {
     for (i = 0; i < num_variables(); i++) { 
        ii=which_int_llimit_cv[i];       
        if (ii>-1 && curr_values[i]<interval_llimit[ii] ) {
@@ -1157,9 +1156,8 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
          curr_values[i]=interval_ulimit[ii];
        }
     }
-  } else {
-    std::vector<colvarvalue> const &curr_values=values ? (*values) : colvar_values;
   }
+  
  
   for (ir = 0; ir < replicas.size(); ir++) {
     replicas[ir]->bias_energy = 0.0;
@@ -1196,7 +1194,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
       calc_hills(replicas[ir]->hills_off_grid.begin(),
                  replicas[ir]->hills_off_grid.end(),
                  bias_energy,
-                 curr_values);
+                 &curr_values);
     }
   }
 
@@ -1207,7 +1205,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     calc_hills(replicas[ir]->new_hills_begin,
                replicas[ir]->hills.end(),
                bias_energy,
-               curr_values);
+               &curr_values);
     if (cvm::debug()) {
       cvm::log("Hills energy = "+cvm::to_str(bias_energy)+".\n");
     }
@@ -1277,7 +1275,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
                            replicas[ir]->hills_off_grid.begin(),
                            replicas[ir]->hills_off_grid.end(),
                            colvar_forces,
-                           curr_values);
+                           &curr_values);
         } 
       }
     }
@@ -1299,7 +1297,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
                          replicas[ir]->new_hills_begin,
                          replicas[ir]->hills.end(),
                          colvar_forces,
-                         curr_values);
+                         &curr_values);
       }
       if (cvm::debug()) {
         cvm::log("Hills forces = "+cvm::to_str(colvar_forces)+".\n");
@@ -1472,7 +1470,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
 
       // loop over the hills and increment the energy grid locally
       hills_energy_here = 0.0;
-      calc_hills(h_first, h_last, hills_energy_here, &new_hcolvar_values);
+      calc_hills(h_first, h_last, hills_energy_here, &new_colvar_values);
       he->acc_value(he_ix, hills_energy_here);
 
       for (i = 0; i < num_variables(); i++) {
