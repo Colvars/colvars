@@ -1238,15 +1238,34 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
 
 int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 {
+  std::vector<colvarvalue> const &curr_values=values ? (*values) : colvar_values;
   size_t ir = 0, ic = 0;
+  std::vector<bool> add_force(num_variables());
   for (ir = 0; ir < replicas.size(); ir++) {
     for (ic = 0; ic < num_variables(); ic++) {
       replicas[ir]->colvar_forces[ic].reset();
     }
   }
+  
+   
+  for (ic = 0; ic < num_variables(); ic++) { 
+    add_force[ic]=true;
+    int ii;
+    ii=which_int_llimit_cv[ic];
+    if (ii>-1) {
+      if( curr_values[ic]<interval_llimit[ii] ) {
+        add_force[ic]=false;
+      }
+    }
+    ii=which_int_ulimit_cv[ic];
+    if (ii>-1) {
+      if( curr_values[ic]>interval_ulimit[ii] ) {
+        add_force[ic]=false;
+      }
+    }
+  }
 
-  bool index_ok = false;
-  std::vector<int> curr_bin;
+  std::vector<int> const curr_bin = hills_energy->get_colvars_index(curr_values);
 
   if (use_grids) {
 
@@ -1263,18 +1282,22 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
       cvm::real const *f = &(replicas[ir]->hills_energy_gradients->value(curr_bin));
       for (ic = 0; ic < num_variables(); ic++) {
         // the gradients are stored, not the forces
-        colvar_forces[ic].real_value += -1.0 * f[ic];
+        if (add_force[ic]) {
+          colvar_forces[ic].real_value += -1.0 * f[ic];
+        }
       }
     }
   } else {
     // off the grid: compute analytically only the hills at the grid's edges
     for (ir = 0; ir < replicas.size(); ir++) {
       for (ic = 0; ic < num_variables(); ic++) {
-        calc_hills_force(ic,
-                         replicas[ir]->hills_off_grid.begin(),
-                         replicas[ir]->hills_off_grid.end(),
-                         colvar_forces,
-                         values);
+        if (add_force[ic]) {
+          calc_hills_force(ic,
+                           replicas[ir]->hills_off_grid.begin(),
+                           replicas[ir]->hills_off_grid.end(),
+                           colvar_forces,
+                           curr_values);
+        } 
       }
     }
   }
@@ -1290,11 +1313,13 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 
   for (ir = 0; ir < replicas.size(); ir++) {
     for (ic = 0; ic < num_variables(); ic++) {
-      calc_hills_force(ic,
-                       replicas[ir]->new_hills_begin,
-                       replicas[ir]->hills.end(),
-                       colvar_forces,
-                       values);
+      if (add_force[ic]) {
+        calc_hills_force(ic,
+                         replicas[ir]->new_hills_begin,
+                         replicas[ir]->hills.end(),
+                         colvar_forces,
+                         curr_values);
+      }
       if (cvm::debug()) {
         cvm::log("Hills forces = "+cvm::to_str(colvar_forces)+".\n");
       }
@@ -1353,27 +1378,13 @@ void colvarbias_meta::calc_hills_force(size_t const &i,
   switch (x.type()) {
 
   case colvarvalue::type_scalar:
-    // if outside interval boundaries do not add force
-    bool add_force;
-    add_force=true;
-    int ii;
-    ii=which_int_llimit_cv[i];
-    if (ii>-1 && x<interval_llimit[ii] ) {
-      add_force=false;
-    }
-    ii=which_int_ulimit_cv[i];
-    if (ii>-1 && x>interval_ulimit[ii] ) {
-      add_force=false;
-    }
-    if (add_force) {
-      for (h = h_first; h != h_last; h++) {
-        if (h->value() == 0.0) continue;
-        colvarvalue const &center = h->centers[i];
-        cvm::real const sigma = h->sigmas[i];
-        forces[i].real_value +=
-          ( h->weight() * h->value() * (0.5 / (sigma*sigma)) *
-            (variables(i)->dist2_lgrad(x, center)).real_value );
-      }
+    for (h = h_first; h != h_last; h++) {
+      if (h->value() == 0.0) continue;
+      colvarvalue const &center = h->centers[i];
+      cvm::real const sigma = h->sigmas[i];
+      forces[i].real_value +=
+        ( h->weight() * h->value() * (0.5 / (sigma*sigma)) *
+          (variables(i)->dist2_lgrad(x, center)).real_value );
     }
     break;
 
@@ -1439,8 +1450,6 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
   // TODO: improve it by looping over a small subgrid instead of the whole grid
 
   std::vector<colvarvalue> new_colvar_values(num_variables());
-  // vector defined to account for reflection+interval
-  std::vector<colvarvalue> new_hcolvar_values(num_variables());
   
   std::vector<cvm::real> colvar_forces_scalar(num_variables());
 
@@ -1457,22 +1466,25 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
     // loop over the points of the grid
     size_t i;
     size_t ii;
+    std::vector<bool> add_force(num_variables());
     for ( ;
           (he->index_ok(he_ix)) && (hg->index_ok(hg_ix));
           count++) {
       for (i = 0; i < num_variables(); i++) {
+        add_force[i]=true; 
         new_colvar_values[i] = he->bin_to_value_scalar(he_ix[i], i);
-        new_hcolvar_values[i] = he->bin_to_value_scalar(he_ix[i], i);
         ii=which_int_llimit_cv[i];
         if (ii>-1 ){ 
-          if ( new_hcolvar_values[i]<interval_llimit[ii] ) {
-            new_hcolvar_values[i]=interval_llimit[ii];
+          if ( new_colvar_values[i]<interval_llimit[ii] ) {
+            new_colvar_values[i]=interval_llimit[ii];
+            add_force[i]=false;
           }
         }
         ii=which_int_ulimit_cv[i];
         if (ii>-1){ 
-          if( new_hcolvar_values[i]>interval_ulimit[ii] ) {
-            new_hcolvar_values[i]=interval_ulimit[ii];
+          if( new_colvar_values[i]>interval_ulimit[ii] ) {
+            new_colvar_values[i]=interval_ulimit[ii];
+            add_force[i]=false;
           }
         }
       }
@@ -1484,7 +1496,9 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
 
       for (i = 0; i < num_variables(); i++) {
         hills_forces_here[i].reset();
-        calc_hills_force(i, h_first, h_last, hills_forces_here, &new_colvar_values);
+        if (add_force[i]){
+          calc_hills_force(i, h_first, h_last, hills_forces_here, &new_colvar_values);
+        }
         colvar_forces_scalar[i] = hills_forces_here[i].real_value;
       }
       hg->acc_force(hg_ix, &(colvar_forces_scalar.front()));
