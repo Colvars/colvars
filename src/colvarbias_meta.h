@@ -222,13 +222,16 @@ protected:
 
   // hills reflection 
 
+  /// \brief Whether using hills reflection
+  bool use_reflection;
+
   /// \brief For which variables reflection limits are on  
 
-  std::vector<int> reflection_llimit_cv;
-  std::vector<int> reflection_ulimit_cv;
+  std::vector<size_t> reflection_llimit_cv;
+  std::vector<size_t> reflection_ulimit_cv;
   cvm::real reflection_int;
-  int nrefvarsl;
-  int nrefvarsu;
+  size_t nrefvarsl;
+  size_t nrefvarsu;
 
   /// \brief Limits for reflection 
   std::vector<cvm::real> reflection_llimit;
@@ -239,7 +242,7 @@ protected:
   std::vector<std::vector<cvm::real> > reflection_l;
 
   /// \brief Multidimensional reflection states
-  std::vector<std::vector<int> > ref_state;
+  std::vector<std::vector<size_t> > ref_state;
 
   /// \brief whether using interval
   bool use_interval; 
@@ -247,8 +250,8 @@ protected:
 
   std::vector<int> which_int_llimit_cv;
   std::vector<int> which_int_ulimit_cv;
-  int nintvarsl;
-  int nintvarsu;
+  size_t nintvarsl;
+  size_t nintvarsu;
   /// \brief Limits for interval 
   std::vector<cvm::real> interval_llimit;
   std::vector<cvm::real> interval_ulimit;
