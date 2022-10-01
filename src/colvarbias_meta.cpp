@@ -526,7 +526,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
       sum*=10;
       nstates=0;
       for (jj = 0; jj < j; jj++) {
-            nstates+=ref_state[j].size();
+            nstates+=ref_state[jj].size();
       }
       nstates++;
       ref_state[j].resize(nstates);
