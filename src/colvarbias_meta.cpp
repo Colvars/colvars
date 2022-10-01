@@ -1191,16 +1191,15 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     for (i = 0; i < num_variables(); i++) { 
        ii=which_int_llimit_cv[i];       
        if (ii>-1 && curr_values[i]<interval_llimit[ii] ) {
-         curr_values[i]=interval_llimit[ii];
+         curr_values[i]=interval_llimit[ii]+0.5*(variables(i)->width);
        }
        ii=which_int_ulimit_cv[i];
        if (ii>-1 && curr_values[i]>interval_ulimit[ii] ) {
-         curr_values[i]=interval_ulimit[ii];
+         curr_values[i]=interval_ulimit[ii]-0.5*(variables(i)->width);
        }
     }
   }
   
- 
   for (ir = 0; ir < replicas.size(); ir++) {
     replicas[ir]->bias_energy = 0.0;
   }
@@ -1232,16 +1231,32 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     }
   } else {
     // off the grid: compute analytically only the hills at the grid's edges
-    for (ir = 0; ir < replicas.size(); ir++) {
-      calc_hills(replicas[ir]->hills_off_grid.begin(),
-                 replicas[ir]->hills_off_grid.end(),
-                 bias_energy,
-                 &curr_values);
+    if (!use_interval) {
+      for (ir = 0; ir < replicas.size(); ir++) {
+        calc_hills(replicas[ir]->hills_off_grid.begin(),
+                   replicas[ir]->hills_off_grid.end(),
+                   bias_energy,
+                   &curr_values);
+      }
     }
   }
 
   // now include the hills that have not been binned yet (starting
   // from new_hills_begin)
+
+  if (use_interval) {
+    curr_values = values ? *values : colvar_values;
+    for (i = 0; i < num_variables(); i++) {
+       ii=which_int_llimit_cv[i];
+       if (ii>-1 && curr_values[i]<interval_llimit[ii] ) {
+         curr_values[i]=interval_llimit[ii];
+       }
+       ii=which_int_ulimit_cv[i];
+       if (ii>-1 && curr_values[i]>interval_ulimit[ii] ) {
+         curr_values[i]=interval_ulimit[ii];
+       }
+    }
+  }
 
   for (ir = 0; ir < replicas.size(); ir++) {
     calc_hills(replicas[ir]->new_hills_begin,
