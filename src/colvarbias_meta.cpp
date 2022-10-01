@@ -1191,11 +1191,15 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     for (i = 0; i < num_variables(); i++) { 
        ii=which_int_llimit_cv[i];       
        if (ii>-1 && curr_values[i]<interval_llimit[ii] ) {
-         curr_values[i]=interval_llimit[ii]+0.5*(variables(i)->width);
+         curr_values[i]=interval_llimit[ii];
        }
        ii=which_int_ulimit_cv[i];
        if (ii>-1 && curr_values[i]>interval_ulimit[ii] ) {
-         curr_values[i]=interval_ulimit[ii]-0.5*(variables(i)->width);
+         if (interval_ulimit[ii]==hills_energy->upper_boundaries[ii].real_value){
+           curr_values[i]=interval_ulimit[ii]-0.5*(variables(i)->width); // upper border is out of grid; in this way is in
+         } else {
+           curr_values[i]=interval_ulimit[ii];
+         }
        }
     }
   }
