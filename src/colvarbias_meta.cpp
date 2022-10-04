@@ -800,7 +800,7 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
            startsumk=1;
            for (i = 0; i <= j; i++) {
               upordown=std::floor(check_val/getsum);
-              check_val=check_val-getsum;
+              if(check_val-getsum>=0) check_val=check_val-getsum;
               getsum=getsum/10;
               if (upordown==1) {
                 numberref++;
@@ -835,7 +835,7 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
                     upordown=std::floor(check_val/getsum);
                     state=num_variables()-1-j+countstate;
                     countstate++;
-                    check_val=check_val-getsum;
+                    if(check_val-getsum>=0) check_val=check_val-getsum;
                     getsum=getsum/10;
                     if (upordown==1) {
                       tmps=colvar_sigmas[state];
