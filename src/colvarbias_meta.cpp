@@ -381,7 +381,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
     // use reflection only with scalar variables
 
     for (i = 0; i < nrefvarsl; i++) {
-       if (reflection_llimit_cv[i]>=num_variables() || reflection_llimit_cv[i]<0) {
+       if (reflection_llimit_cv[i]>=static_cast<int>(num_variables()) || reflection_llimit_cv[i]<0) {
          cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
        }
        j=reflection_llimit_cv[i];
@@ -394,7 +394,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
     }
 
     for (i = 0; i < nrefvarsu; i++) {
-       if (reflection_ulimit_cv[i]>=num_variables() || reflection_ulimit_cv[i]<0) {
+       if (reflection_ulimit_cv[i]>=static_cast<int>(num_variables()) || reflection_ulimit_cv[i]<0) {
          cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
        }
        j=reflection_ulimit_cv[i];
@@ -650,7 +650,7 @@ int colvarbias_meta::init_interval_params(std::string const &conf)
   // use interval only with scalar variables
 
   for ( i = 0; i < nintvarsl; i++) {
-     if (interval_llimit_cv[i]>=num_variables() || interval_llimit_cv[i]<0) {
+     if (interval_llimit_cv[i]>=static_cast<int>(num_variables()) || interval_llimit_cv[i]<0) {
        cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
        return COLVARS_INPUT_ERROR;
      }
@@ -662,7 +662,7 @@ int colvarbias_meta::init_interval_params(std::string const &conf)
   }
 
   for ( i = 0; i < nintvarsu; i++) {
-     if (interval_ulimit_cv[i]>=num_variables() || interval_ulimit_cv[i]<0) {
+     if (interval_ulimit_cv[i]>=static_cast<int>(num_variables()) || interval_ulimit_cv[i]<0) {
        cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
        return COLVARS_INPUT_ERROR;
      }
