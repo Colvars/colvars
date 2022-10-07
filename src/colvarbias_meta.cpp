@@ -1194,7 +1194,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
        }
        ii=which_int_ulimit_cv[i];
        if (ii>-1 && curr_values[i]>interval_ulimit[ii] ) {
-         if (interval_ulimit[ii]==hills_energy->upper_boundaries[ii].real_value){
+         if (interval_ulimit[ii]==hills_energy->upper_boundaries[i].real_value){
            curr_values[i]=interval_ulimit[ii]-0.5*(variables(i)->width); // upper border is out of grid; in this way is in
          } else {
            curr_values[i]=interval_ulimit[ii];
