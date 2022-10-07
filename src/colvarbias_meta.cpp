@@ -548,8 +548,8 @@ int colvarbias_meta::init_interval_params(std::string const &conf)
   use_interval=false;
   nintvarsl=0;
   nintvarsu=0;
-  std::vector<size_t> interval_llimit_cv;
-  std::vector<size_t> interval_ulimit_cv;
+  std::vector<int> interval_llimit_cv;
+  std::vector<int> interval_ulimit_cv;
   size_t i;
   size_t j;
 

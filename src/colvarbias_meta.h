@@ -227,8 +227,8 @@ protected:
 
   /// \brief For which variables reflection limits are on  
 
-  std::vector<size_t> reflection_llimit_cv;
-  std::vector<size_t> reflection_ulimit_cv;
+  std::vector<int> reflection_llimit_cv;
+  std::vector<int> reflection_ulimit_cv;
   cvm::real reflection_int;
   size_t nrefvarsl;
   size_t nrefvarsu;
