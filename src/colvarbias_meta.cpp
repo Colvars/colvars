@@ -1277,9 +1277,13 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
 
 int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 {
-  std::vector<colvarvalue> const &curr_values=values ? (*values) : colvar_values;
   size_t ir = 0, ic = 0;
   int ii;
+  std::vector<colvarvalue> curr_values(num_variables());
+  for (ic = 0; ic < num_variables(); ic++) {
+    curr_values[ic].type(variables(ic)->value());
+  }
+  curr_values = values ? *values : colvar_values;
   std::vector<bool> add_force(num_variables());
   for (ir = 0; ir < replicas.size(); ir++) {
     for (ic = 0; ic < num_variables(); ic++) {
@@ -1287,19 +1291,24 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
     }
   }
 
-
   for (ic = 0; ic < num_variables(); ic++) {
     add_force[ic]=true;
     ii=which_int_llimit_cv[ic];
     if (ii>-1) {
-      if( curr_values[ic]<interval_llimit[ii] ) {
+      if ( curr_values[ic]<interval_llimit[ii] ) {
+        curr_values[ic]=interval_llimit[ii];
         add_force[ic]=false;
       }
     }
     ii=which_int_ulimit_cv[ic];
     if (ii>-1) {
-      if( curr_values[ic]>interval_ulimit[ii] ) {
+      if ( curr_values[ic]>interval_ulimit[ii] ) {
         add_force[ic]=false;
+        if (interval_ulimit[ii]==hills_energy->upper_boundaries[ic].real_value){
+          curr_values[ic]=interval_ulimit[ii]-0.5*(variables(ic)->width); // upper border is out of grid; in this way is in
+        } else {
+          curr_values[ic]=interval_ulimit[ii];
+        }
       }
     }
   }
@@ -1328,14 +1337,14 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
     }
   } else {
     // off the grid: compute analytically only the hills at the grid's edges
-    for (ir = 0; ir < replicas.size(); ir++) {
-      for (ic = 0; ic < num_variables(); ic++) {
-        if (add_force[ic]) {
-          calc_hills_force(ic,
-                           replicas[ir]->hills_off_grid.begin(),
-                           replicas[ir]->hills_off_grid.end(),
-                           colvar_forces,
-                           &curr_values);
+    if (!use_interval) {
+      for (ir = 0; ir < replicas.size(); ir++) {
+        for (ic = 0; ic < num_variables(); ic++) {
+           calc_hills_force(ic,
+                            replicas[ir]->hills_off_grid.begin(),
+                            replicas[ir]->hills_off_grid.end(),
+                            colvar_forces,
+                            &curr_values);
         }
       }
     }
@@ -1343,6 +1352,25 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 
   // now include the hills that have not been binned yet (starting
   // from new_hills_begin)
+
+  if (use_interval) {
+    curr_values = values ? *values : colvar_values;
+    for (ic = 0; ic < num_variables(); ic++) {
+      ii=which_int_llimit_cv[ic];
+      if (ii>-1) {
+        if ( curr_values[ic]<interval_llimit[ii] ) {
+          curr_values[ic]=interval_llimit[ii];
+        }
+      }
+      ii=which_int_ulimit_cv[ic];
+      if (ii>-1) {
+        if ( curr_values[ic]>interval_ulimit[ii] ) {
+          curr_values[ic]=interval_ulimit[ii];
+        }
+      }
+    }
+  }
+
 
   if (cvm::debug()) {
     cvm::log("Metadynamics bias \""+this->name+"\""+
