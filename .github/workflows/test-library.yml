@@ -178,7 +178,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.apptainer
-          key: Linux-x86_64-containers-build-2022-09-03
+          key: Linux-x86_64-containers-build-2022-10-11
 
       - name: Get small downloadable packages
         uses: actions/checkout@v2
@@ -366,7 +366,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.apptainer
-          key: Linux-x86_64-containers-build-2022-09-03
+          key: Linux-x86_64-containers-build-2022-10-11
 
       - name: Checkout Sun compiler (Oracle Developer Studio)
         uses: actions/checkout@v2
