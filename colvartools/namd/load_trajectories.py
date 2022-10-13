@@ -71,16 +71,28 @@ def write_constant_bias_trajs(trajs, biases=[], variables=[],
     for bias in biases:
         if len(variables) == 0:
             variables = trajs[bias].keys()
-        for variable in variables:
-            np.savetxt("%s.%s-%s.dat" % (output_prefix, bias, variable),
-                       np.c_[trajs[bias][variable].steps,
-                             trajs[bias][variable].values])
-
+        pluto=trajs[bias][variables[0]].steps
+        for i in range (0,len(variables)):
+           pluto=np.c_[pluto,trajs[bias][variables[i]].values]
+        pluto=pluto[pluto[:, 0].argsort()] 
+        np.savetxt("%s.%s.dat" % (output_prefix, bias),pluto,
+                   header=" " + " ".join(str(variable) for variable in variables))
+           
+#        with open("%s.%s.dat" % (output_prefix, bias), 'w') as f:
+#            f.write(" # ")
+#            for variable in variables:
+#               f.write(" %s " % (variable))  
+#            f.write(" \n")
+#            for step in range (0,trajs[bias][variables[0]].steps.size):
+#               f.write(" %s " % trajs[bias][variables[0]].steps[step])
+#               for variable in variables:
+#                  f.write(" %s " % (trajs[bias][variable].values[step]))
+#               f.write("\n")  
 
 def extract_constant_bias_trajs(histogram_bins, histogram_range,
                                 pattern="replica-%03d/*.colvars.traj",
                                 variables=[], biases=[],
-                                first=0, last=None, skip=1):
+                                first=0, last=None, skip=1, do_hist=False):
 
     constant_bias_trajs = { }
 
@@ -136,13 +148,20 @@ def extract_constant_bias_trajs(histogram_bins, histogram_range,
 
         replica_index += 1
 
-    compute_histograms(
-        trajs=constant_bias_trajs,
-        biases=biases, variables=variables,
-        bins=histogram_bins, range=histogram_range,
-        output_prefix="histogram"
-    )
+    if do_hist:
+      compute_histograms(
+          trajs=constant_bias_trajs,
+          biases=biases, variables=variables,
+          bins=histogram_bins, range=histogram_range,
+          output_prefix="histogram"
+      )
 
+    write_constant_bias_trajs(
+        trajs=constant_bias_trajs, 
+        biases=biases, 
+        variables=variables,
+        output_prefix="colvars_traj"
+    )
 
 if __name__ == '__main__':
 
@@ -200,6 +219,16 @@ if __name__ == '__main__':
                         help='Range of the histograms',
                         default=[0.0, 12.0])
 
+    parser.add_argument("--do-histograms", 
+                        help="calculate histograms of each variable", 
+                        default=False, 
+                        dest='do_hist', 
+                        action='store_true')
+
     kwargs = vars(parser.parse_args())
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
 
     extract_constant_bias_trajs(**kwargs)
