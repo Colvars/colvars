@@ -1179,6 +1179,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
 
   size_t i;
   int ii;
+  cvm::real up_bound_bin_value;
   std::vector<colvarvalue> curr_values(num_variables());
   for (i = 0; i < num_variables(); i++) {
     curr_values[i].type(variables(i)->value());
@@ -1194,7 +1195,10 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
        }
        ii=which_int_ulimit_cv[i];
        if (ii>-1 && curr_values[i]>interval_ulimit[ii] ) {
-         if (interval_ulimit[ii]==hills_energy->upper_boundaries[i].real_value){
+         // check if upper border is out of the grid otherwise put it back on the grid
+         up_bound_bin_value=hills_energy->lower_boundaries[i].real_value+variables(i)->width*(0.5+cvm::floor((interval_ulimit[ii]-hills_energy->lower_boundaries[i].real_value)/variables(i)->width));       
+         //if (interval_ulimit[ii]==hills_energy->upper_boundaries[i].real_value){
+         if (up_bound_bin_value>hills_energy->upper_boundaries[i].real_value) {
            curr_values[i]=interval_ulimit[ii]-0.5*(variables(i)->width); // upper border is out of grid; in this way is in
          } else {
            curr_values[i]=interval_ulimit[ii];
@@ -1279,6 +1283,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 {
   size_t ir = 0, ic = 0;
   int ii;
+  cvm::real up_bound_bin_value;
   std::vector<colvarvalue> curr_values(num_variables());
   for (ic = 0; ic < num_variables(); ic++) {
     curr_values[ic].type(variables(ic)->value());
@@ -1304,7 +1309,9 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
     if (ii>-1) {
       if ( curr_values[ic]>interval_ulimit[ii] ) {
         add_force[ic]=false;
-        if (interval_ulimit[ii]==hills_energy->upper_boundaries[ic].real_value){
+        up_bound_bin_value=hills_energy->lower_boundaries[ic].real_value+variables(ic)->width*(0.5+cvm::floor((interval_ulimit[ii]-hills_energy->lower_boundaries[ic].real_value)/variables(ic)->width)); 
+        //if (interval_ulimit[ii]==hills_energy->upper_boundaries[ic].real_value){
+        if (up_bound_bin_value>hills_energy->upper_boundaries[ic].real_value) {
           curr_values[ic]=interval_ulimit[ii]-0.5*(variables(ic)->width); // upper border is out of grid; in this way is in
         } else {
           curr_values[ic]=interval_ulimit[ii];
