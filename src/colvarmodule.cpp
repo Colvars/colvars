@@ -1228,8 +1228,8 @@ int colvarmodule::setup()
 
 colvarmodule::~colvarmodule()
 {
-  if ((proxy->smp_thread_id() == COLVARS_NOT_IMPLEMENTED) ||
-      (proxy->smp_thread_id() == 0)) {
+  if ((proxy->smp_thread_id() < 0) ||  // not using threads
+      (proxy->smp_thread_id() == 0)) { // or this is thread 0
 
     reset();
 
