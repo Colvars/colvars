@@ -77,6 +77,7 @@ colvars:   # targetNumStages = 0 [default]
 colvars:   # outputAccumulatedWork = on
 colvars:   # outputCenters = on
 colvars:   # forceConstant = 1 [default]
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width (0.01).
 colvars: ----------------------------------------------------------------------
@@ -90,6 +91,114 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # forceConstant = 1 [default]
+colvars:   # decoupling = off [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   # lowerWalls = { 0 } [default]
+colvars:   Lower walls were not provided.
+colvars:   # upperWalls = { 0.1 }
+colvars:   # upperWallConstant = 10
+colvars:   The upper wall force constant for colvar "rmsd" will be rescaled to 100000 according to the specified width (0.01).
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 2 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Re-initialized atom group for variable "rmsd":0/0. 10 atoms: total mass = 120.11, total charge = 0.53.
+colvars: Resetting the Collective Variables module.
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
+colvars: This version was built with the C++11 standard or higher.
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # units = "" [default]
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 0
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "rmsd"
+colvars:   Initializing a new "rmsd" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "atoms".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID = { BH }
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 120.11, total charge = 0.53.
+colvars:     # refPositions =  [default]
+colvars:     # refPositionsFile = "../Common/da.pdb"
+colvars:     # refPositionsCol = "" [default]
+colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 0.01
+colvars:   # lowerBoundary = 0 [default]
+colvars:   # upperBoundary = 0.1
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonic" instance.
+colvars:   # name = "harmonic1" [default]
+colvars:   # colvars = { rmsd }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = on
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # centers = { 0 }
+colvars:   # targetCenters = { 0.2 }
+colvars:   # targetNumSteps = 20
+colvars:   # targetNumStages = 0 [default]
+colvars:   # outputAccumulatedWork = on
+colvars:   # outputCenters = on
+colvars:   # forceConstant = 1 [default]
+colvars:   # decoupling = off [default]
+colvars:   # targetForceConstant = -1 [default]
+colvars:   The force constant for colvar "rmsd" will be rescaled to 10000 according to the specified width (0.01).
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "harmonicwalls" instance.
+colvars:   # name = "wall_rmsd"
+colvars:   # colvars = { rmsd }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 0 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # writeTISamples = off [default]
+colvars:   # writeTIPMF = off [default]
+colvars:   # forceConstant = 1 [default]
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   # lowerWalls = { 0 } [default]
 colvars:   Lower walls were not provided.
