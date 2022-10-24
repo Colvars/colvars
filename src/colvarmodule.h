@@ -40,7 +40,7 @@ You can browse the class hierarchy or the list of source files.
 #define COLVARS_BUG_ERROR       (1<<3) // Inconsistent state indicating bug
 #define COLVARS_FILE_ERROR      (1<<4)
 #define COLVARS_MEMORY_ERROR    (1<<5)
-#define COLVARS_NO_SUCH_FRAME (1<<6) // Cannot load the requested frame
+#define COLVARS_NO_SUCH_FRAME   (1<<6) // Cannot load the requested frame
 
 #include <sstream>
 #include <string>
