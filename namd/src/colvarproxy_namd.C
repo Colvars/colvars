@@ -113,9 +113,9 @@ colvarproxy_namd::colvarproxy_namd()
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
   colvars->cite_feature("NAMD engine");
   colvars->cite_feature("Colvars-NAMD interface");
-    // Construct instance of colvars scripting interface
+
   errno = 0;
-  if (config) {
+  for ( ; config; config = config->next ) {
     colvars->read_config_file(config->data);
   }
 
