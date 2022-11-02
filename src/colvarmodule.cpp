@@ -1089,10 +1089,7 @@ int colvarmodule::write_restart_file(std::string const &out_name)
   }
   proxy->close_output_stream(out_name);
 
-  if (proxy->output_stream_exists(cv_traj_name)) {
-    // Take the opportunity to flush colvars.traj
-    proxy->flush_output_stream(cv_traj_name);
-  }
+  // Take the opportunity to flush colvars.traj
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }

@@ -2411,9 +2411,7 @@ std::ostream & colvar::write_state(std::ostream &os) {
   os << "}\n\n";
 
   if (runave_outfile.size() > 0) {
-    if (cvm::main()->proxy->output_stream_exists(runave_outfile)) {
-      cvm::main()->proxy->flush_output_stream(runave_outfile);
-    }
+    cvm::main()->proxy->flush_output_stream(runave_outfile);
   }
 
   return os;
