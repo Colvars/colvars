@@ -161,7 +161,7 @@ std::istream &colvarproxy_io::input_stream(std::string const &input_name,
     return *input_stream_error_;
   }
 
-  if (input_streams_.count(input_name) > 0) {
+  if (colvarproxy_io::input_stream_exists(input_name)) {
     return *(input_streams_[input_name]);
   }
 
@@ -179,9 +179,15 @@ std::istream &colvarproxy_io::input_stream(std::string const &input_name,
 }
 
 
+bool colvarproxy_io::input_stream_exists(std::string const &input_name)
+{
+  return (input_streams_.count(input_name) > 0);
+}
+
+
 int colvarproxy_io::close_input_stream(std::string const &input_name)
 {
-  if (input_streams_.count(input_name) > 0) {
+  if (colvarproxy_io::input_stream_exists(input_name)) {
     delete input_streams_[input_name];
     input_streams_.erase(input_name);
     return COLVARS_OK;
@@ -216,7 +222,7 @@ std::ostream & colvarproxy_io::output_stream(std::string const &output_name,
     return *output_stream_error_;
   }
 
-  if (output_streams_.count(output_name) > 0) {
+  if (colvarproxy_io::output_stream_exists(output_name)) {
     return *(output_streams_[output_name]);
   }
 
@@ -245,7 +251,7 @@ int colvarproxy_io::flush_output_stream(std::string const &output_name)
     return COLVARS_OK;
   }
 
-  if (output_streams_.count(output_name) > 0) {
+  if (colvarproxy_io::output_stream_exists(output_name)) {
     (reinterpret_cast<std::ofstream *>(output_streams_[output_name]))->flush();
     return COLVARS_OK;
   }
@@ -278,7 +284,7 @@ int colvarproxy_io::close_output_stream(std::string const &output_name)
                       "from the wrong thread.\n", COLVARS_BUG_ERROR);
   }
 
-  if (output_streams_.count(output_name) > 0) {
+  if (colvarproxy_io::output_stream_exists(output_name)) {
     (reinterpret_cast<std::ofstream *>(output_streams_[output_name]))->close();
     delete output_streams_[output_name];
     output_streams_.erase(output_name);
