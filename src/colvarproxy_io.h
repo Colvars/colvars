@@ -103,6 +103,9 @@ public:
                                      std::string const description = "file/channel",
                                      bool error_on_fail = true);
 
+  /// Check if the file/channel is open (without opening it if not)
+  virtual bool input_stream_exists(std::string const &input_name);
+
   /// Closes the given input stream
   virtual int close_input_stream(std::string const &input_name);
 
