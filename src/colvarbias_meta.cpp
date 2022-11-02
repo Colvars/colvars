@@ -334,13 +334,9 @@ colvarbias_meta::~colvarbias_meta()
   colvarbias_meta::clear_state_data();
   colvarproxy *proxy = cvm::proxy;
 
-  if (proxy->output_stream_exists(replica_hills_file)) {
-    proxy->close_output_stream(replica_hills_file);
-  }
+  proxy->close_output_stream(replica_hills_file);
 
-  if (proxy->output_stream_exists(hills_traj_file_name())) {
-    proxy->close_output_stream(hills_traj_file_name());
-  }
+  proxy->close_output_stream(hills_traj_file_name());
 
   if (target_dist) {
     delete target_dist;

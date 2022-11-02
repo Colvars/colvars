@@ -256,8 +256,7 @@ int colvarproxy_io::flush_output_stream(std::string const &output_name)
     return COLVARS_OK;
   }
 
-  return cvm::error("Error: trying to flush an output file/channel "
-                    "that wasn't open.\n", COLVARS_BUG_ERROR);
+  return COLVARS_OK;
 }
 
 
