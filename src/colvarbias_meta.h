@@ -157,7 +157,7 @@ protected:
   std::list<hill>::const_iterator delete_hill(hill_iter &h);
 
 
-  /// \brief Check is current colvar value is within inversion or 
+  /// \brief Check is current colvar value is within inversion or
   /// reflection limits to assess whether to add a hill
   bool check_reflection_limits(bool &ah);
 
@@ -220,12 +220,12 @@ protected:
   /// \brief Biasing temperature in well-tempered metadynamics
   cvm::real  bias_temperature;
 
-  // hills reflection 
+  // hills reflection
 
   /// \brief Whether using hills reflection
   bool use_reflection;
 
-  /// \brief For which variables reflection limits are on  
+  /// \brief For which variables reflection limits are on
 
   std::vector<int> reflection_llimit_cv;
   std::vector<int> reflection_ulimit_cv;
@@ -233,7 +233,7 @@ protected:
   size_t nrefvarsl;
   size_t nrefvarsu;
 
-  /// \brief Limits for reflection 
+  /// \brief Limits for reflection
   std::vector<cvm::real> reflection_llimit;
   std::vector<cvm::real> reflection_ulimit;
 
@@ -245,14 +245,14 @@ protected:
   std::vector<std::vector<size_t> > ref_state;
 
   /// \brief whether using interval
-  bool use_interval; 
+  bool use_interval;
   /// \brief For which variables hills forces beyond the boundaries(interval) must be removed
 
   std::vector<int> which_int_llimit_cv;
   std::vector<int> which_int_ulimit_cv;
   size_t nintvarsl;
   size_t nintvarsu;
-  /// \brief Limits for interval 
+  /// \brief Limits for interval
   std::vector<cvm::real> interval_llimit;
   std::vector<cvm::real> interval_ulimit;
 
