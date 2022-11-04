@@ -424,8 +424,8 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
            if (use_grids) {
              ii=reflection_llimit_cv[i];
              cvm:: real bound=hills_energy->lower_boundaries[ii].real_value;
-             if (reflection_llimit[i] < bound) {
-               cvm::log("Warning: you are using hills reflection with lower limit smaller than grid lower boundary for CV"+cvm::to_str(ii)+" \n");
+             if (reflection_llimit[i] != bound && reflection_llimit[i] < bound+variables(ii)->width) {
+               cvm::error("Error: please set lower reflection limit for CV "+cvm::to_str(ii)+" either at grid lower boundary ("+cvm::to_str(bound)+") or well above it (above "+cvm::to_str(bound+variables(ii)->width)+").\n", COLVARS_INPUT_ERROR);
              }
            }
         }
@@ -447,8 +447,8 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
            if (use_grids) {
              ii=reflection_ulimit_cv[i];
              cvm:: real bound=hills_energy->upper_boundaries[ii].real_value;
-             if (reflection_ulimit[i] > bound) {
-               cvm::log("Warning: you are using hills reflection with upper limit larger than grid upper boundary for CV"+cvm::to_str(ii)+" \n");
+             if (reflection_ulimit[i] != bound && reflection_ulimit[i] > bound-variables(ii)->width) {
+               cvm::error("Error: please set upper reflection limit for CV "+cvm::to_str(ii)+" either at grid upper boundary ("+cvm::to_str(bound)+") or well below it (below "+cvm::to_str(bound-variables(ii)->width)+").\n", COLVARS_INPUT_ERROR);
              }
            }
         }
