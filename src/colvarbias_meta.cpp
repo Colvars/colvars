@@ -552,6 +552,11 @@ int colvarbias_meta::init_interval_params(std::string const &conf)
   std::vector<int> interval_ulimit_cv;
   size_t i;
   size_t j;
+  // allocate accessory variable of colvar values to be used in energy and forces calculation 
+  curr_values.resize(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+    curr_values[i].type(variables(i)->value());
+  }
 
   if (get_keyval(conf, "useHillsInterval", use_interval, use_interval)) {
     if (use_interval) {
@@ -1179,11 +1184,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
 
   size_t i;
   int ii;
-  cvm::real up_bound_bin_value;
-  std::vector<colvarvalue> curr_values(num_variables());
-  for (i = 0; i < num_variables(); i++) {
-    curr_values[i].type(variables(i)->value());
-  }
+  std::vector<int> curr_bin;
 
   curr_values = values ? *values : colvar_values;
 
@@ -1194,36 +1195,20 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
          curr_values[i]=interval_llimit[ii];
        }
        ii=which_int_ulimit_cv[i];
-       if (ii>-1 && curr_values[i]>=interval_ulimit[ii] ) {
-         // check if upper border is out of the grid otherwise put it back on the grid
-         up_bound_bin_value=hills_energy->lower_boundaries[i].real_value+variables(i)->width*(0.5+cvm::floor((interval_ulimit[ii]-hills_energy->lower_boundaries[i].real_value)/variables(i)->width));
-         //if (interval_ulimit[ii]==hills_energy->upper_boundaries[i].real_value){
-         if (up_bound_bin_value>hills_energy->upper_boundaries[i].real_value) {
-           curr_values[i]=interval_ulimit[ii]-0.5*(variables(i)->width); // upper border is out of grid; in this way is in
-         } else {
-           curr_values[i]=interval_ulimit[ii];
-         }
+       if (ii>-1 && curr_values[i]>interval_ulimit[ii] ) {
+         curr_values[i]=interval_ulimit[ii];
        }
     }
+    curr_bin = hills_energy->get_colvars_index_bound(curr_values);
+  } else {
+    curr_bin = hills_energy->get_colvars_index(curr_values);
   }
 
   for (ir = 0; ir < replicas.size(); ir++) {
     replicas[ir]->bias_energy = 0.0;
   }
 
-  std::vector<int> const curr_bin = hills_energy->get_colvars_index(curr_values);
-
-  if (use_grids) {
-
-    curr_bin = values ?
-      hills_energy->get_colvars_index(*values) :
-      hills_energy->get_colvars_index();
-
-    index_ok = hills_energy->index_ok(curr_bin);
-
-  }
-
-  if ( index_ok ) {
+  if (hills_energy->index_ok(curr_bin)) {
     // index is within the grid: get the energy from there
     for (ir = 0; ir < replicas.size(); ir++) {
 
@@ -1251,20 +1236,6 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
   // now include the hills that have not been binned yet (starting
   // from new_hills_begin)
 
-  if (use_interval) {
-    curr_values = values ? *values : colvar_values;
-    for (i = 0; i < num_variables(); i++) {
-       ii=which_int_llimit_cv[i];
-       if (ii>-1 && curr_values[i]<interval_llimit[ii] ) {
-         curr_values[i]=interval_llimit[ii];
-       }
-       ii=which_int_ulimit_cv[i];
-       if (ii>-1 && curr_values[i]>interval_ulimit[ii] ) {
-         curr_values[i]=interval_ulimit[ii];
-       }
-    }
-  }
-
   for (ir = 0; ir < replicas.size(); ir++) {
     calc_hills(replicas[ir]->new_hills_begin,
                replicas[ir]->hills.end(),
@@ -1283,11 +1254,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 {
   size_t ir = 0, ic = 0;
   int ii;
-  cvm::real up_bound_bin_value;
-  std::vector<colvarvalue> curr_values(num_variables());
-  for (ic = 0; ic < num_variables(); ic++) {
-    curr_values[ic].type(variables(ic)->value());
-  }
+  std::vector<int> curr_bin;
   curr_values = values ? *values : colvar_values;
   std::vector<bool> add_force(num_variables());
   for (ir = 0; ir < replicas.size(); ir++) {
@@ -1307,20 +1274,18 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
     }
     ii=which_int_ulimit_cv[ic];
     if (ii>-1) {
-      if ( curr_values[ic]>=interval_ulimit[ii] ) {
+      if ( curr_values[ic]>interval_ulimit[ii] ) {
         add_force[ic]=false;
-        up_bound_bin_value=hills_energy->lower_boundaries[ic].real_value+variables(ic)->width*(0.5+cvm::floor((interval_ulimit[ii]-hills_energy->lower_boundaries[ic].real_value)/variables(ic)->width));
-        //if (interval_ulimit[ii]==hills_energy->upper_boundaries[ic].real_value){
-        if (up_bound_bin_value>hills_energy->upper_boundaries[ic].real_value) {
-          curr_values[ic]=interval_ulimit[ii]-0.5*(variables(ic)->width); // upper border is out of grid; in this way is in
-        } else {
-          curr_values[ic]=interval_ulimit[ii];
-        }
+        curr_values[ic]=interval_ulimit[ii];
       }
     }
   }
 
-  std::vector<int> const curr_bin = hills_energy->get_colvars_index(curr_values);
+  if (use_interval) {
+    curr_bin = hills_energy->get_colvars_index_bound(curr_values);
+  } else {
+    curr_bin = hills_energy->get_colvars_index(curr_values);
+  }  
 
   if (use_grids) {
 
@@ -1359,25 +1324,6 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 
   // now include the hills that have not been binned yet (starting
   // from new_hills_begin)
-
-  if (use_interval) {
-    curr_values = values ? *values : colvar_values;
-    for (ic = 0; ic < num_variables(); ic++) {
-      ii=which_int_llimit_cv[ic];
-      if (ii>-1) {
-        if ( curr_values[ic]<interval_llimit[ii] ) {
-          curr_values[ic]=interval_llimit[ii];
-        }
-      }
-      ii=which_int_ulimit_cv[ic];
-      if (ii>-1) {
-        if ( curr_values[ic]>interval_ulimit[ii] ) {
-          curr_values[ic]=interval_ulimit[ii];
-        }
-      }
-    }
-  }
-
 
   if (cvm::debug()) {
     cvm::log("Metadynamics bias \""+this->name+"\""+

@@ -256,6 +256,9 @@ protected:
   std::vector<cvm::real> interval_llimit;
   std::vector<cvm::real> interval_ulimit;
 
+  /// \brief Current value of colvars to be modifed for calculation of energy and forces with interval
+  std::vector<colvarvalue> curr_values;
+
   /// Ensemble-biased metadynamics (EBmeta) flag
   bool       ebmeta;
 
