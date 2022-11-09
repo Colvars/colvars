@@ -140,21 +140,22 @@ int colvar_grid<T>::read_multicol(std::string const &filename,
 template <class T>
 std::ostream & colvar_grid<T>::write_multicol(std::ostream &os) const
 {
-  std::streamsize const w = os.width();
-  std::streamsize const p = os.precision();
+  // Save the output formats
+  std::ios_base::fmtflags prev_flags(os.flags());
 
   // Data in the header: nColvars, then for each
   // xiMin, dXi, nPoints, periodic
 
   os << std::setw(2) << "# " << nd << "\n";
+  // Write the floating numbers in full precision
+  os.setf(std::ios::scientific, std::ios::floatfield);
   for (size_t i = 0; i < nd; i++) {
     os << "# "
-       << std::setw(10) << lower_boundaries[i]
-       << std::setw(10) << widths[i]
+       << std::setw(cvm::cv_width) << std::setprecision(cvm::cv_prec) << lower_boundaries[i] << " "
+       << std::setw(cvm::cv_width) << std::setprecision(cvm::cv_prec) << widths[i] << " "
        << std::setw(10) << nx[i] << "  "
        << periodic[i] << "\n";
   }
-
 
   for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix) ) {
 
@@ -165,17 +166,21 @@ std::ostream & colvar_grid<T>::write_multicol(std::ostream &os) const
 
     for (size_t i = 0; i < nd; i++) {
       os << " "
-         << std::setw(w) << std::setprecision(p)
+         << std::setw(cvm::cv_width) << std::setprecision(cvm::cv_prec)
          << bin_to_value_scalar(ix[i], i);
     }
     os << " ";
     for (size_t imult = 0; imult < mult; imult++) {
       os << " "
-         << std::setw(w) << std::setprecision(p)
+         << std::setw(cvm::cv_width) << std::setprecision(cvm::cv_prec)
          << value_output(ix, imult);
     }
     os << "\n";
   }
+
+  // Restore the output formats
+  os.flags(prev_flags);
+
   return os;
 }
 
