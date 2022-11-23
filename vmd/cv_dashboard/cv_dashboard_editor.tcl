@@ -296,12 +296,10 @@ proc ::cv_dashboard::atoms_from_sel { source } {
       -message "Selection text \"${seltext}\" matches zero atoms."
     return
   }
-  # set auto to "" if not requested
-  set auto " auto-updating"
   # Insert magic comment line followed by atomNumbers line
   editor_replace $w.editor.fr.text \
-"${indent3}# \"auto-updating\" keyword updates atom IDs when applying cfg or changing molecule
-${indent3}#$auto selection: \"$seltext\"
+"${indent3}# Remove 2nd \"#\" below to update atom IDs when applying cfg or changing molecule
+${indent3}## auto-updating selection: \"$seltext\"
 ${indent3}[sel2cvatoms $sel]\n"
   $sel delete
 }
