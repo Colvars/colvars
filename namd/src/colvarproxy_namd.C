@@ -345,6 +345,8 @@ void colvarproxy_namd::calculate()
     colvars->update_engine_parameters();
     colvars->setup_input();
     colvars->setup_output();
+    // Controller is only available after full startup phase, so now
+    controller = &Node::Object()->state->getController();
 
     first_timestep = false;
 
@@ -373,7 +375,7 @@ void colvarproxy_namd::calculate()
   }
 
   previous_NAMD_step = step;
-  update_accelMD_info();
+  if (accelMDOn) update_accelMD_info();
 
   {
     Vector const a = lattice->a();
@@ -605,14 +607,8 @@ void colvarproxy_namd::calculate()
 }
 
 void colvarproxy_namd::update_accelMD_info() {
-  if (accelMDOn == false) {
-    return;
-  }
-  const Controller& c = Node::Object()->state->getController();
   // This aMD factor is from previous step!
-  amd_weight_factor = std::exp(c.accelMDdV /
-                               (target_temperature() * boltzmann()));
-//   std::cout << "Step: " << cvm::to_str(colvars->it) << " accelMD dV in colvars: " << c.accelMDdV << std::endl;
+  amd_weight_factor = std::exp(controller->accelMDdV / (target_temperature() * boltzmann()));
 }
 
 
@@ -1650,4 +1646,49 @@ int colvarproxy_namd::replica_comm_send(char* msg_data, int msg_len,
                                         int dest_rep) {
   replica_send(msg_data, msg_len, dest_rep, CkMyPe());
   return msg_len;
+}
+
+
+/// Request energy computation every freq steps
+int colvarproxy_namd::request_alch_energy_freq(int const freq) {
+  // This test is only valid for NAMD3
+  if (freq % simparams->computeEnergies) {
+    cvm::error("computeEnergies must be a divisor of lambda-dynamics period (" + cvm::to_str(freq) + ").\n");
+    return COLVARS_INPUT_ERROR;
+  }
+  if (!simparams->alchOn) {
+    cvm::error("alch must be enabled for lambda-dynamics.\n");
+    return COLVARS_INPUT_ERROR;
+  }
+  if (!simparams->alchThermIntOn) {
+    cvm::error("alchType must be set to TI for lambda-dynamics.\n");
+    return COLVARS_INPUT_ERROR;
+  }
+  return COLVARS_OK;
+}
+
+
+/// Get value of alchemical lambda parameter from back-end
+int colvarproxy_namd::get_alch_lambda(cvm::real* lambda) {
+  *lambda = simparams->alchLambda;
+  return COLVARS_OK;
+}
+
+
+/// Set value of alchemical lambda parameter in back-end
+int colvarproxy_namd::send_alch_lambda(void) {
+  simparams->alchLambda = cached_alch_lambda;
+  return COLVARS_OK;
+}
+
+
+/// Get energy derivative with respect to lambda
+int colvarproxy_namd::get_dE_dlambda(cvm::real* dE_dlambda) {
+  // Force data at step zero is garbage in NAMD3, zero in NAMD2
+  if (cvm::step_relative() > 0) {
+    *dE_dlambda = controller->getTIderivative();
+  } else {
+    *dE_dlambda = 0.0;
+  }
+  return COLVARS_OK;
 }
