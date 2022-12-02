@@ -674,7 +674,7 @@ CVSCRIPT(cv_version,
          )
 
 // This guard allows compiling colvar and bias function bodies in their
-// respecitve files instead of colvarscript_commands.o
+// respective files instead of colvarscript_commands.o
 #ifndef COLVARSCRIPT_COMMANDS_GLOBAL
 #include "colvarscript_commands_colvar.h"
 #include "colvarscript_commands_bias.h"
