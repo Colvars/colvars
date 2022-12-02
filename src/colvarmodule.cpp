@@ -1111,7 +1111,7 @@ int colvarmodule::update_colvar_forces()
     cvm::log("Communicating forces from the colvars to the atoms.\n");
   cvm::increase_depth();
   for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
-    if ((*cvi)->is_enabled(colvardeps::f_cv_gradient)) {
+    if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
       (*cvi)->communicate_forces();
       if (cvm::get_error()) {
         return COLVARS_ERROR;

@@ -130,10 +130,11 @@ int colvarbias_abf::init(std::string const &conf)
       colvars[i]->enable(f_cv_hide_Jacobian);
     }
 
-    // If any colvar is extended-system, we need to collect the extended
-    // system gradient
-    if (colvars[i]->is_enabled(f_cv_extended_Lagrangian))
+    // If any colvar is extended-system (restrained, not driven external param), we are running eABF
+    if (colvars[i]->is_enabled(f_cv_extended_Lagrangian)
+        && !colvars[i]->is_enabled(f_cv_external)) {
       enable(f_cvb_extended);
+    }
 
     // Cannot mix and match coarse time steps with ABF because it gives
     // wrong total force averages - total force needs to be averaged over
@@ -321,17 +322,25 @@ int colvarbias_abf::update()
   size_t i;
   for (i = 0; i < num_variables(); i++) {
     bin[i] = samples->current_bin_scalar(i);
+    if (colvars[i]->is_enabled(f_cv_total_force_current_step)) {
+      force_bin[i] = bin[i];
+    }
   }
-
 
   // ***********************************************************
   // ******  ABF Part I: update the FE gradient estimate  ******
   // ***********************************************************
 
 
-  if (cvm::proxy->total_forces_same_step()) {
-    // e.g. in LAMMPS, total forces are current
-    force_bin = bin;
+  // Share data first, so that 2d/3d PMF is refreshed using new data for mw-pABF.
+  // shared_on can be true with shared_freq 0 if we are sharing via script
+  if (shared_on && shared_freq &&
+      shared_last_step >= 0 &&                    // we have already collected some data
+      cvm::step_absolute() > shared_last_step &&  // time has passed since the last sharing timestep
+                                                  // (avoid re-sharing at last and first ts of successive run statements)
+      cvm::step_absolute() % shared_freq == 0) {
+    // Share gradients and samples for shared ABF.
+    replica_share();
   }
 
   if (can_accumulate_data() && is_enabled(f_cvb_history_dependent)) {
@@ -374,21 +383,11 @@ int colvarbias_abf::update()
     }
   }
 
-  if (!(cvm::proxy->total_forces_same_step())) {
-    // e.g. in NAMD, total forces will be available for next timestep
-    // hence we store the current colvar bin
-    force_bin = bin;
-  }
+  // In some cases, total forces are stored for next timestep
+  // hence we store the current colvar bin - this is overwritten on a per-colvar basis
+  // at the top of update()
+  force_bin = bin;
 
-  // Share data after force sample is collected for this time step
-  // shared_on can be true with shared_freq 0 if we are sharing via script
-  if (shared_on && shared_freq &&
-      cvm::step_absolute() > shared_last_step &&  // time has passed since the last sharing timestep
-                                                  // (avoid re-sharing at last and first ts of successive run statements)
-      cvm::step_absolute() % shared_freq == 0) {
-    // Share gradients and samples for shared ABF.
-    replica_share();
-  }
 
   // ******************************************************************
   // ******  ABF Part II: calculate and apply the biasing force  ******
