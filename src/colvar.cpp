@@ -175,12 +175,6 @@ int colvar::init(std::string const &conf)
 
   set_enabled(f_cv_scalar, (value().type() == colvarvalue::type_scalar));
 
-  // If using scripted biases, any colvar may receive bias forces
-  // and will need its gradient
-  if (cvm::scripted_forces()) {
-    enable(f_cv_gradient);
-  }
-
   // check for linear combinations
   {
     bool lin = !(is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function));
@@ -311,6 +305,11 @@ int colvar::init(std::string const &conf)
   // Detect if we have a single component that is an alchemical lambda
   if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "alchLambda") {
     enable(f_cv_external);
+  }
+
+  // If using scripted biases, any colvar may receive bias forces
+  if (cvm::scripted_forces()) {
+    enable(f_cv_apply_force);
   }
 
   error_code |= init_extended_Lagrangian(conf);
@@ -654,14 +653,15 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     x_ext.type(colvarvalue::type_notset);
     v_ext.type(value());
     fr.type(value());
-    const bool temp_provided = get_keyval(conf, "extendedTemp", temp,
-                                          proxy->target_temperature());
+    const bool temp_provided = get_keyval(conf, "extendedTemp", temp, proxy->target_temperature());
     if (is_enabled(f_cv_external)) {
-      // In the case of an "external" coordinate, there is no coupling potential:
+      // In the case of a driven external parameter in the back-end, there is no coupling potential:
       // only the fictitious mass is meaningful
       get_keyval(conf, "extendedMass", ext_mass);
       // Ensure that the computed restraint energy term is zero
       ext_force_k = 0.0;
+      // Then we need forces from the back-end
+      enable(f_cv_total_force_calc);
     } else {
       // Standard case of coupling to a geometric colvar
       if (temp <= 0.0) { // Then a finite temperature is required
@@ -1098,6 +1098,9 @@ int colvar::init_dependencies() {
     init_feature(f_cv_gradient, "gradient", f_type_dynamic);
     require_feature_children(f_cv_gradient, f_cvc_gradient);
 
+    init_feature(f_cv_apply_force, "apply_force", f_type_dynamic);
+    require_feature_alt(f_cv_apply_force, f_cv_gradient, f_cv_external);
+
     init_feature(f_cv_collect_gradient, "collect_gradient", f_type_dynamic);
     require_feature_self(f_cv_collect_gradient, f_cv_gradient);
     require_feature_self(f_cv_collect_gradient, f_cv_scalar);
@@ -1115,6 +1118,8 @@ int colvar::init_dependencies() {
     // System force: either trivial (spring force); through extended Lagrangian, or calculated explicitly
     init_feature(f_cv_total_force, "total_force", f_type_dynamic);
     require_feature_alt(f_cv_total_force, f_cv_extended_Lagrangian, f_cv_total_force_calc);
+
+    init_feature(f_cv_total_force_current_step, "total_force_current_step", f_type_dynamic);
 
     // Deps for explicit total force calculation
     init_feature(f_cv_total_force_calc, "total_force_calculation", f_type_dynamic);
@@ -1134,13 +1139,15 @@ int colvar::init_dependencies() {
 
     init_feature(f_cv_extended_Lagrangian, "extended_Lagrangian", f_type_user);
     require_feature_self(f_cv_extended_Lagrangian, f_cv_scalar);
-    require_feature_self(f_cv_extended_Lagrangian, f_cv_gradient);
+    require_feature_self(f_cv_extended_Lagrangian, f_cv_apply_force);
 
     init_feature(f_cv_Langevin, "Langevin_dynamics", f_type_user);
     require_feature_self(f_cv_Langevin, f_cv_extended_Lagrangian);
 
-    init_feature(f_cv_external, "external", f_type_user);
+    init_feature(f_cv_external, "external_parameter", f_type_static);
     require_feature_self(f_cv_external, f_cv_single_cvc);
+    // External parameters always report the total force for current step
+    require_feature_self(f_cv_external, f_cv_total_force_current_step);
 
     init_feature(f_cv_single_cvc, "single_component", f_type_static);
 
@@ -1201,10 +1208,16 @@ int colvar::init_dependencies() {
     init_feature(f_cv_linear, "linear", f_type_static);
     init_feature(f_cv_homogeneous, "homogeneous", f_type_static);
 
-    // because total forces are obtained from the previous time step,
-    // we cannot (currently) have colvar values and total forces for the same timestep
     init_feature(f_cv_multiple_ts, "multiple_timestep", f_type_static);
-    exclude_feature_self(f_cv_multiple_ts, f_cv_total_force_calc);
+
+    // when total atomic forces are obtained from the previous time step,
+    // we cannot (currently) have colvar values and projected total forces for the same timestep
+    // TODO this will need refining for driven alchemical parameters
+    // ie. the combination of f_cv_total_force_calc and f_cv_multiple_ts requires f_cv_total_force_current_step
+    // or we need to anticipate the total force request by one timestep
+    if (!cvm::main()->proxy->total_forces_same_step()) {
+      exclude_feature_self(f_cv_multiple_ts, f_cv_total_force_calc);
+    }
 
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_cv_ntot; i++) {
@@ -1224,6 +1237,10 @@ int colvar::init_dependencies() {
 
   feature_states[f_cv_fdiff_velocity].available =
     cvm::main()->proxy->simulation_running();
+
+  // Some back-ends report current total forces for all colvars
+  if (cvm::main()->proxy->total_forces_same_step())
+    enable(f_cv_total_force_current_step);
 
   return COLVARS_OK;
 }
@@ -1351,7 +1368,6 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     cvm::log("Calculating colvar \""+this->name+"\", components "+
              cvm::to_str(first_cvc)+" through "+cvm::to_str(first_cvc+num_cvcs)+".\n");
 
-  colvarproxy *proxy = cvm::main()->proxy;
   int error_code = COLVARS_OK;
 
   error_code |= check_cvc_range(first_cvc, num_cvcs);
@@ -1359,7 +1375,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     return error_code;
   }
 
-  if ((cvm::step_relative() > 0) && (!proxy->total_forces_same_step())){
+  if ((cvm::step_relative() > 0) && (!is_enabled(f_cv_total_force_current_step))){
     // Use Jacobian derivative from previous timestep
     error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   }
@@ -1367,7 +1383,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
   error_code |= calc_cvc_gradients(first_cvc, num_cvcs);
   error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
-  if (proxy->total_forces_same_step()){
+  if (is_enabled(f_cv_total_force_current_step)){
     // Use Jacobian derivative from this timestep
     error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   }
@@ -1384,10 +1400,9 @@ int colvar::collect_cvc_data()
   if (cvm::debug())
     cvm::log("Calculating colvar \""+this->name+"\"'s properties.\n");
 
-  colvarproxy *proxy = cvm::main()->proxy;
   int error_code = COLVARS_OK;
 
-  if ((cvm::step_relative() > 0) && (!proxy->total_forces_same_step())){
+  if ((cvm::step_relative() > 0) && (!is_enabled(f_cv_total_force_current_step))){
     // Total force depends on Jacobian derivative from previous timestep
     // collect_cvc_total_forces() uses the previous value of jd
     error_code |= collect_cvc_total_forces();
@@ -1395,7 +1410,7 @@ int colvar::collect_cvc_data()
   error_code |= collect_cvc_values();
   error_code |= collect_cvc_gradients();
   error_code |= collect_cvc_Jacobians();
-  if (proxy->total_forces_same_step()){
+  if (is_enabled(f_cv_total_force_current_step)){
     // Use Jacobian derivative from this timestep
     error_code |= collect_cvc_total_forces();
   }
@@ -1834,12 +1849,12 @@ void colvar::update_extended_Lagrangian()
     f += fb_actual;
   }
 
-  // fr: bias force on extended variable (without harmonic spring), for output in trajectory
-  fr = f;
-
   // External force has been scaled for an inner-timestep impulse (for the back-end integrator)
   // here we scale it back because this integrator uses only the outer (long) timestep
   f_ext = f / cvm::real(time_step_factor);
+
+  // fr: bias force on extended variable (without harmonic spring), for output in trajectory
+  fr = f_ext;
 
   colvarvalue f_system(fr.type()); // force exterted by the system on the extended DOF
 
@@ -2347,6 +2362,10 @@ int colvar::set_state_params(std::string const &conf)
              cvm::to_str(x)+"\n");
     x_restart = x;
     after_restart = true;
+    // Externally driven cv (e.g. alchemical lambda) is imposed by restart value
+    if (is_enabled(f_cv_external) && is_enabled(f_cv_extended_Lagrangian)) {
+      cvcs[0]->set_value(x);
+    }
   }
 
   if (is_enabled(f_cv_extended_Lagrangian)) {
@@ -2489,8 +2508,14 @@ std::string const colvar::get_state_params() const
   os << "  name " << name << "\n"
      << "  x "
      << std::setprecision(cvm::cv_prec)
-     << std::setw(cvm::cv_width)
-     << x << "\n";
+     << std::setw(cvm::cv_width);
+  if (is_enabled(f_cv_external)) {
+    // For an external colvar, x is one timestep in the future after integration
+    // write x at beginning of timestep
+    os << x_reported << "\n";
+  } else {
+    os << x << "\n";
+  }
 
   if (is_enabled(f_cv_output_velocity)) {
     os << "  v "
