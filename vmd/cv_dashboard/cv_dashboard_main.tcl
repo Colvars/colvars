@@ -550,6 +550,12 @@ proc ::cv_dashboard::refresh_table {} {
     # We were unable to fetch the list of colvars
     # CVM is probably not initialized or there is no molecule loaded
     set ::cv_dashboard::cvs {}
+    # Clear biases as well
+    set biases .cv_dashboard_window.tabs.biases
+    foreach i [$biases.bias_table children {}] {
+     $biases.bias_table delete $i
+    }
+    set ::cv_dashboard::biases {}
     return
   }
   # Get fresh coordinates from VMD
