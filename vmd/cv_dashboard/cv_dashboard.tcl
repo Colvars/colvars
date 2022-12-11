@@ -260,6 +260,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
   set indent $::cv_dashboard::indent
 
   set biases [cv list biases]
+  set default_bias_types [list abf alb harmonic harmonicwalls histogram histogramrestraint linear metadynamics reweightamd]
   # "cv bias name type" after 2021-12-07
   if { [string compare [run_cv version] "2021-12-20"] >= 0 } {
     set bias_types [list]
@@ -269,7 +270,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
     set bias_types [lsort -unique $bias_types]
   } else {
     # if not available, use hard-coded list
-    set bias_types [list abf alb harmonic harmonicwalls histogram histogramrestraint linear metadynamics reweightamd]
+    set bias_types $default_bias_types
   }
   foreach t $bias_types {
     set anonymous_bias_count($t) 0
@@ -347,7 +348,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
                   incr anonymous_bias_count($keyword)
                 }
                 dict set bias_map [list $keyword $anonymous_bias_count($keyword) $name] $block_cfg
-              } else {
+              } else if { [lsearch $default_bias_types $keyword] == -1 } {
                 # What to make of unrecognized block keyword?
                 puts "Warning: unrecognized block keyword in input: $keyword"
                 puts "with configuration block:"
