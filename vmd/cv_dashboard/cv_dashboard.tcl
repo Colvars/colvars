@@ -348,7 +348,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
                   incr anonymous_bias_count($keyword)
                 }
                 dict set bias_map [list $keyword $anonymous_bias_count($keyword) $name] $block_cfg
-              } else if { [lsearch $default_bias_types $keyword] == -1 } {
+              } elseif { [lsearch $default_bias_types $keyword] == -1 } {
                 # What to make of unrecognized block keyword?
                 puts "Warning: unrecognized block keyword in input: $keyword"
                 puts "with configuration block:"
