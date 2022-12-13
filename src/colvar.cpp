@@ -693,7 +693,9 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
       enable(f_cv_Langevin);
       ext_gamma *= 1.0e-3; // correct as long as input is required in ps-1 and cvm::dt() is in fs
       // Adjust Langevin sigma for slow time step if time_step_factor != 1
-      ext_sigma = cvm::sqrt(2.0 * proxy->boltzmann() * temp * ext_gamma * ext_mass / (cvm::dt() * cvm::real(time_step_factor)));
+      // Eq. (6a) in https://doi.org/10.1021/acs.jctc.2c00585
+      ext_sigma = cvm::sqrt((1.0 - cvm::exp(-2.0 * ext_gamma * cvm::dt() * cvm::real(time_step_factor)))
+                             * ext_mass * proxy->boltzmann() * temp);
     }
 
     get_keyval_feature(this, conf, "reflectingLowerBoundary", f_cv_reflecting_lower_boundary, false);
@@ -1820,9 +1822,11 @@ void colvar::update_extended_Lagrangian()
     f += fb_actual;
   }
 
-  fr    = f;
-  // External force has been scaled for a 1-timestep impulse, scale it back because we will
-  // integrate it with the colvar's own timestep factor
+  // fr: bias force on extended variable (without harmonic spring), for output in trajectory
+  fr = f;
+
+  // External force has been scaled for an inner-timestep impulse (for the back-end integrator)
+  // here we scale it back because this integrator uses only the outer (long) timestep
   f_ext = f / cvm::real(time_step_factor);
 
   colvarvalue f_system(fr.type()); // force exterted by the system on the extended DOF
@@ -1835,15 +1839,14 @@ void colvar::update_extended_Lagrangian()
   } else {
     // the total force is applied to the fictitious mass, while the
     // atoms only feel the harmonic force + wall force
-    // fr: bias force on extended variable (without harmonic spring), for output in trajectory
     // f_ext: total force on extended variable (including harmonic spring)
     // f: - initially, external biasing force
     //    - after this code block, colvar force to be applied to atomic coordinates
     //      ie. spring force (fb_actual will be added just below)
     f_system = (-0.5 * ext_force_k) * this->dist2_lgrad(x_ext, x);
     f        = -1.0 * f_system;
-    // Coupling force is a slow force, to be applied to atomic coords impulse-style
-    // over a single MD timestep
+    // Coupling force will be applied to atomic coords impulse-style
+    // over an inner timestep of the back-end integrator
     f *= cvm::real(time_step_factor);
   }
   f_ext += f_system;
@@ -1863,26 +1866,34 @@ void colvar::update_extended_Lagrangian()
   prev_x_ext = x_ext;
   prev_v_ext = v_ext;
 
-  // leapfrog: starting from x_i, f_i, v_(i-1/2)
-  v_ext  += (0.5 * dt) * f_ext / ext_mass;
-  // Because of leapfrog, kinetic energy at time i is approximate
-  kinetic_energy = 0.5 * ext_mass * v_ext * v_ext;
-  potential_energy = 0.5 * ext_force_k * this->dist2(x_ext, x);
-  // leap to v_(i+1/2)
+  // BAOA (GSD) integrator https://doi.org/10.1021/acs.jctc.2c00585
+  // variant that reduces to leapfrog when gamma = 0
+
+  // starting from x_t, f_t, v_(t-1/2)
+  // Eq. (10a)
+  v_ext  += dt * f_ext / ext_mass;
+
+  // Half step in position (10b)
+  x_ext += dt * v_ext / 2.0;
+
+  // leap to v_(i+1/2) (10c)
   if (is_enabled(f_cv_Langevin)) {
-    v_ext -= dt * ext_gamma * v_ext;
+    v_ext -= (1.0 - cvm::exp(- 1.0 * dt * ext_gamma)) * v_ext;
     colvarvalue rnd(x);
     rnd.set_random();
+    // ext_sigma has been computed at init time according to (10c)
     v_ext += dt * ext_sigma * rnd / ext_mass;
   }
-  v_ext  += (0.5 * dt) * f_ext / ext_mass;
-  x_ext  += dt * v_ext;
+  // Second half step in position (10d)
+  x_ext  += dt * v_ext / 2.0;
 
   cvm::real delta = 0; // Length of overshoot past either reflecting boundary
   if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext - lower_boundary) < 0) ||
       (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext - upper_boundary) > 0)) {
+    // Reflect arrival position
     x_ext -= 2.0 * delta;
-    v_ext *= -1.0;
+    // Bounce happened on average at t+1/2 -> reflect velocity at t+1/2
+    v_ext = -0.5 * (prev_v_ext + v_ext);
     if ((is_enabled(f_cv_reflecting_lower_boundary) && (x_ext - lower_boundary) < 0.0) ||
         (is_enabled(f_cv_reflecting_upper_boundary) && (x_ext - upper_boundary) > 0.0)) {
       cvm::error("Error: extended coordinate value " + cvm::to_str(x_ext) + " is still outside boundaries after reflection.\n");
@@ -1891,11 +1902,17 @@ void colvar::update_extended_Lagrangian()
 
   x_ext.apply_constraints();
   this->wrap(x_ext);
+
   if (is_enabled(f_cv_external)) {
     // Colvar value is constrained to the extended value
     x = x_ext;
     cvcs[0]->set_value(x_ext);
   }
+
+  // Final v_ext lags behind x_ext by half a timestep
+  // so kinetic energy is slightly off
+  kinetic_energy = 0.5 * ext_mass * v_ext * v_ext;
+  potential_energy = 0.5 * ext_force_k * this->dist2(x_ext, x);
 }
 
 
