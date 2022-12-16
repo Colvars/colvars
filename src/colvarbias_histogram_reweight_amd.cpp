@@ -138,10 +138,6 @@ int colvarbias_reweightaMD::update() {
     }
     previous_bin.assign(num_variables(), 0);
 
-    if (output_freq && (cvm::step_absolute() % output_freq) == 0) {
-      write_output_files();
-    }
-
     error_code |= cvm::get_error();
   }
   return error_code;
