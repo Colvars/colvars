@@ -691,6 +691,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     }
     if (ext_gamma != 0.0) {
       enable(f_cv_Langevin);
+      cvm::main()->cite_feature("BAOA integrator");
       ext_gamma *= 1.0e-3; // correct as long as input is required in ps-1 and cvm::dt() is in fs
       // Adjust Langevin sigma for slow time step if time_step_factor != 1
       // Eq. (6a) in https://doi.org/10.1021/acs.jctc.2c00585
@@ -1866,17 +1867,21 @@ void colvar::update_extended_Lagrangian()
   prev_x_ext = x_ext;
   prev_v_ext = v_ext;
 
-  // BAOA (GSD) integrator https://doi.org/10.1021/acs.jctc.2c00585
-  // variant that reduces to leapfrog when gamma = 0
-
+  // BAOA (GSD) integrator as formulated in https://doi.org/10.1021/acs.jctc.2c00585
   // starting from x_t, f_t, v_(t-1/2)
-  // Eq. (10a)
-  v_ext  += dt * f_ext / ext_mass;
 
-  // Half step in position (10b)
+  // [B] Eq. (10a) split into two half-steps
+  // This reduces to leapfrog when gamma = 0
+  v_ext  += 0.5 * dt * f_ext / ext_mass;
+  // Kinetic energy at t
+  kinetic_energy = 0.5 * ext_mass * v_ext * v_ext;
+  v_ext  += 0.5 * dt * f_ext / ext_mass;
+  // Final v_ext lags behind x_ext by half a timestep
+
+  // [A] Half step in position (10b)
   x_ext += dt * v_ext / 2.0;
 
-  // leap to v_(i+1/2) (10c)
+  // [O] leap to v_(i+1/2) (10c)
   if (is_enabled(f_cv_Langevin)) {
     v_ext -= (1.0 - cvm::exp(- 1.0 * dt * ext_gamma)) * v_ext;
     colvarvalue rnd(x);
@@ -1884,7 +1889,7 @@ void colvar::update_extended_Lagrangian()
     // ext_sigma has been computed at init time according to (10c)
     v_ext += dt * ext_sigma * rnd / ext_mass;
   }
-  // Second half step in position (10d)
+  // [A] Second half step in position (10d)
   x_ext  += dt * v_ext / 2.0;
 
   cvm::real delta = 0; // Length of overshoot past either reflecting boundary
@@ -1909,9 +1914,7 @@ void colvar::update_extended_Lagrangian()
     cvcs[0]->set_value(x_ext);
   }
 
-  // Final v_ext lags behind x_ext by half a timestep
-  // so kinetic energy is slightly off
-  kinetic_energy = 0.5 * ext_mass * v_ext * v_ext;
+  // Only compute potential energy once BC and constraints have been applied
   potential_energy = 0.5 * ext_force_k * this->dist2(x_ext, x);
 }
 
