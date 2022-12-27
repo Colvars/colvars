@@ -262,7 +262,7 @@ checkfile() {
 if [ ${code} = "LAMMPS" ]
 then
 
-  copy_lepton ${target}/lib/colvars/ || exit 1
+  copy_lepton ${target}/lib/ || exit 1
 
   # Update code-independent headers and sources
   for src in ${source}/src/colvar*.h ${source}/src/colvar*.cpp
@@ -272,7 +272,7 @@ then
   done
 
   # Update makefiles for library
-  for src in ${source}/lammps/lib/colvars/Makefile.{common,deps,lepton.deps}
+  for src in ${source}/lammps/lib/colvars/Makefile.{common,deps}
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
