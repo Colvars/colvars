@@ -48,14 +48,10 @@ jobs:
               exit 1
           fi
 
-      - name: Build library with CMake
+      - name: Build and test library with CMake
         env:
           CCACHE: ccache
         run: cmake -P devel-tools/build_test_library.cmake
-
-      - name: Run functional tests (dependencies only so far)
-        working-directory: build
-        run: ctest
 
       - name: Check documentation of command-line scripting interface
         shell: bash
@@ -424,13 +420,9 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Build library with CMake
+      - name: Build and test library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Windows -P devel-tools/build_test_library.cmake
-
-      - name: Run functional tests (dependencies only so far)
-        working-directory: build
-        run: ctest
 
 
   build-macos-x86_64-clang:
@@ -450,10 +442,6 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Build library with CMake
+      - name: Build and test library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Darwin -P devel-tools/build_test_library.cmake
-
-      - name: Run functional tests (dependencies only so far)
-        working-directory: build
-        run: ctest
