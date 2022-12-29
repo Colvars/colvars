@@ -428,6 +428,10 @@ jobs:
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Windows -P devel-tools/build_test_library.cmake
 
+      - name: Run functional tests (dependencies only so far)
+        working-directory: build
+        run: ctest
+
 
   build-macos-x86_64-clang:
     name: macOS x86_64 (AppleClang)
@@ -449,3 +453,7 @@ jobs:
       - name: Build library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Darwin -P devel-tools/build_test_library.cmake
+
+      - name: Run functional tests (dependencies only so far)
+        working-directory: build
+        run: ctest
