@@ -171,6 +171,18 @@ then
   GMX_MINOR_VERSION=`get_gromacs_minor_version_cmake ${GMX_VERSION_INFO}`
 
   GMX_VERSION=${GMX_MAJOR_VERSION}.${GMX_MINOR_VERSION}
+
+  # In 2022, version info is in CMakeLists.txt
+  if [ ${GMX_MAJOR_VERSION} = "\${Gromacs_VERSION_MAJOR}" ] ; then
+    CMAKE_LISTS=${target}/CMakeLists.txt
+    if [ ! -f ${CMAKE_LISTS} ] ; then
+      echo "ERROR: Cannot find file ${CMAKE_LISTS}."
+      exit 3
+    fi
+    GMX_VERSION=$(cat ${CMAKE_LISTS} | grep '^project(' | \
+    sed -e 's/project(Gromacs VERSION //' -e 's/)//')
+  fi
+
   echo "Detected GROMACS version ${GMX_VERSION}."
 
   case ${GMX_VERSION} in
@@ -179,6 +191,9 @@ then
       ;;
     2021*)
       GMX_VERSION='2021.x'
+      ;;
+    2022*)
+      GMX_VERSION='2022.x'
       ;;
     *)
     if [ $force_update = 0 ] ; then
