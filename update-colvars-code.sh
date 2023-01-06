@@ -508,12 +508,37 @@ then
     mkdir ${target_folder}
   fi
 
-  # Copy library files and proxy files to the "src/external/colvars" folder
-  for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*{cpp,h}
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target_folder}/${tgt}"
-  done
+  if [ ${GMX_VERSION} == '2020.x' ] || [ ${GMX_VERSION} == '2021.x' ] ; then
+    # Copy library files and proxy files to the "src/external/colvars" folder
+    for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*{cpp,h}
+    do \
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target_folder}/${tgt}"
+    done
+  else
+    # Starting from GROMACS 2022, colvar library is in `external` and proxy files are in `src/gromacs/applied_forces/colvarproxy`
+    # Library files
+    for src in ${source}/src/*.h ${source}/src/*.cpp
+    do \
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target_folder}/${tgt}"
+    done
+    # Proxy files
+    target_folder=${target}/src/gromacs/applied_forces/colvarproxy
+    if [ -d ${target_folder} ]
+    then
+      echo "Your ${target} source tree seems to have already been patched."
+      echo "Update with the last Colvars source."
+    else
+      mkdir ${target_folder}
+    fi
+    for src in ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*{cpp,h,txt}
+    do \
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target_folder}/${tgt}"
+    done
+
+  fi
   echo ""
 
   # Copy CMake files
