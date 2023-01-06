@@ -38,6 +38,18 @@ index 99cc804..40fbe29 100644
  if (TARGET Heffte::Heffte)
      target_link_libraries(libgromacs PRIVATE Heffte::Heffte)
  endif()
+diff --git a/src/gromacs/applied_forces/CMakeLists.txt b/src_colvars/gromacs/applied_forces/CMakeLists.txt
+index 34114cd..b469541 100644
+--- a/src/gromacs/applied_forces/CMakeLists.txt
++++ b/src_colvars/gromacs/applied_forces/CMakeLists.txt
+@@ -73,6 +73,7 @@ gmx_add_libgromacs_sources(
+ add_subdirectory(awh)
+ add_subdirectory(densityfitting)
+ add_subdirectory(qmmm)
++add_subdirectory(colvarproxy)
+
+ if (BUILD_TESTING)
+     add_subdirectory(tests)
 diff --git a/src/gromacs/fileio/checkpoint.cpp b/src_colvars/gromacs/fileio/checkpoint.cpp
 index f6764a1..279953d 100644
 --- a/src/gromacs/fileio/checkpoint.cpp
@@ -229,7 +241,7 @@ index 5551227..a104775 100644
  #include "gromacs/utility/stringutil.h"
  #include "gromacs/utility/sysinfo.h"
 
-+#include "colvarproxy_gromacs.h"
++#include "gromacs/applied_forces/colvarproxy/colvarproxy_gromacs.h"
 +
  #include "gpuforcereduction.h"
 
@@ -294,7 +306,7 @@ index ea7f402..d3ffd59 100644
  #include "gromacs/utility/stringutil.h"
  #include "gromacs/utility/mpiinfo.h"
 
-+#include "colvarproxy_gromacs.h"
++#include "gromacs/applied_forces/colvarproxy/colvarproxy_gromacs.h"
 +
  #include "isimulator.h"
  #include "membedholder.h"
@@ -329,7 +341,7 @@ index ea7f402..d3ffd59 100644
 +            }
 +
 +            inputrec->colvars_proxy =  new colvarproxy_gromacs();
-+            inputrec->colvars_proxy->init(inputrec.get(),inputrec->init_step,&mtop, &observablesHistory, prefix, filenames_colvars,filename_restart, cr, MASTER(cr) ? globalState->x.rvec_array() : nullptr,
++            inputrec->colvars_proxy->init(inputrec.get(),inputrec->init_step,mtop, &observablesHistory, prefix, filenames_colvars,filename_restart, cr, MASTER(cr) ? globalState->x.rvec_array() : nullptr,
 +                                          MASTER(cr) ? &globalState->xa_old_whole_colvars : nullptr, MASTER(cr) ? &globalState->n_colvars_atoms : nullptr);
 +            fr->forceProviders->addForceProvider(inputrec->colvars_proxy);
 +        }
