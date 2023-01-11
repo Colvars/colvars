@@ -371,10 +371,11 @@ int colvarbias::calc_forces(std::vector<colvarvalue> const *)
 }
 
 
-void colvarbias::communicate_forces()
+int colvarbias::communicate_forces()
 {
+  int error_code = COLVARS_OK;
   if (! is_enabled(f_cvb_apply_force)) {
-    return;
+    return error_code;
   }
   cvm::real biasing_force_factor = 1.0;
   size_t i = 0;
@@ -403,6 +404,7 @@ void colvarbias::communicate_forces()
     }
     previous_colvar_forces[i] = colvar_forces[i];
   }
+  return error_code;
 }
 
 

@@ -275,10 +275,11 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
   if(ebmeta){
     cvm::main()->cite_feature("Ensemble-biased metadynamics (ebMetaD)");
     if (use_grids && expand_grids) {
-      cvm::error("Error: expandBoundaries is not supported with "
-                 "ebMeta please allocate wide enough boundaries for "
-                 "each colvar ahead of time and set targetdistfile "
-                 "accordingly.\n", COLVARS_INPUT_ERROR);
+      error_code |= cvm::error("Error: expandBoundaries is not supported with "
+                               "ebMeta; please allocate wide enough boundaries "
+                               "for each colvar ahead of time and set "
+                               "targetDistFile accordingly.\n",
+                               COLVARS_INPUT_ERROR);
     }
     target_dist = new colvar_grid_scalar();
     error_code |= target_dist->init_from_colvars(colvars);
@@ -288,9 +289,10 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
                                              "ebMeta target histogram");
     cvm::real min_val = target_dist->minimum_value();
     cvm::real max_val = target_dist->maximum_value();
-    if(min_val<0){
-      cvm::error("Error: Target distribution of EBMetaD "
-                 "has negative values!.\n", COLVARS_INPUT_ERROR);
+    if (min_val < 0.0) {
+      error_code |= cvm::error("Error: Target distribution of EBMetaD "
+                               "has negative values!.\n",
+                               COLVARS_INPUT_ERROR);
     }
     cvm::real target_dist_min_val;
     get_keyval(conf, "targetDistMinVal", target_dist_min_val, 1/1000000.0);
@@ -302,17 +304,19 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
         cvm::log("NOTE: targetDistMinVal is set to zero, the minimum value of the target \n");
         cvm::log(" distribution will be set as the minimum positive value.\n");
         cvm::real min_pos_val = target_dist->minimum_pos_value();
-        if(min_pos_val<=0){
-          cvm::error("Error: Target distribution of EBMetaD has negative "
-                     "or zero minimum positive value!.\n", COLVARS_INPUT_ERROR);
+        if (min_pos_val <= 0.0){
+          error_code |= cvm::error("Error: Target distribution of EBMetaD has "
+                                   "negative or zero minimum positive value.\n",
+                                   COLVARS_INPUT_ERROR);
         }
-        if(min_val==0){
+        if (min_val == 0.0){
           cvm::log("WARNING: Target distribution has zero values.\n");
           cvm::log("Zeros will be converted to the minimum positive value.\n");
           target_dist->remove_small_values(min_pos_val);
         }
       } else {
-          cvm::error("Error: targetDistMinVal must be a value between 0 and 1!.\n", COLVARS_INPUT_ERROR);
+        error_code |= cvm::error("Error: targetDistMinVal must be a value "
+                                 "between 0 and 1.\n", COLVARS_INPUT_ERROR);
       }
     }
     // normalize target distribution and multiply by effective volume = exp(differential entropy)
@@ -322,7 +326,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
     get_keyval(conf, "ebMetaEquilSteps", ebmeta_equil_steps, ebmeta_equil_steps);
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 

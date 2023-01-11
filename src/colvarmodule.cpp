@@ -1020,10 +1020,7 @@ int colvarmodule::update_colvar_forces()
     cvm::log("Collecting forces from all biases.\n");
   cvm::increase_depth();
   for (bi = biases_active()->begin(); bi != biases_active()->end(); bi++) {
-    (*bi)->communicate_forces();
-    if (cvm::get_error()) {
-      return COLVARS_ERROR;
-    }
+    error_code |= (*bi)->communicate_forces();
   }
   cvm::decrease_depth();
 
@@ -1047,9 +1044,6 @@ int colvarmodule::update_colvar_forces()
   for (cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
     // Inactive colvars will only reset their forces and return 0 energy
     total_colvar_energy += (*cvi)->update_forces_energy();
-    if (cvm::get_error()) {
-      return COLVARS_ERROR;
-    }
   }
   cvm::decrease_depth();
   if (cvm::debug())
@@ -1071,7 +1065,7 @@ int colvarmodule::update_colvar_forces()
   }
   cvm::decrease_depth();
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return error_code;
 }
 
 
@@ -1583,7 +1577,7 @@ int colvarmodule::write_output_files()
     error_code |= (*bi)->write_state_to_replicas();
   }
   cvm::decrease_depth();
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return error_code;
 }
 
 

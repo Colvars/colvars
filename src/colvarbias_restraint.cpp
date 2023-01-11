@@ -1434,7 +1434,7 @@ int colvarbias_restraint_histogram::init(std::string const &conf)
   get_keyval(conf, "writeHistogram", b_write_histogram, false);
   get_keyval(conf, "forceConstant", force_k, 1.0);
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
