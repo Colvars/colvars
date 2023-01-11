@@ -113,7 +113,7 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $main.ploth -text "Histogram" -command {::cv_dashboard::plot histogram} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   user add key F5 ::cv_dashboard::refresh_table
-  bind $main <F5> ::cv_dashboard::refresh_table
+  bind $w <F5> ::cv_dashboard::refresh_table
 
   # Add trajectory animation bindings to Dashboard and VMD's OpenGL window
   traj_animation_bindings $w
