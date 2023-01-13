@@ -46,7 +46,7 @@ index 34114cd..b469541 100644
  add_subdirectory(awh)
  add_subdirectory(densityfitting)
  add_subdirectory(qmmm)
-+add_subdirectory(colvarproxy)
++add_subdirectory(colvars)
 
  if (BUILD_TESTING)
      add_subdirectory(tests)
@@ -241,7 +241,7 @@ index 5551227..a104775 100644
  #include "gromacs/utility/stringutil.h"
  #include "gromacs/utility/sysinfo.h"
 
-+#include "gromacs/applied_forces/colvarproxy/colvarproxy_gromacs.h"
++#include "gromacs/applied_forces/colvars/colvarproxy_gromacs.h"
 +
  #include "gpuforcereduction.h"
 
@@ -306,7 +306,7 @@ index ea7f402..d3ffd59 100644
  #include "gromacs/utility/stringutil.h"
  #include "gromacs/utility/mpiinfo.h"
 
-+#include "gromacs/applied_forces/colvarproxy/colvarproxy_gromacs.h"
++#include "gromacs/applied_forces/colvars/colvarproxy_gromacs.h"
 +
  #include "isimulator.h"
  #include "membedholder.h"
