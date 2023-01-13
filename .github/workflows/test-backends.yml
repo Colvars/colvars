@@ -118,3 +118,15 @@ jobs:
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
       rpath_exe: install/bin/gmx_d
+
+  gromacs-2022:
+    name: GROMACS 2022
+    if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, 'test-gromacs-2022')
+    uses: ./.github/workflows/backend-template.yml
+    with:
+      backend_name: GROMACS-2022
+      backend_repo: gromacs/gromacs
+      backend_repo_ref: release-2022
+      path_compile_script: devel-tools/compile-gromacs.sh
+      test_lib_directory: gromacs/tests/library
+      rpath_exe: install/bin/gmx_d
