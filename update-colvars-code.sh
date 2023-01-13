@@ -524,7 +524,7 @@ then
       condcopy "${src}" "${target_folder}/${tgt}"
     done
     # Proxy files
-    target_folder=${target}/src/gromacs/applied_forces/colvarproxy
+    target_folder=${target}/src/gromacs/applied_forces/colvars
     if [ -d ${target_folder} ]
     then
       echo "Your ${target} source tree seems to have already been patched."
