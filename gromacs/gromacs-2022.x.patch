@@ -364,15 +364,18 @@ index ea7f402..d3ffd59 100644
          if (haveDDAtomOrdering(*cr))
          {
              GMX_RELEASE_ASSERT(fr, "fr was NULL while cr->duty was DUTY_PP");
-@@ -2225,6 +2274,13 @@ int Mdrunner::mdrunner()
+@@ -2225,6 +2274,16 @@ int Mdrunner::mdrunner()
          releaseDevice(deviceInfo);
      }
 
 +    /* COLVARS */
 +    if (inputrec->bColvars)
 +    {
++        GMX_RELEASE_ASSERT(inputrec->colvars_proxy, "inputrec->colvars_proxy was NULL while colvars module was enabled.");
++
 +        inputrec->colvars_proxy->finish(cr);
 +        delete inputrec->colvars_proxy;
++        inputrec->colvars_proxy = nullptr;
 +    }
 +
      /* Does what it says */
@@ -423,8 +426,8 @@ index 922a22e..9d981ff 100644
      std::unique_ptr<gmx::KeyValueTreeObject> internalParameters;
 +
 +    /* COLVARS */
-+    bool                bColvars;       /* Do we do colvars calculations ? */
-+    colvarproxy_gromacs     *colvars_proxy; /* The object for the colvars calculations */
++    bool                bColvars = false;       /* Do we do colvars calculations ? */
++    colvarproxy_gromacs     *colvars_proxy = nullptr; /* The object for the colvars calculations */
  };
 
  int ir_optimal_nstcalcenergy(const t_inputrec* ir);
