@@ -206,8 +206,14 @@ then
     ;;
   esac
 
+  if [ ${GMX_VERSION} = '2021.x' ] && \
+       [ -s ${target}/.github/workflows/build_cmake.yml ] ; then
+    echo "Fixing outdated GitHub Actions CI recipe"
+    patch -p1 --forward -s -d ${target} < ${source}/gromacs/gromacs-2021.x-github.patch
+  fi
+
   if [ -z "${GITHUB_ACTION}" ] ; then
-    # Avoid invalidating the cache during CI jobs
+    # Only set version outside CI to avoid invalidating the compiler cache
     if grep -q 'set(GMX_VERSION_STRING_OF_FORK ""' ${GMX_VERSION_INFO} ; then
       sed -i "s/set(GMX_VERSION_STRING_OF_FORK \"\"/set(GMX_VERSION_STRING_OF_FORK \"Colvars-${COLVARS_VERSION}\"/" ${GMX_VERSION_INFO}
     fi
