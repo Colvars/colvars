@@ -66,11 +66,15 @@ public:
   //   return l * angstrom_value / backend_angstrom_value();
   // }
 
-  /// \brief Boltzmann constant in internal Colvars units
-  virtual cvm::real boltzmann();
+  /// Boltzmann constant, with unit the same as energy / K
+  inline cvm::real boltzmann() const
+  {
+    return boltzmann_;
+  }
 
   /// Current target temperature of the simulation (K units)
-  inline cvm::real target_temperature() const {
+  inline cvm::real target_temperature() const
+  {
     return target_temperature_;
   }
 
@@ -150,7 +154,10 @@ protected:
   /// Whether lambda has been set and needs to be updated in backend
   bool cached_alch_lambda_changed;
 
-  /// Most up to date target temperature for the system
+  /// Boltzmann constant in internal Colvars units
+  cvm::real boltzmann_;
+
+  /// Most up to date target temperature for the system (in K)
   cvm::real target_temperature_;
 
   /// Whether the total forces have been requested

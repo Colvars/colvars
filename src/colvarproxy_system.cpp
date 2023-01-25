@@ -18,6 +18,7 @@ colvarproxy_system::colvarproxy_system()
 {
   angstrom_value = 0.0;
   kcal_mol_value = 0.0;
+  boltzmann_value_ = 0.001987191; // Default: kcal/mol/K
   boundaries_type = boundaries_unsupported;
   total_force_requested = false;
   indirect_lambda_biasing_force = 0.0;
@@ -40,12 +41,6 @@ int colvarproxy_system::set_unit_system(std::string const & /* units */,
 cvm::real colvarproxy_system::backend_angstrom_value()
 {
   return 1.0;
-}
-
-
-cvm::real colvarproxy_system::boltzmann()
-{
-  return 0.001987191;
 }
 
 
