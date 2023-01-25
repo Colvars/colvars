@@ -68,6 +68,9 @@ public:
   int setup() override;
   int reset() override;
 
+  /// Get the target temperature from the NAMD thermostats supported so far
+  int update_target_temperature();
+
   // synchronize the local arrays with requested or forced atoms
   int update_atoms_map(AtomIDList::const_iterator begin,
                        AtomIDList::const_iterator end);
