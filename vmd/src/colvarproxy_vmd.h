@@ -50,14 +50,6 @@ public:
 
   virtual int update_input();
 
-  virtual cvm::real backend_angstrom_value();
-
-  virtual cvm::real boltzmann();
-
-  virtual cvm::real temperature();
-
-  virtual cvm::real dt();
-
   virtual cvm::real rand_gaussian();
 
   virtual int get_molid(int &molid);
