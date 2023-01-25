@@ -33,7 +33,7 @@ class colvarproxy_lammps : public colvarproxy {
   LAMMPS_NS::RanPark *_random;
 
   // state of LAMMPS properties
-  double my_timestep, my_boltzmann, my_angstrom;
+  double my_timestep, my_angstrom;
   double bias_energy;
   int previous_step;
 
