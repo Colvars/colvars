@@ -332,7 +332,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
 colvarbias_meta::~colvarbias_meta()
 {
   colvarbias_meta::clear_state_data();
-  colvarproxy *proxy = cvm::proxy;
+  colvarproxy *proxy = cvm::main()->proxy;
 
   proxy->close_output_stream(replica_hills_file);
 
@@ -577,6 +577,7 @@ int colvarbias_meta::update_grid_params()
 
 int colvarbias_meta::update_bias()
 {
+  colvarproxy *proxy = cvm::main()->proxy;
   // add a new hill if the required time interval has passed
   if (((cvm::step_absolute() % new_hill_freq) == 0) &&
       can_accumulate_data() && is_enabled(f_cvb_history_dependent)) {
@@ -607,7 +608,7 @@ int colvarbias_meta::update_bias()
       } else {
         calc_hills(new_hills_begin, hills.end(), hills_energy_sum_here, NULL);
       }
-      hills_scale *= cvm::exp(-1.0*hills_energy_sum_here/(bias_temperature*cvm::boltzmann()));
+      hills_scale *= cvm::exp(-1.0*hills_energy_sum_here/(bias_temperature*proxy->boltzmann()));
     }
 
     switch (comm) {
@@ -1821,6 +1822,7 @@ int colvarbias_meta::write_output_files()
 
 void colvarbias_meta::write_pmf()
 {
+  colvarproxy *proxy = cvm::main()->proxy;
   // allocate a new grid to store the pmf
   colvar_grid_scalar *pmf = new colvar_grid_scalar(*hills_energy);
   pmf->setup();
@@ -1837,7 +1839,7 @@ void colvarbias_meta::write_pmf()
          cvm::real target_val=target_dist->value(i);
          if (target_val>0) {
            pmf_val=pmf->value(i);
-           pmf_val=pmf_val+cvm::temperature() * cvm::boltzmann() * cvm::logn(target_val);
+           pmf_val=pmf_val + proxy->target_temperature() * proxy->boltzmann() * cvm::logn(target_val);
          }
          pmf->set_value(i,pmf_val);
       }
@@ -1847,7 +1849,7 @@ void colvarbias_meta::write_pmf()
     pmf->add_constant(-1.0 * max);
     pmf->multiply_constant(-1.0);
     if (well_tempered) {
-      cvm::real const well_temper_scale = (bias_temperature + cvm::temperature()) / bias_temperature;
+      cvm::real const well_temper_scale = (bias_temperature + proxy->target_temperature()) / bias_temperature;
       pmf->multiply_constant(well_temper_scale);
     }
     {
@@ -1875,7 +1877,7 @@ void colvarbias_meta::write_pmf()
          cvm::real target_val=target_dist->value(i);
          if (target_val>0) {
            pmf_val=pmf->value(i);
-           pmf_val=pmf_val+cvm::temperature() * cvm::boltzmann() * cvm::logn(target_val);
+           pmf_val=pmf_val + proxy->target_temperature() * proxy->boltzmann() * cvm::logn(target_val);
          }
          pmf->set_value(i,pmf_val);
       }
@@ -1885,7 +1887,7 @@ void colvarbias_meta::write_pmf()
     pmf->add_constant(-1.0 * max);
     pmf->multiply_constant(-1.0);
     if (well_tempered) {
-      cvm::real const well_temper_scale = (bias_temperature + cvm::temperature()) / bias_temperature;
+      cvm::real const well_temper_scale = (bias_temperature + proxy->target_temperature()) / bias_temperature;
       pmf->multiply_constant(well_temper_scale);
     }
     std::string const fes_file_name(this->output_prefix +

@@ -40,17 +40,17 @@ colvarbias_abf::colvarbias_abf(char const *key)
 
 int colvarbias_abf::init(std::string const &conf)
 {
+  colvarproxy *proxy = cvm::main()->proxy;
+
   colvarbias::init(conf);
   cvm::main()->cite_feature("ABF colvar bias implementation");
-
-  colvarproxy *proxy = cvm::main()->proxy;
 
   enable(f_cvb_scalar_variables);
   enable(f_cvb_calc_pmf);
 
-  // TODO relax this in case of VMD plugin
-  if (cvm::temperature() == 0.0)
+  if ((proxy->target_temperature() == 0.0) && proxy->simulation_running()) {
     cvm::log("WARNING: ABF should not be run without a thermostat or at 0 Kelvin!\n");
+  }
 
   // ************* parsing general ABF options ***********************
 
@@ -279,7 +279,7 @@ int colvarbias_abf::init(std::string const &conf)
                                          cvm::restart_out_freq,
                                          UI_restart,                    // whether restart from a .count and a .grad file
                                          input_prefix,   // the prefixes of input files
-                                         cvm::temperature());
+                                         proxy->target_temperature());
     }
   }
 
@@ -639,6 +639,8 @@ template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
 
 void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool close)
 {
+  colvarproxy *proxy = cvm::main()->proxy;
+
   write_grid_to_file<colvar_grid_count>(samples, prefix + ".count", close);
   write_grid_to_file<colvar_grid_gradient>(gradients, prefix + ".grad", close);
 
@@ -662,7 +664,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
           czar_gradients->index_ok(ix); czar_gradients->incr(ix)) {
       for (size_t n = 0; n < czar_gradients->multiplicity(); n++) {
         czar_gradients->set_value(ix, z_gradients->value_output(ix, n)
-          - cvm::temperature() * cvm::boltzmann() * z_samples->log_gradient_finite_diff(ix, n), n);
+          - proxy->target_temperature() * proxy->boltzmann() * z_samples->log_gradient_finite_diff(ix, n), n);
       }
     }
     write_grid_to_file<colvar_grid_gradient>(czar_gradients, prefix + ".czar.grad", close);

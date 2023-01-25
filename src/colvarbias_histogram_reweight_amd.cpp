@@ -81,6 +81,7 @@ int colvarbias_reweightaMD::init(std::string const &conf) {
 }
 
 int colvarbias_reweightaMD::update() {
+  colvarproxy *proxy = cvm::main()->proxy;
   int error_code = COLVARS_OK;
   if (cvm::step_relative() >= start_after_steps) {
     // update base class
@@ -110,7 +111,7 @@ int colvarbias_reweightaMD::update() {
         grid->acc_value(previous_bin, reweighting_factor);
         if (b_use_cumulant_expansion) {
           const cvm::real dV = cvm::logn(reweighting_factor) *
-                               cvm::temperature() * cvm::boltzmann();
+            proxy->target_temperature() * proxy->boltzmann();
           grid_dV->acc_value(previous_bin, dV);
           grid_dV_square->acc_value(previous_bin, dV * dV);
         }
@@ -129,7 +130,7 @@ int colvarbias_reweightaMD::update() {
           grid->acc_value(previous_bin, reweighting_factor);
           if (b_use_cumulant_expansion) {
             const cvm::real dV = cvm::logn(reweighting_factor) *
-                                 cvm::temperature() * cvm::boltzmann();
+              proxy->target_temperature() * proxy->boltzmann();
             grid_dV->acc_value(previous_bin, dV);
             grid_dV_square->acc_value(previous_bin, dV * dV);
           }
@@ -272,9 +273,12 @@ int colvarbias_reweightaMD::write_count(const std::string& p_output_prefix, bool
 }
 
 void colvarbias_reweightaMD::hist_to_pmf(
-  colvar_grid_scalar* hist, const colvar_grid_scalar* hist_count) const {
+  colvar_grid_scalar* hist,
+  const colvar_grid_scalar* hist_count) const
+{
+  colvarproxy *proxy = cvm::main()->proxy;
   if (hist->raw_data_num() == 0) return;
-  const cvm::real kbt = cvm::boltzmann() * cvm::temperature();
+  const cvm::real kbt = proxy->boltzmann() * proxy->target_temperature();
   bool first_min_element = true;
   bool first_max_element = true;
   cvm::real min_element = 0;
@@ -318,12 +322,15 @@ void colvarbias_reweightaMD::hist_to_pmf(
   }
 }
 
+
 void colvarbias_reweightaMD::compute_cumulant_expansion_factor(
   const colvar_grid_scalar* hist_dV,
   const colvar_grid_scalar* hist_dV_square,
   const colvar_grid_scalar* hist_count,
-  colvar_grid_scalar* cumulant_expansion_factor) const {
-  const cvm::real beta = 1.0 / (cvm::boltzmann() * cvm::temperature());
+  colvar_grid_scalar* cumulant_expansion_factor) const
+{
+  colvarproxy *proxy = cvm::main()->proxy;
+  const cvm::real beta = 1.0 / (proxy->boltzmann() * proxy->target_temperature());
   size_t i = 0;
   for (i = 0; i < hist_dV->raw_data_num(); ++i) {
     const cvm::real count = hist_count->value(i);

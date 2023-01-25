@@ -633,6 +633,7 @@ harmonicWalls {\n\
 
 int colvar::init_extended_Lagrangian(std::string const &conf)
 {
+  colvarproxy *proxy = cvm::main()->proxy;
   get_keyval_feature(this, conf, "extendedLagrangian", f_cv_extended_Lagrangian, false);
 
   if (is_enabled(f_cv_extended_Lagrangian)) {
@@ -645,7 +646,8 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     x_ext.type(colvarvalue::type_notset);
     v_ext.type(value());
     fr.type(value());
-    const bool temp_provided = get_keyval(conf, "extendedTemp", temp, cvm::temperature());
+    const bool temp_provided = get_keyval(conf, "extendedTemp", temp,
+                                          proxy->target_temperature());
     if (is_enabled(f_cv_external)) {
       // In the case of an "external" coordinate, there is no coupling potential:
       // only the fictitious mass is meaningful
@@ -668,14 +670,14 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
         cvm::error("Error: \"extendedFluctuation\" must be positive.\n", COLVARS_INPUT_ERROR);
         return COLVARS_INPUT_ERROR;
       }
-      ext_force_k = cvm::boltzmann() * temp / (tolerance * tolerance);
+      ext_force_k = proxy->boltzmann() * temp / (tolerance * tolerance);
       cvm::log("Computed extended system force constant: " + cvm::to_str(ext_force_k) + " [E]/U^2\n");
 
       get_keyval(conf, "extendedTimeConstant", extended_period, 200.0);
       if (extended_period <= 0.0) {
         cvm::error("Error: \"extendedTimeConstant\" must be positive.\n", COLVARS_INPUT_ERROR);
       }
-      ext_mass = (cvm::boltzmann() * temp * extended_period * extended_period)
+      ext_mass = (proxy->boltzmann() * temp * extended_period * extended_period)
         / (4.0 * PI * PI * tolerance * tolerance);
       cvm::log("Computed fictitious mass: " + cvm::to_str(ext_mass) + " [E]/(U/fs)^2   (U: colvar unit)\n");
     }
@@ -696,7 +698,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
       enable(f_cv_Langevin);
       ext_gamma *= 1.0e-3; // correct as long as input is required in ps-1 and cvm::dt() is in fs
       // Adjust Langevin sigma for slow time step if time_step_factor != 1
-      ext_sigma = cvm::sqrt(2.0 * cvm::boltzmann() * temp * ext_gamma * ext_mass / (cvm::dt() * cvm::real(time_step_factor)));
+      ext_sigma = cvm::sqrt(2.0 * proxy->boltzmann() * temp * ext_gamma * ext_mass / (cvm::dt() * cvm::real(time_step_factor)));
     }
 
     get_keyval_feature(this, conf, "reflectingLowerBoundary", f_cv_reflecting_lower_boundary, false);
@@ -1663,6 +1665,7 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
 
 int colvar::collect_cvc_Jacobians()
 {
+  colvarproxy *proxy = cvm::main()->proxy;
   if (is_enabled(f_cv_Jacobian)) {
     fj.reset();
     for (size_t i = 0; i < cvcs.size(); i++) {
@@ -1675,7 +1678,7 @@ int colvar::collect_cvc_Jacobians()
       // linear combination is assumed
       fj += (cvcs[i])->Jacobian_derivative() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
     }
-    fj *= cvm::boltzmann() * cvm::temperature();
+    fj *= proxy->boltzmann() * proxy->target_temperature();
   }
 
   return COLVARS_OK;

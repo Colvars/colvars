@@ -632,12 +632,6 @@ public:
 
   // proxy functions
 
-  /// \brief Boltmann constant
-  static real boltzmann();
-
-  /// \brief Temperature of the simulation (K)
-  static real temperature();
-
   /// \brief Time step of MD integrator (fs)
   static real dt();
 
