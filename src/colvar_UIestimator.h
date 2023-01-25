@@ -21,6 +21,7 @@
 // only for colvar module!
 // when integrated into other code, just remove this line and "...cvm::backup_file(...)"
 #include "colvarmodule.h"
+#include "colvarproxy.h"
 
 namespace UIestimator {
     const int Y_SIZE = 21;            // defines the range of extended CV with respect to a given CV
@@ -380,6 +381,8 @@ namespace UIestimator {
     public:
         // calculate gradients from the internal variables
         void calc_pmf() {
+            colvarproxy *proxy = cvm::main()->proxy;
+
             int norm;
             int i, j, k;
 
@@ -455,7 +458,7 @@ namespace UIestimator {
                 std::vector<double> grad_temp(dimension, 0);
                 for (k = 0; k < dimension; k++) {
                     diff_av[k] /= (norm > 0 ? norm : 1);
-                    av[k] = cvm::boltzmann() * temperature * av[k] / (norm > 0 ? norm : 1);
+                    av[k] = proxy->boltzmann() * temperature * av[k] / (norm > 0 ? norm : 1);
                     grad_temp[k] = av[k] - krestr[k] * diff_av[k];
                 }
                 grad.set_value(loop_flag_x, grad_temp);

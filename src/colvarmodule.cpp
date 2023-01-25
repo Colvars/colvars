@@ -2107,18 +2107,6 @@ int cvm::load_coords_xyz(char const *filename,
 // Wrappers to proxy functions: these may go in the future
 
 
-cvm::real cvm::boltzmann()
-{
-  return proxy->boltzmann();
-}
-
-
-cvm::real cvm::temperature()
-{
-  return proxy->temperature();
-}
-
-
 cvm::real cvm::dt()
 {
   return proxy->dt();

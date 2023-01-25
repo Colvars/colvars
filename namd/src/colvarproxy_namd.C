@@ -258,7 +258,7 @@ int colvarproxy_namd::setup()
 
   update_target_temperature();
   cvm::log("updating target temperature (T = "+
-           cvm::to_str(temperature())+" K).\n");
+           cvm::to_str(target_temperature())+" K).\n");
 
   return COLVARS_OK;
 }
@@ -547,7 +547,8 @@ void colvarproxy_namd::update_accelMD_info() {
   }
   const Controller& c = Node::Object()->state->getController();
   // This aMD factor is from previous step!
-  amd_weight_factor = std::exp(c.accelMDdV / (temperature() * boltzmann()));
+  amd_weight_factor = std::exp(c.accelMDdV /
+                               (target_temperature() * boltzmann()));
 //   std::cout << "Step: " << cvm::to_str(colvars->it) << " accelMD dV in colvars: " << c.accelMDdV << std::endl;
 }
 

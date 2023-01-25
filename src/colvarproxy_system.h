@@ -70,7 +70,7 @@ public:
   virtual cvm::real boltzmann();
 
   /// Current target temperature of the simulation (K units)
-  inline cvm::real temperature() const {
+  inline cvm::real target_temperature() const {
     return target_temperature_;
   }
 
