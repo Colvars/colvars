@@ -80,7 +80,6 @@ public:
   void log(std::string const &message) override;
   void error(std::string const &message) override;
   int set_unit_system(std::string const &units_in, bool check_only) override;
-  void exit(std::string const &message) override;
   void add_energy(cvm::real energy) override;
   void request_total_force(bool yesno) override;
 

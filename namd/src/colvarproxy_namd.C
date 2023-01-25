@@ -636,13 +636,6 @@ void colvarproxy_namd::error(std::string const &message)
 }
 
 
-void colvarproxy_namd::exit(std::string const &message)
-{
-  log(message);
-  BackEnd::exit();
-}
-
-
 int colvarproxy_namd::check_atom_id(int atom_number)
 {
   // NAMD's internal numbering starts from zero
