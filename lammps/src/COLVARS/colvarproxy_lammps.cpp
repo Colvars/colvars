@@ -43,7 +43,6 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
 
   first_timestep=true;
   previous_step=-1;
-  t_target=temp;
   do_exit=false;
 
   // set input restart name and strip the extension, if present

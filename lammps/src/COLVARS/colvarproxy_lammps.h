@@ -33,7 +33,7 @@ class colvarproxy_lammps : public colvarproxy {
   LAMMPS_NS::RanPark *_random;
 
   // state of LAMMPS properties
-  double t_target, my_timestep, my_boltzmann, my_angstrom;
+  double my_timestep, my_boltzmann, my_angstrom;
   double bias_energy;
   int previous_step;
 
@@ -60,7 +60,7 @@ class colvarproxy_lammps : public colvarproxy {
 
   // methods for lammps to move data or trigger actions in the proxy
  public:
-  void set_temperature(double t) { t_target = t; };
+
   bool total_forces_enabled() const override { return total_force_requested; };
   bool total_forces_same_step() const override { return true; };
   bool want_exit() const { return do_exit; };
@@ -89,7 +89,6 @@ class colvarproxy_lammps : public colvarproxy {
   inline cvm::real backend_angstrom_value() override { return my_angstrom; };
 
   inline cvm::real boltzmann() override { return my_boltzmann; };
-  inline cvm::real temperature() override { return t_target; };
   inline cvm::real dt() override
   {
     return my_timestep;

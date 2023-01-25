@@ -49,10 +49,10 @@ cvm::real colvarproxy_system::boltzmann()
 }
 
 
-cvm::real colvarproxy_system::temperature()
+int colvarproxy_system::set_target_temperature(cvm::real T)
 {
-  // TODO define, document and implement a user method to set the value of this
-  return 300.0;
+  target_temperature_ = T;
+  return COLVARS_OK;
 }
 
 
