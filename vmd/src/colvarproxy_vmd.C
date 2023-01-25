@@ -147,34 +147,6 @@ int colvarproxy_vmd::setup()
 
   return COLVARS_OK;
 }
-
-
-cvm::real colvarproxy_vmd::backend_angstrom_value()
-{
-  return 1.0;
-}
-
-
-cvm::real colvarproxy_vmd::boltzmann()
-{
-  return 0.001987191;
-}
-
-
-cvm::real colvarproxy_vmd::temperature()
-{
-  // TODO define, document and implement a user method to set the value of this
-  return 300.0;
-}
-
-
-cvm::real colvarproxy_vmd::dt()
-{
-  // TODO define, document and implement a user method to set the value of this
-  return 1.0;
-}
-
-
 cvm::real colvarproxy_vmd::rand_gaussian()
 {
   return vmd_random_gaussian();
