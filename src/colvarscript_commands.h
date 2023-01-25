@@ -534,6 +534,15 @@ CVSCRIPT(cv_savetostring,
          return script->module()->write_restart_string(script->modify_str_result());
          )
 
+CVSCRIPT(cv_settemperature,
+         "Set the target temperature, overriding what the MD engine provides",
+         1, 1,
+         "T : float - Temperature in K",
+         char const *T =
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
+         return script->proxy()->set_target_temperature(strtod(T, NULL));
+         )
+
 CVSCRIPT(cv_units,
          "Get or set the current Colvars unit system\n"
          "units : string - The current unit system",
