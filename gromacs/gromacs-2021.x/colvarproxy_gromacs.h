@@ -99,12 +99,9 @@ public:
 
   // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
   cvm::real backend_angstrom_value();
-  cvm::real boltzmann();
-  cvm::real temperature();
   cvm::real dt();
   cvm::real rand_gaussian();
   // **************** SIMULATION PARAMETERS ****************
-  void set_temper(double temper);
   size_t restart_frequency();
   std::string restart_output_prefix();
   std::string output_prefix();
