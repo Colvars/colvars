@@ -534,13 +534,18 @@ CVSCRIPT(cv_savetostring,
          return script->module()->write_restart_string(script->modify_str_result());
          )
 
-CVSCRIPT(cv_settemperature,
-         "Set the target temperature, overriding what the MD engine provides",
-         1, 1,
-         "T : float - Temperature in K",
-         char const *T =
+CVSCRIPT(cv_targettemperature,
+         "Get/set target temperature, overriding what the MD engine provides\n"
+         "T : float - Current target temperature in K",
+         0, 1,
+         "T : float - New target temperature in K",
+         char const *Targ =
            script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
-         return script->proxy()->set_target_temperature(strtod(T, NULL));
+         if (Targ == NULL) {
+           return script->set_result_real(script->proxy()->target_temperature());
+         } else {
+           return script->proxy()->set_target_temperature(strtod(Targ, NULL));
+         }
          )
 
 CVSCRIPT(cv_units,
