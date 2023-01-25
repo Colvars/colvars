@@ -65,8 +65,8 @@ public:
   colvarproxy_namd();
   ~colvarproxy_namd();
 
-  int setup();
-  int reset();
+  int setup() override;
+  int reset() override;
 
   // synchronize the local arrays with requested or forced atoms
   int update_atoms_map(AtomIDList::const_iterator begin,
@@ -74,25 +74,25 @@ public:
 
   void calculate();
 
-  void log(std::string const &message);
-  void error(std::string const &message);
-  int set_unit_system(std::string const &units_in, bool check_only);
-  void exit(std::string const &message);
-  void add_energy(cvm::real energy);
-  void request_total_force(bool yesno);
+  void log(std::string const &message) override;
+  void error(std::string const &message) override;
+  int set_unit_system(std::string const &units_in, bool check_only) override;
+  void exit(std::string const &message) override;
+  void add_energy(cvm::real energy) override;
+  void request_total_force(bool yesno) override;
 
-  bool total_forces_enabled() const
+  bool total_forces_enabled() const override
   {
     return total_force_requested;
   }
 
-  int run_force_callback();
+  int run_force_callback() override;
   int run_colvar_callback(std::string const &name,
                           std::vector<const colvarvalue *> const &cvcs,
-                          colvarvalue &value);
+                          colvarvalue &value) override;
   int run_colvar_gradient_callback(std::string const &name,
                                    std::vector<const colvarvalue *> const &cvcs,
-                                   std::vector<cvm::matrix2d<cvm::real> > &gradient);
+                                   std::vector<cvm::matrix2d<cvm::real> > &gradient) override;
 
   cvm::real backend_angstrom_value()
   {
