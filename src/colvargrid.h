@@ -1110,9 +1110,7 @@ public:
   int write_opendx(std::string const &filename,
                    std::string description = "grid file") const;
 
-  /// \brief Get the value from a formatted output and transform it
-  /// into the internal representation (it may have been rescaled or
-  /// manipulated)
+  /// Enter or add a value, but also handle parent grid
   virtual void value_input(std::vector<int> const &ix,
                            size_t const &t,
                            size_t const &imult = 0,
@@ -1400,9 +1398,7 @@ public:
     }
   }
 
-  /// \brief Get the value from a formatted output and transform it
-  /// into the internal representation (it may have been rescaled or
-  /// manipulated)
+  /// Enter or add value but also deal with count grid
   virtual void value_input(std::vector<int> const &ix,
                            cvm::real const &new_value,
                            size_t const &imult = 0,
