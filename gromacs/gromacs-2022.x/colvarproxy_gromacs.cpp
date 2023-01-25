@@ -47,9 +47,14 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
 
   angstrom_value = 0.1;
 
+  // From Gnu units
+  // $ units -ts 'k' 'kJ/mol/K/avogadro'
+  // 0.0083144621
+  boltzmann_value_ = 0.0083144621;
+
   // Get the thermostat temperature.
   // NOTE: Considers only the first temperature coupling group!
-  thermostat_temperature = ir->opts.ref_t[0];
+  set_target_temperature(ir->opts.ref_t[0]);
 
   // GROMACS random number generation.
   // Seed with the mdp parameter ld_seed, the Langevin dynamics seed.
@@ -263,11 +268,6 @@ void colvarproxy_gromacs::finish(const t_commrec *cr)
   }
 }
 
-void colvarproxy_gromacs::set_temper(double temper)
-{
-  thermostat_temperature = temper;
-}
-
 // GROMACS uses nanometers and kJ/mol internally
 cvm::real colvarproxy_gromacs::backend_angstrom_value() { return 0.1; }
 
@@ -275,12 +275,6 @@ cvm::real colvarproxy_gromacs::backend_angstrom_value() { return 0.1; }
 // $ units -ts 'k' 'kJ/mol/K/avogadro'
 // 0.0083144621
 cvm::real colvarproxy_gromacs::boltzmann() { return 0.0083144621; }
-
-// Temperature of the simulation (K)
-cvm::real colvarproxy_gromacs::temperature()
-{
-  return thermostat_temperature;
-}
 
 // Time step of the simulation (fs)
 // GROMACS uses picoseconds.
