@@ -268,11 +268,6 @@ void colvarproxy_gromacs::finish(const t_commrec *cr)
 // GROMACS uses nanometers and kJ/mol internally
 cvm::real colvarproxy_gromacs::backend_angstrom_value() { return 0.1; }
 
-// From Gnu units
-// $ units -ts 'k' 'kJ/mol/K/avogadro'
-// 0.0083144621
-cvm::real colvarproxy_gromacs::boltzmann() { return 0.0083144621; }
-
 // Time step of the simulation (fs)
 // GROMACS uses picoseconds.
 cvm::real colvarproxy_gromacs::dt() { return 1000.0*timestep; }

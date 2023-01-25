@@ -88,7 +88,6 @@ class colvarproxy_lammps : public colvarproxy {
 
   inline cvm::real backend_angstrom_value() override { return my_angstrom; };
 
-  inline cvm::real boltzmann() override { return my_boltzmann; };
   inline cvm::real dt() override
   {
     return my_timestep;
