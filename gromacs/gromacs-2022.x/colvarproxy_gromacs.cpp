@@ -50,7 +50,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
   // From Gnu units
   // $ units -ts 'k' 'kJ/mol/K/avogadro'
   // 0.0083144621
-  boltzmann_value_ = 0.0083144621;
+  boltzmann_ = 0.0083144621;
 
   // Get the thermostat temperature.
   // NOTE: Considers only the first temperature coupling group!
