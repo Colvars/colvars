@@ -69,8 +69,13 @@ public:
   /// \brief Boltzmann constant in internal Colvars units
   virtual cvm::real boltzmann();
 
-  /// \brief Target temperature of the simulation (K units)
-  virtual cvm::real temperature();
+  /// Current target temperature of the simulation (K units)
+  inline cvm::real temperature() const {
+    return target_temperature_;
+  }
+
+  /// Set the current target temperature of the simulation (K units)
+  virtual int set_target_temperature(cvm::real T);
 
   /// \brief Time step of the simulation (fs)
   virtual cvm::real dt();
@@ -138,11 +143,15 @@ public:
   }
 
 protected:
+
   /// Next value of lambda to be sent to back-end
   cvm::real cached_alch_lambda;
 
   /// Whether lambda has been set and needs to be updated in backend
   bool cached_alch_lambda_changed;
+
+  /// Most up to date target temperature for the system
+  cvm::real target_temperature_;
 
   /// Whether the total forces have been requested
   bool total_force_requested;

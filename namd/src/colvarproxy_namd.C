@@ -67,21 +67,7 @@ colvarproxy_namd::colvarproxy_namd()
                            std::string(".colvars.state").size());
   }
 
-  // get the thermostat temperature
-  if (simparams->rescaleFreq > 0)
-    thermostat_temperature = simparams->rescaleTemp;
-  else if (simparams->reassignFreq > 0)
-    thermostat_temperature = simparams->reassignTemp;
-  else if (simparams->langevinOn)
-    thermostat_temperature = simparams->langevinTemp;
-  else if (simparams->tCoupleOn)
-    thermostat_temperature = simparams->tCoupleTemp;
-  else if (simparams->loweAndersenOn)
-    thermostat_temperature = simparams->loweAndersenTemp;
-  else if (simparams->stochRescaleOn)
-    thermostat_temperature = simparams->stochRescaleTemp;
-  else
-    thermostat_temperature = 0.0;
+  update_target_temperature();
 
   random = Random(simparams->randomSeed);
 
@@ -148,6 +134,28 @@ colvarproxy_namd::colvarproxy_namd()
 colvarproxy_namd::~colvarproxy_namd()
 {
   delete reduction;
+}
+
+
+int colvarproxy_namd::update_target_temperature()
+{
+  int error_code = COLVARS_OK;
+  if (simparams->rescaleFreq > 0) {
+    error_code |= set_target_temperature(simparams->rescaleTemp);
+  } else if (simparams->reassignFreq > 0) {
+    error_code |= set_target_temperature(simparams->reassignTemp);
+  } else if (simparams->langevinOn) {
+    error_code |= set_target_temperature(simparams->langevinTemp);
+  } else if (simparams->tCoupleOn) {
+    error_code |= set_target_temperature(simparams->tCoupleTemp);
+  } else if (simparams->loweAndersenOn) {
+    error_code |= set_target_temperature(simparams->loweAndersenTemp);
+  } else if (simparams->stochRescaleOn) {
+    error_code |= set_target_temperature(simparams->stochRescaleTemp);
+  } else {
+    error_code |= set_target_temperature(0.0);
+  }
+  return error_code;
 }
 
 
@@ -247,6 +255,10 @@ int colvarproxy_namd::setup()
     log(std::string("\n")+colvars->feature_report(0)+std::string("\n"));
     features_hash = new_features_hash;
   }
+
+  update_target_temperature();
+  cvm::log("updating target temperature (T = "+
+           cvm::to_str(temperature())+" K).\n");
 
   return COLVARS_OK;
 }

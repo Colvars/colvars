@@ -676,16 +676,16 @@ void FixColvars::post_force(int /*vflag*/)
       error->one(FLERR,"Run aborted on request from colvars module.\n");
 
     if (tstat_id < 0) {
-      proxy->set_temperature(0.0);
+      proxy->set_target_temperature(0.0);
     } else {
       int tmp;
       // get thermostat target temperature from corresponding fix,
       // if the fix supports extraction.
       double *tt = (double *) modify->fix[tstat_id]->extract("t_target",tmp);
       if (tt)
-        proxy->set_temperature(*tt);
+        proxy->set_target_temperature(*tt);
       else
-        proxy->set_temperature(0.0);
+        proxy->set_target_temperature(0.0);
     }
   }
 

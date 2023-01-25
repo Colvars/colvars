@@ -42,9 +42,6 @@ protected:
   /// Pointer to the NAMD simulation input object
   SimParameters *simparams;
 
-  /// Self-explained
-  BigReal thermostat_temperature;
-
   /// NAMD-style PRNG object
   Random random;
 
@@ -105,11 +102,6 @@ public:
   cvm::real boltzmann()
   {
     return 0.001987191;
-  }
-
-  cvm::real temperature()
-  {
-    return thermostat_temperature;
   }
 
   cvm::real rand_gaussian()
