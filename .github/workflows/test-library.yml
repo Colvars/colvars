@@ -15,17 +15,17 @@ jobs:
 
     steps:
       - name: Checkout Colvars
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Load compiler cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.ccache
           key: ${{ runner.os }}-build-basic-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-basic-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -82,10 +82,10 @@ jobs:
     needs: basicchecks
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Load containers cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.apptainer
           key: Linux-x86_64-containers-build-doc-2022-09-03
@@ -105,7 +105,7 @@ jobs:
           apptainer pull Fedora35-texlive.sif library://giacomofiorin/default/colvars_development:fedora35_texlive
 
       - name: Checkout website repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/colvars.github.io'
           path: 'website'
@@ -125,14 +125,14 @@ jobs:
     if: ${{ ! github.event.repository.private }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install build dependencies for library
         run: |
           sudo apt-get -y install tcl8.6-dev
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -159,10 +159,10 @@ jobs:
       CCACHE: ccache
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Load compiler ccache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.ccache
           key: ${{ runner.os }}-build-multiple-${{ github.sha }}
@@ -171,13 +171,13 @@ jobs:
       # Using an exact key to forgo saving it in case of a match (tarring up
       # is expensive); also including a date to allow a force-update.
       - name: Load containers cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.apptainer
           key: Linux-x86_64-containers-build-2022-10-11
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -356,16 +356,16 @@ jobs:
     needs: basicchecks
     if: needs.basicchecks.outputs.hassecrets == 'true'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Load containers cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.apptainer
           key: Linux-x86_64-containers-build-2022-10-11
 
       - name: Checkout Sun compiler (Oracle Developer Studio)
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/oracle'
           ssh-key: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
@@ -373,7 +373,7 @@ jobs:
           path: ${{github.workspace}}/oracle
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -411,10 +411,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -433,10 +433,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
