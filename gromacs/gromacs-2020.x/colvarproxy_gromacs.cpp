@@ -52,7 +52,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
 
   angstrom_value = 0.1;
 
-  boltzmann_ = gmx::c_boltz;
+  boltzmann_ = BOLTZ;
 
   // Get the thermostat temperature.
   // NOTE: Considers only the first temperature coupling group!
