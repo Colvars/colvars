@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <cerrno>
 
+
+#include "gromacs/math/units.h"
 #include "gromacs/mdlib/mdatoms.h"
 #include "gromacs/mdtypes/inputrec.h"
 #include "gromacs/mdtypes/forceoutput.h"

@@ -6,6 +6,7 @@
 #include <cerrno>
 
 
+#include "gromacs/math/units.h"
 #include "gromacs/mdtypes/inputrec.h"
 #include "gromacs/mdtypes/forceoutput.h"
 #include "gromacs/mdtypes/enerdata.h"
