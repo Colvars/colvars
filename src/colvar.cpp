@@ -73,10 +73,10 @@ int colvar::init(std::string const &conf)
 
   if ((cvm::colvar_by_name(this->name) != NULL) &&
       (cvm::colvar_by_name(this->name) != this)) {
-    cvm::error("Error: this colvar cannot have the same name, \""+this->name+
-                      "\", as another colvar.\n",
-               COLVARS_INPUT_ERROR);
-    return COLVARS_INPUT_ERROR;
+    error_code |= cvm::error("Error: this colvar cannot have the same name, \""+
+                             this->name+
+                             "\", as another colvar.\n",
+                             COLVARS_INPUT_ERROR);
   }
 
   // Initialize dependency members
@@ -1756,7 +1756,6 @@ int colvar::collect_cvc_Jacobians()
 int colvar::update_requested_atoms()
 {
   int error_code = COLVARS_OK;
-  size_t i, cvc_count;
   for (size_t i = 0; i < cvcs.size(); i++) {
     error_code |= (cvcs[i])->update_all_requested_atoms();
   }

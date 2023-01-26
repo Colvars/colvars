@@ -196,7 +196,7 @@ int colvar::cvc::update_all_requested_atoms()
        agi != atom_groups.end(); agi++) {
     error_code |= update_requested_atoms(*agi);
   }
-  return COLVARS_OK;
+  return error_code;
 }
 
 
