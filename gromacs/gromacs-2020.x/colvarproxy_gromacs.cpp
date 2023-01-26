@@ -12,7 +12,6 @@
 #include "gromacs/pbcutil/pbc.h"
 #include "gromacs/utility/fatalerror.h"
 #include "gromacs/utility/futil.h"
-#include "colvarproxy_gromacs.h"
 #include "gromacs/mdtypes/commrec.h"
 #include "gromacs/domdec/domdec_struct.h"
 #include "gromacs/gmxlib/network.h"
@@ -21,6 +20,10 @@
 #include "gromacs/topology/ifunc.h"
 #include "gromacs/topology/mtop_util.h"
 #include "gromacs/mdlib/broadcaststructs.h"
+
+
+#include "colvarproxy_gromacs.h"
+
 
 //************************************************************
 // colvarproxy_gromacs
@@ -47,10 +50,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
 
   angstrom_value = 0.1;
 
-  // From Gnu units
-  // $ units -ts 'k' 'kJ/mol/K/avogadro'
-  // 0.0083144621
-  boltzmann_ = 0.0083144621;
+  boltzmann_ = gmx::c_boltz;
 
   // Get the thermostat temperature.
   // NOTE: Considers only the first temperature coupling group!
