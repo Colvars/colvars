@@ -61,13 +61,13 @@ jobs:
 
     steps:
       - name: Checkout Colvars
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Load compiler cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.ccache
@@ -79,20 +79,20 @@ jobs:
       # Using an exact key to forgo saving it in case of a match (tarring up
       # is expensive); also including a date to allow a force-update.
       - name: Load containers cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.apptainer
           key: Linux-x86_64-containers-build-2022-10-11
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'openmm/openmm'
           ref: 'master'
           path: 'openmm-source'
 
       - name: Checkout ${{ inputs.backend_name }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ inputs.backend_repo }}
           ref: ${{ inputs.backend_repo_ref }}
@@ -102,7 +102,7 @@ jobs:
       # Only used for VMD test case
       - name: Checkout VMD plugins
         if: ${{ inputs.backend_name == 'VMD' }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ inputs.vmd_plugins_repo }}
           ref: master
@@ -110,7 +110,7 @@ jobs:
           ssh-key: ${{ secrets.private_key_vmd_plugins }}
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
