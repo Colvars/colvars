@@ -50,7 +50,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   // User-scripted forces are not available in GROMACS
   have_scripts = false;
 
-  angstrom_value = 0.1;
+  angstrom_value_ = 0.1;
 
   boltzmann_ = BOLTZ;
 
@@ -266,9 +266,6 @@ void colvarproxy_gromacs::finish(const t_commrec *cr)
     colvars->write_output_files();
   }
 }
-
-// GROMACS uses nanometers and kJ/mol internally
-cvm::real colvarproxy_gromacs::backend_angstrom_value() { return 0.1; }
 
 // Time step of the simulation (fs)
 // GROMACS uses picoseconds.

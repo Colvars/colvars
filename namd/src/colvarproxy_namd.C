@@ -47,7 +47,7 @@ colvarproxy_namd::colvarproxy_namd()
   first_timestep = true;
   requestTotalForce(total_force_requested);
 
-  angstrom_value = 1.;
+  angstrom_value_ = 1.;
 
   // initialize pointers to NAMD configuration data
   simparams = Node::Object()->simParameters;

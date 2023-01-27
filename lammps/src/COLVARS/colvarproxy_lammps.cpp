@@ -101,7 +101,7 @@ void colvarproxy_lammps::init(const char *conf_file)
 
   my_angstrom  = _lmp->force->angstrom;
   // Front-end unit is the same as back-end
-  angstrom_value = my_angstrom;
+  angstrom_value_ = my_angstrom;
 
   // my_kcal_mol  = _lmp->force->qe2f / 23.060549;
   // force->qe2f is 1eV expressed in LAMMPS' energy unit (1 if unit is eV, 23 if kcal/mol)

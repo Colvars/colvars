@@ -16,8 +16,8 @@
 
 colvarproxy_system::colvarproxy_system()
 {
-  angstrom_value = 0.0;
-  kcal_mol_value = 0.0;
+  angstrom_value_ = 0.0;
+  kcal_mol_value_ = 0.0;
   target_temperature_ = 0.0;
   boltzmann_ = 0.001987191; // Default: kcal/mol/K
   boundaries_type = boundaries_unsupported;

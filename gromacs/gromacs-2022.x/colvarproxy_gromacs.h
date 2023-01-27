@@ -98,7 +98,6 @@ public:
   void finish(const t_commrec *cr);
 
   // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
-  cvm::real backend_angstrom_value();
   cvm::real dt();
   cvm::real rand_gaussian();
   // **************** SIMULATION PARAMETERS ****************

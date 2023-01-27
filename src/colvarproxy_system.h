@@ -34,25 +34,16 @@ public:
   /// \brief Request to set the units used internally by Colvars
   virtual int set_unit_system(std::string const &units, bool check_only);
 
-  /// \brief Value of 1 Angstrom in the internal (front-end) Colvars unit for atomic coordinates
-  /// * defaults to 0. in the base class; derived proxy classes must set it
-  /// * in VMD proxy, can only be changed when no variables are defined
-  /// as user-defined values in composite units must be compatible with that system
-  cvm::real angstrom_value;
-
-  /// \brief Value of 1 kcal/mol in the internal Colvars unit for energy
-  cvm::real kcal_mol_value;
-
   /// \brief Convert a length from Angstrom to internal
   inline cvm::real angstrom_to_internal(cvm::real l) const
   {
-    return l * angstrom_value;
+    return l * angstrom_value_;
   }
 
   /// \brief Convert a length from internal to Angstrom
   inline cvm::real internal_to_angstrom(cvm::real l) const
   {
-    return l / angstrom_value;
+    return l / angstrom_value_;
   }
 
   /// Boltzmann constant, with unit the same as energy / K
@@ -148,6 +139,15 @@ protected:
 
   /// Most up to date target temperature for the system (in K)
   cvm::real target_temperature_;
+
+  /// \brief Value of 1 Angstrom in the internal (front-end) Colvars unit for atomic coordinates
+  /// * defaults to 0 in the base class; derived proxy classes must set it
+  /// * in VMD proxy, can only be changed when no variables are defined
+  /// as user-defined values in composite units must be compatible with that system
+  cvm::real angstrom_value_;
+
+  /// \brief Value of 1 kcal/mol in the internal Colvars unit for energy
+  cvm::real kcal_mol_value_;
 
   /// Whether the total forces have been requested
   bool total_force_requested;
