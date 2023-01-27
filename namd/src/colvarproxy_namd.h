@@ -269,8 +269,6 @@ public:
   std::ostream &output_stream(std::string const &output_name,
                               std::string const description = "file/channel") override;
 
-  bool output_stream_exists(std::string const &output_name) override;
-
   int flush_output_stream(std::string const &output_name) override;
 
   int flush_output_streams() override;
