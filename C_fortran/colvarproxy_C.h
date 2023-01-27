@@ -11,10 +11,6 @@ public:
   ~colvarproxy_C();
 
 private:
-  /// \brief Value of the unit for atomic coordinates with respect to
-  /// angstroms (used by some variables for hard-coded default values)
-  cvm::real backend_angstrom_value() { return 1.; }
-
   int set_unit_system(std::string const &units, bool check_only) { return 0.; }
 
   /// \brief Boltzmann constant

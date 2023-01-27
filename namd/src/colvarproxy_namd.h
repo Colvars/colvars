@@ -96,11 +96,6 @@ public:
                                    std::vector<const colvarvalue *> const &cvcs,
                                    std::vector<cvm::matrix2d<cvm::real> > &gradient) override;
 
-  cvm::real backend_angstrom_value()
-  {
-    return 1.0;
-  }
-
   cvm::real boltzmann()
   {
     return 0.001987191;

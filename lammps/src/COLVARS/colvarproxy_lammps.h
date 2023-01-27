@@ -86,8 +86,6 @@ class colvarproxy_lammps : public colvarproxy {
   // Request to set the units used internally by Colvars
   int set_unit_system(std::string const &units_in, bool check_only) override;
 
-  inline cvm::real backend_angstrom_value() override { return my_angstrom; };
-
   inline cvm::real dt() override
   {
     return my_timestep;
