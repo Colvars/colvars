@@ -40,9 +40,6 @@ public:
   /// as user-defined values in composite units must be compatible with that system
   cvm::real angstrom_value;
 
-  /// \brief Value of 1 Angstrom in the backend's unit for atomic coordinates
-  virtual cvm::real backend_angstrom_value();
-
   /// \brief Value of 1 kcal/mol in the internal Colvars unit for energy
   cvm::real kcal_mol_value;
 
@@ -57,14 +54,6 @@ public:
   {
     return l / angstrom_value;
   }
-
-  // /// \brief Convert a length from back-end unit to internal
-  // inline cvm::real back_end_to_internal_unit(cvm::real l) {
-  //   if (angstrom_value == 0.) {
-  //     return l / backend_angstrom_value();
-  //   }
-  //   return l * angstrom_value / backend_angstrom_value();
-  // }
 
   /// Boltzmann constant, with unit the same as energy / K
   inline cvm::real boltzmann() const
