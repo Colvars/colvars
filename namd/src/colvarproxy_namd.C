@@ -1021,12 +1021,6 @@ std::ostream & colvarproxy_namd::output_stream(std::string const &output_name,
 }
 
 
-bool colvarproxy_namd::output_stream_exists(std::string const &output_name)
-{
-  return (output_streams_.count(output_name) > 0);
-}
-
-
 int colvarproxy_namd::flush_output_stream(std::string const &output_name)
 {
   if (!io_available()) {
