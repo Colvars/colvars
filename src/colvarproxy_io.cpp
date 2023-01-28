@@ -252,7 +252,7 @@ int colvarproxy_io::flush_output_stream(std::string const &output_name)
   }
 
   if (colvarproxy_io::output_stream_exists(output_name)) {
-    (reinterpret_cast<std::ofstream *>(output_streams_[output_name]))->flush();
+    (dynamic_cast<std::ofstream *>(output_streams_[output_name]))->flush();
     return COLVARS_OK;
   }
 
@@ -269,7 +269,7 @@ int colvarproxy_io::flush_output_streams()
   for (std::map<std::string, std::ostream *>::iterator osi = output_streams_.begin();
        osi != output_streams_.end();
        osi++) {
-    (reinterpret_cast<std::ofstream *>(osi->second))->flush();
+    (dynamic_cast<std::ofstream *>(osi->second))->flush();
   }
 
   return COLVARS_OK;
@@ -284,7 +284,7 @@ int colvarproxy_io::close_output_stream(std::string const &output_name)
   }
 
   if (colvarproxy_io::output_stream_exists(output_name)) {
-    (reinterpret_cast<std::ofstream *>(output_streams_[output_name]))->close();
+    (dynamic_cast<std::ofstream *>(output_streams_[output_name]))->close();
     delete output_streams_[output_name];
     output_streams_.erase(output_name);
   }
@@ -302,7 +302,7 @@ int colvarproxy_io::close_output_streams()
   for (std::map<std::string, std::ostream *>::iterator osi = output_streams_.begin();
        osi != output_streams_.end();
        osi++) {
-    (reinterpret_cast<std::ofstream *>(osi->second))->close();
+    (dynamic_cast<std::ofstream *>(osi->second))->close();
   }
   output_streams_.clear();
 
