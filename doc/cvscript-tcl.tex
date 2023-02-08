@@ -144,6 +144,24 @@
 \texttt{-------}
 \\
 \texttt{E : float - Amount of energy (internal units)}
+\item \texttt{cv getstepabsolute}
+\\
+\texttt{Get the current step number of the simulation (including restarts)}
+\\
+\texttt{Returns}
+\\
+\texttt{-------}
+\\
+\texttt{step : int - Absolute step number}
+\item \texttt{cv getsteprelative}
+\\
+\texttt{Get the current step number from the start of this job}
+\\
+\texttt{Returns}
+\\
+\texttt{-------}
+\\
+\texttt{step : int - Relative step number}
 \item \texttt{cv help [command]}
 \\
 \texttt{Get the help string of the Colvars scripting interface}
@@ -246,6 +264,15 @@
 \texttt{-------}
 \\
 \texttt{state : string - The saved state}
+\item \texttt{cv targettemperature [T]}
+\\
+\texttt{Get/set target temperature, overriding what the MD engine provides}
+\\
+\texttt{Returns}
+\\
+\texttt{-------}
+\\
+\texttt{T : float - Current target temperature in K}
 \item \texttt{cv units [units]}
 \\
 \texttt{Get or set the current Colvars unit system}

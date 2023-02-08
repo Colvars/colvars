@@ -1,14 +1,18 @@
-auto
+# Typical LaTeX intermediate files
 *.aux
 *.bbl
 *.blg
 *.brf
+*.dvi
+*.fls
+*.fdb_latexmk
 *.idx
 *.ilg
 *.ind
 *.log
 *.out
 *.toc
+*-eps-converted-to.pdf
 
 # Compiled documentation
 colvars-refman-gromacs.pdf

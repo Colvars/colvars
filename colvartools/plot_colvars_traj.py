@@ -3,17 +3,13 @@
 # Invoke this script with --help for documentation.
 
 # Download link: https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true
+# This version was modified on: 2022-09-12
 # Contact: giacomo.fiorin@gmail.com
 
 from __future__ import print_function
 
 import os
 import sys
-
-if (sys.version_info[:2] < (2, 7)):
-    # Save some explanations
-    print("Python versions prior to 2.7 are no longer supported.")
-    sys.exit(1)
 
 import numpy as np
 
@@ -24,10 +20,6 @@ class Colvar_traj(object):
     The series of step numbers are included as well, because collective
     variables may be added or deleted during a simulation.
     """
-
-    _name = ""
-    _step = np.empty(shape=(0))
-    _colvar = np.empty(shape=(0))
 
     def __init__(self, name):
         """Sets the name of the variable"""
@@ -101,23 +93,18 @@ class Colvars_traj(object):
     Can be accessed as a dictionary using a variable's name as key; each
     variable's trajectory is an instance of colvars_traj"""
 
-    _keys = []
-    _start = {}
-    _end = {}
-    _colvars = {}
-    _found = {}
-    _frame = -1
-
-    def __init__(self, filenames=None, first=0, last=-1, every=1):
+    def __init__(self, filenames=None, first=0, last=None, every=1):
         """
         Initialize from the given list of colvars.traj files
         Any optional arguments are passed to read_files()
         """
         self._keys = ['step']
-        self._start['step'] = 0
-        self._end['step'] = -1
+        self._colvars = {}
+        self._start = { 'step' : 0 }
+        self._end = { 'step' : -1 }
         self._count = 0
-        self._frame = 0
+        self._frame = -1
+
         if type(filenames) == str:
             filenames = [filenames]
         if filenames:
@@ -143,7 +130,7 @@ class Colvars_traj(object):
     @property
     def variables(self):
         """Names of variables defined"""
-        return self._keys[1:] # The first entry is "step"
+        return list(self._colvars.keys())
 
     def _parse_comment_line(self, line):
         """
@@ -156,33 +143,37 @@ class Colvars_traj(object):
         self._keys = new_keys
         # Find the boundaries of each column
         for i in range(1, len(self._keys)):
-            self._start[self._keys[i]] = line.find(' '+self._keys[i]+' ')
-            self._end[self._keys[i-1]] = line.find(' '+self._keys[i]+' ')
-            self._end[self._keys[-1]] = -1
+            if i == 1:
+                pos = line.find(' '+self._keys[i]+' ')
+            else:
+                pos = line.find(' '+self._keys[i],
+                                self._start[self._keys[i-1]]+len(self._keys[i-1]))
+            self._start[self._keys[i]] = pos
+            self._end[self._keys[i-1]] = pos
+        self._end[self._keys[-1]] = -1
 
-    def _parse_line(self, line):
+
+    def _parse_line(self, line, dict_buffer):
         """
         Read in a data line from a colvars.traj file
         """
 
         step = np.int64(line[0:self._end['step']])
-
         for v in self._keys[1:]:
-            text = line[self._start[v]:self._end[v]]
-            v_v = np.fromstring(text.lstrip(' (').rstrip(') '), sep=',')
-            n_d = len(v_v)
-            if (v not in self._colvars):
-                self._colvars[v] = Colvar_traj(v)
-                self._colvars[v]._set_num_dimensions(n_d)
-            cv = self._colvars[v]
-            n = len(cv)
-            cv._resize(n+1)
-            cv.steps[n] = step
-            cv.values[n] = v_v
-
+            text = line[self._start[v]:self._end[v]].strip()
+            if (v not in dict_buffer):
+                dict_buffer[v] = {'cv_step': list(), 'cv_values': list()}
+            if text.startswith('('):
+                v_v = np.fromstring(text[1:-1], sep=',')
+                dict_buffer[v]['dimension'] = len(v_v)
+            else:
+                v_v = np.float64(text)
+                dict_buffer[v]['dimension'] = 1
+            dict_buffer[v]['cv_values'].append(v_v)
+            dict_buffer[v]['cv_step'].append(step)
 
     def read_files(self, filenames, list_variables=False,
-                   first=0, last=-1, every=1):
+                   first=0, last=None, every=1):
         """
         Read a series of colvars.traj files.
         filenames : list of strings
@@ -193,31 +184,74 @@ class Colvars_traj(object):
         first : int
             skip all records before this index (see also mol load in VMD)
         last : int
-            stop reading after this record
+            stop reading after this record (default: don't stop)
         every : int
             read every these many records
         """
-        last = np.int64(last)
-        if (last == -1):
+
+        if last == None or last == -1:
             last = np.int64(np.iinfo(np.int64).max)
+        else:
+            last = np.int64(last)
+
         last_step = -1
         for f in [open(filename) for filename in filenames]:
+
+            dict_buffer = dict()
+
             for line in f:
-                if (len(line) == 0): continue
-                if (line[:1] == "@"): continue # xmgr file metadata
-                if (line[:1] == "#"):
+
+                if len(line) == 0:
+                    continue
+
+                if line[:1] == "#":
                     self._parse_comment_line(line)
                     continue
+
                 if list_variables:
+                    # After parsing the last comment line, return if listing
+                    # the variables
                     return self.variables
+
                 step = np.int64(line[0:self._end['step']])
-                if (step == last_step): continue
+
+                if step == last_step:
+                    # Detect duplicated frames (upon restart)
+                    continue
+
                 if ((self._frame >= first) and (self._frame <= last) and
                     (self._frame % every == 0)):
-                    self._parse_line(line)
+                    self._parse_line(line, dict_buffer)
                 self._frame += 1
                 last_step = step
+
+            for key in dict_buffer:
+                if (key not in self._colvars):
+                    self._colvars[key] = Colvar_traj(key)
+                    self._colvars[key]._set_num_dimensions(dict_buffer[key]['dimension'])
+                cv = self._colvars[key]
+                cv._step = np.concatenate((cv.steps, dict_buffer[key]['cv_step']), axis=0)
+                cv._colvar = np.concatenate((cv.values, dict_buffer[key]['cv_values']), axis=0)
             f.close()
+
+    def as_pandas(self, keys=None):
+        """
+        Export data to pandas DataFrame
+        keys : list of strings
+            list of keys to be read
+        """
+        import pandas as pd
+        tmp_dict = dict()
+        if keys is None:
+            keys = self.variables
+        series = list()
+        for key in keys:
+            series.append(pd.Series(data=self.__getitem__(key).values.tolist(),
+                                    index=self.__getitem__(key).steps,
+                                    name=key))
+        df = pd.concat(series, axis=1).reset_index()
+        df.rename(columns={'index': 'step'}, inplace=True)
+        return df
 
 
 if (__name__ == '__main__'):

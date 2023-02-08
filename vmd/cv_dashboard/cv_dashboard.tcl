@@ -67,7 +67,6 @@ namespace eval ::cv_dashboard {
   foreach { text units } [array get text_to_units] {
     set units_to_text($units) $text
   }
-  dict set global_config units "real"
 
   variable template_dir
   variable template_base_dir
@@ -117,6 +116,7 @@ Please upgrade to VMD 1.9.4 alpha or later."
 
   if {[winfo exists .cv_dashboard_window]} {
     wm deiconify .cv_dashboard_window
+    ::cv_dashboard::change_track_frame ;# Restart tracking frames when re-opening
     return .cv_dashboard_window
   }
 
@@ -158,7 +158,7 @@ proc ::cv_dashboard::run_cv args  {
   if [catch { cv {*}$args } res] {
     set short_cmd [string range $args 0 200]
     set short_message [string range $res 0 200]
-    tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
+    tk_messageBox -icon error -title "Colvars Library Error" -parent .cv_dashboard_window\
       -message "Error running command:\n$short_cmd" -detail "$short_message\n\nSee console for further details."
     return -1
   }
@@ -260,6 +260,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
   set indent $::cv_dashboard::indent
 
   set biases [cv list biases]
+  set default_bias_types [list abf alb harmonic harmonicwalls histogram histogramrestraint linear metadynamics reweightamd]
   # "cv bias name type" after 2021-12-07
   if { [string compare [run_cv version] "2021-12-20"] >= 0 } {
     set bias_types [list]
@@ -269,7 +270,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
     set bias_types [lsort -unique $bias_types]
   } else {
     # if not available, use hard-coded list
-    set bias_types [list abf alb harmonic harmonicwalls histogram histogramrestraint linear metadynamics reweightamd]
+    set bias_types $default_bias_types
   }
   foreach t $bias_types {
     set anonymous_bias_count($t) 0
@@ -347,7 +348,7 @@ proc ::cv_dashboard::extract_configs { cfg_in } {
                   incr anonymous_bias_count($keyword)
                 }
                 dict set bias_map [list $keyword $anonymous_bias_count($keyword) $name] $block_cfg
-              } else {
+              } elseif { [lsearch $default_bias_types $keyword] == -1 } {
                 # What to make of unrecognized block keyword?
                 puts "Warning: unrecognized block keyword in input: $keyword"
                 puts "with configuration block:"
@@ -402,7 +403,7 @@ proc ::cv_dashboard::substitute_atomselects { cfg_in } {
     if { $seltext != "" && [regexp -nocase {^(\s*)atom} $line match spaces] } {
       set sel [atomselect $::cv_dashboard::mol $seltext]
       if {[$sel num] == 0 } {
-        tk_messageBox -icon error -title "Colvars warning" -parent .cv_dashboard_window\
+        tk_messageBox -icon warning -title "Colvars Dashboard Warning" -parent .cv_dashboard_window\
           -message "Selection text \"${seltext}\" for automatic atom selection matches zero atoms. \
 Keeping atom numbers from existing configuration."
         # Keep existing atom definition line

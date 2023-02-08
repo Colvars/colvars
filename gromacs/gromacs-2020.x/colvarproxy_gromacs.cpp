@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <cerrno>
 
+
+#include "gromacs/math/units.h"
 #include "gromacs/mdlib/mdatoms.h"
 #include "gromacs/mdtypes/inputrec.h"
 #include "gromacs/mdtypes/forceoutput.h"
@@ -12,7 +14,6 @@
 #include "gromacs/pbcutil/pbc.h"
 #include "gromacs/utility/fatalerror.h"
 #include "gromacs/utility/futil.h"
-#include "colvarproxy_gromacs.h"
 #include "gromacs/mdtypes/commrec.h"
 #include "gromacs/domdec/domdec_struct.h"
 #include "gromacs/gmxlib/network.h"
@@ -21,6 +22,10 @@
 #include "gromacs/topology/ifunc.h"
 #include "gromacs/topology/mtop_util.h"
 #include "gromacs/mdlib/broadcaststructs.h"
+
+
+#include "colvarproxy_gromacs.h"
+
 
 //************************************************************
 // colvarproxy_gromacs
@@ -45,11 +50,13 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   // User-scripted forces are not available in GROMACS
   have_scripts = false;
 
-  angstrom_value = 0.1;
+  angstrom_value_ = 0.1;
+
+  boltzmann_ = BOLTZ;
 
   // Get the thermostat temperature.
   // NOTE: Considers only the first temperature coupling group!
-  thermostat_temperature = ir->opts.ref_t[0];
+  set_target_temperature(ir->opts.ref_t[0]);
 
   // GROMACS random number generation.
   // Seed with the mdp parameter ld_seed, the Langevin dynamics seed.
@@ -81,6 +88,8 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   {
     colvars_restart = true;
     input_prefix_str = filename_restart;
+    input_prefix_str.erase(input_prefix_str.rfind(".dat"));
+    input_prefix_str.erase(input_prefix_str.rfind(".colvars.state"));
   }
 
   // Retrieve masses and charges from input file
@@ -101,6 +110,9 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
 
     version_int = get_version_from_string(COLVARPROXY_VERSION);
 
+    colvars->cite_feature("GROMACS engine");
+    colvars->cite_feature("Colvars-GROMACS interface");
+
     if (cvm::debug()) {
       log("Initializing the colvars proxy object.\n");
     }
@@ -113,8 +125,13 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
         colvars->read_config_file(i->c_str());
     }
 
+
     colvars->setup();
     colvars->setup_input();
+
+    // Citation Reporter
+    cvm::log(std::string("\n")+colvars->feature_report(0)+std::string("\n"));
+
     colvars->setup_output();
 
     if (step != 0) {
@@ -122,6 +139,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     }
 
     colvars->it = colvars->it_restart = step;
+
 
   } // end master
 
@@ -196,7 +214,6 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
       /* For subsequent checkpoint writing, set the pointers (xa_old_whole_p) to the xa_old_whole
       * arrays that get updated at every NS step */
       colvarshist->xa_old_whole_p = xa_old_whole;
-
       //Initialize number of colvars atoms from the global state
       *n_colvars_atoms_state_p = n_colvars_atoms;
       // Point the shifts array from the  global state to the local shifts array
@@ -233,9 +250,8 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     cvm::log ("atoms_new_colvar_forces = "+cvm::to_str (atoms_new_colvar_forces)+"\n");
     cvm::log (cvm::line_marker);
     log("done initializing the colvars proxy object.\n");
-
-
   }
+
 
 } // End colvars initialization.
 
@@ -249,25 +265,6 @@ void colvarproxy_gromacs::finish(const t_commrec *cr)
     colvars->write_restart_file(output_prefix_str+".colvars.state");
     colvars->write_output_files();
   }
-}
-
-void colvarproxy_gromacs::set_temper(double temper)
-{
-  thermostat_temperature = temper;
-}
-
-// GROMACS uses nanometers and kJ/mol internally
-cvm::real colvarproxy_gromacs::backend_angstrom_value() { return 0.1; }
-
-// From Gnu units
-// $ units -ts 'k' 'kJ/mol/K/avogadro'
-// 0.0083144621
-cvm::real colvarproxy_gromacs::boltzmann() { return 0.0083144621; }
-
-// Temperature of the simulation (K)
-cvm::real colvarproxy_gromacs::temperature()
-{
-  return thermostat_temperature;
 }
 
 // Time step of the simulation (fs)
@@ -304,8 +301,11 @@ cvm::rvector colvarproxy_gromacs::position_distance (cvm::atom_pos const &pos1,
 
 void colvarproxy_gromacs::log (std::string const &message)
 {
-  // Gromacs prints messages on the stderr FILE.
-  fprintf(stderr, "colvars: %s", message.c_str());
+  std::istringstream is(message);
+  std::string line;
+  while (std::getline(is, line))
+    // Gromacs prints messages on the stderr FILE
+    fprintf(stderr, "colvars: %s\n", line.c_str());
 }
 
 void colvarproxy_gromacs::error (std::string const &message)
@@ -433,7 +433,6 @@ void colvarproxy_gromacs::calculateForces(
                               gmx_bNS, x_pointer, n_colvars_atoms, nat_loc,
                               ind_loc, xa_ind, xa_old_whole, gmx_box);
 
-
   // Communicate_group_positions takes care of removing shifts (unwrapping)
   // in single node jobs, communicate_group_positions() is efficient and adds no overhead
 
@@ -466,8 +465,6 @@ void colvarproxy_gromacs::calculateForces(
     }
 
     forceProviderOutput->enerd_.term[F_COM_PULL] += bias_energy;
-
-
   } // master node
 
   //Broadcast the forces to all the nodes

@@ -3,9 +3,9 @@ index 3715ce1656..65134d0568 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -572,6 +572,9 @@ include(gmxManageTNG)
- 
+
  include(gmxManageLmfit)
- 
+
 +include(gmxManageColvars)
 +include(gmxManageLepton)
 +
@@ -19,7 +19,7 @@ index a4430e9dd6..385b688501 100644
 @@ -142,6 +142,12 @@ if (WIN32)
  endif()
  list(APPEND libgromacs_object_library_dependencies thread_mpi)
- 
+
 +# Add Colvars and Lepton targets, embed their object code in libgromacs
 +gmx_manage_colvars()
 +gmx_manage_lepton()
@@ -32,7 +32,7 @@ index a4430e9dd6..385b688501 100644
 @@ -189,6 +195,8 @@ else()
      add_library(libgromacs ${LIBGROMACS_SOURCES})
  endif()
- 
+
 +gmx_include_colvars_headers()
 +
  # Add these contents first because linking their tests can take a lot
@@ -58,8 +58,8 @@ index fadc3d283e..8a6ce56a6f 100644
 +/* COLVARS : add a value of 1000 for Colvars support and
 + * prevent regular GROMACS to read colvars .cpt files */
 +static const int cpt_version = cptv_Count - 1 + 1000;
- 
- 
+
+
  const char* est_names[estNR] = { "FE-lambda",
 @@ -1238,6 +1241,15 @@ static void do_cpt_header(XDR* xd, gmx_bool bRead, FILE* list, CheckpointHeaderC
      {
@@ -75,12 +75,12 @@ index fadc3d283e..8a6ce56a6f 100644
 +    }
 +
  }
- 
+
  static int do_cpt_footer(XDR* xd, int file_version)
 @@ -1964,6 +1976,35 @@ static int do_cpt_EDstate(XDR* xd, gmx_bool bRead, int nED, edsamhistory_t* EDst
      return 0;
  }
- 
+
 +/* This function stores the last whole configuration of the colvars atoms in the .cpt file */
 +static int do_cpt_colvars(XDR* xd, gmx_bool bRead, int ecolvars, colvarshistory_t* colvarsstate, FILE* list)
 +{
@@ -124,7 +124,7 @@ index fadc3d283e..8a6ce56a6f 100644
 @@ -2713,6 +2755,17 @@ static void read_checkpoint(const char*                    fn,
          cp_error();
      }
- 
+
 +    if (headerContents->ecolvars != 0 && observablesHistory->colvarsHistory == nullptr)
 +    {
 +        observablesHistory->colvarsHistory = std::make_unique<colvarshistory_t>(colvarshistory_t{});
@@ -142,7 +142,7 @@ index fadc3d283e..8a6ce56a6f 100644
 @@ -2879,6 +2932,13 @@ static CheckpointHeaderContents read_checkpoint_data(t_fileio*
          cp_error();
      }
- 
+
 +    colvarshistory_t colvarshist = {};
 +    ret = do_cpt_colvars(gmx_fio_getxdr(fp), TRUE, headerContents.ecolvars, &colvarshist, nullptr);
 +    if (ret)
@@ -151,12 +151,12 @@ index fadc3d283e..8a6ce56a6f 100644
 +    }
 +
      ret = do_cpt_files(gmx_fio_getxdr(fp), TRUE, outputfiles, nullptr, headerContents.file_version);
- 
+
      if (ret)
 @@ -3000,6 +3060,12 @@ void list_checkpoint(const char* fn, FILE* out)
          ret = do_cpt_swapstate(gmx_fio_getxdr(fp), TRUE, headerContents.eSwapCoords, &swaphist, out);
      }
- 
+
 +    if (ret == 0)
 +    {
 +        colvarshistory_t colvarshist = {};
@@ -189,7 +189,7 @@ index 0b72fc4e0c..60666542b4 100644
      bEner_[F_ORIRESDEV]  = (gmx_mtop_ftype_count(mtop, F_ORIRES) > 0);
 -    bEner_[F_COM_PULL]   = ((ir->bPull && pull_have_potential(*pull_work)) || ir->bRot);
 +    bEner_[F_COM_PULL]   = ((ir->bPull && pull_have_potential(*pull_work)) || ir->bRot || ir->bColvars);
- 
+
      MdModulesEnergyOutputToDensityFittingRequestChecker mdModulesAddOutputToDensityFittingFieldRequest;
      mdModulesNotifier.simulationSetupNotifications_.notify(&mdModulesAddOutputToDensityFittingFieldRequest);
 diff --git a/src/gromacs/mdlib/mdoutf.cpp b/src/gromacs/mdlib/mdoutf.cpp
@@ -207,7 +207,7 @@ index 7e06e4fc9e..38f5604ebd 100644
 @@ -357,6 +358,10 @@ static void write_checkpoint(const char*                     fn,
      swaphistory_t* swaphist    = observablesHistory->swapHistory.get();
      int            eSwapCoords = (swaphist ? swaphist->eSwapCoords : eswapNO);
- 
+
 +    /* COLVARS */
 +    colvarshistory_t* colvarshist = observablesHistory->colvarsHistory.get();
 +    int               ecolvars    = (colvarshist ? colvarshist->n_atoms : 0);
@@ -230,11 +230,11 @@ index 2571b0d216..4572e2baea 100644
 @@ -123,6 +123,8 @@
  #include "gromacs/utility/strconvert.h"
  #include "gromacs/utility/sysinfo.h"
- 
+
 +#include "colvarproxy_gromacs.h"
 +
  #include "gpuforcereduction.h"
- 
+
  using gmx::ArrayRef;
 @@ -616,6 +618,16 @@ static void computeSpecialForces(FILE*                          fplog,
       */
@@ -252,7 +252,7 @@ index 2571b0d216..4572e2baea 100644
 +
          gmx::ForceProviderInput  forceProviderInput(x, *mdatoms, t, box, *cr);
          gmx::ForceProviderOutput forceProviderOutput(forceWithVirialMtsLevel0, enerd);
- 
+
 diff --git a/src/gromacs/mdrun/legacymdrunoptions.h b/src/gromacs/mdrun/legacymdrunoptions.h
 index 474f6f0396..bb94199a30 100644
 --- a/src/gromacs/mdrun/legacymdrunoptions.h
@@ -265,7 +265,7 @@ index 474f6f0396..bb94199a30 100644
 +                                          { efXVG, "-swap", "swapions", ffOPTWR },
 +                                          { efDAT, "-colvars",  "colvars",   ffOPTRDMULT },     /* COLVARS */
 +                                          { efDAT, "-colvars_restart", "colvars",  ffOPTRD },   /* COLVARS */}};
- 
+
      //! Print a warning if any force is larger than this (in kJ/mol nm).
      real pforce = -1;
 diff --git a/src/gromacs/mdrun/replicaexchange.cpp b/src/gromacs/mdrun/replicaexchange.cpp
@@ -278,7 +278,7 @@ index c40161d9ef..490db3f10f 100644
      exchange_rvecs(ms, b, state->v.rvec_array(), state->natoms);
 +    exchange_rvecs(ms, b, state->xa_old_whole_colvars, state->n_colvars_atoms);
  }
- 
+
  static void copy_state_serial(const t_state* src, t_state* dest)
 diff --git a/src/gromacs/mdrun/runner.cpp b/src/gromacs/mdrun/runner.cpp
 index 232d994e1a..8937b83296 100644
@@ -295,7 +295,7 @@ index 232d994e1a..8937b83296 100644
 @@ -167,6 +168,8 @@
  #include "gromacs/utility/smalloc.h"
  #include "gromacs/utility/stringutil.h"
- 
+
 +#include "colvarproxy_gromacs.h"
 +
  #include "isimulator.h"
@@ -304,7 +304,7 @@ index 232d994e1a..8937b83296 100644
 @@ -1691,6 +1694,51 @@ int Mdrunner::mdrunner()
                                 MASTER(cr) ? globalState->x.rvec_array() : nullptr, filenames.size(),
                                 filenames.data(), oenv, mdrunOptions.imdOptions, startingBehavior);
- 
+
 +        /* COLVARS */
 +        if (opt2bSet("-colvars",filenames.size(), filenames.data()))
 +        {
@@ -353,15 +353,18 @@ index 232d994e1a..8937b83296 100644
          if (DOMAINDECOMP(cr))
          {
              GMX_RELEASE_ASSERT(fr, "fr was NULL while cr->duty was DUTY_PP");
-@@ -1839,6 +1887,13 @@ int Mdrunner::mdrunner()
+@@ -1839,6 +1887,16 @@ int Mdrunner::mdrunner()
      }
      releaseDevice(deviceInfo);
- 
+
 +    /* COLVARS */
 +    if (inputrec->bColvars)
 +    {
++        GMX_RELEASE_ASSERT(inputrec->colvars_proxy, "inputrec->colvars_proxy was NULL while colvars module was enabled.");
++
 +        inputrec->colvars_proxy->finish(cr);
 +        delete inputrec->colvars_proxy;
++        inputrec->colvars_proxy = nullptr;
 +    }
 +
      /* Does what it says */
@@ -400,22 +403,22 @@ index 6e4ee727ab..042acdc01b 100644
 @@ -55,6 +55,8 @@ struct gmx_enfrot;
  struct gmx_enfrotgrp;
  struct pull_params_t;
- 
+
 +class colvarproxy_gromacs;
 +
  namespace gmx
  {
  class Awh;
 @@ -570,6 +572,10 @@ struct t_inputrec // NOLINT (clang-analyzer-optin.performance.Padding)
- 
+
      //! KVT for storing simulation parameters that are not part of the mdp file.
      std::unique_ptr<gmx::KeyValueTreeObject> internalParameters;
 +
 +    /* COLVARS */
-+    gmx_bool                bColvars;       /* Do we do colvars calculations ? */
-+    colvarproxy_gromacs     *colvars_proxy; /* The object for the colvars calculations */
++    gmx_bool                bColvars = false;       /* Do we do colvars calculations ? */
++    colvarproxy_gromacs     *colvars_proxy = nullptr; /* The object for the colvars calculations */
  };
- 
+
  int ir_optimal_nstcalcenergy(const t_inputrec* ir);
 diff --git a/src/gromacs/mdtypes/observableshistory.cpp b/src/gromacs/mdtypes/observableshistory.cpp
 index 0b5983a59c..57d851645a 100644
@@ -426,7 +429,7 @@ index 0b5983a59c..57d851645a 100644
  #include "gromacs/mdtypes/pullhistory.h"
  #include "gromacs/mdtypes/swaphistory.h"
 +#include "gromacs/mdtypes/colvarshistory.h"
- 
+
  ObservablesHistory::ObservablesHistory()  = default;
  ObservablesHistory::~ObservablesHistory() = default;
 diff --git a/src/gromacs/mdtypes/observableshistory.h b/src/gromacs/mdtypes/observableshistory.h
@@ -438,18 +441,18 @@ index d2ba1d820f..a5747139d7 100644
  struct edsamhistory_t;
  struct swaphistory_t;
 +struct colvarshistory_t;
- 
+
  /*! \libinternal \brief Observables history, for writing/reading to/from checkpoint file
   */
 @@ -76,6 +77,9 @@ struct ObservablesHistory
      //! Ion/water position swapping history
      std::unique_ptr<swaphistory_t> swapHistory;
- 
+
 +    //! Colvars
 +    std::unique_ptr<colvarshistory_t> colvarsHistory;
 +
      ObservablesHistory();
- 
+
      ~ObservablesHistory();
 diff --git a/src/gromacs/mdtypes/state.cpp b/src/gromacs/mdtypes/state.cpp
 index 0f36009513..b42ba3caf7 100644
@@ -463,7 +466,7 @@ index 0f36009513..b42ba3caf7 100644
 +    ddp_count_cg_gl(0),
 +    xa_old_whole_colvars(nullptr),
 +    n_colvars_atoms(0)
- 
+
  {
      // It would be nicer to initialize these with {} or {{0}} in the
 diff --git a/src/gromacs/mdtypes/state.h b/src/gromacs/mdtypes/state.h
@@ -472,13 +475,13 @@ index e38f3f7dbc..06a1cd8484 100644
 +++ b/src/gromacs/mdtypes/state.h
 @@ -269,6 +269,9 @@ public:
      std::vector<int> cg_gl;           //!< The global cg number of the local cgs
- 
+
      std::vector<double> pull_com_prev_step; //!< The COM of the previous step of each pull group
 +
 +    int      n_colvars_atoms; //!< number of colvars atoms
 +    rvec*    xa_old_whole_colvars; //!< last whole positions of colvars atoms
  };
- 
+
  #ifndef DOXYGEN
 diff --git a/src/programs/mdrun/tests/refdata/MdrunTest_WritesHelp.xml b/src/programs/mdrun/tests/refdata/MdrunTest_WritesHelp.xml
 index c2973bb1af..cb4d1da254 100644
@@ -502,6 +505,5 @@ index c2973bb1af..cb4d1da254 100644
 +           Generic data file
 + -colvars_restart [&lt;.dat&gt;]  (colvars.dat)    (Opt.)
 +           Generic data file
- 
+
  Options to specify output files:
- 

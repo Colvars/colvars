@@ -11,7 +11,7 @@
 /* ----------------------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    https://www.lammps.org/, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+   LAMMPS development team: developers@lammps.org
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
@@ -135,8 +135,6 @@ static void rebuild_table_int(inthash_t *tptr) {
 
   /* free memory used by old table */
   free(old_bucket);
-
-  return;
 }
 
 /*
@@ -166,8 +164,6 @@ void inthash_init(inthash_t *tptr, int buckets) {
 
   /* allocate memory for table */
   tptr->bucket=(inthash_node_t **) calloc(tptr->size, sizeof(inthash_node_t *));
-
-  return;
 }
 
 /*
@@ -680,16 +676,16 @@ void FixColvars::post_force(int /*vflag*/)
       error->one(FLERR,"Run aborted on request from colvars module.\n");
 
     if (tstat_id < 0) {
-      proxy->set_temperature(0.0);
+      proxy->set_target_temperature(0.0);
     } else {
       int tmp;
       // get thermostat target temperature from corresponding fix,
       // if the fix supports extraction.
       double *tt = (double *) modify->fix[tstat_id]->extract("t_target",tmp);
       if (tt)
-        proxy->set_temperature(*tt);
+        proxy->set_target_temperature(*tt);
       else
-        proxy->set_temperature(0.0);
+        proxy->set_target_temperature(0.0);
     }
   }
 
@@ -847,7 +843,6 @@ void FixColvars::post_force_respa(int vflag, int ilevel, int /*iloop*/)
 {
   /* only process colvar forces on the outmost RESPA level. */
   if (ilevel == nlevels_respa-1) post_force(vflag);
-  return;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -939,7 +934,7 @@ void FixColvars::end_of_step()
 void FixColvars::write_restart(FILE *fp)
 {
   if (me == 0) {
-    std::string rest_text("");
+    std::string rest_text;
     proxy->serialize_status(rest_text);
     // TODO call write_output_files()
     const char *cvm_state = rest_text.c_str();

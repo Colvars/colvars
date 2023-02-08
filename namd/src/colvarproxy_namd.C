@@ -47,7 +47,7 @@ colvarproxy_namd::colvarproxy_namd()
   first_timestep = true;
   requestTotalForce(total_force_requested);
 
-  angstrom_value = 1.;
+  angstrom_value_ = 1.;
 
   // initialize pointers to NAMD configuration data
   simparams = Node::Object()->simParameters;
@@ -67,21 +67,7 @@ colvarproxy_namd::colvarproxy_namd()
                            std::string(".colvars.state").size());
   }
 
-  // get the thermostat temperature
-  if (simparams->rescaleFreq > 0)
-    thermostat_temperature = simparams->rescaleTemp;
-  else if (simparams->reassignFreq > 0)
-    thermostat_temperature = simparams->reassignTemp;
-  else if (simparams->langevinOn)
-    thermostat_temperature = simparams->langevinTemp;
-  else if (simparams->tCoupleOn)
-    thermostat_temperature = simparams->tCoupleTemp;
-  else if (simparams->loweAndersenOn)
-    thermostat_temperature = simparams->loweAndersenTemp;
-  else if (simparams->stochRescaleOn)
-    thermostat_temperature = simparams->stochRescaleTemp;
-  else
-    thermostat_temperature = 0.0;
+  update_target_temperature();
 
   random = Random(simparams->randomSeed);
 
@@ -113,9 +99,9 @@ colvarproxy_namd::colvarproxy_namd()
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
   colvars->cite_feature("NAMD engine");
   colvars->cite_feature("Colvars-NAMD interface");
-    // Construct instance of colvars scripting interface
+
   errno = 0;
-  if (config) {
+  for ( ; config; config = config->next ) {
     colvars->read_config_file(config->data);
   }
 
@@ -148,6 +134,28 @@ colvarproxy_namd::colvarproxy_namd()
 colvarproxy_namd::~colvarproxy_namd()
 {
   delete reduction;
+}
+
+
+int colvarproxy_namd::update_target_temperature()
+{
+  int error_code = COLVARS_OK;
+  if (simparams->rescaleFreq > 0) {
+    error_code |= set_target_temperature(simparams->rescaleTemp);
+  } else if (simparams->reassignFreq > 0) {
+    error_code |= set_target_temperature(simparams->reassignTemp);
+  } else if (simparams->langevinOn) {
+    error_code |= set_target_temperature(simparams->langevinTemp);
+  } else if (simparams->tCoupleOn) {
+    error_code |= set_target_temperature(simparams->tCoupleTemp);
+  } else if (simparams->loweAndersenOn) {
+    error_code |= set_target_temperature(simparams->loweAndersenTemp);
+  } else if (simparams->stochRescaleOn) {
+    error_code |= set_target_temperature(simparams->stochRescaleTemp);
+  } else {
+    error_code |= set_target_temperature(0.0);
+  }
+  return error_code;
 }
 
 
@@ -247,6 +255,10 @@ int colvarproxy_namd::setup()
     log(std::string("\n")+colvars->feature_report(0)+std::string("\n"));
     features_hash = new_features_hash;
   }
+
+  update_target_temperature();
+  cvm::log("updating target temperature (T = "+
+           cvm::to_str(target_temperature())+" K).\n");
 
   return COLVARS_OK;
 }
@@ -535,7 +547,8 @@ void colvarproxy_namd::update_accelMD_info() {
   }
   const Controller& c = Node::Object()->state->getController();
   // This aMD factor is from previous step!
-  amd_weight_factor = std::exp(c.accelMDdV / (temperature() * boltzmann()));
+  amd_weight_factor = std::exp(c.accelMDdV /
+                               (target_temperature() * boltzmann()));
 //   std::cout << "Step: " << cvm::to_str(colvars->it) << " accelMD dV in colvars: " << c.accelMDdV << std::endl;
 }
 
@@ -621,13 +634,6 @@ void colvarproxy_namd::error(std::string const &message)
   } else {
     NAMD_die(msg);
   }
-}
-
-
-void colvarproxy_namd::exit(std::string const &message)
-{
-  log(message);
-  BackEnd::exit();
 }
 
 
@@ -992,61 +998,98 @@ int colvarproxy_namd::load_atoms(char const *pdb_filename,
 }
 
 
-std::ostream * colvarproxy_namd::output_stream(std::string const &output_name,
-                                               std::ios_base::openmode mode)
+std::ostream & colvarproxy_namd::output_stream(std::string const &output_name,
+                                               std::string const description)
 {
   if (cvm::debug()) {
     cvm::log("Using colvarproxy_namd::output_stream()\n");
   }
 
-  std::ostream *os = get_output_stream(output_name);
-  if (os != NULL) return os;
+  if (!io_available()) {
+    cvm::error("Error: trying to access an output file/channel "
+               "from the wrong thread.\n", COLVARS_BUG_ERROR);
+    return *output_stream_error_;
+  }
 
-  if (!(mode & (std::ios_base::app | std::ios_base::ate))) {
-    colvarproxy::backup_file(output_name);
+  if (output_streams_.count(output_name) > 0) {
+    return *(output_streams_[output_name]);
   }
-  ofstream_namd *osf = new ofstream_namd(output_name.c_str(), mode);
-  if (!osf->is_open()) {
-    cvm::error("Error: cannot write to file \""+output_name+"\".\n",
+
+  backup_file(output_name.c_str());
+
+  output_streams_[output_name] = new ofstream_namd(output_name.c_str());
+  if (! output_streams_[output_name]->good()) {
+    cvm::error("Error: cannot write to "+description+" \""+output_name+"\".\n",
                COLVARS_FILE_ERROR);
-    return NULL;
   }
-  output_stream_names.push_back(output_name);
-  output_files.push_back(osf);
-  return osf;
+
+  return *(output_streams_[output_name]);
 }
 
 
-int colvarproxy_namd::flush_output_stream(std::ostream *os)
+int colvarproxy_namd::flush_output_stream(std::string const &output_name)
 {
-  std::list<std::ostream *>::iterator osi  = output_files.begin();
-  std::list<std::string>::iterator    osni = output_stream_names.begin();
-  for ( ; osi != output_files.end(); osi++, osni++) {
-    if (*osi == os) {
-      ((ofstream_namd *) *osi)->flush();
-      return COLVARS_OK;
-    }
+  if (!io_available()) {
+    return COLVARS_OK;
   }
-  return COLVARS_ERROR;
+
+  if (output_streams_.count(output_name) > 0) {
+    (reinterpret_cast<ofstream_namd *>(output_streams_[output_name]))->flush();
+    return COLVARS_OK;
+  }
+
+  return cvm::error("Error: trying to flush an output file/channel "
+                    "that wasn't open.\n", COLVARS_BUG_ERROR);
+}
+
+
+int colvarproxy_namd::flush_output_streams()
+{
+  if (!io_available()) {
+    return COLVARS_OK;
+  }
+
+  for (std::map<std::string, std::ostream *>::iterator osi = output_streams_.begin();
+       osi != output_streams_.end();
+       osi++) {
+    (reinterpret_cast<ofstream_namd *>(osi->second))->flush();
+  }
+
+  return COLVARS_OK;
 }
 
 
 int colvarproxy_namd::close_output_stream(std::string const &output_name)
 {
-  std::list<std::ostream *>::iterator osi  = output_files.begin();
-  std::list<std::string>::iterator    osni = output_stream_names.begin();
-  for ( ; osi != output_files.end(); osi++, osni++) {
-    if (*osni == output_name) {
-      if (((ofstream_namd *) *osi)->is_open()) {
-        ((ofstream_namd *) *osi)->close();
-      }
-      delete *osi;
-      output_files.erase(osi);
-      output_stream_names.erase(osni);
-      return COLVARS_OK;
-    }
+  if (!io_available()) {
+    return cvm::error("Error: trying to access an output file/channel "
+                      "from the wrong thread.\n", COLVARS_BUG_ERROR);
   }
-  return COLVARS_ERROR;
+
+  if (output_streams_.count(output_name) > 0) {
+    (reinterpret_cast<ofstream_namd *>(output_streams_[output_name]))->close();
+    delete output_streams_[output_name];
+    output_streams_.erase(output_name);
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_namd::close_output_streams()
+{
+  if (! io_available()) {
+    return COLVARS_OK;
+  }
+
+  for (std::map<std::string, std::ostream *>::iterator osi = output_streams_.begin();
+       osi != output_streams_.end();
+       osi++) {
+    (reinterpret_cast<ofstream_namd *>(osi->second))->close();
+  }
+  output_streams_.clear();
+
+  return COLVARS_OK;
 }
 
 

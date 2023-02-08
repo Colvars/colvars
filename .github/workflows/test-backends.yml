@@ -2,12 +2,16 @@ name: "Backends"
 
 on: [push, pull_request]
 
-# The jobs call a template workflow `backend-template.yml` which performs
+# These jobs call a template workflow `backend-template.yml`, which performs
 # all the necessary steps to run the regression tests of the backend.
-# Variables need to be filled accordingly. See `backend-template.yml`
 
-# Set environment variables to make secrets available to the template steps
+# Variables listed under `with` are mandatory, except `test_lib_directory`
+# and `test_interface_directory`, which are optional.  `backend_name` must be
+# unique, as it is used to identify the cache.
+# See `backend-template.yml` for more details.
+
 env:
+  # Set environment variables to make secrets available to the template steps
   PULL_NAMD_KEY: secrets.PULL_NAMD_KEY
   PULL_VMD_KEY: secrets.PULL_VMD_KEY
   PULL_VMD_PLUGINS_KEY: secrets.PULL_VMD_PLUGINS_KEY
@@ -42,6 +46,27 @@ jobs:
       test_lib_directory: namd/tests/library
       test_interface_directory: namd/tests/interface
       rpath_exe: Linux-x86_64-g++.multicore/namd2
+    secrets:
+      # Choice of license by UIUC prevents sharing the code, hence the secret
+      private_key: ${{ secrets.PULL_NAMD_KEY }}
+
+  namd3:
+    name: NAMD3 (no CUDA)
+    # Prevent running this job on PRs across different accounts, because
+    # secrets wouldn't be shared
+    if: |
+      (github.event_name == 'pull_request' && github.repository_owner == github.event.pull_request.head.repo.owner.login) ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, 'test-namd'))
+    uses: ./.github/workflows/backend-template.yml
+    with:
+      backend_name: NAMD3
+      backend_repo: Colvars/namd
+      backend_repo_ref: devel
+      path_compile_script: devel-tools/compile-namd.sh
+      test_lib_directory: namd/tests/library
+      # Interface tests disabled until map variables are merged into NAMD3
+      # test_interface_directory: namd/tests/interface
+      rpath_exe: Linux-x86_64-g++.multicore/namd3
     secrets:
       # Choice of license by UIUC prevents sharing the code, hence the secret
       private_key: ${{ secrets.PULL_NAMD_KEY }}
@@ -90,6 +115,18 @@ jobs:
       backend_name: GROMACS-2021
       backend_repo: gromacs/gromacs
       backend_repo_ref: release-2021
+      path_compile_script: devel-tools/compile-gromacs.sh
+      test_lib_directory: gromacs/tests/library
+      rpath_exe: install/bin/gmx_d
+
+  gromacs-2022:
+    name: GROMACS 2022
+    if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, 'test-gromacs-2022')
+    uses: ./.github/workflows/backend-template.yml
+    with:
+      backend_name: GROMACS-2022
+      backend_repo: gromacs/gromacs
+      backend_repo_ref: release-2022
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
       rpath_exe: install/bin/gmx_d

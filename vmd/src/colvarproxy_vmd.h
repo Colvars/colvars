@@ -50,14 +50,6 @@ public:
 
   virtual int update_input();
 
-  virtual cvm::real backend_angstrom_value();
-
-  virtual cvm::real boltzmann();
-
-  virtual cvm::real temperature();
-
-  virtual cvm::real dt();
-
   virtual cvm::real rand_gaussian();
 
   virtual int get_molid(int &molid);
@@ -130,6 +122,21 @@ public:
                        cvm::atom_iter atom_end,
                        cvm::real *value,
                        cvm::real *atom_field);
+
+  /// Get value of alchemical lambda parameter from back-end (stub)
+  int get_alch_lambda(cvm::real* lambda) {
+    *lambda = 0.0;
+    return COLVARS_OK;
+  }
+
+  /// Set value of alchemical lambda parameter in back-end (stub)
+  int send_alch_lambda(void) { return COLVARS_OK; }
+
+  /// Get energy derivative with respect to lambda (stub)
+  int get_dE_dlambda(cvm::real* dE_dlambda) {
+    *dE_dlambda = 0.0;
+    return COLVARS_OK;
+  }
 
 protected:
 

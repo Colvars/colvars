@@ -61,10 +61,14 @@ if(COLVARS_LEPTON)
   endif()
 endif()
 
-if(DEFINED ENV{CXX_VERSION})
-  set(BUILD_DIR build_$ENV{CXX}$ENV{CXX_VERSION}_C++${CMAKE_CXX_STANDARD})
+if(DEFINED ENV{CMAKE_BUILD_DIR})
+  set(BUILD_DIR $ENV{CMAKE_BUILD_DIR})
 else()
-  set(BUILD_DIR build)
+  if(DEFINED ENV{CXX_VERSION})
+    set(BUILD_DIR build_$ENV{CXX}$ENV{CXX_VERSION}_C++${CMAKE_CXX_STANDARD})
+  else()
+    set(BUILD_DIR build)
+  endif()
 endif()
 
 if(DEFINED ENV{CCACHE})
@@ -76,6 +80,7 @@ execute_process(
   COMMAND ${CMAKE_COMMAND}
   -S cmake
   -B ${BUILD_DIR}
+  -D COLVARS_DEBUG=${COLVARS_DEBUG}
   -D CMAKE_BUILD_TYPE=RelWithDebinfo
   -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
   -D WARNINGS_ARE_ERRORS=ON
@@ -104,4 +109,13 @@ execute_process(
 
 if(NOT result EQUAL 0)
   message(FATAL_ERROR "Error building library.")
+else()
+  execute_process(
+    COMMAND ${CMAKE_CTEST_COMMAND}
+    --test-dir ${BUILD_DIR}
+    RESULT_VARIABLE result
+  )
+  if(NOT result EQUAL 0)
+    message(FATAL_ERROR "Error running library tests.")
+  endif()
 endif()

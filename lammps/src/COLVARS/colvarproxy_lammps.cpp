@@ -43,7 +43,6 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
 
   first_timestep=true;
   previous_step=-1;
-  t_target=temp;
   do_exit=false;
 
   // set input restart name and strip the extension, if present
@@ -102,11 +101,11 @@ void colvarproxy_lammps::init(const char *conf_file)
 
   my_angstrom  = _lmp->force->angstrom;
   // Front-end unit is the same as back-end
-  angstrom_value = my_angstrom;
+  angstrom_value_ = my_angstrom;
 
   // my_kcal_mol  = _lmp->force->qe2f / 23.060549;
   // force->qe2f is 1eV expressed in LAMMPS' energy unit (1 if unit is eV, 23 if kcal/mol)
-  my_boltzmann = _lmp->force->boltz;
+  boltzmann_ = _lmp->force->boltz;
   my_timestep  = _lmp->update->dt * _lmp->force->femtosecond;
 
   // TODO move one or more of these to setup() if needed
@@ -117,7 +116,7 @@ void colvarproxy_lammps::init(const char *conf_file)
   if (_lmp->update->ntimestep != 0) {
     cvm::log("Setting initial step number from LAMMPS: "+
              cvm::to_str(_lmp->update->ntimestep)+"\n");
-    colvars->it = colvars->it_restart =
+    colvarmodule::it = colvarmodule::it_restart =
       static_cast<cvm::step_number>(_lmp->update->ntimestep);
   }
 
@@ -174,7 +173,7 @@ double colvarproxy_lammps::compute()
   } else {
     // Use the time step number from LAMMPS Update object
     if (_lmp->update->ntimestep - previous_step == 1) {
-      colvars->it++;
+      colvarmodule::it++;
       b_simulation_continuing = false;
     } else {
       // Cases covered by this condition:
@@ -209,7 +208,7 @@ double colvarproxy_lammps::compute()
 
   if (cvm::debug()) {
     cvm::log(std::string(cvm::line_marker)+
-             "colvarproxy_lammps, step no. "+cvm::to_str(colvars->it)+"\n"+
+             "colvarproxy_lammps, step no. "+cvm::to_str(colvarmodule::it)+"\n"+
              "Updating internal data.\n");
   }
 
@@ -227,8 +226,10 @@ double colvarproxy_lammps::compute()
     cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
   }
 
-  // call the collective variable module
-  colvars->calc();
+  // Call the collective variable module
+  if (colvars->calc() != COLVARS_OK) {
+    cvm::error("Error in the collective variables module.\n", COLVARS_ERROR);
+  }
 
   if (cvm::debug()) {
     cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
@@ -269,7 +270,7 @@ cvm::rvector colvarproxy_lammps::position_distance(cvm::atom_pos const &pos1,
   double ytmp = pos2.y - pos1.y;
   double ztmp = pos2.z - pos1.z;
   _lmp->domain->minimum_image(xtmp,ytmp,ztmp);
-  return cvm::rvector(xtmp, ytmp, ztmp);
+  return {xtmp, ytmp, ztmp};
 }
 
 

@@ -40,15 +40,13 @@ You can browse the class hierarchy or the list of source files.
 #define COLVARS_BUG_ERROR       (1<<3) // Inconsistent state indicating bug
 #define COLVARS_FILE_ERROR      (1<<4)
 #define COLVARS_MEMORY_ERROR    (1<<5)
-#define COLVARS_NO_SUCH_FRAME (1<<6) // Cannot load the requested frame
+#define COLVARS_NO_SUCH_FRAME   (1<<6) // Cannot load the requested frame
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <list>
+#include <iosfwd>
 
 class colvarparse;
 class colvar;
@@ -634,12 +632,6 @@ public:
 
   // proxy functions
 
-  /// \brief Boltmann constant
-  static real boltzmann();
-
-  /// \brief Temperature of the simulation (K)
-  static real temperature();
-
   /// \brief Time step of MD integrator (fs)
   static real dt();
 
@@ -766,20 +758,11 @@ public:
 
 protected:
 
-  /// Configuration file
-  std::ifstream config_s;
-
   /// Configuration file parser object
   colvarparse *parse;
 
   /// Name of the trajectory file
   std::string cv_traj_name;
-
-  /// Collective variables output trajectory file
-  std::ostream *cv_traj_os;
-
-  /// Appending to the existing trajectory file?
-  bool cv_traj_append;
 
   /// Write labels at the next iteration
   bool cv_traj_write_labels;

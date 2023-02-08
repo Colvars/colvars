@@ -109,8 +109,8 @@ ABFdata::ABFdata(const char *gradFileName)
             // Read values of the collective variables only to check for consistency with grid
             gradFile >> xi;
 
-            double rel_diff = (mins[j] + widths[j] * (pos[j] + 0.5) - xi) / widths[j];
-            if ( rel_diff * rel_diff > 1e-12 )  {
+            double diff = mins[j] + widths[j] * (pos[j] + 0.5) - xi;
+            if ( diff * diff > 1e-7 )  {
                 std::cout << "\nERROR: wrong coordinates in gradient file\n";
                 std::cout << "Expected " << mins[j] + widths[j] * (pos[j] + 0.5) << ", got " <<  xi << std::endl;
                 exit(1);

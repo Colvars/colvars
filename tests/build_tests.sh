@@ -73,6 +73,7 @@ for colvar in "distance" ; do
         "harmonicwalls-both-fixed" \
         "harmonicwalls-k-moving" \
         "harmonicwalls-upper-k-moving" \
+        "harmonicwalls-upper-k-moving-decoupling" \
         "harmonicwalls-both-k-moving" \
         "linear-fixed" \
         "linear-k-moving" \

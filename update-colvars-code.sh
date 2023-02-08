@@ -124,6 +124,40 @@ get_gromacs_minor_version_cmake() {
     sed -e 's/set(GMX_VERSION_PATCH //' -e 's/)//'
 }
 
+
+copy_lepton() {
+
+  local target_path=${1}
+
+  if [ -z "${GIT}" ] && hash git 2> /dev/null ; then
+    local GIT=$(hash -t git)
+  fi
+
+  if [ -z "${OPENMM_SOURCE}" ] ; then
+    OPENMM_SOURCE=$(mktemp -d /tmp/openmm-source-XXXXXX)
+  fi
+
+  # Download Lepton if needed
+  if [ ! -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
+    if [ -n "${GIT}" ] ; then
+      echo "Downloading Lepton library (used in Colvars) via the OpenMM repository"
+      ${GIT} clone --depth=1 https://github.com/openmm/openmm.git ${OPENMM_SOURCE}
+    fi
+  fi
+
+  # Copy Lepton into target source tree
+  if [ -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
+    cp -f -p -R ${OPENMM_SOURCE}/libraries/lepton ${target_path}
+  else
+    echo "ERROR: could not download the Lepton library automatically." >&2
+    echo "       Please clone the OpenMM repository (https://github.com/openmm/openmm) " >&2
+    echo "       in a directory of your choice, and set the environment variable OPENMM_SOURCE " >&2
+    echo "       to the absolute path of that directory." >&2
+    return 1
+  fi
+}
+
+
 echo "Detected ${code} source tree in ${target}"
 if [ ${code} = "GROMACS" ]
 then
@@ -137,6 +171,18 @@ then
   GMX_MINOR_VERSION=`get_gromacs_minor_version_cmake ${GMX_VERSION_INFO}`
 
   GMX_VERSION=${GMX_MAJOR_VERSION}.${GMX_MINOR_VERSION}
+
+  # In 2022, version info is in CMakeLists.txt
+  if [ ${GMX_MAJOR_VERSION} = "\${Gromacs_VERSION_MAJOR}" ] ; then
+    CMAKE_LISTS=${target}/CMakeLists.txt
+    if [ ! -f ${CMAKE_LISTS} ] ; then
+      echo "ERROR: Cannot find file ${CMAKE_LISTS}."
+      exit 3
+    fi
+    GMX_VERSION=$(cat ${CMAKE_LISTS} | grep '^project(' | \
+    sed -e 's/project(Gromacs VERSION //' -e 's/)//')
+  fi
+
   echo "Detected GROMACS version ${GMX_VERSION}."
 
   case ${GMX_VERSION} in
@@ -145,6 +191,9 @@ then
       ;;
     2021*)
       GMX_VERSION='2021.x'
+      ;;
+    2022*)
+      GMX_VERSION='2022.x'
       ;;
     *)
     if [ $force_update = 0 ] ; then
@@ -157,8 +206,14 @@ then
     ;;
   esac
 
+  if [ ${GMX_VERSION} = '2021.x' ] && \
+       [ -s ${target}/.github/workflows/build_cmake.yml ] ; then
+    echo "Fixing outdated GitHub Actions CI recipe"
+    patch -p1 --forward -s -d ${target} < ${source}/gromacs/gromacs-2021.x-github.patch
+  fi
+
   if [ -z "${GITHUB_ACTION}" ] ; then
-    # Avoid invalidating the cache during CI jobs
+    # Only set version outside CI to avoid invalidating the compiler cache
     if grep -q 'set(GMX_VERSION_STRING_OF_FORK ""' ${GMX_VERSION_INFO} ; then
       sed -i "s/set(GMX_VERSION_STRING_OF_FORK \"\"/set(GMX_VERSION_STRING_OF_FORK \"Colvars-${COLVARS_VERSION}\"/" ${GMX_VERSION_INFO}
     fi
@@ -227,6 +282,8 @@ checkfile() {
 # Update LAMMPS tree
 if [ ${code} = "LAMMPS" ]
 then
+
+  copy_lepton ${target}/lib/ || exit 1
 
   # Update code-independent headers and sources
   for src in ${source}/src/colvar*.h ${source}/src/colvar*.cpp
@@ -298,7 +355,17 @@ if [ ${code} = "NAMD" ]
 then
   NAMD_VERSION=$(grep ^NAMD_VERSION ${target}/Makefile | cut -d' ' -f3)
 
-  # New layout: copy library files to the "colvars" folder
+  copy_lepton ${target}/ || exit 1
+  condcopy "${source}/namd/lepton/Make.depends" \
+           "${target}/lepton/Make.depends"
+  condcopy "${source}/namd/lepton/Makefile.namd" \
+           "${target}/lepton/Makefile.namd"
+
+  if ! grep -q lepton/Makefile.namd "${target}/lepton/Makefile.namd" ; then
+    patch -p1 -N -d ${target} < namd/Makefile.patch
+  fi
+
+  # Copy library files to the "colvars" folder
   for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
@@ -312,15 +379,6 @@ then
   condcopy "${source}/namd/colvars/Make.depends" \
            "${target}/colvars/Make.depends"
 
-  # Update abf_integrate
-  for src in ${source}/colvartools/*h ${source}/colvartools/*cpp
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/lib/abf_integrate/${tgt}"
-  done
-  condcopy "${source}/colvartools/Makefile" \
-           "${target}/lib/abf_integrate/Makefile"
-
   # Update NAMD interface files
   for src in \
       ${source}/namd/src/colvarproxy_namd.h \
@@ -330,6 +388,15 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
+
+  # Update abf_integrate
+  for src in ${source}/colvartools/*h ${source}/colvartools/*cpp
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/lib/abf_integrate/${tgt}"
+  done
+  condcopy "${source}/colvartools/Makefile" \
+           "${target}/lib/abf_integrate/Makefile"
 
   # Is this a devel branch of NAMD 3?
   if echo $NAMD_VERSION | grep -q '3.0a'
@@ -344,27 +411,6 @@ then
            "${target}/ug/ug_colvars.tex"
 
   echo ' done.'
-
-  # Check for changes in related NAMD files
-  for src in \
-      ${source}/namd/src/GlobalMasterColvars.h \
-      ${source}/namd/src/ScriptTcl.h \
-      ${source}/namd/src/ScriptTcl.C \
-      ${source}/namd/src/SimParameters.h \
-      ${source}/namd/src/SimParameters.C \
-      ;
-  do \
-    tgt=$(basename ${src})
-    checkfile "${src}" "${target}/src/${tgt}"
-  done
-  for src in ${source}/namd/Makefile ${source}/namd/config
-  do
-    tgt=$(basename ${src})
-    checkfile "${src}" "${target}/${tgt}"
-    if [ $updated_file = 1 ] ; then
-      updated_makefile=1
-    fi
-  done
 
   # One last check that each file is correctly included in the dependencies
   for file in ${target}/colvars/src/*.{cpp,h} ; do
@@ -454,13 +500,10 @@ fi
 if [ ${code} = "GROMACS" ]
 then
 
+  copy_lepton ${target}/src/external/ || exit 1
+
   target_folder=${target}/src/external/colvars
   patch_opts="-p1 --forward -s"
-  if [ ${GMX_VERSION} \< '2020.x' ] ; then
-    # Legacy path, we now target src/external
-    target_folder=${target}/src/gromacs/colvars
-    patch_opts="-p0 --forward -s"
-  fi
 
   echo ""
   if [ -d ${target_folder} ]
@@ -471,35 +514,37 @@ then
     mkdir ${target_folder}
   fi
 
-  if [ -z "${OPENMM_SOURCE}" ] ; then
-    OPENMM_SOURCE=$(mktemp -d /tmp/openmm-source-XXXXXX)
-  fi
-
-  # Download Lepton if needed
-  if [ ! -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
-    if [ -n "${GIT}" ] ; then
-      echo "Downloading Lepton library (used in Colvars) via the OpenMM repository"
-      ${GIT} clone --depth=1 https://github.com/openmm/openmm.git ${OPENMM_SOURCE}
-    fi
-  fi
-
-  # Copy Lepton into GROMACS tree
-  if [ -d ${OPENMM_SOURCE}/libraries/lepton ] ; then
-    cp -f -p -R ${OPENMM_SOURCE}/libraries/lepton ${target}/src/external/
+  if [ ${GMX_VERSION} == '2020.x' ] || [ ${GMX_VERSION} == '2021.x' ] ; then
+    # Copy library files and proxy files to the "src/external/colvars" folder
+    for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*{cpp,h}
+    do \
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target_folder}/${tgt}"
+    done
   else
-    echo "ERROR: could not download the Lepton library automatically." >&2
-    echo "       Please clone the OpenMM repository (https://github.com/openmm/openmm) " >&2
-    echo "       in a directory of your choice, and set the environment variable OPENMM_SOURCE " >&2
-    echo "       to the absolute path of that directory." >&2
-    exit 1
-  fi
+    # Starting from GROMACS 2022, colvar library is in `external` and proxy files are in `src/gromacs/applied_forces/colvarproxy`
+    # Library files
+    for src in ${source}/src/*.h ${source}/src/*.cpp
+    do \
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target_folder}/${tgt}"
+    done
+    # Proxy files
+    target_folder=${target}/src/gromacs/applied_forces/colvars
+    if [ -d ${target_folder} ]
+    then
+      echo "Your ${target} source tree seems to have already been patched."
+      echo "Update with the last Colvars source."
+    else
+      mkdir ${target_folder}
+    fi
+    for src in ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*{cpp,h,txt}
+    do \
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target_folder}/${tgt}"
+    done
 
-  # Copy library files and proxy files to the "src/external/colvars" folder
-  for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*{cpp,h}
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target_folder}/${tgt}"
-  done
+  fi
   echo ""
 
   # Copy CMake files

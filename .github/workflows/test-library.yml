@@ -15,17 +15,17 @@ jobs:
 
     steps:
       - name: Checkout Colvars
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Load compiler cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.ccache
           key: ${{ runner.os }}-build-basic-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-basic-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -48,14 +48,10 @@ jobs:
               exit 1
           fi
 
-      - name: Build library with CMake
+      - name: Build and test library with CMake
         env:
           CCACHE: ccache
         run: cmake -P devel-tools/build_test_library.cmake
-
-      - name: Run functional tests (dependencies only so far)
-        working-directory: build
-        run: ctest
 
       - name: Check documentation of command-line scripting interface
         shell: bash
@@ -66,6 +62,11 @@ jobs:
               echo "Command-line scripting doc out of date; please run make update-cvscript-cmdline-doc and commit changes" >& 2
               exit 1
           fi
+
+      - name: Build library with debug flags enabled
+        env:
+          CCACHE: ccache
+        run: cmake -D COLVARS_DEBUG=ON -P devel-tools/build_test_library.cmake
 
       - name: Check whether secrets are available
         id: checksecrets
@@ -81,36 +82,30 @@ jobs:
     needs: basicchecks
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Load Singularity containers cache
-        uses: actions/cache@v2
+      - name: Load containers cache
+        uses: actions/cache@v3
         with:
-          path: ~/.singularity
-          key: Linux-x86_64-containers-build-doc-2022-03-04
+          path: ~/.apptainer
+          key: Linux-x86_64-containers-build-doc-2022-09-03
 
-      - name: Get small downloadable packages
-        uses: actions/checkout@v2
-        with:
-          repository: 'Colvars/build-tools-packages'
-          ref: 'master'
-          path: 'devel-tools/packages'
-
-      - name: Install Singularity
+      - name: Install Apptainer
         shell: bash
-        working-directory: devel-tools/packages
         run: |
-          sudo apt-get -y install squashfs-tools containernetworking-plugins
-          sudo dpkg -i singularity_3.8.5-2_amd64.deb
+          wget https://github.com/apptainer/apptainer/releases/download/v1.0.3/apptainer_1.0.3_amd64.deb
+          sudo apt-get -y install ./apptainer_1.0.3_amd64.deb
 
       - name: Get container image
         shell: bash
         working-directory: devel-tools
         run: |
-          singularity pull Fedora35-texlive.sif library://giacomofiorin/default/colvars_development:fedora35_texlive
+          apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
+          apptainer remote use SylabsCloud
+          apptainer pull Fedora35-texlive.sif library://giacomofiorin/default/colvars_development:fedora35_texlive
 
       - name: Checkout website repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/colvars.github.io'
           path: 'website'
@@ -120,7 +115,7 @@ jobs:
         env:
           COLVARSDIR: ${{ github.workspace }}
           FORCE: 1  # Ignore error if branch isn't master
-        run: singularity exec ${COLVARSDIR}/devel-tools/Fedora35-texlive.sif make
+        run: apptainer exec ${COLVARSDIR}/devel-tools/Fedora35-texlive.sif make
 
 
   codeql:
@@ -130,13 +125,18 @@ jobs:
     if: ${{ ! github.event.repository.private }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install build dependencies for library
         run: |
           sudo apt-get -y install tcl8.6-dev
-          # OpenMM contains the latest Lepton
-          git clone --single-branch --depth=1 https://github.com/openmm/openmm openmm-source
+
+      - name: Checkout OpenMM (for Lepton library)
+        uses: actions/checkout@v3
+        with:
+          repository: 'openmm/openmm'
+          ref: 'master'
+          path: 'openmm-source'
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
@@ -159,10 +159,10 @@ jobs:
       CCACHE: ccache
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Load compiler ccache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.ccache
           key: ${{ runner.os }}-build-multiple-${{ github.sha }}
@@ -170,31 +170,32 @@ jobs:
 
       # Using an exact key to forgo saving it in case of a match (tarring up
       # is expensive); also including a date to allow a force-update.
-      - name: Load Singularity containers cache
-        uses: actions/cache@v2
+      - name: Load containers cache
+        uses: actions/cache@v3
         with:
-          path: ~/.singularity
-          key: Linux-x86_64-containers-build-2022-03-03
+          path: ~/.apptainer
+          key: Linux-x86_64-containers-build-2022-10-11
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Install Singularity
+      - name: Install Apptainer
         shell: bash
-        working-directory: devel-tools/packages
         run: |
-          sudo apt-get -y install squashfs-tools containernetworking-plugins
-          sudo dpkg -i singularity_3.8.5-2_amd64.deb
+          wget https://github.com/apptainer/apptainer/releases/download/v1.0.3/apptainer_1.0.3_amd64.deb
+          sudo apt-get -y install ./apptainer_1.0.3_amd64.deb
 
       - name: Get container image
         shell: bash
         working-directory: devel-tools
         run: |
-          singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+          apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
+          apptainer remote use SylabsCloud
+          apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 
       - name: GCC 4.8, C++11
         env:
@@ -203,7 +204,7 @@ jobs:
           CXX_VERSION: 4.8
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: GCC 8, C++17
@@ -213,7 +214,7 @@ jobs:
           CXX_VERSION: 8
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -224,7 +225,7 @@ jobs:
           CXX_VERSION: 11
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -235,7 +236,7 @@ jobs:
           CXX_VERSION: 11
           CC: clang
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: Clang 7, C++17
@@ -245,7 +246,7 @@ jobs:
           CXX_VERSION: 7
           CC: clang
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable llvm-toolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -256,7 +257,7 @@ jobs:
           CXX_VERSION: 11
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -267,7 +268,7 @@ jobs:
           CXX_VERSION: 10
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -278,7 +279,7 @@ jobs:
           CXX_VERSION: 9
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -289,7 +290,7 @@ jobs:
           CXX_VERSION: 8
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -300,7 +301,7 @@ jobs:
           CXX_VERSION: 8
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -311,7 +312,7 @@ jobs:
           CXX_VERSION: 7
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -322,7 +323,7 @@ jobs:
           CXX_VERSION: 7
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -333,7 +334,19 @@ jobs:
           CXX_VERSION: 4.8
           CC: gcc
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 4.8, C++98, no-for-scope (VMD uses it)
+        env:
+          CXX_STANDARD: 98
+          CXX: g++
+          CXX_VERSION: 4.8
+          CC: gcc
+          CXXFLAGS: -fno-for-scope
+          CMAKE_BUILD_DIR: build_g++4.8_C++98_no-for-scope
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
 
@@ -343,16 +356,16 @@ jobs:
     needs: basicchecks
     if: needs.basicchecks.outputs.hassecrets == 'true'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Load Singularity containers cache
-        uses: actions/cache@v2
+      - name: Load containers cache
+        uses: actions/cache@v3
         with:
-          path: ~/.singularity
-          key: Linux-x86_64-containers-build-2022-03-03
+          path: ~/.apptainer
+          key: Linux-x86_64-containers-build-2022-10-11
 
       - name: Checkout Sun compiler (Oracle Developer Studio)
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/oracle'
           ssh-key: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
@@ -360,24 +373,25 @@ jobs:
           path: ${{github.workspace}}/oracle
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Install Singularity
+      - name: Install Apptainer
         shell: bash
-        working-directory: devel-tools/packages
         run: |
-          sudo apt-get -y install squashfs-tools containernetworking-plugins
-          sudo dpkg -i singularity_3.8.5-2_amd64.deb
+          wget https://github.com/apptainer/apptainer/releases/download/v1.0.3/apptainer_1.0.3_amd64.deb
+          sudo apt-get -y install ./apptainer_1.0.3_amd64.deb
 
       - name: Get container image
         shell: bash
         working-directory: devel-tools
         run: |
-          singularity pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+          apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
+          apptainer remote use SylabsCloud
+          apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
 
       - name: Build library with Sun compiler (Oracle Developer Studio)
         shell: bash
@@ -385,7 +399,7 @@ jobs:
           CC: ${{github.workspace}}/oracle/developerstudio12.6/bin/cc
           CXX: ${{github.workspace}}/oracle/developerstudio12.6/bin/CC
         run: |
-          singularity exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=11 -P devel-tools/build_test_library.cmake
 
 
@@ -397,16 +411,16 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Build library with CMake
+      - name: Build and test library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Windows -P devel-tools/build_test_library.cmake
 
@@ -419,15 +433,15 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Build library with CMake
+      - name: Build and test library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Darwin -P devel-tools/build_test_library.cmake

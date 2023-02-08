@@ -3,8 +3,6 @@
 
             ## Atom definitions
             atomNumbers 1 2 3 4
-            ## Optionally, use GROMACS-style index groups
-            # indexGroup @
 
             centerToReference yes
             rotateToReference yes

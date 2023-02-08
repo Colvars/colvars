@@ -107,8 +107,8 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 
   // Default to VMD's native unit system, but do not set the units string
   // to preserve the native workflow of VMD / NAMD / LAMMPS-real
-  angstrom_value = 1.;
-  kcal_mol_value = 1.;
+  angstrom_value_ = 1.;
+  kcal_mol_value_ = 1.;
 
   colvars->setup_input();
   colvars->setup_output();
@@ -147,34 +147,6 @@ int colvarproxy_vmd::setup()
 
   return COLVARS_OK;
 }
-
-
-cvm::real colvarproxy_vmd::backend_angstrom_value()
-{
-  return 1.0;
-}
-
-
-cvm::real colvarproxy_vmd::boltzmann()
-{
-  return 0.001987191;
-}
-
-
-cvm::real colvarproxy_vmd::temperature()
-{
-  // TODO define, document and implement a user method to set the value of this
-  return 300.0;
-}
-
-
-cvm::real colvarproxy_vmd::dt()
-{
-  // TODO define, document and implement a user method to set the value of this
-  return 1.0;
-}
-
-
 cvm::real colvarproxy_vmd::rand_gaussian()
 {
   return vmd_random_gaussian();
@@ -196,18 +168,18 @@ int colvarproxy_vmd::set_unit_system(std::string const &units_in, bool check_onl
   }
 
   if (units_in == "real") {
-    angstrom_value = 1.;
-    kcal_mol_value = 1.;
+    angstrom_value_ = 1.;
+    kcal_mol_value_ = 1.;
   } else if (units_in == "metal") {
-    angstrom_value = 1.;
-    kcal_mol_value = 0.0433641017; // eV
+    angstrom_value_ = 1.;
+    kcal_mol_value_ = 0.0433641017; // eV
     // inverse of LAMMPS value is 1/23.060549 = .043364102
   } else if (units_in == "electron") {
-    angstrom_value = 1.88972612;    // Bohr
-    kcal_mol_value = 0.00159360144; // Hartree
+    angstrom_value_ = 1.88972612;    // Bohr
+    kcal_mol_value_ = 0.00159360144; // Hartree
   } else if (units_in == "gromacs") {
-    angstrom_value = 0.1;    // nm
-    kcal_mol_value = 4.184;  // kJ/mol
+    angstrom_value_ = 0.1;    // nm
+    kcal_mol_value_ = 4.184;  // kJ/mol
   } else {
     cvm::error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
     return COLVARS_ERROR;

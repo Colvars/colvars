@@ -42,9 +42,6 @@ protected:
   /// Pointer to the NAMD simulation input object
   SimParameters *simparams;
 
-  /// Self-explained
-  BigReal thermostat_temperature;
-
   /// NAMD-style PRNG object
   Random random;
 
@@ -68,8 +65,11 @@ public:
   colvarproxy_namd();
   ~colvarproxy_namd();
 
-  int setup();
-  int reset();
+  int setup() override;
+  int reset() override;
+
+  /// Get the target temperature from the NAMD thermostats supported so far
+  int update_target_temperature();
 
   // synchronize the local arrays with requested or forced atoms
   int update_atoms_map(AtomIDList::const_iterator begin,
@@ -77,39 +77,28 @@ public:
 
   void calculate();
 
-  void log(std::string const &message);
-  void error(std::string const &message);
-  int set_unit_system(std::string const &units_in, bool check_only);
-  void exit(std::string const &message);
-  void add_energy(cvm::real energy);
-  void request_total_force(bool yesno);
+  void log(std::string const &message) override;
+  void error(std::string const &message) override;
+  int set_unit_system(std::string const &units_in, bool check_only) override;
+  void add_energy(cvm::real energy) override;
+  void request_total_force(bool yesno) override;
 
-  bool total_forces_enabled() const
+  bool total_forces_enabled() const override
   {
     return total_force_requested;
   }
 
-  int run_force_callback();
+  int run_force_callback() override;
   int run_colvar_callback(std::string const &name,
                           std::vector<const colvarvalue *> const &cvcs,
-                          colvarvalue &value);
+                          colvarvalue &value) override;
   int run_colvar_gradient_callback(std::string const &name,
                                    std::vector<const colvarvalue *> const &cvcs,
-                                   std::vector<cvm::matrix2d<cvm::real> > &gradient);
-
-  cvm::real backend_angstrom_value()
-  {
-    return 1.0;
-  }
+                                   std::vector<cvm::matrix2d<cvm::real> > &gradient) override;
 
   cvm::real boltzmann()
   {
     return 0.001987191;
-  }
-
-  cvm::real temperature()
-  {
-    return thermostat_temperature;
   }
 
   cvm::real rand_gaussian()
@@ -266,11 +255,18 @@ public:
 
 #endif
 
-  std::ostream * output_stream(std::string const &output_name,
-                               std::ios_base::openmode mode);
-  int flush_output_stream(std::ostream *os);
-  int close_output_stream(std::string const &output_name);
-  int backup_file(char const *filename);
+  std::ostream &output_stream(std::string const &output_name,
+                              std::string const description = "file/channel") override;
+
+  int flush_output_stream(std::string const &output_name) override;
+
+  int flush_output_streams() override;
+
+  int close_output_stream(std::string const &output_name) override;
+
+  int close_output_streams() override;
+
+  int backup_file(char const *filename) override;
 
 };
 

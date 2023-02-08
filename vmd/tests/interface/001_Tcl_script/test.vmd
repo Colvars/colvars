@@ -9,6 +9,10 @@ mol addfile ../Common/da.psf type psf waitfor all
 cv molid top
 cv configfile test.in
 
+cv delete
+cv molid top
+cv configfile test.in
+
 # add the RMSD of all heavy atoms
 set noh [atomselect top "not hydrogen"]
 cv config "

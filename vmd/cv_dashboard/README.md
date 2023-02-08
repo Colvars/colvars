@@ -1,3 +1,7 @@
+When using the Dashboard, please cite the reference article:
+
+J. Hénin, Laura J. S. Lopes, G. Fiorin, **Human learning for molecular simulations: the Collective Variables Dashboard in VMD**, J. Chem. Theo. Comput., 2022, 18, 3, 1945–1956 (https://pubs.acs.org/doi/10.1021/acs.jctc.1c01081).
+
 # How to use the Colvars Dashboard in VMD
 
 ## Using the version included with VMD 1.9.4 alpha or later

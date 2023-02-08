@@ -106,9 +106,10 @@ proc ::cv_dashboard::plot { { type timeline } } {
 
     # Create plot with real freq data to enable exports
     # do not display lines but call plot to compute sizes
+    set xmin [expr [lindex $centers 0] - (0.5*$delta)]
+    set xmax [expr [lindex $centers end] + (0.5*$delta)]
     set plothandle [multiplot -title "Histogram for colvar $cvs \[click, keyb arrows (+ Shift/Ctrl) to navigate\]" \
-      -xlabel $xname -ylabel "N" -nostats \
-      -xmin [expr [lindex $centers 0] - (0.5*$delta)] -xmax [expr [lindex $centers end] + (0.5*$delta)] \
+      -xlabel $xname -ylabel "N" -nostats -xmin $xmin -xmax $xmax \
       -ymin 0.0 -x $centers -y $frequencies -nolines -plot]
 
     set ns [namespace qualifiers $plothandle]
@@ -118,7 +119,7 @@ proc ::cv_dashboard::plot { { type timeline } } {
     for {set j 0} {$j < $nbins} {incr j} {
       set left [expr [lindex $centers $j] - (0.5 * $delta)]
       set right [expr [lindex $centers $j] + (0.5 * $delta)]
-      $plothandle draw rectangle $left $ymin $right [lindex $frequencies $j] -fill "#ecf6ff" -tags rect$j
+      $plothandle draw rectangle $left $ymin $right [lindex $frequencies $j] -fill "#90b1fc" -tags rect$j -outline ""
     }
 
     set maxfreq 0
@@ -141,7 +142,12 @@ proc ::cv_dashboard::plot { { type timeline } } {
       lappend cumul_dist_x [lindex $::cv_dashboard::histogram_sorted_values end]
       lappend cumul_dist_y $maxfreq
     }
-    $plothandle add $cumul_dist_x $cumul_dist_y -linecolor black -legend "Cumulative distribution"
+    $plothandle add $cumul_dist_x $cumul_dist_y -linecolor black -legend "Cumulative distribution (grey lines: deciles)"
+    set n_deciles 10
+    for { set i 1 } { $i < $n_deciles } {incr i} {
+      set frac [expr {$i * 1.0 / $n_deciles }]
+      $plothandle draw line $xmin [expr {$maxfreq * $frac}] $xmax [expr {$maxfreq * $frac}] -fill "#d0d0d0"
+    }
   }
 
   $plothandle replot

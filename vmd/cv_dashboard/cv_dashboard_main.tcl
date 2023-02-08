@@ -113,7 +113,7 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $main.ploth -text "Histogram" -command {::cv_dashboard::plot histogram} -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   user add key F5 ::cv_dashboard::refresh_table
-  bind $main <F5> ::cv_dashboard::refresh_table
+  bind $w <F5> ::cv_dashboard::refresh_table
 
   # Add trajectory animation bindings to Dashboard and VMD's OpenGL window
   traj_animation_bindings $w
@@ -550,6 +550,12 @@ proc ::cv_dashboard::refresh_table {} {
     # We were unable to fetch the list of colvars
     # CVM is probably not initialized or there is no molecule loaded
     set ::cv_dashboard::cvs {}
+    # Clear biases as well
+    set biases .cv_dashboard_window.tabs.biases
+    foreach i [$biases.bias_table children {}] {
+     $biases.bias_table delete $i
+    }
+    set ::cv_dashboard::biases {}
     return
   }
   # Get fresh coordinates from VMD
@@ -769,6 +775,16 @@ proc ::cv_dashboard::save {} {
     set ::cv_dashboard::config_dir [file dirname $path]
 
     set o [open $path w]
+
+    if { ![dict exists $::cv_dashboard::global_config "units"] } {
+      # Default value in VMD. Add to config for information purposes
+      # keep as comment only for compatibility with NAMD 2.14
+      puts $o "#units real\n"
+      tk_messageBox -icon warning -title "Colvars Dashboard Warning"\
+        -message "Warning: Saving configuration with default unit settings (Angstrom, kcal/mol). Using this file in Gromacs or LAMMPS may \
+result in different values. To obtain identical values in VMD, set the appropriate unit system in the main Colvars Dashboard dialog (Actions/General Options)."
+    }
+
     puts $o [get_whole_config]
     close $o
   }
@@ -860,7 +876,6 @@ proc ::cv_dashboard::reset {} {
   set ::cv_dashboard::colvar_configs [dict create]
   set ::cv_dashboard::bias_configs [dict create]
   set ::cv_dashboard::global_config [dict create]
-  dict set ::cv_dashboard::global_config units "real"
 
   set ::cv_dashboard::global_comments ""
   refresh_table

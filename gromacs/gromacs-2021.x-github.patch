@@ -1,0 +1,25 @@
+diff --git a/.github/workflows/build_cmake.yml b/.github/workflows/build_cmake.yml
+index c41e123e94..178268eafd 100644
+--- a/.github/workflows/build_cmake.yml
++++ b/.github/workflows/build_cmake.yml
+@@ -17,7 +17,7 @@ jobs:
+       matrix:
+         config:
+         - {
+-            name: "Windows 2019 MSVC", artifact: "Windows-MSVC.7z",
++            name: "Windows Latest MSVC", artifact: "Windows-MSVC.7z",
+             os: windows-2019,
+             cc: "cl", cxx: "cl",
+             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
+@@ -30,8 +30,8 @@ jobs:
+             gpu_var: "Off"
+           }
+         - {
+-            name: "macOS Latest gcc with OpenCL", artifact: "macOS-gcc-OpenCL.7z",
+-            os: macos-latest,
++            name: "macOS 11 gcc with OpenCL", artifact: "macOS-gcc-OpenCL.7z",
++            os: macos-11, # Don't upgrade to macOS 12, see Issue #4646
+             cc: "gcc-10", cxx: "g++-10",
+             gpu_var: "OpenCL"
+
+ 
