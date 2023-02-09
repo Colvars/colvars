@@ -908,7 +908,9 @@ int colvar::init_components(std::string const &conf)
   error_code |= init_components_type<customColvar>(conf, "CV with support of the lepton custom function", "customColvar");
 #endif
   error_code |= init_components_type<neuralNetwork>(conf, "neural network CV for other CVs", "NeuralNetwork");
+#ifdef TORCH
   error_code |= init_components_type<torchANN>(conf, "torch artifical neural network CV", "torchANN");
+#endif
   error_code |= init_components_type<map_total>(conf, "total value of atomic map", "mapTotal");
 #if (__cplusplus >= 201103L)
   // iterate over all available CVC in the map

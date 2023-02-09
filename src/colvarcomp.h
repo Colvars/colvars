@@ -34,8 +34,10 @@
 
 
 #ifdef TORCH
+
 #include <torch/torch.h>
 #include <torch/script.h>
+
 #endif
 
 #include <map>
@@ -1844,7 +1846,7 @@ public:
 
 #endif // C++11 checking
 
-#ifdef TORCH 
+#ifdef TORCH
 
 // only when LibTorch is available
 class colvar::torchANN
