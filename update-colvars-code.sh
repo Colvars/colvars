@@ -361,9 +361,14 @@ then
   condcopy "${source}/namd/lepton/Makefile.namd" \
            "${target}/lepton/Makefile.namd"
 
+
   if ! grep -q lepton/Makefile.namd "${target}/lepton/Makefile.namd" ; then
     patch -p1 -N -d ${target} < namd/Makefile.patch
   fi
+
+  # For Torchann
+  patch -p1 -N -d ${target} < namd/config.patch
+  sed -i '/^COLVARSCXXFLAGS =*/s/$/ $(EXTRACOLVARSFLAGS)/' ${target}/Makefile
 
   # Copy library files to the "colvars" folder
   for src in ${source}/src/*.h ${source}/src/*.cpp

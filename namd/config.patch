@@ -1,0 +1,55 @@
+diff --git a/config b/config
+index 2bbb3e9a..ff0debb6 100755
+--- a/config
++++ b/config
+@@ -56,6 +56,8 @@ function error_syntax {
+   echo '  --cuda-dlink arch=<arch>,code=<code> (for cuFFT, may be repeated)'
+   echo '  --with-cuda-profiling (enables CUDA profiling with NVTX)'
+   echo '  --with-rocm-profiling (enables ROCm profiling with ROCtracer API)'
++  echo '  --with-colvar-torch (enables torchann in Colvars)'
++  echo '  --torch-prefix <directory containing libTorch>'
+   echo ''
+   if [ -n "${PRINT_ARCH_LIST+set}" ]; then
+     ARCH_PAT=''
+@@ -156,6 +158,7 @@ function error_exists {
+   use_memopt=0
+   use_mic=0
+   use_spec=0
++  use_colvar_torch=0
+ 
+   if (( $# < 1 )); then
+     PRINT_ARCH_LIST=1
+@@ -254,6 +257,19 @@ function error_exists {
+         ARCH_SUFFIX_ARG=$ARCH_SUFFIX_ARG-$1
+       ;;
+ 
++      --with-colvar-torch)
++        use_colvar_torch=1
++      ;;
++
++      --torch-prefix)
++        shift
++        if [ ! -d "$1" ]; then
++          echo "ERROR: No such directory $1"
++          error_syntax
++        fi
++        TORCH_PREFIX=$1
++      ;;
++
+       --with-debug)
+         use_debug=1
+       ;;
+@@ -1007,7 +1023,12 @@ function error_exists {
+   if [ -n "$CC_OPTS" ]; then
+     echo "COPTS = $CC_OPTS" >> Make.config
+   fi
+-
++  if (( "$use_colvar_torch" )); then
++    echo "TORCHDIR = $TORCH_PREFIX" >> Make.config
++    echo 'TORCHINCFLAGS = $(COPTI)$(TORCHDIR)/include $(COPTI)$(TORCHDIR)/include/torch/csrc/api/include' >> Make.config
++    echo 'EXTRACOLVARSFLAGS = -std=c++14 -DTORCH $(TORCHINCFLAGS)' >> Make.config
++    echo 'EXTRALINKLIBS = -Wl,-rpath,$(TORCHDIR)/lib -L$(TORCHDIR)/lib -ltorch -ltorch_cpu -lc10 -ltorch' >> Make.config
++  fi
+   if (( $use_debug )); then
+     echo 'CXXOPTS = -g' >> Make.config
+     echo 'CXXTHREADOPTS = -g' >> Make.config
