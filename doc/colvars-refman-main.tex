@@ -4959,7 +4959,7 @@ Most types of restraints (\ref{sec:colvarbias_harmonic}, \ref{sec:colvarbias_har
     Write the PMF computed by thermodynamic integration}{%
     boolean}{%
     \texttt{off}}{%
-    If the bias is applied to a variable that supports the calculation of total forces (see \refkey{outputotalForce}{sec:colvar} and \ref{sec:cvc_sys_forces}), this option allows calculating the corresponding PMF by thermodynamic integration, and writing it to the file \outputName{}\texttt{.$<$name$>$.ti.pmf}, where \texttt{$<$name$>$} is the name of the bias and the contents of the file are in multicolumn text format (\ref{sec:colvar_multicolumn_grid}).
+    If the bias is applied to a variable that supports the calculation of total forces (see \refkey{outputTotalForce}{sec:colvar} and \ref{sec:cvc_sys_forces}), this option allows calculating the corresponding PMF by thermodynamic integration, and writing it to the file \outputName{}\texttt{.$<$name$>$.ti.pmf}, where \texttt{$<$name$>$} is the name of the bias and the contents of the file are in multicolumn text format (\ref{sec:colvar_multicolumn_grid}).
     The total force includes the forces applied to the variable by all bias, except those from this bias itself.
     If any bias applies time-dependent forces besides the one using this option, an error is raised.
 }
