@@ -33,7 +33,6 @@ class colvarproxy_lammps : public colvarproxy {
   LAMMPS_NS::RanPark *_random;
 
   // state of LAMMPS properties
-  double my_timestep, my_angstrom;
   double bias_energy;
   int previous_step;
 
@@ -85,11 +84,6 @@ class colvarproxy_lammps : public colvarproxy {
 
   // Request to set the units used internally by Colvars
   int set_unit_system(std::string const &units_in, bool check_only) override;
-
-  inline cvm::real dt() override
-  {
-    return my_timestep;
-  };    // return _lmp->update->dt * _lmp->force->femtosecond; };
 
   /// Convert a command-line argument to string
   char const *script_obj_to_str(unsigned char *obj);

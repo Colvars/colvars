@@ -239,6 +239,20 @@
 \texttt{\textbf{Returns}}
 \\
 \texttt{state : string - The saved state}
+\item \texttt{fix\_modify Colvars targettemperature [T]}
+\\
+\texttt{Get/set target temperature, overriding internally what the MD engine reports}
+\\
+\texttt{\textbf{Returns}}
+\\
+\texttt{T : float - Current target temperature in K}
+\item \texttt{fix\_modify Colvars timestep [dt]}
+\\
+\texttt{Get/set integration timestep, overriding internally what the MD engine reports}
+\\
+\texttt{\textbf{Returns}}
+\\
+\texttt{dt : float - Current integration timestep in MD engine units}
 \item \texttt{fix\_modify Colvars units [units]}
 \\
 \texttt{Get or set the current Colvars unit system}

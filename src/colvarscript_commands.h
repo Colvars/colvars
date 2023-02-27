@@ -578,16 +578,30 @@ CVSCRIPT(cv_savetostring,
          )
 
 CVSCRIPT(cv_targettemperature,
-         "Get/set target temperature, overriding what the MD engine provides\n"
+         "Get/set target temperature, overriding internally what the MD engine reports\n"
          "T : float - Current target temperature in K",
          0, 1,
-         "T : float - New target temperature in K",
+         "T : float - New target temperature in K (internal use)",
          char const *Targ =
            script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
          if (Targ == NULL) {
            return script->set_result_real(script->proxy()->target_temperature());
          } else {
            return script->proxy()->set_target_temperature(strtod(Targ, NULL));
+         }
+         )
+
+CVSCRIPT(cv_timestep,
+         "Get/set integration timestep, overriding internally what the MD engine reports\n"
+         "dt : float - Current integration timestep in MD engine units",
+         0, 1,
+         "dt : float - New integration timestep in MD engine units",
+         char const *arg =
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
+         if (arg == NULL) {
+           return script->set_result_real(script->proxy()->dt());
+         } else {
+           return script->proxy()->set_integration_timestep(strtod(arg, NULL));
          }
          )
 
