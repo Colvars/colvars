@@ -70,6 +70,7 @@ colvarproxy_namd::colvarproxy_namd()
   }
 
   update_target_temperature();
+  set_integration_timestep(simparams->dt);
 
   random = Random(simparams->randomSeed);
 
@@ -269,6 +270,10 @@ int colvarproxy_namd::setup()
   update_target_temperature();
   log("updating target temperature (T = "+
       cvm::to_str(target_temperature())+" K).\n");
+
+  // Note: not needed currently, but may be in the future if NAMD allows
+  // redefining the timestep
+  set_integration_timestep(simparams->dt);
 
   return error_code;
 }

@@ -96,7 +96,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   updated_masses_ = updated_charges_ = true;
 
   // GROMACS timestep
-  timestep = ir->delta_t;
+  set_integration_timestep(ir->delta_t * 1000.0);
   // Retrieve the topology of all atoms
   gmx_atoms = gmx_mtop_global_atoms(mtop);
 
@@ -266,10 +266,6 @@ void colvarproxy_gromacs::finish(const t_commrec *cr)
     colvars->write_output_files();
   }
 }
-
-// Time step of the simulation (fs)
-// GROMACS uses picoseconds.
-cvm::real colvarproxy_gromacs::dt() { return 1000.0*timestep; }
 
 cvm::real colvarproxy_gromacs::rand_gaussian()
 {

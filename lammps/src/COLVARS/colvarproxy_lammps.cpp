@@ -99,7 +99,7 @@ void colvarproxy_lammps::init()
   colvars = new colvarmodule(this);
 
   // Create instance of scripting interface
-  script = new colvarscript(this);
+  script = new colvarscript(this, colvars);
 
   cvm::log("Using LAMMPS interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
@@ -107,14 +107,9 @@ void colvarproxy_lammps::init()
   colvars->cite_feature("LAMMPS engine");
   colvars->cite_feature("Colvars-LAMMPS interface");
 
-  my_angstrom  = _lmp->force->angstrom;
-  // Front-end unit is the same as back-end
-  angstrom_value_ = my_angstrom;
-
-  // my_kcal_mol  = _lmp->force->qe2f / 23.060549;
-  // force->qe2f is 1eV expressed in LAMMPS' energy unit (1 if unit is eV, 23 if kcal/mol)
+  angstrom_value_ = _lmp->force->angstrom;
   boltzmann_ = _lmp->force->boltz;
-  my_timestep  = _lmp->update->dt * _lmp->force->femtosecond;
+  set_integration_timestep(_lmp->update->dt * _lmp->force->femtosecond);
 
   if (_lmp->update->ntimestep != 0) {
     cvm::log("Setting initial step number from LAMMPS: "+
@@ -157,7 +152,7 @@ colvarproxy_lammps::~colvarproxy_lammps()
 int colvarproxy_lammps::setup()
 {
   int error_code = colvarproxy::setup();
-  my_timestep  = _lmp->update->dt * _lmp->force->femtosecond;
+  set_integration_timestep(_lmp->update->dt * _lmp->force->femtosecond);
   error_code |= colvars->update_engine_parameters();
   error_code |= colvars->setup_input();
   error_code |= colvars->setup_output();

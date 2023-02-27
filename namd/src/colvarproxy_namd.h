@@ -101,11 +101,6 @@ public:
     return random.gaussian();
   }
 
-  cvm::real dt() override
-  {
-    return simparams->dt;
-  }
-
   cvm::real get_accelMD_factor() const override {
     return amd_weight_factor;
   }

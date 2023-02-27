@@ -241,13 +241,18 @@
 \texttt{state : string - The saved state}
 \item \texttt{cv targettemperature [T]}
 \\
-\texttt{Get/set target temperature, overriding what the MD engine provides}
+\texttt{Get/set target temperature, overriding internally what the MD engine reports}
 \\
-\texttt{Returns}
-\\
-\texttt{-------}
+\texttt{\textbf{Returns}}
 \\
 \texttt{T : float - Current target temperature in K}
+\item \texttt{cv timestep [dt]}
+\\
+\texttt{Get/set integration timestep, overriding internally what the MD engine reports}
+\\
+\texttt{\textbf{Returns}}
+\\
+\texttt{dt : float - Current integration timestep in MD engine units}
 \item \texttt{cv units [units]}
 \\
 \texttt{Get or set the current Colvars unit system}
