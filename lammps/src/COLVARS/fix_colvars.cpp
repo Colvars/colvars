@@ -297,7 +297,7 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
 
   inp_name = nullptr;
   out_name = nullptr;
-  tmp_name = nullptr;
+  tfix_name = nullptr;
 
   /* parse optional arguments */
   int iarg = 4;
@@ -315,7 +315,7 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
     } else if (0 == strcmp(arg[iarg], "unwrap")) {
       unwrap_flag = utils::logical(FLERR,arg[iarg+1],false,lmp);
     } else if (0 == strcmp(arg[iarg], "tstat")) {
-      tmp_name = utils::strdup(arg[iarg+1]);
+      tfix_name = utils::strdup(arg[iarg+1]);
     } else {
       error->all(FLERR,"Unknown fix colvars parameter");
     }
@@ -353,7 +353,7 @@ FixColvars::~FixColvars()
   delete[] conf_file;
   delete[] inp_name;
   delete[] out_name;
-  delete[] tmp_name;
+  delete[] tfix_name;
   memory->sfree(comm_buf);
 
   if (proxy) {
