@@ -46,10 +46,15 @@ class colvarproxy_lammps : public colvarproxy {
 
  public:
   friend class cvm::atom;
-  colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp, const char *, const char *, const int, const double,
-                     MPI_Comm);
+
+  colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
+                     const int seed,
+                     MPI_Comm root2root);
+
   ~colvarproxy_lammps() override;
+
   void init();
+
   int setup() override;
 
   // disable default and copy constructor

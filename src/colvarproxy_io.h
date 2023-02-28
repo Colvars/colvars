@@ -66,28 +66,40 @@ public:
   }
 
   /// Prefix of the input state file to be read next
-  inline std::string & input_prefix()
+  inline std::string const & input_prefix() const
   {
     return input_prefix_str;
   }
 
+  /// Initialize input_prefix (NOTE: it will be erased after state file is read)
+  virtual int set_input_prefix(std::string const &prefix);
+
   /// Default prefix to be used for all output files (final configuration)
-  inline std::string & output_prefix()
+  inline std::string const & output_prefix() const
   {
     return output_prefix_str;
   }
 
+  /// Set default output prefix
+  virtual int set_output_prefix(std::string const &prefix);
+
   /// Prefix of the restart (checkpoint) file to be written next
-  inline std::string & restart_output_prefix()
+  inline std::string const & restart_output_prefix() const
   {
     return restart_output_prefix_str;
   }
+
+  /// Set default restart state file prefix
+  virtual int set_restart_output_prefix(std::string const &prefix);
 
   /// Default restart frequency (as set by the simulation engine)
   inline int default_restart_frequency() const
   {
     return restart_frequency_engine;
   }
+
+  /// Communicate/set the restart frequency of the simulation engine
+  virtual int set_default_restart_frequency(int freq);
 
   /// Buffer from which the input state information may be read
   inline char const * & input_buffer()

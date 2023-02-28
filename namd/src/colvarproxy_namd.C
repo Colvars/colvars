@@ -62,12 +62,7 @@ colvarproxy_namd::colvarproxy_namd()
 
   // find the input state file
   StringList *input_restart = Node::Object()->configList->find("colvarsInput");
-  input_prefix_str = std::string(input_restart ? input_restart->data : "");
-  if (input_prefix_str.rfind(".colvars.state") != std::string::npos) {
-    // strip the extension, if present
-    input_prefix_str.erase(input_prefix_str.rfind(".colvars.state"),
-                           std::string(".colvars.state").size());
-  }
+  colvarproxy_io::set_input_prefix(input_restart ? input_restart->data : "");
 
   update_target_temperature();
   set_integration_timestep(simparams->dt);
@@ -78,9 +73,9 @@ colvarproxy_namd::colvarproxy_namd()
   updated_masses_ = updated_charges_ = true;
 
   // take the output prefixes from the namd input
-  output_prefix_str = std::string(simparams->outputFilename);
-  restart_output_prefix_str = std::string(simparams->restartFilename);
-  restart_frequency_engine = simparams->restartFrequency;
+  colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
+  colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
+  colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
 
   if (simparams->accelMDOn) {
     accelMDOn = true;

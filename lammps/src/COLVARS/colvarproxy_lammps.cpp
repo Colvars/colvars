@@ -19,7 +19,6 @@
 
 #include "lammps.h"
 #include "error.h"
-#include "output.h"
 #include "utils.h"
 #include "random_park.h"
 
@@ -32,10 +31,7 @@
 
 
 colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
-                                       const char *inp_name,
-                                       const char *out_name,
                                        const int seed,
-                                       const double temp,
                                        MPI_Comm root2root)
   : _lmp(lmp), inter_comm(root2root)
 {
@@ -49,30 +45,6 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
   do_exit=false;
 
   engine_ready_ = false;
-
-  // set input restart name and strip the extension, if present
-  input_prefix_str = std::string(inp_name ? inp_name : "");
-  if (input_prefix_str.rfind(".colvars.state") != std::string::npos)
-    input_prefix_str.erase(input_prefix_str.rfind(".colvars.state"),
-                            std::string(".colvars.state").size());
-
-  // output prefix is always given
-  output_prefix_str = std::string(out_name);
-  // not so for restarts
-  restart_output_prefix_str = std::string("rest");
-
-  // try to extract a restart prefix from a potential restart command.
-  LAMMPS_NS::Output *outp = _lmp->output;
-  if ((outp->restart_every_single > 0) && (outp->restart1 != nullptr)) {
-    restart_frequency_engine = outp->restart_every_single;
-    restart_output_prefix_str = std::string(outp->restart1);
-  } else if  ((outp->restart_every_double > 0) && (outp->restart2a != nullptr)) {
-    restart_frequency_engine = outp->restart_every_double;
-    restart_output_prefix_str = std::string(outp->restart2a);
-  }
-  // trim off unwanted stuff from the restart prefix
-  if (restart_output_prefix_str.rfind(".*") != std::string::npos)
-    restart_output_prefix_str.erase(restart_output_prefix_str.rfind(".*"),2);
 
   // initialize multi-replica support, if available
   if (replica_enabled() == COLVARS_OK) {

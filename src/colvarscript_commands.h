@@ -473,13 +473,13 @@ CVSCRIPT(cv_load,
          "prefix : string - Path to existing state file or input prefix",
          char const *arg =
            script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
-         script->proxy()->input_prefix() = cvm::state_file_prefix(arg);
-         if (script->module()->setup_input() == COLVARS_OK) {
-           return COLVARS_OK;
-         } else {
+         int error_code =
+           script->proxy()->set_input_prefix(cvm::state_file_prefix(arg));
+         error_code |= script->module()->setup_input();
+         if (error_code != COLVARS_OK) {
            script->add_error_msg("Error loading state file");
-           return COLVARSCRIPT_ERROR;
          }
+         return error_code;
          )
 
 CVSCRIPT(cv_loadfromstring,
@@ -560,8 +560,7 @@ CVSCRIPT(cv_save,
          "prefix : string - Output prefix with trailing \".colvars.state\" gets removed)",
          std::string const prefix =
            cvm::state_file_prefix(script->obj_to_str(script->get_module_cmd_arg(0, objc, objv)));
-         script->proxy()->output_prefix() = prefix;
-         int error_code = COLVARS_OK;
+         int error_code = script->proxy()->set_output_prefix(prefix);
          error_code |= script->module()->setup_output();
          error_code |= script->module()->write_restart_file(prefix+
                                                             ".colvars.state");
