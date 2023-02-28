@@ -61,12 +61,6 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
   // not so for restarts
   restart_output_prefix_str = std::string("rest");
 
-  // check if it is possible to save output configuration
-  if ((!output_prefix_str.size()) && (!restart_output_prefix_str.size())) {
-    error("Error: neither the final output state file or "
-          "the output restart file could be defined, exiting.\n");
-  }
-
   // try to extract a restart prefix from a potential restart command.
   LAMMPS_NS::Output *outp = _lmp->output;
   if ((outp->restart_every_single > 0) && (outp->restart1 != nullptr)) {
