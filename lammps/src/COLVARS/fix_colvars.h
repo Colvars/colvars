@@ -66,7 +66,7 @@ class FixColvars : public Fix {
   char *conf_file;              // name of colvars config file
   char *inp_name;               // name/prefix of colvars restart file
   char *out_name;               // prefix string for all output files
-  char *tmp_name;               // name of thermostat fix.
+  char *tfix_name;              // name of thermostat fix.
   int rng_seed;                 // seed to initialize random number generator
   Fix *tstat_fix;               // pointer to thermostat fix
   double energy;                // biasing energy of the fix
