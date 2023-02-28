@@ -382,22 +382,19 @@ int FixColvars::setmask()
   return mask;
 }
 
-/* ---------------------------------------------------------------------- */
-
-// initial checks for colvars run.
 
 void FixColvars::init()
 {
   if (atom->tag_enable == 0)
-    error->all(FLERR,"Cannot use fix colvars without atom IDs");
+    error->all(FLERR, "Cannot use fix colvars without atom IDs");
 
   if (atom->map_style == Atom::MAP_NONE)
-    error->all(FLERR,"Fix colvars requires an atom map, see atom_modify");
+    error->all(FLERR, "Fix colvars requires an atom map, see atom_modify");
 
   if ((me == 0) && (update->whichflag == 2))
-    error->warning(FLERR,"Using fix colvars with minimization");
+    error->warning(FLERR, "Using fix colvars with minimization");
 
-  if (utils::strmatch(update->integrate_style,"^respa"))
+  if (utils::strmatch(update->integrate_style, "^respa"))
     nlevels_respa = ((Respa *) update->integrate)->nlevels;
 
   if (proxy) {
@@ -408,11 +405,11 @@ void FixColvars::init()
   if (universe->nworlds > 1) {
     // create inter root communicator
     int color = 1;
-    if (me == 0) color = 0;
-    MPI_Comm_split(universe->uworld,color,universe->iworld,&root2root);
+    if (me == 0) {
+      color = 0;
+    }
+    MPI_Comm_split(universe->uworld, color, universe->iworld, &root2root);
   }
-
-  // create and initialize the colvars proxy
 
   if (me == 0) {
 
@@ -470,7 +467,7 @@ void FixColvars::one_time_init()
   }
 
   // send the list of all colvar atom IDs to all nodes.
-  // also initialize and build hashtable on master.
+  // also initialize and build hashtable on MPI rank 0
 
   MPI_Bcast(&num_coords, 1, MPI_INT, 0, world);
   memory->create(taglist,num_coords,"colvars:taglist");
@@ -487,6 +484,7 @@ void FixColvars::one_time_init()
       inthash_insert(hashtable, tl[i], i);
     }
   }
+
   MPI_Bcast(taglist, num_coords, MPI_LMP_TAGINT, 0, world);
 }
 
