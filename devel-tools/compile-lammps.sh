@@ -38,7 +38,7 @@ compile_lammps_target() {
         elif [ "${1,,}" = "debug" ]; then
             LAMMPS_BUILD_TYPE=Debug
             LAMMPS_BUILD_OPTS+=(-DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes)
-            LAMMPS_BUILD_OPTS+=(-DCOLVARS_DEBUG)
+            LAMMPS_BUILD_OPTS+=(-DCOLVARS_DEBUG=on)
         else
             LAMMPS_INSTALL_DIR=${1}
         fi
