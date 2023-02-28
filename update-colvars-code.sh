@@ -283,7 +283,8 @@ checkfile() {
 if [ ${code} = "LAMMPS" ]
 then
 
-  copy_lepton ${target}/lib/ || exit 1
+  # # LAMMPS contains an updated but patched Lepton, uncomment here if needed
+  # copy_lepton ${target}/lib/ || exit 1
 
   # Update code-independent headers and sources
   for src in ${source}/src/colvar*.h ${source}/src/colvar*.cpp
