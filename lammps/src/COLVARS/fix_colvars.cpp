@@ -34,6 +34,7 @@
 #include "error.h"
 #include "memory.h"
 #include "modify.h"
+#include "output.h"
 #include "respa.h"
 #include "universe.h"
 #include "update.h"
@@ -440,11 +441,7 @@ void FixColvars::init()
     utils::logmesg(lmp, "colvars: Warning: cannot handle atom ids > 2147483647\n");
 #endif
 
-    // Initialize the Colvars module as empty: atomic data will be initialized
-    // during setup()
-
-    proxy = new colvarproxy_lammps(lmp, inp_name, out_name, rng_seed, t_target,
-                                   root2root);
+    proxy = new colvarproxy_lammps(lmp, rng_seed, root2root);
     proxy->init();
     proxy->add_config("configfile", conf_file);
     proxy->parse_module_config();
@@ -462,7 +459,36 @@ void FixColvars::one_time_init()
   init_flag = 1;
 
   if (me == 0) {
+
+    // Set I/O prefixes
+    proxy->set_input_prefix(std::string(inp_name ? inp_name : ""));
+    if (proxy->input_prefix().size() > 0) {
+      proxy->log("Will read input state from file \""+
+                 proxy->input_prefix()+".colvars.state\"");
+    }
+
+    proxy->set_output_prefix(std::string(out_name ? out_name : ""));
+
+    // Try to extract a restart prefix from a potential restart command
+    LAMMPS_NS::Output *outp = lmp->output;
+    if ((outp->restart_every_single > 0) &&
+        (outp->restart1 != nullptr)) {
+
+      proxy->set_default_restart_frequency(outp->restart_every_single);
+      proxy->set_restart_output_prefix(std::string(outp->restart1));
+
+    } else if ((outp->restart_every_double > 0) &&
+               (outp->restart2a != nullptr)) {
+
+      proxy->set_default_restart_frequency(outp->restart_every_double);
+      proxy->set_restart_output_prefix(std::string(outp->restart2a));
+    }
+
+    proxy->parse_module_config();
+
     proxy->setup();
+
+    // Number of atoms requested by Colvars
     num_coords = (proxy->modify_atom_positions()->size());
   }
 

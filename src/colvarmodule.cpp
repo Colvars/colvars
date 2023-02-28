@@ -1299,7 +1299,7 @@ int colvarmodule::setup_input()
 
     // Now that the file has been opened, clear this field so that this
     // function will not be called twice
-    proxy->input_prefix().clear();
+    proxy->set_input_prefix("");
 
     cvm::log(cvm::line_marker);
     cvm::log("Loading state from file \""+restart_in_name+"\".\n");

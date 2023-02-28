@@ -151,6 +151,51 @@ int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
 }
 
 
+int colvarproxy_io::set_input_prefix(std::string const &prefix)
+{
+  // set input restart name and strip the extension, if present
+  input_prefix_str = prefix;
+  if (input_prefix_str.rfind(".colvars.state") != std::string::npos) {
+    input_prefix_str.erase(input_prefix_str.rfind(".colvars.state"),
+                           std::string(".colvars.state").size());
+  }
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_io::set_output_prefix(std::string const &prefix)
+{
+  // set input restart name and strip the extension, if present
+  output_prefix_str = prefix;
+  if (output_prefix_str.rfind(".colvars.state") != std::string::npos) {
+    output_prefix_str.erase(output_prefix_str.rfind(".colvars.state"),
+                            std::string(".colvars.state").size());
+  }
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_io::set_restart_output_prefix(std::string const &prefix)
+{
+  // set input restart name and strip the extension, if present
+  restart_output_prefix_str = prefix;
+  if (restart_output_prefix_str.rfind(".colvars.state") != std::string::npos) {
+    restart_output_prefix_str.erase(restart_output_prefix_str.rfind(".colvars.state"),
+                                    std::string(".colvars.state").size());
+  }
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_io::set_default_restart_frequency(int freq)
+{
+  // TODO check for compatibility with colvarsRestartFrequency
+  restart_frequency_engine = freq;
+  return COLVARS_OK;
+}
+
+
+
 std::istream &colvarproxy_io::input_stream(std::string const &input_name,
                                            std::string const description,
                                            bool error_on_fail)
