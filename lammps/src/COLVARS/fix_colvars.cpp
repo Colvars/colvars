@@ -462,7 +462,7 @@ void FixColvars::one_time_init()
   init_flag = 1;
 
   if (me == 0) {
-
+    proxy->setup();
     num_coords = (proxy->modify_atom_positions()->size());
   }
 
