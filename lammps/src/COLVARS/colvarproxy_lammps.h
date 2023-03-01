@@ -78,15 +78,6 @@ class colvarproxy_lammps : public colvarproxy {
   // set status from string
   bool deserialize_status(std::string &);
 
-  // read additional config from file
-  int add_config_file(char const *config_filename);
-
-  // read additional config from string
-  int add_config_string(const std::string &config);
-
-  // load a state file
-  int read_state_file(char const *state_filename);
-
   // Request to set the units used internally by Colvars
   int set_unit_system(std::string const &units_in, bool check_only) override;
 
