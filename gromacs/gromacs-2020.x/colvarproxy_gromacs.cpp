@@ -340,8 +340,8 @@ int colvarproxy_gromacs::load_coords (char const gmx_unused *filename, std::vect
                                       const std::vector<int> gmx_unused &indices, std::string const gmx_unused &pdb_field_str,
                                       double const gmx_unused pdb_field_value)
 {
-  cvm::error("Selecting collective variable atoms "
-		   "from a PDB file is currently not supported.\n");
+  cvm::error("Loading atoms coordinates from a PDB or GRO file is currently not supported."
+             "Please use an XYZ file.\n");
   return COLVARS_NOT_IMPLEMENTED;
 }
 
