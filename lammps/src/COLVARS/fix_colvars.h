@@ -84,7 +84,6 @@ class FixColvars : public Fix {
   char *script_args[100];
 
   void *idmap;       // hash for mapping atom indices to consistent order.
-  int *rev_idmap;    // list of the hash keys for reverse mapping.
 
   int nlevels_respa;       // flag to determine respa levels.
   int store_forces;        // flag to determine whether to store total forces
@@ -93,7 +92,8 @@ class FixColvars : public Fix {
   static int instances;    // count fix instances, since colvars currently
                            // only supports one instance at a time
   MPI_Comm root2root;      // inter-root communicator for multi-replica support
-  void one_time_init();    // one time initialization
+
+  void init_taglist();     // initialize list of atom tags and hash table
 };
 
 }    // namespace LAMMPS_NS
