@@ -332,6 +332,7 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   init_flag = 0;
   num_coords = 0;
   comm_buf = nullptr;
+  taglist = nullptr;
   force_buf = nullptr;
   proxy = nullptr;
   idmap = nullptr;
@@ -451,12 +452,12 @@ void FixColvars::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixColvars::one_time_init()
+void FixColvars::init_taglist()
 {
-  int i;
-
   if (init_flag) return;
   init_flag = 1;
+
+  int new_taglist_size = -1;
 
   if (me == 0) {
 
@@ -489,28 +490,54 @@ void FixColvars::one_time_init()
     proxy->setup();
 
     // Number of atoms requested by Colvars
-    num_coords = (proxy->modify_atom_positions()->size());
-  }
+    num_coords = static_cast<int>(proxy->modify_atom_positions()->size());
 
-  // send the list of all colvar atom IDs to all nodes.
-  // also initialize and build hashtable on MPI rank 0
-
-  MPI_Bcast(&num_coords, 1, MPI_INT, 0, world);
-  memory->create(taglist,num_coords,"colvars:taglist");
-  memory->create(force_buf,3*num_coords,"colvars:force_buf");
-
-  if (me == 0) {
-    std::vector<int> const &tl = *(proxy->get_atom_ids());
-    inthash_t *hashtable=new inthash_t;
-    inthash_init(hashtable, num_coords);
-    idmap = (void *)hashtable;
-
-    for (i=0; i < num_coords; ++i) {
-      taglist[i] = tl[i];
-      inthash_insert(hashtable, tl[i], i);
+    if (proxy->modified_atom_list()) {
+      new_taglist_size = num_coords;
+      proxy->reset_modified_atom_list();
+    } else {
+      new_taglist_size = -1;
     }
   }
 
+  // Broadcast number of colvar atoms; negative means no updates
+  MPI_Bcast(&new_taglist_size, 1, MPI_INT, 0, world);
+
+  if (new_taglist_size < 0) {
+    return;
+  }
+
+  num_coords = new_taglist_size;
+
+  if (taglist) {
+    memory->destroy(taglist);
+    memory->destroy(force_buf);
+  }
+  memory->create(taglist, num_coords, "colvars:taglist");
+  memory->create(force_buf, 3*num_coords, "colvars:force_buf");
+
+  if (me == 0) {
+
+    // Initialize and build hashtable on MPI rank 0
+
+    std::vector<int> const &tl = *(proxy->get_atom_ids());
+
+    if (idmap) {
+      delete reinterpret_cast<inthash_t *>(idmap);
+      idmap = nullptr;
+    }
+
+    inthash_t *hashtable = new inthash_t;
+    inthash_init(hashtable, num_coords);
+    for (int i = 0; i < num_coords; ++i) {
+      taglist[i] = tl[i];
+      inthash_insert(hashtable, tl[i], i);
+    }
+
+    idmap = reinterpret_cast<void *>(hashtable);
+  }
+
+  // Broadcast colvar atom ID list
   MPI_Bcast(taglist, num_coords, MPI_LMP_TAGINT, 0, world);
 }
 
@@ -568,7 +595,7 @@ void FixColvars::setup(int vflag)
   MPI_Status status;
   MPI_Request request;
 
-  one_time_init();
+  init_taglist();
 
   // determine size of comm buffer
   nme=0;
@@ -1003,7 +1030,7 @@ void FixColvars::write_restart(FILE *fp)
 
 void FixColvars::restart(char *buf)
 {
-  one_time_init();
+  init_taglist();
 
   if (me == 0) {
     std::string rest_text(buf);
