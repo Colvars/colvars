@@ -245,6 +245,18 @@ public:
     return atoms_max_applied_force_id_;
   }
 
+  /// Whether the atom list has been modified internally
+  inline bool modified_atom_list() const
+  {
+    return modified_atom_list_;
+  }
+
+  /// Reset the modified atom list flag
+  inline void reset_modified_atom_list()
+  {
+    modified_atom_list_ = false;
+  }
+
   /// Record whether masses have been updated
   inline bool updated_masses() const
   {
@@ -283,6 +295,9 @@ protected:
 
   /// ID of the atom with the maximum norm among all applied forces
   int atoms_max_applied_force_id_;
+
+  /// Whether the atom list has been modified internally
+  bool modified_atom_list_;
 
   /// Whether the masses and charges have been updated from the host code
   bool updated_masses_, updated_charges_;
@@ -565,9 +580,9 @@ public:
 
 
 
-/// \brief Interface between the collective variables module and
-/// the simulation or analysis program (NAMD, VMD, LAMMPS...).
-/// This is the base class: each interfaced program is supported by a derived class.
+/// Interface between Colvars and MD engine (GROMACS, LAMMPS, NAMD, VMD...)
+///
+/// This is the base class: each engine is supported by a derived class.
 class colvarproxy
   : public colvarproxy_system,
     public colvarproxy_atoms,

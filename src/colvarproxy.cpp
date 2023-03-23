@@ -23,6 +23,7 @@ colvarproxy_atoms::colvarproxy_atoms()
 {
   atoms_rms_applied_force_ = atoms_max_applied_force_ = 0.0;
   atoms_max_applied_force_id_ = -1;
+  modified_atom_list_ = false;
   updated_masses_ = updated_charges_ = false;
 }
 
@@ -55,6 +56,7 @@ int colvarproxy_atoms::add_atom_slot(int atom_id)
   atoms_positions.push_back(cvm::rvector(0.0, 0.0, 0.0));
   atoms_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
   atoms_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
+  modified_atom_list_ = true;
   return (atoms_ids.size() - 1);
 }
 
