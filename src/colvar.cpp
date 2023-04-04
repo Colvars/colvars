@@ -697,6 +697,8 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
       // Eq. (6a) in https://doi.org/10.1021/acs.jctc.2c00585
       ext_sigma = cvm::sqrt((1.0 - cvm::exp(-2.0 * ext_gamma * cvm::dt() * cvm::real(time_step_factor)))
                              * ext_mass * proxy->boltzmann() * temp);
+    } else {
+      ext_sigma = 0.0;
     }
 
     get_keyval_feature(this, conf, "reflectingLowerBoundary", f_cv_reflecting_lower_boundary, false);
@@ -1883,11 +1885,10 @@ void colvar::update_extended_Lagrangian()
 
   // [O] leap to v_(i+1/2) (10c)
   if (is_enabled(f_cv_Langevin)) {
-    v_ext -= (1.0 - cvm::exp(- 1.0 * dt * ext_gamma)) * v_ext;
     colvarvalue rnd(x);
     rnd.set_random();
     // ext_sigma has been computed at init time according to (10c)
-    v_ext += dt * ext_sigma * rnd / ext_mass;
+    v_ext = cvm::exp(- 1.0 * dt * ext_gamma) * v_ext + ext_sigma * rnd / ext_mass;
   }
   // [A] Second half step in position (10d)
   x_ext  += dt * v_ext / 2.0;
