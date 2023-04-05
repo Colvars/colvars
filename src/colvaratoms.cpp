@@ -64,7 +64,9 @@ cvm::atom::atom(cvm::residue_id const &residue,
 cvm::atom::atom(atom const &a)
   : index(a.index)
 {
-  id = (cvm::proxy)->get_atom_id(index);
+  colvarproxy *p = cvm::main()->proxy;
+  id = p->get_atom_id(index);
+  p->increase_refcount(index);
   update_mass();
   update_charge();
   reset_data();
