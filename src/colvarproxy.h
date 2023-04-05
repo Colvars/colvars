@@ -157,6 +157,9 @@ public:
     return &atoms_ids;
   }
 
+  /// Return number of atoms with positive reference count
+  size_t get_num_active_atoms() const;
+
   inline std::vector<cvm::real> const *get_atom_masses() const
   {
     return &atoms_masses;
@@ -356,6 +359,9 @@ public:
   {
     return &atom_groups_ids;
   }
+
+  /// Return number of atom groups with positive reference count
+  size_t get_num_active_atom_groups() const;
 
   inline std::vector<cvm::real> *modify_atom_group_masses()
   {

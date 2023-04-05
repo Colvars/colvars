@@ -104,6 +104,16 @@ void colvarproxy_atoms::clear_atom(int index)
 }
 
 
+size_t colvarproxy_atoms::get_num_active_atoms() const
+{
+  size_t result = 0;
+  for (size_t i = 0; i < atoms_ncopies.size(); i++) {
+    if (atoms_ncopies[i] > 0) result++;
+  }
+  return result;
+}
+
+
 int colvarproxy_atoms::load_atoms(char const * /* filename */,
                                   cvm::atom_group & /* atoms */,
                                   std::string const & /* pdb_field */,
@@ -219,6 +229,16 @@ void colvarproxy_atom_groups::clear_atom_group(int index)
   if (atom_groups_ncopies[index] > 0) {
     atom_groups_ncopies[index] -= 1;
   }
+}
+
+
+size_t colvarproxy_atom_groups::get_num_active_atom_groups() const
+{
+  size_t result = 0;
+  for (size_t i = 0; i < atom_groups_ncopies.size(); i++) {
+    if (atom_groups_ncopies[i] > 0) result++;
+  }
+  return result;
 }
 
 

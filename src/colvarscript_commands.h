@@ -309,6 +309,33 @@ CVSCRIPT(cv_getenergy,
          return COLVARS_OK;
          )
 
+CVSCRIPT(cv_getnumactiveatomgroups,
+         "Get the number of atom groups that currently have positive ref counts\n"
+         "count : integer - Total number of atom groups",
+         0, 0,
+         "",
+         script->set_result_int(static_cast<int>(script->proxy()->get_num_active_atom_groups()));
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_getnumactiveatoms,
+         "Get the number of atoms that currently have positive ref counts\n"
+         "count : integer - Total number of atoms",
+         0, 0,
+         "",
+         script->set_result_int(static_cast<int>(script->proxy()->get_num_active_atoms()));
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_getnumatoms,
+         "Get the number of requested atoms, including those not in use now\n"
+         "count : integer - Total number of atoms",
+         0, 0,
+         "",
+         script->set_result_int(static_cast<int>(script->proxy()->get_atom_ids()->size()));
+         return COLVARS_OK;
+         )
+
 CVSCRIPT(cv_getstepabsolute,
          "Get the current step number of the simulation (including restarts)\n"
          "step : int - Absolute step number",
