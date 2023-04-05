@@ -100,13 +100,15 @@ public:
   /// Clear atomic data
   int reset();
 
-  /// Get the numeric ID of the given atom (for the program)
+  /// Get the numeric ID of the given atom
+  /// \param index Internal index in the Colvars arrays
   inline int get_atom_id(int index) const
   {
     return atoms_ids[index];
   }
 
   /// Get the mass of the given atom
+  /// \param index Internal index in the Colvars arrays
   inline cvm::real get_atom_mass(int index) const
   {
     return atoms_masses[index];
@@ -120,24 +122,29 @@ public:
   }
 
   /// Get the charge of the given atom
+  /// \param index Internal index in the Colvars arrays
   inline cvm::real get_atom_charge(int index) const
   {
     return atoms_charges[index];
   }
 
   /// Read the current position of the given atom
+  /// \param index Internal index in the Colvars arrays
   inline cvm::rvector get_atom_position(int index) const
   {
     return atoms_positions[index];
   }
 
   /// Read the current total force of the given atom
+  /// \param index Internal index in the Colvars arrays
   inline cvm::rvector get_atom_total_force(int index) const
   {
     return atoms_total_forces[index];
   }
 
   /// Request that this force is applied to the given atom
+  /// \param index Internal index in the Colvars arrays
+  /// \param new_force Force to add
   inline void apply_atom_force(int index, cvm::rvector const &new_force)
   {
     atoms_new_colvar_forces[index] += new_force;
