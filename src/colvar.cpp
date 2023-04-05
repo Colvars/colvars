@@ -1877,6 +1877,10 @@ void colvar::update_extended_Lagrangian()
   v_ext  += 0.5 * dt * f_ext / ext_mass;
   // Kinetic energy at t
   kinetic_energy = 0.5 * ext_mass * v_ext * v_ext;
+
+  // Potential energy at t
+  potential_energy = 0.5 * ext_force_k * this->dist2(x_ext, x);
+
   v_ext  += 0.5 * dt * f_ext / ext_mass;
   // Final v_ext lags behind x_ext by half a timestep
 
@@ -1914,9 +1918,6 @@ void colvar::update_extended_Lagrangian()
     x = x_ext;
     cvcs[0]->set_value(x_ext);
   }
-
-  // Only compute potential energy once BC and constraints have been applied
-  potential_energy = 0.5 * ext_force_k * this->dist2(x_ext, x);
 }
 
 
