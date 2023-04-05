@@ -112,6 +112,13 @@ public:
     return atoms_masses[index];
   }
 
+  /// Increase the reference count of the given atom
+  /// \param index Internal index in the Colvars arrays
+  inline void increase_refcount(int index)
+  {
+    atoms_ncopies[index] += 1;
+  }
+
   /// Get the charge of the given atom
   inline cvm::real get_atom_charge(int index) const
   {
