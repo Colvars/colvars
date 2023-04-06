@@ -660,7 +660,7 @@ int colvarproxy_vmd::init_atom(int atom_number)
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     if (atoms_ids[i] == aid) {
       // this atom id was already recorded
-      atoms_ncopies[i] += 1;
+      atoms_refcount[i] += 1;
       return i;
     }
   }
@@ -729,7 +729,7 @@ int colvarproxy_vmd::init_atom(cvm::residue_id const &resid,
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     if (atoms_ids[i] == aid) {
       // this atom id was already recorded
-      atoms_ncopies[i] += 1;
+      atoms_refcount[i] += 1;
       return i;
     }
   }
@@ -757,7 +757,7 @@ int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
     if (volmaps_ids[i] == volmap_id) {
       // this map has already been requested
-      volmaps_ncopies[i] += 1;
+      volmaps_refcount[i] += 1;
       return i;
     }
   }

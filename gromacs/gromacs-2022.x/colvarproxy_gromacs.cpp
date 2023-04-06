@@ -247,7 +247,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
 
   if (MASTER(cr) && cvm::debug()) {
     cvm::log ("atoms_ids = "+cvm::to_str (atoms_ids)+"\n");
-    cvm::log ("atoms_ncopies = "+cvm::to_str (atoms_ncopies)+"\n");
+    cvm::log ("atoms_refcount = "+cvm::to_str (atoms_refcount)+"\n");
     cvm::log ("positions = "+cvm::to_str (atoms_positions)+"\n");
     cvm::log ("atoms_new_colvar_forces = "+cvm::to_str (atoms_new_colvar_forces)+"\n");
     cvm::log (cvm::line_marker);
@@ -547,7 +547,7 @@ int colvarproxy_gromacs::init_atom(int atom_number)
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     if (atoms_ids[i] == aid) {
       // this atom id was already recorded
-      atoms_ncopies[i] += 1;
+      atoms_refcount[i] += 1;
       return i;
     }
   }

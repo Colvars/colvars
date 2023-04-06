@@ -38,7 +38,7 @@ colvarproxy_atoms::~colvarproxy_atoms()
 int colvarproxy_atoms::reset()
 {
   atoms_ids.clear();
-  atoms_ncopies.clear();
+  atoms_refcount.clear();
   atoms_masses.clear();
   atoms_charges.clear();
   atoms_positions.clear();
@@ -51,7 +51,7 @@ int colvarproxy_atoms::reset()
 int colvarproxy_atoms::add_atom_slot(int atom_id)
 {
   atoms_ids.push_back(atom_id);
-  atoms_ncopies.push_back(1);
+  atoms_refcount.push_back(1);
   atoms_masses.push_back(1.0);
   atoms_charges.push_back(0.0);
   atoms_positions.push_back(cvm::rvector(0.0, 0.0, 0.0));
@@ -98,8 +98,8 @@ void colvarproxy_atoms::clear_atom(int index)
     cvm::error("Error: trying to disable an atom that was not previously requested.\n",
                COLVARS_INPUT_ERROR);
   }
-  if (atoms_ncopies[index] > 0) {
-    atoms_ncopies[index] -= 1;
+  if (atoms_refcount[index] > 0) {
+    atoms_refcount[index] -= 1;
   }
 }
 
@@ -107,8 +107,8 @@ void colvarproxy_atoms::clear_atom(int index)
 size_t colvarproxy_atoms::get_num_active_atoms() const
 {
   size_t result = 0;
-  for (size_t i = 0; i < atoms_ncopies.size(); i++) {
-    if (atoms_ncopies[i] > 0) result++;
+  for (size_t i = 0; i < atoms_refcount.size(); i++) {
+    if (atoms_refcount[i] > 0) result++;
   }
   return result;
 }
@@ -181,7 +181,7 @@ colvarproxy_atom_groups::~colvarproxy_atom_groups()
 int colvarproxy_atom_groups::reset()
 {
   atom_groups_ids.clear();
-  atom_groups_ncopies.clear();
+  atom_groups_refcount.clear();
   atom_groups_masses.clear();
   atom_groups_charges.clear();
   atom_groups_coms.clear();
@@ -194,7 +194,7 @@ int colvarproxy_atom_groups::reset()
 int colvarproxy_atom_groups::add_atom_group_slot(int atom_group_id)
 {
   atom_groups_ids.push_back(atom_group_id);
-  atom_groups_ncopies.push_back(1);
+  atom_groups_refcount.push_back(1);
   atom_groups_masses.push_back(1.0);
   atom_groups_charges.push_back(0.0);
   atom_groups_coms.push_back(cvm::rvector(0.0, 0.0, 0.0));
@@ -226,8 +226,8 @@ void colvarproxy_atom_groups::clear_atom_group(int index)
                "that was not previously requested.\n",
                COLVARS_INPUT_ERROR);
   }
-  if (atom_groups_ncopies[index] > 0) {
-    atom_groups_ncopies[index] -= 1;
+  if (atom_groups_refcount[index] > 0) {
+    atom_groups_refcount[index] -= 1;
   }
 }
 
@@ -235,8 +235,8 @@ void colvarproxy_atom_groups::clear_atom_group(int index)
 size_t colvarproxy_atom_groups::get_num_active_atom_groups() const
 {
   size_t result = 0;
-  for (size_t i = 0; i < atom_groups_ncopies.size(); i++) {
-    if (atom_groups_ncopies[i] > 0) result++;
+  for (size_t i = 0; i < atom_groups_refcount.size(); i++) {
+    if (atom_groups_refcount[i] > 0) result++;
   }
   return result;
 }
@@ -563,7 +563,7 @@ void colvarproxy::print_input_atomic_data()
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
            "atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
+           "atoms_refcount = "+cvm::to_str(atoms_refcount)+"\n");
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
            "atoms_masses = "+cvm::to_str(atoms_masses)+"\n");
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
@@ -582,7 +582,7 @@ void colvarproxy::print_input_atomic_data()
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
            "atom_groups_ids = "+cvm::to_str(atom_groups_ids)+"\n");
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atom_groups_ncopies = "+cvm::to_str(atom_groups_ncopies)+"\n");
+           "atom_groups_refcount = "+cvm::to_str(atom_groups_refcount)+"\n");
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
            "atom_groups_masses = "+cvm::to_str(atom_groups_masses)+"\n");
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
