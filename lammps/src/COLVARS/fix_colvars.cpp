@@ -399,17 +399,11 @@ void FixColvars::init()
 
   if (utils::strmatch(update->integrate_style,"^respa"))
     nlevels_respa = ((Respa *) update->integrate)->nlevels;
-}
 
-
-/* ---------------------------------------------------------------------- */
-
-void FixColvars::one_time_init()
-{
-  int i,tmp;
-
-  if (init_flag) return;
-  init_flag = 1;
+  if (proxy) {
+    // Return if the proxy has already been allocated
+    return;
+  }
 
   if (universe->nworlds > 1) {
     // create inter root communicator
@@ -421,37 +415,56 @@ void FixColvars::one_time_init()
   // create and initialize the colvars proxy
 
   if (me == 0) {
-    utils::logmesg(lmp,"colvars: Creating proxy instance\n");
 
-#ifdef LAMMPS_BIGBIG
-    utils::logmesg(lmp,"colvars: cannot handle atom ids > 2147483647\n");
-#endif
-
-    if (inp_name) {
-      if (strcmp(inp_name,"NULL") == 0) {
-        delete[] inp_name;
-        inp_name = nullptr;
-      }
-    }
-
-    // try to determine thermostat target temperature
+    // Try to determine thermostat target temperature
     double t_target = 0.0;
-    if (tmp_name) {
-      if (strcmp(tmp_name,"NULL") == 0) {
+    if (tfix_name) {
+      if (strcmp(tfix_name, "NULL") == 0) {
         tstat_fix = nullptr;
       } else {
-        tstat_fix = modify->get_fix_by_id(tmp_name);
-        if (!tstat_fix) error->one(FLERR, "Could not find thermostat fix ID {}", tmp_name);
-        double *tt = (double*) tstat_fix->extract("t_target", tmp);
-        if (tt) t_target = *tt;
-        else error->one(FLERR, "Fix ID {} is not a thermostat fix", tmp_name);
+        tstat_fix = modify->get_fix_by_id(tfix_name);
+        if (!tstat_fix) {
+          error->one(FLERR, "Could not find thermostat fix ID {}", tfix_name);
+        }
+        int tmp = 0;
+        double *tt = reinterpret_cast<double *>(tstat_fix->extract("t_target",
+                                                                   tmp));
+        if (tt) {
+          t_target = *tt;
+        } else {
+          error->one(FLERR, "Fix ID {} is not a thermostat fix", tfix_name);
+        }
       }
     }
 
-    proxy = new colvarproxy_lammps(lmp,inp_name,out_name,rng_seed,t_target,root2root);
+    utils::logmesg(lmp, "colvars: Initializing LAMMPS interface\n");
+
+#ifdef LAMMPS_BIGBIG
+    utils::logmesg(lmp, "colvars: Warning: cannot handle atom ids > 2147483647\n");
+#endif
+
+    // Initialize the Colvars module as empty: atomic data will be initialized
+    // during setup()
+
+    proxy = new colvarproxy_lammps(lmp, inp_name, out_name, rng_seed, t_target,
+                                   root2root);
     proxy->init();
     proxy->add_config("configfile", conf_file);
     proxy->parse_module_config();
+  }
+}
+
+
+/* ---------------------------------------------------------------------- */
+
+void FixColvars::one_time_init()
+{
+  int i;
+
+  if (init_flag) return;
+  init_flag = 1;
+
+  if (me == 0) {
 
     num_coords = (proxy->modify_atom_positions()->size());
   }
