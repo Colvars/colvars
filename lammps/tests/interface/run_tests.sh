@@ -7,7 +7,7 @@ then
 EOF
 exit 1
 fi
-lmp="$@"
+lmp="$1"
 inputs=$(echo in.[0-9][0-9]? | sed -e s/in\.//g)
 
 for id in $inputs
