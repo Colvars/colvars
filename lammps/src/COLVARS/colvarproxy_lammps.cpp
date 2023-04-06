@@ -122,7 +122,7 @@ void colvarproxy_lammps::init(const char *conf_file)
 
   if (cvm::debug()) {
     cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
+    cvm::log("atoms_refcount = "+cvm::to_str(atoms_refcount)+"\n");
     cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
     cvm::log(cvm::line_marker);
     cvm::log("Info: done initializing the colvars proxy object.\n");
@@ -221,7 +221,7 @@ double colvarproxy_lammps::compute()
 
   if (cvm::debug()) {
     cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
+    cvm::log("atoms_refcount = "+cvm::to_str(atoms_refcount)+"\n");
     cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
     cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
   }
@@ -233,7 +233,7 @@ double colvarproxy_lammps::compute()
 
   if (cvm::debug()) {
     cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    cvm::log("atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
+    cvm::log("atoms_refcount = "+cvm::to_str(atoms_refcount)+"\n");
     cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
     cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
   }
@@ -385,7 +385,7 @@ int colvarproxy_lammps::init_atom(int atom_number)
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     if (atoms_ids[i] == aid) {
       // this atom id was already recorded
-      atoms_ncopies[i] += 1;
+      atoms_refcount[i] += 1;
       return i;
     }
   }

@@ -69,7 +69,7 @@ public:
                             std::string const     &segment_id);
 
   /// \brief Used by the atom class destructor: rather than deleting the array slot
-  /// (costly) set the corresponding atoms_ncopies to zero
+  /// (costly) set the corresponding atoms_refcount to zero
   virtual void clear_atom(int index);
 
   /// \brief Select atom IDs from a file (usually PDB) \param filename name of
@@ -118,7 +118,7 @@ public:
   /// \param index Internal index in the Colvars arrays
   inline void increase_refcount(int index)
   {
-    atoms_ncopies[index] += 1;
+    atoms_refcount[index] += 1;
   }
 
   /// Get the charge of the given atom
@@ -263,7 +263,7 @@ protected:
   /// within the host program
   std::vector<int>          atoms_ids;
   /// \brief Keep track of how many times each atom is used by a separate colvar object
-  std::vector<size_t>       atoms_ncopies;
+  std::vector<size_t>       atoms_refcount;
   /// \brief Masses of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
   std::vector<cvm::real>    atoms_masses;
   /// \brief Charges of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
@@ -421,7 +421,7 @@ protected:
   /// within the host program
   std::vector<int>          atom_groups_ids;
   /// \brief Keep track of how many times each group is used by a separate cvc
-  std::vector<size_t>       atom_groups_ncopies;
+  std::vector<size_t>       atom_groups_refcount;
   /// \brief Total masses of the atom groups
   std::vector<cvm::real>    atom_groups_masses;
   /// \brief Total charges of the atom groups (allow redefinition during a run, as done e.g. in LAMMPS)
