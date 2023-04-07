@@ -701,7 +701,7 @@ namespace UIestimator {
                 std::istream &grad_file =
                     proxy->input_stream(grad_filename, "gradient filename");
 
-                if (count_file.bad() || grad_file.bad()) {
+                if (count_file.fail() || grad_file.fail()) {
                     return;
                 }
 

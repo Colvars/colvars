@@ -180,7 +180,7 @@ int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
 
   cvm::log("Writing the accelerated MD PMF file \"" + output_pmf + "\".\n");
   std::ostream &pmf_grid_os = cvm::proxy->output_stream(output_pmf, "PMF file");
-  if (pmf_grid_os.bad()) {
+  if (pmf_grid_os.fail()) {
     return COLVARS_FILE_ERROR;
   }
   pmf_grid_exp_avg->copy_grid(*grid);
@@ -203,7 +203,7 @@ int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
     cvm::log("Writing the accelerated MD gradients file \"" + output_grad +
              "\".\n");
     std::ostream &grad_grid_os = cvm::proxy->output_stream(output_grad, "gradient file");
-    if (grad_grid_os.bad()) {
+    if (grad_grid_os.fail()) {
       return COLVARS_FILE_ERROR;
     }
     for (std::vector<int> ix = grad_grid_exp_avg->new_index();
@@ -227,7 +227,7 @@ int colvarbias_reweightaMD::write_cumulant_expansion_pmf(
   const std::string output_pmf = p_output_prefix + ".pmf";
   cvm::log("Writing the accelerated MD PMF file using cumulant expansion: \"" + output_pmf + "\".\n");
   std::ostream &pmf_grid_cumulant_os = cvm::proxy->output_stream(output_pmf, "PMF file");
-  if (pmf_grid_cumulant_os.bad()) {
+  if (pmf_grid_cumulant_os.fail()) {
     return COLVARS_FILE_ERROR;
   }
   compute_cumulant_expansion_factor(grid_dV, grid_dV_square,
@@ -242,7 +242,7 @@ int colvarbias_reweightaMD::write_cumulant_expansion_pmf(
     const std::string output_grad = p_output_prefix + ".grad";
     cvm::log("Writing the accelerated MD gradients file \"" + output_grad + "\".\n");
     std::ostream &grad_grid_os = cvm::proxy->output_stream(output_grad, "grad file");
-    if (grad_grid_os.bad()) {
+    if (grad_grid_os.fail()) {
       return COLVARS_FILE_ERROR;
     }
     for (std::vector<int> ix = grad_grid_cumulant->new_index();
@@ -262,7 +262,7 @@ int colvarbias_reweightaMD::write_count(const std::string& p_output_prefix, bool
   const std::string output_name = p_output_prefix + ".count";
   cvm::log("Writing the accelerated MD count file \""+output_name+"\".\n");
   std::ostream &grid_count_os = cvm::proxy->output_stream(output_name, "count file");
-  if (grid_count_os.bad()) {
+  if (grid_count_os.fail()) {
     return COLVARS_FILE_ERROR;
   }
   grid_count->write_multicol(grid_count_os);

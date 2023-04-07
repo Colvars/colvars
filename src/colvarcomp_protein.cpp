@@ -336,7 +336,7 @@ colvar::dihedPC::dihedPC(std::string const &conf)
     std::istream &vecFile =
       cvm::main()->proxy->input_stream(vecFileName,
                                        "dihedral PCA vector file");
-    if (vecFile.bad()) {
+    if (vecFile.fail()) {
       return;
     }
 

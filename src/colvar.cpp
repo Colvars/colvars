@@ -2540,7 +2540,7 @@ int colvar::write_output_files()
       cvm::backup_file(acf_outfile.c_str());
       std::ostream &acf_os = cvm::proxy->output_stream(acf_outfile,
                                                        "colvar ACF file");
-      if (acf_os.bad()) {
+      if (acf_os.fail()) {
         error_code |= COLVARS_FILE_ERROR;
       } else {
         error_code |= write_acf(acf_os);
