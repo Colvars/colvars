@@ -126,7 +126,7 @@ int colvar_grid<T>::read_multicol(std::string const &filename,
                                   bool add)
 {
   std::istream &is = cvm::main()->proxy->input_stream(filename, description);
-  if (is.bad()) {
+  if (is.fail()) {
     return COLVARS_FILE_ERROR;
   }
   if (colvar_grid<T>::read_multicol(is, add)) {
@@ -191,7 +191,7 @@ int colvar_grid<T>::write_multicol(std::string const &filename,
 {
   int error_code = COLVARS_OK;
   std::ostream &os = cvm::main()->proxy->output_stream(filename, description);
-  if (os.bad()) {
+  if (os.fail()) {
     return COLVARS_FILE_ERROR;
   }
   error_code |= colvar_grid<T>::write_multicol(os) ? COLVARS_OK :
@@ -249,7 +249,7 @@ int colvar_grid<T>::write_opendx(std::string const &filename,
 {
   int error_code = COLVARS_OK;
   std::ostream &os = cvm::main()->proxy->output_stream(filename, description);
-  if (os.bad()) {
+  if (os.fail()) {
     return COLVARS_FILE_ERROR;
   }
   error_code |= colvar_grid<T>::write_opendx(os) ? COLVARS_OK :

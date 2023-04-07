@@ -170,7 +170,7 @@ std::istream &colvarproxy_io::input_stream(std::string const &input_name,
   input_streams_[input_name] = new std::ifstream(input_name.c_str(),
                                                  std::ios::binary);
 
-  if (!(input_streams_[input_name]->good()) && error_on_fail) {
+  if (input_streams_[input_name]->fail() && error_on_fail) {
     cvm::error("Error: cannot open "+description+" \""+input_name+"\".\n",
                COLVARS_FILE_ERROR);
   }
@@ -229,7 +229,7 @@ std::ostream & colvarproxy_io::output_stream(std::string const &output_name,
   backup_file(output_name.c_str());
 
   output_streams_[output_name] = new std::ofstream(output_name.c_str());
-  if (! output_streams_[output_name]->good()) {
+  if (output_streams_[output_name]->fail()) {
     cvm::error("Error: cannot write to "+description+" \""+output_name+"\".\n",
                COLVARS_FILE_ERROR);
   }

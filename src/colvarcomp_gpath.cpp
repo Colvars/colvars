@@ -428,7 +428,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     get_keyval(conf, "pathFile", path_filename);
     cvm::log(std::string("Reading path file: ") + path_filename + std::string("\n"));
     auto &ifs_path = cvm::main()->proxy->input_stream(path_filename);
-    if (ifs_path.bad()) {
+    if (ifs_path.fail()) {
         return;
     }
     std::string line;
