@@ -229,7 +229,7 @@ std::ostream & colvarproxy_io::output_stream(std::string const &output_name,
   backup_file(output_name.c_str());
 
   output_streams_[output_name] = new std::ofstream(output_name.c_str());
-  if (output_streams_[output_name]->fail()) {
+  if (!*(output_streams_[output_name])) {
     cvm::error("Error: cannot write to "+description+" \""+output_name+"\".\n",
                COLVARS_FILE_ERROR);
   }

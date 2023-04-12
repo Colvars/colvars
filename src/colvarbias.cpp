@@ -600,7 +600,7 @@ int colvarbias::read_state_prefix(std::string const &prefix)
   std::istream *is = &(cvm::main()->proxy->input_stream(filename,
                                                         "bias state file",
                                                         false));
-  if (is->fail()) {
+  if (!*is) {
     filename = prefix;
     is = &(cvm::main()->proxy->input_stream(filename, "bias state file"));
   }

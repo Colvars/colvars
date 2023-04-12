@@ -222,7 +222,7 @@ colvar_grid_gradient::colvar_grid_gradient(std::string &filename)
 {
   std::istream &is = cvm::main()->proxy->input_stream(filename,
                                                       "gradient file");
-  if (is.fail()) {
+  if (!is) {
     return;
   }
 
