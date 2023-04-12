@@ -191,7 +191,7 @@ int colvarmodule::read_config_file(char const  *config_filename)
   // open the configfile
   std::istream &config_s = proxy->input_stream(config_filename,
                                                "configuration file/string");
-  if (config_s.fail()) {
+  if (!config_s) {
     return cvm::error("Error: in opening configuration file \""+
                       std::string(config_filename)+"\".\n",
                       COLVARS_FILE_ERROR);
@@ -1083,7 +1083,7 @@ int colvarmodule::write_restart_file(std::string const &out_name)
 {
   cvm::log("Saving collective variables state to \""+out_name+"\".\n");
   std::ostream &restart_out_os = proxy->output_stream(out_name, "state file");
-  if (restart_out_os.fail()) return COLVARS_FILE_ERROR;
+  if (!restart_out_os) return COLVARS_FILE_ERROR;
   if (!write_restart(restart_out_os)) {
     return cvm::error("Error: in writing restart file.\n", COLVARS_FILE_ERROR);
   }
@@ -1118,7 +1118,7 @@ int colvarmodule::write_traj_files()
   std::ostream &cv_traj_os = proxy->output_stream(cv_traj_name,
                                                   "colvars trajectory");
 
-  if (cv_traj_os.fail()) {
+  if (!cv_traj_os) {
     return COLVARS_FILE_ERROR;
   }
 
@@ -1291,12 +1291,12 @@ int colvarmodule::setup_input()
     std::istream *input_is = &(proxy->input_stream(restart_in_name,
                                                    "restart file/channel",
                                                    false));
-    if (input_is->fail()) {
+    if (!*input_is) {
       // Try without the suffix ".colvars.state"
       restart_in_name = proxy->input_prefix();
       input_is = &(proxy->input_stream(restart_in_name,
                                        "restart file/channel"));
-      if (input_is->fail()) {
+      if (!*input_is) {
         return COLVARS_FILE_ERROR;
       }
     }
@@ -1821,7 +1821,7 @@ int cvm::read_index_file(char const *filename)
 {
   std::istream &is = proxy->input_stream(filename, "index file");
 
-  if (is.fail()) {
+  if (!is) {
     return COLVARS_FILE_ERROR;
   } else {
     index_file_names.push_back(std::string(filename));
