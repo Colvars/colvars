@@ -212,7 +212,7 @@ colvar::customColvar::customColvar(std::string const &conf): linearCombination(c
         }
 #else
         cvm::error("customFunction requires the Lepton library, but it is not enabled during compilation.\n"
-                   "Please refer to https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html#sec:compilation_notes for more information",
+                   "Please refer to the Compilation Notes section of the Colvars manual for more information.\n",
                     COLVARS_INPUT_ERROR);
 #endif
     } else {
@@ -257,7 +257,7 @@ void colvar::customColvar::calc_value() {
         }
 #else
         cvm::error("customFunction requires the Lepton library, but it is not enabled during compilation.\n"
-                   "Please refer to https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html#sec:compilation_notes for more information",
+                   "Please refer to the Compilation Notes section of the Colvars manual for more information.\n",
                     COLVARS_INPUT_ERROR);
 #endif
     }
@@ -295,7 +295,7 @@ void colvar::customColvar::calc_gradients() {
         }
 #else
         cvm::error("customFunction requires the Lepton library, but it is not enabled during compilation.\n"
-                   "Please refer to https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html#sec:compilation_notes for more information",
+                   "Please refer to the Compilation Notes section of the Colvars manual for more information.\n",
                     COLVARS_INPUT_ERROR);
 #endif
     }
@@ -335,7 +335,7 @@ void colvar::customColvar::apply_force(colvarvalue const &force) {
         }
 #else
         cvm::error("customFunction requires the Lepton library, but it is not enabled during compilation.\n"
-                   "Please refer to https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html#sec:compilation_notes for more information",
+                   "Please refer to the Compilation Notes section of the Colvars manual for more information.\n",
                     COLVARS_INPUT_ERROR);
 #endif
     }
