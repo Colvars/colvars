@@ -141,13 +141,15 @@ void colvar::linearCombination::apply_force(colvarvalue const &force) {
 colvar::customColvar::customColvar(std::string const &conf): linearCombination(conf) {
     use_custom_function = false;
     // code swipe from colvar::init_custom_function
-#ifdef LEPTON
     std::string expr_in, expr;
+    size_t pos = 0; // current position in config string
+#ifdef LEPTON
     std::vector<Lepton::ParsedExpression> pexprs;
     Lepton::ParsedExpression pexpr;
     double *ref;
-    size_t pos = 0; // current position in config string
+#endif
     if (key_lookup(conf, "customFunction", &expr_in, &pos)) {
+#ifdef LEPTON
         use_custom_function = true;
         cvm::log("This colvar uses a custom function.\n");
         do {
@@ -208,11 +210,15 @@ colvar::customColvar::customColvar(std::string const &conf): linearCombination(c
         } else {
             x.type(colvarvalue::type_scalar);
         }
-    } else {
-        cvm::log(std::string{"Warning: no customFunction specified.\n"});
-        cvm::log(std::string{"Warning: use linear combination instead.\n"});
-    }
+#else
+        cvm::error("customFunction requires the Lepton library, but it is not enabled during compilation.\n"
+                   "Please refer to https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html#sec:compilation_notes for more information",
+                    COLVARS_INPUT_ERROR);
 #endif
+    } else {
+        cvm::log("Warning: no customFunction specified.\n");
+        cvm::log("Warning: use linear combination instead.\n");
+    }
 }
 
 colvar::customColvar::~customColvar() {
@@ -225,7 +231,6 @@ colvar::customColvar::~customColvar() {
     }
 #endif
 }
-
 
 void colvar::customColvar::calc_value() {
     if (!use_custom_function) {
@@ -251,7 +256,9 @@ void colvar::customColvar::calc_value() {
             x[i] = value_evaluators[i]->evaluate();
         }
 #else
-        cvm::error("Try to use customColvar with customFunction but without Lepton compiled.\n");
+        cvm::error("customFunction requires the Lepton library, but it is not enabled during compilation.\n"
+                   "Please refer to https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html#sec:compilation_notes for more information",
+                    COLVARS_INPUT_ERROR);
 #endif
     }
 }
@@ -287,7 +294,9 @@ void colvar::customColvar::calc_gradients() {
             }
         }
 #else
-        cvm::error("Try to use customColvar with customFunction but without Lepton compiled.\n");
+        cvm::error("customFunction requires the Lepton library, but it is not enabled during compilation.\n"
+                   "Please refer to https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html#sec:compilation_notes for more information",
+                    COLVARS_INPUT_ERROR);
 #endif
     }
 }
@@ -325,7 +334,9 @@ void colvar::customColvar::apply_force(colvarvalue const &force) {
             }
         }
 #else
-        cvm::error("Try to use customColvar with customFunction but without Lepton compiled.\n");
+        cvm::error("customFunction requires the Lepton library, but it is not enabled during compilation.\n"
+                   "Please refer to https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html#sec:compilation_notes for more information",
+                    COLVARS_INPUT_ERROR);
 #endif
     }
 }
