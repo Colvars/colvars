@@ -3003,7 +3003,7 @@ This is a helper CV which can be defined as a linear combination of other CVs. I
 \labelkey{colvar|customColvar}}
 
 \cvleptononly{
-This is a helper CV which can be defined as a mathematical expression (see \ref{sec:colvar_custom_function}) of other CVs. It maybe useful when you want to define the \texttt{gspathCV~\{...\}}, the \texttt{gzpathCV~\{...\}} and \texttt{NeuralNetwork~\{...\}} as combinations of other CVs.
+This is a helper CV which can be defined as a mathematical expression (see \ref{sec:colvar_custom_function}) of other CVs by using \refkey{customFunction}{colvar|customFunction}. Currently only the scalar type of \refkey{customFunction}{colvar|customFunction} is supported. If \refkey{customFunction}{colvar|customFunction} is not provided, this component falls back to \refkey{linearCombination}{colvar|linearCombination}. It maybe useful when you want to define the \texttt{gspathCV~\{...\}}, the \texttt{gzpathCV~\{...\}} and \texttt{NeuralNetwork~\{...\}} as combinations of other CVs.
 }
 
 \cvsubsubsec{\texttt{gspathCV}: progress along a path defined in CV space.}{sec:cvc_gspathCV}
