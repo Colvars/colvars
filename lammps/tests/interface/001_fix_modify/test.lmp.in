@@ -12,11 +12,11 @@ read_data  ../common/da.lmp.data
 
 include ../common/fixes.lmp.in
 
-# Define the fix, with some minimal input
-fix Colvars all colvars test.in output test
+# Define the fix, with no initial input
+fix Colvars all colvars none output test
 
-# Initialize
-run 0 post no
+# Define the variable
+fix_modify Colvars configfile test.in
 
 # Now add the bias
 fix_modify Colvars config """

@@ -14,13 +14,13 @@ fix ID group-ID colvars configfile keyword values ... :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 colvars = style name of this fix command :l
-configfile = the configuration file for the colvars module :l
+configfile = configuration file for the Colvars module, or *none* :l
 keyword = {input} or {output} or {seed} or {tstat} :l
   {input} arg = colvars.state file name or prefix or NULL (default: NULL)
   {output} arg = output filename prefix (default: out)
   {seed} arg = seed for random number generator (default: 1966)
   {unwrap} arg = {yes} or {no}
-    use unwrapped coordinates in collective variables (default: yes)
+    use unwrapped coordinates in Colvars (default: yes)
   {tstat} arg = fix id of a thermostat or NULL (default: NULL) :pre
 :ule
 
@@ -33,14 +33,14 @@ fix abf all colvars colvars.inp tstat 1 :pre
 
 This fix interfaces LAMMPS to the collective variables "Colvars"
 library, which allows to calculate potentials of mean force
-(PMFs) for any set of colvars, using different sampling methods:
+(PMFs) for any set of collective variables, using different sampling methods:
 currently implemented are the Adaptive Biasing Force (ABF) method,
 metadynamics, Steered Molecular Dynamics (SMD) and Umbrella Sampling
 (US) via a flexible harmonic restraint bias.
 
-This documentation describes only the fix colvars command itself and
+This documentation page describes only the fix colvars command itself and
 LAMMPS specific parts of the code.  The full documentation of the
-colvars library is available as "this supplementary PDF document"_PDF/colvars-refman-lammps.pdf
+Colvars library is available as "this supplementary PDF document"_PDF/colvars-refman-lammps.pdf
 
 The Colvars library is developed at "https://github.com/colvars/colvars"_https://github.com/colvars/colvars
 A detailed discussion of its implementation is in "(Fiorin)"_#Fiorin.
@@ -54,16 +54,19 @@ The only mandatory argument to the fix is the filename to the colvars
 input file that contains the input that is independent from the MD
 program in which the colvars library has been integrated.
 
-The {group-ID} entry is ignored. The collective variable module will
+The {group-ID} entry is ignored. The Colvars module will
 always apply to the entire system and there can only be one instance
-of the colvars fix at a time. The colvars fix will only communicate
-the minimum information necessary and the colvars library supports
+of fix colvars at a time. This fix will only communicate
+the minimum information necessary and the Colvars library supports
 multiple, completely independent collective variables, so there is
-no restriction to functionality by limiting the number of colvars fixes.
+no restriction to functionality by limiting the number of fixes.
 
-The {input} keyword allows to specify a state file that would contain
+The *configfile* parameter is either the name of a configuration file for
+Colvars, or alternatively *none* to allow specifying configuration later "fix_modify"_fix_modify.html commands.  In either case, the Colvars module will not be initialized until the next run command.
+
+The {input} keyword allows to specify an optional state file that would contain
 the restart information required in order to continue a calculation from
-a prerecorded state. Fix colvars records it state in "binary restart"_restart.html
+a prerecorded state. Fix colvars records its state in "binary restart"_restart.html
 files, so when using the "read_restart"_read_restart.html command,
 this is usually not needed.
 

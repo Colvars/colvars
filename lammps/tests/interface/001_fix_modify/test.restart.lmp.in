@@ -8,8 +8,6 @@ include ../common/fixes.lmp.in
 
 fix Colvars all colvars test.in input test output test.restart
 
-run 0 post no
-
 fix_modify Colvars config """
 harmonic {
     colvars        one
@@ -17,6 +15,8 @@ harmonic {
     forceConstant  0.001
 }
 """
+
+run 0 post no
 
 echo screen
 

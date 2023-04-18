@@ -292,7 +292,12 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   me = comm->me;
   root2root = MPI_COMM_NULL;
 
-  conf_file = utils::strdup(arg[3]);
+  if (strcmp(arg[3], "none") == 0) {
+    conf_file = nullptr;
+  } else {
+    conf_file = utils::strdup(arg[3]);
+  }
+
   rng_seed = 1966;
   unwrap_flag = 1;
 
@@ -337,10 +342,24 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   proxy = nullptr;
   idmap = nullptr;
 
-  /* Set the first argument to the command used in the LAMMPS input */
-  script_args[0] = strdup("");
-  strcat(script_args[0], "fix_modify ");
-  strcat(script_args[0], id);
+  if (me == 0) {
+    utils::logmesg(lmp, "colvars: Initializing LAMMPS interface\n");
+#ifdef LAMMPS_BIGBIG
+    utils::logmesg(lmp, "colvars: Warning: cannot handle atom ids > 2147483647\n");
+#endif
+    proxy = new colvarproxy_lammps(lmp);
+
+    parse_fix_arguments(narg, arg, true);
+
+    if (!out_name) out_name = utils::strdup("out");
+
+    script_args[0] = reinterpret_cast<unsigned char *>(strdup("fix_modify"));
+
+    proxy->init();
+    if (conf_file) {
+      proxy->add_config("configfile", conf_file);
+    }
+  }
 
   /* storage required to communicate a single coordinate or force. */
   size_one = sizeof(struct commdata);
@@ -399,10 +418,8 @@ void FixColvars::init()
   if (utils::strmatch(update->integrate_style, "^respa"))
     nlevels_respa = ((Respa *) update->integrate)->nlevels;
 
-  if (proxy) {
-    // Return if the proxy has already been allocated
-    return;
-  }
+  if (init_flag) return;
+  init_flag = 1;
 
   if (universe->nworlds > 1) {
     // create inter root communicator
@@ -414,7 +431,6 @@ void FixColvars::init()
   }
 
   if (me == 0) {
-
     // Try to determine thermostat target temperature
     double t_target = 0.0;
     if (tfix_name) {
@@ -441,11 +457,6 @@ void FixColvars::init()
 #ifdef LAMMPS_BIGBIG
     utils::logmesg(lmp, "colvars: Warning: cannot handle atom ids > 2147483647\n");
 #endif
-
-    proxy = new colvarproxy_lammps(lmp, rng_seed, root2root);
-    proxy->init();
-    proxy->add_config("configfile", conf_file);
-    proxy->parse_module_config();
   }
 }
 
@@ -454,40 +465,9 @@ void FixColvars::init()
 
 void FixColvars::init_taglist()
 {
-  if (init_flag) return;
-  init_flag = 1;
-
   int new_taglist_size = -1;
 
   if (me == 0) {
-
-    // Set I/O prefixes
-    proxy->set_input_prefix(std::string(inp_name ? inp_name : ""));
-    if (proxy->input_prefix().size() > 0) {
-      proxy->log("Will read input state from file \""+
-                 proxy->input_prefix()+".colvars.state\"");
-    }
-
-    proxy->set_output_prefix(std::string(out_name ? out_name : ""));
-
-    // Try to extract a restart prefix from a potential restart command
-    LAMMPS_NS::Output *outp = lmp->output;
-    if ((outp->restart_every_single > 0) &&
-        (outp->restart1 != nullptr)) {
-
-      proxy->set_default_restart_frequency(outp->restart_every_single);
-      proxy->set_restart_output_prefix(std::string(outp->restart1));
-
-    } else if ((outp->restart_every_double > 0) &&
-               (outp->restart2a != nullptr)) {
-
-      proxy->set_default_restart_frequency(outp->restart_every_double);
-      proxy->set_restart_output_prefix(std::string(outp->restart2a));
-    }
-
-    proxy->parse_module_config();
-
-    proxy->setup();
 
     // Number of atoms requested by Colvars
     num_coords = static_cast<int>(proxy->modify_atom_positions()->size());
@@ -547,12 +527,6 @@ int FixColvars::modify_param(int narg, char **arg)
 {
   if (me == 0) {
 
-    if (! proxy) {
-      error->one(FLERR,
-                 "Cannot use fix_modify for Colvars before initialization");
-      return 2;
-    }
-
     if (narg > 100) {
       error->one(FLERR, "Too many arguments for fix_modify command");
       return 2;
@@ -583,7 +557,35 @@ int FixColvars::modify_param(int narg, char **arg)
   return 0;
 }
 
-/* ---------------------------------------------------------------------- */
+
+void FixColvars::setup_io()
+{
+  if (me == 0) {
+    proxy->set_input_prefix(std::string(inp_name ? inp_name : ""));
+    if (proxy->input_prefix().size() > 0) {
+      proxy->log("Will read input state from file \""+
+                 proxy->input_prefix()+".colvars.state\"");
+    }
+
+    proxy->set_output_prefix(std::string(out_name ? out_name : ""));
+
+    // Try to extract a restart prefix from a potential restart command
+    LAMMPS_NS::Output *outp = lmp->output;
+    if ((outp->restart_every_single > 0) &&
+        (outp->restart1 != nullptr)) {
+
+      proxy->set_default_restart_frequency(outp->restart_every_single);
+      proxy->set_restart_output_prefix(std::string(outp->restart1));
+
+    } else if ((outp->restart_every_double > 0) &&
+               (outp->restart2a != nullptr)) {
+
+      proxy->set_default_restart_frequency(outp->restart_every_double);
+      proxy->set_restart_output_prefix(std::string(outp->restart2a));
+    }
+  }
+}
+
 
 void FixColvars::setup(int vflag)
 {
@@ -594,6 +596,12 @@ void FixColvars::setup(int vflag)
 
   MPI_Status status;
   MPI_Request request;
+
+  if (me == 0) {
+    setup_io();
+    proxy->parse_module_config();
+    proxy->setup();
+  }
 
   init_taglist();
 

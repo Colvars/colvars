@@ -94,6 +94,9 @@ class FixColvars : public Fix {
   MPI_Comm root2root;      // inter-root communicator for multi-replica support
 
   void init_taglist();     // initialize list of atom tags and hash table
+
+  /// Tell Colvars where to get its state from and where to save it
+  void setup_io();
 };
 
 }    // namespace LAMMPS_NS
