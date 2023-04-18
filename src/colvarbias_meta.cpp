@@ -860,7 +860,6 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
                     }
                  }
                  if (hill_add) {
-                   std::string h_replica = "";
                    switch (comm) {
 
                    case single_replica:
@@ -870,7 +869,6 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
                      break;
 
                    case multiple_replicas:
-                     h_replica=replica_id;
                      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, colvar_sigmas, replica_id));
                      std::ostream *replica_hills_os =
                        cvm::proxy->get_output_stream(replica_hills_file);
