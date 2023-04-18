@@ -8,6 +8,8 @@
 // Colvars repository at GitHub.
 
 #include <fstream>
+#include <list>
+#include <utility>
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -463,11 +465,14 @@ int colvarproxy_script::run_colvar_gradient_callback(std::string const & /* name
 colvarproxy::colvarproxy()
 {
   colvars = NULL;
+  // By default, simulation engines allow to immediately request atoms
+  engine_ready_ = true;
   b_simulation_running = true;
   b_simulation_continuing = false;
   b_delete_requested = false;
   version_int = -1;
   features_hash = 0;
+  config_queue_ = reinterpret_cast<void *>(new std::list<std::pair<std::string, std::string> >);
 }
 
 
@@ -478,6 +483,7 @@ colvarproxy::~colvarproxy()
     delete colvars;
     colvars = NULL;
   }
+  delete reinterpret_cast<std::list<std::pair<std::string, std::string> > *>(config_queue_);
 }
 
 
@@ -505,9 +511,38 @@ int colvarproxy::request_deletion()
 }
 
 
+void colvarproxy::add_config(std::string const &cmd, std::string const &conf)
+{
+  reinterpret_cast<std::list<std::pair<std::string, std::string> > *>(config_queue_)->push_back(std::make_pair(cmd, conf));
+}
+
+
 int colvarproxy::setup()
 {
   return COLVARS_OK;
+}
+
+
+int colvarproxy::setup_module()
+{
+  int error_code = COLVARS_OK;
+  // Read any configuration queued up for Colvars
+  std::list<std::pair<std::string, std::string> > *config_queue = reinterpret_cast<std::list<std::pair<std::string, std::string> > *>(config_queue_);
+  while (config_queue->size() > 0) {
+    std::pair<std::string, std::string> const &p = config_queue->front();
+    if (p.first == "config") {
+      error_code |= colvars->read_config_string(p.second);
+    } else if (p.first == "configfile") {
+      error_code |= colvars->read_config_file(p.second.c_str());
+    } else {
+      error_code |= cvm::error(std::string("Error: invalid keyword \"") +
+                               p.first +
+                               std::string("\" in colvarproxy::setup()\n"),
+                               COLVARS_BUG_ERROR);
+    }
+    config_queue->pop_front();
+  }
+  return error_code;
 }
 
 

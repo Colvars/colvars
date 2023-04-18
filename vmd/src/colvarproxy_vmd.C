@@ -141,12 +141,10 @@ int colvarproxy_vmd::setup()
     return COLVARS_ERROR;
   }
 
-  if (colvars) {
-    return colvars->setup();
-  }
-
-  return COLVARS_OK;
+  return colvars->update_engine_parameters();
 }
+
+
 cvm::real colvarproxy_vmd::rand_gaussian()
 {
   return vmd_random_gaussian();

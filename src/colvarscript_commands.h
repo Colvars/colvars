@@ -134,11 +134,19 @@ CVSCRIPT(cv_config,
          char const *conf_str =
            script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
          std::string const conf(conf_str);
-         if (cvm::main()->read_config_string(conf) == COLVARS_OK) {
-           return COLVARS_OK;
+         script->proxy()->add_config("config", conf);
+         if (script->proxy()->engine_ready()) {
+           // Engine allows immediate initialization
+           if ((script->proxy()->setup_module() |
+                script->proxy()->setup()) == COLVARS_OK) {
+             return COLVARS_OK;
+           } else {
+             script->add_error_msg("Error parsing configuration string");
+             return COLVARSCRIPT_ERROR;
+           }
          }
-         script->add_error_msg("Error parsing configuration string");
-         return COLVARSCRIPT_ERROR;
+         // Engine not ready, config will be read during proxy->setup()
+         return COLVARS_OK;
          )
 
 CVSCRIPT(cv_configfile,
@@ -146,13 +154,20 @@ CVSCRIPT(cv_configfile,
          1, 1,
          "conf_file : string - Path to configuration file",
          char const *conf_file_name =
-           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
-         if (script->module()->read_config_file(conf_file_name) == COLVARS_OK) {
-           return COLVARS_OK;
-         } else {
-           script->add_error_msg("Error parsing configuration file");
-           return COLVARSCRIPT_ERROR;
+         script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
+         script->proxy()->add_config("configfile", std::string(conf_file_name));
+         if (script->proxy()->engine_ready()) {
+           // Engine allows immediate initialization
+           if ((script->proxy()->setup_module() |
+                script->proxy()->setup()) == COLVARS_OK) {
+             return COLVARS_OK;
+           } else {
+             script->add_error_msg("Error parsing configuration file");
+             return COLVARSCRIPT_ERROR;
+           }
          }
+         // Engine not ready, config will be read during proxy->setup()
+         return COLVARS_OK;
          )
 
 CVSCRIPT(cv_delete,
