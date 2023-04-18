@@ -298,9 +298,6 @@ int colvarmodule::parse_config(std::string &conf)
   cvm::log("Collective variables module (re)initialized.\n");
   cvm::log(cvm::line_marker);
 
-  // Update any necessary proxy data
-  proxy->setup();
-
   if (source_Tcl_script.size() > 0) {
     run_tcl_script(source_Tcl_script);
   }
@@ -1207,7 +1204,7 @@ int colvarmodule::end_of_step()
 }
 
 
-int colvarmodule::setup()
+int colvarmodule::update_engine_parameters()
 {
   if (this->size() == 0) return cvm::get_error();
   for (std::vector<colvar *>::iterator cvi = variables()->begin();

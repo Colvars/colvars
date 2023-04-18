@@ -121,11 +121,11 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
 
     auto i = filenames_config.begin();
     for(; i != filenames_config.end(); ++i) {
-        colvars->read_config_file(i->c_str());
+        add_config("configfile", i->c_str());
     }
 
-
-    colvars->setup();
+    colvarproxy::setup_module();
+    colvars->update_engine_parameters();
     colvars->setup_input();
 
     // Citation Reporter

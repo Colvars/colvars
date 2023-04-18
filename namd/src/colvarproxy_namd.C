@@ -102,10 +102,13 @@ colvarproxy_namd::colvarproxy_namd()
 
   errno = 0;
   for ( ; config; config = config->next ) {
-    colvars->read_config_file(config->data);
+    add_config("configfile", config->data);
   }
 
-  colvars->setup();
+  // Trigger immediate initialization of the module
+  colvarproxy::setup_module();
+  colvarproxy_namd::setup();
+  colvars->update_engine_parameters();
   colvars->setup_input();
   colvars->setup_output();
 
@@ -196,19 +199,24 @@ int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
 
 int colvarproxy_namd::setup()
 {
-  if (colvars->size() == 0) return COLVARS_OK;
+  int error_code = colvarproxy::setup();
 
-  cvm::log("Updating NAMD interface:\n");
+  if (colvars->size() == 0) {
+    // Module is empty, nothing to do
+    return COLVARS_OK;
+  }
+
+  log("Updating NAMD interface:\n");
 
   errno = 0;
 
   if (simparams->wrapAll) {
-    cvm::log("Warning: enabling wrapAll can lead to inconsistent results "
-             "for Colvars calculations: please disable wrapAll, "
-             "as is the default option in NAMD.\n");
+    log("Warning: enabling wrapAll can lead to inconsistent results "
+        "for Colvars calculations: please disable wrapAll, "
+        "as is the default option in NAMD.\n");
   }
 
-  cvm::log("updating atomic data ("+cvm::to_str(atoms_ids.size())+" atoms).\n");
+  log("updating atomic data ("+cvm::to_str(atoms_ids.size())+" atoms).\n");
 
   size_t i;
   for (i = 0; i < atoms_ids.size(); i++) {
@@ -225,9 +233,9 @@ int colvarproxy_namd::setup()
     n_group_atoms += modifyRequestedGroups()[ig].size();
   }
 
-  cvm::log("updating group data ("+cvm::to_str(atom_groups_ids.size())+
-           " scalable groups, "+
-           cvm::to_str(n_group_atoms)+" atoms in total).\n");
+  log("updating group data ("+cvm::to_str(atom_groups_ids.size())+
+      " scalable groups, "+
+      cvm::to_str(n_group_atoms)+" atoms in total).\n");
 
   // Note: groupMassBegin, groupMassEnd may be used here, but they won't work for charges
   for (int ig = 0; ig < modifyRequestedGroups().size(); ig++) {
@@ -257,10 +265,10 @@ int colvarproxy_namd::setup()
   }
 
   update_target_temperature();
-  cvm::log("updating target temperature (T = "+
-           cvm::to_str(target_temperature())+" K).\n");
+  log("updating target temperature (T = "+
+      cvm::to_str(target_temperature())+" K).\n");
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
@@ -291,7 +299,7 @@ void colvarproxy_namd::calculate()
   if (first_timestep) {
 
     colvarproxy_namd::setup();
-    colvars->setup();
+    colvars->update_engine_parameters();
     colvars->setup_input();
     colvars->setup_output();
 

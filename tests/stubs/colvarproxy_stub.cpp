@@ -44,7 +44,7 @@ colvarproxy_stub::~colvarproxy_stub()
 int colvarproxy_stub::setup()
 {
   if (colvars) {
-    return colvars->setup();
+    return colvars->update_engine_parameters();
   }
   return COLVARS_OK;
 }

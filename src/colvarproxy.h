@@ -599,18 +599,30 @@ public:
   /// \brief Reset proxy state, e.g. requested atoms
   virtual int reset();
 
-  /// (Re)initialize required member data after construction
+  /// (Re)initialize the module
+  virtual int setup_module();
+
+  /// (Re)initialize required member data (called after the module)
   virtual int setup();
 
-  /// \brief Update data required by the colvars module (e.g. cache atom positions)
+  /// Whether the engine allows to fully initialize Colvars immediately
+  inline bool engine_ready() const
+  {
+    return engine_ready_;
+  }
+
+  /// Enqueue new configuration text, to be parsed as soon as possible
+  void add_config(std::string const &cmd, std::string const &conf);
+
+  /// Update data required by Colvars module (e.g. read atom positions)
   ///
   /// TODO Break up colvarproxy_namd and colvarproxy_lammps function into these
   virtual int update_input();
 
-  /// \brief Update data based from the results of a module update (e.g. send forces)
+  /// Update data based on the results of a Colvars call (e.g. send forces)
   virtual int update_output();
 
-  /// Carry out operations needed before next step is run
+  /// Carry out operations needed before next simulation step is run
   int end_of_step();
 
   /// Print a message to the main log
@@ -662,6 +674,9 @@ public:
 
 protected:
 
+  /// Whether the engine allows to fully initialize Colvars immediately
+  bool engine_ready_;
+
   /// Collected error messages
   std::string error_output;
 
@@ -681,6 +696,9 @@ protected:
 
   /// Track which features have been acknowledged during the last run
   size_t features_hash;
+
+  /// Queue of config strings or files to be fed to the module
+  void *config_queue_;
 
 };
 

@@ -50,7 +50,7 @@ class colvarproxy_lammps : public colvarproxy {
   colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp, const char *, const char *, const int, const double,
                      MPI_Comm);
   ~colvarproxy_lammps() override;
-  void init(const char *);
+  void init();
   int setup() override;
 
   // disable default and copy constructor
