@@ -904,7 +904,7 @@ public:
   {
     xx = xy = xz = yx = yy = yz = zx = zy = zz = 0.0;
   }
-  
+
   /// Return the determinant
   inline cvm::real determinant() const
   {
@@ -1113,11 +1113,6 @@ public:
     q0-=h.q0; q1-=h.q1; q2-=h.q2; q3-=h.q3;
   }
 
-  /// Promote a 3-vector to a quaternion
-  static inline cvm::quaternion promote(cvm::rvector const &v)
-  {
-    return cvm::quaternion(0.0, v.x, v.y, v.z);
-  }
   /// Return the vector component
   inline cvm::rvector get_vector() const
   {
@@ -1169,7 +1164,8 @@ public:
   /// reference frame)
   inline cvm::rvector rotate(cvm::rvector const &v) const
   {
-    return ((*this) * promote(v) * ((*this).conjugate())).get_vector();
+    return ( (*this) * cvm::quaternion(0.0, v.x, v.y, v.z) *
+             this->conjugate() ).get_vector();
   }
 
   /// \brief Rotate Q2 through this quaternion (put it in the rotated
