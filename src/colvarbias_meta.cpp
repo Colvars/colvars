@@ -1156,7 +1156,9 @@ int colvarbias_meta::update_grid_data()
 {
   if ((cvm::step_absolute() % grids_freq) == 0) {
     // map the most recent gaussians to the grids
-    project_hills(new_hills_begin, hills.end(), hills_energy.get(), hills_energy_gradients.get());
+    project_hills(new_hills_begin, hills.end(), hills_energy.get(), hills_energy_gradients.get(),
+                  which_int_llimit_cv, which_int_ulimit_cv,
+                  interval_llimit, interval_ulimit);
     new_hills_begin = hills.end();
 
     // TODO: we may want to condense all into one replicas array,
@@ -1166,7 +1168,9 @@ int colvarbias_meta::update_grid_data()
         replicas[ir]->project_hills(replicas[ir]->new_hills_begin,
                                     replicas[ir]->hills.end(),
                                     replicas[ir]->hills_energy.get(),
-                                    replicas[ir]->hills_energy_gradients.get());
+                                    replicas[ir]->hills_energy_gradients.get(),
+                                    which_int_llimit_cv, which_int_ulimit_cv,
+                                    interval_llimit, interval_ulimit);
         replicas[ir]->new_hills_begin = replicas[ir]->hills.end();
       }
     }
@@ -1458,6 +1462,10 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
                                     colvarbias_meta::hill_iter  h_last,
                                     colvar_grid_scalar         *he,
                                     colvar_grid_gradient       *hg,
+                                    std::vector<int> const &w_int_llimit_cv, 
+                                    std::vector<int> const &w_int_ulimit_cv,
+                                    std::vector<cvm::real> const &int_llimit, 
+                                    std::vector<cvm::real> const &int_ulimit,
                                     bool print_progress)
 {
   if (cvm::debug())
@@ -1491,17 +1499,17 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
       for (i = 0; i < num_variables(); i++) {
         add_force[i]=true;
         new_colvar_values[i] = he->bin_to_value_scalar(he_ix[i], i);
-        ii=which_int_llimit_cv[i];
+        ii=w_int_llimit_cv[i];
         if (ii>-1 ){
-          if ( new_colvar_values[i]<interval_llimit[ii] ) {
-            new_colvar_values[i]=interval_llimit[ii];
+          if ( new_colvar_values[i]<int_llimit[ii] ) {
+            new_colvar_values[i]=int_llimit[ii];
             add_force[i]=false;
           }
         }
-        ii=which_int_ulimit_cv[i];
+        ii=w_int_ulimit_cv[i];
         if (ii>-1){
-          if( new_colvar_values[i]>interval_ulimit[ii] ) {
-            new_colvar_values[i]=interval_ulimit[ii];
+          if( new_colvar_values[i]>int_ulimit[ii] ) {
+            new_colvar_values[i]=int_ulimit[ii];
             add_force[i]=false;
           }
         }
@@ -2074,8 +2082,10 @@ void colvarbias_meta::rebin_grids_after_restart()
       // if there are hills, recompute the new grids from them
       cvm::log("Rebinning the energy and forces grids from "+
                cvm::to_str(hills.size())+" hills (this may take a bit)...\n");
-      project_hills(hills.begin(), hills.end(), new_hills_energy.get(),
-                    new_hills_energy_gradients.get(), true);
+      project_hills(hills.begin(), hills.end(), 
+                    new_hills_energy.get(), new_hills_energy_gradients.get(),
+                    which_int_llimit_cv, which_int_ulimit_cv, 
+                    interval_llimit, interval_ulimit, true);
       cvm::log("rebinning done.\n");
 
     } else {

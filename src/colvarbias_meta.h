@@ -281,8 +281,11 @@ protected:
   std::shared_ptr<colvar_grid_gradient> hills_energy_gradients;
 
   /// Project the selected hills onto grids
-  void project_hills(hill_iter h_first, hill_iter h_last, colvar_grid_scalar *ge,
-                     colvar_grid_gradient *gf, bool print_progress = false);
+  void project_hills(hill_iter h_first, hill_iter h_last,
+                     colvar_grid_scalar *ge, colvar_grid_gradient *gf,
+                     std::vector<int> const &w_int_llimit_cv, std::vector<int> const &w_int_ulimit_cv,
+                     std::vector<cvm::real> const &int_llimit, std::vector<cvm::real> const &int_ulimit,              
+                     bool print_progress = false);
 
 
   // Multiple Replicas variables and functions
