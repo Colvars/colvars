@@ -137,7 +137,7 @@ CVSCRIPT(cv_config,
          script->proxy()->add_config("config", conf);
          if (script->proxy()->engine_ready()) {
            // Engine allows immediate initialization
-           if ((script->proxy()->setup_module() |
+           if ((script->proxy()->parse_module_config() |
                 script->proxy()->setup()) == COLVARS_OK) {
              return COLVARS_OK;
            } else {
@@ -158,7 +158,7 @@ CVSCRIPT(cv_configfile,
          script->proxy()->add_config("configfile", std::string(conf_file_name));
          if (script->proxy()->engine_ready()) {
            // Engine allows immediate initialization
-           if ((script->proxy()->setup_module() |
+           if ((script->proxy()->parse_module_config() |
                 script->proxy()->setup()) == COLVARS_OK) {
              return COLVARS_OK;
            } else {

@@ -523,7 +523,7 @@ int colvarproxy::setup()
 }
 
 
-int colvarproxy::setup_module()
+int colvarproxy::parse_module_config()
 {
   int error_code = COLVARS_OK;
   // Read any configuration queued up for Colvars

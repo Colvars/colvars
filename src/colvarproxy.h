@@ -600,7 +600,7 @@ public:
   virtual int reset();
 
   /// (Re)initialize the module
-  virtual int setup_module();
+  virtual int parse_module_config();
 
   /// (Re)initialize required member data (called after the module)
   virtual int setup();
