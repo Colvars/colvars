@@ -445,7 +445,7 @@ void FixColvars::one_time_init()
     proxy = new colvarproxy_lammps(lmp,inp_name,out_name,rng_seed,t_target,root2root);
     proxy->init();
     proxy->add_config("configfile", conf_file);
-    proxy->setup_module();
+    proxy->parse_module_config();
 
     num_coords = (proxy->modify_atom_positions()->size());
   }

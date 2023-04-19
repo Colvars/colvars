@@ -133,6 +133,7 @@ int colvarproxy_vmd::request_deletion()
 
 int colvarproxy_vmd::setup()
 {
+  int error_code = colvarproxy::setup();
   vmdmol = vmd->moleculeList->mol_from_id(vmdmolid);
   if (vmdmol) {
     set_frame(vmdmol->frame());

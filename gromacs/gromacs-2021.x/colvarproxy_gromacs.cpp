@@ -124,7 +124,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
         add_config("configfile", i->c_str());
     }
 
-    colvarproxy::setup_module();
+    colvarproxy::parse_module_config();
     colvars->update_engine_parameters();
     colvars->setup_input();
 
