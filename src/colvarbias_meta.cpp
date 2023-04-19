@@ -552,7 +552,7 @@ int colvarbias_meta::init_interval_params(std::string const &conf)
   std::vector<int> interval_ulimit_cv;
   size_t i;
   size_t j;
-  // allocate accessory variable of colvar values to be used in energy and forces calculation 
+  // allocate accessory variable of colvar values to be used in energy and forces calculation
   curr_values.resize(num_variables());
   for (i = 0; i < num_variables(); i++) {
     curr_values[i].type(variables(i)->value());
@@ -870,10 +870,10 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
 
                    case multiple_replicas:
                      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, colvar_sigmas, replica_id));
-                     std::ostream *replica_hills_os =
-                       cvm::proxy->get_output_stream(replica_hills_file);
+                     std::ostream &replica_hills_os =
+                       cvm::proxy->output_stream(replica_hills_file);
                      if (replica_hills_os) {
-                       *replica_hills_os << hills.back();
+                       replica_hills_os << hills.back();
                      } else {
                        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
                                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
@@ -1287,7 +1287,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
     curr_bin = hills_energy->get_colvars_index_bound(curr_values);
   } else {
     curr_bin = hills_energy->get_colvars_index(curr_values);
-  }  
+  }
 
   if (use_grids) {
 
@@ -1462,9 +1462,9 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
                                     colvarbias_meta::hill_iter  h_last,
                                     colvar_grid_scalar         *he,
                                     colvar_grid_gradient       *hg,
-                                    std::vector<int> const &w_int_llimit_cv, 
+                                    std::vector<int> const &w_int_llimit_cv,
                                     std::vector<int> const &w_int_ulimit_cv,
-                                    std::vector<cvm::real> const &int_llimit, 
+                                    std::vector<cvm::real> const &int_llimit,
                                     std::vector<cvm::real> const &int_ulimit,
                                     bool print_progress)
 {
@@ -2084,7 +2084,7 @@ void colvarbias_meta::rebin_grids_after_restart()
                cvm::to_str(hills.size())+" hills (this may take a bit)...\n");
       project_hills(hills.begin(), hills.end(), 
                     new_hills_energy.get(), new_hills_energy_gradients.get(),
-                    which_int_llimit_cv, which_int_ulimit_cv, 
+                    which_int_llimit_cv, which_int_ulimit_cv,
                     interval_llimit, interval_ulimit, true);
       cvm::log("rebinning done.\n");
 
