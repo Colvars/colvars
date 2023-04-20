@@ -106,7 +106,7 @@ colvarproxy_namd::colvarproxy_namd()
   }
 
   // Trigger immediate initialization of the module
-  colvarproxy::setup_module();
+  colvarproxy::parse_module_config();
   colvarproxy_namd::setup();
   colvars->update_engine_parameters();
   colvars->setup_input();
