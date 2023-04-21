@@ -697,6 +697,8 @@ protected:
   /// Track which features have been acknowledged during the last run
   size_t features_hash;
 
+private:
+
   /// Queue of config strings or files to be fed to the module
   void *config_queue_;
 
