@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.3)
+cmake_minimum_required(VERSION 3.9)
 
 project(colvars CXX)
 get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
@@ -71,6 +71,17 @@ if(WARNINGS_ARE_ERRORS)
   target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:-xwe>)
   target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/WX>)
 endif()
+
+
+option(COLVARS_OPENMP "Build Colvars with (still limited) OpenMP support" ON)
+
+if(COLVARS_OPENMP)
+  find_package(OpenMP)
+  if(OpenMP_CXX_FOUND)
+    target_link_libraries(colvars OpenMP::OpenMP_CXX)
+  endif()
+endif()
+
 
 include(buildColvarsLepton)
 
