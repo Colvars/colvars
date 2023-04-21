@@ -48,6 +48,8 @@ fix_modify Colvars colvar one getappliedforce
 
 log log.lammps
 
+fix_modify Colvars configfile new_variable.in
+
 include ../common/md.lmp.in
 
 log test.restart.script.2.out
