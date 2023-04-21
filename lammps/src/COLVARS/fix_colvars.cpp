@@ -23,6 +23,7 @@
 
 /* ----------------------------------------------------------------------
    Contributing author:  Axel Kohlmeyer (Temple U)
+   Currently maintained by:  Giacomo Fiorin (NIH)
 ------------------------------------------------------------------------- */
 
 #include "fix_colvars.h"
