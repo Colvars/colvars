@@ -444,6 +444,12 @@ protected:
 };
 
 
+#if defined(_OPENMP)
+#include <omp.h>
+#else
+struct omp_lock_t;
+#endif
+
 /// \brief Methods for SMP parallelization
 class colvarproxy_smp {
 
@@ -489,7 +495,7 @@ public:
 protected:
 
   /// Lock state for OpenMP
-  void *omp_lock_state;
+  omp_lock_t *omp_lock_state;
 };
 
 

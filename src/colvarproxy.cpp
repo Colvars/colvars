@@ -9,10 +9,6 @@
 
 #include <fstream>
 
-#if defined(_OPENMP)
-#include <omp.h>
-#endif
-
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarscript.h"
@@ -263,8 +259,8 @@ colvarproxy_smp::colvarproxy_smp()
   omp_lock_state = NULL;
 #if defined(_OPENMP)
   if (omp_get_thread_num() == 0) {
-    omp_lock_state = reinterpret_cast<void *>(new omp_lock_t);
-    omp_init_lock(reinterpret_cast<omp_lock_t *>(omp_lock_state));
+    omp_lock_state = new omp_lock_t;
+    omp_init_lock(omp_lock_state);
   }
 #endif
 }
@@ -275,7 +271,7 @@ colvarproxy_smp::~colvarproxy_smp()
 #if defined(_OPENMP)
   if (omp_get_thread_num() == 0) {
     if (omp_lock_state) {
-      delete reinterpret_cast<omp_lock_t *>(omp_lock_state);
+      delete omp_lock_state;
     }
   }
 #endif
@@ -394,7 +390,7 @@ int colvarproxy_smp::smp_num_threads()
 int colvarproxy_smp::smp_lock()
 {
 #if defined(_OPENMP)
-  omp_set_lock(reinterpret_cast<omp_lock_t *>(omp_lock_state));
+  omp_set_lock(omp_lock_state);
 #endif
   return COLVARS_OK;
 }
@@ -403,8 +399,7 @@ int colvarproxy_smp::smp_lock()
 int colvarproxy_smp::smp_trylock()
 {
 #if defined(_OPENMP)
-  return omp_test_lock(reinterpret_cast<omp_lock_t *>(omp_lock_state)) ?
-    COLVARS_OK : COLVARS_ERROR;
+  return omp_test_lock(omp_lock_state) ? COLVARS_OK : COLVARS_ERROR;
 #else
   return COLVARS_OK;
 #endif
@@ -414,7 +409,7 @@ int colvarproxy_smp::smp_trylock()
 int colvarproxy_smp::smp_unlock()
 {
 #if defined(_OPENMP)
-  omp_unset_lock(reinterpret_cast<omp_lock_t *>(omp_lock_state));
+  omp_unset_lock(omp_lock_state);
 #endif
   return COLVARS_OK;
 }
