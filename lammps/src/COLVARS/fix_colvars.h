@@ -21,7 +21,8 @@
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
-      Contributing author: Axel Kohlmeyer (Temple U)
+      Contributing author:  Axel Kohlmeyer (Temple U)
+      Currently maintained by:  Giacomo Fiorin (NIH)
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
