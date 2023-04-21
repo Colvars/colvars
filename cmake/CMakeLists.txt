@@ -73,7 +73,12 @@ if(WARNINGS_ARE_ERRORS)
 endif()
 
 
-option(COLVARS_OPENMP "Build Colvars with (still limited) OpenMP support" ON)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(COLVARS_OPENMP_DEFAULT OFF)
+else()
+  set(COLVARS_OPENMP_DEFAULT ON)
+endif()
+option(COLVARS_OPENMP "Build Colvars with (still limited) OpenMP support" ${COLVARS_OPENMP_DEFAULT})
 
 if(COLVARS_OPENMP)
   find_package(OpenMP)
