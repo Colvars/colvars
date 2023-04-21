@@ -1038,8 +1038,6 @@ void FixColvars::write_restart(FILE *fp)
 
 void FixColvars::restart(char *buf)
 {
-  init_taglist();
-
   if (me == 0) {
     std::string rest_text(buf);
     proxy->deserialize_status(rest_text);
