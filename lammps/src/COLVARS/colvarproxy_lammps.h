@@ -47,13 +47,17 @@ class colvarproxy_lammps : public colvarproxy {
  public:
   friend class cvm::atom;
 
-  colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
-                     const int seed,
-                     MPI_Comm root2root);
+  colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp);
 
   ~colvarproxy_lammps() override;
 
   void init();
+
+  /// Set the internal seed used by \link rand_gaussian() \endlink
+  void set_random_seed(int seed);
+
+  /// Set the multiple replicas communicator
+  void set_replicas_communicator(MPI_Comm root2root);
 
   int setup() override;
 

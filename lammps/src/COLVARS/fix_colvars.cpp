@@ -292,6 +292,7 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
 
   me = comm->me;
   root2root = MPI_COMM_NULL;
+  proxy = nullptr;
 
   if (strcmp(arg[3], "none") == 0) {
     conf_file = nullptr;
@@ -307,7 +308,6 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   tfix_name = nullptr;
 
   /* initialize various state variables. */
-  tstat_fix = nullptr;
   energy = 0.0;
   nlevels_respa = 0;
   init_flag = 0;
@@ -317,19 +317,18 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   force_buf = nullptr;
   idmap = nullptr;
 
+  script_args[0] = reinterpret_cast<unsigned char *>(strdup("fix_modify"));
+
+  parse_fix_arguments(narg, arg, true);
+
+  if (!out_name) out_name = utils::strdup("out");
+
   if (me == 0) {
-    utils::logmesg(lmp, "colvars: Initializing LAMMPS interface\n");
 #ifdef LAMMPS_BIGBIG
-    utils::logmesg(lmp, "colvars: Warning: cannot handle atom ids > 2147483647\n");
+    utils::logmesg(lmp,
+                   "colvars: Warning: cannot handle atom ids > 2147483647\n");
 #endif
     proxy = new colvarproxy_lammps(lmp);
-
-    parse_fix_arguments(narg, arg, true);
-
-    if (!out_name) out_name = utils::strdup("out");
-
-    script_args[0] = reinterpret_cast<unsigned char *>(strdup("fix_modify"));
-
     proxy->init();
     if (conf_file) {
       proxy->add_config("configfile", conf_file);
@@ -359,14 +358,14 @@ int FixColvars::parse_fix_arguments(int narg, char **arg, bool fix_constructor)
       is_fix_keyword = true;
     } else if (0 == strcmp(arg[iarg], "seed")) {
       rng_seed = utils::inumeric(FLERR, arg[iarg+1], false, lmp);
-      proxy->set_random_seed(rng_seed);
+      if (me == 0) proxy->set_random_seed(rng_seed);
       is_fix_keyword = true;
     } else if (0 == strcmp(arg[iarg], "unwrap")) {
       unwrap_flag = utils::logical(FLERR, arg[iarg+1], false, lmp);
       is_fix_keyword = true;
     } else if (0 == strcmp(arg[iarg], "tstat")) {
       tfix_name = utils::strdup(arg[iarg+1]);
-      set_thermostat_temperature();
+      if (me == 0) set_thermostat_temperature();
       is_fix_keyword = true;
     }
 
@@ -391,7 +390,9 @@ int FixColvars::parse_fix_arguments(int narg, char **arg, bool fix_constructor)
                    "fix is created");
       } else {
         if (iarg > iarg_start) {
-          error->all(FLERR, "Cannot combine LAMMPS fix keywords and Colvars "
+          error->all(FLERR,
+                     "Unrecognized fix colvars argument: please note that "
+                     "you cannot combine fix colvars keywords and Colvars "
                      "script commands in the same line");
         } else {
           // Return negative error code to try the Colvars script commands
@@ -466,6 +467,9 @@ void FixColvars::init()
       color = 0;
     }
     MPI_Comm_split(universe->uworld, color, universe->iworld, &root2root);
+    if (me == 0) {
+      proxy->set_replicas_communicator(root2root);
+    }
   }
 }
 
@@ -476,10 +480,8 @@ void FixColvars::set_thermostat_temperature()
     // Try to determine thermostat target temperature
     double t_target = 0.0;
     if (tfix_name) {
-      if (strcmp(tfix_name, "NULL") == 0) {
-        tstat_fix = nullptr;
-      } else {
-        tstat_fix = modify->get_fix_by_id(tfix_name);
+      if (strcmp(tfix_name, "NULL") != 0) {
+        Fix *tstat_fix = modify->get_fix_by_id(tfix_name);
         if (!tstat_fix) {
           error->one(FLERR, "Could not find thermostat fix ID {}", tfix_name);
         }

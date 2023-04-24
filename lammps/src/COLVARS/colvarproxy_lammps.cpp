@@ -30,30 +30,19 @@
 #define HASH_FAIL  -1
 
 
-colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp,
-                                       const int seed,
-                                       MPI_Comm root2root)
-  : _lmp(lmp), inter_comm(root2root)
+colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp)
+  : _lmp(lmp)
 {
-  if (cvm::debug())
-    log("Initializing the colvars proxy object.\n");
+  _random = nullptr;
 
-  _random = new LAMMPS_NS::RanPark(lmp,seed);
+  first_timestep = true;
+  previous_step = -1;
+  do_exit = false;
 
-  first_timestep=true;
-  previous_step=-1;
-  do_exit=false;
+  inter_me = 0;
+  inter_num = 1;
 
   engine_ready_ = false;
-
-  // initialize multi-replica support, if available
-  if (replica_enabled() == COLVARS_OK) {
-    MPI_Comm_rank(inter_comm, &inter_me);
-    MPI_Comm_size(inter_comm, &inter_num);
-  }
-
-  if (cvm::debug())
-    log("Done initializing the colvars proxy object.\n");
 }
 
 
@@ -93,10 +82,34 @@ void colvarproxy_lammps::init()
   }
 }
 
+
 colvarproxy_lammps::~colvarproxy_lammps()
 {
-  delete _random;
+  if (_random) {
+    delete _random;
+  }
 }
+
+
+void colvarproxy_lammps::set_random_seed(int seed)
+{
+  if (_random) {
+    delete _random;
+  }
+  _random = new LAMMPS_NS::RanPark(_lmp, seed);
+}
+
+
+void colvarproxy_lammps::set_replicas_communicator(MPI_Comm root2root)
+{
+  inter_comm = root2root;
+  // initialize multi-replica support, if available
+  if (replica_enabled() == COLVARS_OK) {
+    MPI_Comm_rank(inter_comm, &inter_me);
+    MPI_Comm_size(inter_comm, &inter_num);
+  }
+}
+
 
 // re-initialize data where needed
 int colvarproxy_lammps::setup()
