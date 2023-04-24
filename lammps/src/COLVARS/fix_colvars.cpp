@@ -306,31 +306,6 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   out_name = nullptr;
   tfix_name = nullptr;
 
-  /* parse optional arguments */
-  int iarg = 4;
-  while (iarg < narg) {
-    // we have keyword/value pairs. check if value is missing
-    if (iarg+1 == narg)
-      error->all(FLERR,"Missing argument to keyword");
-
-    if (0 == strcmp(arg[iarg], "input")) {
-      inp_name = utils::strdup(arg[iarg+1]);
-    } else if (0 == strcmp(arg[iarg], "output")) {
-      out_name = utils::strdup(arg[iarg+1]);
-    } else if (0 == strcmp(arg[iarg], "seed")) {
-      rng_seed = utils::inumeric(FLERR,arg[iarg+1],false,lmp);
-    } else if (0 == strcmp(arg[iarg], "unwrap")) {
-      unwrap_flag = utils::logical(FLERR,arg[iarg+1],false,lmp);
-    } else if (0 == strcmp(arg[iarg], "tstat")) {
-      tfix_name = utils::strdup(arg[iarg+1]);
-    } else {
-      error->all(FLERR,"Unknown fix colvars parameter");
-    }
-    ++iarg; ++iarg;
-  }
-
-  if (!out_name) out_name = utils::strdup("out");
-
   /* initialize various state variables. */
   tstat_fix = nullptr;
   energy = 0.0;
@@ -340,7 +315,6 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   comm_buf = nullptr;
   taglist = nullptr;
   force_buf = nullptr;
-  proxy = nullptr;
   idmap = nullptr;
 
   if (me == 0) {
@@ -366,9 +340,72 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
   size_one = sizeof(struct commdata);
 }
 
-/*********************************
- * Clean up on deleting the fix. *
- *********************************/
+
+int FixColvars::parse_fix_arguments(int narg, char **arg, bool fix_constructor)
+{
+  int const iarg_start = fix_constructor ? 4 : 0;
+  int iarg = iarg_start;
+  while (iarg < narg) {
+
+    bool is_fix_keyword = false;
+
+    if (0 == strcmp(arg[iarg], "input")) {
+      inp_name = utils::strdup(arg[iarg+1]);
+      // input prefix is set in FixColvars::setup()
+      is_fix_keyword = true;
+    } else if (0 == strcmp(arg[iarg], "output")) {
+      out_name = utils::strdup(arg[iarg+1]);
+      // output prefix is set in FixColvars::setup()
+      is_fix_keyword = true;
+    } else if (0 == strcmp(arg[iarg], "seed")) {
+      rng_seed = utils::inumeric(FLERR, arg[iarg+1], false, lmp);
+      proxy->set_random_seed(rng_seed);
+      is_fix_keyword = true;
+    } else if (0 == strcmp(arg[iarg], "unwrap")) {
+      unwrap_flag = utils::logical(FLERR, arg[iarg+1], false, lmp);
+      is_fix_keyword = true;
+    } else if (0 == strcmp(arg[iarg], "tstat")) {
+      tfix_name = utils::strdup(arg[iarg+1]);
+      set_thermostat_temperature();
+      is_fix_keyword = true;
+    }
+
+    if (is_fix_keyword) {
+
+      // Valid LAMMPS fix keyword: raise error if it has no argument
+      if (iarg + 1 == narg) {
+        if (fix_constructor) {
+          error->all(FLERR, ("Missing argument to keyword \""+
+                             std::string(arg[iarg]) +"\""));
+        } else {
+          // Error code consistent with Fix::modify_param()
+          return 0;
+        }
+      }
+
+    } else {
+
+      if (fix_constructor) {
+        error->all(FLERR, "Unrecognized fix colvars argument: please note that "
+                   "Colvars script commands are not allowed until after the "
+                   "fix is created");
+      } else {
+        if (iarg > iarg_start) {
+          error->all(FLERR, "Cannot combine LAMMPS fix keywords and Colvars "
+                     "script commands in the same line");
+        } else {
+          // Return negative error code to try the Colvars script commands
+          return -1;
+        }
+      }
+    }
+
+    iarg += 2;
+  }
+
+  return iarg;
+}
+
 
 FixColvars::~FixColvars()
 {
@@ -430,7 +467,11 @@ void FixColvars::init()
     }
     MPI_Comm_split(universe->uworld, color, universe->iworld, &root2root);
   }
+}
 
+
+void FixColvars::set_thermostat_temperature()
+{
   if (me == 0) {
     // Try to determine thermostat target temperature
     double t_target = 0.0;
@@ -447,20 +488,14 @@ void FixColvars::init()
                                                                    tmp));
         if (tt) {
           t_target = *tt;
+          proxy->set_target_temperature(t_target);
         } else {
           error->one(FLERR, "Fix ID {} is not a thermostat fix", tfix_name);
         }
       }
     }
-
-    utils::logmesg(lmp, "colvars: Initializing LAMMPS interface\n");
-
-#ifdef LAMMPS_BIGBIG
-    utils::logmesg(lmp, "colvars: Warning: cannot handle atom ids > 2147483647\n");
-#endif
   }
 }
-
 
 /* ---------------------------------------------------------------------- */
 
@@ -522,26 +557,33 @@ void FixColvars::init_taglist()
   MPI_Bcast(taglist, num_coords, MPI_LMP_TAGINT, 0, world);
 }
 
-/* ---------------------------------------------------------------------- */
 
 int FixColvars::modify_param(int narg, char **arg)
 {
+  if (narg > 100) {
+    error->one(FLERR, "Too many arguments for fix_modify command");
+    return 2;
+  }
+
+  // Parse arguments to fix colvars
+  int return_code = parse_fix_arguments(narg, arg, false);
+
+  if (return_code >= 0) {
+    // A fix colvars argument was detected, return directly
+    return return_code;
+  }
+
+  // Any unknown arguments will go through the Colvars scripting interface
   if (me == 0) {
-
-    if (narg > 100) {
-      error->one(FLERR, "Too many arguments for fix_modify command");
-      return 2;
-    }
-
     int error_code = COLVARSCRIPT_OK;
     colvarscript *script = proxy->script;
-    /* The first argument is "fix_modify ID", already set in the constructor */
-    script->set_cmdline_main_cmd(script_args[0]);
+    script->set_cmdline_main_cmd("fix_modify " + std::string(id));
     for (int i = 0; i < narg; i++) {
-      script_args[i+1] = arg[i];
+      script_args[i+1] = reinterpret_cast<unsigned char *>(arg[i]);
     }
-    error_code |=
-      script->run(narg+1, reinterpret_cast<unsigned char **>(script_args));
+
+    // Run the command through Colvars
+    error_code |= script->run(narg+1, script_args);
 
     std::string const result = proxy->get_error_msgs() + script->str_result();
     if (result.size()) {
@@ -554,7 +596,13 @@ int FixColvars::modify_param(int narg, char **arg)
     }
 
     return (error_code == COLVARSCRIPT_OK) ? narg : 0;
+
+  } else {
+
+    // Return without error, don't block Fix::modify_params()
+    return narg;
   }
+
   return 0;
 }
 
@@ -765,19 +813,6 @@ void FixColvars::post_force(int /*vflag*/)
   if (me == 0) {
     if (proxy->want_exit())
       error->one(FLERR,"Run aborted on request from colvars module.\n");
-
-    if (!tstat_fix) {
-      proxy->set_target_temperature(0.0);
-    } else {
-      int tmp;
-      // get thermostat target temperature from corresponding fix,
-      // if the fix supports extraction.
-      double *tt = (double *) tstat_fix->extract("t_target", tmp);
-      if (tt)
-        proxy->set_target_temperature(*tt);
-      else
-        proxy->set_target_temperature(0.0);
-    }
   }
 
   const tagint * const tag = atom->tag;

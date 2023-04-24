@@ -27,6 +27,9 @@ harmonic {
 }
 """
 
+# Re-define the fix seed
+fix_modify Colvars seed 1111111
+
 include ../common/md.lmp.in
 
 write_data test.lmp.data
