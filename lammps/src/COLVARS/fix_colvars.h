@@ -82,7 +82,7 @@ class FixColvars : public Fix {
   double *force_buf;            // communication buffer
 
   /// Arguments passed from fix_modify to the Colvars script interface
-  char *script_args[100];
+  unsigned char *script_args[100];
 
   void *idmap;       // hash for mapping atom indices to consistent order.
 
@@ -96,8 +96,17 @@ class FixColvars : public Fix {
 
   void init_taglist();     // initialize list of atom tags and hash table
 
+  /// Share with Colvars the thermostat fix named by tfix_name
+  void set_thermostat_temperature();
+
   /// Tell Colvars where to get its state from and where to save it
   void setup_io();
+
+  /// Parse LAMMPS-specific arguments to either fix or fix_modify
+  /// \param narg Number of arguments
+  /// \param arg Array of strings
+  /// \param fix_constructor If false, try Colvars commands if LAMMPS ones fail
+  int parse_fix_arguments(int narg, char **arg, bool fix_constructor = true);
 };
 
 }    // namespace LAMMPS_NS
