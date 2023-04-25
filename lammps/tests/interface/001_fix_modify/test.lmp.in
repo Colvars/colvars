@@ -19,11 +19,12 @@ fix Colvars all colvars none output test
 fix_modify Colvars configfile test.in
 
 # Now add the bias
+variable force_constant index 0.001
 fix_modify Colvars config """
 harmonic {
     colvars        one
     centers        0.1
-    forceConstant  0.001
+    forceConstant  ${force_constant}
 }
 """
 
