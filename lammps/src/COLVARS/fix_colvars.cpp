@@ -33,6 +33,7 @@
 #include "comm.h"
 #include "domain.h"
 #include "error.h"
+#include "input.h"
 #include "memory.h"
 #include "modify.h"
 #include "output.h"
@@ -580,8 +581,21 @@ int FixColvars::modify_param(int narg, char **arg)
     int error_code = COLVARSCRIPT_OK;
     colvarscript *script = proxy->script;
     script->set_cmdline_main_cmd("fix_modify " + std::string(id));
+
     for (int i = 0; i < narg; i++) {
-      script_args[i+1] = reinterpret_cast<unsigned char *>(arg[i]);
+
+      // Substitute LAMMPS variables
+      // See https://github.com/lammps/lammps/commit/f9be11ac8ab460edff3709d66734d3fc2cd806dd
+      char *new_arg = arg[i];
+      int ncopy = strlen(new_arg) + 1;
+      char *copy = utils::strdup(new_arg);
+      char *work = new char[ncopy];
+      int nwork = ncopy;
+      lmp->input->substitute(copy,work,ncopy,nwork,0);
+      delete[] work;
+      new_arg = copy;
+
+      script_args[i+1] = reinterpret_cast<unsigned char *>(new_arg);
     }
 
     // Run the command through Colvars
