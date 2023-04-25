@@ -14,7 +14,6 @@ proc gen_cmdline_latex_reference { output { main_cmd "cv" } } {
                       "\\cvsubsec\{Commands to manage individual biases\}\{sec:cvscript_cmdline_bias\}"] {
 
         puts ${output} ${introstr}
-        puts ${output} "\\begin\{itemize\}"
 
         foreach cmd [cv listcommands] {
 
@@ -41,7 +40,8 @@ proc gen_cmdline_latex_reference { output { main_cmd "cv" } } {
             set line [regsub -all "_" "${line}" "\\_"]
             # Allow overriding the main command (for fix_modify)
             set line [regsub -all "^cv" "${line}" "${main_cmd}"]
-            puts ${output} "\\item \\texttt\{${line}\}"
+            puts ${output} "\\begin{mdexampleinput}{}"
+            puts ${output} "\\texttt\{\\textbf{${line}}\}"
 
             foreach line [lrange ${lines} 2 end] {
                 set line [regsub -all "_" "${line}" "\\_"]
@@ -50,10 +50,11 @@ proc gen_cmdline_latex_reference { output { main_cmd "cv" } } {
                 if { ${line} == "" || ${line} == "----------" } continue
                 set line [regsub -all "Parameters" "${line}" "\\textbf\{Parameters\}"]
                 puts ${output} "\\\\"
-                puts ${output} "\\texttt\{${line}\}"
+                puts ${output} "\\-~~~~\\texttt\{${line}\}"
             }
+
+            puts ${output} "\\end{mdexampleinput}"
         }
-        puts ${output} "\\end\{itemize\}"
     }
 }
 

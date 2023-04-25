@@ -1,544 +1,740 @@
 \cvsubsec{Commands to manage the Colvars module}{sec:cvscript_cmdline_cv}
-\begin{itemize}
-\item \texttt{cv addenergy <E>}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv addenergy <E>}}
 \\
-\texttt{Add an energy to the MD engine (no effect in VMD)}
+\-~~~~\texttt{Add an energy to the MD engine (no effect in VMD)}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{E : float - Amount of energy to add}
-\item \texttt{cv config <conf>}
+\-~~~~\texttt{E : float - Amount of energy to add}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv config <conf>}}
 \\
-\texttt{Read configuration from the given string}
+\-~~~~\texttt{Read configuration from the given string}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{conf : string - Configuration string}
-\item \texttt{cv configfile <conf\_file>}
+\-~~~~\texttt{conf : string - Configuration string}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv configfile <conf\_file>}}
 \\
-\texttt{Read configuration from a file}
+\-~~~~\texttt{Read configuration from a file}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{conf\_file : string - Path to configuration file}
-\item \texttt{cv delete}
+\-~~~~\texttt{conf\_file : string - Path to configuration file}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv delete}}
 \\
-\texttt{Delete this Colvars module instance (VMD only)}
-\item \texttt{cv featurereport}
+\-~~~~\texttt{Delete this Colvars module instance (VMD only)}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv featurereport}}
 \\
-\texttt{Return a summary of Colvars features used so far and their citations}
+\-~~~~\texttt{Return a summary of Colvars features used so far and their citations}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{report : string - Feature report and citations}
-\item \texttt{cv frame [frame]}
+\-~~~~\texttt{report : string - Feature report and citations}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv frame [frame]}}
 \\
-\texttt{Get or set current frame number (VMD only)}
+\-~~~~\texttt{Get or set current frame number (VMD only)}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{frame : integer - Frame number}
-\item \texttt{cv getatomappliedforces}
+\-~~~~\texttt{frame : integer - Frame number (optional)}
 \\
-\texttt{Get the list of forces applied by Colvars to atoms}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{frame : integer - Frame number}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getatomappliedforces}}
 \\
-\texttt{forces : array of arrays of floats - Atomic forces}
-\item \texttt{cv getatomappliedforcesmax}
+\-~~~~\texttt{Get the list of forces applied by Colvars to atoms}
 \\
-\texttt{Get the maximum norm of forces applied by Colvars to atoms}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{forces : array of arrays of floats - Atomic forces}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getatomappliedforcesmax}}
 \\
-\texttt{force : float - Maximum atomic force}
-\item \texttt{cv getatomappliedforcesmaxid}
+\-~~~~\texttt{Get the maximum norm of forces applied by Colvars to atoms}
 \\
-\texttt{Get the atom ID with the largest applied force}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{force : float - Maximum atomic force}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getatomappliedforcesmaxid}}
 \\
-\texttt{id : int - ID of the atom with the maximum atomic force}
-\item \texttt{cv getatomappliedforcesrms}
+\-~~~~\texttt{Get the atom ID with the largest applied force}
 \\
-\texttt{Get the root-mean-square norm of forces applied by Colvars to atoms}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{id : int - ID of the atom with the maximum atomic force}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getatomappliedforcesrms}}
 \\
-\texttt{force : float - RMS atomic force}
-\item \texttt{cv resetatomappliedforces}
+\-~~~~\texttt{Get the root-mean-square norm of forces applied by Colvars to atoms}
 \\
-\texttt{Reset forces applied by Colvars to atoms}
-\item \texttt{cv getatomids}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{Get the list of indices of atoms used in Colvars}
+\-~~~~\texttt{force : float - RMS atomic force}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv resetatomappliedforces}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{Reset forces applied by Colvars to atoms}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getatomids}}
 \\
-\texttt{indices : array of ints - Atom indices}
-\item \texttt{cv getatomcharges}
+\-~~~~\texttt{Get the list of indices of atoms used in Colvars}
 \\
-\texttt{Get the list of charges of atoms used in Colvars}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{indices : array of ints - Atom indices}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getatomcharges}}
 \\
-\texttt{charges : array of floats - Atomic charges}
-\item \texttt{cv getatommasses}
+\-~~~~\texttt{Get the list of charges of atoms used in Colvars}
 \\
-\texttt{Get the list of masses of atoms used in Colvars}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{charges : array of floats - Atomic charges}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getatommasses}}
 \\
-\texttt{masses : array of floats - Atomic masses}
-\item \texttt{cv getatompositions}
+\-~~~~\texttt{Get the list of masses of atoms used in Colvars}
 \\
-\texttt{Get the list of cached positions of atoms used in Colvars}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{masses : array of floats - Atomic masses}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getatompositions}}
 \\
-\texttt{positions : array of arrays of floats - Atomic positions}
-\item \texttt{cv getatomtotalforces}
+\-~~~~\texttt{Get the list of cached positions of atoms used in Colvars}
 \\
-\texttt{Get the list of cached total forces of atoms used in Colvars}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{positions : array of arrays of floats - Atomic positions}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getatomtotalforces}}
 \\
-\texttt{forces : array of arrays of floats - Atomic total foces}
-\item \texttt{cv getconfig}
+\-~~~~\texttt{Get the list of cached total forces of atoms used in Colvars}
 \\
-\texttt{Get the module's configuration string read so far}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{forces : array of arrays of floats - Atomic total foces}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getconfig}}
 \\
-\texttt{conf : string - Current configuration string}
-\item \texttt{cv getenergy}
+\-~~~~\texttt{Get the module's configuration string read so far}
 \\
-\texttt{Get the current Colvars energy}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{conf : string - Current configuration string}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getenergy}}
 \\
-\texttt{E : float - Amount of energy (internal units)}
-\item \texttt{cv getnumactiveatomgroups}
+\-~~~~\texttt{Get the current Colvars energy}
 \\
-\texttt{Get the number of atom groups that currently have positive ref counts}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{E : float - Amount of energy (internal units)}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getnumactiveatomgroups}}
 \\
-\texttt{count : integer - Total number of atom groups}
-\item \texttt{cv getnumactiveatoms}
+\-~~~~\texttt{Get the number of atom groups that currently have positive ref counts}
 \\
-\texttt{Get the number of atoms that currently have positive ref counts}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{count : integer - Total number of atom groups}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getnumactiveatoms}}
 \\
-\texttt{count : integer - Total number of atoms}
-\item \texttt{cv getnumatoms}
+\-~~~~\texttt{Get the number of atoms that currently have positive ref counts}
 \\
-\texttt{Get the number of requested atoms, including those not in use now}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{count : integer - Total number of atoms}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getnumatoms}}
 \\
-\texttt{count : integer - Total number of atoms}
-\item \texttt{cv getstepabsolute}
+\-~~~~\texttt{Get the number of requested atoms, including those not in use now}
 \\
-\texttt{Get the current step number of the simulation (including restarts)}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{count : integer - Total number of atoms}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getstepabsolute}}
 \\
-\texttt{step : int - Absolute step number}
-\item \texttt{cv getsteprelative}
+\-~~~~\texttt{Get the current step number of the simulation (including restarts)}
 \\
-\texttt{Get the current step number from the start of this job}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{step : int - Absolute step number}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv getsteprelative}}
 \\
-\texttt{step : int - Relative step number}
-\item \texttt{cv help [command]}
+\-~~~~\texttt{Get the current step number from the start of this job}
 \\
-\texttt{Get the help string of the Colvars scripting interface}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{step : int - Relative step number}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv help [command]}}
 \\
-\texttt{help : string - Help string}
-\item \texttt{cv languageversion}
+\-~~~~\texttt{Get the help string of the Colvars scripting interface}
 \\
-\texttt{Get the C++ language version number}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{command : string - Get the help string of this specific command (optional)}
 \\
-\texttt{version : string - C++ language version}
-\item \texttt{cv list [param]}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{Return a list of all variables or biases}
+\-~~~~\texttt{help : string - Help string}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv languageversion}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{Get the C++ language version number}
 \\
-\texttt{list : sequence of strings - List of elements}
-\item \texttt{cv listcommands}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{Get the list of script functions, prefixed with "cv\_", "colvar\_" or "bias\_"}
+\-~~~~\texttt{version : string - C++ language version}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv list [param]}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{Return a list of all variables or biases}
 \\
-\texttt{list : sequence of strings - List of commands}
-\item \texttt{cv listindexfiles}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{Get a list of the index files loaded in this session}
-\item \texttt{cv load <prefix>}
+\-~~~~\texttt{param : string - "colvars" or "biases"; default is "colvars" (optional)}
 \\
-\texttt{Load data from a state file into all matching colvars and biases}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{list : sequence of strings - List of elements}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv listcommands}}
 \\
-\texttt{prefix : string - Path to existing state file or input prefix}
-\item \texttt{cv loadfromstring <buffer>}
+\-~~~~\texttt{Get the list of script functions, prefixed with "cv\_", "colvar\_" or "bias\_"}
 \\
-\texttt{Load state data from a string into all matching colvars and biases}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{list : sequence of strings - List of commands}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv listindexfiles}}
 \\
-\texttt{buffer : string - String buffer containing the state information}
-\item \texttt{cv molid [molid]}
+\-~~~~\texttt{Get a list of the index files loaded in this session}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv load <prefix>}}
 \\
-\texttt{Get or set the molecule ID on which Colvars is defined (VMD only)}
+\-~~~~\texttt{Load data from a state file into all matching colvars and biases}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{molid : integer - Current molecule ID}
-\item \texttt{cv printframe}
+\-~~~~\texttt{prefix : string - Path to existing state file or input prefix}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv loadfromstring <buffer>}}
 \\
-\texttt{Return the values that would be written to colvars.traj}
+\-~~~~\texttt{Load state data from a string into all matching colvars and biases}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{values : string - The values}
-\item \texttt{cv printframelabels}
+\-~~~~\texttt{buffer : string - String buffer containing the state information}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv molid [molid]}}
 \\
-\texttt{Return the labels that would be written to colvars.traj}
+\-~~~~\texttt{Get or set the molecule ID on which Colvars is defined (VMD only)}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{Labels : string - The labels}
-\item \texttt{cv reset}
+\-~~~~\texttt{molid : integer - New molecule ID; -1 means undefined (optional)}
 \\
-\texttt{Delete all internal configuration}
-\item \texttt{cv resetindexgroups}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{Clear the index groups loaded so far, allowing to replace them}
-\item \texttt{cv save <prefix>}
+\-~~~~\texttt{molid : integer - Current molecule ID}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv printframe}}
 \\
-\texttt{Change the prefix of all output files and save them}
+\-~~~~\texttt{Return the values that would be written to colvars.traj}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{prefix : string - Output prefix with trailing ".colvars.state" gets removed)}
-\item \texttt{cv savetostring}
+\-~~~~\texttt{values : string - The values}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv printframelabels}}
 \\
-\texttt{Write the Colvars state to a string and return it}
+\-~~~~\texttt{Return the labels that would be written to colvars.traj}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{state : string - The saved state}
-\item \texttt{cv targettemperature [T]}
+\-~~~~\texttt{Labels : string - The labels}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv reset}}
 \\
-\texttt{Get/set target temperature, overriding internally what the MD engine reports}
+\-~~~~\texttt{Delete all internal configuration}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv resetindexgroups}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{Clear the index groups loaded so far, allowing to replace them}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv save <prefix>}}
 \\
-\texttt{T : float - Current target temperature in K}
-\item \texttt{cv timestep [dt]}
+\-~~~~\texttt{Change the prefix of all output files and save them}
 \\
-\texttt{Get/set integration timestep, overriding internally what the MD engine reports}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{prefix : string - Output prefix with trailing ".colvars.state" gets removed)}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv savetostring}}
 \\
-\texttt{dt : float - Current integration timestep in MD engine units}
-\item \texttt{cv units [units]}
+\-~~~~\texttt{Write the Colvars state to a string and return it}
 \\
-\texttt{Get or set the current Colvars unit system}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{state : string - The saved state}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv targettemperature [T]}}
 \\
-\texttt{units : string - The current unit system}
-\item \texttt{cv update}
+\-~~~~\texttt{Get/set target temperature, overriding internally what the MD engine reports}
 \\
-\texttt{Recalculate colvars and biases}
-\item \texttt{cv version}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{Get the Colvars Module version string}
+\-~~~~\texttt{T : float - New target temperature in K (internal use) (optional)}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{version : string - Colvars version}
-\end{itemize}
+\-~~~~\texttt{T : float - Current target temperature in K}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv timestep [dt]}}
+\\
+\-~~~~\texttt{Get/set integration timestep, overriding internally what the MD engine reports}
+\\
+\-~~~~\texttt{\textbf{Parameters}}
+\\
+\-~~~~\texttt{dt : float - New integration timestep in MD engine units (optional)}
+\\
+\-~~~~\texttt{\textbf{Returns}}
+\\
+\-~~~~\texttt{dt : float - Current integration timestep in MD engine units}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv units [units]}}
+\\
+\-~~~~\texttt{Get or set the current Colvars unit system}
+\\
+\-~~~~\texttt{\textbf{Parameters}}
+\\
+\-~~~~\texttt{units : string - The new unit system (optional)}
+\\
+\-~~~~\texttt{\textbf{Returns}}
+\\
+\-~~~~\texttt{units : string - The current unit system}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv update}}
+\\
+\-~~~~\texttt{Recalculate colvars and biases}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv version}}
+\\
+\-~~~~\texttt{Get the Colvars Module version string}
+\\
+\-~~~~\texttt{\textbf{Returns}}
+\\
+\-~~~~\texttt{version : string - Colvars version}
+\end{mdexampleinput}
 \cvsubsec{Commands to manage individual collective variables}{sec:cvscript_cmdline_colvar}
-\begin{itemize}
-\item \texttt{cv colvar name addforce <force>}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name addforce <force>}}
 \\
-\texttt{Apply the given force onto this colvar (no effects outside run)}
+\-~~~~\texttt{Apply the given force onto this colvar (no effects outside run)}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{force : float or array - Applied force; must match colvar dimensionality}
+\-~~~~\texttt{force : float or array - Applied force; must match colvar dimensionality}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{force : float or array - Applied force; matches colvar dimensionality}
-\item \texttt{cv colvar name communicateforces}
+\-~~~~\texttt{force : float or array - Applied force; matches colvar dimensionality}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name communicateforces}}
 \\
-\texttt{Communicate bias forces from this colvar to atoms}
-\item \texttt{cv colvar name cvcflags <flags>}
+\-~~~~\texttt{Communicate bias forces from this colvar to atoms}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name cvcflags <flags>}}
 \\
-\texttt{Enable or disable individual components by setting their active flags}
+\-~~~~\texttt{Enable or disable individual components by setting their active flags}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{flags : integer array - Zero/nonzero value disables/enables the CVC}
-\item \texttt{cv colvar name delete}
+\-~~~~\texttt{flags : integer array - Zero/nonzero value disables/enables the CVC}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name delete}}
 \\
-\texttt{Delete this colvar, along with all biases that depend on it}
-\item \texttt{cv colvar name get <feature>}
+\-~~~~\texttt{Delete this colvar, along with all biases that depend on it}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name get <feature>}}
 \\
-\texttt{Get the value of the given feature for this colvar}
+\-~~~~\texttt{Get the value of the given feature for this colvar}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{feature : string - Name of the feature}
+\-~~~~\texttt{feature : string - Name of the feature}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{state : 1/0 - State of the given feature}
-\item \texttt{cv colvar name getappliedforce}
+\-~~~~\texttt{state : 1/0 - State of the given feature}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name getappliedforce}}
 \\
-\texttt{Return the total of the forces applied to this colvar}
+\-~~~~\texttt{Return the total of the forces applied to this colvar}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{force : float - Applied force; matches the colvar dimensionality}
-\item \texttt{cv colvar name resetbiasforce}
+\-~~~~\texttt{force : float - Applied force; matches the colvar dimensionality}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name resetbiasforce}}
 \\
-\texttt{Return the total of the forces applied to this colvar}
-\item \texttt{cv colvar name getatomgroups}
+\-~~~~\texttt{Return the total of the forces applied to this colvar}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name getatomgroups}}
 \\
-\texttt{Return the atom indices used by this colvar as a list of lists}
+\-~~~~\texttt{Return the atom indices used by this colvar as a list of lists}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{groups : array of arrays of ints - Atom indices}
-\item \texttt{cv colvar name getatomids}
+\-~~~~\texttt{groups : array of arrays of ints - Atom indices}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name getatomids}}
 \\
-\texttt{Return the list of atom indices used by this colvar}
+\-~~~~\texttt{Return the list of atom indices used by this colvar}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{indices : array of ints - Atom indices}
-\item \texttt{cv colvar name getconfig}
+\-~~~~\texttt{indices : array of ints - Atom indices}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name getconfig}}
 \\
-\texttt{Return the configuration string of this colvar}
+\-~~~~\texttt{Return the configuration string of this colvar}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{conf : string - Current configuration string}
-\item \texttt{cv colvar name getgradients}
+\-~~~~\texttt{conf : string - Current configuration string}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name getgradients}}
 \\
-\texttt{Return the atomic gradients of this colvar}
+\-~~~~\texttt{Return the atomic gradients of this colvar}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{gradients : array of arrays of floats - Atomic gradients}
-\item \texttt{cv colvar name gettotalforce}
+\-~~~~\texttt{gradients : array of arrays of floats - Atomic gradients}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name gettotalforce}}
 \\
-\texttt{Return the sum of internal and external forces to this colvar}
+\-~~~~\texttt{Return the sum of internal and external forces to this colvar}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{force : float - Total force; matches the colvar dimensionality}
-\item \texttt{cv colvar name getvolmapids}
+\-~~~~\texttt{force : float - Total force; matches the colvar dimensionality}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name getvolmapids}}
 \\
-\texttt{Return the list of volumetric map indices used by this colvar}
-\item \texttt{cv colvar name help [command]}
+\-~~~~\texttt{Return the list of volumetric map indices used by this colvar}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name help [command]}}
 \\
-\texttt{Get a help summary or the help string of one colvar subcommand}
+\-~~~~\texttt{Get a help summary or the help string of one colvar subcommand}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{help : string - Help string}
-\item \texttt{cv colvar name modifycvcs <confs>}
+\-~~~~\texttt{command : string - Get the help string of this specific command (optional)}
 \\
-\texttt{Modify configuration of individual components by passing string arguments}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{help : string - Help string}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name modifycvcs <confs>}}
 \\
-\texttt{confs : sequence of strings - New configurations; empty strings are skipped}
-\item \texttt{cv colvar name run\_ave}
+\-~~~~\texttt{Modify configuration of individual components by passing string arguments}
 \\
-\texttt{Get the current running average of the value of this colvar}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{confs : sequence of strings - New configurations; empty strings are skipped}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name run\_ave}}
 \\
-\texttt{value : float or array - Averaged value; matches the colvar dimensionality}
-\item \texttt{cv colvar name set <feature> <value>}
+\-~~~~\texttt{Get the current running average of the value of this colvar}
 \\
-\texttt{Set the given feature of this colvar to a new value}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{value : float or array - Averaged value; matches the colvar dimensionality}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name set <feature> <value>}}
 \\
-\texttt{feature : string - Name of the feature}
+\-~~~~\texttt{Set the given feature of this colvar to a new value}
 \\
-\texttt{value : string - String representation of the new feature value}
-\item \texttt{cv colvar name state}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{Print a string representation of the feature state of this colvar}
+\-~~~~\texttt{feature : string - Name of the feature}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{value : string - String representation of the new feature value}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name state}}
 \\
-\texttt{state : string - The feature state}
-\item \texttt{cv colvar name type}
+\-~~~~\texttt{Print a string representation of the feature state of this colvar}
 \\
-\texttt{Get the type description of this colvar}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{state : string - The feature state}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name type}}
 \\
-\texttt{type : string - Type description}
-\item \texttt{cv colvar name update}
+\-~~~~\texttt{Get the type description of this colvar}
 \\
-\texttt{Recompute this colvar and return its up-to-date value}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{type : string - Type description}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name update}}
 \\
-\texttt{value : float or array - Current value; matches the colvar dimensionality}
-\item \texttt{cv colvar name value}
+\-~~~~\texttt{Recompute this colvar and return its up-to-date value}
 \\
-\texttt{Get the current value of this colvar}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{value : float or array - Current value; matches the colvar dimensionality}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name value}}
 \\
-\texttt{value : float or array - Current value; matches the colvar dimensionality}
-\item \texttt{cv colvar name width}
+\-~~~~\texttt{Get the current value of this colvar}
 \\
-\texttt{Get the width of this colvar}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{value : float or array - Current value; matches the colvar dimensionality}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv colvar name width}}
 \\
-\texttt{width : float - Value of the width}
-\end{itemize}
+\-~~~~\texttt{Get the width of this colvar}
+\\
+\-~~~~\texttt{\textbf{Returns}}
+\\
+\-~~~~\texttt{width : float - Value of the width}
+\end{mdexampleinput}
 \cvsubsec{Commands to manage individual biases}{sec:cvscript_cmdline_bias}
-\begin{itemize}
-\item \texttt{cv bias name bin}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name bin}}
 \\
-\texttt{Get the current grid bin index (1D ABF only for now)}
+\-~~~~\texttt{Get the current grid bin index (1D ABF only for now)}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{bin : integer - Bin index}
-\item \texttt{cv bias name bincount [index]}
+\-~~~~\texttt{bin : integer - Bin index}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name bincount [index]}}
 \\
-\texttt{Get the number of samples at the given grid bin (1D ABF only for now)}
+\-~~~~\texttt{Get the number of samples at the given grid bin (1D ABF only for now)}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{samples : integer - Number of samples}
-\item \texttt{cv bias name binnum}
+\-~~~~\texttt{index : integer - Grid index; defaults to current bin (optional)}
 \\
-\texttt{Get the total number of grid points of this bias (1D ABF only for now)}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{samples : integer - Number of samples}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name binnum}}
 \\
-\texttt{Bins : integer - Number of grid points}
-\item \texttt{cv bias name delete}
+\-~~~~\texttt{Get the total number of grid points of this bias (1D ABF only for now)}
 \\
-\texttt{Delete this bias}
-\item \texttt{cv bias name energy}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{Get the current energy of this bias}
+\-~~~~\texttt{Bins : integer - Number of grid points}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name delete}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{Delete this bias}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name energy}}
 \\
-\texttt{E : float - Energy value}
-\item \texttt{cv bias name get <feature>}
+\-~~~~\texttt{Get the current energy of this bias}
 \\
-\texttt{Get the value of the given feature for this bias}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{E : float - Energy value}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name get <feature>}}
 \\
-\texttt{feature : string - Name of the feature}
+\-~~~~\texttt{Get the value of the given feature for this bias}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{state : 1/0 - State of the given feature}
-\item \texttt{cv bias name getconfig}
+\-~~~~\texttt{feature : string - Name of the feature}
 \\
-\texttt{Return the configuration string of this bias}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{state : 1/0 - State of the given feature}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name getconfig}}
 \\
-\texttt{conf : string - Current configuration string}
-\item \texttt{cv bias name help [command]}
+\-~~~~\texttt{Return the configuration string of this bias}
 \\
-\texttt{Get a help summary or the help string of one bias subcommand}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{conf : string - Current configuration string}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name help [command]}}
 \\
-\texttt{help : string - Help string}
-\item \texttt{cv bias name load <prefix>}
+\-~~~~\texttt{Get a help summary or the help string of one bias subcommand}
 \\
-\texttt{Load data into this bias}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{command : string - Get the help string of this specific command (optional)}
 \\
-\texttt{prefix : string - Read from a file with this name or prefix}
-\item \texttt{cv bias name loadfromstring <buffer>}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{Load state data into this bias from a string}
+\-~~~~\texttt{help : string - Help string}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name load <prefix>}}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{Load data into this bias}
 \\
-\texttt{buffer : string - String buffer containing the state information}
-\item \texttt{cv bias name save <prefix>}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{Save data from this bias into a file with the given prefix}
+\-~~~~\texttt{prefix : string - Read from a file with this name or prefix}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name loadfromstring <buffer>}}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{Load state data into this bias from a string}
 \\
-\texttt{prefix : string - Prefix for the state file of this bias}
-\item \texttt{cv bias name savetostring}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{Save data from this bias into a string and return it}
+\-~~~~\texttt{buffer : string - String buffer containing the state information}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name save <prefix>}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{Save data from this bias into a file with the given prefix}
 \\
-\texttt{state : string - The bias state}
-\item \texttt{cv bias name set <feature> <value>}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{Set the given feature of this bias to a new value}
+\-~~~~\texttt{prefix : string - Prefix for the state file of this bias}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name savetostring}}
 \\
-\texttt{\textbf{Parameters}}
+\-~~~~\texttt{Save data from this bias into a string and return it}
 \\
-\texttt{feature : string - Name of the feature}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{value : string - String representation of the new feature value}
-\item \texttt{cv bias name share}
+\-~~~~\texttt{state : string - The bias state}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name set <feature> <value>}}
 \\
-\texttt{Share bias information with other replicas (multiple-walker scheme)}
-\item \texttt{cv bias name state}
+\-~~~~\texttt{Set the given feature of this bias to a new value}
 \\
-\texttt{Print a string representation of the feature state of this bias}
+\-~~~~\texttt{\textbf{Parameters}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{feature : string - Name of the feature}
 \\
-\texttt{state : string - String representation of the bias features}
-\item \texttt{cv bias name type}
+\-~~~~\texttt{value : string - String representation of the new feature value}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name share}}
 \\
-\texttt{Print the type of this bias object}
+\-~~~~\texttt{Share bias information with other replicas (multiple-walker scheme)}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name state}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{Print a string representation of the feature state of this bias}
 \\
-\texttt{type : string - Type of this bias object (e.g. metadynamics)}
-\item \texttt{cv bias name update}
+\-~~~~\texttt{\textbf{Returns}}
 \\
-\texttt{Recompute this bias and return its up-to-date energy}
+\-~~~~\texttt{state : string - String representation of the bias features}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name type}}
 \\
-\texttt{\textbf{Returns}}
+\-~~~~\texttt{Print the type of this bias object}
 \\
-\texttt{E : float - Energy value}
-\end{itemize}
+\-~~~~\texttt{\textbf{Returns}}
+\\
+\-~~~~\texttt{type : string - Type of this bias object (e.g. metadynamics)}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name update}}
+\\
+\-~~~~\texttt{Recompute this bias and return its up-to-date energy}
+\\
+\-~~~~\texttt{\textbf{Returns}}
+\\
+\-~~~~\texttt{E : float - Energy value}
+\end{mdexampleinput}
