@@ -496,8 +496,11 @@ To enable a Colvars-based calculation, the following line must be added to the L
 fix~Colvars~all~colvars~\emph{configfile}~[\emph{keyword value pairs ...}]
 \end{mdexampleinput}
 where the fix ID is here set to the string ``\texttt{Colvars}'', because there can only be one instance of \texttt{fix colvars} in a LAMMPS run.
-The value of \emph{configfile} is the name of the configuration file for the Colvars module.
-Other optional keywords may follow:
+
+The value of the \emph{configfile} keyword is the name of the configuration file for the Colvars module.
+You may also provide the lowercase string ``none'' to create an empty module, and define the configuration via \texttt{fix\_modify} (see \ref{sec:cv_scripting}).
+
+Other optional keywords for \texttt{fix colvars} are:
 
 \begin{itemize}
 
@@ -552,6 +555,8 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
 
 \end{itemize}
 
+All of the above keywords except for the name of the configuration file may also be given (or overriden) using \texttt{fix\_modify}, as well as new Colvars configuration files (see \ref{sec:cv_scripting} for more details).
+
 }
 
 
@@ -592,11 +597,17 @@ To enable Colvars within a Tinker-HP run, just provide a Colvars configuration f
 
 \cvsubsec{Using the scripting interface to control the Colvars module}{sec:cv_scripting}
 
-After the first initialization of the Colvars module\cvlammpsonly{ (in LAMMPS, this means after defining an instance of \texttt{fix colvars} and the first \texttt{run} command for any number of steps including 0)}, the internal state of Colvars objects may be queried or modified in a \MDENGINE{} script:
+After the first initialization of the Colvars module, the internal state of Colvars objects may be queried or modified in a \MDENGINE{} script\cvlammpsonly{ (here, ``\texttt{Colvars}'' is the ID of the \texttt{fix colvars} instance):
 \cvscriptexampleinputcv{$<$\emph{method}$>$}{arg1\cvscriptargsep{}arg2\cvscriptargsep{}...}
 \noindent{}where \texttt{$<$\emph{method}$>$} is the name of a specific procedure and \texttt{arg1}, \texttt{arg2}, \ldots are its required and/or optional arguments.
 
 \cvvmdonly{In VMD, the \texttt{\cvscriptcmd{}} command is used by the Dashboard graphical interface,(\ref{sec:dashboard}), but can be also used in scripts or interactively from the command-line terminal (for example, in remote terminal sessions) or in the Tk Console.}
+
+\cvlammpsonly{It is possible to use \texttt{fix\_modify} on a previously created instance of \texttt{fix colvars} is possible at any time.
+However, keep in mind that this fix is only fully initialized at the beginning of the first simulation step.
+Only the variables and biased created during the previous \texttt{run} or \texttt{minimize} command will be accessible, even if a Colvars configuration file that defines them has already been given.
+Should you want to trigger immediate initialization of Colvars, please consider running ``\texttt{run 0}'' in the LAMMPS script.
+}
 
 \ifdefined\cvscriptpyapi{To control Colvars from Python as shown this example, an object \texttt{cv} needs to be initialized to interact with the Colvars module.
 This is done via importing the Python module \texttt{colvars}, which is a pure Python script available from the following link:\\
@@ -604,8 +615,8 @@ This is done via importing the Python module \texttt{colvars}, which is a pure P
 \noindent{}After the object \texttt{cv} is initialized, it can be used for all the following interactions with the Python scripting interface.
 There is no constraint on how it should be named as a Python variable, and it is only named here \texttt{cv} for simplicity.}\fi % \ifdefined\cvscriptpyapi{}
 
-The most frequent uses of the scripting interface are discussed and exemplified in this section.
-\ifdefined\cvscriptcmdapi{For a full list of commands/subcommands supported by the \ifdefined\cvvmdornamd{\texttt{cv} command}\fi\cvlammpsonly{\texttt{fix\_modify} command}, see section~\ref{sec:cvscript_cmdline}.}\fi
+The most frequent commands of the Colvars scripting interface are discussed and exemplified in this section.
+\ifdefined\cvscriptcmdapi{For a full list of scripting commands/subcommands available through the \ifdefined\cvvmdornamd{``\texttt{cv}'' command}\fi\cvlammpsonly{``\texttt{fix\_modify}'' command}, see section~\ref{sec:cvscript_cmdline}.}\fi
 
 
 \cvsubsubsec{Setting up the Colvars module}{sec:cv_command_init}
@@ -625,8 +636,9 @@ The \texttt{cv molid} command without argument will return the molid currently a
 To define new collective variables and/or biases for immediate use in the current session, configuration can be loaded from an external configuration file:
 \cvscriptexampleinputcv{configfile}{"colvars-file.in"}
 This can in principle be called at any time, if only flags internal to Colvars are being modified.
-In practice, when new atoms or any new atomic properties (e.g.{} total forces are being requested), initialization steps are required that are not carried out during a simulation.
-Therefore, it is good practice to change the Colvars configuration outside the scope between segments of the same simulation.
+In practice, when new atoms or any new atomic properties (e.g.{} total forces) are being requested, initialization steps will be required that are not carried out during a simulation.
+Therefore, it is generally good practice in a simulation to change the Colvars configuration outside the scope between segments of the same computation.
+\cvvmdonly{However, in VMD initialization is always immediate, allowing interactive usage by Tcl scripts or the Dashboard.}
 
 To load the configuration directly from a string the ``\texttt{config}'' method may be used:
 \cvscriptexampleinputcv{config}{"keyword \{ ... \}"}
@@ -783,11 +795,9 @@ As soon as a colvar ``\texttt{xi}'' and its associated biasing potentials are up
 
 Aside from the biasing methods already implemented within Colvars (\ref{sec:colvarbias}) this force may be incremented \emph{ad hoc}\ifdefined\cvscriptcallbacks{, for example as part of a custom restraint implemented by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}}\fi:
 \cvscriptexampleinputcolvar{addforce}{$<$force$>$}{"xi"}
-\noindent{}where ``\texttt{$<$force$>$}'' is a scalar or a vector (depending on the type of variable ``\texttt{xi}'') and is defined by the user's function.
-Afterwards, the \texttt{update} method \texttt{xi} should also be called (see \ref{sec:cv_command_colvar}), so that it will be accounted for and reported to file or via \texttt{getappliedforce}.
-\ifdefined\cvsimulationengine{If \texttt{addforce} is used during a simulation step, the force added by will also be communicated to the corresponding atoms as soon as Colvars communicates all forces to \MDENGINE{}.
-\cvlammpsonly{\emph{Note that in LAMMPS this is currently not possible, because \texttt{fix\_modify} is executed outside the \texttt{run} or \texttt{minimize} commands.}}
-}\fi % \ifdefined\cvsimulationengine
+\noindent{}where ``\texttt{$<$force$>$}'' is a scalar or a vector (depending on the type of variable ``\texttt{xi}'').
+\cvnamdonly{If \texttt{addforce} is used during a simulation step, the force added by will be communicated to the corresponding atoms as soon as Colvars communicates all forces to \MDENGINE{}.}
+\cvlammpsonly{Although this would offer in principle a way to add custom forces to a variable, \texttt{fix\_modify} is executed outside the \texttt{run} or \texttt{minimize} commands, and the given force will be reset during a simulation.}
 \cvvmdonly{Note that in VMD, any forces applied via \texttt{addforce} do not have any effect on the movement of atoms: this feature is only available for compatibility.}
 
 For certain types of variable, the force applied directly on a colvar may be combined with those acting \emph{indirectly} on it via the interatomic force field, making up the \emph{total force}.
