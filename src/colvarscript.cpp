@@ -142,7 +142,7 @@ int colvarscript::init_command(colvarscript::command const &comm,
   }
 
   cmd_full_help[comm] = cmd_help[comm]+"\n";
-  if (cmd_n_args_min[comm] > 0) {
+  if (cmd_n_args_max[comm] > 0) {
     cmd_full_help[comm] += "\nParameters\n";
     cmd_full_help[comm] += "----------\n\n";
     size_t i;
