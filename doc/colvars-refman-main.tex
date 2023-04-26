@@ -474,10 +474,21 @@ Other optional keywords for \texttt{fix colvars} are:
 \begin{itemize}
 
 \item %
+  \keydef
+    {output}{%
+    Keyword of the \texttt{fix colvars} command}{%
+    Prefix of the output state file}{%
+    string}{%
+    ``out''}{%
+    If a value is provided, it is interpreted as the prefix to all output files that will be written by the Colvars module (see \ref{sec:colvars_output}).
+    A value must be defined and is set by default, even when Colvars embeds its state information in a LAMMPS restart files, to allow the output of other files (see \ref{sec:colvars_output}).
+}
+
+\item %
   \key
     {input}{%
     Keyword of the \texttt{fix colvars} command}{%
-    Name or prefix of the input state file}{%
+    Name or prefix of the input state file (optional)}{%
     string}{%
     If a value is provided, it is interpreted as either the name of the input state file, or as the prefix of the file named \emph{input}\texttt{.colvars.state}.
     This file contains information needed to continue a previous collective variables-based calculation, including the number of the last computed step (useful for time-dependent biases).
@@ -486,18 +497,9 @@ Other optional keywords for \texttt{fix colvars} are:
 
 \item %
   \keydef
-    {output}{%
-    Keyword of the \texttt{fix colvars} command}{%
-    Prefix of the output state file}{%
-    string}{%
-    ``out''}{%
-    If a value is provided, it is interpreted as the prefix to all output files that will be written by the Colvars module (see \ref{sec:colvars_output}).}
-
-\item %
-  \keydef
     {unwrap}{%
     keyword of the \texttt{fix colvars} command}{%
-    Whether to unwrap coordinates passed to the Colvars module}{%
+    Whether to unwrap coordinates passed to the Colvars module (optional)}{%
     ``yes'' or ``no''}{%
     ``yes''}{%
     This keyword controls whether wrapped or unwrapped coordinates are passed to the Colvars module for calculation of the collective variables and of the resulting forces. The default is to use the image flags to reconstruct the absolute atom positions: under this convention, centers of mass and centers of geometry are calculated as a weighted vector sum (see \ref{sec:colvar_atom_groups_wrapping}).
@@ -507,7 +509,7 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
   \keydef
     {seed}{%
     Keyword of the \texttt{fix colvars} command}{%
-    Seed for the random number generator}{%
+    Seed for the random number generator (optional)}{%
     positive integer}{%
     1966}{%
     If defined, the value of this keyword is provided as seed to the random number generator.
@@ -517,7 +519,7 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
   \keydef
     {tstat}{%
     Keyword of the \texttt{fix colvars} command}{%
-    Thermostating fix}{%
+    Thermostating fix (optional)}{%
     string}{%
     NULL}{%
     This keyword provides the \emph{ID} of an applicable thermostating fix command. This will be used to provide the Colvars module with the current thermostat target temperature when using a method that needs this information.}
@@ -566,16 +568,35 @@ To enable Colvars within a Tinker-HP run, just provide a Colvars configuration f
 
 \cvsubsec{Using the scripting interface to control the Colvars module}{sec:cv_scripting}
 
-After the first initialization of the Colvars module, the internal state of Colvars objects may be queried or modified in a \MDENGINE{} script\cvlammpsonly{ (here, ``\texttt{Colvars}'' is the ID of the \texttt{fix colvars} instance):
+After the first initialization of the Colvars module, the internal state of Colvars objects may be queried or modified in a \MDENGINE{} script\cvlammpsonly{ (here, ``\texttt{Colvars}'' is the ID of the \texttt{fix colvars} instance)}:
 \cvscriptexampleinputcv{$<$\emph{method}$>$}{arg1\cvscriptargsep{}arg2\cvscriptargsep{}...}
 \noindent{}where \texttt{$<$\emph{method}$>$} is the name of a specific procedure and \texttt{arg1}, \texttt{arg2}, \ldots are its required and/or optional arguments.
 
 \cvvmdonly{In VMD, the \texttt{\cvscriptcmd{}} command is used by the Dashboard graphical interface,(\ref{sec:dashboard}), but can be also used in scripts or interactively from the command-line terminal (for example, in remote terminal sessions) or in the Tk Console.}
 
-\cvlammpsonly{It is possible to use \texttt{fix\_modify} on a previously created instance of \texttt{fix colvars} is possible at any time.
-However, keep in mind that this fix is only fully initialized at the beginning of the first simulation step.
-Only the variables and biased created during the previous \texttt{run} or \texttt{minimize} command will be accessible, even if a Colvars configuration file that defines them has already been given.
-Should you want to trigger immediate initialization of Colvars, please consider running ``\texttt{run 0}'' in the LAMMPS script.
+\cvlammpsonly{
+Each \texttt{fix\_modify} command may be used in one of two ways:
+\begin{enumerate}
+
+\item Provide an updated value for the \textbf{parameters of the fix} listed in \ref{sec:colvars_mdengine_parameters}: this behavior is similar to that of several other LAMMPS fix styles, and follows the same argument parsing rules.  For example, multiple keywords can be provided together:
+\begin{mdexampleinput}{%
+}fix\_modify~Colvars~\texttt{seed}~111111~\texttt{tstat}~\texttt{NPT}
+\end{mdexampleinput}
+
+\item Use one of the \textbf{scripting functions} described in this section; the arguments provided as strings are passed to Colvars.  LAMMPS variables referenced by their string representation, ``\texttt{\$\{variable\}}'', will be expanded immediately.  Additionally, variable expansion \emph{will also happen within quotes}, similar to what the \texttt{mdi} command provides in a LAMMPS script: this feature makes it possible to use the values of certain LAMMPS variables in Colvars configuration strings (see \ref{sec:cv_command_init}).
+\begin{mdexampleinput}{%
+}variable~freq~index~1000\\
+\-dump~myDump~all~atom/zstd~\$\{freq\}~dump.atom.zstd\\
+\-fix\_modify~Colvars~config~"colvarsTrajFrequency~\$\{freq\}"
+\end{mdexampleinput}
+
+\end{enumerate}
+
+
+\texttt{fix\_modify} can be run on a previously created instance of \texttt{fix colvars} at any time.
+However, because the fix is not fully initialized until the beginning of the next simulation step, only the variables and biases that were created prior to the most recent \texttt{run} or \texttt{minimize} command will be accessible.
+This fact is true even if a Colvars configuration file that defines those variables and biases was already given in the LAMMPS script.
+Should you want to trigger an immediate initialization of the Colvars module, consider running ``\texttt{run 0}''.
 }
 
 \ifdefined\cvscriptpyapi{To control Colvars from Python as shown this example, an object \texttt{cv} needs to be initialized to interact with the Colvars module.
@@ -584,8 +605,10 @@ This is done via importing the Python module \texttt{colvars}, which is a pure P
 \noindent{}After the object \texttt{cv} is initialized, it can be used for all the following interactions with the Python scripting interface.
 There is no constraint on how it should be named as a Python variable, and it is only named here \texttt{cv} for simplicity.}\fi % \ifdefined\cvscriptpyapi{}
 
-The most frequent commands of the Colvars scripting interface are discussed and exemplified in this section.
-\ifdefined\cvscriptcmdapi{For a full list of scripting commands/subcommands available through the \ifdefined\cvvmdornamd{``\texttt{cv}'' command}\fi\cvlammpsonly{``\texttt{fix\_modify}'' command}, see section~\ref{sec:cvscript_cmdline}.}\fi
+In the remainder of this section, the most frequently used commands of the Colvars scripting interface are discussed and exemplified.
+\ifdefined\cvscriptcmdapi{For a full list of scripting commands available, see section~\ref{sec:cvscript_cmdline}.}
+\\
+\fi
 
 
 \cvsubsubsec{Setting up the Colvars module}{sec:cv_command_init}
@@ -611,9 +634,12 @@ Therefore, it is generally good practice in a simulation to change the Colvars c
 
 To load the configuration directly from a string the ``\texttt{config}'' method may be used:
 \cvscriptexampleinputcv{config}{"keyword \{ ... \}"}
-\noindent{}This method is particularly useful to dynamically define the Colvars configuration within a \MDENGINE{} script.
-\cvnamdonly{For example, when running an ensemble of umbrella sampling simulations in NAMD, it may be convenient to use an identical NAMD script, and let the queuing system assist in defining the window.
-  In this example, in a Slurm array job an environment variable is used to define the window's numeric index (starting at zero), and the umbrella restraint center (starting at 2 for the first window, and increasing in increments of 0.25 for all other windows):
+\ifdefined\cvlammpsornamd\noindent{}This method is particularly useful to dynamically define the Colvars configuration within a \MDENGINE{} script.
+For example, when running an ensemble of umbrella sampling simulations in \MDENGINE{}, it may be convenient to use an identical script and define the specific window through environment variables.
+
+In the following example, the environment variable ``\texttt{SLURM\_ARRAY\_TASK\_ID}'' is set in a Slurm array job to increasing values starting at 0.
+The value of this variable is used to define the window's numeric index, and the umbrella restraint center beginning at 2.00 for the first window, and increasing in increments of 0.25 for all other windows:
+\cvnamdonly{
 \begin{mdexampleinput}
 \-cv~configfile~colvar-definition.in\\
 \-set~window~\$env(SLURM\_ARRAY\_TASK\_ID)\\
@@ -624,7 +650,20 @@ To load the configuration directly from a string the ``\texttt{config}'' method 
 \-~~...\\
 \}"
 \end{mdexampleinput}
-} % \cvnamdonly{}
+}
+\cvlammpsonly{
+\begin{mdexampleinput}
+\-variable~window~getenv~SLURM\_ARRAY\_TASK\_ID\\
+\-fix\_modify~Colvars~config~"""\\
+\-harmonic~\{\\
+\-~~name~us\_\$\{window\}\\
+\-~~colvars~xi\\
+\-~~centers~[expr~2.0~+~0.25~*~\$\{window\}]\\
+\-~~...\\
+\}"""
+\end{mdexampleinput}
+}
+\fi % \cvlammpsornamd
 
 
 \ifdefined\cvvmdornamd{
@@ -673,8 +712,8 @@ Because not only a state file (used to continue simulations) but also other data
 \cvsubsubsec{Accessing atomic data}{sec:cv_command_atomic_data}
 
 For computational efficiency the Colvars module keeps internal copies of the numeric IDs, masses, charges, positions, and optionally total forces of the atoms requested for a Colvars computation.
-At each simulation step, up-to-date versions of these properties are copied from central memory of \MDENGINE{} into the internal memory of the Colvars module.
-In a post-processing workflow or outside a simulation (e.g.{} when using VMD), this copy can be carried out as part of the \texttt{update} method:
+At each simulation step, up-to-date versions of these properties are copied from the central memory of \MDENGINE{} into the internal memory of the Colvars module.
+In a post-processing workflow or outside a simulation (e.g.\ when using VMD), this copy can be carried out as part of the \texttt{update} method:
 \cvscriptexampleinputcv{update}{~}
 \noindent{}which also performs the (re-)computation of all variables and biases defined in Colvars.
 
@@ -744,9 +783,9 @@ While in all typical cases all configuration of the variables is done with the `
 \cvscriptexampleinputcolvar{modifycvcs}{arg1\cvscriptargsep{}arg2\cvscriptargsep{}...}{"$<$name$>$"}
 \noindent{}where each argument is a string passed to the function or functions that are used to compute the variable, and are called colvar components, or CVCs (\ref{sec:cvc_list}).
 For example, a variable ``\texttt{DeltaZ}'' made of a single ``\texttt{distanceZ}'' component can be made periodic with a period equal to the unit cell dimension along the $Z$-axis:
-\cvscriptexampleinputcolvar{modifycvcs}{"period \emph{Lz}"}{"DeltaZ"}
-% TODO fix this for fix_modify
+\cvscriptexampleinputcolvar{modifycvcs}{"period \$\{Lz\}"}{"DeltaZ"}
 \noindent{}Please note that this option is currently limited to changing the values of the polynomial superposition parameters \refkey{componentCoeff}{sec:cvc_superp}, or of the \refkey{componentExp}{sec:cvc_superp} to update on the fly, of \refkey{period}{sec:cvc_periodic}, \refkey{wrapAround}{sec:cvc_periodic} or \refkey{forceNoPBC}{colvar|distance|forceNoPBC} options for components that support them.
+\cvlammpsonly{Furthermore, because the call above uses an \emph{immediate} expansion of the variable ``\texttt{\$\{Lz\}}'', its value will not be updated during a constant-pressure simulation.}
 
 If the variable is computed using many components, it is possible to selectively turn some of them on or off:
 \cvscriptexampleinputcolvar{cvcflags}{$<$flags$>$}{"$<$name$>$"}
