@@ -232,9 +232,11 @@ FixColvars::~FixColvars()
 
   if (proxy) {
     delete proxy;
-    inthash_t *hashtable = (inthash_t *)idmap;
-    inthash_destroy(hashtable);
-    delete hashtable;
+  }
+
+  if (idmap) {
+    inthash_destroy(idmap);
+    delete idmap;
   }
 
   if (root2root != MPI_COMM_NULL)
@@ -355,18 +357,16 @@ void FixColvars::init_taglist()
     std::vector<int> const &tl = *(proxy->get_atom_ids());
 
     if (idmap) {
-      delete reinterpret_cast<inthash_t *>(idmap);
+      delete idmap;
       idmap = nullptr;
     }
 
-    inthash_t *hashtable = new inthash_t;
-    inthash_init(hashtable, num_coords);
+    idmap = new inthash_t;
+    inthash_init(idmap, num_coords);
     for (int i = 0; i < num_coords; ++i) {
       taglist[i] = tl[i];
-      inthash_insert(hashtable, tl[i], i);
+      inthash_insert(idmap, tl[i], i);
     }
-
-    idmap = reinterpret_cast<void *>(hashtable);
   }
 
   // Broadcast colvar atom ID list

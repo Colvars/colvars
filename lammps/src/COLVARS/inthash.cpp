@@ -89,8 +89,7 @@ void inthash_init(inthash_t *tptr, int buckets) {
  *  tptr: Pointer to the hash table
  *  key: The key to lookup
  */
-int inthash_lookup(void *ptr, int key) {
-  const inthash_t *tptr = (const inthash_t *) ptr;
+int inthash_lookup(inthash_t *tptr, int key) {
   int h;
   inthash_node_t *node;
 
@@ -120,7 +119,7 @@ int inthash_insert(inthash_t *tptr, int key, int data) {
   int h;
 
   /* check to see if the entry exists */
-  if ((tmp=inthash_lookup(reinterpret_cast<void *>(tptr), key)) != HASH_FAIL)
+  if ((tmp=inthash_lookup(tptr, key)) != HASH_FAIL)
     return(tmp);
 
   /* expand the table if needed */
