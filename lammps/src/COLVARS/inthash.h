@@ -27,7 +27,7 @@ namespace IntHash_NS {
   /* initialize new hash table  */
   void inthash_init(inthash_t *tptr, int buckets);
   /* lookup entry in hash table */
-  int inthash_lookup(void *tptr, int key);
+  int inthash_lookup(inthash_t *tptr, int key);
   /* insert an entry into hash table. */
   int inthash_insert(inthash_t *tptr, int key, int data);
   /* delete the hash table */
