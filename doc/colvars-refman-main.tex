@@ -6,37 +6,6 @@
 % Colvars repository at GitHub.
 
 
-% Set flags depending on which engine this manual is built for
-
-\cvgromacsonly{
-\def\cvsimulationengine{1} % This backend is a simulation engine
-}
-
-\cvlammpsonly{
-\def\cvsimulationengine{1}
-\def\cvscriptapi{1} % Supports the scripting API
-\def\cvscriptcmdapi{1} % Supports command-line scripting (via fix_modify)
-\newcommand{\cvscriptcmd}{fix\_modify~Colvars}
-}
-
-\cvnamdonly{
-\def\cvsimulationengine{1}
-\def\cvvmdornamd{1}
-\def\cvscriptapi{1}
-\def\cvscriptcallbacks{1} % Supports script callbacks (via Tcl)
-\def\cvscriptcmdapi{1} % Supports command-line scripting (via cv Tcl command)
-\newcommand{\cvscriptcmd}{cv}
-}
-
-\cvvmdonly{
-\def\cvvmdornamd{1}
-\def\cvscriptapi{1}
-\def\cvscriptcallbacks{1} % Supports script callbacks (via Tcl)
-\def\cvscriptcmdapi{1}
-\newcommand{\cvscriptcmd}{cv}
-}
-
-
 \cvsec{Overview}{sec:colvars_intro}
 
 
