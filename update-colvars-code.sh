@@ -301,11 +301,9 @@ then
   done
 
   for src in \
-    ${source}/lammps/src/COLVARS/colvarproxy_lammps.cpp \
-    ${source}/lammps/src/COLVARS/colvarproxy_lammps.h \
-    ${source}/lammps/src/COLVARS/colvarproxy_lammps_version.h \
-    ${source}/lammps/src/COLVARS/fix_colvars.cpp \
-    ${source}/lammps/src/COLVARS/fix_colvars.h
+    ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} \
+    ${source}/lammps/src/COLVARS/fix_colvars.{cpp,h} \
+    ${source}/lammps/src/COLVARS/inthash.{cpp,h}
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/COLVARS/${tgt}"
