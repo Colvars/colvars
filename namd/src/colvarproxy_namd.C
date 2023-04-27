@@ -47,6 +47,8 @@ colvarproxy_namd::colvarproxy_namd()
   first_timestep = true;
   requestTotalForce(total_force_requested);
 
+  boltzmann_ = 0.001987191;
+
   angstrom_value_ = 1.;
 
   // initialize pointers to NAMD configuration data

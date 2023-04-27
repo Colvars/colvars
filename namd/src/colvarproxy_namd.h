@@ -96,17 +96,12 @@ public:
                                    std::vector<const colvarvalue *> const &cvcs,
                                    std::vector<cvm::matrix2d<cvm::real> > &gradient) override;
 
-  cvm::real boltzmann()
-  {
-    return 0.001987191;
-  }
-
-  cvm::real rand_gaussian()
+  cvm::real rand_gaussian() override
   {
     return random.gaussian();
   }
 
-  cvm::real dt()
+  cvm::real dt() override
   {
     return simparams->dt;
   }
@@ -115,12 +110,12 @@ public:
     return amd_weight_factor;
   }
 
-  bool accelMD_enabled() const {
+  bool accelMD_enabled() const override {
     return accelMDOn;
   }
 
 #if CMK_SMP && USE_CKLOOP
-  int smp_enabled()
+  int smp_enabled() override
   {
     if (b_smp_active) {
       return COLVARS_OK;
@@ -128,7 +123,7 @@ public:
     return COLVARS_ERROR;
   }
 
-  int smp_colvars_loop();
+  int smp_colvars_loop() override;
 
   int smp_biases_loop();
 
@@ -180,15 +175,15 @@ public:
   int replica_comm_recv(char* msg_data, int buf_len, int src_rep) override;
   int replica_comm_send(char* msg_data, int msg_len, int dest_rep) override;
 
-  int init_atom(int atom_number);
-  int check_atom_id(int atom_number);
+  int init_atom(int atom_number) override;
+  int check_atom_id(int atom_number) override;
   int init_atom(cvm::residue_id const &residue,
                 std::string const     &atom_name,
-                std::string const     &segment_id);
+                std::string const     &segment_id) override;
   int check_atom_id(cvm::residue_id const &residue,
                     std::string const     &atom_name,
-                    std::string const     &segment_id);
-  void clear_atom(int index);
+                    std::string const     &segment_id) override;
+  void clear_atom(int index) override;
 
   void update_atom_properties(int index);
 
@@ -198,21 +193,22 @@ public:
   int load_atoms(char const *filename,
                  cvm::atom_group &atoms,
                  std::string const &pdb_field,
-                 double const pdb_field_value = 0.0);
+                 double const pdb_field_value = 0.0) override;
 
   int load_coords(char const *filename,
                   std::vector<cvm::atom_pos> &pos,
                   const std::vector<int> &indices,
                   std::string const &pdb_field,
-                  double const pdb_field_value = 0.0);
+                  double const pdb_field_value = 0.0) override;
 
 
-  int scalable_group_coms()
+  int scalable_group_coms() override
   {
     return COLVARS_OK;
   }
-  int init_atom_group(std::vector<int> const &atoms_ids);
-  void clear_atom_group(int index);
+  int init_atom_group(std::vector<int> const &atoms_ids) override;
+  void clear_atom_group(int index) override;
+
   int update_group_properties(int index);
 
 #if NAMD_VERSION_NUMBER >= 34471681
