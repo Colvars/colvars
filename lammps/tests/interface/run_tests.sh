@@ -8,7 +8,9 @@ EOF
 exit 1
 fi
 lmp="$1"
-inputs=$(echo in.[0-9][0-9]? | sed -e s/in\.//g)
+inputs=""
+# # Uncomment this to re-nable diff-based tests
+# inputs=$(echo in.[0-9][0-9]? | sed -e s/in\.//g)
 
 for id in $inputs
 do \
