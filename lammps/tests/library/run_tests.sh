@@ -34,6 +34,19 @@ if [ ! -d ${TOPDIR} ] ; then
   exit 1
 fi
 
+if $BINARY -h > /dev/null ; then
+  if $BINARY -h | grep ^MPI | grep -q STUBS ; then
+    MPI_BUILD=no
+  else
+    MPI_BUILD=yes
+    source ${TOPDIR}/devel-tools/load-openmpi.sh
+    BINARY="mpirun -n 2 $BINARY"
+  fi
+else
+  echo "Error: executable $BINARY did not return a help screen" >& 2
+  exit 1
+fi
+
 SPIFF=$(${TOPDIR}/devel-tools/get_spiff)
 if [ $? != 0 ] ; then
     echo "Error: spiff is not available and could not be downloaded/built." >& 2
