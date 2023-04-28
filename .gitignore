@@ -8,7 +8,6 @@
 *.o
 *.so
 *.a
-*.x
 *.exe
 *.pyc
 .vscode/
