@@ -33,7 +33,7 @@ int colvar::orientation::init(std::string const &conf)
   ref_pos.reserve(atoms->size());
 
   if (get_keyval(conf, "refPositions", ref_pos, ref_pos)) {
-    cvm::log("Using reference positions from input file.\n");
+    cvm::log("Using reference positions from input file.");
     if (ref_pos.size() != atoms->size()) {
       return cvm::error("Error: reference positions do not "
                         "match the number of requested atoms.\n", COLVARS_INPUT_ERROR);
@@ -286,7 +286,7 @@ int colvar::tilt::init(std::string const &conf)
   get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0));
   if (axis.norm2() != 1.0) {
     axis /= axis.norm();
-    cvm::log("Normalizing rotation axis to "+cvm::to_str(axis)+".\n");
+    cvm::log("Normalizing rotation axis to "+cvm::to_str(axis)+".");
   }
 
   return error_code;
@@ -350,7 +350,7 @@ int colvar::spin_angle::init(std::string const &conf)
   get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0));
   if (axis.norm2() != 1.0) {
     axis /= axis.norm();
-    cvm::log("Normalizing rotation axis to "+cvm::to_str(axis)+".\n");
+    cvm::log("Normalizing rotation axis to "+cvm::to_str(axis)+".");
   }
 
   return error_code;

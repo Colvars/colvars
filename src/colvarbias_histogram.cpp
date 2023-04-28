@@ -130,14 +130,14 @@ int colvarbias_histogram::update()
     // output_prefix is unset during the constructor
     if (cvm::step_relative() == 0) {
       out_name = cvm::output_prefix() + "." + this->name + ".dat";
-      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name + "\"\n");
+      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name + "\"");
     }
   }
 
   if (out_name_dx.size() == 0) {
     if (cvm::step_relative() == 0) {
       out_name_dx = cvm::output_prefix() + "." + this->name + ".dx";
-      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_dx + "\"\n");
+      cvm::log("Histogram " + this->name + " will be written to file \"" + out_name_dx + "\"");
     }
   }
 
@@ -182,12 +182,12 @@ int colvarbias_histogram::write_output_files()
   int error_code = COLVARS_OK;
 
   if (out_name.size() && out_name != "none") {
-    cvm::log("Writing the histogram file \""+out_name+"\".\n");
+    cvm::log("Writing the histogram file \""+out_name+"\".");
     error_code |= grid->write_multicol(out_name, "histogram output file");
   }
 
   if (out_name_dx.size() && out_name_dx != "none") {
-    cvm::log("Writing the histogram file \""+out_name_dx+"\".\n");
+    cvm::log("Writing the histogram file \""+out_name_dx+"\".");
     error_code |= grid->write_opendx(out_name_dx, "histogram DX output file");
   }
 

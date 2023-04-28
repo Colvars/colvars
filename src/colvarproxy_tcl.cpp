@@ -66,7 +66,7 @@ int colvarproxy_tcl::tcl_run_script(std::string const &script)
   Tcl_Interp *const interp = get_tcl_interp();
   int err = Tcl_Eval(interp, script.c_str());
   if (err != TCL_OK) {
-    cvm::log("Error while executing Tcl script:\n");
+    cvm::log("Error while executing Tcl script:");
     cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
@@ -83,7 +83,7 @@ int colvarproxy_tcl::tcl_run_file(std::string const &fileName)
   Tcl_Interp *const interp = get_tcl_interp();
   int err = Tcl_EvalFile(interp, fileName.c_str());
   if (err != TCL_OK) {
-    cvm::log("Error while executing Tcl script file" + fileName + ":\n");
+    cvm::log("Error while executing Tcl script file" + fileName + ":");
     cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
@@ -107,7 +107,7 @@ int colvarproxy_tcl::tcl_run_force_callback()
     + cvm::to_str(cvm::step_absolute());
   int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
-    cvm::log("Error while executing calc_colvar_forces:\n");
+    cvm::log("Error while executing calc_colvar_forces:");
     cvm::error(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }

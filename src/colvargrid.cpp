@@ -386,7 +386,7 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_
     // Compute inverse of Laplacian diagonal for Jacobi preconditioning
     // For now all code related to preconditioning is commented out
     // until a method better than Jacobi is implemented
-//     cvm::log("Preparing inverse diagonal for preconditioning...\n");
+//     cvm::log("Preparing inverse diagonal for preconditioning...");
 //     inv_lap_diag.resize(nt);
 //     std::vector<cvm::real> id(nt), lap_col(nt);
 //     for (int i = 0; i < nt; i++) {
@@ -397,7 +397,7 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars, colvar_
 //       id[i] = 0.;
 //       inv_lap_diag[i] = 1. / lap_col[i];
 //     }
-//     cvm::log("Done.\n");
+//     cvm::log("Done.");
   }
 }
 
@@ -453,7 +453,7 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
   } else if (nd <= 3) {
 
     nr_linbcg_sym(divergence, data, tol, itmax, iter, err);
-    cvm::log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err) + "\n");
+    cvm::log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err) );
 
   } else {
     cvm::error("Cannot integrate PMF in dimension > 3\n");

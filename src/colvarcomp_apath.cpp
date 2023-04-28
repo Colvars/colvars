@@ -52,8 +52,8 @@ void colvar::aspathCV::calc_value() {
     if (lambda < 0) {
         // this implies that the user may not set a valid lambda value
         // so recompute it by the suggested value in Parrinello's paper
-        cvm::log("A non-positive value of lambda is detected, which implies that it may not set in the configuration.\n");
-        cvm::log("This component (aspathCV) will recompute a value for lambda following the suggestion in the origin paper.\n");
+        cvm::log("A non-positive value of lambda is detected, which implies that it may not set in the configuration.");
+        cvm::log("This component (aspathCV) will recompute a value for lambda following the suggestion in the origin paper.");
         std::vector<cvm::real> rmsd_between_refs(total_reference_frames - 1, 0.0);
         computeDistanceBetweenReferenceFrames(rmsd_between_refs);
         reComputeLambda(rmsd_between_refs);
@@ -136,8 +136,8 @@ void colvar::azpathCV::calc_value() {
     if (lambda < 0) {
         // this implies that the user may not set a valid lambda value
         // so recompute it by the suggested value in Parrinello's paper
-        cvm::log("A non-positive value of lambda is detected, which implies that it may not set in the configuration.\n");
-        cvm::log("This component (azpathCV) will recompute a value for lambda following the suggestion in the origin paper.\n");
+        cvm::log("A non-positive value of lambda is detected, which implies that it may not set in the configuration.");
+        cvm::log("This component (azpathCV) will recompute a value for lambda following the suggestion in the origin paper.");
         std::vector<cvm::real> rmsd_between_refs(total_reference_frames - 1, 0.0);
         computeDistanceBetweenReferenceFrames(rmsd_between_refs);
         reComputeLambda(rmsd_between_refs);

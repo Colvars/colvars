@@ -96,7 +96,7 @@ void colvarproxy_lammps::init()
   colvars = new colvarmodule(this);
 
   cvm::log("Using LAMMPS interface, version "+
-           cvm::to_str(COLVARPROXY_VERSION)+".\n");
+           cvm::to_str(COLVARPROXY_VERSION)+".");
 
   colvars->cite_feature("LAMMPS engine");
   colvars->cite_feature("Colvars-LAMMPS interface");
@@ -112,17 +112,17 @@ void colvarproxy_lammps::init()
 
   if (_lmp->update->ntimestep != 0) {
     cvm::log("Setting initial step number from LAMMPS: "+
-             cvm::to_str(_lmp->update->ntimestep)+"\n");
+             cvm::to_str(_lmp->update->ntimestep));
     colvarmodule::it = colvarmodule::it_restart =
       static_cast<cvm::step_number>(_lmp->update->ntimestep);
   }
 
   if (cvm::debug()) {
-    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    cvm::log("atoms_refcount = "+cvm::to_str(atoms_refcount)+"\n");
-    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
+    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids));
+    cvm::log("atoms_refcount = "+cvm::to_str(atoms_refcount));
+    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions));
     cvm::log(cvm::line_marker);
-    cvm::log("Info: done initializing the colvars proxy object.\n");
+    cvm::log("Info: done initializing the colvars proxy object.");
   }
 }
 
@@ -166,7 +166,7 @@ double colvarproxy_lammps::compute()
         "colvarproxy_lammps step no. "+
         cvm::to_str(_lmp->update->ntimestep)+" [first - last = "+
         cvm::to_str(_lmp->update->beginstep)+" - "+
-        cvm::to_str(_lmp->update->endstep)+"]\n");
+        cvm::to_str(_lmp->update->endstep)+"]");
   }
 
   if (first_timestep) {
@@ -210,7 +210,7 @@ double colvarproxy_lammps::compute()
   if (cvm::debug()) {
     cvm::log(std::string(cvm::line_marker)+
              "colvarproxy_lammps, step no. "+cvm::to_str(colvarmodule::it)+"\n"+
-             "Updating internal data.\n");
+             "Updating internal data.");
   }
 
   // zero the forces on the atoms, so that they can be accumulated by the colvars
@@ -221,10 +221,10 @@ double colvarproxy_lammps::compute()
   bias_energy = 0.0;
 
   if (cvm::debug()) {
-    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    cvm::log("atoms_refcount = "+cvm::to_str(atoms_refcount)+"\n");
-    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
-    cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
+    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids));
+    cvm::log("atoms_refcount = "+cvm::to_str(atoms_refcount));
+    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions));
+    cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces));
   }
 
   // Call the collective variable module
@@ -233,10 +233,10 @@ double colvarproxy_lammps::compute()
   }
 
   if (cvm::debug()) {
-    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    cvm::log("atoms_refcount = "+cvm::to_str(atoms_refcount)+"\n");
-    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
-    cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces)+"\n");
+    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids));
+    cvm::log("atoms_refcount = "+cvm::to_str(atoms_refcount));
+    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions));
+    cvm::log("atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces));
   }
 
   return bias_energy;

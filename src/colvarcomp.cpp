@@ -65,12 +65,12 @@ int colvar::cvc::set_function_type(std::string const &type)
 int colvar::cvc::init(std::string const &conf)
 {
   if (cvm::debug())
-    cvm::log("Initializing cvc base object.\n");
+    cvm::log("Initializing cvc base object.");
 
   std::string const old_name(name);
 
   if (name.size() > 0) {
-    cvm::log("Updating configuration for component \""+name+"\"\n");
+    cvm::log("Updating configuration for component \""+name+"\"");
   }
 
   if (get_keyval(conf, "name", name, name)) {
@@ -117,7 +117,7 @@ int colvar::cvc::init(std::string const &conf)
   get_keyval(conf, "scalable", b_try_scalable, b_try_scalable);
 
   if (cvm::debug())
-    cvm::log("Done initializing cvc base object.\n");
+    cvm::log("Done initializing cvc base object.");
 
   return cvm::get_error();
 }
@@ -130,11 +130,11 @@ int colvar::cvc::init_total_force_params(std::string const &conf)
   if (get_keyval_feature(this, conf, "oneSiteSystemForce",
                          f_cvc_one_site_total_force, is_enabled(f_cvc_one_site_total_force))) {
     cvm::log("Warning: keyword \"oneSiteSystemForce\" is deprecated: "
-             "please use \"oneSiteTotalForce\" instead.\n");
+             "please use \"oneSiteTotalForce\" instead.");
   }
   if (get_keyval_feature(this, conf, "oneSiteTotalForce",
                          f_cvc_one_site_total_force, is_enabled(f_cvc_one_site_total_force))) {
-    cvm::log("Computing total force on group 1 only\n");
+    cvm::log("Computing total force on group 1 only");
   }
 
   if (! is_enabled(f_cvc_one_site_total_force)) {
@@ -534,7 +534,7 @@ void colvar::cvc::debug_gradients()
     cvm::real x_0 = x.real_value;
     if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_0 = x[0];
 
-    // cvm::log("gradients     = "+cvm::to_str (gradients)+"\n");
+    // cvm::log("gradients     = "+cvm::to_str (gradients));
 
     cvm::atom_group *group_for_fit = group->fitting_group ? group->fitting_group : group;
     cvm::atom_pos fit_gradient_sum, gradient_sum;
@@ -545,7 +545,7 @@ void colvar::cvc::debug_gradients()
         size_t j;
 
         // fit_gradients are in the simulation frame: we should print them in the rotated frame
-        cvm::log("Fit gradients:\n");
+        cvm::log("Fit gradients:");
         for (j = 0; j < group_for_fit->fit_gradients.size(); j++) {
           cvm::log((group->fitting_group ? std::string("refPosGroup") : group->key) +
                   "[" + cvm::to_str(j) + "] = " +
@@ -574,17 +574,17 @@ void colvar::cvc::debug_gradients()
         calc_value();
         cvm::real x_1 = x.real_value;
         if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_1 = x[0];
-        cvm::log("Atom "+cvm::to_str(ia)+", component "+cvm::to_str(id)+":\n");
+        cvm::log("Atom "+cvm::to_str(ia)+", component "+cvm::to_str(id)+":");
         cvm::log("dx(actual) = "+cvm::to_str(x_1 - x_0,
-                              21, 14)+"\n");
+                              21, 14));
         cvm::real const dx_pred = (group->fit_gradients.size()) ?
           (cvm::debug_gradients_step_size * (atom_grad[id] + group->fit_gradients[ia][id])) :
           (cvm::debug_gradients_step_size * atom_grad[id]);
         cvm::log("dx(interp) = "+cvm::to_str(dx_pred,
-                              21, 14)+"\n");
+                              21, 14));
         cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
                   cvm::to_str(cvm::fabs(x_1 - x_0 - dx_pred) /
-                              cvm::fabs(x_1 - x_0), 12, 5)+"\n");
+                              cvm::fabs(x_1 - x_0), 12, 5));
       }
     }
 
@@ -609,14 +609,14 @@ void colvar::cvc::debug_gradients()
           calc_value();
 
           cvm::real const x_1 = x.real_value;
-          cvm::log("refPosGroup atom "+cvm::to_str(ia)+", component "+cvm::to_str (id)+":\n");
+          cvm::log("refPosGroup atom "+cvm::to_str(ia)+", component "+cvm::to_str (id)+":");
           cvm::log("dx(actual) = "+cvm::to_str (x_1 - x_0,
-                                21, 14)+"\n");
+                                21, 14));
 
           cvm::real const dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
 
           cvm::log("dx(interp) = "+cvm::to_str (dx_pred,
-                                21, 14)+"\n");
+                                21, 14));
           cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
                     cvm::to_str(cvm::fabs (x_1 - x_0 - dx_pred) /
                                 cvm::fabs (x_1 - x_0),

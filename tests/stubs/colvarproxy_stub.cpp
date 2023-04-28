@@ -24,7 +24,7 @@ colvarproxy_stub::colvarproxy_stub()
   updated_masses_ = updated_charges_ = true;
 
   colvars = new colvarmodule(this);
-  cvm::log("Using minimal testing interface.\n");
+  cvm::log("Using minimal testing interface.");
 
   colvars->cv_traj_freq = 0; // I/O will be handled explicitly
   colvars->restart_out_freq = 0;
@@ -108,14 +108,14 @@ int colvarproxy_stub::set_unit_system(std::string const &units_in,
 
 void colvarproxy_stub::log(std::string const &message)
 {
-  std::cout << "colvars: " << message;
+  std::cout << "colvars: " << message << "\n";
 }
 
 
 void colvarproxy_stub::error(std::string const &message)
 {
   add_error_msg(message);
-  std::cerr << "colvars: " << message;
+  std::cerr << "colvars: " << message << "\n";
 }
 
 

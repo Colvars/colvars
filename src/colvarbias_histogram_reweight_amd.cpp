@@ -178,7 +178,7 @@ int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
   const std::string& p_output_prefix, bool keep_open) {
   const std::string output_pmf = p_output_prefix + ".pmf";
 
-  cvm::log("Writing the accelerated MD PMF file \"" + output_pmf + "\".\n");
+  cvm::log("Writing the accelerated MD PMF file \"" + output_pmf + "\".");
   std::ostream &pmf_grid_os = cvm::proxy->output_stream(output_pmf, "PMF file");
   if (!pmf_grid_os) {
     return COLVARS_FILE_ERROR;
@@ -201,7 +201,7 @@ int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
   if (b_write_gradients) {
     const std::string output_grad = p_output_prefix + ".grad";
     cvm::log("Writing the accelerated MD gradients file \"" + output_grad +
-             "\".\n");
+             "\".");
     std::ostream &grad_grid_os = cvm::proxy->output_stream(output_grad, "gradient file");
     if (!grad_grid_os) {
       return COLVARS_FILE_ERROR;
@@ -225,7 +225,7 @@ int colvarbias_reweightaMD::write_exponential_reweighted_pmf(
 int colvarbias_reweightaMD::write_cumulant_expansion_pmf(
   const std::string& p_output_prefix, bool keep_open) {
   const std::string output_pmf = p_output_prefix + ".pmf";
-  cvm::log("Writing the accelerated MD PMF file using cumulant expansion: \"" + output_pmf + "\".\n");
+  cvm::log("Writing the accelerated MD PMF file using cumulant expansion: \"" + output_pmf + "\".");
   std::ostream &pmf_grid_cumulant_os = cvm::proxy->output_stream(output_pmf, "PMF file");
   if (!pmf_grid_cumulant_os) {
     return COLVARS_FILE_ERROR;
@@ -240,7 +240,7 @@ int colvarbias_reweightaMD::write_cumulant_expansion_pmf(
 
   if (b_write_gradients) {
     const std::string output_grad = p_output_prefix + ".grad";
-    cvm::log("Writing the accelerated MD gradients file \"" + output_grad + "\".\n");
+    cvm::log("Writing the accelerated MD gradients file \"" + output_grad + "\".");
     std::ostream &grad_grid_os = cvm::proxy->output_stream(output_grad, "grad file");
     if (!grad_grid_os) {
       return COLVARS_FILE_ERROR;
@@ -260,7 +260,7 @@ int colvarbias_reweightaMD::write_cumulant_expansion_pmf(
 
 int colvarbias_reweightaMD::write_count(const std::string& p_output_prefix, bool keep_open) {
   const std::string output_name = p_output_prefix + ".count";
-  cvm::log("Writing the accelerated MD count file \""+output_name+"\".\n");
+  cvm::log("Writing the accelerated MD count file \""+output_name+"\".");
   std::ostream &grid_count_os = cvm::proxy->output_stream(output_name, "count file");
   if (!grid_count_os) {
     return COLVARS_FILE_ERROR;

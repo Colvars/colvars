@@ -114,12 +114,12 @@ colvar::neuralNetwork::neuralNetwork(std::string const &conf): linearCombination
         if (nn->addDenseLayer(d)) {
             if (cvm::debug()) {
                 // show information about the neural network
-                cvm::log("Layer " + cvm::to_str(i_layer) + " : has " + cvm::to_str(d.getInputSize()) + " input nodes and " + cvm::to_str(d.getOutputSize()) + " output nodes.\n");
+                cvm::log("Layer " + cvm::to_str(i_layer) + " : has " + cvm::to_str(d.getInputSize()) + " input nodes and " + cvm::to_str(d.getOutputSize()) + " output nodes.");
                 for (size_t i_output = 0; i_output < d.getOutputSize(); ++i_output) {
                     for (size_t j_input = 0; j_input < d.getInputSize(); ++j_input) {
                         cvm::log("    weights[" + cvm::to_str(i_output) + "][" + cvm::to_str(j_input) + "] = " + cvm::to_str(d.getWeight(i_output, j_input)));
                     }
-                    cvm::log("    biases[" + cvm::to_str(i_output) + "] = " + cvm::to_str(d.getBias(i_output)) + "\n");
+                    cvm::log("    biases[" + cvm::to_str(i_output) + "] = " + cvm::to_str(d.getBias(i_output)) );
                 }
             }
         } else {

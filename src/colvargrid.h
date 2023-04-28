@@ -153,7 +153,7 @@ public:
   {
     if (cvm::debug()) {
       cvm::log("Allocating grid: multiplicity = "+cvm::to_str(mult_i)+
-               ", dimensions = "+cvm::to_str(nx_i)+".\n");
+               ", dimensions = "+cvm::to_str(nx_i)+".");
     }
 
     mult = mult_i;
@@ -178,7 +178,7 @@ public:
     }
 
     if (cvm::debug()) {
-      cvm::log("Total number of grid elements = "+cvm::to_str(nt)+".\n");
+      cvm::log("Total number of grid elements = "+cvm::to_str(nt)+".");
     }
 
     data.reserve(nt);
@@ -263,7 +263,7 @@ public:
                         bool add_extra_bin = false)
   {
     if (cvm::debug()) {
-      cvm::log("Reading grid configuration from collective variables.\n");
+      cvm::log("Reading grid configuration from collective variables.");
     }
 
     cv = colvars;
@@ -274,7 +274,7 @@ public:
 
     if (cvm::debug()) {
       cvm::log("Allocating a grid for "+cvm::to_str(colvars.size())+
-               " collective variables, multiplicity = "+cvm::to_str(mult_i)+".\n");
+               " collective variables, multiplicity = "+cvm::to_str(mult_i)+".");
     }
 
     for (i =  0; i < cv.size(); i++) {
@@ -331,7 +331,7 @@ public:
   int init_from_boundaries()
   {
     if (cvm::debug()) {
-      cvm::log("Configuring grid dimensions from colvars boundaries.\n");
+      cvm::log("Configuring grid dimensions from colvars boundaries.");
     }
 
     // these will have to be updated
@@ -353,14 +353,14 @@ public:
                  cvm::to_str(lower_boundaries[i], cvm::cv_width, cvm::cv_prec)+" - "+
                  cvm::to_str(upper_boundaries[i], cvm::cv_width, cvm::cv_prec)+
                  ") is not commensurate to its bin width("+
-                 cvm::to_str(widths[i], cvm::cv_width, cvm::cv_prec)+").\n");
+                 cvm::to_str(widths[i], cvm::cv_width, cvm::cv_prec)+").");
         upper_boundaries[i].real_value = lower_boundaries[i].real_value +
           (nbins_round * widths[i]);
       }
 
       if (cvm::debug())
         cvm::log("Number of points is "+cvm::to_str((int) nbins_round)+
-                 " for the colvar no. "+cvm::to_str(i+1)+".\n");
+                 " for the colvar no. "+cvm::to_str(i+1)+".");
 
       nx.push_back(nbins_round);
     }
@@ -684,7 +684,7 @@ public:
     std::vector<int> oix = other_grid.new_index();
 
     if (cvm::debug())
-      cvm::log("Remapping grid...\n");
+      cvm::log("Remapping grid...");
     for ( ; this->index_ok(ix); this->incr(ix)) {
 
       for (size_t i = 0; i < nd; i++) {
@@ -705,7 +705,7 @@ public:
 
     has_data = true;
     if (cvm::debug())
-      cvm::log("Remapping done.\n");
+      cvm::log("Remapping done.");
   }
 
   /// \brief Add data from another grid of the same type, AND
@@ -837,7 +837,7 @@ public:
   int parse_params(std::string const &conf,
                    colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal)
   {
-    if (cvm::debug()) cvm::log("Reading grid configuration from string.\n");
+    if (cvm::debug()) cvm::log("Reading grid configuration from string.");
 
     std::vector<int> old_nx = nx;
     std::vector<colvarvalue> old_lb = lower_boundaries;
@@ -961,7 +961,7 @@ public:
       is >> colvarparse::read_block("grid_parameters", &conf);
       parse_params(conf, colvarparse::parse_silent);
     } else {
-      cvm::log("Grid parameters are missing in the restart file, using those from the configuration.\n");
+      cvm::log("Grid parameters are missing in the restart file, using those from the configuration.");
       is.seekg(start_pos, std::ios::beg);
     }
     read_raw(is);

@@ -155,7 +155,7 @@ colvar::coordnum::coordnum(std::string const &conf)
   }
 
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    cvm::log("Warning: only minimum-image distances are used by this variable.\n");
+    cvm::log("Warning: only minimum-image distances are used by this variable.");
   }
 
   get_keyval(conf, "group2CenterOnly", b_group2_center_only, group2->b_dummy);
@@ -305,7 +305,7 @@ colvar::h_bond::h_bond(std::string const &conf)
 : cvc(conf)
 {
   if (cvm::debug())
-    cvm::log("Initializing h_bond object.\n");
+    cvm::log("Initializing h_bond object.");
 
   set_function_type("hBond");
   x.type(colvarvalue::type_scalar);
@@ -343,7 +343,7 @@ colvar::h_bond::h_bond(std::string const &conf)
   }
 
   if (cvm::debug())
-    cvm::log("Done initializing h_bond object.\n");
+    cvm::log("Done initializing h_bond object.");
 }
 
 
@@ -421,7 +421,7 @@ colvar::selfcoordnum::selfcoordnum(std::string const &conf)
   }
 
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    cvm::log("Warning: only minimum-image distances are used by this variable.\n");
+    cvm::log("Warning: only minimum-image distances are used by this variable.");
   }
 
   get_keyval(conf, "tolerance", tolerance, 0.0);
@@ -587,7 +587,7 @@ colvar::groupcoordnum::groupcoordnum(std::string const &conf)
   }
 
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    cvm::log("Warning: only minimum-image distances are used by this variable.\n");
+    cvm::log("Warning: only minimum-image distances are used by this variable.");
   }
 
 }

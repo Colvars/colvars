@@ -383,7 +383,7 @@ void colvarmodule::rotation::calc_optimal_rotation(
   S_backup = S;
 
   if (b_debug_gradients) {
-    cvm::log("S     = "+cvm::to_str(S_backup, cvm::cv_width, cvm::cv_prec)+"\n");
+    cvm::log("S     = "+cvm::to_str(S_backup, cvm::cv_width, cvm::cv_prec));
   }
 
   S_eigval.resize(4);
@@ -426,7 +426,7 @@ void colvarmodule::rotation::calc_optimal_rotation(
       q.match(q_old);
       if (q_old.inner(q) < (1.0 - crossing_threshold)) {
         cvm::log("Warning: one molecular orientation has changed by more than "+
-                 cvm::to_str(crossing_threshold)+": discontinuous rotation ?\n");
+                 cvm::to_str(crossing_threshold)+": discontinuous rotation ?");
       }
     }
     q_old = q;
@@ -435,20 +435,16 @@ void colvarmodule::rotation::calc_optimal_rotation(
   if (b_debug_gradients) {
     cvm::log("L0 = "+cvm::to_str(L0, cvm::cv_width, cvm::cv_prec)+
              ", Q0 = "+cvm::to_str(Q0, cvm::cv_width, cvm::cv_prec)+
-             ", Q0*Q0 = "+cvm::to_str(Q0.inner(Q0), cvm::cv_width, cvm::cv_prec)+
-             "\n");
+             ", Q0*Q0 = "+cvm::to_str(Q0.inner(Q0), cvm::cv_width, cvm::cv_prec));
     cvm::log("L1 = "+cvm::to_str(L1, cvm::cv_width, cvm::cv_prec)+
              ", Q1 = "+cvm::to_str(Q1, cvm::cv_width, cvm::cv_prec)+
-             ", Q0*Q1 = "+cvm::to_str(Q0.inner(Q1), cvm::cv_width, cvm::cv_prec)+
-             "\n");
+             ", Q0*Q1 = "+cvm::to_str(Q0.inner(Q1), cvm::cv_width, cvm::cv_prec));
     cvm::log("L2 = "+cvm::to_str(L2, cvm::cv_width, cvm::cv_prec)+
              ", Q2 = "+cvm::to_str(Q2, cvm::cv_width, cvm::cv_prec)+
-             ", Q0*Q2 = "+cvm::to_str(Q0.inner(Q2), cvm::cv_width, cvm::cv_prec)+
-             "\n");
+             ", Q0*Q2 = "+cvm::to_str(Q0.inner(Q2), cvm::cv_width, cvm::cv_prec));
     cvm::log("L3 = "+cvm::to_str(L3, cvm::cv_width, cvm::cv_prec)+
              ", Q3 = "+cvm::to_str(Q3, cvm::cv_width, cvm::cv_prec)+
-             ", Q0*Q3 = "+cvm::to_str(Q0.inner(Q3), cvm::cv_width, cvm::cv_prec)+
-             "\n");
+             ", Q0*Q3 = "+cvm::to_str(Q0.inner(Q3), cvm::cv_width, cvm::cv_prec));
   }
 
   // calculate derivatives of L0 and Q0 with respect to each atom in
@@ -577,7 +573,7 @@ void colvarmodule::rotation::calc_optimal_rotation(
           }
         }
 
-        //           cvm::log("S_new = "+cvm::to_str(cvm::to_str (S_new), cvm::cv_width, cvm::cv_prec)+"\n");
+        //           cvm::log("S_new = "+cvm::to_str(cvm::to_str (S_new), cvm::cv_width, cvm::cv_prec));
 
 #ifdef COLVARS_LAMMPS
         ecalc->Diagonalize(S_new, S_new_eigval, S_new_eigvec);
@@ -597,8 +593,7 @@ void colvarmodule::rotation::calc_optimal_rotation(
         cvm::log(  "|(l_0+dl_0) - l_0^new|/l_0 = "+
                    cvm::to_str(cvm::fabs(L0+DL0 - L0_new)/L0, cvm::cv_width, cvm::cv_prec)+
                    ", |(q_0+dq_0) - q_0^new| = "+
-                   cvm::to_str((Q0+DQ0 - Q0_new).norm(), cvm::cv_width, cvm::cv_prec)+
-                   "\n");
+                   cvm::to_str((Q0+DQ0 - Q0_new).norm(), cvm::cv_width, cvm::cv_prec));
       }
     }
   }

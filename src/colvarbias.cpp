@@ -52,7 +52,7 @@ int colvarbias::init(std::string const &conf)
   if (num_variables() == 0) {
     // First initialization
 
-    cvm::log("Initializing a new \""+bias_type+"\" instance.\n");
+    cvm::log("Initializing a new \""+bias_type+"\" instance.");
 
     // Only allow setting a non-default name on first init
     get_keyval(conf, "name", name, name);
@@ -89,7 +89,7 @@ int colvarbias::init(std::string const &conf)
     }
 
   } else {
-    cvm::log("Reinitializing bias \""+name+"\".\n");
+    cvm::log("Reinitializing bias \""+name+"\".");
   }
 
   colvar_values.resize(num_variables());
@@ -296,7 +296,7 @@ int colvarbias::add_colvar(std::string const &cv_name)
 
     if (cvm::debug()) {
       cvm::log("Applying this bias to collective variable \""+
-               cv->name+"\".\n");
+               cv->name+"\".");
     }
 
     colvars.push_back(cv);
@@ -325,7 +325,7 @@ int colvarbias::add_colvar(std::string const &cv_name)
 int colvarbias::update()
 {
   if (cvm::debug()) {
-    cvm::log("Updating the "+bias_type+" bias \""+this->name+"\".\n");
+    cvm::log("Updating the "+bias_type+" bias \""+this->name+"\".");
   }
 
   int error_code = COLVARS_OK;
@@ -390,7 +390,7 @@ int colvarbias::communicate_forces()
   for (i = 0; i < num_variables(); i++) {
     if (cvm::debug()) {
       cvm::log("Communicating a force to colvar \""+
-               variables(i)->name+"\".\n");
+               variables(i)->name+"\".");
     }
     // Impulse-style multiple timestep
     // Note that biases with different values of time_step_factor
@@ -478,7 +478,7 @@ int colvarbias::set_state_params(std::string const &conf)
   if (check_name != this->name) {
     if (cvm::debug()) {
       cvm::log("Ignoring state of bias \""+check_name+
-               "\": this bias is named \""+name+"\".\n");
+               "\": this bias is named \""+name+"\".");
     }
     return COLVARS_OK;
   }
@@ -495,7 +495,7 @@ int colvarbias::set_state_params(std::string const &conf)
 std::ostream & colvarbias::write_state(std::ostream &os)
 {
   if (cvm::debug()) {
-    cvm::log("Writing state file for bias \""+name+"\"\n");
+    cvm::log("Writing state file for bias \""+name+"\"");
   }
   os.setf(std::ios::scientific, std::ios::floatfield);
   os.precision(cvm::cv_prec);
@@ -540,7 +540,7 @@ std::istream & colvarbias::read_state(std::istream &is)
   }
 
   cvm::log("Restarting "+bias_type+" bias \""+name+"\" from step number "+
-           cvm::to_str(state_file_step)+".\n");
+           cvm::to_str(state_file_step)+".");
 
   if (!read_state_data(is)) {
     cvm::error("Error: in reading state data for \""+bias_type+"\" bias \""+
@@ -617,7 +617,7 @@ int colvarbias::read_state_string(char const *buffer)
   if (buffer != NULL) {
     size_t const buffer_size = strlen(buffer);
     if (cvm::debug()) {
-      cvm::log("colvarbias::read_state_string() with argument:\n");
+      cvm::log("colvarbias::read_state_string() with argument:");
       cvm::log(buffer);
     }
 
@@ -800,7 +800,7 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
   has_data = true;
 
   if (cvm::debug()) {
-    cvm::log("Updating system forces for bias "+this->name+"\n");
+    cvm::log("Updating system forces for bias "+this->name);
   }
 
   colvarproxy *proxy = cvm::main()->proxy;
@@ -874,7 +874,7 @@ std::istream & colvarbias_ti::read_state_data(std::istream &is)
     return is;
   }
   if (cvm::debug()) {
-    cvm::log("Reading state data for the TI estimator.\n");
+    cvm::log("Reading state data for the TI estimator.");
   }
   if (! read_state_data_key(is, "histogram")) {
     return is;
@@ -889,7 +889,7 @@ std::istream & colvarbias_ti::read_state_data(std::istream &is)
     return is;
   }
   if (cvm::debug()) {
-    cvm::log("Done reading state data for the TI estimator.\n");
+    cvm::log("Done reading state data for the TI estimator.");
   }
   return is;
 }
@@ -916,7 +916,7 @@ int colvarbias_ti::write_output_files()
 
   if (is_enabled(f_cvb_write_ti_pmf)) {
     std::string const pmf_file_name(ti_output_prefix+".ti.pmf");
-    cvm::log("Writing TI PMF to file \""+pmf_file_name+"\".\n");
+    cvm::log("Writing TI PMF to file \""+pmf_file_name+"\".");
     std::ostream &os = cvm::proxy->output_stream(pmf_file_name, "TI PMF");
     if (os) {
       // get the FE gradient

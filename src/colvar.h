@@ -739,7 +739,7 @@ inline void colvar::add_bias_force(colvarvalue const &force)
   check_enabled(f_cv_gradient,
                 std::string("applying a force to the variable \""+name+"\""));
   if (cvm::debug()) {
-    cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
+    cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".");
   }
   fb += force;
 }
@@ -748,7 +748,7 @@ inline void colvar::add_bias_force(colvarvalue const &force)
 inline void colvar::add_bias_force_actual_value(colvarvalue const &force)
 {
   if (cvm::debug()) {
-    cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
+    cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".");
   }
   fb_actual += force;
 }

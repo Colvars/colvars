@@ -80,7 +80,7 @@ colvar::alpha_angles::alpha_angles(std::string const &conf)
     }
 
   } else {
-    cvm::log("The hBondCoeff specified will disable the Calpha-Calpha-Calpha angle terms.\n");
+    cvm::log("The hBondCoeff specified will disable the Calpha-Calpha-Calpha angle terms.");
   }
 
   {
@@ -100,7 +100,7 @@ colvar::alpha_angles::alpha_angles(std::string const &conf)
       }
 
     } else {
-      cvm::log("The hBondCoeff specified will disable the hydrogen bond terms.\n");
+      cvm::log("The hBondCoeff specified will disable the hydrogen bond terms.");
     }
   }
 }
@@ -153,7 +153,7 @@ void colvar::alpha_angles::calc_value()
         cvm::log("Calpha-Calpha angle no. "+cvm::to_str(i+1)+" in \""+
                   this->name+"\" has a value of "+
                   (cvm::to_str((theta[i])->value().real_value))+
-                  " degrees, f = "+cvm::to_str(f)+".\n");
+                  " degrees, f = "+cvm::to_str(f)+".");
     }
   }
 
@@ -168,7 +168,7 @@ void colvar::alpha_angles::calc_value()
       if (cvm::debug())
         cvm::log("Hydrogen bond no. "+cvm::to_str(i+1)+" in \""+
                   this->name+"\" has a value of "+
-                  (cvm::to_str((hb[i])->value().real_value))+".\n");
+                  (cvm::to_str((hb[i])->value().real_value))+".");
     }
   }
 }
@@ -285,7 +285,7 @@ colvar::dihedPC::dihedPC(std::string const &conf)
   : cvc(conf)
 {
   if (cvm::debug())
-    cvm::log("Initializing dihedral PC object.\n");
+    cvm::log("Initializing dihedral PC object.");
 
   set_function_type("dihedPC");
   // Supported through references to atom groups of children cvcs
@@ -412,7 +412,7 @@ colvar::dihedPC::dihedPC(std::string const &conf)
   }
 
   if (cvm::debug())
-    cvm::log("Done initializing dihedPC object.\n");
+    cvm::log("Done initializing dihedPC object.");
 }
 
 

@@ -114,11 +114,11 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     colvars->cite_feature("Colvars-GROMACS interface");
 
     if (cvm::debug()) {
-      log("Initializing the colvars proxy object.\n");
+      log("Initializing the colvars proxy object.");
     }
 
     cvm::log("Using GROMACS interface, version "+
-      cvm::to_str(COLVARPROXY_VERSION)+".\n");
+      cvm::to_str(COLVARPROXY_VERSION)+".");
 
     auto i = filenames_config.begin();
     for(; i != filenames_config.end(); ++i) {
@@ -130,12 +130,12 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
     colvars->setup_input();
 
     // Citation Reporter
-    cvm::log(std::string("\n")+colvars->feature_report(0)+std::string("\n"));
+    cvm::log(std::string("\n")+colvars->feature_report(0));
 
     colvars->setup_output();
 
     if (step != 0) {
-      cvm::log("Initializing step number to "+cvm::to_str(step)+".\n");
+      cvm::log("Initializing step number to "+cvm::to_str(step)+".");
     }
 
     colvars->it = colvars->it_restart = step;
@@ -388,7 +388,7 @@ void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t
     if(cvm::debug()) {
       cvm::log(cvm::line_marker);
       cvm::log("colvarproxy_gromacs, step no. "+cvm::to_str(colvars->it)+"\n"+
-              "Updating internal data.\n");
+              "Updating internal data.");
     }
 
     // step update on master only due to the call of colvars pointer.

@@ -151,11 +151,11 @@ colvar::customColvar::customColvar(std::string const &conf): linearCombination(c
     if (key_lookup(conf, "customFunction", &expr_in, &pos)) {
 #ifdef LEPTON
         use_custom_function = true;
-        cvm::log("This colvar uses a custom function.\n");
+        cvm::log("This colvar uses a custom function.");
         do {
             expr = expr_in;
             if (cvm::debug())
-                cvm::log("Parsing expression \"" + expr + "\".\n");
+                cvm::log("Parsing expression \"" + expr + "\".");
             try {
                 pexpr = Lepton::Parser::parse(expr);
                 pexprs.push_back(pexpr);
@@ -172,7 +172,7 @@ colvar::customColvar::customColvar(std::string const &conf): linearCombination(c
                             ref = &value_evaluators.back()->getVariableReference(vn);
                         } catch (...) {
                             ref = &dev_null;
-                            cvm::log("Warning: Variable " + vn + " is absent from expression \"" + expr + "\".\n");
+                            cvm::log("Warning: Variable " + vn + " is absent from expression \"" + expr + "\".");
                         }
                         value_eval_var_refs.push_back(ref);
                     }
@@ -193,7 +193,7 @@ colvar::customColvar::customColvar(std::string const &conf): linearCombination(c
                             try {
                                 ref = &gradient_evaluators.back()->getVariableReference(vvn);
                             } catch (...) {
-                                cvm::log("Warning: Variable " + vvn + " is absent from derivative of \"" + expr + "\" wrt " + vn + ".\n");
+                                cvm::log("Warning: Variable " + vvn + " is absent from derivative of \"" + expr + "\" wrt " + vn);
                                 ref = &dev_null;
                             }
                             grad_eval_var_refs.push_back(ref);
@@ -216,8 +216,8 @@ colvar::customColvar::customColvar(std::string const &conf): linearCombination(c
                     COLVARS_INPUT_ERROR);
 #endif
     } else {
-        cvm::log("Warning: no customFunction specified.\n");
-        cvm::log("Warning: use linear combination instead.\n");
+        cvm::log("Warning: no customFunction specified.");
+        cvm::log("Warning: use linear combination instead.");
     }
 }
 

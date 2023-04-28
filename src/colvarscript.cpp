@@ -49,7 +49,7 @@ colvarscript::colvarscript(colvarproxy *p, colvarmodule *m)
   Tcl_DeleteCommand(interp, "cv");
   Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
                        (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
-  cvm::log("Redefining the Tcl \"cv\" command to the new script interface.\n");
+  cvm::log("Redefining the Tcl \"cv\" command to the new script interface.");
 #endif
 }
 
@@ -66,7 +66,7 @@ colvarscript::~colvarscript()
 int colvarscript::init_commands()
 {
   if (cvm::debug()) {
-    cvm::log("Called colvarcript::init_commands()\n");
+    cvm::log("Called colvarcript::init_commands()");
   }
 
   cmd_help.resize(colvarscript::cv_n_commands);
@@ -160,7 +160,7 @@ int colvarscript::init_command(colvarscript::command const &comm,
 
   cmd_fns[comm] = fn;
   if (cvm::debug()) {
-    cvm::log("Defined command \""+std::string(name)+"\", with help string:\n");
+    cvm::log("Defined command \""+std::string(name)+"\", with help string:");
     cvm::log(get_command_full_help(name));
   }
 
@@ -459,7 +459,7 @@ char *colvarscript::obj_to_str(unsigned char *obj)
 std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
 {
   if (cvm::debug()) {
-    cvm::log("Using simple-cast colvarscript::obj_to_str_vector().\n");
+    cvm::log("Using simple-cast colvarscript::obj_to_str_vector().");
   }
 
   std::vector<std::string> new_result;
@@ -492,7 +492,7 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
   }
 
   if (cvm::debug()) {
-    cvm::log("result = "+cvm::to_str(new_result)+".\n");
+    cvm::log("result = "+cvm::to_str(new_result)+".");
   }
 
   return new_result;

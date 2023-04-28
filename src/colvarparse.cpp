@@ -131,7 +131,7 @@ void colvarparse::mark_key_set_user(std::string const &key_str,
   }
   if (parse_mode & parse_deprecation_warning) {
     cvm::log("Warning: keyword "+key_str+
-      " is deprecated. Check the documentation for the current equivalent.\n");
+      " is deprecated. Check the documentation for the current equivalent.");
   }
 }
 
@@ -265,8 +265,7 @@ bool colvarparse::_get_keyval_scalar_(std::string const &conf,
 
       if (parse_mode & parse_required) {
         if (cvm::debug()) {
-          cvm::log("get_keyval, parse_required = "+cvm::to_str(parse_mode & parse_required)+
-                   "\n");
+          cvm::log("get_keyval, parse_required = "+cvm::to_str(parse_mode & parse_required));
         }
         error_key_required(key_str, parse_mode);
         return false;
@@ -593,7 +592,7 @@ int colvarparse::check_keywords(std::string &conf, char const *key)
 {
   if (cvm::debug())
     cvm::log("Configuration string for \""+std::string(key)+
-             "\": \"\n"+conf+"\".\n");
+             "\": \"\n"+conf+"\".");
 
   strip_values(conf);
   // after stripping, the config string has either empty lines, or
@@ -668,7 +667,7 @@ bool colvarparse::key_lookup(std::string const &conf,
 {
   if (cvm::debug()) {
     cvm::log("Looking for the keyword \""+std::string(key_in)+
-             "\" and its value.\n");
+             "\" and its value.");
   }
 
   // add this keyword to the register (in its camelCase version)
@@ -695,7 +694,7 @@ bool colvarparse::key_lookup(std::string const &conf,
     if (pos == std::string::npos) {
       // no valid instance of the keyword has been found
       if (cvm::debug()) {
-        cvm::log("Keyword \""+std::string(key_in)+"\" not found.\n");
+        cvm::log("Keyword \""+std::string(key_in)+"\" not found.");
       }
       return false;
     }
@@ -772,7 +771,7 @@ bool colvarparse::key_lookup(std::string const &conf,
       // find the matching closing brace
 
 //       if (cvm::debug()) {
-//         cvm::log("Multi-line value, config is now \""+line+"\".\n");
+//         cvm::log("Multi-line value, config is now \""+line+"\".");
 //       }
 
       int brace_count = 1;
@@ -817,7 +816,7 @@ bool colvarparse::key_lookup(std::string const &conf,
           line.append(conf, line_begin, (line_end-line_begin));
 
 //           if (cvm::debug()) {
-//             cvm::log("Added a new line, config is now \""+line+"\".\n");
+//             cvm::log("Added a new line, config is now \""+line+"\".");
 //           }
         }
 
@@ -840,7 +839,7 @@ bool colvarparse::key_lookup(std::string const &conf,
       data->append(line, data_begin, (data_end-data_begin));
 
       if (cvm::debug()) {
-        cvm::log("Keyword value = \""+*data+"\".\n");
+        cvm::log("Keyword value = \""+*data+"\".");
       }
 
       if (data->size()) {
@@ -947,7 +946,7 @@ int colvarparse::check_ascii(std::string const &conf)
     for (size_t i = 0; i < line.size(); i++) {
       if (uchars[i] & 0x80U) {
         cvm::log("Warning: non-ASCII character detected in this line: \""+
-                 line+"\".\n");
+                 line+"\".");
       }
     }
   }

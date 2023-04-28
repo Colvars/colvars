@@ -49,28 +49,28 @@ int colvarbias_abf::init(std::string const &conf)
   enable(f_cvb_calc_pmf);
 
   if ((proxy->target_temperature() == 0.0) && proxy->simulation_running()) {
-    cvm::log("WARNING: ABF should not be run without a thermostat or at 0 Kelvin!\n");
+    cvm::log("WARNING: ABF should not be run without a thermostat or at 0 Kelvin!");
   }
 
   // ************* parsing general ABF options ***********************
 
   get_keyval_feature((colvarparse *)this, conf, "applyBias",  f_cvb_apply_force, true);
   if (!is_enabled(f_cvb_apply_force)){
-    cvm::log("WARNING: ABF biases will *not* be applied!\n");
+    cvm::log("WARNING: ABF biases will *not* be applied!");
   }
 
   get_keyval(conf, "updateBias",  update_bias, true);
   if (update_bias) {
     enable(f_cvb_history_dependent);
   } else {
-    cvm::log("WARNING: ABF biases will *not* be updated!\n");
+    cvm::log("WARNING: ABF biases will *not* be updated!");
   }
 
   get_keyval(conf, "hideJacobian", hide_Jacobian, false);
   if (hide_Jacobian) {
-    cvm::log("Jacobian (geometric) forces will be handled internally.\n");
+    cvm::log("Jacobian (geometric) forces will be handled internally.");
   } else {
-    cvm::log("Jacobian (geometric) forces will be included in reported free energy gradients.\n");
+    cvm::log("Jacobian (geometric) forces will be included in reported free energy gradients.");
   }
 
   get_keyval(conf, "fullSamples", full_samples, 200);
@@ -104,7 +104,7 @@ int colvarbias_abf::init(std::string const &conf)
                         COLVARS_INPUT_ERROR);
     }
     cvm::log("shared ABF will be applied among "+
-             cvm::to_str(proxy->num_replicas()) + " replicas.\n");
+             cvm::to_str(proxy->num_replicas()) + " replicas.");
     if (cvm::proxy->smp_enabled() == COLVARS_OK) {
       cvm::error("Error: shared ABF is currently not available with SMP parallelism; "
                  "please set \"SMP off\" at the top of the Colvars configuration file.\n",
@@ -187,7 +187,7 @@ int colvarbias_abf::init(std::string const &conf)
 
   // Construct empty grids based on the colvars
   if (cvm::debug()) {
-    cvm::log("Allocating count and free energy gradient grids.\n");
+    cvm::log("Allocating count and free energy gradient grids.");
   }
 
   samples   = new colvar_grid_count(colvars);
@@ -283,7 +283,7 @@ int colvarbias_abf::init(std::string const &conf)
     }
   }
 
-  cvm::log("Finished ABF setup.\n");
+  cvm::log("Finished ABF setup.");
   return COLVARS_OK;
 }
 
@@ -490,7 +490,7 @@ int colvarbias_abf::update()
     last_gradients->copy_grid(*gradients);
     last_samples->copy_grid(*samples);
     shared_last_step = cvm::step_absolute();
-    cvm::log("Prepared sample and gradient buffers at step "+cvm::to_str(cvm::step_absolute())+".\n");
+    cvm::log("Prepared sample and gradient buffers at step "+cvm::to_str(cvm::step_absolute())+".");
   }
 
   // update UI estimator every step

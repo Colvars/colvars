@@ -213,7 +213,7 @@ std::ostream & colvarproxy_io::output_stream(std::string const &output_name,
                                              std::string const description)
 {
   if (cvm::debug()) {
-    cvm::log("Using colvarproxy_io::output_stream()\n");
+    cvm::log("Using colvarproxy_io::output_stream()");
   }
 
   if (!io_available()) {

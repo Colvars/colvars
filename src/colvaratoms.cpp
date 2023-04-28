@@ -132,7 +132,7 @@ int cvm::atom_group::add_atom(cvm::atom const &a)
     if (atoms_ids[i] == a.id) {
       if (cvm::debug())
         cvm::log("Discarding doubly counted atom with number "+
-                 cvm::to_str(a.id+1)+".\n");
+                 cvm::to_str(a.id+1)+".");
       return COLVARS_OK;
     }
   }
@@ -157,7 +157,7 @@ int cvm::atom_group::add_atom_id(int aid)
     if (atoms_ids[i] == aid) {
       if (cvm::debug())
         cvm::log("Discarding doubly counted atom with number "+
-                 cvm::to_str(aid+1)+".\n");
+                 cvm::to_str(aid+1)+".");
       return COLVARS_OK;
     }
   }
@@ -365,14 +365,14 @@ void cvm::atom_group::print_properties(std::string const &colvar_name,
              cvm::to_str(i)+"/"+
              cvm::to_str(j)+". "+ cvm::to_str(atoms_ids.size())+
              " atoms: total mass = "+cvm::to_str(total_mass)+
-             ", total charge = "+cvm::to_str(total_charge)+".\n");
+             ", total charge = "+cvm::to_str(total_charge)+".");
   }
 }
 
 
 int cvm::atom_group::parse(std::string const &group_conf)
 {
-  cvm::log("Initializing atom group \""+key+"\".\n");
+  cvm::log("Initializing atom group \""+key+"\".");
 
   // whether or not to include messages in the log
   // colvarparse::Parse_Mode mode = parse_silent;
@@ -549,7 +549,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
   parse_error |= parse_fitting_options(group_conf);
 
   if (is_enabled(f_ag_scalable) && !b_dummy) {
-    cvm::log("Enabling scalable calculation for group \""+this->key+"\".\n");
+    cvm::log("Enabling scalable calculation for group \""+this->key+"\".");
     index = (cvm::proxy)->init_atom_group(atoms_ids);
   }
 
@@ -560,7 +560,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
   setup();
 
   if (cvm::debug())
-    cvm::log("Done initializing atom group \""+key+"\".\n");
+    cvm::log("Done initializing atom group \""+key+"\".");
 
   {
     std::string init_msg;
@@ -579,7 +579,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
   }
 
   if (b_print_atom_ids) {
-    cvm::log("Internal definition of the atom group:\n");
+    cvm::log("Internal definition of the atom group:");
     cvm::log(print_atom_ids());
   }
 
@@ -800,7 +800,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
     std::string fitting_group_conf;
     if (key_lookup(group_conf, "refPositionsGroup", &fitting_group_conf)) {
       b_ref_pos_group = true;
-      cvm::log("Warning: keyword \"refPositionsGroup\" is deprecated: please use \"fittingGroup\" instead.\n");
+      cvm::log("Warning: keyword \"refPositionsGroup\" is deprecated: please use \"fittingGroup\" instead.");
     }
 
     if (b_ref_pos_group || key_lookup(group_conf, "fittingGroup", &fitting_group_conf)) {
@@ -813,7 +813,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
                    "in this case.\n", COLVARS_INPUT_ERROR);
         return COLVARS_INPUT_ERROR;
       }
-      cvm::log("Within atom group \""+key+"\":\n");
+      cvm::log("Within atom group \""+key+"\":");
       fitting_group = new atom_group("fittingGroup");
       if (fitting_group->parse(fitting_group_conf) == COLVARS_OK) {
         fitting_group->check_keywords(fitting_group_conf, "fittingGroup");
@@ -882,7 +882,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
                "If the internal structure of the group changes too much (i.e. its RMSD is comparable "
                "to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  "
                "If that happens, use fittingGroup (or a different definition for it if already defined) "
-               "to align the coordinates.\n");
+               "to align the coordinates.");
       // initialize rot member data
       rot.request_group1_gradients(group_for_fit->size());
     }
@@ -1150,7 +1150,7 @@ int cvm::atom_group::calc_center_of_mass()
   if (b_dummy) {
     com = dummy_atom_pos;
     if (cvm::debug()) {
-      cvm::log("Dummy atom center of mass = "+cvm::to_str(com)+"\n");
+      cvm::log("Dummy atom center of mass = "+cvm::to_str(com));
     }
   } else if (is_enabled(f_ag_scalable)) {
     com = (cvm::proxy)->get_atom_group_com(index);
@@ -1198,7 +1198,7 @@ void cvm::atom_group::calc_fit_gradients()
   if (b_dummy || ! is_enabled(f_ag_fit_gradients)) return;
 
   if (cvm::debug())
-    cvm::log("Calculating fit gradients.\n");
+    cvm::log("Calculating fit gradients.");
 
   cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
 
@@ -1242,7 +1242,7 @@ void cvm::atom_group::calc_fit_gradients()
   }
 
   if (cvm::debug())
-    cvm::log("Done calculating fit gradients.\n");
+    cvm::log("Done calculating fit gradients.");
 }
 
 

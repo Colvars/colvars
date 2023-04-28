@@ -132,7 +132,7 @@ int colvarbias_alb::init(std::string const &conf)
 
 
   if (cvm::debug())
-    cvm::log(" bias.\n");
+    cvm::log(" bias.");
 
   return COLVARS_OK;
 }
@@ -151,7 +151,7 @@ int colvarbias_alb::update()
   update_calls++;
 
   if (cvm::debug())
-    cvm::log("Updating the adaptive linear bias \""+this->name+"\".\n");
+    cvm::log("Updating the adaptive linear bias \""+this->name+"\".");
 
   //log the moments of the CVs
   // Force and energy calculation

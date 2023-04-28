@@ -96,7 +96,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 
   colvars = new colvarmodule(this);
   cvm::log("Using VMD interface, version "+
-           cvm::to_str(COLVARPROXY_VERSION)+".\n");
+           cvm::to_str(COLVARPROXY_VERSION)+".");
 
   colvars->cite_feature("VMD engine");
   colvars->cite_feature("Colvars-VMD interface (command line)");
@@ -297,7 +297,7 @@ void colvarproxy_vmd::request_total_force(bool yesno)
   if ((yesno == true) && (total_force_requested == false)) {
     cvm::log("Warning: a bias requested total forces, which are undefined in VMD.  "
              "This is only meaningful when analyzing a simulation where these were used, "
-             "provided that a state file is loaded.\n");
+             "provided that a state file is loaded.");
   }
   total_force_requested = yesno;
 }
@@ -569,7 +569,7 @@ int colvarproxy_vmd::load_atoms(char const *pdb_filename,
 {
   if (pdb_field_str.size() == 0) {
     cvm::log("Error: must define which PDB field to use "
-             "in order to define atoms from a PDB file.\n");
+             "in order to define atoms from a PDB file.");
     cvm::set_error_bits(COLVARS_INPUT_ERROR);
     return COLVARS_ERROR;
   }
@@ -638,7 +638,7 @@ int colvarproxy_vmd::check_atom_id(int atom_number)
 
   if (cvm::debug())
     cvm::log("Adding atom "+cvm::to_str(aid+1)+
-             " for collective variables calculation.\n");
+             " for collective variables calculation.");
 
   if ( (aid < 0) || (aid >= vmdmol->nAtoms) ) {
     cvm::error("Error: invalid atom number specified, "+
@@ -738,7 +738,7 @@ int colvarproxy_vmd::init_atom(cvm::residue_id const &resid,
              atom_name+"\" in residue "+
              cvm::to_str(resid)+
              " (index "+cvm::to_str(aid)+
-             ") for collective variables calculation.\n");
+             ") for collective variables calculation.");
 
   int const index = add_atom_slot(aid);
 

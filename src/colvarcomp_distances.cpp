@@ -195,10 +195,10 @@ colvar::distance_z::distance_z(std::string const &conf)
   ref2 = parse_group(conf, "ref2", true);
 
   if ( ref2 ) {
-    cvm::log("Using axis joining the centers of mass of groups \"ref\" and \"ref2\"\n");
+    cvm::log("Using axis joining the centers of mass of groups \"ref\" and \"ref2\"");
     fixed_axis = false;
     if (key_lookup(conf, "axis"))
-      cvm::log("Warning: explicit axis definition will be ignored!\n");
+      cvm::log("Warning: explicit axis definition will be ignored!");
   } else {
     if (get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0))) {
       if (axis.norm2() == 0.0) {
@@ -207,7 +207,7 @@ colvar::distance_z::distance_z(std::string const &conf)
       }
       if (axis.norm2() != 1.0) {
         axis = axis.unit();
-        cvm::log("The normalized axis is: "+cvm::to_str(axis)+".\n");
+        cvm::log("The normalized axis is: "+cvm::to_str(axis)+".");
       }
     }
     fixed_axis = true;
@@ -588,7 +588,7 @@ colvar::distance_inv::distance_inv(std::string const &conf)
   if (is_enabled(f_cvc_debug_gradient)) {
     cvm::log("Warning: debugGradients will not give correct results "
              "for distanceInv, because its value and gradients are computed "
-             "simultaneously.\n");
+             "simultaneously.");
   }
 }
 
@@ -810,7 +810,7 @@ colvar::gyration::gyration(std::string const &conf)
   atoms = parse_group(conf, "atoms");
 
   if (atoms->b_user_defined_fit) {
-    cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".\n");
+    cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".");
   } else {
     atoms->enable(f_ag_center);
     atoms->ref_pos.assign(1, cvm::atom_pos(0.0, 0.0, 0.0));
@@ -916,7 +916,7 @@ colvar::inertia_z::inertia_z(std::string const &conf)
     }
     if (axis.norm2() != 1.0) {
       axis = axis.unit();
-      cvm::log("The normalized axis is: "+cvm::to_str(axis)+".\n");
+      cvm::log("The normalized axis is: "+cvm::to_str(axis)+".");
     }
   }
 }
@@ -970,7 +970,7 @@ colvar::rmsd::rmsd(std::string const &conf)
   bool b_Jacobian_derivative = true;
   if (atoms->fitting_group != NULL && b_Jacobian_derivative) {
     cvm::log("The option \"fittingGroup\" (alternative group for fitting) was enabled: "
-              "Jacobian derivatives of the RMSD will not be calculated.\n");
+              "Jacobian derivatives of the RMSD will not be calculated.");
     b_Jacobian_derivative = false;
   }
   if (b_Jacobian_derivative) provide(f_cvc_Jacobian);
@@ -979,7 +979,7 @@ colvar::rmsd::rmsd(std::string const &conf)
   // we need this because the reference coordinates defined inside the atom group
   // may be used only for fitting, and even more so if fitting_group is used
   if (get_keyval(conf, "refPositions", ref_pos, ref_pos)) {
-    cvm::log("Using reference positions from configuration file to calculate the variable.\n");
+    cvm::log("Using reference positions from configuration file to calculate the variable.");
     if (ref_pos.size() != atoms->size()) {
       cvm::error("Error: the number of reference positions provided ("+
                   cvm::to_str(ref_pos.size())+
@@ -1027,11 +1027,11 @@ colvar::rmsd::rmsd(std::string const &conf)
   }
 
   if (atoms->b_user_defined_fit) {
-    cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".\n");
+    cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".");
   } else {
     // Default: fit everything
     cvm::log("Enabling \"centerToReference\" and \"rotateToReference\", to minimize RMSD before calculating it as a variable: "
-              "if this is not the desired behavior, disable them explicitly within the \"atoms\" block.\n");
+              "if this is not the desired behavior, disable them explicitly within the \"atoms\" block.");
     atoms->enable(f_ag_center);
     atoms->enable(f_ag_rotate);
     // default case: reference positions for calculating the rmsd are also those used
@@ -1231,7 +1231,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     bool const b_inline = get_keyval(conf, "refPositions", ref_pos, ref_pos);
 
     if (b_inline) {
-      cvm::log("Using reference positions from input file.\n");
+      cvm::log("Using reference positions from input file.");
       if (ref_pos.size() != atoms->size()) {
         cvm::error("Error: reference positions do not "
                    "match the number of requested atoms.\n");
@@ -1284,11 +1284,11 @@ colvar::eigenvector::eigenvector(std::string const &conf)
   ref_pos_center *= 1.0 / atoms->size();
 
   if (atoms->b_user_defined_fit) {
-    cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".\n");
+    cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".");
   } else {
     // default: fit everything
     cvm::log("Enabling \"centerToReference\" and \"rotateToReference\", to minimize RMSD before calculating the vector projection: "
-              "if this is not the desired behavior, disable them explicitly within the \"atoms\" block.\n");
+              "if this is not the desired behavior, disable them explicitly within the \"atoms\" block.");
     atoms->enable(f_ag_center);
     atoms->enable(f_ag_rotate);
     atoms->ref_pos = ref_pos;
@@ -1307,7 +1307,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     bool const b_inline = get_keyval(conf, "vector", eigenvec, eigenvec);
     // now load the eigenvector
     if (b_inline) {
-      cvm::log("Using vector components from input file.\n");
+      cvm::log("Using vector components from input file.");
       if (eigenvec.size() != atoms->size()) {
         cvm::error("Error: vector components do not "
                           "match the number of requested atoms->\n");
@@ -1351,7 +1351,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     eig_center += eigenvec[eil];
   }
   eig_center *= 1.0 / atoms->size();
-  cvm::log("Geometric center of the provided vector: "+cvm::to_str(eig_center)+"\n");
+  cvm::log("Geometric center of the provided vector: "+cvm::to_str(eig_center));
 
   bool b_difference_vector = false;
   get_keyval(conf, "differenceVector", b_difference_vector, false);
@@ -1371,7 +1371,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
         eigenvec[i] = atoms->rot.rotate(eigenvec[i]);
       }
     }
-    cvm::log("\"differenceVector\" is on: subtracting the reference positions from the provided vector: v = x_vec - x_ref.\n");
+    cvm::log("\"differenceVector\" is on: subtracting the reference positions from the provided vector: v = x_vec - x_ref.");
     for (size_t i = 0; i < atoms->size(); i++) {
       eigenvec[i] -= ref_pos[i];
     }
@@ -1383,7 +1383,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     }
 
   } else {
-    cvm::log("Centering the provided vector to zero.\n");
+    cvm::log("Centering the provided vector to zero.");
     for (size_t i = 0; i < atoms->size(); i++) {
       eigenvec[i] -= eig_center;
     }
@@ -1401,20 +1401,20 @@ colvar::eigenvector::eigenvector(std::string const &conf)
   get_keyval(conf, "normalizeVector", normalize, normalize);
 
   if (normalize) {
-    cvm::log("Normalizing the vector so that |v| = 1.\n");
+    cvm::log("Normalizing the vector so that |v| = 1.");
     for (size_t i = 0; i < atoms->size(); i++) {
       eigenvec[i] *= cvm::sqrt(eigenvec_invnorm2);
     }
     eigenvec_invnorm2 = 1.0;
   } else if (b_difference_vector) {
-    cvm::log("Normalizing the vector so that the norm of the projection |v ⋅ (x_vec - x_ref)| = 1.\n");
+    cvm::log("Normalizing the vector so that the norm of the projection |v ⋅ (x_vec - x_ref)| = 1.");
     for (size_t i = 0; i < atoms->size(); i++) {
       eigenvec[i] *= eigenvec_invnorm2;
     }
     eigenvec_invnorm2 = 1.0/eigenvec_invnorm2;
   } else {
     cvm::log("The norm of the vector is |v| = "+
-             cvm::to_str(1.0/cvm::sqrt(eigenvec_invnorm2))+".\n");
+             cvm::to_str(1.0/cvm::sqrt(eigenvec_invnorm2))+".");
   }
 }
 
