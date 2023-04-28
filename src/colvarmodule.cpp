@@ -1736,12 +1736,15 @@ std::ostream & colvarmodule::write_traj(std::ostream &os)
 void colvarmodule::log(std::string const &message, int min_log_level)
 {
   if (cvm::log_level() < min_log_level) return;
+
+  std::string const trailing_newline = (message.size() > 0) ?
+    (message[message.size()-1] == '\n' ? "" : "\n") : "";
   // allow logging when the module is not fully initialized
   size_t const d = (cvm::main() != NULL) ? depth() : 0;
   if (d > 0) {
-    proxy->log((std::string(2*d, ' '))+message);
+    proxy->log((std::string(2*d, ' ')) + message + trailing_newline);
   } else {
-    proxy->log(message);
+    proxy->log(message + trailing_newline);
   }
 }
 
@@ -1810,7 +1813,16 @@ void colvarmodule::clear_error()
 int colvarmodule::error(std::string const &message, int code)
 {
   set_error_bits(code);
-  proxy->error(message);
+
+  std::string const trailing_newline = (message.size() > 0) ?
+    (message[message.size()-1] == '\n' ? "" : "\n") : "";
+  size_t const d = depth();
+  if (d > 0) {
+    proxy->error((std::string(2*d, ' ')) + message + trailing_newline);
+  } else {
+    proxy->error(message + trailing_newline);
+  }
+
   return get_error();
 }
 
