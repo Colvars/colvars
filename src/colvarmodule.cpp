@@ -1247,8 +1247,6 @@ colvarmodule::~colvarmodule()
 
 int colvarmodule::reset()
 {
-  cvm::log("Resetting the Collective Variables module.\n");
-
   parse->clear();
 
   // Iterate backwards because we are deleting the elements as we go
