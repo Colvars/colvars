@@ -1,0 +1,32 @@
+# -*- lammps -*-
+
+variable input world test test-1
+variable output world test.restart test.restart-1
+
+include ../common/charmmff.lmp.in
+
+read_data ${input}.lmp.data
+
+include ../common/fixes.lmp.in
+
+log ${output}.out
+
+fix Colvars all colvars test.in
+
+# Restraint with replica-specific center
+variable center world 0.1 0.3
+fix_modify Colvars config """
+harmonic {
+    colvars        one
+    centers        ${center}
+    forceConstant  0.001
+}
+"""
+
+fix_modify Colvars input ${input} output ${output}
+
+include ../common/md.lmp.in
+
+write_data ${output}.lmp.data
+
+shell rm -f "index.ndx"

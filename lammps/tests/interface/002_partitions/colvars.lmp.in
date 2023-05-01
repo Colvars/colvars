@@ -1,0 +1,12 @@
+
+fix Colvars all colvars test.in output ${output}
+
+# 
+variable center world 0.1 0.3
+fix_modify Colvars config """
+harmonic {
+    colvars        one
+    centers        ${center}
+    forceConstant  0.001
+}
+"""
