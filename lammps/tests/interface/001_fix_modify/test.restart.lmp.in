@@ -6,6 +6,8 @@ read_data  test.lmp.data
 
 include ../common/fixes.lmp.in
 
+log test.restart.out
+
 fix Colvars all colvars test.in input test output test.restart
 
 fix_modify Colvars config """
