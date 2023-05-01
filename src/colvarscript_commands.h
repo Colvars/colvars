@@ -541,6 +541,7 @@ CVSCRIPT(cv_reset,
          "Delete all internal configuration",
          0, 0,
          "",
+         cvm::log("Resetting the Collective Variables module.");
          return script->module()->reset();
          )
 
