@@ -40,7 +40,7 @@ if $BINARY -h > /dev/null ; then
   else
     MPI_BUILD=yes
     source ${TOPDIR}/devel-tools/load-openmpi.sh
-    BINARY="mpirun -n 2 $BINARY"
+    BINARY="mpirun -n 4 $BINARY"
   fi
 else
   echo "Error: executable $BINARY did not return a help screen" >& 2
@@ -107,6 +107,17 @@ for dir in ${DIRLIST} ; do
     continue
   else
 
+    extra_args=()
+    if echo ${dir} | grep -q partitions ; then
+      if [ -n "${MPI_BUILD}" ] ; then
+        extra_args+=(-partition 2x2)
+      else
+        echo "  Warning: skipping test because MPI support is missing"
+        cd $BASEDIR
+        continue
+      fi
+    fi
+
     if [ "x${gen_ref_output}" != 'xyes' ]; then
 
       if ! { ls AutoDiff/ | grep -q traj ; } then
@@ -149,8 +160,11 @@ for dir in ${DIRLIST} ; do
       fi
     fi
 
-    $BINARY -in $script -var colvars_config ${colvars_config} \
-        -log ${basename}.out > /dev/null
+    $BINARY \
+      -in $script \
+      -var colvars_config ${colvars_config} \
+      "${extra_args[@]}" \
+      -echo log > /dev/null
 
     # Output of Colvars module, minus the version numbers
     for log_file in *.out ; do
