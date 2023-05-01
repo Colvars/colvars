@@ -131,7 +131,7 @@ for dir in ${DIRLIST} ; do
   cleanup_files
 
   if ls | grep -q \.lmp.in ; then
-    SCRIPTS=`ls -1 *lmp.in`
+    SCRIPTS=`ls -1 test*lmp.in`
   else
     SCRIPTS="../common/test.lmp.in ../common/test.restart.lmp.in"
   fi
@@ -153,8 +153,15 @@ for dir in ${DIRLIST} ; do
         -log ${basename}.out > /dev/null
 
     # Output of Colvars module, minus the version numbers
-    grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
-      | grep -v 'Using NAMD interface, version' > ${basename}.colvars.out
+    for log_file in *.out ; do
+      if [ x${log_file%.colvars.out} != x${log_file} ] ; then
+        continue
+      fi
+      grep "^colvars:" ${log_file} | \
+        grep -v 'Initializing the collective variables module' | \
+        grep -v 'Using LAMMPS interface, version' \
+             > ${log_file%.out}.colvars.out
+    done
 
     # # Output of Tcl interpreter for automatic testing of scripts (TODO: move this to interface)
     # grep "^TCL:" ${basename}.out | grep -v '^TCL: Suspending until startup complete.' > ${basename}.Tcl.out
@@ -162,13 +169,13 @@ for dir in ${DIRLIST} ; do
     #   rm -f ${basename}.Tcl.out
     # fi
 
-    if [ -f ${basename}.colvars.state ] ; then
+    for state_file in *.colvars.state ; do
       # Filter out the version number from the state files to allow comparisons
-      grep -sv '^  version' ${basename}.colvars.state | \
+      grep -sv '^  version' ${state_file} | \
         grep -sv '^  units' \
-        > ${TMPDIR}/${basename}.colvars.state.stripped
-      mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
-    fi
+        > ${TMPDIR}/${state_file}.stripped && \
+      mv -f ${TMPDIR}/${state_file}.stripped ${state_file}.stripped
+    done
 
     # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
