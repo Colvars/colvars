@@ -34,13 +34,19 @@ if [ ! -d ${TOPDIR} ] ; then
   exit 1
 fi
 
+NUM_TASKS=4
+NUM_CPUS=$(nproc)
+if [ ${NUM_TASKS} -gt ${NUM_CPUS} ] ; then
+  NUM_TASKS=${NUM_CPUS}
+fi
+
 if $BINARY -h > /dev/null ; then
   if $BINARY -h | grep ^MPI | grep -q STUBS ; then
     MPI_BUILD=no
   else
     MPI_BUILD=yes
     source ${TOPDIR}/devel-tools/load-openmpi.sh
-    BINARY="mpirun -n 4 $BINARY"
+    BINARY="mpirun -n ${NUM_TASKS} $BINARY"
   fi
 else
   echo "Error: executable $BINARY did not return a help screen" >& 2
@@ -109,10 +115,10 @@ for dir in ${DIRLIST} ; do
 
     extra_args=()
     if echo ${dir} | grep -q partitions ; then
-      if [ -n "${MPI_BUILD}" ] ; then
+      if [ "x${MPI_BUILD}" == "xyes" ] && [ ${NUM_TASKS} == 4 ] ; then
         extra_args+=(-partition 2x2)
       else
-        echo "  Warning: skipping test because MPI support is missing"
+        echo "  Warning: skipping test because MPI is missing or task count is incorrect"
         cd $BASEDIR
         continue
       fi
