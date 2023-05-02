@@ -1981,7 +1981,8 @@ int cvm::load_coords(char const *file_name,
 
 int cvm::load_coords_xyz(char const *filename,
                          std::vector<rvector> *pos,
-                         cvm::atom_group *atoms)
+                         cvm::atom_group *atoms,
+                         bool keep_open)
 {
   std::istream &xyz_is = proxy->input_stream(filename, "XYZ file");
   unsigned int natoms;
@@ -1993,7 +1994,8 @@ int cvm::load_coords_xyz(char const *filename,
                               std::string(filename)+"\".\n");
 
   if ( ! (xyz_is >> natoms) ) {
-    return cvm::error(error_msg, COLVARS_INPUT_ERROR);
+      // Return silent error when reaching the end of multi-frame files
+      return keep_open ? COLVARS_NO_SUCH_FRAME : cvm::error(error_msg, COLVARS_INPUT_ERROR);
   }
 
   ++xyz_reader_use_count;
@@ -2014,6 +2016,12 @@ int cvm::load_coords_xyz(char const *filename,
   size_t xyz_natoms = 0;
   if (pos->size() != natoms) { // Use specified indices
     int next = 0; // indices are zero-based
+    if (!atoms) {
+      // In the other branch of this test, reading all positions from the file,
+      // a valid atom group pointer is not necessary
+      return cvm::error("Trying to read partial positions with invalid atom group pointer",
+                        COLVARS_BUG_ERROR);
+    }
     std::vector<int>::const_iterator index = atoms->sorted_ids().begin();
 
     for ( ; pos_i != pos->end() ; pos_i++, index++) {
@@ -2057,7 +2065,11 @@ int cvm::load_coords_xyz(char const *filename,
                       cvm::to_str(pos->size())+".\n", COLVARS_INPUT_ERROR);
   }
 
-  return proxy->close_input_stream(filename);
+  if (keep_open) {
+    return COLVARS_OK;
+  } else {
+    return proxy->close_input_stream(filename);
+  }
 }
 
 
