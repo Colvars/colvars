@@ -743,7 +743,8 @@ public:
   /// Load coordinates into an atom group from an XYZ file (assumes Angstroms)
   int load_coords_xyz(char const *filename,
                       std::vector<rvector> *pos,
-                      atom_group *atoms);
+                      atom_group *atoms,
+                      bool keep_open = false);
 
   /// Frequency for collective variables trajectory output
   static size_t cv_traj_freq;
