@@ -18,7 +18,7 @@ extern "C" int main(int argc, char *argv[]) {
   while (!err) {
     nframes++;
     traj.push_back(std::vector<cvm::rvector>(natoms));
-    err = proxy->colvars->load_coords_xyz("da-traj.xyz", &(traj[nframes]), NULL, true);
+    err = proxy->colvars->load_coords_xyz("da-traj.xyz", &(traj[nframes]), nullptr, true);
   }
   traj.resize(nframes);
 
