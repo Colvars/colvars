@@ -119,6 +119,10 @@ endif()
 option(BUILD_TOOLS "Build standalone tools" ON)
 
 option(BUILD_TESTS "Build tests" ON)
+if((${CMAKE_CXX_STANDARD} STREQUAL "98") AND BUILD_TESTS)
+  message(WARNING "Will not build tests under the (legacy) C++98 standard")
+  set(BUILD_TESTS OFF)
+endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # TODO fix linkage errors with Visual Studio...
@@ -127,6 +131,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 option(BUILD_UNITTESTS "Build unit tests" ${BUILD_TESTS})
+if((${CMAKE_CXX_STANDARD} STREQUAL "98") AND BUILD_UNITTESTS)
+  message(WARNING "Will not build unit tests under the (legacy) C++98 standard")
+  set(BUILD_UNITTESTS OFF)
+endif()
 
 if(BUILD_TOOLS)
   add_subdirectory(${COLVARS_SOURCE_DIR}/colvartools colvartools)
