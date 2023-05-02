@@ -9,9 +9,7 @@
 extern "C" int main(int argc, char *argv[]) {
 
   colvarproxy *proxy = new colvarproxy_stub();
-
   proxy->set_unit_system("real", false);
-  cvm::log("42 Angstroms in internal units: " + cvm::to_str(proxy->angstrom_to_internal(42)));
 
   const int natoms = 104;
   std::vector<std::vector<cvm::rvector>> traj;
