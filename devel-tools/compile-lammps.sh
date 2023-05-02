@@ -64,6 +64,10 @@ compile_lammps_target() {
 
     LAMMPS_BUILD_OPTS+=("-DPKG_PYTHON=on")
 
+    if hash ninja >& /dev/null ; then
+        LAMMPS_BUILD_OPTS+=("-G" "Ninja")
+    fi
+
     if [ -z "${LAMMPS_BUILD_DIR}" ] ; then
         LAMMPS_BUILD_DIR="${LAMMPS_SRC_DIR}/build"
     fi
@@ -88,7 +92,11 @@ compile_lammps_target() {
 
     if [ $ret_code = 0 ] && [ -n "${LAMMPS_INSTALL_DIR}" ] ; then
         pushd "${LAMMPS_BUILD_DIR}"
-        make install
+        if hash ninja >& /dev/null ; then
+            ninja install
+        else
+            make install
+        fi
         ret_code=$?
         if [ $ret_code = 0 ] ; then
             rm -fr "${LAMMPS_BUILD_DIR}"
