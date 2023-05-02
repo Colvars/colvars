@@ -12,7 +12,7 @@ extern "C" int main(int argc, char *argv[]) {
   proxy->set_unit_system("real", false);
 
   const int natoms = 104;
-  std::vector<std::vector<cvm::rvector>> traj;
+  std::vector<std::vector<cvm::rvector> > traj;
   int err = 0, nframes = -1;
 
   while (!err) {
@@ -22,8 +22,11 @@ extern "C" int main(int argc, char *argv[]) {
   }
   traj.resize(nframes);
 
-  for (int i = 0; i < nframes; i++) {
+  int i;
+  for (i = 0; i < nframes; i++) {
     cvm::log("Frame " + cvm::to_str(i) + " atom 0 coords: " + cvm::to_str(traj[i][0]));
   }
+
+  cvm::log("Done.");
   return 0;
 }
