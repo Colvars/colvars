@@ -337,7 +337,10 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/doc/src/PDF/${tgt}"
   done
-
+  condcopy "${source}/lammps/doc/src/fix_colvars.rst" \
+           "${target}/doc/src/fix_colvars.rst"
+  rm -f "${target}/doc/src/fix_colvars.txt"
+  
   echo ' done.'
   if [ ${downloaded_pdf} = 1 ] ; then
     echo "Note: the PDF manual for the latest Colvars version was downloaded.  "
