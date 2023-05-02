@@ -575,7 +575,7 @@ After the first initialization of the Colvars module, the internal state of Colv
 \cvvmdonly{In VMD, the \texttt{\cvscriptcmd{}} command is used by the Dashboard graphical interface,(\ref{sec:dashboard}), but can be also used in scripts or interactively from the command-line terminal (for example, in remote terminal sessions) or in the Tk Console.}
 
 \cvlammpsonly{
-Each \texttt{fix\_modify} command may be used in one of two ways:
+Each \texttt{fix\_modify} command may be used in either one of two ways:
 \begin{enumerate}
 
 \item Provide an updated value for the \textbf{parameters of the fix} listed in \ref{sec:colvars_mdengine_parameters}: this behavior is similar to that of several other LAMMPS fix styles, and follows the same argument parsing rules.  For example, multiple keywords can be provided together:
@@ -585,7 +585,7 @@ Each \texttt{fix\_modify} command may be used in one of two ways:
 
 \item Use one of the \textbf{scripting functions} described in this section; the arguments provided as strings are passed to Colvars.  LAMMPS variables referenced by their string representation, ``\texttt{\$\{variable\}}'', will be expanded immediately.  Additionally, variable expansion \emph{will also happen within quotes}, similar to what the \texttt{mdi} command provides in a LAMMPS script: this feature makes it possible to use the values of certain LAMMPS variables in Colvars configuration strings (see \ref{sec:cv_command_init}).
 \begin{mdexampleinput}{%
-}variable~freq~index~1000\\
+}variable~freq~index~10000\\
 \-dump~myDump~all~atom/zstd~\$\{freq\}~dump.atom.zstd\\
 \-fix\_modify~Colvars~config~"colvarsTrajFrequency~\$\{freq\}"
 \end{mdexampleinput}
