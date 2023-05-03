@@ -203,11 +203,11 @@ CVSCRIPT(bias_type,
          )
 
 CVSCRIPT(bias_update,
-         "Recompute this bias and return its up-to-date energy\n"
+         "Update all components of this bias and return its new energy\n"
          "E : float - Energy value",
          0, 0,
          "",
          this_bias->update();
-         script->set_result_colvarvalue(this_bias->get_energy());
+         script->set_result_real(this_bias->get_energy());
          return COLVARS_OK;
          )
