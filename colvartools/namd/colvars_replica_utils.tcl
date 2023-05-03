@@ -174,7 +174,8 @@ proc select_bias { i_bias } {
     # Now turn on the selected one
     foreach bias_name $bias_names(${i_bias}) {
         cv bias ${bias_name} set active 1
-        cv bias ${bias_name} update
+        cv bias ${bias_name} calcenergy
+        cv bias ${bias_name} calcforces
     }
 
     # The dependency system may have turned off some variables, reactivate them
@@ -215,7 +216,8 @@ proc share_bias_state { bias_name this_replica i j } {
     }
     if { ${this_replica} == ${j} } {
         cv bias ${bias_name} loadfromstring [replicaRecv ${i}]
-        cv bias ${bias_name} update
+        cv bias ${bias_name} calcenergy
+        cv bias ${bias_name} calcforces
     }
 }
 
