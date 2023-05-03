@@ -77,7 +77,8 @@ CVSCRIPT(bias_calcenergy,
          "E : float - Energy value",
          0, 0,
          "",
-         if (this_bias->calc_energy(NULL) != COLVARS_OK) {
+         if ( ( this_bias->colvarbias::update() |
+                this_bias->calc_energy(NULL) ) != COLVARS_OK) {
            script->add_error_msg("Error: recalculating energy of bias " +
                                  this_bias->name);
            return COLVARSCRIPT_ERROR;
@@ -87,7 +88,7 @@ CVSCRIPT(bias_calcenergy,
          )
 
 CVSCRIPT(bias_calcforces,
-         "Recalculate the forces of this bias at the current colvar values\n"
+         "Recalculate the forces of this bias after a call to calcenergy\n"
          "forces : array of colvarvalue objects - Applied colvar forces",
          0, 0,
          "",
