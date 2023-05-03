@@ -41,20 +41,34 @@ public:
     return colvars.size();
   }
 
-  /// Access the variables vector
-  inline std::vector<colvar *> *variables()
+  /// Access the vector of pointers to the colvar objects
+  inline std::vector<colvar *> * variables()
   {
     return &colvars;
   }
 
-  /// Access the i-th variable
+  /// Access the i-th colvar object
   inline colvar * variables(int i) const
   {
     return colvars[i];
   }
 
-  /// Retrieve colvar values and calculate their biasing forces
-  /// Some implementations may use calc_energy() and calc_forces()
+  /// Access the applied forces vector
+  inline std::vector<colvarvalue> * applied_forces()
+  {
+    return &colvar_forces;
+  }
+
+  /// Access the applied force on the i-th variable
+  inline colvarvalue * applied_forces(int i)
+  {
+    return &(colvar_forces[i]);
+  }
+
+  /// Retrieve colvar values and set to zero the energy and applied forces
+  /// Derived classes may or may not override calc_energy() and
+  /// calc_forces(), but should in general call colvarbias::update() at the
+  /// top of their own update() method
   virtual int update();
 
   /// Returns true if the current step represent a valid increment, whose data
