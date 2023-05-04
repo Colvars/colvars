@@ -92,6 +92,7 @@ compile_lammps_target() {
         -DBUILD_SHARED_LIBS=off \
         -C "${LAMMPS_SRC_DIR}/cmake/presets/most.cmake" \
         -C "${LAMMPS_SRC_DIR}/cmake/presets/nolib.cmake" \
+        -D DOWNLOAD_POTENTIALS=off \
         ${LAMMPS_BUILD_OPTS[@]} \
         -S "${LAMMPS_SRC_DIR}/cmake" \
         -B "${LAMMPS_BUILD_DIR}" \
