@@ -17,6 +17,7 @@ compile_lammps_target() {
         CMAKE_VERSION=$(${CMAKE} --version | head -1 | cut -d' ' -f3)
     else
         echo "Error: no CMake found." >& 2
+        return 1
     fi
 
     local LAMMPS_SRC_DIR=""
@@ -41,6 +42,9 @@ compile_lammps_target() {
             LAMMPS_BUILD_TYPE=Debug
             LAMMPS_BUILD_OPTS+=(-DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes)
             LAMMPS_BUILD_OPTS+=(-DCOLVARS_DEBUG=on)
+        elif [ "${1,,}" = "coverage" ]; then
+            LAMMPS_BUILD_OPTS+=(-DENABLE_COVERAGE=on)
+            local ENABLE_COVERAGE=on
         else
             LAMMPS_INSTALL_DIR=${1}
         fi
@@ -49,6 +53,9 @@ compile_lammps_target() {
 
     if hash mpicc >& /dev/null ; then
         LAMMPS_BUILD_OPTS+=("-DBUILD_MPI=ON")
+        if [ "x${ENABLE_COVERAGE}" == "xon" ] ; then
+            echo "Error: cannot run coverage tests with MPI." >& 2
+        fi
     fi
 
     LAMMPS_BUILD_OPTS+=("-DBUILD_OMP=yes")
