@@ -5193,7 +5193,11 @@ Other parameters to control the ABF runtime can be set in the ABF configuration 
     by omitting this contribution from the measured free energy gradients.
     To ensure uniform sampling despite the incomplete description of the free energy, an
     additional biasing force that counteracts the Jacobian force is applied internally by the
-    colvar.}
+    colvar.
+    \textbf{Warning:} using this option without detailed knowledge of the terms of equation~(\ref{eq:gradient_vector}) is \emph{not recommended}.
+    \textbf{Warning:} a bug affecting Colvars version until October 2020 leads to this term to be subtracted twice in the PMFs reported by conventional ABF.
+    The bug does not affect the simulated trajectory, and the correct PMF can be recovered by adding back the term manually.
+    Other than conventional ABF, the PMFs computed by other sampling methods were never affected.}
 
 \item \keydef{historyFreq}{\texttt{abf}}{%
     Frequency (in timesteps) at which ABF history files are
