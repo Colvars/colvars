@@ -7,16 +7,16 @@
 # Usage:
 #
 # source abmd.tcl
-# setup_ABMD x 10. 42. [up/down] ;# colvar k z_stop
+# setup_ABMD <colvar_name> <force_k> <z_stop> [direction up/down]
 #
 # cv config "
 #   scriptedColvarForces on
 #   colvar {
-#     name x
+#     name <colvar_name>
 # ..."
 
-# Calculates the high-water mark z_max of colvar cvname
-# Ignores its arguments (dummy component)
+# This scripted colvar calculates the high-water mark z_max of colvar cvname
+# Ignores its arguments (values of a dummy component)
 # Note: this is not restartable (z_max info is lost at the end of a run)
 
 proc calc_z_max { args } {
@@ -24,30 +24,26 @@ proc calc_z_max { args } {
     set z [cv colvar $cvname value]
     if { ![info exists z_max] } {
       set z_max $z
-      puts "ABMD: z_max = $z_max"
     } elseif { ($z_max < $z_stop) && ($z >= $z_stop) } {
       set z_max $z_stop
-      puts "ABMD: z_max = $z_max"
     } elseif { ($z > $z_max) && ($z <= $z_stop) } {
       set z_max $z
-      puts "ABMD: z_max = $z_max"
     }
     return $z_max
   }
 }
+
+# Similar to z_max, used for ABMD in the down direction
 
 proc calc_z_min { args } {
   namespace eval ::ABMD {
     set z [cv colvar $cvname value]
     if { ![info exists z_min] } {
       set z_min $z
-      puts "ABMD: z_min = $z_min"
     } elseif { ($z_min > $z_stop) && ($z <= $z_stop) } {
       set z_min $z_stop
-      puts "ABMD: z_min = $z_min"
     } elseif { ($z < $z_min) && ($z >= $z_stop) } {
       set z_min $z
-      puts "ABMD: z_min = $z_min"
     }
     return $z_min
   }
