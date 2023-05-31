@@ -94,7 +94,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   // Retrieve masses and charges from input file
   updated_masses_ = updated_charges_ = true;
 
-  // GROMACS timestep
+  // Get GROMACS timestep (picosecond to femtosecond)
   set_integration_timestep(ir->delta_t * 1000.0);
   // Retrieve the topology of all atoms
   gmx_atoms = gmx_mtop_global_atoms(mtop);
