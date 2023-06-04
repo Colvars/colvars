@@ -47,12 +47,12 @@ Description
 
 This fix interfaces LAMMPS to the collective variables `Colvars
 <https://colvars.github.io>`_ library, which allows to accelerate sampling of
-rare events and calculate potentials of mean force (PMFs) for any set of
-collective variables using a variety of sampling methods
-(e.g. umbrella-sampling, metadynamics, ABF...).
+rare events and the computation of free energy surfaces and potentials of
+mean force (PMFs) for any set of collective variables using a variety of
+sampling methods (e.g. umbrella-sampling, metadynamics, ABF...).
 
 This documentation describes only the "fix colvars" command itself in
-a LAMMPS script.  The Colvars library is documented in the included
+a LAMMPS script.  The Colvars library is fully documented in the included
 `PDF manual <PDF/colvars-refman-lammps.pdf>`_ or in the webpage
 `https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html
 <https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html>`_.
