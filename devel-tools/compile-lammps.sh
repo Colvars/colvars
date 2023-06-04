@@ -45,6 +45,8 @@ compile_lammps_target() {
         elif [ "${1,,}" = "coverage" ]; then
             LAMMPS_BUILD_OPTS+=(-DENABLE_COVERAGE=on)
             local ENABLE_COVERAGE=on
+        elif [ "${1,,}" = "doc" ]; then
+            LAMMPS_BUILD_OPTS+=(-DBUILD_DOC=on)
         else
             LAMMPS_INSTALL_DIR=${1}
         fi
@@ -97,23 +99,15 @@ compile_lammps_target() {
         -S "${LAMMPS_SRC_DIR}/cmake" \
         -B "${LAMMPS_BUILD_DIR}" \
         && \
-        ${CMAKE} --build "${LAMMPS_BUILD_DIR}" --parallel $(nproc --all)
+        ${CMAKE} \
+            --build "${LAMMPS_BUILD_DIR}" \
+            --target install \
+            --parallel $(nproc --all)
     ret_code=$?
 
-    if [ $ret_code = 0 ] && [ -n "${LAMMPS_INSTALL_DIR}" ] ; then
-        pushd "${LAMMPS_BUILD_DIR}"
-        if hash ninja >& /dev/null ; then
-            ninja install
-        else
-            make install
-        fi
-        ret_code=$?
-        if [ $ret_code = 0 ] ; then
-            rm -fr "${LAMMPS_BUILD_DIR}"
-        fi
-        popd
+    if [ $ret_code = 0 ] ; then
+        rm -fr "${LAMMPS_BUILD_DIR}"
     fi
-
     popd
 
     return ${ret_code}
