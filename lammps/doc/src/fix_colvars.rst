@@ -74,9 +74,9 @@ engine in which the Colvars library has been integrated, save for the units
 that are specific to each engine.  In LAMMPS, the units used by Colvars are
 consistent with those specificed by the :doc:`units <units>` command.
 
-.. versionadded:: Summer2023 The special value "*none*" (lowercase)
-                  initializes an empty Colvars module, which allows loading
-                  configuration dynamically using
+.. versionadded:: Colvars_2023-06-04 The special value "*none*"
+                  (lowercase) initializes an empty Colvars module, which
+                  allows loading configuration dynamically using
                   :doc:`fix_modify <fix_modify>` (see below).
 
 The *group-ID* entry is ignored.  "fix colvars" will always apply to
@@ -176,10 +176,10 @@ either one of two ways:
       fix_modify Colvars output equil2
 
 
-(2) .. versionadded:: Summer2023 Call one of the scripting functions provided by
-    the Colvars module itself (a full list is available in the Colvars doc).
-    The arguments to these functions are provided as strings and passed to
-    Colvars.
+(2) .. versionadded:: Colvars_2023-06-04 Call one of the scripting
+    functions provided by the Colvars module itself (a full list is available
+    in the Colvars doc).  The arguments to these functions are provided as
+    strings and passed to Colvars.
 
     LAMMPS variables referenced by their string representation
     "${variable}" will be expanded immediately.  Note also that this
