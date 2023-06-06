@@ -194,6 +194,7 @@ int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
       // add it here anyway to avoid having to test for array boundaries at each step
       int const index = add_atom_slot(*a_i);
       atoms_map[*a_i] = index;
+      modifyRequestedAtoms().add(*a_i);
       update_atom_properties(index);
     }
   }
