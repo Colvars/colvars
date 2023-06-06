@@ -493,9 +493,14 @@ bool colvarproxy::io_available()
 
 int colvarproxy::reset()
 {
+  if (cvm::debug()) {
+    cvm::log("colvarproxy::reset()\n");
+  }
   int error_code = COLVARS_OK;
   error_code |= colvarproxy_atoms::reset();
   error_code |= colvarproxy_atom_groups::reset();
+  error_code |= colvarproxy_volmaps::reset();
+  total_force_requested = false;
   return error_code;
 }
 
