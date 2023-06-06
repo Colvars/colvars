@@ -451,7 +451,8 @@ void colvarproxy_namd::calculate()
         n_total_forces++;
       }
 
-      if (n_total_forces < atoms_ids.size()) {
+      if ( (! b_simulation_continuing) &&
+           (n_total_forces < atoms_ids.size()) ) {
         cvm::error("Error: total forces were requested, but total forces "
                    "were not received for all atoms.\n"
                    "The most probable cause is combination of energy "
@@ -467,7 +468,8 @@ void colvarproxy_namd::calculate()
       ForceList::const_iterator f_i = getGroupTotalForceBegin();
       ForceList::const_iterator f_e = getGroupTotalForceEnd();
       size_t i = 0;
-      if ((f_e - f_i) != ((int) atom_groups_ids.size())) {
+      if ( (! b_simulation_continuing) &&
+           ((f_e - f_i) != ((int) atom_groups_ids.size())) ) {
         cvm::error("Error: total forces were requested for scalable groups, "
                    "but they are not in the same number from the number of groups.\n"
                    "The most probable cause is combination of energy "
