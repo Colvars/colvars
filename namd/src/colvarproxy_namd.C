@@ -287,18 +287,30 @@ int colvarproxy_namd::setup()
 
 int colvarproxy_namd::reset()
 {
+  if (cvm::debug()) {
+    cvm::log("colvarproxy_namd::reset()\n");
+  }
+
   int error_code = COLVARS_OK;
 
-  // Unrequest all atoms and group from NAMD
+  // Unrequest all positions, total forces, etc from NAMD
   modifyRequestedAtoms().clear();
+  modifyForcedAtoms().clear();
+  modifyAppliedForces().clear();
+
   modifyRequestedGroups().clear();
+  modifyGroupForces().clear();
+
 #if NAMD_VERSION_NUMBER >= 34471681
   modifyRequestedGridObjects().clear();
+  modifyGridObjForces().clear();
 #endif
+
+  requestTotalForce(false);
 
   atoms_map.clear();
 
-  // Clear internal Proxy records
+  // Clear internal atomic data
   error_code |= colvarproxy::reset();
 
   return error_code;
