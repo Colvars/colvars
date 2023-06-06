@@ -90,6 +90,8 @@ colvarproxy_namd::colvarproxy_namd()
           "the output restart file could be defined, exiting.\n");
   }
 
+  init_atoms_map();
+
   // initialize module: this object will be the communication proxy
   colvars = new colvarmodule(this);
 
@@ -160,14 +162,23 @@ int colvarproxy_namd::update_target_temperature()
 }
 
 
+
+void colvarproxy_namd::init_atoms_map()
+{
+  size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
+  atoms_map.resize(n_all_atoms);
+  atoms_map.assign(n_all_atoms, -1);
+}
+
+
 int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
                                        AtomIDList::const_iterator end)
 {
-  for (AtomIDList::const_iterator a_i = begin; a_i != end; a_i++) {
+  if (atoms_map.size() != Node::Object()->molecule->numAtoms) {
+    init_atoms_map();
+  }
 
-    if (cvm::debug()) {
-      cvm::log("Updating atoms_map for atom ID "+cvm::to_str(*a_i)+"\n");
-    }
+  for (AtomIDList::const_iterator a_i = begin; a_i != end; a_i++) {
 
     if (atoms_map[*a_i] >= 0) continue;
 
@@ -360,6 +371,16 @@ void colvarproxy_namd::calculate()
   modifyForcedAtoms().clear();
   modifyAppliedForces().clear();
 
+  // If new atomic positions or forces have been requested by other
+  // GlobalMaster objects, add these to the atom map as well
+  size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
+  if ( (atoms_map.size() != n_all_atoms) ||
+       (int(atoms_ids.size()) < (getAtomIdEnd() - getAtomIdBegin())) ||
+       (int(atoms_ids.size()) < (getForceIdEnd() - getForceIdBegin())) ) {
+    update_atoms_map(getAtomIdBegin(), getAtomIdEnd());
+    update_atoms_map(getForceIdBegin(), getForceIdEnd());
+  }
+
   // prepare local arrays
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     atoms_positions[i] = cvm::rvector(0.0, 0.0, 0.0);
@@ -377,22 +398,6 @@ void colvarproxy_namd::calculate()
     volmaps_new_colvar_forces[imap] = 0.0;
   }
 #endif
-
-  // Create the map of NAMD atom IDs to Colvars internal indices
-  size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
-  if (atoms_map.size() != n_all_atoms) {
-    atoms_map.resize(n_all_atoms);
-    atoms_map.assign(n_all_atoms, -1);
-    update_atoms_map(getAtomIdBegin(), getAtomIdEnd());
-  }
-
-  // If new atomic positions or forces have been communicated by other
-  // GlobalMaster objects, add these to the atom map as well
-  if ((int(atoms_ids.size()) < (getAtomIdEnd() - getAtomIdBegin())) ||
-      (int(atoms_ids.size()) < (getForceIdEnd() - getForceIdBegin()))) {
-    update_atoms_map(getAtomIdBegin(), getAtomIdEnd());
-    update_atoms_map(getForceIdBegin(), getForceIdEnd());
-  }
 
   {
     if (cvm::debug()) {

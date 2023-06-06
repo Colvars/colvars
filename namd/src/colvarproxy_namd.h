@@ -71,6 +71,9 @@ public:
   /// Get the target temperature from the NAMD thermostats supported so far
   int update_target_temperature();
 
+  /// Allocate an atoms map with the same size as the NAMD topology
+  void init_atoms_map();
+
   // synchronize the local arrays with requested or forced atoms
   int update_atoms_map(AtomIDList::const_iterator begin,
                        AtomIDList::const_iterator end);
