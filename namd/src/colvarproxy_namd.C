@@ -378,7 +378,7 @@ void colvarproxy_namd::calculate()
   }
 #endif
 
-  // create the atom map if needed
+  // Create the map of NAMD atom IDs to Colvars internal indices
   size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
   if (atoms_map.size() != n_all_atoms) {
     atoms_map.resize(n_all_atoms);
@@ -386,7 +386,8 @@ void colvarproxy_namd::calculate()
     update_atoms_map(getAtomIdBegin(), getAtomIdEnd());
   }
 
-  // if new atomic positions or forces have been communicated by other GlobalMasters, add them to the atom map
+  // If new atomic positions or forces have been communicated by other
+  // GlobalMaster objects, add these to the atom map as well
   if ((int(atoms_ids.size()) < (getAtomIdEnd() - getAtomIdBegin())) ||
       (int(atoms_ids.size()) < (getForceIdEnd() - getForceIdBegin()))) {
     update_atoms_map(getAtomIdBegin(), getAtomIdEnd());
@@ -687,6 +688,7 @@ int colvarproxy_namd::init_atom(int atom_number)
   }
 
   int const index = add_atom_slot(aid);
+  atoms_map[aid] = index;
   modifyRequestedAtoms().add(aid);
   update_atom_properties(index);
   return index;
@@ -748,6 +750,7 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
         ") for collective variables calculation.\n");
 
   int const index = add_atom_slot(aid);
+  atoms_map[aid] = index;
   modifyRequestedAtoms().add(aid);
   update_atom_properties(index);
   return index;
