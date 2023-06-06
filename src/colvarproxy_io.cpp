@@ -207,13 +207,17 @@ std::istream &colvarproxy_io::input_stream(std::string const &input_name,
   }
 
   if (colvarproxy_io::input_stream_exists(input_name)) {
-    return *(input_streams_[input_name]);
+    if (! dynamic_cast<std::ifstream *>(input_streams_[input_name])->is_open()) {
+      // This file was opened before, re-open it.  Using std::ios::binary to
+      // work around differences in line termination conventions
+      // See https://github.com/Colvars/colvars/commit/8236879f7de4
+      dynamic_cast<std::ifstream *>(input_streams_[input_name])->open(input_name.c_str(),
+std::ios::binary);
+    }
+  } else {
+    input_streams_[input_name] = new std::ifstream(input_name.c_str(),
+                                                   std::ios::binary);
   }
-
-  // Using binary to work around differences in line termination conventions
-  // See https://github.com/Colvars/colvars/commit/8236879f7de4
-  input_streams_[input_name] = new std::ifstream(input_name.c_str(),
-                                                 std::ios::binary);
 
   if (input_streams_[input_name]->fail() && error_on_fail) {
     cvm::error("Error: cannot open "+description+" \""+input_name+"\".\n",
@@ -233,8 +237,7 @@ bool colvarproxy_io::input_stream_exists(std::string const &input_name)
 int colvarproxy_io::close_input_stream(std::string const &input_name)
 {
   if (colvarproxy_io::input_stream_exists(input_name)) {
-    delete input_streams_[input_name];
-    input_streams_.erase(input_name);
+    dynamic_cast<std::ifstream *>(input_streams_[input_name])->close();
     return COLVARS_OK;
   }
   return cvm::error("Error: input file/channel \""+input_name+
