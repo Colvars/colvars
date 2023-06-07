@@ -454,7 +454,8 @@ CVSCRIPT(cv_listcommands,
          )
 
 CVSCRIPT(cv_listindexfiles,
-         "Get a list of the index files loaded in this session",
+         "Get a list of the index files loaded in this session\n"
+         "list : sequence of strings - List of index file names",
          0, 0,
          "",
          int const n_files = script->module()->index_file_names.size();
@@ -462,6 +463,23 @@ CVSCRIPT(cv_listindexfiles,
          for (int i = 0; i < n_files; i++) {
            if (i > 0) result.append(1, ' ');
            result.append(script->module()->index_file_names[i]);
+         }
+         script->set_result_str(result);
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(cv_listinputfiles,
+         "Get a list of all input/configuration files loaded in this session\n"
+         "list : sequence of strings - List of file names",
+         0, 0,
+         "",
+         std::list<std::string> const l =
+           script->proxy()->list_input_stream_names();
+         std::string result;
+         for (std::list<std::string>::const_iterator li = l.begin();
+              li != l.end(); li++) {
+           if (li != l.begin()) result.append(1, ' ');
+           result.append(*li);
          }
          script->set_result_str(result);
          return COLVARS_OK;

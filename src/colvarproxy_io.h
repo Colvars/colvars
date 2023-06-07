@@ -124,6 +124,9 @@ public:
   /// Closes all input streams
   virtual int close_input_streams();
 
+  /// List all input streams that were opened at some point
+  virtual std::list<std::string> list_input_stream_names() const;
+
   /// Returns a reference to the named output file/channel (open it if needed)
   /// \param output_name File name or identifier
   /// \param description Purpose of the file
