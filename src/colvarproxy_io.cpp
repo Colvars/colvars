@@ -248,13 +248,27 @@ int colvarproxy_io::close_input_stream(std::string const &input_name)
 
 int colvarproxy_io::close_input_streams()
 {
-  for (std::map<std::string, std::istream *>::iterator ii = input_streams_.begin();
+  for (std::map<std::string,
+         std::istream *>::iterator ii = input_streams_.begin();
        ii != input_streams_.end();
        ii++) {
     delete ii->second;
   }
   input_streams_.clear();
   return COLVARS_OK;
+}
+
+
+std::list<std::string> colvarproxy_io::list_input_stream_names() const
+{
+  std::list<std::string> result;
+  for (std::map<std::string,
+         std::istream *>::const_iterator ii = input_streams_.begin();
+       ii != input_streams_.end();
+       ii++) {
+    result.push_back(ii->first);
+  }
+  return result;
 }
 
 
