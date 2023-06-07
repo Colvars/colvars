@@ -43,6 +43,10 @@ colvarproxy_stub::~colvarproxy_stub()
 
 int colvarproxy_stub::setup()
 {
+  boundaries_type = boundaries_non_periodic;
+  reset_pbc_lattice();
+  colvars->it = colvars->it_restart = 0;
+
   if (colvars) {
     return colvars->update_engine_parameters();
   }
@@ -150,3 +154,13 @@ int colvarproxy_stub::init_atom(int atom_number)
   return index;
 }
 
+
+int colvarproxy_stub::read_frame_xyz(const char *filename)
+{
+  int err = colvars->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
+  if ( !err ) {
+    colvars->it++;
+    colvars->calc();
+  }
+  return err;
+}

@@ -8,22 +8,27 @@
 
 extern "C" int main(int argc, char *argv[]) {
 
-  colvarproxy *proxy = new colvarproxy_stub();
+  colvarproxy_stub *proxy = new colvarproxy_stub();
   proxy->set_unit_system("real", false);
+  proxy->set_output_prefix("test.out");
+  proxy->colvars->setup_input();
+  proxy->colvars->setup_output();
 
+  // Hard-coded for decaalanine system
   const int natoms = 104;
-  std::vector<std::vector<cvm::rvector>> traj;
-  int err = 0, nframes = -1;
+  for (int ai = 0; ai < natoms; ai++) {
+    proxy->init_atom(ai+1);
+  }
 
+  proxy->colvars->read_config_file("test.in");
+
+  int err = 0;
   while (!err) {
-    nframes++;
-    traj.push_back(std::vector<cvm::rvector>(natoms));
-    err = proxy->colvars->load_coords_xyz("da-traj.xyz", &(traj[nframes]), nullptr, true);
+    cvm::log("Frame " + cvm::to_str(cvm::step_absolute()));
+    err = proxy->read_frame_xyz("da-traj.xyz");
   }
-  traj.resize(nframes);
+  proxy->post_run();
+  cvm::log("Done");
 
-  for (int i = 0; i < nframes; i++) {
-    cvm::log("Frame " + cvm::to_str(i) + " atom 0 coords: " + cvm::to_str(traj[i][0]));
-  }
   return 0;
 }

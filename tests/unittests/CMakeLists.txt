@@ -25,5 +25,11 @@ add_test(NAME read_xyz_traj COMMAND read_xyz_traj)
 add_custom_command(
         TARGET read_xyz_traj POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E create_symlink
+                ${CMAKE_CURRENT_SOURCE_DIR}/index.ndx
+                ${CMAKE_CURRENT_BINARY_DIR}/index.ndx
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+                ${CMAKE_CURRENT_SOURCE_DIR}/test.in
+                ${CMAKE_CURRENT_BINARY_DIR}/test.in
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
                 ${CMAKE_CURRENT_SOURCE_DIR}/da-traj.xyz
                 ${CMAKE_CURRENT_BINARY_DIR}/da-traj.xyz)
