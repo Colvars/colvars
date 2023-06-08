@@ -238,7 +238,9 @@ int colvarproxy_io::close_input_stream(std::string const &input_name)
 {
   if (colvarproxy_io::input_stream_exists(input_name)) {
     std::ifstream *ifs = dynamic_cast<std::ifstream *>(input_streams_[input_name]);
-    if (ifs) ifs->close();
+    if (ifs && ifs->is_open()) {
+      ifs->close();
+    }
     return COLVARS_OK;
   }
   return cvm::error("Error: input file/channel \""+input_name+
