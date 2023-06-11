@@ -166,7 +166,6 @@ int colvarproxy_namd::update_target_temperature()
 void colvarproxy_namd::init_atoms_map()
 {
   size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
-  atoms_map.resize(n_all_atoms);
   atoms_map.assign(n_all_atoms, -1);
 }
 
