@@ -238,8 +238,18 @@ int colvarproxy_io::close_input_stream(std::string const &input_name)
 {
   if (colvarproxy_io::input_stream_exists(input_name)) {
     std::ifstream *ifs = dynamic_cast<std::ifstream *>(input_streams_[input_name]);
-    if (ifs && ifs->is_open()) {
-      ifs->close();
+    if (ifs) {
+      if (ifs->is_open()) {
+        ifs->close();
+      }
+    }
+    else {
+      // From a string, just rewind to the begining
+      std::istringstream * iss = dynamic_cast<std::istringstream *>(input_streams_[input_name]);
+      if (iss) {
+        iss->clear();
+        iss->seekg(0);
+      }
     }
     return COLVARS_OK;
   }
