@@ -1293,12 +1293,13 @@ int colvarmodule::setup_input()
       input_is = &(proxy->input_stream(restart_in_name,
                                        "restart file/channel"));
       if (!*input_is) {
+        // Error message has already been printed, return now
         return COLVARS_FILE_ERROR;
       }
     }
 
-    // Now that the file has been opened, clear this field so that this
-    // function will not be called twice
+    // Now that the file has been opened, clear this field so that this block
+    // will not be executed twice
     proxy->set_input_prefix("");
 
     cvm::log(cvm::line_marker);
@@ -1307,31 +1308,18 @@ int colvarmodule::setup_input()
     cvm::log(cvm::line_marker);
 
     proxy->close_input_stream(restart_in_name);
-
-    return cvm::get_error();
   }
 
-  // TODO This could soon be redundant
-  if (proxy->input_buffer() != NULL) {
-    // Read a string buffer
-    char const *buffer = proxy->input_buffer();
-    size_t const buffer_size = strlen(proxy->input_buffer());
-    // Clear proxy pointer for the next round
-    proxy->input_buffer() = NULL;
-    if (buffer_size > 0) {
-      std::istringstream input_is;
-      // Replace the buffer of input_is; work around the lack of const in
-      // pubsetbuf's prototype (which also needs to support output streams)
-      input_is.rdbuf()->pubsetbuf(const_cast<char *>(buffer), buffer_size);
-      cvm::log(cvm::line_marker);
-      cvm::log("Loading state from input buffer.\n");
-      read_restart(input_is);
-      cvm::log(cvm::line_marker);
-      return cvm::get_error();
-    }
+  if (proxy->input_stream_exists("input state string")) {
+    cvm::log(cvm::line_marker);
+    cvm::log("Loading state from string.\n");
+    read_restart(proxy->input_stream("input state string"));
+    cvm::log(cvm::line_marker);
+
+    proxy->close_input_stream("input state string");
   }
 
-  return COLVARS_OK;
+  return cvm::get_error();
 }
 
 

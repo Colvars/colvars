@@ -506,7 +506,8 @@ CVSCRIPT(cv_loadfromstring,
          "buffer : string - String buffer containing the state information",
          char const *arg =
            script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
-         script->proxy()->input_buffer() = arg;
+         script->proxy()->input_stream_from_string("input state string",
+                                                   std::string(arg));
          if (script->module()->setup_input() == COLVARS_OK) {
            return COLVARS_OK;
          } else {

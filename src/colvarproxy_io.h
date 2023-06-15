@@ -101,12 +101,6 @@ public:
   /// Communicate/set the restart frequency of the simulation engine
   virtual int set_default_restart_frequency(int freq);
 
-  /// Buffer from which the input state information may be read
-  inline char const * & input_buffer()
-  {
-    return input_buffer_;
-  }
-
   // The input stream functions below are not virtual, because they currently
   // rely on the fact that either std::ifstream or std::istringstream is used
 
@@ -117,6 +111,14 @@ public:
   std::istream & input_stream(std::string const &input_name,
                               std::string const description = "file/channel",
                               bool error_on_fail = true);
+
+  /// Returns a reference to given input stream, creating it if needed
+  /// \param input_name Identifier of the input stream
+  /// \param content Set this string as the stream's buffer
+  /// \param description Purpose of the stream
+  std::istream & input_stream_from_string(std::string const &input_name,
+                                          std::string const &content,
+                                          std::string const description = "string");
 
   /// Check if the file/channel is open (without opening it if not)
   bool input_stream_exists(std::string const &input_name);

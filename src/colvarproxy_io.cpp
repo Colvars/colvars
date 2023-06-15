@@ -207,8 +207,9 @@ std::istream &colvarproxy_io::input_stream(std::string const &input_name,
   }
 
   if (colvarproxy_io::input_stream_exists(input_name)) {
-    std::ifstream *ifs = dynamic_cast<std::ifstream *>(input_streams_[input_name]);
-    if ( ifs && !ifs->is_open()) {
+    std::ifstream *ifs =
+      dynamic_cast<std::ifstream *>(input_streams_[input_name]);
+    if (ifs && !ifs->is_open()) {
       // This file was opened before, re-open it.  Using std::ios::binary to
       // work around differences in line termination conventions
       // See https://github.com/Colvars/colvars/commit/8236879f7de4
@@ -223,6 +224,41 @@ std::istream &colvarproxy_io::input_stream(std::string const &input_name,
     cvm::error("Error: cannot open "+description+" \""+input_name+"\".\n",
                COLVARS_FILE_ERROR);
   }
+
+  return *(input_streams_[input_name]);
+}
+
+
+std::istream &
+colvarproxy_io::input_stream_from_string(std::string const &input_name,
+                                         std::string const &content,
+                                         std::string const description)
+{
+  if (!io_available()) {
+    cvm::error("Error: trying to access an input file/channel "
+               "from the wrong thread.\n", COLVARS_BUG_ERROR);
+    return *input_stream_error_;
+  }
+
+  if (colvarproxy_io::input_stream_exists(input_name)) {
+
+    std::istringstream *iss =
+      dynamic_cast<std::istringstream *>(input_streams_[input_name]);
+    if (iss) {
+      // If there is already a stringstream, replace it
+      delete iss;
+    } else {
+      std::ifstream *ifs =
+        dynamic_cast<std::ifstream *>(input_streams_[input_name]);
+      if (ifs) {
+        if (ifs->is_open()) {
+          ifs->close();
+        }
+      }
+    }
+  }
+
+  input_streams_[input_name] = new std::istringstream(content);
 
   return *(input_streams_[input_name]);
 }
