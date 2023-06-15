@@ -1373,7 +1373,7 @@ public:
           ds_1[3][3].set(-a2x, -a2y,  a2z);
           if (ds_1_out != NULL) *ds_1_out = ds_1;
           if (dl0_1_out != NULL) {
-            const auto& Q0 = m_rot.S_eigvec[0];
+            const cvm::real* Q0 = m_rot.S_eigvec[0].data;
             /* manually loop unrolling of the following loop:
               dl0_1.reset();
               for (size_t i = 0; i < 4; i++) {
@@ -1402,10 +1402,10 @@ public:
           if (dq0_1_out != NULL) {
             // we can skip this check if a fixed-size array is used
             if (dq0_1_out->size() != 4) dq0_1_out->resize(4);
-            const auto& Q0 = m_rot.S_eigvec[0];
-            const auto& Q1 = m_rot.S_eigvec[1];
-            const auto& Q2 = m_rot.S_eigvec[2];
-            const auto& Q3 = m_rot.S_eigvec[3];
+            const cvm::real* Q0 = m_rot.S_eigvec[0].data;
+            const cvm::real* Q1 = m_rot.S_eigvec[1].data;
+            const cvm::real* Q2 = m_rot.S_eigvec[2].data;
+            const cvm::real* Q3 = m_rot.S_eigvec[3].data;
             cvm::real const L0 = m_rot.S_eigval[0];
             cvm::real const L1 = m_rot.S_eigval[1];
             cvm::real const L2 = m_rot.S_eigval[2];
@@ -1659,7 +1659,7 @@ public:
         ds_2[3][3].set(-a1x, -a1y,  a1z);
         if (ds_2_out != NULL) *ds_2_out = ds_2;
         if (dl0_2_out != NULL) {
-          const auto& Q0 = m_rot.S_eigvec[0];
+          const cvm::real* Q0 = m_rot.S_eigvec[0].data;
           /* manually loop unrolling of the following loop:
             dl0_2.reset();
             for (size_t i = 0; i < 4; i++) {
@@ -1687,10 +1687,10 @@ public:
         }
         if (dq0_2_out != NULL) {
           if (dq0_2_out->size() != 4) dq0_2_out->resize(4);
-          const auto& Q0 = m_rot.S_eigvec[0];
-          const auto& Q1 = m_rot.S_eigvec[1];
-          const auto& Q2 = m_rot.S_eigvec[2];
-          const auto& Q3 = m_rot.S_eigvec[3];
+          const cvm::real* Q0 = m_rot.S_eigvec[0].data;
+          const cvm::real* Q1 = m_rot.S_eigvec[1].data;
+          const cvm::real* Q2 = m_rot.S_eigvec[2].data;
+          const cvm::real* Q3 = m_rot.S_eigvec[3].data;
           cvm::real const L0 = m_rot.S_eigval[0];
           cvm::real const L1 = m_rot.S_eigval[1];
           cvm::real const L2 = m_rot.S_eigval[2];
