@@ -1354,7 +1354,7 @@ public:
 #else
           read_atom_coord(ia, m_pos2, &a2x, &a2y, &a2z);
 #endif
-          cvm::matrix2d<cvm::rvector> ds_1(4, 4);
+          cvm::rvector ds_1[4][4];
           ds_1[0][0].set( a2x,  a2y,  a2z);
           ds_1[1][0].set( 0.0,  a2z, -a2y);
           ds_1[0][1] = ds_1[1][0];
@@ -1371,7 +1371,15 @@ public:
           ds_1[3][2].set( 0.0,  a2z,  a2y);
           ds_1[2][3] = ds_1[3][2];
           ds_1[3][3].set(-a2x, -a2y,  a2z);
-          if (ds_1_out != NULL) *ds_1_out = ds_1;
+          if (ds_1_out != NULL) {
+            // this code path is for debug_gradients, so not necessary to unroll the loop
+            *ds_1_out = cvm::matrix2d<cvm::rvector>(4, 4);
+            for (int i = 0; i < 4; ++i) {
+              for (int j = 0; j < 4; ++j) {
+                (*ds_1_out)[i][j] = ds_1[i][j];
+              }
+            }
+          }
           if (dl0_1_out != NULL) {
             const cvm::real* Q0 = m_rot.S_eigvec[0].data;
             /* manually loop unrolling of the following loop:
@@ -1640,7 +1648,7 @@ public:
 #else
         read_atom_coord(ia, m_pos1, &a1x, &a1y, &a1z);
 #endif
-        cvm::matrix2d<cvm::rvector> ds_2(4, 4);
+        cvm::rvector ds_2[4][4];
         ds_2[0][0].set( a1x,  a1y,  a1z);
         ds_2[1][0].set( 0.0, -a1z,  a1y);
         ds_2[0][1] = ds_2[1][0];
@@ -1657,7 +1665,15 @@ public:
         ds_2[3][2].set( 0.0,  a1z,  a1y);
         ds_2[2][3] = ds_2[3][2];
         ds_2[3][3].set(-a1x, -a1y,  a1z);
-        if (ds_2_out != NULL) *ds_2_out = ds_2;
+        if (ds_2_out != NULL) {
+          // this code path is for debug_gradients, so not necessary to unroll the loop
+          *ds_2_out = cvm::matrix2d<cvm::rvector>(4, 4);
+          for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+              (*ds_2_out)[i][j] = ds_2[i][j];
+            }
+          }
+        }
         if (dl0_2_out != NULL) {
           const cvm::real* Q0 = m_rot.S_eigvec[0].data;
           /* manually loop unrolling of the following loop:
