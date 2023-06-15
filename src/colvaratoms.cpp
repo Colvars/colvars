@@ -118,9 +118,9 @@ cvm::atom_group::~atom_group()
     fitting_group = NULL;
   }
 
-  if (rot_deriv != nullptr) {
+  if (rot_deriv != NULL) {
     delete rot_deriv;
-    rot_deriv = nullptr;
+    rot_deriv = NULL;
   }
 
   cvm::main()->unregister_named_atom_group(this);
@@ -231,7 +231,7 @@ int cvm::atom_group::init()
   b_dummy = false;
   b_user_defined_fit = false;
   fitting_group = NULL;
-  rot_deriv = nullptr;
+  rot_deriv = NULL;
 
   noforce = false;
 
@@ -324,7 +324,7 @@ int cvm::atom_group::setup()
 }
 
 void cvm::atom_group::setup_rotation_derivative() {
-  if (rot_deriv != nullptr) delete rot_deriv;
+  if (rot_deriv != NULL) delete rot_deriv;
   rot_deriv = new cvm::rotation::derivative<cvm::atom, cvm::atom_pos>(
     rot, fitting_group ? fitting_group->atoms : this->atoms, ref_pos
   );
@@ -1258,7 +1258,7 @@ void cvm::atom_group::calc_fit_gradients()
     // Should I cache the dQ0_1 without computing it every time?
     cvm::vector1d<cvm::rvector> dq0_1(4);
     for (size_t j = 0; j < group_for_fit->size(); j++) {
-      rot_deriv->calc_derivative_to_group1(j, nullptr, &dq0_1);
+      rot_deriv->calc_derivative_to_group1(j, NULL, &dq0_1);
       // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
       // for (size_t iq = 0; iq < 4; iq++) {
       //   group_for_fit->fit_gradients[j] += sum_dxdq[iq] * dq0_1[iq];

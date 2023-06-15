@@ -1322,9 +1322,10 @@ public:
 
   template <typename T1, typename T2>
   struct derivative {
+#if (__cplusplus >= 201103L)
     static_assert(std::is_same<T1, cvm::atom_pos>::value || std::is_same<T1, cvm::atom>::value, "");
     static_assert(std::is_same<T2, cvm::atom_pos>::value || std::is_same<T2, cvm::atom>::value, "");
-
+#endif
     const cvm::rotation &m_rot;
     const std::vector<T1> &m_pos1;
     const std::vector<T2> &m_pos2;
@@ -1334,22 +1335,25 @@ public:
       const std::vector<T2> &pos2):
         m_rot(rot), m_pos1(pos1), m_pos2(pos2) {};
     void calc_derivative_to_group1(
-      size_t ia, cvm::rvector* dl0_1_out = nullptr,
-      cvm::vector1d<cvm::rvector>* dq0_1_out = nullptr,
-      cvm::matrix2d<cvm::rvector>* ds_1_out = nullptr) const {
-          if (dl0_1_out == nullptr && dq0_1_out == nullptr) return;
+      size_t ia, cvm::rvector* dl0_1_out = NULL,
+      cvm::vector1d<cvm::rvector>* dq0_1_out = NULL,
+      cvm::matrix2d<cvm::rvector>* ds_1_out = NULL) const {
+          if (dl0_1_out == NULL && dq0_1_out == NULL) return;
           cvm::real a2x, a2y, a2z;
-          read_atom_coord(ia, m_pos2, &a2x, &a2y, &a2z);
           // we can get rid of the helper function read_atom_coord if C++17 is available
-          // if constexpr (std::is_same<T2, cvm::atom_pos>::value) {
-          //   a2x = m_pos2[ia].x;
-          //   a2y = m_pos2[ia].y;
-          //   a2z = m_pos2[ia].z;
-          // } else if constexpr (std::is_same<T2, cvm::atom>::value) {
-          //   a2x = m_pos2[ia].pos.x;
-          //   a2y = m_pos2[ia].pos.y;
-          //   a2z = m_pos2[ia].pos.z;
-          // }
+#if (__cplusplus >= 201703L)
+          if constexpr (std::is_same<T2, cvm::atom_pos>::value) {
+            a2x = m_pos2[ia].x;
+            a2y = m_pos2[ia].y;
+            a2z = m_pos2[ia].z;
+          } else if constexpr (std::is_same<T2, cvm::atom>::value) {
+            a2x = m_pos2[ia].pos.x;
+            a2y = m_pos2[ia].pos.y;
+            a2z = m_pos2[ia].pos.z;
+          }
+#else
+          read_atom_coord(ia, m_pos2, &a2x, &a2y, &a2z);
+#endif
           cvm::matrix2d<cvm::rvector> ds_1(4, 4);
           ds_1[0][0].set( a2x,  a2y,  a2z);
           ds_1[1][0].set( 0.0,  a2z, -a2y);
@@ -1367,8 +1371,8 @@ public:
           ds_1[3][2].set( 0.0,  a2z,  a2y);
           ds_1[2][3] = ds_1[3][2];
           ds_1[3][3].set(-a2x, -a2y,  a2z);
-          if (ds_1_out != nullptr) *ds_1_out = ds_1;
-          if (dl0_1_out != nullptr) {
+          if (ds_1_out != NULL) *ds_1_out = ds_1;
+          if (dl0_1_out != NULL) {
             const auto& Q0 = m_rot.S_eigvec[0];
             /* manually loop unrolling of the following loop:
               dl0_1.reset();
@@ -1395,7 +1399,7 @@ public:
                         Q0[3] * ds_1[3][2] * Q0[2] +
                         Q0[3] * ds_1[3][3] * Q0[3];
           }
-          if (dq0_1_out != nullptr) {
+          if (dq0_1_out != NULL) {
             // we can skip this check if a fixed-size array is used
             if (dq0_1_out->size() != 4) dq0_1_out->resize(4);
             const auto& Q0 = m_rot.S_eigvec[0];
@@ -1617,22 +1621,25 @@ public:
           }
       }
     void calc_derivative_to_group2(
-      size_t ia, cvm::rvector* dl0_2_out = nullptr,
-      cvm::vector1d<cvm::rvector>* dq0_2_out = nullptr,
-      cvm::matrix2d<cvm::rvector>* ds_2_out = nullptr) const {
-      if (dl0_2_out == nullptr && dq0_2_out == nullptr) return;
+      size_t ia, cvm::rvector* dl0_2_out = NULL,
+      cvm::vector1d<cvm::rvector>* dq0_2_out = NULL,
+      cvm::matrix2d<cvm::rvector>* ds_2_out = NULL) const {
+      if (dl0_2_out == NULL && dq0_2_out == NULL) return;
         cvm::real a1x, a1y, a1z;
-        read_atom_coord(ia, m_pos1, &a1x, &a1y, &a1z);
+#if (__cplusplus >= 201703L)
         // we can get rid of the helper function read_atom_coord if C++17 is available
-        // if constexpr (std::is_same<T1, cvm::atom_pos>::value) {
-        //   a1x = m_pos1[ia].x;
-        //   a1y = m_pos1[ia].y;
-        //   a1z = m_pos1[ia].z;
-        // } else if constexpr (std::is_same<T1, cvm::atom>::value) {
-        //   a1x = m_pos1[ia].pos.x;
-        //   a1y = m_pos1[ia].pos.y;
-        //   a1z = m_pos1[ia].pos.z;
-        // }
+        if constexpr (std::is_same<T1, cvm::atom_pos>::value) {
+          a1x = m_pos1[ia].x;
+          a1y = m_pos1[ia].y;
+          a1z = m_pos1[ia].z;
+        } else if constexpr (std::is_same<T1, cvm::atom>::value) {
+          a1x = m_pos1[ia].pos.x;
+          a1y = m_pos1[ia].pos.y;
+          a1z = m_pos1[ia].pos.z;
+        }
+#else
+        read_atom_coord(ia, m_pos1, &a1x, &a1y, &a1z);
+#endif
         cvm::matrix2d<cvm::rvector> ds_2(4, 4);
         ds_2[0][0].set( a1x,  a1y,  a1z);
         ds_2[1][0].set( 0.0, -a1z,  a1y);
@@ -1650,8 +1657,8 @@ public:
         ds_2[3][2].set( 0.0,  a1z,  a1y);
         ds_2[2][3] = ds_2[3][2];
         ds_2[3][3].set(-a1x, -a1y,  a1z);
-        if (ds_2_out != nullptr) *ds_2_out = ds_2;
-        if (dl0_2_out != nullptr) {
+        if (ds_2_out != NULL) *ds_2_out = ds_2;
+        if (dl0_2_out != NULL) {
           const auto& Q0 = m_rot.S_eigvec[0];
           /* manually loop unrolling of the following loop:
             dl0_2.reset();
@@ -1678,7 +1685,7 @@ public:
                       Q0[3] * ds_2[3][2] * Q0[2] +
                       Q0[3] * ds_2[3][3] * Q0[3];
         }
-        if (dq0_2_out != nullptr) {
+        if (dq0_2_out != NULL) {
           if (dq0_2_out->size() != 4) dq0_2_out->resize(4);
           const auto& Q0 = m_rot.S_eigvec[0];
           const auto& Q1 = m_rot.S_eigvec[1];
