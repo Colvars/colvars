@@ -1170,7 +1170,7 @@ void colvar::rmsd::calc_Jacobian_derivative()
     for (size_t ia = 0; ia < atoms->size(); ia++) {
 
       // Gradient of optimal quaternion wrt current Cartesian position
-      atoms->rot_deriv->calc_derivative_to_group1(ia, nullptr, &dq);
+      atoms->rot_deriv->calc_derivative_to_group1(ia, NULL, &dq);
 
       g11 = 2.0 * (atoms->rot.q)[1]*dq[1];
       g22 = 2.0 * (atoms->rot.q)[2]*dq[2];
@@ -1475,7 +1475,7 @@ void colvar::eigenvector::calc_Jacobian_derivative()
     // Gradient of optimal quaternion wrt current Cartesian position
     // trick: d(R^-1)/dx = d(R^t)/dx = (dR/dx)^t
     // we can just transpose the derivatives of the direct matrix
-    atoms->rot_deriv->calc_derivative_to_group1(ia, nullptr, &dq_1);
+    atoms->rot_deriv->calc_derivative_to_group1(ia, NULL, &dq_1);
 
     g11 = 2.0 * quat0[1]*dq_1[1];
     g22 = 2.0 * quat0[2]*dq_1[2];
