@@ -455,6 +455,14 @@ void cvm::rotation::debug_gradients(const std::vector<cvm::atom_pos> &pos1, cons
   cvm::rvector dl0_2;
   cvm::vector1d<cvm::rvector> dq0_2(4);
   cvm::matrix2d<cvm::rvector> ds_2;
+#ifdef COLVARS_LAMMPS
+  MathEigen::Jacobi<cvm::real,
+                      cvm::vector1d<cvm::real> &,
+                      cvm::matrix2d<cvm::real> &> *ecalc =
+      reinterpret_cast<MathEigen::Jacobi<cvm::real,
+                                        cvm::vector1d<cvm::real> &,
+                                        cvm::matrix2d<cvm::real> &> *>(jacobi);
+#endif
   for (size_t ia = 0; ia < pos2.size(); ++ia) {
     // cvm::real const &a1x = pos1[ia].x;
     // cvm::real const &a1y = pos1[ia].y;
