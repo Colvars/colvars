@@ -323,6 +323,13 @@ int cvm::atom_group::setup()
   return COLVARS_OK;
 }
 
+void cvm::atom_group::setup_rotation_derivative() {
+  if (rot_deriv != nullptr) delete rot_deriv;
+  rot_deriv = new cvm::rotation::derivative<cvm::atom, cvm::atom_pos>(
+    rot, fitting_group ? fitting_group->atoms : this->atoms, ref_pos
+  );
+}
+
 
 void cvm::atom_group::update_total_mass()
 {
@@ -589,11 +596,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
     cvm::log(print_atom_ids());
   }
 
-  if (is_enabled(f_ag_rotate)) {
-    rot_deriv = new cvm::rotation::derivative<cvm::atom, cvm::atom_pos>(
-      rot, fitting_group ? fitting_group->atoms : this->atoms, ref_pos
-    );
-  }
+  if (is_enabled(f_ag_rotate)) setup_rotation_derivative();
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -1054,6 +1057,7 @@ void cvm::atom_group::calc_apply_roto_translation()
   }
 
   if (is_enabled(f_ag_rotate)) {
+    // TODO: calling to positions() introduce unnecessary copy
     // rotate the group (around the center of geometry if f_ag_center is
     // enabled, around the origin otherwise)
     rot.calc_optimal_rotation(fitting_group ?
@@ -1233,10 +1237,10 @@ void cvm::atom_group::calc_fit_gradients()
 
     // add the rotation matrix contribution to the gradients
     cvm::rotation const rot_inv = rot.inverse();
-    cvm::vector1d<cvm::rvector> dq0_1;
 
+    // cache all dxdq at once
+    cvm::real sum_dxdq[4] = {0, 0, 0, 0};
     for (size_t i = 0; i < this->size(); i++) {
-
       // compute centered, unrotated position
       cvm::atom_pos const pos_orig =
         rot_inv.rotate((is_enabled(f_ag_center) ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos)));
@@ -1244,15 +1248,44 @@ void cvm::atom_group::calc_fit_gradients()
       // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
       cvm::quaternion const dxdq =
         rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
-
-      for (size_t j = 0; j < group_for_fit->size(); j++) {
-        // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
-        rot_deriv->calc_derivative_to_group1(j, nullptr, &dq0_1);
-        for (size_t iq = 0; iq < 4; iq++) {
-          group_for_fit->fit_gradients[j] += dxdq[iq] * dq0_1[iq];
-        }
-      }
+      sum_dxdq[0] += dxdq[0];
+      sum_dxdq[1] += dxdq[1];
+      sum_dxdq[2] += dxdq[2];
+      sum_dxdq[3] += dxdq[3];
     }
+
+    // TODO: if ref_pos does not change, then dQ0_1 would not be changed.
+    // Should I cache the dQ0_1 without computing it every time?
+    cvm::vector1d<cvm::rvector> dq0_1(4);
+    for (size_t j = 0; j < group_for_fit->size(); j++) {
+      rot_deriv->calc_derivative_to_group1(j, nullptr, &dq0_1);
+      // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
+      // for (size_t iq = 0; iq < 4; iq++) {
+      //   group_for_fit->fit_gradients[j] += sum_dxdq[iq] * dq0_1[iq];
+      // }
+      group_for_fit->fit_gradients[j] += sum_dxdq[0] * dq0_1[0] +
+                                         sum_dxdq[1] * dq0_1[1] +
+                                         sum_dxdq[2] * dq0_1[2] +
+                                         sum_dxdq[3] * dq0_1[3];
+    }
+    // std::vector<cvm::vector1d<cvm::rvector>> dQ0_1(group_for_fit->size(), cvm::vector1d<cvm::rvector>(4));
+    // for (size_t i = 0; i < this->size(); i++) {
+
+    //   // compute centered, unrotated position
+    //   cvm::atom_pos const pos_orig =
+    //     rot_inv.rotate((is_enabled(f_ag_center) ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos)));
+
+    //   // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
+    //   cvm::quaternion const dxdq =
+    //     rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
+
+    //   for (size_t j = 0; j < group_for_fit->size(); j++) {
+    //     // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
+    //     for (size_t iq = 0; iq < 4; iq++) {
+    //       group_for_fit->fit_gradients[j] += dxdq[iq] * dQ0_1[j][iq];
+    //     }
+    //   }
+    // }
   }
 
   if (cvm::debug())

@@ -1049,6 +1049,7 @@ colvar::rmsd::rmsd(std::string const &conf)
     // this is only required for ABF, but we do both groups here for better caching
     // atoms->rot.request_group2_gradients(atoms->size());
   }
+  atoms->setup_rotation_derivative();
 
   std::string perm_conf;
   size_t pos = 0; // current position in config string
@@ -1303,6 +1304,7 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     // this is only required for ABF, but we do both groups here for better caching
     // atoms->rot.request_group2_gradients(atoms->size());
   }
+  atoms->setup_rotation_derivative();
 
   {
     bool const b_inline = get_keyval(conf, "vector", eigenvec, eigenvec);

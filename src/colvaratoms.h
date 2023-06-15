@@ -372,6 +372,8 @@ public:
   /// \brief (Re)calculate the optimal roto-translation
   void calc_apply_roto_translation();
 
+  void setup_rotation_derivative();
+
   /// \brief Save aside the center of geometry of the reference positions,
   /// then subtract it from them
   ///
