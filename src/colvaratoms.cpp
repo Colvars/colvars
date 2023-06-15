@@ -118,6 +118,11 @@ cvm::atom_group::~atom_group()
     fitting_group = NULL;
   }
 
+  if (rot_deriv != nullptr) {
+    delete rot_deriv;
+    rot_deriv = nullptr;
+  }
+
   cvm::main()->unregister_named_atom_group(this);
 }
 
@@ -226,6 +231,7 @@ int cvm::atom_group::init()
   b_dummy = false;
   b_user_defined_fit = false;
   fitting_group = NULL;
+  rot_deriv = nullptr;
 
   noforce = false;
 
@@ -583,6 +589,12 @@ int cvm::atom_group::parse(std::string const &group_conf)
     cvm::log(print_atom_ids());
   }
 
+  if (is_enabled(f_ag_rotate)) {
+    rot_deriv = new cvm::rotation::derivative<cvm::atom, cvm::atom_pos>(
+      rot, fitting_group ? fitting_group->atoms : this->atoms, ref_pos
+    );
+  }
+
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
@@ -884,7 +896,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
                "If that happens, use fittingGroup (or a different definition for it if already defined) "
                "to align the coordinates.\n");
       // initialize rot member data
-      rot.request_group1_gradients(group_for_fit->size());
+      // rot.request_group1_gradients(group_for_fit->size());
     }
   }
 
@@ -912,7 +924,7 @@ void cvm::atom_group::do_feature_side_effects(int id)
       if (is_enabled(f_ag_center) || is_enabled(f_ag_rotate)) {
         atom_group *group_for_fit = fitting_group ? fitting_group : this;
         group_for_fit->fit_gradients.assign(group_for_fit->size(), cvm::atom_pos(0.0, 0.0, 0.0));
-        rot.request_group1_gradients(group_for_fit->size());
+        // rot.request_group1_gradients(group_for_fit->size());
       }
       break;
   }
@@ -1221,6 +1233,7 @@ void cvm::atom_group::calc_fit_gradients()
 
     // add the rotation matrix contribution to the gradients
     cvm::rotation const rot_inv = rot.inverse();
+    cvm::vector1d<cvm::rvector> dq0_1;
 
     for (size_t i = 0; i < this->size(); i++) {
 
@@ -1234,8 +1247,9 @@ void cvm::atom_group::calc_fit_gradients()
 
       for (size_t j = 0; j < group_for_fit->size(); j++) {
         // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
+        rot_deriv->calc_derivative_to_group1(j, nullptr, &dq0_1);
         for (size_t iq = 0; iq < 4; iq++) {
-          group_for_fit->fit_gradients[j] += dxdq[iq] * rot.dQ0_1[j][iq];
+          group_for_fit->fit_gradients[j] += dxdq[iq] * dq0_1[iq];
         }
       }
     }
