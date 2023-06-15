@@ -107,25 +107,28 @@ public:
     return input_buffer_;
   }
 
+  // The input stream functions below are not virtual, because they currently
+  // rely on the fact that either std::ifstream or std::istringstream is used
+
   /// Returns a reference to given input stream, creating it if needed
   /// \param input_name File name (later only a handle)
   /// \param description Purpose of the file
   /// \param error_on_fail Raise error when failing to open (allow testing)
-  virtual std::istream &input_stream(std::string const &input_name,
-                                     std::string const description = "file/channel",
-                                     bool error_on_fail = true);
+  std::istream & input_stream(std::string const &input_name,
+                              std::string const description = "file/channel",
+                              bool error_on_fail = true);
 
   /// Check if the file/channel is open (without opening it if not)
-  virtual bool input_stream_exists(std::string const &input_name);
+  bool input_stream_exists(std::string const &input_name);
 
   /// Closes the given input stream
-  virtual int close_input_stream(std::string const &input_name);
+  int close_input_stream(std::string const &input_name);
 
   /// Closes all input streams
-  virtual int close_input_streams();
+  int close_input_streams();
 
   /// List all input streams that were opened at some point
-  virtual std::list<std::string> list_input_stream_names() const;
+  std::list<std::string> list_input_stream_names() const;
 
   /// Returns a reference to the named output file/channel (open it if needed)
   /// \param output_name File name or identifier
