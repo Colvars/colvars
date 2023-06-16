@@ -205,14 +205,6 @@ cvm::quaternion::position_derivative_inner(cvm::rvector const &pos,
   return result;
 }
 
-
-
-
-// Calculate the optimal rotation between two groups, and implement it
-// as a quaternion.  Uses the method documented in: Coutsias EA,
-// Seok C, Dill KA.  Using quaternions to calculate RMSD.  J Comput
-// Chem. 25(15):1849-57 (2004) DOI: 10.1002/jcc.20110 PubMed: 15376254
-
 #ifdef COLVARS_LAMMPS
 namespace {
   inline void *new_Jacobi_solver(int size) {
@@ -412,6 +404,10 @@ void colvarmodule::rotation::calc_optimal_rotation(
   if (b_debug_gradients) debug_gradients<cvm::atom, cvm::atom_pos>(pos1, pos2);
 }
 
+// Calculate the optimal rotation between two groups, and implement it
+// as a quaternion.  Uses the method documented in: Coutsias EA,
+// Seok C, Dill KA.  Using quaternions to calculate RMSD.  J Comput
+// Chem. 25(15):1849-57 (2004) DOI: 10.1002/jcc.20110 PubMed: 15376254
 void colvarmodule::rotation::calc_optimal_rotation_impl() {
   S.resize(4, 4);
   S.reset();

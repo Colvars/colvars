@@ -12,6 +12,11 @@
 
 #include <vector>
 
+#ifdef COLVARS_LAMMPS
+// Use open-source Jacobi implementation
+#include "math_eigen_impl.h"
+#endif
+
 #include "colvarmodule.h"
 
 #ifndef PI
