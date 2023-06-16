@@ -13,6 +13,7 @@
 #include <sstream>
 #include <iomanip>
 
+#include "colvardeps.h"
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarparse.h"
@@ -1057,12 +1058,11 @@ void cvm::atom_group::calc_apply_roto_translation()
   }
 
   if (is_enabled(f_ag_rotate)) {
-    // TODO: calling to positions() introduce unnecessary copy
     // rotate the group (around the center of geometry if f_ag_center is
     // enabled, around the origin otherwise)
     rot.calc_optimal_rotation(fitting_group ?
-                              fitting_group->positions() :
-                              this->positions(),
+                              fitting_group->atoms:
+                              this->atoms,
                               ref_pos);
 
     cvm::atom_iter ai;
@@ -1216,77 +1216,50 @@ void cvm::atom_group::calc_fit_gradients()
   if (cvm::debug())
     cvm::log("Calculating fit gradients.\n");
 
-  cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
+  if (is_enabled(f_ag_center) && is_enabled(f_ag_rotate)) calc_fit_gradients_impl<true, true>();
+  if (is_enabled(f_ag_center) && !is_enabled(f_ag_rotate)) calc_fit_gradients_impl<true, false>();
+  if (!is_enabled(f_ag_center) && is_enabled(f_ag_rotate)) calc_fit_gradients_impl<false, true>();
+  if (!is_enabled(f_ag_center) && !is_enabled(f_ag_rotate)) calc_fit_gradients_impl<false, false>();
+  /* The above code is an optimized version of the following loops:
+    if (is_enabled(f_ag_center)) {
+        // add the center of geometry contribution to the gradients
+        cvm::rvector atom_grad;
 
-  if (is_enabled(f_ag_center)) {
-    // add the center of geometry contribution to the gradients
-    cvm::rvector atom_grad;
+        for (size_t i = 0; i < this->size(); i++) {
+          atom_grad += atoms[i].grad;
+        }
+        if (is_enabled(f_ag_rotate)) atom_grad = (rot.inverse()).rotate(atom_grad);
+        atom_grad *= (-1.0)/(cvm::real(group_for_fit->size()));
 
-    for (size_t i = 0; i < this->size(); i++) {
-      atom_grad += atoms[i].grad;
-    }
-    if (is_enabled(f_ag_rotate)) atom_grad = (rot.inverse()).rotate(atom_grad);
-    atom_grad *= (-1.0)/(cvm::real(group_for_fit->size()));
+        for (size_t j = 0; j < group_for_fit->size(); j++) {
+          group_for_fit->fit_gradients[j] = atom_grad;
+        }
+      }
 
-    for (size_t j = 0; j < group_for_fit->size(); j++) {
-      group_for_fit->fit_gradients[j] = atom_grad;
-    }
-  }
+      if (is_enabled(f_ag_rotate)) {
 
-  if (is_enabled(f_ag_rotate)) {
+        // add the rotation matrix contribution to the gradients
+        cvm::rotation const rot_inv = rot.inverse();
 
-    // add the rotation matrix contribution to the gradients
-    cvm::rotation const rot_inv = rot.inverse();
+        for (size_t i = 0; i < this->size(); i++) {
 
-    // cache all dxdq at once
-    cvm::real sum_dxdq[4] = {0, 0, 0, 0};
-    for (size_t i = 0; i < this->size(); i++) {
-      // compute centered, unrotated position
-      cvm::atom_pos const pos_orig =
-        rot_inv.rotate((is_enabled(f_ag_center) ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos)));
+          // compute centered, unrotated position
+          cvm::atom_pos const pos_orig =
+            rot_inv.rotate((is_enabled(f_ag_center) ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos)));
 
-      // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
-      cvm::quaternion const dxdq =
-        rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
-      sum_dxdq[0] += dxdq[0];
-      sum_dxdq[1] += dxdq[1];
-      sum_dxdq[2] += dxdq[2];
-      sum_dxdq[3] += dxdq[3];
-    }
+          // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
+          cvm::quaternion const dxdq =
+            rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
 
-    // TODO: if ref_pos does not change, then dQ0_1 would not be changed.
-    // Should I cache the dQ0_1 without computing it every time?
-    cvm::vector1d<cvm::rvector> dq0_1(4);
-    for (size_t j = 0; j < group_for_fit->size(); j++) {
-      rot_deriv->calc_derivative_to_group1(j, NULL, &dq0_1);
-      // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
-      // for (size_t iq = 0; iq < 4; iq++) {
-      //   group_for_fit->fit_gradients[j] += sum_dxdq[iq] * dq0_1[iq];
-      // }
-      group_for_fit->fit_gradients[j] += sum_dxdq[0] * dq0_1[0] +
-                                         sum_dxdq[1] * dq0_1[1] +
-                                         sum_dxdq[2] * dq0_1[2] +
-                                         sum_dxdq[3] * dq0_1[3];
-    }
-    // std::vector<cvm::vector1d<cvm::rvector>> dQ0_1(group_for_fit->size(), cvm::vector1d<cvm::rvector>(4));
-    // for (size_t i = 0; i < this->size(); i++) {
-
-    //   // compute centered, unrotated position
-    //   cvm::atom_pos const pos_orig =
-    //     rot_inv.rotate((is_enabled(f_ag_center) ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos)));
-
-    //   // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
-    //   cvm::quaternion const dxdq =
-    //     rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
-
-    //   for (size_t j = 0; j < group_for_fit->size(); j++) {
-    //     // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
-    //     for (size_t iq = 0; iq < 4; iq++) {
-    //       group_for_fit->fit_gradients[j] += dxdq[iq] * dQ0_1[j][iq];
-    //     }
-    //   }
-    // }
-  }
+          for (size_t j = 0; j < group_for_fit->size(); j++) {
+            // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
+            for (size_t iq = 0; iq < 4; iq++) {
+              group_for_fit->fit_gradients[j] += dxdq[iq] * rot.dQ0_1[j][iq];
+            }
+          }
+        }
+      }
+   */
 
   if (cvm::debug())
     cvm::log("Done calculating fit gradients.\n");
