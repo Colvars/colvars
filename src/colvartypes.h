@@ -1281,6 +1281,14 @@ public:
 
 };
 
+#ifndef COLVARS_LAMMPS
+namespace NR {
+void diagonalize_matrix(cvm::matrix2d<cvm::real> &m,
+                        cvm::vector1d<cvm::real> &eigval,
+                        cvm::matrix2d<cvm::real> &eigvec);
+}
+#endif
+
 void read_atom_coord(
   size_t ia, const std::vector<cvm::atom_pos>& pos,
   cvm::real* x, cvm::real* y, cvm::real* z);
@@ -1923,9 +1931,89 @@ public:
     }
   };
 
+  template<typename T1, typename T2>
   void debug_gradients(
-    const std::vector<cvm::atom_pos> &pos1,
-    const std::vector<cvm::atom_pos> &pos2) const;
+    const std::vector<T1> &pos1,
+    const std::vector<T2> &pos2) const {
+    // eigenvalues and eigenvectors
+    cvm::real const L0 = S_eigval[0];
+    cvm::real const L1 = S_eigval[1];
+    cvm::real const L2 = S_eigval[2];
+    cvm::real const L3 = S_eigval[3];
+    cvm::quaternion const Q0(S_eigvec[0]);
+    cvm::quaternion const Q1(S_eigvec[1]);
+    cvm::quaternion const Q2(S_eigvec[2]);
+    cvm::quaternion const Q3(S_eigvec[3]);
+
+    cvm::log("L0 = "+cvm::to_str(L0, cvm::cv_width, cvm::cv_prec)+
+              ", Q0 = "+cvm::to_str(Q0, cvm::cv_width, cvm::cv_prec)+
+              ", Q0*Q0 = "+cvm::to_str(Q0.inner(Q0), cvm::cv_width, cvm::cv_prec)+
+              "\n");
+    cvm::log("L1 = "+cvm::to_str(L1, cvm::cv_width, cvm::cv_prec)+
+              ", Q1 = "+cvm::to_str(Q1, cvm::cv_width, cvm::cv_prec)+
+              ", Q0*Q1 = "+cvm::to_str(Q0.inner(Q1), cvm::cv_width, cvm::cv_prec)+
+              "\n");
+    cvm::log("L2 = "+cvm::to_str(L2, cvm::cv_width, cvm::cv_prec)+
+              ", Q2 = "+cvm::to_str(Q2, cvm::cv_width, cvm::cv_prec)+
+              ", Q0*Q2 = "+cvm::to_str(Q0.inner(Q2), cvm::cv_width, cvm::cv_prec)+
+              "\n");
+    cvm::log("L3 = "+cvm::to_str(L3, cvm::cv_width, cvm::cv_prec)+
+              ", Q3 = "+cvm::to_str(Q3, cvm::cv_width, cvm::cv_prec)+
+              ", Q0*Q3 = "+cvm::to_str(Q0.inner(Q3), cvm::cv_width, cvm::cv_prec)+
+              "\n");
+
+    const derivative<T1, T2> deriv(*this, pos1, pos2);
+    cvm::rvector dl0_2;
+    cvm::vector1d<cvm::rvector> dq0_2(4);
+    cvm::matrix2d<cvm::rvector> ds_2;
+#ifdef COLVARS_LAMMPS
+    MathEigen::Jacobi<cvm::real,
+                        cvm::vector1d<cvm::real> &,
+                        cvm::matrix2d<cvm::real> &> *ecalc =
+        reinterpret_cast<MathEigen::Jacobi<cvm::real,
+                                          cvm::vector1d<cvm::real> &,
+                                          cvm::matrix2d<cvm::real> &> *>(jacobi);
+#endif
+    for (size_t ia = 0; ia < pos2.size(); ++ia) {
+      // cvm::real const &a1x = pos1[ia].x;
+      // cvm::real const &a1y = pos1[ia].y;
+      // cvm::real const &a1z = pos1[ia].z;
+      deriv.calc_derivative_to_group2(ia, &dl0_2, &dq0_2, &ds_2);
+      // make an infitesimal move along each cartesian coordinate of
+      // this atom, and solve again the eigenvector problem
+      for (size_t comp = 0; comp < 3; comp++) {
+        cvm::matrix2d<cvm::real> S_new(4, 4);
+        cvm::vector1d<cvm::real> S_new_eigval(4);
+        cvm::matrix2d<cvm::real> S_new_eigvec(4, 4);
+        S_new = S_backup;
+        for (size_t i = 0; i < 4; i++) {
+          for (size_t j = 0; j < 4; j++) {
+            S_new[i][j] +=
+              colvarmodule::debug_gradients_step_size * ds_2[i][j][comp];
+          }
+        }
+#ifdef COLVARS_LAMMPS
+        ecalc->Diagonalize(S_new, S_new_eigval, S_new_eigvec);
+#else
+        NR::diagonalize_matrix(S_new, S_new_eigval, S_new_eigvec);
+#endif
+        cvm::real const &L0_new = S_new_eigval[0];
+        cvm::quaternion const Q0_new(S_new_eigvec[0]);
+
+        cvm::real const DL0 = (dl0_2[comp]) * colvarmodule::debug_gradients_step_size;
+        cvm::quaternion const DQ0(dq0_2[0][comp] * colvarmodule::debug_gradients_step_size,
+                                  dq0_2[1][comp] * colvarmodule::debug_gradients_step_size,
+                                  dq0_2[2][comp] * colvarmodule::debug_gradients_step_size,
+                                  dq0_2[3][comp] * colvarmodule::debug_gradients_step_size);
+
+        cvm::log(  "|(l_0+dl_0) - l_0^new|/l_0 = "+
+                  cvm::to_str(cvm::fabs(L0+DL0 - L0_new)/L0, cvm::cv_width, cvm::cv_prec)+
+                  ", |(q_0+dq_0) - q_0^new| = "+
+                  cvm::to_str((Q0+DQ0 - Q0_new).norm(), cvm::cv_width, cvm::cv_prec)+
+                  "\n");
+      }
+    }
+  }
 
   /// \brief Calculate the optimal rotation and store the
   /// corresponding eigenvalue and eigenvector in the arguments l0 and
@@ -1938,6 +2026,8 @@ public:
   /// J Comput Chem. 25(15):1849-57 (2004)
   /// DOI: 10.1002/jcc.20110  PubMed: 15376254
   void calc_optimal_rotation(std::vector<atom_pos> const &pos1,
+                             std::vector<atom_pos> const &pos2);
+  void calc_optimal_rotation(std::vector<cvm::atom> const &pos1,
                              std::vector<atom_pos> const &pos2);
 
   /// Initialize member data
@@ -2073,6 +2163,10 @@ protected:
   /// Build the correlation matrix C (used by calc_optimal_rotation())
   void build_correlation_matrix(std::vector<cvm::atom_pos> const &pos1,
                                 std::vector<cvm::atom_pos> const &pos2);
+  void build_correlation_matrix(std::vector<cvm::atom> const &pos1,
+                                std::vector<cvm::atom_pos> const &pos2);
+
+  void calc_optimal_rotation_impl();
 
   /// Compute the overlap matrix S (used by calc_optimal_rotation())
   void compute_overlap_matrix();

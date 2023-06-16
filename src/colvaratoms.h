@@ -496,6 +496,54 @@ public:
 
   /// \brief Calculate the derivatives of the fitting transformation
   void calc_fit_gradients();
+  template <bool B_ag_center, bool B_ag_rotate>
+  void calc_fit_gradients_impl() {
+    cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
+    // the center of geometry contribution to the gradients
+    cvm::rvector atom_grad;
+    // the rotation matrix contribution to the gradients
+    cvm::rotation const rot_inv = rot.inverse();
+    // temporary variables for computing and summing derivatives
+    cvm::real sum_dxdq[4] = {0, 0, 0, 0};
+    cvm::vector1d<cvm::rvector> dq0_1(4);
+    // loop 1: iterate over the current atom group
+    for (size_t i = 0; i < this->size(); i++) {
+      cvm::atom_pos pos_orig;
+      if (B_ag_center) {
+        atom_grad += atoms[i].grad;
+        if (B_ag_rotate) pos_orig = rot_inv.rotate(atoms[i].pos - ref_pos_cog);
+      } else {
+        if (B_ag_rotate) pos_orig = atoms[i].pos;
+      }
+      if (B_ag_rotate) {
+        // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
+        cvm::quaternion const dxdq =
+          rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
+        sum_dxdq[0] += dxdq[0];
+        sum_dxdq[1] += dxdq[1];
+        sum_dxdq[2] += dxdq[2];
+        sum_dxdq[3] += dxdq[3];
+      }
+    }
+    if (B_ag_center) {
+      if (B_ag_rotate) atom_grad = (rot.inverse()).rotate(atom_grad);
+      atom_grad *= (-1.0)/(cvm::real(group_for_fit->size()));
+    }
+    // loop 2: iterate over the fitting group
+    for (size_t j = 0; j < group_for_fit->size(); j++) {
+      if (B_ag_center) {
+        group_for_fit->fit_gradients[j] = atom_grad;
+      }
+      if (B_ag_rotate) {
+        rot_deriv->calc_derivative_to_group1(j, NULL, &dq0_1);
+        // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
+        group_for_fit->fit_gradients[j] += sum_dxdq[0] * dq0_1[0] +
+                                           sum_dxdq[1] * dq0_1[1] +
+                                           sum_dxdq[2] * dq0_1[2] +
+                                           sum_dxdq[3] * dq0_1[3];
+      }
+    }
+  }
 
   /// \brief Derivatives of the fitting transformation
   std::vector<cvm::atom_pos> fit_gradients;
