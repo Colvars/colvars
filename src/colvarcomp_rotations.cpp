@@ -132,7 +132,8 @@ void colvar::orientation::apply_force(colvarvalue const &force)
   cvm::quaternion const &FQ = force.quaternion_value;
 
   if (!atoms->noforce) {
-    const cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+    cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+    rot_deriv.prepare_derivative(false, true);
     cvm::vector1d<cvm::rvector> dq0_2;
     for (size_t ia = 0; ia < atoms->size(); ia++) {
       rot_deriv.calc_derivative_to_group2(ia, NULL, &dq0_2);
@@ -204,7 +205,8 @@ void colvar::orientation_angle::calc_gradients()
       ((180.0 / PI) * (-2.0) / cvm::sqrt(1.0 - ((rot.q).q0 * (rot.q).q0))) :
       0.0 );
 
-  const cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  rot_deriv.prepare_derivative(false, true);
   cvm::vector1d<cvm::rvector> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv.calc_derivative_to_group2(ia, NULL, &dq0_2);
@@ -255,7 +257,8 @@ void colvar::orientation_proj::calc_value()
 void colvar::orientation_proj::calc_gradients()
 {
   cvm::real const dxdq0 = 2.0 * 2.0 * (rot.q).q0;
-  const cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  rot_deriv.prepare_derivative(false, true);
   cvm::vector1d<cvm::rvector> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv.calc_derivative_to_group2(ia, NULL, &dq0_2);
@@ -320,7 +323,8 @@ void colvar::tilt::calc_gradients()
 {
   cvm::quaternion const dxdq = rot.dcos_theta_dq(axis);
 
-  const cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  rot_deriv.prepare_derivative(false, true);
   cvm::vector1d<cvm::rvector> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     (*atoms)[ia].grad = cvm::rvector(0.0, 0.0, 0.0);
@@ -400,7 +404,8 @@ void colvar::spin_angle::calc_gradients()
 {
   cvm::quaternion const dxdq = rot.dspin_angle_dq(axis);
 
-  const cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  rot_deriv.prepare_derivative(false, true);
   cvm::vector1d<cvm::rvector> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     (*atoms)[ia].grad = cvm::rvector(0.0, 0.0, 0.0);
@@ -520,7 +525,8 @@ void colvar::euler_phi::calc_gradients()
   const cvm::real dxdq1 = (180.0/PI) * (2 * q0 * (-2 * q1 * q1 - 2 * q2 * q2 + 1) - 4 * q1 * (-2 * q0 * q1 - 2 * q2 * q3)) / denominator;
   const cvm::real dxdq2 = (180.0/PI) * (-4 * q2 * (-2 * q0 * q1 - 2 * q2 * q3) + 2 * q3 * (-2 * q1 * q1 - 2 * q2 * q2 + 1)) / denominator;
   const cvm::real dxdq3 = (180.0/PI) * 2 * q2 * (-2 * q1 * q1 - 2 * q2 * q2 + 1) / denominator;
-  const cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  rot_deriv.prepare_derivative(false, true);
   cvm::vector1d<cvm::rvector> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv.calc_derivative_to_group2(ia, NULL, &dq0_2);
@@ -639,7 +645,8 @@ void colvar::euler_psi::calc_gradients()
   const cvm::real dxdq1 = (180.0/PI) * 2 * q2 * (-2 * q2 * q2 - 2 * q3 * q3 + 1) / denominator;
   const cvm::real dxdq2 = (180.0/PI) * (2 * q1 * (-2 * q2 * q2 - 2 * q3 * q3 + 1) - 4 * q2 * (-2 * q0 * q3 - 2 * q1 * q2)) / denominator;
   const cvm::real dxdq3 = (180.0/PI) * (2 * q0 * (-2 * q2 * q2 - 2 * q3 * q3 + 1) - 4 * q3 * (-2 * q0 * q3 - 2 * q1 * q2)) / denominator;
-  const cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  rot_deriv.prepare_derivative(false, true);
   cvm::vector1d<cvm::rvector> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv.calc_derivative_to_group2(ia, NULL, &dq0_2);
@@ -756,7 +763,8 @@ void colvar::euler_theta::calc_gradients()
   const cvm::real dxdq1 = (180.0/PI) * -2 * q3 / denominator;
   const cvm::real dxdq2 = (180.0/PI) * 2 * q0 / denominator;
   const cvm::real dxdq3 = (180.0/PI) * -2 * q1 / denominator;
-  const cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  cvm::rotation::derivative<cvm::atom_pos, cvm::atom_pos> rot_deriv(rot, ref_pos, shifted_pos);
+  rot_deriv.prepare_derivative(false, true);
   cvm::vector1d<cvm::rvector> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv.calc_derivative_to_group2(ia, NULL, &dq0_2);

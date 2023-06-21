@@ -1167,6 +1167,7 @@ void colvar::rmsd::calc_Jacobian_derivative()
     // gradients of products of 2 quaternion components
     cvm::rvector g11, g22, g33, g01, g02, g03, g12, g13, g23;
     cvm::vector1d<cvm::rvector> dq;
+    atoms->rot_deriv->prepare_derivative(false, true);
     for (size_t ia = 0; ia < atoms->size(); ia++) {
 
       // Gradient of optimal quaternion wrt current Cartesian position
@@ -1470,6 +1471,7 @@ void colvar::eigenvector::calc_Jacobian_derivative()
   cvm::real sum = 0.0;
 
   cvm::vector1d<cvm::rvector> dq_1;
+  atoms->rot_deriv->prepare_derivative(false, true);
   for (size_t ia = 0; ia < atoms->size(); ia++) {
 
     // Gradient of optimal quaternion wrt current Cartesian position

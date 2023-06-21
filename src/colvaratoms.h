@@ -538,6 +538,7 @@ public:
       atom_grad *= (-1.0)/(cvm::real(group_for_fit->size()));
     }
     // loop 2: iterate over the fitting group
+    if (B_ag_rotate) rot_deriv->prepare_derivative(false, true);
     for (size_t j = 0; j < group_for_fit->size(); j++) {
       if (B_ag_center) {
         group_for_fit->fit_gradients[j] = atom_grad;
