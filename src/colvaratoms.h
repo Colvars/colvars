@@ -496,6 +496,14 @@ public:
 
   /// \brief Calculate the derivatives of the fitting transformation
   void calc_fit_gradients();
+  /*! @brief  Actual implementation of `calc_fit_gradients`. The template is
+   *          used to avoid branching inside the loops in case that the CPU
+   *          branch prediction is broken (or further migration to GPU code).
+   *  @tparam B_ag_center Centered the reference to origin? This should follow
+   *          the value of `is_enabled(f_ag_center)`.
+   *  @tparam B_ag_rotate Calculate the optimal rotation? This should follow
+   *          the value of `is_enabled(f_ag_rotate)`.
+   */
   template <bool B_ag_center, bool B_ag_rotate>
   void calc_fit_gradients_impl() {
     cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
@@ -543,6 +551,46 @@ public:
                                            sum_dxdq[3] * dq0_1[3];
       }
     }
+    /* The above code is an optimized version of the following loops:
+    if (is_enabled(f_ag_center)) {
+      // add the center of geometry contribution to the gradients
+      cvm::rvector atom_grad;
+
+      for (size_t i = 0; i < this->size(); i++) {
+        atom_grad += atoms[i].grad;
+      }
+      if (is_enabled(f_ag_rotate)) atom_grad = (rot.inverse()).rotate(atom_grad);
+      atom_grad *= (-1.0)/(cvm::real(group_for_fit->size()));
+
+      for (size_t j = 0; j < group_for_fit->size(); j++) {
+        group_for_fit->fit_gradients[j] = atom_grad;
+      }
+    }
+
+    if (is_enabled(f_ag_rotate)) {
+
+      // add the rotation matrix contribution to the gradients
+      cvm::rotation const rot_inv = rot.inverse();
+
+      for (size_t i = 0; i < this->size(); i++) {
+
+        // compute centered, unrotated position
+        cvm::atom_pos const pos_orig =
+          rot_inv.rotate((is_enabled(f_ag_center) ? (atoms[i].pos - ref_pos_cog) : (atoms[i].pos)));
+
+        // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
+        cvm::quaternion const dxdq =
+          rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
+
+        for (size_t j = 0; j < group_for_fit->size(); j++) {
+          // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
+          for (size_t iq = 0; iq < 4; iq++) {
+            group_for_fit->fit_gradients[j] += dxdq[iq] * rot.dQ0_1[j][iq];
+          }
+        }
+      }
+    }
+   */
   }
 
   /// \brief Derivatives of the fitting transformation

@@ -1294,10 +1294,12 @@ void diagonalize_matrix(cvm::matrix2d<cvm::real> &m,
 }
 #endif
 
+/// \brief Helper function for loading the ia-th atom in the vector pos to x, y and z
 void read_atom_coord(
   size_t ia, const std::vector<cvm::atom_pos>& pos,
   cvm::real* x, cvm::real* y, cvm::real* z);
 
+/// \brief Helper function for loading the ia-th atom in the vector pos to x, y and z
 void read_atom_coord(
   size_t ia, const std::vector<cvm::atom>& pos,
   cvm::real* x, cvm::real* y, cvm::real* z);
@@ -1308,9 +1310,6 @@ void read_atom_coord(
 class colvarmodule::rotation
 {
 private:
-  /// \brief Eigenvalue corresponding to the optimal rotation
-  // cvm::real lambda;
-
   /// Correlation matrix C (3, 3)
   cvm::rmatrix C;
 
@@ -1333,20 +1332,42 @@ public:
   /// \brief The rotation itself (implemented as a quaternion)
   cvm::quaternion q;
 
+  /// \brief Helper class for calculating the derivative of rotation
   template <typename T1, typename T2>
   struct derivative {
 #if (__cplusplus >= 201103L)
     static_assert(std::is_same<T1, cvm::atom_pos>::value || std::is_same<T1, cvm::atom>::value, "");
     static_assert(std::is_same<T2, cvm::atom_pos>::value || std::is_same<T2, cvm::atom>::value, "");
 #endif
+    /// \brief Reference to the rotation
     const cvm::rotation &m_rot;
+    /// \brief Reference to the atom positions of group 1
     const std::vector<T1> &m_pos1;
+    /// \brief Reference to the atom positions of group 2
     const std::vector<T2> &m_pos2;
+    /*! @brief Constructor of the cvm::rotation::derivative class
+     *  @param[in]  rot   The cvm::rotation object (must have called
+     *                    `calc_optimal_rotation` before calling
+     *                    `calc_derivative_to_group1` and
+     *                    `calc_derivative_to_group2`)
+     *  @param[in]  pos1  The atom positions of group 1
+     *  @param[in]  pos2  The atom positions of group 2
+     */
     derivative(
       const cvm::rotation &rot,
       const std::vector<T1> &pos1,
       const std::vector<T2> &pos2):
         m_rot(rot), m_pos1(pos1), m_pos2(pos2) {};
+    /*! @brief Calculate the derivatives of S, the leading eigenvalue L and
+     *         the leading eigenvector Q with respect to `m_pos1`
+     *  @param[in]  ia        The index the of atom
+     *  @param[out] dl0_1_out The output of derivative of L with respect to
+     *                        ia-th atom of group 1
+     *  @param[out] dq0_1_out The output of derivative of Q with respect to
+     *                        ia-th atom of group 1
+     *  @param[out] ds_1_out  The output of derivative of overlap matrix S with
+     *                        respect to ia-th atom of group 1
+     */
     void calc_derivative_to_group1(
       size_t ia, cvm::rvector* dl0_1_out = NULL,
       cvm::vector1d<cvm::rvector>* dq0_1_out = NULL,
@@ -1641,6 +1662,16 @@ public:
                               (Q3[3] * ds_1[3][3] * Q0[3]) / (L0-L3) * Q3[3];
           }
       }
+    /*! @brief Calculate the derivatives of S, the leading eigenvalue L and
+     *         the leading eigenvector Q with respect to `m_pos2`
+     *  @param[in]  ia        The index the of atom
+     *  @param[out] dl0_2_out The output of derivative of L with respect to
+     *                        ia-th atom of group 2
+     *  @param[out] dq0_2_out The output of derivative of Q with respect to
+     *                        ia-th atom of group 2
+     *  @param[out] ds_2_out  The output of derivative of overlap matrix S with
+     *                        respect to ia-th atom of group 2
+     */
     void calc_derivative_to_group2(
       size_t ia, cvm::rvector* dl0_2_out = NULL,
       cvm::vector1d<cvm::rvector>* dq0_2_out = NULL,
@@ -1936,10 +1967,20 @@ public:
     }
   };
 
+  /*! @brief  Function for debugging gradients (allow using either
+   *          std::vector<cvm::atom_pos> or std::vector<cvm::atom> for
+   *          pos1 and pos2)
+   *  @param[in]  pos1  Atom positions of group 1
+   *  @param[in]  pos2  Atom positions of group 2
+   */
   template<typename T1, typename T2>
   void debug_gradients(
     const std::vector<T1> &pos1,
     const std::vector<T2> &pos2) const {
+#if (__cplusplus >= 201103L)
+    static_assert(std::is_same<T1, cvm::atom_pos>::value || std::is_same<T1, cvm::atom>::value, "");
+    static_assert(std::is_same<T2, cvm::atom_pos>::value || std::is_same<T2, cvm::atom>::value, "");
+#endif
     // eigenvalues and eigenvectors
     cvm::real const L0 = S_eigval[0];
     cvm::real const L1 = S_eigval[1];
@@ -2171,6 +2212,7 @@ protected:
   void build_correlation_matrix(std::vector<cvm::atom> const &pos1,
                                 std::vector<cvm::atom_pos> const &pos2);
 
+  /// \brief Actual implementation of `calc_optimal_rotation` (and called by it)
   void calc_optimal_rotation_impl();
 
   /// Compute the overlap matrix S (used by calc_optimal_rotation())
