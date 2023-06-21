@@ -7,5 +7,5 @@ IndentWidth: 2
 ObjCBlockIndentWidth: 2
 PenaltyBreakAssignment: 2
 AccessModifierOffset: -2
-BreakBeforeBraces: Stroustrup
+BreakBeforeBraces: WebKit
 ...
