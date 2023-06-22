@@ -47,14 +47,10 @@
 // If CVSCRIPT is not defined, this file yields the function prototypes
 #ifndef CVSCRIPT
 
-#ifdef __cplusplus
 #define CVSCRIPT_COMM_PROTO(COMM)                                       \
   extern "C" int CVSCRIPT_COMM_FNAME(COMM)(void *,                      \
-                                           int, unsigned char *const *);
-#else
-#define CVSCRIPT_COMM_PROTO(COMM)                                       \
-  int CVSCRIPT_COMM_FNAME(COMM)(void *, int, unsigned char *const *);
-#endif
+                                           int,                         \
+                                           unsigned char *const *);
 
 #define CVSCRIPT(COMM,HELP,N_ARGS_MIN,N_ARGS_MAX,ARGS,FN_BODY)  \
   CVSCRIPT_COMM_PROTO(COMM)

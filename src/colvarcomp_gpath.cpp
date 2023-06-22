@@ -1,4 +1,4 @@
-#if (__cplusplus >= 201103L)
+// -*- c++ -*-
 
 // This file is part of the Collective Variables module (Colvars).
 // The original version of Colvars and its updates are located at:
@@ -794,5 +794,3 @@ void colvar::gzpathCV::apply_force(colvarvalue const &force) {
         }
     }
 }
-
-#endif
