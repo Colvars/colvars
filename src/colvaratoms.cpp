@@ -899,8 +899,6 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
                "to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  "
                "If that happens, use fittingGroup (or a different definition for it if already defined) "
                "to align the coordinates.\n");
-      // initialize rot member data
-      // rot.request_group1_gradients(group_for_fit->size());
     }
   }
 
@@ -928,7 +926,6 @@ void cvm::atom_group::do_feature_side_effects(int id)
       if (is_enabled(f_ag_center) || is_enabled(f_ag_rotate)) {
         atom_group *group_for_fit = fitting_group ? fitting_group : this;
         group_for_fit->fit_gradients.assign(group_for_fit->size(), cvm::atom_pos(0.0, 0.0, 0.0));
-        // rot.request_group1_gradients(group_for_fit->size());
       }
       break;
   }
