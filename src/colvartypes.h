@@ -53,6 +53,12 @@ public:
     }
   }
 
+  /// Explicit Copy constructor
+  inline vector1d(const vector1d&) = default;
+
+  /// Explicit Copy assignement
+  inline vector1d& operator=(const vector1d&) = default;
+
   /// Return a pointer to the data location
   inline T * c_array()
   {
@@ -896,9 +902,6 @@ public:
     zz = zzi;
   }
 
-  /// Destructor
-  inline ~rmatrix()
-  {}
 
   inline void reset()
   {
