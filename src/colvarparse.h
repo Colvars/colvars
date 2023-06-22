@@ -262,7 +262,7 @@ public:
   {
     std::string out = "";
     for (size_t i = 0; i < in.size(); i++) {
-      out.append(1, (char) ::tolower(in[i]) );
+      out.append(1, static_cast<char>( ::tolower(in[i])) );
     }
     return out;
   }
