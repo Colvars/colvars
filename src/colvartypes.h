@@ -1361,9 +1361,14 @@ public:
       const std::vector<T1> &pos1,
       const std::vector<T2> &pos2):
         m_rot(rot), m_pos1(pos1), m_pos2(pos2) {};
-    /// \brief This function must be called before `calc_derivative_to_group1`
-    ///        and `calc_derivative_to_group2` in order to prepare the tmp_Q0Q0
-    ///        and tmp_Q0Q0_L
+    /*! @brief This function must be called before `calc_derivative_to_group1`
+     *         and `calc_derivative_to_group2` in order to prepare the tmp_Q0Q0
+     *        and tmp_Q0Q0_L.
+     *  @param[in] require_dl Require the calculation of the derivative of L
+     *                        with respect to atoms.
+     *  @param[in] require_dq Require the calculation of the derivative of Q
+     *                        with respect to atoms.
+     */
     void prepare_derivative(bool require_dl, bool require_dq) {
       if (require_dl) {
         const cvm::real* Q0 = m_rot.S_eigvec[0].data;
@@ -1397,212 +1402,344 @@ public:
         tmp_Q0Q0_L[0][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[0] +
                               (Q2[0] * Q0[0]) / (L0-L2) * Q2[0] +
                               (Q3[0] * Q0[0]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[0][0][1] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[1] +
                               (Q2[0] * Q0[0]) / (L0-L2) * Q2[1] +
                               (Q3[0] * Q0[0]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[0][0][2] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[2] +
                               (Q2[0] * Q0[0]) / (L0-L2) * Q2[2] +
                               (Q3[0] * Q0[0]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[0][0][3] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[3] +
                               (Q2[0] * Q0[0]) / (L0-L2) * Q2[3] +
                               (Q3[0] * Q0[0]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[0][1][0] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[0] +
                               (Q2[0] * Q0[1]) / (L0-L2) * Q2[0] +
                               (Q3[0] * Q0[1]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[0][1][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[1] +
                               (Q2[0] * Q0[1]) / (L0-L2) * Q2[1] +
                               (Q3[0] * Q0[1]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[0][1][2] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[2] +
                               (Q2[0] * Q0[1]) / (L0-L2) * Q2[2] +
                               (Q3[0] * Q0[1]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[0][1][3] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[3] +
                               (Q2[0] * Q0[1]) / (L0-L2) * Q2[3] +
                               (Q3[0] * Q0[1]) / (L0-L3) * Q3[3];
 
 
-        tmp_Q0Q0_L[0][2][0] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[0] +
                               (Q2[0] * Q0[2]) / (L0-L2) * Q2[0] +
                               (Q3[0] * Q0[2]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[0][2][1] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[1] +
                               (Q2[0] * Q0[2]) / (L0-L2) * Q2[1] +
                               (Q3[0] * Q0[2]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[0][2][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[2] +
                               (Q2[0] * Q0[2]) / (L0-L2) * Q2[2] +
                               (Q3[0] * Q0[2]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[0][2][3] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[3] +
                               (Q2[0] * Q0[2]) / (L0-L2) * Q2[3] +
                               (Q3[0] * Q0[2]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[0][3][0] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[0] +
                               (Q2[0] * Q0[3]) / (L0-L2) * Q2[0] +
                               (Q3[0] * Q0[3]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[0][3][1] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[1] +
                               (Q2[0] * Q0[3]) / (L0-L2) * Q2[1] +
                               (Q3[0] * Q0[3]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[0][3][2] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[2] +
                               (Q2[0] * Q0[3]) / (L0-L2) * Q2[2] +
                               (Q3[0] * Q0[3]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[0][3][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[3] +
                               (Q2[0] * Q0[3]) / (L0-L2) * Q2[3] +
                               (Q3[0] * Q0[3]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[1][0][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[0] +
                               (Q2[1] * Q0[0]) / (L0-L2) * Q2[0] +
                               (Q3[1] * Q0[0]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[1][0][1] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[1] +
                               (Q2[1] * Q0[0]) / (L0-L2) * Q2[1] +
                               (Q3[1] * Q0[0]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[1][0][2] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[2] +
                               (Q2[1] * Q0[0]) / (L0-L2) * Q2[2] +
                               (Q3[1] * Q0[0]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[1][0][3] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[3] +
                               (Q2[1] * Q0[0]) / (L0-L2) * Q2[3] +
                               (Q3[1] * Q0[0]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[1][1][0] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[0] +
                               (Q2[1] * Q0[1]) / (L0-L2) * Q2[0] +
                               (Q3[1] * Q0[1]) / (L0-L3) * Q3[0];
         tmp_Q0Q0_L[1][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[1] +
                               (Q2[1] * Q0[1]) / (L0-L2) * Q2[1] +
                               (Q3[1] * Q0[1]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[1][1][2] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[2] +
                               (Q2[1] * Q0[1]) / (L0-L2) * Q2[2] +
                               (Q3[1] * Q0[1]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[1][1][3] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[3] +
                               (Q2[1] * Q0[1]) / (L0-L2) * Q2[3] +
                               (Q3[1] * Q0[1]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[1][2][0] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[0] +
                               (Q2[1] * Q0[2]) / (L0-L2) * Q2[0] +
                               (Q3[1] * Q0[2]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[1][2][1] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[1] +
                               (Q2[1] * Q0[2]) / (L0-L2) * Q2[1] +
                               (Q3[1] * Q0[2]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[1][2][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[2] +
                               (Q2[1] * Q0[2]) / (L0-L2) * Q2[2] +
                               (Q3[1] * Q0[2]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[1][2][3] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[3] +
                               (Q2[1] * Q0[2]) / (L0-L2) * Q2[3] +
                               (Q3[1] * Q0[2]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[1][3][0] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[0] +
                               (Q2[1] * Q0[3]) / (L0-L2) * Q2[0] +
                               (Q3[1] * Q0[3]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[1][3][1] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[1] +
                               (Q2[1] * Q0[3]) / (L0-L2) * Q2[1] +
                               (Q3[1] * Q0[3]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[1][3][2] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[2] +
                               (Q2[1] * Q0[3]) / (L0-L2) * Q2[2] +
                               (Q3[1] * Q0[3]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[1][3][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[3] +
                               (Q2[1] * Q0[3]) / (L0-L2) * Q2[3] +
                               (Q3[1] * Q0[3]) / (L0-L3) * Q3[3];
 
 
-        tmp_Q0Q0_L[2][0][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[0] +
                               (Q2[2] * Q0[0]) / (L0-L2) * Q2[0] +
                               (Q3[2] * Q0[0]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[2][0][1] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[1] +
                               (Q2[2] * Q0[0]) / (L0-L2) * Q2[1] +
                               (Q3[2] * Q0[0]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[2][0][2] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[2] +
                               (Q2[2] * Q0[0]) / (L0-L2) * Q2[2] +
                               (Q3[2] * Q0[0]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[2][0][3] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[3] +
                               (Q2[2] * Q0[0]) / (L0-L2) * Q2[3] +
                               (Q3[2] * Q0[0]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[2][1][0] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[0] +
                               (Q2[2] * Q0[1]) / (L0-L2) * Q2[0] +
                               (Q3[2] * Q0[1]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[2][1][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[1] +
                               (Q2[2] * Q0[1]) / (L0-L2) * Q2[1] +
                               (Q3[2] * Q0[1]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[2][1][2] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[2] +
                               (Q2[2] * Q0[1]) / (L0-L2) * Q2[2] +
                               (Q3[2] * Q0[1]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[2][1][3] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[3] +
                               (Q2[2] * Q0[1]) / (L0-L2) * Q2[3] +
                               (Q3[2] * Q0[1]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[2][2][0] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[0] +
                               (Q2[2] * Q0[2]) / (L0-L2) * Q2[0] +
                               (Q3[2] * Q0[2]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[2][2][1] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[1] +
                               (Q2[2] * Q0[2]) / (L0-L2) * Q2[1] +
                               (Q3[2] * Q0[2]) / (L0-L3) * Q3[1];
         tmp_Q0Q0_L[2][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[2] +
                               (Q2[2] * Q0[2]) / (L0-L2) * Q2[2] +
                               (Q3[2] * Q0[2]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[2][2][3] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[3] +
                               (Q2[2] * Q0[2]) / (L0-L2) * Q2[3] +
                               (Q3[2] * Q0[2]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[2][3][0] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[0] +
                               (Q2[2] * Q0[3]) / (L0-L2) * Q2[0] +
                               (Q3[2] * Q0[3]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[2][3][1] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[1] +
                               (Q2[2] * Q0[3]) / (L0-L2) * Q2[1] +
                               (Q3[2] * Q0[3]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[2][3][2] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[2] +
                               (Q2[2] * Q0[3]) / (L0-L2) * Q2[2] +
                               (Q3[2] * Q0[3]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[2][3][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[3] +
                               (Q2[2] * Q0[3]) / (L0-L2) * Q2[3] +
                               (Q3[2] * Q0[3]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[3][0][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[0] +
                               (Q2[3] * Q0[0]) / (L0-L2) * Q2[0] +
                               (Q3[3] * Q0[0]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[3][0][1] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[1] +
                               (Q2[3] * Q0[0]) / (L0-L2) * Q2[1] +
                               (Q3[3] * Q0[0]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[3][0][2] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[2] +
                               (Q2[3] * Q0[0]) / (L0-L2) * Q2[2] +
                               (Q3[3] * Q0[0]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[3][0][3] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[3] +
                               (Q2[3] * Q0[0]) / (L0-L2) * Q2[3] +
                               (Q3[3] * Q0[0]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[3][1][0] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[0] +
                               (Q2[3] * Q0[1]) / (L0-L2) * Q2[0] +
                               (Q3[3] * Q0[1]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[3][1][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[1] +
                               (Q2[3] * Q0[1]) / (L0-L2) * Q2[1] +
                               (Q3[3] * Q0[1]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[3][1][2] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[2] +
                               (Q2[3] * Q0[1]) / (L0-L2) * Q2[2] +
                               (Q3[3] * Q0[1]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[3][1][3] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[3] +
                               (Q2[3] * Q0[1]) / (L0-L2) * Q2[3] +
                               (Q3[3] * Q0[1]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[3][2][0] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[0] +
                               (Q2[3] * Q0[2]) / (L0-L2) * Q2[0] +
                               (Q3[3] * Q0[2]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[3][2][1] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[1] +
                               (Q2[3] * Q0[2]) / (L0-L2) * Q2[1] +
                               (Q3[3] * Q0[2]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[3][2][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[2] +
                               (Q2[3] * Q0[2]) / (L0-L2) * Q2[2] +
                               (Q3[3] * Q0[2]) / (L0-L3) * Q3[2];
-        tmp_Q0Q0_L[3][2][3] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[3] +
+        tmp_Q0Q0_L[3][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[3] +
                               (Q2[3] * Q0[2]) / (L0-L2) * Q2[3] +
                               (Q3[3] * Q0[2]) / (L0-L3) * Q3[3];
 
-        tmp_Q0Q0_L[3][3][0] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[0] +
+        tmp_Q0Q0_L[0][3][3] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[0] +
                               (Q2[3] * Q0[3]) / (L0-L2) * Q2[0] +
                               (Q3[3] * Q0[3]) / (L0-L3) * Q3[0];
-        tmp_Q0Q0_L[3][3][1] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[1] +
+        tmp_Q0Q0_L[1][3][3] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[1] +
                               (Q2[3] * Q0[3]) / (L0-L2) * Q2[1] +
                               (Q3[3] * Q0[3]) / (L0-L3) * Q3[1];
-        tmp_Q0Q0_L[3][3][2] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[2] +
+        tmp_Q0Q0_L[2][3][3] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[2] +
                               (Q2[3] * Q0[3]) / (L0-L2) * Q2[2] +
                               (Q3[3] * Q0[3]) / (L0-L3) * Q3[2];
         tmp_Q0Q0_L[3][3][3] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[3] +
                               (Q2[3] * Q0[3]) / (L0-L2) * Q2[3] +
                               (Q3[3] * Q0[3]) / (L0-L3) * Q3[3];
+      }
+    }
+    /*! @brief Actual implementation of the derivative calculation
+     *  @param[in]  ds  The derivative of matrix S with respect to an atom of
+     *                  either group 1 or group 2
+     *  @param[out] dl0_out The output of derivative of L
+     *  @param[out] dq0_out The output of derivative of Q
+     *  @param[out] ds_out  The output of derivative of overlap matrix S
+     */
+    void calc_derivative_impl(
+      const cvm::rvector (&ds)[4][4],
+      cvm::rvector* const dl0_out,
+      cvm::vector1d<cvm::rvector>* const dq0_out,
+      cvm::matrix2d<cvm::rvector>* const ds_out) const {
+      if (ds_out != NULL) {
+        // this code path is for debug_gradients, so not necessary to unroll the loop
+        *ds_out = cvm::matrix2d<cvm::rvector>(4, 4);
+        for (int i = 0; i < 4; ++i) {
+          for (int j = 0; j < 4; ++j) {
+            (*ds_out)[i][j] = ds[i][j];
+          }
+        }
+      }
+      if (dl0_out != NULL) {
+        /* manually loop unrolling of the following loop:
+          dl0_1.reset();
+          for (size_t i = 0; i < 4; i++) {
+            for (size_t j = 0; j < 4; j++) {
+              dl0_1 += Q0[i] * ds_1[i][j] * Q0[j];
+            }
+          }
+        */
+        *dl0_out = tmp_Q0Q0[0][0] * ds[0][0] +
+                   tmp_Q0Q0[0][1] * ds[0][1] +
+                   tmp_Q0Q0[0][2] * ds[0][2] +
+                   tmp_Q0Q0[0][3] * ds[0][3] +
+                   tmp_Q0Q0[1][0] * ds[1][0] +
+                   tmp_Q0Q0[1][1] * ds[1][1] +
+                   tmp_Q0Q0[1][2] * ds[1][2] +
+                   tmp_Q0Q0[1][3] * ds[1][3] +
+                   tmp_Q0Q0[2][0] * ds[2][0] +
+                   tmp_Q0Q0[2][1] * ds[2][1] +
+                   tmp_Q0Q0[2][2] * ds[2][2] +
+                   tmp_Q0Q0[2][3] * ds[2][3] +
+                   tmp_Q0Q0[3][0] * ds[3][0] +
+                   tmp_Q0Q0[3][1] * ds[3][1] +
+                   tmp_Q0Q0[3][2] * ds[3][2] +
+                   tmp_Q0Q0[3][3] * ds[3][3];
+      }
+      if (dq0_out != NULL) {
+        // we can skip this check if a fixed-size array is used
+        if (dq0_out->size() != 4) dq0_out->resize(4);
+        /* manually loop unrolling of the following loop:
+          dq0_1.reset();
+          for (size_t p = 0; p < 4; p++) {
+            for (size_t i = 0; i < 4; i++) {
+              for (size_t j = 0; j < 4; j++) {
+                dq0_1[p] +=
+                  (Q1[i] * ds_1[i][j] * Q0[j]) / (L0-L1) * Q1[p] +
+                  (Q2[i] * ds_1[i][j] * Q0[j]) / (L0-L2) * Q2[p] +
+                  (Q3[i] * ds_1[i][j] * Q0[j]) / (L0-L3) * Q3[p];
+              }
+            }
+          }
+        */
+        (*dq0_out)[0] = tmp_Q0Q0_L[0][0][0] * ds[0][0] +
+                        tmp_Q0Q0_L[0][0][1] * ds[0][1] +
+                        tmp_Q0Q0_L[0][0][2] * ds[0][2] +
+                        tmp_Q0Q0_L[0][0][3] * ds[0][3] +
+                        tmp_Q0Q0_L[0][1][0] * ds[1][0] +
+                        tmp_Q0Q0_L[0][1][1] * ds[1][1] +
+                        tmp_Q0Q0_L[0][1][2] * ds[1][2] +
+                        tmp_Q0Q0_L[0][1][3] * ds[1][3] +
+                        tmp_Q0Q0_L[0][2][0] * ds[2][0] +
+                        tmp_Q0Q0_L[0][2][1] * ds[2][1] +
+                        tmp_Q0Q0_L[0][2][2] * ds[2][2] +
+                        tmp_Q0Q0_L[0][2][3] * ds[2][3] +
+                        tmp_Q0Q0_L[0][3][0] * ds[3][0] +
+                        tmp_Q0Q0_L[0][3][1] * ds[3][1] +
+                        tmp_Q0Q0_L[0][3][2] * ds[3][2] +
+                        tmp_Q0Q0_L[0][3][3] * ds[3][3];
+
+        (*dq0_out)[1] = tmp_Q0Q0_L[1][0][0] * ds[0][0] +
+                        tmp_Q0Q0_L[1][0][1] * ds[0][1] +
+                        tmp_Q0Q0_L[1][0][2] * ds[0][2] +
+                        tmp_Q0Q0_L[1][0][3] * ds[0][3] +
+                        tmp_Q0Q0_L[1][1][0] * ds[1][0] +
+                        tmp_Q0Q0_L[1][1][1] * ds[1][1] +
+                        tmp_Q0Q0_L[1][1][2] * ds[1][2] +
+                        tmp_Q0Q0_L[1][1][3] * ds[1][3] +
+                        tmp_Q0Q0_L[1][2][0] * ds[2][0] +
+                        tmp_Q0Q0_L[1][2][1] * ds[2][1] +
+                        tmp_Q0Q0_L[1][2][2] * ds[2][2] +
+                        tmp_Q0Q0_L[1][2][3] * ds[2][3] +
+                        tmp_Q0Q0_L[1][3][0] * ds[3][0] +
+                        tmp_Q0Q0_L[1][3][1] * ds[3][1] +
+                        tmp_Q0Q0_L[1][3][2] * ds[3][2] +
+                        tmp_Q0Q0_L[1][3][3] * ds[3][3];
+
+        (*dq0_out)[2] = tmp_Q0Q0_L[2][0][0] * ds[0][0] +
+                        tmp_Q0Q0_L[2][0][1] * ds[0][1] +
+                        tmp_Q0Q0_L[2][0][2] * ds[0][2] +
+                        tmp_Q0Q0_L[2][0][3] * ds[0][3] +
+                        tmp_Q0Q0_L[2][1][0] * ds[1][0] +
+                        tmp_Q0Q0_L[2][1][1] * ds[1][1] +
+                        tmp_Q0Q0_L[2][1][2] * ds[1][2] +
+                        tmp_Q0Q0_L[2][1][3] * ds[1][3] +
+                        tmp_Q0Q0_L[2][2][0] * ds[2][0] +
+                        tmp_Q0Q0_L[2][2][1] * ds[2][1] +
+                        tmp_Q0Q0_L[2][2][2] * ds[2][2] +
+                        tmp_Q0Q0_L[2][2][3] * ds[2][3] +
+                        tmp_Q0Q0_L[2][3][0] * ds[3][0] +
+                        tmp_Q0Q0_L[2][3][1] * ds[3][1] +
+                        tmp_Q0Q0_L[2][3][2] * ds[3][2] +
+                        tmp_Q0Q0_L[2][3][3] * ds[3][3];
+
+        (*dq0_out)[3] = tmp_Q0Q0_L[3][0][0] * ds[0][0] +
+                        tmp_Q0Q0_L[3][0][1] * ds[0][1] +
+                        tmp_Q0Q0_L[3][0][2] * ds[0][2] +
+                        tmp_Q0Q0_L[3][0][3] * ds[0][3] +
+                        tmp_Q0Q0_L[3][1][0] * ds[1][0] +
+                        tmp_Q0Q0_L[3][1][1] * ds[1][1] +
+                        tmp_Q0Q0_L[3][1][2] * ds[1][2] +
+                        tmp_Q0Q0_L[3][1][3] * ds[1][3] +
+                        tmp_Q0Q0_L[3][2][0] * ds[2][0] +
+                        tmp_Q0Q0_L[3][2][1] * ds[2][1] +
+                        tmp_Q0Q0_L[3][2][2] * ds[2][2] +
+                        tmp_Q0Q0_L[3][2][3] * ds[2][3] +
+                        tmp_Q0Q0_L[3][3][0] * ds[3][0] +
+                        tmp_Q0Q0_L[3][3][1] * ds[3][1] +
+                        tmp_Q0Q0_L[3][3][2] * ds[3][2] +
+                        tmp_Q0Q0_L[3][3][3] * ds[3][3];
       }
     }
     /*! @brief Calculate the derivatives of S, the leading eigenvalue L and
@@ -1616,161 +1753,43 @@ public:
      *                        respect to ia-th atom of group 1
      */
     void calc_derivative_to_group1(
-      size_t ia, cvm::rvector* dl0_1_out = NULL,
-      cvm::vector1d<cvm::rvector>* dq0_1_out = NULL,
-      cvm::matrix2d<cvm::rvector>* ds_1_out = NULL) const {
-          if (dl0_1_out == NULL && dq0_1_out == NULL) return;
-          cvm::real a2x, a2y, a2z;
-          // we can get rid of the helper function read_atom_coord if C++17 is available
+      size_t ia, cvm::rvector* const dl0_1_out = NULL,
+      cvm::vector1d<cvm::rvector>* const dq0_1_out = NULL,
+      cvm::matrix2d<cvm::rvector>* const ds_1_out = NULL) const {
+        if (dl0_1_out == NULL && dq0_1_out == NULL) return;
+        cvm::real a2x, a2y, a2z;
+        // we can get rid of the helper function read_atom_coord if C++17 is available
 #if (__cplusplus >= 201703L)
-          if constexpr (std::is_same<T2, cvm::atom_pos>::value) {
-            a2x = m_pos2[ia].x;
-            a2y = m_pos2[ia].y;
-            a2z = m_pos2[ia].z;
-          } else if constexpr (std::is_same<T2, cvm::atom>::value) {
-            a2x = m_pos2[ia].pos.x;
-            a2y = m_pos2[ia].pos.y;
-            a2z = m_pos2[ia].pos.z;
-          }
+        if constexpr (std::is_same<T2, cvm::atom_pos>::value) {
+          a2x = m_pos2[ia].x;
+          a2y = m_pos2[ia].y;
+          a2z = m_pos2[ia].z;
+        } else if constexpr (std::is_same<T2, cvm::atom>::value) {
+          a2x = m_pos2[ia].pos.x;
+          a2y = m_pos2[ia].pos.y;
+          a2z = m_pos2[ia].pos.z;
+        }
 #else
-          read_atom_coord(ia, m_pos2, &a2x, &a2y, &a2z);
+        read_atom_coord(ia, m_pos2, &a2x, &a2y, &a2z);
 #endif
-          cvm::rvector ds_1[4][4];
-          ds_1[0][0].set( a2x,  a2y,  a2z);
-          ds_1[1][0].set( 0.0,  a2z, -a2y);
-          ds_1[0][1] = ds_1[1][0];
-          ds_1[2][0].set(-a2z,  0.0,  a2x);
-          ds_1[0][2] = ds_1[2][0];
-          ds_1[3][0].set( a2y, -a2x,  0.0);
-          ds_1[0][3] = ds_1[3][0];
-          ds_1[1][1].set( a2x, -a2y, -a2z);
-          ds_1[2][1].set( a2y,  a2x,  0.0);
-          ds_1[1][2] = ds_1[2][1];
-          ds_1[3][1].set( a2z,  0.0,  a2x);
-          ds_1[1][3] = ds_1[3][1];
-          ds_1[2][2].set(-a2x,  a2y, -a2z);
-          ds_1[3][2].set( 0.0,  a2z,  a2y);
-          ds_1[2][3] = ds_1[3][2];
-          ds_1[3][3].set(-a2x, -a2y,  a2z);
-          if (ds_1_out != NULL) {
-            // this code path is for debug_gradients, so not necessary to unroll the loop
-            *ds_1_out = cvm::matrix2d<cvm::rvector>(4, 4);
-            for (int i = 0; i < 4; ++i) {
-              for (int j = 0; j < 4; ++j) {
-                (*ds_1_out)[i][j] = ds_1[i][j];
-              }
-            }
-          }
-          if (dl0_1_out != NULL) {
-            /* manually loop unrolling of the following loop:
-              dl0_1.reset();
-              for (size_t i = 0; i < 4; i++) {
-                for (size_t j = 0; j < 4; j++) {
-                  dl0_1 += Q0[i] * ds_1[i][j] * Q0[j];
-                }
-              }
-            */
-            *dl0_1_out = tmp_Q0Q0[0][0] * ds_1[0][0] +
-                         tmp_Q0Q0[0][1] * ds_1[0][1] +
-                         tmp_Q0Q0[0][2] * ds_1[0][2] +
-                         tmp_Q0Q0[0][3] * ds_1[0][3] +
-                         tmp_Q0Q0[1][0] * ds_1[1][0] +
-                         tmp_Q0Q0[1][1] * ds_1[1][1] +
-                         tmp_Q0Q0[1][2] * ds_1[1][2] +
-                         tmp_Q0Q0[1][3] * ds_1[1][3] +
-                         tmp_Q0Q0[2][0] * ds_1[2][0] +
-                         tmp_Q0Q0[2][1] * ds_1[2][1] +
-                         tmp_Q0Q0[2][2] * ds_1[2][2] +
-                         tmp_Q0Q0[2][3] * ds_1[2][3] +
-                         tmp_Q0Q0[3][0] * ds_1[3][0] +
-                         tmp_Q0Q0[3][1] * ds_1[3][1] +
-                         tmp_Q0Q0[3][2] * ds_1[3][2] +
-                         tmp_Q0Q0[3][3] * ds_1[3][3];
-          }
-          if (dq0_1_out != NULL) {
-            // we can skip this check if a fixed-size array is used
-            if (dq0_1_out->size() != 4) dq0_1_out->resize(4);
-            /* manually loop unrolling of the following loop:
-              dq0_1.reset();
-              for (size_t p = 0; p < 4; p++) {
-                for (size_t i = 0; i < 4; i++) {
-                  for (size_t j = 0; j < 4; j++) {
-                    dq0_1[p] +=
-                      (Q1[i] * ds_1[i][j] * Q0[j]) / (L0-L1) * Q1[p] +
-                      (Q2[i] * ds_1[i][j] * Q0[j]) / (L0-L2) * Q2[p] +
-                      (Q3[i] * ds_1[i][j] * Q0[j]) / (L0-L3) * Q3[p];
-                  }
-                }
-              }
-            */
-            (*dq0_1_out)[0] = tmp_Q0Q0_L[0][0][0] * ds_1[0][0] +
-                              tmp_Q0Q0_L[0][1][0] * ds_1[0][1] +
-                              tmp_Q0Q0_L[0][2][0] * ds_1[0][2] +
-                              tmp_Q0Q0_L[0][3][0] * ds_1[0][3] +
-                              tmp_Q0Q0_L[1][0][0] * ds_1[1][0] +
-                              tmp_Q0Q0_L[1][1][0] * ds_1[1][1] +
-                              tmp_Q0Q0_L[1][2][0] * ds_1[1][2] +
-                              tmp_Q0Q0_L[1][3][0] * ds_1[1][3] +
-                              tmp_Q0Q0_L[2][0][0] * ds_1[2][0] +
-                              tmp_Q0Q0_L[2][1][0] * ds_1[2][1] +
-                              tmp_Q0Q0_L[2][2][0] * ds_1[2][2] +
-                              tmp_Q0Q0_L[2][3][0] * ds_1[2][3] +
-                              tmp_Q0Q0_L[3][0][0] * ds_1[3][0] +
-                              tmp_Q0Q0_L[3][1][0] * ds_1[3][1] +
-                              tmp_Q0Q0_L[3][2][0] * ds_1[3][2] +
-                              tmp_Q0Q0_L[3][3][0] * ds_1[3][3];
-
-            (*dq0_1_out)[1] = tmp_Q0Q0_L[0][0][1] * ds_1[0][0] +
-                              tmp_Q0Q0_L[0][1][1] * ds_1[0][1] +
-                              tmp_Q0Q0_L[0][2][1] * ds_1[0][2] +
-                              tmp_Q0Q0_L[0][3][1] * ds_1[0][3] +
-                              tmp_Q0Q0_L[1][0][1] * ds_1[1][0] +
-                              tmp_Q0Q0_L[1][1][1] * ds_1[1][1] +
-                              tmp_Q0Q0_L[1][2][1] * ds_1[1][2] +
-                              tmp_Q0Q0_L[1][3][1] * ds_1[1][3] +
-                              tmp_Q0Q0_L[2][0][1] * ds_1[2][0] +
-                              tmp_Q0Q0_L[2][1][1] * ds_1[2][1] +
-                              tmp_Q0Q0_L[2][2][1] * ds_1[2][2] +
-                              tmp_Q0Q0_L[2][3][1] * ds_1[2][3] +
-                              tmp_Q0Q0_L[3][0][1] * ds_1[3][0] +
-                              tmp_Q0Q0_L[3][1][1] * ds_1[3][1] +
-                              tmp_Q0Q0_L[3][2][1] * ds_1[3][2] +
-                              tmp_Q0Q0_L[3][3][1] * ds_1[3][3];
-
-            (*dq0_1_out)[2] = tmp_Q0Q0_L[0][0][2] * ds_1[0][0] +
-                              tmp_Q0Q0_L[0][1][2] * ds_1[0][1] +
-                              tmp_Q0Q0_L[0][2][2] * ds_1[0][2] +
-                              tmp_Q0Q0_L[0][3][2] * ds_1[0][3] +
-                              tmp_Q0Q0_L[1][0][2] * ds_1[1][0] +
-                              tmp_Q0Q0_L[1][1][2] * ds_1[1][1] +
-                              tmp_Q0Q0_L[1][2][2] * ds_1[1][2] +
-                              tmp_Q0Q0_L[1][3][2] * ds_1[1][3] +
-                              tmp_Q0Q0_L[2][0][2] * ds_1[2][0] +
-                              tmp_Q0Q0_L[2][1][2] * ds_1[2][1] +
-                              tmp_Q0Q0_L[2][2][2] * ds_1[2][2] +
-                              tmp_Q0Q0_L[2][3][2] * ds_1[2][3] +
-                              tmp_Q0Q0_L[3][0][2] * ds_1[3][0] +
-                              tmp_Q0Q0_L[3][1][2] * ds_1[3][1] +
-                              tmp_Q0Q0_L[3][2][2] * ds_1[3][2] +
-                              tmp_Q0Q0_L[3][3][2] * ds_1[3][3];
-
-            (*dq0_1_out)[3] = tmp_Q0Q0_L[0][0][3] * ds_1[0][0] +
-                              tmp_Q0Q0_L[0][1][3] * ds_1[0][1] +
-                              tmp_Q0Q0_L[0][2][3] * ds_1[0][2] +
-                              tmp_Q0Q0_L[0][3][3] * ds_1[0][3] +
-                              tmp_Q0Q0_L[1][0][3] * ds_1[1][0] +
-                              tmp_Q0Q0_L[1][1][3] * ds_1[1][1] +
-                              tmp_Q0Q0_L[1][2][3] * ds_1[1][2] +
-                              tmp_Q0Q0_L[1][3][3] * ds_1[1][3] +
-                              tmp_Q0Q0_L[2][0][3] * ds_1[2][0] +
-                              tmp_Q0Q0_L[2][1][3] * ds_1[2][1] +
-                              tmp_Q0Q0_L[2][2][3] * ds_1[2][2] +
-                              tmp_Q0Q0_L[2][3][3] * ds_1[2][3] +
-                              tmp_Q0Q0_L[3][0][3] * ds_1[3][0] +
-                              tmp_Q0Q0_L[3][1][3] * ds_1[3][1] +
-                              tmp_Q0Q0_L[3][2][3] * ds_1[3][2] +
-                              tmp_Q0Q0_L[3][3][3] * ds_1[3][3];
-          }
+        cvm::rvector ds_1[4][4];
+        ds_1[0][0].set( a2x,  a2y,  a2z);
+        ds_1[1][0].set( 0.0,  a2z, -a2y);
+        ds_1[0][1] = ds_1[1][0];
+        ds_1[2][0].set(-a2z,  0.0,  a2x);
+        ds_1[0][2] = ds_1[2][0];
+        ds_1[3][0].set( a2y, -a2x,  0.0);
+        ds_1[0][3] = ds_1[3][0];
+        ds_1[1][1].set( a2x, -a2y, -a2z);
+        ds_1[2][1].set( a2y,  a2x,  0.0);
+        ds_1[1][2] = ds_1[2][1];
+        ds_1[3][1].set( a2z,  0.0,  a2x);
+        ds_1[1][3] = ds_1[3][1];
+        ds_1[2][2].set(-a2x,  a2y, -a2z);
+        ds_1[3][2].set( 0.0,  a2z,  a2y);
+        ds_1[2][3] = ds_1[3][2];
+        ds_1[3][3].set(-a2x, -a2y,  a2z);
+        calc_derivative_impl(ds_1, dl0_1_out, dq0_1_out, ds_1_out);
       }
     /*! @brief Calculate the derivatives of S, the leading eigenvalue L and
      *         the leading eigenvector Q with respect to `m_pos2`
@@ -1783,160 +1802,43 @@ public:
      *                        respect to ia-th atom of group 2
      */
     void calc_derivative_to_group2(
-      size_t ia, cvm::rvector* dl0_2_out = NULL,
-      cvm::vector1d<cvm::rvector>* dq0_2_out = NULL,
-      cvm::matrix2d<cvm::rvector>* ds_2_out = NULL) const {
+      size_t ia, cvm::rvector* const dl0_2_out = NULL,
+      cvm::vector1d<cvm::rvector>* const dq0_2_out = NULL,
+      cvm::matrix2d<cvm::rvector>* const ds_2_out = NULL) const {
       if (dl0_2_out == NULL && dq0_2_out == NULL) return;
-        cvm::real a1x, a1y, a1z;
+      cvm::real a1x, a1y, a1z;
 #if (__cplusplus >= 201703L)
-        // we can get rid of the helper function read_atom_coord if C++17 is available
-        if constexpr (std::is_same<T1, cvm::atom_pos>::value) {
-          a1x = m_pos1[ia].x;
-          a1y = m_pos1[ia].y;
-          a1z = m_pos1[ia].z;
-        } else if constexpr (std::is_same<T1, cvm::atom>::value) {
-          a1x = m_pos1[ia].pos.x;
-          a1y = m_pos1[ia].pos.y;
-          a1z = m_pos1[ia].pos.z;
-        }
+      // we can get rid of the helper function read_atom_coord if C++17 is available
+      if constexpr (std::is_same<T1, cvm::atom_pos>::value) {
+        a1x = m_pos1[ia].x;
+        a1y = m_pos1[ia].y;
+        a1z = m_pos1[ia].z;
+      } else if constexpr (std::is_same<T1, cvm::atom>::value) {
+        a1x = m_pos1[ia].pos.x;
+        a1y = m_pos1[ia].pos.y;
+        a1z = m_pos1[ia].pos.z;
+      }
 #else
-        read_atom_coord(ia, m_pos1, &a1x, &a1y, &a1z);
+      read_atom_coord(ia, m_pos1, &a1x, &a1y, &a1z);
 #endif
-        cvm::rvector ds_2[4][4];
-        ds_2[0][0].set( a1x,  a1y,  a1z);
-        ds_2[1][0].set( 0.0, -a1z,  a1y);
-        ds_2[0][1] = ds_2[1][0];
-        ds_2[2][0].set( a1z,  0.0, -a1x);
-        ds_2[0][2] = ds_2[2][0];
-        ds_2[3][0].set(-a1y,  a1x,  0.0);
-        ds_2[0][3] = ds_2[3][0];
-        ds_2[1][1].set( a1x, -a1y, -a1z);
-        ds_2[2][1].set( a1y,  a1x,  0.0);
-        ds_2[1][2] = ds_2[2][1];
-        ds_2[3][1].set( a1z,  0.0,  a1x);
-        ds_2[1][3] = ds_2[3][1];
-        ds_2[2][2].set(-a1x,  a1y, -a1z);
-        ds_2[3][2].set( 0.0,  a1z,  a1y);
-        ds_2[2][3] = ds_2[3][2];
-        ds_2[3][3].set(-a1x, -a1y,  a1z);
-        if (ds_2_out != NULL) {
-          // this code path is for debug_gradients, so not necessary to unroll the loop
-          *ds_2_out = cvm::matrix2d<cvm::rvector>(4, 4);
-          for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-              (*ds_2_out)[i][j] = ds_2[i][j];
-            }
-          }
-        }
-        if (dl0_2_out != NULL) {
-          /* manually loop unrolling of the following loop:
-            dl0_2.reset();
-            for (size_t i = 0; i < 4; i++) {
-              for (size_t j = 0; j < 4; j++) {
-                dl0_2 += Q0[i] * ds_2[i][j] * Q0[j];
-              }
-            }
-          */
-          *dl0_2_out = tmp_Q0Q0[0][0] * ds_2[0][0] +
-                       tmp_Q0Q0[0][1] * ds_2[0][1] +
-                       tmp_Q0Q0[0][2] * ds_2[0][2] +
-                       tmp_Q0Q0[0][3] * ds_2[0][3] +
-                       tmp_Q0Q0[1][0] * ds_2[1][0] +
-                       tmp_Q0Q0[1][1] * ds_2[1][1] +
-                       tmp_Q0Q0[1][2] * ds_2[1][2] +
-                       tmp_Q0Q0[1][3] * ds_2[1][3] +
-                       tmp_Q0Q0[2][0] * ds_2[2][0] +
-                       tmp_Q0Q0[2][1] * ds_2[2][1] +
-                       tmp_Q0Q0[2][2] * ds_2[2][2] +
-                       tmp_Q0Q0[2][3] * ds_2[2][3] +
-                       tmp_Q0Q0[3][0] * ds_2[3][0] +
-                       tmp_Q0Q0[3][1] * ds_2[3][1] +
-                       tmp_Q0Q0[3][2] * ds_2[3][2] +
-                       tmp_Q0Q0[3][3] * ds_2[3][3];
-        }
-        if (dq0_2_out != NULL) {
-          if (dq0_2_out->size() != 4) dq0_2_out->resize(4);
-          /* manually loop unrolling of the following loop:
-            dq0_2.reset();
-            for (size_t p = 0; p < 4; p++) {
-              for (size_t i = 0; i < 4; i++) {
-                for (size_t j = 0; j < 4; j++) {
-                  dq0_2[p] +=
-                    (Q1[i] * ds_2[i][j] * Q0[j]) / (L0-L1) * Q1[p] +
-                    (Q2[i] * ds_2[i][j] * Q0[j]) / (L0-L2) * Q2[p] +
-                    (Q3[i] * ds_2[i][j] * Q0[j]) / (L0-L3) * Q3[p];
-                }
-              }
-            }
-          */
-          (*dq0_2_out)[0] = tmp_Q0Q0_L[0][0][0] * ds_2[0][0] +
-                            tmp_Q0Q0_L[0][1][0] * ds_2[0][1] +
-                            tmp_Q0Q0_L[0][2][0] * ds_2[0][2] +
-                            tmp_Q0Q0_L[0][3][0] * ds_2[0][3] +
-                            tmp_Q0Q0_L[1][0][0] * ds_2[1][0] +
-                            tmp_Q0Q0_L[1][1][0] * ds_2[1][1] +
-                            tmp_Q0Q0_L[1][2][0] * ds_2[1][2] +
-                            tmp_Q0Q0_L[1][3][0] * ds_2[1][3] +
-                            tmp_Q0Q0_L[2][0][0] * ds_2[2][0] +
-                            tmp_Q0Q0_L[2][1][0] * ds_2[2][1] +
-                            tmp_Q0Q0_L[2][2][0] * ds_2[2][2] +
-                            tmp_Q0Q0_L[2][3][0] * ds_2[2][3] +
-                            tmp_Q0Q0_L[3][0][0] * ds_2[3][0] +
-                            tmp_Q0Q0_L[3][1][0] * ds_2[3][1] +
-                            tmp_Q0Q0_L[3][2][0] * ds_2[3][2] +
-                            tmp_Q0Q0_L[3][3][0] * ds_2[3][3];
-
-          (*dq0_2_out)[1] = tmp_Q0Q0_L[0][0][1] * ds_2[0][0] +
-                            tmp_Q0Q0_L[0][1][1] * ds_2[0][1] +
-                            tmp_Q0Q0_L[0][2][1] * ds_2[0][2] +
-                            tmp_Q0Q0_L[0][3][1] * ds_2[0][3] +
-                            tmp_Q0Q0_L[1][0][1] * ds_2[1][0] +
-                            tmp_Q0Q0_L[1][1][1] * ds_2[1][1] +
-                            tmp_Q0Q0_L[1][2][1] * ds_2[1][2] +
-                            tmp_Q0Q0_L[1][3][1] * ds_2[1][3] +
-                            tmp_Q0Q0_L[2][0][1] * ds_2[2][0] +
-                            tmp_Q0Q0_L[2][1][1] * ds_2[2][1] +
-                            tmp_Q0Q0_L[2][2][1] * ds_2[2][2] +
-                            tmp_Q0Q0_L[2][3][1] * ds_2[2][3] +
-                            tmp_Q0Q0_L[3][0][1] * ds_2[3][0] +
-                            tmp_Q0Q0_L[3][1][1] * ds_2[3][1] +
-                            tmp_Q0Q0_L[3][2][1] * ds_2[3][2] +
-                            tmp_Q0Q0_L[3][3][1] * ds_2[3][3];
-
-          (*dq0_2_out)[2] = tmp_Q0Q0_L[0][0][2] * ds_2[0][0] +
-                            tmp_Q0Q0_L[0][1][2] * ds_2[0][1] +
-                            tmp_Q0Q0_L[0][2][2] * ds_2[0][2] +
-                            tmp_Q0Q0_L[0][3][2] * ds_2[0][3] +
-                            tmp_Q0Q0_L[1][0][2] * ds_2[1][0] +
-                            tmp_Q0Q0_L[1][1][2] * ds_2[1][1] +
-                            tmp_Q0Q0_L[1][2][2] * ds_2[1][2] +
-                            tmp_Q0Q0_L[1][3][2] * ds_2[1][3] +
-                            tmp_Q0Q0_L[2][0][2] * ds_2[2][0] +
-                            tmp_Q0Q0_L[2][1][2] * ds_2[2][1] +
-                            tmp_Q0Q0_L[2][2][2] * ds_2[2][2] +
-                            tmp_Q0Q0_L[2][3][2] * ds_2[2][3] +
-                            tmp_Q0Q0_L[3][0][2] * ds_2[3][0] +
-                            tmp_Q0Q0_L[3][1][2] * ds_2[3][1] +
-                            tmp_Q0Q0_L[3][2][2] * ds_2[3][2] +
-                            tmp_Q0Q0_L[3][3][2] * ds_2[3][3];
-
-          (*dq0_2_out)[3] = tmp_Q0Q0_L[0][0][3] * ds_2[0][0] +
-                            tmp_Q0Q0_L[0][1][3] * ds_2[0][1] +
-                            tmp_Q0Q0_L[0][2][3] * ds_2[0][2] +
-                            tmp_Q0Q0_L[0][3][3] * ds_2[0][3] +
-                            tmp_Q0Q0_L[1][0][3] * ds_2[1][0] +
-                            tmp_Q0Q0_L[1][1][3] * ds_2[1][1] +
-                            tmp_Q0Q0_L[1][2][3] * ds_2[1][2] +
-                            tmp_Q0Q0_L[1][3][3] * ds_2[1][3] +
-                            tmp_Q0Q0_L[2][0][3] * ds_2[2][0] +
-                            tmp_Q0Q0_L[2][1][3] * ds_2[2][1] +
-                            tmp_Q0Q0_L[2][2][3] * ds_2[2][2] +
-                            tmp_Q0Q0_L[2][3][3] * ds_2[2][3] +
-                            tmp_Q0Q0_L[3][0][3] * ds_2[3][0] +
-                            tmp_Q0Q0_L[3][1][3] * ds_2[3][1] +
-                            tmp_Q0Q0_L[3][2][3] * ds_2[3][2] +
-                            tmp_Q0Q0_L[3][3][3] * ds_2[3][3];
-        }
+      cvm::rvector ds_2[4][4];
+      ds_2[0][0].set( a1x,  a1y,  a1z);
+      ds_2[1][0].set( 0.0, -a1z,  a1y);
+      ds_2[0][1] = ds_2[1][0];
+      ds_2[2][0].set( a1z,  0.0, -a1x);
+      ds_2[0][2] = ds_2[2][0];
+      ds_2[3][0].set(-a1y,  a1x,  0.0);
+      ds_2[0][3] = ds_2[3][0];
+      ds_2[1][1].set( a1x, -a1y, -a1z);
+      ds_2[2][1].set( a1y,  a1x,  0.0);
+      ds_2[1][2] = ds_2[2][1];
+      ds_2[3][1].set( a1z,  0.0,  a1x);
+      ds_2[1][3] = ds_2[3][1];
+      ds_2[2][2].set(-a1x,  a1y, -a1z);
+      ds_2[3][2].set( 0.0,  a1z,  a1y);
+      ds_2[2][3] = ds_2[3][2];
+      ds_2[3][3].set(-a1x, -a1y,  a1z);
+      calc_derivative_impl(ds_2, dl0_2_out, dq0_2_out, ds_2_out);
     }
   };
 
