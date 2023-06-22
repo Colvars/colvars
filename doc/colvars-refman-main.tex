@@ -7193,7 +7193,7 @@ This section lists the few cases where the choice of compilation settings affect
 
 \item The Lepton library (\cvurl{https://simtk.org/projects/lepton}) used to implement the \texttt{customFunction} feature is currently included only in NAMD (always on), in LAMMPS (on by default) and in the Colvars-patched GROMACS releases.  For VMD, a \href{https://github.com/giacomofiorin/vmd-patches}{patch} that allows to link Lepton is available.
 
-\item Some features require compilation using the C++11 language standard, which is either supported (VMD) or required (GROMACS, LAMMPS, NAMD) by the engines.  However, for historic reasons many of the VMD official builds do not conform to the C++11 standard yet, which results in restricted functionality.  Detailed and up-to-date information can be found at:\\
+\item Colvars requires the C++11 language standard, which is either supported (VMD) or required (GROMACS, LAMMPS, NAMD) by all the engines.  However, many of the VMD official builds are produced on very old architectures.  For details please see:\\
   \cvurl{https://colvars.github.io/README-c++11.html}
 \end{itemize}
 
