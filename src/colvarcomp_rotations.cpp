@@ -84,11 +84,6 @@ int colvar::orientation::init(std::string const &conf)
 
   get_keyval(conf, "closestToQuaternion", ref_quat, cvm::quaternion(1.0, 0.0, 0.0, 0.0));
 
-  // initialize rot member data
-  if (!atoms->noforce) {
-    // rot.request_group2_gradients(atoms->size());
-  }
-
   return error_code;
 }
 
