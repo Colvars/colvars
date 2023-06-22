@@ -11,6 +11,15 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else()
+  if(${CMAKE_CXX_STANDARD} STREQUAL "98")
+    message(FATAL_ERROR "CMAKE_CXX_STANDARD must be 11 or later")
+  endif()
+endif()
+
 option(WARNINGS_ARE_ERRORS "Treats warnings as errors" OFF)
 
 option(ADDRESS_SANITIZER "Build with Address Sanitizer for memory debugging" OFF)
@@ -34,17 +43,6 @@ endif()
 
 option(COLVARS_LEPTON "Build and link the Lepton library" ${COLVARS_LEPTON_DEFAULT})
 
-if(COLVARS_LEPTON)
-  if(NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 11)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  else()
-    if(${CMAKE_CXX_STANDARD} STREQUAL "98")
-      message(FATAL_ERROR "With -DCOLVARS_LEPTON=ON, CMAKE_CXX_STANDARD must be 11 or later")
-    endif()
-  endif()
-endif()
-
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
 add_library(colvars ${COLVARS_SOURCES})
@@ -53,9 +51,6 @@ if(BUILD_SHARED_LIBS)
 endif()
 
 target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
-
-target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-long-long>)
-target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-c++11-long-long>)
 
 target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w>)
 # # Uncomment the line below to enable more thorough checks with Sun Compiler
@@ -119,10 +114,6 @@ endif()
 option(BUILD_TOOLS "Build standalone tools" ON)
 
 option(BUILD_TESTS "Build tests" ON)
-if((${CMAKE_CXX_STANDARD} STREQUAL "98") AND BUILD_TESTS)
-  message(WARNING "Will not build tests under the (legacy) C++98 standard")
-  set(BUILD_TESTS OFF)
-endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # TODO fix linkage errors with Visual Studio...
@@ -131,10 +122,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 
 option(BUILD_UNITTESTS "Build unit tests" ${BUILD_TESTS})
-if((${CMAKE_CXX_STANDARD} STREQUAL "98") AND BUILD_UNITTESTS)
-  message(WARNING "Will not build unit tests under the (legacy) C++98 standard")
-  set(BUILD_UNITTESTS OFF)
-endif()
 
 if(BUILD_TOOLS)
   add_subdirectory(${COLVARS_SOURCE_DIR}/colvartools colvartools)
