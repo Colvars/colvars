@@ -25,6 +25,6 @@ We no longer support using extremely old compilers and OSes that are well past t
 
 ### Building VMD is quite complicated: could you just provide a working VMD build?
 
-In theory we *could*, but because of UIUC's restrictive license we are unfortunately unable to redistribute any version of VMD (modified or not).  It is worth noting that the UIUC license violates several of the best practice set forth by the National Institutes of Health (NIH), which funds the development of VMD:
+In theory we *could*, but because of UIUC's restrictive license we are unfortunately unable to redistribute any version of VMD (modified or not).  It is worth noting that the UIUC license violates several of the best practices set forth by the National Institutes of Health (NIH), which funds the development of NAMD and VMD:
 [https://datascience.nih.gov/tools-and-analytics/best-practices-for-sharing-research-software-faq](https://datascience.nih.gov/tools-and-analytics/best-practices-for-sharing-research-software-faq)
 We hope that this arrangement will change in the future, and we encourage you to let your preference known to the VMD and NAMD development teams.
