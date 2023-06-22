@@ -19,20 +19,15 @@
 // this can be done straightforwardly by using the macro:
 // simple_scalar_dist_functions (derived_class)
 
+#include <functional>
+#include <map>
+#include <memory>
 
 #include "colvarmodule.h"
-#include "colvar.h"
 #include "colvaratoms.h"
+#include "colvar.h"
 #include "colvar_arithmeticpath.h"
-
-#if (__cplusplus >= 201103L)
-// C++11-only functions
 #include "colvar_geometricpath.h"
-#include <memory>
-#include <functional>
-#endif
-
-#include <map>
 
 
 /// \brief Colvar component (base class for collective variables)
@@ -1540,7 +1535,6 @@ public:
 
 
 
-#if (__cplusplus >= 201103L)
 class colvar::CartesianBasedPath
   : public colvar::cvc
 {
@@ -1745,6 +1739,7 @@ namespace neuralnetworkCV {
     class neuralNetworkCompute;
 }
 
+
 class colvar::neuralNetwork
   : public linearCombination
 {
@@ -1760,80 +1755,6 @@ public:
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
 };
-
-#else // if the compiler doesn't support C++11
-
-class colvar::linearCombination
-  : public colvar::componentDisabled
-{
-public:
-    linearCombination(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::CartesianBasedPath
-  : public colvar::componentDisabled
-{
-public:
-    CartesianBasedPath(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::CVBasedPath
-  : public colvar::componentDisabled
-{
-public:
-    CVBasedPath(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::gspath
-  : public colvar::componentDisabled
-{
-public:
-    gspath(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::gzpath
-  : public colvar::componentDisabled
-{
-public:
-    gzpath(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::gspathCV
-  : public colvar::componentDisabled
-{
-public:
-    gspathCV(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::gzpathCV
-  : public colvar::componentDisabled
-{
-public:
-    gzpathCV(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::aspathCV
-  : public colvar::componentDisabled
-{
-public:
-    aspathCV(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::azpathCV
-  : public colvar::componentDisabled
-{
-public:
-    azpathCV(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::neuralNetwork
-  : public colvar::componentDisabled
-{
-public:
-    neuralNetwork(std::string const &conf) : componentDisabled(conf) {}
-};
-
-#endif // C++11 checking
 
 
 // \brief Colvar component: total value of a scalar map

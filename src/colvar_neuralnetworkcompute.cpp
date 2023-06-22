@@ -10,7 +10,6 @@
 #include <iostream>
 #include <fstream>
 
-#if (__cplusplus >= 201103L)
 #include "colvar_neuralnetworkcompute.h"
 #include "colvarparse.h"
 #include "colvarproxy.h"
@@ -306,5 +305,3 @@ void neuralNetworkCompute::compute() {
     }
 }
 }
-
-#endif

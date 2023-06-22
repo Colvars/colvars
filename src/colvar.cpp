@@ -16,13 +16,15 @@
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
-#include "colvar.h"
 #include "colvarcomp.h"
+#include "colvar.h"
 #include "colvarscript.h"
 
-#if (__cplusplus >= 201103L)
-std::map<std::string, std::function<colvar::cvc* (const std::string& subcv_conf)>> colvar::global_cvc_map = std::map<std::string, std::function<colvar::cvc* (const std::string& subcv_conf)>>();
-#endif
+
+std::map<std::string, std::function<colvar::cvc *(const std::string &subcv_conf)>>
+    colvar::global_cvc_map =
+        std::map<std::string, std::function<colvar::cvc *(const std::string &subcv_conf)>>();
+
 
 colvar::colvar()
 {
@@ -467,13 +469,6 @@ int colvar::init_custom_function(std::string const &conf)
   size_t pos = 0;
   if (key_lookup(conf, "customFunction", &expr, &pos)) {
     std::string msg("Error: customFunction requires the Lepton library.");
-#if (__cplusplus < 201103L)
-    // NOTE: this is not ideal; testing for the Lepton library's version would
-    // be more accurate, but also less portable
-    msg +=
-      std::string("  Note also that recent versions of Lepton require C++11: "
-                  "please see https://colvars.github.io/README-c++11.html.");
-#endif
     return cvm::error(msg, COLVARS_NOT_IMPLEMENTED);
   }
 
@@ -743,24 +738,22 @@ int colvar::init_output_flags(std::string const &conf)
   return COLVARS_OK;
 }
 
-#if (__cplusplus >= 201103L)
-// C++11
-template<typename def_class_name> int colvar::init_components_type(std::string const &,
-                                                                   char const * /* def_desc */,
-                                                                   char const *def_config_key) {
+
+template <typename def_class_name>
+int colvar::init_components_type(std::string const &, char const * /* def_desc */,
+                                 char const *def_config_key)
+{
   // global_cvc_map is only supported in the C++11 case
-  global_cvc_map[def_config_key] = [](const std::string& cvc_conf){return new def_class_name(cvc_conf);};
+  global_cvc_map[def_config_key] = [](const std::string &cvc_conf) {
+    return new def_class_name(cvc_conf);
+  };
   // TODO: maybe it is better to do more check to avoid duplication in the map?
   return COLVARS_OK;
 }
 
+
 int colvar::init_components_type_from_global_map(const std::string& conf,
                                                  const char* def_config_key) {
-#else
-template<typename def_class_name> int colvar::init_components_type(std::string const & conf,
-                                                                   char const * /* def_desc */,
-                                                                   char const *def_config_key) {
-#endif
   size_t def_count = 0;
   std::string def_conf = "";
   size_t pos = 0;
@@ -776,11 +769,7 @@ template<typename def_class_name> int colvar::init_components_type(std::string c
     cvm::increase_depth();
     // only the following line is different from init_components_type
     // in the non-C++11 case
-#if (__cplusplus >= 201103L)
     cvc *cvcp = global_cvc_map.at(def_config_key)(def_conf);
-#else
-    cvc *cvcp = new def_class_name(def_conf);
-#endif
     if (cvcp != NULL) {
       cvcs.push_back(cvcp);
       cvcp->check_keywords(def_conf, def_config_key);
@@ -910,7 +899,7 @@ int colvar::init_components(std::string const &conf)
   error_code |= init_components_type<neuralNetwork>(conf, "neural network CV for other CVs", "NeuralNetwork");
 
   error_code |= init_components_type<map_total>(conf, "total value of atomic map", "mapTotal");
-#if (__cplusplus >= 201103L)
+
   // iterate over all available CVC in the map
   for (auto it = global_cvc_map.begin(); it != global_cvc_map.end(); ++it) {
     error_code |= init_components_type_from_global_map(conf, it->first.c_str());
@@ -921,7 +910,7 @@ int colvar::init_components(std::string const &conf)
       // TODO: should it stop here?
     }
   }
-#endif
+
   if (!cvcs.size() || (error_code != COLVARS_OK)) {
     cvm::error("Error: no valid components were provided "
                "for this collective variable.\n",

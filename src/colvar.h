@@ -11,11 +11,8 @@
 #define COLVAR_H
 
 #include <iostream>
-
-#if (__cplusplus >= 201103L)
 #include <map>
 #include <functional>
-#endif
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
@@ -271,17 +268,16 @@ public:
   virtual int init_dependencies();
 
 private:
+
   /// Parse the CVC configuration for all components of a certain type
   template<typename def_class_name> int init_components_type(std::string const & conf,
                                                              char const *def_desc,
                                                              char const *def_config_key);
-#if (__cplusplus >= 201103L)
-  /// For the C++11 case, the names of all available components are
-  /// registered in the global map at first, and then the CVC configuration
-  /// is parsed by this function
+
+  /// The names of all available components are registered in the global map
+  /// at first, and then the CVC configuration is parsed by this function
   int init_components_type_from_global_map(const std::string& conf,
                                            const char* def_config_key);
-#endif
 
 public:
 
@@ -626,13 +622,12 @@ public:
   // components that do not handle any atoms directly
   class map_total;
 
-  /// getter of the global cvc map
-#if (__cplusplus >= 201103L)
   /// A global mapping of cvc names to the cvc constructors
-  static const std::map<std::string, std::function<colvar::cvc* (const std::string& subcv_conf)>>& get_global_cvc_map() {
-      return global_cvc_map;
+  static const std::map<std::string, std::function<colvar::cvc *(const std::string &subcv_conf)>> &
+  get_global_cvc_map()
+  {
+    return global_cvc_map;
   }
-#endif
 
   /// \brief function for sorting cvcs by their names
   static bool compare_cvc(const colvar::cvc* const i, const colvar::cvc* const j);
@@ -671,10 +666,9 @@ protected:
   double dev_null;
 #endif
 
-#if (__cplusplus >= 201103L)
   /// A global mapping of cvc names to the cvc constructors
-  static std::map<std::string, std::function<colvar::cvc* (const std::string& subcv_conf)>> global_cvc_map;
-#endif
+  static std::map<std::string, std::function<colvar::cvc *(const std::string &subcv_conf)>>
+      global_cvc_map;
 
   /// Volmap numeric IDs, one for each CVC (-1 if not available)
   std::vector<int> volmap_ids_;

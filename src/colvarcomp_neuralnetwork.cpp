@@ -1,4 +1,11 @@
-#if (__cplusplus >= 201103L)
+// -*- c++ -*-
+
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
@@ -184,5 +191,3 @@ void colvar::neuralNetwork::apply_force(colvarvalue const &force) {
         }
     }
 }
-
-#endif
