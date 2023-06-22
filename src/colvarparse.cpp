@@ -100,7 +100,7 @@ bool colvarparse::get_key_string_multi_value(std::string const &conf,
                                              char const *key, std::vector<std::string>& data)
 {
   bool b_found = false, b_found_any = false;
-  size_t save_pos = 0, found_count = 0;
+  size_t save_pos = 0;
 
   data.clear();
 
@@ -110,7 +110,6 @@ bool colvarparse::get_key_string_multi_value(std::string const &conf,
     if (b_found) {
       if (!b_found_any)
         b_found_any = true;
-      found_count++;
       data.push_back(data_this);
     }
   } while (b_found);

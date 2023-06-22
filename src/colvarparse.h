@@ -109,12 +109,12 @@ public:
   bool get_keyval(std::string const &conf,
                   char const *key,
                   int &value,
-                  int const &def_value = (int)0,
+                  int const &def_value = 0,
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
                   size_t &value,
-                  size_t const &def_value = (size_t)0,
+                  size_t const &def_value = 0,
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
@@ -134,7 +134,7 @@ public:
   bool get_keyval(std::string const &conf,
                   char const *key,
                   cvm::real &value,
-                  cvm::real const &def_value = (cvm::real)0.0,
+                  cvm::real const &def_value = 0.0,
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
@@ -159,17 +159,17 @@ public:
   bool get_keyval(std::string const &conf,
                   char const *key,
                   std::vector<int> &values,
-                  std::vector<int> const &def_values = std::vector<int>(0, (int)0),
+                  std::vector<int> const &def_values = std::vector<int>(0, 0),
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
                   std::vector<size_t> &values,
-                  std::vector<size_t> const &def_values = std::vector<size_t>(0, (size_t)0),
+                  std::vector<size_t> const &def_values = std::vector<size_t>(0, 0),
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
                   std::vector<long> &values,
-                  std::vector<long> const &def_values = std::vector<long>(0, (long)0),
+                  std::vector<long> const &def_values = std::vector<long>(0, 0),
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
@@ -179,7 +179,7 @@ public:
   bool get_keyval(std::string const &conf,
                   char const *key,
                   std::vector<cvm::real> &values,
-                  std::vector<cvm::real> const &def_values = std::vector<cvm::real>(0, (cvm::real)0.0),
+                  std::vector<cvm::real> const &def_values = std::vector<cvm::real>(0, 0.0),
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
