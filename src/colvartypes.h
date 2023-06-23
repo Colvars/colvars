@@ -80,6 +80,12 @@ public:
     return data;
   }
 
+  /// Return a reference to the data
+  inline std::vector<T> const &data_array() const
+  {
+    return data;
+  }
+
   inline ~vector1d()
   {
     data.clear();
@@ -500,6 +506,12 @@ public:
 
   /// Return a reference to the data
   inline std::vector<T> &data_array()
+  {
+    return data;
+  }
+
+  /// Return a reference to the data
+  inline std::vector<T> const &data_array() const
   {
     return data;
   }
