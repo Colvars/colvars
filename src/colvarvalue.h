@@ -299,11 +299,23 @@ public:
   void undef_op() const;
 
 
-  /// \brief Formatted output operator
-  friend std::ostream & operator << (std::ostream &os, colvarvalue const &q);
+  /// Generic stream writing function (formatted and not)
+  template <typename OST> void write_to_stream(OST &os) const;
 
-  /// \brief Formatted input operator
-  friend std::istream & operator >> (std::istream &is, colvarvalue &q);
+  /// Formatted output operator
+  friend std::ostream & operator << (std::ostream &os, colvarvalue const &x);
+
+  /// Unformatted output operator
+  friend cvm::memory_stream & operator << (cvm::memory_stream &os, colvarvalue const &x);
+
+  /// Generic stream reading function (formatted and not)
+  template <typename IST> void read_from_stream(IST &is);
+
+  /// Formatted input operator
+  friend std::istream & operator >> (std::istream &is, colvarvalue &x);
+
+  /// Unformatted input operator
+  friend cvm::memory_stream & operator >> (cvm::memory_stream &is, colvarvalue &x);
 
   /// Give the number of characters required to output this
   /// colvarvalue, given the current type assigned and the number of
