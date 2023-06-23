@@ -104,9 +104,9 @@ and run the provided `update-colvars-code.sh` script against the unpacked source
 and recompile them.
 
 The `update-colvars-code.sh` script support patching the latest development version of each program:
-- the [LAMMPS GitHub repository](https://github.com/lammps/lammps);
-- the [NAMD GitLab repository](https://gitlab.com/tcbgUIUC/namd);
-- the [CVS repositories of VMD and its plugins](https://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html).
+- [LAMMPS](https://github.com/lammps/lammps);
+- [NAMD](https://gitlab.com/tcbgUIUC/namd);
+- [VMD and its plugins](https://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html); note that starting from Colvars version 2023-06-23, some updates are needed to the VMD build script (see [here](https://colvars.github.io/README-c++11.html) for details).
 
 For [GROMACS](http://www.gromacs.org/), support for specific release series is currently maintained; pre-patched versions of specific releases are provided [below](#gromacs-colvars-releases).
 
