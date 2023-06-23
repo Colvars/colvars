@@ -14,6 +14,7 @@
 #include "colvartypes.h"
 #include "colvarparse.h"
 #include "colvaratoms.h"
+#include "colvar_rotation_derivative.h"
 
 #ifdef COLVARS_LAMMPS
 // Use open-source Jacobi implementation
@@ -389,7 +390,7 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
   calc_optimal_rotation_impl();
 
-  if (b_debug_gradients) debug_gradients<cvm::atom_pos, cvm::atom_pos>(pos1, pos2);
+  if (b_debug_gradients) debug_gradients<cvm::atom_pos, cvm::atom_pos>(*this, pos1, pos2);
 }
 
 void colvarmodule::rotation::calc_optimal_rotation(
@@ -401,7 +402,7 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
   calc_optimal_rotation_impl();
 
-  if (b_debug_gradients) debug_gradients<cvm::atom, cvm::atom_pos>(pos1, pos2);
+  if (b_debug_gradients) debug_gradients<cvm::atom, cvm::atom_pos>(*this, pos1, pos2);
 }
 
 // Calculate the optimal rotation between two groups, and implement it
@@ -452,20 +453,4 @@ void colvarmodule::rotation::calc_optimal_rotation_impl() {
     }
     q_old = q;
   }
-}
-
-void read_atom_coord(
-  size_t ia, const std::vector<cvm::atom_pos>& pos,
-  cvm::real* x, cvm::real* y, cvm::real* z) {
-  *x = pos[ia].x;
-  *y = pos[ia].y;
-  *z = pos[ia].z;
-}
-
-void read_atom_coord(
-  size_t ia, const std::vector<cvm::atom>& pos,
-  cvm::real* x, cvm::real* y, cvm::real* z) {
-  *x = pos[ia].pos.x;
-  *y = pos[ia].pos.y;
-  *z = pos[ia].pos.z;
 }
