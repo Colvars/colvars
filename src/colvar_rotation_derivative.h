@@ -518,10 +518,8 @@ void debug_gradients(
   cvm::rotation &rot,
   const std::vector<T1> &pos1,
   const std::vector<T2> &pos2) {
-#if (__cplusplus >= 201103L)
   static_assert(std::is_same<T1, cvm::atom_pos>::value || std::is_same<T1, cvm::atom>::value, "");
   static_assert(std::is_same<T2, cvm::atom_pos>::value || std::is_same<T2, cvm::atom>::value, "");
-#endif
   // eigenvalues and eigenvectors
   cvm::real const L0 = rot.S_eigval[0];
   cvm::real const L1 = rot.S_eigval[1];
