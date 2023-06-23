@@ -85,6 +85,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarscript_commands.h',
                     'colvarscript_commands_bias.h',
                     'colvarscript_commands_colvar.h',
+                    'colvars_memstream.h',
                     'colvars_version.h',
                     'colvartypes.h',
                     'colvarvalue.h',

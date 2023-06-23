@@ -190,7 +190,9 @@ public:
   template <class T> class matrix2d;
   class quaternion;
   class rotation;
+
   class usage;
+  class memory_stream;
 
   /// Residue identifier
   typedef int residue_id;
