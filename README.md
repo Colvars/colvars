@@ -23,11 +23,7 @@ For the molecular simulation program [GROMACS](http://www.gromacs.org/), code ma
 
 The [Colvars webpage](https://colvars.github.io/) includes user documentation for the four codes, as well as a Doxygen-based [developer documentation](https://colvars.github.io/doxygen/html/).
 
-To reflect the different availability of features in each engine, the Colvars reference manual comes in several flavors:
-- [GROMACS version](https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html);
-- [LAMMPS version](https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html);
-- [NAMD version](https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html);
-- [VMD version](https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html).
+To reflect the different availability of features in each engine, the Colvars reference manual comes in several flavors: [GROMACS](https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html) [LAMMPS](https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html) [NAMD](https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html) [VMD](https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html)
 
 ## Citing
 
