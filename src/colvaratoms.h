@@ -167,7 +167,7 @@ public:
   atom_group(std::vector<cvm::atom> const &atoms_in);
 
   /// \brief Destructor
-  ~atom_group();
+  ~atom_group() override;
 
   /// \brief Optional name to reuse properties of this in other groups
   std::string name;
@@ -180,7 +180,7 @@ public:
   int init();
 
   /// \brief Initialize dependency tree
-  virtual int init_dependencies();
+  virtual int init_dependencies() override;
 
   /// \brief Update data required to calculate cvc's
   int setup();
@@ -221,11 +221,11 @@ public:
   static std::vector<feature *> ag_features;
 
   /// \brief Implementation of the feature list accessor for atom group
-  virtual const std::vector<feature *> &features() const
+  virtual const std::vector<feature *> &features() const override
   {
     return ag_features;
   }
-  virtual std::vector<feature *> &modify_features()
+  virtual std::vector<feature *> &modify_features() override
   {
     return ag_features;
   }
@@ -525,7 +525,7 @@ public:
   /// Implements possible actions to be carried out
   /// when a given feature is enabled
   /// This overloads the base function in colvardeps
-  void do_feature_side_effects(int id);
+  void do_feature_side_effects(int id) override;
 };
 
 
