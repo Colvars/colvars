@@ -8,4 +8,7 @@ ObjCBlockIndentWidth: 2
 PenaltyBreakAssignment: 2
 AccessModifierOffset: -2
 BreakBeforeBraces: WebKit
+EmptyLineAfterAccessModifier: Leave
+NamespaceIndentation: None
+MaxEmptyLinesToKeep: 2
 ...
