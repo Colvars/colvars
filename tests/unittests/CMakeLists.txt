@@ -1,12 +1,18 @@
-add_executable(colvarvalue_unit3vector colvarvalue_unit3vector.cpp)
-target_link_libraries(colvarvalue_unit3vector PRIVATE colvars)
-target_include_directories(colvarvalue_unit3vector PRIVATE ${COLVARS_SOURCE_DIR}/src)
-add_test(NAME colvarvalue_unit3vector COMMAND colvarvalue_unit3vector)
+set(COLVARS_STUBS_DIR ${COLVARS_SOURCE_DIR}/misc_interfaces/stubs/)
 
-add_executable(file_io file_io.cpp)
-target_link_libraries(file_io PRIVATE colvars)
-target_include_directories(file_io PRIVATE ${COLVARS_SOURCE_DIR}/src)
-add_test(NAME file_io COMMAND file_io)
+foreach(CMD
+    colvarvalue_unit3vector
+    file_io
+    memory_stream
+    read_xyz_traj
+  )
+  add_executable(${CMD} ${CMD}.cpp)
+  target_link_libraries(${CMD} PRIVATE colvars)
+  target_include_directories(${CMD} PRIVATE ${COLVARS_SOURCE_DIR}/src)
+  target_include_directories(${CMD} PRIVATE ${COLVARS_STUBS_DIR})
+  target_link_libraries(${CMD} PRIVATE colvars colvars_stubs)
+  add_test(NAME ${CMD} COMMAND ${CMD})
+endforeach()
 
 if(COLVARS_TCL)
   add_executable(embedded_tcl embedded_tcl.cpp)
@@ -15,13 +21,6 @@ if(COLVARS_TCL)
   add_test(NAME embedded_tcl COMMAND embedded_tcl)
 endif()
 
-# Last test requires the stubs proxy
-add_executable(read_xyz_traj read_xyz_traj.cpp)
-set(COLVARS_STUBS_DIR ${COLVARS_SOURCE_DIR}/misc_interfaces/stubs/)
-target_link_libraries(read_xyz_traj PRIVATE colvars colvars_stubs)
-target_include_directories(read_xyz_traj PRIVATE ${COLVARS_SOURCE_DIR}/src)
-target_include_directories(read_xyz_traj PRIVATE ${COLVARS_STUBS_DIR})
-add_test(NAME read_xyz_traj COMMAND read_xyz_traj)
 add_custom_command(
         TARGET read_xyz_traj POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E create_symlink
