@@ -142,7 +142,7 @@ if(COLVARS_DEBUG)
 endif()
 
 option(ENABLE_COVERAGE "Enable code coverage reporting" ON)
-if(ENABLE_COVERAGE AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL "SunPro"))
+if(ENABLE_COVERAGE AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL "SunPro") AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"))
   target_compile_options(colvars PUBLIC --coverage)
   target_link_options(colvars PUBLIC --coverage)
 endif()

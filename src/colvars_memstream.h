@@ -25,7 +25,7 @@ public:
 
   /// Set up an empty stream with an internal buffer, suitable for writing to
   /// \param max_length Maximum allowed capacity (default is 64 GiB)
-  memory_stream(size_t max_length = (1L << 36)) : max_length_(max_length) {}
+  memory_stream(size_t max_length = (static_cast<size_t>(1L) << 36)) : max_length_(max_length) {}
 
   /// Set up a stream based on an external input buffer
   memory_stream(size_t n, unsigned char const *buf)
