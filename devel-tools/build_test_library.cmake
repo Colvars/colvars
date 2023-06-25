@@ -111,16 +111,12 @@ execute_process(
 if(NOT result EQUAL 0)
   message(FATAL_ERROR "Error building library.")
 else()
-  if(${CMAKE_CXX_STANDARD} STREQUAL "98")
-    message(STATUS "Skipping unit tests under the (legacy) C++98 standard")
-  else()
-    execute_process(
-      COMMAND ${CMAKE_CTEST_COMMAND}
-      --test-dir ${BUILD_DIR}
-      RESULT_VARIABLE result
-    )
-    if(NOT result EQUAL 0)
-      message(FATAL_ERROR "Error running library tests.")
-    endif()
+  execute_process(
+    COMMAND ${CMAKE_CTEST_COMMAND}
+    WORKING_DIRECTORY ${BUILD_DIR}
+    RESULT_VARIABLE result
+  )
+  if(NOT result EQUAL 0)
+    message(FATAL_ERROR "Error running library tests.")
   endif()
 endif()
