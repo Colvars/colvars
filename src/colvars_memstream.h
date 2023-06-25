@@ -8,6 +8,14 @@
 #include <typeinfo>
 #include <vector>
 
+// Work around missing std::is_trivially_copyable in old GCC versions
+// TODO remove this after CentOS 7 has been beyond EOL for a while
+#if __GNUG__ && (__GNUC__ < 5)
+#define IS_TRIVIALLY_COPYABLE(T) __has_trivial_copy(T)
+#else
+#define IS_TRIVIALLY_COPYABLE(T) std::is_trivially_copyable<T>::value
+#endif
+
 class cvm::memory_stream {
 
 public:
@@ -131,7 +139,7 @@ protected:
 
 template <typename T> void cvm::memory_stream::write_object(T const &t)
 {
-  static_assert(std::is_trivially_copyable<T>::value, "Cannot use write_object() on complex type");
+  static_assert(IS_TRIVIALLY_COPYABLE(T), "Cannot use write_object() on complex type");
   size_t const new_data_size = sizeof(T);
   if (expand_ouput_buffer(new_data_size)) {
     std::memcpy(output_location(), &t, sizeof(T));
@@ -185,7 +193,7 @@ template <> cvm::memory_stream &operator<<(cvm::memory_stream &os, colvarvalue c
 
 template <typename T> void cvm::memory_stream::write_vector(std::vector<T> const &t)
 {
-  static_assert(std::is_trivially_copyable<T>::value, "Cannot use write_vector() on complex type");
+  static_assert(IS_TRIVIALLY_COPYABLE(T), "Cannot use write_vector() on complex type");
   size_t const vector_length = t.size();
   size_t const new_data_size = sizeof(size_t) + sizeof(T) * vector_length;
   if (expand_ouput_buffer(new_data_size)) {
@@ -205,7 +213,7 @@ cvm::memory_stream &operator<<(cvm::memory_stream &os, std::vector<T> const &t)
 
 template <typename T> void cvm::memory_stream::read_object(T &t)
 {
-  static_assert(std::is_trivially_copyable<T>::value, "Cannot use read_object() on complex type");
+  static_assert(IS_TRIVIALLY_COPYABLE(T), "Cannot use read_object() on complex type");
   begin_reading();
   if (has_remaining(sizeof(T))) {
     std::memcpy(&t, input_location(), sizeof(T));
@@ -254,7 +262,7 @@ template <> cvm::memory_stream &operator>>(cvm::memory_stream &is, cvm::vector1d
 
 template <typename T> void cvm::memory_stream::read_vector(std::vector<T> &t)
 {
-  static_assert(std::is_trivially_copyable<T>::value, "Cannot use read_vector() on complex type");
+  static_assert(IS_TRIVIALLY_COPYABLE(T), "Cannot use read_vector() on complex type");
   begin_reading();
   size_t vector_length = 0;
   if (has_remaining(sizeof(size_t))) {
