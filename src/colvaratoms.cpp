@@ -68,7 +68,7 @@ void calc_fit_gradients_impl(colvarmodule::atom_group* ag) {
       group_for_fit->fit_gradients[j] = atom_grad;
     }
     if (B_ag_rotate) {
-      ag->rot_deriv->calc_derivative_to_group1(j, nullptr, &dq0_1);
+      ag->rot_deriv->calc_derivative_wrt_group1(j, nullptr, &dq0_1);
       // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
       group_for_fit->fit_gradients[j] += sum_dxdq[0] * dq0_1[0] +
                                           sum_dxdq[1] * dq0_1[1] +

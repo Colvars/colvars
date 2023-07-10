@@ -40,8 +40,8 @@ struct rotation_derivative {
   /*! @brief Constructor of the cvm::rotation::derivative class
     *  @param[in]  rot   The cvm::rotation object (must have called
     *                    `calc_optimal_rotation` before calling
-    *                    `calc_derivative_to_group1` and
-    *                    `calc_derivative_to_group2`)
+    *                    `calc_derivative_wrt_group1` and
+    *                    `calc_derivative_wrt_group2`)
     *  @param[in]  pos1  The atom positions of group 1
     *  @param[in]  pos2  The atom positions of group 2
     */
@@ -50,8 +50,8 @@ struct rotation_derivative {
     const std::vector<T1> &pos1,
     const std::vector<T2> &pos2):
       m_rot(rot), m_pos1(pos1), m_pos2(pos2) {};
-  /*! @brief This function must be called before `calc_derivative_to_group1`
-    *         and `calc_derivative_to_group2` in order to prepare the tmp_Q0Q0
+  /*! @brief This function must be called before `calc_derivative_wrt_group1`
+    *         and `calc_derivative_wrt_group2` in order to prepare the tmp_Q0Q0
     *        and tmp_Q0Q0_L.
     *  @param[in] require_dl Require the calculation of the derivative of L
     *                        with respect to atoms.
@@ -441,7 +441,7 @@ struct rotation_derivative {
     *  @param[out] ds_1_out  The output of derivative of overlap matrix S with
     *                        respect to ia-th atom of group 1
     */
-  void calc_derivative_to_group1(
+  void calc_derivative_wrt_group1(
     size_t ia, cvm::rvector* const dl0_1_out = nullptr,
     cvm::vector1d<cvm::rvector>* const dq0_1_out = nullptr,
     cvm::matrix2d<cvm::rvector>* const ds_1_out = nullptr) const {
@@ -478,7 +478,7 @@ struct rotation_derivative {
     *  @param[out] ds_2_out  The output of derivative of overlap matrix S with
     *                        respect to ia-th atom of group 2
     */
-  void calc_derivative_to_group2(
+  void calc_derivative_wrt_group2(
     size_t ia, cvm::rvector* const dl0_2_out = nullptr,
     cvm::vector1d<cvm::rvector>* const dq0_2_out = nullptr,
     cvm::matrix2d<cvm::rvector>* const ds_2_out = nullptr) const {
@@ -564,7 +564,7 @@ void debug_gradients(
     // cvm::real const &a1x = pos1[ia].x;
     // cvm::real const &a1y = pos1[ia].y;
     // cvm::real const &a1z = pos1[ia].z;
-    deriv.calc_derivative_to_group2(ia, &dl0_2, &dq0_2, &ds_2);
+    deriv.calc_derivative_wrt_group2(ia, &dl0_2, &dq0_2, &ds_2);
     // make an infitesimal move along each cartesian coordinate of
     // this atom, and solve again the eigenvector problem
     for (size_t comp = 0; comp < 3; comp++) {
