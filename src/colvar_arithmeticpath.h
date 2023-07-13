@@ -7,10 +7,31 @@
 #include <cmath>
 #include <limits>
 #include <string>
+#include <algorithm>
 
 namespace ArithmeticPathCV {
 
 using std::vector;
+
+template <typename T>
+double logsumexp(const vector<T>& a, const vector<T>& b) {
+    const auto max_a = *std::max_element(a.begin(), a.end());
+    T sum = T();
+    for (size_t i = 0; i < a.size(); ++i) {
+        sum += b[i] * std::exp(a[i] - max_a);
+    }
+    return max_a + std::log(sum);
+}
+
+template <typename T>
+double logsumexp(const vector<T>& a) {
+    const auto max_a = *std::max_element(a.begin(), a.end());
+    T sum = T();
+    for (size_t i = 0; i < a.size(); ++i) {
+        sum += std::exp(a[i] - max_a);
+    }
+    return max_a + std::log(sum);
+}
 
 enum path_sz {S, Z};
 
@@ -28,6 +49,7 @@ public:
 protected:
     scalar_type lambda;
     vector<scalar_type> weights;
+    vector<scalar_type> frame_indexes;
     size_t num_elements;
     size_t total_frames;
     vector< vector<element_type> > frame_element_distances;
@@ -39,6 +61,7 @@ private:
     // intermediate variables
     vector<scalar_type> s_numerator_frame;
     vector<scalar_type> s_denominator_frame;
+    vector<scalar_type> exponents;
     scalar_type numerator_s;
     scalar_type denominator_s;
     scalar_type normalization_factor;
@@ -51,10 +74,13 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::initialize(size_t
     num_elements = p_num_elements;
     total_frames = p_total_frames;
     frame_element_distances.resize(total_frames, p_element);
+    frame_indexes.resize(total_frames);
+    exponents.resize(total_frames, scalar_type());
     for (size_t i_frame = 0; i_frame < frame_element_distances.size(); ++i_frame) {
         for (size_t j_elem = 0; j_elem < num_elements; ++j_elem) {
             frame_element_distances[i_frame][j_elem].reset();
         }
+        frame_indexes[i_frame] = i_frame;
     }
     s = scalar_type(0);
     z = scalar_type(0);
@@ -77,20 +103,15 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeValue() {
         for (size_t j_elem = 0; j_elem < num_elements; ++j_elem) {
             exponent_tmp += weights[j_elem] * frame_element_distances[i_frame][j_elem] * weights[j_elem] * frame_element_distances[i_frame][j_elem];
         }
-        exponent_tmp = exponent_tmp * -1.0 * lambda;
-        // prevent underflow if the argument of cvm::exp is less than -708.4
-        if (exponent_tmp > -708.4) {
-            exponent_tmp = cvm::exp(exponent_tmp);
-        } else {
-            exponent_tmp = 0;
-        }
-        numerator_s += static_cast<scalar_type>(i_frame) * exponent_tmp;
-        denominator_s += exponent_tmp;
-        s_numerator_frame[i_frame] = static_cast<scalar_type>(i_frame) * exponent_tmp;
-        s_denominator_frame[i_frame] = exponent_tmp;
+        exponents[i_frame] = exponent_tmp * -1.0 * lambda;
+        s_denominator_frame[i_frame] = cvm::exp(exponents[i_frame]);
+        s_numerator_frame[i_frame] = static_cast<scalar_type>(i_frame) * s_denominator_frame[i_frame];
+        numerator_s += s_numerator_frame[i_frame];
+        denominator_s += s_denominator_frame[i_frame];
     }
-    s = numerator_s / denominator_s * normalization_factor;
-    z = -1.0 / lambda * cvm::logn(denominator_s);
+    const auto log_s = cvm::logn(normalization_factor) + logsumexp(exponents, frame_indexes) - logsumexp(exponents);
+    s = cvm::exp(log_s);
+    z = -1.0 / lambda * logsumexp(exponents);
 }
 
 template <typename element_type, typename scalar_type, path_sz path_type>
