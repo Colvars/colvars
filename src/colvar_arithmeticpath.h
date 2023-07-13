@@ -109,9 +109,10 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeValue() {
         numerator_s += s_numerator_frame[i_frame];
         denominator_s += s_denominator_frame[i_frame];
     }
-    const auto log_s = cvm::logn(normalization_factor) + logsumexp(exponents, frame_indexes) - logsumexp(exponents);
+    const auto log_sum_exp_ = logsumexp(exponents);
+    const auto log_s = cvm::logn(normalization_factor) + logsumexp(exponents, frame_indexes) - log_sum_exp_;
     s = cvm::exp(log_s);
-    z = -1.0 / lambda * logsumexp(exponents);
+    z = -1.0 / lambda * log_sum_exp_;
 }
 
 template <typename element_type, typename scalar_type, path_sz path_type>
