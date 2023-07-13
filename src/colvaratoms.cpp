@@ -29,28 +29,28 @@
  *          the value of `is_enabled(f_ag_rotate)`.
  */
 template <bool B_ag_center, bool B_ag_rotate>
-void calc_fit_gradients_impl(colvarmodule::atom_group* ag) {
-  cvm::atom_group *group_for_fit = ag->fitting_group ? ag->fitting_group : ag;
+void cvm::atom_group::calc_fit_gradients_impl() {
+  cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
   // the center of geometry contribution to the gradients
   cvm::rvector atom_grad;
   // the rotation matrix contribution to the gradients
-  cvm::rotation const rot_inv = ag->rot.inverse();
+  cvm::rotation const rot_inv = rot.inverse();
   // temporary variables for computing and summing derivatives
   cvm::real sum_dxdq[4] = {0, 0, 0, 0};
   cvm::vector1d<cvm::rvector> dq0_1(4);
   // loop 1: iterate over the current atom group
-  for (size_t i = 0; i < ag->size(); i++) {
+  for (size_t i = 0; i < size(); i++) {
     cvm::atom_pos pos_orig;
     if (B_ag_center) {
-      atom_grad += ag->atoms[i].grad;
-      if (B_ag_rotate) pos_orig = rot_inv.rotate(ag->atoms[i].pos - ag->ref_pos_cog);
+      atom_grad += atoms[i].grad;
+      if (B_ag_rotate) pos_orig = rot_inv.rotate(atoms[i].pos - ref_pos_cog);
     } else {
-      if (B_ag_rotate) pos_orig = ag->atoms[i].pos;
+      if (B_ag_rotate) pos_orig = atoms[i].pos;
     }
     if (B_ag_rotate) {
       // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
       cvm::quaternion const dxdq =
-        ag->rot.q.position_derivative_inner(pos_orig, ag->atoms[i].grad);
+        rot.q.position_derivative_inner(pos_orig, atoms[i].grad);
       sum_dxdq[0] += dxdq[0];
       sum_dxdq[1] += dxdq[1];
       sum_dxdq[2] += dxdq[2];
@@ -58,17 +58,17 @@ void calc_fit_gradients_impl(colvarmodule::atom_group* ag) {
     }
   }
   if (B_ag_center) {
-    if (B_ag_rotate) atom_grad = (ag->rot.inverse()).rotate(atom_grad);
+    if (B_ag_rotate) atom_grad = (rot.inverse()).rotate(atom_grad);
     atom_grad *= (-1.0)/(cvm::real(group_for_fit->size()));
   }
   // loop 2: iterate over the fitting group
-  if (B_ag_rotate) ag->rot_deriv->prepare_derivative(false, true);
+  if (B_ag_rotate) rot_deriv->prepare_derivative(false, true);
   for (size_t j = 0; j < group_for_fit->size(); j++) {
     if (B_ag_center) {
       group_for_fit->fit_gradients[j] = atom_grad;
     }
     if (B_ag_rotate) {
-      ag->rot_deriv->calc_derivative_wrt_group1(j, nullptr, &dq0_1);
+      rot_deriv->calc_derivative_wrt_group1(j, nullptr, &dq0_1);
       // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
       group_for_fit->fit_gradients[j] += sum_dxdq[0] * dq0_1[0] +
                                           sum_dxdq[1] * dq0_1[1] +
@@ -1313,13 +1313,13 @@ void cvm::atom_group::calc_fit_gradients()
     cvm::log("Calculating fit gradients.\n");
 
   if (is_enabled(f_ag_center) && is_enabled(f_ag_rotate))
-    calc_fit_gradients_impl<true, true>(this);
+    calc_fit_gradients_impl<true, true>();
   if (is_enabled(f_ag_center) && !is_enabled(f_ag_rotate))
-    calc_fit_gradients_impl<true, false>(this);
+    calc_fit_gradients_impl<true, false>();
   if (!is_enabled(f_ag_center) && is_enabled(f_ag_rotate))
-    calc_fit_gradients_impl<false, true>(this);
+    calc_fit_gradients_impl<false, true>();
   if (!is_enabled(f_ag_center) && !is_enabled(f_ag_rotate))
-    calc_fit_gradients_impl<false, false>(this);
+    calc_fit_gradients_impl<false, false>();
 
   if (cvm::debug())
     cvm::log("Done calculating fit gradients.\n");
