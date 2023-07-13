@@ -500,8 +500,7 @@ public:
   /// \brief Calculate the derivatives of the fitting transformation
   void calc_fit_gradients();
 
-  template <bool B_ag_center, bool B_ag_rotate>
-  friend void calc_fit_gradients_impl(colvarmodule::atom_group* ag);
+  template <bool B_ag_center, bool B_ag_rotate> void calc_fit_gradients_impl();
 
   /// \brief Derivatives of the fitting transformation
   std::vector<cvm::atom_pos> fit_gradients;
