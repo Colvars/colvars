@@ -500,6 +500,14 @@ public:
   /// \brief Calculate the derivatives of the fitting transformation
   void calc_fit_gradients();
 
+/*! @brief  Actual implementation of `calc_fit_gradients`. The template is
+ *          used to avoid branching inside the loops in case that the CPU
+ *          branch prediction is broken (or further migration to GPU code).
+ *  @tparam B_ag_center Centered the reference to origin? This should follow
+ *          the value of `is_enabled(f_ag_center)`.
+ *  @tparam B_ag_rotate Calculate the optimal rotation? This should follow
+ *          the value of `is_enabled(f_ag_rotate)`.
+ */
   template <bool B_ag_center, bool B_ag_rotate> void calc_fit_gradients_impl();
 
   /// \brief Derivatives of the fitting transformation
