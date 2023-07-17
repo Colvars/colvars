@@ -60,7 +60,7 @@ struct rotation_derivative {
     */
   void prepare_derivative(bool require_dl, bool require_dq) {
     if (require_dl) {
-      const cvm::real* Q0 = m_rot.S_eigvec[0].data;
+      const auto &Q0 = m_rot.S_eigvec[0].data;
       tmp_Q0Q0[0][0] = Q0[0] * Q0[0];
       tmp_Q0Q0[0][1] = Q0[0] * Q0[1];
       tmp_Q0Q0[0][2] = Q0[0] * Q0[2];
@@ -79,10 +79,10 @@ struct rotation_derivative {
       tmp_Q0Q0[3][3] = Q0[3] * Q0[3];
     }
     if (require_dq) {
-      const cvm::real* Q0 = m_rot.S_eigvec[0].data;
-      const cvm::real* Q1 = m_rot.S_eigvec[1].data;
-      const cvm::real* Q2 = m_rot.S_eigvec[2].data;
-      const cvm::real* Q3 = m_rot.S_eigvec[3].data;
+      const auto &Q0 = m_rot.S_eigvec[0].data;
+      const auto &Q1 = m_rot.S_eigvec[1].data;
+      const auto &Q2 = m_rot.S_eigvec[2].data;
+      const auto &Q3 = m_rot.S_eigvec[3].data;
       cvm::real const L0 = m_rot.S_eigval[0];
       cvm::real const L1 = m_rot.S_eigval[1];
       cvm::real const L2 = m_rot.S_eigval[2];
