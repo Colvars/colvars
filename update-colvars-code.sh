@@ -1,6 +1,8 @@
 #!/bin/bash
 # -*- sh-basic-offset: 2; sh-indentation: 2; -*-
 
+set -e
+
 # Script to update a NAMD, VMD, LAMMPS or GROMACS source tree with the latest Colvars
 # version.
 
