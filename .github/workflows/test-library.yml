@@ -88,7 +88,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.apptainer
-          key: Linux-x86_64-containers-build-doc-2022-09-03
+          key: Linux-x86_64-containers-build-doc-2023-07-19
 
       - name: Install Apptainer
         shell: bash
@@ -102,7 +102,7 @@ jobs:
         run: |
           apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
           apptainer remote use SylabsCloud
-          apptainer pull Fedora35-texlive.sif library://giacomofiorin/default/colvars_development:fedora35_texlive
+          apptainer pull texlive.sif library://giacomofiorin/default/colvars_development:texlive
 
       - name: Checkout website repository
         uses: actions/checkout@v3
@@ -115,7 +115,7 @@ jobs:
         env:
           COLVARSDIR: ${{ github.workspace }}
           FORCE: 1  # Ignore error if branch isn't master
-        run: apptainer exec ${COLVARSDIR}/devel-tools/Fedora35-texlive.sif make
+        run: apptainer exec ${COLVARSDIR}/devel-tools/texlive.sif make
 
 
   codeql:
@@ -174,7 +174,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.apptainer
-          key: Linux-x86_64-containers-build-2022-10-11
+          key: Linux-x86_64-containers-build-2023-07-20
 
       - name: Get small downloadable packages
         uses: actions/checkout@v3
@@ -196,6 +196,7 @@ jobs:
           apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
           apptainer remote use SylabsCloud
           apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+          apptainer pull CentOS9-devel.sif library://giacomofiorin/default/colvars_development:centos9
 
       - name: GCC 4.8, C++11
         env:
@@ -340,7 +341,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.apptainer
-          key: Linux-x86_64-containers-build-2022-10-11
+          key: Linux-x86_64-containers-build-2023-07-20
 
       - name: Checkout Sun compiler (Oracle Developer Studio)
         uses: actions/checkout@v3
@@ -370,6 +371,7 @@ jobs:
           apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
           apptainer remote use SylabsCloud
           apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
+          apptainer pull CentOS9-devel.sif library://giacomofiorin/default/colvars_development:centos9
 
       - name: Build library with Sun compiler (Oracle Developer Studio)
         shell: bash
