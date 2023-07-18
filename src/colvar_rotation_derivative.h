@@ -30,14 +30,14 @@ enum class rotation_derivative_dldq {
 
 inline constexpr rotation_derivative_dldq operator|(rotation_derivative_dldq Lhs, rotation_derivative_dldq Rhs) {
   return static_cast<rotation_derivative_dldq>(
-    static_cast<std::underlying_type_t<rotation_derivative_dldq>>(Lhs) |
-    static_cast<std::underlying_type_t<rotation_derivative_dldq>>(Rhs));
+    static_cast<std::underlying_type<rotation_derivative_dldq>::type>(Lhs) |
+    static_cast<std::underlying_type<rotation_derivative_dldq>::type>(Rhs));
 }
 
 inline constexpr rotation_derivative_dldq operator&(rotation_derivative_dldq Lhs, rotation_derivative_dldq Rhs) {
   return static_cast<rotation_derivative_dldq>(
-    static_cast<std::underlying_type_t<rotation_derivative_dldq>>(Lhs) &
-    static_cast<std::underlying_type_t<rotation_derivative_dldq>>(Rhs));
+    static_cast<std::underlying_type<rotation_derivative_dldq>::type>(Lhs) &
+    static_cast<std::underlying_type<rotation_derivative_dldq>::type>(Rhs));
 }
 
 /// \brief Helper class for calculating the derivative of rotation
@@ -78,7 +78,7 @@ struct rotation_derivative {
     *                        with respect to atoms.
     */
   void prepare_derivative(rotation_derivative_dldq require_dl_dq) {
-    if (static_cast<std::underlying_type_t<rotation_derivative_dldq>>(require_dl_dq & rotation_derivative_dldq::use_dl)) {
+    if (static_cast<std::underlying_type<rotation_derivative_dldq>::type>(require_dl_dq & rotation_derivative_dldq::use_dl)) {
       const auto &Q0 = m_rot.S_eigvec[0].data;
       tmp_Q0Q0[0][0] = Q0[0] * Q0[0];
       tmp_Q0Q0[0][1] = Q0[0] * Q0[1];
@@ -97,7 +97,7 @@ struct rotation_derivative {
       tmp_Q0Q0[3][2] = Q0[3] * Q0[2];
       tmp_Q0Q0[3][3] = Q0[3] * Q0[3];
     }
-    if (static_cast<std::underlying_type_t<rotation_derivative_dldq>>(require_dl_dq & rotation_derivative_dldq::use_dq)) {
+    if (static_cast<std::underlying_type<rotation_derivative_dldq>::type>(require_dl_dq & rotation_derivative_dldq::use_dq)) {
       const auto &Q0 = m_rot.S_eigvec[0].data;
       const auto &Q1 = m_rot.S_eigvec[1].data;
       const auto &Q2 = m_rot.S_eigvec[2].data;
