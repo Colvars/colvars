@@ -1223,12 +1223,16 @@ protected:
   /// quaternion, which may be annoying in the colvars trajectory
   cvm::quaternion            ref_quat;
 
+  /// Rotation derivative
+  struct rotation_derivative_impl_;
+  std::unique_ptr<rotation_derivative_impl_> rot_deriv_impl;
+
 public:
 
   orientation(std::string const &conf);
   orientation();
   virtual int init(std::string const &conf);
-  virtual ~orientation() {}
+  virtual ~orientation();
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);

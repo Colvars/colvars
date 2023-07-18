@@ -23,11 +23,30 @@ inline void read_atom_coord(
   *z = pos[ia].pos.z;
 }
 
+enum class rotation_derivative_dldq {
+  use_dl = 1 << 0,
+  use_dq = 1 << 1
+};
+
+inline constexpr rotation_derivative_dldq operator|(rotation_derivative_dldq Lhs, rotation_derivative_dldq Rhs) {
+  return static_cast<rotation_derivative_dldq>(
+    static_cast<std::underlying_type_t<rotation_derivative_dldq>>(Lhs) |
+    static_cast<std::underlying_type_t<rotation_derivative_dldq>>(Rhs));
+}
+
+inline constexpr rotation_derivative_dldq operator&(rotation_derivative_dldq Lhs, rotation_derivative_dldq Rhs) {
+  return static_cast<rotation_derivative_dldq>(
+    static_cast<std::underlying_type_t<rotation_derivative_dldq>>(Lhs) &
+    static_cast<std::underlying_type_t<rotation_derivative_dldq>>(Rhs));
+}
+
 /// \brief Helper class for calculating the derivative of rotation
 template <typename T1, typename T2>
 struct rotation_derivative {
-  static_assert(std::is_same<T1, cvm::atom_pos>::value || std::is_same<T1, cvm::atom>::value, "");
-  static_assert(std::is_same<T2, cvm::atom_pos>::value || std::is_same<T2, cvm::atom>::value, "");
+  static_assert(std::is_same<T1, cvm::atom_pos>::value || std::is_same<T1, cvm::atom>::value,
+                "class template rotation_derivative only supports cvm::atom_pos or cvm::atom types.");
+  static_assert(std::is_same<T2, cvm::atom_pos>::value || std::is_same<T2, cvm::atom>::value,
+                "class template rotation_derivative only supports cvm::atom_pos or cvm::atom types.");
   /// \brief Reference to the rotation
   const cvm::rotation &m_rot;
   /// \brief Reference to the atom positions of group 1
@@ -58,8 +77,8 @@ struct rotation_derivative {
     *  @param[in] require_dq Require the calculation of the derivative of Q
     *                        with respect to atoms.
     */
-  void prepare_derivative(bool require_dl, bool require_dq) {
-    if (require_dl) {
+  void prepare_derivative(rotation_derivative_dldq require_dl_dq) {
+    if (static_cast<std::underlying_type_t<rotation_derivative_dldq>>(require_dl_dq & rotation_derivative_dldq::use_dl)) {
       const auto &Q0 = m_rot.S_eigvec[0].data;
       tmp_Q0Q0[0][0] = Q0[0] * Q0[0];
       tmp_Q0Q0[0][1] = Q0[0] * Q0[1];
@@ -78,7 +97,7 @@ struct rotation_derivative {
       tmp_Q0Q0[3][2] = Q0[3] * Q0[2];
       tmp_Q0Q0[3][3] = Q0[3] * Q0[3];
     }
-    if (require_dq) {
+    if (static_cast<std::underlying_type_t<rotation_derivative_dldq>>(require_dl_dq & rotation_derivative_dldq::use_dq)) {
       const auto &Q0 = m_rot.S_eigvec[0].data;
       const auto &Q1 = m_rot.S_eigvec[1].data;
       const auto &Q2 = m_rot.S_eigvec[2].data;
@@ -559,7 +578,7 @@ void debug_gradients(
                                         cvm::vector1d<cvm::real> &,
                                         cvm::matrix2d<cvm::real> &> *>(rot.jacobi);
 #endif
-  deriv.prepare_derivative(true, true);
+  deriv.prepare_derivative(rotation_derivative_dldq::use_dl | rotation_derivative_dldq::use_dq);
   for (size_t ia = 0; ia < pos2.size(); ++ia) {
     // cvm::real const &a1x = pos1[ia].x;
     // cvm::real const &a1y = pos1[ia].y;
