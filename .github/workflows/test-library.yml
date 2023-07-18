@@ -198,7 +198,7 @@ jobs:
           apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
           apptainer pull CentOS9-devel.sif library://giacomofiorin/default/colvars_development:centos9
 
-      - name: GCC 4.8, C++11
+      - name: GCC 4.8, C++11 (CentOS 7)
         env:
           CXX_STANDARD: 11
           CXX: g++
@@ -208,29 +208,7 @@ jobs:
           apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: GCC 8, C++17
-        env:
-          CXX_STANDARD: 17
-          CXX: g++
-          CXX_VERSION: 8
-          CC: gcc
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          scl enable devtoolset-${CXX_VERSION} -- \
-          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
-
-      - name: GCC 11, C++20
-        env:
-          CXX_STANDARD: 20
-          CXX: g++
-          CXX_VERSION: 11
-          CC: gcc
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          scl enable devtoolset-${CXX_VERSION} -- \
-          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
-
-      - name: Clang 3.4, C++11
+      - name: Clang 3.4, C++11 (CentOS 7)
         env:
           CXX_STANDARD: 11
           CXX: clang++
@@ -240,7 +218,7 @@ jobs:
           apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: Clang 7, C++17
+      - name: Clang 7, C++17 (CentOS 7)
         env:
           CXX_STANDARD: 17
           CXX: clang++
@@ -251,29 +229,29 @@ jobs:
           scl enable llvm-toolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: GCC 11, C++17
+      - name: GCC 8, C++14 (CentOS 7)
         env:
-          CXX_STANDARD: 17
+          CXX_STANDARD: 14
           CXX: g++
-          CXX_VERSION: 11
+          CXX_VERSION: 8
           CC: gcc
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: GCC 10, C++17
+      - name: GCC 8, C++17 (CentOS 7)
         env:
           CXX_STANDARD: 17
           CXX: g++
-          CXX_VERSION: 10
+          CXX_VERSION: 8
           CC: gcc
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: GCC 9, C++14
+      - name: GCC 9, C++14 (CentOS 7)
         env:
           CXX_STANDARD: 14
           CXX: g++
@@ -284,49 +262,109 @@ jobs:
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: GCC 8, C++14
+      - name: GCC 10, C++17 (CentOS 7)
         env:
-          CXX_STANDARD: 14
+          CXX_STANDARD: 17
           CXX: g++
-          CXX_VERSION: 8
+          CXX_VERSION: 10
           CC: gcc
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
           scl enable devtoolset-${CXX_VERSION} -- \
           cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: GCC 8, C++11
+
+      - name: GCC 11, C++11 (CentOS 9)
         env:
           CXX_STANDARD: 11
           CXX: g++
-          CXX_VERSION: 8
+          CXX_VERSION: 11
           CC: gcc
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          scl enable devtoolset-${CXX_VERSION} -- \
-          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: GCC 7, C++14
+      - name: GCC 11, C++14 (CentOS 9)
         env:
           CXX_STANDARD: 14
           CXX: g++
-          CXX_VERSION: 7
+          CXX_VERSION: 11
           CC: gcc
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          scl enable devtoolset-${CXX_VERSION} -- \
-          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: GCC 7, C++11
+      - name: GCC 11, C++17 (CentOS 9)
+        env:
+          CXX_STANDARD: 17
+          CXX: g++
+          CXX_VERSION: 11
+          CC: gcc
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 11, C++20 (CentOS 9)
+        env:
+          CXX_STANDARD: 20
+          CXX: g++
+          CXX_VERSION: 11
+          CC: gcc
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 12, C++11 (CentOS 9)
         env:
           CXX_STANDARD: 11
           CXX: g++
-          CXX_VERSION: 7
+          CXX_VERSION: 12
           CC: gcc
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          scl enable devtoolset-${CXX_VERSION} -- \
-          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          scl enable gcc-toolset-12 -- \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 12, C++20 (CentOS 9)
+        env:
+          CXX_STANDARD: 20
+          CXX: g++
+          CXX_VERSION: 12
+          CC: gcc
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          scl enable gcc-toolset-12 -- \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: Clang 16, C++11 (CentOS 9)
+        env:
+          CXX_STANDARD: 11
+          CXX: clang++
+          CXX_VERSION: 16
+          CC: clang
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: Clang 16, C++17 (CentOS 9)
+        env:
+          CXX_STANDARD: 17
+          CXX: clang++
+          CXX_VERSION: 16
+          CC: clang
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: Clang 16, C++20 (CentOS 9)
+        env:
+          CXX_STANDARD: 20
+          CXX: clang++
+          CXX_VERSION: 16
+          CC: clang
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
 
   build-linux-x86_64-sun:
