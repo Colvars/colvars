@@ -23,8 +23,11 @@ inline void read_atom_coord(
   *z = pos[ia].pos.z;
 }
 
+/// \brief Helper enum class for specifying options in rotation_derivative::prepare_derivative
 enum class rotation_derivative_dldq {
+  /// Require the derivative of the leading eigenvalue with respect to the atom coordinats
   use_dl = 1 << 0,
+  /// Require the derivative of the leading eigenvector with respect to the atom coordinats
   use_dq = 1 << 1
 };
 
@@ -72,10 +75,8 @@ struct rotation_derivative {
   /*! @brief This function must be called before `calc_derivative_wrt_group1`
     *         and `calc_derivative_wrt_group2` in order to prepare the tmp_Q0Q0
     *        and tmp_Q0Q0_L.
-    *  @param[in] require_dl Require the calculation of the derivative of L
-    *                        with respect to atoms.
-    *  @param[in] require_dq Require the calculation of the derivative of Q
-    *                        with respect to atoms.
+    *  @param[in] require_dl_dq Require the calculation of the derivatives of L or/and Q
+    *                           with respect to atoms.
     */
   void prepare_derivative(rotation_derivative_dldq require_dl_dq) {
     if (static_cast<std::underlying_type<rotation_derivative_dldq>::type>(require_dl_dq & rotation_derivative_dldq::use_dl)) {
