@@ -97,6 +97,11 @@ int colvar::orientation::init(std::string const &conf)
 
   rot_deriv_impl = std::unique_ptr<rotation_derivative_impl_>(new rotation_derivative_impl_(this));
 
+  // If the debug gradients feature is active, debug the rotation gradients
+  // (note that this won't be active for the orientation CVC itself, because
+  // colvardeps prevents the flag's activation)
+  rot.b_debug_gradients = is_enabled(f_cvc_debug_gradient);
+
   return error_code;
 }
 
@@ -112,7 +117,6 @@ colvar::orientation::orientation()
 
 void colvar::orientation::calc_value()
 {
-  rot.b_debug_gradients = is_enabled(f_cvc_debug_gradient);
   atoms_cog = atoms->center_of_geometry();
 
   shifted_pos = atoms->positions_shifted(-1.0 * atoms_cog);
