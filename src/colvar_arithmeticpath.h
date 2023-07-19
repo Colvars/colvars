@@ -18,9 +18,9 @@ double logsumexp(const vector<T>& a, const vector<T>& b) {
     const auto max_a = *std::max_element(a.begin(), a.end());
     T sum = T();
     for (size_t i = 0; i < a.size(); ++i) {
-        sum += b[i] * std::exp(a[i] - max_a);
+        sum += b[i] * cvm::exp(a[i] - max_a);
     }
-    return max_a + std::log(sum);
+    return max_a + cvm::logn(sum);
 }
 
 template <typename T>
@@ -28,9 +28,9 @@ double logsumexp(const vector<T>& a) {
     const auto max_a = *std::max_element(a.begin(), a.end());
     T sum = T();
     for (size_t i = 0; i < a.size(); ++i) {
-        sum += std::exp(a[i] - max_a);
+        sum += cvm::exp(a[i] - max_a);
     }
-    return max_a + std::log(sum);
+    return max_a + cvm::logn(sum);
 }
 
 enum path_sz {S, Z};
