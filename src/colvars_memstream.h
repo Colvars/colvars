@@ -7,6 +7,7 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <iomanip>
 
 
 // Work around missing std::is_trivially_copyable in old GCC and Clang versions
@@ -81,6 +82,9 @@ public:
 
   /// Wrapper to read_vector()
   template <typename T> friend memory_stream &operator>>(memory_stream &is, std::vector<T> &t);
+
+  /// No-op function to ignore formatting operators
+  inline void setf(decltype(std::ios::fmtflags(0)), decltype(std::ios::floatfield)) {}
 
 protected:
 
@@ -284,6 +288,18 @@ template <typename T> cvm::memory_stream &operator>>(cvm::memory_stream &is, std
 {
   is.read_vector<T>(t);
   return is;
+}
+
+template <typename T> cvm::memory_stream &operator<<(cvm::memory_stream &os,
+                                                     decltype(std::setprecision(10)) const &)
+{
+  return os;
+}
+
+template <typename T> cvm::memory_stream &operator<<(cvm::memory_stream &os,
+                                                     decltype(std::setw(10)) const &)
+{
+  return os;
 }
 
 #endif
