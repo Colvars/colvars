@@ -59,6 +59,7 @@ COLVARS_SRCS = \
         colvarscript_commands.cpp \
         colvarscript_commands_bias.cpp \
         colvarscript_commands_colvar.cpp \
+        colvars_memstream.cpp \
         colvartypes.cpp \
         colvarvalue.cpp \
         colvar_neuralnetworkcompute.cpp

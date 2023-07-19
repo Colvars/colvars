@@ -49,6 +49,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarscript_commands.C',
                     'colvarscript_commands_bias.C',
                     'colvarscript_commands_colvar.C',
+                    'colvars_memstream.C',
                     'colvartypes.C',
                     'colvarvalue.C',
                     'nr_jacobi.C');
