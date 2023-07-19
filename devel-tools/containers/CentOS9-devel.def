@@ -1,0 +1,48 @@
+BootStrap: docker
+From: quay.io/centos/centos:stream9
+
+
+%help
+    Development environment for CentOS Stream Linux 9
+
+
+%post
+    dnf -y update
+    dnf -y install dnf-plugins-core
+
+    dnf config-manager --set-enabled crb
+    dnf -y install \
+        https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
+        https://dl.fedoraproject.org/pub/epel/epel-next-release-latest-9.noarch.rpm
+
+    dnf -y install \
+        bc man-db vim emacs tcsh \
+        "@Development Tools" \
+        gcc gcc-c++ gcc-gfortran cppcheck \
+        gcc-toolset-{12,13} \
+        autoconf automake cvs git subversion mercurial \
+        cmake ccache \
+        openmpi-devel tbb-devel fftw-devel tcl-devel \
+        python3-{devel,tkinter,virtualenv,numpy,scipy} \
+        ncurses-devel \
+        rlwrap \
+        tk-devel fltk-devel \
+        mesa-dri-drivers mesa-libGL-devel libglvnd-devel \
+        libXi-devel libXinerama-devel libpng-devel \
+        netcdf-devel sqlite-devel \
+        texlive-latex texlive-epstopdf texlive-pdftex latex2html \
+        texlive-graphics texlive-metafont texlive-collection-latexrecommended \
+        texlive-collection-fontsrecommended \
+	squashfs-tools
+
+    source /etc/profile
+    module load mpi
+
+    # Build Charm++
+    umask 022
+    git clone --single-branch --depth=1 -b v7.0.0 https://github.com/UIUC-PPL/charm.git /opt/charm
+    cd /opt/charm
+    export CCACHE_DIR=/tmp
+    ./build charm++ mpi-linux-x86_64 -j\$(nproc) --with-production
+    ./build charm++ netlrts-linux-x86_64 -j\$(nproc) --with-production
+    ./build charm++ multicore-linux-x86_64 -j\$(nproc) --with-production
