@@ -456,10 +456,26 @@ public:
   /// Write a label to the trajectory file (comment line)
   std::ostream & write_traj_label(std::ostream &os);
 
-  /// Read the collective variable from a restart file
+  /// Read the colvar's state from a formatted input stream
   std::istream & read_state(std::istream &is);
-  /// Write the collective variable to a restart file
-  std::ostream & write_state(std::ostream &os);
+
+  /// Read the colvar's state from an unformatted input stream
+  cvm::memory_stream & read_state(cvm::memory_stream &is);
+
+  /// Check the name of the bias vs. the given string, set the matching_state flag accordingly
+  int check_matching_state(std::string const &state_conf);
+
+  /// Read the values of colvar mutable data from a string (used by both versions of read_state())
+  int set_state_params(std::string const &state_conf);
+
+  /// Write the state information of this colvar in a block of text, suitable for later parsing
+  std::string const get_state_params() const;
+
+  /// Write the colvar's state to a formatted output stream
+  std::ostream & write_state(std::ostream &os) const;
+
+  /// Write the colvar's state to an unformatted output stream
+  cvm::memory_stream & write_state(cvm::memory_stream &os) const;
 
   /// Write output files (if defined, e.g. in analysis mode)
   int write_output_files();
@@ -758,4 +774,3 @@ inline void colvar::reset_bias_force() {
 }
 
 #endif
-

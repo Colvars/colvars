@@ -19,6 +19,7 @@
 #include "colvarcomp.h"
 #include "colvar.h"
 #include "colvarscript.h"
+#include "colvars_memstream.h"
 
 
 std::map<std::string, std::function<colvar::cvc *(const std::string &subcv_conf)>>
@@ -2354,6 +2355,31 @@ std::istream & colvar::read_state(std::istream &is)
 }
 
 
+cvm::memory_stream & colvar::read_state(cvm::memory_stream &is)
+{
+  auto const start_pos = is.tellg();
+  std::string key;
+  if (is >> key) {
+    if (key != "colvar") {
+      is.seekg(start_pos);
+      return is;
+    }
+    // Read parameters as a formatted string, then use the formatted I/O
+    std::string data;
+    if (is >> data) {
+      std::istringstream iss(data);
+      if (read_state(iss)) {
+        return is;
+      }
+    }
+  }
+  is.clear();
+  is.seekg(start_pos);
+  is.setstate(std::ios::failbit);
+  return is;
+}
+
+
 std::istream & colvar::read_traj(std::istream &is)
 {
   std::streampos const start_pos = is.tellg();
@@ -2404,10 +2430,23 @@ std::istream & colvar::read_traj(std::istream &is)
 
 // ******************** OUTPUT FUNCTIONS ********************
 
-std::ostream & colvar::write_state(std::ostream &os) {
+std::ostream & colvar::write_state(std::ostream &os) const
+{
+  os << "colvar {\n" << get_state_params() << "}\n\n";
 
-  os << "colvar {\n"
-     << "  name " << name << "\n"
+  if (runave_outfile.size() > 0) {
+    cvm::main()->proxy->flush_output_stream(runave_outfile);
+  }
+
+  return os;
+}
+
+
+std::string const colvar::get_state_params() const
+{
+  std::ostringstream os;
+
+  os << "  name " << name << "\n"
      << "  x "
      << std::setprecision(cvm::cv_prec)
      << std::setw(cvm::cv_width)
@@ -2431,7 +2470,13 @@ std::ostream & colvar::write_state(std::ostream &os) {
        << v_reported << "\n";
   }
 
-  os << "}\n\n";
+  return os.str();
+}
+
+
+cvm::memory_stream & colvar::write_state(cvm::memory_stream &os) const
+{
+  os << "colvar" << get_state_params();
 
   if (runave_outfile.size() > 0) {
     cvm::main()->proxy->flush_output_stream(runave_outfile);
