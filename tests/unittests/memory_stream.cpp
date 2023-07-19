@@ -1,8 +1,11 @@
+// -*- c++ -*-
+
 #include <iostream>
 
 #include "colvarmodule.h"
 #include "colvartypes.h"
 #include "colvarvalue.h"
+#include "colvarparse.h"
 #include "colvars_memstream.h"
 
 
@@ -54,6 +57,11 @@ int main(int argc, char const *argv[])
 
   buf << cv;
 
+  std::string const block_key("colvar");
+  std::string const block("    name a_colvar\n"
+                          "    x 1.0\n");
+  buf << block_key << block;
+
   // // The following will raise a compile error
   // buf << a2;
 
@@ -80,7 +88,20 @@ int main(int argc, char const *argv[])
     colvarvalue new_cv(colvarvalue::type_unit3vector);
     read_and_print(buf, new_cv);
 
+    std::string block;
+    buf >> colvarparse::read_block("colvar", &block);
+    if (block.size()) {
+      std::cout << "block: \"\n" << block << "\"" << std::endl;
+    }
   }
+
+  std::cout << "buf.tellg() = " << buf.tellg() << std::endl;
+  std::cout << "buf.length() = " << buf.length() << std::endl;
+  std::cout << "buf.rdstate() = " << buf.rdstate() << std::endl;
+  std::cout << "goodbit = " << std::ios::goodbit << std::endl;
+  std::cout << "eofbit = " << std::ios::eofbit << std::endl;
+  std::cout << "badbit = " << std::ios::badbit << std::endl;
+  std::cout << "failbit = " << std::ios::failbit << std::endl;
 
   return buf ? 0 : 1;
 }

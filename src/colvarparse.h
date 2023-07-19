@@ -267,28 +267,36 @@ public:
     return out;
   }
 
-  /// \brief Helper class to read a block of the type "key { ... }"
-  /// from a stream and store it in a string
+  /// Helper class to read a block "key { ... }" from a stream and store it in a string
   ///
-  /// Useful on restarts, where the file is too big to be loaded in a
-  /// string by key_lookup; it can only check that the keyword is
-  /// correct and the block is properly delimited by braces, not
-  /// skipping other blocks
+  /// Useful on restarts, where the file is too big to be loaded in a string
+  /// by key_lookup(); it can only check that the keyword is correct and the
+  /// block is properly delimited by braces, not skipping other blocks
   class read_block {
-
-    /// The keyword that identifies the block
-    std::string const key;
-
-    /// Where to keep the data (may be NULL)
-    std::string * const data;
-
   public:
 
-    read_block(std::string const &key_in, std::string *data_in = nullptr);
+    read_block(std::string const &key, std::string *data = nullptr);
 
     ~read_block();
 
+    /// Read block from stream, first check that key matches, then call read_contents()
     friend std::istream & operator >> (std::istream &is, read_block const &rb);
+
+    /// Read block from stream, first check that key matches, then call read_contents()
+    friend cvm::memory_stream & operator >> (cvm::memory_stream &is, read_block const &rb);
+
+  private:
+
+    /// Keyword that identifies the block
+    std::string const key;
+
+    /// Where to keep the data
+    std::string * const data;
+
+    /// Read the contents of a formatted block after checking that the keyword matches
+    /// \param[in] is Stream object
+    /// \param[in] block_only If true, stream is assumed to contain only the block without braces
+    std::istream & read_block_contents(std::istream &is, bool block_only = false) const;
   };
 
 

@@ -14,6 +14,7 @@
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
+#include "colvars_memstream.h"
 
 
 // space & tab
@@ -866,55 +867,107 @@ colvarparse::read_block::~read_block()
 
 std::istream & operator>> (std::istream &is, colvarparse::read_block const &rb)
 {
-  std::streampos start_pos = is.tellg();
-  std::string read_key, next;
+  auto start_pos = is.tellg();
 
-  if ( !(is >> read_key) || !(read_key == rb.key) ||
-       !(is >> next) ) {
-    // the requested keyword has not been found, or it is not possible
-    // to read data after it
+  std::string read_key;
+  if ( !(is >> read_key) || !(read_key == rb.key) ) {
+    // the requested keyword has not been found
     is.clear();
-    is.seekg(start_pos, std::ios::beg);
+    is.seekg(start_pos);
     is.setstate(std::ios::failbit);
     return is;
   }
 
-  if (next != "{") {
-    if (rb.data) {
-      *(rb.data) = next;
+  std::string next;
+  if (is >> next) {
+    if (next == "{") {
+      // Parse a formatted brace-delimited block
+      rb.read_block_contents(is);
+    } else {
+      if (rb.data) {
+        *(rb.data) = next;
+      }
     }
-    return is;
+  } else {
+    is.clear();
+    is.seekg(start_pos);
+    is.setstate(std::ios::badbit);
   }
 
-  size_t brace_count = 1;
+  return is;
+}
+
+
+std::istream &colvarparse::read_block::read_block_contents(std::istream &is,
+                                                           bool block_only) const
+{
+  int brace_count = block_only ? 0 : 1;
+  auto const start_pos = is.tellg();
   std::string line;
   while (colvarparse::getline_nocomments(is, line)) {
     size_t br = 0, br_old = 0;
-    while ( (br = line.find_first_of("{}", br)) != std::string::npos) {
-      if (line[br] == '{') brace_count++;
-      if (line[br] == '}') brace_count--;
+    while ((br = line.find_first_of("{}", br)) != std::string::npos) {
+      if (line[br] == '{')
+        brace_count++;
+      if (line[br] == '}')
+        brace_count--;
       br_old = br;
       br++;
     }
-    if (brace_count) {
-      if (rb.data) {
-        (rb.data)->append(line + "\n");
+    if (brace_count || block_only) {
+      // Add whole line if (1) brace are unmatched or (2) we're reading the whole stream anyway
+      if (data) {
+        data->append(line + "\n");
       }
-    }
-    else {
-      if (rb.data) {
-        (rb.data)->append(line, 0, br_old);
+    } else {
+      // Not reading whole block and braces are matched; add until before the last brace
+      if (data) {
+        data->append(line.substr(0, br_old) + "\n");
       }
       break;
     }
   }
-  if (brace_count)  {
-    // end-of-file reached
-    // restore initial position
-    is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
+
+  if (block_only) {
+    if (is.rdstate() & std::ios::eofbit) {
+      // Clear EOF errors if we were meant to read the whole block
+      is.clear();
+    }
+  } else {
+    if (brace_count)  {
+      // Could not match braces, restore initial position and set fail bit
+      is.clear();
+      is.seekg(start_pos);
+      is.setstate(std::ios::failbit);
+    }
   }
+
+  return is;
+}
+
+
+cvm::memory_stream &operator>>(cvm::memory_stream &is, colvarparse::read_block const &rb)
+{
+  auto const start_pos = is.tellg();
+
+  std::string read_key;
+  if ( !(is >> read_key) || !(read_key == rb.key) ) {
+    // the requested keyword has not been found
+    is.clear();
+    is.seekg(start_pos);
+    is.setstate(std::ios::failbit);
+    return is;
+  }
+
+  std::string content;
+  if (is >> content) {
+    std::istringstream iss(content);
+    if (!rb.read_block_contents(iss, true)) {
+      is.seekg(start_pos);
+      is.setstate(std::ios::failbit);
+    }
+  }
+
   return is;
 }
 
