@@ -36,6 +36,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarscript_commands.o \
 	$(DSTDIR)/colvarscript_commands_bias.o \
 	$(DSTDIR)/colvarscript_commands_colvar.o \
+	$(DSTDIR)/colvars_memstream.o \
 	$(DSTDIR)/colvartypes.o \
 	$(DSTDIR)/colvarvalue.o \
 	$(DSTDIR)/nr_jacobi.o
