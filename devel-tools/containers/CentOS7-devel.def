@@ -1,0 +1,49 @@
+BootStrap: library
+From: centos:7
+
+
+%help
+    Development environment for CentOS 7
+
+
+%post
+    yum -y update
+    yum -y install epel-release centos-release-scl
+    yum -y install \
+        redhat-lsb-core "@Development Tools" \
+        ncurses which bc man-db vim emacs screen tmux \
+        gcc gcc-c++ gcc-gfortran glibc-static libstdc++-static clang cppcheck \
+        autoconf automake  cvs git git-cvs cvsps subversion mercurial \
+        rh-git227 devtoolset-{7..11} llvm-toolset-7 cmake3 ccache ninja \
+        doxygen \
+        openmpi-devel fftw-devel tcl-devel \
+        python-{devel,virtualenv} numpy scipy tkinter \
+        python3-{devel,tkinter} python36-{virtualenv,numpy,scipy} \
+        rh-python38-python-{devel,tkinter,numpy,scipy} \
+        boost169-devel \
+        ncurses-devel \
+        rlwrap \
+        tk-devel fltk-devel \
+        sqlite-devel netcdf-devel expat-devel hdf5-devel tng-devel \
+        mesa-dri-drivers mesa-libGL-devel libglvnd-devel \
+        libXi-devel libXinerama-devel libpng-devel \
+        xfce4-terminal \
+        texlive-latex texlive-epstopdf texlive-pdftex latex2html \
+        texlive-graphics texlive-metafont \
+        texlive-collection-latexrecommended texlive-collection-fontsrecommended
+
+    # Build Charm++
+    umask 022
+    git clone --single-branch --depth=1 -b v7.0.0 https://github.com/UIUC-PPL/charm.git /opt/charm && \
+        cd /opt/charm && \
+        ./build charm++ mpi-linux-x86_64 -j\$(nproc) --with-production && \
+        ./build charm++ multicore-linux-x86_64 -j\$(nproc) --with-production && \
+        ./build charm++ netlrts-linux-x86_64 -j\$(nproc) --with-production
+
+    # Load Git 2.27
+    cat > /etc/profile.d/git.sh <<EOF
+if [ \$(id -u) != 0 ] && [ -d /opt/rh/rh-git227 ] ; then
+    source /opt/rh/rh-git227/enable
+fi
+EOF
+
