@@ -77,6 +77,8 @@ template <> void cvm::memory_stream::read_object(std::string &t)
       t.assign(reinterpret_cast<char const *>(input_location()), string_length);
       incr_read_pos(string_length * sizeof(char));
       done_reading();
+    } else {
+      setstate(std::ios::failbit);
     }
   }
 }

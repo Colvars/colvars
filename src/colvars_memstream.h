@@ -63,7 +63,7 @@ public:
   inline unsigned char const *input_location() const { return input_buffer() + read_pos_; }
 
   /// Cast operator to be used to test for errors
-  inline explicit operator bool() const { return error_code_ == 0; }
+  inline explicit operator bool() const { return state_ == std::ios::goodbit; }
 
   /// Write a simple object to the output buffer
   template <typename T> void write_object(T const &t);
@@ -90,8 +90,26 @@ public:
   /// Wrapper to read_vector()
   template <typename T> friend memory_stream &operator>>(memory_stream &is, std::vector<T> &t);
 
-  /// No-op function to ignore formatting operators
+
+  // Compatibility with STL stream functions
+
+  /// Report the current position in the buffer
+  inline size_t const tellg() const { return read_pos_; }
+
+  /// Report the current position in the buffer
+  inline memory_stream & seekg(size_t pos) { if (bool()) read_pos_ = pos; return *this; }
+
+  /// Ignore formatting operators
   inline void setf(decltype(std::ios::fmtflags(0)), decltype(std::ios::floatfield)) {}
+
+  /// Get the error code
+  inline std::ios::iostate rdstate() const { return state_; }
+
+  /// Set the error code
+  inline void setstate(std::ios::iostate new_state) { state_ |= new_state; }
+
+  /// Clear the error code
+  inline void clear() { state_ = std::ios::goodbit; }
 
 protected:
 
@@ -111,7 +129,7 @@ protected:
   size_t const max_length_;
 
   /// Error status
-  int error_code_ = 0;
+  std::ios::iostate state_ = std::ios::goodbit;
 
   /// Add the requester number of bytes to the array capacity; return false if buffer is external
   bool expand_ouput_buffer(size_t add_bytes);
@@ -119,17 +137,14 @@ protected:
   /// Move the buffer position past the data just written
   inline void incr_write_pos(size_t c) { data_length_ += c; }
 
-  /// Input buffer (may be the same as output, apart from const-ness)
-  unsigned char const *input_buffer_ = nullptr;
-
   /// Current position when reading from the buffer
   size_t read_pos_ = 0L;
 
-  /// Begin an attempt to read an object
-  inline void begin_reading() { error_code_ = -1; }
+  /// Begin an attempt to read an object; assume EOF unless there is space remaining
+  inline void begin_reading() { setstate(std::ios::eofbit); }
 
   /// Mark the reading attempt succesful
-  inline void done_reading() { error_code_ = 0; }
+  inline void done_reading() { clear(); }
 
   /// Move the buffer position past the data just read
   inline void incr_read_pos(size_t c) { read_pos_ += c; }
@@ -204,6 +219,8 @@ template <typename T> void cvm::memory_stream::read_vector(std::vector<T> &t)
       std::memcpy(t.data(), input_location(), vector_length * sizeof(T));
       incr_read_pos(vector_length * sizeof(T));
       done_reading();
+    } else {
+      setstate(std::ios::failbit);
     }
   }
 }
