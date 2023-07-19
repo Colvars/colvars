@@ -2281,7 +2281,7 @@ std::istream & colvar::read_state(std::istream &is)
   if ( !(is >> colvarparse::read_block("colvar", &conf)) ) {
     // this is not a colvar block
     is.clear();
-    is.seekg(start_pos, std::ios::beg);
+    is.seekg(start_pos);
     is.setstate(std::ios::failbit);
     return is;
   }
@@ -2294,7 +2294,7 @@ std::istream & colvar::read_state(std::istream &is)
       cvm::error("Error: Collective variable in the "
                  "restart file without any identifier.\n", COLVARS_INPUT_ERROR);
       is.clear();
-      is.seekg(start_pos, std::ios::beg);
+      is.seekg(start_pos);
       is.setstate(std::ios::failbit);
       return is;
     }
@@ -2304,7 +2304,7 @@ std::istream & colvar::read_state(std::istream &is)
         cvm::log("Ignoring state of colvar \""+check_name+
                  "\": this colvar is named \""+name+"\".\n");
       }
-      is.seekg(start_pos, std::ios::beg);
+      is.seekg(start_pos);
       return is;
     }
   }
@@ -2364,7 +2364,7 @@ std::istream & colvar::read_traj(std::istream &is)
       cvm::log("Error: in reading the value of colvar \""+
                 this->name+"\" from trajectory.\n");
       is.clear();
-      is.seekg(start_pos, std::ios::beg);
+      is.seekg(start_pos);
       is.setstate(std::ios::failbit);
       return is;
     }
