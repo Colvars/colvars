@@ -66,7 +66,6 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
             tmp_atoms->ref_pos = reference_frames[i_frame];
             tmp_atoms->center_ref_pos();
             tmp_atoms->enable(f_ag_fit_gradients);
-            comp_atoms.push_back(tmp_atoms);
         } else {
             // parse a group of atoms for fitting
             std::string fitting_group_name = std::string("fittingAtoms") + cvm::to_str(i_frame);
@@ -90,8 +89,9 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
             tmp_atoms->enable(f_ag_fitting_group);
             tmp_atoms->fitting_group = tmp_fitting_atoms;
             reference_fitting_frames.push_back(reference_fitting_position);
-            comp_atoms.push_back(tmp_atoms);
         }
+        tmp_atoms->setup_rotation_derivative();
+        comp_atoms.push_back(tmp_atoms);
     }
     x.type(colvarvalue::type_scalar);
     // Don't use implicit gradient
