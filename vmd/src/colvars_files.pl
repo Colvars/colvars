@@ -56,6 +56,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvar_arithmeticpath.h',
                     'colvar_geometricpath.h',
                     'colvar_neuralnetworkcompute.h',
+                    'colvar_rotation_derivative.h',
                     'colvaratoms.h',
                     'colvarbias.h',
                     'colvarbias_abf.h',

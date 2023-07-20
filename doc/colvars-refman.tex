@@ -45,10 +45,11 @@
 
 \definecolor{mdexample-border-color}{rgb}{1.0,0.6,0.1}
 \definecolor{mdexample-background-color}{rgb}{1.0,0.96,0.9}
-\newenvironment{mdexampleinput}{%
+\newenvironment{mdexampleinput}[1]{%
   \begin{mdframed}[%
       linecolor=mdexample-border-color,linewidth=2pt,%
       backgroundcolor=mdexample-background-color]
+  \textbf{#1}
   \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
   \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
   \end{mdframed}
@@ -194,18 +195,16 @@ cv.#1(#2)
 
 % use macros with context field to document keywords
 \newcommand{\key}[5]{%
-  \index{#2!\texttt{#1}}%
-  \colorbox{cvkeyword-background-color}{%
-    {\bf Keyword \large \tt #1}}~$\langle\,$#3$\,\rangle$\\%
+  {\bf Keyword} \index{#2!\texttt{#1}}%
+  \colorbox{cvkeyword-background-color}{\large \tt #1} $\langle\,$#3$\,\rangle$\\%
   {\bf Context: } #2 \\%
   {\bf Acceptable values: } #4 \\%
   {\bf Description: } #5%
 }
 
 \newcommand{\keydef}[6]{%
-  \index{#2!\texttt{#1}}%
-  \colorbox{cvkeyword-background-color}{%
-    {\bf Keyword \large \tt #1}}~$\langle\,$#3$\,\rangle$\\%
+  {\bf Keyword} \index{#2!\texttt{#1}}%
+  \colorbox{cvkeyword-background-color}{\large \tt #1} $\langle\,$#3$\,\rangle$\\%
   {\bf Context: } #2 \\%
   {\bf Acceptable values: } #4 \\%
   {\bf Default value: } #5 \\%
@@ -215,14 +214,12 @@ cv.#1(#2)
 \newcommand{\labelkey}[1]{\hypertarget{#1}{~}\label{#1}}
 \newcommand{\refkey}[2]{\hyperlink{#2}{\texttt{#1}}}
 \newcommand{\dupkey}[4]{%
-  \index{#2!\texttt{#1}}%
-  \colorbox{cvkeyword-background-color}{%
-    {\bf Keyword \large \tt #1:}}~see definition of \hyperlink{#3}{\texttt{#1}} (#4)%
+  {\bf Keyword} \index{#2!\texttt{#1}}%
+  \colorbox{cvkeyword-background-color}{\large \tt #1}: see definition of \hyperlink{#3}{\texttt{#1}} (#4)%
 }
 \newcommand{\simkey}[3]{%
   \index{#2!\texttt{#1}}%
-  \colorbox{cvkeyword-background-color}{%
-    {\bf Keyword \large \tt #1:}}~analogous to \texttt{#3}%
+  \colorbox{cvkeyword-background-color}{\large \tt #1}: analogous to \texttt{#3}%
 }
 
 \newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}
@@ -294,6 +291,8 @@ cv.#1(#2)
 }
 
 \newcommand{\cvurl}[1]{\url{#1}}
+
+\input{colvars-engine-flags}
 
 \input{colvars-refman-main}
 

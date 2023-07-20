@@ -4,6 +4,8 @@ source $(dirname $0)/load-recent-git.sh
 
 source $(dirname $0)/set-ccache.sh
 
+source $(dirname $0)/load-openmpi.sh
+
 
 compile_lammps_target() {
 
@@ -15,6 +17,7 @@ compile_lammps_target() {
         CMAKE_VERSION=$(${CMAKE} --version | head -1 | cut -d' ' -f3)
     else
         echo "Error: no CMake found." >& 2
+        return 1
     fi
 
     local LAMMPS_SRC_DIR=""
@@ -38,7 +41,12 @@ compile_lammps_target() {
         elif [ "${1,,}" = "debug" ]; then
             LAMMPS_BUILD_TYPE=Debug
             LAMMPS_BUILD_OPTS+=(-DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes)
-            LAMMPS_BUILD_OPTS+=(-DCOLVARS_DEBUG)
+            LAMMPS_BUILD_OPTS+=(-DCOLVARS_DEBUG=on)
+        elif [ "${1,,}" = "coverage" ]; then
+            LAMMPS_BUILD_OPTS+=(-DENABLE_COVERAGE=on)
+            local ENABLE_COVERAGE=on
+        elif [ "${1,,}" = "doc" ]; then
+            LAMMPS_BUILD_OPTS+=(-DBUILD_DOC=on)
         else
             LAMMPS_INSTALL_DIR=${1}
         fi
@@ -47,6 +55,9 @@ compile_lammps_target() {
 
     if hash mpicc >& /dev/null ; then
         LAMMPS_BUILD_OPTS+=("-DBUILD_MPI=ON")
+        if [ "x${ENABLE_COVERAGE}" == "xon" ] ; then
+            echo "Error: cannot run coverage tests with MPI." >& 2
+        fi
     fi
 
     LAMMPS_BUILD_OPTS+=("-DBUILD_OMP=yes")
@@ -64,6 +75,10 @@ compile_lammps_target() {
 
     LAMMPS_BUILD_OPTS+=("-DPKG_PYTHON=on")
 
+    if hash ninja >& /dev/null ; then
+        LAMMPS_BUILD_OPTS+=("-G" "Ninja")
+    fi
+
     if [ -z "${LAMMPS_BUILD_DIR}" ] ; then
         LAMMPS_BUILD_DIR="${LAMMPS_SRC_DIR}/build"
     fi
@@ -79,23 +94,20 @@ compile_lammps_target() {
         -DBUILD_SHARED_LIBS=off \
         -C "${LAMMPS_SRC_DIR}/cmake/presets/most.cmake" \
         -C "${LAMMPS_SRC_DIR}/cmake/presets/nolib.cmake" \
+        -D DOWNLOAD_POTENTIALS=off \
         ${LAMMPS_BUILD_OPTS[@]} \
         -S "${LAMMPS_SRC_DIR}/cmake" \
         -B "${LAMMPS_BUILD_DIR}" \
         && \
-        ${CMAKE} --build "${LAMMPS_BUILD_DIR}" --parallel $(nproc --all)
+        ${CMAKE} \
+            --build "${LAMMPS_BUILD_DIR}" \
+            --target install \
+            --parallel $(nproc --all)
     ret_code=$?
 
-    if [ $ret_code = 0 ] && [ -n "${LAMMPS_INSTALL_DIR}" ] ; then
-        pushd "${LAMMPS_BUILD_DIR}"
-        make install
-        ret_code=$?
-        if [ $ret_code = 0 ] ; then
-            rm -fr "${LAMMPS_BUILD_DIR}"
-        fi
-        popd
+    if [ $ret_code = 0 ] ; then
+        rm -fr "${LAMMPS_BUILD_DIR}"
     fi
-
     popd
 
     return ${ret_code}

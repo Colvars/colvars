@@ -7,8 +7,10 @@ then
 EOF
 exit 1
 fi
-lmp="$@"
-inputs=$(echo in.[0-9][0-9]? | sed -e s/in\.//g)
+lmp="$1"
+inputs=""
+# # Uncomment this to re-nable diff-based tests
+# inputs=$(echo in.[0-9][0-9]? | sed -e s/in\.//g)
 
 for id in $inputs
 do \
@@ -29,3 +31,5 @@ do \
         fi
     done
 done
+
+../library/run_tests.sh "$@"

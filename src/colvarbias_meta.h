@@ -258,6 +258,8 @@ protected:
   /// Position within replica_hills_file (when reading it)
   std::streampos         replica_hills_file_pos;
 
+  /// Cache of the hills trajectory
+  std::ostringstream     hills_traj_os_buf;
 };
 
 

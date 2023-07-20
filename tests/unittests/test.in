@@ -10,11 +10,6 @@ colvar {
 
     width 0.5
 
-    lowerWall 0.1
-    lowerWallConstant 0.004 # 0.001 kcal / (0.5)^2 - compare with walls bias
-    upperWall 0.2
-    upperWallConstant 0.004
-
     distance {
         group1 {
             indexGroup group1
@@ -24,3 +19,14 @@ colvar {
         }
     }
 } 
+
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+
+    targetForceconstant 0.0001
+    targetNumSteps 10
+
+    outputEnergy   yes
+}

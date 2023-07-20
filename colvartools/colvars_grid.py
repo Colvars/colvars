@@ -48,6 +48,7 @@ class colvars_grid:
         self.histdata = []
         self.nframes = 0
         self.nsets = 0
+        self.count = None # Reference to associated count grid
 
 
     def summary(self):
@@ -532,8 +533,145 @@ class colvars_grid:
         return grad
 
 
+    def count_gradient_increments(self):
+        ''' Compute and return incremental sample count and gradient estimate from a time series
+        '''
+
+        gradient = self
+        count = self.count
+        assert count is not None, "This grid is not associated with a sample count grid"
+    
+        # Incremental sample count
+        dc = colvars_grid()
+        dc.dim = count.dim
+        dc.nsets = 1
+        dc.filenames = count.filenames
+        dc.nframes = count.nframes
+        dc.histdata = [[]]
+        dc.data = []
+        dc.nx.append(count.nx[0])
+        dc.pbc.append(count.pbc[0])
+        dc.xmin.append(count.xmin[0])
+        dc.dx.append(count.dx[0])
+        # Incremental gradient estimates
+        dg = colvars_grid()
+        dg.dim = gradient.dim
+        dg.nsets = gradient.nsets
+        dg.filenames = gradient.filenames
+        dg.nframes = gradient.nframes
+        dg.histdata = [[] for _ in range(dg.nsets)]
+        dg.data = []
+        for i in range(dg.nsets):
+                dg.nx.append(gradient.nx[i])
+                dg.pbc.append(gradient.pbc[i])
+                dg.xmin.append(gradient.xmin[i])
+                dg.dx.append(gradient.dx[i])
+
+        # Frame 0 is just a copy of counts
+        dc.histdata[0].append(count.histdata[0][0])
+        for gi, dgi in zip(gradient.histdata, dg.histdata):
+            dgi.append(gi[0])
+
+        for t in range(1, gradient.nframes): # Loop on time frames
+
+            new_c = count.histdata[0][t]
+            old_c = count.histdata[0][t-1]
+            dc.histdata[0].append(new_c - old_c)
+
+            for gi, dgi in zip(gradient.histdata, dg.histdata): # Loop on datasets
+
+                # Normalize by 1 instead of n for empty bins
+                norm = [(n if n > 0 else 1) for n in (new_c - old_c)]
+                dgi.append((new_c * gi[t] - old_c * gi[t-1]) / norm)
+
+        dc.data.append(dc.histdata[0][-1])
+        for dgi in dg.histdata:
+            dg.data.append(dgi[-1])
+
+        dg.count = dc
+        return dc, dg
+
+
+    def partial_average(self, begin, end = None):
+        ''' Compute and return sample count and gradient estimate from a time series associated
+        with a count grid, based on a specified range of 0-based frames, end excluded.
+        (begin == end) returns zeros; (begin == 0 and end == nframes) returns all frames
+        '''
+
+        gradient = self
+        count = self.count
+        assert count is not None, "This grid is not associated with a sample count grid"
+        assert (end is None) or (begin <= end)
+
+        # Combined sample count
+        mc = colvars_grid()
+        mc.dim = count.dim
+        mc.nsets = 1
+        mc.filenames = count.filenames
+        mc.nframes = 1
+        mc.data = [[]]
+        mc.nx.append(count.nx[0])
+        mc.pbc.append(count.pbc[0])
+        mc.xmin.append(count.xmin[0])
+        mc.dx.append(count.dx[0])
+        # Mean gradient estimates
+        mg = colvars_grid()
+        mg.dim = gradient.dim
+        mg.nsets = gradient.nsets
+        mg.filenames = gradient.filenames
+        mg.nframes = 1
+        mg.data = [[]]
+        for i in range(mg.nsets):
+                mg.nx.append(gradient.nx[i])
+                mg.pbc.append(gradient.pbc[i])
+                mg.xmin.append(gradient.xmin[i])
+                mg.dx.append(gradient.dx[i])
+
+        # If beginning or end frame is zero, we create all-zero arrays
+
+        if begin == 0:
+            beg_c = np.zeros(count.data[0].shape)
+        else:
+            beg_c = count.histdata[0][begin-1]
+
+        if end == 0:
+            end_c = np.zeros(count.data[0].shape)
+        elif end is None:
+            end_c = count.histdata[0][-1]
+        else:
+            end_c = count.histdata[0][end-1]
+
+        mc.data[0].append(end_c - beg_c)
+
+        for gi, dgi in zip(gradient.histdata, mg.data): # Loop on datasets
+            if begin == 0:
+                beg_g = np.zeros(gi[0].shape)
+            else:
+                beg_g = gi[begin-1]
+
+            if end == 0:
+                end_g = np.zeros(gi[0].shape)
+            elif end is None:
+                end_g = gi[-1]
+            else:
+                end_g = gi[end-1]
+
+            # Normalize by 1 instead of n for empty bins
+            norm = [(n if n > 0 else 1) for n in (end_c - beg_c)]
+            dgi.append((end_c * end_g - beg_c * beg_g) / norm)
+
+        mg.count = mc
+        return mc, mg
+
+
+#######################################################
+##        ABF dataset                                 #
+#######################################################
+
+
 class ABF_dataset:
     def __init__(self, prefix, label='no label'):
+        '''Create and populate ABF_dataset from ABF output files with given prefix'''
         # Special file names for CZAR data
         if prefix[-5:] == '.czar':
             prefix = prefix[:-5]
@@ -553,9 +691,12 @@ class ABF_dataset:
         self.g=colvars_grid(prefix + grad)
         print('Loading free energy surface for ' + prefix)
         self.p=colvars_grid(prefix + pmf)
+        self.p.count = self.c
+        self.g.count = self.c
         self.label=label
 
     def load(self, prefix):
+        '''Load output files with given prefix to ABF_dataset'''
         # Special file names for CZAR data
         if prefix[-5:] == '.czar':
             prefix = prefix[:-5]
@@ -575,9 +716,14 @@ class ABF_dataset:
         self.g.read(prefix + grad)
         print('Loading free energy surface for ' + prefix)
         self.p.read(prefix + pmf)
+        self.p.count = self.c
+        self.g.count = self.c
+
 
     def calc_conv(self, gref=None, ref=None):
+        '''Calculate convergence metrics for current dataset'''
         self.S, self.V = self.c.entropy()
         self.heterog = np.log(self.V) - self.S
         self.gconv = self.g.convergence(gref)
         self.conv, self.KL = self.p.convergence(ref, do_KL=True)
+

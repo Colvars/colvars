@@ -1,4 +1,4 @@
-#if (__cplusplus >= 201103L)
+// -*- c++ -*-
 
 // This file is part of the Collective Variables module (Colvars).
 // The original version of Colvars and its updates are located at:
@@ -66,8 +66,6 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
             tmp_atoms->ref_pos = reference_frames[i_frame];
             tmp_atoms->center_ref_pos();
             tmp_atoms->enable(f_ag_fit_gradients);
-            tmp_atoms->rot.request_group1_gradients(tmp_atoms->size());
-            tmp_atoms->rot.request_group2_gradients(tmp_atoms->size());
             comp_atoms.push_back(tmp_atoms);
         } else {
             // parse a group of atoms for fitting
@@ -91,8 +89,6 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
             tmp_atoms->enable(f_ag_fit_gradients);
             tmp_atoms->enable(f_ag_fitting_group);
             tmp_atoms->fitting_group = tmp_fitting_atoms;
-            tmp_atoms->rot.request_group1_gradients(tmp_fitting_atoms->size());
-            tmp_atoms->rot.request_group2_gradients(tmp_fitting_atoms->size());
             reference_fitting_frames.push_back(reference_fitting_position);
             comp_atoms.push_back(tmp_atoms);
         }
@@ -428,7 +424,7 @@ colvar::CVBasedPath::CVBasedPath(std::string const &conf): cvc(conf) {
     get_keyval(conf, "pathFile", path_filename);
     cvm::log(std::string("Reading path file: ") + path_filename + std::string("\n"));
     auto &ifs_path = cvm::main()->proxy->input_stream(path_filename);
-    if (ifs_path.bad()) {
+    if (!ifs_path) {
         return;
     }
     std::string line;
@@ -794,5 +790,3 @@ void colvar::gzpathCV::apply_force(colvarvalue const &force) {
         }
     }
 }
-
-#endif

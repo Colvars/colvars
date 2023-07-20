@@ -94,8 +94,8 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
   // Retrieve masses and charges from input file
   updated_masses_ = updated_charges_ = true;
 
-  // GROMACS timestep
-  timestep = ir->delta_t;
+  // Get GROMACS timestep (picosecond to femtosecond)
+  set_integration_timestep(ir->delta_t * 1000.0);
   // Retrieve the topology of all atoms
   gmx_atoms = gmx_mtop_global_atoms(mtop);
 
@@ -121,11 +121,11 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
 
     auto i = filenames_config.begin();
     for(; i != filenames_config.end(); ++i) {
-        colvars->read_config_file(i->c_str());
+        add_config("configfile", i->c_str());
     }
 
-
-    colvars->setup();
+    colvarproxy::parse_module_config();
+    colvars->update_engine_parameters();
     colvars->setup_input();
 
     // Citation Reporter
@@ -247,7 +247,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step,gmx_mtop_t *mtop,
 
   if (MASTER(cr) && cvm::debug()) {
     cvm::log ("atoms_ids = "+cvm::to_str (atoms_ids)+"\n");
-    cvm::log ("atoms_ncopies = "+cvm::to_str (atoms_ncopies)+"\n");
+    cvm::log ("atoms_refcount = "+cvm::to_str (atoms_refcount)+"\n");
     cvm::log ("positions = "+cvm::to_str (atoms_positions)+"\n");
     cvm::log ("atoms_new_colvar_forces = "+cvm::to_str (atoms_new_colvar_forces)+"\n");
     cvm::log (cvm::line_marker);
@@ -268,10 +268,6 @@ void colvarproxy_gromacs::finish(const t_commrec *cr)
     colvars->write_output_files();
   }
 }
-
-// Time step of the simulation (fs)
-// GROMACS uses picoseconds.
-cvm::real colvarproxy_gromacs::dt() { return 1000.0*timestep; }
 
 cvm::real colvarproxy_gromacs::rand_gaussian()
 {
@@ -342,8 +338,8 @@ int colvarproxy_gromacs::load_coords (char const gmx_unused *filename, std::vect
                                       const std::vector<int> gmx_unused &indices, std::string const gmx_unused &pdb_field_str,
                                       double const gmx_unused pdb_field_value)
 {
-  cvm::error("Selecting collective variable atoms "
-		   "from a PDB file is currently not supported.\n");
+  cvm::error("Loading atoms coordinates from a PDB or GRO file is currently not supported."
+             "Please use an XYZ file.\n");
   return COLVARS_NOT_IMPLEMENTED;
 }
 
@@ -547,7 +543,7 @@ int colvarproxy_gromacs::init_atom(int atom_number)
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     if (atoms_ids[i] == aid) {
       // this atom id was already recorded
-      atoms_ncopies[i] += 1;
+      atoms_refcount[i] += 1;
       return i;
     }
   }

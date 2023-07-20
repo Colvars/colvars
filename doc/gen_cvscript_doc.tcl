@@ -6,13 +6,14 @@ if { [info exists output] == 0 } {
     set output [open "cvscript-tcl.tex" "w"]
 }
 
-foreach prefix [list "cv" "colvar" "bias"] \
-    introstr [list "\\cvsubsec\{Commands to manage the Colvars module\}\{sec:cvscript_tcl_cv\}" \
-                  "\\cvsubsec\{Commands to manage individual collective variables\}\{sec:cvscript_tcl_colvar\}" \
-                  "\\cvsubsec\{Commands to manage individual biases\}\{sec:cvscript_tcl_bias\}"] \
-    {
+proc gen_cmdline_latex_reference { output { main_cmd "cv" } } {
+
+    foreach prefix [list "cv" "colvar" "bias"] \
+        introstr [list "\\cvsubsec\{Commands to manage the Colvars module\}\{sec:cvscript_cmdline_cv\}" \
+                      "\\cvsubsec\{Commands to manage individual collective variables\}\{sec:cvscript_cmdline_colvar\}" \
+                      "\\cvsubsec\{Commands to manage individual biases\}\{sec:cvscript_cmdline_bias\}"] {
+
         puts ${output} ${introstr}
-        puts ${output} "\\begin\{itemize\}"
 
         foreach cmd [cv listcommands] {
 
@@ -37,19 +38,33 @@ foreach prefix [list "cv" "colvar" "bias"] \
             set line [lindex ${lines} 0]
             # Sanitize for LaTeX
             set line [regsub -all "_" "${line}" "\\_"]
-            puts ${output} "\\item \\texttt\{${line}\}"
+            # Allow overriding the main command (for fix_modify)
+            set line [regsub -all "^cv" "${line}" "${main_cmd}"]
+            puts ${output} "\\begin{mdexampleinput}{}"
+            puts ${output} "\\texttt\{\\textbf{${line}}\}"
 
             foreach line [lrange ${lines} 2 end] {
                 set line [regsub -all "_" "${line}" "\\_"]
+                if { ${line} == "" || ${line} == "-------" } continue
+                set line [regsub -all "Returns" "${line}" "\\textbf\{Returns\}"]
                 if { ${line} == "" || ${line} == "----------" } continue
                 set line [regsub -all "Parameters" "${line}" "\\textbf\{Parameters\}"]
                 puts ${output} "\\\\"
-                puts ${output} "\\texttt\{${line}\}"
+                puts ${output} "\\-~~~~\\texttt\{${line}\}"
             }
-        }
-        puts ${output} "\\end\{itemize\}"
-    }
 
+            puts ${output} "\\end{mdexampleinput}"
+        }
+    }
+}
+
+
+set output [open "cvscript-tcl.tex" "w"]
+gen_cmdline_latex_reference ${output} "cv"
+close ${output}
+
+set output [open "cvscript-fix-modify.tex" "w"]
+gen_cmdline_latex_reference ${output} "fix\\_modify Colvars"
 close ${output}
 
 exit

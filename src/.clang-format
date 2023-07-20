@@ -1,0 +1,11 @@
+---
+Language: Cpp
+ColumnLimit: 100
+UseTab: Never
+TabWidth: 2
+IndentWidth: 2
+ObjCBlockIndentWidth: 2
+PenaltyBreakAssignment: 2
+AccessModifierOffset: -2
+BreakBeforeBraces: WebKit
+...

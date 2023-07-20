@@ -1,0 +1,12 @@
+Number of active atoms:
+16
+Active atom IDs:
+1 4 10 11 12 14 20 21 22 24 30 31 32 34 40 41
+Value of the variable:
+3.21816571932638e+00
+Applied force on the variable:
+-1.24726628773055e-02
+Energy of the restraint:
+0.0194459
+Reset the module:
+colvars: Resetting the Collective Variables module.

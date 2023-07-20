@@ -8,10 +8,8 @@
 // Colvars repository at GitHub.
 
 #include <fstream>
-
-#if defined(_OPENMP)
-#include <omp.h>
-#endif
+#include <list>
+#include <utility>
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
@@ -25,6 +23,7 @@ colvarproxy_atoms::colvarproxy_atoms()
 {
   atoms_rms_applied_force_ = atoms_max_applied_force_ = 0.0;
   atoms_max_applied_force_id_ = -1;
+  modified_atom_list_ = false;
   updated_masses_ = updated_charges_ = false;
 }
 
@@ -38,7 +37,7 @@ colvarproxy_atoms::~colvarproxy_atoms()
 int colvarproxy_atoms::reset()
 {
   atoms_ids.clear();
-  atoms_ncopies.clear();
+  atoms_refcount.clear();
   atoms_masses.clear();
   atoms_charges.clear();
   atoms_positions.clear();
@@ -51,12 +50,13 @@ int colvarproxy_atoms::reset()
 int colvarproxy_atoms::add_atom_slot(int atom_id)
 {
   atoms_ids.push_back(atom_id);
-  atoms_ncopies.push_back(1);
+  atoms_refcount.push_back(1);
   atoms_masses.push_back(1.0);
   atoms_charges.push_back(0.0);
   atoms_positions.push_back(cvm::rvector(0.0, 0.0, 0.0));
   atoms_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
   atoms_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
+  modified_atom_list_ = true;
   return (atoms_ids.size() - 1);
 }
 
@@ -98,9 +98,19 @@ void colvarproxy_atoms::clear_atom(int index)
     cvm::error("Error: trying to disable an atom that was not previously requested.\n",
                COLVARS_INPUT_ERROR);
   }
-  if (atoms_ncopies[index] > 0) {
-    atoms_ncopies[index] -= 1;
+  if (atoms_refcount[index] > 0) {
+    atoms_refcount[index] -= 1;
   }
+}
+
+
+size_t colvarproxy_atoms::get_num_active_atoms() const
+{
+  size_t result = 0;
+  for (size_t i = 0; i < atoms_refcount.size(); i++) {
+    if (atoms_refcount[i] > 0) result++;
+  }
+  return result;
 }
 
 
@@ -171,7 +181,7 @@ colvarproxy_atom_groups::~colvarproxy_atom_groups()
 int colvarproxy_atom_groups::reset()
 {
   atom_groups_ids.clear();
-  atom_groups_ncopies.clear();
+  atom_groups_refcount.clear();
   atom_groups_masses.clear();
   atom_groups_charges.clear();
   atom_groups_coms.clear();
@@ -184,7 +194,7 @@ int colvarproxy_atom_groups::reset()
 int colvarproxy_atom_groups::add_atom_group_slot(int atom_group_id)
 {
   atom_groups_ids.push_back(atom_group_id);
-  atom_groups_ncopies.push_back(1);
+  atom_groups_refcount.push_back(1);
   atom_groups_masses.push_back(1.0);
   atom_groups_charges.push_back(0.0);
   atom_groups_coms.push_back(cvm::rvector(0.0, 0.0, 0.0));
@@ -216,9 +226,19 @@ void colvarproxy_atom_groups::clear_atom_group(int index)
                "that was not previously requested.\n",
                COLVARS_INPUT_ERROR);
   }
-  if (atom_groups_ncopies[index] > 0) {
-    atom_groups_ncopies[index] -= 1;
+  if (atom_groups_refcount[index] > 0) {
+    atom_groups_refcount[index] -= 1;
   }
+}
+
+
+size_t colvarproxy_atom_groups::get_num_active_atom_groups() const
+{
+  size_t result = 0;
+  for (size_t i = 0; i < atom_groups_refcount.size(); i++) {
+    if (atom_groups_refcount[i] > 0) result++;
+  }
+  return result;
 }
 
 
@@ -243,8 +263,8 @@ colvarproxy_smp::colvarproxy_smp()
   omp_lock_state = NULL;
 #if defined(_OPENMP)
   if (omp_get_thread_num() == 0) {
-    omp_lock_state = reinterpret_cast<void *>(new omp_lock_t);
-    omp_init_lock(reinterpret_cast<omp_lock_t *>(omp_lock_state));
+    omp_lock_state = new omp_lock_t;
+    omp_init_lock(omp_lock_state);
   }
 #endif
 }
@@ -255,7 +275,7 @@ colvarproxy_smp::~colvarproxy_smp()
 #if defined(_OPENMP)
   if (omp_get_thread_num() == 0) {
     if (omp_lock_state) {
-      delete reinterpret_cast<omp_lock_t *>(omp_lock_state);
+      delete omp_lock_state;
     }
   }
 #endif
@@ -374,7 +394,7 @@ int colvarproxy_smp::smp_num_threads()
 int colvarproxy_smp::smp_lock()
 {
 #if defined(_OPENMP)
-  omp_set_lock(reinterpret_cast<omp_lock_t *>(omp_lock_state));
+  omp_set_lock(omp_lock_state);
 #endif
   return COLVARS_OK;
 }
@@ -383,8 +403,7 @@ int colvarproxy_smp::smp_lock()
 int colvarproxy_smp::smp_trylock()
 {
 #if defined(_OPENMP)
-  return omp_test_lock(reinterpret_cast<omp_lock_t *>(omp_lock_state)) ?
-    COLVARS_OK : COLVARS_ERROR;
+  return omp_test_lock(omp_lock_state) ? COLVARS_OK : COLVARS_ERROR;
 #else
   return COLVARS_OK;
 #endif
@@ -394,7 +413,7 @@ int colvarproxy_smp::smp_trylock()
 int colvarproxy_smp::smp_unlock()
 {
 #if defined(_OPENMP)
-  omp_unset_lock(reinterpret_cast<omp_lock_t *>(omp_lock_state));
+  omp_unset_lock(omp_lock_state);
 #endif
   return COLVARS_OK;
 }
@@ -443,11 +462,14 @@ int colvarproxy_script::run_colvar_gradient_callback(std::string const & /* name
 colvarproxy::colvarproxy()
 {
   colvars = NULL;
+  // By default, simulation engines allow to immediately request atoms
+  engine_ready_ = true;
   b_simulation_running = true;
   b_simulation_continuing = false;
   b_delete_requested = false;
   version_int = -1;
   features_hash = 0;
+  config_queue_ = reinterpret_cast<void *>(new std::list<std::pair<std::string, std::string> >);
 }
 
 
@@ -458,6 +480,7 @@ colvarproxy::~colvarproxy()
     delete colvars;
     colvars = NULL;
   }
+  delete reinterpret_cast<std::list<std::pair<std::string, std::string> > *>(config_queue_);
 }
 
 
@@ -470,9 +493,14 @@ bool colvarproxy::io_available()
 
 int colvarproxy::reset()
 {
+  if (cvm::debug()) {
+    cvm::log("colvarproxy::reset()\n");
+  }
   int error_code = COLVARS_OK;
   error_code |= colvarproxy_atoms::reset();
   error_code |= colvarproxy_atom_groups::reset();
+  error_code |= colvarproxy_volmaps::reset();
+  total_force_requested = false;
   return error_code;
 }
 
@@ -485,9 +513,38 @@ int colvarproxy::request_deletion()
 }
 
 
+void colvarproxy::add_config(std::string const &cmd, std::string const &conf)
+{
+  reinterpret_cast<std::list<std::pair<std::string, std::string> > *>(config_queue_)->push_back(std::make_pair(cmd, conf));
+}
+
+
 int colvarproxy::setup()
 {
   return COLVARS_OK;
+}
+
+
+int colvarproxy::parse_module_config()
+{
+  int error_code = COLVARS_OK;
+  // Read any configuration queued up for Colvars
+  std::list<std::pair<std::string, std::string> > *config_queue = reinterpret_cast<std::list<std::pair<std::string, std::string> > *>(config_queue_);
+  while (config_queue->size() > 0) {
+    std::pair<std::string, std::string> const &p = config_queue->front();
+    if (p.first == "config") {
+      error_code |= colvars->read_config_string(p.second);
+    } else if (p.first == "configfile") {
+      error_code |= colvars->read_config_file(p.second.c_str());
+    } else {
+      error_code |= cvm::error(std::string("Error: invalid keyword \"") +
+                               p.first +
+                               std::string("\" in colvarproxy::setup()\n"),
+                               COLVARS_BUG_ERROR);
+    }
+    config_queue->pop_front();
+  }
+  return error_code;
 }
 
 
@@ -541,47 +598,78 @@ void colvarproxy::print_input_atomic_data()
   cvm::log(cvm::line_marker);
 
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
+           "atoms_ids[size = "+cvm::to_str(atoms_ids.size())+
+           "] = "+cvm::to_str(atoms_ids)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atoms_ncopies = "+cvm::to_str(atoms_ncopies)+"\n");
+           "atoms_refcount[size = "+cvm::to_str(atoms_refcount.size())+
+           "] = "+cvm::to_str(atoms_refcount)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atoms_masses = "+cvm::to_str(atoms_masses)+"\n");
+           "atoms_masses[size = "+cvm::to_str(atoms_masses.size())+
+           "] = "+cvm::to_str(atoms_masses)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atoms_charges = "+cvm::to_str(atoms_charges)+"\n");
+           "atoms_charges[size = "+cvm::to_str(atoms_charges.size())+
+           "] = "+cvm::to_str(atoms_charges)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atoms_positions = "+cvm::to_str(atoms_positions,
-                                            cvm::cv_width,
-                                            cvm::cv_prec)+"\n");
+           "atoms_positions[size = "+cvm::to_str(atoms_positions.size())+
+           "] = "+cvm::to_str(atoms_positions,
+                              cvm::cv_width,
+                              cvm::cv_prec)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atoms_total_forces = "+cvm::to_str(atoms_total_forces,
-                                               cvm::cv_width,
-                                               cvm::cv_prec)+"\n");
+           "atoms_total_forces[size = "+
+           cvm::to_str(atoms_total_forces.size())+
+           "] = "+cvm::to_str(atoms_total_forces,
+                              cvm::cv_width,
+                              cvm::cv_prec)+"\n");
 
   cvm::log(cvm::line_marker);
 
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atom_groups_ids = "+cvm::to_str(atom_groups_ids)+"\n");
+           "atom_groups_ids[size = "+cvm::to_str(atom_groups_ids.size())+
+           "] = "+cvm::to_str(atom_groups_ids)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atom_groups_ncopies = "+cvm::to_str(atom_groups_ncopies)+"\n");
+           "atom_groups_refcount[size = "+
+           cvm::to_str(atom_groups_refcount.size())+
+           "] = "+cvm::to_str(atom_groups_refcount)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atom_groups_masses = "+cvm::to_str(atom_groups_masses)+"\n");
+           "atom_groups_masses[size = "+
+           cvm::to_str(atom_groups_masses.size())+
+           "] = "+cvm::to_str(atom_groups_masses)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atom_groups_charges = "+cvm::to_str(atom_groups_charges)+"\n");
+           "atom_groups_charges[size = "+
+           cvm::to_str(atom_groups_charges.size())+
+           "] = "+cvm::to_str(atom_groups_charges)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atom_groups_coms = "+cvm::to_str(atom_groups_coms,
-                                             cvm::cv_width,
-                                             cvm::cv_prec)+"\n");
+           "atom_groups_coms[size = "+
+           cvm::to_str(atom_groups_coms.size())+
+           "] = "+cvm::to_str(atom_groups_coms,
+                              cvm::cv_width,
+                              cvm::cv_prec)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "atom_groups_total_forces = "+cvm::to_str(atom_groups_total_forces,
-                                                     cvm::cv_width,
-                                                     cvm::cv_prec)+"\n");
+           "atom_groups_total_forces[size = "+
+           cvm::to_str(atom_groups_total_forces.size())+
+           "] = "+cvm::to_str(atom_groups_total_forces,
+                              cvm::cv_width,
+                              cvm::cv_prec)+"\n");
 
   cvm::log(cvm::line_marker);
 
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "volmaps_ids = "+cvm::to_str(volmaps_ids)+"\n");
+           "volmaps_ids[size = "+cvm::to_str(volmaps_ids.size())+
+           "] = "+cvm::to_str(volmaps_ids)+"\n");
+
   cvm::log("Step "+cvm::to_str(cvm::step_absolute())+", "+
-           "volmaps_values = "+cvm::to_str(volmaps_values)+"\n");
+           "volmaps_values[size = "+cvm::to_str(volmaps_values.size())+
+           "] = "+cvm::to_str(volmaps_values)+"\n");
 
   cvm::log(cvm::line_marker);
 }

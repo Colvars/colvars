@@ -41,6 +41,10 @@ public:
 
   int check_atom_id(int atom_number) override;
 
+  /// @brief Reads next frame from XYZ file, keeping it open
+  /// @param filename Input XYZ file
+  /// @return Error code
+  int read_frame_xyz(const char *filename);
 };
 
 

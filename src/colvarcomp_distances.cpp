@@ -14,7 +14,7 @@
 #include "colvarparse.h"
 #include "colvar.h"
 #include "colvarcomp.h"
-
+#include "colvar_rotation_derivative.h"
 
 
 colvar::distance::distance(std::string const &conf)
@@ -1042,13 +1042,8 @@ colvar::rmsd::rmsd(std::string const &conf)
     cvm::log("This is a standard minimum RMSD, derivatives of the optimal rotation "
               "will not be computed as they cancel out in the gradients.");
     atoms->disable(f_ag_fit_gradients);
-
-    // request the calculation of the derivatives of the rotation defined by the atom group
-    atoms->rot.request_group1_gradients(atoms->size());
-    // request derivatives of optimal rotation wrt reference coordinates for Jacobian:
-    // this is only required for ABF, but we do both groups here for better caching
-    atoms->rot.request_group2_gradients(atoms->size());
   }
+  atoms->setup_rotation_derivative();
 
   std::string perm_conf;
   size_t pos = 0; // current position in config string
@@ -1165,10 +1160,12 @@ void colvar::rmsd::calc_Jacobian_derivative()
     cvm::matrix2d<cvm::rvector> grad_rot_mat(3, 3);
     // gradients of products of 2 quaternion components
     cvm::rvector g11, g22, g33, g01, g02, g03, g12, g13, g23;
+    cvm::vector1d<cvm::rvector> dq;
+    atoms->rot_deriv->prepare_derivative(rotation_derivative_dldq::use_dq);
     for (size_t ia = 0; ia < atoms->size(); ia++) {
 
       // Gradient of optimal quaternion wrt current Cartesian position
-      cvm::vector1d<cvm::rvector> &dq = atoms->rot.dQ0_1[ia];
+      atoms->rot_deriv->calc_derivative_wrt_group1(ia, nullptr, &dq);
 
       g11 = 2.0 * (atoms->rot.q)[1]*dq[1];
       g22 = 2.0 * (atoms->rot.q)[2]*dq[2];
@@ -1295,13 +1292,8 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     atoms->center_ref_pos();
     atoms->disable(f_ag_fit_gradients); // cancel out if group is fitted on itself
                                         // and cvc is translationally invariant
-
-    // request the calculation of the derivatives of the rotation defined by the atom group
-    atoms->rot.request_group1_gradients(atoms->size());
-    // request derivatives of optimal rotation wrt reference coordinates for Jacobian:
-    // this is only required for ABF, but we do both groups here for better caching
-    atoms->rot.request_group2_gradients(atoms->size());
   }
+  atoms->setup_rotation_derivative();
 
   {
     bool const b_inline = get_keyval(conf, "vector", eigenvec, eigenvec);
@@ -1466,12 +1458,14 @@ void colvar::eigenvector::calc_Jacobian_derivative()
 
   cvm::real sum = 0.0;
 
+  cvm::vector1d<cvm::rvector> dq_1;
+  atoms->rot_deriv->prepare_derivative(rotation_derivative_dldq::use_dq);
   for (size_t ia = 0; ia < atoms->size(); ia++) {
 
     // Gradient of optimal quaternion wrt current Cartesian position
     // trick: d(R^-1)/dx = d(R^t)/dx = (dR/dx)^t
     // we can just transpose the derivatives of the direct matrix
-    cvm::vector1d<cvm::rvector> &dq_1 = atoms->rot.dQ0_1[ia];
+    atoms->rot_deriv->calc_derivative_wrt_group1(ia, nullptr, &dq_1);
 
     g11 = 2.0 * quat0[1]*dq_1[1];
     g22 = 2.0 * quat0[2]*dq_1[2];

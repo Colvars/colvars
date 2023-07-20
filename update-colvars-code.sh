@@ -283,7 +283,8 @@ checkfile() {
 if [ ${code} = "LAMMPS" ]
 then
 
-  copy_lepton ${target}/lib/ || exit 1
+  # # LAMMPS contains an updated but patched Lepton, uncomment here if needed
+  # copy_lepton ${target}/lib/ || exit 1
 
   # Update code-independent headers and sources
   for src in ${source}/src/colvar*.h ${source}/src/colvar*.cpp
@@ -300,11 +301,9 @@ then
   done
 
   for src in \
-    ${source}/lammps/src/COLVARS/colvarproxy_lammps.cpp \
-    ${source}/lammps/src/COLVARS/colvarproxy_lammps.h \
-    ${source}/lammps/src/COLVARS/colvarproxy_lammps_version.h \
-    ${source}/lammps/src/COLVARS/fix_colvars.cpp \
-    ${source}/lammps/src/COLVARS/fix_colvars.h
+    ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} \
+    ${source}/lammps/src/COLVARS/fix_colvars.{cpp,h} \
+    ${source}/lammps/src/COLVARS/inthash.{cpp,h}
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/COLVARS/${tgt}"
@@ -338,7 +337,10 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/doc/src/PDF/${tgt}"
   done
-
+  condcopy "${source}/lammps/doc/src/fix_colvars.rst" \
+           "${target}/doc/src/fix_colvars.rst"
+  rm -f "${target}/doc/src/fix_colvars.txt"
+  
   echo ' done.'
   if [ ${downloaded_pdf} = 1 ] ; then
     echo "Note: the PDF manual for the latest Colvars version was downloaded.  "

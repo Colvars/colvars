@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.3)
+cmake_minimum_required(VERSION 3.13)
 
 project(colvars CXX)
 get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
@@ -10,6 +10,15 @@ option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
+
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else()
+  if(${CMAKE_CXX_STANDARD} STREQUAL "98")
+    message(FATAL_ERROR "CMAKE_CXX_STANDARD must be 11 or later")
+  endif()
+endif()
 
 option(WARNINGS_ARE_ERRORS "Treats warnings as errors" OFF)
 
@@ -34,17 +43,6 @@ endif()
 
 option(COLVARS_LEPTON "Build and link the Lepton library" ${COLVARS_LEPTON_DEFAULT})
 
-if(COLVARS_LEPTON)
-  if(NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 11)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  else()
-    if(${CMAKE_CXX_STANDARD} STREQUAL "98")
-      message(FATAL_ERROR "With -DCOLVARS_LEPTON=ON, CMAKE_CXX_STANDARD must be 11 or later")
-    endif()
-  endif()
-endif()
-
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
 add_library(colvars ${COLVARS_SOURCES})
@@ -53,9 +51,6 @@ if(BUILD_SHARED_LIBS)
 endif()
 
 target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
-
-target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-long-long>)
-target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-c++11-long-long>)
 
 target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w>)
 # # Uncomment the line below to enable more thorough checks with Sun Compiler
@@ -71,6 +66,22 @@ if(WARNINGS_ARE_ERRORS)
   target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:-xwe>)
   target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/WX>)
 endif()
+
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(COLVARS_OPENMP_DEFAULT OFF)
+else()
+  set(COLVARS_OPENMP_DEFAULT ON)
+endif()
+option(COLVARS_OPENMP "Build Colvars with (still limited) OpenMP support" ${COLVARS_OPENMP_DEFAULT})
+
+if(COLVARS_OPENMP)
+  find_package(OpenMP)
+  if(OpenMP_CXX_FOUND)
+    target_link_libraries(colvars OpenMP::OpenMP_CXX)
+  endif()
+endif()
+
 
 include(buildColvarsLepton)
 
@@ -122,5 +133,12 @@ if(COLVARS_DEBUG)
   target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-DCOLVARS_DEBUG -g -O0>)
   target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/DCOLVARS_DEBUG /DEBUG:FULL>)
 endif()
+
+option(ENABLE_COVERAGE "Enable code coverage reporting" ON)
+if(ENABLE_COVERAGE AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL "SunPro"))
+  target_compile_options(colvars PUBLIC --coverage)
+  target_link_options(colvars PUBLIC --coverage)
+endif()
+
 
 include(buildColvarsTests)

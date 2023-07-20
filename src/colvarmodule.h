@@ -439,9 +439,9 @@ public:
   // from the proxy that may change during program execution)
   // No additional parsing is done within these functions
 
-  /// (Re)initialize internal data (currently used by LAMMPS)
+  /// (Re)initialize any internal data affected by changes in the engine
   /// Also calls setup() member functions of colvars and biases
-  int setup();
+  int update_engine_parameters();
 
   /// (Re)initialize and (re)read the input state file calling read_restart()
   int setup_input();
@@ -743,7 +743,8 @@ public:
   /// Load coordinates into an atom group from an XYZ file (assumes Angstroms)
   int load_coords_xyz(char const *filename,
                       std::vector<rvector> *pos,
-                      atom_group *atoms);
+                      atom_group *atoms,
+                      bool keep_open = false);
 
   /// Frequency for collective variables trajectory output
   static size_t cv_traj_freq;

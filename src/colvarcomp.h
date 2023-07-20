@@ -19,19 +19,15 @@
 // this can be done straightforwardly by using the macro:
 // simple_scalar_dist_functions (derived_class)
 
+#include <functional>
+#include <map>
+#include <memory>
 
 #include "colvarmodule.h"
-#include "colvar.h"
 #include "colvaratoms.h"
+#include "colvar.h"
 #include "colvar_arithmeticpath.h"
-
-#if (__cplusplus >= 201103L)
-// C++11-only functions
 #include "colvar_geometricpath.h"
-#include <memory>
-#include <functional>
-#endif
-
 
 #ifdef TORCH
 
@@ -39,8 +35,6 @@
 #include <torch/script.h>
 
 #endif
-
-#include <map>
 
 
 /// \brief Colvar component (base class for collective variables)
@@ -624,7 +618,7 @@ public:
   dipole_magnitude (std::string const &conf);
   dipole_magnitude (cvm::atom const &a1);
   dipole_magnitude();
-  virtual inline ~dipole_magnitude() {}
+  virtual ~dipole_magnitude() {}
   virtual void calc_value();
   virtual void calc_gradients();
   //virtual void calc_force_invgrads();
@@ -1226,6 +1220,9 @@ protected:
   /// Reference coordinates
   std::vector<cvm::atom_pos> ref_pos;
 
+  /// Shifted atomic positions
+  std::vector<cvm::atom_pos> shifted_pos;
+
   /// Rotation object
   cvm::rotation              rot;
 
@@ -1233,12 +1230,16 @@ protected:
   /// quaternion, which may be annoying in the colvars trajectory
   cvm::quaternion            ref_quat;
 
+  /// Rotation derivative
+  struct rotation_derivative_impl_;
+  std::unique_ptr<rotation_derivative_impl_> rot_deriv_impl;
+
 public:
 
   orientation(std::string const &conf);
   orientation();
   virtual int init(std::string const &conf);
-  virtual ~orientation() {}
+  virtual ~orientation();
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
@@ -1548,7 +1549,6 @@ public:
 
 
 
-#if (__cplusplus >= 201103L)
 class colvar::CartesianBasedPath
   : public colvar::cvc
 {
@@ -1753,6 +1753,7 @@ namespace neuralnetworkCV {
     class neuralNetworkCompute;
 }
 
+
 class colvar::neuralNetwork
   : public linearCombination
 {
@@ -1768,83 +1769,6 @@ public:
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
 };
-
-
-
-#else // if the compiler doesn't support C++11
-
-class colvar::linearCombination
-  : public colvar::componentDisabled
-{
-public:
-    linearCombination(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::CartesianBasedPath
-  : public colvar::componentDisabled
-{
-public:
-    CartesianBasedPath(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::CVBasedPath
-  : public colvar::componentDisabled
-{
-public:
-    CVBasedPath(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::gspath
-  : public colvar::componentDisabled
-{
-public:
-    gspath(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::gzpath
-  : public colvar::componentDisabled
-{
-public:
-    gzpath(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::gspathCV
-  : public colvar::componentDisabled
-{
-public:
-    gspathCV(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::gzpathCV
-  : public colvar::componentDisabled
-{
-public:
-    gzpathCV(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::aspathCV
-  : public colvar::componentDisabled
-{
-public:
-    aspathCV(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::azpathCV
-  : public colvar::componentDisabled
-{
-public:
-    azpathCV(std::string const &conf) : componentDisabled(conf) {}
-};
-
-class colvar::neuralNetwork
-  : public colvar::componentDisabled
-{
-public:
-    neuralNetwork(std::string const &conf) : componentDisabled(conf) {}
-};
-
-
-#endif // C++11 checking
 
 #ifdef TORCH
 

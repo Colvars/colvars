@@ -39,7 +39,7 @@ ABFdata::ABFdata(const char *gradFileName)
 
     std::cout << "Opening file " << gradFileName << " for reading\n";
     gradFile.open(gradFileName);
-    if (!gradFile.good()) {
+    if (!gradFile) {
         std::cerr << "Cannot read from file " << gradFileName << ", aborting\n";
         exit(1);
     }
@@ -136,7 +136,7 @@ ABFdata::ABFdata(const char *gradFileName)
     std::cout << "Opening file " << countFileName << " for reading\n";
     countFile.open(countFileName);
 
-    if (!countFile.good()) {
+    if (!countFile) {
         std::cerr << "Cannot read from file " << countFileName << ", aborting\n";
         exit(1);
     }
@@ -220,7 +220,7 @@ void ABFdata::write_histogram(const char *fileName)
     int *pos, i;
 
     os.open(fileName);
-    if (!os.good()) {
+    if (!os) {
         std::cerr << "Cannot write to file " << fileName << ", aborting\n";
         exit(1);
     }
@@ -264,7 +264,7 @@ void ABFdata::write_bias(const char *fileName)
     double minbias, maxbias;
 
     os.open(fileName);
-    if (!os.good()) {
+    if (!os) {
         std::cerr << "Cannot write to file " << fileName << ", aborting\n";
         exit(1);
     }
@@ -331,7 +331,7 @@ void ABFdata::write_field(double *field, const char *fileName)
     double *f;
 
     os.open(fileName);
-    if (!os.good()) {
+    if (!os) {
         std::cerr << "Cannot write to file " << fileName << ", aborting\n";
         exit(1);
     }
