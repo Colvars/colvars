@@ -38,6 +38,8 @@ colvar::colvar()
   dev_null = 0.0;
 #endif
 
+  matching_state = false;
+
   expand_boundaries = false;
 
   description = "uninitialized colvar";
@@ -2276,10 +2278,11 @@ void colvar::wrap(colvarvalue &x_unwrapped) const
 
 std::istream & colvar::read_state(std::istream &is)
 {
-  std::streampos const start_pos = is.tellg();
+  auto const start_pos = is.tellg();
 
   std::string conf;
-  if ( !(is >> colvarparse::read_block("colvar", &conf)) ) {
+  if ( !(is >> colvarparse::read_block("colvar", &conf)) ||
+       (check_matching_state(conf) != COLVARS_OK) ) {
     // this is not a colvar block
     is.clear();
     is.seekg(start_pos);
@@ -2287,33 +2290,53 @@ std::istream & colvar::read_state(std::istream &is)
     return is;
   }
 
-  {
-    std::string check_name = "";
-    get_keyval(conf, "name", check_name,
-               std::string(""), colvarparse::parse_silent);
-    if (check_name.size() == 0) {
-      cvm::error("Error: Collective variable in the "
-                 "restart file without any identifier.\n", COLVARS_INPUT_ERROR);
-      is.clear();
-      is.seekg(start_pos);
-      is.setstate(std::ios::failbit);
-      return is;
-    }
-
-    if (check_name != name)  {
-      if (cvm::debug()) {
-        cvm::log("Ignoring state of colvar \""+check_name+
-                 "\": this colvar is named \""+name+"\".\n");
-      }
-      is.seekg(start_pos);
-      return is;
-    }
+  if (!matching_state) {
+    // No errors reading, but this state is not for this colvar; rewind
+    is.seekg(start_pos);
+    return is;
   }
 
+  if (set_state_params(conf) != COLVARS_OK) {
+    is.clear();
+    is.seekg(start_pos);
+    is.setstate(std::ios::failbit);
+  }
+
+  return is;
+}
+
+
+int colvar::check_matching_state(std::string const &conf)
+{
+  std::string check_name = "";
+  get_keyval(conf, "name", check_name, std::string(""), colvarparse::parse_silent);
+
+  if (check_name.size() == 0) {
+    return cvm::error("Error: Collective variable in the "
+                      "state file without any identifier.\n", COLVARS_INPUT_ERROR);
+  }
+
+  if (check_name != name)  {
+    if (cvm::debug()) {
+      cvm::log("Ignoring state of colvar \""+check_name+
+               "\": this colvar is named \""+name+"\".\n");
+    }
+    matching_state = false;
+  } else {
+    matching_state = true;
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvar::set_state_params(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
   if ( !(get_keyval(conf, "x", x, x, colvarparse::parse_silent)) ) {
-    cvm::log("Error: restart file does not contain "
-             "the value of the colvar \""+
-             name+"\" .\n");
+    error_code |= cvm::error("Error: restart file does not contain "
+                             "the value of the colvar \""+
+                             name+"\" .\n", COLVARS_INPUT_ERROR);
   } else {
     cvm::log("Restarting collective variable \""+name+"\" from value: "+
              cvm::to_str(x)+"\n");
@@ -2326,9 +2349,10 @@ std::istream & colvar::read_state(std::istream &is)
                       colvarvalue(x.type()), colvarparse::parse_silent)) ||
          !(get_keyval(conf, "extended_v", v_ext,
                       colvarvalue(x.type()), colvarparse::parse_silent)) ) {
-      cvm::log("Error: restart file does not contain "
-               "\"extended_x\" or \"extended_v\" for the colvar \""+
-               name+"\", but you requested \"extendedLagrangian\".\n");
+      error_code |= cvm::error("Error: restart file does not contain "
+                               "\"extended_x\" or \"extended_v\" for the colvar \""+
+                               name+"\", but you requested \"extendedLagrangian\".\n",
+                               COLVARS_INPUT_ERROR);
     }
     x_reported = x_ext;
   } else {
@@ -2339,9 +2363,10 @@ std::istream & colvar::read_state(std::istream &is)
 
     if ( !(get_keyval(conf, "v", v_fdiff,
                       colvarvalue(x.type()), colvarparse::parse_silent)) ) {
-      cvm::log("Error: restart file does not contain "
-               "the velocity for the colvar \""+
-               name+"\", but you requested \"outputVelocity\".\n");
+      error_code |= cvm::error("Error: restart file does not contain "
+                               "the velocity for the colvar \""+
+                               name+"\", but you requested \"outputVelocity\".\n",
+                               COLVARS_INPUT_ERROR);
     }
 
     if (is_enabled(f_cv_extended_Lagrangian)) {
@@ -2351,7 +2376,7 @@ std::istream & colvar::read_state(std::istream &is)
     }
   }
 
-  return is;
+  return error_code;
 }
 
 

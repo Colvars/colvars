@@ -482,6 +482,9 @@ public:
 
 protected:
 
+  /// Flag used to tell if the state string being read is for this colvar
+  bool matching_state;
+
   /// Previous value (to calculate velocities during analysis)
   colvarvalue            x_old;
 
