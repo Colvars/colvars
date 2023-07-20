@@ -844,18 +844,6 @@ int colvarbias_restraint_harmonic::set_state_params(std::string const &conf)
 }
 
 
-std::ostream & colvarbias_restraint_harmonic::write_state_data(std::ostream &os)
-{
-  return colvarbias_ti::write_state_data(os);
-}
-
-
-std::istream & colvarbias_restraint_harmonic::read_state_data(std::istream &is)
-{
-  return colvarbias_ti::read_state_data(is);
-}
-
-
 std::ostream & colvarbias_restraint_harmonic::write_traj_label(std::ostream &os)
 {
   colvarbias_restraint::write_traj_label(os);
@@ -1143,18 +1131,6 @@ int colvarbias_restraint_harmonic_walls::set_state_params(std::string const &con
 }
 
 
-std::ostream & colvarbias_restraint_harmonic_walls::write_state_data(std::ostream &os)
-{
-  return colvarbias_ti::write_state_data(os);
-}
-
-
-std::istream & colvarbias_restraint_harmonic_walls::read_state_data(std::istream &is)
-{
-  return colvarbias_ti::read_state_data(is);
-}
-
-
 std::ostream & colvarbias_restraint_harmonic_walls::write_traj_label(std::ostream &os)
 {
   colvarbias_restraint::write_traj_label(os);
@@ -1297,18 +1273,6 @@ int colvarbias_restraint_linear::set_state_params(std::string const &conf)
   error_code |= colvarbias_restraint_centers_moving::set_state_params(conf);
   error_code |= colvarbias_restraint_k_moving::set_state_params(conf);
   return error_code;
-}
-
-
-std::ostream & colvarbias_restraint_linear::write_state_data(std::ostream &os)
-{
-  return colvarbias_ti::write_state_data(os);
-}
-
-
-std::istream & colvarbias_restraint_linear::read_state_data(std::istream &is)
-{
-  return colvarbias_ti::read_state_data(is);
 }
 
 
