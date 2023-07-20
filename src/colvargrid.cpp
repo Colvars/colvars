@@ -37,6 +37,47 @@ colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
   : colvar_grid<size_t>(colvars, def_count, 1, margin)
 {}
 
+std::istream & colvar_grid_count::read_restart(std::istream &is)
+{
+  return colvar_grid<size_t>::read_restart(is);
+}
+
+cvm::memory_stream & colvar_grid_count::read_restart(cvm::memory_stream &is)
+{
+  return colvar_grid<size_t>::read_restart(is);
+}
+
+std::ostream & colvar_grid_count::write_restart(std::ostream &os)
+{
+  return colvar_grid<size_t>::write_restart(os);
+}
+
+cvm::memory_stream & colvar_grid_count::write_restart(cvm::memory_stream &os)
+{
+  return colvar_grid<size_t>::write_restart(os);
+}
+
+std::istream &colvar_grid_count::read_raw(std::istream &is)
+{
+  return colvar_grid<size_t>::read_raw(is);
+}
+
+cvm::memory_stream &colvar_grid_count::read_raw(cvm::memory_stream &is)
+{
+  return colvar_grid<size_t>::read_raw(is);
+}
+
+std::ostream &colvar_grid_count::write_raw(std::ostream &os, size_t const buf_size) const
+{
+  return colvar_grid<size_t>::write_raw(os, buf_size);
+}
+
+cvm::memory_stream &colvar_grid_count::write_raw(cvm::memory_stream &os,
+                                                 size_t const buf_size) const
+{
+  return colvar_grid<size_t>::write_raw(os, buf_size);
+}
+
 std::istream & colvar_grid_count::read_multicol(std::istream &is, bool add)
 {
   return colvar_grid<size_t>::read_multicol(is, add);
@@ -94,6 +135,48 @@ colvar_grid_scalar::colvar_grid_scalar(std::vector<colvar *> &colvars, bool marg
 
 colvar_grid_scalar::~colvar_grid_scalar()
 {
+}
+
+
+std::istream &colvar_grid_scalar::read_restart(std::istream &is)
+{
+  return colvar_grid<cvm::real>::read_restart(is);
+}
+
+cvm::memory_stream &colvar_grid_scalar::read_restart(cvm::memory_stream &is)
+{
+  return colvar_grid<cvm::real>::read_restart(is);
+}
+
+std::ostream &colvar_grid_scalar::write_restart(std::ostream &os)
+{
+  return colvar_grid<cvm::real>::write_restart(os);
+}
+
+cvm::memory_stream &colvar_grid_scalar::write_restart(cvm::memory_stream &os)
+{
+  return colvar_grid<cvm::real>::write_restart(os);
+}
+
+std::istream &colvar_grid_scalar::read_raw(std::istream &is)
+{
+  return colvar_grid<cvm::real>::read_raw(is);
+}
+
+cvm::memory_stream &colvar_grid_scalar::read_raw(cvm::memory_stream &is)
+{
+  return colvar_grid<cvm::real>::read_raw(is);
+}
+
+std::ostream &colvar_grid_scalar::write_raw(std::ostream &os, size_t const buf_size) const
+{
+  return colvar_grid<cvm::real>::write_raw(os, buf_size);
+}
+
+cvm::memory_stream &colvar_grid_scalar::write_raw(cvm::memory_stream &os,
+                                                  size_t const buf_size) const
+{
+  return colvar_grid<cvm::real>::write_raw(os, buf_size);
 }
 
 std::istream & colvar_grid_scalar::read_multicol(std::istream &is, bool add)
@@ -280,6 +363,46 @@ colvar_grid_gradient::colvar_grid_gradient(std::string &filename)
   cvm::main()->proxy->close_input_stream(filename);
 }
 
+std::istream &colvar_grid_gradient::read_restart(std::istream &is)
+{
+  return colvar_grid<cvm::real>::read_restart(is);
+}
+
+cvm::memory_stream &colvar_grid_gradient::read_restart(cvm::memory_stream &is)
+{
+  return colvar_grid<cvm::real>::read_restart(is);
+}
+
+std::ostream &colvar_grid_gradient::write_restart(std::ostream &os)
+{
+  return colvar_grid<cvm::real>::write_restart(os);
+}
+
+cvm::memory_stream &colvar_grid_gradient::write_restart(cvm::memory_stream &os)
+{
+  return colvar_grid<cvm::real>::write_restart(os);
+}
+
+std::istream &colvar_grid_gradient::read_raw(std::istream &is)
+{
+  return colvar_grid<cvm::real>::read_raw(is);
+}
+
+cvm::memory_stream &colvar_grid_gradient::read_raw(cvm::memory_stream &is)
+{
+  return colvar_grid<cvm::real>::read_raw(is);
+}
+
+std::ostream &colvar_grid_gradient::write_raw(std::ostream &os, size_t const buf_size) const
+{
+  return colvar_grid<cvm::real>::write_raw(os, buf_size);
+}
+
+cvm::memory_stream &colvar_grid_gradient::write_raw(cvm::memory_stream &os,
+                                                    size_t const buf_size) const
+{
+  return colvar_grid<cvm::real>::write_raw(os, buf_size);
+}
 
 std::istream & colvar_grid_gradient::read_multicol(std::istream &is, bool add)
 {

@@ -24,7 +24,8 @@
 /// Only scalar colvars supported so far: vector colvars are treated as arrays
 template <class T> class colvar_grid : public colvarparse {
 
-protected:
+  //protected:
+public: // TODO create accessors for these after all instantiations work
 
   /// Number of dimensions
   size_t nd;
@@ -950,83 +951,33 @@ public:
     }
   }
 
+  /// Read all grid parameters and data from a formatted stream
+  std::istream & read_restart(std::istream &is);
 
-  /// \brief Read grid entry in restart file
-  std::istream & read_restart(std::istream &is)
-  {
-    std::streampos const start_pos = is.tellg();
-    std::string key, conf;
-    if ((is >> key) && (key == std::string("grid_parameters"))) {
-      is.seekg(start_pos, std::ios::beg);
-      is >> colvarparse::read_block("grid_parameters", &conf);
-      parse_params(conf, colvarparse::parse_silent);
-    } else {
-      cvm::log("Grid parameters are missing in the restart file, using those from the configuration.\n");
-      is.seekg(start_pos, std::ios::beg);
-    }
-    read_raw(is);
-    return is;
-  }
+  /// Read all grid parameters and data from an unformatted stream
+  cvm::memory_stream & read_restart(cvm::memory_stream &is);
 
-  /// \brief Write grid entry in restart file
-  std::ostream & write_restart(std::ostream &os)
-  {
-    write_params(os);
-    write_raw(os);
-    return os;
-  }
+  /// Write all grid parameters and data to a formatted stream
+  std::ostream & write_restart(std::ostream &os);
 
+  /// Write all grid parameters and data to an unformatted stream
+  cvm::memory_stream & write_restart(cvm::memory_stream &os);
 
-  /// \brief Write the grid data without labels, as they are
-  /// represented in memory
-  /// \param buf_size Number of values per line
-  std::ostream & write_raw(std::ostream &os,
-                           size_t const buf_size = 3) const
-  {
-    std::streamsize const w = os.width();
-    std::streamsize const p = os.precision();
+  /// Read all grid parameters and data from a formatted stream
+  std::istream &read_raw(std::istream &is);
 
-    std::vector<int> ix = new_index();
-    size_t count = 0;
-    for ( ; index_ok(ix); incr(ix)) {
-      for (size_t imult = 0; imult < mult; imult++) {
-        os << " "
-           << std::setw(w) << std::setprecision(p)
-           << value_output(ix, imult);
-        if (((++count) % buf_size) == 0)
-          os << "\n";
-      }
-    }
-    // write a final newline only if buffer is not empty
-    if ((count % buf_size) != 0)
-      os << "\n";
+  /// Read all grid parameters and data from an unformatted stream
+  cvm::memory_stream &read_raw(cvm::memory_stream &is);
 
-    return os;
-  }
+  /// Write all grid data to a formatted stream (without labels, as they are represented in memory)
+  /// \param[in,out] os Stream object
+  /// \param[in] buf_size Number of values per line
+  std::ostream &write_raw(std::ostream &os, size_t const buf_size = 3) const;
 
-  /// \brief Read data written by colvar_grid::write_raw()
-  std::istream & read_raw(std::istream &is)
-  {
-    std::streampos const start_pos = is.tellg();
-
-    for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
-      for (size_t imult = 0; imult < mult; imult++) {
-        T new_value;
-        if (is >> new_value) {
-          value_input(ix, new_value, imult);
-        } else {
-          is.clear();
-          is.seekg(start_pos, std::ios::beg);
-          is.setstate(std::ios::failbit);
-          cvm::error("Error: failed to read all of the grid points from file.  Possible explanations: grid parameters in the configuration (lowerBoundary, upperBoundary, width) are different from those in the file, or the file is corrupt/incomplete.\n");
-          return is;
-        }
-      }
-    }
-
-    has_data = true;
-    return is;
-  }
+  /// Write all grid data to an unformatted stream
+  /// \param[in,out] os Stream object
+  /// \param[in] buf_size Number of values per line (note: ignored because there is no formatting)
+  cvm::memory_stream &write_raw(cvm::memory_stream &os, size_t const buf_size = 3) const;
 
   /// Read a grid written by write_multicol(), incrementing if add is true
   std::istream & read_multicol(std::istream &is, bool add = false);
@@ -1087,6 +1038,34 @@ public:
   {
     return new_data[address(ix) + imult];
   }
+
+  /// Read all grid parameters and data from a formatted stream
+  std::istream & read_restart(std::istream &is);
+
+  /// Read all grid parameters and data from an unformatted stream
+  cvm::memory_stream & read_restart(cvm::memory_stream &is);
+
+  /// Write all grid parameters and data to a formatted stream
+  std::ostream & write_restart(std::ostream &os);
+
+  /// Write all grid parameters and data to an unformatted stream
+  cvm::memory_stream & write_restart(cvm::memory_stream &os);
+
+  /// Read all grid parameters and data from a formatted stream
+  std::istream &read_raw(std::istream &is);
+
+  /// Read all grid parameters and data from an unformatted stream
+  cvm::memory_stream &read_raw(cvm::memory_stream &is);
+
+  /// Write all grid data to a formatted stream (without labels, as they are represented in memory)
+  /// \param[in,out] os Stream object
+  /// \param[in] buf_size Number of values per line
+  std::ostream &write_raw(std::ostream &os, size_t const buf_size = 3) const;
+
+  /// Write all grid data to an unformatted stream
+  /// \param[in,out] os Stream object
+  /// \param[in] buf_size Number of values per line (note: ignored because there is no formatting)
+  cvm::memory_stream &write_raw(cvm::memory_stream &os, size_t const buf_size = 3) const;
 
   /// Read a grid written by write_multicol(), incrementin if data is true
   std::istream & read_multicol(std::istream &is, bool add = false);
@@ -1260,6 +1239,33 @@ public:
       samples->incr_count(ix);
     has_data = true;
   }
+  /// Read all grid parameters and data from a formatted stream
+  std::istream & read_restart(std::istream &is);
+
+  /// Read all grid parameters and data from an unformatted stream
+  cvm::memory_stream & read_restart(cvm::memory_stream &is);
+
+  /// Write all grid parameters and data to a formatted stream
+  std::ostream & write_restart(std::ostream &os);
+
+  /// Write all grid parameters and data to an unformatted stream
+  cvm::memory_stream & write_restart(cvm::memory_stream &os);
+
+  /// Read all grid parameters and data from a formatted stream
+  std::istream &read_raw(std::istream &is);
+
+  /// Read all grid parameters and data from an unformatted stream
+  cvm::memory_stream &read_raw(cvm::memory_stream &is);
+
+  /// Write all grid data to a formatted stream (without labels, as they are represented in memory)
+  /// \param[in,out] os Stream object
+  /// \param[in] buf_size Number of values per line
+  std::ostream &write_raw(std::ostream &os, size_t const buf_size = 3) const;
+
+  /// Write all grid data to an unformatted stream
+  /// \param[in,out] os Stream object
+  /// \param[in] buf_size Number of values per line (note: ignored because there is no formatting)
+  cvm::memory_stream &write_raw(cvm::memory_stream &os, size_t const buf_size = 3) const;
 
   /// Read a grid written by write_multicol(), incrementin if data is true
   std::istream & read_multicol(std::istream &is, bool add = false);
@@ -1470,6 +1476,33 @@ public:
 
   /// Constructor from a multicol file
   colvar_grid_gradient(std::string &filename);
+  /// Read all grid parameters and data from a formatted stream
+  std::istream & read_restart(std::istream &is);
+
+  /// Read all grid parameters and data from an unformatted stream
+  cvm::memory_stream & read_restart(cvm::memory_stream &is);
+
+  /// Write all grid parameters and data to a formatted stream
+  std::ostream & write_restart(std::ostream &os);
+
+  /// Write all grid parameters and data to an unformatted stream
+  cvm::memory_stream & write_restart(cvm::memory_stream &os);
+
+  /// Read all grid parameters and data from a formatted stream
+  std::istream &read_raw(std::istream &is);
+
+  /// Read all grid parameters and data from an unformatted stream
+  cvm::memory_stream &read_raw(cvm::memory_stream &is);
+
+  /// Write all grid data to a formatted stream (without labels, as they are represented in memory)
+  /// \param[in,out] os Stream object
+  /// \param[in] buf_size Number of values per line
+  std::ostream &write_raw(std::ostream &os, size_t const buf_size = 3) const;
+
+  /// Write all grid data to an unformatted stream
+  /// \param[in,out] os Stream object
+  /// \param[in] buf_size Number of values per line (note: ignored because there is no formatting)
+  cvm::memory_stream &write_raw(cvm::memory_stream &os, size_t const buf_size = 3) const;
 
   /// Read a grid written by write_multicol(), incrementin if data is true
   virtual std::istream & read_multicol(std::istream &is, bool add = false);

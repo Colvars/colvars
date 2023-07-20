@@ -19,6 +19,129 @@
 #include "colvarproxy.h"
 #include "colvar.h"
 #include "colvargrid.h"
+#include "colvars_memstream.h"
+
+
+template <class T, class IST> IST &read_restart_template(colvar_grid<T> &g, IST &is)
+{
+  auto const start_pos = is.tellg();
+  std::string key, conf;
+  if ((is >> key) && (key == std::string("grid_parameters"))) {
+    is.seekg(start_pos);
+    is >> colvarparse::read_block("grid_parameters", &conf);
+    g.parse_params(conf, colvarparse::parse_silent);
+  } else {
+    cvm::log("Grid parameters are missing in the restart file, "
+             "using those from the configuration.\n");
+    is.seekg(start_pos);
+  }
+  g.read_raw(is);
+  return is;
+}
+
+
+template <class T> std::istream &colvar_grid<T>::read_restart(std::istream &is)
+{
+  return read_restart_template<T, std::istream>(*this, is);
+}
+
+
+template <class T> cvm::memory_stream &colvar_grid<T>::read_restart(cvm::memory_stream &is)
+{
+  return read_restart_template<T, cvm::memory_stream>(*this, is);
+}
+
+
+template <class T> std::ostream &colvar_grid<T>::write_restart(std::ostream &os)
+{
+  write_params(os);
+  write_raw(os);
+  return os;
+}
+
+
+template <class T> cvm::memory_stream &colvar_grid<T>::write_restart(cvm::memory_stream &os)
+{
+  std::ostringstream oss;
+  write_params(oss);
+  os << oss.str();
+  write_raw(os);
+  return os;
+}
+
+
+template <class T, class IST> IST &read_raw_template(colvar_grid<T> &g, IST &is)
+{
+  auto const start_pos = is.tellg();
+
+  for (std::vector<int> ix = g.new_index(); g.index_ok(ix); g.incr(ix)) {
+    for (size_t imult = 0; imult < g.mult; imult++) {
+      T new_value;
+      if (is >> new_value) {
+        g.value_input(ix, new_value, imult);
+      } else {
+        is.clear();
+        is.seekg(start_pos);
+        is.setstate(std::ios::failbit);
+        cvm::error(
+            "Error: failed to read all of the grid points from file.  Possible explanations: grid "
+            "parameters in the configuration (lowerBoundary, upperBoundary, width) are different "
+            "from those in the file, or the file is corrupt/incomplete.\n",
+            COLVARS_INPUT_ERROR);
+        return is;
+      }
+    }
+  }
+
+  g.has_data = true;
+  return is;
+}
+
+
+template <class T> std::istream &colvar_grid<T>::read_raw(std::istream &is)
+{
+  return read_raw_template<T, std::istream>(*this, is);
+}
+
+
+template <class T> cvm::memory_stream &colvar_grid<T>::read_raw(cvm::memory_stream &is)
+{
+  return read_raw_template<T, cvm::memory_stream>(*this, is);
+}
+
+
+template <class T>
+std::ostream &colvar_grid<T>::write_raw(std::ostream &os, size_t const buf_size) const
+{
+  auto const w = os.width();
+  auto const p = os.precision();
+
+  size_t count = 0;
+  for (auto ix = new_index(); index_ok(ix); incr(ix)) {
+    for (size_t imult = 0; imult < mult; imult++) {
+      os << " " << std::setw(w) << std::setprecision(p) << value_output(ix, imult);
+      if (((++count) % buf_size) == 0)
+        os << "\n";
+    }
+  }
+  // write a final newline only if buffer is not empty
+  if ((count % buf_size) != 0)
+    os << "\n";
+
+  return os;
+}
+
+
+template <class T>
+cvm::memory_stream &colvar_grid<T>::write_raw(cvm::memory_stream &os, size_t const buf_size) const
+{
+  for (auto ix = new_index(); index_ok(ix); incr(ix)) {
+    for (size_t imult = 0; imult < mult; imult++) {
+      os << value_output(ix, imult);
+    }
+  }
+  return os;
+}
 
 
 template <class T>
