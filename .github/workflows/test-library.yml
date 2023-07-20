@@ -73,7 +73,7 @@ jobs:
         env:
           PULL_ORACLE_DEVELOPER_STUDIO: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
         run: |
-          echo "::set-output name=hassecrets::${{ env.PULL_ORACLE_DEVELOPER_STUDIO != '' }}"
+          echo "hassecrets=${{ env.PULL_ORACLE_DEVELOPER_STUDIO != '' }}" >> $GITHUB_OUTPUT
 
 
   build-doc:
