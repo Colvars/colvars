@@ -77,3 +77,8 @@ colvar {
     }
 }
 
+harmonic {
+    colvars gpath_s_cartesian
+    centers 5.30720368611864e-01
+    forceConstant 0.005
+}
