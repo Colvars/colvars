@@ -8,13 +8,16 @@
 #include <typeinfo>
 #include <vector>
 
-// Work around missing std::is_trivially_copyable in old GCC versions
+
+// Work around missing std::is_trivially_copyable in old GCC and Clang versions
 // TODO remove this after CentOS 7 has been beyond EOL for a while
-#if __GNUG__ && (__GNUC__ < 5)
+#if (defined(__GNUC__) && (__GNUC__ < 5) && !defined(__clang__)) || (defined(__clang__) && (__clang_major__ < 7))
+// Clang needs an exception, because it defines __GNUC__ as well
 #define IS_TRIVIALLY_COPYABLE(T) __has_trivial_copy(T)
 #else
 #define IS_TRIVIALLY_COPYABLE(T) std::is_trivially_copyable<T>::value
 #endif
+
 
 class cvm::memory_stream {
 
