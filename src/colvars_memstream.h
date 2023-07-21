@@ -237,11 +237,14 @@ template <typename T> cvm::memory_stream &operator<<(cvm::memory_stream &os,
   return os;
 }
 
+#if !defined(_MSC_VER) && !defined(__SUNPRO_CC)
+// Visual Studio and MSVC use the same return type for both modifiers
 template <typename T> cvm::memory_stream &operator<<(cvm::memory_stream &os,
                                                      decltype(std::setw(10)) const &)
 {
   return os;
 }
+#endif
 
 // Declare specializations
 
