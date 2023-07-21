@@ -144,9 +144,9 @@ update_version_string() {
         version_str=$(date +'%Y-%m-%d')
     fi
     echo "Setting ${name} version string to ${version_str}"
-    write_version_string ${macro} ${file} ${version_str}
-    git add ${file}
-    git add doc/cv_version.tex
+    write_version_string ${macro} ${file} ${version_str} && \
+        git add ${file} && \
+        git add doc/cv_version.tex
 }
 
 get_all_versions() {
@@ -166,31 +166,37 @@ update_all_versions() {
                           get_colvarmodule_version \
                           COLVARS_VERSION \
                           src/colvars_version.h \
-                          ${branch}
+                          ${branch} \
+        && \
     update_version_string "GROMACS interface" \
                           '^src/colvarproxy' \
                           get_colvarproxy_gromacs_version \
                           COLVARPROXY_VERSION \
                           gromacs/src/colvarproxy_gromacs_version.h \
-                          ${branch}
+                          ${branch} \
+        && \
     update_version_string "LAMMPS interface" \
                           '^lammps/src/COLVARS/colvarproxy\|^lammps/src/COLVARS/fix_colvars\|^src/colvarproxy' \
                           get_colvarproxy_lammps_version \
                           COLVARPROXY_VERSION \
                           lammps/src/COLVARS/colvarproxy_lammps_version.h \
-                          ${branch}
+                          ${branch} \
+        && \
     update_version_string "NAMD interface" \
                           '^namd/src/colvarproxy\|^src/colvarproxy' \
                           get_colvarproxy_namd_version \
                           COLVARPROXY_VERSION \
                           namd/src/colvarproxy_namd_version.h \
-                          ${branch}
+                          ${branch} \
+        && \
     update_version_string "VMD interface" \
                           '^vmd/src/colvarproxy\|^src/colvarproxy' \
                           get_colvarproxy_vmd_version \
                           COLVARPROXY_VERSION \
                           vmd/src/colvarproxy_vmd_version.h \
-                          ${branch}
+                          ${branch} \
+        && \
+    git commit -m "Update version strings"
 }
 
 

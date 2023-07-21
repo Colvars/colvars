@@ -23,11 +23,7 @@ For the molecular simulation program [GROMACS](http://www.gromacs.org/), code ma
 
 The [Colvars webpage](https://colvars.github.io/) includes user documentation for the four codes, as well as a Doxygen-based [developer documentation](https://colvars.github.io/doxygen/html/).
 
-To reflect the different availability of features in each engine, the Colvars reference manual comes in several flavors:
-- [GROMACS version](https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html);
-- [LAMMPS version](https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html);
-- [NAMD version](https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html);
-- [VMD version](https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html).
+To reflect the different availability of features in each engine, the Colvars reference manual comes in several flavors: [GROMACS](https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html) [LAMMPS](https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html) [NAMD](https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html) [VMD](https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html)
 
 ## Citing
 
@@ -104,9 +100,9 @@ and run the provided `update-colvars-code.sh` script against the unpacked source
 and recompile them.
 
 The `update-colvars-code.sh` script support patching the latest development version of each program:
-- the [LAMMPS GitHub repository](https://github.com/lammps/lammps);
-- the [NAMD GitLab repository](https://gitlab.com/tcbgUIUC/namd);
-- the [CVS repositories of VMD and its plugins](https://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html).
+- [LAMMPS](https://github.com/lammps/lammps);
+- [NAMD](https://gitlab.com/tcbgUIUC/namd);
+- [VMD and its plugins](https://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html); note that starting from Colvars version 2023-06-23, some updates are needed to the VMD build script (see [here](https://colvars.github.io/README-c++11.html) for details).
 
 For [GROMACS](http://www.gromacs.org/), support for specific release series is currently maintained; pre-patched versions of specific releases are provided [below](#gromacs-colvars-releases).
 
@@ -116,11 +112,11 @@ All of the above MD engine versions are automatically tested as part of GitHub A
 
 The following links provide specific versions of GROMACS that are already patched with the latest available version of Colvars:
 
+ - **GROMACS [2022.4-colvars](https://github.com/Colvars/gromacs/releases/tag/v2022.4-colvars)**;
+
  - **GROMACS [2021.6-colvars](https://github.com/Colvars/gromacs/releases/tag/v2021.6-colvars)**;
 
- - **GROMACS [2020.7-colvars](https://github.com/Colvars/gromacs/releases/tag/v2020.7-colvars)**.
-
-Other patched releases within the 2020.x or 2021.x series may be produced using the same [patching procedure](#updating-to-the-latest-version) described above.  Unless there is a specific reason not to, it is a good idea to use the latest revision of each release series, available as [Git branches](https://github.com/Colvars/gromacs/branches).  Gromacs versions outside of 2020.x or 2021.x are not supported at this time.
+The Colvars [patching procedure](#updating-to-the-latest-version) described earlier was used to produce the two patched GROMACS version.  This procedure is generally compatible with all GROMACS versions within the same release year.  Unless there is a specific reason not to, it is a good idea to use the latest revision of each release series, available as [Git branches](https://github.com/Colvars/gromacs/branches).
 
 When posting a message to the [Gromacs forum](https://gromacs.bioexcel.eu/) related to any Colvars-patched version of GROMACS please always specify "GROMACS modification: **Yes**" and use the [`colvars` tag](https://gromacs.bioexcel.eu/tag/colvars).  Whenver possible please also reference the Colvars version: this is included in the version string that is reported by the patched GROMACS (right after the GROMACS version), for example:
 ```

@@ -1,0 +1,16 @@
+phi: TORSION ATOMS=5,7,9,15
+psi: TORSION ATOMS=7,9,15,17
+eabf: DRR ...
+
+   ARG=phi,psi 
+   FULLSAMPLES=500 
+   GRID_MIN=-pi,-pi 
+   GRID_MAX=pi,pi 
+   GRID_BIN=180,180 
+   FRICTION=8.0,8.0 
+   TAU=0.5,0.5 
+   OUTPUTFREQ=50000 
+   HISTORYFREQ=500000 
+...
+
+PRINT STRIDE=10 ARG=phi,psi,eabf.phi_fict,eabf.psi_fict,eabf.phi_biasforce,eabf.psi_biasforce FILE=COLVARABF

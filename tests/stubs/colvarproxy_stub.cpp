@@ -43,8 +43,12 @@ colvarproxy_stub::~colvarproxy_stub()
 
 int colvarproxy_stub::setup()
 {
+  boundaries_type = boundaries_non_periodic;
+  reset_pbc_lattice();
+  colvars->it = colvars->it_restart = 0;
+
   if (colvars) {
-    return colvars->setup();
+    return colvars->update_engine_parameters();
   }
   return COLVARS_OK;
 }
@@ -134,7 +138,7 @@ int colvarproxy_stub::init_atom(int atom_number)
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     if (atoms_ids[i] == aid) {
       // this atom id was already recorded
-      atoms_ncopies[i] += 1;
+      atoms_refcount[i] += 1;
       return i;
     }
   }
@@ -150,3 +154,13 @@ int colvarproxy_stub::init_atom(int atom_number)
   return index;
 }
 
+
+int colvarproxy_stub::read_frame_xyz(const char *filename)
+{
+  int err = colvars->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
+  if ( !err ) {
+    colvars->it++;
+    colvars->calc();
+  }
+  return err;
+}

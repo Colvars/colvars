@@ -34,6 +34,25 @@ if [ ! -d ${TOPDIR} ] ; then
   exit 1
 fi
 
+NUM_TASKS=4
+NUM_CPUS=$(nproc)
+if [ ${NUM_TASKS} -gt ${NUM_CPUS} ] ; then
+  NUM_TASKS=${NUM_CPUS}
+fi
+
+if $BINARY -h > /dev/null ; then
+  if $BINARY -h | grep ^MPI | grep -q STUBS ; then
+    MPI_BUILD=no
+  else
+    MPI_BUILD=yes
+    source ${TOPDIR}/devel-tools/load-openmpi.sh
+    BINARY="mpirun -n ${NUM_TASKS} $BINARY"
+  fi
+else
+  echo "Error: executable $BINARY did not return a help screen" >& 2
+  exit 1
+fi
+
 SPIFF=$(${TOPDIR}/devel-tools/get_spiff)
 if [ $? != 0 ] ; then
     echo "Error: spiff is not available and could not be downloaded/built." >& 2
@@ -94,6 +113,17 @@ for dir in ${DIRLIST} ; do
     continue
   else
 
+    extra_args=()
+    if echo ${dir} | grep -q partitions ; then
+      if [ "x${MPI_BUILD}" == "xyes" ] && [ ${NUM_TASKS} == 4 ] ; then
+        extra_args+=(-partition 2x2)
+      else
+        echo "  Warning: skipping test because MPI is missing or task count is incorrect"
+        cd $BASEDIR
+        continue
+      fi
+    fi
+
     if [ "x${gen_ref_output}" != 'xyes' ]; then
 
       if ! { ls AutoDiff/ | grep -q traj ; } then
@@ -118,7 +148,7 @@ for dir in ${DIRLIST} ; do
   cleanup_files
 
   if ls | grep -q \.lmp.in ; then
-    SCRIPTS=`ls -1 *lmp.in | grep -v legacy`
+    SCRIPTS=`ls -1 test*lmp.in`
   else
     SCRIPTS="../common/test.lmp.in ../common/test.restart.lmp.in"
   fi
@@ -136,12 +166,22 @@ for dir in ${DIRLIST} ; do
       fi
     fi
 
-    $BINARY -in $script -var colvars_config ${colvars_config} \
-        -log ${basename}.out > /dev/null
+    $BINARY \
+      -in $script \
+      -var colvars_config ${colvars_config} \
+      "${extra_args[@]}" \
+      -echo log > /dev/null
 
     # Output of Colvars module, minus the version numbers
-    grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
-      | grep -v 'Using NAMD interface, version' > ${basename}.colvars.out
+    for log_file in *.out ; do
+      if [ x${log_file%.colvars.out} != x${log_file} ] ; then
+        continue
+      fi
+      grep "^colvars:" ${log_file} | \
+        grep -v 'Initializing the collective variables module' | \
+        grep -v 'Using LAMMPS interface, version' \
+             > ${log_file%.out}.colvars.out
+    done
 
     # # Output of Tcl interpreter for automatic testing of scripts (TODO: move this to interface)
     # grep "^TCL:" ${basename}.out | grep -v '^TCL: Suspending until startup complete.' > ${basename}.Tcl.out
@@ -149,13 +189,13 @@ for dir in ${DIRLIST} ; do
     #   rm -f ${basename}.Tcl.out
     # fi
 
-    if [ -f ${basename}.colvars.state ] ; then
+    for state_file in *.colvars.state ; do
       # Filter out the version number from the state files to allow comparisons
-      grep -sv '^  version' ${basename}.colvars.state | \
+      grep -sv '^  version' ${state_file} | \
         grep -sv '^  units' \
-        > ${TMPDIR}/${basename}.colvars.state.stripped
-      mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
-    fi
+        > ${TMPDIR}/${state_file}.stripped && \
+      mv -f ${TMPDIR}/${state_file}.stripped ${state_file}.stripped
+    done
 
     # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
@@ -192,7 +232,7 @@ for dir in ${DIRLIST} ; do
       sed 's/fs_/ft_/g' < ${base} > ${TMPDIR}/${base}
       mv -f ${TMPDIR}/${base} ${base}
     fi
-    spiff -r 1e-${DIFF_PREC} $f $base > "$base.diff"
+    ${SPIFF} -r 1e-${DIFF_PREC} $f $base > "$base.diff"
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then

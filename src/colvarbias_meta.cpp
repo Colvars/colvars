@@ -392,11 +392,8 @@ colvarbias_meta::add_hill(colvarbias_meta::hill const &h)
 
   // output to trajectory (if specified)
   if (b_hills_traj) {
-    // Open trajectory file or access the one already open
-    std::ostream &hills_traj_os =
-      cvm::proxy->output_stream(hills_traj_file_name());
-    hills_traj_os << (hills.back()).output_traj();
-    cvm::proxy->flush_output_stream(hills_traj_file_name());
+    // Save the current hill to a buffer for further traj output
+    hills_traj_os_buf << (hills.back()).output_traj();
   }
 
   has_data = true;
@@ -427,13 +424,10 @@ colvarbias_meta::delete_hill(hill_iter &h)
   }
 
   if (b_hills_traj) {
-    // output to the trajectory
-    std::ostream &hills_traj_os =
-      cvm::proxy->output_stream(hills_traj_file_name());
-    hills_traj_os << "# DELETED this hill: "
-                  << (hills.back()).output_traj()
-                  << "\n";
-    cvm::proxy->flush_output_stream(hills_traj_file_name());
+    // Save the current hill to a buffer for further traj output
+    hills_traj_os_buf << "# DELETED this hill: "
+                      << (hills.back()).output_traj()
+                      << "\n";
   }
 
   return hills.erase(h);
@@ -1815,6 +1809,15 @@ int colvarbias_meta::write_output_files()
   colvarbias_ti::write_output_files();
   if (dump_fes) {
     write_pmf();
+  }
+  if (b_hills_traj) {
+    std::ostream &hills_traj_os =
+      cvm::proxy->output_stream(hills_traj_file_name());
+    hills_traj_os << hills_traj_os_buf.str();
+    cvm::proxy->flush_output_stream(hills_traj_file_name());
+    // clear the buffer
+    hills_traj_os_buf.str("");
+    hills_traj_os_buf.clear();
   }
   return COLVARS_OK;
 }

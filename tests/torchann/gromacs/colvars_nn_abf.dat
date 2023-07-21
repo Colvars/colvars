@@ -1,0 +1,104 @@
+colvarsTrajFrequency    1000
+colvarsRestartFrequency 1000
+
+colvar {
+  name nn_0
+  lowerBoundary -2.5
+  upperBoundary 2.5
+  width 0.05
+  extendedLagrangian on
+  extendedFluctuation 0.05
+  extendedTimeConstant 200
+
+  torchann {
+    model_file scripted_cv_cpu.pt
+    m_output_index 0
+    atoms {
+      atomNumbers {
+	2 5 6 7 9 11 15 16 17 19
+      }
+    }
+  }
+}
+
+colvar {
+  name nn_1
+  lowerBoundary -3.5
+  upperBoundary 3.2
+  width 0.05
+  extendedLagrangian on
+  extendedFluctuation 0.05
+  extendedTimeConstant 200
+
+  torchann {
+    model_file scripted_cv_cpu.pt
+    m_output_index 1
+    atoms {
+      atomNumbers {
+	2 5 6 7 9 11 15 16 17 19
+      }
+    }
+  }
+}
+
+colvar {
+  name phi
+
+  width 5.0
+  lowerboundary -180
+  upperboundary 180
+
+  dihedral {
+#    onesiteTotalForce
+    group1 { 
+      atomnumbers 13
+    }
+    group2 { 
+      atomnumbers 15
+    }
+    group3 { 
+      atomnumbers 17
+    }
+    group4 { 
+      atomnumbers 1
+    }
+  }
+}
+
+colvar {
+  name psi
+
+  width 5.0
+  lowerboundary -180
+  upperboundary 180
+
+  dihedral {
+    onesiteTotalForce
+    group1 { 
+      atomnumbers 3
+    }
+    group2 { 
+      atomnumbers 1
+    }
+    group3 { 
+      atomnumbers 17
+    }
+    group4 { 
+      atomnumbers 15
+    }
+  }
+}
+
+#metadynamics {
+#  name meta_r
+#  colvars nn
+#  hillWeight 0.3
+#  hillWidth 1.0
+#  newHillFrequency 100
+#}
+
+abf {
+  colvars nn_0 nn_1
+  fullSamples	100
+}
+

@@ -27,8 +27,6 @@ public:
   //
   t_atoms gmx_atoms;
 protected:
-  cvm::real thermostat_temperature;
-  cvm::real timestep;
   bool first_timestep;
 
   bool colvars_restart;
@@ -98,7 +96,6 @@ public:
   void finish(const t_commrec *cr);
 
   // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
-  cvm::real dt();
   cvm::real rand_gaussian();
   // **************** SIMULATION PARAMETERS ****************
   size_t restart_frequency();

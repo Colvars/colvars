@@ -1,0 +1,30 @@
+# -*- lammps -*-
+
+shell ln -fs "../common/da.ndx" "index.ndx"
+
+include ../common/charmmff.lmp.in
+
+# Contains positions and velocities from da.coor.pdb and da.vel.pdb
+read_data  ../common/da.lmp.data
+
+include ../common/fixes.lmp.in
+
+variable output world test test-1
+
+log ${output}.out
+
+fix Colvars all colvars test.in output ${output}
+
+# Restraint with replica-specific center
+variable center world 0.1 0.3
+fix_modify Colvars config """
+harmonic {
+    colvars        one
+    centers        ${center}
+    forceConstant  0.001
+}
+"""
+
+include ../common/md.lmp.in
+
+write_data ${output}.lmp.data

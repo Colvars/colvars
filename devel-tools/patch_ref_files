@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ -z "${1}" ] ; then
+    echo "Apply a set of diffs to the reference files for a regtest"
+    echo
+    echo "Usage:"
+    echo "    $0 diff1 [diff2] [...]"
+fi
+
 for file in "${@}" ; do
   base=$(basename "${file}")
   dirname=$(dirname "${file}")

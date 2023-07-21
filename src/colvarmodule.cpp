@@ -191,7 +191,7 @@ int colvarmodule::read_config_file(char const  *config_filename)
   // open the configfile
   std::istream &config_s = proxy->input_stream(config_filename,
                                                "configuration file/string");
-  if (config_s.bad()) {
+  if (!config_s) {
     return cvm::error("Error: in opening configuration file \""+
                       std::string(config_filename)+"\".\n",
                       COLVARS_FILE_ERROR);
@@ -297,9 +297,6 @@ int colvarmodule::parse_config(std::string &conf)
   cvm::log(cvm::line_marker);
   cvm::log("Collective variables module (re)initialized.\n");
   cvm::log(cvm::line_marker);
-
-  // Update any necessary proxy data
-  proxy->setup();
 
   if (source_Tcl_script.size() > 0) {
     run_tcl_script(source_Tcl_script);
@@ -428,6 +425,7 @@ int colvarmodule::parse_colvars(std::string const &conf)
         cvm::log("Error while constructing colvar number " +
                  cvm::to_str(colvars.size()) + " : deleting.");
         delete colvars.back();  // the colvar destructor updates the colvars array
+        cvm::decrease_depth();
         return COLVARS_ERROR;
       }
       cvm::decrease_depth();
@@ -1083,7 +1081,7 @@ int colvarmodule::write_restart_file(std::string const &out_name)
 {
   cvm::log("Saving collective variables state to \""+out_name+"\".\n");
   std::ostream &restart_out_os = proxy->output_stream(out_name, "state file");
-  if (restart_out_os.bad()) return COLVARS_FILE_ERROR;
+  if (!restart_out_os) return COLVARS_FILE_ERROR;
   if (!write_restart(restart_out_os)) {
     return cvm::error("Error: in writing restart file.\n", COLVARS_FILE_ERROR);
   }
@@ -1118,7 +1116,7 @@ int colvarmodule::write_traj_files()
   std::ostream &cv_traj_os = proxy->output_stream(cv_traj_name,
                                                   "colvars trajectory");
 
-  if (cv_traj_os.bad()) {
+  if (!cv_traj_os) {
     return COLVARS_FILE_ERROR;
   }
 
@@ -1207,7 +1205,7 @@ int colvarmodule::end_of_step()
 }
 
 
-int colvarmodule::setup()
+int colvarmodule::update_engine_parameters()
 {
   if (this->size() == 0) return cvm::get_error();
   for (std::vector<colvar *>::iterator cvi = variables()->begin();
@@ -1249,8 +1247,6 @@ colvarmodule::~colvarmodule()
 
 int colvarmodule::reset()
 {
-  cvm::log("Resetting the Collective Variables module.\n");
-
   parse->clear();
 
   // Iterate backwards because we are deleting the elements as we go
@@ -1291,19 +1287,20 @@ int colvarmodule::setup_input()
     std::istream *input_is = &(proxy->input_stream(restart_in_name,
                                                    "restart file/channel",
                                                    false));
-    if (input_is->bad()) {
+    if (!*input_is) {
       // Try without the suffix ".colvars.state"
       restart_in_name = proxy->input_prefix();
       input_is = &(proxy->input_stream(restart_in_name,
                                        "restart file/channel"));
-      if (input_is->bad()) {
+      if (!*input_is) {
+        // Error message has already been printed, return now
         return COLVARS_FILE_ERROR;
       }
     }
 
-    // Now that the file has been opened, clear this field so that this
-    // function will not be called twice
-    proxy->input_prefix().clear();
+    // Now that the file has been opened, clear this field so that this block
+    // will not be executed twice
+    proxy->set_input_prefix("");
 
     cvm::log(cvm::line_marker);
     cvm::log("Loading state from file \""+restart_in_name+"\".\n");
@@ -1311,31 +1308,18 @@ int colvarmodule::setup_input()
     cvm::log(cvm::line_marker);
 
     proxy->close_input_stream(restart_in_name);
-
-    return cvm::get_error();
   }
 
-  // TODO This could soon be redundant
-  if (proxy->input_buffer() != NULL) {
-    // Read a string buffer
-    char const *buffer = proxy->input_buffer();
-    size_t const buffer_size = strlen(proxy->input_buffer());
-    // Clear proxy pointer for the next round
-    proxy->input_buffer() = NULL;
-    if (buffer_size > 0) {
-      std::istringstream input_is;
-      // Replace the buffer of input_is; work around the lack of const in
-      // pubsetbuf's prototype (which also needs to support output streams)
-      input_is.rdbuf()->pubsetbuf(const_cast<char *>(buffer), buffer_size);
-      cvm::log(cvm::line_marker);
-      cvm::log("Loading state from input buffer.\n");
-      read_restart(input_is);
-      cvm::log(cvm::line_marker);
-      return cvm::get_error();
-    }
+  if (proxy->input_stream_exists("input state string")) {
+    cvm::log(cvm::line_marker);
+    cvm::log("Loading state from string.\n");
+    read_restart(proxy->input_stream("input state string"));
+    cvm::log(cvm::line_marker);
+
+    proxy->close_input_stream("input state string");
   }
 
-  return COLVARS_OK;
+  return cvm::get_error();
 }
 
 
@@ -1738,12 +1722,15 @@ std::ostream & colvarmodule::write_traj(std::ostream &os)
 void colvarmodule::log(std::string const &message, int min_log_level)
 {
   if (cvm::log_level() < min_log_level) return;
+
+  std::string const trailing_newline = (message.size() > 0) ?
+    (message[message.size()-1] == '\n' ? "" : "\n") : "";
   // allow logging when the module is not fully initialized
   size_t const d = (cvm::main() != NULL) ? depth() : 0;
   if (d > 0) {
-    proxy->log((std::string(2*d, ' '))+message);
+    proxy->log((std::string(2*d, ' ')) + message + trailing_newline);
   } else {
-    proxy->log(message);
+    proxy->log(message + trailing_newline);
   }
 }
 
@@ -1812,7 +1799,16 @@ void colvarmodule::clear_error()
 int colvarmodule::error(std::string const &message, int code)
 {
   set_error_bits(code);
-  proxy->error(message);
+
+  std::string const trailing_newline = (message.size() > 0) ?
+    (message[message.size()-1] == '\n' ? "" : "\n") : "";
+  size_t const d = depth();
+  if (d > 0) {
+    proxy->error((std::string(2*d, ' ')) + message + trailing_newline);
+  } else {
+    proxy->error(message + trailing_newline);
+  }
+
   return get_error();
 }
 
@@ -1821,7 +1817,7 @@ int cvm::read_index_file(char const *filename)
 {
   std::istream &is = proxy->input_stream(filename, "index file");
 
-  if (is.bad()) {
+  if (!is) {
     return COLVARS_FILE_ERROR;
   } else {
     index_file_names.push_back(std::string(filename));
@@ -1973,7 +1969,8 @@ int cvm::load_coords(char const *file_name,
 
 int cvm::load_coords_xyz(char const *filename,
                          std::vector<rvector> *pos,
-                         cvm::atom_group *atoms)
+                         cvm::atom_group *atoms,
+                         bool keep_open)
 {
   std::istream &xyz_is = proxy->input_stream(filename, "XYZ file");
   unsigned int natoms;
@@ -1985,7 +1982,8 @@ int cvm::load_coords_xyz(char const *filename,
                               std::string(filename)+"\".\n");
 
   if ( ! (xyz_is >> natoms) ) {
-    return cvm::error(error_msg, COLVARS_INPUT_ERROR);
+      // Return silent error when reaching the end of multi-frame files
+      return keep_open ? COLVARS_NO_SUCH_FRAME : cvm::error(error_msg, COLVARS_INPUT_ERROR);
   }
 
   ++xyz_reader_use_count;
@@ -2006,6 +2004,12 @@ int cvm::load_coords_xyz(char const *filename,
   size_t xyz_natoms = 0;
   if (pos->size() != natoms) { // Use specified indices
     int next = 0; // indices are zero-based
+    if (!atoms) {
+      // In the other branch of this test, reading all positions from the file,
+      // a valid atom group pointer is not necessary
+      return cvm::error("Trying to read partial positions with invalid atom group pointer",
+                        COLVARS_BUG_ERROR);
+    }
     std::vector<int>::const_iterator index = atoms->sorted_ids().begin();
 
     for ( ; pos_i != pos->end() ; pos_i++, index++) {
@@ -2049,7 +2053,11 @@ int cvm::load_coords_xyz(char const *filename,
                       cvm::to_str(pos->size())+".\n", COLVARS_INPUT_ERROR);
   }
 
-  return proxy->close_input_stream(filename);
+  if (keep_open) {
+    return COLVARS_OK;
+  } else {
+    return proxy->close_input_stream(filename);
+  }
 }
 
 

@@ -40,7 +40,7 @@ public:
   void set_string(std::string const &conf);
 
   /// Default destructor
-  virtual ~colvarparse();
+  virtual ~colvarparse() override;
 
   /// Get the configuration string (includes comments)
   inline std::string const & get_config() const
@@ -109,12 +109,12 @@ public:
   bool get_keyval(std::string const &conf,
                   char const *key,
                   int &value,
-                  int const &def_value = (int)0,
+                  int const &def_value = 0,
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
                   size_t &value,
-                  size_t const &def_value = (size_t)0,
+                  size_t const &def_value = 0,
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
@@ -134,7 +134,7 @@ public:
   bool get_keyval(std::string const &conf,
                   char const *key,
                   cvm::real &value,
-                  cvm::real const &def_value = (cvm::real)0.0,
+                  cvm::real const &def_value = 0.0,
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
@@ -159,17 +159,17 @@ public:
   bool get_keyval(std::string const &conf,
                   char const *key,
                   std::vector<int> &values,
-                  std::vector<int> const &def_values = std::vector<int>(0, (int)0),
+                  std::vector<int> const &def_values = std::vector<int>(0, 0),
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
                   std::vector<size_t> &values,
-                  std::vector<size_t> const &def_values = std::vector<size_t>(0, (size_t)0),
+                  std::vector<size_t> const &def_values = std::vector<size_t>(0, 0),
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
                   std::vector<long> &values,
-                  std::vector<long> const &def_values = std::vector<long>(0, (long)0),
+                  std::vector<long> const &def_values = std::vector<long>(0, 0),
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
@@ -179,7 +179,7 @@ public:
   bool get_keyval(std::string const &conf,
                   char const *key,
                   std::vector<cvm::real> &values,
-                  std::vector<cvm::real> const &def_values = std::vector<cvm::real>(0, (cvm::real)0.0),
+                  std::vector<cvm::real> const &def_values = std::vector<cvm::real>(0, 0.0),
                   Parse_Mode const parse_mode = parse_normal);
   bool get_keyval(std::string const &conf,
                   char const *key,
@@ -262,7 +262,7 @@ public:
   {
     std::string out = "";
     for (size_t i = 0; i < in.size(); i++) {
-      out.append(1, (char) ::tolower(in[i]) );
+      out.append(1, static_cast<char>( ::tolower(in[i])) );
     }
     return out;
   }
@@ -284,7 +284,7 @@ public:
 
   public:
 
-    read_block(std::string const &key_in, std::string *data_in = NULL);
+    read_block(std::string const &key_in, std::string *data_in = nullptr);
 
     ~read_block();
 
@@ -304,8 +304,8 @@ public:
   /// within "conf", useful when doing multiple calls
   bool key_lookup(std::string const &conf,
                   char const *key,
-                  std::string *data = NULL,
-                  size_t *save_pos = NULL);
+                  std::string *data = nullptr,
+                  size_t *save_pos = nullptr);
 
   /// \brief Reads a configuration line, adds it to config_string, and returns
   /// the stream \param is Input stream \param line String that will hold the

@@ -28,6 +28,7 @@ jobs:
       backend_repo_ref: develop
       path_compile_script: devel-tools/compile-lammps.sh
       test_lib_directory: lammps/tests/library
+      test_interface_directory: lammps/tests/interface
       rpath_exe: install/bin/lmp
 
   namd:

@@ -1,0 +1,63 @@
+colvarsTrajFrequency    5000
+colvarsRestartFrequency 10000
+
+
+colvar {
+  name phi
+
+  width 5.0
+  lowerboundary -180
+  upperboundary 180
+  extendedLagrangian on
+  extendedFluctuation 5.0
+  extendedTimeConstant 500
+
+  dihedral {
+#    onesiteTotalForce
+    group1 { 
+      atomnumbers 5
+    }
+    group2 { 
+      atomnumbers 7
+    }
+    group3 { 
+      atomnumbers 9
+    }
+    group4 { 
+      atomnumbers 15
+    }
+  }
+}
+
+colvar {
+  name psi
+
+  width 5.0
+  lowerboundary -180
+  upperboundary 180
+  extendedLagrangian on
+  extendedFluctuation 5.0
+  extendedTimeConstant 500
+
+  dihedral {
+#    onesiteTotalForce
+    group1 { 
+      atomnumbers 7
+    }
+    group2 { 
+      atomnumbers 9
+    }
+    group3 { 
+      atomnumbers 15
+    }
+    group4 { 
+      atomnumbers 17
+    }
+  }
+}
+
+abf {
+  colvars phi psi
+  fullSamples	500
+}
+

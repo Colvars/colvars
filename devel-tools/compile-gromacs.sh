@@ -73,6 +73,10 @@ compile_gromacs_target() {
         GMX_BUILD_OPTS+=(-DREGRESSIONTEST_DOWNLOAD=ON)
     fi
 
+    if hash ninja >& /dev/null ; then
+        GMX_BUILD_OPTS+=("-G" "Ninja")
+    fi
+
     # Let GROMACS know explicitly when ccache is available
     GMX_BUILD_OPTS+=(-DGMX_ENABLE_CCACHE=ON)
 
@@ -105,7 +109,11 @@ compile_gromacs_target() {
         ${CTEST} --output-on-failure
         retcode=$?
         if [ -n "${GMX_INSTALL_DIR}" ] ; then
-            make install
+            if hash ninja >& /dev/null ; then
+                ninja install
+            else
+                make install
+            fi
             ret_code=$((${ret_code} || $?))
         fi
         popd

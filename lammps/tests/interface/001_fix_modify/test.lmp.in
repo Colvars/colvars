@@ -1,0 +1,38 @@
+# -*- lammps -*-
+
+shell ln -fs "../common/da.ndx" "index.ndx"
+shell ln -fs "../common/da-Calpha.xyz" "rmsd_atoms_refpos.xyz"
+shell ln -fs "../common/da-noh.xyz" "heavy_atoms_refpos.xyz"
+shell ln -fs "../common/da-Calpha-random.xyz" "rmsd_atoms_random.xyz"
+
+include ../common/charmmff.lmp.in
+
+# Contains positions and velocities from da.coor.pdb and da.vel.pdb
+read_data  ../common/da.lmp.data
+
+include ../common/fixes.lmp.in
+
+log test.out
+
+# Define the fix, with no initial input
+fix Colvars all colvars none output test
+
+# Define the variable
+fix_modify Colvars configfile test.in
+
+# Now add the bias
+variable force_constant index 0.001
+fix_modify Colvars config """
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  ${force_constant}
+}
+"""
+
+# Re-define the fix seed
+fix_modify Colvars seed 1111111
+
+include ../common/md.lmp.in
+
+write_data test.lmp.data
