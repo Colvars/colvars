@@ -47,7 +47,7 @@ void colvar::torchANN::calc_value() {
       pos_data[3*ia + j] = (*atoms)[ia].pos[j];
   }
   // change to torch Tensor 
-  torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(false));
+  torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, (long int) atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(false));
   std::vector<torch::jit::IValue> inputs = {arg_tensor.to(torch::kFloat32)};
 
   // evaluate the value of function
@@ -69,7 +69,7 @@ void colvar::torchANN::calc_gradients() {
       pos_data[3*ia + j] = (*atoms)[ia].pos[j];
 
   // change to torch Tensor 
-  torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(true));
+  torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, (long int) atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(true));
   std::vector<torch::jit::IValue> inputs = {arg_tensor.to(torch::kFloat32)};
 
   // evaluate the value of function
