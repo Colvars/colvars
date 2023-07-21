@@ -39,9 +39,6 @@ public:
 
 private:
 
-  /// Filename prefix for human-readable gradient/sample count output
-  std::string  output_prefix;
-
   /// Base filename(s) for reading previous gradient data (replaces data from restart file)
   std::vector<std::string> input_prefix;
 
