@@ -52,7 +52,14 @@ endif()
 
 target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Wall -pedantic>)
 
-target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w>)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  if(CMAKE_CXX_COMPILER_VERSION GREATER 6)
+    target_compile_options(colvars PRIVATE -Wshadow-field)
+  endif()
+endif()
+
+# # Note: disabled +w flags for Sun compiler due to their inconsistency
+# target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w>)
 # # Uncomment the line below to enable more thorough checks with Sun Compiler
 # target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w2>)
 
