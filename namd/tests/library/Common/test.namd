@@ -3,7 +3,14 @@
 # Note: see also test.restart.namd, test.legacy.namd, test.restart.legacy.namd
 
 source ../Common/common.namd
-source ../Common/measure_net_force_torque.tcl
+
+if { [info exists env(NAMD_CUDASOA)] && $env(NAMD_CUDASOA) } {
+  CUDASOAIntegrate on
+  # incompatible with TclForces as of 07/2023
+} else {
+  source ../Common/measure_net_force_torque.tcl
+}
+
 
 colvars on
 
