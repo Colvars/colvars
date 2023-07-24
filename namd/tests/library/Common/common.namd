@@ -70,7 +70,8 @@ if { [info exists xsc_file] > 0 } {
 }
 
 COMmotion               no
-zeroMomentum            yes
+# incompatible with TclForces as of 07/2023
+#zeroMomentum            yes
 
 timestep                1.0
 

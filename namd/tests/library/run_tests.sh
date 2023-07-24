@@ -14,6 +14,8 @@ export TMPDIR=${TMPDIR:-/tmp}
 
 DIRLIST=''
 BINARY=namd2
+CUDASOA=0
+
 while [ $# -ge 1 ]; do
   if { echo $1 | grep -q namd ; }; then
     echo "Using NAMD executable from $1"
@@ -22,13 +24,16 @@ while [ $# -ge 1 ]; do
     gen_ref_output='yes'
     echo "Generating reference output"
   elif [ "x$1" = 'x-h' ]; then
-    echo "Usage: ./run_tests.sh [-h] [-g] [path_to_namd2] [testdir1 [testdir2 ...]]"  >& 2
+    echo "Usage: ./run_tests.sh [-h] [-g] [-gpu] [path_to_namd2] [testdir1 [testdir2 ...]]"  >& 2
     echo "    The -g option (re)generates reference outputs in the given directories" >& 2
+    echo "    The -gpu option enables the GPU-resident NAMD3 code path (CUDASOAIntegrate)" >& 2
     echo "    If no executable is given, \"namd2\" is used" >& 2
     echo "    If no directories are given, all matches of [0-9][0-9][0-9]_* are used" >& 2
     echo "    This script relies on the executable spiff to be available, and will try to " >& 2
     echo "    download and build it into $TMPDIR if needed." >& 2
     exit 0
+  elif [ "x$1" = 'x-gpu' ]; then
+    CUDASOA=1
   else
     DIRLIST=`echo ${DIRLIST} $1`
   fi
@@ -164,7 +169,7 @@ for dir in ${DIRLIST} ; do
 
     # Run the test (use a subshell to avoid cluttering stdout)
     # Use multiple threads to test SMP code (TODO: move SMP tests to interface?)
-    $BINARY +p ${NUM_THREADS_THIS} $script > ${basename}.out
+    NAMD_CUDASOA=$CUDASOA $BINARY +p ${NUM_THREADS_THIS} $script > ${basename}.out
 
     # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
