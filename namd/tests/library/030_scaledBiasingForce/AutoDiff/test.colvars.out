@@ -4,6 +4,7 @@ colvars:   https://doi.org/10.1080/00268976.2013.813594
 colvars: as well as all other papers listed below for individual features used.
 colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
 colvars: This version was built with the C++11 standard or higher.
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -12,6 +13,7 @@ colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "end_to_end_distance"
@@ -86,7 +88,6 @@ colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # scaledBiasingForce = on
 colvars:   # scaledBiasingForceFactorsGrid = "factors.grid"
-colvars:   Reading scaling factors for the forces of bias production_abf from factors.grid
 colvars:   # applyBias = on [default]
 colvars:   # updateBias = on [default]
 colvars:   # hideJacobian = off [default]
@@ -108,7 +109,6 @@ colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # scaledBiasingForce = on
 colvars:   # scaledBiasingForceFactorsGrid = "factors.grid"
-colvars:   Reading scaling factors for the forces of bias production_mtd from factors.grid
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # hillWeight = 2
@@ -142,6 +142,7 @@ colvars: # colvarsTrajFrequency = 1 [default]
 colvars: # colvarsRestartFrequency = 10 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -155,6 +156,7 @@ colvars:   # timeStepFactor = 1
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # forceConstant = 1 [default]
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   # lowerWalls = { 13 }
 colvars:   # upperWalls = { 15 }
@@ -194,17 +196,17 @@ colvars: - NAMD engine:
 colvars: - Scalable center-of-mass computation (NAMD):
 colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
 colvars: 
+colvars: updating target temperature (T = 300 K).
 colvars: Re-initialized atom group for variable "end_to_end_distance":0/0. 1 atoms: total mass = 12.01, total charge = -0.3662.
 colvars: Re-initialized atom group for variable "end_to_end_distance":0/1. 1 atoms: total mass = 12.01, total charge = -0.149.
 colvars: The restart output state file will be "test.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Opening trajectory file "test.colvars.traj".
-colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: Warning: enabling wrapAll can lead to inconsistent results for Colvars calculations: please disable wrapAll, as is the default option in NAMD.
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 300 K).
 colvars: Re-initialized atom group for variable "end_to_end_distance":0/0. 1 atoms: total mass = 12.01, total charge = -0.3662.
 colvars: Re-initialized atom group for variable "end_to_end_distance":0/1. 1 atoms: total mass = 12.01, total charge = -0.149.
 colvars: The restart output state file will be "test.colvars.state".

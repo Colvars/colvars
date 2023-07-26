@@ -5,7 +5,7 @@ configuration {
 
 colvar {
   name rmsd
-  x  1.39198635631904e+00
+  x  1.39198635632537e+00
 }
 
 restraint {
@@ -14,7 +14,7 @@ restraint {
     name harmonic1
     firstStep            0
     centers   1.00000000000000e-01
-    accumulatedWork -1.79849880092103e+03
+    accumulatedWork -1.79849880092255e+03
   }
 }
 

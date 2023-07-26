@@ -1,12 +1,11 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
-colvars: in any publication based on this calculation.
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
 colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
 colvars: This version was built with the C++11 standard or higher.
-colvars: The final output state file will be "test.colvars.state".
-colvars: Opening trajectory file "test.colvars.traj".
 colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: The final output state file will be "test.colvars.state".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
 colvars: # units = "" [default]
@@ -15,6 +14,7 @@ colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "s"
@@ -28,14 +28,14 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 727.821, total charge = 6.70552e-08.
@@ -43,7 +43,7 @@ colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.
-colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   Initializing a new "rmsd" component.
 colvars:     # name = "" [default]
@@ -55,21 +55,21 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 727.821, total charge = 6.70552e-08.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/310turn-ideal.xyz"
 colvars:     # refPositionsCol = "" [default]
-colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   All components initialized.
 colvars:   This colvar uses scripted function "pathCVs".
@@ -122,21 +122,21 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 727.821, total charge = 6.70552e-08.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
-colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   Initializing a new "rmsd" component.
 colvars:     # name = "" [default]
@@ -148,21 +148,21 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 727.821, total charge = 6.70552e-08.
 colvars:     # refPositions =  [default]
 colvars:     # refPositionsFile = "../Common/310turn-ideal.xyz"
 colvars:     # refPositionsCol = "" [default]
-colvars:     Enabling "centerReference" and "rotateReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
+colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
 colvars:   All components initialized.
 colvars:   This colvar uses scripted function "pathCVz".
@@ -218,11 +218,6 @@ colvars:   # shared = off [default]
 colvars:   # maxForce =  [default]
 colvars:   # CZARestimator = on [default]
 colvars:   # integrate = on [default]
-colvars:   # pABFintegrateFreq = 0 [default]
-colvars:   # integrateInitMaxIterations = 10000 [default]
-colvars:   # integrateInitTol = 1e-06 [default]
-colvars:   # integrateMaxIterations = 100 [default]
-colvars:   # integrateTol = 0.0001 [default]
 colvars:   # UIestimator = off [default]
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
@@ -233,6 +228,7 @@ colvars: # colvarsTrajFrequency = 1 [default]
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 2 in total.
 colvars: ----------------------------------------------------------------------
@@ -246,6 +242,7 @@ colvars:   # timeStepFactor = 1
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # forceConstant = 1 [default]
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   # lowerWalls = { -0.2 }
 colvars:   # upperWalls = { 1.2 }
@@ -261,9 +258,42 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (104 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - BAOA integrator:
+colvars:   BouRabee2010 https://doi.org/10.1137/090758842
+colvars: 
+colvars: - Colvars module:
+colvars: - Colvars-NAMD interface:
+colvars: - Optimal rotation via flexible fitting:
+colvars: - harmonicWalls colvar bias implementation:
+colvars: - rmsd colvar component:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - ABF colvar bias implementation:
+colvars:   Henin2010 https://doi.org/10.1021/ct9004432
+colvars: 
+colvars: - Poisson integration of 2D/3D free energy surfaces:
+colvars:   Henin2021 https://doi.org/10.1021/acs.jctc.1c00593
+colvars: 
+colvars: - CZAR eABF estimator:
+colvars: - eABF implementation:
+colvars:   Lesage2017 https://doi.org/10.1021/acs.jpcb.6b10055
+colvars: 
+colvars: - NAMD engine:
+colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
+colvars: 
+colvars: - Scripted functions (Tcl):
+colvars:   n/a 
+colvars: 
+colvars: updating target temperature (T = 300 K).
 colvars: Updating NAMD interface:
 colvars: updating atomic data (104 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 300 K).
 colvars: Re-initialized atom group for variable "s":0/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
 colvars: Re-initialized atom group for variable "s":1/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
 colvars: Re-initialized atom group for variable "z":0/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
@@ -277,5 +307,5 @@ colvars: PathCV STEP 6   next pathCV flags  1 1
 colvars: PathCV WARNING: less than 2 RMSDs are above threshold, selecting 2 closest images
 colvars: PathCV STEP 11   next pathCV flags  1 1
 colvars: Saving collective variables state to "test.colvars.state".
-colvars:   Integrated in 143 steps, error: 9.52755e-07
-colvars:   Integrated in 143 steps, error: 8.74992e-07
+colvars:   Integrated in 143 steps, error: 9.02625e-07
+colvars:   Integrated in 142 steps, error: 9.86746e-07

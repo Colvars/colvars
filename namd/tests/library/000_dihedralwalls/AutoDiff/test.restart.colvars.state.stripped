@@ -5,6 +5,6 @@ configuration {
 
 colvar {
   name one
-  x  5.99403692730741e+01
+  x  5.99403692539448e+01
 }
 

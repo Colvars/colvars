@@ -5,12 +5,12 @@ configuration {
 
 colvar {
   name r
-  x  3.21688253464583e+00
+  x  3.21688253444007e+00
 }
 
 colvar {
   name phi
-  x  6.02774557527018e+01
+  x  6.02774557419409e+01
 }
 
 histogram {

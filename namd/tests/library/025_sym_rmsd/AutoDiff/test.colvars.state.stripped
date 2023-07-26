@@ -5,17 +5,17 @@ configuration {
 
 colvar {
   name rmsd
-  x  1.67010101996501e+00
+  x  1.67010101996502e+00
 }
 
 colvar {
   name rmsd_sym
-  x  1.06269628600354e+00
+  x  1.06269628600355e+00
 }
 
 colvar {
   name rmsd_min
-  x  1.06269628600354e+00
+  x  1.06269628600355e+00
 }
 
 restraint {

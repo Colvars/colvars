@@ -5,7 +5,7 @@ configuration {
 
 colvar {
   name one
-  x -8.73679344015558e-01
+  x -8.73679341988515e-01
 }
 
 restraint {

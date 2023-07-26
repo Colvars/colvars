@@ -10,6 +10,6 @@ colvar {
 
 colvar {
   name gpath_z_dihed
-  x  9.55645131452184e+01
+  x  9.55645131452191e+01
 }
 

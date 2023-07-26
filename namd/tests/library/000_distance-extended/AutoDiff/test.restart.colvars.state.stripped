@@ -6,8 +6,8 @@ configuration {
 colvar {
   name one
   x  3.21132143681526e+00
-  v  1.04669167318825e-04
+  v  1.04669167318816e-04
   extended_x  3.20946748678570e+00
-  extended_v  1.04669167318825e-04
+  extended_v  1.04669167318816e-04
 }
 
