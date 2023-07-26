@@ -222,8 +222,9 @@ void colvar::gspath::prepareVectors() {
         } else {
             rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
         }
+        const auto rot_mat_v3 = rot_v3.matrix();
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
-            v3[i_atom] = rot_v3.q.rotate(tmp_reference_frame_1[i_atom]) - tmp_reference_frame_2[i_atom];
+            v3[i_atom] = rot_mat_v3 * tmp_reference_frame_1[i_atom] - tmp_reference_frame_2[i_atom];
         }
     } else {
         cvm::atom_pos reference_cog_1, reference_cog_3;
@@ -257,9 +258,10 @@ void colvar::gspath::prepareVectors() {
         } else {
             rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_3);
         }
+        const auto rot_mat_v3 = rot_v3.matrix();
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             // v3 = s_(m+1) - s_m
-            v3[i_atom] = tmp_reference_frame_3[i_atom] - rot_v3.q.rotate(tmp_reference_frame_1[i_atom]);
+            v3[i_atom] = tmp_reference_frame_3[i_atom] - rot_mat_v3 * tmp_reference_frame_1[i_atom];
         }
     }
 }
@@ -365,12 +367,13 @@ void colvar::gzpath::prepareVectors() {
     } else {
         rot_v4.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_2);
     }
+    const auto rot_mat_v4 = rot_v4.matrix();
     for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
         v1[i_atom] = reference_frames[min_frame_index_1][i_atom] - (*(comp_atoms[min_frame_index_1]))[i_atom].pos;
         v2[i_atom] = (*(comp_atoms[min_frame_index_2]))[i_atom].pos - reference_frames[min_frame_index_2][i_atom];
         // v4 only computes in gzpath
         // v4 = s_m - s_(m-1)
-        v4[i_atom] = rot_v4.q.rotate(tmp_reference_frame_1[i_atom]) - tmp_reference_frame_2[i_atom];
+        v4[i_atom] = rot_mat_v4 * tmp_reference_frame_1[i_atom] - tmp_reference_frame_2[i_atom];
     }
     if (min_frame_index_3 < 0 || min_frame_index_3 > M) {
         v3 = v4;
@@ -398,9 +401,10 @@ void colvar::gzpath::prepareVectors() {
         } else {
             rot_v3.calc_optimal_rotation(tmp_reference_frame_1, tmp_reference_frame_3);
         }
+        const auto rot_mat_v3 = rot_v3.matrix();
         for (i_atom = 0; i_atom < atoms->size(); ++i_atom) {
             // v3 = s_(m+1) - s_m
-            v3[i_atom] = tmp_reference_frame_3[i_atom] - rot_v3.q.rotate(tmp_reference_frame_1[i_atom]);
+            v3[i_atom] = tmp_reference_frame_3[i_atom] - rot_mat_v3 * tmp_reference_frame_1[i_atom];
         }
     }
 }

@@ -1359,8 +1359,9 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     }
     if (atoms->is_enabled(f_ag_rotate)) {
       atoms->rot.calc_optimal_rotation(eigenvec, ref_pos);
+      const auto rot_mat = atoms->rot.matrix();
       for (size_t i = 0; i < atoms->size(); i++) {
-        eigenvec[i] = atoms->rot.rotate(eigenvec[i]);
+        eigenvec[i] = rot_mat * eigenvec[i];
       }
     }
     cvm::log("\"differenceVector\" is on: subtracting the reference positions from the provided vector: v = x_vec - x_ref.\n");
