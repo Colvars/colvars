@@ -11,6 +11,7 @@
 #define COLVARTYPES_H
 
 #include <vector>
+#include <array>
 
 #ifdef COLVARS_LAMMPS
 // Use open-source Jacobi implementation
@@ -1288,9 +1289,9 @@ public:
 
 #ifndef COLVARS_LAMMPS
 namespace NR {
-void diagonalize_matrix(cvm::matrix2d<cvm::real> &m,
-                        cvm::vector1d<cvm::real> &eigval,
-                        cvm::matrix2d<cvm::real> &eigvec);
+void diagonalize_matrix(cvm::real m[4][4],
+                        cvm::real eigval[4],
+                        cvm::real eigvec[4][4]);
 }
 #endif
 
@@ -1304,16 +1305,16 @@ private:
   cvm::rmatrix C;
 
   /// Overlap matrix S (4, 4)
-  cvm::matrix2d<cvm::real> S;
+  cvm::real S[4][4];
 
   /// Eigenvalues of S
-  cvm::vector1d<cvm::real> S_eigval;
+  cvm::real S_eigval[4];
 
   /// Eigenvectors of S
-  cvm::matrix2d<cvm::real> S_eigvec;
+  cvm::real S_eigvec[4][4];
 
   /// Used for debugging gradients
-  cvm::matrix2d<cvm::real> S_backup;
+  cvm::real S_backup[4][4];
 
 public:
   /// \brief Perform gradient tests

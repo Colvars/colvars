@@ -6,13 +6,13 @@
 namespace NR_Jacobi {
 
   /// Numerical recipes diagonalization
-  int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot);
+  int jacobi(cvm::real a[4][4], cvm::real d[4], cvm::real v[4][4], int *nrot);
 
   /// Eigenvector sort
-  int eigsrt(cvm::real *d, cvm::real **v);
+  int eigsrt(cvm::real d[4], cvm::real v[4][4]);
 
   /// Transpose the matrix
-  int transpose(cvm::real **v);
+  int transpose(cvm::real v[4][4]);
 
 }
 

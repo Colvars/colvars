@@ -3,6 +3,7 @@
 
 #include "colvartypes.h"
 #include <type_traits>
+#include <cstring>
 
 /// \brief Helper function for loading the ia-th atom in the vector pos to x, y and z (C++11 SFINAE is used)
 template <typename T, typename std::enable_if<std::is_same<T, cvm::atom_pos>::value, bool>::type = true>
@@ -80,7 +81,7 @@ struct rotation_derivative {
     */
   void prepare_derivative(rotation_derivative_dldq require_dl_dq) {
     if (require_dl_dq & rotation_derivative_dldq::use_dl) {
-      const auto &Q0 = m_rot.S_eigvec[0].data;
+      const auto &Q0 = m_rot.S_eigvec[0];
       tmp_Q0Q0[0][0] = Q0[0] * Q0[0];
       tmp_Q0Q0[0][1] = Q0[0] * Q0[1];
       tmp_Q0Q0[0][2] = Q0[0] * Q0[2];
@@ -99,10 +100,10 @@ struct rotation_derivative {
       tmp_Q0Q0[3][3] = Q0[3] * Q0[3];
     }
     if (require_dl_dq & rotation_derivative_dldq::use_dq) {
-      const auto &Q0 = m_rot.S_eigvec[0].data;
-      const auto &Q1 = m_rot.S_eigvec[1].data;
-      const auto &Q2 = m_rot.S_eigvec[2].data;
-      const auto &Q3 = m_rot.S_eigvec[3].data;
+      const auto &Q0 = m_rot.S_eigvec[0];
+      const auto &Q1 = m_rot.S_eigvec[1];
+      const auto &Q2 = m_rot.S_eigvec[2];
+      const auto &Q3 = m_rot.S_eigvec[3];
       cvm::real const L0 = m_rot.S_eigval[0];
       cvm::real const L1 = m_rot.S_eigval[1];
       cvm::real const L2 = m_rot.S_eigval[2];
@@ -572,14 +573,17 @@ void debug_gradients(
   cvm::vector1d<cvm::rvector> dq0_2(4);
   cvm::matrix2d<cvm::rvector> ds_2;
 #ifdef COLVARS_LAMMPS
-  MathEigen::Jacobi<cvm::real,
-                      cvm::vector1d<cvm::real> &,
-                      cvm::matrix2d<cvm::real> &> *ecalc =
-      reinterpret_cast<MathEigen::Jacobi<cvm::real,
-                                        cvm::vector1d<cvm::real> &,
-                                        cvm::matrix2d<cvm::real> &> *>(rot.jacobi);
+    MathEigen::Jacobi<cvm::real,
+                      cvm::real[4],
+                      cvm::real[4][4]> *ecalc =
+        reinterpret_cast<MathEigen::Jacobi<cvm::real,
+                                           cvm::real[4],
+                                           cvm::real[4][4]> *>(jacobi);
 #endif
   deriv.prepare_derivative(rotation_derivative_dldq::use_dl | rotation_derivative_dldq::use_dq);
+  cvm::real S_new[4][4];
+  cvm::real S_new_eigval[4];
+  cvm::real S_new_eigvec[4][4];
   for (size_t ia = 0; ia < pos2.size(); ++ia) {
     // cvm::real const &a1x = pos1[ia].x;
     // cvm::real const &a1y = pos1[ia].y;
@@ -588,10 +592,9 @@ void debug_gradients(
     // make an infitesimal move along each cartesian coordinate of
     // this atom, and solve again the eigenvector problem
     for (size_t comp = 0; comp < 3; comp++) {
-      cvm::matrix2d<cvm::real> S_new(4, 4);
-      cvm::vector1d<cvm::real> S_new_eigval(4);
-      cvm::matrix2d<cvm::real> S_new_eigvec(4, 4);
-      S_new = rot.S_backup;
+      std::memcpy(S_new, rot.S_backup, sizeof(cvm::real) * 4 * 4);
+      std::memset(S_new_eigval, 0, sizeof(cvm::real) * 4);
+      std::memset(S_new_eigvec, 0, sizeof(cvm::real) * 4 * 4);
       for (size_t i = 0; i < 4; i++) {
         for (size_t j = 0; j < 4; j++) {
           S_new[i][j] +=

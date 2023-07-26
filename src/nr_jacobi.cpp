@@ -14,13 +14,13 @@
 
 namespace NR_Jacobi {
 
-int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot)
+int jacobi(cvm::real a[4][4], cvm::real d[4], cvm::real v[4][4], int *nrot)
 {
   int j,iq,ip,i;
   cvm::real tresh,theta,tau,t,sm,s,h,g,c;
 
-  cvm::vector1d<cvm::real> b(n);
-  cvm::vector1d<cvm::real> z(n);
+  cvm::real b[n];
+  cvm::real z[n];
 
   for (ip=0;ip<n;ip++) {
     for (iq=0;iq<n;iq++) {
@@ -96,7 +96,7 @@ int jacobi(cvm::real **a, cvm::real *d, cvm::real **v, int *nrot)
 }
 
 
-int eigsrt(cvm::real *d, cvm::real **v)
+int eigsrt(cvm::real d[4], cvm::real v[4][4])
 {
   int k,j,i;
   cvm::real p;
@@ -119,7 +119,7 @@ int eigsrt(cvm::real *d, cvm::real **v)
 }
 
 
-int transpose(cvm::real **v)
+int transpose(cvm::real v[4][4])
 {
   cvm::real p;
   int i,j;
