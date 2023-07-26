@@ -1,17 +1,21 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
-colvars: in any publication based on this calculation.
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
 colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
 colvars: This version was built with the C++11 standard or higher.
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: The restart output state file will be "test.tmp.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
 colvars: ----------------------------------------------------------------------
-colvars: Reading new configuration from file "test.legacy.in":
+colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
 colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 10
 colvars: # colvarsRestartFrequency = 10 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "c"
@@ -56,18 +60,13 @@ colvars:     # oneSiteTotalForce = off [default]
 colvars:   All components initialized.
 colvars:   This colvar uses a custom function.
 colvars:   Warning: Variable r2 is absent from expression "atan2(r3, r1) * 180 / 3.1415926".
-colvars:   Warning: Variable r2 is absent from derivative of "atan2(r3, r1) * 180 / 3.1415926" wrt r1.
-colvars:   Warning: Variable r1 is absent from derivative of "atan2(r3, r1) * 180 / 3.1415926" wrt r2.
-colvars:   Warning: Variable r2 is absent from derivative of "atan2(r3, r1) * 180 / 3.1415926" wrt r2.
-colvars:   Warning: Variable r3 is absent from derivative of "atan2(r3, r1) * 180 / 3.1415926" wrt r2.
-colvars:   Warning: Variable r2 is absent from derivative of "atan2(r3, r1) * 180 / 3.1415926" wrt r3.
 colvars:   Expecting colvar value of type scalar number.
 colvars:   # period = 360
 colvars:   # wrapAround = 0
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0 [default]
+colvars:   # upperBoundary = 1 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
@@ -95,6 +94,7 @@ colvars:   # centers = { -179 }
 colvars:   # targetCenters = { -179 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 0.01
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   The force constant for colvar "c" will be rescaled to 0.01 according to the specified width (1).
 colvars: ----------------------------------------------------------------------
@@ -105,15 +105,31 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
-colvars: Re-initialized atom group for variable "c":0/0. 1 atoms: total mass = 15.999, total charge = -0.51.
-colvars: Re-initialized atom group for variable "c":0/1. 1 atoms: total mass = 12.011, total charge = -0.27.
-colvars: The restart output state file will be "test.tmp.colvars.state".
-colvars: The final output state file will be "test.colvars.state".
-colvars: Opening trajectory file "test.colvars.traj".
-colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: updating grid object data (0 grid objects in total).
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - Colvars module:
+colvars: - Colvars-NAMD interface:
+colvars: - Harmonic colvar bias implementation:
+colvars: - Optimal rotation via flexible fitting:
+colvars: - distance colvar component:
+colvars: - distanceDir colvar component (derived from distance):
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - NAMD engine:
+colvars: - Scalable center-of-mass computation (NAMD):
+colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
+colvars: 
+colvars: - Custom functions (Lepton):
+colvars:   n/a 
+colvars: 
+colvars: updating target temperature (T = 0 K).
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 0 K).
 colvars: Re-initialized atom group for variable "c":0/0. 1 atoms: total mass = 15.999, total charge = -0.51.
 colvars: Re-initialized atom group for variable "c":0/1. 1 atoms: total mass = 12.011, total charge = -0.27.
 colvars: The restart output state file will be "test.tmp.colvars.state".

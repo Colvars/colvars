@@ -5,7 +5,7 @@ configuration {
 
 colvar {
   name eulerTheta
-  x  7.42926968363034e-01
+  x  7.42926968363036e-01
 }
 
 colvar {
@@ -15,7 +15,7 @@ colvar {
 
 colvar {
   name eulerPsi
-  x -4.93710444441010e+00
+  x -4.93710444441009e+00
 }
 
 restraint {

@@ -1,9 +1,10 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
-colvars: in any publication based on this calculation.
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
 colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
 colvars: This version was built with the C++11 standard or higher.
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -13,6 +14,7 @@ colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "end_to_end_distance"
@@ -151,7 +153,7 @@ colvars:   # outputFileDX = "none" [default]
 colvars:   # gatherVectorColvars = off [default]
 colvars:   # CollectAfterSteps = 0 [default]
 colvars:   # CumulantExpansion = on [default]
-colvars:   # WriteGradients = on [default]
+colvars:   # WritePMFGradients = on [default]
 colvars:   # historyFreq = 10
 colvars: WARNING: there are 2 time-dependent biases with non-zero force parameters:
 colvars: { production_abf, production_mtd }
@@ -164,6 +166,7 @@ colvars: # colvarsTrajFrequency = 1 [default]
 colvars: # colvarsRestartFrequency = 10 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -177,6 +180,7 @@ colvars:   # timeStepFactor = 1
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # forceConstant = 1 [default]
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   # lowerWalls = { 3 }
 colvars:   # upperWalls = { 14 }
@@ -197,57 +201,56 @@ colvars: Warning: enabling wrapAll can lead to inconsistent results for Colvars 
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - BAOA integrator:
+colvars:   BouRabee2010 https://doi.org/10.1137/090758842
+colvars: 
+colvars: - reweightaMD colvar bias implementation (NAMD):
+colvars:   Chen2021 https://doi.org/10.1021/acs.jctc.1c00103
+colvars: 
+colvars: - Colvars module:
+colvars: - Colvars-NAMD interface:
+colvars: - Histogram colvar bias implementation:
+colvars: - Metadynamics colvar bias implementation:
+colvars: - Optimal rotation via flexible fitting:
+colvars: - distance colvar component:
+colvars: - harmonicWalls colvar bias implementation:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - ABF colvar bias implementation:
+colvars:   Henin2010 https://doi.org/10.1021/ct9004432
+colvars: 
+colvars: - CZAR eABF estimator:
+colvars: - eABF implementation:
+colvars:   Lesage2017 https://doi.org/10.1021/acs.jpcb.6b10055
+colvars: 
+colvars: - NAMD engine:
+colvars: - Scalable center-of-mass computation (NAMD):
+colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
+colvars: 
+colvars: updating target temperature (T = 300 K).
 colvars: Re-initialized atom group for variable "end_to_end_distance":0/0. 1 atoms: total mass = 12.01, total charge = -0.3662.
 colvars: Re-initialized atom group for variable "end_to_end_distance":0/1. 1 atoms: total mass = 12.01, total charge = -0.149.
 colvars: The restart output state file will be "test.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Opening trajectory file "test.colvars.traj".
-colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Initializing step number as firstTimestep.
 colvars: Updating NAMD interface:
 colvars: Warning: enabling wrapAll can lead to inconsistent results for Colvars calculations: please disable wrapAll, as is the default option in NAMD.
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 300 K).
 colvars: Re-initialized atom group for variable "end_to_end_distance":0/0. 1 atoms: total mass = 12.01, total charge = -0.3662.
 colvars: Re-initialized atom group for variable "end_to_end_distance":0/1. 1 atoms: total mass = 12.01, total charge = -0.149.
 colvars: The restart output state file will be "test.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
 colvars:   Prepared sample and gradient buffers at step 500000000.
 colvars:   Metadynamics bias "production_mtd": new upper boundary for colvar "end_to_end_distance", at 16.2.
-colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.count".
-colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.hist.count".
-colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
-colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
-colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.count".
-colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.hist.count".
-colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
-colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".
-colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.count".
-colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.hist.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.hist.grad".
-colvars:   Writing the accelerated MD count file "test.production_amd.hist.count".
-colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.grad".
-colvars:   Writing the accelerated MD PMF file using cumulant expansion: "test.production_amd.cumulant.hist.pmf".
-colvars:   Writing the accelerated MD gradients file "test.production_amd.cumulant.hist.grad".
 colvars:   Writing the accelerated MD PMF file "test.production_amd.reweight.pmf".
 colvars:   Writing the accelerated MD gradients file "test.production_amd.reweight.grad".
 colvars:   Writing the accelerated MD count file "test.production_amd.count".
