@@ -1871,15 +1871,22 @@ void colvar::update_extended_Lagrangian()
 
   // BAOA (GSD) integrator as formulated in https://doi.org/10.1021/acs.jctc.2c00585
   // starting from x_t, f_t, v_(t-1/2)
+  // Variation: the velocity step is split in two to estimate the kinetic energy at time t
+  // so this is more of a "BBAOA" scheme: a rearranged BAOAB where the second B is deferred
+  // to the next time step for implementation reasons (waiting for the force calculation)
 
   // [B] Eq. (10a) split into two half-steps
-  // This reduces to leapfrog when gamma = 0
+  // would reduce to leapfrog when gamma = 0 if this was the reported velocity
   v_ext  += 0.5 * dt * f_ext / ext_mass;
+
   // Kinetic energy at t
   kinetic_energy = 0.5 * ext_mass * v_ext * v_ext;
 
   // Potential energy at t
   potential_energy = 0.5 * ext_force_k * this->dist2(x_ext, x);
+
+  // Total energy will lag behind position by one timestep
+  // (current kinetic energy is not accessible before the next force calculation)
 
   v_ext  += 0.5 * dt * f_ext / ext_mass;
   // Final v_ext lags behind x_ext by half a timestep
