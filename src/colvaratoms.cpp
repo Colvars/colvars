@@ -1062,14 +1062,15 @@ void cvm::atom_group::calc_apply_roto_translation()
                               fitting_group->atoms:
                               this->atoms,
                               ref_pos);
+    const auto rot_mat = rot.matrix();
 
     cvm::atom_iter ai;
     for (ai = this->begin(); ai != this->end(); ai++) {
-      ai->pos = rot.rotate(ai->pos);
+      ai->pos = rot_mat * ai->pos;
     }
     if (fitting_group) {
       for (ai = fitting_group->begin(); ai != fitting_group->end(); ai++) {
-        ai->pos = rot.rotate(ai->pos);
+        ai->pos = rot_mat * ai->pos;
       }
     }
   }
@@ -1109,9 +1110,10 @@ void cvm::atom_group::read_velocities()
 
   if (is_enabled(f_ag_rotate)) {
 
+    const auto rot_mat = rot.matrix();
     for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
       ai->read_velocity();
-      ai->vel = rot.rotate(ai->vel);
+      ai->vel = rot_mat * ai->vel;
     }
 
   } else {
@@ -1130,9 +1132,10 @@ void cvm::atom_group::read_total_forces()
 
   if (is_enabled(f_ag_rotate)) {
 
+    const auto rot_mat = rot.matrix();
     for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
       ai->read_total_force();
-      ai->total_force = rot.rotate(ai->total_force);
+      ai->total_force = rot_mat * ai->total_force;
     }
 
   } else {
@@ -1234,7 +1237,7 @@ void cvm::atom_group::calc_fit_gradients_impl() {
   // the center of geometry contribution to the gradients
   cvm::rvector atom_grad;
   // the rotation matrix contribution to the gradients
-  cvm::rotation const rot_inv = rot.inverse();
+  const auto rot_inv = rot.inverse().matrix();
   // temporary variables for computing and summing derivatives
   cvm::real sum_dxdq[4] = {0, 0, 0, 0};
   cvm::vector1d<cvm::rvector> dq0_1(4);
@@ -1243,7 +1246,7 @@ void cvm::atom_group::calc_fit_gradients_impl() {
     cvm::atom_pos pos_orig;
     if (B_ag_center) {
       atom_grad += atoms[i].grad;
-      if (B_ag_rotate) pos_orig = rot_inv.rotate(atoms[i].pos - ref_pos_cog);
+      if (B_ag_rotate) pos_orig = rot_inv * (atoms[i].pos - ref_pos_cog);
     } else {
       if (B_ag_rotate) pos_orig = atoms[i].pos;
     }
@@ -1258,7 +1261,7 @@ void cvm::atom_group::calc_fit_gradients_impl() {
     }
   }
   if (B_ag_center) {
-    if (B_ag_rotate) atom_grad = (rot.inverse()).rotate(atom_grad);
+    if (B_ag_rotate) atom_grad = rot.inverse().matrix() * atom_grad;
     atom_grad *= (-1.0)/(cvm::real(group_for_fit->size()));
   }
   // loop 2: iterate over the fitting group
@@ -1406,9 +1409,9 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
   if (is_enabled(f_ag_rotate)) {
 
     // rotate forces back to the original frame
-    cvm::rotation const rot_inv = rot.inverse();
+    const auto rot_inv = rot.inverse().matrix();
     for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-      ai->apply_force(rot_inv.rotate(force * ai->grad));
+      ai->apply_force(rot_inv * (force * ai->grad));
     }
 
   } else {
@@ -1451,9 +1454,9 @@ void cvm::atom_group::apply_force(cvm::rvector const &force)
 
   if (is_enabled(f_ag_rotate)) {
 
-    cvm::rotation const rot_inv = rot.inverse();
+    const auto rot_inv = rot.inverse().matrix();
     for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-      ai->apply_force(rot_inv.rotate((ai->mass/total_mass) * force));
+      ai->apply_force(rot_inv * ((ai->mass/total_mass) * force));
     }
 
   } else {

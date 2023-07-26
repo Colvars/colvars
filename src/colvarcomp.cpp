@@ -476,12 +476,12 @@ void colvar::cvc::collect_gradients(std::vector<int> const &atom_ids, std::vecto
     // If necessary, apply inverse rotation to get atomic
     // gradient in the laboratory frame
     if (ag.is_enabled(f_ag_rotate)) {
-      cvm::rotation const rot_inv = ag.rot.inverse();
+      const auto rot_inv = ag.rot.inverse().matrix();
 
       for (size_t k = 0; k < ag.size(); k++) {
         size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
                                     ag[k].id) - atom_ids.begin();
-        atomic_gradients[a] += coeff * rot_inv.rotate(ag[k].grad);
+        atomic_gradients[a] += coeff * (rot_inv * ag[k].grad);
       }
 
     } else {
@@ -542,8 +542,8 @@ void colvar::cvc::debug_gradients()
     cvm::atom_group *group = atom_groups[ig];
     if (group->b_dummy) continue;
 
-    cvm::rotation const rot_0 = group->rot;
-    cvm::rotation const rot_inv = group->rot.inverse();
+    const auto rot_0 = group->rot.matrix();
+    const auto rot_inv = group->rot.inverse().matrix();
 
     cvm::real x_0 = x.real_value;
     if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_0 = x[0];
@@ -564,7 +564,7 @@ void colvar::cvc::debug_gradients()
           cvm::log((group->fitting_group ? std::string("refPosGroup") : group->key) +
                   "[" + cvm::to_str(j) + "] = " +
                   (group->is_enabled(f_ag_rotate) ?
-                    cvm::to_str(rot_0.rotate(group_for_fit->fit_gradients[j])) :
+                    cvm::to_str(rot_0 * (group_for_fit->fit_gradients[j])) :
                     cvm::to_str(group_for_fit->fit_gradients[j])));
         }
       }
@@ -575,7 +575,7 @@ void colvar::cvc::debug_gradients()
 
       // tests are best conducted in the unrotated (simulation) frame
       cvm::rvector const atom_grad = (group->is_enabled(f_ag_rotate) ?
-                                      rot_inv.rotate((*group)[ia].grad) :
+                                      rot_inv * ((*group)[ia].grad) :
                                       (*group)[ia].grad);
       gradient_sum += atom_grad;
 
