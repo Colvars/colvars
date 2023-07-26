@@ -162,6 +162,13 @@ jobs:
           apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
 
+      - name: Save failed library test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed-library-test-diffs-${{ inputs.backend_name }}
+          path: ${{ inputs.test_lib_directory }}/*/*.diff
+
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
         if: ${{ inputs.test_interface_directory }}
         shell: bash
@@ -169,3 +176,11 @@ jobs:
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}
+
+      - name: Save failed interface test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed-interface-test-diffs-${{ inputs.backend_name }}
+          path: ${{ inputs.test_interface_directory }}/*/*.diff
+
