@@ -14,11 +14,22 @@ namespace ArithmeticPathCV {
 using std::vector;
 
 template <typename T>
-double logsumexp(const vector<T>& a, const vector<T>& b) {
+double logsumexp(const vector<T>& a, const vector<T>& b, T* sign_factor = nullptr) {
     const auto max_a = *std::max_element(a.begin(), a.end());
     T sum = T();
     for (size_t i = 0; i < a.size(); ++i) {
         sum += b[i] * cvm::exp(a[i] - max_a);
+    }
+    if (sign_factor) {
+        if (sum > 0) {
+            *sign_factor = 1.0;
+        } else if (sum < 0) {
+            sum = -sum;
+            *sign_factor = -1.0;
+        } else {
+            sum = 1.0;
+            *sign_factor = 0.0;
+        }
     }
     return max_a + cvm::logn(sum);
 }
@@ -62,9 +73,11 @@ private:
     vector<scalar_type> s_numerator_frame;
     vector<scalar_type> s_denominator_frame;
     vector<scalar_type> exponents;
+    vector<scalar_type> exponents2;
     scalar_type numerator_s;
     scalar_type denominator_s;
     scalar_type normalization_factor;
+    scalar_type log_sum_exp_;
 };
 
 template <typename element_type, typename scalar_type, path_sz path_type>
@@ -76,6 +89,7 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::initialize(size_t
     frame_element_distances.resize(total_frames, p_element);
     frame_indexes.resize(total_frames);
     exponents.resize(total_frames, scalar_type());
+    exponents2.resize(total_frames, scalar_type());
     for (size_t i_frame = 0; i_frame < frame_element_distances.size(); ++i_frame) {
         for (size_t j_elem = 0; j_elem < num_elements; ++j_elem) {
             frame_element_distances[i_frame][j_elem].reset();
@@ -90,6 +104,7 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::initialize(size_t
     s_denominator_frame.resize(total_frames, scalar_type(0));
     numerator_s = scalar_type(0);
     denominator_s = scalar_type(0);
+    log_sum_exp_ = scalar_type(0);
     normalization_factor = 1.0 / static_cast<scalar_type>(total_frames - 1);
 }
 
@@ -109,7 +124,7 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeValue() {
         numerator_s += s_numerator_frame[i_frame];
         denominator_s += s_denominator_frame[i_frame];
     }
-    const auto log_sum_exp_ = logsumexp(exponents);
+    log_sum_exp_ = logsumexp(exponents);
     const auto log_s = cvm::logn(normalization_factor) + logsumexp(exponents, frame_indexes) - log_sum_exp_;
     s = cvm::exp(log_s);
     z = -1.0 / lambda * log_sum_exp_;
@@ -126,15 +141,13 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeDerivative
     for (size_t j_elem = 0; j_elem < num_elements; ++j_elem) {
         element_type dsdxj_numerator_part1(dsdx[j_elem]);
         element_type dsdxj_numerator_part2(dsdx[j_elem]);
-        element_type dzdxj_numerator(dsdx[j_elem]);
         dsdxj_numerator_part1.reset();
         dsdxj_numerator_part2.reset();
-        dzdxj_numerator.reset();
         for (size_t i_frame = 0; i_frame < frame_element_distances.size(); ++i_frame) {
             element_type derivative_tmp = -2.0 * lambda * weights[j_elem] * weights[j_elem] * frame_element_distances[i_frame][j_elem];
+            exponents2[i_frame] = weights[j_elem] * weights[j_elem] * frame_element_distances[i_frame][j_elem];
             dsdxj_numerator_part1 += s_numerator_frame[i_frame] * derivative_tmp;
             dsdxj_numerator_part2 += s_denominator_frame[i_frame] * derivative_tmp;
-            dzdxj_numerator += s_denominator_frame[i_frame] * derivative_tmp;
         }
         dsdxj_numerator_part1 *= denominator_s;
         dsdxj_numerator_part2 *= numerator_s;
@@ -143,7 +156,9 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeDerivative
         } else {
             dsdx[j_elem] = (dsdxj_numerator_part1 - dsdxj_numerator_part2) / (denominator_s * denominator_s) * normalization_factor;
         }
-        dzdx[j_elem] = -1.0 / lambda * dzdxj_numerator / denominator_s;
+        scalar_type sign_factor;
+        const auto dzdx_tmp = logsumexp(exponents, exponents2, &sign_factor) - log_sum_exp_;
+        dzdx[j_elem] = 2.0 * sign_factor * cvm::exp(dzdx_tmp);
     }
 }
 
