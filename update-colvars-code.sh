@@ -84,7 +84,7 @@ then
 elif [ -f "${target}/include/molfile_plugin.h" ]
 then
   code="VMD-PLUGINS"
-elif [ -f "${target}/src/gromacs/commandline.h" ]
+elif [ -f "${target}/src/gromacs/commandline/cmdlineinit.h" ]
 then
   code="GROMACS"
 else
@@ -99,7 +99,7 @@ else
   elif [ -f "${target}/src/VMDApp.h" ]
   then
     code="VMD"
-  elif [ -f "${target}/src/gromacs/commandline.h" ]
+  elif [ -f "${target}/src/gromacs/commandline/cmdlineinit.h" ]
   then
     code="GROMACS"
   else
@@ -197,6 +197,9 @@ then
     2022*)
       GMX_VERSION='2022.x'
       ;;
+    2023*)
+      GMX_VERSION='2023.x'
+      ;;
     *)
     if [ $force_update = 0 ] ; then
       echo " ******************************************************************************"
@@ -204,6 +207,12 @@ then
       echo "  You may override with -f, but be mindful of compilation or runtime problems."
       echo " ******************************************************************************"
       exit 3
+    else
+      echo " ******************************************************************************"
+      echo "  WARNING: Unsupported GROMACS ${GMX_VERSION} version will be patched."
+      echo "           Using GROMACS 2023.x files for patching."
+      echo " ******************************************************************************"
+      GMX_VERSION='2023.x'
     fi
     ;;
   esac
@@ -342,7 +351,7 @@ then
   condcopy "${source}/lammps/doc/src/fix_colvars.rst" \
            "${target}/doc/src/fix_colvars.rst"
   rm -f "${target}/doc/src/fix_colvars.txt"
-  
+
   echo ' done.'
   if [ ${downloaded_pdf} = 1 ] ; then
     echo "Note: the PDF manual for the latest Colvars version was downloaded.  "
@@ -560,7 +569,7 @@ then
   echo ""
 
   # Apply patch for Gromacs files
-  patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-${GMX_VERSION}.patch
+  # patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-${GMX_VERSION}.patch
   ret_val=$?
   if [ $ret_val -ne 0 ]
   then
