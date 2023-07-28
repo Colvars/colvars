@@ -117,8 +117,7 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeValue() {
     }
     log_sum_exp_0 = logsumexp(exponents);
     log_sum_exp_1 = logsumexp(exponents, frame_indexes);
-    const auto log_s = cvm::logn(normalization_factor) + log_sum_exp_1 - log_sum_exp_0;
-    s = cvm::exp(log_s);
+    s = normalization_factor * cvm::exp(log_sum_exp_1 - log_sum_exp_0);
     z = -1.0 / lambda * log_sum_exp_0;
 }
 
@@ -138,9 +137,10 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::computeDerivative
         scalar_type sign_factor_2, sign_factor_3;
         const auto log_sum_exp_2 = logsumexp(exponents, exponents2, &sign_factor_2);
         const auto log_sum_exp_3 = logsumexp(exponents, exponents3, &sign_factor_3);
-        dsdx[j_elem] = -2.0 * lambda * weights[j_elem] * weights[j_elem] * normalization_factor * sign_factor_3 * cvm::exp(log_sum_exp_3 - log_sum_exp_0)
-                       +2.0 * lambda * weights[j_elem] * weights[j_elem] * normalization_factor * sign_factor_2 * cvm::exp(log_sum_exp_2 + log_sum_exp_1 - 2.0 * log_sum_exp_0);
-        dzdx[j_elem] = 2.0 * weights[j_elem] * weights[j_elem] * sign_factor_2 * cvm::exp(log_sum_exp_2 - log_sum_exp_0);
+        const auto tmp_factor = 2.0 * weights[j_elem] * weights[j_elem];
+        dsdx[j_elem] = -tmp_factor * lambda * normalization_factor *
+                        (sign_factor_3 * cvm::exp(log_sum_exp_3 - log_sum_exp_0) - sign_factor_2 * cvm::exp(log_sum_exp_2 + log_sum_exp_1 - 2.0 * log_sum_exp_0));
+        dzdx[j_elem] = tmp_factor * sign_factor_2 * cvm::exp(log_sum_exp_2 - log_sum_exp_0);
     }
 }
 
