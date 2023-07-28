@@ -14,7 +14,7 @@ namespace ArithmeticPathCV {
 using std::vector;
 
 template <typename T>
-double logsumexp(const vector<T>& a, const vector<T>& b, T* sign_factor = nullptr) {
+T logsumexp(const vector<T>& a, const vector<T>& b, T* sign_factor = nullptr) {
     const auto max_a = *std::max_element(a.begin(), a.end());
     T sum = T();
     for (size_t i = 0; i < a.size(); ++i) {
@@ -35,7 +35,7 @@ double logsumexp(const vector<T>& a, const vector<T>& b, T* sign_factor = nullpt
 }
 
 template <typename T>
-double logsumexp(const vector<T>& a) {
+T logsumexp(const vector<T>& a) {
     const auto max_a = *std::max_element(a.begin(), a.end());
     T sum = T();
     for (size_t i = 0; i < a.size(); ++i) {
@@ -43,6 +43,7 @@ double logsumexp(const vector<T>& a) {
     }
     return max_a + cvm::logn(sum);
 }
+
 
 enum path_sz {S, Z};
 
@@ -70,14 +71,12 @@ protected:
     vector<element_type> dzdx;
 private:
     // intermediate variables
-    vector<scalar_type> s_numerator_frame;
-    vector<scalar_type> s_denominator_frame;
     vector<scalar_type> exponents;
     vector<scalar_type> exponents2;
-    scalar_type numerator_s;
-    scalar_type denominator_s;
+    vector<scalar_type> exponents3;
     scalar_type normalization_factor;
-    scalar_type log_sum_exp_;
+    scalar_type log_sum_exp_0;
+    scalar_type log_sum_exp_1;
 };
 
 template <typename element_type, typename scalar_type, path_sz path_type>
@@ -88,8 +87,9 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::initialize(size_t
     total_frames = p_total_frames;
     frame_element_distances.resize(total_frames, p_element);
     frame_indexes.resize(total_frames);
-    exponents.resize(total_frames, scalar_type());
-    exponents2.resize(total_frames, scalar_type());
+    exponents.resize(total_frames);
+    exponents2.resize(total_frames);
+    exponents3.resize(total_frames);
     for (size_t i_frame = 0; i_frame < frame_element_distances.size(); ++i_frame) {
         for (size_t j_elem = 0; j_elem < num_elements; ++j_elem) {
             frame_element_distances[i_frame][j_elem].reset();
@@ -100,34 +100,26 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::initialize(size_t
     z = scalar_type(0);
     dsdx = p_element;
     dzdx = p_element;
-    s_numerator_frame.resize(total_frames, scalar_type(0));
-    s_denominator_frame.resize(total_frames, scalar_type(0));
-    numerator_s = scalar_type(0);
-    denominator_s = scalar_type(0);
-    log_sum_exp_ = scalar_type(0);
+    log_sum_exp_0 = scalar_type(0);
+    log_sum_exp_1 = scalar_type(0);
     normalization_factor = 1.0 / static_cast<scalar_type>(total_frames - 1);
 }
 
 template <typename element_type, typename scalar_type, path_sz path_type>
 void ArithmeticPathBase<element_type, scalar_type, path_type>::computeValue() {
     updateDistanceToReferenceFrames();
-    numerator_s = scalar_type(0);
-    denominator_s = scalar_type(0);
     for (size_t i_frame = 0; i_frame < frame_element_distances.size(); ++i_frame) {
         scalar_type exponent_tmp = scalar_type(0);
         for (size_t j_elem = 0; j_elem < num_elements; ++j_elem) {
             exponent_tmp += weights[j_elem] * frame_element_distances[i_frame][j_elem] * weights[j_elem] * frame_element_distances[i_frame][j_elem];
         }
         exponents[i_frame] = exponent_tmp * -1.0 * lambda;
-        s_denominator_frame[i_frame] = cvm::exp(exponents[i_frame]);
-        s_numerator_frame[i_frame] = static_cast<scalar_type>(i_frame) * s_denominator_frame[i_frame];
-        numerator_s += s_numerator_frame[i_frame];
-        denominator_s += s_denominator_frame[i_frame];
     }
-    log_sum_exp_ = logsumexp(exponents);
-    const auto log_s = cvm::logn(normalization_factor) + logsumexp(exponents, frame_indexes) - log_sum_exp_;
+    log_sum_exp_0 = logsumexp(exponents);
+    log_sum_exp_1 = logsumexp(exponents, frame_indexes);
+    const auto log_s = cvm::logn(normalization_factor) + log_sum_exp_1 - log_sum_exp_0;
     s = cvm::exp(log_s);
-    z = -1.0 / lambda * log_sum_exp_;
+    z = -1.0 / lambda * log_sum_exp_0;
 }
 
 template <typename element_type, typename scalar_type, path_sz path_type>
@@ -139,26 +131,16 @@ void ArithmeticPathBase<element_type, scalar_type, path_type>::compute() {
 template <typename element_type, typename scalar_type, path_sz path_type>
 void ArithmeticPathBase<element_type, scalar_type, path_type>::computeDerivatives() {
     for (size_t j_elem = 0; j_elem < num_elements; ++j_elem) {
-        element_type dsdxj_numerator_part1(dsdx[j_elem]);
-        element_type dsdxj_numerator_part2(dsdx[j_elem]);
-        dsdxj_numerator_part1.reset();
-        dsdxj_numerator_part2.reset();
         for (size_t i_frame = 0; i_frame < frame_element_distances.size(); ++i_frame) {
-            element_type derivative_tmp = -2.0 * lambda * weights[j_elem] * weights[j_elem] * frame_element_distances[i_frame][j_elem];
-            exponents2[i_frame] = weights[j_elem] * weights[j_elem] * frame_element_distances[i_frame][j_elem];
-            dsdxj_numerator_part1 += s_numerator_frame[i_frame] * derivative_tmp;
-            dsdxj_numerator_part2 += s_denominator_frame[i_frame] * derivative_tmp;
+            exponents2[i_frame] = frame_element_distances[i_frame][j_elem];
+            exponents3[i_frame] = static_cast<scalar_type>(i_frame) * frame_element_distances[i_frame][j_elem];
         }
-        dsdxj_numerator_part1 *= denominator_s;
-        dsdxj_numerator_part2 *= numerator_s;
-        if ((dsdxj_numerator_part1 - dsdxj_numerator_part2).norm() < std::numeric_limits<scalar_type>::min()) {
-            dsdx[j_elem] = 0;
-        } else {
-            dsdx[j_elem] = (dsdxj_numerator_part1 - dsdxj_numerator_part2) / (denominator_s * denominator_s) * normalization_factor;
-        }
-        scalar_type sign_factor;
-        const auto dzdx_tmp = logsumexp(exponents, exponents2, &sign_factor) - log_sum_exp_;
-        dzdx[j_elem] = 2.0 * sign_factor * cvm::exp(dzdx_tmp);
+        scalar_type sign_factor_2, sign_factor_3;
+        const auto log_sum_exp_2 = logsumexp(exponents, exponents2, &sign_factor_2);
+        const auto log_sum_exp_3 = logsumexp(exponents, exponents3, &sign_factor_3);
+        dsdx[j_elem] = -2.0 * lambda * weights[j_elem] * weights[j_elem] * normalization_factor * sign_factor_3 * cvm::exp(log_sum_exp_3 - log_sum_exp_0)
+                       +2.0 * lambda * weights[j_elem] * weights[j_elem] * normalization_factor * sign_factor_2 * cvm::exp(log_sum_exp_2 + log_sum_exp_1 - 2.0 * log_sum_exp_0);
+        dzdx[j_elem] = 2.0 * weights[j_elem] * weights[j_elem] * sign_factor_2 * cvm::exp(log_sum_exp_2 - log_sum_exp_0);
     }
 }
 
