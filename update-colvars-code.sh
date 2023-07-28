@@ -569,7 +569,7 @@ then
   echo ""
 
   # Apply patch for Gromacs files
-  # patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-${GMX_VERSION}.patch
+  patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-${GMX_VERSION}.patch
   ret_val=$?
   if [ $ret_val -ne 0 ]
   then
