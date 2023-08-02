@@ -24,6 +24,20 @@ T logsumexp(const vector<T>& a, const vector<T>& b) {
 }
 
 template <typename T>
+vector<T> softmax(const vector<T>& a) {
+    const auto max_a = *std::max_element(a.begin(), a.end());
+    T sum = T();
+    vector<T> out(a.size());
+    for (size_t i = 0; i < a.size(); ++i) {
+        sum += cvm::exp(a[i] - max_a);
+    }
+    for (size_t i = 0; i < a.size(); ++i) {
+        out[i] = cvm::exp(a[i] - max_a) / sum;
+    }
+    return out;
+}
+
+template <typename T>
 T logsumexp(const vector<T>& a) {
     const auto max_a = *std::max_element(a.begin(), a.end());
     T sum = T();
