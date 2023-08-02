@@ -1,18 +1,20 @@
-colvarsTrajFrequency    5000
-colvarsRestartFrequency 10000
+colvarsTrajFrequency    1000
+colvarsRestartFrequency 1000
 
 colvar {
   name nn_phi
-  lowerBoundary -180
-  upperBoundary 180
-  width 5.0
+  lowerBoundary -3.3
+  upperBoundary 3.3
+  width 0.1
   extendedLagrangian on
   extendedFluctuation 5.0
   extendedTimeConstant 500
 
   torchann {
+#    ComponentCoeff 57.29578
     model_file dihedrals_cpu.pt
     m_output_index 0
+    period 6.2832
     atoms {
       atomNumbers {
 	2 5 6 7 9 11 15 16 17 19
@@ -23,16 +25,18 @@ colvar {
 
 colvar {
   name nn_psi
-  lowerBoundary -180
-  upperBoundary 180
-  width 5.0
+  lowerBoundary -3.3
+  upperBoundary 3.3
+  width 0.1
   extendedLagrangian on
   extendedFluctuation 5.0
   extendedTimeConstant 500
 
   torchann {
+#    ComponentCoeff 57.29578
     model_file dihedrals_cpu.pt
     m_output_index 1
+    period 6.2832
     atoms {
       atomNumbers {
 	2 5 6 7 9 11 15 16 17 19
@@ -41,62 +45,9 @@ colvar {
   }
 }
 
-colvar {
-  name phi
-
-  width 5.0
-  lowerboundary -180
-  upperboundary 180
-  extendedLagrangian on
-  extendedFluctuation 5.0
-  extendedTimeConstant 500
-
-  dihedral {
-#    onesiteTotalForce
-    group1 { 
-      atomnumbers 5
-    }
-    group2 { 
-      atomnumbers 7
-    }
-    group3 { 
-      atomnumbers 9
-    }
-    group4 { 
-      atomnumbers 15
-    }
-  }
-}
-
-colvar {
-  name psi
-
-  width 5.0
-  lowerboundary -180
-  upperboundary 180
-  extendedLagrangian on
-  extendedFluctuation 5.0
-  extendedTimeConstant 500
-
-  dihedral {
-#    onesiteTotalForce
-    group1 { 
-      atomnumbers 7
-    }
-    group2 { 
-      atomnumbers 9
-    }
-    group3 { 
-      atomnumbers 15
-    }
-    group4 { 
-      atomnumbers 17
-    }
-  }
-}
-
 abf {
   colvars nn_phi nn_psi
-  fullSamples	500
+#  colvars phi psi
+  fullSamples	30
 }
 

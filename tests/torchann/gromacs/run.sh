@@ -1,18 +1,13 @@
 #!/bin/csh -e
  
-#SBATCH --job-name=gro 				# replace the name
-#SBATCH --mem=2048                              # replace with amount suitable for your job
-#SBATCH --time=00-02:00:00                      # replace with amount suitable for your job
-#SBATCH --partition=gpu
-#SBATCH -w htc-gpu017
-#SBATCH --nodes=1 
-#SBATCH --ntasks=1 
-#SBATCH --gres=gpu:2
-
-setenv gmx gmx
+setenv gmx ~/local/gromacs-2021.6/bin/gmx
+#setenv gmx ~/local/gromacs-2021-6-debug/bin/gmx
 
 #setenv flag '-ntomp 1 -dlb yes'
 setenv flag '-ntomp 1' ; # -ntmpi 1'
-setenv bias_flag '-colvars colvars_ae_abf.dat'
 
-mpirun -np 1 ${gmx} mdrun $flag -deffnm md ${bias_flag}
+setenv bias_flag '-colvars colvars_ae_abf.dat'
+#setenv bias_flag '-colvars colvars_nn_dihedrals_abf.dat'
+#setenv bias_flag '-colvars colvars_abf.dat'
+
+${gmx} mdrun $flag -deffnm md ${bias_flag}

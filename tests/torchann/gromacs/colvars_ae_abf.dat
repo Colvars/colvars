@@ -41,54 +41,6 @@ colvar {
   }
 }
 
-colvar {
-  name phi
-
-  width 5.0
-  lowerboundary -180
-  upperboundary 180
-
-  dihedral {
-#    onesiteTotalForce
-    group1 { 
-      atomnumbers 13
-    }
-    group2 { 
-      atomnumbers 15
-    }
-    group3 { 
-      atomnumbers 17
-    }
-    group4 { 
-      atomnumbers 1
-    }
-  }
-}
-
-colvar {
-  name psi
-
-  width 5.0
-  lowerboundary -180
-  upperboundary 180
-
-  dihedral {
-    onesiteTotalForce
-    group1 { 
-      atomnumbers 3
-    }
-    group2 { 
-      atomnumbers 1
-    }
-    group3 { 
-      atomnumbers 17
-    }
-    group4 { 
-      atomnumbers 15
-    }
-  }
-}
-
 #metadynamics {
 #  name meta_r
 #  colvars nn
