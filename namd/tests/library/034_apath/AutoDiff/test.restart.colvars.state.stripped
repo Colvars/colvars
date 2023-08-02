@@ -1,0 +1,22 @@
+configuration {
+  step           40
+  dt 5.000000e-01
+}
+
+colvar {
+  name apath_s_cartesian
+  x  4.99153219820422e-01
+}
+
+colvar {
+  name apath_z_cartesian
+  x -1.39840331390814e+00
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonicwalls1
+  }
+}
+
