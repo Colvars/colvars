@@ -1,0 +1,29 @@
+configuration {
+  step           40
+  dt 5.000000e-01
+}
+
+colvar {
+  name apath_s_distanceVec
+  x  4.41305595207488e-02
+}
+
+colvar {
+  name apath_z_distanceVec
+  x  5.14684657530630e+02
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonic1
+  }
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonicwalls1
+  }
+}
+
