@@ -88,7 +88,7 @@ void colvar::torchANN::calc_gradients() {
   for (cvm::atom_iter ai = atoms->begin() ; ai != atoms->end(); ai++, ia++) 
   {
     for (size_t j = 0; j < 3; j ++)
-      ai->grad[j] = proxy->internal_to_angstrom(grad[0][ia][j].item<double>()) ;
+      ai->grad[j] = grad[0][ia][j].item<double>() ;
   }
 }
 
