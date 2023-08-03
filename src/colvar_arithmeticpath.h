@@ -13,41 +13,6 @@ namespace ArithmeticPathCV {
 
 using std::vector;
 
-template <typename T>
-T logsumexp(const vector<T>& a, const vector<T>& b) {
-    const auto max_a = *std::max_element(a.begin(), a.end());
-    T sum = T();
-    for (size_t i = 0; i < a.size(); ++i) {
-        sum += b[i] * cvm::exp(a[i] - max_a);
-    }
-    return max_a + cvm::logn(sum);
-}
-
-template <typename T>
-vector<T> softmax(const vector<T>& a) {
-    const auto max_a = *std::max_element(a.begin(), a.end());
-    T sum = T();
-    vector<T> out(a.size());
-    for (size_t i = 0; i < a.size(); ++i) {
-        sum += cvm::exp(a[i] - max_a);
-    }
-    for (size_t i = 0; i < a.size(); ++i) {
-        out[i] = cvm::exp(a[i] - max_a) / sum;
-    }
-    return out;
-}
-
-template <typename T>
-T logsumexp(const vector<T>& a) {
-    const auto max_a = *std::max_element(a.begin(), a.end());
-    T sum = T();
-    for (size_t i = 0; i < a.size(); ++i) {
-        sum += cvm::exp(a[i] - max_a);
-    }
-    return max_a + cvm::logn(sum);
-}
-
-
 template <typename scalar_type>
 class ArithmeticPathBase {
 public:
@@ -63,10 +28,11 @@ public:
 protected:
     scalar_type lambda;
     vector<scalar_type> squared_weights;
-    vector<scalar_type> frame_indexes;
     size_t num_elements;
     size_t total_frames;
     vector<scalar_type> exponents;
+    scalar_type max_exponent;
+    scalar_type saved_exponent_sum;
     scalar_type normalization_factor;
     scalar_type saved_s;
 };
@@ -77,11 +43,11 @@ void ArithmeticPathBase<scalar_type>::initialize(size_t p_num_elements, size_t p
     for (size_t i = 0; i < p_weights.size(); ++i) squared_weights.push_back(p_weights[i] * p_weights[i]);
     num_elements = p_num_elements;
     total_frames = p_total_frames;
-    frame_indexes.resize(total_frames);
-    for (size_t i = 0; i < total_frames; ++i) frame_indexes[i] = i;
     exponents.resize(total_frames);
     normalization_factor = 1.0 / static_cast<scalar_type>(total_frames - 1);
     saved_s = scalar_type();
+    saved_exponent_sum = scalar_type();
+    max_exponent = scalar_type();
 }
 
 template <typename scalar_type>
@@ -96,9 +62,18 @@ void ArithmeticPathBase<scalar_type>::computeValue(
             exponent_tmp += squared_weights[j_elem] * frame_element_distances[i_frame][j_elem] * frame_element_distances[i_frame][j_elem];
         }
         exponents[i_frame] = exponent_tmp * -1.0 * lambda;
+        if (i_frame == 0 || exponents[i_frame] > max_exponent) max_exponent = exponents[i_frame];
     }
-    const scalar_type log_sum_exp_0 = logsumexp(exponents);
-    const scalar_type log_sum_exp_1 = logsumexp(exponents, frame_indexes);
+    scalar_type log_sum_exp_0 = scalar_type();
+    scalar_type log_sum_exp_1 = scalar_type();
+    for (size_t i_frame = 0; i_frame < total_frames; ++i_frame) {
+        exponents[i_frame] = cvm::exp(exponents[i_frame] - max_exponent);
+        log_sum_exp_0 += exponents[i_frame];
+        log_sum_exp_1 += i_frame * exponents[i_frame];
+    }
+    saved_exponent_sum = log_sum_exp_0;
+    log_sum_exp_0 = max_exponent + cvm::logn(log_sum_exp_0);
+    log_sum_exp_1 = max_exponent + cvm::logn(log_sum_exp_1);
     saved_s = normalization_factor * cvm::exp(log_sum_exp_1 - log_sum_exp_0);
     if (s != nullptr) {
         *s = saved_s;
@@ -127,10 +102,11 @@ void ArithmeticPathBase<scalar_type>::computeDerivatives(
     vector<vector<element_type>> *dsdx,
     vector<vector<element_type>> *dzdx)
 {
-    const vector<scalar_type> softmax_out = softmax(exponents);
-    vector<scalar_type> tmps;
+    vector<scalar_type> softmax_out, tmps;
+    softmax_out.reserve(total_frames);
     tmps.reserve(total_frames);
     for (size_t i_frame = 0; i_frame < total_frames; ++i_frame) {
+        softmax_out.push_back(exponents[i_frame] / saved_exponent_sum);
         tmps.push_back(
             (static_cast<scalar_type>(i_frame) -
              static_cast<scalar_type>(total_frames - 1) * saved_s) *
