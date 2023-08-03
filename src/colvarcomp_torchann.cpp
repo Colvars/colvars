@@ -39,12 +39,14 @@ colvar::torchANN::~torchANN() {
 
 void colvar::torchANN::calc_value() {
 
+  colvarproxy *proxy = cvm::main()->proxy;
+
   std::vector<double> pos_data(atoms->size() * 3) ;
   size_t ia, j;
   // obtain the values of the arguments
   for (ia = 0; ia < atoms->size(); ia++) {
     for (j = 0; j < 3; j++) 
-      pos_data[3*ia + j] = (*atoms)[ia].pos[j];
+      pos_data[3*ia + j] = proxy->internal_to_angstrom((*atoms)[ia].pos[j]);
   }
   // change to torch Tensor 
   torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, (long int) atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(false));
@@ -60,13 +62,15 @@ void colvar::torchANN::calc_value() {
 
 void colvar::torchANN::calc_gradients() {
 
+  colvarproxy *proxy = cvm::main()->proxy;
+
   std::vector<double> pos_data(atoms->size() * 3) ;
   size_t ia, j;
 
   // obtain the values of the arguments
   for (ia = 0; ia < atoms->size(); ia++) 
     for (j = 0; j < 3; j++) 
-      pos_data[3*ia + j] = (*atoms)[ia].pos[j];
+      pos_data[3*ia + j] = proxy->internal_to_angstrom((*atoms)[ia].pos[j]);
 
   // change to torch Tensor 
   torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, (long int) atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(true));
@@ -84,7 +88,7 @@ void colvar::torchANN::calc_gradients() {
   for (cvm::atom_iter ai = atoms->begin() ; ai != atoms->end(); ai++, ia++) 
   {
     for (size_t j = 0; j < 3; j ++)
-      ai->grad[j] = grad[0][ia][j].item<double>() ;
+      ai->grad[j] = proxy->internal_to_angstrom(grad[0][ia][j].item<double>()) ;
   }
 }
 
@@ -101,6 +105,7 @@ cvm::real colvar::torchANN::dist2(colvarvalue const &x1, colvarvalue const &x2) 
   {
     diff = (diff < - period * 0.5 ? diff + period : (diff > period * 0.5 ? diff - period : diff));
   }
+
   return diff * diff;
 }
 
