@@ -759,7 +759,7 @@ proc ::cv_dashboard::load {} {
         -message "There was an error while attempting to read $path. Would you like to open the file in the colvar editor?" \
         -type yesno]
       if { $answer == "yes" } {
-        #edit_cv false "" $cfg
+        edit_cv true $cfg
       }
     }
     # Save directory for next invocation of this dialog
