@@ -192,6 +192,10 @@ proc ::cv_dashboard::apply_config { cfg } {
   set biases_before [run_cv list biases]
   # Actually submit new config to the Colvars Module
   set res [run_cv config $cfg]
+  if { $res == -1 } {
+    return $res
+  }
+
   set cvs_after [run_cv list]
   set biases_after [run_cv list biases]
 
