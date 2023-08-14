@@ -83,14 +83,13 @@ void colvar::torchANN::calc_gradients() {
 
   outputs[m_output_index].backward({}, false, false);
 
-  torch::Tensor grad = arg_tensor.grad();
+  torch::Tensor grad = arg_tensor.grad()[0];
 
   ia = 0 ;
-
   for (cvm::atom_iter ai = atoms->begin() ; ai != atoms->end(); ai++, ia++) 
   {
     for (size_t j = 0; j < 3; j ++)
-      ai->grad[j] = grad[0][ia][j].item<double>() ;
+      ai->grad[j] = grad[ia][j].item<double>() ;
   }
 }
 
@@ -104,22 +103,16 @@ cvm::real colvar::torchANN::dist2(colvarvalue const &x1, colvarvalue const &x2) 
 {
   cvm::real diff = x1.real_value - x2.real_value;
   if (is_enabled(f_cvc_periodic)) 
-  {
     diff = (diff < - period * 0.5 ? diff + period : (diff > period * 0.5 ? diff - period : diff));
-  }
-
   return diff * diff;
 }
-
 
 colvarvalue colvar::torchANN::dist2_lgrad(colvarvalue const &x1,
                                           colvarvalue const &x2) const
 {
   cvm::real diff = x1.real_value - x2.real_value;
   if (is_enabled(f_cvc_periodic)) 
-  {
     diff = (diff < - period * 0.5 ? diff + period : (diff > period * 0.5 ? diff - period : diff));
-  }
   return 2.0 * diff;
 }
 
@@ -129,24 +122,19 @@ colvarvalue colvar::torchANN::dist2_rgrad(colvarvalue const &x1,
 {
   cvm::real diff = x1.real_value - x2.real_value;
   if (is_enabled(f_cvc_periodic)) 
-  {
     diff = (diff < - period * 0.5 ? diff + period : (diff > period * 0.5 ? diff - period : diff));
-  }
   return (-2.0) * diff;
 }
 
 
 void colvar::torchANN::wrap(colvarvalue &x_unwrapped) const
 {
-  if ((x_unwrapped.real_value - wrap_center) >= period * 0.5) {
-    x_unwrapped.real_value -= period ;
+  if (!is_enabled(f_cvc_periodic)) {
     return;
   }
-
-  if ((x_unwrapped.real_value - wrap_center) < -period * 0.5) {
-    x_unwrapped.real_value += period ;
-    return;
-  }
+  cvm::real shift =
+    cvm::floor((x_unwrapped.real_value - wrap_center) / period + 0.5);
+  x_unwrapped.real_value -= shift * period;
 }
 
 #endif
