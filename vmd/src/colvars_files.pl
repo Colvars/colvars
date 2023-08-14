@@ -22,6 +22,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvar.C',
                     'colvarcomp_neuralnetwork.C',
                     'colvar_neuralnetworkcompute.C',
+                    'colvarcomp_torchann.C',
                     'colvarcomp.C',
                     'colvarcomp_alchlambda.C',
                     'colvarcomp_angles.C',

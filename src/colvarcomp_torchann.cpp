@@ -27,11 +27,12 @@ colvar::torchANN::torchANN(std::string const &conf)
   get_keyval(conf, "model_file", model_file, std::string(""));
   get_keyval(conf, "m_output_index", m_output_index, 0);
 
-  module = torch::jit::load(model_file);
-
-  torch::Tensor grad ;
-
-  cvm::log("model file name: \"" + model_file + "\".\n" ) ;
+  try {
+    module = torch::jit::load(model_file);
+    cvm::log("model loaded.") ;
+  } catch (...) {
+    cvm::error("Error: couldn't load libtorch model.\n");
+  }
 }
 
 colvar::torchANN::~torchANN() {
@@ -48,6 +49,7 @@ void colvar::torchANN::calc_value() {
     for (j = 0; j < 3; j++) 
       pos_data[3*ia + j] = proxy->internal_to_angstrom((*atoms)[ia].pos[j]);
   }
+
   // change to torch Tensor 
   torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, (long int) atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(false));
   std::vector<torch::jit::IValue> inputs = {arg_tensor.to(torch::kFloat32)};
