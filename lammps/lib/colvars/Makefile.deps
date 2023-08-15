@@ -84,7 +84,7 @@ $(COLVARS_OBJ_DIR)colvarcomp_neuralnetwork.o: \
  colvarproxy_system.h colvarproxy_tcl.h colvarproxy_volmaps.h \
  colvar_arithmeticpath.h colvar_geometricpath.h \
  colvar_neuralnetworkcompute.h
-$(COLVARS_OBJ_DIR)colvarcomp_neuralnetwork.o: \
+$(COLVARS_OBJ_DIR)colvarcomp_torchann.o: \
  colvarcomp_torchann.cpp colvarmodule.h colvars_version.h \
  colvarvalue.h colvartypes.h colvarparse.h colvarparams.h colvar.h \
  colvardeps.h colvarcomp.h colvaratoms.h colvarproxy.h colvarproxy_io.h \
