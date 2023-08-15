@@ -1777,7 +1777,7 @@ class colvar::torchANN
   : public colvar::cvc
 {
 protected:
-    /// the index of nn output components
+    /// index of nn output components
     size_t m_output_index;
     cvm::atom_group  *atoms;
     torch::jit::script::Module module;
@@ -1788,16 +1788,16 @@ public:
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
 
-    /// Redefined to handle the 2*PI periodicity
+    /// Redefined to handle periodicity
     virtual cvm::real dist2(colvarvalue const &x1,
 			    colvarvalue const &x2) const;
-    /// Redefined to handle the 2*PI periodicity
+    /// Redefined to handle periodicity
     virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
 				    colvarvalue const &x2) const;
-    /// Redefined to handle the 2*PI periodicity
+    /// Redefined to handle periodicity
     virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
 				    colvarvalue const &x2) const;
-    /// Redefined to handle the 2*PI periodicity
+    /// Redefined to handle periodicity
     virtual void wrap(colvarvalue &x_unwrapped) const;
 
 };
