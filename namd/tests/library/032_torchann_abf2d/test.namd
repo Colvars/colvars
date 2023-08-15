@@ -1,0 +1,53 @@
+# alanine dipeptide
+seed 1
+
+# Variables
+set outName         test
+
+structure           ../Common/da.psf
+coordinates         ../Common/da.pdb
+parameters          ../Common/par_all22_prot.inp
+paraTypeCharmm      on
+temperature         300.0
+
+## SIMULATION PARAMETERS                                  
+hgroupcutoff        2.8
+switching           on
+switchdist          10.0
+cutoff              12.0
+pairlistdist        14.0
+rigidbonds          none
+exclude             scaled1-4
+1-4scaling          1.0
+
+# Integrator Parameters 
+timestep            0.5 
+nonbondedFreq       1 
+fullElectFrequency  1 
+stepspercycle       10
+splitpatch          hydrogen
+margin              2.0
+
+# Output
+outputenergies          1000
+outputtiming            1000
+restartfreq             100000
+binaryoutput            no
+binaryrestart           yes
+outputname              $outName
+restartname             $outName
+
+# CONSTANT-T
+
+langevin                on
+langevinTemp            300.0
+langevinDamping         10.0
+
+# COM
+
+commotion               no
+
+colvars                 on
+colvarsConfig           test.in
+
+numSteps                20

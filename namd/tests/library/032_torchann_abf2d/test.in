@@ -1,0 +1,50 @@
+colvarsTrajFrequency    1
+colvarsRestartFrequency 10
+
+colvar {
+  name nn_phi
+  lowerBoundary -3.3
+  upperBoundary 3.3
+  width 0.1
+  extendedLagrangian on
+  extendedFluctuation 0.1
+  extendedTimeConstant 500
+
+  torchann {
+    model_file dihedrals_cpu.pt
+    m_output_index 0
+    period 6.2832
+    atoms {
+      atomNumbers {
+	1 5 6 7 9 11 15 16 17 19
+      }
+    }
+  }
+}
+
+colvar {
+  name nn_psi
+  lowerBoundary -3.3
+  upperBoundary 3.3
+  width 0.1
+  extendedLagrangian on
+  extendedFluctuation 0.1
+  extendedTimeConstant 500
+
+  torchann {
+    model_file dihedrals_cpu.pt
+    m_output_index 1
+    period 6.2832
+    atoms {
+      atomNumbers {
+	1 5 6 7 9 11 15 16 17 19
+      }
+    }
+  }
+}
+
+abf {
+  colvars nn_phi nn_psi
+  fullSamples	2000
+}
+

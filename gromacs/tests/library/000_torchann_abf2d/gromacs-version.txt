@@ -1,0 +1,3 @@
+             :-) GROMACS - gmx mdrun, 2021.6-Colvars-2023-07-18 (-:
+colvars: Initializing the collective variables module, version 2023-07-18.
+colvars: Using GROMACS interface, version "2023-07-06".
