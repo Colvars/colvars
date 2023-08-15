@@ -1,0 +1,24 @@
+REMARK  FINAL COORDINATES WRITTEN BY NAMD AT TIMESTEP 100000
+ATOM      1  CL  ALAD    1      -6.460  -1.636 -17.800  1.00  0.00      AD     
+ATOM      2  HL1 ALAD    1      -5.829  -2.497 -18.109  1.00  0.00      AD     
+ATOM      3  HL2 ALAD    1      -7.236  -1.463 -18.576  1.00  0.00      AD     
+ATOM      4  HL3 ALAD    1      -5.838  -0.736 -17.605  1.00  0.00      AD     
+ATOM      5  CLP ALAD    1      -7.236  -2.078 -16.627  1.00  0.00      AD     
+ATOM      6  OL  ALAD    1      -8.433  -2.153 -16.586  1.00  0.00      AD     
+ATOM      7  NL  ALAD    1      -6.479  -2.359 -15.550  0.00  0.00      AD     
+ATOM      8  HL  ALAD    1      -5.498  -2.246 -15.690  0.00  0.00      AD     
+ATOM      9  CA  ALAD    1      -7.134  -2.806 -14.271  1.00  0.00      AD     
+ATOM     10  HA  ALAD    1      -8.118  -2.396 -14.096  1.00  0.00      AD     
+ATOM     11  CB  ALAD    1      -7.186  -4.358 -14.392  1.00  0.00      AD     
+ATOM     12  HB1 ALAD    1      -6.113  -4.639 -14.456  1.00  0.00      AD     
+ATOM     13  HB2 ALAD    1      -7.637  -4.789 -13.473  1.00  0.00      AD     
+ATOM     14  HB3 ALAD    1      -7.743  -4.655 -15.306  1.00  0.00      AD     
+ATOM     15  CRP ALAD    1      -6.215  -2.391 -13.067  0.00  0.00      AD     
+ATOM     16  OR  ALAD    1      -4.972  -2.385 -13.181  0.00  0.00      AD     
+ATOM     17  NR  ALAD    1      -6.820  -2.149 -11.896  0.00  0.00      AD     
+ATOM     18  HR  ALAD    1      -7.810  -2.084 -11.803  0.00  0.00      AD     
+ATOM     19  CR  ALAD    1      -6.102  -1.790 -10.678  0.00  0.00      AD     
+ATOM     20  HR1 ALAD    1      -5.349  -2.555 -10.394  0.00  0.00      AD     
+ATOM     21  HR2 ALAD    1      -6.855  -1.770  -9.862  0.00  0.00      AD     
+ATOM     22  HR3 ALAD    1      -5.681  -0.767 -10.781  0.00  0.00      AD     
+END

@@ -4,9 +4,9 @@ seed 1
 # Variables
 set outName         test
 
-structure           ../Common/da.psf
-coordinates         ../Common/da.pdb
-parameters          ../Common/par_all22_prot.inp
+structure           ./ad-charmm36-vacuum.psf
+coordinates         ./ad-charmm36-vacuum_eq.coor
+parameters          ./par_all36m_prot.prm
 paraTypeCharmm      on
 temperature         300.0
 

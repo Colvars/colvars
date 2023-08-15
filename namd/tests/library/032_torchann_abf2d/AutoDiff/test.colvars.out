@@ -37,7 +37,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 60.076, total charge = -1.12.
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 132.079, total charge = -1.52.
 colvars:     # model_file = "dihedrals_cpu.pt"
 colvars:     # m_output_index = 0
 colvars:     model loaded.
@@ -90,7 +90,7 @@ colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 60.076, total charge = -1.12.
+colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 132.079, total charge = -1.52.
 colvars:     # model_file = "dihedrals_cpu.pt"
 colvars:     # m_output_index = 1
 colvars:     model loaded.
@@ -177,8 +177,8 @@ colvars: - NAMD engine:
 colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
 colvars: 
 colvars: updating target temperature (T = 300 K).
-colvars: Re-initialized atom group for variable "nn_phi":0/0. 10 atoms: total mass = 60.076, total charge = -1.12.
-colvars: Re-initialized atom group for variable "nn_psi":0/0. 10 atoms: total mass = 60.076, total charge = -1.12.
+colvars: Re-initialized atom group for variable "nn_phi":0/0. 10 atoms: total mass = 132.079, total charge = -1.52.
+colvars: Re-initialized atom group for variable "nn_psi":0/0. 10 atoms: total mass = 132.079, total charge = -1.52.
 colvars: The restart output state file will be "test.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
 colvars: Updating NAMD interface:
@@ -186,18 +186,18 @@ colvars: updating atomic data (10 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
 colvars: updating target temperature (T = 300 K).
-colvars: Re-initialized atom group for variable "nn_phi":0/0. 10 atoms: total mass = 60.076, total charge = -1.12.
-colvars: Re-initialized atom group for variable "nn_psi":0/0. 10 atoms: total mass = 60.076, total charge = -1.12.
+colvars: Re-initialized atom group for variable "nn_phi":0/0. 10 atoms: total mass = 132.079, total charge = -1.52.
+colvars: Re-initialized atom group for variable "nn_psi":0/0. 10 atoms: total mass = 132.079, total charge = -1.52.
 colvars: The restart output state file will be "test.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
 colvars:   Prepared sample and gradient buffers at step 0.
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".
-colvars:   Integrated in 215 steps, error: 9.45256e-07
-colvars:   Integrated in 217 steps, error: 9.14176e-07
+colvars:   Integrated in 221 steps, error: 9.5063e-07
+colvars:   Integrated in 221 steps, error: 9.5063e-07
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".
-colvars:   Integrated in 209 steps, error: 8.87366e-07
-colvars:   Integrated in 208 steps, error: 9.00609e-07
+colvars:   Integrated in 217 steps, error: 9.22707e-07
+colvars:   Integrated in 221 steps, error: 9.58126e-07
 colvars: Saving collective variables state to "test.colvars.state".
