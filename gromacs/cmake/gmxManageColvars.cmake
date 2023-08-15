@@ -23,9 +23,10 @@ function(gmx_set_colvars_torch)
   find_package(Torch)
 
   if (Torch_FOUND)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-    target_link_libraries(colvars "${TORCH_LIBRARIES}")
-    target_compile_options(colvars PRIVATE -DTORCH)
+    set_property(TARGET colvars PROPERTY CXX_STANDARD 17)
+    target_compile_definitions(colvars PRIVATE -DTORCH)
+    target_compile_options(colvars PRIVATE ${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS})
+    target_include_directories(colvars PRIVATE ${TORCH_INCLUDE_DIRS})
     target_link_libraries(libgromacs PRIVATE "${TORCH_LIBRARIES}")
   endif()
 

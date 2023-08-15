@@ -303,7 +303,7 @@ then
   # Update cmake file 
   src=${source}/lammps/COLVARS.cmake
   tgt=$(basename ${src})
-  condcopy "${source}/lammps/COLVARS.cmake" "${target}/cmake/Modules/Packages/{$tgt}"
+  condcopy "${source}/lammps/COLVARS.cmake" "${target}/cmake/Modules/Packages/${tgt}"
 
   for src in \
     ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} \
