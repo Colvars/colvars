@@ -278,6 +278,9 @@ public:
 
 protected:
 
+  /// Update the description string based on name and type
+  int update_description();
+
   /// Record the type of this class as well as those it is derived from
   std::vector<std::string> function_types;
 
