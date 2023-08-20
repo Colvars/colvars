@@ -365,7 +365,7 @@ then
   condcopy "${source}/namd/lepton/Makefile.namd" \
            "${target}/lepton/Makefile.namd"
 
-  if ! grep -q lepton/Makefile.namd "${target}/lepton/Makefile.namd" ; then
+  if ! grep -q lepton/Makefile.namd "${target}/Makefile" ; then
     patch -p1 -N -d ${target} < namd/Makefile.patch
   fi
 
