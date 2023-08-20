@@ -25,6 +25,10 @@ on:
         description: "Name of the branch of the backend repository"
         required: true
         type: string
+      container_name:
+        description: "Name of the container used to build on"
+        required: true
+        type: string
       vmd_plugins_repo:
         description: "Name of the VMD plugins repository"
         required: false
@@ -71,7 +75,7 @@ jobs:
         with:
           path: |
             ~/.ccache
-            ~/ccache_CentOS7-devel
+            ~/ccache_${{ inputs.container_name }}
           key: ${{ runner.os }}-build-${{ inputs.backend_name }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-build-${{ inputs.backend_name }}-
@@ -122,11 +126,11 @@ jobs:
           wget https://github.com/apptainer/apptainer/releases/download/v1.0.3/apptainer_1.0.3_amd64.deb
           sudo apt-get -y install ./apptainer_1.0.3_amd64.deb
 
-      - name: Get container image of backends' dependencies
+      - name: Get container images for build dependencies
         shell: bash
         working-directory: devel-tools
         run: |
-          # Pull CentOS 7 container used to build backends
+          # Pull all containers used to build backends
           # (contains build tools, OpenMPI, FFTW, Tcl/Tk and Charm++)
           apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
           apptainer remote use SylabsCloud
@@ -136,16 +140,16 @@ jobs:
       - name : Get spiff
         shell: bash
         working-directory: devel-tools
-        run: sudo cp -f $(apptainer exec CentOS7-devel.sif ./get_spiff) /usr/local/bin
+        run: sudo cp -f $(apptainer exec ${{ inputs.container_name }}.sif ./get_spiff) /usr/local/bin
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
         env:
           OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
         run: |
-          apptainer exec devel-tools/CentOS7-devel.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
-          CCACHE_DIR=~/ccache_CentOS7-devel \
-          apptainer exec devel-tools/CentOS7-devel.sif \
+          apptainer exec devel-tools/${{ inputs.container_name }}.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
+          CCACHE_DIR=~/ccache_${{ inputs.container_name }} \
+          apptainer exec devel-tools/${{ inputs.container_name }}.sif \
           bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
 
 
@@ -158,7 +162,7 @@ jobs:
         shell: bash
         working-directory: ${{ inputs.test_lib_directory }}
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
 
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
@@ -166,5 +170,5 @@ jobs:
         shell: bash
         working-directory: ${{ inputs.test_interface_directory }}
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}
