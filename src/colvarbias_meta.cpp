@@ -1451,9 +1451,9 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
     if (cvm::debug()) {
       std::ostringstream tmp_os;
       tmp_os << "hills_energy parameters:\n";
-      hills_energy->write_params(tmp_os);
+      tmp_os << hills_energy->get_state_params();
       tmp_os << "new_hills_energy parameters:\n";
-      new_hills_energy->write_params(tmp_os);
+      tmp_os << new_hills_energy->get_state_params();
       cvm::log(tmp_os.str());
     }
 

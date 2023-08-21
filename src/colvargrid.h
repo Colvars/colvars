@@ -10,8 +10,7 @@
 #ifndef COLVARGRID_H
 #define COLVARGRID_H
 
-#include <iostream>
-#include <iomanip>
+#include <iosfwd>
 
 #include "colvar.h"
 #include "colvarmodule.h"
@@ -804,109 +803,12 @@ public:
     }
   }
 
-  /// Write the grid parameters (number of colvars, boundaries, width and number of points)
-  std::ostream & write_params(std::ostream &os)
-  {
-    size_t i;
-    os << "grid_parameters {\n  n_colvars " << nd << "\n";
+  /// Write the current grid parameters to a string
+  std::string get_state_params() const;
 
-    os << "  lower_boundaries ";
-    for (i = 0; i < nd; i++)
-      os << " " << lower_boundaries[i];
-    os << "\n";
-
-    os << "  upper_boundaries ";
-    for (i = 0; i < nd; i++)
-      os << " " << upper_boundaries[i];
-    os << "\n";
-
-    os << "  widths ";
-    for (i = 0; i < nd; i++)
-      os << " " << widths[i];
-    os << "\n";
-
-    os << "  sizes ";
-    for (i = 0; i < nd; i++)
-      os << " " << nx[i];
-    os << "\n";
-
-    os << "}\n";
-    return os;
-  }
-
-  /// Read a grid definition from a config string
+  /// Read new grid parameters from a string
   int parse_params(std::string const &conf,
-                   colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal)
-  {
-    if (cvm::debug()) cvm::log("Reading grid configuration from string.\n");
-
-    std::vector<int> old_nx = nx;
-    std::vector<colvarvalue> old_lb = lower_boundaries;
-    std::vector<colvarvalue> old_ub = upper_boundaries;
-    std::vector<cvm::real> old_w = widths;
-
-    {
-      size_t nd_in = 0;
-      // this is only used in state files
-      colvarparse::get_keyval(conf, "n_colvars", nd_in, nd, colvarparse::parse_silent);
-      if (nd_in != nd) {
-        cvm::error("Error: trying to read data for a grid "
-                   "that contains a different number of colvars ("+
-                   cvm::to_str(nd_in)+") than the grid defined "
-                   "in the configuration file("+cvm::to_str(nd)+
-                   ").\n");
-        return COLVARS_ERROR;
-      }
-    }
-
-    // underscore keywords are used in state file
-    colvarparse::get_keyval(conf, "lower_boundaries",
-                            lower_boundaries, lower_boundaries, colvarparse::parse_silent);
-    colvarparse::get_keyval(conf, "upper_boundaries",
-                            upper_boundaries, upper_boundaries, colvarparse::parse_silent);
-
-    // camel case keywords are used in config file
-    colvarparse::get_keyval(conf, "lowerBoundaries",
-                            lower_boundaries, lower_boundaries, parse_mode);
-    colvarparse::get_keyval(conf, "upperBoundaries",
-                            upper_boundaries, upper_boundaries, parse_mode);
-
-    colvarparse::get_keyval(conf, "widths", widths, widths, parse_mode);
-
-    // only used in state file
-    colvarparse::get_keyval(conf, "sizes", nx, nx, colvarparse::parse_silent);
-
-    if (nd < lower_boundaries.size()) nd = lower_boundaries.size();
-
-    if (! use_actual_value.size()) use_actual_value.assign(nd, false);
-    if (! periodic.size()) periodic.assign(nd, false);
-    if (! widths.size()) widths.assign(nd, 1.0);
-
-    cvm::real eps = 1.e-10;
-
-    bool new_params = false;
-    if (old_nx.size()) {
-      for (size_t i = 0; i < nd; i++) {
-        if (old_nx[i] != nx[i] ||
-            cvm::sqrt(cv[i]->dist2(old_lb[i], lower_boundaries[i])) > eps ||
-            cvm::sqrt(cv[i]->dist2(old_ub[i], upper_boundaries[i])) > eps ||
-            cvm::fabs(old_w[i] - widths[i]) > eps) {
-          new_params = true;
-        }
-      }
-    } else {
-      new_params = true;
-    }
-
-    // reallocate the array in case the grid params have just changed
-    if (new_params) {
-      init_from_boundaries();
-      // data.clear(); // no longer needed: setup calls clear()
-      return this->setup(nx, T(), mult);
-    }
-
-    return COLVARS_OK;
-  }
+                   colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal);
 
   /// \brief Check that the grid information inside (boundaries,
   /// widths, ...) is consistent with the current setting of the
@@ -1038,6 +940,13 @@ public:
   {
     return new_data[address(ix) + imult];
   }
+
+  /// Write the current grid parameters to a string
+  std::string get_state_params() const;
+
+  /// Read new grid parameters from a string
+  int parse_params(std::string const &conf,
+                   colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal);
 
   /// Read all grid parameters and data from a formatted stream
   std::istream & read_restart(std::istream &is);
@@ -1239,6 +1148,14 @@ public:
       samples->incr_count(ix);
     has_data = true;
   }
+
+  /// Write the current grid parameters to a string
+  std::string get_state_params() const;
+
+  /// Read new grid parameters from a string
+  int parse_params(std::string const &conf,
+                   colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal);
+
   /// Read all grid parameters and data from a formatted stream
   std::istream & read_restart(std::istream &is);
 
@@ -1476,6 +1393,14 @@ public:
 
   /// Constructor from a multicol file
   colvar_grid_gradient(std::string &filename);
+
+  /// Write the current grid parameters to a string
+  std::string get_state_params() const;
+
+  /// Read new grid parameters from a string
+  int parse_params(std::string const &conf,
+                   colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal);
+
   /// Read all grid parameters and data from a formatted stream
   std::istream & read_restart(std::istream &is);
 
