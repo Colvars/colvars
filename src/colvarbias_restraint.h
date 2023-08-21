@@ -38,6 +38,8 @@ public:
 
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
+  // virtual std::ostream & write_state_data(std::ostream &os);
+  // virtual std::istream & read_state_data(std::istream &os);
 
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
@@ -240,6 +242,8 @@ public:
   virtual int update();
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
+  virtual std::ostream & write_state_data(std::ostream &os);
+  virtual std::istream & read_state_data(std::istream &os);
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
   virtual int change_configuration(std::string const &conf);
@@ -265,6 +269,8 @@ public:
   virtual int update();
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
+  virtual std::ostream & write_state_data(std::ostream &os);
+  virtual std::istream & read_state_data(std::istream &os);
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
 
@@ -305,6 +311,8 @@ public:
 
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
+  virtual std::ostream & write_state_data(std::ostream &os);
+  virtual std::istream & read_state_data(std::istream &os);
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
 
