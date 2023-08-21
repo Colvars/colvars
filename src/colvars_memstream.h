@@ -102,6 +102,12 @@ public:
   /// Ignore formatting operators
   inline void setf(decltype(std::ios::fmtflags(0)), decltype(std::ios::floatfield)) {}
 
+  /// Ignore formatting operators
+  inline void flags(decltype(std::ios::fmtflags(0))) {}
+
+  /// Get the current formatting flags (i.e. none because this stream is unformatted)
+  inline decltype(std::ios::fmtflags(0)) flags() const { return std::ios::fmtflags(0); }
+
   /// Get the error code
   inline std::ios::iostate rdstate() const { return state_; }
 
