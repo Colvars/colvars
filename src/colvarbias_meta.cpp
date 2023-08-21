@@ -1302,17 +1302,6 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
 {
   if (use_grids) {
 
-    if (expand_grids) {
-      // the boundaries of the colvars may have been changed; TODO:
-      // this reallocation is only for backward-compatibility, and may
-      // be deleted when grid_parameters (i.e. colvargrid's own
-      // internal reallocation) has kicked in
-      delete hills_energy;
-      delete hills_energy_gradients;
-      hills_energy = new colvar_grid_scalar(colvars);
-      hills_energy_gradients = new colvar_grid_gradient(colvars);
-    }
-
     colvar_grid_scalar   *hills_energy_backup = NULL;
     colvar_grid_gradient *hills_energy_gradients_backup = NULL;
 
