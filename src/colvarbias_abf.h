@@ -169,15 +169,15 @@ private:
 
 public:
 
-  std::ostream &write_state_data(std::ostream &os) override;
+  virtual std::ostream &write_state_data(std::ostream &os);
 
-  cvm::memory_stream &write_state_data(cvm::memory_stream &os) override;
+  virtual cvm::memory_stream &write_state_data(cvm::memory_stream &os);
 
-  std::istream &read_state_data(std::istream &is) override;
+  virtual std::istream &read_state_data(std::istream &is);
 
-  cvm::memory_stream &read_state_data(cvm::memory_stream &is) override;
+  virtual cvm::memory_stream &read_state_data(cvm::memory_stream &is);
 
-  int write_output_files() override;
+  virtual int write_output_files();
 
   /// Calculate the bias energy for 1D ABF
   virtual int calc_energy(std::vector<colvarvalue> const *values);
