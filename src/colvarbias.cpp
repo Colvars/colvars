@@ -938,15 +938,55 @@ std::ostream & colvarbias_ti::write_state_data(std::ostream &os)
   if (! is_enabled(f_cvb_calc_ti_samples)) {
     return os;
   }
-  os << "\nhistogram\n";
+  write_state_data_key(os, "histogram");
   ti_count->write_raw(os);
-  os << "\nsystem_forces\n";
+  write_state_data_key(os, "system_forces");
+  ti_avg_forces->write_raw(os);
+  return os;
+}
+
+
+cvm::memory_stream & colvarbias_ti::write_state_data(cvm::memory_stream &os)
+{
+  if (! is_enabled(f_cvb_calc_ti_samples)) {
+    return os;
+  }
+  write_state_data_key(os, "histogram");
+  ti_count->write_raw(os);
+  write_state_data_key(os, "system_forces");
   ti_avg_forces->write_raw(os);
   return os;
 }
 
 
 std::istream & colvarbias_ti::read_state_data(std::istream &is)
+{
+  if (! is_enabled(f_cvb_calc_ti_samples)) {
+    return is;
+  }
+  if (cvm::debug()) {
+    cvm::log("Reading state data for the TI estimator.\n");
+  }
+  if (! read_state_data_key(is, "histogram")) {
+    return is;
+  }
+  if (! ti_count->read_raw(is)) {
+    return is;
+  }
+  if (! read_state_data_key(is, "system_forces")) {
+    return is;
+  }
+  if (! ti_avg_forces->read_raw(is)) {
+    return is;
+  }
+  if (cvm::debug()) {
+    cvm::log("Done reading state data for the TI estimator.\n");
+  }
+  return is;
+}
+
+
+cvm::memory_stream & colvarbias_ti::read_state_data(cvm::memory_stream &is)
 {
   if (! is_enabled(f_cvb_calc_ti_samples)) {
     return is;
