@@ -12,6 +12,7 @@
 #include "colvarmodule.h"
 #include "colvar.h"
 #include "colvarbias_abf.h"
+#include "colvars_memstream.h"
 
 
 colvarbias_abf::colvarbias_abf(char const *key)
@@ -741,24 +742,24 @@ int colvarbias_abf::read_gradients_samples()
 }
 
 
-std::ostream & colvarbias_abf::write_state_data(std::ostream& os)
+template <typename OST> OST & colvarbias_abf::write_to_stream(OST &os)
 {
-  std::ios::fmtflags flags(os.flags());
+  auto flags = os.flags();
 
   os.setf(std::ios::fmtflags(0), std::ios::floatfield); // default floating-point format
-  os << "\nsamples\n";
+  write_state_data_key(os, "samples");
   samples->write_raw(os, 8);
   os.flags(flags);
 
-  os << "\ngradient\n";
+  write_state_data_key(os, "gradient");
   gradients->write_raw(os, 8);
 
   if (b_CZAR_estimator) {
     os.setf(std::ios::fmtflags(0), std::ios::floatfield); // default floating-point format
-    os << "\nz_samples\n";
+    write_state_data_key(os, "z_samples");
     z_samples->write_raw(os, 8);
     os.flags(flags);
-    os << "\nz_gradient\n";
+    write_state_data_key(os, "z_gradient");
     z_gradients->write_raw(os, 8);
   }
 
@@ -767,7 +768,19 @@ std::ostream & colvarbias_abf::write_state_data(std::ostream& os)
 }
 
 
-std::istream & colvarbias_abf::read_state_data(std::istream& is)
+std::ostream & colvarbias_abf::write_state_data(std::ostream& os)
+{
+  return write_to_stream<std::ostream>(os);
+}
+
+
+cvm::memory_stream & colvarbias_abf::write_state_data(cvm::memory_stream& os)
+{
+  return write_to_stream<cvm::memory_stream>(os);
+}
+
+
+template <typename IST> IST &colvarbias_abf::read_from_stream(IST &is)
 {
   if ( input_prefix.size() > 0 ) {
     cvm::error("ERROR: cannot provide both inputPrefix and a colvars state file.\n", COLVARS_INPUT_ERROR);
@@ -809,6 +822,18 @@ std::istream & colvarbias_abf::read_state_data(std::istream& is)
   }
 
   return is;
+}
+
+
+std::istream & colvarbias_abf::read_state_data(std::istream& is)
+{
+  return read_from_stream<std::istream>(is);
+}
+
+
+cvm::memory_stream & colvarbias_abf::read_state_data(cvm::memory_stream& is)
+{
+  return read_from_stream<cvm::memory_stream>(is);
 }
 
 

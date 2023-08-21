@@ -159,9 +159,25 @@ private:
                                             std::string const &name,
                                             bool close);
 
-  virtual std::istream& read_state_data(std::istream&);
-  virtual std::ostream& write_state_data(std::ostream&);
-  virtual int write_output_files();
+private:
+
+  /// Generic stream writing function (formatted and not)
+  template <typename OST> OST &write_to_stream(OST &os);
+
+  /// Generic stream readingx function (formatted and not)
+  template <typename IST> IST &read_from_stream(IST &is);
+
+public:
+
+  std::ostream &write_state_data(std::ostream &os) override;
+
+  cvm::memory_stream &write_state_data(cvm::memory_stream &os) override;
+
+  std::istream &read_state_data(std::istream &is) override;
+
+  cvm::memory_stream &read_state_data(cvm::memory_stream &is) override;
+
+  int write_output_files() override;
 
   /// Calculate the bias energy for 1D ABF
   virtual int calc_energy(std::vector<colvarvalue> const *values);
