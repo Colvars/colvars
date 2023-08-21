@@ -37,6 +37,17 @@ colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
   : colvar_grid<size_t>(colvars, def_count, 1, margin)
 {}
 
+std::string colvar_grid_count::get_state_params() const
+{
+  return colvar_grid<size_t>::get_state_params();
+}
+
+int colvar_grid_count::parse_params(std::string const &conf,
+                                    colvarparse::Parse_Mode const parse_mode)
+{
+  return colvar_grid<size_t>::parse_params(conf, parse_mode);
+}
+
 std::istream & colvar_grid_count::read_restart(std::istream &is)
 {
   return colvar_grid<size_t>::read_restart(is);
@@ -137,6 +148,16 @@ colvar_grid_scalar::~colvar_grid_scalar()
 {
 }
 
+std::string colvar_grid_scalar::get_state_params() const
+{
+  return colvar_grid<cvm::real>::get_state_params();
+}
+
+int colvar_grid_scalar::parse_params(std::string const &conf,
+                                    colvarparse::Parse_Mode const parse_mode)
+{
+  return colvar_grid<cvm::real>::parse_params(conf, parse_mode);
+}
 
 std::istream &colvar_grid_scalar::read_restart(std::istream &is)
 {
@@ -361,6 +382,17 @@ colvar_grid_gradient::colvar_grid_gradient(std::string &filename)
   is.seekg(0);
   read_multicol(is);
   cvm::main()->proxy->close_input_stream(filename);
+}
+
+std::string colvar_grid_gradient::get_state_params() const
+{
+  return colvar_grid<cvm::real>::get_state_params();
+}
+
+int colvar_grid_gradient::parse_params(std::string const &conf,
+                                       colvarparse::Parse_Mode const parse_mode)
+{
+  return colvar_grid<cvm::real>::parse_params(conf, parse_mode);
 }
 
 std::istream &colvar_grid_gradient::read_restart(std::istream &is)
