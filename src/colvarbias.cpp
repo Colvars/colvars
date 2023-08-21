@@ -15,6 +15,7 @@
 #include "colvarvalue.h"
 #include "colvarbias.h"
 #include "colvargrid.h"
+#include "colvars_memstream.h"
 
 
 colvarbias::colvarbias(char const *key)
@@ -499,7 +500,7 @@ int colvarbias::set_state_params(std::string const &conf)
 std::ostream & colvarbias::write_state(std::ostream &os)
 {
   if (cvm::debug()) {
-    cvm::log("Writing state file for bias \""+name+"\"\n");
+    cvm::log("Writing formatted state for bias \""+name+"\"\n");
   }
   os.setf(std::ios::scientific, std::ios::floatfield);
   os.precision(cvm::cv_prec);
@@ -513,56 +514,101 @@ std::ostream & colvarbias::write_state(std::ostream &os)
 }
 
 
-std::istream & colvarbias::read_state(std::istream &is)
+cvm::memory_stream & colvarbias::write_state(cvm::memory_stream &os)
+{
+  if (cvm::debug()) {
+    cvm::log("Writing unformatted state for bias \""+name+"\"\n");
+  }
+  os << state_keyword << "configuration" << get_state_params();
+  write_state_data(os);
+  return os;
+}
+
+
+template <typename IST, typename SPT>
+void raise_error_rewind(IST &is, SPT start_pos, std::string const &bias_type,
+                        std::string const &bias_name)
+{
+  cvm::error("Error: in reading state for \"" + bias_type + "\" bias \"" + bias_name +
+                 "\" at position " + cvm::to_str(static_cast<size_t>(is.tellg())) + " in stream.\n",
+             COLVARS_INPUT_ERROR);
+  auto state = is.rdstate();
+  is.clear();
+  is.seekg(start_pos);
+  is.setstate(state);
+}
+
+
+template <typename IST> IST & colvarbias::read_state_from_stream(IST &is)
 {
   auto const start_pos = is.tellg();
 
   std::string key, brace, conf;
-  if ( !(is >> key)   || !(key == state_keyword || key == bias_type) ||
-       !(is >> brace) || !(brace == "{") ||
-       !(is >> colvarparse::read_block("configuration", &conf)) ||
-       (check_matching_state(conf) != COLVARS_OK) ) {
-    cvm::error("Error: in reading state configuration for \""+bias_type+
-               "\" bias \""+
-               this->name+"\" at position "+
-               cvm::to_str(static_cast<size_t>(is.tellg()))+
-               " in stream.\n", COLVARS_INPUT_ERROR);
-    is.clear();
-    is.seekg(start_pos);
-    is.setstate(std::ios::failbit);
+  if (is >> key) {
+    if (key == state_keyword || key == bias_type) {
+
+      if (! std::is_same<IST, cvm::memory_stream>::value) {
+        // Formatted input only
+        if (!(is >> brace) || !(brace == "{") ) {
+          raise_error_rewind(is, start_pos, bias_type, name);
+          return is;
+        }
+      }
+
+      if (!(is >> colvarparse::read_block("configuration", &conf)) ||
+          (check_matching_state(conf) != COLVARS_OK)) {
+        raise_error_rewind(is, start_pos, bias_type, name);
+        return is;
+      }
+
+    } else {
+      // Not a match for this bias type, rewind without error
+      is.seekg(start_pos);
+      return is;
+    }
+
+  } else {
+    raise_error_rewind(is, start_pos, bias_type, name);
     return is;
   }
 
   if (!matching_state) {
-    // No errors reading, but this state is not for this bias; rewind
+    // No errors, but not a match for this bias instance; rewind
     is.seekg(start_pos);
     return is;
   }
 
   if ((set_state_params(conf) != COLVARS_OK) || !read_state_data(is)) {
-    cvm::error("Error: in reading state data for \""+bias_type+"\" bias \""+
-               this->name+"\" at position "+
-               cvm::to_str(static_cast<size_t>(is.tellg()))+
-               " in stream.\n", COLVARS_INPUT_ERROR);
-    auto state = is.rdstate();
-    is.clear();
-    is.seekg(start_pos);
-    is.setstate(state);
+    raise_error_rewind(is, start_pos, bias_type, name);
   }
 
-  is >> brace;
-  if (brace != "}") {
-    cvm::error("Error: corrupt restart information for \""+bias_type+"\" bias \""+
-               this->name+"\": no matching brace at position "+
-               cvm::to_str(static_cast<size_t>(is.tellg()))+
-               " in stream.\n");
-    is.setstate(std::ios::failbit);
+  if (! std::is_same<IST, cvm::memory_stream>::value) {
+    is >> brace;
+    if (brace != "}") {
+      cvm::error("Error: corrupt restart information for \""+bias_type+"\" bias \""+
+                 this->name+"\": no matching brace at position "+
+                 cvm::to_str(static_cast<size_t>(is.tellg()))+
+                 " in stream.\n");
+      raise_error_rewind(is, start_pos, bias_type, name);
+    }
   }
 
   cvm::log("Restarted " + bias_type + " bias \"" + name + "\" with step number " +
            cvm::to_str(state_file_step) + ".\n");
 
   return is;
+}
+
+
+std::istream &colvarbias::read_state(std::istream &is)
+{
+  return read_state_from_stream<std::istream>(is);
+}
+
+
+cvm::memory_stream &colvarbias::read_state(cvm::memory_stream &is)
+{
+  return read_state_from_stream<cvm::memory_stream>(is);
 }
 
 
@@ -636,9 +682,23 @@ int colvarbias::read_state_string(char const *buffer)
 }
 
 
+std::ostream & colvarbias::write_state_data_key(std::ostream &os, char const *key)
+{
+  os << "\n" << key << "\n";
+  return os;
+}
+
+
+cvm::memory_stream & colvarbias::write_state_data_key(cvm::memory_stream &os, char const *key)
+{
+  os << key;
+  return os;
+}
+
+
 std::istream & colvarbias::read_state_data_key(std::istream &is, char const *key)
 {
-  std::streampos const start_pos = is.tellg();
+  auto const start_pos = is.tellg();
   std::string key_in;
   if ( !(is >> key_in) ||
        !(to_lower_cppstr(key_in) == to_lower_cppstr(std::string(key))) ) {
@@ -647,7 +707,24 @@ std::istream & colvarbias::read_state_data_key(std::istream &is, char const *key
                cvm::to_str(static_cast<size_t>(is.tellg()))+
                " in stream.\n", COLVARS_INPUT_ERROR);
     is.clear();
-    is.seekg(start_pos, std::ios::beg);
+    is.seekg(start_pos);
+    is.setstate(std::ios::failbit);
+    return is;
+  }
+  return is;
+}
+
+
+cvm::memory_stream & colvarbias::read_state_data_key(cvm::memory_stream &is, char const *key)
+{
+  auto const start_pos = is.tellg();
+  std::string key_in;
+  if ( !(is >> key_in) ||
+       !(to_lower_cppstr(key_in) == to_lower_cppstr(std::string(key))) ) {
+    cvm::error("Error: in reading restart configuration for "+
+               bias_type+" bias \""+this->name+"\".\n", COLVARS_INPUT_ERROR);
+    is.clear();
+    is.seekg(start_pos);
     is.setstate(std::ios::failbit);
     return is;
   }
