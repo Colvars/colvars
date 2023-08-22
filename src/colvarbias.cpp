@@ -504,13 +504,9 @@ std::ostream & colvarbias::write_state(std::ostream &os)
   os.setf(std::ios::scientific, std::ios::floatfield);
   os.precision(cvm::cv_prec);
   os << state_keyword << " {\n"
-     << "  configuration {\n";
-  std::istringstream is(get_state_params());
-  std::string line;
-  while (std::getline(is, line)) {
-    os << "    " << line << "\n";
-  }
-  os << "  }\n";
+     << "  configuration {\n"
+     << get_state_params()
+     << "  }\n";
   write_state_data(os);
   os << "}\n\n";
   return os;
