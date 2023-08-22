@@ -33,7 +33,7 @@ jobs:
 
       - name: Install build dependencies for library
         run: |
-          sudo apt-get -y install ccache tcl8.6-dev
+          sudo apt -y install ccache tcl8.6-dev clang
 
       - name: Test build recipes
         run: bash devel-tools/check_build_recipes
@@ -48,7 +48,7 @@ jobs:
               exit 1
           fi
 
-      - name: Build and test library with CMake
+      - name: Build and test library (GCC)
         env:
           CCACHE: ccache
         run: cmake -P devel-tools/build_test_library.cmake
@@ -62,6 +62,13 @@ jobs:
               echo "Command-line scripting doc out of date; please run make update-cvscript-cmdline-doc and commit changes" >& 2
               exit 1
           fi
+
+      - name: Build and test library (Clang)
+        env:
+          CCACHE: ccache
+          CXX: clang++
+          CC: clang
+        run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Build library with debug flags enabled
         env:
