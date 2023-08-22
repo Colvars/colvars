@@ -24,7 +24,7 @@ class colvarbias_histogram : public colvarbias {
 public:
 
   colvarbias_histogram(char const *key);
-  ~colvarbias_histogram();
+  virtual ~colvarbias_histogram();
   virtual int init(std::string const &conf);
   virtual int update();
   virtual int write_output_files();
