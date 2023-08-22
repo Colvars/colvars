@@ -65,6 +65,7 @@ jobs:
 
       - name: Build and test library (Clang)
         env:
+          CMAKE_BUILD_DIR: build-clang
           CCACHE: ccache
           CXX: clang++
           CC: clang
