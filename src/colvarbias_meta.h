@@ -17,6 +17,7 @@
 #include "colvarbias.h"
 #include "colvargrid.h"
 
+
 /// Metadynamics bias (implementation of \link colvarbias \endlink)
 class colvarbias_meta
   : public virtual colvarbias,
@@ -57,8 +58,8 @@ public:
 
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &state_conf);
-  virtual std::ostream & write_state_data(std::ostream &os);
-  virtual std::istream & read_state_data(std::istream &os);
+  virtual std::ostream &write_state_data(std::ostream &os);
+  virtual std::istream &read_state_data(std::istream &is);
 
   virtual int setup_output();
   virtual int write_output_files();
