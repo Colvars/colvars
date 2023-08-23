@@ -14,6 +14,7 @@
 #include <cmath>
 #include <algorithm>
 #include <string>
+#include <iostream>
 
 namespace GeometricPathCV {
 

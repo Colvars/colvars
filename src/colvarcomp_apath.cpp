@@ -7,11 +7,12 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
-#include <numeric>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <iostream>
 #include <limits>
+#include <numeric>
 
 #include "colvarvalue.h"
 #include "colvarparse.h"
