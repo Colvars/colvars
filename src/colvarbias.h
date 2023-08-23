@@ -173,6 +173,15 @@ public:
   /// \param[in] key  Keyword labeling the header block
   cvm::memory_stream & write_state_data_key(cvm::memory_stream &os, char const *key);
 
+private:
+
+  /// Read a keyword header for a data sequence from a stream
+  /// \param[in,out] Input stream
+  /// \param[in] Keyword labeling the header block; an error will be raised if not matching
+  template <typename IST> IST &read_state_data_key_template(IST &is, char const *key);
+
+public:
+
   /// Read a keyword header for a data sequence from a formatted stream
   /// \param[in,out] Input stream
   /// \param[in] Keyword labeling the header block; an error will be raised if not matching
