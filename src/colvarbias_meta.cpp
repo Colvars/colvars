@@ -1298,6 +1298,36 @@ int colvarbias_meta::set_state_params(std::string const &state_conf)
 }
 
 
+template <typename IST, typename GT>
+IST & colvarbias_meta::read_grid_data_template_(IST& is, std::string const &key,
+                                                GT *grid, GT *backup_grid)
+{
+  auto const start_pos = is.tellg();
+  std::string key_in;
+  if (is >> key_in) {
+    if ((key != key_in) || !(grid->read_restart(is))) {
+      is.clear();
+      is.seekg(start_pos);
+      is.setstate(std::ios::failbit);
+      if (!rebin_grids) {
+        if ((backup_grid == nullptr) || (comm == single_replica)) {
+          cvm::error("Error: couldn't read grid data for metadynamics bias \""+
+                     this->name+"\""+
+                     ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                     "; if useGrids was off when the state file was written, "
+                     "try enabling rebinGrids now to regenerate the grids.\n", COLVARS_INPUT_ERROR);
+        }
+      }
+    }
+  } else {
+    is.clear();
+    is.seekg(start_pos);
+    is.setstate(std::ios::failbit);
+  }
+  return is;
+}
+
+
 std::istream & colvarbias_meta::read_state_data(std::istream& is)
 {
   if (use_grids) {
@@ -1316,95 +1346,26 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
       hills_energy_gradients        = new colvar_grid_gradient(colvars);
     }
 
-    std::streampos const hills_energy_pos = is.tellg();
-    std::string key;
-    if (!(is >> key)) {
-      if (hills_energy_backup != NULL) {
-        delete hills_energy;
-        delete hills_energy_gradients;
-        hills_energy           = hills_energy_backup;
-        hills_energy_gradients = hills_energy_gradients_backup;
+    read_grid_data_template_<std::istream, colvar_grid_scalar>(is, "hills_energy", hills_energy,
+                                                               hills_energy_backup);
+
+    read_grid_data_template_<std::istream, colvar_grid_gradient>(
+        is, "hills_energy_gradients", hills_energy_gradients, hills_energy_gradients_backup);
+
+    if (is) {
+      cvm::log("  successfully read the biasing potential and its gradients from grids.\n");
+      if (hills_energy_backup != nullptr) {
+        // Now that we have successfully updated the grids, delete the backup copies
+        delete hills_energy_backup;
+        delete hills_energy_gradients_backup;
       }
-      is.clear();
-      is.seekg(hills_energy_pos, std::ios::beg);
-      is.setstate(std::ios::failbit);
+    } else {
       return is;
-    } else if (!(key == std::string("hills_energy")) ||
-               !(hills_energy->read_restart(is))) {
-      is.clear();
-      is.seekg(hills_energy_pos, std::ios::beg);
-      if (!rebin_grids) {
-        if ((hills_energy_backup == NULL) || (comm == single_replica)) {
-          cvm::error("Error: couldn't read the energy grid for metadynamics bias \""+
-                     this->name+"\""+
-                     ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                     "; if useGrids was off when the state file was written, "
-                     "enable rebinGrids now to regenerate the grids.\n");
-        } else {
-          delete hills_energy;
-          delete hills_energy_gradients;
-          hills_energy           = hills_energy_backup;
-          hills_energy_gradients = hills_energy_gradients_backup;
-          is.setstate(std::ios::failbit);
-          return is;
-        }
-      }
-    }
-
-    std::streampos const hills_energy_gradients_pos = is.tellg();
-    if (!(is >> key)) {
-      if (hills_energy_backup != NULL)  {
-        delete hills_energy;
-        delete hills_energy_gradients;
-        hills_energy           = hills_energy_backup;
-        hills_energy_gradients = hills_energy_gradients_backup;
-      }
-      is.clear();
-      is.seekg(hills_energy_gradients_pos, std::ios::beg);
-      is.setstate(std::ios::failbit);
-      return is;
-    } else if (!(key == std::string("hills_energy_gradients")) ||
-               !(hills_energy_gradients->read_restart(is))) {
-      is.clear();
-      is.seekg(hills_energy_gradients_pos, std::ios::beg);
-      if (!rebin_grids) {
-        if ((hills_energy_backup == NULL) || (comm == single_replica)) {
-          cvm::error("Error: couldn't read the gradients grid for metadynamics bias \""+
-                     this->name+"\""+
-                     ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                     "; if useGrids was off when the state file was written, "
-                     "enable rebinGrids now to regenerate the grids.\n");
-        } else {
-          delete hills_energy;
-          delete hills_energy_gradients;
-          hills_energy           = hills_energy_backup;
-          hills_energy_gradients = hills_energy_gradients_backup;
-          is.setstate(std::ios::failbit);
-          return is;
-        }
-      }
-    }
-
-    if (cvm::debug())
-      cvm::log("Successfully read new grids for bias \""+
-               this->name+"\""+
-               ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+"\n");
-
-    cvm::log("  read biasing energy and forces from grids.\n");
-
-    if (hills_energy_backup != NULL) {
-      // now that we have successfully updated the grids, delete the
-      // backup copies
-      if (cvm::debug())
-        cvm::log("Deallocating the older grids.\n");
-
-      delete hills_energy_backup;
-      delete hills_energy_gradients_backup;
     }
   }
 
-  // Save references to the end of the list of existing hills, so that it can
-  // be cleared if hills are read successfully state
+  // Save references to the end of the list of existing hills, so that they can
+  // be cleared if hills are read successfully from the stream
   bool const existing_hills = !hills.empty();
   size_t const old_hills_size = hills.size();
   hill_iter old_hills_end = hills.end();
@@ -1423,12 +1384,15 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
                cvm::to_str((hills.back()).it)+".\n");
     }
   }
+
   is.clear();
+
   new_hills_begin = hills.end();
-  cvm::log("  read "+cvm::to_str(hills.size() - old_hills_size)+
-           " additional explicit hills.\n");
+  cvm::log("  successfully read "+cvm::to_str(hills.size() - old_hills_size)+
+           " explicit hills from state.\n");
 
   if (existing_hills) {
+    // Prune any hills that pre-existed those just read
     hills.erase(hills.begin(), old_hills_end);
     hills_off_grid.erase(hills_off_grid.begin(), old_hills_off_grid_end);
     if (cvm::debug()) {
@@ -1437,6 +1401,34 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
     }
   }
 
+  // If rebinGrids is set, rebin the grids based on the current information
+  rebin_grids_after_restart();
+
+  if (use_grids) {
+    if (!hills_off_grid.empty()) {
+      cvm::log(cvm::to_str(hills_off_grid.size())+" hills are near the "
+               "grid boundaries: they will be computed analytically "
+               "and saved to the state files.\n");
+    }
+  }
+
+  colvarbias_ti::read_state_data(is);
+
+  if (cvm::debug())
+    cvm::log("colvarbias_meta::read_restart() done\n");
+
+  has_data = true;
+
+  if (comm == multiple_replicas) {
+    read_replica_files();
+  }
+
+  return is;
+}
+
+
+void colvarbias_meta::rebin_grids_after_restart()
+{
   if (rebin_grids) {
 
     // allocate new grids (based on the new boundaries and widths just
@@ -1483,27 +1475,6 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
     if (!hills.empty())
       recount_hills_off_grid(hills.begin(), hills.end(), hills_energy);
   }
-
-  if (use_grids) {
-    if (!hills_off_grid.empty()) {
-      cvm::log(cvm::to_str(hills_off_grid.size())+" hills are near the "
-               "grid boundaries: they will be computed analytically "
-               "and saved to the state files.\n");
-    }
-  }
-
-  colvarbias_ti::read_state_data(is);
-
-  if (cvm::debug())
-    cvm::log("colvarbias_meta::read_restart() done\n");
-
-  has_data = true;
-
-  if (comm != single_replica) {
-    read_replica_files();
-  }
-
-  return is;
 }
 
 

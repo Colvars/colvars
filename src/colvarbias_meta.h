@@ -58,8 +58,19 @@ public:
 
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &state_conf);
+
   virtual std::ostream &write_state_data(std::ostream &os);
   virtual std::istream &read_state_data(std::istream &is);
+
+private:
+
+  template <typename IST, typename GT>
+  IST &read_grid_data_template_(IST &is, std::string const &key, GT *grid, GT *backup_grid);
+
+public:
+
+  /// Function called by read_state_data() to execute rebinning (if requested)
+  void rebin_grids_after_restart();
 
   virtual int setup_output();
   virtual int write_output_files();
