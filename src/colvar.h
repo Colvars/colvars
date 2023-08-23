@@ -10,9 +10,9 @@
 #ifndef COLVAR_H
 #define COLVAR_H
 
-#include <iostream>
-#include <map>
 #include <functional>
+#include <iosfwd>
+#include <map>
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
