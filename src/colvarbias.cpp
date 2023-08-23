@@ -527,15 +527,16 @@ cvm::memory_stream & colvarbias::write_state(cvm::memory_stream &os)
 
 template <typename IST, typename SPT>
 void raise_error_rewind(IST &is, SPT start_pos, std::string const &bias_type,
-                        std::string const &bias_name)
+                        std::string const &bias_name, std::string const added_msg = "")
 {
-  cvm::error("Error: in reading state for \"" + bias_type + "\" bias \"" + bias_name +
-                 "\" at position " + cvm::to_str(static_cast<size_t>(is.tellg())) + " in stream.\n",
-             COLVARS_INPUT_ERROR);
   auto state = is.rdstate();
   is.clear();
   is.seekg(start_pos);
-  is.setstate(state);
+  is.setstate(state | std::ios::failbit);
+  cvm::error("Error: in reading state for \"" + bias_type + "\" bias \"" + bias_name +
+                 "\" at position " + cvm::to_str(static_cast<size_t>(is.tellg())) + " in stream." +
+             added_msg + "\n",
+             COLVARS_INPUT_ERROR);
 }
 
 
@@ -696,41 +697,33 @@ cvm::memory_stream & colvarbias::write_state_data_key(cvm::memory_stream &os, ch
 }
 
 
-std::istream & colvarbias::read_state_data_key(std::istream &is, char const *key)
+template <typename IST> IST &colvarbias::read_state_data_key_template(IST &is, char const *key)
 {
   auto const start_pos = is.tellg();
   std::string key_in;
-  if ( !(is >> key_in) ||
-       !(to_lower_cppstr(key_in) == to_lower_cppstr(std::string(key))) ) {
-    cvm::error("Error: in reading restart configuration for "+
-               bias_type+" bias \""+this->name+"\" at position "+
-               cvm::to_str(static_cast<size_t>(is.tellg()))+
-               " in stream.\n", COLVARS_INPUT_ERROR);
-    is.clear();
-    is.seekg(start_pos);
-    is.setstate(std::ios::failbit);
-    return is;
+  if (is >> key_in) {
+    if (to_lower_cppstr(key_in) != to_lower_cppstr(std::string(key))) {
+      raise_error_rewind(is, start_pos, bias_type, name,
+                         "  Expected keyword \"" + std::string(key) + "\", found \"" + key_in +
+                             "\".");
+    }
+  } else {
+    raise_error_rewind(is, start_pos, bias_type, name);
   }
   return is;
+}
+
+
+std::istream & colvarbias::read_state_data_key(std::istream &is, char const *key)
+{
+  return read_state_data_key_template<std::istream>(is, key);
 }
 
 
 cvm::memory_stream & colvarbias::read_state_data_key(cvm::memory_stream &is, char const *key)
 {
-  auto const start_pos = is.tellg();
-  std::string key_in;
-  if ( !(is >> key_in) ||
-       !(to_lower_cppstr(key_in) == to_lower_cppstr(std::string(key))) ) {
-    cvm::error("Error: in reading restart configuration for "+
-               bias_type+" bias \""+this->name+"\".\n", COLVARS_INPUT_ERROR);
-    is.clear();
-    is.seekg(start_pos);
-    is.setstate(std::ios::failbit);
-    return is;
-  }
-  return is;
+  return read_state_data_key_template<cvm::memory_stream>(is, key);
 }
-
 
 
 std::ostream & colvarbias::write_traj_label(std::ostream &os)
