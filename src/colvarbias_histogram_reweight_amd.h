@@ -79,9 +79,14 @@ protected:
   /// Write gradients of the PMF?
   bool b_write_gradients;
 
+  template <typename OST> OST & write_state_data_template_(OST& os);
+  template <typename IST> IST & read_state_data_template_(IST& is);
+
   /// save and restore
   virtual std::istream & read_state_data(std::istream &is) override;
+  virtual cvm::memory_stream & read_state_data(cvm::memory_stream &is) override;
   virtual std::ostream & write_state_data(std::ostream &os) override;
+  virtual cvm::memory_stream & write_state_data(cvm::memory_stream &os) override;
 
 private:
   /// temporary grids for evaluating PMFs
