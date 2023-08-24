@@ -6,9 +6,7 @@
 #include "colvarparse.h"
 #include "colvarcomp.h"
 
-colvar::torchANN::torchANN(std::string const &conf)
-  : cvc(conf)
-{
+colvar::torchANN::torchANN(std::string const &conf): linearCombination(conf) {
   set_function_type("torchANN");
 
   if (period != 0.0) {
@@ -21,18 +19,30 @@ colvar::torchANN::torchANN(std::string const &conf)
     return;
   }
 
-  atoms = parse_group(conf, "atoms");
-
   std::string model_file ;
   get_keyval(conf, "model_file", model_file, std::string(""));
   get_keyval(conf, "m_output_index", m_output_index, 0);
 
   try {
-    module = torch::jit::load(model_file);
+    nn = torch::jit::load(model_file);
     cvm::log("model loaded.") ;
   } catch (...) {
     cvm::error("Error: couldn't load libtorch model.\n");
   }
+
+  cvc_indices.resize(cv.size(),0);
+
+  size_t num_inputs = 0;
+  // compute total number of inputs of neural network 
+  for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) 
+  {
+      num_inputs += cv[i_cv]->value().size() ;
+      if (i_cv < cv.size() - 1) 
+	cvc_indices[i_cv+1] = num_inputs;
+  }
+  
+  // initialize the input tensor 
+  input_tensor = torch::zeros({1,(long int) num_inputs}, torch::TensorOptions().dtype(torch::kFloat32).requires_grad(true));
 }
 
 colvar::torchANN::~torchANN() {
@@ -40,63 +50,82 @@ colvar::torchANN::~torchANN() {
 
 void colvar::torchANN::calc_value() {
 
-  colvarproxy *proxy = cvm::main()->proxy;
+  for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) 
+      cv[i_cv]->calc_value();
 
-  std::vector<double> pos_data(atoms->size() * 3) ;
-  size_t ia, j;
-  // obtain the values of the arguments
-  for (ia = 0; ia < atoms->size(); ia++) {
-    for (j = 0; j < 3; j++) 
-      pos_data[3*ia + j] = proxy->internal_to_angstrom((*atoms)[ia].pos[j]);
+  // set input tensor with no_grad 
+  {
+    torch::NoGradGuard no_grad;
+    size_t l = 0;
+    for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+	const colvarvalue& current_cv_value = cv[i_cv]->value();
+	if (current_cv_value.type() == colvarvalue::type_scalar) {
+	    input_tensor[0][l++] = cv[i_cv]->sup_coeff * (cvm::pow(current_cv_value.real_value, cv[i_cv]->sup_np));
+	} else {  
+	    for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) 
+		input_tensor[0][l++] = cv[i_cv]->sup_coeff * current_cv_value[j_elem];
+	}
+    }
   }
 
-  // change to torch Tensor 
-  torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, (long int) atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(false));
-  std::vector<torch::jit::IValue> inputs = {arg_tensor.to(torch::kFloat32)};
+  if (input_tensor.grad().defined())
+    input_tensor.grad().zero_();
+
+  std::vector<torch::jit::IValue> inputs={input_tensor};
 
   // evaluate the value of function
-  auto outputs = module.forward(inputs).toTensor()[0] ;
+  nn_outputs = nn.forward(inputs).toTensor()[0][m_output_index];
 
-  x = outputs[m_output_index].item<double>() ;
+  nn_outputs.backward({}, false, false);
+  input_grad = input_tensor.grad()[0];
+
+  x = nn_outputs.item<double>() ;
 
   this->wrap(x);
 }
 
 void colvar::torchANN::calc_gradients() {
 
-  colvarproxy *proxy = cvm::main()->proxy;
-
-  std::vector<double> pos_data(atoms->size() * 3) ;
-  size_t ia, j;
-
-  // obtain the values of the arguments
-  for (ia = 0; ia < atoms->size(); ia++) 
-    for (j = 0; j < 3; j++) 
-      pos_data[3*ia + j] = proxy->internal_to_angstrom((*atoms)[ia].pos[j]);
-
-  // change to torch Tensor 
-  torch::Tensor arg_tensor = torch::from_blob(pos_data.data(), {1, (long int) atoms->size(),3}, torch::TensorOptions().dtype(torch::kFloat64).requires_grad(true));
-  std::vector<torch::jit::IValue> inputs = {arg_tensor.to(torch::kFloat32)};
-
-  // evaluate the value of function
-  auto outputs = module.forward(inputs).toTensor()[0] ;
-
-  outputs[m_output_index].backward({}, false, false);
-
-  torch::Tensor grad = arg_tensor.grad()[0];
-
-  ia = 0 ;
-  for (cvm::atom_iter ai = atoms->begin() ; ai != atoms->end(); ai++, ia++) 
-  {
-    for (size_t j = 0; j < 3; j ++)
-      ai->grad[j] = grad[ia][j].item<double>() ;
+  for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+      cv[i_cv]->calc_gradients();
+      if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
+	  const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+	  // get the initial index of this cvc
+	  size_t l = cvc_indices[i_cv];
+	  for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
+	      // get derivative of neural network wrt its input 
+	      const cvm::real factor = input_grad[l+j_elem].item<double>();
+	      for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
+		  for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
+		      (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = factor_polynomial * factor * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
+		  }
+	      }
+	  }
+      }
   }
 }
 
 void colvar::torchANN::apply_force(colvarvalue const &force) {
-  if (!atoms->noforce) {
-    atoms->apply_colvar_force(force.real_value);
-  }
+
+    for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+	// If this CV us explicit gradients, then atomic gradients is already calculated
+	// We can apply the force to atom groups directly
+	if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
+	    for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
+		(cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
+	    }
+	} else {
+	    const colvarvalue& current_cv_value = cv[i_cv]->value();
+	    colvarvalue cv_force(current_cv_value.type());
+	    const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+	    // get the initial index of this cvc
+	    size_t l = cvc_indices[i_cv];
+	    for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) {
+		    cv_force[j_elem] += factor_polynomial * input_grad[l+j_elem].item<double>() * force.real_value;
+		}
+	    cv[i_cv]->apply_force(cv_force);
+	}
+    }
 }
 
 cvm::real colvar::torchANN::dist2(colvarvalue const &x1, colvarvalue const &x2) const

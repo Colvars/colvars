@@ -1774,13 +1774,18 @@ public:
 
 // only when LibTorch is available
 class colvar::torchANN
-  : public colvar::cvc
+  : public colvar::linearCombination
 {
 protected:
-    /// index of nn output components
+    torch::jit::script::Module nn;
+    /// the index of nn output components
     size_t m_output_index;
-    cvm::atom_group  *atoms;
-    torch::jit::script::Module module;
+    // 1d tensor, concatenation of values of sub-cvcs
+    torch::Tensor input_tensor;
+    torch::Tensor nn_outputs;
+    torch::Tensor input_grad;
+    // record the initial index of of sub-cvcs in input_tensor
+    std::vector<int> cvc_indices;
 public:
     torchANN(std::string const &conf);
     virtual ~torchANN();
@@ -1799,7 +1804,6 @@ public:
 				    colvarvalue const &x2) const;
     /// Redefined to handle periodicity
     virtual void wrap(colvarvalue &x_unwrapped) const;
-
 };
 
 #else
