@@ -166,12 +166,15 @@ public:
   /// Write a keyword header for a data sequence to a formatted stream
   /// \param[in,out] os Output stream
   /// \param[in] key  Keyword labeling the header block
-  std::ostream & write_state_data_key(std::ostream &os, char const *key);
+  /// \param[in] header  Whether this is the header of a multi-line segment vs a single line
+  std::ostream & write_state_data_key(std::ostream &os, char const *key, bool header = true);
 
   /// Write a keyword header for a data sequence to an unformatted stream
   /// \param[in,out] os Output stream
   /// \param[in] key  Keyword labeling the header block
-  cvm::memory_stream & write_state_data_key(cvm::memory_stream &os, char const *key);
+  /// \param[in] header  Ignored
+  cvm::memory_stream & write_state_data_key(cvm::memory_stream &os, char const *key,
+                                            bool header = true);
 
 private:
 
