@@ -35,6 +35,7 @@
 #include "colvarproxy.h"
 #include "colvar.h"
 #include "colvarbias_meta.h"
+#include "colvars_memstream.h"
 
 
 colvarbias_meta::colvarbias_meta(char const *key)
@@ -625,7 +626,7 @@ int colvarbias_meta::update_bias()
       std::ostream &replica_hills_os =
         cvm::proxy->output_stream(replica_hills_file);
       if (replica_hills_os) {
-        replica_hills_os << hills.back();
+        write_hill(replica_hills_os, hills.back());
       } else {
         return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
                           ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
@@ -1328,7 +1329,7 @@ IST & colvarbias_meta::read_grid_data_template_(IST& is, std::string const &key,
 }
 
 
-std::istream & colvarbias_meta::read_state_data(std::istream& is)
+template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 {
   if (use_grids) {
 
@@ -1427,6 +1428,18 @@ std::istream & colvarbias_meta::read_state_data(std::istream& is)
 }
 
 
+std::istream & colvarbias_meta::read_state_data(std::istream& is)
+{
+  return read_state_data_template_<std::istream>(is);
+}
+
+
+// cvm::memory_stream &colvarbias_meta::read_state_data(cvm::memory_stream &is)
+// {
+//   return read_state_data_template_<cvm::memory_stream>(is);
+// }
+
+
 void colvarbias_meta::rebin_grids_after_restart()
 {
   if (rebin_grids) {
@@ -1478,25 +1491,70 @@ void colvarbias_meta::rebin_grids_after_restart()
 }
 
 
-inline std::istream & reset_istream(std::istream &is, size_t start_pos)
+std::ostream &colvarbias_meta::write_hill(std::ostream &os, colvarbias_meta::hill const &h)
+{
+  os.setf(std::ios::scientific, std::ios::floatfield);
+
+  write_state_data_key(os, "hill", false);
+
+  os << "{\n";
+
+  write_state_data_key(os, "step", false);
+  os << std::setw(cvm::it_width) << h.it << "\n";
+
+  write_state_data_key(os, "weight", false);
+  os << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width) << h.W << "\n";
+
+  if (h.replica.size()) {
+    write_state_data_key(os, "replicaID", false);
+    os << h.replica << "\n";
+  }
+
+  size_t i;
+  write_state_data_key(os, "centers", false);
+  for (i = 0; i < (h.centers).size(); i++) {
+    os << " " << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width) << h.centers[i];
+  }
+  os << "\n";
+
+  // For backward compatibility, write the widths instead of the sigmas
+  write_state_data_key(os, "widths", false);
+  for (i = 0; i < (h.sigmas).size(); i++) {
+    os << " " << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width) << 2.0 * h.sigmas[i];
+  }
+  os << "\n";
+
+  os << "}\n";
+
+  return os;
+}
+
+
+template <typename IST> IST &hill_stream_error(IST &is, size_t start_pos, std::string const &key)
 {
   is.clear();
-  is.seekg(start_pos, std::ios::beg);
+  is.seekg(start_pos);
   is.setstate(std::ios::failbit);
+  cvm::error("Error: in reading data for keyword \"" + key + "\" from stream.\n",
+             COLVARS_INPUT_ERROR);
   return is;
 }
 
 
-std::istream & colvarbias_meta::read_hill(std::istream &is)
+std::istream &colvarbias_meta::read_hill(std::istream &is)
 {
-  if (!is) return is; // do nothing if failbit is set
+  if (!is)
+    return is; // do nothing if failbit is set
 
-  std::streampos const start_pos = is.tellg();
-  size_t i = 0;
+  auto const start_pos = is.tellg();
 
   std::string data;
-  if ( !(is >> read_block("hill", &data)) ) {
-    return reset_istream(is, start_pos);
+  if (!(is >> read_block("hill", &data))) {
+    auto state = is.rdstate();
+    is.clear();
+    is.seekg(start_pos);
+    is.setstate(state);
+    return is;
   }
 
   std::istringstream data_is(data);
@@ -1504,62 +1562,56 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
   cvm::step_number h_it = 0L;
   cvm::real h_weight = 0.0;
   std::vector<colvarvalue> h_centers(num_variables());
-  for (i = 0; i < num_variables(); i++) {
+  for (size_t i = 0; i < num_variables(); i++) {
     h_centers[i].type(variables(i)->value());
   }
   std::vector<cvm::real> h_sigmas(num_variables());
   std::string h_replica;
 
-  std::string keyword;
-  while (data_is >> keyword) {
+  if (!read_state_data_key(data_is, "step") || !(data_is >> h_it)) {
+    return hill_stream_error<std::istream>(is, start_pos, "step");
+  }
 
-    if (keyword == "step") {
-      if ( !(data_is >> h_it)) {
-        return reset_istream(is, start_pos);
-      }
-      if ((h_it <= state_file_step) && !restart_keep_hills) {
-        if (cvm::debug())
-          cvm::log("Skipping a hill older than the state file for metadynamics bias \""+
-                   this->name+"\""+
-                   ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+"\n");
-        return is;
+  if ((h_it <= state_file_step) && !restart_keep_hills) {
+    if (cvm::debug())
+      cvm::log("Skipping a hill older than the state file for metadynamics bias \"" + this->name +
+               "\"" + ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") + "\n");
+    return is;
+  }
+
+  if (read_state_data_key(data_is, "weight")) {
+    if (!(data_is >> h_weight)) {
+      return hill_stream_error<std::istream>(is, start_pos, "weight");
+    }
+  }
+
+  if (read_state_data_key(data_is, "centers")) {
+    for (size_t i = 0; i < num_variables(); i++) {
+      if (!(data_is >> h_centers[i])) {
+        return hill_stream_error<std::istream>(is, start_pos, "centers");
       }
     }
+  }
 
-    if (keyword == "weight") {
-      if ( !(data_is >> h_weight)) {
-        return reset_istream(is, start_pos);
+  if (read_state_data_key(data_is, "widths")) {
+    for (size_t i = 0; i < num_variables(); i++) {
+      if (!(data_is >> h_sigmas[i])) {
+        return hill_stream_error<std::istream>(is, start_pos, "widths");
       }
+      // For backward compatibility, read the widths instead of the sigmas
+      h_sigmas[i] /= 2.0;
     }
+  }
 
-    if (keyword == "centers") {
-      for (i = 0; i < num_variables(); i++) {
-        if ( !(data_is >> h_centers[i])) {
-          return reset_istream(is, start_pos);
-        }
+  if (comm != single_replica) {
+    if (read_state_data_key(data_is, "replicaID")) {
+      if (!(data_is >> h_replica)) {
+        return hill_stream_error<std::istream>(is, start_pos, "replicaID");
       }
-    }
-
-    if (keyword == "widths") {
-      for (i = 0; i < num_variables(); i++) {
-        if ( !(data_is >> h_sigmas[i])) {
-          return reset_istream(is, start_pos);
-        }
-        // For backward compatibility, read the widths instead of the sigmas
-        h_sigmas[i] /= 2.0;
-      }
-    }
-
-    if (comm != single_replica) {
-      if (keyword == "replicaID") {
-        if ( !(data_is >> h_replica)) {
-          return reset_istream(is, start_pos);
-        }
-        if (h_replica != replica_id) {
-          cvm::error("Error: trying to read a hill created by replica \""+
-                     h_replica+"\" for replica \""+replica_id+
-                     "\"; did you swap output files?\n", COLVARS_INPUT_ERROR);
-        }
+      if (h_replica != replica_id) {
+        cvm::error("Error: trying to read a hill created by replica \"" + h_replica +
+                       "\" for replica \"" + replica_id + "\"; did you swap output files?\n",
+                   COLVARS_INPUT_ERROR);
       }
     }
   }
@@ -1576,7 +1628,7 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
     // add this also to the list of hills that are off-grid, which will
     // be computed analytically
     cvm::real const min_dist =
-      hills_energy->bin_distance_from_boundaries((hills.back()).centers, true);
+        hills_energy->bin_distance_from_boundaries((hills.back()).centers, true);
     if (min_dist < (3.0 * cvm::floor(hill_width)) + 1.0) {
       hills_off_grid.push_back(hills.back());
     }
@@ -1719,42 +1771,50 @@ std::string const colvarbias_meta::get_state_params() const
 }
 
 
-std::ostream & colvarbias_meta::write_state_data(std::ostream& os)
+template <typename OST> OST &colvarbias_meta::write_state_data_template_(OST &os)
 {
   if (use_grids) {
 
     // this is a very good time to project hills, if you haven't done
     // it already!
-    project_hills(new_hills_begin, hills.end(),
-                  hills_energy,    hills_energy_gradients);
+    project_hills(new_hills_begin, hills.end(), hills_energy, hills_energy_gradients);
     new_hills_begin = hills.end();
 
     // write down the grids to the restart file
-    os << "  hills_energy\n";
+    write_state_data_key(os, "hills_energy");
     hills_energy->write_restart(os);
-    os << "  hills_energy_gradients\n";
+    write_state_data_key(os, "hills_energy_gradients");
     hills_energy_gradients->write_restart(os);
   }
 
-  if ( (!use_grids) || keep_hills ) {
+  if ((!use_grids) || keep_hills) {
     // write all hills currently in memory
-    for (std::list<hill>::const_iterator h = this->hills.begin();
-         h != this->hills.end();
-         h++) {
-      os << *h;
+    for (std::list<hill>::const_iterator h = this->hills.begin(); h != this->hills.end(); h++) {
+      write_hill(os, *h);
     }
   } else {
     // write just those that are near the grid boundaries
     for (std::list<hill>::const_iterator h = this->hills_off_grid.begin();
-         h != this->hills_off_grid.end();
-         h++) {
-      os << *h;
+         h != this->hills_off_grid.end(); h++) {
+      write_hill(os, *h);
     }
   }
 
   colvarbias_ti::write_state_data(os);
   return os;
 }
+
+
+std::ostream & colvarbias_meta::write_state_data(std::ostream& os)
+{
+  return write_state_data_template_<std::ostream>(os);
+}
+
+
+// cvm::memory_stream &colvarbias_meta::write_state_data(cvm::memory_stream &os)
+// {
+//   return write_state_data_template_<cvm::memory_stream>(os);
+// }
 
 
 int colvarbias_meta::write_state_to_replicas()
@@ -2008,43 +2068,3 @@ colvarbias_meta::hill::operator = (colvarbias_meta::hill const &h)
 
 colvarbias_meta::hill::~hill()
 {}
-
-
-std::ostream & operator << (std::ostream &os, colvarbias_meta::hill const &h)
-{
-  os.setf(std::ios::scientific, std::ios::floatfield);
-
-  os << "hill {\n";
-  os << "  step " << std::setw(cvm::it_width) << h.it << "\n";
-  os << "  weight   "
-     << std::setprecision(cvm::en_prec)
-     << std::setw(cvm::en_width)
-     << h.W << "\n";
-
-  if (h.replica.size())
-    os << "  replicaID  " << h.replica << "\n";
-
-  size_t i;
-  os << "  centers ";
-  for (i = 0; i < (h.centers).size(); i++) {
-    os << " "
-       << std::setprecision(cvm::cv_prec)
-       << std::setw(cvm::cv_width)
-       << h.centers[i];
-  }
-  os << "\n";
-
-  // For backward compatibility, write the widths instead of the sigmas
-  os << "  widths  ";
-  for (i = 0; i < (h.sigmas).size(); i++) {
-    os << " "
-       << std::setprecision(cvm::cv_prec)
-       << std::setw(cvm::cv_width)
-       << 2.0 * h.sigmas[i];
-  }
-  os << "\n";
-
-  os << "}\n";
-
-  return os;
-}

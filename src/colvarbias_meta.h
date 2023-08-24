@@ -60,12 +60,18 @@ public:
   virtual int set_state_params(std::string const &state_conf);
 
   virtual std::ostream &write_state_data(std::ostream &os);
+  // virtual cvm::memory_stream &write_state_data(cvm::memory_stream &os);
   virtual std::istream &read_state_data(std::istream &is);
+  // virtual cvm::memory_stream &read_state_data(cvm::memory_stream &is);
 
 private:
 
   template <typename IST, typename GT>
   IST &read_grid_data_template_(IST &is, std::string const &key, GT *grid, GT *backup_grid);
+
+  template <typename IST> IST &read_state_data_template_(IST &is);
+
+  template <typename OST> OST &write_state_data_template_(OST &os);
 
 public:
 
@@ -119,7 +125,10 @@ protected:
   void recount_hills_off_grid(hill_iter h_first, hill_iter h_last,
                                colvar_grid_scalar *ge);
 
-  /// Read a hill from a file
+  /// Write a hill to a stream
+  std::ostream & write_hill(std::ostream &os, hill const &h);
+
+  /// Read a new hill from a state stream
   std::istream & read_hill(std::istream &is);
 
   /// \brief Add a new hill; if a .hills trajectory is written,
@@ -412,9 +421,6 @@ public:
 
   /// Represent the hill ina string suitable for a trajectory file
   std::string output_traj();
-
-  /// Write the hill to an output stream
-  friend std::ostream & operator << (std::ostream &os, hill const &h);
 
 };
 
