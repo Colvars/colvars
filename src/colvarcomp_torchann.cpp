@@ -9,6 +9,9 @@
 colvar::torchANN::torchANN(std::string const &conf): linearCombination(conf) {
   set_function_type("torchANN");
 
+  x.type(colvarvalue::type_scalar);
+  enable(f_cvc_scalar);
+
   if (period != 0.0) {
     enable(f_cvc_periodic);
   }
@@ -40,7 +43,7 @@ colvar::torchANN::torchANN(std::string const &conf): linearCombination(conf) {
       if (i_cv < cv.size() - 1) 
 	cvc_indices[i_cv+1] = num_inputs;
   }
-  
+
   // initialize the input tensor 
   input_tensor = torch::zeros({1,(long int) num_inputs}, torch::TensorOptions().dtype(torch::kFloat32).requires_grad(true));
 }
@@ -67,7 +70,6 @@ void colvar::torchANN::calc_value() {
 	}
     }
   }
-
   if (input_tensor.grad().defined())
     input_tensor.grad().zero_();
 
