@@ -2380,27 +2380,37 @@ int colvar::set_state_params(std::string const &conf)
 }
 
 
-cvm::memory_stream & colvar::read_state(cvm::memory_stream &is)
+cvm::memory_stream &colvar::read_state(cvm::memory_stream &is)
 {
   auto const start_pos = is.tellg();
-  std::string key;
+  std::string key, data;
   if (is >> key) {
-    if (key != "colvar") {
-      is.seekg(start_pos);
-      return is;
-    }
-    // Read parameters as a formatted string, then use the formatted I/O
-    std::string data;
-    if (is >> data) {
-      std::istringstream iss(data);
-      if (read_state(iss)) {
-        return is;
+    if (key == "colvar") {
+      // Read a formatted config string, then read the state parameters from it
+      if (is >> data) {
+        if (set_state_params(data) == COLVARS_OK) {
+          return is;
+        }
       }
     }
   }
+
+  auto const error_pos = is.tellg();
+
   is.clear();
   is.seekg(start_pos);
   is.setstate(std::ios::failbit);
+
+  std::string error_msg("Error: in reading state data for colvar \"" + name + " at position " +
+                        cvm::to_str(error_pos) + " in unformatted stream.\n");
+  if (key.size() && key != "colvar") {
+    error_msg += "; the keyword read was \"" + key + "\", but \"colvar\" was expected";
+  }
+  if (data.size()) {
+    error_msg += "; the configuration string read was not recognized";
+  }
+  error_msg += ".\n";
+  cvm::error(error_msg, COLVARS_INPUT_ERROR);
   return is;
 }
 

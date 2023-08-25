@@ -29,7 +29,7 @@
 #include "colvarscript.h"
 #include "colvaratoms.h"
 #include "colvarcomp.h"
-
+#include "colvars_memstream.h"
 
 
 /// Track usage of Colvars features
@@ -67,6 +67,11 @@ protected:
   std::map<std::string, std::string> feature_paper_map_;
 
 };
+
+
+namespace {
+  constexpr uint32_t colvars_magic_number = 2013813594;
+}
 
 
 colvarmodule::colvarmodule(colvarproxy *proxy_in)
@@ -117,6 +122,8 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 #endif
 
   // set initial default values
+
+  binary_restart = true;
 
   // "it_restart" will be set by the input state file, if any;
   // "it" should be updated by the proxy
@@ -1079,9 +1086,22 @@ int colvarmodule::write_restart_file(std::string const &out_name)
   cvm::log("Saving collective variables state to \""+out_name+"\".\n");
   std::ostream &restart_out_os = proxy->output_stream(out_name, "state file");
   if (!restart_out_os) return COLVARS_FILE_ERROR;
-  if (!write_restart(restart_out_os)) {
-    return cvm::error("Error: in writing restart file.\n", COLVARS_FILE_ERROR);
+
+  if (binary_restart) {
+    cvm::memory_stream mem_os;
+    if (!write_state(mem_os)) {
+      return cvm::error("Error: in writing binary state information to file.\n", COLVARS_ERROR);
+    }
+    if (!restart_out_os.write(reinterpret_cast<char *>(mem_os.output_buffer()),
+                              mem_os.length())) {
+      return cvm::error("Error: in writing restart file.\n", COLVARS_FILE_ERROR);
+    }
+  } else {
+    if (!write_state(restart_out_os)) {
+      return cvm::error("Error: in writing restart file.\n", COLVARS_FILE_ERROR);
+    }
   }
+
   proxy->close_output_stream(out_name);
 
   // Take the opportunity to flush colvars.traj
@@ -1094,7 +1114,7 @@ int colvarmodule::write_restart_string(std::string &output)
 {
   cvm::log("Saving state to output buffer.\n");
   std::ostringstream os;
-  if (!write_restart(os)) {
+  if (!write_state(os)) {
     return cvm::error("Error: in writing restart to buffer.\n", COLVARS_FILE_ERROR);
   }
   output = os.str();
@@ -1310,8 +1330,30 @@ int colvarmodule::setup_input()
     proxy->set_input_prefix("");
 
     cvm::log(cvm::line_marker);
-    cvm::log("Loading state from file \""+restart_in_name+"\".\n");
-    read_restart(*input_is);
+
+    if (binary_restart) {
+      cvm::log("Loading state from binary file \""+restart_in_name+"\".\n");
+      input_is->seekg(0, std::ios::end);
+      auto const file_size = input_is->tellg();
+      input_is->seekg(0, std::ios::beg);
+      // TODO integrate istream.read() into memory_stream to avoid copying
+      auto *buf = new unsigned char[file_size];
+      if (input_is->read(reinterpret_cast<char *>(buf), file_size)) {
+        cvm::memory_stream mem_is(file_size, buf);
+        if (!read_state(mem_is)) {
+          input_is->setstate(std::ios::failbit);
+          cvm::error("Error: cannot interpret contents of binary file \""+restart_in_name+"\".\n",
+                     COLVARS_INPUT_ERROR);
+        }
+      } else {
+        cvm::error("Error: cannot read from binary file \"" + restart_in_name + "\".\n",
+                   COLVARS_INPUT_ERROR);
+      }
+      delete [] buf;
+    } else {
+      cvm::log("Loading state from text file \"" + restart_in_name + "\".\n");
+      read_state(*input_is);
+    }
     cvm::log(cvm::line_marker);
 
     proxy->delete_input_stream(restart_in_name);
@@ -1320,7 +1362,7 @@ int colvarmodule::setup_input()
   if (proxy->input_stream_exists("input state string")) {
     cvm::log(cvm::line_marker);
     cvm::log("Loading state from string.\n");
-    read_restart(proxy->input_stream("input state string"));
+    read_state(proxy->input_stream("input state string"));
     cvm::log(cvm::line_marker);
 
     proxy->delete_input_stream("input state string");
@@ -1385,8 +1427,7 @@ std::string colvarmodule::state_file_prefix(char const *filename)
 }
 
 
-
-std::istream & colvarmodule::read_restart(std::istream &is)
+template <typename IST> IST & colvarmodule::read_state_template_(IST &is)
 {
   bool warn_total_forces = false;
 
@@ -1448,35 +1489,58 @@ std::istream & colvarmodule::read_restart(std::istream &is)
 }
 
 
+std::istream & colvarmodule::read_state(std::istream &is)
+{
+  return read_state_template_<std::istream>(is);
+}
+
+
+cvm::memory_stream &colvarmodule::read_state(cvm::memory_stream &is)
+{
+  uint32_t file_magic_number = 0;
+  if (!(is >> file_magic_number)) {
+    return is;
+  }
+  if (file_magic_number == colvars_magic_number) {
+    return read_state_template_<cvm::memory_stream>(is);
+  } else {
+    is.setstate(std::ios::failbit);
+    cvm::error("Error: magic number of binary file (" +
+                   cvm::to_str(static_cast<size_t>(file_magic_number)) +
+                   ") does not match the expected magic number for a Colvars state file (" +
+                   cvm::to_str(static_cast<size_t>(colvars_magic_number)) + ").\n",
+               COLVARS_INPUT_ERROR);
+  }
+  return is;
+}
+
 
 std::istream & colvarmodule::read_objects_state(std::istream &is)
 {
-  std::streampos pos = 0;
+  auto pos = is.tellg();
   std::string word;
 
-  while (is.good()) {
+  while (is) {
     pos = is.tellg();
-    word.clear();
-    is >> word;
 
-    if (word.size()) {
+    if (is >> word) {
 
-      is.seekg(pos, std::ios::beg);
+      is.seekg(pos);
 
       if (word == "colvar") {
 
         cvm::increase_depth();
-        for (std::vector<colvar *>::iterator cvi = colvars.begin();
-             cvi != colvars.end();
-             cvi++) {
-          if ( !((*cvi)->read_state(is)) ) {
+        for (std::vector<colvar *>::iterator cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+          if (!((*cvi)->read_state(is))) {
             // Here an error signals that the variable is a match, but the
             // state is corrupt; otherwise, the variable rewinds is silently
-            cvm::error("Error: in reading restart configuration for "
-                       "collective variable \""+(*cvi)->name+"\".\n",
+            cvm::error("Error: in reading state for collective variable \"" +
+                           (*cvi)->name + "\" at position " + cvm::to_str(is.tellg()) +
+                           " in stream.\n",
                        COLVARS_INPUT_ERROR);
           }
-          if (is.tellg() > pos) break; // found it
+          if (is.tellg() > pos)
+            break; // found it
         }
         cvm::decrease_depth();
 
@@ -1493,11 +1557,12 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
           }
           if (!((*bi)->read_state(is))) {
             // Same as above, an error means a match but the state is incorrect
-            cvm::error("Error: in reading restart configuration for bias \""+
-                       (*bi)->name+"\".\n",
+            cvm::error("Error: in reading state for bias \"" + (*bi)->name + "\" at position " +
+                           cvm::to_str(is.tellg()) + " in stream.\n",
                        COLVARS_INPUT_ERROR);
           }
-          if (is.tellg() > pos) break; // found it
+          if (is.tellg() > pos)
+            break; // found it
         }
         cvm::decrease_depth();
       }
@@ -1512,6 +1577,25 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
     if (!is) break;
   }
 
+  return is;
+}
+
+
+cvm::memory_stream &colvarmodule::read_objects_state(cvm::memory_stream &is)
+{
+  // An unformatted stream must match the objects' exact configuration
+  cvm::increase_depth();
+  for (std::vector<colvar *>::iterator cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    if (!(*cvi)->read_state(is)) {
+      return is;
+    }
+  }
+  for (std::vector<colvarbias *>::iterator bi = biases.begin(); bi != biases.end(); bi++) {
+    if (!(*bi)->read_state(is)) {
+      return is;
+    }
+  }
+  cvm::decrease_depth();
   return is;
 }
 
@@ -1638,18 +1722,24 @@ int colvarmodule::read_traj(char const *traj_filename,
 }
 
 
-std::ostream & colvarmodule::write_restart(std::ostream &os)
+template <typename OST> OST &colvarmodule::write_state_template_(OST &os)
 {
-  os.setf(std::ios::scientific, std::ios::floatfield);
-  os << "configuration {\n"
-     << "  step " << std::setw(it_width)
-     << it << "\n"
-     << "  dt " << dt() << "\n"
-     << "  version " << std::string(COLVARS_VERSION) << "\n";
+  bool const formatted = !std::is_same<OST, cvm::memory_stream>::value;
+
+  std::ostringstream oss;
+  oss.setf(std::ios::scientific, std::ios::floatfield);
+  oss << "  step " << std::setw(it_width)
+      << it << "\n"
+      << "  dt " << dt() << "\n"
+      << "  version " << std::string(COLVARS_VERSION) << "\n";
   if (proxy->units.size() > 0) {
-    os << "  units " << proxy->units << "\n";
+    oss << "  units " << proxy->units << "\n";
   }
-  os << "}\n\n";
+
+  os << std::string("configuration");
+  if (formatted) os << " {\n";
+  os << oss.str();
+  if (formatted) os << "}\n\n";
 
   int error_code = COLVARS_OK;
 
@@ -1676,7 +1766,22 @@ std::ostream & colvarmodule::write_restart(std::ostream &os)
 }
 
 
-std::ostream & colvarmodule::write_traj_label(std::ostream &os)
+std::ostream &colvarmodule::write_state(std::ostream &os)
+{
+  return write_state_template_<std::ostream>(os);
+}
+
+
+cvm::memory_stream &colvarmodule::write_state(cvm::memory_stream &os)
+{
+  if (os << colvars_magic_number) {
+    write_state_template_<cvm::memory_stream>(os);
+  }
+  return os;
+}
+
+
+std::ostream &colvarmodule::write_traj_label(std::ostream &os)
 {
   os.setf(std::ios::scientific, std::ios::floatfield);
 
