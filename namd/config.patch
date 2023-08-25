@@ -47,7 +47,7 @@ index 2bbb3e9a..ff0debb6 100755
 +  if (( "$use_colvar_torch" )); then
 +    echo "TORCHDIR = $TORCH_PREFIX" >> Make.config
 +    echo 'TORCHINCFLAGS = $(COPTI)$(TORCHDIR)/include $(COPTI)$(TORCHDIR)/include/torch/csrc/api/include' >> Make.config
-+    echo 'EXTRACOLVARSFLAGS = -std=c++14 -DTORCH $(TORCHINCFLAGS)' >> Make.config
++    echo 'EXTRACOLVARSFLAGS = -std=c++17 -DTORCH $(TORCHINCFLAGS)' >> Make.config
 +    echo 'EXTRALINKLIBS = -Wl,-rpath,$(TORCHDIR)/lib -L$(TORCHDIR)/lib -ltorch -ltorch_cpu -lc10 -ltorch' >> Make.config
 +  fi
    if (( $use_debug )); then
