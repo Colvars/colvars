@@ -109,6 +109,7 @@ void colvar::torchANN::calc_gradients() {
 
 void colvar::torchANN::apply_force(colvarvalue const &force) {
 
+
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
 	// If this CV us explicit gradients, then atomic gradients is already calculated
 	// We can apply the force to atom groups directly
@@ -118,7 +119,8 @@ void colvar::torchANN::apply_force(colvarvalue const &force) {
 	    }
 	} else {
 	    const colvarvalue& current_cv_value = cv[i_cv]->value();
-	    colvarvalue cv_force(current_cv_value.type());
+	    colvarvalue cv_force(current_cv_value);
+	    cv_force.reset();
 	    const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
 	    // get the initial index of this cvc
 	    size_t l = cvc_indices[i_cv];
