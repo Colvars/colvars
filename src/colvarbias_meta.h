@@ -60,9 +60,9 @@ public:
   virtual int set_state_params(std::string const &state_conf);
 
   virtual std::ostream &write_state_data(std::ostream &os);
-  // virtual cvm::memory_stream &write_state_data(cvm::memory_stream &os);
+  virtual cvm::memory_stream &write_state_data(cvm::memory_stream &os);
   virtual std::istream &read_state_data(std::istream &is);
-  // virtual cvm::memory_stream &read_state_data(cvm::memory_stream &is);
+  virtual cvm::memory_stream &read_state_data(cvm::memory_stream &is);
 
 private:
 
@@ -123,13 +123,23 @@ protected:
 
   /// Regenerate the hills_off_grid list
   void recount_hills_off_grid(hill_iter h_first, hill_iter h_last,
-                               colvar_grid_scalar *ge);
+                              colvar_grid_scalar *ge);
 
-  /// Write a hill to a stream
-  std::ostream & write_hill(std::ostream &os, hill const &h);
+  template <typename OST> OST &write_hill_template_(OST &os, colvarbias_meta::hill const &h);
 
-  /// Read a new hill from a state stream
+  /// Write a hill to a formatted stream
+  std::ostream &write_hill(std::ostream &os, hill const &h);
+
+  /// Write a hill to an unformatted stream
+  cvm::memory_stream &write_hill(cvm::memory_stream &os, hill const &h);
+
+  template <typename IST> IST &read_hill_template_(IST &is);
+
+  /// Read a new hill from a formatted stream
   std::istream & read_hill(std::istream &is);
+
+  /// Read a new hill from an unformatted stream
+  cvm::memory_stream & read_hill(cvm::memory_stream &is);
 
   /// \brief Add a new hill; if a .hills trajectory is written,
   /// write it there; if there is more than one replica, communicate
