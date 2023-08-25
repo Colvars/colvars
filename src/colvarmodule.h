@@ -249,6 +249,8 @@ public:
     return it;
   }
 
+  bool binary_restart;
+
   /// \brief Finite difference step size (if there is no dynamics, or
   /// if gradients need to be tested independently from the size of
   /// dt)
@@ -451,17 +453,37 @@ public:
   /// (Re)initialize the output trajectory and state file (does not write it yet)
   int setup_output();
 
-  /// Read a restart file
-  std::istream & read_restart(std::istream &is);
+private:
+
+  template <typename IST> IST & read_state_template_(IST &is);
+
+public:
+
+  /// Read all objects' state fron a formatted (text) stream
+  std::istream & read_state(std::istream &is);
+
+  /// Read all objects' state fron an unformatted (binary) stream
+  memory_stream & read_state(memory_stream &is);
 
   /// Read the states of individual objects; allows for changes
   std::istream & read_objects_state(std::istream &is);
 
+  /// Read the states of individual objects; allows for changes
+  memory_stream & read_objects_state(memory_stream &is);
+
   /// If needed (old restart file), print the warning that cannot be ignored
   int print_total_forces_errning(bool warn_total_forces);
 
-  /// Write the output restart file
-  std::ostream & write_restart(std::ostream &os);
+private:
+  template <typename OST> OST &write_state_template_(OST &os);
+
+public:
+
+  /// Write the state of the module to a formatted (text) file
+  std::ostream & write_state(std::ostream &os);
+
+  /// Write the state of the module to an unformatted (binary) file
+  memory_stream & write_state(memory_stream &os);
 
   /// Strips .colvars.state from filename and checks that it is not empty
   static std::string state_file_prefix(char const *filename);
