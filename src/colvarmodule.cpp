@@ -1910,7 +1910,7 @@ void colvarmodule::clear_error()
 
 int colvarmodule::error(std::string const &message, int code)
 {
-  set_error_bits(code);
+  set_error_bits(code >= 0 ? code : COLVARS_ERROR);
 
   std::string const trailing_newline = (message.size() > 0) ?
     (message[message.size()-1] == '\n' ? "" : "\n") : "";
