@@ -1,6 +1,8 @@
 #!/bin/bash
 # -*- sh-basic-offset: 2; sh-indentation: 2; -*-
 
+set -e
+
 # Script to update a NAMD, VMD, LAMMPS or GROMACS source tree with the latest Colvars
 # version.
 
@@ -368,8 +370,7 @@ then
   condcopy "${source}/namd/lepton/Makefile.namd" \
            "${target}/lepton/Makefile.namd"
 
-
-  if ! grep -q lepton/Makefile.namd "${target}/lepton/Makefile.namd" ; then
+  if ! grep -q lepton/Makefile.namd "${target}/Makefile" ; then
     patch -p1 -N -d ${target} < namd/Makefile.patch
   fi
 

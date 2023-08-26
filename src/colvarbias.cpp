@@ -462,17 +462,15 @@ std::string const colvarbias::get_state_params() const
 }
 
 
-int colvarbias::set_state_params(std::string const &conf)
+int colvarbias::check_matching_state(std::string const &conf)
 {
-  matching_state = false;
-
   std::string check_name = "";
   colvarparse::get_keyval(conf, "name", check_name,
                           std::string(""), colvarparse::parse_silent);
 
   if (check_name.size() == 0) {
-    cvm::error("Error: \""+bias_type+"\" block within the restart file "
-               "has no identifiers.\n", COLVARS_INPUT_ERROR);
+    return cvm::error("Error: \""+bias_type+"\" block within the state file "
+                      "has no identifiers.\n", COLVARS_INPUT_ERROR);
   }
 
   if (check_name != this->name) {
@@ -480,11 +478,17 @@ int colvarbias::set_state_params(std::string const &conf)
       cvm::log("Ignoring state of bias \""+check_name+
                "\": this bias is named \""+name+"\".\n");
     }
-    return COLVARS_OK;
+    matching_state = false;
+  } else {
+    matching_state = true;
   }
 
-  matching_state = true;
+  return COLVARS_OK;
+}
 
+
+int colvarbias::set_state_params(std::string const &conf)
+{
   colvarparse::get_keyval(conf, "step", state_file_step,
                           cvm::step_absolute(), colvarparse::parse_silent);
 
@@ -515,41 +519,42 @@ std::ostream & colvarbias::write_state(std::ostream &os)
 
 std::istream & colvarbias::read_state(std::istream &is)
 {
-  std::streampos const start_pos = is.tellg();
+  auto const start_pos = is.tellg();
 
   std::string key, brace, conf;
   if ( !(is >> key)   || !(key == state_keyword || key == bias_type) ||
        !(is >> brace) || !(brace == "{") ||
        !(is >> colvarparse::read_block("configuration", &conf)) ||
-       (set_state_params(conf) != COLVARS_OK) ) {
+       (check_matching_state(conf) != COLVARS_OK) ) {
     cvm::error("Error: in reading state configuration for \""+bias_type+
                "\" bias \""+
                this->name+"\" at position "+
                cvm::to_str(static_cast<size_t>(is.tellg()))+
                " in stream.\n", COLVARS_INPUT_ERROR);
     is.clear();
-    is.seekg(start_pos, std::ios::beg);
+    is.seekg(start_pos);
     is.setstate(std::ios::failbit);
     return is;
   }
 
-  if (matching_state == false) {
-    // This state is not for this bias
-    is.seekg(start_pos, std::ios::beg);
+  if (!matching_state) {
+    // No errors reading, but this state is not for this bias; rewind
+    is.seekg(start_pos);
     return is;
   }
 
   cvm::log("Restarting "+bias_type+" bias \""+name+"\" from step number "+
            cvm::to_str(state_file_step)+".\n");
 
-  if (!read_state_data(is)) {
+  if ((set_state_params(conf) != COLVARS_OK) || !read_state_data(is)) {
     cvm::error("Error: in reading state data for \""+bias_type+"\" bias \""+
                this->name+"\" at position "+
                cvm::to_str(static_cast<size_t>(is.tellg()))+
                " in stream.\n", COLVARS_INPUT_ERROR);
+    auto state = is.rdstate();
     is.clear();
-    is.seekg(start_pos, std::ios::beg);
-    is.setstate(std::ios::failbit);
+    is.seekg(start_pos);
+    is.setstate(state);
   }
 
   is >> brace;
