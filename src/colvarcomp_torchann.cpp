@@ -125,7 +125,7 @@ void colvar::torchANN::apply_force(colvarvalue const &force) {
 	    // get the initial index of this cvc
 	    size_t l = cvc_indices[i_cv];
 	    for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) {
-		    cv_force[j_elem] += factor_polynomial * input_grad[l+j_elem].item<double>() * force.real_value;
+		    cv_force[j_elem] = factor_polynomial * input_grad[l+j_elem].item<double>() * force.real_value;
 		}
 	    cv[i_cv]->apply_force(cv_force);
 	}
