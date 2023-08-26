@@ -1049,7 +1049,7 @@ std::ostream & colvarproxy_namd::output_stream(std::string const &output_name,
 
   backup_file(output_name.c_str());
 
-  output_streams_[output_name] = new ofstream_namd(output_name.c_str());
+  output_streams_[output_name] = new ofstream_namd(output_name.c_str(), std::ios::binary);
   if (! output_streams_[output_name]->good()) {
     cvm::error("Error: cannot write to "+description+" \""+output_name+"\".\n",
                COLVARS_FILE_ERROR);
