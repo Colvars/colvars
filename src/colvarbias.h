@@ -133,6 +133,9 @@ public:
   /// Write the values of specific mutable properties to a string
   virtual std::string const get_state_params() const;
 
+  /// Check the name of the bias vs. the given string, set the matching_state flag accordingly
+  int check_matching_state(std::string const &conf);
+
   /// Read the values of specific mutable properties from a string
   virtual int set_state_params(std::string const &state_conf);
 

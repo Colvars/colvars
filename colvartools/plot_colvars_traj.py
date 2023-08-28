@@ -3,7 +3,7 @@
 # Invoke this script with --help for documentation.
 
 # Download link: https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true
-# This version was modified on: 2022-09-12
+# This version was modified on: 2023-07-13
 # Contact: giacomo.fiorin@gmail.com
 
 from __future__ import print_function
@@ -143,6 +143,8 @@ class Colvars_traj(object):
         self._keys = new_keys
         # Find the boundaries of each column
         for i in range(1, len(self._keys)):
+            if (self._keys[i] not in self._colvars):
+                self._colvars[self._keys[i]] = Colvar_traj(self._keys[i])
             if i == 1:
                 pos = line.find(' '+self._keys[i]+' ')
             else:
@@ -151,7 +153,6 @@ class Colvars_traj(object):
             self._start[self._keys[i]] = pos
             self._end[self._keys[i-1]] = pos
         self._end[self._keys[-1]] = -1
-
 
     def _parse_line(self, line, dict_buffer):
         """
@@ -226,10 +227,8 @@ class Colvars_traj(object):
                 last_step = step
 
             for key in dict_buffer:
-                if (key not in self._colvars):
-                    self._colvars[key] = Colvar_traj(key)
-                    self._colvars[key]._set_num_dimensions(dict_buffer[key]['dimension'])
                 cv = self._colvars[key]
+                cv._set_num_dimensions(dict_buffer[key]['dimension'])
                 cv._step = np.concatenate((cv.steps, dict_buffer[key]['cv_step']), axis=0)
                 cv._colvar = np.concatenate((cv.values, dict_buffer[key]['cv_values']), axis=0)
             f.close()

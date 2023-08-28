@@ -72,7 +72,14 @@ EOF
 
     cmd+=(--tcl-prefix ${TCL_HOME:-/usr})
     cmd+=(--with-fftw3 --fftw-prefix ${FFTW_HOME:-/usr})
-    cmd+=(--with-python)
+
+    local python_version=$(python3 --version 2> /dev/null | cut -d' ' -f 2)
+    python_version=${python_version%.*}
+    if [ "x${python_version}" == "x3.6" ] || [ "x${python_version}" == "x3.7" ] || \
+        [ "x${python_version}" == "x3.8" ] ; then
+        # Currently does not build with >= 3.9 API
+        cmd+=(--with-python)
+    fi
 
     eval ${cmd[@]}
 
