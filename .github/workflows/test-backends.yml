@@ -147,6 +147,7 @@ jobs:
       backend_name: GROMACS-2023
       backend_repo: gromacs/gromacs
       backend_repo_ref: release-2023
+      container_name: CentOS9-devel
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
       rpath_exe: install/bin/gmx_d
