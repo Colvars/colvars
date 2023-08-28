@@ -120,7 +120,8 @@ public:
   /// number and always behaves like it unless you change its type
   colvarvalue();
 
-  /// Constructor from a type specification
+  /// Constructor from a type flag (note: type_vector also needs the vector length to be set)
+  /// \param[in] vti Value of the \link Type \endlink enum
   colvarvalue(Type const &vti);
 
   /// Copy constructor from real base type
