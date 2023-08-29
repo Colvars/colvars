@@ -17,7 +17,7 @@ endif()
 
 # Last test requires the stubs proxy
 add_executable(read_xyz_traj read_xyz_traj.cpp)
-set(COLVARS_STUBS_DIR ${COLVARS_SOURCE_DIR}/tests/stubs/)
+set(COLVARS_STUBS_DIR ${COLVARS_SOURCE_DIR}/misc_interfaces/stubs/)
 target_link_libraries(read_xyz_traj PRIVATE colvars colvars_stubs)
 target_include_directories(read_xyz_traj PRIVATE ${COLVARS_SOURCE_DIR}/src)
 target_include_directories(read_xyz_traj PRIVATE ${COLVARS_STUBS_DIR})
