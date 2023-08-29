@@ -1,6 +1,7 @@
 // Test linking Colvars through a C interface
 
 #include "colvarproxy.h"
+#include <iostream>
 
 /// \brief Communication between colvars and LAMMPS
 /// (implementation of \link colvarproxy \endlink)

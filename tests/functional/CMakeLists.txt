@@ -1,4 +1,4 @@
-set(COLVARS_STUBS_DIR ${COLVARS_SOURCE_DIR}/tests/stubs/)
+set(COLVARS_STUBS_DIR ${COLVARS_SOURCE_DIR}/misc_interfaces/stubs/)
 add_library(colvars_stubs OBJECT ${COLVARS_STUBS_DIR}/colvarproxy_stub.cpp)
 target_include_directories(colvars_stubs PRIVATE ${COLVARS_SOURCE_DIR}/src)
 
