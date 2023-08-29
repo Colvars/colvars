@@ -9,7 +9,7 @@
 extern "C" int main(int argc, char *argv[]) {
 
   colvarproxy_stub *proxy = new colvarproxy_stub();
-  proxy->set_unit_system("real", false);
+  proxy->set_unit_system("real");
   proxy->set_output_prefix("test.out");
   proxy->colvars->setup_input();
   proxy->colvars->setup_output();

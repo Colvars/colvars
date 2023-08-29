@@ -18,7 +18,7 @@ extern "C" int main(int argc, char *argv[]) {
 
   colvarproxy_stub *proxy = new colvarproxy_stub();
   // Initialize simple unit system to test file input
-  err |= proxy->set_unit_system("real", false);
+  err |= proxy->set_unit_system("real");
 
   if (argc > 3) {
     err |= proxy->set_output_prefix(argv[3]);
