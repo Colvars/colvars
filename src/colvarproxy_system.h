@@ -32,7 +32,7 @@ public:
   std::string units;
 
   /// \brief Request to set the units used internally by Colvars
-  virtual int set_unit_system(std::string const &units, bool check_only);
+  virtual int set_unit_system(std::string const &units, bool check_only = false);
 
   /// \brief Convert a length from Angstrom to internal
   inline cvm::real angstrom_to_internal(cvm::real l) const

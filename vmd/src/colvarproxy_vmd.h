@@ -68,7 +68,7 @@ public:
 
   virtual void error(std::string const &message);
 
-  virtual int set_unit_system(std::string const &units_in, bool check_only);
+  virtual int set_unit_system(std::string const &units_in, bool check_only = false);
 
   virtual int run_force_callback();
 

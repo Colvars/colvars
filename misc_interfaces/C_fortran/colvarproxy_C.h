@@ -12,7 +12,7 @@ public:
   ~colvarproxy_C();
 
 private:
-  int set_unit_system(std::string const &units, bool check_only) { return 0.; }
+  int set_unit_system(std::string const &units, bool check_only = false) { return 0.; }
 
   /// \brief Boltzmann constant
   cvm::real boltzmann() { return 0.; }

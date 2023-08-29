@@ -83,7 +83,7 @@ class colvarproxy_lammps : public colvarproxy {
   bool deserialize_status(std::string &);
 
   // Request to set the units used internally by Colvars
-  int set_unit_system(std::string const &units_in, bool check_only) override;
+  int set_unit_system(std::string const &units_in, bool check_only = false) override;
 
   /// Convert a command-line argument to string
   char const *script_obj_to_str(unsigned char *obj);

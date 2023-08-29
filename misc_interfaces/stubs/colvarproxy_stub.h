@@ -35,7 +35,7 @@ public:
 
   void error(std::string const &message) override;
 
-  int set_unit_system(std::string const &units_in, bool check_only) override;
+  int set_unit_system(std::string const &units_in, bool check_only = false) override;
 
   int init_atom(int atom_number) override;
 
