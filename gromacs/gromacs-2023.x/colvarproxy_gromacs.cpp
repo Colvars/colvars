@@ -99,12 +99,12 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
   // Retrieve the topology of all atoms
   gmx_atoms = gmx_mtop_global_atoms(mtop);
 
-  // Read configuration file and set up the proxy only on the master node.
-  if (MASTER(cr))
+  // Read configuration file and set up the proxy only on the MAIN node.
+  if (MAIN(cr))
   {
 
     // initiate module: this object will be the communication proxy
-    // colvarmodule pointer is only defined on the Master due to the static pointer to colvarproxy.
+    // colvarmodule pointer is only defined on the MAIN due to the static pointer to colvarproxy.
     colvars = new colvarmodule(this);
 
     version_int = get_version_from_string(COLVARPROXY_VERSION);
@@ -140,13 +140,13 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
     colvars->it = colvars->it_restart = step;
 
 
-  } // end master
+  } // end MAIN
 
 
   // MPI initialisation
 
   // Initialise attributs for the MPI communication
-  if(MASTER(cr)) {
+  if(MAIN(cr)) {
     // Retrieve the number of colvar atoms
     n_colvars_atoms = atoms_ids.size();
     // Copy their global indices
@@ -158,8 +158,8 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
     // Let the other nodes know the number of colvar atoms.
     block_bc(cr->mpi_comm_mygroup, n_colvars_atoms);
 
-    // Initialise atoms_new_colvar_forces on non-master nodes
-    if(!MASTER(cr)) {
+    // Initialise atoms_new_colvar_forces on non-MAIN nodes
+    if(!MAIN(cr)) {
       atoms_new_colvar_forces.reserve(n_colvars_atoms);
     }
   }
@@ -174,7 +174,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
   // Prepare data
 
   // Manage restart with .cpt
-  if (MASTER(cr))
+  if (MAIN(cr))
   {
       /* colvarsHistory is the struct holding the data saved in the cpt
 
@@ -227,7 +227,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
   if (PAR(cr))
   {
     nblock_bc(cr->mpi_comm_mygroup, n_colvars_atoms, xa_old_whole);
-    snew_bc(MASTER(cr), ind, n_colvars_atoms);
+    snew_bc(MAIN(cr), ind, n_colvars_atoms);
     nblock_bc(cr->mpi_comm_mygroup, n_colvars_atoms, ind);
   }
 
@@ -245,7 +245,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
     }
   }
 
-  if (MASTER(cr) && cvm::debug()) {
+  if (MAIN(cr) && cvm::debug()) {
     cvm::log ("atoms_ids = "+cvm::to_str (atoms_ids)+"\n");
     cvm::log ("atoms_refcount = "+cvm::to_str (atoms_refcount)+"\n");
     cvm::log ("positions = "+cvm::to_str (atoms_positions)+"\n");
@@ -263,7 +263,7 @@ colvarproxy_gromacs::~colvarproxy_gromacs()
 
 void colvarproxy_gromacs::finish(const t_commrec *cr)
 {
-  if(MASTER(cr)) {
+  if(MAIN(cr)) {
     colvars->write_restart_file(output_prefix_str+".colvars.state");
     colvars->write_output_files();
   }
@@ -381,7 +381,7 @@ int colvarproxy_gromacs::backup_file (char const *filename)
 void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t_pbc const &pbc, const matrix box, bool bNS)
 {
 
-  if (MASTER(cr)) {
+  if (MAIN(cr)) {
 
     if(cvm::debug()) {
       cvm::log(cvm::line_marker);
@@ -389,7 +389,7 @@ void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t
               "Updating internal data.\n");
     }
 
-    // step update on master only due to the call of colvars pointer.
+    // step update on MAIN only due to the call of colvars pointer.
     if (first_timestep) {
       first_timestep = false;
     } else {
@@ -398,7 +398,7 @@ void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t
         colvars->it++;
       // Other cases?
     }
-  } // end master
+  } // end MAIN
 
   gmx_pbc = pbc;
   gmx_box = box;
@@ -408,7 +408,7 @@ void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t
 
   // Prepare data for MPI communication
   if(PAR(cr) && bNS) {
-    dd_make_local_group_indices(cr->dd->ga2la, n_colvars_atoms, ind, &nat_loc, &ind_loc, &nalloc_loc, xa_ind);
+    dd_make_local_group_indices(cr->dd->ga2la.get(), n_colvars_atoms, ind, &nat_loc, &ind_loc, &nalloc_loc, xa_ind);
   }
 }
 
@@ -434,9 +434,9 @@ void colvarproxy_gromacs::calculateForces(
   // Communicate_group_positions takes care of removing shifts (unwrapping)
   // in single node jobs, communicate_group_positions() is efficient and adds no overhead
 
-  if (MASTER(cr))
+  if (MAIN(cr))
   {
-    // On non-master nodes, jump directly to applying the forces
+    // On non-MAIN nodes, jump directly to applying the forces
 
     // Zero the forces on the atoms, so that they can be accumulated by the colvars.
     for (size_t i = 0; i < atoms_new_colvar_forces.size(); i++) {
@@ -463,7 +463,7 @@ void colvarproxy_gromacs::calculateForces(
     }
 
     forceProviderOutput->enerd_.term[F_COM_PULL] += bias_energy;
-  } // master node
+  } // MAIN node
 
   //Broadcast the forces to all the nodes
   if (PAR(cr))
