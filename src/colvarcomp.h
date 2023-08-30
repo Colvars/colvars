@@ -1778,8 +1778,9 @@ class colvar::torchANN
 {
 protected:
     torch::jit::script::Module nn;
-    /// the index of nn output components
+    /// the index of nn output component
     size_t m_output_index;
+    bool use_double_input;
     // 1d tensor, concatenation of values of sub-cvcs
     torch::Tensor input_tensor;
     torch::Tensor nn_outputs;
