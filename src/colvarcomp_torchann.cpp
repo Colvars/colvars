@@ -23,15 +23,15 @@ colvar::torchANN::torchANN(std::string const &conf): linearCombination(conf) {
   }
 
   std::string model_file ;
-  get_keyval(conf, "model_file", model_file, std::string(""));
-  get_keyval(conf, "m_output_index", m_output_index, 0);
-
+  get_keyval(conf, "modelFile", model_file, std::string(""));
   try {
     nn = torch::jit::load(model_file);
-    cvm::log("model loaded.") ;
-  } catch (...) {
-    cvm::error("Error: couldn't load libtorch model.\n");
+    cvm::log("torch model loaded.") ;
+  } catch (const std::exception & e) {
+    cvm::error("Error: couldn't load libtorch model (see below).\n" + cvm::to_str(e.what()));
   }
+  get_keyval(conf, "m_output_index", m_output_index, 0);
+  get_keyval(conf, "doubleInputTensor", use_double_input, false);
 
   cvc_indices.resize(cv.size(),0);
 
@@ -43,9 +43,28 @@ colvar::torchANN::torchANN(std::string const &conf): linearCombination(conf) {
       if (i_cv < cv.size() - 1) 
 	cvc_indices[i_cv+1] = num_inputs;
   }
+  cvm::log("Input dimension of model: " + cvm::to_str(num_inputs));
 
   // initialize the input tensor 
-  input_tensor = torch::zeros({1,(long int) num_inputs}, torch::TensorOptions().dtype(torch::kFloat32).requires_grad(true));
+  auto options = torch::TensorOptions().dtype(torch::kFloat32).requires_grad(true);
+  
+  if (use_double_input) {  // set type to double
+    options = options.dtype(torch::kFloat64);
+    nn.to(torch::kFloat64);
+    cvm::log("Model's dtype: kFloat64.") ;
+  } else {
+    cvm::log("Model's dtype: kFloat32.") ;
+  }
+
+  input_tensor = torch::zeros({1,(long int) num_inputs}, options);
+
+  try { // test the model 
+    std::vector<torch::jit::IValue> inputs={input_tensor};
+    nn_outputs = nn.forward(inputs).toTensor()[0][m_output_index];
+    cvm::log("Evaluating model with zero tensor succeeded.");
+  } catch (const std::exception & e) {
+    cvm::error("Error: evaluating libtorch model with zero tensor failed (see below).\n" + cvm::to_str(e.what()));
+  }
 }
 
 colvar::torchANN::~torchANN() {
