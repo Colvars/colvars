@@ -32,6 +32,7 @@ colvar::torchANN::torchANN(std::string const &conf): linearCombination(conf) {
   }
   get_keyval(conf, "m_output_index", m_output_index, 0);
   get_keyval(conf, "doubleInputTensor", use_double_input, false);
+  get_keyval(conf, "useGPU", use_gpu, false);
 
   cvc_indices.resize(cv.size(),0);
 
@@ -48,12 +49,37 @@ colvar::torchANN::torchANN(std::string const &conf): linearCombination(conf) {
   // initialize the input tensor 
   auto options = torch::TensorOptions().dtype(torch::kFloat32).requires_grad(true);
   
-  if (use_double_input) {  // set type to double
-    options = options.dtype(torch::kFloat64);
-    nn.to(torch::kFloat64);
-    cvm::log("Model's dtype: kFloat64.") ;
+  if (use_gpu) {
+    if (torch::cuda::is_available()) {
+	  try {
+	  	nn.to(torch::kCUDA);
+	  } catch(const std::exception & e) {
+		  cvm::error("Failed to move model to GPU.");
+		  use_gpu = false;
+	  }
+    } else {
+       use_gpu = false;
+       cvm::log("GPU not available.");
+    }
+  }
+
+  if (use_gpu) {
+     options = options.device(torch::kCUDA);
+     cvm::log("Use GPU.");
+     if (use_double_input) {
+       cvm::log("Data type reset to Float for GPU computation!");
+       use_double_input = false;
+     }
   } else {
-    cvm::log("Model's dtype: kFloat32.") ;
+     cvm::log("Use CPU.");
+  }
+
+  if (use_double_input) {  // set type to double
+        options = options.dtype(torch::kFloat64);
+	nn.to(torch::kFloat64);
+	cvm::log("Model's dtype: kFloat64.");
+  } else {
+	cvm::log("Model's dtype: kFloat32.");
   }
 
   input_tensor = torch::zeros({1,(long int) num_inputs}, options);
@@ -74,6 +100,9 @@ void colvar::torchANN::calc_value() {
 
   for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) 
       cv[i_cv]->calc_value();
+ 
+  if (use_gpu)  
+      input_tensor = input_tensor.to(torch::kCPU);
 
   // set input tensor with no_grad 
   {
@@ -89,16 +118,19 @@ void colvar::torchANN::calc_value() {
 	}
     }
   }
-  if (input_tensor.grad().defined())
-    input_tensor.grad().zero_();
+
+  if (use_gpu) 
+      input_tensor = input_tensor.to(torch::kCUDA);
 
   std::vector<torch::jit::IValue> inputs={input_tensor};
 
   // evaluate the value of function
   nn_outputs = nn.forward(inputs).toTensor()[0][m_output_index];
 
-  nn_outputs.backward({}, false, false);
-  input_grad = input_tensor.grad()[0];
+  input_grad = torch::autograd::grad({nn_outputs}, {input_tensor})[0][0];
+
+  if (use_gpu)
+    input_grad = input_grad.to(torch::kCPU);
 
   x = nn_outputs.item<double>() ;
 
