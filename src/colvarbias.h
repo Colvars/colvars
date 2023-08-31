@@ -167,33 +167,33 @@ public:
   /// \param[in,out] os Output stream
   /// \param[in] key  Keyword labeling the header block
   /// \param[in] header  Whether this is the header of a multi-line segment vs a single line
-  std::ostream & write_state_data_key(std::ostream &os, char const *key, bool header = true);
+  std::ostream &write_state_data_key(std::ostream &os, std::string const &key, bool header = true);
 
   /// Write a keyword header for a data sequence to an unformatted stream
   /// \param[in,out] os Output stream
   /// \param[in] key  Keyword labeling the header block
   /// \param[in] header  Ignored
-  cvm::memory_stream & write_state_data_key(cvm::memory_stream &os, char const *key,
-                                            bool header = true);
+  cvm::memory_stream &write_state_data_key(cvm::memory_stream &os, std::string const &key,
+                                           bool header = true);
 
 private:
 
   /// Read a keyword header for a data sequence from a stream
   /// \param[in,out] Input stream
   /// \param[in] Keyword labeling the header block; an error will be raised if not matching
-  template <typename IST> IST &read_state_data_key_template(IST &is, char const *key);
+  template <typename IST> IST &read_state_data_key_template(IST &is, std::string const &key);
 
 public:
 
   /// Read a keyword header for a data sequence from a formatted stream
   /// \param[in,out] Input stream
   /// \param[in] Keyword labeling the header block; an error will be raised if not matching
-  std::istream & read_state_data_key(std::istream &is, char const *key);
+  std::istream & read_state_data_key(std::istream &is, std::string const &key);
 
   /// Read a keyword header for a data sequence from an unformatted stream
   /// \param[in,out] Input stream
   /// \param[in] Keyword labeling the header block; an error will be raised if not matching
-  cvm::memory_stream & read_state_data_key(cvm::memory_stream &is, char const *key);
+  cvm::memory_stream & read_state_data_key(cvm::memory_stream &is, std::string const &key);
 
 private:
 
