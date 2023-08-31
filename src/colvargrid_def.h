@@ -25,17 +25,18 @@
 template <class T, class IST> IST &read_restart_template(colvar_grid<T> &g, IST &is)
 {
   auto const start_pos = is.tellg();
-  std::string key, conf;
-  if ((is >> key) && (key == std::string("grid_parameters"))) {
-    is.seekg(start_pos);
-    is >> colvarparse::read_block("grid_parameters", &conf);
-    g.parse_params(conf, colvarparse::parse_silent);
-  } else {
-    cvm::log("Grid parameters are missing in the restart file, "
-             "using those from the configuration.\n");
-    is.seekg(start_pos);
+  std::string conf;
+  if ((is >> colvarparse::read_block("grid_parameters", &conf)) &&
+      (g.parse_params(conf, colvarparse::parse_restart) == COLVARS_OK) && g.read_raw(is)) {
+    return is;
   }
-  g.read_raw(is);
+  auto const error_pos = is.tellg();
+  is.clear();
+  is.seekg(start_pos);
+  is.setstate(std::ios::failbit);
+  cvm::error("Error: in reading grid state from stream at position " + cvm::to_str(error_pos) +
+                 "\n",
+             COLVARS_INPUT_ERROR);
   return is;
 }
 
@@ -54,7 +55,7 @@ template <class T> cvm::memory_stream &colvar_grid<T>::read_restart(cvm::memory_
 
 template <class T> std::ostream &colvar_grid<T>::write_restart(std::ostream &os)
 {
-  os << get_state_params();
+  os << "grid_parameters {\n" << get_state_params() << "}\n";
   write_raw(os);
   return os;
 }
@@ -62,7 +63,7 @@ template <class T> std::ostream &colvar_grid<T>::write_restart(std::ostream &os)
 
 template <class T> cvm::memory_stream &colvar_grid<T>::write_restart(cvm::memory_stream &os)
 {
-  os << get_state_params();
+  os << std::string("grid_parameters") << get_state_params();
   write_raw(os);
   return os;
 }
@@ -146,7 +147,7 @@ template <class T> std::string colvar_grid<T>::get_state_params() const
 {
   std::ostringstream os;
   size_t i;
-  os << "grid_parameters {\n  n_colvars " << nd << "\n";
+  os << "  n_colvars " << nd << "\n";
 
   os << "  lower_boundaries ";
   for (i = 0; i < nd; i++)
@@ -168,7 +169,6 @@ template <class T> std::string colvar_grid<T>::get_state_params() const
     os << " " << nx[i];
   os << "\n";
 
-  os << "}\n";
   return os.str();
 }
 

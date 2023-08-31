@@ -2501,7 +2501,7 @@ std::string const colvar::get_state_params() const
 
 cvm::memory_stream & colvar::write_state(cvm::memory_stream &os) const
 {
-  os << "colvar" << get_state_params();
+  os << std::string("colvar") << get_state_params();
 
   if (runave_outfile.size() > 0) {
     cvm::main()->proxy->flush_output_stream(runave_outfile);
