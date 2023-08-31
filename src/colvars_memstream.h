@@ -97,7 +97,7 @@ public:
   inline size_t const tellg() const { return read_pos_; }
 
   /// Report the current position in the buffer
-  inline memory_stream & seekg(size_t pos) { if (bool()) read_pos_ = pos; return *this; }
+  inline memory_stream & seekg(size_t pos) { read_pos_ = pos; return *this; }
 
   /// Ignore formatting operators
   inline void setf(decltype(std::ios::fmtflags(0)), decltype(std::ios::floatfield)) {}
