@@ -223,6 +223,12 @@ for dir in ${DIRLIST} ; do
   for f in AutoDiff/*
   do
     base=`basename $f`
+
+    if [ "${base%.state.stripped}" != "${base}" ] && [ -n "${COLVARS_BINARY_RESTART}" ] ; then
+      # Do not try comparing binary state files, they will never match anyway
+      continue
+    fi
+
     if [ ! -f $base ] ; then
       echo -e "\n*** File $(${TPUT_RED})$base$(${TPUT_CLEAR}) is missing. ***"
       SUCCESS=0

@@ -7,13 +7,14 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <fstream>
+#include <cstdlib>
 #include <cstring>
-#include <vector>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <map>
+#include <sstream>
+#include <vector>
 
 #include "colvarmodule.h"
 #include "colvarparse.h"
@@ -123,7 +124,12 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   // set initial default values
 
-  binary_restart = true;
+  binary_restart = false;
+  if (getenv("COLVARS_BINARY_RESTART") != nullptr) {
+    if (atoi(getenv("COLVARS_BINARY_RESTART"))) {
+      binary_restart = true;
+    }
+  }
 
   // "it_restart" will be set by the input state file, if any;
   // "it" should be updated by the proxy
@@ -1381,14 +1387,16 @@ int colvarmodule::setup_output()
     std::string(proxy->restart_output_prefix()+".colvars.state") :
     std::string("");
 
+  std::string const state_file_format(binary_restart ? " (binary format)" : "");
+
   if (restart_out_name.size()) {
-    cvm::log("The restart output state file will be \""+
+    cvm::log("The restart output state file" + state_file_format + " will be \""+
              restart_out_name+"\".\n");
   }
 
   output_prefix() = proxy->output_prefix();
   if (output_prefix().size()) {
-    cvm::log("The final output state file will be \""+
+    cvm::log("The final output state file" + state_file_format + " will be \""+
              (output_prefix().size() ?
               std::string(output_prefix()+".colvars.state") :
               std::string("colvars.state"))+"\".\n");
