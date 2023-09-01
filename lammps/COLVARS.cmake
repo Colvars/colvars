@@ -6,7 +6,7 @@ option(COLVARS_DEBUG "Enable debugging messages for Colvars (quite verbose)" OFF
 
 option(COLVARS_LEPTON "Use the Lepton library for custom expressions" ON)
 
-option(COLVARS_TORCH "Enable torchann colvar components" ON)
+option(COLVARS_TORCH "Enable torchann colvar components" OFF)
 
 if(COLVARS_LEPTON)
   if(NOT LEPTON_SOURCE_DIR)
