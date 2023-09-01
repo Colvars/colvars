@@ -161,9 +161,6 @@ protected:
 
 template <typename T> void cvm::memory_stream::write_object(T const &t)
 {
-  if (cvm::debug()) {
-    cvm::log("Writing object of type " + std::string(typeid(T).name()) + "\n");
-  }
   static_assert(IS_TRIVIALLY_COPYABLE(T), "Cannot use write_object() on complex type");
   size_t const new_data_size = sizeof(T);
   if (expand_ouput_buffer(new_data_size)) {

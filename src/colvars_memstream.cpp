@@ -34,9 +34,6 @@ template <> void cvm::memory_stream::write_object(std::string const &t)
 {
   size_t const string_length = t.size();
   size_t const new_data_size = sizeof(size_t) + sizeof(char) * string_length;
-  if (cvm::debug()) {
-    cvm::log("Writing object of type std::string, value = " + cvm::to_str(t));
-  }
   if (expand_ouput_buffer(new_data_size)) {
     std::memcpy(output_location(), &string_length, sizeof(size_t));
     incr_write_pos(sizeof(size_t));
