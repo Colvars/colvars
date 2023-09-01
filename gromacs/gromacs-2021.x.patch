@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3715ce1..65134d0 100644
+index 3715ce1656..65134d0568 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -572,6 +572,9 @@ include(gmxManageTNG)
@@ -13,7 +13,7 @@ index 3715ce1..65134d0 100644
  set(REQUIRED_CUDA_VERSION 9.0)
  set(REQUIRED_CUDA_COMPUTE_CAPABILITY 3.0)
 diff --git a/src/gromacs/CMakeLists.txt b/src/gromacs/CMakeLists.txt
-index a4430e9..74dc708 100644
+index a4430e9dd6..74dc70817e 100644
 --- a/src/gromacs/CMakeLists.txt
 +++ b/src/gromacs/CMakeLists.txt
 @@ -142,6 +142,12 @@ if (WIN32)
@@ -41,7 +41,7 @@ index a4430e9..74dc708 100644
  # of time, so we want lots of parallel work still available after
  # linking starts.
 diff --git a/src/gromacs/fileio/checkpoint.cpp b/src/gromacs/fileio/checkpoint.cpp
-index fadc3d2..8a6ce56 100644
+index fadc3d283e..8a6ce56a6f 100644
 --- a/src/gromacs/fileio/checkpoint.cpp
 +++ b/src/gromacs/fileio/checkpoint.cpp
 @@ -72,6 +72,7 @@
@@ -169,7 +169,7 @@ index fadc3d2..8a6ce56 100644
      {
          std::vector<gmx_file_position_t> outputfiles;
 diff --git a/src/gromacs/fileio/checkpoint.h b/src/gromacs/fileio/checkpoint.h
-index c3dbc3c..c32dfa4 100644
+index c3dbc3c107..c32dfa4f44 100644
 --- a/src/gromacs/fileio/checkpoint.h
 +++ b/src/gromacs/fileio/checkpoint.h
 @@ -238,6 +238,8 @@ struct CheckpointHeaderContents
@@ -182,7 +182,7 @@ index c3dbc3c..c32dfa4 100644
      bool isModularSimulatorCheckpoint = false;
  };
 diff --git a/src/gromacs/mdlib/energyoutput.cpp b/src/gromacs/mdlib/energyoutput.cpp
-index 0b72fc4..6066654 100644
+index 0b72fc4e0c..60666542b4 100644
 --- a/src/gromacs/mdlib/energyoutput.cpp
 +++ b/src/gromacs/mdlib/energyoutput.cpp
 @@ -242,7 +242,7 @@ EnergyOutput::EnergyOutput(ener_file*               fp_ene,
@@ -195,7 +195,7 @@ index 0b72fc4..6066654 100644
      MdModulesEnergyOutputToDensityFittingRequestChecker mdModulesAddOutputToDensityFittingFieldRequest;
      mdModulesNotifier.simulationSetupNotifications_.notify(&mdModulesAddOutputToDensityFittingFieldRequest);
 diff --git a/src/gromacs/mdlib/mdoutf.cpp b/src/gromacs/mdlib/mdoutf.cpp
-index 7e06e4f..38f5604 100644
+index 7e06e4fc9e..38f5604ebd 100644
 --- a/src/gromacs/mdlib/mdoutf.cpp
 +++ b/src/gromacs/mdlib/mdoutf.cpp
 @@ -64,6 +64,7 @@
@@ -226,7 +226,7 @@ index 7e06e4f..38f5604 100644
      std::strcpy(headerContents.version, gmx_version());
      std::strcpy(headerContents.fprog, gmx::getProgramContext().fullBinaryPath());
 diff --git a/src/gromacs/mdlib/sim_util.cpp b/src/gromacs/mdlib/sim_util.cpp
-index 2571b0d..4572e2b 100644
+index 2571b0d216..4572e2baea 100644
 --- a/src/gromacs/mdlib/sim_util.cpp
 +++ b/src/gromacs/mdlib/sim_util.cpp
 @@ -123,6 +123,8 @@
@@ -256,7 +256,7 @@ index 2571b0d..4572e2b 100644
          gmx::ForceProviderOutput forceProviderOutput(forceWithVirialMtsLevel0, enerd);
  
 diff --git a/src/gromacs/mdrun/legacymdrunoptions.h b/src/gromacs/mdrun/legacymdrunoptions.h
-index 474f6f0..bb94199 100644
+index 474f6f0396..bb94199a30 100644
 --- a/src/gromacs/mdrun/legacymdrunoptions.h
 +++ b/src/gromacs/mdrun/legacymdrunoptions.h
 @@ -127,7 +127,9 @@ public:
@@ -271,7 +271,7 @@ index 474f6f0..bb94199 100644
      //! Print a warning if any force is larger than this (in kJ/mol nm).
      real pforce = -1;
 diff --git a/src/gromacs/mdrun/replicaexchange.cpp b/src/gromacs/mdrun/replicaexchange.cpp
-index c40161d..490db3f 100644
+index c40161d9ef..490db3f10f 100644
 --- a/src/gromacs/mdrun/replicaexchange.cpp
 +++ b/src/gromacs/mdrun/replicaexchange.cpp
 @@ -610,6 +610,7 @@ static void exchange_state(const gmx_multisim_t* ms, int b, t_state* state)
@@ -283,7 +283,7 @@ index c40161d..490db3f 100644
  
  static void copy_state_serial(const t_state* src, t_state* dest)
 diff --git a/src/gromacs/mdrun/runner.cpp b/src/gromacs/mdrun/runner.cpp
-index 232d994..cdf06fe 100644
+index 232d994e1a..cdf06fe041 100644
 --- a/src/gromacs/mdrun/runner.cpp
 +++ b/src/gromacs/mdrun/runner.cpp
 @@ -125,6 +125,7 @@
@@ -374,7 +374,7 @@ index 232d994..cdf06fe 100644
      walltime_accounting_destroy(walltime_accounting);
 diff --git a/src/gromacs/mdtypes/colvarshistory.h b/src/gromacs/mdtypes/colvarshistory.h
 new file mode 100644
-index 0000000..6605e6f
+index 0000000000..6605e6fce2
 --- /dev/null
 +++ b/src/gromacs/mdtypes/colvarshistory.h
 @@ -0,0 +1,20 @@
@@ -399,7 +399,7 @@ index 0000000..6605e6f
 +
 +#endif
 diff --git a/src/gromacs/mdtypes/inputrec.h b/src/gromacs/mdtypes/inputrec.h
-index 6e4ee72..f827185 100644
+index 6e4ee727ab..f827185107 100644
 --- a/src/gromacs/mdtypes/inputrec.h
 +++ b/src/gromacs/mdtypes/inputrec.h
 @@ -55,6 +55,8 @@ struct gmx_enfrot;
@@ -423,7 +423,7 @@ index 6e4ee72..f827185 100644
  
  int ir_optimal_nstcalcenergy(const t_inputrec* ir);
 diff --git a/src/gromacs/mdtypes/observableshistory.cpp b/src/gromacs/mdtypes/observableshistory.cpp
-index 0b5983a..57d8516 100644
+index 0b5983a59c..57d851645a 100644
 --- a/src/gromacs/mdtypes/observableshistory.cpp
 +++ b/src/gromacs/mdtypes/observableshistory.cpp
 @@ -41,6 +41,7 @@
@@ -435,7 +435,7 @@ index 0b5983a..57d8516 100644
  ObservablesHistory::ObservablesHistory()  = default;
  ObservablesHistory::~ObservablesHistory() = default;
 diff --git a/src/gromacs/mdtypes/observableshistory.h b/src/gromacs/mdtypes/observableshistory.h
-index d2ba1d8..a574713 100644
+index d2ba1d820f..a5747139d7 100644
 --- a/src/gromacs/mdtypes/observableshistory.h
 +++ b/src/gromacs/mdtypes/observableshistory.h
 @@ -59,6 +59,7 @@ class energyhistory_t;
@@ -457,7 +457,7 @@ index d2ba1d8..a574713 100644
  
      ~ObservablesHistory();
 diff --git a/src/gromacs/mdtypes/state.cpp b/src/gromacs/mdtypes/state.cpp
-index 0f36009..b42ba3c 100644
+index 0f36009513..b42ba3caf7 100644
 --- a/src/gromacs/mdtypes/state.cpp
 +++ b/src/gromacs/mdtypes/state.cpp
 @@ -302,7 +302,9 @@ t_state::t_state() :
@@ -472,7 +472,7 @@ index 0f36009..b42ba3c 100644
  {
      // It would be nicer to initialize these with {} or {{0}} in the
 diff --git a/src/gromacs/mdtypes/state.h b/src/gromacs/mdtypes/state.h
-index e38f3f7..06a1cd8 100644
+index e38f3f7dbc..06a1cd8484 100644
 --- a/src/gromacs/mdtypes/state.h
 +++ b/src/gromacs/mdtypes/state.h
 @@ -269,6 +269,9 @@ public:
@@ -486,7 +486,7 @@ index e38f3f7..06a1cd8 100644
  
  #ifndef DOXYGEN
 diff --git a/src/programs/mdrun/tests/refdata/MdrunTest_WritesHelp.xml b/src/programs/mdrun/tests/refdata/MdrunTest_WritesHelp.xml
-index c2973bb..cb4d1da 100644
+index c2973bb1af..cb4d1da254 100644
 --- a/src/programs/mdrun/tests/refdata/MdrunTest_WritesHelp.xml
 +++ b/src/programs/mdrun/tests/refdata/MdrunTest_WritesHelp.xml
 @@ -6,7 +6,8 @@
