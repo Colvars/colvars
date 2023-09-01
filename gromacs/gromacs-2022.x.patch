@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 9195efc..ff9518f 100644
+index cd748c9..dffee16 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -588,6 +588,10 @@ include(gmxManageLmfit)
@@ -53,7 +53,7 @@ index 34114cd..8e4b3cf 100644
  if (BUILD_TESTING)
      add_subdirectory(tests)
 diff --git a/src/gromacs/fileio/checkpoint.cpp b/src/gromacs/fileio/checkpoint.cpp
-index 1413e97..4c009be 100644
+index f6764a1..7dfc52c 100644
 --- a/src/gromacs/fileio/checkpoint.cpp
 +++ b/src/gromacs/fileio/checkpoint.cpp
 @@ -69,6 +69,7 @@
@@ -79,7 +79,7 @@ index 1413e97..4c009be 100644
  }
  
  static int do_cpt_footer(XDR* xd, CheckPointVersion file_version)
-@@ -2034,6 +2043,36 @@ static int do_cpt_EDstate(XDR* xd, gmx_bool bRead, int nED, edsamhistory_t* EDst
+@@ -2035,6 +2044,36 @@ static int do_cpt_EDstate(XDR* xd, gmx_bool bRead, int nED, edsamhistory_t* EDst
      return 0;
  }
  
@@ -116,7 +116,7 @@ index 1413e97..4c009be 100644
  static int do_cpt_correlation_grid(XDR*                         xd,
                                     gmx_bool                     bRead,
                                     gmx_unused int               fflags,
-@@ -2431,6 +2470,7 @@ void write_checkpoint_data(t_fileio*                         fp,
+@@ -2432,6 +2471,7 @@ void write_checkpoint_data(t_fileio*                         fp,
                               observablesHistory->swapHistory.get(),
                               nullptr)
              < 0)
@@ -124,7 +124,7 @@ index 1413e97..4c009be 100644
          || (do_cpt_files(gmx_fio_getxdr(fp), FALSE, outputfiles, nullptr, headerContents.file_version) < 0))
      {
          gmx_file("Cannot read/write checkpoint; corrupt file, or maybe you are out of disk space?");
-@@ -2824,6 +2864,17 @@ static void read_checkpoint(const char*                    fn,
+@@ -2825,6 +2865,17 @@ static void read_checkpoint(const char*                    fn,
          cp_error();
      }
  
@@ -142,7 +142,7 @@ index 1413e97..4c009be 100644
      std::vector<gmx_file_position_t> outputfiles;
      ret = do_cpt_files(gmx_fio_getxdr(fp), TRUE, &outputfiles, nullptr, headerContents->file_version);
      if (ret)
-@@ -2999,6 +3050,13 @@ static CheckpointHeaderContents read_checkpoint_data(t_fileio*
+@@ -3000,6 +3051,13 @@ static CheckpointHeaderContents read_checkpoint_data(t_fileio*
          cp_error();
      }
  
@@ -156,7 +156,7 @@ index 1413e97..4c009be 100644
      ret = do_cpt_files(gmx_fio_getxdr(fp), TRUE, outputfiles, nullptr, headerContents.file_version);
  
      if (ret)
-@@ -3119,6 +3177,12 @@ void list_checkpoint(const char* fn, FILE* out)
+@@ -3120,6 +3178,12 @@ void list_checkpoint(const char* fn, FILE* out)
          ret = do_cpt_swapstate(gmx_fio_getxdr(fp), TRUE, headerContents.eSwapCoords, &swaphist, out);
      }
  
@@ -293,7 +293,7 @@ index 9fa553c..9c5be82 100644
  
  static void copy_state_serial(const t_state* src, t_state* dest)
 diff --git a/src/gromacs/mdrun/runner.cpp b/src/gromacs/mdrun/runner.cpp
-index 3e4d8ca..64eff71 100644
+index ea7f402..3bd9641 100644
 --- a/src/gromacs/mdrun/runner.cpp
 +++ b/src/gromacs/mdrun/runner.cpp
 @@ -126,6 +126,7 @@
@@ -313,7 +313,7 @@ index 3e4d8ca..64eff71 100644
  #include "isimulator.h"
  #include "membedholder.h"
  #include "replicaexchange.h"
-@@ -2053,6 +2056,52 @@ int Mdrunner::mdrunner()
+@@ -2055,6 +2058,52 @@ int Mdrunner::mdrunner()
                                           mdrunOptions.imdOptions,
                                           startingBehavior);
  
@@ -366,7 +366,7 @@ index 3e4d8ca..64eff71 100644
          if (haveDDAtomOrdering(*cr))
          {
              GMX_RELEASE_ASSERT(fr, "fr was NULL while cr->duty was DUTY_PP");
-@@ -2223,6 +2272,16 @@ int Mdrunner::mdrunner()
+@@ -2225,6 +2274,16 @@ int Mdrunner::mdrunner()
          releaseDevice(deviceInfo);
      }
  
