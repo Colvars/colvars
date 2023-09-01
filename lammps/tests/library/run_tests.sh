@@ -229,6 +229,10 @@ for dir in ${DIRLIST} ; do
   for f in AutoDiff/*
   do
     base=`basename $f`
+    if [ "${base%.state.stripped}" != "${base}" ] && [ -n "${COLVARS_BINARY_RESTART}" ] ; then
+      # Do not try comparing binary state files, they will never match anyway
+      continue
+    fi
     if [ "${base}" != "${base%.traj}" ] ; then
       # System force is now total force
       sed 's/fs_/ft_/g' < ${base} > ${TMPDIR}/${base}

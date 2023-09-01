@@ -184,3 +184,12 @@ jobs:
           name: failed-interface-test-diffs-${{ inputs.backend_name }}
           path: ${{ inputs.test_interface_directory }}/*/*.diff
 
+      - name: Run regression tests for library code with ${{ inputs.backend_name }} (binary restarts)
+        if: ${{ inputs.test_lib_directory }}
+        shell: bash
+        working-directory: ${{ inputs.test_lib_directory }}
+        env:
+          COLVARS_BINARY_RESTART: 1
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
+          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
