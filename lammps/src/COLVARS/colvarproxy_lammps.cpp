@@ -209,7 +209,7 @@ double colvarproxy_lammps::compute()
 void colvarproxy_lammps::serialize_status(std::string &rst)
 {
   std::ostringstream os;
-  colvars->write_restart(os);
+  colvars->write_state(os);
   rst = os.str();
 }
 
