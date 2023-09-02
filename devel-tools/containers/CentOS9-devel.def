@@ -21,7 +21,7 @@ From: quay.io/centos/centos:stream9
         gcc gcc-c++ gcc-gfortran cppcheck \
         gcc-toolset-{12,13} \
         autoconf automake cvs git subversion mercurial \
-        cmake ccache \
+        cmake ccache ninja-build \
         openmpi-devel tbb-devel fftw-devel tcl-devel \
         python3-{devel,tkinter,virtualenv,numpy,scipy} \
         ncurses-devel \
