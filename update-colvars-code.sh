@@ -375,7 +375,7 @@ then
   fi
 
   # For torchann
-  patch -p1 -N -d ${target} < namd/config.patch
+  patch -F 12 -p1 -N -d ${target} < namd/config.patch
   sed -i '/^COLVARSCXXFLAGS =*/s/$/ $(EXTRACOLVARSFLAGS)/' ${target}/Makefile
 
   # Copy library files to the "colvars" folder
