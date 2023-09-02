@@ -30,10 +30,8 @@
 #include "colvar_geometricpath.h"
 
 #ifdef TORCH
-
 #include <torch/torch.h>
 #include <torch/script.h>
-
 #endif
 
 
@@ -1771,7 +1769,6 @@ public:
 };
 
 #ifdef TORCH
-
 // only when LibTorch is available
 class colvar::torchANN
   : public colvar::linearCombination
@@ -1807,16 +1804,13 @@ public:
     /// Redefined to handle periodicity
     virtual void wrap(colvarvalue &x_unwrapped) const;
 };
-
 #else
-
 class colvar::torchANN
   : public colvar::componentDisabled
 {
 public:
     torchANN(std::string const &conf) : componentDisabled(conf) {}
 };
-
 #endif // TORCH checking
 
 // \brief Colvar component: total value of a scalar map

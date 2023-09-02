@@ -1,3 +1,0 @@
-Info: NAMD Git-2022-05-10 for Linux-x86_64-multicore
-colvars: Initializing the collective variables module, version 2023-07-21.
-colvars: Using NAMD interface, version "2023-07-06".

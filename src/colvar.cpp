@@ -898,7 +898,7 @@ int colvar::init_components(std::string const &conf)
 #endif
   error_code |= init_components_type<neuralNetwork>(conf, "neural network CV for other CVs", "NeuralNetwork");
 #ifdef TORCH
-  error_code |= init_components_type<torchANN>(conf, "torch artifical neural network CV", "torchANN");
+  error_code |= init_components_type<torchANN>(conf, "CV defined by PyTorch artifical neural network models", "torchANN");
 #endif
   error_code |= init_components_type<map_total>(conf, "total value of atomic map", "mapTotal");
 
