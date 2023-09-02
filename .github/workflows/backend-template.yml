@@ -146,6 +146,7 @@ jobs:
         shell: bash
         env:
           OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
+          CMAKE_GENERATOR: Ninja
         run: |
           apptainer exec devel-tools/${{ inputs.container_name }}.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
           CCACHE_DIR=~/ccache_${{ inputs.container_name }} \

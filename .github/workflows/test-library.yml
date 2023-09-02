@@ -165,6 +165,7 @@ jobs:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     env:
       CCACHE: ccache
+      CMAKE_GENERATOR: Ninja
 
     steps:
       - uses: actions/checkout@v3
