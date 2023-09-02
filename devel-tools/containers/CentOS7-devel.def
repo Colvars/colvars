@@ -34,11 +34,14 @@ From: centos:7
 
     # Build Charm++
     umask 022
-    git clone --single-branch --depth=1 -b v7.0.0 https://github.com/UIUC-PPL/charm.git /opt/charm && \
-        cd /opt/charm && \
-        ./build charm++ mpi-linux-x86_64 -j\$(nproc) --with-production && \
-        ./build charm++ multicore-linux-x86_64 -j\$(nproc) --with-production && \
-        ./build charm++ netlrts-linux-x86_64 -j\$(nproc) --with-production
+    source /etc/profile
+    module load mpi
+    git clone --single-branch --depth=1 -b v7.0.0 https://github.com/UIUC-PPL/charm.git /opt/charm
+    cd /opt/charm
+    export CCACHE_DIR=/tmp
+    ./build charm++ mpi-linux-x86_64 -j16 --with-production && \
+    ./build charm++ multicore-linux-x86_64 -j16 --with-production && \
+    ./build charm++ netlrts-linux-x86_64 -j16 --with-production
 
     # Load Git 2.27
     cat > /etc/profile.d/git.sh <<EOF
@@ -47,3 +50,8 @@ if [ \$(id -u) != 0 ] && [ -d /opt/rh/rh-git227 ] ; then
 fi
 EOF
 
+    # Build and install spiff
+    rm -fr /tmp/spiff
+    git clone https://github.com/jhenin/spiff /tmp/spiff && \
+        make -C /tmp/spiff && \
+        install /tmp/spiff/spiff /usr/local/bin/
