@@ -137,11 +137,6 @@ jobs:
           apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
           apptainer pull CentOS9-devel.sif library://giacomofiorin/default/colvars_development:centos9
 
-      - name : Get spiff
-        shell: bash
-        working-directory: devel-tools
-        run: sudo cp -f $(apptainer exec ${{ inputs.container_name }}.sif ./get_spiff) /usr/local/bin
-
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
         env:
