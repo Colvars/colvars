@@ -1307,7 +1307,7 @@ int colvarmodule::setup_input()
     read_restart(*input_is);
     cvm::log(cvm::line_marker);
 
-    proxy->close_input_stream(restart_in_name);
+    proxy->delete_input_stream(restart_in_name);
   }
 
   if (proxy->input_stream_exists("input state string")) {
@@ -1316,7 +1316,7 @@ int colvarmodule::setup_input()
     read_restart(proxy->input_stream("input state string"));
     cvm::log(cvm::line_marker);
 
-    proxy->close_input_stream("input state string");
+    proxy->delete_input_stream("input state string");
   }
 
   return cvm::get_error();
