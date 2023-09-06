@@ -123,8 +123,9 @@ jobs:
       - name: Install Apptainer
         shell: bash
         run: |
-          wget https://github.com/apptainer/apptainer/releases/download/v1.0.3/apptainer_1.0.3_amd64.deb
-          sudo apt-get -y install ./apptainer_1.0.3_amd64.deb
+          sudo add-apt-repository -y ppa:apptainer/ppa
+          sudo apt update
+          sudo apt install -y apptainer-suid
 
       - name: Get container images for build dependencies
         shell: bash
