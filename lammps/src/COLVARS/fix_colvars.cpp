@@ -478,7 +478,6 @@ void FixColvars::setup(int vflag)
   if (me == 0) {
     setup_io();
     proxy->parse_module_config();
-    proxy->setup();
   }
 
   init_taglist();
