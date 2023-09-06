@@ -883,6 +883,8 @@ int colvar::init_components(std::string const &conf)
   error_code |= init_components_type<eigenvector>(conf, "eigenvector", "eigenvector");
   error_code |= init_components_type<alch_lambda>(conf, "alchemical coupling parameter", "alchLambda");
   error_code |= init_components_type<alch_Flambda>(conf, "force on alchemical coupling parameter", "alchFLambda");
+  error_code |= init_components_type<aspath>(conf, "arithmetic path collective variables (s)", "aspath");
+  error_code |= init_components_type<azpath>(conf, "arithmetic path collective variables (z)", "azpath");
   error_code |= init_components_type<gspath>(conf, "geometrical path collective variables (s)", "gspath");
   error_code |= init_components_type<gzpath>(conf, "geometrical path collective variables (z)", "gzpath");
   error_code |= init_components_type<linearCombination>(conf, "linear combination of other collective variables", "linearCombination");

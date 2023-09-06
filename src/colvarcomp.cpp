@@ -43,6 +43,22 @@ colvar::cvc::cvc(std::string const &conf)
 }
 
 
+int colvar::cvc::update_description()
+{
+  if (name.size() > 0) {
+    description = "cvc " + name;
+  } else {
+    description = "unnamed cvc";
+  }
+  if (function_type.size() > 0) {
+    description += " of type \"" + function_type + "\"";
+  } else {
+    description += " of unset type";
+  }
+  return COLVARS_OK;
+}
+
+
 int colvar::cvc::set_function_type(std::string const &type)
 {
   function_type = type;
@@ -53,6 +69,8 @@ int colvar::cvc::set_function_type(std::string const &type)
       function_types.push_back(function_type);
     }
   }
+  update_description();
+
   for (size_t i = function_types.size()-1; i > 0; i--) {
     cvm::main()->cite_feature(function_types[i]+" colvar component"+
                               " (derived from "+function_types[i-1]+")");
@@ -74,11 +92,6 @@ int colvar::cvc::init(std::string const &conf)
   }
 
   if (get_keyval(conf, "name", name, name)) {
-    if (name.size() > 0) {
-      description = "cvc \"" + name + "\" of type " + function_type;
-    } else {
-      description = "unnamed cvc";
-    }
     if ((name != old_name) && (old_name.size() > 0)) {
       cvm::error("Error: cannot rename component \""+old_name+
                  "\" after initialization (new name = \""+name+"\")",
@@ -86,6 +99,7 @@ int colvar::cvc::init(std::string const &conf)
       name = old_name;
     }
   }
+  update_description();
 
   get_keyval(conf, "componentCoeff", sup_coeff, sup_coeff);
   get_keyval(conf, "componentExp", sup_np, sup_np);
@@ -314,7 +328,7 @@ int colvar::cvc::init_dependencies() {
 
 int colvar::cvc::setup()
 {
-  description = "cvc " + name;
+  update_description();
   return COLVARS_OK;
 }
 

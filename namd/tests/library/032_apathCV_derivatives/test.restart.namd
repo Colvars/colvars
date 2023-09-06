@@ -1,0 +1,47 @@
+seed 1
+timestep            0.5
+
+parmfile            ../Common/trialanine.parm7
+coordinates         ../Common/../Common/trialanine_initial.pdb
+bincoordinates      test.coor
+temperature         300
+
+outputname          test.restart
+outputenergies      1000
+outputtiming        1000
+restartfreq         500000
+
+## SIMULATION PARAMETERS                                  
+# AMBER FF settings
+amber               on
+rigidBonds          water
+useSettle           on
+rigidTolerance      1.0e-8
+rigidIterations     100
+cutoff              9.0
+pairlistdist        11.0
+switching           off
+exclude             scaled1-4
+readexclusions      yes
+1-4scaling          0.83333333
+scnb                2.0
+zeromomentum        on
+ljcorrection        off
+watermodel          tip3
+
+nonbondedFreq       1 
+fullElectFrequency  1 
+stepspercycle       10
+splitpatch          hydrogen
+hgroupcutoff        2.8
+
+colvars             on
+colvarsConfig       apath.in
+colvarsInput        test.colvars.state
+
+langevin            on
+langevinDamping     10.0
+langevinTemp        300.0
+
+firsttimestep       0
+run                 20
