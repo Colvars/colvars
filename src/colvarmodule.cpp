@@ -1207,9 +1207,17 @@ int colvarmodule::end_of_step()
 
 int colvarmodule::update_engine_parameters()
 {
-  if (this->size() == 0) return cvm::get_error();
-  for (std::vector<colvar *>::iterator cvi = variables()->begin();
-       cvi != variables()->end();  cvi++) {
+  if (size() == 0) {
+    // No-op if no variables or biases are defined
+    return cvm::get_error();
+  }
+  if (proxy->simulation_running()) {
+    cvm::log("Current simulation parameters: initial step = " + cvm::to_str(it) +
+             ", integration timestep = " + cvm::to_str(dt()) + "\n");
+  }
+  cvm::log("Updating atomic parameters (masses, charges, etc).\n");
+  for (std::vector<colvar *>::iterator cvi = variables()->begin(); cvi != variables()->end();
+       cvi++) {
     (*cvi)->setup();
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
