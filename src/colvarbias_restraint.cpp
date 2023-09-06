@@ -202,6 +202,8 @@ int colvarbias_restraint_moving::init(std::string const &conf)
 
     first_step = cvm::step_absolute();
 
+    cvm::log("Initial step for restraint change: " + cvm::to_str(first_step) + "\n");
+
     get_keyval(conf, "targetNumSteps", target_nsteps, target_nsteps);
     if (!target_nsteps) {
       cvm::error("Error: targetNumSteps must be non-zero.\n", COLVARS_INPUT_ERROR);
