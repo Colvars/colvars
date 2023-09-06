@@ -12,6 +12,7 @@ restraint {
   configuration {
     step 20
     name harmonicwalls1
+    firstStep            0
     forceConstant  1.00000000000000e-04
     accumulatedWork -3.27455711899810e-02
   }

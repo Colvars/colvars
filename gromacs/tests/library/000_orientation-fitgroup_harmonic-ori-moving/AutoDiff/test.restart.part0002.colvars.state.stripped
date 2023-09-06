@@ -12,6 +12,7 @@ restraint {
   configuration {
     step 40
     name harmonic1
+    firstStep            0
     centers  (  0.00000000000000e+00 ,  0.00000000000000e+00 ,  1.00000000000000e+00 ,  0.00000000000000e+00 )
     accumulatedWork  9.54354372629752e-01
   }
