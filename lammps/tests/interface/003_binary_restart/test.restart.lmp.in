@@ -1,0 +1,22 @@
+# -*- lammps -*-
+
+include ../common/charmmff.lmp.in
+
+read_restart  test.lmp.bin
+
+include ../common/fixes.lmp.in
+
+log test.restart.out
+
+fix Colvars all colvars ${colvars_config} output test.restart
+
+include ../common/md.lmp.in
+
+write_data test.restart.lmp.data
+write_restart test.restart.lmp.bin
+
+shell rm -f "index.ndx"
+shell rm -f "rmsd_atoms_refpos.xyz"
+shell rm -f "heavy_atoms_refpos.xyz"
+shell rm -f "rmsd_atoms_refpos2.xyz"
+shell rm -f "rmsd_atoms_random.xyz"
