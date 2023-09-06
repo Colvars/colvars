@@ -317,7 +317,8 @@ void colvar::customColvar::apply_force(colvarvalue const &force) {
                 }
             } else {
                 const colvarvalue& current_cv_value = cv[i_cv]->value();
-                colvarvalue cv_force(current_cv_value.type());
+		colvarvalue cv_force(current_cv_value);
+		cv_force.reset();
                 const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
                 for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) {
                     for (size_t c = 0; c < x.size(); ++c) {
