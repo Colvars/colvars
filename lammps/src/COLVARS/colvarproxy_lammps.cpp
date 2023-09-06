@@ -216,10 +216,7 @@ void colvarproxy_lammps::serialize_status(std::string &rst)
 // set status from string
 bool colvarproxy_lammps::deserialize_status(std::string &rst)
 {
-  std::istringstream is;
-  is.str(rst);
-
-  if (!colvars->read_restart(is)) {
+  if (! colvarproxy_io::input_stream_from_string("input state string", rst)) {
     return false;
   } else {
     return true;

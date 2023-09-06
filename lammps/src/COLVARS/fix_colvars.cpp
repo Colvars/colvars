@@ -904,7 +904,9 @@ void FixColvars::restart(char *buf)
 {
   if (me == 0) {
     std::string rest_text(buf);
-    proxy->deserialize_status(rest_text);
+    if (!proxy->deserialize_status(rest_text)) {
+      error->all(FLERR, "Failed to set the Colvars input state from string buffer");
+    }
   }
 }
 
