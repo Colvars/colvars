@@ -5,11 +5,11 @@ configuration {
 
 colvar {
   name one
-  x  3.21404878499019e+00
+  x  3.21404878547144e+00
 }
 
 colvar {
   name two
-  x  3.14863335183754e+00
+  x  3.14863335158646e+00
 }
 

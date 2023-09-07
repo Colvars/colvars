@@ -10,12 +10,12 @@ colvar {
 
 colvar {
   name rmsd_sym
-  x  7.26619298562140e-01
+  x  7.26619298562136e-01
 }
 
 colvar {
   name rmsd_min
-  x  7.26619298562140e-01
+  x  7.26619298562136e-01
 }
 
 restraint {

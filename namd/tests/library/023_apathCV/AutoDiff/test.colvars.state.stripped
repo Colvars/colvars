@@ -10,6 +10,6 @@ colvar {
 
 colvar {
   name apath_z_dihed
-  x  4.37232316380885e+00
+  x  4.37232316380883e+00
 }
 

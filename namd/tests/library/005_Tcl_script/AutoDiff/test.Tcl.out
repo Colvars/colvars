@@ -1,4 +1,4 @@
-TCL: Running Colvars version 2023-07-21
+TCL: Running Colvars version 2020-04-09
 TCL: Running cv units real
 TCL: 
 TCL: d = 0.00000000000000e+00
@@ -13,7 +13,7 @@ TCL: E(harmonic1) = 18000
 TCL: Original numsteps 20 will be ignored.
 TCL: Running for 20 steps
 TCL: d = 1.28684277602119e+01
-TCL: E(abf1) = 32.885
+TCL: E(abf1) = 0
 TCL: E(harmonic1) = 94.2708
 TCL: Running cv bias harm2 getconfig
 TCL: 
@@ -27,7 +27,7 @@ TCL:
 TCL: Running cv bias harm2 energy
 TCL: 17.8166
 TCL: Running cv bias harm2 update
-TCL: 1.78166082981433e+01
+TCL: 17.8166
 TCL: Running for 20 steps
 TCL: Running cv bias harm2 energy
 TCL: 13.4817

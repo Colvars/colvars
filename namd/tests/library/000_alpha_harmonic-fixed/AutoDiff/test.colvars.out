@@ -1,12 +1,9 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:   https://doi.org/10.1080/00268976.2013.813594
-colvars: as well as all other papers listed below for individual features used.
+colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
+colvars: in any publication based on this calculation.
 colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
 colvars: This version was built with the C++11 standard or higher.
-colvars: Redefining the Tcl "cv" command to the new script interface.
-colvars: The restart output state file will be "test.tmp.colvars.state".
-colvars: The final output state file will be "test.colvars.state".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -45,7 +42,6 @@ colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
-colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "one"
@@ -68,7 +64,7 @@ colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 0.1
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0.1 [default]
+colvars:   # upperBoundary = 0 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
@@ -96,7 +92,6 @@ colvars:   # centers = { 0.1 }
 colvars:   # targetCenters = { 0.1 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 0.001
-colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   The force constant for colvar "one" will be rescaled to 0.1 according to the specified width (0.1).
 colvars: ----------------------------------------------------------------------
@@ -107,28 +102,43 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (22 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: updating grid object data (0 grid objects in total).
-colvars: 
-colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
-colvars: 
-colvars: - Colvars module:
-colvars: - Colvars-NAMD interface:
-colvars: - Harmonic colvar bias implementation:
-colvars: - Optimal rotation via flexible fitting:
-colvars: - alpha colvar component:
-colvars: - angle colvar component:
-colvars: - hBond colvar component:
-colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
-colvars: 
-colvars: - NAMD engine:
-colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
-colvars: 
-colvars: updating target temperature (T = 0 K).
+colvars: Re-initialized atom group for variable "one":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
+colvars: Re-initialized atom group for variable "one":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/4. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/5. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/6. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/7. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/8. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/9. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/10. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/11. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/12. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/13. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/14. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/15. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/16. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/17. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/18. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/19. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/20. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/21. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/22. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/23. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars: Re-initialized atom group for variable "one":0/24. 2 atoms: total mass = 30.006, total charge = -0.98.
+colvars: Re-initialized atom group for variable "one":0/25. 2 atoms: total mass = 30.006, total charge = -0.98.
+colvars: Re-initialized atom group for variable "one":0/26. 2 atoms: total mass = 30.006, total charge = -0.98.
+colvars: Re-initialized atom group for variable "one":0/27. 2 atoms: total mass = 30.006, total charge = -0.98.
+colvars: Re-initialized atom group for variable "one":0/28. 2 atoms: total mass = 30.006, total charge = -0.98.
+colvars: Re-initialized atom group for variable "one":0/29. 2 atoms: total mass = 30.006, total charge = -0.98.
+colvars: The restart output state file will be "test.tmp.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: Opening trajectory file "test.colvars.traj".
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (22 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
-colvars: updating grid object data (0 grid objects in total).
-colvars: updating target temperature (T = 0 K).
 colvars: Re-initialized atom group for variable "one":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
 colvars: Re-initialized atom group for variable "one":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "one":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
