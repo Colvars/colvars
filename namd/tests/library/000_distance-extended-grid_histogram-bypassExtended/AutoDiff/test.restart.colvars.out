@@ -154,7 +154,7 @@ colvars: updating target temperature (T = 0 K).
 colvars: ----------------------------------------------------------------------
 colvars: Loading state from file "test.colvars.state".
 colvars:   Restarting collective variable "one" from value: 3.2155
-colvars:   Restarting histogram bias "histogram1" from step number 20.
+colvars:   Restarting histogram bias "histogram1" from step number 0.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).

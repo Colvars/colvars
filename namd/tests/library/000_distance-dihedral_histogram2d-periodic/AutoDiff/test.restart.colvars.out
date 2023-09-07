@@ -7,6 +7,7 @@ colvars: This version was built with the C++11 standard or higher.
 colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Opening trajectory file "test.restart.colvars.traj".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -225,7 +226,6 @@ colvars: - NAMD engine:
 colvars: - Scalable center-of-mass computation (NAMD):
 colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
 colvars: 
-colvars: updating target temperature (T = 0 K).
 colvars: ----------------------------------------------------------------------
 colvars: Loading state from file "test.colvars.state".
 colvars:   Restarting collective variable "r" from value: 3.21688
@@ -236,7 +236,6 @@ colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (4 scalable groups, 16 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
-colvars: updating target temperature (T = 0 K).
 colvars: Re-initialized atom group for variable "r":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
 colvars: Re-initialized atom group for variable "r":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: Re-initialized atom group for variable "phi":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.

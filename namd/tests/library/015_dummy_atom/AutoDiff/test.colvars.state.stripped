@@ -5,7 +5,7 @@ configuration {
 
 colvar {
   name angle
-  x  9.03916964165211e+01
+  x  9.03916964164922e+01
 }
 
 restraint {

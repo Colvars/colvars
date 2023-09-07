@@ -192,7 +192,7 @@ colvars: ----------------------------------------------------------------------
 colvars: Loading state from file "test.colvars.state".
 colvars:   Restarting collective variable "one" from value: -1.07139
 colvars:   Restarting collective variable "two" from value: -2.07997
-colvars:   Restarting metadynamics bias "metadynamics1" from step number 20.
+colvars:   Restarting metadynamics bias "metadynamics1" from step number 0.
 colvars:     read biasing energy and forces from grids.
 colvars:     read 0 additional explicit hills.
 colvars: ----------------------------------------------------------------------

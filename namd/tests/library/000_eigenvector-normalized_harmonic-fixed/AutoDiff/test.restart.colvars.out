@@ -7,6 +7,7 @@ colvars: This version was built with the C++11 standard or higher.
 colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Opening trajectory file "test.restart.colvars.traj".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -115,7 +116,6 @@ colvars:   # centers = { 0.1 }
 colvars:   # targetCenters = { 0.1 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 0.001
-colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   The force constant for colvar "one" will be rescaled to 0.004 according to the specified width (0.5).
 colvars: ----------------------------------------------------------------------
@@ -140,7 +140,6 @@ colvars:
 colvars: - NAMD engine:
 colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
 colvars: 
-colvars: updating target temperature (T = 0 K).
 colvars: ----------------------------------------------------------------------
 colvars: Loading state from file "test.colvars.state".
 colvars:   Restarting collective variable "one" from value: 0.4245
@@ -150,7 +149,6 @@ colvars: Updating NAMD interface:
 colvars: updating atomic data (10 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
-colvars: updating target temperature (T = 0 K).
 colvars: Re-initialized atom group for variable "one":0/0. 10 atoms: total mass = 120.11, total charge = 0.53.
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".

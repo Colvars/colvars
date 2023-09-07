@@ -5,7 +5,7 @@ configuration {
 
 colvar {
   name one
-  x  3.21403236488325e+00
+  x  3.21403236536445e+00
 }
 
 restraint {
@@ -14,7 +14,7 @@ restraint {
     name harmonicwalls1
     firstStep            0
     forceConstant  1.00000000000000e-04
-    accumulatedWork -3.37880405391244e-02
+    accumulatedWork -3.37880405409319e-02
   }
 }
 
