@@ -130,7 +130,7 @@ colvars:   # forceConstant = 0.001
 colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   # lowerWalls = { 0.1 }
-colvars:   # upperWalls = { 0.2 }
+colvars:   # upperWalls = { 0.3 }
 colvars:   # lowerWallConstant = 0.001 [default]
 colvars:   # upperWallConstant = 0.001 [default]
 colvars:   The lower wall force constant for colvar "one" will be rescaled to 0.004 according to the specified width (0.5).
