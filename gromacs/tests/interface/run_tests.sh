@@ -291,10 +291,8 @@ for dir in ${DIRLIST} ; do
     fi
     if [ $RETVAL -ne 0 ]
     then
-      if [ ${base} != ${base%.out} ]
+      if [ ${base} == ${base%.out} ] # Ignore differences in stdout log
       then
-        echo -n "(warning: differences in log file $base) "
-      else
         echo -e "\n*** Failure for file $(${TPUT_RED})$base$(${TPUT_CLEAR}): see `pwd`/$base.diff "
         SUCCESS=0
         ALL_SUCCESS=0
@@ -321,7 +319,7 @@ for dir in ${DIRLIST} ; do
     if [ "x${gen_ref_output}" == 'xyes' ]; then
       echo "Reference files copied successfully."
     else
-      echo "$(${TPUT_GREEN})Success!$(${TPUT_CLEAR})"
+      echo " $(${TPUT_GREEN})Success!$(${TPUT_CLEAR})"
     fi
     cleanup_files
   fi

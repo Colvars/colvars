@@ -172,6 +172,7 @@ for dir in ${DIRLIST} ; do
       "${extra_args[@]}" \
       -echo log > /dev/null
 
+
     # Output of Colvars module, minus the version numbers
     for log_file in *.out ; do
       if [ x${log_file%.colvars.out} != x${log_file} ] ; then
@@ -236,10 +237,8 @@ for dir in ${DIRLIST} ; do
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then
-      if [ ${base##*\.} = 'out' ]
+      if [ ${base} == ${base%.out} ] # Ignore differences in stdout log
       then
-        echo -n "(warning: differences in log file $base) "
-      else
         echo -e "\n*** Failure for file $(${TPUT_RED})$base$(${TPUT_CLEAR}): see `pwd`/$base.diff "
         SUCCESS=0
         ALL_SUCCESS=0
@@ -268,7 +267,7 @@ for dir in ${DIRLIST} ; do
     if [ "x${gen_ref_output}" == 'xyes' ]; then
       echo "Reference files copied successfully."
     else
-      echo "$(${TPUT_GREEN})Success!$(${TPUT_CLEAR})"
+      echo " $(${TPUT_GREEN})Success!$(${TPUT_CLEAR})"
     fi
     cleanup_files
   fi

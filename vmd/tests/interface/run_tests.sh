@@ -78,10 +78,8 @@ do
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then
-      if [ ${base##*\.} = 'out' ]
+      if [ ${base} == ${base%.out} ] # Ignore differences in stdout log
       then
-        echo -n "(warning: differences in log file $base) "
-      else
         echo -e "\n***  Failure for file $base: see $dir/$base.diff ***"
         SUCCESS=0
         ALL_SUCCESS=0
@@ -91,7 +89,7 @@ do
 
   if [ $SUCCESS -eq 1 ]
   then
-    echo "Success!"
+    echo " Success!"
     cleanup_files
   fi
 
