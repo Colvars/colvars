@@ -129,6 +129,9 @@ public:
   /// Closes all input streams
   int close_input_streams();
 
+  /// Same as close_input_stream(), but also removes the corresponding entry from memory
+  int delete_input_stream(std::string const &input_name);
+
   /// List all input streams that were opened at some point
   std::list<std::string> list_input_stream_names() const;
 

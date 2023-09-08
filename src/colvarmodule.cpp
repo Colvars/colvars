@@ -1207,9 +1207,17 @@ int colvarmodule::end_of_step()
 
 int colvarmodule::update_engine_parameters()
 {
-  if (this->size() == 0) return cvm::get_error();
-  for (std::vector<colvar *>::iterator cvi = variables()->begin();
-       cvi != variables()->end();  cvi++) {
+  if (size() == 0) {
+    // No-op if no variables or biases are defined
+    return cvm::get_error();
+  }
+  if (proxy->simulation_running()) {
+    cvm::log("Current simulation parameters: initial step = " + cvm::to_str(it) +
+             ", integration timestep = " + cvm::to_str(dt()) + "\n");
+  }
+  cvm::log("Updating atomic parameters (masses, charges, etc).\n");
+  for (std::vector<colvar *>::iterator cvi = variables()->begin(); cvi != variables()->end();
+       cvi++) {
     (*cvi)->setup();
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
@@ -1307,7 +1315,7 @@ int colvarmodule::setup_input()
     read_restart(*input_is);
     cvm::log(cvm::line_marker);
 
-    proxy->close_input_stream(restart_in_name);
+    proxy->delete_input_stream(restart_in_name);
   }
 
   if (proxy->input_stream_exists("input state string")) {
@@ -1316,7 +1324,7 @@ int colvarmodule::setup_input()
     read_restart(proxy->input_stream("input state string"));
     cvm::log(cvm::line_marker);
 
-    proxy->close_input_stream("input state string");
+    proxy->delete_input_stream("input state string");
   }
 
   return cvm::get_error();

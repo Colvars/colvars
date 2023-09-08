@@ -12,6 +12,7 @@ restraint {
   configuration {
     step 20
     name harmonic1
+    firstStep            0
     forceConstant  1.00000000000000e-04
   }
 }

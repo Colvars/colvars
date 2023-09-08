@@ -22,6 +22,7 @@ restraint {
   configuration {
     step 40
     name harmonic1
+    firstStep            0
     centers   2.00000000000000e+00
   }
 }

@@ -293,6 +293,26 @@ int colvarproxy_io::close_input_stream(std::string const &input_name)
 }
 
 
+int colvarproxy_io::delete_input_stream(std::string const &input_name)
+{
+  if (colvarproxy_io::close_input_stream(input_name) == COLVARS_OK) {
+    std::ifstream *ifs = dynamic_cast<std::ifstream *>(input_streams_[input_name]);
+    if (ifs) {
+      delete ifs;
+    } else {
+      std::istringstream * iss = dynamic_cast<std::istringstream *>(input_streams_[input_name]);
+      if (iss) {
+        delete iss;
+      }
+    }
+    input_streams_.erase(input_name);
+    return COLVARS_OK;
+  }
+  return cvm::error("Error: input file/channel \""+input_name+
+                    "\" does not exist.\n", COLVARS_FILE_ERROR);
+}
+
+
 int colvarproxy_io::close_input_streams()
 {
   for (std::map<std::string,

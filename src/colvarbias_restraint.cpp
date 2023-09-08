@@ -202,6 +202,8 @@ int colvarbias_restraint_moving::init(std::string const &conf)
 
     first_step = cvm::step_absolute();
 
+    cvm::log("Initial step for restraint change: " + cvm::to_str(first_step) + "\n");
+
     get_keyval(conf, "targetNumSteps", target_nsteps, target_nsteps);
     if (!target_nsteps) {
       cvm::error("Error: targetNumSteps must be non-zero.\n", COLVARS_INPUT_ERROR);
@@ -232,10 +234,9 @@ std::string const colvarbias_restraint_moving::get_state_params() const
   std::ostringstream os;
   os.setf(std::ios::scientific, std::ios::floatfield);
   if (b_chg_centers || b_chg_force_k) {
-    // TODO move this
+    os << "firstStep " << std::setw(cvm::it_width) << first_step << "\n";
     if (target_nstages) {
-      os << "stage " << std::setw(cvm::it_width)
-         << stage << "\n";
+      os << "stage " << std::setw(cvm::it_width) << stage << "\n";
     }
   }
   return os.str();
@@ -245,6 +246,12 @@ std::string const colvarbias_restraint_moving::get_state_params() const
 int colvarbias_restraint_moving::set_state_params(std::string const &conf)
 {
   if (b_chg_centers || b_chg_force_k) {
+    auto first_step_flags = colvarparse::parse_restart;
+    if (cvm::main()->restart_version_number() > 20230906) {
+      // Only require the first step when the code could produce it
+      first_step_flags = colvarparse::parse_restart | colvarparse::parse_required;
+    }
+    get_keyval(conf, "firstStep", first_step, first_step, first_step_flags);
     if (target_nstages) {
       get_keyval(conf, "stage", stage, stage,
                  colvarparse::parse_restart | colvarparse::parse_required);
