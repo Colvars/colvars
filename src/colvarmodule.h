@@ -448,6 +448,9 @@ private:
 
   template <typename IST> IST & read_state_template_(IST &is);
 
+  /// Internal state buffer, to be read as an unformatted stream
+  std::vector<unsigned char> input_state_buffer_;
+
 public:
 
   /// Read all objects' state fron a formatted (text) stream
@@ -455,6 +458,9 @@ public:
 
   /// Read all objects' state fron an unformatted (binary) stream
   memory_stream & read_state(memory_stream &is);
+
+  /// Set an internal state buffer, to be read later as an unformatted stream when ready
+  int set_input_state_buffer(size_t n, unsigned char *buf);
 
   /// Read the states of individual objects; allows for changes
   std::istream & read_objects_state(std::istream &is);
