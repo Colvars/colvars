@@ -1374,6 +1374,16 @@ int colvarmodule::setup_input()
     proxy->delete_input_stream("input state string");
   }
 
+  if (input_state_buffer_.size() > 0) {
+    cvm::log(cvm::line_marker);
+    cvm::log("Loading state from unformatted memory.\n");
+    cvm::memory_stream ms(input_state_buffer_.size(), input_state_buffer_.data());
+    read_state(ms);
+    cvm::log(cvm::line_marker);
+
+    input_state_buffer_.clear();
+  }
+
   return cvm::get_error();
 }
 
@@ -1520,6 +1530,14 @@ cvm::memory_stream &colvarmodule::read_state(cvm::memory_stream &is)
                COLVARS_INPUT_ERROR);
   }
   return is;
+}
+
+
+int colvarmodule::set_input_state_buffer(size_t n, unsigned char *buf)
+{
+  input_state_buffer_.clear();
+  std::copy(buf, buf + n, std::back_inserter(input_state_buffer_));
+  return COLVARS_OK;
 }
 
 

@@ -45,9 +45,11 @@
 #include <iostream>
 #include <vector>
 
-#include "colvarproxy_lammps.h"
 #include "colvarmodule.h"
+#include "colvarproxy.h"
+#include "colvarproxy_lammps.h"
 #include "colvarscript.h"
+#include "colvars_memstream.h"
 
 
 /* struct for packed data communication of coordinates and forces. */
@@ -888,13 +890,17 @@ void FixColvars::end_of_step()
 void FixColvars::write_restart(FILE *fp)
 {
   if (me == 0) {
-    std::string rest_text;
-    proxy->serialize_status(rest_text);
-    // TODO call write_output_files()
-    const char *cvm_state = rest_text.c_str();
-    int len = strlen(cvm_state) + 1; // need to include terminating null byte.
-    fwrite(&len,sizeof(int),1,fp);
-    fwrite(cvm_state,1,len,fp);
+    cvm::memory_stream ms;
+    if (proxy->colvars->write_state(ms)) {
+      int len_cv_state = ms.length();
+      // Will write the buffer's length twice, so that the fix can read it later, too
+      int len = len_cv_state + sizeof(int);
+      fwrite(&len, sizeof(int), 1, fp);
+      fwrite(&len, sizeof(int), 1, fp);
+      fwrite(ms.output_buffer(), 1, len_cv_state, fp);
+    } else {
+      error->all(FLERR, "Failed to write Colvars state to binary file");
+    }
   }
 }
 
@@ -903,8 +909,10 @@ void FixColvars::write_restart(FILE *fp)
 void FixColvars::restart(char *buf)
 {
   if (me == 0) {
-    std::string rest_text(buf);
-    if (!proxy->deserialize_status(rest_text)) {
+    // Read the buffer's length, then load it into Colvars starting right past that location
+    int length = *(reinterpret_cast<int *>(buf));
+    unsigned char *colvars_state_buffer = reinterpret_cast<unsigned char *>(buf + sizeof(int));
+    if (proxy->colvars->set_input_state_buffer(length, colvars_state_buffer) != COLVARS_OK) {
       error->all(FLERR, "Failed to set the Colvars input state from string buffer");
     }
   }
