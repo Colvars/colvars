@@ -10,6 +10,7 @@
 #ifndef COLVARTYPES_H
 #define COLVARTYPES_H
 
+#include <sstream> // TODO specialize templates and replace this with iosfwd
 #include <vector>
 
 #ifdef COLVARS_LAMMPS

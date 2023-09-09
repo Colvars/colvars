@@ -33,7 +33,6 @@ You can browse the class hierarchy or the list of source files.
 /// shared between all object instances) to be accessed from other
 /// objects.
 
-#include <sstream>
 #include <string>
 #include <vector>
 #include <list>
