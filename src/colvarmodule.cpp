@@ -1340,7 +1340,7 @@ int colvarmodule::setup_input()
     input_is->seekg(0, std::ios::beg);
 
     bool binary_state_file = false;
-    
+
     uint32_t file_magic_number = 0;
     if (file_size > sizeof(uint32_t)) {
       if (input_is->read(reinterpret_cast<char *>(&file_magic_number), sizeof(uint32_t))) {
@@ -1484,8 +1484,11 @@ template <typename IST> IST & colvarmodule::read_state_template_(IST &is)
       }
 
       if (restart_version() != version()) {
-        cvm::log("This state file was generated with version "+
-                 restart_version()+"\n");
+        cvm::log("This state file was generated with version " + restart_version() + "\n");
+        if (std::is_same<IST, cvm::memory_stream>::value) {
+          cvm::log("Warning: compatibility between differetn Colvars versions is not "
+                   "guaranteed for unformatted (binary) state files.\n");
+        }
       }
 
       if (restart_version_number() < 20160810) {
