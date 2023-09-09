@@ -22,7 +22,7 @@
 #include "colvars_memstream.h"
 
 
-template <class T, class IST> IST &read_restart_template(colvar_grid<T> &g, IST &is)
+template <class T, class IST> IST &read_restart_template_(colvar_grid<T> &g, IST &is)
 {
   auto const start_pos = is.tellg();
   std::string conf;
@@ -43,13 +43,13 @@ template <class T, class IST> IST &read_restart_template(colvar_grid<T> &g, IST 
 
 template <class T> std::istream &colvar_grid<T>::read_restart(std::istream &is)
 {
-  return read_restart_template<T, std::istream>(*this, is);
+  return read_restart_template_<T, std::istream>(*this, is);
 }
 
 
 template <class T> cvm::memory_stream &colvar_grid<T>::read_restart(cvm::memory_stream &is)
 {
-  return read_restart_template<T, cvm::memory_stream>(*this, is);
+  return read_restart_template_<T, cvm::memory_stream>(*this, is);
 }
 
 
@@ -69,7 +69,7 @@ template <class T> cvm::memory_stream &colvar_grid<T>::write_restart(cvm::memory
 }
 
 
-template <class T, class IST> IST &read_raw_template(colvar_grid<T> &g, IST &is)
+template <class T, class IST> IST &read_raw_template_(colvar_grid<T> &g, IST &is)
 {
   auto const start_pos = is.tellg();
 
@@ -99,13 +99,13 @@ template <class T, class IST> IST &read_raw_template(colvar_grid<T> &g, IST &is)
 
 template <class T> std::istream &colvar_grid<T>::read_raw(std::istream &is)
 {
-  return read_raw_template<T, std::istream>(*this, is);
+  return read_raw_template_<T, std::istream>(*this, is);
 }
 
 
 template <class T> cvm::memory_stream &colvar_grid<T>::read_raw(cvm::memory_stream &is)
 {
-  return read_raw_template<T, cvm::memory_stream>(*this, is);
+  return read_raw_template_<T, cvm::memory_stream>(*this, is);
 }
 
 

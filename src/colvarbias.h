@@ -181,7 +181,7 @@ private:
   /// Read a keyword header for a data sequence from a stream
   /// \param[in,out] Input stream
   /// \param[in] Keyword labeling the header block; an error will be raised if not matching
-  template <typename IST> IST &read_state_data_key_template(IST &is, std::string const &key);
+  template <typename IST> IST &read_state_data_key_template_(IST &is, std::string const &key);
 
 public:
 
@@ -198,7 +198,7 @@ public:
 private:
 
   /// Generic stream reading function (formatted and not)
-  template <typename IST> IST & read_state_from_stream(IST &is);
+  template <typename IST> IST & read_state_template_(IST &is);
 
 public:
 

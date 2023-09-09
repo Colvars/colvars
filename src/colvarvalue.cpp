@@ -723,7 +723,7 @@ int colvarvalue::from_simple_string(std::string const &s)
 }
 
 
-template <typename OST> void colvarvalue::write_to_stream(OST &os) const
+template <typename OST> void colvarvalue::write_to_stream_template_(OST &os) const
 {
   switch (type()) {
   case colvarvalue::type_scalar:
@@ -751,14 +751,14 @@ template <typename OST> void colvarvalue::write_to_stream(OST &os) const
 
 std::ostream & operator << (std::ostream &os, colvarvalue const &x)
 {
-  x.write_to_stream<std::ostream>(os);
+  x.write_to_stream_template_<std::ostream>(os);
   return os;
 }
 
 
 cvm::memory_stream & operator << (cvm::memory_stream &os, colvarvalue const &x)
 {
-  x.write_to_stream<cvm::memory_stream>(os);
+  x.write_to_stream_template_<cvm::memory_stream>(os);
   return os;
 }
 
@@ -773,7 +773,7 @@ std::ostream & operator << (std::ostream &os, std::vector<colvarvalue> const &v)
 }
 
 
-template <typename IST> void colvarvalue::read_from_stream(IST &is)
+template <typename IST> void colvarvalue::read_from_stream_template_(IST &is)
 {
   if (type() == colvarvalue::type_notset) {
     cvm::error("Trying to read from a stream a colvarvalue, "
@@ -811,14 +811,14 @@ template <typename IST> void colvarvalue::read_from_stream(IST &is)
 
 std::istream & operator >> (std::istream &is, colvarvalue &x)
 {
-  x.read_from_stream<std::istream>(is);
+  x.read_from_stream_template_<std::istream>(is);
   return is;
 }
 
 
 cvm::memory_stream & operator >> (cvm::memory_stream &is, colvarvalue &x)
 {
-  x.read_from_stream<cvm::memory_stream>(is);
+  x.read_from_stream_template_<cvm::memory_stream>(is);
   return is;
 }
 

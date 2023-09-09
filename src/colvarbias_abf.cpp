@@ -742,7 +742,7 @@ int colvarbias_abf::read_gradients_samples()
 }
 
 
-template <typename OST> OST & colvarbias_abf::write_to_stream(OST &os)
+template <typename OST> OST & colvarbias_abf::write_state_data_template_(OST &os)
 {
   auto flags = os.flags();
 
@@ -770,17 +770,17 @@ template <typename OST> OST & colvarbias_abf::write_to_stream(OST &os)
 
 std::ostream & colvarbias_abf::write_state_data(std::ostream& os)
 {
-  return write_to_stream<std::ostream>(os);
+  return write_state_data_template_<std::ostream>(os);
 }
 
 
 cvm::memory_stream & colvarbias_abf::write_state_data(cvm::memory_stream& os)
 {
-  return write_to_stream<cvm::memory_stream>(os);
+  return write_state_data_template_<cvm::memory_stream>(os);
 }
 
 
-template <typename IST> IST &colvarbias_abf::read_from_stream(IST &is)
+template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
 {
   if ( input_prefix.size() > 0 ) {
     cvm::error("ERROR: cannot provide both inputPrefix and a colvars state file.\n", COLVARS_INPUT_ERROR);
@@ -827,13 +827,13 @@ template <typename IST> IST &colvarbias_abf::read_from_stream(IST &is)
 
 std::istream & colvarbias_abf::read_state_data(std::istream& is)
 {
-  return read_from_stream<std::istream>(is);
+  return read_state_data_template_<std::istream>(is);
 }
 
 
 cvm::memory_stream & colvarbias_abf::read_state_data(cvm::memory_stream& is)
 {
-  return read_from_stream<cvm::memory_stream>(is);
+  return read_state_data_template_<cvm::memory_stream>(is);
 }
 
 
