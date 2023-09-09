@@ -540,7 +540,7 @@ void raise_error_rewind(IST &is, SPT start_pos, std::string const &bias_type,
 }
 
 
-template <typename IST> IST & colvarbias::read_state_from_stream(IST &is)
+template <typename IST> IST & colvarbias::read_state_template_(IST &is)
 {
   auto const start_pos = is.tellg();
 
@@ -603,13 +603,13 @@ template <typename IST> IST & colvarbias::read_state_from_stream(IST &is)
 
 std::istream &colvarbias::read_state(std::istream &is)
 {
-  return read_state_from_stream<std::istream>(is);
+  return read_state_template_<std::istream>(is);
 }
 
 
 cvm::memory_stream &colvarbias::read_state(cvm::memory_stream &is)
 {
-  return read_state_from_stream<cvm::memory_stream>(is);
+  return read_state_template_<cvm::memory_stream>(is);
 }
 
 
@@ -699,7 +699,8 @@ cvm::memory_stream &colvarbias::write_state_data_key(cvm::memory_stream &os, std
 }
 
 
-template <typename IST> IST &colvarbias::read_state_data_key_template(IST &is, std::string const &key)
+template <typename IST>
+IST &colvarbias::read_state_data_key_template_(IST &is, std::string const &key)
 {
   auto const start_pos = is.tellg();
   std::string key_in;
@@ -718,13 +719,13 @@ template <typename IST> IST &colvarbias::read_state_data_key_template(IST &is, s
 
 std::istream & colvarbias::read_state_data_key(std::istream &is, std::string const &key)
 {
-  return read_state_data_key_template<std::istream>(is, key);
+  return read_state_data_key_template_<std::istream>(is, key);
 }
 
 
 cvm::memory_stream & colvarbias::read_state_data_key(cvm::memory_stream &is, std::string const &key)
 {
-  return read_state_data_key_template<cvm::memory_stream>(is, key);
+  return read_state_data_key_template_<cvm::memory_stream>(is, key);
 }
 
 

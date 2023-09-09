@@ -162,10 +162,10 @@ private:
 private:
 
   /// Generic stream writing function (formatted and not)
-  template <typename OST> OST &write_to_stream(OST &os);
+  template <typename OST> OST &write_state_data_template_(OST &os);
 
   /// Generic stream readingx function (formatted and not)
-  template <typename IST> IST &read_from_stream(IST &is);
+  template <typename IST> IST &read_state_data_template_(IST &is);
 
 public:
 

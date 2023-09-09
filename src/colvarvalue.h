@@ -298,9 +298,12 @@ public:
   /// Undefined operation
   void undef_op() const;
 
+private:
 
   /// Generic stream writing function (formatted and not)
-  template <typename OST> void write_to_stream(OST &os) const;
+  template <typename OST> void write_to_stream_template_(OST &os) const;
+
+public:
 
   /// Formatted output operator
   friend std::ostream & operator << (std::ostream &os, colvarvalue const &x);
@@ -308,8 +311,12 @@ public:
   /// Unformatted output operator
   friend cvm::memory_stream & operator << (cvm::memory_stream &os, colvarvalue const &x);
 
+private:
+
   /// Generic stream reading function (formatted and not)
-  template <typename IST> void read_from_stream(IST &is);
+  template <typename IST> void read_from_stream_template_(IST &is);
+
+public:
 
   /// Formatted input operator
   friend std::istream & operator >> (std::istream &is, colvarvalue &x);
