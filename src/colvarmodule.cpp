@@ -1314,17 +1314,15 @@ int colvarmodule::reset()
 int colvarmodule::setup_input()
 {
   if (proxy->input_prefix().size()) {
-    // Read a state file
-    std::string restart_in_name(proxy->input_prefix()+
-                                std::string(".colvars.state"));
-    std::istream *input_is = &(proxy->input_stream(restart_in_name,
-                                                   "restart file/channel",
-                                                   false));
+
+    // Read state from a file
+
+    std::string restart_in_name(proxy->input_prefix() + std::string(".colvars.state"));
+    std::istream *input_is = &(proxy->input_stream(restart_in_name, "restart file/channel", false));
     if (!*input_is) {
       // Try without the suffix ".colvars.state"
       restart_in_name = proxy->input_prefix();
-      input_is = &(proxy->input_stream(restart_in_name,
-                                       "restart file/channel"));
+      input_is = &(proxy->input_stream(restart_in_name, "restart file/channel"));
       if (!*input_is) {
         // Error message has already been printed, return now
         return COLVARS_FILE_ERROR;
@@ -1361,14 +1359,15 @@ int colvarmodule::setup_input()
         cvm::memory_stream mem_is(file_size, buf);
         if (!read_state(mem_is)) {
           input_is->setstate(std::ios::failbit);
-          cvm::error("Error: cannot interpret contents of binary file \""+restart_in_name+"\".\n",
+          cvm::error("Error: cannot interpret contents of binary file \"" + restart_in_name +
+                         "\".\n",
                      COLVARS_INPUT_ERROR);
         }
       } else {
         cvm::error("Error: cannot read from binary file \"" + restart_in_name + "\".\n",
                    COLVARS_INPUT_ERROR);
       }
-      delete [] buf;
+      delete[] buf;
     } else {
       cvm::log("Loading state from text file \"" + restart_in_name + "\".\n");
       read_state(*input_is);
@@ -1379,8 +1378,9 @@ int colvarmodule::setup_input()
   }
 
   if (proxy->input_stream_exists("input state string")) {
+
     cvm::log(cvm::line_marker);
-    cvm::log("Loading state from string.\n");
+    cvm::log("Loading state from formatted string.\n");
     read_state(proxy->input_stream("input state string"));
     cvm::log(cvm::line_marker);
 
