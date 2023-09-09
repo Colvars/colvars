@@ -1337,11 +1337,24 @@ int colvarmodule::setup_input()
 
     cvm::log(cvm::line_marker);
 
-    if (binary_restart) {
-      cvm::log("Loading state from binary file \""+restart_in_name+"\".\n");
-      input_is->seekg(0, std::ios::end);
-      auto const file_size = input_is->tellg();
-      input_is->seekg(0, std::ios::beg);
+    input_is->seekg(0, std::ios::end);
+    size_t const file_size = input_is->tellg();
+    input_is->seekg(0, std::ios::beg);
+
+    bool binary_state_file = false;
+    
+    uint32_t file_magic_number = 0;
+    if (file_size > sizeof(uint32_t)) {
+      if (input_is->read(reinterpret_cast<char *>(&file_magic_number), sizeof(uint32_t))) {
+        if (file_magic_number == colvars_magic_number) {
+          binary_state_file = true;
+        }
+        input_is->seekg(0, std::ios::beg);
+      }
+    }
+
+    if (binary_state_file) {
+      cvm::log("Loading state from binary file \"" + restart_in_name + "\".\n");
       // TODO integrate istream.read() into memory_stream to avoid copying
       auto *buf = new unsigned char[file_size];
       if (input_is->read(reinterpret_cast<char *>(buf), file_size)) {
