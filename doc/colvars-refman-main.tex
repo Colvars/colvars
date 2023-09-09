@@ -481,7 +481,9 @@ Other optional keywords for \texttt{fix colvars} are:
     string}{%
     ``out''}{%
     If a value is provided, it is interpreted as the prefix to all output files that will be written by the Colvars module (see \ref{sec:colvars_output}).
-    A value must be defined and is set by default, even when Colvars embeds its state information in a LAMMPS restart files, to allow the output of other files (see \ref{sec:colvars_output}).
+    This includes output state files for checkpointing, as well as accumu;ated information such as PMFs or histograms and trajectories of the collective variables.
+    Because this information is often useful, a default value is set for this keyword when not provided.
+    However, supplying an empty string suppresses any file output from Colvars to file, except for data saved into the LAMMPS binary restart file.
 }
 
 \item %
