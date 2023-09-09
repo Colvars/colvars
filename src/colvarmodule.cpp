@@ -807,7 +807,9 @@ int colvarmodule::calc()
       // Write restart file, if different from main output
       error_code |= write_restart_file(restart_out_name);
     } else {
-      error_code |= write_restart_file(output_prefix()+".colvars.state");
+      if (output_prefix().size()) {
+        error_code |= write_restart_file(output_prefix()+".colvars.state");
+      }
     }
 
     cvm::increase_depth();
