@@ -1374,6 +1374,9 @@ int colvarmodule::setup_input()
     }
     cvm::log(cvm::line_marker);
 
+    // Now that the explicit input file was read, we shall ignore any unformatted buffer
+    input_state_buffer_.clear();
+
     proxy->delete_input_stream(restart_in_name);
   }
 
