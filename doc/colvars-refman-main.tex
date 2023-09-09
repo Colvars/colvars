@@ -958,36 +958,49 @@ The following keywords are available in the global context of the Colvars config
 
 \cvsubsec{Input state file}{sec:colvars_input}
 
-A \emph{state file} contains the information produced during a Colvars-based simulation besides atomic data, which is provided by \MDENGINE{}.
+Several of the sampling methods implemented in Colvars are time- or history-dependent, i.e.\ they work by accumulating data as a simulation progresses and use this data to change their biasing forces.  When continuing a simulation over consecutive runs, a \emph{state file} needs to be loaded into Colvars.
 
-Because many of the methods implemented in Colvars are history-dependent, this file is often needed to continue a long simulation over consecutive runs.
-Such state file is written automatically at the end of any simulation with Colvars, and contains data accumulated during that simulation along with the step number at the end of it.
-The step number read from the state file is then used to control such time-dependent biases: because of this essential role, the step number internal to Colvars may not always match the step number reported by the MD program that carried during the simulation (which may instead restart from zero each time).
-\cvnamdonly{If a state file is not given, the NAMD command \texttt{firstTimestep} may be used to control the Colvars step number.}
+The Colvars state file may be in either one of two formats:
+\begin{itemize}
+\item Unformatted (binary) format, which is both space-efficient and quick to load/save, but requires that the same \MDENGINE{} build was used to save the file in the first place.  Most importantly, no changes are allowed in the Colvars configuration between the original run.
+\item Formatted (text) format, which takes more space and is slower to to load/save but is also portable across different platforms and even different engines (except for changes in physical units).  Formatted state files are also the only format previously supported by Colvars version until late 2023. % TODO Add specific version?
+\end{itemize}
 
-Depending on the configuration, a state file may need to be loaded issued at the beginning of a new simulation when time-dependent biasing methods are applied (moving restraints, metadynamics, ABF, ...).
-\cvnamdonly{When the Colvars module is initialized in NAMD, the \texttt{colvarsInput} keyword can be used to give the name of the state file}.
-\cvlammpsonly{When the Colvars fix is defined in LAMMPS, the keyword \texttt{input} can be used to load the state file, although it is typically easier to use the LAMMPS \texttt{read\_restart} to re-initialize Colvars together with other fixes.}
-After initialization of the Colvars module, a state file may be loaded at any time \cvnamdonly{with the Tcl command \texttt{cv load}}%
-\cvvmdonly{with the Tcl command \texttt{cv load}}%
-\cvlammpsonly{with the \texttt{fix\_modify <fix-ID> load <filename>} LAMMPS command}.
+\cvsubsubsec{Contents of the state file.}{}
+In either format, the state file contains accumulated data as well as the step number at the end of the run.
+The step number read from a state file overrides any value that \MDENGINE{} provides, and will be incremented if the simulation proceeds.
+This means that the step number used internally by Colvars may not always match the step number reported by \MDENGINE{}.
+\cvnamdonly{This is particularly inmportant in NAMD, which represents step numbers as a 32-bit integers that overflows after $\sim$ 2 billion steps, effectively rendering neutralizing the usefulness of \texttt{firstTimeStep}.}
 
-It is possible to load a state file even if the configuration has changed:
-for example, new variables may be defined or restraints be added in between consecutive runs.
+% \cvgromacsonly{\cvsubsubsec{Restarting in GROMACS.}{} TODO }
+
+\cvlammpsonly{\cvsubsubsec{Restarting in LAMMPS.}{}
+For continuing a Colvars-based simulation, the recommended method is using the standard LAMMPS \texttt{read\_restart} command, which effectively reads the Colvars state in unformatted (binary) format embedded in the LAMMPS restart file.  Alternatively, restarting from a formatted Colvars-only state file is also possible by using the \texttt{input} keyword of the \texttt{fix colvars} command, which overrides the information read from the LAMMPS restart file.
+Furthermore, a state file may also be loaded after initialization with the \texttt{fix\_modify <fix-ID> load <filename>} LAMMPS command.
+}
+
+\cvnamdonly{\cvsubsubsec{Restarting in NAMD.}{}
+Before the Colvars module is initialized in NAMD, the \texttt{colvarsInput} keyword can be used to give the name of a state file.
+After initialization of the Colvars module, a state file may be loaded at any time with the Tcl command \texttt{cv load}.}
+
+\cvsubsubsec{Restarting after a change in Colvars configuration.}{}
+A unique advantage of the formatted Colvars state files is that they can be loaded even if the configuration has changed.
+For example, new restraints may have been added or removed from the Colvars configuration between consecutive runs.
 For each newly defined variable or bias, no information will be read from the state file if this is unavailable: such new objects will remain uninitialized until the first compute step.
 Conversely, any information that the state file has about variables or biases that are no longer defined is silently ignored.
-\emph{Because these checks are performed based on the names of variables and biases, it is the user's responsibility to ensure that these definitions are consistent between runs.}
+\emph{Because these checks are performed based solely on the names of variables and biases, it is your responsibility to ensure that these names correspond to consistent definitions between runs.}
 
 
 
 \cvsubsec{Output files}{sec:colvars_output}
 
-During a simulation with collective variables defined, the following three output files are written:
+If the output prefix \outputName{} is defined, the following output files are written during a simulation run:
 
 \begin{itemize}
 
-\item A \emph{state file}, named \outputName\texttt{.colvars.state}; this file is in ASCII (plain text) format\cvnamdonly{, regardless of the value of \texttt{binaryOutput} in the NAMD configuration}.  This file is written at the end of the specified run\cvscriptonly{, but can also be written at any time with the command \texttt{cv save} (\ref{sec:cv_command_loadsave})}.\\
-  \emph{This is the only Colvars output file needed to continue a simulation.}
+\item A \emph{state file}, named \outputName\texttt{.colvars.state}, which is written at the end of the specified run\cvscriptonly{, and can also be written at any time with the scripting command \texttt{save} (\ref{sec:cv_command_loadsave})}.
+This file is in plain text format by default\cvnamdonly{, regardless of the value of \texttt{binaryOutput} of the NAMD coordinate and velocity files}, or in binary format if the environment variable \texttt{COLVARS\_BINARY\_RESTART} is set to a non-zero integer.
+\emph{The state is the only Colvars output file needed to continue a simulation.}
 
 \item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
   The name of this file is \restartName\texttt{.colvars.state}.
