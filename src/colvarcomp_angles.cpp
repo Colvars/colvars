@@ -349,7 +349,7 @@ void colvar::dihedral::calc_gradients()
     A *= rA;
     cvm::rvector const dcosdA = rA*(cos_phi*A-B);
     cvm::rvector const dcosdB = rB*(cos_phi*B-A);
-    rA = 1.0;
+    // rA = 1.0;
 
     cvm::real const K = (1.0/sin_phi) * (180.0/PI);
 
@@ -363,7 +363,7 @@ void colvar::dihedral::calc_gradients()
     C *= rC;
     cvm::rvector const dsindC = rC*(sin_phi*C-B);
     cvm::rvector const dsindB = rB*(sin_phi*B-C);
-    rC = 1.0;
+    // rC = 1.0;
 
     cvm::real    const K = (-1.0/cos_phi) * (180.0/PI);
 
