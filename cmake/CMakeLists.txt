@@ -6,6 +6,10 @@ get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # Avoid having to export all the relevant symbols
+  set(BUILD_SHARED_LIBS OFF)
+endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -120,13 +124,7 @@ endif()
 
 option(BUILD_TOOLS "Build standalone tools" ON)
 
-option(BUILD_TESTS "Build tests" ON)
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  # TODO fix linkage errors with Visual Studio...
-  set(BUILD_TOOLS OFF)
-  set(BUILD_TESTS OFF)
-endif()
+option(BUILD_TESTS "Build functional tests" ON)
 
 option(BUILD_UNITTESTS "Build unit tests" ${BUILD_TESTS})
 
