@@ -13,17 +13,22 @@
 #include <iomanip>
 #include <algorithm>
 
-// used to set the absolute path of a replica file
+// Define function to get the absolute path of a replica file
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #include <direct.h>
-#define CHDIR ::_chdir
-#define GETCWD ::_getcwd
+#define GETCWD(BUF, SIZE) ::_getcwd(BUF, SIZE)
 #define PATHSEP "\\"
 #else
 #include <unistd.h>
-#define CHDIR ::chdir
-#define GETCWD ::getcwd
+#define GETCWD(BUF, SIZE) ::getcwd(BUF, SIZE)
 #define PATHSEP "/"
+#endif
+
+// When C++17 is available, use the standard library's API
+#if (__cplusplus >= 201703L)
+#include <filesystem>
+#undef GETCWD
+#define GETCWD(BUF, SIZE) (std::filesystem::current_path().string().c_str())
 #endif
 
 #include "colvarmodule.h"
@@ -1638,7 +1643,7 @@ int colvarbias_meta::setup_output()
 
     // TODO: one may want to specify the path manually for intricated filesystems?
     char *pwd = new char[3001];
-    if (GETCWD(pwd, 3000) == NULL) {
+    if (GETCWD(pwd, 3000) == nullptr) {
       return cvm::error("Error: cannot get the path of the current working directory.\n",
                         COLVARS_BUG_ERROR);
     }
