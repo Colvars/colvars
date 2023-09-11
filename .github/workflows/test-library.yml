@@ -51,6 +51,7 @@ jobs:
       - name: Build and test library (GCC)
         env:
           CCACHE: ccache
+          CCACHE_DIR: ~/.ccache
         run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Check documentation of command-line scripting interface
@@ -67,6 +68,7 @@ jobs:
         env:
           CMAKE_BUILD_DIR: build-clang
           CCACHE: ccache
+          CCACHE_DIR: ~/.ccache
           CXX: clang++
           CC: clang
         run: cmake -P devel-tools/build_test_library.cmake
@@ -74,6 +76,7 @@ jobs:
       - name: Build library with debug flags enabled
         env:
           CCACHE: ccache
+          CCACHE_DIR: ~/.ccache
         run: cmake -D COLVARS_DEBUG=ON -P devel-tools/build_test_library.cmake
 
       - name: Check whether secrets are available
