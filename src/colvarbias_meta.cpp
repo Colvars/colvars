@@ -1537,7 +1537,7 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
   std::istringstream data_is(data);
 
   cvm::step_number h_it = 0L;
-  cvm::real h_weight;
+  cvm::real h_weight = 0.0;
   std::vector<colvarvalue> h_centers(num_variables());
   for (i = 0; i < num_variables(); i++) {
     h_centers[i].type(variables(i)->value());

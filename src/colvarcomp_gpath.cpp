@@ -31,9 +31,9 @@ colvar::CartesianBasedPath::CartesianBasedPath(std::string const &conf): cvc(con
     // Lookup reference column of PDB
     // Copied from the RMSD class
     std::string reference_column;
-    double reference_column_value;
+    double reference_column_value = 0.0;
     if (get_keyval(conf, "refPositionsCol", reference_column, std::string(""))) {
-        bool found = get_keyval(conf, "refPositionsColValue", reference_column_value, 0.0);
+        bool found = get_keyval(conf, "refPositionsColValue", reference_column_value, reference_column_value);
         if (found && reference_column_value == 0.0) {
           cvm::error("Error: refPositionsColValue, "
                      "if provided, must be non-zero.\n");
