@@ -120,7 +120,7 @@ if(NOT result EQUAL 0)
   message(FATAL_ERROR "Error building library.")
 else()
   execute_process(
-    COMMAND ${CMAKE_CTEST_COMMAND}
+    COMMAND ${CMAKE_CTEST_COMMAND} -C Debug
     WORKING_DIRECTORY ${BUILD_DIR}
     RESULT_VARIABLE result
   )
