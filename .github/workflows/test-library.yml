@@ -159,6 +159,54 @@ jobs:
         uses: github/codeql-action/analyze@v2
 
 
+  static-analyser:
+    name: Clang 14 Static Analyser
+    runs-on: ubuntu-latest
+    needs: basicchecks
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install build dependencies for library
+        run: |
+          sudo apt -y install tcl8.6-dev clang-14 clang-tools-14
+
+      - name: Checkout OpenMM (for Lepton library)
+        uses: actions/checkout@v3
+        with:
+          repository: 'openmm/openmm'
+          ref: 'master'
+          path: 'openmm-source'
+
+      - name: Perform Clang Static Analyser
+        env:
+          CXX: clang++-14
+          CC: clang-14
+        run: |
+          scan-build-14 --use-cc=clang-14 --use-c++=clang++-14 cmake -P devel-tools/build_test_library.cmake 2>&1 | tee build_analyser.log
+          grep "CMake Error" build_analyser.log > build_errors.log || true
+          if [ -s build_errors.log ] ; then
+            echo "Found compiler errors during build"
+            cat build_analyser.log
+            exit 1
+          fi
+
+      - name: Analyze logs
+        run: | # Retrieve warnings generated but not the ones of OpenMM
+          awk '/colvars\/colvars\/[^openmm].*warning:/,/warning.*generated|^$/' build_analyser.log | tee warnings_analyser.log || true
+          if [ -s warnings_analyser.log ] ; then
+            echo "Found compiler warning during build"
+            exit 1
+          fi
+
+      - name: Archive warnings artifacts
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: warnings_clang_static_analyser
+          path: warnings_analyser.log
+
+
   build-linux-x86_64-many:
     name: Linux x86_64 (many compilers)
     runs-on: ubuntu-latest
