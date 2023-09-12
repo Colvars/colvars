@@ -13,10 +13,10 @@ From: centos:7
         redhat-lsb-core "@Development Tools" \
         ncurses which bc man-db vim emacs screen tmux \
         gcc gcc-c++ gcc-gfortran glibc-static libstdc++-static clang cppcheck \
-        autoconf automake  cvs git git-cvs cvsps subversion mercurial \
+        autoconf automake cvs git git-cvs cvsps subversion mercurial \
         rh-git227 devtoolset-{7..11} llvm-toolset-7 cmake3 ccache ninja-build \
         doxygen \
-        openmpi-devel fftw-devel tcl-devel \
+        Lmod openmpi-devel fftw-devel tcl-devel \
         python-{devel,virtualenv} numpy scipy tkinter \
         python3-{devel,tkinter} python36-{virtualenv,numpy,scipy} \
         rh-python38-python-{devel,tkinter,numpy,scipy} \
