@@ -24,8 +24,8 @@
 #define PATHSEP "/"
 #endif
 
-// When C++17 is available, use the standard library's API
-#if (__cplusplus >= 201703L)
+#ifdef __cpp_lib_filesystem
+// When std::filesystem is available, use it
 #include <filesystem>
 #undef GETCWD
 #define GETCWD(BUF, SIZE) (std::filesystem::current_path().string().c_str())
