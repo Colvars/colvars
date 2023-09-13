@@ -12,6 +12,9 @@ jobs:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     outputs:
       hassecrets: ${{ steps.checksecrets.outputs.hassecrets }}
+    env:
+      CCACHE: ccache
+      CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
       - name: Checkout Colvars
@@ -20,7 +23,7 @@ jobs:
       - name: Load compiler cache
         uses: actions/cache@v3
         with:
-          path: ~/.ccache
+          path: ${{ github.workspace }}/ccache
           key: ${{ runner.os }}-build-basic-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-basic-
 
@@ -49,8 +52,6 @@ jobs:
           fi
 
       - name: Build and test library (GCC)
-        env:
-          CCACHE: ccache
         run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Check documentation of command-line scripting interface
@@ -66,14 +67,11 @@ jobs:
       - name: Build and test library (Clang)
         env:
           CMAKE_BUILD_DIR: build-clang
-          CCACHE: ccache
           CXX: clang++
           CC: clang
         run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Build library with debug flags enabled
-        env:
-          CCACHE: ccache
         run: cmake -D COLVARS_DEBUG=ON -P devel-tools/build_test_library.cmake
 
       - name: Check whether secrets are available
@@ -82,6 +80,9 @@ jobs:
           PULL_ORACLE_DEVELOPER_STUDIO: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
         run: |
           echo "hassecrets=${{ env.PULL_ORACLE_DEVELOPER_STUDIO != '' }}" >> $GITHUB_OUTPUT
+
+      - name: Print ccache stats
+        run: ccache -s -v
 
 
   build-doc:
@@ -215,6 +216,7 @@ jobs:
     env:
       CCACHE: ccache
       CMAKE_GENERATOR: Ninja
+      CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
       - uses: actions/checkout@v3
@@ -222,7 +224,7 @@ jobs:
       - name: Load compiler ccache
         uses: actions/cache@v3
         with:
-          path: ~/.ccache
+          path: ${{ github.workspace }}/ccache
           key: ${{ runner.os }}-build-multiple-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-multiple-
 
