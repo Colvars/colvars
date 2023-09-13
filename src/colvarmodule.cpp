@@ -327,6 +327,7 @@ void colvarmodule::config_changed()
 
 int colvarmodule::parse_global_params(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
   // TODO document and then echo this keyword
   parse->get_keyval(conf, "logLevel", log_level_, log_level_,
                     colvarparse::parse_silent);
@@ -334,10 +335,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
     std::string units;
     if (parse->get_keyval(conf, "units", units)) {
       units = colvarparse::to_lower_cppstr(units);
-      int error_code = proxy->set_unit_system(units, (colvars.size() != 0));
-      if (error_code != COLVARS_OK) {
-        return error_code;
-      }
+      error_code |= proxy->set_unit_system(units, (colvars.size() != 0));
     }
   }
 
@@ -346,7 +344,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
     size_t pos = 0;
     while (parse->key_lookup(conf, "indexFile", &index_file_name, &pos)) {
       cvm::log("# indexFile = \""+index_file_name+"\"\n");
-      read_index_file(index_file_name.c_str());
+      error_code |= read_index_file(index_file_name.c_str());
       index_file_name.clear();
     }
   }
@@ -358,9 +356,8 @@ int colvarmodule::parse_global_params(std::string const &conf)
   }
 
   bool b_analysis = true;
-  if (parse->get_keyval(conf, "analysis", b_analysis, true,
-                        colvarparse::parse_silent)) {
-    cvm::log("Warning: keyword \"analysis\" is deprecated: it is now set "
+  if (parse->get_keyval(conf, "analysis", b_analysis, true, colvarparse::parse_silent)) {
+    cvm::log("Warning: keyword \"analysis\" is deprecated: it is now always set "
              "to true; individual analyses are performed only if requested.");
   }
 
@@ -391,7 +388,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
   parse->get_keyval(conf, "sourceTclFile", source_Tcl_script);
 #endif
 
-  return cvm::get_error();
+  return error_code;
 }
 
 
