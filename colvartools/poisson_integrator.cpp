@@ -6,13 +6,13 @@
 
 int main (int argc, char *argv[]) {
 
-  colvarproxy *proxy = new colvarproxy();
-  colvarmodule *colvars = new colvarmodule(proxy);
-
   if (argc < 2) {
     std::cerr << "One argument needed: file name.\n";
     return 1;
   }
+
+  colvarproxy *proxy = new colvarproxy();
+  colvarmodule *colvars = new colvarmodule(proxy);
 
   std::string gradfile (argv[1]);
   colvar_grid_gradient grad(gradfile);
@@ -28,5 +28,7 @@ int main (int argc, char *argv[]) {
 
   potential.write_multicol(std::string(gradfile + ".int"),
                            "integrated potential");
+
+  delete colvars;
   return 0;
 }

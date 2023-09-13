@@ -1644,6 +1644,9 @@ int colvarbias_meta::setup_output()
     // TODO: one may want to specify the path manually for intricated filesystems?
     char *pwd = new char[3001];
     if (GETCWD(pwd, 3000) == nullptr) {
+      if (pwd != nullptr) { //
+        delete[] pwd;
+      }
       return cvm::error("Error: cannot get the path of the current working directory.\n",
                         COLVARS_BUG_ERROR);
     }
