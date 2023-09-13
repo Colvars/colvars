@@ -600,7 +600,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
   if (is_enabled(f_ag_rotate)) setup_rotation_derivative();
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return parse_error;
 }
 
 

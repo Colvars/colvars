@@ -994,7 +994,7 @@ int colvarmodule::calc_biases()
     total_bias_energy += (*bi)->get_energy();
   }
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return error_code;
 }
 
 
