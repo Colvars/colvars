@@ -398,7 +398,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
   // }
   // colvarparse::Parse_Mode mode = parse_normal;
 
-  int parse_error = COLVARS_OK;
+  int error_code = COLVARS_OK;
 
   // Optional group name will let other groups reuse atom definition
   if (get_keyval(group_conf, "name", name)) {
@@ -448,7 +448,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
         cvm::error("Error: cannot find atom group with name " + atoms_of + ".\n");
         return COLVARS_ERROR;
       }
-      parse_error |= add_atoms_of_group(ag);
+      error_code |= add_atoms_of_group(ag);
     }
   }
 
@@ -462,7 +462,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
     std::string numbers_conf = "";
     size_t pos = 0;
     while (key_lookup(group_conf, "atomNumbers", &numbers_conf, &pos)) {
-      parse_error |= add_atom_numbers(numbers_conf);
+      error_code |= add_atom_numbers(numbers_conf);
       numbers_conf = "";
     }
   }
@@ -471,7 +471,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
     std::string index_group_name;
     if (get_keyval(group_conf, "indexGroup", index_group_name)) {
       // use an index group from the index file read globally
-      parse_error |= add_index_group(index_group_name);
+      error_code |= add_index_group(index_group_name);
     }
   }
 
@@ -480,7 +480,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
     size_t pos = 0;
     while (key_lookup(group_conf, "atomNumbersRange",
                       &range_conf, &pos)) {
-      parse_error |= add_atom_numbers_range(range_conf);
+      error_code |= add_atom_numbers_range(range_conf);
       range_conf = "";
     }
   }
@@ -507,7 +507,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
         cvm::error("Error: more instances of \"atomNameResidueRange\" than "
                    "values of \"psfSegID\".\n", COLVARS_INPUT_ERROR);
       } else {
-        parse_error |= add_atom_name_residue_range(psf_segids.size() ?
+        error_code |= add_atom_name_residue_range(psf_segids.size() ?
           *psii : std::string(""), range_conf);
         if (psf_segids.size()) psii++;
       }
@@ -533,25 +533,25 @@ int cvm::atom_group::parse(std::string const &group_conf)
       }
 
       // NOTE: calls to add_atom() and/or add_atom_id() are in the proxy-implemented function
-      parse_error |= cvm::load_atoms(atoms_file_name.c_str(), *this, atoms_col, atoms_col_value);
+      error_code |= cvm::load_atoms(atoms_file_name.c_str(), *this, atoms_col, atoms_col_value);
     }
   }
 
   // Catch any errors from all the initialization steps above
-  if (parse_error || cvm::get_error()) return (parse_error || cvm::get_error());
+  if (error_code || cvm::get_error()) return (error_code || cvm::get_error());
 
   // checks of doubly-counted atoms have been handled by add_atom() already
 
   if (get_keyval(group_conf, "dummyAtom", dummy_atom_pos, cvm::atom_pos())) {
 
-    parse_error |= set_dummy();
-    parse_error |= set_dummy_pos(dummy_atom_pos);
+    error_code |= set_dummy();
+    error_code |= set_dummy_pos(dummy_atom_pos);
 
   } else {
 
     if (!(atoms_ids.size())) {
-      parse_error |= cvm::error("Error: no atoms defined for atom group \""+
-                                key+"\".\n", COLVARS_INPUT_ERROR);
+      error_code |= cvm::error("Error: no atoms defined for atom group \"" + key + "\".\n",
+                               COLVARS_INPUT_ERROR);
     }
 
     // whether these atoms will ever receive forces or not
@@ -561,7 +561,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
   }
 
   // Now that atoms are defined we can parse the detailed fitting options
-  parse_error |= parse_fitting_options(group_conf);
+  error_code |= parse_fitting_options(group_conf);
 
   if (is_enabled(f_ag_scalable) && !b_dummy) {
     cvm::log("Enabling scalable calculation for group \""+this->key+"\".\n");
@@ -600,7 +600,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
   if (is_enabled(f_ag_rotate)) setup_rotation_derivative();
 
-  return parse_error;
+  return error_code;
 }
 
 
