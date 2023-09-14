@@ -131,27 +131,13 @@ for dir in ${DIRLIST} ; do
     fi
   fi
 
-  SCRIPTS="../Common/test.tpr ../Common/test.restart.tpr"
-  restart=false
-
   cleanup_files
 
+  # Run simulation(s)
+  for basename in test test.restart ; do
 
-
-  # run simulation(s)
-  for script in ${SCRIPTS} ; do
-
-    basename=`basename ${script}`
-    basename=${basename%.tpr}
-
-    #prefix of the Gromacs generated files
+    # Prefix of the Gromacs generated files
     output=""
-
-    #Different command line if it's a restart (checkpoint needed)
-    if echo "${basename}" |grep -q "restart"
-    then
-      restart=true
-    fi
 
     # Input files
     # Symbolink link to the colvars input file, index file, and xyz file
@@ -169,25 +155,24 @@ for dir in ${DIRLIST} ; do
     fi
 
     # Try running the test
-    if [ "$restart" = "false" ]
-    then
-      $BINARY mdrun -s ${script} -deffnm ${basename} -colvars test.dat &> ${basename}.out
+
+    if [ "${basename}" == "test" ] ; then
+      ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr >& ${basename}.grompp.out
+      ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} >& ${basename}.out
       RETVAL=$?
       output=${basename}
-    else
-      if [ -f test.restart.in ] ; then
-        ln -fs test.restart.in test.dat
-      fi
-      $BINARY mdrun -s ${script} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt -colvars test.dat -colvars_restart test.colvars.state.dat &> ${basename}.out
-      RETVAL=$?
-      output="${basename}.part0002"
     fi
 
+    if [ "${basename}" == "test.restart" ] ; then
+      ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
+      ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
+      RETVAL=$?
+      output=${basename}
+    fi
 
     # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
       | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
-
 
     if [ -f ${output}.colvars.state ] ; then
       # Filter out the version number from the state files to allow comparisons
