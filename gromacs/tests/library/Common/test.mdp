@@ -51,3 +51,7 @@ pbc                      = xyz
 tcoupl                   = no
 ;Velocity generation
 gen_vel                  = no
+
+; Colvars configuration
+colvars-active           = Yes
+colvars-filename         = test.in
