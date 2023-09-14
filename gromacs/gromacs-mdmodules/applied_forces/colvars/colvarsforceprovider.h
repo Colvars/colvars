@@ -1,0 +1,205 @@
+/*
+ * This file is part of the GROMACS molecular simulation package.
+ *
+ * Copyright 2023- The GROMACS Authors
+ * and the project initiators Erik Lindahl, Berk Hess and David van der Spoel.
+ * Consult the AUTHORS/COPYING files and https://www.gromacs.org for details.
+ *
+ * GROMACS is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ *
+ * GROMACS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with GROMACS; if not, see
+ * https://www.gnu.org/licenses, or write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA.
+ *
+ * If you want to redistribute modifications to GROMACS, please
+ * consider that scientific software is very special. Version
+ * control is crucial - bugs must be traceable. We will be happy to
+ * consider code for inclusion in the official distribution, but
+ * derived work must not be called official GROMACS. Details are found
+ * in the README & COPYING files - if they are missing, get the
+ * official version at https://www.gromacs.org.
+ *
+ * To help us fund GROMACS development, we humbly ask that you cite
+ * the research papers on the package. Check out https://www.gromacs.org.
+ */
+/*! \internal \file
+ * \brief
+ * Declares the force provider for colvars
+ *
+ * \author Hubert Santuz <hubert.santuz@gmail.com>
+ * \ingroup module_applied_forces
+ */
+
+#ifndef GMX_APPLIED_FORCES_COLVARSFORCEPROVIDER_H
+#define GMX_APPLIED_FORCES_COLVARSFORCEPROVIDER_H
+
+
+#include "gromacs/domdec/localatomset.h"
+#include "gromacs/mdrunutility/mdmodulesnotifiers.h"
+#include "gromacs/mdtypes/iforceprovider.h"
+
+#include "colvarproxygromacs.h"
+
+
+namespace gmx
+{
+
+
+/*! \internal
+ * \brief Parameters defining the internal colvars force provider state.
+ */
+struct ColvarsForceProviderState
+{
+
+    /*! \brief Indicate if a colvars state was read.
+     */
+    bool stateRead_ = false;
+
+    /*! \brief The number of colvars atoms.
+     */
+    std::int64_t nColvarsAtoms_ = 0;
+
+    /*! \brief String naming variable holding the number of colvars atoms.
+     * \note Changing this name will break backwards compability for checkpoint file writing.
+     */
+    static const std::string nColvarsAtomsName_;
+
+    //! Last known whole positions of the colvars atoms
+    //! \todo Change the type to a standard one to avoid memory leak.
+    rvec* xOldWhole_ = nullptr;
+
+    /*! \brief String naming variable holding the last known whole positions of the colvars atoms
+     * \note Changing this name will break backwards compability for checkpoint file writing.
+     */
+    static const std::string xOldWholeName_;
+
+    /*! \brief Content of the colvars state file.
+     */
+    std::string colvarStateFile_;
+
+    /*! \brief String naming variable holding the content of the colvars state file.
+     * \note Changing this name will break backwards compability for checkpoint file writing.
+     */
+    static const std::string colvarStateFileName_;
+
+    /*! \brief Write internal colvars data into a key value tree.
+     * The entries to the kvt are identified with identifier, so that a variable
+     * is indentified with the key "identifier-variablename"
+     *
+     * \param[in] kvtBuilder enables writing to the Key-Value-Tree
+     *                              the state is written to
+     *
+     * \param[in] identifier denotes the module that is checkpointing the data
+     */
+    void writeState(KeyValueTreeObjectBuilder kvtBuilder, const std::string& identifier) const;
+
+    /*! \brief Read the internal parameters from the checkpoint file on master
+     * \param[in] kvtData holding the checkpoint information
+     * \param[in] identifier identifies the data in a key-value-tree
+     */
+    void readState(const KeyValueTreeObject& kvtData, const std::string& identifier);
+};
+
+
+/*! \internal \brief
+ * Implements IForceProvider for colvars.
+ * Override the ColvarProxyGromacs generic class for the communication.
+ */
+class ColvarsForceProvider final : public ColvarProxyGromacs, public IForceProvider
+{
+
+private:
+    //! The total bias energy on all colvars atoms.
+    double bias_energy;
+
+    //! Is this a neighbor-search step?
+    bool gmx_bNS;
+
+
+    // Node-local bookkepping data
+    //! The colvars atom indices
+    std::unique_ptr<gmx::LocalAtomSet> colvars_atoms;
+    //! Total number of Colvars atoms
+    int n_colvars_atoms = 0;
+    //! Unwrapped positions for all Colvars atoms, communicated to all nodes.
+    rvec* x_colvars_unwrapped = nullptr;
+    //! Shifts for all Colvars atoms, to make molecule(s) whole.
+    ivec* xa_shifts = nullptr;
+    //! Extra shifts since last DD step.
+    ivec* xa_eshifts = nullptr;
+    //! Old positions for all Colvars atoms on master.
+    rvec* xa_old_whole = nullptr;
+    //! Position of each local atom in the collective array.
+    int* xa_ind = nullptr;
+    //! Bias forces on all Colvars atoms
+    rvec* f_colvars = nullptr;
+
+    ColvarsForceProviderState stateToCheckpoint_;
+
+
+public:
+    friend class cvm::atom;
+    //! Construct force provider for colvars from its parameters
+    ColvarsForceProvider(const std::string&                        colvarsConfigString,
+                         LocalAtomSetManager*                      localAtomSetManager,
+                         PbcType                                   pbcType,
+                         double                                    simulationTimeStep,
+                         t_atoms                                   atoms,
+                         const t_commrec*                          cr,
+                         const MDLogger*                           logger,
+                         const std::vector<RVec>&                  colvarsCoords,
+                         const std::string&                        outputPrefix,
+                         const std::map<std::string, std::string>& KVTInputs,
+                         const ColvarsForceProviderState&          state,
+                         real                                      ensTemp);
+
+    ~ColvarsForceProvider() override;
+
+    /*! \brief Calculate colvars forces
+     * \param[in] forceProviderInput input for force provider
+     * \param[out] forceProviderOutput output for force provider
+     */
+    void calculateForces(const ForceProviderInput& forceProviderInput,
+                         ForceProviderOutput*      forceProviderOutput) override;
+
+    // Compute virial tensor for position r and force f, and add to matrix vir
+    void add_virial_term(matrix vir, const rvec& f, const gmx::RVec& x);
+
+    /*! \brief Write internal colvars data to checkpoint file.
+     * \param[in] checkpointWriting enables writing to the Key-Value-Tree
+     *                              that is used for storing the checkpoint
+     *                              information
+     * \param[in] moduleName names the module that is checkpointing this force-provider
+     *
+     * \note The provided state to checkpoint has to change if checkpointing
+     *       is moved before the force provider call in the MD-loop.
+     */
+    void writeCheckpointData(MDModulesWriteCheckpointData checkpointWriting, const std::string& moduleName);
+
+    /*! \brief Process atomsRedistributedSignal notification during mdrun.
+     * \param[in] atomsRedistributedSignal signal recieved
+     */
+    void processAtomsRedistributedSignal(const MDModulesAtomsRedistributedSignal& atomsRedistributedSignal);
+
+
+    //! From colvarproxy
+
+    /*! \brief add energy to the total count of bias energy bias_energy
+     * \param[in] energy the value of energy to add
+     *
+     */
+    void add_energy(cvm::real energy) override;
+};
+
+} // namespace gmx
+
+#endif // GMX_APPLIED_FORCES_COLVARSFORCEPROVIDER_H
