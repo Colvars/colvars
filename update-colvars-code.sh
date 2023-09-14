@@ -84,6 +84,10 @@ then
 elif [ -f "${target}/include/molfile_plugin.h" ]
 then
   code="VMD-PLUGINS"
+elif [ -f "${target}/INSTALL-dev" ]
+then
+  code="GROMACS-DEV"
+  echo "You are about to patch GROMACS developpement version with the alpha version of Colvars-MDModules."
 elif [ -f "${target}/src/gromacs/commandline/cmdlineinit.h" ]
 then
   code="GROMACS"
@@ -599,6 +603,74 @@ then
   if [ ${shared_gmx_proxy_version} \> ${patch_gmx_proxy_version} ] ; then
     condcopy ${source}/gromacs/src/colvarproxy_gromacs_version.h \
       "${target}/src/gromacs/colvars/colvarproxy_gromacs_version.h"
+  fi
+
+  exit 0
+fi
+
+if [ ${code} = "GROMACS-DEV" ]
+then
+
+  copy_lepton ${target}/src/external/ || exit 1
+
+  target_folder=${target}/src/external/colvars
+  patch_opts="-p1 --forward -s"
+
+  echo ""
+  if [ -d ${target_folder} ]
+  then
+    echo "Your ${target} source tree seems to have already been patched."
+    echo "Update with the last Colvars source."
+  else
+    mkdir ${target_folder}
+  fi
+
+  # Copy library files and proxy files to the "src/external/colvars" folder
+  for src in ${source}/src/*.h ${source}/src/*.cpp
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target_folder}/${tgt}"
+  done
+  echo ""
+
+  # Copy CMake files
+  for src in ${source}/gromacs/cmake/gmxManage{Colvars,Lepton}.cmake
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/cmake/${tgt}"
+  done
+  echo ""
+
+  # Copy MDModules files to the "src/gromacs/applied_forces/colvars" folder
+  target_folder=${target}/src/gromacs/applied_forces/colvars
+  if [ -d ${target_folder} ]
+  then
+    echo "Your ${target} source tree seems to have already been patched."
+    echo "Update with the last Colvars source."
+  else
+    mkdir ${target_folder}
+  fi
+  for src in ${source}/gromacs/gromacs-mdmodules/applied_forces/colvars/*
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target_folder}/${tgt}"
+  done
+  echo ""
+
+  # Apply patch for Gromacs files
+  patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules.patch
+  ret_val=$?
+  if [ $ret_val -ne 0 ]
+  then
+    echo " ************************************************************************************************ "
+    echo " Patch fails. Your GROMACS developement tree may be different of one used for creating the patch. "
+    echo " ************************************************************************************************ "
+  else
+    echo ' done.'
+    echo ""
+    echo "  *******************************************"
+    echo "    Please create your build with cmake now."
+    echo "  *******************************************"
   fi
 
   exit 0
