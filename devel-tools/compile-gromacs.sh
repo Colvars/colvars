@@ -9,6 +9,10 @@ source $(dirname $0)/set-ccache.sh
 
 compile_gromacs_target() {
 
+    if [ -n "${GROMACS_REGRESSION_TESTS}" ] ; then
+        export GROMACS_BUILD_TESTS=1
+    fi
+
     local CMAKE=cmake CTEST=ctest
     if hash cmake3 >& /dev/null ; then
         CMAKE=cmake3
@@ -68,8 +72,9 @@ compile_gromacs_target() {
         fi
     fi
 
-    # When on GitHub Actions, download the tests as well
+    # When on GitHub Actions, build the tests as well
     if [ -n "${GITHUB_ACTION}" ] ; then
+        export GROMACS_BUILD_TESTS=1
         GMX_BUILD_OPTS+=(-DREGRESSIONTEST_DOWNLOAD=ON)
     fi
 
@@ -98,25 +103,22 @@ compile_gromacs_target() {
         ${CMAKE} --build "${GMX_BUILD_DIR}" --parallel $(nproc --all)
     ret_code=$?
 
-    if [ -n "${GROMACS_REGRESSION_TESTS}" ] ; then
+    if [ -n "${GROMACS_BUILD_TESTS}" ] ; then
         # Build the tests as well
         ${CMAKE} --build "${GMX_BUILD_DIR}" --target tests --parallel $(nproc --all)
         ret_code=$((${ret_code} || $?))
     fi
 
     if [ ${ret_code} = 0 ] ; then
-        pushd "${GMX_BUILD_DIR}"
-        ${CTEST} --output-on-failure
-        retcode=$?
-        if [ -n "${GMX_INSTALL_DIR}" ] ; then
-            if hash ninja >& /dev/null ; then
-                ninja install
-            else
-                make install
-            fi
-            ret_code=$((${ret_code} || $?))
+        if [ -n "${GROMACS_BUILD_TESTS}" ] && [ -z "${GITHUB_ACTION}" ] ; then
+            # Some GROMACS tests are extremely long, we run them only offline
+            pushd "${GMX_BUILD_DIR}"
+            ${CTEST} --output-on-failure
+            retcode=$((${ret_code} || $?))
+            popd
         fi
-        popd
+        ${CMAKE} --install "${GMX_BUILD_DIR}"
+        ret_code=$((${ret_code} || $?))
     fi
 
     popd
