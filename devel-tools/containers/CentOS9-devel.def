@@ -19,10 +19,10 @@ From: quay.io/centos/centos:stream9
         bc man-db vim emacs tcsh \
         "@Development Tools" \
         gcc gcc-c++ gcc-gfortran cppcheck \
-        gcc-toolset-{12,13} \
+        gcc-toolset-{12,13} clang clang-tools-extra \
         autoconf automake cvs git subversion mercurial \
         cmake ccache ninja-build \
-        openmpi-devel tbb-devel fftw-devel tcl-devel \
+        Lmod openmpi-devel tbb-devel fftw-devel tcl-devel \
         python3-{devel,tkinter,virtualenv,numpy,scipy} \
         ncurses-devel \
         rlwrap \
