@@ -194,6 +194,13 @@ size_t colvarmodule::size() const
 }
 
 
+void colvarmodule::set_initial_step(step_number it_in)
+{
+  cvm::log("Setting initial step number from MD engine: " + cvm::to_str(it_in) + "\n");
+  it = it_restart = it_in;
+}
+
+
 int colvarmodule::read_config_file(char const  *config_filename)
 {
   cvm::log(cvm::line_marker);

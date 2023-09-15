@@ -118,8 +118,7 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
         //     cvm::log("Initializing step number to "+cvm::to_str(step)+".\n");
         // }
 
-        // colvars->it = colvars->it_restart = step;
-        colvars->it = 0;
+        colvars->set_initial_step(static_cast<cvm::step_number>(0L));
     }
 }
 

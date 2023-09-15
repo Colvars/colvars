@@ -339,6 +339,9 @@ public:
   /// Destructor
   ~colvarmodule();
 
+  /// Set the initial step number (it is 0 otherwise); may be overridden when reading a state
+  void set_initial_step(step_number it);
+
   /// Actual function called by the destructor
   int reset();
 
