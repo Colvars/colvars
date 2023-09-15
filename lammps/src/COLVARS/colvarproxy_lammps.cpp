@@ -67,18 +67,7 @@ void colvarproxy_lammps::init()
   set_integration_timestep(_lmp->update->dt * _lmp->force->femtosecond);
 
   if (_lmp->update->ntimestep != 0) {
-    cvm::log("Setting initial step number from LAMMPS: "+
-             cvm::to_str(_lmp->update->ntimestep)+"\n");
-    colvarmodule::it = colvarmodule::it_restart =
-      static_cast<cvm::step_number>(_lmp->update->ntimestep);
-  }
-
-  if (cvm::debug()) {
-    cvm::log("atoms_ids = "+cvm::to_str(atoms_ids)+"\n");
-    cvm::log("atoms_refcount = "+cvm::to_str(atoms_refcount)+"\n");
-    cvm::log("atoms_positions = "+cvm::to_str(atoms_positions)+"\n");
-    cvm::log(cvm::line_marker);
-    cvm::log("Info: done initializing the colvars proxy object.\n");
+    colvars->set_initial_step(static_cast<cvm::step_number>(_lmp->update->ntimestep));
   }
 }
 
