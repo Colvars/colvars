@@ -100,7 +100,7 @@ public:
   // Compatibility with STL stream functions
 
   /// Report the current position in the buffer
-  inline size_t const tellg() const { return read_pos_; }
+  inline size_t tellg() const { return read_pos_; }
 
   /// Report the current position in the buffer
   inline memory_stream & seekg(size_t pos) { read_pos_ = pos; return *this; }
