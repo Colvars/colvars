@@ -161,6 +161,8 @@ for dir in ${DIRLIST} ; do
       ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} >& ${basename}.out
       RETVAL=$?
       output=${basename}
+      grep "^colvars:" ${basename}.log | grep -v 'Initializing the collective variables module' \
+        | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
     fi
 
     if [ "${basename}" == "test.restart" ] ; then
@@ -168,11 +170,9 @@ for dir in ${DIRLIST} ; do
       ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
       RETVAL=$?
       output=${basename}
+      grep "^colvars:" ${basename}.part0002.log | grep -v 'Initializing the collective variables module' \
+        | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
     fi
-
-    # Output of Colvars module, minus the version numbers
-    grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
-      | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
 
     if [ -f ${output}.colvars.state ] ; then
       # Filter out the version number from the state files to allow comparisons
