@@ -82,9 +82,9 @@ struct ColvarsForceProviderState
      */
     static const std::string xOldWholeName_;
 
-    /*! \brief Content of the colvars state file.
+    /*! \brief Content of the unformatted Colvars state file.
      */
-    std::string colvarStateFile_;
+    std::vector<unsigned char> colvarStateFile_;
 
     /*! \brief String naming variable holding the content of the formatted Colvars state file.
      * \note Changing this name will break backwards compability for checkpoint file writing.

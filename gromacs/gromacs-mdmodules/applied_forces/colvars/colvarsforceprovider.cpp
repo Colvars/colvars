@@ -40,6 +40,7 @@
  */
 
 #include "colvarsforceprovider.h"
+#include "external/colvars/colvars_memstream.h"
 
 #include <string>
 
@@ -87,8 +88,8 @@ void ColvarsForceProviderState::writeState(KeyValueTreeObjectBuilder kvtBuilder,
             static_cast<int64_t>(colvarStateFile_.size()), colvarStateFileSizeName_, identifier, kvtBuilder);
 
     // Write formatted Colvars state file, one character at a time
-    auto charArrayAdder = kvtBuilder.addUniformArray<char>(colvarStateFileName_);
-    for (const char &c : colvarStateFile_) {
+    auto charArrayAdder = kvtBuilder.addUniformArray<unsigned char>(colvarStateFileName_);
+    for (const unsigned char &c : colvarStateFile_) {
         charArrayAdder.addValue(c);
     }
 }
@@ -125,11 +126,13 @@ void ColvarsForceProviderState::readState(const KeyValueTreeObject& kvtData, con
     readKvtCheckpointValue(
             compat::make_not_null(&colvarStateFileSize_), colvarStateFileSizeName_, identifier, kvtData);
 
-    // Read Colvars state file
-    colvarStateFile_.reserve(colvarStateFileSize_);
+    // Read Colvars state file; use explicit loop because kvt types don't support std::copy
     auto charArray = kvtData[colvarStateFileName_].asArray().values();
+    colvarStateFile_.resize(colvarStateFileSize_);
+    auto it = colvarStateFile_.begin();
     for (const auto &c: charArray) {
-        colvarStateFile_.append(1, c.cast<char>());
+        *it = c.cast<unsigned char>();
+        it++;
     }
 }
 
@@ -227,9 +230,7 @@ ColvarsForceProvider::ColvarsForceProvider(const std::string&       colvarsConfi
             }
 
             // Read input state file
-            input_stream_from_string("input state string", stateToCheckpoint_.colvarStateFile_);
-            // Clear input now that we have copied it
-            stateToCheckpoint_.colvarStateFile_.clear();
+            colvars->set_input_state_buffer(stateToCheckpoint_.colvarStateFile_);
             colvars->setup_input();
         }
         else
@@ -427,7 +428,7 @@ void ColvarsForceProvider::add_energy(cvm::real energy)
 void ColvarsForceProvider::writeCheckpointData(MDModulesWriteCheckpointData checkpointWriting,
                                                const std::string&           moduleName)
 {
-    colvars->write_restart_string(stateToCheckpoint_.colvarStateFile_);
+    colvars->write_state_buffer(stateToCheckpoint_.colvarStateFile_);
     stateToCheckpoint_.writeState(checkpointWriting.builder_, moduleName);
 }
 
