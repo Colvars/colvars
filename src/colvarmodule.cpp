@@ -125,8 +125,9 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   // set initial default values
 
   binary_restart = false;
-  if (getenv("COLVARS_BINARY_RESTART") != nullptr) {
-    if (atoi(getenv("COLVARS_BINARY_RESTART"))) {
+  char const *env_var = getenv("COLVARS_BINARY_RESTART");
+  if (env_var) {
+    if (atoi(env_var ? env_var : "0")) {
       binary_restart = true;
     }
   }
