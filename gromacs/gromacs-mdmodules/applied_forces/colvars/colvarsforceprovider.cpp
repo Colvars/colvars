@@ -211,7 +211,9 @@ ColvarsForceProvider::ColvarsForceProvider(const std::string&       colvarsConfi
             }
 
             // Read input state file
-            input_buffer_ = stateToCheckpoint_.colvarStateFile_.c_str();
+            input_stream_from_string("input state string", stateToCheckpoint_.colvarStateFile_);
+            // Clear input now that we have copied it
+            stateToCheckpoint_.colvarStateFile_.clear();
             colvars->setup_input();
         }
         else
