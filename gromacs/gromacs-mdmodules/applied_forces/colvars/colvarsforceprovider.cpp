@@ -66,6 +66,8 @@ const std::string ColvarsForceProviderState::xOldWholeName_ = "xOldWhole";
 
 const std::string ColvarsForceProviderState::colvarStateFileName_ = "colvarStateFile";
 
+const std::string ColvarsForceProviderState::colvarStateFileSizeName_ = "colvarStateFileSize";
+
 void ColvarsForceProviderState::writeState(KeyValueTreeObjectBuilder kvtBuilder,
                                            const std::string&        identifier) const
 {
@@ -81,8 +83,14 @@ void ColvarsForceProviderState::writeState(KeyValueTreeObjectBuilder kvtBuilder,
         }
     }
 
+    writeKvtCheckpointValue(
+            static_cast<int64_t>(colvarStateFile_.size()), colvarStateFileSizeName_, identifier, kvtBuilder);
 
-    writeKvtCheckpointValue(colvarStateFile_, colvarStateFileName_, identifier, kvtBuilder);
+    // Write formatted Colvars state file, one character at a time
+    auto charArrayAdder = kvtBuilder.addUniformArray<char>(colvarStateFileName_);
+    for (const char &c : colvarStateFile_) {
+        charArrayAdder.addValue(c);
+    }
 }
 
 void ColvarsForceProviderState::readState(const KeyValueTreeObject& kvtData, const std::string& identifier)
@@ -113,8 +121,16 @@ void ColvarsForceProviderState::readState(const KeyValueTreeObject& kvtData, con
         }
     }
 
+    int64_t colvarStateFileSize_ = 0L;
     readKvtCheckpointValue(
-            compat::make_not_null(&colvarStateFile_), colvarStateFileName_, identifier, kvtData);
+            compat::make_not_null(&colvarStateFileSize_), colvarStateFileSizeName_, identifier, kvtData);
+
+    // Read Colvars state file
+    colvarStateFile_.reserve(colvarStateFileSize_);
+    auto charArray = kvtData[colvarStateFileName_].asArray().values();
+    for (const auto &c: charArray) {
+        colvarStateFile_.append(1, c.cast<char>());
+    }
 }
 
 
