@@ -181,9 +181,6 @@ protected:
 
   /// Object whose reference is returned when write errors occur
   std::ostream *output_stream_error_;
-
-  /// Buffer from which the input state information may be read
-  char const *input_buffer_;
 };
 
 

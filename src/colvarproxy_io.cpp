@@ -29,7 +29,6 @@
 
 colvarproxy_io::colvarproxy_io()
 {
-  input_buffer_ = NULL;
   restart_frequency_engine = 0;
   input_stream_error_ = new std::istringstream();
   input_stream_error_->setstate(std::ios::badbit);
