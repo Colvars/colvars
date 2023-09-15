@@ -41,13 +41,19 @@ public:
   {
   }
 
+  /// Set up a stream based on an external output buffer
+  memory_stream(std::vector<unsigned char> &buf) : memory_stream()
+  {
+    external_output_buffer_ = &buf;
+  }
+
   /// Length of the buffer
   inline size_t length() const { return data_length_; }
 
   /// Output buffer
   inline unsigned char *output_buffer()
   {
-    return (external_output_buffer_ ? external_output_buffer_ : internal_buffer_.data());
+    return (external_output_buffer_ ? external_output_buffer_->data() : internal_buffer_.data());
   }
 
   /// Next location to write to
@@ -120,7 +126,7 @@ public:
 protected:
 
   /// External output buffer
-  unsigned char *external_output_buffer_ = nullptr;
+  std::vector<unsigned char> *external_output_buffer_ = nullptr;
 
   /// External input buffer
   unsigned char const *external_input_buffer_ = nullptr;
@@ -138,7 +144,7 @@ protected:
   std::ios::iostate state_ = std::ios::goodbit;
 
   /// Add the requester number of bytes to the array capacity; return false if buffer is external
-  bool expand_ouput_buffer(size_t add_bytes);
+  bool expand_output_buffer(size_t add_bytes);
 
   /// Move the buffer position past the data just written
   inline void incr_write_pos(size_t c) { data_length_ += c; }
@@ -155,15 +161,16 @@ protected:
   /// Move the buffer position past the data just read
   inline void incr_read_pos(size_t c) { read_pos_ += c; }
 
-  /// Check that the buffer contains enough bytes to read as the argument says, set error otherwise
+  /// Check that the buffer contains enough bytes to read as the argument says, set error
+  /// otherwise
   inline bool has_remaining(size_t c) { return c <= (data_length_ - read_pos_); }
-};
+  };
 
 template <typename T> void cvm::memory_stream::write_object(T const &t)
 {
   static_assert(IS_TRIVIALLY_COPYABLE(T), "Cannot use write_object() on complex type");
   size_t const new_data_size = sizeof(T);
-  if (expand_ouput_buffer(new_data_size)) {
+  if (expand_output_buffer(new_data_size)) {
     std::memcpy(output_location(), &t, sizeof(T));
     incr_write_pos(new_data_size);
   }
@@ -180,7 +187,7 @@ template <typename T> void cvm::memory_stream::write_vector(std::vector<T> const
   static_assert(IS_TRIVIALLY_COPYABLE(T), "Cannot use write_vector() on complex type");
   size_t const vector_length = t.size();
   size_t const new_data_size = sizeof(size_t) + sizeof(T) * vector_length;
-  if (expand_ouput_buffer(new_data_size)) {
+  if (expand_output_buffer(new_data_size)) {
     std::memcpy(output_location(), &vector_length, sizeof(size_t));
     incr_write_pos(sizeof(T));
     std::memcpy(output_location(), t.data(), t.size() * sizeof(T));

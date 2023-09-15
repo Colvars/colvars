@@ -14,17 +14,13 @@
 #include "colvars_memstream.h"
 
 
-bool cvm::memory_stream::expand_ouput_buffer(size_t add_bytes)
+bool cvm::memory_stream::expand_output_buffer(size_t add_bytes)
 {
-  if (external_output_buffer_) {
-    // Cannot resize an external buffer
-    setstate(std::ios::badbit);
+  auto &buffer = external_output_buffer_ ? *external_output_buffer_ : internal_buffer_;
+  if ((buffer.size() + add_bytes) <= max_length_) {
+    buffer.resize((buffer.size() + add_bytes));
   } else {
-    if ((internal_buffer_.size() + add_bytes) <= max_length_) {
-      internal_buffer_.resize((internal_buffer_.size() + add_bytes));
-    } else {
-      setstate(std::ios::badbit);
-    }
+    setstate(std::ios::badbit);
   }
   return bool(*this);
 }
@@ -34,7 +30,7 @@ template <> void cvm::memory_stream::write_object(std::string const &t)
 {
   size_t const string_length = t.size();
   size_t const new_data_size = sizeof(size_t) + sizeof(char) * string_length;
-  if (expand_ouput_buffer(new_data_size)) {
+  if (expand_output_buffer(new_data_size)) {
     std::memcpy(output_location(), &string_length, sizeof(size_t));
     incr_write_pos(sizeof(size_t));
     std::memcpy(output_location(), t.c_str(), t.size() * sizeof(char));
