@@ -461,6 +461,9 @@ public:
   /// Set an internal state buffer, to be read later as an unformatted stream when ready
   int set_input_state_buffer(size_t n, unsigned char *buf);
 
+  /// Same as set_input_state_buffer() for C array, but uses std::move
+  int set_input_state_buffer(std::vector<unsigned char> &buf);
+
   /// Read the states of individual objects; allows for changes
   std::istream & read_objects_state(std::istream &is);
 
@@ -480,6 +483,9 @@ public:
 
   /// Write the state of the module to an unformatted (binary) file
   memory_stream & write_state(memory_stream &os);
+
+  /// Write the state of the module to an array of bytes (wrapped as a memory_stream object)
+  int write_state_buffer(std::vector<unsigned char> &buffer);
 
   /// Strips .colvars.state from filename and checks that it is not empty
   static std::string state_file_prefix(char const *filename);
