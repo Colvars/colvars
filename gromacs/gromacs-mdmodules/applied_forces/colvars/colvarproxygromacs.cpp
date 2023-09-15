@@ -41,6 +41,7 @@
 
 #include "colvarproxygromacs.h"
 
+#include <sstream>
 
 namespace gmx
 {
@@ -130,9 +131,12 @@ cvm::real ColvarProxyGromacs::rand_gaussian()
 
 void ColvarProxyGromacs::log(std::string const& message)
 {
-    if (logger_)
-    {
-        GMX_LOG(logger_->info).appendText(message);
+    if (logger_) {
+        std::istringstream is(message);
+        std::string line;
+        while (std::getline(is, line)) {
+            GMX_LOG(logger_->info).appendText("colvars: " + line + "\n");
+        }
     }
 }
 
