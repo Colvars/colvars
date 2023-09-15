@@ -1563,6 +1563,13 @@ int colvarmodule::set_input_state_buffer(size_t n, unsigned char *buf)
 }
 
 
+int colvarmodule::set_input_state_buffer(std::vector<unsigned char> &buf)
+{
+  input_state_buffer_ = std::move(buf);
+  return COLVARS_OK;
+}
+
+
 std::istream & colvarmodule::read_objects_state(std::istream &is)
 {
   auto pos = is.tellg();
@@ -1826,6 +1833,16 @@ cvm::memory_stream &colvarmodule::write_state(cvm::memory_stream &os)
     write_state_template_<cvm::memory_stream>(os);
   }
   return os;
+}
+
+
+int colvarmodule::write_state_buffer(std::vector<unsigned char> &buffer)
+{
+  cvm::memory_stream os(buffer);
+  if (os << colvars_magic_number) {
+    write_state_template_<cvm::memory_stream>(os);
+  }
+  return os ? COLVARS_OK : COLVARS_ERROR;
 }
 
 
