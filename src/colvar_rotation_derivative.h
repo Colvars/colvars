@@ -578,7 +578,7 @@ void debug_gradients(
                       cvm::real[4][4]> *ecalc =
         reinterpret_cast<MathEigen::Jacobi<cvm::real,
                                            cvm::real[4],
-                                           cvm::real[4][4]> *>(jacobi);
+                                           cvm::real[4][4]> *>(rot.jacobi);
 #endif
   deriv.prepare_derivative(rotation_derivative_dldq::use_dl | rotation_derivative_dldq::use_dq);
   cvm::real S_new[4][4];
