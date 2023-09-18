@@ -52,6 +52,22 @@ get_colvarproxy_vmd_version() {
                       vmd/src/colvarproxy_vmd.h
 }
 
+get_cv_dashboard_version() {
+    local commit="${1}:"
+    if [ "${commit}" = ":" ] ; then
+        # Use work tree
+        commit="HEAD:"
+    fi
+    local file1="vmd/cv_dashboard/VERSION"
+    local file2="vmd/cv_dashboard/cv_dashboard.tcl"
+    local version=$(git cat-file -p ${commit}${file1} 2> /dev/null)
+    if [ "x${version}" = "x" ] ; then
+        version=$(git grep "package provide cv_dashboard" ${commit}${file2} 2> /dev/null)
+        version=$(echo ${version} | awk '{ print $4 }' | tr -d '"')
+    fi
+    echo ${version}
+}
+
 get_last_master_commit() {
     local grep_pattern=${1}
     local commit
@@ -89,9 +105,13 @@ write_version_string() {
     local macro=${1}
     local file=${2}
     local version_str=${3}
-    echo -e "#ifndef ${macro}\n\
-#define ${macro} \"${version_str}\"\n\
-#endif" > ${file}
+    if [ "${macro}" = "none" ] ; then
+        echo -e "${version_str}" > ${file}
+    else
+        echo -e "#ifndef ${macro}\n\
+    #define ${macro} \"${version_str}\"\n\
+    #endif" > ${file}
+    fi
     if [ "${file}" = "src/colvars_version.h" ] ; then
         local version_str_tex=$(version_str_for_tex ${version_str})
         echo -E "\newcommand{\cvversion}{${version_str_tex}}" \
@@ -196,6 +216,13 @@ update_all_versions() {
                           vmd/src/colvarproxy_vmd_version.h \
                           ${branch} \
         && \
+    update_version_string "Colvars Dashboard" \
+                          '^vmd/cv_dashboard' \
+                          get_cv_dashboard_version \
+                          none \
+                          vmd/cv_dashboard/VERSION \
+                          ${branch} \
+        && \
     git commit -m "Update version strings"
 }
 
@@ -225,5 +252,9 @@ write_all_versions_branch() {
     write_version_branch get_colvarproxy_gromacs_version \
                          COLVARPROXY_VERSION \
                          gromacs/src/colvarproxy_gromacs_version.h \
+                         ${branch}
+    write_version_branch get_cv_dashboard_version \
+                         none \
+                         vmd/cv_dashboard/VERSION \
                          ${branch}
 }

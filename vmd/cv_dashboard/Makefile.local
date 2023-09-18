@@ -1,6 +1,8 @@
 # -*- makefile -*-
 
-VERSION = 1.5
+cat := $(if $(filter $(OS),Windows_NT),type,cat)
+VERSION := $(shell $(cat) VERSION)
+
 ifeq (${DESTINATION},)
 DESTINATION = ${HOME}/lib/vmd/plugins/noarch/tcl/cv_dashboard${VERSION}
 endif
