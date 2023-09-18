@@ -785,14 +785,12 @@ bool colvarparse::key_lookup(std::string const &conf,
           if (line[brace] == '{') brace_count++;
           if (line[brace] == '}') brace_count--;
           if (brace_count == 0) {
-            data_end = brace+1;
             break;
           }
           brace = line.find_first_of("{}", brace+1);
         }
 
         if (brace_count == 0) {
-          data_end = brace+1;
           break;
         }
 

@@ -99,20 +99,6 @@ jobs:
       private_key: ${{ secrets.PULL_VMD_KEY }}
       private_key_vmd_plugins: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
 
-  gromacs-2020:
-    name: GROMACS 2020
-    if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, 'test-gromacs-2020')
-    uses: ./.github/workflows/backend-template.yml
-    with:
-      backend_name: GROMACS-2020
-      backend_repo: gromacs/gromacs
-      backend_repo_ref: release-2020
-      container_name: CentOS7-devel
-      path_compile_script: devel-tools/compile-gromacs.sh
-      test_lib_directory: gromacs/tests/library
-      # Gromacs need to be compiled in double precision to pass the tests
-      rpath_exe: install/bin/gmx_d
-
   gromacs-2021:
     name: GROMACS 2021
     if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, 'test-gromacs-2021')
@@ -134,6 +120,19 @@ jobs:
       backend_name: GROMACS-2022
       backend_repo: gromacs/gromacs
       backend_repo_ref: release-2022
+      container_name: CentOS9-devel
+      path_compile_script: devel-tools/compile-gromacs.sh
+      test_lib_directory: gromacs/tests/library
+      rpath_exe: install/bin/gmx_d
+
+  gromacs-2023:
+    name: GROMACS 2023
+    if: github.event_name == 'pull_request' || contains(github.event.head_commit.message, 'test-gromacs-2023')
+    uses: ./.github/workflows/backend-template.yml
+    with:
+      backend_name: GROMACS-2023
+      backend_repo: gromacs/gromacs
+      backend_repo_ref: release-2023
       container_name: CentOS9-devel
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library

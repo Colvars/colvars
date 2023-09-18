@@ -327,6 +327,7 @@ void colvarmodule::config_changed()
 
 int colvarmodule::parse_global_params(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
   // TODO document and then echo this keyword
   parse->get_keyval(conf, "logLevel", log_level_, log_level_,
                     colvarparse::parse_silent);
@@ -334,10 +335,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
     std::string units;
     if (parse->get_keyval(conf, "units", units)) {
       units = colvarparse::to_lower_cppstr(units);
-      int error_code = proxy->set_unit_system(units, (colvars.size() != 0));
-      if (error_code != COLVARS_OK) {
-        return error_code;
-      }
+      error_code |= proxy->set_unit_system(units, (colvars.size() != 0));
     }
   }
 
@@ -346,7 +344,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
     size_t pos = 0;
     while (parse->key_lookup(conf, "indexFile", &index_file_name, &pos)) {
       cvm::log("# indexFile = \""+index_file_name+"\"\n");
-      read_index_file(index_file_name.c_str());
+      error_code |= read_index_file(index_file_name.c_str());
       index_file_name.clear();
     }
   }
@@ -358,9 +356,8 @@ int colvarmodule::parse_global_params(std::string const &conf)
   }
 
   bool b_analysis = true;
-  if (parse->get_keyval(conf, "analysis", b_analysis, true,
-                        colvarparse::parse_silent)) {
-    cvm::log("Warning: keyword \"analysis\" is deprecated: it is now set "
+  if (parse->get_keyval(conf, "analysis", b_analysis, true, colvarparse::parse_silent)) {
+    cvm::log("Warning: keyword \"analysis\" is deprecated: it is now always set "
              "to true; individual analyses are performed only if requested.");
   }
 
@@ -391,7 +388,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
   parse->get_keyval(conf, "sourceTclFile", source_Tcl_script);
 #endif
 
-  return cvm::get_error();
+  return error_code;
 }
 
 
@@ -994,7 +991,7 @@ int colvarmodule::calc_biases()
     total_bias_energy += (*bi)->get_energy();
   }
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return error_code;
 }
 
 
@@ -1207,9 +1204,17 @@ int colvarmodule::end_of_step()
 
 int colvarmodule::update_engine_parameters()
 {
-  if (this->size() == 0) return cvm::get_error();
-  for (std::vector<colvar *>::iterator cvi = variables()->begin();
-       cvi != variables()->end();  cvi++) {
+  if (size() == 0) {
+    // No-op if no variables or biases are defined
+    return cvm::get_error();
+  }
+  if (proxy->simulation_running()) {
+    cvm::log("Current simulation parameters: initial step = " + cvm::to_str(it) +
+             ", integration timestep = " + cvm::to_str(dt()) + "\n");
+  }
+  cvm::log("Updating atomic parameters (masses, charges, etc).\n");
+  for (std::vector<colvar *>::iterator cvi = variables()->begin(); cvi != variables()->end();
+       cvi++) {
     (*cvi)->setup();
   }
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
@@ -1307,7 +1312,7 @@ int colvarmodule::setup_input()
     read_restart(*input_is);
     cvm::log(cvm::line_marker);
 
-    proxy->close_input_stream(restart_in_name);
+    proxy->delete_input_stream(restart_in_name);
   }
 
   if (proxy->input_stream_exists("input state string")) {
@@ -1316,7 +1321,7 @@ int colvarmodule::setup_input()
     read_restart(proxy->input_stream("input state string"));
     cvm::log(cvm::line_marker);
 
-    proxy->close_input_stream("input state string");
+    proxy->delete_input_stream("input state string");
   }
 
   return cvm::get_error();

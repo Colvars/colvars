@@ -5,9 +5,9 @@ configuration {
 
 colvar {
   name end_to_end_distance
-  x  1.45658595679527e+01
-  extended_x  1.45679030161301e+01
-  extended_v -3.36435197039109e-04
+  x  1.45658974873707e+01
+  extended_x  1.45679724556133e+01
+  extended_v -3.38170305625943e-04
 }
 
 abf {

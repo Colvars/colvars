@@ -62,6 +62,8 @@ on:
 jobs:
   test_backends:
     runs-on: ubuntu-latest
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/ccache_${{ inputs.container_name }}
 
     steps:
       - name: Checkout Colvars
@@ -74,8 +76,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.ccache
-            ~/ccache_${{ inputs.container_name }}
+            ${{ github.workspace }}/ccache_${{ inputs.container_name }}
           key: ${{ runner.os }}-build-${{ inputs.backend_name }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-build-${{ inputs.backend_name }}-
@@ -86,7 +87,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.apptainer
-          key: Linux-x86_64-containers-build-2023-07-20
+          key: Linux-x86_64-containers-build-2023-09-05
 
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v3
@@ -123,8 +124,9 @@ jobs:
       - name: Install Apptainer
         shell: bash
         run: |
-          wget https://github.com/apptainer/apptainer/releases/download/v1.0.3/apptainer_1.0.3_amd64.deb
-          sudo apt-get -y install ./apptainer_1.0.3_amd64.deb
+          sudo add-apt-repository -y ppa:apptainer/ppa
+          sudo apt update
+          sudo apt install -y apptainer-suid
 
       - name: Get container images for build dependencies
         shell: bash
@@ -137,18 +139,13 @@ jobs:
           apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
           apptainer pull CentOS9-devel.sif library://giacomofiorin/default/colvars_development:centos9
 
-      - name : Get spiff
-        shell: bash
-        working-directory: devel-tools
-        run: sudo cp -f $(apptainer exec ${{ inputs.container_name }}.sif ./get_spiff) /usr/local/bin
-
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
         env:
           OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
+          CMAKE_GENERATOR: Ninja
         run: |
           apptainer exec devel-tools/${{ inputs.container_name }}.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
-          CCACHE_DIR=~/ccache_${{ inputs.container_name }} \
           apptainer exec devel-tools/${{ inputs.container_name }}.sif \
           bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
 
@@ -165,6 +162,13 @@ jobs:
           apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
 
+      - name: Save failed library test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed-library-test-diffs-${{ inputs.backend_name }}
+          path: ${{ inputs.test_lib_directory }}/*/*.diff
+
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
         if: ${{ inputs.test_interface_directory }}
         shell: bash
@@ -172,3 +176,11 @@ jobs:
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}
+
+      - name: Save failed interface test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed-interface-test-diffs-${{ inputs.backend_name }}
+          path: ${{ inputs.test_interface_directory }}/*/*.diff
+

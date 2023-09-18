@@ -13,17 +13,22 @@
 #include <iomanip>
 #include <algorithm>
 
-// used to set the absolute path of a replica file
+// Define function to get the absolute path of a replica file
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #include <direct.h>
-#define CHDIR ::_chdir
-#define GETCWD ::_getcwd
+#define GETCWD(BUF, SIZE) ::_getcwd(BUF, SIZE)
 #define PATHSEP "\\"
 #else
 #include <unistd.h>
-#define CHDIR ::chdir
-#define GETCWD ::getcwd
+#define GETCWD(BUF, SIZE) ::getcwd(BUF, SIZE)
 #define PATHSEP "/"
+#endif
+
+#ifdef __cpp_lib_filesystem
+// When std::filesystem is available, use it
+#include <filesystem>
+#undef GETCWD
+#define GETCWD(BUF, SIZE) (std::filesystem::current_path().string().c_str())
 #endif
 
 #include "colvarmodule.h"
@@ -1537,7 +1542,7 @@ std::istream & colvarbias_meta::read_hill(std::istream &is)
   std::istringstream data_is(data);
 
   cvm::step_number h_it = 0L;
-  cvm::real h_weight;
+  cvm::real h_weight = 0.0;
   std::vector<colvarvalue> h_centers(num_variables());
   for (i = 0; i < num_variables(); i++) {
     h_centers[i].type(variables(i)->value());
@@ -1638,7 +1643,10 @@ int colvarbias_meta::setup_output()
 
     // TODO: one may want to specify the path manually for intricated filesystems?
     char *pwd = new char[3001];
-    if (GETCWD(pwd, 3000) == NULL) {
+    if (GETCWD(pwd, 3000) == nullptr) {
+      if (pwd != nullptr) { //
+        delete[] pwd;
+      }
       return cvm::error("Error: cannot get the path of the current working directory.\n",
                         COLVARS_BUG_ERROR);
     }

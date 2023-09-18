@@ -478,7 +478,6 @@ void FixColvars::setup(int vflag)
   if (me == 0) {
     setup_io();
     proxy->parse_module_config();
-    proxy->setup();
   }
 
   init_taglist();
@@ -905,7 +904,9 @@ void FixColvars::restart(char *buf)
 {
   if (me == 0) {
     std::string rest_text(buf);
-    proxy->deserialize_status(rest_text);
+    if (!proxy->deserialize_status(rest_text)) {
+      error->all(FLERR, "Failed to set the Colvars input state from string buffer");
+    }
   }
 }
 

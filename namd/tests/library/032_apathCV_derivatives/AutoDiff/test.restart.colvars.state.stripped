@@ -1,0 +1,29 @@
+configuration {
+  step           40
+  dt 5.000000e-01
+}
+
+colvar {
+  name apath_s_dihed
+  x  7.79955855923709e-01
+}
+
+colvar {
+  name apath_z_dihed
+  x -7.51941915199812e+01
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonic1
+  }
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonicwalls1
+  }
+}
+

@@ -21,7 +21,7 @@ compile_gromacs_target() {
     fi
 
     local GMX_SRC_DIR=""
-    if [ -f "${1}/src/gromacs/commandline.h" ] ; then
+    if [ -d "${1}/src/gromacs" ] ; then
         GMX_SRC_DIR=$(realpath "${1}")
         shift
     else

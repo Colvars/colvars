@@ -33,22 +33,8 @@ colvar::linearCombination::linearCombination(std::string const &conf): cvc(conf)
                    " expects one or more nesting components.\n");
         return;
     } else {
-        // TODO: Maybe we can add an option to allow mixing scalar and vector types,
-        //       but that's a bit complicated so we just require a consistent type
-        //       of nesting CVs.
         x.type(cv[0]->value());
         x.reset();
-        for (size_t i_cv = 1; i_cv < cv.size(); ++i_cv) {
-            const auto type_i = cv[i_cv]->value().type();
-            if (type_i != x.type()) {
-                cvm::error("Error: the type of sub-CVC " + cv[i_cv]->name +
-                          " is " + colvarvalue::type_desc(type_i) + ", which is "
-                          "different to the type of the first sub-CVC. Currently "
-                          "only sub-CVCs of the same type are supported to be "
-                          "nested.\n");
-                return;
-            }
-        }
     }
     use_explicit_gradients = true;
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
@@ -317,7 +303,8 @@ void colvar::customColvar::apply_force(colvarvalue const &force) {
                 }
             } else {
                 const colvarvalue& current_cv_value = cv[i_cv]->value();
-                colvarvalue cv_force(current_cv_value.type());
+                colvarvalue cv_force(current_cv_value);
+                cv_force.reset();
                 const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
                 for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) {
                     for (size_t c = 0; c < x.size(); ++c) {

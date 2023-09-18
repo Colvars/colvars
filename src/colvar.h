@@ -599,6 +599,8 @@ public:
   class alch_Flambda;
   class componentDisabled;
   class CartesianBasedPath;
+  class aspath;
+  class azpath;
   class gspath;
   class gzpath;
   class linearCombination;

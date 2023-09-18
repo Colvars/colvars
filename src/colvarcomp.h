@@ -26,7 +26,6 @@
 #include "colvarmodule.h"
 #include "colvaratoms.h"
 #include "colvar.h"
-#include "colvar_arithmeticpath.h"
 #include "colvar_geometricpath.h"
 
 
@@ -1549,6 +1548,7 @@ class colvar::CartesianBasedPath
   : public colvar::cvc
 {
 protected:
+    virtual void computeDistanceBetweenReferenceFrames(std::vector<cvm::real>& result);
     virtual void computeDistanceToReferenceFrames(std::vector<cvm::real>& result);
     /// Selected atoms
     cvm::atom_group *atoms;
@@ -1715,13 +1715,42 @@ public:
     virtual void apply_force(colvarvalue const &force);
 };
 
+struct ArithmeticPathImpl;
 
+class colvar::aspath
+  : public colvar::CartesianBasedPath
+{
+private:
+    std::unique_ptr<ArithmeticPathImpl> impl_;
+    friend struct ArithmeticPathImpl;
+public:
+    aspath(std::string const &conf);
+    virtual ~aspath();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
+
+class colvar::azpath
+  : public colvar::CartesianBasedPath
+{
+private:
+    std::unique_ptr<ArithmeticPathImpl> impl_;
+    friend struct ArithmeticPathImpl;
+public:
+    azpath(std::string const &conf);
+    virtual ~azpath();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+};
 
 class colvar::aspathCV
-  : public colvar::CVBasedPath, public ArithmeticPathCV::ArithmeticPathBase<colvarvalue, cvm::real, ArithmeticPathCV::path_sz::S>
+  : public colvar::CVBasedPath
 {
-protected:
-    virtual void updateDistanceToReferenceFrames();
+private:
+    std::unique_ptr<ArithmeticPathImpl> impl_;
+    friend struct ArithmeticPathImpl;
 public:
     aspathCV(std::string const &conf);
     virtual ~aspathCV();
@@ -1732,10 +1761,11 @@ public:
 
 
 class colvar::azpathCV
-  : public colvar::CVBasedPath, public ArithmeticPathCV::ArithmeticPathBase<colvarvalue, cvm::real, ArithmeticPathCV::path_sz::Z>
+  : public colvar::CVBasedPath
 {
-protected:
-    virtual void updateDistanceToReferenceFrames();
+private:
+    std::unique_ptr<ArithmeticPathImpl> impl_;
+    friend struct ArithmeticPathImpl;
 public:
     azpathCV(std::string const &conf);
     virtual ~azpathCV();
