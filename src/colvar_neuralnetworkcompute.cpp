@@ -267,13 +267,17 @@ std::vector<std::vector<double>> neuralNetworkCompute::multiply_matrix(const std
     const size_t n = B.size();
     if (A[0].size() != n) {
         std::cerr << "Error on multiplying matrices!\n";
+        // std::cerr << fmt::format("Error on multiplying matrices ({}, {}) and ({}, {})!\n", m, A[0].size(), n, B[0].size());
     }
     const size_t t = B[0].size();
     std::vector<std::vector<double>> C(m, std::vector<double>(t, 0.0));
     for (size_t i = 0; i < m; ++i) {
-        for (size_t j = 0; j < t; ++j) {
-            for (size_t k = 0; k < n; ++k) {
-                C[i][j] += A[i][k] * B[k][j];
+        for (size_t k = 0; k < n; ++k) {
+            const auto tmp = A[i][k];
+            auto& C_i = C[i];
+            auto& B_k = B[k];
+            for (size_t j = 0; j < t; ++j) {
+                C_i[j] += tmp * B_k[j];
             }
         }
     }
