@@ -1279,7 +1279,9 @@ int colvarmodule::reset()
   proxy->flush_output_streams();
   proxy->reset();
 
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  clear_error();
+
+  return COLVARS_OK;
 }
 
 
