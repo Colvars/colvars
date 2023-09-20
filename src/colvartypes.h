@@ -11,7 +11,6 @@
 #define COLVARTYPES_H
 
 #include <vector>
-#include <array>
 
 #ifdef COLVARS_LAMMPS
 // Use open-source Jacobi implementation
