@@ -171,7 +171,7 @@ Here are the steps for a quick first tour of the Dashboard:
 
 Alternately, use the Automatic colvars features in the Actions tab.
 
-Now, clicking ``Edit'' in the Dashboard window (or right-clikcing on a colvar in the list view), you can modify the collective variable to reflect interesting geometric properties of the system.
+Now, clicking ``Edit'' in the Dashboard window (or right-clicking on a colvar in the list view), you can modify the collective variable to reflect interesting geometric properties of the system.
 The power of the collective variables approach lies in the variety of geometric functions (``components'') and their combinations.
 The editor window provides a number of helpers to make it easy and quick to define the most relevant variables.
 See section \ref{sec:dashboard_config_editor} for details.
@@ -381,7 +381,7 @@ One of these parameters is the configuration file or the configuration text for 
 The ``internal units'' of the Colvars module are the units in which values are expected to be in the configuration file, and in which collective variable values, energies, etc. are expressed in the output and colvars trajectory files.
 Generally \textbf{the Colvars module uses internally the same units as its back-end MD engine, with the exception of VMD}, where different unit sets are supported to allow for easy setup, visualization and analysis of Colvars simulations performed with any simulation engine.
 
-Note that \textbf{angles} are expressed in degrees, and derived quantites such as force constants are based on degrees as well.
+Note that \textbf{angles} are expressed in degrees, and derived quantities such as force constants are based on degrees as well.
 Some colvar components have default values, expressed in \AA{}ngstr\"om in this documentation. They are converted to the current length unit as needed.
 Atomic coordinates read from \textbf{XYZ files} (and PDB files where applicable) are expected to be expressed in \AA{}ngstr\"om, no matter what unit system is in use by the back-end (\MDENGINE) or the Colvars Module. They are converted internally to the current length unit as needed.
 Note that force constants in \texttt{harmonic} and \texttt{harmonicWalls} biases (\ref{sec:colvarbias_harmonic}) are rescaled according to the \refkey{width}{colvar|width} parameter of colvars, so that they are formally in energy units, although if \refkey{width}{colvar|width} is given its default value of 1.0, force constants are effectively expressed in \energyunit/\textit{(colvar unit)}$^2$.
@@ -481,7 +481,7 @@ Other optional keywords for \texttt{fix colvars} are:
     string}{%
     ``out''}{%
     If a value is provided, it is interpreted as the prefix to all output files that will be written by the Colvars module (see \ref{sec:colvars_output}).
-    This includes output state files for checkpointing, as well as accumu;ated information such as PMFs or histograms and trajectories of the collective variables.
+    This includes output state files for checkpointing, as well as accumulated information such as PMFs or histograms and trajectories of the collective variables.
     Because this information is often useful, a default value is set for this keyword when not provided.
     However, supplying an empty string suppresses any file output from Colvars to file, except for data saved into the LAMMPS binary restart file.
 }
@@ -524,11 +524,11 @@ Setting this to \emph{no} will use the current local coordinates that are wrappe
     Thermostating fix (optional)}{%
     string}{%
     NULL}{%
-    This keyword provides the \emph{ID} of an applicable thermostating fix command. This will be used to provide the Colvars module with the current thermostat target temperature when using a method that needs this information.}
+    This keyword provides the \emph{ID} of an applicable thermostatting fix command. This will be used to provide the Colvars module with the current thermostat target temperature when using a method that needs this information.}
 
 \end{itemize}
 
-All of the above keywords except for the name of the configuration file may also be given (or overriden) using \texttt{fix\_modify}, as well as new Colvars configuration files (see \ref{sec:cv_scripting} for more details).
+All of the above keywords except for the name of the configuration file may also be given (or overridden) using \texttt{fix\_modify}, as well as new Colvars configuration files (see \ref{sec:cv_scripting} for more details).
 
 }
 
@@ -696,7 +696,7 @@ After a configuration is fully defined, the ``\texttt{load}'' method may be used
 \end{mdexampleinput}
 The step number contained by the loaded file will be used internally by Colvars to control time-dependent biases, unless \texttt{firstTimestep} is issued, in which case that value will be used.}
 
-\cvnamdonly{When the system's topology is changed during simulation via the \texttt{structure} command (e.g.{} in constant-pH simulations), it is generally best to reset and re-initalize the module from scratch before loading the corresponding snapshot:
+\cvnamdonly{When the system's topology is changed during simulation via the \texttt{structure} command (e.g.{} in constant-pH simulations), it is generally best to reset and re-initialize the module from scratch before loading the corresponding snapshot:
 \begin{mdexampleinput}
 \-structure~newsystem.psf\\
 \-reinitatoms~$<$snapshot$>$\\
@@ -811,7 +811,7 @@ Aside from the biasing methods already implemented within Colvars (\ref{sec:colv
 \cvvmdonly{Note that in VMD, any forces applied via \texttt{addforce} do not have any effect on the movement of atoms: this feature is only available for compatibility.}
 
 For certain types of variable, the force applied directly on a colvar may be combined with those acting \emph{indirectly} on it via the interatomic force field, making up the \emph{total force}.
-When the \refkey{outputTotalForce}{colvar|outputTotalForce} kewyord is enabled, or when a biasing method that makes explicit use of the total force is enabled,  the total force may be obtained as:
+When the \refkey{outputTotalForce}{colvar|outputTotalForce} keyword is enabled, or when a biasing method that makes explicit use of the total force is enabled,  the total force may be obtained as:
 \cvscriptexampleinputcolvar{gettotalforce}{}{"xi"}
 \noindent{}Note that not all types of variable support total-force computation, and the value of the total force may not be available immediately within the same simulation step: see the documentation of \refkey{outputTotalForce}{colvar|outputTotalForce} for more details.
 
@@ -962,8 +962,9 @@ Several of the sampling methods implemented in Colvars are time- or history-depe
 
 The Colvars state file may be in either one of two formats:
 \begin{itemize}
-\item Unformatted (binary) format, which is both space-efficient and quick to load/save, but requires that the same \MDENGINE{} build was used to save the file in the first place.  Most importantly, no changes are allowed in the Colvars configuration between the original run.
-\item Formatted (text) format, which takes more space and is slower to to load/save but is also portable across different platforms and even different engines (except for changes in physical units).  Formatted state files are also the only format previously supported by Colvars version until late 2023. % TODO Add specific version?
+\item Unformatted (binary) format, which is both space-efficient and quick to load/save, but requires that the same \MDENGINE{} build was used to save the file in the first place. Most importantly, no changes are allowed in the Colvars configuration between the original run. Binary state files are supported by Colvars versions starting late 2023. % TODO Add specific version?
+Binary checkpointing is enabled by setting the environment variable COLVARS_BINARY_RESTART to 1.
+\item Formatted (text) format, which takes more space and is slower to to load/save but is also portable across different platforms and even different engines (except for changes in physical units).
 \end{itemize}
 
 \cvsubsubsec{Contents of the state file.}{}
@@ -1111,7 +1112,7 @@ Due to the fixed-precision PDB format, it is not recommended to use PDB files to
 
 \cvsubsubsec{Grid files: multicolumn text format}{sec:colvar_multicolumn_grid}
 
-Many simulation methods and analysis tools write files that contain functions of the collective variables tabulated on a grid (e.g.{} potentials of mean force or multidimentional histograms) for the purpose of analyzing results.
+Many simulation methods and analysis tools write files that contain functions of the collective variables tabulated on a grid (e.g.{} potentials of mean force or multidimensional histograms) for the purpose of analyzing results.
 Such files are produced by ABF (\ref{sec:colvarbias_abf}), metadynamics (\ref{sec:colvarbias_meta}), multidimensional histograms (\ref{sec:colvarbias_histogram}), as well as any restraint with optional thermodynamic integration support (\ref{sec:colvarbias_ti}).
 
 In some cases, these files may also be read as input of a new simulation.
@@ -1143,7 +1144,7 @@ In most situations:
 \item $\mathtt{periodic}(\xi_{i})$ is set to 1 if and only if $\xi_{i}$ is periodic and the grids' boundaries cover its period.
 \end{itemize}
 
-How the grid's boundaries affect the sequence of points depends on how the contents of the file were computed.  In many cases, such as histograms and PMFs computed by metadynamics (\ref{sec:colvarbias_ebmeta}), the values of $\xi_i$ in the first few columns correspond to the \emph{midpoints} of the corresponing bins, i.e.\ $\xi^{1}_{1} = \mathtt{min}(\xi_{i}) + \mathtt{width}(\xi_{i})/2$.
+How the grid's boundaries affect the sequence of points depends on how the contents of the file were computed.  In many cases, such as histograms and PMFs computed by metadynamics (\ref{sec:colvarbias_ebmeta}), the values of $\xi_i$ in the first few columns correspond to the \emph{midpoints} of the corresponding bins, i.e.\ $\xi^{1}_{1} = \mathtt{min}(\xi_{i}) + \mathtt{width}(\xi_{i})/2$.
 However, there is a slightly different format in PMF files computed by ABF (\ref{sec:colvarbias_abf}) or other biases that use thermodynamic integration (\ref{sec:colvarbias_ti}).
 In these cases, it is free-energy gradients that are accumulated on an \texttt{(npoints)}-long grid along each variable $\xi$: after these gradients are integrated, the resulting PMF is discretized on a slightly larger grid with \texttt{(npoints+1)} points along $\xi$ (unless the interval is periodic).
 Therefore, the grid's outer edges extend by $\mathtt{width}(\xi_{i})/2$ above and below the specified boundaries, so that for instance $\mathtt{min}(\xi_{i})$ in the header appears to be shifted back by $\mathtt{width}(\xi_{i})/2$ compared to what would be expected.  \emph{Please keep this difference in mind when comparing PMFs computed by different methods.}
@@ -1811,7 +1812,7 @@ If \texttt{group2} is a \texttt{dummyAtom}, this option is set to \texttt{yes} b
      \texttt{coordNum}}{%
      Pairlist control}{%
     decimal}{%
-    0.0}{This controls the pairlist feature, dictating the minimum value for each summation element in Eq.~\ref{eq:cvc_coordNum} such that the pair that contributed the summation element is included in subsequent simulation timesteps until the next pairlist recalculation. For most applications, this value should be small (eg. 0.001) to avoid missing important contributions to the overall sum. Higher values will improve performance by reducing the number of pairs that contribute to the sum. Values above 1 will exclude all possible pair interactions. Similarly, values below 0 will never exclude a pair from consideration. To ensure continuous forces, Eq.~\ref{eq:cvc_coordNum} is further modified by subtracting the tolerance and then rescaling so that each pair covers the range $\left[0, 1\right]$.
+    0.0}{This controls the pair  list feature, dictating the minimum value for each summation element in Eq.~\ref{eq:cvc_coordNum} such that the pair that contributed the summation element is included in subsequent simulation timesteps until the next pai r list recalculation. For most applications, this value should be small (eg. 0.001) to avoid missing important contributions to the overall sum. Higher values will improve performance by reducing the number of pairs that contribute to the sum. Values above 1 will exclude all possible pair interactions. Similarly, values below 0 will never exclude a pair from consideration. To ensure continuous forces, Eq.~\ref{eq:cvc_coordNum} is further modified by subtracting the tolerance and then rescaling so that each pair covers the range $\left[0, 1\right]$.
   }
 
 \item %
@@ -1821,7 +1822,7 @@ If \texttt{group2} is a \texttt{dummyAtom}, this option is set to \texttt{yes} b
      \texttt{coordNum}}{%
      Pairlist regeneration frequency}{%
     positive integer}{%
-    100}{This controls the pairlist feature, dictating how many steps are taken between regenerating pairlists if the tolerance is greater than 0.
+    100}{This controls the pairlist feature, dictating how many steps are taken between regenerating pair  lists if the tolerance is greater than 0.
   }
 \end{cvcoptions}
 
@@ -1831,7 +1832,7 @@ cutoff) to $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$ (all distances
 are less than the cutoff), or $N_{\mathtt{group1}}$ if
 \texttt{group2CenterOnly} is used.  For performance reasons, at least
 one of \texttt{group1} and \texttt{group2} should be of limited size or \texttt{group2CenterOnly} should be used: the cost of the loop over all pairs grows as $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$.
-Setting $\mathtt{tolerance} > 0$ ameliorates this to some degree, although every pair is still checked to regenerate the pairlist.
+Setting $\mathtt{tolerance} > 0$ ameliorates this to some degree, although every pair is still checked to regenerate the pair  list.
 
 
 
@@ -1890,7 +1891,7 @@ same options \texttt{cutoff} (with a different default value of
 3.3~\AA{}), \texttt{expNumer} (with a default value of 6) and
 \texttt{expDenom} (with a default value of 8).  Unlike
 \texttt{coordNum}, it requires two atom numbers, \texttt{acceptor} and
-\texttt{donor}, to be defined.  It returns an adimensional number,
+\texttt{donor}, to be defined.  It returns a dimensionless number,
 with values between 0 (acceptor and donor far outside the cutoff
 distance) and 1 (acceptor and donor much closer than the cutoff).
 
@@ -2302,7 +2303,7 @@ Lastly, the traditional Euler angles are also available as the functions \refkey
 Altogether, these are sufficient to represent all three degrees of freedom of a full rotation.
 However, they also suffer from the potential ``gimbal lock'' problem, which emerges whenever $\theta \simeq \pm 90^\circ$, which includes also the case where the full rotation is small.
 Under such conditions, the angles $\phi$ and $\psi$ are both ill-defined and cannot be used as collective variables.
-For these reasons, it is highly recommmended that Euler angles are used only in simulations where their range of applicability is \emph{known ahead of time}, and excludes configurations where  $\theta \simeq \pm 90^\circ$ altogether.
+For these reasons, it is highly recommended that Euler angles are used only in simulations where their range of applicability is \emph{known ahead of time}, and excludes configurations where  $\theta \simeq \pm 90^\circ$ altogether.
 
 \cvsubsubsec{\texttt{orientation}: orientation from reference coordinates.}{sec:cvc_orientation}
 \labelkey{colvar|orientation}
@@ -3222,7 +3223,7 @@ This colvar component computes the $s$ variable.
     \texttt{aspathCV} and \texttt{azpathCV}}{%
     The file name of the path file.}{%
     UNIX filename}{%
-		Defines the nodes or images that constitutes the path in CV space. The CVs of an image are listed in a line of \texttt{pathFile} using space-seperated format. Lines from top to button in \texttt{pathFile} corresponds images from initial to last.
+		Defines the nodes or images that constitutes the path in CV space. The CVs of an image are listed in a line of \texttt{pathFile} using space-separated format. Lines from top to button in \texttt{pathFile} corresponds images from initial to last.
     }
 
 \end{cvcoptions}
@@ -4119,7 +4120,7 @@ The following keywords define these parameters for a specific variable, and will
     Histograms (\ref{sec:colvarbias_histogram}), ABF (\ref{sec:colvarbias_abf}) and metadynamics (\ref{sec:colvarbias_meta}) all use this number as the initial choice for the grid spacing along this variable.
     As a typical rule of thumb, \texttt{width} should be no larger than the standard deviation of the colvar in an unbiased simulation (to characterize a local free-energy minimum with at least two points).
 
-    Further, many restraints such as harmonic potentials (\ref{sec:colvarbias_harmonic}), harmonic walls (\ref{sec:colvarbias_harmonic_walls}) and linear restraints (\ref{sec:colvarbias_linear}) also use this parameter to define the \emph{expected fluctuations} of the colvar, alowing to express the force constant in terms of this unit.
+    Further, many restraints such as harmonic potentials (\ref{sec:colvarbias_harmonic}), harmonic walls (\ref{sec:colvarbias_harmonic_walls}) and linear restraints (\ref{sec:colvarbias_linear}) also use this parameter to define the \emph{expected fluctuations} of the colvar, allowing to express the force constant in terms of this unit.
     This is most useful with multi-dimensional restraints acting on variables that have very different units (for examples, working with \lengthunit{} and degrees $^\circ$ simultaneously): a single force constant can be used for all, which is converted to the respective unit of each variable when forces are applied (the  are printed at initialization time.
   }
 
@@ -5220,7 +5221,7 @@ where $\gradx \widetilde A$ denotes the current estimate of the
 free energy gradient at the current point $\bm{\xi}$ in the collective
 variable subspace, and $\alpha(N_\xi)$ is a scaling factor that is ramped
 from 0 to 1 as the local number of samples $N_\xi$ increases
-to prevent nonequilibrium effects in the early phase of the simulation,
+to prevent non-equilibrium effects in the early phase of the simulation,
 when the gradient estimate has a large variance.
 See the \texttt{fullSamples} parameter below for details.
 
@@ -5229,7 +5230,7 @@ $\gradx \widetilde A$ is progressively refined. The biasing
 force introduced in the equations of motion guarantees that in
 the bin centered around $\bm{\xi}$,
 the forces acting along the selected collective variables average
-to zero over time. Eventually, as the undelying free energy surface is canceled
+to zero over time. Eventually, as the underlying free energy surface is canceled
 by the adaptive bias, evolution of the system along $\bm{\xi}$
 is governed mainly by diffusion.
 Although this implementation of ABF can in principle be used in
@@ -5297,7 +5298,7 @@ Other parameters to control the ABF runtime can be set in the ABF configuration 
     to application of the ABF}
   {positive integer}
   {200}
-  {To avoid nonequilibrium effects due to large fluctuations of the force exerted along the
+  {To avoid non-equilibrium effects due to large fluctuations of the force exerted along the
    colvars, it is recommended to apply a biasing force only after a the estimate has started
    converging. If \texttt{fullSamples} is non-zero, the applied biasing force is scaled by a factor
    $\alpha(N_\xi)$ between 0 and 1.
@@ -5768,13 +5769,13 @@ by eq. \ref{eq:colvars_meta_fes} oscillates on time around the ``real'' free ene
     V_{\mathrm{meta}}(\bm{\xi},t)dt}
   }
 \end{equation}
-where $t_{e}$ is the time after which the bias potential grows (approximately) evenly during the simulation and $t_{tot}$ is the total simulation time. The free energy calculated according to eq.~\ref{eq:colvars_meta_fes_av} can thus be obtained averaging on time mutiple time-dependent free energy estimates, that can be printed out through the keyword \texttt{keepFreeEnergyFiles}. An alternative is to obtain the free energy profiles by summing the hills added during the simulation; the hills trajectory can be printed out by enabling the option \texttt{writeHillsTrajectory}.
+where $t_{e}$ is the time after which the bias potential grows (approximately) evenly during the simulation and $t_{tot}$ is the total simulation time. The free energy calculated according to eq.~\ref{eq:colvars_meta_fes_av} can thus be obtained averaging on time multiple time-dependent free energy estimates, that can be printed out through the keyword \texttt{keepFreeEnergyFiles}. An alternative is to obtain the free energy profiles by summing the hills added during the simulation; the hills trajectory can be printed out by enabling the option \texttt{writeHillsTrajectory}.
 
 
 \cvsubsubsec{Treatment of the PMF boundaries}{sec:colvarbias_meta_boundaries}
 
 In typical scenarios the Gaussian hills of a metadynamics potential are interpolated and summed together onto a grid, which is much more efficient than computing each hill independently at every step (the keyword \refkey{useGrids}{metadynamics|useGrids} is \texttt{on} by default).
-This numerical approximation typically yields neglibile errors in the resulting PMF \cite{Fiorin2013}.
+This numerical approximation typically yields negligible errors in the resulting PMF \cite{Fiorin2013}.
 However, due to the finite thickness of the Gaussian function, the metadynamics potential would suddenly vanish each time a variable exceeds its grid boundaries.
 
 To avoid such discontinuity the Colvars metadynamics code will keep an explicit copy of each hill that straddles a grid's boundary, and will use it to compute metadynamics forces outside the grid.
@@ -6120,7 +6121,7 @@ Instead, multiple probability distributions on different variables can be target
 \\
 \end{tabular}
 
-\textbf{Tip:} Besides setting a meaninful value for \texttt{targetDistMinVal}, the exploration of unphysically low values of the target distribution (which would lead to very large hills and possibly numerical instabilities) can be also prevented by restricting sampling to a given interval, using e.g.{} \texttt{harmonicWalls} restraint (\ref{sec:colvarbias_harmonic_walls}).
+\textbf{Tip:} Besides setting a meaningful value for \texttt{targetDistMinVal}, the exploration of unphysically low values of the target distribution (which would lead to very large hills and possibly numerical instabilities) can be also prevented by restricting sampling to a given interval, using e.g.{} \texttt{harmonicWalls} restraint (\ref{sec:colvarbias_harmonic_walls}).
 
 
 
@@ -6387,7 +6388,7 @@ When the centers are changed continuously, a steered MD in a collective variable
     boolean}{%
     \texttt{off}}{%
     If this option is chosen and  \texttt{colvarsTrajFrequency} is not zero, the positions of the restraint centers will be written to the trajectory file during the simulation.
-    This option allows to conveniently extract the PMF from the colvars trajectory files in a steered MD calculation.
+    This option allows to conveniently extract the PMF from the Colvars trajectory files in a steered MD calculation.
 }
 
 \end{itemize}
