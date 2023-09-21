@@ -40,13 +40,14 @@ if [ ${NUM_TASKS} -gt ${NUM_CPUS} ] ; then
   NUM_TASKS=${NUM_CPUS}
 fi
 
-if $BINARY -h > /dev/null ; then
-  if $BINARY -h | grep ^MPI | grep -q STUBS ; then
+if $BINARY -h >& /dev/null ; then
+  if $BINARY -h 2> /dev/null | grep ^MPI | grep -q STUBS ; then
     MPI_BUILD=no
   else
-    MPI_BUILD=yes
-    source ${TOPDIR}/devel-tools/load-openmpi.sh
-    BINARY="mpirun -n ${NUM_TASKS} $BINARY"
+    if source ${TOPDIR}/devel-tools/load-openmpi.sh ; then
+      MPI_BUILD=yes
+      BINARY="mpirun -n ${NUM_TASKS} $BINARY"
+    fi
   fi
 else
   echo "Error: executable $BINARY did not return a help screen" >& 2
