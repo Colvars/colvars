@@ -1,7 +1,4 @@
-# Load Software Collections packages on a RedHat-style distribution
-if hash scl >& /dev/null ; then
-    if scl -l | grep -q ^devtoolset-10 ; then
-        source /opt/rh/devtoolset-10/enable && \
-            echo "Loaded: $(gcc --version)"
-    fi
+# Load Software Collections package for RHEL/CentOS 7
+if [ -s /etc/redhat-release ] && [ -s /opt/rh/devtoolset-10/enable ] ; then
+    source /opt/rh/devtoolset-10/enable && echo "Loaded: $(gcc --version)" | head -n 1
 fi
