@@ -131,10 +131,12 @@ cvm::real ColvarProxyGromacs::rand_gaussian()
 
 void ColvarProxyGromacs::log(std::string const& message)
 {
-    if (logger_) {
+    if (logger_)
+    {
         std::istringstream is(message);
-        std::string line;
-        while (std::getline(is, line)) {
+        std::string        line;
+        while (std::getline(is, line))
+        {
             GMX_LOG(logger_->info).appendText("colvars: " + line + "\n");
         }
     }
