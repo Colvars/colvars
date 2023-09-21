@@ -24,15 +24,15 @@ while [ $# -ge 1 ]; do
     gen_ref_output='yes'
     echo "Generating reference output"
   elif [ "x$1" = 'x-h' ]; then
-    echo "Usage: ./run_tests.sh [-h] [-g] [-gpu] [path_to_namd2] [testdir1 [testdir2 ...]]"  >& 2
+    echo "Usage: ./run_tests.sh [-h] [-g] [-cudasoa] [path_to_namd2] [testdir1 [testdir2 ...]]"  >& 2
     echo "    The -g option (re)generates reference outputs in the given directories" >& 2
-    echo "    The -gpu option enables the GPU-resident NAMD3 code path (CUDASOAIntegrate)" >& 2
+    echo "    The -cudasoa option enables the GPU-resident NAMD3 code path (CUDASOAIntegrate)" >& 2
     echo "    If no executable is given, \"namd2\" is used" >& 2
     echo "    If no directories are given, all matches of [0-9][0-9][0-9]_* are used" >& 2
     echo "    This script relies on the executable spiff to be available, and will try to " >& 2
     echo "    download and build it into $TMPDIR if needed." >& 2
     exit 0
-  elif [ "x$1" = 'x-gpu' ]; then
+  elif [ "x$1" = 'x-cudasoa' ]; then
     CUDASOA=1
   else
     DIRLIST=`echo ${DIRLIST} $1`
