@@ -144,12 +144,6 @@ void ColvarProxyGromacs::log(std::string const& message)
 
 void ColvarProxyGromacs::error(std::string const& message)
 {
-    // In GROMACS, all errors are fatal.
-    fatal_error(message);
-}
-
-void ColvarProxyGromacs::fatal_error(std::string const& message)
-{
     log(message);
     GMX_THROW(InternalError("Error in collective variables module.\n"));
 }
