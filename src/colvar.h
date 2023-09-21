@@ -88,7 +88,7 @@ public:
   /// calculations, \link colvarbias_abf \endlink, it is used to
   /// calculate the grid spacing in the direction of this collective
   /// variable.
-  cvm::real width;
+  cvm::real width = 1.0;
 
   /// \brief Implementation of the feature list for colvar
   static std::vector<feature *> cv_features;
@@ -181,13 +181,13 @@ protected:
   /// Previous velocity of the restraint center
   colvarvalue prev_v_ext;
   /// Mass of the restraint center
-  cvm::real ext_mass;
+  cvm::real ext_mass = 0.0;
   /// Restraint force constant
-  cvm::real ext_force_k;
+  cvm::real ext_force_k = 0.0;
   /// Friction coefficient for Langevin extended dynamics
-  cvm::real ext_gamma;
+  cvm::real ext_gamma = 0.0;
   /// Amplitude of Gaussian white noise for Langevin extended dynamics
-  cvm::real ext_sigma;
+  cvm::real ext_sigma = 0.0;
 
   /// \brief Applied force on extended DOF, for output (unscaled if using MTS)
   colvarvalue fr;
@@ -221,14 +221,14 @@ public:
   colvarvalue ft;
 
   /// Period, if this variable is periodic
-  cvm::real period;
+  cvm::real period = 0.0;
 
   /// Center of wrapping, if this variable is periodic
-  cvm::real wrap_center;
+  cvm::real wrap_center = 0.0;
 
   /// \brief Expand the boundaries of multiples of width, to keep the
   /// value always within range
-  bool expand_boundaries;
+  bool expand_boundaries = false;
 
   /// \brief Location of the lower boundary
   colvarvalue lower_boundary;
@@ -383,10 +383,10 @@ public:
 protected:
 
   /// \brief Number of CVC objects with an active flag
-  size_t n_active_cvcs;
+  size_t n_active_cvcs = 0;
 
   /// Sum of square coefficients for active cvcs
-  cvm::real active_cvc_square_norm;
+  cvm::real active_cvc_square_norm = 0.0;
 
   /// Update the sum of square coefficients for active cvcs
   void update_active_cvc_square_norm();
@@ -550,15 +550,15 @@ protected:
   /// Current value of the running average
   colvarvalue    runave;
   /// Current value of the square deviation from the running average
-  cvm::real      runave_variance;
+  cvm::real      runave_variance = 0.0;
 
   /// Calculate the running average and its standard deviation
   int calc_runave();
 
   /// If extended Lagrangian active: colvar kinetic energy
-  cvm::real kinetic_energy;
+  cvm::real kinetic_energy = 0.0;
   /// If extended Lagrangian active: colvar harmonic potential
-  cvm::real potential_energy;
+  cvm::real potential_energy = 0.0;
 
 public:
 
