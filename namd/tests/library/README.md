@@ -12,7 +12,7 @@ This is the usage information for `run_tests.sh`:
 ```
 Usage: ./run_tests.sh [-h] [-g] [path_to_namd2] [testdir1 [testdir2 ...]]
     The -g option (re)generates reference outputs in the given directories
-    The -gpu option enables the GPU-resident NAMD3 code path (CUDASOAIntegrate)
+    The -cudasoa option enables the GPU-resident NAMD3 code path (CUDASOAIntegrate)
     If no executable is given, "namd2" is used
     If no directories are given, all matches of [0-9][0-9][0-9]_* are used
 ```

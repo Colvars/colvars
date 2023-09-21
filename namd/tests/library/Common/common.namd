@@ -70,7 +70,7 @@ if { [info exists xsc_file] > 0 } {
 }
 
 COMmotion               no
-# incompatible with TclForces as of 07/2023
+# incompatible with CUDASOAIntegrate as of 09/2023
 #zeroMomentum            yes
 
 timestep                1.0
