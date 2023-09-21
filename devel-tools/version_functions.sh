@@ -109,8 +109,8 @@ write_version_string() {
         echo -e "${version_str}" > ${file}
     else
         echo -e "#ifndef ${macro}\n\
-    #define ${macro} \"${version_str}\"\n\
-    #endif" > ${file}
+#define ${macro} \"${version_str}\"\n\
+#endif" > ${file}
     fi
     if [ "${file}" = "src/colvars_version.h" ] ; then
         local version_str_tex=$(version_str_for_tex ${version_str})

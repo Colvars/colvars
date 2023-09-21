@@ -1,3 +1,3 @@
 #ifndef COLVARPROXY_VERSION
-    #define COLVARPROXY_VERSION "2023-09-19"
-    #endif
+#define COLVARPROXY_VERSION "2023-09-19"
+#endif
