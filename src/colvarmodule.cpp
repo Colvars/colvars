@@ -126,10 +126,8 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   binary_restart = false;
   char const *env_var = getenv("COLVARS_BINARY_RESTART");
-  if (env_var) {
-    if (atoi(env_var ? env_var : "0")) {
-      binary_restart = true;
-    }
+  if (env_var && atoi(env_var)) {
+    binary_restart = true;
   }
 
   // "it_restart" will be set by the input state file, if any;
