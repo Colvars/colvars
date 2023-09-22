@@ -136,9 +136,6 @@ for dir in ${DIRLIST} ; do
   # Run simulation(s)
   for basename in test test.restart ; do
 
-    # Prefix of the Gromacs generated files
-    output=""
-
     # Input files
     # Symbolink link to the colvars input file, index file, and xyz file
     ln -sf test.in test.dat
@@ -160,29 +157,28 @@ for dir in ${DIRLIST} ; do
       ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr >& ${basename}.grompp.out
       ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} >& ${basename}.out
       RETVAL=$?
-      output=${basename}
-      grep "^colvars:" ${basename}.log | grep -v 'Initializing the collective variables module' \
-        | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
     fi
 
     if [ "${basename}" == "test.restart" ] ; then
       ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
       ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
       RETVAL=$?
-      output=${basename}
-      grep "^colvars:" ${basename}.part0002.log | grep -v 'Initializing the collective variables module' \
-        | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
+      output=${basename}.part0002
+      for file in ${output}.* ; do
+        # Remove the part number, our filenames are unique anyway
+        mv -f ${file} ${file/.part0002/}
+      done
     fi
 
-    if [ -f ${output}.colvars.state ] ; then
-      # Filter out the version number from the state files to allow comparisons
-      grep -sv 'version' ${output}.colvars.state > ${TMPDIR}/${output}.colvars.state.stripped
-      mv -f ${TMPDIR}/${output}.colvars.state.stripped ${output}.colvars.state.stripped
-      #Create symlink for restart input
-      ln -sf ${output}.colvars.state{,.dat}
+    # Filter out the version numbers to allow comparisons
+    grep "^colvars:" ${basename}.log \
+      | grep -v 'Initializing the collective variables module' \
+      | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
+    if [ -f ${basename}.colvars.state ] ; then
+      grep -sv 'version' ${basename}.colvars.state \
+           > ${TMPDIR}/${basename}.colvars.state.stripped && \
+        mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
     fi
-
-    #Convert the output of the traj files
 
     # If this test is used to generate the reference output files, copy them
     if [ "x${gen_ref_output}" = 'xyes' ]; then
