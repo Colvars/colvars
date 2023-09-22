@@ -9,6 +9,7 @@ function(gmx_manage_colvars)
   file(GLOB COLVARS_SOURCES ${PROJECT_SOURCE_DIR}/src/external/colvars/*.cpp)
   add_library(colvars OBJECT ${COLVARS_SOURCES})
   # Colvars requires a correct definition of __cplusplus, which MSVC doesn't give by default
+  # See: https://learn.microsoft.com/en-us/cpp/build/reference/zc-cplusplus
   target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
 endfunction()
 
