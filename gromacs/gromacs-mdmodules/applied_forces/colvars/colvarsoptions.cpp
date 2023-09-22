@@ -260,24 +260,18 @@ void ColvarsOptions::setLogger(const MDLogger& logger)
     logger_ = &logger;
 }
 
-void ColvarsOptions::processTprFilename(const MdRunInputFilename& tprFilename)
+void ColvarsOptions::processEdrFilename(const EdrOutputFilename& filename)
 {
-    // Exit if colvars module is not active
+    // Do nothing if Colvars is not active
     if (!active_)
     {
         return;
     }
 
     // Provided name should not be empty
-    GMX_RELEASE_ASSERT(!tprFilename.mdRunFilename_.empty(),
-                       "Filename of the *.tpr simulation file is empty");
+    GMX_RELEASE_ASSERT(!filename.edrOutputFilename_.empty(), "Empty name for the *.edr output file");
 
-    if (!output_prefix_.empty())
-    {
-        return;
-    }
-
-    output_prefix_ = stripExtension(std::filesystem::path(tprFilename.mdRunFilename_).filename());
+    output_prefix_ = stripExtension(std::filesystem::path(filename.edrOutputFilename_).filename());
 }
 
 void ColvarsOptions::getTemperature(const EnsembleTemperature& temp)

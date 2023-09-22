@@ -102,11 +102,11 @@ public:
     //! Set the MDLogger instance
     void setLogger(const MDLogger& logger);
 
-    /*! \brief Process MdRunInputFilename notification during mdrun.
-     * In case output_prefix is empty sets it to tpr name
-     * \param[in] tprFilename name of the *.tpr file that mdrun simulates
+    /*! \brief Process EdrOutputFilename notification during mdrun.
+     * Used to set the prefix of Colvars output files based on the .edr filename
+     * \param[in] filename name of the *.edr file that mdrun will produce
      */
-    void processTprFilename(const MdRunInputFilename& tprFilename);
+    void processEdrFilename(const EdrOutputFilename& filename);
 
     /*! \brief Store the ensemble temperature of the system if available.
      * \param[in] temp temperature object
