@@ -81,7 +81,7 @@ public:
      *
      * \param[in] notifier allows the module to subscribe to notifications from MdModules.
      *
-     * The colvars code subscribes to these notifications:
+     * The Colvars mdmodule code subscribes to these notifications:
      *   - storing its internal parameters in a tpr file by writing to a
      *     key-value-tree during pre-processing by a function taking a
      *     KeyValueTreeObjectBuilder as parameter
@@ -131,7 +131,7 @@ public:
 
 
     /*! \brief Request to be notified.
-     * The colvars code subscribes to these notifications:
+     * The Colvars mdmodule code subscribes to these notifications:
      *   - the LocalAtomSetManager sets in the simulation parameter setup
      *     by taking a LocalAtomSetManager * as parameter
      *   - the type of periodic boundary conditions that are used
@@ -142,7 +142,9 @@ public:
      *     by taking a t_commrec as parameter
      *   - the simulation time step
      *     by taking a SimulationTimeStep as a parameter
-     *   - Access MDLogger for notifications output
+     *   - MDLogger for notifications output
+     *   - the .edr filename
+     *     to provide a user-defined output prefix for Colvars output files
      */
     void subscribeToSimulationSetupNotifications(MDModulesNotifiers* notifier) override
     {
@@ -191,11 +193,11 @@ public:
         };
         notifier->simulationSetupNotifier_.subscribe(setLoggerFunction);
 
-        // Process tpr filename
-        const auto setTprFileNameFunction = [this](const MdRunInputFilename& tprName) {
-            colvarsOptions_.processTprFilename(tprName);
+        // Get edr filename
+        const auto setEdrFileNameFunction = [this](const EdrOutputFilename& filename) {
+            colvarsOptions_.processEdrFilename(filename);
         };
-        notifier->simulationSetupNotifier_.subscribe(setTprFileNameFunction);
+        notifier->simulationSetupNotifier_.subscribe(setEdrFileNameFunction);
 
         // writing checkpoint data
         const auto checkpointDataWriting = [this](MDModulesWriteCheckpointData checkpointData) {
