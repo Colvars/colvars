@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 57618904..b51789b3 100644
+index 1456d146..4bae1b7a 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -406,13 +406,7 @@ SBLIB = \
+@@ -404,13 +404,7 @@ SBLIB = \
  
  include colvars/src/Makefile.namd
  
