@@ -800,30 +800,26 @@ int colvarmodule::calc()
 
   // write restart files and similar data
   if (restart_out_freq && (cvm::step_relative() > 0) &&
-      ((cvm::step_absolute() % restart_out_freq) == 0) ) {
+      ((cvm::step_absolute() % restart_out_freq) == 0)) {
 
     if (restart_out_name.size()) {
       // Write restart file, if different from main output
       error_code |= write_restart_file(restart_out_name);
-    } else {
-      if (output_prefix().size()) {
-        error_code |= write_restart_file(output_prefix()+".colvars.state");
-      }
+    } else if (output_prefix().size()) {
+      error_code |= write_restart_file(output_prefix() + ".colvars.state");
     }
 
-    cvm::increase_depth();
-    for (std::vector<colvar *>::iterator cvi = colvars.begin();
-         cvi != colvars.end();
-         cvi++) {
-      // TODO remove this when corrFunc becomes a bias
-      error_code |= (*cvi)->write_output_files();
+    if (output_prefix().size()) {
+      cvm::increase_depth();
+      for (std::vector<colvar *>::iterator cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+        // TODO remove this when corrFunc becomes a bias
+        error_code |= (*cvi)->write_output_files();
+      }
+      for (std::vector<colvarbias *>::iterator bi = biases.begin(); bi != biases.end(); bi++) {
+        error_code |= (*bi)->write_state_to_replicas();
+      }
+      cvm::decrease_depth();
     }
-    for (std::vector<colvarbias *>::iterator bi = biases.begin();
-         bi != biases.end();
-         bi++) {
-      error_code |= (*bi)->write_state_to_replicas();
-    }
-    cvm::decrease_depth();
   }
 
   // Write output files for biases, at the specified frequency for each
