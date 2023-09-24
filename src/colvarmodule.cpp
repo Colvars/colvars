@@ -1417,31 +1417,26 @@ int colvarmodule::setup_output()
              restart_out_name+"\".\n");
   }
 
-  output_prefix() = proxy->output_prefix();
-  if (output_prefix().size()) {
-    cvm::log("The final output state file" + state_file_format + " will be \""+
-             (output_prefix().size() ?
-              std::string(output_prefix()+".colvars.state") :
-              std::string("colvars.state"))+"\".\n");
-    // cvm::log (cvm::line_marker);
+  if (output_prefix() != proxy->output_prefix()) {
+    output_prefix() = proxy->output_prefix();
+    if (output_prefix().size()) {
+      cvm::log("The final output state file will be \"" +
+               (output_prefix().size() ? std::string(output_prefix() + ".colvars.state")
+                                       : std::string("colvars.state")) +
+               "\".\n");
+    }
+
+    cv_traj_name =
+        (output_prefix().size() ? std::string(output_prefix() + ".colvars.traj") : std::string(""));
+
+    for (std::vector<colvarbias *>::iterator bi = biases.begin();
+         bi != biases.end();
+         bi++) {
+      error_code |= (*bi)->setup_output();
+    }
   }
 
-  cv_traj_name =
-    (output_prefix().size() ?
-     std::string(output_prefix()+".colvars.traj") :
-     std::string(""));
-
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
-       bi++) {
-    error_code |= (*bi)->setup_output();
-  }
-
-  if (error_code != COLVARS_OK || cvm::get_error()) {
-    set_error_bits(COLVARS_FILE_ERROR);
-  }
-
-  return cvm::get_error();
+  return error_code;
 }
 
 
