@@ -72,7 +72,7 @@ colvarproxy_namd::colvarproxy_namd()
   // both fields are taken from data structures already available
   updated_masses_ = updated_charges_ = true;
 
-  // take the output prefixes from the namd input
+  // Take the output prefixes from the NAMD input
   colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
   colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
   colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
@@ -323,6 +323,8 @@ void colvarproxy_namd::calculate()
 
   if (first_timestep) {
 
+    // First run after the proxy is constructed
+
     colvarproxy_namd::setup();
     colvars->update_engine_parameters();
     colvars->setup_input();
@@ -331,17 +333,26 @@ void colvarproxy_namd::calculate()
     first_timestep = false;
 
   } else {
+
     // Use the time step number inherited from GlobalMaster
     if ( step - previous_NAMD_step == 1 ) {
       colvars->it++;
       b_simulation_continuing = false;
     } else {
+
       // Cases covered by this condition:
       // - run 0
       // - beginning of a new run statement
       // The internal counter is not incremented, and the objects are made
       // aware of this via the following flag
       b_simulation_continuing = true;
+
+      // Update NAMD output and restart prefixes
+      colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
+      colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
+      colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
+      colvars->setup_output();
+
     }
   }
 
