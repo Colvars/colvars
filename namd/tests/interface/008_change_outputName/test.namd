@@ -1,0 +1,22 @@
+# -*- tcl -*-
+
+
+source ../Common/common.namd
+source ../Common/measure_net_force_torque.tcl
+
+stepspercycle 5
+
+colvars                 on
+colvarsConfig           test.in
+
+if { [file exists test.prerun.tcl] > 0 } {
+    source test.prerun.tcl
+}
+
+run 10
+
+outputName test.alt
+
+run 10
+
+source ../Common/delete_tmp_files.tcl

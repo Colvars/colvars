@@ -1,0 +1,17 @@
+configuration {
+  step           10
+  dt 1.000000e+00
+}
+
+colvar {
+  name one
+  x  3.21732987848069e+00
+}
+
+restraint {
+  configuration {
+    step 10
+    name h
+  }
+}
+
