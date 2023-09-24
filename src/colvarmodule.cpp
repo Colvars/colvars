@@ -1426,6 +1426,12 @@ int colvarmodule::setup_output()
                "\".\n");
     }
 
+    if (proxy->output_stream_exists(cv_traj_name)) {
+      // Close old file
+      proxy->close_output_stream(cv_traj_name);
+      cv_traj_write_labels = true;
+    }
+
     cv_traj_name =
         (output_prefix().size() ? std::string(output_prefix() + ".colvars.traj") : std::string(""));
 
