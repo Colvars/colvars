@@ -214,14 +214,14 @@ for dir in ${DIRLIST} ; do
       grep ':-) GROMACS -' ${basename}.out | head -n 1 > gromacs-version.txt
       grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> gromacs-version.txt
       grep 'Using GROMACS interface, version' ${basename}.out | head -n 1 >> gromacs-version.txt
-      cp ${output}.colvars.state.stripped AutoDiff/
-      cp ${output}.colvars.traj           AutoDiff/
+      cp ${basename}.colvars.state.stripped AutoDiff/
+      cp ${basename}.colvars.traj           AutoDiff/
       cp ${basename}.colvars.out            AutoDiff/
-      if [ -f ${output}.histogram1.dat ] ; then
-        cp -f ${output}.histogram1.dat AutoDiff/
+      if [ -f ${basename}.histogram1.dat ] ; then
+        cp -f ${basename}.histogram1.dat AutoDiff/
       fi
-      if [ -f ${output}.pmf ] ; then
-        cp -f ${output}.pmf AutoDiff/
+      if [ -f ${basename}.pmf ] ; then
+        cp -f ${basename}.pmf AutoDiff/
       fi
     fi
 
