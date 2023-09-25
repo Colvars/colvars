@@ -86,12 +86,12 @@ struct ColvarsForceProviderState
      */
     std::vector<unsigned char> colvarStateFile_;
 
-    /*! \brief String naming variable holding the content of the formatted Colvars state file.
+    /*! \brief String naming variable holding the content of the unformatted Colvars state file.
      * \note Changing this name will break backwards compability for checkpoint file writing.
      */
     static const std::string colvarStateFileName_;
 
-    /*! \brief String naming variable holding the size of the formatted Colvars state file.
+    /*! \brief String naming variable holding the size of the unformatted Colvars state file.
      * \note Changing this name will break backwards compability for checkpoint file writing.
      */
     static const std::string colvarStateFileSizeName_;
