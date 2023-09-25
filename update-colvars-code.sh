@@ -84,11 +84,7 @@ then
 elif [ -f "${target}/include/molfile_plugin.h" ]
 then
   code="VMD-PLUGINS"
-elif [ -f "${target}/INSTALL-dev" ]
-then
-  code="GROMACS-DEV"
-  echo "You are about to patch GROMACS developpement version with the alpha version of Colvars-MDModules."
-elif [ -f "${target}/src/gromacs/commandline/cmdlineinit.h" ]
+elif [ -f "${target}/src/gromacs/version.h.cmakein" ]
 then
   code="GROMACS"
 else
@@ -103,7 +99,7 @@ else
   elif [ -f "${target}/src/VMDApp.h" ]
   then
     code="VMD"
-  elif [ -f "${target}/src/gromacs/commandline/cmdlineinit.h" ]
+  elif [ -f "${target}/src/gromacs/version.h.cmakein" ]
   then
     code="GROMACS"
   else
@@ -112,6 +108,12 @@ else
   fi
 fi
 
+if [ ${code} == "GROMACS" ] ; then
+  if [ -f ${target}/src/gromacs/mdrunutility/mdmodulesnotifiers.cpp ] ; then
+    # Code after https://gitlab.com/gromacs/gromacs/-/merge_requests/3566
+    code=GROMACS-DEV
+  fi
+fi
 
 COLVARS_VERSION=$(grep define $(dirname $0)/src/colvars_version.h | cut -d' ' -f 3 | tr -d '"')
 if [ -z "${COLVARS_VERSION}" ] ; then
@@ -513,7 +515,7 @@ then
   echo ' done.'
 fi
 
-# Update GROMACS tree
+# Update GROMACS tree (legacy versions)
 if [ ${code} = "GROMACS" ]
 then
 
@@ -608,6 +610,7 @@ then
   exit 0
 fi
 
+# Update GROMACS tree (MDModules interface-ready version)
 if [ ${code} = "GROMACS-DEV" ]
 then
 
