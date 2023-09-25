@@ -1003,7 +1003,7 @@ Both versions support loading Colvars state files in either format (binary or te
 
 \cvsubsubsec{Restarting after a change in Colvars configuration.}{}
 It useful in some cases to modify the configuration of variables or biases between consecutive runs: a typical example would the addition or removal of a restraint in a simulation.
-By restarting using formatted (i.e.\ text) Colvars state files, it is possible to read previous data while allowing for changes in configuration.
+By restarting using text-format Colvars state files, it is possible to read previous data while allowing for changes in configuration.
 For each newly defined variable or bias, no information will be read from the state file if this is unavailable: such new objects will remain uninitialized until the first compute step.
 Conversely, any information that the state file has about variables or biases that are no longer defined is silently ignored.
 \emph{Because these checks are performed based solely on the names of variables and biases, it is your responsibility to ensure that these names correspond to consistent definitions between runs.}
