@@ -93,6 +93,12 @@ cleanup_files() {
 }
 
 
+if ${BINARY} mdrun -colvars 2>&1 | grep -q 'Unknown command-line option -colvars' ; then
+  MDMODULES_INTERFACE=yes
+else
+  MDMODULES_INTERFACE=no
+fi
+
 for dir in ${DIRLIST} ; do
 
   if [ -f ${dir}/disabled ] ; then
@@ -153,21 +159,44 @@ for dir in ${DIRLIST} ; do
 
     # Try running the test
 
-    if [ "${basename}" == "test" ] ; then
-      ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr >& ${basename}.grompp.out
-      ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} >& ${basename}.out
-      RETVAL=$?
-    fi
+    if [ "x${MDMODULES_INTERFACE}" == "xyes" ] ; then
 
-    if [ "${basename}" == "test.restart" ] ; then
-      ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
-      ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
-      RETVAL=$?
-      output=${basename}.part0002
-      for file in ${output}.* ; do
-        # Remove the part number, our filenames are unique anyway
-        mv -f ${file} ${file/.part0002/}
-      done
+      if [ "${basename}" == "test" ] ; then
+        ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr >& ${basename}.grompp.out
+        ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} >& ${basename}.out
+        RETVAL=$?
+      fi
+
+      if [ "${basename}" == "test.restart" ] ; then
+        ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
+        ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
+        RETVAL=$?
+        output=${basename}.part0002
+        for file in ${output}.* ; do
+          # Remove the part number
+          mv -f ${file} ${file/.part0002/}
+        done
+      fi
+
+    else
+
+      if [ "${basename}" == "test" ] ; then
+        ln -fs ${basename}.in ${basename}.dat
+        ${BINARY} mdrun -s ../Common/${basename} -deffnm ${basename} -colvars test.dat &> ${basename}.out
+        RETVAL=$?
+        ln -fs ${basename}.colvars.state{,.dat}
+      fi
+
+      if [ "${basename}" == "test.restart" ] ; then
+        ${BINARY} mdrun -s ../Common/${basename} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt -colvars ${basename%.restart}.dat -colvars_restart ${basename%.restart}.colvars.state.dat &> ${basename}.out
+        RETVAL=$?
+        output="${basename}.part0002"
+        for file in ${output}.* ; do
+          # Remove the part number
+          mv -f ${file} ${file/.part0002/}
+        done
+      fi
+
     fi
 
     # Filter out the version numbers to allow comparisons
