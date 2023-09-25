@@ -958,13 +958,22 @@ The following keywords are available in the global context of the Colvars config
 
 \cvsubsec{Input state file}{sec:colvars_input}
 
-Several of the sampling methods implemented in Colvars are time- or history-dependent, i.e.\ they work by accumulating data as a simulation progresses and use this data to change their biasing forces.  When continuing a simulation over consecutive runs, a \emph{state file} needs to be loaded into Colvars.
+Several of the sampling methods implemented in Colvars are time- or history-dependent, i.e.\ they work by accumulating data as a simulation progresses and use these data to determine their biasing forces.
+
+This requires that the Colvars information 
+
+a standard method for checkpointing (currently, these are only GROMACS and LAMMPS)
+
+When continuing a simulation over consecutive runs, a \emph{state file} needs to be loaded into Colvars.
 
 The Colvars state file may be in either one of two formats:
 \begin{itemize}
-\item Unformatted (binary) format, which is both space-efficient and quick to load/save, but requires that the same \MDENGINE{} build was used to save the file in the first place. Most importantly, no changes are allowed in the Colvars configuration between the original run. Binary state files are supported by Colvars versions starting late 2023. % TODO Add specific version?
-Binary checkpointing is enabled by setting the environment variable COLVARS_BINARY_RESTART to 1.
-\item Formatted (text) format, which takes more space and is slower to to load/save but is also portable across different platforms and even different engines (except for changes in physical units).
+\item Unformatted, i.e.\ \emph{``binary''} format, which is both space-efficient and quick to load/save, but requires that the same \MDENGINE{} build was used to save the file in the first place, and the the Colvars configuration was the same. This format is supported by Colvars versions starting late 2023. % TODO Add specific version?
+Binary checkpointing can b
+
+enabled by setting the environment variable ``COLVARS_BINARY_RESTART'' to 1.
+\item Formatted, i.e.\ \emph{``text''} format, which takes more space and is slower to to load/save but is also portable across different platforms and even different simulation engines (save for changes in physical units).
+This format is supported by all versions of Colvars.
 \end{itemize}
 
 \cvsubsubsec{Contents of the state file.}{}
@@ -976,21 +985,39 @@ This means that the step number used internally by Colvars may not always match 
 % \cvgromacsonly{\cvsubsubsec{Restarting in GROMACS.}{} TODO }
 
 \cvlammpsonly{\cvsubsubsec{Restarting in LAMMPS.}{}
-For continuing a Colvars-based simulation, the recommended method is using the standard LAMMPS \texttt{read\_restart} command, which effectively reads the Colvars state in unformatted (binary) format embedded in the LAMMPS restart file.  Alternatively, restarting from a formatted Colvars-only state file is also possible by using the \texttt{input} keyword of the \texttt{fix colvars} command, which overrides the information read from the LAMMPS restart file.
-Furthermore, a state file may also be loaded after initialization with the \texttt{fix\_modify <fix-ID> load <filename>} LAMMPS command.
-}
+For continuing a Colvars-based simulation, the recommended method is using the standard LAMMPS \texttt{read\_restart} command, which reads the Colvars state data from the LAMMPS restart file (in binary format).
+\begin{mdexampleinput}{}
+\-read\_restart~\emph{filename}
+\end{mdexampleinput}
+Alternatively, restarting from a Colvars-specific state file is also possible by providing the \texttt{input} keyword to the \texttt{fix colvars} command:
+\begin{mdexampleinput}{}
+\-fix~Colvars~all~colvars~\emph{configfile}~input~\emph{input\_prefix}
+\end{mdexampleinput}
+When the ``\texttt{input}'' keyword is used, the contents of the file \texttt{$<$\emph{input\_prefix}$>$.colvar.state} override the information read from the LAMMPS restart file.  Finally, a state file may also be loaded after initialization through the ``\texttt{fix\_modify}'' command:
+\begin{mdexampleinput}{%
+}fix\_modify~Colvars~\texttt{input}~\emph{new\_input\_prefix}
+\end{mdexampleinput}
+} % end \cvlammpsonly
+
 
 \cvnamdonly{\cvsubsubsec{Restarting in NAMD.}{}
 Before the Colvars module is initialized in NAMD, the \texttt{colvarsInput} keyword can be used to give the name of a state file.
-After initialization of the Colvars module, a state file may be loaded at any time with the Tcl command \texttt{cv load}.}
+After initialization of the Colvars module, a state file may be loaded at any time with the Tcl command \texttt{cv load}.
+Both versions support loading Colvars state files in either format (binary or text).
+} % end \cvnamdonly
+
 
 \cvsubsubsec{Restarting after a change in Colvars configuration.}{}
-A unique advantage of the formatted Colvars state files is that they can be loaded even if the configuration has changed.
-For example, new restraints may have been added or removed from the Colvars configuration between consecutive runs.
+It useful in some cases to modify the configuration of variables or biases between consecutive runs: a typical example would the addition or removal of a restraint in a simulation.
+By restarting using formatted (i.e.\ text) Colvars state files, it is possible to read previous data while allowing for changes in configuration.
 For each newly defined variable or bias, no information will be read from the state file if this is unavailable: such new objects will remain uninitialized until the first compute step.
 Conversely, any information that the state file has about variables or biases that are no longer defined is silently ignored.
 \emph{Because these checks are performed based solely on the names of variables and biases, it is your responsibility to ensure that these names correspond to consistent definitions between runs.}
 
+When restarting using unformatted (i.e.\ binary) state files, configuration changes are not allowed.  The easiest solution would be to produce a formatted (i.e.\ text) state file specifically for that purpose.
+\ifdefined\cvscriptapi{%
+Alternatively, after restarting Colvars using a state file consistent with the previous configuration, the configuration may be changed using the scripting interface (see \ref{sec:cv_scripting}).
+}\fi
 
 
 \cvsubsec{Output files}{sec:colvars_output}
@@ -1000,8 +1027,8 @@ If the output prefix \outputName{} is defined, the following output files are wr
 \begin{itemize}
 
 \item A \emph{state file}, named \outputName\texttt{.colvars.state}, which is written at the end of the specified run\cvscriptonly{, and can also be written at any time with the scripting command \texttt{save} (\ref{sec:cv_command_loadsave})}.
-This file is in plain text format by default\cvnamdonly{, regardless of the value of \texttt{binaryOutput} of the NAMD coordinate and velocity files}, or in binary format if the environment variable \texttt{COLVARS\_BINARY\_RESTART} is set to a non-zero integer.
-\emph{The state is the only Colvars output file needed to continue a simulation.}
+This file is in plain text format by default\cvnamdonly{, regardless of the value of \texttt{binaryOutput} of the NAMD coordinate and velocity files}, or in unformatted (i.e.\ binary) format if the environment variable \texttt{COLVARS\_BINARY\_RESTART} is set to a non-zero integer.
+The state file is used to continue a simulation, and is required to restart a simulation unless the engine supports embedding information into their checkpoint file (as GROMACS or LAMMPS currently do).
 
 \item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
   The name of this file is \restartName\texttt{.colvars.state}.
