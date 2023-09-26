@@ -81,7 +81,7 @@ public:
      *
      * \param[in] notifier allows the module to subscribe to notifications from MdModules.
      *
-     * The Colvars mdmodule code subscribes to these notifications:
+     * The Colvars MDModule subscribes to these notifications:
      *   - storing its internal parameters in a tpr file by writing to a
      *     key-value-tree during pre-processing by a function taking a
      *     KeyValueTreeObjectBuilder as parameter
@@ -105,10 +105,10 @@ public:
         notifier->preProcessingNotifier_.subscribe(writeInternalParametersFunction);
 
         // Access of the topology during pre-processing
-        const auto gettTopologyFunction = [this](gmx_mtop_t* mtop) {
-            colvarsOptions_.getTopology(mtop);
+        const auto processTopologyFunction = [this](gmx_mtop_t* mtop) {
+            colvarsOptions_.processTopology(mtop);
         };
-        notifier->preProcessingNotifier_.subscribe(gettTopologyFunction);
+        notifier->preProcessingNotifier_.subscribe(processTopologyFunction);
 
         // Set Logger during pre-processing
         const auto setLoggerFunction = [this](const MDLogger& logger) {
@@ -123,15 +123,15 @@ public:
         notifier->preProcessingNotifier_.subscribe(processCoordinatesFunction);
 
         //  Notification for the temperature
-        const auto getTemperatureFunction = [this](const EnsembleTemperature& temp) {
-            colvarsOptions_.getTemperature(temp);
+        const auto processTemperatureFunction = [this](const EnsembleTemperature& temp) {
+            colvarsOptions_.processTemperature(temp);
         };
-        notifier->preProcessingNotifier_.subscribe(getTemperatureFunction);
+        notifier->preProcessingNotifier_.subscribe(processTemperatureFunction);
     }
 
 
     /*! \brief Request to be notified.
-     * The Colvars mdmodule code subscribes to these notifications:
+     * The Colvars MDModule subscribes to these notifications:
      *   - the LocalAtomSetManager sets in the simulation parameter setup
      *     by taking a LocalAtomSetManager * as parameter
      *   - the type of periodic boundary conditions that are used
@@ -233,7 +233,7 @@ public:
         {
 
             colvarsForceProvider_ = std::make_unique<ColvarsForceProvider>(
-                    colvarsOptions_.colvarsInputContent(),
+                    colvarsOptions_.colvarsConfigContent(),
                     ColvarsSimulationsParameters_.localAtomSetManager(),
                     ColvarsSimulationsParameters_.periodicBoundaryConditionType(),
                     ColvarsSimulationsParameters_.simulationTimeStep(),

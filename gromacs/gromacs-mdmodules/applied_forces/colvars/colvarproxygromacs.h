@@ -121,7 +121,6 @@ public:
     void log(std::string const& message) override;
     /// Print a message to the main log and let the rest of the program handle the error
     void error(std::string const& message) override;
-
     /// Request to set the units used internally by Colvars
     int set_unit_system(std::string const& units_in, bool colvars_defined) override;
 

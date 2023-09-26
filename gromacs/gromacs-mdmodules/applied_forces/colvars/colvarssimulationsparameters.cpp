@@ -53,6 +53,10 @@ void ColvarsSimulationsParameters::setLocalAtomSetManager(LocalAtomSetManager* l
 
 LocalAtomSetManager* ColvarsSimulationsParameters::localAtomSetManager() const
 {
+    if (localAtomSetManager_ == nullptr)
+    {
+        GMX_THROW(InternalError("Local atom manager not set for Colvars simulation."));
+    }
     return localAtomSetManager_;
 }
 
@@ -77,7 +81,7 @@ PbcType ColvarsSimulationsParameters::periodicBoundaryConditionType()
     if (pbcType_ == nullptr)
     {
         GMX_THROW(
-                InternalError("Periodic boundary condition enum not set for colvars simulation."));
+                InternalError("Periodic boundary condition enum not set for Colvars simulation."));
     }
     return *pbcType_;
 }
@@ -101,6 +105,10 @@ void ColvarsSimulationsParameters::setComm(const t_commrec& cr)
 
 const t_commrec* ColvarsSimulationsParameters::comm() const
 {
+    if (cr_ == nullptr)
+    {
+        GMX_THROW(InternalError("Communication record not set for Colvars simulation."));
+    }
     return cr_;
 }
 

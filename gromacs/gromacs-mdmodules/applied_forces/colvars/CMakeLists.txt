@@ -40,3 +40,6 @@ gmx_add_libgromacs_sources(
     colvarproxygromacs.cpp
     )
 
+if (BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
