@@ -54,4 +54,4 @@ gen_vel                  = no
 
 ; Colvars configuration
 colvars-active           = Yes
-colvars-filename         = test.in
+colvars-configfile       = test.in
