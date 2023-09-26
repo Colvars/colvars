@@ -652,12 +652,21 @@ then
     echo "Update with the last Colvars source."
   else
     mkdir ${target_folder}
+    mkdir -p ${target_folder}/tests/refdata
   fi
-  for src in ${source}/gromacs/gromacs-mdmodules/applied_forces/colvars/*
-  do \
+  for src in ${source}/gromacs/gromacs-mdmodules/applied_forces/colvars/*.* ; do
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/${tgt}"
   done
+  for src in ${source}/gromacs/gromacs-mdmodules/applied_forces/colvars/tests/*.* ; do
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target_folder}/tests/${tgt}"
+  done
+  for src in ${source}/gromacs/gromacs-mdmodules/applied_forces/colvars/tests/refdata/*.* ; do
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target_folder}/tests/refdata/${tgt}"
+  done
+
   echo ""
 
   # Apply patch for Gromacs files
