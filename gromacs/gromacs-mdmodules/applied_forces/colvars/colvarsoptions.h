@@ -63,6 +63,10 @@ struct CoordinatesAndBoxPreprocessed;
 struct MdRunInputFilename;
 
 
+//! Tag with name of the Colvars MDModule
+static const std::string c_colvarsModuleName = "colvars";
+
+
 /*! \internal
  * \brief Input data storage for colvars
  */
@@ -92,7 +96,7 @@ public:
     /*! \brief Store the topology of the system.
      * \param[in,out] mtop topology object
      */
-    void getTopology(gmx_mtop_t* mtop);
+    void processTopology(gmx_mtop_t* mtop);
 
     /*! \brief Process coordinates, PbcType and Box in order to validate the colvars input.
      * \param[in] coord structure with coordinates and box dimensions
@@ -111,16 +115,16 @@ public:
     /*! \brief Store the ensemble temperature of the system if available.
      * \param[in] temp temperature object
      */
-    void getTemperature(const EnsembleTemperature& temp);
+    void processTemperature(const EnsembleTemperature& temp);
 
     //! Report if this colvars module is active
     bool isActive() const;
 
-    //! Return the file name of the colvars input
+    //! Return the file name of the colvars config
     const std::string& colvarsFileName() const;
 
-    //! Return the content of the colvars input file
-    const std::string& colvarsInputContent() const;
+    //! Return the content of the colvars config file
+    const std::string& colvarsConfigContent() const;
 
     //! Return the colvars atoms coordinates
     const std::vector<RVec>& colvarsAtomCoords() const;
@@ -131,8 +135,26 @@ public:
     //! Return the ensemble temperature
     const real& colvarsEnsTemp() const;
 
-
+    //! Return the map of all others colvars input files
     const std::map<std::string, std::string>& colvarsInputFiles() const;
+
+    /*! \brief Function to set internal paramaters outside the way done
+     * through the MDModule notifiers and callbacks.
+     * Use exclusively in the test framework.
+     *
+     * \param[in] colvarsfile Name of the colvars input file.
+     * \param[in] topology Atoms topology
+     * \param[in] coords Coordinates of each atom in the system
+     * \param[in] pbcType Periodic boundary conditions
+     * \param[in] boxValues Matrix with full box of the system
+     * \param[in] temperature the constant ensemble temperature
+     */
+    void setParameters(const std::string&   colvarsfile,
+                       t_atoms              topology,
+                       ArrayRef<const RVec> coords,
+                       PbcType              pbcType,
+                       const matrix         boxValues,
+                       real                 temperature);
 
 
 private:
@@ -143,15 +165,27 @@ private:
      * \note Changing this strings will break .tpr backwards compability
      */
     //! \{
-    const std::string c_activeTag_        = "active";
-    const std::string colvarsFileNameTag_ = "filename";
+    const std::string c_activeTag_          = "active";
+    const std::string c_colvarsFileNameTag_ = "configfile";
     //! \}
 
-    //! Colvars input filename, default colvars.dat
+
+    /*! \brief This tags for parameters which will be generated during grompp
+     * and stored into *.tpr file via KVT
+     */
+    //! \{
+    const std::string c_inputStreamsTag_   = "inputStreams";
+    const std::string c_configStringTag_   = "configString";
+    const std::string c_startingCoordsTag_ = "startingCoords";
+    const std::string c_ensTempTag_        = "ensTemp";
+
+    //! \}
+
+    //! Colvars config filename, default colvars.dat
     std::string colvarsFileName_ = "colvars.dat";
 
 
-    //! Content of the colvars input file
+    //! Content of the colvars config file
     std::string colvarsConfigString;
     //! Topology of the system
     t_atoms gmx_atoms;

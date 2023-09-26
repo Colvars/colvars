@@ -43,6 +43,7 @@
 
 #include <sstream>
 
+
 namespace gmx
 {
 
@@ -103,13 +104,15 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
             cvm::log("Initializing the colvars proxy object.\n");
         }
 
+        int error_code = colvarproxy::setup();
+        error_code |= colvars->read_config_string(colvarsConfigString);
+        error_code |= colvars->update_engine_parameters();
+        error_code |= colvars->setup_input();
 
-        add_config("config", colvarsConfigString);
-
-        colvarproxy::parse_module_config();
-        colvars->update_engine_parameters();
-        colvars->setup_input();
-
+        if (error_code != COLVARS_OK)
+        {
+            error("Error when initializing Colvars module.");
+        }
 
         // Citation Reporter
         cvm::log(std::string("\n") + colvars->feature_report(0) + std::string("\n"));
@@ -119,6 +122,7 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
         //     cvm::log("Initializing step number to "+cvm::to_str(step)+".\n");
         // }
 
+        // colvars->it = colvars->it_restart = step;
         colvars->set_initial_step(static_cast<cvm::step_number>(0L));
     }
 }

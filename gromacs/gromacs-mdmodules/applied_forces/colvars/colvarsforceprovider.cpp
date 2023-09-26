@@ -40,9 +40,10 @@
  */
 
 #include "colvarsforceprovider.h"
-#include "external/colvars/colvars_memstream.h"
 
 #include <string>
+
+#include "external/colvars/colvars_memstream.h"
 
 #include "gromacs/domdec/localatomsetmanager.h"
 #include "gromacs/fileio/checkpoint.h"
@@ -84,12 +85,14 @@ void ColvarsForceProviderState::writeState(KeyValueTreeObjectBuilder kvtBuilder,
         }
     }
 
+
     writeKvtCheckpointValue(
             static_cast<int64_t>(colvarStateFile_.size()), colvarStateFileSizeName_, identifier, kvtBuilder);
 
-    // Write formatted Colvars state file, one character at a time
+    // Write unformatted Colvars state file, one character at a time
     auto charArrayAdder = kvtBuilder.addUniformArray<unsigned char>(colvarStateFileName_);
-    for (const unsigned char &c : colvarStateFile_) {
+    for (const unsigned char& c : colvarStateFile_)
+    {
         charArrayAdder.addValue(c);
     }
 }
@@ -130,7 +133,8 @@ void ColvarsForceProviderState::readState(const KeyValueTreeObject& kvtData, con
     auto charArray = kvtData[colvarStateFileName_].asArray().values();
     colvarStateFile_.resize(colvarStateFileSize_);
     auto it = colvarStateFile_.begin();
-    for (const auto &c: charArray) {
+    for (const auto& c : charArray)
+    {
         *it = c.cast<unsigned char>();
         it++;
     }
@@ -229,9 +233,15 @@ ColvarsForceProvider::ColvarsForceProvider(const std::string&       colvarsConfi
                 copy_rvec(stateToCheckpoint_.xOldWhole_[i], xa_old_whole[i]);
             }
 
+            int error_code = colvarproxy::setup();
             // Read input state file
-            colvars->set_input_state_buffer(stateToCheckpoint_.colvarStateFile_);
-            colvars->setup_input();
+            error_code |= colvars->set_input_state_buffer(stateToCheckpoint_.colvarStateFile_);
+            error_code |= colvars->setup_input();
+
+            if (error_code != COLVARS_OK)
+            {
+                error("Error when initializing Colvars module.");
+            }
         }
         else
         {
