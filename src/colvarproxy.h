@@ -600,9 +600,9 @@ public:
   colvarproxy();
 
   /// Destructor
-  virtual ~colvarproxy() override;
+  ~colvarproxy() override;
 
-  virtual bool io_available() override;
+  bool io_available() override;
 
   /// Request deallocation of the module (currently only implemented by VMD)
   virtual int request_deletion();
