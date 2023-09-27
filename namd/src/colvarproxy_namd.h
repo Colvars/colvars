@@ -250,7 +250,7 @@ public:
 #endif
 
   std::ostream &output_stream(std::string const &output_name,
-                              std::string const description = "file/channel") override;
+                              std::string const description) override;
 
   int flush_output_stream(std::string const &output_name) override;
 
