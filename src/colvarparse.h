@@ -40,7 +40,7 @@ public:
   void set_string(std::string const &conf);
 
   /// Default destructor
-  virtual ~colvarparse() override;
+  ~colvarparse() override;
 
   /// Get the configuration string (includes comments)
   inline std::string const & get_config() const

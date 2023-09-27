@@ -183,7 +183,7 @@ public:
   int init();
 
   /// \brief Initialize dependency tree
-  virtual int init_dependencies() override;
+  int init_dependencies() override;
 
   /// \brief Update data required to calculate cvc's
   int setup();
@@ -224,16 +224,13 @@ public:
   static std::vector<feature *> ag_features;
 
   /// \brief Implementation of the feature list accessor for atom group
-  virtual const std::vector<feature *> &features() const override
+  const std::vector<feature *> &features() const override { return ag_features; }
+
+  std::vector<feature *> &modify_features() override { return ag_features; }
+
+  static void delete_features()
   {
-    return ag_features;
-  }
-  virtual std::vector<feature *> &modify_features() override
-  {
-    return ag_features;
-  }
-  static void delete_features() {
-    for (size_t i=0; i < ag_features.size(); i++) {
+    for (size_t i = 0; i < ag_features.size(); i++) {
       delete ag_features[i];
     }
     ag_features.clear();
