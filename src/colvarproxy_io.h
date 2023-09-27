@@ -139,7 +139,7 @@ public:
   /// \param output_name File name or identifier
   /// \param description Purpose of the file
   virtual std::ostream &output_stream(std::string const &output_name,
-                                      std::string const description = "file/channel");
+                                      std::string const description);
 
   /// Check if the file/channel is open (without opening it if not)
   virtual bool output_stream_exists(std::string const &output_name);

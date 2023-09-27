@@ -2974,14 +2974,11 @@ int colvar::calc_runave()
         runave_variance *= 1.0 / cvm::real(runave_length-1);
 
         if (runave_outfile.size() > 0) {
-          std::ostream &runave_os = proxy->output_stream(runave_outfile);
-          runave_os << std::setw(cvm::it_width) << cvm::step_relative()
-                    << "   "
-                    << std::setprecision(cvm::cv_prec)
-                    << std::setw(cvm::cv_width)
-                    << runave << " "
-                    << std::setprecision(cvm::cv_prec)
-                    << std::setw(cvm::cv_width)
+          std::ostream &runave_os =
+              proxy->output_stream(runave_outfile, "running average output file");
+          runave_os << std::setw(cvm::it_width) << cvm::step_relative() << "   "
+                    << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width) << runave << " "
+                    << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
                     << cvm::sqrt(runave_variance) << "\n";
         }
       }

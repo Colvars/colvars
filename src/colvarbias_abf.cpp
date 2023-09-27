@@ -602,7 +602,7 @@ int colvarbias_abf::replica_share() {
 template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
                                                           std::string const &filename,
                                                           bool close) {
-  std::ostream &os = cvm::proxy->output_stream(filename);
+  std::ostream &os = cvm::proxy->output_stream(filename, "multicolumn grid file");
   if (!os) {
     return cvm::error("Error opening file " + filename + " for writing.\n", COLVARS_ERROR | COLVARS_FILE_ERROR);
   }
@@ -620,7 +620,7 @@ template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
   // (could be implemented as multiple dx files)
   if (num_variables() > 2 && close) {
     std::string  dx = filename + ".dx";
-    std::ostream &dx_os = cvm::proxy->output_stream(dx);
+    std::ostream &dx_os = cvm::proxy->output_stream(dx, "OpenDX grid file");
     if (!dx_os)  {
       return cvm::error("Error opening file " + dx + " for writing.\n", COLVARS_ERROR | COLVARS_FILE_ERROR);
     }

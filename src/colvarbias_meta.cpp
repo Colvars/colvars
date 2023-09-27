@@ -624,7 +624,7 @@ int colvarbias_meta::update_bias()
       add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
                     colvar_values, colvar_sigmas, replica_id));
       std::ostream &replica_hills_os =
-        cvm::proxy->output_stream(replica_hills_file);
+        cvm::proxy->output_stream(replica_hills_file, "replica hills file");
       if (replica_hills_os) {
         write_hill(replica_hills_os, hills.back());
       } else {
@@ -1777,7 +1777,7 @@ int colvarbias_meta::setup_output()
 
     // if we're running without grids, use a growing list of "hills" files
     // otherwise, just one state file and one "hills" file as buffer
-    std::ostream &list_os = cvm::proxy->output_stream(replica_list_file);
+    std::ostream &list_os = cvm::proxy->output_stream(replica_list_file, "replica list file");
     if (list_os) {
       list_os << "stateFile " << replica_state_file << "\n";
       list_os << "hillsFile " << replica_hills_file << "\n";
@@ -1799,7 +1799,7 @@ int colvarbias_meta::setup_output()
 
   if (b_hills_traj) {
     std::ostream &hills_traj_os =
-      cvm::proxy->output_stream(hills_traj_file_name());
+      cvm::proxy->output_stream(hills_traj_file_name(), "hills trajectory file");
     if (!hills_traj_os) {
       error_code |= COLVARS_FILE_ERROR;
     }
@@ -1902,7 +1902,7 @@ int colvarbias_meta::write_output_files()
   }
   if (b_hills_traj) {
     std::ostream &hills_traj_os =
-      cvm::proxy->output_stream(hills_traj_file_name());
+        cvm::proxy->output_stream(hills_traj_file_name(), "hills trajectory file");
     hills_traj_os << hills_traj_os_buf.str();
     cvm::proxy->flush_output_stream(hills_traj_file_name());
     // clear the buffer
@@ -2008,7 +2008,7 @@ int colvarbias_meta::write_replica_state_file()
   // Write to temporary state file
   std::string const tmp_state_file(replica_state_file+".tmp");
   error_code |= proxy->remove_file(tmp_state_file);
-  std::ostream &rep_state_os = cvm::proxy->output_stream(tmp_state_file);
+  std::ostream &rep_state_os = cvm::proxy->output_stream(tmp_state_file, "temporary state file");
   if (rep_state_os) {
     if (!write_state(rep_state_os)) {
       error_code |= cvm::error("Error: in writing to temporary file \""+
@@ -2027,11 +2027,11 @@ int colvarbias_meta::reopen_replica_buffer_file()
 {
   int error_code = COLVARS_OK;
   colvarproxy *proxy = cvm::proxy;
-  if (proxy->output_stream(replica_hills_file)) {
+  if (proxy->output_stream(replica_hills_file, "replica hills file")) {
     error_code |= proxy->close_output_stream(replica_hills_file);
   }
   error_code |= proxy->remove_file(replica_hills_file);
-  std::ostream &replica_hills_os = proxy->output_stream(replica_hills_file);
+  std::ostream &replica_hills_os = proxy->output_stream(replica_hills_file, "replica hills file");
   if (replica_hills_os) {
     replica_hills_os.setf(std::ios::scientific, std::ios::floatfield);
   } else {
