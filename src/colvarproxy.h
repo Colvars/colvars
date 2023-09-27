@@ -608,7 +608,7 @@ public:
   virtual int request_deletion();
 
   /// Whether deallocation was requested
-  inline bool delete_requested()
+  inline bool delete_requested() const
   {
     return b_delete_requested;
   }
