@@ -1148,7 +1148,7 @@ int colvarproxy_namd::backup_file(char const *filename)
 int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
 {
   if (cvm::debug())
-    cvm::log("Reguesting from NAMD a group of size "+cvm::to_str(atoms_ids.size())+
+    cvm::log("Requesting from NAMD a group of size "+cvm::to_str(atoms_ids.size())+
         " for collective variables calculation.\n");
 
   colvars->cite_feature("Scalable center-of-mass computation (NAMD)");
