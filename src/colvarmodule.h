@@ -784,7 +784,7 @@ public:
   std::string   restart_out_name;
 
   /// Pseudo-random number with Gaussian distribution
-  static real rand_gaussian(void);
+  static real rand_gaussian();
 
 protected:
 
