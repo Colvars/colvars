@@ -59,11 +59,8 @@ if ! { echo ${DIRLIST} | grep -q 0 ; } then
   DIRLIST=`eval ls -d [0-9][0-9][0-9]_*`
 fi
 
-NUM_THREADS=1
 NUM_CPUS=$(nproc)
-if [ ${NUM_THREADS} -gt ${NUM_CPUS} ] ; then
-  NUM_THREADS=${NUM_CPUS}
-fi
+NUM_THREADS=${NUM_THREADS:-${NUM_CPUS}}
 
 TPUT_RED='true'
 TPUT_GREEN='true'
