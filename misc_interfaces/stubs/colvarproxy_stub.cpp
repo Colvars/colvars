@@ -78,7 +78,7 @@ int colvarproxy_stub::set_unit_system(std::string const &units_in,
                                             bool check_only)
 {
   // if check_only is specified, just test for compatibility
-  // cvolvarmodule does that if new units are requested while colvars are already defined
+  // colvarmodule sets this flag if new units are requested while colvars are already defined
   if (check_only) {
     if ((units != "" && units_in != units) || (units == "" && units_in != "real")) {
       cvm::error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
