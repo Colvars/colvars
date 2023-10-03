@@ -163,12 +163,13 @@ for dir in ${DIRLIST} ; do
 
       if [ "${basename}" == "test" ] ; then
         ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr >& ${basename}.grompp.out
-        ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -nsteps 20 -deffnm ${basename} >& ${basename}.out
+        ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} >& ${basename}.out
         RETVAL=$?
       fi
 
       if [ "${basename}" == "test.restart" ] ; then
-        ${BINARY} mdrun -s ${basename%.restart}.tpr -ntomp 1 -nsteps 20 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
+        ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
+        ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
         RETVAL=$?
         output=${basename}.part0002
         for file in ${output}.* ; do
