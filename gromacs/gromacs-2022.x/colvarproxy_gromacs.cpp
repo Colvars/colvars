@@ -473,6 +473,7 @@ void colvarproxy_gromacs::calculateForces(
 
   const gmx::ArrayRef<gmx::RVec> &f_out = forceProviderOutput->forceWithVirial_.force_;
   matrix local_colvars_virial = { { 0 } };
+  const bool computeVirial = forceProviderOutput->forceWithVirial_.computeVirial_;
 
   // Pass the applied forces back to GROMACS
   for (int i = 0; i < n_colvars_atoms; i++)
@@ -484,16 +485,22 @@ void colvarproxy_gromacs::calculateForces(
       const int *locndx = cr->dd->ga2la->findHome(i_global);
       if (locndx) {
         f_out[*locndx] += f_colvars[i];
-        add_virial_term(local_colvars_virial, f_colvars[i], x_colvars_unwrapped[i]);
+        if (computeVirial) {
+          add_virial_term(local_colvars_virial, f_colvars[i], x_colvars_unwrapped[i]);
+        }
       }
       // Do nothing if atom is not local
     } else { // Non MPI-parallel
       f_out[i_global] += f_colvars[i];
-      add_virial_term(local_colvars_virial, f_colvars[i], x_colvars_unwrapped[i]);
+      if (computeVirial) {
+        add_virial_term(local_colvars_virial, f_colvars[i], x_colvars_unwrapped[i]);
+      }
     }
   }
 
-  forceProviderOutput->forceWithVirial_.addVirialContribution(local_colvars_virial);
+  if (computeVirial) {
+    forceProviderOutput->forceWithVirial_.addVirialContribution(local_colvars_virial);
+  }
   return;
 }
 

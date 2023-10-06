@@ -397,6 +397,7 @@ void ColvarsForceProvider::calculateForces(const ForceProviderInput& forceProvid
 
     const gmx::ArrayRef<gmx::RVec>& f_out = forceProviderOutput->forceWithVirial_.force_;
     matrix                          local_colvars_virial   = { { 0 } };
+    const bool                      computeVirial          = forceProviderOutput->forceWithVirial_.computeVirial_;
     const auto&                     localcolvarsIndex      = colvars_atoms->localIndex();
     const auto&                     collectivecolvarsIndex = colvars_atoms->collectiveIndex();
     // Loop through local atoms to aply the colvars forces
@@ -408,10 +409,14 @@ void ColvarsForceProvider::calculateForces(const ForceProviderInput& forceProvid
         int i_colvars = collectivecolvarsIndex[l];
         /* Add */
         rvec_inc(f_out[i_local], f_colvars[i_colvars]);
-        add_virial_term(local_colvars_virial, f_colvars[i_colvars], x_colvars_unwrapped[i_colvars]);
+        if (computeVirial) {
+            add_virial_term(local_colvars_virial, f_colvars[i_colvars], x_colvars_unwrapped[i_colvars]);
+        }
     }
 
-    forceProviderOutput->forceWithVirial_.addVirialContribution(local_colvars_virial);
+    if (computeVirial) {
+        forceProviderOutput->forceWithVirial_.addVirialContribution(local_colvars_virial);
+    }
 
     // Re-set the flag for proper update
     gmx_bNS = false;
