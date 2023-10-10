@@ -72,11 +72,14 @@ EOF
         fi
     fi
 
-    if [ -f /usr/local/include/tcl.h ] ; then
-        cmd+=(--tcl-prefix /usr/local)
-    else
-        cmd+=(--tcl-prefix ${TCL_HOME:-/usr})
+    if [ -z "${TCL_HOME}" ] ; then
+        if [ -f /usr/local/include/tcl.h ] ; then
+            export TCL_HOME=/usr/local
+        else
+            export TCL_HOME=/usr
+        fi
     fi
+    cmd+=(--tcl-prefix ${TCL_HOME})
 
     cmd+=(--with-fftw3 --fftw-prefix ${FFTW_HOME:-/usr})
 

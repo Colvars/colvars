@@ -74,6 +74,8 @@ jobs:
     secrets:
       # Choice of license by UIUC prevents sharing the code, hence the secret
       private_key: ${{ secrets.PULL_NAMD_KEY }}
+    env:
+      TCL_HOME: /opt/tcl/8.6
 
   vmd:
     name: VMD
