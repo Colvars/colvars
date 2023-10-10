@@ -10,8 +10,9 @@ From: centos:7
     yum -y update
     yum -y install epel-release centos-release-scl
     yum -y install \
-        redhat-lsb-core "@Development Tools" \
-        ncurses which bc man-db vim emacs screen tmux \
+        redhat-lsb-core \
+        bc man-db vim emacs tcsh which bash-completion screen tmux \
+        "@Development Tools" \
         gcc gcc-c++ gcc-gfortran glibc-static libstdc++-static clang cppcheck \
         autoconf automake cvs git git-cvs cvsps subversion mercurial \
         rh-git227 devtoolset-{7..11} llvm-toolset-7 cmake3 ccache ninja-build \
@@ -55,3 +56,11 @@ EOF
     git clone https://github.com/jhenin/spiff /tmp/spiff && \
         make -C /tmp/spiff && \
         install /tmp/spiff/spiff /usr/local/bin/
+
+    # Build and install Tcl 8.6 to support newer NAMD versions
+    cd /tmp && \
+        curl -O https://newcontinuum.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8.6.13-src.tar.gz && \
+        tar xzf tcl8.6.13-src.tar.gz && \
+        cd tcl8.6.13/unix && \
+        ./configure --prefix=/usr/local && \
+        make -j install
