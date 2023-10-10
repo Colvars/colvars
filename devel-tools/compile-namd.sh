@@ -64,7 +64,11 @@ EOF
         cmd+=(--charm-arch netlrts-linux-x86_64)
     fi
 
-    if ! grep -q -- -ltcl8.6 arch/Linux-x86_64.tcl ; then
+    if grep -q -- -ltcl8.6 arch/Linux-x86_64.tcl ; then
+        if [ -d $(dirname $0)/packages/tcl8.6.13-linux-x86_64-threaded ] ; then
+            export TCL_HOME=$(dirname $0)/packages/tcl8.6.13-linux-x86_64-threaded
+        fi
+    else
         # Amend NAMD 2.x arch file for recent Tcl versions under RH and Debian paths
         if [ -f /usr/lib64/libtcl8.6.so ] || \
                [ -f /usr/lib/x86_64-linux-gnu/libtcl8.6.so ] ; then
@@ -79,6 +83,7 @@ EOF
             export TCL_HOME=/usr
         fi
     fi
+
     cmd+=(--tcl-prefix ${TCL_HOME})
 
     cmd+=(--with-fftw3 --fftw-prefix ${FFTW_HOME:-/usr})
