@@ -87,7 +87,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.apptainer
-          key: Linux-x86_64-containers-build-2023-09-05
+          key: Linux-x86_64-containers-build
 
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v3
