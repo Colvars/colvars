@@ -64,13 +64,20 @@ EOF
         cmd+=(--charm-arch netlrts-linux-x86_64)
     fi
 
-    # Quick check for more recent Tcl using RH and Debian paths
-    if [ -f /usr/lib64/libtcl8.6.so ] || \
-        [ -f /usr/lib/x86_64-linux-gnu/libtcl8.6.so ] ; then
-        sed -i 's/-ltcl8.5/-ltcl8.6/' arch/Linux-x86_64.tcl
+    if ! grep -q -- -ltcl8.6 arch/Linux-x86_64.tcl ; then
+        # Amend NAMD 2.x arch file for recent Tcl versions under RH and Debian paths
+        if [ -f /usr/lib64/libtcl8.6.so ] || \
+               [ -f /usr/lib/x86_64-linux-gnu/libtcl8.6.so ] ; then
+            sed -i 's/-ltcl8.5/-ltcl8.6/' arch/Linux-x86_64.tcl
+        fi
     fi
 
-    cmd+=(--tcl-prefix ${TCL_HOME:-/usr})
+    if [ -f /usr/local/include/tcl.h ] ; then
+        cmd+=(--tcl-prefix /usr/local)
+    else
+        cmd+=(--tcl-prefix ${TCL_HOME:-/usr})
+    fi
+
     cmd+=(--with-fftw3 --fftw-prefix ${FFTW_HOME:-/usr})
 
     local python_version=$(python3 --version 2> /dev/null | cut -d' ' -f 2)
@@ -83,10 +90,10 @@ EOF
 
     eval ${cmd[@]}
 
-    if pushd ${dirname} ; then 
+    if pushd ${dirname} ; then
         make -j$(nproc --all)
         ret_code=$?
-        popd 
+        popd
     else
         ret_code=1
     fi
