@@ -31,8 +31,8 @@ if(DEFINED CMAKE_SYSTEM_NAME AND COLVARS_TCL)
 
   if(EXISTS "${COLVARS_SOURCE_DIR}/devel-tools/packages")
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-      set(TCL_DIR "${COLVARS_SOURCE_DIR}/devel-tools/packages/tcl8.5.9-linux-x86_64")
-      set(TCL_LIBRARY "libtcl8.5.a")
+      set(TCL_DIR "${COLVARS_SOURCE_DIR}/devel-tools/packages/tcl8.6.13-linux-x86_64-threaded")
+      set(TCL_LIBRARY "libtcl8.6.a")
     endif()
 
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
