@@ -26,6 +26,7 @@ class Colvar_traj(object):
         self._name = name
         self._step = np.zeros(shape=(0), dtype=np.int64)
         self._colvar = np.zeros(shape=(0), dtype=np.float64)
+        self._warned_dimensions = False
 
     def __len__(self):
         """Returns the length of the trajectory"""
@@ -40,11 +41,12 @@ class Colvar_traj(object):
 
     def _set_num_dimensions(self, n_d):
         """Set the number of components of the collective variable"""
-        if (len(self) > 0):
+        if len(self) > 0 and not self._warned_dimensions:
             print("Warning: changing the number of dimensions "
-                  "of collective variable \""+self._name+
+                  "of collective variable \""+self._name +
                   "\" after it has already been read.")
-        if (n_d > 1):
+            self._warned_dimensions = True
+        if n_d > 1:
             self._colvar.resize((len(self), n_d))
         else:
             self._colvar.resize((len(self)))
