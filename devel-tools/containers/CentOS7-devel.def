@@ -57,11 +57,12 @@ EOF
         make -C /tmp/spiff && \
         install /tmp/spiff/spiff /usr/local/bin/
 
-    # Build and install Tcl 8.6 to support newer NAMD versions
+    # Install Tcl 8.6 to support newer NAMD versions
     cd /tmp && \
-        rm -f tcl8.6.13-src.tar.gz && \
-        curl -O https://newcontinuum.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8.6.13-src.tar.gz && \
-        tar xzf tcl8.6.13-src.tar.gz && \
-        cd tcl8.6.13/unix && \
-        ./configure --prefix=/opt/tcl/8.6 && \
-        make -j16 && make install
+        rm -f tcl8.6.13-linux-x86_64-threaded.tar.gz && \
+        curl -O https://www.ks.uiuc.edu/Research/namd/libraries/tcl8.6.13-linux-x86_64-threaded.tar.gz && \
+        tar xzf tcl8.6.13-linux-x86_64-threaded.tar.gz && \
+        cd tcl8.6.13-linux-x86_64-threaded && \
+        find . -type f -exec install -v -D "{}" "/opt/tcl/8.6/{}" \; && \
+        cd && \
+        rm -fr /tmp/tcl8.6.13-linux-x86_64-threaded /tmp/tcl8.6.13-linux-x86_64-threaded.tar.gz
