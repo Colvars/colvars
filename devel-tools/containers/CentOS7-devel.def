@@ -59,8 +59,9 @@ EOF
 
     # Build and install Tcl 8.6 to support newer NAMD versions
     cd /tmp && \
+        rm -f tcl8.6.13-src.tar.gz && \
         curl -O https://newcontinuum.dl.sourceforge.net/project/tcl/Tcl/8.6.13/tcl8.6.13-src.tar.gz && \
         tar xzf tcl8.6.13-src.tar.gz && \
         cd tcl8.6.13/unix && \
-        ./configure --prefix=/usr/local && \
-        make -j install
+        ./configure --prefix=/opt/tcl/8.6 && \
+        make -j16 && make install
