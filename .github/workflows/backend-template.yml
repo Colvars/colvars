@@ -167,7 +167,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: failed-library-test-diffs-${{ inputs.backend_name }}
-          path: ${{ inputs.test_lib_directory }}/*/*.diff
+          path: ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.diff
 
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
         if: ${{ inputs.test_interface_directory }}
@@ -182,7 +182,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: failed-interface-test-diffs-${{ inputs.backend_name }}
-          path: ${{ inputs.test_interface_directory }}/*/*.diff
+          path: ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.diff
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }} (binary restarts)
         if: ${{ inputs.test_lib_directory }}
