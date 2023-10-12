@@ -4,6 +4,9 @@ source $(dirname $0)/load-recent-git.sh
 
 source $(dirname $0)/set-ccache.sh
 
+# Save path to be used later
+devel_tools_folder=$(realpath $(dirname $0))
+
 
 compile_namd_target() {
 
@@ -65,8 +68,8 @@ EOF
     fi
 
     if grep -q -- -ltcl8.6 arch/Linux-x86_64.tcl ; then
-        if [ -d $(dirname $0)/packages/tcl8.6.13-linux-x86_64-threaded ] ; then
-            export TCL_HOME=$(dirname $0)/packages/tcl8.6.13-linux-x86_64-threaded
+        if [ -d ${devel_tools_folder}/packages/tcl8.6.13-linux-x86_64-threaded ] ; then
+            export TCL_HOME=${devel_tools_folder}/packages/tcl8.6.13-linux-x86_64-threaded
         fi
     else
         # Amend NAMD 2.x arch file for recent Tcl versions under RH and Debian paths
