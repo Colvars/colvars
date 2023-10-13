@@ -81,14 +81,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ inputs.backend_name }}-
 
-      # Using an exact key to forgo saving it in case of a match (tarring up
-      # is expensive); also including a date to allow a force-update.
-      - name: Load containers cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.apptainer
-          key: Linux-x86_64-containers-build-code
-
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v3
         with:
@@ -132,12 +124,8 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          # Pull all containers used to build backends
-          # (contains build tools, OpenMPI, FFTW, Tcl/Tk and Charm++)
-          apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
-          apptainer remote use SylabsCloud
-          apptainer pull CentOS7-devel.sif library://giacomofiorin/default/colvars_development:centos7
-          apptainer pull CentOS9-devel.sif library://giacomofiorin/default/colvars_development:centos9
+          apptainer pull CentOS7-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS7-devel
+          apptainer pull CentOS9-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS9-devel
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
