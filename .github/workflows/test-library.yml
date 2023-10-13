@@ -93,12 +93,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Load containers cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.apptainer
-          key: Linux-x86_64-containers-build-doc-2023-07-19
-
       - name: Install Apptainer
         shell: bash
         run: |
@@ -110,9 +104,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer remote status SylabsCloud || apptainer remote add --no-login SylabsCloud cloud.sylabs.io
-          apptainer remote use SylabsCloud
-          apptainer pull texlive.sif library://giacomofiorin/default/colvars_development:texlive
+          apptainer pull texlive.sif oras://ghcr.io/Colvars/devel-containers:texlive
 
       - name: Checkout website repository
         uses: actions/checkout@v3
