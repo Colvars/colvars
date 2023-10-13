@@ -871,9 +871,9 @@ int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
                    case multiple_replicas:
                      add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, colvar_sigmas, replica_id));
                      std::ostream &replica_hills_os =
-                       cvm::proxy->output_stream(replica_hills_file);
+                       cvm::proxy->output_stream(replica_hills_file, "replica hills file");
                      if (replica_hills_os) {
-                       replica_hills_os << hills.back();
+                       write_hill(replica_hills_os, hills.back());
                      } else {
                        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
                                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
@@ -1130,7 +1130,7 @@ int colvarbias_meta::update_bias()
         std::ostream &replica_hills_os =
           cvm::proxy->output_stream(replica_hills_file, "replica hills file");
         if (replica_hills_os) {
-          replica_hills_os << hills.back();
+          write_hill(replica_hills_os, hills.back());
         } else {
           return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
                             ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
@@ -2443,7 +2443,10 @@ template <typename OST> OST &colvarbias_meta::write_state_data_template_(OST &os
 
     // this is a very good time to project hills, if you haven't done
     // it already!
-    project_hills(new_hills_begin, hills.end(), hills_energy.get(), hills_energy_gradients.get());
+    project_hills(new_hills_begin, hills.end(),
+                  hills_energy.get(), hills_energy_gradients.get(),
+                  which_int_llimit_cv, which_int_ulimit_cv,
+                  interval_llimit, interval_ulimit);
     new_hills_begin = hills.end();
 
     // write down the grids to the restart file
