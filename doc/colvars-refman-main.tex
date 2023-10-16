@@ -1112,7 +1112,7 @@ PDB files may be used either as one of the available mechanisms to select atoms 
 To select atoms via the \refkey{atomsFile}{atom-group|atomsFile} keyword, the option \refkey{atomsFile}{atom-group|atomsCol} is required, and atoms are selected based on either one of the following cases.
 \begin{enumerate}
 \item[\emph{(i)}] All atoms with a non-zero value of the corresponding column are selected.
-\item[\emph{(ii)}] If and only if \refkey{atomsFile}{atom-group|atomsColValue} is provided, only atoms with a value of \texttt{atomsCol} equaling \texttt{atomsColValue} are selected.
+\item[\emph{(ii)}] If and only if \refkey{atomsColValue}{atom-group|atomsColValue} is provided, only atoms with a value of \texttt{atomsCol} equaling \texttt{atomsColValue} are selected.
   This can be useful to reuse the same PDB file for generating multiple selections.
 \end{enumerate}
 
