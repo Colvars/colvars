@@ -20,6 +20,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarcomp_volmaps.o \
 	$(DSTDIR)/colvarcomp_combination.o \
 	$(DSTDIR)/colvarcomp_neuralnetwork.o \
+	$(DSTDIR)/colvarcomp_torchann.o \
 	$(DSTDIR)/colvar_neuralnetworkcompute.o \
 	$(DSTDIR)/colvardeps.o \
 	$(DSTDIR)/colvargrid.o \

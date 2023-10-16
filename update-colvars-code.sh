@@ -317,6 +317,11 @@ then
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
 
+  # Update cmake file 
+  src=${source}/lammps/COLVARS.cmake
+  tgt=$(basename ${src})
+  condcopy "${source}/lammps/COLVARS.cmake" "${target}/cmake/Modules/Packages/${tgt}"
+
   for src in \
     ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} \
     ${source}/lammps/src/COLVARS/fix_colvars.{cpp,h} \
@@ -383,6 +388,10 @@ then
   if ! grep -q lepton/Makefile.namd "${target}/Makefile" ; then
     patch -p1 -N -d ${target} < namd/Makefile.patch
   fi
+
+  # For torchann
+  patch -F 12 -p1 -N -d ${target} < namd/config.patch
+  sed -i '/^COLVARSCXXFLAGS =*/s/$/ $(EXTRACOLVARSFLAGS)/' ${target}/Makefile
 
   # Copy library files to the "colvars" folder
   for src in ${source}/src/*.h ${source}/src/*.cpp

@@ -38,7 +38,7 @@ index 8ddc9c1..21b3221 100644
  
  int tcouple_min_integration_steps(TemperatureCoupling etc);
 diff --git a/src/gromacs/CMakeLists.txt b/src/gromacs/CMakeLists.txt
-index 114bfd9..bb03eb4 100644
+index 114bfd9..acbdc9c 100644
 --- a/src/gromacs/CMakeLists.txt
 +++ b/src/gromacs/CMakeLists.txt
 @@ -146,6 +146,11 @@ if (WIN32)
@@ -53,11 +53,12 @@ index 114bfd9..bb03eb4 100644
  # This code is here instead of utility/CMakeLists.txt, because CMake
  # custom commands and source file properties can only be set in the directory
  # that contains the target that uses them.
-@@ -192,6 +197,8 @@ else()
+@@ -192,6 +197,9 @@ else()
      add_library(libgromacs ${LIBGROMACS_SOURCES})
  endif()
  
 +gmx_include_colvars_headers()
++gmx_set_colvars_torch()
 +
  if (TARGET Heffte::Heffte)
      target_link_libraries(libgromacs PRIVATE Heffte::Heffte)
@@ -398,7 +399,7 @@ index acadeab..faf31b5 100644
      /* Does what it says */
      print_date_and_time(fplog, cr->nodeid, "Finished mdrun", gmx_gettime());
      walltime_accounting_destroy(walltime_accounting);
-diff --git b/src/gromacs/mdtypes/colvarshistory.h b/src/gromacs/mdtypes/colvarshistory.h
+diff --git a/src/gromacs/mdtypes/colvarshistory.h b/src/gromacs/mdtypes/colvarshistory.h
 new file mode 100644
 index 0000000..6605e6f
 --- /dev/null

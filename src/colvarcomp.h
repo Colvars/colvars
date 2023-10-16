@@ -28,6 +28,11 @@
 #include "colvar.h"
 #include "colvar_geometricpath.h"
 
+#ifdef TORCH
+#include <torch/torch.h>
+#include <torch/script.h>
+#endif
+
 
 /// \brief Colvar component (base class for collective variables)
 ///
@@ -1796,6 +1801,50 @@ public:
     virtual void apply_force(colvarvalue const &force);
 };
 
+#ifdef TORCH
+// only when LibTorch is available
+class colvar::torchANN
+  : public colvar::linearCombination
+{
+protected:
+    torch::jit::script::Module nn;
+    /// the index of nn output component
+    size_t m_output_index;
+    bool use_double_input;
+    bool use_gpu;
+    // 1d tensor, concatenation of values of sub-cvcs
+    torch::Tensor input_tensor;
+    torch::Tensor nn_outputs;
+    torch::Tensor input_grad;
+    // record the initial index of of sub-cvcs in input_tensor
+    std::vector<int> cvc_indices;
+public:
+    torchANN(std::string const &conf);
+    virtual ~torchANN();
+    virtual void calc_value();
+    virtual void calc_gradients();
+    virtual void apply_force(colvarvalue const &force);
+
+    /// Redefined to handle periodicity
+    virtual cvm::real dist2(colvarvalue const &x1,
+			    colvarvalue const &x2) const;
+    /// Redefined to handle periodicity
+    virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
+				    colvarvalue const &x2) const;
+    /// Redefined to handle periodicity
+    virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
+				    colvarvalue const &x2) const;
+    /// Redefined to handle periodicity
+    virtual void wrap(colvarvalue &x_unwrapped) const;
+};
+#else
+class colvar::torchANN
+  : public colvar::componentDisabled
+{
+public:
+    torchANN(std::string const &conf) : componentDisabled(conf) {}
+};
+#endif // TORCH checking
 
 // \brief Colvar component: total value of a scalar map
 // (usually implemented as a grid by the simulation engine)

@@ -39,6 +39,7 @@ COLVARS_SRCS = \
         colvarcomp_distances.cpp \
         colvarcomp_gpath.cpp \
         colvarcomp_neuralnetwork.cpp \
+        colvarcomp_torchann.cpp \
         colvarcomp_combination.cpp \
         colvarcomp_protein.cpp \
         colvarcomp_rotations.cpp \

@@ -413,8 +413,27 @@ obj/colvarcomp_combination.o: \
 	colvars/src/colvardeps.h \
 	colvars/src/colvar.h \
 	colvars/src/colvar_arithmeticpath.h \
-	colvars/src/colvar_geometricpath.h
+	colvars/src/colvar_geometricpath.h 
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_combination.o $(COPTC) colvars/src/colvarcomp_combination.cpp
+obj/colvarcomp_torchann.o: \
+	obj/.exists \
+	colvars/src/colvarcomp_torchann.cpp \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvar.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvar_arithmeticpath.h \
+	colvars/src/colvar_geometricpath.h 
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_torchann.o $(COPTC) colvars/src/colvarcomp_torchann.cpp
 obj/colvarcomp_neuralnetwork.o: \
 	obj/.exists \
 	colvars/src/colvarcomp_neuralnetwork.cpp \
