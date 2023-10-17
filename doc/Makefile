@@ -1,5 +1,5 @@
 .PHONY: all pdf html doxygen webpage webpage-legacy images \
-	clean clean-all \
+	install clean clean-all \
 	update-code-refs update-cvscript-cmdline-doc updates
 
 PDF = \
@@ -91,12 +91,13 @@ webpage: all images
 	cp -p -r doxygen/html/* $(COLVARS_WEBSITE_TREE)/doxygen/html/
 
 # Update HTML pages with older-style paths (without branch/release name)
-webpage-legacy: webpage
+webpage-legacy: all images
 	cp -p -f $(PDF) $(COLVARS_WEBSITE_TREE)/pdf ; \
 	for engine in lammps namd vmd ; do \
 	cp -p -f colvars-refman-$${engine}.{html,css} $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
 	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
 	done
 
+install: webpage webpage-legacy
 
 endif
