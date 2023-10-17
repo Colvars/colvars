@@ -19,6 +19,7 @@ BIBTEX=colvars-refman.bib
 COLVARS_RELEASE := $(shell git symbolic-ref --short -q HEAD)
 export COLVARS_RELEASE
 
+
 all: pdf html
 
 updates: version-list update-code-refs update-cvscript-cmdline-doc
@@ -27,6 +28,7 @@ pdf: $(PDF)
 html: $(HTML)
 
 %.pdf: %.tex $(BIBTEX) colvars-refman-main.tex colvars-refman.tex
+	@echo "Building $@ with release label \"${COLVARS_RELEASE}\"" ; \
 	latexmk -pdf $<
 ## Use the lines below if latexmk is not available (better install latexmk!)
 # pdflatex $<
@@ -39,6 +41,7 @@ html: $(HTML)
 HTLATEX = htlatex
 HTLATEX_OPTS = "html5mjlatex.cfg, charset=utf-8" " -cunihtf -utf8"
 %.html: %.tex colvars-refman-main.tex colvars-refman.tex $(BIBTEX) %.pdf
+	@echo "Building $@ with release label \"${COLVARS_RELEASE}\"" ; \
 	$(HTLATEX) $(notdir $<) $(HTLATEX_OPTS); \
 	bash postprocess_html.sh
 
