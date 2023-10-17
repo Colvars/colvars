@@ -113,11 +113,8 @@ jobs:
           path: 'website'
 
       - name: Build doc
-        working-directory: website
-        env:
-          COLVARSDIR: ${{ github.workspace }}
-          FORCE: 1  # Ignore error if branch isn't master
-        run: apptainer exec ${COLVARSDIR}/devel-tools/texlive.sif make
+        working-directory: doc
+        run: apptainer exec ${{ github.workspace }}/devel-tools/texlive.sif make
 
 
   codeql:
