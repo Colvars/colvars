@@ -1,4 +1,4 @@
-.PHONY: all pdf html webpage webpage-legacy images \
+.PHONY: all pdf html doxygen webpage webpage-legacy images \
 	clean clean-all \
 	update-code-refs update-cvscript-cmdline-doc updates
 
@@ -29,7 +29,7 @@ endif
 export COLVARS_RELEASE
 
 
-all: pdf html
+all: pdf html doxygen
 
 updates: version-list update-code-refs update-cvscript-cmdline-doc
 
@@ -70,6 +70,12 @@ update-cvscript-cmdline-doc:
 	tclsh gen_cvscript_doc.tcl
 
 
+doxygen: doxygen/html/index.html
+
+doxygen/html/index.html: ../src/*.h doxygen/Doxyfile
+	cd doxygen; doxygen
+
+
 ifneq ($(COLVARS_WEBSITE_TREE),)
 
 IMAGES = cover-512px.jpg eulerangles-512px.png
@@ -77,10 +83,12 @@ IMAGES = cover-512px.jpg eulerangles-512px.png
 # Install docs in the website tree, under the folder named $(COLVARS_RELEASE).
 # Note: to produce the documentation for a specific release of a MD engine,
 # check out the branch or tag corresponding to that version, clean and rebuild.
-webpage: pdf html images
+webpage: all images
 	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
 	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
-	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/
+	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
+	rm -fr $(COLVARS_WEBSITE_TREE)/doxygen/html/* ; \
+	cp -p -r doxygen/html/* $(COLVARS_WEBSITE_TREE)/doxygen/html/
 
 # Update HTML pages with older-style paths (without branch/release name)
 webpage-legacy: webpage
