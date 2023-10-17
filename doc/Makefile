@@ -1,4 +1,4 @@
-.PHONY: all pdf html webpage images \
+.PHONY: all pdf html webpage webpage-legacy images \
 	clean clean-all \
 	update-code-refs update-cvscript-cmdline-doc updates
 
@@ -19,7 +19,13 @@ CSS = $(HTML:.html=.css)
 
 BIBTEX = colvars-refman.bib
 
-COLVARS_RELEASE := $(shell git symbolic-ref --short -q HEAD)
+COLVARS_RELEASE = $(shell git symbolic-ref --short -q HEAD)
+# If we are not working on a branch, try a tag instead
+
+ifeq ($(COLVARS_RELEASE),)
+COLVARS_RELEASE = $(git describe --tags --exact-match)
+endif
+
 export COLVARS_RELEASE
 
 
@@ -62,3 +68,27 @@ update-code-refs:
 
 update-cvscript-cmdline-doc:
 	tclsh gen_cvscript_doc.tcl
+
+
+ifneq ($(COLVARS_WEBSITE_TREE),)
+
+IMAGES = cover-512px.jpg eulerangles-512px.png
+
+# Install docs in the website tree, under the folder named $(COLVARS_RELEASE).
+# Note: to produce the documentation for a specific release of a MD engine,
+# check out the branch or tag corresponding to that version, clean and rebuild.
+webpage: pdf html images
+	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
+	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
+	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/
+
+# Update HTML pages with older-style paths (without branch/release name)
+webpage-legacy: webpage
+	cp -p -f $(PDF) $(COLVARS_WEBSITE_TREE)/pdf ; \
+	for engine in lammps namd vmd ; do \
+	cp -p -f colvars-refman-$${engine}.{html,css} $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
+	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
+	done
+
+
+endif
