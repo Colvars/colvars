@@ -76,7 +76,12 @@ doxygen/html/index.html: ../src/*.h doxygen/Doxyfile
 	cd doxygen; doxygen
 
 
-ifneq ($(COLVARS_WEBSITE_TREE),)
+ifeq ($(COLVARS_WEBSITE_TREE),)
+
+install:
+	@echo "To install, please define the COLVARS_WEBSITE_TREE environment variable to a worktree of the colvars.github.io repository"
+
+else
 
 IMAGES = cover-512px.jpg eulerangles-512px.png
 
