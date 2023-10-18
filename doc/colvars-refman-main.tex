@@ -1958,8 +1958,8 @@ $\mathbf{x}_{\mathrm{cog}}^{\mathrm{(ref)}}$.  The root mean square
 displacement is then defined as:
 \begin{equation}
   \label{eq:cvc_rmsd}
-  { \mathrm{RMSD}(\{\mathbf{x}_{i}(t)\},
-    \{\mathbf{x}_{i}^{\mathrm{(ref)}}\}) } \; = \; \sqrt{
+  { \mathrm{RMSD}\left(\left\{\mathbf{x}_{i}\left(t\right)\right\},
+    \left\{\mathbf{x}_{i}^{\mathrm{(ref)}}\right\}\right) } \; = \; \sqrt{
     \frac{1}{N} \sum_{i=1}^{N} \left|
       U
       \left(\mathbf{x}_{i}(t) - \mathbf{x}_{\mathrm{cog}}(t)\right) -
@@ -2110,8 +2110,8 @@ number of atoms in the group. The computed quantity is the
 total projection:
 \begin{equation}
   \label{eq:cvc_eigenvector}
-  { p(\{\mathbf{x}_{i}(t)\},
-    \{\mathbf{x}_{i}^{\mathrm{(ref)}}\}) } \; = \; {
+  { p\left(\left\{\mathbf{x}_{i}\left(t\right)\right\},
+    \left\{\mathbf{x}_{i}^{\mathrm{(ref)}}\right\}\right) } \; = \; {
     \sum_{i=1}^{n}  \mathbf{v}_{i} \cdot
     \left(U(\mathbf{x}_{i}(t) - \mathbf{x}_{\mathrm{cog}}(t)) -
       (\mathbf{x}_{i}^{\mathrm{(ref)}} -
@@ -3685,7 +3685,7 @@ To track transitions between states, the contribution of each map to $\xi$ shoul
 The ``Multi-Map'' progress variable \cite{Fiorin2020} uses a weight sum of these components, using linearly-increasing weights:
 \begin{equation}
   \label{eq:cvc_multi_map}
-    \xi(\mathbf{X}) = \sum_{k=1}^{K} k \Phi_{k}(\mathbf{X}) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}(\mathbf{x}_{i})
+    \xi\left(\mathbf{X}\right) = \sum_{k=1}^{K} k \Phi_{k}(\mathbf{X}) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}(\mathbf{x}_{i})
 \end{equation}
 \noindent{}where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal} component.
 
@@ -3865,7 +3865,7 @@ To extend the set of possible definitions of colvars $\xi(\mathbf{r})$, multiple
 $q_i(\mathbf{r})$ can be summed with the formula:
 \begin{equation}
   \label{eq:colvar_combination}
-  \xi(\mathbf{r}) = \sum_i c_i [q_i(\mathbf{r})]^{n_i}
+  \xi\left(\mathbf{r}\right) = \sum_i c_i [q_i(\mathbf{r})]^{n_i}
 \end{equation}
 where each component appears with a unique coefficient $c_i$ (1.0 by
 default) the positive integer exponent $n_i$ (1 by default).
@@ -5171,7 +5171,7 @@ is defined from the canonical distribution of $\bm{\xi}$, ${\mathcal P}(\bm{\xi}
 
 \begin{equation}
   \label{eq:free}
-  A(\bm{\xi}) = -\frac{1}{\beta} \ln {\mathcal P}(\bm{\xi}) + A_0
+  A\left(\bm{\xi}\right) = -\frac{1}{\beta} \ln {\mathcal P}(\bm{\xi}) + A_0
 \end{equation}
 
 In the TI formalism, the free energy is obtained from its gradient,
@@ -5180,7 +5180,7 @@ $\bm{F}_\xi$ exerted on $\bm{\xi}$, taken over an iso-$\bm{\xi}$ surface:
 
 \begin{equation}
   \label{eq:gradient}
-  \bm{\nabla}_\xi A(\bm{\xi}) = \left\langle -\bm{F}_\xi \right\rangle_{\bm{\xi}}
+  \bm{\nabla}_\xi A\left(\bm{\xi}\right) = \left\langle -\bm{F}_\xi \right\rangle_{\bm{\xi}}
 \end{equation}
 
 Several formulae that take the form of~(\ref{eq:gradient}) have been
@@ -5757,7 +5757,7 @@ The metadynamics method uses a history-dependent potential \cite{Laio2002} that 
 The metadynamics potential on the colvars $\bm{\xi} = (\xi_{1}, \xi_{2}, \ldots, \xi_{N_{\mathrm{cv}}})$ is defined as:
 \begin{equation}
   \label{eq:colvars_meta_pot}
-  V_{\mathrm{meta}}(\bm{\xi}(t)) \; = \; {
+  V_{\mathrm{meta}}\left(\bm{\xi}\left(t\right)\right) \; = \; {
     \sum_{t' = \delta{}t, \\ 2\delta{}t, \\ \ldots}^{t'<t} W \: {
       \prod_{i = 1}^{N_{\mathrm{cv}}}
       \exp\left(-\frac{(\xi_{i}(t)-\xi_{i}(t'))^{2}}{2\sigma_{\xi_{i}}^{2}}\right)
@@ -5786,7 +5786,7 @@ If the metadynamics parameters are chosen correctly, after an equilibration time
 by eq. \ref{eq:colvars_meta_fes} oscillates on time around the ``real'' free energy, thereby a better estimate of the latter can be obtained as the time average of the bias potential after $t_{e}$ \cite{Marinelli2009,Crespo2010}:
 \begin{equation}
   \label{eq:colvars_meta_fes_av}
-  A(\bm{\xi}) \; = \; {-\frac{1}{t_{tot}-t_{e}} \int_{t_{e}}^{t_{tot}} {
+  A\left(\bm{\xi}\right) \; = \; {-\frac{1}{t_{tot}-t_{e}} \int_{t_{e}}^{t_{tot}} {
     V_{\mathrm{meta}}(\bm{\xi},t)dt}
   }
 \end{equation}
@@ -6029,7 +6029,7 @@ Standard metadynamics can be seen as a special case of EBMetaD with a flat distr
 This is achieved by weighing the Gaussian functions used in the metadynamics approach by the inverse of the target probability distribution:
 \begin{equation}
   \label{eq:colvars_ebmeta_pot}
-  V_{\mathrm{EBmetaD}}(\bm{\xi}(t)) \; = \; {
+  V_{\mathrm{EBmetaD}}\left(\bm{\xi}\left(t\right)\right) \; = \; {
     \sum_{t' = \delta{}t, \\ 2\delta{}t, \\ \ldots}^{t'<t} \frac{W}{\exp\left(S_{\rho}\right)\rho_{exp}(\bm{\xi}(t'))} \: {
       \prod_{i = 1}^{N_{\mathrm{cv}}}
       \exp\left(-\frac{(\xi_{i}(t)-\xi_{i}(t'))^{2}}{2\sigma_{\xi_{i}}^{2}}\right)
@@ -6283,7 +6283,7 @@ energy surfaces. In the context of the Colvars module,
 harmonic potentials are meant according to their textbook definition:
 \begin{equation}
   \label{eq:colvarbias_harmonic}
-  V(\xi) = \frac{1}{2} k \left(\frac{\xi - \xi_0}{w_{\xi}}\right)^2
+  V\left(\xi\right) = \frac{1}{2} k \left(\frac{\xi - \xi_0}{w_{\xi}}\right)^2
 \end{equation}
 There are two noteworthy aspects of this expression:
 \begin{enumerate}
@@ -6298,7 +6298,7 @@ There are two noteworthy aspects of this expression:
 Beyond one dimension, the use of a scaled harmonic potential also allows a standard definition of a multi-dimensional restraint with a unified force constant:
 \begin{equation}
   \label{eq:colvarbias_harmonic_multi}
-  V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \sum_{i=1}^{M} \left(\frac{\xi_{i} - \xi_0}{w_{\xi}}\right)^2
+  V\left(\xi_{1}, \ldots, \xi_{M}\right) = \frac{1}{2} k \sum_{i=1}^{M} \left(\frac{\xi_{i} - \xi_0}{w_{\xi}}\right)^2
 \end{equation}
 
 If one-dimensional or homogeneous multi-dimensional restraints are defined, and there are no other uses for the parameter $w_{\xi}$, \texttt{width} \emph{can be left at its default value of $1$}.
@@ -6571,7 +6571,7 @@ If the restraint centers or force constant are changed continuosly (\texttt{targ
 The \texttt{harmonicWalls~\{...\}} bias is closely related to the harmonic bias (see \ref{sec:colvarbias_harmonic}), with the following two differences: \emph{(i)} instead of a center a \emph{lower wall} and/or an \emph{upper wall} are defined, outside of which the bias implements a half-harmonic potential;
 \begin{equation}
   \label{eq:colvarbias_harmonic_walls}
-  V(\xi) = \left\{
+  V\left(\xi\right) = \left\{
     \begin{array}{l l}
       \frac{1}{2} k \left(\frac{\xi - \xi_{\mathrm{upper}}}{w_{\xi}}\right)^2 & \mathrm{if }\ \xi > \xi_{\mathrm{upper}} \\
       0 & \mathrm{if }\ \xi_{\mathrm{lower}} \leq \xi \leq \xi_{\mathrm{upper}} \\
@@ -6691,7 +6691,7 @@ The \texttt{harmonicWalls} bias implements the following options:
 The \texttt{linear} keyword defines a linear potential:
 \begin{equation}
   \label{eq:colvarbias_linear}
-  V(\xi) = k \left(\frac{\xi - \xi_0}{w_{\xi}}\right)
+  V\left(\xi\right) = k \left(\frac{\xi - \xi_0}{w_{\xi}}\right)
 \end{equation}
 \noindent{}whose force is simply given by the constant $k/w_\xi$ itself:
 \begin{equation}
@@ -7026,11 +7026,11 @@ actual colvar, and the second, as the extended coordinate.
 
 The \texttt{reweightaMD} can be used to build reweighted free-energy landscapes of a set of collective variables on-the-fly from accelerated molecular dynamics (aMD)\cite{hamelberg2004} and Gaussian aMD (GaMD)\cite{Miao2015}. More specifically, it collects the boost potential, $\Delta V(\mathbf{X})$, and computes the corresponding free-energies:
 \begin{equation}\label{eq:amd-reweighting}
-	A(\xi)=-\frac{1}{\beta}\ln\langle\exp\lbrace\beta\Delta V(\mathbf{X})\delta[\xi(\mathbf{X})-\xi]\rbrace\rangle,
+	A\left(\xi\right)=-\frac{1}{\beta}\ln\langle\exp\lbrace\beta\Delta V(\mathbf{X})\delta[\xi(\mathbf{X})-\xi]\rbrace\rangle,
 \end{equation}
 where $\beta$ is $1/k_{B}T$. If the distribution of $\Delta V(\mathbf{X})\delta[\xi(\mathbf{X})-\xi]$ is assumed to be near Gaussian, the equation above can be approximated by the cumulant expansion:
 \begin{equation}\label{eq:cumulant-expansion}
-	A(\xi)=-C_1(\xi)-\frac{1}{2}\beta C_2(\xi),
+	A\left(\xi\right)=-C_1(\xi)-\frac{1}{2}\beta C_2(\xi),
 \end{equation}
 where $C_1(\xi)$ and $C_2(\xi)$ are the average and the variance of $\Delta V(\mathbf{X})\delta[\xi(\mathbf{X})-\xi]$, respectively. It should be noted that this implementation is initially intended for the combination of aMD/GaMD with other CV-based methods such as eABF\cite{Chen2021}, where the term associated with the biasing distribution $\tilde{\rho}(\xi)$, namely $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$, is included, so users are expected to add the output from Eq.~(\ref{eq:amd-reweighting}) or (\ref{eq:cumulant-expansion}) with those from CZAR (see Eq.~(\ref{eq:czar})) \cite{Lesage2017} directly. Consequently, in Eq.~(\ref{eq:amd-reweighting}) and (\ref{eq:cumulant-expansion}) the term $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$ is not included. Therefore, if users want to perform just aMD/GaMD simulations with this on-the-fly reweighting implementation, the term $-\frac{1}{\beta}\ln\tilde{\rho}(\xi)$ should be manually computed by post-processing.
 
@@ -7086,11 +7086,11 @@ The $M$ variables $(\xi_{1}, \ldots, \xi_{M})$ are interpreted as multiple obser
 The potential is minimized when the histogram $h(\xi)$, estimated as a sum of Gaussian functions centered at $(\xi_{1}, \ldots, \xi_{M})$, is equal to the reference histogram $h_{0}(\xi)$:
 \begin{equation}
   \label{eq:colvarbias_restraint_histogram}
-  V(\xi_{1}, \ldots, \xi_{M}) = \frac{1}{2} k \int\left(h(\xi)-h_{0}(\xi)\right)^2 \mathrm{d}\xi
+  V\left(\xi_{1}, \ldots, \xi_{M}\right) = \frac{1}{2} k \int\left(h(\xi)-h_{0}(\xi)\right)^2 \mathrm{d}\xi
 \end{equation}
 \begin{equation}
   \label{eq:colvarbias_restraint_histogram_gaussian}
-  h(\xi) = \frac{1}{M\sqrt{2\pi\sigma^2}} \sum_{i=1}^{M} \exp\left(-\frac{(\xi-\xi_{i})^2}{2\sigma^2}\right)
+  h\left(\xi\right) = \frac{1}{M\sqrt{2\pi\sigma^2}} \sum_{i=1}^{M} \exp\left(-\frac{(\xi-\xi_{i})^2}{2\sigma^2}\right)
 \end{equation}
 When used in combination with a \texttt{distancePairs} multi-dimensional variable, this bias implements the refinement algorithm against ESR/DEER experiments published by Shen \emph{et al} \cite{Shen2015}.
 
