@@ -3909,7 +3909,7 @@ of $1/N$.
 \cvsubsec{Custom functions}{sec:colvar_custom_function}
 
 Collective variables may be defined by specifying a custom function of multiple components, i.e.\ an analytical expression that is more general than the linear combinations described in \ref{sec:cvc_superp}.
-Such expression is parsed and calculated by Lepton, the lightweight expression parser written by Peter Eastman (\cvurl{https://simtk.org/projects/lepton}) that produces efficient evaluation routines for both the expression and its derivatives.
+Such expression is parsed and calculated by Lepton, the lightweight expression parser written by Peter Eastman (\url{https://simtk.org/projects/lepton}) that produces efficient evaluation routines for both the expression and its derivatives.
 Although Lepton is generally available in most applications and builds where Colvars is included, it is best to check section~\ref{sec:compilation_notes} to confirm.
 
 
@@ -7261,7 +7261,7 @@ Many of the older keywords are still recognized by the current code, thanks to s
 \emph{This is not a list of new features:} its primary purpose is to make you aware of those improvements that affect the use of old configuration files with new versions of the code.
 
 \noindent\textbf{Note:} if you are using any of the NAMD and VMD tutorials:\\
-\cvurl{https://www.ks.uiuc.edu/Training/Tutorials/}\\
+\url{https://www.ks.uiuc.edu/Training/Tutorials/}\\
 please be aware that \emph{several of these tutorials are not actively maintained}: for those cases, this list will help you reconcile any inconsistencies.
 
 \begin{itemize}
@@ -7272,7 +7272,7 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 \item \textbf{Colvars version 2016-08-10 or later \cvnamdonly{(NAMD version 2.12b1 or later)}\cvvmdonly{(VMD version 1.9.3 or later)}\cvlammpsonly{(LAMMPS version 15Sep2016 or later)}.}\\
   ``System forces'' have been replaced by ``total forces'' (see for example \refkey{outputTotalForce}{colvar|outputTotalForce}).
   See the following page for more information:\\
-  \cvurl{https://colvars.github.io/README-totalforce.html}
+  \url{https://colvars.github.io/README-totalforce.html}
 
 \item \textbf{Colvars version 2017-01-09 or later \cvnamdonly{(NAMD version 2.13b1 or later)}\cvvmdonly{(VMD version 1.9.4 or later)}\cvlammpsonly{(LAMMPS version 10Mar2017 or later)}.}\\
   A new type of restraint, \texttt{harmonicWalls} (see~\ref{sec:colvarbias_harmonic_walls}), replaces and improves upon the legacy keywords \texttt{lowerWall} and \texttt{upperWall}: these are still supported as short-hands.
@@ -7284,7 +7284,7 @@ please be aware that \emph{several of these tutorials are not actively maintaine
   The parameter \refkey{hillWidth}{metadynamics|hillWidth}, expressing the Gaussian width $2\sigma$ in relative units (number of grid points), does not have a default value any more.
   A new alternative parameter \refkey{gaussianSigmas}{metadynamics|gaussianSigmas} allows setting the $\sigma$ parameters explicitly for each variable if needed.\\
   Furthermore, to facilitate the use of other analysis tools such as for example \texttt{sum\_hills}:\\
-\cvurl{https://www.plumed.org/doc-v2.6/user-doc/html/sum_hills.html}\\
+\url{https://www.plumed.org/doc-v2.6/user-doc/html/sum_hills.html}\\
   the format of the file written by \refkey{writeHillsTrajectory}{metadynamics|writeHillsTrajectory} has also been changed to use $\sigma$ instead of $2\sigma$.
   This change does not affect how the biasing potential is written in the state file, or the simulated trajectory.
 
@@ -7315,11 +7315,11 @@ This section lists the few cases where the choice of compilation settings affect
 
 \begin{itemize}
 
-\item Scripting commands using the Tcl language (\cvurl{https://www.tcl.tk}) are supported in VMD and NAMD.  All precompiled builds of each code include Tcl, and it is highly recommended to enable Tcl support in any custom build, using precompiled Tcl libraries from the UIUC website.
+\item Scripting commands using the Tcl language (\url{https://www.tcl.tk}) are supported in VMD and NAMD.  All precompiled builds of each code include Tcl, and it is highly recommended to enable Tcl support in any custom build, using precompiled Tcl libraries from the UIUC website.
 
-\item The Lepton library (\cvurl{https://simtk.org/projects/lepton}) used to implement the \texttt{customFunction} feature is currently included only in NAMD (always on), in LAMMPS (on by default) and in the Colvars-patched GROMACS releases.  For VMD, a \href{https://github.com/giacomofiorin/vmd-patches}{patch} that allows to link Lepton is available.
+\item The Lepton library (\url{https://simtk.org/projects/lepton}) used to implement the \texttt{customFunction} feature is currently included only in NAMD (always on), in LAMMPS (on by default) and in the Colvars-patched GROMACS releases.  For VMD, a \href{https://github.com/giacomofiorin/vmd-patches}{patch} that allows to link Lepton is available.
 
 \item Colvars requires the C++11 language standard, which is either supported (VMD) or required (GROMACS, LAMMPS, NAMD) by all the engines.  However, many of the VMD official builds are produced on very old architectures.  For details please see:\\
-  \cvurl{https://colvars.github.io/README-c++11.html}
+  \url{https://colvars.github.io/README-c++11.html}
 \end{itemize}
 
