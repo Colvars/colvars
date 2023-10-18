@@ -1811,7 +1811,7 @@ protected:
     /// the index of nn output component
     size_t m_output_index;
     bool use_double_input;
-    bool use_gpu;
+    //bool use_gpu;
     // 1d tensor, concatenation of values of sub-cvcs
     torch::Tensor input_tensor;
     torch::Tensor nn_outputs;
