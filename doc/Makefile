@@ -36,7 +36,7 @@ updates: version-list update-code-refs update-cvscript-cmdline-doc
 pdf: $(PDF)
 html: $(HTML)
 
-%.pdf: %.tex $(BIBTEX) colvars-refman-main.tex colvars-refman.tex
+%.pdf: %.tex $(BIBTEX) colvars-refman-main.tex colvars-refman.tex Makefile
 	@echo "Building $@ with release label \"${COLVARS_RELEASE}\"" ; \
 	latexmk -pdf $<
 ## Use the lines below if latexmk is not available (better install latexmk!)
@@ -49,7 +49,7 @@ html: $(HTML)
 # Note: HTML targets rely on up-to-date bbl files; ensuring that by running pdflatex first
 HTLATEX = htlatex
 HTLATEX_OPTS = "html5mjlatex.cfg, charset=utf-8" " -cunihtf -utf8"
-%.html: %.tex colvars-refman-main.tex colvars-refman.tex $(BIBTEX) %.pdf
+%.html: %.tex colvars-refman-main.tex colvars-refman.tex $(BIBTEX) %.pdf Makefile
 	@echo "Building $@ with release label \"${COLVARS_RELEASE}\"" ; \
 	$(HTLATEX) $(notdir $<) $(HTLATEX_OPTS); \
 	bash postprocess_html.sh
