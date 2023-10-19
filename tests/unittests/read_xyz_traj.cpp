@@ -30,5 +30,7 @@ extern "C" int main(int argc, char *argv[]) {
   proxy->post_run();
   cvm::log("Done");
 
+  delete proxy;
+
   return 0;
 }
