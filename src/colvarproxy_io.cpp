@@ -432,6 +432,7 @@ int colvarproxy_io::close_output_streams()
        osi != output_streams_.end();
        osi++) {
     (dynamic_cast<std::ofstream *>(osi->second))->close();
+    delete osi->second;
   }
   output_streams_.clear();
 
