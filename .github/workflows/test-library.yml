@@ -200,6 +200,65 @@ jobs:
           path: warnings_analyser.log
 
 
+  address-sanitizer:
+    name: Clang 16 address sanitizer
+    runs-on: ubuntu-latest
+    needs: basicchecks
+    env:
+      CCACHE: ccache
+      CCACHE_DIR: ${{ github.workspace }}/ccache
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Load compiler ccache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/ccache
+          key: ${{ runner.os }}-build-asan-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-asan-
+
+      - name: Install build dependencies for library
+        run: |
+          sudo apt -y install tcl8.6-dev clang-14 clang-tools-14
+
+      - name: Checkout OpenMM (for Lepton library)
+        uses: actions/checkout@v3
+        with:
+          repository: 'openmm/openmm'
+          ref: 'master'
+          path: 'openmm-source'
+
+      - name: Install Apptainer
+        shell: bash
+        run: |
+          sudo add-apt-repository -y ppa:apptainer/ppa
+          sudo apt update
+          sudo apt install -y apptainer-suid
+
+      - name: Get container images for build dependencies
+        shell: bash
+        working-directory: devel-tools
+        run: |
+          apptainer pull CentOS9-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS9-devel
+
+      - name: Build with Clang 16 and address sanitizer
+        env:
+          CXX: clang++
+          CC: clang
+          CMAKE_ADDRESS_SANITIZER: ON
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -P devel-tools/build_test_library.cmake
+
+      - name: Archive warnings artifacts
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: Clang_address_sanitizer_output
+          path: ${{github.workspace}}/build/Testing/Temporary/LastTest.log
+
+
   build-linux-x86_64-many:
     name: Linux x86_64 (GCC, Clang)
     runs-on: ubuntu-latest
