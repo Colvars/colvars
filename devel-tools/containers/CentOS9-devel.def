@@ -16,7 +16,7 @@ From: quay.io/centos/centos:stream9
         https://dl.fedoraproject.org/pub/epel/epel-next-release-latest-9.noarch.rpm
 
     dnf -y install \
-        bc man-db vim emacs tcsh \
+        bc man-db vim emacs tcsh which bash-completion screen tmux \
         "@Development Tools" \
         gcc gcc-c++ gcc-gfortran cppcheck \
         gcc-toolset-{12,13} clang clang-tools-extra \
@@ -30,9 +30,12 @@ From: quay.io/centos/centos:stream9
         mesa-dri-drivers mesa-libGL-devel libglvnd-devel \
         libXi-devel libXinerama-devel libpng-devel \
         netcdf-devel sqlite-devel \
-        texlive-latex texlive-epstopdf texlive-pdftex latex2html \
+        doxygen \
+        texlive-latex texlive-epstopdf texlive-pdftex texlive-tex4ht \
         texlive-graphics texlive-metafont texlive-collection-latexrecommended \
         texlive-collection-fontsrecommended \
+        latexmk latex2html \
+        inkscape gimp \
 	squashfs-tools
 
     source /etc/profile
@@ -42,15 +45,21 @@ From: quay.io/centos/centos:stream9
     umask 022
     source /etc/profile
     module load mpi
-    git clone --single-branch --depth=1 -b v7.0.0 https://github.com/UIUC-PPL/charm.git /opt/charm
-    cd /opt/charm
-    export CCACHE_DIR=/tmp
-    ./build charm++ mpi-linux-x86_64 -j16 --with-production && \
-    ./build charm++ multicore-linux-x86_64 -j16 --with-production && \
-    ./build charm++ netlrts-linux-x86_64 -j16 --with-production
+    if [ ! -d /opt/charm ] ; then
+        git clone --single-branch --depth=1 -b v7.0.0 https://github.com/UIUC-PPL/charm.git /opt/charm
+        cd /opt/charm
+        export CCACHE_DIR=/tmp
+        ./build charm++ mpi-linux-x86_64 -j16 --with-production && \
+        ./build charm++ multicore-linux-x86_64 -j16 --with-production && \
+        ./build charm++ netlrts-linux-x86_64 -j16 --with-production
+    fi
 
-    # Build and install spiff
-    rm -fr /tmp/spiff
-    git clone https://github.com/jhenin/spiff /tmp/spiff && \
-        make -C /tmp/spiff && \
-        install /tmp/spiff/spiff /usr/local/bin/
+    if [ ! -f /usr/local/bin/spiff ] ; then
+        # Build and install spiff
+        rm -fr /tmp/spiff
+        git clone https://github.com/jhenin/spiff /tmp/spiff && \
+            make -C /tmp/spiff && \
+            install /tmp/spiff/spiff /usr/local/bin/
+    fi
+
+
