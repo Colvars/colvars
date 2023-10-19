@@ -54,5 +54,7 @@ extern "C" int main(int argc, char *argv[]) {
   err |= run_colvarscript_command(2, args);
   cvm::log("  " + std::string(get_colvarscript_result()));
 
+  delete proxy;
+
   return err;
 }
