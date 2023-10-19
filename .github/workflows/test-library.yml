@@ -71,7 +71,7 @@ jobs:
           CC: clang
         run: cmake -P devel-tools/build_test_library.cmake
 
-      - name: Build library with debug flags enabled
+      - name: Build library with debug code enabled (GCC)
         run: cmake -D COLVARS_DEBUG=ON -P devel-tools/build_test_library.cmake
 
       - name: Check whether secrets are available
