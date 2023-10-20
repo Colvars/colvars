@@ -199,16 +199,16 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
     }
 
     cvm::increase_depth();
-    int err = group->parse(group_conf);
-    group->check_keywords(group_conf, group_key);
 
-    if (err || cvm::get_error()) {
+    if (cvm::get_error() || group->parse(group_conf) != COLVARS_OK) {
       cvm::error("Error parsing definition for atom group \""+
                  std::string(group_key)+"\".", COLVARS_INPUT_ERROR);
       delete group;
     } else {
       register_atom_group(group);
+      group->check_keywords(group_conf, group_key);
     }
+
     cvm::decrease_depth();
 
   } else {
