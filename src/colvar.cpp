@@ -918,6 +918,7 @@ int colvar::init_components(std::string const &conf)
       cvm::log("Failed to initialize " + it->first + " with the following configuration:\n");
       cvm::log(conf);
       // TODO: should it stop here?
+      break;
     }
   }
 
