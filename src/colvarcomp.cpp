@@ -171,7 +171,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
                                           char const *group_key,
                                           bool optional)
 {
-  cvm::atom_group *group = NULL;
+  cvm::atom_group *group = nullptr;
   std::string group_conf;
 
   if (key_lookup(conf, group_key, &group_conf)) {
@@ -195,6 +195,8 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
       cvm::error("Error: atom group \""+group->key+
                  "\" is set, but has no definition.\n",
                  COLVARS_INPUT_ERROR);
+      delete group;
+      group = nullptr;
       return group;
     }
 
@@ -204,6 +206,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
       cvm::error("Error parsing definition for atom group \""+
                  std::string(group_key)+"\".", COLVARS_INPUT_ERROR);
       delete group;
+      group = nullptr;
     } else {
       register_atom_group(group);
       group->check_keywords(group_conf, group_key);
