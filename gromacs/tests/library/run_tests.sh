@@ -168,14 +168,47 @@ for dir in ${DIRLIST} ; do
       fi
 
       if [ "${basename}" == "test.restart" ] ; then
-        ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
-        ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
-        RETVAL=$?
-        output=${basename}.part0002
-        for file in ${output}.* ; do
-          # Remove the part number
-          mv -f ${file} ${file/.part0002/}
-        done
+
+        if [ -n "${FORCE_INPUT_STATE_FILE}" ] ; then
+
+          # Restart GROMACS using the checkpoint but Colvars using its own state file
+
+          # Add defaultInputStateFile to the Colvars config
+          NEW_CVCONF=$(mktemp test.XXXXX.in)
+          cat test.in > ${NEW_CVCONF}
+          echo "defaultInputStateFile test.colvars.state" >> ${NEW_CVCONF}
+
+          NEW_MDP=$(mktemp test.XXXXX.mdp)
+          cat ../Common/test.mdp > ${NEW_MDP}
+          sed -i "s/test.in/${NEW_CVCONF}/" ${NEW_MDP}
+          # Mimic the initial step of a job restarted from checkpoint, to be
+          # consistent with reference outputs
+          echo "init-step = 20" >> ${NEW_MDP}
+          ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr >& ${basename}.grompp.out
+          rm -f ${NEW_MDP} ${NEW_CVCONF}
+          ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend >& ${basename}.out
+          RETVAL=$?
+
+          output=${basename}.part0001
+          for file in ${output}.* ; do
+            # Remove the part number
+            mv -f ${file} ${file/.part0001/}
+          done
+
+        else
+
+          # Restart both GROMACS and Colvars using the GROMACS checkpoint file
+          ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
+          ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
+
+          RETVAL=$?
+          output=${basename}.part0002
+          for file in ${output}.* ; do
+            # Remove the part number
+            mv -f ${file} ${file/.part0002/}
+          done
+
+        fi
       fi
 
     else
