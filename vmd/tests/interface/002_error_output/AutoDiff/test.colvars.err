@@ -3,16 +3,16 @@ Error: keyword "wrongkeyword" is not supported, or not recognized in this contex
 Error parsing configuration string
 
 Command "cv" returned the following errors:
-Error: atom group "group1" is set, but has no definition.
-Error: definition for atom group "group2" not found.
-Error: in setting up component "distance".
-Error: no valid components were provided for this collective variable.
+  Error: atom group "group1" has no definition.
+  Error: atom group "group2" is required.
+  Error: in setting up component "distance".
+  Error: no valid components were provided for this collective variable.
 Error parsing configuration string
 
 Command "cv" returned the following errors:
-Error: invalid atom number specified, 1000
-Error parsing definition for atom group "atoms".
-Error: in setting up component "rmsd".
-Error: no valid components were provided for this collective variable.
+    Error: invalid atom number specified, 1000
+    Error: in definition of atom group "atoms".
+  Error: in setting up component "rmsd".
+  Error: no valid components were provided for this collective variable.
 Error parsing configuration string
 
