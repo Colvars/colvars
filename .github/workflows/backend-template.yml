@@ -146,6 +146,8 @@ jobs:
         if: ${{ inputs.test_lib_directory }}
         shell: bash
         working-directory: ${{ inputs.test_lib_directory }}
+        env:
+          VMDNORLWRAP: 1
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
@@ -161,6 +163,8 @@ jobs:
         if: ${{ inputs.test_interface_directory }}
         shell: bash
         working-directory: ${{ inputs.test_interface_directory }}
+        env:
+          VMDNORLWRAP: 1
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}
