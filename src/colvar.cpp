@@ -751,7 +751,6 @@ template <typename def_class_name>
 int colvar::init_components_type(std::string const &, char const * /* def_desc */,
                                  char const *def_config_key)
 {
-  // global_cvc_map is only supported in the C++11 case
   global_cvc_map[def_config_key] = [](const std::string &cvc_conf) {
     return new def_class_name(cvc_conf);
   };
@@ -774,11 +773,9 @@ int colvar::init_components_type_from_global_map(const std::string& conf,
              "a new \""+std::string(def_config_key)+"\" component"+
              (cvm::debug() ? ", with configuration:\n"+def_conf
               : ".\n"));
+    cvc *cvcp = global_cvc_map[def_config_key](def_conf);
     cvm::increase_depth();
-    // only the following line is different from init_components_type
-    // in the non-C++11 case
-    cvc *cvcp = global_cvc_map.at(def_config_key)(def_conf);
-    if (cvcp != NULL) {
+    if (cvcp) {
       cvcs.push_back(cvcp);
       cvcp->check_keywords(def_conf, def_config_key);
       cvcp->set_function_type(def_config_key);
@@ -787,25 +784,22 @@ int colvar::init_components_type_from_global_map(const std::string& conf,
                    std::string(def_config_key)+"\".\n", COLVARS_INPUT_ERROR);
         return COLVARS_INPUT_ERROR;
       }
-      cvm::decrease_depth();
+
     } else {
       cvm::decrease_depth();
-      cvm::error("Error: in allocating component \""+
-                   std::string(def_config_key)+"\".\n",
-                 COLVARS_MEMORY_ERROR);
-      return COLVARS_MEMORY_ERROR;
+      return cvm::error("Error: in allocating component \"" + std::string(def_config_key) + "\".\n",
+                        COLVARS_MEMORY_ERROR);
     }
 
-    if ( (cvcp->period != 0.0) || (cvcp->wrap_center != 0.0) ) {
-      if (! cvcp->is_enabled(f_cvc_periodic)) {
-        cvm::error("Error: invalid use of period and/or "
-                   "wrapAround in a \""+
-                   std::string(def_config_key)+
-                   "\" component.\n"+
-                   "Period: "+cvm::to_str(cvcp->period) +
-                   " wrapAround: "+cvm::to_str(cvcp->wrap_center),
-                   COLVARS_INPUT_ERROR);
-        return COLVARS_INPUT_ERROR;
+    if ((cvcp->period != 0.0) || (cvcp->wrap_center != 0.0)) {
+      if (!cvcp->is_enabled(f_cvc_periodic)) {
+        cvm::decrease_depth();
+        return cvm::error("Error: invalid use of period and/or "
+                          "wrapAround in a \"" +
+                              std::string(def_config_key) + "\" component.\n" +
+                              "Period: " + cvm::to_str(cvcp->period) +
+                              " wrapAround: " + cvm::to_str(cvcp->wrap_center),
+                          COLVARS_INPUT_ERROR);
       }
     }
 
@@ -825,6 +819,9 @@ int colvar::init_components_type_from_global_map(const std::string& conf,
                 ", named \""+cvcs.back()->name+"\""
                 : "")+".\n");
     }
+
+    cvm::decrease_depth();
+
     def_conf = "";
     if (cvm::debug()) {
       cvm::log("Parsed "+cvm::to_str(cvcs.size())+
@@ -1554,11 +1551,11 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
         (cvcs[i])->debug_gradients();
     }
 
-    cvm::decrease_depth();
-
     if (cvm::debug())
       cvm::log("Done calculating gradients of colvar \""+this->name+"\".\n");
   }
+
+  cvm::decrease_depth();
 
   return COLVARS_OK;
 }
