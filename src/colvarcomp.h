@@ -105,6 +105,9 @@ public:
   /// Calls the init() function of the class
   cvc(std::string const &conf);
 
+  /// Current initialization state; TODO remove this when using init() after default constructor
+  int init_code = COLVARS_OK;
+
   /// Set the value of \link function_type \endlink and its dependencies
   int set_function_type(std::string const &type);
 

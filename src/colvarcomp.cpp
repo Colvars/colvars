@@ -171,7 +171,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
                                           char const *group_key,
                                           bool optional)
 {
-  int error_code = COLVARS_OK;
+  int &error_code = init_code;
 
   cvm::atom_group *group = nullptr;
   std::string group_conf;
@@ -218,8 +218,9 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
   } else {
 
     if (!optional) {
-      cvm::error("Error: atom group \"" + std::string(group_key) + "\" is required.\n",
-                 COLVARS_INPUT_ERROR);
+      error_code |=
+          cvm::error("Error: atom group \"" + std::string(group_key) + "\" is required.\n",
+                     COLVARS_INPUT_ERROR);
     }
   }
 
