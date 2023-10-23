@@ -171,6 +171,8 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
                                           char const *group_key,
                                           bool optional)
 {
+  int error_code = COLVARS_OK;
+
   cvm::atom_group *group = nullptr;
   std::string group_conf;
 
@@ -191,33 +193,33 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
       // TODO check for other types of parallelism here
     }
 
-    if (group_conf.size() == 0) {
-      cvm::error("Error: atom group \""+group->key+
-                 "\" is set, but has no definition.\n",
-                 COLVARS_INPUT_ERROR);
+    if (group_conf.empty()) {
+      error_code |= cvm::error("Error: atom group \"" + group->key + "\" has no definition.\n",
+                               COLVARS_INPUT_ERROR);
       delete group;
       group = nullptr;
       return group;
     }
 
     cvm::increase_depth();
-
-    if (cvm::get_error() || group->parse(group_conf) != COLVARS_OK) {
-      cvm::error("Error parsing definition for atom group \""+
-                 std::string(group_key)+"\".", COLVARS_INPUT_ERROR);
+    error_code |= group->parse(group_conf);
+    if (error_code != COLVARS_OK) {
+      error_code |=
+          cvm::error("Error: in definition of atom group \"" + std::string(group_key) + "\".",
+                     COLVARS_INPUT_ERROR);
       delete group;
       group = nullptr;
     } else {
       register_atom_group(group);
-      group->check_keywords(group_conf, group_key);
+      error_code |= group->check_keywords(group_conf, group_key);
     }
-
     cvm::decrease_depth();
 
   } else {
-    if (! optional) {
-      cvm::error("Error: definition for atom group \""+
-                 std::string(group_key)+"\" not found.\n");
+
+    if (!optional) {
+      cvm::error("Error: atom group \"" + std::string(group_key) + "\" is required.\n",
+                 COLVARS_INPUT_ERROR);
     }
   }
 
