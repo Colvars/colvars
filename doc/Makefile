@@ -19,10 +19,13 @@ CSS = $(HTML:.html=.css)
 
 BIBTEX = colvars-refman.bib
 
+ifeq ($(COLVARS_RELEASE),)
+# Unless defined otherwise, the release label is the name of the branch
 COLVARS_RELEASE = $(shell git symbolic-ref --short -q HEAD)
-# If we are not working on a branch, try a tag instead
+endif
 
 ifeq ($(COLVARS_RELEASE),)
+# If we are not working on a branch, try a tag instead
 COLVARS_RELEASE = $(git describe --tags --exact-match)
 endif
 
