@@ -13,6 +13,7 @@ HTML = \
 	colvars-refman-gromacs.html \
 	colvars-refman-lammps.html \
 	colvars-refman-namd.html \
+	colvars-refman-tinkerhp.html \
 	colvars-refman-vmd.html
 
 CSS = $(HTML:.html=.css)
@@ -101,7 +102,7 @@ webpage: all images
 # Update HTML pages with older-style paths (without branch/release name)
 webpage-legacy: all images
 	cp -p -f $(PDF) $(COLVARS_WEBSITE_TREE)/pdf ; \
-	for engine in lammps namd vmd ; do \
+	for engine in lammps namd tinkerhp vmd ; do \
 	cp -p -f colvars-refman-$${engine}.{html,css} $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
 	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
 	done
