@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: Checkout Colvars
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
@@ -82,14 +82,14 @@ jobs:
             ${{ runner.os }}-build-${{ inputs.backend_name }}-
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'openmm/openmm'
           ref: 'master'
           path: 'openmm-source'
 
       - name: Checkout ${{ inputs.backend_name }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ${{ inputs.backend_repo }}
           ref: ${{ inputs.backend_repo_ref }}
@@ -99,7 +99,7 @@ jobs:
       # Only used for VMD test case
       - name: Checkout VMD plugins
         if: ${{ inputs.backend_name == 'VMD' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ${{ inputs.vmd_plugins_repo }}
           ref: master
@@ -107,7 +107,7 @@ jobs:
           ssh-key: ${{ secrets.private_key_vmd_plugins }}
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'

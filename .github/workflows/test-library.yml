@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout Colvars
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Load compiler cache
         uses: actions/cache@v3
@@ -28,7 +28,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-basic-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -91,7 +91,7 @@ jobs:
     needs: basicchecks
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Apptainer
         shell: bash
@@ -107,7 +107,7 @@ jobs:
           apptainer pull texlive.sif oras://ghcr.io/Colvars/devel-containers:texlive
 
       - name: Checkout website repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/colvars.github.io'
           path: 'website'
@@ -124,14 +124,14 @@ jobs:
     if: ${{ ! github.event.repository.private }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install build dependencies for library
         run: |
           sudo apt-get -y install tcl8.6-dev
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -155,14 +155,14 @@ jobs:
     needs: basicchecks
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install build dependencies for library
         run: |
           sudo apt -y install tcl8.6-dev clang-14 clang-tools-14
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -206,7 +206,7 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Load compiler ccache
         uses: actions/cache@v3
@@ -220,7 +220,7 @@ jobs:
           sudo apt -y install tcl8.6-dev clang-14 clang-tools-14
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -267,7 +267,7 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Load compiler ccache
         uses: actions/cache@v3
@@ -277,7 +277,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-multiple-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -420,10 +420,10 @@ jobs:
     needs: basicchecks
     if: needs.basicchecks.outputs.hassecrets == 'true'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Checkout Sun compiler (Oracle Developer Studio)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/oracle'
           ssh-key: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
@@ -431,7 +431,7 @@ jobs:
           path: ${{github.workspace}}/oracle
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -468,10 +468,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -490,10 +490,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
