@@ -5,18 +5,18 @@ configuration {
 
 colvar {
   name d_atoms
-  x  2.17376969472260e+00
+  x       1.1416587238007
 }
 
 colvar {
   name coords_OW_337
-  x ( -5.34258737699553e-02 ,  2.07786447525045e+00 ,  2.77037464710549e+00 )
+  x (       3.1039593476827 ,       2.0737309334266 ,       2.7962428532949 )
 }
 
 restraint {
   configuration {
-    step 50
-    name harmonic1
+step 50
+name harmonic1
   }
 }
 
