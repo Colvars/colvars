@@ -37,13 +37,13 @@ while [ $# -ge 1 ]; do
 done
 
 GMX_BASE=$(basename ${BINARY})
-GMX_SUFFIX=${GMX#gmx_}
+GMX_SUFFIX=${GMX_BASE#gmx_}
 GMX_SUFFIX=${GMX_SUFFIX#mdrun_}
 export GMX_SUFFIX=${GMX_SUFFIX%_d} # TODO prevent running single precision?
-echo "GROMACS suffix = \"\""
 
 if [ "${GMX_SUFFIX}" == "mpi" ] ; then
-  export BINARY_MPI="${GMX} mdrun"
+  echo "Detected MPI binary, running MPI tests."
+  export BINARY_MPI="${GMX_BASE} mdrun"
 fi
 
 TOPDIR=$(git rev-parse --show-toplevel)
@@ -102,13 +102,12 @@ cleanup_files() {
     rm -f *.out *.out.diff # Delete output files regardless
     rm -f *.ndx *.xyz
     rm -f test.dat
-    if [ -f cleanup.sh ]
-    then
-      ./cleanup.sh
-    fi
   done
+  if [ -f cleanup.sh ]
+  then
+    ./cleanup.sh
+  fi
 }
-
 
 for dir in ${DIRLIST} ; do
 
@@ -213,7 +212,7 @@ for dir in ${DIRLIST} ; do
       echo "Run special script."
       ./run.sh
       output=${basename}
-    # Try running the test serial
+    # Try running the test sequentially
     elif [ "$restart" = "false" ]
     then
       $COMMAND -s ${script} -deffnm ${basename} -colvars test.dat ${options} &> ${basename}.out
@@ -259,6 +258,7 @@ for dir in ${DIRLIST} ; do
 
     if [ -f "run.sh" ]
     then
+      echo "DONE"
       break
     fi
 
@@ -312,7 +312,7 @@ for dir in ${DIRLIST} ; do
         fi
       fi
     fi
-   done
+  done
 
   if [ $SUCCESS -eq 1 ]
   then
