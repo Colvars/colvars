@@ -86,7 +86,7 @@ cleanup_files() {
   for script in test*.lmp.in testres*.lmp.in ; do
     for f in ${script%.lmp.in}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
     rm -f ${script%.lmp.in}.*{BAK,old,backup}
-    for f in ${script%.lmp.in}.*{state,state.stripped,lmp.data,out,traj,pmf,hills,grad,count,histogram?.dat,histogram?.dx}
+    for f in ${script%.lmp.in}.*{state,state.stripped,lmp.data,out,traj,pmf,hills,grad,count,{histogram?,corrfunc,hist}.dat,.histogram?.dx,.ti.force}
     do
       if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff
     done
