@@ -26,7 +26,7 @@ jobs:
       backend_name: LAMMPS
       backend_repo: lammps/lammps
       backend_repo_ref: develop
-      container_name: CentOS7-devel
+      container_name: CentOS9-devel
       path_compile_script: devel-tools/compile-lammps.sh
       test_lib_directory: lammps/tests/library
       test_interface_directory: lammps/tests/interface
