@@ -42,8 +42,11 @@
 #ifndef GMX_APPLIED_FORCES_COLVARPROXYGROMACS_H
 #define GMX_APPLIED_FORCES_COLVARPROXYGROMACS_H
 
-#include "external/colvars/colvaratoms.h"
+// NOLINTBEGIN
+// Disabling clang-tidy checks on Colvars library code that is not called directly by GROMACS,
+// or is not even used at all (e.g. code used by NAMD or VMD interfaces)
 #include "external/colvars/colvarproxy.h"
+// NOLINTEND
 
 #include "gromacs/pbcutil/pbc.h"
 #include "gromacs/random/tabulatednormaldistribution.h"
@@ -68,11 +71,11 @@ class ColvarProxyGromacs : public colvarproxy
 
 protected:
     //! Atoms topology
-    t_atoms gmx_atoms;
+    t_atoms gmxAtoms_;
 
     //! Box infos
     PbcType pbcType_;
-    t_pbc   gmx_pbc;
+    t_pbc   gmxPbc_;
 
     // GROMACS logger instance
     const MDLogger* logger_ = nullptr;
@@ -82,8 +85,8 @@ protected:
 
 
     // GROMACS random number generation.
-    DefaultRandomEngine           rng; // gromacs random number generator
-    TabulatedNormalDistribution<> normal_distribution;
+    DefaultRandomEngine           rng_; // gromacs random number generator
+    TabulatedNormalDistribution<> normalDistribution_;
 
 
 public:
@@ -96,43 +99,44 @@ public:
      * \param[in] pbcType Periodic boundary conditions
      * \param[in] logger GROMACS logger instance
      * \param[in] doParsing Wether the input file should be parsed.
-     * \param[in] input_strings Input files stored as string in the KVT
-     * \param[in] ensTemp the constant ensemble temperature
+     * \param[in] inputStrings Input files stored as string in the TPR's KVT
+     * \param[in] ensembleTemperature the constant ensemble temperature
+     * \param[in] seed the colvars seed for random number generator
      */
     ColvarProxyGromacs(const std::string&                        colvarsConfigString,
                        t_atoms                                   atoms,
                        PbcType                                   pbcType,
                        const MDLogger*                           logger,
                        bool                                      doParsing,
-                       const std::map<std::string, std::string>& input_strings,
-                       real                                      ensTemp);
+                       const std::map<std::string, std::string>& inputStrings,
+                       real                                      ensembleTemperature,
+                       int                                       seed);
     ~ColvarProxyGromacs() override;
 
-    /// Update colvars topology of one atom mass and charge from the GROMACS topology
-    void update_atom_properties(int index);
+    //! Update colvars topology of one atom mass and charge from the GROMACS topology
+    void updateAtomProperties(int index);
 
     //! From colvarproxy
+    // Methods below override virtual ones present in the `colvarproxy` class
 
-    // **************** SYSTEM-WIDE PHYSICAL QUANTITIES ****************
+    //! Return a random number from a Gaussian distribution
     cvm::real rand_gaussian() override;
 
-    // **************** INPUT/OUTPUT ****************
-    /// Print a message to the main log
+    //! Print a message to the main log
     void log(std::string const& message) override;
-    /// Print a message to the main log and let the rest of the program handle the error
+    //! Print a message to the main log and let GROMACS handle the error
     void error(std::string const& message) override;
-    /// Request to set the units used internally by Colvars
-    int set_unit_system(std::string const& units_in, bool colvars_defined) override;
+    //! Request to set the units used internally by Colvars
+    int set_unit_system(std::string const& unitsIn, bool colvarsDefined) override;
 
-    /// Initialize colvars atom from GROMACS topology
-    int init_atom(int atom_number) override;
-
+    //! Initialize colvars atom from GROMACS topology
+    int init_atom(int atomNumber) override;
     /*! \brief Check if atom belongs to the global index of atoms
-     *  \param[in] atom_number Colvars index of the atom to check
+     *  \param[in] atomNumber Colvars index of the atom to check
      */
-    int check_atom_id(int atom_number) override;
+    int check_atom_id(int atomNumber) override;
 
-    // **************** PERIODIC BOUNDARY CONDITIONS ****************
+    //! Compute the minimum distance with respect to the PBC between 2 atoms.
     cvm::rvector position_distance(cvm::atom_pos const& pos1, cvm::atom_pos const& pos2) const override;
 };
 

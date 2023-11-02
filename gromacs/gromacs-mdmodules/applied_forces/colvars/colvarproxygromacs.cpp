@@ -52,12 +52,14 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
                                        PbcType            pbcType,
                                        const MDLogger*    logger,
                                        bool               doParsing,
-                                       const std::map<std::string, std::string>& input_strings,
-                                       real                                      ensTemp) :
-    gmx_atoms(atoms), pbcType_(pbcType), logger_(logger), doParsing_(doParsing)
+                                       const std::map<std::string, std::string>& inputStrings,
+                                       real ensembleTemperature,
+                                       int  seed) :
+    gmxAtoms_(atoms), pbcType_(pbcType), logger_(logger), doParsing_(doParsing)
 {
 
     //! From colvarproxy
+    //! The 5 variables below are defined in the `colvarproxy` base class
 
     // Retrieve masses and charges from input file
     updated_masses_ = updated_charges_ = true;
@@ -69,26 +71,35 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
 
     // From Gnu units
     // $ units -ts 'k' 'kJ/mol/K/avogadro'
-    // 0.0083144621
     boltzmann_ = 0.0083144621;
 
     // Get the thermostat temperature.
-    set_target_temperature(ensTemp);
+    set_target_temperature(ensembleTemperature);
 
     // GROMACS random number generation.
-    rng.seed(makeRandomSeed());
+    // Used the number defined in the mdp options for the seed.
+    // -1 (default value) stands for random
+    if (seed == -1)
+    {
+        rng_.seed(makeRandomSeed());
+    }
+    else
+    {
+        rng_.seed(seed);
+    }
 
 
-    // Read configuration file and set up the proxy during Pre processing
+    // Read configuration file and set up the proxy during pre-processing
     // and during simulation phase but only on the master node.
     if (doParsing)
     {
 
-        // Retrieve input files stored as string in the KVT
+        // Retrieve input files stored as string in the key-value-tree (KVT) of the TPR.
         // Add them to the map of colvars input data.
-        for (const auto& [input_name, content] : input_strings)
+        for (const auto& [inputName, content] : inputStrings)
         {
-            input_streams_[input_name] = new std::istringstream(content);
+            // input_streams_ defined in colvarproxy
+            input_streams_[inputName] = new std::istringstream(content);
         }
 
         colvars = new colvarmodule(this);
@@ -104,12 +115,12 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
             cvm::log("Initializing the colvars proxy object.\n");
         }
 
-        int error_code = colvarproxy::setup();
-        error_code |= colvars->read_config_string(colvarsConfigString);
-        error_code |= colvars->update_engine_parameters();
-        error_code |= colvars->setup_input();
+        int errorCode = colvarproxy::setup();
+        errorCode |= colvars->read_config_string(colvarsConfigString);
+        errorCode |= colvars->update_engine_parameters();
+        errorCode |= colvars->setup_input();
 
-        if (error_code != COLVARS_OK)
+        if (errorCode != COLVARS_OK)
         {
             error("Error when initializing Colvars module.");
         }
@@ -117,12 +128,6 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
         // Citation Reporter
         cvm::log(std::string("\n") + colvars->feature_report(0) + std::string("\n"));
 
-        // TODO: Retrieve step
-        // if (step != 0) {
-        //     cvm::log("Initializing step number to "+cvm::to_str(step)+".\n");
-        // }
-
-        // colvars->it = colvars->it_restart = step;
         colvars->set_initial_step(static_cast<cvm::step_number>(0L));
     }
 }
@@ -130,7 +135,7 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
 
 cvm::real ColvarProxyGromacs::rand_gaussian()
 {
-    return normal_distribution(rng);
+    return normalDistribution_(rng_);
 }
 
 void ColvarProxyGromacs::log(std::string const& message)
@@ -153,12 +158,12 @@ void ColvarProxyGromacs::error(std::string const& message)
 }
 
 
-int ColvarProxyGromacs::set_unit_system(std::string const& units_in, bool /*colvars_defined*/)
+int ColvarProxyGromacs::set_unit_system(std::string const& unitsIn, bool /*colvarsDefined*/)
 {
-    if (units_in != "gromacs")
+    if (unitsIn != "gromacs")
     {
         cvm::error(
-                "Specified unit system \"" + units_in
+                "Specified unit system \"" + unitsIn
                 + "\" is unsupported in Gromacs. Supported units are \"gromacs\" (nm, kJ/mol).\n");
         return COLVARS_ERROR;
     }
@@ -168,18 +173,18 @@ int ColvarProxyGromacs::set_unit_system(std::string const& units_in, bool /*colv
 
 // **************** ATOMS ****************
 
-int ColvarProxyGromacs::check_atom_id(int atom_number)
+int ColvarProxyGromacs::check_atom_id(int atomNumber)
 {
     // GROMACS uses zero-based arrays.
-    int const aid = (atom_number - 1);
+    int const aid = (atomNumber - 1);
 
     if (cvm::debug())
     {
-        log("Adding atom " + cvm::to_str(atom_number) + " for collective variables calculation.\n");
+        log("Adding atom " + cvm::to_str(atomNumber) + " for collective variables calculation.\n");
     }
-    if ((aid < 0) || (aid >= gmx_atoms.nr))
+    if ((aid < 0) || (aid >= gmxAtoms_.nr))
     {
-        cvm::error("Error: invalid atom number specified, " + cvm::to_str(atom_number) + "\n",
+        cvm::error("Error: invalid atom number specified, " + cvm::to_str(atomNumber) + "\n",
                    COLVARS_INPUT_ERROR);
         return COLVARS_INPUT_ERROR;
     }
@@ -188,11 +193,12 @@ int ColvarProxyGromacs::check_atom_id(int atom_number)
 }
 
 
-int ColvarProxyGromacs::init_atom(int atom_number)
+int ColvarProxyGromacs::init_atom(int atomNumber)
 {
     // GROMACS uses zero-based arrays.
-    int aid = atom_number - 1;
+    int aid = atomNumber - 1;
 
+    // atoms_ids & atoms_refcount declared in `colvarproxy_atoms` class
     for (size_t i = 0; i < atoms_ids.size(); i++)
     {
         if (atoms_ids[i] == aid)
@@ -203,7 +209,7 @@ int ColvarProxyGromacs::init_atom(int atom_number)
         }
     }
 
-    aid = check_atom_id(atom_number);
+    aid = check_atom_id(atomNumber);
 
     if (aid < 0)
     {
@@ -211,23 +217,24 @@ int ColvarProxyGromacs::init_atom(int atom_number)
     }
 
     int const index = add_atom_slot(aid);
-    update_atom_properties(index);
+    updateAtomProperties(index);
     return index;
 }
 
-void ColvarProxyGromacs::update_atom_properties(int index)
+void ColvarProxyGromacs::updateAtomProperties(int index)
 {
 
     // update mass
-    double const mass = gmx_atoms.atom[atoms_ids[index]].m;
+    double const mass = gmxAtoms_.atom[atoms_ids[index]].m;
     if (mass <= 0.001)
     {
         this->log("Warning: near-zero mass for atom " + cvm::to_str(atoms_ids[index] + 1)
                   + "; expect unstable dynamics if you apply forces to it.\n");
     }
-    atoms_masses[index] = mass;
-    // update charge
-    atoms_charges[index] = gmx_atoms.atom[atoms_ids[index]].q;
+
+    // atoms_masses & atoms_charges declared in `colvarproxy_atoms` class
+    atoms_masses[index]  = mass;
+    atoms_charges[index] = gmxAtoms_.atom[atoms_ids[index]].q;
 }
 
 ColvarProxyGromacs::~ColvarProxyGromacs()
@@ -250,7 +257,7 @@ cvm::rvector ColvarProxyGromacs::position_distance(cvm::atom_pos const& pos1, cv
     r2[1] = pos2.y;
     r2[2] = pos2.z;
 
-    pbc_dx(&gmx_pbc, r2, r1, dr);
+    pbc_dx(&gmxPbc_, r2, r1, dr);
     return cvm::atom_pos(dr[0], dr[1], dr[2]);
 }
 
