@@ -193,7 +193,6 @@ public:
         };
         notifier->simulationSetupNotifier_.subscribe(setLoggerFunction);
 
-        // Get edr filename
         const auto setEdrFileNameFunction = [this](const EdrOutputFilename& filename) {
             colvarsOptions_.processEdrFilename(filename);
         };
@@ -234,17 +233,18 @@ public:
 
             colvarsForceProvider_ = std::make_unique<ColvarsForceProvider>(
                     colvarsOptions_.colvarsConfigContent(),
-                    ColvarsSimulationsParameters_.localAtomSetManager(),
-                    ColvarsSimulationsParameters_.periodicBoundaryConditionType(),
-                    ColvarsSimulationsParameters_.simulationTimeStep(),
                     ColvarsSimulationsParameters_.topology(),
-                    ColvarsSimulationsParameters_.comm(),
+                    ColvarsSimulationsParameters_.periodicBoundaryConditionType(),
                     ColvarsSimulationsParameters_.logger(),
+                    colvarsOptions_.colvarsInputFiles(),
+                    colvarsOptions_.colvarsEnsTemp(),
+                    colvarsOptions_.colvarsSeed(),
+                    ColvarsSimulationsParameters_.localAtomSetManager(),
+                    ColvarsSimulationsParameters_.comm(),
+                    ColvarsSimulationsParameters_.simulationTimeStep(),
                     colvarsOptions_.colvarsAtomCoords(),
                     colvarsOptions_.colvarsOutputPrefix(),
-                    colvarsOptions_.colvarsInputFiles(),
-                    colvarsState_,
-                    colvarsOptions_.colvarsEnsTemp());
+                    colvarsState_);
             forceProviders->addForceProvider(colvarsForceProvider_.get());
         }
     }

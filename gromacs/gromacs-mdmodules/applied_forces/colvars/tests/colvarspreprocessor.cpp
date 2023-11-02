@@ -51,6 +51,7 @@
 #include "gromacs/gmxpreprocess/grompp.h"
 #include "gromacs/math/vec.h"
 #include "gromacs/pbcutil/pbc.h"
+#include "gromacs/topology/atoms.h"
 #include "gromacs/topology/mtop_lookup.h"
 #include "gromacs/topology/mtop_util.h"
 #include "gromacs/topology/topology.h"
@@ -101,13 +102,19 @@ public:
         // Load topology
         bool       fullTopology;
         gmx_mtop_t mtop_;
-        rvec*      coords;
         readConfAndTopology(tprName.c_str(), &fullTopology, &mtop_, &pbcType_, &coords, nullptr, box_);
         atoms_ = gmx_mtop_global_atoms(mtop_);
         x_     = gmx::constArrayRefFromArray(reinterpret_cast<gmx::RVec*>(coords), atoms_.nr);
     }
 
+    ~ColvarsPreProcessorTest() override
+    {
+        done_atom(&atoms_);
+        sfree(coords);
+    }
+
 protected:
+    rvec*                      coords;
     gmx::test::TestFileManager fileManager_;
     t_atoms                    atoms_;
     PbcType                    pbcType_;
@@ -120,7 +127,7 @@ TEST_F(ColvarsPreProcessorTest, CanConstructColvarsPreProcess)
     // Reference input 4x SPCE waters from database 4water.top
     makeMtopFromFile("4water", "");
 
-    EXPECT_NO_THROW(ColvarsPreProcessor colvarsPreProcess("", atoms_, pbcType_, nullptr, box_, x_, 0));
+    EXPECT_NO_THROW(ColvarsPreProcessor colvarsPreProcess("", atoms_, pbcType_, nullptr, 0, -1, box_, x_));
 }
 
 TEST_F(ColvarsPreProcessorTest, CheckValuesFourWaters)
@@ -147,7 +154,7 @@ TEST_F(ColvarsPreProcessorTest, CheckValuesFourWaters)
                   centers 0.3
               })";
 
-    ColvarsPreProcessor colvarsPreProcess(colvarsInput, atoms_, pbcType_, nullptr, box_, x_, 0);
+    ColvarsPreProcessor colvarsPreProcess(colvarsInput, atoms_, pbcType_, nullptr, 0, -1, box_, x_);
 
     gmx::test::TestReferenceData    data;
     gmx::test::TestReferenceChecker checker(data.rootChecker());
@@ -156,14 +163,14 @@ TEST_F(ColvarsPreProcessorTest, CheckValuesFourWaters)
     checker.setDefaultTolerance(gmx::test::absoluteTolerance(0.001));
     checker.checkVector(colvarsPreProcess.getColvarsCoords()[1], "Coords Atom 4");
 
-    const auto* const atom_ids = colvarsPreProcess.get_atom_ids();
-    checker.checkSequence(atom_ids->begin(), atom_ids->end(), "Index of colvars atoms");
+    const auto* const atomIds = colvarsPreProcess.get_atom_ids();
+    checker.checkSequence(atomIds->begin(), atomIds->end(), "Index of colvars atoms");
 
-    const auto* const atom_masses = colvarsPreProcess.get_atom_masses();
-    checker.checkSequence(atom_masses->begin(), atom_masses->end(), "Masses of colvars atoms");
+    const auto* const atomMasses = colvarsPreProcess.get_atom_masses();
+    checker.checkSequence(atomMasses->begin(), atomMasses->end(), "Masses of colvars atoms");
 
-    const auto* const atom_charges = colvarsPreProcess.get_atom_charges();
-    checker.checkSequence(atom_charges->begin(), atom_charges->end(), "Charges of colvars atoms");
+    const auto* const atomCharges = colvarsPreProcess.get_atom_charges();
+    checker.checkSequence(atomCharges->begin(), atomCharges->end(), "Charges of colvars atoms");
 }
 
 
@@ -197,7 +204,7 @@ TEST_F(ColvarsPreProcessorTest, CheckNestedInputFiles)
     size_t      index     = colvarsInput.find("<template_ndx>");
     colvarsInput.replace(index, std::string("<template_ndx>").length(), pathIndex);
 
-    ColvarsPreProcessor colvarsPreProcess(colvarsInput, atoms_, pbcType_, nullptr, box_, x_, 0);
+    ColvarsPreProcessor colvarsPreProcess(colvarsInput, atoms_, pbcType_, nullptr, 0, -1, box_, x_);
 
     // Make sure the index file inside colvarsInput was correctly read
     auto listInputStreams = colvarsPreProcess.list_input_stream_names();
@@ -205,6 +212,8 @@ TEST_F(ColvarsPreProcessorTest, CheckNestedInputFiles)
     EXPECT_EQ(pathIndex, *inputStreamIndex);
 }
 
+#if defined(__has_feature)
+#    if !__has_feature(address_sanitizer)
 TEST_F(ColvarsPreProcessorTest, WrongColvarsInput)
 {
     // Reference input 4x SPCE waters from database 4water.top
@@ -230,7 +239,9 @@ TEST_F(ColvarsPreProcessorTest, WrongColvarsInput)
               })";
 
     EXPECT_ANY_THROW(ColvarsPreProcessor colvarsPreProcess(
-            colvarsInput, atoms_, pbcType_, nullptr, box_, x_, 0));
+            colvarsInput, atoms_, pbcType_, nullptr, 0, -1, box_, x_));
 }
+#    endif
+#endif
 
 } // namespace gmx

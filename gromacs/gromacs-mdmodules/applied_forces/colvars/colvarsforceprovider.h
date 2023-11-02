@@ -71,7 +71,7 @@ struct ColvarsForceProviderState
     /*! \brief String naming variable holding the number of colvars atoms.
      * \note Changing this name will break backwards compability for checkpoint file writing.
      */
-    static const std::string nColvarsAtomsName_;
+    static const std::string sc_nColvarsAtomsName_;
 
     //! Last known whole positions of the colvars atoms
     //! \todo Change the type to a standard one to avoid memory leak.
@@ -80,7 +80,7 @@ struct ColvarsForceProviderState
     /*! \brief String naming variable holding the last known whole positions of the colvars atoms
      * \note Changing this name will break backwards compability for checkpoint file writing.
      */
-    static const std::string xOldWholeName_;
+    static const std::string sc_xOldWholeName_;
 
     /*! \brief Content of the unformatted Colvars state file.
      */
@@ -89,12 +89,12 @@ struct ColvarsForceProviderState
     /*! \brief String naming variable holding the content of the unformatted Colvars state file.
      * \note Changing this name will break backwards compability for checkpoint file writing.
      */
-    static const std::string colvarStateFileName_;
+    static const std::string sc_colvarStateFileName_;
 
     /*! \brief String naming variable holding the size of the unformatted Colvars state file.
      * \note Changing this name will break backwards compability for checkpoint file writing.
      */
-    static const std::string colvarStateFileSizeName_;
+    static const std::string sc_colvarStateFileSizeName_;
 
     /*! \brief Write internal colvars data into a key value tree.
      * The entries to the kvt are identified with identifier, so that a variable
@@ -124,48 +124,64 @@ class ColvarsForceProvider final : public ColvarProxyGromacs, public IForceProvi
 
 private:
     //! The total bias energy on all colvars atoms.
-    double bias_energy;
+    double biasEnergy;
 
     //! Is this a neighbor-search step?
-    bool gmx_bNS;
+    bool gmxBNS;
 
 
     // Node-local bookkepping data
     //! The colvars atom indices
-    std::unique_ptr<gmx::LocalAtomSet> colvars_atoms;
+    std::unique_ptr<gmx::LocalAtomSet> colvarsAtoms;
     //! Total number of Colvars atoms
-    int n_colvars_atoms = 0;
+    int nColvarsAtoms = 0;
     //! Unwrapped positions for all Colvars atoms, communicated to all nodes.
-    rvec* x_colvars_unwrapped = nullptr;
+    rvec* xColvars = nullptr;
     //! Shifts for all Colvars atoms, to make molecule(s) whole.
-    ivec* xa_shifts = nullptr;
+    ivec* xColvarsShifts = nullptr;
     //! Extra shifts since last DD step.
-    ivec* xa_eshifts = nullptr;
+    ivec* xColvarsEshifts = nullptr;
     //! Old positions for all Colvars atoms on master.
-    rvec* xa_old_whole = nullptr;
-    //! Position of each local atom in the collective array.
-    int* xa_ind = nullptr;
+    rvec* xColvarsOldWhole = nullptr;
     //! Bias forces on all Colvars atoms
-    rvec* f_colvars = nullptr;
+    rvec* fColvars = nullptr;
 
+    //! Struct holding the information stored in the checkpoint file
     ColvarsForceProviderState stateToCheckpoint_;
 
 
 public:
     friend class cvm::atom;
-    //! Construct force provider for colvars from its parameters
+
+    /*! \brief Construct ColvarsForceProvider from its parameters
+     *
+     * \param[in] colvarsConfigString Content of the colvars input file.
+     * \param[in] atoms Atoms topology
+     * \param[in] pbcType Periodic boundary conditions
+     * \param[in] logger GROMACS logger instance
+     * \param[in] inputStrings Input files stored as string in the TPR's KVT
+     * \param[in] ensembleTemperature the constant ensemble temperature
+     * \param[in] seed The colvars seed for random number generator
+     * \param[in] localAtomSetManager Atom Manager to retrieve Colvars index atoms
+     * \param[in] cr Communication Record
+     * \param[in] simulationTimeStep The simulation time step
+     * \param[in] colvarsCoords The colvars atoms coordinates retrived from the TPR's KVT
+     * \param[in] outputPrefix The prefix for output colvars files
+     * \param[in] state The state of colvars force provider to be written in the checkpoint
+     */
     ColvarsForceProvider(const std::string&                        colvarsConfigString,
-                         LocalAtomSetManager*                      localAtomSetManager,
-                         PbcType                                   pbcType,
-                         double                                    simulationTimeStep,
                          t_atoms                                   atoms,
-                         const t_commrec*                          cr,
+                         PbcType                                   pbcType,
                          const MDLogger*                           logger,
+                         const std::map<std::string, std::string>& inputStrings,
+                         real                                      ensembleTemperature,
+                         int                                       seed,
+                         LocalAtomSetManager*                      localAtomSetManager,
+                         const t_commrec*                          cr,
+                         double                                    simulationTimeStep,
                          const std::vector<RVec>&                  colvarsCoords,
                          const std::string&                        outputPrefix,
-                         const std::map<std::string, std::string>& KVTInputs,
-                         const ColvarsForceProviderState&          state,
-                         real                                      ensTemp);
+                         const ColvarsForceProviderState&          state);
 
     ~ColvarsForceProvider() override;
 
@@ -176,8 +192,8 @@ public:
     void calculateForces(const ForceProviderInput& forceProviderInput,
                          ForceProviderOutput*      forceProviderOutput) override;
 
-    // Compute virial tensor for position r and force f, and add to matrix vir
-    void add_virial_term(matrix vir, const rvec& f, const gmx::RVec& x);
+    //! Compute virial tensor for position r and force f, and add to matrix vir
+    static void addVirialTerm(matrix vir, const rvec& f, const gmx::RVec& x);
 
     /*! \brief Write internal colvars data to checkpoint file.
      * \param[in] checkpointWriting enables writing to the Key-Value-Tree
@@ -198,7 +214,7 @@ public:
 
     //! From colvarproxy
 
-    /*! \brief add energy to the total count of bias energy bias_energy
+    /*! \brief add energy to the total count of bias energy biasEnergy
      * \param[in] energy the value of energy to add
      *
      */
