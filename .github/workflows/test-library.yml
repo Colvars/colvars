@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout Colvars
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Load compiler cache
         uses: actions/cache@v3
@@ -28,7 +28,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-basic-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -71,7 +71,7 @@ jobs:
           CC: clang
         run: cmake -P devel-tools/build_test_library.cmake
 
-      - name: Build library with debug flags enabled
+      - name: Build library with debug code enabled (GCC)
         run: cmake -D COLVARS_DEBUG=ON -P devel-tools/build_test_library.cmake
 
       - name: Check whether secrets are available
@@ -91,7 +91,7 @@ jobs:
     needs: basicchecks
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Apptainer
         shell: bash
@@ -107,17 +107,14 @@ jobs:
           apptainer pull texlive.sif oras://ghcr.io/Colvars/devel-containers:texlive
 
       - name: Checkout website repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/colvars.github.io'
           path: 'website'
 
       - name: Build doc
-        working-directory: website
-        env:
-          COLVARSDIR: ${{ github.workspace }}
-          FORCE: 1  # Ignore error if branch isn't master
-        run: apptainer exec ${COLVARSDIR}/devel-tools/texlive.sif make
+        working-directory: doc
+        run: apptainer exec ${{ github.workspace }}/devel-tools/texlive.sif make
 
 
   codeql:
@@ -127,14 +124,14 @@ jobs:
     if: ${{ ! github.event.repository.private }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install build dependencies for library
         run: |
           sudo apt-get -y install tcl8.6-dev
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -158,14 +155,14 @@ jobs:
     needs: basicchecks
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install build dependencies for library
         run: |
           sudo apt -y install tcl8.6-dev clang-14 clang-tools-14
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -200,6 +197,65 @@ jobs:
           path: warnings_analyser.log
 
 
+  address-sanitizer:
+    name: Clang 16 address sanitizer
+    runs-on: ubuntu-latest
+    needs: basicchecks
+    env:
+      CCACHE: ccache
+      CCACHE_DIR: ${{ github.workspace }}/ccache
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load compiler ccache
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/ccache
+          key: ${{ runner.os }}-build-asan-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-asan-
+
+      - name: Install build dependencies for library
+        run: |
+          sudo apt -y install tcl8.6-dev clang-14 clang-tools-14
+
+      - name: Checkout OpenMM (for Lepton library)
+        uses: actions/checkout@v4
+        with:
+          repository: 'openmm/openmm'
+          ref: 'master'
+          path: 'openmm-source'
+
+      - name: Install Apptainer
+        shell: bash
+        run: |
+          sudo add-apt-repository -y ppa:apptainer/ppa
+          sudo apt update
+          sudo apt install -y apptainer-suid
+
+      - name: Get container images for build dependencies
+        shell: bash
+        working-directory: devel-tools
+        run: |
+          apptainer pull CentOS9-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS9-devel
+
+      - name: Build with Clang 16 and address sanitizer
+        env:
+          CXX: clang++
+          CC: clang
+          CMAKE_ADDRESS_SANITIZER: ON
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -P devel-tools/build_test_library.cmake
+
+      - name: Archive warnings artifacts
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: Clang_address_sanitizer_output
+          path: ${{github.workspace}}/build/Testing/Temporary/LastTest.log
+
+
   build-linux-x86_64-many:
     name: Linux x86_64 (GCC, Clang)
     runs-on: ubuntu-latest
@@ -211,7 +267,7 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Load compiler ccache
         uses: actions/cache@v3
@@ -221,7 +277,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-multiple-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -364,10 +420,10 @@ jobs:
     needs: basicchecks
     if: needs.basicchecks.outputs.hassecrets == 'true'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Checkout Sun compiler (Oracle Developer Studio)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/oracle'
           ssh-key: ${{ secrets.PULL_ORACLE_DEVELOPER_STUDIO }}
@@ -375,7 +431,7 @@ jobs:
           path: ${{github.workspace}}/oracle
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -412,10 +468,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -434,10 +490,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'

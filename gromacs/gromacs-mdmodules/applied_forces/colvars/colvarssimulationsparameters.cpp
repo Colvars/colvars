@@ -62,12 +62,12 @@ LocalAtomSetManager* ColvarsSimulationsParameters::localAtomSetManager() const
 
 void ColvarsSimulationsParameters::setTopology(const gmx_mtop_t& mtop)
 {
-    gmx_atoms = gmx_mtop_global_atoms(mtop);
+    gmxAtoms_ = gmx_mtop_global_atoms(mtop);
 }
 
 t_atoms ColvarsSimulationsParameters::topology() const
 {
-    return gmx_atoms;
+    return gmxAtoms_;
 }
 
 

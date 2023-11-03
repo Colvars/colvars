@@ -23,6 +23,11 @@
 \newcommand{\cvscriptcmd}{cv}
 }
 
+\cvtinkerhponly{
+\def\cvsimulationengine{1}
+\def\cvscriptcallbacks{1} % Supports script callbacks (via Tcl)
+}
+
 \cvvmdonly{
 \def\cvvmdornamd{1}
 \def\cvscriptapi{1}

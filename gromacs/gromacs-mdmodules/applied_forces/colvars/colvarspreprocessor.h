@@ -65,23 +65,25 @@ public:
      * \param[in] atoms Atoms topology
      * \param[in] pbcType Periodic boundary conditions
      * \param[in] logger GROMACS logger instance
+     * \param[in] ensembleTemperature the constant ensemble temperature
+     * \param[in] seed the colvars seed for random number generator
      * \param[in] box Matrix with full box of the system
      * \param[in] x Coordinates of each atom in the system
-     * \param[in] ensTemp the constant ensemble temperature
      */
     ColvarsPreProcessor(const std::string&   colvarsConfigString,
                         t_atoms              atoms,
                         PbcType              pbcType,
                         const MDLogger*      logger,
+                        real                 ensembleTemperature,
+                        int                  seed,
                         const matrix         box,
-                        ArrayRef<const RVec> x,
-                        real                 ensTemp);
+                        ArrayRef<const RVec> x);
 
 
     //! Return a vector of the colvars atoms coordinates
     std::vector<RVec> getColvarsCoords();
 
-    //! Save all input files of colvars into the KVT
+    //! Save all input files of colvars (outside the config file) in the tpr file through the key-value-tree
     bool inputStreamsToKVT(KeyValueTreeObjectBuilder treeBuilder, const std::string& tag);
 
 private:

@@ -19,9 +19,11 @@
 #endif
 
 /*! \mainpage Main page
-This is the Developer's documentation for the Collective Variables Module.
+This is the Developer's documentation for the Collective Variables module (Colvars).
 
 You can browse the class hierarchy or the list of source files.
+
+Please note that this documentation is only supported for the master branch, and its features may differ from those in a given release of a simulation package.
  */
 
 /// \file colvarmodule.h

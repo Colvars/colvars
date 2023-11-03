@@ -31,15 +31,23 @@
 # To help us fund GROMACS development, we humbly ask that you cite
 # the research papers on the package. Check out https://www.gromacs.org.
 
-gmx_add_libgromacs_sources(
-    colvarsMDModule.cpp
-    colvarsoptions.cpp
-    colvarspreprocessor.cpp
-    colvarssimulationsparameters.cpp
-    colvarsforceprovider.cpp
-    colvarproxygromacs.cpp
-    )
+# If Colvars is not activated then compile uust the stub implementation colvarsMDModule_stub.cpp
+# In other case compile regular colvarsMDModule.cpp and tests
+if(NOT GMX_USE_COLVARS STREQUAL "INTERNAL")
+    gmx_add_libgromacs_sources(
+        colvarsMDModule_stub.cpp
+        )
+else()
+    gmx_add_libgromacs_sources(
+        colvarsMDModule.cpp
+        colvarsoptions.cpp
+        colvarspreprocessor.cpp
+        colvarssimulationsparameters.cpp
+        colvarsforceprovider.cpp
+        colvarproxygromacs.cpp
+        )
 
-if (BUILD_TESTING)
-    add_subdirectory(tests)
+    if (BUILD_TESTING)
+        add_subdirectory(tests)
+    endif()
 endif()

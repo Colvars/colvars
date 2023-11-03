@@ -110,13 +110,13 @@ All of the above MD engine versions are automatically tested as part of GitHub A
 
 ## GROMACS-Colvars releases
 
-The following links provide specific versions of GROMACS that are already patched with the latest available version of Colvars:
+Colvars can interface to GROMACS in two ways, depending on the version of GROMACS:
+1. Using a customized `mdrun` command line (GROMACS releases up to 2023); source code is available as patched versions of existing GROMACS releases [here](https://github.com/Colvars/gromacs/tags).
+2. Using a standard `mdrun` command line; source code is available as a GROMACS development branch [here](https://gitlab.com/gromacs/gromacs/-/merge_requests/3671).
 
- - **GROMACS [2022.4-colvars](https://github.com/Colvars/gromacs/releases/tag/v2022.4-colvars)**;
+In either case, the installation procedure is identical to that of standard GROMACS.
 
- - **GROMACS [2021.6-colvars](https://github.com/Colvars/gromacs/releases/tag/v2021.6-colvars)**;
-
-The Colvars [patching procedure](#updating-to-the-latest-version) described earlier was used to produce the two patched GROMACS version.  This procedure is generally compatible with all GROMACS versions within the same release year.  Unless there is a specific reason not to, it is a good idea to use the latest revision of each release series, available as [Git branches](https://github.com/Colvars/gromacs/branches).
+The Colvars [patching procedure](#updating-to-the-latest-version) can be used to add or update the version of Colvars to GROMACS.  This procedure is generally compatible with all GROMACS versions from the same release years as those listed above.  Please use the latest revision of each release series whenever possible.
 
 When posting a message to the [Gromacs forum](https://gromacs.bioexcel.eu/) related to any Colvars-patched version of GROMACS please always specify "GROMACS modification: **Yes**" and use the [`colvars` tag](https://gromacs.bioexcel.eu/tag/colvars).  Whenver possible please also reference the Colvars version: this is included in the version string that is reported by the patched GROMACS (right after the GROMACS version), for example:
 ```

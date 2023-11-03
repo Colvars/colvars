@@ -6,5 +6,7 @@
 colvars-active           = true
 ; colvars config file
 colvars-configfile       = colvars_sample.dat
+; Colvars seed
+colvars-seed             = 12345789
 </String>
 </ReferenceData>

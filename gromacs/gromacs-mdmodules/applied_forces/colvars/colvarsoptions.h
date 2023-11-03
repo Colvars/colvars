@@ -138,6 +138,9 @@ public:
     //! Return the map of all others colvars input files
     const std::map<std::string, std::string>& colvarsInputFiles() const;
 
+    //! Return the colvars seed
+    int colvarsSeed() const;
+
     /*! \brief Function to set internal paramaters outside the way done
      * through the MDModule notifiers and callbacks.
      * Use exclusively in the test framework.
@@ -150,7 +153,7 @@ public:
      * \param[in] temperature the constant ensemble temperature
      */
     void setParameters(const std::string&   colvarsfile,
-                       t_atoms              topology,
+                       const t_atoms&       topology,
                        ArrayRef<const RVec> coords,
                        PbcType              pbcType,
                        const matrix         boxValues,
@@ -167,6 +170,7 @@ private:
     //! \{
     const std::string c_activeTag_          = "active";
     const std::string c_colvarsFileNameTag_ = "configfile";
+    const std::string c_colvarsSeedTag_     = "seed";
     //! \}
 
 
@@ -185,22 +189,25 @@ private:
     std::string colvarsFileName_ = "colvars.dat";
 
 
+    //! Colvars seed for Langevin integrator
+    int colvarsSeed_ = -1;
+
     //! Content of the colvars config file
-    std::string colvarsConfigString;
+    std::string colvarsConfigString_;
     //! Topology of the system
-    t_atoms gmx_atoms;
+    t_atoms gmxAtoms_;
     //! Coordinates
-    ArrayRef<const RVec> x;
+    ArrayRef<const RVec> x_;
     //! PBC Type
-    PbcType pbc;
+    PbcType pbc_;
     //! Box
-    matrix box;
+    matrix box_;
     //! Vector with colvars atoms coordinates
     std::vector<RVec> colvarsAtomCoords_;
     //! Inputs files saved as strings inside KVT
-    std::map<std::string, std::string> inputFiles;
+    std::map<std::string, std::string> inputFiles_;
 
-    real ensembleTemperature;
+    real ensembleTemperature_;
 
 
     //! Logger instance
@@ -209,7 +216,7 @@ private:
     /*! \brief String containing the prefix for output colvars files
      * default value empty, means will be deduced from *.tpr name during mdrun
      */
-    std::string output_prefix_;
+    std::string outputPrefix_;
 };
 
 } // namespace gmx
