@@ -452,6 +452,9 @@ private:
 
   template <typename IST> IST & read_state_template_(IST &is);
 
+  /// Default input state file; if given, it is read unless the MD engine provides it
+  std::string default_input_state_file_;
+
   /// Internal state buffer, to be read as an unformatted stream
   std::vector<unsigned char> input_state_buffer_;
 

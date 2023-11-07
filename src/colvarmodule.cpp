@@ -407,6 +407,9 @@ int colvarmodule::parse_global_params(std::string const &conf)
   parse->get_keyval(conf, "sourceTclFile", source_Tcl_script);
 #endif
 
+  parse->get_keyval(conf, "defaultInputStateFile", default_input_state_file_,
+                    default_input_state_file_);
+
   return error_code;
 }
 
@@ -1317,7 +1320,13 @@ int colvarmodule::reset()
 
 int colvarmodule::setup_input()
 {
-  if (proxy->input_prefix().size()) {
+  if (proxy->input_prefix().empty() && (!proxy->input_stream_exists("input state string")) &&
+      input_state_buffer_.empty()) {
+    // If no input sources have been defined up to this point, use defaultInputStateFile
+    proxy->set_input_prefix(default_input_state_file_);
+  }
+
+  if (!proxy->input_prefix().empty()) {
 
     // Read state from a file
 
@@ -1378,13 +1387,22 @@ int colvarmodule::setup_input()
     }
     cvm::log(cvm::line_marker);
 
-    // Now that the explicit input file was read, we shall ignore any unformatted buffer
+    // Now that an explicit state file was read, we shall ignore any other restart info
+    if (proxy->input_stream_exists("input state string")) {
+      proxy->delete_input_stream("input state string");
+    }
     input_state_buffer_.clear();
 
     proxy->delete_input_stream(restart_in_name);
   }
 
   if (proxy->input_stream_exists("input state string")) {
+
+    if (!input_state_buffer_.empty()) {
+      return cvm::error("Error: formatted/text and unformatted/binary input state buffers are "
+                        "defined at the same time.\n",
+                        COLVARS_BUG_ERROR);
+    }
 
     cvm::log(cvm::line_marker);
     cvm::log("Loading state from formatted string.\n");
@@ -1394,7 +1412,7 @@ int colvarmodule::setup_input()
     proxy->delete_input_stream("input state string");
   }
 
-  if (input_state_buffer_.size() > 0) {
+  if (!input_state_buffer_.empty()) {
     cvm::log(cvm::line_marker);
     cvm::log("Loading state from unformatted memory.\n");
     cvm::memory_stream ms(input_state_buffer_.size(), input_state_buffer_.data());
@@ -1404,7 +1422,9 @@ int colvarmodule::setup_input()
     input_state_buffer_.clear();
   }
 
-  return cvm::get_error();
+  default_input_state_file_.clear();
+
+  return get_error();
 }
 
 
