@@ -1046,7 +1046,7 @@ While not strictly required, we recommend that as soon as a usable checkpoint fi
 
 \cvsubsec{Output files}{sec:colvars_output}
 
-If the output prefix \outputName{} is defined, the following output files are written during a simulation run:
+If the output prefix \outputName{} is defined\cvgromacsonly{ (in GROMACS, this is defined by the value of the \texttt{-e} flag of \texttt{mdrun})}, the following output files are written during a simulation run:
 
 \begin{itemize}
 
@@ -1054,7 +1054,7 @@ If the output prefix \outputName{} is defined, the following output files are wr
 This file is in plain text format by default\cvnamdonly{, regardless of the value of \texttt{binaryOutput} of the NAMD coordinate and velocity files}, or in binary format if the environment variable \texttt{COLVARS\_BINARY\_RESTART} is set to a non-zero integer.
 The state file is used to continue a simulation, and is required to restart a simulation unless the engine supports embedding information into their checkpoint file (as GROMACS or LAMMPS currently do).
 
-\item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
+\item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero and \restartName{} is defined\cvgromacsonly{ (this is \emph{not} the case in GROMACS)}, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
   The name of this file is \restartName\texttt{.colvars.state}.
 
 \item If the parameter \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} is greater than 0 (default value: 100 steps), a \emph{trajectory file}, named \outputName\texttt{.colvars.traj}, is written during the simulation.  Unlike the state file, this file is not needed to restart a simulation, but can be used for post-processing and analysis.  The format of this file is described in sec.~\ref{sec:colvars_traj_format}.
