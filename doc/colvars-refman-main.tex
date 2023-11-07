@@ -490,7 +490,7 @@ Other optional keywords for \texttt{fix colvars} are:
     string}{%
     If a value is provided, it is interpreted as either the name of the input state file, or as the prefix of the file named \emph{input}\texttt{.colvars.state}.
     This file contains information needed to continue a previous collective variables-based calculation, including the number of the last computed step (useful for time-dependent biases).
-    The same information is also stored in the binary restart files written by LAMMPS, so this option is not needed when continuing a calculation from a LAMMPS restart.
+    The same information is also stored in the binary restart files written by LAMMPS, so this option is generally not needed when the \texttt{read\_restart} LAMMPS command is used.
   }
 
 \item %
@@ -966,7 +966,7 @@ The following keywords are available in the global context of the Colvars config
 
 \cvsubsec{Input state file}{sec:colvars_input}
 
-Several of the sampling methods implemented in Colvars are time- or history-dependent, i.e.\ they work by accumulating data as a simulation progresses, and use these data to determine their biasing forces.  If the simulation engine uses a checkpoint or restart file (as GROMACS and LAMMPS do), any data needed by Colvars are embedded inti that file.  Otherwise, a dedicated \emph{state file} can be loaded into Colvars directly.
+Several of the sampling methods implemented in Colvars are time- or history-dependent, i.e.\ they work by accumulating data as a simulation progresses, and use these data to determine their biasing forces.  If the simulation engine uses a checkpoint or restart file (as GROMACS and LAMMPS do), any data needed by Colvars are embedded into that file.  Otherwise, a dedicated \emph{state file} can be loaded into Colvars directly.
 
 When a dedicated Colvars state file is used, it may be in either one of two formats:
 \begin{itemize}
@@ -984,7 +984,10 @@ The step number read from a state file overrides any value that \MDENGINE{} prov
 This means that the step number used internally by Colvars may not always match the step number reported by \MDENGINE{}.
 \cvnamdonly{This is particularly inmportant in NAMD, which represents step numbers as a 32-bit integers that overflows after $\sim$ 2 billion steps, effectively negating the usefulness of the \texttt{firstTimeStep} keyword.  However, step numbers are implemented correctly in the Colvars state file.}
 
-% \cvgromacsonly{\cvsubsubsec{Restarting in GROMACS.}{} TODO }
+\cvgromacsonly{\cvsubsubsec{Restarting in GROMACS.}{}
+  Beginning with GROMACS 2024, all information necessary to restart Colvars is included in the checkpoint ``\texttt{.cpt}'' file.
+  No special provisions are therefore needed compared to a GROMACS simulation without Colvars enabled.
+}
 
 \cvlammpsonly{\cvsubsubsec{Restarting in LAMMPS.}{}
 For continuing a Colvars-based simulation, the recommended method is using the standard LAMMPS \texttt{read\_restart} command, which reads the Colvars state data from the LAMMPS restart file (in binary format).
@@ -1037,13 +1040,10 @@ The state file is used to continue a simulation, and is required to restart a si
 
 \item If the parameter \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} is greater than 0 (default value: 100 steps), a \emph{trajectory file}, named \outputName\texttt{.colvars.traj}, is written during the simulation.  Unlike the state file, this file is not needed to restart a simulation, but can be used for post-processing and analysis.  The format of this file is described in sec.~\ref{sec:colvars_traj_format}.
 
-\item Additionally, certain features, when enabled, can emit output files with a specific purpose: for example, potentials of mean force can be written to file to be analyzed or plotted.  These files are described in the respective sections, but as a general rule they all use names beginning with the \outputName prefix.
+\item Additionally, certain features, when enabled, can emit output files with a specific purpose: for example, potentials of mean force (PMFs) can be written to file to be analyzed or plotted.  These files are described in the respective sections, but as a general rule they all use names beginning with the \outputName{} prefix.
+Like the trajectory file, these additional files are needed only for analyzing a simulation's results, but not to continue it.
 
 \end{itemize}
-
-Other output files may also be written by specific methods, e.g.{} the ABF or metadynamics methods (\ref{sec:colvarbias_abf}, \ref{sec:colvarbias_meta}).
-Like the trajectory file, they are needed only for analyzing, not continuing a simulation.
-All such files' names also begin with the prefix \outputName.
 
 \cvnamdonly{Lastly, the total energy of all biases or restraints applied to the colvars appears under the NAMD standard output, under the MISC column.}
 
