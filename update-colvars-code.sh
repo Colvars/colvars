@@ -670,7 +670,9 @@ then
   echo ""
 
   # Apply patch for Gromacs files
-  patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules.patch
+  if [ -f ${source}/gromacs/gromacs-mdmodules.patch ] ; then
+    patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules.patch
+  fi
   ret_val=$?
   if [ $ret_val -ne 0 ]
   then
