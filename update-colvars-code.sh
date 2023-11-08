@@ -637,7 +637,7 @@ then
   echo ""
 
   # Copy CMake files
-  for src in ${source}/gromacs/cmake/gmxManage{Colvars,Lepton}.cmake
+  for src in ${source}/gromacs/gromacs-mdmodules/cmake/*.cmake
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/cmake/${tgt}"
