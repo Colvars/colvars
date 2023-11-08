@@ -128,7 +128,8 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
         // Citation Reporter
         cvm::log(std::string("\n") + colvars->feature_report(0) + std::string("\n"));
 
-        colvars->set_initial_step(static_cast<cvm::step_number>(0L));
+        // TODO get initial step number from MDModules
+        // colvars->set_initial_step(static_cast<cvm::step_number>(0L));
     }
 }
 
