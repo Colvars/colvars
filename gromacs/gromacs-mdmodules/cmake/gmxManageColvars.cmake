@@ -40,18 +40,23 @@ mark_as_advanced(GMX_USE_COLVARS)
 
 function(gmx_manage_colvars)
     if(GMX_USE_COLVARS STREQUAL "INTERNAL")
-        file(GLOB COLVARS_SOURCES ${PROJECT_SOURCE_DIR}/src/external/colvars/*.cpp)
-        add_library(colvars OBJECT ${COLVARS_SOURCES})
+        # Create an object library for the colvars sources
+        set(COLVARS_DIR "${CMAKE_SOURCE_DIR}/src/external/colvars")
+        file(GLOB COLVARS_SOURCES ${COLVARS_DIR}/*.cpp)
+        add_library(colvars_objlib OBJECT ${COLVARS_SOURCES})
         # Set correctly the value of __cplusplus, which MSVC doesn't do by default
-        target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
-        set(HAVE_COLVARS 1 CACHE INTERNAL "Is Colvars available?")
-    else()
-        set(HAVE_COLVARS 0 CACHE INTERNAL "Is Colvars available?")
-    endif()
-endfunction()
+        target_compile_options(colvars_objlib PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
+        # Ensure that colvars_objlib can be used in both STATIC and SHARED libraries.
+        set_target_properties(colvars_objlib PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-function(gmx_include_colvars_headers)
-    if(GMX_USE_COLVARS STREQUAL "INTERNAL")
-        target_include_directories(libgromacs PRIVATE ${PROJECT_SOURCE_DIR}/src/external/colvars)
+        # Create an INTERFACE library for colvars with the object library as a dependency
+        add_library(colvars INTERFACE)
+        target_sources(colvars INTERFACE $<TARGET_OBJECTS:colvars_objlib>)
+        target_include_directories(colvars SYSTEM INTERFACE $<BUILD_INTERFACE:${COLVARS_DIR}>)
+
+    else()
+        # Create a dummy link target so the calling code doesn't need to know
+        # whether colvars support is being compiled.
+        add_library(colvars INTERFACE)
     endif()
 endfunction()
