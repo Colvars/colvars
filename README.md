@@ -100,25 +100,26 @@ and run the provided `update-colvars-code.sh` script against the unpacked source
 and recompile them.
 
 The `update-colvars-code.sh` script support patching the latest development version of each program:
+- [GROMACS](https://github.com/gromacs/gromacs);
 - [LAMMPS](https://github.com/lammps/lammps);
 - [NAMD](https://gitlab.com/tcbgUIUC/namd);
 - [VMD and its plugins](https://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html); note that starting from Colvars version 2023-06-23, some updates are needed to the VMD build script (see [here](https://colvars.github.io/README-c++11.html) for details).
-
-For [GROMACS](http://www.gromacs.org/), support for specific release series is currently maintained; pre-patched versions of specific releases are provided [below](#gromacs-colvars-releases).
 
 All of the above MD engine versions are automatically tested as part of GitHub Actions [workflows](https://github.com/Colvars/colvars/actions?query=branch%3Amaster).
 
 ## GROMACS-Colvars releases
 
 Colvars can interface to GROMACS in two ways, depending on the version of GROMACS:
-1. Using a customized `mdrun` command line (GROMACS releases up to 2023); source code is available as patched versions of existing GROMACS releases [here](https://github.com/Colvars/gromacs/tags).
-2. Using a standard `mdrun` command line; source code is available as a GROMACS development branch [here](https://gitlab.com/gromacs/gromacs/-/merge_requests/3671).
+1. Using a customized `mdrun` command line (GROMACS releases up to 2023); source code is available as patched versions of past GROMACS releases [here](https://github.com/Colvars/gromacs/tags).
+2. Using a standard `mdrun` command line (supported in the 2024-beta release); source code is available directly from the [GROMACS repository](https://github.com/gromacs/gromacs).
 
-In either case, the installation procedure is identical to that of standard GROMACS.
+The standard GROMACS installation procedure is supported in either case.
 
-The Colvars [patching procedure](#updating-to-the-latest-version) can be used to add or update the version of Colvars to GROMACS.  This procedure is generally compatible with all GROMACS versions from the same release years as those listed above.  Please use the latest revision of each release series whenever possible.
+To update the version of Colvars to GROMACS in a given release, the Colvars [patching procedure](#updating-to-the-latest-version) can be used.  This procedure is generally compatible with all GROMACS versions from the same release years as those listed above.  Please use the latest revision of each release series whenever possible.
 
-When posting a message to the [Gromacs forum](https://gromacs.bioexcel.eu/) related to any Colvars-patched version of GROMACS please always specify "GROMACS modification: **Yes**" and use the [`colvars` tag](https://gromacs.bioexcel.eu/tag/colvars).  Whenver possible please also reference the Colvars version: this is included in the version string that is reported by the patched GROMACS (right after the GROMACS version), for example:
+When posting a message to the [Gromacs forum](https://gromacs.bioexcel.eu/) please use the [`colvars` tag](https://gromacs.bioexcel.eu/tag/colvars) and please salso specify "GROMACS modification: **Yes**" unless you are using a standard GROMACS.
+
+If using a patched release, please also reference the Colvars version: this is included in the version string that is reported by the patched GROMACS (right after the GROMACS version), for example:
 ```
    :-) GROMACS - gmx_d, 2021.5-Colvars-2022-02-20-dev (double precision) (-:
 ```
