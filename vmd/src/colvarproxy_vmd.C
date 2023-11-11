@@ -77,6 +77,7 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
     msgColvars("colvars: ")
 #endif
 {
+  engine_name_ = "VMD";
   version_int = get_version_from_string(COLVARPROXY_VERSION);
   b_simulation_running = false;
 

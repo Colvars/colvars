@@ -35,6 +35,8 @@ colvarproxy_lammps::colvarproxy_lammps(LAMMPS_NS::LAMMPS *lmp)
 {
   _random = nullptr;
 
+  engine_name_ = "LAMMPS";
+
   first_timestep = true;
   previous_step = -1;
   do_exit = false;
