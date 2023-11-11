@@ -407,8 +407,10 @@ int colvarmodule::parse_global_params(std::string const &conf)
   parse->get_keyval(conf, "sourceTclFile", source_Tcl_script);
 #endif
 
-  parse->get_keyval(conf, "defaultInputStateFile", default_input_state_file_,
-                    default_input_state_file_);
+  if (proxy->engine_name() == "GROMACS" && proxy->version_number() >= 20231003) {
+    parse->get_keyval(conf, "defaultInputStateFile", default_input_state_file_,
+                      default_input_state_file_);
+  }
 
   return error_code;
 }
