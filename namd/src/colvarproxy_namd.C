@@ -42,6 +42,8 @@
 
 colvarproxy_namd::colvarproxy_namd()
 {
+  engine_name_ = "NAMD";
+
   version_int = get_version_from_string(COLVARPROXY_VERSION);
 
   first_timestep = true;

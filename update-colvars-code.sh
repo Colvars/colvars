@@ -654,6 +654,7 @@ then
     mkdir ${target_folder}
     mkdir -p ${target_folder}/tests/refdata
   fi
+  condcopy gromacs/src/colvarproxy_gromacs_version.h "${target_folder}/colvarproxy_gromacs_version.h"
   for src in ${source}/gromacs/gromacs-mdmodules/applied_forces/colvars/*.* ; do
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/${tgt}"
