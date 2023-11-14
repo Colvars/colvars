@@ -1016,18 +1016,17 @@ Both versions support loading Colvars state files in either format (binary or te
 
 In some cases, it is useful to modify the configuration of variables or biases between consecutive runs, for example by adding or removing a restraint.
 Some special provisions will happen in that case.
-When a state file is loaded, no information is available from in regarding the any newly added variable or bias, which will remain uninitialized until the first compute step.
-Conversely, any information that the state file contains about variables or biases that are no longer defined will be silently ignored.
-Because these checks are performed based only on the \emph{names} of variables and biases, it is your responsibility to ensure that these names have \emph{consistent definitions between runs.}
+When a state file is loaded, no information is available about any newly added variable or bias, which will thus remain uninitialized until the first compute step.
+Conversely, any information that the state file may contain about variables or biases that are no longer defined will be silently ignored.
+Please note that these checks are performed based only on the \emph{names} of variables and biases: it is your responsibility to ensure that these names have \emph{consistent definitions between runs.}
 
-The flexibility just described carries some limitations: namely, it is only supported when reading \emph{text-format} state files.
+The flexibility just described carries some limitations: namely, it is only supported when reading \emph{text-format} Colvars state files.
 Instead, restarting from binary files\cvlammpsonly{ (such as the LAMMPS restart file)}\cvgromacsonly{ (such as the GROMACS checkpoint file)} after a configuration change will trigger an error.
 It is also important to remind that when switching to a different build of \MDENGINE, the binary format may change slightly, even if the release version is the same.
 
-To work around the potential issues just described, a text-format Colvars state file should be used.
-\ifdefined\cvvmdornamd{This is the default in \MDENGINE{} unless the ``\texttt{COLVARS\_BINARY\_RESTART}'' is set to 1, and this information is only provided for troubleshooting.}\fi\cvlammpsonly{This can be achieved by providing an explicit \texttt{input} keyword when initializing the Colvars fix (see \ref{sec:colvars_mdengine_parameters}), which will instruct Colvars to use the given filename instead of the LAMMPS restart file.
-  Furthermore, the \texttt{fix\_modify} scripting command allows to load a Colvars file after initialization (\ref{sec:cv_command_loadsave}).}\cvgromacsonly{In GROMACS, this step would normally entail generating a new TPR file: however, there is no provision to embed a text-format Colvars state file in a TPR file.
-  For this specific use case, the following Colvars option may be used:
+To work around the potential issues just described, a text-format Colvars state file should be loaded.
+\ifdefined\cvvmdornamd{This is the default in \MDENGINE{} unless the ``\texttt{COLVARS\_BINARY\_RESTART}'' is set to 1, and this information is only provided here for troubleshooting purposes.}\fi\cvlammpsonly{This can be achieved by providing an explicit \texttt{input} keyword when initializing the Colvars fix (see \ref{sec:colvars_mdengine_parameters}), which will instruct Colvars to use the given filename, instead of the LAMMPS restart file.
+  Furthermore, the \texttt{fix\_modify} scripting command allows to load a Colvars file after initialization (\ref{sec:cv_command_loadsave}).}\cvgromacsonly{Loading such state file requires an exception to the standard behavior in GROMACS (i.e.\ loading a checkpoint file): this exception is supported by the following Colvars configuration:
 \begin{itemize}
 \item %
   \labelkey{Colvars-global|defaultInputStateFile}
@@ -1035,12 +1034,12 @@ To work around the potential issues just described, a text-format Colvars state 
     global}{%
     Default input state file, if not provided by \MDENGINE}{%
     UNIX filename}{%
-    Define a state file that will be loaded by default, unless \MDENGINE{} provides restarting information through the checkpoint.
+    Define a state file that will be loaded by default, unless \MDENGINE{} provides restarting information for Colvars through the checkpoint file.
   }
 \end{itemize}
-When GROMACS is run using a TPR file that contains \texttt{defaultInputStateFile}, but no checkpoint file is provided, Colvars will attempt to load its state formation from the given file.
-Later, when that simulation is continued using a checkpoint file, Colvars will use that instead.
-While not strictly required, we recommend that as soon as a usable checkpoint file becomes available, a \emph{new TPR file} is produced with \texttt{defaultInputStateFile} \emph{removed}.
+When a Colvars configuration featuring \texttt{defaultInputStateFile} is processed into a TPR file, and a GROMACS simulation is started from this TPR file but without providing a checkpoint, Colvars will load its state from the file named by \texttt{defaultInputStateFile}.
+Later, when that same simulation is continued by providing a checkpoint file to GROMACS, Colvars will ignore \texttt{defaultInputStateFile} and will read its data from the checkpoint file.
+For the sake of clarity, we recommend that as soon as a suitable GROMACS checkpoint is available, the \texttt{defaultInputStateFile} is removed \emph{removed}, and a new TPR file is produced accordingly.
 }
 
 
