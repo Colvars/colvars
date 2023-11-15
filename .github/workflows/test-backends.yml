@@ -82,7 +82,7 @@ jobs:
       container_name: CentOS9-devel
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
-      rpath_exe: install/bin/gmx_d
+      rpath_exe: install/bin/gmx_mpi_d
 
   gromacs-2023:
     name: GROMACS (release-2023)
@@ -94,7 +94,7 @@ jobs:
       container_name: CentOS9-devel
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
-      rpath_exe: install/bin/gmx_d
+      rpath_exe: install/bin/gmx_mpi_d
 
   gromacs-main:
     name: GROMACS (main)
@@ -106,4 +106,4 @@ jobs:
       container_name: CentOS9-devel
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
-      rpath_exe: install/bin/gmx_d
+      rpath_exe: install/bin/gmx_mpi_d
