@@ -132,7 +132,7 @@ write_version_branch() {
     local branch=${4}
     local version_str=$(${function_name})
     version_str=${version_str%%_*}
-    write_version_string ${macro} ${file} "${version_str}_${branch}" 
+    write_version_string ${macro} ${file} "${version_str}_${branch}"
 }
 
 
@@ -143,7 +143,7 @@ update_version_string() {
     local macro=${4}
     local file=${5}
     local last_commit=${6}
-    
+
     local branch=$(get_branch_name)
     local version_str=$(date +'%Y-%m-%d')
 
@@ -156,17 +156,18 @@ update_version_string() {
             last_commit=$(get_last_master_commit "${grep_pattern}")
         fi
     fi
-    
+
     version_str=$(${function_name} ${last_commit})
     # Bump up version when files were modified
     if git diff --name-only ${last_commit} . | \
         grep -q "${grep_pattern}" ; then
         version_str=$(date +'%Y-%m-%d')
     fi
-    echo "Setting ${name} version string to ${version_str}"
-    write_version_string ${macro} ${file} ${version_str} && \
-        git add ${file} && \
-        git add doc/cv_version.tex
+    write_version_string ${macro} ${file} ${version_str}
+    if [ $? == 0 ] && [ -n "$(git diff ${file})" ] ; then
+        echo "Setting ${name} version string to ${version_str}"
+        git add ${file} && git add doc/cv_version.tex
+    fi
 }
 
 get_all_versions() {
