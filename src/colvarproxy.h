@@ -602,6 +602,11 @@ public:
   /// Destructor
   ~colvarproxy() override;
 
+  inline std::string const &engine_name() const
+  {
+    return engine_name_;
+  }
+
   bool io_available() override;
 
   /// Request deallocation of the module (currently only implemented by VMD)
@@ -714,7 +719,10 @@ protected:
   /// Track which features have been acknowledged during the last run
   size_t features_hash;
 
-private:
+protected:
+
+  /// Name of the simulation engine that the derived proxy object supports
+  std::string engine_name_ = "standalone";
 
   /// Queue of config strings or files to be fed to the module
   void *config_queue_;

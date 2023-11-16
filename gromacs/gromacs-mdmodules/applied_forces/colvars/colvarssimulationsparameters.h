@@ -120,7 +120,7 @@ private:
     //! The simulation time step
     double simulationTimeStep_ = 1;
     //! The topology
-    t_atoms gmx_atoms;
+    t_atoms gmxAtoms_;
     //! The communicator
     const t_commrec* cr_;
     //! MDLogger for notifications during mdrun

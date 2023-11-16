@@ -10,6 +10,9 @@
 
 \usepackage[english]{babel}
 
+\usepackage{catchfile}
+\CatchFileEdef{\cvreleaselabel}{|kpsewhich -var-value=COLVARS_RELEASE}{\endlinechar=-1}
+
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathrsfs}
@@ -141,24 +144,29 @@ cv.#1(#2)
 
         \noindent\textsf{Updated versions of this manual:
           \ifdefined\HCode
-          [\href{https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html}{GROMACS}]
+          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-gromacs.html}{GROMACS}]
           \else
-          [\href{https://colvars.github.io/pdf/colvars-refman-gromacs.pdf}{GROMACS}]
+          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-gromacs.pdf}{GROMACS}]
           \fi
           \ifdefined\HCode
-          [\href{https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html}{LAMMPS}]
+          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-lammps.html}{LAMMPS}]
           \else
-          [\href{https://colvars.github.io/pdf/colvars-refman-lammps.pdf}{LAMMPS}]
+          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-lammps.pdf}{LAMMPS}]
           \fi
           \ifdefined\HCode
-          [\href{https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html}{NAMD}]
+          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-namd.html}{NAMD}]
           \else
-          [\href{https://colvars.github.io/pdf/colvars-refman-namd.pdf}{NAMD}]
+          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-namd.pdf}{NAMD}]
           \fi
           \ifdefined\HCode
-          [\href{https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html}{VMD}]
+          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-tinkerhp.html}{Tinker-HP}]
           \else
-          [\href{https://colvars.github.io/pdf/colvars-refman-vmd.pdf}{VMD}]
+          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-tinkerhp.pdf}{Tinker-HP}]
+          \fi
+          \ifdefined\HCode
+          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-vmd.html}{VMD}]
+          \else
+          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-vmd.pdf}{VMD}]
           \fi
         }
 
@@ -171,13 +179,13 @@ cv.#1(#2)
   \else
   \includegraphics[width=0.9\textwidth]{cover.jpg}\\
   \fi
-  \textsf{\large Alejandro Bernardin, Haochuan Chen, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Joshua V.{} Vermaas, Andrew D.{} White}
+  \textsf{\large Alejandro Bernardin, Haochuan Chen, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Hubert Santuz, Joshua V.{} Vermaas, Andrew D.{} White}
 
 \ifdefined\HCode
-\noindent{}(\href{https://colvars.github.io/pdf/colvars-refman-\mdengine.pdf}{PDF version})
+\noindent{}(\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-\mdengine.pdf}{PDF version})
 \else
 \par
-\noindent{}(\href{https://colvars.github.io/colvars-refman-\mdengine/colvars-refman-\mdengine.html}{HTML version})
+\noindent{}(\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-\mdengine.html}{HTML version})
 \fi
 
 
@@ -290,14 +298,15 @@ cv.#1(#2)
   \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
 }
 
-\newcommand{\cvurl}[1]{\url{#1}}
-
 \input{colvars-engine-flags}
 
 \input{colvars-refman-main}
 
+\ifdefined\HCode
+\else
 \newpage
 \printindex
+\fi
 
 \newpage
 %\addtocontents{toc}{\contentsline {section}{References}{\thepage}}

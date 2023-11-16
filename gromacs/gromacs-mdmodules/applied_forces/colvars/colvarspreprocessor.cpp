@@ -51,15 +51,23 @@ ColvarsPreProcessor::ColvarsPreProcessor(const std::string&   colvarsConfigStrin
                                          t_atoms              atoms,
                                          PbcType              pbcType,
                                          const MDLogger*      logger,
+                                         real                 ensembleTemperature,
+                                         int                  seed,
                                          const matrix         box,
-                                         ArrayRef<const RVec> x,
-                                         real                 ensTemp) :
-    ColvarProxyGromacs(colvarsConfigString, atoms, pbcType, logger, true, std::map<std::string, std::string>(), ensTemp),
+                                         ArrayRef<const RVec> x) :
+    ColvarProxyGromacs(colvarsConfigString,
+                       atoms,
+                       pbcType,
+                       logger,
+                       true,
+                       std::map<std::string, std::string>(),
+                       ensembleTemperature,
+                       seed),
     x_(x)
 {
 
     // Initialize t_pbc struct
-    set_pbc(&gmx_pbc, pbcType, box);
+    set_pbc(&gmxPbc_, pbcType, box);
 
     cvm::log(cvm::line_marker);
     cvm::log("End colvars Initialization.\n\n");
@@ -81,12 +89,15 @@ bool ColvarsPreProcessor::inputStreamsToKVT(KeyValueTreeObjectBuilder treeBuilde
 {
 
     // Save full copy of the content of the input streams (aka input files) into the KVT.
-    for (const auto& input_name : list_input_stream_names())
+    for (const auto& inputName : list_input_stream_names())
     {
-        std::istream&      stream = input_stream(input_name);
+        std::istream&      stream = input_stream(inputName);
         std::ostringstream os;
         os << stream.rdbuf();
-        treeBuilder.addValue<std::string>(tag + "-" + input_name, os.str());
+        std::string key = tag;
+        key += "-";
+        key += inputName;
+        treeBuilder.addValue<std::string>(key, os.str());
     }
     return true;
 }

@@ -646,7 +646,7 @@ then
   echo ""
 
   # Copy CMake files
-  for src in ${source}/gromacs/cmake/gmxManage{Colvars,Lepton}.cmake
+  for src in ${source}/gromacs/gromacs-mdmodules/cmake/*.cmake
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/cmake/${tgt}"
@@ -663,6 +663,7 @@ then
     mkdir ${target_folder}
     mkdir -p ${target_folder}/tests/refdata
   fi
+  condcopy gromacs/src/colvarproxy_gromacs_version.h "${target_folder}/colvarproxy_gromacs_version.h"
   for src in ${source}/gromacs/gromacs-mdmodules/applied_forces/colvars/*.* ; do
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/${tgt}"
@@ -679,7 +680,9 @@ then
   echo ""
 
   # Apply patch for Gromacs files
-  patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules.patch
+  if [ -f ${source}/gromacs/gromacs-mdmodules.patch ] ; then
+    patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules.patch
+  fi
   ret_val=$?
   if [ $ret_val -ne 0 ]
   then

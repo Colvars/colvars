@@ -105,14 +105,12 @@ public:
         }
 
 
-        bool       fullTopology;
-        gmx_mtop_t mtop;
-        rvec*      coords;
+        bool fullTopology;
+
         // Load topology
         readConfAndTopology(tprName.c_str(), &fullTopology, &mtop, &pbcType_, &coords, nullptr, box_);
 
-        x_     = gmx::constArrayRefFromArray(reinterpret_cast<gmx::RVec*>(coords), atoms_.nr);
-        atoms_ = gmx_mtop_global_atoms(mtop);
+        x_ = gmx::constArrayRefFromArray(reinterpret_cast<gmx::RVec*>(coords), mtop.natoms);
     }
 
     void ColvarsConfigStringFromFile(const std::string& filename)
@@ -154,6 +152,14 @@ public:
         colvarsConfigString_ = TextReader::readFileToString(colvarsInputFile);
     }
 
+    ~ColvarsForceProviderTest() override
+    {
+        if (coords)
+        {
+            sfree(coords);
+        }
+    }
+
 protected:
     std::string                        colvarsConfigString_;
     std::vector<RVec>                  atomCoords_;
@@ -167,9 +173,12 @@ protected:
 
     double      simulationTimeStep_ = 0.002;
     real        temperature_        = 300;
+    int         seed_               = 123456;
     std::string prefixOutput_;
 
+    rvec*                coords = nullptr;
     ArrayRef<const RVec> x_;
+    gmx_mtop_t           mtop;
     matrix               box_;
 };
 
@@ -177,40 +186,43 @@ TEST_F(ColvarsForceProviderTest, CanConstructOrNot)
 {
 
     EXPECT_NO_THROW(ColvarsForceProvider forceProvider(colvarsConfigString_,
-                                                       &atomSetManager_,
-                                                       pbcType_,
-                                                       simulationTimeStep_,
                                                        atoms_,
-                                                       &cr_,
+                                                       pbcType_,
                                                        &logger_,
+                                                       KVTInputs,
+                                                       temperature_,
+                                                       seed_,
+                                                       &atomSetManager_,
+                                                       &cr_,
+                                                       simulationTimeStep_,
                                                        atomCoords_,
                                                        prefixOutput_,
-                                                       KVTInputs,
-                                                       colvarsState_,
-                                                       temperature_));
+                                                       colvarsState_));
 }
 
 TEST_F(ColvarsForceProviderTest, SimpleInputs)
 {
     PrepareInputForceProvider("4water");
     ColvarsConfigStringFromFile("colvars_sample.dat");
+    atoms_ = gmx_mtop_global_atoms(mtop);
 
     // Indexes taken from the Colvars Config file.
     atomCoords_ = { RVec(x_[0]), RVec(x_[4]) };
 
 
     ColvarsForceProvider forceProvider(colvarsConfigString_,
-                                       &atomSetManager_,
-                                       pbcType_,
-                                       simulationTimeStep_,
                                        atoms_,
-                                       &cr_,
+                                       pbcType_,
                                        &logger_,
+                                       KVTInputs,
+                                       temperature_,
+                                       seed_,
+                                       &atomSetManager_,
+                                       &cr_,
+                                       simulationTimeStep_,
                                        atomCoords_,
                                        prefixOutput_,
-                                       KVTInputs,
-                                       colvarsState_,
-                                       temperature_);
+                                       colvarsState_);
 
 
     // Re-use the PreProcessorTest since the ForceProvider recalls colvars initilization and the input are identicals.
@@ -221,19 +233,24 @@ TEST_F(ColvarsForceProviderTest, SimpleInputs)
     checker.setDefaultTolerance(gmx::test::absoluteTolerance(0.001));
     checker.checkVector(atomCoords_[1], "Coords Atom 4");
 
-    const auto* const atom_ids = forceProvider.get_atom_ids();
-    checker.checkSequence(atom_ids->begin(), atom_ids->end(), "Index of colvars atoms");
+    const auto* const atomIds = forceProvider.get_atom_ids();
+    checker.checkSequence(atomIds->begin(), atomIds->end(), "Index of colvars atoms");
 
-    const auto* const atom_masses = forceProvider.get_atom_masses();
-    checker.checkSequence(atom_masses->begin(), atom_masses->end(), "Masses of colvars atoms");
+    const auto* const atomMasses = forceProvider.get_atom_masses();
+    checker.checkSequence(atomMasses->begin(), atomMasses->end(), "Masses of colvars atoms");
 
-    const auto* const atom_charges = forceProvider.get_atom_charges();
-    checker.checkSequence(atom_charges->begin(), atom_charges->end(), "Charges of colvars atoms");
+    const auto* const atomCharges = forceProvider.get_atom_charges();
+    checker.checkSequence(atomCharges->begin(), atomCharges->end(), "Charges of colvars atoms");
+
+    done_atom(&atoms_);
 }
 
+#if defined(__has_feature)
+#    if !__has_feature(address_sanitizer)
 TEST_F(ColvarsForceProviderTest, WrongColvarsInput)
 {
     PrepareInputForceProvider("4water");
+    atoms_ = gmx_mtop_global_atoms(mtop);
 
     // atom 100 does not exist
     colvarsConfigString_ = R"(units gromacs
@@ -255,18 +272,22 @@ TEST_F(ColvarsForceProviderTest, WrongColvarsInput)
               })";
 
     EXPECT_ANY_THROW(ColvarsForceProvider forceProvider(colvarsConfigString_,
-                                                        &atomSetManager_,
-                                                        pbcType_,
-                                                        simulationTimeStep_,
                                                         atoms_,
-                                                        &cr_,
+                                                        pbcType_,
                                                         &logger_,
+                                                        KVTInputs,
+                                                        temperature_,
+                                                        seed_,
+                                                        &atomSetManager_,
+                                                        &cr_,
+                                                        simulationTimeStep_,
                                                         atomCoords_,
                                                         prefixOutput_,
-                                                        KVTInputs,
-                                                        colvarsState_,
-                                                        temperature_));
+                                                        colvarsState_));
+    done_atom(&atoms_);
 }
+#    endif
+#endif
 
 TEST_F(ColvarsForceProviderTest, CalculateForces4water)
 {
@@ -275,6 +296,7 @@ TEST_F(ColvarsForceProviderTest, CalculateForces4water)
 
     PrepareInputForceProvider("4water");
     ColvarsConfigStringFromFile("colvars_sample.dat");
+    atoms_ = gmx_mtop_global_atoms(mtop);
 
     // Indexes taken from the Colvars Config file.
     atomCoords_ = { RVec(x_[0]), RVec(x_[4]) };
@@ -289,23 +311,26 @@ TEST_F(ColvarsForceProviderTest, CalculateForces4water)
     ForceProviderOutput forceProviderOutput(&forceWithVirial, &enerdDummy);
 
     ColvarsForceProvider forceProvider(colvarsConfigString_,
-                                       &atomSetManager_,
-                                       pbcType_,
-                                       simulationTimeStep_,
                                        atoms_,
-                                       &cr_,
+                                       pbcType_,
                                        &logger_,
+                                       KVTInputs,
+                                       temperature_,
+                                       seed_,
+                                       &atomSetManager_,
+                                       &cr_,
+                                       simulationTimeStep_,
                                        atomCoords_,
                                        prefixOutput_,
-                                       KVTInputs,
-                                       colvarsState_,
-                                       temperature_);
+                                       colvarsState_);
 
     forceProvider.calculateForces(forceProviderInput, &forceProviderOutput);
 
-    checker.setDefaultTolerance(gmx::test::defaultFloatTolerance());
-    checker.checkDouble(enerdDummy.term[F_COM_PULL], "Bias Energy");
+    checker.setDefaultTolerance(gmx::test::relativeToleranceAsFloatingPoint(100.0, 5e-5));
+    checker.checkReal(enerdDummy.term[F_COM_PULL], "Bias Energy");
     checker.checkSequence(forces.begin(), forces.end(), "Forces");
+
+    done_atom(&atoms_);
 }
 
 TEST_F(ColvarsForceProviderTest, CalculateForcesAlanine)
@@ -315,6 +340,7 @@ TEST_F(ColvarsForceProviderTest, CalculateForcesAlanine)
 
     PrepareInputForceProvider("ala");
     ColvarsConfigStringFromFile("colvars_sample_alanine.dat");
+    atoms_ = gmx_mtop_global_atoms(mtop);
 
     // Indexes taken from the Colvars Config file.
     atomCoords_ = { RVec(x_[0]), RVec(x_[4]), RVec(x_[10]), RVec(x_[11]) };
@@ -329,23 +355,26 @@ TEST_F(ColvarsForceProviderTest, CalculateForcesAlanine)
     ForceProviderOutput forceProviderOutput(&forceWithVirial, &enerdDummy);
 
     ColvarsForceProvider forceProvider(colvarsConfigString_,
-                                       &atomSetManager_,
-                                       pbcType_,
-                                       simulationTimeStep_,
                                        atoms_,
-                                       &cr_,
+                                       pbcType_,
                                        &logger_,
+                                       KVTInputs,
+                                       temperature_,
+                                       seed_,
+                                       &atomSetManager_,
+                                       &cr_,
+                                       simulationTimeStep_,
                                        atomCoords_,
                                        prefixOutput_,
-                                       KVTInputs,
-                                       colvarsState_,
-                                       temperature_);
+                                       colvarsState_);
 
     forceProvider.calculateForces(forceProviderInput, &forceProviderOutput);
 
-    checker.setDefaultTolerance(gmx::test::defaultFloatTolerance());
-    checker.checkDouble(enerdDummy.term[F_COM_PULL], "Bias Energy");
+    checker.setDefaultTolerance(gmx::test::relativeToleranceAsFloatingPoint(10.0, 5e-5));
+    checker.checkReal(enerdDummy.term[F_COM_PULL], "Bias Energy");
     checker.checkSequence(forces.begin(), forces.end(), "Forces");
+
+    done_atom(&atoms_);
 }
 
 } // namespace gmx

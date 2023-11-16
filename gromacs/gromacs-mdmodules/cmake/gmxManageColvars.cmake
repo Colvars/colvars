@@ -31,23 +31,32 @@
 # To help us fund GROMACS development, we humbly ask that you cite
 # the research papers on the package. Check out https://www.gromacs.org.
 
-# If Colvars is not activated then compile uust the stub implementation colvarsMDModule_stub.cpp
-# In other case compile regular colvarsMDModule.cpp and tests
-if(NOT GMX_USE_COLVARS STREQUAL "INTERNAL")
-    gmx_add_libgromacs_sources(
-        colvarsMDModule_stub.cpp
-        )
-else()
-    gmx_add_libgromacs_sources(
-        colvarsMDModule.cpp
-        colvarsoptions.cpp
-        colvarspreprocessor.cpp
-        colvarssimulationsparameters.cpp
-        colvarsforceprovider.cpp
-        colvarproxygromacs.cpp
-        )
+# Build Colvars library as bundled in a GROMACS worktree; not supporting external linkage yet
+gmx_option_multichoice(GMX_USE_COLVARS
+    "Build the collective variables (Colvars) library interfaced with GROMACS"
+    INTERNAL
+    INTERNAL NONE)
+mark_as_advanced(GMX_USE_COLVARS)
 
-    if (BUILD_TESTING)
-        add_subdirectory(tests)
+function(gmx_manage_colvars)
+    if(GMX_USE_COLVARS STREQUAL "INTERNAL")
+        # Create an object library for the colvars sources
+        set(COLVARS_DIR "${CMAKE_SOURCE_DIR}/src/external/colvars")
+        file(GLOB COLVARS_SOURCES ${COLVARS_DIR}/*.cpp)
+        add_library(colvars_objlib OBJECT ${COLVARS_SOURCES})
+        # Set correctly the value of __cplusplus, which MSVC doesn't do by default
+        target_compile_options(colvars_objlib PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
+        # Ensure that colvars_objlib can be used in both STATIC and SHARED libraries.
+        set_target_properties(colvars_objlib PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+        # Create an INTERFACE library for colvars with the object library as a dependency
+        add_library(colvars INTERFACE)
+        target_sources(colvars INTERFACE $<TARGET_OBJECTS:colvars_objlib>)
+        target_include_directories(colvars SYSTEM INTERFACE $<BUILD_INTERFACE:${COLVARS_DIR}>)
+
+    else()
+        # Create a dummy link target so the calling code doesn't need to know
+        # whether colvars support is being compiled.
+        add_library(colvars INTERFACE)
     endif()
-endif()
+endfunction()

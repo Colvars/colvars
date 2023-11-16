@@ -86,7 +86,7 @@ public:
         Options colvarsModuleOptions;
         colvarsOptions_.initMdpOptions(&colvarsModuleOptions);
 
-        // Add rules to transform mdp inputs to densityFittingModule data
+        // Add rules to transform mdp inputs to colvars data
         KeyValueTreeTransformer transform;
         transform.rules()->addRule().keyMatchType("/", StringCompareType::CaseAndDashInsensitive);
 
@@ -111,6 +111,7 @@ public:
         KeyValueTreeBuilder mdpValueBuilder;
         mdpValueBuilder.rootObject().addValue(c_colvarsModuleName + "-active", std::string("true"));
         mdpValueBuilder.rootObject().addValue(c_colvarsModuleName + "-configfile", colvarsConfig);
+        mdpValueBuilder.rootObject().addValue(c_colvarsModuleName + "-seed", std::string("12345789"));
         return mdpValueBuilder.build();
     }
 
@@ -151,21 +152,29 @@ public:
         PbcType    pbcType;
         matrix     box;
         gmx_mtop_t mtop;
-        rvec*      coords;
+
         // Load topology
         readConfAndTopology(tprName.c_str(), &fullTopology, &mtop, &pbcType, &coords, nullptr, box);
 
-        t_atoms atoms = gmx_mtop_global_atoms(mtop);
-        x             = gmx::constArrayRefFromArray(reinterpret_cast<gmx::RVec*>(coords), atoms.nr);
+        atoms = gmx_mtop_global_atoms(mtop);
+        ArrayRef<const RVec> x =
+                gmx::constArrayRefFromArray(reinterpret_cast<gmx::RVec*>(coords), atoms.nr);
 
         // Populate attributes outside the use of the defined callbacks.
         colvarsOptions_.setParameters(colvarsConfigFile, atoms, x, pbcType, box, 300);
     }
 
+    void deleteInputColvarsPreProcessor()
+    {
+        sfree(coords);
+        done_atom(&atoms);
+    }
+
 
 protected:
-    ColvarsOptions       colvarsOptions_;
-    ArrayRef<const RVec> x;
+    rvec*          coords;
+    t_atoms        atoms;
+    ColvarsOptions colvarsOptions_;
 };
 
 
@@ -261,6 +270,7 @@ TEST_F(ColvarsOptionsTest, InternalsToKvtAndBack)
     auto refColvarsInputContent = colvarsOptions_.colvarsConfigContent();
     auto refColvarsCoordinates  = colvarsOptions_.colvarsAtomCoords();
     auto refTemperature         = colvarsOptions_.colvarsEnsTemp();
+    auto refSeed                = colvarsOptions_.colvarsSeed();
 
     // Retrieve paramaters from the KVT
     colvarsOptions_.readInternalParametersFromKvt(inputTree);
@@ -277,6 +287,9 @@ TEST_F(ColvarsOptionsTest, InternalsToKvtAndBack)
     EXPECT_REAL_EQ(refColvarsCoordinates[1][ZZ], actualColvarsCoordinates[1][ZZ]);
 
     EXPECT_EQ(refTemperature, colvarsOptions_.colvarsEnsTemp());
+    EXPECT_EQ(refSeed, colvarsOptions_.colvarsSeed());
+
+    deleteInputColvarsPreProcessor();
 }
 
 } // namespace gmx
