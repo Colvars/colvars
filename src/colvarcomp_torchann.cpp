@@ -35,9 +35,11 @@ colvar::torchANN::torchANN(std::string const &conf): linearCombination(conf) {
   get_keyval(conf, "modelFile", model_file, std::string(""));
   try {
     nn = torch::jit::load(model_file);
+    nn.to(torch::kCPU);
     cvm::log("torch model loaded.") ;
   } catch (const std::exception & e) {
     cvm::error("Error: couldn't load libtorch model (see below).\n" + cvm::to_str(e.what()));
+    return;
   }
   get_keyval(conf, "m_output_index", m_output_index, 0);
   get_keyval(conf, "doubleInputTensor", use_double_input, false);
@@ -98,6 +100,7 @@ colvar::torchANN::torchANN(std::string const &conf): linearCombination(conf) {
     cvm::log("Evaluating model with zero tensor succeeded.");
   } catch (const std::exception & e) {
     cvm::error("Error: evaluating model with zero tensor failed (see below).\n" + cvm::to_str(e.what()));
+    return;
   } 
 }
 
