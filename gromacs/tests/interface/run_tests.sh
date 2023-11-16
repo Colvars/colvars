@@ -210,7 +210,7 @@ for dir in ${DIRLIST} ; do
     if [ -f "run.sh" ]
     then
       echo "Run special script."
-      ./run.sh
+      ./run.sh $COMMAND
       output=${basename}
     # Try running the test sequentially
     elif [ "$restart" = "false" ]

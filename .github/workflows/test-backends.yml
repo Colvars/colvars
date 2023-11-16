@@ -106,4 +106,5 @@ jobs:
       container_name: CentOS9-devel
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
+      test_interface_directory: gromacs/tests/interface
       rpath_exe: install/bin/gmx_mpi_d
