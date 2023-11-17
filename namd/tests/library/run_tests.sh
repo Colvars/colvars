@@ -40,6 +40,8 @@ while [ $# -ge 1 ]; do
   shift
 done
 
+
+
 TOPDIR=$(git rev-parse --show-toplevel)
 if [ ! -d ${TOPDIR} ] ; then
   echo "Error: cannot identify top project directory." >& 2
@@ -101,10 +103,17 @@ cleanup_files() {
 declare -a failed_tests
 declare -a failed_tests_low_prec
 
+TORCH_LINKED=false
+if { ldd $(which $BINARY) | grep -q libtorch[_a-zA-Z]*.so ; } then TORCH_LINKED=true ; fi
 
 for dir in ${DIRLIST} ; do
 
   if [ -f ${dir}/disabled ] ; then
+    continue
+  fi
+
+  if echo ${dir} | grep -q torchann && [ ${TORCH_LINKED} != "true" ] ; then 
+    echo "Directory ${dir} skipped."
     continue
   fi
 

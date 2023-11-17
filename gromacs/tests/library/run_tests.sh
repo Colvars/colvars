@@ -99,9 +99,17 @@ else
   MDMODULES_INTERFACE=no
 fi
 
+TORCH_LINKED=false
+if { ldd $(which $BINARY) | grep -q libtorch[_a-zA-Z]*.so ; } then TORCH_LINKED=true ; fi
+
 for dir in ${DIRLIST} ; do
 
   if [ -f ${dir}/disabled ] ; then
+    continue
+  fi
+
+  if echo ${dir} | grep -q torchann && [ ${TORCH_LINKED} != "true" ] ; then 
+    echo "Directory ${dir} skipped."
     continue
   fi
 
