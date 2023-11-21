@@ -367,6 +367,7 @@ Then we use the following Tcl procedure to compute a custom variable that is sim
 This version results in extremely fast updates.
 } % cvvmdonly dashboard
 
+
 \cvsec{Enabling and controlling the Colvars module in \MDENGINE{}}{sec:colvarmodule}
 
 Here, we document the syntax of the commands and parameters used to set up and use the Colvars module in \MDENGINE{}\cvgromacsonly{ \cite{Abraham2015}}\cvlammpsonly{ \cite{Plimpton1995}}\cvnamdonly{ \cite{Phillips2020}}.
@@ -374,11 +375,11 @@ One of these parameters is the configuration file or the configuration text for 
 
 \cvsubsec{Units in the Colvars module}{sec:units}
 
-The ``internal units'' of the Colvars module are the units in which values are expected to be in the configuration file, and in which collective variable values, energies, etc. are expressed in the output and colvars trajectory files.
+The ``internal units'' of the Colvars module are the units in which values are expressed in the configuration file, and in which collective variable values, energies, etc.\ are expressed in the output and colvars trajectory files.
 Generally \textbf{the Colvars module uses internally the same units as its back-end MD engine, with the exception of VMD}, where different unit sets are supported to allow for easy setup, visualization and analysis of Colvars simulations performed with any simulation engine.
 
 Note that \textbf{angles} are expressed in degrees, and derived quantities such as force constants are based on degrees as well.
-Some colvar components have default values, expressed in \AA{}ngstr\"om in this documentation. They are converted to the current length unit as needed.
+Some colvar components have default values, expressed in \AA{}ngstr\"om (\AA) in this documentation. They are converted to the current length unit, if different from \AA.
 Atomic coordinates read from \textbf{XYZ files} (and PDB files where applicable) are expected to be expressed in \AA{}ngstr\"om, no matter what unit system is in use by the back-end (\MDENGINE) or the Colvars Module. They are converted internally to the current length unit as needed.
 Note that force constants in \texttt{harmonic} and \texttt{harmonicWalls} biases (\ref{sec:colvarbias_harmonic}) are rescaled according to the \refkey{width}{colvar|width} parameter of colvars, so that they are formally in energy units, although if \refkey{width}{colvar|width} is given its default value of 1.0, force constants are effectively expressed in \energyunit/\textit{(colvar unit)}$^2$.
 
