@@ -2,6 +2,8 @@
 
 source $(dirname $0)/load-recent-git.sh
 
+source $(dirname $0)/load-openmpi.sh
+
 source $(dirname $0)/set-ccache.sh
 
 # Save path to be used later
@@ -14,6 +16,9 @@ compile_namd_target() {
     local dirname_prefix="Linux-x86_64-g++"
 
     local label="multicore"
+    if hash mpicxx >& /dev/null ; then
+        label="mpi"
+    fi
 
     while [ $# -ge 1 ]; do
         if [ -f "${1}/src/NamdTypes.h" ] ; then
@@ -43,10 +48,6 @@ compile_namd_target() {
 
     local -a cmd=(./config ${dirname})
 
-    if [ "${label}" = "multicore" ] ; then
-        cmd+=(--charm-arch multicore-linux-x86_64)
-    fi
-
     if [ "${dirname_prefix}" = "Linux-x86_64-g++-debug" ] ; then
         cat > arch/Linux-x86_64-g++-debug.arch <<EOF
 NAMD_ARCH = Linux-x86_64
@@ -59,8 +60,12 @@ COPTS = \$(CXXOPTS)
 EOF
     fi
 
+    if [ "${label}" = "multicore" ] ; then
+        cmd+=(--charm-arch multicore-linux-x86_64)
+    fi
+
     if [ "${label}" = "mpi" ] ; then
-        cmd+=(--charm-arch mpi-linux-x86_64-mpicxx)
+        cmd+=(--charm-arch mpi-linux-x86_64)
     fi
 
     if [ "${label}" = "netlrts" ] ; then
