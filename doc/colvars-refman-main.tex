@@ -538,7 +538,7 @@ All of the above keywords except for the name of the configuration file may also
 
 \textbf{Note:} \emph{the GROMACS keywords described here are only supported in GROMACS versions 2024 and later, where Colvars is supported natively.}
 
-To enable a simulation with Colvars, one or more options should be added to the typical \texttt{mdrun} parameters, for example:
+To enable a simulation with Colvars, one or more options should be added to the typical \texttt{mdp} parameters, for example:
 \begin{mdexampleinput}
 \-;~MDP~file\\
 \-...\
@@ -547,7 +547,7 @@ To enable a simulation with Colvars, one or more options should be added to the 
 \-...\\
 \-(other~MDP~options)\\
 \end{mdexampleinput}
-When the MDP file is compiled into a TPR file, the contents of \texttt{colvars.inp} and of all files referenced by it are bundled in the TPR file as well.
+When the \texttt{gmx grommp} command is called to create a TPR file, the contents of \texttt{my\_colvars\_config.txt} and of all files referenced by it are bundled in the TPR file as well.
 
 In any run based on the same TPR file, \texttt{gmx mdrun} will not access any of the original files used to initialize Colvars.
 When modifying the Colvars configuration (e.g.\ adding or removing a bias), a new TPR file should be built as well.
@@ -571,8 +571,8 @@ To do this while also continuing a previous simulations, please see \ref{sec:cha
     MDP option}{%
     Colvars configuration file}{%
     string}{%
-    no}{%
-    Name of the Colvars configuration file, which can be either an absolute path, or a path relative to the folder from which \texttt{gmx mdrun} is called.
+    colvars.dat}{%
+    Name of the Colvars configuration file, which can be either an absolute path, or a path relative to the folder from which \texttt{gmx grompp} is called.
 }
 
 \item %
@@ -581,7 +581,7 @@ To do this while also continuing a previous simulations, please see \ref{sec:cha
     Random number generator seed}{%
     integer}{%
     -1}{%
-    Seed used to initialize the random generator associated with certain stochastic methods implemented within Colvars.  The default value generates a random seed.
+    Seed used to initialize the random generator associated with certain stochastic methods implemented within Colvars. The default value generates a random seed.
 }
 
 \end{itemize}
@@ -606,6 +606,29 @@ Altogether, the two files hold the required information to restart the simulatio
 It is also highly recommended to read checkpoint files that were written by the same major version of GROMACS (as is the case with unmodified GROMACS).
 
 For the output files, the prefix of Colvars output files will use the \texttt{-defnnm} option of mdrun, or be the same as the GROMACS log file if the option is not set.  Otherwise, the prefix will be \emph{output}.
+
+\textbf{Note:} \emph{This section describes how to use Colvars in GROMACS versions starting 2024, which support and include Colvars natively.}
+
+To enable a Colvars-based calculation, just modify the \texttt{mdp} file to add those two keywords:
+\begin{mdexampleinput}
+  \-...\\
+  \-colvars-active~=~yes\\
+  \-colvars-configfile~=~my\_colvars.dat\\
+  \-...\\
+\end{mdexampleinput}
+
+Then, create the \texttt{tpr} and launch the simulation as usual:
+\begin{mdexampleinput}
+  \-gmx~grompp~-f~system.mdp~-p~system.top~-c~init.gro~-o~test.tpr
+  \-gmx~mdrun~-s~test.tpr~-deffnm~md~
+\end{mdexampleinput}
+
+Restarting from a previous simulation is done using the \texttt{-cpi} parameter for the checkpoint file (e.g.{} ``\texttt{state.cpt}''). This file holds the required information to restart the Colvars-based simulation.
+\begin{mdexampleinput}
+  \-gmx~mdrun~-s~test\_restart.tpr~-deffnm~md~-cpi~state.cpt
+\end{mdexampleinput}
+
+For the output files, the prefix of Colvars output files share the same prefix as the \texttt{edr} file, which is ``\texttt{ener}'' by default. This is modified if the \texttt{-defnnm} or the \texttt{-e} option of mdrun is used.
 
 \textbf{Note on PBC wrapping in GROMACS.} Internally, GROMACS handles only PBC-wrapped atom coordinates, which may break the calculation of some variables if their atom groups become split across PBCs.
 To prevent this, Colvars unwraps coordinates throughout the simulation, by assuming that each atom group is intact in the initial coordinates, and canceling any later jumps across the periodic box.
@@ -904,7 +927,7 @@ It is also possible to make the change subject to a condition on the energy of t
 \-\}
 \end{mdexampleinput}
 } % \cvnamdonly
- 
+
 
 \cvsubsubsec{Loading and saving the state of individual biases}{sec:cv_command_bias_loadsave}
 
@@ -5050,7 +5073,7 @@ In general, internal coordinate wrapping by \MDENGINE{} does not affect the calc
 
 \cvsubsec{Performance of a Colvars calculation based on group size.}{sec:colvar_atom_groups_scaling}
 
-In simulations performed with message-passing programs (such as NAMD or LAMMPS), the calculation of energy and forces is distributed (i.e., parallelized) across multiple nodes, as well as over the processor cores of each node.
+In simulations performed with message-passing programs (such as NAMD, LAMMPS or GROMACS), the calculation of energy and forces is distributed (i.e., parallelized) across multiple nodes, as well as over the processor cores of each node.
 When Colvars is enabled, certain atomic coordinates are collected on a single node, where the calculation of collective variables and of their biases is executed.
 This means that for simulations over large numbers of nodes, a Colvars calculation may produce a significant overhead, coming from the costs of transmitting atomic coordinates to one node and of processing them.
 \cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD may alleviate both factors, but a noticeable performance impact may be observed.}
