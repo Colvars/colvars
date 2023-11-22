@@ -5006,35 +5006,38 @@ The following two options have default values appropriate for the vast majority 
 
 \cvsubsec{Treatment of periodic boundary conditions.}{sec:colvar_atom_groups_wrapping}
 
+In simulations with periodic boundary conditions (PBCs), Colvars computes all distances between two points following the nearest-image convention, using PBC parameters provided by \MDENGINE.
+However, many common variables rely on a consistent definition of the center of mass or geometry of a group of atoms.
+This requires the use of \emph{unwrapped} coordinates, which are not subject to ``jumps'' when they diffuse across periodic boundaries.
+
 \cvnamdonly{
- In simulations with periodic boundary conditions, NAMD maintains
+ When PBCs are defined, NAMD maintains
   the coordinates of all the atoms within a molecule contiguous to
-  each other (i.e.~there are no spurious ``jumps'' in the molecular
-  bonds).  The Colvars module relies on this when calculating a group's
-  center of geometry, but this condition may fail if the group spans
-  different molecules.  In that case, writing the NAMD output and restart files
+  each other (i.e.\ there are no spurious ``jumps'' in the molecular
+  bonds).  However, different
+
+the same treatment  condition may fail if the group spans
+  different molecules
+
+.  In that case, writing the NAMD output and restart files
   using \texttt{wrapAll} or \texttt{wrapWater} could produce wrong results
   when a simulation run is continued from a previous one.
   The user should then determine, according to which
   type of colvars are being calculated, whether \texttt{wrapAll} or
   \texttt{wrapWater} can be enabled.
 
-  In general, internal coordinate wrapping by NAMD does not affect the calculation of colvars if each atom group satisfies one or more of the following:
 }
+
 \cvlammpsonly{
-In simulations with periodic boundary conditions, many of the implemented colvar components rely on the fact that each position within a group of atoms is at the nearest periodic image from the center of geometry of the group itself.
-However, due to the internal wrapping of individual atomic positions done by LAMMPS, this assumption is broken if the group straddles one of the unit cell's boundaries.
-For this reason, within the Colvars module all coordinates are unwrapped by default to avoid discontinuities (see \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}).
-
-The user should determine whether maintaining the default value of \texttt{unwrap}, depending on the specifics of each system.
-In general, internal coordinate wrapping by LAMMPS does not affect the calculation of colvars if each atom group satisfies one or more of the following:
-}
-\cvvmdonly{
-  When periodic boundary conditions are defined, the Colvars module requires that the coordinates of each molecular fragment are contiguous, without ``jumps'' when a fragment is partially wrapped near a periodic boundary.
-  The Colvars module relies on this assumption when calculating a group's center of geometry, but the condition may fail if the group spans different molecules.
-  In general, coordinate wrapping does not affect the calculation of colvars if each atom group satisfies one or more of the following:
+LAMMPS controls the availability of unwrapped coordinates using the \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}, which defaults to \texttt{yes}.
+The user should determine whether it is appropriate to maintain the default value of \texttt{unwrap}, depending on the specifics of each system.
 }
 
+\cvgromacsonly{
+TODO
+}
+
+In general, internal coordinate wrapping by \MDENGINE{} does not affect the calculation of colvars if each atom group satisfies one or more of the following:
 \begin{enumerate}
   \item[\emph{i)}] it is composed by only one atom;
   \item[\emph{ii)}] it is used by a colvar component which does not make use of its center of geometry, but only of pairwise distances (\texttt{distanceInv}, \texttt{coordNum}, \texttt{hBond}, \texttt{alpha}, \texttt{dihedralPC});
