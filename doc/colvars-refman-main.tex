@@ -531,8 +531,64 @@ All of the above keywords except for the name of the configuration file may also
 
 
 \cvgromacsonly{
+
 \cvsubsec{Running Colvars in GROMACS}{sec:colvars_mdengine_parameters}
 
+\ifdefined\gromacsmdmodule
+
+\textbf{Note:} \emph{the GROMACS keywords described here are only supported in GROMACS versions 2024 and later, where Colvars is supported natively.}
+
+To enable a simulation with Colvars, one or more options should be added to the typical \texttt{mdrun} parameters, for example:
+\begin{mdexampleinput}
+\-;~MDP~file\\
+\-...\
+\-colvars-active~=~yes\\
+\-colvars-configfile~=~my\_colvars\_config.txt\\
+\-...\\
+\-(other~MDP~options)\\
+\end{mdexampleinput}
+When the MDP file is compiled into a TPR file, the contents of \texttt{colvars.inp} and of all files referenced by it are bundled in the TPR file as well.
+
+In any run based on the same TPR file, \texttt{gmx mdrun} will not access any of the original files used to initialize Colvars.
+When modifying the Colvars configuration (e.g.\ adding or removing a bias), a new TPR file should be built as well.
+To do this while also continuing a previous simulations, please see \ref{sec:change_config_restart}.
+
+\begin{itemize}
+
+\item %
+  \keydef{
+    colvars-active}{%
+    MDP option}{%
+    Activate the Colvars module in GROMACS}{%
+    boolean}{%
+    \texttt{no}}{%
+    Activate Colvars computation in the current run.  Requires that the Colvars library was compiled with GROMACS, which is the default in a typical installation.
+}
+
+\item %
+  \keydef
+    {colvars-configfile}{%
+    MDP option}{%
+    Colvars configuration file}{%
+    string}{%
+    no}{%
+    Name of the Colvars configuration file, which can be either an absolute path, or a path relative to the folder from which \texttt{gmx mdrun} is called.
+}
+
+\item %
+  \keydef{colvars-seed}{%
+    MDP option}{%
+    Random number generator seed}{%
+    integer}{%
+    -1}{%
+    Seed used to initialize the random generator associated with certain stochastic methods implemented within Colvars.  The default value generates a random seed.
+}
+
+\end{itemize}
+
+\else
+
+\textbf{Note:} \emph{This section describes how to use Colvars in GROMACS versions until 2023, using patched GROMACS source code.  This interface is now deprecated: whenever possible, please consider using GROMACS 2024 and later versions, which support and include Colvars natively.}
 
 To enable a Colvars-based calculation, just specify one or more Colvars configuration files with the \texttt{-colvars} command-line parameter to \texttt{gmx mdrun}:
 \begin{mdexampleinput}
@@ -554,6 +610,7 @@ For the output files, the prefix of Colvars output files will use the \texttt{-d
 \textbf{Note on PBC wrapping in GROMACS.} Internally, GROMACS handles only PBC-wrapped atom coordinates, which may break the calculation of some variables if their atom groups become split across PBCs.
 To prevent this, Colvars unwraps coordinates throughout the simulation, by assuming that each atom group is intact in the initial coordinates, and canceling any later jumps across the periodic box.
 This information is propagated across restarts, and communicated between replicas when GROMACS is used for replica-exchange simulations. Thus, Colvars is compatible with native replica-exchange in GROMACS.
+\fi
 } % \cvgromacsonly
 
 \cvtinkerhponly{
@@ -1013,7 +1070,7 @@ Both versions support loading Colvars state files in either format (binary or te
 } % end \cvnamdonly
 
 
-\cvsubsubsec{Changing configuration upon restarting.}{}
+\cvsubsubsec{Changing configuration upon restarting.}{sec:change_config_restart}
 
 In some cases, it is useful to modify the configuration of variables or biases between consecutive runs, for example by adding or removing a restraint.
 Some special provisions will happen in that case.
