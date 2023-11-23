@@ -2,6 +2,41 @@
 	install clean clean-all \
 	update-code-refs update-cvscript-cmdline-doc updates
 
+ifeq ($(COLVARS_RELEASE),)
+# Unless defined otherwise, the release label is the name of the branch
+COLVARS_RELEASE = $(shell git symbolic-ref --short -q HEAD)
+endif
+
+ifeq ($(COLVARS_RELEASE),)
+# If we are not working on a branch, try a tag instead
+COLVARS_RELEASE = $(git describe --tags --exact-match)
+endif
+
+export COLVARS_RELEASE
+
+# Check if this a release of a specific engine
+COLVARS_RELEASE_PREFIX := $(firstword $(subst -, , $(COLVARS_RELEASE)))
+# Only allow specific cases
+ifeq ($(COLVARS_RELEASE_PREFIX),gromacs)
+    RELEASE_ENGINE := $(COLVARS_RELEASE_PREFIX)
+endif
+ifeq ($(COLVARS_RELEASE_PREFIX),lammps)
+    RELEASE_ENGINE := $(COLVARS_RELEASE_PREFIX)
+endif
+ifeq ($(COLVARS_RELEASE_PREFIX),namd)
+    RELEASE_ENGINE := $(COLVARS_RELEASE_PREFIX)
+endif
+ifeq ($(COLVARS_RELEASE_PREFIX),tinkerhp)
+    RELEASE_ENGINE := $(COLVARS_RELEASE_PREFIX)
+endif
+ifeq ($(COLVARS_RELEASE_PREFIX),vmd)
+    RELEASE_ENGINE := $(COLVARS_RELEASE_PREFIX)
+endif
+export RELEASE_ENGINE
+
+
+ifeq ($(RELEASE_ENGINE),)
+
 PDF = \
 	colvars-refman-gromacs.pdf \
 	colvars-refman-lammps.pdf \
@@ -16,26 +51,21 @@ HTML = \
 	colvars-refman-tinkerhp.html \
 	colvars-refman-vmd.html
 
-CSS = $(HTML:.html=.css)
+else
 
+PDF = colvars-refman-$(RELEASE_ENGINE).pdf
+HTML = colvars-refman-$(RELEASE_ENGINE).html
+
+endif
+
+CSS = $(HTML:.html=.css)
 BIBTEX = colvars-refman.bib
 
-ifeq ($(COLVARS_RELEASE),)
-# Unless defined otherwise, the release label is the name of the branch
-COLVARS_RELEASE = $(shell git symbolic-ref --short -q HEAD)
-endif
-
-ifeq ($(COLVARS_RELEASE),)
-# If we are not working on a branch, try a tag instead
-COLVARS_RELEASE = $(git describe --tags --exact-match)
-endif
-
-export COLVARS_RELEASE
-
-
+ifeq ($(COLVARS_RELEASE),"master")
 all: pdf html doxygen
-
-updates: version-list update-code-refs update-cvscript-cmdline-doc
+else
+all: pdf html
+endif
 
 pdf: $(PDF)
 html: $(HTML)
@@ -58,8 +88,16 @@ HTLATEX_OPTS = "html5mjlatex.cfg, charset=utf-8" " -cunihtf -utf8"
 	$(HTLATEX) $(notdir $<) $(HTLATEX_OPTS); \
 	bash postprocess_html.sh
 
+
+ifeq ($(COLVARS_RELEASE),"master")
+all: pdf html doxygen
+else
+all: pdf html
+endif
+
 clean: 
 	rm -f *.fdb_latexmk *.fls *.aux *.bbl *.blg *.log *.toc *.out *.idx *.ilg *.ind *.brf *.4tc *.4ct *.dvi *.idv *.lg *.xref *.tmp eulerangles-512px.png
+	rm -fr doxygen/html
 
 clean-all: clean
 	rm -f $(PDF) $(HTML) $(CSS)
@@ -73,6 +111,7 @@ update-code-refs:
 update-cvscript-cmdline-doc:
 	tclsh gen_cvscript_doc.tcl
 
+updates: version-list update-code-refs update-cvscript-cmdline-doc
 
 doxygen: doxygen/html/index.html
 
