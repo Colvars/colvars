@@ -547,7 +547,7 @@ To enable a simulation with Colvars, one or more options should be added to the 
 \-...\\
 \-(other~MDP~options)\\
 \end{mdexampleinput}
-When the \texttt{gmx grommp} command is called to create a TPR file, the contents of \texttt{my\_colvars\_config.txt} and of all files referenced by it are bundled in the TPR file as well.
+When the \texttt{gmx grommp} command is called to create a TPR file, the contents of \texttt{my\_config.colvars} and of all files referenced by it are bundled in the TPR file as well.
 
 In any run based on the same TPR file, \texttt{gmx mdrun} will not access any of the original files used to initialize Colvars.
 When modifying the Colvars configuration (e.g.\ adding or removing a bias), a new TPR file should be built as well.
@@ -562,17 +562,16 @@ To do this while also continuing a previous simulations, please see \ref{sec:cha
     Activate the Colvars module in GROMACS}{%
     boolean}{%
     \texttt{no}}{%
-    Activate Colvars computation in the current run.  Requires that the Colvars library was compiled with GROMACS, which is the default in a typical installation.
+    Activate Colvars computation in the current run.  Requires that the Colvars library was compiled into GROMACS, which is the default.
 }
 
 \item %
-  \keydef
+  \key
     {colvars-configfile}{%
     MDP option}{%
     Colvars configuration file}{%
     string}{%
-    colvars.dat}{%
-    Name of the Colvars configuration file, which can be either an absolute path, or a path relative to the folder from which \texttt{gmx grompp} is called.
+    Name of the Colvars configuration file, which can be either an absolute path, or a path relative to the working directory when \texttt{gmx grompp} is called.
 }
 
 \item %
@@ -629,10 +628,6 @@ Restarting from a previous simulation is done using the \texttt{-cpi} parameter 
 \end{mdexampleinput}
 
 For the output files, the prefix of Colvars output files share the same prefix as the \texttt{edr} file, which is ``\texttt{ener}'' by default. This is modified if the \texttt{-defnnm} or the \texttt{-e} option of mdrun is used.
-
-\textbf{Note on PBC wrapping in GROMACS.} Internally, GROMACS handles only PBC-wrapped atom coordinates, which may break the calculation of some variables if their atom groups become split across PBCs.
-To prevent this, Colvars unwraps coordinates throughout the simulation, by assuming that each atom group is intact in the initial coordinates, and canceling any later jumps across the periodic box.
-This information is propagated across restarts, and communicated between replicas when GROMACS is used for replica-exchange simulations. Thus, Colvars is compatible with native replica-exchange in GROMACS.
 \fi
 } % \cvgromacsonly
 
@@ -5053,8 +5048,11 @@ The user should determine whether it is appropriate to maintain the default valu
 }
 
 \cvgromacsonly{
-In GROMACS, individual atom coordinates are systematically wrapped into a single unit cell, however Colvars maintains an unwrapped copy of the relevant coordinates to preserve their relative positions as provided in the input configuration.
-These unwrapped coordinates are preserved across restarts from a checkpoint (\texttt{cpt}) file. However, whenever preparing a new simulation input with \texttt{gmx grompp}, users should provide input coordinates where the atoms involved in collective variables are not artificially moved across the boundary conditions, but occupy their relevant relative positions -- usually the nearest ones.
+Internally, GROMACS wraps individual atom coordinates into a single periodic cell, which may break the calculation of some variables if their atom groups become split across PBCs.
+To prevent this, Colvars unwraps coordinates throughout the simulation, by assuming that each atom group is intact in the initial coordinates, and canceling any later jumps across the periodic box.
+This information is propagated across restarts using a checkpoint (\texttt{cpt}) file.
+However, whenever preparing a new simulation input with \texttt{gmx grompp}, users should provide input coordinates where the atoms involved in collective variables are not artificially moved across the boundary conditions, but occupy their relevant relative positions -- usually the nearest ones.
+Unwrapped coordinates are communicated between replicas when GROMACS is used for replica-exchange simulations. Thus, Colvars is compatible with native replica-exchange in GROMACS.
 }
 
 In general, internal coordinate wrapping by \MDENGINE{} does not affect the calculation of colvars if each atom group satisfies one or more of the following:
@@ -5065,7 +5063,7 @@ In general, internal coordinate wrapping by \MDENGINE{} does not affect the calc
   \item[\emph{iv)}] it has all of its atoms within the same molecular fragment%
 }.
 \end{enumerate}
-\cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} (or the alternative \texttt{qwrap} or \texttt{qunwrap}, \url{https://github.com/jhenin/qwrap}) prior to processing a trajectory with the Colvars module.}
+\cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} (or the alternative \texttt{qwrap} or \texttt{qunwrap}: \url{https://github.com/jhenin/qwrap}) prior to processing a trajectory with the Colvars module.}
 
 
 \cvsubsec{Performance of a Colvars calculation based on group size.}{sec:colvar_atom_groups_scaling}
