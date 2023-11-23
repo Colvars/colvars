@@ -37,11 +37,5 @@ add_custom_command(
 add_custom_command(
         TARGET parse_error POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E create_symlink
-                ${CMAKE_CURRENT_SOURCE_DIR}/index.ndx
-                ${CMAKE_CURRENT_BINARY_DIR}/index.ndx
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
                 ${CMAKE_CURRENT_SOURCE_DIR}/test_error.in
-                ${CMAKE_CURRENT_BINARY_DIR}/test_error.in
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-                ${CMAKE_CURRENT_SOURCE_DIR}/da-traj.xyz
-                ${CMAKE_CURRENT_BINARY_DIR}/da-traj.xyz)
+                ${CMAKE_CURRENT_BINARY_DIR}/test_error.in)
