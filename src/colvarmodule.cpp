@@ -111,7 +111,8 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
            "as well as all other papers listed below for individual features used.\n");
 
   if (proxy->smp_enabled() == COLVARS_OK) {
-    cvm::log("SMP parallelism is enabled; if needed, use \"smp off\" to override this.\n");
+    cvm::log("SMP parallelism is enabled (num threads = " + to_str(proxy->smp_num_threads()) +
+             "); use \"smp off\" to disable if needed.\n");
   }
 
 #if (__cplusplus >= 201103L)
