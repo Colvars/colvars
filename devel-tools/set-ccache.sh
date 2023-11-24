@@ -7,5 +7,15 @@ fi
 
 export PATH=${CCACHE_HOME}:${PATH}
 
+if [ -z "${CCACHE_DIR}" ] ; then
+    # Test for default setting in RHEL-like distributions
+    if grep -sq 'CCACHE_DIR=/var/cache/ccache' /etc/profile.d/ccache.sh ; then
+        if ! mktemp /var/ccache/ccache/test.XXXXXX >& /dev/null ; then
+            # Prevent using unwritable path inside containers
+            export CCACHE_DIR=~/.ccache
+        fi
+    fi
+fi
+
 # Report cache statistics
 ccache -s
