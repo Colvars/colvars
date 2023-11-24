@@ -156,13 +156,13 @@ for dir in ${DIRLIST} ; do
     # Symbolink link to the colvars input file, index file, and xyz file
     ln -sf test.in test.dat
     ln -sf ../Common/da.ndx index.ndx
-    if grep -q "refPositionsFile rmsd_" test.dat
+    if [ -f test.dat ] && grep -q "refPositionsFile rmsd_" test.dat
     then
         ln -fs ../Common/rmsd_atoms_refpos.xyz ./
         ln -fs ../Common/rmsd_atoms_refpos2.xyz ./
         ln -fs ../Common/rmsd_atoms_random.xyz ./
     fi
-    if grep -q "refPositionsFile heavy_" test.dat
+    if [ -f test.dat ] && grep -q "refPositionsFile heavy_" test.dat
     then
         ln -fs ../Common/heavy_atoms_refpos.xyz heavy_atoms_refpos.xyz
     fi
