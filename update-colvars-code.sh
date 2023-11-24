@@ -330,6 +330,10 @@ then
     condcopy "${src}" "${target}/src/COLVARS/${tgt}"
   done
 
+  if [ -f ${source}/lammps/COLVARS.cmake.diff ] ; then
+    patch -p1 -N -d ${target} < ${source}/lammps/COLVARS.cmake.diff
+  fi
+
   downloaded_pdf=0
   # Copy PDF of the user manual
   if [ ! -f ${source}/doc/colvars-refman-lammps.pdf ] ; then
