@@ -7,9 +7,7 @@ if [ ! -d ${TOPDIR} ] ; then
 fi
 
 MPI_TESTS=[0-9][0-9][0-9]_MPI_*
-
 tests=([0-9][0-9][0-9]_*)
-
 for DIR in $MPI_TESTS
 do
   tests=(${tests[@]/$DIR})
@@ -17,10 +15,8 @@ done
 
 ALL_SUCCESS=1
 
-echo "Running tests ${tests[@]}"
 
 ../library/run_tests.sh $1 ${tests[@]}
-
 if [ $? -ne 0 ]
 then
     ALL_SUCCESS=0
@@ -40,6 +36,20 @@ if source ${TOPDIR}/devel-tools/load-openmpi.sh ; then
       fi
     done
 fi
+
+# Eventually we should normalize to using the library script also for MPI:
+# for that, the run.sh scripts need to be adjusted to produce the right output
+# as in 000_noconfig
+
+# # Run tests that depend on an MPI build
+# if source ${TOPDIR}/devel-tools/load-openmpi.sh ; then
+#   ../library/run_tests.sh $1 $MPI_TESTS
+#   if [ $? -ne 0 ]
+#   then
+#       ALL_SUCCESS=0
+#   fi
+# fi
+
 
 
 if [ $ALL_SUCCESS -eq 1 ]
