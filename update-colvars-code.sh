@@ -141,6 +141,10 @@ copy_lepton() {
     local GIT=$(hash -t git)
   fi
 
+  if [ -d ${source}/openmm-source ] ; then
+    OPENMM_SOURCE=${source}/openmm-source
+  fi
+
   if [ -z "${OPENMM_SOURCE}" ] ; then
     OPENMM_SOURCE=$(mktemp -d /tmp/openmm-source-XXXXXX)
   fi
