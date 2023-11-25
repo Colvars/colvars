@@ -644,13 +644,11 @@ then
   done
   echo ""
 
-  # Copy CMake files
-  for src in ${source}/gromacs/gromacs-mdmodules/cmake/*.cmake
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/cmake/${tgt}"
-  done
-  echo ""
+  # Patch CMake build recipe
+  if [ -f ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff ] ; then
+    patch -p1 -N -d ${target} < ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff
+  fi
+  echo
 
   # Copy MDModules files to the "src/gromacs/applied_forces/colvars" folder
   target_folder=${target}/src/gromacs/applied_forces/colvars
