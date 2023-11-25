@@ -991,11 +991,13 @@ The following keywords are available in the global context of the Colvars config
     global}{%
     Colvar module restart frequency}{%
     positive integer}{%
-    \cvnamdonly{NAMD parameter \texttt{restartFreq}}\cvlammpsonly{LAMMPS \texttt{restart} frequency when defined}\cvvmdonly{0}}{%
-    The state file and any other output files produced by Colvars are written every these many steps (the trajectory file is still written every \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} steps).
+    \cvgromacsonly{0}\cvnamdonly{NAMD parameter \texttt{restartFreq}}\cvlammpsonly{LAMMPS \texttt{restart} frequency when defined}\cvvmdonly{0}}{%
+    When this value is non-zero, a state file suitable for restarting will be written every these many steps.
+    Additionally, any other output files produced by Colvars are written as well (except the trajectory file, which is written every \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} steps).
     \cvvmdonly{In VMD, the simulation step is not progressed and this parameter is effectively ignored.}
     It is generally a good idea to leave this parameter at its default value, unless needed for special cases or to disable automatic writing of output files altogether.
-    Writing can still be invoked at any time via the command \texttt{cv save}.}
+    \cvgromacsonly{(The default value of 0 in GROMACS reflects this.)}
+    \ifdefined\cvscriptapi{If neeed, writing of all output files can still be triggered at any time via the \texttt{save} scripting function}.\fi}
 
 \item %
   \labelkey{Colvars-global|indexFile}
@@ -1049,20 +1051,29 @@ When a dedicated Colvars state file is used, it may be in either one of two form
 
 \item Formatted, i.e.\ \emph{``text''} format, which takes more space and is slower to to load/save but is also portable across different platforms and even different simulation engines (save for changes in physical units).  This format is used by default, unless explicitly requested otherwise.
 
-\item Unformatted, i.e.\ \emph{``binary''} format, which is both space-efficient and quick to load/save, but requires that the same \MDENGINE{} build was used to write the file and that the Colvars configuration remains the same. This format is supported by Colvars versions starting 2023-09-25.
-Colvars state files are written in binary format by setting the environment variable ``\texttt{COLVARS\_BINARY\_RESTART}'' to 1.
+\item Unformatted, i.e.\ \emph{``binary''} format, which is both space-efficient and quick to load/save, but requires that the same \MDENGINE{} build was used to write the file and that the Colvars configuration remains the same. This format is supported by Colvars versions starting 2023-09-25\cvgromacsonly{ (GROMACS versions 2024 and later)}.
+Colvars state files can be written in binary format by setting the environment variable ``\texttt{COLVARS\_BINARY\_RESTART}'' to 1.
 
 \end{itemize}
 
-\cvsubsubsec{Contents of the state file.}{}
+% \cvsubsubsec{Contents of the state file.}{}
+
 In either format, the state file contains accumulated data as well as the step number at the end of the run.
 The step number read from a state file overrides any value that \MDENGINE{} provides, and will be incremented if the simulation proceeds.
 This means that the step number used internally by Colvars may not always match the step number reported by \MDENGINE{}.
 \cvnamdonly{This is particularly inmportant in NAMD, which represents step numbers as a 32-bit integers that overflows after $\sim$ 2 billion steps, effectively negating the usefulness of the \texttt{firstTimeStep} keyword.  However, step numbers are implemented correctly in the Colvars state file.}
 
 \cvgromacsonly{\cvsubsubsec{Restarting in GROMACS.}{}
+  \ifdefined\gromacsmdmodule
   Beginning with GROMACS 2024, all information necessary to restart Colvars is included in the checkpoint ``\texttt{.cpt}'' file.
   No special provisions are therefore needed compared to a GROMACS simulation without Colvars enabled.
+  \else
+  For the GROMACS patched versions until 2023, Colvars can be restarted by providing the \texttt{-colvars\_restart} option to \texttt{gmx mdrun}:
+\begin{mdexampleinput}
+\-gmx~mdrun~-s~test\_restart.tpr~-deffnm~md~-cpi~state.cpt~\textbackslash\\
+\-~~~~-colvars~config.colvars.dat~-colvars\_restart~md.colvars.state.dat
+\end{mdexampleinput}
+  \fi
 }
 
 \cvlammpsonly{\cvsubsubsec{Restarting in LAMMPS.}{}
@@ -1097,12 +1108,12 @@ Conversely, any information that the state file may contain about variables or b
 Please note that these checks are performed based only on the \emph{names} of variables and biases: it is your responsibility to ensure that these names have \emph{consistent definitions between runs.}
 
 The flexibility just described carries some limitations: namely, it is only supported when reading \emph{text-format} Colvars state files.
-Instead, restarting from binary files\cvlammpsonly{ (such as the LAMMPS restart file)}\cvgromacsonly{ (such as the GROMACS checkpoint file)} after a configuration change will trigger an error.
+Instead, restarting from binary files\cvlammpsonly{ (such as the LAMMPS restart file)}\cvgromacsonly{\ifdefined\gromacsmdmodule{} (such as the GROMACS checkpoint file)\fi} after a configuration change will trigger an error.
 It is also important to remind that when switching to a different build of \MDENGINE, the binary format may change slightly, even if the release version is the same.
 
 To work around the potential issues just described, a text-format Colvars state file should be loaded.
 \ifdefined\cvvmdornamd{This is the default in \MDENGINE{} unless the ``\texttt{COLVARS\_BINARY\_RESTART}'' is set to 1, and this information is only provided here for troubleshooting purposes.}\fi\cvlammpsonly{This can be achieved by providing an explicit \texttt{input} keyword when initializing the Colvars fix (see \ref{sec:colvars_mdengine_parameters}), which will instruct Colvars to use the given filename, instead of the LAMMPS restart file.
-  Furthermore, the \texttt{fix\_modify} scripting command allows to load a Colvars file after initialization (\ref{sec:cv_command_loadsave}).}\cvgromacsonly{Loading such state file requires an exception to the standard behavior in GROMACS (i.e.\ loading a checkpoint file): this exception is supported by the following Colvars configuration:
+  Furthermore, the \texttt{fix\_modify} scripting command allows to load a Colvars file after initialization (\ref{sec:cv_command_loadsave}).}\cvgromacsonly{\ifdefined\gromacsmdmodule{}Loading such state file requires an exception to the standard behavior in GROMACS (i.e.\ loading a checkpoint file): this exception is supported by the following Colvars configuration:
 \begin{itemize}
 \item %
   \labelkey{Colvars-global|defaultInputStateFile}
@@ -1116,20 +1127,21 @@ To work around the potential issues just described, a text-format Colvars state 
 When a Colvars configuration featuring \texttt{defaultInputStateFile} is processed into a TPR file, and a GROMACS simulation is started from this TPR file but without providing a checkpoint, Colvars will load its state from the file named by \texttt{defaultInputStateFile}.
 Later, when that same simulation is continued by providing a checkpoint file to GROMACS, Colvars will ignore \texttt{defaultInputStateFile} and will read its data from the checkpoint file.
 For the sake of clarity, we recommend that as soon as a suitable GROMACS checkpoint is available, the \texttt{defaultInputStateFile} is removed \emph{removed}, and a new TPR file is produced accordingly.
+\fi % end \ifdefined\gromacsmdmodule
 }
 
 
 \cvsubsec{Output files}{sec:colvars_output}
 
-If the output prefix \outputName{} is defined\cvgromacsonly{ (in GROMACS, this is defined by the value of the \texttt{-e} flag of \texttt{mdrun})}, the following output files are written during a simulation run:
+If the output prefix \outputName{} is defined\cvgromacsonly{ (in GROMACS, this is defined by the value of the \ifdefined\gromacsmdmodule{}\texttt{-e}\else{}\texttt{-g}\fi flag of \texttt{mdrun})}, the following output files are written during a simulation run:
 
 \begin{itemize}
 
 \item A \emph{state file}, named \outputName\texttt{.colvars.state}, which is written at the end of the specified run\cvscriptonly{, and can also be written at any time with the scripting command \texttt{save} (\ref{sec:cv_command_loadsave})}.
 This file is in plain text format by default\cvnamdonly{, regardless of the value of \texttt{binaryOutput} of the NAMD coordinate and velocity files}, or in binary format if the environment variable \texttt{COLVARS\_BINARY\_RESTART} is set to a non-zero integer.
-The state file is used to continue a simulation, and is required to restart a simulation unless the engine supports embedding information into their checkpoint file (as GROMACS or LAMMPS currently do).
+The state file can be used to continue a simulation: unless its contents are embedded in the checkpoint file of the MD engine itself (currently, GROMACS and LAMMPS support this), instructions for loading the Colvars state file will be required in the simulation script (see \ref{sec:colvars_input}).
 
-\item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero and \restartName{} is defined\cvgromacsonly{ (this is \emph{not} the case in GROMACS)}, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
+\item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero and \restartName{} is defined\cvgromacsonly{ (note: this is \emph{not} the case in GROMACS)}, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
   The name of this file is \restartName\texttt{.colvars.state}.
 
 \item If the parameter \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} is greater than 0 (default value: 100 steps), a \emph{trajectory file}, named \outputName\texttt{.colvars.traj}, is written during the simulation.  Unlike the state file, this file is not needed to restart a simulation, but can be used for post-processing and analysis.  The format of this file is described in sec.~\ref{sec:colvars_traj_format}.
@@ -1151,7 +1163,7 @@ This section summarizes the file formats of various files that Colvars may be re
 \emph{Configuration files} are text files that are generally read as input by \MDENGINE{}\cvscriptonly{, and may be optionally inlined in a \MDENGINE{} script (see \ref{sec:cv_command_init})}.
 Starting from version 2017-02-01, changes in newline encodings are handled transparently, i.e.\ it is possible to typeset a configuration file in Windows (CR-LF newlines) and then use it with Linux or macOS (LF-only newlines).
 
-\emph{State files}, although not written manually, follow otherwise the same text format as configuration files.
+\emph{Formatted state files}, although not written manually, follow otherwise the same text format as configuration files.  \texttt{Binary state files} can only be read by the Colvars code itself.
 
 
 \cvsubsubsec{Index (NDX) files}{sec:colvars_ndx_format}
@@ -1193,6 +1205,8 @@ $E_{N}$ & $x_{N}$ & $y_{N}$ & $z_{N}$ \\
 
 \noindent{}where $N$ is the number of atomic coordinates in the file and $E_i$ is the chemical element of the $i$-th atom.
 Because $E_i$ is not used in Colvars, any string that does not contain tabs or spaces is acceptable.
+
+\textbf{Note:} all XYZ coordinates are assumed to be expressed in \AA{} units\cvgromacsonly{; it is advisable to obtain them from a PDB file, or using VMD and/or the Colvars Dashboard to avoid inconstencies with GROMACS\' nm units}\cvlammpsonly{, regardless of the units currently used by LAMMPS}.
 
 An XYZ file may contain either one of the following scenarios:
 \begin{enumerate}
@@ -4998,7 +5012,7 @@ atoms \{\\
 \end{cvexampleinput}
 }
 
-The following two options have default values appropriate for the vast majority of applications, and are only provided to support rare, special cases.
+The following options have default values appropriate for the vast majority of applications, and are only provided to support rare, special cases.
 \begin{itemize}
 
 \item %
@@ -5043,7 +5057,7 @@ This requires the use of \emph{unwrapped} coordinates, which are not subject to 
 }
 
 \cvlammpsonly{
-LAMMPS controls the availability of unwrapped coordinates using the \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}, which defaults to \texttt{yes}.
+LAMMPS controls the internal availability of unwrapped coordinates using the \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}, which defaults to \texttt{yes}.
 The user should determine whether it is appropriate to maintain the default value of \texttt{unwrap}, depending on the specifics of each system.
 }
 
@@ -5051,7 +5065,8 @@ The user should determine whether it is appropriate to maintain the default valu
 Internally, GROMACS wraps individual atom coordinates into a single periodic cell, which may break the calculation of some variables if their atom groups become split across PBCs.
 To prevent this, Colvars unwraps coordinates throughout the simulation, by assuming that each atom group is intact in the initial coordinates, and canceling any later jumps across the periodic box.
 This information is propagated across restarts using a checkpoint (\texttt{cpt}) file.
-However, whenever preparing a new simulation input with \texttt{gmx grompp}, users should provide input coordinates where the atoms involved in collective variables are not artificially moved across the boundary conditions, but occupy their relevant relative positions -- usually the nearest ones.
+
+Whenever preparing a new simulation input with \texttt{gmx grompp}, users should provide input coordinates such that the atoms involved in collective variables will not be artificially moved across the boundary conditions, but occupy their relevant positions relative to each other -- usually the nearest ones.
 Unwrapped coordinates are communicated between replicas when GROMACS is used for replica-exchange simulations. Thus, Colvars is compatible with native replica-exchange in GROMACS.
 }
 
@@ -7426,9 +7441,9 @@ This section lists the few cases where the choice of compilation settings affect
 
 \item Scripting commands using the Tcl language (\url{https://www.tcl.tk}) are supported in VMD and NAMD.  All precompiled builds of each code include Tcl, and it is highly recommended to enable Tcl support in any custom build, using precompiled Tcl libraries from the UIUC website.
 
-\item The Lepton library (\url{https://simtk.org/projects/lepton}) used to implement the \texttt{customFunction} feature is currently included only in NAMD (always on), in LAMMPS (on by default) and in the Colvars-patched GROMACS releases.  For VMD, a \href{https://github.com/giacomofiorin/vmd-patches}{patch} that allows to link Lepton is available.
+\item The Lepton library (\url{https://simtk.org/projects/lepton}) used to implement the \texttt{customFunction} feature is currently included only in NAMD (always on), in LAMMPS (on by default) and in the Colvars-patched GROMACS releases (but currently, not in the standard releases).  For VMD, a \href{https://github.com/giacomofiorin/vmd-patches}{patch} that allows to link Lepton is available.
 
-\item Colvars requires the C++11 language standard, which is either supported (VMD) or required (GROMACS, LAMMPS, NAMD) by all the engines.  However, many of the VMD official builds are produced on very old architectures.  For details please see:\\
+\item Colvars requires the C++11 language standard or higher, which is either supported (VMD) or required (GROMACS, LAMMPS, NAMD) by all the engines.  However, many of the VMD official builds are produced on very old architectures, where C++11 features are disabled at build time, thus limiting functionality.  For details please see:\\
   \url{https://colvars.github.io/README-c++11.html}
 \end{itemize}
 
