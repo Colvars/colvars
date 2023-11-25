@@ -836,6 +836,8 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
 
 void colvar::define_component_types()
 {
+  colvarproxy *proxy = cvm::main()->proxy;
+
   add_component_type<distance>("distance", "distance");
   add_component_type<distance_vec>("distance vector", "distanceVec");
   add_component_type<cartesian>("Cartesian coordinates", "cartesian");
@@ -854,8 +856,12 @@ void colvar::define_component_types()
   add_component_type<dipole_angle>("dipole angle", "dipoleAngle");
   add_component_type<dihedral>("dihedral", "dihedral");
   add_component_type<h_bond>("hydrogen bond", "hBond");
-  add_component_type<alpha_angles>("alpha helix", "alpha");
-  add_component_type<dihedPC>("dihedral principal component", "dihedralPC");
+
+  if (proxy->check_atom_name_selections_available() == COLVARS_OK) {
+    add_component_type<alpha_angles>("alpha helix", "alpha");
+    add_component_type<dihedPC>("dihedral principal component", "dihedralPC");
+  }
+
   add_component_type<orientation>("orientation", "orientation");
   add_component_type<orientation_angle>("orientation angle", "orientationAngle");
   add_component_type<orientation_proj>("orientation projection", "orientationProj");
@@ -880,11 +886,16 @@ void colvar::define_component_types()
   add_component_type<euler_phi>("euler phi angle of the optimal orientation", "eulerPhi");
   add_component_type<euler_psi>("euler psi angle of the optimal orientation", "eulerPsi");
   add_component_type<euler_theta>("euler theta angle of the optimal orientation", "eulerTheta");
+
 #ifdef LEPTON
   add_component_type<customColvar>("CV with support of the Lepton custom function", "customColvar");
 #endif
+
   add_component_type<neuralNetwork>("neural network CV for other CVs", "neuralNetwork");
-  add_component_type<map_total>("total value of atomic map", "mapTotal");
+
+  if (proxy->volmaps_available() == COLVARS_OK) {
+    add_component_type<map_total>("total value of atomic map", "mapTotal");
+  }
 }
 
 
