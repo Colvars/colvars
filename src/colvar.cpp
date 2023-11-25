@@ -920,37 +920,38 @@ int colvar::init_components(std::string const &conf)
     }
   }
 
-  if (!cvcs.size() || (error_code != COLVARS_OK)) {
+  if (!cvcs.size()) {
     std::string msg("Error: no valid components were provided for this collective variable.\n");
     msg += "Currently available component types are: \n";
     for (auto it = global_cvc_desc_map.begin(); it != global_cvc_desc_map.end(); ++it) {
       msg += "    " + it->first + " -- " + it->second + "\n";
     }
     msg += "\nPlease note that some of the above types may still be unavailable, irrespective of this error.\n";
-    return cvm::error(msg, COLVARS_INPUT_ERROR);
+    error_code |= cvm::error(msg, COLVARS_INPUT_ERROR);
   }
 
   // Check for uniqueness of CVC names (esp. if user-provided)
   for (i = 0; i < cvcs.size(); i++) {
-    for (j = i+1; j < cvcs.size(); j++) {
+    for (j = i + 1; j < cvcs.size(); j++) {
       if (cvcs[i]->name == cvcs[j]->name) {
-        cvm::error("Components " + cvm::to_str(i) + " and " + cvm::to_str(j) +\
-          " cannot have the same name \"" +  cvcs[i]->name+ "\".\n", COLVARS_INPUT_ERROR);
-        return COLVARS_INPUT_ERROR;
+        error_code |= cvm::error("Components " + cvm::to_str(i) + " and " + cvm::to_str(j) +
+                                     " cannot have the same name \"" + cvcs[i]->name + "\".\n",
+                                 COLVARS_INPUT_ERROR);
       }
     }
   }
 
-  n_active_cvcs = cvcs.size();
-
-  // Store list of children cvcs for dependency checking purposes
-  for (i = 0; i < cvcs.size(); i++) {
-    add_child(cvcs[i]);
+  if (error_code == COLVARS_OK) {
+    // Store list of children cvcs for dependency checking purposes
+    for (i = 0; i < cvcs.size(); i++) {
+      add_child(cvcs[i]);
+    }
+    // By default all CVCs are active at the start
+    n_active_cvcs = cvcs.size();
+    cvm::log("All components initialized.\n");
   }
 
-  cvm::log("All components initialized.\n");
-
-  return COLVARS_OK;
+  return error_code;
 }
 
 
