@@ -910,10 +910,13 @@ int colvar::init_components(std::string const &conf)
   }
 
   if (!cvcs.size() || (error_code != COLVARS_OK)) {
-    cvm::error("Error: no valid components were provided "
-               "for this collective variable.\n",
-               COLVARS_INPUT_ERROR);
-    return COLVARS_INPUT_ERROR;
+    std::string msg("Error: no valid components were provided for this collective variable.\n");
+    msg += "Currently available component types are: \n";
+    for (auto it = global_cvc_desc_map.begin(); it != global_cvc_desc_map.end(); ++it) {
+      msg += "    " + it->first + " -- " + it->second + "\n";
+    }
+    msg += "\nPlease note that some of the above types may still be unavailable, irrespective of this error.\n";
+    return cvm::error(msg, COLVARS_INPUT_ERROR);
   }
 
   // Check for uniqueness of CVC names (esp. if user-provided)
