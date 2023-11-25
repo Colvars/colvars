@@ -1271,6 +1271,13 @@ int colvarproxy_namd::set_unit_system(std::string const &units_in, bool /*check_
 
 #if NAMD_VERSION_NUMBER >= 34471681
 
+
+int colvarproxy_namd::check_volmaps_available()
+{
+  return COLVARS_OK;
+}
+
+
 int colvarproxy_namd::init_volmap_by_id(int volmap_id)
 {
   for (size_t i = 0; i < volmaps_ids.size(); i++) {

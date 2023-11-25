@@ -893,7 +893,7 @@ void colvar::define_component_types()
 
   add_component_type<neuralNetwork>("neural network CV for other CVs", "neuralNetwork");
 
-  if (proxy->volmaps_available() == COLVARS_OK) {
+  if (proxy->check_volmaps_available() == COLVARS_OK) {
     add_component_type<map_total>("total value of atomic map", "mapTotal");
   }
 }
