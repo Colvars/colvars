@@ -22,9 +22,13 @@
 #include "colvars_memstream.h"
 
 
-std::map<std::string, std::function<colvar::cvc *(const std::string &subcv_conf)>>
+
+std::map<std::string, std::function<colvar::cvc *(const std::string &conf)>>
     colvar::global_cvc_map =
-        std::map<std::string, std::function<colvar::cvc *(const std::string &subcv_conf)>>();
+        std::map<std::string, std::function<colvar::cvc *(const std::string &conf)>>();
+
+std::map<std::string, std::string> colvar::global_cvc_desc_map =
+    std::map<std::string, std::string>();
 
 
 colvar::colvar()

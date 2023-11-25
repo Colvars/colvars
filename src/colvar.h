@@ -688,8 +688,11 @@ protected:
 #endif
 
   /// A global mapping of cvc names to the cvc constructors
-  static std::map<std::string, std::function<colvar::cvc *(const std::string &subcv_conf)>>
+  static std::map<std::string, std::function<colvar::cvc *(const std::string &conf)>>
       global_cvc_map;
+
+  /// A global mapping of cvc names to the corresponding descriptions
+  static std::map<std::string, std::string> global_cvc_desc_map;
 
   /// Volmap numeric IDs, one for each CVC (-1 if not available)
   std::vector<int> volmap_ids_;
