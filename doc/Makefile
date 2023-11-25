@@ -97,10 +97,12 @@ endif
 
 clean: 
 	rm -f *.fdb_latexmk *.fls *.aux *.bbl *.blg *.log *.toc *.out *.idx *.ilg *.ind *.brf *.4tc *.4ct *.dvi *.idv *.lg *.xref *.tmp eulerangles-512px.png
-	rm -fr doxygen/html
 
 clean-all: clean
 	rm -f $(PDF) $(HTML) $(CSS)
+	rm -fr doxygen/html
+	@echo
+	@echo "Note: only removed files that this branch is set to build."
 
 version-list:
 	./print_engine_versions.sh > ../README-versions.md
