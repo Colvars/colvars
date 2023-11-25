@@ -758,6 +758,12 @@ int colvarproxy_vmd::init_atom(cvm::residue_id const &resid,
 }
 
 
+int colvarproxy_vmd::check_volmaps_available()
+{
+  return COLVARS_OK;
+}
+
+
 int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
 {
   for (size_t i = 0; i < volmaps_ids.size(); i++) {

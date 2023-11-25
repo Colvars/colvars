@@ -212,6 +212,8 @@ public:
 
 #if NAMD_VERSION_NUMBER >= 34471681
 
+  int check_volmaps_available() override;
+
   int init_volmap_by_id(int volmap_id) override;
 
   int init_volmap_by_name(const char *volmap_name) override;
