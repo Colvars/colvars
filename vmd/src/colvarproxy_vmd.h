@@ -91,6 +91,9 @@ public:
                           std::string const &pdb_field,
                           double const pdb_field_value = 0.0);
 
+
+  virtual int check_atom_name_selections_available();
+
   virtual int init_atom(int atom_number);
 
   virtual int check_atom_id(int atom_number);
