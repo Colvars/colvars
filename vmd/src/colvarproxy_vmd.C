@@ -651,6 +651,12 @@ int colvarproxy_vmd::check_atom_id(int atom_number)
 }
 
 
+int colvarproxy_vmd::check_atom_name_selections_available()
+{
+  return COLVARS_OK;
+}
+
+
 int colvarproxy_vmd::init_atom(int atom_number)
 {
   // save time by checking first whether this atom has been requested before
