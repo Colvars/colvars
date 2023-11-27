@@ -7,23 +7,17 @@ if [ -z "${key}" ] ; then
     exit 1
 fi
 
-gh actions-cache --help > /dev/null || gh extension install actions/gh-actions-cache
+gh actions-cache --help >& /dev/null || gh extension install actions/gh-actions-cache
 
-# Delete all caches except those generated from master
-for cache in $(gh actions-cache list --key ${key} | cut -f 1); do
-    branch=$(gh actions-cache list --key ${cache} | cut -f 3)
-    if [ ${branch} != 'refs/heads/master' ] ; then
-        # Ignore error if another job just deleted the same cache
-        gh actions-cache delete --confirm "${cache}" || true
-    fi
-done
-
-# Now keep one cache for master
-caches=($(gh actions-cache list --key ${key} | cut -f 1))
-i=${#caches[@]}
-while [ ${i} -ge 1 ] ; do
-    if [ -n "${caches[${i}]}" ] ; then
-        gh actions-cache delete --confirm "${caches[${i}]}" || true
-    fi
-    i=$((${i} - 1))
+# Keep at least one cache for each branch
+branches=$(gh actions-cache list --key ${key} | cut -f 3 | uniq)
+for branch in ${branches} ; do
+    caches=($(gh actions-cache list --key ${key} --branch ${branch} | cut -f 1))
+    i=${#caches[@]}
+    while [ ${i} -ge 1 ] ; do
+        if [ -n "${caches[${i}]}" ] ; then
+            gh actions-cache delete --confirm "${caches[${i}]}" || true
+        fi
+        i=$((${i} - 1))
+    done
 done
