@@ -1,5 +1,7 @@
 set(COLVARS_STUBS_DIR ${COLVARS_SOURCE_DIR}/misc_interfaces/stubs/)
 
+add_custom_target(link_files)
+
 foreach(CMD
     colvarvalue_unit3vector
     file_io
@@ -13,6 +15,7 @@ foreach(CMD
   target_include_directories(${CMD} PRIVATE ${COLVARS_STUBS_DIR})
   target_link_libraries(${CMD} PRIVATE colvars colvars_stubs)
   add_test(NAME ${CMD} COMMAND ${CMD})
+  add_dependencies(${CMD} link_files)
 endforeach()
 
 if(COLVARS_TCL)
@@ -23,7 +26,7 @@ if(COLVARS_TCL)
 endif()
 
 add_custom_command(
-        TARGET read_xyz_traj POST_BUILD
+        TARGET link_files
         COMMAND ${CMAKE_COMMAND} -E create_symlink
                 ${CMAKE_CURRENT_SOURCE_DIR}/index.ndx
                 ${CMAKE_CURRENT_BINARY_DIR}/index.ndx
@@ -32,16 +35,7 @@ add_custom_command(
                 ${CMAKE_CURRENT_BINARY_DIR}/test.in
         COMMAND ${CMAKE_COMMAND} -E create_symlink
                 ${CMAKE_CURRENT_SOURCE_DIR}/da-traj.xyz
-                ${CMAKE_CURRENT_BINARY_DIR}/da-traj.xyz)
-
-add_custom_command(
-        TARGET parse_error POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-                ${CMAKE_CURRENT_SOURCE_DIR}/index.ndx
-                ${CMAKE_CURRENT_BINARY_DIR}/index.ndx
+                ${CMAKE_CURRENT_BINARY_DIR}/da-traj.xyz
         COMMAND ${CMAKE_COMMAND} -E create_symlink
                 ${CMAKE_CURRENT_SOURCE_DIR}/test_error.in
-                ${CMAKE_CURRENT_BINARY_DIR}/test_error.in
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-                ${CMAKE_CURRENT_SOURCE_DIR}/da-traj.xyz
-                ${CMAKE_CURRENT_BINARY_DIR}/da-traj.xyz)
+                ${CMAKE_CURRENT_BINARY_DIR}/test_error.in)

@@ -61,8 +61,20 @@ if ! { echo ${DIRLIST} | grep -q 0 ; } then
   DIRLIST=`eval ls -d [0-9][0-9][0-9]_*`
 fi
 
-NUM_CPUS=$(nproc)
-NUM_THREADS=${NUM_THREADS:-${NUM_CPUS}}
+
+NUM_THREADS=4
+NUM_TASKS=1
+
+CHARM_ARCH=$(${BINARY} 2>&1 | grep 'Info: Based on Charm++/Converse' | cut -d' ' -f 7 || true)
+if [ "x${CHARM_ARCH}" == "xmpi-linux-x86_64" ] && source ${TOPDIR}/devel-tools/load-openmpi.sh ; then
+  NUM_TASKS=${NUM_THREADS}
+  NUM_THREADS=1
+  BINARY="mpirun -n ${NUM_TASKS} -oversubscribe $BINARY"
+else
+  BINARY="$BINARY +p ${NUM_THREADS}"
+fi
+
+echo "Running NAMD as: $BINARY"
 
 TPUT_RED='true'
 TPUT_GREEN='true'
@@ -177,8 +189,7 @@ for dir in ${DIRLIST} ; do
     fi
 
     # Run the test (use a subshell to avoid cluttering stdout)
-    # Use multiple threads to test SMP code (TODO: move SMP tests to interface?)
-    NAMD_CUDASOA=$CUDASOA $BINARY +p ${NUM_THREADS} $script > ${basename}.out
+    NAMD_CUDASOA=$CUDASOA $BINARY $script > ${basename}.out
 
     # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \

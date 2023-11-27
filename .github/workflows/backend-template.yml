@@ -64,6 +64,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CCACHE_DIR: ${{ github.workspace }}/ccache_${{ inputs.container_name }}
+      # Silence OpenMPI warnings
+      PSM3_MULTI_EP: 1
 
     steps:
       - name: Checkout Colvars
@@ -185,3 +187,10 @@ jobs:
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
+
+      - name: Keep only one cache besides the one from this job
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-${{ inputs.backend_name }}-

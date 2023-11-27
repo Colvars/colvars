@@ -255,6 +255,13 @@ jobs:
           name: Clang_address_sanitizer_output
           path: ${{github.workspace}}/build/Testing/Temporary/LastTest.log
 
+      - name: Keep only one cache besides the one from this job
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-asan-
+
 
   build-linux-x86_64-many:
     name: Linux x86_64 (GCC, Clang)
@@ -412,6 +419,13 @@ jobs:
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: Keep only one cache besides the one from this job
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh Linux-build-multiple-
 
 
   build-linux-x86_64-sun:
