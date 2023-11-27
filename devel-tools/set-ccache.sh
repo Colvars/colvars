@@ -18,4 +18,4 @@ if [ -z "${CCACHE_DIR}" ] || [ "x${CCACHE_DIR}" == "x/var/cache/ccache" ] ; then
 fi
 
 # Report cache statistics
-ccache -s
+ccache -sv
