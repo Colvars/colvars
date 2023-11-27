@@ -1,6 +1,6 @@
 name: "Library"
 
-on: [push, pull_request]
+on: [push]
 
 
 jobs:
@@ -9,7 +9,6 @@ jobs:
 
     name: Basic checks
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     outputs:
       hassecrets: ${{ steps.checksecrets.outputs.hassecrets }}
     env:
@@ -267,7 +266,6 @@ jobs:
     name: Linux x86_64 (GCC, Clang)
     runs-on: ubuntu-latest
     needs: basicchecks
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     env:
       CCACHE: ccache
       CMAKE_GENERATOR: Ninja
@@ -478,7 +476,6 @@ jobs:
     name: Windows x86_64 (MSVC)
     runs-on: windows-latest
     needs: basicchecks
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
 
@@ -500,7 +497,6 @@ jobs:
     name: macOS x86_64 (AppleClang)
     runs-on: macos-latest
     needs: basicchecks
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
 

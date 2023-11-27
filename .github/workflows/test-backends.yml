@@ -1,6 +1,6 @@
 name: "Backends"
 
-on: [push, pull_request]
+on: [push]
 
 # These jobs call a template workflow `backend-template.yml`, which performs
 # all the necessary steps to run the regression tests of the backend.
@@ -20,9 +20,6 @@ jobs:
 
   lammps:
     name: LAMMPS
-    if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'push' && (contains(github.event.head_commit.message, 'test-lammps') || github.event.base_ref == 'refs/heads/master'))
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: LAMMPS
@@ -38,9 +35,6 @@ jobs:
     name: NAMD
     # Prevent running this job on PRs across different accounts, because
     # secrets wouldn't be shared
-    if: |
-      (github.event_name == 'pull_request' && github.repository_owner == github.event.pull_request.head.repo.owner.login) ||
-      (github.event_name == 'push' && (contains(github.event.head_commit.message, 'test-namd') || github.event.base_ref == 'refs/heads/master'))
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: NAMD
@@ -59,9 +53,6 @@ jobs:
     name: NAMD3 (no CUDA)
     # Prevent running this job on PRs across different accounts, because
     # secrets wouldn't be shared
-    if: |
-      (github.event_name == 'pull_request' && github.repository_owner == github.event.pull_request.head.repo.owner.login) ||
-      (github.event_name == 'push' && (contains(github.event.head_commit.message, 'test-namd') || github.event.base_ref == 'refs/heads/master'))
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: NAMD3
@@ -81,9 +72,6 @@ jobs:
     name: VMD
     # Prevent running this job on PRs across different accounts, because
     # secrets wouldn't be shared
-    if: |
-      (github.event_name == 'pull_request' && github.repository_owner == github.event.pull_request.head.repo.owner.login) ||
-      (github.event_name == 'push' && (contains(github.event.head_commit.message, 'test-vmd') || github.event.base_ref == 'refs/heads/master'))
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: VMD
@@ -103,9 +91,6 @@ jobs:
 
   gromacs-2022:
     name: GROMACS 2022
-    if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'push' && (contains(github.event.head_commit.message, 'test-gromacs') || github.event.base_ref == 'refs/heads/master'))
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: GROMACS-2022
@@ -118,9 +103,6 @@ jobs:
 
   gromacs-2023:
     name: GROMACS 2023
-    if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'push' && (contains(github.event.head_commit.message, 'test-gromacs') || github.event.base_ref == 'refs/heads/master'))
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: GROMACS-2023
@@ -133,9 +115,6 @@ jobs:
 
   gromacs-devel:
     name: GROMACS (MDModules)
-    if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'push' && (contains(github.event.head_commit.message, 'test-gromacs') || github.event.base_ref == 'refs/heads/master'))
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: GROMACS-devel
