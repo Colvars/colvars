@@ -585,6 +585,18 @@ To do this while also continuing a previous simulations, please see \ref{sec:cha
 
 \end{itemize}
 
+\noindent{}Then, create the \texttt{tpr} and launch the simulation using a standard \texttt{gmx mdrun} command line:
+\begin{mdexampleinput}
+\-gmx~grompp~-f~system.mdp~-p~system.top~-c~init.gro~-o~test.tpr\\
+\-gmx~mdrun~-s~test.tpr
+\end{mdexampleinput}
+
+\noindent{}Continuing from a previous simulation is done using the \texttt{-cpi} parameter for the checkpoint file (e.g.\ ``\texttt{state.cpt}''). This file holds the required information to restart the Colvars-based simulation.
+\begin{mdexampleinput}
+\-gmx~convert-tpr~-s~test.tpr~-nsteps~\${NUMSTEPS}~-o~test\_restart.tpr\\
+\-gmx~mdrun~-s~test\_restart.tpr~-cpi~state.cpt
+\end{mdexampleinput}
+
 \else
 
 \textbf{Note:} \emph{This section describes how to use Colvars in GROMACS versions until 2023, using patched GROMACS source code.  This interface is now deprecated: whenever possible, please consider using GROMACS 2024 and later versions, which support and include Colvars natively.}
@@ -606,28 +618,6 @@ It is also highly recommended to read checkpoint files that were written by the 
 
 For the output files, the prefix of Colvars output files will use the \texttt{-defnnm} option of mdrun, or be the same as the GROMACS log file if the option is not set.  Otherwise, the prefix will be \emph{output}.
 
-\textbf{Note:} \emph{This section describes how to use Colvars in GROMACS versions starting 2024, which support and include Colvars natively.}
-
-To enable a Colvars-based calculation, just modify the \texttt{mdp} file to add those two keywords:
-\begin{mdexampleinput}
-  \-...\\
-  \-colvars-active~=~yes\\
-  \-colvars-configfile~=~my\_colvars.dat\\
-  \-...\\
-\end{mdexampleinput}
-
-Then, create the \texttt{tpr} and launch the simulation as usual:
-\begin{mdexampleinput}
-  \-gmx~grompp~-f~system.mdp~-p~system.top~-c~init.gro~-o~test.tpr
-  \-gmx~mdrun~-s~test.tpr~-deffnm~md~
-\end{mdexampleinput}
-
-Restarting from a previous simulation is done using the \texttt{-cpi} parameter for the checkpoint file (e.g.{} ``\texttt{state.cpt}''). This file holds the required information to restart the Colvars-based simulation.
-\begin{mdexampleinput}
-  \-gmx~mdrun~-s~test\_restart.tpr~-deffnm~md~-cpi~state.cpt
-\end{mdexampleinput}
-
-For the output files, the prefix of Colvars output files share the same prefix as the \texttt{edr} file, which is ``\texttt{ener}'' by default. This is modified if the \texttt{-defnnm} or the \texttt{-e} option of mdrun is used.
 \fi
 } % \cvgromacsonly
 
