@@ -64,6 +64,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CCACHE_DIR: ${{ github.workspace }}/ccache_${{ inputs.container_name }}
+      # Silence OpenMPI warnings
+      PSM3_MULTI_EP: 1
 
     steps:
       - name: Checkout Colvars
