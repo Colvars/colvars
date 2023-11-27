@@ -178,7 +178,7 @@ void colvar::torchANN::calc_gradients() {
 void colvar::torchANN::apply_force(colvarvalue const &force) {
 
   for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-    // If this CV us explicit gradients, then atomic gradients is already calculated
+    // If this CV uses explicit gradients, then atomic gradients is already calculated
     // We can apply the force to atom groups directly
     if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
       for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
@@ -199,11 +199,14 @@ void colvar::torchANN::apply_force(colvarvalue const &force) {
   }
 }
 
+// Nearest-image convection is handled in the same way as in colvar::distance_z
 cvm::real colvar::torchANN::dist2(colvarvalue const &x1, colvarvalue const &x2) const
 {
   cvm::real diff = x1.real_value - x2.real_value;
-  if (is_enabled(f_cvc_periodic)) 
-    diff = (diff < - period * 0.5 ? diff + period : (diff > period * 0.5 ? diff - period : diff));
+  if (is_enabled(f_cvc_periodic)) {
+    cvm::real shift = cvm::floor(diff/period + 0.5);
+    diff -= shift * period;
+  }
   return diff * diff;
 }
 
@@ -211,18 +214,21 @@ colvarvalue colvar::torchANN::dist2_lgrad(colvarvalue const &x1,
                                           colvarvalue const &x2) const
 {
   cvm::real diff = x1.real_value - x2.real_value;
-  if (is_enabled(f_cvc_periodic)) 
-    diff = (diff < - period * 0.5 ? diff + period : (diff > period * 0.5 ? diff - period : diff));
+  if (is_enabled(f_cvc_periodic)) {
+    cvm::real shift = cvm::floor(diff/period + 0.5);
+    diff -= shift * period;
+  }
   return 2.0 * diff;
 }
-
 
 colvarvalue colvar::torchANN::dist2_rgrad(colvarvalue const &x1,
                                           colvarvalue const &x2) const
 {
   cvm::real diff = x1.real_value - x2.real_value;
-  if (is_enabled(f_cvc_periodic)) 
-    diff = (diff < - period * 0.5 ? diff + period : (diff > period * 0.5 ? diff - period : diff));
+  if (is_enabled(f_cvc_periodic)) {
+    cvm::real shift = cvm::floor(diff/period + 0.5);
+    diff -= shift * period;
+  }
   return (-2.0) * diff;
 }
 
