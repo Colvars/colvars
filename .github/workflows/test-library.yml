@@ -255,6 +255,21 @@ jobs:
           name: Clang_address_sanitizer_output
           path: ${{github.workspace}}/build/Testing/Temporary/LastTest.log
 
+      - name: Keep only one cache besides the one from this job
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh extension install actions/gh-actions-cache;
+          caches=($(gh actions-cache list --key Linux-build-asan- | cut -f 1));
+          i=100;
+          while [ ${i} -ge 1 ] ; do
+              if [ -n "${caches[${i}]}" ] ; then
+                  gh actions-cache delete --confirm "${caches[${i}]}";
+              fi
+              i=$((${i} - 1));
+          done
+
 
   build-linux-x86_64-many:
     name: Linux x86_64 (GCC, Clang)
