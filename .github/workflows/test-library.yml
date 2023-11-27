@@ -260,15 +260,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh extension install actions/gh-actions-cache;
-          caches=($(gh actions-cache list --key Linux-build-asan- | cut -f 1));
-          i=100;
-          while [ ${i} -ge 1 ] ; do
-              if [ -n "${caches[${i}]}" ] ; then
-                  gh actions-cache delete --confirm "${caches[${i}]}";
-              fi
-              i=$((${i} - 1));
-          done
+          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-asan-
 
 
   build-linux-x86_64-many:
@@ -433,15 +425,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh extension install actions/gh-actions-cache;
-          caches=($(gh actions-cache list --key Linux-build-multiple- | cut -f 1));
-          i=100;
-          while [ ${i} -ge 1 ] ; do
-              if [ -n "${caches[${i}]}" ] ; then
-                  gh actions-cache delete --confirm "${caches[${i}]}";
-              fi
-              i=$((${i} - 1));
-          done
+          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh Linux-build-multiple-
 
 
   build-linux-x86_64-sun:
