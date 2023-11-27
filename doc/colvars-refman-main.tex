@@ -541,22 +541,21 @@ All of the above keywords except for the name of the configuration file may also
 To enable a simulation with Colvars, one or more options should be added to the typical \texttt{mdp} parameters, for example:
 \begin{mdexampleinput}
 \-;~MDP~file\\
-\-...\
+\-...\\
 \-colvars-active~=~yes\\
 \-colvars-configfile~=~my\_config.colvars\\
 \-...\\
 \-(other~MDP~options)\\
 \end{mdexampleinput}
 When the \texttt{gmx grommp} command is called to create a TPR file, the contents of \texttt{my\_config.colvars} and of all files referenced by it are bundled in the TPR file as well.
-
 In any run based on the same TPR file, \texttt{gmx mdrun} will not access any of the original files used to initialize Colvars.
-When modifying the Colvars configuration (e.g.\ adding or removing a bias), a new TPR file should be built as well.
+Therefore to modify the Colvars configuration (e.g.\ adding or removing a bias), a new TPR file should be built as well.
 To do this while also continuing a previous simulations, please see \ref{sec:change_config_restart}.
 
 \begin{itemize}
 
 \item %
-  \keydef{
+  \keydef{%
     colvars-active}{%
     MDP option}{%
     Activate the Colvars module in GROMACS}{%
@@ -596,6 +595,8 @@ To do this while also continuing a previous simulations, please see \ref{sec:cha
 \-gmx~convert-tpr~-s~test.tpr~-nsteps~\${NUMSTEPS}~-o~test\_restart.tpr\\
 \-gmx~mdrun~-s~test\_restart.tpr~-cpi~state.cpt
 \end{mdexampleinput}
+
+Other output files (not needed for restarting) will be written using as prefix the value of the \texttt{-e} flag of \texttt{gmx mdrun} (see \ref{sec:colvars_output)}).
 
 \else
 
@@ -1123,7 +1124,7 @@ For the sake of clarity, we recommend that as soon as a suitable GROMACS checkpo
 
 \cvsubsec{Output files}{sec:colvars_output}
 
-If the output prefix \outputName{} is defined\cvgromacsonly{ (in GROMACS, this is defined by the value of the \ifdefined\gromacsmdmodule{}\texttt{-e}\else{}\texttt{-g}\fi flag of \texttt{mdrun})}, the following output files are written during a simulation run:
+When the output prefix \outputName{} is defined\cvgromacsonly{ (in GROMACS, this is automatically set to the value of the \ifdefined\gromacsmdmodule{}\texttt{-e}\else{}\texttt{-g}\fi flag of \texttt{mdrun})}, the following output files are written during a simulation run:
 
 \begin{itemize}
 
@@ -1131,10 +1132,10 @@ If the output prefix \outputName{} is defined\cvgromacsonly{ (in GROMACS, this i
 This file is in plain text format by default\cvnamdonly{, regardless of the value of \texttt{binaryOutput} of the NAMD coordinate and velocity files}, or in binary format if the environment variable \texttt{COLVARS\_BINARY\_RESTART} is set to a non-zero integer.
 The state file can be used to continue a simulation: unless its contents are embedded in the checkpoint file of the MD engine itself (currently, GROMACS and LAMMPS support this), instructions for loading the Colvars state file will be required in the simulation script (see \ref{sec:colvars_input}).
 
-\item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero and \restartName{} is defined\cvgromacsonly{ (note: this is \emph{not} the case in GROMACS)}, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
+\item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero and the \restartName{} prefix is defined\cvgromacsonly{ (note: this is \emph{not} the case in GROMACS)}, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
   The name of this file is \restartName\texttt{.colvars.state}.
 
-\item If the parameter \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} is greater than 0 (default value: 100 steps), a \emph{trajectory file}, named \outputName\texttt{.colvars.traj}, is written during the simulation.  Unlike the state file, this file is not needed to restart a simulation, but can be used for post-processing and analysis.  The format of this file is described in sec.~\ref{sec:colvars_traj_format}.
+\item If the parameter \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} is greater than 0 (default value: 100 steps), a \emph{trajectory file}, named \outputName\texttt{.colvars.traj}, is written during the simulation.  Unlike a state file, this file is not needed to restart a simulation, but can be used for post-processing and analysis.  The format of this file is described in sec.~\ref{sec:colvars_traj_format}.
 
 \item Additionally, certain features, when enabled, can emit output files with a specific purpose: for example, potentials of mean force (PMFs) can be written to file to be analyzed or plotted.  These files are described in the respective sections, but as a general rule they all use names beginning with the \outputName{} prefix.
 Like the trajectory file, these additional files are needed only for analyzing a simulation's results, but not to continue it.
