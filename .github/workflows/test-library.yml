@@ -83,6 +83,13 @@ jobs:
       - name: Print ccache stats
         run: ccache -s -v
 
+      - name: Keep only one cache besides the one from this job
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-basic-
+
 
   build-doc:
     name: Build documentation
