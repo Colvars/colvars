@@ -1488,7 +1488,7 @@ The \texttt{distance \{...\}} block defines a distance component between the two
     {group1}{%
     \texttt{distance}}{%
     First group of atoms}{%
-    Block \texttt{group1 \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     First group of atoms.}
 
 \item %
@@ -1553,7 +1553,7 @@ One of the groups can be set to a dummy atom to allow the use of an absolute Car
     {main}{%
     \texttt{distanceZ}}{%
     Main group of atoms}{%
-    Block \texttt{main \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Group of atoms whose position $\bm{r}$ is measured.}
 
 \item %
@@ -1563,7 +1563,7 @@ One of the groups can be set to a dummy atom to allow the use of an absolute Car
     \texttt{distanceZ}}{%
     Reference group of
     atoms}{%
-    Block \texttt{ref \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Reference group of atoms.  The position of its center of mass is
     noted $\bm{r}_1$ below.}
 
@@ -1574,7 +1574,7 @@ One of the groups can be set to a dummy atom to allow the use of an absolute Car
     \texttt{distanceZ}}{%
     Secondary reference
     group}{%
-    Block \texttt{ref2 \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     none}{%
     Optional group of reference atoms, whose position $\bm{r}_2$ can
     be used to define a dynamic projection axis: $\bm{e}=(\| \bm{r}_2
@@ -3018,7 +3018,7 @@ $(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
     {atoms}{%
     \texttt{cartesian}}{%
     Group of atoms}{%
-    Block \texttt{atoms \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Defines the atoms whose coordinates make up the value of the component.
     If \texttt{rotateToReference}, \texttt{centerToReference}, or \texttt{centerToOrigin} are defined, coordinates
     are evaluated within the moving frame of reference.}
@@ -3069,7 +3069,7 @@ In the \texttt{gspath~\{...\}} and the \texttt{gzpath~\{...\}} block all vectors
     {atoms}{%
     \texttt{gspath} and \texttt{gzpath}}{%
     Group of atoms}{%
-    Block \texttt{atoms \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Defines the atoms whose coordinates make up the value of the component.}
 
 \item %
@@ -3464,7 +3464,7 @@ implementation of the PCV progress component of the Tcl-scripted version
     {atoms}{%
     \texttt{aspath} and \texttt{azpath}}{%
     Group of atoms}{%
-    Block \texttt{atoms \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Defines the atoms whose coordinates make up the value of the component.}
 
 \item %
@@ -4965,7 +4965,7 @@ Be careful when using these options in ABF simulations or when using total force
     {fittingGroup}{%
     atom group}{%
     Use an alternate set of atoms to define the roto-translation}{%
-    Block \texttt{fittingGroup \{ ... \}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     This atom group itself}{%
     If either \texttt{centerToReference} or \texttt{rotateToReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
     Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
