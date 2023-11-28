@@ -535,8 +535,8 @@ then
   echo ""
   if [ -d ${target_folder} ]
   then
-    echo "Your ${target} source tree seems to have already been patched."
-    echo "Update with the last Colvars source."
+    echo "${target} source tree seems to have already been patched."
+    echo "Updating to the current Colvars sources."
   else
     mkdir ${target_folder}
   fi
@@ -549,7 +549,7 @@ then
       condcopy "${src}" "${target_folder}/${tgt}"
     done
   else
-    # Starting from GROMACS 2022, colvar library is in `external` and proxy files are in `src/gromacs/applied_forces/colvarproxy`
+    # Starting from GROMACS 2022, the Colvars library is under `external` and proxy files are in `src/gromacs/applied_forces/colvarproxy`
     # Library files
     for src in ${source}/src/*.h ${source}/src/*.cpp
     do \
@@ -560,8 +560,8 @@ then
     target_folder=${target}/src/gromacs/applied_forces/colvars
     if [ -d ${target_folder} ]
     then
-      echo "Your ${target} source tree seems to have already been patched."
-      echo "Update with the last Colvars source."
+      echo "${target} source tree seems to have already been patched."
+      echo "Updating to the current Colvars sources."
     else
       mkdir ${target_folder}
     fi
@@ -630,8 +630,8 @@ then
   echo ""
   if [ -d ${target_folder} ]
   then
-    echo "Your ${target} source tree seems to have already been patched."
-    echo "Update with the last Colvars source."
+    echo "${target} source tree seems to have already been patched."
+    echo "Updating to the current Colvars sources."
   else
     mkdir ${target_folder}
   fi
@@ -654,8 +654,8 @@ then
   target_folder=${target}/src/gromacs/applied_forces/colvars
   if [ -d ${target_folder} ]
   then
-    echo "Your ${target} source tree seems to have already been patched."
-    echo "Update with the last Colvars source."
+    echo "${target} source tree seems to have already been patched."
+    echo "Updating to the current Colvars sources."
   else
     mkdir ${target_folder}
     mkdir -p ${target_folder}/tests/refdata
