@@ -1,5 +1,7 @@
 # Ensure that Lmod is properly initialized
-source /etc/profile
+if [ -f /etc/profile.d/modules.sh ] ; then
+    source /etc/profile.d/modules.sh
+fi
 
 if declare -f module >& /dev/null ; then
     # Default modulefile in OpenMPI RPM package

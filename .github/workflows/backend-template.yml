@@ -133,9 +133,11 @@ jobs:
           OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
           CMAKE_GENERATOR: Ninja
         run: |
-          apptainer exec devel-tools/${{ inputs.container_name }}.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
           apptainer exec devel-tools/${{ inputs.container_name }}.sif \
-          bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
+              ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
+          mkdir -p ${CCACHE_DIR}
+          apptainer exec devel-tools/${{ inputs.container_name }}.sif \
+              bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
 
 
       # 2 types of tests can be performed with the MD engine: library & interface
