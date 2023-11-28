@@ -1,6 +1,6 @@
 #!/bin/bash
 
-key=${1:-key Linux-build-}
+key=${1:-Linux-build-}
 
 if [ -z "${key}" ] ; then
     echo "Error: please specify a cache key as argument." >& 2
@@ -9,7 +9,7 @@ fi
 
 gh actions-cache --help >& /dev/null || gh extension install actions/gh-actions-cache
 
-# Keep at least one cache for each branch
+# Keep at most one cache for each branch
 branches=$(gh actions-cache list --key ${key} | cut -f 3 | uniq)
 for branch in ${branches} ; do
     caches=($(gh actions-cache list --key ${key} --branch ${branch} | cut -f 1))
