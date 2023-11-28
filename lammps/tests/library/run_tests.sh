@@ -37,6 +37,9 @@ fi
 NUM_TASKS=${NUM_TASKS:-4}
 
 if $BINARY -h >& /dev/null ; then
+  if $BINARY -h 2> /dev/null | grep -q '^OPENMP package API: OpenMP' ; then
+    BINARY="$BINARY -pk omp 2"
+  fi
   if $BINARY -h 2> /dev/null | grep ^MPI | grep -q STUBS ; then
     MPI_BUILD=no
   else
@@ -49,6 +52,8 @@ else
   echo "Error: executable $BINARY did not return a help screen" >& 2
   exit 1
 fi
+
+echo "Running LAMMPS as: $BINARY"
 
 SPIFF=$(${TOPDIR}/devel-tools/get_spiff)
 if [ $? != 0 ] ; then
