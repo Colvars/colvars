@@ -1,6 +1,7 @@
 name: "Library"
 
-on: [push]
+on:
+  push:
 
 
 jobs:
