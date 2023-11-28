@@ -36,27 +36,14 @@ export RELEASE_ENGINE
 
 
 ifeq ($(RELEASE_ENGINE),)
-
-PDF = \
-	colvars-refman-gromacs.pdf \
-	colvars-refman-lammps.pdf \
-	colvars-refman-namd.pdf \
-	colvars-refman-tinkerhp.pdf \
-	colvars-refman-vmd.pdf
-
-HTML = \
-	colvars-refman-gromacs.html \
-	colvars-refman-lammps.html \
-	colvars-refman-namd.html \
-	colvars-refman-tinkerhp.html \
-	colvars-refman-vmd.html
-
+# Build doc for all engines
+ENGINES = gromacs lammps namd tinkerhp vmd
 else
-
-PDF = colvars-refman-$(RELEASE_ENGINE).pdf
-HTML = colvars-refman-$(RELEASE_ENGINE).html
-
+ENGINES = $(RELEASE_ENGINE)
 endif
+
+PDF = $(foreach _,${ENGINES},colvars-refman-$_.pdf)
+HTML = $(foreach _,${ENGINES},colvars-refman-$_.html)
 
 CSS = $(HTML:.html=.css)
 BIBTEX = colvars-refman.bib
@@ -133,17 +120,24 @@ IMAGES = cover-512px.jpg eulerangles-512px.png
 # Install docs in the website tree, under the folder named $(COLVARS_RELEASE).
 # Note: to produce the documentation for a specific release of a MD engine,
 # check out the branch or tag corresponding to that version, clean and rebuild.
-webpage: all images
+ifeq ($(COLVARS_RELEASE),"master")
+webpage: all images doxygen
 	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
 	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
 	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
 	rm -fr $(COLVARS_WEBSITE_TREE)/doxygen/html/* ; \
 	cp -p -r doxygen/html/* $(COLVARS_WEBSITE_TREE)/doxygen/html/
+else
+webpage: all images
+	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
+	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
+	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/
+endif
 
 # Update HTML pages with older-style paths (without branch/release name)
 webpage-legacy: all images
 	cp -p -f $(PDF) $(COLVARS_WEBSITE_TREE)/pdf ; \
-	for engine in lammps namd tinkerhp vmd ; do \
+	for engine in $(ENGINES) ; do \
 	cp -p -f colvars-refman-$${engine}.{html,css} $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
 	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
 	done
