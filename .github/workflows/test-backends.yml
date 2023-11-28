@@ -1,6 +1,8 @@
 name: "Backends"
 
-on: [push]
+on:
+  push:
+
 
 # These jobs call a template workflow `backend-template.yml`, which performs
 # all the necessary steps to run the regression tests of the backend.
