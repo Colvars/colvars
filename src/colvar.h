@@ -617,7 +617,6 @@ public:
   class dihedPC;
   class alch_lambda;
   class alch_Flambda;
-  class componentDisabled;
   class CartesianBasedPath;
   class aspath;
   class azpath;
@@ -645,8 +644,7 @@ public:
   class map_total;
 
   /// A global mapping of cvc names to the cvc constructors
-  static const std::map<std::string, std::function<colvar::cvc *(const std::string &subcv_conf)>> &
-  get_global_cvc_map()
+  static const std::map<std::string, std::function<colvar::cvc *()>> &get_global_cvc_map()
   {
     return global_cvc_map;
   }
@@ -689,8 +687,7 @@ protected:
 #endif
 
   /// A global mapping of cvc names to the cvc constructors
-  static std::map<std::string, std::function<colvar::cvc *(const std::string &conf)>>
-      global_cvc_map;
+  static std::map<std::string, std::function<colvar::cvc *()>> global_cvc_map;
 
   /// A global mapping of cvc names to the corresponding descriptions
   static std::map<std::string, std::string> global_cvc_desc_map;

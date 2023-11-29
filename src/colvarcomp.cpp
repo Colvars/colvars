@@ -29,20 +29,6 @@ colvar::cvc::cvc()
 }
 
 
-colvar::cvc::cvc(std::string const &conf)
-{
-  description = "uninitialized colvar component";
-  b_try_scalable = true;
-  sup_coeff = 1.0;
-  sup_np = 1;
-  period = 0.0;
-  wrap_center = 0.0;
-  width = 0.0;
-  init_dependencies();
-  colvar::cvc::init(conf);
-}
-
-
 int colvar::cvc::update_description()
 {
   if (name.size() > 0) {
@@ -171,7 +157,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
                                           char const *group_key,
                                           bool optional)
 {
-  int &error_code = init_code;
+  int error_code = COLVARS_OK;
 
   cvm::atom_group *group = nullptr;
   std::string group_conf;

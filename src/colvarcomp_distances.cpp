@@ -16,8 +16,7 @@
 #include "colvar_rotation_derivative.h"
 
 
-colvar::distance::distance(std::string const &conf)
-  : cvc(conf)
+colvar::distance::distance()
 {
   set_function_type("distance");
   init_as_distance();
@@ -25,23 +24,19 @@ colvar::distance::distance(std::string const &conf)
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   enable(f_cvc_com_based);
+}
+
+
+int colvar::distance::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
 
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
-  init_total_force_params(conf);
-}
+  error_code |= init_total_force_params(conf);
 
-
-colvar::distance::distance()
-  : cvc()
-{
-  set_function_type("distance");
-  init_as_distance();
-
-  provide(f_cvc_inv_gradient);
-  provide(f_cvc_Jacobian);
-  enable(f_cvc_com_based);
+  return error_code;
 }
 
 
@@ -97,21 +92,9 @@ simple_scalar_dist_functions(distance)
 
 
 
-colvar::distance_vec::distance_vec(std::string const &conf)
-  : distance(conf)
-{
-  set_function_type("distanceVec");
-  enable(f_cvc_com_based);
-  disable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_3vector);
-}
-
-
 colvar::distance_vec::distance_vec()
-  : distance()
 {
   set_function_type("distanceVec");
-  enable(f_cvc_com_based);
   disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_3vector);
 }
@@ -167,14 +150,19 @@ colvarvalue colvar::distance_vec::dist2_rgrad(colvarvalue const &x1,
 
 
 
-colvar::distance_z::distance_z(std::string const &conf)
-  : cvc(conf)
+colvar::distance_z::distance_z()
 {
   set_function_type("distanceZ");
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   enable(f_cvc_com_based);
   x.type(colvarvalue::type_scalar);
+}
+
+
+int colvar::distance_z::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
 
   // TODO detect PBC from MD engine (in simple cases)
   // and then update period in real time
@@ -183,9 +171,9 @@ colvar::distance_z::distance_z(std::string const &conf)
   }
 
   if ((wrap_center != 0.0) && !is_enabled(f_cvc_periodic)) {
-    cvm::error("Error: wrapAround was defined in a distanceZ component,"
-                " but its period has not been set.\n");
-    return;
+    error_code |= cvm::error("Error: wrapAround was defined in a distanceZ component,"
+                             " but its period has not been set.\n",
+                             COLVARS_INPUT_ERROR);
   }
 
   main = parse_group(conf, "main");
@@ -201,8 +189,7 @@ colvar::distance_z::distance_z(std::string const &conf)
   } else {
     if (get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0))) {
       if (axis.norm2() == 0.0) {
-        cvm::error("Axis vector is zero!");
-        return;
+        error_code |= cvm::error("Axis vector is zero!", COLVARS_INPUT_ERROR);
       }
       if (axis.norm2() != 1.0) {
         axis = axis.unit();
@@ -212,18 +199,9 @@ colvar::distance_z::distance_z(std::string const &conf)
     fixed_axis = true;
   }
 
-  init_total_force_params(conf);
+  error_code |= init_total_force_params(conf);
 
-}
-
-
-colvar::distance_z::distance_z()
-{
-  set_function_type("distanceZ");
-  provide(f_cvc_inv_gradient);
-  provide(f_cvc_Jacobian);
-  enable(f_cvc_com_based);
-  x.type(colvarvalue::type_scalar);
+  return error_code;
 }
 
 
@@ -365,27 +343,10 @@ void colvar::distance_z::wrap(colvarvalue &x_unwrapped) const
 
 
 
-colvar::distance_xy::distance_xy(std::string const &conf)
-  : distance_z(conf)
-{
-  set_function_type("distanceXY");
-  init_as_distance();
-
-  provide(f_cvc_inv_gradient);
-  provide(f_cvc_Jacobian);
-  enable(f_cvc_com_based);
-}
-
-
 colvar::distance_xy::distance_xy()
-  : distance_z()
 {
   set_function_type("distanceXY");
   init_as_distance();
-
-  provide(f_cvc_inv_gradient);
-  provide(f_cvc_Jacobian);
-  enable(f_cvc_com_based);
 }
 
 
@@ -478,18 +439,7 @@ simple_scalar_dist_functions(distance_xy)
 
 
 
-colvar::distance_dir::distance_dir(std::string const &conf)
-  : distance(conf)
-{
-  set_function_type("distanceDir");
-  enable(f_cvc_com_based);
-  disable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_unit3vector);
-}
-
-
 colvar::distance_dir::distance_dir()
-  : distance()
 {
   set_function_type("distanceDir");
   enable(f_cvc_com_based);
@@ -555,31 +505,35 @@ colvarvalue colvar::distance_dir::dist2_rgrad(colvarvalue const &x1,
 }
 
 
-
-colvar::distance_inv::distance_inv(std::string const &conf)
-  : cvc(conf)
+colvar::distance_inv::distance_inv()
 {
   set_function_type("distanceInv");
   init_as_distance();
+}
+
+
+int colvar::distance_inv::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
 
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
-  get_keyval(conf, "exponent", exponent, 6);
-  if (exponent%2) {
-    cvm::error("Error: odd exponent provided, can only use even ones.\n");
-    return;
+  get_keyval(conf, "exponent", exponent, exponent);
+  if (exponent % 2) {
+    error_code |=
+        cvm::error("Error: odd exponent provided, can only use even ones.\n", COLVARS_INPUT_ERROR);
   }
   if (exponent <= 0) {
-    cvm::error("Error: negative or zero exponent provided.\n");
-    return;
+    error_code |= cvm::error("Error: negative or zero exponent provided.\n", COLVARS_INPUT_ERROR);
   }
 
   for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++) {
     for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
       if (ai1->id == ai2->id) {
-        cvm::error("Error: group1 and group2 have some atoms in common: this is not allowed for distanceInv.\n");
-        return;
+        error_code |= cvm::error("Error: group1 and group2 have some atoms in common: this is not "
+                                 "allowed for distanceInv.\n",
+                                 COLVARS_INPUT_ERROR);
       }
     }
   }
@@ -589,6 +543,8 @@ colvar::distance_inv::distance_inv(std::string const &conf)
              "for distanceInv, because its value and gradients are computed "
              "simultaneously.\n");
   }
+
+  return error_code;
 }
 
 
@@ -655,25 +611,23 @@ simple_scalar_dist_functions(distance_inv)
 
 
 
-colvar::distance_pairs::distance_pairs(std::string const &conf)
-  : cvc(conf)
-{
-  set_function_type("distancePairs");
-
-  group1 = parse_group(conf, "group1");
-  group2 = parse_group(conf, "group2");
-
-  x.type(colvarvalue::type_vector);
-  disable(f_cvc_explicit_gradient);
-  x.vector1d_value.resize(group1->size() * group2->size());
-}
-
-
 colvar::distance_pairs::distance_pairs()
 {
   set_function_type("distancePairs");
   disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_vector);
+}
+
+
+int colvar::distance_pairs::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
+
+  group1 = parse_group(conf, "group1");
+  group2 = parse_group(conf, "group2");
+  x.vector1d_value.resize(group1->size() * group2->size());
+
+  return error_code;
 }
 
 
@@ -740,29 +694,19 @@ void colvar::distance_pairs::apply_force(colvarvalue const &force)
 
 
 
-colvar::dipole_magnitude::dipole_magnitude(std::string const &conf)
-  : cvc(conf)
-{
-  set_function_type("dipoleMagnitude");
-  atoms = parse_group(conf, "atoms");
-  init_total_force_params(conf);
-  x.type(colvarvalue::type_scalar);
-}
-
-
-colvar::dipole_magnitude::dipole_magnitude(cvm::atom const &a1)
-{
-  set_function_type("dipoleMagnitude");
-  atoms = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
-  register_atom_group(atoms);
-  x.type(colvarvalue::type_scalar);
-}
-
-
 colvar::dipole_magnitude::dipole_magnitude()
 {
   set_function_type("dipoleMagnitude");
   x.type(colvarvalue::type_scalar);
+}
+
+
+int colvar::dipole_magnitude::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
+  atoms = parse_group(conf, "atoms");
+  if (!atoms) error_code |= COLVARS_INPUT_ERROR;
+  return error_code;
 }
 
 
@@ -798,14 +742,19 @@ simple_scalar_dist_functions(dipole_magnitude)
 
 
 
-colvar::gyration::gyration(std::string const &conf)
-  : cvc(conf)
+colvar::gyration::gyration()
 {
   set_function_type("gyration");
-  init_as_distance();
-
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
+  init_as_distance();
+}
+
+
+int colvar::gyration::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
+
   atoms = parse_group(conf, "atoms");
 
   if (atoms->b_user_defined_fit) {
@@ -815,6 +764,8 @@ colvar::gyration::gyration(std::string const &conf)
     atoms->ref_pos.assign(1, cvm::atom_pos(0.0, 0.0, 0.0));
     atoms->fit_gradients.assign(atoms->size(), cvm::rvector(0.0, 0.0, 0.0));
   }
+
+  return error_code;
 }
 
 
@@ -867,11 +818,9 @@ simple_scalar_dist_functions(gyration)
 
 
 
-colvar::inertia::inertia(std::string const &conf)
-  : gyration(conf)
+colvar::inertia::inertia()
 {
   set_function_type("inertia");
-  init_as_distance();
 }
 
 
@@ -903,21 +852,25 @@ simple_scalar_dist_functions(inertia_z)
 
 
 
-colvar::inertia_z::inertia_z(std::string const &conf)
-  : inertia(conf)
+colvar::inertia_z::inertia_z()
 {
   set_function_type("inertiaZ");
-  init_as_distance();
+}
+
+
+int colvar::inertia_z::init(std::string const &conf)
+{
+  int error_code = inertia::init(conf);
   if (get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0))) {
     if (axis.norm2() == 0.0) {
-      cvm::error("Axis vector is zero!", COLVARS_INPUT_ERROR);
-      return;
+      error_code |= cvm::error("Axis vector is zero!", COLVARS_INPUT_ERROR);
     }
     if (axis.norm2() != 1.0) {
       axis = axis.unit();
       cvm::log("The normalized axis is: "+cvm::to_str(axis)+".\n");
     }
   }
+  return error_code;
 }
 
 
@@ -950,21 +903,22 @@ simple_scalar_dist_functions(inertia)
 
 
 
-
-colvar::rmsd::rmsd(std::string const &conf)
-  : cvc(conf)
+colvar::rmsd::rmsd()
 {
   set_function_type("rmsd");
   init_as_distance();
-
   provide(f_cvc_inv_gradient);
+}
+
+
+int colvar::rmsd::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
 
   atoms = parse_group(conf, "atoms");
-  if (cvm::get_error()) return;
 
   if (!atoms || atoms->size() == 0) {
-    cvm::error("Error: \"atoms\" must contain at least 1 atom to compute RMSD.");
-    return;
+    return error_code | COLVARS_INPUT_ERROR;
   }
 
   bool b_Jacobian_derivative = true;
@@ -981,20 +935,20 @@ colvar::rmsd::rmsd(std::string const &conf)
   if (get_keyval(conf, "refPositions", ref_pos, ref_pos)) {
     cvm::log("Using reference positions from configuration file to calculate the variable.\n");
     if (ref_pos.size() != atoms->size()) {
-      cvm::error("Error: the number of reference positions provided ("+
-                  cvm::to_str(ref_pos.size())+
-                  ") does not match the number of atoms of group \"atoms\" ("+
-                  cvm::to_str(atoms->size())+").\n");
-      return;
+      error_code |= cvm::error("Error: the number of reference positions provided (" +
+                                   cvm::to_str(ref_pos.size()) +
+                                   ") does not match the number of atoms of group \"atoms\" (" +
+                                   cvm::to_str(atoms->size()) + ").\n",
+                               COLVARS_INPUT_ERROR);
     }
   } else { // Only look for ref pos file if ref positions not already provided
     std::string ref_pos_file;
     if (get_keyval(conf, "refPositionsFile", ref_pos_file, std::string(""))) {
 
       if (ref_pos.size()) {
-        cvm::error("Error: cannot specify \"refPositionsFile\" and "
-                          "\"refPositions\" at the same time.\n");
-        return;
+        error_code |= cvm::error("Error: cannot specify \"refPositionsFile\" and "
+                                 "\"refPositions\" at the same time.\n",
+                                 COLVARS_INPUT_ERROR);
       }
 
       std::string ref_pos_col;
@@ -1004,9 +958,9 @@ colvar::rmsd::rmsd(std::string const &conf)
         // if provided, use PDB column to select coordinates
         bool found = get_keyval(conf, "refPositionsColValue", ref_pos_col_value, 0.0);
         if (found && ref_pos_col_value==0.0) {
-          cvm::error("Error: refPositionsColValue, "
-                     "if provided, must be non-zero.\n");
-          return;
+          error_code |= cvm::error("Error: refPositionsColValue, "
+                                   "if provided, must be non-zero.\n",
+                                   COLVARS_INPUT_ERROR);
         }
       }
 
@@ -1015,15 +969,17 @@ colvar::rmsd::rmsd(std::string const &conf)
       cvm::load_coords(ref_pos_file.c_str(), &ref_pos, atoms,
                        ref_pos_col, ref_pos_col_value);
     } else {
-      cvm::error("Error: no reference positions for RMSD; use either refPositions of refPositionsFile.");
-      return;
+      error_code |= cvm::error(
+          "Error: no reference positions for RMSD; use either refPositions of refPositionsFile.",
+          COLVARS_INPUT_ERROR);
     }
   }
 
   if (ref_pos.size() != atoms->size()) {
-    cvm::error("Error: found " + cvm::to_str(ref_pos.size()) +
-                    " reference positions for RMSD; expected " + cvm::to_str(atoms->size()));
-    return;
+    error_code |=
+        cvm::error("Error: found " + cvm::to_str(ref_pos.size()) +
+                       " reference positions for RMSD; expected " + cvm::to_str(atoms->size()),
+                   COLVARS_INPUT_ERROR);
   }
 
   if (atoms->b_user_defined_fit) {
@@ -1045,6 +1001,15 @@ colvar::rmsd::rmsd(std::string const &conf)
   }
   atoms->setup_rotation_derivative();
 
+  error_code |= init_permutation(conf);
+
+  return error_code;
+}
+
+
+int colvar::rmsd::init_permutation(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
   std::string perm_conf;
   size_t pos = 0; // current position in config string
   n_permutations = 1;
@@ -1059,21 +1024,22 @@ colvar::rmsd::rmsd(std::string const &conf)
         std::vector<int> const &ids = atoms->ids();
         size_t const ia = std::find(ids.begin(), ids.end(), index-1) - ids.begin();
         if (ia == atoms->size()) {
-          cvm::error("Error: atom id " + cvm::to_str(index) +
-                    " is not a member of group \"atoms\".");
-          return;
+          error_code |= cvm::error("Error: atom id " + cvm::to_str(index) +
+                                       " is not a member of group \"atoms\".",
+                                   COLVARS_INPUT_ERROR);
         }
         if (std::find(perm.begin(), perm.end(), ia) != perm.end()) {
-          cvm::error("Error: atom id " + cvm::to_str(index) +
-                    " is mentioned more than once in atomPermutation list.");
-          return;
+          error_code |= cvm::error("Error: atom id " + cvm::to_str(index) +
+                                       " is mentioned more than once in atomPermutation list.",
+                                   COLVARS_INPUT_ERROR);
         }
         perm.push_back(ia);
       }
       if (perm.size() != atoms->size()) {
-        cvm::error("Error: symmetry permutation in input contains " + cvm::to_str(perm.size()) +
-                  " indices, but group \"atoms\" contains " + cvm::to_str(atoms->size()) + " atoms.");
-        return;
+        error_code |= cvm::error(
+            "Error: symmetry permutation in input contains " + cvm::to_str(perm.size()) +
+                " indices, but group \"atoms\" contains " + cvm::to_str(atoms->size()) + " atoms.",
+            COLVARS_INPUT_ERROR);
       }
       cvm::log("atomPermutation = " + cvm::to_str(perm));
       n_permutations++;
@@ -1083,6 +1049,8 @@ colvar::rmsd::rmsd(std::string const &conf)
       }
     }
   }
+
+  return error_code;
 }
 
 
@@ -1214,16 +1182,23 @@ simple_scalar_dist_functions(rmsd)
 
 
 
-colvar::eigenvector::eigenvector(std::string const &conf)
-  : cvc(conf)
+colvar::eigenvector::eigenvector()
 {
   set_function_type("eigenvector");
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   x.type(colvarvalue::type_scalar);
+}
+
+
+int colvar::eigenvector::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
 
   atoms = parse_group(conf, "atoms");
-  if (cvm::get_error()) return;
+  if (!atoms || atoms->size() == 0) {
+    return error_code | COLVARS_INPUT_ERROR;
+  }
 
   {
     bool const b_inline = get_keyval(conf, "refPositions", ref_pos, ref_pos);
@@ -1231,9 +1206,9 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     if (b_inline) {
       cvm::log("Using reference positions from input file.\n");
       if (ref_pos.size() != atoms->size()) {
-        cvm::error("Error: reference positions do not "
-                   "match the number of requested atoms.\n");
-        return;
+        error_code |= cvm::error("Error: reference positions do not "
+                                 "match the number of requested atoms.\n",
+                                 COLVARS_INPUT_ERROR);
       }
     }
 
@@ -1241,19 +1216,18 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     if (get_keyval(conf, "refPositionsFile", file_name)) {
 
       if (b_inline) {
-        cvm::error("Error: refPositions and refPositionsFile cannot be specified at the same time.\n");
-        return;
+        error_code |= cvm::error(
+            "Error: refPositions and refPositionsFile cannot be specified at the same time.\n",
+            COLVARS_INPUT_ERROR);
       }
-
       std::string file_col;
       double file_col_value=0.0;
       if (get_keyval(conf, "refPositionsCol", file_col, std::string(""))) {
         // use PDB flags if column is provided
         bool found = get_keyval(conf, "refPositionsColValue", file_col_value, 0.0);
-        if (found && file_col_value==0.0) {
-          cvm::error("Error: refPositionsColValue, "
-                            "if provided, must be non-zero.\n");
-          return;
+        if (found && file_col_value == 0.0) {
+          error_code |= cvm::error("Error: refPositionsColValue, if provided, must be non-zero.\n",
+                                   COLVARS_INPUT_ERROR);
         }
       }
 
@@ -1264,14 +1238,14 @@ colvar::eigenvector::eigenvector(std::string const &conf)
   }
 
   if (ref_pos.size() == 0) {
-    cvm::error("Error: reference positions were not provided.\n", COLVARS_INPUT_ERROR);
-    return;
+    error_code |=
+        cvm::error("Error: reference positions were not provided.\n", COLVARS_INPUT_ERROR);
   }
 
   if (ref_pos.size() != atoms->size()) {
-    cvm::error("Error: reference positions do not "
-               "match the number of requested atoms.\n", COLVARS_INPUT_ERROR);
-    return;
+    error_code |= cvm::error("Error: reference positions do not "
+                             "match the number of requested atoms.\n",
+                             COLVARS_INPUT_ERROR);
   }
 
   // save for later the geometric center of the provided positions (may not be the origin)
@@ -1302,9 +1276,8 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     if (b_inline) {
       cvm::log("Using vector components from input file.\n");
       if (eigenvec.size() != atoms->size()) {
-        cvm::error("Error: vector components do not "
-                          "match the number of requested atoms->\n");
-        return;
+        error_code |= cvm::error("Error: vector components do not "
+                                 "match the number of requested atoms->\n", COLVARS_INPUT_ERROR);
       }
     }
 
@@ -1312,8 +1285,9 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     if (get_keyval(conf, "vectorFile", file_name)) {
 
       if (b_inline) {
-        cvm::error("Error: vector and vectorFile cannot be specified at the same time.\n");
-        return;
+        error_code |=
+            cvm::error("Error: vector and vectorFile cannot be specified at the same time.\n",
+                       COLVARS_INPUT_ERROR);
       }
 
       std::string file_col;
@@ -1322,8 +1296,8 @@ colvar::eigenvector::eigenvector(std::string const &conf)
         // use PDB flags if column is provided
         bool found = get_keyval(conf, "vectorColValue", file_col_value, 0.0);
         if (found && file_col_value==0.0) {
-          cvm::error("Error: vectorColValue, if provided, must be non-zero.\n");
-          return;
+          error_code |= cvm::error("Error: vectorColValue, if provided, must be non-zero.\n",
+                                   COLVARS_INPUT_ERROR);
         }
       }
 
@@ -1334,9 +1308,8 @@ colvar::eigenvector::eigenvector(std::string const &conf)
   }
 
   if (!ref_pos.size() || !eigenvec.size()) {
-    cvm::error("Error: both reference coordinates"
-                      "and eigenvector must be defined.\n");
-    return;
+    error_code |= cvm::error("Error: both reference coordinates and eigenvector must be defined.\n",
+                             COLVARS_INPUT_ERROR);
   }
 
   cvm::atom_pos eig_center(0.0, 0.0, 0.0);
@@ -1410,6 +1383,8 @@ colvar::eigenvector::eigenvector(std::string const &conf)
     cvm::log("The norm of the vector is |v| = "+
              cvm::to_str(1.0/cvm::sqrt(eigenvec_invnorm2))+".\n");
   }
+
+  return error_code;
 }
 
 
@@ -1506,10 +1481,17 @@ simple_scalar_dist_functions(eigenvector)
 
 
 
-colvar::cartesian::cartesian(std::string const &conf)
-  : cvc(conf)
+colvar::cartesian::cartesian()
 {
   set_function_type("cartesian");
+  x.type(colvarvalue::type_vector);
+  disable(f_cvc_explicit_gradient);
+}
+
+
+int colvar::cartesian::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
 
   atoms = parse_group(conf, "atoms");
 
@@ -1524,14 +1506,15 @@ colvar::cartesian::cartesian(std::string const &conf)
   if (use_z) axes.push_back(2);
 
   if (axes.size() == 0) {
-    cvm::error("Error: a \"cartesian\" component was defined with all three axes disabled.\n");
-    return;
+    error_code |=
+        cvm::error("Error: a \"cartesian\" component was defined with all three axes disabled.\n",
+                   COLVARS_INPUT_ERROR);
   }
 
-  x.type(colvarvalue::type_vector);
-  disable(f_cvc_explicit_gradient);
   // Don't try to access atoms if creation of the atom group failed
-  if (atoms != NULL) x.vector1d_value.resize(atoms->size() * axes.size());
+  if (atoms) x.vector1d_value.resize(atoms->size() * axes.size());
+
+  return error_code;
 }
 
 
