@@ -9,7 +9,7 @@ endif
 
 ifeq ($(COLVARS_RELEASE),)
 # If we are not working on a branch, try a tag instead
-COLVARS_RELEASE = $(git describe --tags --exact-match)
+COLVARS_RELEASE = $(shell git describe --tags --exact-match)
 endif
 
 export COLVARS_RELEASE
@@ -121,18 +121,13 @@ IMAGES = cover-512px.jpg eulerangles-512px.png
 # Note: to produce the documentation for a specific release of a MD engine,
 # check out the branch or tag corresponding to that version, clean and rebuild.
 ifeq ($(COLVARS_RELEASE),"master")
+
 webpage: all images doxygen
 	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
 	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
 	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
 	rm -fr $(COLVARS_WEBSITE_TREE)/doxygen/html/* ; \
 	cp -p -r doxygen/html/* $(COLVARS_WEBSITE_TREE)/doxygen/html/
-else
-webpage: all images
-	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
-	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
-	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/
-endif
 
 # Update HTML pages with older-style paths (without branch/release name)
 webpage-legacy: all images
@@ -143,5 +138,16 @@ webpage-legacy: all images
 	done
 
 install: webpage webpage-legacy
+
+else
+
+webpage: all images
+	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
+	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
+	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/
+
+install: webpage
+endif
+
 
 endif
