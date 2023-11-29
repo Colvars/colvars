@@ -124,8 +124,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer pull CentOS7-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS7-devel
-          apptainer pull CentOS9-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS9-devel
+          apptainer pull ${{ inputs.container_name }}.sif oras://ghcr.io/Colvars/devel-containers:${{ inputs.container_name }}
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
