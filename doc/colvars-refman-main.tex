@@ -4701,11 +4701,14 @@ The group's identifying keyword is followed by a brace-delimited block containin
   string}{%
   This parameter defines a globally unique name for this atom group, which can be referred to
   in the definition of other atom groups (including in other colvars) by invoking
-  \texttt{atomsOfGroup} as a selection keyword.}
+  \texttt{atomsOfGroup} as a selection keyword.
+  This has two benefits: (1) it can make the configuration shorter and more legible, and (2) several
+  related atom groups can be defined using a common set of atoms, so that this selection can be
+  changed in one place, keeping all related groups synchronized with the same atom set.}
 \end{itemize}
 Other keywords are documented in the following sections.
 
-In the example below, the \texttt{gyration} component uses the identifying keyword \texttt{atoms} to define its associated group, which is defined based on the index group named ``\texttt{Protein-H}''.  Optionally, the group is also given the unique name ``\texttt{my\_protein}'', so that the following sections of the Colvars configuration may refer to it.
+In the example below, the \texttt{gyration} component uses the identifying keyword \texttt{atoms} to define its associated group, which is defined based on the index group named ``\texttt{Protein-H}''.  Optionally, the group is also given the unique name ``\texttt{my\_protein}'', so that atom groups defined later in the Colvars configuration may refer to it.
 \begin{cvexampleinput}
 \-colvar~\{\\
 \-~~name~rgyr\\
@@ -7436,7 +7439,7 @@ This section lists the few cases where the choice of compilation settings affect
 
 \begin{itemize}
 
-\item Scripting commands using the Tcl language (\url{https://www.tcl.tk}) are supported in VMD and NAMD.  All precompiled builds of each code include Tcl, and it is highly recommended to enable Tcl support in any custom build, using precompiled Tcl libraries from the UIUC website.
+\item Scripting commands using the Tcl language (\url{https://www.tcl.tk}) are supported in VMD, NAMD, and Tinker-HP.  All precompiled builds of NAMD and VMD include Tcl, and it is highly recommended to enable Tcl support in any custom build, using precompiled Tcl libraries from the UIUC website.
 
 \item The Lepton library (\url{https://simtk.org/projects/lepton}) used to implement the \texttt{customFunction} feature is currently included only in NAMD (always on), in LAMMPS (on by default) and in the Colvars-patched GROMACS releases (but currently, not in the standard releases).  For VMD, a \href{https://github.com/giacomofiorin/vmd-patches}{patch} that allows to link Lepton is available.
 
