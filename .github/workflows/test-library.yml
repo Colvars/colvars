@@ -116,12 +116,36 @@ jobs:
       - name: Checkout website repository
         uses: actions/checkout@v4
         with:
+          ssh-key: ${{ secrets.PULL_PUSH_COLVARS_GITHUB_IO }}
           repository: 'Colvars/colvars.github.io'
           path: 'website'
 
-      - name: Build doc
+      - name: Build doc for current branch
         working-directory: doc
-        run: apptainer exec ${{ github.workspace }}/devel-tools/texlive.sif make
+        run: |
+          make clean-all
+          apptainer exec ${{ github.workspace }}/devel-tools/texlive.sif make
+
+      - name: Install SSH key for access to website repository
+        if: contains(github.event.head_commit.message, '[update-doc]')
+        env:
+          WEBSITE_SSH_KEY: ${{ secrets.PULL_PUSH_COLVARS_GITHUB_IO }}
+        run: |
+          mkdir -p -m 700 ~/.ssh
+          echo "${WEBSITE_SSH_KEY}" > ~/.ssh/website
+          chmod 600 ~/.ssh/website
+
+      - name: Push updated doc to website repository
+        working-directory: doc
+        if: contains(github.event.head_commit.message, '[update-doc]')
+        env:
+          COLVARS_WEBSITE_TREE: ${{ github.workspace }}/website
+        run: |
+          apptainer exec ${{ github.workspace }}/devel-tools/texlive.sif make install
+          export GIT_SSH="ssh -i ~/.ssh/website"
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "CI runner"
+          bash update_website.sh ${{ github.workspace }}/website
 
 
   codeql:
