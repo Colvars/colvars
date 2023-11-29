@@ -4690,20 +4690,33 @@ For run-time computation of histograms, please see the histogram bias (\ref{sec:
 
 \cvsec{Selecting atoms}{sec:colvar_atom_groups}
 
-To define collective variables, atoms are usually selected as groups.  Each group is defined using an identifier that is unique in the context of the specific colvar component (e.g.~for a distance component, the two groups are \texttt{group1} and \texttt{group2}).
-The identifier is followed by a brace-delimited block containing selection keywords and other parameters, including an optional \texttt{name}:
+To define collective variables, atoms are usually selected as groups.  Each group is defined using an identifying keyword that is unique in the context of the specific colvar component (e.g.~for a distance component, the two groups are identified by the \texttt{group1} and \texttt{group2} keywords).
 
+The group's identifying keyword is followed by a brace-delimited block containing selection keywords and other parameters, one of which is \texttt{name}:
 \begin{itemize}
 \item \key
   {name}{%
   atom group}{%
   Unique name for the atom group}{%
   string}{%
-  This parameter defines a unique name for this atom group, which can be referred to
+  This parameter defines a globally unique name for this atom group, which can be referred to
   in the definition of other atom groups (including in other colvars) by invoking
   \texttt{atomsOfGroup} as a selection keyword.}
 \end{itemize}
+Other keywords are documented in the following sections.
 
+In the example below, the \texttt{gyration} component uses the identifying keyword \texttt{atoms} to define its associated group, which is defined based on the index group named ``\texttt{Protein-H}''.  Optionally, the group is also given the unique name ``\texttt{my\_protein}'', so that the following sections of the Colvars configuaration may refer to it.
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~rgyr\\
+\-~~gyration~\{\\
+\-~~~~atoms~\{\\
+\-~~~~~~name~my\_protein\\
+\-~~~~~~indexGroup~Protein-H\\
+\-~~~~\}\\
+\-~~\}\\
+\-\}
+\end{cvexampleinput}
 
 \cvsubsec{Atom selection keywords}{sec:colvar_atom_groups_sel}
 
