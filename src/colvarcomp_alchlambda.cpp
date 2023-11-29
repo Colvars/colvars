@@ -16,8 +16,7 @@
 #include "colvarcomp.h"
 
 
-colvar::alch_lambda::alch_lambda(std::string const &conf)
-  : cvc(conf)
+colvar::alch_lambda::alch_lambda()
 {
   set_function_type("alchLambda");
 
@@ -59,8 +58,7 @@ simple_scalar_dist_functions(alch_lambda)
 
 
 
-colvar::alch_Flambda::alch_Flambda(std::string const &conf)
-  : cvc(conf)
+colvar::alch_Flambda::alch_Flambda()
 {
   set_function_type("alch_Flambda");
 

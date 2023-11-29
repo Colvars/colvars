@@ -22,10 +22,8 @@
 #include "colvars_memstream.h"
 
 
-
-std::map<std::string, std::function<colvar::cvc *(const std::string &conf)>>
-    colvar::global_cvc_map =
-        std::map<std::string, std::function<colvar::cvc *(const std::string &conf)>>();
+std::map<std::string, std::function<colvar::cvc *()>> colvar::global_cvc_map =
+    std::map<std::string, std::function<colvar::cvc *()>>();
 
 std::map<std::string, std::string> colvar::global_cvc_desc_map =
     std::map<std::string, std::string>();
@@ -755,8 +753,8 @@ template <typename def_class_name>
 void colvar::add_component_type(char const *def_description, char const *def_config_key)
 {
   if (global_cvc_map.count(def_config_key) == 0) {
-    global_cvc_map[def_config_key] = [](const std::string &cvc_conf) {
-      return new def_class_name(cvc_conf);
+    global_cvc_map[def_config_key] = []() {
+      return new def_class_name();
     };
     global_cvc_desc_map[def_config_key] = std::string(def_description);
   }
@@ -767,6 +765,7 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
   size_t def_count = 0;
   std::string def_conf = "";
   size_t pos = 0;
+  int error_code = COLVARS_OK;
   while ( this->key_lookup(conf,
                            def_config_key,
                            &def_conf,
@@ -776,39 +775,43 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
              "a new \""+std::string(def_config_key)+"\" component"+
              (cvm::debug() ? ", with configuration:\n"+def_conf
               : ".\n"));
-    cvc *cvcp = global_cvc_map[def_config_key](def_conf);
-    cvm::increase_depth();
-    if (cvcp) {
-      int error_code = cvcp->init_code;
-      cvcs.push_back(cvcp);
-      error_code |= cvcp->set_function_type(def_config_key);
-      if (error_code == COLVARS_OK) {
-        error_code |= cvcp->check_keywords(def_conf, def_config_key);
-      }
-      if (error_code != COLVARS_OK) {
-        cvm::decrease_depth();
-        return cvm::error("Error: in setting up component \"" + std::string(def_config_key) +
-                              "\".\n",
-                          COLVARS_INPUT_ERROR);
-      }
-    } else {
-      cvm::decrease_depth();
-      return cvm::error("Error: in allocating component \"" + std::string(def_config_key) + "\".\n",
+    cvc *cvcp = global_cvc_map[def_config_key]();
+    if (!cvcp) {
+      return cvm::error("Error: in creating object of type \"" + std::string(def_config_key) +
+                            "\".\n",
                         COLVARS_MEMORY_ERROR);
     }
 
+    cvcs.push_back(cvcp);
+
+    cvm::increase_depth();
+    int error_code_this = cvcp->init(def_conf);
+    if (error_code_this == COLVARS_OK) {
+      // Checking for invalid keywords only if the parsing was successful, otherwise any
+      // early-returns due to errors would raise false positives
+      error_code_this |= cvcp->check_keywords(def_conf, def_config_key);
+    }
+    cvm::decrease_depth();
+    if (error_code_this != COLVARS_OK) {
+      error_code |=
+          cvm::error("Error: in setting up component \"" + std::string(def_config_key) + "\".\n",
+                     COLVARS_INPUT_ERROR);
+    }
+
+    // TODO integrate this check in colvarcomp::init(), which now can count
+    // on the derived object being fully initialized
     if ((cvcp->period != 0.0) || (cvcp->wrap_center != 0.0)) {
       if (!cvcp->is_enabled(f_cvc_periodic)) {
-        cvm::decrease_depth();
-        return cvm::error("Error: invalid use of period and/or "
-                          "wrapAround in a \"" +
-                              std::string(def_config_key) + "\" component.\n" +
-                              "Period: " + cvm::to_str(cvcp->period) +
-                              " wrapAround: " + cvm::to_str(cvcp->wrap_center),
-                          COLVARS_INPUT_ERROR);
+        error_code |= cvm::error("Error: invalid use of period and/or "
+                                 "wrapAround in a \"" +
+                                     std::string(def_config_key) + "\" component.\n" +
+                                     "Period: " + cvm::to_str(cvcp->period) +
+                                     " wrapAround: " + cvm::to_str(cvcp->wrap_center),
+                                 COLVARS_INPUT_ERROR);
       }
     }
 
+    // Set default name if it doesn't have one
     if ( ! cvcs.back()->name.size()) {
       std::ostringstream s;
       s << def_config_key << std::setfill('0') << std::setw(4) << ++def_count;
@@ -822,15 +825,13 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
                (cvm::debug() ? ", named \"" + cvcs.back()->name + "\"" : "") + ".\n");
     }
 
-    cvm::decrease_depth();
-
     def_conf = "";
     if (cvm::debug()) {
       cvm::log("Parsed " + cvm::to_str(cvcs.size()) + " components at this time.\n");
     }
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 

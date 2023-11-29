@@ -12,8 +12,7 @@
 #include "colvarcomp.h"
 
 
-colvar::angle::angle(std::string const &conf)
-  : cvc(conf)
+colvar::angle::angle()
 {
   set_function_type("angle");
   init_as_angle();
@@ -21,26 +20,25 @@ colvar::angle::angle(std::string const &conf)
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   enable(f_cvc_com_based);
+}
+
+
+int colvar::angle::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
 
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
   group3 = parse_group(conf, "group3");
 
-  init_total_force_params(conf);
+  error_code |= init_total_force_params(conf);
+
+  return error_code;
 }
 
 
-colvar::angle::angle(cvm::atom const &a1,
-                     cvm::atom const &a2,
-                     cvm::atom const &a3)
+colvar::angle::angle(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3) : angle()
 {
-  set_function_type("angle");
-  init_as_angle();
-
-  provide(f_cvc_inv_gradient);
-  provide(f_cvc_Jacobian);
-  enable(f_cvc_com_based);
-
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
   group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
   group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
@@ -137,40 +135,23 @@ simple_scalar_dist_functions(angle)
 
 
 
-colvar::dipole_angle::dipole_angle(std::string const &conf)
-  : cvc(conf)
+colvar::dipole_angle::dipole_angle()
 {
   set_function_type("dipoleAngle");
   init_as_angle();
+}
+
+
+int colvar::dipole_angle::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
 
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
   group3 = parse_group(conf, "group3");
 
-  init_total_force_params(conf);
-}
-
-
-colvar::dipole_angle::dipole_angle(cvm::atom const &a1,
-                      cvm::atom const &a2,
-                      cvm::atom const &a3)
-{
-  set_function_type("dipoleAngle");
-  init_as_angle();
-
-  group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
-  group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
-  group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
-  register_atom_group(group1);
-  register_atom_group(group2);
-  register_atom_group(group3);
-}
-
-
-colvar::dipole_angle::dipole_angle()
-{
-  set_function_type("dipoleAngle");
-  init_as_angle();
+  error_code |= init_total_force_params(conf);
+  return error_code;
 }
 
 
@@ -246,35 +227,34 @@ simple_scalar_dist_functions(dipole_angle)
 
 
 
-colvar::dihedral::dihedral(std::string const &conf)
-  : cvc(conf)
+colvar::dihedral::dihedral()
 {
   set_function_type("dihedral");
   init_as_periodic_angle();
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   enable(f_cvc_com_based);
+}
+
+
+int colvar::dihedral::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
 
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
   group3 = parse_group(conf, "group3");
   group4 = parse_group(conf, "group4");
 
-  init_total_force_params(conf);
+  error_code |= init_total_force_params(conf);
+  return error_code;
 }
 
 
-colvar::dihedral::dihedral(cvm::atom const &a1,
-                           cvm::atom const &a2,
-                           cvm::atom const &a3,
+colvar::dihedral::dihedral(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3,
                            cvm::atom const &a4)
+  : dihedral()
 {
-  set_function_type("dihedral");
-  init_as_periodic_angle();
-  provide(f_cvc_inv_gradient);
-  provide(f_cvc_Jacobian);
-  enable(f_cvc_com_based);
-
   b_1site_force = false;
 
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
@@ -285,16 +265,6 @@ colvar::dihedral::dihedral(cvm::atom const &a1,
   register_atom_group(group2);
   register_atom_group(group3);
   register_atom_group(group4);
-}
-
-
-colvar::dihedral::dihedral()
-{
-  set_function_type("dihedral");
-  init_as_periodic_angle();
-  enable(f_cvc_periodic);
-  provide(f_cvc_inv_gradient);
-  provide(f_cvc_Jacobian);
 }
 
 
@@ -498,22 +468,21 @@ void colvar::dihedral::wrap(colvarvalue &x_unwrapped) const
 }
 
 
-colvar::polar_theta::polar_theta(std::string const &conf)
-  : cvc(conf)
+colvar::polar_theta::polar_theta()
 {
+  r = theta = phi = 0.0;
   set_function_type("polarTheta");
   enable(f_cvc_com_based);
-
-  atoms = parse_group(conf, "atoms");
-  init_total_force_params(conf);
-  x.type(colvarvalue::type_scalar);
+  init_as_angle();
 }
 
 
-colvar::polar_theta::polar_theta()
+int colvar::polar_theta::init(std::string const &conf)
 {
-  set_function_type("polarTheta");
-  x.type(colvarvalue::type_scalar);
+  int error_code = cvc::init(conf);
+  atoms = parse_group(conf, "atoms");
+  error_code |= init_total_force_params(conf);
+  return error_code;
 }
 
 
@@ -550,22 +519,22 @@ void colvar::polar_theta::apply_force(colvarvalue const &force)
 simple_scalar_dist_functions(polar_theta)
 
 
-colvar::polar_phi::polar_phi(std::string const &conf)
-  : cvc(conf)
-{
-  set_function_type("polarPhi");
-  init_as_periodic_angle();
-  enable(f_cvc_com_based);
-
-  atoms = parse_group(conf, "atoms");
-  init_total_force_params(conf);
-}
-
 
 colvar::polar_phi::polar_phi()
 {
+  r = theta = phi = 0.0;
   set_function_type("polarPhi");
+  enable(f_cvc_com_based);
   init_as_periodic_angle();
+}
+
+
+int colvar::polar_phi::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
+  atoms = parse_group(conf, "atoms");
+  error_code |= init_total_force_params(conf);
+  return error_code;
 }
 
 

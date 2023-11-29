@@ -22,13 +22,12 @@ public:
 };
 
 
-colvar::orientation::orientation(std::string const &conf)
-  : cvc()
+colvar::orientation::orientation()
 {
   set_function_type("orientation");
+  rot_deriv_impl = std::unique_ptr<rotation_derivative_impl_>(new rotation_derivative_impl_(this));
   disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_quaternion);
-  colvar::orientation::init(conf);
 }
 
 
@@ -95,23 +94,12 @@ int colvar::orientation::init(std::string const &conf)
 
   get_keyval(conf, "closestToQuaternion", ref_quat, cvm::quaternion(1.0, 0.0, 0.0, 0.0));
 
-  rot_deriv_impl = std::unique_ptr<rotation_derivative_impl_>(new rotation_derivative_impl_(this));
-
   // If the debug gradients feature is active, debug the rotation gradients
   // (note that this won't be active for the orientation CVC itself, because
   // colvardeps prevents the flag's activation)
   rot.b_debug_gradients = is_enabled(f_cvc_debug_gradient);
 
   return error_code;
-}
-
-
-colvar::orientation::orientation()
-  : cvc()
-{
-  set_function_type("orientation");
-  disable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_quaternion);
 }
 
 
@@ -178,19 +166,11 @@ colvarvalue colvar::orientation::dist2_rgrad(colvarvalue const &x1,
 
 
 
-colvar::orientation_angle::orientation_angle(std::string const &conf)
-  : orientation()
+colvar::orientation_angle::orientation_angle()
 {
   set_function_type("orientationAngle");
   init_as_angle();
   enable(f_cvc_explicit_gradient);
-  orientation_angle::init(conf);
-}
-
-
-int colvar::orientation_angle::init(std::string const &conf)
-{
-  return orientation::init(conf);
 }
 
 
@@ -238,20 +218,12 @@ simple_scalar_dist_functions(orientation_angle)
 
 
 
-colvar::orientation_proj::orientation_proj(std::string const &conf)
-  : orientation()
+colvar::orientation_proj::orientation_proj()
 {
   set_function_type("orientationProj");
   enable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_scalar);
   init_scalar_boundaries(0.0, 1.0);
-  orientation_proj::init(conf);
-}
-
-
-int colvar::orientation_proj::init(std::string const &conf)
-{
-  return orientation::init(conf);
 }
 
 
@@ -290,22 +262,18 @@ simple_scalar_dist_functions(orientation_proj)
 
 
 
-colvar::tilt::tilt(std::string const &conf)
-  : orientation()
+colvar::tilt::tilt()
 {
   set_function_type("tilt");
   x.type(colvarvalue::type_scalar);
   enable(f_cvc_explicit_gradient);
   init_scalar_boundaries(-1.0, 1.0);
-  tilt::init(conf);
 }
 
 
 int colvar::tilt::init(std::string const &conf)
 {
-  int error_code = COLVARS_OK;
-
-  error_code |= orientation::init(conf);
+  int error_code = orientation::init(conf);
 
   get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0));
   if (axis.norm2() != 1.0) {
@@ -358,22 +326,18 @@ simple_scalar_dist_functions(tilt)
 
 
 
-colvar::spin_angle::spin_angle(std::string const &conf)
-  : orientation()
+colvar::spin_angle::spin_angle()
 {
   set_function_type("spinAngle");
   init_as_periodic_angle();
   enable(f_cvc_periodic);
   enable(f_cvc_explicit_gradient);
-  spin_angle::init(conf);
 }
 
 
 int colvar::spin_angle::init(std::string const &conf)
 {
-  int error_code = COLVARS_OK;
-
-  error_code |= orientation::init(conf);
+  int error_code = orientation::init(conf);
 
   get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0));
   if (axis.norm2() != 1.0) {
@@ -382,17 +346,6 @@ int colvar::spin_angle::init(std::string const &conf)
   }
 
   return error_code;
-}
-
-
-colvar::spin_angle::spin_angle()
-  : orientation()
-{
-  set_function_type("spinAngle");
-  period = 360.0;
-  enable(f_cvc_periodic);
-  enable(f_cvc_explicit_gradient);
-  x.type(colvarvalue::type_scalar);
 }
 
 
@@ -477,30 +430,11 @@ void colvar::spin_angle::wrap(colvarvalue &x_unwrapped) const
 }
 
 
-colvar::euler_phi::euler_phi(std::string const &conf)
-  : orientation()
-{
-  set_function_type("eulerPhi");
-  init_as_periodic_angle();
-  enable(f_cvc_explicit_gradient);
-  euler_phi::init(conf);
-}
-
-
 colvar::euler_phi::euler_phi()
-  : orientation()
 {
   set_function_type("eulerPhi");
   init_as_periodic_angle();
   enable(f_cvc_explicit_gradient);
-}
-
-
-int colvar::euler_phi::init(std::string const &conf)
-{
-  int error_code = COLVARS_OK;
-  error_code |= orientation::init(conf);
-  return error_code;
 }
 
 
@@ -596,30 +530,12 @@ void colvar::euler_phi::wrap(colvarvalue &x_unwrapped) const
 }
 
 
-colvar::euler_psi::euler_psi(std::string const &conf)
-  : orientation()
-{
-  set_function_type("eulerPsi");
-  init_as_periodic_angle();
-  enable(f_cvc_explicit_gradient);
-  euler_psi::init(conf);
-}
-
-
 colvar::euler_psi::euler_psi()
   : orientation()
 {
   set_function_type("eulerPsi");
   init_as_periodic_angle();
   enable(f_cvc_explicit_gradient);
-}
-
-
-int colvar::euler_psi::init(std::string const &conf)
-{
-  int error_code = COLVARS_OK;
-  error_code |= orientation::init(conf);
-  return error_code;
 }
 
 
@@ -715,30 +631,12 @@ void colvar::euler_psi::wrap(colvarvalue &x_unwrapped) const
 }
 
 
-colvar::euler_theta::euler_theta(std::string const &conf)
-  : orientation()
-{
-  set_function_type("eulerTheta");
-  init_as_angle();
-  enable(f_cvc_explicit_gradient);
-  euler_theta::init(conf);
-}
-
-
 colvar::euler_theta::euler_theta()
   : orientation()
 {
   set_function_type("eulerTheta");
   init_as_angle();
   enable(f_cvc_explicit_gradient);
-}
-
-
-int colvar::euler_theta::init(std::string const &conf)
-{
-  int error_code = COLVARS_OK;
-  error_code |= orientation::init(conf);
-  return error_code;
 }
 
 
