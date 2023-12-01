@@ -1,4 +1,4 @@
-diff --git a/gromacs/gromacs-mdmodules/cmake/gmxManageColvars.cmake b/gromacs/gromacs-mdmodules/cmake/gmxManageColvars.cmake
+diff --git a/cmake/gmxManageColvars.cmake b/cmake/gmxManageColvars.cmake
 index 90778221..645b23b5 100644
 --- a/cmake/gmxManageColvars.cmake
 +++ b/cmake/gmxManageColvars.cmake
