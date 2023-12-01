@@ -64,6 +64,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CCACHE_DIR: ~/ccache_${{ inputs.container_name }}
+      # OpenMPI transport settings suitable for GH VMs
+      OMPI_MCA_mtl: "^ofi"
+      OMPI_MCA_btl: "vader,self"
 
     steps:
       - name: Checkout Colvars
