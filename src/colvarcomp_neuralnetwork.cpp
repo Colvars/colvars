@@ -203,3 +203,25 @@ void colvar::neuralNetwork::apply_force(colvarvalue const &force) {
         }
     }
 }
+
+
+cvm::real colvar::neuralNetwork::dist2(colvarvalue const &x1, colvarvalue const &x2) const
+{
+  return x1.dist2(x2);
+}
+
+
+colvarvalue colvar::neuralNetwork::dist2_lgrad(colvarvalue const &x1, colvarvalue const &x2) const
+{
+  return x1.dist2_grad(x2);
+}
+
+
+colvarvalue colvar::neuralNetwork::dist2_rgrad(colvarvalue const &x1, colvarvalue const &x2) const
+{
+  return x2.dist2_grad(x1);
+}
+
+
+
+void colvar::neuralNetwork::wrap(colvarvalue & /* x_unwrapped */) const {}

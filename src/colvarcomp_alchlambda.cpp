@@ -54,8 +54,6 @@ void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
   cvm::proxy->set_alch_lambda(x.real_value);
 }
 
-simple_scalar_dist_functions(alch_lambda)
-
 
 
 colvar::alch_Flambda::alch_Flambda()
@@ -100,4 +98,3 @@ void colvar::alch_Flambda::apply_force(colvarvalue const &force)
   cvm::proxy->indirect_lambda_biasing_force += d2E_dlambda2 * f;
 }
 
-simple_scalar_dist_functions(alch_Flambda)

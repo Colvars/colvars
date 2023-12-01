@@ -131,9 +131,6 @@ void colvar::angle::apply_force(colvarvalue const &force)
 }
 
 
-simple_scalar_dist_functions(angle)
-
-
 
 colvar::dipole_angle::dipole_angle()
 {
@@ -223,9 +220,6 @@ void colvar::dipole_angle::apply_force(colvarvalue const &force)
 }
 
 
-simple_scalar_dist_functions(dipole_angle)
-
-
 
 colvar::dihedral::dihedral()
 {
@@ -293,7 +287,7 @@ void colvar::dihedral::calc_value()
   cvm::real const sin_phi = n1 * r34 * r23.norm();
 
   x.real_value = (180.0/PI) * cvm::atan2(sin_phi, cos_phi);
-  this->wrap(x);
+  wrap(x);
 }
 
 
@@ -425,48 +419,6 @@ void colvar::dihedral::apply_force(colvarvalue const &force)
 }
 
 
-// metrics functions for cvc implementations with a periodicity
-
-cvm::real colvar::dihedral::dist2(colvarvalue const &x1,
-                                  colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return diff * diff;
-}
-
-
-colvarvalue colvar::dihedral::dist2_lgrad(colvarvalue const &x1,
-                                          colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return 2.0 * diff;
-}
-
-
-colvarvalue colvar::dihedral::dist2_rgrad(colvarvalue const &x1,
-                                          colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return (-2.0) * diff;
-}
-
-
-void colvar::dihedral::wrap(colvarvalue &x_unwrapped) const
-{
-  if ((x_unwrapped.real_value - wrap_center) >= 180.0) {
-    x_unwrapped.real_value -= 360.0;
-    return;
-  }
-
-  if ((x_unwrapped.real_value - wrap_center) < -180.0) {
-    x_unwrapped.real_value += 360.0;
-    return;
-  }
-}
-
 
 colvar::polar_theta::polar_theta()
 {
@@ -516,9 +468,6 @@ void colvar::polar_theta::apply_force(colvarvalue const &force)
 }
 
 
-simple_scalar_dist_functions(polar_theta)
-
-
 
 colvar::polar_phi::polar_phi()
 {
@@ -562,49 +511,4 @@ void colvar::polar_phi::apply_force(colvarvalue const &force)
 {
   if (!atoms->noforce)
     atoms->apply_colvar_force(force.real_value);
-}
-
-
-// Same as dihedral, for polar_phi
-
-cvm::real colvar::polar_phi::dist2(colvarvalue const &x1,
-                                  colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return diff * diff;
-}
-
-
-colvarvalue colvar::polar_phi::dist2_lgrad(colvarvalue const &x1,
-                                          colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return 2.0 * diff;
-}
-
-
-colvarvalue colvar::polar_phi::dist2_rgrad(colvarvalue const &x1,
-                                          colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return (-2.0) * diff;
-}
-
-
-void colvar::polar_phi::wrap(colvarvalue &x_unwrapped) const
-{
-  if ((x_unwrapped.real_value - wrap_center) >= 180.0) {
-    x_unwrapped.real_value -= 360.0;
-    return;
-  }
-
-  if ((x_unwrapped.real_value - wrap_center) < -180.0) {
-    x_unwrapped.real_value += 360.0;
-    return;
-  }
-
-  return;
 }

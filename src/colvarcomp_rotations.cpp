@@ -164,6 +164,9 @@ colvarvalue colvar::orientation::dist2_rgrad(colvarvalue const &x1,
 }
 
 
+void colvar::orientation::wrap(colvarvalue & /* x_unwrapped */) const {}
+
+
 
 colvar::orientation_angle::orientation_angle()
 {
@@ -213,7 +216,27 @@ void colvar::orientation_angle::apply_force(colvarvalue const &force)
 }
 
 
-simple_scalar_dist_functions(orientation_angle)
+cvm::real colvar::orientation_angle::dist2(colvarvalue const &x1, colvarvalue const &x2) const
+{
+  return cvc::dist2(x1, x2);
+}
+
+
+colvarvalue colvar::orientation_angle::dist2_lgrad(colvarvalue const &x1,
+                                                   colvarvalue const &x2) const
+{
+  return cvc::dist2_lgrad(x1, x2);
+}
+
+
+colvarvalue colvar::orientation_angle::dist2_rgrad(colvarvalue const &x1,
+                                                   colvarvalue const &x2) const
+{
+  return cvc::dist2_rgrad(x1, x2);
+}
+
+
+void colvar::orientation_angle::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 
@@ -257,9 +280,6 @@ void colvar::orientation_proj::apply_force(colvarvalue const &force)
 }
 
 
-simple_scalar_dist_functions(orientation_proj)
-
-
 
 colvar::tilt::tilt()
 {
@@ -272,7 +292,7 @@ colvar::tilt::tilt()
 
 int colvar::tilt::init(std::string const &conf)
 {
-  int error_code = orientation::init(conf);
+  int error_code = orientation_proj::init(conf);
 
   get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0));
   if (axis.norm2() != 1.0) {
@@ -321,9 +341,6 @@ void colvar::tilt::apply_force(colvarvalue const &force)
 }
 
 
-simple_scalar_dist_functions(tilt)
-
-
 
 colvar::spin_angle::spin_angle()
 {
@@ -331,20 +348,6 @@ colvar::spin_angle::spin_angle()
   init_as_periodic_angle();
   enable(f_cvc_periodic);
   enable(f_cvc_explicit_gradient);
-}
-
-
-int colvar::spin_angle::init(std::string const &conf)
-{
-  int error_code = orientation::init(conf);
-
-  get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0));
-  if (axis.norm2() != 1.0) {
-    axis /= axis.norm();
-    cvm::log("Normalizing rotation axis to "+cvm::to_str(axis)+".\n");
-  }
-
-  return error_code;
 }
 
 
@@ -356,7 +359,7 @@ void colvar::spin_angle::calc_value()
   rot.calc_optimal_rotation(ref_pos, shifted_pos);
 
   x.real_value = rot.spin_angle(axis);
-  this->wrap(x);
+  wrap(x);
 }
 
 
@@ -385,48 +388,6 @@ void colvar::spin_angle::apply_force(colvarvalue const &force)
   }
 }
 
-
-cvm::real colvar::spin_angle::dist2(colvarvalue const &x1,
-                                    colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return diff * diff;
-}
-
-
-colvarvalue colvar::spin_angle::dist2_lgrad(colvarvalue const &x1,
-                                            colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return 2.0 * diff;
-}
-
-
-colvarvalue colvar::spin_angle::dist2_rgrad(colvarvalue const &x1,
-                                            colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return (-2.0) * diff;
-}
-
-
-void colvar::spin_angle::wrap(colvarvalue &x_unwrapped) const
-{
-  if ((x_unwrapped.real_value - wrap_center) >= 180.0) {
-    x_unwrapped.real_value -= 360.0;
-    return;
-  }
-
-  if ((x_unwrapped.real_value - wrap_center) < -180.0) {
-    x_unwrapped.real_value += 360.0;
-    return;
-  }
-
-  return;
-}
 
 
 colvar::euler_phi::euler_phi()
@@ -486,51 +447,8 @@ void colvar::euler_phi::apply_force(colvarvalue const &force)
 }
 
 
-cvm::real colvar::euler_phi::dist2(colvarvalue const &x1,
-                                  colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return diff * diff;
-}
-
-
-colvarvalue colvar::euler_phi::dist2_lgrad(colvarvalue const &x1,
-                                          colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return 2.0 * diff;
-}
-
-
-colvarvalue colvar::euler_phi::dist2_rgrad(colvarvalue const &x1,
-                                          colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return (-2.0) * diff;
-}
-
-
-void colvar::euler_phi::wrap(colvarvalue &x_unwrapped) const
-{
-  if ((x_unwrapped.real_value - wrap_center) >= 180.0) {
-    x_unwrapped.real_value -= 360.0;
-    return;
-  }
-
-  if ((x_unwrapped.real_value - wrap_center) < -180.0) {
-    x_unwrapped.real_value += 360.0;
-    return;
-  }
-
-  return;
-}
-
 
 colvar::euler_psi::euler_psi()
-  : orientation()
 {
   set_function_type("eulerPsi");
   init_as_periodic_angle();
@@ -587,51 +505,8 @@ void colvar::euler_psi::apply_force(colvarvalue const &force)
 }
 
 
-cvm::real colvar::euler_psi::dist2(colvarvalue const &x1,
-                                  colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return diff * diff;
-}
-
-
-colvarvalue colvar::euler_psi::dist2_lgrad(colvarvalue const &x1,
-                                          colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return 2.0 * diff;
-}
-
-
-colvarvalue colvar::euler_psi::dist2_rgrad(colvarvalue const &x1,
-                                          colvarvalue const &x2) const
-{
-  cvm::real diff = x1.real_value - x2.real_value;
-  diff = (diff < -180.0 ? diff + 360.0 : (diff > 180.0 ? diff - 360.0 : diff));
-  return (-2.0) * diff;
-}
-
-
-void colvar::euler_psi::wrap(colvarvalue &x_unwrapped) const
-{
-  if ((x_unwrapped.real_value - wrap_center) >= 180.0) {
-    x_unwrapped.real_value -= 360.0;
-    return;
-  }
-
-  if ((x_unwrapped.real_value - wrap_center) < -180.0) {
-    x_unwrapped.real_value += 360.0;
-    return;
-  }
-
-  return;
-}
-
 
 colvar::euler_theta::euler_theta()
-  : orientation()
 {
   set_function_type("eulerTheta");
   init_as_angle();
@@ -683,28 +558,4 @@ void colvar::euler_theta::apply_force(colvarvalue const &force)
   if (!atoms->noforce) {
     atoms->apply_colvar_force(fw);
   }
-}
-
-
-cvm::real colvar::euler_theta::dist2(colvarvalue const &x1,
-                                     colvarvalue const &x2) const
-{
-  // theta angle is not periodic
-  return cvc::dist2(x1, x2);
-}
-
-
-colvarvalue colvar::euler_theta::dist2_lgrad(colvarvalue const &x1,
-                                             colvarvalue const &x2) const
-{
-  // theta angle is not periodic
-  return cvc::dist2_lgrad(x1, x2);
-}
-
-
-colvarvalue colvar::euler_theta::dist2_rgrad(colvarvalue const &x1,
-                                             colvarvalue const &x2) const
-{
-  // theta angle is not periodic
-  return cvc::dist2_rgrad(x1, x2);
 }

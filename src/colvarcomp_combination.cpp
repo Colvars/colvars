@@ -137,6 +137,30 @@ void colvar::linearCombination::apply_force(colvarvalue const &force) {
 }
 
 
+cvm::real colvar::linearCombination::dist2(colvarvalue const &x1, colvarvalue const &x2) const
+{
+  return x1.dist2(x2);
+}
+
+
+colvarvalue colvar::linearCombination::dist2_lgrad(colvarvalue const &x1,
+                                                   colvarvalue const &x2) const
+{
+  return x1.dist2_grad(x2);
+}
+
+
+colvarvalue colvar::linearCombination::dist2_rgrad(colvarvalue const &x1,
+                                                   colvarvalue const &x2) const
+{
+  return x2.dist2_grad(x1);
+}
+
+
+void colvar::linearCombination::wrap(colvarvalue & /* x_unwrapped */) const {}
+
+
+
 colvar::customColvar::customColvar()
 {
     set_function_type("customColvar");

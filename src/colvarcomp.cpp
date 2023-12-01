@@ -642,32 +642,41 @@ void colvar::cvc::debug_gradients()
 }
 
 
-cvm::real colvar::cvc::dist2(colvarvalue const &x1,
-                             colvarvalue const &x2) const
+cvm::real colvar::cvc::dist2(colvarvalue const &x1, colvarvalue const &x2) const
 {
-  return x1.dist2(x2);
+  cvm::real diff = x1.real_value - x2.real_value;
+  if (is_enabled(f_cvc_periodic)) {
+    cvm::real const shift = cvm::floor(diff / period + 0.5);
+    diff -= shift * period;
+  }
+  return diff * diff;
 }
 
 
-colvarvalue colvar::cvc::dist2_lgrad(colvarvalue const &x1,
-                                     colvarvalue const &x2) const
+colvarvalue colvar::cvc::dist2_lgrad(colvarvalue const &x1, colvarvalue const &x2) const
 {
-  return x1.dist2_grad(x2);
+  cvm::real diff = x1.real_value - x2.real_value;
+  if (is_enabled(f_cvc_periodic)) {
+    cvm::real const shift = cvm::floor(diff / period + 0.5);
+    diff -= shift * period;
+  }
+  return 2.0 * diff;
 }
 
 
-colvarvalue colvar::cvc::dist2_rgrad(colvarvalue const &x1,
-                                     colvarvalue const &x2) const
+colvarvalue colvar::cvc::dist2_rgrad(colvarvalue const &x1, colvarvalue const &x2) const
 {
-  return x2.dist2_grad(x1);
+  return cvc::dist2_lgrad(x1, x2);
 }
 
 
-void colvar::cvc::wrap(colvarvalue & /* x_unwrapped */) const
+void colvar::cvc::wrap(colvarvalue &x_unwrapped) const
 {
-  return;
+  if (is_enabled(f_cvc_periodic)) {
+    cvm::real const shift = cvm::floor((x_unwrapped.real_value - wrap_center) / period + 0.5);
+    x_unwrapped.real_value -= shift * period;
+  }
 }
-
 
 
 // Static members
