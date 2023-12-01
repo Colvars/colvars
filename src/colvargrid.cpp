@@ -8,13 +8,11 @@
 // Colvars repository at GitHub.
 
 #include <ctime>
-#include <fstream>
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
 #include "colvar.h"
-#include "colvarcomp.h"
 #include "colvargrid.h"
 #include "colvargrid_def.h"
 

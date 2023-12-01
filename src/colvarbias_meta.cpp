@@ -7,8 +7,6 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
-#include <iostream>
-#include <sstream>
 #include <fstream>
 #include <iomanip>
 #include <algorithm>

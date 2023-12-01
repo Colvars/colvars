@@ -19,8 +19,6 @@
 // this can be done straightforwardly by using the macro:
 // simple_scalar_dist_functions (derived_class)
 
-#include <functional>
-#include <map>
 #include <memory>
 
 #include "colvarmodule.h"
