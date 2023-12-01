@@ -21,7 +21,6 @@
 
 
 colvar::CartesianBasedPath::CartesianBasedPath()
-  : cvc(), atoms(nullptr), reference_frames(0)
 {
     x.type(colvarvalue::type_scalar);
     // Don't use implicit gradient
@@ -621,6 +620,29 @@ colvar::CVBasedPath::~CVBasedPath() {
     // The last step is cleaning up the list of atom groups.
     atom_groups.clear();
 }
+
+
+cvm::real colvar::CVBasedPath::dist2(colvarvalue const &x1, colvarvalue const &x2) const
+{
+  return x1.dist2(x2);
+}
+
+
+colvarvalue colvar::CVBasedPath::dist2_lgrad(colvarvalue const &x1, colvarvalue const &x2) const
+{
+  return x1.dist2_grad(x2);
+}
+
+
+colvarvalue colvar::CVBasedPath::dist2_rgrad(colvarvalue const &x1, colvarvalue const &x2) const
+{
+  return x2.dist2_grad(x1);
+}
+
+
+void colvar::CVBasedPath::wrap(colvarvalue & /* x_unwrapped */) const {}
+
+
 
 colvar::gspathCV::gspathCV()
 {

@@ -268,8 +268,6 @@ void colvar::alpha_angles::apply_force(colvarvalue const &force)
 }
 
 
-simple_scalar_dist_functions(alpha_angles)
-
 
 
 //////////////////////////////////////////////////////////////////////
@@ -482,6 +480,3 @@ void colvar::dihedPC::apply_force(colvarvalue const &force)
                            coeffs[2*i+1] * dsindt) * force);
   }
 }
-
-
-simple_scalar_dist_functions(dihedPC)

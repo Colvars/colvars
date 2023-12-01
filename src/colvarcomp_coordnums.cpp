@@ -295,9 +295,6 @@ void colvar::coordnum::apply_force(colvarvalue const &force)
 }
 
 
-simple_scalar_dist_functions(coordnum)
-
-
 
 // h_bond member functions
 
@@ -397,9 +394,6 @@ void colvar::h_bond::apply_force(colvarvalue const &force)
 {
   (atom_groups[0])->apply_colvar_force(force);
 }
-
-
-simple_scalar_dist_functions(h_bond)
 
 
 
@@ -547,8 +541,6 @@ void colvar::selfcoordnum::apply_force(colvarvalue const &force)
 }
 
 
-simple_scalar_dist_functions(selfcoordnum)
-
 
 colvar::groupcoordnum::groupcoordnum()
 {
@@ -664,6 +656,3 @@ void colvar::groupcoordnum::apply_force(colvarvalue const &force)
   if (!group2->noforce)
     group2->apply_colvar_force(force.real_value);
 }
-
-
-simple_scalar_dist_functions(groupcoordnum)
