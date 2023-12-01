@@ -13,8 +13,9 @@
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
+#include "colvar.h"
+#include "colvarbias.h"
 #include "colvarscript.h"
-#include "colvaratoms.h"
 #include "colvarmodule_utils.h"
 
 

@@ -12,7 +12,6 @@
 
 #include "colvarmodule.h"
 #include "colvartypes.h"
-#include "colvarvalue.h"
 #include "colvarproxy_io.h"
 #include "colvarproxy_system.h"
 #include "colvarproxy_tcl.h"

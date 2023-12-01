@@ -11,6 +11,7 @@
 #define COLVAR_H
 
 #include <functional>
+#include <list>
 #include <iosfwd>
 #include <map>
 

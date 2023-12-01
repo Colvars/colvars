@@ -18,7 +18,7 @@
 #include "colvarparse.h"
 #include "colvarcomp.h"
 #include "colvar.h"
-#include "colvarscript.h"
+#include "colvarbias.h"
 #include "colvars_memstream.h"
 
 
