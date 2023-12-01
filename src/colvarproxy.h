@@ -479,7 +479,7 @@ public:
   bool b_smp_active;
 
   /// Whether threaded parallelization is available (TODO: make this a cvm::deps feature)
-  virtual int smp_enabled();
+  virtual int check_smp_enabled();
 
   /// Distribute calculation of colvars (and their components) across threads
   virtual int smp_colvars_loop();
