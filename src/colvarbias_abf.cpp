@@ -599,6 +599,12 @@ int colvarbias_abf::replica_share() {
 }
 
 
+size_t colvarbias_abf::replica_share_freq() const
+{
+  return shared_freq;
+}
+
+
 template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
                                                           std::string const &filename,
                                                           bool close) {
