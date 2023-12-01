@@ -6,6 +6,11 @@ source $(dirname $0)/load-openmpi.sh
 
 source $(dirname $0)/set-ccache.sh
 
+# Set explicit path for non-CMake targets
+if [ -n "${CCACHE_HOME}" ] ; then
+    export PATH=${CCACHE_HOME}:${PATH}
+fi
+
 # Save path to be used later
 devel_tools_folder=$(realpath $(dirname $0))
 

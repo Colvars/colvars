@@ -1,4 +1,6 @@
 # Typical LaTeX intermediate files
+*.4ct
+*.4tc
 *.aux
 *.bbl
 *.blg
@@ -7,16 +9,13 @@
 *.fls
 *.fdb_latexmk
 *.idx
+*.idv
 *.ilg
 *.ind
 *.log
+*.lg
 *.out
 *.toc
+*.tmp
+*.xref
 *-eps-converted-to.pdf
-
-# Compiled documentation
-colvars-refman-gromacs.pdf
-colvars-refman-lammps.pdf
-colvars-refman-namd.pdf
-colvars-refman-tinkerhp.pdf
-colvars-refman-vmd.pdf

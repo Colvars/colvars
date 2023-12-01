@@ -171,7 +171,7 @@ for dir in ${DIRLIST} ; do
 
       if [ "${basename}" == "test" ] ; then
         ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr >& ${basename}.grompp.out
-        ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} >& ${basename}.out
+        ${BINARY} mdrun -s ${basename}.tpr -ntomp 2 -deffnm ${basename} >& ${basename}.out
         RETVAL=$?
       fi
 
@@ -194,7 +194,7 @@ for dir in ${DIRLIST} ; do
           echo "init-step = 20" >> ${NEW_MDP}
           ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr >& ${basename}.grompp.out
           rm -f ${NEW_MDP} ${NEW_CVCONF}
-          ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend >& ${basename}.out
+          ${BINARY} mdrun -s ${basename}.tpr -ntomp 2 -deffnm ${basename} -noappend >& ${basename}.out
           RETVAL=$?
 
           output=${basename}.part0001
@@ -207,7 +207,7 @@ for dir in ${DIRLIST} ; do
 
           # Restart both GROMACS and Colvars using the GROMACS checkpoint file
           ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
-          ${BINARY} mdrun -s ${basename}.tpr -ntomp 1 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
+          ${BINARY} mdrun -s ${basename}.tpr -ntomp 2 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
 
           RETVAL=$?
           output=${basename}.part0002

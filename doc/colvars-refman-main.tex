@@ -367,6 +367,7 @@ Then we use the following Tcl procedure to compute a custom variable that is sim
 This version results in extremely fast updates.
 } % cvvmdonly dashboard
 
+
 \cvsec{Enabling and controlling the Colvars module in \MDENGINE{}}{sec:colvarmodule}
 
 Here, we document the syntax of the commands and parameters used to set up and use the Colvars module in \MDENGINE{}\cvgromacsonly{ \cite{Abraham2015}}\cvlammpsonly{ \cite{Plimpton1995}}\cvnamdonly{ \cite{Phillips2020}}.
@@ -374,11 +375,11 @@ One of these parameters is the configuration file or the configuration text for 
 
 \cvsubsec{Units in the Colvars module}{sec:units}
 
-The ``internal units'' of the Colvars module are the units in which values are expected to be in the configuration file, and in which collective variable values, energies, etc. are expressed in the output and colvars trajectory files.
+The ``internal units'' of the Colvars module are the units in which values are expressed in the configuration file, and in which collective variable values, energies, etc.\ are expressed in the output and colvars trajectory files.
 Generally \textbf{the Colvars module uses internally the same units as its back-end MD engine, with the exception of VMD}, where different unit sets are supported to allow for easy setup, visualization and analysis of Colvars simulations performed with any simulation engine.
 
 Note that \textbf{angles} are expressed in degrees, and derived quantities such as force constants are based on degrees as well.
-Some colvar components have default values, expressed in \AA{}ngstr\"om in this documentation. They are converted to the current length unit as needed.
+Some colvar components have default values, expressed in \AA{}ngstr\"om (\AA) in this documentation. They are converted to the current length unit, if different from \AA.
 Atomic coordinates read from \textbf{XYZ files} (and PDB files where applicable) are expected to be expressed in \AA{}ngstr\"om, no matter what unit system is in use by the back-end (\MDENGINE) or the Colvars Module. They are converted internally to the current length unit as needed.
 Note that force constants in \texttt{harmonic} and \texttt{harmonicWalls} biases (\ref{sec:colvarbias_harmonic}) are rescaled according to the \refkey{width}{colvar|width} parameter of colvars, so that they are formally in energy units, although if \refkey{width}{colvar|width} is given its default value of 1.0, force constants are effectively expressed in \energyunit/\textit{(colvar unit)}$^2$.
 
@@ -530,8 +531,76 @@ All of the above keywords except for the name of the configuration file may also
 
 
 \cvgromacsonly{
+
 \cvsubsec{Running Colvars in GROMACS}{sec:colvars_mdengine_parameters}
 
+\ifdefined\gromacsmdmodule
+
+\textbf{Note:} \emph{the GROMACS keywords described here are only supported in GROMACS versions 2024 and later, where Colvars is supported natively.}
+
+To enable a simulation with Colvars, one or more options should be added to the typical \texttt{mdp} parameters, for example:
+\begin{mdexampleinput}
+\-;~MDP~file\\
+\-...\\
+\-colvars-active~=~yes\\
+\-colvars-configfile~=~my\_config.colvars\\
+\-...\\
+\-(other~MDP~options)\\
+\end{mdexampleinput}
+When the \texttt{gmx grommp} command is called to create a TPR file, the contents of \texttt{my\_config.colvars} and of all files referenced by it are bundled in the TPR file as well.
+In any run based on the same TPR file, \texttt{gmx mdrun} will not access any of the original files used to initialize Colvars.
+Therefore to modify the Colvars configuration (e.g.\ adding or removing a bias), a new TPR file should be built as well.
+To do this while also continuing a previous simulations, please see \ref{sec:change_config_restart}.
+
+\begin{itemize}
+
+\item %
+  \keydef{%
+    colvars-active}{%
+    MDP option}{%
+    Activate the Colvars module in GROMACS}{%
+    boolean}{%
+    \texttt{no}}{%
+    Activate Colvars computation in the current run.  Requires that the Colvars library was compiled into GROMACS, which is the default.
+}
+
+\item %
+  \key
+    {colvars-configfile}{%
+    MDP option}{%
+    Colvars configuration file}{%
+    string}{%
+    Name of the Colvars configuration file, which can be either an absolute path, or a path relative to the working directory when \texttt{gmx grompp} is called.
+}
+
+\item %
+  \keydef{colvars-seed}{%
+    MDP option}{%
+    Random number generator seed}{%
+    integer}{%
+    -1}{%
+    Seed used to initialize the random generator associated with certain stochastic methods implemented within Colvars. The default value generates a random seed.
+}
+
+\end{itemize}
+
+\noindent{}Then, create the \texttt{tpr} and launch the simulation using a standard \texttt{gmx mdrun} command line:
+\begin{mdexampleinput}
+\-gmx~grompp~-f~system.mdp~-p~system.top~-c~init.gro~-o~test.tpr\\
+\-gmx~mdrun~-s~test.tpr
+\end{mdexampleinput}
+
+\noindent{}Continuing from a previous simulation is done using the \texttt{-cpi} parameter for the checkpoint file (e.g.\ ``\texttt{state.cpt}''). This file holds the required information to restart the Colvars-based simulation.
+\begin{mdexampleinput}
+\-gmx~convert-tpr~-s~test.tpr~-nsteps~\${NUMSTEPS}~-o~test\_restart.tpr\\
+\-gmx~mdrun~-s~test\_restart.tpr~-cpi~state.cpt
+\end{mdexampleinput}
+
+Other output files (not needed for restarting) will be written using as prefix the value of the \texttt{-e} flag of \texttt{gmx mdrun} (see \ref{sec:colvars_output)}).
+
+\else
+
+\textbf{Note:} \emph{This section describes how to use Colvars in GROMACS versions until 2023, using patched GROMACS source code.  This interface is now deprecated: whenever possible, please consider using GROMACS 2024 and later versions, which support and include Colvars natively.}
 
 To enable a Colvars-based calculation, just specify one or more Colvars configuration files with the \texttt{-colvars} command-line parameter to \texttt{gmx mdrun}:
 \begin{mdexampleinput}
@@ -550,16 +619,14 @@ It is also highly recommended to read checkpoint files that were written by the 
 
 For the output files, the prefix of Colvars output files will use the \texttt{-defnnm} option of mdrun, or be the same as the GROMACS log file if the option is not set.  Otherwise, the prefix will be \emph{output}.
 
-\textbf{Note on PBC wrapping in GROMACS.} Internally, GROMACS handles only PBC-wrapped atom coordinates, which may break the calculation of some variables if their atom groups become split across PBCs.
-To prevent this, Colvars unwraps coordinates throughout the simulation, by assuming that each atom group is intact in the initial coordinates, and canceling any later jumps across the periodic box.
-This information is propagated across restarts, and communicated between replicas when GROMACS is used for replica-exchange simulations. Thus, Colvars is compatible with native replica-exchange in GROMACS.
+\fi
 } % \cvgromacsonly
 
 \cvtinkerhponly{
 \cvsubsec{Running Colvars in Tinker-HP}{sec:colvars_mdengine_parameters}
 
 To enable Colvars within a Tinker-HP run, just provide a Colvars configuration file with the same prefix as the \texttt{.key} file, and the extension \texttt{.colvars}.
-Tcl-scripted variables and biases Tcl callbacks may be defined by sourcing a script file using the \refkey{sourceTclFile}{Colvars-global|sourceTclFile} option.
+Tcl-scripted variables and biases may be defined by sourcing a script file using the \refkey{sourceTclFile}{Colvars-global|sourceTclFile} option.
 }% \cvtinkerhponly
 
 
@@ -846,7 +913,7 @@ It is also possible to make the change subject to a condition on the energy of t
 \-\}
 \end{mdexampleinput}
 } % \cvnamdonly
- 
+
 
 \cvsubsubsec{Loading and saving the state of individual biases}{sec:cv_command_bias_loadsave}
 
@@ -915,11 +982,13 @@ The following keywords are available in the global context of the Colvars config
     global}{%
     Colvar module restart frequency}{%
     positive integer}{%
-    \cvnamdonly{NAMD parameter \texttt{restartFreq}}\cvlammpsonly{LAMMPS \texttt{restart} frequency when defined}\cvvmdonly{0}}{%
-    The state file and any other output files produced by Colvars are written every these many steps (the trajectory file is still written every \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} steps).
+    \cvgromacsonly{0}\cvnamdonly{NAMD parameter \texttt{restartFreq}}\cvlammpsonly{LAMMPS \texttt{restart} frequency when defined}\cvvmdonly{0}}{%
+    When this value is non-zero, a state file suitable for restarting will be written every these many steps.
+    Additionally, any other output files produced by Colvars are written as well (except the trajectory file, which is written every \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} steps).
     \cvvmdonly{In VMD, the simulation step is not progressed and this parameter is effectively ignored.}
     It is generally a good idea to leave this parameter at its default value, unless needed for special cases or to disable automatic writing of output files altogether.
-    Writing can still be invoked at any time via the command \texttt{cv save}.}
+    \cvgromacsonly{(The default value of 0 in GROMACS reflects this.)}
+    \ifdefined\cvscriptapi{If neeed, writing of all output files can still be triggered at any time via the \texttt{save} scripting function}.\fi}
 
 \item %
   \labelkey{Colvars-global|indexFile}
@@ -973,20 +1042,29 @@ When a dedicated Colvars state file is used, it may be in either one of two form
 
 \item Formatted, i.e.\ \emph{``text''} format, which takes more space and is slower to to load/save but is also portable across different platforms and even different simulation engines (save for changes in physical units).  This format is used by default, unless explicitly requested otherwise.
 
-\item Unformatted, i.e.\ \emph{``binary''} format, which is both space-efficient and quick to load/save, but requires that the same \MDENGINE{} build was used to write the file and that the Colvars configuration remains the same. This format is supported by Colvars versions starting 2023-09-25.
-Colvars state files are written in binary format by setting the environment variable ``\texttt{COLVARS\_BINARY\_RESTART}'' to 1.
+\item Unformatted, i.e.\ \emph{``binary''} format, which is both space-efficient and quick to load/save, but requires that the same \MDENGINE{} build was used to write the file and that the Colvars configuration remains the same. This format is supported by Colvars versions starting 2023-09-25\cvgromacsonly{ (GROMACS versions 2024 and later)}.
+Colvars state files can be written in binary format by setting the environment variable ``\texttt{COLVARS\_BINARY\_RESTART}'' to 1.
 
 \end{itemize}
 
-\cvsubsubsec{Contents of the state file.}{}
+% \cvsubsubsec{Contents of the state file.}{}
+
 In either format, the state file contains accumulated data as well as the step number at the end of the run.
 The step number read from a state file overrides any value that \MDENGINE{} provides, and will be incremented if the simulation proceeds.
 This means that the step number used internally by Colvars may not always match the step number reported by \MDENGINE{}.
 \cvnamdonly{This is particularly inmportant in NAMD, which represents step numbers as a 32-bit integers that overflows after $\sim$ 2 billion steps, effectively negating the usefulness of the \texttt{firstTimeStep} keyword.  However, step numbers are implemented correctly in the Colvars state file.}
 
 \cvgromacsonly{\cvsubsubsec{Restarting in GROMACS.}{}
+  \ifdefined\gromacsmdmodule
   Beginning with GROMACS 2024, all information necessary to restart Colvars is included in the checkpoint ``\texttt{.cpt}'' file.
   No special provisions are therefore needed compared to a GROMACS simulation without Colvars enabled.
+  \else
+  For the GROMACS patched versions until 2023, Colvars can be restarted by providing the \texttt{-colvars\_restart} option to \texttt{gmx mdrun}:
+\begin{mdexampleinput}
+\-gmx~mdrun~-s~test\_restart.tpr~-deffnm~md~-cpi~state.cpt~\textbackslash\\
+\-~~~~-colvars~config.colvars.dat~-colvars\_restart~md.colvars.state.dat
+\end{mdexampleinput}
+  \fi
 }
 
 \cvlammpsonly{\cvsubsubsec{Restarting in LAMMPS.}{}
@@ -1012,7 +1090,7 @@ Both versions support loading Colvars state files in either format (binary or te
 } % end \cvnamdonly
 
 
-\cvsubsubsec{Changing configuration upon restarting.}{}
+\cvsubsubsec{Changing configuration upon restarting.}{sec:change_config_restart}
 
 In some cases, it is useful to modify the configuration of variables or biases between consecutive runs, for example by adding or removing a restraint.
 Some special provisions will happen in that case.
@@ -1021,12 +1099,12 @@ Conversely, any information that the state file may contain about variables or b
 Please note that these checks are performed based only on the \emph{names} of variables and biases: it is your responsibility to ensure that these names have \emph{consistent definitions between runs.}
 
 The flexibility just described carries some limitations: namely, it is only supported when reading \emph{text-format} Colvars state files.
-Instead, restarting from binary files\cvlammpsonly{ (such as the LAMMPS restart file)}\cvgromacsonly{ (such as the GROMACS checkpoint file)} after a configuration change will trigger an error.
+Instead, restarting from binary files\cvlammpsonly{ (such as the LAMMPS restart file)}\cvgromacsonly{\ifdefined\gromacsmdmodule{} (such as the GROMACS checkpoint file)\fi} after a configuration change will trigger an error.
 It is also important to remind that when switching to a different build of \MDENGINE, the binary format may change slightly, even if the release version is the same.
 
 To work around the potential issues just described, a text-format Colvars state file should be loaded.
 \ifdefined\cvvmdornamd{This is the default in \MDENGINE{} unless the ``\texttt{COLVARS\_BINARY\_RESTART}'' is set to 1, and this information is only provided here for troubleshooting purposes.}\fi\cvlammpsonly{This can be achieved by providing an explicit \texttt{input} keyword when initializing the Colvars fix (see \ref{sec:colvars_mdengine_parameters}), which will instruct Colvars to use the given filename, instead of the LAMMPS restart file.
-  Furthermore, the \texttt{fix\_modify} scripting command allows to load a Colvars file after initialization (\ref{sec:cv_command_loadsave}).}\cvgromacsonly{Loading such state file requires an exception to the standard behavior in GROMACS (i.e.\ loading a checkpoint file): this exception is supported by the following Colvars configuration:
+  Furthermore, the \texttt{fix\_modify} scripting command allows to load a Colvars file after initialization (\ref{sec:cv_command_loadsave}).}\cvgromacsonly{\ifdefined\gromacsmdmodule{}Loading such state file requires an exception to the standard behavior in GROMACS (i.e.\ loading a checkpoint file): this exception is supported by the following Colvars configuration:
 \begin{itemize}
 \item %
   \labelkey{Colvars-global|defaultInputStateFile}
@@ -1040,23 +1118,24 @@ To work around the potential issues just described, a text-format Colvars state 
 When a Colvars configuration featuring \texttt{defaultInputStateFile} is processed into a TPR file, and a GROMACS simulation is started from this TPR file but without providing a checkpoint, Colvars will load its state from the file named by \texttt{defaultInputStateFile}.
 Later, when that same simulation is continued by providing a checkpoint file to GROMACS, Colvars will ignore \texttt{defaultInputStateFile} and will read its data from the checkpoint file.
 For the sake of clarity, we recommend that as soon as a suitable GROMACS checkpoint is available, the \texttt{defaultInputStateFile} is removed \emph{removed}, and a new TPR file is produced accordingly.
+\fi % end \ifdefined\gromacsmdmodule
 }
 
 
 \cvsubsec{Output files}{sec:colvars_output}
 
-If the output prefix \outputName{} is defined\cvgromacsonly{ (in GROMACS, this is defined by the value of the \texttt{-e} flag of \texttt{mdrun})}, the following output files are written during a simulation run:
+When the output prefix \outputName{} is defined\cvgromacsonly{ (in GROMACS, this is automatically set to the value of the \ifdefined\gromacsmdmodule{}\texttt{-e}\else{}\texttt{-g}\fi flag of \texttt{mdrun})}, the following output files are written during a simulation run:
 
 \begin{itemize}
 
 \item A \emph{state file}, named \outputName\texttt{.colvars.state}, which is written at the end of the specified run\cvscriptonly{, and can also be written at any time with the scripting command \texttt{save} (\ref{sec:cv_command_loadsave})}.
 This file is in plain text format by default\cvnamdonly{, regardless of the value of \texttt{binaryOutput} of the NAMD coordinate and velocity files}, or in binary format if the environment variable \texttt{COLVARS\_BINARY\_RESTART} is set to a non-zero integer.
-The state file is used to continue a simulation, and is required to restart a simulation unless the engine supports embedding information into their checkpoint file (as GROMACS or LAMMPS currently do).
+The state file can be used to continue a simulation: unless its contents are embedded in the checkpoint file of the MD engine itself (currently, GROMACS and LAMMPS support this), instructions for loading the Colvars state file will be required in the simulation script (see \ref{sec:colvars_input}).
 
-\item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero and \restartName{} is defined\cvgromacsonly{ (this is \emph{not} the case in GROMACS)}, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
+\item If the parameter \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is larger than zero and the \restartName{} prefix is defined\cvgromacsonly{ (note: this is \emph{not} the case in GROMACS)}, a \emph{restart file} is written every that many steps: this file is fully equivalent to the final state file.
   The name of this file is \restartName\texttt{.colvars.state}.
 
-\item If the parameter \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} is greater than 0 (default value: 100 steps), a \emph{trajectory file}, named \outputName\texttt{.colvars.traj}, is written during the simulation.  Unlike the state file, this file is not needed to restart a simulation, but can be used for post-processing and analysis.  The format of this file is described in sec.~\ref{sec:colvars_traj_format}.
+\item If the parameter \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency} is greater than 0 (default value: 100 steps), a \emph{trajectory file}, named \outputName\texttt{.colvars.traj}, is written during the simulation.  Unlike a state file, this file is not needed to restart a simulation, but can be used for post-processing and analysis.  The format of this file is described in sec.~\ref{sec:colvars_traj_format}.
 
 \item Additionally, certain features, when enabled, can emit output files with a specific purpose: for example, potentials of mean force (PMFs) can be written to file to be analyzed or plotted.  These files are described in the respective sections, but as a general rule they all use names beginning with the \outputName{} prefix.
 Like the trajectory file, these additional files are needed only for analyzing a simulation's results, but not to continue it.
@@ -1075,7 +1154,7 @@ This section summarizes the file formats of various files that Colvars may be re
 \emph{Configuration files} are text files that are generally read as input by \MDENGINE{}\cvscriptonly{, and may be optionally inlined in a \MDENGINE{} script (see \ref{sec:cv_command_init})}.
 Starting from version 2017-02-01, changes in newline encodings are handled transparently, i.e.\ it is possible to typeset a configuration file in Windows (CR-LF newlines) and then use it with Linux or macOS (LF-only newlines).
 
-\emph{State files}, although not written manually, follow otherwise the same text format as configuration files.
+\emph{Formatted state files}, although not written manually, follow otherwise the same text format as configuration files.  \texttt{Binary state files} can only be read by the Colvars code itself.
 
 
 \cvsubsubsec{Index (NDX) files}{sec:colvars_ndx_format}
@@ -1117,6 +1196,8 @@ $E_{N}$ & $x_{N}$ & $y_{N}$ & $z_{N}$ \\
 
 \noindent{}where $N$ is the number of atomic coordinates in the file and $E_i$ is the chemical element of the $i$-th atom.
 Because $E_i$ is not used in Colvars, any string that does not contain tabs or spaces is acceptable.
+
+\textbf{Note:} all XYZ coordinates are assumed to be expressed in \AA{} units\cvgromacsonly{; it is advisable to obtain them from a PDB file, or using VMD and/or the Colvars Dashboard to avoid inconstencies with GROMACS\' nm units}\cvlammpsonly{, regardless of the units currently used by LAMMPS}.
 
 An XYZ file may contain either one of the following scenarios:
 \begin{enumerate}
@@ -1407,7 +1488,7 @@ The \texttt{distance \{...\}} block defines a distance component between the two
     {group1}{%
     \texttt{distance}}{%
     First group of atoms}{%
-    Block \texttt{group1 \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     First group of atoms.}
 
 \item %
@@ -1472,7 +1553,7 @@ One of the groups can be set to a dummy atom to allow the use of an absolute Car
     {main}{%
     \texttt{distanceZ}}{%
     Main group of atoms}{%
-    Block \texttt{main \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Group of atoms whose position $\bm{r}$ is measured.}
 
 \item %
@@ -1482,7 +1563,7 @@ One of the groups can be set to a dummy atom to allow the use of an absolute Car
     \texttt{distanceZ}}{%
     Reference group of
     atoms}{%
-    Block \texttt{ref \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Reference group of atoms.  The position of its center of mass is
     noted $\bm{r}_1$ below.}
 
@@ -1493,7 +1574,7 @@ One of the groups can be set to a dummy atom to allow the use of an absolute Car
     \texttt{distanceZ}}{%
     Secondary reference
     group}{%
-    Block \texttt{ref2 \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     none}{%
     Optional group of reference atoms, whose position $\bm{r}_2$ can
     be used to define a dynamic projection axis: $\bm{e}=(\| \bm{r}_2
@@ -1724,8 +1805,8 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
   \key
     {atoms}{%
     \texttt{polarPhi}}{%
-    Atom group}{%
-    \texttt{atoms~\{...\}} block}{%
+    Group of atoms defining this function}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Defines the group of atoms for the COM of which the angle should be calculated.
     }
 \end{cvcoptions}
@@ -1753,8 +1834,8 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
   \key
     {atoms}{%
     \texttt{polarPhi}}{%
-    Atom group}{%
-    \texttt{atoms~\{...\}} block}{%
+    Group of atoms defining this function}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Defines the group of atoms for the COM of which the angle should be calculated.
     }
 \end{cvcoptions}
@@ -2007,8 +2088,8 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
   \key
     {atoms}{%
     \texttt{rmsd}}{%
-    Atom group}{%
-    \texttt{atoms~\{...\}} block}{%
+    Group of atoms defining this function}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Defines the group of atoms of which the RMSD should be calculated.
     Optimal fit options (such as \texttt{refPositions} and
     \texttt{rotateToReference}) should typically NOT be set within this
@@ -2937,7 +3018,7 @@ $(x_1, y_1, z_1, \cdots, x_n, y_n, z_n)$.
     {atoms}{%
     \texttt{cartesian}}{%
     Group of atoms}{%
-    Block \texttt{atoms \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Defines the atoms whose coordinates make up the value of the component.
     If \texttt{rotateToReference}, \texttt{centerToReference}, or \texttt{centerToOrigin} are defined, coordinates
     are evaluated within the moving frame of reference.}
@@ -2988,7 +3069,7 @@ In the \texttt{gspath~\{...\}} and the \texttt{gzpath~\{...\}} block all vectors
     {atoms}{%
     \texttt{gspath} and \texttt{gzpath}}{%
     Group of atoms}{%
-    Block \texttt{atoms \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Defines the atoms whose coordinates make up the value of the component.}
 
 \item %
@@ -3383,7 +3464,7 @@ implementation of the PCV progress component of the Tcl-scripted version
     {atoms}{%
     \texttt{aspath} and \texttt{azpath}}{%
     Group of atoms}{%
-    Block \texttt{atoms \{...\}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     Defines the atoms whose coordinates make up the value of the component.}
 
 \item %
@@ -3643,8 +3724,8 @@ Because the volumetric map itself and the atoms affected by it are defined exter
   \key
     {atoms}{%
     \texttt{mapTotal}}{%
-    Atom group}{%
-    \texttt{atoms~\{...\}} block}{%
+    Group of atoms defining this function}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     If defined, this option allows defining the set of atoms to be aligned onto the volumetric map following the syntax described in section \ref{sec:colvar_atom_groups}.
     This also allows, for instance, to express the volumetric map in a rotated frame of reference (see \ref{sec:colvar_atom_groups_ref_frame}).
     \cvvmdonly{In VMD, this definition is required, otherwise the \texttt{mapTotal} value is identically zero.}
@@ -4609,20 +4690,36 @@ For run-time computation of histograms, please see the histogram bias (\ref{sec:
 
 \cvsec{Selecting atoms}{sec:colvar_atom_groups}
 
-To define collective variables, atoms are usually selected as groups.  Each group is defined using an identifier that is unique in the context of the specific colvar component (e.g.~for a distance component, the two groups are \texttt{group1} and \texttt{group2}).
-The identifier is followed by a brace-delimited block containing selection keywords and other parameters, including an optional \texttt{name}:
+To define collective variables, atoms are usually selected as groups.  Each group is defined using an identifying keyword that is unique in the context of the specific colvar component (e.g.~for a distance component, the two groups are identified by the \texttt{group1} and \texttt{group2} keywords).
 
+The group's identifying keyword is followed by a brace-delimited block containing selection keywords and other parameters, one of which is \texttt{name}:
 \begin{itemize}
 \item \key
   {name}{%
   atom group}{%
   Unique name for the atom group}{%
   string}{%
-  This parameter defines a unique name for this atom group, which can be referred to
+  This parameter defines a globally unique name for this atom group, which can be referred to
   in the definition of other atom groups (including in other colvars) by invoking
-  \texttt{atomsOfGroup} as a selection keyword.}
+  \texttt{atomsOfGroup} as a selection keyword.
+  This has two benefits: (1) it can make the configuration shorter and more legible, and (2) several
+  related atom groups can be defined using a common set of atoms, so that this selection can be
+  changed in one place, keeping all related groups synchronized with the same atom set.}
 \end{itemize}
+Other keywords are documented in the following sections.
 
+In the example below, the \texttt{gyration} component uses the identifying keyword \texttt{atoms} to define its associated group, which is defined based on the index group named ``\texttt{Protein-H}''.  Optionally, the group is also given the unique name ``\texttt{my\_protein}'', so that atom groups defined later in the Colvars configuration may refer to it.
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~rgyr\\
+\-~~gyration~\{\\
+\-~~~~atoms~\{\\
+\-~~~~~~name~my\_protein\\
+\-~~~~~~indexGroup~Protein-H\\
+\-~~~~\}\\
+\-~~\}\\
+\-\}
+\end{cvexampleinput}
 
 \cvsubsec{Atom selection keywords}{sec:colvar_atom_groups_sel}
 
@@ -4884,7 +4981,7 @@ Be careful when using these options in ABF simulations or when using total force
     {fittingGroup}{%
     atom group}{%
     Use an alternate set of atoms to define the roto-translation}{%
-    Block \texttt{fittingGroup \{ ... \}}}{%
+    \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     This atom group itself}{%
     If either \texttt{centerToReference} or \texttt{rotateToReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
     Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
@@ -4922,7 +5019,7 @@ atoms \{\\
 \end{cvexampleinput}
 }
 
-The following two options have default values appropriate for the vast majority of applications, and are only provided to support rare, special cases.
+The following options have default values appropriate for the vast majority of applications, and are only provided to support rare, special cases.
 \begin{itemize}
 
 \item %
@@ -4948,35 +5045,39 @@ The following two options have default values appropriate for the vast majority 
 
 \cvsubsec{Treatment of periodic boundary conditions.}{sec:colvar_atom_groups_wrapping}
 
+In simulations with periodic boundary conditions (PBCs), Colvars computes all distances between two points following the nearest-image convention, using PBC parameters provided by \MDENGINE.
+However, many common variables rely on a consistent definition of the center of mass or geometry of a group of atoms.
+This requires the use of \emph{unwrapped} coordinates, which are not subject to ``jumps'' when they diffuse across periodic boundaries.
+
 \cvnamdonly{
- In simulations with periodic boundary conditions, NAMD maintains
+ When PBCs are defined, NAMD maintains
   the coordinates of all the atoms within a molecule contiguous to
-  each other (i.e.~there are no spurious ``jumps'' in the molecular
-  bonds).  The Colvars module relies on this when calculating a group's
-  center of geometry, but this condition may fail if the group spans
+  each other (i.e.\ there are no spurious ``jumps'' in the molecular
+  bonds).  However, this condition may fail if the group spans
   different molecules.  In that case, writing the NAMD output and restart files
   using \texttt{wrapAll} or \texttt{wrapWater} could produce wrong results
   when a simulation run is continued from a previous one.
   The user should then determine, according to which
   type of colvars are being calculated, whether \texttt{wrapAll} or
-  \texttt{wrapWater} can be enabled.
-
-  In general, internal coordinate wrapping by NAMD does not affect the calculation of colvars if each atom group satisfies one or more of the following:
+  \texttt{wrapWater} can be enabled while ensuring that the input coordinates for each
+  run contain all atom groups in one piece.
 }
+
 \cvlammpsonly{
-In simulations with periodic boundary conditions, many of the implemented colvar components rely on the fact that each position within a group of atoms is at the nearest periodic image from the center of geometry of the group itself.
-However, due to the internal wrapping of individual atomic positions done by LAMMPS, this assumption is broken if the group straddles one of the unit cell's boundaries.
-For this reason, within the Colvars module all coordinates are unwrapped by default to avoid discontinuities (see \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}).
-
-The user should determine whether maintaining the default value of \texttt{unwrap}, depending on the specifics of each system.
-In general, internal coordinate wrapping by LAMMPS does not affect the calculation of colvars if each atom group satisfies one or more of the following:
-}
-\cvvmdonly{
-  When periodic boundary conditions are defined, the Colvars module requires that the coordinates of each molecular fragment are contiguous, without ``jumps'' when a fragment is partially wrapped near a periodic boundary.
-  The Colvars module relies on this assumption when calculating a group's center of geometry, but the condition may fail if the group spans different molecules.
-  In general, coordinate wrapping does not affect the calculation of colvars if each atom group satisfies one or more of the following:
+LAMMPS controls the internal availability of unwrapped coordinates using the \texttt{unwrap} keyword in \ref{sec:colvars_mdengine_parameters}, which defaults to \texttt{yes}.
+The user should determine whether it is appropriate to maintain the default value of \texttt{unwrap}, depending on the specifics of each system.
 }
 
+\cvgromacsonly{
+Internally, GROMACS wraps individual atom coordinates into a single periodic cell, which may break the calculation of some variables if their atom groups become split across PBCs.
+To prevent this, Colvars unwraps coordinates throughout the simulation, by assuming that each atom group is intact in the initial coordinates, and canceling any later jumps across the periodic box.
+This information is propagated across restarts using a checkpoint (\texttt{cpt}) file.
+
+Whenever preparing a new simulation input with \texttt{gmx grompp}, users should provide input coordinates such that the atoms involved in collective variables will not be artificially moved across the boundary conditions, but occupy their relevant positions relative to each other -- usually the nearest ones.
+Unwrapped coordinates are communicated between replicas when GROMACS is used for replica-exchange simulations. Thus, Colvars is compatible with native replica-exchange in GROMACS.
+}
+
+In general, internal coordinate wrapping by \MDENGINE{} does not affect the calculation of colvars if each atom group satisfies one or more of the following:
 \begin{enumerate}
   \item[\emph{i)}] it is composed by only one atom;
   \item[\emph{ii)}] it is used by a colvar component which does not make use of its center of geometry, but only of pairwise distances (\texttt{distanceInv}, \texttt{coordNum}, \texttt{hBond}, \texttt{alpha}, \texttt{dihedralPC});
@@ -4984,12 +5085,12 @@ In general, internal coordinate wrapping by LAMMPS does not affect the calculati
   \item[\emph{iv)}] it has all of its atoms within the same molecular fragment%
 }.
 \end{enumerate}
-\cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} prior to processing a trajectory with the Colvars module.}
+\cvvmdonly{If none of these conditions are met, wrapping may affect the calculation of collective variables: a possible solution is to use \texttt{pbc wrap} or \texttt{pbc unwrap} (or the alternative \texttt{qwrap} or \texttt{qunwrap}: \url{https://github.com/jhenin/qwrap}) prior to processing a trajectory with the Colvars module.}
 
 
 \cvsubsec{Performance of a Colvars calculation based on group size.}{sec:colvar_atom_groups_scaling}
 
-In simulations performed with message-passing programs (such as NAMD or LAMMPS), the calculation of energy and forces is distributed (i.e., parallelized) across multiple nodes, as well as over the processor cores of each node.
+In simulations performed with message-passing programs (such as NAMD, LAMMPS or GROMACS), the calculation of energy and forces is distributed (i.e., parallelized) across multiple nodes, as well as over the processor cores of each node.
 When Colvars is enabled, certain atomic coordinates are collected on a single node, where the calculation of collective variables and of their biases is executed.
 This means that for simulations over large numbers of nodes, a Colvars calculation may produce a significant overhead, coming from the costs of transmitting atomic coordinates to one node and of processing them.
 \cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD may alleviate both factors, but a noticeable performance impact may be observed.}
@@ -7329,13 +7430,6 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 
 \end{itemize}
 
-\noindent{}An up-to-date version of this manual for the latest version of Colvars may be accessed %
-\cvgromacsonly{\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-gromacs.html}{here}}%
-\cvlammpsonly{\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-lammps.html}{here}}%
-\cvnamdonly{\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-namd.html}{here}}%
-\cvvmdonly{\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-vmd.html}{here}}.
-
-
 
 \cvsec{Compilation notes}{sec:compilation_notes}
 
@@ -7345,11 +7439,11 @@ This section lists the few cases where the choice of compilation settings affect
 
 \begin{itemize}
 
-\item Scripting commands using the Tcl language (\url{https://www.tcl.tk}) are supported in VMD and NAMD.  All precompiled builds of each code include Tcl, and it is highly recommended to enable Tcl support in any custom build, using precompiled Tcl libraries from the UIUC website.
+\item Scripting commands using the Tcl language (\url{https://www.tcl.tk}) are supported in VMD, NAMD, and Tinker-HP.  All precompiled builds of NAMD and VMD include Tcl, and it is highly recommended to enable Tcl support in any custom build, using precompiled Tcl libraries from the UIUC website.
 
-\item The Lepton library (\url{https://simtk.org/projects/lepton}) used to implement the \texttt{customFunction} feature is currently included only in NAMD (always on), in LAMMPS (on by default) and in the Colvars-patched GROMACS releases.  For VMD, a \href{https://github.com/giacomofiorin/vmd-patches}{patch} that allows to link Lepton is available.
+\item The Lepton library (\url{https://simtk.org/projects/lepton}) used to implement the \texttt{customFunction} feature is currently included only in NAMD (always on), in LAMMPS (on by default) and in the Colvars-patched GROMACS releases (but currently, not in the standard releases).  For VMD, a \href{https://github.com/giacomofiorin/vmd-patches}{patch} that allows to link Lepton is available.
 
-\item Colvars requires the C++11 language standard, which is either supported (VMD) or required (GROMACS, LAMMPS, NAMD) by all the engines.  However, many of the VMD official builds are produced on very old architectures.  For details please see:\\
+\item Colvars requires the C++11 language standard or higher, which is either supported (VMD) or required (GROMACS, LAMMPS, NAMD) by all the engines.  However, many of the VMD official builds are produced on very old architectures, where C++11 features are disabled at build time, thus limiting functionality.  For details please see:\\
   \url{https://colvars.github.io/README-c++11.html}
 \end{itemize}
 

@@ -203,31 +203,22 @@ cv.#1(#2)
 
 % use macros with context field to document keywords
 \newcommand{\key}[5]{%
-  {\bf Keyword} \index{#2!\texttt{#1}}%
-  \colorbox{cvkeyword-background-color}{\large \tt #1} $\langle\,$#3$\,\rangle$\\%
-  {\bf Context: } #2 \\%
-  {\bf Acceptable values: } #4 \\%
-  {\bf Description: } #5%
-}
+  \colorbox{cvkeyword-background-color}{\index{#2!\texttt{#1}}\texttt{#1}} --- \emph{#3}\vspace{1ex}\\%
+  $[$~#4, context: #2~$]$\vspace{1ex}\\%
+  #5}
 
 \newcommand{\keydef}[6]{%
-  {\bf Keyword} \index{#2!\texttt{#1}}%
-  \colorbox{cvkeyword-background-color}{\large \tt #1} $\langle\,$#3$\,\rangle$\\%
-  {\bf Context: } #2 \\%
-  {\bf Acceptable values: } #4 \\%
-  {\bf Default value: } #5 \\%
-  {\bf Description: } #6
-}
+  \colorbox{cvkeyword-background-color}{\index{#2!\texttt{#1}}\texttt{#1}} --- \emph{#3}\vspace{1ex}\\%
+  Default: #5 $[$~#4, context: #2~$]$\vspace{1ex}\\%
+  #6}
 
-\newcommand{\labelkey}[1]{\hypertarget{#1}{~}\label{#1}}
+\newcommand{\labelkey}[1]{\hypertarget{#1}{}\label{#1}}
 \newcommand{\refkey}[2]{\hyperlink{#2}{\texttt{#1}}}
 \newcommand{\dupkey}[4]{%
-  {\bf Keyword} \index{#2!\texttt{#1}}%
-  \colorbox{cvkeyword-background-color}{\large \tt #1}: see definition of \hyperlink{#3}{\texttt{#1}} (#4)%
+  \colorbox{cvkeyword-background-color}{\index{#2!\texttt{#1}}\texttt{#1}} --- same definition as \hyperlink{#3}{\texttt{#1}} (#4)%
 }
 \newcommand{\simkey}[3]{%
-  \index{#2!\texttt{#1}}%
-  \colorbox{cvkeyword-background-color}{\large \tt #1}: analogous to \texttt{#3}%
+  \colorbox{cvkeyword-background-color}{\index{#2!\texttt{#1}}\texttt{#1}} --- analogous to \texttt{#3}%
 }
 
 \newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}

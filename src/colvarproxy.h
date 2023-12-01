@@ -56,6 +56,9 @@ public:
   /// corresponding atom yet
   virtual int check_atom_id(int atom_number);
 
+  /// Check whether it is possible to select atoms by residue number name
+  virtual int check_atom_name_selections_available();
+
   /// Select this atom for collective variables calculation, using name and
   /// residue number.  Not all programs support this: leave this function as
   /// is in those cases.

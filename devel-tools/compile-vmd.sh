@@ -4,6 +4,11 @@ source $(dirname $0)/load-recent-git.sh
 
 source $(dirname $0)/set-ccache.sh
 
+# Set explicit path for non-CMake targets
+if [ -n "${CCACHE_HOME}" ] ; then
+    export PATH=${CCACHE_HOME}:${PATH}
+fi
+
 detect_os() {
 
     # TODO This only works for RedHat-style Linux environments

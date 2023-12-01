@@ -91,6 +91,9 @@ public:
                           std::string const &pdb_field,
                           double const pdb_field_value = 0.0);
 
+
+  virtual int check_atom_name_selections_available();
+
   virtual int init_atom(int atom_number);
 
   virtual int check_atom_id(int atom_number);
@@ -102,6 +105,8 @@ public:
   virtual int check_atom_id(cvm::residue_id const &residue,
                             std::string const     &atom_name,
                             std::string const     &segment_id);
+
+  virtual int check_volmaps_available();
 
   virtual int init_volmap_by_id(int volmap_id);
 

@@ -73,6 +73,12 @@ int colvarproxy_atoms::check_atom_id(int /* atom_number */)
 }
 
 
+int colvarproxy_atoms::check_atom_name_selections_available()
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+
 int colvarproxy_atoms::init_atom(cvm::residue_id const & /* residue */,
                                  std::string const     & /* atom_name */,
                                  std::string const     & /* segment_id */)

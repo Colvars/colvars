@@ -173,6 +173,7 @@ public:
   int replica_comm_recv(char* msg_data, int buf_len, int src_rep) override;
   int replica_comm_send(char* msg_data, int msg_len, int dest_rep) override;
 
+  int check_atom_name_selections_available() override;
   int init_atom(int atom_number) override;
   int check_atom_id(int atom_number) override;
   int init_atom(cvm::residue_id const &residue,
@@ -210,6 +211,8 @@ public:
   int update_group_properties(int index);
 
 #if NAMD_VERSION_NUMBER >= 34471681
+
+  int check_volmaps_available() override;
 
   int init_volmap_by_id(int volmap_id) override;
 

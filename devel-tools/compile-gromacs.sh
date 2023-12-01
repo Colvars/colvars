@@ -49,7 +49,7 @@ compile_gromacs_target() {
         if [ "${1,,}" = "debug" ]; then
             GMX_BUILD_TYPE=Debug
             GMX_BUILD_OPTS+=(-DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=yes)
-            GMX_BUILD_OPTS+=(-DCOLVARS_DEBUG)
+            GMX_BUILD_OPTS+=(-DCOLVARS_DEBUG=ON)
         else
             GMX_INSTALL_DIR=${1}
         fi
@@ -60,7 +60,7 @@ compile_gromacs_target() {
         GMX_BUILD_OPTS+=("-DGMX_MPI=ON")
     fi
 
-    # GMX_BUILD_OPTS+=("-DBUILD_OMP=yes")
+    GMX_BUILD_OPTS+=("-DGMX_OPENMP=yes")
 
     # Select FFT
     if [ "$(basename \"${CXX}\")" = "icpc" ] ; then

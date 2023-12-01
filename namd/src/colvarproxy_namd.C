@@ -697,6 +697,12 @@ int colvarproxy_namd::check_atom_id(int atom_number)
 }
 
 
+int colvarproxy_namd::check_atom_name_selections_available()
+{
+  return COLVARS_OK;
+}
+
+
 int colvarproxy_namd::init_atom(int atom_number)
 {
   // save time by checking first whether this atom has been requested before
@@ -1264,6 +1270,13 @@ int colvarproxy_namd::set_unit_system(std::string const &units_in, bool /*check_
 
 
 #if NAMD_VERSION_NUMBER >= 34471681
+
+
+int colvarproxy_namd::check_volmaps_available()
+{
+  return COLVARS_OK;
+}
+
 
 int colvarproxy_namd::init_volmap_by_id(int volmap_id)
 {
