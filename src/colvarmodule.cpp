@@ -979,8 +979,15 @@ int colvarmodule::calc_biases()
     }
   }
 
-  // if SMP support is available, split up the work
-  if (proxy->check_smp_enabled() == COLVARS_OK) {
+  bool biases_need_io = false;
+  for (bi = biases_active()->begin(); bi != biases_active()->end(); bi++) {
+    if (((*bi)->replica_share_freq() > 0) && (step_absolute() % (*bi)->replica_share_freq() == 0)) {
+      biases_need_io = true;
+    }
+  }
+
+  // If SMP support is available, split up the work (unless biases need to use main thread's memory)
+  if (proxy->check_smp_enabled() == COLVARS_OK && !biases_need_io) {
 
     if (use_scripted_forces && !scripting_after_biases) {
       // calculate biases and scripted forces in parallel
@@ -996,10 +1003,12 @@ int colvarmodule::calc_biases()
       error_code |= calc_scripted_forces();
     }
 
+    // Straight loop over biases on a single thread
     cvm::increase_depth();
     for (bi = biases_active()->begin(); bi != biases_active()->end(); bi++) {
       error_code |= (*bi)->update();
       if (cvm::get_error()) {
+        cvm::decrease_depth();
         return error_code;
       }
     }
