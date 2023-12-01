@@ -113,13 +113,7 @@ public:
   }
 
 #if CMK_SMP && USE_CKLOOP
-  int smp_enabled() override
-  {
-    if (b_smp_active) {
-      return COLVARS_OK;
-    }
-    return COLVARS_ERROR;
-  }
+  int check_smp_enabled() override;
 
   int smp_colvars_loop() override;
 

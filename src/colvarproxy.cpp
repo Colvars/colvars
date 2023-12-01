@@ -288,7 +288,7 @@ colvarproxy_smp::~colvarproxy_smp()
 }
 
 
-int colvarproxy_smp::smp_enabled()
+int colvarproxy_smp::check_smp_enabled()
 {
 #if defined(_OPENMP)
   if (b_smp_active) {
@@ -492,8 +492,8 @@ colvarproxy::~colvarproxy()
 
 bool colvarproxy::io_available()
 {
-  return (smp_enabled() == COLVARS_OK && smp_thread_id() == 0) ||
-    (smp_enabled() != COLVARS_OK);
+  return (check_smp_enabled() == COLVARS_OK && smp_thread_id() == 0) ||
+    (check_smp_enabled() != COLVARS_OK);
 }
 
 
