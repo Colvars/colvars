@@ -34,6 +34,8 @@
 #include "DataExchanger.h"
 
 #include "colvarmodule.h"
+#include "colvar.h"
+#include "colvarbias.h"
 #include "colvaratoms.h"
 #include "colvarproxy.h"
 #include "colvarproxy_namd.h"
