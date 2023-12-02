@@ -2,11 +2,9 @@
 
 A software module for molecular simulation and analysis that provides a high-performance implementation of sampling algorithms defined on a reduced space of continuously differentiable functions (aka collective variables).
 
-First released in 2008 as part of the standard distribution of [NAMD](https://www.ks.uiuc.edu/Research/namd/) version 2.7b1, Colvars has also been integrated in [LAMMPS](https://lammps.sandia.gov/download.html) and [VMD](https://www.ks.uiuc.edu/Research/vmd/).  In VMD, interactive use is possible both from the command line and through the [Dashboard](vmd/cv_dashboard/README.md) graphical user interface.
+First released in 2008 as part of the standard distribution of [NAMD](https://www.ks.uiuc.edu/Research/namd/) version 2.7b1, Colvars has also been integrated in [LAMMPS](https://lammps.sandia.gov/download.html), [VMD](https://www.ks.uiuc.edu/Research/vmd/) and [GROMACS](http://www.gromacs.org/).  In VMD, interactive use is possible both from the command line and through the [Dashboard](vmd/cv_dashboard/README.md) graphical user interface.
 
-Patched [releases](https://github.com/Colvars/gromacs) of [GROMACS](http://www.gromacs.org/) that contain Colvars are also available ([see below](#gromacs-colvars-releases)).
-
-The functionality provided by the Colvars library includes a variety of functions and algorithms, including free-energy estimators based on thermodynamic forces, non-equilibrium work and probability distributions.
+The functionality provided to those packages by the Colvars library includes a variety of functions and algorithms, including free-energy estimators based on thermodynamic forces, non-equilibrium work and probability distributions.
 
 ## Obtaining and using
 
@@ -100,7 +98,7 @@ and run the provided `update-colvars-code.sh` script against the unpacked source
 and recompile them.
 
 The `update-colvars-code.sh` script support patching the latest development version of each program:
-- [GROMACS](https://github.com/gromacs/gromacs);
+- [GROMACS](https://gitlab.com/gromacs/gromacs);
 - [LAMMPS](https://github.com/lammps/lammps);
 - [NAMD](https://gitlab.com/tcbgUIUC/namd);
 - [VMD and its plugins](https://www.ks.uiuc.edu/Research/vmd/doxygen/cvsget.html); note that starting from Colvars version 2023-06-23, some updates are needed to the VMD build script (see [here](https://colvars.github.io/README-c++11.html) for details).
