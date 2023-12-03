@@ -851,7 +851,7 @@ While in all typical cases all configuration of the variables is done with the `
 \noindent{}where each argument is a string passed to the function or functions that are used to compute the variable, and are called colvar components, or CVCs (\ref{sec:cvc_list}).
 For example, a variable ``\texttt{DeltaZ}'' made of a single ``\texttt{distanceZ}'' component can be made periodic with a period equal to the unit cell dimension along the $Z$-axis:
 \cvscriptexampleinputcolvar{modifycvcs}{"period \$\{Lz\}"}{"DeltaZ"}
-\noindent{}Please note that this option is currently limited to changing the values of the polynomial superposition parameters \refkey{componentCoeff}{sec:cvc_superp}, or of the \refkey{componentExp}{sec:cvc_superp} to update on the fly, of \refkey{period}{sec:cvc_periodic}, \refkey{wrapAround}{sec:cvc_periodic} or \refkey{forceNoPBC}{colvar|distance|forceNoPBC} options for components that support them.
+\noindent{}Please note that this option is currently limited to changing the values of the polynomial superposition parameters \refkey{componentCoeff}{sec:cvc_superp}, or of the \refkey{componentExp}{sec:cvc_superp} to update on the fly, of \refkey{period}{sec:cvc_periodic}, \refkey{wrapAround}{sec:cvc_periodic} or \refkey{forceNoPBC}{colvar|cvc|forceNoPBC} options for components where it is relevant.
 \cvlammpsonly{Furthermore, because the call above uses an \emph{immediate} expansion of the variable ``\texttt{\$\{Lz\}}'', its value will not be updated during a constant-pressure simulation.}
 
 If the variable is computed using many components, it is possible to selectively turn some of them on or off:
@@ -1476,6 +1476,37 @@ the documentation of the first one that uses that keyword.
 The very few keywords that are available for all types of components are listed in a separate section \ref{sec:cvc_common}.
 
 
+\cvsubsec{Treatment of periodic boundary conditions}{sec:cvc_pbcs}
+
+In all colvar components described below, the following rules apply concerning periodic boundary
+conditions (PBCs):
+\begin{enumerate}
+\item Distance vectors between two coordinates
+  $\mathbf{d}_{i,j} = \left(\mathbf{x}_1 - \mathbf{x}_2\right)$, are calculated following the
+  minimum-image convention by default, unless \refkey{forceNoPBC}{colvar|cvc|forceNoPBC} is enabled.
+  ($\mathbf{x}_1$ and $\mathbf{x}_2$ may be either individual atomic coordinates, or centers of mass
+  of two groups.)
+\item For all other functions of individual atomic coordinates,
+  $f\left(\mathbf{x}_1, \mathbf{x}_2, \ldots\right)$, it is assumed that all atoms that are part of
+  the same group are in the same periodic unit cell (see \ref{sec:colvar_atom_groups_wrapping}).
+\end{enumerate}
+
+\begin{itemize}
+\item %
+  \labelkey{colvar|cvc|forceNoPBC}%
+  \keydef{forceNoPBC}{%
+    any component}{%
+    Use absolute rather than minimum-image distances?}{%
+    boolean}{%
+    \texttt{no}}{%
+    If this keyword is set to \texttt{yes}, PBCs will be ignored when calculating this component.
+    This is only useful in a limited number of special cases, e.g.\ to describe the distance between
+    remote points of a single macromolecule, which cannot be split across periodic cell boundaries,
+    and for which the minimum-image distance might give the wrong result because of a relatively
+    small periodic cell.}
+\end{itemize}
+
+
 \cvsubsec{Distances}{sec:cvc_distances}
 
 
@@ -1497,24 +1528,6 @@ The \texttt{distance \{...\}} block defines a distance component between the two
 \item %
   \labelkey{colvar|distance|group2}
   \simkey{group2}{\texttt{distance}}{group1}
-
-\item %
-  \labelkey{colvar|distance|forceNoPBC}
-  \keydef
-    {forceNoPBC}{%
-    \texttt{distance}}{%
-    Calculate absolute rather than minimum-image distance?}{%
-    boolean}{%
-    \texttt{no}}{%
-    By default, in calculations with periodic boundary conditions, the
-    \texttt{distance} component returns the distance according to the
-    minimum-image convention. If this parameter is set to \texttt{yes},
-    PBC will be ignored and the distance between the coordinates as maintained
-    internally will be used. This is only useful in a limited number of
-    special cases, e.g. to describe the distance between remote points
-    of a single macromolecule, which cannot be split across periodic cell
-    boundaries, and for which the minimum-image distance might give the
-    wrong result because of a relatively small periodic cell.}
 
 \item %
   \labelkey{colvar|distance|oneSiteTotalForce}
@@ -1601,9 +1614,6 @@ One of the groups can be set to a dummy atom to allow the use of an absolute Car
     components separated by commas and enclosed in parentheses.}
 
 \item %
-  \dupkey{forceNoPBC}{\texttt{distanceZ}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
-
-\item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceZ}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 This component returns a number (in \lengthunit) whose range is determined
@@ -1635,8 +1645,6 @@ defined using the \texttt{axis} parameter or as the vector joining
 \item %
   \dupkey{axis}{\texttt{distanceXY}}{colvar|distanceZ|axis}{\texttt{distanceZ} component}
 \item %
-  \dupkey{forceNoPBC}{\texttt{distanceXY}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
-\item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceZ}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
@@ -1656,8 +1664,6 @@ of mass of \texttt{group1} and \texttt{group2}.
   \dupkey{group1}{\texttt{distanceVec}}{colvar|distance|group1}{\texttt{distance} component}
 \item %
   \simkey{group2}{\texttt{distanceVec}}{group1}
-\item %
-  \dupkey{forceNoPBC}{\texttt{distanceVec}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceVec}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -1679,8 +1685,6 @@ $|\mathbf{d}| = 1$.
   \dupkey{group1}{\texttt{distanceDir}}{colvar|distance|group1}{\texttt{distance} component}
 \item %
   \simkey{group2}{\texttt{distanceDir}}{group1}
-\item %
-  \dupkey{forceNoPBC}{\texttt{distanceDir}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{distanceDir}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -1734,8 +1738,6 @@ interval $[0:180]$.
 \item %
   \simkey{group3}{\texttt{angle}}{group1}
 \item %
-  \dupkey{forceNoPBC}{\texttt{angle}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
-\item %
   \dupkey{oneSiteTotalForce}{\texttt{angle}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
 
@@ -1756,8 +1758,6 @@ It returns an angle (in degrees) within the interval $[0:180]$.
   \simkey{group2}{\texttt{dipoleAngle}}{group1}
 \item %
   \simkey{group3}{\texttt{dipoleAngle}}{group1}
-\item %
-  \dupkey{forceNoPBC}{\texttt{dipoleAngle}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{dipoleAngle}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -1783,8 +1783,6 @@ boundaries can be defined by using any real number of choice.
   \simkey{group3}{\texttt{dihedral}}{group1}
 \item %
   \simkey{group4}{\texttt{dihedral}}{group1}
-\item %
-  \dupkey{forceNoPBC}{\texttt{dihedral}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \item %
   \dupkey{oneSiteTotalForce}{\texttt{dihedral}}{colvar|distance|oneSiteTotalForce}{\texttt{distance} component}
 \end{cvcoptions}
@@ -3039,8 +3037,6 @@ The \texttt{distancePairs~\{...\}} block defines a $N_{\mathrm{1}}\times{}N_{\ma
   \dupkey{group1}{\texttt{distancePairs}}{colvar|distance|group1}{\texttt{distance} component}
 \item %
   \simkey{group2}{\texttt{distancePairs}}{group1}
-\item %
-  \dupkey{forceNoPBC}{\texttt{distancePairs}}{colvar|distance|forceNoPBC}{\texttt{distance} component}
 \end{cvcoptions}
 This component returns a $N_{\mathrm{1}}\times{}N_{\mathrm{2}}$-dimensional vector of numbers, each ranging from $0$ to the largest possible distance within the chosen boundary conditions.
 
@@ -3873,42 +3869,40 @@ The following options can be used for any of the above colvar components in orde
 
 
 \cvsubsec{Periodic components}{sec:cvc_periodic}
-The following components returns
-real numbers that lie in a periodic interval:
-\begin{itemize}
-\item \texttt{dihedral}: torsional angle between four groups;
-\item \texttt{spinAngle}: angle of rotation around a predefined axis
-  in the best-fit from a set of reference coordinates.
-\end{itemize}
-In certain conditions, \texttt{distanceZ} can also be periodic, namely
-when periodic boundary conditions (PBCs) are defined in the simulation
-and \texttt{distanceZ}'s axis is parallel to a unit cell vector.
 
-In addition, a custom \cvscriptonly{or scripted} scalar colvar may be periodic
-depending on its user-defined expression. It will only be treated as such by
-the Colvars module if the period is specified using the \texttt{period} keyword,
-while \texttt{wrapAround} is optional.
+Certain components, such as \refkey{dihedral}{colvar|dihedral} or
+\refkey{dihedral}{colvar|spinAngle}, compute angles that lie in a periodic interval between
+$-180^\circ$ and $180^\circ$.  When computing pairwise distances between values of those angles
+(e.g.\ for the sake of computing restraint potentials, or sampling PMFs), periodicity is taken into
+account by following the minimum-image convention.
 
-The following keywords can be used within periodic components\cvleptononly{, or within custom variables (\ref{sec:colvar_custom_function})}\cvscriptonly{, or wthin scripted variables \ref{sec:colvar_scripted}}).
+Additionally, several other components, such as \refkey{distanceZ}{colvar|distanceZ}, support
+optional periodicity if this is provided in the configuration.
+
+The following keywords can be used within periodic components\cvleptononly{, or within custom
+  variables (\ref{sec:colvar_custom_function})}\cvscriptonly{, or wthin scripted variables
+  \ref{sec:colvar_scripted}}).
 
 \begin{itemize}
 \item %
+  \labelkey{colvar|cvc|period}
   \keydef
     {period}{%
-    \texttt{distanceZ}, custom colvars}{%
+    components with optional periodicity}{%
     Period of the component}{%
     positive decimal}{%
-    0.0}{%
-    Setting this number enables the treatment of \texttt{distanceZ} as
+    0.0, unless otherwise stated}{%
+    Setting this number enables the treatment of as
     a periodic component: by default, \texttt{distanceZ} is not
     considered periodic.  The keyword is supported, but irrelevant
     within \texttt{dihedral} or \texttt{spinAngle}, because their
     period is always 360~degrees.}
 
 \item %
+  \labelkey{colvar|cvc|wrapAround}
   \keydef
     {wrapAround}{%
-    \texttt{distanceZ}, \texttt{dihedral}, \texttt{spinAngle}, custom colvars}{%
+    periodic components}{%
     Center of the wrapping interval for periodic variables}{%
     decimal}{%
     0.0}{%
@@ -3917,11 +3911,7 @@ The following keywords can be used within periodic components\cvleptononly{, or 
     This can be useful for convenience of output, or to set the walls for a \texttt{harmonicWalls} in an order that would not otherwise be allowed.}
 \end{itemize}
 
-Internally, all differences between two values of a periodic colvar
-follow the minimum image convention: they are calculated based on
-the two periodic images that are closest to each other.
-
-\emph{Note: linear or polynomial combinations of periodic components (see \ref{sec:cvc_superp}) may become meaningless when components cross the periodic boundary.  Use such combinations carefully: estimate the range of possible values of each component in a given simulation, and make use of \texttt{wrapAround} to limit this problem whenever possible.}
+\emph{Note: using linear/polynomial combinations of periodic components (see \ref{sec:cvc_superp}), or other custom or scripted function may invalidate the periodicity.  Use such combinations carefully: estimate the range of possible values of each component in a given simulation, and make use of \texttt{wrapAround} to limit this problem whenever possible.}
 
 
 \cvsubsec{Non-scalar components}{sec:cvc_non_scalar}
@@ -7482,3 +7472,7 @@ This section lists the few cases where the choice of compilation settings affect
   \url{https://colvars.github.io/README-c++11.html}
 \end{itemize}
 
+% Emacs
+% Local Variables:
+% fill-column: 100
+% End:
