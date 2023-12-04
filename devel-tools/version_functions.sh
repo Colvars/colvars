@@ -224,7 +224,7 @@ update_all_versions() {
                           vmd/cv_dashboard/VERSION \
                           ${branch} \
         && \
-    git commit -m "Update version strings"
+    git commit -m "Update version strings\n\n[update-doc]"
 }
 
 
