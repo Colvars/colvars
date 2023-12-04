@@ -1653,11 +1653,11 @@ defined using the \texttt{axis} parameter or as the vector joining
 \cvsubsubsec{\texttt{distanceVec}: distance vector  between two groups.}{sec:cvc_distanceVec}
 \labelkey{colvar|distanceVec}
 
-The \texttt{distanceVec~\{...\}} block defines
-a distance vector component, which accepts the same keywords as
-the component \texttt{distance}: \texttt{group1}, \texttt{group2}, and
-\texttt{forceNoPBC}. Its value is the 3-vector joining the centers
-of mass of \texttt{group1} and \texttt{group2}.
+The \texttt{distanceVec} component computes the 3-dimensional vector joining the centers of mass of
+\texttt{group1} and \texttt{group2}.  Its values are therefore multi-dimensional and are subject to
+the restrictions listed in \ref{sec:cvc_non_scalar}.  Moreover, when computing differences between
+two different values of a \texttt{distanceVec} variable the minimum-image convention is assumed
+(unless \refkey{forceNoPBC}{colvar|cvc|forceNoPBC} is enabled).
 
 \begin{cvcoptions}
 \item %
