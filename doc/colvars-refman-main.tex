@@ -458,7 +458,7 @@ Because these are static parameters, it is typically more convenient to use the 
 \cvsubsec{LAMMPS keywords}{sec:colvars_mdengine_parameters}
 
 To enable a Colvars-based calculation, the following line must be added to the LAMMPS configuration file:
-\begin{mdexampleinput}{}
+\begin{mdexampleinput}
 fix~Colvars~all~colvars~\emph{configfile}~[\emph{keyword value pairs ...}]
 \end{mdexampleinput}
 where the fix ID is here set to the string ``\texttt{Colvars}'', because there can only be one instance of \texttt{fix colvars} in a LAMMPS run.
@@ -645,13 +645,13 @@ Each \texttt{fix\_modify} command may be used in either one of two ways:
 \begin{enumerate}
 
 \item Provide an updated value for the \textbf{parameters of the fix} listed in \ref{sec:colvars_mdengine_parameters}: this behavior is similar to that of several other LAMMPS fix styles, and follows the same argument parsing rules.  For example, multiple keywords can be provided together:
-\begin{mdexampleinput}{%
-}fix\_modify~Colvars~\texttt{seed}~111111~\texttt{tstat}~\texttt{NPT}
+\begin{mdexampleinput}
+\-fix\_modify~Colvars~\texttt{seed}~111111~\texttt{tstat}~\texttt{NPT}
 \end{mdexampleinput}
 
 \item Use one of the \textbf{scripting functions} described in this section; the arguments provided as strings are passed to Colvars.  LAMMPS variables referenced by their string representation, ``\texttt{\$\{variable\}}'', will be expanded immediately.  Additionally, variable expansion \emph{will also happen within quotes}, similar to what the \texttt{mdi} command provides in a LAMMPS script: this feature makes it possible to use the values of certain LAMMPS variables in Colvars configuration strings (see \ref{sec:cv_command_init}).
-\begin{mdexampleinput}{%
-}variable~freq~index~10000\\
+\begin{mdexampleinput}
+\-variable~freq~index~10000\\
 \-dump~myDump~all~atom/zstd~\$\{freq\}~dump.atom.zstd\\
 \-fix\_modify~Colvars~config~"colvarsTrajFrequency~\$\{freq\}"
 \end{mdexampleinput}
@@ -739,7 +739,7 @@ The value of this variable is used to define the window's numeric index, and the
 The vast majority of the syntax in Colvars is backward-compatible, adding keywords when new features are introduced.
 However, when using multiple versions simultaneously it may be useful to test within the script whether the version is recent enough to support the desired feature.
 The ``\texttt{version}'' can be used to get the Colvars version for this use:
-\begin{mdexampleinput}{}
+\begin{mdexampleinput}
 \-if~\{~[cv~version]~>=~"2020-02-25"~\}~\{\\
 \-~~cv~config~"(use~a~recent~feature)"\\
 \-\}
@@ -765,7 +765,7 @@ The step number contained by the loaded file will be used internally by Colvars 
 \-structure~newsystem.psf\\
 \-reinitatoms~$<$snapshot$>$\\
 \-cv~reset\\
-\-cv~configfile~...\\
+\-cv~configfile~$<$new\_config$>$\\
 \-cv~load~$<$snapshot$>$
 \end{mdexampleinput}
 } % \cvnamdonly
@@ -774,6 +774,7 @@ The ``\texttt{save}'' method, analogous to ``\texttt{load}'', allows to save all
 This is normally not required during a simulation if \refkey{colvarsRestartFrequency}{Colvars-global|colvarsRestartFrequency} is defined (either directly or indirectly by the \MDENGINE{} restart frequency).
 Because not only a state file (used to continue simulations) but also other data files (used to analyze the trajectory) are written, it is generally recommended to call the \texttt{save} method using a prefix, rather than a complete file name:
 \cvscriptexampleinputcv{save}{"$<$job$>$"}
+
 
 \cvsubsubsec{Accessing atomic data}{sec:cv_command_atomic_data}
 
@@ -892,7 +893,7 @@ For example, given the most current value of the variable ``\texttt{xi}'', an al
 \cvnamdonly{Another circumstance when ``\texttt{update}'' may be called e.g.{} as part of the function invoked by \refkey{scriptedColvarForces}{Colvars-global|scriptedColvarForces}, it is executed before any biasing forces are applied to the variables, thus allowing to modify them.
 This use of ``\texttt{update}'' is often used e.g.{} in the definition of custom bias-exchange algorithms as part of the \MDENGINE{} script.
 Because a restraint is a relatively light-weight object, the easiest way to change the configuration of an existing bias is deleting it and re-creating it:
-\begin{mdexampleinput}{}
+\begin{mdexampleinput}
 \-{\bfseries\#~Delete~the~restraint~"harmonic\_xi"}\\
 \-cv~bias~harmonic\_xi~delete\\
 \-{\bfseries\#~Re-define~it,~but~using~an~updated~restraint~center}\\
@@ -905,7 +906,7 @@ Because a restraint is a relatively light-weight object, the easiest way to chan
 \-cv~bias~harmonic\_xi~update
 \end{mdexampleinput}
 It is also possible to make the change subject to a condition on the energy of the new bias:
-\begin{mdexampleinput}{}
+\begin{mdexampleinput}
 \-...\\
 \-cv~bias~harmonic\_xi~update\\
 \-if~\{~[cv~bias~harmonic\_xi~energy]~<~\$\{E\_accept\}~\}~\{\\
@@ -1069,16 +1070,16 @@ This means that the step number used internally by Colvars may not always match 
 
 \cvlammpsonly{\cvsubsubsec{Restarting in LAMMPS.}{}
 For continuing a Colvars-based simulation, the recommended method is using the standard LAMMPS \texttt{read\_restart} command, which reads the Colvars state data from the LAMMPS restart file (in binary format).
-\begin{mdexampleinput}{}
+\begin{mdexampleinput}
 \-read\_restart~\emph{filename}
 \end{mdexampleinput}
 Alternatively, restarting from a Colvars-specific state file is also possible by providing the \texttt{input} keyword to the \texttt{fix colvars} command:
-\begin{mdexampleinput}{}
+\begin{mdexampleinput}
 \-fix~Colvars~all~colvars~\emph{configfile}~input~\emph{input\_prefix}
 \end{mdexampleinput}
 When the ``\texttt{input}'' keyword is used, the contents of the file \texttt{$<$\emph{input\_prefix}$>$.colvar.state} override the information read from the LAMMPS restart file.  Finally, a state file may also be loaded after initialization through the ``\texttt{fix\_modify}'' command:
-\begin{mdexampleinput}{%
-}fix\_modify~Colvars~\texttt{input}~\emph{new\_input\_prefix}
+\begin{mdexampleinput}
+\-fix\_modify~Colvars~\texttt{input}~\emph{new\_input\_prefix}
 \end{mdexampleinput}
 } % end \cvlammpsonly
 
@@ -3686,10 +3687,10 @@ Please cite \cite{Fiorin2020} when using this implementation of collective varia
 Given a function of the Cartesian coordinates $\phi(\mathbf{x}) = \phi(x, y, z)$, a \texttt{mapTotal} collective variable component $\Phi(\mathbf{X})$ is defined as the sum of the values of the function $\phi(\mathbf{x})$ evaluated at the coordinates of each atom, $\mathbf{x}_{i}$:
 \begin{equation}
   \label{eq:cvc_map_total}
-  \Phi(\mathbf{X}) = \sum_{i=1}^{N} w_i \phi(\mathbf{x}_{i})
+  \Phi\left(\mathbf{X}\right) = \sum_{i=1}^{N} w_i \phi\left(\mathbf{x}_{i}\right)
 \end{equation}
 \noindent{}where $w_i$ are weights assigned to each variable (1 by default).
-This formulation allows, for example, to ``count'' the number of atoms within a region of space by using a positive-valued function $\phi(\mathbf{x})$, such as for example the number of water molecules in a hydrophobic cavity \cite{Fiorin2020}.\\
+This formulation allows, for example, to ``count'' the number of atoms within a region of space by using a positive-valued function $\phi\left(\mathbf{x}\right)$, such as for example the number of water molecules in a hydrophobic cavity \cite{Fiorin2020}.\\
 
 Because the volumetric map itself and the atoms affected by it are defined externally to Colvars, this component has a very limited number of keywords.
 
@@ -3792,7 +3793,7 @@ To track transitions between states, the contribution of each map to $\xi$ shoul
 The ``Multi-Map'' progress variable \cite{Fiorin2020} uses a weight sum of these components, using linearly-increasing weights:
 \begin{equation}
   \label{eq:cvc_multi_map}
-    \xi\left(\mathbf{X}\right) = \sum_{k=1}^{K} k \Phi_{k}(\mathbf{X}) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}(\mathbf{x}_{i})
+    \xi\left(\mathbf{X}\right) = \sum_{k=1}^{K} k \Phi_{k}\left(\mathbf{X}\right) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}\left(\mathbf{x}_{i}\right)
 \end{equation}
 \noindent{}where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal} component.
 
