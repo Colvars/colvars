@@ -120,7 +120,7 @@ IMAGES = cover-512px.jpg eulerangles-512px.png
 # Install docs in the website tree, under the folder named $(COLVARS_RELEASE).
 # Note: to produce the documentation for a specific release of a MD engine,
 # check out the branch or tag corresponding to that version, clean and rebuild.
-ifeq ($(COLVARS_RELEASE),"master")
+ifeq ($(COLVARS_RELEASE),master)
 
 webpage: all images doxygen
 	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
