@@ -106,9 +106,14 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
            "  https://doi.org/10.1080/00268976.2013.813594\n"
            "as well as all other papers listed below for individual features used.\n");
 
-  if (proxy->check_smp_enabled() == COLVARS_OK) {
-    cvm::log("SMP parallelism is enabled (num threads = " + to_str(proxy->smp_num_threads()) +
-             "); use \"smp off\" to disable if needed.\n");
+  if (proxy->check_smp_enabled() == COLVARS_NOT_IMPLEMENTED) {
+    cvm::log("SMP parallelism is not available in this build.\n");
+  } else {
+    if (proxy->check_smp_enabled() == COLVARS_OK) {
+      cvm::log("SMP parallelism is enabled (num threads = " + to_str(proxy->smp_num_threads()) + ").\n");
+    } else {
+      cvm::log("SMP parallelism is available in this build but not enabled.\n");
+    }
   }
 
 #if (__cplusplus >= 201103L)
