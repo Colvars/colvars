@@ -125,26 +125,31 @@ void colvar::distance_vec::apply_force(colvarvalue const &force)
 }
 
 
-cvm::real colvar::distance_vec::dist2(colvarvalue const &x1,
-                                      colvarvalue const &x2) const
+cvm::real colvar::distance_vec::dist2(colvarvalue const &x1, colvarvalue const &x2) const
 {
-  return (cvm::position_distance(x1.rvector_value, x2.rvector_value)).norm2();
+  if (is_enabled(f_cvc_pbc_minimum_image)) {
+    return (cvm::position_distance(x1.rvector_value, x2.rvector_value)).norm2();
+  }
+  return (x2.rvector_value - x1.rvector_value).norm2();
 }
 
 
-colvarvalue colvar::distance_vec::dist2_lgrad(colvarvalue const &x1,
-                                              colvarvalue const &x2) const
+colvarvalue colvar::distance_vec::dist2_lgrad(colvarvalue const &x1, colvarvalue const &x2) const
 {
-  return 2.0 * cvm::position_distance(x2.rvector_value, x1.rvector_value);
+  if (is_enabled(f_cvc_pbc_minimum_image)) {
+    return 2.0 * cvm::position_distance(x2.rvector_value, x1.rvector_value);
+  }
+  return 2.0 * (x2.rvector_value - x1.rvector_value);
 }
 
 
-colvarvalue colvar::distance_vec::dist2_rgrad(colvarvalue const &x1,
-                                              colvarvalue const &x2) const
+colvarvalue colvar::distance_vec::dist2_rgrad(colvarvalue const &x1, colvarvalue const &x2) const
 {
-  return 2.0 * cvm::position_distance(x2.rvector_value, x1.rvector_value);
+  return distance_vec::dist2_lgrad(x2, x1);
 }
 
+
+void colvar::distance_vec::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 colvar::distance_z::distance_z()
