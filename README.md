@@ -2,7 +2,7 @@
 
 A software module for molecular simulation and analysis that provides a high-performance implementation of sampling algorithms defined on a reduced space of continuously differentiable functions (aka collective variables).
 
-First released in 2008 as part of the standard distribution of [NAMD](https://www.ks.uiuc.edu/Research/namd/) version 2.7b1, Colvars has also been integrated in [LAMMPS](https://lammps.sandia.gov/download.html), [VMD](https://www.ks.uiuc.edu/Research/vmd/) and [GROMACS](http://www.gromacs.org/).  In VMD, interactive use is possible both from the command line and through the [Dashboard](vmd/cv_dashboard/README.md) graphical user interface.
+First released in 2008 as part of the standard distribution of [NAMD](https://www.ks.uiuc.edu/Research/namd/) version 2.7b1, Colvars has also been integrated in [LAMMPS](https://lammps.sandia.gov/download.html), [VMD](https://www.ks.uiuc.edu/Research/vmd/), [GROMACS](http://www.gromacs.org/), and [Tinker-HP](https://tinker-hp.org/).  In VMD, interactive use is possible both from the command line and through the [Dashboard](vmd/cv_dashboard/README.md) graphical user interface.
 
 The functionality provided to those packages by the Colvars library includes a variety of functions and algorithms, including free-energy estimators based on thermodynamic forces, non-equilibrium work and probability distributions.
 
@@ -11,6 +11,7 @@ The functionality provided to those packages by the Colvars library includes a v
 The easiest way to obtain pre-compiled versions of Colvars is via one of following:
 - the molecular simulation program [LAMMPS](https://lammps.sandia.gov/download.html);
 - the molecular simulation program [NAMD](https://www.ks.uiuc.edu/Research/namd/);
+- the molecular simulation program [Tinker-HP](https://tinker-hp.org/);
 - the molecular visualization program [VMD](https://www.ks.uiuc.edu/Research/vmd/).
 
 Please check [here](https://github.com/Colvars/colvars/wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages) to see which version of Colvars is included with the round-number or "stable" versions of each code.
@@ -19,9 +20,9 @@ For the molecular simulation program [GROMACS](http://www.gromacs.org/), code ma
 
 ## Documentation
 
-The [Colvars webpage](https://colvars.github.io/) includes user documentation for the four codes, as well as a Doxygen-based [developer documentation](https://colvars.github.io/doxygen/html/).
+The [Colvars webpage](https://colvars.github.io/) includes user documentation for all codes, as well as a Doxygen-based [developer documentation](https://colvars.github.io/doxygen/html/).
 
-To reflect the different availability of features in each engine, the Colvars reference manual comes in several flavors: [GROMACS](https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html) [LAMMPS](https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html) [NAMD](https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html) [VMD](https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html)
+To reflect the different availability of features in each engine, the Colvars reference manual comes in several flavors: [GROMACS](https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html) [LAMMPS](https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html) [NAMD](https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html) [Tinker-HP](https://colvars.github.io/colvars-refman-tinkerhp/colvars-refman-tinkerhp.html) [VMD](https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html)
 
 ## Citing
 
@@ -50,10 +51,13 @@ cv configfile <Colvars configuration file>
 ```
 fix Colvars all colvars configfile <Colvars configuration file>
 ```
-- In GROMACS:
+- In GROMACS 2024 and later (mdp file):
 ```
-gmx mdrun -s topol.tpr -deffnm topol -colvars <Colvars configuration file>
+colvars-active = yes
+colvars-configfile = my_config.colvars
 ```
+- In Tinker-HP:
+Create a Colvars configuration file with the same prefix as the `.key` file, and the extension `.colvars`.
 
 The contents of the configuration file are typically the same across all programs, for example:
 ```
@@ -124,7 +128,7 @@ If using a patched release, please also reference the Colvars version: this is i
 
 ## Which version of Colvars is recommended?
 
-The Git `master` branch is to be considered the "*stable*" release at any given time; any bugfixes are released through `master` first.  The input syntax is near-completely *backward-compatible* and output files are *forward-compatible*.  Feel free to download Colvars and update NAMD, VMD, LAMMPS or GROMACS as needed.
+The Git `master` branch is to be considered the "*stable*" release at any given time; any bugfixes are released through `master` first.  The input syntax is near-completely *backward-compatible* and output files are *forward-compatible*.  Feel free to download Colvars and update NAMD, VMD, LAMMPS, GROMACS, or Tinker-HP as needed.
 
 Other branches are dedicated to the development of specific features: please use them at your own discretion.
 
