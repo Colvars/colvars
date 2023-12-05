@@ -34,7 +34,7 @@ class colvarproxy_lammps : public colvarproxy {
 
   // state of LAMMPS properties
   double bias_energy;
-  int previous_step;
+  cvm::step_number previous_step;
 
   bool first_timestep;
   bool do_exit;

@@ -46,7 +46,7 @@ protected:
   Random random;
 
   bool first_timestep;
-  size_t previous_NAMD_step;
+  cvm::step_number previous_NAMD_step;
 
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
