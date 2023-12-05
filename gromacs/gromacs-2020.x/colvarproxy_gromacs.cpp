@@ -391,7 +391,6 @@ void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t
     if (first_timestep) {
       first_timestep = false;
     } else {
-      // Use the time step number inherited from GROMACS
       if ( step - previous_gmx_step == 1 )
         colvars->it++;
       // Other cases?
