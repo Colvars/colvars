@@ -143,7 +143,7 @@ colvarproxy_namd::colvarproxy_namd()
   PatchData *patchData = cpdata.ckLocalBranch();
   nodeReduction = patchData->reduction;
   #endif
-  
+
   if (cvm::debug())
     iout << "Info: done initializing the colvars proxy object.\n" << endi;
 }
@@ -1495,13 +1495,22 @@ int colvarproxy_namd::compute_volmap(int flags,
 
 #if CMK_SMP && USE_CKLOOP // SMP only
 
+int colvarproxy_namd::check_smp_enabled()
+{
+  if (b_smp_active) {
+    return COLVARS_OK;
+  }
+  return COLVARS_ERROR;
+}
+
+
 void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param)
 {
   colvarproxy_namd *proxy = (colvarproxy_namd *) param;
   colvarmodule *cv = proxy->colvars;
 #if CMK_TRACE_ENABLED
   double before = CmiWallTimer();
-#endif    
+#endif
   cvm::increase_depth();
   for (int i = first; i <= last; i++) {
     colvar *x = (*(cv->variables_active_smp()))[i];
@@ -1537,7 +1546,7 @@ void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *p
   colvarmodule *cv = proxy->colvars;
 #if CMK_TRACE_ENABLED
   double before = CmiWallTimer();
-#endif    
+#endif
   cvm::increase_depth();
   for (int i = first; i <= last; i++) {
     colvarbias *b = (*(cv->biases_active()))[i];
@@ -1571,13 +1580,13 @@ void calc_cv_scripted_forces(int paramNum, void *param)
   colvarmodule *cv = proxy->colvars;
 #if CMK_TRACE_ENABLED
   double before = CmiWallTimer();
-#endif    
+#endif
   if (cvm::debug()) {
     cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
              "]: calc_cv_scripted_forces()\n");
   }
   cv->calc_scripted_forces();
-#if CMK_TRACE_ENABLED  
+#if CMK_TRACE_ENABLED
   traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES,before,CmiWallTimer());
 #endif
 }
