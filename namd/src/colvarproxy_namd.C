@@ -24,6 +24,7 @@
 #include "ScriptTcl.h"
 #include "NamdState.h"
 #include "Controller.h"
+#include "PatchData.h"
 
 #ifdef NAMD_TCL
 #include <tcl.h>
@@ -47,7 +48,13 @@ colvarproxy_namd::colvarproxy_namd()
   engine_name_ = "NAMD";
 
   version_int = get_version_from_string(COLVARPROXY_VERSION);
-
+#if CMK_TRACE_ENABLED
+  if ( 0 == CkMyPe() ) {
+    traceRegisterUserEvent("GM COLVAR item", GLOBAL_MASTER_CKLOOP_CALC_ITEM);
+    traceRegisterUserEvent("GM COLVAR bias", GLOBAL_MASTER_CKLOOP_CALC_BIASES );
+    traceRegisterUserEvent("GM COLVAR scripted bias", GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES );
+  }
+#endif
   first_timestep = true;
   requestTotalForce(total_force_requested);
 
@@ -131,6 +138,12 @@ colvarproxy_namd::colvarproxy_namd()
 
   reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
 
+  #ifdef NODEGROUP_FORCE_REGISTER
+  CProxy_PatchData cpdata(CkpvAccess(BOCclass_group).patchData);
+  PatchData *patchData = cpdata.ckLocalBranch();
+  nodeReduction = patchData->reduction;
+  #endif
+  
   if (cvm::debug())
     iout << "Info: done initializing the colvars proxy object.\n" << endi;
 }
@@ -575,7 +588,13 @@ void colvarproxy_namd::calculate()
 #endif
 
   // send MISC energy
+  #ifdef NODEGROUP_FORCE_REGISTER
+  if(!simparams->CUDASOAintegrate) {
+    reduction->submit();
+  }
+  #else
   reduction->submit();
+  #endif
 
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
@@ -633,7 +652,15 @@ int colvarproxy_namd::run_colvar_gradient_callback(
 
 void colvarproxy_namd::add_energy(cvm::real energy)
 {
+  #ifdef NODEGROUP_FORCE_REGISTER
+  if (simparams->CUDASOAintegrate) {
+    nodeReduction->item(REDUCTION_MISC_ENERGY) += energy;
+  } else {
+    reduction->item(REDUCTION_MISC_ENERGY) += energy;
+  }
+  #else
   reduction->item(REDUCTION_MISC_ENERGY) += energy;
+  #endif
 }
 
 void colvarproxy_namd::request_total_force(bool yesno)
@@ -1468,20 +1495,13 @@ int colvarproxy_namd::compute_volmap(int flags,
 
 #if CMK_SMP && USE_CKLOOP // SMP only
 
-int colvarproxy_namd::check_smp_enabled()
-{
-  if (b_smp_active) {
-    return COLVARS_OK;
-  }
-  return COLVARS_ERROR;
-}
-
-
 void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param)
 {
   colvarproxy_namd *proxy = (colvarproxy_namd *) param;
   colvarmodule *cv = proxy->colvars;
-
+#if CMK_TRACE_ENABLED
+  double before = CmiWallTimer();
+#endif    
   cvm::increase_depth();
   for (int i = first; i <= last; i++) {
     colvar *x = (*(cv->variables_active_smp()))[i];
@@ -1495,6 +1515,9 @@ void calc_colvars_items_smp(int first, int last, void *result, int paramNum, voi
     x->calc_cvcs(x_item, 1);
   }
   cvm::decrease_depth();
+#if CMK_TRACE_ENABLED
+  traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_ITEM,before,CmiWallTimer());
+#endif
 }
 
 
@@ -1512,7 +1535,9 @@ void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *p
 {
   colvarproxy_namd *proxy = (colvarproxy_namd *) param;
   colvarmodule *cv = proxy->colvars;
-
+#if CMK_TRACE_ENABLED
+  double before = CmiWallTimer();
+#endif    
   cvm::increase_depth();
   for (int i = first; i <= last; i++) {
     colvarbias *b = (*(cv->biases_active()))[i];
@@ -1525,6 +1550,9 @@ void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *p
     b->update();
   }
   cvm::decrease_depth();
+#if CMK_TRACE_ENABLED
+  traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_BIASES,before,CmiWallTimer());
+#endif
 }
 
 
@@ -1541,11 +1569,17 @@ void calc_cv_scripted_forces(int paramNum, void *param)
 {
   colvarproxy_namd *proxy = (colvarproxy_namd *) param;
   colvarmodule *cv = proxy->colvars;
+#if CMK_TRACE_ENABLED
+  double before = CmiWallTimer();
+#endif    
   if (cvm::debug()) {
     cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
              "]: calc_cv_scripted_forces()\n");
   }
   cv->calc_scripted_forces();
+#if CMK_TRACE_ENABLED  
+  traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES,before,CmiWallTimer());
+#endif
 }
 
 

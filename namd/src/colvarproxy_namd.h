@@ -29,6 +29,10 @@
 #include "colvarproxy.h"
 #include "colvarvalue.h"
 
+#define GLOBAL_MASTER_CKLOOP_CALC_ITEM 2000
+#define GLOBAL_MASTER_CKLOOP_CALC_BIASES 2001
+#define GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES 2002
+
 /// \brief Communication between colvars and NAMD (implementation of
 /// \link colvarproxy \endlink)
 class colvarproxy_namd : public colvarproxy, public GlobalMaster {
@@ -50,6 +54,9 @@ protected:
 
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
+#ifdef NODEGROUP_FORCE_REGISTER
+  NodeReduction *nodeReduction;
+#endif
 
   /// Accelerated MD reweighting factor
   bool accelMDOn;
