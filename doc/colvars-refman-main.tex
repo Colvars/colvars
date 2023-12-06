@@ -5091,22 +5091,29 @@ In general, internal coordinate wrapping by \MDENGINE{} does not affect the calc
 
 \cvsubsec{Performance of a Colvars calculation based on group size.}{sec:colvar_atom_groups_scaling}
 
-In simulations performed with message-passing programs (such as NAMD, LAMMPS or GROMACS), the calculation of energy and forces is distributed (i.e., parallelized) across multiple nodes, as well as over the processor cores of each node.
-When Colvars is enabled, certain atomic coordinates are collected on a single node, where the calculation of collective variables and of their biases is executed.
-This means that for simulations over large numbers of nodes, a Colvars calculation may produce a significant overhead, coming from the costs of transmitting atomic coordinates to one node and of processing them.
+In simulations performed with MD simulation engines such as GROMACS, LAMMPS or NAMD, the computation of energy and forces is distributed (i.e., parallelized) over multiple nodes, as well as over the CPU/GPU cores of each node.
+When Colvars is enabled, atomic coordinates are collected on a single CPU core, where collective variables and their biases are computed.
+This means that in the case of simulations that are already being run over large numbers of nodes, or inside a GPU, a Colvars calculation may produce a significant overhead.
+This overhead comes from the combined cost of two operation: transmitting atomic coordinates, and computing functions of the same.
 \cvnamdonly{The latency-tolerant design and dynamic load balancing of NAMD may alleviate both factors, but a noticeable performance impact may be observed.}
 
 Performance can be improved in multiple ways:
+
 \begin{itemize}
+
+\item As a general rule, the size of atom groups should be kept relatively small (up to a few thousands of atoms, depending on the size of the entire system in comparison).
+  For example, restraining a protein through a RMSD colvar defined over all of its atoms is only marginally different than one defined over only the $\alpha$ carbon atoms, but the difference in computational cost is much higher.
+To gain an estimate of the computational cost of a specific Colvars configuration, one may use a test calculation of the same colvar in VMD (hint: use the \texttt{time} Tcl command to measure the cost of running \texttt{cv update}).
+
 \item The calculation of variables, components and biases can be distributed over the processor cores of the node where the Colvars module is executed.
   Currently, an equal weight is assigned to each colvar, or to each component of those colvars that include more than one component.
   The performance of simulations that use many colvars or components is improved automatically.
   For simulations that use a single large colvar, it may be advisable to partition it in multiple components, which will be then distributed across the available cores.
-  \cvnamdonly{In NAMD, this feature is enabled in all binaries compiled using SMP builds of Charm++ with the CkLoop extension.}
+  \cvnamdonly{In NAMD, this feature is enabled in all binaries compiled using SMP builds of Charm++ with the CkLoop extension (including ``multicore'' builds).}
   \cvlammpsonly{In LAMMPS, this feature is supported automatically when LAMMPS is compiled with OpenMP support.}
   \cvgromacsonly{In GROMACS, this feature is supported automatically when GROMACS is compiled with OpenMP support.}
-  If printed, the message ``SMP parallelism is available.'' indicates the availability of the option\cvvmdonly{ (will be supported in a future release of VMD)}.
-  If available, the option is turned on by default, but may be disabled using the keyword \refkey{smp}{Colvars-global|smp} if required for debugging.
+  The messages ``SMP parallelism is available'' or ``SMP parallelism is enabled'', printed by Colvars at initialization time, indicate the availability or status of this feature\cvvmdonly{ (will be supported in a future release of VMD)}.
+  If available, the option is turned on by default, but may be disabled using the keyword \refkey{smp}{Colvars-global|smp} if required for debugging or troubleshooting.
 
 \cvnamdonly{
   % Use the following command to identify them:
@@ -5116,8 +5123,6 @@ Performance can be improved in multiple ways:
   When supported, the message ``Will enable scalable calculation for group \ldots'' is printed for each group.
 }
 
-\item As a general rule, the size of atom groups should be kept relatively small (up to a few thousands of atoms, depending on the size of the entire system in comparison).
-To gain an estimate of the computational cost of a large colvar, one can use a test calculation of the same colvar in VMD (hint: use the \texttt{time} Tcl command to measure the cost of running \texttt{cv update}).
 \end{itemize}
 
 
