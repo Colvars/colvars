@@ -78,16 +78,6 @@ void colvar::distance::calc_Jacobian_derivative()
 }
 
 
-void colvar::distance::apply_force(colvarvalue const &force)
-{
-  if (!group1->noforce)
-    group1->apply_colvar_force(force.real_value);
-
-  if (!group2->noforce)
-    group2->apply_colvar_force(force.real_value);
-}
-
-
 
 colvar::distance_vec::distance_vec()
 {
@@ -282,19 +272,6 @@ void colvar::distance_z::calc_Jacobian_derivative()
 }
 
 
-void colvar::distance_z::apply_force(colvarvalue const &force)
-{
-  if (!ref1->noforce)
-    ref1->apply_colvar_force(force.real_value);
-
-  if (ref2 && !ref2->noforce)
-    ref2->apply_colvar_force(force.real_value);
-
-  if (!main->noforce)
-    main->apply_colvar_force(force.real_value);
-}
-
-
 
 colvar::distance_xy::distance_xy()
 {
@@ -374,18 +351,6 @@ void colvar::distance_xy::calc_Jacobian_derivative()
   jd.real_value = x.real_value ? (1.0 / x.real_value) : 0.0;
 }
 
-
-void colvar::distance_xy::apply_force(colvarvalue const &force)
-{
-  if (!ref1->noforce)
-    ref1->apply_colvar_force(force.real_value);
-
-  if (ref2 && !ref2->noforce)
-    ref2->apply_colvar_force(force.real_value);
-
-  if (!main->noforce)
-    main->apply_colvar_force(force.real_value);
-}
 
 
 colvar::distance_dir::distance_dir()
@@ -550,16 +515,6 @@ void colvar::distance_inv::calc_gradients()
 }
 
 
-void colvar::distance_inv::apply_force(colvarvalue const &force)
-{
-  if (!group1->noforce)
-    group1->apply_colvar_force(force.real_value);
-
-  if (!group2->noforce)
-    group2->apply_colvar_force(force.real_value);
-}
-
-
 
 colvar::distance_pairs::distance_pairs()
 {
@@ -701,14 +656,6 @@ void colvar::dipole_magnitude::calc_gradients()
 }
 
 
-void colvar::dipole_magnitude::apply_force(colvarvalue const &force)
-{
-  if (!atoms->noforce) {
-    atoms->apply_colvar_force(force.real_value);
-  }
-}
-
-
 
 colvar::gyration::gyration()
 {
@@ -775,13 +722,6 @@ void colvar::gyration::calc_Jacobian_derivative()
 }
 
 
-void colvar::gyration::apply_force(colvarvalue const &force)
-{
-  if (!atoms->noforce)
-    atoms->apply_colvar_force(force.real_value);
-}
-
-
 
 colvar::inertia::inertia()
 {
@@ -803,13 +743,6 @@ void colvar::inertia::calc_gradients()
   for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
     ai->grad = 2.0 * ai->pos;
   }
-}
-
-
-void colvar::inertia::apply_force(colvarvalue const &force)
-{
-  if (!atoms->noforce)
-    atoms->apply_colvar_force(force.real_value);
 }
 
 
@@ -851,13 +784,6 @@ void colvar::inertia_z::calc_gradients()
   for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
     ai->grad = 2.0 * (ai->pos * axis) * axis;
   }
-}
-
-
-void colvar::inertia_z::apply_force(colvarvalue const &force)
-{
-  if (!atoms->noforce)
-    atoms->apply_colvar_force(force.real_value);
 }
 
 
@@ -1051,13 +977,6 @@ void colvar::rmsd::calc_gradients()
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     (*atoms)[ia].grad = (drmsddx2 * 2.0 * ((*atoms)[ia].pos - ref_pos[start + ia]));
   }
-}
-
-
-void colvar::rmsd::apply_force(colvarvalue const &force)
-{
-  if (!atoms->noforce)
-    atoms->apply_colvar_force(force.real_value);
 }
 
 
@@ -1358,13 +1277,6 @@ void colvar::eigenvector::calc_gradients()
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     (*atoms)[ia].grad = eigenvec[ia];
   }
-}
-
-
-void colvar::eigenvector::apply_force(colvarvalue const &force)
-{
-  if (!atoms->noforce)
-    atoms->apply_colvar_force(force.real_value);
 }
 
 

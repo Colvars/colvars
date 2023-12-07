@@ -116,11 +116,10 @@ void colvar::map_total::calc_gradients()
 
 void colvar::map_total::apply_force(colvarvalue const &force)
 {
-  colvarproxy *proxy = cvm::main()->proxy;
   if (atoms) {
-    if (!atoms->noforce)
-      atoms->apply_colvar_force(force.real_value);
+    cvc::apply_force(force);
   } else {
+    colvarproxy *proxy = cvm::main()->proxy;
     proxy->apply_volmap_force(volmap_index, force.real_value);
   }
 }

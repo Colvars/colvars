@@ -197,7 +197,7 @@ public:
   /// collective variable force, usually coming from the biases and
   /// eventually manipulated by the parent \link colvar \endlink
   /// object
-  virtual void apply_force(colvarvalue const &cvforce) = 0;
+  virtual void apply_force(colvarvalue const &cvforce);
 
   /// Square distance between x1 and x2 (can be redefined to transparently
   /// implement metrics in multi-dimensional spaces with or without
@@ -344,7 +344,6 @@ public:
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -424,7 +423,6 @@ public:
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -446,7 +444,6 @@ public:
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -465,7 +462,6 @@ public:
   virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -484,8 +480,8 @@ protected:
 public:
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
+
 
 /// \brief Colvar component: average distance between two groups of atoms, weighted as the sixth power,
 /// as in NMR refinements(colvarvalue::type_scalar type, range (0:*))
@@ -505,7 +501,6 @@ public:
   virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -552,7 +547,6 @@ public:
   virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -573,7 +567,6 @@ public:
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -588,7 +581,6 @@ public:
   virtual ~inertia() {}
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -607,7 +599,6 @@ public:
   virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -640,7 +631,6 @@ public:
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -681,7 +671,6 @@ public:
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -718,7 +707,6 @@ public:
   virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -756,7 +744,6 @@ public:
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -801,7 +788,6 @@ public:
   virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 
   enum {
     ef_null = 0,
@@ -865,7 +851,6 @@ public:
   virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 
   /// Main workhorse function
   template<int flags> int compute_selfcoordnum();
@@ -896,7 +881,6 @@ public:
   virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -924,7 +908,6 @@ public:
   virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -1051,9 +1034,9 @@ public:
 };
 
 
-/// \brief Colvar component: angle of rotation with respect to a set
-/// of reference coordinates (colvarvalue::type_scalar type, range
-/// [0:PI))
+/// Colvar component: angle of rotation with respect to a set of reference coordinates
+/// (colvarvalue::type_scalar type, range [0:PI))
+/// This is also used to derive all other sub-rotation variables that return a scalar value
 class colvar::orientation_angle
   : public colvar::orientation
 {
@@ -1088,7 +1071,6 @@ public:
   virtual ~orientation_proj() {}
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -1109,7 +1091,6 @@ public:
   virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -1125,7 +1106,6 @@ public:
   virtual ~spin_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -1137,7 +1117,6 @@ public:
   virtual ~euler_phi() {}
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -1149,7 +1128,6 @@ public:
   virtual ~euler_psi() {}
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -1161,7 +1139,6 @@ public:
   virtual ~euler_theta() {}
   virtual void calc_value();
   virtual void calc_gradients();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -1198,7 +1175,6 @@ public:
   virtual void calc_gradients();
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
-  virtual void apply_force(colvarvalue const &force);
 };
 
 
@@ -1288,7 +1264,8 @@ public:
     virtual ~CartesianBasedPath();
     virtual int init(std::string const &conf);
     virtual void calc_value() = 0;
-    virtual void apply_force(colvarvalue const &force) = 0;
+    /// Redefined to raise error because this is an abstract type
+    virtual void apply_force(colvarvalue const &force);
 };
 
 /// \brief Colvar component: alternative path collective variable using geometry, variable s
@@ -1416,7 +1393,8 @@ public:
     virtual ~CVBasedPath();
     virtual int init(std::string const &conf);
     virtual void calc_value() = 0;
-    virtual void apply_force(colvarvalue const &force) = 0;
+    /// Redefined to raise error because this is an abstract type
+    virtual void apply_force(colvarvalue const &force);
   /// Redefined to use the metric of the returned colvarvalue (defined at runtime)
   virtual cvm::real dist2(colvarvalue const &x1, colvarvalue const &x2) const;
   /// Redefined to use the metric of the returned colvarvalue (defined at runtime)

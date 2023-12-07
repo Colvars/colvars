@@ -210,10 +210,7 @@ void colvar::orientation_angle::calc_gradients()
 
 void colvar::orientation_angle::apply_force(colvarvalue const &force)
 {
-  cvm::real const &fw = force.real_value;
-  if (!atoms->noforce) {
-    atoms->apply_colvar_force(fw);
-  }
+  cvc::apply_force(force);
 }
 
 
@@ -271,16 +268,6 @@ void colvar::orientation_proj::calc_gradients()
 }
 
 
-void colvar::orientation_proj::apply_force(colvarvalue const &force)
-{
-  cvm::real const &fw = force.real_value;
-
-  if (!atoms->noforce) {
-    atoms->apply_colvar_force(fw);
-  }
-}
-
-
 
 colvar::tilt::tilt()
 {
@@ -332,16 +319,6 @@ void colvar::tilt::calc_gradients()
 }
 
 
-void colvar::tilt::apply_force(colvarvalue const &force)
-{
-  cvm::real const &fw = force.real_value;
-
-  if (!atoms->noforce) {
-    atoms->apply_colvar_force(fw);
-  }
-}
-
-
 
 colvar::spin_angle::spin_angle()
 {
@@ -376,16 +353,6 @@ void colvar::spin_angle::calc_gradients()
     for (size_t iq = 0; iq < 4; iq++) {
       (*atoms)[ia].grad += (dxdq[iq] * dq0_2[iq]);
     }
-  }
-}
-
-
-void colvar::spin_angle::apply_force(colvarvalue const &force)
-{
-  cvm::real const &fw = force.real_value;
-
-  if (!atoms->noforce) {
-    atoms->apply_colvar_force(fw);
   }
 }
 
@@ -439,15 +406,6 @@ void colvar::euler_phi::calc_gradients()
 }
 
 
-void colvar::euler_phi::apply_force(colvarvalue const &force)
-{
-  cvm::real const &fw = force.real_value;
-  if (!atoms->noforce) {
-    atoms->apply_colvar_force(fw);
-  }
-}
-
-
 
 colvar::euler_psi::euler_psi()
 {
@@ -497,15 +455,6 @@ void colvar::euler_psi::calc_gradients()
 }
 
 
-void colvar::euler_psi::apply_force(colvarvalue const &force)
-{
-  cvm::real const &fw = force.real_value;
-  if (!atoms->noforce) {
-    atoms->apply_colvar_force(fw);
-  }
-}
-
-
 
 colvar::euler_theta::euler_theta()
 {
@@ -549,14 +498,5 @@ void colvar::euler_theta::calc_gradients()
                         (dxdq1 * dq0_2[1]) +
                         (dxdq2 * dq0_2[2]) +
                         (dxdq3 * dq0_2[3]);
-  }
-}
-
-
-void colvar::euler_theta::apply_force(colvarvalue const &force)
-{
-  cvm::real const &fw = force.real_value;
-  if (!atoms->noforce) {
-    atoms->apply_colvar_force(fw);
   }
 }

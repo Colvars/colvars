@@ -236,6 +236,8 @@ int colvar::cvc::init_dependencies() {
 
     init_feature(f_cvc_upper_boundary, "defined_upper_boundary", f_type_static);
 
+    init_feature(f_cvc_explicit_atom_groups, "explicit_atom_groups", f_type_static);
+
     init_feature(f_cvc_gradient, "gradient", f_type_dynamic);
 
     init_feature(f_cvc_explicit_gradient, "explicit_gradient", f_type_static);
@@ -272,6 +274,7 @@ int colvar::cvc::init_dependencies() {
 
     init_feature(f_cvc_collect_atom_ids, "collect_atom_ids", f_type_dynamic);
     require_feature_children(f_cvc_collect_atom_ids, f_ag_collect_atom_ids);
+    require_feature_self(f_cvc_collect_atom_ids, f_cvc_explicit_atom_groups);
 
     // TODO only enable this when f_ag_scalable can be turned on for a pre-initialized group
     // require_feature_children(f_cvc_scalable, f_ag_scalable);
@@ -380,6 +383,7 @@ void colvar::cvc::register_atom_group(cvm::atom_group *ag)
 {
   atom_groups.push_back(ag);
   add_child(ag);
+  enable(f_cvc_explicit_atom_groups);
 }
 
 
@@ -419,29 +423,21 @@ int colvar::cvc::set_param(std::string const &param_name,
 
 void colvar::cvc::read_data()
 {
-  size_t ig;
-  for (ig = 0; ig < atom_groups.size(); ig++) {
-    cvm::atom_group &atoms = *(atom_groups[ig]);
-    atoms.reset_atoms_data();
-    atoms.read_positions();
-    atoms.calc_required_properties();
-    // each atom group will take care of its own fitting_group, if defined
+  if (is_enabled(f_cvc_explicit_atom_groups)) {
+    for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
+      cvm::atom_group &atoms = *(*agi);
+      atoms.reset_atoms_data();
+      atoms.read_positions();
+      atoms.calc_required_properties();
+      // each atom group will take care of its own fitting_group, if defined
+    }
   }
-
-////  Don't try to get atom velocities, as no back-end currently implements it
-//   if (tasks[task_output_velocity] && !tasks[task_fdiff_velocity]) {
-//     for (i = 0; i < cvcs.size(); i++) {
-//       for (ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
-//         cvcs[i]->atom_groups[ig]->read_velocities();
-//       }
-//     }
-//   }
 }
 
 
-std::vector<std::vector<int> > colvar::cvc::get_atom_lists()
+std::vector<std::vector<int>> colvar::cvc::get_atom_lists()
 {
-  std::vector<std::vector<int> > lists;
+  std::vector<std::vector<int>> lists;
 
   std::vector<cvm::atom_group *>::iterator agi = atom_groups.begin();
   for ( ; agi != atom_groups.end(); ++agi) {
@@ -519,6 +515,18 @@ void colvar::cvc::calc_fit_gradients()
 {
   for (size_t ig = 0; ig < atom_groups.size(); ig++) {
     atom_groups[ig]->calc_fit_gradients();
+  }
+}
+
+
+void colvar::cvc::apply_force(colvarvalue const &cvforce)
+{
+  if (is_enabled(f_cvc_explicit_atom_groups)) {
+    for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
+      if (!(*agi)->noforce) {
+        (*agi)->apply_colvar_force(cvforce);
+      }
+    }
   }
 }
 
