@@ -165,6 +165,14 @@ void colvar::CartesianBasedPath::computeDistanceBetweenReferenceFrames(std::vect
 }
 
 
+void colvar::CartesianBasedPath::apply_force(colvarvalue const &force)
+{
+    cvm::error("Error: using apply_force() in a component of type CartesianBasedPath, which is abstract.\n",
+               COLVARS_BUG_ERROR);
+}
+
+
+
 colvar::gspath::gspath()
 {
     set_function_type("gspath");
@@ -619,6 +627,13 @@ colvar::CVBasedPath::~CVBasedPath() {
     }
     // The last step is cleaning up the list of atom groups.
     atom_groups.clear();
+}
+
+
+void colvar::CVBasedPath::apply_force(colvarvalue const &force)
+{
+    cvm::error("Error: using apply_force() in a component of type CVBasedPath, which is abstract.\n",
+               COLVARS_BUG_ERROR);
 }
 
 

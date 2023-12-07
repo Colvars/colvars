@@ -357,6 +357,8 @@ public:
     f_cvc_lower_boundary,
     /// This CVC provides a default value for the colvar's upper boundary
     f_cvc_upper_boundary,
+    /// CVC accesses atom groups directly (as opposed to going throuh other objects)
+    f_cvc_explicit_atom_groups,
     /// CVC calculates atom gradients
     f_cvc_gradient,
     /// CVC calculates and stores explicit atom gradients on rank 0

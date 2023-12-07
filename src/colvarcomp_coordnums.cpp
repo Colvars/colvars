@@ -285,16 +285,6 @@ void colvar::coordnum::calc_gradients()
 }
 
 
-void colvar::coordnum::apply_force(colvarvalue const &force)
-{
-  if (!group1->noforce)
-    group1->apply_colvar_force(force.real_value);
-
-  if (!group2->noforce)
-    group2->apply_colvar_force(force.real_value);
-}
-
-
 
 // h_bond member functions
 
@@ -387,12 +377,6 @@ void colvar::h_bond::calc_gradients()
                                       (*atom_groups[0])[0],
                                       (*atom_groups[0])[1],
                                       NULL, 0.0);
-}
-
-
-void colvar::h_bond::apply_force(colvarvalue const &force)
-{
-  (atom_groups[0])->apply_colvar_force(force);
 }
 
 
@@ -533,14 +517,6 @@ void colvar::selfcoordnum::calc_gradients()
 }
 
 
-void colvar::selfcoordnum::apply_force(colvarvalue const &force)
-{
-  if (!group1->noforce) {
-    group1->apply_colvar_force(force.real_value);
-  }
-}
-
-
 
 colvar::groupcoordnum::groupcoordnum()
 {
@@ -645,14 +621,4 @@ void colvar::groupcoordnum::calc_gradients()
 
   group1->set_weighted_gradient(group1_com_atom.grad);
   group2->set_weighted_gradient(group2_com_atom.grad);
-}
-
-
-void colvar::groupcoordnum::apply_force(colvarvalue const &force)
-{
-  if (!group1->noforce)
-    group1->apply_colvar_force(force.real_value);
-
-  if (!group2->noforce)
-    group2->apply_colvar_force(force.real_value);
 }

@@ -118,19 +118,6 @@ void colvar::angle::calc_Jacobian_derivative()
 }
 
 
-void colvar::angle::apply_force(colvarvalue const &force)
-{
-  if (!group1->noforce)
-    group1->apply_colvar_force(force.real_value);
-
-  if (!group2->noforce)
-    group2->apply_colvar_force(force.real_value);
-
-  if (!group3->noforce)
-    group3->apply_colvar_force(force.real_value);
-}
-
-
 
 colvar::dipole_angle::dipole_angle()
 {
@@ -204,19 +191,6 @@ void colvar::dipole_angle::calc_gradients()
   for (i = 0; i < group3->size(); i++) {
     (*group3)[i].grad =((*group3)[i].mass/group3->total_mass) * (dxdr3);
   }
-}
-
-
-void colvar::dipole_angle::apply_force(colvarvalue const &force)
-{
-  if (!group1->noforce)
-    group1->apply_colvar_force(force.real_value);
-
-  if (!group2->noforce)
-    group2->apply_colvar_force(force.real_value);
-
-  if (!group3->noforce)
-    group3->apply_colvar_force(force.real_value);
 }
 
 
@@ -403,22 +377,6 @@ void colvar::dihedral::calc_Jacobian_derivative()
 }
 
 
-void colvar::dihedral::apply_force(colvarvalue const &force)
-{
-  if (!group1->noforce)
-    group1->apply_colvar_force(force.real_value);
-
-  if (!group2->noforce)
-    group2->apply_colvar_force(force.real_value);
-
-  if (!group3->noforce)
-    group3->apply_colvar_force(force.real_value);
-
-  if (!group4->noforce)
-    group4->apply_colvar_force(force.real_value);
-}
-
-
 
 colvar::polar_theta::polar_theta()
 {
@@ -461,13 +419,6 @@ void colvar::polar_theta::calc_gradients()
 }
 
 
-void colvar::polar_theta::apply_force(colvarvalue const &force)
-{
-  if (!atoms->noforce)
-    atoms->apply_colvar_force(force.real_value);
-}
-
-
 
 colvar::polar_phi::polar_phi()
 {
@@ -504,11 +455,4 @@ void colvar::polar_phi::calc_gradients()
     (180.0/PI) * -cvm::sin(phi) / (r*cvm::sin(theta)),
     (180.0/PI) *  cvm::cos(phi) / (r*cvm::sin(theta)),
     0.));
-}
-
-
-void colvar::polar_phi::apply_force(colvarvalue const &force)
-{
-  if (!atoms->noforce)
-    atoms->apply_colvar_force(force.real_value);
 }
