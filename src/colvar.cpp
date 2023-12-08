@@ -192,9 +192,9 @@ int colvar::init(std::string const &conf)
 
         if ((cvcs[i])->sup_np < 0) {
           cvm::log("Warning: you chose a negative exponent in the combination; "
-                    "if you apply forces, the simulation may become unstable "
-                    "when the component \""+
-                    (cvcs[i])->function_type+"\" approaches zero.\n");
+                   "if you apply forces, the simulation may become unstable "
+                   "when the component \""+
+                   (cvcs[i])->function_type()+"\" approaches zero.\n");
         }
       }
     }
@@ -301,7 +301,7 @@ int colvar::init(std::string const &conf)
   error_code |= init_grid_parameters(conf);
 
   // Detect if we have a single component that is an alchemical lambda
-  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type == "alchLambda") {
+  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "alchLambda") {
     enable(f_cv_external);
   }
 

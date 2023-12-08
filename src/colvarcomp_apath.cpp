@@ -191,7 +191,7 @@ void colvar::aspath::apply_force(colvarvalue const &force) {
 
 colvar::azpath::azpath()
 {
-    function_type = "azpath";
+    set_function_type("azpath");
     x.type(colvarvalue::type_scalar);
 }
 
