@@ -925,7 +925,9 @@ It is thus useful to load information from a state file that contains informatio
 \cvscriptexampleinputbias{load}{"old"}{"metadynamics1"}
 A corresponding ``\texttt{save}'' function is also available:
 \cvscriptexampleinputbias{save}{"new"}{"metadynamics1"}
-\noindent{}This pair of functions is also used internally by Colvars to implement e.g.{} multiple-walker metadynamics (\ref{sec:colvarbias_meta_mr}), but they can be called from a scripted function to implement alternative coupling schemes.
+\noindent{}Please note that the file above must contain only the state information for that particular bias: \emph{loading a state file for the whole module is not allowed.}
+
+This pair of functions is also used internally by Colvars to implement e.g.{} multiple-walker metadynamics (\ref{sec:colvarbias_meta_mr}), but they can be called from a scripted function to implement alternative coupling schemes.
 
 \ifdefined\cvscriptcmdapi{See \ref{sec:cvscript_cmdline_bias} for a complete list of scripting commands used to manage biases.}\fi
 
