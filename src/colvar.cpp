@@ -137,7 +137,14 @@ int colvar::init(std::string const &conf)
 
     // Sort array of cvcs based on their names
     // Note: default CVC names are in input order for same type of CVC
-    std::sort(cvcs.begin(), cvcs.end(), colvar::compare_cvc);
+    std::sort(cvcs.begin(), cvcs.end(),
+              [](std::shared_ptr<colvar::cvc> const &cvc1,
+                 std::shared_ptr<colvar::cvc> const &cvc2) -> bool {
+                if (cvc1 && cvc2) {
+                  return cvc1->name < cvc2->name;
+                }
+                return false;
+              });
 
     if(cvcs.size() > 1) {
       cvm::log("Sorted list of components for this scripted colvar:\n");
@@ -781,8 +788,7 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
                             "\".\n",
                         COLVARS_MEMORY_ERROR);
     }
-
-    cvcs.push_back(cvcp);
+    cvcs.push_back(std::shared_ptr<colvar::cvc>(cvcp));
 
     cvm::increase_depth();
     int error_code_this = cvcp->init(def_conf);
@@ -945,7 +951,7 @@ int colvar::init_components(std::string const &conf)
   if (error_code == COLVARS_OK) {
     // Store list of children cvcs for dependency checking purposes
     for (i = 0; i < cvcs.size(); i++) {
-      add_child(cvcs[i]);
+      add_child(cvcs[i].get());
     }
     // By default all CVCs are active at the start
     n_active_cvcs = cvcs.size();
@@ -1285,14 +1291,10 @@ colvar::~colvar()
   // for dependency purposes
   remove_all_children();
 
-  for (std::vector<cvc *>::reverse_iterator ci = cvcs.rbegin();
-      ci != cvcs.rend();
-      ++ci) {
-    // clear all children of this cvc (i.e. its atom groups)
-    // because the cvc base class destructor can't do it early enough
-    // and we don't want to have each cvc derived class do it separately
+  for (auto ci = cvcs.rbegin(); ci != cvcs.rend(); ++ci) {
+    // Clear all children of this cvc (i.e. its atom groups), because the cvc base class destructor
+    // can't do it early enough and we don't want to have each cvc derived class do it separately
     (*ci)->remove_all_children();
-    delete *ci;
   }
   cvcs.clear();
 
