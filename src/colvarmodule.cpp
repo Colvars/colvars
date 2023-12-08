@@ -736,6 +736,22 @@ cvm::atom_group *colvarmodule::atom_group_by_name(std::string const &name)
 }
 
 
+colvardeps *colvarmodule::get_component_by_name(std::string const &name)
+{
+  if (colvar_components_.count(name) > 0) {
+    return colvar_components_[name].get();
+  }
+  return nullptr;
+}
+
+
+void colvarmodule::register_component(std::string const &name, std::shared_ptr<colvardeps> ptr)
+{
+  // TODO Add function to clean up when some components have ref count == 1
+  colvar_components_[name] = ptr;
+}
+
+
 void colvarmodule::register_named_atom_group(atom_group *ag) {
   named_atom_groups.push_back(ag);
 }
@@ -1303,6 +1319,7 @@ colvarmodule::~colvarmodule()
 
     delete usage_;
     usage_ = NULL;
+    colvar_components_.clear();
 
     // The proxy object will be deallocated last (if at all)
     proxy = NULL;

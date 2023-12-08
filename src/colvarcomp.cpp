@@ -47,12 +47,25 @@ std::string colvar::cvc::function_type() const
 int colvar::cvc::set_function_type(std::string const &type)
 {
   function_types.push_back(type);
-  update_description();
+  int error_code = update_description();
   cvm::main()->cite_feature(function_types[0]+" colvar component");
   for (size_t i = function_types.size()-1; i > 0; i--) {
     cvm::main()->cite_feature(function_types[i]+" colvar component"+
                               " (derived from "+function_types[i-1]+")");
   }
+  return error_code;
+}
+
+
+std::string colvar::cvc::qualified_name() const
+{
+  return parent_name_ + "/" + name;
+}
+
+
+int colvar::cvc::set_parent_name(std::string const &cv_name)
+{
+  parent_name_ = cv_name;
   return COLVARS_OK;
 }
 

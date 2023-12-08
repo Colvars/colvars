@@ -37,12 +37,16 @@ Please note that this documentation is only supported for the master branch, and
 
 #include <cmath>
 #include <iosfwd>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-class colvarparse;
+// Forward declarations
 class colvar;
 class colvarbias;
+class colvardeps;
+class colvarparse;
 class colvarproxy;
 class colvarvalue;
 
@@ -272,8 +276,13 @@ private:
   /// Indexes of the items to calculate for each colvar
   std::vector<int> colvars_smp_items;
 
+  /// Array of components (functions used to define the variables)
+  /// TODO Use a better base type than colvardeps?
+  std::map<std::string, std::shared_ptr<colvardeps>> colvar_components_;
+
   /// Array of named atom groups
   std::vector<atom_group *> named_atom_groups;
+
 public:
   /// Register a named atom group into named_atom_groups
   void register_named_atom_group(atom_group *ag);
@@ -284,14 +293,12 @@ public:
   /// Array of collective variables
   std::vector<colvar *> *variables();
 
-  /* TODO: implement named CVCs
-  /// Array of named (reusable) collective variable components
-  static std::vector<cvc *>     cvcs;
-  /// Named cvcs register themselves at initialization time
-  inline void register_cvc(cvc *p) {
-    cvcs.push_back(p);
-  }
-  */
+  /// Get a pointer to a colvar component (individual function)
+  /// TODO Use a different base class after it's possible to forward declare colvar::cvc
+  colvardeps *get_component_by_name(std::string const &name);
+
+  /// Add a new colvar component to the internal registry
+  void register_component(std::string const &name, std::shared_ptr<colvardeps> ptr);
 
   /// Collective variables with the active flag on
   std::vector<colvar *> *variables_active();

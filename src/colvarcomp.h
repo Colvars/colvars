@@ -77,8 +77,11 @@ public:
   /// String identifier for the type of collective variable
   std::string function_type() const;
 
-  /// Keyword used in the input to denote this CVC
-  std::string config_key;
+  /// Return the component's name, prefixed by its parent colvar's name
+  std::string qualified_name() const;
+
+  /// Set the name of the parent colvar
+  int set_parent_name(std::string const &cv_name);
 
   /// \brief Coefficient in the polynomial combination (default: 1.0)
   cvm::real sup_coeff = 1.0;
@@ -239,8 +242,11 @@ public:
 
 protected:
 
-  /// Set the value of \link function_type \endlink and its dependencies
+  /// Set the value of \link function_type \endlink and define static dependencies
   int set_function_type(std::string const &type);
+
+  /// Name of the parent colvar, responsible for driving computation of this CVC
+  std::string parent_name_;
 
   /// Update the description string based on name and type
   int update_description();
