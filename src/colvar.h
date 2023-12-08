@@ -14,6 +14,7 @@
 #include <list>
 #include <iosfwd>
 #include <map>
+#include <memory>
 
 #include "colvarmodule.h"
 #include "colvarvalue.h"
@@ -654,8 +655,8 @@ public:
 
 protected:
 
-  /// \brief Array of \link colvar::cvc \endlink objects
-  std::vector<cvc *> cvcs;
+  /// Array of components objects
+  std::vector<std::shared_ptr<colvar::cvc>> cvcs;
 
   /// \brief Flags to enable or disable cvcs at next colvar evaluation
   std::vector<bool> cvc_flags;
