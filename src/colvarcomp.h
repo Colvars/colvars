@@ -116,7 +116,7 @@ public:
   int init_dependencies() override;
 
   /// \brief After construction, set data related to dependency handling
-  int setup();
+  virtual int setup();
 
   /// \brief Implementation of the feature list accessor for colvar
   virtual const std::vector<feature *> &features() const override
@@ -311,6 +311,9 @@ protected:
   /// Record the type of this class as well as those it is derived from
   std::vector<std::string> function_types;
 
+  /// Role identifiers and pointers to the external CVCs whose data is being reused
+  std::map<std::string, std::shared_ptr<cvc>> precomputed_cvcs;
+
   /// \brief Cached value
   colvarvalue x;
 
@@ -354,6 +357,15 @@ protected:
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   std::array<cudaEvent_t, static_cast<int>(event_type::num_event_types)> events = {};
 #endif
+
+  /// Whether this CVC is reusing another CVC
+  inline bool has_precomputed_cvc(std::string const &id) const
+  {
+    return precomputed_cvcs.count(id) > 0;
+  }
+
+  /// Store a pointer to another CVC whose computation will be reused
+  int register_precomputed_cvc(std::string const &id, std::string const &cvc_name);
 };
 
 
