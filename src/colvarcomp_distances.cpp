@@ -148,6 +148,7 @@ colvar::distance_z::distance_z()
   provide(f_cvc_inv_gradient);
   provide(f_cvc_Jacobian);
   enable(f_cvc_com_based);
+  provide(f_cvc_periodic);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -155,18 +156,6 @@ colvar::distance_z::distance_z()
 int colvar::distance_z::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
-
-  // TODO detect PBC from MD engine (in simple cases)
-  // and then update period in real time
-  if (period != 0.0) {
-    enable(f_cvc_periodic);
-  }
-
-  if ((wrap_center != 0.0) && !is_enabled(f_cvc_periodic)) {
-    error_code |= cvm::error("Error: wrapAround was defined in a distanceZ component,"
-                             " but its period has not been set.\n",
-                             COLVARS_INPUT_ERROR);
-  }
 
   main = parse_group(conf, "main");
   ref1 = parse_group(conf, "ref");
@@ -276,6 +265,7 @@ void colvar::distance_z::calc_Jacobian_derivative()
 colvar::distance_xy::distance_xy()
 {
   set_function_type("distanceXY");
+  provide(f_cvc_periodic, false); // Disable inherited distance_z flag
   init_as_distance();
 }
 

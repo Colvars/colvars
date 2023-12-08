@@ -324,7 +324,6 @@ colvar::spin_angle::spin_angle()
 {
   set_function_type("spinAngle");
   init_as_periodic_angle();
-  enable(f_cvc_periodic);
   enable(f_cvc_explicit_gradient);
 }
 
