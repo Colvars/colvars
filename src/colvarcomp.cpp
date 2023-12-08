@@ -32,36 +32,33 @@ colvar::cvc::cvc()
 int colvar::cvc::update_description()
 {
   if (name.size() > 0) {
-    description = "cvc " + name;
+    description = "cvc \"" + name + "\"";
   } else {
     description = "unnamed cvc";
   }
-  if (function_type.size() > 0) {
-    description += " of type \"" + function_type + "\"";
-  } else {
-    description += " of unset type";
-  }
+  description += " of type \"" + function_type() + "\"";
   return COLVARS_OK;
+}
+
+
+std::string colvar::cvc::function_type() const
+{
+  if (function_types.empty()) {
+    return "unset";
+  }
+  return function_types.back();
 }
 
 
 int colvar::cvc::set_function_type(std::string const &type)
 {
-  function_type = type;
-  if (function_types.size() == 0) {
-    function_types.push_back(function_type);
-  } else {
-    if (function_types.back() != function_type) {
-      function_types.push_back(function_type);
-    }
-  }
+  function_types.push_back(type);
   update_description();
-
+  cvm::main()->cite_feature(function_types[0]+" colvar component");
   for (size_t i = function_types.size()-1; i > 0; i--) {
     cvm::main()->cite_feature(function_types[i]+" colvar component"+
                               " (derived from "+function_types[i-1]+")");
   }
-  cvm::main()->cite_feature(function_types[0]+" colvar component");
   return COLVARS_OK;
 }
 
@@ -498,7 +495,7 @@ void colvar::cvc::collect_gradients(std::vector<int> const &atom_ids, std::vecto
 void colvar::cvc::calc_force_invgrads()
 {
   cvm::error("Error: calculation of inverse gradients is not implemented "
-             "for colvar components of type \""+function_type+"\".\n",
+             "for colvar components of type \""+function_type()+"\".\n",
              COLVARS_NOT_IMPLEMENTED);
 }
 
@@ -506,7 +503,7 @@ void colvar::cvc::calc_force_invgrads()
 void colvar::cvc::calc_Jacobian_derivative()
 {
   cvm::error("Error: calculation of inverse gradients is not implemented "
-             "for colvar components of type \""+function_type+"\".\n",
+             "for colvar components of type \""+function_type()+"\".\n",
              COLVARS_NOT_IMPLEMENTED);
 }
 

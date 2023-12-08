@@ -74,15 +74,8 @@ public:
   /// cvc instance when debugging)
   std::string name;
 
-  /// \brief Description of the type of collective variable
-  ///
-  /// Normally this string is set by the parent \link colvar \endlink
-  /// object within its constructor, when all \link colvar::cvc \endlink
-  /// objects are initialized; therefore the main "config string"
-  /// constructor does not need to define it.  If a \link colvar::cvc
-  /// \endlink is initialized and/or a different constructor is used,
-  /// this variable definition should be set within the constructor.
-  std::string function_type;
+  /// String identifier for the type of collective variable
+  std::string function_type() const;
 
   /// Keyword used in the input to denote this CVC
   std::string config_key;
@@ -104,9 +97,6 @@ public:
   /// Destructor
   virtual ~cvc();
 
-  /// Set the value of \link function_type \endlink and its dependencies
-  int set_function_type(std::string const &type);
-
   /// An init function should be defined for every class inheriting from cvc
   /// \param conf Contents of the configuration file pertaining to this \link
   /// cvc \endlink
@@ -115,31 +105,20 @@ public:
   /// \brief Initialize dependency tree
   virtual int init_dependencies();
 
-  /// \brief Within the constructor, make a group parse its own
-  /// options from the provided configuration string
-  /// Returns reference to new group
-  cvm::atom_group *parse_group(std::string const &conf,
-                               char const *group_key,
-                               bool optional = false);
-
-  /// \brief Parse options pertaining to total force calculation
-  virtual int init_total_force_params(std::string const &conf);
-
   /// \brief After construction, set data related to dependency handling
   int setup();
-
-  /// \brief Implementation of the feature list for colvar
-  static std::vector<feature *> cvc_features;
 
   /// \brief Implementation of the feature list accessor for colvar
   virtual const std::vector<feature *> &features() const
   {
     return cvc_features;
   }
+
   virtual std::vector<feature *> &modify_features()
   {
     return cvc_features;
   }
+
   static void delete_features() {
     for (size_t i=0; i < cvc_features.size(); i++) {
       delete cvc_features[i];
@@ -259,8 +238,21 @@ public:
 
 protected:
 
+  /// Set the value of \link function_type \endlink and its dependencies
+  int set_function_type(std::string const &type);
+
   /// Update the description string based on name and type
   int update_description();
+
+  /// Parse a group definition
+  cvm::atom_group *parse_group(std::string const &conf, char const *group_key,
+                               bool optional = false);
+
+  /// \brief Parse options pertaining to total force calculation
+  virtual int init_total_force_params(std::string const &conf);
+
+  /// \brief Implementation of the feature list for colvar
+  static std::vector<feature *> cvc_features;
 
   /// Record the type of this class as well as those it is derived from
   std::vector<std::string> function_types;
