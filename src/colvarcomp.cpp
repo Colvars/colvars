@@ -62,6 +62,8 @@ int colvar::cvc::init(std::string const &conf)
   if (cvm::debug())
     cvm::log("Initializing cvc base object.\n");
 
+  int error_code = COLVARS_OK;
+
   std::string const old_name(name);
 
   if (name.size() > 0) {
@@ -70,9 +72,9 @@ int colvar::cvc::init(std::string const &conf)
 
   if (get_keyval(conf, "name", name, name)) {
     if ((name != old_name) && (old_name.size() > 0)) {
-      cvm::error("Error: cannot rename component \""+old_name+
-                 "\" after initialization (new name = \""+name+"\")",
-                 COLVARS_INPUT_ERROR);
+      error_code |= cvm::error("Error: cannot rename component \"" + old_name +
+                                   "\" after initialization (new name = \"" + name + "\")",
+                               COLVARS_INPUT_ERROR);
       name = old_name;
     }
   }
@@ -93,6 +95,24 @@ int colvar::cvc::init(std::string const &conf)
   register_param("period", reinterpret_cast<void *>(&period));
   register_param("wrapAround", reinterpret_cast<void *>(&wrap_center));
 
+  if (period != 0.0) {
+    if (!is_available(f_cvc_periodic)) {
+      error_code |=
+          cvm::error("Error: invalid use of period and/or "
+                     "wrapAround in a \"" +
+                         function_type() + "\" component.\n" + "Period: " + cvm::to_str(period) +
+                         " wrapAround: " + cvm::to_str(wrap_center),
+                     COLVARS_INPUT_ERROR);
+    } else {
+      enable(f_cvc_periodic);
+    }
+  }
+
+  if ((wrap_center != 0.0) && !is_enabled(f_cvc_periodic)) {
+    error_code |= cvm::error("Error: wrapAround was defined for a non-periodic component.\n",
+                             COLVARS_INPUT_ERROR);
+  }
+
   get_keyval_feature(this, conf, "debugGradients",
                      f_cvc_debug_gradient, false, parse_silent);
 
@@ -110,7 +130,7 @@ int colvar::cvc::init(std::string const &conf)
   if (cvm::debug())
     cvm::log("Done initializing cvc base object.\n");
 
-  return cvm::get_error();
+  return error_code;
 }
 
 
@@ -294,6 +314,8 @@ int colvar::cvc::init_dependencies() {
   feature_states[f_cvc_gradient].available = true;
   feature_states[f_cvc_collect_atom_ids].available = true;
 
+  feature_states[f_cvc_periodic].available = false;
+
   // CVCs are enabled from the start - get disabled based on flags
   enable(f_cvc_active);
 
@@ -351,6 +373,7 @@ void colvar::cvc::init_as_angle()
 void colvar::cvc::init_as_periodic_angle()
 {
   x.type(colvarvalue::type_scalar);
+  provide(f_cvc_periodic);
   enable(f_cvc_periodic);
   period = 360.0;
   init_scalar_boundaries(-180.0, 180.0);

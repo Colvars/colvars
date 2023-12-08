@@ -804,19 +804,6 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
                      COLVARS_INPUT_ERROR);
     }
 
-    // TODO integrate this check in colvarcomp::init(), which now can count
-    // on the derived object being fully initialized
-    if ((cvcp->period != 0.0) || (cvcp->wrap_center != 0.0)) {
-      if (!cvcp->is_enabled(f_cvc_periodic)) {
-        error_code |= cvm::error("Error: invalid use of period and/or "
-                                 "wrapAround in a \"" +
-                                     std::string(def_config_key) + "\" component.\n" +
-                                     "Period: " + cvm::to_str(cvcp->period) +
-                                     " wrapAround: " + cvm::to_str(cvcp->wrap_center),
-                                 COLVARS_INPUT_ERROR);
-      }
-    }
-
     // Set default name if it doesn't have one
     if ( ! cvcs.back()->name.size()) {
       std::ostringstream s;
