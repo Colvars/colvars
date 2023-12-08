@@ -10,6 +10,8 @@
 #ifndef COLVARMODULE_H
 #define COLVARMODULE_H
 
+#include <cstdint>
+
 #include "colvars_version.h"
 
 #ifndef COLVARS_DEBUG
