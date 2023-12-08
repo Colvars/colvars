@@ -19,12 +19,6 @@
 colvar::cvc::cvc()
 {
   description = "uninitialized colvar component";
-  b_try_scalable = true;
-  sup_coeff = 1.0;
-  sup_np = 1;
-  period = 0.0;
-  wrap_center = 0.0;
-  width = 0.0;
   cvc::init_dependencies();
 }
 

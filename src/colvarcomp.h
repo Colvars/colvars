@@ -81,15 +81,16 @@ public:
   std::string config_key;
 
   /// \brief Coefficient in the polynomial combination (default: 1.0)
-  cvm::real sup_coeff;
+  cvm::real sup_coeff = 1.0;
+
   /// \brief Exponent in the polynomial combination (default: 1)
-  int       sup_np;
+  int       sup_np = 1;
 
   /// \brief Period of the values of this CVC (default: 0.0, non periodic)
-  cvm::real period;
+  cvm::real period = 0.0;
 
   /// \brief If the component is periodic, wrap around this value (default: 0.0)
-  cvm::real wrap_center;
+  cvm::real wrap_center = 0.0;
 
   /// Constructor
   cvc();
@@ -228,7 +229,7 @@ public:
   virtual int set_param(std::string const &param_name, void const *new_value);
 
   /// \brief Whether or not this CVC will be computed in parallel whenever possible
-  bool b_try_scalable;
+  bool b_try_scalable = true;
 
   /// Forcibly set value of CVC - useful for driving an external coordinate,
   /// eg. lambda dynamics
@@ -291,8 +292,8 @@ protected:
   /// \brief Location of the upper boundary (not defined by user choice)
   colvarvalue upper_boundary;
 
-  /// \brief CVC-specific default colvar width
-  cvm::real width;
+  /// \brief CVC-specific default colvar width (default: not provided)
+  cvm::real width = 0.0;
 };
 
 
@@ -323,9 +324,9 @@ class colvar::distance
 {
 protected:
   /// First atom group
-  cvm::atom_group  *group1;
+  cvm::atom_group  *group1 = nullptr;
   /// Second atom group
-  cvm::atom_group  *group2;
+  cvm::atom_group  *group2 = nullptr;
   /// Vector distance, cached to be recycled
   cvm::rvector     dist_v;
 public:
@@ -394,11 +395,11 @@ class colvar::distance_z
 {
 protected:
   /// Main atom group
-  cvm::atom_group  *main;
+  cvm::atom_group  *main = nullptr;
   /// Reference atom group
-  cvm::atom_group  *ref1;
+  cvm::atom_group  *ref1 = nullptr;
   /// Optional, second ref atom group
-  cvm::atom_group  *ref2;
+  cvm::atom_group  *ref2 = nullptr;
   /// Vector on which the distance vector is projected
   cvm::rvector axis;
   /// Norm of the axis
@@ -406,7 +407,7 @@ protected:
   /// Vector distance, cached to be recycled
   cvm::rvector     dist_v;
   /// Flag: using a fixed axis vector?
-  bool fixed_axis;
+  bool fixed_axis = true;
 public:
   distance_z();
   virtual ~distance_z() {}
@@ -445,7 +446,7 @@ class colvar::polar_phi
   : public colvar::cvc
 {
 protected:
-  cvm::atom_group *atoms;
+  cvm::atom_group *atoms = nullptr;
   cvm::real r, theta, phi;
 
 public:
@@ -467,7 +468,7 @@ public:
   virtual ~polar_theta() {}
   virtual int init(std::string const &conf);
 protected:
-  cvm::atom_group  *atoms;
+  cvm::atom_group  *atoms = nullptr;
   cvm::real r, theta, phi;
 public:
   virtual void calc_value();
@@ -482,9 +483,9 @@ class colvar::distance_inv
 {
 protected:
   /// First atom group
-  cvm::atom_group  *group1;
+  cvm::atom_group  *group1 = nullptr;
   /// Second atom group
-  cvm::atom_group  *group2;
+  cvm::atom_group  *group2 = nullptr;
   /// Components of the distance vector orthogonal to the axis
   int exponent = 6;
 public:
@@ -504,9 +505,9 @@ class colvar::distance_pairs
 {
 protected:
   /// First atom group
-  cvm::atom_group  *group1;
+  cvm::atom_group  *group1 = nullptr;
   /// Second atom group
-  cvm::atom_group  *group2;
+  cvm::atom_group  *group2 = nullptr;
 public:
   distance_pairs();
   virtual ~distance_pairs() {}
@@ -531,7 +532,7 @@ class colvar::dipole_magnitude
 {
 protected:
   /// Dipole atom group
-  cvm::atom_group  *atoms;
+  cvm::atom_group  *atoms = nullptr;
   cvm::atom_pos dipoleV;
 public:
   dipole_magnitude();
@@ -550,7 +551,7 @@ class colvar::gyration
 {
 protected:
   /// Atoms involved
-  cvm::atom_group  *atoms;
+  cvm::atom_group  *atoms = nullptr;
 public:
   gyration();
   virtual ~gyration() {}
@@ -603,7 +604,7 @@ class colvar::eigenvector
 protected:
 
   /// Atom group
-  cvm::atom_group  *           atoms;
+  cvm::atom_group  *           atoms = nullptr;
 
   /// Reference coordinates
   std::vector<cvm::atom_pos>  ref_pos;
@@ -635,11 +636,11 @@ class colvar::angle
 protected:
 
   /// Atom group
-  cvm::atom_group  *group1;
+  cvm::atom_group  *group1 = nullptr;
   /// Atom group
-  cvm::atom_group  *group2;
+  cvm::atom_group  *group2 = nullptr;
   /// Atom group
-  cvm::atom_group  *group3;
+  cvm::atom_group  *group3 = nullptr;
 
   /// Inter site vectors
   cvm::rvector r21, r23;
@@ -651,7 +652,7 @@ protected:
   /// Compute total force on first site only to avoid unwanted
   /// coupling to other colvars (see e.g. Ciccotti et al., 2005)
   /// (or to allow dummy atoms)
-  bool b_1site_force;
+  bool b_1site_force = false;
 public:
 
   angle();
@@ -675,11 +676,11 @@ class colvar::dipole_angle
 protected:
 
   /// Dipole atom group
-  cvm::atom_group  *group1;
+  cvm::atom_group  *group1 = nullptr;
   /// Atom group
-  cvm::atom_group  *group2;
+  cvm::atom_group  *group2 = nullptr;
   /// Atom group
-  cvm::atom_group  *group3;
+  cvm::atom_group  *group3 = nullptr;
 
   /// Inter site vectors
   cvm::rvector r21, r23;
@@ -691,7 +692,7 @@ protected:
   /// Compute total force on first site only to avoid unwanted
   /// coupling to other colvars (see e.g. Ciccotti et al., 2005)
   /// (or to allow dummy atoms)
-  bool b_1site_force;
+  bool b_1site_force = false;
 public:
 
   dipole_angle();
@@ -711,19 +712,19 @@ class colvar::dihedral
 protected:
 
   /// Atom group
-  cvm::atom_group  *group1;
+  cvm::atom_group  *group1 = nullptr;
   /// Atom group
-  cvm::atom_group  *group2;
+  cvm::atom_group  *group2 = nullptr;
   /// Atom group
-  cvm::atom_group  *group3;
+  cvm::atom_group  *group3 = nullptr;
   /// Atom group
-  cvm::atom_group  *group4;
+  cvm::atom_group  *group4 = nullptr;
   /// Inter site vectors
   cvm::rvector r12, r23, r34;
 
   /// \brief Compute total force on first site only to avoid unwanted
   /// coupling to other colvars (see e.g. Ciccotti et al., 2005)
-  bool b_1site_force;
+  bool b_1site_force = false;
 
 public:
 
@@ -747,9 +748,9 @@ class colvar::coordnum
 {
 protected:
   /// First atom group
-  cvm::atom_group  *group1;
+  cvm::atom_group  *group1 = nullptr;
   /// Second atom group
-  cvm::atom_group  *group2;
+  cvm::atom_group  *group2 = nullptr;
   /// \brief "Cutoff" for isotropic calculation (default)
   cvm::real     r0;
   /// \brief "Cutoff vector" for anisotropic calculation
@@ -824,7 +825,7 @@ class colvar::selfcoordnum
 protected:
 
   /// Selected atoms
-  cvm::atom_group  *group1;
+  cvm::atom_group  *group1 = nullptr;
   /// \brief "Cutoff" for isotropic calculation (default)
   cvm::real     r0;
   /// Integer exponent of the function numerator
@@ -986,7 +987,7 @@ class colvar::orientation
 protected:
 
   /// Atom group
-  cvm::atom_group  *          atoms;
+  cvm::atom_group  *          atoms = nullptr;
   /// Center of geometry of the group
   cvm::atom_pos              atoms_cog;
 
@@ -1144,7 +1145,7 @@ class colvar::rmsd
 protected:
 
   /// Atom group
-  cvm::atom_group  *atoms;
+  cvm::atom_group  *atoms = nullptr;
 
   /// Reference coordinates (for RMSD calculation only)
   /// Includes sets with symmetry permutations (n_permutations * n_atoms)
@@ -1178,7 +1179,7 @@ class colvar::cartesian
 {
 protected:
   /// Atom group
-  cvm::atom_group  *atoms;
+  cvm::atom_group  *atoms = nullptr;
   /// Which Cartesian coordinates to include
   std::vector<size_t> axes;
 public:
@@ -1243,7 +1244,7 @@ protected:
     /// Selected atoms
     cvm::atom_group *atoms = nullptr;
     /// Fitting options
-    bool has_user_defined_fitting;
+    bool has_user_defined_fitting = false;
     /// Reference frames
     std::vector<std::vector<cvm::atom_pos>> reference_frames;
     std::vector<std::vector<cvm::atom_pos>> reference_fitting_frames;
@@ -1374,7 +1375,7 @@ protected:
     /// If all sub-cvs use explicit gradients then we also use it
     bool use_explicit_gradients;
     /// Total number of reference frames
-    size_t total_reference_frames;
+    size_t total_reference_frames = 0;
 protected:
     virtual void computeDistanceToReferenceFrames(std::vector<cvm::real>& result);
     /// Helper function to determine the distance between reference frames
@@ -1510,7 +1511,7 @@ protected:
     /// actual computation happens in neuralnetworkCV::neuralNetworkCompute
     std::unique_ptr<neuralnetworkCV::neuralNetworkCompute> nn;
     /// the index of nn output components
-    size_t m_output_index;
+    size_t m_output_index = 0;
 public:
     neuralNetwork();
     virtual ~neuralNetwork();
