@@ -104,16 +104,13 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   xyz_reader_use_count = 0;
 
-  num_biases_types_used_ =
-    reinterpret_cast<void *>(new std::map<std::string, int>());
-
   restart_version_str.clear();
   restart_version_int = 0;
 
-  usage_ = new usage(this);
+  usage_ = std::unique_ptr<usage>(new usage(this));
   usage_->cite_feature("Colvars module");
 
-  if (proxy != NULL) {
+  if (proxy != nullptr) {
     // TODO relax this error to handle multiple molecules in VMD
     // once the module is not static anymore
     this->error("Error: trying to allocate the collective "
@@ -124,7 +121,8 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   proxy = proxy_in; // Pointer to the proxy object
   proxy_static = proxy_in; // Temporary - assume single proxy & module objects
 
-  parse = new colvarparse(this); // Parsing object for global options
+  parse = std::unique_ptr<colvarparse>(new colvarparse(this));
+
   version_int = proxy->get_version_from_string(COLVARS_VERSION);
 
   this->log(line_marker);
@@ -649,19 +647,17 @@ int colvarmodule::parse_biases_type(std::string const &conf,
 
   // Check how many times this bias keyword was used, set default name
   // accordingly
-  std::map<std::string, int> *num_biases_types_used =
-    reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_);
-  if (num_biases_types_used->count(type_keyword) == 0) {
-    (*num_biases_types_used)[type_keyword] = 0;
+  if (num_biases_types_used_.count(type_keyword) == 0) {
+    num_biases_types_used_[type_keyword] = 0;
   }
 
   std::string bias_conf = "";
   size_t conf_saved_pos = 0;
   while (parse->key_lookup(conf, keyword, &bias_conf, &conf_saved_pos)) {
     if (bias_conf.size()) {
-      this->log(line_marker);
+      this->log(cvm::line_marker);
       this->increase_depth();
-      int &bias_count = (*num_biases_types_used)[type_keyword];
+      int &bias_count = num_biases_types_used_[type_keyword];
       biases.push_back(new bias_type(this, type_keyword.c_str()));
       bias_count += 1;
       biases.back()->rank = bias_count;
@@ -1507,19 +1503,10 @@ colvarmodule::~colvarmodule()
     colvar::cvc::delete_features();
     atom_group::delete_features();
 
-    delete
-      reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_);
-    num_biases_types_used_ = NULL;
-
-    delete parse;
-    parse = NULL;
-
-    delete usage_;
-    usage_ = NULL;
     colvar_components_.clear();
 
     // The proxy object will be deallocated last (if at all)
-    proxy = NULL;
+    proxy = nullptr;
   }
 }
 
@@ -1535,9 +1522,7 @@ int colvarmodule::reset()
   }
   biases.clear();
   biases_active_.clear();
-
-  // Reset counters tracking usage of each bias type
-  reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_)->clear();
+  num_biases_types_used_.clear();
 
   // Iterate backwards because we are deleting the elements as we go
   while (!colvars.empty()) {
