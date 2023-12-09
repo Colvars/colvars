@@ -379,6 +379,10 @@ int colvar::cvc::setup()
                            ci->first + "\".\n",
                        COLVARS_INPUT_ERROR);
       }
+      // TODO Handle this from the dependency system
+      if (is_enabled(f_cvc_gradient)) {
+        ci->second->enable(f_cvc_gradient);
+      }
     }
   }
   error_code |= update_description();
@@ -753,10 +757,10 @@ int colvar::cvc::register_precomputed_cvc(std::string const &id, std::string con
     return COLVARS_OK;
   }
   if (base_ptr) {
-    return cvm::error("Error: object named \"" + name + "\" is not a colvar component.\n",
+    return cvm::error("Error: object named \"" + cvc_name + "\" is not a colvar component.\n",
                       COLVARS_INPUT_ERROR);
   }
-  return cvm::error("Error: cannot find a component named \"" + name + "\".\n",
+  return cvm::error("Error: cannot find a component named \"" + cvc_name + "\".\n",
                     COLVARS_INPUT_ERROR);
 }
 

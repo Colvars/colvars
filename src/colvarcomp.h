@@ -1026,6 +1026,21 @@ protected:
   struct rotation_derivative_impl_;
   std::unique_ptr<rotation_derivative_impl_> rot_deriv_impl;
 
+  /// Orientation value, computed either by the "rot" object or another CVC
+  cvm::quaternion q;
+
+  /// Derivative of the scalar value with respect to q (derived CVCs)
+  cvm::quaternion dx_dq;
+
+  /// Compute the value of q, and return it for assignment
+  cvm::quaternion const &compute_rotation();
+
+  /// Compute the explicit gradients of functions of q with a scalar value
+  void compute_scalar_gradients(cvm::quaternion const &dscalar_dq);
+
+  /// Pointer to the orientation CVC being reused, if any, otherwise this object itself
+  orientation *get_orientation_cvc();
+
 public:
 
   orientation();
@@ -1042,6 +1057,9 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1, colvarvalue const &x2) const;
   /// Redefined to use quaternion metrics
   virtual void wrap(colvarvalue &x_unwrapped) const;
+
+  /// Return a reference to the rotation value, for other classes to use
+  inline cvm::quaternion const &get_rotation() const { return q; }
 };
 
 
