@@ -318,8 +318,8 @@ public:
 
 private:
 
-  /// Pointer to a map counting how many biases of each type were used
-  void *num_biases_types_used_;
+  /// Map counting how many biases of each type were used
+  std::map<std::string, int> num_biases_types_used_;
 
   /// Array of active collective variable biases
   std::vector<colvarbias *> biases_active_;
@@ -787,7 +787,7 @@ public:
 protected:
 
   /// Configuration file parser object
-  colvarparse *parse;
+  std::unique_ptr<colvarparse> parse;
 
   /// Name of the trajectory file
   std::string cv_traj_name;
@@ -811,7 +811,7 @@ protected:
   int xyz_reader_use_count;
 
   /// Track usage of Colvars features
-  usage *usage_;
+  std::unique_ptr<usage> usage_;
 
 public:
 
