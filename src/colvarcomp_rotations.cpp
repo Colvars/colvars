@@ -314,13 +314,13 @@ void colvar::tilt::calc_value()
   (void)atoms->positions_shifted(-1.0 * atoms_cog, shifted_pos_soa);
   rot.calc_optimal_rotation_soa(ref_pos_soa, shifted_pos_soa, num_ref_pos, atoms->size());
 
-  x.real_value = rot.cos_theta(axis);
+  x.real_value = rot.q.tilt(axis);
 }
 
 
 void colvar::tilt::calc_gradients()
 {
-  cvm::quaternion const dxdq = rot.dcos_theta_dq(axis);
+  cvm::quaternion const dxdq = rot.q.dtilt_dq(axis);
 
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
   const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdq(dxdq);
@@ -349,14 +349,14 @@ void colvar::spin_angle::calc_value()
   (void)atoms->positions_shifted(-1.0 * atoms_cog, shifted_pos_soa);
   rot.calc_optimal_rotation_soa(ref_pos_soa, shifted_pos_soa, num_ref_pos, atoms->size());
 
-  x.real_value = rot.spin_angle(axis);
+  x.real_value = rot.q.spin_angle(axis);
   wrap(x);
 }
 
 
 void colvar::spin_angle::calc_gradients()
 {
-  cvm::quaternion const dxdq = rot.dspin_angle_dq(axis);
+  cvm::quaternion const dxdq = rot.q.dspin_angle_dq(axis);
 
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
   const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdq(dxdq);
