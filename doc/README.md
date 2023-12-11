@@ -1,12 +1,34 @@
 ## Building the documentation
 
-This folder contains LaTeX files needed to build the Colvars documentation in PDF format.  On a computer with a working LaTeX installation, use the following to build the PDF manuals for all supported backends in parallel:
+This folder contains LaTeX files needed to build the Colvars documentation in PDF and HTML formats.  Not all installation of TeXlive contain functional code, thus we highly recommend using the container used in development.
 ```
-$ make -j
+$ apptainer pull texlive.sif oras://ghcr.io/Colvars/devel-containers:texlive
+$ apptainer exec texlive.sif make all
 ```
-The HTML version of the doc is built from within a worktree of the [colvars.github.io](https://github.com/Colvars/colvars.github.io) repository, which is the GitHub Pages repository responsible for the main Colvars webpage.
+Note: if the working folder is not under `/home`, Apptainer may not automatically bind it in the container: in that case, try using `--bind <mount_point>`.  Likewise, adapt this step for different container engines (e.g. Docker, Podman, etc).
+
+The GNU Make variable `COLVARS_RELEASE` will be automatically taken from the Git branch or tag name.  Alternatively, feel free to define it as environment variable, for example:
+```
+$ export COLVARS_RELEASE=gromacs-2024
+$ apptainer exec texlive.sif make all
+```
+Note that when the release is prefixed by the name of a specific engine, only the doc for that engine gets built.
+
+
+## Updating the website
+
+To update the website, clone its [repository](https://github.com/Colvars/colvars.github.io) and set the environment variable accordingly before building the documentation:
+```
+$ export COLVARS_WEBSITE_TREE=<path to website repo>
+$ make all
+$ make install
+```
+
+
+## LaTeX file organization
 
 The file `colvars-refman-main.tex` is the main file, which includes content that is conditionally rendered by LaTeX depending on the version of the documentation being generated.  There are specific LaTeX files for each backend that include this file to generate the specific version of the doc, e.g. `colvars-refman-gromacs.tex` to generate the doc for Gromacs users.
+
 
 ## Citations to software
 

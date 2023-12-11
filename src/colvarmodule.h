@@ -10,7 +10,7 @@
 #ifndef COLVARMODULE_H
 #define COLVARMODULE_H
 
-#include <cmath>
+#include <cstdint>
 
 #include "colvars_version.h"
 
@@ -35,16 +35,15 @@ Please note that this documentation is only supported for the master branch, and
 /// shared between all object instances) to be accessed from other
 /// objects.
 
+#include <cmath>
+#include <iosfwd>
 #include <string>
 #include <vector>
-#include <list>
-#include <iosfwd>
 
 class colvarparse;
 class colvar;
 class colvarbias;
 class colvarproxy;
-class colvarscript;
 class colvarvalue;
 
 
@@ -82,8 +81,6 @@ public:
   }
 
   friend class colvarproxy;
-  // TODO colvarscript should be unaware of colvarmodule's internals
-  friend class colvarscript;
 
   /// Use a 64-bit integer to store the step number
   typedef long long step_number;

@@ -29,6 +29,10 @@
 #include "colvarproxy.h"
 #include "colvarvalue.h"
 
+#define GLOBAL_MASTER_CKLOOP_CALC_ITEM 2000
+#define GLOBAL_MASTER_CKLOOP_CALC_BIASES 2001
+#define GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES 2002
+
 /// \brief Communication between colvars and NAMD (implementation of
 /// \link colvarproxy \endlink)
 class colvarproxy_namd : public colvarproxy, public GlobalMaster {
@@ -46,10 +50,13 @@ protected:
   Random random;
 
   bool first_timestep;
-  size_t previous_NAMD_step;
+  cvm::step_number previous_NAMD_step;
 
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
+#ifdef NODEGROUP_FORCE_REGISTER
+  NodeReduction *nodeReduction;
+#endif
 
   /// Accelerated MD reweighting factor
   bool accelMDOn;
@@ -113,13 +120,7 @@ public:
   }
 
 #if CMK_SMP && USE_CKLOOP
-  int smp_enabled() override
-  {
-    if (b_smp_active) {
-      return COLVARS_OK;
-    }
-    return COLVARS_ERROR;
-  }
+  int check_smp_enabled() override;
 
   int smp_colvars_loop() override;
 
@@ -173,6 +174,7 @@ public:
   int replica_comm_recv(char* msg_data, int buf_len, int src_rep) override;
   int replica_comm_send(char* msg_data, int msg_len, int dest_rep) override;
 
+  int check_atom_name_selections_available() override;
   int init_atom(int atom_number) override;
   int check_atom_id(int atom_number) override;
   int init_atom(cvm::residue_id const &residue,
@@ -210,6 +212,8 @@ public:
   int update_group_properties(int index);
 
 #if NAMD_VERSION_NUMBER >= 34471681
+
+  int check_volmaps_available() override;
 
   int init_volmap_by_id(int volmap_id) override;
 

@@ -63,9 +63,10 @@ jobs:
   test_backends:
     runs-on: ubuntu-latest
     env:
-      CCACHE_DIR: ${{ github.workspace }}/ccache_${{ inputs.container_name }}
-      # Silence OpenMPI warnings
-      PSM3_MULTI_EP: 1
+      CCACHE_DIR: ~/ccache_${{ inputs.container_name }}
+      # OpenMPI transport settings suitable for GH VMs
+      OMPI_MCA_mtl: "^ofi"
+      OMPI_MCA_btl: "vader,self"
 
     steps:
       - name: Checkout Colvars
@@ -78,7 +79,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ${{ github.workspace }}/ccache_${{ inputs.container_name }}
+            ~/ccache_${{ inputs.container_name }}
           key: ${{ runner.os }}-build-${{ inputs.backend_name }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-build-${{ inputs.backend_name }}-
@@ -126,8 +127,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer pull CentOS7-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS7-devel
-          apptainer pull CentOS9-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS9-devel
+          apptainer pull ${{ inputs.container_name }}.sif oras://ghcr.io/Colvars/devel-containers:${{ inputs.container_name }}
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
@@ -135,9 +135,11 @@ jobs:
           OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
           CMAKE_GENERATOR: Ninja
         run: |
-          apptainer exec devel-tools/${{ inputs.container_name }}.sif ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
           apptainer exec devel-tools/${{ inputs.container_name }}.sif \
-          bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
+              ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
+          mkdir -p ${CCACHE_DIR}
+          apptainer exec devel-tools/${{ inputs.container_name }}.sif \
+              bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
 
 
       # 2 types of tests can be performed with the MD engine: library & interface

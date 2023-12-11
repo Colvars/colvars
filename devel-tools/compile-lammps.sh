@@ -1,10 +1,8 @@
 #!/bin/bash
 
-source $(dirname $0)/load-recent-git.sh
+source $(dirname $0)/load-openmpi.sh
 
 source $(dirname $0)/set-ccache.sh
-
-source $(dirname $0)/load-openmpi.sh
 
 
 compile_lammps_target() {
@@ -74,6 +72,10 @@ compile_lammps_target() {
     fi
 
     LAMMPS_BUILD_OPTS+=("-DPKG_PYTHON=on")
+
+    if hash ccache >& /dev/null ; then
+        LAMMPS_BUILD_OPTS+=(-DCMAKE_{CXX,CC}_COMPILER_LAUNCHER=ccache)
+    fi
 
     if hash ninja >& /dev/null ; then
         LAMMPS_BUILD_OPTS+=("-G" "Ninja")

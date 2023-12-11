@@ -2,24 +2,6 @@
 	install clean clean-all \
 	update-code-refs update-cvscript-cmdline-doc updates
 
-PDF = \
-	colvars-refman-gromacs.pdf \
-	colvars-refman-lammps.pdf \
-	colvars-refman-namd.pdf \
-	colvars-refman-tinkerhp.pdf \
-	colvars-refman-vmd.pdf
-
-HTML = \
-	colvars-refman-gromacs.html \
-	colvars-refman-lammps.html \
-	colvars-refman-namd.html \
-	colvars-refman-tinkerhp.html \
-	colvars-refman-vmd.html
-
-CSS = $(HTML:.html=.css)
-
-BIBTEX = colvars-refman.bib
-
 ifeq ($(COLVARS_RELEASE),)
 # Unless defined otherwise, the release label is the name of the branch
 COLVARS_RELEASE = $(shell git symbolic-ref --short -q HEAD)
@@ -27,15 +9,50 @@ endif
 
 ifeq ($(COLVARS_RELEASE),)
 # If we are not working on a branch, try a tag instead
-COLVARS_RELEASE = $(git describe --tags --exact-match)
+COLVARS_RELEASE = $(shell git describe --tags --exact-match)
 endif
 
 export COLVARS_RELEASE
 
+# Check if this a release of a specific engine
+COLVARS_RELEASE_PREFIX := $(firstword $(subst -, , $(COLVARS_RELEASE)))
+# Only allow specific cases
+ifeq ($(COLVARS_RELEASE_PREFIX),gromacs)
+    RELEASE_ENGINE := $(COLVARS_RELEASE_PREFIX)
+endif
+ifeq ($(COLVARS_RELEASE_PREFIX),lammps)
+    RELEASE_ENGINE := $(COLVARS_RELEASE_PREFIX)
+endif
+ifeq ($(COLVARS_RELEASE_PREFIX),namd)
+    RELEASE_ENGINE := $(COLVARS_RELEASE_PREFIX)
+endif
+ifeq ($(COLVARS_RELEASE_PREFIX),tinkerhp)
+    RELEASE_ENGINE := $(COLVARS_RELEASE_PREFIX)
+endif
+ifeq ($(COLVARS_RELEASE_PREFIX),vmd)
+    RELEASE_ENGINE := $(COLVARS_RELEASE_PREFIX)
+endif
+export RELEASE_ENGINE
 
+
+ifeq ($(RELEASE_ENGINE),)
+# Build doc for all engines
+ENGINES = gromacs lammps namd tinkerhp vmd
+else
+ENGINES = $(RELEASE_ENGINE)
+endif
+
+PDF = $(foreach _,${ENGINES},colvars-refman-$_.pdf)
+HTML = $(foreach _,${ENGINES},colvars-refman-$_.html)
+
+CSS = $(HTML:.html=.css)
+BIBTEX = colvars-refman.bib
+
+ifeq ($(COLVARS_RELEASE),"master")
 all: pdf html doxygen
-
-updates: version-list update-code-refs update-cvscript-cmdline-doc
+else
+all: pdf html
+endif
 
 pdf: $(PDF)
 html: $(HTML)
@@ -58,11 +75,21 @@ HTLATEX_OPTS = "html5mjlatex.cfg, charset=utf-8" " -cunihtf -utf8"
 	$(HTLATEX) $(notdir $<) $(HTLATEX_OPTS); \
 	bash postprocess_html.sh
 
+
+ifeq ($(COLVARS_RELEASE),"master")
+all: pdf html doxygen
+else
+all: pdf html
+endif
+
 clean: 
 	rm -f *.fdb_latexmk *.fls *.aux *.bbl *.blg *.log *.toc *.out *.idx *.ilg *.ind *.brf *.4tc *.4ct *.dvi *.idv *.lg *.xref *.tmp eulerangles-512px.png
 
 clean-all: clean
 	rm -f $(PDF) $(HTML) $(CSS)
+	rm -fr doxygen/html
+	@echo
+	@echo "Note: only removed files that this branch is set to build."
 
 version-list:
 	./print_engine_versions.sh > ../README-versions.md
@@ -73,6 +100,7 @@ update-code-refs:
 update-cvscript-cmdline-doc:
 	tclsh gen_cvscript_doc.tcl
 
+updates: version-list update-code-refs update-cvscript-cmdline-doc
 
 doxygen: doxygen/html/index.html
 
@@ -92,7 +120,9 @@ IMAGES = cover-512px.jpg eulerangles-512px.png
 # Install docs in the website tree, under the folder named $(COLVARS_RELEASE).
 # Note: to produce the documentation for a specific release of a MD engine,
 # check out the branch or tag corresponding to that version, clean and rebuild.
-webpage: all images
+ifeq ($(COLVARS_RELEASE),master)
+
+webpage: all images doxygen
 	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
 	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
 	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
@@ -102,11 +132,22 @@ webpage: all images
 # Update HTML pages with older-style paths (without branch/release name)
 webpage-legacy: all images
 	cp -p -f $(PDF) $(COLVARS_WEBSITE_TREE)/pdf ; \
-	for engine in lammps namd tinkerhp vmd ; do \
+	for engine in $(ENGINES) ; do \
 	cp -p -f colvars-refman-$${engine}.{html,css} $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
 	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
 	done
 
 install: webpage webpage-legacy
+
+else
+
+webpage: all images
+	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
+	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
+	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/
+
+install: webpage
+endif
+
 
 endif

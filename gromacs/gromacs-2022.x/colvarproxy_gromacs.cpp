@@ -87,8 +87,7 @@ void colvarproxy_gromacs::init(t_inputrec *ir, int64_t step, const gmx_mtop_t &m
   {
     colvars_restart = true;
     input_prefix_str = filename_restart;
-    input_prefix_str.erase(input_prefix_str.rfind(".dat"));
-    input_prefix_str.erase(input_prefix_str.rfind(".colvars.state"));
+    // Don't strip the input_prefix_str because colvarmodule.cpp doesn't know that restart file from GROMACS needs the .dat extension.
   }
 
   // Retrieve masses and charges from input file
@@ -393,7 +392,6 @@ void colvarproxy_gromacs::update_data(const t_commrec *cr, int64_t const step, t
     if (first_timestep) {
       first_timestep = false;
     } else {
-      // Use the time step number inherited from GROMACS
       if ( step - previous_gmx_step == 1 )
         colvars->it++;
       // Other cases?

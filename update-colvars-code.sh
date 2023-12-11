@@ -335,6 +335,10 @@ then
     condcopy "${src}" "${target}/src/COLVARS/${tgt}"
   done
 
+  if [ -f ${source}/lammps/COLVARS.cmake.diff ] ; then
+    patch -p1 -N -d ${target} < ${source}/lammps/COLVARS.cmake.diff
+  fi
+
   downloaded_pdf=0
   # Copy PDF of the user manual
   if [ ! -f ${source}/doc/colvars-refman-lammps.pdf ] ; then
@@ -540,8 +544,8 @@ then
   echo ""
   if [ -d ${target_folder} ]
   then
-    echo "Your ${target} source tree seems to have already been patched."
-    echo "Update with the last Colvars source."
+    echo "${target} source tree seems to have already been patched."
+    echo "Updating to the current Colvars sources."
   else
     mkdir ${target_folder}
   fi
@@ -554,7 +558,7 @@ then
       condcopy "${src}" "${target_folder}/${tgt}"
     done
   else
-    # Starting from GROMACS 2022, colvar library is in `external` and proxy files are in `src/gromacs/applied_forces/colvarproxy`
+    # Starting from GROMACS 2022, the Colvars library is under `external` and proxy files are in `src/gromacs/applied_forces/colvarproxy`
     # Library files
     for src in ${source}/src/*.h ${source}/src/*.cpp
     do \
@@ -565,8 +569,8 @@ then
     target_folder=${target}/src/gromacs/applied_forces/colvars
     if [ -d ${target_folder} ]
     then
-      echo "Your ${target} source tree seems to have already been patched."
-      echo "Update with the last Colvars source."
+      echo "${target} source tree seems to have already been patched."
+      echo "Updating to the current Colvars sources."
     else
       mkdir ${target_folder}
     fi
@@ -635,8 +639,8 @@ then
   echo ""
   if [ -d ${target_folder} ]
   then
-    echo "Your ${target} source tree seems to have already been patched."
-    echo "Update with the last Colvars source."
+    echo "${target} source tree seems to have already been patched."
+    echo "Updating to the current Colvars sources."
   else
     mkdir ${target_folder}
   fi
@@ -649,20 +653,18 @@ then
   done
   echo ""
 
-  # Copy CMake files
-  for src in ${source}/gromacs/gromacs-mdmodules/cmake/*.cmake
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/cmake/${tgt}"
-  done
-  echo ""
+  # Patch CMake build recipe
+  if [ -f ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff ] ; then
+    patch -p1 -N -d ${target} < ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff
+  fi
+  echo
 
   # Copy MDModules files to the "src/gromacs/applied_forces/colvars" folder
   target_folder=${target}/src/gromacs/applied_forces/colvars
   if [ -d ${target_folder} ]
   then
-    echo "Your ${target} source tree seems to have already been patched."
-    echo "Update with the last Colvars source."
+    echo "${target} source tree seems to have already been patched."
+    echo "Updating to the current Colvars sources."
   else
     mkdir ${target_folder}
     mkdir -p ${target_folder}/tests/refdata
