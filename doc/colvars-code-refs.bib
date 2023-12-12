@@ -102,9 +102,9 @@
 % Moving frame of reference
 % Optimal rotation via flexible fitting
 % orientationAngle colvar component (derived from orientation)
-% orientationProj colvar component (derived from orientation)
-% spinAngle colvar component (derived from orientation)
-% tilt colvar component (derived from orientation)
+% orientationProj colvar component (derived from orientationAngle)
+% spinAngle colvar component (derived from tilt)
+% tilt colvar component (derived from orientationProj)
 % alpha colvar component
 % dihedralPC colvar component
 % cartesian colvar component
@@ -161,9 +161,9 @@
 
 % polarTheta colvar component
 % polarPhi colvar component
-% eulerPhi colvar component (derived from orientation)
-% eulerTheta colvar component (derived from orientation)
-% eulerPsi colvar component (derived from orientation)
+% eulerPhi colvar component (derived from orientation_angle)
+% eulerTheta colvar component (derived from orientation_angle)
+% eulerPsi colvar component (derived from orientation_angle)
 @article{Fu2017,
   author = {Fu, Haohao and Cai, Wensheng and H\'enin, J\'er\^ome and Roux, Beno\^it and Chipot, Christophe},
   title = {New Coarse Variables for the Accurate Determination of Standard Binding Free Energies},
