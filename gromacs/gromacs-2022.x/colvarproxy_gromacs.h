@@ -32,7 +32,7 @@ protected:
   bool colvars_restart;
   std::string config_file;
   size_t restart_frequency_s;
-  int previous_gmx_step;
+  int64_t previous_gmx_step;
   double bias_energy;
 
   bool gmx_bNS; // Is this a neighbor-search step? Eventually will become unnecessary

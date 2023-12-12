@@ -7,13 +7,9 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <map>
-#include <sstream>
+#include <memory>
 #include <vector>
 
 #include "colvarmodule.h"
@@ -110,9 +106,14 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
            "  https://doi.org/10.1080/00268976.2013.813594\n"
            "as well as all other papers listed below for individual features used.\n");
 
-  if (proxy->smp_enabled() == COLVARS_OK) {
-    cvm::log("SMP parallelism is enabled (num threads = " + to_str(proxy->smp_num_threads()) +
-             "); use \"smp off\" to disable if needed.\n");
+  if (proxy->check_smp_enabled() == COLVARS_NOT_IMPLEMENTED) {
+    cvm::log("SMP parallelism is not available in this build.\n");
+  } else {
+    if (proxy->check_smp_enabled() == COLVARS_OK) {
+      cvm::log("SMP parallelism is enabled (num threads = " + to_str(proxy->smp_num_threads()) + ").\n");
+    } else {
+      cvm::log("SMP parallelism is available in this build but not enabled.\n");
+    }
   }
 
 #if (__cplusplus >= 201103L)
@@ -901,7 +902,7 @@ int colvarmodule::calc_colvars()
   }
 
   // if SMP support is available, split up the work
-  if (proxy->smp_enabled() == COLVARS_OK) {
+  if (proxy->check_smp_enabled() == COLVARS_OK) {
 
     // first, calculate how much work (currently, how many active CVCs) each colvar has
 
@@ -983,8 +984,15 @@ int colvarmodule::calc_biases()
     }
   }
 
-  // if SMP support is available, split up the work
-  if (proxy->smp_enabled() == COLVARS_OK) {
+  bool biases_need_io = false;
+  for (bi = biases_active()->begin(); bi != biases_active()->end(); bi++) {
+    if (((*bi)->replica_share_freq() > 0) && (step_absolute() % (*bi)->replica_share_freq() == 0)) {
+      biases_need_io = true;
+    }
+  }
+
+  // If SMP support is available, split up the work (unless biases need to use main thread's memory)
+  if (proxy->check_smp_enabled() == COLVARS_OK && !biases_need_io) {
 
     if (use_scripted_forces && !scripting_after_biases) {
       // calculate biases and scripted forces in parallel
@@ -1000,10 +1008,12 @@ int colvarmodule::calc_biases()
       error_code |= calc_scripted_forces();
     }
 
+    // Straight loop over biases on a single thread
     cvm::increase_depth();
     for (bi = biases_active()->begin(); bi != biases_active()->end(); bi++) {
       error_code |= (*bi)->update();
       if (cvm::get_error()) {
+        cvm::decrease_depth();
         return error_code;
       }
     }
@@ -1955,7 +1965,7 @@ size_t & colvarmodule::depth()
 {
   // NOTE: do not call log() or error() here, to avoid recursion
   colvarmodule *cv = cvm::main();
-  if (proxy->smp_enabled() == COLVARS_OK) {
+  if (proxy->check_smp_enabled() == COLVARS_OK) {
     int const nt = proxy->smp_num_threads();
     if (int(cv->depth_v.size()) != nt) {
       proxy->smp_lock();

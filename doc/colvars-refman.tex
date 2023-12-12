@@ -48,11 +48,10 @@
 
 \definecolor{mdexample-border-color}{rgb}{1.0,0.6,0.1}
 \definecolor{mdexample-background-color}{rgb}{1.0,0.96,0.9}
-\newenvironment{mdexampleinput}[1]{%
+\newenvironment{mdexampleinput}{%
   \begin{mdframed}[%
       linecolor=mdexample-border-color,linewidth=2pt,%
       backgroundcolor=mdexample-background-color]
-  \textbf{#1}
   \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
   \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
   \end{mdframed}
@@ -69,22 +68,29 @@
   \end{mdframed}
 }
 
+% Note: the Python version is currently not built yet
 \newcommand{\cvscriptexampleinputcv}[2]{%
+% CLI interface
 \def\cvscriptargsep{~}
-\begin{mdexampleinput}{\ifdefined\cvscriptpyapi\textbf{With the ``\texttt{\cvscriptcmd{}}'' command:}\\\fi}%
+\ifdefined\cvscriptpyapi%
+\textbf{With the ``\texttt{\cvscriptcmd{}}'' command:}\\\fi
+\begin{mdexampleinput}
 \noindent\cvscriptcmd{}~#1~#2
-\end{mdexampleinput}\ifdefined\cvscriptpyapi{%
+\end{mdexampleinput}
+% Python interface
+\ifdefined\cvscriptpyapi%
+\textbf{With the Python interface:}\\
 \def\cvscriptargsep{,~}
-\begin{mdexampleinput}{\textbf{With the Python interface:}\\}%
+\begin{mdexampleinput}
 from colvars import Colvarscript\\
 cv = Colvarscript()\\
 cv.#1(#2)
-\end{mdexampleinput}}\fi
+\end{mdexampleinput}\fi % end \ifdefined\cvscriptpyapi
 }
 
 \newcommand{\cvscriptexampleinputcolvar}[3]{%
 \def\cvscriptargsep{~}
-\begin{mdexampleinput}{}
+\begin{mdexampleinput}
 \noindent\cvscriptcmd{}~colvar~#3~#1~#2
 \end{mdexampleinput}
 }
@@ -209,7 +215,7 @@ cv.#1(#2)
 
 \newcommand{\keydef}[6]{%
   \colorbox{cvkeyword-background-color}{\index{#2!\texttt{#1}}\texttt{#1}} --- \emph{#3}\vspace{1ex}\\%
-  Default: #5 $[$~#4, context: #2~$]$\vspace{1ex}\\%
+  Default: #5\ $[$~#4, context: #2~$]$\vspace{1ex}\\%
   #6}
 
 \newcommand{\labelkey}[1]{\hypertarget{#1}{}\label{#1}}

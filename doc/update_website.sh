@@ -34,6 +34,7 @@ if make install && pushd ${COLVARS_WEBSITE_TREE} ; then
     fi
     git commit -m "Update doc for version \"${COLVARS_RELEASE}\""
     # Hard-code the website repository
+    git pull --rebase git@github.com:Colvars/colvars.github.io master
     git push git@github.com:Colvars/colvars.github.io master
     popd
 fi
