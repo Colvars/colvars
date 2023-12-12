@@ -606,11 +606,22 @@ int colvarmodule::parse_colvars(std::string const &conf)
     this->log("Warning: no collective variables defined.\n");
   }
 
-  if (colvars.size())
-    this->log(line_marker);
-  this->log("Collective variables initialized, "+
-           this->to_str(colvars.size())+
-           " in total.\n");
+  if (colvars.size()) {
+    this->log(cvm::line_marker);
+    this->log("Collective variables initialized, " + cvm::to_str(colvars.size()) + " in total.\n");
+    std::string msg;
+    msg = "List of variables: ";
+    for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+      msg += " " + (*cvi)->name;
+    }
+    msg += "\n";
+    msg += "List of components: ";
+    for (auto cvci = colvar_components_.begin(); cvci != colvar_components_.end(); cvci++) {
+      msg += " " + cvci->first;
+    }
+    msg += "\n";
+    this->log(msg);
+  }
 
   return (this->get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -728,9 +739,16 @@ int colvarmodule::parse_biases(std::string const &conf)
   }
 
   if (num_biases() || use_scripted_forces) {
-    this->log(line_marker);
+    this->log(cvm::line_marker);
     this->log("Collective variables biases initialized, "+
-             this->to_str(num_biases())+" in total.\n");
+             cvm::to_str(num_biases())+" in total.\n");
+    std::string msg;
+    msg = "List of biases: ";
+    for (auto bi = biases.begin(); bi != biases.end(); bi++) {
+      msg += " " + (*bi)->name;
+    }
+    msg += "\n";
+    this->log(msg);
   } else {
     if (!use_scripted_forces) {
       this->log("No collective variables biases were defined.\n");
