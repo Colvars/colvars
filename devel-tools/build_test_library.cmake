@@ -60,8 +60,9 @@ if(COLVARS_LEPTON)
       set(LEPTON_DIR "${LEPTON_DIR}/openmm-source/libraries/lepton")
     endif()
     if(NOT EXISTS ${LEPTON_DIR})
-      # Giving up, cloning OpenMM
+      # Giving up, cloning OpenMM into a sub-folder
       execute_process(COMMAND git clone --depth=1 https://github.com/openmm/openmm.git "${COLVARS_SOURCE_DIR}/openmm-source")
+      set(LEPTON_DIR "${COLVARS_SOURCE_DIR}/openmm-source/libraries/lepton")
     endif()
     message(STATUS "Using Lepton library from: ${LEPTON_DIR}")
   endif()
