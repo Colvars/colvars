@@ -1,0 +1,39 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name ori
+
+    outputValue off
+
+    width 0.5
+
+    orientation {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+} 
+
+
+colvar {
+    name one
+
+    outputAppliedForce on
+
+    width 3.0
+
+    spinAngle {
+        axis (1.0, -3.0, 4.0)
+        reuseComponent ori/orientation0001
+    }
+} 
+
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+}
