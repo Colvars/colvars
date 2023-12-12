@@ -174,6 +174,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
   std::string group_conf;
 
   if (key_lookup(conf, group_key, &group_conf)) {
+
     group = new cvm::atom_group(group_key);
 
     if (b_try_scalable) {
@@ -195,6 +196,8 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
                                COLVARS_INPUT_ERROR);
       delete group;
       group = nullptr;
+      // Silence unused variable warning; TODO stop returning a pointer
+      (void) error_code;
       return group;
     }
 
@@ -220,6 +223,9 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
                      COLVARS_INPUT_ERROR);
     }
   }
+
+  // Silence unused variable warning; TODO stop returning a pointer
+  (void) error_code;
 
   return group;
 }
