@@ -2755,8 +2755,6 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
 {
   size_t const this_cv_width = x.output_width(cvmodule->cv_width);
 
-  os << " ";
-
   if (is_enabled(f_cv_output_value)) {
 
     os << " "
