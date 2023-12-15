@@ -2101,23 +2101,34 @@ std::ostream &colvarmodule::write_traj_label(std::ostream &os)
 {
   os.setf(std::ios::scientific, std::ios::floatfield);
 
-  os << "# " << this->wrap_string("step", this->it_width-2)
-     << " ";
+  os << "# " << this->wrap_string("step", this->it_width - 2) << " ";
+
+  // Use a stringstream buffer to check for no output from objects
+  std::ostringstream oss;
+  oss.setf(std::ios::scientific, std::ios::floatfield);
 
   this->increase_depth();
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
-       cvi++) {
-    (*cvi)->write_traj_label(os);
+
+  for (std::vector<colvar *>::iterator cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    oss.str("");
+    (*cvi)->write_traj_label(oss);
+    if (!oss.str().empty()) {
+      os << " " << oss.str();
+    }
   }
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
-       bi++) {
-    (*bi)->write_traj_label(os);
+
+  for (std::vector<colvarbias *>::iterator bi = biases.begin(); bi != biases.end(); bi++) {
+    oss.str("");
+    (*bi)->write_traj_label(oss);
+    if (!oss.str().empty()) {
+      os << " " << oss.str();
+    }
   }
-  os << "\n";
 
   this->decrease_depth();
+
+  os << "\n";
+
   return os;
 }
 
@@ -2126,23 +2137,34 @@ std::ostream & colvarmodule::write_traj(std::ostream &os)
 {
   os.setf(std::ios::scientific, std::ios::floatfield);
 
-  os << std::setw(this->it_width) << it
-     << " ";
+  os << std::setw(this->it_width) << it << " ";
+
+  // Use a stringstream buffer to check for no output from objects
+  std::ostringstream oss;
+  oss.setf(std::ios::scientific, std::ios::floatfield);
 
   this->increase_depth();
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
-       cvi++) {
-    (*cvi)->write_traj(os);
+
+  for (std::vector<colvar *>::iterator cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    oss.str("");
+    (*cvi)->write_traj(oss);
+    if (!oss.str().empty()) {
+      os << " " << oss.str();
+    }
   }
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
-       bi++) {
-    (*bi)->write_traj(os);
+
+  for (std::vector<colvarbias *>::iterator bi = biases.begin(); bi != biases.end(); bi++) {
+    oss.str("");
+    (*bi)->write_traj(oss);
+    if (!oss.str().empty()) {
+      os << " " << oss.str();
+    }
   }
-  os << "\n";
 
   this->decrease_depth();
+
+  os << "\n";
+
   return os;
 }
 
