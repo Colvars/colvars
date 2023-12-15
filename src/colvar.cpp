@@ -2534,8 +2534,6 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
 {
   size_t const this_cv_width = x.output_width(cvm::cv_width);
 
-  os << " ";
-
   if (is_enabled(f_cv_output_value)) {
 
     os << " "
@@ -2583,7 +2581,6 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
 
 std::ostream & colvar::write_traj(std::ostream &os)
 {
-  os << " ";
   if (is_enabled(f_cv_output_value)) {
 
     if (is_enabled(f_cv_extended_Lagrangian) && !is_enabled(f_cv_external)) {
