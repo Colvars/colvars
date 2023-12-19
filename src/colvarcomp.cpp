@@ -379,6 +379,13 @@ int colvar::cvc::setup()
                            ci->first + "\".\n",
                        COLVARS_INPUT_ERROR);
       }
+      if (ci->second->is_enabled(f_cvc_reusing_cvcs)) {
+        error_code |= cvm::error(
+            "Error: component \"" + name + "\" is trying to reuse component \"" +
+                ci->second->qualified_name() +
+                "\", which is in turn reusing other components; only one indirection is allowed.\n",
+            COLVARS_INPUT_ERROR);
+      }
       // TODO Handle this from the dependency system
       if (is_enabled(f_cvc_gradient)) {
         ci->second->enable(f_cvc_gradient);
