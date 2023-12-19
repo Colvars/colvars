@@ -5,25 +5,25 @@ configuration {
 
 colvar {
   name apath_s_dihed
-  x  7.81288623236069e-01
+  x      0.78342349010752
 }
 
 colvar {
   name apath_z_dihed
-  x -9.87779009864524e+00
+  x      -361.89038799212
 }
 
 restraint {
   configuration {
-    step 20
-    name harmonic1
+step 20
+name harmonic1
   }
 }
 
 restraint {
   configuration {
-    step 20
-    name harmonicwalls1
+step 20
+name harmonicwalls1
   }
 }
 
