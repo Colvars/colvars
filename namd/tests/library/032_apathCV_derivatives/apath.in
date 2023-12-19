@@ -34,7 +34,7 @@ colvar {
     name apath_z_dihed
 
     azpathCV {
-        lambda 0.006
+        lambda 0.002
         dihedral {
             scalable off
             name 001
@@ -71,6 +71,7 @@ harmonic {
 
 harmonicWalls {
     colvars apath_z_dihed
-    upperWalls 10.0
+    upperWalls 100.0
+    lowerWalls -500.0
     forceConstant 0.05
 }
