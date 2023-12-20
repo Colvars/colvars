@@ -426,6 +426,10 @@ obj/colvarcomp_neuralnetwork.o: \
 	colvars/src/colvar_geometricpath.h \
 	colvars/src/colvar_neuralnetworkcompute.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_neuralnetwork.o $(COPTC) colvars/src/colvarcomp_neuralnetwork.cpp
+obj/colvarcomp_torchann.o: \
+	obj/.exists \
+	colvars/src/colvarcomp_torchann.cpp
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_torchann.o $(COPTC) colvars/src/colvarcomp_torchann.cpp
 obj/colvar_neuralnetworkcompute.o: \
 	obj/.exists \
 	colvars/src/colvar_neuralnetworkcompute.cpp \
