@@ -1503,8 +1503,6 @@ colvarmodule::~colvarmodule()
     colvar::cvc::delete_features();
     atom_group::delete_features();
 
-    colvar_components_.clear();
-
     // The proxy object will be deallocated last (if at all)
     proxy = nullptr;
   }
@@ -1523,6 +1521,9 @@ int colvarmodule::reset()
   biases.clear();
   biases_active_.clear();
   num_biases_types_used_.clear();
+
+  // Clear the global map first, after which each colvar takes down its own CVCs
+  colvar_components_.clear();
 
   // Iterate backwards because we are deleting the elements as we go
   while (!colvars.empty()) {
