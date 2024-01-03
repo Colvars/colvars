@@ -53,7 +53,6 @@ fi
 
 
 NUM_TASKS=${NUM_TASKS:-4}
-NUM_THREADS=${NUM_THREADS:-2}
 
 MPI_BUILD=no
 TMPI_TASKS="-ntmpi ${NUM_TASKS}"
@@ -62,7 +61,7 @@ if echo $BINARY | grep -q gmx_mpi ; then
   MPI_BUILD=yes
   if source ${TOPDIR}/devel-tools/load-openmpi.sh ; then
     MPIRUN_CMD="mpirun -n ${NUM_TASKS} -oversubscribe"
-    echo "Will run mdrun as: ${MPIRUN_CMD} ${BINARY} mdrun -ntomp ${NUM_THREADS}"
+    echo "Will run mdrun as: ${MPIRUN_CMD} ${BINARY} mdrun"
     TMPI_TASKS=""
   fi
 fi
@@ -173,7 +172,7 @@ for dir in ${DIRLIST} ; do
 
       if [ "${basename}" == "test" ] ; then
         ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr >& ${basename}.grompp.out
-        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} >& ${basename}.out
+        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp 2 -deffnm ${basename} >& ${basename}.out
         RETVAL=$?
       fi
 
@@ -196,7 +195,7 @@ for dir in ${DIRLIST} ; do
           echo "init-step = 20" >> ${NEW_MDP}
           ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr >& ${basename}.grompp.out
           rm -f ${NEW_MDP} ${NEW_CVCONF}
-          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend >& ${basename}.out
+          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp 2 -deffnm ${basename} -noappend >& ${basename}.out
           RETVAL=$?
 
           output=${basename}.part0001
@@ -209,7 +208,7 @@ for dir in ${DIRLIST} ; do
 
           # Restart both GROMACS and Colvars using the GROMACS checkpoint file
           ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
-          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
+          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp 2 -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
 
           RETVAL=$?
           output=${basename}.part0002
