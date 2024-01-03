@@ -8,12 +8,12 @@
 # if script called from `run_tests.sh` in the parent folder, retrieve the correct command binary from the argument
 if [ "$1" ]
 then
-    COMMAND=$1
+    BINARY=$1
 else
-    COMMAND="mpirun -np 16 gmx_mpi_d"
+    BINARY="gmx_mpi_d"
 fi
 
-$COMMAND -multidir a b c d -s test.tpr  -deffnm test -replex 10 -reseed 376 2>&1 | tee test.out
+mpirun -np 16 -oversubscribe $BINARY mdrun -multidir a b c d -s test.tpr -deffnm test -replex 10 -reseed 376 2>&1 | tee test.out
 
 # Copy result files to be tested in the main folder
 cp a/test.colvars.traj a/test.colvars.state .

@@ -61,7 +61,7 @@ if echo $BINARY | grep -q gmx_mpi ; then
   MPI_BUILD=yes
   if source ${TOPDIR}/devel-tools/load-openmpi.sh ; then
     MPIRUN_CMD="mpirun -n ${NUM_TASKS} -oversubscribe"
-    echo "Will run mdrun as: ${MPIRUN_CMD} mdrun"
+    echo "Will run mdrun as: ${MPIRUN_CMD} ${BINARY} mdrun"
     TMPI_TASKS=""
   fi
 fi
