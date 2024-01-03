@@ -4,6 +4,8 @@ source $(dirname $0)/load-recent-git.sh
 
 source $(dirname $0)/load-recent-gcc.sh
 
+source $(dirname $0)/load-openmpi.sh
+
 source $(dirname $0)/set-ccache.sh
 
 

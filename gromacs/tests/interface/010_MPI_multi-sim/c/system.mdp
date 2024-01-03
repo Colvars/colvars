@@ -47,7 +47,10 @@ tau-t                    = 1
 ld-seed                  = 3
 
 ; pressure coupling
-pcoupl                   = No
+pcoupl                   = no
 
 gen-vel                  = no
+
+colvars-active           = yes
+colvars-configfile       = test.colvars.dat
 

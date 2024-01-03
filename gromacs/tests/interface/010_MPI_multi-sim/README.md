@@ -18,7 +18,7 @@ The tests are valid against Gromacs version 2020.X. The inputs (.tpr) and refere
 Only the traj files of the simulation **a** is being tested.
 
 
-### Scripts
+### Scripts
 
   - `create_tpr.sh` is used to generate the .tpr
   - `run.sh` is called by a `run_tests.sh` script to run the REMD simulation
