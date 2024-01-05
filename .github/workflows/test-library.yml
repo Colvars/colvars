@@ -246,10 +246,6 @@ jobs:
           key: ${{ runner.os }}-build-asan-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-asan-
 
-      - name: Install build dependencies for library
-        run: |
-          sudo apt -y install tcl8.6-dev clang-14 clang-tools-14
-
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v4
         with:
