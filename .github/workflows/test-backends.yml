@@ -20,108 +20,15 @@ env:
 
 jobs:
 
-  lammps:
-    name: LAMMPS
+  gromacs-2024:
+    name: GROMACS (release-2024)
     uses: ./.github/workflows/backend-template.yml
     with:
-      backend_name: LAMMPS
-      backend_repo: lammps/lammps
-      backend_repo_ref: develop
-      container_name: CentOS9-devel
-      path_compile_script: devel-tools/compile-lammps.sh
-      test_lib_directory: lammps/tests/library
-      test_interface_directory: lammps/tests/interface
-      rpath_exe: install/bin/lmp
-
-  namd:
-    name: NAMD
-    # Prevent running this job on PRs across different accounts, because
-    # secrets wouldn't be shared
-    uses: ./.github/workflows/backend-template.yml
-    with:
-      backend_name: NAMD
-      backend_repo: Colvars/namd
-      backend_repo_ref: master
-      container_name: CentOS7-devel
-      path_compile_script: devel-tools/compile-namd.sh
-      test_lib_directory: namd/tests/library
-      test_interface_directory: namd/tests/interface
-      rpath_exe: Linux-x86_64-g++.mpi/namd2
-    secrets:
-      # Choice of license by UIUC prevents sharing the code, hence the secret
-      private_key: ${{ secrets.PULL_NAMD_KEY }}
-
-  namd3:
-    name: NAMD3 (no CUDA)
-    # Prevent running this job on PRs across different accounts, because
-    # secrets wouldn't be shared
-    uses: ./.github/workflows/backend-template.yml
-    with:
-      backend_name: NAMD3
-      backend_repo: Colvars/namd
-      backend_repo_ref: devel
-      path_compile_script: devel-tools/compile-namd.sh
-      test_lib_directory: namd/tests/library
-      test_interface_directory: namd/tests/interface
-      rpath_exe: Linux-x86_64-g++.mpi/namd3
-      container_name: CentOS7-devel
-    secrets:
-      # Choice of license by UIUC prevents sharing the code, hence the secret
-      private_key: ${{ secrets.PULL_NAMD_KEY }}
-
-  vmd:
-    name: VMD
-    # Prevent running this job on PRs across different accounts, because
-    # secrets wouldn't be shared
-    uses: ./.github/workflows/backend-template.yml
-    with:
-      backend_name: VMD
-      backend_repo: Colvars/vmd
-      backend_repo_ref: master
-      container_name: CentOS7-devel
-      # Special variable for VMD test case since it's the only one
-      # which needs to checkout 2 repos
-      vmd_plugins_repo: Colvars/vmd-plugins
-      path_compile_script: devel-tools/compile-vmd.sh
-      test_interface_directory: vmd/tests/interface
-      rpath_exe: install/vmd
-    secrets:
-      # Per-repository secret
-      private_key: ${{ secrets.PULL_VMD_KEY }}
-      private_key_vmd_plugins: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
-
-  gromacs-2022:
-    name: GROMACS 2022
-    uses: ./.github/workflows/backend-template.yml
-    with:
-      backend_name: GROMACS-2022
+      backend_name: GROMACS-2024
       backend_repo: gromacs/gromacs
-      backend_repo_ref: release-2022
+      backend_repo_ref: release-2024
       container_name: CentOS9-devel
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
-      rpath_exe: install/bin/gmx_d
-
-  gromacs-2023:
-    name: GROMACS 2023
-    uses: ./.github/workflows/backend-template.yml
-    with:
-      backend_name: GROMACS-2023
-      backend_repo: gromacs/gromacs
-      backend_repo_ref: release-2023
-      container_name: CentOS9-devel
-      path_compile_script: devel-tools/compile-gromacs.sh
-      test_lib_directory: gromacs/tests/library
-      rpath_exe: install/bin/gmx_d
-
-  gromacs-devel:
-    name: GROMACS (MDModules)
-    uses: ./.github/workflows/backend-template.yml
-    with:
-      backend_name: GROMACS-devel
-      backend_repo: gromacs/gromacs
-      backend_repo_ref: main
-      container_name: CentOS9-devel
-      path_compile_script: devel-tools/compile-gromacs.sh
-      test_lib_directory: gromacs/tests/library
-      rpath_exe: install/bin/gmx_d
+      test_interface_directory: gromacs/tests/interface
+      rpath_exe: install/bin/gmx_mpi_d
