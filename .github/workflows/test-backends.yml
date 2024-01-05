@@ -96,6 +96,19 @@ jobs:
       test_lib_directory: gromacs/tests/library
       rpath_exe: install/bin/gmx_mpi_d
 
+  gromacs-2024:
+    name: GROMACS (release-2024)
+    uses: ./.github/workflows/backend-template.yml
+    with:
+      backend_name: GROMACS-2024
+      backend_repo: gromacs/gromacs
+      backend_repo_ref: release-2024
+      container_name: CentOS9-devel
+      path_compile_script: devel-tools/compile-gromacs.sh
+      test_lib_directory: gromacs/tests/library
+      test_interface_directory: gromacs/tests/interface
+      rpath_exe: install/bin/gmx_mpi_d
+
   gromacs-main:
     name: GROMACS (main)
     uses: ./.github/workflows/backend-template.yml
