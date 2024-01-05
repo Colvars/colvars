@@ -72,18 +72,6 @@ jobs:
       private_key: ${{ secrets.PULL_VMD_KEY }}
       private_key_vmd_plugins: ${{ secrets.PULL_VMD_PLUGINS_KEY }}
 
-  gromacs-2022:
-    name: GROMACS (release-2022)
-    uses: ./.github/workflows/backend-template.yml
-    with:
-      backend_name: GROMACS-2022
-      backend_repo: gromacs/gromacs
-      backend_repo_ref: release-2022
-      container_name: CentOS9-devel
-      path_compile_script: devel-tools/compile-gromacs.sh
-      test_lib_directory: gromacs/tests/library
-      rpath_exe: install/bin/gmx_mpi_d
-
   gromacs-2023:
     name: GROMACS (release-2023)
     uses: ./.github/workflows/backend-template.yml
