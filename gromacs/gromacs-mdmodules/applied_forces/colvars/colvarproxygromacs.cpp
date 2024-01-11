@@ -40,9 +40,10 @@
  */
 
 #include "colvarproxygromacs.h"
-#include "colvarproxy_gromacs_version.h"
 
 #include <sstream>
+
+#include "colvarproxy_gromacs_version.h"
 
 
 namespace gmx
@@ -59,7 +60,7 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
     gmxAtoms_(atoms), pbcType_(pbcType), logger_(logger), doParsing_(doParsing)
 {
     engine_name_ = "GROMACS";
-    version_int = get_version_from_string(COLVARPROXY_VERSION);
+    version_int  = get_version_from_string(COLVARPROXY_VERSION);
 
     //! From colvarproxy
     //! The 5 variables below are defined in the `colvarproxy` base class
