@@ -43,9 +43,6 @@
 
 #include <sstream>
 
-#include "gromacs/utility/futil.h"
-#include "gromacs/utility/path.h"
-
 #include "colvarproxy_gromacs_version.h"
 
 
