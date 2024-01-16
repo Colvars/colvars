@@ -417,7 +417,7 @@ if (__name__ == '__main__'):
         if numpy_format:
             np.savez(output_file, **columns)
         else:
-            np.savetxt(fname=output_file, X=np.c_[*columns], fmt=str(text_fmt_string))
+            np.savetxt(fname=output_file, X=np.column_stack(columns), fmt=str(text_fmt_string))
 
     else:
 
