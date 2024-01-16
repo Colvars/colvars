@@ -3,7 +3,7 @@
 # Invoke this script with --help for documentation.
 
 # Download link: https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true
-# This version was modified on: 2023-07-13
+# This version was modified on: 2024-01-16
 # Contact: giacomo.fiorin@gmail.com
 
 from __future__ import print_function
@@ -314,10 +314,10 @@ if (__name__ == '__main__'):
 
     parser.add_argument('--output-file',
                         type=str,
-                        help='Write the selected variables to a text file.  '
-                        'The step number is always included as the first '
-                        'column, and all variables '
-                        'must be defined on the same trajectory segments.',
+                        help="Write the selected variables to a file in NumPy format "
+                        " (if the extension is .npz) or in text format otherwise.  "
+                        "The step number is included as the first column, and all variables "
+                        "must be defined on the same trajectory segments.",
                         default=None)
 
     parser.add_argument('--plot-file',
@@ -388,24 +388,36 @@ if (__name__ == '__main__'):
     plot_keys = dict(zip(variables, variables))
 
 
-    if (args.output_file):
+    if args.output_file:
 
-        fmt = " %12d"
-        columns = [colvars_traj[variables[0]].steps]
+        output_file = args.output_file
+        numpy_format = False
+        if output_file.endswith(".npz"):
+            numpy_format = True
+        if output_file == '-':
+            output_file = sys.stdout
+
+        text_fmt_string = " %12d"
+        if numpy_format:
+            columns = { 'step' : colvars_traj[variables[0]].steps }
+        else:
+            columns = [colvars_traj[variables[0]].steps]
         for var in variables:
             cv = colvars_traj[var]
             for ic in range(cv.num_dimensions):
                 y = cv.values
-                if (cv.num_dimensions > 1):
+                if cv.num_dimensions > 1 and not numpy_format:
                     y = cv.values[:,ic]
-                columns += [y]
-                fmt += " %21.14f"
-        columns = tuple(columns)
-        output_file = args.output_file
-        if (output_file == '-'): output_file = sys.stdout
-        np.savetxt(fname=output_file,
-                   X=list(zip(*columns)),
-                   fmt=str(fmt))
+                if numpy_format:
+                    columns[var] = y
+                else:
+                    columns += [y]
+                text_fmt_string += " %21.14f"
+
+        if numpy_format:
+            np.savez(output_file, **columns)
+        else:
+            np.savetxt(fname=output_file, X=np.c_[*columns], fmt=str(text_fmt_string))
 
     else:
 
