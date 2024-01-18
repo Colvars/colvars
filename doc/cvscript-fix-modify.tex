@@ -595,7 +595,7 @@
 \begin{mdexampleinput}{}
 \texttt{\textbf{fix\_modify Colvars bias name bin}}
 \\
-\-~~~~\texttt{Get the current grid bin index (1D ABF only for now)}
+\-~~~~\texttt{Get the current grid bin index (flattened if more than 1d)}
 \\
 \-~~~~\texttt{\textbf{Returns}}
 \\
@@ -613,6 +613,15 @@
 \-~~~~\texttt{\textbf{Returns}}
 \\
 \-~~~~\texttt{samples : integer - Number of samples}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{fix\_modify Colvars bias name local\_sample\_count [radius]}}
+\\
+\-~~~~\texttt{Get the number of samples around the current binsamples : integer - Number of samples}
+\\
+\-~~~~\texttt{\textbf{Parameters}}
+\\
+\-~~~~\texttt{radius : integer - Sum over radius bins around current bin (optional)}
 \end{mdexampleinput}
 \begin{mdexampleinput}{}
 \texttt{\textbf{fix\_modify Colvars bias name binnum}}

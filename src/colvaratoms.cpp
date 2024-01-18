@@ -286,7 +286,7 @@ int cvm::atom_group::init_dependencies() {
   // Initialize feature_states for each instance
   // default as unavailable, not enabled
   feature_states.reserve(f_ag_ntot);
-  for (i = 0; i < colvardeps::f_ag_ntot; i++) {
+  for (i = feature_states.size(); i < colvardeps::f_ag_ntot; i++) {
     feature_states.push_back(feature_state(false, false));
   }
 

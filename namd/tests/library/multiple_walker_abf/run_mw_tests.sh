@@ -11,16 +11,25 @@ if (( $# != 1 )); then
 fi
 NAMD_EXEC=$1
 
-#NAMD_EXEC=$HOME/Software/NAMD_2.10b1_Source_colvars/Linux-x86_64-g++/namd2
+# Runner for the netlrts version
+RUNNER="${HOME}/progs/namd/Linux-x86_64-g++.netlrts/charmrun ++local +p4"
+
+# Runner for the MPI version
+#RUNNER="mpirun -n 4"
+
 unset l
 
 i=0
 for f in mw_independent.namd mw_shared.namd mw_selection.namd; do
     nam=${f%.*}
     rm -f out_${nam}.*.log
-    mpirun -n 4 $NAMD_EXEC +replicas 4 $f +stdout out_${nam}.%d.log
+    $RUNNER $NAMD_EXEC +replicas 4 $f +stdout out_${nam}.%d.log
 
-    grad=out_${nam}.0.grad
+    if [ $f = "mw_independent.namd" ]; then
+      grad=out_${nam}.0.grad
+    else
+      grad=out_${nam}.0.all.grad
+    fi
     rmsd=$( paste -d ' ' da10_12-32_indepSaga0.0.grad $grad | awk '!/^#/ && NF==4 {n++; s+=($4-$2)*($4-$2)}; END {print sqrt(s/n)}' )
     echo "RMSD $rmsd"
     l[$i]=$( printf "%s\t\t%.5f" $nam $rmsd )

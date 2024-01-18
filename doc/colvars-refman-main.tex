@@ -5552,35 +5552,52 @@ Other parameters to control the ABF runtime can be set in the ABF configuration 
 \end{itemize}
 
 \cvnamdonly{
-\cvsubsubsec{Multiple-replica ABF}{sec:colvarbias_abf_shared}
+\cvsubsubsec{Multiple-walker ABF}{sec:colvarbias_abf_shared}
 \label{sec:mw-ABF}
 
+This implements the multiple-walker ABF scheme described in \cite{Minoukadeh2010}. The reference for this
+implementation is \cite{Comer2014c}.
+This feature requires that \MDENGINE be compiled and executed with multiple-replica
+support.
+
+If \refkey{shared}{abf|shared} is enabled, the total force samples will be synchronized among all replicas
+at intervals defined by \refkey{sharedFreq}{abf|sharedFreq}.
+Each replica maintains a separate buffer of total force samples that determine the biasing force.
+Every \refkey{sharedFreq}{abf|sharedFreq} steps, the replicas communicate the samples that have been gathered since the last synchronization time, ensuring all replicas apply a similar biasing force.
+Thus, it is as if total force samples among all replicas are gathered in a single shared buffer.
+Shared ABF allows all replicas to benefit from the sampling done by other replicas and can lead to faster convergence of the biasing force.
+
+An implementation of the selection mechanism described in \cite{Comer2014c} is provided as a set of Tcl scripts in \texttt{colvartools/mwABF\_selection.tcl} in the Colvars repository.
+Compared with the initial implementation, the current implementation supports selection on sets of up to 3 colvars.
+To reduce noise, samples can be counted in a hybercube around the current bin (see Tcl script for details).
+A set of example NAMD inputs can be found in the \texttt{namd/tests/library/multiple\_walker\_abf} directory.
+
+
+\paragraph{Output files of multiple-walker ABF.}
+In multiple-walker ABF runs, each walker now outputs gradient and count files containing only data collected locally (this is a change in version 2024-01-06).
+In addition, the first walker outputs the collected data using the common prefix, with an additional \texttt{".all"} string (i.e. file names ending with \texttt{".all.count"}, \texttt{".all.grad"} etc.).
+
+
 \begin{itemize}
-\item \keydef{shared}{\texttt{abf}}{%
-    Apply multiple-replica ABF, sharing force samples among the replicas?}
+\item
+  \labelkey{abf|shared}
+  \keydef{shared}{\texttt{abf}}{%
+    Apply multiple-walker ABF, sharing force samples among the replicas?}
   {boolean}
   {\texttt{no}}
-  { This is command requires that NAMD be compiled and executed with multiple-replica
-    support.
-    If \texttt{shared} is set to yes, the total force samples will be synchronized among all replicas
-    at intervals defined by \texttt{sharedFreq}.
-    This implements the multiple-walker ABF scheme described in \cite{Minoukadeh2010}; this
-    implementation is documented in \cite{Comer2014c}.
-    Thus, it is as if total force samples among all replicas are
-    gathered in a single shared buffer, which why the algorithm is referred to as shared ABF.
-    Shared ABF allows all replicas to benefit from the sampling done by other replicas and can lead to faster convergence of the biasing force.
+  {
+    Enable sharing of ABF data between replicas, in a multi-replica simulation.
   }
 
-\item \keydef{sharedFreq}{\texttt{abf}}{%
+\item
+  \labelkey{abf|sharedFreq}
+  \keydef{sharedFreq}{\texttt{abf}}{%
     Frequency (in timesteps) at which force samples are synchronized among the replicas}
-  {positive integer}
+  {positive integer or zero}
   {\refkey{outputFreq}{colvarbias|outputFreq}}
   {
-  In the current implementation of shared ABF, each replica maintains a separate
-  buffer of total force samples that determine the biasing force.
-  Every \texttt{sharedFreq} steps, the replicas communicate the samples that
-  have been gathered since the last synchronization time, ensuring all replicas
-  apply a similar biasing force.
+    Every \texttt{sharedFreq} steps, the replicas communicate the samples that have been gathered since the last synchronization time.
+    Because this forces the replicas to synchronize, small values of this parameter may slightly reduce the overall throughput, especially on systems with unequal performance.
   }
 \end{itemize}
 }
