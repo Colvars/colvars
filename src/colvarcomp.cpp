@@ -303,7 +303,7 @@ int colvar::cvc::init_dependencies() {
   // default as available, not enabled
   // except dynamic features which default as unavailable
   feature_states.reserve(f_cvc_ntot);
-  for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
+  for (i = feature_states.size(); i < colvardeps::f_cvc_ntot; i++) {
     bool avail = is_dynamic(i) ? false : true;
     feature_states.push_back(feature_state(avail, false));
   }

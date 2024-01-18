@@ -29,7 +29,6 @@ atomNumbers { 10 }
 }
 
 abf {
-   name abf
    colvars endToEnd
    fullSamples 500
    historyFreq 20000

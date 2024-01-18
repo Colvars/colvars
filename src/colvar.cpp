@@ -1221,7 +1221,7 @@ int colvar::init_dependencies() {
 
   // Initialize feature_states for each instance
   feature_states.reserve(f_cv_ntot);
-  for (i = 0; i < f_cv_ntot; i++) {
+  for (i = feature_states.size(); i < f_cv_ntot; i++) {
     feature_states.push_back(feature_state(true, false));
     // Most features are available, so we set them so
     // and list exceptions below
@@ -1513,6 +1513,7 @@ int colvar::collect_cvc_values()
               cvm::to_str(x, cvm::cv_width, cvm::cv_prec)+".\n");
 
   if (after_restart) {
+    x_old = x_restart;
     if (cvm::proxy->simulation_running()) {
       cvm::real const jump2 = dist2(x, x_restart) / (width*width);
       if (jump2 > 0.25) {
@@ -1707,12 +1708,13 @@ int colvar::calc_colvar_properties()
     // Do the same if no simulation is running (eg. VMD postprocessing)
     if ((cvm::step_relative() == 0 && !after_restart) || x_ext.type() == colvarvalue::type_notset || !cvm::proxy->simulation_running()) {
       x_ext = x;
+      cvm::log("Initializing extended coordinate to colvar value.\n");
       if (is_enabled(f_cv_reflecting_lower_boundary) && x_ext < lower_boundary) {
-        cvm::log("Warning: initializing extended coordinate to reflective lower boundary, as colvar value is below.");
+        cvm::log("Warning: initializing extended coordinate to reflective lower boundary, as colvar value is below.\n");
         x_ext = lower_boundary;
       }
       if (is_enabled(f_cv_reflecting_upper_boundary) && x_ext > upper_boundary) {
-        cvm::log("Warning: initializing extended coordinate to reflective upper boundary, as colvar value is above.");
+        cvm::log("Warning: initializing extended coordinate to reflective upper boundary, as colvar value is above.\n");
         x_ext = upper_boundary;
       }
 
@@ -1722,8 +1724,18 @@ int colvar::calc_colvar_properties()
     // Special case of a repeated timestep (eg. multiple NAMD "run" statements)
     // revert values of the extended coordinate and velocity prior to latest integration
     if (cvm::proxy->simulation_running() && cvm::step_relative() == prev_timestep) {
-      x_ext = prev_x_ext;
-      v_ext = prev_v_ext;
+      // Detect jumps due to discrete changes in coordinates (eg. in replica exchange schemes)
+      cvm::real const jump2 = dist2(x, x_old) / (width*width);
+      if (jump2 > 0.25) {
+        cvm::log("Detected discrete jump in colvar value from "
+            + cvm::to_str(x_old) + " to " + cvm::to_str(x) + ".\n");
+        cvm::log("Reinitializing extended coordinate to colvar value.\n");
+        x_ext = x;
+      } else {
+        cvm::log("Reinitializing extended coordinate to last value.\n");
+        x_ext = prev_x_ext;
+        v_ext = prev_v_ext;
+      }
     }
     // report the restraint center as "value"
     // These position and velocities come from integration at the _previous timestep_ in update_forces_energy()
@@ -1939,9 +1951,8 @@ int colvar::end_of_step()
   if (cvm::debug())
     cvm::log("End of step for colvar \""+this->name+"\".\n");
 
-  if (is_enabled(f_cv_fdiff_velocity)) {
-    x_old = x;
-  }
+  // Used for fdiff_velocity and for detecting jumps for extended Lagrangian colvars
+  x_old = x;
 
   if (is_enabled(f_cv_subtract_applied_force)) {
     f_old = f;
