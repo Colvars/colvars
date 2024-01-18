@@ -1,7 +1,7 @@
 # set: thisName lastName run temp reinitTemp
 outputName 			out_mw_independent.[myReplica]
 print "REPLICA [myReplica]"
-seed [expr {[myReplica]*[myReplica]*[myReplica]*2803 + 99377}]
+seed [expr {[myReplica]*[myReplica]*[myReplica]*2803 + 1}]
 
 set temp 300
 numSteps                        40000

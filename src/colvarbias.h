@@ -91,8 +91,9 @@ public:
   // FIXME this is currently 1D only
   virtual int current_bin();
   //// Give the count at a given bin index.
-  // FIXME this is currently 1D only
   virtual int bin_count(int bin_index);
+  /// Return the average number of samples in a given "radius" around current bin
+  virtual int local_sample_count(int radius);
 
   //// Share information between replicas, whatever it may be.
   virtual int replica_share();

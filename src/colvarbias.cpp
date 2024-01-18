@@ -167,6 +167,10 @@ int colvarbias::init_dependencies() {
 
     init_feature(f_cvb_get_total_force, "obtain_total_force", f_type_dynamic);
     require_feature_children(f_cvb_get_total_force, f_cv_total_force);
+    // Depending on back-end, we may not obtain total force at step 0
+    if (!cvm::main()->proxy->total_forces_same_step()) {
+      exclude_feature_self(f_cvb_get_total_force, f_cvb_step_zero_data);
+    }
 
     init_feature(f_cvb_output_acc_work, "output_accumulated_work", f_type_user);
     require_feature_self(f_cvb_output_acc_work, f_cvb_apply_force);
@@ -203,7 +207,7 @@ int colvarbias::init_dependencies() {
 
   // Initialize feature_states for each instance
   feature_states.reserve(f_cvb_ntot);
-  for (i = 0; i < f_cvb_ntot; i++) {
+  for (i = feature_states.size(); i < f_cvb_ntot; i++) {
     feature_states.push_back(feature_state(true, false));
     // Most features are available, so we set them so
     // and list exceptions below
@@ -437,14 +441,22 @@ int colvarbias::bin_num()
   cvm::error("Error: bin_num() not implemented.\n");
   return COLVARS_NOT_IMPLEMENTED;
 }
+
 int colvarbias::current_bin()
 {
   cvm::error("Error: current_bin() not implemented.\n");
   return COLVARS_NOT_IMPLEMENTED;
 }
+
 int colvarbias::bin_count(int /* bin_index */)
 {
   cvm::error("Error: bin_count() not implemented.\n");
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+int colvarbias::local_sample_count(int /* radius */)
+{
+  cvm::error("Error: local_sample_count() not implemented.\n");
   return COLVARS_NOT_IMPLEMENTED;
 }
 
