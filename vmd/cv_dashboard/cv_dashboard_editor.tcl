@@ -653,19 +653,28 @@ proc ::cv_dashboard::cvs_from_labels {} {
       set cv_name "$short($obj)"
       set cfg ""
 
+      # Loop on atoms
       for {set i 0} { $i < $n($obj) } {incr i} {
         set a [lindex $l $i]
         set m [lindex $a 0]
         if { $m != $molid } {
-          # Label references atom outside of current molecule, skip
+          # Label references atom outside of current molecule, cannot create colvar
           set ok false
           break
         }
         set sel [atomselect $molid "index [lindex $a 1]"]
-        set serial [$sel get serial]
-        set resname [$sel get resname]
-        set resid [$sel get resid]
-        set name [$sel get name]
+        if {[$sel num] != 1} {
+          # Look like a bug, we should have exactly 1 atom
+          tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
+            -message [string cat "Invalid selection ([$sel num] atoms instead of 1) in ::cv_dashboard::cvs_from_labels.\n"\
+            "Please report this as a bug."]
+          set ok false
+          break
+        }
+        set serial [lindex [$sel get serial] 0]
+        set resname [lindex [$sel get resname] 0]
+        set resid [lindex [$sel get resid] 0]
+        set name [lindex [$sel get name] 0]
         $sel delete
 
         if { $name == "" || $resname == "" } {
