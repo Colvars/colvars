@@ -2183,6 +2183,7 @@ int cvm::load_coords(char const *file_name,
                                      sorted_pos, atoms->sorted_ids(),
                                      pdb_field, pdb_field_value);
   }
+  if (error_code != COLVARS_OK) return error_code;
 
   std::vector<int> const &map = atoms->sorted_ids_map();
   for (size_t i = 0; i < atoms->size(); i++) {
@@ -2199,7 +2200,7 @@ int cvm::load_coords_xyz(char const *filename,
                          bool keep_open)
 {
   std::istream &xyz_is = proxy->input_stream(filename, "XYZ file");
-  unsigned int natoms;
+  size_t natoms;
   char symbol[256];
   std::string line;
   cvm::real x = 0.0, y = 0.0, z = 0.0;
@@ -2223,12 +2224,19 @@ int cvm::load_coords_xyz(char const *filename,
     cvm::getline(xyz_is, line);
     xyz_is.width(255);
   } else {
+    proxy->close_input_stream(filename);
     return cvm::error(error_msg, COLVARS_INPUT_ERROR);
+  }
+
+  if (pos->size() > natoms) {
+    proxy->close_input_stream(filename);
+    return cvm::error("File \"" + std::string(filename) + "\" contains fewer atoms (" + cvm::to_str(natoms)
+      + ") than expected (" + cvm::to_str(pos->size()) + ").", COLVARS_INPUT_ERROR);
   }
 
   std::vector<atom_pos>::iterator pos_i = pos->begin();
   size_t xyz_natoms = 0;
-  if (pos->size() != natoms) { // Use specified indices
+  if (pos->size() < natoms) { // Use specified indices
     int next = 0; // indices are zero-based
     if (!atoms) {
       // In the other branch of this test, reading all positions from the file,
@@ -2236,6 +2244,13 @@ int cvm::load_coords_xyz(char const *filename,
       return cvm::error("Trying to read partial positions with invalid atom group pointer",
                         COLVARS_BUG_ERROR);
     }
+
+    if (static_cast<unsigned int>(atoms->sorted_ids().back()) > natoms) {
+      proxy->close_input_stream(filename);
+      return cvm::error("File \"" + std::string(filename) + "\" contains fewer atoms (" + cvm::to_str(natoms)
+        + ") than expected (" + cvm::to_str(atoms->sorted_ids().back()) + ").", COLVARS_INPUT_ERROR);
+    }
+
     std::vector<int>::const_iterator index = atoms->sorted_ids().begin();
 
     for ( ; pos_i != pos->end() ; pos_i++, index++) {
@@ -2252,6 +2267,7 @@ int cvm::load_coords_xyz(char const *filename,
         (*pos_i)[2] = proxy->angstrom_to_internal(z);
         xyz_natoms++;
       } else {
+        proxy->close_input_stream(filename);
         return cvm::error(error_msg, COLVARS_INPUT_ERROR);
       }
     }
@@ -2267,12 +2283,14 @@ int cvm::load_coords_xyz(char const *filename,
         (*pos_i)[2] = proxy->angstrom_to_internal(z);
         xyz_natoms++;
       } else {
+        proxy->close_input_stream(filename);
         return cvm::error(error_msg, COLVARS_INPUT_ERROR);
       }
     }
   }
 
   if (xyz_natoms != pos->size()) {
+    proxy->close_input_stream(filename);
     return cvm::error("Error: The number of positions read from file \""+
                       std::string(filename)+"\" does not match the number of "+
                       "positions required: "+cvm::to_str(xyz_natoms)+" vs. "+
