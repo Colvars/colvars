@@ -66,16 +66,17 @@ int colvar::orientation::init(std::string const &conf)
       }
 
       ref_pos.resize(atoms->size());
-      cvm::load_coords(file_name.c_str(), &ref_pos, atoms,
+      error_code |= cvm::load_coords(file_name.c_str(), &ref_pos, atoms,
                        file_col, file_col_value);
     }
   }
+
+  if (error_code != COLVARS_OK) return error_code;
 
   if (!ref_pos.size()) {
     return cvm::error("Error: must define a set of "
                       "reference coordinates.\n", COLVARS_INPUT_ERROR);
   }
-
 
   cvm::rvector ref_cog(0.0, 0.0, 0.0);
   size_t i;
