@@ -292,7 +292,7 @@ proc ::cv_dashboard::atoms_from_sel { source } {
   set sel [atomselect $::cv_dashboard::mol $seltext]
 
   if {[$sel num] == 0 } {
-    tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
+    tk_messageBox -icon error -title "Colvars error" -parent $w.editor\
       -message "Selection text \"${seltext}\" matches zero atoms."
     return
   }
@@ -417,14 +417,14 @@ proc ::cv_dashboard::edit_apply { type } {
     catch {cv $type $i delete}
   }
   set cfg [$text get 1.0 end-1c]
-  set res [apply_config $cfg]
+  set res [apply_config $cfg $window]
   if { [string compare $res ""] } {
     # error: restore backed up cfg
     foreach i $::cv_dashboard::being_edited {
       # Delete again any object that might have been successfully recreated
       catch {cv $type $i delete}
     }
-    apply_config $::cv_dashboard::backup_cfg
+    apply_config $::cv_dashboard::backup_cfg $window
     # The bias names being edited might have changed here
     # Do not destroy editor window (give user a chance to fix input)
     if { $type == "colvar" } {
