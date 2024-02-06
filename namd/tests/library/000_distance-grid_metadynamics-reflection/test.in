@@ -14,6 +14,8 @@ colvar {
     # lowerBoundary 0.0
     upperBoundary 10.0
 
+    # not required to define hard limits but recommended to avoid unnecessary grid expansion
+    # likely to be activated by default with refletion in the future
     hardUpperBoundary on
     hardLowerBoundary on
 
@@ -36,8 +38,8 @@ metadynamics {
 }
 
 harmonicWalls {
-    name wall_dist_N_O
-    colvars dist_N_O
-    forceConstant 0.6
+    name wall_one
+    colvars one
+    forceConstant 1.0
     upperWalls 10.0
 }
