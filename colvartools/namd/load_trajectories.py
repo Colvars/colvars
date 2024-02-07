@@ -76,7 +76,7 @@ def write_constant_bias_trajs(trajs, biases=[], variables=[],
            pluto=np.c_[pluto,trajs[bias][variables[i]].values]
         pluto=pluto[pluto[:, 0].argsort()] 
         np.savetxt("%s.%s.dat" % (output_prefix, bias),pluto,
-                   header=" " + " ".join(str(variable) for variable in variables))
+                   header="step" " " + " ".join(str(variable) for variable in variables))
            
 #        with open("%s.%s.dat" % (output_prefix, bias), 'w') as f:
 #            f.write(" # ")
