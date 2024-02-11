@@ -771,7 +771,7 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
                            def_config_key,
                            &def_conf,
                            &pos) ) {
-    if (!def_conf.size()) continue;
+
     cvm::log("Initializing "
              "a new \""+std::string(def_config_key)+"\" component"+
              (cvm::debug() ? ", with configuration:\n"+def_conf
