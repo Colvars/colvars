@@ -151,6 +151,7 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::button $main.cvfromprotein -text "Protein/NA auto-colvars" -command ::cv_dashboard::auto_cv -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $main.cvfromlabels -text "Colvars from VMD labels" -command ::cv_dashboard::cvs_from_labels -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.cvfromtraj -text "Colvars from traj file" -command ::cv_dashboard::cvs_from_traj -padding "2 0 2 0"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   # General options
   incr gridrow
