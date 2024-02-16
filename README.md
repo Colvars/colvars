@@ -1,10 +1,10 @@
-# Collective variables library (Colvars)
+# Collective variables module (Colvars)
 
 A software library for molecular simulation and analysis that provides a high-performance implementation of sampling algorithms defined on a reduced space of continuously differentiable functions (aka collective variables).
 
 First released in 2008 as part of the standard distribution of [NAMD](https://www.ks.uiuc.edu/Research/namd/) version 2.7b1, Colvars has also been integrated in [LAMMPS](https://lammps.sandia.gov/download.html), [VMD](https://www.ks.uiuc.edu/Research/vmd/), [GROMACS](http://www.gromacs.org/), and [Tinker-HP](https://tinker-hp.org/).  In VMD, interactive use is possible both from the command line and through the [Dashboard](vmd/cv_dashboard/README.md) graphical user interface.
 
-The functionality provided to those packages by the Colvars library includes a variety of functions and algorithms, including free-energy estimators based on thermodynamic forces, non-equilibrium work and probability distributions.
+The functionality provided to those packages by Colvars includes a variety of functions and algorithms, including free-energy estimators based on thermodynamic forces, non-equilibrium work and probability distributions.
 
 ## Obtaining and using
 
@@ -87,7 +87,7 @@ The [tests](https://github.com/Colvars/colvars/tree/master/tests?raw=true) folde
 
 ## Updating to the latest version
 
-To recompile each program with the most recent version of the module, [download](https://github.com/Colvars/colvars/archive/master.zip) the `master` branch of this repository, or clone it via git:
+To recompile each program with the most recent version of the library, [download](https://github.com/Colvars/colvars/archive/master.zip) the `master` branch of this repository, or clone it via git:
 ```
 git clone https://github.com/Colvars/colvars.git
 ```
