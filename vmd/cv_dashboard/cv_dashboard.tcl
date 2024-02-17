@@ -870,30 +870,29 @@ proc ::cv_dashboard::load_cv_traj { filenames } {
     close $fd
   }
   set nsteps [llength $steps]
-  puts "Read $nsteps steps from colvars.traj files"
+  puts "Read $nsteps steps from files: $filenames"
 
 
   # (2) Use heuristic to match number of samples to number of frames
+  # assuming that the molecular trajectory frequency is a multiple of the colvars.traj frequency
 
   set molid $::cv_dashboard::mol
   set nf [molinfo $molid get numframes]
 
-  if { $nf > 0 && [expr {$nsteps % $nf}] == 0 } {
-    set skip_steps 0
-    set stride [expr {$nsteps / $nf}]
-    puts "Assuming $stride colvars.traj steps per trajectory frame."
-    tk_messageBox -title "Loading Colvars trajectory file" -parent .cv_dashboard_window -message \
-      "Read $nsteps steps from colvars.traj files.\nAssuming $stride colvars.traj steps per trajectory frame."
-  } elseif { $nf > 1 && [expr {($nsteps - 1) % $nf}] == 0 } {
+  if { $nf > 0 && [expr {($nsteps - 1) % $nf}] == 0 } {
+    # VMD trajectory is missing first step
     set stride [expr {($nsteps - 1) / $nf}]
     set skip_steps $stride
     puts "Assuming $stride colvars.traj steps per trajectory frame, skipping $stride initial steps."
-    tk_messageBox -title "Loading Colvars trajectory file" -parent .cv_dashboard_window -message \
-      "Read $nsteps steps from colvars.traj files.\nAssuming $stride colvars.traj steps per trajectory frame, skipping $stride initial steps."
+  } elseif { $nf > 1 && [expr {($nsteps - 1) % ($nf - 1)}] == 0 } {
+    set stride [expr {($nsteps - 1) / ($nf - 1)}]
+    set skip_steps 0
+    puts "Assuming $stride colvars.traj steps per trajectory frame."
   } else {
     puts "Error: cannot match $nsteps steps with $nf frames."
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
-    -message "Cannot match $nsteps steps with $nf frames.\n"
+    -message "Could not match $nsteps steps with $nf frames. Check that the selected colvars.traj files ($filenames) correspond to \
+the loaded trajectory of molecule $molid, and that the molecular trajectory frequency is a multiple of the colvars.traj frequency."
     return
   }
 
