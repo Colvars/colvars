@@ -66,17 +66,19 @@ proc load_cv_traj { filenames {molid "top"}} {
 
 
   # (2) Use heuristic to match number of samples to number of frames
+  # assuming that the molecular trajectory frequency is a multiple of the colvars.traj frequency
 
   set nf [molinfo $molid get numframes]
 
-  if { $nf > 0 && [expr {$nsteps % $nf}] == 0 } {
-    set skip_steps 0
-    set stride [expr {$nsteps / $nf}]
-    puts "Assuming $stride colvars.traj steps per trajectory frame."
-  } elseif { $nf > 1 && [expr {($nsteps - 1) % $nf}] == 0 } {
+  if { $nf > 0 && [expr {($nsteps - 1) % $nf}] == 0 } {
+    # VMD trajectory is missing first step
     set stride [expr {($nsteps - 1) / $nf}]
     set skip_steps $stride
-    puts "Assuming $stride colvars.traj steps per trajectory frame, by skipping $stride initial steps."  
+    puts "Assuming $stride colvars.traj steps per trajectory frame, skipping $stride initial steps."
+  } elseif { $nf > 1 && [expr {($nsteps - 1) % ($nf - 1)}] == 0 } {
+    set stride [expr {($nsteps - 1) / ($nf - 1)}]
+    set skip_steps 0
+    puts "Assuming $stride colvars.traj steps per trajectory frame."
   } else {
     puts "Error: cannot match $nsteps steps with $nf frames."
     return
@@ -165,7 +167,6 @@ proc create_traj_colvar { molid cv } {
   }
   "
   cv config $configString
-  }
 }
 
 
