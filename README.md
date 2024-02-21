@@ -8,21 +8,20 @@ The functionality provided to those packages by Colvars includes a variety of fu
 
 ## Obtaining and using
 
-The easiest way to obtain pre-compiled versions of Colvars is via one of following:
-- the molecular simulation program [LAMMPS](https://lammps.sandia.gov/download.html);
-- the molecular simulation program [NAMD](https://www.ks.uiuc.edu/Research/namd/);
-- the molecular simulation program [Tinker-HP](https://tinker-hp.org/);
-- the molecular visualization program [VMD](https://www.ks.uiuc.edu/Research/vmd/).
+The easiest way to obtain pre-compiled versions of Colvars is via one of the following software packages:
+- [GROMACS](https://manual.gromacs.org/)
+- [LAMMPS](https://lammps.sandia.gov/download.html)
+- [NAMD](https://www.ks.uiuc.edu/Research/namd/)
+- [Tinker-HP](https://tinker-hp.org/)
+- [VMD](https://www.ks.uiuc.edu/Research/vmd/)
 
 Please check [here](https://github.com/Colvars/colvars/wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages) to see which version of Colvars is included with the round-number or "stable" versions of each code.
-
-For the molecular simulation program [GROMACS](http://www.gromacs.org/), code may be compiled via our Colvars-patched [releases](#gromacs-colvars-releases).
 
 ## Documentation
 
 The [Colvars webpage](https://colvars.github.io/) includes user documentation for all codes, as well as a Doxygen-based [developer documentation](https://colvars.github.io/doxygen/html/).
 
-To reflect the different availability of features in each engine, the Colvars reference manual comes in several flavors: [GROMACS](https://colvars.github.io/colvars-refman-gromacs/colvars-refman-gromacs.html) [LAMMPS](https://colvars.github.io/colvars-refman-lammps/colvars-refman-lammps.html) [NAMD](https://colvars.github.io/colvars-refman-namd/colvars-refman-namd.html) [Tinker-HP](https://colvars.github.io/colvars-refman-tinkerhp/colvars-refman-tinkerhp.html) [VMD](https://colvars.github.io/colvars-refman-vmd/colvars-refman-vmd.html)
+To reflect the different availability of features in each engine, the Colvars reference manual comes in several flavors: [GROMACS](https://colvars.github.io/master/colvars-refman-gromacs.html) [LAMMPS](https://colvars.github.io/master/colvars-refman-lammps.html) [NAMD](https://colvars.github.io/master/colvars-refman-namd.html) [Tinker-HP](https://colvars.github.io/master/colvars-refman-tinkerhp.html) [VMD](https://colvars.github.io/master/colvars-refman-vmd.html)
 
 ## Citing
 
@@ -109,28 +108,17 @@ The `update-colvars-code.sh` script support patching the latest development vers
 
 All of the above MD engine versions are automatically tested as part of GitHub Actions [workflows](https://github.com/Colvars/colvars/actions?query=branch%3Amaster).
 
-## GROMACS-Colvars releases
+## Legacy GROMACS-Colvars patched releases
 
-Colvars can interface to GROMACS in two ways, depending on the version of GROMACS:
-1. Using a customized `mdrun` command line (GROMACS releases up to 2023); source code is available as patched versions of past GROMACS releases [here](https://github.com/Colvars/gromacs/tags).
-2. Using a standard `mdrun` command line (supported in the 2024-beta release); source code is available directly from the [GROMACS repository](https://github.com/gromacs/gromacs).
+Versions GROMACS prior to 2024 are supported through the use of a customized `mdrun` command line; source code of these patched releases is available [here](https://github.com/Colvars/gromacs).  When posting a message to the [Gromacs forum](https://gromacs.bioexcel.eu/) regarding the use of these patched releases, please specify "GROMACS modification: **Yes**".
 
-The standard GROMACS installation procedure is supported in either case.
-
-To update the version of Colvars to GROMACS in a given release, the Colvars [patching procedure](#updating-to-the-latest-version) can be used.  This procedure is generally compatible with all GROMACS versions from the same release years as those listed above.  Please use the latest revision of each release series whenever possible.
-
-When posting a message to the [Gromacs forum](https://gromacs.bioexcel.eu/) please use the [`colvars` tag](https://gromacs.bioexcel.eu/tag/colvars) and please salso specify "GROMACS modification: **Yes**" unless you are using a standard GROMACS.
-
-If using a patched release, please also reference the Colvars version: this is included in the version string that is reported by the patched GROMACS (right after the GROMACS version), for example:
-```
-   :-) GROMACS - gmx_d, 2021.5-Colvars-2022-02-20-dev (double precision) (-:
-```
 
 ## Which version of Colvars is recommended?
 
-The Git `master` branch is to be considered the "*stable*" release at any given time; any bugfixes are released through `master` first.  The input syntax is near-completely *backward-compatible* and output files are *forward-compatible*.  Feel free to download Colvars and update NAMD, VMD, LAMMPS, GROMACS, or Tinker-HP as needed.
+The Git `master` branch is to be considered the "*stable*" release at any given time; any bugfixes are released through `master` first.  The input syntax is near-completely *backward-compatible* and output files are *forward-compatible*.  Feel free to download Colvars and update GROMACS, LAMMPS, NAMD, Tinker-HP or VMD as needed.
 
 Other branches are dedicated to the development of specific features: please use them at your own discretion.
+
 
 ## Which version of Colvars is included in package XX version YY?
 
@@ -139,15 +127,18 @@ This date is printed to the standard output or log file as soon as Colvars is ac
 
 A table mapping software package release versions to Colvars versions is given [here](https://github.com/Colvars/colvars/wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages).
 
-
 If you are using a stable release of any of the codes mentioned above, feel free to use the version number of that code when asking questions.
+
 
 ## Feedback
 
-Please use the "[Issues](https://github.com/Colvars/colvars/issues)" tab of this page to submit new bug reports or to suggest new features.
+For usage questions, please start a new [Discussion](https://github.com/Colvars/colvars/discussions/new?category=q-a).
+
+For bug reports or feature requests, use the "[Issues](https://github.com/Colvars/colvars/issues)" tab.
+
 
 ## License
 
-This software is distributed under the GNU Lesser General Public License (LGPL), version 3.  See COPYING.LESSER for complete licensing terms.
+This software is distributed under the GNU Lesser General Public License version 3 (LGPLv3); see the file COPYING.LESSER for complete licensing terms.
 
-In the interest of broad distribution, copies of this code are also distributed together with LAMMPS (LGPL version 2), NAMD and VMD (UIUC license).  However, the terms of the LGPLv3 license still apply to code originating from this repository.
+In the interest of broad distribution, copies of this code are also included in GROMACS (LGPLv2), LAMMPS (LGPLv2), NAMD and VMD (UIUC license); however, the terms of the LGPLv3 still apply to code originating from this repository.
