@@ -673,7 +673,7 @@ int cvm::atom_group::add_atom_numbers(std::string const &numbers_conf)
 }
 
 
-int cvm::atom_group::add_index_group(std::string const &index_group_name)
+int cvm::atom_group::add_index_group(std::string const &index_group_name, bool silent)
 {
   std::vector<std::string> const &index_group_names =
     cvm::main()->index_group_names;
@@ -687,7 +687,10 @@ int cvm::atom_group::add_index_group(std::string const &index_group_name)
   }
 
   if (i_group >= index_group_names.size()) {
-    return cvm::error("Error: could not find index group "+
+    if (silent)
+      return COLVARS_INPUT_ERROR;
+    else
+      return cvm::error("Error: could not find index group "+
                       index_group_name+" among those already provided.\n",
                       COLVARS_INPUT_ERROR);
   }
