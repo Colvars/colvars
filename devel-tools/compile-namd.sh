@@ -11,8 +11,9 @@ if [ -n "${CCACHE_HOME}" ] ; then
     export PATH=${CCACHE_HOME}:${PATH}
 fi
 
-# Save path to be used later
-devel_tools_folder=$(realpath $(dirname $0))
+if [ -e /opt/tcl/8.6/include/tcl.h ] ; then
+    export TCL_HOME=/opt/tcl/8.6
+fi
 
 
 compile_namd_target() {
@@ -75,18 +76,6 @@ EOF
 
     if [ "${label}" = "netlrts" ] ; then
         cmd+=(--charm-arch netlrts-linux-x86_64)
-    fi
-
-    if grep -q -- -ltcl8.6 arch/Linux-x86_64.tcl ; then
-        if [ -d ${devel_tools_folder}/packages/tcl8.6.13-linux-x86_64-threaded ] ; then
-            export TCL_HOME=${devel_tools_folder}/packages/tcl8.6.13-linux-x86_64-threaded
-        fi
-    else
-        # Amend NAMD 2.x arch file for recent Tcl versions under RH and Debian paths
-        if [ -f /usr/lib64/libtcl8.6.so ] || \
-               [ -f /usr/lib/x86_64-linux-gnu/libtcl8.6.so ] ; then
-            sed -i 's/-ltcl8.5/-ltcl8.6/' arch/Linux-x86_64.tcl
-        fi
     fi
 
     if [ -z "${TCL_HOME}" ] ; then

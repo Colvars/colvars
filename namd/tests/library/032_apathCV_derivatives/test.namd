@@ -38,9 +38,9 @@ hgroupcutoff        2.8
 colvars             on
 colvarsConfig       apath.in
 
-langevin            on
-langevinDamping     10.0
-langevinTemp        300.0
+#langevin            on
+#langevinDamping     10.0
+#langevinTemp        300.0
 
 firsttimestep       0
 run                 20

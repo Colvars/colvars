@@ -161,10 +161,18 @@ proc ::cv_dashboard::run_cv args  {
     }
   }
 
+  # Optional argument: parent window to display error messages on top of
+  set parent_window .cv_dashboard_window
+  # a good heuristic to decide that the last argument is the name of a window
+  if {[llength $args] > 1 && [string match ".cv_dashboard_window*" [lindex $args end]]} {
+    set parent_window [lindex $args end]
+    set args [lrange $args 0 end-1]
+  }
+
   if [catch { cv {*}$args } res] {
     set short_cmd [string range $args 0 200]
     set short_message [string range $res 0 200]
-    tk_messageBox -icon error -title "Colvars Library Error" -parent .cv_dashboard_window\
+    tk_messageBox -icon error -title "Colvars Library Error" -parent $parent_window\
       -message "Error running command:\n$short_cmd" -detail "$short_message\n\nSee console for further details."
     return -1
   }
@@ -178,7 +186,7 @@ proc ::cv_dashboard::run_cv args  {
 # - submit to Colvars module for parsing
 # - extract config strings of individual colvars
 # - keep full config string with comments for any newly added colvar
-proc ::cv_dashboard::apply_config { cfg } {
+proc ::cv_dashboard::apply_config { cfg {parent_window .cv_dashboard_window}} {
   if { $cfg == "" } {
     return ""
   }
@@ -191,7 +199,7 @@ proc ::cv_dashboard::apply_config { cfg } {
   set cvs_before [run_cv list]
   set biases_before [run_cv list biases]
   # Actually submit new config to the Colvars Module
-  set res [run_cv config $cfg]
+  set res [run_cv config $cfg $parent_window]
   set cvs_after [run_cv list]
   set biases_after [run_cv list biases]
 

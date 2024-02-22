@@ -246,10 +246,6 @@ jobs:
           key: ${{ runner.os }}-build-asan-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-asan-
 
-      - name: Install build dependencies for library
-        run: |
-          sudo apt -y install tcl8.6-dev clang-14 clang-tools-14
-
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v4
         with:
@@ -428,6 +424,17 @@ jobs:
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           scl enable gcc-toolset-12 -- \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: GCC 13, C++20 (CentOS 9)
+        env:
+          CXX_STANDARD: 20
+          CXX: g++
+          CXX_VERSION: 13
+          CC: gcc
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          scl enable gcc-toolset-13 -- \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: Clang 16, C++11 (CentOS 9)

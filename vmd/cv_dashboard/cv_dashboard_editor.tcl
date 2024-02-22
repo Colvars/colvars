@@ -292,7 +292,7 @@ proc ::cv_dashboard::atoms_from_sel { source } {
   set sel [atomselect $::cv_dashboard::mol $seltext]
 
   if {[$sel num] == 0 } {
-    tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
+    tk_messageBox -icon error -title "Colvars error" -parent $w.editor\
       -message "Selection text \"${seltext}\" matches zero atoms."
     return
   }
@@ -417,14 +417,14 @@ proc ::cv_dashboard::edit_apply { type } {
     catch {cv $type $i delete}
   }
   set cfg [$text get 1.0 end-1c]
-  set res [apply_config $cfg]
+  set res [apply_config $cfg $window]
   if { [string compare $res ""] } {
     # error: restore backed up cfg
     foreach i $::cv_dashboard::being_edited {
       # Delete again any object that might have been successfully recreated
       catch {cv $type $i delete}
     }
-    apply_config $::cv_dashboard::backup_cfg
+    apply_config $::cv_dashboard::backup_cfg $window
     # The bias names being edited might have changed here
     # Do not destroy editor window (give user a chance to fix input)
     if { $type == "colvar" } {
@@ -653,19 +653,28 @@ proc ::cv_dashboard::cvs_from_labels {} {
       set cv_name "$short($obj)"
       set cfg ""
 
+      # Loop on atoms
       for {set i 0} { $i < $n($obj) } {incr i} {
         set a [lindex $l $i]
         set m [lindex $a 0]
         if { $m != $molid } {
-          # Label references atom outside of current molecule, skip
+          # Label references atom outside of current molecule, cannot create colvar
           set ok false
           break
         }
         set sel [atomselect $molid "index [lindex $a 1]"]
-        set serial [$sel get serial]
-        set resname [$sel get resname]
-        set resid [$sel get resid]
-        set name [$sel get name]
+        if {[$sel num] != 1} {
+          # Look like a bug, we should have exactly 1 atom
+          tk_messageBox -icon error -title "Colvars error" -parent .cv_dashboard_window\
+            -message [string cat "Invalid selection ([$sel num] atoms instead of 1) in ::cv_dashboard::cvs_from_labels.\n"\
+            "Please report this as a bug."]
+          set ok false
+          break
+        }
+        set serial [lindex [$sel get serial] 0]
+        set resname [lindex [$sel get resname] 0]
+        set resid [lindex [$sel get resid] 0]
+        set name [lindex [$sel get name] 0]
         $sel delete
 
         if { $name == "" || $resname == "" } {

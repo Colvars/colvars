@@ -1,13 +1,17 @@
 #!/bin/sh
 
+# Create a dependency graph using the dot utility from the Graphviz package
+
 echo 'digraph d {
 rankdir = "LR";' > deps.gv
 
-# create nodes and edges
-gawk -f process_deps_graph.awk colvaratoms.cpp >> deps.gv
-gawk -f process_deps_graph.awk colvarcomp.cpp >> deps.gv
-gawk -f process_deps_graph.awk colvar.cpp >> deps.gv
-gawk -f process_deps_graph.awk colvarbias.cpp >> deps.gv
+# collect data from the all files with calls to init_feature()
+files=$(grep -lE 'init_feature\(f_' *.cpp)
+for f in $files
+do
+  echo "Extracting deps from source file $f"
+  gawk -f process_deps_graph.awk $f >> deps.gv
+done
 
 # set dependencies of the same level objects to the same rank
 awk '/^  cvb_/{list = list "\"" $1 "\" ; "} END {print "  { rank = same; " list "}"}' deps.gv >> deps.gv

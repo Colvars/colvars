@@ -1,8 +1,12 @@
 #!/usr/bin/awk -f
 
-/^ *init_feature\(/ {
+# This script parses a Colvars C++ source files containing calls to colvardeps::init_feature()
+# and print a dependency graph in dot (graphviz) format
 
-  if (!match($0, /init_feature\(f_([^,]*), \"/, res)) exit(1)
+/^ *init_feature\(/ {
+  # Create a node (text box) for each feature
+
+  if (!match($0, /init_feature\(f_([^,]*), "/, res)) exit(1)
   id = res[1]
   if (!match($0, /init_feature\(f_([^_]*)/, res)) exit(1)
   obj = res[1]
@@ -29,20 +33,19 @@
   depstyle["self"] = ""
   depstyle["exclude"] = "[dir = \"both\" arrowhead = \"tee\" arrowtail = \"tee\" style = dotted]"
   depstyle["children"] = ""
-  depstyle["alt2"] = "[style = dashed]"
-  depstyle["alt3"] = "[style = dashed]"
-  depstyle["alt4"] = "[style = dashed]"
-
+  depstyle["alt"] = "[style = dashed]"
 
   print "  " id " [label = \"" label "\" fontcolor = \"" color[obj] "\" color = \"" \
     color[obj] "\" shape = \"" shape[type] "\" style = \"" style[type] "\"];"
 }
 
 /^ *require_feature_/ {
+  # Create an edge for each dependency
+
   if (!match($0, /require_feature_([^\(]*)/, res)) exit(1)
   deptype = res[1]
 
-  # extract features
+  # extract feature names
   sub(/\);.*/, "")
   n = split(gensub(/[^a-z_]*f_([a-z_]*)[\);]*/, " \\1", "g"), features)
 
@@ -60,7 +63,7 @@
     }
     printf "}"
   }
-  
+
   print " " depstyle[deptype] ";"
 }
 

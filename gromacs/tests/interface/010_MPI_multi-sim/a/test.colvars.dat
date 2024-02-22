@@ -28,4 +28,5 @@ harmonic {
     colvars d_atoms
     forceConstant 2000
     centers 2.5
+    outputEnergy on
 }
