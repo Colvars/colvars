@@ -181,7 +181,8 @@ jobs:
           path: ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.diff
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }} (binary restarts)
-        if: ${{ inputs.test_lib_directory }}
+        # Skipping GROMACS, because its restarts are always binary anyway
+        if: ${{ inputs.test_lib_directory }} && ${{ inputs.backend_name != 'GROMACS-main' }}
         shell: bash
         working-directory: ${{ inputs.test_lib_directory }}
         env:
