@@ -625,6 +625,17 @@ public:
 
   /// \brief Get the bin indices corresponding to the provided values of
   /// the colvars and assign first or last bin if out of boundaries
+  inline std::vector<int> const get_colvars_index_bound(std::vector<colvarvalue> const &values) const
+  {
+    std::vector<int> index = new_index();
+    for (size_t i = 0; i < nd; i++) {
+      index[i] = value_to_bin_scalar_bound(values[i], i);
+    }
+    return index;
+  }
+
+  /// \brief Get the bin indices corresponding to the current values of
+  /// the colvars and assign first or last bin if out of boundaries
   inline std::vector<int> const get_colvars_index_bound() const
   {
     std::vector<int> index = new_index();
