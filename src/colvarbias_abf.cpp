@@ -120,6 +120,10 @@ int colvarbias_abf::init(std::string const &conf)
     }
   }
 
+  // Default to standard (infinite temperature) ABF
+  bias_factor = 0.0;
+  get_keyval(conf, "biasFactor", bias_factor, bias_factor);
+
   // shared ABF
   get_keyval(conf, "shared", shared_on, false);
   if (shared_on) {
@@ -534,6 +538,8 @@ cvm::real colvarbias_abf::smoothing_factor(cvm::real weight)
 int colvarbias_abf::calc_biasing_force(std::vector<cvm::real> &force)
 {
   size_t i;
+  // Factor for finite temperature
+  cvm::real fact = 1. - bias_factor;
 
   // Pick between different types of biasing force
   if ( pabf_freq ) {
@@ -541,10 +547,7 @@ int colvarbias_abf::calc_biasing_force(std::vector<cvm::real> &force)
     pmf->vector_gradient_finite_diff(bin, force);
     // Calculate ramp factor that ensures smooth introduction of the force
     const cvm::real count = samples->value(bin);
-    const cvm::real fact = smoothing_factor(count);
-    for (i = 0; i < num_variables(); i++) {
-      force[i] *= fact;
-    }
+    fact *= smoothing_factor(count);
   } else {
     // Normal ABF or eABF: use accumulated gradient average
     gradients->vector_value_smoothed(bin, &force[0], true);
@@ -554,6 +557,10 @@ int colvarbias_abf::calc_biasing_force(std::vector<cvm::real> &force)
       // Only plain ABF needs this
       force[0] = force[0] - gradients->average();
     }
+  }
+
+  for (i = 0; i < num_variables(); i++) {
+    force[i] *= fact;
   }
 
   if (cap_force) {

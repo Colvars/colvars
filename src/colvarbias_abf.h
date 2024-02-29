@@ -51,6 +51,9 @@ private:
   /// Integrate gradients into a PMF on output
   bool    b_integrate;
 
+  /// Factor for finite-temperature ABF. Zero for standard ABF, one for no bias.
+  cvm::real bias_factor;
+
   /// Number of samples per bin before applying the full biasing force
   size_t  full_samples;
   /// Number of samples per bin before applying a scaled-down biasing force
