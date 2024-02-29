@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if pushd $(git rev-parse --show-toplevel) 1> /dev/null ; then
+    retcode=0
+    for f in src/colvar*.cpp src/colvar*.h ; do
+        if [ $f == "src/colvars_version.h" ] ; then
+            continue
+        fi
+        if ! grep -q 'The original version of Colvars and its updates are located at:' $f ; then
+            echo "Error: missing header in file ${f}" >&2
+            retcode=1
+        fi
+    done
+    popd 1> /dev/null
+    exit ${retcode}
+fi
+
