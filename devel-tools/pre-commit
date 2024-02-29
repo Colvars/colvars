@@ -10,6 +10,4 @@ do \
 done
 
 # Relaxing this check now that it's done in GitHub Actions
-# $(git rev-parse --show-toplevel)/devel-tools/check_build_recipes || exit 1
-
-exit 0
+$(git rev-parse --show-toplevel)/devel-tools/check_build_recipes
