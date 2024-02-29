@@ -1,4 +1,11 @@
 
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.
+
   paper_count_[std::string("Abraham2015")] = 0;
   paper_url_[std::string("Abraham2015")] = "https://doi.org/10.1016/j.softx.2015.06.001";
   paper_bibtex_[std::string("Abraham2015")] =

@@ -8,7 +8,7 @@ import re
 
 
 def gen_cplusplus_entry(entry, key, url):
-    key_year_sep = re.search('\d', key).start()
+    key_year_sep = re.search('\\d', key).start()
     key_author = key[0:key_year_sep]
     key_year = key[key_year_sep:]
     result = """
@@ -43,6 +43,14 @@ def assign_undef_features(entry):
 
 
 with open('colvars-code-refs.bib') as bib:
+    print("""
+// This file is part of the Collective Variables module (Colvars).
+// The original version of Colvars and its updates are located at:
+// https://github.com/Colvars/colvars
+// Please update all Colvars source files before making any changes.
+// If you wish to distribute your changes, please submit them to the
+// Colvars repository at GitHub.""")
+
     entry = ""
     for line in bib.readlines():
         first_char = None
