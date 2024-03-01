@@ -213,7 +213,11 @@ int colvardeps::enable(int feature_id,
     res = enable(f->requires_self[i], dry_run, false, error);
     if (res != COLVARS_OK) {
       if (!dry_run || error) {
-        cvm::log("...required by \"" + f->description + "\" in " + description + "\n");
+        if (toplevel) {
+          cvm::log("Cannot enable \"" + f->description + "\" in " + description + "\n");
+        } else {
+          cvm::log("...required by \"" + f->description + "\" in " + description + "\n");
+        }
         if (toplevel) {
           cvm::error("Error: Failed dependency in " + description + ".\n");
         }
@@ -273,7 +277,11 @@ int colvardeps::enable(int feature_id,
       res = children[j]->enable(g, dry_run || !is_enabled(), false, error);
       if (res != COLVARS_OK) {
         if (!dry_run || error) {
-          cvm::log("...required by \"" + f->description + "\" in " + description + "\n");
+          if (toplevel) {
+            cvm::log("Cannot enable \"" + f->description + "\" in " + description + "\n");
+          } else {
+            cvm::log("...required by \"" + f->description + "\" in " + description + "\n");
+          }
           if (toplevel) {
             cvm::error("Error: Failed dependency in " + description + ".\n");
           }
