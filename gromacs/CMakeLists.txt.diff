@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 70b0369bed..cccfe2aa1b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -678,6 +678,8 @@ include(gmxManageLmfit)
+ 
+ include(gmxManageMuparser)
+ 
++include(gmxManageLepton)
++
+ include(gmxManageColvars)
+ 
+ ##################################################
