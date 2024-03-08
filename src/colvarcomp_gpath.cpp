@@ -46,8 +46,8 @@ int colvar::CartesianBasedPath::init(std::string const &conf)
     if (get_keyval(conf, "refPositionsCol", reference_column, std::string(""))) {
         bool found = get_keyval(conf, "refPositionsColValue", reference_column_value, reference_column_value);
         if (found && reference_column_value == 0.0) {
-          error_code |= cvm::error("Error: refPositionsColValue, "
-                                   "if provided, must be non-zero.\n", COLVARS_INPUT_ERROR);
+            return cvm::error("Error: refPositionsColValue, if provided, must be non-zero.\n",
+                              COLVARS_INPUT_ERROR);
         }
     }
     // Lookup all reference frames
@@ -196,7 +196,9 @@ int colvar::gspath::init(std::string const &conf)
         cvm::log(std::string("Geometric path s(σ) will use the neighbouring frame to compute s_(m+1)\n"));
     }
     if (total_reference_frames < 2) {
-        error_code |= cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) + " reference frames, but gspath requires at least 2 frames.\n", COLVARS_INPUT_ERROR);
+        return cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) +
+                              " reference frames, but gspath requires at least 2 frames.\n",
+                          COLVARS_INPUT_ERROR);
     }
     GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::S>::initialize(atoms->size(), cvm::atom_pos(), total_reference_frames, use_second_closest_frame, use_third_closest_frame);
     cvm::log(std::string("Geometric pathCV(s) is initialized.\n"));
@@ -353,7 +355,9 @@ int colvar::gzpath::init(std::string const &conf)
         cvm::log(std::string("Geometric path z(σ) will use the square of distance from current frame to path compute z\n"));
     }
     if (total_reference_frames < 2) {
-        error_code |= cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) + " reference frames, but gzpath requires at least 2 frames.\n", COLVARS_INPUT_ERROR);
+        return cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) +
+                               " reference frames, but gzpath requires at least 2 frames.\n",
+                          COLVARS_INPUT_ERROR);
     }
     GeometricPathCV::GeometricPathBase<cvm::atom_pos, cvm::real, GeometricPathCV::path_sz::Z>::initialize(atoms->size(), cvm::atom_pos(), total_reference_frames, use_second_closest_frame, use_third_closest_frame, b_use_z_square);
     // Logging
