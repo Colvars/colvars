@@ -106,22 +106,36 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
            "  https://doi.org/10.1080/00268976.2013.813594\n"
            "as well as all other papers listed below for individual features used.\n");
 
-  if (proxy->check_smp_enabled() == COLVARS_NOT_IMPLEMENTED) {
-    cvm::log("SMP parallelism is not available in this build.\n");
-  } else {
-    if (proxy->check_smp_enabled() == COLVARS_OK) {
-      cvm::log("SMP parallelism is enabled (num threads = " + to_str(proxy->smp_num_threads()) + ").\n");
-    } else {
-      cvm::log("SMP parallelism is available in this build but not enabled.\n");
-    }
-  }
-
 #if (__cplusplus >= 201103L)
   cvm::log("This version was built with the C++11 standard or higher.\n");
 #else
   cvm::log("This version was built without the C++11 standard: some features are disabled.\n"
     "Please see the following link for details:\n"
     "  https://colvars.github.io/README-c++11.html\n");
+#endif
+
+  cvm::log("Summary of compile-time features available in this build:\n");
+
+  if (proxy->check_smp_enabled() == COLVARS_NOT_IMPLEMENTED) {
+    cvm::log("  - SMP parallelism: not available\n");
+  } else {
+    if (proxy->check_smp_enabled() == COLVARS_OK) {
+      cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
+    } else {
+      cvm::log("  - SMP parallelism: available, but not enabled\n");
+    }
+  }
+
+#if defined(LEPTON)
+  cvm::log("  - Lepton custom functions: available\n");
+#else
+  cvm::log("  - Lepton custom functions: not available\n");
+#endif
+
+#if defined(COLVARS_TCL)
+  cvm::log("  - Tcl interpreter: available\n");
+#else
+  cvm::log("  - Tcl interpreter: not available\n");
 #endif
 
   // set initial default values
