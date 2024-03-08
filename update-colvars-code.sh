@@ -644,9 +644,18 @@ then
   done
   echo ""
 
-  # Patch CMake build recipe
-  if [ -f ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff ] ; then
+  # Patch CMake build recipe when applicable
+  if [ -s ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff ] ; then
     patch -p1 -N -d ${target} < ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff
+  fi
+  if [ -s ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.diff ] ; then
+    patch -p1 -N -d ${target} < ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.diff
+  fi
+  if [ -s ${source}/gromacs/CMakeLists.txt.diff ] ; then
+    patch -p1 -N -d ${target} < ${source}/gromacs/CMakeLists.txt.diff
+  fi
+  if [ -s ${source}/gromacs/cmake/gmxManageLepton.cmake ] ; then
+    condcopy ${source}/gromacs/cmake/gmxManageLepton.cmake "${target}/cmake/gmxManageLepton.cmake"
   fi
   echo
 

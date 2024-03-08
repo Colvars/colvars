@@ -1,0 +1,13 @@
+diff --git a/src/gromacs/CMakeLists.txt b/src/gromacs/CMakeLists.txt
+index 29d3642897..651c983be2 100644
+--- a/src/gromacs/CMakeLists.txt
++++ b/src/gromacs/CMakeLists.txt
+@@ -470,6 +470,8 @@ target_link_libraries(libgromacs PRIVATE lmfit)
+ target_link_libraries(libgromacs PRIVATE muparser::muparser)
+ gmx_manage_colvars()
+ target_link_libraries(libgromacs PRIVATE colvars)
++gmx_manage_lepton()
++target_link_libraries(libgromacs PRIVATE lepton)
+ 
+ # Make sure we fix "everything" found by compilers that support that
+ gmx_warn_on_everything(libgromacs)
