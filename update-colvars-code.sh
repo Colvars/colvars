@@ -143,9 +143,12 @@ copy_lepton() {
 
   if [ -d ${source}/openmm-source ] ; then
     OPENMM_SOURCE=${source}/openmm-source
+  elif [ -d ${source}/../openmm-source ] ; then
+    OPENMM_SOURCE=${source}/../openmm-source
   fi
 
   if [ -z "${OPENMM_SOURCE}" ] ; then
+    # Create a temp folder and download OpenMM into it
     OPENMM_SOURCE=$(mktemp -d /tmp/openmm-source-XXXXXX)
   fi
 
