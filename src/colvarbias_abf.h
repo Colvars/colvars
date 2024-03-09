@@ -202,23 +202,15 @@ public:
   /// Alternately we could overload the init_dependencies() function
   virtual int init_dependencies();
 
-  enum features_bias_abf {
-    /// Start after generic cvb features
-    /// There is at least one ext-Lagrangian colvar -> run eABF
-    f_cvb_abf_extended = f_cvb_ntot,
-    /// Total number of features for an ABF bias
-    f_cvb_abf_ntot
-  };
-
   /// \brief Implementation of the feature list for colvarbias_abf
   static std::vector<feature *> cvb_abf_features;
 
   /// \brief Implementation of the feature list accessor for colvarbias
-  virtual const std::vector<feature *> &features() const
+  virtual const std::vector<feature *> &features() const override
   {
     return cvb_abf_features;
   }
-  virtual std::vector<feature *> &modify_features()
+  virtual std::vector<feature *> &modify_features() override
   {
     return cvb_abf_features;
   }

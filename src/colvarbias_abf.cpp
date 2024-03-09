@@ -26,39 +26,13 @@ colvarbias_abf::colvarbias_abf(char const *key)
 }
 
 int colvarbias_abf::init_dependencies() {
+  // This customizes the cvb dependency tree for the derived class
 
   // First build dependency tree for parent class (colvarbias)
   colvarbias::init_dependencies();
 
-  int i;
-  if (features().size() < f_cvb_ntot) {
-    cvm::error("Error: dependency tree for parent class colvarbias has incorrect size "
-      + cvm::to_str(features().size()) + ".\n");
-    return COLVARS_ERROR;
-  } else if (features().size() == f_cvb_ntot) {
-    for (i = f_cvb_ntot; i < f_cvb_abf_ntot; i++) {
-      modify_features().push_back(new feature);
-    }
-
-    // To update the FE gradient we need to get the total force
-    require_feature_self(f_cvb_history_dependent, f_cvb_get_total_force);
-
-    init_feature(f_cvb_abf_extended, "ABF on extended-Lagrangian variables", f_type_static);
-
-    // check that everything is initialized
-    for (i = f_cvb_ntot; i < f_cvb_abf_ntot; i++) {
-      if (is_not_set(i)) {
-        cvm::error("Uninitialized feature " + cvm::to_str(i) + " in " + description);
-      }
-    }
-  }
-
-  // Initialize feature_states for each instance
-  for (i = f_cvb_ntot; i < f_cvb_abf_ntot; i++) {
-    feature_states.push_back(feature_state(true, false));
-    // Most features are available, so we set them so
-    // and list exceptions below
-  }
+  // To update the FE gradient we need to get the total force
+  require_feature_self(f_cvb_history_dependent, f_cvb_get_total_force);
 
   return COLVARS_OK;
 }
@@ -164,7 +138,7 @@ int colvarbias_abf::init(std::string const &conf)
     // If any colvar is extended-system, we need to collect the extended
     // system gradient
     if (colvars[i]->is_enabled(f_cv_extended_Lagrangian))
-      enable(f_cvb_abf_extended);
+      enable(f_cvb_extended);
 
     // Cannot mix and match coarse time steps with ABF because it gives
     // wrong total force averages - total force needs to be averaged over
@@ -187,7 +161,7 @@ int colvarbias_abf::init(std::string const &conf)
     cvm::log("WARNING: ABF biases will *not* be updated!\n");
   }
 
-  if (is_enabled(f_cvb_abf_extended)) {
+  if (is_enabled(f_cvb_extended)) {
     cvm::main()->cite_feature("eABF implementation");
   } else {
     cvm::main()->cite_feature("Internal-forces free energy estimator");
@@ -224,7 +198,7 @@ int colvarbias_abf::init(std::string const &conf)
   gradients->min_samples = min_samples;
 
   // Data for eABF z-based estimator
-  if (is_enabled(f_cvb_abf_extended)) {
+  if (is_enabled(f_cvb_extended)) {
     get_keyval(conf, "CZARestimator", b_CZAR_estimator, true);
     if ( b_CZAR_estimator ) {
       cvm::main()->cite_feature("CZAR eABF estimator");
@@ -296,7 +270,7 @@ int colvarbias_abf::init(std::string const &conf)
   }
 
   // if extendedLangrangian is on, then call UI estimator
-  if (is_enabled(f_cvb_abf_extended)) {
+  if (is_enabled(f_cvb_extended)) {
     get_keyval(conf, "UIestimator", b_UI_estimator, false);
 
     if (b_UI_estimator) {
