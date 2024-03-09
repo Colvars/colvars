@@ -197,6 +197,8 @@ int colvarbias::init_dependencies() {
     init_feature(f_cvb_scale_biasing_force, "scale_biasing_force", f_type_user);
     require_feature_children(f_cvb_scale_biasing_force, f_cv_grid);
 
+    init_feature(f_cvb_extended, "Bias on extended-Lagrangian variables", f_type_static);
+
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_cvb_ntot; i++) {
       if (is_not_set(i)) {

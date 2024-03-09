@@ -253,6 +253,8 @@ public:
     f_cvb_write_ti_pmf,
     /// \brief whether this bias uses an external grid to scale the biasing forces
     f_cvb_scale_biasing_force,
+    /// \brief whether this bias is applied to one or more ext-Lagrangian colvars
+    f_cvb_extended,
     f_cvb_ntot
   };
 
