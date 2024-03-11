@@ -41,6 +41,8 @@
 
 #include "colvarproxygromacs.h"
 
+#include "gromacs/utility/futil.h"
+
 #include <sstream>
 
 #include "colvarproxy_gromacs_version.h"
@@ -169,15 +171,13 @@ int ColvarProxyGromacs::backup_file(char const* filename)
     auto const        state_suffix_pos = filename_str.rfind(std::string(".colvars.state"));
     if (state_suffix_pos != std::string::npos)
     {
-        // For a Colvars state file, which is ordinarily written together
-        // with the GROMACS checkpoint, use the same mechanism
-        std::filesystem::path fn_orig    = filename_str;
-        std::filesystem::path fn_renamed = gmx::concatenateBeforeExtension(fn_orig, "_prev");
-        gmx_file_copy(fn_orig.string(), fn_renamed.string(), true);
+        // For a state file, which is usually written together with the checkpoint, keep one backup
+        // copy but use a different suffix to minimize confusion in edge cases
+        gmx_file_copy(filename_str, filename_str + ".old", true);
     }
     else
     {
-        // General backup provedure
+        // General GROMACS backup mechanism
         make_backup(filename);
     }
     return COLVARS_OK;
