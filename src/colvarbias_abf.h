@@ -32,11 +32,11 @@ public:
   /// Constructor for ABF bias
   colvarbias_abf(char const *key);
   /// Initializer for ABF bias
-  virtual int init(std::string const &conf);
+  int init(std::string const &conf) override;
   /// Default destructor for ABF bias
-  virtual ~colvarbias_abf();
+  ~colvarbias_abf() override;
   /// Per-timestep update of ABF bias
-  virtual int update();
+  int update() override;
 
 private:
 
@@ -126,13 +126,13 @@ private:
   cvm::step_number shared_last_step;
 
   // Share between replicas -- may be called independently of update
-  virtual int replica_share();
+  int replica_share() override;
 
   // Share data needed for CZAR between replicas - called before output only
   int replica_share_CZAR();
 
   /// Report the frequency at which this bias needs to communicate with replicas
-  virtual size_t replica_share_freq() const;
+  size_t replica_share_freq() const override;
 
   // Data just after the last share (start of cycle) in shared ABF
   std::unique_ptr<colvar_grid_gradient> last_gradients;
@@ -154,13 +154,13 @@ private:
 
   // For Tcl implementation of selection rules.
   /// Give the total number of bins for a given bias.
-  virtual int bin_num();
+  int bin_num() override;
   /// Calculate the bin index for a given bias.
-  virtual int current_bin();
+  int current_bin() override;
   //// Give the count at a given bin index.
-  virtual int bin_count(int bin_index);
+  int bin_count(int bin_index) override;
   /// Return the average number of samples in a given "radius" around current bin
-  virtual int local_sample_count(int radius);
+  int local_sample_count(int radius) override;
 
   /// Write human-readable FE gradients and sample count, and DX file in dim > 2
   /// \param local write grids contining replica-local data in shared ABF
@@ -184,33 +184,33 @@ private:
 
 public:
 
-  virtual std::ostream &write_state_data(std::ostream &os);
+  std::ostream &write_state_data(std::ostream &os) override;
 
-  virtual cvm::memory_stream &write_state_data(cvm::memory_stream &os);
+  cvm::memory_stream &write_state_data(cvm::memory_stream &os) override;
 
-  virtual std::istream &read_state_data(std::istream &is);
+  std::istream &read_state_data(std::istream &is) override;
 
-  virtual cvm::memory_stream &read_state_data(cvm::memory_stream &is);
+  cvm::memory_stream &read_state_data(cvm::memory_stream &is) override;
 
-  virtual int write_output_files();
+  int write_output_files() override;
 
   /// Calculate the bias energy for 1D ABF
-  virtual int calc_energy(std::vector<colvarvalue> const *values);
+  int calc_energy(std::vector<colvarvalue> const *values) override;
 
   /// Initialize specific dependencies of ABF derived class
   /// Adding them to those of base class colvarbias
   /// Alternately we could overload the init_dependencies() function
-  virtual int init_dependencies();
+  int init_dependencies() override;
 
   /// \brief Implementation of the feature list for colvarbias_abf
   static std::vector<feature *> cvb_abf_features;
 
   /// \brief Implementation of the feature list accessor for colvarbias
-  virtual const std::vector<feature *> &features() const override
+  const std::vector<feature *> &features() const override
   {
     return cvb_abf_features;
   }
-  virtual std::vector<feature *> &modify_features() override
+  std::vector<feature *> &modify_features() override
   {
     return cvb_abf_features;
   }
