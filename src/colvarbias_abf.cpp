@@ -28,7 +28,10 @@ int colvarbias_abf::init(std::string const &conf)
 {
   colvarproxy *proxy = cvm::main()->proxy;
 
-  colvarbias::init(conf);
+  int err = colvarbias::init(conf);
+  if (err != COLVARS_OK) {
+    return err;
+  }
   cvm::main()->cite_feature("ABF colvar bias implementation");
 
   enable(f_cvb_scalar_variables);
@@ -261,7 +264,11 @@ int colvarbias_abf::init(std::string const &conf)
     get_keyval(conf, "UIestimator", b_UI_estimator, false);
 
     if (b_UI_estimator) {
-
+      if (shared_on) {
+        cvm::error("Error: UI estimator is not available for multiple-walker (shared) ABF.\n");
+        b_UI_estimator = false;
+        return COLVARS_ERROR;
+      }
       cvm::main()->cite_feature("Umbrella-integration eABF estimator");
       std::vector<double> UI_lowerboundary;
       std::vector<double> UI_upperboundary;
