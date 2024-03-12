@@ -97,49 +97,49 @@ The colvar called ``$c$'' is the coordination number calculated between atoms 1 
 The values of ``$c$''\cvnamebasedonly{ and ``alpha''} are also recorded throughout the simulation as a joint 2-dimensional histogram (see \ref{sec:colvarbias_histogram}).
 
 \begin{cvexampleinput}
-colvar \{\\
-\-~~\# difference of two distances\\
-\-~~name d \\
-\-~~width 0.2  \# estimated fluctuation width \\
-\-~~distance \{\\
-\-~~~~componentCoeff  1.0\\
-\-~~~~group1 \{ atomNumbers 1 2 \}\\
-\-~~~~group2 \{ atomNumbers 3 4 5 \}\\
+colvar~\{\\
+\-~~\#~difference~of~two~distances\\
+\-~~name~d~\\
+\-~~width~0.2~~\#~estimated~fluctuation~width~\\
+\-~~distance~\{\\
+\-~~~~componentCoeff~~1.0\\
+\-~~~~group1~\{~atomNumbers~1~2~\}\\
+\-~~~~group2~\{~atomNumbers~3~4~5~\}\\
 \-~~\}\\
-\-~~distance \{\\
-\-~~~~componentCoeff -1.0\\
-\-~~~~group1 \{ atomNumbers 7 \}\\
-\-~~~~group2 \{ atomNumbers 8 9 10 \}\\
+\-~~distance~\{\\
+\-~~~~componentCoeff~-1.0\\
+\-~~~~group1~\{~atomNumbers~7~\}\\
+\-~~~~group2~\{~atomNumbers~8~9~10~\}\\
 \-~~\}\\
 \}\\
 \\
-colvar \{\\
-\-~~name c\\
-\-~~coordNum \{\\
-\-~~~~cutoff 6.0\\
-\-~~~~group1 \{ atomNumbersRange  1-10 \}\\
-\-~~~~group2 \{ atomNumbersRange 11-20 \}\\
-\-~~~~tolerance 1.0e-6\\
-\-~~~~pairListFrequency 1000\\
+colvar~\{\\
+\-~~name~c\\
+\-~~coordNum~\{\\
+\-~~~~cutoff~6.0\\
+\-~~~~group1~\{~atomNumbersRange~~1-10~\}\\
+\-~~~~group2~\{~atomNumbersRange~11-20~\}\\
+\-~~~~tolerance~1.0e-6\\
+\-~~~~pairListFrequency~1000\\
 \-~~\}\\
 \}\\
 \cvnamebasedonly{%
-colvar \{\\
-\-~~name alpha\\
-\-~~alpha \{\\
-\-~~~~psfSegID PROT\\
-\-~~~~residueRange 1-10\\
+colvar~\{\\
+\-~~name~alpha\\
+\-~~alpha~\{\\
+\-~~~~psfSegID~PROT\\
+\-~~~~residueRange~1-10\\
 \-~~\}\\
 \}}
 \\
-harmonic \{\\
-\-~~colvars d c\\
-\-~~centers 3.0 4.0\\
-\-~~forceConstant 5.0\\
+harmonic~\{\\
+\-~~colvars~d~c\\
+\-~~centers~3.0~4.0\\
+\-~~forceConstant~5.0\\
 \}\\
 \\
-histogram \{\\
-\-~~colvars c\cvnamebasedonly{ alpha}\\
+histogram~\{\\
+\-~~colvars~c\cvnamebasedonly{~alpha}\\
 \}
 \end{cvexampleinput}
 
@@ -313,7 +313,7 @@ These can be visualized alongside colvars by taking advantage of the scripted co
 Such a custom variable can either be computed on the fly (by calling an external tool or a VMD feature) or pre-computed and cached.
 For example, we can use VMD to compute the protein solvent-accessible surface area (SASA) on the fly:
 
-\begin{cvexampleinput}
+\begin{mdexampleinput}
 \-set~sasa\_sel~[atomselect~top~"protein~and~noh"]\\
 \-\\
 \-proc~calc\_user\_colvar~\{~x~\}~\{\\
@@ -321,7 +321,7 @@ For example, we can use VMD to compute the protein solvent-accessible surface ar
 \-~~\$::sasa\_sel~frame~[cv~frame]\\
 \-~~return~[measure~sasa~1~\$::sasa\_sel]\\
 \-\}
-\end{cvexampleinput}
+\end{mdexampleinput}
 
 The Tcl script above should be entered into VMD's text console, or sourced from a file.
 Then we can define a colvar that will be calculated by the scripted procedure above, by entering the following configuration as a new colvar in the Dashboad Editor Window:
@@ -344,7 +344,7 @@ Then we can define a colvar that will be calculated by the scripted procedure ab
 
 If the SASA computation is slow, it can be cached to make subsequent interaction responsive.
 To that effect, we source the following script to pre-compute the SASA for every frame and store it in VMD's User field for atom 0.
-\begin{cvexampleinput}
+\begin{mdexampleinput}
 \-set~atom0\_sel~[atomselect~top~"index~0"]\\
 \-\\
 \-for~\{set~f~0\}~\{\$f~<~[molinfo~top~get~numframes]\}~\{incr~f\}~\{\\
@@ -352,18 +352,18 @@ To that effect, we source the following script to pre-compute the SASA for every
 \-~~\$::atom0\_sel~frame~\$f\\
 \-~~\$::atom0\_sel~set~user~[measure~sasa~1~\$::sasa\_sel]\\
 \}
-\end{cvexampleinput}
+\end{mdexampleinput}
 
 
 Then we use the following Tcl procedure to compute a custom variable that is simply equal to the User field for atom 0 for the current frame:
-\begin{cvexampleinput}
+\begin{mdexampleinput}
 \-\\
 \-proc~calc\_user\_colvar~\{~x~\}~\{\\
 \-~~\#~Follow~current~Colvars~frame\\
 \-~~\$::atom0\_sel~frame~[cv~frame]\\
 \-~~return~[\$::atom0\_sel~get~user]\\
 \-\}
-\end{cvexampleinput}
+\end{mdexampleinput}
 This version results in extremely fast updates.
 } % cvvmdonly dashboard
 
@@ -1358,7 +1358,7 @@ Analyzing the above file with standard tools is possible, but laborious: a \href
 A collective variable is defined by the keyword \texttt{colvar} followed by its configuration options contained within curly braces:
 
 \begin{cvexampleinput}
-\-colvar \{\\
+\-colvar~\{\\
 \-~~name~xi\\
 \-~~$<$other~options$>$\\
 \-~~function\_name~\{\\
@@ -3139,32 +3139,32 @@ In the \texttt{gspath~\{...\}} and the \texttt{gzpath~\{...\}} block all vectors
 The usage of \texttt{gzpath} and \texttt{gspath} is illustrated below:
 
 \begin{cvexampleinput}
-colvar \{\\
-\-~~\# Progress along the path\\
-\-~~name gs\\
-\-~~\# The path is defined by 5 reference frames (from string-00.pdb to string-04.pdb)\\
-\-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
-\-~~gspath \{\\
-\-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
-\-~~~~refPositionsFile1 string-00.pdb\\
-\-~~~~refPositionsFile2 string-01.pdb\\
-\-~~~~refPositionsFile3 string-02.pdb\\
-\-~~~~refPositionsFile4 string-03.pdb\\
-\-~~~~refPositionsFile5 string-04.pdb\\
+colvar~\{\\
+\-~~\#~Progress~along~the~path\\
+\-~~name~gs\\
+\-~~\#~The~path~is~defined~by~5~reference~frames~(from~string-00.pdb~to~string-04.pdb)\\
+\-~~\#~Use~atomic~coordinate~from~atoms~1,~2~and~3~to~compute~the~path\\
+\-~~gspath~\{\\
+\-~~~~atoms~\{atomnumbers~\{~1~2~3~\}\}\\
+\-~~~~refPositionsFile1~string-00.pdb\\
+\-~~~~refPositionsFile2~string-01.pdb\\
+\-~~~~refPositionsFile3~string-02.pdb\\
+\-~~~~refPositionsFile4~string-03.pdb\\
+\-~~~~refPositionsFile5~string-04.pdb\\
 \-~~\}\\
 \}\\
-\noindent\ttfamily colvar \{\\
-\-~~\# Distance from the path\\
-\-~~name gz\\
-\-~~\# The path is defined by 5 reference frames (from string-00.pdb to string-04.pdb)\\
-\-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
-\-~~gzpath \{\\
-\-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
-\-~~~~refPositionsFile1 string-00.pdb\\
-\-~~~~refPositionsFile2 string-01.pdb\\
-\-~~~~refPositionsFile3 string-02.pdb\\
-\-~~~~refPositionsFile4 string-03.pdb\\
-\-~~~~refPositionsFile5 string-04.pdb\\
+\noindent\ttfamily~colvar~\{\\
+\-~~\#~Distance~from~the~path\\
+\-~~name~gz\\
+\-~~\#~The~path~is~defined~by~5~reference~frames~(from~string-00.pdb~to~string-04.pdb)\\
+\-~~\#~Use~atomic~coordinate~from~atoms~1,~2~and~3~to~compute~the~path\\
+\-~~gzpath~\{\\
+\-~~~~atoms~\{atomnumbers~\{~1~2~3~\}\}\\
+\-~~~~refPositionsFile1~string-00.pdb\\
+\-~~~~refPositionsFile2~string-01.pdb\\
+\-~~~~refPositionsFile3~string-02.pdb\\
+\-~~~~refPositionsFile4~string-03.pdb\\
+\-~~~~refPositionsFile5~string-04.pdb\\
 \-~~\}\\
 \}
 \end{cvexampleinput}
@@ -3241,47 +3241,47 @@ In the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} block all vec
 The usage of \texttt{gzpathCV} and \texttt{gspathCV} is illustrated below:
 
 \begin{cvexampleinput}
-\-colvar \{\\
-\-~~\# Progress along the path\\
-\-~~name gs\\
-\-~~\# Path defined by the CV space of two dihedral angles\\
-\-~~gspathCV \{\\
-\-~~~~pathFile ./path.txt\\
-\-~~~~dihedral \{\\
-\-~~~~~~name 001\\
-\-~~~~~~group1 \{atomNumbers \{5\}\}\\
-\-~~~~~~group2 \{atomNumbers \{7\}\}\\
-\-~~~~~~group3 \{atomNumbers \{9\}\}\\
-\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-colvar~\{\\
+\-~~\#~Progress~along~the~path\\
+\-~~name~gs\\
+\-~~\#~Path~defined~by~the~CV~space~of~two~dihedral~angles\\
+\-~~gspathCV~\{\\
+\-~~~~pathFile~./path.txt\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~001\\
+\-~~~~~~group1~\{atomNumbers~\{5\}\}\\
+\-~~~~~~group2~\{atomNumbers~\{7\}\}\\
+\-~~~~~~group3~\{atomNumbers~\{9\}\}\\
+\-~~~~~~group4~\{atomNumbers~\{15\}\}\\
 \-~~~~\}\\
-\-~~~~dihedral \{\\
-\-~~~~~~name 002\\
-\-~~~~~~group1 \{atomNumbers \{7\}\}\\
-\-~~~~~~group2 \{atomNumbers \{9\}\}\\
-\-~~~~~~group3 \{atomNumbers \{15\}\}\\
-\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~002\\
+\-~~~~~~group1~\{atomNumbers~\{7\}\}\\
+\-~~~~~~group2~\{atomNumbers~\{9\}\}\\
+\-~~~~~~group3~\{atomNumbers~\{15\}\}\\
+\-~~~~~~group4~\{atomNumbers~\{17\}\}\\
 \-~~~~\}\\
 \-~~\}\\
 \}\\
 \\
-\-colvar \{\\
-\-~~\# Distance from the path\\
-\-~~name gz\\
-\-~~gzpathCV \{\\
-\-~~~~pathFile ./path.txt\\
-\-~~~~dihedral \{\\
-\-~~~~~~name 001\\
-\-~~~~~~group1 \{atomNumbers \{5\}\}\\
-\-~~~~~~group2 \{atomNumbers \{7\}\}\\
-\-~~~~~~group3 \{atomNumbers \{9\}\}\\
-\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\-colvar~\{\\
+\-~~\#~Distance~from~the~path\\
+\-~~name~gz\\
+\-~~gzpathCV~\{\\
+\-~~~~pathFile~./path.txt\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~001\\
+\-~~~~~~group1~\{atomNumbers~\{5\}\}\\
+\-~~~~~~group2~\{atomNumbers~\{7\}\}\\
+\-~~~~~~group3~\{atomNumbers~\{9\}\}\\
+\-~~~~~~group4~\{atomNumbers~\{15\}\}\\
 \-~~~~\}\\
-\-~~~~dihedral \{\\
-\-~~~~~~name 002\\
-\-~~~~~~group1 \{atomNumbers \{7\}\}\\
-\-~~~~~~group2 \{atomNumbers \{9\}\}\\
-\-~~~~~~group3 \{atomNumbers \{15\}\}\\
-\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~002\\
+\-~~~~~~group1~\{atomNumbers~\{7\}\}\\
+\-~~~~~~group2~\{atomNumbers~\{9\}\}\\
+\-~~~~~~group3~\{atomNumbers~\{15\}\}\\
+\-~~~~~~group4~\{atomNumbers~\{17\}\}\\
 \-~~~~\}\\
 \-~~\}\\
 \}
@@ -3362,51 +3362,51 @@ This colvar component computes the $z$ variable. Options are the same as in \ref
 The usage of \texttt{azpathCV} and \texttt{aspathCV} is illustrated below:
 
 \begin{cvexampleinput}
-colvar \{\\
-\-~~\# Progress along the path\\
-\-~~name as\\
-\-~~\# Path defined by the CV space of two dihedral angles\\
-\-~~aspathCV \{\\
-\-~~~~pathFile ./path.txt\\
-\-~~~~weights \{1.0 1.0\}\\
-\-~~~~lambda 0.005\\
-\-~~~~dihedral \{\\
-\-~~~~~~name 001\\
-\-~~~~~~group1 \{atomNumbers \{5\}\}\\
-\-~~~~~~group2 \{atomNumbers \{7\}\}\\
-\-~~~~~~group3 \{atomNumbers \{9\}\}\\
-\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+colvar~\{\\
+\-~~\#~Progress~along~the~path\\
+\-~~name~as\\
+\-~~\#~Path~defined~by~the~CV~space~of~two~dihedral~angles\\
+\-~~aspathCV~\{\\
+\-~~~~pathFile~./path.txt\\
+\-~~~~weights~\{1.0~1.0\}\\
+\-~~~~lambda~0.005\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~001\\
+\-~~~~~~group1~\{atomNumbers~\{5\}\}\\
+\-~~~~~~group2~\{atomNumbers~\{7\}\}\\
+\-~~~~~~group3~\{atomNumbers~\{9\}\}\\
+\-~~~~~~group4~\{atomNumbers~\{15\}\}\\
 \-~~~~\}\\
-\-~~~~dihedral \{\\
-\-~~~~~~name 002\\
-\-~~~~~~group1 \{atomNumbers \{7\}\}\\
-\-~~~~~~group2 \{atomNumbers \{9\}\}\\
-\-~~~~~~group3 \{atomNumbers \{15\}\}\\
-\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~002\\
+\-~~~~~~group1~\{atomNumbers~\{7\}\}\\
+\-~~~~~~group2~\{atomNumbers~\{9\}\}\\
+\-~~~~~~group3~\{atomNumbers~\{15\}\}\\
+\-~~~~~~group4~\{atomNumbers~\{17\}\}\\
 \-~~~~\}\\
 \-~~\}\\
 \}\\
 \\
-colvar \{\\
-\-~~\# Distance from the path\\
-\-~~name az\\
-\-~~azpathCV \{\\
-\-~~~~pathFile ./path.txt\\
-\-~~~~weights \{1.0 1.0\}\\
-\-~~~~lambda 0.005\\
-\-~~~~dihedral \{\\
-\-~~~~~~name 001\\
-\-~~~~~~group1 \{atomNumbers \{5\}\}\\
-\-~~~~~~group2 \{atomNumbers \{7\}\}\\
-\-~~~~~~group3 \{atomNumbers \{9\}\}\\
-\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+colvar~\{\\
+\-~~\#~Distance~from~the~path\\
+\-~~name~az\\
+\-~~azpathCV~\{\\
+\-~~~~pathFile~./path.txt\\
+\-~~~~weights~\{1.0~1.0\}\\
+\-~~~~lambda~0.005\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~001\\
+\-~~~~~~group1~\{atomNumbers~\{5\}\}\\
+\-~~~~~~group2~\{atomNumbers~\{7\}\}\\
+\-~~~~~~group3~\{atomNumbers~\{9\}\}\\
+\-~~~~~~group4~\{atomNumbers~\{15\}\}\\
 \-~~~~\}\\
-\-~~~~dihedral \{\\
-\-~~~~~~name 002\\
-\-~~~~~~group1 \{atomNumbers \{7\}\}\\
-\-~~~~~~group2 \{atomNumbers \{9\}\}\\
-\-~~~~~~group3 \{atomNumbers \{15\}\}\\
-\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~002\\
+\-~~~~~~group1~\{atomNumbers~\{7\}\}\\
+\-~~~~~~group2~\{atomNumbers~\{9\}\}\\
+\-~~~~~~group3~\{atomNumbers~\{15\}\}\\
+\-~~~~~~group4~\{atomNumbers~\{17\}\}\\
 \-~~~~\}\\
 \-~~\}\\
 \}
@@ -3503,32 +3503,33 @@ Similar to \refkey{aspath}{colvar|aspath}, this CV computes a special case of Eq
 The usage of \texttt{azpath} and \texttt{aspath} is illustrated below:
 
 \begin{cvexampleinput}
-colvar \{\\
-\-~~\# Progress along the path\\
-\-~~name as\\
-\-~~\# The path is defined by 5 reference frames (from string-00.pdb to string-04.pdb)\\
-\-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
-\-~~aspath \{\\
-\-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
-\-~~~~refPositionsFile1 string-00.pdb\\
-\-~~~~refPositionsFile2 string-01.pdb\\
-\-~~~~refPositionsFile3 string-02.pdb\\
-\-~~~~refPositionsFile4 string-03.pdb\\
-\-~~~~refPositionsFile5 string-04.pdb\\
+\-colvar~\{\\
+\-~~\#~Progress~along~the~path\\
+\-~~name~as\\
+\-~~\#~The~path~is~defined~by~5~reference~frames~(from~string-00.pdb~to~string-04.pdb)\\
+\-~~\#~Use~atomic~coordinate~from~atoms~1,~2~and~3~to~compute~the~path\\
+\-~~aspath~\{\\
+\-~~~~atoms~\{atomnumbers~\{~1~2~3~\}\}\\
+\-~~~~refPositionsFile1~string-00.pdb\\
+\-~~~~refPositionsFile2~string-01.pdb\\
+\-~~~~refPositionsFile3~string-02.pdb\\
+\-~~~~refPositionsFile4~string-03.pdb\\
+\-~~~~refPositionsFile5~string-04.pdb\\
 \-~~\}\\
-\}\\
-\noindent\ttfamily colvar \{\\
-\-~~\# Distance from the path\\
-\-~~name az\\
-\-~~\# The path is defined by 5 reference frames (from string-00.pdb to string-04.pdb)\\
-\-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
-\-~~azpath \{\\
-\-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
-\-~~~~refPositionsFile1 string-00.pdb\\
-\-~~~~refPositionsFile2 string-01.pdb\\
-\-~~~~refPositionsFile3 string-02.pdb\\
-\-~~~~refPositionsFile4 string-03.pdb\\
-\-~~~~refPositionsFile5 string-04.pdb\\
+\-\}\\
+\-\\
+\-colvar~\{\\
+\-~~\#~Distance~from~the~path\\
+\-~~name~az\\
+\-~~\#~The~path~is~defined~by~5~reference~frames~(from~string-00.pdb~to~string-04.pdb)\\
+\-~~\#~Use~atomic~coordinate~from~atoms~1,~2~and~3~to~compute~the~path\\
+\-~~azpath~\{\\
+\-~~~~atoms~\{atomnumbers~\{~1~2~3~\}\}\\
+\-~~~~refPositionsFile1~string-00.pdb\\
+\-~~~~refPositionsFile2~string-01.pdb\\
+\-~~~~refPositionsFile3~string-02.pdb\\
+\-~~~~refPositionsFile4~string-03.pdb\\
+\-~~~~refPositionsFile5~string-04.pdb\\
 \-~~\}\\
 \}
 \end{cvexampleinput}
@@ -4055,22 +4056,22 @@ same meaning as in periodic components (see \ref{sec:cvc_periodic} for details).
 A vector variable may be defined by specifying the \texttt{customFunction} parameter several times: each expression defines one scalar element of the vector colvar, as in this example:
 
 \begin{cvexampleinput}
-\-colvar \{\\
-\-~~name custom\\
+\-colvar~\{\\
+\-~~name~custom\\
 \\
-\-~~\# A 2-dimensional vector function of a scalar x and a 3-vector r\\
-\-~~customFunction cos(x) * (r1 + r2 + r3)\\
-\-~~customFunction sqrt(r1 * r2)\\
+\-~~\#~A~2-dimensional~vector~function~of~a~scalar~x~and~a~3-vector~r\\
+\-~~customFunction~cos(x)~*~(r1~+~r2~+~r3)\\
+\-~~customFunction~sqrt(r1~*~r2)\\
 \\
-\-~~distance \{\\
-\-~~~~name x\\
-\-~~~~group1 \{ atomNumbers 1 \}\\
-\-~~~~group2 \{ atomNumbers 50 \}\\
+\-~~distance~\{\\
+\-~~~~name~x\\
+\-~~~~group1~\{~atomNumbers~1~\}\\
+\-~~~~group2~\{~atomNumbers~50~\}\\
 \-~~\}\\
-\-~~distanceVec \{\\
-\-~~~~name r\\
-\-~~~~group1 \{ atomNumbers 10 11 12 \}\\
-\-~~~~group2 \{ atomNumbers  20 21 22 \}\\
+\-~~distanceVec~\{\\
+\-~~~~name~r\\
+\-~~~~group1~\{~atomNumbers~10~11~12~\}\\
+\-~~~~group2~\{~atomNumbers~~20~21~22~\}\\
 \-~~\}\\
 \}
 \end{cvexampleinput}
@@ -4723,28 +4724,28 @@ Below is an example configuration for an atom group called ``\texttt{atoms}''.
 \textbf{Note: }\emph{this is an unusually varied combination of selection keywords, demonstrating how they can be combined together: most simulations only use one of them.}\\
 
 \begin{cvexampleinput}
-\-atoms \{\\
+\-atoms~\{\\
 \\
-\-~~\# add atoms 1 and 3 to this group (note: first atom in the system is 1)\\
-\-~~atomNumbers \{ \\
-\-~~~~1 3\\
+\-~~\#~add~atoms~1~and~3~to~this~group~(note:~first~atom~in~the~system~is~1)\\
+\-~~atomNumbers~\{~\\
+\-~~~~1~3\\
 \-~~\}\\
 \\
-\-~~\# add atoms starting from 20 up to and including 50\\
-\-~~atomNumbersRange  20-50\\
+\-~~\#~add~atoms~starting~from~20~up~to~and~including~50\\
+\-~~atomNumbersRange~~20-50\\
 \cvnamebasedonly{%
-\-~~\# add all the atoms with occupancy 2 in the file atoms.pdb\\
-\-~~atomsFile             atoms.pdb\\
-\-~~atomsCol              O\\
-\-~~atomsColValue         2.0\\
+\-~~\#~add~all~the~atoms~with~occupancy~2~in~the~file~atoms.pdb\\
+\-~~atomsFile~~~~~~~~~~~~~atoms.pdb\\
+\-~~atomsCol~~~~~~~~~~~~~~O\\
+\-~~atomsColValue~~~~~~~~~2.0\\
 \\
-\-~~\# add all the C-alphas within residues 11 to 20 of segments "PR1" and "PR2"\\
-\-~~psfSegID              PR1 PR2\\
-\-~~atomNameResidueRange  CA 11-20\\
-\-~~atomNameResidueRange  CA 11-20\\
+\-~~\#~add~all~the~C-alphas~within~residues~11~to~20~of~segments~"PR1"~and~"PR2"\\
+\-~~psfSegID~~~~~~~~~~~~~~PR1~PR2\\
+\-~~atomNameResidueRange~~CA~11-20\\
+\-~~atomNameResidueRange~~CA~11-20\\
 }
-\-~~\# add index group (requires a .ndx file to be provided globally)\\
-\-~~indexGroup Water\\
+\-~~\#~add~index~group~(requires~a~.ndx~file~to~be~provided~globally)\\
+\-~~indexGroup~Water\\
 \}
 \end{cvexampleinput}
 
@@ -4992,22 +4993,22 @@ Be careful when using these options in ABF simulations or when using total force
     To define a DBC coordinate, this atom group would be used within an \refkey{rmsd}{sec:cvc_rmsd} function.
 
 \begin{cvexampleinput}
-\-\# Example: defining a group "atoms" (the ligand) whose coordinates are expressed \\
-\# in a roto-translated frame of reference defined by a second group (the receptor)\\
-atoms \{\\
+\-\#~Example:~defining~a~group~"atoms"~(the~ligand)~whose~coordinates~are~expressed~\\
+\#~in~a~roto-translated~frame~of~reference~defined~by~a~second~group~(the~receptor)\\
+atoms~\{\\
 \\
-\-~~atomNumbers 1 2 3 4 5 6 7 \# atoms of the ligand (1-based)\\
+\-~~atomNumbers~1~2~3~4~5~6~7~\#~atoms~of~the~ligand~(1-based)\\
 \\
-\-~~centerToReference yes\\
-\-~~rotateToReference yes\\
-\-~~fittingGroup \{\\
-\-~~~~\# define the frame by fitting alpha carbon atoms\\
-\-~~~~\# in 2 protein segments close to the site\\
-\-~~~~psfSegID              PROT PROT\\
-\-~~~~atomNameResidueRange  CA 1-40\\
-\-~~~~atomNameResidueRange  CA 59-100\\
-\-~~\} \\
-\-~~refPositionsFile all.pdb  \# can be the entire system\\
+\-~~centerToReference~yes\\
+\-~~rotateToReference~yes\\
+\-~~fittingGroup~\{\\
+\-~~~~\#~define~the~frame~by~fitting~alpha~carbon~atoms\\
+\-~~~~\#~in~2~protein~segments~close~to~the~site\\
+\-~~~~psfSegID~~~~~~~~~~~~~~PROT~PROT\\
+\-~~~~atomNameResidueRange~~CA~1-40\\
+\-~~~~atomNameResidueRange~~CA~59-100\\
+\-~~\}~\\
+\-~~refPositionsFile~all.pdb~~\#~can~be~the~entire~system\\
 \}
 \end{cvexampleinput}
 }
@@ -5123,7 +5124,6 @@ To gain an estimate of the computational cost of a specific Colvars configuratio
 A biasing or analysis method can be applied to existing collective variables by using the following configuration:
 
 \begin{cvexampleinput}
-
 \-$<$biastype$>$~\{\\
 \-~~name~$<$name$>$ \\
 \-~~colvars~$<$xi1$>$~$<$xi2$>$~...\\
@@ -5960,25 +5960,25 @@ In general, it is a good idea to \emph{define a repulsive potential to avoid hil
 
 \noindent\textbf{Example:} Using harmonic walls to protect the grid's boundaries.
 \begin{cvexampleinput}
-\-colvar \{\\
-\-\-~~name r\\
-\-\-~~distance \{ ... \}\\
-\-\-~~upperBoundary 15.0\\
-\-\-~~width 0.2\\
+\-colvar~\{\\
+\-\-~~name~r\\
+\-\-~~distance~\{~...~\}\\
+\-\-~~upperBoundary~15.0\\
+\-\-~~width~0.2\\
 \-\}\\
 \\
-\-metadynamics \{\\
-\-\-~~name meta\_r\\
-\-\-~~colvars r\\
-\-\-~~hillWeight 0.001\\
-\-\-~~hillWidth 2.0\\
+\-metadynamics~\{\\
+\-\-~~name~meta\_r\\
+\-\-~~colvars~r\\
+\-\-~~hillWeight~0.001\\
+\-\-~~hillWidth~2.0\\
 \-\}\\
 \\
-\-harmonicWalls \{\\
-\-\-~~name wall\_r\\
-\-\-~~colvars r\\
-\-\-~~upperWalls 13.0\\
-\-\-~~upperWallConstant 2.0\\
+\-harmonicWalls~\{\\
+\-\-~~name~wall\_r\\
+\-\-~~colvars~r\\
+\-\-~~upperWalls~13.0\\
+\-\-~~upperWallConstant~2.0\\
 \-\}
 \end{cvexampleinput}
 
@@ -6261,24 +6261,24 @@ Instead, multiple probability distributions on different variables can be target
 
 \noindent\textbf{Example:} EBmetaD configuration for a single variable.
 \begin{cvexampleinput}
-\-colvar \{\\
-\-\-~~name r \\
-\-\-~~distance \{\\
-\-\-~~~~group1 \{ atomNumbers 991 992 \}\\
-\-\-~~~~group2 \{ atomNumbers 1762 1763 \}\\
+\-colvar~\{\\
+\-\-~~name~r~\\
+\-\-~~distance~\{\\
+\-\-~~~~group1~\{~atomNumbers~991~992~\}\\
+\-\-~~~~group2~\{~atomNumbers~1762~1763~\}\\
 \-\-~~\}\\
-\-\-~~upperBoundary  100.0 \\
-\-\-~~width            0.1 \\
+\-\-~~upperBoundary~~100.0~\\
+\-\-~~width~~~~~~~~~~~~0.1~\\
 \-\}\\
 \\
-\-metadynamics \{\\
-\-\-~~name              ebmeta\\
-\-\-~~colvars           r\\
-\-\-~~hillWeight        0.01\\
-\-\-~~hillWidth         3.0\\
-\-\-~~ebMeta            on\\
-\-\-~~targetDistFile    targetdist1.dat\\
-\-\-~~ebMetaEquilSteps  500000\\
+\-metadynamics~\{\\
+\-\-~~name~~~~~~~~~~~~~~ebmeta\\
+\-\-~~colvars~~~~~~~~~~~r\\
+\-\-~~hillWeight~~~~~~~~0.01\\
+\-\-~~hillWidth~~~~~~~~~3.0\\
+\-\-~~ebMeta~~~~~~~~~~~~on\\
+\-\-~~targetDistFile~~~~targetdist1.dat\\
+\-\-~~ebMetaEquilSteps~~500000\\
 \-\}
 \end{cvexampleinput}
 
@@ -6353,16 +6353,16 @@ Both files are only used for communication, and may be deleted after the replica
 
 \noindent\textbf{Example:} Multiple-walker metadynamics with file-based communication.\\
 \begin{cvexampleinput}
-\-metadynamics \{\\
-\-\-~~name mymtd\\
-\-\-~~colvars x\\
-\-\-~~hillWeight 0.001\\
-\-\-~~newHillFrequency 1000\\
-\-\-~~hillWidth 3.0\\
+\-metadynamics~\{\\
+\-\-~~name~mymtd\\
+\-\-~~colvars~x\\
+\-\-~~hillWeight~0.001\\
+\-\-~~newHillFrequency~1000\\
+\-\-~~hillWidth~3.0\\
 \-\-~~\\
-\-\-~~multipleReplicas       on\\
-\-\-~~replicasRegistry       /shared-folder/mymtd-replicas.txt\\
-\-\-~~replicaUpdateFrequency 50000  \# Best if larger than newHillFrequency\\
+\-\-~~multipleReplicas~~~~~~~on\\
+\-\-~~replicasRegistry~~~~~~~/shared-folder/mymtd-replicas.txt\\
+\-\-~~replicaUpdateFrequency~50000~~\#~Best~if~larger~than~newHillFrequency\\
 \-\}
 \end{cvexampleinput}
 
@@ -6817,24 +6817,24 @@ The \texttt{harmonicWalls} bias implements the following options:
 
 \noindent\textbf{Example 1:} harmonic walls for one variable with two different force constants.
 \begin{cvexampleinput}
-\-harmonicWalls \{\\
-\-\-~~name  mywalls\\
-\-\-~~colvars    dist\\
-\-\-~~lowerWalls  22.0 \\
-\-\-~~upperWalls  38.0 \\
-\-\-~~lowerWallConstant  2.0 \\
-\-\-~~upperWallConstant 10.0 \\
+\-harmonicWalls~\{\\
+\-\-~~name~~mywalls\\
+\-\-~~colvars~~~~dist\\
+\-\-~~lowerWalls~~22.0~\\
+\-\-~~upperWalls~~38.0~\\
+\-\-~~lowerWallConstant~~2.0~\\
+\-\-~~upperWallConstant~10.0~\\
 \-\}
 \end{cvexampleinput}
 
 \noindent\textbf{Example 2:} harmonic walls for two variables with a single force constant.
 \begin{cvexampleinput}
-\-harmonicWalls \{\\
-\-\-~~name  mywalls\\
-\-\-~~colvars       phi    psi\\
-\-\-~~lowerWalls -180.0    0.0\\
-\-\-~~upperWalls    0.0  180.0\\
-\-\-~~forceConstant 5.0 \\
+\-harmonicWalls~\{\\
+\-\-~~name~~mywalls\\
+\-\-~~colvars~~~~~~~phi~~~~psi\\
+\-\-~~lowerWalls~-180.0~~~~0.0\\
+\-\-~~upperWalls~~~~0.0~~180.0\\
+\-\-~~forceConstant~5.0~\\
 \-\}
 \end{cvexampleinput}
 
