@@ -195,31 +195,6 @@ public:
   int write_output_files() override;
 
   /// Calculate the bias energy for 1D ABF
-  int calc_energy(std::vector<colvarvalue> const *values) override;
-
-  /// Initialize specific dependencies of ABF derived class
-  /// Adding them to those of base class colvarbias
-  /// Alternately we could overload the init_dependencies() function
-  int init_dependencies() override;
-
-  /// \brief Implementation of the feature list for colvarbias_abf
-  static std::vector<feature *> cvb_abf_features;
-
-  /// \brief Implementation of the feature list accessor for colvarbias
-  const std::vector<feature *> &features() const override
-  {
-    return cvb_abf_features;
-  }
-  std::vector<feature *> &modify_features() override
-  {
-    return cvb_abf_features;
-  }
-  static void delete_features() {
-    for (size_t i=0; i < cvb_abf_features.size(); i++) {
-      delete cvb_abf_features[i];
-    }
-    cvb_abf_features.clear();
-  }
-
+  virtual int calc_energy(std::vector<colvarvalue> const *values);
 };
 #endif
