@@ -31,6 +31,7 @@ colvar::CartesianBasedPath::CartesianBasedPath()
 int colvar::CartesianBasedPath::init(std::string const &conf)
 {
     int error_code = cvc::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
 
     // Parse selected atoms
     atoms = parse_group(conf, "atoms");
@@ -182,6 +183,7 @@ colvar::gspath::gspath()
 int colvar::gspath::init(std::string const &conf)
 {
     int error_code = CartesianBasedPath::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
 
     get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, true);
     if (use_second_closest_frame == true) {
@@ -336,6 +338,7 @@ colvar::gzpath::gzpath()
 int colvar::gzpath::init(std::string const &conf)
 {
     int error_code = CartesianBasedPath::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
 
     get_keyval(conf, "useSecondClosestFrame", use_second_closest_frame, true);
     if (use_second_closest_frame == true) {
@@ -481,6 +484,7 @@ colvar::CVBasedPath::CVBasedPath()
 int colvar::CVBasedPath::init(std::string const &conf)
 {
     int error_code = cvc::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
 
     // Lookup all available sub-cvcs
     for (auto it_cv_map = colvar::get_global_cvc_map().begin(); it_cv_map != colvar::get_global_cvc_map().end(); ++it_cv_map) {
@@ -534,6 +538,7 @@ int colvar::CVBasedPath::init(std::string const &conf)
                 }
             } else {
                 error_code = cvm::error("Error: incorrect format of path file.\n", COLVARS_INPUT_ERROR);
+                return error_code;
             }
         }
         if (!fields.empty()) {
@@ -546,11 +551,13 @@ int colvar::CVBasedPath::init(std::string const &conf)
       error_code = cvm::error(
           "Error: there is only 1 or 0 reference frame, which doesn't constitute a path.\n",
           COLVARS_INPUT_ERROR);
+      return error_code;
     }
     if (cv.size() == 0) {
       error_code =
           cvm::error("Error: the CV " + name + " expects one or more nesting components.\n",
                      COLVARS_INPUT_ERROR);
+      return error_code;
     }
 
     use_explicit_gradients = true;
@@ -672,6 +679,7 @@ colvar::gspathCV::gspathCV()
 int colvar::gspathCV::init(std::string const &conf)
 {
     int error_code = CVBasedPath::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
 
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     // Initialize variables for future calculation
@@ -688,7 +696,7 @@ int colvar::gspathCV::init(std::string const &conf)
         cvm::log(std::string("Geometric path s(σ) will use the neighbouring frame to compute s_(m+1)\n"));
     }
     if (total_reference_frames < 2) {
-        error_code |= cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) + " reference frames, but gspathCV requires at least 2 frames.\n", COLVARS_INPUT_ERROR);
+        return cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) + " reference frames, but gspathCV requires at least 2 frames.\n", COLVARS_INPUT_ERROR);
     }
     GeometricPathCV::GeometricPathBase<colvarvalue, cvm::real, GeometricPathCV::path_sz::S>::initialize(cv.size(), ref_cv[0], total_reference_frames, use_second_closest_frame, use_third_closest_frame);
     return error_code;
@@ -801,6 +809,7 @@ colvar::gzpathCV::gzpathCV()
 int colvar::gzpathCV::init(std::string const &conf) {
 
     int error_code = CVBasedPath::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
 
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     // Initialize variables for future calculation
@@ -824,7 +833,7 @@ int colvar::gzpathCV::init(std::string const &conf) {
         cvm::log(std::string("Geometric path z(σ) will use the square of distance from current frame to path compute z\n"));
     }
     if (total_reference_frames < 2) {
-        error_code |= cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) +
+        return cvm::error("Error: you have specified " + cvm::to_str(total_reference_frames) +
                                      " reference frames, but gzpathCV requires at least 2 frames.\n",
                                  COLVARS_INPUT_ERROR);
     }

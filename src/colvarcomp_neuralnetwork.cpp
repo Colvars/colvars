@@ -25,6 +25,7 @@ colvar::neuralNetwork::neuralNetwork()
 int colvar::neuralNetwork::init(std::string const &conf)
 {
     int error_code = linearCombination::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
     // the output of neural network consists of multiple values
     // read "output_component" key to determine it
     get_keyval(conf, "output_component", m_output_index);
@@ -73,8 +74,7 @@ int colvar::neuralNetwork::init(std::string const &conf)
             std::string function_name;
             get_keyval(conf, lookup_key.c_str(), function_name, std::string(""));
             if (activation_function_map.find(function_name) == activation_function_map.end()) {
-                error_code |=
-                    cvm::error("Unknown activation function name: \"" + function_name + "\".\n",
+                return cvm::error("Unknown activation function name: \"" + function_name + "\".\n",
                                COLVARS_INPUT_ERROR);
             }
             activation_functions.push_back(std::make_pair(false, function_name));
@@ -94,7 +94,7 @@ int colvar::neuralNetwork::init(std::string const &conf)
     }
     // expect the three numbers are equal
     if ((num_layers_weight != num_layers_bias) || (num_layers_bias != num_activation_functions)) {
-        error_code |= cvm::error(
+        return cvm::error(
             "Error: the numbers of weights, biases and activation functions do not match.\n",
             COLVARS_INPUT_ERROR);
     }
@@ -110,7 +110,7 @@ int colvar::neuralNetwork::init(std::string const &conf)
             try {
                 d = denseLayer(weight_files[i_layer], bias_files[i_layer], activation_functions[i_layer].second);
             } catch (std::exception &ex) {
-              error_code |= cvm::error("Error on initializing layer " + cvm::to_str(i_layer) +
+                return cvm::error("Error on initializing layer " + cvm::to_str(i_layer) +
                                            " (" + ex.what() + ")\n",
                                        COLVARS_INPUT_ERROR);
             }
@@ -122,7 +122,7 @@ int colvar::neuralNetwork::init(std::string const &conf)
             try {
                 d = denseLayer(weight_files[i_layer], bias_files[i_layer], f, df);
             } catch (std::exception &ex) {
-              error_code |= cvm::error("Error on initializing layer " + cvm::to_str(i_layer) +
+                return cvm::error("Error on initializing layer " + cvm::to_str(i_layer) +
                                            " (" + ex.what() + ")\n",
                                        COLVARS_INPUT_ERROR);
             }
@@ -142,7 +142,7 @@ int colvar::neuralNetwork::init(std::string const &conf)
                 }
             }
         } else {
-            error_code |= cvm::error("Error: error on adding a new dense layer.\n", COLVARS_INPUT_ERROR);
+            return cvm::error("Error: error on adding a new dense layer.\n", COLVARS_INPUT_ERROR);
         }
     }
     nn->input().resize(cv.size());
