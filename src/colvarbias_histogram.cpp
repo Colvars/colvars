@@ -26,7 +26,10 @@ colvarbias_histogram::colvarbias_histogram(char const *key)
 
 int colvarbias_histogram::init(std::string const &conf)
 {
-  colvarbias::init(conf);
+  int err = colvarbias::init(conf);
+  if (err != COLVARS_OK) {
+    return err;
+  }
   cvm::main()->cite_feature("Histogram colvar bias implementation");
 
   enable(f_cvb_scalar_variables);
