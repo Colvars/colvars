@@ -532,8 +532,8 @@ int cvm::atom_group::parse(std::string const &group_conf)
         cvm::error("Error: atomsColValue, if provided, must be non-zero.\n", COLVARS_INPUT_ERROR);
       }
 
-      // NOTE: calls to add_atom() and/or add_atom_id() are in the proxy-implemented function
-      error_code |= cvm::load_atoms(atoms_file_name.c_str(), *this, atoms_col, atoms_col_value);
+      error_code |= cvm::main()->proxy->load_atoms_pdb(atoms_file_name.c_str(), *this, atoms_col,
+                                                       atoms_col_value);
     }
   }
 

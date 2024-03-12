@@ -907,11 +907,11 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
 }
 
 
-int colvarproxy_namd::load_coords(char const *pdb_filename,
-                                  std::vector<cvm::atom_pos> &pos,
-                                  const std::vector<int> &indices,
-                                  std::string const &pdb_field_str,
-                                  double const pdb_field_value)
+int colvarproxy_namd::load_coords_pdb(char const *pdb_filename,
+                                      std::vector<cvm::atom_pos> &pos,
+                                      const std::vector<int> &indices,
+                                      std::string const &pdb_field_str,
+                                      double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0 && indices.size() == 0) {
     cvm::error("Bug alert: either PDB field should be defined or list of "
@@ -1019,10 +1019,10 @@ int colvarproxy_namd::load_coords(char const *pdb_filename,
 }
 
 
-int colvarproxy_namd::load_atoms(char const *pdb_filename,
-                                 cvm::atom_group &atoms,
-                                 std::string const &pdb_field_str,
-                                 double const pdb_field_value)
+int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
+                                     cvm::atom_group &atoms,
+                                     std::string const &pdb_field_str,
+                                     double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0)
     cvm::error("Error: must define which PDB field to use "
