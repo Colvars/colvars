@@ -19,6 +19,7 @@ colvar::linearCombination::linearCombination()
 int colvar::linearCombination::init(std::string const &conf)
 {
     int error_code = cvc::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
 
     // Lookup all available sub-cvcs
     for (auto it_cv_map = colvar::get_global_cvc_map().begin(); it_cv_map != colvar::get_global_cvc_map().end(); ++it_cv_map) {
@@ -40,8 +41,7 @@ int colvar::linearCombination::init(std::string const &conf)
     }
     // Show useful error messages and prevent crashes if no sub CVC is found
     if (cv.size() == 0) {
-        error_code |=
-            cvm::error("Error: the CV " + name + " expects one or more nesting components.\n",
+       return cvm::error("Error: the CV " + name + " expects one or more nesting components.\n",
                        COLVARS_INPUT_ERROR);
     } else {
         x.type(cv[0]->value());
@@ -170,6 +170,7 @@ colvar::customColvar::customColvar()
 int colvar::customColvar::init(std::string const &conf)
 {
     int error_code = linearCombination::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
 
     // code swipe from colvar::init_custom_function
     std::string expr_in, expr;
@@ -191,7 +192,7 @@ int colvar::customColvar::init(std::string const &conf)
                 pexpr = Lepton::Parser::parse(expr);
                 pexprs.push_back(pexpr);
             } catch (...) {
-                cvm::error("Error parsing expression \"" + expr + "\".\n", COLVARS_INPUT_ERROR);
+                return cvm::error("Error parsing expression \"" + expr + "\".\n", COLVARS_INPUT_ERROR);
             }
             try {
                 value_evaluators.push_back(new Lepton::CompiledExpression(pexpr.createCompiledExpression()));
@@ -209,7 +210,7 @@ int colvar::customColvar::init(std::string const &conf)
                     }
                 }
             } catch (...) {
-                cvm::error("Error compiling expression \"" + expr + "\".\n", COLVARS_INPUT_ERROR);
+                return cvm::error("Error compiling expression \"" + expr + "\".\n", COLVARS_INPUT_ERROR);
             }
         } while (key_lookup(conf, "customFunction", &expr_in, &pos));
         // Now define derivative with respect to each scalar sub-component
@@ -234,7 +235,7 @@ int colvar::customColvar::init(std::string const &conf)
             }
         }
         if (value_evaluators.size() == 0) {
-            cvm::error("Error: no custom function defined.\n", COLVARS_INPUT_ERROR);
+            return cvm::error("Error: no custom function defined.\n", COLVARS_INPUT_ERROR);
         }
         if (value_evaluators.size() != 1) {
             x.type(colvarvalue::type_vector);

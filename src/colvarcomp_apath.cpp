@@ -144,6 +144,7 @@ colvar::aspath::aspath()
 int colvar::aspath::init(std::string const &conf)
 {
     int error_code = CartesianBasedPath::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     cvm::real p_lambda;
     get_keyval(conf, "lambda", p_lambda, -1.0);
@@ -198,6 +199,7 @@ colvar::azpath::azpath()
 int colvar::azpath::init(std::string const &conf)
 {
     int error_code = CartesianBasedPath::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     x.type(colvarvalue::type_scalar);
     cvm::real p_lambda;
@@ -252,6 +254,7 @@ colvar::aspathCV::aspathCV()
 int colvar::aspathCV::init(std::string const &conf)
 {
     int error_code = CVBasedPath::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     std::vector<cvm::real> p_weights(cv.size(), 1.0);
     get_keyval(conf, "weights", p_weights, std::vector<cvm::real>(cv.size(), 1.0));
@@ -356,6 +359,7 @@ colvar::azpathCV::azpathCV()
 int colvar::azpathCV::init(std::string const &conf)
 {
     int error_code = CVBasedPath::init(conf);
+    if (error_code != COLVARS_OK) return error_code;
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     std::vector<cvm::real> p_weights(cv.size(), 1.0);
     get_keyval(conf, "weights", p_weights, std::vector<cvm::real>(cv.size(), 1.0));
