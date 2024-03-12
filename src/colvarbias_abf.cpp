@@ -21,20 +21,6 @@ colvarbias_abf::colvarbias_abf(char const *key)
     pabf_freq(0),
     system_force(NULL)
 {
-  // colvarproxy *proxy = cvm::main()->proxy;
-  init_dependencies();
-}
-
-int colvarbias_abf::init_dependencies() {
-  // This customizes the cvb dependency tree for the derived class
-
-  // First build dependency tree for parent class (colvarbias)
-  colvarbias::init_dependencies();
-
-  // To update the FE gradient we need to get the total force
-  require_feature_self(f_cvb_history_dependent, f_cvb_get_total_force);
-
-  return COLVARS_OK;
 }
 
 
@@ -157,6 +143,7 @@ int colvarbias_abf::init(std::string const &conf)
   get_keyval(conf, "updateBias",  update_bias, true);
   if (update_bias) {
     enable(f_cvb_history_dependent);
+    enable(f_cvb_get_total_force);
   } else {
     cvm::log("WARNING: ABF biases will *not* be updated!\n");
   }
@@ -317,9 +304,6 @@ colvarbias_abf::~colvarbias_abf()
     delete_if_non_null(global_czar_pmf)
   }
   if (system_force) delete[] system_force;
-  // Need to delete here because of additional features of the derived class
-  // wrt colvarbias base class
-  delete_features();
 }
 
 
@@ -1118,8 +1102,3 @@ int colvarbias_abf::calc_energy(std::vector<colvarvalue> const *values)
   bias_energy = -sum;
   return COLVARS_OK;
 }
-
-
-// Static members
-
-std::vector<colvardeps::feature *> colvarbias_abf::cvb_abf_features;
