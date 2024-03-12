@@ -97,19 +97,19 @@ private:
   gradient_t system_force;
 
   /// n-dim grid of free energy gradients
-  std::unique_ptr<colvar_grid_gradient> gradients;
+  std::shared_ptr<colvar_grid_gradient> gradients;
   /// n-dim grid of number of samples
-  std::unique_ptr<colvar_grid_count>    samples;
+  std::shared_ptr<colvar_grid_count>    samples;
   /// n-dim grid of pmf (dimension 1 to 3)
-  std::unique_ptr<integrate_potential>  pmf;
+  std::shared_ptr<integrate_potential>  pmf;
   /// n-dim grid: average force on "real" coordinate for eABF z-based estimator
-  std::unique_ptr<colvar_grid_gradient> z_gradients;
+  std::shared_ptr<colvar_grid_gradient> z_gradients;
   /// n-dim grid of number of samples on "real" coordinate for eABF z-based estimator
-  std::unique_ptr<colvar_grid_count>    z_samples;
+  std::shared_ptr<colvar_grid_count>    z_samples;
   /// n-dim grid containing CZAR estimatr of "real" free energy gradients
-  std::unique_ptr<colvar_grid_gradient> czar_gradients;
+  std::shared_ptr<colvar_grid_gradient> czar_gradients;
   /// n-dim grid of CZAR pmf (dimension 1 to 3)
-  std::unique_ptr<integrate_potential>  czar_pmf;
+  std::shared_ptr<integrate_potential>  czar_pmf;
 
   /// Calculate system force for all colvars
   int update_system_force();
@@ -136,20 +136,20 @@ private:
 
   // Data just after the last share (start of cycle) in shared ABF
   std::unique_ptr<colvar_grid_gradient> last_gradients;
-  std::unique_ptr<colvar_grid_count>    last_samples;
+  std::shared_ptr<colvar_grid_count>    last_samples;
   // eABF/CZAR local data last shared
   std::unique_ptr<colvar_grid_gradient> last_z_gradients;
-  std::unique_ptr<colvar_grid_count>    last_z_samples;
+  std::shared_ptr<colvar_grid_count>    last_z_samples;
   // ABF data from local replica only in shared ABF
-  std::unique_ptr<colvar_grid_gradient> local_gradients;
-  std::unique_ptr<colvar_grid_count>    local_samples;
+  std::shared_ptr<colvar_grid_gradient> local_gradients;
+  std::shared_ptr<colvar_grid_count>    local_samples;
   std::unique_ptr<integrate_potential>  local_pmf;
   // eABF/CZAR data collected from all replicas in shared eABF on replica 0
   // if non-shared, aliases of regular CZAR grids, for output purposes
-  colvar_grid_gradient *global_z_gradients;
-  colvar_grid_count    *global_z_samples;
-  colvar_grid_gradient *global_czar_gradients;
-  integrate_potential  *global_czar_pmf;
+  std::shared_ptr<colvar_grid_gradient> global_z_gradients;
+  std::shared_ptr<colvar_grid_count>    global_z_samples;
+  std::shared_ptr<colvar_grid_gradient> global_czar_gradients;
+  std::shared_ptr<integrate_potential>  global_czar_pmf;
 
 
   // For Tcl implementation of selection rules.
@@ -195,6 +195,6 @@ public:
   int write_output_files() override;
 
   /// Calculate the bias energy for 1D ABF
-  virtual int calc_energy(std::vector<colvarvalue> const *values);
+  int calc_energy(std::vector<colvarvalue> const *values) override;
 };
 #endif

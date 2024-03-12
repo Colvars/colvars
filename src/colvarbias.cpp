@@ -780,28 +780,11 @@ colvarbias_ti::colvarbias_ti(char const *key)
     // Samples at step zero can not be collected
     feature_states[f_cvb_step_zero_data].available = false;
   }
-  ti_avg_forces = NULL;
-  ti_count = NULL;
 }
 
 
 colvarbias_ti::~colvarbias_ti()
 {
-  colvarbias_ti::clear_state_data();
-}
-
-
-int colvarbias_ti::clear_state_data()
-{
-  if (ti_avg_forces != NULL) {
-    delete ti_avg_forces;
-    ti_avg_forces = NULL;
-  }
-  if (ti_count != NULL) {
-    delete ti_count;
-    ti_count = NULL;
-  }
-  return COLVARS_OK;
 }
 
 
@@ -859,7 +842,7 @@ int colvarbias_ti::init(std::string const &conf)
 int colvarbias_ti::init_grids()
 {
   if (is_enabled(f_cvb_calc_ti_samples)) {
-    if (ti_avg_forces == NULL) {
+    if (!ti_avg_forces) {
       ti_bin.resize(num_variables());
       ti_system_forces.resize(num_variables());
       for (size_t icv = 0; icv < num_variables(); icv++) {
@@ -867,8 +850,8 @@ int colvarbias_ti::init_grids()
         ti_system_forces[icv].is_derivative();
         ti_system_forces[icv].reset();
       }
-      ti_avg_forces = new colvar_grid_gradient(colvars);
-      ti_count = new colvar_grid_count(colvars);
+      ti_avg_forces.reset(new colvar_grid_gradient(colvars));
+      ti_count.reset(new colvar_grid_count(colvars));
       ti_avg_forces->samples = ti_count;
       ti_count->has_parent_data = true;
     }

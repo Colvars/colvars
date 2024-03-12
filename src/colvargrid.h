@@ -11,11 +11,13 @@
 #define COLVARGRID_H
 
 #include <iosfwd>
+#include <memory>
 
 #include "colvar.h"
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
+
 
 /// \brief Grid of values of a function of several collective
 /// variables \param T The data type
@@ -1555,7 +1557,7 @@ public:
 
   /// \brief Provide the sample count by which each binned value
   /// should be divided
-  colvar_grid_count *samples;
+  std::shared_ptr<colvar_grid_count> samples;
 
   /// Default constructor
   colvar_grid_gradient();
@@ -1574,7 +1576,7 @@ public:
   colvar_grid_gradient(std::string &filename);
 
   /// Constructor from a vector of colvars and a pointer to the count grid
-  colvar_grid_gradient(std::vector<colvar *> &colvars, colvar_grid_count *samples_in);
+  colvar_grid_gradient(std::vector<colvar *> &colvars, std::shared_ptr<colvar_grid_count> samples_in);
 
   /// Parameters for smoothing data with low sampling
   int full_samples;
@@ -1827,7 +1829,7 @@ class integrate_potential : public colvar_grid_scalar
   {}
 
   /// Constructor from a vector of colvars + gradient grid
-  integrate_potential(std::vector<colvar *> &colvars, colvar_grid_gradient * gradients);
+  integrate_potential(std::vector<colvar *> &colvars, std::shared_ptr<colvar_grid_gradient> gradients);
 
   /// Constructor from a gradient grid (for processing grid files without a Colvars config)
   integrate_potential(colvar_grid_gradient * gradients);
@@ -1860,7 +1862,7 @@ class integrate_potential : public colvar_grid_scalar
   protected:
 
   // Reference to gradient grid
-  colvar_grid_gradient *gradients;
+  std::shared_ptr<colvar_grid_gradient> gradients;
 
   /// Array holding divergence + boundary terms (modified Neumann) if not periodic
   std::vector<cvm::real> divergence;
