@@ -11,6 +11,9 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#if __cplusplus >= 201703L
+#include <filesystem>
+#endif
 
 #include "colvarmodule.h"
 #include "colvarparse.h"
@@ -2160,6 +2163,14 @@ int cvm::load_coords(char const *file_name,
                      double pdb_field_value)
 {
   int error_code = COLVARS_OK;
+
+#if __cplusplus >= 201703L
+  std::string const file_name_str(file_name);
+  if (!std::filesystem::exists(file_name_str)) {
+    return cvm::error("Error: coordinate file \"" + file_name_str + "\" does not exist.\n",
+                      COLVARS_FILE_ERROR);
+  }
+#endif
 
   std::string const ext(strlen(file_name) > 4 ?
                         (file_name + (strlen(file_name) - 4)) :
