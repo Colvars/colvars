@@ -527,7 +527,7 @@ public:
   }
 
  /// Get the value at the point with linear address i (for speed)
-  inline T get_value(size_t i)
+  inline T get_value(size_t i) const
   {
     return data[i];
   }
@@ -1660,14 +1660,6 @@ public:
     }
   }
 
-  /// \brief Report the offset between the lower end of the bin and the current value of variable i
-  inline cvm::real current_offset(int const i) const
-  {
-    cvm::real dist = cv[i]->value().real_value - lower_boundaries[i].real_value;
-    cvm::real offset = std::fmod(dist, widths[i]);
-    if ( offset < 0. ) offset = widths[i] + offset;
-    return offset;
-  }
 
   /// \brief Accumulate the value
   inline void acc_value(std::vector<int> const &ix, std::vector<colvarvalue> const &values) {
@@ -1859,59 +1851,6 @@ class integrate_potential : public colvar_grid_scalar
   /// Useful e.g. for output
   inline void set_zero_minimum() {
     add_constant(-1.0 * minimum_value());
-  }
-
-  /// \brief Return the value at the upper edge/corner of the given bin,
-  /// linearly interpolated (averaged) between 2^nd neighboring bins
-  /// Used to interpolate to a grid shifted by a half-bin
-  /// e.g. from PMF to gradient grid
-  /// should not be used on upper edges of non-periodic grids
-  /// (that should never be necessary, since those are extra bins with respect
-  /// to underlying gradient grid)
-  inline cvm::real value_corner_interp(std::vector<int> const &ix,
-                                size_t const &imult = 0) const
-  {
-    cvm::real sum = 0;
-    std::vector<int> b(ix);
-    gradients->wrap_to_edge(b, b);
-    // Fast implementation for small dimensions
-    if (nd == 1) {
-      b[0]++;
-      wrap(b);
-      return 0.5 * (value(ix, imult) + value(b, imult));
-    }
-
-    if (nd == 2) {
-      sum = value(b, imult);
-      b[0]++; wrap(b); sum += value(b, imult);
-      b[1]++; wrap(b); sum += value(b, imult);
-      b[0]--; wrap(b); sum += value(b, imult);
-      return 0.25 * sum;
-    }
-
-    if (nd == 3) {
-      sum = value(b, imult);
-      b[0]++; wrap(b); sum += value(b, imult);
-      b[1]++; wrap(b); sum += value(b, imult);
-      b[0]--; wrap(b); sum += value(b, imult);
-      b[2]++; wrap(b); sum += value(b, imult);
-      b[0]++; wrap(b); sum += value(b, imult);
-      b[1]--; wrap(b); sum += value(b, imult);
-      b[0]--; wrap(b); sum += value(b, imult);
-      return 0.125 * sum;
-    }
-
-    // Arbitrary dimension
-    const int max = 1 << nd;
-    for (int count = 0; count < max; count++) {
-      count++;
-      // k-th bit of count is the increment of the k-th coordinate
-      for (size_t k = 0; k < nd; k++) {
-        b[k] = ix[k] + (count & 1 << k);
-      }
-      wrap_to_edge(b, b); sum += value(b, imult);
-    }
-    return sum * (1. / max);
   }
 
   /// \brief Flag requesting the use of a smoothed version of the gradient (default: false)
