@@ -746,17 +746,6 @@ public:
   /// Clear the index groups loaded so far
   int reset_index_groups();
 
-  /// \brief Select atom IDs from a file (usually PDB) \param filename name of
-  /// the file \param atoms array into which atoms read from "filename" will be
-  /// appended \param pdb_field (optional) if the file is a PDB and this
-  /// string is non-empty, select atoms for which this field is non-zero
-  /// \param pdb_field_value (optional) if non-zero, select only atoms whose
-  /// pdb_field equals this
-  static int load_atoms(char const *filename,
-                        atom_group &atoms,
-                        std::string const &pdb_field,
-                        double pdb_field_value = 0.0);
-
   /// \brief Load coordinates for a group of atoms from a file (PDB or XYZ);
   /// if "pos" is already allocated, the number of its elements must match the
   /// number of entries in "filename" \param filename name of the file \param

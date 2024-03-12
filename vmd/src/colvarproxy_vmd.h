@@ -80,16 +80,16 @@ public:
                                            std::vector<const colvarvalue *> const &cvc_values,
                                            std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
-  virtual int load_atoms(char const *filename,
-                         cvm::atom_group &atoms,
-                         std::string const &pdb_field,
-                         double const pdb_field_value = 0.0);
+  virtual int load_atoms_pdb(char const *filename,
+                             cvm::atom_group &atoms,
+                             std::string const &pdb_field,
+                             double const pdb_field_value = 0.0);
 
-  virtual int load_coords(char const *filename,
-                          std::vector<cvm::atom_pos> &pos,
-                          const std::vector<int> &indices,
-                          std::string const &pdb_field,
-                          double const pdb_field_value = 0.0);
+  virtual int load_coords_pdb(char const *filename,
+                              std::vector<cvm::atom_pos> &pos,
+                              const std::vector<int> &indices,
+                              std::string const &pdb_field,
+                              double const pdb_field_value = 0.0);
 
 
   virtual int check_atom_name_selections_available();

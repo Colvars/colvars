@@ -190,16 +190,16 @@ public:
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                  cvm::atom_pos const &pos2) const;
 
-  int load_atoms(char const *filename,
-                 cvm::atom_group &atoms,
-                 std::string const &pdb_field,
-                 double const pdb_field_value) override;
+  int load_atoms_pdb(char const *filename,
+                     cvm::atom_group &atoms,
+                     std::string const &pdb_field,
+                     double const pdb_field_value) override;
 
-  int load_coords(char const *filename,
-                  std::vector<cvm::atom_pos> &pos,
-                  const std::vector<int> &indices,
-                  std::string const &pdb_field,
-                  double const pdb_field_value) override;
+  int load_coords_pdb(char const *filename,
+                      std::vector<cvm::atom_pos> &pos,
+                      const std::vector<int> &indices,
+                      std::string const &pdb_field,
+                      double const pdb_field_value) override;
 
 
   int scalable_group_coms() override

@@ -2144,15 +2144,6 @@ int colvarmodule::reset_index_groups()
 }
 
 
-int cvm::load_atoms(char const *file_name,
-                    cvm::atom_group &atoms,
-                    std::string const &pdb_field,
-                    double pdb_field_value)
-{
-  return proxy->load_atoms(file_name, atoms, pdb_field, pdb_field_value);
-}
-
-
 int cvm::load_coords(char const *file_name,
                      std::vector<cvm::rvector> *pos,
                      cvm::atom_group *atoms,
@@ -2167,7 +2158,7 @@ int cvm::load_coords(char const *file_name,
 
   atoms->create_sorted_ids();
 
-  std::vector<cvm::rvector> sorted_pos(atoms->size(), cvm::rvector(0.0));
+  std::vector<cvm::atom_pos> sorted_pos(atoms->size(), cvm::rvector(0.0));
 
   // Differentiate between PDB and XYZ files
   if (colvarparse::to_lower_cppstr(ext) == std::string(".xyz")) {
@@ -2179,10 +2170,10 @@ int cvm::load_coords(char const *file_name,
     error_code |= cvm::main()->load_coords_xyz(file_name, &sorted_pos, atoms);
   } else {
     // Otherwise, call proxy function for PDB
-    error_code |= proxy->load_coords(file_name,
-                                     sorted_pos, atoms->sorted_ids(),
-                                     pdb_field, pdb_field_value);
+    error_code |= proxy->load_coords_pdb(file_name, sorted_pos, atoms->sorted_ids(), pdb_field,
+                                         pdb_field_value);
   }
+
   if (error_code != COLVARS_OK) return error_code;
 
   std::vector<int> const &map = atoms->sorted_ids_map();
