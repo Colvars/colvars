@@ -100,8 +100,8 @@ int colvarbias_abf::init(std::string const &conf)
 
     // Allocate these at init time if possible
     local_samples.reset(new colvar_grid_count(colvars));
-    local_gradients.reset(new colvar_grid_gradient(colvars, local_samples.get()));
-    local_pmf.reset(new integrate_potential(colvars, local_gradients.get()));
+    local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
+    local_pmf.reset(new integrate_potential(colvars, local_gradients));
   }
 
   // ************* checking the associated colvars *******************
@@ -179,7 +179,7 @@ int colvarbias_abf::init(std::string const &conf)
   }
 
   samples.reset(new colvar_grid_count(colvars));
-  gradients.reset(new colvar_grid_gradient(colvars, samples.get()));
+  gradients.reset(new colvar_grid_gradient(colvars, samples));
 
   gradients->full_samples = full_samples;
   gradients->min_samples = min_samples;
@@ -197,7 +197,7 @@ int colvarbias_abf::init(std::string const &conf)
     z_bin.assign(num_variables(), 0);
     z_samples.reset(new colvar_grid_count(colvars));
     z_samples->request_actual_value();
-    z_gradients.reset(new colvar_grid_gradient(colvars, z_samples.get()));
+    z_gradients.reset(new colvar_grid_gradient(colvars, z_samples));
     z_gradients->request_actual_value();
     czar_gradients.reset(new colvar_grid_gradient(colvars));
   }
@@ -209,9 +209,9 @@ int colvarbias_abf::init(std::string const &conf)
       cvm::error("Error: cannot integrate free energy in dimension > 3.\n");
       return COLVARS_ERROR;
     }
-    pmf.reset(new integrate_potential(colvars, gradients.get()));
+    pmf.reset(new integrate_potential(colvars, gradients));
     if (b_CZAR_estimator) {
-      czar_pmf.reset(new integrate_potential(colvars, czar_gradients.get()));
+      czar_pmf.reset(new integrate_potential(colvars, czar_gradients));
     }
     // Parameters for integrating initial (and final) gradient data
     get_keyval(conf, "integrateMaxIterations", integrate_iterations, 10000, colvarparse::parse_silent);
@@ -225,16 +225,16 @@ int colvarbias_abf::init(std::string const &conf)
   if (b_CZAR_estimator && shared_on && cvm::main()->proxy->replica_index() == 0) {
     // The pointers below are used for outputting CZAR data
     // Allocate grids for collected global data, on replica 0 only
-    global_z_samples = new colvar_grid_count(colvars);
-    global_z_gradients = new colvar_grid_gradient(colvars, global_z_samples);
-    global_czar_gradients = new colvar_grid_gradient(colvars);
-    global_czar_pmf = new integrate_potential(colvars, global_czar_gradients);
+    global_z_samples.reset(new colvar_grid_count(colvars));
+    global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
+    global_czar_gradients.reset(new colvar_grid_gradient(colvars));
+    global_czar_pmf.reset(new integrate_potential(colvars, global_czar_gradients));
   } else {
     // otherwise they are just aliases for the local CZAR grids
-    global_z_samples = z_samples.get();
-    global_z_gradients = z_gradients.get();
-    global_czar_gradients = czar_gradients.get();
-    global_czar_pmf = czar_pmf.get();
+    global_z_samples = z_samples;
+    global_z_gradients = z_gradients;
+    global_czar_gradients = czar_gradients;
+    global_czar_pmf = czar_pmf;
   }
 
   // For shared ABF, we store a second set of grids.
@@ -242,10 +242,10 @@ int colvarbias_abf::init(std::string const &conf)
   // but now we allow calling share externally (e.g. from Tcl).
   if (b_CZAR_estimator) {
     last_z_samples.reset(new colvar_grid_count(colvars));
-    last_z_gradients.reset(new colvar_grid_gradient(colvars, last_z_samples.get()));
+    last_z_gradients.reset(new colvar_grid_gradient(colvars, last_z_samples));
   }
   last_samples.reset(new colvar_grid_count(colvars));
-  last_gradients.reset(new colvar_grid_gradient(colvars, last_samples.get()));
+  last_gradients.reset(new colvar_grid_gradient(colvars, last_samples));
   shared_last_step = -1;
 
 
@@ -295,14 +295,6 @@ int colvarbias_abf::init(std::string const &conf)
 /// Destructor
 colvarbias_abf::~colvarbias_abf()
 {
-  #define delete_if_non_null(ptr) if (ptr) { delete ptr; ptr = nullptr; }
-  // Only deallocate objects that are not owned by unique pointers
-  if (global_z_samples != z_samples.get())  {
-    delete_if_non_null(global_z_gradients)
-    delete_if_non_null(global_z_samples)
-    delete_if_non_null(global_czar_gradients)
-    delete_if_non_null(global_czar_pmf)
-  }
   if (system_force) delete[] system_force;
 }
 
@@ -554,8 +546,8 @@ int colvarbias_abf::replica_share() {
     // We arrive here if sharing has just been enabled by a script
     // in which case local arrays have not been initialized yet
     local_samples.reset(new colvar_grid_count(colvars));
-    local_gradients.reset(new colvar_grid_gradient(colvars, local_samples.get()));
-    local_pmf.reset(new integrate_potential(colvars, local_gradients.get()));
+    local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
+    local_pmf.reset(new integrate_potential(colvars, local_gradients));
   }
   // Calculate the delta gradient and count for the local replica
   last_gradients->delta_grid(*gradients);
@@ -677,10 +669,10 @@ int colvarbias_abf::replica_share_CZAR() {
       // We arrive here if sharing has just been enabled by a script
       // Allocate grids for collective data, on replica 0 only
       // overriding CZAR grids that are equal to local ones by default
-      global_z_samples = new colvar_grid_count(colvars);
-      global_z_gradients = new colvar_grid_gradient(colvars, global_z_samples);
-      global_czar_gradients = new colvar_grid_gradient(colvars);
-      global_czar_pmf = new integrate_potential(colvars, global_czar_gradients);
+      global_z_samples.reset(new colvar_grid_count(colvars));
+      global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
+      global_czar_gradients.reset(new colvar_grid_gradient(colvars));
+      global_czar_pmf.reset(new integrate_potential(colvars, global_czar_gradients));
     }
     // Start by adding new data for this cycle from replica 0
     global_z_gradients->add_grid( *last_z_gradients );
@@ -805,10 +797,10 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     gradients_out = gradients.get();
     pmf_out = pmf.get();
     // Note: outside of shared ABF, "global" CZAR grids are just the local ones
-    z_samples_out = global_z_samples;
-    z_gradients_out = global_z_gradients;
-    czar_gradients_out = global_czar_gradients;
-    czar_pmf_out = global_czar_pmf;
+    z_samples_out = global_z_samples.get();
+    z_gradients_out = global_z_gradients.get();
+    czar_gradients_out = global_czar_gradients.get();
+    czar_pmf_out = global_czar_pmf.get();
   }
 
   write_grid_to_file<colvar_grid_count>(samples_out, prefix + ".count", close);
@@ -892,7 +884,7 @@ int colvarbias_abf::read_gradients_samples()
     // Therefore the czar_gradients grid is not linked to a sampling grid
     // Here we define a temporary czar_gradients grid linked to z_samples,
     // to correctly average input gradients if overlapping
-    czar_gradients_in.reset(new colvar_grid_gradient(colvars, z_samples.get()));
+    czar_gradients_in.reset(new colvar_grid_gradient(colvars, z_samples));
   }
 
   for ( size_t i = 0; i < input_prefix.size(); i++ ) {

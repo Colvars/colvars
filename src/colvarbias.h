@@ -10,6 +10,8 @@
 #ifndef COLVARBIAS_H
 #define COLVARBIAS_H
 
+#include <memory>
+
 #include "colvar.h"
 #include "colvarparse.h"
 #include "colvardeps.h"
@@ -334,8 +336,6 @@ public:
   colvarbias_ti(char const *key);
   virtual ~colvarbias_ti();
 
-  virtual int clear_state_data();
-
   virtual int init(std::string const &conf);
   virtual int init_grids();
   virtual int update();
@@ -359,10 +359,10 @@ protected:
   std::vector<colvarvalue> ti_system_forces;
 
   /// Averaged system forces
-  colvar_grid_gradient *ti_avg_forces;
+  std::shared_ptr<colvar_grid_gradient> ti_avg_forces;
 
   /// Histogram of sampled data
-  colvar_grid_count *ti_count;
+  std::shared_ptr<colvar_grid_count> ti_count;
 
   /// Because total forces may be from the last simulation step,
   /// store the index of the variables then
