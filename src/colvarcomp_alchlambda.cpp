@@ -45,10 +45,11 @@ void colvar::alch_lambda::calc_value()
 {
   // By default, follow external parameter
   // This might get overwritten by driving extended dynamics
+  // (in apply_force() below)
   cvm::proxy->get_alch_lambda(&x.real_value);
 
   cvm::proxy->get_dE_dlambda(&ft.real_value);
-  ft.real_value *= -1.0; // Energy derivative to force
+  ft.real_value *= -1.0; // Convert energy derivative to force
 
   // Include any force due to bias on Flambda
   ft.real_value += cvm::proxy->indirect_lambda_biasing_force;
@@ -73,7 +74,6 @@ void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
   // new value will be cached and sent at end of timestep
   cvm::proxy->set_alch_lambda(x.real_value);
 }
-
 
 
 colvar::alch_Flambda::alch_Flambda()
