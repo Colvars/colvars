@@ -457,8 +457,12 @@ int colvarbias_abf::update_system_force()
   // System force from atomic forces (or extended Lagrangian if applicable)
 
   for (i = 0; i < num_variables(); i++) {
-    if (colvars[i]->is_enabled(f_cv_subtract_applied_force)) {
+    if (colvars[i]->is_enabled(f_cv_subtract_applied_force) ||
+       (cvm::proxy->total_forces_same_step() && !colvars[i]->is_enabled(f_cv_external))) {
       // this colvar is already subtracting the ABF force
+      // or the "total force" is really a system force at current step
+      // (For external parameters, the total force contains biasing forces
+      // unless f_cv_subtract_applied_force is enabled)
       system_force[i] = colvars[i]->total_force().real_value;
     } else {
       system_force[i] = colvars[i]->total_force().real_value

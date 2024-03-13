@@ -1790,7 +1790,7 @@ int colvar::calc_colvar_properties()
 
   } else {
 
-    if (is_enabled(f_cv_subtract_applied_force)) {
+    if (is_enabled(f_cv_subtract_applied_force) && !cvm::proxy->total_forces_same_step()) {
       // correct the total force only if it has been measured
       // TODO add a specific test instead of relying on sq norm
       if (ft.norm2() > 0.0) {
@@ -1877,7 +1877,8 @@ void colvar::update_extended_Lagrangian()
   // Integrate with slow timestep (if time_step_factor != 1)
   cvm::real dt = cvm::dt() * cvm::real(time_step_factor);
 
-  colvarvalue f_ext(fr.type()); // force acting on the extended variable
+  // Force acting on the extended variable
+  colvarvalue f_ext(fr.type());
   f_ext.reset();
 
   if (is_enabled(f_cv_external)) {
