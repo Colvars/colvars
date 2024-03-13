@@ -899,8 +899,9 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
   if ((cvm::step_relative() > 0) || proxy->total_forces_same_step()) {
     if (ti_avg_forces->index_ok(ti_bin)) {
       for (i = 0; i < num_variables(); i++) {
-        if (variables(i)->is_enabled(f_cv_subtract_applied_force)) {
+        if (variables(i)->is_enabled(f_cv_subtract_applied_force) || proxy->total_forces_same_step()) {
           // this colvar is already subtracting all applied forces
+          // or the "total force" is really a system force at current step
           ti_system_forces[i] = variables(i)->total_force();
         } else {
           ti_system_forces[i] = variables(i)->total_force() -
