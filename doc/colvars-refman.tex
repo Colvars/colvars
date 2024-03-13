@@ -254,7 +254,7 @@ cv.#1(#2)
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
   \fi
-  \hypertarget{#2}{\section{#1}}\label{#2}
+  \hypertarget{#2}{\section*{#1}}\label{#2}\addcontentsline{toc}{section}{#1}
   \ifdefined\HCode
   \HCode{</div>}
   \else
@@ -270,7 +270,7 @@ cv.#1(#2)
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
   \fi
-  \hypertarget{#2}{\subsection{#1}}\label{#2}
+  \hypertarget{#2}{\subsection*{#1}}\label{#2}\addcontentsline{toc}{subsection}{\ifdefined\HCode~~~\fi#1}
   \ifdefined\HCode
   \HCode{</div>}
   \else
@@ -286,7 +286,7 @@ cv.#1(#2)
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
   \fi
-  \hypertarget{#2}{\subsubsection{#1}}\label{#2}
+  \hypertarget{#2}{\subsubsection*{#1}}\label{#2}\addcontentsline{toc}{subsubsection}{\ifdefined\HCode~~~~~~\fi#1}
   \ifdefined\HCode
   \HCode{</div>}
   \else
