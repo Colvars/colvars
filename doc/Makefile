@@ -73,7 +73,7 @@ HTLATEX_OPTS = "html5mjlatex.cfg, charset=utf-8" " -cunihtf -utf8"
 %.html: %.tex colvars-refman-main.tex colvars-refman.tex $(BIBTEX) %.pdf Makefile
 	@echo "Building $@ with release label \"${COLVARS_RELEASE}\"" ; \
 	$(HTLATEX) $(notdir $<) $(HTLATEX_OPTS); \
-	bash postprocess_html.sh
+	bash postprocess_html.sh $@
 
 
 ifeq ($(COLVARS_RELEASE),"master")
