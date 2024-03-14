@@ -889,8 +889,8 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
 
   size_t i;
 
-  if (proxy->total_forces_same_step()) {
-    for (i = 0; i < num_variables(); i++) {
+  for (i = 0; i < num_variables(); i++) {
+    if (variables(i)->is_enabled(f_cv_total_force_current_step)) {
       ti_bin[i] = ti_avg_forces->current_bin_scalar(i);
     }
   }
@@ -899,7 +899,8 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
   if ((cvm::step_relative() > 0) || proxy->total_forces_same_step()) {
     if (ti_avg_forces->index_ok(ti_bin)) {
       for (i = 0; i < num_variables(); i++) {
-        if (variables(i)->is_enabled(f_cv_subtract_applied_force) || proxy->total_forces_same_step()) {
+        if (variables(i)->is_enabled(f_cv_subtract_applied_force) ||
+          (cvm::proxy->total_forces_same_step() && !variables(i)->is_enabled(f_cv_external))) {
           // this colvar is already subtracting all applied forces
           // or the "total force" is really a system force at current step
           ti_system_forces[i] = variables(i)->total_force();
@@ -915,9 +916,9 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
     }
   }
 
-  if (!proxy->total_forces_same_step()) {
-    // Set the index for use in the next iteration, when total forces come in
-    for (i = 0; i < num_variables(); i++) {
+  for (i = 0; i < num_variables(); i++) {
+    if (!variables(i)->is_enabled(f_cv_total_force_current_step)) {
+      // Set the index for use in the next iteration, when total forces come in
       ti_bin[i] = ti_avg_forces->current_bin_scalar(i);
     }
   }
