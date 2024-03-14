@@ -34,6 +34,10 @@ int colvar::distance::init(std::string const &conf)
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");
 
+  if (!group1 || !group2) {
+    return error_code | COLVARS_INPUT_ERROR;
+  }
+
   error_code |= init_total_force_params(conf);
 
   return error_code;

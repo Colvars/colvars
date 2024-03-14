@@ -109,7 +109,7 @@ int colvar::coordnum::init(std::string const &conf)
   group2 = parse_group(conf, "group2");
 
   if (!group1 || !group2) {
-    return cvm::error("Error: failed to initialize atom groups.\n", COLVARS_INPUT_ERROR);
+    return error_code | COLVARS_INPUT_ERROR;
   }
 
   if (int atom_number = cvm::atom_group::overlap(*group1, *group2)) {
@@ -394,6 +394,10 @@ int colvar::selfcoordnum::init(std::string const &conf)
   int error_code = cvc::init(conf);
 
   group1 = parse_group(conf, "group1");
+
+  if (!group1 || group1->size() == 0) {
+    return error_code | COLVARS_INPUT_ERROR;
+  }
 
   get_keyval(conf, "cutoff", r0, r0);
   get_keyval(conf, "expNumer", en, en);
