@@ -39,6 +39,9 @@ int colvar::orientation::init(std::string const &conf)
   int error_code = cvc::init(conf);
 
   atoms = parse_group(conf, "atoms");
+  if (!atoms || atoms->size() == 0) {
+    return error_code | COLVARS_INPUT_ERROR;
+  }
   ref_pos.reserve(atoms->size());
 
   if (get_keyval(conf, "refPositions", ref_pos, ref_pos)) {
