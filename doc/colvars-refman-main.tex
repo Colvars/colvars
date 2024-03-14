@@ -3155,18 +3155,18 @@ colvar \{\\
 \-~~~~refPositionsFile5 string-04.pdb\\
 \-~~\}\\
 \}\\
-\noindent\ttfamily colvar \{\\
-\-~~\# Distance from the path\\
-\-~~name gz\\
-\-~~\# The path is defined by 5 reference frames (from string-00.pdb to string-04.pdb)\\
-\-~~\# Use atomic coordinate from atoms 1, 2 and 3 to compute the path\\
-\-~~gzpath \{\\
-\-~~~~atoms \{atomnumbers \{ 1 2 3 \}\}\\
-\-~~~~refPositionsFile1 string-00.pdb\\
-\-~~~~refPositionsFile2 string-01.pdb\\
-\-~~~~refPositionsFile3 string-02.pdb\\
-\-~~~~refPositionsFile4 string-03.pdb\\
-\-~~~~refPositionsFile5 string-04.pdb\\
+\-colvar~\{\\
+\-~~\#~Distance~from~the~path\\
+\-~~name~gz\\
+\-~~\#~The~path~is~defined~by~5~reference~frames~(from~string-00.pdb~to~string-04.pdb)\\
+\-~~\#~Use~atomic~coordinate~from~atoms~1,~2~and~3~to~compute~the~path\\
+\-~~gzpath~\{\\
+\-~~~~atoms~\{atomnumbers~\{~1~2~3~\}\}\\
+\-~~~~refPositionsFile1~string-00.pdb\\
+\-~~~~refPositionsFile2~string-01.pdb\\
+\-~~~~refPositionsFile3~string-02.pdb\\
+\-~~~~refPositionsFile4~string-03.pdb\\
+\-~~~~refPositionsFile5~string-04.pdb\\
 \-~~\}\\
 \}
 \end{cvexampleinput}
@@ -3633,44 +3633,43 @@ where $f_{k}$ is the activation function of the $k$-th layer, $w_{(k,j),(k-1,i)}
 
 An example of configuration using \texttt{NeuralNetwork} is shown below:
 
-\bigskip
-{%
-% verbatim can't appear within commands
-\noindent\ttfamily colvar \{\\
-\-~~\# Define a neural network with 2 layers\\
-\-~~\# The inputs are two torsion angles\\
-\-~~\# and the first node at the output layer is used as the final CV\\
-\-~~name nn\_output\_1\\
-\-~~NeuralNetwork \{\\
-\-~~~~output\_component 0\\
-\-~~~~layer1\_WeightsFile      dense\_1\_weights.txt\\
-\-~~~~layer1\_BiasesFile       dense\_1\_biases.txt\\
-\-~~~~layer1\_activation       tanh\\
-\-~~~~layer2\_WeightsFile      dense\_2\_weights.txt\\
-\-~~~~layer2\_BiasesFile       dense\_2\_biases.txt\\
-\-~~~~layer2\_activation       tanh\\
-\-~~~~\# The component coefficient is used for normalization\\
-\-~~~~componentCoeff 180.0\\
-\-~~~~dihedral \{\\
-\-~~~~~~name 001\\
-\-~~~~~~\# normalization factor 1.0/180.0\\
-\-~~~~~~componentCoeff 0.00555555555555555556\\
-\-~~~~~~group1 \{atomNumbers \{5\}\}\\
-\-~~~~~~group2 \{atomNumbers \{7\}\}\\
-\-~~~~~~group3 \{atomNumbers \{9\}\}\\
-\-~~~~~~group4 \{atomNumbers \{15\}\}\\
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~\#~Define~a~neural~network~with~2~layers\\
+\-~~\#~The~inputs~are~two~torsion~angles\\
+\-~~\#~and~the~first~node~at~the~output~layer~is~used~as~the~final~CV\\
+\-~~name~nn\_output\_1\\
+\-~~NeuralNetwork~\{\\
+\-~~~~output\_component~0\\
+\-~~~~layer1\_WeightsFile~~~~~~dense\_1\_weights.txt\\
+\-~~~~layer1\_BiasesFile~~~~~~~dense\_1\_biases.txt\\
+\-~~~~layer1\_activation~~~~~~~tanh\\
+\-~~~~layer2\_WeightsFile~~~~~~dense\_2\_weights.txt\\
+\-~~~~layer2\_BiasesFile~~~~~~~dense\_2\_biases.txt\\
+\-~~~~layer2\_activation~~~~~~~tanh\\
+\-~~~~\#~The~component~coefficient~is~used~for~normalization\\
+\-~~~~componentCoeff~180.0\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~001\\
+\-~~~~~~\#~normalization~factor~1.0/180.0\\
+\-~~~~~~componentCoeff~0.00555555555555555556\\
+\-~~~~~~group1~\{atomNumbers~\{5\}\}\\
+\-~~~~~~group2~\{atomNumbers~\{7\}\}\\
+\-~~~~~~group3~\{atomNumbers~\{9\}\}\\
+\-~~~~~~group4~\{atomNumbers~\{15\}\}\\
 \-~~~~\}\\
-\-~~~~dihedral \{\\
-\-~~~~~~name 002\\
-\-~~~~~~\# normalization factor 1.0/180.0\\
-\-~~~~~~componentCoeff 0.00555555555555555556\\
-\-~~~~~~group1 \{atomNumbers \{7\}\}\\
-\-~~~~~~group2 \{atomNumbers \{9\}\}\\
-\-~~~~~~group3 \{atomNumbers \{15\}\}\\
-\-~~~~~~group4 \{atomNumbers \{17\}\}\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~002\\
+\-~~~~~~\#~normalization~factor~1.0/180.0\\
+\-~~~~~~componentCoeff~0.00555555555555555556\\
+\-~~~~~~group1~\{atomNumbers~\{7\}\}\\
+\-~~~~~~group2~\{atomNumbers~\{9\}\}\\
+\-~~~~~~group3~\{atomNumbers~\{15\}\}\\
+\-~~~~~~group4~\{atomNumbers~\{17\}\}\\
 \-~~~~\}\\
 \-~~\}\\
-\}}
+\-\}\\
+\end{cvexampleinput}
 
 
 \ifdefined\cvvmdornamd{
