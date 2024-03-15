@@ -250,49 +250,49 @@ cv.#1(#2)
   \newpage
   \ifdefined\HCode
   \pagetoplink
+  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
   \HCode{<div class="heading">} % Use CSS, mdframed won't work for this
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
   \fi
-  \hypertarget{#2}{\section*{#1}}\label{#2}\addcontentsline{toc}{section}{#1}
+  \hypertarget{#2}{\section{#1}}\label{#2}
   \ifdefined\HCode
   \HCode{</div>}
   \else
   \end{mdframed}
   \fi
-  \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
 }
 
 \newcommand{\cvsubsec}[2]{%
   \ifdefined\HCode
   \pagetoplink
+  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
   \HCode{<div class="heading">}
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
   \fi
-  \hypertarget{#2}{\subsection*{#1}}\label{#2}\addcontentsline{toc}{subsection}{\ifdefined\HCode~~~\fi#1}
+  \hypertarget{#2}{\subsection{#1}}\label{#2}
   \ifdefined\HCode
   \HCode{</div>}
   \else
   \end{mdframed}
   \fi
-  \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
 }
 
 \newcommand{\cvsubsubsec}[2]{%
   \ifdefined\HCode
   \pagetoplink
+  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
   \HCode{<div class="heading">}
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
   \fi
-  \hypertarget{#2}{\subsubsection*{#1}}\label{#2}\addcontentsline{toc}{subsubsection}{\ifdefined\HCode~~~~~~\fi#1}
+  \hypertarget{#2}{\subsubsection{#1}}\label{#2}
   \ifdefined\HCode
   \HCode{</div>}
   \else
   \end{mdframed}
   \fi
-  \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
 }
 
 \input{colvars-engine-flags}
