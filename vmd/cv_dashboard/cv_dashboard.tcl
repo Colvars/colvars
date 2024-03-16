@@ -886,8 +886,13 @@ proc ::cv_dashboard::load_cv_traj { filenames } {
     close $fd
   }
   set nsteps [llength $steps]
+  if { $nsteps == 0 } {
+    puts "Error: Could not read any time steps from files: $filenames"
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+    -message "Could not read any time steps from the selected colvars.traj files ($filenames)."
+    return
+  }
   puts "Read $nsteps steps from files: $filenames"
-
 
   # (2) Use heuristic to match number of samples to number of frames
   # assuming that the molecular trajectory frequency is a multiple of the colvars.traj frequency
