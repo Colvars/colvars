@@ -30,7 +30,7 @@ if make install && pushd ${COLVARS_WEBSITE_TREE} ; then
     git add ${COLVARS_RELEASE}
     if [ "x${COLVARS_RELEASE}" == "xmaster" ] ; then
         git add doxygen
-        git add colvars-refman-*
+        git add colvars-refman-* pdf
     fi
     git commit -m "Update doc for version \"${COLVARS_RELEASE}\""
     # Hard-code the website repository
