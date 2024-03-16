@@ -370,7 +370,7 @@ This version results in extremely fast updates.
 
 \cvsec{Enabling and controlling the Colvars module in \MDENGINE{}}{sec:colvarmodule}
 
-Here, we document the syntax of the commands and parameters used to set up and use the Colvars module in \MDENGINE{}\cvgromacsonly{ \cite{Abraham2015}}\cvlammpsonly{ \cite{Plimpton1995}}\cvnamdonly{ \cite{Phillips2020}}.
+Here, we document the syntax of the commands and parameters used to set up and use the Colvars module in \MDENGINE{}\cvgromacsonly{ \cite{Abraham2015}}\cvlammpsonly{ \cite{Thompson2022}}\cvnamdonly{ \cite{Phillips2020}}.
 One of these parameters is the configuration file or the configuration text for the module itself, whose syntax is described in \ref{sec:colvars_config_syntax} and in the following sections.
 
 \cvsubsec{Units in the Colvars module}{sec:units}
@@ -2767,21 +2767,22 @@ $N_{0}$ to $N_{0}+N$ is calculated by the formula:
     \right)
   } \; = \; \; \; \; \\ \; \; \; \; {
     \nonumber
-    \frac{1}{2(N-2)}
+    \frac{(1-C_\text{hb})}{N-1}
     \sum_{n=N_{0}}^{N_{0}+N-2}
     \mathrm{angf}\left(
         \mathrm{C}_{\alpha}^{(n)},
         \mathrm{C}_{\alpha}^{(n+1)},
         \mathrm{C}_{\alpha}^{(n+2)}\right)
   } \; + \; {
-    \frac{1}{2(N-4)}
+    \frac{C_\text{hb}}{N-3}
     \sum_{n=N_{0}}^{N_{0}+N-4}
     \mathrm{hbf}\left(
       \mathrm{O}^{(n)},
       \mathrm{N}^{(n+4)}\right) \mathrm{,}
   } \\
 \end{eqnarray}
-where the score function for the $\mathrm{C}_{\alpha} -
+where $C_\text{hb}$ is defined by \refkey{hBondCoeff}{colvar|alpha|hBondCoeff},
+the score function $\mathrm{angf}$ for the $\mathrm{C}_{\alpha} -
 \mathrm{C}_{\alpha} - \mathrm{C}_{\alpha}$ angle is defined as:
 \begin{equation}
   \label{eq:colvars_alpha_Calpha}
@@ -2805,7 +2806,7 @@ where the score function for the $\mathrm{C}_{\alpha} -
       \left(\Delta\theta_{\mathrm{tol}}\right)^{4}} \mathrm{,}
   }
 \end{equation}
-and the score function for the $\mathrm{O}^{(n)} \leftrightarrow
+and the score function $\mathrm{hbf}$ for the $\mathrm{O}^{(n)} \leftrightarrow
 \mathrm{N}^{(n+4)}$ hydrogen bond is defined through a \texttt{hBond}
 colvar component on the same atoms.
 
