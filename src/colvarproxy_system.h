@@ -109,6 +109,11 @@ public:
   /// Send cached value of alchemical lambda parameter to back-end (if available)
   virtual int send_alch_lambda();
 
+  /// Request energy computation every freq steps (necessary for NAMD3, not all back-ends)
+  virtual int request_alch_energy_freq(int const freq) {
+    return COLVARS_OK;
+  }
+
   /// Get energy derivative with respect to lambda (if available)
   virtual int get_dE_dlambda(cvm::real* dE_dlambda);
 
