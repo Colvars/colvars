@@ -111,7 +111,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer pull texlive.sif oras://ghcr.io/Colvars/devel-containers:texlive
+          apptainer pull texlive.sif oras://ghcr.io/colvars/devel-containers:texlive
 
       - name: Checkout website repository
         uses: actions/checkout@v4
@@ -264,7 +264,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer pull CentOS9-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS9-devel
+          apptainer pull CentOS9-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel
 
       - name: Build with Clang 16 and address sanitizer
         env:
@@ -327,8 +327,8 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer pull CentOS7-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS7-devel
-          apptainer pull CentOS9-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS9-devel
+          apptainer pull CentOS7-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS7-devel
+          apptainer pull CentOS9-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel
 
       - name: GCC 4.8, C++11 (CentOS 7)
         env:
@@ -499,7 +499,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer pull CentOS7-devel.sif oras://ghcr.io/Colvars/devel-containers:CentOS7-devel
+          apptainer pull CentOS7-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS7-devel
 
       - name: Build library with Sun compiler (Oracle Developer Studio)
         shell: bash
