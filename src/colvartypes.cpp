@@ -202,6 +202,80 @@ cvm::quaternion::position_derivative_inner(cvm::rvector const &pos,
   return result;
 }
 
+
+cvm::real cvm::quaternion::spin_angle(cvm::rvector const &axis) const
+{
+  cvm::rvector const q_vec = get_vector();
+  cvm::real alpha = (180.0 / PI) * 2.0 * cvm::atan2(axis * q_vec, q0);
+  while (alpha > 180.0)
+    alpha -= 360;
+  while (alpha < -180.0)
+    alpha += 360;
+  return alpha;
+}
+
+
+cvm::quaternion cvm::quaternion::dspin_angle_dq(cvm::rvector const &axis) const
+{
+  cvm::rvector const q_vec = get_vector();
+  cvm::real const iprod = axis * q_vec;
+  if (q0) {
+    cvm::real const dspindx = (180.0 / PI) * 2.0 * (1.0 / (1.0 + (iprod * iprod) / (q0 * q0)));
+    return cvm::quaternion(dspindx * (iprod * (-1.0) / (q0 * q0)),
+                           dspindx * ((1.0 / q0) * axis.x),
+                           dspindx * ((1.0 / q0) * axis.y),
+                           dspindx * ((1.0 / q0) * axis.z));
+  }
+  // (1/(1+x^2)) ~ (1/x)^2
+  // The documentation of spinAngle discourages its use when q_vec and
+  // axis are not close
+  return cvm::quaternion((180.0/PI) * 2.0 * ((-1.0)/iprod), 0.0, 0.0, 0.0);
+}
+
+
+cvm::real cvm::quaternion::tilt(cvm::rvector const &axis) const
+{
+  cvm::rvector const q_vec = get_vector();
+  cvm::real const alpha = (180.0 / PI) * 2.0 * cvm::atan2(axis * q_vec, q0);
+
+  cvm::real const cos_spin_2 = cvm::cos(alpha * (PI / 180.0) * 0.5);
+  cvm::real const cos_theta_2 = ((cos_spin_2 != 0.0) ? (q0 / cos_spin_2) : (0.0));
+  // cos(2t) = 2*cos(t)^2 - 1
+  return 2.0 * (cos_theta_2 * cos_theta_2) - 1.0;
+}
+
+
+cvm::quaternion cvm::quaternion::dtilt_dq(cvm::rvector const &axis) const
+{
+  cvm::rvector const q_vec = get_vector();
+  cvm::real const iprod = axis * q_vec;
+
+  cvm::real const cos_spin_2 = cvm::cos(cvm::atan2(iprod, q0));
+
+  if (q0)  {
+
+    cvm::real const d_cos_theta_dq0 =
+        (4.0 * q0 / (cos_spin_2 * cos_spin_2)) *
+        (1.0 - (iprod * iprod) / (q0 * q0) / (1.0 + (iprod * iprod) / (q0 * q0)));
+
+    cvm::real const d_cos_theta_dqn =
+        (4.0 * q0 / (cos_spin_2 * cos_spin_2) * (iprod / q0) / (1.0 + (iprod * iprod) / (q0 * q0)));
+
+    return cvm::quaternion(d_cos_theta_dq0,
+                           d_cos_theta_dqn * axis.x,
+                           d_cos_theta_dqn * axis.y,
+                           d_cos_theta_dqn * axis.z);
+  }
+
+  cvm::real const d_cos_theta_dqn = (4.0 / (cos_spin_2 * cos_spin_2 * iprod));
+  return cvm::quaternion(0.0,
+                         d_cos_theta_dqn * axis.x,
+                         d_cos_theta_dqn * axis.y,
+                         d_cos_theta_dqn * axis.z);
+}
+
+
+
 #ifdef COLVARS_LAMMPS
 namespace {
   inline void *new_Jacobi_solver(int size) {

@@ -1,0 +1,2 @@
+Reference traj files are taken from 000_spinangle-reuse_harmonic-fixed,
+whereas the .state and .out files are based on this job's configuration.

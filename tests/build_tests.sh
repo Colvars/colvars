@@ -206,7 +206,7 @@ for colvar in \
     "eigenvector-difference" \
     "eigenvector-normalized" \
     "tilt" \
-    "spinangle" \
+    "spinangle" "spinangle-reuse" \
     "selfcoordnum" "selfcoordnum-pairlist" \
     "orientationangle" "orientationproj" \
    ; do
