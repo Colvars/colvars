@@ -710,7 +710,7 @@ proc ::cv_dashboard::cvs_from_labels {} {
 }
 
 # Create colvars from an existing colvars trajectory file
-# loading the precimputed values
+# loading the precomputed values
 
 proc ::cv_dashboard::cvs_from_traj {} {
   set files [tk_getOpenFile -title "Input colvars trajectory files for the complete trajectory" \
