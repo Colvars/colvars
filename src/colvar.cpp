@@ -35,6 +35,7 @@ colvar::colvar()
   after_restart = false;
   kinetic_energy = 0.0;
   potential_energy = 0.0;
+  period = 0.0;
 
 #ifdef LEPTON
   dev_null = 0.0;
