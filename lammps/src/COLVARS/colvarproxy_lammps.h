@@ -70,7 +70,8 @@ class colvarproxy_lammps : public colvarproxy {
  public:
 
   bool total_forces_enabled() const override { return total_force_requested; };
-  bool total_forces_same_step() const override { return true; };
+  // Total forces are saved at end of step, only processed at the next step
+  bool total_forces_same_step() const override { return false; };
   bool want_exit() const { return do_exit; };
 
   // perform colvars computation. returns biasing energy
