@@ -94,6 +94,7 @@ public:
   virtual bool total_forces_enabled() const;
 
   /// Are total forces from the current step available?
+  /// in which case they are really system forces
   virtual bool total_forces_same_step() const;
 
   /// Get the molecule ID when called in VMD; raise error otherwise
