@@ -88,8 +88,6 @@ private:
 
 public:
 
-  friend class colvarproxy;
-
   /// Use a 64-bit integer to store the step number
   typedef long long step_number;
 
@@ -204,8 +202,6 @@ public:
   // allow these classes to access protected data
   class atom;
   class atom_group;
-  friend class atom;
-  friend class atom_group;
   typedef std::vector<atom>::iterator       atom_iter;
   typedef std::vector<atom>::const_iterator atom_const_iter;
 
