@@ -18,6 +18,7 @@
 #include "colvar.h"
 #include "colvarbias.h"
 #include "colvarbias_abf.h"
+#include "colvarbias_abmd.h"
 #include "colvarbias_alb.h"
 #include "colvarbias_histogram.h"
 #include "colvarbias_histogram_reweight_amd.h"
@@ -560,6 +561,9 @@ int colvarmodule::parse_biases(std::string const &conf)
 
   /// initialize ABF instances
   parse_biases_type<colvarbias_abf>(conf, "abf");
+
+  /// initialize ABMD instances
+  parse_biases_type<colvarbias_abmd>(conf, "abmd");
 
   /// initialize adaptive linear biases
   parse_biases_type<colvarbias_alb>(conf, "ALB");

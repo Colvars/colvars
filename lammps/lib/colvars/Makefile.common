@@ -25,6 +25,7 @@ COLVARS_INCFLAGS = -DCOLVARS_LAMMPS $(COLVARS_DEBUG_INCFLAGS) $(COLVARS_PYTHON_I
 COLVARS_SRCS = \
         colvaratoms.cpp \
         colvarbias_abf.cpp \
+        colvarbias_abmd.cpp \
         colvarbias_alb.cpp \
         colvarbias.cpp \
         colvarbias_histogram.cpp \

@@ -80,6 +80,26 @@ obj/colvarbias_abf.o: \
 	colvars/src/colvar_UIestimator.h \
 	colvars/src/colvars_memstream.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_abf.o $(COPTC) colvars/src/colvarbias_abf.cpp
+obj/colvarbias_abmd.o: \
+	obj/.exists \
+	colvars/src/colvarbias_abmd.cpp \
+	colvars/src/colvarbias_abmd.h \
+	colvars/src/colvarbias_restraint.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvar.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_abmd.o $(COPTC) colvars/src/colvarbias_abmd.cpp
 obj/colvarbias_alb.o: \
 	obj/.exists \
 	colvars/src/colvarbias_alb.cpp \
@@ -498,11 +518,12 @@ obj/colvarmodule.o: \
 	colvars/src/colvarbias_abf.h \
 	colvars/src/colvargrid.h \
 	colvars/src/colvar_UIestimator.h \
+	colvars/src/colvarbias_abmd.h \
+	colvars/src/colvarbias_restraint.h \
 	colvars/src/colvarbias_alb.h \
 	colvars/src/colvarbias_histogram.h \
 	colvars/src/colvarbias_histogram_reweight_amd.h \
 	colvars/src/colvarbias_meta.h \
-	colvars/src/colvarbias_restraint.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarscript_commands.h \
 	colvars/src/colvarscript_commands_colvar.h \

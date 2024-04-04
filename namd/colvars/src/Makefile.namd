@@ -3,6 +3,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvaratoms.o \
 	$(DSTDIR)/colvarbias.o \
 	$(DSTDIR)/colvarbias_abf.o \
+	$(DSTDIR)/colvarbias_abmd.o \
 	$(DSTDIR)/colvarbias_alb.o \
 	$(DSTDIR)/colvarbias_histogram.o \
 	$(DSTDIR)/colvarbias_histogram_reweight_amd.o \
