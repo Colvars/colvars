@@ -63,6 +63,7 @@ m4 -Dti_pmf -Dcenters_moving_half < harmonic.in.m4 > harmonic-centers-moving-ti.
 
 for colvar in "distance" ; do
     for bias in \
+        "abmd" \
         "harmonic-fixed" \
         "harmonic-centers-moving" \
         "harmonic-centers-moving-full" \
