@@ -344,6 +344,22 @@
     "  url = {https://doi.org/10.1021/ct500320c}\n"
     "}\n";
 
+  paper_count_[std::string("Marchi1999")] = 0;
+  paper_url_[std::string("Marchi1999")] = "https://doi.org/10.1063/1.478259";
+  paper_bibtex_[std::string("Marchi1999")] =
+    "\n"
+    "@Article{Marchi1999,\n"
+    "  author  = {Massimo Marchi and Pietro Ballone},\n"
+    "  journal = {J. Chem. Phys.},\n"
+    "  title   = {Adiabatic bias molecular dynamics: A method to navigate the conformational space of complex molecular systems},\n"
+    "  year    = {1999},\n"
+    "  number  = {8},\n"
+    "  pages   = {3697-3702},\n"
+    "  volume  = {110},\n"
+    "  doi     = {10.1063/1.478259},\n"
+    "  url     = {https://doi.org/10.1063/1.478259},\n"
+    "}\n";
+
   paper_count_[std::string("n/a")] = 0;
   paper_url_[std::string("n/a")] = "";
   paper_bibtex_[std::string("n/a")] = "";
@@ -554,6 +570,9 @@
 
   feature_count_[std::string("ALB colvar bias implementation")] = 0;
   feature_paper_map_[std::string("ALB colvar bias implementation")] = "White2014";
+
+  feature_count_[std::string("ABMD bias")] = 0;
+  feature_paper_map_[std::string("ABMD bias")] = "Marchi1999";
 
   feature_count_[std::string("Colvars-GROMACS interface")] = 0;
   feature_paper_map_[std::string("Colvars-GROMACS interface")] = "n/a";

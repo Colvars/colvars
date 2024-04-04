@@ -477,8 +477,8 @@ size_t colvarbias::replica_share_freq() const
 std::string const colvarbias::get_state_params() const
 {
   std::ostringstream os;
-  os << "step " << cvm::step_absolute() << "\n"
-     << "name " << this->name << "\n";
+  os << "    step " << cvm::step_absolute() << "\n"
+     << "    name " << this->name << "\n";
   return os.str();
 }
 
