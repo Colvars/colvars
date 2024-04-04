@@ -5,7 +5,7 @@ timestep          0.5
 colvars		  on
 
 # INPUT
-structure               ../Common/da.psf 
+structure               ../Common/da.psf
 parameters              ../Common/par_all22_prot.inp
 paraTypeCharmm          on
 coordinates             ../Common/da.min.pdb
@@ -49,7 +49,7 @@ switchdist              9.0
 cutoff                  11.0
 pairlistdist            12.0
 
-# RESPA 
+# RESPA
 fullElectFrequency      1
 nonbondedFreq           1
 
@@ -90,7 +90,7 @@ colvar {
             indexGroup Protein_C-alpha_10
         }
     }
-} 
+}
 
 
 metadynamics {

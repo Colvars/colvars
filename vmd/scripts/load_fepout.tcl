@@ -3,7 +3,7 @@
 
 proc load_fepout { filenames } {
 
-    set dE_back 0 ;# Constant to signal backward time step in IDWS 
+    set dE_back 0 ;# Constant to signal backward time step in IDWS
 
     set dE [list]
     set i 0
