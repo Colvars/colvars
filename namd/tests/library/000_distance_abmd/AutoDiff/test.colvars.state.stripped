@@ -13,7 +13,7 @@ abmd {
     step 20
     name abmd1
     refValue  3.22362245333741e+00
-    finalValue 5.00000000000000e+01
+    stoppingValue 5.00000000000000e+01
     forceConstant 1.00000000000000e+01
     decreasing off
   }

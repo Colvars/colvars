@@ -51,13 +51,13 @@ CSS = $(HTML:.html=.css)
 BIBTEX = colvars-refman.bib
 
 ifeq ($(COLVARS_RELEASE),"master")
-all: pdf html images doxygen
+all: pdf html doxygen
 else
-all: pdf html images
+all: pdf html
 endif
 
-pdf: $(PDF)
-html: $(HTML)
+pdf: images $(PDF)
+html: images $(HTML)
 images: $(IMAGES)
 
 %.pdf: %.tex $(BIBTEX) colvars-refman-main.tex colvars-refman.tex Makefile
@@ -81,13 +81,7 @@ HTLATEX_OPTS = "html5mjlatex.cfg, charset=utf-8" " -cunihtf -utf8"
 eulerangles-512px.png: eulerangles.pdf
 	convert -flatten -resize 512x576 $^ $@
 
-ifeq ($(COLVARS_RELEASE),"master")
-all: pdf html doxygen
-else
-all: pdf html
-endif
-
-clean: 
+clean:
 	rm -f *.fdb_latexmk *.fls *.aux *.bbl *.blg *.log *.toc *.out *.idx *.ilg *.ind *.brf *.4tc *.4ct *.dvi *.idv *.lg *.xref *.tmp eulerangles-512px.png
 
 clean-all: clean
@@ -125,7 +119,7 @@ else
 # check out the branch or tag corresponding to that version, clean and rebuild.
 ifeq ($(COLVARS_RELEASE),master)
 
-webpage: all images doxygen
+webpage: all doxygen
 	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
 	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
 	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
@@ -133,7 +127,7 @@ webpage: all images doxygen
 	cp -p -r doxygen/html/* $(COLVARS_WEBSITE_TREE)/doxygen/html/
 
 # Update HTML pages with older-style paths (without branch/release name)
-webpage-legacy: all images
+webpage-legacy: all
 	cp -p -f $(PDF) $(COLVARS_WEBSITE_TREE)/pdf ; \
 	for engine in $(ENGINES) ; do \
 	cp -p -f colvars-refman-$${engine}.{html,css} $(COLVARS_WEBSITE_TREE)/colvars-refman-$${engine}/ ; \
@@ -144,7 +138,7 @@ install: webpage webpage-legacy
 
 else
 
-webpage: all images
+webpage: all
 	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
 	cp -p -f $(PDF) $(HTML) $(CSS) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/ ; \
 	cp -p -f $(addprefix $(COLVARS_WEBSITE_TREE)/images/, $(IMAGES)) $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE)/

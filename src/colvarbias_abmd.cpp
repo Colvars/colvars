@@ -40,7 +40,7 @@ int colvarbias_abmd::init(std::string const &conf)
 
   get_keyval(conf, "forceConstant", k);
   get_keyval(conf, "decreasing", decreasing, decreasing);
-  get_keyval(conf, "finalValue", final_val);
+  get_keyval(conf, "stoppingValue", stopping_val);
 
   return COLVARS_OK;
 }
@@ -68,7 +68,7 @@ int colvarbias_abmd::update()
   if ( diff > 0. ) {
     colvar_forces[0] = 0.;
     bias_energy = 0.;
-    if ( (ref_val-final_val) * sign <= 0. ) ref_val = val;
+    if ( (ref_val-stopping_val) * sign <= 0. ) ref_val = val;
   } else {
     colvar_forces[0] = - sign * k * diff;
     bias_energy = 0.5 * k * diff * diff;;
@@ -85,7 +85,7 @@ std::string const colvarbias_abmd::get_state_params() const
   os << "    refValue "
       << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
       << ref_val << "\n";
-  os << "    finalValue " << final_val << "\n";
+  os << "    stoppingValue " << stopping_val << "\n";
   os << "    forceConstant " << k << "\n";
   os << "    decreasing " << (decreasing ? "on" : "off") << "\n";
 
@@ -109,7 +109,7 @@ int colvarbias_abmd::set_state_params(std::string const &conf)
     colvarparse::parse_restart | colvarparse::parse_required);
   get_keyval(conf, "decreasing", decreasing, decreasing,
     colvarparse::parse_restart | colvarparse::parse_required);
-  get_keyval(conf, "finalValue", final_val, final_val,
+  get_keyval(conf, "stoppingValue", stopping_val, stopping_val,
     colvarparse::parse_restart | colvarparse::parse_required);
 
   return COLVARS_OK;

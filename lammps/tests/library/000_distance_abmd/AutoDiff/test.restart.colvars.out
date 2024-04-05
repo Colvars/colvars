@@ -115,7 +115,7 @@ colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # forceConstant = 10
 colvars:   # decreasing = off [default]
-colvars:   # finalValue = 50
+colvars:   # stoppingValue = 50
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------

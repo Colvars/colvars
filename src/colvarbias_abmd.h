@@ -36,8 +36,8 @@ protected:
   /// \brief Has ref_val already been set?
   bool ref_initialized = false;
 
-  /// \brief Final location of the wall
-  cvm::real final_val = 0.;
+  /// \brief Value of the reference where it stops moving
+  cvm::real stopping_val = 0.;
 
   /// \brief Is the target moving down?
   bool decreasing = false;
