@@ -5904,6 +5904,69 @@ This option can be utilized in both eABF and classical ABF simulations, e.g.,
 }
 
 
+
+\cvsubsec{Adiabatic Bias Molecular Dynamics (ABMD)}{sec:colvarbias_abmd}
+
+This implements the Adiabatic Bias Molecular Dynamics (ABMD) method of Marchi and Ballone~\cite{Marchi1999}, sometimes referred to as \emph{ratchet-and-pawl} or \emph{ratcheted MD}.
+ABMD is a non-equilibrium process that enhances the motion of a scalar colvar in a given direction.
+For simplicity, the case of an increasing value is described below, but enhancing downward motion of the variable is also supported via the \refkey{decreasing}{abmd|decreasing} flag.
+
+ABMD does not directly push the variable forward, but prevents it from backtracking by applying a time-dependent half-harmonic potential $V_t$, the center of which is the highest value attained by the variable so far (its high-water mark).
+This design implies that the bias is conservative at all times and therefore exerts zero net work, hence the "adiabatic" qualifier.
+
+
+\begin{equation}
+  \label{eq:colvarbias_abmd}
+  V_t(\xi_t) = \left\{
+    \begin{array}{l l}
+      \frac{1}{2} k (\xi_t - \xi^{\mathrm{ref}}_t)^2 & \text{if }\ \xi_t < \xi^{\mathrm{ref}}_t \\
+      0 & \text{otherwise}
+    \end{array}
+  \right.
+\end{equation}
+
+where $\xi^{\mathrm{ref}}_t$ is the high-water mark at time $t$, bounded by a user-defined stopping value $\xi^{\mathrm{stop}}$:
+
+\begin{equation}
+  \xi^{\mathrm{ref}}_t = \min\left(\max_{s=0}^{t} \xi_s, \xi^{\mathrm{stop}}\right).
+\end{equation}
+
+Besides the name of the biased variable specified by the \texttt{colvars} keyword, the tunable parameters of ABMD are the force constant $k$ and the stopping value $\xi^{\mathrm{stop}}$, set by the following user keywords:
+
+\begin{itemize}
+  \item %
+    \key{forceConstant}{\texttt{abmd}}{%
+      Force constant for the half-harmonic bias}
+    {positive decimal}
+    {The value of $k$. Stronger values result if faster motion of the coordinate, along more biased pathways.}
+
+  \item \key{stoppingValue}{\texttt{abmd}}{%
+     Value beyong which the reference value is not updated}
+   {decimal}
+   {This sets the value of $\xi^{\mathrm{stop}}$. It is useful to prevent the variable from reaching unrealistic
+    values after the relevant range has been covered.}
+
+   \item
+   \labelkey{abmd|decreasing}
+   \keydef{decreasing}{\texttt{abmd}}{%
+   Should the variable decrease over time?}
+    {boolean}
+    {no}
+    {This is used to make ABMD enhance motion toward lower colvar values. When enabled, it reverses the shape of the
+    half-harmonic potential, and makes the reference value follow the minimum of the variable.}
+
+\end{itemize}
+
+ABMD also supports the following common bias parameters:
+\begin{itemize}
+  \item \dupkey{name}{\texttt{abmd}}{sec:colvarbias}{biasing and analysis methods}
+  \item \dupkey{colvars}{\texttt{abmd}}{sec:colvarbias}{biasing and analysis methods}
+  \item \dupkey{outputEnergy}{\texttt{abmd}}{sec:colvarbias}{biasing and analysis methods}
+  \item \dupkey{outputFreq}{\texttt{abmd}}{colvarbias|outputFreq}{biasing and analysis methods}
+\end{itemize}
+
+
+
 \cvsubsec{Metadynamics}{sec:colvarbias_meta}
 
 The metadynamics method uses a history-dependent potential \cite{Laio2002} that generalizes to any type of colvars the conformational flooding \cite{Grubmuller1995} and local elevation \cite{Huber1994} methods,  originally formulated to use as colvars the principal components of a covariance matrix or a set of dihedral  angles, respectively.
