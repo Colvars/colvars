@@ -45,17 +45,20 @@ endif
 PDF = $(foreach _,${ENGINES},colvars-refman-$_.pdf)
 HTML = $(foreach _,${ENGINES},colvars-refman-$_.html)
 
+IMAGES = cover-512px.jpg eulerangles-512px.png
+
 CSS = $(HTML:.html=.css)
 BIBTEX = colvars-refman.bib
 
 ifeq ($(COLVARS_RELEASE),"master")
-all: pdf html doxygen
+all: pdf html images doxygen
 else
-all: pdf html
+all: pdf html images
 endif
 
 pdf: $(PDF)
 html: $(HTML)
+images: $(IMAGES)
 
 %.pdf: %.tex $(BIBTEX) colvars-refman-main.tex colvars-refman.tex Makefile
 	@echo "Building $@ with release label \"${COLVARS_RELEASE}\"" ; \
@@ -75,6 +78,8 @@ HTLATEX_OPTS = "html5mjlatex.cfg, charset=utf-8" " -cunihtf -utf8"
 	$(HTLATEX) $(notdir $<) $(HTLATEX_OPTS); \
 	bash postprocess_html.sh $@
 
+eulerangles-512px.png: eulerangles.pdf
+	convert -flatten -resize 512x576 $^ $@
 
 ifeq ($(COLVARS_RELEASE),"master")
 all: pdf html doxygen
@@ -114,8 +119,6 @@ install:
 	@echo "To install, please define the COLVARS_WEBSITE_TREE environment variable to a worktree of the colvars.github.io repository"
 
 else
-
-IMAGES = cover-512px.jpg eulerangles-512px.png
 
 # Install docs in the website tree, under the folder named $(COLVARS_RELEASE).
 # Note: to produce the documentation for a specific release of a MD engine,
