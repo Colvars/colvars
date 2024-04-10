@@ -138,8 +138,8 @@ private:
   std::unique_ptr<colvar_grid_gradient> last_gradients;
   std::shared_ptr<colvar_grid_count>    last_samples;
   // eABF/CZAR local data last shared
-  std::unique_ptr<colvar_grid_gradient> last_z_gradients;
-  std::shared_ptr<colvar_grid_count>    last_z_samples;
+  std::unique_ptr<colvar_grid_gradient> z_gradients_in;
+  std::shared_ptr<colvar_grid_count>    z_samples_in;
   // ABF data from local replica only in shared ABF
   std::shared_ptr<colvar_grid_gradient> local_gradients;
   std::shared_ptr<colvar_grid_count>    local_samples;

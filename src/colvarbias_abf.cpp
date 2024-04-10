@@ -244,15 +244,15 @@ int colvarbias_abf::init(std::string const &conf)
   // This used to be only if "shared" was defined,
   // but now we allow calling share externally (e.g. from Tcl).
   if (b_CZAR_estimator) {
-    last_z_samples.reset(new colvar_grid_count(colvars));
-    last_z_gradients.reset(new colvar_grid_gradient(colvars, last_z_samples));
+    z_samples_in.reset(new colvar_grid_count(colvars));
+    z_gradients_in.reset(new colvar_grid_gradient(colvars, z_samples_in));
   }
   last_samples.reset(new colvar_grid_count(colvars));
   last_gradients.reset(new colvar_grid_gradient(colvars, last_samples));
-  shared_last_step = -1;
+  // Any data collected after now is new for shared ABF purposes
+  shared_last_step = cvm::step_absolute();
 
-
-  // If custom grids are provided, read them
+  // Read any custom input ABF data
   if ( input_prefix.size() > 0 ) {
     read_gradients_samples();
     // Update divergence to account for input data
@@ -328,17 +328,6 @@ int colvarbias_abf::update()
     force_bin = bin;
   }
 
-  // Share data first, so that 2d/3d PMF is refreshed using new data for mw-pABF.
-  // shared_on can be true with shared_freq 0 if we are sharing via script
-  if (shared_on && shared_freq &&
-      shared_last_step >= 0 &&                    // we have already collected some data
-      cvm::step_absolute() > shared_last_step &&  // time has passed since the last sharing timestep
-                                                  // (avoid re-sharing at last and first ts of successive run statements)
-      cvm::step_absolute() % shared_freq == 0) {
-    // Share gradients and samples for shared ABF.
-    replica_share();
-  }
-
   if (can_accumulate_data() && is_enabled(f_cvb_history_dependent)) {
 
     if (cvm::step_relative() > 0 || cvm::proxy->total_forces_same_step()) {
@@ -385,6 +374,15 @@ int colvarbias_abf::update()
     force_bin = bin;
   }
 
+  // Share data after force sample is collected for this time step
+  // shared_on can be true with shared_freq 0 if we are sharing via script
+  if (shared_on && shared_freq &&
+      cvm::step_absolute() > shared_last_step &&  // time has passed since the last sharing timestep
+                                                  // (avoid re-sharing at last and first ts of successive run statements)
+      cvm::step_absolute() % shared_freq == 0) {
+    // Share gradients and samples for shared ABF.
+    replica_share();
+  }
 
   // ******************************************************************
   // ******  ABF Part II: calculate and apply the biasing force  ******
@@ -421,14 +419,6 @@ int colvarbias_abf::update()
     output_prefix = cvm::output_prefix() + "." + this->name;
   }
 
-
-  // Prepare for the first sharing.
-  if (shared_last_step < 0) {
-    // Copy the current gradient and count values into last.
-    last_gradients->copy_grid(*gradients);
-    last_samples->copy_grid(*samples);
-    shared_last_step = cvm::step_absolute();
-  }
 
   // update UI estimator every step
   if (b_UI_estimator)
@@ -569,7 +559,7 @@ int colvarbias_abf::replica_share() {
   size_t samples_n = samples->raw_data_num();
   size_t gradients_n = gradients->raw_data_num();
 
-  size_t samp_start = gradients_n*sizeof(cvm::real);
+  size_t samp_start = gradients_n * sizeof(cvm::real);
   int msg_total = samples_n * sizeof(size_t) + samp_start;
   char* msg_data = new char[msg_total];
 
@@ -588,7 +578,7 @@ int colvarbias_abf::replica_share() {
       last_gradients->raw_data_in((cvm::real*)(&msg_data[0]));
       // Combine the delta gradient and count of the other replicas
       // with Replica 0's current state (including its delta).
-      gradients->add_grid( *last_gradients );
+      gradients->add_grid(*last_gradients);
 
       last_samples->raw_data_in((size_t*)(&msg_data[samp_start]));
       samples->add_grid(*last_samples);
@@ -659,10 +649,6 @@ int colvarbias_abf::replica_share_CZAR() {
 
   cvm::log("shared eABF: Gathering CZAR gradient and samples from replicas at step "+cvm::to_str(cvm::step_absolute()) );
 
-  // Calculate the delta gradient and count for the local replica
-  last_z_gradients->delta_grid(*z_gradients);
-  last_z_samples->delta_grid(*z_samples);
-
   // Count of data items.
   size_t samples_n = z_samples->raw_data_num();
   size_t gradients_n = z_gradients->raw_data_num();
@@ -681,33 +667,33 @@ int colvarbias_abf::replica_share_CZAR() {
       global_czar_gradients.reset(new colvar_grid_gradient(colvars));
       global_czar_pmf.reset(new integrate_potential(colvars, global_czar_gradients));
     }
-    // Start by adding new data for this cycle from replica 0
-    global_z_gradients->add_grid( *last_z_gradients );
-    global_z_samples->add_grid( *last_z_samples );
+
+    // Start with data from replica 0
+    global_z_gradients->copy_grid(*z_gradients);
+    global_z_samples->copy_grid(*z_samples);
+
     int p;
-    // Replica 0 collects the delta gradient and count from the others.
+    // Replica 0 collects the gradient and count from the others.
     for (p = 1; p < proxy->num_replicas(); p++) {
-      // Receive the deltas.
       if (proxy->replica_comm_recv(msg_data, msg_total, p) != msg_total) {
         cvm::error("Error getting shared ABF data from replica.");
         return COLVARS_ERROR;
       }
 
       // Map the deltas from the others into the grids.
-      // Re-use last_z_gradients, erasing its contents each time
-      last_z_gradients->raw_data_in((cvm::real*)(&msg_data[0]));
-      last_z_samples->raw_data_in((size_t*)(&msg_data[samp_start]));
+      // Re-use z_gradients_in, erasing its contents each time
+      z_gradients_in->raw_data_in((cvm::real*)(&msg_data[0]));
+      z_samples_in->raw_data_in((size_t*)(&msg_data[samp_start]));
 
       // Combine the new gradient and count of the other replicas
-      // with Replica 0's current state (including its delta).
-      global_z_gradients->add_grid( *last_z_gradients );
-      global_z_samples->add_grid( *last_z_samples );
+      // with Replica 0's current state
+      global_z_gradients->add_grid(*z_gradients_in);
+      global_z_samples->add_grid(*z_samples_in);
     }
-
   } else {
-    // All other replicas send their delta gradient and count.
-    last_z_gradients->raw_data_out((cvm::real*)(&msg_data[0]));
-    last_z_samples->raw_data_out((size_t*)(&msg_data[samp_start]));
+    // All other replicas send their current z gradient and z count.
+    z_gradients->raw_data_out((cvm::real*)(&msg_data[0]));
+    z_samples->raw_data_out((size_t*)(&msg_data[samp_start]));
     if (proxy->replica_comm_send(msg_data, msg_total, 0) != msg_total) {
       cvm::error("Error sending shared ABF data to replica.");
       return COLVARS_ERROR;
@@ -719,10 +705,6 @@ int colvarbias_abf::replica_share_CZAR() {
   proxy->replica_comm_barrier();
   // Done syncing the replicas.
   delete[] msg_data;
-
-  // Copy the current gradient and count values into last.
-  last_z_gradients->copy_grid(*z_gradients);
-  last_z_samples->copy_grid(*z_samples);
 
   return COLVARS_OK;
 }
@@ -901,6 +883,10 @@ int colvarbias_abf::read_gradients_samples()
     err |= samples->read_multicol(prefix + ".count", "ABF samples file", true);
     err |= gradients->read_multicol(prefix + ".grad", "ABF gradient file", true);
 
+    if (shared_on) {
+      last_gradients->copy_grid(*gradients);
+      last_samples->copy_grid(*samples);
+    }
     if (b_CZAR_estimator) {
       // Read eABF z-averaged data for CZAR
       err |= z_samples->read_multicol(prefix + ".zcount", "eABF z-histogram file", true);
@@ -933,6 +919,13 @@ template <typename OST> OST & colvarbias_abf::write_state_data_template_(OST &os
 
   write_state_data_key(os, "gradient");
   gradients->write_raw(os, 8);
+
+  if (shared_on) {
+    write_state_data_key(os, "local_samples");
+    local_samples->write_raw(os, 8);
+    write_state_data_key(os, "local_gradient");
+    local_gradients->write_raw(os, 8);
+  }
 
   if (b_CZAR_estimator) {
     os.setf(std::ios::fmtflags(0), std::ios::floatfield); // default floating-point format
@@ -983,6 +976,21 @@ template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
     pmf->set_div();
   }
 
+  if (shared_on) {
+    if (! read_state_data_key(is, "local_samples")) {
+      return is;
+    }
+    if (! local_samples->read_raw(is)) {
+      return is;
+    }
+    if (! read_state_data_key(is, "local_gradient")) {
+      return is;
+    }
+    if (! local_gradients->read_raw(is)) {
+      return is;
+    }
+  }
+
   if (b_CZAR_estimator) {
 
     if (! read_state_data_key(is, "z_samples")) {
@@ -998,6 +1006,14 @@ template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
     if (! z_gradients->read_raw(is)) {
       return is;
     }
+  }
+
+  // Last samples / gradients must be updated after restart
+  // reproducing the state after the last sharing step of previous run
+  if (shared_on) {
+    last_gradients->copy_grid(*gradients);
+    last_samples->copy_grid(*samples);
+    shared_last_step = cvm::step_absolute();
   }
 
   return is;
