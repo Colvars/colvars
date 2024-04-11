@@ -209,6 +209,7 @@ then
       echo " ******************************************************************************"
       echo "  ERROR: GROMACS version ${GMX_VERSION} is unsupported."
       echo "  You may override with -f, but be mindful of compilation or runtime problems."
+      echo "  Alternatively, you may also download legacy code versions at https://github.com/Colvars/gromacs"
       echo " ******************************************************************************"
       exit 3
     else
