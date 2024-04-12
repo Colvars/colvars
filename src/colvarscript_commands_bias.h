@@ -164,6 +164,21 @@ CVSCRIPT(bias_savetostring,
          return this_bias->write_state_string(script->modify_str_result());
          )
 
+CVSCRIPT(bias_writeoutput,
+         "Write output data into files with the given prefix",
+         1, 1,
+         "prefix : string - Prefix for the output files of this bias",
+         std::string const prefix =
+          cvm::state_file_prefix(script->obj_to_str(script->get_bias_cmd_arg(0, objc, objv)));
+         std::string prefix_bak = cvm::output_prefix();
+         cvm::proxy->set_output_prefix(prefix);
+         this_bias->setup_output();
+         int error_code = this_bias->write_output_files();
+         cvm::proxy->set_output_prefix(prefix_bak);
+         this_bias->setup_output();
+         return error_code;
+         )
+
 CVSCRIPT(bias_set,
          "Set the given feature of this bias to a new value",
          2, 2,
