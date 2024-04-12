@@ -37,6 +37,7 @@ public:
   ~colvarbias_abf() override;
   /// Per-timestep update of ABF bias
   int update() override;
+  int setup_output() override;
 
 private:
 
