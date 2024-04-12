@@ -577,8 +577,7 @@ CVSCRIPT(cv_save,
            cvm::state_file_prefix(script->obj_to_str(script->get_module_cmd_arg(0, objc, objv)));
          int error_code = script->proxy()->set_output_prefix(prefix);
          error_code |= script->module()->setup_output();
-         error_code |= script->module()->write_restart_file(prefix+
-                                                            ".colvars.state");
+         error_code |= script->module()->write_restart_file(prefix + ".colvars.state");
          error_code |= script->module()->write_output_files();
          return error_code;
          )
