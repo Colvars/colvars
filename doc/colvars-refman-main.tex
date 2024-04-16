@@ -3056,24 +3056,38 @@ component.
 \cvsubsubsec{\texttt{alchLambda}: alchemical lambda parameter.}{sec:cvc_alchlambda}
 \labelkey{colvar|alchLambda}
 
-The \texttt{alchLambda~\{\}} block defines a component returning the alchemical lambda parameter
-of the back-end simulation in \MDENGINE{}, provided that it is enabled using the appropriate options
-of \MDENGINE{}. This coordinate is obtained from the back-end at the beginning of a simulation, and
-synchronized from Colvars to \MDENGINE{} at every time step. This enables lambda-dynamics simulations.
-The \texttt{alchLambda} block itself takes no parameters, it should be left empty.
-In contrast, the \texttt{colvar} block containing it should define the relevant extended-system parameters
-to enable lambda dynamics, primarily \refkey{extendedMass}{colvar|extendedMass}:
+The \texttt{alchLambda} block defines a component returning the alchemical lambda parameter
+of the back-end simulation in \MDENGINE{}, provided that it is enabled within that software.
+\cvnamdonly{Specifically, the flag \texttt{alchOn} should be enabled, and \texttt{alchType}
+should be set to \texttt{TI}.}
+The current lambda value is obtained from the back-end at the beginning of a simulation, and
+synchronized from Colvars to \MDENGINE{} at every following time step.
+This enables lambda-dynamics simulations as documented in detail in \cite{Lagardere2023}.
+The \texttt{alchLambda} keyword itself takes no parameters.
+
+To run lambda-dynamics, the enclosing \texttt{colvar} block should contain extended-system
+parameters (\ref{sec:colvar_extended}) as in the following example:
 
 \begin{cvexampleinput}
 \-colvar~\{\\
 \-~~name~lambda\\
 \-~~extendedLagrangian~on\\
-\-~~extendedMass~400\\
-\-\\
-\-~~alchLambda~\{~\#~Keep~the~line~break\\
-\-~~\}\\
+\-~~extendedMass~150000\\
+\-~~extendedLangevinDamping~1000\\
+\\
+\-~~lowerBoundary~0\\
+\-~~upperBoundary~1\\
+\-~~reflectingLowerBoundary\\
+\-~~reflectingUpperBoundary\\
+\\
+\-~~alchLambda\\
 \-\}
 \end{cvexampleinput}
+
+These parameter values have been found  to give stable dynamics for a wide range of applications\cite{Lagardere2023}.
+Reflecting boundary conditions are recommended for lambda-dynamics to ensure that the alchemical
+variable remains precisely within its physical range.
+
 
 \cvsubsubsec{\texttt{alchFlambda}: Force on the alchemical lambda parameter.}{sec:cvc_alchFlambda}
 \labelkey{colvar|alchFlambda}
@@ -3081,7 +3095,7 @@ to enable lambda dynamics, primarily \refkey{extendedMass}{colvar|extendedMass}:
 The \texttt{alchFlambda~\{\}} block defines a component returning the force exterted on the alchemical
 lambda parameter of the back-end simulation in \MDENGINE{}, provided that it is enabled using the appropriate options
 of \MDENGINE{}. This coordinate is obtained from the back-end at each time step of a simulation.
-The \texttt{alchfLambda} block itself takes no parameters, it should be left empty.
+The \texttt{alchFlambda} block itself takes no parameters, it should be left empty.
 } % end of \cvalchlambdaonly
 
 \cvsubsec{Raw data: building blocks for custom functions}{sec:cvc_raw}
@@ -4522,7 +4536,7 @@ coordinates and act directly on the actual colvars.
     positive decimal}{%
     This parameter specifies the fictitious mass in the case of an alchemical
     variable used in lambda-dynamics (\refkey{alchLambda}{colvar|alchLambda}).
-    Note that the dimension is not that of a usual mass. Its unit is the energy unit
+    Note that the dimension is not that of a usual mass: its unit is the energy unit
     (\ref{sec:units}) times fs$^2$.
     }
 }
