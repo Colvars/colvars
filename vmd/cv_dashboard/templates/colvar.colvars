@@ -18,17 +18,16 @@ colvar {
 colvar {
     name myColvar
 
-    ## Uncomment optional parameters as needed, replace '@' with value
-    # width @
-    # lowerBoundary @
-    # upperBoundary @
+    # width <value>
+    # lowerBoundary <value>
+    # upperBoundary <value>
 
     ## (auto-)correlation function
     # corrFunc yes
     # corrFuncType velocity
-    # corrFuncLength @
-    # corrFuncStride @
-    # corrFuncWithColvar @
+    # corrFuncLength <value>
+    # corrFuncStride <value>
+    # corrFuncWithColvar <value>
 
     ## running average
     # runAve yes
@@ -40,8 +39,8 @@ colvar {
 
     distance {
         ## Optional coeff and exponent for polynomial combinations
-        # componentCoeff @
-        # componentExp @
+        # componentCoeff <value>
+        # componentExp <value>
         group1 {
             atomNumbers 1 2
         }
@@ -55,12 +54,10 @@ colvar {
 colvar {
     name myColvar
 
-    ## Uncomment optional parameters as needed, replace '@' with value
-
     ## Grid parameters
-    # width @
-    # lowerBoundary @
-    # upperBoundary @
+    # width <value>
+    # lowerBoundary <value>
+    # upperBoundary <value>
 
     ## Insert one or several components below
 
@@ -103,14 +100,14 @@ colvar {
 colvar {
     name extended-Lagrangian_colvar
 
-    # width @
-    # lowerBoundary @
-    # upperBoundary @
+    # width <value>
+    # lowerBoundary <value>
+    # upperBoundary <value>
 
     ## The options below are only useful during specific simulations eg. eABF
     ## they have no effect in VMD analysis
     extendedLagrangian      on
-    extendedFluctuation     @
+    extendedFluctuation     <value>
     extendedTimeConstant    200.0
     extendedTemp            300.0
     extendedLangevinDamping 0.1
