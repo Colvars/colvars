@@ -532,8 +532,8 @@ jobs:
         run: cmake -D CMAKE_SYSTEM_NAME=Windows -P devel-tools/build_test_library.cmake
 
 
-  build-macos-x86_64-clang:
-    name: macOS x86_64 (AppleClang)
+  build-macos-ARM64-clang:
+    name: macOS ARM64 (AppleClang)
     runs-on: macos-latest
     needs: basicchecks
 
