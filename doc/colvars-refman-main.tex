@@ -5907,29 +5907,29 @@ This option can be utilized in both eABF and classical ABF simulations, e.g.,
 
 \cvsubsec{Adiabatic Bias Molecular Dynamics (ABMD)}{sec:colvarbias_abmd}
 
-This implements the Adiabatic Bias Molecular Dynamics (ABMD) method of Marchi and Ballone~\cite{Marchi1999}, sometimes referred to as \emph{ratchet-and-pawl} or \emph{ratcheted MD}.
+This implements the Adiabatic Bias Molecular Dynamics (ABMD) method of Marchi and Ballone\ \cite{Marchi1999}, sometimes referred to as \emph{ratchet-and-pawl} or \emph{ratcheted MD}.
 ABMD is a non-equilibrium process that enhances the motion of a scalar colvar in a given direction.
 For simplicity, the case of an increasing value is described below, but enhancing downward motion of the variable is also supported via the \refkey{decreasing}{abmd|decreasing} flag.
 
 ABMD does not directly push the variable forward, but prevents it from backtracking by applying a time-dependent half-harmonic potential $V_t$, the center of which is the highest value attained by the variable so far (its high-water mark).
-This design implies that the bias is conservative at all times and therefore exerts zero net work, hence the "adiabatic" qualifier.
-
+This design implies that the bias is conservative at all times and therefore exerts zero net work, hence the ``adiabatic'' qualifier:
 
 \begin{equation}
   \label{eq:colvarbias_abmd}
   V_t(\xi_t) = \left\{
     \begin{array}{l l}
-      \frac{1}{2} k (\xi_t - \xi^{\mathrm{ref}}_t)^2 & \text{if }\ \xi_t < \xi^{\mathrm{ref}}_t \\
+      \dfrac{1}{2} k \left(\xi_t - \xi^{\mathrm{ref}}_t\right)^2 & \text{if }\ \xi_t < \xi^{\mathrm{ref}}_t \\
       0 & \text{otherwise}
     \end{array}
   \right.
 \end{equation}
-
-where $\xi^{\mathrm{ref}}_t$ is the high-water mark at time $t$, bounded by a user-defined stopping value $\xi^{\mathrm{stop}}$:
+\noindent{}where $\xi^{\mathrm{ref}}_t$ is the high-water mark at time $t$, bounded by a user-defined stopping value $\xi^{\mathrm{stop}}$:
 
 \begin{equation}
   \xi^{\mathrm{ref}}_t = \min\left(\max_{s=0}^{t} \xi_s, \xi^{\mathrm{stop}}\right).
 \end{equation}
+
+\emph{Note:} because the ABMD potential in eq.\ \ref{eq:colvarbias_abmd} is never defined for more than one variable, no internal unit conversion is applied to $k$: this behavior is different from other restraints available in Colvars, such as the harmonic wall restraints in \ref{sec:colvarbias_harmonic_walls}.
 
 Besides the name of the biased variable specified by the \texttt{colvars} keyword, the tunable parameters of ABMD are the force constant $k$ and the stopping value $\xi^{\mathrm{stop}}$, set by the following user keywords:
 
