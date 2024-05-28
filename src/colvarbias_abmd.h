@@ -13,8 +13,7 @@
 #include "colvarbias_restraint.h"
 
 
-/// \brief Wall restraint
-/// (implementation of \link colvarbias_restraint \endlink)
+/// \brief Adiabatic Bias MD
 class colvarbias_abmd
   : public colvarbias_ti
 {
