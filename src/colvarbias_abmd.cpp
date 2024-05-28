@@ -120,7 +120,7 @@ std::ostream & colvarbias_abmd::write_traj_label(std::ostream &os)
 {
   size_t const this_cv_width = (variables(0)->value()).output_width(cvm::cv_width);
   os << " ref_"
-      << cvm::wrap_string(variables(0)->name, this_cv_width-3);
+      << cvm::wrap_string(variables(0)->name, this_cv_width-4);
 
   return os;
 }
