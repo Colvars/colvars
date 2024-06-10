@@ -312,6 +312,8 @@ int colvar::init(std::string const &conf)
   // Detect if we have a single component that is an alchemical lambda
   if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "alchLambda") {
     enable(f_cv_external);
+
+    static_cast<colvar::alch_lambda *>(cvcs[0].get())->init_alchemy(time_step_factor);
   }
 
   // If using scripted biases, any colvar may receive bias forces
@@ -320,6 +322,17 @@ int colvar::init(std::string const &conf)
   }
 
   error_code |= init_extended_Lagrangian(conf);
+
+  // when total atomic forces are obtained from the previous time step,
+  // we cannot (currently) have colvar values and projected total forces for the same timestep
+  // (that would require anticipating the total force request by one timestep)
+  // i.e. the combination of f_cv_total_force_calc and f_cv_multiple_ts requires f_cv_total_force_current_step
+  // Because f_cv_total_force_current_step is static, we can hard-code this, once other features are set
+  // that is f_cv_external and f_cv_extended_Lagrangian
+  if (!is_enabled(f_cv_total_force_current_step)) {
+    exclude_feature_self(f_cv_multiple_ts, f_cv_total_force_calc);
+  }
+
   error_code |= init_output_flags(conf);
 
   // Now that the children are defined we can solve dependencies
@@ -1156,6 +1169,8 @@ int colvar::init_dependencies() {
     init_feature(f_cv_total_force, "total_force", f_type_dynamic);
     require_feature_alt(f_cv_total_force, f_cv_extended_Lagrangian, f_cv_total_force_calc);
 
+    // If this is active, the total force reported to biases (ABF / TI) is from the current step
+    // therefore it does not include Colvars biases -> it is a "system force"
     init_feature(f_cv_total_force_current_step, "total_force_current_step", f_type_dynamic);
 
     // Deps for explicit total force calculation
@@ -1246,15 +1261,6 @@ int colvar::init_dependencies() {
     init_feature(f_cv_homogeneous, "homogeneous", f_type_static);
 
     init_feature(f_cv_multiple_ts, "multiple_timestep", f_type_static);
-
-    // when total atomic forces are obtained from the previous time step,
-    // we cannot (currently) have colvar values and projected total forces for the same timestep
-    // TODO this will need refining for driven alchemical parameters
-    // ie. the combination of f_cv_total_force_calc and f_cv_multiple_ts requires f_cv_total_force_current_step
-    // or we need to anticipate the total force request by one timestep
-    if (!cvm::main()->proxy->total_forces_same_step()) {
-      exclude_feature_self(f_cv_multiple_ts, f_cv_total_force_calc);
-    }
 
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_cv_ntot; i++) {
@@ -1661,22 +1667,20 @@ int colvar::collect_cvc_total_forces()
   if (is_enabled(f_cv_total_force_calc)) {
     ft.reset();
 
-    if (cvm::step_relative() > 0) {
-      // get from the cvcs the total forces from the PREVIOUS step
-      for (size_t i = 0; i < cvcs.size();  i++) {
-        if (!cvcs[i]->is_enabled()) continue;
-            if (cvm::debug())
-            cvm::log("Colvar component no. "+cvm::to_str(i+1)+
-                " within colvar \""+this->name+"\" has total force "+
-                cvm::to_str((cvcs[i])->total_force(),
-                cvm::cv_width, cvm::cv_prec)+".\n");
-        // linear combination is assumed
-        ft += (cvcs[i])->total_force() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
-      }
+    for (size_t i = 0; i < cvcs.size();  i++) {
+      if (!cvcs[i]->is_enabled()) continue;
+          if (cvm::debug())
+          cvm::log("Colvar component no. "+cvm::to_str(i+1)+
+              " within colvar \""+this->name+"\" has total force "+
+              cvm::to_str((cvcs[i])->total_force(),
+              cvm::cv_width, cvm::cv_prec)+".\n");
+      // linear combination is assumed
+      ft += (cvcs[i])->total_force() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
     }
 
     if (!(is_enabled(f_cv_hide_Jacobian) && is_enabled(f_cv_subtract_applied_force))) {
-      // add the Jacobian force to the total force, and don't apply any silent
+      // This is by far the most common case
+      // Add the Jacobian force to the total force, and don't apply any silent
       // correction internally: biases such as colvarbias_abf will handle it
       // If f_cv_hide_Jacobian is enabled, a force of -fj is present in ft due to the
       // Jacobian-compensating force
@@ -1684,6 +1688,10 @@ int colvar::collect_cvc_total_forces()
     }
   }
 
+  if (is_enabled(f_cv_total_force_current_step)) {
+   // Report total force value without waiting for calc_colvar_properties()
+    ft_reported = ft;
+  }
   return COLVARS_OK;
 }
 
@@ -1785,9 +1793,12 @@ int colvar::calc_colvar_properties()
     // But we report values at the beginning of the timestep (value at t=0 on the first timestep)
     x_reported = x_ext;
     v_reported = v_ext;
-    // the "total force" with the extended Lagrangian is
-    // calculated in update_forces_energy() below
 
+    // the "total force" for the extended Lagrangian is calculated in update_forces_energy() below
+    // A future improvement could compute a "system force" here, borrowing a part of update_extended_Lagrangian()
+    // this would change the behavior of eABF with respect to other biases
+    // by enabling f_cv_total_force_current_step, and reducing the total force to a system force
+    // giving the behavior of f_cv_subtract_applied_force - this is correct for WTM-eABF etc.
   } else {
 
     if (is_enabled(f_cv_subtract_applied_force) && !cvm::proxy->total_forces_same_step()) {
@@ -1916,14 +1927,18 @@ void colvar::update_extended_Lagrangian()
   }
   f_ext += f_system;
 
-  if (is_enabled(f_cv_subtract_applied_force)) {
-    // Report a "system" force without the biases on this colvar
-    // that is, just the spring force (or alchemical force)
-    ft_reported = f_system;
-  } else {
-    // The total force acting on the extended variable is f_ext
-    // This will be used in the next timestep
-    ft_reported = f_ext;
+  if ( ! is_enabled(f_cv_total_force_current_step)) {
+    if (is_enabled(f_cv_subtract_applied_force)) {
+      // Report a "system" force without the biases on this colvar
+      // that is, just the spring force (or alchemical force)
+      ft_reported = f_system;
+    } else {
+      // The total force acting on the extended variable is f_ext
+      // This will be used in the next timestep
+      ft_reported = f_ext;
+    }
+    // Since biases have already been updated, this ft_reported will only be
+    // communicated to biases at the next timestep
   }
 
   // backup in case we need to revert this integration timestep

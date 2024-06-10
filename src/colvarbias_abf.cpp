@@ -346,11 +346,12 @@ int colvarbias_abf::update()
   if (can_accumulate_data() && is_enabled(f_cvb_history_dependent)) {
 
     if (cvm::step_relative() > 0 || cvm::proxy->total_forces_same_step()) {
+      // Note: this will skip step 0 data when available in some cases (extended system),
+      // but not doing so would make the code more complex
       if (samples->index_ok(force_bin)) {
         // Only if requested and within bounds of the grid...
 
-        // get total forces (lagging by 1 timestep) from colvars
-        // and subtract previous ABF force if necessary
+        // get total force and subtract previous ABF force if necessary
         update_system_force();
 
         gradients->acc_force(force_bin, system_force);
@@ -457,14 +458,13 @@ int colvarbias_abf::update_system_force()
   // System force from atomic forces (or extended Lagrangian if applicable)
 
   for (i = 0; i < num_variables(); i++) {
-    if (colvars[i]->is_enabled(f_cv_subtract_applied_force) ||
-       (cvm::proxy->total_forces_same_step() && !colvars[i]->is_enabled(f_cv_external))) {
+    if (colvars[i]->is_enabled(f_cv_subtract_applied_force)
+      || colvars[i]->is_enabled(f_cv_total_force_current_step)) {
       // this colvar is already subtracting the ABF force
-      // or the "total force" is really a system force at current step
-      // (For external parameters, the total force contains biasing forces
-      // unless f_cv_subtract_applied_force is enabled)
+      // or the "total force" is from current step and cannot possibly contain Colvars biases
       system_force[i] = colvars[i]->total_force().real_value;
     } else {
+      // Subtract previous step's bias force from previous step's total force
       system_force[i] = colvars[i]->total_force().real_value
         - colvar_forces[i].real_value;
     }

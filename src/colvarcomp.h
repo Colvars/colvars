@@ -1212,6 +1212,7 @@ protected:
   // No atom groups needed
 public:
   alch_lambda();
+  int init_alchemy(int time_step_factor);
   virtual ~alch_lambda() {}
   virtual void calc_value();
   virtual void calc_force_invgrads();
