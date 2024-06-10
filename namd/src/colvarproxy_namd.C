@@ -1649,7 +1649,7 @@ int colvarproxy_namd::replica_comm_send(char* msg_data, int msg_len,
 }
 
 
-/// Request energy computation every freq steps
+/// Request alchemical energy computation every freq steps
 int colvarproxy_namd::request_alch_energy_freq(int const freq) {
   // This test is only valid for NAMD3
   if (freq % simparams->computeEnergies) {
@@ -1657,7 +1657,7 @@ int colvarproxy_namd::request_alch_energy_freq(int const freq) {
     return COLVARS_INPUT_ERROR;
   }
   if (!simparams->alchOn) {
-    cvm::error("alch must be enabled for lambda-dynamics.\n");
+    cvm::error("alchOn must be enabled for lambda-dynamics.\n");
     return COLVARS_INPUT_ERROR;
   }
   if (!simparams->alchThermIntOn) {
