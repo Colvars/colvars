@@ -29,15 +29,25 @@ colvar::alch_lambda::alch_lambda()
 
   x.type(colvarvalue::type_scalar);
 
+  // Query initial value from back-end; will be overwritten if restarting from a state file
+  cvm::proxy->get_alch_lambda(&x.real_value);
+}
+
+
+int colvar::alch_lambda::init_alchemy(int factor)
+{
   // We need calculation every time step
   // default in Tinker-HP and NAMD2, must be enforced in NAMD3
   // Also checks back-end settings, ie. that alchemy is enabled
   // (in NAMD3: alchType TI, computeEnergies at the right frequency)
-  cvm::proxy->request_alch_energy_freq(1);
-  // TODO examine how this breaks everything - whereas alchOutFreq seems to work
 
-  // Query initial value from back-end; will be overwritten if restarting from a state file
-  cvm::proxy->get_alch_lambda(&x.real_value);
+  // Forbid MTS until fully implemented
+  if (factor != 1) {
+    return cvm::error("Error: timeStepFactor > 1 is not yet supported for alchemical variables.");
+  }
+  cvm::proxy->request_alch_energy_freq(factor);
+
+  return COLVARS_OK;
 }
 
 
