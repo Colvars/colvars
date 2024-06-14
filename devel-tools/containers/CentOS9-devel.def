@@ -16,12 +16,12 @@ From: quay.io/centos/centos:stream9
         https://dl.fedoraproject.org/pub/epel/epel-next-release-latest-9.noarch.rpm
 
     dnf -y install \
-        bc man-db vim emacs tcsh which bash-completion screen tmux \
+        bc man-db vim emacs tcsh which bash-completion rsync screen tmux \
         "@Development Tools" \
         gcc gcc-c++ gcc-gfortran cppcheck \
         gcc-toolset-{12,13} clang clang-tools-extra \
         autoconf automake cvs git subversion mercurial \
-        cmake ccache ninja-build \
+        cmake ccache ninja-build mold \
         Lmod openmpi-devel tbb-devel fftw-devel tcl-devel \
         python3-{devel,tkinter,virtualenv,numpy,scipy} \
         ncurses-devel \
@@ -29,7 +29,7 @@ From: quay.io/centos/centos:stream9
         tk-devel fltk-devel \
         mesa-dri-drivers mesa-libGL-devel libglvnd-devel \
         libXi-devel libXinerama-devel libpng-devel \
-        netcdf-devel sqlite-devel \
+        netcdf-devel hdf5-devel sqlite-devel expat-devel \
         doxygen \
         texlive-latex texlive-epstopdf texlive-pdftex texlive-tex4ht \
         texlive-graphics texlive-metafont texlive-collection-latexrecommended \
