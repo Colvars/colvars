@@ -946,7 +946,6 @@ the loaded trajectory of molecule $molid, and that the molecular trajectory freq
   foreach cv $cvs {
     create_traj_colvar $molid $cv
   }
-  refresh_table
 }
 
 
