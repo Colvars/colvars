@@ -946,6 +946,7 @@ the loaded trajectory of molecule $molid, and that the molecular trajectory freq
   foreach cv $cvs {
     create_traj_colvar $molid $cv
   }
+  refresh_table
 }
 
 
@@ -972,6 +973,10 @@ proc create_traj_colvar { molid cv } {
     } else {
       return $null
     }
+  "
+  # We cannot compute gradients, just return zero to avoid errors
+  proc calc_traj_${cv}_gradient { x } "
+    return $null
   "
 
   catch "cv colvar traj_$cv delete"
