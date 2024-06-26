@@ -77,8 +77,11 @@ public:
   /// String identifier for the type of collective variable
   std::string function_type() const;
 
-  /// Keyword used in the input to denote this CVC
-  std::string config_key;
+  /// Return the component's name, prefixed by its parent colvar's name
+  std::string qualified_name() const;
+
+  /// Set the name of the parent colvar
+  int set_parent_name(std::string const &cv_name);
 
   /// \brief Coefficient in the polynomial combination (default: 1.0)
   cvm::real sup_coeff = 1.0;
@@ -107,7 +110,7 @@ public:
   virtual int init_dependencies();
 
   /// \brief After construction, set data related to dependency handling
-  int setup();
+  virtual int setup();
 
   /// \brief Implementation of the feature list accessor for colvar
   virtual const std::vector<feature *> &features() const
@@ -239,8 +242,11 @@ public:
 
 protected:
 
-  /// Set the value of \link function_type \endlink and its dependencies
+  /// Set the value of \link function_type \endlink and define static dependencies
   int set_function_type(std::string const &type);
+
+  /// Name of the parent colvar, responsible for driving computation of this CVC
+  std::string parent_name_;
 
   /// Update the description string based on name and type
   int update_description();
@@ -257,6 +263,9 @@ protected:
 
   /// Record the type of this class as well as those it is derived from
   std::vector<std::string> function_types;
+
+  /// Role identifiers and pointers to the external CVCs whose data is being reused
+  std::map<std::string, std::shared_ptr<cvc>> precomputed_cvcs;
 
   /// \brief Cached value
   colvarvalue x;
@@ -294,6 +303,15 @@ protected:
 
   /// \brief CVC-specific default colvar width (default: not provided)
   cvm::real width = 0.0;
+
+  /// Whether this CVC is reusing another CVC
+  inline bool has_precomputed_cvc(std::string const &id) const
+  {
+    return precomputed_cvcs.count(id) > 0;
+  }
+
+  /// Store a pointer to another CVC whose computation will be reused
+  int register_precomputed_cvc(std::string const &id, std::string const &cvc_name);
 };
 
 
@@ -1008,6 +1026,21 @@ protected:
   struct rotation_derivative_impl_;
   std::unique_ptr<rotation_derivative_impl_> rot_deriv_impl;
 
+  /// Orientation value, computed either by the "rot" object or another CVC
+  cvm::quaternion q;
+
+  /// Derivative of the scalar value with respect to q (derived CVCs)
+  cvm::quaternion dx_dq;
+
+  /// Compute the value of q, and return it for assignment
+  cvm::quaternion const &compute_rotation();
+
+  /// Compute the explicit gradients of functions of q with a scalar value
+  void compute_scalar_gradients(cvm::quaternion const &dscalar_dq);
+
+  /// Pointer to the orientation CVC being reused, if any, otherwise this object itself
+  orientation *get_orientation_cvc();
+
 public:
 
   orientation();
@@ -1024,6 +1057,9 @@ public:
   virtual colvarvalue dist2_rgrad(colvarvalue const &x1, colvarvalue const &x2) const;
   /// Redefined to use quaternion metrics
   virtual void wrap(colvarvalue &x_unwrapped) const;
+
+  /// Return a reference to the rotation value, for other classes to use
+  inline cvm::quaternion const &get_rotation() const { return q; }
 };
 
 
