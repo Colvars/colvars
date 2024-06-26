@@ -617,7 +617,7 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars, std::sh
 }
 
 
-integrate_potential::integrate_potential(colvar_grid_gradient * gradients)
+integrate_potential::integrate_potential(std::shared_ptr<colvar_grid_gradient> gradients)
   : b_smoothed(false),
     gradients(gradients)
 {

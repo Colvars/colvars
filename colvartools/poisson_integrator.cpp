@@ -16,13 +16,13 @@ int main (int argc, char *argv[]) {
   colvarmodule *colvars = new colvarmodule(proxy);
 
   std::string gradfile (argv[1]);
-  colvar_grid_gradient grad(gradfile);
+  std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
 
   int itmax = 1000;
   cvm::real err;
   cvm::real tol = 1e-6;
 
-  integrate_potential potential(&grad);
+  integrate_potential potential(grad_ptr);
   potential.set_div();
   potential.integrate(itmax, tol, err);
   potential.set_zero_minimum();

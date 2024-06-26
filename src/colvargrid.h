@@ -1832,7 +1832,7 @@ class integrate_potential : public colvar_grid_scalar
   integrate_potential(std::vector<colvar *> &colvars, std::shared_ptr<colvar_grid_gradient> gradients);
 
   /// Constructor from a gradient grid (for processing grid files without a Colvars config)
-  integrate_potential(colvar_grid_gradient * gradients);
+  integrate_potential(std::shared_ptr<colvar_grid_gradient> gradients);
 
   /// \brief Calculate potential from divergence (in 2D); return number of steps
   int integrate(const int itmax, const cvm::real & tol, cvm::real & err, bool verbose = true);
