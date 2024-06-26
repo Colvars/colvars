@@ -842,6 +842,7 @@ proc ::cv_dashboard::load_cv_traj { filenames } {
   }
 
   set steps [list]
+  set step -1  ;# MD step read from first column
   set file_num 0
   set title ""
 
@@ -851,7 +852,6 @@ proc ::cv_dashboard::load_cv_traj { filenames } {
     puts "Opening $n ..."
     set fd [open $n "r"]
     set line_in_file 0
-    set step -1  ;# MD step read from first column
     incr file_num
 
     while { [gets $fd line] >= 0 } {
@@ -871,12 +871,16 @@ proc ::cv_dashboard::load_cv_traj { filenames } {
         }
       }
       # This is a data line
+      incr line_in_file
       set prev_step $step
       set step [lindex $line 0]
-      if { $step == $prev_step } { continue }
-      incr line_in_file
-      if { $line_in_file == 1 && $file_num > 1 } {
-        # Skip redundant first data line in subsequent files
+      if { $step == $prev_step } {
+        puts "Skipping second copy of step $step"
+        continue
+      }
+      if { $line_in_file == 1 && $file_num > 1 && $step <= $prev_step } {
+        # Step number may reset between files and take a lower value
+        puts "Skipping redundant first step $step"
         continue
       }
       # Convert vector quantities to Tcl lists: ( 1.0 , 2.3 ) -> { 1.0 2.3 }
@@ -913,7 +917,8 @@ proc ::cv_dashboard::load_cv_traj { filenames } {
     puts "Error: cannot match $nsteps steps with $nf frames."
     tk_messageBox -icon error -title "Colvars Dashboard Error"\
     -message "Could not match $nsteps steps with $nf frames. Check that the selected colvars.traj files ($filenames) correspond to \
-the loaded trajectory of molecule $molid, and that the molecular trajectory frequency is a multiple of the colvars.traj frequency."
+the loaded trajectory of molecule $molid, and that the molecular trajectory frequency is a multiple of the colvars.traj frequency. \
+Read the standard output (terminal) for details."
     return
   }
 
