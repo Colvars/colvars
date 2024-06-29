@@ -32,12 +32,7 @@ struct ArithmeticPathImpl: public ArithmeticPathCV::ArithmeticPathBase<cvm::real
         }
     }
     template <typename T>
-    void updateCVDistanceToReferenceFrames(T* obj, bool compatibility_mode) {
-        if (compatibility_mode) {
-            for (size_t i_cv = 0; i_cv < obj->cv.size(); ++i_cv) {
-                obj->cv[i_cv]->calc_value();
-            }
-        }
+    void updateCVDistanceToReferenceFrames(T* obj) {
         for (size_t i_frame = 0; i_frame < obj->ref_cv.size(); ++i_frame) {
             for (size_t i_cv = 0; i_cv < obj->cv.size(); ++i_cv) {
                 colvarvalue ref_cv_value(obj->ref_cv[i_frame][i_cv]);
@@ -278,6 +273,11 @@ int colvar::aspathCV::init(std::string const &conf)
 colvar::aspathCV::~aspathCV() {}
 
 void colvar::aspathCV::calc_value() {
+    if (compatibility_mode) {
+        for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+            cv[i_cv]->calc_value();
+        }
+    }
     if (impl_->get_lambda() < 0) {
         // this implies that the user may not set a valid lambda value
         // so recompute it by the suggested value in Parrinello's paper
@@ -288,7 +288,7 @@ void colvar::aspathCV::calc_value() {
         impl_->reComputeLambda(rmsd_between_refs);
         cvm::log("Ok, the value of lambda is updated to " + cvm::to_str(impl_->get_lambda()));
     }
-    impl_->updateCVDistanceToReferenceFrames(this, compatibility_mode);
+    impl_->updateCVDistanceToReferenceFrames(this);
     x = impl_->compute_s();
 }
 
@@ -395,6 +395,11 @@ int colvar::azpathCV::init(std::string const &conf)
 }
 
 void colvar::azpathCV::calc_value() {
+    if (compatibility_mode) {
+        for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+            cv[i_cv]->calc_value();
+        }
+    }
     if (impl_->get_lambda() < 0) {
         // this implies that the user may not set a valid lambda value
         // so recompute it by the suggested value in Parrinello's paper
@@ -405,7 +410,7 @@ void colvar::azpathCV::calc_value() {
         impl_->reComputeLambda(rmsd_between_refs);
         cvm::log("Ok, the value of lambda is updated to " + cvm::to_str(impl_->get_lambda()));
     }
-    impl_->updateCVDistanceToReferenceFrames(this, compatibility_mode);
+    impl_->updateCVDistanceToReferenceFrames(this);
     x = impl_->compute_z();
 }
 

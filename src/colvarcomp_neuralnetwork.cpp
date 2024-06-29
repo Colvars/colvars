@@ -178,7 +178,9 @@ void colvar::neuralNetwork::calc_value() {
 
 void colvar::neuralNetwork::calc_gradients() {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        // cv[i_cv]->calc_gradients();
+        if (compatibility_mode) {
+            cv[i_cv]->calc_gradients();
+        }
         if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             const cvm::real factor = nn->getGradient(m_output_index, i_cv);
             const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);

@@ -535,6 +535,12 @@ int colvar::CVBasedPath::init(std::string const &conf)
         {return colvar::compare_cvc_names(i->name, j->name);});
     std::vector<colvarvalue> tmp_cv;
     for (auto it_sub_cv = cv.begin(); it_sub_cv != cv.end(); ++it_sub_cv) {
+        if (compatibility_mode) {
+            for (auto it_atom_group = (*it_sub_cv)->atom_groups.begin();
+                it_atom_group != (*it_sub_cv)->atom_groups.end(); ++it_atom_group) {
+                register_atom_group(*it_atom_group);
+            }
+        }
         colvarvalue tmp_i_cv((*it_sub_cv)->value());
         tmp_i_cv.reset();
         tmp_cv.push_back(tmp_i_cv);
