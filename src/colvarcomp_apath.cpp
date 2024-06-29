@@ -32,9 +32,11 @@ struct ArithmeticPathImpl: public ArithmeticPathCV::ArithmeticPathBase<cvm::real
         }
     }
     template <typename T>
-    void updateCVDistanceToReferenceFrames(T* obj) {
-        for (size_t i_cv = 0; i_cv < obj->cv.size(); ++i_cv) {
-            obj->cv[i_cv]->calc_value();
+    void updateCVDistanceToReferenceFrames(T* obj, bool compatibility_mode) {
+        if (compatibility_mode) {
+            for (size_t i_cv = 0; i_cv < obj->cv.size(); ++i_cv) {
+                obj->cv[i_cv]->calc_value();
+            }
         }
         for (size_t i_frame = 0; i_frame < obj->ref_cv.size(); ++i_frame) {
             for (size_t i_cv = 0; i_cv < obj->cv.size(); ++i_cv) {
@@ -286,14 +288,16 @@ void colvar::aspathCV::calc_value() {
         impl_->reComputeLambda(rmsd_between_refs);
         cvm::log("Ok, the value of lambda is updated to " + cvm::to_str(impl_->get_lambda()));
     }
-    impl_->updateCVDistanceToReferenceFrames(this);
+    impl_->updateCVDistanceToReferenceFrames(this, compatibility_mode);
     x = impl_->compute_s();
 }
 
 void colvar::aspathCV::calc_gradients() {
     impl_->compute_s_derivatives();
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        cv[i_cv]->calc_gradients();
+        if (compatibility_mode) {
+            cv[i_cv]->calc_gradients();
+        }
         if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
             // compute the gradient (grad) with respect to the i-th CV
@@ -304,10 +308,18 @@ void colvar::aspathCV::calc_gradients() {
                 grad += impl_->dsdx[m_frame][i_cv];
             }
             for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
-                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                    for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
-                        (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = grad[j_elem] * factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
+                if (compatibility_mode) {
+                    for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
+                        for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
+                            (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = grad[j_elem] * factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
+                        }
                     }
+                } else {
+                    const cvm::real tmp1 = grad[j_elem];
+                    cv[i_cv]->modify_children_cvcs_atom_gradients([tmp1, factor_polynomial](cvm::rvector& grad){
+                        grad = factor_polynomial * tmp1 * grad;
+                        return grad;
+                    });
                 }
             }
         }
@@ -317,8 +329,12 @@ void colvar::aspathCV::calc_gradients() {
 void colvar::aspathCV::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
+            if (compatibility_mode) {
+                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
+                    (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
+                }
+            } else {
+                cv[i_cv]->propagate_colvar_force(force.real_value);
             }
         } else {
             cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
@@ -389,14 +405,16 @@ void colvar::azpathCV::calc_value() {
         impl_->reComputeLambda(rmsd_between_refs);
         cvm::log("Ok, the value of lambda is updated to " + cvm::to_str(impl_->get_lambda()));
     }
-    impl_->updateCVDistanceToReferenceFrames(this);
+    impl_->updateCVDistanceToReferenceFrames(this, compatibility_mode);
     x = impl_->compute_z();
 }
 
 void colvar::azpathCV::calc_gradients() {
     impl_->compute_z_derivatives();
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        cv[i_cv]->calc_gradients();
+        if (compatibility_mode) {
+            cv[i_cv]->calc_gradients();
+        }
         if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
             cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
             // compute the gradient (grad) with respect to the i-th CV
@@ -407,10 +425,18 @@ void colvar::azpathCV::calc_gradients() {
                 grad += impl_->dzdx[m_frame][i_cv];
             }
             for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
-                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                    for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
-                        (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = grad[j_elem] * factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
+                if (compatibility_mode) {
+                    for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
+                        for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
+                            (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = grad[j_elem] * factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
+                        }
                     }
+                } else {
+                    const cvm::real tmp1 = grad[j_elem];
+                    cv[i_cv]->modify_children_cvcs_atom_gradients([tmp1, factor_polynomial](cvm::rvector& grad){
+                        grad = factor_polynomial * tmp1 * grad;
+                        return grad;
+                    });
                 }
             }
         }
@@ -421,8 +447,12 @@ void colvar::azpathCV::apply_force(colvarvalue const &force) {
     // the PCV component itself is a scalar, so force should be scalar
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
         if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
+            if (compatibility_mode) {
+                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
+                    (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
+                }
+            } else {
+                cv[i_cv]->propagate_colvar_force(force.real_value);
             }
         } else {
             const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);

@@ -302,6 +302,11 @@ int colvarproxy_smp::smp_colvars_loop()
 #endif
 }
 
+int colvarproxy_smp::smp_colvars_loop2() {
+  // TODO
+  return smp_colvars_loop();
+}
+
 
 int colvarproxy_smp::smp_biases_loop()
 {

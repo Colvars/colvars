@@ -25,6 +25,7 @@
 #include "colvaratoms.h"
 #include "colvar.h"
 #include "colvar_geometricpath.h"
+#include "colvarvalue.h"
 
 
 /// \brief Colvar component (base class for collective variables)
@@ -66,7 +67,7 @@
 ///
 
 class colvar::cvc
-  : public colvarparse, public colvardeps
+  : public colvarparse, public colvardeps, public std::enable_shared_from_this<colvar::cvc>
 {
 public:
 
@@ -239,6 +240,18 @@ public:
   inline void set_value(colvarvalue const &new_value) {
     x = new_value;
   }
+
+  /// \brief Return the children CVCs
+  virtual std::vector<std::shared_ptr<colvar::cvc>> children_cvcs() const;
+
+  /// \brief Find a child CVC by its qualified name
+  virtual std::shared_ptr<colvar::cvc> find_children_cvc_by_qualified_name(const std::string& p_name);
+
+  /// \brief Modify the atom gradients of all children CVCs (if they have explict gradients) and this CVC itself
+  void modify_children_cvcs_atom_gradients(std::function<cvm::rvector(cvm::rvector&)> functor);
+
+  /// \brief Propagate force to atom groups all children CVCs and this CVC itself
+  void propagate_colvar_force(cvm::real const &force);
 
 protected:
 
@@ -1347,29 +1360,33 @@ class colvar::linearCombination
 {
 protected:
     /// Sub-colvar components
-    std::vector<colvar::cvc*> cv;
+    std::vector<std::shared_ptr<colvar::cvc>> cv;
     /// If all sub-cvs use explicit gradients then we also use it
     bool use_explicit_gradients;
+    /// For SMP off or SMP on but using engines other than NAMD
+    bool compatibility_mode;
 protected:
     cvm::real getPolynomialFactorOfCVGradient(size_t i_cv) const;
 public:
     linearCombination();
     virtual ~linearCombination();
-    virtual int init(std::string const &conf);
-    virtual void calc_value();
-    virtual void calc_gradients();
-    virtual void apply_force(colvarvalue const &force);
-  /// Redefined to allow arbitrary dimensions
-  virtual cvm::real dist2(colvarvalue const &x1,
-                          colvarvalue const &x2) const;
-  /// Redefined to allow arbitrary dimensions
-  virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
-                                  colvarvalue const &x2) const;
-  /// Redefined to allow arbitrary dimensions
-  virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
-                                  colvarvalue const &x2) const;
-  /// Redefined to allow arbitrary dimensions
-  virtual void wrap(colvarvalue &x_unwrapped) const;
+    virtual int init(std::string const &conf) override;
+    virtual void calc_value() override;
+    virtual void calc_gradients() override;
+    virtual void apply_force(colvarvalue const &force) override;
+    /// Redefined to allow arbitrary dimensions
+    virtual cvm::real dist2(colvarvalue const &x1,
+                            colvarvalue const &x2) const override;
+    /// Redefined to allow arbitrary dimensions
+    virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
+                                    colvarvalue const &x2) const override;
+    /// Redefined to allow arbitrary dimensions
+    virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
+                                    colvarvalue const &x2) const override;
+    /// Redefined to allow arbitrary dimensions
+    virtual void wrap(colvarvalue &x_unwrapped) const override;
+
+    virtual std::vector<std::shared_ptr<colvar::cvc>> children_cvcs() const override;
 };
 
 
@@ -1405,13 +1422,15 @@ class colvar::CVBasedPath
 {
 protected:
     /// Sub-colvar components
-    std::vector<colvar::cvc*> cv;
+    std::vector<std::shared_ptr<colvar::cvc>> cv;
     /// Reference colvar values from path
     std::vector<std::vector<colvarvalue>> ref_cv;
     /// If all sub-cvs use explicit gradients then we also use it
     bool use_explicit_gradients;
     /// Total number of reference frames
     size_t total_reference_frames = 0;
+    /// For SMP off or SMP on but using engines other than NAMD
+    bool compatibility_mode;
 protected:
     virtual void computeDistanceToReferenceFrames(std::vector<cvm::real>& result);
     /// Helper function to determine the distance between reference frames
@@ -1420,18 +1439,20 @@ protected:
 public:
     CVBasedPath();
     virtual ~CVBasedPath();
-    virtual int init(std::string const &conf);
+    virtual int init(std::string const &conf) override;
     virtual void calc_value() = 0;
     /// Redefined to raise error because this is an abstract type
-    virtual void apply_force(colvarvalue const &force);
-  /// Redefined to use the metric of the returned colvarvalue (defined at runtime)
-  virtual cvm::real dist2(colvarvalue const &x1, colvarvalue const &x2) const;
-  /// Redefined to use the metric of the returned colvarvalue (defined at runtime)
-  virtual colvarvalue dist2_lgrad(colvarvalue const &x1, colvarvalue const &x2) const;
-  /// Redefined to use the metric of the returned colvarvalue (defined at runtime)
-  virtual colvarvalue dist2_rgrad(colvarvalue const &x1, colvarvalue const &x2) const;
-  /// Redefined to use the metric of the returned colvarvalue (defined at runtime)
-  virtual void wrap(colvarvalue &x_unwrapped) const;
+    virtual void apply_force(colvarvalue const &force) override;
+    /// Redefined to use the metric of the returned colvarvalue (defined at runtime)
+    virtual cvm::real dist2(colvarvalue const &x1, colvarvalue const &x2) const override;
+    /// Redefined to use the metric of the returned colvarvalue (defined at runtime)
+    virtual colvarvalue dist2_lgrad(colvarvalue const &x1, colvarvalue const &x2) const override;
+    /// Redefined to use the metric of the returned colvarvalue (defined at runtime)
+    virtual colvarvalue dist2_rgrad(colvarvalue const &x1, colvarvalue const &x2) const override;
+    /// Redefined to use the metric of the returned colvarvalue (defined at runtime)
+    virtual void wrap(colvarvalue &x_unwrapped) const override;
+
+    virtual std::vector<std::shared_ptr<colvar::cvc>> children_cvcs() const override;
 };
 
 

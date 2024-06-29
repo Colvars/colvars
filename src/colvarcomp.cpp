@@ -9,12 +9,11 @@
 
 #include <algorithm>
 
+#include "colvardeps.h"
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvar.h"
 #include "colvarcomp.h"
-
-
 
 colvar::cvc::cvc()
 {
@@ -77,19 +76,21 @@ int colvar::cvc::init(std::string const &conf)
 
   int error_code = COLVARS_OK;
 
-  std::string const old_name(name);
+  // std::string const old_name(name);
 
   if (name.size() > 0) {
     cvm::log("Updating configuration for component \""+name+"\"\n");
   }
 
+  // TODO: We have now qualified_name() and name, and there is a parent name.
+  //       We should figure out better how to update the name.
   if (get_keyval(conf, "name", name, name)) {
-    if ((name != old_name) && (old_name.size() > 0)) {
-      error_code |= cvm::error("Error: cannot rename component \"" + old_name +
-                                   "\" after initialization (new name = \"" + name + "\")",
-                               COLVARS_INPUT_ERROR);
-      name = old_name;
-    }
+    // if ((name != old_name) && (old_name.size() > 0)) {
+    //   error_code |= cvm::error("Error: cannot rename component \"" + old_name +
+    //                                "\" after initialization (new name = \"" + name + "\")",
+    //                            COLVARS_INPUT_ERROR);
+    //   name = old_name;
+    // }
   }
   update_description();
 
@@ -172,6 +173,9 @@ int colvar::cvc::init_total_force_params(std::string const &conf)
       }
     }
   }
+
+  // get_keyval_feature(this, conf, "reusable",
+  //                    f_cvc_reusable, false, parse_silent);
 
   return COLVARS_OK;
 }
@@ -306,12 +310,12 @@ int colvar::cvc::init_dependencies() {
     require_feature_children(f_cvc_collect_atom_ids, f_ag_collect_atom_ids);
     require_feature_self(f_cvc_collect_atom_ids, f_cvc_explicit_atom_groups);
 
-    init_feature(f_cvc_reusing_cvcs, "reusing_cvcs", f_type_static);
+    // init_feature(f_cvc_reusing_cvcs, "reusing_cvcs", f_type_static);
     // When reusing computation from another CVC, individual atoms are inaccessible
-    exclude_feature_self(f_cvc_reusing_cvcs, f_cvc_explicit_atom_groups);
-    exclude_feature_self(f_cvc_reusing_cvcs, f_cvc_explicit_gradient);
+    // exclude_feature_self(f_cvc_reusing_cvcs, f_cvc_explicit_atom_groups);
+    // exclude_feature_self(f_cvc_reusing_cvcs, f_cvc_explicit_gradient);
 
-    init_feature(f_cvc_reusable, "reusable", f_type_static);
+    // init_feature(f_cvc_reusable, "reusable", f_type_user);
 
     // TODO only enable this when f_ag_scalable can be turned on for a pre-initialized group
     // require_feature_children(f_cvc_scalable, f_ag_scalable);
@@ -343,8 +347,8 @@ int colvar::cvc::init_dependencies() {
   feature_states[f_cvc_periodic].available = false;
 
   // Few CVCs are able so far to reuse another CVC or be reused
-  feature_states[f_cvc_reusable].available = false;
-  feature_states[f_cvc_reusing_cvcs].available = false;
+  // feature_states[f_cvc_reusable].available = false;
+  // feature_states[f_cvc_reusing_cvcs].available = false;
 
   // CVCs are enabled from the start - get disabled based on flags
   enable(f_cvc_active);
@@ -369,7 +373,7 @@ int colvar::cvc::init_dependencies() {
 int colvar::cvc::setup()
 {
   int error_code = COLVARS_OK;
-  if (is_enabled(f_cvc_reusing_cvcs)) {
+  // if (is_enabled(f_cvc_reusing_cvcs)) {
     for (auto ci = precomputed_cvcs.begin(); ci != precomputed_cvcs.end(); ci++) {
       if (ci->first != ci->second->function_type()) {
         error_code |=
@@ -379,19 +383,20 @@ int colvar::cvc::setup()
                            ci->first + "\".\n",
                        COLVARS_INPUT_ERROR);
       }
-      if (ci->second->is_enabled(f_cvc_reusing_cvcs)) {
-        error_code |= cvm::error(
-            "Error: component \"" + name + "\" is trying to reuse component \"" +
-                ci->second->qualified_name() +
-                "\", which is in turn reusing other components; only one indirection is allowed.\n",
-            COLVARS_INPUT_ERROR);
-      }
+      // NOTE: Any CVCs should be generally reusable.
+      // if (ci->second->is_enabled(f_cvc_reusing_cvcs)) {
+      //   error_code |= cvm::error(
+      //       "Error: component \"" + name + "\" is trying to reuse component \"" +
+      //           ci->second->qualified_name() +
+      //           "\", which is in turn reusing other components; only one indirection is allowed.\n",
+      //       COLVARS_INPUT_ERROR);
+      // }
       // TODO Handle this from the dependency system
       if (is_enabled(f_cvc_gradient)) {
         ci->second->enable(f_cvc_gradient);
       }
     }
-  }
+  // }
   error_code |= update_description();
   return error_code;
 }
@@ -608,6 +613,8 @@ void colvar::cvc::debug_gradients()
 
   cvm::log("Debugging gradients for " + description);
 
+  // TODO: Consider if CVC a reuses CVC b, when debug_gradients is activated for b,
+  //       should we restore the atom positions of b after perturbating them?
   for (size_t ig = 0; ig < atom_groups.size(); ig++) {
     cvm::atom_group *group = atom_groups[ig];
     if (group->b_dummy) continue;
@@ -757,10 +764,10 @@ void colvar::cvc::wrap(colvarvalue &x_unwrapped) const
 
 int colvar::cvc::register_precomputed_cvc(std::string const &id, std::string const &cvc_name)
 {
-  auto *base_ptr = cvm::main()->get_component_by_name(cvc_name);
-  cvc *cvc_ptr = dynamic_cast<cvc *>(base_ptr);
+  auto base_ptr = cvm::main()->get_component_by_name(cvc_name);
+  auto cvc_ptr = std::dynamic_pointer_cast<cvc>(base_ptr);
   if (cvc_ptr) {
-    precomputed_cvcs[id] = std::shared_ptr<cvc>(dynamic_cast<cvc *>(cvc_ptr));
+    precomputed_cvcs[id] = cvc_ptr;
     return COLVARS_OK;
   }
   if (base_ptr) {
@@ -771,7 +778,60 @@ int colvar::cvc::register_precomputed_cvc(std::string const &id, std::string con
                     COLVARS_INPUT_ERROR);
 }
 
+std::vector<std::shared_ptr<colvar::cvc>> colvar::cvc::children_cvcs() const {
+  std::vector<std::shared_ptr<colvar::cvc>> result;
+  for (auto it = precomputed_cvcs.begin(); it != precomputed_cvcs.end(); ++it) {
+    result.push_back(it->second);
+  }
+  return result;
+}
 
+std::shared_ptr<colvar::cvc> colvar::cvc::find_children_cvc_by_qualified_name(const std::string& p_name) {
+  if (qualified_name() == p_name) return shared_from_this();
+  auto children = children_cvcs();
+  for (auto it = children.begin(); it != children.end(); ++it) {
+    auto ptr = (*it)->find_children_cvc_by_qualified_name(p_name);
+    if (ptr) return ptr;
+  }
+  return nullptr;
+}
+
+void colvar::cvc::modify_children_cvcs_atom_gradients(std::function<cvm::rvector(cvm::rvector&)> functor) {
+  // TODO: is it necessary to check f_cvc_explicit_atom_groups?
+  if (is_enabled(f_cvc_explicit_gradient)) {
+    for (auto it = atom_groups.begin(); it != atom_groups.end(); ++it) {
+      if ((*it) != nullptr) {
+        auto ag = *it;
+        for (auto ia = ag->begin(); ia != ag->end(); ++ia) {
+          // TODO: There should be locks per atom group or std::atomic<cvm::rvector> but there are none!!
+          cvm::proxy->smp_lock();
+          functor(ia->grad);
+          cvm::proxy->smp_unlock();
+        }
+      }
+    }
+  }
+  auto children = children_cvcs();
+  for (auto it = children.begin(); it != children.end(); ++it) {
+    (*it)->modify_children_cvcs_atom_gradients(functor);
+  }
+}
+
+void colvar::cvc::propagate_colvar_force(cvm::real const &force) {
+  if (is_enabled(f_cvc_explicit_gradient)) {
+    for (auto it = atom_groups.begin(); it != atom_groups.end(); ++it) {
+      if ((*it) != nullptr) {
+        // TODO: should I use SMP lock here if biases are computed in parallel??
+        auto ag = *it;
+        ag->apply_colvar_force(force);
+      }
+    }
+  }
+  auto children = children_cvcs();
+  for (auto it = children.begin(); it != children.end(); ++it) {
+    (*it)->propagate_colvar_force(force);
+  }
+}
 
 // Static members
 
