@@ -796,43 +796,6 @@ std::shared_ptr<colvar::cvc> colvar::cvc::find_children_cvc_by_qualified_name(co
   return nullptr;
 }
 
-void colvar::cvc::modify_children_cvcs_atom_gradients(std::function<cvm::rvector(cvm::rvector&)> functor) {
-  // TODO: is it necessary to check f_cvc_explicit_atom_groups?
-  if (is_enabled(f_cvc_explicit_gradient)) {
-    for (auto it = atom_groups.begin(); it != atom_groups.end(); ++it) {
-      if ((*it) != nullptr) {
-        auto ag = *it;
-        for (auto ia = ag->begin(); ia != ag->end(); ++ia) {
-          // TODO: There should be locks per atom group or std::atomic<cvm::rvector> but there are none!!
-          cvm::proxy->smp_lock();
-          functor(ia->grad);
-          cvm::proxy->smp_unlock();
-        }
-      }
-    }
-  }
-  auto children = children_cvcs();
-  for (auto it = children.begin(); it != children.end(); ++it) {
-    (*it)->modify_children_cvcs_atom_gradients(functor);
-  }
-}
-
-void colvar::cvc::propagate_colvar_force(cvm::real const &force) {
-  if (is_enabled(f_cvc_explicit_gradient)) {
-    for (auto it = atom_groups.begin(); it != atom_groups.end(); ++it) {
-      if ((*it) != nullptr) {
-        // TODO: should I use SMP lock here if biases are computed in parallel??
-        auto ag = *it;
-        ag->apply_colvar_force(force);
-      }
-    }
-  }
-  auto children = children_cvcs();
-  for (auto it = children.begin(); it != children.end(); ++it) {
-    (*it)->propagate_colvar_force(force);
-  }
-}
-
 // Static members
 
 std::vector<colvardeps::feature *> colvar::cvc::cvc_features;

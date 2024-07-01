@@ -247,12 +247,6 @@ public:
   /// \brief Find a child CVC by its qualified name
   virtual std::shared_ptr<colvar::cvc> find_children_cvc_by_qualified_name(const std::string& p_name);
 
-  /// \brief Modify the atom gradients of all children CVCs (if they have explict gradients) and this CVC itself
-  void modify_children_cvcs_atom_gradients(std::function<cvm::rvector(cvm::rvector&)> functor);
-
-  /// \brief Propagate force to atom groups all children CVCs and this CVC itself
-  void propagate_colvar_force(cvm::real const &force);
-
 protected:
 
   /// Set the value of \link function_type \endlink and define static dependencies
@@ -1361,8 +1355,6 @@ class colvar::linearCombination
 protected:
     /// Sub-colvar components
     std::vector<std::shared_ptr<colvar::cvc>> cv;
-    /// If all sub-cvs use explicit gradients then we also use it
-    bool use_explicit_gradients;
     /// For SMP off or SMP on but using engines other than NAMD
     bool compatibility_mode;
 protected:
@@ -1425,8 +1417,6 @@ protected:
     std::vector<std::shared_ptr<colvar::cvc>> cv;
     /// Reference colvar values from path
     std::vector<std::vector<colvarvalue>> ref_cv;
-    /// If all sub-cvs use explicit gradients then we also use it
-    bool use_explicit_gradients;
     /// Total number of reference frames
     size_t total_reference_frames = 0;
     /// For SMP off or SMP on but using engines other than NAMD

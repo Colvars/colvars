@@ -83,18 +83,7 @@ int colvar::linearCombination::init(std::string const &conf)
         x.type(cv[0]->value());
         x.reset();
     }
-    use_explicit_gradients = true;
-    for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            use_explicit_gradients = false;
-        }
-    }
-    if (!use_explicit_gradients) {
-        disable(f_cvc_explicit_gradient);
-        cvm::log("Disable explicit gradient in " + name + "\n");
-    } else {
-        cvm::log("Enable explicit gradient in " + name + "\n");
-    }
+    disable(f_cvc_explicit_gradient);
     return error_code;
 }
 
@@ -147,44 +136,15 @@ void colvar::linearCombination::calc_gradients() {
         if (compatibility_mode) {
             cv[i_cv]->calc_gradients();
         }
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            if (compatibility_mode) {
-                for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
-                    for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                        for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
-                            (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
-                        }
-                    }
-                }
-            } else {
-                cv[i_cv]->modify_children_cvcs_atom_gradients([factor_polynomial](cvm::rvector& grad){
-                    grad = factor_polynomial * grad;
-                    return grad;
-                });
-            }
-        }
     }
 }
 
 void colvar::linearCombination::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        // If this CV us explicit gradients, then atomic gradients is already calculated
-        // We can apply the force to atom groups directly
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            if (compatibility_mode) {
-                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                    (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
-                }
-            } else {
-                cv[i_cv]->propagate_colvar_force(force.real_value);
-            }
-        } else {
-            // Compute factors for polynomial combinations
-            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            colvarvalue cv_force = force.real_value * factor_polynomial;
-            cv[i_cv]->apply_force(cv_force);
-        }
+        // Compute factors for polynomial combinations
+        cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+        colvarvalue cv_force = force.real_value * factor_polynomial;
+        cv[i_cv]->apply_force(cv_force);
     }
 }
 
@@ -362,45 +322,9 @@ void colvar::customColvar::calc_gradients() {
         colvar::linearCombination::calc_gradients();
     } else {
 #ifdef LEPTON
-        size_t r = 0; // index in the vector of variable references
-        size_t e = 0; // index of the gradient evaluator
         for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) { // for each CV
             if (compatibility_mode) {
                 cv[i_cv]->calc_gradients();
-            }
-            if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-                const colvarvalue& current_cv_value = cv[i_cv]->value();
-                const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-                // TODO: Currently we only have gradients of scalar variables, what should I do if current_cv_value.size() > 1??
-                for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) { // for each element in this CV
-                    for (size_t c = 0; c < x.size(); ++c) { // for each custom function expression
-                        for (size_t k = 0; k < cv.size(); ++k) { // this is required since we need to feed all CV values to this expression
-                            const cvm::real factor_polynomial_k = getPolynomialFactorOfCVGradient(k);
-                            for (size_t l = 0; l < cv[k]->value().size(); ++l) {
-                                *(grad_eval_var_refs[r++]) = factor_polynomial_k * cv[k]->value()[l];
-                            }
-                        }
-                        const double expr_grad = gradient_evaluators[e++]->evaluate();
-                        if (compatibility_mode) {
-                            for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                                for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
-                                    (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = expr_grad * factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
-                                }
-                            }
-                        } else {
-                            if (cvm::debug()) {
-                                cvm::log("Propagate a gradient of " + cvm::to_str(expr_grad * factor_polynomial) + " to " + cv[i_cv]->qualified_name());
-                            }
-                            cv[i_cv]->modify_children_cvcs_atom_gradients([factor_polynomial, expr_grad](cvm::rvector& grad){
-                                // TODO: is it better to use SMP lock here?
-                                // cvm::proxy->smp_lock();
-                                grad = expr_grad * factor_polynomial * grad;
-                                // cvm::proxy->smp_unlock();
-                                return grad;
-                            });
-                        }
-                    }
-                }
             }
         }
 #else
@@ -419,38 +343,22 @@ void colvar::customColvar::apply_force(colvarvalue const &force) {
         size_t r = 0; // index in the vector of variable references
         size_t e = 0; // index of the gradient evaluator
         for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-            // If this CV us explicit gradients, then atomic gradients is already calculated
-            // We can apply the force to atom groups directly
-            if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-                if (compatibility_mode) {
-                    for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                        (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
-                    }
-                } else {
-                    if (cvm::debug()) {
-                        cvm::log("Propagate a force of " + cvm::to_str(force.real_value) + " to "
-                                + cv[i_cv]->qualified_name() + " from " + this->qualified_name());
-                    }
-                    cv[i_cv]->propagate_colvar_force(force.real_value);
-                }
-            } else {
-                const colvarvalue& current_cv_value = cv[i_cv]->value();
-                colvarvalue cv_force(current_cv_value);
-                cv_force.reset();
-                const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-                for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) {
-                    for (size_t c = 0; c < x.size(); ++c) {
-                        for (size_t k = 0; k < cv.size(); ++k) {
-                            const cvm::real factor_polynomial_k = getPolynomialFactorOfCVGradient(k);
-                            for (size_t l = 0; l < cv[k]->value().size(); ++l) {
-                                *(grad_eval_var_refs[r++]) = factor_polynomial_k * cv[k]->value()[l];
-                            }
+            const colvarvalue& current_cv_value = cv[i_cv]->value();
+            colvarvalue cv_force(current_cv_value);
+            cv_force.reset();
+            const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+            for (size_t j_elem = 0; j_elem < current_cv_value.size(); ++j_elem) {
+                for (size_t c = 0; c < x.size(); ++c) {
+                    for (size_t k = 0; k < cv.size(); ++k) {
+                        const cvm::real factor_polynomial_k = getPolynomialFactorOfCVGradient(k);
+                        for (size_t l = 0; l < cv[k]->value().size(); ++l) {
+                            *(grad_eval_var_refs[r++]) = factor_polynomial_k * cv[k]->value()[l];
                         }
-                        cv_force[j_elem] += factor_polynomial * gradient_evaluators[e++]->evaluate() * force.real_value;
                     }
+                    cv_force[j_elem] += factor_polynomial * gradient_evaluators[e++]->evaluate() * force.real_value;
                 }
-                cv[i_cv]->apply_force(cv_force);
             }
+            cv[i_cv]->apply_force(cv_force);
         }
 #else
         cvm::error("customFunction requires the Lepton library, but it is not enabled during compilation.\n"

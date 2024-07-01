@@ -595,17 +595,7 @@ int colvar::CVBasedPath::init(std::string const &conf)
                      COLVARS_INPUT_ERROR);
       return error_code;
     }
-
-    use_explicit_gradients = true;
-    for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            use_explicit_gradients = false;
-        }
-    }
-    if (!use_explicit_gradients) {
-        disable(f_cvc_explicit_gradient);
-    }
-
+    disable(f_cvc_explicit_gradient);
     return error_code;
 }
 
@@ -787,63 +777,23 @@ void colvar::gspathCV::calc_gradients() {
             // No matter whether the i-th cv uses implicit gradient, compute it first.
             cv[i_cv]->calc_gradients();
         }
-        // If the gradient is not implicit, then add the gradients to its atom groups
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            // Compute factors for polynomial combinations
-            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            // Loop over all elements of the corresponding colvar value
-            for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
-                // ds/dz, z = vector of CVs
-                const cvm::real tmp1 = -1.0 * sign * 0.5 * dfdv1[i_cv][j_elem] / M;
-                const cvm::real tmp2 = sign * 0.5 * dfdv2[i_cv][j_elem] / M;
-                if (compatibility_mode) {
-                    // Apply the gradients to the atom groups in i-th cv
-                    // Loop over all atom groups
-                    for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                        // Loop over all atoms in the k-th atom group
-                        for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
-                            // Chain rule
-                            (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = factor_polynomial * ((*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad * tmp1 + (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad * tmp2);
-                        }
-                    }
-                } else {
-                    const cvm::real factor = tmp1 + tmp2;
-                    cv[i_cv]->modify_children_cvcs_atom_gradients([factor, factor_polynomial](cvm::rvector& grad){
-                        grad = factor_polynomial * factor * grad;
-                        return grad;
-                    });
-                }
-            }
-        }
     }
 }
 
 void colvar::gspathCV::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        // If this CV us explicit gradients, then atomic gradients is already calculated
-        // We can apply the force to atom groups directly
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            if (compatibility_mode) {
-                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                    (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
-                }
-            } else {
-                cv[i_cv]->propagate_colvar_force(force.real_value);
-            }
-        } else {
-            // Temporary variables storing gradients
-            colvarvalue tmp_cv_grad_v1(cv[i_cv]->value());
-            colvarvalue tmp_cv_grad_v2(cv[i_cv]->value());
-            // Compute factors for polynomial combinations
-            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
-                // ds/dz, z = vector of CVs
-                tmp_cv_grad_v1[j_elem] = -1.0 * sign * 0.5 * dfdv1[i_cv][j_elem] / M;
-                tmp_cv_grad_v2[j_elem] = sign * 0.5 * dfdv2[i_cv][j_elem] / M;
-            }
-            colvarvalue cv_force = force.real_value * factor_polynomial * (tmp_cv_grad_v1 + tmp_cv_grad_v2);
-            cv[i_cv]->apply_force(cv_force);
+        // Temporary variables storing gradients
+        colvarvalue tmp_cv_grad_v1(cv[i_cv]->value());
+        colvarvalue tmp_cv_grad_v2(cv[i_cv]->value());
+        // Compute factors for polynomial combinations
+        cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+        for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
+            // ds/dz, z = vector of CVs
+            tmp_cv_grad_v1[j_elem] = -1.0 * sign * 0.5 * dfdv1[i_cv][j_elem] / M;
+            tmp_cv_grad_v2[j_elem] = sign * 0.5 * dfdv2[i_cv][j_elem] / M;
         }
+        colvarvalue cv_force = force.real_value * factor_polynomial * (tmp_cv_grad_v1 + tmp_cv_grad_v2);
+        cv[i_cv]->apply_force(cv_force);
     }
 }
 
@@ -939,58 +889,17 @@ void colvar::gzpathCV::calc_gradients() {
         if (compatibility_mode) {
             cv[i_cv]->calc_gradients();
         }
-        // If the gradient is not implicit, then add the gradients to its atom groups
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            // Temporary variables storing gradients
-            colvarvalue tmp_cv_grad_v1 = -1.0 * dzdv1[i_cv];
-            colvarvalue tmp_cv_grad_v2 =  1.0 * dzdv2[i_cv];
-            // Compute factors for polynomial combinations
-            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
-                if (compatibility_mode) {
-                // Apply the gradients to the atom groups in i-th cv
-                // Loop over all atom groups
-                    for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                        // Loop over all atoms in the k-th atom group
-                        for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
-                            // Chain rule
-                            (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = factor_polynomial * ((*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad * tmp_cv_grad_v1[j_elem] + (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad * tmp_cv_grad_v2[j_elem]);
-                        }
-                    }
-                } else {
-                    const cvm::real tmp1 = tmp_cv_grad_v1[j_elem];
-                    const cvm::real tmp2 = tmp_cv_grad_v2[j_elem];
-                    const cvm::real factor = tmp1 + tmp2;
-                    cv[i_cv]->modify_children_cvcs_atom_gradients([factor, factor_polynomial](cvm::rvector& grad){
-                        grad = factor_polynomial * factor * grad;
-                        return grad;
-                    });
-                }
-            }
-        }
     }
 }
 
 void colvar::gzpathCV::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        // If this CV us explicit gradients, then atomic gradients is already calculated
-        // We can apply the force to atom groups directly
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            if (compatibility_mode) {
-                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                    (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
-                }
-            } else {
-                cv[i_cv]->propagate_colvar_force(force.real_value);
-            }
-        } else {
-            colvarvalue tmp_cv_grad_v1 = -1.0 * dzdv1[i_cv];
-            colvarvalue tmp_cv_grad_v2 =  1.0 * dzdv2[i_cv];
-            // Temporary variables storing gradients
-            // Compute factors for polynomial combinations
-            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            colvarvalue cv_force = force.real_value * factor_polynomial * (tmp_cv_grad_v1 + tmp_cv_grad_v2);
-            cv[i_cv]->apply_force(cv_force);
-        }
+        colvarvalue tmp_cv_grad_v1 = -1.0 * dzdv1[i_cv];
+        colvarvalue tmp_cv_grad_v2 =  1.0 * dzdv2[i_cv];
+        // Temporary variables storing gradients
+        // Compute factors for polynomial combinations
+        cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+        colvarvalue cv_force = force.real_value * factor_polynomial * (tmp_cv_grad_v1 + tmp_cv_grad_v2);
+        cv[i_cv]->apply_force(cv_force);
     }
 }

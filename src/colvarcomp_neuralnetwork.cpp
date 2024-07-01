@@ -181,52 +181,16 @@ void colvar::neuralNetwork::calc_gradients() {
         if (compatibility_mode) {
             cv[i_cv]->calc_gradients();
         }
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            const cvm::real factor = nn->getGradient(m_output_index, i_cv);
-            const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
-                if (compatibility_mode) {
-                    for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                        for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
-                            (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = factor_polynomial * factor * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
-                        }
-                    }
-                } else {
-                    if (cvm::debug()) {
-                        cvm::log("Propagate a gradient of " + cvm::to_str(factor * factor_polynomial) + " to " + cv[i_cv]->qualified_name());
-                    }
-                    cv[i_cv]->modify_children_cvcs_atom_gradients([factor_polynomial, factor](cvm::rvector& grad){
-                        grad = factor * factor_polynomial * grad;
-                        return grad;
-                    });
-                }
-            }
-        }
     }
 }
 
 void colvar::neuralNetwork::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        // If this CV us explicit gradients, then atomic gradients is already calculated
-        // We can apply the force to atom groups directly
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            if (compatibility_mode) {
-                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                    (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
-                }
-            } else {
-                if (cvm::debug()) {
-                    cvm::log("Propagate a force of " + cvm::to_str(force.real_value) + " to " + cv[i_cv]->qualified_name() + " from " + this->qualified_name());
-                }
-                cv[i_cv]->propagate_colvar_force(force.real_value);
-            }
-        } else {
-            // Compute factors for polynomial combinations
-            const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            const cvm::real factor = nn->getGradient(m_output_index, i_cv);;
-            colvarvalue cv_force = force.real_value * factor * factor_polynomial;
-            cv[i_cv]->apply_force(cv_force);
-        }
+        // Compute factors for polynomial combinations
+        const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+        const cvm::real factor = nn->getGradient(m_output_index, i_cv);;
+        colvarvalue cv_force = force.real_value * factor * factor_polynomial;
+        cv[i_cv]->apply_force(cv_force);
     }
 }
 
