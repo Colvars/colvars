@@ -27,9 +27,9 @@ colvar::orientation::orientation()
   set_function_type("orientation");
   rot_deriv_impl = std::unique_ptr<rotation_derivative_impl_>(new rotation_derivative_impl_(this));
   // This CVC can be reused by others
-  provide(f_cvc_reusable);
+  // provide(f_cvc_reusable);
   // This CVC and its derived classes can reuse existing orientation objects
-  provide(f_cvc_reusing_cvcs);
+  // provide(f_cvc_reusing_cvcs);
   disable(f_cvc_explicit_gradient);
   x.type(colvarvalue::type_quaternion);
 }

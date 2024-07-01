@@ -11,6 +11,8 @@
 #include "colvar.h"
 #include "colvarcomp.h"
 
+#include <iostream>
+
 
 colvar::angle::angle()
 {
