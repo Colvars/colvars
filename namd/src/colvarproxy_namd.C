@@ -1602,8 +1602,8 @@ int colvarproxy_namd::smp_colvars_loop2() {
   // Bypass the colvar objects and find all CVC objects
   std::vector<std::shared_ptr<colvar::cvc>> all_cvcs;
   std::unordered_map<std::shared_ptr<colvar::cvc>, cvc_info> cvc_info_map;
-  for (auto it = cv->variables_active_smp()->begin();
-       it != cv->variables_active_smp()->end(); ++it) {
+  for (auto it = cv->variables_active()->begin();
+       it != cv->variables_active()->end(); ++it) {
     // TODO: Bad design! What will happen if CVC a is in a "colvar" block
     // that does not support total_force_calc, but is then reused in
     // another block that requires total_force_calc even if it supports Jacobian itself???
