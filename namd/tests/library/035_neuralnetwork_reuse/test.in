@@ -1,0 +1,118 @@
+colvarsTrajFrequency    1
+colvarsRestartFrequency 10
+
+colvar {
+    name re1
+    dihedral {
+        name phi_1
+        group1 {atomNumbers {10}}
+        group2 {atomNumbers {12}}
+        group3 {atomNumbers {14}}
+        group4 {atomNumbers {20}}
+        scalable off
+    }
+}
+
+colvar {
+    name re2
+    customColvar {
+        name 002
+        customFunction sin(phi_2/180.0*3.1415926535897)
+        dihedral {
+            name phi_2
+            group1 {atomNumbers {20}}
+            group2 {atomNumbers {22}}
+            group3 {atomNumbers {24}}
+            group4 {atomNumbers {30}}
+            scalable off
+        }
+    }
+}
+
+colvar {
+    name                    nn_output_1
+
+    width 0.01
+
+    lowerboundary           -1
+    upperboundary           1
+
+    extendedlagrangian      on
+    extendedFluctuation     0.01
+    extendedTimeConstant    200
+    subtractappliedforce    on
+
+    NeuralNetwork {
+        output_component        0
+        layer1_WeightsFile      dense_weights.txt
+        layer1_BiasesFile       dense_biases.txt
+        layer1_activation       tanh
+        layer2_WeightsFile      dense_1_weights.txt
+        layer2_BiasesFile       dense_1_biases.txt
+        layer2_activation       tanh
+
+        reuseComponents re2/002
+
+        customColvar {
+            name 001
+            customFunction sin(phi_1/180.0*3.1415926535897)
+            reuseComponents re1/phi_1
+        }
+        customColvar {
+            name 003
+            customFunction sin(phi_3/180.0*3.1415926535897)
+            dihedral {
+                name phi_3
+                group1 {atomNumbers {30}}
+                group2 {atomNumbers {32}}
+                group3 {atomNumbers {34}}
+                group4 {atomNumbers {40}}
+                scalable off
+            }
+        }
+        customColvar {
+            name 004
+            customFunction sin(psi_1/180.0*3.1415926535897)
+            dihedral {
+                name psi_1
+                group1 {atomNumbers {12}}
+                group2 {atomNumbers {14}}
+                group3 {atomNumbers {20}}
+                group4 {atomNumbers {22}}
+                scalable off
+            }
+        }
+        customColvar {
+            name 005
+            customFunction sin(psi_2/180.0*3.1415926535897)
+            dihedral {
+                name psi_2
+                group1 {atomNumbers {22}}
+                group2 {atomNumbers {24}}
+                group3 {atomNumbers {30}}
+                group4 {atomNumbers {32}}
+                scalable off
+            }
+        }
+        customColvar {
+            name 006
+            customFunction sin(psi_3/180.0*3.1415926535897)
+            dihedral {
+                name psi_3
+                group1 {atomNumbers {32}}
+                group2 {atomNumbers {34}}
+                group3 {atomNumbers {40}}
+                group4 {atomNumbers {42}}
+                scalable off
+            }
+        }
+    }
+}
+
+
+abf {
+    colvars             nn_output_1
+    fullSamples         2000
+    writeCZARwindowFile on
+    historyfreq         100000
+}

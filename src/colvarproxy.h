@@ -462,6 +462,7 @@ public:
 
   /// Distribute calculation of colvars (and their components) across threads
   virtual int smp_colvars_loop();
+  virtual int smp_colvars_loop2();
 
   /// Distribute calculation of biases across threads
   virtual int smp_biases_loop();

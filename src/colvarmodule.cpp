@@ -751,10 +751,19 @@ cvm::atom_group *colvarmodule::atom_group_by_name(std::string const &name)
 }
 
 
-colvardeps *colvarmodule::get_component_by_name(std::string const &name)
+std::shared_ptr<colvardeps> colvarmodule::get_component_by_name(std::string const &name)
 {
   if (colvar_components_.count(name) > 0) {
-    return colvar_components_[name].get();
+    return colvar_components_[name];
+  } else {
+    std::shared_ptr<colvardeps> result(nullptr);
+    // Iterate over all sub-CVCs
+    for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+      for (auto cvci = (*cvi)->cvcs_begin(); cvci != (*cvi)->cvcs_end(); ++cvci) {
+        result = std::dynamic_pointer_cast<colvardeps>((*cvci)->find_children_cvc_by_qualified_name(name));
+        if (result) return result;
+      }
+    }
   }
   return nullptr;
 }
@@ -974,7 +983,8 @@ int colvarmodule::calc_colvars()
     cvm::decrease_depth();
 
     // calculate colvar components in parallel
-    error_code |= proxy->smp_colvars_loop();
+    // error_code |= proxy->smp_colvars_loop();
+    error_code |= proxy->smp_colvars_loop2();
 
     cvm::increase_depth();
     for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
