@@ -13,8 +13,8 @@ proc ::cv_dashboard::add_cv {} {
 proc ::cv_dashboard::edit_cv { {add false} {cvs ""} } {
 
   set indent $::cv_dashboard::indent
-
-  if $add {
+  
+  if { $add && ($cvs eq "") } {
     # do not remove existing vars
     set cvs {}
     set ::cv_dashboard::backup_cfg ""
@@ -26,6 +26,9 @@ proc ::cv_dashboard::edit_cv { {add false} {cvs ""} } {
       set cfg "colvar {\n${indent}name d\n${indent}distance {\n${indent}${indent}group1 { atomNumbers 1 2 }
 ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
     }
+  } elseif $add {
+    set ::cv_dashboard::backup_cfg ""
+    set cfg $cvs
   } else {
     if {[llength $cvs] < 1} {
       # if not provided, try selection
