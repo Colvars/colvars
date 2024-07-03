@@ -273,7 +273,7 @@ for dir in ${DIRLIST} ; do
     if [ "x${gen_ref_output}" == 'xyes' ]; then
       echo "Reference files copied successfully."
     else
-      echo " $(${TPUT_GREEN})Success!$(${TPUT_CLEAR})"
+      echo " "$(${TPUT_GREEN})"Success!"$(${TPUT_CLEAR})
     fi
     cleanup_files
   fi
