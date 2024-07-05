@@ -24,6 +24,7 @@
 #include "colvarbias_histogram_reweight_amd.h"
 #include "colvarbias_meta.h"
 #include "colvarbias_restraint.h"
+#include "colvarbias_opes.h"
 #include "colvarscript.h"
 #include "colvaratoms.h"
 #include "colvarcomp.h"
@@ -588,6 +589,9 @@ int colvarmodule::parse_biases(std::string const &conf)
 
   /// initialize reweightaMD instances
   parse_biases_type<colvarbias_reweightaMD>(conf, "reweightaMD");
+
+  /// initialize OPES instances
+  parse_biases_type<colvarbias_opes>(conf, "opes_metad");
 
   if (use_scripted_forces) {
     cvm::log(cvm::line_marker);

@@ -344,6 +344,44 @@
     "  url = {https://doi.org/10.1021/ct500320c}\n"
     "}\n";
 
+  paper_count_[std::string("Invernizzi2020")] = 0;
+  paper_url_[std::string("Invernizzi2020")] = "https://dx.doi.org/10.1021/acs.jpclett.0c00497";
+  paper_bibtex_[std::string("Invernizzi2020")] = R"(
+@article{Invernizzi2020,
+	title = {Rethinking {Metadynamics}: {From} {Bias} {Potentials} to {Probability} {Distributions}},
+	volume = {11},
+	issn = {1948-7185, 1948-7185},
+	shorttitle = {Rethinking {Metadynamics}},
+	url = {https://pubs.acs.org/doi/10.1021/acs.jpclett.0c00497},
+	doi = {10.1021/acs.jpclett.0c00497},
+	number = {7},
+	urldate = {2020-09-30},
+	journal = {J. Phys. Chem. Lett.},
+	author = {Invernizzi, Michele and Parrinello, Michele},
+	month = apr,
+	year = {2020},
+	pages = {2731--2736},
+})"; // C++11 raw string literal
+
+  paper_count_[std::string("Invernizzi2022")] = 0;
+  paper_url_[std::string("Invernizzi2022")] = "https://doi.org/10.1021/acs.jctc.2c00152";
+  paper_bibtex_[std::string("Invernizzi2022")] = R"(
+@article{Invernizzi2022,
+	title = {Exploration vs {Convergence} {Speed} in {Adaptive}-{Bias} {Enhanced} {Sampling}},
+	volume = {18},
+	issn = {1549-9618},
+	url = {https://doi.org/10.1021/acs.jctc.2c00152},
+	doi = {10.1021/acs.jctc.2c00152},
+	number = {6},
+	urldate = {2024-07-02},
+	journal = {J. Chem. Theory Comput.},
+	author = {Invernizzi, Michele and Parrinello, Michele},
+	month = jun,
+	year = {2022},
+	pages = {3988--3996},
+}
+)"; // C++11 raw string literal
+
   paper_count_[std::string("n/a")] = 0;
   paper_url_[std::string("n/a")] = "";
   paper_bibtex_[std::string("n/a")] = "";
@@ -590,3 +628,9 @@
 
   feature_count_[std::string("ABMD bias")] = 0;
   feature_paper_map_[std::string("ABMD bias")] = "n/a";
+
+  feature_count_[std::string("OPES")] = 0;
+  feature_paper_map_[std::string("OPES")] = "Invernizzi2020";
+
+  feature_count_[std::string("OPES explore or adaptive kernels")] = 0;
+  feature_paper_map_[std::string("OPES explore or adaptive kernels")] = "Invernizzi2022";
