@@ -10,7 +10,7 @@ class colvars_grid:
     Gradient files contain as many data series as there are dimensions.
     Data can be obtained in array shape with as_array()
 
-    # Example: 3d surface plot for a 2d free energy surface ("PMF"), with contour plot at z=0
+    # Example: 3d surface plot for a 2d free energy surface (PMF), with contour plot at z=0
     from mpl_toolkits.mplot3d import Axes3D
     pmf = colvars_grid('run.pmf')
     fig = plt.figure()

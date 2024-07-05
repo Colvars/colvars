@@ -27,7 +27,7 @@ proc native_contacts_cfg { {molid "top"} {seltext "alpha"} {cutoff 5} } {
         }
     }
 
-    set n_pairs [llength $nonlocal_a1] 
+    set n_pairs [llength $nonlocal_a1]
     if { $n_pairs == 0} { return "" }
     set coeff [expr {1. / $n_pairs}]
 

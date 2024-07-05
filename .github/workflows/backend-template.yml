@@ -127,7 +127,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer pull ${{ inputs.container_name }}.sif oras://ghcr.io/Colvars/devel-containers:${{ inputs.container_name }}
+          apptainer pull ${{ inputs.container_name }}.sif oras://ghcr.io/colvars/devel-containers:${{ inputs.container_name }}
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash

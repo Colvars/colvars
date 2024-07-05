@@ -1,9 +1,10 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
-colvars: in any publication based on this calculation.
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
 colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
 colvars: This version was built with the C++11 standard or higher.
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -12,6 +13,7 @@ colvars: # colvarsTrajFrequency = 2
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "d"
@@ -25,28 +27,28 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group1".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group2".
 colvars:       # printAtomIDs = off [default]
@@ -80,13 +82,14 @@ colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 60
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # applyBias = on [default]
-colvars:   # updateBias = on [default]
 colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
 colvars:   # fullSamples = 0
+colvars:   # minSamples = 0 [default]
 colvars:   # inputPrefix =  [default]
 colvars:   # historyFreq = 0 [default]
 colvars:   # shared = off [default]
+colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
 colvars:   # integrate = on [default]
 colvars:   Finished ABF setup.
@@ -104,6 +107,7 @@ colvars:   # centers = { 12 }
 colvars:   # targetCenters = { 12 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 10
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   The force constant for colvar "d" will be rescaled to 250 according to the specified width (0.2).
 colvars: ----------------------------------------------------------------------
@@ -114,18 +118,38 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - Colvars module:
+colvars: - Colvars-NAMD interface:
+colvars: - Harmonic colvar bias implementation:
+colvars: - Optimal rotation via flexible fitting:
+colvars: - distance colvar component:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - ABF colvar bias implementation:
+colvars: - Internal-forces free energy estimator:
+colvars:   Henin2010 https://doi.org/10.1021/ct9004432
+colvars: 
+colvars: - NAMD engine:
+colvars: - Scalable center-of-mass computation (NAMD):
+colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
+colvars: 
+colvars: updating target temperature (T = 300 K).
+colvars: Current simulation parameters: initial step = 0, integration timestep = 0.5
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Re-initialized atom group for variable "d":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
 colvars: Re-initialized atom group for variable "d":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: The final output state file will be "test.colvars.state".
-colvars: Opening trajectory file "test.colvars.traj".
-colvars: Redefining the Tcl "cv" command to the new script interface.
-colvars:   Prepared sample and gradient buffers at step 0.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
-colvars: Re-initialized atom group for variable "d":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
-colvars: Re-initialized atom group for variable "d":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
-colvars: The final output state file will be "test.colvars.state".
+colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 300 K).
+colvars: Current simulation parameters: initial step = 0, integration timestep = 0.5
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Saving collective variables state to "test.colvars.state".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
@@ -135,6 +159,7 @@ colvars: # colvarsTrajFrequency = 2 [default]
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -151,6 +176,7 @@ colvars:   # centers = { 13 }
 colvars:   # targetCenters = { 13 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 1
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   The force constant for colvar "d" will be rescaled to 25 according to the specified width (0.2).
 colvars: ----------------------------------------------------------------------
@@ -161,273 +187,296 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 300 K).
 colvars: Saving collective variables state to "test.colvars.state".
-colvars: Features of "colvar d" ON/OFF (refcount)
-colvars: - active   ON (4)
-colvars: - awake   ON (0)
-colvars: - gradient   ON (3)
-colvars: - collect_gradient   OFF (0)
-colvars: - velocity_from_finite_differences   OFF (0)
-colvars: - total_force   ON (3)
-colvars: - total_force_calculation   ON (1)
-colvars: - subtract_applied_force_from_total_force   ON (0)
-colvars: - Jacobian_derivative   ON (1)
-colvars: - hide_Jacobian_force   OFF (0)
-colvars: - extended_Lagrangian   OFF (0)
-colvars: - Langevin_dynamics   OFF (0)
-colvars: - output_energy   OFF (0)
-colvars: - output_value   ON (0)
-colvars: - output_velocity   OFF (0)
-colvars: - output_applied_force   ON (0)
-colvars: - output_total_force   ON (0)
-colvars: - lower_boundary   ON (1)
-colvars: - upper_boundary   ON (1)
-colvars: - hard_lower_boundary   OFF (0)
-colvars: - hard_upper_boundary   OFF (0)
-colvars: - reflecting_lower_boundary   OFF (0)
-colvars: - reflecting_upper_boundary   OFF (0)
-colvars: - grid   ON (0)
-colvars: - running_average   OFF (0)
-colvars: - correlation_function   OFF (0)
-colvars: - scripted   OFF (0)
-colvars: - custom_function   OFF (0)
-colvars: - periodic   OFF (0)
-colvars: - single_component   ON (0)
-colvars: - scalar   ON (6)
-colvars: - linear   ON (2)
-colvars: - homogeneous   ON (0)
-colvars: - multiple_timestep   OFF (0)
+colvars: Features of "colvar d" (refcount)
+colvars: - ON active (3) 
+colvars: -    awake
+colvars: - ON gradient (3) 
+colvars: -    collect_gradient
+colvars: -    collect_atom_ids
+colvars: -    velocity_from_finite_differences
+colvars: - ON total_force (3) 
+colvars: - ON total_force_calculation (1) 
+colvars: - ON subtract_applied_force_from_total_force
+colvars: - ON Jacobian_derivative (1) 
+colvars: -    hide_Jacobian_force
+colvars: -    extended_Lagrangian
+colvars: -    external
+colvars: -    Langevin_dynamics
+colvars: -    output_energy
+colvars: - ON output_value
+colvars: -    output_velocity
+colvars: - ON output_applied_force
+colvars: - ON output_total_force
+colvars: - ON lower_boundary
+colvars: - ON upper_boundary
+colvars: -    hard_lower_boundary
+colvars: -    hard_upper_boundary
+colvars: -    reflecting_lower_boundary
+colvars: -    reflecting_upper_boundary
+colvars: - ON grid
+colvars: -    running_average
+colvars: -    correlation_function
+colvars: -    scripted
+colvars: -    custom_function
+colvars: -    periodic
+colvars: - ON single_component
+colvars: - ON scalar (7) 
+colvars: - ON linear (2) 
+colvars: - ON homogeneous
+colvars: -    multiple_timestep
 colvars:   * child 1
-colvars:   Features of "cvc distance0001" ON/OFF (refcount)
-colvars:   - active   ON (0)
-colvars:   - scalar   OFF (0)
-colvars:   - periodic   OFF (0)
-colvars:   - defined_width   OFF (0)
-colvars:   - defined_lower_boundary   ON (0)
-colvars:   - defined_upper_boundary   OFF (0)
-colvars:   - gradient   ON (2)
-colvars:   - explicit_gradient   ON (0)
-colvars:   - inverse_gradient   ON (2)
-colvars:   - Jacobian_derivative   ON (1)
-colvars:   - total_force_from_one_group   OFF (0)
-colvars:   - debug_gradient   OFF (0)
-colvars:   - use_minimum-image_with_PBCs   ON (0)
-colvars:   - function_of_centers_of_mass   ON (1)
-colvars:   - scalable_calculation   ON (0)
-colvars:   - scalable_calculation_of_centers_of_mass   ON (1)
+colvars:   Features of "cvc distance0001 of type "distance"" (refcount)
+colvars:   - ON active
+colvars:   -    scalar
+colvars:   -    periodic
+colvars:   -    defined_width
+colvars:   - ON defined_lower_boundary
+colvars:   -    defined_upper_boundary
+colvars:   - ON gradient (2) 
+colvars:   -    explicit_gradient
+colvars:   - ON inverse_gradient (2) 
+colvars:   - ON Jacobian_derivative (1) 
+colvars:   -    total_force_from_one_group
+colvars:   -    debug_gradient
+colvars:   - ON use_minimum-image_with_PBCs
+colvars:   - ON function_of_centers_of_mass (1) 
+colvars:   - ON scalable_calculation (1) 
+colvars:   - ON scalable_calculation_of_centers_of_mass
+colvars:   -    collect_atom_ids
 colvars:     * child 1
-colvars:     Features of "atom group group1" ON/OFF (refcount)
-colvars:     - active   OFF (0)
-colvars:     - translational_fit   OFF (0)
-colvars:     - rotational_fit   OFF (0)
-colvars:     - fitting_group   OFF (0)
-colvars:     - explicit_atom_gradient   ON (1)
-colvars:     - fit_gradients   OFF (0)
-colvars:     - atomic_forces   OFF (0)
-colvars:     - scalable_group   ON (0)
-colvars:     - scalable_group_center_of_mass   ON (1)
+colvars:     Features of "atom group group1" (refcount)
+colvars:     -    active
+colvars:     -    center_to_reference
+colvars:     -    center_to_origin
+colvars:     -    rotate_to_origin
+colvars:     -    fitting_group
+colvars:     -    explicit_atom_gradient
+colvars:     -    fit_gradients
+colvars:     -    atomic_forces
+colvars:     - ON scalable_group (1) 
+colvars:     - ON scalable_group_center_of_mass
+colvars:     -    collect_atom_ids
 colvars:     * child 2
-colvars:     Features of "atom group group2" ON/OFF (refcount)
-colvars:     - active   OFF (0)
-colvars:     - translational_fit   OFF (0)
-colvars:     - rotational_fit   OFF (0)
-colvars:     - fitting_group   OFF (0)
-colvars:     - explicit_atom_gradient   ON (1)
-colvars:     - fit_gradients   OFF (0)
-colvars:     - atomic_forces   OFF (0)
-colvars:     - scalable_group   ON (0)
-colvars:     - scalable_group_center_of_mass   ON (1)
-colvars: Features of "bias harmonic1" ON/OFF (refcount)
-colvars: - active   ON (1)
-colvars: - awake   ON (0)
-colvars: - step_zero_data   OFF (0)
-colvars: - apply_force   ON (0)
-colvars: - bypass_extended_Lagrangian_coordinates   OFF (0)
-colvars: - obtain_total_force   OFF (0)
-colvars: - output_accumulated_work   OFF (0)
-colvars: - history_dependent   OFF (0)
-colvars: - time_dependent   OFF (0)
-colvars: - require_scalar_variables   OFF (0)
-colvars: - calculate_a_PMF   OFF (0)
-colvars: - calculate_TI_samples   OFF (0)
-colvars: - write_TI_samples_   OFF (0)
-colvars: - write_TI_PMF   OFF (0)
+colvars:     Features of "atom group group2" (refcount)
+colvars:     -    active
+colvars:     -    center_to_reference
+colvars:     -    center_to_origin
+colvars:     -    rotate_to_origin
+colvars:     -    fitting_group
+colvars:     -    explicit_atom_gradient
+colvars:     -    fit_gradients
+colvars:     -    atomic_forces
+colvars:     - ON scalable_group (1) 
+colvars:     - ON scalable_group_center_of_mass
+colvars:     -    collect_atom_ids
+colvars: Features of "bias harmonic1" (refcount)
+colvars: - ON active
+colvars: -    awake
+colvars: -    step_zero_data
+colvars: - ON apply_force
+colvars: -    bypass_extended_Lagrangian_coordinates
+colvars: -    obtain_total_force
+colvars: -    output_accumulated_work
+colvars: -    history_dependent
+colvars: -    time_dependent
+colvars: -    require_scalar_variables
+colvars: -    calculate_a_PMF
+colvars: -    calculate_TI_samples
+colvars: -    write_TI_samples_
+colvars: -    write_TI_PMF
+colvars: -    scale_biasing_force
 colvars:   * child 1
-colvars:   Features of "colvar d" ON/OFF (refcount)
-colvars:   - active   ON (4)
-colvars:   - awake   ON (0)
-colvars:   - gradient   ON (3)
-colvars:   - collect_gradient   OFF (0)
-colvars:   - velocity_from_finite_differences   OFF (0)
-colvars:   - total_force   ON (3)
-colvars:   - total_force_calculation   ON (1)
-colvars:   - subtract_applied_force_from_total_force   ON (0)
-colvars:   - Jacobian_derivative   ON (1)
-colvars:   - hide_Jacobian_force   OFF (0)
-colvars:   - extended_Lagrangian   OFF (0)
-colvars:   - Langevin_dynamics   OFF (0)
-colvars:   - output_energy   OFF (0)
-colvars:   - output_value   ON (0)
-colvars:   - output_velocity   OFF (0)
-colvars:   - output_applied_force   ON (0)
-colvars:   - output_total_force   ON (0)
-colvars:   - lower_boundary   ON (1)
-colvars:   - upper_boundary   ON (1)
-colvars:   - hard_lower_boundary   OFF (0)
-colvars:   - hard_upper_boundary   OFF (0)
-colvars:   - reflecting_lower_boundary   OFF (0)
-colvars:   - reflecting_upper_boundary   OFF (0)
-colvars:   - grid   ON (0)
-colvars:   - running_average   OFF (0)
-colvars:   - correlation_function   OFF (0)
-colvars:   - scripted   OFF (0)
-colvars:   - custom_function   OFF (0)
-colvars:   - periodic   OFF (0)
-colvars:   - single_component   ON (0)
-colvars:   - scalar   ON (6)
-colvars:   - linear   ON (2)
-colvars:   - homogeneous   ON (0)
-colvars:   - multiple_timestep   OFF (0)
+colvars:   Features of "colvar d" (refcount)
+colvars:   - ON active (3) 
+colvars:   -    awake
+colvars:   - ON gradient (3) 
+colvars:   -    collect_gradient
+colvars:   -    collect_atom_ids
+colvars:   -    velocity_from_finite_differences
+colvars:   - ON total_force (3) 
+colvars:   - ON total_force_calculation (1) 
+colvars:   - ON subtract_applied_force_from_total_force
+colvars:   - ON Jacobian_derivative (1) 
+colvars:   -    hide_Jacobian_force
+colvars:   -    extended_Lagrangian
+colvars:   -    external
+colvars:   -    Langevin_dynamics
+colvars:   -    output_energy
+colvars:   - ON output_value
+colvars:   -    output_velocity
+colvars:   - ON output_applied_force
+colvars:   - ON output_total_force
+colvars:   - ON lower_boundary
+colvars:   - ON upper_boundary
+colvars:   -    hard_lower_boundary
+colvars:   -    hard_upper_boundary
+colvars:   -    reflecting_lower_boundary
+colvars:   -    reflecting_upper_boundary
+colvars:   - ON grid
+colvars:   -    running_average
+colvars:   -    correlation_function
+colvars:   -    scripted
+colvars:   -    custom_function
+colvars:   -    periodic
+colvars:   - ON single_component
+colvars:   - ON scalar (7) 
+colvars:   - ON linear (2) 
+colvars:   - ON homogeneous
+colvars:   -    multiple_timestep
 colvars:     * child 1
-colvars:     Features of "cvc distance0001" ON/OFF (refcount)
-colvars:     - active   ON (0)
-colvars:     - scalar   OFF (0)
-colvars:     - periodic   OFF (0)
-colvars:     - defined_width   OFF (0)
-colvars:     - defined_lower_boundary   ON (0)
-colvars:     - defined_upper_boundary   OFF (0)
-colvars:     - gradient   ON (2)
-colvars:     - explicit_gradient   ON (0)
-colvars:     - inverse_gradient   ON (2)
-colvars:     - Jacobian_derivative   ON (1)
-colvars:     - total_force_from_one_group   OFF (0)
-colvars:     - debug_gradient   OFF (0)
-colvars:     - use_minimum-image_with_PBCs   ON (0)
-colvars:     - function_of_centers_of_mass   ON (1)
-colvars:     - scalable_calculation   ON (0)
-colvars:     - scalable_calculation_of_centers_of_mass   ON (1)
+colvars:     Features of "cvc distance0001 of type "distance"" (refcount)
+colvars:     - ON active
+colvars:     -    scalar
+colvars:     -    periodic
+colvars:     -    defined_width
+colvars:     - ON defined_lower_boundary
+colvars:     -    defined_upper_boundary
+colvars:     - ON gradient (2) 
+colvars:     -    explicit_gradient
+colvars:     - ON inverse_gradient (2) 
+colvars:     - ON Jacobian_derivative (1) 
+colvars:     -    total_force_from_one_group
+colvars:     -    debug_gradient
+colvars:     - ON use_minimum-image_with_PBCs
+colvars:     - ON function_of_centers_of_mass (1) 
+colvars:     - ON scalable_calculation (1) 
+colvars:     - ON scalable_calculation_of_centers_of_mass
+colvars:     -    collect_atom_ids
 colvars:       * child 1
-colvars:       Features of "atom group group1" ON/OFF (refcount)
-colvars:       - active   OFF (0)
-colvars:       - translational_fit   OFF (0)
-colvars:       - rotational_fit   OFF (0)
-colvars:       - fitting_group   OFF (0)
-colvars:       - explicit_atom_gradient   ON (1)
-colvars:       - fit_gradients   OFF (0)
-colvars:       - atomic_forces   OFF (0)
-colvars:       - scalable_group   ON (0)
-colvars:       - scalable_group_center_of_mass   ON (1)
+colvars:       Features of "atom group group1" (refcount)
+colvars:       -    active
+colvars:       -    center_to_reference
+colvars:       -    center_to_origin
+colvars:       -    rotate_to_origin
+colvars:       -    fitting_group
+colvars:       -    explicit_atom_gradient
+colvars:       -    fit_gradients
+colvars:       -    atomic_forces
+colvars:       - ON scalable_group (1) 
+colvars:       - ON scalable_group_center_of_mass
+colvars:       -    collect_atom_ids
 colvars:       * child 2
-colvars:       Features of "atom group group2" ON/OFF (refcount)
-colvars:       - active   OFF (0)
-colvars:       - translational_fit   OFF (0)
-colvars:       - rotational_fit   OFF (0)
-colvars:       - fitting_group   OFF (0)
-colvars:       - explicit_atom_gradient   ON (1)
-colvars:       - fit_gradients   OFF (0)
-colvars:       - atomic_forces   OFF (0)
-colvars:       - scalable_group   ON (0)
-colvars:       - scalable_group_center_of_mass   ON (1)
+colvars:       Features of "atom group group2" (refcount)
+colvars:       -    active
+colvars:       -    center_to_reference
+colvars:       -    center_to_origin
+colvars:       -    rotate_to_origin
+colvars:       -    fitting_group
+colvars:       -    explicit_atom_gradient
+colvars:       -    fit_gradients
+colvars:       -    atomic_forces
+colvars:       - ON scalable_group (1) 
+colvars:       - ON scalable_group_center_of_mass
+colvars:       -    collect_atom_ids
 colvars: Saving collective variables state to "test.colvars.state".
-colvars: Features of "bias harm2" ON/OFF (refcount)
-colvars: - active   ON (1)
-colvars: - awake   ON (0)
-colvars: - step_zero_data   OFF (0)
-colvars: - apply_force   ON (0)
-colvars: - bypass_extended_Lagrangian_coordinates   OFF (0)
-colvars: - obtain_total_force   OFF (0)
-colvars: - output_accumulated_work   OFF (0)
-colvars: - history_dependent   OFF (0)
-colvars: - time_dependent   OFF (0)
-colvars: - require_scalar_variables   OFF (0)
-colvars: - calculate_a_PMF   OFF (0)
-colvars: - calculate_TI_samples   OFF (0)
-colvars: - write_TI_samples_   OFF (0)
-colvars: - write_TI_PMF   OFF (0)
+colvars: Features of "bias harm2" (refcount)
+colvars: - ON active
+colvars: -    awake
+colvars: -    step_zero_data
+colvars: - ON apply_force
+colvars: -    bypass_extended_Lagrangian_coordinates
+colvars: -    obtain_total_force
+colvars: -    output_accumulated_work
+colvars: -    history_dependent
+colvars: -    time_dependent
+colvars: -    require_scalar_variables
+colvars: -    calculate_a_PMF
+colvars: -    calculate_TI_samples
+colvars: -    write_TI_samples_
+colvars: -    write_TI_PMF
+colvars: -    scale_biasing_force
 colvars:   * child 1
-colvars:   Features of "colvar d" ON/OFF (refcount)
-colvars:   - active   ON (3)
-colvars:   - awake   ON (0)
-colvars:   - gradient   ON (2)
-colvars:   - collect_gradient   OFF (0)
-colvars:   - velocity_from_finite_differences   OFF (0)
-colvars:   - total_force   ON (3)
-colvars:   - total_force_calculation   ON (1)
-colvars:   - subtract_applied_force_from_total_force   ON (0)
-colvars:   - Jacobian_derivative   ON (1)
-colvars:   - hide_Jacobian_force   OFF (0)
-colvars:   - extended_Lagrangian   OFF (0)
-colvars:   - Langevin_dynamics   OFF (0)
-colvars:   - output_energy   OFF (0)
-colvars:   - output_value   ON (0)
-colvars:   - output_velocity   OFF (0)
-colvars:   - output_applied_force   ON (0)
-colvars:   - output_total_force   ON (0)
-colvars:   - lower_boundary   ON (1)
-colvars:   - upper_boundary   ON (1)
-colvars:   - hard_lower_boundary   OFF (0)
-colvars:   - hard_upper_boundary   OFF (0)
-colvars:   - reflecting_lower_boundary   OFF (0)
-colvars:   - reflecting_upper_boundary   OFF (0)
-colvars:   - grid   ON (0)
-colvars:   - running_average   OFF (0)
-colvars:   - correlation_function   OFF (0)
-colvars:   - scripted   OFF (0)
-colvars:   - custom_function   OFF (0)
-colvars:   - periodic   OFF (0)
-colvars:   - single_component   ON (0)
-colvars:   - scalar   ON (6)
-colvars:   - linear   ON (2)
-colvars:   - homogeneous   ON (0)
-colvars:   - multiple_timestep   OFF (0)
+colvars:   Features of "colvar d" (refcount)
+colvars:   - ON active (2) 
+colvars:   -    awake
+colvars:   - ON gradient (2) 
+colvars:   -    collect_gradient
+colvars:   -    collect_atom_ids
+colvars:   -    velocity_from_finite_differences
+colvars:   - ON total_force (3) 
+colvars:   - ON total_force_calculation (1) 
+colvars:   - ON subtract_applied_force_from_total_force
+colvars:   - ON Jacobian_derivative (1) 
+colvars:   -    hide_Jacobian_force
+colvars:   -    extended_Lagrangian
+colvars:   -    external
+colvars:   -    Langevin_dynamics
+colvars:   -    output_energy
+colvars:   - ON output_value
+colvars:   -    output_velocity
+colvars:   - ON output_applied_force
+colvars:   - ON output_total_force
+colvars:   - ON lower_boundary
+colvars:   - ON upper_boundary
+colvars:   -    hard_lower_boundary
+colvars:   -    hard_upper_boundary
+colvars:   -    reflecting_lower_boundary
+colvars:   -    reflecting_upper_boundary
+colvars:   - ON grid
+colvars:   -    running_average
+colvars:   -    correlation_function
+colvars:   -    scripted
+colvars:   -    custom_function
+colvars:   -    periodic
+colvars:   - ON single_component
+colvars:   - ON scalar (7) 
+colvars:   - ON linear (2) 
+colvars:   - ON homogeneous
+colvars:   -    multiple_timestep
 colvars:     * child 1
-colvars:     Features of "cvc distance0001" ON/OFF (refcount)
-colvars:     - active   ON (0)
-colvars:     - scalar   OFF (0)
-colvars:     - periodic   OFF (0)
-colvars:     - defined_width   OFF (0)
-colvars:     - defined_lower_boundary   ON (0)
-colvars:     - defined_upper_boundary   OFF (0)
-colvars:     - gradient   ON (2)
-colvars:     - explicit_gradient   ON (0)
-colvars:     - inverse_gradient   ON (2)
-colvars:     - Jacobian_derivative   ON (1)
-colvars:     - total_force_from_one_group   OFF (0)
-colvars:     - debug_gradient   OFF (0)
-colvars:     - use_minimum-image_with_PBCs   ON (0)
-colvars:     - function_of_centers_of_mass   ON (1)
-colvars:     - scalable_calculation   ON (0)
-colvars:     - scalable_calculation_of_centers_of_mass   ON (1)
+colvars:     Features of "cvc distance0001 of type "distance"" (refcount)
+colvars:     - ON active
+colvars:     -    scalar
+colvars:     -    periodic
+colvars:     -    defined_width
+colvars:     - ON defined_lower_boundary
+colvars:     -    defined_upper_boundary
+colvars:     - ON gradient (2) 
+colvars:     -    explicit_gradient
+colvars:     - ON inverse_gradient (2) 
+colvars:     - ON Jacobian_derivative (1) 
+colvars:     -    total_force_from_one_group
+colvars:     -    debug_gradient
+colvars:     - ON use_minimum-image_with_PBCs
+colvars:     - ON function_of_centers_of_mass (1) 
+colvars:     - ON scalable_calculation (1) 
+colvars:     - ON scalable_calculation_of_centers_of_mass
+colvars:     -    collect_atom_ids
 colvars:       * child 1
-colvars:       Features of "atom group group1" ON/OFF (refcount)
-colvars:       - active   OFF (0)
-colvars:       - translational_fit   OFF (0)
-colvars:       - rotational_fit   OFF (0)
-colvars:       - fitting_group   OFF (0)
-colvars:       - explicit_atom_gradient   ON (1)
-colvars:       - fit_gradients   OFF (0)
-colvars:       - atomic_forces   OFF (0)
-colvars:       - scalable_group   ON (0)
-colvars:       - scalable_group_center_of_mass   ON (1)
+colvars:       Features of "atom group group1" (refcount)
+colvars:       -    active
+colvars:       -    center_to_reference
+colvars:       -    center_to_origin
+colvars:       -    rotate_to_origin
+colvars:       -    fitting_group
+colvars:       -    explicit_atom_gradient
+colvars:       -    fit_gradients
+colvars:       -    atomic_forces
+colvars:       - ON scalable_group (1) 
+colvars:       - ON scalable_group_center_of_mass
+colvars:       -    collect_atom_ids
 colvars:       * child 2
-colvars:       Features of "atom group group2" ON/OFF (refcount)
-colvars:       - active   OFF (0)
-colvars:       - translational_fit   OFF (0)
-colvars:       - rotational_fit   OFF (0)
-colvars:       - fitting_group   OFF (0)
-colvars:       - explicit_atom_gradient   ON (1)
-colvars:       - fit_gradients   OFF (0)
-colvars:       - atomic_forces   OFF (0)
-colvars:       - scalable_group   ON (0)
-colvars:       - scalable_group_center_of_mass   ON (1)
-colvars: The final output state file will be "test.colvars.state".
+colvars:       Features of "atom group group2" (refcount)
+colvars:       -    active
+colvars:       -    center_to_reference
+colvars:       -    center_to_origin
+colvars:       -    rotate_to_origin
+colvars:       -    fitting_group
+colvars:       -    explicit_atom_gradient
+colvars:       -    fit_gradients
+colvars:       -    atomic_forces
+colvars:       - ON scalable_group (1) 
+colvars:       - ON scalable_group_center_of_mass
+colvars:       -    collect_atom_ids
 colvars: Saving collective variables state to "test.colvars.state".
-colvars: The final output state file will be "test.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".
 colvars: ----------------------------------------------------------------------
-colvars: Restarting from file "test.colvars.state".
+colvars: Loading state from text file "test.colvars.state".
 colvars:   Restarting collective variable "d" from value: 11.9615
-colvars:   Restarting abf bias "abf1" from step number 60.
+colvars:   Restarted abf bias "abf1" with step number 60.
 colvars: ----------------------------------------------------------------------
 colvars: Resetting the Collective Variables module.
 colvars: ----------------------------------------------------------------------
@@ -438,6 +487,7 @@ colvars: # colvarsTrajFrequency = 2
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "d"
@@ -451,32 +501,32 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group1".
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.011, total charge = -0.1.
+colvars:       Atom group "group1" defined with 1 atoms requested.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group2".
 colvars:       # printAtomIDs = off [default]
-colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
+colvars:       Atom group "group2" defined with 1 atoms requested.
 colvars:     # oneSiteSystemForce = off [default]
 colvars:     # oneSiteTotalForce = off [default]
 colvars:   All components initialized.
@@ -506,13 +556,14 @@ colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 60
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # applyBias = on [default]
-colvars:   # updateBias = on [default]
 colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
 colvars:   # fullSamples = 0
+colvars:   # minSamples = 0 [default]
 colvars:   # inputPrefix =  [default]
 colvars:   # historyFreq = 0 [default]
 colvars:   # shared = off [default]
+colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
 colvars:   # integrate = on [default]
 colvars:   Finished ABF setup.
@@ -530,6 +581,7 @@ colvars:   # centers = { 12 }
 colvars:   # targetCenters = { 12 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 10
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   The force constant for colvar "d" will be rescaled to 250 according to the specified width (0.2).
 colvars: ----------------------------------------------------------------------
@@ -540,5 +592,7 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 2 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 300 K).
 colvars: Warning: before deleting colvar d, deleting related bias harmonic1
 colvars: Warning: before deleting colvar d, deleting related bias abf1

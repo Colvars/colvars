@@ -47,10 +47,10 @@
 #_dihedralPC
     dihedralPC {
         ## Projection onto a dihedral principal component
-        psfSegID @
-        residueRange @-@
-        vectorFile @
-        vectorNumber @
+        psfSegID <name>
+        residueRange <first>-<last>
+        vectorFile <filename>
+        vectorNumber <value>
     }
 
 #_dipoleAngle
@@ -197,9 +197,9 @@
             # fittingGroup {
             #     atomNumbers 5 6 7 8
             # }
-            # refPositionsFile @
+            # refPositionsFile <filename>
         }
-        refPositionsFile @
+        refPositionsFile <filename>
     }
 
 #_rmsd
@@ -207,7 +207,7 @@
         atoms {
             atomNumbers 1 2 3
         }
-        refPositionsFile @
+        refPositionsFile <filename>
     }
 
 #_selfCoordNum
@@ -222,7 +222,7 @@
         atoms {
             atomNumbers 1 2 3
         }
-        refPositionsFile @
+        refPositionsFile <filename>
         # axis (1.0, -3.0, 4.0)
     }
 
@@ -231,7 +231,7 @@
         atoms {
             atomNumbers 1 2 3
         }
-        refPositionsFile @
+        refPositionsFile <filename>
         # axis (1.0, -3.0, 4.0)
     }
 

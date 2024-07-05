@@ -232,13 +232,14 @@ cv.#1(#2)
 \newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
 
 \newenvironment{cvcoptions}{%
-  %% TODO Uncomment when all itemizations environment are redefined
-  %% \begin{mdframed}[linecolor=cvexample-border-color,linewidth=2pt]
-  \noindent\textbf{List of keywords} (see also \ref{sec:cvc_superp} for additional options):
-  \begin{itemize}}{%
+  \noindent\textbf{List of keywords} (see also \ref{sec:cvc_pbcs}, \ref{sec:cvc_common}, \ref{sec:cvc_periodic} and \ref{sec:cvc_superp} for additional options):
+  \begin{itemize}
+  }{%
+  \item %
+    \colorbox{cvkeyword-background-color}{\texttt{forceNoPBC}} --- \emph{Use absolute rather than minimum-image distances?} (see \hyperlink{colvar|cvc|forceNoPBC}{description})\\
+    Default: \texttt{no}
   \end{itemize}
-  %% \end{mdframed}
-  }
+}
 
 \newcommand{\pagetoplink}{\ifdefined\HCode
   \begin{flushright}
@@ -250,6 +251,7 @@ cv.#1(#2)
   \newpage
   \ifdefined\HCode
   \pagetoplink
+  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
   \HCode{<div class="heading">} % Use CSS, mdframed won't work for this
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
@@ -260,12 +262,12 @@ cv.#1(#2)
   \else
   \end{mdframed}
   \fi
-  \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
 }
 
 \newcommand{\cvsubsec}[2]{%
   \ifdefined\HCode
   \pagetoplink
+  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
   \HCode{<div class="heading">}
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
@@ -276,12 +278,12 @@ cv.#1(#2)
   \else
   \end{mdframed}
   \fi
-  \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
 }
 
 \newcommand{\cvsubsubsec}[2]{%
   \ifdefined\HCode
   \pagetoplink
+  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
   \HCode{<div class="heading">}
   \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
@@ -292,7 +294,6 @@ cv.#1(#2)
   \else
   \end{mdframed}
   \fi
-  \ifdefined\HCode\HCode{<selfref>}\ref{#2}\HCode{</selfref>}\fi
 }
 
 \input{colvars-engine-flags}

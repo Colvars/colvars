@@ -33,15 +33,13 @@ jobs:
       test_interface_directory: lammps/tests/interface
       rpath_exe: install/bin/lmp
 
-  namd-devel:
-    name: NAMD (devel)
-    # Prevent running this job on PRs across different accounts, because
-    # secrets wouldn't be shared
+  namd-main:
+    name: NAMD (main)
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: NAMD
       backend_repo: Colvars/namd
-      backend_repo_ref: devel
+      backend_repo_ref: main
       path_compile_script: devel-tools/compile-namd.sh
       test_lib_directory: namd/tests/library
       test_interface_directory: namd/tests/interface
@@ -53,8 +51,6 @@ jobs:
 
   vmd-cvs:
     name: VMD
-    # Prevent running this job on PRs across different accounts, because
-    # secrets wouldn't be shared
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: VMD

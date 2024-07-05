@@ -8,7 +8,7 @@ import re
 
 
 def gen_cplusplus_entry(entry, key, url):
-    key_year_sep = re.search('\d', key).start()
+    key_year_sep = re.search('\\d', key).start()
     key_author = key[0:key_year_sep]
     key_year = key[key_year_sep:]
     result = """

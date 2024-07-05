@@ -9,7 +9,6 @@ colvar {
         distanceVec {
             name 002
             componentCoeff 0.6
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -19,7 +18,6 @@ colvar {
         }
         distanceVec {
             name 005
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -29,7 +27,6 @@ colvar {
         }
         distanceVec {
             name 006
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -39,7 +36,6 @@ colvar {
         }
         distanceVec {
             name 007
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -49,7 +45,6 @@ colvar {
         }
         distanceVec {
             name 009
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -59,7 +54,6 @@ colvar {
         }
         distanceVec {
             name 011
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -69,7 +63,6 @@ colvar {
         }
         distanceVec {
             name 015
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -79,7 +72,6 @@ colvar {
         }
         distanceVec {
             name 016
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -89,7 +81,6 @@ colvar {
         }
         distanceVec {
             name 017
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -99,7 +90,6 @@ colvar {
         }
         distanceVec {
             name 019
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -109,7 +99,6 @@ colvar {
         }
         distanceVec {
             name 021
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -119,7 +108,6 @@ colvar {
         }
         distanceVec {
             name 025
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -129,7 +117,6 @@ colvar {
         }
         distanceVec {
             name 026
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -139,7 +126,6 @@ colvar {
         }
         distanceVec {
             name 027
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -149,7 +135,6 @@ colvar {
         }
         distanceVec {
             name 029
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -159,7 +144,6 @@ colvar {
         }
         distanceVec {
             name 031
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -169,7 +153,6 @@ colvar {
         }
         distanceVec {
             name 035
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -179,7 +162,6 @@ colvar {
         }
         distanceVec {
             name 036
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -189,7 +171,6 @@ colvar {
         }
         distanceVec {
             name 037
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -199,7 +180,6 @@ colvar {
         }
         distanceVec {
             name 039
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -219,7 +199,6 @@ colvar {
         debugGradients on
         distanceVec {
             name 002
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -229,7 +208,6 @@ colvar {
         }
         distanceVec {
             name 005
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -239,7 +217,6 @@ colvar {
         }
         distanceVec {
             name 006
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -249,7 +226,6 @@ colvar {
         }
         distanceVec {
             name 007
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -259,7 +235,6 @@ colvar {
         }
         distanceVec {
             name 009
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -269,7 +244,6 @@ colvar {
         }
         distanceVec {
             name 011
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -279,7 +253,6 @@ colvar {
         }
         distanceVec {
             name 015
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -289,7 +262,6 @@ colvar {
         }
         distanceVec {
             name 016
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -299,7 +271,6 @@ colvar {
         }
         distanceVec {
             name 017
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -309,7 +280,6 @@ colvar {
         }
         distanceVec {
             name 019
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -319,7 +289,6 @@ colvar {
         }
         distanceVec {
             name 021
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -329,7 +298,6 @@ colvar {
         }
         distanceVec {
             name 025
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -339,7 +307,6 @@ colvar {
         }
         distanceVec {
             name 026
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -349,7 +316,6 @@ colvar {
         }
         distanceVec {
             name 027
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -359,7 +325,6 @@ colvar {
         }
         distanceVec {
             name 029
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -369,7 +334,6 @@ colvar {
         }
         distanceVec {
             name 031
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -379,7 +343,6 @@ colvar {
         }
         distanceVec {
             name 035
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -389,7 +352,6 @@ colvar {
         }
         distanceVec {
             name 036
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -399,7 +361,6 @@ colvar {
         }
         distanceVec {
             name 037
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }
@@ -409,7 +370,6 @@ colvar {
         }
         distanceVec {
             name 039
-            forceNoPBC    yes
             group1 {
                 dummyAtom (0.00, 0.00, 0.00)
             }

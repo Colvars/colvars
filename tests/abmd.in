@@ -1,0 +1,5 @@
+abmd {
+    colvars one
+    forceConstant 10
+    stoppingValue 50
+}

@@ -28,9 +28,10 @@ Navigate to the `vmd/cv_dashboard` subdirectory.
 
 Edit the `DESTINATION` variable in Makefile.local with the path where VMD is installed,
 and run `make -f Makefile.local install`
-Then start the interface using `Extensions/Analysis/Colvars Dashboard`.
-`Makefile` is used within the VMD plugin distribution, by VMD's own build script; we will use
-`Makefile.local` instead.
+(`Makefile` is used within the VMD plugin distribution, by VMD's own build script, which is why we use
+`Makefile.local`).
+Then start VMD and open the interface using `Extensions/Analysis/Colvars Dashboard`.
+
 
 ### On Windows or if GNU make is not available
 Find the path where VMD is installed

@@ -1,0 +1,21 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name one
+  x       3.2144511460791
+}
+
+abmd {
+  configuration {
+    step 40
+    name abmd1
+    refValue  3.22362245333741e+00
+    stoppingValue 5.00000000000000e+01
+    forceConstant 1.00000000000000e+01
+    decreasing off
+  }
+}
+

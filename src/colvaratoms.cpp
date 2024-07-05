@@ -286,7 +286,7 @@ int cvm::atom_group::init_dependencies() {
   // Initialize feature_states for each instance
   // default as unavailable, not enabled
   feature_states.reserve(f_ag_ntot);
-  for (i = 0; i < colvardeps::f_ag_ntot; i++) {
+  for (i = feature_states.size(); i < colvardeps::f_ag_ntot; i++) {
     feature_states.push_back(feature_state(false, false));
   }
 
@@ -532,8 +532,8 @@ int cvm::atom_group::parse(std::string const &group_conf)
         cvm::error("Error: atomsColValue, if provided, must be non-zero.\n", COLVARS_INPUT_ERROR);
       }
 
-      // NOTE: calls to add_atom() and/or add_atom_id() are in the proxy-implemented function
-      error_code |= cvm::load_atoms(atoms_file_name.c_str(), *this, atoms_col, atoms_col_value);
+      error_code |= cvm::main()->proxy->load_atoms_pdb(atoms_file_name.c_str(), *this, atoms_col,
+                                                       atoms_col_value);
     }
   }
 

@@ -143,9 +143,12 @@ copy_lepton() {
 
   if [ -d ${source}/openmm-source ] ; then
     OPENMM_SOURCE=${source}/openmm-source
+  elif [ -d ${source}/../openmm-source ] ; then
+    OPENMM_SOURCE=${source}/../openmm-source
   fi
 
   if [ -z "${OPENMM_SOURCE}" ] ; then
+    # Create a temp folder and download OpenMM into it
     OPENMM_SOURCE=$(mktemp -d /tmp/openmm-source-XXXXXX)
   fi
 
@@ -184,7 +187,7 @@ then
 
   GMX_VERSION=${GMX_MAJOR_VERSION}.${GMX_MINOR_VERSION}
 
-  # In 2022, version info is in CMakeLists.txt
+  # Since 2022, version info is in CMakeLists.txt
   if [ ${GMX_MAJOR_VERSION} = "\${Gromacs_VERSION_MAJOR}" ] ; then
     CMAKE_LISTS=${target}/CMakeLists.txt
     if [ ! -f ${CMAKE_LISTS} ] ; then
@@ -198,23 +201,15 @@ then
   echo "Detected GROMACS version ${GMX_VERSION}."
 
   case ${GMX_VERSION} in
-    2020*)
-      GMX_VERSION='2020.x'
-      ;;
-    2021*)
-      GMX_VERSION='2021.x'
-      ;;
-    2022*)
-      GMX_VERSION='2022.x'
-      ;;
     2023*)
       GMX_VERSION='2023.x'
       ;;
     *)
     if [ $force_update = 0 ] ; then
       echo " ******************************************************************************"
-      echo "  ERROR: Support for GROMACS version ${GMX_VERSION} has not been tested yet."
+      echo "  ERROR: GROMACS version ${GMX_VERSION} is unsupported."
       echo "  You may override with -f, but be mindful of compilation or runtime problems."
+      echo "  Alternatively, you may also download legacy code versions at https://github.com/Colvars/gromacs"
       echo " ******************************************************************************"
       exit 3
     else
@@ -226,12 +221,6 @@ then
     fi
     ;;
   esac
-
-  if [ ${GMX_VERSION} = '2021.x' ] && \
-       [ -s ${target}/.github/workflows/build_cmake.yml ] ; then
-    echo "Fixing outdated GitHub Actions CI recipe"
-    patch -p1 --forward -s -d ${target} < ${source}/gromacs/gromacs-2021.x-github.patch
-  fi
 
   if [ -z "${GITHUB_ACTION}" ] ; then
     # Only set version outside CI to avoid invalidating the compiler cache
@@ -653,9 +642,18 @@ then
   done
   echo ""
 
-  # Patch CMake build recipe
-  if [ -f ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff ] ; then
+  # Patch CMake build recipe when applicable
+  if [ -s ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff ] ; then
     patch -p1 -N -d ${target} < ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff
+  fi
+  if [ -s ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.diff ] ; then
+    patch -p1 -N -d ${target} < ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.diff
+  fi
+  if [ -s ${source}/gromacs/CMakeLists.txt.diff ] ; then
+    patch -p1 -N -d ${target} < ${source}/gromacs/CMakeLists.txt.diff
+  fi
+  if [ -s ${source}/gromacs/cmake/gmxManageLepton.cmake ] ; then
+    condcopy ${source}/gromacs/cmake/gmxManageLepton.cmake "${target}/cmake/gmxManageLepton.cmake"
   fi
   echo
 

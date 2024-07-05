@@ -2,24 +2,24 @@
 abf {
     # Colvar must define grid parameters:
     # width, lowerBoundary, upperBoundary
-    colvars        @
+    colvars        <names>
     fullSamples    500
 }
 #_metadynamics
 metadynamics {
-    colvars        @
+    colvars        <names>
     hillWeight     0.001
     writeTIPMF     yes
 }
 #_harmonic bias
 harmonic {
-    colvars        @
+    colvars        <names>
     centers        0.1
     forceConstant  10.0
 }
 #_moving harmonic bias (SMD)
 harmonic {
-    colvars        @
+    colvars        <names>
     # Start from:
     centers        0.1
     # move towards:
@@ -35,7 +35,7 @@ harmonic {
 }
 #_moving harmonic bias with discrete stages
 harmonic {
-    colvars        @
+    colvars        <names>
     centers        0.1
     forceConstant  10.0
 
@@ -48,7 +48,7 @@ harmonic {
 }
 #_moving harmonic bias with TI
 harmonic {
-    colvars        @
+    colvars        <names>
     centers        0.1
     forceConstant  10.0
 
@@ -62,7 +62,7 @@ harmonic {
 }
 #_harmonic bias with changing force constant
 harmonic {
-    colvars        @
+    colvars        <names>
     centers        0.1
     forceConstant  10.0
 
@@ -73,14 +73,14 @@ harmonic {
 }
 #_harmonic walls
 harmonicWalls {
-    colvars        @
+    colvars        <names>
     lowerWalls     0.1
     upperWalls     0.2
     forceConstant  10.0
 }
 #_harmonic walls with diff. k
 harmonicWalls {
-    colvars        @
+    colvars        <names>
     lowerWalls     0.1
     lowerWallConstant  0.002
     upperWalls     0.2
@@ -88,7 +88,7 @@ harmonicWalls {
 }
 #_moving harmonic walls
 harmonicWalls {
-    colvars        @
+    colvars        <names>
     lowerWalls     0.1
     upperWalls     0.2
 
@@ -103,7 +103,7 @@ harmonicWalls {
 }
 #_harmonic walls with changing force constant
 harmonicWalls {
-    colvars        @
+    colvars        <names>
 
     lowerWalls     0.1
     upperWalls     0.2
@@ -116,7 +116,7 @@ harmonicWalls {
 }
 #_histogram
 histogram {
-    colvars    @
+    colvars        <names>
     # If the colvars don't include grid parameters, they can be specified below
     histogramGrid {
         lowerBoundaries 0
@@ -126,7 +126,7 @@ histogram {
 }
 #_linear
 linear {
-    colvars        @
+    colvars        <names>
     centers        0.1
     forceConstant  10.0
 
