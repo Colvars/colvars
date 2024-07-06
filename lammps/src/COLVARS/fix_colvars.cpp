@@ -141,11 +141,12 @@ FixColvars::FixColvars(LAMMPS *lmp, int narg, char **arg) :
 
   if (me == 0) {
 #ifdef LAMMPS_BIGBIG
-    utils::logmesg(lmp,
-                   "colvars: Warning: cannot handle atom ids > 2147483647\n");
+    utils::logmesg(lmp, "colvars: Warning: cannot handle atom ids > 2147483647\n");
 #endif
     proxy = new colvarproxy_lammps(lmp);
     proxy->init();
+    proxy->set_random_seed(rng_seed);
+    proxy->set_target_temperature(t_target);
     if (conf_file) {
       proxy->add_config("configfile", conf_file);
     }
@@ -174,7 +175,6 @@ int FixColvars::parse_fix_arguments(int narg, char **arg, bool fix_constructor)
       is_fix_keyword = true;
     } else if (0 == strcmp(arg[iarg], "seed")) {
       rng_seed = utils::inumeric(FLERR, arg[iarg+1], false, lmp);
-      if (me == 0) proxy->set_random_seed(rng_seed);
       is_fix_keyword = true;
     } else if (0 == strcmp(arg[iarg], "unwrap")) {
       unwrap_flag = utils::logical(FLERR, arg[iarg+1], false, lmp);
@@ -295,8 +295,6 @@ void FixColvars::init()
 void FixColvars::set_thermostat_temperature()
 {
   if (me == 0) {
-    // Try to determine thermostat target temperature
-    double t_target = 0.0;
     if (tfix_name) {
       if (strcmp(tfix_name, "NULL") != 0) {
         Fix *tstat_fix = modify->get_fix_by_id(tfix_name);
@@ -308,7 +306,6 @@ void FixColvars::set_thermostat_temperature()
                                                                    tmp));
         if (tt) {
           t_target = *tt;
-          proxy->set_target_temperature(t_target);
         } else {
           error->one(FLERR, "Fix ID {} is not a thermostat fix", tfix_name);
         }

@@ -15,7 +15,7 @@ include ../common/fixes.lmp.in
 
 log test.out
 
-fix Colvars all colvars ${colvars_config} output test
+fix Colvars all colvars ${colvars_config} output test seed 54321
 
 include ../common/md.lmp.in
 
