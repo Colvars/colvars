@@ -707,6 +707,20 @@ void colvar::cvc::wrap(colvarvalue &x_unwrapped) const
 }
 
 
+
+colvar::componentDisabled::componentDisabled() {}
+
+colvar::componentDisabled::~componentDisabled() {}
+
+int colvar::componentDisabled::init(std::string const & /* conf */)
+{
+  return cvm::error("Error: components of type " + function_type() +
+                        " are not enabled in the current build",
+                    COLVARS_NOT_IMPLEMENTED);
+}
+
+
+
 // Static members
 
 std::vector<colvardeps::feature *> colvar::cvc::cvc_features;

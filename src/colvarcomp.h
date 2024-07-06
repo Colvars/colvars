@@ -320,6 +320,16 @@ inline colvarvalue const & colvar::cvc::Jacobian_derivative() const
 }
 
 
+/// \brief Colvar component class for a feature not currently available
+class colvar::componentDisabled
+  : public colvar::cvc
+{
+public:
+  componentDisabled();
+  virtual ~componentDisabled();
+  int init(std::string const & /* conf */);
+};
+
 
 /// \brief Colvar component: distance between the centers of mass of
 /// two groups (colvarvalue::type_scalar type, range [0:*))
