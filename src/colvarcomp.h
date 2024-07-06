@@ -1565,30 +1565,20 @@ protected:
     // record the initial index of of sub-cvcs in input_tensor
     std::vector<int> cvc_indices;
 public:
-    torchANN(std::string const &conf);
+    torchANN();
     virtual ~torchANN();
+    virtual int init(std::string const &conf);
     virtual void calc_value();
     virtual void calc_gradients();
     virtual void apply_force(colvarvalue const &force);
-
-    /// Redefined to handle periodicity
-    virtual cvm::real dist2(colvarvalue const &x1,
-			    colvarvalue const &x2) const;
-    /// Redefined to handle periodicity
-    virtual colvarvalue dist2_lgrad(colvarvalue const &x1,
-				    colvarvalue const &x2) const;
-    /// Redefined to handle periodicity
-    virtual colvarvalue dist2_rgrad(colvarvalue const &x1,
-				    colvarvalue const &x2) const;
-    /// Redefined to handle periodicity
-    virtual void wrap(colvarvalue &x_unwrapped) const;
 };
 #else
 class colvar::torchANN
   : public colvar::componentDisabled
 {
 public:
-    torchANN(std::string const &conf) : componentDisabled(conf) {}
+    torchANN();
+    virtual ~torchANN();
 };
 #endif // TORCH checking
 
