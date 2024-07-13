@@ -79,16 +79,13 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   xyz_reader_use_count = 0;
 
-  num_biases_types_used_ =
-    reinterpret_cast<void *>(new std::map<std::string, int>());
-
   restart_version_str.clear();
   restart_version_int = 0;
 
-  usage_ = new usage();
+  usage_ = std::unique_ptr<usage>(new usage());
   usage_->cite_feature("Colvars module");
 
-  if (proxy != NULL) {
+  if (proxy != nullptr) {
     // TODO relax this error to handle multiple molecules in VMD
     // once the module is not static anymore
     cvm::error("Error: trying to allocate the collective "
@@ -97,7 +94,9 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   }
 
   proxy = proxy_in; // Pointer to the proxy object
-  parse = new colvarparse(); // Parsing object for global options
+
+  parse = std::unique_ptr<colvarparse>(new colvarparse());
+
   version_int = proxy->get_version_from_string(COLVARS_VERSION);
 
   cvm::log(cvm::line_marker);
@@ -486,11 +485,22 @@ int colvarmodule::parse_colvars(std::string const &conf)
     cvm::log("Warning: no collective variables defined.\n");
   }
 
-  if (colvars.size())
+  if (colvars.size()) {
     cvm::log(cvm::line_marker);
-  cvm::log("Collective variables initialized, "+
-           cvm::to_str(colvars.size())+
-           " in total.\n");
+    cvm::log("Collective variables initialized, " + cvm::to_str(colvars.size()) + " in total.\n");
+    std::string msg;
+    msg = "List of variables: ";
+    for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+      msg += " " + (*cvi)->name;
+    }
+    msg += "\n";
+    msg += "List of components: ";
+    for (auto cvci = colvar_components_.begin(); cvci != colvar_components_.end(); cvci++) {
+      msg += " " + cvci->first;
+    }
+    msg += "\n";
+    cvm::log(msg);
+  }
 
   return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
@@ -518,10 +528,8 @@ int colvarmodule::parse_biases_type(std::string const &conf,
 
   // Check how many times this bias keyword was used, set default name
   // accordingly
-  std::map<std::string, int> *num_biases_types_used =
-    reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_);
-  if (num_biases_types_used->count(type_keyword) == 0) {
-    (*num_biases_types_used)[type_keyword] = 0;
+  if (num_biases_types_used_.count(type_keyword) == 0) {
+    num_biases_types_used_[type_keyword] = 0;
   }
 
   std::string bias_conf = "";
@@ -530,7 +538,7 @@ int colvarmodule::parse_biases_type(std::string const &conf,
     if (bias_conf.size()) {
       cvm::log(cvm::line_marker);
       cvm::increase_depth();
-      int &bias_count = (*num_biases_types_used)[type_keyword];
+      int &bias_count = num_biases_types_used_[type_keyword];
       biases.push_back(new bias_type(type_keyword.c_str()));
       bias_count += 1;
       biases.back()->rank = bias_count;
@@ -608,6 +616,13 @@ int colvarmodule::parse_biases(std::string const &conf)
     cvm::log(cvm::line_marker);
     cvm::log("Collective variables biases initialized, "+
              cvm::to_str(num_biases())+" in total.\n");
+    std::string msg;
+    msg = "List of biases: ";
+    for (auto bi = biases.begin(); bi != biases.end(); bi++) {
+      msg += " " + (*bi)->name;
+    }
+    msg += "\n";
+    cvm::log(msg);
   } else {
     if (!use_scripted_forces) {
       cvm::log("No collective variables biases were defined.\n");
@@ -739,6 +754,22 @@ cvm::atom_group *colvarmodule::atom_group_by_name(std::string const &name)
     }
   }
   return NULL;
+}
+
+
+colvardeps *colvarmodule::get_component_by_name(std::string const &name)
+{
+  if (colvar_components_.count(name) > 0) {
+    return colvar_components_[name].get();
+  }
+  return nullptr;
+}
+
+
+void colvarmodule::register_component(std::string const &name, std::shared_ptr<colvardeps> ptr)
+{
+  // TODO Add function to clean up when some components have ref count == 1
+  colvar_components_[name] = ptr;
 }
 
 
@@ -1301,18 +1332,8 @@ colvarmodule::~colvarmodule()
     colvar::cvc::delete_features();
     atom_group::delete_features();
 
-    delete
-      reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_);
-    num_biases_types_used_ = NULL;
-
-    delete parse;
-    parse = NULL;
-
-    delete usage_;
-    usage_ = NULL;
-
     // The proxy object will be deallocated last (if at all)
-    proxy = NULL;
+    proxy = nullptr;
   }
 }
 
@@ -1329,9 +1350,10 @@ int colvarmodule::reset()
   }
   biases.clear();
   biases_active_.clear();
+  num_biases_types_used_.clear();
 
-  // Reset counters tracking usage of each bias type
-  reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_)->clear();
+  // Clear the global map first, after which each colvar takes down its own CVCs
+  colvar_components_.clear();
 
   // Iterate backwards because we are deleting the elements as we go
   while (!colvars.empty()) {
@@ -1906,23 +1928,34 @@ std::ostream &colvarmodule::write_traj_label(std::ostream &os)
 {
   os.setf(std::ios::scientific, std::ios::floatfield);
 
-  os << "# " << cvm::wrap_string("step", cvm::it_width-2)
-     << " ";
+  os << "# " << cvm::wrap_string("step", cvm::it_width - 2) << " ";
+
+  // Use a stringstream buffer to check for no output from objects
+  std::ostringstream oss;
+  oss.setf(std::ios::scientific, std::ios::floatfield);
 
   cvm::increase_depth();
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
-       cvi++) {
-    (*cvi)->write_traj_label(os);
+
+  for (std::vector<colvar *>::iterator cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    oss.str("");
+    (*cvi)->write_traj_label(oss);
+    if (!oss.str().empty()) {
+      os << " " << oss.str();
+    }
   }
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
-       bi++) {
-    (*bi)->write_traj_label(os);
+
+  for (std::vector<colvarbias *>::iterator bi = biases.begin(); bi != biases.end(); bi++) {
+    oss.str("");
+    (*bi)->write_traj_label(oss);
+    if (!oss.str().empty()) {
+      os << " " << oss.str();
+    }
   }
-  os << "\n";
 
   cvm::decrease_depth();
+
+  os << "\n";
+
   return os;
 }
 
@@ -1931,23 +1964,34 @@ std::ostream & colvarmodule::write_traj(std::ostream &os)
 {
   os.setf(std::ios::scientific, std::ios::floatfield);
 
-  os << std::setw(cvm::it_width) << it
-     << " ";
+  os << std::setw(cvm::it_width) << it << " ";
+
+  // Use a stringstream buffer to check for no output from objects
+  std::ostringstream oss;
+  oss.setf(std::ios::scientific, std::ios::floatfield);
 
   cvm::increase_depth();
-  for (std::vector<colvar *>::iterator cvi = colvars.begin();
-       cvi != colvars.end();
-       cvi++) {
+
+  for (std::vector<colvar *>::iterator cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    oss.str("");
     (*cvi)->write_traj(os);
+    if (!oss.str().empty()) {
+      os << " " << oss.str();
+    }
   }
-  for (std::vector<colvarbias *>::iterator bi = biases.begin();
-       bi != biases.end();
-       bi++) {
+
+  for (std::vector<colvarbias *>::iterator bi = biases.begin(); bi != biases.end(); bi++) {
+    oss.str("");
     (*bi)->write_traj(os);
+    if (!oss.str().empty()) {
+      os << " " << oss.str();
+    }
   }
-  os << "\n";
 
   cvm::decrease_depth();
+
+  os << "\n";
+
   return os;
 }
 
