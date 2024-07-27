@@ -124,10 +124,11 @@ int colvarbias_abf::init(std::string const &conf)
       colvars[i]->enable(f_cv_hide_Jacobian);
     }
 
-    // If any colvar is extended-system, we need to collect the extended
-    // system gradient
-    if (colvars[i]->is_enabled(f_cv_extended_Lagrangian))
+    // If any colvar is extended-system (restrained, not driven external param), we are running eABF
+    if (colvars[i]->is_enabled(f_cv_extended_Lagrangian)
+        && !colvars[i]->is_enabled(f_cv_external)) {
       enable(f_cvb_extended);
+    }
 
     // Cannot mix and match coarse time steps with ABF because it gives
     // wrong total force averages - total force needs to be averaged over
@@ -315,27 +316,36 @@ int colvarbias_abf::update()
   size_t i;
   for (i = 0; i < num_variables(); i++) {
     bin[i] = samples->current_bin_scalar(i);
+    if (colvars[i]->is_enabled(f_cv_total_force_current_step)) {
+      force_bin[i] = bin[i];
+    }
   }
-
 
   // ***********************************************************
   // ******  ABF Part I: update the FE gradient estimate  ******
   // ***********************************************************
 
 
-  if (cvm::proxy->total_forces_same_step()) {
-    // e.g. in LAMMPS, total forces are current
-    force_bin = bin;
+  // Share data first, so that 2d/3d PMF is refreshed using new data for mw-pABF.
+  // shared_on can be true with shared_freq 0 if we are sharing via script
+  if (shared_on && shared_freq &&
+      shared_last_step >= 0 &&                    // we have already collected some data
+      cvm::step_absolute() > shared_last_step &&  // time has passed since the last sharing timestep
+                                                  // (avoid re-sharing at last and first ts of successive run statements)
+      cvm::step_absolute() % shared_freq == 0) {
+    // Share gradients and samples for shared ABF.
+    replica_share();
   }
 
   if (can_accumulate_data() && is_enabled(f_cvb_history_dependent)) {
 
     if (cvm::step_relative() > 0 || cvm::proxy->total_forces_same_step()) {
+      // Note: this will skip step 0 data when available in some cases (extended system),
+      // but not doing so would make the code more complex
       if (samples->index_ok(force_bin)) {
         // Only if requested and within bounds of the grid...
 
-        // get total forces (lagging by 1 timestep) from colvars
-        // and subtract previous ABF force if necessary
+        // get total force and subtract previous ABF force if necessary
         update_system_force();
 
         gradients->acc_force(force_bin, system_force);
@@ -368,21 +378,11 @@ int colvarbias_abf::update()
     }
   }
 
-  if (!(cvm::proxy->total_forces_same_step())) {
-    // e.g. in NAMD, total forces will be available for next timestep
-    // hence we store the current colvar bin
-    force_bin = bin;
-  }
+  // In some cases, total forces are stored for next timestep
+  // hence we store the current colvar bin - this is overwritten on a per-colvar basis
+  // at the top of update()
+  force_bin = bin;
 
-  // Share data after force sample is collected for this time step
-  // shared_on can be true with shared_freq 0 if we are sharing via script
-  if (shared_on && shared_freq &&
-      cvm::step_absolute() > shared_last_step &&  // time has passed since the last sharing timestep
-                                                  // (avoid re-sharing at last and first ts of successive run statements)
-      cvm::step_absolute() % shared_freq == 0) {
-    // Share gradients and samples for shared ABF.
-    replica_share();
-  }
 
   // ******************************************************************
   // ******  ABF Part II: calculate and apply the biasing force  ******
@@ -452,10 +452,13 @@ int colvarbias_abf::update_system_force()
   // System force from atomic forces (or extended Lagrangian if applicable)
 
   for (i = 0; i < num_variables(); i++) {
-    if (colvars[i]->is_enabled(f_cv_subtract_applied_force)) {
+    if (colvars[i]->is_enabled(f_cv_subtract_applied_force)
+      || colvars[i]->is_enabled(f_cv_total_force_current_step)) {
       // this colvar is already subtracting the ABF force
+      // or the "total force" is from current step and cannot possibly contain Colvars biases
       system_force[i] = colvars[i]->total_force().real_value;
     } else {
+      // Subtract previous step's bias force from previous step's total force
       system_force[i] = colvars[i]->total_force().real_value
         - colvar_forces[i].real_value;
     }
