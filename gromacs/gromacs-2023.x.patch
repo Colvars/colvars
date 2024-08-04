@@ -48,6 +48,7 @@ index 114bfd9834..ba8a3e8dbd 100644
 +gmx_manage_colvars()
 +target_link_libraries(libgromacs PRIVATE colvars)
 +gmx_manage_lepton()
+
 +target_link_libraries(libgromacs PRIVATE lepton)
 +
  # Make sure we fix "everything" found by compilers that support that
