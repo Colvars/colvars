@@ -433,8 +433,11 @@ int colvarbias_meta::update()
   error_code |= update_grid_params();
   // add new biasing energy/forces
   error_code |= update_bias();
-  // update grid content to reflect new bias
-  error_code |= update_grid_data();
+
+  if (use_grids) {
+    // update grid content to reflect new bias
+    error_code |= update_grid_data();
+  }
 
   if (comm != single_replica &&
       (cvm::step_absolute() % replica_update_freq) == 0) {
@@ -652,11 +655,20 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     replicas[ir]->bias_energy = 0.0;
   }
 
-  std::vector<int> const curr_bin = values ?
-    hills_energy->get_colvars_index(*values) :
-    hills_energy->get_colvars_index();
+  bool index_ok = false;
+  std::vector<int> curr_bin;
 
-  if (hills_energy->index_ok(curr_bin)) {
+  if (use_grids) {
+
+    curr_bin = values ?
+      hills_energy->get_colvars_index(*values) :
+      hills_energy->get_colvars_index();
+
+    index_ok = hills_energy->index_ok(curr_bin);
+
+  }
+
+  if ( index_ok ) {
     // index is within the grid: get the energy from there
     for (ir = 0; ir < replicas.size(); ir++) {
 
@@ -705,11 +717,20 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
     }
   }
 
-  std::vector<int> const curr_bin = values ?
-    hills_energy->get_colvars_index(*values) :
-    hills_energy->get_colvars_index();
+  bool index_ok = false;
+  std::vector<int> curr_bin;
 
-  if (hills_energy->index_ok(curr_bin)) {
+  if (use_grids) {
+
+    curr_bin = values ?
+      hills_energy->get_colvars_index(*values) :
+      hills_energy->get_colvars_index();
+
+    index_ok = hills_energy->index_ok(curr_bin);
+
+  }
+
+  if ( index_ok ) {
     for (ir = 0; ir < replicas.size(); ir++) {
       cvm::real const *f = &(replicas[ir]->hills_energy_gradients->value(curr_bin));
       for (ic = 0; ic < num_variables(); ic++) {
