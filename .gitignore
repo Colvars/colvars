@@ -46,3 +46,5 @@
 *.pmf
 !**/AutoDiff/*.pmf
 
+# macOS
+.DS_Store
