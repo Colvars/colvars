@@ -988,13 +988,22 @@ int colvarbias_restraint_harmonic_walls::init(std::string const &conf)
       }
     }
     if (lower_wall_k * upper_wall_k == 0.0) {
-      cvm::error("Error: lowerWallConstant and upperWallConstant, "
-                 "when defined, must both be positive.\n",
-                 COLVARS_INPUT_ERROR);
-      return COLVARS_INPUT_ERROR;
+      // Zero force constants are only ok if changing towards a nonzero value
+      if (target_force_k == 0.0) {
+        cvm::error("Error: lowerWallConstant and upperWallConstant, "
+                  "when defined, must both be positive.\n",
+                  COLVARS_INPUT_ERROR);
+        return COLVARS_INPUT_ERROR;
+      } else {
+        // Use final force constant as reference because initial value is zero
+        force_k = target_force_k;
+      }
+    } else {
+      // Use starting force constant as reference
+      // (geometric mean, in case the two are different)
+      force_k = cvm::sqrt(lower_wall_k * upper_wall_k);
     }
-    force_k = cvm::sqrt(lower_wall_k * upper_wall_k);
-    // transform the two constants to relative values using gemetric mean as ref
+    // transform the two constants to relative values
     // to preserve force_k if provided as single parameter
     // (allow changing both via force_k)
     lower_wall_k /= force_k;
