@@ -440,7 +440,7 @@ proc ::cv_dashboard::cvContextMenu { x y wX wY } {
       $menu add command -label "Show rotation" -command [list ::cv_dashboard::start_rotation_display $rotations]
       $menu add command -label "Hide rotation" -command [list ::cv_dashboard::stop_rotation_display]
     }
-    $menu add command -label Edit -command [list ::cv_dashboard::edit_cv false $cvs]
+    $menu add command -label Edit -command [list ::cv_dashboard::edit_cv -cvs $cvs]
     $menu add command -label Delete -command [list ::cv_dashboard::del_cv $cvs]
     $menu add command -label Duplicate -command [list ::cv_dashboard::duplicate_cv $cvs]
     $menu add command -label "Add harmonic bias" -command [list ::cv_dashboard::add_bias $cvs]
@@ -760,7 +760,7 @@ proc ::cv_dashboard::load {} {
         -message "There was an error while attempting to read $path. Would you like to open the file in the colvar editor?" \
         -type yesno]
       if { $answer == "yes" } {
-        edit_cv true $cfg
+        edit_cv -string $cfg
       }
     }
     # Save directory for next invocation of this dialog
