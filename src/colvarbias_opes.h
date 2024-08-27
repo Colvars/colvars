@@ -65,7 +65,7 @@ private:
   cvm::step_number m_pace;
   cvm::step_number m_adaptive_sigma_stride;
   cvm::step_number m_adaptive_counter;
-  cvm::step_number m_counter;
+  unsigned long long m_counter;
   cvm::real m_compression_threshold;
   cvm::real m_compression_threshold2;
   bool m_adaptive_sigma;
