@@ -844,7 +844,7 @@ int colvarbias_opes::update_opes() {
           std::sort(m_nlist_index.begin(), m_nlist_index.end());
         }
       }
-      for (int w = 0; w < m_num_walkers; ++w) {
+      for (size_t w = 0; w < m_num_walkers; ++w) {
         std::vector<cvm::real> center_w(
           all_center.begin() + num_variables() * w,
           all_center.begin() + num_variables() * (w + 1));
