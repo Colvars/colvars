@@ -30,6 +30,8 @@ public:
   virtual int update() override;
   std::ostream &write_state_data(std::ostream &os) override;
   std::istream &read_state_data(std::istream &is) override;
+  cvm::memory_stream &write_state_data(cvm::memory_stream &os) override;
+  cvm::memory_stream &read_state_data(cvm::memory_stream &is) override;
   template <typename OST> OST &write_state_data_template_(OST &os);
   template <typename IST> IST &read_state_data_template_(IST &os);
   std::string const traj_file_name(const std::string& suffix) const;
