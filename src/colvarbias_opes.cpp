@@ -1336,7 +1336,7 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
   readFieldReal("zed", m_zed);
   readFieldReal("sum_weights", m_sum_weights);
   readFieldReal("sum_weights2", m_sum_weights2);
-  unsigned long long tmp_counter;
+  unsigned long long tmp_counter = 1;
   readFieldULL("counter", tmp_counter);
   m_counter = tmp_counter;
   if (m_adaptive_sigma) {
@@ -1365,9 +1365,9 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
       }
     }
   }
-  unsigned long long kernel_size;
+  unsigned long long kernel_size = 0;
   readFieldULL("num_hills", kernel_size);
-  m_kernels.resize(kernel_size);
+  if (kernel_size > 0) m_kernels.resize(kernel_size);
   read_state_data_key(is, "hills");
   auto consume = [&](const std::string& expected_token){
     if (formatted) {
@@ -1381,9 +1381,9 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
   consume("{");
   for (size_t k = 0; k < m_kernels.size(); ++k) {
     consume("{");
-    unsigned long long tmp_k;
+    unsigned long long tmp_k = 0;
     is >> tmp_k;
-    if (k != tmp_k) {
+    if (formatted && k != tmp_k) {
       throw std::runtime_error("Corrupt hill data\n");
     }
     kernel current_kernel;
@@ -1393,9 +1393,9 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
       is >> current_kernel.m_center[i];
     }
     for (size_t i = 0; i < num_variables(); ++i) {
-      is >>current_kernel.m_sigma[i];
+      is >> current_kernel.m_sigma[i];
     }
-    is >>current_kernel.m_height;
+    is >> current_kernel.m_height;
     m_kernels[k] = current_kernel;
     consume("}");
   }
