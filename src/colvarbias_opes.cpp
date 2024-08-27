@@ -2,6 +2,7 @@
 #include "colvarbias.h"
 #include "colvardeps.h"
 #include "colvarproxy.h"
+#include "colvars_memstream.h"
 
 #include <exception>
 #include <iomanip>
@@ -1096,9 +1097,10 @@ int colvarbias_opes::update() {
 }
 
 template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os) {
-  const std::ios_base::fmtflags f = os.flags();
-  bool const formatted = !std::is_same<OST, cvm::memory_stream>::value;
+  std::ios_base::fmtflags f;
+  const bool formatted = !std::is_same<OST, cvm::memory_stream>::value;
   if (formatted) {
+    f = os.flags();
     os.setf(std::ios::scientific, std::ios::floatfield);
   }
   write_state_data_key(os, "opes_metad_" + this->name);
@@ -1275,13 +1277,23 @@ template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os
     if (formatted) os << " }\n";
   }
   if (formatted) os << "}\n";
-  os.setf(f);
+  if (formatted) os.setf(f);
   return os;
 }
 
 std::ostream& colvarbias_opes::write_state_data(std::ostream &os) {
   try {
     auto& s = write_state_data_template_<std::ostream>(os);
+    return s;
+  } catch (const std::exception& e) {
+    cvm::error(e.what());
+  }
+  return os;
+}
+
+cvm::memory_stream& colvarbias_opes::write_state_data(cvm::memory_stream& os) {
+  try {
+    auto& s = write_state_data_template_<cvm::memory_stream>(os);
     return s;
   } catch (const std::exception& e) {
     cvm::error(e.what());
@@ -1388,19 +1400,29 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
     consume("}");
   }
   consume("}");
+  m_kdenorm = m_sum_weights;
+  const cvm::real kbt = cvm::proxy->target_temperature() * cvm::proxy->boltzmann();
+  m_traj_line.rct = kbt * cvm::logn(m_sum_weights / m_counter);
+  m_traj_line.zed = m_zed;
+  m_traj_line.neff = (1 + m_sum_weights) * (1 + m_sum_weights) / (1 + m_sum_weights2);
+  m_traj_line.nker = m_kernels.size();
+  showInfo();
   return is;
 }
 
 std::istream& colvarbias_opes::read_state_data(std::istream &is) {
   try {
     auto& ret = read_state_data_template_<std::istream>(is);
-    m_kdenorm = m_sum_weights;
-    const cvm::real kbt = cvm::proxy->target_temperature() * cvm::proxy->boltzmann();
-    m_traj_line.rct = kbt * cvm::logn(m_sum_weights / m_counter);
-    m_traj_line.zed = m_zed;
-    m_traj_line.neff = (1 + m_sum_weights) * (1 + m_sum_weights) / (1 + m_sum_weights2);
-    m_traj_line.nker = m_kernels.size();
-    showInfo();
+    return ret;
+  } catch (const std::exception& e) {
+    cvm::error(e.what());
+  }
+  return is;
+}
+
+cvm::memory_stream& colvarbias_opes::read_state_data(cvm::memory_stream &is) {
+  try {
+    auto& ret = read_state_data_template_<cvm::memory_stream>(is);
     return ret;
   } catch (const std::exception& e) {
     cvm::error(e.what());
