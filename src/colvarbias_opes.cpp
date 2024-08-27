@@ -1478,8 +1478,8 @@ void colvarbias_opes::addKernel(const double height, const std::vector<cvm::real
             }
             if (found_giver == false) {
               cvm::error("problem with merging and nlist\n");
-              m_nlist_index.erase(m_nlist_index.begin() + giver_nk);
             }
+            m_nlist_index.erase(m_nlist_index.begin() + giver_nk);
           }
           giver_k = taker_k;
           taker_k = getMergeableKernel(m_kernels[giver_k].m_center, giver_k);
