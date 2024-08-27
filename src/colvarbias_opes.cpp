@@ -1415,13 +1415,13 @@ void colvarbias_opes::addKernel(const double height, const std::vector<cvm::real
   // simulation time in ps
   m_kernels_output << std::setw(24) << (cvm::step_absolute() * cvm::dt()) * 1e-3;
   for (size_t i = 0; i < num_variables(); ++i) {
-    m_kernels_output << std::defaultfloat << " " << std::setw(24) << std::setprecision(16) <<  center[i];
+    m_kernels_output << " " << std::setw(24) << std::setprecision(16) <<  center[i];
   }
   for (size_t i = 0; i < num_variables(); ++i) {
-    m_kernels_output << std::defaultfloat << " " << std::setw(24) << std::setprecision(16) << sigma[i];
+    m_kernels_output << " " << std::setw(24) << std::setprecision(16) << sigma[i];
   }
-  m_kernels_output << std::defaultfloat << " " << std::setw(24) << std::setprecision(16) << height;
-  m_kernels_output << std::defaultfloat << " " << std::setw(24) << std::setprecision(16) << logweight;
+  m_kernels_output << " " << std::setw(24) << std::setprecision(16) << height;
+  m_kernels_output << " " << std::setw(24) << std::setprecision(16) << logweight;
   m_kernels_output << std::endl;
   m_kernels_output.flags(f);
 }
