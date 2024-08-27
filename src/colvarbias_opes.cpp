@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <numeric>
 #include <unordered_set>
+#include <limits>
 
 colvarbias_opes::colvarbias_opes(char const *key):
   colvarbias(key), m_barrier(0), m_biasfactor(0),
