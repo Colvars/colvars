@@ -320,7 +320,10 @@ then
   done
 
   if [ -f ${source}/lammps/COLVARS.cmake.diff ] ; then
+    # Do not exit if the patch fails - already applied in development branch
+    set +e
     patch -p1 -N -d ${target} < ${source}/lammps/COLVARS.cmake.diff
+    set -e
   fi
 
   downloaded_pdf=0
