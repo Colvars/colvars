@@ -1344,7 +1344,7 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
           readFieldReal("sigma0_" + arg_iw, tmp0);
           readFieldReal("av_cv_" + arg_iw, tmp1);
           readFieldReal("av_M2_" + arg_iw, tmp2);
-          if (cvm::proxy->replica_index() == w) {
+          if (cvm::proxy->replica_index() == static_cast<int>(w)) {
             m_sigma0[i] = tmp0;
             m_av_cv[i] = tmp1;
             m_av_M2[i] = tmp2;
