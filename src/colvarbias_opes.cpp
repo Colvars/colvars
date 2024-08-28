@@ -235,7 +235,7 @@ void colvarbias_opes::showInfo() const {
     for (size_t i = 0; i < num_variables(); ++i) {
       sigmas += " " + cvm::to_str(m_sigma0[i]);
     }
-    cvm::log(this->name + " kernels have initial sigma = " + sigmas + "\n");
+    cvm::log(this->name + ": kernels have initial sigma = " + sigmas + "\n");
   }
   if (m_fixed_sigma) {
     cvm::log(this->name + " fixed_sigma: sigma will not decrease as the simulation proceeds\n");
@@ -1455,6 +1455,7 @@ void colvarbias_opes::addKernel(const double height, const std::vector<cvm::real
     if (taker_k < m_kernels.size()) {
       no_match = false;
       m_delta_kernels.emplace_back(-1 * m_kernels[taker_k].m_height, m_kernels[taker_k].m_center, m_kernels[taker_k].m_sigma);
+      mergeKernels(m_kernels[taker_k], kernel(height, center, sigma));
       m_delta_kernels.push_back(m_kernels[taker_k]);
       if (m_recursive_merge) {
         size_t giver_k = taker_k;
