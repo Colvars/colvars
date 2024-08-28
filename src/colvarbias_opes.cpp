@@ -298,7 +298,7 @@ cvm::real colvarbias_opes::evaluateKernel(
   std::vector<cvm::real>& dist) const {
   cvm::real norm2 = 0;
   for (size_t i = 0; i < num_variables(); ++i) {
-    dist[i] = variables(i)->dist2_lgrad(x[i], G.m_center[i]) / G.m_sigma[i];
+    dist[i] = 0.5 * variables(i)->dist2_lgrad(x[i], G.m_center[i]) / G.m_sigma[i];
     norm2 += dist[i] * dist[i];
     if (norm2 >= m_cutoff2) {
       return 0;
@@ -1523,7 +1523,7 @@ size_t colvarbias_opes::getMergeableKernel(const std::vector<cvm::real>& giver_c
         if (k == giver_k) continue;
         double norm2 = 0;
         for (size_t i = 0; i < num_variables(); ++i) {
-          norm2 += variables(i)->dist2( giver_center[i], m_kernels[k].m_center[i]) / (m_kernels[k].m_sigma[i] * m_kernels[k].m_sigma[i]);
+          norm2 += variables(i)->dist2(giver_center[i], m_kernels[k].m_center[i]) / (m_kernels[k].m_sigma[i] * m_kernels[k].m_sigma[i]);
           if (norm2 >= min_norm2) break;
         }
         if (norm2 < min_norm2) {
