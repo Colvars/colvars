@@ -1016,7 +1016,7 @@ int colvarbias_opes::update_opes() {
           {
             #pragma omp for reduction(+:delta_sum_uprob)
             for (size_t d = 0; d < m_delta_kernels.size(); ++d) {
-              for (size_t dd = 0; d < m_delta_kernels.size(); ++dd) {
+              for (size_t dd = 0; dd < m_delta_kernels.size(); ++dd) {
                 const int sign = m_delta_kernels[d].m_height < 0 ? -1 : 1;
                 delta_sum_uprob -= sign * evaluateKernel(m_delta_kernels[dd], m_delta_kernels[d].m_center);
               }
@@ -1026,7 +1026,7 @@ int colvarbias_opes::update_opes() {
           auto worker = [&](int start, int end, void* result) {
             double tmp_prob = 0;
             for (int d = start; d <= end; ++d) {
-              for (size_t dd = 0; d < m_delta_kernels.size(); ++dd) {
+              for (size_t dd = 0; dd < m_delta_kernels.size(); ++dd) {
                 const int sign = m_delta_kernels[d].m_height < 0 ? -1 : 1;
                 tmp_prob += sign * evaluateKernel(m_delta_kernels[dd], m_delta_kernels[d].m_center);
               }
