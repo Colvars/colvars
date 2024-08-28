@@ -31,12 +31,12 @@ colvarbias_opes::colvarbias_opes(char const *key):
   m_num_threads(1), m_nlker(0), m_traj_output_frequency(0),
   m_traj_line(traj_line{0}), m_is_first_step(true)
 {
-  enable(f_cvb_scalar_variables);
-  enable(f_cvb_apply_force);
 }
 
 int colvarbias_opes::init(const std::string& conf) {
   int error_code = colvarbias::init(conf);
+  enable(f_cvb_scalar_variables);
+  enable(f_cvb_apply_force);
   m_temperature = cvm::proxy->target_temperature();
   get_keyval(conf, "pace", m_pace);
   get_keyval(conf, "barrier", m_barrier);
@@ -313,9 +313,9 @@ cvm::real colvarbias_opes::evaluateKernel(
 }
 
 cvm::real colvarbias_opes::getProbAndDerivatives(
-  const std::vector<cvm::real>& cv, std::vector<cvm::real>& der_prob,
-  std::vector<cvm::real>& dist) const {
+  const std::vector<cvm::real>& cv, std::vector<cvm::real>& der_prob) const {
   double prob = 0.0;
+  std::vector<cvm::real> dist(num_variables(), 0);
   if (!m_nlist) {
     if (m_num_threads == 1 || m_kernels.size() < 2 * m_num_threads) {
       for (size_t k = 0; k < m_kernels.size(); ++k) {
@@ -424,11 +424,6 @@ cvm::real colvarbias_opes::getProbAndDerivatives(
 #endif
     }
   }
-  // if (cvm::step_absolute() % 1000 == 0) {
-  //   cvm::log("m_kdenorm = " + cvm::to_str(m_kdenorm));
-  //   cvm::log("number of kernels: " + cvm::to_str(m_kernels.size()));
-  //   cvm::log("prob = " + cvm::to_str(prob));
-  // }
   prob /= m_kdenorm;
   for (size_t i = 0; i < num_variables(); ++i) {
     der_prob[i] /= m_kdenorm;
@@ -459,8 +454,7 @@ int colvarbias_opes::calculate_opes() {
     }
   }
   std::vector<cvm::real> der_prob(num_variables(), 0);
-  std::vector<cvm::real> cv_dist(num_variables(), 0);
-  const cvm::real prob = getProbAndDerivatives(m_cv, der_prob, cv_dist);
+  const cvm::real prob = getProbAndDerivatives(m_cv, der_prob);
   const cvm::real bias = kbt * m_bias_prefactor * cvm::logn(prob / m_zed + m_epsilon);
   bias_energy = bias;
   for (size_t i = 0; i < num_variables(); ++i) {
@@ -488,9 +482,9 @@ int colvarbias_opes::update_opes() {
   if (cvm::step_absolute() % m_pace == 0) {
     m_old_kdenorm = m_kdenorm;
     m_delta_kernels.clear();
-    size_t old_nker = m_kernels.size();
+    const size_t old_nker = m_kernels.size();
     // TODO: how could I account for extra biases in Colvars?
-    cvm::real log_weight = bias_energy / kbt;
+    const cvm::real log_weight = bias_energy / kbt;
     cvm::real height = cvm::exp(log_weight);
     cvm::real sum_heights = height;
     cvm::real sum_heights2 = height * height;
@@ -1051,8 +1045,8 @@ int colvarbias_opes::update_opes() {
       m_traj_line.zed = m_zed;
     }
     if (m_calc_work) {
-      std::vector<cvm::real> dummy(num_variables()), dummy2(num_variables());
-      const cvm::real prob = getProbAndDerivatives(m_cv, dummy, dummy2);
+      std::vector<cvm::real> dummy(num_variables());
+      const cvm::real prob = getProbAndDerivatives(m_cv, dummy);
       const cvm::real new_bias = kbt * m_bias_prefactor * cvm::logn(prob / m_zed + m_epsilon);
       m_work += new_bias - bias_energy;
       m_traj_line.work = m_work;
@@ -1096,7 +1090,7 @@ int colvarbias_opes::update() {
   return error_code;
 }
 
-template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os) {
+template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os) const {
   std::ios_base::fmtflags f;
   const bool formatted = !std::is_same<OST, cvm::memory_stream>::value;
   if (formatted) {
@@ -1472,7 +1466,7 @@ void colvarbias_opes::addKernel(const double height, const std::vector<cvm::real
             bool found_giver = false;
             for (size_t nk = 0; nk < m_nlist_index.size(); ++nk) {
               if (found_giver) m_nlist_index[nk]--;
-              if (m_nlist_index[nk] == giver_nk) {
+              if (m_nlist_index[nk] == giver_k) {
                 giver_nk = nk;
                 found_giver = true;
               }
