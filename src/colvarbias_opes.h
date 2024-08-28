@@ -32,7 +32,7 @@ public:
   std::istream &read_state_data(std::istream &is) override;
   cvm::memory_stream &write_state_data(cvm::memory_stream &os) override;
   cvm::memory_stream &read_state_data(cvm::memory_stream &is) override;
-  template <typename OST> OST &write_state_data_template_(OST &os);
+  template <typename OST> OST &write_state_data_template_(OST &os) const;
   template <typename IST> IST &read_state_data_template_(IST &os);
   std::string const traj_file_name(const std::string& suffix) const;
   virtual int write_output_files() override;
@@ -40,7 +40,7 @@ private:
   int update_opes();
   int calculate_opes();
   void save_state();
-  cvm::real getProbAndDerivatives(const std::vector<cvm::real>& cv, std::vector<cvm::real>& der_prob, std::vector<cvm::real>& dist) const;
+  cvm::real getProbAndDerivatives(const std::vector<cvm::real>& cv, std::vector<cvm::real>& der_prob) const;
   cvm::real evaluateKernel(const kernel& G, const std::vector<cvm::real>& x) const;
   cvm::real evaluateKernel(const kernel& G, const std::vector<cvm::real>& x, std::vector<cvm::real>& accumulated_derivative, std::vector<cvm::real>& dist) const;
   void addKernel(const double height, const std::vector<cvm::real>& center, const std::vector<cvm::real>& sigma, const double logweight);
