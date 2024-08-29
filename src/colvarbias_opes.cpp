@@ -70,6 +70,7 @@ int colvarbias_opes::init(const std::string& conf) {
     m_bias_prefactor = 1 - 1.0 / m_biasfactor;
   }
   get_keyval(conf, "adaptive_sigma", m_adaptive_sigma, false);
+  m_sigma0.resize(num_variables());
   get_keyval(conf, "sigma", m_sigma0, std::vector<cvm::real>(num_variables()));
   if (m_adaptive_sigma) {
     get_keyval(conf, "adaptive_sigma_stride", m_adaptive_sigma_stride, 0);
