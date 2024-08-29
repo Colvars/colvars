@@ -4,11 +4,13 @@
 #include "colvarbias.h"
 
 #include <vector>
+#include <memory>
 
-// OPES_METAD implementation: swiped from OPESmetad.cpp from PLUMED
+// OPES_METAD implementation: swiped from OPESmetad.cpp of PLUMED
 // NOTE: The "explore" mode is not implemented
 class colvarbias_opes: public colvarbias {
 public:
+  /// The Gaussian kernel data structure
   struct kernel {
     cvm::real m_height;
     std::vector<cvm::real> m_center;
@@ -25,17 +27,22 @@ public:
     /// Hills added concurrently by several replicas
     multiple_replicas
   };
+  /// Constructor
   colvarbias_opes(char const *key);
-  virtual int init(std::string const &conf) override;
-  virtual int update() override;
+  /// Initializer
+  int init(std::string const &conf) override;
+  /// Per-timestep update
+  int update() override;
+  /// Save the state to a text file for restarting
   std::ostream &write_state_data(std::ostream &os) override;
+  /// Read the state from a text file for restarting
   std::istream &read_state_data(std::istream &is) override;
+  /// Save the state to a binary file for restarting
   cvm::memory_stream &write_state_data(cvm::memory_stream &os) override;
+  /// Read the state from a binary file for restarting
   cvm::memory_stream &read_state_data(cvm::memory_stream &is) override;
-  template <typename OST> OST &write_state_data_template_(OST &os) const;
-  template <typename IST> IST &read_state_data_template_(IST &os);
-  std::string const traj_file_name(const std::string& suffix) const;
-  virtual int write_output_files() override;
+  /// Write to files at restart steps
+  int write_output_files() override;
 private:
   int update_opes();
   int calculate_opes();
@@ -59,7 +66,14 @@ private:
   };
   void writeTrajBuffer();
   void showInfo() const;
+  template <typename OST> OST &write_state_data_template_(OST &os) const;
+  template <typename IST> IST &read_state_data_template_(IST &os);
+  std::string const traj_file_name(const std::string& suffix) const;
+  void collectSampleToPMFGrid();
+  void computePMF();
+  int writePMF(const std::string &filename, bool keep_open);
 private:
+  cvm::real m_kbt;
   cvm::real m_barrier;
   cvm::real m_biasfactor;
   cvm::real m_bias_prefactor;
@@ -125,6 +139,12 @@ private:
   decltype(m_sum_weights) m_saved_sum_weights;
   decltype(m_sum_weights2) m_saved_sum_weights2;
   decltype(m_kernels) m_saved_kernels;
+  // PMF grid from reweighting
+  bool m_pmf_grid_on;
+  std::vector<colvar*> m_pmf_cvs;
+  std::unique_ptr<colvar_grid_scalar> m_reweight_grid;
+  std::unique_ptr<colvar_grid_scalar> m_pmf_grid;
+  cvm::step_number m_pmf_hist_freq;
 };
 
 #endif // COLVARBIAS_OPES_H
