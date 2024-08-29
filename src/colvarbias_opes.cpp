@@ -598,7 +598,7 @@ int colvarbias_opes::update_opes() {
         }
         if (m_sigma_min.size() == 0) {
           for (size_t i = 0; i < num_variables(); ++i) {
-            if (m_sigma0[i] > 1e-6) {
+            if (m_sigma0[i] < 1e-6) {
               cvm::error("Adaptive sigma is suspiciously small for CV " + cvm::to_str(i) + "\nManually provide sigma or set a safe sigma_min to avoid possible issues\n");
               return COLVARS_ERROR;
             }
