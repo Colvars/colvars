@@ -3,6 +3,7 @@
 #include "colvardeps.h"
 #include "colvarproxy.h"
 #include "colvars_memstream.h"
+#include "colvargrid.h"
 
 #include <exception>
 #include <iomanip>
@@ -14,7 +15,7 @@
 #include <limits>
 
 colvarbias_opes::colvarbias_opes(char const *key):
-  colvarbias(key), m_barrier(0), m_biasfactor(0),
+  colvarbias(key), m_kbt(0), m_barrier(0), m_biasfactor(0),
   m_bias_prefactor(0), m_temperature(0),
   m_pace(0), m_adaptive_sigma_stride(0),
   m_adaptive_counter(0), m_counter(1),
@@ -29,7 +30,9 @@ colvarbias_opes::colvarbias_opes(char const *key):
   m_nlist_pace_reset(false), m_nker(0), m_calc_work(false),
   m_work(0), comm(single_replica), m_num_walkers(1),
   m_num_threads(1), m_nlker(0), m_traj_output_frequency(0),
-  m_traj_line(traj_line{0}), m_is_first_step(true)
+  m_traj_line(traj_line{0}), m_is_first_step(true),
+  m_pmf_grid_on(false), m_reweight_grid(nullptr),
+  m_pmf_grid(nullptr), m_pmf_hist_freq(0)
 {
 }
 
@@ -38,6 +41,7 @@ int colvarbias_opes::init(const std::string& conf) {
   enable(f_cvb_scalar_variables);
   enable(f_cvb_apply_force);
   m_temperature = cvm::proxy->target_temperature();
+  m_kbt = m_temperature * cvm::proxy->boltzmann();
   get_keyval(conf, "pace", m_pace);
   get_keyval(conf, "barrier", m_barrier);
   if (m_barrier < 0) {
@@ -48,8 +52,7 @@ int colvarbias_opes::init(const std::string& conf) {
   if ((cvm::proxy->target_temperature() == 0.0) && cvm::proxy->simulation_running()) {
     cvm::log("WARNING: OPES should not be run without a thermostat or at 0 Kelvin!\n");
   }
-  const cvm::real kbt = m_temperature * cvm::proxy->boltzmann();
-  m_biasfactor = m_barrier / kbt;
+  m_biasfactor = m_barrier / m_kbt;
   if (biasfactor_str == "inf" || biasfactor_str == "INF") {
     m_biasfactor = std::numeric_limits<cvm::real>::infinity();
     m_bias_prefactor = -1;
@@ -99,13 +102,13 @@ int colvarbias_opes::init(const std::string& conf) {
       }
     }
   }
-  get_keyval(conf, "epsilon", m_epsilon, std::exp(-m_barrier/m_bias_prefactor/kbt));
+  get_keyval(conf, "epsilon", m_epsilon, std::exp(-m_barrier/m_bias_prefactor/m_kbt));
   if (m_epsilon <= 0) {
     return cvm::error("you must choose a value of epsilon greater than zero");
   }
   m_sum_weights = std::pow(m_epsilon, m_bias_prefactor);
   m_sum_weights2 = m_sum_weights * m_sum_weights;
-  get_keyval(conf, "kernel_cutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_bias_prefactor/kbt));
+  get_keyval(conf, "kernel_cutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_bias_prefactor/m_kbt));
   if (m_cutoff <= 0) {
     return cvm::error("you must choose a value of kernel_cutoff greater than zero");
   }
@@ -199,10 +202,34 @@ int colvarbias_opes::init(const std::string& conf) {
     }
     m_num_walkers = proxy->num_replicas();
   }
+  get_keyval(conf, "pmf", m_pmf_grid_on, false);
+  if (m_pmf_grid_on) {
+    std::vector<std::string> pmf_cv_name;
+    get_keyval(conf, "pmf_colvars", pmf_cv_name);
+    for (auto it = pmf_cv_name.begin(); it != pmf_cv_name.end(); ++it) {
+      bool found = false;
+      for (size_t i = 0; i < num_variables(); ++i) {
+        if (variables(i)->name == (*it)) {
+          if (variables(i)->enable(f_cv_grid) != COLVARS_OK) {
+            return cvm::error("CV " + (*it) + " does not support grid\n");
+          }
+          m_pmf_cvs.push_back(variables(i));
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return cvm::error("CV " + (*it) + " not found\n");
+      }
+    }
+    m_reweight_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
+    m_pmf_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
+    get_keyval(conf, "pmf_hist_freq", m_pmf_hist_freq, 0);
+  }
   // TODO: explore mode
   m_kdenorm = m_sum_weights;
   m_old_kdenorm = m_kdenorm;
-  m_traj_line.rct = kbt * cvm::logn(m_sum_weights / m_counter);
+  m_traj_line.rct = m_kbt * cvm::logn(m_sum_weights / m_counter);
   m_traj_line.zed = m_zed;
   m_traj_line.neff = (1 + m_sum_weights) * (1 + m_sum_weights) / (1 + m_sum_weights2);
   m_traj_line.nker = m_kernels.size();
@@ -213,13 +240,12 @@ int colvarbias_opes::init(const std::string& conf) {
 }
 
 void colvarbias_opes::showInfo() const {
-  const cvm::real kbt = m_temperature * cvm::proxy->boltzmann();
   // Print information about this bias
   auto printInfo = [&](const std::string& info, const std::string& val){
     cvm::log(this->name + ": " + info + val + "\n");
   };
   printInfo("temperature = ", cvm::to_str(m_biasfactor));
-  printInfo("beta = ", cvm::to_str(1.0 / kbt));
+  printInfo("beta = ", cvm::to_str(1.0 / m_kbt));
   printInfo("depositing new kernels with pace = ", cvm::to_str(m_pace));
   printInfo("expected barrier is ", cvm::to_str(m_barrier));
   printInfo("using target distribution with biasfactor (gamma) = ", cvm::to_str(m_biasfactor));
@@ -432,7 +458,6 @@ cvm::real colvarbias_opes::getProbAndDerivatives(
 }
 
 int colvarbias_opes::calculate_opes() {
-  const cvm::real kbt = cvm::proxy->target_temperature() * cvm::proxy->boltzmann();
   if (m_nlist) {
     ++m_nlist_steps;
     const bool exchange_step =
@@ -455,16 +480,15 @@ int colvarbias_opes::calculate_opes() {
   }
   std::vector<cvm::real> der_prob(num_variables(), 0);
   const cvm::real prob = getProbAndDerivatives(m_cv, der_prob);
-  const cvm::real bias = kbt * m_bias_prefactor * cvm::logn(prob / m_zed + m_epsilon);
+  const cvm::real bias = m_kbt * m_bias_prefactor * cvm::logn(prob / m_zed + m_epsilon);
   bias_energy = bias;
   for (size_t i = 0; i < num_variables(); ++i) {
-    colvar_forces[i] = -kbt * m_bias_prefactor / (prob / m_zed + m_epsilon) * der_prob[i] / m_zed;
+    colvar_forces[i] = -m_kbt * m_bias_prefactor / (prob / m_zed + m_epsilon) * der_prob[i] / m_zed;
   }
   return COLVARS_OK;
 }
 
 int colvarbias_opes::update_opes() {
-  const cvm::real kbt = cvm::proxy->target_temperature() * cvm::proxy->boltzmann();
   if (m_adaptive_sigma) {
     m_adaptive_counter++;
     cvm::step_number tau = m_adaptive_sigma_stride;
@@ -484,7 +508,7 @@ int colvarbias_opes::update_opes() {
     m_delta_kernels.clear();
     const size_t old_nker = m_kernels.size();
     // TODO: how could I account for extra biases in Colvars?
-    const cvm::real log_weight = bias_energy / kbt;
+    const cvm::real log_weight = bias_energy / m_kbt;
     cvm::real height = cvm::exp(log_weight);
     cvm::real sum_heights = height;
     cvm::real sum_heights2 = height * height;
@@ -554,7 +578,7 @@ int colvarbias_opes::update_opes() {
     m_sum_weights += sum_heights;
     m_sum_weights2 += sum_heights2;
     m_neff = (1 + m_sum_weights) * (1 + m_sum_weights) / (1 + m_sum_weights2);
-    m_rct = kbt * cvm::logn(m_sum_weights / m_counter);
+    m_rct = m_kbt * cvm::logn(m_sum_weights / m_counter);
     m_traj_line.neff = m_neff;
     m_traj_line.rct = m_rct;
     // TODO: exploration mode
@@ -1047,7 +1071,7 @@ int colvarbias_opes::update_opes() {
     if (m_calc_work) {
       std::vector<cvm::real> dummy(num_variables());
       const cvm::real prob = getProbAndDerivatives(m_cv, dummy);
-      const cvm::real new_bias = kbt * m_bias_prefactor * cvm::logn(prob / m_zed + m_epsilon);
+      const cvm::real new_bias = m_kbt * m_bias_prefactor * cvm::logn(prob / m_zed + m_epsilon);
       m_work += new_bias - bias_energy;
       m_traj_line.work = m_work;
     }
@@ -1081,13 +1105,27 @@ int colvarbias_opes::update() {
     //       the PRINT here. Even if OPESmetad::update() is skipped we should
     //       still call Print::update()
     writeTrajBuffer();
+    if (m_pmf_grid_on) collectSampleToPMFGrid();
     m_is_first_step = false;
     return COLVARS_OK;
   }
   error_code |= update_opes();
   if (error_code != COLVARS_OK) return error_code;
   writeTrajBuffer(); // Print::update()
+  if (m_pmf_grid_on) collectSampleToPMFGrid();
   return error_code;
+}
+
+void colvarbias_opes::collectSampleToPMFGrid() {
+  if (m_reweight_grid) {
+    // Get the bin index
+    std::vector<int> bin(num_variables(), 0);
+    for (size_t i = 0; i < num_variables(); i++) {
+      bin[i] = m_reweight_grid->current_bin_scalar(i);
+    }
+    const cvm::real reweighting_factor = cvm::exp(bias_energy / m_kbt);
+    m_reweight_grid->acc_value(bin, reweighting_factor);
+  }
 }
 
 template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os) const {
@@ -1272,6 +1310,10 @@ template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os
   }
   if (formatted) os << "}\n";
   if (formatted) os.setf(f);
+  if (m_pmf_grid_on) {
+    write_state_data_key(os, "probability_grid");
+    m_reweight_grid->write_raw(os, 8);
+  }
   return os;
 }
 
@@ -1394,9 +1436,12 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
     consume("}");
   }
   consume("}");
+  if (m_pmf_grid_on) {
+    read_state_data_key(is, "probability_grid");
+    m_reweight_grid->read_raw(is);
+  }
   m_kdenorm = m_sum_weights;
-  const cvm::real kbt = cvm::proxy->target_temperature() * cvm::proxy->boltzmann();
-  m_traj_line.rct = kbt * cvm::logn(m_sum_weights / m_counter);
+  m_traj_line.rct = m_kbt * cvm::logn(m_sum_weights / m_counter);
   m_traj_line.zed = m_zed;
   m_traj_line.neff = (1 + m_sum_weights) * (1 + m_sum_weights) / (1 + m_sum_weights2);
   m_traj_line.nker = m_kernels.size();
@@ -1756,6 +1801,55 @@ int colvarbias_opes::write_output_files() {
     m_traj_oss.str("");
     m_traj_oss.clear();
     if (firsttime) firsttime = false;
+    if (m_pmf_grid_on) {
+      computePMF();
+      const std::string pmf_filename = traj_file_name(".pmf");
+      writePMF(pmf_filename, false);
+      if (m_pmf_hist_freq > 0 && cvm::step_absolute() % m_pmf_hist_freq == 0) {
+        const std::string pmf_hist_filename = traj_file_name(".hist.pmf");
+        writePMF(pmf_hist_filename, true);
+      }
+    }
+  }
+  return COLVARS_OK;
+}
+
+void colvarbias_opes::computePMF() {
+  // Get the sum of probabilities of all grids
+  cvm::real norm_factor = 0;
+  cvm::real max_prob = 0;
+  auto& prob_data = m_reweight_grid->data;
+  for (auto it = prob_data.begin(); it != prob_data.end(); ++it) {
+    norm_factor += (*it);
+    if ((*it) > max_prob) max_prob = (*it);
+  }
+  if (norm_factor > 0) {
+    const cvm::real min_pmf = (max_prob > 0) ? -1.0 * m_kbt * cvm::logn(max_prob / norm_factor) : 0;
+    auto& pmf_data = m_pmf_grid->data;
+    for (size_t i = 0; i < pmf_data.size(); ++i) {
+      if (prob_data[i] > 0) {
+        pmf_data[i] = -1.0 * m_kbt * cvm::logn(prob_data[i] / norm_factor) - min_pmf;
+      }
+    }
+    auto max_pmf = *std::max_element(pmf_data.begin(), pmf_data.end());
+    for (size_t i = 0; i < pmf_data.size(); ++i) {
+      if (!(prob_data[i] > 0)) {
+        pmf_data[i] = max_pmf;
+      }
+    }
+  }
+}
+
+int colvarbias_opes::writePMF(const std::string &filename, bool keep_open) {
+  std::ostream& os = cvm::proxy->output_stream(filename, "output stream of " + filename);
+  if (!os) {
+    return COLVARS_FILE_ERROR;
+  }
+  m_pmf_grid->write_multicol(os);
+  if (!keep_open) {
+    cvm::proxy->close_output_stream(filename);
+  } else {
+    cvm::proxy->flush_output_stream(filename);
   }
   return COLVARS_OK;
 }
