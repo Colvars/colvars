@@ -39,7 +39,7 @@ colvarbias_opes::colvarbias_opes(char const *key):
 int colvarbias_opes::init(const std::string& conf) {
   int error_code = colvarbias::init(conf);
   enable(f_cvb_scalar_variables);
-  enable(f_cvb_apply_force);
+  get_keyval_feature(this, conf, "applyBias", f_cvb_apply_force, true);
   m_temperature = cvm::proxy->target_temperature();
   m_kbt = m_temperature * cvm::proxy->boltzmann();
   get_keyval(conf, "pace", m_pace);
@@ -72,6 +72,8 @@ int colvarbias_opes::init(const std::string& conf) {
   get_keyval(conf, "adaptive_sigma", m_adaptive_sigma, false);
   m_sigma0.resize(num_variables());
   get_keyval(conf, "sigma", m_sigma0, std::vector<cvm::real>(num_variables()));
+  m_av_cv.assign(num_variables(), 0);
+  m_av_M2.assign(num_variables(), 0);
   if (m_adaptive_sigma) {
     get_keyval(conf, "adaptive_sigma_stride", m_adaptive_sigma_stride, 0);
     if (std::isinf(m_biasfactor)) {
@@ -81,8 +83,6 @@ int colvarbias_opes::init(const std::string& conf) {
     if (m_adaptive_sigma_stride == 0) {
       m_adaptive_sigma_stride = m_pace * 10;
     }
-    m_av_cv.assign(num_variables(), 0);
-    m_av_M2.assign(num_variables(), 0);
     if (m_adaptive_sigma_stride < m_pace) {
       return cvm::error("It is better to choose an adaptive_sigma_stride >= pace.\n", COLVARS_INPUT_ERROR);
     }
@@ -483,8 +483,10 @@ int colvarbias_opes::calculate_opes() {
   const cvm::real prob = getProbAndDerivatives(m_cv, der_prob);
   const cvm::real bias = m_kbt * m_bias_prefactor * cvm::logn(prob / m_zed + m_epsilon);
   bias_energy = bias;
-  for (size_t i = 0; i < num_variables(); ++i) {
-    colvar_forces[i] = -m_kbt * m_bias_prefactor / (prob / m_zed + m_epsilon) * der_prob[i] / m_zed;
+  if (is_enabled(f_cvb_apply_force)) {
+    for (size_t i = 0; i < num_variables(); ++i) {
+      colvar_forces[i] = -m_kbt * m_bias_prefactor / (prob / m_zed + m_epsilon) * der_prob[i] / m_zed;
+    }
   }
   return COLVARS_OK;
 }
