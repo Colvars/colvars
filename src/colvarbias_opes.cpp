@@ -1144,7 +1144,7 @@ int colvarbias_opes::collectSampleToPMFGrid() {
     if (comm == multiple_replicas) {
       if (cvm::step_absolute() % shared_freq == 0) {
         const size_t samples_n = m_reweight_grid->raw_data_num();
-        const size_t msg_size = samples_n * sizeof(cvm::real);
+        const int msg_size = samples_n * sizeof(cvm::real);
         if (cvm::main()->proxy->replica_index() == 0) {
           std::vector<cvm::real> buffer(samples_n * (cvm::proxy->num_replicas() - 1));
           for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
@@ -1275,7 +1275,6 @@ cvm::memory_stream& colvarbias_opes::write_state_data(cvm::memory_stream& os) {
 
 template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is) {
   bool const formatted = !std::is_same<IST, cvm::memory_stream>::value;
-  const int num_walkers = m_num_walkers;
   std::string tmp_name;
   is >> tmp_name;
   if (tmp_name.rfind("opes_metad_", 0) != 0) {
