@@ -90,7 +90,7 @@ private:
   template <typename OST> OST &write_state_data_template_(OST &os) const;
   template <typename IST> IST &read_state_data_template_(IST &os);
   std::string const traj_file_name(const std::string& suffix) const;
-  void collectSampleToPMFGrid();
+  int collectSampleToPMFGrid();
   void computePMF();
   int writePMF(const std::string &filename, bool keep_open);
 private:
