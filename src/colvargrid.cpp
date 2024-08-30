@@ -24,15 +24,9 @@ colvar_grid_count::colvar_grid_count()
   mult = 1;
 }
 
-colvar_grid_count::colvar_grid_count(std::vector<int> const &nx_i,
-                                     size_t const &def_count)
-  : colvar_grid<size_t>(nx_i, def_count, 1)
-{}
-
 colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
-                                     size_t const &def_count,
-                                     bool margin)
-  : colvar_grid<size_t>(colvars, def_count, 1, margin)
+                                     std::string config)
+  : colvar_grid<size_t>(colvars, 0, 1, false, config)
 {}
 
 std::string colvar_grid_count::get_state_params() const
@@ -132,13 +126,10 @@ colvar_grid_scalar::colvar_grid_scalar(colvar_grid_scalar const &g)
 {
 }
 
-colvar_grid_scalar::colvar_grid_scalar(std::vector<int> const &nx_i)
-  : colvar_grid<cvm::real>(nx_i, 0.0, 1), samples(NULL)
-{
-}
-
-colvar_grid_scalar::colvar_grid_scalar(std::vector<colvar *> &colvars, bool margin)
-  : colvar_grid<cvm::real>(colvars, 0.0, 1, margin), samples(NULL)
+colvar_grid_scalar::colvar_grid_scalar(std::vector<colvar *> &colvars,
+                                       std::string config,
+                                       bool add_extra_bin)
+  : colvar_grid<cvm::real>(colvars, 0.0, 1, add_extra_bin, config), samples(NULL)
 {
 }
 
@@ -334,18 +325,15 @@ colvar_grid_gradient::colvar_grid_gradient()
 {}
 
 
-colvar_grid_gradient::colvar_grid_gradient(std::vector<int> const &nx_i)
-  : colvar_grid<cvm::real>(nx_i, 0.0, nx_i.size()), samples(NULL), full_samples(0), min_samples(0)
+colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars, std::string config)
+  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, config), samples(NULL), full_samples(0), min_samples(0)
 {}
 
 
-colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars)
-  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size()), samples(NULL), full_samples(0), min_samples(0)
-{}
-
-
-colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars, std::shared_ptr<colvar_grid_count> samples_in)
-  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size()), samples(samples_in), full_samples(0), min_samples(0)
+colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars,
+                                           std::shared_ptr<colvar_grid_count> samples_in,
+                                           std::string config)
+  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, config), samples(samples_in), full_samples(0), min_samples(0)
 {
   samples_in->has_parent_data = true;
 }
@@ -586,12 +574,14 @@ cvm::real colvar_grid_gradient::grid_rmsd(colvar_grid_gradient const &other_grid
 }
 
 
-integrate_potential::integrate_potential(std::vector<colvar *> &colvars, std::shared_ptr<colvar_grid_gradient> gradients)
-  : colvar_grid_scalar(colvars, true),
+integrate_potential::integrate_potential(std::vector<colvar *> &colvars,
+                                         std::shared_ptr<colvar_grid_gradient> gradients,
+                                         std::string config)
+  : colvar_grid_scalar(colvars, config, true),
     b_smoothed(false),
     gradients(gradients)
 {
-  // parent class colvar_grid_scalar is constructed with margin option set to true
+  // parent class colvar_grid_scalar is constructed with add_extra_bin option set to true
   // hence PMF grid is wider than gradient grid if non-PBC
 
   if (nd > 1) {
