@@ -1,6 +1,6 @@
 histogram {
     colvars    one
-    histogramGrid {
+    gridParameters {
         widths 5
         lowerBoundaries -60
         upperBoundaries 300
