@@ -91,7 +91,7 @@ private:
   template <typename IST> IST &read_state_data_template_(IST &os);
   std::string const traj_file_name(const std::string& suffix) const;
   int collectSampleToPMFGrid();
-  void computePMF();
+  int computePMF();
   int writePMF(const std::string &filename, bool keep_open);
 private:
   cvm::real m_kbt;
