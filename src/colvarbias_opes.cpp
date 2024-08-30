@@ -1,3 +1,24 @@
+// This code is mainly adapted from the PLUMED opes module, which uses the
+// LGPLv3 license as shown below:
+/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   Copyright (c) 2020-2021 of Michele Invernizzi.
+
+   This file is part of the OPES plumed module.
+
+   The OPES plumed module is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   The OPES plumed module is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public License
+   along with plumed.  If not, see <http://www.gnu.org/licenses/>.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
 #include "colvarbias_opes.h"
 #include "colvarbias.h"
 #include "colvardeps.h"
@@ -161,11 +182,6 @@ int colvarbias_opes::init(const std::string& conf) {
   get_keyval(conf, "calc_work", m_calc_work, false);
   bool b_replicas = false;
   get_keyval(conf, "multipleReplicas", b_replicas, false);
-#ifndef OPES_REPLICA
-  if (b_replicas) {
-    return cvm::error("Multiple-walker OPES is not supported.\n");
-  }
-#endif
   if (!cvm::proxy->b_smp_active) m_num_threads = 1;
   else m_num_threads = cvm::proxy->smp_num_threads();
 #ifdef OPES_THREADING
@@ -187,9 +203,6 @@ int colvarbias_opes::init(const std::string& conf) {
     colvarproxy *proxy = cvm::main()->proxy;
     get_keyval(conf, "replicaID", replica_id, replica_id);
     get_keyval(conf, "sharedFreq", shared_freq, output_freq);
-    if ( shared_freq && output_freq % shared_freq ) {
-      return cvm::error("Error: outputFreq must be a multiple of sharedFreq.\n");
-    }
     if (!replica_id.size()) {
       if (proxy->replica_enabled() == COLVARS_OK) {
         // Obtain replicaID from the communicator
@@ -1139,117 +1152,6 @@ template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os
     os.setf(std::ios::scientific, std::ios::floatfield);
   }
   write_state_data_key(os, "opes_metad_" + this->name);
-  std::vector<cvm::real> all_sigma0;
-  std::vector<cvm::real> all_av_cv;
-  std::vector<cvm::real> all_av_M2;
-  if (m_adaptive_sigma && m_num_walkers > 1) {
-    all_sigma0.resize(m_num_walkers * num_variables());
-    all_av_cv.resize(m_num_walkers * num_variables());
-    all_av_M2.resize(m_num_walkers * num_variables());
-    const int my_replica = cvm::proxy->replica_index();
-
-    // Allgather of m_sigma0
-    if (my_replica == 0) {
-      std::copy(m_sigma0.begin(), m_sigma0.end(), all_sigma0.begin());
-      const int recv_size = sizeof(decltype(m_sigma0)::value_type) * m_sigma0.size();
-      for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
-        void* recv_start_ptr = all_sigma0.data() + p * recv_size;
-        if (cvm::proxy->replica_comm_recv((char*)recv_start_ptr, recv_size, p) != recv_size) {
-          throw std::runtime_error("Error on receiving m_sigma0 from " + cvm::to_str(p));
-        }
-      }
-    } else {
-      const int send_size = sizeof(decltype(m_sigma0)::value_type) * m_sigma0.size();
-      if (cvm::proxy->replica_comm_send((char*)m_sigma0.data(), send_size, 0) != send_size) {
-        throw std::runtime_error("Error on sending m_sigma0 on replica " + cvm::to_str(my_replica));
-      }
-    }
-    cvm::proxy->replica_comm_barrier();
-
-    // Broadcast of all_sigma0
-    if (my_replica == 0) {
-      const int send_size = sizeof(decltype(all_sigma0)::value_type) * all_sigma0.size();
-      for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
-        if (cvm::proxy->replica_comm_send((char*)all_sigma0.data(), send_size, p) != send_size) {
-          throw std::runtime_error("Error on sending all_sigma0 from replica 0 to replica " + cvm::to_str(p));
-        }
-      }
-    } else {
-      const int recv_size = sizeof(decltype(all_sigma0)::value_type) * all_sigma0.size();
-      if (cvm::proxy->replica_comm_recv((char*)all_sigma0.data(), recv_size, 0) != recv_size) {
-        throw std::runtime_error("Error on receiving all_sigma0 on replica " + cvm::to_str(my_replica));
-      }
-    }
-    cvm::proxy->replica_comm_barrier();
-
-    // Allgather of m_av_cv
-    if (my_replica == 0) {
-      std::copy(m_av_cv.begin(), m_av_cv.end(), all_av_cv.begin());
-      const int recv_size = sizeof(decltype(m_av_cv)::value_type) * m_av_cv.size();
-      for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
-        void* recv_start_ptr = all_av_cv.data() + p * recv_size;
-        if (cvm::proxy->replica_comm_recv((char*)recv_start_ptr, recv_size, p) != recv_size) {
-          throw std::runtime_error("Error on receiving m_av_cv from " + cvm::to_str(p));
-        }
-      }
-    } else {
-      const int send_size = sizeof(decltype(m_av_cv)::value_type) * m_av_cv.size();
-      if (cvm::proxy->replica_comm_send((char*)m_av_cv.data(), send_size, 0) != send_size) {
-        throw std::runtime_error("Error on sending m_av_cv on replica " + cvm::to_str(my_replica));
-      }
-    }
-    cvm::proxy->replica_comm_barrier();
-
-    // Broadcast of all_av_cv
-    if (my_replica == 0) {
-      const int send_size = sizeof(decltype(all_av_cv)::value_type) * all_av_cv.size();
-      for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
-        if (cvm::proxy->replica_comm_send((char*)all_av_cv.data(), send_size, p) != send_size) {
-          throw std::runtime_error("Error on sending all_av_cv from replica 0 to replica " + cvm::to_str(p));
-        }
-      }
-    } else {
-      const int recv_size = sizeof(decltype(all_av_cv)::value_type) * all_av_cv.size();
-      if (cvm::proxy->replica_comm_recv((char*)all_av_cv.data(), recv_size, 0) != recv_size) {
-        throw std::runtime_error("Error on receiving all_av_cv on replica " + cvm::to_str(my_replica));
-      }
-    }
-    cvm::proxy->replica_comm_barrier();
-
-    // Allgather of m_av_M2
-    if (my_replica == 0) {
-      std::copy(m_av_M2.begin(), m_av_M2.end(), all_av_M2.begin());
-      const int recv_size = sizeof(decltype(m_av_M2)::value_type) * m_av_M2.size();
-      for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
-        void* recv_start_ptr = all_av_M2.data() + p * recv_size;
-        if (cvm::proxy->replica_comm_recv((char*)recv_start_ptr, recv_size, p) != recv_size) {
-          throw std::runtime_error("Error on receiving m_av_M2 from " + cvm::to_str(p));
-        }
-      }
-    } else {
-      const int send_size = sizeof(decltype(m_av_M2)::value_type) * m_av_M2.size();
-      if (cvm::proxy->replica_comm_send((char*)m_av_M2.data(), send_size, 0) != send_size) {
-        throw std::runtime_error("Error on sending m_av_M2 on replica " + cvm::to_str(my_replica));
-      }
-    }
-    cvm::proxy->replica_comm_barrier();
-
-    // Broadcast of all_av_M2
-    if (my_replica == 0) {
-      const int send_size = sizeof(decltype(all_av_M2)::value_type) * all_av_M2.size();
-      for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
-        if (cvm::proxy->replica_comm_send((char*)all_av_M2.data(), send_size, p) != send_size) {
-          throw std::runtime_error("Error on sending all_av_M2 from replica 0 to replica " + cvm::to_str(p));
-        }
-      }
-    } else {
-      const int recv_size = sizeof(decltype(all_av_M2)::value_type) * all_av_M2.size();
-      if (cvm::proxy->replica_comm_recv((char*)all_av_M2.data(), recv_size, 0) != recv_size) {
-        throw std::runtime_error("Error on receiving all_av_M2 on replica " + cvm::to_str(my_replica));
-      }
-    }
-    cvm::proxy->replica_comm_barrier();
-  }
   auto printFieldReal = [&](const std::string& s, cvm::real x){
     write_state_data_key(os, s, false);
     if (formatted)
@@ -1276,21 +1178,10 @@ template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os
   printFieldULL("counter", m_counter);
   if (m_adaptive_sigma) {
     printFieldULL("adaptive_counter", m_adaptive_counter);
-    if (m_num_walkers == 1) {
-      for (size_t i = 0; i < num_variables(); ++i) {
-        printFieldReal("sigma0_" + variables(i)->name, m_sigma0[i]);
-        printFieldReal("av_cv_" + variables(i)->name, m_av_cv[i]);
-        printFieldReal("av_M2_" + variables(i)->name, m_av_M2[i]);
-      }
-    } else {
-      for (size_t w = 0; w < m_num_walkers; ++w) {
-        for (size_t i = 0; i < num_variables(); ++i) {
-          const std::string arg_iw = variables(i)->name + "_" + cvm::to_str(w);
-          printFieldReal("sigma0_" + arg_iw, all_sigma0[w*num_variables()+i]);
-          printFieldReal("av_cv_" + arg_iw, all_av_cv[w*num_variables()+i]);
-          printFieldReal("av_M2_" + arg_iw, all_av_M2[w*num_variables()+i]);
-        }
-      }
+    for (size_t i = 0; i < num_variables(); ++i) {
+      printFieldReal("sigma0_" + variables(i)->name, m_sigma0[i]);
+      printFieldReal("av_cv_" + variables(i)->name, m_av_cv[i]);
+      printFieldReal("av_M2_" + variables(i)->name, m_av_M2[i]);
     }
   }
   printFieldULL("num_hills", m_saved_kernels.size());
@@ -1381,27 +1272,10 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
   if (m_adaptive_sigma) {
     readFieldULL("adaptive_counter", tmp_counter);
     m_adaptive_counter = tmp_counter;
-    if (num_walkers == 1) {
-      for (size_t i = 0; i < num_variables(); ++i) {
-        readFieldReal("sigma0_" + variables(i)->name, m_sigma0[i]);
-        readFieldReal("av_cv_" + variables(i)->name, m_av_cv[i]);
-        readFieldReal("av_M2_" + variables(i)->name, m_av_M2[i]);
-      }
-    } else {
-      for (size_t w = 0; w < m_num_walkers; ++w) {
-        for (size_t i = 0; i < num_variables(); ++i) {
-          cvm::real tmp0, tmp1, tmp2;
-          const std::string arg_iw = variables(i)->name + "_" + cvm::to_str(w);
-          readFieldReal("sigma0_" + arg_iw, tmp0);
-          readFieldReal("av_cv_" + arg_iw, tmp1);
-          readFieldReal("av_M2_" + arg_iw, tmp2);
-          if (cvm::proxy->replica_index() == static_cast<int>(w)) {
-            m_sigma0[i] = tmp0;
-            m_av_cv[i] = tmp1;
-            m_av_M2[i] = tmp2;
-          }
-        }
-      }
+    for (size_t i = 0; i < num_variables(); ++i) {
+      readFieldReal("sigma0_" + variables(i)->name, m_sigma0[i]);
+      readFieldReal("av_cv_" + variables(i)->name, m_av_cv[i]);
+      readFieldReal("av_M2_" + variables(i)->name, m_av_M2[i]);
     }
   }
   unsigned long long kernel_size = 0;
