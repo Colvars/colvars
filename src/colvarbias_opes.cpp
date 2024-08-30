@@ -1140,48 +1140,6 @@ int colvarbias_opes::collectSampleToPMFGrid() {
     }
     const cvm::real reweighting_factor = cvm::exp(bias_energy / m_kbt);
     m_reweight_grid->acc_value(bin, reweighting_factor);
-    // Multiple replica: collect all samples from other replicas
-    if (comm == multiple_replicas) {
-      if (cvm::step_absolute() % shared_freq == 0) {
-        const size_t samples_n = m_reweight_grid->raw_data_num();
-        const int msg_size = samples_n * sizeof(cvm::real);
-        if (cvm::main()->proxy->replica_index() == 0) {
-          std::vector<cvm::real> buffer(samples_n * (cvm::proxy->num_replicas() - 1));
-          for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
-            const size_t start_pos = (p - 1) * msg_size;
-            if (cvm::proxy->replica_comm_recv((char*)&(buffer[start_pos]), msg_size, p) != msg_size) {
-              return cvm::error("Error getting shared OPES reweighting histogram from replica " + cvm::to_str(p));
-            }
-          }
-          // Sum the samples on PE 0
-          auto& data = m_reweight_grid->data;
-          for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
-            for (size_t i = 0 ; i < samples_n; ++i) {
-              data[i] += buffer[(p-1)*samples_n+i];
-            }
-          }
-        } else {
-          if (cvm::proxy->replica_comm_send((char*)(m_reweight_grid->data.data()), msg_size, 0) != msg_size) {
-            return cvm::error("Error sending shared OPES reweighting histogram from replica " + cvm::to_str(cvm::main()->proxy->replica_index()));
-          }
-        }
-        cvm::proxy->replica_comm_barrier();
-        // Broadcast m_reweight_grid to all replicas
-        auto& data = m_reweight_grid->data;
-        if (cvm::main()->proxy->replica_index() == 0) {
-          for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
-            if (cvm::proxy->replica_comm_send((char*)data.data(), msg_size, p) != msg_size) {
-              return cvm::error("Error sending shared OPES reweighting histogram to " + cvm::to_str(p));
-            }
-          }
-        } else {
-          if (cvm::proxy->replica_comm_recv((char*)data.data(), msg_size, 0) != msg_size) {
-            return cvm::error("Error getting shared OPES reweighting histogram from " + cvm::to_str(cvm::main()->proxy->replica_index()));
-          }
-        }
-        cvm::proxy->replica_comm_barrier();
-      }
-    }
   }
   return COLVARS_OK;
 }
@@ -1650,6 +1608,7 @@ std::string const colvarbias_opes::traj_file_name(const std::string& suffix) con
 }
 
 int colvarbias_opes::write_output_files() {
+  int error_code = COLVARS_OK;
   thread_local static bool firsttime = true;
   // Write the kernels
   const std::string kernels_filename = traj_file_name(".kernels.dat");
@@ -1680,7 +1639,7 @@ int colvarbias_opes::write_output_files() {
   }
   os_kernels << m_kernels_output.str();
   os_kernels.setf(format_kernels);
-  cvm::proxy->flush_output_stream(kernels_filename);
+  error_code |= cvm::proxy->flush_output_stream(kernels_filename);
   m_kernels_output.str("");
   m_kernels_output.clear();
 
@@ -1713,25 +1672,67 @@ int colvarbias_opes::write_output_files() {
   }
   os_traj << m_traj_oss.str();
   os_traj.setf(format_traj);
-  cvm::proxy->flush_output_stream(traj_filename);
+  error_code |= cvm::proxy->flush_output_stream(traj_filename);
   m_traj_oss.str("");
   m_traj_oss.clear();
   if (firsttime) firsttime = false;
   if (m_pmf_grid_on) {
-    computePMF();
+    error_code |= computePMF();
     const std::string pmf_filename = traj_file_name(".pmf");
-    writePMF(pmf_filename, false);
+    error_code |= writePMF(pmf_filename, false);
     if (m_pmf_hist_freq > 0 && cvm::step_absolute() % m_pmf_hist_freq == 0) {
       const std::string pmf_hist_filename = traj_file_name(".hist.pmf");
-      writePMF(pmf_hist_filename, true);
+      error_code |= writePMF(pmf_hist_filename, true);
     }
   }
   // To prevent the case that one replica exits earlier and then destroys all streams
   if (comm == multiple_replicas) cvm::proxy->replica_comm_barrier();
-  return COLVARS_OK;
+  return error_code;
 }
 
-void colvarbias_opes::computePMF() {
+int colvarbias_opes::computePMF() {
+  // Multiple replica: collect all samples from other replicas
+  if (comm == multiple_replicas) {
+    if (cvm::step_absolute() % shared_freq == 0) {
+      const size_t samples_n = m_reweight_grid->raw_data_num();
+      const int msg_size = samples_n * sizeof(cvm::real);
+      if (cvm::main()->proxy->replica_index() == 0) {
+        std::vector<cvm::real> buffer(samples_n * (cvm::proxy->num_replicas() - 1));
+        for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
+          const size_t start_pos = (p - 1) * msg_size;
+          if (cvm::proxy->replica_comm_recv((char*)&(buffer[start_pos]), msg_size, p) != msg_size) {
+            return cvm::error("Error getting shared OPES reweighting histogram from replica " + cvm::to_str(p));
+          }
+        }
+        // Sum the samples on PE 0
+        auto& data = m_reweight_grid->data;
+        for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
+          for (size_t i = 0 ; i < samples_n; ++i) {
+            data[i] += buffer[(p-1)*samples_n+i];
+          }
+        }
+      } else {
+        if (cvm::proxy->replica_comm_send((char*)(m_reweight_grid->data.data()), msg_size, 0) != msg_size) {
+          return cvm::error("Error sending shared OPES reweighting histogram from replica " + cvm::to_str(cvm::main()->proxy->replica_index()));
+        }
+      }
+      cvm::proxy->replica_comm_barrier();
+      // Broadcast m_reweight_grid to all replicas
+      auto& data = m_reweight_grid->data;
+      if (cvm::main()->proxy->replica_index() == 0) {
+        for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
+          if (cvm::proxy->replica_comm_send((char*)data.data(), msg_size, p) != msg_size) {
+            return cvm::error("Error sending shared OPES reweighting histogram to " + cvm::to_str(p));
+          }
+        }
+      } else {
+        if (cvm::proxy->replica_comm_recv((char*)data.data(), msg_size, 0) != msg_size) {
+          return cvm::error("Error getting shared OPES reweighting histogram from " + cvm::to_str(cvm::main()->proxy->replica_index()));
+        }
+      }
+      cvm::proxy->replica_comm_barrier();
+    }
+  }
   // Get the sum of probabilities of all grids
   cvm::real norm_factor = 0;
   cvm::real max_prob = 0;
@@ -1755,6 +1756,7 @@ void colvarbias_opes::computePMF() {
       }
     }
   }
+  return COLVARS_OK;
 }
 
 int colvarbias_opes::writePMF(const std::string &filename, bool keep_open) {
