@@ -188,8 +188,7 @@ int colvarbias_opes::init(const std::string& conf) {
   if (m_num_threads == -1) {
     return cvm::error("Multithreading in OPES is not supported.");
   }
-#endif
-#ifndef OPES_THREADING
+#else
   // if (m_num_threads > 1) {
   //   return cvm::error("Multithreading in OPES is not compiled.\n");
   // }
@@ -515,7 +514,7 @@ int colvarbias_opes::update_opes() {
       m_av_cv[i] += diff_i / tau;
       m_av_M2[i] += diff_i * 0.5 * variables(i)->dist2_lgrad(m_cv[i], m_av_cv[i]);
     }
-    if (m_adaptive_counter < m_adaptive_sigma_stride/* && restarting*/) {
+    if (m_adaptive_counter < m_adaptive_sigma_stride && m_counter == 1) {
       return COLVARS_OK;;
     }
   }
@@ -706,7 +705,7 @@ int colvarbias_opes::update_opes() {
         std::copy(m_cv.begin(), m_cv.end(), all_center.begin());
         const int recv_size = sizeof(decltype(m_cv)::value_type) * m_cv.size();
         for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
-          void* recv_start_ptr = all_center.data() + recv_size * p;
+          cvm::real* recv_start_ptr = &(all_center[p * m_cv.size()]);
           if (cvm::proxy->replica_comm_recv((char*)recv_start_ptr, recv_size, p) != recv_size) {
             return cvm::error("Error on receiving centers from replica 0 to replica " + cvm::to_str(p));
           }
@@ -739,8 +738,8 @@ int colvarbias_opes::update_opes() {
         std::copy(sigma.begin(), sigma.end(), all_sigma.begin());
         const int recv_size = sizeof(decltype(sigma)::value_type) * sigma.size();
         for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
-          void* recv_start = all_sigma.data() + recv_size * p;
-          if (cvm::proxy->replica_comm_recv((char*)recv_start, recv_size, p) != recv_size) {
+          cvm::real* recv_start_ptr = &(all_sigma[p * m_cv.size()]);
+          if (cvm::proxy->replica_comm_recv((char*)recv_start_ptr, recv_size, p) != recv_size) {
             return cvm::error("Error on receiving sigmas from replica 0 to replica " + cvm::to_str(p));
           }
         }
@@ -842,7 +841,7 @@ int colvarbias_opes::update_opes() {
             std::partial_sum(all_nlist_size.begin(), all_nlist_size.end() - 1, recv_start.begin() + 1);
             std::copy(m_nlist_index.begin(), m_nlist_index.end(), all_nlist_index.begin());
             for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
-              void* recv_start_ptr = all_nlist_index.data() + recv_start[p] * sizeof(decltype(all_nlist_index)::value_type);
+              size_t* recv_start_ptr = &(all_nlist_index[recv_start[p]]);
               const int recv_size = all_nlist_size[p] * sizeof(decltype(all_nlist_index)::value_type);
               if (cvm::proxy->replica_comm_recv((char*)recv_start_ptr, recv_size, p) != recv_size) {
                 return cvm::error("Error on receiving neighbor list from replica " + cvm::to_str(p));
@@ -1121,18 +1120,18 @@ int colvarbias_opes::update() {
     //       the PRINT here. Even if OPESmetad::update() is skipped we should
     //       still call Print::update()
     writeTrajBuffer();
-    if (m_pmf_grid_on) collectSampleToPMFGrid();
+    if (m_pmf_grid_on) error_code |= collectSampleToPMFGrid();
     m_is_first_step = false;
     return COLVARS_OK;
   }
   error_code |= update_opes();
   if (error_code != COLVARS_OK) return error_code;
   writeTrajBuffer(); // Print::update()
-  if (m_pmf_grid_on) collectSampleToPMFGrid();
+  if (m_pmf_grid_on) error_code |= collectSampleToPMFGrid();
   return error_code;
 }
 
-void colvarbias_opes::collectSampleToPMFGrid() {
+int colvarbias_opes::collectSampleToPMFGrid() {
   if (m_reweight_grid) {
     // Get the bin index
     std::vector<int> bin(num_variables(), 0);
@@ -1141,7 +1140,50 @@ void colvarbias_opes::collectSampleToPMFGrid() {
     }
     const cvm::real reweighting_factor = cvm::exp(bias_energy / m_kbt);
     m_reweight_grid->acc_value(bin, reweighting_factor);
+    // Multiple replica: collect all samples from other replicas
+    if (comm == multiple_replicas) {
+      if (cvm::step_absolute() % shared_freq == 0) {
+        const size_t samples_n = m_reweight_grid->raw_data_num();
+        const size_t msg_size = samples_n * sizeof(cvm::real);
+        if (cvm::main()->proxy->replica_index() == 0) {
+          std::vector<cvm::real> buffer(samples_n * (cvm::proxy->num_replicas() - 1));
+          for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
+            const size_t start_pos = (p - 1) * msg_size;
+            if (cvm::proxy->replica_comm_recv((char*)&(buffer[start_pos]), msg_size, p) != msg_size) {
+              return cvm::error("Error getting shared OPES reweighting histogram from replica " + cvm::to_str(p));
+            }
+          }
+          // Sum the samples on PE 0
+          auto& data = m_reweight_grid->data;
+          for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
+            for (size_t i = 0 ; i < samples_n; ++i) {
+              data[i] += buffer[(p-1)*samples_n+i];
+            }
+          }
+        } else {
+          if (cvm::proxy->replica_comm_send((char*)(m_reweight_grid->data.data()), msg_size, 0) != msg_size) {
+            return cvm::error("Error sending shared OPES reweighting histogram from replica " + cvm::to_str(cvm::main()->proxy->replica_index()));
+          }
+        }
+        cvm::proxy->replica_comm_barrier();
+        // Broadcast m_reweight_grid to all replicas
+        auto& data = m_reweight_grid->data;
+        if (cvm::main()->proxy->replica_index() == 0) {
+          for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
+            if (cvm::proxy->replica_comm_send((char*)data.data(), msg_size, p) != msg_size) {
+              return cvm::error("Error sending shared OPES reweighting histogram to " + cvm::to_str(p));
+            }
+          }
+        } else {
+          if (cvm::proxy->replica_comm_recv((char*)data.data(), msg_size, 0) != msg_size) {
+            return cvm::error("Error getting shared OPES reweighting histogram from " + cvm::to_str(cvm::main()->proxy->replica_index()));
+          }
+        }
+        cvm::proxy->replica_comm_barrier();
+      }
+    }
   }
+  return COLVARS_OK;
 }
 
 template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os) const {
@@ -1609,85 +1651,84 @@ std::string const colvarbias_opes::traj_file_name(const std::string& suffix) con
 }
 
 int colvarbias_opes::write_output_files() {
-  const bool to_write = (comm == single_replica) ? true : (cvm::proxy->replica_index() == 0 ? true : false);
-  if (to_write) {
-    thread_local static bool firsttime = true;
-    // Write the kernels
-    const std::string kernels_filename = traj_file_name(".kernels.dat");
-    std::ostream& os_kernels = cvm::proxy->output_stream(kernels_filename, "kernels file");
-    const std::ios_base::fmtflags format_kernels = os_kernels.flags();
-    if (firsttime) {
-      os_kernels << "#! FIELDS time ";
-      for (size_t i = 0; i < num_variables(); ++i) {
-        os_kernels << variables(i)->name + " ";
-      }
-      for (size_t i = 0; i < num_variables(); ++i) {
-        os_kernels << "sigma_" + variables(i)->name + " ";
-      }
-      os_kernels << "height logweight\n";
-      os_kernels << "#! SET action " + name + "_kernels\n";
-      os_kernels << "#! SET biasfactor " << m_biasfactor << "\n";
-      os_kernels << "#! SET epsilon " << m_epsilon << "\n";
-      os_kernels << "#! SET kernel_cutoff " << m_cutoff << "\n";
-      os_kernels << "#! SET compression_threshold " << m_compression_threshold << "\n";
-      for (size_t i = 0; i < num_variables(); ++i) {
-        if (variables(i)->is_enabled(f_cv_lower_boundary)) {
-          os_kernels << "#! SET min_" + variables(i)->name + " " << variables(i)->lower_boundary.real_value << "\n";
-        }
-        if (variables(i)->is_enabled(f_cv_upper_boundary)) {
-          os_kernels << "#! SET max_" + variables(i)->name + " " << variables(i)->upper_boundary.real_value << "\n";
-        }
-      }
+  thread_local static bool firsttime = true;
+  // Write the kernels
+  const std::string kernels_filename = traj_file_name(".kernels.dat");
+  std::ostream& os_kernels = cvm::proxy->output_stream(kernels_filename, "kernels file");
+  const std::ios_base::fmtflags format_kernels = os_kernels.flags();
+  if (firsttime) {
+    os_kernels << "#! FIELDS time ";
+    for (size_t i = 0; i < num_variables(); ++i) {
+      os_kernels << variables(i)->name + " ";
     }
-    os_kernels << m_kernels_output.str();
-    os_kernels.setf(format_kernels);
-    cvm::proxy->flush_output_stream(kernels_filename);
-    m_kernels_output.str("");
-    m_kernels_output.clear();
-
-    // Write the trajectory
-    const std::string traj_filename = traj_file_name(".misc.traj");
-    std::ostream& os_traj = cvm::proxy->output_stream(traj_filename, "trajectory of various OPES properties");
-    const std::ios_base::fmtflags format_traj = os_traj.flags();
-    if (firsttime) {
-      os_traj << "#! FIELDS time ";
-      for (size_t i = 0; i < num_variables(); ++i) {
-        os_traj << variables(i)->name + " ";
-      }
-      os_traj << this->name + ".bias ";
-      os_traj << this->name + ".rct ";
-      if (!m_no_zed) os_traj << this->name + ".zed ";
-      os_traj << this->name + ".neff ";
-      if (m_calc_work) if (!m_no_zed) os_traj << this->name + ".work ";
-      os_traj << this->name + ".nker ";
-      if (m_nlist) os_traj << this->name + ".nlker ";
-      if (m_nlist) os_traj << this->name + ".nlsteps ";
-      os_traj << "\n";
-      for (size_t i = 0; i < num_variables(); ++i) {
-        if (variables(i)->is_enabled(f_cv_lower_boundary)) {
-          os_traj << "#! SET min_" + variables(i)->name + " " << variables(i)->lower_boundary.real_value << "\n";
-        }
-        if (variables(i)->is_enabled(f_cv_upper_boundary)) {
-          os_traj << "#! SET max_" + variables(i)->name + " " << variables(i)->upper_boundary.real_value << "\n";
-        }
-      }
+    for (size_t i = 0; i < num_variables(); ++i) {
+      os_kernels << "sigma_" + variables(i)->name + " ";
     }
-    os_traj << m_traj_oss.str();
-    os_traj.setf(format_traj);
-    cvm::proxy->flush_output_stream(traj_filename);
-    m_traj_oss.str("");
-    m_traj_oss.clear();
-    if (firsttime) firsttime = false;
-    if (m_pmf_grid_on) {
-      computePMF();
-      const std::string pmf_filename = traj_file_name(".pmf");
-      writePMF(pmf_filename, false);
-      if (m_pmf_hist_freq > 0 && cvm::step_absolute() % m_pmf_hist_freq == 0) {
-        const std::string pmf_hist_filename = traj_file_name(".hist.pmf");
-        writePMF(pmf_hist_filename, true);
+    os_kernels << "height logweight\n";
+    os_kernels << "#! SET action " + name + "_kernels\n";
+    os_kernels << "#! SET biasfactor " << m_biasfactor << "\n";
+    os_kernels << "#! SET epsilon " << m_epsilon << "\n";
+    os_kernels << "#! SET kernel_cutoff " << m_cutoff << "\n";
+    os_kernels << "#! SET compression_threshold " << m_compression_threshold << "\n";
+    for (size_t i = 0; i < num_variables(); ++i) {
+      if (variables(i)->is_enabled(f_cv_lower_boundary)) {
+        os_kernels << "#! SET min_" + variables(i)->name + " " << variables(i)->lower_boundary.real_value << "\n";
+      }
+      if (variables(i)->is_enabled(f_cv_upper_boundary)) {
+        os_kernels << "#! SET max_" + variables(i)->name + " " << variables(i)->upper_boundary.real_value << "\n";
       }
     }
   }
+  os_kernels << m_kernels_output.str();
+  os_kernels.setf(format_kernels);
+  cvm::proxy->flush_output_stream(kernels_filename);
+  m_kernels_output.str("");
+  m_kernels_output.clear();
+
+  // Write the trajectory
+  const std::string traj_filename = traj_file_name(".misc.traj");
+  std::ostream& os_traj = cvm::proxy->output_stream(traj_filename, "trajectory of various OPES properties");
+  const std::ios_base::fmtflags format_traj = os_traj.flags();
+  if (firsttime) {
+    os_traj << "#! FIELDS time ";
+    for (size_t i = 0; i < num_variables(); ++i) {
+      os_traj << variables(i)->name + " ";
+    }
+    os_traj << this->name + ".bias ";
+    os_traj << this->name + ".rct ";
+    if (!m_no_zed) os_traj << this->name + ".zed ";
+    os_traj << this->name + ".neff ";
+    if (m_calc_work) if (!m_no_zed) os_traj << this->name + ".work ";
+    os_traj << this->name + ".nker ";
+    if (m_nlist) os_traj << this->name + ".nlker ";
+    if (m_nlist) os_traj << this->name + ".nlsteps ";
+    os_traj << "\n";
+    for (size_t i = 0; i < num_variables(); ++i) {
+      if (variables(i)->is_enabled(f_cv_lower_boundary)) {
+        os_traj << "#! SET min_" + variables(i)->name + " " << variables(i)->lower_boundary.real_value << "\n";
+      }
+      if (variables(i)->is_enabled(f_cv_upper_boundary)) {
+        os_traj << "#! SET max_" + variables(i)->name + " " << variables(i)->upper_boundary.real_value << "\n";
+      }
+    }
+  }
+  os_traj << m_traj_oss.str();
+  os_traj.setf(format_traj);
+  cvm::proxy->flush_output_stream(traj_filename);
+  m_traj_oss.str("");
+  m_traj_oss.clear();
+  if (firsttime) firsttime = false;
+  if (m_pmf_grid_on) {
+    computePMF();
+    const std::string pmf_filename = traj_file_name(".pmf");
+    writePMF(pmf_filename, false);
+    if (m_pmf_hist_freq > 0 && cvm::step_absolute() % m_pmf_hist_freq == 0) {
+      const std::string pmf_hist_filename = traj_file_name(".hist.pmf");
+      writePMF(pmf_hist_filename, true);
+    }
+  }
+  // To prevent the case that one replica exits earlier and then destroys all streams
+  if (comm == multiple_replicas) cvm::proxy->replica_comm_barrier();
   return COLVARS_OK;
 }
 
