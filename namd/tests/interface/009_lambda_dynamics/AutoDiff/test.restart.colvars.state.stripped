@@ -1,0 +1,25 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name lambda
+  x      0.20836051020006
+  extended_x      0.20836051020006
+  extended_v    0.0004528018356754
+}
+
+abf {
+  configuration {
+    step 40
+    name abf1
+  }
+
+samples
+ 40
+
+gradient
+ -9.1800383003581
+}
+
