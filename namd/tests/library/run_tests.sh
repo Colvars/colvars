@@ -69,12 +69,12 @@ CHARM_ARCH=$(${BINARY} 2>&1 | grep 'Info: Based on Charm++/Converse' | cut -d' '
 if [ "x${CHARM_ARCH}" == "xmpi-linux-x86_64" ] && source ${TOPDIR}/devel-tools/load-openmpi.sh ; then
   NUM_TASKS=${NUM_THREADS}
   NUM_THREADS=1
-  BINARY="mpirun -n ${NUM_TASKS} -oversubscribe $BINARY"
+  CMD="mpirun -n ${NUM_TASKS} -oversubscribe $BINARY"
 else
-  BINARY="$BINARY +p ${NUM_THREADS}"
+  CMD="$BINARY +p ${NUM_THREADS}"
 fi
 
-echo "Running NAMD as: $BINARY"
+echo "Running NAMD as: $CMD"
 
 TPUT_RED='true'
 TPUT_GREEN='true'
@@ -188,8 +188,13 @@ for dir in ${DIRLIST} ; do
       fi
     fi
 
-    # Run the test (use a subshell to avoid cluttering stdout)
-    NAMD_CUDASOA=$CUDASOA $BINARY $script > ${basename}.out
+    if [ -f no_smp ]; then
+      # Force the test to run serially
+      NAMD_CUDASOA=$CUDASOA $BINARY +p1 $script > ${basename}.out
+    else
+      # Run the test (use a subshell to avoid cluttering stdout)
+      NAMD_CUDASOA=$CUDASOA $CMD $script > ${basename}.out
+    fi
 
     # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \

@@ -1,0 +1,122 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
+colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - SMP parallelism: enabled (num. threads = 1)
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: available
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: The restart output state file will be "test.tmp.colvars.state".
+colvars: The final output state file will be "test.colvars.state".
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "test.in":
+colvars: # units = "" [default]
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 10
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "lambda"
+colvars:   Initializing a new "alchLambda" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 0 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = 0
+colvars:   # upperBoundary = 1
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = on
+colvars:     Enabling the extended Lagrangian term for colvar "lambda".
+colvars:     # extendedTemp = 300 [default]
+colvars:     # extendedMass = 150000
+colvars:     # outputEnergy = off [default]
+colvars:     # extendedLangevinDamping = 1 [default]
+colvars:     # reflectingLowerBoundary = on
+colvars:     # reflectingUpperBoundary = on
+colvars:     # outputValue = on [default]
+colvars:     # outputVelocity = off [default]
+colvars:     # outputTotalForce = on
+colvars:     # outputAppliedForce = on
+colvars:     # subtractAppliedForce = off [default]
+colvars:     # runAve = off [default]
+colvars:     # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "abf" instance.
+colvars:   # name = "abf1" [default]
+colvars:   # colvars = { lambda }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # applyBias = on [default]
+colvars:   # hideJacobian = off [default]
+colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
+colvars:   # fullSamples = 0
+colvars:   # minSamples = 0 [default]
+colvars:   # inputPrefix =  [default]
+colvars:   # historyFreq = 0 [default]
+colvars:   # shared = off [default]
+colvars:   # updateBias = on [default]
+colvars:   # maxForce =  [default]
+colvars:   # integrate = on [default]
+colvars:   Finished ABF setup.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - BAOA integrator:
+colvars:   BouRabee2010 https://doi.org/10.1137/090758842
+colvars: 
+colvars: - Colvars module:
+colvars: - Colvars-NAMD interface:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - ABF colvar bias implementation:
+colvars: - Internal-forces free energy estimator:
+colvars:   Henin2010 https://doi.org/10.1021/ct9004432
+colvars: 
+colvars: - alchLambda colvar component:
+colvars:   Lagardere2023 https://arxiv.org/abs/2307.08006
+colvars: 
+colvars: - NAMD engine:
+colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
+colvars: 
+colvars: updating target temperature (T = 300 K).
+colvars: Updating NAMD interface:
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (0 scalable groups, 0 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 300 K).
+colvars: Current simulation parameters: initial step = 0, integration timestep = 1
+colvars: Updating atomic parameters (masses, charges, etc).
+colvars: The restart output state file will be "test.tmp.colvars.state".
+colvars:   Initializing extended coordinate to colvar value.
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars: Saving collective variables state to "test.colvars.state".
