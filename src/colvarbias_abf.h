@@ -42,6 +42,8 @@ private:
 
   /// Base filename(s) for reading previous gradient data (replaces data from restart file)
   std::vector<std::string> input_prefix;
+  /// Optional custom configuration string for grid parameters
+  std::string grid_params;
 
   /// Adapt the bias at each time step (as opposed to keeping it constant)?
   bool    update_bias;
