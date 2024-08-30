@@ -1342,8 +1342,8 @@ public:
 
   /// \brief Return the gradient of the scalar field from finite differences
   /// Input coordinates are those of gradient grid, shifted wrt scalar grid
-  /// Should not be called on edges of scalar grid, provided the latter has margins
-  /// wrt gradient grid
+  /// Should not be called on edges of scalar grid, provided the latter has
+  /// margins (extra bins) wrt gradient grid
   inline void vector_gradient_finite_diff( const std::vector<int> &ix0, std::vector<cvm::real> &grad)
   {
     cvm::real A0, A1;
