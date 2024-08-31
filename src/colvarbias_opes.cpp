@@ -1696,19 +1696,13 @@ int colvarbias_opes::computePMF() {
     if (cvm::step_absolute() % shared_freq == 0) {
       const size_t samples_n = m_reweight_grid->raw_data_num();
       const int msg_size = samples_n * sizeof(cvm::real);
+      std::vector<cvm::real> buffer;
       if (cvm::main()->proxy->replica_index() == 0) {
-        std::vector<cvm::real> buffer(samples_n * (cvm::proxy->num_replicas() - 1));
+        buffer.resize(samples_n * (cvm::proxy->num_replicas() - 1));
         for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
-          const size_t start_pos = (p - 1) * msg_size;
+          const size_t start_pos = (p - 1) * samples_n;
           if (cvm::proxy->replica_comm_recv((char*)&(buffer[start_pos]), msg_size, p) != msg_size) {
             return cvm::error("Error getting shared OPES reweighting histogram from replica " + cvm::to_str(p));
-          }
-        }
-        // Sum the samples on PE 0
-        auto& data = m_reweight_grid->data;
-        for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
-          for (size_t i = 0 ; i < samples_n; ++i) {
-            data[i] += buffer[(p-1)*samples_n+i];
           }
         }
       } else {
@@ -1720,13 +1714,20 @@ int colvarbias_opes::computePMF() {
       // Broadcast m_reweight_grid to all replicas
       auto& data = m_reweight_grid->data;
       if (cvm::main()->proxy->replica_index() == 0) {
+        // Sum the samples on PE 0
         for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
-          if (cvm::proxy->replica_comm_send((char*)data.data(), msg_size, p) != msg_size) {
+          const size_t start_pos = (p - 1) * samples_n;
+          for (size_t i = 0 ; i < samples_n; ++i) {
+            data[i] += buffer[start_pos+i];
+          }
+        }
+        for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
+          if (cvm::proxy->replica_comm_send((char*)(data.data()), msg_size, p) != msg_size) {
             return cvm::error("Error sending shared OPES reweighting histogram to " + cvm::to_str(p));
           }
         }
       } else {
-        if (cvm::proxy->replica_comm_recv((char*)data.data(), msg_size, 0) != msg_size) {
+        if (cvm::proxy->replica_comm_recv((char*)(data.data()), msg_size, 0) != msg_size) {
           return cvm::error("Error getting shared OPES reweighting histogram from " + cvm::to_str(cvm::main()->proxy->replica_index()));
         }
       }
