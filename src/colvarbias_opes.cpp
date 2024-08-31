@@ -53,7 +53,7 @@ colvarbias_opes::colvarbias_opes(char const *key):
   m_num_threads(1), m_nlker(0), m_traj_output_frequency(0),
   m_traj_line(traj_line{0}), m_is_first_step(true),
   m_pmf_grid_on(false), m_reweight_grid(nullptr),
-  m_pmf_grid(nullptr), m_pmf_hist_freq(0), m_pmf_shared(false)
+  m_pmf_grid(nullptr), m_pmf_hist_freq(0), m_pmf_shared(true)
 {
 }
 
@@ -239,7 +239,11 @@ int colvarbias_opes::init(const std::string& conf) {
     m_pmf_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
     get_keyval(conf, "pmf_hist_freq", m_pmf_hist_freq, 0);
     if (comm == multiple_replicas) {
-      get_keyval(conf, "pmf_shared", m_pmf_shared, false);
+      get_keyval(conf, "pmf_shared", m_pmf_shared, true);
+      if (m_pmf_shared) {
+        m_global_reweight_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
+        m_global_pmf_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
+      }
     }
   }
   // TODO: explore mode
@@ -1682,15 +1686,53 @@ int colvarbias_opes::write_output_files() {
   if (m_pmf_grid_on) {
     error_code |= computePMF();
     const std::string pmf_filename = traj_file_name(".pmf");
-    error_code |= writePMF(pmf_filename, false);
+    error_code |= writePMF(m_pmf_grid, pmf_filename, false);
+    if (comm == multiple_replicas && m_pmf_shared) {
+      if (cvm::proxy->replica_index() == 0) {
+        const std::string global_pmf_filename = traj_file_name(".global.pmf");
+        error_code |= writePMF(m_global_pmf_grid, global_pmf_filename, false);
+      }
+    }
     if (m_pmf_hist_freq > 0 && cvm::step_absolute() % m_pmf_hist_freq == 0) {
       const std::string pmf_hist_filename = traj_file_name(".hist.pmf");
-      error_code |= writePMF(pmf_hist_filename, true);
+      error_code |= writePMF(m_pmf_grid, pmf_hist_filename, true);
+      if (comm == multiple_replicas && m_pmf_shared) {
+        if (cvm::proxy->replica_index() == 0) {
+          const std::string global_hist_pmf_filename = traj_file_name(".global.hist.pmf");
+          error_code |= writePMF(m_global_pmf_grid, global_hist_pmf_filename, true);
+        }
+      }
     }
   }
   // To prevent the case that one replica exits earlier and then destroys all streams
   if (comm == multiple_replicas) cvm::proxy->replica_comm_barrier();
   return error_code;
+}
+
+void hist_to_pmf(const cvm::real kbt, const std::unique_ptr<colvar_grid_scalar>& hist, std::unique_ptr<colvar_grid_scalar>& pmf) {
+  // Get the sum of probabilities of all grids
+  cvm::real norm_factor = 0;
+  cvm::real max_prob = 0;
+  auto& prob_data = hist->data;
+  for (auto it = prob_data.begin(); it != prob_data.end(); ++it) {
+    norm_factor += (*it);
+    if ((*it) > max_prob) max_prob = (*it);
+  }
+  if (norm_factor > 0) {
+    const cvm::real min_pmf = (max_prob > 0) ? -1.0 * kbt * cvm::logn(max_prob / norm_factor) : 0;
+    auto& pmf_data = pmf->data;
+    for (size_t i = 0; i < pmf_data.size(); ++i) {
+      if (prob_data[i] > 0) {
+        pmf_data[i] = -1.0 * kbt * cvm::logn(prob_data[i] / norm_factor) - min_pmf;
+      }
+    }
+    auto max_pmf = *std::max_element(pmf_data.begin(), pmf_data.end());
+    for (size_t i = 0; i < pmf_data.size(); ++i) {
+      if (!(prob_data[i] > 0)) {
+        pmf_data[i] = max_pmf;
+      }
+    }
+  }
 }
 
 int colvarbias_opes::computePMF() {
@@ -1714,63 +1756,37 @@ int colvarbias_opes::computePMF() {
     }
     cvm::proxy->replica_comm_barrier();
     // Broadcast m_reweight_grid to all replicas
-    auto& data = m_reweight_grid->data;
+    auto& global_data = m_global_reweight_grid->data;
     if (cvm::main()->proxy->replica_index() == 0) {
+      global_data = m_reweight_grid->data;
       // Sum the samples on PE 0
       for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
         const size_t start_pos = (p - 1) * samples_n;
-        cvm::real sum_buffer = 0;
         for (size_t i = 0 ; i < samples_n; ++i) {
-          sum_buffer += buffer[start_pos+i];
-          data[i] += buffer[start_pos+i];
+          global_data[i] += buffer[start_pos+i];
         }
-        cvm::log("Buffer " + cvm::to_str(p) + " sum = " + cvm::to_str(sum_buffer));
-      }
-
-      for (int p = 1; p < cvm::proxy->num_replicas(); p++) {
-        if (cvm::proxy->replica_comm_send((char*)(&data[0]), msg_size, p) != msg_size) {
-          return cvm::error("Error sending shared OPES reweighting histogram to " + cvm::to_str(p));
-        }
-      }
-    } else {
-      if (cvm::proxy->replica_comm_recv((char*)(&data[0]), msg_size, 0) != msg_size) {
-        return cvm::error("Error getting shared OPES reweighting histogram from " + cvm::to_str(cvm::main()->proxy->replica_index()));
       }
     }
-    cvm::proxy->replica_comm_barrier();
   }
   // Get the sum of probabilities of all grids
-  cvm::real norm_factor = 0;
-  cvm::real max_prob = 0;
-  auto& prob_data = m_reweight_grid->data;
-  for (auto it = prob_data.begin(); it != prob_data.end(); ++it) {
-    norm_factor += (*it);
-    if ((*it) > max_prob) max_prob = (*it);
+  hist_to_pmf(m_kbt, m_reweight_grid, m_pmf_grid);
+  if (comm == multiple_replicas && m_pmf_shared) {
+    if (cvm::main()->proxy->replica_index() == 0) {
+      hist_to_pmf(m_kbt, m_global_reweight_grid, m_global_pmf_grid);
+    }
   }
-  if (norm_factor > 0) {
-    const cvm::real min_pmf = (max_prob > 0) ? -1.0 * m_kbt * cvm::logn(max_prob / norm_factor) : 0;
-    auto& pmf_data = m_pmf_grid->data;
-    for (size_t i = 0; i < pmf_data.size(); ++i) {
-      if (prob_data[i] > 0) {
-        pmf_data[i] = -1.0 * m_kbt * cvm::logn(prob_data[i] / norm_factor) - min_pmf;
-      }
-    }
-    auto max_pmf = *std::max_element(pmf_data.begin(), pmf_data.end());
-    for (size_t i = 0; i < pmf_data.size(); ++i) {
-      if (!(prob_data[i] > 0)) {
-        pmf_data[i] = max_pmf;
-      }
-    }
+  if (comm == multiple_replicas) {
+    cvm::proxy->replica_comm_barrier();
   }
   return COLVARS_OK;
 }
 
-int colvarbias_opes::writePMF(const std::string &filename, bool keep_open) {
+int colvarbias_opes::writePMF(const std::unique_ptr<colvar_grid_scalar>& pmf_grid, const std::string &filename, bool keep_open) {
   std::ostream& os = cvm::proxy->output_stream(filename, "output stream of " + filename);
   if (!os) {
     return COLVARS_FILE_ERROR;
   }
-  m_pmf_grid->write_multicol(os);
+  pmf_grid->write_multicol(os);
   if (!keep_open) {
     cvm::proxy->close_output_stream(filename);
   } else {

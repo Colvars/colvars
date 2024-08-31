@@ -92,7 +92,7 @@ private:
   std::string const traj_file_name(const std::string& suffix) const;
   int collectSampleToPMFGrid();
   int computePMF();
-  int writePMF(const std::string &filename, bool keep_open);
+  int writePMF(const std::unique_ptr<colvar_grid_scalar>& pmf_grid, const std::string &filename, bool keep_open);
 private:
   cvm::real m_kbt;
   cvm::real m_barrier;
@@ -167,6 +167,8 @@ private:
   std::unique_ptr<colvar_grid_scalar> m_pmf_grid;
   cvm::step_number m_pmf_hist_freq;
   bool m_pmf_shared; // shared PMF among replicas
+  std::unique_ptr<colvar_grid_scalar> m_global_reweight_grid;
+  std::unique_ptr<colvar_grid_scalar> m_global_pmf_grid;
 };
 
 #endif // COLVARBIAS_OPES_H
