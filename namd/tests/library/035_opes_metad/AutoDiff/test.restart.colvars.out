@@ -1,0 +1,426 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
+colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - SMP parallelism: enabled (num. threads = 4)
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: available
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration from file "opes.in":
+colvars: # units = "" [default]
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 10
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "phi1"
+colvars:   Initializing a new "dihedral" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 360 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5972.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group3".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group4".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 1 [default]
+colvars:   # lowerBoundary = -180 [default]
+colvars:   # upperBoundary = 180 [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = on [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "phi2"
+colvars:   Initializing a new "dihedral" component.
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 360 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group3".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group4".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 5
+colvars:   # lowerBoundary = -180
+colvars:   # upperBoundary = 180
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "phi3"
+colvars:   Initializing a new "dihedral" component.
+colvars:     # name = "003"
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 360 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group1".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group2".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 14.01, total charge = -0.4157.
+colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group3".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.01, total charge = 0.0337.
+colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "" [default]
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       Enabling scalable calculation for group "group4".
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 1 atoms requested: total mass = 12.01, total charge = 0.5973.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 5
+colvars:   # lowerBoundary = -180
+colvars:   # upperBoundary = 180
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = off [default]
+colvars:   # outputTotalForce = off [default]
+colvars:   # outputAppliedForce = off [default]
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 3 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "opes_metad" instance.
+colvars:   # name = "opes_metad1" [default]
+colvars:   # colvars = { phi1, phi2, phi3 }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = on
+colvars:   # outputFreq = 10 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # applyBias = on [default]
+colvars:   # pace = 5
+colvars:   # barrier = 10
+colvars:   # biasfactor = "" [default]
+colvars:   # adaptive_sigma = on
+colvars:   # sigma = { 0, 0, 0 } [default]
+colvars:   # adaptive_sigma_stride = 0 [default]
+colvars:   # sigma_min =  [default]
+colvars:   # epsilon = 1.79174e-08 [default]
+colvars:   # kernel_cutoff = 5.97285 [default]
+colvars:   # compression_threshold = 1 [default]
+colvars:   # nlist = on
+colvars:   # nlist_pace_reset = off [default]
+colvars:   # nlist_param =  [default]
+colvars:   # no_zed = off [default]
+colvars:   # fixed_sigma = off [default]
+colvars:   # recursive_merge = on [default]
+colvars:   # calc_work = off [default]
+colvars:   # multipleReplicas = off [default]
+colvars:   # serial = off [default]
+colvars:   # pmf = on
+colvars:   # pmf_colvars = { phi2, phi3 }
+colvars:   # pmf_hist_freq = 0 [default]
+colvars:   # print_trajectory_frequency = 1
+colvars:   opes_metad1: temperature = 16.7741
+colvars:   opes_metad1: beta = 1.67741
+colvars:   opes_metad1: depositing new kernels with pace = 5
+colvars:   opes_metad1: expected barrier is 10
+colvars:   opes_metad1: using target distribution with biasfactor (gamma) = 16.7741
+colvars:   opes_metad1: adaptive sigma will be used, with adaptive_sigma_stride = 50
+colvars:   opes_metad1:   thus the first x kernel depositions will be skipped, x = adaptive_sigma_stride/pace = 10
+colvars:   opes_metad1: kernels are truncated with kernels_cutoff = 5.97285
+colvars:   opes_metad1: the value at cutoff is = 1.79174e-08
+colvars:   opes_metad1: regularization epsilon = 1.79174e-08
+colvars:   opes_metad1: kernels will be compressed when closer than compression_threshold = 1
+colvars:   opes_metad1 nlist: using neighbor list for kernels, with parameters: 3 0.5
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Updating NAMD interface:
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (10 scalable groups, 10 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - Colvars module:
+colvars: - Colvars-NAMD interface:
+colvars: - Optimal rotation via flexible fitting:
+colvars: - dihedral colvar component:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - OPES:
+colvars:   Invernizzi2020 https://pubs.acs.org/doi/10.1021/acs.jpclett.0c00497
+colvars: 
+colvars: - OPES explore or adaptive kernels:
+colvars:   Invernizzi2022 https://doi.org/10.1021/acs.jctc.2c00152
+colvars: 
+colvars: - NAMD engine:
+colvars: - Scalable center-of-mass computation (NAMD):
+colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
+colvars: 
+colvars: updating target temperature (T = 300 K).
+colvars: Current simulation parameters: initial step = 0, integration timestep = 0.5
+colvars: Updating atomic parameters (masses, charges, etc).
+colvars: Re-initialized atom group for variable "phi1":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
+colvars: Re-initialized atom group for variable "phi1":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "phi1":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "phi1":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "phi2":0/0. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "phi2":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "phi2":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "phi2":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "phi3":0/0. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "phi3":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "phi3":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "phi3":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: ----------------------------------------------------------------------
+colvars: Loading state from text file "test.colvars.state".
+colvars:   Restarting collective variable "phi1" from value: -52.3191
+colvars:   Restarting collective variable "phi2" from value: -33.6185
+colvars:   Restarting collective variable "phi3" from value: -34.3463
+colvars:   opes_metad1: temperature = 16.7741
+colvars:   opes_metad1: beta = 1.67741
+colvars:   opes_metad1: depositing new kernels with pace = 5
+colvars:   opes_metad1: expected barrier is 10
+colvars:   opes_metad1: using target distribution with biasfactor (gamma) = 16.7741
+colvars:   opes_metad1: adaptive sigma will be used, with adaptive_sigma_stride = 50
+colvars:   opes_metad1:   thus the first x kernel depositions will be skipped, x = adaptive_sigma_stride/pace = 10
+colvars:   opes_metad1: kernels are truncated with kernels_cutoff = 5.97285
+colvars:   opes_metad1: the value at cutoff is = 1.79174e-08
+colvars:   opes_metad1: regularization epsilon = 1.79174e-08
+colvars:   opes_metad1: kernels will be compressed when closer than compression_threshold = 1
+colvars:   opes_metad1 nlist: using neighbor list for kernels, with parameters: 3 0.5
+colvars:   Restarted opes_metad bias "opes_metad1" with step number 100.
+colvars: ----------------------------------------------------------------------
+colvars: The restart output state file will be "test.restart.restart.colvars.state".
+colvars: The final output state file will be "test.restart.colvars.state".
+colvars: Updating NAMD interface:
+colvars: updating atomic data (0 atoms).
+colvars: updating group data (10 scalable groups, 10 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 300 K).
+colvars: Current simulation parameters: initial step = 100, integration timestep = 0.5
+colvars: Updating atomic parameters (masses, charges, etc).
+colvars: Re-initialized atom group for variable "phi1":0/0. 1 atoms: total mass = 12.01, total charge = 0.5972.
+colvars: Re-initialized atom group for variable "phi1":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "phi1":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "phi1":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "phi2":0/0. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "phi2":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "phi2":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "phi2":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "phi3":0/0. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: Re-initialized atom group for variable "phi3":0/1. 1 atoms: total mass = 14.01, total charge = -0.4157.
+colvars: Re-initialized atom group for variable "phi3":0/2. 1 atoms: total mass = 12.01, total charge = 0.0337.
+colvars: Re-initialized atom group for variable "phi3":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
+colvars: The restart output state file will be "test.restart.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.restart.colvars.state".
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
+colvars: Saving collective variables state to "test.restart.restart.colvars.state".
+colvars: Saving collective variables state to "test.restart.colvars.state".
