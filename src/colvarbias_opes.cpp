@@ -1141,8 +1141,8 @@ int colvarbias_opes::update() {
 int colvarbias_opes::collectSampleToPMFGrid() {
   if (m_reweight_grid) {
     // Get the bin index
-    std::vector<int> bin(num_variables(), 0);
-    for (size_t i = 0; i < num_variables(); i++) {
+    std::vector<int> bin(m_pmf_cvs.size(), 0);
+    for (size_t i = 0; i < m_pmf_cvs.size(); ++i) {
       bin[i] = m_reweight_grid->current_bin_scalar(i);
     }
     const cvm::real reweighting_factor = cvm::exp(bias_energy / m_kbt);
