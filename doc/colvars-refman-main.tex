@@ -6503,6 +6503,339 @@ The following are the multiple-walkers related options:
 \end{itemize}
 
 
+\cvsubsec{On-the-fly probability enhanced sampling (OPES)}{sec:colvarbias_opes}
+
+This biasing method implements the on-the-fly probability enhanced sampling (OPES) with metadynamics-like target distribution.\cite{Invernizzi2020}
+The bias samples target distributions defined via their marginal distribution
+$p^{\mathrm{tg}}(\boldsymbol{\xi})$ over some CVs, $\boldsymbol{\xi} = \boldsymbol{\xi}(x)$.
+By default \texttt{opes{\textunderscore}metad} targets the well-tempered distribution, $p^{\mathrm{WT}}(\boldsymbol{\xi}) = [P(\boldsymbol{\xi})]^{1/\gamma}$, where $\gamma$ is known as the \texttt{biasfactor}.
+Similarly to \texttt{metadynamics}, \texttt{opes{\textunderscore}metad} optimizes the bias on-the-fly, with a given \texttt{pace}.
+It does so by reweighting via kernel density estimation the unbiased distribution in the CV space, $P(\boldsymbol{\xi})$.
+A compression algorithm is used to prevent the number of kernels from growing linearly with the simulation time.
+The bias at step $n$ is
+\begin{equation}\label{eq:opes_potential}
+V_n(\boldsymbol{\xi}) = -k_{\mathrm{B}}T(1-1/\gamma)\log\left(\frac{P_n(\boldsymbol{\xi})}{Z_n}+\epsilon\right),
+\end{equation}
+where the probability $P_n (\boldsymbol{\xi})$ and the normlization factor $Z_n$ is computed as
+\begin{equation}
+P_n (\boldsymbol{\xi}) = \frac{\sum_k^n w_k G(\boldsymbol{\xi}, \boldsymbol{\xi}_k)}{\sum_k^n w_k}
+\end{equation}
+\begin{equation}
+Z_n = \frac{1}{|\Omega_n|}\int_{\Omega_n} P_n (\boldsymbol{\xi}) \mathrm{d}\boldsymbol{\xi},
+\end{equation}
+where the weights $w_k$ are given by $w_k = \exp(\beta V_{k-1}(\boldsymbol{\xi}_k))$, and the Gaussian kernels
+$G(\boldsymbol{\xi}, \boldsymbol{\xi}')=h\exp\left[-1/2(\boldsymbol{\xi}-\boldsymbol{\xi}')^T \Sigma^{-1}(\boldsymbol{\xi}-\boldsymbol{\xi}')\right]$ have a diagonal covariance matrix $\Sigma_{ij}=\sigma^2 \delta_{ij}$ and fixed height $h=\Pi_i (\sigma_i \sqrt{2\pi})^{-1}$ (see Ref.\cite{Invernizzi2020} for a complete description of the method). This section (aside from the "implementation notes") is largely based on the \href{https://www.plumed.org/doc-master/user-doc/html/_o_p_e_s__m_e_t_a_d__e_x_p_l_o_r_e.html}{PLUMED manual of the OPES module}.
+
+\cvsubsubsec{Implementation notes}{sec:colvarbias_opes_notes}
+The \texttt{opes{\textunderscore}metad} in Colvars is largely based on the code of the OPES module in PLUMED \cite{tribello_plumed_2014}, except that it has the following limitations:
+\begin{itemize}
+\item Colvars does not support chaining bias actions in PLUMED, so the Colvars OPES implementation cannot take the biasing energies of other biases, such as harmonic restraints, into account.
+\item Due to the same limitation of Colvars as descrbited above, you cannot collect samples on-the-fly by chaining \texttt{opes{\textunderscore}metad} with a weighted histogram for PMF calculations. Although the PMF calculation via reweighting is implemented as \texttt{pmf{\textunderscore}grid}, the functionality is quite limited. The CVs in \texttt{pmf{\textunderscore}colvars} must be the biased ones. In other words, you cannot apply bias on $(\xi_1, \xi_2)$ and compute the PMF along $\xi_3$ by the on-the-fly reweighting. You can only specify one set of CVs for estimating the PMF either (you cannot apply the OPES bias on $(\xi_1, \xi_2, \xi_3)$ and compute two 2D PMFs along $(\xi_1, \xi_2)$ and $(\xi_2, \xi_3)$ on-the-fly simultaneously using the \texttt{pmf{\textunderscore}grid}). However, you can always bypass this limitation by post-hoc reweighting with the trajectories.
+\item Colvars computes the biases in parallel with SMP, so it cannot use multiple threads again for computing the probability and the normalization factor, searching the kernels that are able to compress and updating the neighbor list.
+\end{itemize}
+
+\cvsubsubsec{General options}{sec:colvarbias_opes_general_options}
+To enable a OPES-based calculation, a \texttt{opes{\textunderscore}metad \{...\}} block must be included in the Colvars configuration file. The \texttt{opes{\textunderscore}metad} block supports the following options:
+\begin{itemize}
+\item \dupkey{name}{\texttt{opes{\textunderscore}metad}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{opes{\textunderscore}metad}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputEnergy}{\texttt{opes{\textunderscore}metad}}{sec:colvarbias}{biasing and analysis methods}
+\item %
+  \labelkey{opes_metad|barrier}
+  \key
+    {barrier}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    The highest free-energy barrier you wish to overcome (\energyunit)}{%
+    positive decimal}{%
+    This parameter should be set to be at least equal to the highest free energy barrier you wish to overcome. If it is much lower than that, you will not cross the barrier, if it is much higher, convergence might take a little longer. If the system has a basin that is clearly more stable than the others, it is better to start the simulation from there.}
+\item %
+  \labelkey{opes_metad|pace}
+  \key
+    {pace}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Frequency of hill creation}{%
+    positive integer}{%
+    The frequency for kernel deposition.}
+\item %
+  \labelkey{opes_metad|biasfactor}
+  \keydef
+    {biasfactor}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    The $\gamma$ biasfactor used for the well-tempered target distribution. Cannot be "inf" }{%
+    positive decimal}{%
+    $\mathrm{barrier} / k_{\mathrm{B}} T$}{%
+    This option sets the $\gamma$ in Eq.(\ref{eq:opes_potential}).}
+\item %
+  \labelkey{opes_metad|sigma}
+  \key
+    {sigma}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    The initial widths of the kernels, divided by the square root of gamma}{%
+    positive decimal}{%
+    This option sets the initial $\sigma$ values of the Gaussian kernels. The number of \texttt{sigma} values should match the number of CVs used by \texttt{colvars}. If \texttt{adaptive{\textunderscore}sigma} is set, then this option can be ignored.}
+\item %
+  \labelkey{opes_metad|sigma_min}
+  \key
+    {sigma{\textunderscore}min}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    The minimum widths of the kernels, divided by the square root of gamma}{%
+    positive decimal (optional)}{%
+    This option sets the minimum $\sigma$ values of the Gaussian kernels. The number of \texttt{sigma{\textunderscore}min} values should match the number of CVs used by \texttt{colvars}. The OPES method scales down the $\sigma$ during the simulation, and will never shrink $\sigma$ under \texttt{sigma{\textunderscore}min} if this option is set.}
+\item %
+  \labelkey{opes_metad|epsilon}
+  \keydef
+    {epsilon}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    The value of the regularization constant for the probability}{%
+    positive decimal}{%
+    $\exp(-\mathrm{barrier} / k_{\mathrm{B}} T / (1-1/\gamma))$}{%
+    This option sets the $\epsilon$ in Eq.(\ref{eq:opes_potential}).}
+\item %
+  \labelkey{opes_metad|kernel_cutoff}
+  \keydef
+    {kernel{\textunderscore}cutoff}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Truncate kernels at this distance, in units of $\sigma$}{%
+    positive decimal}{%
+    $\sqrt{2*\mathrm{barrier}/k_{\mathrm{B}} T/(1-1/\gamma)}$}{%
+    If the value of $(\boldsymbol{\xi}-\boldsymbol{\xi}')^T \Sigma^{-1}(\boldsymbol{\xi}-\boldsymbol{\xi}')$ is larger than the square of this value, then $G(\boldsymbol{\xi}, \boldsymbol{\xi}')$ is evaluated as zero.}
+\item %
+  \labelkey{opes_metad|compression_threshold}
+  \keydef
+    {compression{\textunderscore}threshold}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Merge kernels if closer than this threshold, in units of $\sigma$}{%
+    positive decimal}{%
+    1.0}{%
+    Kernels will be merged the distances of their centers (scaled by the square of $\sigma$) are closer than this threshold.}
+\item %
+  \labelkey{opes_metad|adaptive_sigma}
+  \keydef
+    {adaptive{\textunderscore}sigma}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Adaptively compute the bandwidths}{%
+    boolean}{%
+    \texttt{off}}{%
+    If enabled, the values of $\sigma$ of CVs are computed adaptively based on their variances. See the Supporting Information of Ref.\cite{Invernizzi2022} for more details.}
+\item %
+  \labelkey{opes_metad|adaptive_sigma_stride}
+  \keydef
+    {adaptive{\textunderscore}sigma{\textunderscore}stride}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Number of steps for measuring adaptive sigma}{%
+    positive integer}{%
+    $10\times\mathrm{pace}$}{%
+    This option sets the number of steps for measuring the rolling variances of CVs that are used by the adaptive kernel bandwidth algorithm. See the Supporting Information of Ref.\cite{Invernizzi2022} for more details.}
+\item %
+  \labelkey{opes_metad|nlist}
+  \keydef
+    {nlist}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Use neighbor list for kernels summation (experimental)}{%
+    boolean}{%
+    \texttt{off}}{%
+    If enabled, a neighbor list will be used for kernels summation.}
+\item %
+  \labelkey{opes_metad|nlist_pace_reset}
+  \keydef
+    {nlist{\textunderscore}pace{\textunderscore}reset}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Force the reset of the neighbor list at each pace}{%
+    boolean}{%
+    \texttt{off}}{%
+    If enabled, the neighbor list will be rebuilt at each pace.}
+\item %
+  \labelkey{opes_metad|nlist_param}
+  \keydef
+    {nlist{\textunderscore}param}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    The two cutoff parameters of the neighbor list}{%
+    positive decimals}{%
+    3.0 0.5}{%
+    The first parameter is the maximum distance of neighboring kernels. The second parameters is the threshold for rebuilding.}
+\item %
+  \labelkey{opes_metad|no_zed}
+  \keydef
+    {no{\textunderscore}zed}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Do not normalize the probability over the explored CV space}{%
+    boolean}{%
+    \texttt{off}}{%
+    If enabled, $Z_n$ is always 1.}
+\item %
+  \labelkey{opes_metad|fixed_sigma}
+  \keydef
+    {fixed{\textunderscore}sigma}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Do not scale down $\boldsymbol{\sigma}$}{%
+    boolean}{%
+    \texttt{off}}{%
+    If enabled, $\boldsymbol{\sigma}$ will not be decreased as the simulation proceeds.}
+\item %
+  \labelkey{opes_metad|recursive_merge}
+  \keydef
+    {recursive{\textunderscore}merge}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Merge the kernels recursively}{%
+    boolean}{%
+    \texttt{on}}{%
+    If enabled, the kernels will be compressed recursively when a new kernel is added.}
+\item %
+  \labelkey{opes_metad|calc_work}
+  \keydef
+    {calc{\textunderscore}work}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Calculate the work done by the bias}{%
+    boolean}{%
+    \texttt{off}}{%
+    If enabled, the total accumulated work will be computed.}
+\end{itemize}
+
+\cvsubsubsec{Multiple-walker options}{sec:colvarbias_opes_multiple_walker_options}
+
+The following options can be used for the multiple-walker OPES:
+\begin{itemize}
+\item %
+  \labelkey{opes_metad|multipleReplicas}
+  \keydef
+    {multipleReplicas}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Enable multiple-walker OPES}{%
+    boolean}{%
+    \texttt{off}}{%
+    This option turns on multiple-walker communication between replicas.}
+\item %
+  \labelkey{opes_metad|replicaID}
+  \keydef
+    {replicaID}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Set the identifier for this replica (required only for independent jobs)}{%
+    string}{%
+    replica index (only if MPI\cvnamdonly{ or Charm++} is used)}{%
+    If \refkey{multipleReplicas}{opes_metad|multipleReplicas} is \texttt{on}, this option sets a unique identifier for this replicas.
+    Specifying this option is thus only required when the replicas are launched as independent computations:
+    when the replicas share a common parallel communication framework (i.e.\ they are all launched together as a single message-passing computation via MPI\cvnamdonly{or Charm++}) the default value of this keyword is the replica's numeric index (zero-based).
+}
+\item
+  \labelkey{opes_metad|sharedFreq}
+  \keydef{sharedFreq}{\texttt{opes{\textunderscore}metad}}{%
+    Frequency (in number of steps) at which force samples are synchronized among the replicas}
+  {positive integer or zero}
+  {\refkey{outputFreq}{colvarbias|outputFreq}}
+  {
+    Every \texttt{sharedFreq} steps, the replicas communicate the samples that have been gathered since the last synchronization time.
+    Because this forces the replicas to synchronize, small values of this parameter may slightly reduce the overall throughput, especially on systems with unequal performance.
+  }
+\end{itemize}
+
+\cvsubsubsec{Output options}{sec:colvarbias_opes_output_options}
+
+The following options are used for setting the PMF and trajectory output. The PMF is calculated based on reweighting the CVs specified by \texttt{pmf{\textunderscore}colvars}, which collects on-the-fly the biasing energy $V(\boldsymbol{\xi})$ and the values of CVs of every step, and builds a weighted histogram to calculate the unbiased probability of $\boldsymbol{\xi}$
+\begin{equation}
+\langle \mathcal{P}(\boldsymbol{\xi}') \rangle = \dfrac{\sum_{t=0}^N \delta(\boldsymbol{\xi}(\mathbf{x})-\boldsymbol{\xi}') \exp\left(\frac{V(\boldsymbol{\xi})}{k_{\mathrm{B}} T}\right)}{\sum_{t=0}^N \exp\left(\frac{V(\boldsymbol{\xi})}{k_{\mathrm{B}} T}\right)}
+\end{equation}
+where $N$ is the total number of simulation steps, $\boldsymbol{\xi}'$ is the grid center in the histogram, and $\delta$ is the dirac delta function. The PMF is then obtained by
+\begin{equation}
+A(\boldsymbol{\xi}')=-k_{\mathrm{B}} T \ln{\langle \mathcal{P}(\boldsymbol{\xi}') \rangle} + A_0
+\end{equation}
+where $A_0$ is a constant to ensure $A(\boldsymbol{\xi}')$ on every grid of the histogram is not negative.
+
+\begin{itemize}
+\item %
+  \labelkey{opes_metad|pmf}
+  \keydef
+    {pmf}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Output the PMF}{%
+    boolean}{%
+    \texttt{off}}{%
+    This option turns on the PMF output based on reweighting.}
+\item %
+  \labelkey{opes_metad|pmf_colvars}
+  \key
+    {pmf{\textunderscore}colvars}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    The CVs used for estimating the PMF}{%
+    positive decimal}{%
+    This option sets the CVs used for the PMF. The CVs specified in this option must have appeared in \refkey{colvars}{colvarbias|colvars} and had the boundaries and widths.}
+\item %
+  \labelkey{opes_metad|pmf_hist_freq}
+  \keydef
+    {pmf{\textunderscore}hist{\textunderscore}freq}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    The frequency of saving the PMF history file}{%
+    positive integer}{%
+    0}{%
+    If this option is larger than 0 and \refkey{pmf}{opes_metad|pmf} is on, then every \texttt{pmf{\textunderscore}hist{\textunderscore}freq} steps the current PMF will also be saved into ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.hist.pmf}''.}
+\item %
+  \labelkey{opes_metad|pmf_shared}
+  \keydef
+    {pmf{\textunderscore}shared}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    Output a global PMF for multiple-walker OPES}{%
+    boolean}{%
+    \texttt{on}}{%
+    If \refkey{multipleReplicas}{opes_metad|multipleReplicas} is on and this option is also on, then a global reweighting histogram will be built to collect samples from all replicas, and the corresponding global PMF is written into ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.global.pmf}'' by replica 0. The history global PMF is also written to ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.global.hist.pmf}'' by replica 0.}
+\item %
+  \labelkey{opes_metad|print_trajectory_frequency}
+  \keydef
+    {print{\textunderscore}trajectory{\textunderscore}frequency}{%
+    \texttt{opes{\textunderscore}metad}}{%
+    The frequency of saving the trajectories}{%
+    positive integer}{%
+    \refkey{colvarsTrajFrequency}{Colvars-global|colvarsTrajFrequency}}{%
+    If this option is larger than 0, then every \texttt{print{\textunderscore}trajectory{\textunderscore}frequency}, the simulation time in ps, the values of CVs, the biasing energy, $c(t)$, $Z_n$ (if \refkey{no{\textunderscore}zed}{opes_metad|no_zed} is off), the effective sample size ($N_{\mathrm{eff}}$ in Ref.\cite{Invernizzi2020}), the work (if \refkey{calc{\textunderscore}work}{opes_metad|calc_work} is on), the total number of compressed kernels, the number of kernels in the neighbor list (if \refkey{nlist}{opes_metad|nlist} is on), and the number of steps from the last neighbor list update (if \refkey{nlist}{opes_metad|nlist} is on) will be written to
+    \\``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.misc.traj}''.
+    }
+\end{itemize}
+
+\cvsubsubsec{Example input}{sec:colvarbias_opes_example}
+
+\noindent\textbf{Example:} OPES with adaptive kernel bandwidth, neighbor list and PMF based on reweighting.\\
+\begin{cvexampleinput}
+\-colvarsTrajFrequency~~~~500         \\
+\-colvarsRestartFrequency~~~~5000     \\
+                                      \\
+\-colvar~\{                           \\
+\-\-~~name~phi                        \\
+\-\-~~lowerBoundary~-180              \\
+\-\-~~upperBoundary~180               \\
+\-\-~~width~5.0                       \\
+\-\-~~dihedral \{                     \\
+\-\-~~~~group1~\{atomNumbers~\{~5~\}\}\\
+\-\-~~~~group2~\{atomNumbers~\{~7~\}\}\\
+\-\-~~~~group3~\{atomNumbers~\{~9~\}\}\\
+\-\-~~~~group4~\{atomNumbers~\{~15\}\}\\
+\-\-~~\}                              \\
+\-\}                                  \\
+                                      \\
+\-colvar~\{                           \\
+\-~~name~psi                          \\
+\-~~lowerBoundary~-180                \\
+\-~~upperBoundary~180                 \\
+\-~~width~5.0                         \\
+\-~~dihedral \{                       \\
+\-~~~~group1~\{atomNumbers~\{~7~\}\}  \\
+\-~~~~group2~\{atomNumbers~\{~9~\}\}  \\
+\-~~~~group3~\{atomNumbers~\{~15~\}\} \\
+\-~~~~group4~\{atomNumbers~\{~17~\}\} \\
+\-~~\}                                \\
+\-\}                                  \\
+                                      \\
+\-opes\_metad~\{                      \\
+\-~~colvars~phi~psi                   \\
+\-~~pace~500                          \\
+\-~~barrier~11.950286806883364        \\
+\-~~adaptive\_sigma~on                \\
+\-~~nlist~on                          \\
+\-~~print\_trajectory\_frequency~500  \\
+\-~~pmf~on                            \\
+\-~~pmf\_colvars~phi~psi              \\
+\-~~pmf\_hist\_freq~1000              \\
+\-~~outputEnergy~on                   \\
+\-\}
+\end{cvexampleinput}
+
 
 \cvsubsec{Harmonic restraints}{sec:colvarbias_harmonic}
 
