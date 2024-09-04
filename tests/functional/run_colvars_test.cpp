@@ -36,7 +36,7 @@ extern "C" int main(int argc, char *argv[]) {
     cvm::log("Reading trajectory for " + cvm::to_str(natoms)
               + " atoms from XYZ file " + argv[2]);
     for (int ai = 0; ai < natoms; ai++) {
-      err |= proxy->init_atom(ai+1);
+      proxy->init_atom(ai+1);
     }
     int io_err = 0;
     while (!io_err) {
