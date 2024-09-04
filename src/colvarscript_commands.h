@@ -595,8 +595,10 @@ CVSCRIPT(cv_outputprefix,
            script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
          if (argstr) {
            std::string const prefix = cvm::state_file_prefix(argstr);
-           cvm::log("SETTING PREFIX TO " + prefix);
-           return cvm::proxy->set_output_prefix(prefix);
+           cvm::log("Setting output prefix to " + prefix);
+           int error = cvm::proxy->set_output_prefix(prefix);
+           error |= script->module()->setup_output();
+           return error;
          } else {
            script->set_result_str(cvm::output_prefix());
            return COLVARS_OK;
