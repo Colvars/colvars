@@ -1265,11 +1265,35 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
       throw std::runtime_error("Expect field \"" + s + "\" , but got \"" + field + "\"\n");
     }
   };
-  readFieldReal("biasfactor", m_biasfactor);
-  readFieldReal("epsilon", m_epsilon);
-  readFieldReal("kernel_cutoff", m_cutoff);
+  cvm::real old_biasfactor;
+  readFieldReal("biasfactor", old_biasfactor);
+  if (std::abs(old_biasfactor - m_biasfactor) > 1e-6 * m_biasfactor) {
+    cvm::log("WARNING: previous bias factor was " + cvm::to_str(old_biasfactor) +
+             " while now it is " + cvm::to_str(m_biasfactor) +
+             " (the new one is used).\n");
+  }
+  cvm::real old_epsilon;
+  readFieldReal("epsilon", old_epsilon);
+  if (std::abs(old_epsilon - m_epsilon) > 1e-6 * m_epsilon) {
+    cvm::log("WARNING: previous epsilon was " + cvm::to_str(old_epsilon) +
+             " while now it is " + cvm::to_str(m_epsilon) +
+             " (the new one is used).\n");
+  }
+  cvm::real old_cutoff;
+  readFieldReal("kernel_cutoff", old_cutoff);
+  if (std::abs(old_cutoff - m_cutoff) > 1e-6 * m_cutoff) {
+    cvm::log("WARNING: previous cutoff was " + cvm::to_str(old_cutoff) +
+             " while now it is " + cvm::to_str(m_cutoff) +
+             " (the new one is used).\n");
+  }
   m_cutoff2 = m_cutoff * m_cutoff;
-  readFieldReal("compression_threshold", m_compression_threshold);
+  cvm::real old_compression_threshold;
+  readFieldReal("compression_threshold", old_compression_threshold);
+  if (std::abs(old_compression_threshold - m_compression_threshold) > 1e-6 * m_compression_threshold) {
+    cvm::log("WARNING: previous cutoff was " + cvm::to_str(old_compression_threshold) +
+             " while now it is " + cvm::to_str(m_compression_threshold) +
+             " (the new one is used).\n");
+  }
   m_compression_threshold2 = m_compression_threshold * m_compression_threshold;
   readFieldReal("zed", m_zed);
   readFieldReal("sum_weights", m_sum_weights);
