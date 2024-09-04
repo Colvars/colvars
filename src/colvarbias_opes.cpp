@@ -1146,7 +1146,9 @@ int colvarbias_opes::collectSampleToPMFGrid() {
       bin[i] = m_reweight_grid->current_bin_scalar(i);
     }
     const cvm::real reweighting_factor = cvm::exp(bias_energy / m_kbt);
-    m_reweight_grid->acc_value(bin, reweighting_factor);
+    if (m_reweight_grid->index_ok(bin)) {
+      m_reweight_grid->acc_value(bin, reweighting_factor);
+    }
   }
   return COLVARS_OK;
 }
