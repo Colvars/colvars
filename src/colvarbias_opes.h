@@ -169,6 +169,7 @@ private:
   bool m_pmf_shared; // shared PMF among replicas
   std::unique_ptr<colvar_grid_scalar> m_global_reweight_grid;
   std::unique_ptr<colvar_grid_scalar> m_global_pmf_grid;
+  bool m_explore;
 };
 
 #endif // COLVARBIAS_OPES_H
