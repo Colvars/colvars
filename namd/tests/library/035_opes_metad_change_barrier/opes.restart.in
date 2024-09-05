@@ -41,12 +41,12 @@ colvar {
 
 opes_metad {
     colvars phi1 phi2 phi3
-    pace 5
+    newHillFrequency 5
     barrier 5.0
-    adaptive_sigma on
-    nlist on
-    print_trajectory_frequency 1
+    adaptiveSigma on
+    neighborList on
+    printTrajectoryFrequency 1
     pmf on
-    pmf_colvars phi2 phi3
+    pmfColvars phi2 phi3
     outputEnergy on
 }
