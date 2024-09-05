@@ -53,7 +53,8 @@ colvarbias_opes::colvarbias_opes(char const *key):
   m_num_threads(1), m_nlker(0), m_traj_output_frequency(0),
   m_traj_line(traj_line{0}), m_is_first_step(true),
   m_pmf_grid_on(false), m_reweight_grid(nullptr),
-  m_pmf_grid(nullptr), m_pmf_hist_freq(0), m_pmf_shared(true)
+  m_pmf_grid(nullptr), m_pmf_hist_freq(0), m_pmf_shared(true),
+  m_explore(false)
 {
 }
 
@@ -65,6 +66,7 @@ int colvarbias_opes::init(const std::string& conf) {
   m_kbt = m_temperature * cvm::proxy->boltzmann();
   get_keyval(conf, "pace", m_pace);
   get_keyval(conf, "barrier", m_barrier);
+  get_keyval(conf, "explore", m_explore, false);
   if (m_barrier < 0) {
     return cvm::error("the barrier should be greater than zero", COLVARS_INPUT_ERROR);
   }
@@ -77,6 +79,9 @@ int colvarbias_opes::init(const std::string& conf) {
   if (biasfactor_str == "inf" || biasfactor_str == "INF") {
     m_biasfactor = std::numeric_limits<cvm::real>::infinity();
     m_bias_prefactor = -1;
+    if (m_explore) {
+      return cvm::error("biasfactor cannot be infinity in the explore mode.");
+    }
   } else {
     if (biasfactor_str.size() > 0) {
       try {
@@ -89,6 +94,9 @@ int colvarbias_opes::init(const std::string& conf) {
       return cvm::error("biasfactor must be greater than one (use \"inf\" for uniform target)");
     }
     m_bias_prefactor = 1 - 1.0 / m_biasfactor;
+  }
+  if (m_explore) {
+    m_bias_prefactor = m_biasfactor - 1;
   }
   get_keyval(conf, "adaptive_sigma", m_adaptive_sigma, false);
   m_sigma0.resize(num_variables());
@@ -112,6 +120,11 @@ int colvarbias_opes::init(const std::string& conf) {
       return cvm::error("number of sigma parameters does not match the number of variables",
                         COLVARS_INPUT_ERROR);
     }
+    if (m_explore) {
+      for (size_t i = 0; i < num_variables(); ++i) {
+        m_sigma0[i] *= std::sqrt(m_biasfactor);
+      }
+    }
   }
   get_keyval(conf, "sigma_min", m_sigma_min);
   if ((m_sigma_min.size() != 0) && (m_sigma_min.size() != num_variables())) {
@@ -130,7 +143,11 @@ int colvarbias_opes::init(const std::string& conf) {
   }
   m_sum_weights = std::pow(m_epsilon, m_bias_prefactor);
   m_sum_weights2 = m_sum_weights * m_sum_weights;
-  get_keyval(conf, "kernel_cutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_bias_prefactor/m_kbt));
+  if (m_explore) {
+    get_keyval(conf, "kernel_cutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_kbt));
+  } else {
+    get_keyval(conf, "kernel_cutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_bias_prefactor/m_kbt));
+  }
   if (m_cutoff <= 0) {
     return cvm::error("you must choose a value of kernel_cutoff greater than zero");
   }
@@ -246,8 +263,7 @@ int colvarbias_opes::init(const std::string& conf) {
       }
     }
   }
-  // TODO: explore mode
-  m_kdenorm = m_sum_weights;
+  m_kdenorm = m_explore? m_counter : m_sum_weights;
   m_old_kdenorm = m_kdenorm;
   m_traj_line.rct = m_kbt * cvm::logn(m_sum_weights / m_counter);
   m_traj_line.zed = m_zed;
@@ -318,7 +334,7 @@ void colvarbias_opes::showInfo() const {
     printInfo("using multiple threads per simulation: ", cvm::to_str(m_num_threads));
   }
   cvm::main()->cite_feature("OPES");
-  if (m_adaptive_sigma) {
+  if (m_adaptive_sigma || m_explore) {
     cvm::main()->cite_feature("OPES explore or adaptive kernels");
   }
 }
@@ -603,11 +619,15 @@ int colvarbias_opes::update_opes() {
     m_rct = m_kbt * cvm::logn(m_sum_weights / m_counter);
     m_traj_line.neff = m_neff;
     m_traj_line.rct = m_rct;
-    // TODO: exploration mode
-    m_kdenorm = m_sum_weights;
+    if (m_explore) {
+      m_kdenorm = m_counter;
+      height = 1.0;
+    } else {
+      m_kdenorm = m_sum_weights;
+    }
     std::vector<cvm::real> sigma = m_sigma0;
     if (m_adaptive_sigma) {
-      const cvm::real factor = m_biasfactor;
+      const cvm::real factor = m_explore ? 1.0 : m_biasfactor;
       if (m_counter == 1 + m_num_walkers) {
         for (size_t i = 0; i < num_variables(); ++i) {
           m_av_M2[i] *= m_biasfactor;
@@ -650,7 +670,7 @@ int colvarbias_opes::update_opes() {
       }
     }
     if (!m_fixed_sigma) {
-      const cvm::real size = m_neff;
+      const cvm::real size = m_explore ? m_counter : m_neff;
       const size_t ncv = num_variables();
       const cvm::real s_rescaling = std::pow(size * (ncv + 2.0) / 4, -1.0 / (4.0 + ncv));
       for (size_t i = 0; i < num_variables(); ++i) {
@@ -1349,7 +1369,7 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
     read_state_data_key(is, "probability_grid");
     m_reweight_grid->read_raw(is);
   }
-  m_kdenorm = m_sum_weights;
+  m_kdenorm = m_explore ? m_counter : m_sum_weights;
   m_traj_line.rct = m_kbt * cvm::logn(m_sum_weights / m_counter);
   m_traj_line.zed = m_zed;
   m_traj_line.neff = (1 + m_sum_weights) * (1 + m_sum_weights) / (1 + m_sum_weights2);
