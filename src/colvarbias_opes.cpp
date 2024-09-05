@@ -1684,11 +1684,13 @@ int colvarbias_opes::write_output_files() {
     os_kernels << "#! SET kernel_cutoff " << m_cutoff << "\n";
     os_kernels << "#! SET compression_threshold " << m_compression_threshold << "\n";
     for (size_t i = 0; i < num_variables(); ++i) {
-      if (variables(i)->is_enabled(f_cv_lower_boundary)) {
-        os_kernels << "#! SET min_" + variables(i)->name + " " << variables(i)->lower_boundary.real_value << "\n";
-      }
-      if (variables(i)->is_enabled(f_cv_upper_boundary)) {
-        os_kernels << "#! SET max_" + variables(i)->name + " " << variables(i)->upper_boundary.real_value << "\n";
+      if (variables(i)->is_enabled(f_cv_periodic)) {
+        if (variables(i)->is_enabled(f_cv_lower_boundary)) {
+          os_kernels << "#! SET min_" + variables(i)->name + " " << variables(i)->lower_boundary.real_value << "\n";
+        }
+        if (variables(i)->is_enabled(f_cv_upper_boundary)) {
+          os_kernels << "#! SET max_" + variables(i)->name + " " << variables(i)->upper_boundary.real_value << "\n";
+        }
       }
     }
   }
