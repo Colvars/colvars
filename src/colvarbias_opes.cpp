@@ -164,7 +164,7 @@ int colvarbias_opes::init(const std::string& conf) {
   if (m_nlist) {
     get_keyval(conf, "neighborListNewHillReset", m_nlist_pace_reset, false);
     std::vector<cvm::real> nlist_param;
-    get_keyval(conf, "neighborListParam", nlist_param, std::vector<cvm::real>());
+    get_keyval(conf, "neighborListParameters", nlist_param, std::vector<cvm::real>());
     if (nlist_param.empty()) {
       m_nlist_param[0] = 3.0; //*cutoff2_ -> max distance of neighbors
       m_nlist_param[1] = 0.5; //*nlist_dev2_[i] -> condition for rebuilding
