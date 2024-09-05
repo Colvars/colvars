@@ -1676,7 +1676,9 @@ int colvarbias_opes::write_output_files() {
       os_kernels << "sigma_" + variables(i)->name + " ";
     }
     os_kernels << "height logweight\n";
-    os_kernels << "#! SET action " + name + "_kernels\n";
+    // Make sure the action name compatible with the script in https://github.com/invemichele/opes/blob/master/postprocessing/State_from_Kernels.py
+    if (m_explore) os_kernels << "#! SET action OPES_METAD_EXPLORE_kernels\n";
+    else os_kernels << "#! SET action OPES_METAD_kernels\n";
     os_kernels << "#! SET biasfactor " << m_biasfactor << "\n";
     os_kernels << "#! SET epsilon " << m_epsilon << "\n";
     os_kernels << "#! SET kernel_cutoff " << m_cutoff << "\n";
