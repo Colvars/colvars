@@ -64,7 +64,7 @@ int colvarbias_opes::init(const std::string& conf) {
   get_keyval_feature(this, conf, "applyBias", f_cvb_apply_force, true);
   m_temperature = cvm::proxy->target_temperature();
   m_kbt = m_temperature * cvm::proxy->boltzmann();
-  get_keyval(conf, "pace", m_pace);
+  get_keyval(conf, "newHillFrequency", m_pace);
   get_keyval(conf, "barrier", m_barrier);
   get_keyval(conf, "explore", m_explore, false);
   if (m_barrier < 0) {
@@ -98,13 +98,13 @@ int colvarbias_opes::init(const std::string& conf) {
   if (m_explore) {
     m_bias_prefactor = m_biasfactor - 1;
   }
-  get_keyval(conf, "adaptive_sigma", m_adaptive_sigma, false);
+  get_keyval(conf, "adaptiveSigma", m_adaptive_sigma, false);
   m_sigma0.resize(num_variables());
-  get_keyval(conf, "sigma", m_sigma0, std::vector<cvm::real>(num_variables()));
+  get_keyval(conf, "gaussianSigma", m_sigma0, std::vector<cvm::real>(num_variables()));
   m_av_cv.assign(num_variables(), 0);
   m_av_M2.assign(num_variables(), 0);
   if (m_adaptive_sigma) {
-    get_keyval(conf, "adaptive_sigma_stride", m_adaptive_sigma_stride, 0);
+    get_keyval(conf, "adaptiveSigmaStride", m_adaptive_sigma_stride, 0);
     if (std::isinf(m_biasfactor)) {
       return cvm::error("cannot use infinite biasfactor with adaptive sigma",
                         COLVARS_INPUT_ERROR);
@@ -113,7 +113,7 @@ int colvarbias_opes::init(const std::string& conf) {
       m_adaptive_sigma_stride = m_pace * 10;
     }
     if (m_adaptive_sigma_stride < m_pace) {
-      return cvm::error("It is better to choose an adaptive_sigma_stride >= pace.\n", COLVARS_INPUT_ERROR);
+      return cvm::error("It is better to choose an adaptiveSigmaStride >= newHillFrequency.\n", COLVARS_INPUT_ERROR);
     }
   } else {
     if (m_sigma0.size() != num_variables()) {
@@ -126,14 +126,14 @@ int colvarbias_opes::init(const std::string& conf) {
       }
     }
   }
-  get_keyval(conf, "sigma_min", m_sigma_min);
+  get_keyval(conf, "gaussianSigmaMin", m_sigma_min);
   if ((m_sigma_min.size() != 0) && (m_sigma_min.size() != num_variables())) {
-    return cvm::error("incorrect number of parameters of sigma_min");
+    return cvm::error("incorrect number of parameters of gaussianSigmaMin");
   }
   if (m_sigma_min.size() > 0 && !m_adaptive_sigma) {
     for (size_t i = 0; i < num_variables(); ++i) {
       if (m_sigma_min[i] > m_sigma0[i]) {
-        return cvm::error("sigma_min of variable " + cvm::to_str(i) + " should be smaller than sigma");
+        return cvm::error("gaussianSigmaMin of variable " + cvm::to_str(i) + " should be smaller than sigma");
       }
     }
   }
@@ -144,27 +144,27 @@ int colvarbias_opes::init(const std::string& conf) {
   m_sum_weights = std::pow(m_epsilon, m_bias_prefactor);
   m_sum_weights2 = m_sum_weights * m_sum_weights;
   if (m_explore) {
-    get_keyval(conf, "kernel_cutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_kbt));
+    get_keyval(conf, "kernelCutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_kbt));
   } else {
-    get_keyval(conf, "kernel_cutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_bias_prefactor/m_kbt));
+    get_keyval(conf, "kernelCutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_bias_prefactor/m_kbt));
   }
   if (m_cutoff <= 0) {
-    return cvm::error("you must choose a value of kernel_cutoff greater than zero");
+    return cvm::error("you must choose a value of kernelCutoff greater than zero");
   }
   m_cutoff2 = m_cutoff * m_cutoff;
   m_val_at_cutoff = std::exp(-0.5 * m_cutoff2);
-  get_keyval(conf, "compression_threshold", m_compression_threshold, 1);
+  get_keyval(conf, "compressionThreshold", m_compression_threshold, 1);
   if (m_compression_threshold != 0) {
     if (m_compression_threshold < 0 || m_compression_threshold > m_cutoff) {
-      return cvm::error("compression_threshold cannot be smaller than 0 or larger than kernel_cutoff", COLVARS_INPUT_ERROR);
+      return cvm::error("compressionThreshold cannot be smaller than 0 or larger than kernelCutoff", COLVARS_INPUT_ERROR);
     }
   }
   m_compression_threshold2 = m_compression_threshold * m_compression_threshold;
-  get_keyval(conf, "nlist", m_nlist, false);
+  get_keyval(conf, "neighborList", m_nlist, false);
   if (m_nlist) {
-    get_keyval(conf, "nlist_pace_reset", m_nlist_pace_reset, false);
+    get_keyval(conf, "neighborListNewHillReset", m_nlist_pace_reset, false);
     std::vector<cvm::real> nlist_param;
-    get_keyval(conf, "nlist_param", nlist_param, std::vector<cvm::real>());
+    get_keyval(conf, "neighborListParam", nlist_param, std::vector<cvm::real>());
     if (nlist_param.empty()) {
       m_nlist_param[0] = 3.0; //*cutoff2_ -> max distance of neighbors
       m_nlist_param[1] = 0.5; //*nlist_dev2_[i] -> condition for rebuilding
@@ -173,14 +173,14 @@ int colvarbias_opes::init(const std::string& conf) {
         return cvm::error("two cutoff parameters are needed for the neighbor list", COLVARS_INPUT_ERROR);
       }
       if (nlist_param[0] <= 1.0) {
-        return cvm::error("the first of nlist_param must be greater than 1.0. The smaller the first, the smaller should be the second as well", COLVARS_INPUT_ERROR);
+        return cvm::error("the first of neighborListParam must be greater than 1.0. The smaller the first, the smaller should be the second as well", COLVARS_INPUT_ERROR);
       }
       const cvm::real min_PARAM_1 = (1.-1./std::sqrt(nlist_param[0]))+0.16;
       if (nlist_param[1] <= 0) {
-        return cvm::error("the second of nlist_param must be greater than 0", COLVARS_INPUT_ERROR);
+        return cvm::error("the second of neighborListParam must be greater than 0", COLVARS_INPUT_ERROR);
       }
       if (nlist_param[1] > min_PARAM_1) {
-        return cvm::error("the second of nlist_param must be smaller to avoid systematic errors. Largest suggested value is: 1.16-1/sqrt(param_0) = " + cvm::to_str(min_PARAM_1), COLVARS_INPUT_ERROR);
+        return cvm::error("the second of neighborListParam must be smaller to avoid systematic errors. Largest suggested value is: 1.16-1/sqrt(param_0) = " + cvm::to_str(min_PARAM_1), COLVARS_INPUT_ERROR);
       }
       m_nlist_param = nlist_param;
     }
@@ -189,14 +189,14 @@ int colvarbias_opes::init(const std::string& conf) {
     m_nlist_steps = 0;
     m_nlist_update = true;
   }
-  get_keyval(conf, "no_zed", m_no_zed, false);
+  get_keyval(conf, "noZed", m_no_zed, false);
   if (m_no_zed) {
     m_sum_weights = 1;
     m_sum_weights2 = 1;
   }
-  get_keyval(conf, "fixed_sigma", m_fixed_sigma, false);
-  get_keyval(conf, "recursive_merge", m_recursive_merge, true);
-  get_keyval(conf, "calc_work", m_calc_work, false);
+  get_keyval(conf, "fixedGaussianSigma", m_fixed_sigma, false);
+  get_keyval(conf, "recursiveMerge", m_recursive_merge, true);
+  get_keyval(conf, "calcWork", m_calc_work, false);
   bool b_replicas = false;
   get_keyval(conf, "multipleReplicas", b_replicas, false);
   if (!cvm::proxy->b_smp_active) m_num_threads = 1;
@@ -235,7 +235,7 @@ int colvarbias_opes::init(const std::string& conf) {
   get_keyval(conf, "pmf", m_pmf_grid_on, false);
   if (m_pmf_grid_on) {
     std::vector<std::string> pmf_cv_name;
-    get_keyval(conf, "pmf_colvars", pmf_cv_name);
+    get_keyval(conf, "pmfColvars", pmf_cv_name);
     for (auto it = pmf_cv_name.begin(); it != pmf_cv_name.end(); ++it) {
       bool found = false;
       for (size_t i = 0; i < num_variables(); ++i) {
@@ -254,9 +254,9 @@ int colvarbias_opes::init(const std::string& conf) {
     }
     m_reweight_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
     m_pmf_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
-    get_keyval(conf, "pmf_hist_freq", m_pmf_hist_freq, 0);
+    get_keyval(conf, "pmfHistoryFrequency", m_pmf_hist_freq, 0);
     if (comm == multiple_replicas) {
-      get_keyval(conf, "pmf_shared", m_pmf_shared, true);
+      get_keyval(conf, "pmfShared", m_pmf_shared, true);
       if (m_pmf_shared) {
         m_global_reweight_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
         m_global_pmf_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
@@ -269,7 +269,7 @@ int colvarbias_opes::init(const std::string& conf) {
   m_traj_line.zed = m_zed;
   m_traj_line.neff = (1 + m_sum_weights) * (1 + m_sum_weights) / (1 + m_sum_weights2);
   m_traj_line.nker = m_kernels.size();
-  get_keyval(conf, "print_trajectory_frequency", m_traj_output_frequency, cvm::cv_traj_freq);
+  get_keyval(conf, "printTrajectoryFrequency", m_traj_output_frequency, cvm::cv_traj_freq);
   m_cv.resize(num_variables(), 0);
   showInfo();
   return error_code;
@@ -282,34 +282,34 @@ void colvarbias_opes::showInfo() const {
   };
   printInfo("temperature = ", cvm::to_str(m_biasfactor));
   printInfo("beta = ", cvm::to_str(1.0 / m_kbt));
-  printInfo("depositing new kernels with pace = ", cvm::to_str(m_pace));
+  printInfo("depositing new kernels with newHillFrequency = ", cvm::to_str(m_pace));
   printInfo("expected barrier is ", cvm::to_str(m_barrier));
   printInfo("using target distribution with biasfactor (gamma) = ", cvm::to_str(m_biasfactor));
   if (m_biasfactor == std::numeric_limits<cvm::real>::infinity()) {
     cvm::log("  (thus a uniform flat target distribution, no well-tempering)\n");
   }
   if (m_adaptive_sigma) {
-    printInfo("adaptive sigma will be used, with adaptive_sigma_stride = ", cvm::to_str(m_adaptive_sigma_stride));
+    printInfo("adaptive sigma will be used, with adaptiveSigmaStride = ", cvm::to_str(m_adaptive_sigma_stride));
     size_t x = std::ceil(m_adaptive_sigma_stride / m_pace);
-    printInfo("  thus the first x kernel depositions will be skipped, x = adaptive_sigma_stride/pace = ", cvm::to_str(x));
+    printInfo("  thus the first x kernel depositions will be skipped, x = adaptiveSigmaStride/newHillFrequency = ", cvm::to_str(x));
   } else {
     std::string sigmas;
     for (size_t i = 0; i < num_variables(); ++i) {
       sigmas += " " + cvm::to_str(m_sigma0[i]);
     }
-    cvm::log(this->name + ": kernels have initial sigma = " + sigmas + "\n");
+    cvm::log(this->name + ": kernels have initial gaussianSigma = " + sigmas + "\n");
   }
   if (m_fixed_sigma) {
-    cvm::log(this->name + " fixed_sigma: sigma will not decrease as the simulation proceeds\n");
+    cvm::log(this->name + " fixedGaussianSigma: gaussianSigma will not decrease as the simulation proceeds\n");
   }
-  printInfo("kernels are truncated with kernels_cutoff = ", cvm::to_str(m_cutoff));
+  printInfo("kernels are truncated with kernelCutoff = ", cvm::to_str(m_cutoff));
   if (m_cutoff < 3.5) {
     cvm::log(this->name + " +++ WARNING +++ probably kernels are truncated too much\n");
   }
   printInfo("the value at cutoff is = ", cvm::to_str(m_val_at_cutoff));
   printInfo("regularization epsilon = ", cvm::to_str(m_epsilon));
   if (m_val_at_cutoff > m_epsilon*(1+1e-6)) {
-    cvm::log(this->name + " +++ WARNING +++ the kernel_cutoff might be too small for the given EPSILON\n");
+    cvm::log(this->name + " +++ WARNING +++ the kernelCutoff might be too small for the given epsilon\n");
   }
   printInfo("kernels will be compressed when closer than compression_threshold = ", cvm::to_str(m_compression_threshold));
   if (m_compression_threshold2 == 0) {
@@ -319,13 +319,13 @@ void colvarbias_opes::showInfo() const {
     cvm::log(this->name + " -- RECURSIVE_MERGE_OFF: only one merge for each new kernel will be attempted. This is faster only if total number of kernels does not grow too much\n");
   }
   if (m_nlist) {
-    cvm::log(this->name + " nlist: using neighbor list for kernels, with parameters: " + cvm::to_str(m_nlist_param[0]) + " " + cvm::to_str(m_nlist_param[1]) + "\n");
+    cvm::log(this->name + " neighborList: using neighbor list for kernels, with parameters: " + cvm::to_str(m_nlist_param[0]) + " " + cvm::to_str(m_nlist_param[1]) + "\n");
     if (m_nlist_pace_reset) {
-      cvm::log(this->name + " nlist_pace_reset: forcing the neighbor list to update every pace\n");
+      cvm::log(this->name + " neighborListNewHillReset: forcing the neighbor list to update every time when depositing a new hill\n");
     }
   }
   if (m_no_zed) {
-    printInfo("no_zed: using fixed normalization factor = ", cvm::to_str(m_zed));
+    printInfo("noZed: using fixed normalization factor = ", cvm::to_str(m_zed));
   }
   if (comm == multiple_replicas && m_num_walkers > 1) {
     cvm::log(this->name + " if multiple replicas are present, they will share the same bias\n");
