@@ -1271,6 +1271,15 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
   if (tmp_name.rfind("opes_metad_", 0) != 0) {
     throw std::runtime_error("Unknown action name: " + tmp_name + "\n");
   }
+  auto readFieldString = [&](const std::string& s, std::string& x){
+    std::string field;
+    is >> field;
+    if (field.compare(s) == 0) {
+      is >> x;
+    } else {
+      throw std::runtime_error("Expect field \"" + s + "\" , but got \"" + field + "\"\n");
+    }
+  };
   auto readFieldReal = [&](const std::string& s, cvm::real& x){
     std::string field;
     is >> field;
@@ -1289,8 +1298,15 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
       throw std::runtime_error("Expect field \"" + s + "\" , but got \"" + field + "\"\n");
     }
   };
+  std::string old_biasfactor_str;
   cvm::real old_biasfactor;
-  readFieldReal("biasfactor", old_biasfactor);
+  readFieldString("biasfactor", old_biasfactor_str);
+  if (old_biasfactor_str == "inf" || old_biasfactor_str == "-inf" || old_biasfactor_str == "+inf" ||
+      old_biasfactor_str == "INF" || old_biasfactor_str == "-INF" || old_biasfactor_str == "+INF") {
+    old_biasfactor = std::numeric_limits<cvm::real>::infinity();
+  } else {
+    old_biasfactor = std::stod(old_biasfactor_str);
+  }
   if (std::abs(old_biasfactor - m_biasfactor) > 1e-6 * m_biasfactor) {
     cvm::log("WARNING: previous bias factor was " + cvm::to_str(old_biasfactor) +
              " while now it is " + cvm::to_str(m_biasfactor) +
