@@ -507,7 +507,7 @@ int colvarbias_opes::calculate_opes() {
       m_nlist_update = true;
     } else {
       for (size_t i = 0; i < num_variables(); ++i) {
-        const cvm::real diff_i2 = variables(i)->dist2(m_cv[i], m_av_cv[i]);
+        const cvm::real diff_i2 = variables(i)->dist2(m_cv[i], m_nlist_center[i]);
         if (diff_i2 > m_nlist_param[1] * m_nlist_dev2[i]) {
           m_nlist_update = true;
           break;
