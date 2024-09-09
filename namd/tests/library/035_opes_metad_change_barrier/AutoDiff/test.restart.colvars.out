@@ -283,41 +283,43 @@ colvars:   # outputEnergy = on
 colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # applyBias = on [default]
-colvars:   # pace = 5
+colvars:   # newHillFrequency = 5
 colvars:   # barrier = 5
+colvars:   # explore = off [default]
 colvars:   # biasfactor = "" [default]
-colvars:   # adaptive_sigma = on
-colvars:   # sigma = { 0, 0, 0 } [default]
-colvars:   # adaptive_sigma_stride = 0 [default]
-colvars:   # sigma_min =  [default]
+colvars:   # adaptiveSigma = on
+colvars:   # gaussianSigma = { 0, 0, 0 } [default]
+colvars:   # adaptiveSigmaStride = 0 [default]
+colvars:   # gaussianSigmaMin =  [default]
 colvars:   # epsilon = 7.31923e-05 [default]
-colvars:   # kernel_cutoff = 4.36404 [default]
-colvars:   # compression_threshold = 1 [default]
-colvars:   # nlist = on
-colvars:   # nlist_pace_reset = off [default]
-colvars:   # nlist_param =  [default]
-colvars:   # no_zed = off [default]
-colvars:   # fixed_sigma = off [default]
-colvars:   # recursive_merge = on [default]
-colvars:   # calc_work = off [default]
+colvars:   # kernelCutoff = 4.36404 [default]
+colvars:   # compressionThreshold = 1 [default]
+colvars:   # neighborList = on
+colvars:   # neighborListNewHillReset = off [default]
+colvars:   # neighborListParameters =  [default]
+colvars:   # noZed = off [default]
+colvars:   # fixedGaussianSigma = off [default]
+colvars:   # recursiveMerge = on [default]
+colvars:   # calcWork = off [default]
 colvars:   # multipleReplicas = off [default]
 colvars:   # serial = off [default]
 colvars:   # pmf = on
-colvars:   # pmf_colvars = { phi2, phi3 }
-colvars:   # pmf_hist_freq = 0 [default]
-colvars:   # print_trajectory_frequency = 1
-colvars:   opes_metad1: temperature = 8.38705
+colvars:   # pmfColvars = { phi2, phi3 }
+colvars:   # pmfHistoryFrequency = 0 [default]
+colvars:   # printTrajectoryFrequency = 1
+colvars:   opes_metad1: temperature = 300
 colvars:   opes_metad1: beta = 1.67741
-colvars:   opes_metad1: depositing new kernels with pace = 5
+colvars:   opes_metad1: depositing new kernels with newHillFrequency = 5
 colvars:   opes_metad1: expected barrier is 5
 colvars:   opes_metad1: using target distribution with biasfactor (gamma) = 8.38705
-colvars:   opes_metad1: adaptive sigma will be used, with adaptive_sigma_stride = 50
-colvars:   opes_metad1:   thus the first x kernel depositions will be skipped, x = adaptive_sigma_stride/pace = 10
-colvars:   opes_metad1: kernels are truncated with kernels_cutoff = 4.36404
+colvars:   opes_metad1: the equivalent bias temperature = 2216.11
+colvars:   opes_metad1: adaptive sigma will be used, with adaptiveSigmaStride = 50
+colvars:   opes_metad1:   thus the first x kernel depositions will be skipped, x = adaptiveSigmaStride/newHillFrequency = 10
+colvars:   opes_metad1: kernels are truncated with kernelCutoff = 4.36404
 colvars:   opes_metad1: the value at cutoff is = 7.31923e-05
 colvars:   opes_metad1: regularization epsilon = 7.31923e-05
 colvars:   opes_metad1: kernels will be compressed when closer than compression_threshold = 1
-colvars:   opes_metad1 nlist: using neighbor list for kernels, with parameters: 3 0.5
+colvars:   opes_metad1 neighborList: using neighbor list for kernels, with parameters: 3 0.5
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -369,18 +371,19 @@ colvars:   Restarting collective variable "phi3" from value: -34.3475
 colvars:   WARNING: previous bias factor was 16.7741 while now it is 8.38705 (the new one is used).
 colvars:   WARNING: previous epsilon was 1.79174e-08 while now it is 7.31923e-05 (the new one is used).
 colvars:   WARNING: previous cutoff was 5.97285 while now it is 4.36404 (the new one is used).
-colvars:   opes_metad1: temperature = 8.38705
+colvars:   opes_metad1: temperature = 300
 colvars:   opes_metad1: beta = 1.67741
-colvars:   opes_metad1: depositing new kernels with pace = 5
+colvars:   opes_metad1: depositing new kernels with newHillFrequency = 5
 colvars:   opes_metad1: expected barrier is 5
 colvars:   opes_metad1: using target distribution with biasfactor (gamma) = 8.38705
-colvars:   opes_metad1: adaptive sigma will be used, with adaptive_sigma_stride = 50
-colvars:   opes_metad1:   thus the first x kernel depositions will be skipped, x = adaptive_sigma_stride/pace = 10
-colvars:   opes_metad1: kernels are truncated with kernels_cutoff = 4.36404
+colvars:   opes_metad1: the equivalent bias temperature = 2216.11
+colvars:   opes_metad1: adaptive sigma will be used, with adaptiveSigmaStride = 50
+colvars:   opes_metad1:   thus the first x kernel depositions will be skipped, x = adaptiveSigmaStride/newHillFrequency = 10
+colvars:   opes_metad1: kernels are truncated with kernelCutoff = 4.36404
 colvars:   opes_metad1: the value at cutoff is = 7.31923e-05
 colvars:   opes_metad1: regularization epsilon = 7.31923e-05
 colvars:   opes_metad1: kernels will be compressed when closer than compression_threshold = 1
-colvars:   opes_metad1 nlist: using neighbor list for kernels, with parameters: 3 0.5
+colvars:   opes_metad1 neighborList: using neighbor list for kernels, with parameters: 3 0.5
 colvars:   Restarted opes_metad bias "opes_metad1" with step number 100.
 colvars: ----------------------------------------------------------------------
 colvars: The restart output state file will be "test.restart.restart.colvars.state".
