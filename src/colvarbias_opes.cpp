@@ -76,7 +76,8 @@ int colvarbias_opes::init(const std::string& conf) {
     cvm::log("WARNING: OPES should not be run without a thermostat or at 0 Kelvin!\n");
   }
   m_biasfactor = m_barrier / m_kbt;
-  if (biasfactor_str == "inf" || biasfactor_str == "INF") {
+  const bool inf_biasfactor = biasfactor_str == "inf" || biasfactor_str == "INF";
+  if (inf_biasfactor) {
     m_biasfactor = std::numeric_limits<cvm::real>::infinity();
     m_bias_prefactor = 1;
     if (m_explore) {
@@ -105,7 +106,7 @@ int colvarbias_opes::init(const std::string& conf) {
   m_av_M2.assign(num_variables(), 0);
   if (m_adaptive_sigma) {
     get_keyval(conf, "adaptiveSigmaStride", m_adaptive_sigma_stride, 0);
-    if (std::isinf(m_biasfactor)) {
+    if (inf_biasfactor) {
       return cvm::error("cannot use infinite biasfactor with adaptive sigma",
                         COLVARS_INPUT_ERROR);
     }
