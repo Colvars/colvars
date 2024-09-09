@@ -78,7 +78,7 @@ int colvarbias_opes::init(const std::string& conf) {
   m_biasfactor = m_barrier / m_kbt;
   if (biasfactor_str == "inf" || biasfactor_str == "INF") {
     m_biasfactor = std::numeric_limits<cvm::real>::infinity();
-    m_bias_prefactor = -1;
+    m_bias_prefactor = 1;
     if (m_explore) {
       return cvm::error("biasfactor cannot be infinity in the explore mode.");
     }
