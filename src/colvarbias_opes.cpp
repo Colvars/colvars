@@ -281,13 +281,16 @@ void colvarbias_opes::showInfo() const {
   auto printInfo = [&](const std::string& info, const std::string& val){
     cvm::log(this->name + ": " + info + val + "\n");
   };
-  printInfo("temperature = ", cvm::to_str(m_biasfactor));
+  printInfo("temperature = ", cvm::to_str(m_kbt / cvm::proxy->boltzmann()));
   printInfo("beta = ", cvm::to_str(1.0 / m_kbt));
   printInfo("depositing new kernels with newHillFrequency = ", cvm::to_str(m_pace));
   printInfo("expected barrier is ", cvm::to_str(m_barrier));
   printInfo("using target distribution with biasfactor (gamma) = ", cvm::to_str(m_biasfactor));
   if (m_biasfactor == std::numeric_limits<cvm::real>::infinity()) {
     cvm::log("  (thus a uniform flat target distribution, no well-tempering)\n");
+    cvm::log(this->name + ": " + "the equivalent bias temperature = inf\n");
+  } else {
+    cvm::log(this->name + ": " + "the equivalent bias temperature = " + cvm::to_str(cvm::proxy->target_temperature() * (m_biasfactor - 1)));
   }
   if (m_adaptive_sigma) {
     printInfo("adaptive sigma will be used, with adaptiveSigmaStride = ", cvm::to_str(m_adaptive_sigma_stride));
