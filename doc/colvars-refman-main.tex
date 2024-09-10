@@ -6661,7 +6661,7 @@ To enable a OPES-based calculation, a \texttt{opes{\textunderscore}metad \{...\}
     \texttt{opes{\textunderscore}metad}}{%
     Number of steps for measuring adaptive sigma}{%
     positive integer}{%
-    $10\times\mathrm{pace}$}{%
+    $10\times\mathrm{newHillFrequency}$}{%
     This option sets the number of steps for measuring the rolling variances of CVs that are used by the adaptive kernel bandwidth algorithm. See the Supporting Information of Ref.\cite{Invernizzi2022} for more details.}
 \item %
   \labelkey{opes_metad|nlist}
@@ -6677,10 +6677,10 @@ To enable a OPES-based calculation, a \texttt{opes{\textunderscore}metad \{...\}
   \keydef
     {neighborListNewHillReset}{%
     \texttt{opes{\textunderscore}metad}}{%
-    Force the reset of the neighbor list at each pace}{%
+    Force the reset of the neighbor list at each time when depositing a new hill}{%
     boolean}{%
     \texttt{off}}{%
-    If enabled, the neighbor list will be rebuilt at each pace.}
+    If enabled, the neighbor list will be rebuilt at each time when depositing a new hill.}
 \item %
   \labelkey{opes_metad|nlist_param}
   \keydef
