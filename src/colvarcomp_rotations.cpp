@@ -145,21 +145,30 @@ void colvar::orientation::apply_force(colvarvalue const &force)
   if (!atoms->noforce) {
     rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
     cvm::vector1d<cvm::rvector> dq0_2;
-
-    if (atoms->is_enabled(f_ag_rotate)) {
-      auto const rot_inv = atoms->rot.inverse().matrix();
-      for (size_t ia = 0; ia < atoms->size(); ia++) {
-        rot_deriv_impl->calc_derivative_wrt_group2(ia, nullptr, &dq0_2);
-        for (size_t i = 0; i < 4; i++) {
-          (*atoms)[ia].apply_force(rot_inv * (FQ[i] * dq0_2[i]));
-        }
+    std::vector<cvm::rvector> main_group_forces;
+    const bool force_on_fitting_group = atoms->fitting_group == nullptr ? false : true;
+    cvm::rmatrix ag_rot;
+    if (force_on_fitting_group) {
+      ag_rot = atoms->rot.inverse().matrix();
+    }
+    for (size_t ia = 0; ia < atoms->size(); ia++) {
+      rot_deriv_impl->calc_derivative_wrt_group2(ia, nullptr, &dq0_2);
+      const auto f_ia = FQ[0] * dq0_2[0] +
+                        FQ[1] * dq0_2[1] +
+                        FQ[2] * dq0_2[2] +
+                        FQ[3] * dq0_2[3];
+      if (force_on_fitting_group) {
+        main_group_forces.push_back(f_ia);
+        (*atoms)[ia].apply_force(ag_rot * f_ia);
+      } else {
+        (*atoms)[ia].apply_force(f_ia);
       }
-    } else {
-      for (size_t ia = 0; ia < atoms->size(); ia++) {
-        rot_deriv_impl->calc_derivative_wrt_group2(ia, nullptr, &dq0_2);
-        for (size_t i = 0; i < 4; i++) {
-          (*atoms)[ia].apply_force(FQ[i] * dq0_2[i]);
-        }
+    }
+    if (force_on_fitting_group) {
+      const std::vector<cvm::rvector> fitting_group_forces = atoms->calc_fit_forces(main_group_forces);
+      if (fitting_group_forces.empty()) return;
+      for (size_t ia = 0; ia < atoms->fitting_group->size(); ia++) {
+        (*(atoms->fitting_group))[ia].apply_force(fitting_group_forces[ia]);
       }
     }
   }
