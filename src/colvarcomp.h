@@ -1230,6 +1230,11 @@ protected:
   struct rotation_derivative_impl_;
   std::unique_ptr<rotation_derivative_impl_> rot_deriv_impl;
 
+  bool atom_rotated;
+  cvm::atom_group *group_for_fit;
+  std::vector<cvm::rvector> main_group_forces;
+  std::vector<cvm::rvector> fitting_group_forces;
+
 public:
 
   orientation(std::string const &conf);
