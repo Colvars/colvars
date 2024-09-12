@@ -43,6 +43,12 @@ int colvar::orientation::init(std::string const &conf)
     return error_code | COLVARS_INPUT_ERROR;
   }
   ref_pos.reserve(atoms->size());
+  main_group_forces.resize(atoms->size());
+  atom_rotated = atoms->is_enabled(f_ag_rotate);
+  if (atom_rotated) {
+    group_for_fit = atoms->fitting_group ? atoms->fitting_group : atoms;
+    fitting_group_forces.resize(group_for_fit->size());
+  }
 
   if (get_keyval(conf, "refPositions", ref_pos, ref_pos)) {
     cvm::log("Using reference positions from input file.\n");
@@ -137,11 +143,12 @@ void colvar::orientation::apply_force(colvarvalue const &force)
   if (!atoms->noforce) {
     rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
     cvm::vector1d<cvm::rvector> dq0_2;
-    std::vector<cvm::rvector> main_group_forces;
-    const bool force_on_fitting_group = atoms->fitting_group == nullptr ? false : true;
     cvm::rmatrix ag_rot;
-    if (force_on_fitting_group) {
+    if (atom_rotated) {
       ag_rot = atoms->rot.inverse().matrix();
+    }
+    if (cvm::debug()) {
+      cvm::log("Force on main group:\n");
     }
     for (size_t ia = 0; ia < atoms->size(); ia++) {
       rot_deriv_impl->calc_derivative_wrt_group2(ia, nullptr, &dq0_2);
@@ -149,18 +156,31 @@ void colvar::orientation::apply_force(colvarvalue const &force)
                         FQ[1] * dq0_2[1] +
                         FQ[2] * dq0_2[2] +
                         FQ[3] * dq0_2[3];
-      if (force_on_fitting_group) {
-        main_group_forces.push_back(f_ia);
+      if (atom_rotated) {
+        main_group_forces[ia] = f_ia;
         (*atoms)[ia].apply_force(ag_rot * f_ia);
+        if (cvm::debug()) {
+          cvm::log(cvm::to_str(ag_rot * f_ia));
+        }
       } else {
         (*atoms)[ia].apply_force(f_ia);
+        if (cvm::debug()) {
+          cvm::log(cvm::to_str(f_ia));
+        }
       }
     }
-    if (force_on_fitting_group) {
-      const std::vector<cvm::rvector> fitting_group_forces = atoms->calc_fit_forces(main_group_forces);
-      if (fitting_group_forces.empty()) return;
-      for (size_t ia = 0; ia < atoms->fitting_group->size(); ia++) {
-        (*(atoms->fitting_group))[ia].apply_force(fitting_group_forces[ia]);
+    if (atom_rotated) {
+      atoms->calc_fit_forces(main_group_forces, fitting_group_forces);
+      if (cvm::debug()) {
+        cvm::log("Force on fitting group:\n");
+      }
+      for (size_t ia = 0; ia < group_for_fit->size(); ia++) {
+        (*(group_for_fit))[ia].apply_force(fitting_group_forces[ia]);
+        if (cvm::debug()) {
+          cvm::log(cvm::to_str(fitting_group_forces[ia]));
+        }
+        // Clear the fitting group force
+        fitting_group_forces[ia] = 0;
       }
     }
   }
