@@ -1242,7 +1242,7 @@ void cvm::atom_group::calc_fit_forces_impl(
   main_force_accessor_T accessor) const {
   const cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
   if (forces_on_fitting_group.size() != group_for_fit->size()) {
-    forces_on_fitting_group.resize(group_for_fit->size());
+    forces_on_fitting_group.assign(group_for_fit->size(), 0);
   }
   // the center of geometry contribution to the gradients
   cvm::rvector atom_grad;
@@ -1488,12 +1488,34 @@ void cvm::atom_group::apply_force(cvm::rvector const &force)
   }
 
   if (is_enabled(f_ag_rotate)) {
-
+    // TODO: What is the best way to avoid repeating the allocation??
+    std::vector<cvm::rvector> forces_on_main_group;
     const auto rot_inv = rot.inverse().matrix();
-    for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-      ai->apply_force(rot_inv * ((ai->mass/total_mass) * force));
+    if (cvm::debug()) {
+      cvm::log("Force on main group:\n");
     }
-
+    for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
+      const auto f = (ai->mass/total_mass) * force;
+      ai->apply_force(rot_inv * f);
+      if (cvm::debug()) {
+        cvm::log(cvm::to_str(rot_inv * f));
+      }
+      forces_on_main_group.push_back(f);
+    }
+    if (cvm::debug()) {
+      cvm::log("Force on fitting group:\n");
+    }
+    std::vector<cvm::rvector> forces_on_fitting_group;
+    calc_fit_forces(forces_on_main_group, forces_on_fitting_group);
+    atom_group *group_for_fit = fitting_group ? fitting_group : this;
+    if (forces_on_fitting_group.size() == group_for_fit->size()) {
+      for (size_t j = 0; j < group_for_fit->size(); j++) {
+        (*group_for_fit)[j].apply_force(forces_on_fitting_group[j]);
+        if (cvm::debug()) {
+          cvm::log(cvm::to_str(forces_on_fitting_group[j]));
+        }
+      }
+    }
   } else {
 
     for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
