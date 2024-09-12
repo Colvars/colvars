@@ -497,6 +497,8 @@ public:
   /// \brief Calculate the derivatives of the fitting transformation
   void calc_fit_gradients();
 
+  std::vector<cvm::rvector> calc_fit_forces(const std::vector<cvm::rvector>& forces_on_main_group) const;
+
 /*! @brief  Actual implementation of `calc_fit_gradients`. The template is
  *          used to avoid branching inside the loops in case that the CPU
  *          branch prediction is broken (or further migration to GPU code).
@@ -506,6 +508,8 @@ public:
  *          the value of `is_enabled(f_ag_rotate)`.
  */
   template <bool B_ag_center, bool B_ag_rotate> void calc_fit_gradients_impl();
+
+  template <bool B_ag_center, bool B_ag_rotate> std::vector<cvm::rvector> calc_fit_forces_impl(const std::vector<cvm::rvector>& forces_on_main_group) const;
 
   /// \brief Derivatives of the fitting transformation
   std::vector<cvm::atom_pos> fit_gradients;
