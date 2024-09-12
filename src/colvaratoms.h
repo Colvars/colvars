@@ -512,10 +512,8 @@ public:
   // template <bool B_ag_center, bool B_ag_rotate> void calc_fit_gradients_impl();
 
   template <bool B_ag_center, bool B_ag_rotate,
-            typename main_force_container_T,
             typename main_force_accessor_T>
   void calc_fit_forces_impl(
-    const main_force_container_T& forces_on_main_group,
     std::vector<cvm::rvector>& forces_on_fitting_group,
     main_force_accessor_T accessor) const;
 
