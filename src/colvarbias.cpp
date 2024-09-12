@@ -751,24 +751,18 @@ cvm::memory_stream & colvarbias::read_state_data_key(cvm::memory_stream &is, std
 
 std::ostream & colvarbias::write_traj_label(std::ostream &os)
 {
-  os << " ";
   if (b_output_energy)
-    os << " E_"
-       << cvm::wrap_string(this->name, cvm::en_width-2);
+    os << " E_" << cvm::wrap_string(this->name, cvm::en_width - 2);
   return os;
 }
 
 
-std::ostream & colvarbias::write_traj(std::ostream &os)
+std::ostream &colvarbias::write_traj(std::ostream &os)
 {
-  os << " ";
   if (b_output_energy)
-    os << " "
-       << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
-       << bias_energy;
+    os << " " << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width) << bias_energy;
   return os;
 }
-
 
 
 colvarbias_ti::colvarbias_ti(char const *key)

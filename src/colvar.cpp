@@ -798,6 +798,8 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
       // early-returns due to errors would raise false positives
       error_code_this |= cvcp->check_keywords(def_conf, def_config_key);
     }
+    // Update properties and check that dynamic dependencies are fulfilled
+    error_code_this |= cvcs.back()->setup();
     cvm::decrease_depth();
     if (error_code_this != COLVARS_OK) {
       error_code |=
@@ -805,15 +807,19 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
                      COLVARS_INPUT_ERROR);
     }
 
-    // Set default name if it doesn't have one
-    if ( ! cvcs.back()->name.size()) {
+    // Give a default name if one wasn't defined
+    if (cvcp->name.empty()) {
       std::ostringstream s;
+      // Pad cvc number for correct ordering when sorting by name
       s << def_config_key << std::setfill('0') << std::setw(4) << ++def_count;
-      cvcs.back()->name = s.str();
-      /* pad cvc number for correct ordering when sorting by name */
+      cvcp->name = s.str();
     }
+    // Record the name of the parent colvar to make it globally searchable
+    cvcp->set_parent_name(name);
 
-    cvcs.back()->setup();
+    // Add to the global register
+    cvm::main()->register_component(cvcs.back()->qualified_name(), cvcs.back());
+
     if (cvm::debug()) {
       cvm::log("Done initializing a \"" + std::string(def_config_key) + "\" component" +
                (cvm::debug() ? ", named \"" + cvcs.back()->name + "\"" : "") + ".\n");
@@ -2106,8 +2112,7 @@ int colvar::update_cvc_config(std::vector<std::string> const &confs)
       std::string conf(confs[i]);
       cvm::increase_depth();
       error_code |= cvcs[i]->colvar::cvc::init(conf);
-      error_code |= cvcs[i]->check_keywords(conf,
-                                            cvcs[i]->config_key.c_str());
+      error_code |= cvcs[i]->check_keywords(conf, cvcs[i]->function_type().c_str());
       cvm::decrease_depth();
       num_changes++;
     }
@@ -2530,8 +2535,6 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
 {
   size_t const this_cv_width = x.output_width(cvm::cv_width);
 
-  os << " ";
-
   if (is_enabled(f_cv_output_value)) {
 
     os << " "
@@ -2579,7 +2582,6 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
 
 std::ostream & colvar::write_traj(std::ostream &os)
 {
-  os << " ";
   if (is_enabled(f_cv_output_value)) {
 
     if (is_enabled(f_cv_extended_Lagrangian) && !is_enabled(f_cv_external)) {

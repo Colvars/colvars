@@ -380,6 +380,10 @@ public:
     f_cvc_scalable,
     /// Centers-of-mass used in this CVC can be computed in parallel
     f_cvc_scalable_com,
+    /// Can be reused by another CVC to avoid duplicating computation
+    f_cvc_reusable,
+    /// Reuses computation previously done by another CVC
+    f_cvc_reusing_cvcs,
     /// \brief Build list of atoms involved in CVC calculation
     f_cvc_collect_atom_ids,
     /// Number of CVC features
