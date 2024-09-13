@@ -1525,7 +1525,6 @@ void cvm::atom_group::group_force_object::add_atom_force(size_t i, const cvm::rv
 }
 
 void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
-  m_ag->calc_fit_forces(m_ag->group_forces, m_ag->fitting_group_forces);
   const cvm::rmatrix rot_inv = m_ag->rot.inverse().matrix();
   if (cvm::debug()) {
     cvm::log("Applying force on main group " + m_ag->name + ":\n");
@@ -1537,13 +1536,21 @@ void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
       cvm::log(cvm::to_str(f_ia));
     }
   }
-  if (cvm::debug()) {
-    cvm::log("Applying force on the fitting group of main group" + m_ag->name + ":\n");
-  }
-  for (size_t ia = 0; ia < m_group_for_fit->size(); ia++) {
-    (*(m_group_for_fit))[ia].apply_force(m_ag->fitting_group_forces[ia]);
+  // Gradients are only available with scalar components, so for a scalar component,
+  // if f_ag_fit_gradients is disabled, then the forces on the fitting group is not
+  // computed. For a vector component, we can only know the forces on the fitting
+  // group, but checking this flag can mimic results that the users expect (if
+  // "enableFitGradients no" then there is no force on the fitting group).
+  if (m_ag->is_enabled(f_ag_fit_gradients)) {
+    m_ag->calc_fit_forces(m_ag->group_forces, m_ag->fitting_group_forces);
     if (cvm::debug()) {
-      cvm::log(cvm::to_str(m_ag->fitting_group_forces[ia]));
+      cvm::log("Applying force on the fitting group of main group" + m_ag->name + ":\n");
+    }
+    for (size_t ia = 0; ia < m_group_for_fit->size(); ia++) {
+      (*(m_group_for_fit))[ia].apply_force(m_ag->fitting_group_forces[ia]);
+      if (cvm::debug()) {
+        cvm::log(cvm::to_str(m_ag->fitting_group_forces[ia]));
+      }
     }
   }
 }
