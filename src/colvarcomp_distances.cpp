@@ -1408,7 +1408,7 @@ void colvar::cartesian::apply_force(colvarvalue const &force)
       for (j = 0; j < dim; j++) {
         f[axes[j]] = force.vector1d_value[dim*ia + j];
       }
-      ag_force.set_atom_force(ia, f);
+      ag_force.add_atom_force(ia, f);
     }
   }
 }
