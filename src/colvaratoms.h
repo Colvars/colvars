@@ -257,7 +257,24 @@ protected:
   /// \brief Index in the colvarproxy arrays (if the group is scalable)
   int index;
 
+  std::vector<cvm::rvector> group_forces;
+  std::vector<cvm::rvector> fitting_group_forces;
+
 public:
+
+  class group_force_object {
+  public:
+    group_force_object(cvm::atom_group* ag);
+    ~group_force_object();
+    void set_atom_force(size_t i, const cvm::rvector& force);
+  private:
+    cvm::atom_group* m_ag;
+    cvm::atom_group* m_group_for_fit;
+    bool m_has_fitting_force;
+    void apply_force_with_fitting_group();
+  };
+
+  group_force_object get_group_force_object();
 
   inline cvm::atom & operator [] (size_t const i)
   {
@@ -497,7 +514,7 @@ public:
   /// \brief Calculate the derivatives of the fitting transformation
   void calc_fit_gradients();
 
-  std::vector<cvm::rvector> calc_fit_forces(
+  void calc_fit_forces(
     const std::vector<cvm::rvector>& forces_on_main_group,
     std::vector<cvm::rvector>& forces_on_fitting_group) const;
 
