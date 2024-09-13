@@ -144,7 +144,7 @@ void colvar::orientation::apply_force(colvarvalue const &force)
                         FQ[1] * dq0_2[1] +
                         FQ[2] * dq0_2[2] +
                         FQ[3] * dq0_2[3];
-      ag_force.set_atom_force(ia, f_ia);
+      ag_force.add_atom_force(ia, f_ia);
     }
   }
 }

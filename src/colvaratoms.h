@@ -266,7 +266,7 @@ public:
   public:
     group_force_object(cvm::atom_group* ag);
     ~group_force_object();
-    void set_atom_force(size_t i, const cvm::rvector& force);
+    void add_atom_force(size_t i, const cvm::rvector& force);
   private:
     cvm::atom_group* m_ag;
     cvm::atom_group* m_group_for_fit;
