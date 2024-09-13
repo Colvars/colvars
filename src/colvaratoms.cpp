@@ -1482,7 +1482,7 @@ void cvm::atom_group::apply_force(cvm::rvector const &force)
 
   auto ag_force = get_group_force_object();
   for (size_t i = 0; i < size(); ++i) {
-    ag_force.set_atom_force(i, atoms[i].mass / total_mass * force);
+    ag_force.add_atom_force(i, atoms[i].mass / total_mass * force);
   }
 }
 
@@ -1515,9 +1515,9 @@ cvm::atom_group::group_force_object::~group_force_object() {
   }
 }
 
-void cvm::atom_group::group_force_object::set_atom_force(size_t i, const cvm::rvector& force) {
+void cvm::atom_group::group_force_object::add_atom_force(size_t i, const cvm::rvector& force) {
   if (m_has_fitting_force) {
-    m_ag->group_forces[i] = force;
+    m_ag->group_forces[i] += force;
   } else {
     // Apply the force directly if we don't use fitting
     (*m_ag)[i].apply_force(force);
