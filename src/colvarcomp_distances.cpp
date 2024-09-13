@@ -1403,11 +1403,12 @@ void colvar::cartesian::apply_force(colvarvalue const &force)
   size_t ia, j;
   if (!atoms->noforce) {
     cvm::rvector f;
+    auto ag_force = atoms->get_group_force_object();
     for (ia = 0; ia < atoms->size(); ia++) {
       for (j = 0; j < dim; j++) {
         f[axes[j]] = force.vector1d_value[dim*ia + j];
       }
-      (*atoms)[ia].apply_force(f);
+      ag_force.set_atom_force(ia, f);
     }
   }
 }

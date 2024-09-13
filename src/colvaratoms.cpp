@@ -1290,7 +1290,7 @@ void cvm::atom_group::calc_fit_forces_impl(
 }
 
 
-std::vector<cvm::rvector> cvm::atom_group::calc_fit_forces(
+void cvm::atom_group::calc_fit_forces(
   const std::vector<cvm::rvector>& forces_on_main_group,
   std::vector<cvm::rvector>& forces_on_fitting_group) const {
   if (cvm::debug())
@@ -1307,7 +1307,6 @@ std::vector<cvm::rvector> cvm::atom_group::calc_fit_forces(
 
   if (cvm::debug())
     cvm::log("Done calculating fit forces.\n");
-  return std::vector<cvm::rvector>();
 }
 
 
@@ -1481,39 +1480,70 @@ void cvm::atom_group::apply_force(cvm::rvector const &force)
     return;
   }
 
-  if (is_enabled(f_ag_rotate)) {
-    // TODO: What is the best way to avoid repeating the allocation??
-    std::vector<cvm::rvector> forces_on_main_group;
-    const auto rot_inv = rot.inverse().matrix();
-    if (cvm::debug()) {
-      cvm::log("Force on main group:\n");
-    }
-    for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-      const auto f = (ai->mass/total_mass) * force;
-      ai->apply_force(rot_inv * f);
-      if (cvm::debug()) {
-        cvm::log(cvm::to_str(rot_inv * f));
-      }
-      forces_on_main_group.push_back(f);
-    }
-    if (cvm::debug()) {
-      cvm::log("Force on fitting group:\n");
-    }
-    std::vector<cvm::rvector> forces_on_fitting_group;
-    calc_fit_forces(forces_on_main_group, forces_on_fitting_group);
-    atom_group *group_for_fit = fitting_group ? fitting_group : this;
-    if (forces_on_fitting_group.size() == group_for_fit->size()) {
-      for (size_t j = 0; j < group_for_fit->size(); j++) {
-        (*group_for_fit)[j].apply_force(forces_on_fitting_group[j]);
-        if (cvm::debug()) {
-          cvm::log(cvm::to_str(forces_on_fitting_group[j]));
-        }
-      }
-    }
-  } else {
+  auto ag_force = get_group_force_object();
+  for (size_t i = 0; i < size(); ++i) {
+    ag_force.set_atom_force(i, atoms[i].mass / total_mass * force);
+  }
+}
 
-    for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-      ai->apply_force((ai->mass/total_mass) * force);
+cvm::atom_group::group_force_object cvm::atom_group::get_group_force_object() {
+  return cvm::atom_group::group_force_object(this);
+}
+
+cvm::atom_group::group_force_object::group_force_object(cvm::atom_group* ag):
+m_ag(ag), m_group_for_fit(m_ag->fitting_group ? m_ag->fitting_group : m_ag),
+m_has_fitting_force(m_ag->is_enabled(f_ag_center) || m_ag->is_enabled(f_ag_rotate)) {
+  if (m_has_fitting_force) {
+    if (m_ag->group_forces.size() != m_ag->size()) {
+      m_ag->group_forces.assign(m_ag->size(), 0);
+    } else {
+      std::fill(m_ag->group_forces.begin(),
+                m_ag->group_forces.end(), 0);
+    }
+    if (m_ag->fitting_group_forces.size() != m_group_for_fit->size()) {
+      m_ag->fitting_group_forces.assign(m_group_for_fit->size(), 0);
+    } else {
+      std::fill(m_ag->fitting_group_forces.begin(),
+                m_ag->fitting_group_forces.end(), 0);
+    }
+  }
+}
+
+cvm::atom_group::group_force_object::~group_force_object() {
+  if (m_has_fitting_force) {
+    apply_force_with_fitting_group();
+  }
+}
+
+void cvm::atom_group::group_force_object::set_atom_force(size_t i, const cvm::rvector& force) {
+  if (m_has_fitting_force) {
+    m_ag->group_forces[i] = force;
+  } else {
+    // Apply the force directly if we don't use fitting
+    (*m_ag)[i].apply_force(force);
+  }
+}
+
+void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
+  m_ag->calc_fit_forces(m_ag->group_forces, m_ag->fitting_group_forces);
+  const cvm::rmatrix rot_inv = m_ag->rot.inverse().matrix();
+  if (cvm::debug()) {
+    cvm::log("Applying force on main group " + m_ag->name + ":\n");
+  }
+  for (size_t ia = 0; ia < m_ag->size(); ++ia) {
+    const cvm::rvector f_ia = rot_inv * m_ag->group_forces[ia];
+    (*m_ag)[ia].apply_force(f_ia);
+    if (cvm::debug()) {
+      cvm::log(cvm::to_str(f_ia));
+    }
+  }
+  if (cvm::debug()) {
+    cvm::log("Applying force on the fitting group of main group" + m_ag->name + ":\n");
+  }
+  for (size_t ia = 0; ia < m_group_for_fit->size(); ia++) {
+    (*(m_group_for_fit))[ia].apply_force(m_ag->fitting_group_forces[ia]);
+    if (cvm::debug()) {
+      cvm::log(cvm::to_str(m_ag->fitting_group_forces[ia]));
     }
   }
 }
