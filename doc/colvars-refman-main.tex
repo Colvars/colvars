@@ -1118,7 +1118,7 @@ To work around the potential issues just described, a text-format Colvars state 
 \end{itemize}
 When a Colvars configuration featuring \texttt{defaultInputStateFile} is processed into a TPR file, and a GROMACS simulation is started from this TPR file but without providing a checkpoint, Colvars will load its state from the file named by \texttt{defaultInputStateFile}.
 Later, when that same simulation is continued by providing a checkpoint file to GROMACS, Colvars will ignore \texttt{defaultInputStateFile} and will read its data from the checkpoint file.
-For the sake of clarity, we recommend that as soon as a suitable GROMACS checkpoint is available, the \texttt{defaultInputStateFile} is removed \emph{removed}, and a new TPR file is produced accordingly.
+For the sake of clarity, we recommend that as soon as a suitable GROMACS checkpoint becomes available, the \texttt{defaultInputStateFile} is \emph{removed} and a new TPR file is produced accordingly.
 \fi % end \ifdefined\gromacsmdmodule
 }
 
