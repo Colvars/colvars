@@ -42,6 +42,9 @@
 
 #include "gromacs/applied_forces/colvars/colvarsoptions.h"
 
+#include "config.h"
+
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -50,14 +53,18 @@
 #include "gromacs/fileio/confio.h"
 #include "gromacs/gmxpreprocess/grompp.h"
 #include "gromacs/math/paddedvector.h"
+#include "gromacs/math/vectypes.h"
 #include "gromacs/mdrunutility/mdmodulesnotifiers.h"
 #include "gromacs/mdtypes/inputrec.h"
 #include "gromacs/options/options.h"
 #include "gromacs/options/treesupport.h"
 #include "gromacs/selection/indexutil.h"
+#include "gromacs/topology/atoms.h"
 #include "gromacs/topology/index.h"
 #include "gromacs/topology/mtop_util.h"
 #include "gromacs/topology/topology.h"
+#include "gromacs/utility/arrayref.h"
+#include "gromacs/utility/keyvaluetree.h"
 #include "gromacs/utility/keyvaluetreebuilder.h"
 #include "gromacs/utility/keyvaluetreemdpwriter.h"
 #include "gromacs/utility/keyvaluetreetransform.h"
@@ -71,6 +78,8 @@
 #include "testutils/testasserts.h"
 #include "testutils/testfilemanager.h"
 #include "testutils/testmatchers.h"
+
+enum class PbcType : int;
 
 namespace gmx
 {
@@ -115,34 +124,32 @@ public:
         return mdpValueBuilder.build();
     }
 
+#if GMX_HAVE_COLVARS
+
     void PrepareInputColvarsPreProcessor(const std::string& fileName)
     {
 
         // Path to the sample colvars input file
         std::string colvarsConfigFile =
-                gmx::test::TestFileManager::getInputFilePath("colvars_sample.dat").u8string();
+                gmx::test::TestFileManager::getInputFilePath("colvars_sample.dat").string();
 
-        gmx::test::TestFileManager fileManager_;
-        const std::string          simData =
-                gmx::test::TestFileManager::getTestSimulationDatabaseDirectory().u8string();
+        gmx::test::TestFileManager  fileManager_;
+        const std::filesystem::path simData =
+                gmx::test::TestFileManager::getTestSimulationDatabaseDirectory();
 
         // Generate empty mdp file
         const std::string mdpInputFileName =
-                fileManager_.getTemporaryFilePath(fileName + ".mdp").u8string();
+                fileManager_.getTemporaryFilePath(fileName + ".mdp").string();
         gmx::TextWriter::writeFileFromString(mdpInputFileName, "");
 
         // Generate tpr file
-        const std::string tprName = fileManager_.getTemporaryFilePath(fileName + ".tpr").u8string();
+        const std::string tprName = fileManager_.getTemporaryFilePath(fileName + ".tpr").string();
         {
             gmx::test::CommandLine caller;
             caller.append("grompp");
             caller.addOption("-f", mdpInputFileName);
-            caller.addOption(
-                    "-p",
-                    std::filesystem::path(simData).append(fileName).replace_extension(".top").u8string());
-            caller.addOption(
-                    "-c",
-                    std::filesystem::path(simData).append(fileName).replace_extension(".gro").u8string());
+            caller.addOption("-p", (simData / fileName).replace_extension(".top").string());
+            caller.addOption("-c", (simData / fileName).replace_extension(".gro").string());
             caller.addOption("-o", tprName);
             ASSERT_EQ(0, gmx_grompp(caller.argc(), caller.argv()));
         }
@@ -170,6 +177,7 @@ public:
         done_atom(&atoms);
     }
 
+#endif // GMX_HAVE_COLVARS
 
 protected:
     rvec*          coords;
@@ -178,13 +186,9 @@ protected:
 };
 
 
-TEST_F(ColvarsOptionsTest, OptionSetsActive)
-{
-    EXPECT_FALSE(colvarsOptions_.isActive());
-    setFromMdpValues(ColvarsBuildDefaulMdpValues());
-    EXPECT_TRUE(colvarsOptions_.isActive());
-}
-
+// The following tests should work either with or without Colvars compiled
+// because GROMACS without colvars should still be able to read a tpr file with colvars mdp keywords.
+// (For example, gmx dump should be able to output colvars values even without Colvars compiled.)
 TEST_F(ColvarsOptionsTest, OutputNoDefaultValuesWhenInactive)
 {
     // Test buildMdpOutput()
@@ -253,6 +257,15 @@ TEST_F(ColvarsOptionsTest, OutputValuesWhenActive)
     checker.checkString(stream.toString(), "Mdp output");
 }
 
+#if GMX_HAVE_COLVARS
+
+TEST_F(ColvarsOptionsTest, OptionSetsActive)
+{
+    EXPECT_FALSE(colvarsOptions_.isActive());
+    setFromMdpValues(ColvarsBuildDefaulMdpValues());
+    EXPECT_TRUE(colvarsOptions_.isActive());
+}
+
 TEST_F(ColvarsOptionsTest, InternalsToKvtAndBack)
 {
 
@@ -291,5 +304,22 @@ TEST_F(ColvarsOptionsTest, InternalsToKvtAndBack)
 
     deleteInputColvarsPreProcessor();
 }
+
+
+TEST_F(ColvarsOptionsTest, RetrieveEdrFilename)
+{
+    // Activate colvars
+    setFromMdpValues(ColvarsBuildInputMdpValues());
+
+    std::string refEdrFilename = "output/ener.edr";
+    colvarsOptions_.processEdrFilename(EdrOutputFilename{ refEdrFilename });
+    const std::string ref = std::filesystem::path("output/ener").make_preferred().string();
+    EXPECT_EQ(ref, colvarsOptions_.colvarsOutputPrefix());
+
+    refEdrFilename = "sim.part1.edr";
+    colvarsOptions_.processEdrFilename(EdrOutputFilename{ refEdrFilename });
+    EXPECT_EQ("sim.part1", colvarsOptions_.colvarsOutputPrefix());
+}
+#endif // GMX_HAVE_COLVARS
 
 } // namespace gmx
