@@ -42,6 +42,10 @@
 
 #include "gromacs/applied_forces/colvars/colvarsforceprovider.h"
 
+#include <array>
+#include <filesystem>
+#include <map>
+#include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -52,16 +56,22 @@
 #include "gromacs/gmxpreprocess/grompp.h"
 #include "gromacs/math/paddedvector.h"
 #include "gromacs/math/vec.h"
+#include "gromacs/math/vectypes.h"
 #include "gromacs/mdlib/forcerec.h"
 #include "gromacs/mdtypes/commrec.h"
 #include "gromacs/mdtypes/enerdata.h"
 #include "gromacs/mdtypes/forceoutput.h"
 #include "gromacs/mdtypes/iforceprovider.h"
 #include "gromacs/pbcutil/pbc.h"
+#include "gromacs/topology/atoms.h"
+#include "gromacs/topology/ifunc.h"
 #include "gromacs/topology/mtop_lookup.h"
 #include "gromacs/topology/mtop_util.h"
 #include "gromacs/topology/topology.h"
 #include "gromacs/utility/arrayref.h"
+#include "gromacs/utility/logger.h"
+#include "gromacs/utility/real.h"
+#include "gromacs/utility/smalloc.h"
 #include "gromacs/utility/textreader.h"
 #include "gromacs/utility/textwriter.h"
 
@@ -69,6 +79,8 @@
 #include "testutils/refdata.h"
 #include "testutils/testasserts.h"
 #include "testutils/testfilemanager.h"
+
+enum class PbcType : int;
 
 namespace gmx
 {
@@ -79,27 +91,23 @@ public:
     void PrepareInputForceProvider(const std::string& fileName)
     {
 
-        gmx::test::TestFileManager fileManager_;
-        const std::string          simData =
-                gmx::test::TestFileManager::getTestSimulationDatabaseDirectory().u8string();
+        gmx::test::TestFileManager  fileManager_;
+        const std::filesystem::path simData =
+                gmx::test::TestFileManager::getTestSimulationDatabaseDirectory();
 
         // Generate empty mdp file
         const std::string mdpInputFileName =
-                fileManager_.getTemporaryFilePath(fileName + ".mdp").u8string();
+                fileManager_.getTemporaryFilePath(fileName + ".mdp").string();
         gmx::TextWriter::writeFileFromString(mdpInputFileName, "");
 
         // Generate tpr file
-        const std::string tprName = fileManager_.getTemporaryFilePath(fileName + ".tpr").u8string();
+        const std::string tprName = fileManager_.getTemporaryFilePath(fileName + ".tpr").string();
         {
             gmx::test::CommandLine caller;
             caller.append("grompp");
             caller.addOption("-f", mdpInputFileName);
-            caller.addOption(
-                    "-p",
-                    std::filesystem::path(simData).append(fileName).replace_extension(".top").u8string());
-            caller.addOption(
-                    "-c",
-                    std::filesystem::path(simData).append(fileName).replace_extension(".gro").u8string());
+            caller.addOption("-p", (simData / fileName).replace_extension(".top").string());
+            caller.addOption("-c", (simData / fileName).replace_extension(".gro").string());
             caller.addOption("-o", tprName);
             ASSERT_EQ(0, gmx_grompp(caller.argc(), caller.argv()));
         }
@@ -116,7 +124,7 @@ public:
     void ColvarsConfigStringFromFile(const std::string& filename)
     {
         // Path to the sample colvars input file
-        std::string colvarsInputFile = gmx::test::TestFileManager::getInputFilePath(filename).u8string();
+        std::filesystem::path colvarsInputFile = gmx::test::TestFileManager::getInputFilePath(filename);
 
         colvarsConfigString_ = TextReader::readFileToString(colvarsInputFile);
     }
@@ -146,8 +154,8 @@ public:
     void IncorrectColvarsConfigString()
     {
         // Path to the sample colvars input file
-        std::string colvarsInputFile =
-                gmx::test::TestFileManager::getInputFilePath("colvars_sample.dat").u8string();
+        std::filesystem::path colvarsInputFile =
+                gmx::test::TestFileManager::getInputFilePath("colvars_sample.dat");
 
         colvarsConfigString_ = TextReader::readFileToString(colvarsInputFile);
     }
@@ -226,7 +234,8 @@ TEST_F(ColvarsForceProviderTest, SimpleInputs)
 
 
     // Re-use the PreProcessorTest since the ForceProvider recalls colvars initilization and the input are identicals.
-    gmx::test::TestReferenceData    data("ColvarsPreProcessorTest_CheckValuesFourWaters.xml");
+    gmx::test::TestReferenceData data(
+            std::filesystem::path{ "ColvarsPreProcessorTest_CheckValuesFourWaters.xml" });
     gmx::test::TestReferenceChecker checker(data.rootChecker());
 
     // Check colvars & atoms values are correctly read
