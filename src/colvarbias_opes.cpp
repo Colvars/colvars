@@ -34,6 +34,7 @@
 #include <numeric>
 #include <unordered_set>
 #include <limits>
+#include <sstream>
 
 colvarbias_opes::colvarbias_opes(char const *key):
   colvarbias(key), m_kbt(0), m_barrier(0), m_biasfactor(0),
@@ -1201,7 +1202,17 @@ template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os
     if (formatted)
       os << "\n";
   };
-  printFieldReal("biasfactor", m_biasfactor);
+  auto printFieldString = [&](const std::string& s, const std::string& x){
+    write_state_data_key(os, s, false);
+    if (formatted)
+      os << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width);
+    os << x;
+    if (formatted)
+      os << "\n";
+  };
+  std::ostringstream oss;
+  oss << m_biasfactor;
+  printFieldString("biasfactor", oss.str());
   printFieldReal("epsilon", m_epsilon);
   printFieldReal("kernel_cutoff", cvm::sqrt(m_cutoff2));
   printFieldReal("compression_threshold", m_compression_threshold);
