@@ -1,9 +1,15 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
-colvars: in any publication based on this calculation.
-colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
 colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - SMP parallelism: enabled (num. threads = 4)
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: available
+colvars: Redefining the Tcl "cv" command to the new script interface.
+colvars: The restart output state file will be "test.restart.tmp.colvars.state".
+colvars: The final output state file will be "test.restart.colvars.state".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -42,6 +48,7 @@ colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "one"
@@ -55,28 +62,28 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "group1"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group1".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group1" defined with 4 atoms requested: total mass = 54.028, total charge = -0.72.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "group2"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group2".
 colvars:       # printAtomIDs = off [default]
@@ -123,25 +130,37 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 8 atoms in total).
-colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
-colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
+colvars: updating grid object data (0 grid objects in total).
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - Colvars module:
+colvars: - Colvars-NAMD interface:
+colvars: - Histogram colvar bias implementation:
+colvars: - Optimal rotation via flexible fitting:
+colvars: - distance colvar component:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - NAMD engine:
+colvars: - Scalable center-of-mass computation (NAMD):
+colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
+colvars: 
+colvars: updating target temperature (T = 0 K).
 colvars: ----------------------------------------------------------------------
-colvars: Restarting from file "test.colvars.state".
+colvars: Loading state from text file "test.colvars.state".
 colvars:   Restarting collective variable "one" from value: 3.21688
-colvars:   Restarting histogram bias "histogram1" from step number 20.
+colvars:   Restarted histogram bias "histogram1" with step number 20.
 colvars: ----------------------------------------------------------------------
-colvars: The restart output state file will be "test.restart.tmp.colvars.state".
-colvars: The final output state file will be "test.restart.colvars.state".
-colvars: Opening trajectory file "test.restart.colvars.traj".
-colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 8 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 0 K).
+colvars: Current simulation parameters: initial step = 20, integration timestep = 1
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
-colvars: The final output state file will be "test.restart.colvars.state".
-colvars:   Histogram histogram1 will be written to file "test.restart.histogram1.dat"
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".

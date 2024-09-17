@@ -100,9 +100,9 @@ int colvarbias_histogram::init(std::string const &conf)
   {
     std::string grid_conf;
     if (key_lookup(conf, "histogramGrid", &grid_conf) ||
-        key_lookup(conf, "gridParameters", &grid_conf)) {
+        key_lookup(conf, "grid", &grid_conf)) {
       grid->parse_params(grid_conf);
-      grid->check_keywords(grid_conf, "gridParameters");
+      grid->check_keywords(grid_conf, "grid");
     }
   }
 
