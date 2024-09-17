@@ -1,0 +1,27 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name one
+  x       3.1550316480017
+}
+
+abf {
+  configuration {
+    step 40
+    name abf1
+  }
+
+samples
+ 0 0 0 0 0 0 0 0
+ 0 0 21 19 0 0 0 0
+ 0 0 0 0
+
+gradient
+ 0 0 0 0 0 0 0 0
+ 0 0 -18.596622597615 -2.579519379033 0 0 0 0
+ 0 0 0 0
+}
+
