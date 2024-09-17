@@ -26,7 +26,7 @@ colvar {
 
 histogram {
     colvars    one
-    gridParameters {
+    grid {
         widths 0.2
         lowerBoundaries 0.6
         upperBoundaries 5.4
