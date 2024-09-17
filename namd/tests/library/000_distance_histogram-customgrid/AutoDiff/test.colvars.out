@@ -2,12 +2,14 @@ colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars:   https://doi.org/10.1080/00268976.2013.813594
 colvars: as well as all other papers listed below for individual features used.
-colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
 colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - SMP parallelism: enabled (num. threads = 4)
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: available
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: The restart output state file will be "test.tmp.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Opening trajectory file "test.colvars.traj".
-colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -46,6 +48,7 @@ colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "one"
@@ -142,15 +145,17 @@ colvars: - NAMD engine:
 colvars: - Scalable center-of-mass computation (NAMD):
 colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
 colvars: 
+colvars: updating target temperature (T = 0 K).
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 8 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 0 K).
+colvars: Current simulation parameters: initial step = 0, integration timestep = 1
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: The restart output state file will be "test.tmp.colvars.state".
-colvars: The final output state file will be "test.colvars.state".
-colvars:   Histogram histogram1 will be written to file "test.histogram1.dat"
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.tmp.colvars.state".
