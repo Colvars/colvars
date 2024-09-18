@@ -4408,7 +4408,7 @@ Biasing forces are then applied to the extended degree
 of freedom, and the actual geometric colvar (function of Cartesian
 coordinates) only feels the force from the harmonic spring.
 This is particularly useful when combined with an \refkey{abf}{sec:colvarbias_abf} bias
-to perform eABF simulations (\ref{sec:eABF}).
+to perform eABF simulations (\ref{sec:colvarbias_abf_extended}).
 
 Note that for some biases (\refkey{harmonicWalls}{sec:colvarbias_harmonic_walls}, \refkey{histogram}{sec:colvarbias_histogram}),
 this masking behavior is controlled by the keyword \refkey{bypassExtendedLagrangian}{colvarbias|bypassExtendedLagrangian}.
@@ -5223,7 +5223,7 @@ All biasing and analysis methods implemented recognize the following options:
     This option is implemented by the \refkey{harmonicWalls}{sec:colvarbias_harmonic_walls} and
     \refkey{histogram}{sec:colvarbias_histogram} biases.
     It is only relevant if the bias is applied to one or several extended-Lagrangian colvars (\ref{sec:colvar_extended}),
-    for example within an eABF (\ref{sec:eABF}) simulation.
+    for example within an eABF (\ref{sec:colvarbias_abf_extended}) simulation.
     Usually, biases use the value of the extended coordinate as a proxy for the actual colvar, and their biasing forces are applied to the extended coordinates as well.
     If \texttt{bypassExtendedLagrangian} is enabled, the bias behaves as if there were no extended coordinates, and accesses the value of the underlying colvars, applying any biasing forces along the gradients of those variables.}
 
@@ -5256,6 +5256,30 @@ All biasing and analysis methods implemented recognize the following options:
   }
 
 \end{itemize}
+
+
+
+\cvsubsec{Defining grids for biasing and analysis methods}{sec:colvarbias_grid}
+
+Several methods (\hyperlink{sec:colvarbias_histogram}{histograms}, \hyperlink{sec:colvarbias_abf}{ABF} and \hyperlink{sec:colvarbias_abf_extended}{eABF}, optionally \hyperlink{sec:colvarbias_metadynamics}{metadynamics}) rely on discretizing colvars on regular grids to represent functions such as probability distributions or free energy surfaces.
+Grid parameters for these may be provided at the level of the individual variables, or via a dedicated configuration block \texttt{grid \{ \ldots \}} inside the configuration of the bias.
+The options supported \emph{inside this block} are:
+
+\begin{itemize}
+\item %
+  \key{%
+    lowerBoundaries}{%
+    \texttt{grid}}{%
+    Lower boundaries of the grid}{%
+    list of space-separated decimals}{%
+    This option defines the lower boundaries of the grid, overriding any values defined by the \texttt{lowerBoundary} keyword of each colvar.
+  }
+\item %
+  \simkey{upperBoundaries}{\texttt{grid}}{lowerBoundaries}
+\item %
+  \simkey{widths}{\texttt{grid}}{lowerBoundaries}
+\end{itemize}
+
 
 
 \cvsubsec{Thermodynamic integration}{sec:colvarbias_ti}
@@ -5318,7 +5342,7 @@ tabulated biasing potentials to one or more colvars. See
 
 Combining ABF with the extended Lagrangian feature (\ref{sec:colvar_extended})
 of the variables produces the extended-system ABF variant of the method
-(\ref{sec:eABF}).
+(\ref{sec:colvarbias_abf_extended}).
 
 ABF is based on the thermodynamic integration (TI) scheme for
 computing free energy profiles. The free energy as a function
@@ -5421,7 +5445,7 @@ Most commonly, the number of variables is one or two, sometimes three.
 The following conditions must be met for an ABF simulation to be possible and
 to produce an accurate estimate of the free energy profile.
 Note that these requirements do not apply when using the extended-system
-ABF method (\ref{sec:eABF}).
+ABF method (\ref{sec:colvarbias_abf_extended}).
 
 \begin{enumerate}
  \item \emph{Only linear combinations} of colvar components can be used in ABF calculations.
@@ -5764,8 +5788,7 @@ sampling and discretization on a grid). See Ref.\cite{Henin2021} for details.
 
 
 
-\cvsubsec{Extended-system Adaptive Biasing Force (eABF)}{sec:ecolvarbias_abf_extended}
-\label{sec:eABF}
+\cvsubsec{Extended-system Adaptive Biasing Force (eABF)}{sec:colvarbias_abf_extended}
 
 Extended-system ABF (eABF) is a variant of ABF (\ref{sec:colvarbias_abf})
 where the bias is not applied
@@ -7544,32 +7567,15 @@ The standard keywords below are used to control the histogram's computation and 
 
 \item \dupkey{name}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{colvars}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
-% \item \dupkey{outputEnergy}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 \item \dupkey{stepZeroData}{\texttt{histogram}}{sec:colvarbias}{biasing and analysis methods}
 
 \end{itemize}
 
 
-\cvsubsubsec{Defining grids for multidimensional histograms}{sec:colvarbias_histogram_grid}
-
 Grid parameters for the histogram may be provided at the level of the individual variables, or via a dedicated configuration block \texttt{grid \{ \ldots \}} inside the configuration of this \texttt{histogram}.
-The options supported \emph{inside this block} are:
+The options supported \emph{inside this block} are described in \ref{sec:colvarbias_grid}.
 
-\begin{itemize}
-\item %
-  \key{%
-    lowerBoundaries}{%
-    \texttt{grid}}{%
-    Lower boundaries of the grid}{%
-    list of space-separated decimals}{%
-    This option defines the lower boundaries of the grid, overriding any values defined by the \texttt{lowerBoundary} keyword of each colvar.
-    Note that when \texttt{gatherVectorColvars} is \texttt{on} in the enclosing \texttt{histogram} block, each vector variable is automatically treated as a scalar, and a single value should be provided for it.
-  }
-\item %
-  \simkey{upperBoundaries}{\texttt{grid}}{lowerBoundaries}
-\item %
-  \simkey{widths}{\texttt{grid}}{lowerBoundaries}
-\end{itemize}
+Note that when \texttt{gatherVectorColvars} is \texttt{on}, each vector variable is automatically treated as a scalar, and a single value of each grid parameter should be provided for it.
 
 
 \cvsubsubsec{Output options for multi-dimensional histograms}{sec:colvarbias_histogram_output}
