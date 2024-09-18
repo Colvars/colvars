@@ -257,8 +257,8 @@ protected:
   /// \brief Index in the colvarproxy arrays (if the group is scalable)
   int index;
 
+  /// \brief The forces acting on the group atoms (stored mainly used for calculating the fitting group forces)
   std::vector<cvm::rvector> group_forces;
-  std::vector<cvm::rvector> fitting_group_forces;
 
 public:
 
@@ -514,25 +514,47 @@ public:
   /// \brief Calculate the derivatives of the fitting transformation
   void calc_fit_gradients();
 
-  void calc_fit_forces(
-    const std::vector<cvm::rvector>& forces_on_main_group,
-    std::vector<cvm::rvector>& forces_on_fitting_group) const;
-
-/*! @brief  Actual implementation of `calc_fit_gradients`. The template is
+/*! @brief  Actual implementation of `calc_fit_gradients` and
+ *          `calc_fit_forces`. The template is
  *          used to avoid branching inside the loops in case that the CPU
  *          branch prediction is broken (or further migration to GPU code).
  *  @tparam B_ag_center Centered the reference to origin? This should follow
  *          the value of `is_enabled(f_ag_center)`.
  *  @tparam B_ag_rotate Calculate the optimal rotation? This should follow
  *          the value of `is_enabled(f_ag_rotate)`.
+ *  @tparam main_force_accessor_T The type of accessor of the main
+ *          group forces or gradients.
+ *  @tparam fitting_force_accessor_T The type of accessor of the fitting group
+ *          forces or gradients.
+ *  @param accessor_main The accessor of the main group forces or gradients.
+ *         accessor_main(i) should return the i-th force or gradient of the
+ *         main group.
+ *  @param accessor_fitting The accessor of the fitting group forces or gradients.
+ *         accessor_fitting(j, v) should store/apply the j-th atom gradient or
+ *         force in the fitting group.
  */
-  // template <bool B_ag_center, bool B_ag_rotate> void calc_fit_gradients_impl();
-
   template <bool B_ag_center, bool B_ag_rotate,
-            typename main_force_accessor_T>
+            typename main_force_accessor_T, typename fitting_force_accessor_T>
   void calc_fit_forces_impl(
-    std::vector<cvm::rvector>& forces_on_fitting_group,
-    main_force_accessor_T accessor) const;
+    main_force_accessor_T accessor_main,
+    fitting_force_accessor_T accessor_fitting) const;
+
+/*! @brief  Calculate or apply the fitting group forces from the main group forces.
+ *  @tparam main_force_accessor_T The type of accessor of the main
+ *          group forces or gradients.
+ *  @tparam fitting_force_accessor_T The type of accessor of the fitting group
+ *          forces or gradients.
+ *  @param accessor_main The accessor of the main group forces or gradients.
+ *         accessor_main(i) should return the i-th force or gradient of the
+ *         main group.
+ *  @param accessor_fitting The accessor of the fitting group forces or gradients.
+ *         accessor_fitting(j, v) should store/apply the j-th atom gradient or
+ *         force in the fitting group.
+ */
+  template <typename main_force_accessor_T, typename fitting_force_accessor_T>
+  void calc_fit_forces(
+    main_force_accessor_T accessor_main,
+    fitting_force_accessor_T accessor_fitting) const;
 
   /// \brief Derivatives of the fitting transformation
   std::vector<cvm::atom_pos> fit_gradients;
