@@ -38,6 +38,19 @@ gmx_option_multichoice(GMX_USE_COLVARS
     INTERNAL NONE)
 mark_as_advanced(GMX_USE_COLVARS)
 
+function(gmx_set_colvars_torch)
+  find_package(Torch)
+  if (Torch_FOUND)
+    message(STATUS "Torch found, enabling for Colvars")
+    set_property(TARGET colvars_objlib PROPERTY CXX_STANDARD 17)
+    target_compile_definitions(colvars_objlib PRIVATE -DTORCH)
+    target_compile_options(colvars_objlib PRIVATE ${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS})
+    target_include_directories(colvars_objlib PRIVATE ${TORCH_INCLUDE_DIRS})
+    target_link_libraries(libgromacs PRIVATE "${TORCH_LIBRARIES}")
+  endif()
+endfunction()
+
+
 function(gmx_manage_colvars)
     if(GMX_USE_COLVARS STREQUAL "INTERNAL")
         # Create an object library for the colvars sources
@@ -64,16 +77,6 @@ function(gmx_manage_colvars)
         # whether colvars support is being compiled.
         add_library(colvars INTERFACE)
     endif()
-endfunction()
 
-function(gmx_set_colvars_torch)
-  find_package(Torch)
-  if (Torch_FOUND)
-    set_property(TARGET colvars PROPERTY CXX_STANDARD 17)
-    target_compile_definitions(colvars PRIVATE -DTORCH)
-    target_compile_options(colvars PRIVATE ${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS})
-    target_include_directories(colvars PRIVATE ${TORCH_INCLUDE_DIRS})
-    target_link_libraries(libgromacs PRIVATE "${TORCH_LIBRARIES}")
-  endif()
+    gmx_set_colvars_torch()
 endfunction()
-

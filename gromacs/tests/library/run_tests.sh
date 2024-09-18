@@ -110,7 +110,8 @@ else
 fi
 
 TORCH_LINKED=false
-if { ldd $(which $BINARY) | grep -q libtorch[_a-zA-Z]*.so ; } then TORCH_LINKED=true ; fi
+# Need readlink because ldd can give wrong results when run on symlinks to binaries
+if { ldd $(readlink -f $(which $BINARY)) | grep -q libtorch[_a-zA-Z]*.so ; } then TORCH_LINKED=true ; fi
 
 for dir in ${DIRLIST} ; do
 
@@ -119,7 +120,7 @@ for dir in ${DIRLIST} ; do
   fi
 
   if echo ${dir} | grep -q torchann && [ ${TORCH_LINKED} != "true" ] ; then 
-    echo "Directory ${dir} skipped."
+    echo "Binary is not libtorch-enabled; directory ${dir} skipped."
     continue
   fi
 
@@ -216,7 +217,7 @@ for dir in ${DIRLIST} ; do
         else
 
           # Restart both GROMACS and Colvars using the GROMACS checkpoint file
-          ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
+          ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp_c.out
           ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
 
           RETVAL=$?

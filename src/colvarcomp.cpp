@@ -98,8 +98,7 @@ int colvar::cvc::init(std::string const &conf)
   if (period != 0.0) {
     if (!is_available(f_cvc_periodic)) {
       error_code |=
-          cvm::error("Error: invalid use of period and/or "
-                     "wrapAround in a \"" +
+          cvm::error("Error: invalid use of period and/or wrapAround in a \"" +
                          function_type() + "\" component.\n" + "Period: " + cvm::to_str(period) +
                          " wrapAround: " + cvm::to_str(wrap_center),
                      COLVARS_INPUT_ERROR);

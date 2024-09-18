@@ -19,6 +19,7 @@
 colvar::torchANN::torchANN()
 {
   set_function_type("torchANN");
+  provide(f_cvc_periodic);
 }
 
 
