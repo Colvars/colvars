@@ -10,7 +10,11 @@ colvar {
   extendedLagrangian on
   extendedFluctuation 5.0
   extendedTimeConstant 200
-  extendedTemp 300
+  extendedTemp         300
+
+  outputAppliedForce on
+  outputTotalForce on
+  outputVelocity     on
 
   torchann {
     modelFile identity.pt
