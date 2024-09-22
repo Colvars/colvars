@@ -23,8 +23,8 @@ colvar {
 histogram {
     colvars    one
     grid {
-        widths 0.2
-        lowerBoundaries 0.6
-        upperBoundaries 5.4
+        width 0.2
+        lowerBoundary 0.6
+        upperBoundary 5.4
     }
 }
