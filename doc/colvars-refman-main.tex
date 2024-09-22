@@ -4233,6 +4233,7 @@ form of path-based collective variables as defined by Branduardi et al\cite{Bran
 
 Many algorithms require the definition of two boundaries and a bin width for each colvar, which are necessary to compute discrete ``states'' for a collective variable's otherwise continuous values.
 The following keywords define these parameters for a specific variable, and will be used by all bias that refer to that variable unless otherwise specified.
+Some of these parameters can be set directly within a bias configuration by inserting a \refkey{grid}{sec:colvarbias_grid} block (\ref{sec:colvarbias_grid}).
 
 \begin{itemize}
 
@@ -5262,22 +5263,30 @@ All biasing and analysis methods implemented recognize the following options:
 \cvsubsec{Defining grids for biasing and analysis methods}{sec:colvarbias_grid}
 
 Several methods (\hyperlink{sec:colvarbias_histogram}{histograms}, \hyperlink{sec:colvarbias_abf}{ABF} and \hyperlink{sec:colvarbias_abf_extended}{eABF}, optionally \hyperlink{sec:colvarbias_metadynamics}{metadynamics}) rely on discretizing colvars on regular grids to represent functions such as probability distributions or free energy surfaces.
-Grid parameters for these may be provided at the level of the individual variables, or via a dedicated configuration block \texttt{grid \{ \ldots \}} inside the configuration of the bias.
+Grid parameters for these may be provided at the level of the individual variables (\ref{sec:colvar_grid_params}), or via a dedicated configuration block \texttt{grid \{ \ldots \}} inside the configuration of the bias.
 The options supported \emph{inside this block} are:
 
 \begin{itemize}
 \item %
   \key{%
-    lowerBoundaries}{%
+    lowerBoundary}{%
     \texttt{grid}}{%
     Lower boundaries of the grid}{%
     list of space-separated decimals}{%
-    This option defines the lower boundaries of the grid, overriding any values defined by the \texttt{lowerBoundary} keyword of each colvar.
+    This option is specified once, and takes as many parameters as there are colvars associated with this bias.
+    It defines the lower boundaries of the grid, overriding any values defined by the \refkey{lowerBoundary}{colvar|lowerBoundary} keyword of each colvar.
   }
 \item %
-  \simkey{upperBoundaries}{\texttt{grid}}{lowerBoundaries}
+  \simkey{upperBoundary}{\texttt{grid}}{lowerBoundary}
 \item %
-  \simkey{widths}{\texttt{grid}}{lowerBoundaries}
+  \key{%
+    lowerBoundary}{%
+    \texttt{grid}}{%
+    Bin widths of the grid}{%
+    list of space-separated decimals}{%
+    This option is specified once, and takes as many parameters as there are colvars associated with this bias.
+    It defines the bin widths of the grid along each dimension, overriding any values defined by the \refkey{width}{colvar|width} keyword of each colvar.
+  }
 \end{itemize}
 
 
@@ -5484,7 +5493,7 @@ group used in a \texttt{distance} component.
 \cvsubsubsec{Parameters for ABF}{sec:colvarbias_abf_params}
 
 ABF depends on parameters from each collective variable to define the grid on which free energy gradients are computed: see \ref{sec:colvar_grid_params} for details.
-Alternately, grid parameters can be set directly inside the ABF block by inserting a \texttt{grid} sub-block, as explained in \ref{sec:colvarbias_histogram_grid}.
+Alternately, grid parameters can be set directly inside the ABF block by inserting a \texttt{grid} sub-block, as explained in \ref{sec:colvarbias_grid}.
 Other parameters to control the ABF runtime can be set in the ABF configuration block:
 
 \begin{itemize}
@@ -7553,15 +7562,15 @@ The \texttt{histogram} feature is used to record the distribution of a set of co
 \-\-~~name~hist2d\\
 \-\-~~colvars~r~theta\\
 \-\-~~grid~\{\\
-\-\-~~~~widths~~0.1~1.0\\
-\-\-~~~~lowerBoundaries~~~2.0~30.0\\
-\-\-~~~~upperBoundaries~~10.0~90.0\\
+\-\-~~~~width~~0.1~1.0\\
+\-\-~~~~lowerBoundary~~~2.0~30.0\\
+\-\-~~~~upperBoundary~~10.0~90.0\\
 \-\-~~\}\\
 \-\}\\
 \end{cvexampleinput}
 
 
-The standard keywords below are used to control the histogram's computation and to select the variables that are sampled.  See also \ref{sec:colvarbias_histogram_grid} for keywords used to define the grid, \ref{sec:colvarbias_histogram_output} for output parameters and \ref{sec:colvarbias_histogram_vectors} for more advanced keywords.
+The standard keywords below are used to control the histogram's computation and to select the variables that are sampled.  See also \ref{sec:colvarbias_grid} for keywords used to define the grid, \ref{sec:colvarbias_histogram_output} for output parameters and \ref{sec:colvarbias_histogram_vectors} for more advanced keywords.
 
 \begin{itemize}
 
