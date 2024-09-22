@@ -29,8 +29,8 @@ abf {
     fullSamples 10
 
     grid {
-        widths 0.2
-        lowerBoundaries 1.0
-        upperBoundaries 5.0
+        width 0.2
+        lowerBoundary 1.0
+        upperBoundary 5.0
     }
 }
