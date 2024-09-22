@@ -211,6 +211,8 @@ template <class T> int colvar_grid<T>::parse_params(std::string const &conf,
                           upper_boundaries, upper_boundaries, parse_mode);
 
   colvarparse::get_keyval(conf, "width", widths, widths, parse_mode);
+  // Plural form in state file
+  colvarparse::get_keyval(conf, "widths", widths, widths, parse_mode);
 
   // only used in state file
   colvarparse::get_keyval(conf, "sizes", nx, nx, colvarparse::parse_silent);
