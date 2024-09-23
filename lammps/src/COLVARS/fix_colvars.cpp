@@ -286,7 +286,7 @@ void FixColvars::init()
     }
     MPI_Comm_split(universe->uworld, color, universe->iworld, &root2root);
     if (me == 0) {
-      proxy->set_replicas_communicator(root2root);
+      proxy->set_replicas_mpi_communicator(root2root);
     }
   }
 }

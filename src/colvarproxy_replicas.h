@@ -11,6 +11,18 @@
 #define COLVARPROXY_REPLICAS_H
 
 
+#if defined(COLVARS_LAMMPS)
+// TODO Set this directly from the LAMMPS build system once GNU Make support is removed
+#define COLVARS_MPI
+#endif
+
+#ifdef COLVARS_MPI
+#include <mpi.h>
+#else
+typedef void* MPI_Comm;
+#endif
+
+
 /// \brief Methods for multiple-replica communication
 class colvarproxy_replicas {
 
@@ -21,6 +33,9 @@ public:
 
   /// Destructor
   virtual ~colvarproxy_replicas();
+
+  /// Set the multiple replicas communicator
+  virtual void set_replicas_mpi_communicator(MPI_Comm comm);
 
   /// Indicate if multi-replica support is available and active
   virtual int check_replicas_enabled();
@@ -39,6 +54,17 @@ public:
 
   /// Send data to other replica
   virtual int replica_comm_send(char* msg_data, int msg_len, int dest_rep);
+
+protected:
+
+  /// MPI communicator containint 1 root proc from each world
+  MPI_Comm replicas_mpi_comm;
+
+  /// Index (rank) of this replica in the MPI implementation
+  int replicas_mpi_rank = 0;
+
+  /// Number of replicas in the MPI implementation
+  int replicas_mpi_num = 1;
 };
 
 #endif
