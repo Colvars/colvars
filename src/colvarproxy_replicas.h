@@ -23,7 +23,7 @@ public:
   virtual ~colvarproxy_replicas();
 
   /// Indicate if multi-replica support is available and active
-  virtual int replica_enabled();
+  virtual int check_replicas_enabled();
 
   /// Index of this replica
   virtual int replica_index();
