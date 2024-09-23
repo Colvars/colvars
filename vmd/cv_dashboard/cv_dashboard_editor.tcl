@@ -5,16 +5,21 @@
 
 # Edit new colvar config
 proc ::cv_dashboard::add_cv {} {
-  edit_cv true
+  edit_cv -new
 }
 
 
 # Colvar config editor window
-proc ::cv_dashboard::edit_cv { {add false} {cvs ""} } {
+proc ::cv_dashboard::edit_cv { {mode "-cvs"} { arg "" } } {
+
+  # This procedure has three modes of operation:
+  # -cvs (default) config from list of cvs or selected cvs (default)
+  # -new           edit new cv from template
+  # -string        edit given config string
 
   set indent $::cv_dashboard::indent
-
-  if $add {
+  
+  if { $mode == "-new" } {
     # do not remove existing vars
     set cvs {}
     set ::cv_dashboard::backup_cfg ""
@@ -26,7 +31,13 @@ proc ::cv_dashboard::edit_cv { {add false} {cvs ""} } {
       set cfg "colvar {\n${indent}name d\n${indent}distance {\n${indent}${indent}group1 { atomNumbers 1 2 }
 ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
     }
+  } elseif { $mode == "-string" } {
+    set ::cv_dashboard::backup_cfg ""
+    set cfg $arg
+    set cvs {}
   } else {
+    # Default mode: "-cvs"
+    set cvs $arg
     if {[llength $cvs] < 1} {
       # if not provided, try selection
       set cvs [selected_colvars]

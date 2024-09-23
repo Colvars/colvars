@@ -48,9 +48,11 @@
 #include "gromacs/fileio/checkpoint.h"
 #include "gromacs/mdtypes/commrec.h"
 #include "gromacs/mdtypes/imdmodule.h"
+#include "gromacs/mdtypes/imdpoptionprovider.h"
 #include "gromacs/utility/keyvaluetreebuilder.h"
 
 #include "colvarsMDModule.h"
+#include "colvarsoptions.h"
 
 
 namespace gmx
@@ -62,7 +64,7 @@ namespace
 /*! \internal
  * \brief Colvars module
  *
- * Stub Implementation
+ * Stub Implementation in case Colvars library is not compiled
  */
 class ColvarsMDModule final : public IMDModule
 {
@@ -71,15 +73,39 @@ public:
     explicit ColvarsMDModule() = default;
 
 
-    void subscribeToPreProcessingNotifications(MDModulesNotifiers* /*notifier*/) override {}
+    void subscribeToPreProcessingNotifications(MDModulesNotifiers* /*notifier*/) override
+    {
+        // Proper exit when Colvars is activated from the mdp but has not been compiled along with GROMACS.
+        // In this case, Colvars config file cannot be parsed & verified and the tpr created could be flawed.
+        if (colvarsOptionsStub_.isActive())
+        {
+            GMX_THROW(InternalError(
+                    "Colvars module is activated but GROMACS has not been compiled with Colvars, "
+                    "Colvars simulation is not possible.\n"
+                    "Please, reconfigure GROMACS with -DGMX_USE_COLVARS=internal.\n"));
+        }
+    }
 
     void subscribeToSimulationSetupNotifications(MDModulesNotifiers* /*notifier*/) override {}
 
-    IMdpOptionProvider* mdpOptionProvider() override { return nullptr; }
+    IMdpOptionProvider* mdpOptionProvider() override { return &colvarsOptionsStub_; }
 
     IMDOutputProvider* outputProvider() override { return nullptr; }
 
-    void initForceProviders(ForceProviders* /*forceProviders*/) override {}
+    void initForceProviders(ForceProviders* /*forceProviders*/) override
+    {
+        // Proper exit when Colvars is activated from the tpr but has not been compiled along with GROMACS.
+        if (colvarsOptionsStub_.isActive())
+        {
+            GMX_THROW(InternalError(
+                    "Colvars module is activated but GROMACS has not been compiled with Colvars, "
+                    "Colvars simulation is not possible.\n"
+                    "Please, reconfigure GROMACS with -DGMX_USE_COLVARS=internal.\n"));
+        }
+    }
+
+private:
+    ColvarsOptions colvarsOptionsStub_;
 };
 
 
