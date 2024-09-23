@@ -11,11 +11,6 @@
 #define COLVARPROXY_REPLICAS_H
 
 
-#if defined(COLVARS_LAMMPS)
-// TODO Set this directly from the LAMMPS build system once GNU Make support is removed
-#define COLVARS_MPI
-#endif
-
 #ifdef COLVARS_MPI
 #include <mpi.h>
 #else
