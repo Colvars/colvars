@@ -95,6 +95,25 @@ endif()
 
 include(buildColvarsLepton)
 
+
+option(COLVARS_MPI "Link against a MPI library" OFF)
+
+if(COLVARS_MPI)
+  find_package(MPI)
+  if(${MPI_FOUND})
+    include_directories(SYSTEM ${MPI_CXX_INCLUDE_PATH})
+    target_compile_options(colvars PRIVATE -DCOLVARS_MPI)
+    add_compile_options(-DCOLVARS_MPI)
+    target_link_libraries(colvars ${MPI_CXX_LIBRARIES})
+    set(COLVARS_MPI ON)
+  else()
+    if(NOT ${MPI_FOUND})
+      message(FATAL_ERROR "MPI not found.")
+    endif()
+  endif()
+endif()
+
+
 option(COLVARS_TCL "Link against the Tcl library" OFF)
 
 if(COLVARS_TCL)
