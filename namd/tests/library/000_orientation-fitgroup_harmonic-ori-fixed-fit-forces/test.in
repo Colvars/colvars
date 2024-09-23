@@ -22,7 +22,25 @@ colvar {
         }
         refPositionsFile rmsd_atoms_refpos.xyz
     }
-} 
+}
+
+colvar {
+    name main
+    cartesian {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+    }
+}
+
+colvar {
+    name fitting
+    cartesian {
+        atoms {
+            indexGroup heavy_atoms
+        }
+    }
+}
 
 harmonic {
     colvars        one
