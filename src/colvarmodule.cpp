@@ -129,6 +129,13 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
     }
   }
 
+  if (proxy->check_replicas_enabled() == COLVARS_NOT_IMPLEMENTED) {
+    cvm::log("  - Running in single-replica model\n");
+  } else {
+    cvm::log("  - Running replica with rank " + to_str(proxy->replica_index()) + " (" +
+             to_str(proxy->replica_num()) + " replicas in total)\n");
+  }
+
 #if defined(LEPTON)
   cvm::log("  - Lepton custom functions: available\n");
 #else
