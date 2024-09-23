@@ -42,8 +42,10 @@ void colvarproxy_replicas::set_replicas_mpi_communicator(MPI_Comm comm)
 int colvarproxy_replicas::check_replicas_enabled()
 {
 #ifdef COLVARS_MPI
-  // Return "not implemented" when the simulation does not support partitions
-  return (replicas_mpi_comm != MPI_COMM_NULL) ? COLVARS_OK : COLVARS_NOT_IMPLEMENTED;
+  if (replicas_mpi_comm != MPI_COMM_NULL) {
+    return num_replicas() > 1 ? COLVARS_OK : COLVARS_ERROR;
+  }
+  return COLVARS_ERROR;
 #else
   return COLVARS_NOT_IMPLEMENTED;
 #endif

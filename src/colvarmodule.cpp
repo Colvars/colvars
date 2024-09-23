@@ -130,10 +130,14 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   }
 
   if (proxy->check_replicas_enabled() == COLVARS_NOT_IMPLEMENTED) {
-    cvm::log("  - Running in single-replica model\n");
+    cvm::log("  - Multiple replicas: not available\n");
   } else {
-    cvm::log("  - Running replica with rank " + to_str(proxy->replica_index()) + " (" +
-             to_str(proxy->replica_num()) + " replicas in total)\n");
+    if (proxy->check_replicas_enabled() == COLVARS_OK) {
+      cvm::log("  - Multiple replicas: enabled with replica rank " + to_str(proxy->replica_index()) + " (" +
+               to_str(proxy->num_replicas()) + " replicas in total)\n");
+    } else {
+      cvm::log("  - Multiple replicas: available, but not enabled\n");
+    }
   }
 
 #if defined(LEPTON)
