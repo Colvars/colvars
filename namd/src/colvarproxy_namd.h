@@ -167,7 +167,7 @@ public:
 
 #endif // #if CMK_SMP && USE_CKLOOP
 
-  int replica_enabled() override;
+  int check_replicas_enabled() override;
   int replica_index() override;
   int num_replicas() override;
   void replica_comm_barrier() override;

@@ -1605,7 +1605,7 @@ int colvarproxy_namd::smp_biases_script_loop()
 #endif  // #if CMK_SMP && USE_CKLOOP
 
 
-int colvarproxy_namd::replica_enabled() {
+int colvarproxy_namd::check_replicas_enabled() {
 #if CMK_HAS_PARTITION
   return COLVARS_OK;
 #else
