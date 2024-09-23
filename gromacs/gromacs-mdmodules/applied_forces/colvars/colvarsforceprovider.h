@@ -61,6 +61,7 @@
 
 enum class PbcType : int;
 struct t_commrec;
+struct gmx_multisim_t;
 
 
 namespace gmx
@@ -196,6 +197,7 @@ public:
                          int                                       seed,
                          LocalAtomSetManager*                      localAtomSetManager,
                          const t_commrec*                          cr,
+                         const gmx_multisim_t*                     ms,
                          double                                    simulationTimeStep,
                          const std::vector<RVec>&                  colvarsCoords,
                          const std::string&                        outputPrefix,
