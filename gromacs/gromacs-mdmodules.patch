@@ -1,0 +1,32 @@
+diff --git a/src/gromacs/mdrun/runner.cpp b/src/gromacs/mdrun/runner.cpp
+index 321833a6d6..e847921390 100644
+--- a/src/gromacs/mdrun/runner.cpp
++++ b/src/gromacs/mdrun/runner.cpp
+@@ -1837,6 +1837,7 @@ int Mdrunner::mdrunner()
+     if (thisRankHasDuty(cr, DUTY_PP))
+     {
+         setupNotifier.notify(*cr);
++        setupNotifier.notify(ms);
+         setupNotifier.notify(&atomSets);
+         setupNotifier.notify(mtop);
+         setupNotifier.notify(inputrec->pbcType);
+diff --git a/src/gromacs/mdrunutility/mdmodulesnotifiers.h b/src/gromacs/mdrunutility/mdmodulesnotifiers.h
+index 913cb0b3c4..76c8ebc09a 100644
+--- a/src/gromacs/mdrunutility/mdmodulesnotifiers.h
++++ b/src/gromacs/mdrunutility/mdmodulesnotifiers.h
+@@ -62,6 +62,7 @@ struct gmx_mtop_t;
+ class WarningHandler;
+ enum class PbcType : int;
+ struct t_inputrec;
++struct gmx_multisim_t;
+ 
+ namespace gmx
+ {
+@@ -395,6 +396,7 @@ struct MDModulesNotifiers
+                            const SimulationTimeStep&,
+                            const EnsembleTemperature&,
+                            const t_commrec&,
++                           const gmx_multisim_t*,
+                            const MdRunInputFilename&,
+                            const EdrOutputFilename&,
+                            const PlumedInputFilename&>::type simulationSetupNotifier_;
