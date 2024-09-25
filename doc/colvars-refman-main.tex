@@ -6510,7 +6510,7 @@ The bias samples target distributions defined via their marginal distribution
 $p^{\mathrm{tg}}(\boldsymbol{\xi})$ over some CVs, $\boldsymbol{\xi} = \boldsymbol{\xi}(x)$.
 By default \texttt{opes{\textunderscore}metad} targets the well-tempered distribution, $p^{\mathrm{WT}}(\boldsymbol{\xi}) = [P(\boldsymbol{\xi})]^{1/\gamma}$, where $\gamma$ is known as the \texttt{biasfactor}.
 Similarly to \texttt{metadynamics}, \texttt{opes{\textunderscore}metad} optimizes the bias on-the-fly, with a given \refkey{frequency}{opes_metad|pace}.
-It does so by reweighting via kernel density estimation the unbiased distribution in the CV space, $P(\boldsymbol{\xi})$.
+It does so by reweighting via kernel density estimation of the unbiased distribution in the CV space, $P(\boldsymbol{\xi})$.
 A compression algorithm is used to prevent the number of kernels from growing linearly with the simulation time.
 The bias at step $n$ is
 \begin{equation}\label{eq:opes_potential}
@@ -6524,19 +6524,22 @@ P_n (\boldsymbol{\xi}) = \frac{\sum_k^n w_k G(\boldsymbol{\xi}, \boldsymbol{\xi}
 Z_n = \frac{1}{|\Omega_n|}\int_{\Omega_n} P_n (\boldsymbol{\xi}) \mathrm{d}\boldsymbol{\xi},
 \end{equation}
 where the weights $w_k$ are given by $w_k = \exp(\beta V_{k-1}(\boldsymbol{\xi}_k))$, and the Gaussian kernels
-$G(\boldsymbol{\xi}, \boldsymbol{\xi}')=h\exp\left[-1/2(\boldsymbol{\xi}-\boldsymbol{\xi}')^T \Sigma^{-1}(\boldsymbol{\xi}-\boldsymbol{\xi}')\right]$ have a diagonal covariance matrix $\Sigma_{ij}=\sigma^2 \delta_{ij}$ and fixed height $h=\Pi_i (\sigma_i \sqrt{2\pi})^{-1}$ (see Ref.\cite{Invernizzi2020} for a complete description of the method). This section (aside from the "implementation notes") is largely based on the \href{https://www.plumed.org/doc-master/user-doc/html/_o_p_e_s__m_e_t_a_d__e_x_p_l_o_r_e.html}{PLUMED manual of the OPES module}.
+$G(\boldsymbol{\xi}, \boldsymbol{\xi}')=h\exp\left[-1/2(\boldsymbol{\xi}-\boldsymbol{\xi}')^T \Sigma^{-1}(\boldsymbol{\xi}-\boldsymbol{\xi}')\right]$ have a diagonal covariance matrix $\Sigma_{ij}=\sigma^2 \delta_{ij}$ and fixed height $h=\Pi_i (\sigma_i \sqrt{2\pi})^{-1}$ (see Ref.\cite{Invernizzi2020} for a complete description of the method).
 
-If \refkey{the exploration mode}{opes_metad|explore} is on, then the on-the-fly target probability distribution $p^{\mathrm{WT}}(\boldsymbol{\xi})$ is used to define the biasing energy (see Ref.\cite{Invernizzi2022} for a complete description of the exploration mode),
+If the exploration mode (keyword \refkey{explore}{opes_metad|explore}) is on, then the on-the-fly target probability distribution $p^{\mathrm{WT}}(\boldsymbol{\xi})$ is used to define the biasing energy:
 \begin{equation}\label{eq:opes_potential_explore}
 V_n (\boldsymbol{\xi})=-k_{\mathrm{B}} T(\gamma - 1)\ln{\left(\frac{p_n^{\mathrm{WT}}(\boldsymbol{\xi})}{Z_n}+\epsilon\right)},
 \end{equation}
+(See Ref.\cite{Invernizzi2022} for a complete description of the exploration mode.)
+
+The implementation of \texttt{opes{\textunderscore}metad} and its documentation are largely based on the \href{https://www.plumed.org/doc-master/user-doc/html/_o_p_e_s__m_e_t_a_d__e_x_p_l_o_r_e.html}{OPES module} of the \href{https://www.plumed.org/}{PLUMED} package.
 
 
 \cvsubsubsec{Implementation notes}{sec:colvarbias_opes_notes}
 The \texttt{opes{\textunderscore}metad} in Colvars is largely based on the code of the OPES module in PLUMED \cite{tribello_plumed_2014}, except that it has the following limitations:
 \begin{itemize}
 \item Colvars does not support chaining bias actions in PLUMED, so the Colvars OPES implementation cannot take the biasing energies of other biases, such as harmonic restraints, into account.
-\item Due to the same limitation of Colvars as descrbited above, you cannot collect samples on-the-fly by chaining \texttt{opes{\textunderscore}metad} with a weighted histogram for PMF calculations. Although the PMF calculation via reweighting is implemented into the \refkey{pmf}{opes_metad|pmf} option, the functionality is quite limited. The CVs in \refkey{pmfColvars}{opes_metad|pmf_colvars} must be among the biased ones. In other words, you cannot apply bias on $(\xi_1, \xi_2)$ and compute the PMF along $\xi_3$ by the on-the-fly reweighting using \refkey{pmf}{opes_metad|pmf} (you can only compute the PMF along $\xi_1$, $\xi_2$ or $(\xi_1, \xi_2)$). In addition, you can only specify one set of CVs for estimating the PMF (you cannot apply the OPES bias on $(\xi_1, \xi_2, \xi_3)$ and compute two 2D PMFs along $(\xi_1, \xi_2)$ and $(\xi_2, \xi_3)$ simultaneously using the \refkey{pmf}{opes_metad|pmf} option). However, you can always bypass this limitation by post-hoc reweighting with the trajectories.
+\item Due to the same limitation of Colvars as described above, you cannot collect samples on-the-fly by chaining \texttt{opes{\textunderscore}metad} with a weighted histogram for PMF calculations. Although the PMF calculation via reweighting is implemented into the \refkey{pmf}{opes_metad|pmf} option, the functionality is quite limited. The CVs in \refkey{pmfColvars}{opes_metad|pmf_colvars} must be among the biased ones. In other words, you cannot apply bias on $(\xi_1, \xi_2)$ and compute the PMF along $\xi_3$ by the on-the-fly reweighting using \refkey{pmf}{opes_metad|pmf} (you can only compute the PMF along $\xi_1$, $\xi_2$ or $(\xi_1, \xi_2)$). In addition, you can only specify one set of CVs for estimating the PMF (you cannot apply the OPES bias on $(\xi_1, \xi_2, \xi_3)$ and compute two 2D PMFs along $(\xi_1, \xi_2)$ and $(\xi_2, \xi_3)$ simultaneously using the \refkey{pmf}{opes_metad|pmf} option). However, you can always bypass this limitation by post-hoc reweighting with the trajectories.
 \item Colvars computes the biases in parallel with SMP, so it cannot use multiple threads again for computing the probability and the normalization factor, searching the kernels that are able to compress and updating the neighbor list. As a result, the CPU performance of this implementation may be slower than the PLUMED OPES module.
 \end{itemize}
 
@@ -6544,7 +6547,9 @@ The following table summarizes the option names in Colvars and the corresponding
 \begin{table}[h]
 \centering
 \begin{tabular}{ll}
-\textbf{Colvars} & \textbf{PLUMED} \\
+\textbf{Colvars keyword} & \textbf{PLUMED keyword} \\
+\hline
+barrier & BARRIER \\
 newHillFrequency & PACE \\
 gaussianSigma & SIGMA \\
 gaussianSigmaMin & SIGMA\_MIN \\
