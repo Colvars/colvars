@@ -6581,9 +6581,9 @@ To enable a OPES-based calculation, a \texttt{opes{\textunderscore}metad \{...\}
     {biasfactor}{%
     \texttt{opes{\textunderscore}metad}}{%
     The $\gamma$ biasfactor used for the well-tempered target distribution}{%
-    positive decimal}{%
+    positive decimal or ``inf''}{%
     $\mathrm{barrier} / k_{\mathrm{B}} T$}{%
-    This option sets the $\gamma$ in Eq.(\ref{eq:opes_potential}). It cannot be "inf" in the exploration mode.}
+    This option sets the $\gamma$ in Eq.(\ref{eq:opes_potential}). If setting to ``inf'', the target distribution is uniform. It cannot be ``inf'' in the exploration mode.}
 \item %
   \labelkey{opes_metad|sigma}
   \key
