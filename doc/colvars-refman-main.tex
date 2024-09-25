@@ -6529,7 +6529,7 @@ The \texttt{opes{\textunderscore}metad} in Colvars is largely based on the code 
 \item Colvars computes the biases in parallel with SMP, so it cannot use multiple threads again for computing the probability and the normalization factor, searching the kernels that are able to compress and updating the neighbor list. As a result, the CPU performance of this implementation may be slower than the PLUMED OPES module.
 \end{itemize}
 
-The following table summarizes the option names in Colvars and the corresponding option names in the PLUMED OPES module:
+The following table summarizes the differences of the option names in Colvars and the corresponding option names in the PLUMED OPES module:
 \begin{table}[h]
 \centering
 \begin{tabular}{ll}
@@ -6817,7 +6817,7 @@ where $A_0$ is a constant to ensure $A(\boldsymbol{\xi}')$ on every grid of the 
     }
 \end{itemize}
 
-The output file ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.kernels.dat}'' includes all deposited uncompressed kernels (the step number of deposition, the kernel center, the Gaussian kernel $\sigma$, the height of the kernel, and the biasing energy in $k_{\mathrm{B}} T$). The format of \texttt{.kernels.dat} files manages to be compatible with the post-processing tools provided in \href{https://www.plumed.org/doc-v2.7/user-doc/html/opes-metad.html}{the PLUMED OPES tutorial}, so that it is possible to run \texttt{State{\textunderscore}from{\textunderscore}Kernels.py} and then \texttt{FES{\textunderscore}from{\textunderscore}State.py} to get the PMF along the biased CVs. Besides the \refkey{pmf}{opes_metad|pmf} option, there are two ways to manually estimate the PMF, namely (i) reweighting the trajectories using the biasing energy either in the \texttt{.colvars.traj} file (with \texttt{outputEnergy}) or the \refkey{.misc.traj}{opes_metad|print_trajectory_frequency} file (the \texttt{$<$name$>$.bias} column), and (ii) summing up all the kernels (see Ref.\cite{Invernizzi2020} for more information).
+Similar to the output file specified by the \texttt{FILE} option in the PLUMED implementation, the output file ``\outputName\texttt{.colvars.$<$name$>$.$<$replicaID$>$.kernels.dat}'' includes all deposited uncompressed kernels (the step number of deposition, the kernel center, the Gaussian kernel $\sigma$, the height of the kernel, and the biasing energy in $k_{\mathrm{B}} T$). The format of \texttt{.kernels.dat} files manages to be compatible with the post-processing tools provided in \href{https://www.plumed.org/doc-v2.7/user-doc/html/opes-metad.html}{the PLUMED OPES tutorial}, so that it is possible to run \texttt{State{\textunderscore}from{\textunderscore}Kernels.py} and then \texttt{FES{\textunderscore}from{\textunderscore}State.py} to get the PMF along the biased CVs. Besides the \refkey{pmf}{opes_metad|pmf} option, there are two ways to manually estimate the PMF, namely (i) reweighting the trajectories using the biasing energy either in the \texttt{.colvars.traj} file (with \texttt{outputEnergy}) or the \refkey{.misc.traj}{opes_metad|print_trajectory_frequency} file (the \texttt{$<$name$>$.bias} column), and (ii) summing up all the kernels (see Ref.\cite{Invernizzi2020} for more information).
 
 \cvsubsubsec{Example input}{sec:colvarbias_opes_example}
 
