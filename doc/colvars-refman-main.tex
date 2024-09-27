@@ -5263,8 +5263,13 @@ All biasing and analysis methods implemented recognize the following options:
 \cvsubsec{Defining grids for biasing and analysis methods}{sec:colvarbias_grid}
 
 Several methods (\hyperlink{sec:colvarbias_histogram}{histograms}, \hyperlink{sec:colvarbias_abf}{ABF} and \hyperlink{sec:colvarbias_abf_extended}{eABF}, optionally \hyperlink{sec:colvarbias_metadynamics}{metadynamics}) rely on discretizing colvars on regular grids to represent functions such as probability distributions or free energy surfaces.
-Grid parameters for these may be provided at the level of the individual variables (\ref{sec:colvar_grid_params}), or via a dedicated configuration block \texttt{grid \{ \ldots \}} inside the configuration of the bias.
-The options supported \emph{inside this block} are:
+
+Grid parameters are specific to each variable, and some of them may even be defined automatically: for instance, periodic angles have default boundaries of -180$^\circ$ and 180$^\circ$.
+When not given by default, boundaries may be also specified when defining the collective variable itself (\ref{sec:colvar_grid_params}).
+
+Each bias will use by default any colvar boundaries that are automatically defined or explicitly given.
+Optionally, the bias may also contain a dedicated configuration block \texttt{grid \{ \ldots \}} inside its configuration.
+The options supported within the \texttt{grid \{ \ldots \}} block are:
 
 \begin{itemize}
 \item %
@@ -5288,6 +5293,33 @@ The options supported \emph{inside this block} are:
     It defines the bin widths of the grid along each dimension, overriding any values defined by the \refkey{width}{colvar|width} keyword of each colvar.
   }
 \end{itemize}
+
+\noindent\textbf{Example:} Definition of custom grid parameters for a histogram.  Note how some of the boundaries of the variables are automatically defined, but this histogram's grid is custom-defined to also specify a finer width and narrower boundaries.
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-\-~~name~r\\
+\-\-~~\#~lowerBoundary~0.0~is~automatically~defined\\
+\-\-~~upperBoundary~20.0\\
+\-\-~~distance~\{~...~\}\\
+\-\}\\
+\\
+\-colvar~\{\\
+\-\-~~name~theta\\
+\-\-~~\#~lowerBoundary~-180.0~is~automatically~defined\\
+\-\-~~\#~upperBoundary~180.0~is~automatically~defined\\
+\-\-~~dihedral~\{~...~\}\\
+\-\}\\
+\\
+\-histogram~\{\\
+\-\-~~name~hist2d\\
+\-\-~~colvars~r~theta\\
+\-\-~~grid~\{\\
+\-\-~~~~width~~0.1~1.0\\
+\-\-~~~~lowerBoundary~~~2.0~30.0\\
+\-\-~~~~upperBoundary~~10.0~90.0\\
+\-\-~~\}\\
+\-\}\\
+\end{cvexampleinput}
 
 
 
@@ -7522,7 +7554,7 @@ an optimization algorithm until the bias has converged}.
 
 The \texttt{histogram} feature is used to record the distribution of a set of collective variables in the form of a N-dimensional histogram.  Defining such a histogram is generally useful for analysis purposes, but it has no effect on the simulation.
 
-\noindent\textbf{Example 1:} the two-dimensional histogram of a distance and an angle can be generated using the configuration below.  The histogram code requires that each variable is a scalar number that is confined within a pre-defined interval.  The interval's boundaries may be specified by hand (e.g.{} through \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary} in the variable definition), or auto-detected based on the type of function.  In this example, the lower boundary for the distance variable ``\texttt{r}'' is automatically set to zero, and interval for the three-body angle ``\texttt{theta}'' is $0^\circ$ and $180^\circ$: however, that an upper boundary for the distance ``\texttt{r}'' still needs to be specified manually.  The grid spacings for the two variables are $0.2$~\lengthunit and $3.0^\circ$, respectively.
+\noindent\textbf{Example:} the two-dimensional histogram of a distance and an angle can be generated using the configuration below.  The histogram code requires that each variable is a scalar number that is confined within a pre-defined interval.  The interval's boundaries may be specified by hand (e.g.{} through \refkey{lowerBoundary}{colvar|lowerBoundary} and \refkey{upperBoundary}{colvar|upperBoundary} in the variable definition), or auto-detected based on the type of function.  In this example, the lower boundary for the distance variable ``\texttt{r}'' is automatically set to zero, and interval for the three-body angle ``\texttt{theta}'' is $0^\circ$ and $180^\circ$: however, that an upper boundary for the distance ``\texttt{r}'' still needs to be specified manually.  The grid spacings for the two variables are $0.2$~\lengthunit and $3.0^\circ$, respectively.
 % Note: a three-body angle is used to support NAMD users, because the
 % init_as_periodic_angle() function was added after the NAMD 2.14 release.
 \begin{cvexampleinput}
@@ -7542,30 +7574,6 @@ The \texttt{histogram} feature is used to record the distribution of a set of co
 \-histogram~\{\\
 \-\-~~name~hist2d\\
 \-\-~~colvars~r~theta\\
-\-\}\\
-\end{cvexampleinput}
-
-\noindent\textbf{Example 2:} This example is similar to the previous one, but with the important difference that the parameters for the histogram's grid are defined \emph{explicitly} for this histogram instance.  Therefore, this histogram's grid may differ from the one defined from parameters embedded in the \texttt{colvar~\{~...~\}} block (for example, narrower intervals and finer grid spacings may be selected).
-\begin{cvexampleinput}
-\-colvar~\{\\
-\-\-~~name~r\\
-\-\-~~upperBoundary~20.0\\
-\-\-~~distance~\{~...~\}\\
-\-\}\\
-\\
-\-colvar~\{\\
-\-\-~~name~theta\\
-\-\-~~dihedral~\{~...~\}\\
-\-\}\\
-\\
-\-histogram~\{\\
-\-\-~~name~hist2d\\
-\-\-~~colvars~r~theta\\
-\-\-~~grid~\{\\
-\-\-~~~~width~~0.1~1.0\\
-\-\-~~~~lowerBoundary~~~2.0~30.0\\
-\-\-~~~~upperBoundary~~10.0~90.0\\
-\-\-~~\}\\
 \-\}\\
 \end{cvexampleinput}
 
