@@ -14,7 +14,7 @@
 #include "colvarvalue.h"
 
 
-#ifdef TORCH
+#ifdef COLVARS_TORCH
 
 colvar::torchANN::torchANN()
 {

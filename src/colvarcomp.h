@@ -26,7 +26,7 @@
 #include "colvar.h"
 #include "colvar_geometricpath.h"
 
-#ifdef TORCH
+#ifdef COLVARS_TORCH
 #include <torch/torch.h>
 #include <torch/script.h>
 #endif
@@ -1547,7 +1547,7 @@ public:
   virtual void wrap(colvarvalue &x_unwrapped) const;
 };
 
-#ifdef TORCH
+#ifdef COLVARS_TORCH
 // only when LibTorch is available
 class colvar::torchANN
   : public colvar::linearCombination
@@ -1580,7 +1580,7 @@ public:
     torchANN();
     virtual ~torchANN();
 };
-#endif // TORCH checking
+#endif // COLVARS_TORCH checking
 
 // \brief Colvar component: total value of a scalar map
 // (usually implemented as a grid by the simulation engine)
