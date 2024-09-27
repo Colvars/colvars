@@ -82,8 +82,27 @@ else()
 endif()
 
 if(DEFINED ENV{CCACHE})
-  set(DEFINE_CC_CCACHE "-DCMAKE_C_COMPILER_LAUNCHER=$ENV{CCACHE}")
-  set(DEFINE_CXX_CCACHE "-DCMAKE_CXX_COMPILER_LAUNCHER=$ENV{CCACHE}")
+  set(CCACHE $ENV{CCACHE})
+else()
+  find_program(CCACHE "ccache")
+  if(CCACHE)
+    set(CCACHE "ccache")
+  endif()
+endif()
+
+if(NOT ${CCACHE} STREQUAL "CCACHE-NOTFOUND")
+  message(STATUS "Using ${CCACHE} as the compiler launcher")
+  set(DEFINE_CC_CCACHE "-DCMAKE_C_COMPILER_LAUNCHER=${CCACHE}")
+  set(DEFINE_CXX_CCACHE "-DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE}")
+endif()
+
+if(NOT DEFINED ENV{CXX})
+  # Use Clang if available to catch more errors
+  find_program(CLANG "clang++")
+  if(CLANG)
+    message(STATUS "Clang is available, using it as the default compiler")
+    set(DEFINE_CXX_COMPILER "-DCMAKE_CXX_COMPILER=clang++")
+  endif()
 endif()
 
 execute_process(
@@ -96,6 +115,7 @@ execute_process(
   -D WARNINGS_ARE_ERRORS=ON
   -D CMAKE_VERBOSE_MAKEFILE=ON
   -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+  ${DEFINE_CXX_COMPILER}
   ${DEFINE_CC_CCACHE}
   ${DEFINE_CXX_CCACHE}
   -D COLVARS_TCL=${COLVARS_TCL}
