@@ -16,6 +16,9 @@ else()
   endif()
 endif()
 
+set(COLVARS_TORCH ON)
+# Minimum C++ standard depends on Torch version
+
 if(NOT DEFINED BUILD_SHARED_LIBS)
   # We need a shared library to load the Tcl package
   set(BUILD_SHARED_LIBS ON)
@@ -105,6 +108,10 @@ if(NOT DEFINED ENV{CXX})
   endif()
 endif()
 
+if(EXISTS "/opt/libtorch")
+  list(APPEND CMAKE_PREFIX_PATH "/opt/libtorch")
+endif()
+
 execute_process(
   COMMAND ${CMAKE_COMMAND}
   -S cmake
@@ -121,7 +128,9 @@ execute_process(
   -D COLVARS_TCL=${COLVARS_TCL}
   ${DEFINE_TCL_DIR}
   ${DEFINE_TCL_LIBRARY}
+  ${DEFINE_PYTHON}
   -D COLVARS_LEPTON=${COLVARS_LEPTON}
+  -D COLVARS_TORCH=${COLVARS_TORCH}
   -D LEPTON_DIR=${LEPTON_DIR}
   RESULT_VARIABLE result
   )

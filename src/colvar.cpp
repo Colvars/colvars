@@ -888,7 +888,7 @@ void colvar::define_component_types()
 
   add_component_type<neuralNetwork>("neural network CV for other CVs", "neuralNetwork");
 
-#ifdef TORCH
+#ifdef COLVARS_TORCH
   add_component_type<torchANN>("CV defined by PyTorch artifical neural network models", "torchANN");
 #endif
 
