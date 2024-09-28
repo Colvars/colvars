@@ -1,13 +1,15 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
-colvars: in any publication based on this calculation.
-colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
 colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - SMP parallelism: enabled (num. threads = 4)
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: available
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
-colvars: Opening trajectory file "test.restart.colvars.traj".
-colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -16,6 +18,7 @@ colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "multimap"
@@ -28,6 +31,8 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:     # mapName = "map"
+colvars:     # mapID = -1 [default]
+colvars:     # atomWeights =  [default]
 colvars:   Initializing a new "mapTotal" component.
 colvars:     # name = "maprot"
 colvars:     # componentCoeff = 0.0068054
@@ -37,11 +42,13 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:     # mapName = "map2"
+colvars:     # mapID = -1 [default]
+colvars:     # atomWeights =  [default]
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 0.02
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0 [default]
+colvars:   # upperBoundary = 0.02 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
@@ -65,11 +72,13 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:     # mapName = "map"
+colvars:     # mapID = -1 [default]
+colvars:     # atomWeights =  [default]
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0 [default]
+colvars:   # upperBoundary = 1 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
@@ -93,11 +102,13 @@ colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:     # mapName = "map2"
+colvars:     # mapID = -1 [default]
+colvars:     # atomWeights =  [default]
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0 [default]
+colvars:   # upperBoundary = 1 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
@@ -123,11 +134,13 @@ colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # centers = { 1.3 }
 colvars:   # targetCenters = { 2 }
+colvars:   Initial step for restraint change: 0
 colvars:   # targetNumSteps = 20
 colvars:   # targetNumStages = 0 [default]
 colvars:   # outputAccumulatedWork = off [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 1
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   The force constant for colvar "multimap" will be rescaled to 2500 according to the specified width (0.02).
 colvars: ----------------------------------------------------------------------
@@ -139,19 +152,41 @@ colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: updating grid object data (2 grid objects in total).
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - Colvars module:
+colvars: - Colvars-NAMD interface:
+colvars: - Harmonic colvar bias implementation:
+colvars: - Linear and polynomial combination of colvar components:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - Volumetric map-based collective variables:
+colvars: - mapTotal colvar component:
+colvars:   Fiorin2020 https://doi.org/10.1002/jcc.26075
+colvars: 
+colvars: - NAMD engine:
+colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
+colvars: 
+colvars: - GridForces volumetric map implementation for NAMD:
+colvars:   Wells2007 https://doi.org/10.1063/1.2770738
+colvars: 
+colvars: updating target temperature (T = 0 K).
 colvars: ----------------------------------------------------------------------
-colvars: Loading state from file "test.colvars.state".
+colvars: Loading state from text file "test.colvars.state".
 colvars:   Restarting collective variable "multimap" from value: 1.32181
 colvars:   Restarting collective variable "map" from value: 0.788137
 colvars:   Restarting collective variable "map2" from value: 0.266838
-colvars:   Restarting harmonic bias "harmonic1" from step number 20.
+colvars:   Restarted harmonic bias "harmonic1" with step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: updating grid object data (2 grid objects in total).
+colvars: updating target temperature (T = 0 K).
+colvars: Current simulation parameters: initial step = 20, integration timestep = 1
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
-colvars: The final output state file will be "test.restart.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".

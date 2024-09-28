@@ -5,17 +5,17 @@ configuration {
 
 colvar {
   name numatoms
-  x  5.01673023067415e+01
+  x       50.167306933552
 }
 
 colvar {
   name numatoms_rot
-  x  1.96190860426341e+01
+  x       19.619083014632
 }
 
 colvar {
   name numatoms_ref
-  x  5.01673023067415e+01
+  x       50.167306933552
 }
 
 restraint {
