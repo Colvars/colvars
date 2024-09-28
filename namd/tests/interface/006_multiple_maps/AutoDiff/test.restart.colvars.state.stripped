@@ -5,25 +5,25 @@ configuration {
 
 colvar {
   name multimap
-  x  1.37074503648023e+00
+  x       1.3707453567725
 }
 
 colvar {
   name map
-  x  7.66575883577770e-01
+  x      0.76657609530575
 }
 
 colvar {
   name map2
-  x  3.02084576451228e-01
+  x      0.30208463073336
 }
 
 restraint {
   configuration {
     step 40
     name harmonic1
-    firstStep            0
-    centers   2.00000000000000e+00
+firstStep            0
+centers   2.00000000000000e+00
   }
 }
 
