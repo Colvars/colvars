@@ -13,8 +13,9 @@
 
 #ifdef COLVARS_MPI
 #include <mpi.h>
+typedef MPI_Comm replicas_mpi_comm_t;
 #else
-typedef void* MPI_Comm;
+typedef void * replicas_mpi_comm_t;
 #endif
 
 
@@ -30,7 +31,7 @@ public:
   virtual ~colvarproxy_replicas();
 
   /// Set the multiple replicas communicator
-  virtual void set_replicas_mpi_communicator(MPI_Comm comm);
+  virtual void set_replicas_mpi_communicator(replicas_mpi_comm_t comm);
 
   /// Indicate if multi-replica support is available and active
   virtual int check_replicas_enabled();
@@ -53,7 +54,7 @@ public:
 protected:
 
   /// MPI communicator containint 1 root proc from each world
-  MPI_Comm replicas_mpi_comm;
+  replicas_mpi_comm_t replicas_mpi_comm;
 
   /// Index (rank) of this replica in the MPI implementation
   int replicas_mpi_rank = 0;

@@ -8,10 +8,6 @@
 // Colvars repository at GitHub.
 
 
-#ifdef COLVARS_MPI
-#include <mpi.h>
-#endif
-
 #include "colvarmodule.h"
 #include "colvarproxy_replicas.h"
 
@@ -27,10 +23,10 @@ colvarproxy_replicas::colvarproxy_replicas()
 colvarproxy_replicas::~colvarproxy_replicas() {}
 
 
-void colvarproxy_replicas::set_replicas_mpi_communicator(MPI_Comm comm)
+void colvarproxy_replicas::set_replicas_mpi_communicator(replicas_mpi_comm_t comm)
 {
-#ifdef COLVARS_MPI
   replicas_mpi_comm = comm;
+#ifdef COLVARS_MPI
   if (comm != MPI_COMM_NULL) {
     MPI_Comm_rank(comm, &replicas_mpi_rank);
     MPI_Comm_size(comm, &replicas_mpi_num);
