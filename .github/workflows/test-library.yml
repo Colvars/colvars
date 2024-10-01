@@ -221,7 +221,7 @@ jobs:
           fi
 
       - name: Archive warnings artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: warnings_clang_static_analyser
@@ -276,7 +276,7 @@ jobs:
           cmake -P devel-tools/build_test_library.cmake
 
       - name: Archive warnings artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: Clang_address_sanitizer_output
