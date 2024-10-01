@@ -114,7 +114,7 @@ const t_commrec* ColvarsSimulationsParameters::comm() const
     return cr_;
 }
 
-void ColvarsSimulationsParameters::setMultisim(const gmx_multisim_t *ms)
+void ColvarsSimulationsParameters::setMultisim(const gmx_multisim_t* ms)
 {
     ms_ = ms;
 }
