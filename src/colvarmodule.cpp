@@ -133,10 +133,10 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
     cvm::log("  - Multiple replicas: not available\n");
   } else {
     if (proxy->check_replicas_enabled() == COLVARS_OK) {
-      cvm::log("  - Multiple replicas: enabled with replica rank " + to_str(proxy->replica_index()) + " (" +
-               to_str(proxy->num_replicas()) + " replicas in total)\n");
+      cvm::log("  - Multiple replicas: enabled (replica number " +
+               to_str(proxy->replica_index() + 1) + " of " + to_str(proxy->num_replicas()) + ")\n");
     } else {
-      cvm::log("  - Multiple replicas: available, but not enabled\n");
+      cvm::log("  - Multiple replicas: available, but not (yet) enabled\n");
     }
   }
 
