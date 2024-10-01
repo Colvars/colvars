@@ -39,11 +39,15 @@
  * \ingroup module_applied_forces
  */
 
+#include "colvarsforceprovider.h"
+
 #include <cstddef>
 #include <cstdint>
 
 #include <array>
 #include <string>
+
+#include "external/colvars/colvars_memstream.h"
 
 #include "gromacs/applied_forces/colvars/colvarproxygromacs.h"
 #include "gromacs/compat/pointers.h"
@@ -66,10 +70,6 @@
 #include "gromacs/utility/keyvaluetree.h"
 #include "gromacs/utility/keyvaluetreebuilder.h"
 #include "gromacs/utility/smalloc.h"
-
-#include "colvarsforceprovider.h"
-
-#include "external/colvars/colvars_memstream.h"
 
 enum class PbcType : int;
 
@@ -242,7 +242,8 @@ ColvarsForceProvider::ColvarsForceProvider(const std::string& colvarsConfigStrin
 #if GMX_MPI
     if (MAIN(cr))
     {
-        if (isMultiSim(ms)) {
+        if (isMultiSim(ms))
+        {
             colvarproxy::set_replicas_mpi_communicator(ms->mainRanksComm_);
         }
     }

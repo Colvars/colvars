@@ -111,7 +111,7 @@ public:
     const t_commrec* comm() const;
 
     //! Set the Multisim record
-    void setMultisim(const gmx_multisim_t *ms);
+    void setMultisim(const gmx_multisim_t* ms);
     //! Return Multisim record
     const gmx_multisim_t* ms() const;
 
@@ -135,7 +135,7 @@ private:
     //! The communicator
     const t_commrec* cr_;
     //! The multisim record
-    const gmx_multisim_t *ms_;
+    const gmx_multisim_t* ms_;
     //! MDLogger for notifications during mdrun
     const MDLogger* logger_ = nullptr;
 

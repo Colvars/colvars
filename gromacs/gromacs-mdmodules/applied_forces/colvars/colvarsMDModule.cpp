@@ -40,6 +40,8 @@
  */
 #include "gmxpre.h"
 
+#include "colvarsMDModule.h"
+
 #include <functional>
 #include <memory>
 #include <string>
@@ -56,8 +58,6 @@
 #include "colvarsforceprovider.h"
 #include "colvarsoptions.h"
 #include "colvarssimulationsparameters.h"
-
-#include "colvarsMDModule.h"
 
 enum class PbcType : int;
 struct gmx_mtop_t;
@@ -194,7 +194,7 @@ public:
         notifier->simulationSetupNotifier_.subscribe(setCommFunction);
 
         // Retrieve the Multisim Record during simulations setup
-        const auto setMultisimFunction = [this](const gmx_multisim_t *ms) {
+        const auto setMultisimFunction = [this](const gmx_multisim_t* ms) {
             this->ColvarsSimulationsParameters_.setMultisim(ms);
         };
         notifier->simulationSetupNotifier_.subscribe(setMultisimFunction);
