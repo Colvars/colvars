@@ -13,7 +13,7 @@ else
     BINARY="gmx_mpi_d"
 fi
 
-mpirun -np 16 -oversubscribe $BINARY mdrun -multidir a b c d -s test.tpr -deffnm test -replex 10 -reseed 376 2>&1 | tee test.out
+mpirun -np 16 -oversubscribe $BINARY mdrun -multidir a b c d -s test.tpr -deffnm test -replex 10 -reseed 376 >& test.out
 
 # Copy result files to be tested in the main folder
 cp a/test.colvars.traj a/test.colvars.state .
