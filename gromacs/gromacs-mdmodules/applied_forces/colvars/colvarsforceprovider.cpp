@@ -247,6 +247,8 @@ ColvarsForceProvider::ColvarsForceProvider(const std::string& colvarsConfigStrin
             colvarproxy::set_replicas_mpi_communicator(ms->mainRanksComm_);
         }
     }
+#else
+    GMX_UNUSED_VALUE(ms);
 #endif
 
     // Check state status (did we read a cpt file?)
