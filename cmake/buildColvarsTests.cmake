@@ -15,6 +15,11 @@ if(BUILD_TESTS)
 
       # Copy the Colvars configuration files
       file(GLOB TEST_CONFIG_FILES ${COLVARS_SOURCE_DIR}/tests/input_files/*/test.in)
+      if(NOT COLVARS_TORCH)
+        # TODO create a way to detect test dependencies at some point
+        list(REMOVE_ITEM TEST_CONFIG_FILES ${COLVARS_SOURCE_DIR}/tests/input_files/torchann-dihedral_harmonic-fixed/test.in)
+      endif()
+
       foreach(TEST_CONFIG_FILE ${TEST_CONFIG_FILES})
         get_filename_component(TEST_NAME ${TEST_CONFIG_FILE} DIRECTORY)
         get_filename_component(TEST_NAME ${TEST_NAME} NAME)
