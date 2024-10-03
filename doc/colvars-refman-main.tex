@@ -6495,34 +6495,34 @@ This biasing method implements the on-the-fly probability enhanced sampling (OPE
 The bias samples target distributions defined via their marginal distribution
 $p^{\mathrm{tg}}(\boldsymbol{\xi})$ over some CVs, $\boldsymbol{\xi} = \boldsymbol{\xi}(x)$.
 By default \texttt{opes{\textunderscore}metad} targets the well-tempered distribution, $p^{\mathrm{WT}}(\boldsymbol{\xi}) = [P(\boldsymbol{\xi})]^{1/\gamma}$, where $\gamma$ is known as the \texttt{biasfactor}.
-Similarly to \texttt{metadynamics}, \texttt{opes{\textunderscore}metad} optimizes the bias on-the-fly, with a given \refkey{frequency}{opes_metad|pace}.
+Similarly to \texttt{metadynamics}, \texttt{opes{\textunderscore}metad} optimizes the bias on-the-fly, with a given \refkey{newHillfrequency}{opes_metad|newHillFrequency}.
 It does so by reweighting via kernel density estimation of the unbiased distribution in the CV space, $P(\boldsymbol{\xi})$.
 A compression algorithm is used to prevent the number of kernels from growing linearly with the simulation time.
 The bias at step $n$ is
 \begin{equation}\label{eq:opes_potential}
-V_n(\boldsymbol{\xi}) = -k_{\mathrm{B}}T(1-1/\gamma)\ln\left(\frac{P_n(\boldsymbol{\xi})}{Z_n}+\epsilon\right),
+V_n\left(\boldsymbol{\xi}\right) = -k_{\mathrm{B}}T\left(1-1/\gamma\right)\ln\left(\frac{P_n(\boldsymbol{\xi})}{Z_n}+\epsilon\right),
 \end{equation}
-where the probability $P_n (\boldsymbol{\xi})$ and the normlization factor $Z_n$ is computed as
+where the probability $P_n \left(\boldsymbol{\xi}\right)$ and the normalization factor $Z_n$ are computed as
 \begin{equation}
 P_n (\boldsymbol{\xi}) = \frac{\sum_k^n w_k G(\boldsymbol{\xi}, \boldsymbol{\xi}_k)}{\sum_k^n w_k}
 \end{equation}
 \begin{equation}
-Z_n = \frac{1}{|\Omega_n|}\int_{\Omega_n} P_n (\boldsymbol{\xi}) \mathrm{d}\boldsymbol{\xi},
+Z_n = \frac{1}{|\Omega_n|}\int_{\Omega_n} P_n \left(\boldsymbol{\xi}\right) \mathrm{d}\boldsymbol{\xi},
 \end{equation}
 where the weights $w_k$ are given by $w_k = \exp(\beta V_{k-1}(\boldsymbol{\xi}_k))$, and the Gaussian kernels
-$G(\boldsymbol{\xi}, \boldsymbol{\xi}')=h\exp\left[-1/2(\boldsymbol{\xi}-\boldsymbol{\xi}')^T \Sigma^{-1}(\boldsymbol{\xi}-\boldsymbol{\xi}')\right]$ have a diagonal covariance matrix $\Sigma_{ij}=\sigma^2 \delta_{ij}$ and fixed height $h=\Pi_i (\sigma_i \sqrt{2\pi})^{-1}$ (see Ref.\cite{Invernizzi2020} for a complete description of the method).
+$G\left(\boldsymbol{\xi}, \boldsymbol{\xi}'\right) = h\exp\left[-1/2\left(\boldsymbol{\xi}-\boldsymbol{\xi}'\right)^T \Sigma^{-1}\left(\boldsymbol{\xi}-\boldsymbol{\xi}'\right)\right]$ have a diagonal covariance matrix $\Sigma_{ij}=\sigma^2 \delta_{ij}$ and fixed height $h=\Pi_i (\sigma_i \sqrt{2\pi})^{-1}$ (see Ref.\cite{Invernizzi2020} for a complete description of the method).
 
 If the exploration mode (keyword \refkey{explore}{opes_metad|explore}) is on, then the on-the-fly target probability distribution $p^{\mathrm{WT}}(\boldsymbol{\xi})$ is used to define the biasing energy:
 \begin{equation}\label{eq:opes_potential_explore}
-V_n (\boldsymbol{\xi})=-k_{\mathrm{B}} T(\gamma - 1)\ln{\left(\frac{p_n^{\mathrm{WT}}(\boldsymbol{\xi})}{Z_n}+\epsilon\right)},
+V_n \left(\boldsymbol{\xi}\right)=-k_{\mathrm{B}} T\left(\gamma - 1\right)\ln{\left(\frac{p_n^{\mathrm{WT}}(\boldsymbol{\xi})}{Z_n}+\epsilon\right)},
 \end{equation}
 (See Ref.\cite{Invernizzi2022} for a complete description of the exploration mode.)
 
-The implementation of \texttt{opes{\textunderscore}metad} and its documentation are largely based on the \href{https://www.plumed.org/doc-master/user-doc/html/_o_p_e_s__m_e_t_a_d__e_x_p_l_o_r_e.html}{OPES module} of the \href{https://www.plumed.org/}{PLUMED} package.
+The implementation of \texttt{opes{\textunderscore}metad}\ and its documentation are largely based on the \href{https://www.plumed.org/doc-master/user-doc/html/_o_p_e_s__m_e_t_a_d__e_x_p_l_o_r_e.html}{OPES module} of the \href{https://www.plumed.org/}{PLUMED} package.
 
 
 \cvsubsubsec{Implementation notes}{sec:colvarbias_opes_notes}
-The \texttt{opes{\textunderscore}metad} in Colvars is largely based on the code of the OPES module in PLUMED \cite{tribello_plumed_2014}, except that it has the following limitations:
+Compared to the the OPES module in PLUMED \cite{tribello_plumed_2014}, this implementation currently has the following limitations:
 \begin{itemize}
 \item Colvars does not support chaining bias actions in PLUMED, so the Colvars OPES implementation cannot take the biasing energies of other biases, such as harmonic restraints, into account.
 \item Due to the same limitation of Colvars as described above, you cannot collect samples on-the-fly by chaining \texttt{opes{\textunderscore}metad} with a weighted histogram for PMF calculations. Although the PMF calculation via reweighting is implemented into the \refkey{pmf}{opes_metad|pmf} option, the functionality is quite limited. The CVs in \refkey{pmfColvars}{opes_metad|pmf_colvars} must be among the biased ones. In other words, you cannot apply bias on $(\xi_1, \xi_2)$ and compute the PMF along $\xi_3$ by the on-the-fly reweighting using \refkey{pmf}{opes_metad|pmf} (you can only compute the PMF along $\xi_1$, $\xi_2$ or $(\xi_1, \xi_2)$). In addition, you can only specify one set of CVs for estimating the PMF (you cannot apply the OPES bias on $(\xi_1, \xi_2, \xi_3)$ and compute two 2D PMFs along $(\xi_1, \xi_2)$ and $(\xi_2, \xi_3)$ simultaneously using the \refkey{pmf}{opes_metad|pmf} option). However, you can always bypass this limitation by post-hoc reweighting with the trajectories.
@@ -6549,7 +6549,8 @@ neighborListParameters & NLIST\_PARAMETERS \\
 noZed & NO\_ZED \\
 fixedGaussianSigma & FIXED\_SIGMA \\
 recursiveMerge & (the opposite of RECURSIVE\_MERGE\_OFF) \\
-calcWork & CALC\_WORK
+calcWork & CALC\_WORK \\
+multipleReplicas & WALKERS\_MPI
 \end{tabular}
 \end{table}
 
@@ -6568,7 +6569,7 @@ To enable a OPES-based calculation, a \texttt{opes{\textunderscore}metad \{...\}
     positive decimal}{%
     This parameter should be set to be at least equal to the highest free energy barrier you wish to overcome. If it is much lower than that, you will not cross the barrier, if it is much higher, convergence might take a little longer. If the system has a basin that is clearly more stable than the others, it is better to start the simulation from there.}
 \item %
-  \labelkey{opes_metad|pace}
+  \labelkey{opes_metad|newHillFrequency}
   \key
     {newHillFrequency}{%
     \texttt{opes{\textunderscore}metad}}{%
@@ -6721,7 +6722,7 @@ To enable a OPES-based calculation, a \texttt{opes{\textunderscore}metad \{...\}
 
 \cvsubsubsec{Multiple-walker options}{sec:colvarbias_opes_multiple_walker_options}
 
-The following options can be used for the multiple-walker OPES:
+The following options can be used for the multiple-walker OPES, and require the direct communication between replicas through MPI\cvnamdonly{ or a Charm++ platform that supports partitions}:
 \begin{itemize}
 \item %
   \labelkey{opes_metad|multipleReplicas}
@@ -6739,7 +6740,7 @@ The following options can be used for the multiple-walker OPES:
     \texttt{opes{\textunderscore}metad}}{%
     Set the identifier for this replica (required only for independent jobs)}{%
     string}{%
-    replica index (only if MPI\cvnamdonly{ or Charm++} is used)}{%
+    replica index)}{%
     If \refkey{multipleReplicas}{opes_metad|multipleReplicas} is \texttt{on}, this option sets a unique identifier for this replicas.
     Specifying this option is thus only required when the replicas are launched as independent computations:
     when the replicas share a common parallel communication framework (i.e.\ they are all launched together as a single message-passing computation via MPI\cvnamdonly{or Charm++}) the default value of this keyword is the replica's numeric index (zero-based).
@@ -6760,7 +6761,7 @@ The following options can be used for the multiple-walker OPES:
 
 The following options are used for setting the PMF and trajectory output. The PMF is calculated based on reweighting the CVs specified by \refkey{pmfColvars}{opes_metad|pmf_colvars}, which collects on-the-fly the biasing energy $V(\boldsymbol{\xi})$ and the values of CVs of every step, and builds a weighted histogram to calculate the unbiased probability of $\boldsymbol{\xi}$
 \begin{equation}
-\langle \mathcal{P}(\boldsymbol{\xi}') \rangle = \dfrac{\sum_{t=0}^N \delta(\boldsymbol{\xi}(\mathbf{x})-\boldsymbol{\xi}') \exp\left(\frac{V(\boldsymbol{\xi})}{k_{\mathrm{B}} T}\right)}{\sum_{t=0}^N \exp\left(\frac{V(\boldsymbol{\xi})}{k_{\mathrm{B}} T}\right)}
+\langle \mathcal{P}\left(\boldsymbol{\xi}'\right) \rangle = \dfrac{\sum_{t=0}^N \delta\left(\boldsymbol{\xi}\left(\mathbf{x}\right)-\boldsymbol{\xi}'\right) \exp\left(\frac{V(\boldsymbol{\xi})}{k_{\mathrm{B}} T}\right)}{\sum_{t=0}^N \exp\left(\frac{V(\boldsymbol{\xi})}{k_{\mathrm{B}} T}\right)}
 \end{equation}
 where $N$ is the total number of simulation steps, $\boldsymbol{\xi}'$ is the grid center in the histogram, and $\delta$ is the dirac delta function. The PMF is then obtained by
 \begin{equation}
