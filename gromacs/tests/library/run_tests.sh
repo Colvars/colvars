@@ -96,7 +96,7 @@ cleanup_files() {
     done
     rm -f *.xtc *.trr *.edr *.cpt *.gro *.log \#*${script%.tpr}.*  #Gromacs files
     rm -f
-    rm -f *.out *.out.diff # Delete output files regardless
+    rm -f *.out *.out.diff *.err # Delete output files regardless
     rm -f *.ndx *.xyz
     rm -f test.dat
   done
