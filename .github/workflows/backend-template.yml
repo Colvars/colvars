@@ -160,8 +160,12 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: failed-library-test-diffs-${{ inputs.backend_name }}
-          path: ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.diff
+          name: failed-library-test-output-${{ inputs.backend_name }}
+          path: |
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.diff
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.err
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.log
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.out
 
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
         if: ${{ inputs.test_interface_directory }}
@@ -177,8 +181,12 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: failed-interface-test-diffs-${{ inputs.backend_name }}
-          path: ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.diff
+          name: failed-interface-test-output-${{ inputs.backend_name }}
+          path: |
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.diff
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.err
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.log
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.out
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }} (binary restarts)
         # Skipping GROMACS, because its restarts are always binary anyway

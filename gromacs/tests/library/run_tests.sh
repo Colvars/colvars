@@ -172,8 +172,8 @@ for dir in ${DIRLIST} ; do
     if [ "x${MDMODULES_INTERFACE}" == "xyes" ] ; then
 
       if [ "${basename}" == "test" ] ; then
-        ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr >& ${basename}.grompp.out
-        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} >& ${basename}.out
+        ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} 2> ${basename}.err 1> ${basename}.out
         RETVAL=$?
       fi
 
@@ -194,9 +194,9 @@ for dir in ${DIRLIST} ; do
           # Mimic the initial step of a job restarted from checkpoint, to be
           # consistent with reference outputs
           echo "init-step = 20" >> ${NEW_MDP}
-          ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr >& ${basename}.grompp.out
+          ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
           rm -f ${NEW_MDP} ${NEW_CVCONF}
-          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend >& ${basename}.out
+          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend 2> ${basename}.err 1> ${basename}.out
           RETVAL=$?
 
           output=${basename}.part0001
@@ -208,8 +208,8 @@ for dir in ${DIRLIST} ; do
         else
 
           # Restart both GROMACS and Colvars using the GROMACS checkpoint file
-          ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr >& ${basename}.grompp.out
-          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt >& ${basename}.out
+          ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt 2> ${basename}.err 1> ${basename}.out
 
           RETVAL=$?
           output=${basename}.part0002
@@ -306,7 +306,7 @@ for dir in ${DIRLIST} ; do
     then
       if [ ${base} == ${base%.out} ] # Ignore differences in stdout log
       then
-        echo -e "\n*** Failure for file $(${TPUT_RED})$base$(${TPUT_CLEAR}): see `pwd`/$base.diff "
+        echo -e "\n*** Failure for file $(${TPUT_RED})$base$(${TPUT_CLEAR}) (return code = $RETVAL): see also `pwd`/$base.diff "
         SUCCESS=0
         ALL_SUCCESS=0
         LOW_PREC=${DIFF_PREC}
