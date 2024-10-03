@@ -1,3 +1,16 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8acf71e985..494254aac0 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -691,6 +691,8 @@ include(gmxManageMuparser)
+ 
+ include(gmxManageColvars)
+ 
++include(gmxManageLepton)
++
+ include(gmxManagePlumed)
+ 
+ ##################################################
 diff --git a/src/gromacs/CMakeLists.txt b/src/gromacs/CMakeLists.txt
 index 04f980777c..45c1ce781d 100644
 --- a/src/gromacs/CMakeLists.txt
