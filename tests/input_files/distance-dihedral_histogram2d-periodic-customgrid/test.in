@@ -38,9 +38,9 @@ colvar {
 
 histogram {
     colvars r phi
-    histogramGrid {
-        widths  0.2 6.0
-        lowerBoundaries   0.0   0.0
-        upperBoundaries  10.0 360.0
+    grid {
+        width  0.2 6.0
+        lowerBoundary   0.0   0.0
+        upperBoundary  10.0 360.0
     }
 }
