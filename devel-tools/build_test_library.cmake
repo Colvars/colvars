@@ -7,6 +7,14 @@ else()
   get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 endif()
 
+if(EXISTS "/opt/libtorch")
+  set(DEFINE_TORCH "-DCOLVARS_TORCH=ON")
+  set(DEFINE_TORCH_PREFIX "-DLIBTORCH_PREFIX=/opt/libtorch")
+  if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 17)
+  endif()
+endif()
+
 set(COLVARS_LEPTON ON)
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 11)
@@ -16,8 +24,6 @@ else()
   endif()
 endif()
 
-set(COLVARS_TORCH ON)
-# Minimum C++ standard depends on Torch version
 
 if(NOT DEFINED BUILD_SHARED_LIBS)
   # We need a shared library to load the Tcl package
@@ -108,10 +114,6 @@ if(NOT DEFINED ENV{CXX})
   endif()
 endif()
 
-if(EXISTS "/opt/libtorch")
-  list(APPEND CMAKE_PREFIX_PATH "/opt/libtorch")
-endif()
-
 execute_process(
   COMMAND ${CMAKE_COMMAND}
   -S cmake
@@ -125,13 +127,15 @@ execute_process(
   ${DEFINE_CXX_COMPILER}
   ${DEFINE_CC_CCACHE}
   ${DEFINE_CXX_CCACHE}
+  ${DEFINE_PYTHON}
   -D COLVARS_TCL=${COLVARS_TCL}
   ${DEFINE_TCL_DIR}
   ${DEFINE_TCL_LIBRARY}
-  ${DEFINE_PYTHON}
+  ${DEFINE_TORCH}
+  ${DEFINE_TORCH_PREFIX}
   -D COLVARS_LEPTON=${COLVARS_LEPTON}
-  -D COLVARS_TORCH=${COLVARS_TORCH}
   -D LEPTON_DIR=${LEPTON_DIR}
+  -D CMAKE_PREFIX_PATH="/opt/libtorch/share/cmake"
   RESULT_VARIABLE result
   )
 
