@@ -561,12 +561,12 @@ int colvarbias_opes::update_opes() {
       if (cvm::proxy->replica_index() == 0) {
         for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
           if (cvm::proxy->replica_comm_recv((char*)&(replica_sum_heights[p - 1]), sizeof(cvm::real), p) != sizeof(cvm::real)) {
-            return cvm::error("Error getting sum of weights from replica " + cvm::to_str(p));
+            return cvm::error("Error: receiving sum of weights from replica " + cvm::to_str(p));
           }
         }
       } else {
         if (cvm::proxy->replica_comm_send((char*)&sum_heights, sizeof(cvm::real), 0) != sizeof(cvm::real)) {
-          return cvm::error("Error sending sum of weights from replica.");
+          return cvm::error("Error: sending sum of weights to replica 0.");
         }
       }
       cvm::proxy->replica_comm_barrier();
@@ -577,12 +577,12 @@ int colvarbias_opes::update_opes() {
         }
         for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
           if (cvm::proxy->replica_comm_send((char*)&sum_heights, sizeof(cvm::real), p) != sizeof(cvm::real)) {
-            return cvm::error("Error sending sum of weights to replica " + cvm::to_str(p));
+            return cvm::error("Error: sending sum of weights to replica " + cvm::to_str(p));
           }
         }
       } else {
         if (cvm::proxy->replica_comm_recv((char*)&sum_heights, sizeof(cvm::real), 0) != sizeof(cvm::real)) {
-          return cvm::error("Error receiving sum of weights from replica.");
+          return cvm::error("Error: receiving sum of weights from replica 0.");
         }
       }
       cvm::proxy->replica_comm_barrier();
@@ -591,12 +591,12 @@ int colvarbias_opes::update_opes() {
       if (cvm::proxy->replica_index() == 0) {
         for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
           if (cvm::proxy->replica_comm_recv((char*)&(replica_sum_heights2[p - 1]), sizeof(cvm::real), p) != sizeof(cvm::real)) {
-            return cvm::error("Error getting sum of weights2 from replica " + cvm::to_str(p));
+            return cvm::error("Error: getting sum of weights2 from replica " + cvm::to_str(p));
           }
         }
       } else {
         if (cvm::proxy->replica_comm_send((char*)&sum_heights2, sizeof(cvm::real), 0) != sizeof(cvm::real)) {
-          return cvm::error("Error sending sum of weights2 from replica.");
+          return cvm::error("Error: sending sum of weights2 from replica.");
         }
       }
       cvm::proxy->replica_comm_barrier();
@@ -607,12 +607,12 @@ int colvarbias_opes::update_opes() {
         }
         for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
           if (cvm::proxy->replica_comm_send((char*)&sum_heights2, sizeof(cvm::real), p) != sizeof(cvm::real)) {
-            return cvm::error("Error sending sum of weights2 to replica " + cvm::to_str(p));
+            return cvm::error("Error: sending sum of weights2 to replica " + cvm::to_str(p));
           }
         }
       } else {
         if (cvm::proxy->replica_comm_recv((char*)&sum_heights2, sizeof(cvm::real), 0) != sizeof(cvm::real)) {
-          return cvm::error("Error receiving sum of weights2 from replica.");
+          return cvm::error("Error: receiving sum of weights2 from replica.");
         }
       }
       cvm::proxy->replica_comm_barrier();
@@ -707,12 +707,12 @@ int colvarbias_opes::update_opes() {
         all_height[0] = height;
         for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
           if (cvm::proxy->replica_comm_recv((char*)&(all_height[p]), sizeof(decltype(all_height)::value_type), p) != sizeof(decltype(all_height)::value_type)) {
-            return cvm::error("Error on receiving height on replica 0 from replica " + cvm::to_str(p));
+            return cvm::error("Error: on receiving height on replica 0 from replica " + cvm::to_str(p));
           }
         }
       } else {
         if (cvm::proxy->replica_comm_send((char*)&height, sizeof(decltype(height)), 0) != sizeof(cvm::real)) {
-          return cvm::error("Error on sending height to replica 0 from replica " + cvm::to_str(my_replica));
+          return cvm::error("Error: on sending height to replica 0 from replica " + cvm::to_str(my_replica));
         }
       }
       cvm::proxy->replica_comm_barrier();
@@ -721,13 +721,13 @@ int colvarbias_opes::update_opes() {
         const int send_size = sizeof(decltype(all_height)::value_type) * all_height.size();
         for (int p = 1; p < cvm::proxy->num_replicas(); ++p) {
           if (cvm::proxy->replica_comm_send((char*)all_height.data(), send_size, p) != send_size) {
-            return cvm::error("Error on sending heights from replica 0 to replica " + cvm::to_str(p));
+            return cvm::error("Error: on sending heights from replica 0 to replica " + cvm::to_str(p));
           }
         }
       } else {
         const int recv_size = sizeof(decltype(all_height)::value_type) * all_height.size();
         if (cvm::proxy->replica_comm_recv((char*)all_height.data(), recv_size, 0) != recv_size) {
-          return cvm::error("Error on receiving heights from replica 0 to replica " + cvm::to_str(my_replica));
+          return cvm::error("Error: on receiving heights from replica 0 to replica " + cvm::to_str(my_replica));
         }
       }
       cvm::proxy->replica_comm_barrier();
