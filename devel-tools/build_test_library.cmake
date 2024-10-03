@@ -15,15 +15,9 @@ if(EXISTS "/opt/libtorch")
   endif()
 endif()
 
-set(COLVARS_LEPTON ON)
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 11)
-else()
-  if(${CMAKE_CXX_STANDARD} GREATER 70)
-    set(COLVARS_LEPTON OFF)
-  endif()
 endif()
-
 
 if(NOT DEFINED BUILD_SHARED_LIBS)
   # We need a shared library to load the Tcl package
@@ -62,6 +56,8 @@ if(COLVARS_TCL AND DEFINED TCL_DIR)
   set(DEFINE_TCL_LIBRARY "-DTCL_LIBRARY=${TCL_DIR}/lib/${TCL_LIBRARY}")
 endif()
 
+
+set(COLVARS_LEPTON ON)
 
 if(COLVARS_LEPTON)
   if(NOT DEFINED LEPTON_DIR)
