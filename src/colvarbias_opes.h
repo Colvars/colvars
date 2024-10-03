@@ -28,7 +28,6 @@
 #include <memory>
 
 // OPES_METAD implementation: swiped from OPESmetad.cpp of PLUMED
-// NOTE: The "explore" mode is not implemented
 class colvarbias_opes: public colvarbias {
 public:
   /// The Gaussian kernel data structure
