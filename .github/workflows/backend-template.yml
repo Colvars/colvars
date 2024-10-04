@@ -76,7 +76,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Load compiler cache
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
+        id: compiler-cache-restore
         with:
           path: |
             ~/ccache_${{ inputs.container_name }}
@@ -141,6 +142,21 @@ jobs:
           apptainer exec devel-tools/${{ inputs.container_name }}.sif \
               bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
 
+      - name: Save compiler cache
+        uses: actions/cache/save@v4
+        id: compiler-cache-save
+        if: always() && steps.compiler-cache-restore.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ~/ccache_${{ inputs.container_name }}
+          key: ${{ runner.os }}-build-${{ inputs.backend_name }}-${{ github.sha }}
+
+      - name: Keep only one cache besides the one from this job
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-${{ inputs.backend_name }}-
 
       # 2 types of tests can be performed with the MD engine: library & interface
       # It depends on the working directory
@@ -158,10 +174,14 @@ jobs:
 
       - name: Save failed library test artifact
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: failed-library-test-diffs-${{ inputs.backend_name }}
-          path: ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.diff
+          name: failed-library-test-output-${{ inputs.backend_name }}
+          path: |
+            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.diff
+            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.err
+            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.log
+            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.out
 
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
         if: ${{ inputs.test_interface_directory }}
@@ -175,10 +195,14 @@ jobs:
 
       - name: Save failed interface test artifact
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: failed-interface-test-diffs-${{ inputs.backend_name }}
-          path: ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.diff
+          name: failed-interface-test-output-${{ inputs.backend_name }}
+          path: |
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.diff
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.err
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.log
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.out
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }} (binary restarts)
         # Skipping GROMACS, because its restarts are always binary anyway
@@ -190,10 +214,3 @@ jobs:
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
-
-      - name: Keep only one cache besides the one from this job
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-${{ inputs.backend_name }}-

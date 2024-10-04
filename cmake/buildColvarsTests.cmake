@@ -28,7 +28,7 @@ if(BUILD_TESTS)
           -E copy ${TEST_CONFIG_FILE}
           ${CMAKE_BINARY_DIR}/tests/functional/${TEST_NAME}/test.in)
         add_test(NAME ${TEST_NAME}
-          COMMAND run_colvars_test ${TEST_NAME}/test.in
+          COMMAND run_colvars_test ${TEST_NAME}/test.in trajectory.xyz
           WORKING_DIRECTORY
           ${CMAKE_CURRENT_BINARY_DIR}/tests/functional)
       endforeach()

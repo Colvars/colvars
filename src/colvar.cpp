@@ -95,6 +95,12 @@ int colvar::init(std::string const &conf)
   if (error_code != COLVARS_OK) {
     return cvm::get_error();
   }
+#else
+  if (key_lookup(conf, "customFunction")) {
+    return cvm::error(
+        "Error: customFunction keyword is used, but the Lepton library is not available.\n",
+        COLVARS_NOT_IMPLEMENTED);
+  }
 #endif
 
   // Setup colvar as scripted function of components

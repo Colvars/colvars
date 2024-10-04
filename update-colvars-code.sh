@@ -133,6 +133,8 @@ get_gromacs_minor_version_cmake() {
 }
 
 
+UPDATE_LEPTON=${UPDATE_LEPTON:-yes}
+
 copy_lepton() {
 
   local target_path=${1}
@@ -379,14 +381,16 @@ if [ ${code} = "NAMD" ]
 then
   NAMD_VERSION=$(grep ^NAMD_VERSION ${target}/Makefile | cut -d' ' -f3)
 
-  copy_lepton ${target}/ || exit 1
-  condcopy "${source}/namd/lepton/Make.depends" \
-           "${target}/lepton/Make.depends"
-  condcopy "${source}/namd/lepton/Makefile.namd" \
-           "${target}/lepton/Makefile.namd"
-
-  if ! grep -q lepton/Makefile.namd "${target}/Makefile" ; then
-    patch -p1 -N -d ${target} < namd/Makefile.patch
+  if [ "x${UPDATE_LEPTON}" == "xyes" ] ; then
+    echo -n "(note: updating Lepton)"
+    copy_lepton ${target}/ || exit 1
+    condcopy "${source}/namd/lepton/Make.depends" \
+             "${target}/lepton/Make.depends"
+    condcopy "${source}/namd/lepton/Makefile.namd" \
+             "${target}/lepton/Makefile.namd"
+    if ! grep -q lepton/Makefile.namd "${target}/Makefile" ; then
+      patch -p1 -N -d ${target} < namd/Makefile.patch
+    fi
   fi
 
   # For torchann
@@ -528,7 +532,10 @@ fi
 if [ ${code} = "GROMACS" ]
 then
 
-  copy_lepton ${target}/src/external/ || exit 1
+  if [ "x${UPDATE_LEPTON}" == "xyes" ] ; then
+    echo -n "(note: adding/updating Lepton)"
+    copy_lepton ${target}/src/external/ || exit 1
+  fi
 
   target_folder=${target}/src/external/colvars
   patch_opts="-p1 --forward -s"
@@ -576,12 +583,13 @@ then
   echo ""
 
   # Copy CMake files
-  for src in ${source}/gromacs/cmake/gmxManage{Colvars,Lepton}.cmake
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/cmake/${tgt}"
-  done
-  echo ""
+  condcopy "${source}/gromacs/cmake/gmxManageColvars.cmake" \
+           "${target}/cmake/gmxManageColvars.cmake"
+  if [ "x${UPDATE_LEPTON}" == "xyes" ] ; then
+    echo -n "(note: adding/updating Lepton)"
+    condcopy "${source}/gromacs/cmake/gmxManageLepton.cmake" \
+             "${target}/cmake/gmxManageLepton.cmake"
+  fi
 
   # Apply patch for Gromacs files
   patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-${GMX_VERSION}.patch
@@ -623,19 +631,10 @@ fi
 if [ ${code} = "GROMACS-DEV" ]
 then
 
-  copy_lepton ${target}/src/external/ || exit 1
-
   target_folder=${target}/src/external/colvars
   patch_opts="-p1 --forward -s"
 
-  echo ""
-  if [ -d ${target_folder} ]
-  then
-    echo "${target} source tree seems to have already been patched."
-    echo "Updating to the current Colvars sources."
-  else
-    mkdir ${target_folder}
-  fi
+  mkdir -p ${target_folder}
 
   # Copy library files and proxy files to the "src/external/colvars" folder
   for src in ${source}/src/*.h ${source}/src/*.cpp
@@ -645,19 +644,26 @@ then
   done
   echo ""
 
-  # Patch CMake build recipe when applicable
+  # Patch CMake build recipes when applicable
   if [ -s ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff ] ; then
-    patch -p1 -N -d ${target} < ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff
+    patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff || true
   fi
-  if [ -s ${source}/gromacs/gromacs-mdmodules/CMakeLists1.txt.diff ] ; then
-    patch -p1 -N -d ${target} < ${source}/gromacs/gromacs-mdmodules/CMakeLists1.txt.diff
+  if [ -s ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.diff ] ; then
+    patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.diff || true
   fi
-  if [ -s ${source}/gromacs/gromacs-mdmodules/CMakeLists2.txt.diff ] ; then
-    patch -p1 -N -d ${target} < ${source}/gromacs/gromacs-mdmodules/CMakeLists2.txt.diff
+  if [ -s ${source}/gromacs/CMakeLists.txt.diff ] ; then
+    patch ${patch_opts} -d ${target} < ${source}/gromacs/CMakeLists.txt.diff || true
   fi
-  if [ -s ${source}/gromacs/cmake/gmxManageLepton.cmake ] ; then
+
+  if [ "x${UPDATE_LEPTON}" == "xyes" ] ; then
+    echo -n "(note: adding/updating Lepton)"
+    copy_lepton ${target}/src/external/ || exit 1
+    if [ -s ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.Lepton.diff ] ; then
+      patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.Lepton.diff || true
+    fi
     condcopy ${source}/gromacs/cmake/gmxManageLepton.cmake "${target}/cmake/gmxManageLepton.cmake"
   fi
+
   echo
 
   # Copy MDModules files to the "src/gromacs/applied_forces/colvars" folder
@@ -687,8 +693,8 @@ then
   echo ""
 
   # Apply patch for Gromacs files
-  if [ -f ${source}/gromacs/gromacs-mdmodules.patch ] ; then
-    patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules.patch
+  if [ -s ${source}/gromacs/gromacs-mdmodules.patch ] ; then
+    patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules.patch || true
   fi
   ret_val=$?
   if [ $ret_val -ne 0 ]

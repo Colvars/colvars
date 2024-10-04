@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Load compiler cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/ccache
           key: ${{ runner.os }}-build-basic-${{ github.sha }}
@@ -225,7 +225,7 @@ jobs:
           fi
 
       - name: Archive warnings artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: warnings_clang_static_analyser
@@ -244,7 +244,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Load compiler ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/ccache
           key: ${{ runner.os }}-build-asan-${{ github.sha }}
@@ -280,7 +280,7 @@ jobs:
           cmake -P devel-tools/build_test_library.cmake
 
       - name: Archive warnings artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: Clang_address_sanitizer_output
@@ -307,7 +307,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Load compiler ccache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/ccache
           key: ${{ runner.os }}-build-multiple-${{ github.sha }}

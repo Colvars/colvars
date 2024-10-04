@@ -24,7 +24,14 @@ create_test_dir() {
         return
     fi
 
-    dirname="${workdir}/"`printf %03d ${n_test}`_$1
+    if [ ${workdir##*/} == "input_files" ] ; then
+        # Newer version, run by CMake
+        dirname="${workdir}/"$1
+    else
+        # Older version, run by homegrown script that needs a numbered prefix
+        dirname="${workdir}/"`printf %03d ${n_test}`_$1
+    fi
+
     mkdir -p ${dirname}/AutoDiff && \
         echo "Created new directory $dirname"
 }
