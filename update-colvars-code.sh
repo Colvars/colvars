@@ -109,9 +109,9 @@ else
 fi
 
 if [ ${code} == "GROMACS" ] ; then
-  if [ -f ${target}/src/gromacs/mdrunutility/mdmodulesnotifiers.cpp ] ; then
-    # Code after https://gitlab.com/gromacs/gromacs/-/merge_requests/3566
-    code=GROMACS-DEV
+  if [ ! -f ${target}/src/gromacs/applied_forces/colvars/colvarsMDModule.cpp ] ; then
+    echo "ERROR: Versions of GROMACS prior to 2024 are no longer supported."
+    exit 1
   fi
 fi
 
@@ -184,45 +184,14 @@ then
     exit 3
   fi
 
-  GMX_MAJOR_VERSION=`get_gromacs_major_version_cmake ${GMX_VERSION_INFO}`
-  GMX_MINOR_VERSION=`get_gromacs_minor_version_cmake ${GMX_VERSION_INFO}`
-
-  GMX_VERSION=${GMX_MAJOR_VERSION}.${GMX_MINOR_VERSION}
-
-  # Since 2022, version info is in CMakeLists.txt
-  if [ ${GMX_MAJOR_VERSION} = "\${Gromacs_VERSION_MAJOR}" ] ; then
-    CMAKE_LISTS=${target}/CMakeLists.txt
-    if [ ! -f ${CMAKE_LISTS} ] ; then
-      echo "ERROR: Cannot find file ${CMAKE_LISTS}."
-      exit 3
-    fi
-    GMX_VERSION=$(cat ${CMAKE_LISTS} | grep '^project(' | \
-    sed -e 's/project(Gromacs VERSION //' -e 's/)//')
+  CMAKE_LISTS=${target}/CMakeLists.txt
+  if [ ! -f ${CMAKE_LISTS} ] ; then
+    echo "ERROR: Cannot find file ${CMAKE_LISTS}."
+    exit 3
   fi
+  GMX_VERSION=$(cat ${CMAKE_LISTS} | grep '^project(' | sed -e 's/project(Gromacs VERSION //' -e 's/)//')
 
   echo "Detected GROMACS version ${GMX_VERSION}."
-
-  case ${GMX_VERSION} in
-    2023*)
-      GMX_VERSION='2023.x'
-      ;;
-    *)
-    if [ $force_update = 0 ] ; then
-      echo " ******************************************************************************"
-      echo "  ERROR: GROMACS version ${GMX_VERSION} is unsupported."
-      echo "  You may override with -f, but be mindful of compilation or runtime problems."
-      echo "  Alternatively, you may also download legacy code versions at https://github.com/Colvars/gromacs"
-      echo " ******************************************************************************"
-      exit 3
-    else
-      echo " ******************************************************************************"
-      echo "  WARNING: Unsupported GROMACS ${GMX_VERSION} version will be patched."
-      echo "           Using GROMACS 2023.x files for patching."
-      echo " ******************************************************************************"
-      GMX_VERSION='2023.x'
-    fi
-    ;;
-  esac
 
   if [ -z "${GITHUB_ACTION}" ] ; then
     # Only set version outside CI to avoid invalidating the compiler cache
@@ -232,6 +201,7 @@ then
   fi
 
 fi
+
 echo -n "Updating ..."
 
 
@@ -519,107 +489,9 @@ then
   echo ' done.'
 fi
 
-# Update GROMACS tree (legacy versions)
-if [ ${code} = "GROMACS" ]
-then
-
-  if [ "x${UPDATE_LEPTON}" == "xyes" ] ; then
-    echo -n "(note: adding/updating Lepton)"
-    copy_lepton ${target}/src/external/ || exit 1
-  fi
-
-  target_folder=${target}/src/external/colvars
-  patch_opts="-p1 --forward -s"
-
-  echo ""
-  if [ -d ${target_folder} ]
-  then
-    echo "${target} source tree seems to have already been patched."
-    echo "Updating to the current Colvars sources."
-  else
-    mkdir ${target_folder}
-  fi
-
-  if [ ${GMX_VERSION} == '2020.x' ] || [ ${GMX_VERSION} == '2021.x' ] ; then
-    # Copy library files and proxy files to the "src/external/colvars" folder
-    for src in ${source}/src/*.h ${source}/src/*.cpp ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*{cpp,h}
-    do \
-      tgt=$(basename ${src})
-      condcopy "${src}" "${target_folder}/${tgt}"
-    done
-  else
-    # Starting from GROMACS 2022, the Colvars library is under `external` and proxy files are in `src/gromacs/applied_forces/colvarproxy`
-    # Library files
-    for src in ${source}/src/*.h ${source}/src/*.cpp
-    do \
-      tgt=$(basename ${src})
-      condcopy "${src}" "${target_folder}/${tgt}"
-    done
-    # Proxy files
-    target_folder=${target}/src/gromacs/applied_forces/colvars
-    if [ -d ${target_folder} ]
-    then
-      echo "${target} source tree seems to have already been patched."
-      echo "Updating to the current Colvars sources."
-    else
-      mkdir ${target_folder}
-    fi
-    for src in ${source}/gromacs/src/*.h ${source}/gromacs/gromacs-${GMX_VERSION}/*{cpp,h,txt}
-    do \
-      tgt=$(basename ${src})
-      condcopy "${src}" "${target_folder}/${tgt}"
-    done
-
-  fi
-  echo ""
-
-  # Copy CMake files
-  condcopy "${source}/gromacs/cmake/gmxManageColvars.cmake" \
-           "${target}/cmake/gmxManageColvars.cmake"
-  if [ "x${UPDATE_LEPTON}" == "xyes" ] ; then
-    echo -n "(note: adding/updating Lepton)"
-    condcopy "${source}/gromacs/cmake/gmxManageLepton.cmake" \
-             "${target}/cmake/gmxManageLepton.cmake"
-  fi
-
-  # Apply patch for Gromacs files
-  patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-${GMX_VERSION}.patch
-  ret_val=$?
-  if [ $ret_val -ne 0 ]
-  then
-    echo " ************************************************************************* "
-    echo " Patch fails. It seems the Gromacs source files have been already patched. "
-    echo " ************************************************************************* "
-  else
-    echo ' done.'
-    echo ""
-    echo "  *******************************************"
-    echo "    Please create your build with cmake now."
-    echo "  *******************************************"
-  fi
-
-  if [ ${GMX_VERSION} == '2021.x' ] ; then
-    if [ -f "${target}/.github/workflows/build_cmake.yml" ] ; then
-      # Ad-hoc fix for CI build until 2021.6 is released
-      sed -i -e 's/windows-latest/windows-2019/' "${target}/.github/workflows/build_cmake.yml"
-    fi
-  fi
-
-  # Update the proxy version if needed
-  shared_gmx_proxy_version=$(grep '^#define' "${source}/gromacs/src/colvarproxy_gromacs_version.h" | cut -d' ' -f 3)
-
-  patch_gmx_proxy_version=$(grep '^#define' "${target_folder}/colvarproxy_gromacs_version.h" | cut -d' ' -f 3)
-
-  if [ ${shared_gmx_proxy_version} \> ${patch_gmx_proxy_version} ] ; then
-    condcopy ${source}/gromacs/src/colvarproxy_gromacs_version.h \
-      "${target}/src/gromacs/colvars/colvarproxy_gromacs_version.h"
-  fi
-
-  exit 0
-fi
 
 # Update GROMACS tree (MDModules interface-ready version)
-if [ ${code} = "GROMACS-DEV" ]
+if [ ${code} = "GROMACS" ]
 then
 
   target_folder=${target}/src/external/colvars
@@ -636,11 +508,11 @@ then
   echo ""
 
   # Patch CMake build recipes when applicable
-  if [ -s ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff ] ; then
-    patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules/gmxManageColvars.cmake.diff || true
+  if [ -s ${source}/gromacs/gmxManageColvars.cmake.diff ] ; then
+    patch ${patch_opts} -d ${target} < ${source}/gromacs/gmxManageColvars.cmake.diff || true
   fi
-  if [ -s ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.diff ] ; then
-    patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.diff || true
+  if [ -s ${source}/gromacs/CMakeLists.txt.diff ] ; then
+    patch ${patch_opts} -d ${target} < ${source}/gromacs/CMakeLists.txt.diff || true
   fi
   if [ -s ${source}/gromacs/CMakeLists.txt.diff ] ; then
     patch ${patch_opts} -d ${target} < ${source}/gromacs/CMakeLists.txt.diff || true
@@ -649,15 +521,15 @@ then
   if [ "x${UPDATE_LEPTON}" == "xyes" ] ; then
     echo -n "(note: adding/updating Lepton)"
     copy_lepton ${target}/src/external/ || exit 1
-    if [ -s ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.Lepton.diff ] ; then
-      patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules/CMakeLists.txt.Lepton.diff || true
+    if [ -s ${source}/gromacs/CMakeLists.txt.Lepton.diff ] ; then
+      patch ${patch_opts} -d ${target} < ${source}/gromacs/CMakeLists.txt.Lepton.diff || true
     fi
     condcopy ${source}/gromacs/cmake/gmxManageLepton.cmake "${target}/cmake/gmxManageLepton.cmake"
   fi
 
   echo
 
-  # Copy MDModules files to the "src/gromacs/applied_forces/colvars" folder
+  # Copy MDModules files to the "src/gromacs/src/applied_forces/colvars" folder
   target_folder=${target}/src/gromacs/applied_forces/colvars
   if [ -d ${target_folder} ]
   then
@@ -668,15 +540,15 @@ then
     mkdir -p ${target_folder}/tests/refdata
   fi
   condcopy gromacs/src/colvarproxy_gromacs_version.h "${target_folder}/colvarproxy_gromacs_version.h"
-  for src in ${source}/gromacs/gromacs-mdmodules/applied_forces/colvars/*.* ; do
+  for src in ${source}/gromacs/src/applied_forces/colvars/*.* ; do
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/${tgt}"
   done
-  for src in ${source}/gromacs/gromacs-mdmodules/applied_forces/colvars/tests/*.* ; do
+  for src in ${source}/gromacs/src/applied_forces/colvars/tests/*.* ; do
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/tests/${tgt}"
   done
-  for src in ${source}/gromacs/gromacs-mdmodules/applied_forces/colvars/tests/refdata/*.* ; do
+  for src in ${source}/gromacs/src/applied_forces/colvars/tests/refdata/*.* ; do
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/tests/refdata/${tgt}"
   done
