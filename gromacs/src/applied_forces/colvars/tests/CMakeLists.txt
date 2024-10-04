@@ -48,7 +48,7 @@ else()
         )
 endif()
 
-if(GMX_MPI)
+if(GMX_LIB_MPI)
     # THis target does not link the library directly, must add the flag again
     target_compile_definitions(colvars_applied_forces-test PRIVATE -DCOLVARS_MPI)
 endif()
