@@ -110,7 +110,7 @@ All of the above MD engine versions are automatically tested as part of GitHub A
 
 ## Legacy GROMACS-Colvars patched releases
 
-Versions GROMACS prior to 2024 are supported through the use of a customized `mdrun` command line; source code of these patched releases is available [here](https://github.com/Colvars/gromacs).  When posting a message to the [Gromacs forum](https://gromacs.bioexcel.eu/) regarding the use of these patched releases, please specify "GROMACS modification: **Yes**".
+Versions GROMACS prior to 2024 are no longer supported by the current version of Colvars: please use GROMACS 2024 or later.
 
 
 ## Which version of Colvars is recommended?
