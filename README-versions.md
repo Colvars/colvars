@@ -9,7 +9,7 @@
 ### Versions included in GROMACS
 GROMACS version | Colvars version
 -------------- | ---------------
-2024 | [2023-12-04](https://github.com/Colvars/colvars/releases/tag/gromacs-2024)
+2024 | [2023-12-05](https://github.com/Colvars/colvars/tree/gromacs-2024)
 
 ### Versions included in LAMMPS
 LAMMPS version | Colvars version
@@ -36,7 +36,7 @@ stable_4Nov2016 | [2016-10-21](https://github.com/Colvars/colvars/releases/tag/l
 
 NAMD version | Colvars version
 -------------- | ---------------
-3.0 | [2024-06-04](https://github.com/Colvars/colvars/releases/tag/namd-3.0)
+3.0 | [2024-06-04](https://github.com/Colvars/colvars/tree/namd-3.0)
 2.14 | [2020-07-07](https://github.com/Colvars/colvars/releases/tag/namd-2.14)
 2.13b2 | [2018-10-12](https://github.com/Colvars/colvars/releases/tag/namd-2.13b2)
 2.13b1 | [2018-09-07](https://github.com/Colvars/colvars/releases/tag/namd-2.13b1)
