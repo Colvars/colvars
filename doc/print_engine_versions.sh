@@ -1,6 +1,12 @@
 #!/bin/bash
 
-source ../devel-tools/version_functions.sh
+TOPDIR=$(git rev-parse --show-toplevel)
+if [ ! -d ${TOPDIR} ] ; then
+  echo "Error: cannot identify top project directory." >& 2
+  exit 1
+fi
+
+source ${TOPDIR}/devel-tools/version_functions.sh
 
 
 reformat_lammps_version() {
@@ -28,7 +34,7 @@ print_tag_versions() {
     done
 }
 
-for package in LAMMPS NAMD VMD ; do
+for package in GROMACS LAMMPS NAMD VMD ; do
     echo "[Versions included in ${package}](#versions-included-in-${package})"
     echo
 done
@@ -43,7 +49,7 @@ sort_lammps_versions(){
 }
 
 
-for package in LAMMPS NAMD VMD ; do
+for package in GROMACS LAMMPS NAMD VMD ; do
     echo "### Versions included in ${package}"
     if [ ${package} = NAMD ] ; then
         echo "(Note: the Colvars version included in NAMD 2.12 is the same as the one included in 2.12b1 with only bugfixes applied: therefore, NAMD 2.12 does not correspond to a specific version of the Colvars source tree)"
