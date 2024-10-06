@@ -1251,7 +1251,7 @@ void cvm::atom_group::calc_fit_forces_impl(
       atom_grad += accessor_main(i);
       if (B_ag_rotate) pos_orig = rot_inv * (atoms[i].pos - ref_pos_cog);
     } else {
-      if (B_ag_rotate) pos_orig = atoms[i].pos;
+      if (B_ag_rotate) pos_orig = rot_inv * atoms[i].pos;
     }
     if (B_ag_rotate) {
       // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
