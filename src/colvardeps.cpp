@@ -108,13 +108,13 @@ void colvardeps::set_enabled(int feature_id, bool truefalse) {
 }
 
 
-int colvardeps::get_feature_id(std::string const &name)
+int colvardeps::get_feature_id(std::string const &feature_name)
 {
   int fid = 0;
   std::vector<feature *> const &features_this = features();
   for (fid = 0; fid < int(features_this.size()); fid++) {
     if (colvarparse::to_lower_cppstr(features()[fid]->description) ==
-        colvarparse::to_lower_cppstr(name)) {
+        colvarparse::to_lower_cppstr(feature_name)) {
       break;
     }
   }
