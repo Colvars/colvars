@@ -767,7 +767,7 @@ int colvar::init_output_flags(std::string const &conf)
     error_code |= colvardeps::init_features_output(feature_names);
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
