@@ -1212,9 +1212,11 @@ protected:
   // No atom groups needed
 public:
   alch_lambda();
+  int init_alchemy(int time_step_factor);
   virtual ~alch_lambda() {}
   virtual void calc_value();
-  virtual void calc_gradients();
+  virtual void calc_force_invgrads();
+  virtual void calc_Jacobian_derivative();
   virtual void apply_force(colvarvalue const &force);
 };
 

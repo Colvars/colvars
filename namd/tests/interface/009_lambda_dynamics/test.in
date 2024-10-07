@@ -1,0 +1,22 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+
+colvar {
+  name lambda
+  extendedLagrangian on
+  extendedMass 150000
+
+  lowerBoundary 0
+  upperBoundary 1
+  reflectingLowerBoundary
+  reflectingUpperBoundary
+
+  alchLambda
+  outputTotalForce
+  outputAppliedForce
+}
+
+abf {
+    colvars     lambda
+    fullSamples 0
+}
