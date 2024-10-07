@@ -796,10 +796,10 @@ std::ostream & colvarbias::write_traj(std::ostream &os)
 }
 
 
-std::string const colvarbias::get_features_state() const {
+std::string const colvarbias::get_features_state() const
+{
   std::ostringstream os;
-  os << "active " << (is_enabled(f_cv_active) ? std::string("on") :
-                      std::string("off")) << "\n";
+  os << "    active " << (is_enabled(f_cv_active) ? std::string("on") : std::string("off")) << "\n";
   return os.str();
 }
 

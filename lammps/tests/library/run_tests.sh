@@ -195,7 +195,7 @@ for dir in ${DIRLIST} ; do
     for state_file in *.colvars.state ; do
       # Filter out the version number from the state files to allow comparisons
       grep -sv '^  version' ${state_file} | \
-        grep -sv '^  units' \
+        grep -sv '^    active \(on\|off\)$' \
         > ${TMPDIR}/${state_file}.stripped && \
       mv -f ${TMPDIR}/${state_file}.stripped ${state_file}.stripped
     done
