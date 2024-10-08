@@ -470,23 +470,11 @@ struct rotation_derivative {
       cvm::real a2x, a2y, a2z;
       // we can get rid of the helper function read_atom_coord if C++17 (constexpr) is available
       read_atom_coord(ia, m_pos2, &a2x, &a2y, &a2z);
-      cvm::rvector ds_1[4][4];
-      ds_1[0][0].set( a2x,  a2y,  a2z);
-      ds_1[1][0].set( 0.0,  a2z, -a2y);
-      ds_1[0][1] = ds_1[1][0];
-      ds_1[2][0].set(-a2z,  0.0,  a2x);
-      ds_1[0][2] = ds_1[2][0];
-      ds_1[3][0].set( a2y, -a2x,  0.0);
-      ds_1[0][3] = ds_1[3][0];
-      ds_1[1][1].set( a2x, -a2y, -a2z);
-      ds_1[2][1].set( a2y,  a2x,  0.0);
-      ds_1[1][2] = ds_1[2][1];
-      ds_1[3][1].set( a2z,  0.0,  a2x);
-      ds_1[1][3] = ds_1[3][1];
-      ds_1[2][2].set(-a2x,  a2y, -a2z);
-      ds_1[3][2].set( 0.0,  a2z,  a2y);
-      ds_1[2][3] = ds_1[3][2];
-      ds_1[3][3].set(-a2x, -a2y,  a2z);
+      const cvm::rvector ds_1[4][4] = {
+        {{ a2x,  a2y,  a2z}, { 0.0, a2z,  -a2y}, {-a2z,  0.0,  a2x}, { a2y, -a2x,  0.0}},
+        {{ 0.0,  a2z, -a2y}, { a2x, -a2y, -a2z}, { a2y,  a2x,  0.0}, { a2z,  0.0,  a2x}},
+        {{-a2z,  0.0,  a2x}, { a2y,  a2x,  0.0}, {-a2x,  a2y, -a2z}, { 0.0,  a2z,  a2y}},
+        {{ a2y, -a2x,  0.0}, { a2z,  0.0,  a2x}, { 0.0,  a2z,  a2y}, {-a2x, -a2y,  a2z}}};
       calc_derivative_impl(ds_1, dl0_1_out, dq0_1_out, ds_1_out);
     }
   /*! @brief Calculate the derivatives of S, the leading eigenvalue L and
@@ -507,23 +495,11 @@ struct rotation_derivative {
     cvm::real a1x, a1y, a1z;
     // we can get rid of the helper function read_atom_coord if C++17 (constexpr) is available
     read_atom_coord(ia, m_pos1, &a1x, &a1y, &a1z);
-    cvm::rvector ds_2[4][4];
-    ds_2[0][0].set( a1x,  a1y,  a1z);
-    ds_2[1][0].set( 0.0, -a1z,  a1y);
-    ds_2[0][1] = ds_2[1][0];
-    ds_2[2][0].set( a1z,  0.0, -a1x);
-    ds_2[0][2] = ds_2[2][0];
-    ds_2[3][0].set(-a1y,  a1x,  0.0);
-    ds_2[0][3] = ds_2[3][0];
-    ds_2[1][1].set( a1x, -a1y, -a1z);
-    ds_2[2][1].set( a1y,  a1x,  0.0);
-    ds_2[1][2] = ds_2[2][1];
-    ds_2[3][1].set( a1z,  0.0,  a1x);
-    ds_2[1][3] = ds_2[3][1];
-    ds_2[2][2].set(-a1x,  a1y, -a1z);
-    ds_2[3][2].set( 0.0,  a1z,  a1y);
-    ds_2[2][3] = ds_2[3][2];
-    ds_2[3][3].set(-a1x, -a1y,  a1z);
+    const cvm::rvector ds_2[4][4] = {
+      {{ a1x,  a1y,  a1z}, { 0.0, -a1z,  a1y}, { a1z,  0.0, -a1x}, {-a1y,  a1x,  0.0}},
+      {{ 0.0, -a1z,  a1y}, { a1x, -a1y, -a1z}, { a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}},
+      {{ a1z,  0.0, -a1x}, { a1y,  a1x,  0.0}, {-a1x,  a1y, -a1z}, { 0.0,  a1z,  a1y}},
+      {{-a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}, { 0.0,  a1z,  a1y}, {-a1x, -a1y,  a1z}}};
     calc_derivative_impl(ds_2, dl0_2_out, dq0_2_out, ds_2_out);
   }
 };
