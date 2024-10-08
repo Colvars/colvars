@@ -442,6 +442,9 @@ private:
   /// \brief Center of geometry before any fitting
   cvm::atom_pos cog_orig;
 
+  /// \brief Unrotated atom positions for fit gradients
+  std::vector<cvm::atom_pos> pos_unrotated;
+
 public:
 
   /// \brief Return the center of geometry of the atomic positions
