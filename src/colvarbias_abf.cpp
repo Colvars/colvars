@@ -411,14 +411,6 @@ int colvarbias_abf::update()
   // *********************************
 
 
-  // update the output prefix; TODO: move later to setup_output() function
-  if (cvm::main()->num_biases_feature(colvardeps::f_cvb_calc_pmf) == 1) {
-    // This is the only bias computing PMFs
-    output_prefix = cvm::output_prefix();
-  } else {
-    output_prefix = cvm::output_prefix() + "." + this->name;
-  }
-
 
   // update UI estimator every step
   if (b_UI_estimator)
@@ -430,7 +422,6 @@ int colvarbias_abf::update()
       x[i] = colvars[i]->actual_value();
       y[i] = colvars[i]->value();
     }
-    eabf_UI.update_output_filename(output_prefix);
     eabf_UI.update(cvm::step_absolute(), x, y);
   }
 
@@ -720,6 +711,20 @@ size_t colvarbias_abf::replica_share_freq() const
   return shared_freq;
 }
 
+int colvarbias_abf::setup_output()
+{
+  // update the output prefix
+  if (cvm::main()->num_biases_feature(colvardeps::f_cvb_calc_pmf) == 1) {
+    // This is the only bias computing PMFs
+    output_prefix = cvm::output_prefix();
+  } else {
+    output_prefix = cvm::output_prefix() + "." + this->name;
+  }
+  if (b_UI_estimator)
+    eabf_UI.update_output_filename(output_prefix);
+
+  return COLVARS_OK;
+}
 
 template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
                                                           std::string const &filename,
