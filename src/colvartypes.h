@@ -1221,8 +1221,21 @@ public:
 
   /// \brief Multiply the given vector by the derivative of the given
   /// (rotated) position with respect to the quaternion
-  cvm::quaternion position_derivative_inner(cvm::rvector const &pos,
-                                            cvm::rvector const &vec) const;
+  inline cvm::quaternion position_derivative_inner(cvm::rvector const &pos,
+                                            cvm::rvector const &vec) const {
+    return cvm::quaternion(2.0 * (vec.x * ( q0 * pos.x - q3 * pos.y + q2 * pos.z) +
+                                  vec.y * ( q3 * pos.x + q0 * pos.y - q1 * pos.z) +
+                                  vec.z * (-q2 * pos.x + q1 * pos.y + q0 * pos.z)),
+                           2.0 * (vec.x * ( q1 * pos.x + q2 * pos.y + q3 * pos.z) +
+                                  vec.y * ( q2 * pos.x - q1 * pos.y - q0 * pos.z) +
+                                  vec.z * ( q3 * pos.x + q0 * pos.y - q1 * pos.z)),
+                           2.0 * (vec.x * (-q2 * pos.x + q1 * pos.y + q0 * pos.z) +
+                                  vec.y * ( q1 * pos.x + q2 * pos.y + q3 * pos.z) +
+                                  vec.z * (-q0 * pos.x + q3 * pos.y - q2 * pos.z)),
+                           2.0 * (vec.x * (-q3 * pos.x - q0 * pos.y + q1 * pos.z) +
+                                  vec.y * ( q0 * pos.x - q3 * pos.y + q2 * pos.z) +
+                                  vec.z * ( q1 * pos.x + q2 * pos.y + q3 * pos.z)));
+  }
 
 
   /// \brief Return the cosine between the orientation frame
