@@ -1,0 +1,54 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+
+colvar {
+    name phi1
+
+    dihedral {
+        group1 {atomNumbers {5}}
+        group2 {atomNumbers {7}}
+        group3 {atomNumbers {9}}
+        group4 {atomNumbers {15}}
+    }
+}
+
+colvar {
+    name phi2
+    lowerBoundary -180
+    upperBoundary 180
+    width 5.0
+    dihedral {
+        group1 {atomNumbers {15}}
+        group2 {atomNumbers {17}}
+        group3 {atomNumbers {19}}
+        group4 {atomNumbers {25}}
+    }
+}
+
+colvar {
+    name phi3
+    lowerBoundary -180
+    upperBoundary 180
+    width 5.0
+    dihedral {
+        name 003
+        group1 {atomNumbers {25}}
+        group2 {atomNumbers {27}}
+        group3 {atomNumbers {29}}
+        group4 {atomNumbers {35}}
+    }
+}
+
+opes_metad {
+    colvars phi1 phi2 phi3
+    newHillFrequency 5
+    barrier 10.0
+    biasfactor inf
+#    adaptiveSigma on
+    gaussianSigma 25.0 25.0 25.0
+    neighborList on
+    printTrajectoryFrequency 1
+    pmf on
+    pmfColvars phi2 phi3
+    outputEnergy on
+}

@@ -9,6 +9,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarbias_histogram_reweight_amd.o \
 	$(DSTDIR)/colvarbias_meta.o \
 	$(DSTDIR)/colvarbias_restraint.o \
+	$(DSTDIR)/colvarbias_opes.o \
 	$(DSTDIR)/colvarcomp.o \
 	$(DSTDIR)/colvarcomp_angles.o \
 	$(DSTDIR)/colvarcomp_alchlambda.o \
