@@ -1286,7 +1286,7 @@ void cvm::atom_group::calc_fit_forces_impl(
       fitting_force_grad += atom_grad;
     }
     if (B_ag_rotate) {
-      rot_deriv->calc_derivative_wrt_group1(j, nullptr, &dq0_1);
+      rot_deriv->calc_derivative_wrt_group1<false, true, false>(j, nullptr, &dq0_1);
       // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
       fitting_force_grad += sum_dxdq[0] * dq0_1[0] +
                             sum_dxdq[1] * dq0_1[1] +

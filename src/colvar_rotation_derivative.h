@@ -9,7 +9,7 @@
 template <typename T, typename std::enable_if<std::is_same<T, cvm::atom_pos>::value, bool>::type = true>
 inline void read_atom_coord(
   size_t ia, const std::vector<T>& pos,
-  cvm::real* x, cvm::real* y, cvm::real* z) {
+  cvm::real* __restrict__ x, cvm::real* __restrict__ y, cvm::real* __restrict__ z) {
   *x = pos[ia].x;
   *y = pos[ia].y;
   *z = pos[ia].z;
@@ -18,7 +18,7 @@ inline void read_atom_coord(
 template <typename T, typename std::enable_if<std::is_same<T, cvm::atom>::value, bool>::type = true>
 inline void read_atom_coord(
   size_t ia, const std::vector<T>& pos,
-  cvm::real* x, cvm::real* y, cvm::real* z) {
+  cvm::real* __restrict__ x, cvm::real* __restrict__ y, cvm::real* __restrict__ z) {
   *x = pos[ia].pos.x;
   *y = pos[ia].pos.y;
   *z = pos[ia].pos.z;
@@ -327,12 +327,13 @@ struct rotation_derivative {
     *  @param[out] dq0_out The output of derivative of Q
     *  @param[out] ds_out  The output of derivative of overlap matrix S
     */
+  template <bool use_dl, bool use_dq, bool use_ds>
   void calc_derivative_impl(
     const cvm::rvector (&ds)[4][4],
-    cvm::rvector* const dl0_out,
-    cvm::vector1d<cvm::rvector>* const dq0_out,
-    cvm::matrix2d<cvm::rvector>* const ds_out) const {
-    if (ds_out != nullptr) {
+    cvm::rvector* __restrict__ const dl0_out,
+    cvm::vector1d<cvm::rvector>* __restrict__ const dq0_out,
+    cvm::matrix2d<cvm::rvector>* __restrict__ const ds_out) const {
+    if (use_ds) {
       // this code path is for debug_gradients, so not necessary to unroll the loop
       *ds_out = cvm::matrix2d<cvm::rvector>(4, 4);
       for (int i = 0; i < 4; ++i) {
@@ -341,7 +342,7 @@ struct rotation_derivative {
         }
       }
     }
-    if (dl0_out != nullptr) {
+    if (use_dl) {
       /* manually loop unrolling of the following loop:
         dl0_1.reset();
         for (size_t i = 0; i < 4; i++) {
@@ -367,7 +368,7 @@ struct rotation_derivative {
                  tmp_Q0Q0[3][2] * ds[3][2] +
                  tmp_Q0Q0[3][3] * ds[3][3];
     }
-    if (dq0_out != nullptr) {
+    if (use_dq) {
       // we can skip this check if a fixed-size array is used
       if (dq0_out->size() != 4) dq0_out->resize(4);
       /* manually loop unrolling of the following loop:
@@ -462,11 +463,12 @@ struct rotation_derivative {
     *  @param[out] ds_1_out  The output of derivative of overlap matrix S with
     *                        respect to ia-th atom of group 1
     */
+  template <bool use_dl, bool use_dq, bool use_ds>
   void calc_derivative_wrt_group1(
-    size_t ia, cvm::rvector* const dl0_1_out = nullptr,
-    cvm::vector1d<cvm::rvector>* const dq0_1_out = nullptr,
-    cvm::matrix2d<cvm::rvector>* const ds_1_out = nullptr) const {
-      if (dl0_1_out == nullptr && dq0_1_out == nullptr) return;
+    size_t ia, cvm::rvector* __restrict__ const dl0_1_out = nullptr,
+    cvm::vector1d<cvm::rvector>* __restrict__ const dq0_1_out = nullptr,
+    cvm::matrix2d<cvm::rvector>* __restrict__ const ds_1_out = nullptr) const {
+      // if (dl0_1_out == nullptr && dq0_1_out == nullptr) return;
       cvm::real a2x, a2y, a2z;
       // we can get rid of the helper function read_atom_coord if C++17 (constexpr) is available
       read_atom_coord(ia, m_pos2, &a2x, &a2y, &a2z);
@@ -475,7 +477,7 @@ struct rotation_derivative {
         {{ 0.0,  a2z, -a2y}, { a2x, -a2y, -a2z}, { a2y,  a2x,  0.0}, { a2z,  0.0,  a2x}},
         {{-a2z,  0.0,  a2x}, { a2y,  a2x,  0.0}, {-a2x,  a2y, -a2z}, { 0.0,  a2z,  a2y}},
         {{ a2y, -a2x,  0.0}, { a2z,  0.0,  a2x}, { 0.0,  a2z,  a2y}, {-a2x, -a2y,  a2z}}};
-      calc_derivative_impl(ds_1, dl0_1_out, dq0_1_out, ds_1_out);
+      calc_derivative_impl<use_dl, use_dq, use_ds>(ds_1, dl0_1_out, dq0_1_out, ds_1_out);
     }
   /*! @brief Calculate the derivatives of S, the leading eigenvalue L and
     *         the leading eigenvector Q with respect to `m_pos2`
@@ -487,11 +489,12 @@ struct rotation_derivative {
     *  @param[out] ds_2_out  The output of derivative of overlap matrix S with
     *                        respect to ia-th atom of group 2
     */
+  template <bool use_dl, bool use_dq, bool use_ds>
   void calc_derivative_wrt_group2(
-    size_t ia, cvm::rvector* const dl0_2_out = nullptr,
-    cvm::vector1d<cvm::rvector>* const dq0_2_out = nullptr,
-    cvm::matrix2d<cvm::rvector>* const ds_2_out = nullptr) const {
-    if (dl0_2_out == nullptr && dq0_2_out == nullptr) return;
+    size_t ia, cvm::rvector* __restrict__ const dl0_2_out = nullptr,
+    cvm::vector1d<cvm::rvector>* __restrict__ const dq0_2_out = nullptr,
+    cvm::matrix2d<cvm::rvector>* __restrict__ const ds_2_out = nullptr) const {
+    // if (dl0_2_out == nullptr && dq0_2_out == nullptr) return;
     cvm::real a1x, a1y, a1z;
     // we can get rid of the helper function read_atom_coord if C++17 (constexpr) is available
     read_atom_coord(ia, m_pos1, &a1x, &a1y, &a1z);
@@ -500,7 +503,7 @@ struct rotation_derivative {
       {{ 0.0, -a1z,  a1y}, { a1x, -a1y, -a1z}, { a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}},
       {{ a1z,  0.0, -a1x}, { a1y,  a1x,  0.0}, {-a1x,  a1y, -a1z}, { 0.0,  a1z,  a1y}},
       {{-a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}, { 0.0,  a1z,  a1y}, {-a1x, -a1y,  a1z}}};
-    calc_derivative_impl(ds_2, dl0_2_out, dq0_2_out, ds_2_out);
+    calc_derivative_impl<use_dl, use_dq, use_ds>(ds_2, dl0_2_out, dq0_2_out, ds_2_out);
   }
 };
 
@@ -564,7 +567,7 @@ void debug_gradients(
     // cvm::real const &a1x = pos1[ia].x;
     // cvm::real const &a1y = pos1[ia].y;
     // cvm::real const &a1z = pos1[ia].z;
-    deriv.calc_derivative_wrt_group2(ia, &dl0_2, &dq0_2, &ds_2);
+    deriv.template calc_derivative_wrt_group2<true, true, true>(ia, &dl0_2, &dq0_2, &ds_2);
     // make an infitesimal move along each cartesian coordinate of
     // this atom, and solve again the eigenvector problem
     for (size_t comp = 0; comp < 3; comp++) {
