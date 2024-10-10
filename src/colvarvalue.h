@@ -109,9 +109,6 @@ public:
   /// User keywords for specifying value types in the configuration
   static std::string const type_keyword(Type t);
 
-  /// Number of degrees of freedom for each supported type
-  static size_t num_df(Type t);
-
   /// Number of dimensions for each supported type (used to allocate vector1d_value)
   static size_t num_dimensions(Type t);
 
