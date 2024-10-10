@@ -98,8 +98,7 @@ int colvar::cvc::init(std::string const &conf)
   if (period != 0.0) {
     if (!is_available(f_cvc_periodic)) {
       error_code |=
-          cvm::error("Error: invalid use of period and/or "
-                     "wrapAround in a \"" +
+          cvm::error("Error: invalid use of period and/or wrapAround in a \"" +
                          function_type() + "\" component.\n" + "Period: " + cvm::to_str(period) +
                          " wrapAround: " + cvm::to_str(wrap_center),
                      COLVARS_INPUT_ERROR);
@@ -705,6 +704,20 @@ void colvar::cvc::wrap(colvarvalue &x_unwrapped) const
     x_unwrapped.real_value -= shift * period;
   }
 }
+
+
+
+colvar::componentDisabled::componentDisabled() {}
+
+colvar::componentDisabled::~componentDisabled() {}
+
+int colvar::componentDisabled::init(std::string const & /* conf */)
+{
+  return cvm::error("Error: components of type " + function_type() +
+                        " are not enabled in the current build",
+                    COLVARS_NOT_IMPLEMENTED);
+}
+
 
 
 // Static members

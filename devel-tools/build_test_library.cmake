@@ -7,13 +7,19 @@ else()
   get_filename_component(COLVARS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 endif()
 
-set(COLVARS_LEPTON ON)
+if(EXISTS "/opt/libtorch")
+  if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 17)
+  endif()
+  if(${CMAKE_CXX_STANDARD} GREATER_EQUAL 17)
+    message("Enabling Torch interface, using library at /opt/libtorch")
+    set(DEFINE_TORCH "-DCOLVARS_TORCH=ON")
+    set(DEFINE_TORCH_PREFIX "-DLIBTORCH_PREFIX=/opt/libtorch")
+  endif()
+endif()
+
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 11)
-else()
-  if(${CMAKE_CXX_STANDARD} GREATER 70)
-    set(COLVARS_LEPTON OFF)
-  endif()
 endif()
 
 if(NOT DEFINED BUILD_SHARED_LIBS)
@@ -54,6 +60,8 @@ if(COLVARS_TCL AND DEFINED TCL_DIR)
 endif()
 
 
+set(COLVARS_LEPTON ON)
+
 if(COLVARS_LEPTON)
   if(NOT DEFINED LEPTON_DIR)
     set(LEPTON_DIR "${COLVARS_SOURCE_DIR}/openmm-source/libraries/lepton")
@@ -82,8 +90,27 @@ else()
 endif()
 
 if(DEFINED ENV{CCACHE})
-  set(DEFINE_CC_CCACHE "-DCMAKE_C_COMPILER_LAUNCHER=$ENV{CCACHE}")
-  set(DEFINE_CXX_CCACHE "-DCMAKE_CXX_COMPILER_LAUNCHER=$ENV{CCACHE}")
+  set(CCACHE $ENV{CCACHE})
+else()
+  find_program(CCACHE "ccache")
+  if(CCACHE)
+    set(CCACHE "ccache")
+  endif()
+endif()
+
+if(NOT ${CCACHE} STREQUAL "CCACHE-NOTFOUND")
+  message(STATUS "Using ${CCACHE} as the compiler launcher")
+  set(DEFINE_CC_CCACHE "-DCMAKE_C_COMPILER_LAUNCHER=${CCACHE}")
+  set(DEFINE_CXX_CCACHE "-DCMAKE_CXX_COMPILER_LAUNCHER=${CCACHE}")
+endif()
+
+if(NOT DEFINED ENV{CXX})
+  # Use Clang if available to catch more errors
+  find_program(CLANG "clang++")
+  if(CLANG)
+    message(STATUS "Clang is available, using it as the default compiler")
+    set(DEFINE_CXX_COMPILER "-DCMAKE_CXX_COMPILER=clang++")
+  endif()
 endif()
 
 execute_process(
@@ -96,13 +123,18 @@ execute_process(
   -D WARNINGS_ARE_ERRORS=ON
   -D CMAKE_VERBOSE_MAKEFILE=ON
   -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+  ${DEFINE_CXX_COMPILER}
   ${DEFINE_CC_CCACHE}
   ${DEFINE_CXX_CCACHE}
+  ${DEFINE_PYTHON}
   -D COLVARS_TCL=${COLVARS_TCL}
   ${DEFINE_TCL_DIR}
   ${DEFINE_TCL_LIBRARY}
+  ${DEFINE_TORCH}
+  ${DEFINE_TORCH_PREFIX}
   -D COLVARS_LEPTON=${COLVARS_LEPTON}
   -D LEPTON_DIR=${LEPTON_DIR}
+  -D CMAKE_PREFIX_PATH="/opt/libtorch/share/cmake"
   RESULT_VARIABLE result
   )
 

@@ -1,0 +1,33 @@
+colvar {
+  name one
+  lowerBoundary -180.0
+  upperBoundary 180
+  width 5.0
+  extendedLagrangian on
+  extendedFluctuation 5.0
+  extendedTimeConstant 200
+  extendedTemp 300
+
+  torchann {
+    modelFile identity.pt
+    m_output_index 0
+    period 360
+    doubleInputTensor on
+
+    dihedral {
+      group1 { 
+	indexGroup group1
+      }
+      group2 { 
+	indexGroup group2
+      }
+      group3 { 
+	indexGroup group3
+      }
+      group4 { 
+	indexGroup group4
+      }
+    }
+  }
+}
+

@@ -1,0 +1,273 @@
+colvars: ----------------------------------------------------------------------
+colvars: Please cite Fiorin et al, Mol Phys 2013:
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
+colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - SMP parallelism: enabled (num. threads = 2)
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: not available
+colvars: ----------------------------------------------------------------------
+colvars: Start colvars Initialization.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration:
+colvars: # units = "" [default]
+colvars: # indexFile = "index.ndx"
+colvars: The following index groups are currently defined:
+colvars:   Protein (104 atoms)
+colvars:   Protein_noH (51 atoms)
+colvars:   Protein_Backbone (40 atoms)
+colvars:   Protein_C-alpha (10 atoms)
+colvars:   RMSD_atoms (10 atoms)
+colvars:   Protein_C-alpha_1_2 (2 atoms)
+colvars:   Protein_C-alpha_9_10 (2 atoms)
+colvars:   Protein_C-alpha_1 (1 atoms)
+colvars:   group1 (4 atoms)
+colvars:   Protein_C-alpha_2 (1 atoms)
+colvars:   group2 (4 atoms)
+colvars:   Protein_C-alpha_3 (1 atoms)
+colvars:   group3 (4 atoms)
+colvars:   Protein_C-alpha_4 (1 atoms)
+colvars:   group4 (4 atoms)
+colvars:   Protein_C-alpha_5 (1 atoms)
+colvars:   group5 (4 atoms)
+colvars:   Protein_C-alpha_6 (1 atoms)
+colvars:   group6 (4 atoms)
+colvars:   Protein_C-alpha_7 (1 atoms)
+colvars:   group7 (4 atoms)
+colvars:   Protein_C-alpha_8 (1 atoms)
+colvars:   group8 (4 atoms)
+colvars:   Protein_C-alpha_9 (1 atoms)
+colvars:   group9 (4 atoms)
+colvars:   Protein_C-alpha_10 (1 atoms)
+colvars:   group10 (4 atoms)
+colvars:   heavy_atoms (51 atoms)
+colvars: # smp = on [default]
+colvars: # colvarsTrajFrequency = 1
+colvars: # colvarsRestartFrequency = 10
+colvars: # scriptedColvarForces = off [default]
+colvars: # scriptingAfterBiases = off [default]
+colvars: # defaultInputStateFile = "" [default]
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new collective variable.
+colvars:   # name = "nn_0"
+colvars:   Initializing a new "torchANN" component.
+colvars:   Warning: cannot cite unknown feature "torchANN colvar component (derived from linearCombination)"
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 360
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:     # name = "" [default]
+colvars:     # componentCoeff = 1 [default]
+colvars:     # componentExp = 1 [default]
+colvars:     # period = 360 [default]
+colvars:     # wrapAround = 0 [default]
+colvars:     # forceNoPBC = off [default]
+colvars:     # scalable = on [default]
+colvars:       Initializing atom group "group1".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "group1"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group1" defined with 4 atoms requested: total mass = 54.028, total charge = -0.72.
+colvars:       Initializing atom group "group2".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "group2"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group2" defined with 4 atoms requested: total mass = 54.028, total charge = -0.4.
+colvars:       Initializing atom group "group3".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "group3"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group3" defined with 4 atoms requested: total mass = 54.028, total charge = -0.4.
+colvars:       Initializing atom group "group4".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "group4"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "group4" defined with 4 atoms requested: total mass = 54.028, total charge = -0.4.
+colvars:     # oneSiteSystemForce = off [default]
+colvars:     # oneSiteTotalForce = off [default]
+colvars:     # modelFile = "identity.pt"
+colvars:     torch model loaded.
+colvars:     # m_output_index = 0
+colvars:     # doubleInputTensor = on
+colvars:     Input dimension of model: 1
+colvars:     Model's dtype: kFloat64.
+colvars:     Evaluating model with zero tensor succeeded.
+colvars:   All components initialized.
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # width = 5
+colvars:   # lowerBoundary = -180
+colvars:   # upperBoundary = 180
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
+colvars:   # extendedLagrangian = on
+colvars:   Enabling the extended Lagrangian term for colvar "nn_0".
+colvars:   # extendedTemp = 300
+colvars:   # extendedFluctuation = 5
+colvars:   Computed extended system force constant: 0.0997735 [E]/U^2
+colvars:   # extendedTimeConstant = 200
+colvars:   Computed fictitious mass: 101.092 [E]/(U/fs)^2   (U: colvar unit)
+colvars:   # outputEnergy = off [default]
+colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # reflectingLowerBoundary = off [default]
+colvars:   # reflectingUpperBoundary = off [default]
+colvars:   # outputValue = on [default]
+colvars:   # outputVelocity = on
+colvars:   # outputTotalForce = on
+colvars:   # outputAppliedForce = on
+colvars:   # subtractAppliedForce = off [default]
+colvars:   # runAve = off [default]
+colvars:   # corrFunc = off [default]
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars:   Initializing a new "abf" instance.
+colvars:   # name = "abf1" [default]
+colvars:   # colvars = { nn_0 }
+colvars:   # stepZeroData = off [default]
+colvars:   # outputEnergy = off [default]
+colvars:   # outputFreq = 10 [default]
+colvars:   # timeStepFactor = 1 [default]
+colvars:   # applyBias = on [default]
+colvars:   # hideJacobian = off [default]
+colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
+colvars:   # fullSamples = 0
+colvars:   # minSamples = 0 [default]
+colvars:   # inputPrefix =  [default]
+colvars:   # historyFreq = 0 [default]
+colvars:   # shared = off [default]
+colvars:   # updateBias = on [default]
+colvars:   # maxForce =  [default]
+colvars:   # CZARestimator = on [default]
+colvars:   # integrate = on [default]
+colvars:   # UIestimator = off [default]
+colvars:   Finished ABF setup.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables biases initialized, 1 in total.
+colvars: ----------------------------------------------------------------------
+colvars: Collective variables module (re)initialized.
+colvars: ----------------------------------------------------------------------
+colvars: Current simulation parameters: initial step = 0, integration timestep = 1
+colvars: Updating atomic parameters (masses, charges, etc).
+colvars: Re-initialized atom group for variable "nn_0":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
+colvars: Re-initialized atom group for variable "nn_0":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
+colvars: Re-initialized atom group for variable "nn_0":0/2. 4 atoms: total mass = 54.028, total charge = -0.4.
+colvars: Re-initialized atom group for variable "nn_0":0/3. 4 atoms: total mass = 54.028, total charge = -0.4.
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - GROMACS engine:
+colvars:   Abraham2015 https://doi.org/10.1016/j.softx.2015.06.001
+colvars: 
+colvars: - BAOA integrator:
+colvars:   BouRabee2010 https://doi.org/10.1137/090758842
+colvars: 
+colvars: - Colvars module:
+colvars: - Optimal rotation via flexible fitting:
+colvars: - dihedral colvar component:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - ABF colvar bias implementation:
+colvars:   Henin2010 https://doi.org/10.1021/ct9004432
+colvars: 
+colvars: - CZAR eABF estimator:
+colvars: - eABF implementation:
+colvars:   Lesage2017 https://doi.org/10.1021/acs.jpcb.6b10055
+colvars: 
+colvars: - Colvars-GROMACS interface:
+colvars: - linearCombination colvar component:
+colvars:   n/a 
+colvars: 
+colvars: The final output state file will be "test.restart.part0002.colvars.state".
+colvars: ----------------------------------------------------------------------
+colvars: Loading state from unformatted memory.
+colvars:   Restarting collective variable "nn_0" from value: 60.3619
+colvars:   Restarted abf bias "abf1" with step number 20.
+colvars: ----------------------------------------------------------------------
+colvars: ----------------------------------------------------------------------
+colvars: End colvars Initialization.
+colvars: 
+colvars:   f_ext -0.169316   v_ext  0.024117
+colvars:   Langevin   v_ext 0.0304969
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
+colvars:   f_ext -0.165215   v_ext  0.0296797
+colvars:   Langevin   v_ext 0.0404316
+colvars:   f_ext -0.160235   v_ext  0.0396391
+colvars:   Langevin   v_ext 0.0502246
+colvars:   f_ext -0.154832   v_ext  0.0494588
+colvars:   Langevin   v_ext 0.0287956
+colvars:   f_ext -0.147703   v_ext  0.0280651
+colvars:   Langevin   v_ext 0.0402164
+colvars:   f_ext -0.139264   v_ext  0.0395276
+colvars:   Langevin   v_ext 0.0502289
+colvars:   f_ext -0.131407   v_ext  0.049579
+colvars:   Langevin   v_ext 0.0371063
+colvars:   f_ext -0.123153   v_ext  0.0364972
+colvars:   Langevin   v_ext 0.0298841
+colvars:   f_ext -0.113915   v_ext  0.0293206
+colvars:   Langevin   v_ext 0.0194858
+colvars:   f_ext -0.104118   v_ext  0.0189709
+colvars:   Langevin   v_ext 0.0308551
+colvars:   f_ext -0.0949429   v_ext  0.0303855
+colvars:   Langevin   v_ext 0.0337564
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
+colvars: Saving collective variables state to "test.restart.part0002.colvars.state".
+colvars:   f_ext -0.087258   v_ext  0.0333248
+colvars:   Langevin   v_ext 0.0355738
+colvars:   f_ext -0.0807625   v_ext  0.0351743
+colvars:   Langevin   v_ext 0.0356866
+colvars:   f_ext -0.0754962   v_ext  0.0353132
+colvars:   Langevin   v_ext 0.0500664
+colvars:   f_ext -0.072256   v_ext  0.049709
+colvars:   Langevin   v_ext 0.0433941
+colvars:   f_ext -0.0708401   v_ext  0.0430437
+colvars:   Langevin   v_ext 0.0479175
+colvars:   f_ext -0.0708791   v_ext  0.0475669
+colvars:   Langevin   v_ext 0.0551275
+colvars:   f_ext -0.0731648   v_ext  0.0547657
+colvars:   Langevin   v_ext 0.051756
+colvars:   f_ext -0.0773541   v_ext  0.0513734
+colvars:   Langevin   v_ext 0.0496407
+colvars:   f_ext -0.0830079   v_ext  0.0492301
+colvars:   Langevin   v_ext 0.0459575
+colvars:   f_ext -0.0901361   v_ext  0.0455117
+colvars:   Langevin   v_ext 0.0516946
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
+colvars: Saving collective variables state to "test.restart.part0002.colvars.state".
+colvars: Saving collective variables state to "test.restart.part0002.colvars.state".
