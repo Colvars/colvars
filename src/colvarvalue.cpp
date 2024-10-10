@@ -153,29 +153,6 @@ std::string const colvarvalue::type_keyword(Type t)
 }
 
 
-size_t colvarvalue::num_df(Type t)
-{
-  switch (t) {
-  case colvarvalue::type_notset:
-  default:
-    return 0; break;
-  case colvarvalue::type_scalar:
-    return 1; break;
-  case colvarvalue::type_3vector:
-    return 3; break;
-  case colvarvalue::type_unit3vector:
-  case colvarvalue::type_unit3vectorderiv:
-    return 2; break;
-  case colvarvalue::type_quaternion:
-  case colvarvalue::type_quaternionderiv:
-    return 3; break;
-  case colvarvalue::type_vector:
-    // the size of a vector is unknown without its object
-    return 0; break;
-  }
-}
-
-
 size_t colvarvalue::num_dimensions(Type t)
 {
   switch (t) {
