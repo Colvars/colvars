@@ -652,13 +652,16 @@ cvm::real colvarvalue::dist2(colvarvalue const &x2) const
 
   switch (this->type()) {
   case colvarvalue::type_scalar:
-    return (this->real_value - x2.real_value)*(this->real_value - x2.real_value);
+    return (this->real_value - x2.real_value) * (this->real_value - x2.real_value);
   case colvarvalue::type_3vector:
     return (this->rvector_value - x2.rvector_value).norm2();
   case colvarvalue::type_unit3vector:
-  case colvarvalue::type_unit3vectorderiv:
-    // angle between (*this) and x2 is the distance
-    return cvm::acos(this->rvector_value * x2.rvector_value) * cvm::acos(this->rvector_value * x2.rvector_value);
+  case colvarvalue::type_unit3vectorderiv: {
+    cvm::rvector const &v1 = this->rvector_value;
+    cvm::rvector const &v2 = x2.rvector_value;
+    cvm::real const theta = cvm::acos(v1 * v2);
+    return theta * theta;
+  }
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     // angle between (*this) and x2 is the distance, the quaternion
@@ -671,6 +674,8 @@ cvm::real colvarvalue::dist2(colvarvalue const &x2) const
     this->undef_op();
     return 0.0;
   };
+
+  return 0.0;
 }
 
 
@@ -684,13 +689,13 @@ colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
   case colvarvalue::type_3vector:
     return 2.0 * (this->rvector_value - x2.rvector_value);
   case colvarvalue::type_unit3vector:
-  case colvarvalue::type_unit3vectorderiv:
-    {
-      cvm::rvector const &v1 = this->rvector_value;
-      cvm::rvector const &v2 = x2.rvector_value;
-      cvm::real const cos_t = v1 * v2;
-      return colvarvalue(2.0 * (cos_t * v1 - v2), colvarvalue::type_unit3vectorderiv);
-    }
+  case colvarvalue::type_unit3vectorderiv: {
+    cvm::rvector const &v1 = this->rvector_value;
+    cvm::rvector const &v2 = x2.rvector_value;
+    cvm::real const cos_t = v1 * v2;
+    return colvarvalue(2.0 * std::acos(cos_t) * -1.0 / cvm::sqrt(1.0 - cos_t * cos_t) * v2,
+                       colvarvalue::type_unit3vectorderiv);
+  }
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
     return this->quaternion_value.dist2_grad(x2.quaternion_value);
@@ -702,6 +707,8 @@ colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
     this->undef_op();
     return colvarvalue(colvarvalue::type_notset);
   };
+
+  return colvarvalue(colvarvalue::type_notset);
 }
 
 
