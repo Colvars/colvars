@@ -655,20 +655,23 @@ cvm::real colvarvalue::dist2(colvarvalue const &x2) const
     return (this->real_value - x2.real_value) * (this->real_value - x2.real_value);
   case colvarvalue::type_3vector:
     return (this->rvector_value - x2.rvector_value).norm2();
-  case colvarvalue::type_unit3vector:
-  case colvarvalue::type_unit3vectorderiv: {
+  case colvarvalue::type_unit3vector: {
     cvm::rvector const &v1 = this->rvector_value;
     cvm::rvector const &v2 = x2.rvector_value;
     cvm::real const theta = cvm::acos(v1 * v2);
     return theta * theta;
   }
   case colvarvalue::type_quaternion:
-  case colvarvalue::type_quaternionderiv:
     // angle between (*this) and x2 is the distance, the quaternion
     // object has it implemented internally
     return this->quaternion_value.dist2(x2.quaternion_value);
   case colvarvalue::type_vector:
     return (this->vector1d_value - x2.vector1d_value).norm2();
+  case colvarvalue::type_unit3vectorderiv:
+  case colvarvalue::type_quaternionderiv:
+    cvm::error("Error: computing a squared-distance between two variables of type \"" +
+                   type_desc(this->type()) + "\", for which it is not defined.\n",
+               COLVARS_BUG_ERROR);
   case colvarvalue::type_notset:
   default:
     this->undef_op();
@@ -688,8 +691,7 @@ colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
     return 2.0 * (this->real_value - x2.real_value);
   case colvarvalue::type_3vector:
     return 2.0 * (this->rvector_value - x2.rvector_value);
-  case colvarvalue::type_unit3vector:
-  case colvarvalue::type_unit3vectorderiv: {
+  case colvarvalue::type_unit3vector: {
     cvm::rvector const &v1 = this->rvector_value;
     cvm::rvector const &v2 = x2.rvector_value;
     cvm::real const cos_t = v1 * v2;
@@ -697,11 +699,15 @@ colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
                        colvarvalue::type_unit3vectorderiv);
   }
   case colvarvalue::type_quaternion:
-  case colvarvalue::type_quaternionderiv:
     return this->quaternion_value.dist2_grad(x2.quaternion_value);
   case colvarvalue::type_vector:
     return colvarvalue(2.0 * (this->vector1d_value - x2.vector1d_value), colvarvalue::type_vector);
     break;
+  case colvarvalue::type_unit3vectorderiv:
+  case colvarvalue::type_quaternionderiv:
+    cvm::error("Error: computing a squared-distance gradient between two variables of type \"" +
+                   type_desc(this->type()) + "\", for which it is not defined.\n",
+               COLVARS_BUG_ERROR);
   case colvarvalue::type_notset:
   default:
     this->undef_op();
