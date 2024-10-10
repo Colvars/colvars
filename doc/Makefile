@@ -1,6 +1,6 @@
 .PHONY: all pdf html doxygen webpage webpage-legacy images \
 	install clean clean-all \
-	update-code-refs update-cvscript-cmdline-doc updates
+	update-code-refs update-cvscript-cmdline-doc updates update-version-list
 
 ifeq ($(COLVARS_RELEASE),)
 # Unless defined otherwise, the release label is the name of the branch
@@ -90,7 +90,7 @@ clean-all: clean
 	@echo
 	@echo "Note: only removed files that this branch is set to build."
 
-version-list:
+update-version-list:
 	./print_engine_versions.sh > ../README-versions.md
 
 update-code-refs:

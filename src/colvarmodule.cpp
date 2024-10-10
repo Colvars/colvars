@@ -129,6 +129,17 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
     }
   }
 
+  if (proxy->check_replicas_enabled() == COLVARS_NOT_IMPLEMENTED) {
+    cvm::log("  - Multiple replicas: not available\n");
+  } else {
+    if (proxy->check_replicas_enabled() == COLVARS_OK) {
+      cvm::log("  - Multiple replicas: enabled (replica number " +
+               to_str(proxy->replica_index() + 1) + " of " + to_str(proxy->num_replicas()) + ")\n");
+    } else {
+      cvm::log("  - Multiple replicas: available, but not (yet) enabled\n");
+    }
+  }
+
 #if defined(LEPTON)
   cvm::log("  - Lepton custom functions: available\n");
 #else

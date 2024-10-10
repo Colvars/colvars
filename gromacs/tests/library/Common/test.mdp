@@ -53,6 +53,5 @@ tcoupl                   = no
 gen_vel                  = no
 
 ; Colvars configuration
-colvars-active           = yes
+colvars-active           = Yes
 colvars-configfile       = test.in
-colvars-seed             = 12345

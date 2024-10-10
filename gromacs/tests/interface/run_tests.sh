@@ -20,13 +20,13 @@ fi
 
 # Run tests that depend on an MPI build
 if source ${TOPDIR}/devel-tools/load-openmpi.sh ; then
-    if cd 010_MPI_multi-sim ; then
+    if pushd 010_MPI_multi-sim > /dev/null ; then
         ./run.sh $1
         if [ $? -ne 0 ]
         then
             ALL_SUCCESS=0
         fi
-        cd -
+        popd > /dev/null
     fi
 fi
 

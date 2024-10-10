@@ -109,18 +109,9 @@ else
   MDMODULES_INTERFACE=no
 fi
 
-TORCH_LINKED=false
-# Need readlink because ldd can give wrong results when run on symlinks to binaries
-if { ldd $(readlink -f $(which $BINARY)) | grep -q libtorch[_a-zA-Z]*.so ; } then TORCH_LINKED=true ; fi
-
 for dir in ${DIRLIST} ; do
 
   if [ -f ${dir}/disabled ] ; then
-    continue
-  fi
-
-  if echo ${dir} | grep -q torchann && [ ${TORCH_LINKED} != "true" ] ; then 
-    echo "Binary is not libtorch-enabled; directory ${dir} skipped."
     continue
   fi
 

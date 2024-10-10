@@ -1,12 +1,21 @@
+[Versions included in GROMACS](#versions-included-in-GROMACS)
+
 [Versions included in LAMMPS](#versions-included-in-LAMMPS)
 
 [Versions included in NAMD](#versions-included-in-NAMD)
 
 [Versions included in VMD](#versions-included-in-VMD)
 
+### Versions included in GROMACS
+GROMACS version | Colvars version
+-------------- | ---------------
+2024 | [2023-12-05](https://github.com/Colvars/colvars/tree/gromacs-2024)
+
 ### Versions included in LAMMPS
 LAMMPS version | Colvars version
 -------------- | ---------------
+stable_29Aug2024 | [2024-06-04](https://github.com/Colvars/colvars/releases/tag/lammps-stable_29Aug2024)
+stable_2Aug2023 | [2023-05-01](https://github.com/Colvars/colvars/releases/tag/lammps-stable_2Aug2023)
 stable_23Jun2022 | [2022-05-24](https://github.com/Colvars/colvars/releases/tag/lammps-stable_23Jun2022)
 stable_29Sep2021 | [2021-09-13](https://github.com/Colvars/colvars/releases/tag/lammps-stable_29Sep2021)
 stable_29Oct2020 | [2020-09-17](https://github.com/Colvars/colvars/releases/tag/lammps-stable_29Oct2020)
@@ -27,6 +36,7 @@ stable_4Nov2016 | [2016-10-21](https://github.com/Colvars/colvars/releases/tag/l
 
 NAMD version | Colvars version
 -------------- | ---------------
+3.0 | [2024-06-04](https://github.com/Colvars/colvars/tree/namd-3.0)
 2.14 | [2020-07-07](https://github.com/Colvars/colvars/releases/tag/namd-2.14)
 2.13b2 | [2018-10-12](https://github.com/Colvars/colvars/releases/tag/namd-2.13b2)
 2.13b1 | [2018-09-07](https://github.com/Colvars/colvars/releases/tag/namd-2.13b1)
@@ -40,6 +50,7 @@ VMD version | Colvars version
 -------------- | ---------------
 1.9.4a58 | [2022-04-14](https://github.com/Colvars/colvars/releases/tag/vmd-1.9.4a58)
 1.9.4a49 | [2020-10-22](https://github.com/Colvars/colvars/releases/tag/vmd-1.9.4a49)
+1.9.4a12 | [2017-10-11](https://github.com/Colvars/colvars/releases/tag/vmd-1.9.4a12)
 1.9.3 | [2016-10-26](https://github.com/Colvars/colvars/releases/tag/vmd-1.9.3)
 1.9.2 | [2014-10-13](https://github.com/Colvars/colvars/releases/tag/vmd-1.9.2)
 
