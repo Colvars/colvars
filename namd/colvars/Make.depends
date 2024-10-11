@@ -8,6 +8,7 @@ obj/colvar.o: \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
 	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_torchann.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarproxy_io.h \
@@ -448,6 +449,7 @@ obj/colvarcomp_neuralnetwork.o: \
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_neuralnetwork.o $(COPTC) colvars/src/colvarcomp_neuralnetwork.cpp
 obj/colvarcomp_torchann.o: \
 	obj/.exists \
+	colvars/src/colvarcomp_torchann.h \
 	colvars/src/colvarcomp_torchann.cpp
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarcomp_torchann.o $(COPTC) colvars/src/colvarcomp_torchann.cpp
 obj/colvar_neuralnetworkcompute.o: \
