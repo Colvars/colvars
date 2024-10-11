@@ -21,6 +21,7 @@
 #include "colvarbias.h"
 #include "colvars_memstream.h"
 
+#include "colvarcomp_torchann.h"
 
 std::map<std::string, std::function<colvar::cvc *()>> colvar::global_cvc_map =
     std::map<std::string, std::function<colvar::cvc *()>>();

@@ -23,7 +23,6 @@ colvar::torchANN::torchANN()
   provide(f_cvc_periodic);
 }
 
-
 colvar::torchANN::~torchANN() {}
 
 
