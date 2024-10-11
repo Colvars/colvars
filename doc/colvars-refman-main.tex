@@ -1851,6 +1851,10 @@ An example is provided in file \texttt{examples/11\_polar\_angles.in} of the Col
     }
 \end{cvcoptions}
 
+\textbf{Note:} \texttt{polarPhi} is ill-defined when the corresponding
+\refkey{polarTheta}{colvar|polarTheta} component is close to 0$^\circ$ or 180$^\circ$; please take
+measures to avoid sampling these configurations in your simulations.
+
 
 \cvsubsec{Contacts}{sec:cvc_contacts}
 
