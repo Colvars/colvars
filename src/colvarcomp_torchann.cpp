@@ -219,4 +219,8 @@ int colvar::torchANN::init(std::string const &conf) {
 
 }
 
+void colvar::torchANN::calc_value()
+{
+}
+
 #endif

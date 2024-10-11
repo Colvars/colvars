@@ -56,6 +56,7 @@ public:
     torchANN();
     virtual ~torchANN();
     virtual int init(std::string const &conf);
+    virtual void calc_value();
 };
 #endif // COLVARS_TORCH checking
        
