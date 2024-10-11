@@ -1680,6 +1680,16 @@ the component \texttt{distance}: \texttt{group1}, \texttt{group2}, and
 3-dimensional unit vector $\mathbf{d} = (d_{x}, d_{y}, d_{z})$, with
 $|\mathbf{d}| = 1$.
 
+This multi-dimensional variable has two intrinsic degrees of freedom: however, these cannot be
+sampled independently as one-dimensional variables.  A decomposition in two dimensions can be done
+using \refkey{polarTheta}{colvar|polarTheta} and \refkey{polarPhi}{colvar|polarPhi} angles, with the
+caveat that the latter is ill-defined when the former approaches 0$^\circ$ or 180$^\circ$.
+
+The distance between two values of \texttt{distanceDir} is calculated internally as the angle (in
+radians) between the two unit vectors: this definition adapts the standard Euclidean distance to the
+unit sphere, to ensure that restraint forces comply with the mathematical constraint.
+
+
 \begin{cvcoptions}
 \item %
   \dupkey{group1}{\texttt{distanceDir}}{colvar|distance|group1}{\texttt{distance} component}
