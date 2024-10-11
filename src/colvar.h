@@ -586,9 +586,6 @@ public:
   // collective variable component base class
   class cvc;
 
-  // placeholder/stub for unavailable functionality
-  class componentDisabled;
-
   // list of available collective variable components
 
   // scalar colvar components

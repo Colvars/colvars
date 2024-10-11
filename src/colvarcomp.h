@@ -26,11 +26,6 @@
 #include "colvar.h"
 #include "colvar_geometricpath.h"
 
-#ifdef COLVARS_TORCH
-#include <torch/torch.h>
-#include <torch/script.h>
-#endif
-
 
 /// \brief Colvar component (base class for collective variables)
 ///
@@ -319,16 +314,6 @@ inline colvarvalue const & colvar::cvc::Jacobian_derivative() const
   return jd;
 }
 
-
-/// \brief Colvar component class for a feature not currently available
-class colvar::componentDisabled
-  : public colvar::cvc
-{
-public:
-  componentDisabled();
-  virtual ~componentDisabled();
-  int init(std::string const & /* conf */);
-};
 
 
 /// \brief Colvar component: distance between the centers of mass of
@@ -1547,40 +1532,6 @@ public:
   virtual void wrap(colvarvalue &x_unwrapped) const;
 };
 
-#ifdef COLVARS_TORCH
-// only when LibTorch is available
-class colvar::torchANN
-  : public colvar::linearCombination
-{
-protected:
-    torch::jit::script::Module nn;
-    /// the index of nn output component
-    size_t m_output_index;
-    bool use_double_input;
-    //bool use_gpu;
-    // 1d tensor, concatenation of values of sub-cvcs
-    torch::Tensor input_tensor;
-    torch::Tensor nn_outputs;
-    torch::Tensor input_grad;
-    // record the initial index of of sub-cvcs in input_tensor
-    std::vector<int> cvc_indices;
-public:
-    torchANN();
-    virtual ~torchANN();
-    virtual int init(std::string const &conf);
-    virtual void calc_value();
-    virtual void calc_gradients();
-    virtual void apply_force(colvarvalue const &force);
-};
-#else
-class colvar::torchANN
-  : public colvar::componentDisabled
-{
-public:
-    torchANN();
-    virtual ~torchANN();
-};
-#endif // COLVARS_TORCH checking
 
 // \brief Colvar component: total value of a scalar map
 // (usually implemented as a grid by the simulation engine)

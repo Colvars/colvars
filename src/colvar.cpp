@@ -894,9 +894,7 @@ void colvar::define_component_types()
 
   add_component_type<neuralNetwork>("neural network CV for other CVs", "neuralNetwork");
 
-#ifdef COLVARS_TORCH
   add_component_type<torchANN>("CV defined by PyTorch artifical neural network models", "torchANN");
-#endif
 
   if (proxy->check_volmaps_available() == COLVARS_OK) {
     add_component_type<map_total>("total value of atomic map", "mapTotal");

@@ -13,6 +13,7 @@
 #include "colvarparse.h"
 #include "colvarvalue.h"
 
+#include "colvarcomp_torchann.h"
 
 #ifdef COLVARS_TORCH
 
@@ -202,14 +203,21 @@ void colvar::torchANN::apply_force(colvarvalue const &force) {
 
 #else
 
-
 colvar::torchANN::torchANN()
 {
   set_function_type("torchANN");
 }
 
-
 colvar::torchANN::~torchANN() {}
 
+int colvar::torchANN::init(std::string const &conf) {
+
+  return cvm::error(
+          "torchANN requires the libtorch library, but it is not enabled during compilation.\n"
+          "Please refer to the Compilation Notes section of the Colvars manual for more "
+          "information.\n",
+          COLVARS_NOT_IMPLEMENTED);
+
+}
 
 #endif
