@@ -11,24 +11,6 @@
 #include <iomanip>
 #include <algorithm>
 
-// Define function to get the absolute path of a replica file
-#if defined(_WIN32) && !defined(__CYGWIN__)
-#include <direct.h>
-#define GETCWD(BUF, SIZE) ::_getcwd(BUF, SIZE)
-#define PATHSEP "\\"
-#else
-#include <unistd.h>
-#define GETCWD(BUF, SIZE) ::getcwd(BUF, SIZE)
-#define PATHSEP "/"
-#endif
-
-#ifdef __cpp_lib_filesystem
-// When std::filesystem is available, use it
-#include <filesystem>
-#undef GETCWD
-#define GETCWD(BUF, SIZE) (std::filesystem::current_path().string().c_str())
-#endif
-
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvar.h"
@@ -1718,29 +1700,17 @@ int colvarbias_meta::setup_output()
 
   if (comm == multiple_replicas) {
 
-    // TODO: one may want to specify the path manually for intricated filesystems?
-    char *pwd = new char[3001];
-    if (GETCWD(pwd, 3000) == nullptr) {
-      if (pwd != nullptr) { //
-        delete[] pwd;
-      }
-      return cvm::error("Error: cannot get the path of the current working directory.\n",
-                        COLVARS_BUG_ERROR);
-    }
-
+    auto const pwd = cvm::main()->proxy->get_current_work_dir();
     replica_list_file =
-      (std::string(pwd)+std::string(PATHSEP)+
-       this->name+"."+replica_id+".files.txt");
+        cvm::main()->proxy->join_paths(pwd, this->name + "." + replica_id + ".files.txt");
     // replica_hills_file and replica_state_file are those written
     // by the current replica; within the mirror biases, they are
     // those by another replica
-    replica_hills_file =
-      (std::string(pwd)+std::string(PATHSEP)+
-       cvm::output_prefix()+".colvars."+this->name+"."+replica_id+".hills");
-    replica_state_file =
-      (std::string(pwd)+std::string(PATHSEP)+
-       cvm::output_prefix()+".colvars."+this->name+"."+replica_id+".state");
-    delete[] pwd;
+    replica_hills_file = cvm::main()->proxy->join_paths(
+        pwd, cvm::output_prefix() + ".colvars." + this->name + "." + replica_id + ".hills");
+
+    replica_state_file = cvm::main()->proxy->join_paths(
+        pwd, cvm::output_prefix() + ".colvars." + this->name + "." + replica_id + ".state");
 
     // now register this replica
 
