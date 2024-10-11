@@ -921,6 +921,15 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf)
 
 void cvm::atom_group::do_feature_side_effects(int id)
 {
+  // If enabled features are changed upstream, the features below should be refreshed
+  switch (id) {
+    case f_ag_fit_gradients:
+      if (is_enabled(f_ag_center) || is_enabled(f_ag_rotate)) {
+        atom_group *group_for_fit = fitting_group ? fitting_group : this;
+        group_for_fit->fit_gradients.assign(group_for_fit->size(), cvm::atom_pos(0.0, 0.0, 0.0));
+      }
+      break;
+  }
 }
 
 
@@ -1209,14 +1218,9 @@ void cvm::atom_group::calc_fit_gradients()
     cvm::log("Calculating fit gradients.\n");
 
   cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
-  if (group_for_fit->fit_gradients.size() != group_for_fit->size()) {
-    group_for_fit->fit_gradients.assign(group_for_fit->size(), 0);
-  } else {
-    std::fill(group_for_fit->fit_gradients.begin(),
-              group_for_fit->fit_gradients.end(), 0);
-  }
+
   auto accessor_main = [this](size_t i){return atoms[i].grad;};
-  auto accessor_fitting = [&group_for_fit](size_t j, const cvm::rvector& grad){group_for_fit->fit_gradients[j] += grad;};
+  auto accessor_fitting = [&group_for_fit](size_t j, const cvm::rvector& grad){group_for_fit->fit_gradients[j] = grad;};
   if (is_enabled(f_ag_center) && is_enabled(f_ag_rotate))
     calc_fit_forces_impl<true, true>(accessor_main, accessor_fitting);
   if (is_enabled(f_ag_center) && !is_enabled(f_ag_rotate))
