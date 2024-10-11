@@ -257,7 +257,9 @@ protected:
   /// \brief Index in the colvarproxy arrays (if the group is scalable)
   int index;
 
-  /// \brief The forces acting on the group atoms (stored mainly used for calculating the fitting group forces)
+  /// \brief The temporary forces acting on the main group atoms.
+  ///        Currently this is only used for calculating the fitting group forces for
+  ///        non-scalar components.
   std::vector<cvm::rvector> group_forces;
 
 public:
