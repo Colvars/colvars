@@ -1,6 +1,10 @@
 #ifndef COLVAR_ROTATION_DERIVATIVE
 #define COLVAR_ROTATION_DERIVATIVE
 
+#ifdef _MSC_VER
+#define __restrict__
+#endif
+
 #include "colvartypes.h"
 #include <type_traits>
 #include <cstring>
