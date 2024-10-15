@@ -53,7 +53,7 @@ proc calc_z_max_gradient { args } { return 0 }
 proc calc_z_min_gradient { args } { return 0 }
 
 proc setup_ABMD { colvar force_k z_stop {direction up} } {
-  # cv config "scriptedColvarForces on"
+  cv config "scriptedColvarForces on"
 
   namespace eval ::ABMD {}
   set ::ABMD::cvname $colvar
