@@ -205,7 +205,7 @@ int colvarbias_opes::init(const std::string& conf) {
   else m_num_threads = cvm::proxy->smp_num_threads();
 #ifdef OPES_THREADING
   if (m_num_threads == -1) {
-    return cvm::error("Multithreading in OPES is not supported.");
+    return cvm::error("Multithreading is not available for OPES because Colvars is not running multiple threads.");
   }
 #else
   // if (m_num_threads > 1) {
@@ -432,7 +432,7 @@ cvm::real colvarbias_opes::getProbAndDerivatives(
         }
       }
 #else
-      cvm::error("Unsupported threading library.\n");
+      cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
     }
   } else {
@@ -487,7 +487,7 @@ cvm::real colvarbias_opes::getProbAndDerivatives(
         }
       }
 #else
-      cvm::error("Unsupported threading library.\n");
+      cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
     }
   }
@@ -971,7 +971,7 @@ int colvarbias_opes::update_opes() {
             numChunks, lowerRange, upperRange,
             worker, &sum_uprob, CKLOOP_DOUBLE_SUM, NULL);
 #else
-          cvm::error("Unsupported threading library.\n");
+          cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
         }
         if (num_parallel > 1) {
@@ -1017,7 +1017,7 @@ int colvarbias_opes::update_opes() {
               numChunks, lowerRange, upperRange,
               worker, &delta_sum_uprob, CKLOOP_DOUBLE_SUM, NULL);
 #else
-            cvm::error("Unsupported threading library.\n");
+            cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
           }
         } else {
@@ -1061,7 +1061,7 @@ int colvarbias_opes::update_opes() {
               numChunks, lowerRange, upperRange,
               worker, &delta_sum_uprob, CKLOOP_DOUBLE_SUM, NULL);
 #else
-            cvm::error("Unsupported threading library.\n");
+            cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
           }
         }
@@ -1107,7 +1107,7 @@ int colvarbias_opes::update_opes() {
             worker, &tmp, CKLOOP_DOUBLE_SUM, NULL);
           delta_sum_uprob -= tmp;
 #else
-          cvm::error("Unsupported threading library.\n");
+          cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
         }
         sum_uprob = m_zed * m_old_kdenorm * old_nker + delta_sum_uprob;
@@ -1593,7 +1593,7 @@ size_t colvarbias_opes::getMergeableKernel(const std::vector<cvm::real>& giver_c
       min_norm2 = *it_min;
       min_k = min_k_smp[std::distance(min_norm2_smp.begin(), it_min)];
 #else
-      cvm::error("Unsupported threading library.\n");
+      cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
     }
   } else {
@@ -1672,7 +1672,7 @@ size_t colvarbias_opes::getMergeableKernel(const std::vector<cvm::real>& giver_c
       min_norm2 = *it_min;
       min_k = min_k_smp[std::distance(min_norm2_smp.begin(), it_min)];
 #else
-      cvm::error("Unsupported threading library.\n");
+      cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
     }
   }
@@ -1951,7 +1951,7 @@ void colvarbias_opes::updateNlist(const std::vector<cvm::real>& center) {
       m_nlist_index.insert(m_nlist_index.end(), private_nlist_index[i].begin(), private_nlist_index.end());
     }
 #else
-    cvm::error("Unsupported threading library.\n");
+    cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
     if (m_recursive_merge) {
       std::sort(m_nlist_index.begin(), m_nlist_index.end());
