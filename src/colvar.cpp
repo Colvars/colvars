@@ -2207,12 +2207,10 @@ int colvar::set_cvc_param(std::string const &param_name, void const *new_value)
 bool colvar::periodic_boundaries(colvarvalue const &lb, colvarvalue const &ub) const
 {
   if (period > 0.0) {
-    if ( ((cvm::sqrt(this->dist2(lb, ub))) / this->width)
-         < 1.0E-10 ) {
+    if (((cvm::sqrt(this->dist2(lb, ub))) / this->width) < colvar_boundaries_tol) {
       return true;
     }
   }
-
   return false;
 }
 
