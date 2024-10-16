@@ -408,7 +408,7 @@ cvm::real colvarbias_opes::getProbAndDerivatives(
         }
       }
 #elif defined(CMK_SMP) && defined(USE_CKLOOP)
-      // TODO: Does this work??
+      // TODO: Test this once fine-grained parallelization is enabled
       std::vector<std::vector<cvm::real>> derivs(m_num_threads, std::vector<cvm::real>(num_variables(), 0));
       std::vector<std::vector<cvm::real>> dists(m_num_threads, std::vector<cvm::real>(num_variables(), 0));
       auto worker = [&](int start, int end, void* result){
@@ -432,7 +432,7 @@ cvm::real colvarbias_opes::getProbAndDerivatives(
         }
       }
 #else
-      cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
+      cvm::error("multiple threads required in OPES, but this binary is not linked with a supported threading library.\n");
 #endif
     }
   } else {
@@ -462,7 +462,7 @@ cvm::real colvarbias_opes::getProbAndDerivatives(
         }
       }
 #elif defined(CMK_SMP) && defined(USE_CKLOOP)
-      // TODO: Does this work??
+      // TODO: Test this once fine-grained parallelization is enabled
       std::vector<std::vector<cvm::real>> derivs(m_num_threads, std::vector<cvm::real>(num_variables(), 0));
       std::vector<std::vector<cvm::real>> dists(m_num_threads, std::vector<cvm::real>(num_variables(), 0));
       auto worker = [&](int start, int end, void* result){
@@ -487,7 +487,7 @@ cvm::real colvarbias_opes::getProbAndDerivatives(
         }
       }
 #else
-      cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
+      cvm::error("multiple threads required in OPES, but this binary is not linked with a supported threading library.\n");
 #endif
     }
   }
