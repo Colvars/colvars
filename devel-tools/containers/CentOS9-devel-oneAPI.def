@@ -1,0 +1,31 @@
+
+BootStrap: localimage
+From: CentOS9-devel.sif
+
+
+%help
+    Development environment for CentOS Stream Linux 9 with Intel oneAPI installed
+
+
+%setup
+    cat > ${APPTAINER_ROOTFS}/etc/yum.repos.d/oneAPI.repo << EOF
+[oneAPI]
+name=Intel® oneAPI repository
+baseurl=https://yum.repos.intel.com/oneapi
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+EOF
+
+
+%post
+    dnf -y update
+    dnf -y install intel-basekit intel-hpckit
+    cat > /etc/profile.d/oneapi.sh << EOF
+if [ -z "${ONEAPI_ROOT}" ] ; then
+    echo "Usage of Intel oneAPI is subject to the license agreement at: https://www.intel.com/content/www/us/en/developer/articles/license/end-user-license-agreement.html"
+    source /opt/intel/oneapi/setvars.sh > /dev/null
+fi
+EOF
+    chmod 644 /etc/profile.d/oneapi.sh
