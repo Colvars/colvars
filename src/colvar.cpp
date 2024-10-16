@@ -526,32 +526,43 @@ int colvar::init_grid_parameters(std::string const &conf)
 
   if (is_enabled(f_cv_scalar)) {
 
-    if (is_enabled(f_cv_single_cvc)) {
-      // Get the default boundaries from the component
+    // Record the CVC's intrinsic boundaries, and set them as default values for the user's choice
+    colvarvalue cvc_lower_boundary, cvc_upper_boundary;
+
+    if (is_enabled(f_cv_single_cvc)) { // Get the intrinsic boundaries of the CVC
+
       if (cvcs[0]->is_enabled(f_cvc_lower_boundary)) {
         enable(f_cv_lower_boundary);
         enable(f_cv_hard_lower_boundary);
-        lower_boundary =
+        lower_boundary = cvc_lower_boundary =
           *(reinterpret_cast<colvarvalue const *>(cvcs[0]->get_param_ptr("lowerBoundary")));
       }
+
       if (cvcs[0]->is_enabled(f_cvc_upper_boundary)) {
         enable(f_cv_upper_boundary);
         enable(f_cv_hard_upper_boundary);
-        upper_boundary =
-          *(reinterpret_cast<colvarvalue const *>(cvcs[0]->get_param_ptr("upperBoundary")));
+        upper_boundary = cvc_upper_boundary =
+            *(reinterpret_cast<colvarvalue const *>(cvcs[0]->get_param_ptr("upperBoundary")));
       }
     }
 
     if (get_keyval(conf, "lowerBoundary", lower_boundary, lower_boundary)) {
       enable(f_cv_lower_boundary);
-      // Because this is the user's choice, we cannot assume it is a true
-      // physical boundary
-      disable(f_cv_hard_lower_boundary);
+      if (is_enabled(f_cv_single_cvc) && is_enabled(f_cv_hard_lower_boundary)) {
+        if (cvm::sqrt(dist2(lower_boundary, cvc_lower_boundary))/width > colvar_boundaries_tol)  {
+          // The user choice is different from the CVC's default
+          disable(f_cv_hard_lower_boundary);
+        }
+      }
     }
 
     if (get_keyval(conf, "upperBoundary", upper_boundary, upper_boundary)) {
       enable(f_cv_upper_boundary);
-      disable(f_cv_hard_upper_boundary);
+      if (is_enabled(f_cv_single_cvc) && is_enabled(f_cv_hard_upper_boundary)) {
+        if (cvm::sqrt(dist2(upper_boundary, cvc_upper_boundary))/width > colvar_boundaries_tol)  {
+          disable(f_cv_hard_upper_boundary);
+        }
+      }
     }
 
     get_keyval_feature(this, conf, "hardLowerBoundary", f_cv_hard_lower_boundary,
