@@ -501,8 +501,6 @@ int colvar::init_grid_parameters(std::string const &conf)
 {
   int error_code = COLVARS_OK;
 
-  colvarmodule *cv = cvm::main();
-
   cvm::real default_width = width;
 
   if (!key_already_set("width")) {
@@ -555,6 +553,29 @@ int colvar::init_grid_parameters(std::string const &conf)
       enable(f_cv_upper_boundary);
       disable(f_cv_hard_upper_boundary);
     }
+
+    get_keyval_feature(this, conf, "hardLowerBoundary", f_cv_hard_lower_boundary,
+                       is_enabled(f_cv_hard_lower_boundary));
+
+    get_keyval_feature(this, conf, "hardUpperBoundary", f_cv_hard_upper_boundary,
+                       is_enabled(f_cv_hard_upper_boundary));
+
+    get_keyval(conf, "expandBoundaries", expand_boundaries, expand_boundaries);
+
+    error_code |= parse_legacy_wall_params(conf);
+    error_code |= check_grid_parameters();
+  }
+
+  return error_code;
+}
+
+
+int colvar::parse_legacy_wall_params(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+  colvarmodule *cv = cvm::main();
+
+  if (is_enabled(f_cv_scalar)) {
 
     // Parse legacy wall options and set up a harmonicWalls bias if needed
     cvm::real lower_wall_k = 0.0, upper_wall_k = 0.0;
@@ -609,13 +630,14 @@ harmonicWalls {\n\
     }
   }
 
-  get_keyval_feature(this, conf, "hardLowerBoundary", f_cv_hard_lower_boundary,
-                     is_enabled(f_cv_hard_lower_boundary));
+  return error_code;
+}
 
-  get_keyval_feature(this, conf, "hardUpperBoundary", f_cv_hard_upper_boundary,
-                     is_enabled(f_cv_hard_upper_boundary));
 
-  // consistency checks for boundaries and walls
+int colvar::check_grid_parameters()
+{
+  int error_code = COLVARS_OK;
+
   if (is_enabled(f_cv_lower_boundary) && is_enabled(f_cv_upper_boundary)) {
     if (lower_boundary >= upper_boundary) {
       error_code |= cvm::error("Error: the upper boundary, "+
@@ -626,7 +648,6 @@ harmonicWalls {\n\
     }
   }
 
-  get_keyval(conf, "expandBoundaries", expand_boundaries, expand_boundaries);
   if (expand_boundaries && periodic_boundaries()) {
     error_code |= cvm::error("Error: trying to expand boundaries that already "
                              "cover a whole period of a periodic colvar.\n",
