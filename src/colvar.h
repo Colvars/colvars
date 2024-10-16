@@ -262,7 +262,7 @@ public:
 
   /// Init defaults for grid options
   int init_grid_parameters(std::string const &conf);
-  
+
   /// Consistency check for the grid paramaters
   int check_grid_parameters();
 
@@ -782,6 +782,12 @@ inline void colvar::reset_bias_force() {
   fb.reset();
   fb_actual.type(value());
   fb_actual.reset();
+}
+
+
+namespace {
+  // Tolerance parameter to decide when two boundaries coincide
+  constexpr cvm::real colvar_boundaries_tol = 1.0e-10;
 }
 
 #endif
