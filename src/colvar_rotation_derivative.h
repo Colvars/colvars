@@ -5,11 +5,21 @@
 #include <type_traits>
 #include <cstring>
 
+#ifndef _noalias
+#if defined(__INTEL_COMPILER) || (defined(__PGI) && !defined(__NVCOMPILER))
+#define _noalias restrict
+#elif defined(__GNUC__) || defined(__INTEL_LLVM_COMPILER) || defined(__NVCOMPILER)
+#define _noalias __restrict
+#else
+#define _noalias
+#endif
+#endif
+
 /// \brief Helper function for loading the ia-th atom in the vector pos to x, y and z (C++11 SFINAE is used)
 template <typename T, typename std::enable_if<std::is_same<T, cvm::atom_pos>::value, bool>::type = true>
 inline void read_atom_coord(
   size_t ia, const std::vector<T>& pos,
-  cvm::real* __restrict x, cvm::real* __restrict y, cvm::real* __restrict z) {
+  cvm::real* _noalias x, cvm::real* _noalias y, cvm::real* _noalias z) {
   *x = pos[ia].x;
   *y = pos[ia].y;
   *z = pos[ia].z;
@@ -18,7 +28,7 @@ inline void read_atom_coord(
 template <typename T, typename std::enable_if<std::is_same<T, cvm::atom>::value, bool>::type = true>
 inline void read_atom_coord(
   size_t ia, const std::vector<T>& pos,
-  cvm::real* __restrict x, cvm::real* __restrict y, cvm::real* __restrict z) {
+  cvm::real* _noalias x, cvm::real* _noalias y, cvm::real* _noalias z) {
   *x = pos[ia].pos.x;
   *y = pos[ia].pos.y;
   *z = pos[ia].pos.z;
@@ -330,9 +340,9 @@ struct rotation_derivative {
   template <bool use_dl, bool use_dq, bool use_ds>
   void calc_derivative_impl(
     const cvm::rvector (&ds)[4][4],
-    cvm::rvector* __restrict const dl0_out,
-    cvm::vector1d<cvm::rvector>* __restrict const dq0_out,
-    cvm::matrix2d<cvm::rvector>* __restrict const ds_out) const {
+    cvm::rvector* _noalias const dl0_out,
+    cvm::vector1d<cvm::rvector>* _noalias const dq0_out,
+    cvm::matrix2d<cvm::rvector>* _noalias const ds_out) const {
     if (use_ds) {
       // this code path is for debug_gradients, so not necessary to unroll the loop
       *ds_out = cvm::matrix2d<cvm::rvector>(4, 4);
@@ -465,9 +475,9 @@ struct rotation_derivative {
     */
   template <bool use_dl, bool use_dq, bool use_ds>
   void calc_derivative_wrt_group1(
-    size_t ia, cvm::rvector* __restrict const dl0_1_out = nullptr,
-    cvm::vector1d<cvm::rvector>* __restrict const dq0_1_out = nullptr,
-    cvm::matrix2d<cvm::rvector>* __restrict const ds_1_out = nullptr) const {
+    size_t ia, cvm::rvector* _noalias const dl0_1_out = nullptr,
+    cvm::vector1d<cvm::rvector>* _noalias const dq0_1_out = nullptr,
+    cvm::matrix2d<cvm::rvector>* _noalias const ds_1_out = nullptr) const {
       // if (dl0_1_out == nullptr && dq0_1_out == nullptr) return;
       cvm::real a2x, a2y, a2z;
       // we can get rid of the helper function read_atom_coord if C++17 (constexpr) is available
@@ -491,9 +501,9 @@ struct rotation_derivative {
     */
   template <bool use_dl, bool use_dq, bool use_ds>
   void calc_derivative_wrt_group2(
-    size_t ia, cvm::rvector* __restrict const dl0_2_out = nullptr,
-    cvm::vector1d<cvm::rvector>* __restrict const dq0_2_out = nullptr,
-    cvm::matrix2d<cvm::rvector>* __restrict const ds_2_out = nullptr) const {
+    size_t ia, cvm::rvector* _noalias const dl0_2_out = nullptr,
+    cvm::vector1d<cvm::rvector>* _noalias const dq0_2_out = nullptr,
+    cvm::matrix2d<cvm::rvector>* _noalias const ds_2_out = nullptr) const {
     // if (dl0_2_out == nullptr && dq0_2_out == nullptr) return;
     cvm::real a1x, a1y, a1z;
     // we can get rid of the helper function read_atom_coord if C++17 (constexpr) is available
