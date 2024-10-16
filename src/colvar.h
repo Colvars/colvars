@@ -262,6 +262,12 @@ public:
 
   /// Init defaults for grid options
   int init_grid_parameters(std::string const &conf);
+  
+  /// Consistency check for the grid paramaters
+  int check_grid_parameters();
+
+  /// Read legacy wall keyword (these are biases now)
+  int parse_legacy_wall_params(std::string const &conf);
 
   /// Init extended Lagrangian parameters
   int init_extended_Lagrangian(std::string const &conf);
