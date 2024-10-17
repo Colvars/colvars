@@ -81,7 +81,6 @@ std::string colvarproxy_io::get_current_work_dir() const
 
   // Legacy code
   size_t constexpr buf_size = 3001;
-  std::string cwd;
   char buf[buf_size];
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
