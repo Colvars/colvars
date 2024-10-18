@@ -14,6 +14,7 @@
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvar.h"
+#include "colvargrid.h"
 #include "colvarbias_meta.h"
 #include "colvars_memstream.h"
 
@@ -31,8 +32,6 @@ colvarbias_meta::colvarbias_meta(char const *key)
   use_grids = true;
   grids_freq = 0;
   rebin_grids = false;
-  hills_energy = NULL;
-  hills_energy_gradients = NULL;
 
   dump_fes = true;
   keep_hills = false;
@@ -143,9 +142,9 @@ int colvarbias_meta::init(std::string const &conf)
     get_keyval(conf, "keepHills", keep_hills, keep_hills);
     get_keyval(conf, "keepFreeEnergyFiles", dump_fes_save, dump_fes_save);
 
-    if (hills_energy == NULL) {
-      hills_energy           = new colvar_grid_scalar(colvars);
-      hills_energy_gradients = new colvar_grid_gradient(colvars);
+    if (!hills_energy) {
+      hills_energy.reset(new colvar_grid_scalar(colvars));
+      hills_energy_gradients.reset(new colvar_grid_gradient(colvars));
     }
 
   } else {
@@ -254,7 +253,6 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
 {
   int error_code = COLVARS_OK;
   // for ebmeta
-  target_dist = NULL;
   get_keyval(conf, "ebMeta", ebmeta, false);
   if(ebmeta){
     cvm::main()->cite_feature("Ensemble-biased metadynamics (ebMetaD)");
@@ -265,7 +263,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
                                "targetDistFile accordingly.\n",
                                COLVARS_INPUT_ERROR);
     }
-    target_dist = new colvar_grid_scalar();
+    target_dist.reset(new colvar_grid_scalar());
     error_code |= target_dist->init_from_colvars(colvars);
     std::string target_dist_file;
     get_keyval(conf, "targetDistFile", target_dist_file);
@@ -523,10 +521,8 @@ int colvarbias_meta::update_grid_params()
         new_hills_energy->map_grid(*hills_energy);
         new_hills_energy_gradients->map_grid(*hills_energy_gradients);
 
-        delete hills_energy;
-        delete hills_energy_gradients;
-        hills_energy = new_hills_energy;
-        hills_energy_gradients = new_hills_energy_gradients;
+        hills_energy.reset(new_hills_energy);
+        hills_energy_gradients.reset(new_hills_energy_gradients);
 
         curr_bin = hills_energy->get_colvars_index();
         if (cvm::debug())
@@ -1061,8 +1057,8 @@ int colvarbias_meta::update_replicas_registry()
         (replicas.back())->comm = multiple_replicas;
 
         if (use_grids) {
-          (replicas.back())->hills_energy           = new colvar_grid_scalar(colvars);
-          (replicas.back())->hills_energy_gradients = new colvar_grid_gradient(colvars);
+          (replicas.back())->hills_energy.reset(new colvar_grid_scalar(colvars));
+          (replicas.back())->hills_energy_gradients.reset(new colvar_grid_gradient(colvars));
         }
         if (is_enabled(f_cvb_calc_ti_samples)) {
           (replicas.back())->enable(f_cvb_calc_ti_samples);
@@ -1319,34 +1315,40 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 {
   if (use_grids) {
 
-    colvar_grid_scalar   *hills_energy_backup = NULL;
-    colvar_grid_gradient *hills_energy_gradients_backup = NULL;
+    std::unique_ptr<colvar_grid_scalar> hills_energy_backup;
+    std::unique_ptr<colvar_grid_gradient> hills_energy_gradients_backup;
 
-    if (has_data) {
+    bool const need_backup = has_data;
+
+    if (need_backup) {
       if (cvm::debug())
-        cvm::log("Backupping grids for metadynamics bias \""+
-                 this->name+"\""+
-                 ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+".\n");
-      hills_energy_backup           = hills_energy;
-      hills_energy_gradients_backup = hills_energy_gradients;
-      hills_energy                  = new colvar_grid_scalar(colvars);
-      hills_energy_gradients        = new colvar_grid_gradient(colvars);
+        cvm::log("Backing up grids for metadynamics bias \"" + this->name + "\"" +
+                 ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") + ".\n");
+
+      hills_energy_backup = std::move(hills_energy);
+      hills_energy_gradients_backup = std::move(hills_energy_gradients);
+      hills_energy.reset(new colvar_grid_scalar(colvars));
+      hills_energy_gradients.reset(new colvar_grid_gradient(colvars));
     }
 
-    read_grid_data_template_<IST, colvar_grid_scalar>(is, "hills_energy", hills_energy,
-                                                      hills_energy_backup);
+    read_grid_data_template_<IST, colvar_grid_scalar>(is, "hills_energy", hills_energy.get(),
+                                                      hills_energy_backup.get());
 
-    read_grid_data_template_<IST, colvar_grid_gradient>(
-        is, "hills_energy_gradients", hills_energy_gradients, hills_energy_gradients_backup);
+    read_grid_data_template_<IST, colvar_grid_gradient>(is, "hills_energy_gradients",
+                                                        hills_energy_gradients.get(),
+                                                        hills_energy_gradients_backup.get());
 
     if (is) {
       cvm::log("  successfully read the biasing potential and its gradients from grids.\n");
-      if (hills_energy_backup != nullptr) {
-        // Now that we have successfully updated the grids, delete the backup copies
-        delete hills_energy_backup;
-        delete hills_energy_gradients_backup;
-      }
     } else {
+      if (need_backup) {
+        if (cvm::debug())
+          cvm::log("Restoring grids from backup for metadynamics bias \"" + this->name + "\"" +
+                   ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") + ".\n");
+        // Restoring content from original grid
+        hills_energy->copy_grid(*hills_energy_backup);
+        hills_energy_gradients->copy_grid(*hills_energy_gradients_backup);
+      }
       return is;
     }
   }
@@ -1434,10 +1436,8 @@ void colvarbias_meta::rebin_grids_after_restart()
     // read from the configuration file), and project onto them the
     // grids just read from the restart file
 
-    colvar_grid_scalar   *new_hills_energy =
-      new colvar_grid_scalar(colvars);
-    colvar_grid_gradient *new_hills_energy_gradients =
-      new colvar_grid_gradient(colvars);
+    std::unique_ptr<colvar_grid_scalar> new_hills_energy(new colvar_grid_scalar(colvars));
+    std::unique_ptr<colvar_grid_gradient> new_hills_energy_gradients(new colvar_grid_gradient(colvars));
 
     if (cvm::debug()) {
       std::ostringstream tmp_os;
@@ -1464,15 +1464,13 @@ void colvarbias_meta::rebin_grids_after_restart()
       new_hills_energy_gradients->map_grid(*hills_energy_gradients);
     }
 
-    delete hills_energy;
-    delete hills_energy_gradients;
-    hills_energy = new_hills_energy;
-    hills_energy_gradients = new_hills_energy_gradients;
+    hills_energy = std::move(new_hills_energy);
+    hills_energy_gradients = std::move(new_hills_energy_gradients);
 
     // assuming that some boundaries have expanded, eliminate those
     // off-grid hills that aren't necessary any more
     if (!hills.empty())
-      recount_hills_off_grid(hills.begin(), hills.end(), hills_energy);
+      recount_hills_off_grid(hills.begin(), hills.end());
   }
 }
 
@@ -1813,7 +1811,7 @@ template <typename OST> OST &colvarbias_meta::write_state_data_template_(OST &os
 
     // this is a very good time to project hills, if you haven't done
     // it already!
-    project_hills(new_hills_begin, hills.end(), hills_energy, hills_energy_gradients);
+    project_hills(new_hills_begin, hills.end(), hills_energy.get(), hills_energy_gradients.get());
     new_hills_begin = hills.end();
 
     // write down the grids to the restart file
