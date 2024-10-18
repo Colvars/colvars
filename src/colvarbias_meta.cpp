@@ -318,33 +318,15 @@ colvarbias_meta::~colvarbias_meta()
 {
   colvarbias_meta::clear_state_data();
   colvarproxy *proxy = cvm::main()->proxy;
-
   proxy->close_output_stream(replica_hills_file);
-
   proxy->close_output_stream(hills_traj_file_name());
-
-  if (target_dist) {
-    delete target_dist;
-    target_dist = NULL;
-  }
 }
 
 
 int colvarbias_meta::clear_state_data()
 {
-  if (hills_energy) {
-    delete hills_energy;
-    hills_energy = NULL;
-  }
-
-  if (hills_energy_gradients) {
-    delete hills_energy_gradients;
-    hills_energy_gradients = NULL;
-  }
-
   hills.clear();
   hills_off_grid.clear();
-
   return COLVARS_OK;
 }
 
@@ -626,8 +608,7 @@ int colvarbias_meta::update_grid_data()
 {
   if ((cvm::step_absolute() % grids_freq) == 0) {
     // map the most recent gaussians to the grids
-    project_hills(new_hills_begin, hills.end(),
-                  hills_energy,    hills_energy_gradients);
+    project_hills(new_hills_begin, hills.end(), hills_energy.get(), hills_energy_gradients.get());
     new_hills_begin = hills.end();
 
     // TODO: we may want to condense all into one replicas array,
@@ -636,8 +617,8 @@ int colvarbias_meta::update_grid_data()
       for (size_t ir = 0; ir < replicas.size(); ir++) {
         replicas[ir]->project_hills(replicas[ir]->new_hills_begin,
                                     replicas[ir]->hills.end(),
-                                    replicas[ir]->hills_energy,
-                                    replicas[ir]->hills_energy_gradients);
+                                    replicas[ir]->hills_energy.get(),
+                                    replicas[ir]->hills_energy_gradients.get());
         replicas[ir]->new_hills_begin = replicas[ir]->hills.end();
       }
     }
@@ -962,8 +943,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
 
 
 void colvarbias_meta::recount_hills_off_grid(colvarbias_meta::hill_iter  h_first,
-                                             colvarbias_meta::hill_iter  h_last,
-                                             colvar_grid_scalar         * /* he */)
+                                             colvarbias_meta::hill_iter  h_last)
 {
   hills_off_grid.clear();
 
@@ -1471,9 +1451,9 @@ void colvarbias_meta::rebin_grids_after_restart()
     if (restart_keep_hills && !hills.empty()) {
       // if there are hills, recompute the new grids from them
       cvm::log("Rebinning the energy and forces grids from "+
-               cvm::to_str(hills.size())+" hills (this may take a while)...\n");
-      project_hills(hills.begin(), hills.end(),
-                    new_hills_energy, new_hills_energy_gradients, true);
+               cvm::to_str(hills.size())+" hills (this may take a bit)...\n");
+      project_hills(hills.begin(), hills.end(), new_hills_energy.get(),
+                    new_hills_energy_gradients.get(), true);
       cvm::log("rebinning done.\n");
 
     } else {
