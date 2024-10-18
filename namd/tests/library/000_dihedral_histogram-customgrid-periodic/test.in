@@ -28,9 +28,9 @@ colvar {
 
 histogram {
     colvars    one
-    histogramGrid {
-        widths 5
-        lowerBoundaries -60
-        upperBoundaries 300
+    grid {
+        width 5
+        lowerBoundary -60
+        upperBoundary 300
     }
 }
