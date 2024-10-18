@@ -3074,6 +3074,36 @@ These parameter values have been found  to give stable dynamics for a wide range
 Reflecting boundary conditions are recommended for lambda-dynamics to ensure that the alchemical
 variable remains precisely within its physical range.
 
+\cvnamdonly{
+The NAMD configuration file should also contain the parameters for setting up the alchemical simulation, for example:
+\begin{cvexampleinput}
+computeEnergies~~~~~~~~~1\\
+\\
+alch~~~~~~~~~~~~~~~~~~~~on\\
+alchType~~~~~~~~~~~~~~~~TI\\
+alchFile~~~~~~~~~~~~~~~~\$\{alchFile\}.pdb\\
+alchCol~~~~~~~~~~~~~~~~~B\\
+alchOutFile~~~~~~~~~~~~~\$\{outName\}.fepout\\
+alchOutFreq~~~~~~~~~~~~~100\\
+alchVdwLambdaEnd~~~~~~~~0.5\\
+alchElecLambdaStart~~~~~0.5\\
+alchVdWShiftCoeff~~~~~~~6.0\\
+alchlambda~~~~~~~~~~~~~~0\\
+\end{cvexampleinput}
+
+Here, the value of 1 for \texttt{computeEnergies} and TI for \texttt{alchType} are mandatory.
+All other parameters can be chosen freely as documented in the NAMD User's Guide.
+
+\paragraph{Special considerations for running lambda-dynamics in NAMD/Colvars.}
+As of NAMD 3.0, lambda-dynamics is not compatible with multiple timestepping. We recommend applying
+hydrogen mass repartitioning (HMR) to the topology and increasing the base timestep to 2~fs
+to limit the performance impact of disabling multiple timestepping.
+When running in parallel on CPUs, synchronization issues prevent lambda-dynamics trajectories from being
+fully reproducible.
+This can be circumvented by running NAMD in GPU-resident mode.
+} % end of \cvnamdonly
+
+
 
 \cvsubsubsec{\texttt{alchFlambda}: Force on the alchemical lambda parameter.}{sec:cvc_alchFlambda}
 \labelkey{colvar|alchFlambda}
@@ -3082,7 +3112,11 @@ The \texttt{alchFlambda~\{\}} block defines a component returning the force exte
 lambda parameter of the back-end simulation in \MDENGINE{}, provided that it is enabled using the appropriate options
 of \MDENGINE{}. This coordinate is obtained from the back-end at each time step of a simulation.
 The \texttt{alchFlambda} block itself takes no parameters, it should be left empty.
+
+
 } % end of \cvalchlambdaonly
+
+
 
 \cvsubsec{Raw data: building blocks for custom functions}{sec:cvc_raw}
 
