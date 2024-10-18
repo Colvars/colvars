@@ -293,11 +293,11 @@ else
   echo "$(${TPUT_RED})There were failed tests.$(${TPUT_CLEAR})"
   if [ ${#failed_tests[@]} -gt 0 ]; then
     echo "The following tests are failed:"
-    printf "%s\n" "${failed_tests[@]}"
+    printf "%s\n" "${failed_tests[@]}" | sort -u
   fi
   if [ ${#failed_tests_low_prec[@]} -gt 0 ]; then
     echo "The following tests are failed, but passed at low precisions:"
-    printf "%s\n" "${failed_tests_low_prec[@]}"
+    printf "%s\n" "${failed_tests_low_prec[@]}" | sort -u
   fi
   exit 1
 fi

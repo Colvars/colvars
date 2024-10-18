@@ -46,6 +46,9 @@ protected:
   /// Pointer to the NAMD simulation input object
   SimParameters *simparams;
 
+  /// Pointer to Controller object
+  Controller const *controller;
+
   /// NAMD-style PRNG object
   Random random;
 
@@ -265,6 +268,18 @@ public:
   int close_output_streams() override;
 
   int backup_file(char const *filename) override;
+
+  /// Get value of alchemical lambda parameter from back-end
+  int get_alch_lambda(cvm::real* lambda);
+
+  /// Set value of alchemical lambda parameter in back-end
+  int send_alch_lambda(void);
+
+  /// Request energy computation every freq steps
+  int request_alch_energy_freq(int const freq);
+
+  /// Get energy derivative with respect to lambda
+  int get_dE_dlambda(cvm::real* dE_dlambda);
 
 };
 

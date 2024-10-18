@@ -93,11 +93,18 @@ int colvarbias::init(std::string const &conf)
     cvm::log("Reinitializing bias \""+name+"\".\n");
   }
 
+  feature_states[f_cvb_step_zero_data].available = true;
+
   colvar_values.resize(num_variables());
   for (i = 0; i < num_variables(); i++) {
     colvar_values[i].type(colvars[i]->value().type());
     colvar_forces[i].type(colvar_values[i].type());
     previous_colvar_forces[i].type(colvar_values[i].type());
+    if (!colvars[i]->is_enabled(f_cv_total_force_current_step)) {
+      // If any colvar does not have current-step total force, then
+      // we can't do step 0 data
+      feature_states[f_cvb_step_zero_data].available = false;
+    }
   }
 
   output_prefix = cvm::output_prefix();
@@ -157,7 +164,7 @@ int colvarbias::init_dependencies() {
     init_feature(f_cvb_step_zero_data, "step_zero_data", f_type_user);
 
     init_feature(f_cvb_apply_force, "apply_force", f_type_user);
-    require_feature_children(f_cvb_apply_force, f_cv_gradient);
+    require_feature_children(f_cvb_apply_force, f_cv_apply_force);
 
     init_feature(f_cvb_bypass_ext_lagrangian, "bypass_extended_Lagrangian_coordinates", f_type_user);
 
@@ -221,8 +228,6 @@ int colvarbias::init_dependencies() {
   // The feature f_cvb_bypass_ext_lagrangian is only implemented by some derived classes
   // (initially, harmonicWalls)
   feature_states[f_cvb_bypass_ext_lagrangian].available = false;
-  // disabled by default; can be changed by derived classes that implement it
-  feature_states[f_cvb_bypass_ext_lagrangian].enabled = false;
 
   return COLVARS_OK;
 }
@@ -884,8 +889,8 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
 
   size_t i;
 
-  if (proxy->total_forces_same_step()) {
-    for (i = 0; i < num_variables(); i++) {
+  for (i = 0; i < num_variables(); i++) {
+    if (variables(i)->is_enabled(f_cv_total_force_current_step)) {
       ti_bin[i] = ti_avg_forces->current_bin_scalar(i);
     }
   }
@@ -894,8 +899,10 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
   if ((cvm::step_relative() > 0) || proxy->total_forces_same_step()) {
     if (ti_avg_forces->index_ok(ti_bin)) {
       for (i = 0; i < num_variables(); i++) {
-        if (variables(i)->is_enabled(f_cv_subtract_applied_force)) {
+        if (variables(i)->is_enabled(f_cv_subtract_applied_force) ||
+          (cvm::proxy->total_forces_same_step() && !variables(i)->is_enabled(f_cv_external))) {
           // this colvar is already subtracting all applied forces
+          // or the "total force" is really a system force at current step
           ti_system_forces[i] = variables(i)->total_force();
         } else {
           ti_system_forces[i] = variables(i)->total_force() -
@@ -909,9 +916,9 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
     }
   }
 
-  if (!proxy->total_forces_same_step()) {
-    // Set the index for use in the next iteration, when total forces come in
-    for (i = 0; i < num_variables(); i++) {
+  for (i = 0; i < num_variables(); i++) {
+    if (!variables(i)->is_enabled(f_cv_total_force_current_step)) {
+      // Set the index for use in the next iteration, when total forces come in
       ti_bin[i] = ti_avg_forces->current_bin_scalar(i);
     }
   }

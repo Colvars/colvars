@@ -67,12 +67,12 @@ CHARM_ARCH=$(${BINARY} 2>&1 | grep 'Info: Based on Charm++/Converse' | cut -d' '
 if [ "x${CHARM_ARCH}" == "xmpi-linux-x86_64" ] && source ${TOPDIR}/devel-tools/load-openmpi.sh ; then
   NUM_TASKS=${NUM_THREADS}
   NUM_THREADS=1
-  BINARY="mpirun -n ${NUM_TASKS} -oversubscribe $BINARY"
+  CMD="mpirun -n ${NUM_TASKS} -oversubscribe $BINARY"
 else
-  BINARY="$BINARY +p ${NUM_THREADS}"
+  CMD="$BINARY +p ${NUM_THREADS}"
 fi
 
-echo "Running NAMD as: $BINARY"
+echo "Running NAMD as: $CMD"
 
 TPUT_RED='true'
 TPUT_GREEN='true'
@@ -100,7 +100,7 @@ cleanup_files() {
     fi
     for f in ${script%.namd}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
     rm -f ${script%.namd}.*{BAK,old,backup}
-    for f in ${script%.namd}.*{state,state.stripped,out,traj,coor,vel,xsc,dcd,pmf,hills,grad,force,count,histogram?.dat,hist.dat,corrfunc.dat,histogram?.dx,count.dx,pmf.dx,output.dat,kernels.dat}
+    for f in ${script%.namd}.*{state,state.stripped,out,traj,coor,vel,xsc,dcd,pmf,hills,grad,force,count,histogram?.dat,hist.dat,corrfunc.dat,histogram?.dx,count.dx,pmf.dx,output.dat,ti,kernels.dat}
     do
       if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff
     done
@@ -179,8 +179,13 @@ for dir in ${DIRLIST} ; do
       fi
     fi
 
-    # Run the test (use a subshell to avoid cluttering stdout)
-    NAMD_CUDASOA=$CUDASOA $BINARY $script > ${basename}.out
+    if [ -f no_smp ]; then
+      # Force the test to run serially
+      NAMD_CUDASOA=$CUDASOA $BINARY +p1 $script > ${basename}.out
+    else
+      # Run the test (use a subshell to avoid cluttering stdout)
+      NAMD_CUDASOA=$CUDASOA $CMD $script > ${basename}.out
+    fi
 
     # Output of Colvars module, minus the version numbers
     grep "^colvars:" ${basename}.out | grep -v 'Initializing the collective variables module' \
@@ -221,8 +226,11 @@ for dir in ${DIRLIST} ; do
       fi
 
       # Update any additional files with current versions
-      for file in AutoDiff/*; do
-        cp -uf `basename ${file}` AutoDiff/
+      for file in AutoDiff/${basename}*; do
+        source=`basename ${file}`
+        if [ -f ${source} ] ; then
+          cp -uf ${source} AutoDiff/
+        fi
       done
     fi
 
