@@ -10,9 +10,10 @@
 #ifndef COLVARBIAS_META_H
 #define COLVARBIAS_META_H
 
-#include <vector>
-#include <list>
 #include <iosfwd>
+#include <list>
+#include <memory>
+#include <vector>
 
 #include "colvarbias.h"
 
@@ -213,7 +214,7 @@ protected:
   bool       ebmeta;
 
   /// Target distribution for EBmeta
-  std::shared_ptr<colvar_grid_scalar> target_dist;
+  std::unique_ptr<colvar_grid_scalar> target_dist;
 
   /// Number of equilibration steps for EBmeta
   cvm::step_number ebmeta_equil_steps;
@@ -225,10 +226,10 @@ protected:
   bool       safely_read_restart;
 
   /// Hill energy, cached on a grid
-  std::shared_ptr<colvar_grid_scalar> hills_energy;
+  std::unique_ptr<colvar_grid_scalar> hills_energy;
 
   /// Hill forces, cached on a grid
-  std::shared_ptr<colvar_grid_gradient> hills_energy_gradients;
+  std::unique_ptr<colvar_grid_gradient> hills_energy_gradients;
 
   /// Project the selected hills onto grids
   void project_hills(hill_iter h_first, hill_iter h_last, colvar_grid_scalar *ge,
