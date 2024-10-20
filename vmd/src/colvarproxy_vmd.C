@@ -766,7 +766,7 @@ int colvarproxy_vmd::check_volmaps_available()
 }
 
 
-int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
+int colvarproxy_vmd::init_internal_volmap_by_id(int volmap_id)
 {
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
     if (volmaps_ids[i] == volmap_id) {
@@ -778,22 +778,14 @@ int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
 
   int index = -1;
 
-  int error_code = check_volmap_by_id(volmap_id);
-  if (error_code == COLVARS_OK) {
+  if ((volmap_id < 0) || (volmap_id >= vmdmol->num_volume_data())) {
+    cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
+               ") for map.\n", COLVARS_INPUT_ERROR);
+  } else {
     index = add_volmap_slot(volmap_id);
   }
 
   return index;
-}
-
-
-int colvarproxy_vmd::check_volmap_by_id(int volmap_id)
-{
-  if ((volmap_id < 0) || (volmap_id >= vmdmol->num_volume_data())) {
-    return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
-                      ") for map.\n", COLVARS_INPUT_ERROR);
-  }
-  return COLVARS_OK;
 }
 
 
@@ -868,14 +860,15 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
 
 
 int colvarproxy_vmd::compute_volmap(int flags,
-                                    int volmap_id,
+                                    int index,
                                     cvm::atom_iter atom_begin,
                                     cvm::atom_iter atom_end,
                                     cvm::real *value,
                                     cvm::real *atom_field)
 {
   int error_code = COLVARS_OK;
-  VolumetricData const *voldata = vmdmol->get_volume_data(volmap_id);
+  int const volmap_id = volmaps_ids[index];
+  auto const *voldata = vmdmol->get_volume_data(volmap_id);
   if (voldata != NULL) {
 
     if (flags & volmap_flag_gradients) {
@@ -905,8 +898,8 @@ int colvarproxy_vmd::compute_volmap(int flags,
     }
   } else {
     // Error message
-    error_code |=
-      const_cast<colvarproxy_vmd *>(this)->check_volmap_by_id(volmap_id);
+    error_code |= cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
+                             ") for map.\n", COLVARS_INPUT_ERROR);
   }
   return error_code;
 }
