@@ -226,20 +226,21 @@ public:
 
   int check_volmaps_available() override;
 
-  int init_volmap_by_id(int volmap_id) override;
+  int request_engine_volmap_by_id(int volmap_id) override;
 
-  int init_volmap_by_name(const char *volmap_name) override;
+  int request_engine_volmap_by_name(std::string const &volmap_name) override;
 
-  int check_volmap_by_id(int volmap_id) override;
+  /// Add map to GlobalMaster client (if not already in them)
+  void request_globalmaster_volmap(int volmap_id);
 
-  int check_volmap_by_name(char const *volmap_name) override;
+  int init_internal_volmap_by_id(int volmap_id) override;
 
-  int get_volmap_id_from_name(char const *volmap_name) override;
+  int init_internal_volmap_by_name(std::string const &volmap_name) override;
 
   void clear_volmap(int index) override;
 
   int compute_volmap(int flags,
-                     int volmap_id,
+                     int index,
                      cvm::atom_group* ag,
                      cvm::real *value,
                      cvm::real *atom_field) override;
