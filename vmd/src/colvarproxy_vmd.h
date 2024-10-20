@@ -108,14 +108,12 @@ public:
 
   virtual int check_volmaps_available();
 
-  virtual int init_volmap_by_id(int volmap_id);
-
-  virtual int check_volmap_by_id(int volmap_id);
+  virtual int init_internal_volmap_by_id(int volmap_id);
 
   virtual void clear_volmap(int index);
 
   virtual int compute_volmap(int flags,
-                             int volmap_id,
+                             int index,
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
                              cvm::real *value,
