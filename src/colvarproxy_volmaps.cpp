@@ -74,6 +74,12 @@ int colvarproxy_volmaps::init_internal_volmap_by_name(std::string const & /* vol
 }
 
 
+int colvarproxy_volmaps::load_internal_volmap_from_file(std::string const & /* volmap_filename */)
+{
+  return -1;
+}
+
+
 void colvarproxy_volmaps::clear_volmap(int index)
 {
   if (((size_t) index) >= volmaps_ids.size()) {
