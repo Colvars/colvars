@@ -44,7 +44,12 @@ public:
   /// \returns Index of the map in the colvarproxy arrays
   virtual int init_internal_volmap_by_name(std::string const &filename);
 
-  /// \brief Used by the CVC destructors
+  /// Load a map internally in Colvars, and select it for internal computation
+  /// \param filename Name of file containing the map
+  /// \returns Index of the map in the colvarproxy arrays
+  virtual int load_internal_volmap_from_file(std::string const &filename);
+
+  /// Used by the CVC destructors
   virtual void clear_volmap(int index);
 
   /// Get the numeric ID of the given volumetric map (for the MD program)
