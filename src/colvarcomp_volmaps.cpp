@@ -25,27 +25,38 @@ int colvar::map_total::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
   colvarproxy *proxy = cvm::main()->proxy;
+
+  // Identifiers for maps loaded by the MD engine
   get_keyval(conf, "mapName", volmap_name, volmap_name);
   get_keyval(conf, "mapID", volmap_id, volmap_id);
-  register_param("mapID", reinterpret_cast<void *>(&volmap_id));
+  register_param("mapID", reinterpret_cast<void *>(&volmap_id)); // Used in script API for VMD
+
+  // Load a new map from Colvars
+  std::string volmap_filename;
+  get_keyval(conf, "mapFile", volmap_filename, volmap_filename);
 
   cvm::main()->cite_feature("Volumetric map-based collective variables");
 
-  if ((volmap_name.size() > 0) && (volmap_id >= 0)) {
+  if ( ((volmap_name.size() > 0) && (volmap_id >= 0)) ||
+       ((volmap_filename.size() > 0) && (volmap_id >= 0)) ||
+       ((volmap_name.size() > 0) && (volmap_filename.size() > 0)) ) {
     error_code |=
-        cvm::error("Error: mapName and mapID are mutually exclusive.\n", COLVARS_INPUT_ERROR);
+        cvm::error("Error: mapName, mapID and mapFile are all mutually exclusive.\n", COLVARS_INPUT_ERROR);
   }
 
   // Parse optional group
   atoms = parse_group(conf, "atoms", true);
   if (atoms) {
 
-    // Using internal selection
+    // Using internal atom selection
     if (volmap_name.size() > 0) {
       volmap_index = proxy->init_internal_volmap_by_name(volmap_name);
     }
     if (volmap_id >= 0) {
       volmap_index = proxy->init_internal_volmap_by_id(volmap_id);
+    }
+    if (volmap_filename.size() > 0) {
+      volmap_index = proxy->load_internal_volmap_from_file(volmap_filename);
     }
 
   } else {
@@ -56,6 +67,12 @@ int colvar::map_total::init(std::string const &conf)
     }
     if (volmap_id >= 0) {
       volmap_index = proxy->request_engine_volmap_by_id(volmap_id);
+    }
+
+    if (volmap_filename.size() > 0) {
+      error_code |=
+          cvm::error("Error: mapFile requires that an atom group is selected internally.\n",
+                     COLVARS_INPUT_ERROR);
     }
   }
 
