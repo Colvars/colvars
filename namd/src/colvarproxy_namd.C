@@ -18,6 +18,7 @@
 #include "Molecule.h"
 #include "GridForceGrid.h"
 #include "GridForceGrid.inl"
+#include "MGridforceParams.h"
 #include "PDB.h"
 #include "PDBData.h"
 #include "ReductionMgr.h"
@@ -1324,6 +1325,7 @@ int colvarproxy_namd::request_engine_volmap_by_id(int volmap_id)
   } else {
     index = add_volmap_slot(volmap_id);
     request_globalmaster_volmap(volmap_id);
+    internal_grids_.push_back(nullptr); // Not loading this map internally in Colvars
     colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   }
   return index;
@@ -1370,6 +1372,7 @@ int colvarproxy_namd::request_engine_volmap_by_name(std::string const &volmap_na
     }
 
     index = add_volmap_slot(volmap_id);
+    internal_grids_.push_back(nullptr); // Not loading this map internally in Colvars
   }
 
   if (index >= 0) {
@@ -1409,6 +1412,7 @@ int colvarproxy_namd::init_internal_volmap_by_id(int volmap_id)
                ") for map.\n", COLVARS_INPUT_ERROR);
   } else {
     index = add_volmap_slot(volmap_id);
+    internal_grids_.push_back(nullptr); // Not loading this map internally in Colvars
     colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   }
   return index;
@@ -1435,8 +1439,29 @@ int colvarproxy_namd::init_internal_volmap_by_name(std::string const &volmap_nam
                "\".\n", COLVARS_INPUT_ERROR);
   } else {
     index = add_volmap_slot(volmap_id);
+    internal_grids_.push_back(nullptr); // Not loading this map internally in Colvars
     colvars->cite_feature("GridForces volumetric map implementation for NAMD");
   }
+  return index;
+}
+
+
+int colvarproxy_namd::load_internal_volmap_from_file(std::string const &filename)
+{
+  // Set an invalid ID: this map was not loaded by NAMD through the MGridForces keywords
+  auto *grid = new GridforceFullMainGrid(-1);
+
+  // Parameter set suitable for Colvars uses
+  MGridforceParams mgridParams;
+  mgridParams.gridforceCheckSize = FALSE;
+  mgridParams.gridforceCont[0] = mgridParams.gridforceCont[1] = mgridParams.gridforceCont[2] = TRUE;
+
+  grid->initialize(const_cast<char *>(filename.c_str()), simparams, &mgridParams, 0);
+
+  int index = add_volmap_slot(-1);
+  internal_grids_.push_back(std::unique_ptr<GridforceFullMainGrid>(grid));
+
+  // NAMD would crash on the above in case of errors
   return index;
 }
 
@@ -1509,7 +1534,9 @@ int colvarproxy_namd::compute_volmap(int flags,
                                      cvm::real *atom_field)
 {
   Molecule *mol = Node::Object()->molecule;
-  GridforceGrid *grid = mol->get_gridfrc_grid(volmaps_ids[index]);
+  GridforceGrid *grid = volmaps_ids[index] >= 0 ?
+    mol->get_gridfrc_grid(volmaps_ids[index]) :
+    internal_grids_[index].get();
   // Inheritance is not possible with GridForceGrid's design
   if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeFull) {
     GridforceFullMainGrid *g = dynamic_cast<GridforceFullMainGrid *>(grid);
