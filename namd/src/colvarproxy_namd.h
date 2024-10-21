@@ -26,6 +26,7 @@
 
 class Controller;
 class GlobalMasterColvars;
+class GridforceFullMainGrid;
 class Random;
 class SimParameters;
 
@@ -237,6 +238,8 @@ public:
 
   int init_internal_volmap_by_name(std::string const &volmap_name) override;
 
+  int load_internal_volmap_from_file(std::string const &filename) override;
+
   void clear_volmap(int index) override;
 
   int compute_volmap(int flags,
@@ -287,6 +290,10 @@ public:
   /// Get energy derivative with respect to lambda
   int get_dE_dlambda(cvm::real* dE_dlambda);
 
+protected:
+
+  /// Pointers to internally managed maps (set to nullptr for maps loaded by NAMD)
+  std::vector<std::unique_ptr<GridforceFullMainGrid>> internal_gridforce_grids_;
 };
 
 
