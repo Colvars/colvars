@@ -1421,7 +1421,7 @@ int colvarproxy_namd::load_internal_volmap_from_file(std::string const &filename
   mgridParams.gridforceCheckSize = FALSE;
   mgridParams.gridforceCont[0] = mgridParams.gridforceCont[1] = mgridParams.gridforceCont[2] = TRUE;
 
-  grid->initialize(const_cast<char *>(filename.c_str()), simparams, &mgridParams, 0);
+  grid->initialize(const_cast<char *>(filename.c_str()), simparams, &mgridParams, -1);
 
   int index = add_volmap_slot(-1);
   internal_grids_.push_back(std::unique_ptr<GridforceFullMainGrid>(grid));
