@@ -1,10 +1,13 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
-colvars: in any publication based on this calculation.
-colvars: This version was built without the C++11 standard: some features are disabled.
-colvars: Please see the following link for details:
-colvars: https://colvars.github.io/README-c++11.html
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
+colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - SMP parallelism: not available
+colvars:   - Multiple replicas: not available
+colvars:   - Lepton custom functions: not available
+colvars:   - Tcl interpreter: available
 colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
@@ -44,6 +47,7 @@ colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "numatoms"
@@ -57,24 +61,27 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:     # mapName = "" [default]
 colvars:     # mapID = 0
+colvars:     # mapFile = "" [default]
 colvars:       Initializing atom group "atoms".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "Protein"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 727.821, total charge = 6.70552e-08.
+colvars:     # atomWeights =  [default]
+colvars:     Map has index 0 in the proxy arrays and ID + 0 for NAMD.
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 2
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0 [default]
+colvars:   # upperBoundary = 2 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
@@ -99,27 +106,28 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:     # mapName = "" [default]
 colvars:     # mapID = 0
+colvars:     # mapFile = "" [default]
 colvars:       Initializing atom group "atoms".
 colvars:       # name = "" [default]
-colvars:       # centerReference = on
-colvars:       # rotateReference = on
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = on
+colvars:       # rotateToReference = on
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "Protein"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       Within atom group "atoms":
 colvars:       Initializing atom group "fittingGroup".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "" [default]
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "fittingGroup" defined with 5 atoms requested: total mass = 60.055, total charge = 0.35.
@@ -131,11 +139,13 @@ colvars:       Warning: atom group "atoms" will be aligned to a fixed orientatio
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "atoms" defined with 104 atoms requested: total mass = 727.821, total charge = 6.70552e-08.
+colvars:     # atomWeights =  [default]
+colvars:     Map has index 0 in the proxy arrays and ID + 0 for NAMD.
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 2
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0 [default]
+colvars:   # upperBoundary = 2 [default]
 colvars:   # hardLowerBoundary = off [default]
 colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
@@ -163,6 +173,7 @@ colvars:   # centers = { 50 }
 colvars:   # targetCenters = { 50 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 0.2
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -1 [default]
 colvars:   The force constant for colvar "numatoms" will be rescaled to 0.05 according to the specified width (2).
 colvars: ----------------------------------------------------------------------
@@ -170,5 +181,6 @@ colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Re-initialized atom group for variable "numatoms":0/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
 colvars: Re-initialized atom group for variable "numatoms_rot":0/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
