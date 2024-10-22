@@ -36,6 +36,7 @@ int colvarproxy_volmaps::reset()
   volmaps_refcount.clear();
   volmaps_values.clear();
   volmaps_new_colvar_forces.clear();
+  volmaps_filenames.clear();
   return COLVARS_OK;
 }
 
@@ -46,6 +47,7 @@ int colvarproxy_volmaps::add_volmap_slot(int volmap_id)
   volmaps_refcount.push_back(1);
   volmaps_values.push_back(0.0);
   volmaps_new_colvar_forces.push_back(0.0);
+  volmaps_filenames.push_back(std::string(""));
   return (volmaps_ids.size() - 1);
 }
 
