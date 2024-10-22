@@ -1413,10 +1413,21 @@ int colvarproxy_namd::init_internal_volmap_by_name(std::string const &volmap_nam
 
 int colvarproxy_namd::load_internal_volmap_from_file(std::string const &filename)
 {
-  // Set an invalid ID: this map was not loaded by NAMD through the MGridForces keywords
+  // Internal maps have volmap_id == -1, to avoid mixing them with those
+  // loaded by NAMD through the MGridForces keywords (irrespective of whether
+  // they are computed internally or through ComputeGlobal)
+
+  for (size_t i = 0; i < volmaps_ids.size(); i++) {
+    if (volmaps_ids[i] == -1 && volmaps_filenames[i] == filename) {
+      // this map has already been loaded
+      volmaps_refcount[i] += 1;
+      return i;
+    }
+  }
+
   auto *grid = new GridforceFullMainGrid(-1);
 
-  // Parameter set suitable for Colvars uses
+  // Parameter set suitable for current Colvars use cases (single mapTotal CVs and Multi-Map)
   MGridforceParams mgridParams;
   mgridParams.gridforceCheckSize = FALSE;
   mgridParams.gridforceCont[0] = mgridParams.gridforceCont[1] = mgridParams.gridforceCont[2] = TRUE;
@@ -1424,6 +1435,7 @@ int colvarproxy_namd::load_internal_volmap_from_file(std::string const &filename
   grid->initialize(const_cast<char *>(filename.c_str()), simparams, &mgridParams, -1);
 
   int index = add_volmap_slot(-1);
+  volmaps_filenames[index] = filename;
   internal_grids_.push_back(std::unique_ptr<GridforceFullMainGrid>(grid));
 
   // NAMD would crash on the above in case of errors
