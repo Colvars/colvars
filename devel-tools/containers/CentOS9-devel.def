@@ -57,7 +57,7 @@ From: quay.io/centos/centos:stream9
     if [ ! -f /usr/local/bin/spiff ] ; then
         # Build and install spiff
         rm -fr /tmp/spiff
-        git clone https://github.com/HanatoK/spiff /tmp/spiff && \
+        git clone https://github.com/Colvars/spiff /tmp/spiff && \
             make -C /tmp/spiff && \
             install /tmp/spiff/spiff /usr/local/bin/
     fi
