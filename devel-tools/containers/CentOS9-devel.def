@@ -62,5 +62,17 @@ From: quay.io/centos/centos:stream9
             install /tmp/spiff/spiff /usr/local/bin/
     fi
 
+    # Download pre-built libTorch
+    rm -fr /opt/torch
     curl -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.4.1%2Bcpu.zip
     unzip /tmp/libtorch.zip -d /opt
+
+    # Install GitHub CLI
+    dnf -y config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+    dnf -y install gh --repo gh-cli
+
+    # Download pre-built recent CMake (mostly for GROMACS)
+    rm -fr /opt/cmake
+    mkdir -p /opt/cmake
+    gh release download v3.30.5 --repo https://github.com/Kitware/CMake --clobber --pattern '*linux-x86_64.sh'
+    bash cmake-3.30.5-linux-x86_64.sh  --skip-license --prefix=/opt/cmake
