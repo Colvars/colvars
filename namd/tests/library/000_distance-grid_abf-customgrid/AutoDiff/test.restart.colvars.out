@@ -109,19 +109,29 @@ colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
-colvars:   Initializing a new "histogram" instance.
-colvars:   # name = "histogram1" [default]
+colvars:   Initializing a new "abf" instance.
+colvars:   # name = "abf1" [default]
 colvars:   # colvars = { one }
 colvars:   # stepZeroData = off [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
-colvars:   # outputFile = "" [default]
-colvars:   # outputFileDX = "none" [default]
-colvars:   # gatherVectorColvars = off [default]
-colvars:   # lowerBoundaries = { 0.6 }
-colvars:   # upperBoundaries = { 5.4 }
+colvars:   WARNING: ABF should not be run without a thermostat or at 0 Kelvin!
+colvars:   # applyBias = on [default]
+colvars:   # hideJacobian = off [default]
+colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
+colvars:   # fullSamples = 10
+colvars:   # minSamples = 5 [default]
+colvars:   # inputPrefix =  [default]
+colvars:   # historyFreq = 0 [default]
+colvars:   # shared = off [default]
+colvars:   # updateBias = on [default]
+colvars:   # maxForce =  [default]
+colvars:   # lowerBoundaries = { 1 }
+colvars:   # upperBoundaries = { 5 }
 colvars:   # widths = { 0.2 }
+colvars:   # integrate = on [default]
+colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
@@ -136,10 +146,13 @@ colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
 colvars: 
 colvars: - Colvars module:
 colvars: - Colvars-NAMD interface:
-colvars: - Histogram colvar bias implementation:
 colvars: - Optimal rotation via flexible fitting:
 colvars: - distance colvar component:
 colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - ABF colvar bias implementation:
+colvars: - Internal-forces free energy estimator:
+colvars:   Henin2010 https://doi.org/10.1021/ct9004432
 colvars: 
 colvars: - NAMD engine:
 colvars: - Scalable center-of-mass computation (NAMD):
@@ -148,8 +161,8 @@ colvars:
 colvars: updating target temperature (T = 0 K).
 colvars: ----------------------------------------------------------------------
 colvars: Loading state from text file "test.colvars.state".
-colvars:   Restarting collective variable "one" from value: 3.21688
-colvars:   Restarted histogram bias "histogram1" with step number 20.
+colvars:   Restarting collective variable "one" from value: 3.19504
+colvars:   Restarted abf bias "abf1" with step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
@@ -164,8 +177,6 @@ colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
-colvars:   Writing the histogram file "test.restart.histogram1.dat".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
-colvars:   Writing the histogram file "test.restart.histogram1.dat".
 colvars: Saving collective variables state to "test.restart.colvars.state".

@@ -100,11 +100,6 @@ int colvarbias_abf::init(std::string const &conf)
     if ( shared_freq && output_freq % shared_freq ) {
       return cvm::error("Error: outputFreq must be a multiple of sharedFreq.\n");
     }
-
-    // Allocate these at init time if possible
-    local_samples.reset(new colvar_grid_count(colvars));
-    local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
-    local_pmf.reset(new integrate_potential(colvars, local_gradients));
   }
 
   // ************* checking the associated colvars *******************
@@ -181,11 +176,22 @@ int colvarbias_abf::init(std::string const &conf)
     cvm::log("Allocating count and free energy gradient grids.\n");
   }
 
-  samples.reset(new colvar_grid_count(colvars));
-  gradients.reset(new colvar_grid_gradient(colvars, samples));
+  {
+    /// Optional custom configuration string for grid parameters
+    std::string grid_conf;
+    key_lookup(conf, "grid", &grid_conf);
+
+    samples.reset(new colvar_grid_count(colvars, grid_conf));
+  }
+  gradients.reset(new colvar_grid_gradient(colvars, samples)); // Also use samples as template for sizes
 
   gradients->full_samples = full_samples;
   gradients->min_samples = min_samples;
+
+  if (shared_on) {
+    local_samples.reset(new colvar_grid_count(colvars, samples));
+    local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
+  }
 
   // Data for eABF z-based estimator
   if (is_enabled(f_cvb_extended)) {
@@ -198,11 +204,11 @@ int colvarbias_abf::init(std::string const &conf)
                colvarparse::parse_silent);
 
     z_bin.assign(num_variables(), 0);
-    z_samples.reset(new colvar_grid_count(colvars));
+    z_samples.reset(new colvar_grid_count(colvars, samples));
     z_samples->request_actual_value();
     z_gradients.reset(new colvar_grid_gradient(colvars, z_samples));
     z_gradients->request_actual_value();
-    czar_gradients.reset(new colvar_grid_gradient(colvars));
+    czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
   }
 
   get_keyval(conf, "integrate", b_integrate, num_variables() <= 3); // Integrate for output if d<=3
@@ -216,6 +222,9 @@ int colvarbias_abf::init(std::string const &conf)
     if (b_CZAR_estimator) {
       czar_pmf.reset(new integrate_potential(colvars, czar_gradients));
     }
+    if (shared_on) {
+      local_pmf.reset(new integrate_potential(colvars, local_gradients));
+    }
     // Parameters for integrating initial (and final) gradient data
     get_keyval(conf, "integrateMaxIterations", integrate_iterations, 10000, colvarparse::parse_silent);
     get_keyval(conf, "integrateTol", integrate_tol, 1e-6, colvarparse::parse_silent);
@@ -228,9 +237,9 @@ int colvarbias_abf::init(std::string const &conf)
   if (b_CZAR_estimator && shared_on && cvm::main()->proxy->replica_index() == 0) {
     // The pointers below are used for outputting CZAR data
     // Allocate grids for collected global data, on replica 0 only
-    global_z_samples.reset(new colvar_grid_count(colvars));
+    global_z_samples.reset(new colvar_grid_count(colvars, samples));
     global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-    global_czar_gradients.reset(new colvar_grid_gradient(colvars));
+    global_czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
     global_czar_pmf.reset(new integrate_potential(colvars, global_czar_gradients));
   } else {
     // otherwise they are just aliases for the local CZAR grids
@@ -244,10 +253,10 @@ int colvarbias_abf::init(std::string const &conf)
   // This used to be only if "shared" was defined,
   // but now we allow calling share externally (e.g. from Tcl).
   if (b_CZAR_estimator) {
-    z_samples_in.reset(new colvar_grid_count(colvars));
+    z_samples_in.reset(new colvar_grid_count(colvars, samples));
     z_gradients_in.reset(new colvar_grid_gradient(colvars, z_samples_in));
   }
-  last_samples.reset(new colvar_grid_count(colvars));
+  last_samples.reset(new colvar_grid_count(colvars, samples));
   last_gradients.reset(new colvar_grid_gradient(colvars, last_samples));
   // Any data collected after now is new for shared ABF purposes
   shared_last_step = cvm::step_absolute();
@@ -542,7 +551,7 @@ int colvarbias_abf::replica_share() {
   if (!local_samples) {
     // We arrive here if sharing has just been enabled by a script
     // in which case local arrays have not been initialized yet
-    local_samples.reset(new colvar_grid_count(colvars));
+    local_samples.reset(new colvar_grid_count(colvars, samples));
     local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
     local_pmf.reset(new integrate_potential(colvars, local_gradients));
   }
@@ -662,9 +671,9 @@ int colvarbias_abf::replica_share_CZAR() {
       // We arrive here if sharing has just been enabled by a script
       // Allocate grids for collective data, on replica 0 only
       // overriding CZAR grids that are equal to local ones by default
-      global_z_samples.reset(new colvar_grid_count(colvars));
+      global_z_samples.reset(new colvar_grid_count(colvars, samples));
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-      global_czar_gradients.reset(new colvar_grid_gradient(colvars));
+      global_czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
       global_czar_pmf.reset(new integrate_potential(colvars, global_czar_gradients));
     }
 
