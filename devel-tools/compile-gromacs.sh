@@ -16,14 +16,9 @@ compile_gromacs_target() {
     fi
 
     local CMAKE=cmake CTEST=ctest
-    if hash cmake3 >& /dev/null ; then
-        CMAKE=cmake3
-        CTEST=ctest3
-    fi
-    if hash ${CMAKE} >& /dev/null ; then
-        CMAKE_VERSION=$(${CMAKE} --version | head -1 | cut -d' ' -f3)
-    else
-        echo "Error: no CMake found." >& 2
+    if [ -e /opt/cmake/bin/cmake ] ; then
+        CMAKE=/opt/cmake/bin/cmake
+        CTEST=/opt/cmake/bin/ctest
     fi
 
     local GMX_SRC_DIR=""
