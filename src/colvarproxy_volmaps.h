@@ -99,19 +99,20 @@ public:
 
 protected:
 
-  /// \brief Array of numeric IDs of volumetric maps
+  /// Array of numeric IDs of volumetric maps (-1 if loaded internally)
   std::vector<int>          volmaps_ids;
 
-  /// \brief Keep track of how many times each vol map is used by a
-  /// separate colvar object
+  /// Keep track of how many times each vol map is used by a separate colvar object
   std::vector<size_t>       volmaps_refcount;
 
-  /// \brief Current values of the vol maps
+  /// Current total values of the volmaps (when computed by the MD engine)
   std::vector<cvm::real>    volmaps_values;
 
-  /// \brief Forces applied from colvars, to be communicated to the MD
-  /// integrator
+  /// Forces applied from colvars, to be communicated to the MD engine
   std::vector<cvm::real>    volmaps_new_colvar_forces;
+
+  /// Names of files containing maps (empty when maps are loaded by MD engine)
+  std::vector<std::string>  volmaps_filenames;
 
   /// Root-mean-square of the the applied forces
   cvm::real volmaps_rms_applied_force_;
