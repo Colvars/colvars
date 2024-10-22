@@ -1433,8 +1433,20 @@ int colvarproxy_namd::load_internal_volmap_from_file(std::string const &filename
 
 void colvarproxy_namd::clear_volmap(int index)
 {
-  // TODO remove from GlobalMaster
   colvarproxy::clear_volmap(index);
+  if (volmaps_refcount[index] == 0) {
+    int const volmap_id = volmaps_ids[index];
+    if (volmap_id >= 0) {
+      // Remove map from GlobalMaster
+      int const id_index_in_gm = modifyRequestedGridObjects().find(volmap_id);
+      if (id_index_in_gm >= 0) {
+        modifyRequestedGridObjects().del(id_index_in_gm, 1);
+      }
+    } else {
+      // Delete internal map
+      internal_grids_[index].reset(nullptr);
+    }
+  }
 }
 
 
