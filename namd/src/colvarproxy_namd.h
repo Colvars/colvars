@@ -215,17 +215,22 @@ public:
 
   int check_volmaps_available() override;
 
+  /// Select a MGridForces map for computation by NAMD
   int request_engine_volmap_by_id(int volmap_id) override;
 
+  /// Select a MGridForces map for computation by NAMD
   int request_engine_volmap_by_name(std::string const &volmap_name) override;
 
   /// Add map to GlobalMaster client (if not already in them)
   void request_globalmaster_volmap(int volmap_id);
 
+  /// Select a MGridForces map for internal computation (frontend)
   int init_internal_volmap_by_id(int volmap_id) override;
 
+  /// Select a MGridForces map for internal computation (frontend)
   int init_internal_volmap_by_name(std::string const &volmap_name) override;
 
+  /// Load a map internally independent from MGridForces
   int load_internal_volmap_from_file(std::string const &filename) override;
 
   void clear_volmap(int index) override;
