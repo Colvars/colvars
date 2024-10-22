@@ -461,10 +461,9 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
   // next index to be looked up in PDB file (if list is supplied)
   std::vector<int>::const_iterator current_index = indices.begin();
 
-  FileSpec *tmpspec = new FileSpec();
-  tmpspec->autobonds = 0;
-  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", tmpspec);
-  delete tmpspec;
+  FileSpec tmpspec;
+  tmpspec.autobonds = 0;
+  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", &tmpspec);
   if (tmpmolid < 0) {
     cvm::error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
                COLVARS_FILE_ERROR);
@@ -577,10 +576,9 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
     return COLVARS_ERROR;
   }
 
-  FileSpec *tmpspec = new FileSpec();
-  tmpspec->autobonds = 0;
-  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", tmpspec);
-  delete tmpspec;
+  FileSpec tmpspec;
+  tmpspec.autobonds = 0;
+  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", &tmpspec);
 
   if (tmpmolid < 0) {
     cvm::error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
@@ -784,6 +782,32 @@ int colvarproxy_vmd::init_internal_volmap_by_id(int volmap_id)
   } else {
     index = add_volmap_slot(volmap_id);
   }
+
+  return index;
+}
+
+
+int colvarproxy_vmd::load_internal_volmap_from_file(std::string const &filename)
+{
+  // For simplicity, we do not make distinctions between maps loaded using
+  // VMD commands vs. using Colvars input: both kinds of maps are loaded and
+  // managed by the Molecule object
+  for (size_t i = 0; i < volmaps_ids.size(); i++) {
+    if (volmaps_filenames[i] == filename) {
+      // this map has already been loaded
+      volmaps_refcount[i] += 1;
+      return i;
+    }
+  }
+
+  // Load a new map
+  FileSpec tmpspec;
+  tmpspec.autobonds = 0;
+  int tmpmolid = vmd->molecule_load(vmdmolid, filename.c_str(), "dx", &tmpspec);
+  int volmap_id = vmdmol->num_volume_data() - 1;
+
+  int index = add_volmap_slot(volmap_id);
+  volmaps_filenames[index] = filename;
 
   return index;
 }
