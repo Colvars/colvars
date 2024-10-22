@@ -5,17 +5,17 @@ configuration {
 
 colvar {
   name multimap
-  x       1.3218138951509
+  x       1.3218131489018
 }
 
 colvar {
   name map
-  x      0.78813712417352
+  x      0.78813639857134
 }
 
 colvar {
   name map2
-  x      0.26683838548868
+  x      0.26683837516522
 }
 
 restraint {
