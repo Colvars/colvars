@@ -110,6 +110,8 @@ public:
 
   virtual int init_internal_volmap_by_id(int volmap_id);
 
+  virtual int load_internal_volmap_from_file(std::string const &filename);
+
   virtual void clear_volmap(int index);
 
   virtual int compute_volmap(int flags,
