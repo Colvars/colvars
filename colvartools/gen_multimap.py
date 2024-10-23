@@ -482,6 +482,7 @@ mol addfile %s type dx waitfor all
 
 def multimap_colvar_def_tcl(name, map_labels, coefficients=[], map_norms=[],
                             indices=None, pdb_files=None, use_pdb_weights=False,
+                            map_files=None,
                             scripted_function=None, width=None, pdb_file_cache=[]):
     """
     Write a Tcl script to define the collective variable in VMD or NAMD.
@@ -512,12 +513,19 @@ def multimap_colvar_def_tcl(name, map_labels, coefficients=[], map_norms=[],
     use_pdb_weights : bool
         If True, set the atomWeights keyword using PDB columns
 
+    map_files : list of strings
+        If given, Colvars will load each maps internally using mapFile
+
     scripted_function : string
         If defined, use it as the value of the scriptedFunction keyword
 
     width : string
         If defined, set the width parameter of the colvar (the string may
         represent either a number or a Tcl variable expansion)
+
+    pdb_file_cache : list
+        If define, keep track of what PDB files are being loaded for atom
+        selections and reuse each file
 
     """
 
@@ -566,14 +574,20 @@ colvar {
         componentCoeff %13.6e
 """ % (label, coefficients[i] * scale)
 
-        if indices is None:
-            conf += """\
-        mapName %s
-""" % label
+        if map_files is None:
+            if indices is None:
+                conf += """\
+            mapName %s
+    """ % label
+            else:
+                conf += """\
+            mapID %d
+    """ % indices[i]
         else:
             conf += """\
-        mapID %d
-""" % indices[i]
+            mapFile %s
+    """ % map_files[i]
+
 
         if not pdb_files is None:
             if not pdb_files[i] in pdb_file_cache:
@@ -609,11 +623,11 @@ colvar {
 
 
 def singlemap_colvars_def_tcl(map_labels, coefficients=[], map_norms=[],
-                              indices=None, pdb_files=None,
-                              use_pdb_weights=False, pdb_file_cache=[]):
+                              indices=None, pdb_files=None, use_pdb_weights=False,
+                              map_files=None, pdb_file_cache=[]):
 
     conf = """
-# Define single-map variables for diagnostics (no extra computational cost)
+# Define single-map variables for diagnostics
 """
 
     for i, label in enumerate(map_labels):
@@ -629,16 +643,20 @@ colvar {
     mapTotal {
         name %s
 """ % (label, label)
-        if indices is None:
-            # Map labels for NAMD
-            conf += """\
-        mapName %s
-""" % label
+
+        if map_files is None:
+            if indices is None:
+                conf += """\
+            mapName %s
+    """ % label
+            else:
+                conf += """\
+            mapID %d
+    """ % indices[i]
         else:
-            # Numeric IDs for VMD
             conf += """\
-        mapID %d
-""" % indices[i]
+            mapFile %s
+    """ % map_files[i]
 
         if scale != 1.0:
             conf += """\
@@ -994,7 +1012,14 @@ Generate input files for Multi-Map computations with VMD and NAMD.  Reference ar
                        'PDB columns to define the weights of each atom within '
                        'each map; when false, all weights are equal to 1. '
                        'Defaults to True if --input-pdb-files is used.',
-                       default=None)
+                       default=False)
+    group.add_argument('--load-maps-internally',
+                       action='store_true',
+                       help="When true, Colvars will load the maps internally using "
+                       "\"mapFile\" and the loop over atoms is done inside Colvars "
+                       "instead of NAMD; "
+                       "does not have an effect in VMD",
+                       default=False)
     group.add_argument('--define-single-maps',
                        action='store_true',
                        help='Define single-map variables in addition to Multi-Map',
@@ -1007,7 +1032,6 @@ Generate input files for Multi-Map computations with VMD and NAMD.  Reference ar
     group.add_argument('--com-restraint-pdb-file',
                        type=str,
                        help="PDB file-based selection for the COM restraint")
-
     group.add_argument('--ori-restraint',
                        action='store_true',
                        help='Add the definition of an orientational restraint '
@@ -1023,11 +1047,11 @@ Generate input files for Multi-Map computations with VMD and NAMD.  Reference ar
                        type=str, required=True,
                        help='Prefix for output files')
     group.add_argument('--namd-script',
-                       type=str, default=None,
+                       type=str,
                        help='Write NAMD commands to define the Multi-Map '
                        'collective variable into this file.')
     group.add_argument('--vmd-script',
-                       type=str, default=None,
+                       type=str,
                        help='Write VMD commands to define the Multi-map '
                        'collective variable into this file.')
 
@@ -1251,7 +1275,7 @@ def generate_maps_from_profiles(args):
     return maps
 
 
-def write_namd_script(gridforces_script, map_labels, pdb_files, map_norms, args):
+def write_namd_script(gridforces_script, map_labels, pdb_files, map_norms, map_files, args):
     pdb_file_cache = []
     with open(args.namd_script, 'w') as script:
 
@@ -1289,8 +1313,7 @@ set com("z") [lindex ${com_pos} 2]
         write_colvars_script(script, map_labels, pdb_files, map_norms, args)
 
 
-
-def write_colvars_script(script, map_labels, pdb_files, map_norms, args):
+def write_colvars_script(script, map_labels, pdb_files, map_norms, map_files, args):
     if script:
 
         # Disabled code path, using componentCoeff now rather than Tcl
@@ -1304,12 +1327,13 @@ def write_colvars_script(script, map_labels, pdb_files, map_norms, args):
             map_labels=map_labels,
             map_norms=map_norms,
             indices=None,
-            pdb_files=pdb_files,
             coefficients=np.tile(
                 args.multimap_coefficients,
                 args.n_inputs),
-            scripted_function=scripted_function,
+            pdb_files=pdb_files,
             use_pdb_weights=args.use_pdb_weights,
+            map_files=map_files,
+            scripted_function=scripted_function,
             width='${multimap_cv_width}',
             pdb_file_cache=pdb_file_cache)
         script.write(mmcv_def)
@@ -1321,6 +1345,7 @@ def write_colvars_script(script, map_labels, pdb_files, map_norms, args):
                 map_norms=map_norms,
                 pdb_files=pdb_files,
                 use_pdb_weights=args.use_pdb_weights,
+                map_files=map_files,
                 pdb_file_cache=pdb_file_cache)
             script.write(singles_def)
 
@@ -1341,7 +1366,7 @@ def write_colvars_script(script, map_labels, pdb_files, map_norms, args):
 
 
 
-def write_vmd_script(vmd_load_map_cmds, map_labels, pdb_files, map_norms, args):
+def write_vmd_script(vmd_load_map_cmds, map_labels, pdb_files, map_norms, map_files, args):
     pdb_file_cache = []
     unique_files = list(set(pdb_files))
     with open(args.vmd_script, 'w') as script:
@@ -1515,17 +1540,28 @@ def gen_multimap(args):
 
     all_map_labels = [x for il in args.input_labels for x in map_labels[il]]
     all_pdb_files = [x for il in args.input_labels for x in pdb_files[il]]
+    all_map_files = [x for il in args.input_labels for x in map_files[il]]
     all_map_norms = [x for il in args.input_labels for x in map_norms[il]]
 
     print("")
 
-    if not args.namd_script is None:
-        write_namd_script(gridforces_script, all_map_labels, all_pdb_files,
-                          all_map_norms, args)
+    if args.namd_script:
+        write_namd_script(
+            gridforces_script,
+            all_map_labels,
+            all_pdb_files,
+            all_map_norms,
+            all_map_files,
+            args)
 
-    if not args.vmd_script is None:
-        write_vmd_script(vmd_load_map_cmds, all_map_labels, all_pdb_files,
-                         all_map_norms, args)
+    if args.vmd_script:
+        write_vmd_script(
+            vmd_load_map_cmds,
+            all_map_labels,
+            all_pdb_files,
+            all_map_norms,
+            all_map_files,
+            args)
 
 
 if __name__ == '__main__':
