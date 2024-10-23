@@ -1308,13 +1308,14 @@ set com("z") [lindex ${com_pos} 2]
                                     pdb_file_cache=pdb_file_cache)
         namd_script.write(mmcv_def)
 
-        singles_def = \
-            singlemap_colvars_def_tcl(map_labels=map_labels,
-                                      indices=range(n),
-                                      map_norms=map_norms,
-                                      pdb_files=pdb_files,
-                                      use_pdb_weights=args.use_pdb_weights)
-        vmd_script_file.write(singles_def)
+        if args.define_single_maps:
+            singles_def = \
+                singlemap_colvars_def_tcl(map_labels=map_labels,
+                                          map_norms=map_norms,
+                                          pdb_files=pdb_files,
+                                          use_pdb_weights=args.use_pdb_weights,
+                                          pdb_file_cache=pdb_file_cache)
+            namd_script.write(singles_def)
 
         if args.system_dim == '3d':
             # Center-of-mass restraint
@@ -1384,14 +1385,15 @@ cv molid top
                                     pdb_file_cache=pdb_file_cache)
         vmd_script_file.write(mmcv_def)
 
-        singles_def = \
-            singlemap_colvars_def_tcl(map_labels=map_labels,
-                                      indices=range(n),
-                                      map_norms=map_norms,
-                                      pdb_files=pdb_files,
-                                      use_pdb_weights=args.use_pdb_weights,
-                                      pdb_file_cache=pdb_file_cache)
-        vmd_script_file.write(singles_def)
+        if args.define_single_maps:
+            singles_def = \
+                singlemap_colvars_def_tcl(map_labels=map_labels,
+                                          indices=range(n),
+                                          map_norms=map_norms,
+                                          pdb_files=pdb_files,
+                                          use_pdb_weights=args.use_pdb_weights,
+                                          pdb_file_cache=pdb_file_cache)
+            vmd_script_file.write(singles_def)
 
         if args.system_dim == '3d':
             # Center-of-mass restraint
