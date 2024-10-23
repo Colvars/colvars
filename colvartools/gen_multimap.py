@@ -1251,10 +1251,9 @@ def generate_maps_from_profiles(args):
     return maps
 
 
-def write_namd_script(gridforces_script, map_labels, pdb_files, map_norms,
-                      args):
+def write_namd_script(gridforces_script, map_labels, pdb_files, map_norms, args):
     pdb_file_cache = []
-    with open(args.script, 'w') as script:
+    with open(args.namd_script, 'w') as script:
 
         print("Writing NAMD script to file", args.script)
 
@@ -1287,7 +1286,16 @@ set com("z") [lindex ${com_pos} 2]
 """)
         script.write(gridforces_script)
 
+        write_colvars_script(script, map_labels, pdb_files, map_norms, args)
+
+
+
+def write_colvars_script(script, map_labels, pdb_files, map_norms, args):
+    if script:
+
+        # Disabled code path, using componentCoeff now rather than Tcl
         scripted_function = None
+
         if not scripted_function is None:
             script.write(multimap_colvar_function_tcl(args))
 
@@ -1336,9 +1344,9 @@ set com("z") [lindex ${com_pos} 2]
 def write_vmd_script(vmd_load_map_cmds, map_labels, pdb_files, map_norms, args):
     pdb_file_cache = []
     unique_files = list(set(pdb_files))
-    with open(args.script, 'w') as script_file:
+    with open(args.vmd_script, 'w') as script:
         print("Writing VMD script to file", args.script)
-        script_file.write("""# -*- tcl -*-
+        script.write("""# -*- tcl -*-
 
 ## VMD script to load map files onto the top molecule
 
@@ -1350,7 +1358,7 @@ if { [info exists multimap_cv_width] == 0 } {
 
 """)
         if args.use_pdb_weights:
-            script_file.write("""
+            script.write("""
 # Precompute the per-atom weights by taking them from each PDB file
 foreach pdb_file { %s } {
     mol addfile $pdb_file type pdb waitfor all
@@ -1361,56 +1369,15 @@ foreach pdb_file { %s } {
 }
 """ % ' '.join(set(unique_files)))
 
-        script_file.write("""
+        script.write("""
 # Attach Colvars to the top molecule
 cv molid top
 
 # Load volumetric maps
 """)
-        script_file.write(vmd_load_map_cmds)
-        scripted_function = None
-        if not scripted_function is None:
-            script_file.write(multimap_colvar_function_tcl(args))
+        script.write(vmd_load_map_cmds)
 
-        mmcv_def = multimap_colvar_def_tcl(
-            name=args.colvar_name,
-            map_labels=map_labels,
-            map_norms=map_norms,
-            indices=range(len(map_labels)),
-            pdb_files=pdb_files,
-            coefficients=np.tile(
-                args.multimap_coefficients,
-                args.n_inputs),
-            scripted_function=scripted_function,
-            use_pdb_weights=args.use_pdb_weights,
-            width='${multimap_cv_width}',
-            pdb_file_cache=pdb_file_cache)
-        script_file.write(mmcv_def)
-
-        if args.define_single_maps:
-            singles_def = singlemap_colvars_def_tcl(
-                map_labels=map_labels,
-                indices=range(len(map_labels)),
-                map_norms=map_norms,
-                pdb_files=pdb_files,
-                use_pdb_weights=args.use_pdb_weights,
-                pdb_file_cache=pdb_file_cache)
-            script_file.write(singles_def)
-
-        # Center-of-mass and orientation restraint
-
-        com_pdb_file = ori_pdb_file = args.com_restraint_pdb_file
-        if com_pdb_file is None:
-            com_pdb_file = ori_pdb_file =  pdb_files[0]
-
-        if args.system_dim == '3d':
-            if args.com_restraint:
-                script.write(namd_com_restraint_def(pdb_files[0]))
-            if args.ori_restraint:
-                script.write(namd_ori_restraint_def(pdb_files[0]))
-
-        if args.system_dim == '2d' and args.com_restraint:
-            script.write(namd_com_z_restraint_def(pdb_files))
+    write_colvars_script(script, map_labels, pdb_files, map_norms, args):
 
 
 def gen_multimap(args):
