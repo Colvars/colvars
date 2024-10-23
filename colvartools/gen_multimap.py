@@ -5,7 +5,7 @@
 # Used in this tutorial: https://colvars.github.io/multi-map/multi-map.html
 
 # Download link: https://github.com/Colvars/colvars/blob/master/colvartools/gen_multimap.py?raw=true
-# Last updated: 2022-01-42
+
 # Contact: giacomo.fiorin@gmail.com
 
 
@@ -16,14 +16,13 @@ import numpy as np
 import scipy.ndimage as spnd
 from scipy.interpolate import InterpolatedUnivariateSpline
 
-
 try:
     import gridData
 except ImportError:
-    print("Module gridData not found: "
-          "it is usually bundled with MDAnalysis.")
-    if (__name__ == '__main__'):
-        sys.exit(1)
+    raise ImportError("Error: module gridData not found, please install MDAnalysis.")
+
+
+__version__ = '2023-10-03'
 
 
 def format_array(a, fmt="%.3f"):
@@ -1357,6 +1356,16 @@ cv molid top
                                       pdb_files=pdb_files,
                                       use_pdb_weights=args.use_pdb_weights)
         vmd_script_file.write(singles_def)
+
+        if args.system_dim == '3d':
+            # Center-of-mass restraint
+            if args.com_restraint:
+                vmd_script_file.write(namd_com_restraint_def(pdb_files[0]))
+            if args.ori_restraint:
+                vmd_script_file.write(namd_ori_restraint_def(pdb_files[0]))
+
+        if args.system_dim == '2d' and args.com_restraint:
+            vmd_script_file.write(namd_com_z_restraint_def(pdb_files))
 
 
 def gen_multimap(args):
