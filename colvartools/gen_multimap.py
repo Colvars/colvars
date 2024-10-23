@@ -482,7 +482,7 @@ mol addfile %s type dx waitfor all
 
 def multimap_colvar_def_tcl(name, map_labels, coefficients=[], map_norms=[],
                             indices=None, pdb_files=None, use_pdb_weights=False,
-                            scripted_function=None, width=None):
+                            scripted_function=None, width=None, pdb_file_cache=[]):
     """
     Write a Tcl script to define the collective variable in VMD or NAMD.
 
@@ -520,6 +520,7 @@ def multimap_colvar_def_tcl(name, map_labels, coefficients=[], map_norms=[],
         represent either a number or a Tcl variable expansion)
 
     """
+
     if len(coefficients) == 0 and scripted_function is None:
         raise Exception('Need either a set of coefficients or a scripting '
                         'function.')
@@ -575,12 +576,22 @@ colvar {
 """ % indices[i]
 
         if not pdb_files is None:
-            conf += """\
+            if not pdb_files[i] in pdb_file_cache:
+                conf += """\
         atoms {
+            name %s
             atomsFile %s
             atomsCol O
         }
+""" % (pdb_files[i], pdb_files[i])
+                pdb_file_cache += [pdb_files[i]]
+            else:
+                conf += """\
+        atoms {
+            atomsOfGroup %s
+        }
 """ % pdb_files[i]
+
             if use_pdb_weights:
                 conf += """\
         atomWeights $weights(%s)
@@ -599,7 +610,8 @@ colvar {
 
 def singlemap_colvars_def_tcl(map_labels, coefficients=[], map_norms=[],
                               indices=None, pdb_files=None,
-                              use_pdb_weights=False):
+                              use_pdb_weights=False, pdb_file_cache=[]):
+
     conf = """
 # Define single-map variables for diagnostics (no extra computational cost)
 """
@@ -634,12 +646,22 @@ colvar {
 """ % scale
 
         if not pdb_files is None:
-            conf += """\
+            if not pdb_files[i] in pdb_file_cache:
+                conf += """\
         atoms {
+            name %s
             atomsFile %s
             atomsCol O
         }
+""" % (pdb_files[i], pdb_files[i])
+                pdb_file_cache += [pdb_files[i]]
+            else:
+                conf += """\
+        atoms {
+            atomsOfGroup %s
+        }
 """ % pdb_files[i]
+
             if use_pdb_weights:
                 conf += """\
         atomWeights $weights(%s)
@@ -714,6 +736,7 @@ harmonic {
 
 
 def namd_com_z_restraint_def(pdb_files, name='com_dist', force_constant=5.0):
+    pdb_file_cache = []
     unique_files = list(set(pdb_files))
     conf = """
 
@@ -979,6 +1002,10 @@ Generate input files for Multi-Map computations with VMD and NAMD.  Reference ar
                        'each map; when false, all weights are equal to 1. '
                        'Defaults to True if --input-pdb-files is used.',
                        default=None)
+    group.add_argument('--define-single-maps',
+                       action='store_true',
+                       help='Define single-map variables in addition to Multi-Map',
+                       default=False)
     group.add_argument('--com-restraint',
                        action='store_true',
                        help='Add the definition of a center-of-mass restraint '
@@ -1229,6 +1256,7 @@ def generate_maps_from_profiles(args):
 
 def write_namd_script(gridforces_script, map_labels, pdb_files, map_norms,
                       args):
+    pdb_file_cache = []
     with open(args.namd_script, 'w') as namd_script:
 
         print("Writing NAMD script to file", args.namd_script)
@@ -1273,29 +1301,35 @@ set com("z") [lindex ${com_pos} 2]
                                     coefficients=\
                                         np.tile(args.multimap_coefficients,
                                                 args.n_inputs),
+                                    pdb_files=pdb_files,
                                     scripted_function=scripted_function,
                                     use_pdb_weights=args.use_pdb_weights,
-                                    width='${multimap_cv_width}')
+                                    width='${multimap_cv_width}',
+                                    pdb_file_cache=pdb_file_cache)
         namd_script.write(mmcv_def)
 
         singles_def = \
             singlemap_colvars_def_tcl(map_labels=map_labels,
+                                      indices=range(n),
                                       map_norms=map_norms,
+                                      pdb_files=pdb_files,
                                       use_pdb_weights=args.use_pdb_weights)
-        namd_script.write(singles_def)
+        vmd_script_file.write(singles_def)
 
         if args.system_dim == '3d':
             # Center-of-mass restraint
-            namd_script.write(namd_com_restraint_def(pdb_files[0]))
+            if args.com_restraint:
+                namd_script.write(namd_com_restraint_def(pdb_files[0]))
             if args.ori_restraint:
                 namd_script.write(namd_ori_restraint_def(pdb_files[0]))
 
-        if args.system_dim == '2d':
+        if args.system_dim == '2d' and args.com_restraint:
             namd_script.write(namd_com_z_restraint_def(pdb_files))
 
 
 
 def write_vmd_script(vmd_load_map_cmds, map_labels, pdb_files, map_norms, args):
+    pdb_file_cache = []
     unique_files = list(set(pdb_files))
     with open(args.vmd_script, 'w') as vmd_script_file:
         print("Writing VMD script to file", args.vmd_script)
@@ -1342,11 +1376,12 @@ cv molid top
                                     indices=range(n),
                                     pdb_files=pdb_files,
                                     coefficients=\
-                                        np.tile(args.multimap_coefficients,
-                                                args.n_inputs),
+                                    np.tile(args.multimap_coefficients,
+                                            args.n_inputs),
                                     scripted_function=scripted_function,
                                     use_pdb_weights=args.use_pdb_weights,
-                                    width='${multimap_cv_width}')
+                                    width='${multimap_cv_width}',
+                                    pdb_file_cache=pdb_file_cache)
         vmd_script_file.write(mmcv_def)
 
         singles_def = \
@@ -1354,7 +1389,8 @@ cv molid top
                                       indices=range(n),
                                       map_norms=map_norms,
                                       pdb_files=pdb_files,
-                                      use_pdb_weights=args.use_pdb_weights)
+                                      use_pdb_weights=args.use_pdb_weights,
+                                      pdb_file_cache=pdb_file_cache)
         vmd_script_file.write(singles_def)
 
         if args.system_dim == '3d':
