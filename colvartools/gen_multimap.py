@@ -735,9 +735,7 @@ harmonic {
     return conf
 
 
-def namd_com_z_restraint_def(pdb_files, name='com_dist', force_constant=5.0):
-    pdb_file_cache = []
-    unique_files = list(set(pdb_files))
+def namd_com_z_restraint_def(pdb_file, name='com_dist', force_constant=5.0):
     conf = """
 
 # Define a center-of-mass restraint on all requested atoms
@@ -745,22 +743,17 @@ cv config \"
 colvar {
     name %s
     width 0.1
-""" % name
-
-    for pdb_file in unique_files:
-        conf += """\
     distanceZ {
-        componentCoeff %f
         main {
             atomsFile %s
             atomsCol O
         }
         ref { dummyAtom (0.0, 0.0, 0.0) }
     }
-""" % (1.0/len(unique_files), pdb_file)
+}
+""" % name, pdb_file
 
     conf += """\
-}
 
 harmonic {
     name r_%s
@@ -1011,11 +1004,15 @@ Generate input files for Multi-Map computations with VMD and NAMD.  Reference ar
                        help='Add the definition of a center-of-mass restraint '
                        'to the NAMD input',
                        default=True)
+    group.add_argument('--com-restraint-pdb-file',
+                       type=str,
+                       help="PDB file-based selection for the COM restraint")
 
     group.add_argument('--ori-restraint',
                        action='store_true',
                        help='Add the definition of an orientational restraint '
-                       'to the NAMD input; it is highly recommended to reduce '
+                       'to the NAMD input; uses the same file as --com-restraint to select atoms; '
+                       'it is highly recommended to reduce '
                        'the size of the selection (e.g. only C-alpha atoms '
                        'for proteins) to maintain reasonable parallel '
                        'performance.  Not valid for bilayers.',
@@ -1317,8 +1314,13 @@ set com("z") [lindex ${com_pos} 2]
                                           pdb_file_cache=pdb_file_cache)
             namd_script.write(singles_def)
 
+        # Center-of-mass and orientation restraint
+
+        com_pdb_file = ori_pdb_file = args.com_restraint_pdb_file
+        if com_pdb_file is None:
+            com_pdb_file = ori_pdb_file =  pdb_files[0]
+
         if args.system_dim == '3d':
-            # Center-of-mass restraint
             if args.com_restraint:
                 namd_script.write(namd_com_restraint_def(pdb_files[0]))
             if args.ori_restraint:
@@ -1395,15 +1397,20 @@ cv molid top
                                           pdb_file_cache=pdb_file_cache)
             vmd_script_file.write(singles_def)
 
+        # Center-of-mass and orientation restraint
+
+        com_pdb_file = ori_pdb_file = args.com_restraint_pdb_file
+        if com_pdb_file is None:
+            com_pdb_file = ori_pdb_file =  pdb_files[0]
+
         if args.system_dim == '3d':
-            # Center-of-mass restraint
             if args.com_restraint:
-                vmd_script_file.write(namd_com_restraint_def(pdb_files[0]))
+                vmd_script.write(namd_com_restraint_def(pdb_files[0]))
             if args.ori_restraint:
-                vmd_script_file.write(namd_ori_restraint_def(pdb_files[0]))
+                vmd_script.write(namd_ori_restraint_def(pdb_files[0]))
 
         if args.system_dim == '2d' and args.com_restraint:
-            vmd_script_file.write(namd_com_z_restraint_def(pdb_files))
+            vmd_script.write(namd_com_z_restraint_def(pdb_files))
 
 
 def gen_multimap(args):
