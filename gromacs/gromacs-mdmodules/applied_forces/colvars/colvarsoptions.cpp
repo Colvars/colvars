@@ -34,10 +34,14 @@
 /*! \internal \file
  * \brief
  * Implements options for Colvars.
+ * Keep a minimal ColvarsOptions implementation in the case Colvars is not activated
+ * to ensure compatbility (with gmx tools for example).
  */
 #include "gmxpre.h"
 
 #include "colvarsoptions.h"
+
+#include "config.h"
 
 #include <fstream>
 
@@ -52,7 +56,9 @@
 #include "gromacs/utility/strconvert.h"
 #include "gromacs/utility/textreader.h"
 
-#include "colvarspreprocessor.h"
+#if GMX_HAVE_COLVARS
+#    include "colvarspreprocessor.h"
+#endif
 
 
 namespace gmx
@@ -125,6 +131,15 @@ void ColvarsOptions::initMdpOptions(IOptionsContainerWithSections* options)
     section.addOption(StringOption(c_colvarsFileNameTag_.c_str()).store(&colvarsFileName_));
     section.addOption(IntegerOption(c_colvarsSeedTag_.c_str()).store(&colvarsSeed_));
 }
+
+
+bool ColvarsOptions::isActive() const
+{
+    return active_;
+}
+
+
+#if GMX_HAVE_COLVARS
 
 
 void ColvarsOptions::writeInternalParametersToKvt(KeyValueTreeObjectBuilder treeBuilder)
@@ -273,8 +288,7 @@ void ColvarsOptions::processEdrFilename(const EdrOutputFilename& filename)
     // Provided name should not be empty
     GMX_RELEASE_ASSERT(!filename.edrOutputFilename_.empty(), "Empty name for the *.edr output file");
 
-    outputPrefix_ =
-            stripExtension(std::filesystem::path(filename.edrOutputFilename_).filename()).u8string();
+    outputPrefix_ = stripExtension(std::filesystem::path(filename.edrOutputFilename_)).u8string();
 }
 
 
@@ -288,11 +302,6 @@ void ColvarsOptions::processTemperature(const EnsembleTemperature& temp)
     {
         ensembleTemperature_ = -1;
     }
-}
-
-bool ColvarsOptions::isActive() const
-{
-    return active_;
 }
 
 const std::string& ColvarsOptions::colvarsFileName() const
@@ -346,5 +355,7 @@ void ColvarsOptions::setParameters(const std::string&   colvarsfile,
     ensembleTemperature_ = temperature;
 }
 
+
+#endif // GMX_HAVE_COLVARS
 
 } // namespace gmx

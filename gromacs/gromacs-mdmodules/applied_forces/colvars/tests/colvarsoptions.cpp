@@ -42,6 +42,8 @@
 
 #include "gromacs/applied_forces/colvars/colvarsoptions.h"
 
+#include "config.h"
+
 #include <string>
 #include <vector>
 
@@ -115,6 +117,8 @@ public:
         return mdpValueBuilder.build();
     }
 
+#if GMX_HAVE_COLVARS
+
     void PrepareInputColvarsPreProcessor(const std::string& fileName)
     {
 
@@ -170,6 +174,7 @@ public:
         done_atom(&atoms);
     }
 
+#endif // GMX_HAVE_COLVARS
 
 protected:
     rvec*          coords;
@@ -178,13 +183,9 @@ protected:
 };
 
 
-TEST_F(ColvarsOptionsTest, OptionSetsActive)
-{
-    EXPECT_FALSE(colvarsOptions_.isActive());
-    setFromMdpValues(ColvarsBuildDefaulMdpValues());
-    EXPECT_TRUE(colvarsOptions_.isActive());
-}
-
+// The following tests should work either with or without Colvars compiled
+// because GROMACS without colvars should still be able to read a tpr file with colvars mdp keywords.
+// (For example, gmx dump should be able to output colvars values even without Colvars compiled.)
 TEST_F(ColvarsOptionsTest, OutputNoDefaultValuesWhenInactive)
 {
     // Test buildMdpOutput()
@@ -253,6 +254,15 @@ TEST_F(ColvarsOptionsTest, OutputValuesWhenActive)
     checker.checkString(stream.toString(), "Mdp output");
 }
 
+#if GMX_HAVE_COLVARS
+
+TEST_F(ColvarsOptionsTest, OptionSetsActive)
+{
+    EXPECT_FALSE(colvarsOptions_.isActive());
+    setFromMdpValues(ColvarsBuildDefaulMdpValues());
+    EXPECT_TRUE(colvarsOptions_.isActive());
+}
+
 TEST_F(ColvarsOptionsTest, InternalsToKvtAndBack)
 {
 
@@ -291,5 +301,22 @@ TEST_F(ColvarsOptionsTest, InternalsToKvtAndBack)
 
     deleteInputColvarsPreProcessor();
 }
+
+
+TEST_F(ColvarsOptionsTest, RetrieveEdrFilename)
+{
+    // Activate colvars
+    setFromMdpValues(ColvarsBuildInputMdpValues());
+
+    std::string refEdrFilename = "output/ener.edr";
+    colvarsOptions_.processEdrFilename(EdrOutputFilename{ refEdrFilename });
+    const std::string ref = std::filesystem::path("output/ener").make_preferred().string();
+    EXPECT_EQ(ref, colvarsOptions_.colvarsOutputPrefix());
+
+    refEdrFilename = "sim.part1.edr";
+    colvarsOptions_.processEdrFilename(EdrOutputFilename{ refEdrFilename });
+    EXPECT_EQ("sim.part1", colvarsOptions_.colvarsOutputPrefix());
+}
+#endif // GMX_HAVE_COLVARS
 
 } // namespace gmx

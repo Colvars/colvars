@@ -180,7 +180,7 @@ int ColvarProxyGromacs::backup_file(char const* filename)
     }
     else
     {
-        // General backup provedure
+        // General backup procedure
         make_backup(filename);
     }
     return COLVARS_OK;
