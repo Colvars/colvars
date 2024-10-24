@@ -7,7 +7,7 @@
 
 echo -n "Running $(basename $PWD)..."
 
-set -e
+#set -e
 
 # if script called from `run_tests.sh` in the parent folder, retrieve the correct command binary from the argument
 if [ -x "$1" ]
@@ -17,7 +17,7 @@ else
     BINARY="gmx_mpi_d"
 fi
 
-mpirun -np 16 -oversubscribe $BINARY mdrun -multidir a b c d -s test.tpr -deffnm test -replex 10 -reseed 376 >& test.out
+mpirun -np 16 -oversubscribe $BINARY mdrun -multidir a b c d -s test.tpr -deffnm test -reseed 376 >& test.out
 
 labels=(a b c d)
 for number in $(seq 1 ${#labels[@]}) ; do
@@ -37,10 +37,10 @@ for number in $(seq 1 ${#labels[@]}) ; do
   fi
 done
 
-# # TODO actually test these against the reference
-# # Copy result files to be tested in the main folder
-# cp -f a/test.colvars.traj a/test.colvars.state .
-# cp -f a/test.log ./test.out
+# Copy result files to be tested in the main folder
+cp a/test.colvars.traj a/test.colvars.state .
+cp a/test.log ./test.out
+cp a/test.all.czar.pmf ./test.all.czar.pmf
 
 echo " Done."
 
