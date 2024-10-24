@@ -3721,7 +3721,8 @@ Given a function of the Cartesian coordinates $\phi(\mathbf{x}) = \phi(x, y, z)$
 \noindent{}where $w_i$ are weights assigned to each variable (1 by default).
 This formulation allows, for example, to ``count'' the number of atoms within a region of space by using a positive-valued function $\phi\left(\mathbf{x}\right)$, such as for example the number of water molecules in a hydrophobic cavity \cite{Fiorin2020}.\\
 
-Because the volumetric map itself and the atoms affected by it are defined externally to Colvars, this component has a very limited number of keywords.
+
+The \texttt{mapTotal} components takes the following options:
 
 \begin{cvcoptions}
 \cvnamdonly{
@@ -3746,7 +3747,18 @@ Because the volumetric map itself and the atoms affected by it are defined exter
     non-negative integer}{%
     The value of this option specifies the numeric index of the volumetric map to use for this collective variable component.
     The map referred to must be already loaded before using this option.
-    \cvnamdonly{This option is mutually exclusive with \refkey{mapName}{colvar|mapTotal|mapName}; if the latter is given, the numeric ID is obtained internally from \MDENGINE{}.}
+    \cvnamdonly{This option is mutually exclusive with \refkey{mapName}{colvar|mapTotal|mapName}: if the latter is given, the numeric ID is obtained internally from NAMD.}
+  }
+
+\item %
+  \labelkey{colvar|mapTotal|mapFile}
+  \key
+    {mapFile}{%
+    \texttt{mapTotal}}{%
+    Name of file to load the map from}{%
+    filename}{%
+    This option is mutually exclusive with \refkey{mapID}{colvar|mapTotal|mapID}\cvnamdonly{and \refkey{mapName}{colvar|mapTotal|mapName}}.
+    \cvnamdonly{Additionally, because the file specified by this option is loaded internally within Colvars, atom selections must be specified using the \refkey{mapName}{colvar|mapTotal|atoms} keyword.}
   }
 
 \item %
@@ -3756,10 +3768,11 @@ Because the volumetric map itself and the atoms affected by it are defined exter
     \texttt{mapTotal}}{%
     Group of atoms defining this function}{%
     \hyperref[sec:colvar_atom_groups]{Atom group}}{%
-    If defined, this option allows defining the set of atoms to be aligned onto the volumetric map following the syntax described in section \ref{sec:colvar_atom_groups}.
-    This also allows, for instance, to express the volumetric map in a rotated frame of reference (see \ref{sec:colvar_atom_groups_ref_frame}).
-    \cvvmdonly{In VMD, this definition is required, otherwise the \texttt{mapTotal} value is identically zero.}
-    \cvnamdonly{In NAMD, this keyword is optional; unless a frame of reference other than the laboratory is needed, it is computationally much more efficient to select atoms via \href{https://www.ks.uiuc.edu/Research/namd/2.14/ug/node43.html}{GridForces} keywords.}
+    This option defines the set of atoms to be aligned onto the volumetric map following the syntax described in section \ref{sec:colvar_atom_groups}.
+    \cvvmdonly{In VMD, this definition is \emph{required}, otherwise the \texttt{mapTotal} value is identically zero.}
+    \cvnamdonly{In NAMD, this keyword is optional, because atoms may also be selected via the \href{https://www.ks.uiuc.edu/Research/namd/2.14/ug/node43.html}{MGridForceFile} keyword.
+      The two approaches are equivalent for the purpose of selecting atoms: however, the former is needed when combining \texttt{mapTotal} with other Colvars features such as a moving frame of reference (see \ref{sec:colvar_atom_groups_ref_frame}), or when running NAMD in GPU-resident mode.
+      Instead, the latter (when available) is more efficient because it offloads most of the computation of the volmap to NAMD in a scalable manner.}
     }
 
 \item %
@@ -3771,13 +3784,13 @@ Because the volumetric map itself and the atoms affected by it are defined exter
     list of space-separated decimals}{%
     all weights equal to 1}{%
     If defined, the value of this option assigns weights $w_i$ to the individual atoms in a \texttt{mapTotal} variable.
-    This option requires defining \texttt{atoms} explicitly, and the number of weights must match the number of atoms.
+    This option requires defining using the \refkey{mapName}{colvar|mapTotal|atoms} keyword to select atoms, and the number of weights must match the number of atoms.
     }
 
 \end{cvcoptions}
 
 \cvnamdonly{
-\noindent\textbf{Example: biasing the number of molecules inside a cavity using a volumetric map.}
+\noindent\textbf{Example: number of molecules inside a cavity using a volumetric map (NAMD offload version).}
 
 Firstly, a volumetric map that has a value of 1 inside the cavity and 0 outside should be prepared.
 A reasonable starting point may be obtained, for example, with VMD: using an existing trajectory where the cavity is occupied by solvent and a spatial selection that identifies all the molecules within the cavity, \texttt{volmap occupancy -allframes -combine max} computes the occupancy map as a step function (values 1 or 0), and \texttt{volutil -smooth \ldots} makes it a continuous map, suitable for use as a MD simulation bias.
@@ -3785,12 +3798,12 @@ A PDB file defining the selection (for example, where all water oxygens and ions
 Both the map file and the atom selection file are then loaded via the \texttt{mGridForcePotFile} and related NAMD commands:
 
 \begin{mdexampleinput}
-  \-mGridForce yes\\
-  \-mGridForcePotFile Cavity cavity.dx~~~\# OpenDX map file\\
-  \-mGridForceFile Cavity water-sel.pdb~~\# PDB file used for atom selection\\
-  \-mGridForceCol Cavity O~~~~~~~~~~~~~~~\# Use the occupancy column of the PDB file\\
-  \-mGridForceChargeCol Cavity B~~~~~~~~~\# Use beta as ``charge'' (default: electric charge)\\
-  \-mGridForceScale Cavity 0.0 0.0 0.0~~~\# Do not use GridForces for this map\\
+  \-mGridForce~yes\\
+  \-mGridForcePotFile~Cavity~cavity.dx~~~\#~OpenDX~map~file\\
+  \-mGridForceFile~Cavity~water-sel.pdb~~\#~PDB~file~used~for~atom~selection\\
+  \-mGridForceCol~Cavity~O~~~~~~~~~~~~~~~\#~Use~the~occupancy~column~of~the~PDB~file\\
+  \-mGridForceChargeCol~Cavity~B~~~~~~~~~\#~Use~beta~as~``charge''\\
+  \-mGridForceScale~Cavity~0.0~0.0~0.0~~~\#~Do~not~use~GridForces~as~a~bias
 \end{mdexampleinput}
 
 The value of \texttt{mGridForceScale} is particularly important, because it determines the GridForces force constant for the ``Cavity'' map.
@@ -3813,51 +3826,72 @@ The variable ``\texttt{n\_waters}'' may then be used with any of the enhanced sa
 } % \cvnamdonly{}
 
 
-\cvsubsubsec{Multiple volumetric maps collective variables}{sec:cvc_multimap}
+\noindent\textbf{Example: number of molecules inside a cavity using a volumetric map (internal version).}
+
+This example makes use of the \refkey{mapFile}{colvar|mapTotal|mapFile} keyword to load a volumetric map inside Colvars itself; additionally, a moving frame of reference is defined based on the protein's C$_\alpha$ atoms.
+
+\begin{cvexampleinput}
+  \-colvar~\{\\
+  \-~~name~n\_waters\\
+  \-~~mapTotal~\{\\
+  \-~~~~mapFile~cavity.dx\\
+  \-~~~~fittingGroup~\{\\
+  \-~~~~~~psfSegID~~~~~~~~~~~~~~PROT\\
+  \-~~~~~~atomNameResidueRange~~CA~1-100\\
+  \-~~~~\}~\\
+  \-~~\}\\
+  \-\}
+\end{cvexampleinput}
+
+The variable ``\texttt{n\_waters}'' may then be used with any of the enhanced sampling methods available (\ref{sec:colvarbias}): new forces applied to it at each simulation step will be transmitted to the corresponding atoms within the same step.
+
+
+\cvsubsubsec{Multi-Map collective variables}{sec:cvc_multimap}
 
 To study processes that involve changes in shape of a macromolecular aggregate (for example, deformations of lipid membranes) it is useful to define collective variables based on more than one volumetric map at a time, measuring the relative similarity with each map while still achieving correct thermodynamic sampling of each state.
 
 This is achieved by combining multiple \texttt{mapTotal} components, each based on a differently-shaped volumetric map, into a single collective variable $\xi$.
 To track transitions between states, the contribution of each map to $\xi$ should be discriminated from the others, for example by assigning to it a different weight.
+
 The ``Multi-Map'' progress variable \cite{Fiorin2020} uses a weight sum of these components, using linearly-increasing weights:
 \begin{equation}
   \label{eq:cvc_multi_map}
     \xi\left(\mathbf{X}\right) = \sum_{k=1}^{K} k \Phi_{k}\left(\mathbf{X}\right) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}\left(\mathbf{x}_{i}\right)
 \end{equation}
-\noindent{}where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal} component.
+\noindent{}where $K$ is the number of maps employed, each $\Phi_k$ is a \texttt{mapTotal} component and the coefficients $k$ are defined using \refkey{componentCoeff}{sec:cvc_superp}.
 
-Here is a link to the \textbf{Multi-Map tutorial} page: \url{https://colvars.github.io/multi-map/multi-map.html}\\
-An example configuration for illustration purposes is also included below.
+Here is a link to the \textbf{Multi-Map tutorial} page:\\
+\url{https://colvars.github.io/multi-map/multi-map.html}\\
+An example configuration is also included below.
 
 \noindent\textbf{Example: transitions between macromolecular shapes using volumetric maps.}\\
 A series of map files, each representing a different shape, is loaded into NAMD:\\
 \begin{mdexampleinput}
-  \-mGridForce yes\\
-  \-for \{ set k 1 \} \{ \$k <= \$K \} \{ incr k \} \{\\
-  \-~~mGridForcePotFile Shape\_\$k map\_\$k.dx~~~\# Density map of the k-th state\\
-  \-~~mGridForceFile Shape\_\$k atoms.pdb~~~\# PDB file used for atom selection\\
-  \-~~mGridForceCol Shape\_\$k O~~~\# Use the occupancy column of the PDB file atoms.pdb\\
-  \-~~mGridForceChargeCol Shape\_\$k B~~~\# Use beta as ``charge'' (default: electric charge)\\
-  \-~~mGridForceScale Shape\_\$k 0.0 0.0 0.0~~\# Do not use GridForces for this map\\
+  \-mGridForce~yes\\
+  \-for~\{~set~k~1~\}~\{~\$k~<=~\$K~\}~\{~incr~k~\}~\{\\
+  \-~~mGridForcePotFile~Shape\_\$k~map\_\$k.dx~~~\#~Density~map~of~the~k-th~state\\
+  \-~~mGridForceFile~Shape\_\$k~atoms.pdb~~~\#~PDB~file~used~for~atom~selection\\
+  \-~~mGridForceCol~Shape\_\$k~O~~~\#~Use~the~occupancy~column~of~the~PDB~file~atoms.pdb\\
+  \-~~mGridForceChargeCol~Shape\_\$k~B~~~\#~Use~beta~as~``charge''\\
+  \-~~mGridForceScale~Shape\_\$k~0.0~0.0~0.0~~\#~Do~not~use~GridForces~as~a~bias\\
   \-\}
 \end{mdexampleinput}
 
 The GridForces maps thus loaded are then used to define the Multi-Map collective variable, with coefficients $\xi_k = k$ \cite{Fiorin2020}:\\
 \begin{mdexampleinput}
-  \-\# Collect the definition of all components into one string\\
-  \-set components "\\
-  \-for \{ set k 1 \} \{ \$k <= \$K \} \{ incr k \} \{\\
-  \-~~set components "\$\{components\}\\
-  \-~~mapTotal \{\\
-  \-~~~~mapName Shape\_\$k\\
-  \-~~~~componentCoeff \$k\\
-  \-~~\}\\
+  \-\#~Collect~the~definition~of~all~components~into~a~Tcl~string\\
+  \-set~components~""\\
+  \-for~\{~set~k~1~\}~\{~\$k~<=~\$K~\}~\{~incr~k~\}~\{\\
+  \-~~set~components~"\$\{components\}\\
+  \-~~mapTotal~\{\\
+  \-~~~~mapName~Shape\_\$k\\
+  \-~~~~componentCoeff~\$k\\
+  \-~~\}"\\
   \-\}\\
-  \-"\\
-  \-\# Use this string to define the variable\\
-  \-cv config "\\
-  \-colvar \{\\
-  \-\-~~name shapes\\
+  \-\#~Use~this~string~to~define~the~variable\\
+  \-cv~config~"\\
+  \-colvar~\{\\
+  \-\-~~name~shapes\\
   \-\-~~\$\{components\}\\
   \-\}"
 \end{mdexampleinput}
