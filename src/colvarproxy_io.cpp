@@ -18,8 +18,10 @@
 #include <io.h>
 #endif
 
-#ifdef __cpp_lib_filesystem
-#include <filesystem>
+#if defined(__has_include)
+# if __has_include(<filesystem>)
+#  include <filesystem> // Would also define __cpp_lib_filesystem
+# endif
 #endif
 
 #include <cerrno>
