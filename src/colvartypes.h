@@ -1350,7 +1350,7 @@ public:
 
 #ifndef COLVARS_LAMMPS
 namespace NR {
-void diagonalize_matrix(cvm::real m[4][4],
+int diagonalize_matrix(cvm::real m[4][4],
                         cvm::real eigval[4],
                         cvm::real eigvec[4][4]);
 }
