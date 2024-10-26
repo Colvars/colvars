@@ -25,6 +25,7 @@
 #include "NamdState.h"
 #include "Controller.h"
 #include "PatchData.h"
+#include "ConfigList.h"
 
 #ifdef NAMD_TCL
 #include <tcl.h>
