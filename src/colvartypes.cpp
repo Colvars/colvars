@@ -271,7 +271,7 @@ void colvarmodule::rotation::compute_overlap_matrix()
 #ifndef COLVARS_LAMMPS
 namespace NR {
 
-void diagonalize_matrix(cvm::real m[4][4],
+int diagonalize_matrix(cvm::real m[4][4],
                         cvm::real eigval[4],
                         cvm::real eigvec[4][4])
 {
@@ -282,9 +282,7 @@ void diagonalize_matrix(cvm::real m[4][4],
   int jac_nrot = 0;
   if (NR_Jacobi::jacobi(m, eigval, eigvec, &jac_nrot) !=
       COLVARS_OK) {
-    cvm::error("Too many iterations in jacobi diagonalization.\n"
-               "This is usually the result of an ill-defined set of atoms for "
-               "rotational alignment (RMSD, rotateReference, etc).\n");
+    return COLVARS_ERROR;
   }
   NR_Jacobi::eigsrt(eigval, eigvec);
   // jacobi saves eigenvectors by columns
@@ -302,6 +300,7 @@ void diagonalize_matrix(cvm::real m[4][4],
       eigvec[ie][i] /= norm;
     }
   }
+  return COLVARS_OK;
 }
 
 }
@@ -364,14 +363,22 @@ void colvarmodule::rotation::calc_optimal_rotation_impl() {
                                        cvm::real[4][4]> *>(jacobi);
 
   int ierror = ecalc->Diagonalize(S, S_eigval, S_eigvec);
+#else
+  int ierror = NR::diagonalize_matrix(S, S_eigval, S_eigvec);
+#endif
   if (ierror) {
+    cvm::log("Failed to diagonalize the following overlapping matrix:\n");
+    // cvm::log(cvm::to_str(S[0][0]) + " " + cvm::to_str(S[0][1]) + );
+    for (size_t i = 0; i < 4; ++i) {
+      for (size_t j = 0; j < 4; ++j) {
+        cvm::log(cvm::to_str(S[i][j]) + " ");
+      }
+      cvm::log("\n");
+    }
     cvm::error("Too many iterations in jacobi diagonalization.\n"
                "This is usually the result of an ill-defined set of atoms for "
                "rotational alignment (RMSD, rotateReference, etc).\n");
   }
-#else
-  NR::diagonalize_matrix(S, S_eigval, S_eigvec);
-#endif
   q = cvm::quaternion{S_eigvec[0][0], S_eigvec[0][1], S_eigvec[0][2], S_eigvec[0][3]};
 
   if (cvm::rotation::monitor_crossings) {
