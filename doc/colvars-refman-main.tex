@@ -2768,17 +2768,21 @@ $[-180^{\circ}:180^{\circ}]$.
 \end{cvcoptions}
 
 
-\cvnamebasedonly{
+
 
 \cvsubsec{Protein structure descriptors}{sec:cvc_protein}
 
 \cvsubsubsec{\texttt{alpha}: $\alpha$-helix content of a protein segment.}{sec:cvc_alpha}
 \labelkey{colvar|alpha}
 
-The block \texttt{alpha~\{...\}} defines the
-parameters to calculate the helical content of a segment of protein
-residues.  The $\alpha$-helical content across the $N+1$ residues
-$N_{0}$ to $N_{0}+N$ is calculated by the formula:
+The block \texttt{alpha~\{...\}} defines the parameters to calculate the helical content of a segment of
+protein residues, as a tunable combination of an angle term between alpha carbon atoms, and a
+1-4 hydrogen-bond term.
+To create a colvar that computes the helical content of a protein with several,
+non-contiguous helical segments, just define several \texttt{alpha} blocks inside a single \text{colvar} block,
+and give them linear combination coefficients that sum to 1 (see \texttt{componentCoeff} in section \ref{sec:cvc_superp}).
+
+The $\alpha$-helical content across the $N+1$ residues $N_{0}$ to $N_{0}+N$ is calculated by the formula:
 \begin{eqnarray}
   \label{eq:colvars_alpha}
   {
@@ -2840,8 +2844,26 @@ and the score function $\mathrm{hbf}$ for the $\mathrm{O}^{(n)} \leftrightarrow
 \mathrm{N}^{(n+4)}$ hydrogen bond is defined through a \texttt{hBond}
 colvar component on the same atoms.
 
-\begin{cvcoptions}
 
+\begin{cvcoptions}
+  \item %
+  \labelkey{colvar|alpha|prefix}
+  \keydef
+    {prefix}{%
+      \texttt{alpha}}{%
+      Prefix of atom groups to be used for computing the $\alpha$-helix content}{%
+      \texttt{alpha_}}{%
+    ``$<$Initial residue number$>$-$<$Final residue number$>$''}{%
+    Atoms involved in an alpha-helix component are based on groups defined within a
+    GROMACS-style index file specified with \refkey{indexFile}{Colvars-global|indexFile} in the global
+    Colvars configuration, i.e. outside of a \texttt{colvar {...}} block.
+    The group names must use a common prefix followed by atom names, e.g. \texttt{alpha\_N}, \texttt{alpha\_CA},
+    and \texttt{alpha\_O} when using the default prefix \texttt{alpha\_}.
+    The CA group is only required when the angle term is enabled, that is when \texttt{hBondCoeff} is less than 1.
+    This option lets users set a different prefix, for example, when several $\alpha$-helical segments
+    must be tracked.}
+
+\cvnamebasedonly{
 \item %
   \labelkey{colvar|alpha|residueRange}
   \key
@@ -2849,6 +2871,8 @@ colvar component on the same atoms.
       \texttt{alpha}}{%
       Potential $\alpha$-helical residues}{%
     ``$<$Initial residue number$>$-$<$Final residue number$>$''}{%
+    Alternately, in some back-ends like NAMD and VMD, the atoms may be defined using their PSF segment name (segname)
+    and a range of residue numbers.
     This option specifies the range of residues on which this
     component should be defined.  The Colvars module looks for the
     atoms within these residues named ``\texttt{CA}'', ``\texttt{N}''
@@ -2865,7 +2889,7 @@ colvar component on the same atoms.
     This option sets the PSF segment identifier for the residues
     specified in \texttt{residueRange}.  This option is only required
     when PSF topologies are used.}
-
+} % end of \cvnamebasedonly
 
 \item %
   \labelkey{colvar|alpha|hBondCoeff}
@@ -2972,12 +2996,13 @@ component for defining the relevant residues (\texttt{residueRange}
 and \texttt{psfSegID}) in addition to the following:
 
 \begin{cvcoptions}
-
+\cvnamebasedonly{
 \item %
   \dupkey{residueRange}{\texttt{dihedralPC}}{colvar|alpha|residueRange}{\texttt{alpha} component}
 
 \item %
   \dupkey{psfSegID}{\texttt{dihedralPC}}{colvar|alpha|psfSegID}{\texttt{alpha} component}
+} % end of \cvnamebasedonly
 
 \item %
   \key
@@ -2998,7 +3023,6 @@ and \texttt{psfSegID}) in addition to the following:
     Number of the eigenvector to be used for this component.}
 \end{cvcoptions}
 
-} % end of \cvnamebasedonly
 
 \cvalchlambdaonly{
 
