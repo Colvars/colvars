@@ -2775,7 +2775,7 @@ $[-180^{\circ}:180^{\circ}]$.
 \cvsubsubsec{\texttt{alpha}: $\alpha$-helix content of a protein segment.}{sec:cvc_alpha}
 \labelkey{colvar|alpha}
 
-The block \texttt{alpha~\{...\}} defines the parameters to calculate the helical content of a segment of
+The block \texttt{alpha~\{...\}} defines a measure of the helical content of a segment of
 protein residues, as a tunable combination of an angle term between alpha carbon atoms, and a
 1-4 hydrogen-bond term.
 To create a colvar that computes the helical content of a protein with several,
@@ -2852,11 +2852,11 @@ colvar component on the same atoms.
     {prefix}{%
       \texttt{alpha}}{%
       Prefix of atom groups to be used for computing the $\alpha$-helix content}{%
-      \texttt{alpha_}}{%
-    ``$<$Initial residue number$>$-$<$Final residue number$>$''}{%
+      string}{%
+      \texttt{alpha\_}}{%
     Atoms involved in an alpha-helix component are based on groups defined within a
     GROMACS-style index file specified with \refkey{indexFile}{Colvars-global|indexFile} in the global
-    Colvars configuration, i.e. outside of a \texttt{colvar {...}} block.
+    Colvars configuration, i.e. outside of a \texttt{colvar} block.
     The group names must use a common prefix followed by atom names, e.g. \texttt{alpha\_N}, \texttt{alpha\_CA},
     and \texttt{alpha\_O} when using the default prefix \texttt{alpha\_}.
     The CA group is only required when the angle term is enabled, that is when \texttt{hBondCoeff} is less than 1.
@@ -2971,7 +2971,7 @@ score).
 \labelkey{colvar|dihedralPC}
 
 The block \texttt{dihedralPC~\{...\}} defines the
-parameters to calculate the projection of backbone dihedral angles within
+parameters of the projection of backbone dihedral angles within
 a protein segment onto a \emph{dihedral principal component}, following
 the formalism of dihedral principal component analysis (dPCA) proposed by
 Mu et al.\cite{Mu2005} and documented in detail by Altis et
@@ -2991,12 +2991,25 @@ the projection of the current backbone conformation is:
 + k_{4n-1} \cos (\phi_{n+1}) + k_{4n} \sin(\phi_{n+1})
 \end{equation}
 
-\texttt{dihedralPC} expects the same parameters as the \texttt{alpha}
-component for defining the relevant residues (\texttt{residueRange}
-and \texttt{psfSegID}) in addition to the following:
+The atoms involved in \texttt{dihedralPC} are defined by the same parameters as the \texttt{alpha}
+component.
 
 \begin{cvcoptions}
-\cvnamebasedonly{
+  \item %
+  \labelkey{colvar|dihedralPC|prefix}
+  \keydef
+    {prefix}{%
+      \texttt{dihedralPC}}{%
+      Prefix of atom groups to be used for computing a dihedralPC projection}{%
+      string}{%
+      \texttt{dihed\_}}{%
+    Backbone atoms involved in a \texttt{dihedralPC} component are based on groups defined within a
+    GROMACS-style index file specified with \refkey{indexFile}{Colvars-global|indexFile} in the global
+    Colvars configuration, i.e. outside of a \texttt{colvar} block.
+    The group names must use a common prefix followed by atom names CA, N, and C, e.g. \texttt{dihed\_CA},
+    \texttt{dihed\_N}, and \texttt{dihed\_C} when using the default prefix \texttt{dihed\_}.}
+
+  \cvnamebasedonly{
 \item %
   \dupkey{residueRange}{\texttt{dihedralPC}}{colvar|alpha|residueRange}{\texttt{alpha} component}
 
