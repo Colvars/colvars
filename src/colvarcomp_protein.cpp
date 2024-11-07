@@ -63,7 +63,7 @@ int colvar::alpha_angles::init(std::string const &conf)
 
   } else {
     b_use_index_groups = true;
-    get_keyval(conf, "prefix", prefix, "alpha");
+    get_keyval(conf, "prefix", prefix, "alpha_");
 
     // Not all groups are mandatory, parse silently
     group_CA.add_index_group(prefix + "CA", true);
@@ -371,12 +371,12 @@ int colvar::dihedPC::init(std::string const &conf)
   } else {
 
     b_use_index_groups = true;
-    get_keyval(conf, "prefix", prefix, "dihed");
+    get_keyval(conf, "prefix", prefix, "dihed_");
 
-    // Not all groups are mandatory, parse silently
-    group_CA.add_index_group(prefix + "CA", true);
-    group_N.add_index_group(prefix + "N", true);
-    group_C.add_index_group(prefix + "C", true);
+    // All three groups are required
+    group_CA.add_index_group(prefix + "CA");
+    group_N.add_index_group(prefix + "N");
+    group_C.add_index_group(prefix + "C");
     int na = group_CA.size();
     int nn = group_N.size();
     int nc = group_C.size();
