@@ -203,6 +203,25 @@ obj/colvarbias_restraint.o: \
 	colvars/src/colvarparams.h \
 	colvars/src/colvardeps.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_restraint.o $(COPTC) colvars/src/colvarbias_restraint.cpp
+obj/colvarbias_opes.o: \
+	obj/.exists \
+	colvars/src/colvarbias_opes.cpp \
+	colvars/src/colvarbias_opes.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvar.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarbias_opes.o $(COPTC) colvars/src/colvarbias_opes.cpp
 obj/colvarcomp.o: \
 	obj/.exists \
 	colvars/src/colvarcomp.cpp \
@@ -530,6 +549,7 @@ obj/colvarmodule.o: \
 	colvars/src/colvarbias_histogram.h \
 	colvars/src/colvarbias_histogram_reweight_amd.h \
 	colvars/src/colvarbias_meta.h \
+	colvars/src/colvarbias_opes.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarscript_commands.h \
 	colvars/src/colvarscript_commands_colvar.h \

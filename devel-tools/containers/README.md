@@ -17,6 +17,6 @@ apptainer run container.sif
    contained.  For example, to update the most commonly used container
    version:
 ```
-apptainer push CentOS9-devel oras://ghcr.io/colvars/devel-containers:CentOS9-devel
+apptainer push CentOS9-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel
 ```
 (note that the above requires having set up an access token for apptainer)

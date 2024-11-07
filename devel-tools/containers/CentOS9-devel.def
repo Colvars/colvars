@@ -57,7 +57,7 @@ From: quay.io/centos/centos:stream9
     if [ ! -f /usr/local/bin/spiff ] ; then
         # Build and install spiff
         rm -fr /tmp/spiff
-        git clone https://github.com/HanatoK/spiff /tmp/spiff && \
+        git clone https://github.com/Colvars/spiff /tmp/spiff && \
             make -C /tmp/spiff && \
             install /tmp/spiff/spiff /usr/local/bin/
     fi
@@ -74,5 +74,6 @@ From: quay.io/centos/centos:stream9
     # Download pre-built recent CMake (mostly for GROMACS)
     rm -fr /opt/cmake
     mkdir -p /opt/cmake
+    # export GH_TOKEN=xxxxx (will needs this to run gh even on public repos)
     gh release download v3.30.5 --repo https://github.com/Kitware/CMake --clobber --pattern '*linux-x86_64.sh'
     bash cmake-3.30.5-linux-x86_64.sh  --skip-license --prefix=/opt/cmake

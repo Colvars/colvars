@@ -1,0 +1,67 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    distanceDir {
+        group1 {
+            indexGroup group1
+            centerToReference yes
+            rotateToReference yes
+            fittingGroup {
+                indexGroup heavy_atoms
+            }
+            refPositionsFile heavy_atoms_refpos.xyz
+        }
+        group2 {
+            indexGroup group2
+            centerToReference yes
+            rotateToReference yes
+            fittingGroup {
+                indexGroup heavy_atoms
+            }
+            refPositionsFile heavy_atoms_refpos.xyz
+        }
+    }
+}
+
+colvar {
+    name group1
+    cartesian {
+        atoms {
+            indexGroup group1
+        }
+    }
+}
+
+colvar {
+    name group2
+    cartesian {
+        atoms {
+            indexGroup group2
+        }
+    }
+}
+
+colvar {
+    name fitting_group1
+    cartesian {
+        atoms {
+            indexGroup heavy_atoms
+        }
+    }
+}
+
+harmonic {
+    colvars        one
+    centers        (1.0, 0.1, 0.2)
+    forceConstant  10.0
+    outputEnergy   on
+}

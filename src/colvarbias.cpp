@@ -704,7 +704,7 @@ int colvarbias::read_state_string(char const *buffer)
 
 
 std::ostream &colvarbias::write_state_data_key(std::ostream &os, std::string const &key,
-                                               bool header)
+                                               bool header) const
 {
   os << (header ? "\n" : "") << key << (header ? "\n" : " ");
   return os;
@@ -712,7 +712,7 @@ std::ostream &colvarbias::write_state_data_key(std::ostream &os, std::string con
 
 
 cvm::memory_stream &colvarbias::write_state_data_key(cvm::memory_stream &os, std::string const &key,
-                                                     bool /* header */)
+                                                     bool /* header */) const
 {
   os << std::string(key);
   return os;

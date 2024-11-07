@@ -12,7 +12,7 @@ get_spiff() {
             SPIFFDIR=$(dirname $0)/spiff
         fi
         if [ ! -d "${SPIFFDIR}" ] ; then
-            git clone --quiet --depth 1 https://github.com/jhenin/spiff.git "${SPIFFDIR}"
+            git clone --quiet --depth 1 https://github.com/Colvars/spiff.git "${SPIFFDIR}"
         fi
         if [ ! -x "${SPIFFDIR}"/spiff ] ; then
             if pushd "${SPIFFDIR}" > /dev/null ; then

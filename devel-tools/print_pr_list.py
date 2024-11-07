@@ -27,9 +27,11 @@ def affects_backend(labels, backend=None):
     return False
 
 
-def get_pr_list(state='merged'):
+def get_pr_list(state='merged', label=None):
     # 10,000 sounds like a reasonable limit for the Colvars repo
-    cmd = "gh pr list --state %s --limit 10000 --json number,url,mergedAt,title,author,labels" % state
+    cmd = f"gh pr list --state {state} --limit 10000 --json number,url,mergedAt,title,author,labels"
+    if label:
+        cmd += f" --label {label}"
     try:
         txt = subprocess.check_output(
             cmd, shell=True, stderr=subprocess.STDOUT).decode('UTF-8')
@@ -40,7 +42,7 @@ def get_pr_list(state='merged'):
 
 
 def get_pr_commits(number):
-    cmd = "gh pr view %s --json commits" % number
+    cmd = f"gh pr view {number} --json commits"
     try:
         txt = subprocess.check_output(
             cmd, shell=True, stderr=subprocess.STDOUT).decode('UTF-8')
@@ -84,7 +86,7 @@ def print_pr_report(kwargs):
         print()
         print("The following is a list of all pull requests:")
 
-    pr_db = get_pr_list(kwargs.get('state'))
+    pr_db = get_pr_list(kwargs.get('state'), label=kwargs['label'])
     all_authors = []
     for pr in pr_db:
         pr['mergedAt'] = date_parser.parse(pr['mergedAt']).timestamp()
@@ -116,6 +118,9 @@ if __name__ == '__main__':
                         choices=backends,
                         help="List PRs that affect only this backend; "
                         "default is all")
+    parser.add_argument('--label',
+                        type=str,
+                        help="List only PRs with this label")
     parser.add_argument('--state',
                         type=str,
                         default='merged',
