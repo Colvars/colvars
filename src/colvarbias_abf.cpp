@@ -87,6 +87,8 @@ int colvarbias_abf::init(std::string const &conf)
   get_keyval(conf, "shared", shared_on, false);
   if (shared_on) {
     cvm::main()->cite_feature("Multiple-walker ABF implementation");
+    cvm::main()->cite_feature("Updated multiple-walker ABF implementation");
+
 
     // Cannot check this here because the replica communicator is obtained later
     // in Gromacs
