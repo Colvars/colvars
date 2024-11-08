@@ -1442,10 +1442,8 @@ The following components implement functions with a scalar value (i.e.{} a real 
 \item \refkey{gyration}{colvar|gyration}: radius of gyration of a group of atoms;
 \item \refkey{inertia}{colvar|inertia}: moment of inertia of a group of atoms;
 \item \refkey{inertiaZ}{colvar|inertiaZ}: moment of inertia of a group of atoms around a chosen axis;
-\cvnamebasedonly{
 \item \refkey{alpha}{colvar|alpha}: $\alpha$-helix content of a protein segment.
 \item \refkey{dihedralPC}{colvar|dihedralPC}: projection of protein backbone dihedrals onto a dihedral principal component.
-}
 \cvalchlambdaonly{
 \item \refkey{alchLambda}{colvar|alchLambda}: alchemical lambda parameter (for controlling the back-end).
 \item \refkey{alchFlambda}{colvar|alchFlambda}: force along alchLambda.
@@ -2871,7 +2869,7 @@ colvar component on the same atoms.
       \texttt{alpha}}{%
       Potential $\alpha$-helical residues}{%
     ``$<$Initial residue number$>$-$<$Final residue number$>$''}{%
-    Alternately, in some back-ends like NAMD and VMD, the atoms may be defined using their PSF segment name (segname)
+    In some back-ends like NAMD and VMD, the atoms may be defined using their PSF segment name (segname)
     and a range of residue numbers.
     This option specifies the range of residues on which this
     component should be defined.  The Colvars module looks for the
@@ -7188,11 +7186,12 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     dependence of the energy on $\lambda$ around $k_\lambda = 0$.}
 
 \item %
-  \key
+  \keydef
     {targetEquilSteps}{%
     \texttt{harmonic}}{%
     Number of steps discarded from TI estimate}{%
     positive integer}{%
+    0}{%
     Defines the number of steps within each stage that are considered
     equilibration and discarded from the restraint free energy derivative
     estimate reported reported in the output.}
