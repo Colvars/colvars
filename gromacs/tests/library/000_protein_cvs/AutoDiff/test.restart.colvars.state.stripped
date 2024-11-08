@@ -1,0 +1,15 @@
+configuration {
+  step           40
+  dt 1.000000e+00
+}
+
+colvar {
+  name alpha
+  x      0.82442460983544
+}
+
+colvar {
+  name dihedPC
+  x      -2.1016437078475
+}
+

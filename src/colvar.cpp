@@ -858,12 +858,8 @@ void colvar::define_component_types()
   add_component_type<dipole_angle>("dipole angle", "dipoleAngle");
   add_component_type<dihedral>("dihedral", "dihedral");
   add_component_type<h_bond>("hydrogen bond", "hBond");
-
-  if (proxy->check_atom_name_selections_available() == COLVARS_OK) {
-    add_component_type<alpha_angles>("alpha helix", "alpha");
-    add_component_type<dihedPC>("dihedral principal component", "dihedralPC");
-  }
-
+  add_component_type<alpha_angles>("alpha helix", "alpha");
+  add_component_type<dihedPC>("dihedral principal component", "dihedralPC");
   add_component_type<orientation>("orientation", "orientation");
   add_component_type<orientation_angle>("orientation angle", "orientationAngle");
   add_component_type<orientation_proj>("orientation projection", "orientationProj");

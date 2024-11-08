@@ -1442,10 +1442,8 @@ The following components implement functions with a scalar value (i.e.{} a real 
 \item \refkey{gyration}{colvar|gyration}: radius of gyration of a group of atoms;
 \item \refkey{inertia}{colvar|inertia}: moment of inertia of a group of atoms;
 \item \refkey{inertiaZ}{colvar|inertiaZ}: moment of inertia of a group of atoms around a chosen axis;
-\cvnamebasedonly{
 \item \refkey{alpha}{colvar|alpha}: $\alpha$-helix content of a protein segment.
 \item \refkey{dihedralPC}{colvar|dihedralPC}: projection of protein backbone dihedrals onto a dihedral principal component.
-}
 \cvalchlambdaonly{
 \item \refkey{alchLambda}{colvar|alchLambda}: alchemical lambda parameter (for controlling the back-end).
 \item \refkey{alchFlambda}{colvar|alchFlambda}: force along alchLambda.
@@ -2768,17 +2766,21 @@ $[-180^{\circ}:180^{\circ}]$.
 \end{cvcoptions}
 
 
-\cvnamebasedonly{
+
 
 \cvsubsec{Protein structure descriptors}{sec:cvc_protein}
 
 \cvsubsubsec{\texttt{alpha}: $\alpha$-helix content of a protein segment.}{sec:cvc_alpha}
 \labelkey{colvar|alpha}
 
-The block \texttt{alpha~\{...\}} defines the
-parameters to calculate the helical content of a segment of protein
-residues.  The $\alpha$-helical content across the $N+1$ residues
-$N_{0}$ to $N_{0}+N$ is calculated by the formula:
+The block \texttt{alpha~\{...\}} defines a measure of the helical content of a segment of
+protein residues, as a tunable combination of an angle term between alpha carbon atoms, and a
+1-4 hydrogen-bond term.
+To create a colvar that computes the helical content of a protein with several,
+non-contiguous helical segments, just define several \texttt{alpha} blocks inside a single \text{colvar} block,
+and give them linear combination coefficients that sum to 1 (see \texttt{componentCoeff} in section \ref{sec:cvc_superp}).
+
+The $\alpha$-helical content across the $N+1$ residues $N_{0}$ to $N_{0}+N$ is calculated by the formula:
 \begin{eqnarray}
   \label{eq:colvars_alpha}
   {
@@ -2840,8 +2842,26 @@ and the score function $\mathrm{hbf}$ for the $\mathrm{O}^{(n)} \leftrightarrow
 \mathrm{N}^{(n+4)}$ hydrogen bond is defined through a \texttt{hBond}
 colvar component on the same atoms.
 
-\begin{cvcoptions}
 
+\begin{cvcoptions}
+  \item %
+  \labelkey{colvar|alpha|prefix}
+  \keydef
+    {prefix}{%
+      \texttt{alpha}}{%
+      Prefix of atom groups to be used for computing the $\alpha$-helix content}{%
+      string}{%
+      \texttt{alpha\_}}{%
+    Atoms involved in an alpha-helix component are based on groups defined within a
+    GROMACS-style index file specified with \refkey{indexFile}{Colvars-global|indexFile} in the global
+    Colvars configuration, i.e. outside of a \texttt{colvar} block.
+    The group names must use a common prefix followed by atom names, e.g. \texttt{alpha\_N}, \texttt{alpha\_CA},
+    and \texttt{alpha\_O} when using the default prefix \texttt{alpha\_}.
+    The CA group is only required when the angle term is enabled, that is when \texttt{hBondCoeff} is less than 1.
+    This option lets users set a different prefix, for example, when several $\alpha$-helical segments
+    must be tracked.}
+
+\cvnamebasedonly{
 \item %
   \labelkey{colvar|alpha|residueRange}
   \key
@@ -2849,6 +2869,8 @@ colvar component on the same atoms.
       \texttt{alpha}}{%
       Potential $\alpha$-helical residues}{%
     ``$<$Initial residue number$>$-$<$Final residue number$>$''}{%
+    In some back-ends like NAMD and VMD, the atoms may be defined using their PSF segment name (segname)
+    and a range of residue numbers.
     This option specifies the range of residues on which this
     component should be defined.  The Colvars module looks for the
     atoms within these residues named ``\texttt{CA}'', ``\texttt{N}''
@@ -2865,7 +2887,7 @@ colvar component on the same atoms.
     This option sets the PSF segment identifier for the residues
     specified in \texttt{residueRange}.  This option is only required
     when PSF topologies are used.}
-
+} % end of \cvnamebasedonly
 
 \item %
   \labelkey{colvar|alpha|hBondCoeff}
@@ -2947,7 +2969,7 @@ score).
 \labelkey{colvar|dihedralPC}
 
 The block \texttt{dihedralPC~\{...\}} defines the
-parameters to calculate the projection of backbone dihedral angles within
+parameters of the projection of backbone dihedral angles within
 a protein segment onto a \emph{dihedral principal component}, following
 the formalism of dihedral principal component analysis (dPCA) proposed by
 Mu et al.\cite{Mu2005} and documented in detail by Altis et
@@ -2967,17 +2989,31 @@ the projection of the current backbone conformation is:
 + k_{4n-1} \cos (\phi_{n+1}) + k_{4n} \sin(\phi_{n+1})
 \end{equation}
 
-\texttt{dihedralPC} expects the same parameters as the \texttt{alpha}
-component for defining the relevant residues (\texttt{residueRange}
-and \texttt{psfSegID}) in addition to the following:
+The atoms involved in \texttt{dihedralPC} are defined by the same parameters as the \texttt{alpha}
+component.
 
 \begin{cvcoptions}
+  \item %
+  \labelkey{colvar|dihedralPC|prefix}
+  \keydef
+    {prefix}{%
+      \texttt{dihedralPC}}{%
+      Prefix of atom groups to be used for computing a dihedralPC projection}{%
+      string}{%
+      \texttt{dihed\_}}{%
+    Backbone atoms involved in a \texttt{dihedralPC} component are based on groups defined within a
+    GROMACS-style index file specified with \refkey{indexFile}{Colvars-global|indexFile} in the global
+    Colvars configuration, i.e. outside of a \texttt{colvar} block.
+    The group names must use a common prefix followed by atom names CA, N, and C, e.g. \texttt{dihed\_CA},
+    \texttt{dihed\_N}, and \texttt{dihed\_C} when using the default prefix \texttt{dihed\_}.}
 
+  \cvnamebasedonly{
 \item %
   \dupkey{residueRange}{\texttt{dihedralPC}}{colvar|alpha|residueRange}{\texttt{alpha} component}
 
 \item %
   \dupkey{psfSegID}{\texttt{dihedralPC}}{colvar|alpha|psfSegID}{\texttt{alpha} component}
+} % end of \cvnamebasedonly
 
 \item %
   \key
@@ -2998,7 +3034,6 @@ and \texttt{psfSegID}) in addition to the following:
     Number of the eigenvector to be used for this component.}
 \end{cvcoptions}
 
-} % end of \cvnamebasedonly
 
 \cvalchlambdaonly{
 
@@ -7151,11 +7186,12 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     dependence of the energy on $\lambda$ around $k_\lambda = 0$.}
 
 \item %
-  \key
+  \keydef
     {targetEquilSteps}{%
     \texttt{harmonic}}{%
     Number of steps discarded from TI estimate}{%
     positive integer}{%
+    0}{%
     Defines the number of steps within each stage that are considered
     equilibration and discarded from the restraint free energy derivative
     estimate reported reported in the output.}

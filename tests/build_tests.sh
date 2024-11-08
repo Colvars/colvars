@@ -296,6 +296,8 @@ bias="harmonic-fixed-euler"
 create_test_dir ${colvar}_${bias}
 write_colvars_config ${colvar} ${bias}
 
+create_test_dir protein_cvs
+write_colvars_config protein_cvs
 
 # TODO uncomment this and the add two-dimensional regtests
 # # Generate two-variables versions of bias configurations

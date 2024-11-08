@@ -1,10 +1,11 @@
 # Write a VMD selection into a GROMACS index file.
 
-# 1st argument is either a Tcl file channel or a file name: in the latter
-# case, content will be appended to that file.
-# 2nd argument is an atom selection proc, as returned by the atomselect
+# Parameters:
+# 1- either a Tcl file channel or a file name: in the latter
+#   case, content will be appended to that file.
+# 2- an atom selection proc, as returned by the atomselect
 # command.
-# 3rd argument is the name of the group.
+# 3- the name of the group.
 
 proc write_index_group { ndxfile sel name } {
     # Check that the name does not contain spaces or tabs
@@ -41,5 +42,43 @@ proc write_index_group { ndxfile sel name } {
 
     if { "${output}" != "${ndxfile}" } {
         close ${output}
+    }
+}
+
+# Write a GROMACS index file suitable for computing the alpha-helix
+# content of a helical segment
+
+# Parameters:
+# 1- either a Tcl file channel or a file name: in the latter
+#   case, content will be appended to that file.
+# 2- a selection text returning contiguous amino-acid residues
+# 3- optional: molecule id (default: top)
+# 4- optional: prefix for the group names (default: alpha_)
+
+proc write_alpha_groups { ndxfile seltext { mol top } { prefix alpha_ } } {
+
+    foreach atomname { N CA O } {
+        set sel [atomselect $mol "($seltext) and name $atomname"]
+        write_index_group $ndxfile $sel "${prefix}${atomname}"
+        $sel delete
+    }
+}
+
+# Write a GROMACS index file suitable for computing the dihedralPC
+# projection of a peptide chain
+
+# Parameters:
+# 1- either a Tcl file channel or a file name: in the latter
+#   case, content will be appended to that file.
+# 2- a selection text returning contiguous amino-acid residues
+# 3- optional: molecule id (default: top)
+# 4- optional: prefix for the group names (default: alpha_)
+
+proc write_dihedralPC_groups { ndxfile seltext { mol top } { prefix dihed_ } } {
+
+    foreach atomname { CA N C } {
+        set sel [atomselect $mol "($seltext) and name $atomname"]
+        write_index_group $ndxfile $sel "${prefix}${atomname}"
+        $sel delete
     }
 }
