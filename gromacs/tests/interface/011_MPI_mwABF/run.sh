@@ -17,6 +17,13 @@ else
     BINARY="gmx_mpi_d"
 fi
 
+for i in a b c d
+do
+  cd $i
+  $BINARY grompp -f system.mdp -p ../../Common/system.top -c ../../Common/system.gro -o test.tpr &> grompp.log
+  cd ..
+done
+
 mpirun -np 16 -oversubscribe $BINARY mdrun -multidir a b c d -s test.tpr -deffnm test -reseed 376 >& test.out
 
 labels=(a b c d)
