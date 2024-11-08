@@ -5616,13 +5616,12 @@ Other parameters to control the ABF runtime can be set in the ABF configuration 
   }
 \end{itemize}
 
-\cvnamdonly{
 \cvsubsubsec{Multiple-walker ABF}{sec:colvarbias_abf_shared}
 \label{sec:mw-ABF}
 
-This implements the multiple-walker ABF scheme described in \cite{Minoukadeh2010}. The reference for this
-implementation is \cite{Comer2014c}.
-This feature requires that \MDENGINE be compiled and executed with multiple-replica
+This implements the multiple-walker ABF scheme described in \cite{Minoukadeh2010}. The references for this
+implementation are \cite{Comer2014c} and \cite{Fiorin2024}.
+This feature requires that \MDENGINE{} be compiled and executed with multiple-replica
 support.
 
 If \refkey{shared}{abf|shared} is enabled, the total force samples will be synchronized among all replicas
@@ -5632,14 +5631,15 @@ Every \refkey{sharedFreq}{abf|sharedFreq} steps, the replicas communicate the sa
 Thus, it is as if total force samples among all replicas are gathered in a single shared buffer.
 Shared ABF allows all replicas to benefit from the sampling done by other replicas and can lead to faster convergence of the biasing force.
 
+\cvnamdonly{
 An implementation of the selection mechanism described in \cite{Comer2014c} is provided as a set of Tcl scripts in \texttt{colvartools/mwABF\_selection.tcl} in the Colvars repository.
 Compared with the initial implementation, the current implementation supports selection on sets of up to 3 colvars.
 To reduce noise, samples can be counted in a hybercube around the current bin (see Tcl script for details).
 A set of example NAMD inputs can be found in the \texttt{namd/tests/library/multiple\_walker\_abf} directory.
-
+} % end of \cvnamdonly
 
 \paragraph{Output files of multiple-walker ABF.}
-In multiple-walker ABF runs, each walker now outputs gradient and count files containing only data collected locally (this is a change in version 2024-01-06).
+In multiple-walker ABF runs, since Colvars version 2024-01-06, each walker outputs gradient and count files containing only data collected locally.
 In addition, the first walker outputs the collected data using the common prefix, with an additional \texttt{".all"} string (i.e. file names ending with \texttt{".all.count"}, \texttt{".all.grad"} etc.).
 
 
@@ -5665,7 +5665,6 @@ In addition, the first walker outputs the collected data using the common prefix
     Because this forces the replicas to synchronize, small values of this parameter may slightly reduce the overall throughput, especially on systems with unequal performance.
   }
 \end{itemize}
-}
 
 \cvsubsubsec{Output files}{sec:colvarbias_abf_output}
 

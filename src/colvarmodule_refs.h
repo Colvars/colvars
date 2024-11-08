@@ -129,6 +129,23 @@
     "  url = {https://doi.org/10.1002/jcc.26075}\n"
     "}\n";
 
+  paper_count_[std::string("Fiorin2024")] = 0;
+  paper_url_[std::string("Fiorin2024")] = "https://doi.org/10.1021/acs.jpcb.4c05604";
+  paper_bibtex_[std::string("Fiorin2024")] =
+    "\n"
+    "@article{Fiorin2024,\n"
+    "  author = {Fiorin, Giacomo and Marinelli, Fabrizio and Forrest, Lucy R. and Chen, Haochuan and Chipot, Christophe and Kohlmeyer, Axel and Santuz, Hubert and H{\\'e}nin, J{\\'e}rôme},\n"
+    "  title = {Expanded Functionality and Portability for the Colvars Library},\n"
+    "  journal = {J. Phys. Chem. {B}},\n"
+    "  volume = {0},\n"
+    "  number = {0},\n"
+    "  pages = {null},\n"
+    "  year = {2024},\n"
+    "  doi = {10.1021/acs.jpcb.4c05604},\n"
+    "  pmid = 39501453,\n"
+    "  url = { https://doi.org/10.1021/acs.jpcb.4c05604}\n"
+    "}\n";
+
   paper_count_[std::string("Fu2016")] = 0;
   paper_url_[std::string("Fu2016")] = "https://doi.org/10.1021/acs.jctc.6b00447";
   paper_bibtex_[std::string("Fu2016")] =
@@ -527,6 +544,9 @@
 
   feature_count_[std::string("Multi-Map collective variables")] = 0;
   feature_paper_map_[std::string("Multi-Map collective variables")] = "Fiorin2020";
+
+  feature_count_[std::string("Updated multiple-walker ABF implementation")] = 0;
+  feature_paper_map_[std::string("Updated multiple-walker ABF implementation")] = "Fiorin2024";
 
   feature_count_[std::string("Umbrella-integration eABF estimator")] = 0;
   feature_paper_map_[std::string("Umbrella-integration eABF estimator")] = "Fu2016";
