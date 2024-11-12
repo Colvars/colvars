@@ -36,9 +36,9 @@ inline void read_atom_coord(
 
 /// \brief Helper enum class for specifying options in rotation_derivative::prepare_derivative
 enum class rotation_derivative_dldq {
-  /// Require the derivative of the leading eigenvalue with respect to the atom coordinats
+  /// Require the derivative of the leading eigenvalue with respect to the atom coordinates
   use_dl = 1 << 0,
-  /// Require the derivative of the leading eigenvector with respect to the atom coordinats
+  /// Require the derivative of the leading eigenvector with respect to the atom coordinates
   use_dq = 1 << 1
 };
 
@@ -574,9 +574,6 @@ void debug_gradients(
   cvm::real S_new_eigval[4];
   cvm::real S_new_eigvec[4][4];
   for (size_t ia = 0; ia < pos2.size(); ++ia) {
-    // cvm::real const &a1x = pos1[ia].x;
-    // cvm::real const &a1y = pos1[ia].y;
-    // cvm::real const &a1z = pos1[ia].z;
     deriv.template calc_derivative_wrt_group2<true, true, true>(ia, &dl0_2, &dq0_2, &ds_2);
     // make an infitesimal move along each cartesian coordinate of
     // this atom, and solve again the eigenvector problem
