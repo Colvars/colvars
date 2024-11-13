@@ -11,6 +11,7 @@ colvar {
   extendedFluctuation 5.0
   extendedTimeConstant 200
   extendedTemp         300
+  extendedLangevinDamping 0.0 # suppress random friction term
 
   outputAppliedForce on
   outputTotalForce on

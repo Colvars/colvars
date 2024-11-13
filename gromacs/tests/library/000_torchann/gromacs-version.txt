@@ -1,1 +1,0 @@
- :-) GROMACS - gmx mdrun, 2025-dev-20240917-cad5a47f01-dirty-unknown (double precision) (-:

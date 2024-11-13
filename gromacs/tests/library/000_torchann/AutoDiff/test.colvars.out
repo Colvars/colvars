@@ -5,6 +5,7 @@ colvars: as well as all other papers listed below for individual features used.
 colvars: This version was built with the C++11 standard or higher.
 colvars: Summary of compile-time features available in this build:
 colvars:   - SMP parallelism: enabled (num. threads = 2)
+colvars:   - Multiple replicas: not available
 colvars:   - Lepton custom functions: available
 colvars:   - Tcl interpreter: not available
 colvars: ----------------------------------------------------------------------
@@ -42,6 +43,10 @@ colvars:   group9 (4 atoms)
 colvars:   Protein_C-alpha_10 (1 atoms)
 colvars:   group10 (4 atoms)
 colvars:   heavy_atoms (51 atoms)
+colvars:   prot_N (10 atoms)
+colvars:   prot_CA (10 atoms)
+colvars:   prot_C (10 atoms)
+colvars:   prot_O (10 atoms)
 colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
@@ -144,7 +149,7 @@ colvars:   Computed extended system force constant: 0.0997735 [E]/U^2
 colvars:   # extendedTimeConstant = 200
 colvars:   Computed fictitious mass: 101.092 [E]/(U/fs)^2   (U: colvar unit)
 colvars:   # outputEnergy = off [default]
-colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # extendedLangevinDamping = 0
 colvars:   # reflectingLowerBoundary = off [default]
 colvars:   # reflectingUpperBoundary = off [default]
 colvars:   # outputValue = on [default]
@@ -195,9 +200,6 @@ colvars:
 colvars: - GROMACS engine:
 colvars:   Abraham2015 https://doi.org/10.1016/j.softx.2015.06.001
 colvars: 
-colvars: - BAOA integrator:
-colvars:   BouRabee2010 https://doi.org/10.1137/090758842
-colvars: 
 colvars: - Colvars module:
 colvars: - Optimal rotation via flexible fitting:
 colvars: - dihedral colvar component:
@@ -219,51 +221,9 @@ colvars: ----------------------------------------------------------------------
 colvars: End colvars Initialization.
 colvars: 
 colvars:   Initializing extended coordinate to colvar value.
-colvars:   f_ext 0   v_ext  0
-colvars:   Langevin   v_ext 0.00724064
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
-colvars:   f_ext -0.00472997   v_ext  0.00721724
-colvars:   Langevin   v_ext 0.0187846
-colvars:   f_ext -0.0103018   v_ext  0.0187336
-colvars:   Langevin   v_ext 0.0300809
-colvars:   f_ext -0.0183182   v_ext  0.0299903
-colvars:   Langevin   v_ext 0.0100211
-colvars:   f_ext -0.0271243   v_ext  0.0098869
-colvars:   Langevin   v_ext 0.0226521
-colvars:   f_ext -0.0369962   v_ext  0.0224691
-colvars:   Langevin   v_ext 0.0336928
-colvars:   f_ext -0.0493782   v_ext  0.0334486
-colvars:   Langevin   v_ext 0.0213974
-colvars:   f_ext -0.0625954   v_ext  0.0210878
-colvars:   Langevin   v_ext 0.0147893
-colvars:   f_ext -0.0755125   v_ext  0.0144158
-colvars:   Langevin   v_ext 0.00478564
-colvars:   f_ext -0.0880182   v_ext  0.0043503
-colvars:   Langevin   v_ext 0.0163287
-colvars:   f_ext -0.100698   v_ext  0.0158307
-colvars:   Langevin   v_ext 0.0191876
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".
-colvars:   f_ext -0.113758   v_ext  0.0186249
-colvars:   Langevin   v_ext 0.0207577
-colvars:   f_ext -0.126221   v_ext  0.0201334
-colvars:   Langevin   v_ext 0.0204362
-colvars:   f_ext -0.137544   v_ext  0.0197559
-colvars:   Langevin   v_ext 0.034218
-colvars:   f_ext -0.148006   v_ext  0.0334859
-colvars:   Langevin   v_ext 0.026813
-colvars:   f_ext -0.156928   v_ext  0.0260368
-colvars:   Langevin   v_ext 0.0305022
-colvars:   f_ext -0.163586   v_ext  0.0296931
-colvars:   Langevin   v_ext 0.0368135
-colvars:   f_ext -0.16855   v_ext  0.0359799
-colvars:   Langevin   v_ext 0.0325176
-colvars:   f_ext -0.17136   v_ext  0.0316701
-colvars:   Langevin   v_ext 0.0294926
-colvars:   f_ext -0.171572   v_ext  0.028644
-colvars:   Langevin   v_ext 0.0249544
-colvars:   f_ext -0.169316   v_ext  0.024117
-colvars:   Langevin   v_ext 0.02993
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".

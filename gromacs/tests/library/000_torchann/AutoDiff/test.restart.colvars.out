@@ -5,6 +5,7 @@ colvars: as well as all other papers listed below for individual features used.
 colvars: This version was built with the C++11 standard or higher.
 colvars: Summary of compile-time features available in this build:
 colvars:   - SMP parallelism: enabled (num. threads = 2)
+colvars:   - Multiple replicas: not available
 colvars:   - Lepton custom functions: available
 colvars:   - Tcl interpreter: not available
 colvars: ----------------------------------------------------------------------
@@ -42,6 +43,10 @@ colvars:   group9 (4 atoms)
 colvars:   Protein_C-alpha_10 (1 atoms)
 colvars:   group10 (4 atoms)
 colvars:   heavy_atoms (51 atoms)
+colvars:   prot_N (10 atoms)
+colvars:   prot_CA (10 atoms)
+colvars:   prot_C (10 atoms)
+colvars:   prot_O (10 atoms)
 colvars: # smp = on [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
@@ -144,7 +149,7 @@ colvars:   Computed extended system force constant: 0.0997735 [E]/U^2
 colvars:   # extendedTimeConstant = 200
 colvars:   Computed fictitious mass: 101.092 [E]/(U/fs)^2   (U: colvar unit)
 colvars:   # outputEnergy = off [default]
-colvars:   # extendedLangevinDamping = 1 [default]
+colvars:   # extendedLangevinDamping = 0
 colvars:   # reflectingLowerBoundary = off [default]
 colvars:   # reflectingUpperBoundary = off [default]
 colvars:   # outputValue = on [default]
@@ -195,9 +200,6 @@ colvars:
 colvars: - GROMACS engine:
 colvars:   Abraham2015 https://doi.org/10.1016/j.softx.2015.06.001
 colvars: 
-colvars: - BAOA integrator:
-colvars:   BouRabee2010 https://doi.org/10.1137/090758842
-colvars: 
 colvars: - Colvars module:
 colvars: - Optimal rotation via flexible fitting:
 colvars: - dihedral colvar component:
@@ -217,57 +219,15 @@ colvars:
 colvars: The final output state file will be "test.restart.part0002.colvars.state".
 colvars: ----------------------------------------------------------------------
 colvars: Loading state from unformatted memory.
-colvars:   Restarting collective variable "nn_0" from value: 60.3619
+colvars:   Restarting collective variable "nn_0" from value: 60.3557
 colvars:   Restarted abf bias "abf1" with step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: ----------------------------------------------------------------------
 colvars: End colvars Initialization.
 colvars: 
-colvars:   f_ext -0.169316   v_ext  0.024117
-colvars:   Langevin   v_ext 0.0304969
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
-colvars:   f_ext -0.165215   v_ext  0.0296797
-colvars:   Langevin   v_ext 0.0404316
-colvars:   f_ext -0.160235   v_ext  0.0396391
-colvars:   Langevin   v_ext 0.0502246
-colvars:   f_ext -0.154832   v_ext  0.0494588
-colvars:   Langevin   v_ext 0.0287956
-colvars:   f_ext -0.147703   v_ext  0.0280651
-colvars:   Langevin   v_ext 0.0402164
-colvars:   f_ext -0.139264   v_ext  0.0395276
-colvars:   Langevin   v_ext 0.0502289
-colvars:   f_ext -0.131407   v_ext  0.049579
-colvars:   Langevin   v_ext 0.0371063
-colvars:   f_ext -0.123153   v_ext  0.0364972
-colvars:   Langevin   v_ext 0.0298841
-colvars:   f_ext -0.113915   v_ext  0.0293206
-colvars:   Langevin   v_ext 0.0194858
-colvars:   f_ext -0.104118   v_ext  0.0189709
-colvars:   Langevin   v_ext 0.0308551
-colvars:   f_ext -0.0949429   v_ext  0.0303855
-colvars:   Langevin   v_ext 0.0337564
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
 colvars: Saving collective variables state to "test.restart.part0002.colvars.state".
-colvars:   f_ext -0.087258   v_ext  0.0333248
-colvars:   Langevin   v_ext 0.0355738
-colvars:   f_ext -0.0807625   v_ext  0.0351743
-colvars:   Langevin   v_ext 0.0356866
-colvars:   f_ext -0.0754962   v_ext  0.0353132
-colvars:   Langevin   v_ext 0.0500664
-colvars:   f_ext -0.072256   v_ext  0.049709
-colvars:   Langevin   v_ext 0.0433941
-colvars:   f_ext -0.0708401   v_ext  0.0430437
-colvars:   Langevin   v_ext 0.0479175
-colvars:   f_ext -0.0708791   v_ext  0.0475669
-colvars:   Langevin   v_ext 0.0551275
-colvars:   f_ext -0.0731648   v_ext  0.0547657
-colvars:   Langevin   v_ext 0.051756
-colvars:   f_ext -0.0773541   v_ext  0.0513734
-colvars:   Langevin   v_ext 0.0496407
-colvars:   f_ext -0.0830079   v_ext  0.0492301
-colvars:   Langevin   v_ext 0.0459575
-colvars:   f_ext -0.0901361   v_ext  0.0455117
-colvars:   Langevin   v_ext 0.0516946
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
 colvars: Saving collective variables state to "test.restart.part0002.colvars.state".
 colvars: Saving collective variables state to "test.restart.part0002.colvars.state".
