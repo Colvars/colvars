@@ -5823,8 +5823,14 @@ where the angle brackets indicate a canonical average conditioned by $\lambda=\l
 At long simulation times, eABF produces a flat histogram of the extended variable $\lambda$,
 and a flattened histogram of $\xi$, whose exact shape depends on the strength of the coupling
 as defined by \texttt{extendedFluctuation} in the colvar.
-Coupling should be somewhat loose for faster exploration and convergence, but strong
-enough that the bias does help overcome barriers along the colvar $\xi$.\cite{Lesage2017}
+
+Coupling should be strong enough that the bias helps overcome barriers along the colvar.\cite{Lesage2017}
+A value of \texttt{extendedFluctuation} equal to the bin width is often reasonable.
+In the limit of strong coupling (small \texttt{extendedFluctuation}), the eABF free energy surface
+(\texttt{.pmf} file) becomes close to the true one, making the asymptotically more accurate but
+noisier CZAR estimator (\texttt{.czar.pmf} file) unnecessary.
+In practice, we recommend comparing these two free energy surfaces to decide which one to use.
+
 Distribution of the colvar may be assessed by plotting its histogram, which
 is written to the \outputName\texttt{.zcount} file in every eABF simulation.
 Note that a \texttt{histogram} bias (\ref{sec:colvarbias_histogram})
