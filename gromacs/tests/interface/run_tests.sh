@@ -6,10 +6,18 @@ if [ ! -d ${TOPDIR} ] ; then
     exit 1
 fi
 
+MPI_TESTS=[0-9][0-9][0-9]_MPI_*
+
 tests=([0-9][0-9][0-9]_*)
-tests=(${tests[@]/010_MPI_multi-sim})
+
+for DIR in $MPI_TESTS
+do
+  tests=(${tests[@]/$DIR})
+done
 
 ALL_SUCCESS=1
+
+echo "Running tests ${tests[@]}"
 
 ../library/run_tests.sh $1 ${tests[@]}
 
@@ -20,14 +28,17 @@ fi
 
 # Run tests that depend on an MPI build
 if source ${TOPDIR}/devel-tools/load-openmpi.sh ; then
-    if pushd 010_MPI_multi-sim > /dev/null ; then
-        ./run.sh $1
-        if [ $? -ne 0 ]
-        then
-            ALL_SUCCESS=0
-        fi
-        popd > /dev/null
-    fi
+    for DIR in $MPI_TESTS
+    do
+      if pushd $DIR > /dev/null ; then
+          ./run.sh $1
+          if [ $? -ne 0 ]
+          then
+              ALL_SUCCESS=0
+          fi
+          popd > /dev/null
+      fi
+    done
 fi
 
 

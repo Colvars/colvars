@@ -110,7 +110,7 @@ All of the above MD engine versions are automatically tested as part of GitHub A
 
 ## Legacy GROMACS-Colvars patched releases
 
-Versions GROMACS prior to 2024 are no longer supported by the current version of Colvars: please use GROMACS 2024 or later.
+Versions of GROMACS prior to 2024 are no longer supported by the current version of Colvars: please use GROMACS 2024 or later.
 
 
 ## Which version of Colvars is recommended?
