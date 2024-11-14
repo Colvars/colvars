@@ -225,9 +225,30 @@ colvars: ----------------------------------------------------------------------
 colvars: ----------------------------------------------------------------------
 colvars: End colvars Initialization.
 colvars: 
+colvars:   extended (x,v): 63.0066,-0.0157069
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
+colvars:   extended (x,v): 62.9896,-0.0170486
+colvars:   extended (x,v): 62.9713,-0.0183231
+colvars:   extended (x,v): 62.9517,-0.0195136
+colvars:   extended (x,v): 62.9311,-0.0206058
+colvars:   extended (x,v): 62.9095,-0.0215885
+colvars:   extended (x,v): 62.8871,-0.0224538
+colvars:   extended (x,v): 62.8639,-0.0231964
+colvars:   extended (x,v): 62.8401,-0.0238145
+colvars:   extended (x,v): 62.8158,-0.0243086
+colvars:   extended (x,v): 62.7911,-0.0246818
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
 colvars: Saving collective variables state to "test.restart.part0002.colvars.state".
+colvars:   extended (x,v): 62.7661,-0.0249397
+colvars:   extended (x,v): 62.7411,-0.0250899
+colvars:   extended (x,v): 62.7159,-0.0251422
+colvars:   extended (x,v): 62.6908,-0.0251081
+colvars:   extended (x,v): 62.6658,-0.0250011
+colvars:   extended (x,v): 62.641,-0.0248362
+colvars:   extended (x,v): 62.6163,-0.0246298
+colvars:   extended (x,v): 62.5919,-0.0243992
+colvars:   extended (x,v): 62.5678,-0.0241624
+colvars:   extended (x,v): 62.5438,-0.0239376
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.part0002.colvars.traj".
 colvars: Saving collective variables state to "test.restart.part0002.colvars.state".
 colvars: Saving collective variables state to "test.restart.part0002.colvars.state".
