@@ -14,10 +14,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 11)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
-else()
-  if(${CMAKE_CXX_STANDARD} STREQUAL "98")
-    message(FATAL_ERROR "CMAKE_CXX_STANDARD must be 11 or later")
-  endif()
 endif()
 
 option(WARNINGS_ARE_ERRORS "Treats warnings as errors" OFF)
@@ -88,10 +84,9 @@ option(COLVARS_OPENMP "Build Colvars with (still limited) OpenMP support" ${COLV
 if(COLVARS_OPENMP)
   find_package(OpenMP)
   if(OpenMP_CXX_FOUND)
-    target_link_libraries(colvars OpenMP::OpenMP_CXX)
+    target_link_libraries(colvars PRIVATE OpenMP::OpenMP_CXX)
   endif()
 endif()
-
 
 include(buildColvarsLepton)
 
@@ -137,13 +132,35 @@ if(COLVARS_TCL)
   else()
     target_compile_options(colvars PRIVATE -DCOLVARS_TCL)
   endif()
-  target_link_libraries(colvars ${TCL_LIBRARY})
+  target_link_libraries(colvars PUBLIC ${TCL_LIBRARY})
+endif()
+
+option(COLVARS_TORCH "Link against the Torch library" OFF)
+
+if(COLVARS_TORCH)
+  if (CMAKE_CXX_STANDARD LESS 17)
+    message(STATUS "Increase the CMAKE_CXX_STANDARD to 17")
+    set_property(TARGET colvars PROPERTY CXX_STANDARD 17)
+  else()
+    message(STATUS "Keep the CMAKE_CXX_STANDARD as ${CMAKE_CXX_STANDARD}")
+  endif()
+  if(DEFINED LIBTORCH_PREFIX)
+    find_package(Torch REQUIRED PATHS file(JOIN ${LIBTORCH_PREFIX} "share/cmake/Torch"))
+  else()
+    find_package(Torch REQUIRED)
+  endif()
+  if(Torch_FOUND)
+    target_compile_definitions(colvars PRIVATE -DCOLVARS_TORCH)
+    target_compile_options(colvars PRIVATE ${TORCH_CXX_FLAGS})
+    target_include_directories(colvars PRIVATE ${TORCH_INCLUDE_DIRS})
+    target_link_libraries(colvars PUBLIC ${TORCH_LIBRARIES})
+  endif()
 endif()
 
 option(BUILD_TOOLS "Build standalone tools" ON)
 
 option(BUILD_TESTS "Build tests" ON)
-
+ 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # TODO fix linkage errors with Visual Studio...
   set(BUILD_TOOLS OFF)

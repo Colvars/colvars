@@ -653,5 +653,8 @@
   feature_count_[std::string("Scripted functions (Tcl)")] = 0;
   feature_paper_map_[std::string("Scripted functions (Tcl)")] = "n/a";
 
+  feature_count_[std::string("torchANN colvar component")] = 0;
+  feature_paper_map_[std::string("torchANN colvar component")] = "n/a";
+
   feature_count_[std::string("ABMD bias")] = 0;
   feature_paper_map_[std::string("ABMD bias")] = "n/a";

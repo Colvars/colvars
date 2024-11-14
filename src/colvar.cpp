@@ -21,6 +21,7 @@
 #include "colvarbias.h"
 #include "colvars_memstream.h"
 
+#include "colvarcomp_torchann.h"
 
 std::map<std::string, std::function<colvar::cvc *()>> colvar::global_cvc_map =
     std::map<std::string, std::function<colvar::cvc *()>>();
@@ -921,6 +922,8 @@ void colvar::define_component_types()
 #endif
 
   add_component_type<neuralNetwork>("neural network CV for other CVs", "neuralNetwork");
+
+  add_component_type<torchANN>("CV defined by PyTorch artifical neural network models", "torchANN");
 
   if (proxy->check_volmaps_available() == COLVARS_OK) {
     add_component_type<map_total>("total value of atomic map", "mapTotal");

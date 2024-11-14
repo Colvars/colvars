@@ -216,6 +216,7 @@ for colvar in \
     "tilt" \
     "spinangle" \
     "selfcoordnum" "selfcoordnum-pairlist" \
+    "torchann-dihedral" \
     "orientationangle" "orientationproj" \
    ; do
     for bias in \

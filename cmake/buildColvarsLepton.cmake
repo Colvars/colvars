@@ -18,7 +18,7 @@ if(COLVARS_LEPTON)
     target_compile_options(colvars PRIVATE -DLEPTON)
   endif()
   target_include_directories(colvars PRIVATE ${LEPTON_DIR}/include)
-  target_link_libraries(colvars lepton)
+  target_link_libraries(colvars PRIVATE lepton)
 
   # Silence warnings for Lepton
   target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare -Wno-unknown-warning-option>)

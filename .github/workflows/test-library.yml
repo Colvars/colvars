@@ -51,7 +51,11 @@ jobs:
               exit 1
           fi
 
-      - name: Build and test library (GCC)
+      - name: Build and test library (Clang)
+        env:
+          CMAKE_BUILD_DIR: build
+          CXX: clang++
+          CC: clang
         run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Check documentation of command-line scripting interface
@@ -64,11 +68,11 @@ jobs:
               exit 1
           fi
 
-      - name: Build and test library (Clang)
+      - name: Build and test library (GCC)
         env:
-          CMAKE_BUILD_DIR: build-clang
-          CXX: clang++
-          CC: clang
+          CMAKE_BUILD_DIR: build-gcc
+          CXX: g++
+          CC: gcc
         run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Build library with debug code enabled (GCC)

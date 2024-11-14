@@ -639,6 +639,7 @@ public:
   class euler_psi;
   class euler_theta;
   class neuralNetwork;
+  class torchANN;
   class customColvar;
 
   // non-scalar components

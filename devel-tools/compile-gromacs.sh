@@ -69,6 +69,10 @@ compile_gromacs_target() {
         fi
     fi
 
+    if [ -d "/opt/libtorch" ] ; then
+        GMX_BUILD_OPTS+=(-DGMX_NNPOT=TORCH -DTorch_DIR=/opt/libtorch/share/cmake/Torch)
+    fi
+
     # When on GitHub Actions, build the tests as well
     if [ -n "${GITHUB_ACTION}" ] ; then
         export GROMACS_BUILD_TESTS=1
