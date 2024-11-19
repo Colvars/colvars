@@ -25,11 +25,12 @@ To reflect the different availability of features in each engine, the Colvars re
 
 ## Citing
 
-The reference article is:
-G. Fiorin, M. L. Klein, and J. Hénin, Mol. Phys. **111** (22-23), 3345-3362 (2013).
-https://doi.org/10.1080/00268976.2013.813594  \[[BibTex file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.bib?raw=true)\] \[[Endnote file](https://github.com/Colvars/colvars/blob/master/doc/ref_Fiorin_2013.ciw?raw=true)\]
+Please cite the following papers when using the library:
 
-*Additional references for the implementation of specific features are listed in the [documentation](#documentation).*  Beginning with Colvars 2021-08-30, these references, including acknowledgments of specific code from the MD engine, are also printed to the screen/logfile when they are used.
+- G. Fiorin, M. L. Klein, and J. Hénin, Mol. Phys. **111** (22-23), 3345-3362 (2013).  https://doi.org/10.1080/00268976.2013.813594
+- G. Fiorin, F. Marinelli, L. R. Forrest, H. Chen, C. Chipot, A. Kohlmeyer, H. Santuz, J. Hénin, J. Phys. Chem. B **128** (45), 11108-11123 (2024).  https://doi.org/10.1021/acs.jpcb.4c05604
+
+*References to specific code features* are also listed in the [documentation](#documentation) and printed at runtime when their features are used.  A [BibTex file](https://github.com/Colvars/colvars/blob/master/doc/colvars-code-refs.bib?raw=true) containing all of these is also available.
 
 *Note to NAMD users:* the NAMD reference papers (Phillips *et al*, [2005](https://doi.org/10.1002/jcc.20289) and [2020](https://doi.org/10.1063/5.0014475)) are used in some publications to acknowledge Colvars features.  This is incomplete.  When possible, please consider identifying and acknowledging all development efforts that supported your project.  As an important clarification, most of the Colvars code was developed *outside* of the NAMD/VMD funding grants.
 
