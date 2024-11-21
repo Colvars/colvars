@@ -33,8 +33,12 @@ proc ::cv_dashboard::createWindow {} {
     -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $w.save -text "Save" -command ::cv_dashboard::save -padding "2 0 2 0"] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [ttk::button $w.reset -text "Reset" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
+  grid [ttk::button $w.reset -text "⚠ Reset ⚠" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+
+  incr gridrow
+  grid [ttk::button $w.save_traj -text "Save traj file" -command ::cv_dashboard::save_traj_dialog -padding "2 0 2 0"] \
+    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
 
   # Table of colvars
   ttk::treeview $w.cvtable -selectmode extended -show {headings tree} -height 8
@@ -516,7 +520,7 @@ https://colvars.github.io
 In [vmdinfo versionmsg]
 Running Tcl/Tk [info patchlevel]
 
-Jérôme Hénin (jerome.henin@ibpc.fr), Giacomo Fiorin (giacomo.fiorin@nih.gov) and the Colvars developers.
+Jérôme Hénin (jerome.henin@cnrs.fr), Giacomo Fiorin (giacomo.fiorin@nih.gov) and the Colvars developers.
 
 #Please cite the following references for features currently in use:
 
@@ -1487,4 +1491,14 @@ proc ::cv_dashboard::createRotationMenu { row } {
   grid [ttk::button $menu.hide_rotation -text "Hide rotation" -command { ::cv_dashboard::stop_rotation_display } -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
   grid remove $menu.show_rotation $menu.hide_rotation
+}
+
+# Open file dialog to choose file name, then save colvars trajectory
+
+proc ::cv_dashboard::save_traj_dialog {} {
+  set file [tk_getSaveFile -title "Colvars trajectory file to be written" \
+      -filetypes {{"Colvars traj" .colvars.traj} {"All files" *}}]
+  if {[llength $file] > 0 } {
+    ::cv_dashboard::save_traj_file $file
+  }
 }
