@@ -4,6 +4,7 @@
 # Usage (after installing):
 # package require cv_dashboard
 # cv_dashboard
+# or select the Extensions/Analysis menu item
 
 # Design principles:
 # - take advantage of colvars/VMD binding for maximum user interaction
@@ -11,8 +12,9 @@
 # - do not try to parse the colvars config (let the Colvars Module do it)
 #   to avoid coming up with an incompatible parser
 
-# This plugin only acts on the "top" molecule
-# which is most consistent for trajectory animation (determined by the frame number of mol)
+# Source file layout:
+# - this file contains utility functions and data structure, without GUI
+# - other files contain GUI elements
 
 # TODO Multiplot:
 # - properly calculate position of cursor in plot when not all the plot is visible (resized window)
@@ -954,7 +956,8 @@ Read the standard output (terminal) for details."
 }
 
 
-#  Create a scripted colvar that returns values from a precomputed trajectory
+# Create a scripted colvar that returns values from a precomputed trajectory
+# (internal utility function for load_cv_traj, hence not in the main namespace)
 
 proc create_traj_colvar { molid cv } {
 
@@ -1009,4 +1012,21 @@ proc create_traj_colvar { molid cv } {
   }
   "
   cv config $configString
+}
+
+# Save trajectory of currently defined colvars to a file in the colvars.traj format
+
+proc ::cv_dashboard::save_traj_file { fileName } {
+
+  puts "Writing colvars trajectory to file $fileName"
+  set o [open $fileName w]
+  puts -nonewline $o [cv printframelabels]
+
+  set nf [molinfo top get numframes]
+  for {set f 0} {$f< $nf} {incr f} {
+    cv frame $f
+    cv update
+    puts -nonewline $o [cv printframe]
+  }
+  close $o
 }
