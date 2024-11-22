@@ -101,18 +101,19 @@ harmonicWalls {
     outputEnergy   yes
     outputAccumulatedWork yes
 }
-#_harmonic walls with changing force constant
+#_harmonic wall with changing force constant: RFEP
+# (Restraint Free Energy Perturbation)
 harmonicWalls {
-    colvars        <names>
+    colvars         <names>
 
-    lowerWalls     0.1
-    upperWalls     0.2
-    forceConstant  10.0
+    upperWalls      10.0
+    forceConstant   200.0
 
-    targetForceconstant 0.0001
-    targetNumSteps 10
-    outputEnergy   yes
-    outputAccumulatedWork yes
+    decoupling      yes
+    lambdaExponent  4     # Nonlinear scaling of the force constant
+    targetNumSteps  10000
+    targetNumStages 40
+    outputEnergy    yes
 }
 #_histogram
 histogram {
