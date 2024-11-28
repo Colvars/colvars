@@ -44,6 +44,7 @@ if ( !(is >> hash) || (hash != "#") ) {
 }
 
 is >> nd;
+// mult_i == 0 means this is a gradient grid
 mult = (mult_i == 0) ? nd : mult_i;
 
 std::vector<cvm::real> lower_in(nd), widths_in(nd);

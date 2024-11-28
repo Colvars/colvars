@@ -17,6 +17,7 @@
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
+#include "colvarproxy.h"
 
 
 /// \brief Unified base class for grid of values of a function of several collective
@@ -1016,6 +1017,8 @@ public:
   colvar_grid_count(std::vector<colvar *>  &colvars,
                     std::string            config);
 
+  colvar_grid_count(std::string &filename);
+
   /// Increment the counter at given position
   inline void incr_count(std::vector<int> const &ix)
   {
@@ -1187,32 +1190,34 @@ public:
   inline cvm::real log_gradient_finite_diff(const std::vector<int> &ix0,
                                             int n = 0, int offset = 0)
   {
-    cvm::real A0, A1, A2;
+    cvm::real Am1, A0, A1, A2; // values at locations -1, 0, +1, +2
     std::vector<int> ix = ix0;
 
     // TODO this can be rewritten more concisely with wrap_edge()
     if (periodic[n]) {
       ix[n]--; wrap(ix);
-      A0 = value(ix) + offset;
-      ix = ix0;
+      Am1 = value(ix) + offset;
+      ix = ix0; wrap(ix);
+      A0 = value(ix) + offset; // Used just to detect gaps
       ix[n]++; wrap(ix);
       A1 = value(ix) + offset;
-      if (A0 * A1 == 0) {
-        return 0.; // can't handle empty bins
+      if (Am1 * A0 * A1 == 0) {
+        return 0.; // can't handle 0, and don't compute derivative over a gap
       } else {
-        return (cvm::logn(A1) - cvm::logn(A0))
+        return (cvm::logn(A1) - cvm::logn(Am1))
           / (widths[n] * 2.);
       }
     } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
       ix[n]--;
-      A0 = value(ix) + offset;
+      Am1 = value(ix) + offset;
       ix = ix0;
+      A0 = value(ix) + offset;
       ix[n]++;
       A1 = value(ix) + offset;
-      if (A0 * A1 == 0) {
-        return 0.; // can't handle empty bins
+      if (Am1 * A0 * A1 == 0) {
+        return 0.; // can't handle 0, and don't compute derivative over a gap
       } else {
-        return (cvm::logn(A1) - cvm::logn(A0))
+        return (cvm::logn(A1) - cvm::logn(Am1))
           / (widths[n] * 2.);
       }
     } else {
@@ -1223,7 +1228,7 @@ public:
       ix[n] += increment; A1 = value(ix) + offset;
       ix[n] += increment; A2 = value(ix) + offset;
       if (A0 * A1 * A2 == 0) {
-        return 0.; // can't handle empty bins
+        return 0.; // can't handle 0
       } else {
         return (-1.5 * cvm::logn(A0) + 2. * cvm::logn(A1)
           - 0.5 * cvm::logn(A2)) * increment / widths[n];
@@ -1238,31 +1243,33 @@ public:
   inline cvm::real gradient_finite_diff(const std::vector<int> &ix0,
                                         int n = 0)
   {
-    cvm::real A0, A1, A2;
+    cvm::real Am1, A0, A1, A2;
     std::vector<int> ix = ix0;
 
     // FIXME this can be rewritten more concisely with wrap_edge()
     if (periodic[n]) {
       ix[n]--; wrap(ix);
-      A0 = value(ix);
-      ix = ix0;
+      Am1 = value(ix);
+      ix = ix0; wrap(ix);
+      A0 = value(ix); // Used just to detect gaps
       ix[n]++; wrap(ix);
       A1 = value(ix);
-      if (A0 * A1 == 0) {
+      if (Am1 * A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (A1 - A0) / (widths[n] * 2.);
+        return (A1 - Am1) / (widths[n] * 2.);
       }
     } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
       ix[n]--;
-      A0 = value(ix);
+      Am1 = value(ix);
       ix = ix0;
+      A0 = value(ix);
       ix[n]++;
       A1 = value(ix);
-      if (A0 * A1 == 0) {
+      if (Am1 * A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (A1 - A0) / (widths[n] * 2.);
+        return (A1 - Am1) / (widths[n] * 2.);
       }
     } else {
       // edge: use 2nd order derivative
@@ -1285,7 +1292,7 @@ public:
 
   /// \brief Provide the associated sample count by which each binned value
   /// should be divided
-  colvar_grid_count *samples;
+  std::shared_ptr<colvar_grid_count> samples;
 
   /// Default constructor
   colvar_grid_scalar();
@@ -1485,31 +1492,33 @@ public:
   inline cvm::real gradient_finite_diff(const std::vector<int> &ix0,
                                         int n = 0)
   {
-    cvm::real A0, A1, A2;
+    cvm::real Am1, A0, A1, A2;
     std::vector<int> ix = ix0;
 
     // FIXME this can be rewritten more concisely with wrap_edge()
     if (periodic[n]) {
       ix[n]--; wrap(ix);
-      A0 = value(ix);
-      ix = ix0;
+      Am1 = value(ix);
+      ix = ix0; wrap(ix);
+      A0 = value(ix); // Used just to detect gaps
       ix[n]++; wrap(ix);
       A1 = value(ix);
-      if (A0 * A1 == 0) {
+      if (Am1 * A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (A1 - A0) / (widths[n] * 2.);
+        return (A1 - Am1) / (widths[n] * 2.);
       }
     } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
       ix[n]--;
-      A0 = value(ix);
+      Am1 = value(ix);
       ix = ix0;
+      A0 = value(ix);
       ix[n]++;
       A1 = value(ix);
-      if (A0 * A1 == 0) {
+      if (Am1 * A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return cvm::real(A1 - A0) / (widths[n] * 2.);
+        return (A1 - Am1) / (widths[n] * 2.);
       }
     } else {
       // edge: use 2nd order derivative
@@ -1518,8 +1527,8 @@ public:
       A0 = value(ix);
       ix[n] += increment; A1 = value(ix);
       ix[n] += increment; A2 = value(ix);
-      return (-1.5 * cvm::real(A0) + 2. * cvm::real(A1)
-          - 0.5 * cvm::real(A2)) * increment / widths[n];
+      return (-1.5 * A0 + 2. * A1
+          - 0.5 * A2) * increment / widths[n];
     }
   }
 
@@ -1557,6 +1566,7 @@ public:
     }
     if (add) {
       if (samples)
+        // Special case if samples == 0 and value != 0
         data[address(ix)] += new_value * samples->new_value(ix);
       else
         data[address(ix)] += new_value;
@@ -1616,7 +1626,7 @@ public:
   //                      std::string config = std::string());
 
   /// Constructor from a multicol file
-  colvar_grid_gradient(std::string const &filename);
+  colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in = nullptr);
 
   /// Constructor from a vector of colvars and a pointer to the count grid
   colvar_grid_gradient(std::vector<colvar *> &colvars,
@@ -1914,22 +1924,46 @@ class integrate_potential : public colvar_grid_scalar
   /// Array holding divergence + boundary terms (modified Neumann) if not periodic
   std::vector<cvm::real> divergence;
 
+  // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
+  // Stored as a flat vector like the divergence
+  std::vector<cvm::real> weights;
+
+  // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
+  // Stored as a flat vector like the divergence
+  std::vector<cvm::real> fdiff_gradient;
+
 //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
   /// Obtain the gradient vector at given location ix, if available
   /// or zero if it is on the edge of the gradient grid
   /// ix gets wrapped in PBC
-  void get_grad(cvm::real * g, std::vector<int> &ix);
+  /// Returns the sample count in given bin if available, or 1 for all
+  size_t get_grad(cvm::real * g, std::vector<int> &ix);
 
   /// \brief Solve linear system based on CG, valid for symmetric matrices only
-  void nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x,
+  /// atimes : left multiplication by LHS symmetric matrix
+  /// b : RHS of equation
+  /// x : initial guess for the solution; output is solution
+  /// tol : convergence criterion
+  /// itmax : max number of iterations
+  /// iter (out) : final iteration
+  /// err (out) : final error value
+  void nr_linbcg_sym(const bool weighted, const std::vector<cvm::real> &b, std::vector<cvm::real> &x,
                      const cvm::real &tol, const int itmax, int &iter, cvm::real &err);
 
   /// l2 norm of a vector
   cvm::real l2norm(const std::vector<cvm::real> &x);
 
-  /// Multiplication by sparse matrix representing Lagrangian (or its transpose)
-  void atimes(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
+  /// @brief Multiplication by sparse matrix representing Lagrangian (or its transpose)
+  /// @param x scalar field, discretized on grid, flattened
+  /// @param r (out) discrete Laplacian of x
+  void laplacian(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
+
+  void laplacian_weighted(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
+
+  /// Compute gradient of whole potential grid by finite difference
+  // void compute_grad(const std::vector<cvm::real> &A, std::vector<cvm::real> &G);
+
 
 //   /// Inversion of preconditioner matrix
 //   void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x);

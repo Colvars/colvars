@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
 
 #include "colvargrid.h"
 #include "colvarproxy.h"
@@ -16,7 +17,29 @@ int main (int argc, char *argv[]) {
   proxy->colvars = new colvarmodule(proxy); // This could be omitted if we used the colvarproxy_stub class
 
   std::string gradfile (argv[1]);
-  std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
+  std::string countfile;
+  std::shared_ptr<colvar_grid_count> count_ptr;
+
+  // Look for matching count file
+  size_t pos = gradfile.rfind(std::string(".czar.grad"));
+  if (pos != std::string::npos) {
+    countfile = gradfile.substr(0,pos) + ".zcount";
+  } else {
+    pos = gradfile.rfind(std::string(".grad"));
+    if (pos != std::string::npos) {
+      countfile = gradfile.substr(0,pos) + ".count";
+    }
+  }
+  if (countfile.size()) {
+    struct stat buffer;
+    if (stat(countfile.c_str(), &buffer) == 0) {
+      std::cout << "Found associated count file " << countfile << ", reading...\n";
+      count_ptr.reset(new colvar_grid_count(countfile));
+    }
+  }
+
+  std::cout << "Reading gradient file " << gradfile << std::endl;
+  std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile, count_ptr);
   if (cvm::get_error()) { return -1; }
 
   int itmax = 10000;
