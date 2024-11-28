@@ -36,10 +36,6 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $w.reset -text "⚠ Reset ⚠" -command ::cv_dashboard::reset -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
-  incr gridrow
-  grid [ttk::button $w.save_traj -text "Save traj file" -command ::cv_dashboard::save_traj_dialog -padding "2 0 2 0"] \
-    -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-
   # Table of colvars
   ttk::treeview $w.cvtable -selectmode extended -show {headings tree} -height 8
   $w.cvtable configure -column val
@@ -104,7 +100,10 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::button $main.del -text "Delete" -command ::cv_dashboard::del_cv -padding "2 0 2 0"] \
     -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
   incr gridrow
-  grid [ttk::button $main.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.refresh -text "Refresh list \[F5\]" -command ::cv_dashboard::refresh_table -padding "2 0 2 0"]  \
+    -row $gridrow -column 0 -columnspan 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::button $main.save_traj -text "Save traj file" -command ::cv_dashboard::save_traj_dialog -padding "2 0 2 0"] \
+    -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   # Plots
   incr gridrow
