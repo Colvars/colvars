@@ -214,7 +214,10 @@ protected:
 
   /// \brief Intermediate quantity to compute the restraint free energy
   /// (in TI, would be the accumulating FE derivative)
-  cvm::real restraint_FE;
+  cvm::real restraint_FE_deriv;
+
+  /// \brief Derivative of the restraint energy wrt lambda
+  cvm::real restraint_potential_deriv = 0.;
 
   /// \brief Equilibration steps for restraint FE calculation through TI
   cvm::real target_equil_steps;

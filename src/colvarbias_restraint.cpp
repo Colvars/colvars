@@ -524,7 +524,7 @@ colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(char const *key)
   target_force_k = -1.0;
   starting_force_k = -1.0;
   lambda_exp = 1.0;
-  restraint_FE = 0.0;
+  restraint_FE_deriv = 0.0;
   force_k_incr = 0.0;
 }
 
@@ -624,8 +624,9 @@ int colvarbias_restraint_k_moving::update()
         for (size_t i = 0; i < num_variables(); i++) {
           dU_dk += d_restraint_potential_dk(i);
         }
-        restraint_FE += lambda_exp * cvm::pow(lambda, lambda_exp - 1.0)
+        restraint_potential_deriv = lambda_exp * cvm::pow(lambda, lambda_exp - 1.0)
           * (target_force_k - starting_force_k) * dU_dk;
+        restraint_FE_deriv += restraint_potential_deriv;
       }
 
       // Finish current stage...
@@ -634,12 +635,12 @@ int colvarbias_restraint_k_moving::update()
 
         cvm::log("Restraint " + this->name + " Lambda= "
                  + cvm::to_str(lambda) + " dA/dLambda= "
-                 + cvm::to_str(restraint_FE / cvm::real(target_nsteps - target_equil_steps))+"\n");
+                 + cvm::to_str(restraint_FE_deriv / cvm::real(target_nsteps - target_equil_steps))+"\n");
 
         //  ...and move on to the next one
         if (stage < target_nstages) {
 
-          restraint_FE = 0.0;
+          restraint_FE_deriv = 0.0;
           stage++;
           if (lambda_schedule.size()) {
             lambda = lambda_schedule[stage];
@@ -744,6 +745,11 @@ std::ostream & colvarbias_restraint_k_moving::write_traj(std::ostream &os)
     os << " "
        << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
        << acc_work;
+  }
+  if (b_chg_force_k && target_nstages) {
+      os << " "
+       << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
+       << restraint_potential_deriv;
   }
   return os;
 }
