@@ -19,6 +19,7 @@ extern "C" int main(int argc, char *argv[]) {
     return 1;
   }
 
+  proxy->tcl_run_script("puts \"(Tcl) This is Tcl version [info tclversion]\"");
   proxy->tcl_run_script("puts \"(Tcl) Currently defined variables:\n(Tcl) [info vars]\"");
   proxy->tcl_run_script("puts \"(Tcl) Currently defined procedures:\n(Tcl) [info procs]\"");
 
