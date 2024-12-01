@@ -1504,6 +1504,20 @@ conditions (PBCs):
     small periodic cell.}
 \end{itemize}
 
+\paragraph*{Example: ignoring PBCs in a distance between two groups.}  Using \texttt{forceNoPBC yes} when defining a
+\texttt{distance \{ ... \}} function lets Colvars ignore the minimum-image convention when computing the distance between the centers of mass of \texttt{group1} and \texttt{group2}.  (Note that the centers of mass themselves are always calculated as weighted averages anyway).
+
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~d\\
+\-~~distance~\{\\
+\-~~~~forceNoPBC~yes\\
+\-~~~~group1~\{~\ldots~\}\\
+\-~~~~group2~\{~\ldots~\}\\
+\-~~\}\\
+\-\}\\
+\end{cvexampleinput}
+
 
 \cvsubsec{Distances}{sec:cvc_distances}
 
