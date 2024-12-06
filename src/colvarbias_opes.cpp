@@ -1915,13 +1915,13 @@ void colvarbias_opes::updateNlist(const std::vector<cvm::real>& center) {
     {
       std::vector<size_t> private_nlist_index;
       #pragma omp for nowait
-      for (size_t k = 0; k < m_kernels.size(); ++k) {
+      for (int k = 0; k < static_cast<int>(m_kernels.size()); ++k) {
         cvm::real norm2_k = 0;
-        for (size_t i = 0; i < num_variables(); ++i) {
+        for (int i = 0; i < static_cast<int>(num_variables()); ++i) {
           norm2_k += variables(i)->dist2(m_nlist_center[i], m_kernels[k].m_center[i]) / (m_kernels[k].m_sigma[i] * m_kernels[k].m_sigma[i]);
         }
         if (norm2_k <= m_nlist_param[0] * m_cutoff2) {
-          private_nlist_index.push_back(k);
+          private_nlist_index.push_back(static_cast<size_t>(k));
         }
       }
       #pragma omp critical
