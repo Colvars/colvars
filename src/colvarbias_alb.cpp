@@ -149,7 +149,8 @@ int colvarbias_alb::update()
 {
   colvarproxy *proxy = cvm::main()->proxy;
 
-  bias_energy = 0.0;
+  int error_code = colvarbias::update();
+
   update_calls++;
 
   if (cvm::debug())
@@ -251,7 +252,7 @@ int colvarbias_alb::update()
 
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
