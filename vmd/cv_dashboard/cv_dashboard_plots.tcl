@@ -85,6 +85,18 @@ proc ::cv_dashboard::plot { { type timeline } } {
     set plothandle [multiplot -title {Colvars trajectory   [click on markers, keyb arrows (+ Shift/Ctrl) to navigate]} \
     -xlabel $xname -ylabel $yname -nostats -marker circle -fill white -radius 4 -callback ::cv_dashboard::marker_clicked]
     $plothandle add $y($xname) $y($yname)
+
+    # Add custom Colvars menu item to Multiplot window
+    set plot_ns [$plothandle namespace]
+    set menubar "[set ${plot_ns}::w].menubar"
+    menubutton $menubar.colvars -text "Colvars" -underline 0 -menu $menubar.colvars.menu
+    menu $menubar.colvars.menu -tearoff 0
+    $menubar.colvars.menu add command -label "Swap axes" -command ::cv_dashboard::pairwise_swap_axes
+    # Add item to existing menu bar
+    set col [lindex [grid size $menubar] 0]
+    grid $menubar.colvars -row 0 -column $col -sticky nsw
+    grid columnconfigure $menubar $col -weight 2
+
   } elseif { $type == "histogram"} {
     set xname [lindex $name_list 0]
     # Save list of values for navigating
@@ -112,7 +124,6 @@ proc ::cv_dashboard::plot { { type timeline } } {
       -xlabel $xname -ylabel "N" -nostats -xmin $xmin -xmax $xmax \
       -ymin 0.0 -x $centers -y $frequencies -nolines -plot]
 
-    set ns [namespace qualifiers $plothandle]
     # force bars to start at zero
     set ymin 0.0
 
@@ -251,13 +262,13 @@ proc ::cv_dashboard::plot_bias_energy { } {
 # Callback for click inside plot window, at coords x y
 proc ::cv_dashboard::plot_clicked { x y } {
 
-  set ns [$::cv_dashboard::plothandle namespace]
-  set xplotmin [set ${ns}::xplotmin]
-  set xplotmax [set ${ns}::xplotmax]
-  set yplotmin [set ${ns}::yplotmin]
-  set yplotmax [set ${ns}::yplotmax]
-  set scalex [set ${ns}::scalex]
-  set xmin [set ${ns}::xmin]
+  set plot_ns [$::cv_dashboard::plothandle namespace]
+  set xplotmin [set ${plot_ns}::xplotmin]
+  set xplotmax [set ${plot_ns}::xplotmax]
+  set yplotmin [set ${plot_ns}::yplotmin]
+  set yplotmax [set ${plot_ns}::yplotmax]
+  set scalex [set ${plot_ns}::scalex]
+  set xmin [set ${plot_ns}::xmin]
 
   # note: ymax < ymin because of pixel coordinate convention
   if { [expr {($x < $xplotmin) || ($x > $xplotmax) || ($y > $yplotmin) || ($y < $yplotmax)}] } {
@@ -330,9 +341,9 @@ proc ::cv_dashboard::chg_frame { shift { order "traj" } } {
 proc ::cv_dashboard::zoom { factor } {
   variable ::cv_dashboard::plothandle
 
-  set ns [namespace qualifiers $plothandle]
-  set xmin [set ${ns}::xmin]
-  set xmax [set ${ns}::xmax]
+  set plot_ns [$plothandle namespace]
+  set xmin [set ${plot_ns}::xmin]
+  set xmax [set ${plot_ns}::xmax]
 
   set f $::cv_dashboard::current_frame
   # rescale current half-width
@@ -357,9 +368,9 @@ proc ::cv_dashboard::zoom { factor } {
 proc ::cv_dashboard::fit_vertically {} {
   variable ::cv_dashboard::plothandle
 
-  set ns [namespace qualifiers $plothandle]
-  set xmin [set ${ns}::xmin]
-  set xmax [set ${ns}::xmax]
+  set plot_ns [$plothandle namespace]
+  set xmin [set ${plot_ns}::xmin]
+  set xmax [set ${plot_ns}::xmax]
   set ydata [$plothandle ydata]
   set ymin [lindex [lindex $ydata 0] $xmin]
   set ymax $ymin
@@ -399,11 +410,11 @@ proc ::cv_dashboard::display_marker { f } {
       # we tinker a little with Multiplot's internals to get access to its Tk canvas
       # necessary because Multiplot does not expose an interface to draw & delete
       # objects without redrawing the whole plot - which takes too long for this
-      set ns [namespace qualifiers $plothandle]
+      set plot_ns [$plothandle namespace]
       if { $::cv_dashboard::plottype == "timeline" } {
 
-        set xmin [set ${ns}::xmin]
-        set xmax [set ${ns}::xmax]
+        set xmin [set ${plot_ns}::xmin]
+        set xmax [set ${plot_ns}::xmax]
         # Move plot boundaries if necessary
         if { $f < $xmin } {
           set xmax [expr { $xmax + $f - $xmin }]
@@ -416,49 +427,49 @@ proc ::cv_dashboard::display_marker { f } {
           $plothandle configure -xmin $xmin -xmax $xmax -plot
         }
 
-        set y1 [set ${ns}::yplotmin]
-        set y2 [set ${ns}::yplotmax]
-        set xplotmin [set ${ns}::xplotmin]
-        set scalex [set ${ns}::scalex]
+        set y1 [set ${plot_ns}::yplotmin]
+        set y2 [set ${plot_ns}::yplotmax]
+        set xplotmin [set ${plot_ns}::xplotmin]
+        set scalex [set ${plot_ns}::scalex]
         set x [expr $xplotmin+($scalex*($f-$xmin))]
 
-        set canv "[set ${ns}::w].f.cf"
+        set canv "[set ${plot_ns}::w].f.cf"
         $canv delete frame_marker
         $canv create line  $x $y1 $x $y2 -fill $timeline_color -tags frame_marker
       } elseif { $::cv_dashboard::plottype == "2cv" } {
         set x [lindex [ lindex [$plothandle xdata] 0] $f]
         set y [lindex [ lindex [$plothandle ydata] 0] $f]
 
-        set xmin [set ${ns}::xmin]
-        set ymin [set ${ns}::ymin]
+        set xmin [set ${plot_ns}::xmin]
+        set ymin [set ${plot_ns}::ymin]
 
         set radius 5
-        set xplotmin [set ${ns}::xplotmin]
-        set scalex [set ${ns}::scalex]
+        set xplotmin [set ${plot_ns}::xplotmin]
+        set scalex [set ${plot_ns}::scalex]
         set x1 [expr {$xplotmin+$scalex*($x-$xmin) - $radius}]
         set x2 [expr {$xplotmin+$scalex*($x-$xmin) + $radius}]
 
-        set yplotmin [set ${ns}::yplotmin]
-        set scaley [set ${ns}::scaley]
+        set yplotmin [set ${plot_ns}::yplotmin]
+        set scaley [set ${plot_ns}::scaley]
         set y1 [expr {$yplotmin+$scaley*($y-$ymin) - $radius}]
         set y2 [expr {$yplotmin+$scaley*($y-$ymin) + $radius}]
 
-        set canv "[set ${ns}::w].f.cf"
+        set canv "[set ${plot_ns}::w].f.cf"
         $canv delete frame_marker
         $canv create oval $x1 $y1 $x2 $y2 -outline white -fill $2cv_color -tags frame_marker
       } elseif { $::cv_dashboard::plottype == "histogram" } {
-        set xmin [set ${ns}::xmin]
-        set xmax [set ${ns}::xmax]
+        set xmin [set ${plot_ns}::xmin]
+        set xmax [set ${plot_ns}::xmax]
 
-        set y1 [set ${ns}::yplotmin]
-        set y2 [set ${ns}::yplotmax]
+        set y1 [set ${plot_ns}::yplotmin]
+        set y2 [set ${plot_ns}::yplotmax]
         set v [lindex $cv_dashboard::histogram_time_series $f]
 
-        set xplotmin [set ${ns}::xplotmin]
-        set scalex [set ${ns}::scalex]
+        set xplotmin [set ${plot_ns}::xplotmin]
+        set scalex [set ${plot_ns}::scalex]
         set x [expr $xplotmin+($scalex*($v-$xmin))]
 
-        set canv "[set ${ns}::w].f.cf"
+        set canv "[set ${plot_ns}::w].f.cf"
         $canv delete frame_marker
         $canv create line  $x $y1 $x $y2 -fill $histogram_color -tags frame_marker
       }
@@ -518,4 +529,19 @@ proc ::cv_dashboard::simplify x {
   set factor [expr $pow10 * $half_int]
   set x [expr round($x / $factor) * $factor]
   return $x
+}
+
+
+proc ::cv_dashboard::pairwise_swap_axes {} {
+
+  variable ::cv_dashboard::plothandle
+  set plot_ns [$plothandle namespace]
+
+  set x [$plothandle xdata]
+  set y [$plothandle ydata]
+  set xlabel [set ${plot_ns}::xlabeltext]
+  set ylabel [set ${plot_ns}::ylabeltext]
+
+  $plothandle clear
+  $plothandle add $y $x -xlabel $ylabel -ylabel $xlabel -plot
 }
