@@ -100,11 +100,6 @@ int colvarbias::init(std::string const &conf)
     colvar_values[i].type(colvars[i]->value().type());
     colvar_forces[i].type(colvar_values[i].type());
     previous_colvar_forces[i].type(colvar_values[i].type());
-    if (!colvars[i]->is_enabled(f_cv_total_force_current_step)) {
-      // If any colvar does not have current-step total force, then
-      // we can't do step 0 data
-      feature_states[f_cvb_step_zero_data].available = false;
-    }
   }
 
   output_prefix = cvm::output_prefix();

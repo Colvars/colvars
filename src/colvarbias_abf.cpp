@@ -136,6 +136,12 @@ int colvarbias_abf::init(std::string const &conf)
       enable(f_cvb_extended);
     }
 
+    if (!colvars[i]->is_enabled(f_cv_total_force_current_step)) {
+      // If any colvar does not have current-step total force, then
+      // we can't do step 0 data
+      provide(f_cvb_step_zero_data, false);
+    }
+
     // Cannot mix and match coarse time steps with ABF because it gives
     // wrong total force averages - total force needs to be averaged over
     // every time step
