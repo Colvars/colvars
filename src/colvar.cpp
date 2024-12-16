@@ -2560,7 +2560,7 @@ std::string const colvar::get_state_params() const
      << "  x "
      << std::setprecision(cvm::cv_prec)
      << std::setw(cvm::cv_width);
-  if (is_enabled(f_cv_external)) {
+  if (is_enabled(f_cv_external) && is_enabled(f_cv_extended_Lagrangian)) {
     // For an external colvar, x is one timestep in the future after integration
     // write x at beginning of timestep
     os << x_reported << "\n";
