@@ -5,18 +5,23 @@ configuration {
 
 colvar {
   name one
-  x       3.2140487849902
+  x       3.1550316480017
 }
 
-histogram {
+abf {
   configuration {
     step 40
-    name histogram1
+    name abf1
   }
 
-grid
+samples
  0 0 0 0 0 0 0 0
- 0 0 0 0 0 40 0 0
+ 0 0 21 19 0 0 0 0
+ 0 0 0 0
+
+gradient
  0 0 0 0 0 0 0 0
+ 0 0 -18.596622597615 -2.579519379033 0 0 0 0
+ 0 0 0 0
 }
 
