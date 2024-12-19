@@ -154,6 +154,7 @@ for colvar in "distance-grid" ; do
         "histogram" \
         "histogram-customgrid" \
         "abf" \
+        "abf-customgrid" \
         "metadynamics" \
         "metadynamics-sigmas" \
         "metadynamics-wt" \

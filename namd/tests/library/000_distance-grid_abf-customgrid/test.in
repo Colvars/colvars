@@ -24,11 +24,13 @@ colvar {
     }
 } 
 
-histogram {
-    colvars    one
+abf {
+    colvars one
+    fullSamples 10
+
     grid {
         width 0.2
-        lowerBoundary 0.6
-        upperBoundary 5.4
+        lowerBoundary 1.0
+        upperBoundary 5.0
     }
 }
