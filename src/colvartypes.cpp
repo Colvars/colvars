@@ -368,13 +368,16 @@ void colvarmodule::rotation::calc_optimal_rotation_impl() {
 #endif
   if (ierror) {
     cvm::log("Failed to diagonalize the following overlapping matrix:\n");
-    // cvm::log(cvm::to_str(S[0][0]) + " " + cvm::to_str(S[0][1]) + );
     for (size_t i = 0; i < 4; ++i) {
       for (size_t j = 0; j < 4; ++j) {
         cvm::log(cvm::to_str(S[i][j]) + " ");
       }
       cvm::log("\n");
     }
+    cvm::log("The corresponding correlation matrix is:\n");
+    cvm::log(" " + cvm::to_str(C.xx) + " " + cvm::to_str(C.xy) + " " + cvm::to_str(C.xz));
+    cvm::log(" " + cvm::to_str(C.yx) + " " + cvm::to_str(C.yy) + " " + cvm::to_str(C.yz));
+    cvm::log(" " + cvm::to_str(C.zx) + " " + cvm::to_str(C.zy) + " " + cvm::to_str(C.zz) + "\n");
     cvm::error("Too many iterations in jacobi diagonalization.\n"
                "This is usually the result of an ill-defined set of atoms for "
                "rotational alignment (RMSD, rotateReference, etc).\n");
