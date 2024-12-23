@@ -124,7 +124,7 @@ public:
   }
 
 #if CMK_SMP && USE_CKLOOP
-  int check_smp_enabled() override;
+  int check_smp_enabled(smp_mode_t mode) override;
 
   int smp_colvars_loop() override;
 

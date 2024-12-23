@@ -201,7 +201,7 @@ int colvarbias_opes::init(const std::string& conf) {
   get_keyval(conf, "calcWork", m_calc_work, false);
   bool b_replicas = false;
   get_keyval(conf, "multipleReplicas", b_replicas, false);
-  if (!cvm::proxy->b_smp_active) m_num_threads = 1;
+  if (cvm::proxy->check_smp_enabled(colvarproxy::smp_mode_t::cvcs) != COLVARS_OK) m_num_threads = 1;
   else m_num_threads = cvm::proxy->smp_num_threads();
 #ifdef OPES_THREADING
   if (m_num_threads == -1) {

@@ -448,6 +448,8 @@ class colvarproxy_smp {
 
 public:
 
+  enum class smp_mode_t {cvcs, inner_loop, none};
+
   /// Constructor
   colvarproxy_smp();
 
@@ -456,10 +458,10 @@ public:
 
   /// Whether threaded parallelization should be used (TODO: make this a
   /// cvm::deps feature)
-  bool b_smp_active;
+  smp_mode_t smp_mode;
 
   /// Whether threaded parallelization is available (TODO: make this a cvm::deps feature)
-  virtual int check_smp_enabled();
+  virtual int check_smp_enabled(smp_mode_t mode);
 
   /// Distribute calculation of colvars (and their components) across threads
   virtual int smp_colvars_loop();

@@ -1497,9 +1497,9 @@ int colvarproxy_namd::compute_volmap(int flags,
 
 #if CMK_SMP && USE_CKLOOP // SMP only
 
-int colvarproxy_namd::check_smp_enabled()
+int colvarproxy_namd::check_smp_enabled(smp_mode_t mode)
 {
-  if (b_smp_active) {
+  if (smp_mode == mode) {
     return COLVARS_OK;
   }
   return COLVARS_ERROR;
