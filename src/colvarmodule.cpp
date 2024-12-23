@@ -119,16 +119,6 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   cxx_lang_msg += std::string("\n");
   cvm::log(cxx_lang_msg);
 
-  if (proxy->check_smp_enabled() == COLVARS_NOT_IMPLEMENTED) {
-    cvm::log("  - SMP parallelism: not available\n");
-  } else {
-    if (proxy->check_smp_enabled() == COLVARS_OK) {
-      cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
-    } else {
-      cvm::log("  - SMP parallelism: available, but not enabled\n");
-    }
-  }
-
   if (proxy->check_replicas_enabled() == COLVARS_NOT_IMPLEMENTED) {
     cvm::log("  - Multiple replicas: not available\n");
   } else {
@@ -398,8 +388,18 @@ int colvarmodule::parse_global_params(std::string const &conf)
     }
   }
 
-  if (parse->get_keyval(conf, "smp", proxy->b_smp_active, proxy->b_smp_active)) {
-    if (proxy->b_smp_active == false) {
+  std::string smp;
+  if (parse->get_keyval(conf, "smp", smp, "cvcs")) {
+    if (smp == "cvcs" || smp == "on" || smp == "yes") {
+      proxy->smp_mode = colvarproxy_smp::smp_mode_t::cvcs;
+      cvm::log("SMP parallelism will be applied to Colvars components.\n");
+      cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
+    } else if (smp == "inner_loop") {
+      proxy->smp_mode = colvarproxy_smp::smp_mode_t::inner_loop;
+      cvm::log("SMP parallelism will be applied to inner loops.\n");
+      cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
+    } else {
+      proxy->smp_mode = colvarproxy_smp::smp_mode_t::none;
       cvm::log("SMP parallelism has been disabled.\n");
     }
   }
@@ -936,7 +936,7 @@ int colvarmodule::calc_colvars()
   }
 
   // if SMP support is available, split up the work
-  if (proxy->check_smp_enabled() == COLVARS_OK) {
+  if (proxy->check_smp_enabled(colvarproxy::smp_mode_t::cvcs) == COLVARS_OK) {
 
     // first, calculate how much work (currently, how many active CVCs) each colvar has
 
@@ -1027,7 +1027,7 @@ int colvarmodule::calc_biases()
   }
 
   // If SMP support is available, split up the work (unless biases need to use main thread's memory)
-  if (proxy->check_smp_enabled() == COLVARS_OK && !biases_need_main_thread) {
+  if (proxy->check_smp_enabled(colvarproxy::smp_mode_t::cvcs) == COLVARS_OK && !biases_need_main_thread) {
 
     if (use_scripted_forces && !scripting_after_biases) {
       // calculate biases and scripted forces in parallel
@@ -2000,7 +2000,7 @@ size_t & colvarmodule::depth()
 {
   // NOTE: do not call log() or error() here, to avoid recursion
   colvarmodule *cv = cvm::main();
-  if (proxy->check_smp_enabled() == COLVARS_OK) {
+  if (proxy->check_smp_enabled(colvarproxy::smp_mode_t::cvcs) == COLVARS_OK) {
     int const nt = proxy->smp_num_threads();
     if (int(cv->depth_v.size()) != nt) {
       proxy->smp_lock();

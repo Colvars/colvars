@@ -243,7 +243,7 @@ void colvarproxy_atom_groups::compute_max_atom_groups_applied_force()
 
 colvarproxy_smp::colvarproxy_smp()
 {
-  b_smp_active = true; // May be disabled by user option
+  smp_mode = smp_mode_t::cvcs; // May be disabled by user option
   omp_lock_state = NULL;
 #if defined(_OPENMP)
   if (omp_get_thread_num() == 0) {
@@ -266,10 +266,10 @@ colvarproxy_smp::~colvarproxy_smp()
 }
 
 
-int colvarproxy_smp::check_smp_enabled()
+int colvarproxy_smp::check_smp_enabled(smp_mode_t mode)
 {
 #if defined(_OPENMP)
-  if (b_smp_active) {
+  if (smp_mode == mode) {
     return COLVARS_OK;
   }
   return COLVARS_ERROR;
@@ -470,8 +470,8 @@ colvarproxy::~colvarproxy()
 
 bool colvarproxy::io_available()
 {
-  return (check_smp_enabled() == COLVARS_OK && smp_thread_id() == 0) ||
-    (check_smp_enabled() != COLVARS_OK);
+  return (check_smp_enabled(smp_mode_t::cvcs) == COLVARS_OK && smp_thread_id() == 0) ||
+    (check_smp_enabled(smp_mode_t::cvcs) != COLVARS_OK);
 }
 
 
