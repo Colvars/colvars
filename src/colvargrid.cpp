@@ -623,17 +623,34 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
       cvm::log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
 
     // DEBUG ###########################
-    auto backup = data;
-    data = divergence;
-    std::ofstream os("div.dat");
-    write_multicol(os);
-    os.close();
-    data = weights;
-    os.open("weights.dat");
-    write_multicol(os);
-    os.close();
-    data = backup;
-    // DEBUG ###########################
+    // auto backup = data;
+    // data = divergence;
+    // std::ofstream os("div.dat");
+    // write_multicol(os);
+    // os.close();
+    // data = weights;
+    // os.open("weights.dat");
+    // write_multicol(os);
+    // os.close();
+    // data = backup;
+    // DEBUG 2 ###########################
+    // Compute terms of the Laplacian matrix
+    std::vector<cvm::real> lap_mat(nt, 0.);
+
+    std::vector<size_t> cols = { 0, 1, 2, 3, 4, 5, nt-6, nt-5, nt-4, nt-3, nt-2, nt-1 };
+
+    for (size_t i = 0; i < cols.size(); i++) {
+      this->reset();
+      data[cols[i]] = 1.;
+      laplacian_weighted(data, lap_mat);
+      printf("Col  %3li  | ", cols[i]);
+      for (size_t j = 0; j < cols.size(); j++) {
+        printf(" %6.1f", lap_mat[cols[j]]);
+      }
+      printf("\n");
+    }
+    // DEBUG 2 ###########################
+
 
   } else {
     cvm::error("Cannot integrate PMF in dimension > 3\n");
@@ -735,8 +752,10 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
     count += get_grad(g10, ix);
 
     // cvm::real weight = count / 1000.L + min_weight;
-    // cvm::real const weight = 10;
-    cvm::real weight = cvm::logn(count + 1) + 1;
+    cvm::real const weight = (linear_index > nt/2 ? 1.1 : 1);
+    // cvm::real const weight = 1.;
+
+    // cvm::real weight = cvm::logn(count + 1) * 1e-8 + 1;
 
     divergence[linear_index] = ((g10[0]-g00[0] + g11[0]-g01[0]) / widths[0]
                               + (g01[1]-g00[1] + g11[1]-g10[1]) / widths[1]) * 0.5 * weight;
@@ -1234,16 +1253,13 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
 
     for (i=1; i<w-1; i++) {
       // Full range of j, but factor may change on y edges (j == 0 and j == h-1)
-      LA[li] = fact * ffx * ((weights[li] + weights[li + xm]) * (A[li + xm] - A[li]) +
-                             (weights[li] + weights[li + xp]) * (A[li + xp] - A[li]));
+      LA[li] = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
       li++;
       for (j=1; j<h-1; j++) {
-        LA[li] = ffx * ((weights[li] + weights[li + xm]) * (A[li + xm] - A[li]) +
-                        (weights[li] + weights[li + xp]) * (A[li + xp] - A[li]));
+        LA[li] = ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
         li++;
       }
-      LA[li] = fact * ffx * ((weights[li] + weights[li + xm]) * (A[li + xm] - A[li]) +
-                             (weights[li] + weights[li + xp]) * (A[li + xp] - A[li]));
+      LA[li] = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
       li++;
     }
     // Edges along x (x components only)
@@ -1253,43 +1269,37 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       xm =  h * (w - 1);
       xp =  h;
       fact = periodic[1] ? 1.0 : 0.5;
-      LA[li] = fact * ffx * ((weights[li] + weights[li + xm]) * (A[li + xm] - A[li]) +
-                             (weights[li] + weights[li + xp]) * (A[li + xp] - A[li]));
-      LA[li2] = fact * ffx * ((weights[li2] + weights[li2 - xm]) * (A[li2 - xm] - A[li2]) +
-                              (weights[li2] + weights[li2 - xp]) * (A[li2 - xp] - A[li2]));
+      LA[li]  = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
+      LA[li2] = fact * ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
       li++;
       li2++;
       for (j=1; j<h-1; j++) {
-        LA[li] = ffx * ((weights[li] + weights[li + xm]) * (A[li + xm] - A[li]) +
-                        (weights[li] + weights[li + xp]) * (A[li + xp] - A[li]));
-        LA[li2] = ffx * ((weights[li2] + weights[li2 - xm]) * (A[li2 - xm] - A[li2]) +
-                         (weights[li2] + weights[li2 - xp]) * (A[li2 - xp] - A[li2]));
+        LA[li]  = ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
+        LA[li2] = ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
         li++;
         li2++;
       }
-      LA[li] = fact * ffx * ((weights[li] + weights[li + xm]) * (A[li + xm] - A[li]) +
-                             (weights[li] + weights[li + xp]) * (A[li + xp] - A[li]));
-      LA[li2] = fact * ffx * ((weights[li2] + weights[li2 - xm]) * (A[li2 - xm] - A[li2]) +
-                              (weights[li2] + weights[li2 - xp]) * (A[li2 - xp] - A[li2]));
-    } else { // Neumann BC along x
+      LA[li]  = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
+      LA[li2] = fact * ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
+    } else {
       xm = -h;
       xp =  h;
       fact = periodic[1] ? 1.0 : 0.5; // Halve in corners in full PBC only
       // lower corner, "j == 0"
-      LA[li]  = fact * ffx * (weights[li] + weights[li + xp]) * (A[li + xp] - A[li]);
-      LA[li2] = fact * ffx * (weights[li2] + weights[li2 + xm]) * (A[li2 + xm] - A[li2]);
+      LA[li]  = fact * ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
+      LA[li2] = fact * ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
       li++;
       li2++;
       for (j=1; j<h-1; j++) {
         // x gradient (+ y term of laplacian, calculated below)
-        LA[li]  = ffx * (weights[li] + weights[li + xp]) * (A[li + xp] - A[li]);
-        LA[li2] = ffx * (weights[li2] + weights[li2 + xm]) * (A[li2 + xm] - A[li2]);
+        LA[li]  = ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
+        LA[li2] = ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
         li++;
         li2++;
       }
       // upper corner, j == h-1
-      LA[li]  = fact * ffx * (weights[li] + weights[li + xp]) * (A[li + xp] - A[li]);
-      LA[li2] = fact * ffx * (weights[li2] + weights[li2 + xm]) * (A[li2 + xm] - A[li2]);
+      LA[li]  = fact * ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
+      LA[li2] = fact * ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
     }
 
     // Now adding all y components
@@ -1302,8 +1312,7 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       if (i == 1) fact = 1.0;
       if (i == w - 1) fact = periodic[0] ? 1.0 : 0.5;
       for (j=1; j<h-1; j++) {
-        LA[li] += fact * ffy * ((weights[li] + weights[li + ym]) * (A[li + ym] - A[li]) +
-                                (weights[li] + weights[li + yp]) * (A[li + yp] - A[li]));
+        LA[li] += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
         li++;
       }
       li += 2; // skip the edges and move to next column
@@ -1315,43 +1324,37 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       fact = periodic[0] ? 1.0 : 0.5;
       ym = h - 1;
       yp = 1;
-      LA[li] += fact * ffy * ((weights[li] + weights[li + ym]) * (A[li + ym] - A[li]) +
-                              (weights[li] + weights[li + yp]) * (A[li + yp] - A[li]));
-      LA[li2] += fact * ffy * ((weights[li2] + weights[li2 - ym]) * (A[li2 - ym] - A[li2]) +
-                               (weights[li2] + weights[li2 - yp]) * (A[li2 - yp] - A[li2]));
+      LA[li]  += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
+      LA[li2] += fact * ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
       li  += h;
       li2 += h;
       for (i=1; i<w-1; i++) {
-        LA[li] += ffy * ((weights[li] + weights[li + ym]) * (A[li + ym] - A[li]) +
-                         (weights[li] + weights[li + yp]) * (A[li + yp] - A[li]));
-        LA[li2] += ffy * ((weights[li2] + weights[li2 - ym]) * (A[li2 - ym] - A[li2]) +
-                          (weights[li2] + weights[li2 - yp]) * (A[li2 - yp] - A[li2]));
+        LA[li]  += ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
+        LA[li2] += ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
         li  += h;
         li2 += h;
       }
-      LA[li] += fact * ffy * ((weights[li] + weights[li + ym]) * (A[li + ym] - A[li]) +
-                              (weights[li] + weights[li + yp]) * (A[li + yp] - A[li]));
-      LA[li2] += fact * ffy * ((weights[li2] + weights[li2 - ym]) * (A[li2 - ym] - A[li2]) +
-                               (weights[li2] + weights[li2 - yp]) * (A[li2 - yp] - A[li2]));
-    } else { // Neumann BC along y
+      LA[li]  += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
+      LA[li2] += fact * ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
+    } else {
       ym = -1;
       yp = 1;
       fact = periodic[0] ? 1.0 : 0.5; // Halve in corners in full PBC only
       // Left corner
-      LA[li]  += fact * ffy * (weights[li] + weights[li + yp]) * (A[li + yp] - A[li]);
-      LA[li2] += fact * ffy * (weights[li2] + weights[li2 + ym]) * (A[li2 + ym] - A[li2]);
+      LA[li]  += fact * ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
+      LA[li2] += fact * ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
       li  += h;
       li2 += h;
       for (i=1; i<w-1; i++) {
         // y gradient (+ x term of laplacian, calculated above)
-        LA[li]  += ffy * (weights[li] + weights[li + yp]) * (A[li + yp] - A[li]);
-        LA[li2] += ffy * (weights[li2] + weights[li2 + ym]) * (A[li2 + ym] - A[li2]);
+        LA[li]  += ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
+        LA[li2] += ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
         li  += h;
         li2 += h;
       }
       // Right corner
-      LA[li]  += fact * ffy * (weights[li] + weights[li + yp]) * (A[li + yp] - A[li]);
-      LA[li2] += fact * ffy * (weights[li2] + weights[li2 + ym]) * (A[li2 + ym] - A[li2]);
+      LA[li]  += fact * ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
+      LA[li2] += fact * ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
     }
 
   } else if (nd == 3) {
@@ -1388,15 +1391,15 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       for (j=0; j<d; j++) { // full range of y
         if (j == 1) fact *= ifacty;
         if (j == d-1) fact *= facty;
-        LA[li] = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
+        LA[li] = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
         li++;
         fact *= ifactz;
         for (k=1; k<h-1; k++) { // full range of z
-          LA[li] = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
+          LA[li] = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
           li++;
         }
         fact *= factz;
-        LA[li] = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
+        LA[li] = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
         li++;
       }
     }
@@ -1410,20 +1413,20 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       for (j=0; j<d; j++) {
         if (j == 1) fact *= ifacty;
         if (j == d-1) fact *= facty;
-        LA[li]  = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
-        LA[li2] = fact * ffx * (A[li2 - xp] + A[li2 - xm] - 2.0 * A[li2]);
+        LA[li]  = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
+        LA[li2] = fact * ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
         li++;
         li2++;
         fact *= ifactz;
         for (k=1; k<h-1; k++) {
-          LA[li]  = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
-          LA[li2] = fact * ffx * (A[li2 - xp] + A[li2 - xm] - 2.0 * A[li2]);
+          LA[li]  = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
+          LA[li2] = fact * ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
           li++;
           li2++;
         }
         fact *= factz;
-        LA[li]  = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
-        LA[li2] = fact * ffx * (A[li2 - xp] + A[li2 - xm] - 2.0 * A[li2]);
+        LA[li]  = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
+        LA[li2] = fact * ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
         li++;
         li2++;
       }
@@ -1434,21 +1437,21 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       for (j=0; j<d; j++) {
         if (j == 1) fact *= ifacty;
         if (j == d-1) fact *= facty;
-        LA[li]  = fact * ffx * (A[li + xp] - A[li]);
-        LA[li2] = fact * ffx * (A[li2 + xm] - A[li2]);
+        LA[li]  = fact * ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
+        LA[li2] = fact * ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
         li++;
         li2++;
         fact *= ifactz;
         for (k=1; k<h-1; k++) {
           // x gradient (+ y, z terms of laplacian, calculated below)
-          LA[li]  = fact * ffx * (A[li + xp] - A[li]);
-          LA[li2] = fact * ffx * (A[li2 + xm] - A[li2]);
+          LA[li]  = fact * ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
+          LA[li2] = fact * ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
           li++;
           li2++;
         }
         fact *= factz;
-        LA[li]  = fact * ffx * (A[li + xp] - A[li]);
-        LA[li2] = fact * ffx * (A[li2 + xm] - A[li2]);
+        LA[li]  = fact * ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
+        LA[li2] = fact * ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
         li++;
         li2++;
       }
@@ -1462,15 +1465,15 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       if (i == 1) fact *= ifactx;
       if (i == w-1) fact *= factx;
       for (j=1; j<d-1; j++) {
-        LA[li] += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
+        LA[li] += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
         li++;
         fact *= ifactz;
         for (k=1; k<h-1; k++) {
-          LA[li] += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
+          LA[li] += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
           li++;
         }
         fact *= factz;
-        LA[li] += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
+        LA[li] += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
         li++;
       }
       li += 2 * h; // skip columns in front and back slabs
@@ -1485,20 +1488,20 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       for (i=0; i<w; i++) {
         if (i == 1) fact *= ifactx;
         if (i == w-1) fact *= factx;
-        LA[li]  += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
-        LA[li2] += fact * ffy * (A[li2 - yp] + A[li2 - ym] - 2.0 * A[li2]);
+        LA[li]  += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
+        LA[li2] += fact * ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
         li++;
         li2++;
         fact *= ifactz;
         for (k=1; k<h-1; k++) {
-          LA[li]  += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
-          LA[li2] += fact * ffy * (A[li2 - yp] + A[li2 - ym] - 2.0 * A[li2]);
+          LA[li]  += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
+          LA[li2] += fact * ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
           li++;
           li2++;
         }
         fact *= factz;
-        LA[li]  += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
-        LA[li2] += fact * ffy * (A[li2 - yp] + A[li2 - ym] - 2.0 * A[li2]);
+        LA[li]  += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
+        LA[li2] += fact * ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
         li++;
         li2++;
         li  += h * static_cast<size_t>(d - 1);
@@ -1511,21 +1514,21 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       for (i=0; i<w; i++) {
         if (i == 1) fact *= ifactx;
         if (i == w-1) fact *= factx;
-        LA[li]  += fact * ffy * (A[li + yp] - A[li]);
-        LA[li2] += fact * ffy * (A[li2 + ym] - A[li2]);
+        LA[li]  += fact * ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
+        LA[li2] += fact * ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
         li++;
         li2++;
         fact *= ifactz;
         for (k=1; k<h-1; k++) {
           // y gradient (+ x, z terms of laplacian, calculated above and below)
-          LA[li]  += fact * ffy * (A[li + yp] - A[li]);
-          LA[li2] += fact * ffy * (A[li2 + ym] - A[li2]);
+          LA[li]  += fact * ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
+          LA[li2] += fact * ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
           li++;
           li2++;
         }
         fact *= factz;
-        LA[li]  += fact * ffy * (A[li + yp] - A[li]);
-        LA[li2] += fact * ffy * (A[li2 + ym] - A[li2]);
+        LA[li]  += fact * ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
+        LA[li2] += fact * ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
         li++;
         li2++;
         li  += h * static_cast<size_t>(d - 1);
@@ -1541,21 +1544,21 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       if (i == 1) fact *= ifactx;
       if (i == w-1) fact *= factx;
       for (k=1; k<h-1; k++) {
-        LA[li] += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
+        LA[li] += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
         li++;
       }
       fact *= ifacty;
       li += 2; // skip edge slabs
       for (j=1; j<d-1; j++) { // full range of y
         for (k=1; k<h-1; k++) {
-          LA[li] += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
+          LA[li] += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
           li++;
         }
         li += 2; // skip edge slabs
       }
       fact *= facty;
       for (k=1; k<h-1; k++) {
-        LA[li] += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
+        LA[li] += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
         li++;
       }
       li += 2; // skip edge slabs
@@ -1570,20 +1573,20 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       for (i=0; i<w; i++) {
         if (i == 1) fact *= ifactx;
         if (i == w-1) fact *= factx;
-        LA[li]  += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
-        LA[li2] += fact * ffz * (A[li2 - zp] + A[li2 - zm] - 2.0 * A[li2]);
+        LA[li]  += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
+        LA[li2] += fact * ffz * (weights[li2 - zp] * A[li2 - zp] + weights[li2 - zm] * A[li2 - zm] - 2.0 * weights[li2] * A[li2]);
         li  += h;
         li2 += h;
         fact *= ifacty;
         for (j=1; j<d-1; j++) {
-          LA[li]  += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
-          LA[li2] += fact * ffz * (A[li2 - zp] + A[li2 - zm] - 2.0 * A[li2]);
+          LA[li]  += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
+          LA[li2] += fact * ffz * (weights[li2 - zp] * A[li2 - zp] + weights[li2 - zm] * A[li2 - zm] - 2.0 * weights[li2] * A[li2]);
           li  += h;
           li2 += h;
         }
         fact *= facty;
-        LA[li]  += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
-        LA[li2] += fact * ffz * (A[li2 - zp] + A[li2 - zm] - 2.0 * A[li2]);
+        LA[li]  += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
+        LA[li2] += fact * ffz * (weights[li2 - zp] * A[li2 - zp] + weights[li2 - zm] * A[li2 - zm] - 2.0 * weights[li2] * A[li2]);
         li  += h;
         li2 += h;
       }
@@ -1594,31 +1597,26 @@ void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, st
       for (i=0; i<w; i++) {
         if (i == 1) fact *= ifactx;
         if (i == w-1) fact *= factx;
-        LA[li]  += fact * ffz * (A[li + zp] - A[li]);
-        LA[li2] += fact * ffz * (A[li2 + zm] - A[li2]);
+        LA[li]  += fact * ffz * (weights[li + zp] * A[li + zp] - weights[li] * A[li]);
+        LA[li2] += fact * ffz * (weights[li2 + zm] * A[li2 + zm] - weights[li2] * A[li2]);
         li  += h;
         li2 += h;
         fact *= ifacty;
         for (j=1; j<d-1; j++) {
           // z gradient (+ x, y terms of laplacian, calculated above)
-          LA[li]  += fact * ffz * (A[li + zp] - A[li]);
-          LA[li2] += fact * ffz * (A[li2 + zm] - A[li2]);
+          LA[li]  += fact * ffz * (weights[li + zp] * A[li + zp] - weights[li] * A[li]);
+          LA[li2] += fact * ffz * (weights[li2 + zm] * A[li2 + zm] - weights[li2] * A[li2]);
           li  += h;
           li2 += h;
         }
         fact *= facty;
-        LA[li]  += fact * ffz * (A[li + zp] - A[li]);
-        LA[li2] += fact * ffz * (A[li2 + zm] - A[li2]);
+        LA[li]  += fact * ffz * (weights[li + zp] * A[li + zp] - weights[li] * A[li]);
+        LA[li2] += fact * ffz * (weights[li2 + zm] * A[li2 + zm] - weights[li2] * A[li2]);
         li  += h;
         li2 += h;
       }
     }
   }
-
-  // Multiply all terms by weight - simple Laplacian scaling
-  // for (size_t li = 0; li < LA.size(); li++) {
-  //   LA[li] *= weights[li];
-  // }
 }
 
 /*
