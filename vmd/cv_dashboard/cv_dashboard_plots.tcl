@@ -92,6 +92,8 @@ proc ::cv_dashboard::plot { { type timeline } } {
     menubutton $menubar.colvars -text "Colvars" -underline 0 -menu $menubar.colvars.menu
     menu $menubar.colvars.menu -tearoff 0
     $menubar.colvars.menu add command -label "Swap axes" -command ::cv_dashboard::pairwise_swap_axes
+    $menubar.colvars.menu add command -label "Turn lines off" -command "::cv_dashboard::display_lines false"
+    $menubar.colvars.menu add command -label "Turn lines on" -command "::cv_dashboard::display_lines true"
     # Add item to existing menu bar
     set col [lindex [grid size $menubar] 0]
     grid $menubar.colvars -row 0 -column $col -sticky nsw
@@ -544,4 +546,17 @@ proc ::cv_dashboard::pairwise_swap_axes {} {
 
   $plothandle clear
   $plothandle add $y $x -xlabel $ylabel -ylabel $xlabel -plot
+}
+
+
+proc ::cv_dashboard::display_lines { yesno } {
+
+  variable ::cv_dashboard::plothandle
+  if $yesno {
+    set param "-lines"
+  } else {
+    set param "-nolines"
+  }
+
+  $plothandle configure $param -plot
 }

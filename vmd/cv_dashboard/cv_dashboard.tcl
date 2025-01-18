@@ -132,8 +132,8 @@ Please upgrade to VMD 1.9.4 alpha or later."
   if { [vecdist $abc {1 1 1}] < 1e-10 } {
       set answer [tk_messageBox -icon warning -type okcancel -title "Warning: unlikely periodic box lengths"\
         -message "The periodic box lengths are (1, 1, 1), which can be the output of a\
- non-periodic simulation in NAMD. Overwrite with (0, 0, 0) to make Colvars detect as non-periodic?
- The command line is:
+ non-periodic simulation in NAMD. Overwrite with (0, 0, 0) to signal a non-periodic system?
+ This will run the following commands:
  package require pbctools
  pbc set {0 0 0} -all -molid $::cv_dashboard::mol"]
       if { $answer == "ok" } {
