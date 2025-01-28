@@ -20,7 +20,7 @@ proc colvar_save_traj_file { {fileName vmd.colvars.traj} } {
 
   puts "Writing colvars trajectory to file $fileName"
   set o [open $fileName w]
-  puts $o [colvar_traj]
+  puts -nonewline $o [colvar_traj]
   close $o
 }
 
