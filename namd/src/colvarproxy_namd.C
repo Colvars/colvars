@@ -139,7 +139,7 @@ colvarproxy_namd::colvarproxy_namd()
 
   reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
 
-  #if defined(NODEGROUP_FORCE_REGISTER) && ( NAMD_VERSION_NUMBER < 50396675 )
+  #if defined(NODEGROUP_FORCE_REGISTER) && ( NAMD_VERSION_NUMBER < 34471682L )
   CProxy_PatchData cpdata(CkpvAccess(BOCclass_group).patchData);
   PatchData *patchData = cpdata.ckLocalBranch();
   nodeReduction = patchData->reduction;
@@ -591,7 +591,7 @@ void colvarproxy_namd::calculate()
 #endif
 
   // send MISC energy
-  #if defined(NODEGROUP_FORCE_REGISTER) && ( NAMD_VERSION_NUMBER < 50396675 )
+  #if defined(NODEGROUP_FORCE_REGISTER) && ( NAMD_VERSION_NUMBER < 34471682L )
   if(!simparams->CUDASOAintegrate) {
     reduction->submit();
   }
@@ -649,7 +649,7 @@ int colvarproxy_namd::run_colvar_gradient_callback(
 
 void colvarproxy_namd::add_energy(cvm::real energy)
 {
-  #if defined(NODEGROUP_FORCE_REGISTER) && ( NAMD_VERSION_NUMBER < 50396675 )
+  #if defined(NODEGROUP_FORCE_REGISTER) && ( NAMD_VERSION_NUMBER < 34471682L )
   if (simparams->CUDASOAintegrate) {
     nodeReduction->item(REDUCTION_MISC_ENERGY) += energy;
   } else {
