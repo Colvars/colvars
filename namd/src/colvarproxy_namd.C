@@ -25,7 +25,6 @@
 #include "NamdState.h"
 #include "Controller.h"
 #include "PatchData.h"
-#include "ConfigList.h"
 
 #ifdef NAMD_TCL
 #include <tcl.h>
@@ -139,7 +138,7 @@ colvarproxy_namd::colvarproxy_namd()
 
   reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
 
-  #if defined(NODEGROUP_FORCE_REGISTER) && ( NAMD_VERSION_NUMBER < 34471682L )
+  #ifdef NODEGROUP_FORCE_REGISTER
   CProxy_PatchData cpdata(CkpvAccess(BOCclass_group).patchData);
   PatchData *patchData = cpdata.ckLocalBranch();
   nodeReduction = patchData->reduction;
@@ -591,7 +590,7 @@ void colvarproxy_namd::calculate()
 #endif
 
   // send MISC energy
-  #if defined(NODEGROUP_FORCE_REGISTER) && ( NAMD_VERSION_NUMBER < 34471682L )
+  #ifdef NODEGROUP_FORCE_REGISTER
   if(!simparams->CUDASOAintegrate) {
     reduction->submit();
   }
@@ -649,7 +648,7 @@ int colvarproxy_namd::run_colvar_gradient_callback(
 
 void colvarproxy_namd::add_energy(cvm::real energy)
 {
-  #if defined(NODEGROUP_FORCE_REGISTER) && ( NAMD_VERSION_NUMBER < 34471682L )
+  #ifdef NODEGROUP_FORCE_REGISTER
   if (simparams->CUDASOAintegrate) {
     nodeReduction->item(REDUCTION_MISC_ENERGY) += energy;
   } else {
