@@ -49,7 +49,6 @@ public:
   virtual int init_well_tempered_params(std::string const &conf);
   virtual int init_ebmeta_params(std::string const &conf);
   virtual int init_reflection_params(std::string const &conf);
-  virtual int init_interval_params(std::string const &conf);
 
   virtual int clear_state_data();
 
@@ -244,17 +243,10 @@ protected:
   /// \brief Multidimensional reflection states
   std::vector<std::vector<size_t> > ref_state;
 
-  /// \brief whether using interval
-  bool use_interval;
   /// \brief For which variables hills forces beyond the boundaries(interval) must be removed
 
   std::vector<int> which_int_llimit_cv;
   std::vector<int> which_int_ulimit_cv;
-  size_t nintvarsl;
-  size_t nintvarsu;
-  /// \brief Limits for interval
-  std::vector<cvm::real> interval_llimit;
-  std::vector<cvm::real> interval_ulimit;
 
   /// \brief Current value of colvars to be modifed for calculation of energy and forces with interval
   std::vector<colvarvalue> curr_values;
@@ -284,7 +276,7 @@ protected:
   void project_hills(hill_iter h_first, hill_iter h_last,
                      colvar_grid_scalar *ge, colvar_grid_gradient *gf,
                      std::vector<int> const &w_int_llimit_cv, std::vector<int> const &w_int_ulimit_cv,
-                     std::vector<cvm::real> const &int_llimit, std::vector<cvm::real> const &int_ulimit,              
+                     std::vector<cvm::real> const &ref_llimit, std::vector<cvm::real> const &ref_ulimit,              
                      bool print_progress = false);
 
 
