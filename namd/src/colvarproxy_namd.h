@@ -12,7 +12,7 @@
 
 #ifndef NAMD_VERSION_NUMBER
 // Assume 2.14b1 for now until the NAMD macro is merged
-#define NAMD_VERSION_NUMBER 34471681L
+#define NAMD_VERSION_NUMBER 34471681
 #endif
 
 #include "colvarproxy_namd_version.h"
@@ -57,7 +57,7 @@ protected:
 
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
-#if defined(NODEGROUP_FORCE_REGISTER) && ( NAMD_VERSION_NUMBER < 34471682L )
+#ifdef NODEGROUP_FORCE_REGISTER
   NodeReduction *nodeReduction;
 #endif
 
