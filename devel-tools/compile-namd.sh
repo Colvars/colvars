@@ -18,8 +18,15 @@ fi
 
 compile_namd_target() {
 
+    arch_string=$(arch)
+    charm_arch_string=$(arch)
+    if [ "$arch_string" == "aarch64" ]; then
+        arch_string="ARM64"
+        charm_arch_string="arm8"
+    fi
+
     local source_dir=""
-    local dirname_prefix="Linux-x86_64-g++"
+    local dirname_prefix="Linux-${arch_string}-g++"
 
     local label="multicore"
     if hash mpicxx >& /dev/null ; then
@@ -32,7 +39,7 @@ compile_namd_target() {
             pushd "${source_dir}"
             shift
         elif [ "${1}" = "debug" ] ; then
-            dirname_prefix="Linux-x86_64-g++-debug"
+            dirname_prefix="Linux-${arch_string}-g++-debug"
             shift
         else
             label="${1}"
@@ -54,28 +61,28 @@ compile_namd_target() {
 
     local -a cmd=(./config ${dirname})
 
-    if [ "${dirname_prefix}" = "Linux-x86_64-g++-debug" ] ; then
-        cat > arch/Linux-x86_64-g++-debug.arch <<EOF
-NAMD_ARCH = Linux-x86_64
-CHARMARCH = multicore-linux-x86_64
+    if [ "${dirname_prefix}" = "Linux-${arch_string}-g++-debug" ] ; then
+        cat > arch/Linux-${arch_string}-g++-debug.arch <<EOF
+NAMD_ARCH = Linux-${arch_string}
+CHARMARCH = multicore-linux-${charm_arch_string}
 
-CXX = g++ -m64 -std=c++0x
-CXXOPTS = -O0 -g -DCOLVARS_DEBUG -DDEBUGM -DMIN_DEBUG_LEVEL=4
+CXX = g++ -m64 -std=c++17
+CXXOPTS = -Wno-register -O0 -g -DCOLVARS_DEBUG -DDEBUGM -DMIN_DEBUG_LEVEL=4
 CC = gcc -m64
 COPTS = \$(CXXOPTS)
 EOF
     fi
 
     if [ "${label}" = "multicore" ] ; then
-        cmd+=(--charm-arch multicore-linux-x86_64)
+        cmd+=(--charm-arch multicore-linux-${charm_arch_string})
     fi
 
     if [ "${label}" = "mpi" ] ; then
-        cmd+=(--charm-arch mpi-linux-x86_64)
+        cmd+=(--charm-arch mpi-linux-${charm_arch_string})
     fi
 
     if [ "${label}" = "netlrts" ] ; then
-        cmd+=(--charm-arch netlrts-linux-x86_64)
+        cmd+=(--charm-arch netlrts-linux-${charm_arch_string})
     fi
 
     if [ -z "${TCL_HOME}" ] ; then
