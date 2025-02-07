@@ -13,6 +13,10 @@ on:
   workflow_call:
     # Variables needed by the template
     inputs:
+      runner_name:
+        description: "Name of the runner"
+        required: true
+        type: string
       backend_name:
         description: "Name of the backend"
         required: true
