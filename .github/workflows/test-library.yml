@@ -638,3 +638,38 @@ jobs:
       - name: Build and test library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Darwin -P devel-tools/build_test_library.cmake
+
+  build-linux-ARM64-gcc:
+    name: Linux ARM64 (GCC, Clang)
+    runs-on: ubuntu-24.04-arm
+    needs: basicchecks
+    env:
+      CCACHE: ccache
+      CMAKE_GENERATOR: Ninja
+      CCACHE_DIR: ${{ github.workspace }}/ccache
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Apptainer
+        shell: bash
+        run: |
+          sudo add-apt-repository -y ppa:apptainer/ppa
+          sudo apt update
+          sudo apt install -y apptainer-suid
+
+      - name: Get container images for build dependencies
+        shell: bash
+        working-directory: devel-tools
+        run: |
+          apptainer pull CentOS9-devel-arm64.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel-arm64
+
+      - name: GCC 11, C++20 (CentOS 9)
+        env:
+          CXX_STANDARD: 20
+          CXX: g++
+          CXX_VERSION: 11
+          CC: gcc
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel-arm64.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
