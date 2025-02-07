@@ -96,7 +96,7 @@ jobs:
       path_compile_script: devel-tools/compile-namd.sh
       test_lib_directory: namd/tests/library
       test_interface_directory: namd/tests/interface
-      rpath_exe: Linux-ARM64-g++.mpi/namd3
+      rpath_exe: Linux-ARM64-g++.multicore/namd3
       container_name: CentOS9-devel-arm64
     secrets:
       # Choice of license by UIUC prevents sharing the code, hence the secret
