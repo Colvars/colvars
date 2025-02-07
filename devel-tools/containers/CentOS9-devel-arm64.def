@@ -1,0 +1,81 @@
+BootStrap: docker
+From: quay.io/centos/centos:stream9
+
+
+%help
+    Development environment for CentOS Stream Linux 9
+
+
+%post
+    dnf -y update
+    dnf -y install dnf-plugins-core
+
+    dnf config-manager --set-enabled crb
+    dnf -y install \
+        https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
+        https://dl.fedoraproject.org/pub/epel/epel-next-release-latest-9.noarch.rpm
+
+    dnf -y install \
+        bc man-db vim emacs tcsh which bash-completion rsync screen tmux \
+        "@Development Tools" \
+        gcc gcc-c++ gcc-gfortran cppcheck \
+        gcc-toolset-{12,13} clang clang-tools-extra \
+        autoconf automake cvs git subversion mercurial \
+        cmake ccache ninja-build mold \
+        Lmod openmpi-devel tbb-devel fftw-devel tcl-devel \
+        python3-{devel,tkinter,virtualenv,numpy,scipy} \
+        ncurses-devel \
+        rlwrap \
+        tk-devel fltk-devel \
+        mesa-dri-drivers mesa-libGL-devel libglvnd-devel \
+        libXi-devel libXinerama-devel libpng-devel \
+        netcdf-devel hdf5-devel sqlite-devel expat-devel \
+        doxygen \
+        texlive-latex texlive-epstopdf texlive-pdftex texlive-tex4ht \
+        texlive-graphics texlive-metafont texlive-collection-latexrecommended \
+        texlive-collection-fontsrecommended \
+        latexmk latex2html \
+        inkscape gimp wget \
+	squashfs-tools
+
+    source /etc/profile
+    module load mpi
+
+    # Build Charm++
+    umask 022
+    source /etc/profile
+    module load mpi
+    if [ ! -d /opt/charm ] ; then
+        git clone --single-branch --depth=1 -b v8.0.1 https://github.com/UIUC-PPL/charm.git /opt/charm
+        cd /opt/charm
+        export CCACHE_DIR=/tmp
+        ./build charm++ mpi-linux-arm8 -j16 --with-production && \
+        ./build charm++ multicore-linux-arm8 -j16 --with-production && \
+        ./build charm++ netlrts-linux-arm8 -j16 --with-production
+    fi
+
+    if [ ! -f /usr/local/bin/spiff ] ; then
+        # Build and install spiff
+        rm -fr /tmp/spiff
+        git clone https://github.com/Colvars/spiff /tmp/spiff && \
+            make -C /tmp/spiff && \
+            install /tmp/spiff/spiff /usr/local/bin/
+    fi
+
+    # TODO: there is no pre-built libtorch for arm64
+    # Download pre-built libTorch
+    # rm -fr /opt/torch
+    # curl -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.4.1%2Bcpu.zip
+    # unzip /tmp/libtorch.zip -d /opt
+
+    # Install GitHub CLI
+    dnf -y config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+    dnf -y install gh --repo gh-cli
+
+    # Download pre-built recent CMake (mostly for GROMACS)
+    rm -fr /opt/cmake
+    mkdir -p /opt/cmake
+    # export GH_TOKEN=xxxxx (will needs this to run gh even on public repos)
+    # gh release download v3.31.5 --repo https://github.com/Kitware/CMake --clobber --pattern '*linux-aarch64.sh'
+    wget https://github.com/Kitware/CMake/releases/download/v3.31.5/cmake-3.31.5-linux-aarch64.sh
+    bash cmake-3.31.5-linux-aarch64.sh  --skip-license --prefix=/opt/cmake
