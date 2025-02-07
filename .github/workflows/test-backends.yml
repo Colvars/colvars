@@ -24,6 +24,7 @@ jobs:
     name: LAMMPS (develop)
     uses: ./.github/workflows/backend-template.yml
     with:
+      runner_name: ubuntu-latest
       backend_name: LAMMPS
       backend_repo: lammps/lammps
       backend_repo_ref: develop
@@ -37,6 +38,7 @@ jobs:
     name: NAMD (main)
     uses: ./.github/workflows/backend-template.yml
     with:
+      runner_name: ubuntu-latest
       backend_name: NAMD
       backend_repo: Colvars/namd
       backend_repo_ref: main
@@ -53,6 +55,7 @@ jobs:
     name: VMD
     uses: ./.github/workflows/backend-template.yml
     with:
+      runner_name: ubuntu-latest
       backend_name: VMD
       backend_repo: Colvars/vmd
       backend_repo_ref: master
@@ -72,6 +75,7 @@ jobs:
     name: GROMACS (main)
     uses: ./.github/workflows/backend-template.yml
     with:
+      runner_name: ubuntu-latest
       backend_name: GROMACS-main
       backend_repo: gromacs/gromacs
       backend_repo_ref: main
@@ -80,3 +84,20 @@ jobs:
       test_lib_directory: gromacs/tests/library
       test_interface_directory: gromacs/tests/interface
       rpath_exe: install/bin/gmx_mpi_d
+
+  namd-main-arm64:
+    name: NAMD (main ARM64)
+    uses: ./.github/workflows/backend-template.yml
+    with:
+      runner_name: ubuntu-24.04-arm
+      backend_name: NAMD
+      backend_repo: Colvars/namd
+      backend_repo_ref: main
+      path_compile_script: devel-tools/compile-namd.sh
+      test_lib_directory: namd/tests/library
+      test_interface_directory: namd/tests/interface
+      rpath_exe: Linux-ARM64-g++.mpi/namd3
+      container_name: CentOS9-devel-arm64
+    secrets:
+      # Choice of license by UIUC prevents sharing the code, hence the secret
+      private_key: ${{ secrets.PULL_NAMD_KEY }}

@@ -61,7 +61,7 @@ on:
 
 jobs:
   test_backends:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner_name }}
     env:
       CCACHE_DIR: ~/ccache_${{ inputs.container_name }}
       # OpenMPI transport settings suitable for GH VMs
