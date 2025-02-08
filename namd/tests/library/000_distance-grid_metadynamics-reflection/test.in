@@ -11,8 +11,8 @@ colvar {
     # use a non-trivial width to test bias behavior
     width 0.5
     # The lower boundary is already defined at 0 for a distance function
-    # lowerBoundary 0.0
-    upperBoundary 10.0
+    lowerBoundary 3.2
+    upperBoundary 10.2
 
     # not required to define hard limits but recommended to avoid unnecessary grid expansion
     # likely to be activated by default with refletion in the future
@@ -41,5 +41,6 @@ harmonicWalls {
     name wall_one
     colvars one
     forceConstant 1.0
-    upperWalls 10.0
+    lowerWalls 3.2
+    upperWalls 10.2
 }
