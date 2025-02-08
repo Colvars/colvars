@@ -322,9 +322,13 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   size_t j;
   size_t jcount;
 
-  if (use_grids) {
-    use_reflection=true;  
-  }  
+  // in future remove the line below and uncomment the three following ones as reflection should be default with grids 
+  
+  use_reflection=false;
+
+  //if (use_grids) {
+  //  use_reflection=true;  
+  //}  
 
   for ( i = 0; i < num_variables(); i++ ) {
      if (!variables(i)->is_enabled(f_cv_periodic)) {
