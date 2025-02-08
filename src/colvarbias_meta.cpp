@@ -322,6 +322,10 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   size_t j;
   size_t jcount;
 
+  if (use_grids) {
+    use_reflection=true;  
+  }  
+
   for ( i = 0; i < num_variables(); i++ ) {
      if (!variables(i)->is_enabled(f_cv_periodic)) {
        icount++;
@@ -329,7 +333,15 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   }
   nonpvars=icount;
 
-  get_keyval(conf, "useHillsReflection", use_reflection, true);
+  get_keyval(conf, "useHillsReflection", use_reflection, use_reflection);
+
+  for ( i = 0; i < num_variables(); i++ ) {
+       if (variables(i)->value().type()!=colvarvalue::type_scalar) {
+	 use_reflection=false;        
+         cvm::log("Note: CV number "+cvm::to_str(i)+" is not of scalar type. Hills reflection has been disabled as it can be used only with scalar variables.\n");
+       }
+  }
+
   if (use_reflection) {
 
     get_keyval(conf, "reflectionRange", reflection_int, 6.0);
@@ -384,9 +396,6 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
          cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
        }
        j=reflection_llimit_cv[i];
-       if (variables(j)->value().type()!=colvarvalue::type_scalar) {
-         cvm::error("Error: Hills reflection can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
-       }
        if (variables(j)->is_enabled(f_cv_periodic)) {
          cvm::log("Warning: you are using hills reflection with a periodic variable, make sure you are using it far from periodic boundaries \n");
        }
@@ -397,9 +406,6 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
          cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
        }
        j=reflection_ulimit_cv[i];
-       if (variables(j)->value().type()!=colvarvalue::type_scalar) {
-         cvm::error("Error: Hills reflection can be used only with scalar variables.\n", COLVARS_INPUT_ERROR);
-       }
        if (variables(j)->is_enabled(f_cv_periodic)) {
          cvm::log("Warning: you are using hills reflection with a periodic variable, make sure you are using it far from periodic boundaries \n");
        }
