@@ -157,6 +157,7 @@ int colvarbias_meta::init(std::string const &conf)
 
   error_code |= init_replicas_params(conf);
   error_code |= init_well_tempered_params(conf);
+  error_code |= init_reflection_params(conf);
   error_code |= init_ebmeta_params(conf);
 
   if (cvm::debug())
@@ -313,6 +314,268 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
   return error_code;
 }
 
+int colvarbias_meta::init_reflection_params(std::string const &conf)
+{
+  nrefvarsl=0;
+  nrefvarsu=0;
+  size_t nonpvars;
+  size_t i;
+  size_t icount=0;
+  size_t j;
+  size_t jcount;
+
+  // in future remove the line below and uncomment the three following ones as reflection should be default with grids 
+  
+  use_reflection=false;
+
+  //if (use_grids) {
+  //  use_reflection=true;  
+  //}  
+
+  for ( i = 0; i < num_variables(); i++ ) {
+     if (!variables(i)->is_enabled(f_cv_periodic)) {
+       icount++;
+     }
+  }
+  nonpvars=icount;
+
+  get_keyval(conf, "useHillsReflection", use_reflection, use_reflection);
+
+  for ( i = 0; i < num_variables(); i++ ) {
+       if (variables(i)->value().type()!=colvarvalue::type_scalar) {
+	 use_reflection=false;        
+         cvm::log("Note: CV number "+cvm::to_str(i)+" is not of scalar type. Hills reflection has been disabled as it can be used only with scalar variables.\n");
+       }
+  }
+
+  if (use_reflection) {
+
+    get_keyval(conf, "reflectionRange", reflection_int, 6.0);
+    cvm::log("Reflection range is "+cvm::to_str(reflection_int)+".\n");
+
+    if (get_keyval(conf, "reflectionLowLimitUseCVs", reflection_llimit_cv, reflection_llimit_cv)) {
+      nrefvarsl=reflection_llimit_cv.size();
+      if(nrefvarsl>num_variables()) cvm::error("Error: number CVs with active lower reflection limit is > num_variables  \n", COLVARS_INPUT_ERROR);
+      cvm::log("Using lower limits reflection on "+cvm::to_str(nrefvarsl)+" variables.\n");
+    } else {
+      nrefvarsl=nonpvars;
+      reflection_llimit_cv.resize(nrefvarsl);
+      icount=0;
+      for (i = 0; i < num_variables(); i++) {
+         if (!variables(i)->is_enabled(f_cv_periodic)) {
+           reflection_llimit_cv[icount]=i;
+           icount++;
+         }
+      }
+      cvm::log("Using all non-periodic variables for lower limits of reflection \n");
+    }
+
+    if (reflection_llimit.size()==0) {
+      reflection_llimit.resize(nrefvarsl);
+    }
+
+    if (get_keyval(conf, "reflectionUpLimitUseCVs", reflection_ulimit_cv, reflection_ulimit_cv)) {
+      nrefvarsu=reflection_ulimit_cv.size();
+      if(nrefvarsu>num_variables()) cvm::error("Error: number CVs with active upper reflection limit is > num_variables  \n", COLVARS_INPUT_ERROR);
+      cvm::log("Using upper limits reflection on "+cvm::to_str(nrefvarsu)+" variables.\n");
+    } else {
+      nrefvarsu=nonpvars;
+      reflection_ulimit_cv.resize(nrefvarsu);
+      icount=0;
+      for (i = 0; i < num_variables(); i++) {
+         if (!variables(i)->is_enabled(f_cv_periodic)) {
+           reflection_ulimit_cv[icount]=i;
+           icount++;
+         }
+      }
+      cvm::log("Using all non-periodic variables for upper limits of reflection \n");
+    }
+
+    if (reflection_ulimit.size()==0) {
+      reflection_ulimit.resize(nrefvarsu);
+    }
+
+    // use reflection only with scalar variables
+
+    for (i = 0; i < nrefvarsl; i++) {
+       if (reflection_llimit_cv[i]>=static_cast<int>(num_variables()) || reflection_llimit_cv[i]<0) {
+         cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
+       }
+       j=reflection_llimit_cv[i];
+       if (variables(j)->is_enabled(f_cv_periodic)) {
+         cvm::log("Warning: you are using hills reflection with a periodic variable, make sure you are using it far from periodic boundaries \n");
+       }
+    }
+
+    for (i = 0; i < nrefvarsu; i++) {
+       if (reflection_ulimit_cv[i]>=static_cast<int>(num_variables()) || reflection_ulimit_cv[i]<0) {
+         cvm::error("Error: CV number is negative or >= num_variables  \n", COLVARS_INPUT_ERROR);
+       }
+       j=reflection_ulimit_cv[i];
+       if (variables(j)->is_enabled(f_cv_periodic)) {
+         cvm::log("Warning: you are using hills reflection with a periodic variable, make sure you are using it far from periodic boundaries \n");
+       }
+    }
+
+    // if grids are defined, set by default reflection boundaries as grid boundaries
+    if (use_grids) {
+      for (i = 0; i < nrefvarsl; i++) {
+         icount=reflection_llimit_cv[i];
+         reflection_llimit[i]=hills_energy->lower_boundaries[icount].real_value;
+      }
+      for (i = 0; i < nrefvarsu; i++) {
+         icount=reflection_ulimit_cv[i];
+         reflection_ulimit[i]=hills_energy->upper_boundaries[icount].real_value;
+      }
+    }
+
+    if (nrefvarsl>0) {
+      if (get_keyval(conf, "reflectionLowLimit", reflection_llimit, reflection_llimit)) {
+        for (i = 0; i < nrefvarsl; i++) {
+           if (use_grids) {
+             icount=reflection_llimit_cv[i];
+             cvm:: real bound=hills_energy->lower_boundaries[icount].real_value;
+             if (reflection_llimit[i] != bound && reflection_llimit[i] < bound+variables(icount)->width) {
+               cvm::error("Error: please set lower reflection limit for CV "+cvm::to_str(icount)+" either at grid lower boundary ("+cvm::to_str(bound)+") or well above it (above "+cvm::to_str(bound+variables(icount)->width)+").\n", COLVARS_INPUT_ERROR);
+             }
+           }
+        }
+      } else {
+        if (!use_grids) {
+          cvm::error("Error: Lower limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+        }
+      }
+    }
+
+    for (i = 0; i < nrefvarsl; i++) {
+       cvm::log("Reflection condition is applied on a lower limit for CV "+cvm::to_str(reflection_llimit_cv[i])+".\n");
+       cvm::log("Reflection condition lower limit for this CV is "+cvm::to_str(reflection_llimit[i])+".\n");
+    }
+
+    if (nrefvarsu>0) {
+      if (get_keyval(conf, "reflectionUpLimit", reflection_ulimit, reflection_ulimit)) {
+        for (i = 0; i < nrefvarsu; i++) {
+           if (use_grids) {
+             icount=reflection_ulimit_cv[i];
+             cvm:: real bound=hills_energy->upper_boundaries[icount].real_value;
+             if (reflection_ulimit[i] != bound && reflection_ulimit[i] > bound-variables(icount)->width) {
+               cvm::error("Error: please set upper reflection limit for CV "+cvm::to_str(icount)+" either at grid upper boundary ("+cvm::to_str(bound)+") or well below it (below "+cvm::to_str(bound-variables(icount)->width)+").\n", COLVARS_INPUT_ERROR);
+             }
+           }
+        }
+      } else {
+        if (!use_grids) {
+          cvm::error("Error: Upper limits for reflection not provided.\n", COLVARS_INPUT_ERROR);
+        }
+      }
+    }
+
+    for (i = 0; i < nrefvarsu; i++) {
+       cvm::log("Reflection condition is applied on an upper limit for CV "+cvm::to_str(reflection_ulimit_cv[i])+".\n");
+       cvm::log("Reflection condition upper limit for this CV is "+cvm::to_str(reflection_ulimit[i])+".\n");
+    }
+
+    // multimensional reflection
+
+    // generate reflection states
+    size_t sum;
+    sum=1;
+    size_t nstates;
+    size_t count;
+
+    if (reflection_usel.size()==0) {
+      reflection_usel.resize(num_variables(),std::vector<bool>(2));
+    }
+
+    if (reflection_l.size()==0) {
+      reflection_l.resize(num_variables(),std::vector<cvm::real>(2));
+    }
+
+    for (j = 1; j < num_variables(); j++) {
+       reflection_usel[j][0]=false;
+       reflection_l[j][0]=0.0;
+       reflection_usel[j][1]=false;
+       reflection_l[j][1]=0.0;
+    }
+
+    for (i = 0; i < nrefvarsl; i++) {
+       j=reflection_llimit_cv[i];
+       reflection_usel[j][0]=true;
+       reflection_l[j][0]=reflection_llimit[i];
+    }
+
+    for (i = 0; i < nrefvarsu; i++) {
+       j=reflection_ulimit_cv[i];
+       reflection_usel[j][1]=true;
+       reflection_l[j][1]=reflection_ulimit[i];
+    }
+
+//  Generate all possible reflection states (e.g. through faces, edges and vertex).
+//  Consider for example a cube, the states are:
+//  [0,0,1]
+//  [0,1,0] [0,1,1]
+//  [1,0,0] [1,0,1] [1,1,0] [1,1,1]
+//  where 1 means reflect on that coordinate and 0 do not reflect.
+//  These states can be generated as:
+//  ref_state[0][0]=1
+//  ref_state[1][0]=10  ref_state[1][1]=11
+//  ref_state[2][0]=100 ref_state[2][1]=101 ref_state[2][2]=110 ref_state[2][3]=111
+//  going down along the rows the size ref_state[j].size() is the number of previous states
+//  (j-1) plus one.
+//  A specific state instead can be generated starting from a power of 10 and then summing
+//  the states of the previous rows:
+//  ref_state[1][1]=ref_state[1][0]+ref_state[0][0]
+//  ref_state[2][1]=ref_state[2][0]+ref_state[0][0]
+//  ref_state[2][2]=ref_state[2][0]+ref_state[1][0]
+//  ref_state[2][3]=ref_state[2][0]+ref_state[1][1]
+
+    if (ref_state.size()==0) {
+      ref_state.resize(num_variables(),std::vector<size_t>(1));
+    }
+    ref_state[0][0]=1;
+    for (j = 1; j < num_variables(); j++) {
+      sum*=10;
+      nstates=0;
+      for (jcount = 0; jcount < j; jcount++) {
+            nstates+=ref_state[jcount].size();
+      }
+      nstates++;
+      ref_state[j].resize(nstates);
+      ref_state[j][0]=sum;
+      count=0;
+      for (jcount = 0; jcount < j; jcount++) {
+         for ( icount = 0; icount < ref_state[jcount].size(); icount++) {
+            count++;
+            ref_state[j][count]=ref_state[j][0]+ref_state[jcount][icount];
+         }
+      }
+    }
+  }
+
+  if (which_int_llimit_cv.size()==0) {
+    which_int_llimit_cv.resize(num_variables());
+  }
+  for ( i = 0; i < num_variables(); i++) {
+     which_int_llimit_cv[i]=-1;
+  }
+  for ( i = 0; i < nrefvarsl; i++) {
+     j=reflection_llimit_cv[i];
+     which_int_llimit_cv[j]=i;
+  }
+
+  if (which_int_ulimit_cv.size()==0) {
+    which_int_ulimit_cv.resize(num_variables());
+  }
+  for ( i = 0; i < num_variables(); i++) {
+     which_int_ulimit_cv[i]=-1;
+  }
+  for ( i = 0; i < nrefvarsu; i++) {
+     j=reflection_ulimit_cv[i];
+     which_int_ulimit_cv[j]=i;
+  }
+  
+  return COLVARS_OK;
+}
 
 colvarbias_meta::~colvarbias_meta()
 {
@@ -385,6 +648,167 @@ colvarbias_meta::add_hill(colvarbias_meta::hill const &h)
   return hills.end();
 }
 
+bool colvarbias_meta::check_reflection_limits(bool &ah)
+{
+  size_t i;
+  size_t icount;
+  for ( i = 0; i < nrefvarsl; i++) {
+     icount=reflection_llimit_cv[i];
+     if (colvar_values[icount]<reflection_llimit[i]) {
+       ah=false;
+     }
+  }
+  for ( i = 0; i < nrefvarsu; i++) {
+     icount=reflection_ulimit_cv[i];
+     if (colvar_values[icount]>reflection_ulimit[i]) {
+       ah=false;
+     }
+  }
+  return ah;
+}
+
+int colvarbias_meta::reflect_hill_multid(cvm::real const &h_scale)
+{
+  size_t i = 0;
+  size_t j;
+  size_t jcount;
+  size_t startsum;
+  int getsum;
+  int check_val;
+  size_t numberref;
+  size_t startsumk;
+  int upordown;
+  size_t nkstates;
+  size_t kstate;
+  size_t k;
+  size_t kcount;
+  size_t countstate;
+  bool hill_add;
+  int getsumk;
+  int checkstate;
+  size_t state;
+  int valk;
+  cvm:: real tmps;
+  colvarvalue tmp;
+  colvarvalue unitary;
+  cvm:: real reflection_limit;
+  cvm:: real tmpd;
+
+  std::vector<colvarvalue> curr_cv_values(num_variables());
+  for (i = 0; i < num_variables(); i++) {
+    curr_cv_values[i].type(variables(i)->value());
+  }
+  for (i = 0; i < num_variables(); i++) {
+      curr_cv_values[i] = colvar_values[i];
+  }
+
+  // sum over all possible reflection states previously generated,
+  // see init
+
+  for ( j = 0; j < num_variables(); j++) {
+     startsum=1;
+     for (i = 0; i < j; i++) {
+        startsum*=10;
+     }
+     for (jcount = 0; jcount < ref_state[j].size(); jcount++) {
+           getsum=startsum;
+           check_val=ref_state[j][jcount];
+           numberref=0;
+           startsumk=1;
+           for (i = 0; i <= j; i++) {
+              upordown=std::floor(check_val/getsum);
+              if(check_val-getsum>=0) check_val=check_val-getsum;
+              getsum=getsum/10;
+              if (upordown==1) {
+                numberref++;
+                if(numberref>1) startsumk*=10;
+              }
+           }
+
+           // sum over all possible lower and upper boudary combinations
+           // exploiting kstate=ref_state[k][kcount]:
+           // for just one reflection these are 0(lower boundary) and 1(upper boundary)
+           // for two reflections these are 0 1 10 11 (0,0 0,1 1,0 1,1)
+           // where 0 is reflect on the two lower boudaries of the two coordinates etc.
+
+           nkstates=2;
+           kstate=0;
+           for ( k = 0; k <numberref; k++ ) {
+              if (k>0)  nkstates=ref_state[k].size();
+              for ( kcount = 0; kcount < nkstates; kcount++) {
+                 if (k==0 && kcount==1) {
+                   kstate=1;
+                 } else if (k>0) {
+                   kstate=ref_state[k][kcount];
+                 }
+
+                 getsum=startsum;
+                 countstate=0;
+                 check_val=ref_state[j][jcount];
+                 hill_add=true;
+                 getsumk=startsumk;
+                 checkstate=kstate;
+                 for (i = 0; i <= j; i++) {
+                    upordown=std::floor(check_val/getsum);
+                    state=num_variables()-1-j+countstate;
+                    countstate++;
+                    if(check_val-getsum>=0) check_val=check_val-getsum;
+                    getsum=getsum/10;
+                    if (upordown==1) {
+                      tmps=colvar_sigmas[state];
+                      tmp=curr_cv_values[state]; // store original current cv value
+                      unitary=curr_cv_values[state];
+                      unitary.set_ones();
+                      valk=std::floor(checkstate/getsumk);
+                      if(checkstate-getsumk>=0) checkstate=checkstate-getsumk;
+                      getsumk=getsumk/10;
+                      reflection_limit=reflection_l[state][valk];
+                      tmpd=reflection_limit-cvm::real(curr_cv_values[state]);
+                      tmpd=std::sqrt(tmpd*tmpd);
+                      if (tmpd<reflection_int*tmps && reflection_usel[state][valk] ) { // do mirror within selected range in case upordown=1
+                        curr_cv_values[state]=2.0*reflection_limit*unitary-tmp; // reflected cv value
+                      } else {
+                        hill_add=false;
+                      }
+                    }
+                 }
+                 if (hill_add) {
+                   switch (comm) {
+
+                   case single_replica:
+
+                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, colvar_sigmas));
+
+                     break;
+
+                   case multiple_replicas:
+                     add_hill(hill(cvm::step_absolute(), hill_weight*h_scale, curr_cv_values, colvar_sigmas, replica_id));
+                     std::ostream &replica_hills_os =
+                       cvm::proxy->output_stream(replica_hills_file, "replica hills file");
+                     if (replica_hills_os) {
+                       write_hill(replica_hills_os, hills.back());
+                     } else {
+                       return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                                         ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                                         " while writing hills for the other replicas.\n", COLVARS_FILE_ERROR);
+                     }
+                     break;
+                   }
+
+                   for (i = 0; i < num_variables(); i++) {
+                      curr_cv_values[i] = colvar_values[i]; // go back to previous values
+                   }
+                 } else {
+                   for (i = 0; i < num_variables(); i++) {
+                      curr_cv_values[i] = colvar_values[i]; // go back to previous values
+                   }
+                 }
+              }
+           }
+     }
+  }
+  return COLVARS_OK;
+}
 
 std::list<colvarbias_meta::hill>::const_iterator
 colvarbias_meta::delete_hill(hill_iter &h)
@@ -593,29 +1017,50 @@ int colvarbias_meta::update_bias()
       hills_scale *= cvm::exp(-1.0*hills_energy_sum_here/(bias_temperature*proxy->boltzmann()));
     }
 
-    switch (comm) {
+    // Whether add a hill
+    bool add_a_hill=true;
 
-    case single_replica:
+    // Do not add hills beyond reflection borders
+    // as just reflected hills must be present
+    // beyond those boundaries
 
-      add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
-                    colvar_values, colvar_sigmas));
+    // Check reflection borders: if beyond borders do not add hill
 
-      break;
+    add_a_hill=check_reflection_limits(add_a_hill);
 
-    case multiple_replicas:
-      add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
-                    colvar_values, colvar_sigmas, replica_id));
-      std::ostream &replica_hills_os =
-        cvm::proxy->output_stream(replica_hills_file, "replica hills file");
-      if (replica_hills_os) {
-        write_hill(replica_hills_os, hills.back());
-      } else {
-        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
-                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                          " while writing hills for the other replicas.\n", COLVARS_FILE_ERROR);
+    if (add_a_hill) {
+
+      switch (comm) {
+
+      case single_replica:
+
+        add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
+                      colvar_values, colvar_sigmas));
+
+        break;
+
+      case multiple_replicas:
+        add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
+                      colvar_values, colvar_sigmas, replica_id));
+        std::ostream &replica_hills_os =
+          cvm::proxy->output_stream(replica_hills_file, "replica hills file");
+        if (replica_hills_os) {
+          write_hill(replica_hills_os, hills.back());
+        } else {
+          return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+                            ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
+                            " while writing hills for the other replicas.\n", COLVARS_FILE_ERROR);
+        }
+        break;
       }
-      break;
+
+      // add reflected hills if required
+      if (use_reflection) {
+        reflect_hill_multid(hills_scale);
+      }
+
     }
+
   }
 
   return COLVARS_OK;
@@ -627,7 +1072,9 @@ int colvarbias_meta::update_grid_data()
   if ((cvm::step_absolute() % grids_freq) == 0) {
     // map the most recent gaussians to the grids
     project_hills(new_hills_begin, hills.end(),
-                  hills_energy,    hills_energy_gradients);
+                  hills_energy,    hills_energy_gradients,
+                  which_int_llimit_cv, which_int_ulimit_cv,
+                  reflection_llimit, reflection_ulimit);
     new_hills_begin = hills.end();
 
     // TODO: we may want to condense all into one replicas array,
@@ -637,7 +1084,9 @@ int colvarbias_meta::update_grid_data()
         replicas[ir]->project_hills(replicas[ir]->new_hills_begin,
                                     replicas[ir]->hills.end(),
                                     replicas[ir]->hills_energy,
-                                    replicas[ir]->hills_energy_gradients);
+                                    replicas[ir]->hills_energy_gradients,
+                                    which_int_llimit_cv, which_int_ulimit_cv,
+                                    reflection_llimit, reflection_ulimit);
         replicas[ir]->new_hills_begin = replicas[ir]->hills.end();
       }
     }
@@ -651,24 +1100,40 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
 {
   size_t ir = 0;
 
+  size_t i;
+  int icount;
+  bool index_ok = false;
+  std::vector<int> curr_bin;
+
+  curr_values = values ? *values : colvar_values;
+
+  if (use_reflection) {
+    for (i = 0; i < num_variables(); i++) {
+       icount=which_int_llimit_cv[i];
+       if (icount>-1 && curr_values[i]<reflection_llimit[icount] ) {
+         curr_values[i]=reflection_llimit[icount];
+       }
+       icount=which_int_ulimit_cv[i];
+       if (icount>-1 && curr_values[i]>reflection_ulimit[icount] ) {
+         curr_values[i]=reflection_ulimit[icount];
+       }
+    } 
+    if (use_grids) {
+      curr_bin = hills_energy->get_colvars_index_bound(curr_values);
+    }  
+  } else {
+    if (use_grids) {	  
+      curr_bin = hills_energy->get_colvars_index(curr_values);
+    }   
+  }
+
   for (ir = 0; ir < replicas.size(); ir++) {
     replicas[ir]->bias_energy = 0.0;
   }
 
-  bool index_ok = false;
-  std::vector<int> curr_bin;
+  index_ok = hills_energy->index_ok(curr_bin);
 
-  if (use_grids) {
-
-    curr_bin = values ?
-      hills_energy->get_colvars_index(*values) :
-      hills_energy->get_colvars_index();
-
-    index_ok = hills_energy->index_ok(curr_bin);
-
-  }
-
-  if ( index_ok ) {
+  if (index_ok) {
     // index is within the grid: get the energy from there
     for (ir = 0; ir < replicas.size(); ir++) {
 
@@ -683,11 +1148,13 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     }
   } else {
     // off the grid: compute analytically only the hills at the grid's edges
-    for (ir = 0; ir < replicas.size(); ir++) {
-      calc_hills(replicas[ir]->hills_off_grid.begin(),
-                 replicas[ir]->hills_off_grid.end(),
-                 bias_energy,
-                 values);
+    if (!use_reflection) {
+      for (ir = 0; ir < replicas.size(); ir++) {
+        calc_hills(replicas[ir]->hills_off_grid.begin(),
+                   replicas[ir]->hills_off_grid.end(),
+                   bias_energy,
+                   &curr_values);
+      }
     }
   }
 
@@ -698,7 +1165,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     calc_hills(replicas[ir]->new_hills_begin,
                replicas[ir]->hills.end(),
                bias_energy,
-               values);
+               &curr_values);
     if (cvm::debug()) {
       cvm::log("Hills energy = "+cvm::to_str(bias_energy)+".\n");
     }
@@ -711,42 +1178,69 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
 int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 {
   size_t ir = 0, ic = 0;
+  int icount;
+  bool index_ok = false;
+  std::vector<int> curr_bin;
+
+  curr_values = values ? *values : colvar_values;
+  std::vector<bool> add_force(num_variables());
   for (ir = 0; ir < replicas.size(); ir++) {
     for (ic = 0; ic < num_variables(); ic++) {
       replicas[ir]->colvar_forces[ic].reset();
     }
   }
 
-  bool index_ok = false;
-  std::vector<int> curr_bin;
-
-  if (use_grids) {
-
-    curr_bin = values ?
-      hills_energy->get_colvars_index(*values) :
-      hills_energy->get_colvars_index();
-
-    index_ok = hills_energy->index_ok(curr_bin);
-
+  for (ic = 0; ic < num_variables(); ic++) {
+    add_force[ic]=true;
+    icount=which_int_llimit_cv[ic];
+    if (icount>-1) {
+      if ( curr_values[ic]<reflection_llimit[icount] ) {
+        curr_values[ic]=reflection_llimit[icount];
+        add_force[ic]=false;
+      }
+    }
+    icount=which_int_ulimit_cv[ic];
+    if (icount>-1) {
+      if ( curr_values[ic]>reflection_ulimit[icount] ) {
+        add_force[ic]=false;
+        curr_values[ic]=reflection_ulimit[icount];
+      }
+    }
   }
+
+  if (use_reflection) {
+    if (use_grids) { 	  
+      curr_bin = hills_energy->get_colvars_index_bound(curr_values);
+    }
+  } else {
+    if (use_grids) {	  
+      curr_bin = hills_energy->get_colvars_index(curr_values);
+    }
+  }
+
+  index_ok = hills_energy->index_ok(curr_bin); 
 
   if ( index_ok ) {
     for (ir = 0; ir < replicas.size(); ir++) {
       cvm::real const *f = &(replicas[ir]->hills_energy_gradients->value(curr_bin));
       for (ic = 0; ic < num_variables(); ic++) {
         // the gradients are stored, not the forces
-        colvar_forces[ic].real_value += -1.0 * f[ic];
+        if (add_force[ic]) {
+          colvar_forces[ic].real_value += -1.0 * f[ic];
+        }
       }
     }
   } else {
     // off the grid: compute analytically only the hills at the grid's edges
-    for (ir = 0; ir < replicas.size(); ir++) {
-      for (ic = 0; ic < num_variables(); ic++) {
-        calc_hills_force(ic,
-                         replicas[ir]->hills_off_grid.begin(),
-                         replicas[ir]->hills_off_grid.end(),
-                         colvar_forces,
-                         values);
+    if (!use_reflection) {
+      for (ir = 0; ir < replicas.size(); ir++) {
+        for (ic = 0; ic < num_variables(); ic++) {
+           calc_hills_force(ic,
+                            replicas[ir]->hills_off_grid.begin(),
+                            replicas[ir]->hills_off_grid.end(),
+                            colvar_forces,
+                            &curr_values);
+        }
       }
     }
   }
@@ -762,11 +1256,13 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 
   for (ir = 0; ir < replicas.size(); ir++) {
     for (ic = 0; ic < num_variables(); ic++) {
-      calc_hills_force(ic,
-                       replicas[ir]->new_hills_begin,
-                       replicas[ir]->hills.end(),
-                       colvar_forces,
-                       values);
+      if (add_force[ic]) {
+        calc_hills_force(ic,
+                         replicas[ir]->new_hills_begin,
+                         replicas[ir]->hills.end(),
+                         colvar_forces,
+                         &curr_values);
+      }
       if (cvm::debug()) {
         cvm::log("Hills forces = "+cvm::to_str(colvar_forces)+".\n");
       }
@@ -887,6 +1383,10 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
                                     colvarbias_meta::hill_iter  h_last,
                                     colvar_grid_scalar         *he,
                                     colvar_grid_gradient       *hg,
+                                    std::vector<int> const &w_int_llimit_cv,
+                                    std::vector<int> const &w_int_ulimit_cv,
+                                    std::vector<cvm::real> const &ref_llimit,
+                                    std::vector<cvm::real> const &ref_ulimit,
                                     bool print_progress)
 {
   if (cvm::debug())
@@ -897,6 +1397,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
   // TODO: improve it by looping over a small subgrid instead of the whole grid
 
   std::vector<colvarvalue> new_colvar_values(num_variables());
+
   std::vector<cvm::real> colvar_forces_scalar(num_variables());
 
   std::vector<int> he_ix = he->new_index();
@@ -910,12 +1411,29 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
   if (hg != NULL) {
 
     // loop over the points of the grid
+    size_t i;
+    int icount;
+    std::vector<bool> add_force(num_variables());
     for ( ;
           (he->index_ok(he_ix)) && (hg->index_ok(hg_ix));
           count++) {
-      size_t i;
       for (i = 0; i < num_variables(); i++) {
+        add_force[i]=true;
         new_colvar_values[i] = he->bin_to_value_scalar(he_ix[i], i);
+        icount=w_int_llimit_cv[i];
+        if (icount>-1 ){
+          if ( new_colvar_values[i]<ref_llimit[icount] ) {
+            new_colvar_values[i]=ref_llimit[icount];
+            add_force[i]=false;
+          }
+        }
+        icount=w_int_ulimit_cv[i];
+        if (icount>-1){
+          if( new_colvar_values[i]>ref_ulimit[icount] ) {
+            new_colvar_values[i]=ref_ulimit[icount];
+            add_force[i]=false;
+          }
+        }
       }
 
       // loop over the hills and increment the energy grid locally
@@ -925,7 +1443,9 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
 
       for (i = 0; i < num_variables(); i++) {
         hills_forces_here[i].reset();
-        calc_hills_force(i, h_first, h_last, hills_forces_here, &new_colvar_values);
+        if (add_force[i]){
+          calc_hills_force(i, h_first, h_last, hills_forces_here, &new_colvar_values);
+        }
         colvar_forces_scalar[i] = hills_forces_here[i].real_value;
       }
       hg->acc_force(hg_ix, &(colvar_forces_scalar.front()));
@@ -1473,7 +1993,9 @@ void colvarbias_meta::rebin_grids_after_restart()
       cvm::log("Rebinning the energy and forces grids from "+
                cvm::to_str(hills.size())+" hills (this may take a while)...\n");
       project_hills(hills.begin(), hills.end(),
-                    new_hills_energy, new_hills_energy_gradients, true);
+                    new_hills_energy, new_hills_energy_gradients,
+                    which_int_llimit_cv, which_int_ulimit_cv,
+                    reflection_llimit, reflection_ulimit, true);
       cvm::log("rebinning done.\n");
 
     } else {
@@ -1833,7 +2355,10 @@ template <typename OST> OST &colvarbias_meta::write_state_data_template_(OST &os
 
     // this is a very good time to project hills, if you haven't done
     // it already!
-    project_hills(new_hills_begin, hills.end(), hills_energy, hills_energy_gradients);
+    project_hills(new_hills_begin, hills.end(),
+                  hills_energy,    hills_energy_gradients,
+                  which_int_llimit_cv, which_int_ulimit_cv,
+                  reflection_llimit, reflection_ulimit);
     new_hills_begin = hills.end();
 
     // write down the grids to the restart file
