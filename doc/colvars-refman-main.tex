@@ -6147,18 +6147,16 @@ In typical scenarios the Gaussian hills of a metadynamics potential are interpol
 This numerical approximation typically yields negligible errors in the resulting PMF \cite{Fiorin2013}.
 However, due to the finite thickness of the Gaussian function, the metadynamics potential would suddenly vanish each time a variable exceeds its grid boundaries.
 
-To avoid such discontinuity the Colvars metadynamics code will keep an explicit copy of each hill that straddles a grid's boundary, and will use it to compute metadynamics forces outside the grid.
-This measure is taken to protect the accuracy and stability of a metadynamics simulation, except in cases of ``natural'' boundaries (for example, the $[0:180]$ interval of an \texttt{angle} colvar) or when the flags \refkey{hardLowerBoundary}{colvar|hardLowerBoundary} and \refkey{hardUpperBoundary}{colvar|hardUpperBoundary} are explicitly set by the user.
-Unfortunately, processing explicit hills alongside the potential and force grids could easily become inefficient, slowing down the simulation and increasing the state file's size.
+To prevent such discontinuities, colvars implements a specific methodology\cite{Fiorin2024} whereby the hills are reflected beyond the boundaries and the biasing forces are set to zero.  This results in a continuous biasing potential that remains constant in the direction orthogonal to the boundaries once crossed \cite{Fiorin2024}. This feature can be enabled by setting the keyword \refkey{useHillsReflection}{metadynamics|useHillsReflection} to \texttt{on}. It is recommended to activate the latter keyword both in presence of ``natural'' boundaries (for example, the $[0:180]$ interval of an \texttt{angle} colvar) or by those set by the user. For instance, by defining \emph{ a repulsive potential to limit the sampling between the boundaries} via \texttt{harmonicWalls} restraint (see \ref{sec:colvarbias_harmonic_walls}). When \refkey{useHillsReflection}{metadynamics|useHillsReflection} is active, the latter walls should be set at the defined CVs boundaries (i.e. at the grid boundaries), and not within those.  Note that in the current implementation \refkey{useHillsReflection}{metadynamics|useHillsReflection} cannot be activated for variables of non-scalar type. To minimize error in these cases (or if \refkey{useHillsReflection}{metadynamics|useHillsReflection} is set to  \texttt{off}, which is the actual default), the Colvars metadynamics code will keep an explicit copy of each hill that straddles a grid's boundary, and will use it to compute metadynamics forces outside the grid.
+This measure is taken to protect the accuracy and stability of a metadynamics simulation, except in cases of ``natural'' boundaries or when the flags \refkey{hardLowerBoundary}{colvar|hardLowerBoundary} and \refkey{hardUpperBoundary}{colvar|hardUpperBoundary} are explicitly set by the user. Also in these cases it is a good idea to \emph{define a repulsive potential to avoid hills from coming too close to the grid's boundaries}, via \texttt{harmonicWalls} restraint (see \ref{sec:colvarbias_harmonic_walls}).
+Unfortunately, processing explicit hills alongside the potential and force grids could easily become inefficient, slowing down the simulation and increasing the state file's size. Therefore, except for periodic CVs, for all other scalar varibles it is recommended to activate the keyword \refkey{useHillsReflection}{metadynamics|useHillsReflection}. The latter is automatically set to \texttt{off} for periodic CVs.
 
-In general, it is a good idea to \emph{define a repulsive potential to avoid hills from coming too close to the grid's boundaries}, for example as a \texttt{harmonicWalls} restraint (see \ref{sec:colvarbias_harmonic_walls}).\\
-
-\noindent\textbf{Example:} Using harmonic walls to protect the grid's boundaries.
+\noindent\textbf{Example:} Using hills reflection to avoid systematic erros at the grid's boundaries and harmonic walls to limit the sampling within those.
 \begin{cvexampleinput}
 \-colvar~\{\\
 \-\-~~name~r\\
 \-\-~~distance~\{~...~\}\\
-\-\-~~upperBoundary~15.0\\
+\-\-~~upperBoundary~13.0\\
 \-\-~~width~0.2\\
 \-\}\\
 \\
@@ -6167,6 +6165,7 @@ In general, it is a good idea to \emph{define a repulsive potential to avoid hil
 \-\-~~colvars~r\\
 \-\-~~hillWeight~0.001\\
 \-\-~~hillWidth~2.0\\
+\-\-~~useHillsReflection~on\\
 \-\}\\
 \\
 \-harmonicWalls~\{\\
