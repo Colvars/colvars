@@ -47,7 +47,7 @@ index ddf9f860..4148d87c 100755
 +  if (( "$use_colvars_torch" )); then
 +    echo "TORCHDIR = $TORCH_PREFIX" >> Make.config
 +    echo 'TORCHINCFLAGS = $(COPTI)$(TORCHDIR)/include $(COPTI)$(TORCHDIR)/include/torch/csrc/api/include' >> Make.config
-+    echo 'EXTRACOLVARSFLAGS = -std=c++17 -DTORCH $(TORCHINCFLAGS)' >> Make.config
++    echo 'EXTRACOLVARSFLAGS = -std=c++17 -DCOLVARS_TORCH $(TORCHINCFLAGS)' >> Make.config
 +    if [[ $use_cuda && -f "${TORCH_PREFIX}/lib/libtorch_cuda.so" ]]; then 
 +      echo 'EXTRALINKLIBS = -Wl,-rpath,$(TORCHDIR)/lib -L$(TORCHDIR)/lib -ltorch -ltorch_cpu -lc10 -ltorch_cuda -lc10_cuda' >> Make.config
 +    else
