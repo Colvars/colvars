@@ -344,7 +344,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   for ( i = 0; i < num_variables(); i++ ) {
        if (variables(i)->value().type()!=colvarvalue::type_scalar) {
 	 use_reflection=false;        
-         cvm::log("Note: CV number "+cvm::to_str(i)+" is not of scalar type. Hills reflection has been disabled as it can be used only with scalar variables.\n");
+         cvm::log("Note: CV "+cvm::to_str(variables(i)->name)+" is not of scalar type. Hills reflection has been disabled as it can be used only with scalar variables.\n");
        }
   }
 
@@ -353,9 +353,28 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
     get_keyval(conf, "reflectionRange", reflection_int, 6.0);
     cvm::log("Reflection range is "+cvm::to_str(reflection_int)+".\n");
 
-    if (get_keyval(conf, "reflectionLowLimitUseCVs", reflection_llimit_cv, reflection_llimit_cv)) {
-      nrefvarsl=reflection_llimit_cv.size();
-      if(nrefvarsl>num_variables()) cvm::error("Error: number CVs with active lower reflection limit is > num_variables  \n", COLVARS_INPUT_ERROR);
+    std::vector<std::string> colvar_names_l;
+    std::vector<int> check_dup(num_variables());    
+    if (get_keyval(conf, "reflectionLowLimitUseCVs", colvar_names_l)) {
+      nrefvarsl=colvar_names_l.size();
+      reflection_llimit_cv.resize(nrefvarsl);
+
+      for (i = 0; i < num_variables(); i++) check_dup[i]=0;
+      for (j = 0; j < nrefvarsl; j++) {
+	 icount=0;	 
+	 for (i = 0; i < num_variables(); i++) {     
+	    if (colvar_names_l[j].compare(variables(i)->name)==0) {
+	      reflection_llimit_cv[j]=i;    
+	      icount++;
+	      check_dup[i]++; 
+	    }  
+         }
+         if (icount!=1) cvm::error("Error: CV name "+colvar_names_l[j]+" mismatch or duplication for lower reflection limit \n", COLVARS_INPUT_ERROR);	 
+      }
+      for (i = 0; i < num_variables(); i++) {
+	 if (check_dup[i]>1) cvm::error("Error: CV name duplication for lower reflection limit \n", COLVARS_INPUT_ERROR);
+      }      
+      if(nrefvarsl>num_variables()) cvm::error("Error: number of CVs with active lower reflection limit is > num_variables  \n", COLVARS_INPUT_ERROR);
       cvm::log("Using lower limits reflection on "+cvm::to_str(nrefvarsl)+" variables.\n");
     } else {
       nrefvarsl=nonpvars;
@@ -374,9 +393,26 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
       reflection_llimit.resize(nrefvarsl);
     }
 
-    if (get_keyval(conf, "reflectionUpLimitUseCVs", reflection_ulimit_cv, reflection_ulimit_cv)) {
-      nrefvarsu=reflection_ulimit_cv.size();
-      if(nrefvarsu>num_variables()) cvm::error("Error: number CVs with active upper reflection limit is > num_variables  \n", COLVARS_INPUT_ERROR);
+    std::vector<std::string> colvar_names_u;
+    if (get_keyval(conf, "reflectionUpLimitUseCVs", colvar_names_u)) {
+      nrefvarsu=colvar_names_u.size();
+      reflection_ulimit_cv.resize(nrefvarsu);
+      for (i = 0; i < num_variables(); i++) check_dup[i]=0;
+      for (j = 0; j < nrefvarsu; j++) {
+	 icount=0;     
+         for (i = 0; i < num_variables(); i++) {
+            if (colvar_names_u[j].compare(variables(i)->name)==0) {
+              reflection_ulimit_cv[j]=i;
+	      icount++;
+	      check_dup[i]++;
+	    }  
+         }
+	 if (icount!=1) cvm::error("Error: CV name "+cvm::to_str(colvar_names_u[j])+" mismatch or duplication for upper reflection limit \n", COLVARS_INPUT_ERROR);
+      }
+      for (i = 0; i < num_variables(); i++) {
+         if (check_dup[i]>1) cvm::error("Error: CV name duplication for upper reflection limit \n", COLVARS_INPUT_ERROR);
+      }         
+      if(nrefvarsu>num_variables()) cvm::error("Error: number of CVs with active upper reflection limit is > num_variables  \n", COLVARS_INPUT_ERROR);
       cvm::log("Using upper limits reflection on "+cvm::to_str(nrefvarsu)+" variables.\n");
     } else {
       nrefvarsu=nonpvars;
@@ -448,7 +484,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
     }
 
     for (i = 0; i < nrefvarsl; i++) {
-       cvm::log("Reflection condition is applied on a lower limit for CV "+cvm::to_str(reflection_llimit_cv[i])+".\n");
+       cvm::log("Reflection condition is applied on a lower limit for CV "+cvm::to_str(variables(reflection_llimit_cv[i])->name)+".\n");
        cvm::log("Reflection condition lower limit for this CV is "+cvm::to_str(reflection_llimit[i])+".\n");
     }
 
@@ -471,7 +507,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
     }
 
     for (i = 0; i < nrefvarsu; i++) {
-       cvm::log("Reflection condition is applied on an upper limit for CV "+cvm::to_str(reflection_ulimit_cv[i])+".\n");
+       cvm::log("Reflection condition is applied on an upper limit for CV "+cvm::to_str(variables(reflection_ulimit_cv[i])->name)+".\n");
        cvm::log("Reflection condition upper limit for this CV is "+cvm::to_str(reflection_ulimit[i])+".\n");
     }
 
