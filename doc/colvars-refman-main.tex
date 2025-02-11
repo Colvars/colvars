@@ -6271,7 +6271,10 @@ While \refkey{useHillsReflection}{metadynamics|useHillsReflection} is in most ca
     \texttt{reflectionLowLimit} and \texttt{reflectionUpLimit}. Currently, 
     this option is implemented for all types of variables except the non-scalar 
     types (\texttt{distanceDir} or \texttt{orientation}), and it becomes inactive 
-    if those are active.}
+    if those are active. To enhance efficiency, the boundary correction is applied 
+    only to Gaussians that lie within a specified cutoff distance from the boundaries 
+    (defaulting to 6 times the Gaussian's sigma, though this can be adjusted using 
+    the keyword \texttt{reflectionRange})}
 
 \item %
   \labelkey{metadynamics|reflectionLowLimitUseCVs}
