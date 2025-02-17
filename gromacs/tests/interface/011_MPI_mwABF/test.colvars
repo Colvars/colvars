@@ -1,0 +1,39 @@
+units gromacs
+colvarsTrajFrequency 1
+
+colvar {
+    name d_atoms
+    extendedLagrangian on
+    extendedFluctuation 0.1
+    extendedTimeConstant 200
+
+    width 0.1
+    lowerBoundary 1
+    upperBoundary 10
+    distance {
+        group1 {
+            atomNumbers 337
+        }
+        group2 {
+            atomNumbers 715
+        }
+    forceNoPBC
+    }
+}
+
+colvar {
+    name coords_OW_337
+
+    cartesian {
+        atoms {
+            atomNumbers 337
+        }
+    }
+}
+
+abf {
+    colvars d_atoms
+    fullSamples 10
+    shared on
+    sharedFreq 10
+}
