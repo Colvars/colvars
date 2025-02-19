@@ -18,6 +18,11 @@
 #define COLVARS_DEBUG false
 #endif
 
+#if defined(__FAST_MATH__) && defined(__aarch64__)
+// NOTE: This is used for fixing https://github.com/Colvars/colvars/issues/767
+#define COLVARS_BOUNDED_INV_TRIGONOMETRIC_FUNC
+#endif
+
 /*! \mainpage Main page
 This is the Developer's documentation for the Collective Variables module (Colvars).
 
@@ -150,13 +155,23 @@ public:
   /// Reimplemented to work around MS compiler issues
   static inline real asin(real const &x)
   {
+#ifdef COLVARS_BOUNDED_INV_TRIGONOMETRIC_FUNC
+    const double tmp = static_cast<double>(x);
+    return ::asin(tmp > 1.0 ? 1.0 : (tmp < -1.0 ? -1.0 : tmp));
+#else
     return ::asin(static_cast<double>(x));
+#endif
   }
 
   /// Reimplemented to work around MS compiler issues
   static inline real acos(real const &x)
   {
+#ifdef COLVARS_BOUNDED_INV_TRIGONOMETRIC_FUNC
+    const double tmp = static_cast<double>(x);
+    return ::acos(tmp > 1.0 ? 1.0 : (tmp < -1.0 ? -1.0 : tmp));
+#else
     return ::acos(static_cast<double>(x));
+#endif
   }
 
   /// Reimplemented to work around MS compiler issues
