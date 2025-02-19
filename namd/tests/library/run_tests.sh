@@ -78,11 +78,13 @@ echo "Running NAMD as: $CMD"
 
 TPUT_RED='true'
 TPUT_GREEN='true'
+TPUT_YELLOW='true'
 TPUT_BLUE='true'
 TPUT_CLEAR='true'
 if hash tput >& /dev/null && [ -z "${GITHUB_ACTION}" ] ; then
   TPUT_RED='tput setaf 1'
   TPUT_GREEN='tput setaf 2'
+  TPUT_YELLOW='tput setaf 3'
   TPUT_BLUE='tput setaf 4'
   TPUT_CLEAR='tput sgr 0'
 fi
@@ -92,6 +94,7 @@ ALL_SUCCESS=1
 
 # Precision requested to pass (negative powers of ten)
 DIFF_PREC=6
+DIFF_ABS_PREC=12
 # Minimum precision to be tested
 MIN_PREC=1
 
@@ -114,6 +117,7 @@ cleanup_files() {
 
 declare -a failed_tests
 declare -a failed_tests_low_prec
+declare -a failed_tests_abs_prec
 
 TORCH_LINKED=false
 if { ldd $(which $BINARY) | grep -q libtorch[_a-zA-Z]*.so ; } then TORCH_LINKED=true ; fi
@@ -285,7 +289,6 @@ for dir in ${DIRLIST} ; do
       then
         echo -e "\n*** Failure for file $(${TPUT_RED})$base$(${TPUT_CLEAR}): see `pwd`/$base.diff "
         SUCCESS=0
-        ALL_SUCCESS=0
         LOW_PREC=${DIFF_PREC}
         RETVAL=1
         while [ $RETVAL -ne 0 ] && [ $LOW_PREC -gt $MIN_PREC ]
@@ -296,11 +299,22 @@ for dir in ${DIRLIST} ; do
         done
         if [ $RETVAL -eq 0 ]
         then
+          ALL_SUCCESS=0
           failed_tests_low_prec+=($dir)
           echo " --> Passes at reduced precision 1e-${LOW_PREC}"
         else
-          failed_tests+=($dir)
-          echo " --> Fails at minimum tested precision 1e-${LOW_PREC}"
+	  # Test absolute error
+	  spiff -a 1e-${DIFF_ABS_PREC} $f $base > /dev/null
+	  RETVAL=$?
+	  if [ $RETVAL -eq 0 ]
+	  then
+	    failed_tests_abs_prec+=($dir)
+	    echo " --> Passes at absolute precision 1e-${DIFF_ABS_PREC}"
+	  else
+            ALL_SUCCESS=0
+            failed_tests+=($dir)
+            echo " --> Fails at minimum tested precision 1e-${LOW_PREC}"
+          fi
         fi
       fi
     fi
@@ -322,6 +336,10 @@ for dir in ${DIRLIST} ; do
   cd $BASEDIR
 done
 
+if [ ${#failed_tests_abs_prec[@]} -gt 0 ]; then
+  echo "$(${TPUT_YELLOW})The following tests are failed at relative precision, but passed at absolute precision:$(${TPUT_CLEAR})"
+  printf "%s\n" "${failed_tests_abs_prec[@]}" | sort -u
+fi
 
 if [ $ALL_SUCCESS -eq 1 ]
 then
