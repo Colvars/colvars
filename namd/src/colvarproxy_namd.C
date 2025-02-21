@@ -1669,14 +1669,21 @@ int colvarproxy_namd::request_alch_energy_freq(int const freq) {
 
 /// Get value of alchemical lambda parameter from back-end
 int colvarproxy_namd::get_alch_lambda(cvm::real* lambda) {
-  *lambda = simparams->alchLambda;
+  *lambda = simparams->getCurrentLambda(step);
   return COLVARS_OK;
 }
 
 
 /// Set value of alchemical lambda parameter in back-end
 int colvarproxy_namd::send_alch_lambda(void) {
-  simparams->alchLambda = cached_alch_lambda;
+  if (simparams->alchLambdaFreq > 0) {
+    cvm::error("Cannot set lambda from Colvars because alchLambdaFreq is enabled. "
+                "Either remove biasing forces and extended Lagrangian dynamics on the alchemical coordinate, "
+                "or disable alchLambdaFreq.\n");
+    return COLVARS_INPUT_ERROR;
+  } else {
+    simparams->alchLambda = cached_alch_lambda;
+  }
   return COLVARS_OK;
 }
 
