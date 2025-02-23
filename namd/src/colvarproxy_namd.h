@@ -24,6 +24,7 @@
 #include "Lattice.h"
 #include "GlobalMaster.h"
 #include "Random.h"
+#include "ConfigList.h"
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
@@ -57,7 +58,7 @@ protected:
 
   /// Used to submit restraint energy as MISC
   SubmitReduction *reduction;
-#ifdef NODEGROUP_FORCE_REGISTER
+#if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
   NodeReduction *nodeReduction;
 #endif
 
