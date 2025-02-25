@@ -642,6 +642,24 @@
 \-~~~~\texttt{Bins : integer - Number of grid points}
 \end{mdexampleinput}
 \begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name calcenergy}}
+\\
+\-~~~~\texttt{Recalculate the energy of this bias at the current colvar values}
+\\
+\-~~~~\texttt{\textbf{Returns}}
+\\
+\-~~~~\texttt{E : float - Energy value}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name calcforces}}
+\\
+\-~~~~\texttt{Recalculate the forces of this bias after a call to calcenergy}
+\\
+\-~~~~\texttt{\textbf{Returns}}
+\\
+\-~~~~\texttt{forces : array of colvarvalue objects - Applied colvar forces}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
 \texttt{\textbf{cv bias name delete}}
 \\
 \-~~~~\texttt{Delete this bias}
@@ -763,7 +781,7 @@
 \begin{mdexampleinput}{}
 \texttt{\textbf{cv bias name update}}
 \\
-\-~~~~\texttt{Recompute this bias and return its up-to-date energy}
+\-~~~~\texttt{Update all components of this bias and return its new energy}
 \\
 \-~~~~\texttt{\textbf{Returns}}
 \\

@@ -172,9 +172,6 @@ public:
   /// \brief Destructor
   ~atom_group() override;
 
-  /// \brief Optional name to reuse properties of this in other groups
-  std::string name;
-
   /// \brief Keyword used to define the group
   // TODO Make this field part of the data structures that link a group to a CVC
   std::string key;
