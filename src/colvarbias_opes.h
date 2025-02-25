@@ -169,6 +169,7 @@ private:
   std::unique_ptr<colvar_grid_scalar> m_global_reweight_grid;
   std::unique_ptr<colvar_grid_scalar> m_global_pmf_grid;
   bool m_explore;
+  bool m_inf_biasfactor;
 };
 
 #endif // COLVARBIAS_OPES_H

@@ -55,7 +55,7 @@ colvarbias_opes::colvarbias_opes(char const *key):
   m_traj_line(traj_line{0}), m_is_first_step(true),
   m_pmf_grid_on(false), m_reweight_grid(nullptr),
   m_pmf_grid(nullptr), m_pmf_hist_freq(0), m_pmf_shared(true),
-  m_explore(false)
+  m_explore(false), m_inf_biasfactor(false)
 {
 }
 
@@ -77,8 +77,8 @@ int colvarbias_opes::init(const std::string& conf) {
     cvm::log("WARNING: OPES should not be run without a thermostat or at 0 Kelvin!\n");
   }
   m_biasfactor = m_barrier / m_kbt;
-  const bool inf_biasfactor = biasfactor_str == "inf" || biasfactor_str == "INF";
-  if (inf_biasfactor) {
+  m_inf_biasfactor = biasfactor_str == "inf" || biasfactor_str == "INF";
+  if (m_inf_biasfactor) {
     m_biasfactor = std::numeric_limits<cvm::real>::infinity();
     m_bias_prefactor = 1;
     if (m_explore) {
@@ -107,7 +107,7 @@ int colvarbias_opes::init(const std::string& conf) {
   m_av_M2.assign(num_variables(), 0);
   if (m_adaptive_sigma) {
     get_keyval(conf, "adaptiveSigmaStride", m_adaptive_sigma_stride, 0);
-    if (inf_biasfactor) {
+    if (m_inf_biasfactor) {
       return cvm::error("cannot use infinite biasfactor with adaptive sigma",
                         COLVARS_INPUT_ERROR);
     }
@@ -286,8 +286,8 @@ void colvarbias_opes::showInfo() const {
   printInfo("beta = ", cvm::to_str(1.0 / m_kbt));
   printInfo("depositing new kernels with newHillFrequency = ", cvm::to_str(m_pace));
   printInfo("expected barrier is ", cvm::to_str(m_barrier));
-  printInfo("using target distribution with biasfactor (gamma) = ", cvm::to_str(m_biasfactor));
-  if (m_biasfactor == std::numeric_limits<cvm::real>::infinity()) {
+  printInfo("using target distribution with biasfactor (gamma) = ", m_inf_biasfactor ? "inf" : cvm::to_str(m_biasfactor));
+  if (m_inf_biasfactor) {
     cvm::log("  (thus a uniform flat target distribution, no well-tempering)\n");
     cvm::log(this->name + ": " + "the equivalent bias temperature = inf\n");
   } else {
@@ -1211,7 +1211,11 @@ template <typename OST> OST& colvarbias_opes::write_state_data_template_(OST &os
       os << "\n";
   };
   std::ostringstream oss;
-  oss << m_biasfactor;
+  if (m_inf_biasfactor) {
+    oss << "inf";
+  } else {
+    oss << m_biasfactor;
+  }
   printFieldString("biasfactor", oss.str());
   printFieldReal("epsilon", m_epsilon);
   printFieldReal("kernel_cutoff", cvm::sqrt(m_cutoff2));
@@ -1315,8 +1319,10 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
   if (old_biasfactor_str == "inf" || old_biasfactor_str == "-inf" || old_biasfactor_str == "+inf" ||
       old_biasfactor_str == "INF" || old_biasfactor_str == "-INF" || old_biasfactor_str == "+INF") {
     old_biasfactor = std::numeric_limits<cvm::real>::infinity();
+    m_inf_biasfactor = true;
   } else {
     old_biasfactor = std::stod(old_biasfactor_str);
+    m_inf_biasfactor = false;
   }
   if (std::abs(old_biasfactor - m_biasfactor) > 1e-6 * m_biasfactor) {
     cvm::log("WARNING: previous bias factor was " + cvm::to_str(old_biasfactor) +
@@ -1710,7 +1716,11 @@ int colvarbias_opes::write_output_files() {
     // Make sure the action name compatible with the script in https://github.com/invemichele/opes/blob/master/postprocessing/State_from_Kernels.py
     if (m_explore) os_kernels << "#! SET action OPES_METAD_EXPLORE_kernels\n";
     else os_kernels << "#! SET action OPES_METAD_kernels\n";
-    os_kernels << "#! SET biasfactor " << m_biasfactor << "\n";
+    if (m_inf_biasfactor) {
+      os_kernels << "#! SET biasfactor " << "inf" << "\n";
+    } else {
+      os_kernels << "#! SET biasfactor " << m_biasfactor << "\n";
+    }
     os_kernels << "#! SET epsilon " << m_epsilon << "\n";
     os_kernels << "#! SET kernel_cutoff " << m_cutoff << "\n";
     os_kernels << "#! SET compression_threshold " << m_compression_threshold << "\n";
