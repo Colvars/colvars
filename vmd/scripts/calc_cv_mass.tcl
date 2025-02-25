@@ -1,3 +1,8 @@
+# Compute the reduced mass of a collective variable
+# and write its trajectory to a file
+
+# M = (\nabla xi m^-1 \nabla_xi)^-1
+# where m is the diagonal matrix of Cartesian coordinate (ie atom) masses
 
 proc cv_mass_traj { cv filename } {
 
