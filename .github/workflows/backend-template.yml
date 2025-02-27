@@ -13,6 +13,10 @@ on:
   workflow_call:
     # Variables needed by the template
     inputs:
+      runner_name:
+        description: "Name of the runner"
+        required: true
+        type: string
       backend_name:
         description: "Name of the backend"
         required: true
@@ -61,7 +65,7 @@ on:
 
 jobs:
   test_backends:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner_name }}
     env:
       CCACHE_DIR: ~/ccache_${{ inputs.container_name }}
       # OpenMPI transport settings suitable for GH VMs
