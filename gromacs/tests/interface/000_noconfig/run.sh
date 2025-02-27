@@ -12,4 +12,6 @@ options="-ntmpi 1 -ntomp 2"
 
 gmx_d mdrun -s test.tpr -deffnm ${basename} ${options} &> ${basename}.out
 
-gmx_d mdrun -s test.tpr -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt -colvars_restart test.colvars.state.dat ${options} &> ${basename}.out
+gmx_d mdrun -s test.restart.tpr -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt -colvars_restart test.colvars.state.dat ${options} &> ${basename}.out
+
+rm -f *.tpr
