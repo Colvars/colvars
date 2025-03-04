@@ -92,7 +92,7 @@ public:
   typedef std::list<hill>::iterator hill_iter;
 
 protected:
-
+  
   /// Width of a hill in number of grid points
   ///
   /// The local width of each collective variable, multiplied by this
@@ -224,6 +224,9 @@ protected:
   /// grids before replacing the current ones (used e.g. in
   /// multiple_replicas)
   bool       safely_read_restart;
+
+  /// Grid configuration for the bias (does not affect target_dist from ebmeta)
+  std::string bias_grid_conf;
 
   /// Hill energy, cached on a grid
   std::unique_ptr<colvar_grid_scalar> hills_energy;
