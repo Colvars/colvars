@@ -1299,7 +1299,8 @@ public:
   /// Constructor from a vector of colvars
   colvar_grid_scalar(std::vector<colvar *> &colvars,
                      std::shared_ptr<const colvar_grid_params> params = nullptr,
-                     bool add_extra_bin = false);
+                     bool add_extra_bin = false,
+                     std::string config = std::string());
 
   /// Constructor from a multicol file
   colvar_grid_scalar(std::string const &filename);
