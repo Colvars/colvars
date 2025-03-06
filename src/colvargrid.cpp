@@ -133,8 +133,9 @@ colvar_grid_scalar::colvar_grid_scalar(colvar_grid_scalar const &g)
 
 colvar_grid_scalar::colvar_grid_scalar(std::vector<colvar *> &colvars,
                                        std::shared_ptr<const colvar_grid_params> params,
-                                       bool add_extra_bin)
-  : colvar_grid<cvm::real>(colvars, 0.0, 1, add_extra_bin, params), samples(NULL)
+                                       bool add_extra_bin,
+                                       std::string config)
+  : colvar_grid<cvm::real>(colvars, 0.0, 1, add_extra_bin, params, config), samples(NULL)
 {
 }
 
