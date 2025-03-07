@@ -18,7 +18,7 @@
 #define COLVARS_DEBUG false
 #endif
 
-#if defined(__FAST_MATH__) && defined(__aarch64__)
+#if defined(__FAST_MATH__)
 // NOTE: This is used for fixing https://github.com/Colvars/colvars/issues/767
 #define COLVARS_BOUNDED_INV_TRIGONOMETRIC_FUNC
 #endif
@@ -152,27 +152,44 @@ public:
     return ::cos(static_cast<double>(x));
   }
 
-  /// Reimplemented to work around MS compiler issues
-  static inline real asin(real const &x)
-  {
+#ifndef PI
+#define PI   3.14159265358979323846
+#endif
+#ifndef PI_2
+#define PI_2 1.57079632679489661923
+#endif
+
+/// Reimplemented to work around compiler issues; return hard-coded values for boundary conditions
+static inline real asin(real const &x)
+{
 #ifdef COLVARS_BOUNDED_INV_TRIGONOMETRIC_FUNC
-    const double tmp = static_cast<double>(x);
-    return ::asin(tmp > 1.0 ? 1.0 : (tmp < -1.0 ? -1.0 : tmp));
+    if (x <= -1.0) {
+        return -PI_2;
+    } else if (x >= 1.0) {
+        return PI_2;
+    } else {
+        return ::asin(static_cast<double>(x));
+    }
 #else
     return ::asin(static_cast<double>(x));
 #endif
-  }
+}
 
-  /// Reimplemented to work around MS compiler issues
-  static inline real acos(real const &x)
-  {
+/// Reimplemented to work around compiler issues; return hard-coded values for boundary conditions
+static inline real acos(real const &x)
+{
 #ifdef COLVARS_BOUNDED_INV_TRIGONOMETRIC_FUNC
-    const double tmp = static_cast<double>(x);
-    return ::acos(tmp > 1.0 ? 1.0 : (tmp < -1.0 ? -1.0 : tmp));
+    if (x <= -1.0) {
+        return PI;
+    } else if (x >= 1.0) {
+        return 0.0;
+    } else {
+        return ::acos(static_cast<double>(x));
+    }
 #else
     return ::acos(static_cast<double>(x));
 #endif
-  }
+}
 
   /// Reimplemented to work around MS compiler issues
   static inline real atan2(real const &x, real const &y)

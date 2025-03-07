@@ -20,10 +20,6 @@
 
 #include "colvarmodule.h"
 
-#ifndef PI
-#define PI 3.14159265358979323846
-#endif
-
 // ----------------------------------------------------------------------
 /// Linear algebra functions and data types used in the collective
 /// variables implemented so far
