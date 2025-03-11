@@ -259,6 +259,8 @@ template <class T> int colvar_grid<T>::parse_params(std::string const &conf,
                           lower_boundaries, lower_boundaries, colvarparse::parse_silent);
   colvarparse::get_keyval(conf, "upper_boundaries",
                           upper_boundaries, upper_boundaries, colvarparse::parse_silent);
+  // plural form is used in state file
+  colvarparse::get_keyval(conf, "widths", widths, widths, colvarparse::parse_silent);
 
   // camel case keywords are used in config file
   colvarparse::get_keyval(conf, "lowerBoundary",
@@ -267,8 +269,6 @@ template <class T> int colvar_grid<T>::parse_params(std::string const &conf,
                           upper_boundaries, upper_boundaries, parse_mode);
 
   colvarparse::get_keyval(conf, "width", widths, widths, parse_mode);
-  // Plural form in state file
-  colvarparse::get_keyval(conf, "widths", widths, widths, parse_mode);
 
   // only used in state file
   colvarparse::get_keyval(conf, "sizes", nx, nx, colvarparse::parse_silent);
