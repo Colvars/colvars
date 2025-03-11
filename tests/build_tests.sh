@@ -176,6 +176,9 @@ create_test_dir "distance-grid_metadynamics-rebinfromgrids"
 write_colvars_config "distance-grid" "metadynamics-new"
 write_colvars_config "distance-grid-finer" "metadynamics-rebingrids" ${dirname}/test.restart.in
 
+create_test_dir "distance_metadynamics-customgrid"
+write_colvars_config "distance" "metadynamics-customgrid"
+
 colvar="distance-extended-grid"
 for bias in "histogram" "histogram-bypassExtended"; do
     create_test_dir ${colvar}_${bias}
