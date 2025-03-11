@@ -1,3 +1,3 @@
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2025-02-25"
+#define COLVARS_VERSION "2025-03-11"
 #endif
