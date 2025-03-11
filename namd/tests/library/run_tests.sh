@@ -128,6 +128,14 @@ for dir in ${DIRLIST} ; do
     continue
   fi
 
+  if [ -f ${dir}/skip_test.sh ]; then
+    bash ${dir}/skip_test.sh
+    if [ $? -eq 0 ]; then
+      echo "Directory ${dir} skipped."
+      continue
+    fi
+  fi
+
   if echo ${dir} | grep -q torchann && [ ${TORCH_LINKED} != "true" ] ; then 
     echo "Directory ${dir} skipped."
     continue
