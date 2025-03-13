@@ -57,7 +57,9 @@ protected:
   cvm::step_number previous_NAMD_step;
 
   /// Used to submit restraint energy as MISC
+#if !defined (NAMD_UNIFIED_REDUCTION)
   SubmitReduction *reduction;
+#endif
 #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
   NodeReduction *nodeReduction;
 #endif

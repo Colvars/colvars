@@ -136,7 +136,9 @@ colvarproxy_namd::colvarproxy_namd()
     colvars->set_initial_step(static_cast<cvm::step_number>(simparams->firstTimestep));
   }
 
+#if !defined (NAMD_UNIFIED_REDUCTION)
   reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
+#endif
 
   #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
   CProxy_PatchData cpdata(CkpvAccess(BOCclass_group).patchData);
@@ -151,7 +153,9 @@ colvarproxy_namd::colvarproxy_namd()
 
 colvarproxy_namd::~colvarproxy_namd()
 {
+#if !defined (NAMD_UNIFIED_REDUCTION)
   delete reduction;
+#endif
 }
 
 
@@ -595,7 +599,11 @@ void colvarproxy_namd::calculate()
     reduction->submit();
   }
   #else
+  #if !defined(NAMD_UNIFIED_REDUCTION)
   reduction->submit();
+  #else
+  submitReduction();
+  #endif
   #endif
 
   // NAMD does not destruct GlobalMaster objects, so we must remember
@@ -655,7 +663,11 @@ void colvarproxy_namd::add_energy(cvm::real energy)
     reduction->item(REDUCTION_MISC_ENERGY) += energy;
   }
   #else
+  #if !defined(NAMD_UNIFIED_REDUCTION)
   reduction->item(REDUCTION_MISC_ENERGY) += energy;
+  #else
+  addReductionEnergy(REDUCTION_MISC_ENERGY, energy);
+  #endif
   #endif
 }
 
