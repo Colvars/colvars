@@ -1,0 +1,10 @@
+abf {
+    colvars one
+    fullSamples 10
+
+    grid {
+        width 0.2
+        lowerBoundary 1.0
+        upperBoundary 5.0
+    }
+}

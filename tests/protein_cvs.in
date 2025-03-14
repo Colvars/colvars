@@ -1,0 +1,15 @@
+colvar {
+    name alpha
+    alpha {
+        prefix prot_
+    }
+}
+
+colvar {
+    name dihedPC
+    dihedralPC {
+        prefix prot_
+        vectorFile ../Common/eigenvectors-localmin
+        vectorNumber 2
+    }
+}
