@@ -35,6 +35,12 @@ protected:
   /// \brief Has ref_val already been set?
   bool ref_initialized = false;
 
+  /// \brief Max velocity of reference, in colvar units per timestep
+  cvm::real max_velocity = 0.;
+
+  /// if max velocity, we're doing ratchet 'n brakes, use real harmonic restraint
+  bool b_brakes = false;
+
   /// \brief Value of the reference where it stops moving
   cvm::real stopping_val = 0.;
 

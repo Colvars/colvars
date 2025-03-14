@@ -42,6 +42,10 @@ int colvarbias_abmd::init(std::string const &conf)
   get_keyval(conf, "decreasing", decreasing, decreasing);
   get_keyval(conf, "stoppingValue", stopping_val);
 
+  // TODO change to cv units per physical time? ps?
+  get_keyval(conf, "maxVelocity", max_velocity);
+  if (max_velocity > 0) b_brakes = true;
+
   return COLVARS_OK;
 }
 
@@ -65,13 +69,23 @@ int colvarbias_abmd::update()
   cvm::real const sign = decreasing ? -1. : 1.;
   cvm::real const diff = (val - ref_val) * sign;
 
-  if ( diff > 0. ) {
+  if ( max_velocity > 0. && diff > max_velocity ) { // Apply brakes
+    ref_val += sign * max_velocity;
+    if ( (ref_val-stopping_val) * sign > 0. ) ref_val = stopping_val;
+
+    cvm::real const diff_signed = (val - ref_val);
+    colvar_forces[0] = - k * diff_signed;
+    bias_energy = 0.5 * k * diff_signed * diff_signed;
+
+  } else if ( diff > 0. ) { // Just inching forward, no restraint
     colvar_forces[0] = 0.;
     bias_energy = 0.;
-    if ( (ref_val-stopping_val) * sign <= 0. ) ref_val = val;
-  } else {
+    ref_val = val;
+    if ( (ref_val-stopping_val) * sign > 0. ) ref_val = stopping_val;
+
+  } else { // Apply restraint
     colvar_forces[0] = - sign * k * diff;
-    bias_energy = 0.5 * k * diff * diff;;
+    bias_energy = 0.5 * k * diff * diff;
   }
   return COLVARS_OK;
 }
