@@ -10,12 +10,16 @@
 #ifndef COLVARBIAS_META_H
 #define COLVARBIAS_META_H
 
-#include <vector>
-#include <list>
 #include <iosfwd>
+#include <list>
+#include <memory>
+#include <vector>
 
 #include "colvarbias.h"
-#include "colvargrid.h"
+
+class colvar_grid_scalar;
+class colvar_grid_gradient;
+
 
 
 /// Metadynamics bias (implementation of \link colvarbias \endlink)
@@ -88,7 +92,7 @@ public:
   typedef std::list<hill>::iterator hill_iter;
 
 protected:
-
+  
   /// Width of a hill in number of grid points
   ///
   /// The local width of each collective variable, multiplied by this
@@ -123,8 +127,7 @@ protected:
   hill_iter new_hills_off_grid_begin;
 
   /// Regenerate the hills_off_grid list
-  void recount_hills_off_grid(hill_iter h_first, hill_iter h_last,
-                              colvar_grid_scalar *ge);
+  void recount_hills_off_grid(hill_iter h_first, hill_iter h_last);
 
   template <typename OST> OST &write_hill_template_(OST &os, colvarbias_meta::hill const &h);
 
@@ -211,7 +214,7 @@ protected:
   bool       ebmeta;
 
   /// Target distribution for EBmeta
-  colvar_grid_scalar* target_dist;
+  std::unique_ptr<colvar_grid_scalar> target_dist;
 
   /// Number of equilibration steps for EBmeta
   cvm::step_number ebmeta_equil_steps;
@@ -222,16 +225,18 @@ protected:
   /// multiple_replicas)
   bool       safely_read_restart;
 
+  /// Grid configuration for the bias (does not affect target_dist from ebmeta)
+  std::string bias_grid_conf;
+
   /// Hill energy, cached on a grid
-  colvar_grid_scalar    *hills_energy;
+  std::unique_ptr<colvar_grid_scalar> hills_energy;
 
   /// Hill forces, cached on a grid
-  colvar_grid_gradient  *hills_energy_gradients;
+  std::unique_ptr<colvar_grid_gradient> hills_energy_gradients;
 
-  /// \brief Project the selected hills onto grids
-  void project_hills(hill_iter h_first, hill_iter h_last,
-                      colvar_grid_scalar *ge, colvar_grid_gradient *gf,
-                      bool print_progress = false);
+  /// Project the selected hills onto grids
+  void project_hills(hill_iter h_first, hill_iter h_last, colvar_grid_scalar *ge,
+                     colvar_grid_gradient *gf, bool print_progress = false);
 
 
   // Multiple Replicas variables and functions

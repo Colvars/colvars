@@ -5,12 +5,12 @@ configuration {
 
 colvar {
   name r
-  x  3.21688253464583e+00
+  x       3.2168825344401
 }
 
 colvar {
   name phi
-  x  6.02774557527018e+01
+  x       60.277455741941
 }
 
 histogram {
@@ -18,6 +18,7 @@ histogram {
     step 20
     name histogram1
   }
+
 grid
  0 0 0 0 0 0 0 0
  0 0 0 0 0 0 0 0
