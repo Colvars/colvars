@@ -6,8 +6,7 @@ colvar {
     width 2.0
     mapTotal {
         name numatoms
-        # Use numeric map ID for consistency with VMD
-        mapID 0
+        mapFile ../Common/da.density.dx
         atoms {
             # Use internal selection
             indexGroup Protein
@@ -28,7 +27,7 @@ colvar {
     width 2.0
     mapTotal {
         name numatoms_rot
-        mapID 0
+        mapFile ../Common/da.density.dx
         atoms {
             # Use internal selection with fitting group
             indexGroup Protein
