@@ -49,14 +49,12 @@ int colvar::map_total::init(std::string const &conf)
   if (atoms) {
 
     // Using internal atom selection
-    if (volmap_name.size() > 0) {
-      volmap_index = proxy->init_internal_volmap_by_name(volmap_name);
-    }
-    if (volmap_id >= 0) {
-      volmap_index = proxy->init_internal_volmap_by_id(volmap_id);
-    }
     if (volmap_filename.size() > 0) {
       volmap_index = proxy->load_internal_volmap_from_file(volmap_filename);
+    } else {
+      error_code |= cvm::error(
+          "Error: when using only atom selections internal to Colvars, mapFile must be defined.\n",
+          COLVARS_INPUT_ERROR);
     }
 
   } else {

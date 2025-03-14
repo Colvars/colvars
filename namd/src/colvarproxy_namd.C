@@ -1434,12 +1434,9 @@ int colvarproxy_namd::init_internal_volmap_by_name(std::string const &volmap_nam
 
 int colvarproxy_namd::load_internal_volmap_from_file(std::string const &filename)
 {
-  // Internal maps have volmap_id == -1, to avoid mixing them with those
-  // loaded by NAMD through the MGridForces keywords (irrespective of whether
-  // they are computed internally or through ComputeGlobal)
-
+  // Maps loaded internally in Colvars have their filename recorded
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
-    if (volmaps_ids[i] == -1 && volmaps_filenames[i] == filename) {
+    if (volmaps_filenames[i] == filename) {
       // this map has already been loaded
       volmaps_refcount[i] += 1;
       return i;
@@ -1459,7 +1456,6 @@ int colvarproxy_namd::load_internal_volmap_from_file(std::string const &filename
   volmaps_filenames[index] = filename;
   internal_gridforce_grids_.push_back(std::unique_ptr<GridforceFullMainGrid>(grid));
 
-  // NAMD would crash on the above in case of errors
   return index;
 }
 
