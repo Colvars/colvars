@@ -758,7 +758,7 @@ proc ::cv_dashboard::load {} {
     set cfg [read -nonewline $in]
     close $in
     set res [apply_config $cfg]
-    if { $res != 0 } {
+    if { $res != "" } {
       set answer [tk_messageBox -icon error -title "Error Reading File" -parent .cv_dashboard_window\
         -message "There was an error while attempting to read $path. Would you like to open the file in the colvar editor?" \
         -type yesno]
