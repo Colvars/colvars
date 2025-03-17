@@ -57,6 +57,12 @@ colvarbias_opes::colvarbias_opes(char const *key):
   m_pmf_grid(nullptr), m_pmf_hist_freq(0), m_pmf_shared(true),
   m_explore(false), m_inf_biasfactor(false)
 {
+#ifdef OPES_THREADING
+  provide(f_cvb_smp, cvm::proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::inner_loop);
+  if (is_available(f_cv_smp)){
+    enable(f_cvb_smp); // Enabled by default
+  }
+#endif
 }
 
 int colvarbias_opes::init(const std::string& conf) {
@@ -201,12 +207,13 @@ int colvarbias_opes::init(const std::string& conf) {
   get_keyval(conf, "calcWork", m_calc_work, false);
   bool b_replicas = false;
   get_keyval(conf, "multipleReplicas", b_replicas, false);
-  if (cvm::proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::none ||
-      cvm::proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::cvcs) m_num_threads = 1;
-  else m_num_threads = cvm::proxy->smp_num_threads();
+
 #ifdef OPES_THREADING
-  if (m_num_threads == -1) {
-    return cvm::error("Multithreading is not available for OPES because Colvars is not running multiple threads.");
+  get_keyval_feature(this, conf, "smp", f_cvb_smp, is_enabled(f_cvb_smp));
+  if (is_enabled(f_cv_smp)) {
+    m_num_threads = cvm::proxy->smp_num_threads();
+  } else {
+    m_num_threads = 1;
   }
 #else
   // if (m_num_threads > 1) {
