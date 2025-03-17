@@ -224,6 +224,9 @@ int colvarbias::init_dependencies() {
   // (initially, harmonicWalls)
   feature_states[f_cvb_bypass_ext_lagrangian].available = false;
 
+  // Most biases cannot currently be processed in parallel over threads
+  feature_states[f_cvb_smp].available = false;
+
   return COLVARS_OK;
 }
 
