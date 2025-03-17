@@ -1497,14 +1497,14 @@ int colvarproxy_namd::compute_volmap(int flags,
 
 #if CMK_SMP && USE_CKLOOP // SMP only
 
-int colvarproxy_namd::check_smp_enabled(smp_mode_t mode)
-{
-  if (smp_mode == mode) {
-    return COLVARS_OK;
-  }
-  return COLVARS_ERROR;
+colvarproxy::smp_mode_t colvarproxy_namd::get_smp_mode() const {
+  return smp_mode;
 }
 
+int colvarproxy_namd::set_smp_mode(smp_mode_t mode) {
+  smp_mode = mode;
+  return COLVARS_OK;
+}
 
 void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param)
 {

@@ -456,12 +456,11 @@ public:
   /// Destructor
   virtual ~colvarproxy_smp();
 
-  /// Whether threaded parallelization should be used (TODO: make this a
-  /// cvm::deps feature)
-  smp_mode_t smp_mode;
+  /// Get the current SMP mode
+  virtual smp_mode_t get_smp_mode() const;
 
-  /// Whether threaded parallelization is available (TODO: make this a cvm::deps feature)
-  virtual int check_smp_enabled(smp_mode_t mode);
+  /// Set the current SMP mode
+  virtual int set_smp_mode(smp_mode_t mode);
 
   /// Distribute calculation of colvars (and their components) across threads
   virtual int smp_colvars_loop();
@@ -491,6 +490,10 @@ protected:
 
   /// Lock state for OpenMP
   omp_lock_t *omp_lock_state;
+
+  /// Whether threaded parallelization should be used (TODO: make this a
+  /// cvm::deps feature)
+  smp_mode_t smp_mode;
 };
 
 
