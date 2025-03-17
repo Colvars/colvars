@@ -13,7 +13,7 @@ int main (int argc, char *argv[]) {
   }
 
   colvarproxy *proxy = new colvarproxy();
-  colvarmodule *colvars = new colvarmodule(proxy);
+  proxy->colvars = new colvarmodule(proxy); // This could be omitted if we used the colvarproxy_stub class
 
   std::string gradfile (argv[1]);
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
@@ -58,6 +58,7 @@ int main (int argc, char *argv[]) {
     std::cout << "\nWriting integrated potential in OpenDX format to " + gradfile + ".int.dx\n";
     potential.write_opendx(std::string(gradfile + ".int.dx"), "integrated potential");
   }
-  delete colvars;
+
+  delete proxy;
   return 0;
 }
