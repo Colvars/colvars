@@ -265,16 +265,25 @@ colvarproxy_smp::~colvarproxy_smp()
 #endif
 }
 
-
-int colvarproxy_smp::check_smp_enabled(smp_mode_t mode)
-{
+colvarproxy::smp_mode_t colvarproxy_smp::get_smp_mode() const {
 #if defined(_OPENMP)
-  if (smp_mode == mode) {
-    return COLVARS_OK;
-  }
-  return COLVARS_ERROR;
+  return smp_mode;
 #else
-  return COLVARS_NOT_IMPLEMENTED;
+  return colvarproxy::smp_mode_t::none;
+#endif
+}
+
+int colvarproxy_smp::set_smp_mode(smp_mode_t mode) {
+#if defined(_OPENMP)
+  smp_mode = mode;
+  return COLVARS_OK;
+#else
+  if (mode != colvarproxy::smp_mode_t::none) {
+    return COLVARS_NOT_IMPLEMENTED;
+  } else {
+    smp_mode = colvarproxy::smp_mode_t::none;
+  }
+  return COLVARS_OK;
 #endif
 }
 
@@ -470,8 +479,8 @@ colvarproxy::~colvarproxy()
 
 bool colvarproxy::io_available()
 {
-  return (check_smp_enabled(smp_mode_t::cvcs) == COLVARS_OK && smp_thread_id() == 0) ||
-    (check_smp_enabled(smp_mode_t::cvcs) != COLVARS_OK);
+  return ((get_smp_mode() != smp_mode_t::none) && smp_thread_id() == 0) ||
+    (get_smp_mode() == smp_mode_t::none);
 }
 
 
