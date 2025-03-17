@@ -35,12 +35,19 @@ int main (int argc, char *argv[]) {
     if (stat(countfile.c_str(), &buffer) == 0) {
       std::cout << "Found associated count file " << countfile << ", reading...\n";
       count_ptr.reset(new colvar_grid_count(countfile));
+      if (!count_ptr || count_ptr->nd == 0) { // catch constructor failure
+        cvm::error("Error reading count grid.");
+        return cvm::get_error();
+      }
     }
   }
 
   std::cout << "Reading gradient file " << gradfile << std::endl;
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile, count_ptr);
-  if (cvm::get_error()) { return -1; }
+  if (!grad_ptr || grad_ptr->nd == 0) { // catch constructor failure
+    cvm::error("Error reading gradient grid.");
+    return cvm::get_error();
+  }
 
   int itmax = 10000;
   cvm::real err;
