@@ -10,6 +10,8 @@
 #ifndef COLVARPROXY_H
 #define COLVARPROXY_H
 
+#include <functional>
+
 #include "colvarmodule.h"
 #include "colvartypes.h"
 #include "colvarproxy_io.h"
@@ -462,8 +464,8 @@ public:
   /// Set the current SMP mode
   virtual int set_smp_mode(smp_mode_t mode);
 
-  /// Distribute calculation of colvars (and their components) across threads
-  virtual int smp_colvars_loop();
+  /// Distribute computation over threads using OpenMP, unless overridden in the backend (e.g. NAMD)
+  virtual int smp_loop(int n_items, std::function<int (int)> const &worker);
 
   /// Distribute calculation of biases across threads
   virtual int smp_biases_loop();
