@@ -128,7 +128,7 @@ public:
 
   int set_smp_mode(smp_mode_t mode) override;
 
-  int smp_colvars_loop() override;
+  int smp_loop(int n_items, std::function<int (int)> const &worker) override;
 
   int smp_biases_loop() override;
 
