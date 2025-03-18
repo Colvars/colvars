@@ -1506,40 +1506,27 @@ int colvarproxy_namd::set_smp_mode(smp_mode_t mode) {
   return COLVARS_OK;
 }
 
-void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param)
+
+int colvarproxy_namd::smp_loop(int n_items, std::function<int (int)> const &worker)
 {
-  colvarproxy_namd *proxy = (colvarproxy_namd *) param;
-  colvarmodule *cv = proxy->colvars;
+  auto cmkWorker = [&](int start, int end, void * /* result */) {
 #if CMK_TRACE_ENABLED
-  double before = CmiWallTimer();
+    double before = CmiWallTimer();
 #endif
-  cvm::increase_depth();
-  for (int i = first; i <= last; i++) {
-    colvar *x = (*(cv->variables_active_smp()))[i];
-    int x_item = (*(cv->variables_active_smp_items()))[i];
-    if (cvm::debug()) {
-      cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
-               "]: calc_colvars_items_smp(), first = "+cvm::to_str(first)+
-               ", last = "+cvm::to_str(last)+", cv = "+
-               x->name+", cvc = "+cvm::to_str(x_item)+"\n");
+    for (int i = start; i <= end; i++) {
+      worker(i);
     }
-    x->calc_cvcs(x_item, 1);
-  }
-  cvm::decrease_depth();
 #if CMK_TRACE_ENABLED
-  traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_ITEM,before,CmiWallTimer());
+    traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_ITEM, before, CmiWallTimer());
 #endif
-}
-
-
-int colvarproxy_namd::smp_colvars_loop()
-{
-  colvarmodule *cv = this->colvars;
-  const int numChunks = smp_num_threads() > cv->variables_active_smp()->size() ?
-                        cv->variables_active_smp()->size() :
+  };
+  const int numChunks = smp_num_threads() > n_items ?
+                        n_items :
                         smp_num_threads();
-  CkLoop_Parallelize(calc_colvars_items_smp, 1, this,
-                     numChunks, 0, cv->variables_active_smp()->size()-1);
+  cvm::increase_depth();
+  CkLoop_Parallelize(numChunks, 0, n_items - 1, cmkWorker, nullptr, CKLOOP_NONE, nullptr);
+  cvm::decrease_depth();
+  // CkLoop does not support bitwise-OR reduction, so we just return the global error flag
   return cvm::get_error();
 }
 
