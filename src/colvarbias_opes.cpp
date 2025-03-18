@@ -20,10 +20,8 @@
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
 #if defined(NAMD_VERSION)
-// "BOCgroup.h" is used for including all Charm++ related macros
-#include "BOCgroup.h"
+#include "CkLoopAPI.h"
 #include "CkLambda.h"
-// OPES_THREADING is only tested in NAMD
 #define OPES_THREADING
 #endif
 
@@ -68,7 +66,7 @@ colvarbias_opes::colvarbias_opes(char const *key):
 {
 #ifdef OPES_THREADING
   provide(f_cvb_smp, cvm::proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::inner_loop);
-  if (is_available(f_cv_smp)){
+  if (is_available(f_cvb_smp)){
     enable(f_cvb_smp); // Enabled by default
   }
 #endif
@@ -219,7 +217,7 @@ int colvarbias_opes::init(const std::string& conf) {
 
 #ifdef OPES_THREADING
   get_keyval_feature(this, conf, "smp", f_cvb_smp, is_enabled(f_cvb_smp));
-  if (is_enabled(f_cv_smp)) {
+  if (is_enabled(f_cvb_smp)) {
     m_num_threads = cvm::proxy->smp_num_threads();
   } else {
     m_num_threads = 1;
