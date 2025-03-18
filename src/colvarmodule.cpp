@@ -202,6 +202,20 @@ std::vector<int> *colvarmodule::variables_active_smp_items()
 }
 
 
+int colvarmodule::calc_component_smp(int i)
+{
+  colvar *x = (*(variables_active_smp()))[i];
+  int x_item = (*(variables_active_smp_items()))[i];
+  if (cvm::debug()) {
+    cvm::log("Thread "+cvm::to_str(proxy->smp_thread_id())+"/"+
+             cvm::to_str(proxy->smp_num_threads())+
+             ": calc_component_smp(), i = "+cvm::to_str(i)+", cv = "+
+             x->name+", cvc = "+cvm::to_str(x_item)+"\n");
+  }
+  return x->calc_cvcs(x_item, 1);
+}
+
+
 std::vector<colvarbias *> *colvarmodule::biases_active()
 {
   return &(biases_active_);
@@ -970,8 +984,10 @@ int colvarmodule::calc_colvars()
     }
     cvm::decrease_depth();
 
-    // calculate colvar components in parallel
-    error_code |= proxy->smp_colvars_loop();
+    // calculate active colvar components in parallel
+    error_code |= proxy->smp_loop(variables_active_smp()->size(), [](int i) {
+        return cvm::main()->calc_component_smp(i);
+      });
 
     cvm::increase_depth();
     for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {

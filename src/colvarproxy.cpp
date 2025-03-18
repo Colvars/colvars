@@ -288,27 +288,22 @@ int colvarproxy_smp::set_smp_mode(smp_mode_t mode) {
 }
 
 
-int colvarproxy_smp::smp_colvars_loop()
+int colvarproxy_smp::smp_loop(int n_items, std::function<int (int)> const &worker)
 {
+  int error_code = COLVARS_OK;
 #if defined(_OPENMP)
-  colvarmodule *cv = cvm::main();
-  colvarproxy *proxy = cv->proxy;
+  cvm::increase_depth();
 #pragma omp parallel for
-  for (int i = 0; i < static_cast<int>(cv->variables_active_smp()->size()); i++) {
-    colvar *x = (*(cv->variables_active_smp()))[i];
-    int x_item = (*(cv->variables_active_smp_items()))[i];
-    if (cvm::debug()) {
-      cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+
-               cvm::to_str(proxy->smp_num_threads())+
-               "]: calc_colvars_items_smp(), i = "+cvm::to_str(i)+", cv = "+
-               x->name+", cvc = "+cvm::to_str(x_item)+"\n");
-    }
-    x->calc_cvcs(x_item, 1);
+  for (int i = 0; i < n_items; i++) {
+    int const retcode = worker(i);
+#pragma omp atomic
+    error_code |= retcode;
   }
-  return cvm::get_error();
+  cvm::decrease_depth();
 #else
-  return COLVARS_NOT_IMPLEMENTED;
+  error_code |= COLVARS_NOT_IMPLEMENTED;
 #endif
+  return error_code;
 }
 
 
