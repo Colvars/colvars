@@ -46,7 +46,7 @@
 colvarproxy_namd::colvarproxy_namd()
 {
   engine_name_ = "NAMD";
-#if defined(CMK_SMP)
+#if CMK_SMP && USE_CKLOOP
   charm_lock_state = CmiCreateLock();
 #endif
 
@@ -154,7 +154,7 @@ colvarproxy_namd::colvarproxy_namd()
 
 colvarproxy_namd::~colvarproxy_namd()
 {
-#if defined(CMK_SMP)
+#if CMK_SMP && USE_CKLOOP
   CmiDestroyLock(charm_lock_state);
 #endif
   delete reduction;
