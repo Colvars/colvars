@@ -1442,10 +1442,12 @@ void colvarbias_meta::rebin_grids_after_restart()
     // read from the configuration file), and project onto them the
     // grids just read from the restart file
 
-    std::unique_ptr<colvar_grid_scalar> new_hills_energy(
-        new colvar_grid_scalar(colvars, hills_energy));
-    std::unique_ptr<colvar_grid_gradient> new_hills_energy_gradients(
-        new colvar_grid_gradient(colvars, nullptr, hills_energy));
+    // Create new grids based on the configuration parameters, because reading from the state
+    // file automatically sets the old parameters
+    std::shared_ptr<colvar_grid_scalar> new_hills_energy(
+        new colvar_grid_scalar(colvars, nullptr, false, bias_grid_conf));
+    std::shared_ptr<colvar_grid_gradient> new_hills_energy_gradients(
+        new colvar_grid_gradient(colvars, nullptr, new_hills_energy));
 
     if (cvm::debug()) {
       std::ostringstream tmp_os;
