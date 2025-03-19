@@ -225,9 +225,6 @@ protected:
   /// multiple_replicas)
   bool       safely_read_restart;
 
-  /// Grid configuration for the bias (does not affect target_dist from ebmeta)
-  std::string bias_grid_conf;
-
   /// Hill energy, cached on a grid
   std::shared_ptr<colvar_grid_scalar> hills_energy;
 

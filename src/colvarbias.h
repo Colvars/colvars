@@ -358,6 +358,9 @@ protected:
   /// \brief Forces exerted from the system to the associated variables
   std::vector<colvarvalue> ti_system_forces;
 
+  /// Grid configuration parameters (also used by grids in derived classes)
+  std::string grid_conf;
+
   /// Averaged system forces
   std::shared_ptr<colvar_grid_gradient> ti_avg_forces;
 

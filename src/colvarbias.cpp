@@ -797,6 +797,8 @@ int colvarbias_ti::init(std::string const &conf)
 {
   int error_code = COLVARS_OK;
 
+  key_lookup(conf, "grid", &grid_conf);
+
   get_keyval_feature(this, conf, "writeTISamples",
                      f_cvb_write_ti_samples,
                      is_enabled(f_cvb_write_ti_samples));
@@ -855,10 +857,8 @@ int colvarbias_ti::init_grids()
         ti_system_forces[icv].is_derivative();
         ti_system_forces[icv].reset();
       }
-      ti_avg_forces.reset(new colvar_grid_gradient(colvars));
-      ti_count.reset(new colvar_grid_count(colvars));
-      ti_avg_forces->samples = ti_count;
-      ti_count->has_parent_data = true;
+      ti_count.reset(new colvar_grid_count(colvars, grid_conf));
+      ti_avg_forces.reset(new colvar_grid_gradient(colvars, nullptr, ti_count));
     }
   }
 
