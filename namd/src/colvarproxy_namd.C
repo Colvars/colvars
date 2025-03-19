@@ -46,6 +46,9 @@
 colvarproxy_namd::colvarproxy_namd()
 {
   engine_name_ = "NAMD";
+#if defined(CMK_SMP)
+  charm_lock_state = CmiCreateLock();
+#endif
 
   version_int = get_version_from_string(COLVARPROXY_VERSION);
 #if CMK_TRACE_ENABLED
@@ -151,6 +154,9 @@ colvarproxy_namd::colvarproxy_namd()
 
 colvarproxy_namd::~colvarproxy_namd()
 {
+#if defined(CMK_SMP)
+  CmiDestroyLock(charm_lock_state);
+#endif
   delete reduction;
 }
 
@@ -1529,9 +1535,11 @@ void calc_colvars_items_smp(int first, int last, void *result, int paramNum, voi
 int colvarproxy_namd::smp_colvars_loop()
 {
   colvarmodule *cv = this->colvars;
+  const int numChunks = smp_num_threads() > cv->variables_active_smp()->size() ?
+                        cv->variables_active_smp()->size() :
+                        smp_num_threads();
   CkLoop_Parallelize(calc_colvars_items_smp, 1, this,
-                     cv->variables_active_smp()->size(),
-                     0, cv->variables_active_smp()->size()-1);
+                     numChunks, 0, cv->variables_active_smp()->size()-1);
   return cvm::get_error();
 }
 
@@ -1564,8 +1572,11 @@ void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *p
 int colvarproxy_namd::smp_biases_loop()
 {
   colvarmodule *cv = this->colvars;
+  const int numChunks = smp_num_threads() > cv->variables_active_smp()->size() ?
+                        cv->variables_active_smp()->size() :
+                        smp_num_threads();
   CkLoop_Parallelize(calc_cv_biases_smp, 1, this,
-                     cv->biases_active()->size(), 0, cv->biases_active()->size()-1);
+                     numChunks, 0, cv->biases_active()->size()-1);
   return cvm::get_error();
 }
 
