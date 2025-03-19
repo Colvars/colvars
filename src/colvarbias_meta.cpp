@@ -143,10 +143,10 @@ int colvarbias_meta::init(std::string const &conf)
     get_keyval(conf, "keepFreeEnergyFiles", dump_fes_save, dump_fes_save);
 
     key_lookup(conf, "grid", &bias_grid_conf);
-    
+
     if (!hills_energy) {
       hills_energy.reset(new colvar_grid_scalar(colvars, nullptr, false, bias_grid_conf));
-      hills_energy_gradients.reset(new colvar_grid_gradient(colvars, nullptr, nullptr, bias_grid_conf));
+      hills_energy_gradients.reset(new colvar_grid_gradient(colvars, nullptr, hills_energy));
     }
 
   } else {
@@ -506,9 +506,9 @@ int colvarbias_meta::update_grid_params()
         // map everything into new grids
 
         colvar_grid_scalar *new_hills_energy =
-          new colvar_grid_scalar(*hills_energy);
+            new colvar_grid_scalar(*hills_energy);
         colvar_grid_gradient *new_hills_energy_gradients =
-          new colvar_grid_gradient(*hills_energy_gradients);
+            new colvar_grid_gradient(*hills_energy_gradients);
 
         // supply new boundaries to the new grids
 
@@ -1059,10 +1059,11 @@ int colvarbias_meta::update_replicas_registry()
         (replicas.back())->comm = multiple_replicas;
 
         if (use_grids) {
-          (replicas.back())->hills_energy.reset(
-             new colvar_grid_scalar(colvars, nullptr, false, bias_grid_conf));
-          (replicas.back())->hills_energy_gradients.reset(
-             new colvar_grid_gradient(colvars, nullptr, nullptr, bias_grid_conf));
+          (replicas.back())
+              ->hills_energy.reset(new colvar_grid_scalar(colvars, hills_energy));
+          (replicas.back())
+              ->hills_energy_gradients.reset(
+                  new colvar_grid_gradient(colvars, nullptr, hills_energy));
         }
 
         if (is_enabled(f_cvb_calc_ti_samples)) {
@@ -1320,8 +1321,8 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 {
   if (use_grids) {
 
-    std::unique_ptr<colvar_grid_scalar> hills_energy_backup;
-    std::unique_ptr<colvar_grid_gradient> hills_energy_gradients_backup;
+    std::shared_ptr<colvar_grid_scalar> hills_energy_backup;
+    std::shared_ptr<colvar_grid_gradient> hills_energy_gradients_backup;
 
     bool const need_backup = has_data;
 
@@ -1332,8 +1333,8 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 
       hills_energy_backup = std::move(hills_energy);
       hills_energy_gradients_backup = std::move(hills_energy_gradients);
-      hills_energy.reset(new colvar_grid_scalar(colvars, nullptr, false, bias_grid_conf));
-      hills_energy_gradients.reset(new colvar_grid_gradient(colvars, nullptr, nullptr, bias_grid_conf));
+      hills_energy.reset(new colvar_grid_scalar(colvars, hills_energy));
+      hills_energy_gradients.reset(new colvar_grid_gradient(colvars, nullptr, hills_energy));
     }
 
     read_grid_data_template_<IST, colvar_grid_scalar>(is, "hills_energy", hills_energy.get(),
@@ -1442,9 +1443,9 @@ void colvarbias_meta::rebin_grids_after_restart()
     // grids just read from the restart file
 
     std::unique_ptr<colvar_grid_scalar> new_hills_energy(
-      new colvar_grid_scalar(colvars, nullptr, false, bias_grid_conf));
+        new colvar_grid_scalar(colvars, hills_energy));
     std::unique_ptr<colvar_grid_gradient> new_hills_energy_gradients(
-      new colvar_grid_gradient(colvars, nullptr, nullptr, bias_grid_conf));
+        new colvar_grid_gradient(colvars, nullptr, hills_energy));
 
     if (cvm::debug()) {
       std::ostringstream tmp_os;
