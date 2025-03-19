@@ -92,7 +92,7 @@ public:
   typedef std::list<hill>::iterator hill_iter;
 
 protected:
-  
+
   /// Width of a hill in number of grid points
   ///
   /// The local width of each collective variable, multiplied by this
@@ -229,10 +229,10 @@ protected:
   std::string bias_grid_conf;
 
   /// Hill energy, cached on a grid
-  std::unique_ptr<colvar_grid_scalar> hills_energy;
+  std::shared_ptr<colvar_grid_scalar> hills_energy;
 
   /// Hill forces, cached on a grid
-  std::unique_ptr<colvar_grid_gradient> hills_energy_gradients;
+  std::shared_ptr<colvar_grid_gradient> hills_energy_gradients;
 
   /// Project the selected hills onto grids
   void project_hills(hill_iter h_first, hill_iter h_last, colvar_grid_scalar *ge,
