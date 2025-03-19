@@ -142,10 +142,8 @@ int colvarbias_meta::init(std::string const &conf)
     get_keyval(conf, "keepHills", keep_hills, keep_hills);
     get_keyval(conf, "keepFreeEnergyFiles", dump_fes_save, dump_fes_save);
 
-    key_lookup(conf, "grid", &bias_grid_conf);
-
     if (!hills_energy) {
-      hills_energy.reset(new colvar_grid_scalar(colvars, nullptr, false, bias_grid_conf));
+      hills_energy.reset(new colvar_grid_scalar(colvars, nullptr, false, grid_conf));
       hills_energy_gradients.reset(new colvar_grid_gradient(colvars, nullptr, hills_energy));
     }
 
@@ -1445,7 +1443,7 @@ void colvarbias_meta::rebin_grids_after_restart()
     // Create new grids based on the configuration parameters, because reading from the state
     // file automatically sets the old parameters
     std::shared_ptr<colvar_grid_scalar> new_hills_energy(
-        new colvar_grid_scalar(colvars, nullptr, false, bias_grid_conf));
+        new colvar_grid_scalar(colvars, nullptr, false, grid_conf));
     std::shared_ptr<colvar_grid_gradient> new_hills_energy_gradients(
         new colvar_grid_gradient(colvars, nullptr, new_hills_energy));
 
