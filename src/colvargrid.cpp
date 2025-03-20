@@ -20,6 +20,19 @@
 #include <sstream>
 
 #include <iostream>
+#include <algorithm>
+
+// Helper function to print vector<int>
+std::string vec_to_string(const std::vector<int>& vec){
+    std::ostringstream oss;
+    oss << "[";
+    for (size_t i = 0; i < vec.size(); ++i) {
+        oss << vec[i];
+        if (i < vec.size() - 1) oss << ", ";
+    }
+    oss << "]";
+    return oss.str();
+};
 
 colvar_grid_count::colvar_grid_count()
   : colvar_grid<size_t>()
@@ -579,14 +592,16 @@ integrate_potential::integrate_potential(std::shared_ptr<colvar_grid_gradient> g
 {
   nd = gradients->num_variables();
   nx = gradients->number_of_points_vec();
+  computation_nx = gradients->number_of_points_vec();
   widths = gradients->widths;
   periodic = gradients->periodic;
 
   // Expand grid by 1 bin in non-periodic dimensions
   for (size_t i = 0; i < nd; i++ ) {
-    if (!periodic[i]) nx[i]++;
+    if (!periodic[i])  nx[i] --;
     // Shift the grid by half the bin width (values at edges instead of center of bins)
     lower_boundaries.push_back(gradients->lower_boundaries[i].real_value - 0.5 * widths[i]);
+   
   }
 
   setup(nx);
@@ -1225,8 +1240,8 @@ void integrate_potential::prepare_laplacian_calculation()
     std::vector<std::vector<int>> weights_relative_positions = {{}}; //relative to the point of the stencil
     double weights_count = 0;
     int dim=0;
-    int number_of_non_zero_coordinates = -1;
-    int non_zero_coordinate = 0;
+    int number_of_non_zero_coordinates = 0;
+    int non_zero_coordinate = -1;
     for (char direction_j : base_3)
     {
       int displacement_j = direction_j - '0';
@@ -1253,17 +1268,26 @@ void integrate_potential::prepare_laplacian_calculation()
       }
       dim++;
       
+      
     }
   // Store computed values in stencil maps
       laplacian_stencil[i] = direction;
       weight_stencil[i] = weights_relative_positions;
       weight_counts[i] = weights_count;
-        
+    
     // Store classic laplacian stencil information
     if (number_of_non_zero_coordinates <= 1) {
-        neighbor_in_classic_laplacian_stencil[i] = {true, static_cast<double>(non_zero_coordinate)};
+      if (non_zero_coordinate != -1)
+        neighbor_in_classic_laplacian_stencil[i] = {true, 1/(widths[non_zero_coordinate]*widths[non_zero_coordinate])};
+      else{
+        float sum = 0;
+        for (int i=0; i<nd; i++){
+          sum -= 2/(widths[i] * widths[i]);
+        }
+        neighbor_in_classic_laplacian_stencil[i] = {true, sum};
+      }
     } else {
-        neighbor_in_classic_laplacian_stencil[i] = {false, 0.0};
+        neighbor_in_classic_laplacian_stencil[i] = {false, -2};
     }
     
     // Helper to print vector contents
@@ -1290,6 +1314,45 @@ void integrate_potential::prepare_laplacian_calculation()
   }
 }
 
+void integrate_potential::print_laplacian_preparations()
+{
+  for (int i=0; i< std::pow(3,nd); i++)
+  {
+    std::cout << "Stencil " << i << " is [";
+    for (size_t j = 0; j < laplacian_stencil[i].size(); ++j) {
+      std::cout << laplacian_stencil[i][j];
+      if (j < laplacian_stencil[i].size() - 1) std::cout << ", ";
+    }
+    std::cout << "] with weights [";
+  }
+  std::cout << std::endl;
+  std::cout << "weight stencil" << std::endl;
+  for (int i=0; i< std::pow(3,nd); i++)
+  {
+    std::cout << "Stencil " << i << " is [";
+    for (size_t j = 0; j < weight_stencil[i].size(); ++j) {
+      std::cout << vec_to_string(weight_stencil[i][j]);
+      if (j < weight_stencil[i].size() - 1) std::cout << ", ";
+    }
+    std::cout << "]" << std::endl;
+  }
+  std::cout << std::endl;
+  std::cout << "weight_counts" << std::endl;
+  for (int i=0; i< std::pow(3,nd); i++)
+  {
+    std::cout << "Stencil " << i << " is [";
+    std::cout << weight_counts[i] << "[" << std::endl;
+  }
+  std::cout << std::endl;
+  std::cout << "neighbor_in_classic_laplacian_stencil" << std::endl;
+  for (int i=0; i< std::pow(3,nd); i++)
+  {
+    std::cout << "Stencil " << i << " is [";
+    std::cout << std::get<0>(neighbor_in_classic_laplacian_stencil[i]) << ", " << std::get<1>(neighbor_in_classic_laplacian_stencil[i]) << "]" << std::endl;
+  }
+  std::cout << std::endl; 
+}
+
 std::vector<std::vector<int>>  integrate_potential::update_weight_relative_positions(std::vector<std::vector<int>> &weights_relative_positions, std::vector<int> direction)
   {
       
@@ -1309,16 +1372,144 @@ std::vector<std::vector<int>>  integrate_potential::update_weight_relative_posit
       }
       return result;
   }
+
+std::vector<int> integrate_potential::find_reference_point_for_virtual_point(std::vector<int> virtual_point_coordinates){
+  std::vector<int> reference_point_coordinates = virtual_point_coordinates;
+  for (int i=0; i<nd; i++){
+    if  (0 <= virtual_point_coordinates[i] < nx[i] || periodic[i]){
+    }
+    else{
+      if (virtual_point_coordinates[i] < 0){
+        reference_point_coordinates[i] = 0;
+      }
+      else if (virtual_point_coordinates[i] >= computation_nx[i]){
+        reference_point_coordinates[i] = computation_nx[i] - 1;
+      }
+    }
+  }
+  return reference_point_coordinates;
+}
+
+float integrate_potential::calculate_weight_sum(std::vector<int> stencil_point, std::vector<int> direction){
+  float weight_sum = 0;
+  // TODO: Finish later
+}
+
+std::vector<cvm::real> integrate_potential::compute_averaged_border_normal_gradients(std::vector<int> virtual_point_coordinates){
+  std::vector<int> reference_point_coordinates = find_reference_point_for_virtual_point(virtual_point_coordinates);
+  std::vector<int> directions_to_average_along = {};
+  bool normal_directions[nd];
+  for (int i=0; i<nd; i++){
+    if (0<= virtual_point_coordinates[i] < computation_nx[i] || periodic[i]){
+      directions_to_average_along.push_back(i);
+      normal_directions[i] = false;
+    }
+    else{
+      normal_directions[i] = true;
+    }
+  }
+  // Find the position of the gradients to average
+  std::vector<std::vector<int>> gradients_to_average_relative_positions = {};
+  if (directions_to_average_along.size() == 0){
+    for (int i=0; i<nd; i++){
+      gradients_to_average_relative_positions.push_back(std::vector<int>(0,nd));
+    }
+    for (int i=0; i<pow(2,directions_to_average_along.size()); i++){
+     std::vector<int> direction_along_which_to_average(nd,0);
+     std::string binary = convert_base_two(i,directions_to_average_along.size());
+     for (int bit_position=0; bit_position<directions_to_average_along.size(); bit_position++){
+      direction_along_which_to_average[directions_to_average_along[bit_position]] = binary[bit_position]-'0';
+     }
+     gradients_to_average_relative_positions.push_back(direction_along_which_to_average);
+    }
+  }
+  //compute the averaged bordered normal gradient
+  std::vector<cvm::real> averaged_bordered_normal_gradient(nd,0);
+  // averaging the gradients
+  for (int i=0; i< gradients_to_average_relative_positions.size(); i++){
+    std::vector<int> gradient_position(0,nd);
+    for (int j=0; j<nd; j++){
+      gradient_position[j] = reference_point_coordinates[j] + gradients_to_average_relative_positions[i][j];
+    }
+    std::vector<cvm::real> gradient(0,nd);
+    gradients->vector_value(gradient_position,gradient); //TODO: watch out wrap around edge but for computation grid ?? --> normally it's good
+    for (int j=0; j<nd; j++){
+      averaged_bordered_normal_gradient[j] += gradient[j];
+    }
+  }
+  for (int j=0; j<nd; j++){
+    averaged_bordered_normal_gradient[j] /= gradients_to_average_relative_positions.size();
+  }
+  // only keep the normal directions
+  for (int j=0; j<nd; j++){
+    if (normal_directions[j]){
+      averaged_bordered_normal_gradient[j] = 0;
+    }
+  }
+  return averaged_bordered_normal_gradient;
+}
 std::string integrate_potential::convert_base_three(int n)
 {
-  std::string base_3 = "";
-  while (n > 0)
-  {
-    base_3 += std::to_string(n % 3);
-    n /= 3;
-  }
-  return base_3;
+  std::string result = "";
+    
+    // Convert to base 3
+    while (n > 0) {
+        int remainder = n % 3;
+        result.push_back('0' + remainder);
+        n /= 3;
+    }
+    
+    // Handle the case where n is 0
+    if (result.empty()) {
+        result = "0";
+    }
+    
+    // Reverse the string (since we built it from right to left)
+    std::reverse(result.begin(), result.end());
+    
+    // Pad with leading zeros if necessary
+    while (result.size() < nd) {
+        result = "0" + result;
+    }
+    
+    // Truncate if the result has more digits than requested
+    if (result.size() > nd) {
+        result = result.substr(result.size() - nd);
+    }
+    return result;
 }
+std::string integrate_potential::convert_base_two(int n, int length)
+{
+  std::string result = "";
+    
+    // Convert to base 2
+    while (n > 0) {
+        int remainder = n % 2;
+        result.push_back('0' + remainder);
+        n /= 2;
+    }
+    
+    // Handle the case where n is 0
+    if (result.empty()) {
+        result = "0";
+    }
+    
+    // Reverse the string (since we built it from right to left)
+    std::reverse(result.begin(), result.end());
+    
+    // Pad with leading zeros if necessary
+    while (result.size() < length) {
+        result = "0" + result;
+    }
+    
+    // Truncate if the result has more digits than requested
+    if (result.size() > length) {
+        result = result.substr(result.size() - length);
+    }
+    return result;
+}
+
+
 
 void integrate_potential::nr_linbcg_sym(const bool weighted, const std::vector<cvm::real> &b,
   std::vector<cvm::real> &x, const cvm::real &tol, const int itmax, int &iter, cvm::real &err)
@@ -1385,28 +1576,4 @@ cvm::real integrate_potential::l2norm(const std::vector<cvm::real> &x)
   for (i=0;i<x.size();i++)
     sum += x[i]*x[i];
   return sqrt(sum);
-}
-
-// Helper function to print vector<int>
-std::string vec_to_string(const std::vector<int>& vec) {
-    std::ostringstream oss;
-    oss << "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        oss << vec[i];
-        if (i < vec.size() - 1) oss << ", ";
-    }
-    oss << "]";
-    return oss.str();
-}
-
-// Helper function to print vector<vector<int>>
-std::string vec2d_to_string(const std::vector<std::vector<int>>& vec) {
-    std::ostringstream oss;
-    oss << "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        oss << vec_to_string(vec[i]);
-        if (i < vec.size() - 1) oss << ", ";
-    }
-    oss << "]";
-    return oss.str();
 }

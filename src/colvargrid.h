@@ -21,7 +21,8 @@
 #include "colvarparse.h"
 #include "colvarproxy.h"
 #include <unordered_map>
-
+//TOD0: do with vector instead of map
+//TODO: separate constant part of the laplacian
 /// \brief Unified base class for grid of values of a function of several collective
 /// variables
 class colvar_grid_params  {
@@ -1981,6 +1982,7 @@ class integrate_potential : public colvar_grid_scalar
   bool b_smoothed;
   
   void prepare_laplacian_calculation();
+  void print_laplacian_preparations();
 
   protected:
 
@@ -1996,6 +1998,8 @@ class integrate_potential : public colvar_grid_scalar
   std::vector<cvm::real> weights;
   float m;
   std::vector<cvm::real> weights_minus_m;
+  std::vector<int> computation_nx;
+  
 
   // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
   // Stored as a flat vector like the divergence
@@ -2003,7 +2007,7 @@ class integrate_potential : public colvar_grid_scalar
   std::unordered_map<int, std::vector<int>> laplacian_stencil;
   std::unordered_map<int, std::vector<std::vector<int>>> weight_stencil;
   std::unordered_map<int, float> weight_counts;
-  std::unordered_map<int, std::tuple<bool, int>> neighbor_in_classic_laplacian_stencil;
+  std::unordered_map<int, std::pair<bool, int>> neighbor_in_classic_laplacian_stencil;
 //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
   /// Obtain the gradient vector at given location ix, if available
@@ -2040,7 +2044,14 @@ class integrate_potential : public colvar_grid_scalar
 //   /// Inversion of preconditioner matrix
 //   void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x);
   std::string convert_base_three(int n);
+  std::string convert_base_two(int n, int length);
   std::vector<std::vector<int>>  update_weight_relative_positions(std::vector<std::vector<int>> &weights_relative_positions, std::vector<int> direction);
+  // TODO: Ask if this is not better to have a list/dict with all the reference points for each virtual point since they're the same as 
+  // long as the grid doesn't change
+  std::vector<int> find_reference_point_for_virtual_point(std::vector<int> virtual_point_coordinates);
+  std::vector<cvm::real> compute_averaged_border_normal_gradients(std::vector<int> virtual_point_coordinates);
+  float calculate_weight_sum(std::vector<int> stencil_point, std::vector<int> direction);
+  bool is_virtual_point(std::vector<int> coordinate);
 };
 
 #endif

@@ -40,13 +40,14 @@ int main (int argc, char *argv[]) {
   }
   std::cout << "Reading gradient file " << gradfile << std::endl;
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile, count_ptr);
-  std::cout << "aaaaaaaaaaaaaaaaaa" << gradfile << std::endl;
 
   int itmax = 1000;
   cvm::real err;
   cvm::real tol = 1e-6;
 
   integrate_potential potential(grad_ptr);
+  potential.prepare_laplacian_calculation();
+  potential.print_laplacian_preparations();
   potential.set_div();
   potential.integrate(itmax, tol, err);
   potential.set_zero_minimum();
