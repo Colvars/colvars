@@ -10,6 +10,8 @@
 #ifndef COLVARGRID_H
 #define COLVARGRID_H
 
+#include <tuple>
+
 #include <iosfwd>
 #include <memory>
 
@@ -18,7 +20,7 @@
 #include "colvarvalue.h"
 #include "colvarparse.h"
 #include "colvarproxy.h"
-
+#include <unordered_map>
 
 /// \brief Unified base class for grid of values of a function of several collective
 /// variables
@@ -1935,6 +1937,7 @@ public:
 
 
 /// Integrate (1D, 2D or 3D) gradients
+//TODO: Maybe make that a base class and the two derived class be the normal laplacian and the weighted one ?
 
 class integrate_potential : public colvar_grid_scalar
 {
@@ -1963,6 +1966,7 @@ class integrate_potential : public colvar_grid_scalar
   /// called by update_div_neighbors and by colvarbias_abf::adiabatic_reweighting_update_gradient_pmf
   void update_div_local(const std::vector<int> &ix);
 
+
   /// \brief Set matrix containing divergence and boundary conditions
   /// based on complete gradient grid
   void set_div();
@@ -1975,7 +1979,8 @@ class integrate_potential : public colvar_grid_scalar
 
   /// \brief Flag requesting the use of a smoothed version of the gradient (default: false)
   bool b_smoothed;
-
+  
+  void prepare_laplacian_calculation();
 
   protected:
 
@@ -1987,12 +1992,18 @@ class integrate_potential : public colvar_grid_scalar
 
   // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
   // Stored as a flat vector like the divergence
+  // TODO: Maybe use that as argument of the function ? 
   std::vector<cvm::real> weights;
+  float m;
+  std::vector<cvm::real> weights_minus_m;
 
   // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
   // Stored as a flat vector like the divergence
   std::vector<cvm::real> fdiff_gradient;
-
+  std::unordered_map<int, std::vector<int>> laplacian_stencil;
+  std::unordered_map<int, std::vector<std::vector<int>>> weight_stencil;
+  std::unordered_map<int, float> weight_counts;
+  std::unordered_map<int, std::tuple<bool, int>> neighbor_in_classic_laplacian_stencil;
 //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
   /// Obtain the gradient vector at given location ix, if available
@@ -2028,7 +2039,8 @@ class integrate_potential : public colvar_grid_scalar
 
 //   /// Inversion of preconditioner matrix
 //   void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x);
+  std::string convert_base_three(int n);
+  std::vector<std::vector<int>>  update_weight_relative_positions(std::vector<std::vector<int>> &weights_relative_positions, std::vector<int> direction);
 };
 
 #endif
-

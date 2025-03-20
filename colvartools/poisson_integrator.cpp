@@ -38,9 +38,9 @@ int main (int argc, char *argv[]) {
       count_ptr.reset(new colvar_grid_count(countfile));
     }
   }
-
   std::cout << "Reading gradient file " << gradfile << std::endl;
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile, count_ptr);
+  std::cout << "aaaaaaaaaaaaaaaaaa" << gradfile << std::endl;
 
   int itmax = 1000;
   cvm::real err;
