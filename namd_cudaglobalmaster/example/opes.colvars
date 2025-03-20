@@ -1,0 +1,59 @@
+colvarsTrajFrequency		500
+colvarsRestartFrequency		5000
+#scriptedColvarForces  on
+
+colvar {
+    name phi
+    outputAppliedForce on
+    lowerBoundary -180
+    upperBoundary 180
+    width 5.0
+    dihedral {
+    group1 {
+             atomNumbers { 5 }
+        }
+    group2 {
+             atomNumbers { 7 }
+        }
+    group3 {
+             atomNumbers { 9 }
+        }
+    group4 {
+             atomNumbers { 15 }
+        }
+    }
+}
+
+colvar {
+    name psi
+    outputAppliedForce on
+    lowerBoundary -180
+    upperBoundary 180
+    width 5.0
+    dihedral {
+    group1 {
+             atomNumbers { 7 }
+        }
+    group2 {
+             atomNumbers { 9 }
+        }
+    group3 {
+             atomNumbers { 15 }
+        }
+    group4 {
+             atomNumbers { 17 }
+        }
+    }
+}
+
+opes_metad {
+  colvars phi psi
+  newHillFrequency 1000
+  barrier 11.950286806883364
+  adaptiveSigma on
+  printTrajectoryFrequency 1000
+  pmf on
+  pmfColvars phi psi
+  pmfHistoryFrequency 1000
+  outputEnergy on
+}
