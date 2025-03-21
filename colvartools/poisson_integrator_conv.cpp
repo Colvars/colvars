@@ -6,15 +6,14 @@
 // Integrate provided gradients while monitoring convergence towards a provided scalar grid
 // (typically the result of a previous integration)
 
-int main (int argc, char *argv[])
-{
-  colvarproxy *proxy = new colvarproxy();
-  colvarmodule *colvars = new colvarmodule(proxy);
-
+int main (int argc, char *argv[]) {
   if (argc < 2) {
     std::cerr << "\n\nOne argument needed: gradient multicol file name.\n";
     return 1;
   }
+
+  colvarproxy *proxy = new colvarproxy();
+  colvarmodule *colvars = new colvarmodule(proxy);
 
   std::string gradfile (argv[1]);
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
