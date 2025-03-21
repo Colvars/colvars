@@ -127,6 +127,7 @@ public:
                       std::string const &pdb_field,
                       double const pdb_field_value) override;
   void calculate();
+  void update_atom_properties(int index);
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
@@ -235,6 +236,8 @@ void colvarproxy_impl::initialize_from_cudagm(
   mConfigFiles.clear();
   mConfigFiles.insert(mConfigFiles.end(), arguments.begin()+2, arguments.end());
   // const int64_t step = mClient->getStep();
+  // both fields are taken from data structures already available
+  updated_masses_ = updated_charges_ = true;
   setup();
   colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
   colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
@@ -264,7 +267,7 @@ int colvarproxy_impl::update_target_temperature()
 }
 
 int colvarproxy_impl::init_atom(int atom_number) {
-  int aid = atom_number;
+  int aid = atom_number - 1;
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     if (atoms_ids[i] == aid) {
       // this atom id was already recorded
@@ -274,10 +277,10 @@ int colvarproxy_impl::init_atom(int atom_number) {
   }
   aid = check_atom_id(atom_number);
   if (aid < 0) {
-    return aid;
+    return COLVARS_INPUT_ERROR;
   }
   int const index = colvarproxy::add_atom_slot(aid);
-  // update_atom_properties(aid);
+  update_atom_properties(index);
   mAtomsChanged = true;
   // TODO: This is an overkill!!!
   // I expect Colvars can either
@@ -288,6 +291,21 @@ int colvarproxy_impl::init_atom(int atom_number) {
   deallocateDeviceTransposeArrays();
   allocateDeviceTransposeArrays();
   return index;
+}
+
+void colvarproxy_impl::update_atom_properties(int index)
+{
+  // update mass
+  double const mass = molecule->atommass(atoms_ids[index]);
+  this->log("id = " + cvm::to_str(atoms_ids[index]) + "\n");
+  if (mass <= 0.001) {
+    this->log("Warning: near-zero mass for atom "+
+              cvm::to_str(atoms_ids[index]+1)+
+              "; expect unstable dynamics if you apply forces to it.\n");
+  }
+  atoms_masses[index] = mass;
+  // update charge
+  atoms_charges[index] = molecule->atomcharge(atoms_ids[index]);
 }
 
 void colvarproxy_impl::clear_atom(int index) {
@@ -305,7 +323,7 @@ void colvarproxy_impl::clear_atom(int index) {
 
 // Copied from colvarproxy_namd.C
 int colvarproxy_impl::check_atom_id(int atom_number) {
-  int const aid = atom_number;
+  int const aid = atom_number - 1;
   if (cvm::debug())
     log("Adding atom "+cvm::to_str(atom_number)+
         " for collective variables calculation.\n");
