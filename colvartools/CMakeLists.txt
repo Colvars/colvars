@@ -1,3 +1,7 @@
 add_executable(poisson_integrator poisson_integrator.cpp)
 target_link_libraries(poisson_integrator PRIVATE colvars)
 target_include_directories(poisson_integrator PRIVATE ${COLVARS_SOURCE_DIR}/src)
+
+add_executable(poisson_integrator_conv poisson_integrator_conv.cpp)
+target_link_libraries(poisson_integrator_conv PRIVATE colvars)
+target_include_directories(poisson_integrator_conv PRIVATE ${COLVARS_SOURCE_DIR}/src)
