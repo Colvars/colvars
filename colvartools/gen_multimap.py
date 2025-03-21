@@ -5,7 +5,7 @@
 # Used in this tutorial: https://colvars.github.io/multi-map/multi-map.html
 
 # Download link: https://github.com/Colvars/colvars/blob/master/colvartools/gen_multimap.py?raw=true
-# Last updated: 2020-10-28
+
 # Contact: giacomo.fiorin@gmail.com
 
 
@@ -16,14 +16,13 @@ import numpy as np
 import scipy.ndimage as spnd
 from scipy.interpolate import InterpolatedUnivariateSpline
 
-
 try:
     import gridData
 except ImportError:
-    print("Module gridData not found: "
-          "it is usually bundled with MDAnalysis.")
-    if (__name__ == '__main__'):
-        sys.exit(1)
+    raise ImportError("Error: module gridData not found, please install MDAnalysis.")
+
+
+__version__ = '2024-10-24'
 
 
 def format_array(a, fmt="%.3f"):
@@ -257,22 +256,22 @@ def get_cell_dimensions(args):
     return cell
 
 
-def create_grid_object(cell, args):
+def create_grid_object(cell, npoints):
     """
     Create a new 3D map using gridData
+
+    Parameters
+    ----------
+    cell : array_like
+        Array with 3 dimensions
+
+    npoints : array_like
+        Number of points along each of the three dimensions
     """
-    # Set up 3D map
     cell_origin = -0.5*cell
-    cell_dx = np.zeros(shape=(3))
-    cell_n = np.zeros(shape=(3), dtype=int)
-    if not args.grid_npoints is None:
-        cell_dx = np.divide(cell, np.array(args.grid_npoints))
-        cell_n = np.array(args.grid_npoints, dtype=int)
-    else:
-        raise Exception("Undefined number of grid points.")
-
+    cell_dx = np.divide(cell, np.array(npoints))
+    cell_n = np.array(npoints, dtype=int)
     cell_origin += 0.5*cell_dx
-
     map_obj = gridData.Grid(np.ones(shape=cell_n, dtype=float),
                             origin=cell_origin,
                             delta=cell_dx)
@@ -290,7 +289,7 @@ def init_z_profiles(origin, length, dz, args):
         for input_file in args.input_profiles:
             # Load 1D profiles from file
             z_profile = np.loadtxt(input_file,
-                                   dtype=[('z', np.float), ('p', np.float)])
+                                   dtype=[('z', np.float64), ('p', np.float64)])
             z_profiles += [z_profile]
 
     elif (len(args.input_centers)):
@@ -483,7 +482,8 @@ mol addfile %s type dx waitfor all
 
 def multimap_colvar_def_tcl(name, map_labels, coefficients=[], map_norms=[],
                             indices=None, pdb_files=None, use_pdb_weights=False,
-                            scripted_function=None, width=None):
+                            map_files=None,
+                            scripted_function=None, width=None, pdb_file_cache=[]):
     """
     Write a Tcl script to define the collective variable in VMD or NAMD.
 
@@ -513,6 +513,9 @@ def multimap_colvar_def_tcl(name, map_labels, coefficients=[], map_norms=[],
     use_pdb_weights : bool
         If True, set the atomWeights keyword using PDB columns
 
+    map_files : list of strings
+        If given, Colvars will load each maps internally using mapFile
+
     scripted_function : string
         If defined, use it as the value of the scriptedFunction keyword
 
@@ -520,7 +523,12 @@ def multimap_colvar_def_tcl(name, map_labels, coefficients=[], map_norms=[],
         If defined, set the width parameter of the colvar (the string may
         represent either a number or a Tcl variable expansion)
 
+    pdb_file_cache : list
+        If define, keep track of what PDB files are being loaded for atom
+        selections and reuse each file
+
     """
+
     if len(coefficients) == 0 and scripted_function is None:
         raise Exception('Need either a set of coefficients or a scripting '
                         'function.')
@@ -566,22 +574,38 @@ colvar {
         componentCoeff %13.6e
 """ % (label, coefficients[i] * scale)
 
-        if indices is None:
-            conf += """\
+        if map_files is None:
+            if indices is None:
+                conf += """\
         mapName %s
 """ % label
-        else:
-            conf += """\
+            else:
+                conf += """\
         mapID %d
 """ % indices[i]
-
-        if not pdb_files is None:
+        else:
             conf += """\
+        mapFile %s
+""" % map_files[i]
+
+
+        if (indices is not None) or args.load_maps_internally:
+            if not pdb_files[i] in pdb_file_cache:
+                conf += """\
         atoms {
+            name %s
             atomsFile %s
             atomsCol O
         }
+""" % (pdb_files[i], pdb_files[i])
+                pdb_file_cache += [pdb_files[i]]
+            else:
+                conf += """\
+        atoms {
+            atomsOfGroup %s
+        }
 """ % pdb_files[i]
+
             if use_pdb_weights:
                 conf += """\
         atomWeights $weights(%s)
@@ -599,10 +623,11 @@ colvar {
 
 
 def singlemap_colvars_def_tcl(map_labels, coefficients=[], map_norms=[],
-                              indices=None, pdb_files=None,
-                              use_pdb_weights=False):
+                              indices=None, pdb_files=None, use_pdb_weights=False,
+                              map_files=None, pdb_file_cache=[]):
+
     conf = """
-# Define single-map variables for diagnostics (no extra computational cost)
+# Define single-map variables for diagnostics
 """
 
     for i, label in enumerate(map_labels):
@@ -618,29 +643,43 @@ colvar {
     mapTotal {
         name %s
 """ % (label, label)
-        if indices is None:
-            # Map labels for NAMD
-            conf += """\
-        mapName %s
+
+        if map_files is None:
+            if indices is None:
+                conf += """\
+            mapName %s
 """ % label
-        else:
-            # Numeric IDs for VMD
-            conf += """\
-        mapID %d
+            else:
+                conf += """\
+            mapID %d
 """ % indices[i]
+        else:
+            conf += """\
+            mapFile %s
+""" % map_files[i]
 
         if scale != 1.0:
             conf += """\
         componentCoeff %13.6e
 """ % scale
 
-        if not pdb_files is None:
-            conf += """\
+        if (pdb_files is not None) or args.load_maps_internally:
+            if not pdb_files[i] in pdb_file_cache:
+                conf += """\
         atoms {
+            name %s
             atomsFile %s
             atomsCol O
         }
+""" % (pdb_files[i], pdb_files[i])
+                pdb_file_cache += [pdb_files[i]]
+            else:
+                conf += """\
+        atoms {
+            atomsOfGroup %s
+        }
 """ % pdb_files[i]
+
             if use_pdb_weights:
                 conf += """\
         atomWeights $weights(%s)
@@ -656,6 +695,7 @@ colvar {
 
 
 def namd_com_restraint_def(pdb_file, name='com_dist', force_constant=5.0):
+
     conf = """
 
 # Define a center-of-mass restraint on all requested atoms
@@ -684,11 +724,12 @@ harmonic {
 
 
 def namd_ori_restraint_def(pdb_file, name='ori', force_constant=5.0):
+
     conf = """
 
 # Define an orientation restraint on requested atoms
 # WARNING: unlike the center of mass, this computation is not parallelized,
-# and reducing the size of the selection (e.g. only C-alpha atoms for 
+# and reducing the size of the selection (e.g. only C-alpha atoms for
 # proteins) is highly recommended to maintain reasonable parallel performance.
 cv config \"
 colvar {
@@ -714,8 +755,8 @@ harmonic {
     return conf
 
 
-def namd_com_z_restraint_def(pdb_files, name='com_dist', force_constant=5.0):
-    unique_files = list(set(pdb_files))
+def namd_com_z_restraint_def(pdb_file, name='com_dist', force_constant=5.0):
+
     conf = """
 
 # Define a center-of-mass restraint on all requested atoms
@@ -723,22 +764,17 @@ cv config \"
 colvar {
     name %s
     width 0.1
-""" % name
-
-    for pdb_file in unique_files:
-        conf += """\
     distanceZ {
-        componentCoeff %f
         main {
             atomsFile %s
             atomsCol O
         }
         ref { dummyAtom (0.0, 0.0, 0.0) }
     }
-""" % (1.0/len(unique_files), pdb_file)
+}
+""" % (name, pdb_file)
 
     conf += """\
-}
 
 harmonic {
     name r_%s
@@ -902,7 +938,7 @@ Generate input files for Multi-Map computations with VMD and NAMD.  Reference ar
                        'in the same format as --deformation-map. '
                        'May be used together with other masking functions.')
     group.add_argument('--mask-by-amplitude',
-                       type=np.float,
+                       type=float,
                        help='Mask out regions that move less than this '
                        'fraction of the maximum amplitude.  '
                        'May be used together with other masking functions.',
@@ -979,17 +1015,31 @@ Generate input files for Multi-Map computations with VMD and NAMD.  Reference ar
                        'PDB columns to define the weights of each atom within '
                        'each map; when false, all weights are equal to 1. '
                        'Defaults to True if --input-pdb-files is used.',
-                       default=None)
+                       default=False)
+    group.add_argument('--load-maps-internally',
+                       action='store_true',
+                       help="When true, Colvars will load the maps internally using "
+                       "\"mapFile\" and the loop over atoms is done inside Colvars "
+                       "instead of NAMD; "
+                       "does not have an effect in VMD",
+                       default=False)
+    group.add_argument('--define-single-maps',
+                       action='store_true',
+                       help='Define single-map variables in addition to Multi-Map',
+                       default=False)
     group.add_argument('--com-restraint',
                        action='store_true',
                        help='Add the definition of a center-of-mass restraint '
                        'to the NAMD input',
                        default=True)
-
+    group.add_argument('--com-restraint-pdb-file',
+                       type=str,
+                       help="PDB file-based selection for the COM restraint")
     group.add_argument('--ori-restraint',
                        action='store_true',
                        help='Add the definition of an orientational restraint '
-                       'to the NAMD input; it is highly recommended to reduce '
+                       'to the NAMD input; uses the same file as --com-restraint to select atoms; '
+                       'it is highly recommended to reduce '
                        'the size of the selection (e.g. only C-alpha atoms '
                        'for proteins) to maintain reasonable parallel '
                        'performance.  Not valid for bilayers.',
@@ -1000,11 +1050,11 @@ Generate input files for Multi-Map computations with VMD and NAMD.  Reference ar
                        type=str, required=True,
                        help='Prefix for output files')
     group.add_argument('--namd-script',
-                       type=str, default=None,
+                       type=str,
                        help='Write NAMD commands to define the Multi-Map '
                        'collective variable into this file.')
     group.add_argument('--vmd-script',
-                       type=str, default=None,
+                       type=str,
                        help='Write VMD commands to define the Multi-map '
                        'collective variable into this file.')
 
@@ -1091,8 +1141,9 @@ def check_prep_args(args):
               "\"; values of this 2D map will be multiplied by "
               "the deformation amplitudes.  "
               "The mean is automatically subtracted.")
-        args.deformation_map = np.loadtxt(args.deformation_map, dtype=np.float)
-        args.deformation_map_mask = np.ones(shape=args.deformation_map.shape)
+        args.deformation_map = np.loadtxt(args.deformation_map, dtype=np.float64)
+        if args.deformation_map_mask is None:
+            args.deformation_map_mask = np.ones(shape=args.deformation_map.shape)
         print("Subtracting the mean Z-coordinate of the map; before =",
               args.deformation_map.mean())
         args.deformation_map -= args.deformation_map.mean()
@@ -1106,7 +1157,7 @@ def check_prep_args(args):
     if type(args.deformation_map_mask) == str:
         print("Loading the mask from file \""+args.deformation_map_mask+"\"")
         args.deformation_map_mask = np.loadtxt(args.deformation_map_mask,
-                                               dtype=np.float)
+                                               dtype=np.float64)
         print("Mean value of the mask map =", args.deformation_map_mask.mean())
 
     if args.mask_by_amplitude > 0.0:
@@ -1115,7 +1166,7 @@ def check_prep_args(args):
         print("Masking the deformation map based on its magnitude")
         max_amplitude = np.abs(args.deformation_map).max()
         mask_threshold = args.mask_by_amplitude*max_amplitude
-        args.deformation_map_mask *= \
+        args.deformation_map_mask = \
             get_mask_from_deformation(deformation_map=args.deformation_map,
                                       threshold=mask_threshold,
                                       tolerance=0.2*mask_threshold)
@@ -1123,8 +1174,13 @@ def check_prep_args(args):
         del mask_threshold, max_amplitude
 
 
-    args.n_deformations = max(len(args.input_map_files),
-                              len(args.deformation_amplitudes))
+    if args.system_dim == '3d':
+        args.n_deformations = len(args.input_map_files)
+    if args.system_dim == '2d':
+        args.n_deformations = len(args.deformation_amplitudes) // args.n_inputs
+        args.deformation_amplitudes = \
+            np.array(args.deformation_amplitudes).reshape((args.n_inputs,
+                                                           args.n_deformations))
 
     if args.multimap_coefficients is None:
         args.multimap_coefficients = np.arange(1.0, args.n_deformations+1)
@@ -1147,7 +1203,7 @@ def generate_maps_from_profiles(args):
     # TODO forbid triclinic cells
 
     # Object to hold the undeformed map for each input
-    map_input = create_grid_object(cell_sizes, args)
+    map_input = create_grid_object(cell_sizes, args.grid_npoints)
     print("Unit cell dimensions = ", format_array(cell_sizes))
     print("Grid sizes (# points) = ", map_input.grid.shape)
     # Define cell_dx in a consistent manner, because the shape of Grid.delta
@@ -1165,8 +1221,13 @@ def generate_maps_from_profiles(args):
     maps = {}
 
     # Loop over all input maps (e.g. upper and lower leaflet)
-    for z_profile, z_profile_com, input_label in \
-        zip(z_profiles, z_profiles_coms, args.input_labels):
+    for i_input, z_profile, z_profile_com, input_label in \
+        zip(range(args.n_inputs), z_profiles, z_profiles_coms,
+            args.input_labels):
+
+        deformation_amplitudes = args.deformation_amplitudes[i_input,:]
+
+        print("Amplitudes", deformation_amplitudes)
 
         maps[input_label] = []
 
@@ -1175,10 +1236,10 @@ def generate_maps_from_profiles(args):
 
         init_map_from_profile(z_profile=z_profile['p'], grid=map_input.grid)
 
-        for i, amplitude in enumerate(args.deformation_amplitudes):
+        for i, amplitude in enumerate(deformation_amplitudes):
 
             # Object to hold the deformed map
-            map_output = create_grid_object(cell_sizes, args)
+            map_output = create_grid_object(cell_sizes, args.grid_npoints)
 
             print("  Deformation amplitude =", format_array(amplitude))
             amplitude_bins = np.divide(amplitude, cell_dx[2][2])
@@ -1205,7 +1266,7 @@ def generate_maps_from_profiles(args):
 
             if not args.deformation_map_mask is None:
                 factor = args.deformation_map_mask.sum() / \
-                         np.float(args.deformation_map_mask.size)
+                         np.float64(args.deformation_map_mask.size)
                 print("  Masking the map (fraction = %.1f%%)" % (factor*100))
                 np.multiply(map_output.grid,
                             args.deformation_map_mask[:,:,np.newaxis],
@@ -1217,16 +1278,21 @@ def generate_maps_from_profiles(args):
     return maps
 
 
-def write_namd_script(gridforces_script, map_labels, pdb_files, map_norms,
-                      args):
-    with open(args.namd_script, 'w') as namd_script:
+def write_namd_script(gridforces_script, map_labels, pdb_files, map_norms, map_files, args):
+    print("Writing NAMD script to file", args.namd_script)
+    pdb_file_cache = []
+    with open(args.namd_script, 'w') as script:
 
-        print("Writing NAMD script to file", args.namd_script)
+        script.write("""# -*- tcl -*-
 
-        namd_script.write("""# -*- tcl -*-
+## Use this script by setting "colvars on" and then "source %s"
+""" % args.namd_script)
+        if not args.load_maps_internally:
+            script.write("""
 
-## Please ensure that "mGridForce on" and "colvars on" are defined before
-## sourcing this file in a NAMD script.
+## Please also ensure that "mGridForce on" is specified before sourcing this file in a NAMD script.
+""")
+        script.write("""
 
 # The width parameters sets the amplitude of the colvar's fluctuation, and
 # can be used to set the correct scale for harmonic restraint potentials
@@ -1236,7 +1302,7 @@ if { [info exists multimap_cv_width] == 0 } {
 """)
 
         if args.system_dim == '3d':
-            namd_script.write("""
+            script.write("""
 # Define a default position for the center-of-mass restraint
 if { [info exists com_pos] == 0 } {
     set com_pos [list 0.0 0.0 0.0]
@@ -1247,49 +1313,75 @@ set com("y") [lindex ${com_pos} 1]
 set com("z") [lindex ${com_pos} 2]
 """)
 
-        namd_script.write("""
-# Load gridForces maps
-""")
-        namd_script.write(gridforces_script)
+        if not args.load_maps_internally:
+            script.write("""
+    # Load gridForces maps
+    """)
+            script.write(gridforces_script)
 
+        write_colvars_script(script, map_labels, pdb_files, map_norms, map_files, pdb_file_cache, args)
+
+
+def write_colvars_script(script, map_labels, pdb_files, map_norms, map_files, pdb_file_cache, args, indices=None):
+    if script is not None:
+
+        # Disabled code path, using componentCoeff now rather than Tcl
         scripted_function = None
+
         if not scripted_function is None:
-            namd_script.write(multimap_colvar_function_tcl(args))
+            script.write(multimap_colvar_function_tcl(args))
 
-        mmcv_def = \
-            multimap_colvar_def_tcl(name=args.colvar_name,
-                                    map_labels=map_labels,
-                                    map_norms=map_norms,
-                                    coefficients=\
-                                        np.tile(args.multimap_coefficients,
-                                                args.n_inputs),
-                                    scripted_function=scripted_function,
-                                    use_pdb_weights=args.use_pdb_weights,
-                                    width='${multimap_cv_width}')
-        namd_script.write(mmcv_def)
+        mmcv_def = multimap_colvar_def_tcl(
+            name=args.colvar_name,
+            map_labels=map_labels,
+            map_norms=map_norms,
+            indices=indices,
+            coefficients=np.tile(
+                args.multimap_coefficients,
+                args.n_inputs),
+            pdb_files=pdb_files,
+            use_pdb_weights=args.use_pdb_weights,
+            map_files=map_files,
+            scripted_function=scripted_function,
+            width='${multimap_cv_width}',
+            pdb_file_cache=pdb_file_cache)
 
-        singles_def = \
-            singlemap_colvars_def_tcl(map_labels=map_labels,
-                                      map_norms=map_norms,
-                                      use_pdb_weights=args.use_pdb_weights)
-        namd_script.write(singles_def)
+        script.write(mmcv_def)
+
+        if args.define_single_maps:
+            singles_def = singlemap_colvars_def_tcl(
+                map_labels=map_labels,
+                indices=indices,
+                map_norms=map_norms,
+                pdb_files=pdb_files,
+                use_pdb_weights=args.use_pdb_weights,
+                map_files=map_files,
+                pdb_file_cache=pdb_file_cache)
+            script.write(singles_def)
+
+        # Center-of-mass and orientation restraint
+
+        com_pdb_file = ori_pdb_file = args.com_restraint_pdb_file
+        if com_pdb_file is None:
+            com_pdb_file = ori_pdb_file = pdb_files[0]
 
         if args.system_dim == '3d':
-            # Center-of-mass restraint
-            namd_script.write(namd_com_restraint_def(pdb_files[0]))
+            if args.com_restraint:
+                script.write(namd_com_restraint_def(com_pdb_file))
             if args.ori_restraint:
-                namd_script.write(namd_ori_restraint_def(pdb_files[0]))
+                script.write(namd_ori_restraint_def(ori_pdb_file))
 
-        if args.system_dim == '2d':
-            namd_script.write(namd_com_z_restraint_def(pdb_files))
+        if args.system_dim == '2d' and args.com_restraint:
+            script.write(namd_com_z_restraint_def(com_pdb_file))
 
 
 
-def write_vmd_script(vmd_load_map_cmds, map_labels, pdb_files, map_norms, args):
+def write_vmd_script(vmd_load_map_cmds, map_labels, pdb_files, map_norms, map_files, args):
+    print("Writing VMD script to file", args.vmd_script)
+    pdb_file_cache = []
     unique_files = list(set(pdb_files))
-    with open(args.vmd_script, 'w') as vmd_script_file:
-        print("Writing VMD script to file", args.vmd_script)
-        vmd_script_file.write("""# -*- tcl -*-
+    with open(args.vmd_script, 'w') as script:
+        script.write("""# -*- tcl -*-
 
 ## VMD script to load map files onto the top molecule
 
@@ -1301,7 +1393,7 @@ if { [info exists multimap_cv_width] == 0 } {
 
 """)
         if args.use_pdb_weights:
-            vmd_script_file.write("""
+            script.write("""
 # Precompute the per-atom weights by taking them from each PDB file
 foreach pdb_file { %s } {
     mol addfile $pdb_file type pdb waitfor all
@@ -1312,43 +1404,22 @@ foreach pdb_file { %s } {
 }
 """ % ' '.join(set(unique_files)))
 
-        vmd_script_file.write("""
+        script.write("""
 # Attach Colvars to the top molecule
 cv molid top
+""")
+        if not args.load_maps_internally:
+            script.write("""
 
 # Load volumetric maps
 """)
-        vmd_script_file.write(vmd_load_map_cmds)
-        scripted_function = None
-        if not scripted_function is None:
-            vmd_script_file.write(multimap_colvar_function_tcl(args))
+            script.write(vmd_load_map_cmds)
 
-        n = len(map_labels)
-
-        mmcv_def = \
-            multimap_colvar_def_tcl(name=args.colvar_name,
-                                    map_labels=map_labels,
-                                    map_norms=map_norms,
-                                    indices=range(n),
-                                    pdb_files=pdb_files,
-                                    coefficients=\
-                                        np.tile(args.multimap_coefficients,
-                                                args.n_inputs),
-                                    scripted_function=scripted_function,
-                                    use_pdb_weights=args.use_pdb_weights,
-                                    width='${multimap_cv_width}')
-        vmd_script_file.write(mmcv_def)
-
-        singles_def = \
-            singlemap_colvars_def_tcl(map_labels=map_labels,
-                                      indices=range(n),
-                                      map_norms=map_norms,
-                                      pdb_files=pdb_files,
-                                      use_pdb_weights=args.use_pdb_weights)
-        vmd_script_file.write(singles_def)
+        write_colvars_script(script, map_labels, pdb_files, map_norms, map_files, pdb_file_cache, args, 
+                             indices=range(len(map_labels)))
 
 
-def generate_multimap(args):
+def gen_multimap(args):
     """
     Process cmdline arguments, generate/load the maps, write input scripts
     """
@@ -1442,13 +1513,13 @@ def generate_multimap(args):
             else:
                 map_file = map_files[input_label][i]
 
-            if not args.namd_script is None:
+            if not args.namd_script is None and not args.load_maps_internally:
                 gridforces_script += \
                     get_gridforces_map_cmds(label=map_label,
                                             map_file=map_file,
                                             pdb_file=pdb_file)
 
-            if not args.vmd_script is None:
+            if not args.vmd_script is None and not args.load_maps_internally:
                 vmd_load_map_cmds += \
                     get_vmd_load_map_cmds(map_file=map_file)
 
@@ -1485,18 +1556,33 @@ def generate_multimap(args):
     all_pdb_files = [x for il in args.input_labels for x in pdb_files[il]]
     all_map_norms = [x for il in args.input_labels for x in map_norms[il]]
 
+    if args.load_maps_internally:
+        all_map_files = [x for il in args.input_labels for x in map_files[il]]
+    else:
+        all_map_files = None
+
     print("")
 
-    if not args.namd_script is None:
-        write_namd_script(gridforces_script, all_map_labels, all_pdb_files,
-                          all_map_norms, args)
+    if args.namd_script:
+        write_namd_script(
+            gridforces_script,
+            all_map_labels,
+            all_pdb_files,
+            all_map_norms,
+            all_map_files,
+            args)
 
-    if not args.vmd_script is None:
-        write_vmd_script(vmd_load_map_cmds, all_map_labels, all_pdb_files,
-                         all_map_norms, args)
+    if args.vmd_script:
+        write_vmd_script(
+            vmd_load_map_cmds,
+            all_map_labels,
+            all_pdb_files,
+            all_map_norms,
+            all_map_files,
+            args)
 
 
 if __name__ == '__main__':
     args = parse_cmdline_args()
     check_prep_args(args)
-    generate_multimap(args)
+    gen_multimap(args)
