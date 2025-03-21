@@ -1,12 +1,12 @@
 #include <iostream>
-#include <fstream>
 
 #include "colvargrid.h"
 #include "colvarproxy.h"
 
+// Integrate provided gradients while monitoring convergence towards a provided scalar grid
+// (typically the result of a previous integration)
 
 int main (int argc, char *argv[]) {
-
   if (argc < 2) {
     std::cerr << "\n\nOne argument needed: gradient multicol file name.\n";
     return 1;
@@ -19,14 +19,37 @@ int main (int argc, char *argv[]) {
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
   if (cvm::get_error()) { return -1; }
 
-  int itmax = 10000;
-  cvm::real err;
-  cvm::real tol = 1e-8;
+  cvm::real err = 1.;
+  cvm::real tol = 1e-10;
 
   integrate_potential potential(grad_ptr);
   potential.set_div();
-  potential.integrate(itmax, tol, err);
-  potential.set_zero_minimum();
+
+  // Load reference
+  colvar_grid_scalar ref(gradfile + ".ref");
+  if (cvm::get_error()) { return -1; }
+
+  if (ref.number_of_points() != potential.number_of_points()) {
+    cvm::error("Reference grid has wrong number of points: " + cvm::to_str(ref.number_of_points()) + "\n");
+    return -1;
+  }
+
+  // Monitor convergence
+  int rounds = 100;
+  int steps_per_round = 10;
+
+  std::cout << 0 << " " << 0 << " " << ref.grid_rmsd(potential) << std::endl;
+
+  for (int i = 0; i < rounds && err > tol; i++) {
+    potential.reset(0.);
+    potential.integrate(steps_per_round * (i+1), tol, err);
+    potential.set_zero_minimum();
+
+    std::cout << (i+1)*steps_per_round << " " <<  err << " " << ref.grid_rmsd(potential) << std::endl;
+
+    char buff[100];
+    snprintf(buff, sizeof(buff), "%04i", steps_per_round * (i+1));
+  }
 
   if (potential.num_variables() < 3) {
     std::cout << "\nWriting integrated potential in multicol format to " + gradfile + ".int\n";

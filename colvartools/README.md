@@ -5,7 +5,9 @@ This directory contains both standalone tools and Colvars scripts.
 ## Standalone tools
 | File name | Summary |
 | ------------- | ------------- |
-| **abf_integrate** | Post-process gradient files produced by ABF and related methods, to generate a PMF. Superseded by builtin integration for dimensions 2 and 3, still needed for higher-dimension PMFs. Build using the provided **Makefile**.|
+| **abf_integrate** | Process free energy gradient from ABF/TI to generate a free energy surface using a legacy MCMC procedure. Superseded by Poisson integration (builtin or standalone) for dimensions 2 and 3, still needed for higher-dimension PMFs. Build using the provided **Makefile**.|
+| **poisson_integrator** | Process free energy gradient from ABF/TI to generate a free energy surface as the solution of a Poisson equation. Build using the provided **Makefile**.|
+| **poisson_integrator_conv** | Process free energy gradient from ABF/TI to generate a free energy surface as the solution of a Poisson equation, monitoring convergence towards a given discretized scalar field. Build using the provided **Makefile**.|
 | **noe_to_colvars.py** | Parse an X-PLOR style list of assign commands for NOE restraints.|
 | **plot_colvars_traj.py** | Select variables from a Colvars trajectory file and optionally plot them as a 1D graph as a function of time or of one of the variables.|
 | **quaternion2rmatrix.tcl** | As the name says.|
