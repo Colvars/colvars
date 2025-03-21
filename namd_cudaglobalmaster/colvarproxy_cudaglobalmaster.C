@@ -297,7 +297,7 @@ void colvarproxy_impl::update_atom_properties(int index)
 {
   // update mass
   double const mass = molecule->atommass(atoms_ids[index]);
-  this->log("id = " + cvm::to_str(atoms_ids[index]) + "\n");
+  // this->log("id = " + cvm::to_str(atoms_ids[index]) + "\n");
   if (mass <= 0.001) {
     this->log("Warning: near-zero mass for atom "+
               cvm::to_str(atoms_ids[index]+1)+
