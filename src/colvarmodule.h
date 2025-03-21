@@ -339,6 +339,9 @@ public:
   /// Indexes of the items to calculate for each colvar
   std::vector<int> *variables_active_smp_items();
 
+  /// Calculate the value of the specified component (to be called in a SMP loop)
+  int calc_component_smp(int i);
+
   /// Array of collective variable biases
   std::vector<colvarbias *> biases;
 

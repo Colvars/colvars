@@ -124,13 +124,15 @@ public:
   }
 
 #if CMK_SMP && USE_CKLOOP
-  int check_smp_enabled() override;
+  colvarproxy::smp_mode_t get_smp_mode() const override;
 
-  int smp_colvars_loop() override;
+  int set_smp_mode(smp_mode_t mode) override;
 
-  int smp_biases_loop();
+  int smp_loop(int n_items, std::function<int (int)> const &worker) override;
 
-  int smp_biases_script_loop();
+  int smp_biases_loop() override;
+
+  int smp_biases_script_loop() override;
 
   friend void calc_colvars_items_smp(int first, int last, void *result, int paramNum, void *param);
   friend void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *param);

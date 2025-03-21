@@ -257,6 +257,8 @@ public:
     f_cvb_scale_biasing_force,
     /// \brief whether this bias is applied to one or more ext-Lagrangian colvars
     f_cvb_extended,
+    /// Process this bias's data in parallel over multiple CPU threads
+    f_cvb_smp,
     f_cvb_ntot
   };
 

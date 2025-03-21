@@ -201,6 +201,8 @@ int colvarbias::init_dependencies() {
 
     init_feature(f_cvb_extended, "Bias on extended-Lagrangian variables", f_type_static);
 
+    init_feature(f_cvb_smp, "smp_computation", f_type_user);
+
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_cvb_ntot; i++) {
       if (is_not_set(i)) {
@@ -223,6 +225,9 @@ int colvarbias::init_dependencies() {
   // The feature f_cvb_bypass_ext_lagrangian is only implemented by some derived classes
   // (initially, harmonicWalls)
   feature_states[f_cvb_bypass_ext_lagrangian].available = false;
+
+  // Most biases cannot currently be processed in parallel over threads
+  feature_states[f_cvb_smp].available = false;
 
   return COLVARS_OK;
 }
