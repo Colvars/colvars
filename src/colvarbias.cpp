@@ -807,18 +807,16 @@ int colvarbias_ti::init(std::string const &conf)
                      f_cvb_write_ti_pmf,
                      is_enabled(f_cvb_write_ti_pmf));
 
+  if (is_enabled(f_cvb_write_ti_pmf)) {
+    enable(f_cvb_write_ti_samples);
+  }
+
   if ((num_variables() > 1) && is_enabled(f_cvb_write_ti_pmf)) {
     return cvm::error("Error: only 1-dimensional PMFs can be written "
                       "on the fly.\n"
                       "Consider using writeTISamples instead and "
                       "post-processing the sampled free-energy gradients.\n",
                       COLVARS_NOT_IMPLEMENTED);
-  } else {
-    error_code |= init_grids();
-  }
-
-  if (is_enabled(f_cvb_write_ti_pmf)) {
-    enable(f_cvb_write_ti_samples);
   }
 
   if (is_enabled(f_cvb_calc_ti_samples)) {
@@ -838,6 +836,8 @@ int colvarbias_ti::init(std::string const &conf)
     }
   }
 
+  error_code |= colvarbias_ti::init_grids();
+
   if (is_enabled(f_cvb_write_ti_pmf) || is_enabled(f_cvb_write_ti_samples)) {
     cvm::main()->cite_feature("Internal-forces free energy estimator");
   }
@@ -851,6 +851,7 @@ int colvarbias_ti::init_grids()
   if (is_enabled(f_cvb_calc_ti_samples)) {
     if (!ti_avg_forces) {
       ti_bin.resize(num_variables());
+      ti_bin.assign(ti_bin.size(), -1);
       ti_system_forces.resize(num_variables());
       for (size_t icv = 0; icv < num_variables(); icv++) {
         ti_system_forces[icv].type(variables(icv)->value());
@@ -889,6 +890,10 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
 
   size_t i;
 
+  if (cvm::debug()) {
+    cvm::log("TI bin for bias \"" + name + "\" = " + cvm::to_str(ti_bin) + ".\n");
+  }
+
   for (i = 0; i < num_variables(); i++) {
     if (variables(i)->is_enabled(f_cv_total_force_current_step)) {
       ti_bin[i] = ti_avg_forces->current_bin_scalar(i);
@@ -911,6 +916,9 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
         }
       }
       if (cvm::step_relative() > 0 || is_enabled(f_cvb_step_zero_data)) {
+        if (cvm::debug()) {
+          cvm::log("Accumulating TI forces for bias \"" + name + "\".\n");
+        }
         ti_avg_forces->acc_value(ti_bin, ti_system_forces);
       }
     }
