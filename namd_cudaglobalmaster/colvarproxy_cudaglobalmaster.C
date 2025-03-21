@@ -658,31 +658,26 @@ void colvarproxy_impl::calculate() {
             cvm::rvector(0, 0, 0));
   // Clear the previous bias energy
   mBiasEnergy = 0;
-  // If the atom selection is changed, re-allocate arrays
   int savedDevice;
   cudaCheck(cudaGetDevice(&savedDevice));
   cudaCheck(cudaSetDevice(m_device_id));
   // TODO: Colvars does not support GPU, so we have to copy the buffers manually
   const size_t numAtoms = atoms_ids.size();
-  // copy_DtoH(d_mPositions, h_mPositions, 3*numAtoms, mStream);
   // Transform the arrays for Colvars
   std::vector<cvm::atom_pos> &colvars_pos = *(modify_atom_positions());
   transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
   copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
   if (mClient->requestedTotalForcesAtomsChanged()) {
-    // copy_DtoH(d_mTotalForces, h_mTotalForces, 3*numAtoms, mStream);
     std::vector<cvm::rvector> &colvars_total_force = *(modify_atom_total_forces());
     transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
     copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
   }
   if (mClient->requestUpdateMasses()) {
-    // copy_DtoH(d_mMass, h_mMass, numAtoms, mStream);
     std::vector<cvm::real> &colvars_mass = *(modify_atom_masses());
     copy_float_to_host_double(d_mMass, d_trans_mMass, numAtoms, mStream);
     copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
   }
   if (mClient->requestUpdateCharges()) {
-    // copy_DtoH(d_mCharges, h_mCharges, numAtoms, mStream);
     std::vector<cvm::real> &colvars_charge  = *(modify_atom_charges());
     copy_float_to_host_double(d_mCharges, d_trans_mCharges, numAtoms, mStream);
     copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
@@ -690,35 +685,8 @@ void colvarproxy_impl::calculate() {
   if (mClient->requestUpdateLattice()) {
     copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
   }
-  // for (size_t i = 0; i < numAtoms; ++i) {
-  //   colvars_pos[i] = {h_mPositions[i],
-  //                     h_mPositions[i+numAtoms],
-  //                     h_mPositions[i+2*numAtoms]};
-  // }
-
   // Synchronize the stream to make sure the host buffers are ready
   cudaCheck(cudaStreamSynchronize(mStream));
-  // if (mClient->requestedTotalForcesAtomsChanged()) {
-  //   std::vector<cvm::rvector> &colvars_total_force = *(modify_atom_total_forces());
-  //   for (size_t i = 0; i < numAtoms; ++i) {
-  //     colvars_total_force[i] = {
-  //       h_mTotalForces[i],
-  //       h_mTotalForces[i+numAtoms],
-  //       h_mTotalForces[i+2*numAtoms]};
-  //   }
-  // }
-  // if (mClient->requestUpdateMasses()) {
-  //   std::vector<cvm::real> &colvars_mass = *(modify_atom_masses());
-  //   for (size_t i = 0; i < numAtoms; ++i) {
-  //     colvars_mass[i] = cvm::real(h_mMass[i]);
-  //   }
-  // }
-  // if (mClient->requestUpdateCharges()) {
-  //   std::vector<cvm::real> &colvars_charge  = *(modify_atom_charges());
-  //   for (size_t i = 0; i < numAtoms; ++i) {
-  //     colvars_charge[i] = cvm::real(h_mCharges[i]);
-  //   }
-  // }
   if (mClient->requestUpdateLattice()) {
     unit_cell_x.set(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
     unit_cell_y.set(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
@@ -754,16 +722,8 @@ void colvarproxy_impl::calculate() {
     print_output_atomic_data();
   }
   // Update applied forces
-
-  // for (size_t i = 0; i < numAtoms; ++i) {
-  //   h_mAppliedForces[i] = colvars_applied_force[i].x;
-  //   h_mAppliedForces[i+numAtoms] = colvars_applied_force[i].y;
-  //   h_mAppliedForces[i+2*numAtoms] = colvars_applied_force[i].z;
-  // }
   copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
   transpose_from_host_rvector(d_mAppliedForces, d_trans_mAppliedForces, numAtoms, mStream);
-  // log("NUMBER OF ATOMS IN COLVARS: " + cvm::to_str(numAtoms) + "\n");
-  // copy_HtoD(h_mAppliedForces, d_mAppliedForces, 3*numAtoms, mStream);
   // NOTE: I think I can skip the syncrhonization here because this client
   //       share the same stream as the CudaGlobalMasterServer object
   // cudaCheck(cudaStreamSynchronize(mStream));

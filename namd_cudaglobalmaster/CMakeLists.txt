@@ -47,3 +47,4 @@ target_include_directories(cudaglobalmastercolvars PUBLIC "${NAMD_HEADER_DIR}" P
 target_link_libraries(cudaglobalmastercolvars CUDA::cudart)
 target_compile_options(cudaglobalmastercolvars PRIVATE -Wno-register)
 set_property(TARGET cudaglobalmastercolvars PROPERTY LANGUAGE CUDA)
+set_property(TARGET cudaglobalmastercolvars PROPERTY CUDA_ARCHITECTURES OFF)
