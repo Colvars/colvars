@@ -115,7 +115,12 @@ write_colvars_config "dihedral" "harmonicwalls360angle-fixed"
 write_colvars_config "dihedralwalls" "" ${dirname}/test.legacy.in
 
 create_test_dir "distance-wall-bypassExtended-off"
-write_colvars_config "distance-extended" "harmonicwalls-bypassExtended-off"
+if echo ${WORKDIR} | grep -q namd ; then
+    # The NAMD input file differs from this template
+    write_colvars_config "distance-extended" "harmonicwalls-bypassExtended-off-namd"
+else
+    write_colvars_config "distance-extended" "harmonicwalls-bypassExtended-off"
+fi
 
 # Tests for each colvar without a bias
 for colvar in \
@@ -154,6 +159,7 @@ for colvar in "distance-grid" ; do
         "histogram" \
         "histogram-customgrid" \
         "abf" \
+        "abf-customgrid" \
         "metadynamics" \
         "metadynamics-sigmas" \
         "metadynamics-wt" \
@@ -174,6 +180,9 @@ write_colvars_config "distance-grid-finer" "metadynamics-keephills-rebingrids" $
 create_test_dir "distance-grid_metadynamics-rebinfromgrids"
 write_colvars_config "distance-grid" "metadynamics-new"
 write_colvars_config "distance-grid-finer" "metadynamics-rebingrids" ${dirname}/test.restart.in
+
+create_test_dir "distance_metadynamics-customgrid"
+write_colvars_config "distance" "metadynamics-customgrid"
 
 colvar="distance-extended-grid"
 for bias in "histogram" "histogram-bypassExtended"; do
