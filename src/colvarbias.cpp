@@ -858,7 +858,7 @@ int colvarbias_ti::init_grids()
         ti_system_forces[icv].reset();
       }
       ti_count.reset(new colvar_grid_count(colvars, grid_conf));
-      ti_avg_forces.reset(new colvar_grid_gradient(colvars, nullptr, ti_count));
+      ti_avg_forces.reset(new colvar_grid_gradient(colvars, ti_count));
     }
   }
 
