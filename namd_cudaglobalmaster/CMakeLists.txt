@@ -25,7 +25,7 @@ if(NOT EXISTS ${COLVARS_SOURCE_DIR})
   message(FATAL_ERROR "The Colvars source directory ${COLVARS_SOURCE_DIR} does not exist!")
 endif()
 
-file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
+file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/[^.]*.cpp)
 
 include(CheckLanguage)
 check_language(CUDA)
