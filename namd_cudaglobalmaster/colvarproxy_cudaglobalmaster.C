@@ -757,7 +757,7 @@ void colvarproxy_impl::calculate() {
     numAtoms, mStream);
   // NOTE: I think I can skip the syncrhonization here because this client
   //       share the same stream as the CudaGlobalMasterServer object
-  cudaCheck(cudaStreamSynchronize(mStream));
+  // cudaCheck(cudaStreamSynchronize(mStream));
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
   if (step == simParams->N) {
