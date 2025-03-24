@@ -139,7 +139,7 @@ public:
     return cvm::rvector(0.0);
   }
 
-  inline std::vector<int> const *get_atom_ids() const
+  inline auto const *get_atom_ids() const
   {
     return &atoms_ids;
   }
@@ -147,56 +147,56 @@ public:
   /// Return number of atoms with positive reference count
   size_t get_num_active_atoms() const;
 
-  inline std::vector<cvm::real> const *get_atom_masses() const
+  inline auto const *get_atom_masses() const
   {
     return &atoms_masses;
   }
 
-  inline std::vector<cvm::real> *modify_atom_masses()
+  inline auto *modify_atom_masses()
   {
     // assume that we are requesting masses to change them
     updated_masses_ = true;
     return &atoms_masses;
   }
 
-  inline std::vector<cvm::real> const *get_atom_charges()
+  inline auto const *get_atom_charges()
   {
     return &atoms_charges;
   }
 
-  inline std::vector<cvm::real> *modify_atom_charges()
+  inline auto *modify_atom_charges()
   {
     // assume that we are requesting charges to change them
     updated_charges_ = true;
     return &atoms_charges;
   }
 
-  inline std::vector<cvm::rvector> const *get_atom_positions() const
+  inline auto const *get_atom_positions() const
   {
     return &atoms_positions;
   }
 
-  inline std::vector<cvm::rvector> *modify_atom_positions()
+  inline auto *modify_atom_positions()
   {
     return &atoms_positions;
   }
 
-  inline std::vector<cvm::rvector> const *get_atom_total_forces() const
+  inline auto const *get_atom_total_forces() const
   {
     return &atoms_total_forces;
   }
 
-  inline std::vector<cvm::rvector> *modify_atom_total_forces()
+  inline auto *modify_atom_total_forces()
   {
     return &atoms_total_forces;
   }
 
-  inline std::vector<cvm::rvector> const *get_atom_applied_forces() const
+  inline auto const *get_atom_applied_forces() const
   {
     return &atoms_new_colvar_forces;
   }
 
-  inline std::vector<cvm::rvector> *modify_atom_applied_forces()
+  inline auto *modify_atom_applied_forces()
   {
     return &atoms_new_colvar_forces;
   }
@@ -249,6 +249,14 @@ public:
     return updated_charges_;
   }
 
+#if defined(COLVARS_CUDA)
+  template <typename T>
+  using allocator_type = cvm::CudaHostAllocator<T>;
+#else
+  template <typename T>
+  using allocator_type = std::allocator<T>;
+#endif
+
 protected:
 
   /// \brief Array of 0-based integers used to uniquely associate atoms
@@ -257,15 +265,15 @@ protected:
   /// \brief Keep track of how many times each atom is used by a separate colvar object
   std::vector<size_t>       atoms_refcount;
   /// \brief Masses of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
-  std::vector<cvm::real>    atoms_masses;
+  std::vector<cvm::real, allocator_type<cvm::real>>    atoms_masses;
   /// \brief Charges of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
-  std::vector<cvm::real>    atoms_charges;
+  std::vector<cvm::real, allocator_type<cvm::real>>    atoms_charges;
   /// \brief Current three-dimensional positions of the atoms
-  std::vector<cvm::rvector> atoms_positions;
+  std::vector<cvm::rvector, allocator_type<cvm::rvector>> atoms_positions;
   /// \brief Most recent total forces on each atom
-  std::vector<cvm::rvector> atoms_total_forces;
+  std::vector<cvm::rvector, allocator_type<cvm::rvector>> atoms_total_forces;
   /// \brief Forces applied from colvars, to be communicated to the MD integrator
-  std::vector<cvm::rvector> atoms_new_colvar_forces;
+  std::vector<cvm::rvector, allocator_type<cvm::rvector>> atoms_new_colvar_forces;
 
   /// Root-mean-square of the applied forces
   cvm::real atoms_rms_applied_force_;

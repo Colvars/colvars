@@ -146,11 +146,11 @@ private:
   float*  d_mMass;
   float*  d_mCharges;
   // For transpose
-  cvm::rvector* d_trans_mPositions;
-  cvm::rvector* d_trans_mAppliedForces;
-  cvm::rvector* d_trans_mTotalForces;
-  cvm::real*    d_trans_mMass;
-  cvm::real*    d_trans_mCharges;
+  // cvm::rvector* d_trans_mPositions;
+  // cvm::rvector* d_trans_mAppliedForces;
+  // cvm::rvector* d_trans_mTotalForces;
+  // cvm::real*    d_trans_mMass;
+  // cvm::real*    d_trans_mCharges;
   double* h_mLattice;
   double mBiasEnergy;
   cudaStream_t mStream;
@@ -172,11 +172,11 @@ colvarproxy_impl::colvarproxy_impl(
   d_mPositions(nullptr), d_mAppliedForces(nullptr),
   d_mTotalForces(nullptr), d_mLattice(nullptr),
   d_mMass(nullptr), d_mCharges(nullptr),
-  d_trans_mPositions(nullptr),
-  d_trans_mAppliedForces(nullptr),
-  d_trans_mTotalForces(nullptr),
-  d_trans_mMass(nullptr),
-  d_trans_mCharges(nullptr),
+  // d_trans_mPositions(nullptr),
+  // d_trans_mAppliedForces(nullptr),
+  // d_trans_mTotalForces(nullptr),
+  // d_trans_mMass(nullptr),
+  // d_trans_mCharges(nullptr),
   h_mLattice(nullptr),
   mBiasEnergy(0), mAtomsChanged(false),
   first_timestep(true), previous_NAMD_step(0),
@@ -589,24 +589,24 @@ void colvarproxy_impl::deallocateDeviceArrays() {
 }
 
 void colvarproxy_impl::allocateDeviceTransposeArrays() {
-  const int numAtoms = atoms_ids.size();
-  allocate_device<cvm::rvector>(&d_trans_mPositions, numAtoms);
-  allocate_device<cvm::rvector>(&d_trans_mAppliedForces, numAtoms);
-  if (mClient->requestedTotalForcesAtomsChanged()) {
-    allocate_device<cvm::rvector>(&d_trans_mTotalForces, numAtoms);
-  }
-  allocate_device<cvm::real>(&d_trans_mMass, numAtoms);
-  allocate_device<cvm::real>(&d_trans_mCharges, numAtoms);
+  // const int numAtoms = atoms_ids.size();
+  // allocate_device<cvm::rvector>(&d_trans_mPositions, numAtoms);
+  // allocate_device<cvm::rvector>(&d_trans_mAppliedForces, numAtoms);
+  // if (mClient->requestedTotalForcesAtomsChanged()) {
+  //   allocate_device<cvm::rvector>(&d_trans_mTotalForces, numAtoms);
+  // }
+  // allocate_device<cvm::real>(&d_trans_mMass, numAtoms);
+  // allocate_device<cvm::real>(&d_trans_mCharges, numAtoms);
 }
 
 void colvarproxy_impl::deallocateDeviceTransposeArrays() {
-  deallocate_device<cvm::rvector>(&d_trans_mPositions);
-  deallocate_device<cvm::rvector>(&d_trans_mAppliedForces);
-  if (mClient->requestedTotalForcesAtomsChanged()) {
-    deallocate_device<cvm::rvector>(&d_trans_mTotalForces);
-  }
-  deallocate_device<cvm::real>(&d_trans_mMass);
-  deallocate_device<cvm::real>(&d_trans_mCharges);
+  // deallocate_device<cvm::rvector>(&d_trans_mPositions);
+  // deallocate_device<cvm::rvector>(&d_trans_mAppliedForces);
+  // if (mClient->requestedTotalForcesAtomsChanged()) {
+  //   deallocate_device<cvm::rvector>(&d_trans_mTotalForces);
+  // }
+  // deallocate_device<cvm::real>(&d_trans_mMass);
+  // deallocate_device<cvm::real>(&d_trans_mCharges);
 }
 
 
@@ -665,8 +665,7 @@ void colvarproxy_impl::calculate() {
   }
   previous_NAMD_step = step;
   // Clear the previous applied forces
-  std::vector<cvm::rvector> &colvars_applied_force
-    = *(modify_atom_applied_forces());
+  auto &colvars_applied_force = *(modify_atom_applied_forces());
   // TODO: Why do I need to clean the applied forces manually?
   std::fill(colvars_applied_force.begin(),
             colvars_applied_force.end(),
@@ -679,23 +678,32 @@ void colvarproxy_impl::calculate() {
   // TODO: Colvars does not support GPU, so we have to copy the buffers manually
   const size_t numAtoms = atoms_ids.size();
   // Transform the arrays for Colvars
-  std::vector<cvm::atom_pos> &colvars_pos = *(modify_atom_positions());
-  transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
-  copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
+  auto &colvars_pos = *(modify_atom_positions());
+  // cvm::rvector* p_colvars_pos = colvars_pos.data();
+  // cudaPointerAttributes attr;
+  // cudaPointerGetAttributes(&attr, p_colvars_pos);
+  // iout << "ptr = " << p_colvars_pos << "\n" << endi;
+  // iout << "memory type = " << attr.type << "\n" << endi;
+  // iout << "device = " << attr.device << "\n" << endi;
+  // iout << "device pointer = " << attr.devicePointer << "\n" << endi;
+  // iout << "host pointer = " << attr.hostPointer << "\n" << endi;
+  transpose_to_host_rvector(d_mPositions, colvars_pos.data(), numAtoms, mStream);
+  // cudaCheck(cudaStreamSynchronize(mStream));
+  // copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
   if (mClient->requestedTotalForcesAtomsChanged()) {
-    std::vector<cvm::rvector> &colvars_total_force = *(modify_atom_total_forces());
-    transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
-    copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
+    auto &colvars_total_force = *(modify_atom_total_forces());
+    transpose_to_host_rvector(d_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
+    // copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
   }
   if (mClient->requestUpdateMasses()) {
-    std::vector<cvm::real> &colvars_mass = *(modify_atom_masses());
-    copy_float_to_host_double(d_mMass, d_trans_mMass, numAtoms, mStream);
-    copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
+    auto &colvars_mass = *(modify_atom_masses());
+    copy_float_to_host_double(d_mMass, colvars_mass.data(), numAtoms, mStream);
+    // copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
   }
   if (mClient->requestUpdateCharges()) {
-    std::vector<cvm::real> &colvars_charge  = *(modify_atom_charges());
-    copy_float_to_host_double(d_mCharges, d_trans_mCharges, numAtoms, mStream);
-    copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
+    auto &colvars_charge  = *(modify_atom_charges());
+    copy_float_to_host_double(d_mCharges, colvars_charge.data(), numAtoms, mStream);
+    // copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
   }
   if (mClient->requestUpdateLattice()) {
     copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
@@ -742,11 +750,14 @@ void colvarproxy_impl::calculate() {
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxRangePop();
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
-  copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
-  transpose_from_host_rvector(d_mAppliedForces, d_trans_mAppliedForces, numAtoms, mStream);
+  // Update applied forces
+  // copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
+  transpose_from_host_rvector(
+    d_mAppliedForces, colvars_applied_force.data(),
+    numAtoms, mStream);
   // NOTE: I think I can skip the syncrhonization here because this client
   //       share the same stream as the CudaGlobalMasterServer object
-  // cudaCheck(cudaStreamSynchronize(mStream));
+  cudaCheck(cudaStreamSynchronize(mStream));
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
   if (step == simParams->N) {
