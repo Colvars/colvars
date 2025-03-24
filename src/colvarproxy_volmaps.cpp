@@ -123,12 +123,12 @@ int colvarproxy_volmaps::compute_volmap(int /* flags */,
 void colvarproxy_volmaps::compute_rms_volmaps_applied_force()
 {
   volmaps_rms_applied_force_ =
-    compute_norm2_stats<cvm::real, 0, false>(volmaps_new_colvar_forces);
+    compute_norm2_stats<decltype(volmaps_new_colvar_forces), 0, false>(volmaps_new_colvar_forces);
 }
 
 
 void colvarproxy_volmaps::compute_max_volmaps_applied_force()
 {
   volmaps_max_applied_force_ =
-    compute_norm2_stats<cvm::real, 1, false>(volmaps_new_colvar_forces);
+    compute_norm2_stats<decltype(volmaps_new_colvar_forces), 1, false>(volmaps_new_colvar_forces);
 }
