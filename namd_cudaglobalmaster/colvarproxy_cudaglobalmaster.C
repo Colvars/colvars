@@ -10,6 +10,10 @@
 #include "colvarparse.h"
 #include "colvaratoms.h"
 
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+#include <nvtx3/nvToolsExt.h>
+#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+
 #if defined (__linux__) || defined (__APPLE__)
 extern "C" {
   CudaGlobalMasterColvars* allocator() {
@@ -158,6 +162,9 @@ private:
   const Molecule* molecule;
   CudaGlobalMasterColvars* mClient;
   int m_device_id;
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  nvtxEventAttributes_t mEventAttrib;
+#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
 };
 
 colvarproxy_impl::colvarproxy_impl(
@@ -174,6 +181,14 @@ colvarproxy_impl::colvarproxy_impl(
   mBiasEnergy(0), mAtomsChanged(false),
   first_timestep(true), previous_NAMD_step(0),
   simParams(s), molecule(m) {
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  mEventAttrib.version = NVTX_VERSION;
+  mEventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
+  mEventAttrib.colorType = NVTX_COLOR_ARGB;
+  mEventAttrib.color = 0xFF880000;
+  mEventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;
+  mEventAttrib.message.ascii = "Colvars CPU";
+#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
 }
 
 colvarproxy_impl::~colvarproxy_impl() {
@@ -712,6 +727,9 @@ void colvarproxy_impl::calculate() {
     }
   }
   // Run Colvars
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  nvtxRangePushEx(&mEventAttrib);
+#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   if (cvm::debug()) {
     print_input_atomic_data();
   }
@@ -721,7 +739,9 @@ void colvarproxy_impl::calculate() {
   if (cvm::debug()) {
     print_output_atomic_data();
   }
-  // Update applied forces
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  nvtxRangePop();
+#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
   transpose_from_host_rvector(d_mAppliedForces, d_trans_mAppliedForces, numAtoms, mStream);
   // NOTE: I think I can skip the syncrhonization here because this client
@@ -730,7 +750,13 @@ void colvarproxy_impl::calculate() {
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
   if (step == simParams->N) {
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  nvtxRangePushEx(&mEventAttrib);
+#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
     post_run();
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  nvtxRangePop();
+#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   }
   // Restore the GPU device
   cudaCheck(cudaSetDevice(savedDevice));

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 include(CheckIncludeFile)
 project(cudaglobalmastercolvars LANGUAGES CXX)
 
@@ -44,7 +44,7 @@ add_library(cudaglobalmastercolvars SHARED
             colvarproxy_cudaglobalmaster_kernel.cu
             ${COLVARS_SOURCES})
 target_include_directories(cudaglobalmastercolvars PUBLIC "${NAMD_HEADER_DIR}" PUBLIC "${COLVARS_SOURCE_DIR}" PUBLIC "${MOLFILE_PLUGIN_HEADER_DIR}")
-target_link_libraries(cudaglobalmastercolvars CUDA::cudart)
+target_link_libraries(cudaglobalmastercolvars CUDA::cudart CUDA::nvToolsExt)
 target_compile_options(cudaglobalmastercolvars PRIVATE -Wno-register)
 set_property(TARGET cudaglobalmastercolvars PROPERTY LANGUAGE CUDA)
 set_property(TARGET cudaglobalmastercolvars PROPERTY CUDA_ARCHITECTURES OFF)
