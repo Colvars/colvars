@@ -45,6 +45,11 @@ Please note that this documentation is only supported for the master branch, and
 #include <string>
 #include <vector>
 
+#if defined(COLVARS_CUDA)
+#include <iostream>
+#include <cuda_runtime.h>
+#endif
+
 class colvarparse;
 class colvar;
 class colvarbias;
@@ -82,6 +87,45 @@ public:
   {
     return patch_version_int;
   }
+
+#if defined(COLVARS_CUDA)
+  template <typename T>
+  class CudaHostAllocator {
+  public:
+    using value_type = T;
+
+    CudaHostAllocator() = default;
+
+    template<typename U>
+    constexpr CudaHostAllocator(const CudaHostAllocator<U>&) noexcept {}
+
+    friend bool operator==(const CudaHostAllocator&, const CudaHostAllocator&) { return true; }
+    friend bool operator!=(const CudaHostAllocator&, const CudaHostAllocator&) { return false; }
+
+    T* allocate(size_t n) {
+      T* ptr;
+      if (cudaHostAlloc(&ptr, n * sizeof(T), cudaHostAllocMapped) != cudaSuccess) {
+        // std::cerr << "BAD ALLOC!" << std::endl;
+        throw std::bad_alloc();
+      }
+      // std::cerr << "CudaHostAllocator: allocate at " << ptr << std::endl;
+      return ptr;
+    }
+    void deallocate(T* ptr, size_t n) noexcept {
+      // TODO: Should I throw if it does not return cudaSuccess
+      cudaFreeHost(&ptr);
+    }
+    template<typename U, typename... Args>
+    void construct(U* p, Args&&... args) {
+        new(p) U(std::forward<Args>(args)...);
+    }
+
+    template<typename U>
+    void destroy(U* p) noexcept {
+        p->~U();
+    }
+  };
+#endif
 
 private:
 
@@ -687,6 +731,13 @@ public:
   /// Convert to string for output purposes
   static std::string to_str(std::vector<std::string> const &x,
                             size_t width = 0, size_t prec = 0);
+
+#if defined(COLVARS_CUDA)
+  static std::string to_str(std::vector<rvector, CudaHostAllocator<rvector>> const &x,
+                            size_t width = 0, size_t prec = 0);
+  static std::string to_str(std::vector<real, CudaHostAllocator<real>> const &x,
+                            size_t width = 0, size_t prec = 0);
+#endif
 
 
   /// Reduce the number of characters in a string
