@@ -105,15 +105,12 @@ public:
     T* allocate(size_t n) {
       T* ptr;
       if (cudaHostAlloc(&ptr, n * sizeof(T), cudaHostAllocMapped) != cudaSuccess) {
-        // std::cerr << "BAD ALLOC!" << std::endl;
         throw std::bad_alloc();
       }
-      // std::cerr << "CudaHostAllocator: allocate at " << ptr << std::endl;
       return ptr;
     }
     void deallocate(T* ptr, size_t n) noexcept {
-      // TODO: Should I throw if it does not return cudaSuccess
-      cudaFreeHost(&ptr);
+      cudaFreeHost(ptr);
     }
     template<typename U, typename... Args>
     void construct(U* p, Args&&... args) {
