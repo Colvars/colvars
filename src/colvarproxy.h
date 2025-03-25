@@ -44,6 +44,16 @@ class colvarproxy_atoms {
 
 public:
 
+#if defined(COLVARS_CUDA)
+  template <typename T>
+  using allocator_type = cvm::CudaHostAllocator<T>;
+#else
+  template <typename T>
+  using allocator_type = std::allocator<T>;
+#endif
+  using real_vector_t = std::vector<cvm::real, allocator_type<cvm::real>>;
+  using rvector_vector_t = std::vector<cvm::rvector, allocator_type<cvm::rvector>>;
+
   /// Constructor
   colvarproxy_atoms();
 
@@ -139,7 +149,7 @@ public:
     return cvm::rvector(0.0);
   }
 
-  inline auto const *get_atom_ids() const
+  inline std::vector<int> const *get_atom_ids() const
   {
     return &atoms_ids;
   }
@@ -147,56 +157,56 @@ public:
   /// Return number of atoms with positive reference count
   size_t get_num_active_atoms() const;
 
-  inline auto const *get_atom_masses() const
+  inline real_vector_t const *get_atom_masses() const
   {
     return &atoms_masses;
   }
 
-  inline auto *modify_atom_masses()
+  inline real_vector_t *modify_atom_masses()
   {
     // assume that we are requesting masses to change them
     updated_masses_ = true;
     return &atoms_masses;
   }
 
-  inline auto const *get_atom_charges()
+  inline real_vector_t const *get_atom_charges()
   {
     return &atoms_charges;
   }
 
-  inline auto *modify_atom_charges()
+  inline real_vector_t *modify_atom_charges()
   {
     // assume that we are requesting charges to change them
     updated_charges_ = true;
     return &atoms_charges;
   }
 
-  inline auto const *get_atom_positions() const
+  inline rvector_vector_t const *get_atom_positions() const
   {
     return &atoms_positions;
   }
 
-  inline auto *modify_atom_positions()
+  inline rvector_vector_t *modify_atom_positions()
   {
     return &atoms_positions;
   }
 
-  inline auto const *get_atom_total_forces() const
+  inline rvector_vector_t const *get_atom_total_forces() const
   {
     return &atoms_total_forces;
   }
 
-  inline auto *modify_atom_total_forces()
+  inline rvector_vector_t *modify_atom_total_forces()
   {
     return &atoms_total_forces;
   }
 
-  inline auto const *get_atom_applied_forces() const
+  inline rvector_vector_t const *get_atom_applied_forces() const
   {
     return &atoms_new_colvar_forces;
   }
 
-  inline auto *modify_atom_applied_forces()
+  inline rvector_vector_t *modify_atom_applied_forces()
   {
     return &atoms_new_colvar_forces;
   }
@@ -248,14 +258,6 @@ public:
   {
     return updated_charges_;
   }
-
-#if defined(COLVARS_CUDA)
-  template <typename T>
-  using allocator_type = cvm::CudaHostAllocator<T>;
-#else
-  template <typename T>
-  using allocator_type = std::allocator<T>;
-#endif
 
 protected:
 
