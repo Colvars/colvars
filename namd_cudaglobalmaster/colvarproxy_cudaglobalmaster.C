@@ -131,6 +131,7 @@ public:
                       std::string const &pdb_field,
                       double const pdb_field_value) override;
   void calculate();
+  void onBuffersUpdated();
   void update_atom_properties(int index);
   friend class CudaGlobalMasterColvars;
 private:
@@ -634,6 +635,57 @@ int colvarproxy_impl::replica_comm_send(char* msg_data, int msg_len, int dest_re
   return mClient->replica_comm_send(msg_data, msg_len, dest_rep);
 }
 
+void colvarproxy_impl::onBuffersUpdated() {
+  // Clear the previous applied forces
+  auto &colvars_applied_force = *(modify_atom_applied_forces());
+  // TODO: Why do I need to clean the applied forces manually?
+  std::fill(colvars_applied_force.begin(),
+            colvars_applied_force.end(),
+            cvm::rvector(0, 0, 0));
+  // Clear the previous bias energy
+  mBiasEnergy = 0;
+  int savedDevice;
+  cudaCheck(cudaGetDevice(&savedDevice));
+  cudaCheck(cudaSetDevice(m_device_id));
+  // TODO: Colvars does not support GPU, so we have to copy the buffers manually
+  const size_t numAtoms = atoms_ids.size();
+  // Transform the arrays for Colvars
+  auto &colvars_pos = *(modify_atom_positions());
+  // cvm::rvector* p_colvars_pos = colvars_pos.data();
+  // cudaPointerAttributes attr;
+  // cudaPointerGetAttributes(&attr, p_colvars_pos);
+  // iout << "ptr = " << p_colvars_pos << "\n" << endi;
+  // iout << "memory type = " << attr.type << "\n" << endi;
+  // iout << "device = " << attr.device << "\n" << endi;
+  // iout << "device pointer = " << attr.devicePointer << "\n" << endi;
+  // iout << "host pointer = " << attr.hostPointer << "\n" << endi;
+  transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
+  // cudaCheck(cudaStreamSynchronize(mStream));
+  copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
+  if (mClient->requestedTotalForcesAtomsChanged()) {
+    auto &colvars_total_force = *(modify_atom_total_forces());
+    transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
+    copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
+  }
+  if (mClient->requestUpdateMasses()) {
+    auto &colvars_mass = *(modify_atom_masses());
+    copy_float_to_host_double(d_mMass, d_trans_mMass, numAtoms, mStream);
+    copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
+  }
+  if (mClient->requestUpdateCharges()) {
+    auto &colvars_charge  = *(modify_atom_charges());
+    copy_float_to_host_double(d_mCharges, d_trans_mCharges, numAtoms, mStream);
+    copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
+  }
+  if (mClient->requestUpdateLattice()) {
+    copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+  }
+  // Synchronize the stream to make sure the host buffers are ready
+  cudaCheck(cudaStreamSynchronize(mStream));
+  // Restore the GPU device
+  cudaCheck(cudaSetDevice(savedDevice));
+}
+
 void colvarproxy_impl::calculate() {
   const int64_t step = mClient->getStep();
   if (first_timestep) {
@@ -655,7 +707,6 @@ void colvarproxy_impl::calculate() {
       // The internal counter is not incremented, and the objects are made
       // aware of this via the following flag
       b_simulation_continuing = true;
-
       // Update NAMD output and restart prefixes
       colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
       colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
@@ -664,44 +715,6 @@ void colvarproxy_impl::calculate() {
     }
   }
   previous_NAMD_step = step;
-  // Clear the previous applied forces
-  std::vector<cvm::rvector> &colvars_applied_force
-    = *(modify_atom_applied_forces());
-  // TODO: Why do I need to clean the applied forces manually?
-  std::fill(colvars_applied_force.begin(),
-            colvars_applied_force.end(),
-            cvm::rvector(0, 0, 0));
-  // Clear the previous bias energy
-  mBiasEnergy = 0;
-  int savedDevice;
-  cudaCheck(cudaGetDevice(&savedDevice));
-  cudaCheck(cudaSetDevice(m_device_id));
-  // TODO: Colvars does not support GPU, so we have to copy the buffers manually
-  const size_t numAtoms = atoms_ids.size();
-  // Transform the arrays for Colvars
-  std::vector<cvm::atom_pos> &colvars_pos = *(modify_atom_positions());
-  transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
-  copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
-  if (mClient->requestedTotalForcesAtomsChanged()) {
-    std::vector<cvm::rvector> &colvars_total_force = *(modify_atom_total_forces());
-    transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
-    copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
-  }
-  if (mClient->requestUpdateMasses()) {
-    std::vector<cvm::real> &colvars_mass = *(modify_atom_masses());
-    copy_float_to_host_double(d_mMass, d_trans_mMass, numAtoms, mStream);
-    copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
-  }
-  if (mClient->requestUpdateCharges()) {
-    std::vector<cvm::real> &colvars_charge  = *(modify_atom_charges());
-    copy_float_to_host_double(d_mCharges, d_trans_mCharges, numAtoms, mStream);
-    copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
-  }
-  if (mClient->requestUpdateLattice()) {
-    copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
-  }
-  // Synchronize the stream to make sure the host buffers are ready
-  cudaCheck(cudaStreamSynchronize(mStream));
   if (mClient->requestUpdateLattice()) {
     unit_cell_x.set(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
     unit_cell_y.set(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
@@ -742,8 +755,16 @@ void colvarproxy_impl::calculate() {
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxRangePop();
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  // Update applied forces
+  const size_t numAtoms = atoms_ids.size();
+  int savedDevice;
+  cudaCheck(cudaGetDevice(&savedDevice));
+  cudaCheck(cudaSetDevice(m_device_id));
+  auto &colvars_applied_force = *(modify_atom_applied_forces());
   copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
-  transpose_from_host_rvector(d_mAppliedForces, d_trans_mAppliedForces, numAtoms, mStream);
+  transpose_from_host_rvector(
+    d_mAppliedForces, d_trans_mAppliedForces,
+    numAtoms, mStream);
   // NOTE: I think I can skip the syncrhonization here because this client
   //       share the same stream as the CudaGlobalMasterServer object
   // cudaCheck(cudaStreamSynchronize(mStream));
@@ -957,4 +978,8 @@ double* CudaGlobalMasterColvars::getLattice() {
 
 const std::vector<AtomID>& CudaGlobalMasterColvars::getRequestedAtoms() const {
   return *(mImpl->get_atom_ids());
+}
+
+void CudaGlobalMasterColvars::onBuffersUpdated() {
+  mImpl->onBuffersUpdated();
 }

@@ -2360,7 +2360,7 @@ template<typename T> std::string _to_str(T const &x,
 }
 
 
-template<typename T> std::string _to_str_vector(std::vector<T> const &x,
+template<typename T> std::string _to_str_vector(T const &x,
                                                 size_t width, size_t prec)
 {
   if (!x.size()) return std::string("");
@@ -2463,50 +2463,64 @@ std::string colvarmodule::to_str(cvm::matrix2d<cvm::real> const &x,
 std::string colvarmodule::to_str(std::vector<int> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<int>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<size_t> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<size_t>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<long int> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<long int>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<cvm::real> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<cvm::real>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<cvm::rvector> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<cvm::rvector>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<cvm::quaternion> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<cvm::quaternion>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<colvarvalue> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<colvarvalue>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<std::string> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<std::string>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
+
+#if defined(COLVARS_CUDA)
+std::string colvarmodule::to_str(std::vector<cvm::real, CudaHostAllocator<cvm::real>> const &x,
+                                 size_t width, size_t prec)
+{
+  return _to_str_vector(x, width, prec);
+}
+
+std::string colvarmodule::to_str(std::vector<cvm::rvector, CudaHostAllocator<cvm::rvector>> const &x,
+                                 size_t width, size_t prec)
+{
+  return _to_str_vector(x, width, prec);
+}
+#endif
 
 
 std::string cvm::wrap_string(std::string const &s, size_t nchars)

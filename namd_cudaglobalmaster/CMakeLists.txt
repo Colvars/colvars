@@ -36,14 +36,14 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 endif()
 
-add_definitions(-DNAMD_CUDA -DNODEGROUP_FORCE_REGISTER)
+add_definitions(-DNAMD_CUDA -DNODEGROUP_FORCE_REGISTER -DCOLVARS_CUDA)
 add_library(cudaglobalmastercolvars SHARED
             colvarproxy_cudaglobalmaster.h
             colvarproxy_cudaglobalmaster.C
             colvarproxy_cudaglobalmaster_kernel.h
             colvarproxy_cudaglobalmaster_kernel.cu
             ${COLVARS_SOURCES})
-target_include_directories(cudaglobalmastercolvars PUBLIC "${NAMD_HEADER_DIR}" PUBLIC "${COLVARS_SOURCE_DIR}" PUBLIC "${MOLFILE_PLUGIN_HEADER_DIR}")
+target_include_directories(cudaglobalmastercolvars PUBLIC "${COLVARS_SOURCE_DIR}" PUBLIC "${NAMD_HEADER_DIR}" PUBLIC "${MOLFILE_PLUGIN_HEADER_DIR}")
 target_link_libraries(cudaglobalmastercolvars CUDA::cudart CUDA::nvToolsExt)
 target_compile_options(cudaglobalmastercolvars PRIVATE -Wno-register)
 set_property(TARGET cudaglobalmastercolvars PROPERTY LANGUAGE CUDA)
