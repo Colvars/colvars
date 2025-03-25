@@ -267,6 +267,7 @@ void FixColvars::init()
   if (init_flag) return;
   init_flag = 1;
 
+#if defined(COLVARS_MPI)
   if (universe->nworlds > 1) {
     // create inter root communicator
     int color = 1;
@@ -278,6 +279,7 @@ void FixColvars::init()
       proxy->set_replicas_mpi_communicator(root2root);
     }
   }
+#endif
 }
 
 
