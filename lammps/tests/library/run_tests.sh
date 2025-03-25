@@ -234,6 +234,9 @@ for dir in ${DIRLIST} ; do
       # Do not try comparing binary state files, they will never match anyway
       continue
     fi
+    if [ ${base} != ${base%.out} ] ; then
+      continue
+    fi
     if [ "${base}" != "${base%.traj}" ] ; then
       # System force is now total force
       sed 's/fs_/ft_/g' < ${base} > ${TMPDIR}/${base}
