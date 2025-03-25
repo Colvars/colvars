@@ -17,6 +17,7 @@ public:
   CudaGlobalMasterColvars();
   virtual ~CudaGlobalMasterColvars();
   void initialize(const std::vector<std::string>& arguments, int deviceID, cudaStream_t stream) override;
+  void onBuffersUpdated() override;
   void calculate() override;
   cudaStream_t getStream() override;
   bool requestedAtomsChanged() override;
