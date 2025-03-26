@@ -2,9 +2,8 @@ cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 include(CheckIncludeFile)
 project(cudaglobalmastercolvars LANGUAGES CXX)
 
-find_package(CUDAToolkit)
-# find_package(Torch REQUIRED)
-
+option(NAMD_TCL "If your NAMD is built with TCL, use ON" ON)
+option(NAMD_NVTX_ENABLED "If your NAMD is built with -DNAMD_NVTX_ENABLED, use ON" OFF)
 set(NAMD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." CACHE STRING "NAMD source code directory")
 set(NAMD_HEADER_DIR "${NAMD_DIR}/src" CACHE STRING "NAMD header directory")
 set(MOLFILE_PLUGIN_HEADER_DIR "${NAMD_DIR}/plugins/include" CACHE STRING "Molfile plugin header directory")
@@ -27,6 +26,7 @@ endif()
 
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/[^.]*.cpp)
 
+find_package(CUDAToolkit)
 include(CheckLanguage)
 check_language(CUDA)
 enable_language(CUDA)
@@ -34,6 +34,16 @@ enable_language(CUDA)
 if(NOT DEFINED CMAKE_CUDA_STANDARD)
   set(CMAKE_CUDA_STANDARD 17)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+endif()
+
+if(NAMD_TCL)
+  message(STATUS "add -DNAMD_TCL to compiler flags")
+  add_definitions(-DNAMD_TCL)
+endif()
+
+if(NAMD_NVTX_ENABLED)
+  message(STATUS "add -DNAMD_NVTX_ENABLED and -DCUDAGLOBALMASTERCOLVARS_CUDA_PROFILING to compiler flags")
+  add_definitions(-DNAMD_NVTX_ENABLED -DCUDAGLOBALMASTERCOLVARS_CUDA_PROFILING)
 endif()
 
 add_definitions(-DNAMD_CUDA -DNODEGROUP_FORCE_REGISTER -DCOLVARS_CUDA)

@@ -9,6 +9,7 @@
 #include "PDB.h"
 #include "colvarparse.h"
 #include "colvaratoms.h"
+#include "ScriptTcl.h"
 
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
 #include <nvtx3/nvToolsExt.h>
@@ -91,7 +92,7 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
 
 class colvarproxy_impl: public colvarproxy {
 public:
-  colvarproxy_impl(const SimParameters* s, const Molecule* m);
+  colvarproxy_impl(const SimParameters* s, const Molecule* m, ScriptTcl* t);
   virtual ~colvarproxy_impl();
   void add_energy(cvm::real energy) override { mBiasEnergy += energy; }
   void log(std::string const &message) override;
@@ -133,6 +134,18 @@ public:
   void calculate();
   void onBuffersUpdated();
   void update_atom_properties(int index);
+  void init_tcl_pointers() override {
+#ifdef NAMD_TCL
+    // Store pointer to NAMD's Tcl interpreter
+    if (mScriptTcl != nullptr) {
+      set_tcl_interp(mScriptTcl->get_tcl_interp());
+    } else {
+      colvarproxy::init_tcl_pointers();
+    }
+#else
+    colvarproxy::init_tcl_pointers(); // Create dedicated interpreter
+#endif
+  }
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
@@ -162,6 +175,7 @@ private:
   const SimParameters* simParams;
   const Molecule* molecule;
   CudaGlobalMasterColvars* mClient;
+  ScriptTcl* mScriptTcl;
   int m_device_id;
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxEventAttributes_t mEventAttrib;
@@ -169,7 +183,7 @@ private:
 };
 
 colvarproxy_impl::colvarproxy_impl(
-  const SimParameters* s, const Molecule* m): colvarproxy(),
+  const SimParameters* s, const Molecule* m, ScriptTcl* t): colvarproxy(),
   d_mPositions(nullptr), d_mAppliedForces(nullptr),
   d_mTotalForces(nullptr), d_mLattice(nullptr),
   d_mMass(nullptr), d_mCharges(nullptr),
@@ -181,7 +195,7 @@ colvarproxy_impl::colvarproxy_impl(
   h_mLattice(nullptr),
   mBiasEnergy(0), mAtomsChanged(false),
   first_timestep(true), previous_NAMD_step(0),
-  simParams(s), molecule(m) {
+  simParams(s), molecule(m), mScriptTcl(t) {
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   mEventAttrib.version = NVTX_VERSION;
   mEventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
@@ -895,7 +909,8 @@ CudaGlobalMasterColvars::CudaGlobalMasterColvars():
 {
   mImpl = std::make_unique<colvarproxy_impl>(
     CudaGlobalMasterClient::getSimParameters(),
-    CudaGlobalMasterClient::getMolecule());
+    CudaGlobalMasterClient::getMolecule(),
+    CudaGlobalMasterClient::getScript());
 }
 
 CudaGlobalMasterColvars::~CudaGlobalMasterColvars() {}
