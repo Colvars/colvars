@@ -10,6 +10,7 @@
 #include "colvarparse.h"
 #include "colvaratoms.h"
 #include "ScriptTcl.h"
+#include "colvarscript.h"
 
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
 #include <nvtx3/nvToolsExt.h>
@@ -997,4 +998,33 @@ const std::vector<AtomID>& CudaGlobalMasterColvars::getRequestedAtoms() const {
 
 void CudaGlobalMasterColvars::onBuffersUpdated() {
   mImpl->onBuffersUpdated();
+}
+
+int CudaGlobalMasterColvars::updateFromTCLCommand(const std::vector<std::string>& arguments) {
+  // Prepare the arguments
+  const int objc = arguments.size();
+  unsigned char** objv = new unsigned char*[objc];
+  for (int i = 0; i < objc; ++i) {
+    const int len = std::strlen(arguments[i].c_str());
+    objv[i] = new unsigned char[len + 1];
+    std::strncpy(reinterpret_cast<char*>(objv[i]),
+                 arguments[i].c_str(), len + 1);
+    objv[i][len] = '\0';
+  }
+  // Call Colvars scripting interface
+  int error_code = TCL_ERROR;
+  mTCLResult.clear();
+  if (mImpl->script) {
+    // objv[0] is the name of this client
+    if (COLVARSCRIPT_OK == mImpl->script->run(objc-1, objv+1)) {
+      error_code = TCL_OK;
+      mTCLResult = mImpl->get_error_msgs() + mImpl->script->str_result();
+    }
+  }
+  // Cleanups
+  for (int i = 0; i < objc; ++i) {
+    delete[] objv[i];
+  }
+  delete[] objv;
+  return error_code;
 }
