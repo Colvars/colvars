@@ -11,12 +11,15 @@ class Lattice;
 
 class colvarproxy_impl;
 
+using CudaGlobalMasterClient = CudaGlobalMaster::CudaGlobalMasterClient;
+
 // NOTE: Don't inherit from both CudaGlobalMasterClient and colvarproxy!
 class CudaGlobalMasterColvars: public CudaGlobalMasterClient {
 public:
   CudaGlobalMasterColvars();
   virtual ~CudaGlobalMasterColvars();
   void initialize(const std::vector<std::string>& arguments, int deviceID, cudaStream_t stream) override;
+  int updateFromTCLCommand(const std::vector<std::string>& arguments) override;
   void onBuffersUpdated() override;
   void calculate() override;
   cudaStream_t getStream() override;
@@ -60,9 +63,11 @@ public:
     return CudaGlobalMasterClient::replica_comm_send(msg_data, msg_len, dest_rep);
   }
   int64_t getStep() const {return m_step;}
+  std::string getTCLUpdateResult() override {return mTCLResult;}
 private:
   std::unique_ptr<colvarproxy_impl> mImpl;
   std::vector<AtomID> mEmpty;
+  std::string mTCLResult;
 };
 
 #endif // COLVARPROXY_CUDAGLOBALMASTER_H
