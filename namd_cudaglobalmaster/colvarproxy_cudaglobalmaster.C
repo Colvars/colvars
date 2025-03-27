@@ -147,6 +147,7 @@ public:
     colvarproxy::init_tcl_pointers(); // Create dedicated interpreter
 #endif
   }
+  int reset() override;
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
@@ -210,6 +211,13 @@ colvarproxy_impl::colvarproxy_impl(
 colvarproxy_impl::~colvarproxy_impl() {
   deallocateDeviceArrays();
   deallocateDeviceTransposeArrays();
+}
+
+int colvarproxy_impl::reset() {
+  deallocateDeviceArrays();
+  deallocateDeviceTransposeArrays();
+  mAtomsChanged = true;
+  return colvarproxy::reset();
 }
 
 int colvarproxy_impl::setup() {
@@ -664,36 +672,38 @@ void colvarproxy_impl::onBuffersUpdated() {
   cudaCheck(cudaSetDevice(m_device_id));
   // TODO: Colvars does not support GPU, so we have to copy the buffers manually
   const size_t numAtoms = atoms_ids.size();
-  // Transform the arrays for Colvars
-  auto &colvars_pos = *(modify_atom_positions());
-  // cvm::rvector* p_colvars_pos = colvars_pos.data();
-  // cudaPointerAttributes attr;
-  // cudaPointerGetAttributes(&attr, p_colvars_pos);
-  // iout << "ptr = " << p_colvars_pos << "\n" << endi;
-  // iout << "memory type = " << attr.type << "\n" << endi;
-  // iout << "device = " << attr.device << "\n" << endi;
-  // iout << "device pointer = " << attr.devicePointer << "\n" << endi;
-  // iout << "host pointer = " << attr.hostPointer << "\n" << endi;
-  transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
-  // cudaCheck(cudaStreamSynchronize(mStream));
-  copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
-  if (mClient->requestedTotalForcesAtomsChanged()) {
-    auto &colvars_total_force = *(modify_atom_total_forces());
-    transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
-    copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
-  }
-  if (mClient->requestUpdateMasses()) {
-    auto &colvars_mass = *(modify_atom_masses());
-    copy_float_to_host_double(d_mMass, d_trans_mMass, numAtoms, mStream);
-    copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
-  }
-  if (mClient->requestUpdateCharges()) {
-    auto &colvars_charge  = *(modify_atom_charges());
-    copy_float_to_host_double(d_mCharges, d_trans_mCharges, numAtoms, mStream);
-    copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
-  }
-  if (mClient->requestUpdateLattice()) {
-    copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+  if (numAtoms > 0) {
+    // Transform the arrays for Colvars
+    auto &colvars_pos = *(modify_atom_positions());
+    // cvm::rvector* p_colvars_pos = colvars_pos.data();
+    // cudaPointerAttributes attr;
+    // cudaPointerGetAttributes(&attr, p_colvars_pos);
+    // iout << "ptr = " << p_colvars_pos << "\n" << endi;
+    // iout << "memory type = " << attr.type << "\n" << endi;
+    // iout << "device = " << attr.device << "\n" << endi;
+    // iout << "device pointer = " << attr.devicePointer << "\n" << endi;
+    // iout << "host pointer = " << attr.hostPointer << "\n" << endi;
+    transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
+    // cudaCheck(cudaStreamSynchronize(mStream));
+    copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
+    if (mClient->requestedTotalForcesAtomsChanged()) {
+      auto &colvars_total_force = *(modify_atom_total_forces());
+      transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
+      copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
+    }
+    if (mClient->requestUpdateMasses()) {
+      auto &colvars_mass = *(modify_atom_masses());
+      copy_float_to_host_double(d_mMass, d_trans_mMass, numAtoms, mStream);
+      copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
+    }
+    if (mClient->requestUpdateCharges()) {
+      auto &colvars_charge  = *(modify_atom_charges());
+      copy_float_to_host_double(d_mCharges, d_trans_mCharges, numAtoms, mStream);
+      copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
+    }
+    if (mClient->requestUpdateLattice()) {
+      copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+    }
   }
   // Synchronize the stream to make sure the host buffers are ready
   cudaCheck(cudaStreamSynchronize(mStream));
@@ -776,10 +786,12 @@ void colvarproxy_impl::calculate() {
   cudaCheck(cudaGetDevice(&savedDevice));
   cudaCheck(cudaSetDevice(m_device_id));
   auto &colvars_applied_force = *(modify_atom_applied_forces());
-  copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
-  transpose_from_host_rvector(
-    d_mAppliedForces, d_trans_mAppliedForces,
-    numAtoms, mStream);
+  if (numAtoms > 0) {
+    copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
+    transpose_from_host_rvector(
+      d_mAppliedForces, d_trans_mAppliedForces,
+      numAtoms, mStream);
+  }
   // NOTE: I think I can skip the syncrhonization here because this client
   //       share the same stream as the CudaGlobalMasterServer object
   // cudaCheck(cudaStreamSynchronize(mStream));
