@@ -43,7 +43,8 @@
 #include "colvarscript.h"
 
 
-colvarproxy_namd::colvarproxy_namd()
+colvarproxy_namd::colvarproxy_namd(GlobalMaster *gm)
+  : gm_(gm)
 {
   engine_name_ = "NAMD";
 #if CMK_SMP && USE_CKLOOP
@@ -53,13 +54,13 @@ colvarproxy_namd::colvarproxy_namd()
   version_int = get_version_from_string(COLVARPROXY_VERSION);
 #if CMK_TRACE_ENABLED
   if ( 0 == CkMyPe() ) {
-    traceRegisterUserEvent("GM COLVAR item", GLOBAL_MASTER_CKLOOP_CALC_ITEM);
-    traceRegisterUserEvent("GM COLVAR bias", GLOBAL_MASTER_CKLOOP_CALC_BIASES );
-    traceRegisterUserEvent("GM COLVAR scripted bias", GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES );
+    gm_->traceRegisterUserEvent("GM COLVAR item", GLOBAL_MASTER_CKLOOP_CALC_ITEM);
+    gm_->traceRegisterUserEvent("GM COLVAR bias", GLOBAL_MASTER_CKLOOP_CALC_BIASES );
+    gm_->traceRegisterUserEvent("GM COLVAR scripted bias", GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES );
   }
 #endif
   first_timestep = true;
-  requestTotalForce(total_force_requested);
+  gm_->requestTotalForce(total_force_requested);
 
   boltzmann_ = 0.001987191;
 
@@ -218,7 +219,7 @@ int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
       // add it here anyway to avoid having to test for array boundaries at each step
       int const index = add_atom_slot(*a_i);
       atoms_map[*a_i] = index;
-      modifyRequestedAtoms().add(*a_i);
+      gm_->modifyRequestedAtoms().add(*a_i);
       update_atom_properties(index);
     }
   }
@@ -263,8 +264,8 @@ int colvarproxy_namd::setup()
   }
 
   size_t n_group_atoms = 0;
-  for (int ig = 0; ig < modifyRequestedGroups().size(); ig++) {
-    n_group_atoms += modifyRequestedGroups()[ig].size();
+  for (int ig = 0; ig < gm_->modifyRequestedGroups().size(); ig++) {
+    n_group_atoms += gm_->modifyRequestedGroups()[ig].size();
   }
 
   log("updating group data ("+cvm::to_str(atom_groups_ids.size())+
@@ -272,7 +273,7 @@ int colvarproxy_namd::setup()
       cvm::to_str(n_group_atoms)+" atoms in total).\n");
 
   // Note: groupMassBegin, groupMassEnd may be used here, but they won't work for charges
-  for (int ig = 0; ig < modifyRequestedGroups().size(); ig++) {
+  for (int ig = 0; ig < gm_->modifyRequestedGroups().size(); ig++) {
 
     // update mass and charge
     update_group_properties(ig);
@@ -285,7 +286,7 @@ int colvarproxy_namd::setup()
 #if NAMD_VERSION_NUMBER >= 34471681
   log("updating grid object data ("+cvm::to_str(volmaps_ids.size())+
       " grid objects in total).\n");
-  for (int imap = 0; imap < modifyGridObjForces().size(); imap++) {
+  for (int imap = 0; imap < gm_->modifyGridObjForces().size(); imap++) {
     volmaps_new_colvar_forces[imap] = 0.0;
   }
 #endif
@@ -319,19 +320,19 @@ int colvarproxy_namd::reset()
   int error_code = COLVARS_OK;
 
   // Unrequest all positions, total forces, etc from NAMD
-  modifyRequestedAtoms().clear();
-  modifyForcedAtoms().clear();
-  modifyAppliedForces().clear();
+  gm_->modifyRequestedAtoms().clear();
+  gm_->modifyForcedAtoms().clear();
+  gm_->modifyAppliedForces().clear();
 
-  modifyRequestedGroups().clear();
-  modifyGroupForces().clear();
+  gm_->modifyRequestedGroups().clear();
+  gm_->modifyGroupForces().clear();
 
 #if NAMD_VERSION_NUMBER >= 34471681
-  modifyRequestedGridObjects().clear();
-  modifyGridObjForces().clear();
+  gm_->modifyRequestedGridObjects().clear();
+  gm_->modifyGridObjForces().clear();
 #endif
 
-  requestTotalForce(false);
+  gm_->requestTotalForce(false);
 
   atoms_map.clear();
 
@@ -345,6 +346,8 @@ int colvarproxy_namd::reset()
 void colvarproxy_namd::calculate()
 {
   errno = 0;
+
+  auto const step = gm_->step;
 
   if (first_timestep) {
 
@@ -386,6 +389,8 @@ void colvarproxy_namd::calculate()
   previous_NAMD_step = step;
   if (accelMDOn) update_accelMD_info();
 
+  auto *lattice = gm_->lattice;
+
   {
     Vector const a = lattice->a();
     Vector const b = lattice->b();
@@ -418,17 +423,17 @@ void colvarproxy_namd::calculate()
   // must delete the forces applied at the previous step: we can do
   // that because they have already been used and copied to other
   // memory locations
-  modifyForcedAtoms().clear();
-  modifyAppliedForces().clear();
+  gm_->modifyForcedAtoms().clear();
+  gm_->modifyAppliedForces().clear();
 
   // If new atomic positions or forces have been requested by other
   // GlobalMaster objects, add these to the atom map as well
   size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
   if ( (atoms_map.size() != n_all_atoms) ||
-       (int(atoms_ids.size()) < (getAtomIdEnd() - getAtomIdBegin())) ||
-       (int(atoms_ids.size()) < (getForceIdEnd() - getForceIdBegin())) ) {
-    update_atoms_map(getAtomIdBegin(), getAtomIdEnd());
-    update_atoms_map(getForceIdBegin(), getForceIdEnd());
+       (int(atoms_ids.size()) < (gm_->getAtomIdEnd() - gm_->getAtomIdBegin())) ||
+       (int(atoms_ids.size()) < (gm_->getForceIdEnd() - gm_->getForceIdBegin())) ) {
+    update_atoms_map(gm_->getAtomIdBegin(), gm_->getAtomIdEnd());
+    update_atoms_map(gm_->getForceIdBegin(), gm_->getForceIdEnd());
   }
 
   // prepare local arrays
@@ -454,9 +459,9 @@ void colvarproxy_namd::calculate()
       cvm::log("Updating positions arrays.\n");
     }
     size_t n_positions = 0;
-    AtomIDList::const_iterator a_i = getAtomIdBegin();
-    AtomIDList::const_iterator a_e = getAtomIdEnd();
-    PositionList::const_iterator p_i = getAtomPositionBegin();
+    AtomIDList::const_iterator a_i = gm_->getAtomIdBegin();
+    AtomIDList::const_iterator a_e = gm_->getAtomIdEnd();
+    PositionList::const_iterator p_i = gm_->getAtomPositionBegin();
 
     for ( ; a_i != a_e; ++a_i, ++p_i ) {
       atoms_positions[atoms_map[*a_i]] = cvm::rvector((*p_i).x, (*p_i).y, (*p_i).z);
@@ -479,9 +484,9 @@ void colvarproxy_namd::calculate()
         cvm::log("Updating total forces arrays.\n");
       }
       size_t n_total_forces = 0;
-      AtomIDList::const_iterator a_i = getForceIdBegin();
-      AtomIDList::const_iterator a_e = getForceIdEnd();
-      ForceList::const_iterator f_i = getTotalForce();
+      AtomIDList::const_iterator a_i = gm_->getForceIdBegin();
+      AtomIDList::const_iterator a_e = gm_->getForceIdEnd();
+      ForceList::const_iterator f_i = gm_->getTotalForce();
 
       for ( ; a_i != a_e; ++a_i, ++f_i ) {
         atoms_total_forces[atoms_map[*a_i]] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
@@ -502,8 +507,8 @@ void colvarproxy_namd::calculate()
       if (cvm::debug()) {
         cvm::log("Updating group total forces arrays.\n");
       }
-      ForceList::const_iterator f_i = getGroupTotalForceBegin();
-      ForceList::const_iterator f_e = getGroupTotalForceEnd();
+      ForceList::const_iterator f_i = gm_->getGroupTotalForceBegin();
+      ForceList::const_iterator f_e = gm_->getGroupTotalForceEnd();
       size_t i = 0;
       if ( (! b_simulation_continuing) &&
            ((f_e - f_i) != ((int) atom_groups_ids.size())) ) {
@@ -527,8 +532,8 @@ void colvarproxy_namd::calculate()
     size_t ig;
     // note: getGroupMassBegin() could be used here, but masses and charges
     // have already been calculated from the last call to setup()
-    PositionList::const_iterator gp_i = getGroupPositionBegin();
-    for (ig = 0; gp_i != getGroupPositionEnd(); gp_i++, ig++) {
+    PositionList::const_iterator gp_i = gm_->getGroupPositionBegin();
+    for (ig = 0; gp_i != gm_->getGroupPositionEnd(); gp_i++, ig++) {
       atom_groups_coms[ig] = cvm::rvector(gp_i->x, gp_i->y, gp_i->z);
     }
   }
@@ -540,9 +545,12 @@ void colvarproxy_namd::calculate()
     }
     // Using a simple nested loop: there probably won't be so many maps that
     // this becomes performance-limiting
-    IntList::const_iterator goi_i = getGridObjIndexBegin();
-    BigRealList::const_iterator gov_i = getGridObjValueBegin();
-    for ( ; gov_i != getGridObjValueEnd(); goi_i++, gov_i++) {
+    IntList::const_iterator goi_i = gm_->getGridObjIndexBegin();
+    BigRealList::const_iterator gov_i = gm_->getGridObjValueBegin();
+    for ( ; gov_i != gm_->getGridObjValueEnd(); goi_i++, gov_i++) {
+      if (cvm::debug()) {
+        log("  ID = " + cvm::to_str(*goi_i) + ", value = " + cvm::to_str(*gov_i) + ".\n");
+      }
       for (size_t imap = 0; imap < volmaps_ids.size(); imap++) {
         if (volmaps_ids[imap] == *goi_i) {
           volmaps_values[imap] = *gov_i;
@@ -569,14 +577,14 @@ void colvarproxy_namd::calculate()
   // communicate all forces to the MD integrator
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     cvm::rvector const &f = atoms_new_colvar_forces[i];
-    modifyForcedAtoms().add(atoms_ids[i]);
-    modifyAppliedForces().add(Vector(f.x, f.y, f.z));
+    gm_->modifyForcedAtoms().add(atoms_ids[i]);
+    gm_->modifyAppliedForces().add(Vector(f.x, f.y, f.z));
   }
 
   if (atom_groups_new_colvar_forces.size() > 0) {
-    modifyGroupForces().resize(requestedGroups().size());
-    ForceList::iterator gf_i = modifyGroupForces().begin();
-    for (int ig = 0; gf_i != modifyGroupForces().end(); gf_i++, ig++) {
+    gm_->modifyGroupForces().resize(gm_->requestedGroups().size());
+    ForceList::iterator gf_i = gm_->modifyGroupForces().begin();
+    for (int ig = 0; gf_i != gm_->modifyGroupForces().end(); gf_i++, ig++) {
       cvm::rvector const &f = atom_groups_new_colvar_forces[ig];
       *gf_i = Vector(f.x, f.y, f.z);
     }
@@ -584,11 +592,11 @@ void colvarproxy_namd::calculate()
 
 #if NAMD_VERSION_NUMBER >= 34471681
   if (volmaps_new_colvar_forces.size() > 0) {
-    modifyGridObjForces().resize(requestedGridObjs().size());
-    modifyGridObjForces().setall(0.0);
-    IntList::const_iterator goi_i = getGridObjIndexBegin();
-    BigRealList::iterator gof_i = modifyGridObjForces().begin();
-    for ( ; goi_i != getGridObjIndexEnd(); goi_i++, gof_i++) {
+    gm_->modifyGridObjForces().resize(gm_->requestedGridObjs().size());
+    gm_->modifyGridObjForces().setall(0.0);
+    IntList::const_iterator goi_i = gm_->getGridObjIndexBegin();
+    BigRealList::iterator gof_i = gm_->modifyGridObjForces().begin();
+    for ( ; goi_i != gm_->getGridObjIndexEnd(); goi_i++, gof_i++) {
       for (size_t imap = 0; imap < volmaps_ids.size(); imap++) {
         if (volmaps_ids[imap] == *goi_i) {
           *gof_i = volmaps_new_colvar_forces[imap];
@@ -672,7 +680,7 @@ void colvarproxy_namd::add_energy(cvm::real energy)
   #if !defined(NAMD_UNIFIED_REDUCTION)
   reduction->item(REDUCTION_MISC_ENERGY) += energy;
   #else
-  addReductionEnergy(REDUCTION_MISC_ENERGY, energy);
+  gm_->addReductionEnergy(REDUCTION_MISC_ENERGY, energy);
   #endif
   #endif
 }
@@ -683,7 +691,7 @@ void colvarproxy_namd::request_total_force(bool yesno)
     cvm::log("colvarproxy_namd::request_total_force()\n");
   }
   total_force_requested = yesno;
-  requestTotalForce(total_force_requested);
+  gm_->requestTotalForce(total_force_requested);
   if (cvm::debug()) {
     cvm::log("colvarproxy_namd::request_total_force() end\n");
   }
@@ -768,7 +776,7 @@ int colvarproxy_namd::init_atom(int atom_number)
 
   int const index = add_atom_slot(aid);
   atoms_map[aid] = index;
-  modifyRequestedAtoms().add(aid);
+  gm_->modifyRequestedAtoms().add(aid);
   update_atom_properties(index);
   return index;
 }
@@ -830,7 +838,7 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
 
   int const index = add_atom_slot(aid);
   atoms_map[aid] = index;
-  modifyRequestedAtoms().add(aid);
+  gm_->modifyRequestedAtoms().add(aid);
   update_atom_properties(index);
   return index;
 }
@@ -866,7 +874,7 @@ cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
   Position const p1(pos1.x, pos1.y, pos1.z);
   Position const p2(pos2.x, pos2.y, pos2.z);
   // return p2 - p1
-  Vector const d = this->lattice->delta(p2, p1);
+  Vector const d = gm_->lattice->delta(p2, p1);
   return cvm::rvector(d.x, d.y, d.z);
 }
 
@@ -1209,8 +1217,8 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
 
   // compare this new group to those already allocated inside GlobalMaster
   int ig;
-  for (ig = 0; ig < modifyRequestedGroups().size(); ig++) {
-    AtomIDList const &namd_group = modifyRequestedGroups()[ig];
+  for (ig = 0; ig < gm_->modifyRequestedGroups().size(); ig++) {
+    AtomIDList const &namd_group = gm_->modifyRequestedGroups()[ig];
     bool b_match = true;
 
     if (namd_group.size() != ((int) atoms_ids.size())) {
@@ -1237,10 +1245,10 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
 
   // add this group (note: the argument of add_atom_group_slot() is redundant for NAMD, and provided only for consistency)
   size_t const index = add_atom_group_slot(atom_groups_ids.size());
-  modifyRequestedGroups().resize(atom_groups_ids.size());
+  gm_->modifyRequestedGroups().resize(atom_groups_ids.size());
   // the following is done in calculate()
-  // modifyGroupForces().resize(atom_groups_ids.size());
-  AtomIDList &namd_group = modifyRequestedGroups()[index];
+  // gm_->modifyGroupForces().resize(atom_groups_ids.size());
+  AtomIDList &namd_group = gm_->modifyRequestedGroups()[index];
   namd_group.resize(atoms_ids.size());
   int const n_all_atoms = Node::Object()->molecule->numAtoms;
   for (size_t ia = 0; ia < atoms_ids.size(); ia++) {
@@ -1260,8 +1268,8 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
 
   if (cvm::debug()) {
     cvm::log("Group has index "+cvm::to_str(index)+"\n");
-    cvm::log("modifyRequestedGroups length = "+cvm::to_str(modifyRequestedGroups().size())+
-        ", modifyGroupForces length = "+cvm::to_str(modifyGroupForces().size())+"\n");
+    cvm::log("modifyRequestedGroups length = "+cvm::to_str(gm_->modifyRequestedGroups().size())+
+        ", modifyGroupForces length = "+cvm::to_str(gm_->modifyGroupForces().size())+"\n");
   }
 
   return index;
@@ -1277,7 +1285,7 @@ void colvarproxy_namd::clear_atom_group(int index)
 
 int colvarproxy_namd::update_group_properties(int index)
 {
-  AtomIDList const &namd_group = modifyRequestedGroups()[index];
+  AtomIDList const &namd_group = gm_->modifyRequestedGroups()[index];
   if (cvm::debug()) {
     cvm::log("Re-calculating total mass and charge for scalable group no. "+cvm::to_str(index+1)+" ("+
              cvm::to_str(namd_group.size())+" atoms).\n");
@@ -1335,7 +1343,7 @@ int colvarproxy_namd::init_volmap_by_id(int volmap_id)
   int index = -1;
   if (error_code == COLVARS_OK) {
     index = add_volmap_slot(volmap_id);
-    modifyRequestedGridObjects().add(volmap_id);
+    gm_->modifyRequestedGridObjects().add(volmap_id);
   }
 
   return (error_code == COLVARS_OK) ? index : -1;
@@ -1377,7 +1385,7 @@ int colvarproxy_namd::init_volmap_by_name(char const *volmap_name)
     }
 
     index = add_volmap_slot(volmap_id);
-    modifyRequestedGridObjects().add(volmap_id);
+    gm_->modifyRequestedGridObjects().add(volmap_id);
   }
 
   return (error_code == COLVARS_OK) ? index : -1;
@@ -1679,7 +1687,7 @@ int colvarproxy_namd::request_alch_energy_freq(int const freq) {
 
 /// Get value of alchemical lambda parameter from back-end
 int colvarproxy_namd::get_alch_lambda(cvm::real* lambda) {
-  *lambda = simparams->getCurrentLambda(step);
+  *lambda = simparams->getCurrentLambda(gm_->step);
   return COLVARS_OK;
 }
 
