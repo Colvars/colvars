@@ -1,6 +1,6 @@
 
 BootStrap: localimage
-From: CentOS9-devel.sif
+From: CentOS9.sif
 
 
 %help
@@ -8,7 +8,24 @@ From: CentOS9-devel.sif
 
 
 %setup
-    cat > ${APPTAINER_ROOTFS}/etc/yum.repos.d/oneAPI.repo << EOF
+
+
+%post
+    dnf -y update
+    dnf -y install dnf-plugins-core
+
+    dnf config-manager --set-enabled crb
+    dnf -y install \
+        https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
+        https://dl.fedoraproject.org/pub/epel/epel-next-release-latest-9.noarch.rpm
+
+    dnf -y install \
+        "@Development Tools" \
+        gcc gcc-c++ \
+        git cmake ccache ninja-build mold \
+        Lmod openmpi-devel tbb-devel fftw-devel tcl-devel
+
+    cat > /etc/yum.repos.d/oneAPI.repo << EOF
 [oneAPI]
 name=Intel® oneAPI repository
 baseurl=https://yum.repos.intel.com/oneapi
@@ -18,10 +35,7 @@ repo_gpgcheck=1
 gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
 EOF
 
-
-%post
-    dnf -y update
-    dnf -y install intel-basekit intel-hpckit
+    dnf -y install intel-oneapi-compiler-dpcpp-cpp intel-oneapi-mpi-devel #intel-basekit intel-hpckit
     cat > /etc/profile.d/oneapi.sh << EOF
 if [ -z "${ONEAPI_ROOT}" ] ; then
     echo "Usage of Intel oneAPI is subject to the license agreement at: https://www.intel.com/content/www/us/en/developer/articles/license/end-user-license-agreement.html"
