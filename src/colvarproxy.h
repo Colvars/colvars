@@ -10,6 +10,8 @@
 #ifndef COLVARPROXY_H
 #define COLVARPROXY_H
 
+#include <functional>
+
 #include "colvarmodule.h"
 #include "colvartypes.h"
 #include "colvarproxy_io.h"
@@ -448,21 +450,22 @@ class colvarproxy_smp {
 
 public:
 
+  enum class smp_mode_t {cvcs, inner_loop, none};
+
   /// Constructor
   colvarproxy_smp();
 
   /// Destructor
   virtual ~colvarproxy_smp();
 
-  /// Whether threaded parallelization should be used (TODO: make this a
-  /// cvm::deps feature)
-  bool b_smp_active;
+  /// Get the current SMP mode
+  virtual smp_mode_t get_smp_mode() const;
 
-  /// Whether threaded parallelization is available (TODO: make this a cvm::deps feature)
-  virtual int check_smp_enabled();
+  /// Set the current SMP mode
+  virtual int set_smp_mode(smp_mode_t mode);
 
-  /// Distribute calculation of colvars (and their components) across threads
-  virtual int smp_colvars_loop();
+  /// Distribute computation over threads using OpenMP, unless overridden in the backend (e.g. NAMD)
+  virtual int smp_loop(int n_items, std::function<int (int)> const &worker);
 
   /// Distribute calculation of biases across threads
   virtual int smp_biases_loop();
@@ -489,6 +492,10 @@ protected:
 
   /// Lock state for OpenMP
   omp_lock_t *omp_lock_state;
+
+  /// Whether threaded parallelization should be used (TODO: make this a
+  /// cvm::deps feature)
+  smp_mode_t smp_mode;
 };
 
 
