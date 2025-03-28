@@ -198,6 +198,7 @@ colvarproxy_impl::colvarproxy_impl(
   mBiasEnergy(0), mAtomsChanged(false),
   first_timestep(true), previous_NAMD_step(0),
   simParams(s), molecule(m), mScriptTcl(t) {
+  colvars = nullptr;
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   mEventAttrib.version = NVTX_VERSION;
   mEventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
@@ -221,17 +222,6 @@ int colvarproxy_impl::reset() {
 }
 
 int colvarproxy_impl::setup() {
-  engine_name_ = "NAMD_CUDAGLOBALMASTER";
-  // if (colvars != nullptr) delete colvars;
-  colvars = new colvarmodule(this);
-  cvm::log("Using " + engine_name_ + " interface, version "+
-           cvm::to_str(0)+".\n");
-  colvars->cite_feature("NAMD engine");
-  colvars->cite_feature("Colvars-NAMD interface");
-  for (auto it = mConfigFiles.begin(); it != mConfigFiles.end(); ++it) {
-    add_config("configfile", *it);
-  }
-  update_target_temperature();
   colvarproxy::parse_module_config();
   int error_code = colvarproxy::setup();
   if (colvars->size() == 0) {
@@ -277,6 +267,19 @@ void colvarproxy_impl::initialize_from_cudagm(
   // const int64_t step = mClient->getStep();
   // both fields are taken from data structures already available
   updated_masses_ = updated_charges_ = true;
+  engine_name_ = "NAMD_CUDAGLOBALMASTER";
+  // if (colvars != nullptr) delete colvars;
+  if (colvars == nullptr) {
+    colvars = new colvarmodule(this);
+  }
+  cvm::log("Using " + engine_name_ + " interface, version "+
+           cvm::to_str(0)+".\n");
+  colvars->cite_feature("NAMD engine");
+  colvars->cite_feature("Colvars-NAMD interface");
+  for (auto it = mConfigFiles.begin(); it != mConfigFiles.end(); ++it) {
+    add_config("configfile", *it);
+  }
+  update_target_temperature();
   setup();
   colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
   colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
