@@ -135,18 +135,21 @@ public:
   void calculate();
   void onBuffersUpdated();
   void update_atom_properties(int index);
-  void init_tcl_pointers() override {
-#ifdef NAMD_TCL
-    // Store pointer to NAMD's Tcl interpreter
-    if (mScriptTcl != nullptr) {
-      set_tcl_interp(mScriptTcl->get_tcl_interp());
-    } else {
-      colvarproxy::init_tcl_pointers();
-    }
-#else
-    colvarproxy::init_tcl_pointers(); // Create dedicated interpreter
-#endif
-  }
+  // FIXME: This interface does not run Colvars on the same thread as ScriptTcl,
+  //        so it is buggy to use the same interpreter as NAMD.
+//   void init_tcl_pointers() override {
+// #ifdef NAMD_TCL
+//     // Store pointer to NAMD's Tcl interpreter
+//     iout << "mScriptTcl = " << mScriptTcl << "\n" << endi;
+//     if (mScriptTcl != nullptr) {
+//       set_tcl_interp(mScriptTcl->get_tcl_interp());
+//     } else {
+//       colvarproxy::init_tcl_pointers();
+//     }
+// #else
+//     colvarproxy::init_tcl_pointers(); // Create dedicated interpreter
+// #endif
+//   }
   int run_force_callback() override;
   int run_colvar_callback(
     std::string const &name,
