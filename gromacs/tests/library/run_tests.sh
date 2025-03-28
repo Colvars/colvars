@@ -247,7 +247,8 @@ for dir in ${DIRLIST} ; do
       | grep -v 'Initializing the collective variables module' \
       | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
     if [ -f ${basename}.colvars.state ] ; then
-      grep -sv 'version' ${basename}.colvars.state \
+      grep -sv 'version' ${basename}.colvars.state | \
+        grep -Esv '^    active (on|off)$' \
            > ${TMPDIR}/${basename}.colvars.state.stripped && \
         mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
     fi

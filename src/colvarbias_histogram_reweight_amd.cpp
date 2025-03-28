@@ -85,7 +85,8 @@ int colvarbias_reweightaMD::update() {
   colvarproxy *proxy = cvm::main()->proxy;
   int error_code = COLVARS_OK;
   if (cvm::step_relative() >= start_after_steps) {
-    // update base class
+
+    // Update base class (bias_energy and colvar_forces are zeroed there)
     error_code |= colvarbias::update();
 
     if (cvm::debug()) {

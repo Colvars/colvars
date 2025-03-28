@@ -1,0 +1,36 @@
+! Trimmed-down force field file for CGENFF ammonia and TIP3P water
+! Original files at: https://mackerell.umaryland.edu/charmm_ff.shtml#charmm
+
+ATOMS
+!hydrogens
+MASS  -1  HGPAM3     1.00800 ! polar H, NEUTRAL ammonia (#)
+MASS  -1  HT         1.00800 ! TIPS3P WATER HYDROGEN
+MASS  -1  NG331     14.00700 ! neutral ammonia nitrogen
+MASS  -1  OT        15.99940 ! TIPS3P WATER OXYGEN
+
+BONDS
+HT    HT      0.0       1.5139  ! from TIPS3P geometry (for SHAKE w/PARAM)
+HT    OT    450.0       0.9572  ! from TIPS3P geometry
+NG331  HGPAM3  455.50     1.0140 ! AMINE aliphatic amines
+
+ANGLES
+HGPAM3 NG331  HGPAM3   41.50    107.10 ! AMINE aliphatic amines kevo: 29.00 -> 4
+HT   OT   HT     55.0      104.52   ! FROM TIPS3P GEOMETRY
+
+DIHEDRALS
+
+IMPROPERS
+
+NONBONDED nbxmod  5 atom cdiel fshift vatom vdistance vfswitch -
+cutnb 14.0 ctofnb 12.0 ctonnb 10.0 eps 1.0 e14fac 1.0 wmin 1.5
+
+!see mass list above for better description of atom types
+!hydrogens
+HGPAM3   0.0       -0.0120     0.8700 ! aliphatic amines
+NG331    0.0       -0.0700     1.9800 ! aliphatic amines
+HT       0.0       -0.046     0.2245
+OT       0.0       -0.1521    1.7682
+
+NBFIX
+
+END
