@@ -59,7 +59,7 @@ endif()
 
 if(NAMD_TCL)
   message(STATUS "add -DNAMD_TCL to compiler flags")
-  add_definitions(-DNAMD_TCL)
+  add_definitions(-DCOLVARS_TCL)
   if(NOT EXISTS ${NAMD_TCL_INCLUDE_DIR})
     message(WARNING "-DNAMD_TCL is enabled but TCL headers are not found in ${NAMD_TCL_INCLUDE_DIR}")
     message(WARNING "Trying to find TCL from the system")
