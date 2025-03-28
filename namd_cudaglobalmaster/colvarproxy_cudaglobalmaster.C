@@ -147,6 +147,15 @@ public:
     colvarproxy::init_tcl_pointers(); // Create dedicated interpreter
 #endif
   }
+  int run_force_callback() override;
+  int run_colvar_callback(
+    std::string const &name,
+    std::vector<const colvarvalue *> const &cvcs,
+    colvarvalue &value) override;
+  int run_colvar_gradient_callback(
+    std::string const &name,
+    std::vector<const colvarvalue *> const &cvcs,
+    std::vector<cvm::matrix2d<cvm::real> > &gradient) override;
   int reset() override;
   friend class CudaGlobalMasterColvars;
 private:
@@ -716,6 +725,7 @@ void colvarproxy_impl::onBuffersUpdated() {
 
 void colvarproxy_impl::calculate() {
   const int64_t step = mClient->getStep();
+  // iout << "colvarproxy_impl::calculate at step " << step << "\n" << endi;
   if (first_timestep) {
     // TODO: Do I really need to call them again?
     // setup();
@@ -918,6 +928,28 @@ int colvarproxy_impl::backup_file(char const *filename)
     NAMD_backup_file(filename, ".BAK");
   }
   return COLVARS_OK;
+}
+
+int colvarproxy_impl::run_force_callback()
+{
+  return colvarproxy::tcl_run_force_callback();
+}
+
+int colvarproxy_impl::run_colvar_callback(
+                          std::string const &name,
+                          std::vector<const colvarvalue *> const &cvc_values,
+                          colvarvalue &value)
+{
+  return colvarproxy::tcl_run_colvar_callback(name, cvc_values, value);
+}
+
+int colvarproxy_impl::run_colvar_gradient_callback(
+                          std::string const &name,
+                          std::vector<const colvarvalue *> const &cvc_values,
+                          std::vector<cvm::matrix2d<cvm::real> > &gradient)
+{
+  return colvarproxy::tcl_run_colvar_gradient_callback(name, cvc_values,
+                                                       gradient);
 }
 
 CudaGlobalMasterColvars::CudaGlobalMasterColvars():
