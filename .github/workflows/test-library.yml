@@ -551,7 +551,7 @@ jobs:
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer pull CentOS9-devel-oneAPI.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel-oneAPI
+          apptainer pull CentOS9-oneAPI.sif oras://ghcr.io/colvars/devel-containers:CentOS9-oneAPI
 
       - name: Intel oneAPI 2024.2, C++11
         shell: bash
@@ -561,7 +561,7 @@ jobs:
           CXX_STANDARD: 11
           BASH_ENV: "/etc/profile.d/oneapi.sh"
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel-oneAPI.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
           bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
 
       - name: Intel oneAPI 2024.2, C++14
@@ -572,7 +572,7 @@ jobs:
           CXX_STANDARD: 14
           BASH_ENV: "/etc/profile.d/oneapi.sh"
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel-oneAPI.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
           bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
 
       - name: Intel oneAPI 2024.2, C++17
@@ -583,7 +583,7 @@ jobs:
           CXX_STANDARD: 17
           BASH_ENV: "/etc/profile.d/oneapi.sh"
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel-oneAPI.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
           bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
 
       - name: Intel oneAPI 2024.2, C++20
@@ -594,7 +594,7 @@ jobs:
           CXX_STANDARD: 20
           BASH_ENV: "/etc/profile.d/oneapi.sh"
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel-oneAPI.sif \
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
           bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
 
 
