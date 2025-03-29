@@ -579,16 +579,12 @@ CVSCRIPT(cv_resetindexgroups,
          )
 
 CVSCRIPT(cv_save,
-         "Change the prefix of all output files and save them",
+         "Save the current state to a restart file with the given prefix",
          1, 1,
-         "prefix : string - Output prefix with trailing \".colvars.state\" gets removed)",
+         "prefix : string - Output prefix (trailing \".colvars.state\" gets removed)",
          std::string const prefix =
            cvm::state_file_prefix(script->obj_to_str(script->get_module_cmd_arg(0, objc, objv)));
-         int error_code = script->proxy()->set_output_prefix(prefix);
-         error_code |= script->module()->setup_output();
-         error_code |= script->module()->write_restart_file(prefix+
-                                                            ".colvars.state");
-         error_code |= script->module()->write_output_files();
+         int error_code = script->module()->write_restart_file(prefix + ".colvars.state");
          return error_code;
          )
 
@@ -598,6 +594,24 @@ CVSCRIPT(cv_savetostring,
          0, 0,
          "",
          return script->module()->write_restart_string(script->modify_str_result());
+         )
+
+CVSCRIPT(cv_outputprefix,
+         "Get/set the prefix for all output files",
+         0, 1,
+         "prefix : string - Output prefix (trailing \".colvars.state\" gets removed)",
+         char const *argstr =
+           script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
+         if (argstr) {
+           std::string const prefix = cvm::state_file_prefix(argstr);
+           cvm::log("Setting output prefix to " + prefix);
+           int error = cvm::proxy->set_output_prefix(prefix);
+           error |= script->module()->setup_output();
+           return error;
+         } else {
+           script->set_result_str(cvm::output_prefix());
+           return COLVARS_OK;
+         }
          )
 
 CVSCRIPT(cv_targettemperature,
