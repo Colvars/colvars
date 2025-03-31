@@ -10,8 +10,6 @@
 #ifndef COLVARGRID_H
 #define COLVARGRID_H
 
-#include <tuple>
-
 #include <iosfwd>
 #include <memory>
 
@@ -23,6 +21,9 @@
 #include <unordered_map>
 //TOD0: do with vector instead of map
 //TODO: separate constant part of the laplacian
+//TODO: problem i can't update the constant part of the laplacian = div_supplement because i would need to know what point use it in 
+// its stencil and how they use it, maybe create boolean that says if it has already been computed
+// TODO: reduce size of divergence matrix 
 /// \brief Unified base class for grid of values of a function of several collective
 /// variables
 class colvar_grid_params  {
@@ -1855,11 +1856,12 @@ public:
 
     return fact * data[address(ix)];
   }
+  
 
   /// \brief Obtain the vector value of the function at ix divided by its
   /// number of samples (if the count grid is defined), possibly smoothed
   /// by a ramp function going from 0 to 1 between minSamples and fullSamples.
-  inline void vector_value_smoothed(std::vector<int> const &ix, cvm::real *grad, bool smoothed = true)
+  inline void vector_value_regularized(std::vector<int> const &ix, cvm::real *grad, bool smoothed = true)
   {
     cvm::real weight, fact;
 
@@ -1874,7 +1876,6 @@ public:
     } else {
       fact = weight > 0. ? 1. / weight : 0.;
     }
-
     cvm::real *p = &(data[address(ix)]);
 
     // Appease Clang analyzer, which likes to assume that mult is zero
@@ -1944,7 +1945,9 @@ class integrate_potential : public colvar_grid_scalar
 {
   public:
 
-  integrate_potential();
+  integrate_potential(){
+    init_computation_nx_nt();
+  };
 
   virtual ~integrate_potential()
   {}
@@ -1981,25 +1984,189 @@ class integrate_potential : public colvar_grid_scalar
   /// \brief Flag requesting the use of a smoothed version of the gradient (default: false)
   bool b_smoothed;
   
+  /// \brief Initialize computation_nx based on nx and periodic boundaries
+  inline void init_computation_nx_nt() {
+    computation_nx.resize(nd);
+    computation_nt = 1;
+    computation_nxc.resize(nd);
+    for (size_t i = 0; i < nd; i++) {
+      if (periodic[i]) {
+        computation_nx[i] = nx[i];
+      } else {
+        computation_nx[i] = nx[i] - 1;  // One less point for non-periodic dimensions
+      }
+      computation_nt*=computation_nx[i];
+      computation_nxc[i] = computation_nt;
+    }
+  }
+  
+  // \brief Computes all the relative positions to calculate the laplacian at a specific point
   void prepare_laplacian_calculation();
   void print_laplacian_preparations();
 
+  // \brief Computes all the relative positions to calculate the divergence at a specific point
+  void prepare_divergence_calculation();
   protected:
 
+  std::vector<int> computation_nx;
+  std::vector<int> computation_nxc;
+  int computation_nt;
+
+  /// \brief Get the index corresponding to the "first" bin, to be
+  /// used as the initial value for an index in looping
+  inline std::vector<int> const new_index_computation_div() const
+  { 
+    return std::vector<int> (nd, 0);
+  }
+
+  /// \brief Check that the index is within range in each of the
+  /// dimensions
+  inline bool index_ok_computation_div(std::vector<int> const &ix) const
+  {
+    for (size_t i = 0; i < nd; i++) {
+      if ( (ix[i] < 0) || (ix[i] >= int(nx[i]) && periodic[i]) || (ix[i] >= int(nx[i]-1) && !periodic[i]) )
+        return false; 
+    }
+    return true;
+  }
+
+  /// \brief Increment the index, in a way that will make it loop over
+  /// the whole nd-dimensional array
+  inline void incr_computation_div(std::vector<int> &ix) const
+  {
+    for (int i = ix.size()-1; i >= 0; i--) {
+
+      ix[i]++;
+
+      if ((ix[i] >= int(nx[i]) && periodic[i]) || (ix[i] >= int(nx[i]-1) && !periodic[i])) {
+
+        if (i > 0) {
+          ix[i] = 0;
+          continue;
+        } else {
+          // this is the last iteration, a non-valid index is being
+          // set for the outer index, which will be caught by
+          // index_ok()
+          ix[0] = nx[0];
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+  }
+
+  /// Wrap an index vector around periodic boundary conditions
+  /// or detects edges if non-periodic
+  inline bool wrap_detect_virtual_computation_grid(std::vector<int> & ix) const
+  {
+    bool virtual_point = false;
+    for (size_t i = 0; i < nd; i++) {
+      if (periodic[i]) {
+        ix[i] = (ix[i] + nx[i] -1) % (nx[i]-1); // Avoid modulo with negative operands (implementation-defined)
+      } else if (ix[i] < 0 || ix[i] >= nx[i]-1) {
+        virtual_point = true;
+      }
+    }
+    return virtual_point;
+  }
+
+  /// Wrap an index vector around periodic boundary conditions
+  /// or brings back to nearest edge if non-periodic
+  inline bool wrap_to_edge_computation_grid(std::vector<int> & ix, std::vector<int> & edge_bin) const
+  {
+    bool virtual_point = false;
+    edge_bin = ix;
+    for (size_t i = 0; i < nd; i++) {
+      if (periodic[i]) {
+        ix[i] = (ix[i] + nx[i] -1) % (nx[i]-1); // Avoid modulo with negative operands (implementation-defined)
+        edge_bin[i] = ix[i];
+      } else if (ix[i] < 0) {
+        virtual_point = true;
+        edge_bin[i] = 0;
+      } else if (ix[i] >= nx[i]-1) {
+        virtual_point = true;
+        edge_bin[i] = nx[i] - 2;
+      }
+    }
+    return virtual_point;
+  }
+
+    /// Get the low-level index corresponding to an index
+  inline size_t computation_address(std::vector<int> const &ix) const
+  {
+    size_t addr = 0;
+    for (size_t i = 0; i < nd; i++) {
+      addr += ix[i]*static_cast<size_t>(computation_nxc[i]);
+      if (cvm::debug()) {
+        if (ix[i] >= computation_nx[i]) {
+          cvm::error("Error: exceeding bounds in colvar_grid.\n", COLVARS_BUG_ERROR);
+          return 0;
+        }
+      }
+    }
+    return addr;
+  }
   // Reference to gradient grid
   std::shared_ptr<colvar_grid_gradient> gradients;
 
+  inline void vector_value_regularized(std::vector<int> const &ix, cvm::real *grad, bool regularized = true)
+  {
+    cvm::real weight, fact;
+
+    if (samples) {
+      weight = cvm::real(samples->value(ix));
+    } else {
+      weight = 0;
+    }
+
+    if (regularized) {
+      if (weight < min_count_F) {
+        fact = 0;
+      }
+      else if (weight > max_count_F) {
+        fact = 1/weight;
+      }
+      else {
+        fact = (weight - min_count_F)/(max_count_F - min_count_F) / weight; 
+      }
+    } else {
+      fact = weight > 0. ? 1. / weight : 0.;
+    }
+    cvm::real *p = &(gradients->data[address(ix)]);
+
+    // Appease Clang analyzer, which likes to assume that mult is zero
+    #ifdef __clang_analyzer__
+    assert(mult > 0);
+    #endif
+
+    for (size_t imult = 0; imult < mult; imult++) {
+      grad[imult] = fact * p[imult];
+    }
+  }  
+
   /// Array holding divergence + boundary terms (modified Neumann) if not periodic
   std::vector<cvm::real> divergence;
+  std::vector<cvm::real> div_border_supplement;
 
   // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
   // Stored as a flat vector like the divergence
-  // TODO: Maybe use that as argument of the function ? 
   std::vector<cvm::real> weights;
-  float m;
-  std::vector<cvm::real> weights_minus_m;
-  std::vector<int> computation_nx;
-  
+  std::vector<size_t> sorted_counts;
+
+  // TODO: Maybe use that as argument of the function ? 
+  cvm::real m;
+  size_t sum_count;
+  // max and min count to regularize F 
+  int max_count_F = 1;
+  int min_count_F = 0;
+  // max and min count to regularize the weights
+  float max_count_W = 80;
+  float min_count_W = 1;
+  size_t upper_threshold_count = 1;
+  size_t lower_threshold_count = 1;
+  void get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix);
+  cvm::real get_regularized_weight(std::vector<int> &ix);  
 
   // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
   // Stored as a flat vector like the divergence
@@ -2008,6 +2175,7 @@ class integrate_potential : public colvar_grid_scalar
   std::unordered_map<int, std::vector<std::vector<int>>> weight_stencil;
   std::unordered_map<int, float> weight_counts;
   std::unordered_map<int, std::pair<bool, int>> neighbor_in_classic_laplacian_stencil;
+  std::vector<std::vector<int>> surrounding_points_relative_positions;
 //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
   /// Obtain the gradient vector at given location ix, if available
@@ -2035,7 +2203,7 @@ class integrate_potential : public colvar_grid_scalar
   /// @param r (out) discrete Laplacian of x
   void laplacian(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
 
-  void laplacian_weighted(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
+  template<bool initialize_div_supplement>  void laplacian_weighted(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
 
   /// Compute gradient of whole potential grid by finite difference
   // void compute_grad(const std::vector<cvm::real> &A, std::vector<cvm::real> &G);
@@ -2050,8 +2218,12 @@ class integrate_potential : public colvar_grid_scalar
   // long as the grid doesn't change
   std::vector<int> find_reference_point_for_virtual_point(std::vector<int> virtual_point_coordinates);
   std::vector<cvm::real> compute_averaged_border_normal_gradients(std::vector<int> virtual_point_coordinates);
-  float calculate_weight_sum(std::vector<int> stencil_point, std::vector<int> direction);
+  cvm::real calculate_weight_sum(std::vector<int> stencil_point, std::vector<std::vector<int>> directions);
   bool is_virtual_point(std::vector<int> coordinate);
-};
+  void set_weighted_div();
 
+
+  template<typename T>
+  typename std::vector<T>::iterator insertIntoSortedList(std::vector<T>& sortedList, const T& value);
+};
 #endif

@@ -51,7 +51,9 @@ int main (int argc, char *argv[]) {
   potential.set_div();
   potential.integrate(itmax, tol, err);
   potential.set_zero_minimum();
-
+  // TODO: calculate div
+  // TODO: calculate Laplacian
+  // see how it works and wait for Jérôme
   std::cout << "Writing integrated potential file " << gradfile + ".int" << std::endl;
   potential.write_multicol(std::string(gradfile + ".int"), "integrated potential");
 

@@ -12,6 +12,7 @@
 *.exe
 *.pyc
 .vscode/
+/build
 
 # Executable
 /colvartools/abf_integrate
