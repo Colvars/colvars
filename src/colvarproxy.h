@@ -514,9 +514,6 @@ public:
   /// (does not need to be allocated in a new interface)
   colvarscript *script;
 
-  /// Do we have a scripting interface?
-  bool have_scripts;
-
   /// Run a user-defined colvar forces script
   virtual int run_force_callback();
 
