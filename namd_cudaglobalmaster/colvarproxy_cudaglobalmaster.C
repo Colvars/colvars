@@ -253,9 +253,6 @@ int colvarproxy_impl::setup() {
   error_code |= colvars->update_engine_parameters();
   error_code |= colvars->setup_input();
   error_code |= colvars->setup_output();
-  if (simParams->firstTimestep != 0) {
-    colvars->set_initial_step(static_cast<cvm::step_number>(simParams->firstTimestep));
-  }
   return error_code;
 }
 
@@ -295,6 +292,9 @@ void colvarproxy_impl::initialize_from_cudagm(
   }
   update_target_temperature();
   setup();
+  if (simParams->firstTimestep != 0) {
+    colvars->set_initial_step(static_cast<cvm::step_number>(simParams->firstTimestep));
+  }
   colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
   colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
   colvarproxy_io::set_default_restart_frequency(simParams->restartFrequency);
