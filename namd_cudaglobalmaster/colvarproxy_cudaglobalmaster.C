@@ -219,6 +219,8 @@ colvarproxy_impl::colvarproxy_impl(
   mEventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;
   mEventAttrib.message.ascii = "Colvars CPU";
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  boltzmann_ = 0.001987191;
+  angstrom_value_ = 1.;
 }
 
 colvarproxy_impl::~colvarproxy_impl() {
