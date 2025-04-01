@@ -101,6 +101,7 @@ public:
   int init_atom(int atom_number) override;
   void clear_atom(int index) override;
   int check_atom_id(int atom_number) override;
+  void request_total_force(bool yesno) override {total_force_requested = yesno;}
   bool total_forces_enabled() const override { return total_force_requested; };
   bool total_forces_same_step() const override { return false; };
   int setup() override;
@@ -160,6 +161,12 @@ public:
     std::vector<const colvarvalue *> const &cvcs,
     std::vector<cvm::matrix2d<cvm::real> > &gradient) override;
   int reset() override;
+  void reallocate() {
+    deallocateDeviceArrays();
+    allocateDeviceArrays();
+    deallocateDeviceTransposeArrays();
+    allocateDeviceTransposeArrays();
+  }
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
@@ -338,14 +345,6 @@ int colvarproxy_impl::init_atom(int atom_number) {
   int const index = colvarproxy::add_atom_slot(aid);
   update_atom_properties(index);
   mAtomsChanged = true;
-  // TODO: This is an overkill!!!
-  // I expect Colvars can either
-  // (i) inform me the changing of atoms is completed
-  // or (ii) initialize multiple atoms at once.
-  deallocateDeviceArrays();
-  allocateDeviceArrays();
-  deallocateDeviceTransposeArrays();
-  allocateDeviceTransposeArrays();
   return index;
 }
 
@@ -367,14 +366,6 @@ void colvarproxy_impl::update_atom_properties(int index)
 void colvarproxy_impl::clear_atom(int index) {
   colvarproxy::clear_atom(index);
   mAtomsChanged = true;
-  // TODO: This is an overkill!!!
-  // I expect Colvars can either
-  // (i) inform me the changing of atoms is completed
-  // or (ii) initialize multiple atoms at once.
-  deallocateDeviceArrays();
-  allocateDeviceArrays();
-  deallocateDeviceTransposeArrays();
-  allocateDeviceTransposeArrays();
 }
 
 // Copied from colvarproxy_namd.C
@@ -695,7 +686,7 @@ void colvarproxy_impl::onBuffersUpdated() {
     transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
     // cudaCheck(cudaStreamSynchronize(mStream));
     copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
-    if (mClient->requestedTotalForcesAtomsChanged()) {
+    if (mClient->requestUpdateAtomTotalForces()) {
       auto &colvars_total_force = *(modify_atom_total_forces());
       transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
       copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
@@ -995,6 +986,13 @@ bool CudaGlobalMasterColvars::requestUpdateMasses() {
 
 bool CudaGlobalMasterColvars::requestUpdateCharges() {
   return mImpl->atomsChanged();
+}
+
+void CudaGlobalMasterColvars::setStep(int64_t step) {
+  CudaGlobalMasterClient::setStep(step);
+  if (mImpl->atomsChanged()) {
+    mImpl->reallocate();
+  }
 }
 
 void CudaGlobalMasterColvars::calculate() {
