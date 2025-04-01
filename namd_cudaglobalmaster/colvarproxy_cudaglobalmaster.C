@@ -684,7 +684,6 @@ void colvarproxy_impl::onBuffersUpdated() {
     // Transform the arrays for Colvars
     auto &colvars_pos = *(modify_atom_positions());
     transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
-    // cudaCheck(cudaStreamSynchronize(mStream));
     copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
     if (mClient->requestUpdateAtomTotalForces()) {
       auto &colvars_total_force = *(modify_atom_total_forces());
@@ -945,6 +944,9 @@ int colvarproxy_impl::run_colvar_gradient_callback(
 CudaGlobalMasterColvars::CudaGlobalMasterColvars():
   CudaGlobalMasterClient()
 {
+  if (CudaGlobalMasterClient::getSimParameters()->colvarsOn) {
+    NAMD_die("This plugin is incompatible with the Colvars bundled with NAMD.");
+  }
   mImpl = std::make_unique<colvarproxy_impl>(
     CudaGlobalMasterClient::getSimParameters(),
     CudaGlobalMasterClient::getMolecule(),
