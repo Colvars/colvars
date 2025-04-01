@@ -692,14 +692,6 @@ void colvarproxy_impl::onBuffersUpdated() {
   if (numAtoms > 0) {
     // Transform the arrays for Colvars
     auto &colvars_pos = *(modify_atom_positions());
-    // cvm::rvector* p_colvars_pos = colvars_pos.data();
-    // cudaPointerAttributes attr;
-    // cudaPointerGetAttributes(&attr, p_colvars_pos);
-    // iout << "ptr = " << p_colvars_pos << "\n" << endi;
-    // iout << "memory type = " << attr.type << "\n" << endi;
-    // iout << "device = " << attr.device << "\n" << endi;
-    // iout << "device pointer = " << attr.devicePointer << "\n" << endi;
-    // iout << "host pointer = " << attr.hostPointer << "\n" << endi;
     transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
     // cudaCheck(cudaStreamSynchronize(mStream));
     copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
@@ -722,6 +714,8 @@ void colvarproxy_impl::onBuffersUpdated() {
       copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
     }
   }
+  // Check if CUDA kernels are successfully executed
+  cudaCheck(cudaPeekAtLastError());
   // Synchronize the stream to make sure the host buffers are ready
   cudaCheck(cudaStreamSynchronize(mStream));
   // Restore the GPU device
@@ -973,7 +967,6 @@ void CudaGlobalMasterColvars::initialize(
   int deviceID, cudaStream_t stream) {
   CudaGlobalMasterClient::initialize(arguments, deviceID, stream);
   mImpl->initialize_from_cudagm(this, arguments, deviceID, stream);
-  // iout << "Using stream: " << stream << "\n" << endi;
 }
 
 bool CudaGlobalMasterColvars::requestedAtomsChanged()  {
