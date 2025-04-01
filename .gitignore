@@ -32,7 +32,7 @@
 *.xsc
 *.backup
 *.err
-
+/tests/input_files
 # Output files from reg tests, with exceptions for reference files
 *.state
 !**/AutoDiff/*.state
