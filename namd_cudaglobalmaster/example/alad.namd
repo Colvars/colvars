@@ -1,0 +1,75 @@
+#Alanine dipeptide
+seed 1
+
+set current output/alad_opes
+
+#Variables
+set temperature		300
+set outputname		$current
+
+#Input
+structure		input_wb29/alad-wb29.psf
+#bincoordinates		$previous.restart.coor
+coordinates		input_wb29/alad-wb_mineq29.pdb
+#binvelocities		$previous.restart.vel
+#ExtendedSystem		$previous.restart.xsc
+ExtendedSystem		input_wb29/alad-wb_mineq29.xsc
+paraTypeCharmm	    	on
+parameters		input_wb29/par_all27_prot_lipid.prm
+parameters		input_wb29/alad.prm
+temperature		$temperature
+
+# Force-Field Parameters
+exclude             scaled1-4
+1-4scaling          1.0
+cutoff              12.0
+switching           on
+switchdist          10.0
+pairlistdist        13.5
+vdwForceSwitching   on
+# dielectric          [expr 332.0636/332.0522173]
+
+wrapAll			on
+# wrapWater		on
+
+# Integrator Parameters
+timestep            2.0  ;# 2fs/step
+rigidBonds          all  ;# needed for 2fs steps
+nonbondedFreq       1
+fullElectFrequency  2  
+
+
+# PME (for full-system periodic electrostatics)
+PME			yes
+PMEGridSpacing		1.0
+
+useGroupPressure yes ;# needed for rigidBonds 
+useFlexibleCell no 
+useConstantArea no
+
+# # Constant Temperature Control
+langevin            on    ;# do langevin dynamics
+langevinDamping     1     ;# damping coefficient (gamma) of 1/ps
+langevinTemp        $temperature
+langevinHydrogen    off    ;# don't couple langevin bath to hydrogens
+
+# Output
+outputName		$outputname
+
+restartfreq		1000
+dcdfreq			50000
+xstFreq			50000
+outputEnergies		1000
+outputPressure		1000
+outputTiming		1000
+
+# colvars			on
+# colvarsConfig		opes.colvars
+
+CUDASOAIntegrate                on
+
+gpuGlobal on
+gpuGlobalCreateClient ../build/libcudaglobalmastercolvars.so COLVARS opes.colvars
+
+firsttimestep                   0
+run                             50000
