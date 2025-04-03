@@ -681,32 +681,20 @@ void colvarproxy_impl::onBuffersUpdated() {
   // TODO: Colvars does not support GPU, so we have to copy the buffers manually
   const size_t numAtoms = atoms_ids.size();
   if (numAtoms > 0) {
-    // Transform the arrays for Colvars
-    auto &colvars_pos = *(modify_atom_positions());
     transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
-    copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
     if (mClient->requestUpdateAtomTotalForces()) {
-      auto &colvars_total_force = *(modify_atom_total_forces());
       transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
-      copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
     }
     if (mClient->requestUpdateMasses()) {
-      auto &colvars_mass = *(modify_atom_masses());
       copy_float_to_host_double(d_mMass, d_trans_mMass, numAtoms, mStream);
-      copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
     }
     if (mClient->requestUpdateCharges()) {
-      auto &colvars_charge  = *(modify_atom_charges());
       copy_float_to_host_double(d_mCharges, d_trans_mCharges, numAtoms, mStream);
-      copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
-    }
-    if (mClient->requestUpdateLattice()) {
-      copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
     }
   }
   // Check if CUDA kernels are successfully executed
   cudaCheck(cudaPeekAtLastError());
-  // Synchronize the stream to make sure the host buffers are ready
+  // Ensure the above kernels are done before the NB forces
   cudaCheck(cudaStreamSynchronize(mStream));
   // Restore the GPU device
   cudaCheck(cudaSetDevice(savedDevice));
@@ -714,6 +702,33 @@ void colvarproxy_impl::onBuffersUpdated() {
 
 void colvarproxy_impl::calculate() {
   const int64_t step = mClient->getStep();
+  const size_t numAtoms = atoms_ids.size();
+  int savedDevice;
+  cudaCheck(cudaGetDevice(&savedDevice));
+  cudaCheck(cudaSetDevice(m_device_id));
+  // The following memcpy operations are supposed to be overlapped with the NB kernel
+  if (numAtoms > 0) {
+    // Transform the arrays for Colvars
+    auto &colvars_pos = *(modify_atom_positions());
+    copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
+    if (mClient->requestUpdateAtomTotalForces()) {
+      auto &colvars_total_force = *(modify_atom_total_forces());
+      copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
+    }
+    if (mClient->requestUpdateMasses()) {
+      auto &colvars_mass = *(modify_atom_masses());
+      copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
+    }
+    if (mClient->requestUpdateCharges()) {
+      auto &colvars_charge  = *(modify_atom_charges());
+      copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
+    }
+    if (mClient->requestUpdateLattice()) {
+      copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+    }
+  }
+  // Synchronize the stream to make sure the host buffers are ready
+  cudaCheck(cudaStreamSynchronize(mStream));
   // iout << "colvarproxy_impl::calculate at step " << step << "\n" << endi;
   if (first_timestep) {
     // TODO: Do I really need to call them again?
@@ -783,10 +798,7 @@ void colvarproxy_impl::calculate() {
   nvtxRangePop();
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   // Update applied forces
-  const size_t numAtoms = atoms_ids.size();
-  int savedDevice;
-  cudaCheck(cudaGetDevice(&savedDevice));
-  cudaCheck(cudaSetDevice(m_device_id));
+
   auto &colvars_applied_force = *(modify_atom_applied_forces());
   if (numAtoms > 0) {
     copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
