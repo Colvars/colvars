@@ -886,11 +886,11 @@ int colvarproxy_vmd::compute_volmap(int flags,
         int const new_flags = volmap_flag_gradients |
           volmap_flag_use_atom_field;
         compute_voldata<new_flags>(voldata, atom_begin, atom_end,
-                                   value, atom_field);
+                                   value, atom_field, NULL);
       } else {
         int const new_flags = volmap_flag_gradients;
         compute_voldata<new_flags>(voldata, atom_begin, atom_end,
-                                   value, NULL);
+                                   value, NULL, NULL);
       }
 
     } else {
@@ -898,11 +898,11 @@ int colvarproxy_vmd::compute_volmap(int flags,
       if (flags & volmap_flag_use_atom_field) {
         int const new_flags = volmap_flag_use_atom_field;
         compute_voldata<new_flags>(voldata, atom_begin, atom_end,
-                                   value, atom_field);
+                                   value, atom_field, NULL);
       } else {
         int const new_flags = volmap_flag_null;
         compute_voldata<new_flags>(voldata, atom_begin, atom_end,
-                                   value, NULL);
+                                   value, NULL, NULL);
       }
     }
   } else {
