@@ -262,14 +262,15 @@ int colvarbias_opes::init(const std::string& conf) {
         return cvm::error("CV " + (*it) + " not found\n");
       }
     }
-    m_reweight_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
-    m_pmf_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
+    key_lookup(conf, "grid", &grid_conf);
+    m_reweight_grid.reset(new colvar_grid_scalar(m_pmf_cvs, nullptr, false, grid_conf));
+    m_pmf_grid.reset(new colvar_grid_scalar(m_pmf_cvs, m_reweight_grid));
     get_keyval(conf, "pmfHistoryFrequency", m_pmf_hist_freq, 0);
     if (comm == multiple_replicas) {
       get_keyval(conf, "pmfShared", m_pmf_shared, true);
       if (m_pmf_shared) {
-        m_global_reweight_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
-        m_global_pmf_grid = std::unique_ptr<colvar_grid_scalar>(new colvar_grid_scalar(m_pmf_cvs));
+        m_global_reweight_grid.reset(new colvar_grid_scalar(m_pmf_cvs, m_reweight_grid));
+        m_global_pmf_grid.reset(new colvar_grid_scalar(m_pmf_cvs, m_reweight_grid));
       }
     }
   }
@@ -1808,7 +1809,7 @@ int colvarbias_opes::write_output_files() {
   return error_code;
 }
 
-void hist_to_pmf(const cvm::real kbt, const std::unique_ptr<colvar_grid_scalar>& hist, std::unique_ptr<colvar_grid_scalar>& pmf) {
+void hist_to_pmf(const cvm::real kbt, const colvar_grid_scalar *hist, std::unique_ptr<colvar_grid_scalar>& pmf) {
   // Get the sum of probabilities of all grids
   cvm::real norm_factor = 0;
   cvm::real max_prob = 0;
@@ -1868,10 +1869,10 @@ int colvarbias_opes::computePMF() {
     }
   }
   // Get the sum of probabilities of all grids
-  hist_to_pmf(m_kbt, m_reweight_grid, m_pmf_grid);
+  hist_to_pmf(m_kbt, m_reweight_grid.get(), m_pmf_grid);
   if (comm == multiple_replicas && m_pmf_shared) {
     if (cvm::main()->proxy->replica_index() == 0) {
-      hist_to_pmf(m_kbt, m_global_reweight_grid, m_global_pmf_grid);
+      hist_to_pmf(m_kbt, m_global_reweight_grid.get(), m_global_pmf_grid);
     }
   }
   if (comm == multiple_replicas) {
