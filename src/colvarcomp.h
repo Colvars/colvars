@@ -233,8 +233,14 @@ public:
 
   /// Forcibly set value of CVC - useful for driving an external coordinate,
   /// eg. lambda dynamics
-  inline void set_value(colvarvalue const &new_value) {
+  inline void set_value(colvarvalue const &new_value, bool now=false) {
     x = new_value;
+    // Cache value to be communicated to back-end between time steps
+    cvm::proxy->set_alch_lambda(x.real_value);
+    if (now) {
+      // If requested (e.g. upon restarting), sync to back-end
+      cvm::proxy->send_alch_lambda();
+    }
   }
 
 protected:

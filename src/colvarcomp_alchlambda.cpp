@@ -81,8 +81,7 @@ void colvar::alch_lambda::calc_Jacobian_derivative()
 
 void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
 {
-  // new value will be cached and sent at end of timestep
-  cvm::proxy->set_alch_lambda(x.real_value);
+  // Forces, if any, are applied in colvar::update_extended_Lagrangian()
 }
 
 

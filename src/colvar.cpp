@@ -2415,7 +2415,8 @@ int colvar::set_state_params(std::string const &conf)
     after_restart = true;
     // Externally driven cv (e.g. alchemical lambda) is imposed by restart value
     if (is_enabled(f_cv_external) && is_enabled(f_cv_extended_Lagrangian)) {
-      cvcs[0]->set_value(x);
+      // Request immediate sync of driven parameter to back-end code
+      cvcs[0]->set_value(x, true);
     }
   }
 
