@@ -260,6 +260,11 @@ public:
     this->init_from_colvars(colvars, mult_i, add_extra_bin);
   }
 
+  /// \brief Constructor from a multicol file
+  /// \param filename multicol file containing data to be read
+  /// \param multi_i multiplicity of the data - if 0, assume gradient multiplicity (mult = nd)
+  colvar_grid(std::string const &filename, size_t mult_i = 1);
+
   int init_from_colvars(std::vector<colvar *> const &colvars,
                         size_t mult_i = 1,
                         bool add_extra_bin = false)
