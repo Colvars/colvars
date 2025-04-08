@@ -142,60 +142,10 @@ colvar_grid_scalar::colvar_grid_scalar(std::vector<colvar *> &colvars, bool marg
 {
 }
 
-
 colvar_grid_scalar::colvar_grid_scalar(std::string const &filename)
-  : colvar_grid<cvm::real>(),
-    samples(NULL)
+  : colvar_grid<cvm::real>(filename, 1),
+    samples(nullptr)
 {
-  std::istream &is = cvm::main()->proxy->input_stream(filename, "multicol scalar file");
-  if (!is) {
-    return;
-  }
-
-  // Data in the header: nColvars, then for each
-  // xiMin, dXi, nPoints, periodic flag
-
-  std::string  hash;
-  size_t i;
-
-  if ( !(is >> hash) || (hash != "#") ) {
-    cvm::error("Error reading grid at position "+
-                cvm::to_str(static_cast<size_t>(is.tellg()))+
-                " in stream(read \"" + hash + "\")\n");
-    return;
-  }
-
-  is >> nd;
-  mult = 1;
-  std::vector<cvm::real> lower_in(nd), widths_in(nd);
-  std::vector<int>       nx_in(nd);
-  std::vector<int>       periodic_in(nd);
-
-  for (i = 0; i < nd; i++ ) {
-    if ( !(is >> hash) || (hash != "#") ) {
-      cvm::error("Error reading grid at position "+
-                  cvm::to_str(static_cast<size_t>(is.tellg()))+
-                  " in stream(read \"" + hash + "\")\n");
-      return;
-    }
-
-    is >> lower_in[i] >> widths_in[i] >> nx_in[i] >> periodic_in[i];
-  }
-
-  this->setup(nx_in, 0., mult);
-
-  widths = widths_in;
-
-  for (i = 0; i < nd; i++ ) {
-    lower_boundaries.push_back(colvarvalue(lower_in[i]));
-    periodic.push_back(static_cast<bool>(periodic_in[i]));
-  }
-
-  // Reset the istream for read_multicol, which expects the whole file
-  is.clear();
-  is.seekg(0);
-  read_multicol(is);
-  cvm::main()->proxy->close_input_stream(filename);
 }
 
 colvar_grid_scalar::~colvar_grid_scalar()
@@ -408,66 +358,9 @@ colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars, std::
 
 
 colvar_grid_gradient::colvar_grid_gradient(std::string const &filename)
-  : colvar_grid<cvm::real>(),
-    samples(NULL)
+  : colvar_grid<cvm::real>(filename, 0),
+    samples(nullptr)
 {
-  std::istream &is = cvm::main()->proxy->input_stream(filename, "gradient file");
-  if (!is) {
-    return;
-  }
-
-  // Data in the header: nColvars, then for each
-  // xiMin, dXi, nPoints, periodic flag
-
-  std::string  hash;
-  size_t i;
-
-  if ( !(is >> hash) || (hash != "#") ) {
-    cvm::error("Error reading grid at position "+
-                cvm::to_str(static_cast<size_t>(is.tellg()))+
-                " in stream(read \"" + hash + "\")\n");
-    return;
-  }
-
-  is >> nd;
-
-  if (nd > 50) {
-    cvm::error("Error: excessive number of dimensions in file \""+
-               filename+"\".  Please ensure that the file is not corrupt.\n",
-               COLVARS_INPUT_ERROR);
-    return;
-  }
-
-  mult = nd;
-  std::vector<cvm::real> lower_in(nd), widths_in(nd);
-  std::vector<int>       nx_in(nd);
-  std::vector<int>       periodic_in(nd);
-
-  for (i = 0; i < nd; i++ ) {
-    if ( !(is >> hash) || (hash != "#") ) {
-      cvm::error("Error reading grid at position "+
-                  cvm::to_str(static_cast<size_t>(is.tellg()))+
-                  " in stream(read \"" + hash + "\")\n");
-      return;
-    }
-
-    is >> lower_in[i] >> widths_in[i] >> nx_in[i] >> periodic_in[i];
-  }
-
-  this->setup(nx_in, 0., mult);
-
-  widths = widths_in;
-
-  for (i = 0; i < nd; i++ ) {
-    lower_boundaries.push_back(colvarvalue(lower_in[i]));
-    periodic.push_back(static_cast<bool>(periodic_in[i]));
-  }
-
-  // Reset the istream for read_multicol, which expects the whole file
-  is.clear();
-  is.seekg(0);
-  read_multicol(is);
-  cvm::main()->proxy->close_input_stream(filename);
 }
 
 std::string colvar_grid_gradient::get_state_params() const
