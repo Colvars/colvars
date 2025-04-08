@@ -26,7 +26,6 @@ int main (int argc, char *argv[]) {
     std::cerr << "One argument needed: file name.\n";
     return 1;
   }
-
   colvarproxy *proxy = new colvarproxy();
   colvarmodule *colvars = new colvarmodule(proxy);
 
@@ -34,9 +33,9 @@ int main (int argc, char *argv[]) {
   std::shared_ptr<colvar_grid_count> count_ptr;
 
   std::string countfile;
-
   // Look for matching count file
   size_t pos = gradfile.rfind(std::string(".czar.grad"));
+
   if (pos != std::string::npos) {
     countfile = gradfile.substr(0,pos) + ".zcount";
   } else {
@@ -45,6 +44,7 @@ int main (int argc, char *argv[]) {
       countfile = gradfile.substr(0,pos) + ".count";
     }
   }
+
   if (countfile.size()) {
     struct stat buffer;
     if (stat(countfile.c_str(), &buffer) == 0) {
@@ -52,34 +52,43 @@ int main (int argc, char *argv[]) {
       count_ptr.reset(new colvar_grid_count(countfile));
     }
   }
+
   std::cout << "Reading gradient file " << gradfile << std::endl;
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile, count_ptr);
 
   int itmax = 1000;
   cvm::real err;
-  cvm::real tol = 1e-6;
-
+  cvm::real tol = 1e-3;
   integrate_potential potential(grad_ptr);
   potential.prepare_laplacian_calculation();
   potential.print_laplacian_preparations();
+
   potential.set_weighted_div();
   // potential.data = potential.divergence;
   // TODO: calculate div
   // TODO: calculate Laplacian
   // see how it works and wait for Jérôme
-  std::cout << potential.divergence.size() << "\n";
-  std::cout << " up to here everything's fine";
-  saveVectorToCSV(potential.divergence, "divergence.csv");
-  // potential.integrate(itmax, tol, err);
+  std::vector<cvm::real> laplacian_matrix (potential.computation_grid->nt, 0);
+  std::vector<cvm::real> test_vector (potential.computation_grid->nt, 1);
+  std::vector<cvm::real> complete_div (potential.computation_grid->nt, 0);
+
+  potential.laplacian_weighted<true>(test_vector, laplacian_matrix);
+  for (int i = 0; i < potential.computation_grid->nt; i++){
+    complete_div[i] = potential.divergence[i] + potential.div_border_supplement[i];
+  }
+  saveVectorToCSV(complete_div, "divergence.csv");
+  saveVectorToCSV(potential.laplacian_matrix_test, "laplacian.csv");
+  potential.integrate(itmax, tol, err);
   // potential.set_zero_minimum();
 
-  
+  // potential.computation_grid->data;
+
   std::cout << "Writing integrated potential file " << gradfile + ".int" << std::endl;
-  potential.write_multicol(std::string(gradfile + ".int"), "integrated potential");
+  saveVectorToCSV(potential.computation_grid->data, "integrated.csv");
 
   std::cout << "Writing internal gradient to file " << gradfile + ".out" << std::endl;
-  grad_ptr->write_multicol(std::string(gradfile + ".out"), "integrated potential gradeitn");
-
+  grad_ptr->write_multicol(std::string(gradfile + ".out"), "integrated potential gradient");
+  std::cout << "Jusqu'ici tout va bien" << std::endl;
   delete colvars;
   return 0;
 }
