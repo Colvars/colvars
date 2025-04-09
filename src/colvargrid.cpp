@@ -1280,6 +1280,9 @@ template<bool initialize_div_supplement> void integrate_potential::laplacian_wei
 {
   for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix); computation_grid->incr(ix)){
     LA[computation_grid->address(ix)] = 0;
+    if (initialize_div_supplement){
+      div_border_supplement[computation_grid->address(ix)] = 0;
+    }
   }
   // laplacian_matrix_test = std::vector<cvm::real>(computation_nt*computation_nt, 0);
   for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
@@ -1510,15 +1513,15 @@ cvm::real integrate_potential::calculate_weight_sum(std::vector<int> stencil_poi
     for (int i = 0; i < nd && i < direction.size(); i++) {
       weight_coordinate[i] += direction[i];
     }
-    bool test = stencil_point[0] == 128 && stencil_point[1] == 118;
+    // bool test = stencil_point[0] == 128 && stencil_point[1] == 118;
 
     gradients->wrap_detect_edge(weight_coordinate);
     weight_sum += get_regularized_weight(weight_coordinate) - m;
 
-    if (test){
-      std::cout << "weight_coordinate: " << vec_to_string(weight_coordinate) << std::endl;
-      std::cout << "weight_sum: " << weight_sum << std::endl;
-    }
+    // if (test){
+    //   std::cout << "weight_coordinate: " << vec_to_string(weight_coordinate) << std::endl;
+    //   std::cout << "weight_sum: " << weight_sum << std::endl;
+    // }
   }
   return weight_sum;
 }
@@ -1527,7 +1530,7 @@ std::vector<cvm::real> integrate_potential::compute_averaged_border_normal_gradi
     std::vector<int> virtual_point_coordinates)
 {
   std::vector<int> reference_point_coordinates(nd,0); // Initialize with correct size
-  computation_grid->wrap_to_edge(virtual_point_coordinates, reference_point_coordinates);
+  gradients->wrap_to_edge(virtual_point_coordinates, reference_point_coordinates);
   std::vector<int> directions_to_average_along;
   bool normal_directions[nd];
   for (int i = 0; i < nd; i++) {
@@ -1545,15 +1548,16 @@ std::vector<cvm::real> integrate_potential::compute_averaged_border_normal_gradi
     gradients_to_average_relative_positions.push_back(zero_vector);
   } else {
     for (int i = 0; i < pow(2, directions_to_average_along.size()); i++) {
-      std::vector<int> direction_along_which_to_average(nd, 0);
+      std::vector<int> gradient_to_average_relative_position(nd, 0);
       std::string binary = convert_base_two(i, directions_to_average_along.size());
       for (int bit_position = 0; bit_position < directions_to_average_along.size(); bit_position++) {
-        direction_along_which_to_average[directions_to_average_along[bit_position]] =
+        gradient_to_average_relative_position[directions_to_average_along[bit_position]] =
             binary[bit_position] - '0';
       }
-      gradients_to_average_relative_positions.push_back(direction_along_which_to_average);
+      gradients_to_average_relative_positions.push_back(gradient_to_average_relative_position);
     }
   }
+
   // compute the averaged bordered normal gradient
   std::vector<cvm::real> averaged_bordered_normal_gradient(nd, 0);
   // averaging the gradients
