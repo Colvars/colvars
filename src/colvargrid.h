@@ -1972,8 +1972,8 @@ class integrate_potential : public colvar_grid_scalar
 
   /// \brief Update matrix containing divergence and boundary conditions
   /// called by update_div_neighbors and by colvarbias_abf::adiabatic_reweighting_update_gradient_pmf
-  void update_div_local(const std::vector<int> &ix);
-
+  void update_weighted_div_local(const std::vector<int> &ix);
+  void update_div_local(const std::vector<int> &ix0);
 
   /// \brief Set matrix containing divergence and boundary conditions
   /// based on complete gradient grid
