@@ -692,7 +692,7 @@ void integrate_potential::set_div()
     return;
 
   for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
-      update_div_local(ix);
+      update_weighted_div_local(ix);
   }
 }
 
@@ -735,7 +735,7 @@ void integrate_potential::set_weighted_div()
     std::cout << "m: " << m << " n_points: " << n_points << "gradients->number_of_points(): " << gradients->number_of_points() <<  std::endl;
     for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
         computation_grid->incr(ix)) {
-      update_div_local(ix);
+      update_weighted_div_local(ix);
     }
     
   }
@@ -794,6 +794,47 @@ void integrate_potential::get_grad(cvm::real *g, std::vector<int> &ix)
   gradients->vector_value_smoothed(ix, g, b_smoothed);
 }
 
+void integrate_potential::update_div_local(const std::vector<int> &ix0)
+{
+  const size_t linear_index = address(ix0);
+  int i, j, k;
+  std::vector<int> ix = ix0;
+
+  if (nd == 2) {
+    // gradients at grid points surrounding the current scalar grid point
+    cvm::real g00[2], g01[2], g10[2], g11[2];
+
+    get_grad(g11, ix);
+    ix[0] = ix0[0] - 1;
+    get_grad(g01, ix);
+    ix[1] = ix0[1] - 1;
+    get_grad(g00, ix);
+    ix[0] = ix0[0];
+    get_grad(g10, ix);
+
+    divergence[linear_index] = ((g10[0]-g00[0] + g11[0]-g01[0]) / widths[0]
+                              + (g01[1]-g00[1] + g11[1]-g10[1]) / widths[1]) * 0.5;
+  } else if (nd == 3) {
+    cvm::real gc[24]; // stores 3d gradients in 8 contiguous bins
+    int index = 0;
+
+    ix[0] = ix0[0] - 1;
+    for (i = 0; i<2; i++) {
+      ix[1] = ix0[1] - 1;
+      for (j = 0; j<2; j++) {
+        ix[2] = ix0[2] - 1;
+        for (k = 0; k<2; k++) {
+          get_grad(gc + index, ix);
+          index += 3;
+          ix[2]++;
+        }
+        ix[1]++;
+      }
+      ix[0]++;
+    }
+  }
+}
+
 size_t integrate_potential::get_grad(std::vector<cvm::real> &g, std::vector<int> &ix){
   //TODO: it works fine
   size_t count = gradients->samples->value(ix);
@@ -817,7 +858,7 @@ void integrate_potential::prepare_divergence_calculation()
   }
 }
 
-void integrate_potential::update_div_local(const std::vector<int> &ix0)
+void integrate_potential::update_weighted_div_local(const std::vector<int> &ix0)
 /*
 Updates the divergence at the point ix0
 */
@@ -1320,7 +1361,6 @@ template<bool initialize_div_supplement> void integrate_potential::laplacian_wei
         } else {          
           std::vector<int> reference_point_coordinates(nd,0);
           computation_grid->wrap_to_edge(neighbor_coordinate, reference_point_coordinates);
-          std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradients(neighbor_coordinate);
           LA[computation_grid->address(ix)] += coefficient * A[computation_grid->address(reference_point_coordinates)];
 
           // if (test){
@@ -1337,11 +1377,17 @@ template<bool initialize_div_supplement> void integrate_potential::laplacian_wei
 
           cvm::real div_supplement_term = 0;
           if (initialize_div_supplement){
+            std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradients(neighbor_coordinate);
             for (int i = 0; i < nd; i++){
               div_supplement_term += averaged_normal_vector[i] * neighbor_relative_position[i] * widths[i];
             }
           }
-          div_border_supplement[computation_grid->address(ix)] -= div_supplement_term*coefficient;
+          bool test = reference_point_coordinates[0] == 128 && reference_point_coordinates[1] == 69;
+          if (test){
+            std::cout << "div_supplement_term: " << div_supplement_term << std::endl;
+            std::cout << "coefficient: " << coefficient << std::endl;
+          }
+          div_border_supplement[computation_grid->address(ix)] -= div_supplement_term* coefficient;
         }
     }
   }
@@ -1529,6 +1575,7 @@ cvm::real integrate_potential::calculate_weight_sum(std::vector<int> stencil_poi
 std::vector<cvm::real> integrate_potential::compute_averaged_border_normal_gradients(
     std::vector<int> virtual_point_coordinates)
 {
+  bool test = virtual_point_coordinates[0] == 129 && virtual_point_coordinates[1] == 69;
   std::vector<int> reference_point_coordinates(nd,0); // Initialize with correct size
   gradients->wrap_to_edge(virtual_point_coordinates, reference_point_coordinates);
   std::vector<int> directions_to_average_along;
@@ -1541,7 +1588,7 @@ std::vector<cvm::real> integrate_potential::compute_averaged_border_normal_gradi
       normal_directions[i] = true;
     }
   }
-  // Find the position of the gradients to average
+  // Find the positions of the gradients to average
   std::vector<std::vector<int>> gradients_to_average_relative_positions;
   if (directions_to_average_along.size() == 0) {
     std::vector<int> zero_vector(nd, 0);
@@ -1563,6 +1610,10 @@ std::vector<cvm::real> integrate_potential::compute_averaged_border_normal_gradi
   // averaging the gradients
   for (int i = 0; i < gradients_to_average_relative_positions.size(); i++) {
     std::vector<int> gradient_position(reference_point_coordinates); // Initialize with reference_point_coordinates
+    if (test){
+      std::cout<< "gradient_position: " << vec_to_string(gradient_position) << std::endl;
+      std::cout << vec_to_string(gradients_to_average_relative_positions[i]) << std::endl;
+    }
     for (int j = 0; j < nd; j++) {
       gradient_position[j] += gradients_to_average_relative_positions[i][j];
     }
@@ -1572,17 +1623,15 @@ std::vector<cvm::real> integrate_potential::compute_averaged_border_normal_gradi
       averaged_bordered_normal_gradient[j] += gradient[j];
     }
   }
-  if (!gradients_to_average_relative_positions.empty()) {
-    for (int j = 0; j < nd; j++) {
-      averaged_bordered_normal_gradient[j] /= gradients_to_average_relative_positions.size();
-    }
-  }
-  // only keep the normal directions
+  // only keep the normal directions and average
+
   for (int j = 0; j < nd; j++) {
-    if (normal_directions[j]) {
+    if (!normal_directions[j]) {
       averaged_bordered_normal_gradient[j] = 0;
     }
+    averaged_bordered_normal_gradient[j] /= gradients_to_average_relative_positions.size();
   }
+
   return averaged_bordered_normal_gradient;
 }
 

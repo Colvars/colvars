@@ -78,7 +78,7 @@ int main (int argc, char *argv[]) {
   }
   saveVectorToCSV(complete_div, "divergence.csv");
   // saveVectorToCSV(potential.laplacian_matrix_test, "laplacian.csv");
-  potential.integrate(itmax, tol, err);
+  // potential.integrate(itmax, tol, err);
   // potential.set_zero_minimum();
 
   // potential.computation_grid->data;
