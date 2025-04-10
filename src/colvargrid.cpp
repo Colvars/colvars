@@ -647,34 +647,36 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
     nr_linbcg_sym(true, divergence, computation_grid->data, tol, itmax, iter, err);
     if (verbose)
       cvm::log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
+    std::cout << "extrapolating potential" << std::endl;
+    extrapolate_potential();
+    std::cout << "potential extrapolated" << std::endl;
+    // // DEBUG ###########################
+    // auto backup = data;
+    // data = divergence;
+    // std::ofstream os("div.dat");
+    // write_multicol(os);
+    // os.close();
+    // data = weights;
+    // os.open("weights.dat");
+    // write_multicol(os);
+    // os.close();
+    // data = backup;
+    // // DEBUG 2 ###########################
+    // // Compute terms of the Laplacian matrix
+    // std::vector<cvm::real> lap_mat(nt, 0.);
 
-    // DEBUG ###########################
-    auto backup = data;
-    data = divergence;
-    std::ofstream os("div.dat");
-    write_multicol(os);
-    os.close();
-    data = weights;
-    os.open("weights.dat");
-    write_multicol(os);
-    os.close();
-    data = backup;
-    // DEBUG 2 ###########################
-    // Compute terms of the Laplacian matrix
-    std::vector<cvm::real> lap_mat(nt, 0.);
+    // std::vector<size_t> cols = {0, 1, 2, 3, 4, 5, nt - 6, nt - 5, nt - 4, nt - 3, nt - 2, nt - 1};
 
-    std::vector<size_t> cols = {0, 1, 2, 3, 4, 5, nt - 6, nt - 5, nt - 4, nt - 3, nt - 2, nt - 1};
-
-    for (size_t i = 0; i < cols.size(); i++) {
-      this->reset();
-      data[cols[i]] = 1.;
-      laplacian_weighted<true>(data, lap_mat);
-      printf("Col  %3li  | ", cols[i]);
-      for (size_t j = 0; j < cols.size(); j++) {
-        printf(" %6.1f", lap_mat[cols[j]]);
-      }
-      printf("\n");
-    }
+    // for (size_t i = 0; i < cols.size(); i++) {
+    //   this->reset();
+    //   data[cols[i]] = 1.;
+    //   laplacian_weighted<true>(data, lap_mat);
+    //   printf("Col  %3li  | ", cols[i]);
+    //   for (size_t j = 0; j < cols.size(); j++) {
+    //     printf(" %6.1f", lap_mat[cols[j]]);
+    //   }
+    //   printf("\n");
+    // }
     // DEBUG 2 ###########################
 
 
@@ -1382,11 +1384,6 @@ template<bool initialize_div_supplement> void integrate_potential::laplacian_wei
               div_supplement_term += averaged_normal_vector[i] * neighbor_relative_position[i] * widths[i];
             }
           }
-          bool test = reference_point_coordinates[0] == 128 && reference_point_coordinates[1] == 69;
-          if (test){
-            std::cout << "div_supplement_term: " << div_supplement_term << std::endl;
-            std::cout << "coefficient: " << coefficient << std::endl;
-          }
           div_border_supplement[computation_grid->address(ix)] -= div_supplement_term* coefficient;
         }
     }
@@ -1575,7 +1572,7 @@ cvm::real integrate_potential::calculate_weight_sum(std::vector<int> stencil_poi
 std::vector<cvm::real> integrate_potential::compute_averaged_border_normal_gradients(
     std::vector<int> virtual_point_coordinates)
 {
-  bool test = virtual_point_coordinates[0] == 129 && virtual_point_coordinates[1] == 69;
+  // bool test = virtual_point_coordinates[0] == 129 && virtual_point_coordinates[1] == 69;
   std::vector<int> reference_point_coordinates(nd,0); // Initialize with correct size
   gradients->wrap_to_edge(virtual_point_coordinates, reference_point_coordinates);
   std::vector<int> directions_to_average_along;
@@ -1610,10 +1607,10 @@ std::vector<cvm::real> integrate_potential::compute_averaged_border_normal_gradi
   // averaging the gradients
   for (int i = 0; i < gradients_to_average_relative_positions.size(); i++) {
     std::vector<int> gradient_position(reference_point_coordinates); // Initialize with reference_point_coordinates
-    if (test){
-      std::cout<< "gradient_position: " << vec_to_string(gradient_position) << std::endl;
-      std::cout << vec_to_string(gradients_to_average_relative_positions[i]) << std::endl;
-    }
+    // if (test){
+    //   std::cout<< "gradient_position: " << vec_to_string(gradient_position) << std::endl;
+    //   std::cout << vec_to_string(gradients_to_average_relative_positions[i]) << std::endl;
+    // }
     for (int j = 0; j < nd; j++) {
       gradient_position[j] += gradients_to_average_relative_positions[i][j];
     }
@@ -1753,6 +1750,34 @@ void integrate_potential::nr_linbcg_sym(const bool weighted, const std::vector<c
       break;
   }
 }
+
+void integrate_potential::extrapolate_potential(){
+  for (std::vector<int> ix = new_index(); index_ok(ix);
+        incr(ix) ){
+          std::vector<int> corresponding_index_in_small_grid = ix;
+          for (int i = 0; i < nd; i++){
+            if (!periodic[i]){
+              corresponding_index_in_small_grid[i] = ix[i]-1;
+            }
+          }
+          std::vector<int> reference_index_in_small_grid(nd, 0);
+          bool need_to_extrapolate = 
+          computation_grid->wrap_to_edge(corresponding_index_in_small_grid, reference_index_in_small_grid);
+          cvm::real potential_value = computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
+          std::vector<cvm::real> relative_position(nd, 0);
+          
+          if (need_to_extrapolate){
+            for (int i = 0; i < nd; i++){
+              relative_position[i] = corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i];
+            }
+            std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradients(corresponding_index_in_small_grid);
+            for (int i = 0; i < nd; i++){
+              potential_value += averaged_normal_vector[i] * relative_position[i] * widths[i];
+            }
+          }
+          data[address(ix)] = potential_value;
+        }
+};
 template<typename T>
   typename std::vector<T>::iterator integrate_potential::insertIntoSortedList(std::vector<T>& sortedList, const T& value) {
     // Find the first position where the element is not less than value
