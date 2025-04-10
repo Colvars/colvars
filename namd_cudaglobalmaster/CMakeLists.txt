@@ -6,6 +6,7 @@ option(NAMD_TCL "If your NAMD is built with TCL, use ON" ON)
 option(NAMD_NVTX_ENABLED "If your NAMD is built with -DNAMD_NVTX_ENABLED, use ON" OFF)
 set(NAMD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." CACHE STRING "NAMD source code directory")
 set(NAMD_HEADER_DIR "${NAMD_DIR}/src" CACHE STRING "NAMD header directory")
+set(CHARM_HEADER_DIR "${NAMD_DIR}/charm/include" CACHE STRING "Charm++ header directory")
 set(MOLFILE_PLUGIN_HEADER_DIR "${NAMD_DIR}/plugins/include" CACHE STRING "Molfile plugin header directory")
 set(COLVARS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../src" CACHE STRING "Colvars source code directory")
 set(NAMD_TCL_INCLUDE_DIR "${NAMD_DIR}/tcl8.6.13-linux-x86_64-threaded/include" CACHE STRING "TCL header directory")
@@ -18,6 +19,7 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 endif()
 
 message(STATUS "NAMD_HEADER_DIR is ${NAMD_HEADER_DIR}")
+message(STATUS "CHARM_HEADER_DIR is ${CHARM_HEADER_DIR}")
 message(STATUS "MOLFILE_PLUGIN_HEADER_DIR is ${MOLFILE_PLUGIN_HEADER_DIR}")
 message(STATUS "COLVARS_SOURCE_DIR is ${COLVARS_SOURCE_DIR}")
 message(STATUS "NAMD_TCL_INCLUDE_DIR is ${NAMD_TCL_INCLUDE_DIR}")
@@ -88,6 +90,7 @@ add_library(
 target_include_directories(cudaglobalmastercolvars
   PUBLIC "${COLVARS_SOURCE_DIR}"
   PUBLIC "${NAMD_HEADER_DIR}"
+  PUBLIC "${CHARM_HEADER_DIR}"
   PUBLIC "${MOLFILE_PLUGIN_HEADER_DIR}"
   PUBLIC "${NAMD_TCL_INCLUDE_DIR}"
   PUBLIC "${NAMD_LEPTON_INCLUDE_DIR}")
