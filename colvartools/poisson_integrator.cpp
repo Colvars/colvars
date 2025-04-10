@@ -78,13 +78,14 @@ int main (int argc, char *argv[]) {
   }
   saveVectorToCSV(complete_div, "divergence.csv");
   // saveVectorToCSV(potential.laplacian_matrix_test, "laplacian.csv");
-  // potential.integrate(itmax, tol, err);
-  // potential.set_zero_minimum();
+  potential.integrate(itmax, tol, err);
+  potential.set_zero_minimum();
 
   // potential.computation_grid->data;
 
   std::cout << "Writing integrated potential file " << gradfile + ".int" << std::endl;
   saveVectorToCSV(potential.computation_grid->data, "integrated.csv");
+  saveVectorToCSV(potential.data, "integrated_extrapolated.csv");
 
   std::cout << "Writing internal gradient to file " << gradfile + ".out" << std::endl;
   grad_ptr->write_multicol(std::string(gradfile + ".out"), "integrated potential gradient");

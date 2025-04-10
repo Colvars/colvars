@@ -2113,5 +2113,8 @@ class integrate_potential : public colvar_grid_scalar
 
   template<typename T>
   typename std::vector<T>::iterator insertIntoSortedList(std::vector<T>& sortedList, const T& value);
+
+
+  void extrapolate_potential();
 };
 #endif
