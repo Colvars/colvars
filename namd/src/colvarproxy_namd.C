@@ -38,6 +38,7 @@
 #include "colvar.h"
 #include "colvarbias.h"
 #include "colvaratoms.h"
+#include "colvaratoms_soa.h"
 #include "colvarproxy.h"
 #include "colvarproxy_namd.h"
 #include "colvarscript.h"
@@ -1032,9 +1033,12 @@ int colvarproxy_namd::load_coords_pdb(char const *pdb_filename,
   return COLVARS_OK;
 }
 
-
 int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
+#ifdef COLVARS_USE_SOA
+                                     cvm::atom_group_soa& atoms,
+#else
                                      cvm::atom_group &atoms,
+#endif // COLVARS_USE_SOA
                                      std::string const &pdb_field_str,
                                      double const pdb_field_value)
 {
@@ -1046,7 +1050,9 @@ int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
   size_t const pdb_natoms = pdb->num_atoms();
 
   e_pdb_field pdb_field_index = pdb_field_str2enum(pdb_field_str);
-
+#ifdef COLVARS_USE_SOA
+  auto modify_atoms = atoms.get_atom_modifier();
+#endif // COLVARS_USE_SOA
   for (size_t ipdb = 0; ipdb < pdb_natoms; ipdb++) {
 
     double atom_pdb_field_value = 0.0;
@@ -1079,81 +1085,17 @@ int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
     }
 
     if (atoms.is_enabled(colvardeps::f_ag_scalable)) {
+#ifdef COLVARS_USE_SOA
+      modify_atoms.add_atom_id(ipdb);
+#else
       atoms.add_atom_id(ipdb);
+#endif // COLVARS_USE_SOA
     } else {
+#ifdef COLVARS_USE_SOA
+      modify_atoms.add_atom(cvm::atom_group_soa::init_atom_from_proxy(this, ipdb+1));
+#else
       atoms.add_atom(cvm::atom(ipdb+1));
-    }
-  }
-
-  delete pdb;
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
-}
-
-int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
-                                     cvm::atom_group_soa &atoms,
-                                     std::string const &pdb_field_str,
-                                     double const pdb_field_value)
-{
-  if (pdb_field_str.size() == 0)
-    cvm::error("Error: must define which PDB field to use "
-               "in order to define atoms from a PDB file.\n", COLVARS_INPUT_ERROR);
-
-  PDB *pdb = new PDB(pdb_filename);
-  size_t const pdb_natoms = pdb->num_atoms();
-
-  e_pdb_field pdb_field_index = pdb_field_str2enum(pdb_field_str);
-
-  auto modify_atoms = get_atom_modifier();
-  for (size_t ipdb = 0; ipdb < pdb_natoms; ipdb++) {
-
-    double atom_pdb_field_value = 0.0;
-
-    switch (pdb_field_index) {
-    case e_pdb_occ:
-      atom_pdb_field_value = (pdb->atom(ipdb))->occupancy();
-      break;
-    case e_pdb_beta:
-      atom_pdb_field_value = (pdb->atom(ipdb))->temperaturefactor();
-      break;
-    case e_pdb_x:
-      atom_pdb_field_value = (pdb->atom(ipdb))->xcoor();
-      break;
-    case e_pdb_y:
-      atom_pdb_field_value = (pdb->atom(ipdb))->ycoor();
-      break;
-    case e_pdb_z:
-      atom_pdb_field_value = (pdb->atom(ipdb))->zcoor();
-      break;
-    default:
-      break;
-    }
-
-    if ( (pdb_field_value) &&
-         (atom_pdb_field_value != pdb_field_value) ) {
-      continue;
-    } else if (atom_pdb_field_value == 0.0) {
-      continue;
-    }
-
-    if (atoms.is_enabled(colvardeps::f_ag_scalable)) {
-      atoms.add_atom_id(ipdb);
-    } else {
-      // modify_atoms.add_atom(cvm::atom(ipdb+1));
-      const int atom_number = ipdb+1;
-      const int proxy_index = init_atom(atom_number);
-      const int atom_id = get_atom_id(proxy_index);
-      const cvm::real atom_mass = get_atom_mass(proxy_index);
-      const cvm::real atom_charge = get_atom_charge(proxy_index);
-      modify_atoms.add_atom(
-        cvm::atom_group_soa::simple_atom{
-          .proxy_index = proxy_index,
-          .id = atom_id,
-          .mass = atom_mass,
-          .charge = atom_charge,
-          .pos = {0, 0, 0},
-          .vel = {0, 0, 0},
-          .total_force = {0, 0, 0},
-          .grad = {0, 0, 0}});
+#endif // COLVARS_USE_SOA
     }
   }
 
@@ -1517,7 +1459,7 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
   Vector dV(0.0);
 #ifdef COLVARS_USE_SOA
   for (size_t i = 0; i < ag->size(); ++i) {
-    if (g->compute_VdV(Position(ag->pos_x(i), ag->pos_y(i), ag->pos_z(i)))) {
+    if (g->compute_VdV(Position(ag->pos_x(i), ag->pos_y(i), ag->pos_z(i)), V, dV)) {
       // out-of-bounds atom
       V = 0.0f;
       dV = 0.0;
