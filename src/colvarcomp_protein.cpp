@@ -34,7 +34,11 @@ int colvar::alpha_angles::init(std::string const &conf)
   std::vector<int> residues;
 
   bool b_use_index_groups = false;
+#ifdef COLVARS_USE_SOA
+  cvm::atom_group_soa group_CA, group_N, group_O;
+#else
   cvm::atom_group group_CA, group_N, group_O;
+#endif // COLVARS_USE_SOA
 
   std::string residues_conf = "";
   std::string prefix;
@@ -66,9 +70,21 @@ int colvar::alpha_angles::init(std::string const &conf)
     get_keyval(conf, "prefix", prefix, "alpha_");
 
     // Not all groups are mandatory, parse silently
+#ifdef COLVARS_USE_SOA
+    {
+      // These lines must be in its own scope to ensure RAII
+      auto modify_group_CA = group_CA.get_atom_modifier();
+      auto modify_group_N = group_N.get_atom_modifier();
+      auto modify_group_O = group_O.get_atom_modifier();
+      modify_group_CA.add_index_group(prefix + "CA", true);
+      modify_group_N.add_index_group(prefix + "N", true);
+      modify_group_O.add_index_group(prefix + "O", true);
+    }
+#else
     group_CA.add_index_group(prefix + "CA", true);
     group_N.add_index_group(prefix + "N", true);
     group_O.add_index_group(prefix + "O", true);
+#endif // COLVARS_USE_SOA
     int na = group_CA.size();
     int nn = group_N.size();
     int no = group_O.size();
@@ -111,10 +127,21 @@ int colvar::alpha_angles::init(std::string const &conf)
         register_atom_group(theta.back()->atom_groups[2]);
       }
     } else {
+#ifdef COLVARS_USE_SOA
+      colvarproxy* const p = cvm::main()->proxy;
+#endif // COLVARS_USE_SOA
       for (size_t i = 0; i < residues.size()-2; i++) {
+#ifdef COLVARS_USE_SOA
+        theta.push_back(
+          new colvar::angle(
+            cvm::atom_group_soa::init_atom_from_proxy(p, r[i  ], "CA", sid),
+            cvm::atom_group_soa::init_atom_from_proxy(p, r[i+1], "CA", sid),
+            cvm::atom_group_soa::init_atom_from_proxy(p, r[i+2], "CA", sid)));
+#else
         theta.push_back(new colvar::angle(cvm::atom(r[i  ], "CA", sid),
                                           cvm::atom(r[i+1], "CA", sid),
                                           cvm::atom(r[i+2], "CA", sid)));
+#endif // COLVARS_USE_SOA
         register_atom_group(theta.back()->atom_groups[0]);
         register_atom_group(theta.back()->atom_groups[1]);
         register_atom_group(theta.back()->atom_groups[2]);
@@ -131,6 +158,9 @@ int colvar::alpha_angles::init(std::string const &conf)
     get_keyval(conf, "hBondExpDenom", ed, ed);
 
     if (hb_coeff > 0.0) {
+#ifdef COLVARS_USE_SOA
+      colvarproxy* const p = cvm::main()->proxy;
+#endif // COLVARS_USE_SOA
       if (b_use_index_groups) {
         if (group_N.size() < 5) {
           return cvm::error("Not enough atoms (" + cvm::to_str(group_N.size()) + ") in index group \"" + prefix + "N\"",
@@ -139,16 +169,30 @@ int colvar::alpha_angles::init(std::string const &conf)
         for (size_t i = 0; i < group_N.size()-4; i++) {
           // Note: we need to call the atom copy constructor here because
           // the h_bond constructor does not make copies of the provided atoms
+#ifdef COLVARS_USE_SOA
+          hb.push_back(
+            new colvar::h_bond(cvm::atom_group_soa::init_atom_from_proxy(p,group_O[i]),
+                               cvm::atom_group_soa::init_atom_from_proxy(p,group_N[i+4]),
+                               r0, en, ed));
+#else
           hb.push_back(new colvar::h_bond(cvm::atom(group_O[i]),
                                           cvm::atom(group_N[i+4]),
                                           r0, en, ed));
+#endif // COLVARS_USE_SOA
           register_atom_group(hb.back()->atom_groups[0]);
         }
       } else {
         for (size_t i = 0; i < residues.size()-4; i++) {
+#ifdef COLVARS_USE_SOA
+          hb.push_back(
+            new colvar::h_bond(cvm::atom_group_soa::init_atom_from_proxy(p,r[i  ], "O",  sid),
+                               cvm::atom_group_soa::init_atom_from_proxy(p,r[i+4], "N",  sid),
+                               r0, en, ed));
+#else
           hb.push_back(new colvar::h_bond(cvm::atom(r[i  ], "O",  sid),
                                           cvm::atom(r[i+4], "N",  sid),
                                           r0, en, ed));
+#endif // COLVARS_USE_SOA
           register_atom_group(hb.back()->atom_groups[0]);
         }
       }
@@ -251,11 +295,17 @@ void colvar::alpha_angles::collect_gradients(std::vector<int> const &atom_ids, s
       cvm::real const coeff = cvc_coeff * theta_norm * dfdt * (1.0/theta_tol);
 
       for (size_t j = 0; j < theta[i]->atom_groups.size(); j++) {
-        cvm::atom_group &ag = *(theta[i]->atom_groups[j]);
+        auto &ag = *(theta[i]->atom_groups[j]);
         for (size_t k = 0; k < ag.size(); k++) {
+#ifdef COLVARS_USE_SOA
+          size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                      ag.id(k)) - atom_ids.begin();
+          atomic_gradients[a] += coeff * cvm::rvector(ag.grad_x(k), ag.grad_y(k), ag.grad_z(k));
+#else
           size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
                                       ag[k].id) - atom_ids.begin();
           atomic_gradients[a] += coeff * ag[k].grad;
+#endif // COLVARS_USE_SOA
         }
       }
     }
@@ -271,11 +321,17 @@ void colvar::alpha_angles::collect_gradients(std::vector<int> const &atom_ids, s
       cvm::real const coeff = cvc_coeff * 0.5 * hb_norm;
 
       for (size_t j = 0; j < hb[i]->atom_groups.size(); j++) {
-        cvm::atom_group &ag = *(hb[i]->atom_groups[j]);
+        auto &ag = *(hb[i]->atom_groups[j]);
         for (size_t k = 0; k < ag.size(); k++) {
+#ifdef COLVARS_USE_SOA
+          size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                      ag.id(k)) - atom_ids.begin();
+          atomic_gradients[a] += coeff * cvm::rvector(ag.grad_x(k), ag.grad_y(k), ag.grad_z(k));
+#else
           size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
                                       ag[k].id) - atom_ids.begin();
           atomic_gradients[a] += coeff * ag[k].grad;
+#endif // COLVARS_USE_SOA
         }
       }
     }
@@ -347,7 +403,11 @@ int colvar::dihedPC::init(std::string const &conf)
   size_t n_residues;
   std::string residues_conf = "";
   std::string prefix;
+#ifdef COLVARS_USE_SOA
+  cvm::atom_group_soa group_CA, group_N, group_C;
+#else
   cvm::atom_group group_CA, group_N, group_C;
+#endif // COLVARS_USE_SOA
 
   // residueRange is mandatory for the topology-based case
   if (key_lookup(conf, "residueRange", &residues_conf)) {
@@ -374,9 +434,20 @@ int colvar::dihedPC::init(std::string const &conf)
     get_keyval(conf, "prefix", prefix, "dihed_");
 
     // All three groups are required
+#ifdef COLVARS_USE_SOA
+    {
+      auto modify_group_CA = group_CA.get_atom_modifier();
+      auto modify_group_N = group_N.get_atom_modifier();
+      auto modify_group_C = group_C.get_atom_modifier();
+      modify_group_CA.add_index_group(prefix + "CA");
+      modify_group_N.add_index_group(prefix + "N");
+      modify_group_C.add_index_group(prefix + "C");
+    }
+#else
     group_CA.add_index_group(prefix + "CA");
     group_N.add_index_group(prefix + "N");
     group_C.add_index_group(prefix + "C");
+#endif // COLVARS_USE_SOA
     int na = group_CA.size();
     int nn = group_N.size();
     int nc = group_C.size();
@@ -455,7 +526,9 @@ int colvar::dihedPC::init(std::string const &conf)
                              " (4 coeffs per residue, minus one residue).\n",
                              COLVARS_INPUT_ERROR);
   }
-
+#ifdef COLVARS_USE_SOA
+  colvarproxy* const p = cvm::main()->proxy;
+#endif // COLVARS_USE_SOA
   for (size_t i = 0; i < n_residues-1; i++) {
     // Psi
     if (b_use_index_groups) {
@@ -464,10 +537,19 @@ int colvar::dihedPC::init(std::string const &conf)
                                             group_C[i],
                                             group_N[i+1]));
     } else {
+#ifdef COLVARS_USE_SOA
+      theta.push_back(
+        new colvar::dihedral(
+          cvm::atom_group_soa::init_atom_from_proxy(p,r[i  ], "N", sid),
+          cvm::atom_group_soa::init_atom_from_proxy(p,r[i  ], "CA", sid),
+          cvm::atom_group_soa::init_atom_from_proxy(p,r[i  ], "C", sid),
+          cvm::atom_group_soa::init_atom_from_proxy(p,r[i+1], "N", sid)));
+#else
       theta.push_back(new colvar::dihedral(cvm::atom(r[i  ], "N", sid),
                                            cvm::atom(r[i  ], "CA", sid),
                                            cvm::atom(r[i  ], "C", sid),
                                            cvm::atom(r[i+1], "N", sid)));
+#endif // COLVARS_USE_SOA
     }
     register_atom_group(theta.back()->atom_groups[0]);
     register_atom_group(theta.back()->atom_groups[1]);
@@ -480,10 +562,18 @@ int colvar::dihedPC::init(std::string const &conf)
                                            group_CA[i+1],
                                            group_C[i+1]));
     } else {
+#ifdef COLVARS_USE_SOA
+      theta.push_back(
+        new colvar::dihedral(cvm::atom_group_soa::init_atom_from_proxy(p,r[i  ], "C", sid),
+                             cvm::atom_group_soa::init_atom_from_proxy(p,r[i+1], "N", sid),
+                             cvm::atom_group_soa::init_atom_from_proxy(p,r[i+1], "CA", sid),
+                             cvm::atom_group_soa::init_atom_from_proxy(p,r[i+1], "C", sid)));
+#else
       theta.push_back(new colvar::dihedral(cvm::atom(r[i  ], "C", sid),
                                            cvm::atom(r[i+1], "N", sid),
                                            cvm::atom(r[i+1], "CA", sid),
                                            cvm::atom(r[i+1], "C", sid)));
+#endif // COLVARS_USE_SOA
     }
     register_atom_group(theta.back()->atom_groups[0]);
     register_atom_group(theta.back()->atom_groups[1]);
@@ -541,11 +631,17 @@ void colvar::dihedPC::collect_gradients(std::vector<int> const &atom_ids, std::v
     cvm::real const coeff = cvc_coeff * (coeffs[2*i] * dcosdt + coeffs[2*i+1] * dsindt);
 
     for (size_t j = 0; j < theta[i]->atom_groups.size(); j++) {
-      cvm::atom_group &ag = *(theta[i]->atom_groups[j]);
+      auto &ag = *(theta[i]->atom_groups[j]);
       for (size_t k = 0; k < ag.size(); k++) {
+#ifdef COLVARS_USE_SOA
+        size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
+                                    ag.id(k)) - atom_ids.begin();
+        atomic_gradients[a] += coeff * cvm::rvector(ag.grad_x(k), ag.grad_y(k), ag.grad_z(k));
+#else
         size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
                                     ag[k].id) - atom_ids.begin();
         atomic_gradients[a] += coeff * ag[k].grad;
+#endif // COLVARS_USE_SOA
       }
     }
   }

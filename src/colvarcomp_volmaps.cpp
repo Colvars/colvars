@@ -99,8 +99,13 @@ void colvar::map_total::calc_value()
       flags |= colvarproxy::volmap_flag_use_atom_field;
       w = &(atom_weights[0]);
     }
+#ifdef COLVARS_USE_SOA
+    proxy->compute_volmap(flags, volmap_id, atoms,
+                          &(x.real_value), w);
+#else
     proxy->compute_volmap(flags, volmap_id, atoms->begin(), atoms->end(),
                           &(x.real_value), w);
+#endif // COLVARS_USE_SOA
   } else {
     // Get the externally computed value
     x.real_value = proxy->get_volmap_value(volmap_index);
