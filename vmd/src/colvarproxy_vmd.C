@@ -826,11 +826,11 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
   int i = 0;
   float coord[3], voxcoord[3], grad[3];
   cvm::rvector dV(0.0);
-  cvm::atom_iter ai = atom_begin;
   cvm::atom_pos const origin(0.0, 0.0, 0.0);
 #ifdef COLVARS_USE_SOA
-  for (; i < atoms.size(); ++i) {
+  for (; i < atoms->size(); ++i) {
 #else
+  cvm::atom_iter ai = atom_begin;
   for ( ; ai != atom_end; ai++, i++) {
 #endif // COLVARS_USE_SOA
     // Wrap around the origin
