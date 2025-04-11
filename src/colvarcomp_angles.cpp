@@ -36,7 +36,30 @@ int colvar::angle::init(std::string const &conf)
   return error_code;
 }
 
-
+#ifdef COLVARS_USE_SOA
+colvar::angle::angle(cvm::atom_group_soa::simple_atom const &a1,
+                     cvm::atom_group_soa::simple_atom const &a2,
+                     cvm::atom_group_soa::simple_atom const &a3) : angle()
+{
+  group1 = new cvm::atom_group_soa();
+  group2 = new cvm::atom_group_soa();
+  group3 = new cvm::atom_group_soa();
+  {
+    auto modify_group1 = group1->get_atom_modifier();
+    auto modify_group2 = group2->get_atom_modifier();
+    auto modify_group3 = group3->get_atom_modifier();
+    modify_group1.add_atom(a1);
+    modify_group2.add_atom(a2);
+    modify_group3.add_atom(a3);
+  }
+  // group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
+  // group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
+  // group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
+  register_atom_group(group1);
+  register_atom_group(group2);
+  register_atom_group(group3);
+}
+#else
 colvar::angle::angle(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3) : angle()
 {
   group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
@@ -46,6 +69,7 @@ colvar::angle::angle(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &
   register_atom_group(group2);
   register_atom_group(group3);
 }
+#endif // COLVARS_USE_SOA
 
 
 void colvar::angle::calc_value()
@@ -148,6 +172,7 @@ void colvar::dipole_angle::calc_value()
   group1->calc_dipole(g1_pos);
 
   r21 = group1->dipole();
+  cvm::log("r21 = " + cvm::to_str(r21) + " ; g1_pos = " + cvm::to_str(g1_pos) + "\n");
   r21l = r21.norm();
   r23  = is_enabled(f_cvc_pbc_minimum_image) ?
     cvm::position_distance(g2_pos, g3_pos) :
@@ -178,7 +203,26 @@ void colvar::dipole_angle::calc_gradients()
   double aux1 = group1->total_charge/group1->total_mass;
   // double aux2 = group2->total_charge/group2->total_mass;
   // double aux3 = group3->total_charge/group3->total_mass;
-
+#ifdef COLVARS_USE_SOA
+  for (size_t i = 0; i < group1->size(); i++) {
+    const cvm::rvector grad = (group1->charge(i) + (-1) * group1->mass(i) * aux1) * dxdr1;
+    group1->grad_x(i) = grad.x;
+    group1->grad_y(i) = grad.y;
+    group1->grad_z(i) = grad.z;
+  }
+  for (size_t i = 0; i < group2->size(); i++) {
+    const cvm::rvector grad = group2->mass(i) / group2->total_mass * dxdr3 * (-1.0);
+    group2->grad_x(i) = grad.x;
+    group2->grad_y(i) = grad.y;
+    group2->grad_z(i) = grad.z;
+  }
+  for (size_t i = 0; i < group2->size(); i++) {
+    const cvm::rvector grad = group3->mass(i) / group3->total_mass * dxdr3;
+    group3->grad_x(i) = grad.x;
+    group3->grad_y(i) = grad.y;
+    group3->grad_z(i) = grad.z;
+  }
+#else
   size_t i;
   for (i = 0; i < group1->size(); i++) {
     (*group1)[i].grad =((*group1)[i].charge + (-1)* (*group1)[i].mass * aux1) * (dxdr1);
@@ -191,6 +235,7 @@ void colvar::dipole_angle::calc_gradients()
   for (i = 0; i < group3->size(); i++) {
     (*group3)[i].grad =((*group3)[i].mass/group3->total_mass) * (dxdr3);
   }
+#endif // COLVARS_USE_SOA
 }
 
 
@@ -218,7 +263,39 @@ int colvar::dihedral::init(std::string const &conf)
   return error_code;
 }
 
+#ifdef COLVARS_USE_SOA
+colvar::dihedral::dihedral(cvm::atom_group_soa::simple_atom const &a1,
+                           cvm::atom_group_soa::simple_atom const &a2,
+                           cvm::atom_group_soa::simple_atom const &a3,
+                           cvm::atom_group_soa::simple_atom const &a4)
+  : dihedral()
+{
+  b_1site_force = false;
 
+  group1 = new cvm::atom_group_soa();
+  group2 = new cvm::atom_group_soa();
+  group3 = new cvm::atom_group_soa();
+  group4 = new cvm::atom_group_soa();
+  {
+    auto modify_group1 = group1->get_atom_modifier();
+    auto modify_group2 = group2->get_atom_modifier();
+    auto modify_group3 = group3->get_atom_modifier();
+    auto modify_group4 = group4->get_atom_modifier();
+    modify_group1.add_atom(a1);
+    modify_group2.add_atom(a2);
+    modify_group3.add_atom(a3);
+    modify_group4.add_atom(a4);
+  }
+  // group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
+  // group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
+  // group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
+  // group4 = new cvm::atom_group(std::vector<cvm::atom>(1, a4));
+  register_atom_group(group1);
+  register_atom_group(group2);
+  register_atom_group(group3);
+  register_atom_group(group4);
+}
+#else
 colvar::dihedral::dihedral(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3,
                            cvm::atom const &a4)
   : dihedral()
@@ -234,7 +311,7 @@ colvar::dihedral::dihedral(cvm::atom const &a1, cvm::atom const &a2, cvm::atom c
   register_atom_group(group3);
   register_atom_group(group4);
 }
-
+#endif // COLVARS_USE_SOA
 
 void colvar::dihedral::calc_value()
 {

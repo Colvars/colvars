@@ -178,7 +178,13 @@ void colvar::aspath::calc_gradients() {
     impl_->compute_s_derivatives();
     for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+#ifdef COLVARS_USE_SOA
+            comp_atoms[i_frame]->grad_x(i_atom) += impl_->dsdx[i_frame][i_atom][0];
+            comp_atoms[i_frame]->grad_y(i_atom) += impl_->dsdx[i_frame][i_atom][1];
+            comp_atoms[i_frame]->grad_z(i_atom) += impl_->dsdx[i_frame][i_atom][2];
+#else
             (*(comp_atoms[i_frame]))[i_atom].grad += impl_->dsdx[i_frame][i_atom];
+#endif
         }
     }
 }
@@ -233,7 +239,13 @@ void colvar::azpath::calc_gradients() {
     impl_->compute_z_derivatives();
     for (size_t i_frame = 0; i_frame < reference_frames.size(); ++i_frame) {
         for (size_t i_atom = 0; i_atom < atoms->size(); ++i_atom) {
+#ifdef COLVARS_USE_SOA
+            comp_atoms[i_frame]->grad_x(i_atom) += impl_->dzdx[i_frame][i_atom][0];
+            comp_atoms[i_frame]->grad_y(i_atom) += impl_->dzdx[i_frame][i_atom][1];
+            comp_atoms[i_frame]->grad_z(i_atom) += impl_->dzdx[i_frame][i_atom][2];
+#else
             (*(comp_atoms[i_frame]))[i_atom].grad += impl_->dzdx[i_frame][i_atom];
+#endif // COLVARS_USE_SOA
         }
     }
 }
@@ -306,7 +318,13 @@ void colvar::aspathCV::calc_gradients() {
             for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
                 for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
                     for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
+#ifdef COLVARS_USE_SOA
+                        cv[i_cv]->atom_groups[k_ag]->grad_x(l_atom) *= grad[j_elem] * factor_polynomial;
+                        cv[i_cv]->atom_groups[k_ag]->grad_y(l_atom) *= grad[j_elem] * factor_polynomial;
+                        cv[i_cv]->atom_groups[k_ag]->grad_z(l_atom) *= grad[j_elem] * factor_polynomial;
+#else
                         (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = grad[j_elem] * factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
+#endif // COLVARS_USE_SOA
                     }
                 }
             }
@@ -409,7 +427,13 @@ void colvar::azpathCV::calc_gradients() {
             for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
                 for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
                     for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
+#ifdef COLVARS_USE_SOA
+                        cv[i_cv]->atom_groups[k_ag]->grad_x(l_atom) *= grad[j_elem] * factor_polynomial;
+                        cv[i_cv]->atom_groups[k_ag]->grad_y(l_atom) *= grad[j_elem] * factor_polynomial;
+                        cv[i_cv]->atom_groups[k_ag]->grad_z(l_atom) *= grad[j_elem] * factor_polynomial;
+#else
                         (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = grad[j_elem] * factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
+#endif // COLVARS_USE_SOA
                     }
                 }
             }

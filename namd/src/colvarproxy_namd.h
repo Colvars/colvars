@@ -204,6 +204,10 @@ public:
                      cvm::atom_group &atoms,
                      std::string const &pdb_field,
                      double const pdb_field_value) override;
+  int load_atoms_pdb(char const *filename,
+                     cvm::atom_group_soa &atoms,
+                     std::string const &pdb_field,
+                     double pdb_field_value) override;
 
   int load_coords_pdb(char const *filename,
                       std::vector<cvm::atom_pos> &pos,
@@ -237,27 +241,43 @@ public:
 
   void clear_volmap(int index) override;
 
+#ifdef COLVARS_USE_SOA
   int compute_volmap(int flags,
-                             int volmap_id,
-                             cvm::atom_iter atom_begin,
-                             cvm::atom_iter atom_end,
-                             cvm::real *value,
-                             cvm::real *atom_field) override;
+                     int volmap_id,
+                     cvm::atom_group_soa* ag,
+                     cvm::real *value,
+                     cvm::real *atom_field) override;
+#else
+  int compute_volmap(int flags,
+                     int volmap_id,
+                     cvm::atom_iter atom_begin,
+                     cvm::atom_iter atom_end,
+                     cvm::real *value,
+                     cvm::real *atom_field) override;
+#endif // COLVARS_USE_SOA
 
   /// Abstraction of the two types of NAMD volumetric maps
   template<class T>
   void getGridForceGridValue(int flags,
                              T const *grid,
+#ifdef COLVARS_USE_SOA
+                             cvm::atom_group_soa* ag,
+#else
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
+#endif // COLVARS_USE_SOA
                              cvm::real *value,
                              cvm::real *atom_field);
 
   /// Implementation of inner loop; allows for atom list computation and use
   template<class T, int flags>
   void GridForceGridLoop(T const *g,
+#ifdef COLVARS_USE_SOA
+                         cvm::atom_group_soa* ag,
+#else
                          cvm::atom_iter atom_begin,
                          cvm::atom_iter atom_end,
+#endif // COLVARS_USE_SOA
                          cvm::real *value,
                          cvm::real *atom_field);
 

@@ -547,6 +547,16 @@ int colvarproxy::load_atoms_pdb(char const * /* filename */,
       COLVARS_NOT_IMPLEMENTED);
 }
 
+int colvarproxy::load_atoms_pdb(char const * /* filename */,
+                                cvm::atom_group_soa & /* atoms */,
+                                std::string const & /* pdb_field */,
+                                double /* pdb_field_value */)
+{
+  return cvm::error(
+      "Error: loading atom indices from a PDB file is currently not implemented in " +
+          engine_name() + ".\n",
+      COLVARS_NOT_IMPLEMENTED);
+}
 
 int colvarproxy::load_coords_pdb(char const * /* filename */,
                                  std::vector<cvm::atom_pos> & /* pos */,
