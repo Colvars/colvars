@@ -590,6 +590,9 @@ public:
   virtual int load_atoms_pdb(char const *filename, cvm::atom_group &atoms,
                              std::string const &pdb_field, double pdb_field_value);
 
+  virtual int load_atoms_pdb(char const *filename, cvm::atom_group_soa &atoms,
+                             std::string const &pdb_field, double pdb_field_value);
+
   /// \brief Load a set of coordinates from a PDB file
   /// \param[in] filename name of the file
   /// \param[in,out] pos array of coordinates to fill; if not empty, the number of its elements must match
