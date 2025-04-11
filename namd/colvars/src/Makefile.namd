@@ -1,6 +1,7 @@
 COLVARSLIB = \
 	$(DSTDIR)/colvar.o \
 	$(DSTDIR)/colvaratoms.o \
+	$(DSTDIR)/colvaratoms_soa.o \
 	$(DSTDIR)/colvarbias.o \
 	$(DSTDIR)/colvarbias_abf.o \
 	$(DSTDIR)/colvarbias_abmd.o \

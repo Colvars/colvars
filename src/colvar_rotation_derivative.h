@@ -19,7 +19,7 @@
 template <typename T, typename std::enable_if<std::is_same<T, cvm::atom_pos>::value, bool>::type = true>
 inline void read_atom_coord(
   size_t ia, const std::vector<T>& pos,
-  cvm::real* _noalias x, cvm::real* _noalias y, cvm::real* _noalias z) {
+  cvm::real* _noalias x, cvm::real* _noalias y, cvm::real* _noalias z, size_t stride) {
   *x = pos[ia].x;
   *y = pos[ia].y;
   *z = pos[ia].z;
@@ -28,10 +28,19 @@ inline void read_atom_coord(
 template <typename T, typename std::enable_if<std::is_same<T, cvm::atom>::value, bool>::type = true>
 inline void read_atom_coord(
   size_t ia, const std::vector<T>& pos,
-  cvm::real* _noalias x, cvm::real* _noalias y, cvm::real* _noalias z) {
+  cvm::real* _noalias x, cvm::real* _noalias y, cvm::real* _noalias z, size_t stride) {
   *x = pos[ia].pos.x;
   *y = pos[ia].pos.y;
   *z = pos[ia].pos.z;
+}
+
+template <typename T, typename std::enable_if<std::is_same<T, cvm::real>::value, bool>::type = true>
+inline void read_atom_coord(
+  size_t ia, const std::vector<T>& pos,
+  cvm::real* _noalias x, cvm::real* _noalias y, cvm::real* _noalias z, size_t stride) {
+  *x = pos[ia];
+  *y = pos[ia + stride];
+  *z = pos[ia + 2 * stride];
 }
 
 /// \brief Helper enum class for specifying options in rotation_derivative::prepare_derivative
@@ -55,21 +64,55 @@ inline constexpr bool operator&(rotation_derivative_dldq Lhs, rotation_derivativ
 }
 
 /// \brief Helper class for calculating the derivative of rotation
-template <typename T1, typename T2>
+template <typename T1, typename T2, bool soa = false>
 struct rotation_derivative {
-  static_assert(std::is_same<T1, cvm::atom_pos>::value || std::is_same<T1, cvm::atom>::value,
-                "class template rotation_derivative only supports cvm::atom_pos or cvm::atom types.");
-  static_assert(std::is_same<T2, cvm::atom_pos>::value || std::is_same<T2, cvm::atom>::value,
-                "class template rotation_derivative only supports cvm::atom_pos or cvm::atom types.");
+  static_assert(
+    std::is_same<T1, cvm::real>::value     ||
+    std::is_same<T1, cvm::atom_pos>::value ||
+    std::is_same<T1, cvm::atom>::value,
+    "class template rotation_derivative only supports cvm::real (SOA), cvm::atom_pos or cvm::atom types.");
+  static_assert(
+    std::is_same<T2, cvm::real>::value        ||
+    std::is_same<T2, cvm::atom_pos>::value ||
+    std::is_same<T2, cvm::atom>::value,
+    "class template rotation_derivative only supports cvm::real (SOA), cvm::atom_pos or cvm::atom types.");
+  static_assert(
+    !soa || (soa && (std::is_same<T1, cvm::real>::value && std::is_same<T2, cvm::real>::value)),
+    "class template rotation_derivative only supports cvm::real when using SOA.");
   /// \brief Reference to the rotation
   const cvm::rotation &m_rot;
   /// \brief Reference to the atom positions of group 1
   const std::vector<T1> &m_pos1;
   /// \brief Reference to the atom positions of group 2
   const std::vector<T2> &m_pos2;
+  /// \brief Number of atoms in group1 (used in SOA)
+  size_t m_num_atoms_pos1;
+  /// \brief Number of atoms in group1 (used in SOA)
+  size_t m_num_atoms_pos2;
   /// \brief Temporary variable that will be updated if prepare_derivative called
   cvm::real tmp_Q0Q0[4][4];
   cvm::real tmp_Q0Q0_L[4][4][4];
+#ifdef COLVARS_USE_SOA
+  /*! @brief Constructor of the cvm::rotation::derivative class for SOA
+    *  @param[in]  rot   The cvm::rotation object (must have called
+    *                    `calc_optimal_rotation` before calling
+    *                    `calc_derivative_wrt_group1` and
+    *                    `calc_derivative_wrt_group2`)
+    *  @param[in]  pos1  The atom positions of group 1
+    *  @param[in]  pos2  The atom positions of group 2
+    *  @param[in]  num_atoms_pos1 The number of atoms in group1
+    *  @param[in]  num_atoms_pos2 The number of atoms in group2
+    */
+  rotation_derivative(
+    const cvm::rotation &rot,
+    const std::vector<T1> &pos1,
+    const std::vector<T2> &pos2,
+    const size_t num_atoms_pos1,
+    const size_t num_atoms_pos2):
+      m_rot(rot), m_pos1(pos1), m_pos2(pos2),
+      m_num_atoms_pos1(num_atoms_pos1),
+      m_num_atoms_pos2(num_atoms_pos2) {}
+#else
   /*! @brief Constructor of the cvm::rotation::derivative class
     *  @param[in]  rot   The cvm::rotation object (must have called
     *                    `calc_optimal_rotation` before calling
@@ -83,6 +126,7 @@ struct rotation_derivative {
     const std::vector<T1> &pos1,
     const std::vector<T2> &pos2):
       m_rot(rot), m_pos1(pos1), m_pos2(pos2) {};
+#endif // COLVARS_USE_SOA
   /*! @brief This function must be called before `calc_derivative_wrt_group1`
     *         and `calc_derivative_wrt_group2` in order to prepare the tmp_Q0Q0
     *        and tmp_Q0Q0_L.
@@ -481,7 +525,7 @@ struct rotation_derivative {
       // if (dl0_1_out == nullptr && dq0_1_out == nullptr) return;
       cvm::real a2x, a2y, a2z;
       // we can get rid of the helper function read_atom_coord if C++17 (constexpr) is available
-      read_atom_coord(ia, m_pos2, &a2x, &a2y, &a2z);
+      read_atom_coord(ia, m_pos2, &a2x, &a2y, &a2z, m_num_atoms_pos2);
       const cvm::rvector ds_1[4][4] = {
         {{ a2x,  a2y,  a2z}, { 0.0, a2z,  -a2y}, {-a2z,  0.0,  a2x}, { a2y, -a2x,  0.0}},
         {{ 0.0,  a2z, -a2y}, { a2x, -a2y, -a2z}, { a2y,  a2x,  0.0}, { a2z,  0.0,  a2x}},
@@ -507,7 +551,7 @@ struct rotation_derivative {
     // if (dl0_2_out == nullptr && dq0_2_out == nullptr) return;
     cvm::real a1x, a1y, a1z;
     // we can get rid of the helper function read_atom_coord if C++17 (constexpr) is available
-    read_atom_coord(ia, m_pos1, &a1x, &a1y, &a1z);
+    read_atom_coord(ia, m_pos1, &a1x, &a1y, &a1z, m_num_atoms_pos1);
     const cvm::rvector ds_2[4][4] = {
       {{ a1x,  a1y,  a1z}, { 0.0, -a1z,  a1y}, { a1z,  0.0, -a1x}, {-a1y,  a1x,  0.0}},
       {{ 0.0, -a1z,  a1y}, { a1x, -a1y, -a1z}, { a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}},
@@ -523,13 +567,26 @@ struct rotation_derivative {
  *  @param[in]  pos1  Atom positions of group 1
  *  @param[in]  pos2  Atom positions of group 2
  */
-template<typename T1, typename T2>
+template<typename T1, typename T2, bool soa>
 void debug_gradients(
   cvm::rotation &rot,
   const std::vector<T1> &pos1,
   const std::vector<T2> &pos2) {
-  static_assert(std::is_same<T1, cvm::atom_pos>::value || std::is_same<T1, cvm::atom>::value, "");
-  static_assert(std::is_same<T2, cvm::atom_pos>::value || std::is_same<T2, cvm::atom>::value, "");
+  static_assert(
+    std::is_same<T1, cvm::real>::value     ||
+    std::is_same<T1, cvm::atom_pos>::value ||
+    std::is_same<T1, cvm::atom>::value,
+    "function template debug_gradients only supports cvm::real (SOA), cvm::atom_pos or cvm::atom types.");
+  static_assert(
+    std::is_same<T2, cvm::real>::value        ||
+    std::is_same<T2, cvm::atom_pos>::value ||
+    std::is_same<T2, cvm::atom>::value,
+    "function template debug_gradients only supports cvm::real (SOA), cvm::atom_pos or cvm::atom types.");
+  static_assert(
+    (!soa && (std::is_same<T1, cvm::atom_pos>::value || std::is_same<T1, cvm::atom>::value)
+          && (std::is_same<T2, cvm::atom_pos>::value || std::is_same<T2, cvm::atom>::value)) ||
+    (soa && (std::is_same<T1, cvm::real>::value && std::is_same<T2, cvm::real>::value)),
+    "function template debug_gradients only supports cvm::real when using SOA.");
   // eigenvalues and eigenvectors
   cvm::real const L0 = rot.S_eigval[0];
   cvm::real const L1 = rot.S_eigval[1];
@@ -556,8 +613,11 @@ void debug_gradients(
             ", Q3 = "+cvm::to_str(Q3, cvm::cv_width, cvm::cv_prec)+
             ", Q0*Q3 = "+cvm::to_str(Q0.inner(Q3), cvm::cv_width, cvm::cv_prec)+
             "\n");
-
-  rotation_derivative<T1, T2> deriv(rot, pos1, pos2);
+#ifdef COLVARS_USE_SOA
+  rotation_derivative<T1, T2, soa> deriv(rot, pos1, pos2, pos1.size() / 3, pos2.size() / 3);
+#else
+  rotation_derivative<T1, T2, soa> deriv(rot, pos1, pos2);
+#endif
   cvm::rvector dl0_2;
   cvm::vector1d<cvm::rvector> dq0_2(4);
   cvm::matrix2d<cvm::rvector> ds_2;
@@ -573,7 +633,8 @@ void debug_gradients(
   cvm::real S_new[4][4];
   cvm::real S_new_eigval[4];
   cvm::real S_new_eigvec[4][4];
-  for (size_t ia = 0; ia < pos2.size(); ++ia) {
+  const size_t num_atoms = soa ? deriv.m_num_atoms_pos2 : pos2.size();
+  for (size_t ia = 0; ia < num_atoms; ++ia) {
     deriv.template calc_derivative_wrt_group2<true, true, true>(ia, &dl0_2, &dq0_2, &ds_2);
     // make an infitesimal move along each cartesian coordinate of
     // this atom, and solve again the eigenvector problem

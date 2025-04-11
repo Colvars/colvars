@@ -1024,14 +1024,22 @@ void colvar::build_atom_list(void)
 
   for (size_t i = 0; i < cvcs.size(); i++) {
     for (size_t j = 0; j < cvcs[i]->atom_groups.size(); j++) {
-      cvm::atom_group const &ag = *(cvcs[i]->atom_groups[j]);
+      auto const &ag = *(cvcs[i]->atom_groups[j]);
       for (size_t k = 0; k < ag.size(); k++) {
+#ifdef COLVARS_USE_SOA
+        temp_id_list.push_back(ag.id(k));
+#else
         temp_id_list.push_back(ag[k].id);
+#endif // COLVARS_USE_SOA
       }
       if (ag.is_enabled(f_ag_fitting_group) && ag.is_enabled(f_ag_fit_gradients)) {
-        cvm::atom_group const &fg = *(ag.fitting_group);
+        auto const &fg = *(ag.fitting_group);
         for (size_t k = 0; k < fg.size(); k++) {
+#ifdef COLVARS_USE_SOA
+          temp_id_list.push_back(fg.id(k));
+#else
           temp_id_list.push_back(fg[k].id);
+#endif // COLVARS_USE_SOA
         }
       }
     }
@@ -1294,7 +1302,7 @@ void colvar::setup()
   // loop over all components to update masses and charges of all groups
   for (size_t i = 0; i < cvcs.size(); i++) {
     for (size_t ig = 0; ig < cvcs[i]->atom_groups.size(); ig++) {
-      cvm::atom_group *atoms = cvcs[i]->atom_groups[ig];
+      auto *atoms = cvcs[i]->atom_groups[ig];
       atoms->setup();
       atoms->print_properties(name, i, ig);
       atoms->read_positions();

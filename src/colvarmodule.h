@@ -23,6 +23,8 @@
 #define COLVARS_BOUNDED_INV_TRIGONOMETRIC_FUNC
 #endif
 
+#define COLVARS_USE_SOA
+
 /*! \mainpage Main page
 This is the Developer's documentation for the Collective Variables module (Colvars).
 
@@ -234,6 +236,7 @@ static inline real acos(real const &x)
   // allow these classes to access protected data
   class atom;
   class atom_group;
+  class atom_group_soa;
   typedef std::vector<atom>::iterator       atom_iter;
   typedef std::vector<atom>::const_iterator atom_const_iter;
 
@@ -309,13 +312,22 @@ private:
   std::vector<int> colvars_smp_items;
 
   /// Array of named atom groups
+#ifdef COLVARS_USE_SOA
+  std::vector<atom_group_soa *> named_atom_groups_soa;
+#else
   std::vector<atom_group *> named_atom_groups;
+#endif // COLVARS_USE_SOA
 public:
+
+#ifdef COLVARS_USE_SOA
+  void register_named_atom_group_soa(atom_group_soa *ag);
+  void unregister_named_atom_group_soa(atom_group_soa *ag);
+#else
   /// Register a named atom group into named_atom_groups
   void register_named_atom_group(atom_group *ag);
-
   /// Remove a named atom group from named_atom_groups
   void unregister_named_atom_group(atom_group *ag);
+#endif
 
   /// Array of collective variables
   std::vector<colvar *> *variables();
@@ -569,7 +581,11 @@ public:
   static colvar * colvar_by_name(std::string const &name);
 
   /// Look up a named atom group by name; returns NULL if not found
+#ifdef COLVARS_USE_SOA
+  static atom_group_soa * atom_group_soa_by_name(std::string const& name);
+#else
   static atom_group * atom_group_by_name(std::string const &name);
+#endif // COLVARS_USE_SOA
 
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
@@ -800,17 +816,32 @@ public:
   /// and this string is non-empty, select atoms for which this field is
   /// non-zero \param pdb_field_value (optional) if non-zero, select only
   /// atoms whose pdb_field equals this
+#ifdef COLVARS_USE_SOA
+  static int load_coords(char const *filename,
+                         std::vector<rvector> *pos,
+                         atom_group_soa *atoms,
+                         std::string const &pdb_field,
+                         double pdb_field_value = 0.0);
+#else
   static int load_coords(char const *filename,
                          std::vector<rvector> *pos,
                          atom_group *atoms,
                          std::string const &pdb_field,
                          double pdb_field_value = 0.0);
+#endif // COLVARS_USE_SOA
 
   /// Load coordinates into an atom group from an XYZ file (assumes Angstroms)
+#ifdef COLVARS_USE_SOA
+  int load_coords_xyz(char const *filename,
+                      std::vector<rvector> *pos,
+                      atom_group_soa *atoms,
+                      bool keep_open = false);
+#else
   int load_coords_xyz(char const *filename,
                       std::vector<rvector> *pos,
                       atom_group *atoms,
                       bool keep_open = false);
+#endif // COLVARS_USE_SOA
 
   /// Frequency for collective variables trajectory output
   static size_t cv_traj_freq;
