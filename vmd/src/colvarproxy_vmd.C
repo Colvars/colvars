@@ -566,7 +566,11 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
 
 
 int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
+#ifdef COLVARS_USE_SOA
+                                    cvm::atom_group_soa &atoms,
+#else
                                     cvm::atom_group &atoms,
+#endif // COLVARS_USE_SOA
                                     std::string const &pdb_field_str,
                                     double const pdb_field_value)
 {
@@ -593,7 +597,9 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
   size_t const pdb_natoms = tmpmol->nAtoms;
 
   e_pdb_field pdb_field_index = pdb_field_str2enum(pdb_field_str);
-
+#ifdef COLVARS_USE_SOA
+  auto modify_atoms = atoms.get_atom_modifier();
+#endif // COLVARS_USE_SOA
   for (size_t ipdb = 0; ipdb < pdb_natoms; ipdb++) {
 
     double atom_pdb_field_value = 0.0;
@@ -624,8 +630,11 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
     } else if (atom_pdb_field_value == 0.0) {
       continue;
     }
-
+#ifdef COLVARS_USE_SOA
+    modify_atoms.add_atom(cvm::atom_group_soa::init_atom_from_proxy(this, ipdb+1));
+#else
     atoms.add_atom(cvm::atom(ipdb+1));
+#endif // COLVARS_USE_SOA
   }
 
   vmd->molecule_delete(tmpmolid);
@@ -805,8 +814,12 @@ void colvarproxy_vmd::clear_volmap(int index)
 
 template<int flags>
 void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
+#ifdef COLVARS_USE_SOA
+                                      cvm::atom_group_soa* atoms,
+#else
                                       cvm::atom_iter atom_begin,
                                       cvm::atom_iter atom_end,
+#endif // COLVARS_USE_SOA
                                       cvm::real *value,
                                       cvm::real *atom_field)
 {
@@ -815,11 +828,18 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
   cvm::rvector dV(0.0);
   cvm::atom_iter ai = atom_begin;
   cvm::atom_pos const origin(0.0, 0.0, 0.0);
-
+#ifdef COLVARS_USE_SOA
+  for (; i < atoms.size(); ++i) {
+#else
   for ( ; ai != atom_end; ai++, i++) {
-
+#endif // COLVARS_USE_SOA
     // Wrap around the origin
+#ifdef COLVARS_USE_SOA
+    cvm::rvector const wrapped_pos = position_distance(
+      origin, cvm::atom_pos(atoms->pos_x(i), atoms->pos_y(i), atoms->pos_z(i)));
+#else
     cvm::rvector const wrapped_pos = position_distance(origin, ai->pos);
+#endif // COLVARS_USE_SOA
     coord[0] = internal_to_angstrom(wrapped_pos.x);
     coord[1] = internal_to_angstrom(wrapped_pos.y);
     coord[2] = internal_to_angstrom(wrapped_pos.z);
@@ -855,12 +875,25 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
     if (flags & volmap_flag_use_atom_field) {
       *value += V * atom_field[i];
       if (flags & volmap_flag_gradients) {
+#ifdef COLVARS_USE_SOA
+        const cvm::rvector g = atom_field[i] * dV;
+        atoms->grad_x(i) += g.x;
+        atoms->grad_y(i) += g.y;
+        atoms->grad_z(i) += g.z;
+#else
         ai->grad += atom_field[i] * dV;
+#endif // COLVARS_USE_SOA
       }
     } else {
       *value += V;
       if (flags & volmap_flag_gradients) {
+#ifdef COLVARS_USE_SOA
+        atoms->grad_x(i) += dV.x;
+        atoms->grad_y(i) += dV.y;
+        atoms->grad_z(i) += dV.z;
+#else
         ai->grad += dV;
+#endif // COLVARS_USE_SOA
       }
     }
   }
@@ -869,8 +902,12 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
 
 int colvarproxy_vmd::compute_volmap(int flags,
                                     int volmap_id,
+#ifdef COLVARS_USE_SOA
+                                    cvm::atom_group_soa* atoms,
+#else
                                     cvm::atom_iter atom_begin,
                                     cvm::atom_iter atom_end,
+#endif // COLVARS_USE_SOA
                                     cvm::real *value,
                                     cvm::real *atom_field)
 {
@@ -883,24 +920,44 @@ int colvarproxy_vmd::compute_volmap(int flags,
       if (flags & volmap_flag_use_atom_field) {
         int const new_flags = volmap_flag_gradients |
           volmap_flag_use_atom_field;
+#ifdef COLVARS_USE_SOA
+        compute_voldata<new_flags>(voldata, atoms,
+                                   value, atom_field);
+#else
         compute_voldata<new_flags>(voldata, atom_begin, atom_end,
                                    value, atom_field);
+#endif // COLVARS_USE_SOA
       } else {
         int const new_flags = volmap_flag_gradients;
+#ifdef COLVARS_USE_SOA
+        compute_voldata<new_flags>(voldata, atoms,
+                                   value, NULL);
+#else
         compute_voldata<new_flags>(voldata, atom_begin, atom_end,
                                    value, NULL);
+#endif // COLVARS_USE_SOA
       }
 
     } else {
 
       if (flags & volmap_flag_use_atom_field) {
         int const new_flags = volmap_flag_use_atom_field;
+#ifdef COLVARS_USE_SOA
+        compute_voldata<new_flags>(voldata, atoms,
+                                   value, atom_field);
+#else
         compute_voldata<new_flags>(voldata, atom_begin, atom_end,
                                    value, atom_field);
+#endif // COLVARS_USE_SOA
       } else {
         int const new_flags = volmap_flag_null;
+#ifdef COLVARS_USE_SOA
+        compute_voldata<new_flags>(voldata, atoms,
+                                   value, NULL);
+#else
         compute_voldata<new_flags>(voldata, atom_begin, atom_end,
                                    value, NULL);
+#endif // COLVARS_USE_SOA
       }
     }
   } else {
