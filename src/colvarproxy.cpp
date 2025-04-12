@@ -535,18 +535,7 @@ int colvarproxy::parse_module_config()
   return error_code;
 }
 
-
-int colvarproxy::load_atoms_pdb(char const * /* filename */,
-                                cvm::atom_group & /* atoms */,
-                                std::string const & /* pdb_field */,
-                                double /* pdb_field_value */)
-{
-  return cvm::error(
-      "Error: loading atom indices from a PDB file is currently not implemented in " +
-          engine_name() + ".\n",
-      COLVARS_NOT_IMPLEMENTED);
-}
-
+#ifdef COLVARS_USE_SOA
 int colvarproxy::load_atoms_pdb(char const * /* filename */,
                                 cvm::atom_group_soa & /* atoms */,
                                 std::string const & /* pdb_field */,
@@ -557,6 +546,18 @@ int colvarproxy::load_atoms_pdb(char const * /* filename */,
           engine_name() + ".\n",
       COLVARS_NOT_IMPLEMENTED);
 }
+#else
+int colvarproxy::load_atoms_pdb(char const * /* filename */,
+                                cvm::atom_group & /* atoms */,
+                                std::string const & /* pdb_field */,
+                                double /* pdb_field_value */)
+{
+  return cvm::error(
+      "Error: loading atom indices from a PDB file is currently not implemented in " +
+          engine_name() + ".\n",
+      COLVARS_NOT_IMPLEMENTED);
+}
+#endif // COLVARS_USE_SOA
 
 int colvarproxy::load_coords_pdb(char const * /* filename */,
                                  std::vector<cvm::atom_pos> & /* pos */,
