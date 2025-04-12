@@ -1412,10 +1412,9 @@ void cvm::atom_group_soa::set_weighted_gradient(cvm::rvector const &grad)
     //   ai->grad = (ai->mass/total_mass) * grad;
     // }
     for (size_t i = 0; i < num_atoms; ++i) {
-      const double factor = atoms_mass[i]/total_mass;
-      grad_x(i) = factor * grad.x;
-      grad_y(i) = factor * grad.y;
-      grad_z(i) = factor * grad.z;
+      grad_x(i) = (atoms_mass[i]/total_mass) * grad.x;
+      grad_y(i) = (atoms_mass[i]/total_mass) * grad.y;
+      grad_z(i) = (atoms_mass[i]/total_mass) * grad.z;
     }
   }
 }
