@@ -587,11 +587,14 @@ public:
   /// \param[in] pdb_field if the file is a PDB and this string is non-empty,
   /// select atoms for which this field is non-zero
   /// \param[in] pdb_field_value if non-zero, select only atoms whose pdb_field equals this
-  virtual int load_atoms_pdb(char const *filename, cvm::atom_group &atoms,
-                             std::string const &pdb_field, double pdb_field_value);
-
+#ifdef COLVARS_USE_SOA
   virtual int load_atoms_pdb(char const *filename, cvm::atom_group_soa &atoms,
                              std::string const &pdb_field, double pdb_field_value);
+#else
+  virtual int load_atoms_pdb(char const *filename, cvm::atom_group &atoms,
+                             std::string const &pdb_field, double pdb_field_value);
+#endif // COLVARS_USE_SOA
+
 
   /// \brief Load a set of coordinates from a PDB file
   /// \param[in] filename name of the file
