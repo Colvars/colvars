@@ -984,7 +984,7 @@ void cvm::atom_group_soa::update_total_mass() {
     // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
     //   total_mass += ai->mass;
     // }
-    total_mass = std::accumulate(atoms_mass.begin(), atoms_mass.end(), 0.0f);
+    total_mass = std::accumulate(atoms_mass.begin(), atoms_mass.end(), 0.0);
   }
   if (total_mass < 1e-15) {
     cvm::error("ERROR: " + description + " has zero total mass.\n");
@@ -1004,7 +1004,7 @@ void cvm::atom_group_soa::update_total_charge() {
     // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
     //   total_charge += ai->charge;
     // }
-    total_charge = std::accumulate(atoms_charge.begin(), atoms_charge.end(), 0.0f);
+    total_charge = std::accumulate(atoms_charge.begin(), atoms_charge.end(), 0.0);
   }
 }
 
