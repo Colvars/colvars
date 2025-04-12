@@ -337,6 +337,9 @@ public:
   /// \brief Accessors to masses
   inline cvm::real& mass(size_t i) {return atoms_mass[i];}
   inline const cvm::real& mass(size_t i) const {return atoms_mass[i];}
+  /// \brief Accessors to weights
+  inline cvm::real& weight(size_t i) {return atoms_weight[i];}
+  inline const cvm::real& weight(size_t i) const {return atoms_weight[i];}
   /// \brief Accessors to charges
   inline cvm::real& charge(size_t i) {return atoms_charge[i];}
   inline const cvm::real& charge(size_t i) const {return atoms_charge[i];}
@@ -471,6 +474,8 @@ private:
   std::vector<cvm::real> atoms_mass;
   std::vector<cvm::real> atoms_grad;
   std::vector<cvm::real> atoms_total_force;
+  /// \brief Atom masses divided by total mass
+  std::vector<cvm::real> atoms_weight;
   /// \brief Internal atom IDs for host code
   std::vector<int> atoms_ids;
   /// Sorted list of internal atom IDs (populated on-demand by

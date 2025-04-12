@@ -211,13 +211,13 @@ void colvar::dipole_angle::calc_gradients()
     group1->grad_z(i) = grad.z;
   }
   for (size_t i = 0; i < group2->size(); i++) {
-    const cvm::rvector grad = group2->mass(i) / group2->total_mass * dxdr3 * (-1.0);
+    const cvm::rvector grad = group2->weight(i) * dxdr3 * (-1.0);
     group2->grad_x(i) = grad.x;
     group2->grad_y(i) = grad.y;
     group2->grad_z(i) = grad.z;
   }
   for (size_t i = 0; i < group2->size(); i++) {
-    const cvm::rvector grad = group3->mass(i) / group3->total_mass * dxdr3;
+    const cvm::rvector grad = group3->weight(i) * dxdr3;
     group3->grad_x(i) = grad.x;
     group3->grad_y(i) = grad.y;
     group3->grad_z(i) = grad.z;
