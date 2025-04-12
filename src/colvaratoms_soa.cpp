@@ -233,8 +233,8 @@ int cvm::atom_group_soa::setup() {
     atoms_charge.resize(size());
     atoms_mass.resize(size());
     for (size_t i = 0; i < num_atoms; ++i) {
-      atoms_charge[i] = static_cast<float>(p->get_atom_charge(atoms_index[i]));
-      atoms_mass[i] = static_cast<float>(p->get_atom_mass(atoms_index[i]));
+      atoms_charge[i] = p->get_atom_charge(atoms_index[i]);
+      atoms_mass[i] = p->get_atom_mass(atoms_index[i]);
     }
   }
   update_total_charge();
@@ -247,28 +247,7 @@ void cvm::atom_group_soa::atom_modifier::update_from_soa() {
   if (!m_ag->is_enabled(f_ag_scalable)) {
     m_atoms.resize(m_ag->size());
     for (size_t i = 0; i < m_atoms.size(); ++i) {
-      m_atoms[i] = simple_atom{
-        .proxy_index = m_ag->atoms_index[i],
-        .id = m_ag->atoms_ids[i],
-        .mass = m_ag->atoms_mass[i],
-        .charge = m_ag->atoms_charge[i],
-        .pos = cvm::atom_pos{
-          m_ag->pos_x(i),
-          m_ag->pos_y(i),
-          m_ag->pos_z(i)},
-        .vel = cvm::rvector{
-          m_ag->vel_x(i),
-          m_ag->vel_y(i),
-          m_ag->vel_z(i)},
-        .total_force = cvm::rvector{
-          m_ag->total_force_x(i),
-          m_ag->total_force_y(i),
-          m_ag->total_force_z(i)},
-        .grad = cvm::rvector{
-          m_ag->grad_x(i),
-          m_ag->grad_y(i),
-          m_ag->grad_z(i)
-        }};
+      m_atoms[i] = (*m_ag)[i];
       m_atoms_ids_count[m_ag->atoms_ids[i]] = 1;
     }
   }
