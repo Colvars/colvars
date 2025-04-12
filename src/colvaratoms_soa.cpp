@@ -266,6 +266,7 @@ void cvm::atom_group_soa::atom_modifier::sync_to_soa() const {
     m_ag->atoms_mass.resize(m_ag->num_atoms);
     m_ag->atoms_grad.resize(3 * m_ag->num_atoms);
     m_ag->atoms_total_force.resize(3 * m_ag->num_atoms);
+    m_ag->atoms_weight.resize(m_ag->num_atoms);
     // colvarproxy *p = cvm::main()->proxy;
     if (m_ag->atoms_ids.size() != m_atoms.size()) {
       cvm::error("Number of atom IDs does not match the number of atoms!\n",
@@ -571,6 +572,7 @@ void cvm::atom_group_soa::clear_soa() {
   std::fill(atoms_mass.begin(), atoms_mass.end(), 0);
   std::fill(atoms_grad.begin(), atoms_grad.end(), 0);
   std::fill(atoms_total_force.begin(), atoms_total_force.end(), 0);
+  std::fill(atoms_weight.begin(), atoms_weight.end(), 0);
   // Reset the number of atoms
   num_atoms = 0;
   // Other fields should be untouched
@@ -985,6 +987,9 @@ void cvm::atom_group_soa::update_total_mass() {
     //   total_mass += ai->mass;
     // }
     total_mass = std::accumulate(atoms_mass.begin(), atoms_mass.end(), 0.0);
+    const double t_m = total_mass;
+    std::transform(atoms_mass.begin(), atoms_mass.end(),
+                   atoms_weight.begin(), [t_m](cvm::real x){return x/t_m;});
   }
   if (total_mass < 1e-15) {
     cvm::error("ERROR: " + description + " has zero total mass.\n");
@@ -1412,9 +1417,9 @@ void cvm::atom_group_soa::set_weighted_gradient(cvm::rvector const &grad)
     //   ai->grad = (ai->mass/total_mass) * grad;
     // }
     for (size_t i = 0; i < num_atoms; ++i) {
-      grad_x(i) = (atoms_mass[i]/total_mass) * grad.x;
-      grad_y(i) = (atoms_mass[i]/total_mass) * grad.y;
-      grad_z(i) = (atoms_mass[i]/total_mass) * grad.z;
+      grad_x(i) = atoms_weight[i] * grad.x;
+      grad_y(i) = atoms_weight[i] * grad.y;
+      grad_z(i) = atoms_weight[i] * grad.z;
     }
   }
 }
@@ -1713,7 +1718,7 @@ void cvm::atom_group_soa::apply_force(cvm::rvector const &force)
 
   auto ag_force = get_group_force_object();
   for (size_t i = 0; i < size(); ++i) {
-    ag_force.add_atom_force(i, atoms_mass[i] / total_mass * force);
+    ag_force.add_atom_force(i, atoms_weight[i] * force);
   }
 }
 
