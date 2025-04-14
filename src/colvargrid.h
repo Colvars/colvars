@@ -1792,6 +1792,7 @@ public:
     return fact * data[address(ix)];
   }
 
+
   /// \brief Obtain the vector value of the function at ix divided by its
   /// number of samples (if the count grid is defined), possibly smoothed
   /// by a ramp function going from 0 to 1 between minSamples and fullSamples.
@@ -1810,7 +1811,6 @@ public:
     } else {
       fact = weight > 0. ? 1. / weight : 0.;
     }
-
     cvm::real *p = &(data[address(ix)]);
 
     // Appease Clang analyzer, which likes to assume that mult is zero
@@ -1874,12 +1874,17 @@ public:
 
 
 /// Integrate (1D, 2D or 3D) gradients
+//TODO: Maybe make that a base class and the two derived class be the normal laplacian and the weighted one ?
 
 class integrate_potential : public colvar_grid_scalar
 {
   public:
 
-  integrate_potential();
+  integrate_potential(){
+
+  };
+  // TODO: put it back in private
+  std::vector<cvm::real> divergence;
 
   virtual ~integrate_potential()
   {}
@@ -1892,7 +1897,7 @@ class integrate_potential : public colvar_grid_scalar
   integrate_potential(std::shared_ptr<colvar_grid_gradient> gradients);
 
   /// \brief Calculate potential from divergence (in 2D); return number of steps
-  int integrate(const int itmax, const cvm::real & tol, cvm::real & err, bool verbose = true);
+  int integrate(const int itmax, const cvm::real & tol, cvm::real & err, bool verbose = true, bool weighted = true);
 
   /// \brief Update matrix containing divergence and boundary conditions
   /// based on new gradient point value, in neighboring bins
@@ -1900,11 +1905,14 @@ class integrate_potential : public colvar_grid_scalar
 
   /// \brief Update matrix containing divergence and boundary conditions
   /// called by update_div_neighbors and by colvarbias_abf::adiabatic_reweighting_update_gradient_pmf
-  void update_div_local(const std::vector<int> &ix);
+  void update_weighted_div_local(const std::vector<int> &ix);
+  void update_div_local(const std::vector<int> &ix0);
 
   /// \brief Set matrix containing divergence and boundary conditions
   /// based on complete gradient grid
   void set_div();
+  void set_weighted_div();
+
 
   /// \brief Add constant to potential so that its minimum value is zero
   /// Useful e.g. for output
@@ -1915,30 +1923,84 @@ class integrate_potential : public colvar_grid_scalar
   /// \brief Flag requesting the use of a smoothed version of the gradient (default: false)
   bool b_smoothed;
 
+  /// \brief Initialize computation_nx based on nx and periodic boundaries
+  inline void init_computation_nx_nt() {
+    computation_nx.resize(nd);
+    computation_nt = 1;
+    computation_nxc.resize(nd);
+    for (size_t i = 0; i < nd; i++) {
+      if (periodic[i]) {
+        computation_nx[i] = nx[i];
+      } else {
+        computation_nx[i] = nx[i] - 1;  // One less point for non-periodic dimensions
+      }
+      computation_nt*=computation_nx[i];
+      computation_nxc[i] = computation_nt;
+    }
+  }
 
+  // \brief Computes all the relative positions to calculate the laplacian at a specific point
+  void prepare_laplacian_calculation();
+  void print_laplacian_preparations();
+
+  // \brief Computes all the relative positions to calculate the divergence at a specific point
+  void prepare_divergence_calculation();
+
+  // TODO: put back in private after testing
+  colvar_grid_scalar *computation_grid = new colvar_grid_scalar();
+  template<bool initialize_div_supplement>  void laplacian_weighted(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
+
+  /// Array holding divergence + boundary terms (modified Neumann) if not periodic
+  std::vector<cvm::real> div_border_supplement;
+  std::vector<cvm::real> laplacian_matrix_test;
   protected:
+
+
+  std::vector<int> computation_nx;
+  std::vector<int> computation_nxc;
+  int computation_nt;
 
   // Reference to gradient grid
   std::shared_ptr<colvar_grid_gradient> gradients;
 
-  /// Array holding divergence + boundary terms (modified Neumann) if not periodic
-  std::vector<cvm::real> divergence;
 
   // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
   // Stored as a flat vector like the divergence
   std::vector<cvm::real> weights;
+  std::vector<size_t> sorted_counts;
+
+  // TODO: Add that as constructor arguments
+  cvm::real m;
+  size_t sum_count;
+  // max and min count to regularize F
+  int max_count_F = 1;
+  int min_count_F = 0;
+  // max and min count to regularize the weights
+  float lambda_max = 0.8;
+  float lambda_min = 0.1;
+  size_t upper_threshold_count = 1;
+  size_t lower_threshold_count = 1;
+  void get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix);
+  cvm::real get_regularized_weight(std::vector<int> &ix);
 
   // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
   // Stored as a flat vector like the divergence
   std::vector<cvm::real> fdiff_gradient;
-
+  // TODO: change unordered_map to vector
+  std::unordered_map<int, std::vector<int>> laplacian_stencil;
+  std::unordered_map<int, std::vector<std::vector<int>>> weight_stencil;
+  std::unordered_map<int, float> weight_counts;
+  std::unordered_map<int, std::pair<bool, cvm::real>> neighbor_in_classic_laplacian_stencil;
+  std::vector<std::vector<int>> surrounding_points_relative_positions;
 //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
   /// Obtain the gradient vector at given location ix, if available
   /// or zero if it is on the edge of the gradient grid
   /// ix gets wrapped in PBC
   /// Returns the sample count in given bin if available, or 1 for all
-  size_t get_grad(cvm::real * g, std::vector<int> &ix);
+  // TODO unify both implementations
+  size_t get_grad(cvm::real * g,             std::vector<int> &ix);
+  size_t get_grad(std::vector<cvm::real> &g, std::vector<int> &ix);
 
   /// \brief Solve linear system based on CG, valid for symmetric matrices only
   /// atimes : left multiplication by LHS symmetric matrix
@@ -1959,15 +2021,26 @@ class integrate_potential : public colvar_grid_scalar
   /// @param r (out) discrete Laplacian of x
   void laplacian(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
 
-  void laplacian_weighted(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
-
   /// Compute gradient of whole potential grid by finite difference
   // void compute_grad(const std::vector<cvm::real> &A, std::vector<cvm::real> &G);
 
 
 //   /// Inversion of preconditioner matrix
 //   void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x);
+  std::string convert_base_three(int n);
+  std::string convert_base_two(int n, int length);
+  std::vector<std::vector<int>>  update_weight_relative_positions(std::vector<std::vector<int>> &weights_relative_positions, std::vector<int> direction);
+  // TODO: Ask if this is not better to have a list/dict with all the reference points for each virtual point since they're the same as
+  // long as the grid doesn't change
+  std::vector<cvm::real> compute_averaged_border_normal_gradients(std::vector<int> virtual_point_coordinates);
+  cvm::real calculate_weight_sum(std::vector<int> stencil_point, std::vector<std::vector<int>> directions);
+  bool is_virtual_point(std::vector<int> coordinate);
+
+
+  template<typename T>
+  typename std::vector<T>::iterator insertIntoSortedList(std::vector<T>& sortedList, const T& value);
+
+
+  void extrapolate_potential();
 };
-
 #endif
-

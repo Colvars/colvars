@@ -6,13 +6,26 @@
 #include "colvarproxy.h"
 
 
+// void saveVectorToCSV(const std::vector<cvm::real>& vec, const std::string& filename) {
+//     std::ofstream file(filename);
+//     if (!file) {
+//         std::cerr << "Error opening file\n";
+//         return;
+//     }
+
+//     for (size_t i = 0; i < vec.size(); ++i) {
+//         file << vec[i];
+//         if (i != vec.size() - 1) file << ",";  // Separate values with commas
+//     }
+//     file.close();
+// }
+
 int main (int argc, char *argv[]) {
 
   if (argc < 2) {
     std::cerr << "\n\nOne argument needed: gradient multicol file name.\n";
     return 1;
   }
-
   colvarproxy *proxy = new colvarproxy();
   proxy->colvars = new colvarmodule(proxy); // This could be omitted if we used the colvarproxy_stub class
 
@@ -54,7 +67,24 @@ int main (int argc, char *argv[]) {
   cvm::real tol = 1e-8;
 
   integrate_potential potential(grad_ptr);
-  potential.set_div();
+  potential.prepare_laplacian_calculation();
+  // potential.print_laplacian_preparations();
+
+  potential.set_weighted_div();
+  // potential.data = potential.divergence;
+  // TODO: calculate div
+  // TODO: calculate Laplacian
+  // see how it works and wait for Jérôme
+  std::vector<cvm::real> laplacian_matrix (potential.computation_grid->nt, 0);
+  std::vector<cvm::real> test_vector (potential.computation_grid->nt, 1);
+  std::vector<cvm::real> complete_div (potential.computation_grid->nt, 0);
+
+  potential.laplacian_weighted<true>(test_vector, laplacian_matrix);
+  for (int i = 0; i < potential.computation_grid->nt; i++){
+    complete_div[i] = potential.divergence[i] + potential.div_border_supplement[i];
+  }
+  // saveVectorToCSV(complete_div, "divergence.csv");
+  // saveVectorToCSV(potential.laplacian_matrix_test, "laplacian.csv");
   potential.integrate(itmax, tol, err);
   potential.set_zero_minimum();
 
