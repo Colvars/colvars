@@ -51,8 +51,8 @@ public:
   template <typename T>
   using allocator_type = std::allocator<T>;
 #endif
-  using real_vector_t = std::vector<cvm::real, allocator_type<cvm::real>>;
-  using rvector_vector_t = std::vector<cvm::rvector, allocator_type<cvm::rvector>>;
+  using atom_buffer_real_t = std::vector<cvm::real, allocator_type<cvm::real>>;
+  using atom_buffer_rvector_t = std::vector<cvm::rvector, allocator_type<cvm::rvector>>;
 
   /// Constructor
   colvarproxy_atoms();
@@ -157,56 +157,56 @@ public:
   /// Return number of atoms with positive reference count
   size_t get_num_active_atoms() const;
 
-  inline real_vector_t const *get_atom_masses() const
+  inline atom_buffer_real_t const *get_atom_masses() const
   {
     return &atoms_masses;
   }
 
-  inline real_vector_t *modify_atom_masses()
+  inline atom_buffer_real_t *modify_atom_masses()
   {
     // assume that we are requesting masses to change them
     updated_masses_ = true;
     return &atoms_masses;
   }
 
-  inline real_vector_t const *get_atom_charges()
+  inline atom_buffer_real_t const *get_atom_charges()
   {
     return &atoms_charges;
   }
 
-  inline real_vector_t *modify_atom_charges()
+  inline atom_buffer_real_t *modify_atom_charges()
   {
     // assume that we are requesting charges to change them
     updated_charges_ = true;
     return &atoms_charges;
   }
 
-  inline rvector_vector_t const *get_atom_positions() const
+  inline atom_buffer_rvector_t const *get_atom_positions() const
   {
     return &atoms_positions;
   }
 
-  inline rvector_vector_t *modify_atom_positions()
+  inline atom_buffer_rvector_t *modify_atom_positions()
   {
     return &atoms_positions;
   }
 
-  inline rvector_vector_t const *get_atom_total_forces() const
+  inline atom_buffer_rvector_t const *get_atom_total_forces() const
   {
     return &atoms_total_forces;
   }
 
-  inline rvector_vector_t *modify_atom_total_forces()
+  inline atom_buffer_rvector_t *modify_atom_total_forces()
   {
     return &atoms_total_forces;
   }
 
-  inline rvector_vector_t const *get_atom_applied_forces() const
+  inline atom_buffer_rvector_t const *get_atom_applied_forces() const
   {
     return &atoms_new_colvar_forces;
   }
 
-  inline rvector_vector_t *modify_atom_applied_forces()
+  inline atom_buffer_rvector_t *modify_atom_applied_forces()
   {
     return &atoms_new_colvar_forces;
   }
