@@ -923,13 +923,22 @@ public:
 #ifdef COLVARS_USE_SOA
   template<int flags>
   static cvm::real switching_function(cvm::real const &r0,
-                                      cvm::rvector const &r0_vec,
+                                      cvm::rvector const &inv_r0_vec,
+                                      cvm::rvector const &inv_r0sq_vec,
                                       int en,
                                       int ed,
-                                      const cvm::atom_pos& A1,
-                                      const cvm::atom_pos& A2,
-                                      cvm::rvector& G1,
-                                      cvm::rvector& G2,
+                                      const cvm::real a1x,
+                                      const cvm::real a1y,
+                                      const cvm::real a1z,
+                                      const cvm::real a2x,
+                                      const cvm::real a2y,
+                                      const cvm::real a2z,
+                                      cvm::real& g1x,
+                                      cvm::real& g1y,
+                                      cvm::real& g1z,
+                                      cvm::real& g2x,
+                                      cvm::real& g2y,
+                                      cvm::real& g2z,
                                       bool **pairlist_elem,
                                       cvm::real tolerance);
 #else
