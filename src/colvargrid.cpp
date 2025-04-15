@@ -38,10 +38,6 @@ std::string vec_to_string(const std::vector<int> &vec)
 
 colvar_grid_count::colvar_grid_count() : colvar_grid<size_t>() { mult = 1; }
 
-colvar_grid_count::colvar_grid_count(std::vector<colvar *> &colvars, std::string config)
-    : colvar_grid<size_t>(colvars, 0, 1, false, nullptr, config)
-{
-}
 
 colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
                                      std::string config)
@@ -693,20 +689,20 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
     // data = backup;
     // DEBUG 2 ###########################
     // Compute terms of the Laplacian matrix
-    std::vector<cvm::real> lap_mat(nt, 0.);
+    // std::vector<cvm::real> lap_mat(nt, 0.);
 
-    std::vector<size_t> cols = { 0, 1, 2, 3, 4, 5, nt-6, nt-5, nt-4, nt-3, nt-2, nt-1 };
+    // std::vector<size_t> cols = { 0, 1, 2, 3, 4, 5, nt-6, nt-5, nt-4, nt-3, nt-2, nt-1 };
 
-    for (size_t i = 0; i < cols.size(); i++) {
-      this->reset();
-      data[cols[i]] = 1.;
-      laplacian_weighted(data, lap_mat);
-      printf("Col  %3li  | ", cols[i]);
-      for (size_t j = 0; j < cols.size(); j++) {
-        printf(" %6.1f", lap_mat[cols[j]]);
-      }
-      printf("\n");
-    }
+    // for (size_t i = 0; i < cols.size(); i++) {
+    //   this->reset();
+    //   data[cols[i]] = 1.;
+    //   laplacian_weighted<true>(data, lap_mat);
+    //   printf("Col  %3li  | ", cols[i]);
+    //   for (size_t j = 0; j < cols.size(); j++) {
+    //     printf(" %6.1f", lap_mat[cols[j]]);
+    //   }
+    //   printf("\n");
+    // }
     // DEBUG 2 ###########################
 
 
@@ -834,28 +830,24 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
   const size_t linear_index = address(ix0);
   int i, j, k;
   std::vector<int> ix = ix0;
-  size_t count = 0;
-  cvm::real min_weight = 1.; // Tunable parameter
 
   if (nd == 2) {
     // gradients at grid points surrounding the current scalar grid point
     cvm::real g00[2], g01[2], g10[2], g11[2];
 
-    count = get_grad(g11, ix);
+    get_grad(g11, ix);
     ix[0] = ix0[0] - 1;
-    count += get_grad(g01, ix);
+    get_grad(g01, ix);
     ix[1] = ix0[1] - 1;
-    count += get_grad(g00, ix);
+    get_grad(g00, ix);
     ix[0] = ix0[0];
-    count += get_grad(g10, ix);
+    get_grad(g10, ix);
 
     divergence[linear_index] = ((g10[0]-g00[0] + g11[0]-g01[0]) / widths[0]
-                              + (g01[1]-g00[1] + g11[1]-g10[1]) / widths[1]) * 0.5 * weight;
-    weights[linear_index] = weight;
-
+                              + (g01[1]-g00[1] + g11[1]-g10[1]) / widths[1]) * 0.5;
   } else if (nd == 3) {
     cvm::real gc[24]; // stores 3d gradients in 8 contiguous bins
-    int li = 0;
+    int index = 0;
 
     ix[0] = ix0[0] - 1;
     for (i = 0; i<2; i++) {
@@ -863,8 +855,8 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
       for (j = 0; j<2; j++) {
         ix[2] = ix0[2] - 1;
         for (k = 0; k<2; k++) {
-          count += get_grad(gc + li, ix);
-          li += 3;
+          get_grad(gc + index, ix);
+          index += 3;
           ix[2]++;
         }
         ix[1]++;
@@ -881,6 +873,7 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
       / widths[2]) * 0.25;
   }
 }
+
 
 size_t integrate_potential::get_grad(std::vector<cvm::real> &g, std::vector<int> &ix){
   //TODO: it works fine
@@ -1356,414 +1349,20 @@ void integrate_potential::laplacian(const std::vector<cvm::real> &A, std::vector
 }
 
 
+/*
+/// Inversion of preconditioner matrix (e.g. diagonal of the Laplacian)
+void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x)
+{
+  for (size_t i=0; i<int(nt); i++) {
+    x[i] = b[i] * inv_lap_diag[i]; // Jacobi preconditioner - little benefit in tests so far
+  }
+  return;
+}*/
+
+
 /// Multiplication by sparse matrix representing Laplacian
 /// NOTE: Laplacian must be symmetric for solving with CG
-void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA)
-{
-
-  // colvar_grid_count count; // TODO set count grid with same lattice as free energy
-  // New member data of integrate potential
-  // to be updated by update_div by summing counts for gradient grid
-
-  if (nd == 2) {
-    // DIMENSION 2
-
-    size_t li, li2; // linear indices for flat indexing
-    int i, j;
-    cvm::real fact;
-    // For brevity we factor in the 1/2 term from averaging weights into ffx/ffy
-    const cvm::real ffx = 0.5 / (widths[0] * widths[0]);
-    const cvm::real ffy = 0.5 / (widths[1] * widths[1]);
-    const int h = nx[1];
-    const int w = nx[0];
-    // offsets for 4 reference points of the Laplacian stencil
-    int xm = -h, xp = h, ym = -1, yp = 1;
-
-    // NOTE on performance: this version is slightly sub-optimal because
-    // it contains two double loops on the core of the array (for x and y terms)
-    // The slightly faster version is in commit 0254cb5a2958cb2e135f268371c4b45fad34866b
-    // yet it is much uglier, and probably horrible to extend to dimension 3
-    // All terms in the matrix are assigned (=) during the x loops, then updated (+=)
-    // with the y (and z) contributions
-
-
-    // All x components except on x edges
-    li = h; // Skip first column
-
-    // Halve the term on y edges (if any) to preserve symmetry of the Laplacian matrix
-    // (Long Chen, Finite Difference Methods, UCI, 2017)
-    fact = periodic[1] ? 1.0 : 0.5;
-
-    for (i=1; i<w-1; i++) {
-      // Full range of j, but factor may change on y edges (j == 0 and j == h-1)
-      LA[li] = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-      li++;
-      for (j=1; j<h-1; j++) {
-        LA[li] = ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-        li++;
-      }
-      LA[li] = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-      li++;
-    }
-    // Edges along x (x components only)
-    li = 0L; // Follows left edge
-    li2 = h * static_cast<size_t>(w - 1); // Follows right edge
-    if (periodic[0]) {
-      xm =  h * (w - 1);
-      xp =  h;
-      fact = periodic[1] ? 1.0 : 0.5;
-      LA[li]  = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-      LA[li2] = fact * ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
-      li++;
-      li2++;
-      for (j=1; j<h-1; j++) {
-        LA[li]  = ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-        LA[li2] = ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
-        li++;
-        li2++;
-      }
-      LA[li]  = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-      LA[li2] = fact * ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
-    } else {
-      xm = -h;
-      xp =  h;
-      fact = periodic[1] ? 1.0 : 0.5; // Halve in corners in full PBC only
-      // lower corner, "j == 0"
-      LA[li]  = fact * ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
-      LA[li2] = fact * ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
-      li++;
-      li2++;
-      for (j=1; j<h-1; j++) {
-        // x gradient (+ y term of laplacian, calculated below)
-        LA[li]  = ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
-        LA[li2] = ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
-        li++;
-        li2++;
-      }
-      // upper corner, j == h-1
-      LA[li]  = fact * ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
-      LA[li2] = fact * ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
-    }
-
-    // Now adding all y components
-    // All y components except on y edges
-    li = 1; // Skip first element (in first row)
-
-    fact = periodic[0] ? 1.0 : 0.5; // for i == 0
-    for (i=0; i<w; i++) {
-      // Factor of 1/2 on x edges if non-periodic
-      if (i == 1) fact = 1.0;
-      if (i == w - 1) fact = periodic[0] ? 1.0 : 0.5;
-      for (j=1; j<h-1; j++) {
-        LA[li] += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
-        li++;
-      }
-      li += 2; // skip the edges and move to next column
-    }
-    // Edges along y (y components only)
-    li = 0L; // Follows bottom edge
-    li2 = h - 1; // Follows top edge
-    if (periodic[1]) {
-      fact = periodic[0] ? 1.0 : 0.5;
-      ym = h - 1;
-      yp = 1;
-      LA[li]  += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
-      LA[li2] += fact * ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
-      li  += h;
-      li2 += h;
-      for (i=1; i<w-1; i++) {
-        LA[li]  += ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
-        LA[li2] += ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
-        li  += h;
-        li2 += h;
-      }
-      LA[li]  += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
-      LA[li2] += fact * ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
-    } else {
-      ym = -1;
-      yp = 1;
-      fact = periodic[0] ? 1.0 : 0.5; // Halve in corners in full PBC only
-      // Left corner
-      LA[li]  += fact * ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
-      LA[li2] += fact * ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
-      li  += h;
-      li2 += h;
-      for (i=1; i<w-1; i++) {
-        // y gradient (+ x term of laplacian, calculated above)
-        LA[li]  += ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
-        LA[li2] += ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
-        li  += h;
-        li2 += h;
-      }
-      // Right corner
-      LA[li]  += fact * ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
-      LA[li2] += fact * ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
-    }
-
-  } else if (nd == 3) {
-    // DIMENSION 3
-
-    int i, j, k;
-    size_t li, li2;
-    cvm::real fact = 1.0;
-    const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
-    const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
-    const cvm::real ffz = 1.0 / (widths[2] * widths[2]);
-    const int h = nx[2]; // height
-    const int d = nx[1]; // depth
-    const int w = nx[0]; // width
-    // offsets for 6 reference points of the Laplacian stencil
-    int xm = -d * h;
-    int xp =  d * h;
-    int ym = -h;
-    int yp =  h;
-    int zm = -1;
-    int zp =  1;
-
-    cvm::real factx = periodic[0] ? 1 : 0.5; // factor to be applied on x edges
-    cvm::real facty = periodic[1] ? 1 : 0.5; // same for y
-    cvm::real factz = periodic[2] ? 1 : 0.5; // same for z
-    cvm::real ifactx = 1 / factx;
-    cvm::real ifacty = 1 / facty;
-    cvm::real ifactz = 1 / factz;
-
-    // All x components except on x edges
-    li = d * static_cast<size_t>(h); // Skip left slab
-    fact = facty * factz;
-    for (i=1; i<w-1; i++) {
-      for (j=0; j<d; j++) { // full range of y
-        if (j == 1) fact *= ifacty;
-        if (j == d-1) fact *= facty;
-        LA[li] = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-        li++;
-        fact *= ifactz;
-        for (k=1; k<h-1; k++) { // full range of z
-          LA[li] = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-          li++;
-        }
-        fact *= factz;
-        LA[li] = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-        li++;
-      }
-    }
-    // Edges along x (x components only)
-    li = 0L; // Follows left slab
-    li2 = static_cast<size_t>(d) * h * (w - 1); // Follows right slab
-    if (periodic[0]) {
-      xm =  d * h * (w - 1);
-      xp =  d * h;
-      fact = facty * factz;
-      for (j=0; j<d; j++) {
-        if (j == 1) fact *= ifacty;
-        if (j == d-1) fact *= facty;
-        LA[li]  = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-        LA[li2] = fact * ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
-        li++;
-        li2++;
-        fact *= ifactz;
-        for (k=1; k<h-1; k++) {
-          LA[li]  = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-          LA[li2] = fact * ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
-          li++;
-          li2++;
-        }
-        fact *= factz;
-        LA[li]  = fact * ffx * (weights[li + xm] * A[li + xm] + weights[li + xp] * A[li + xp] - 2.0 * weights[li] * A[li]);
-        LA[li2] = fact * ffx * (weights[li2 - xp] * A[li2 - xp] + weights[li2 - xm] * A[li2 - xm] - 2.0 * weights[li2] * A[li2]);
-        li++;
-        li2++;
-      }
-    } else {
-      xm = -d * h;
-      xp =  d * h;
-      fact = facty * factz;
-      for (j=0; j<d; j++) {
-        if (j == 1) fact *= ifacty;
-        if (j == d-1) fact *= facty;
-        LA[li]  = fact * ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
-        LA[li2] = fact * ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
-        li++;
-        li2++;
-        fact *= ifactz;
-        for (k=1; k<h-1; k++) {
-          // x gradient (+ y, z terms of laplacian, calculated below)
-          LA[li]  = fact * ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
-          LA[li2] = fact * ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
-          li++;
-          li2++;
-        }
-        fact *= factz;
-        LA[li]  = fact * ffx * (weights[li + xp] * A[li + xp] - weights[li] * A[li]);
-        LA[li2] = fact * ffx * (weights[li2 + xm] * A[li2 + xm] - weights[li2] * A[li2]);
-        li++;
-        li2++;
-      }
-    }
-
-    // Now adding all y components
-    // All y components except on y edges
-    li = h; // Skip first column (in front slab)
-    fact = factx * factz;
-    for (i=0; i<w; i++) { // full range of x
-      if (i == 1) fact *= ifactx;
-      if (i == w-1) fact *= factx;
-      for (j=1; j<d-1; j++) {
-        LA[li] += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
-        li++;
-        fact *= ifactz;
-        for (k=1; k<h-1; k++) {
-          LA[li] += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
-          li++;
-        }
-        fact *= factz;
-        LA[li] += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
-        li++;
-      }
-      li += 2 * h; // skip columns in front and back slabs
-    }
-    // Edges along y (y components only)
-    li = 0L; // Follows front slab
-    li2 = h * static_cast<size_t>(d - 1); // Follows back slab
-    if (periodic[1]) {
-      ym = h * (d - 1);
-      yp = h;
-      fact = factx * factz;
-      for (i=0; i<w; i++) {
-        if (i == 1) fact *= ifactx;
-        if (i == w-1) fact *= factx;
-        LA[li]  += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
-        LA[li2] += fact * ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
-        li++;
-        li2++;
-        fact *= ifactz;
-        for (k=1; k<h-1; k++) {
-          LA[li]  += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
-          LA[li2] += fact * ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
-          li++;
-          li2++;
-        }
-        fact *= factz;
-        LA[li]  += fact * ffy * (weights[li + ym] * A[li + ym] + weights[li + yp] * A[li + yp] - 2.0 * weights[li] * A[li]);
-        LA[li2] += fact * ffy * (weights[li2 - yp] * A[li2 - yp] + weights[li2 - ym] * A[li2 - ym] - 2.0 * weights[li2] * A[li2]);
-        li++;
-        li2++;
-        li  += h * static_cast<size_t>(d - 1);
-        li2 += h * static_cast<size_t>(d - 1);
-      }
-    } else {
-      ym = -h;
-      yp =  h;
-      fact = factx * factz;
-      for (i=0; i<w; i++) {
-        if (i == 1) fact *= ifactx;
-        if (i == w-1) fact *= factx;
-        LA[li]  += fact * ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
-        LA[li2] += fact * ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
-        li++;
-        li2++;
-        fact *= ifactz;
-        for (k=1; k<h-1; k++) {
-          // y gradient (+ x, z terms of laplacian, calculated above and below)
-          LA[li]  += fact * ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
-          LA[li2] += fact * ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
-          li++;
-          li2++;
-        }
-        fact *= factz;
-        LA[li]  += fact * ffy * (weights[li + yp] * A[li + yp] - weights[li] * A[li]);
-        LA[li2] += fact * ffy * (weights[li2 + ym] * A[li2 + ym] - weights[li2] * A[li2]);
-        li++;
-        li2++;
-        li  += h * static_cast<size_t>(d - 1);
-        li2 += h * static_cast<size_t>(d - 1);
-      }
-    }
-
-  // Now adding all z components
-    // All z components except on z edges
-    li = 1; // Skip first element (in bottom slab)
-    fact = factx * facty;
-    for (i=0; i<w; i++) { // full range of x
-      if (i == 1) fact *= ifactx;
-      if (i == w-1) fact *= factx;
-      for (k=1; k<h-1; k++) {
-        LA[li] += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
-        li++;
-      }
-      fact *= ifacty;
-      li += 2; // skip edge slabs
-      for (j=1; j<d-1; j++) { // full range of y
-        for (k=1; k<h-1; k++) {
-          LA[li] += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
-          li++;
-        }
-        li += 2; // skip edge slabs
-      }
-      fact *= facty;
-      for (k=1; k<h-1; k++) {
-        LA[li] += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
-        li++;
-      }
-      li += 2; // skip edge slabs
-    }
-    // Edges along z (z components onlz)
-    li = 0; // Follows bottom slab
-    li2 = h - 1; // Follows top slab
-    if (periodic[2]) {
-      zm = h - 1;
-      zp = 1;
-      fact = factx * facty;
-      for (i=0; i<w; i++) {
-        if (i == 1) fact *= ifactx;
-        if (i == w-1) fact *= factx;
-        LA[li]  += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
-        LA[li2] += fact * ffz * (weights[li2 - zp] * A[li2 - zp] + weights[li2 - zm] * A[li2 - zm] - 2.0 * weights[li2] * A[li2]);
-        li  += h;
-        li2 += h;
-        fact *= ifacty;
-        for (j=1; j<d-1; j++) {
-          LA[li]  += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
-          LA[li2] += fact * ffz * (weights[li2 - zp] * A[li2 - zp] + weights[li2 - zm] * A[li2 - zm] - 2.0 * weights[li2] * A[li2]);
-          li  += h;
-          li2 += h;
-        }
-        fact *= facty;
-        LA[li]  += fact * ffz * (weights[li + zm] * A[li + zm] + weights[li + zp] * A[li + zp] - 2.0 * weights[li] * A[li]);
-        LA[li2] += fact * ffz * (weights[li2 - zp] * A[li2 - zp] + weights[li2 - zm] * A[li2 - zm] - 2.0 * weights[li2] * A[li2]);
-        li  += h;
-        li2 += h;
-      }
-    } else {
-      zm = -1;
-      zp = 1;
-      fact = factx * facty;
-      for (i=0; i<w; i++) {
-        if (i == 1) fact *= ifactx;
-        if (i == w-1) fact *= factx;
-        LA[li]  += fact * ffz * (weights[li + zp] * A[li + zp] - weights[li] * A[li]);
-        LA[li2] += fact * ffz * (weights[li2 + zm] * A[li2 + zm] - weights[li2] * A[li2]);
-        li  += h;
-        li2 += h;
-        fact *= ifacty;
-        for (j=1; j<d-1; j++) {
-          // z gradient (+ x, y terms of laplacian, calculated above)
-          LA[li]  += fact * ffz * (weights[li + zp] * A[li + zp] - weights[li] * A[li]);
-          LA[li2] += fact * ffz * (weights[li2 + zm] * A[li2 + zm] - weights[li2] * A[li2]);
-          li  += h;
-          li2 += h;
-        }
-        fact *= facty;
-        LA[li]  += fact * ffz * (weights[li + zp] * A[li + zp] - weights[li] * A[li]);
-        LA[li2] += fact * ffz * (weights[li2 + zm] * A[li2 + zm] - weights[li2] * A[li2]);
-        li  += h;
-        li2 += h;
-      }
-    }
-  }
-}
-
-
-void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x)
+template<bool initialize_div_supplement> void integrate_potential::laplacian_weighted(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA)
 {
   for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix); computation_grid->incr(ix)){
     LA[computation_grid->address(ix)] = 0;
@@ -1776,19 +1375,19 @@ void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cv
         computation_grid->incr(ix)) {
       // TODO: delete this after testing
       // bool test = ix[0] == 128 && ix[1] == 118;
-      for (std::pair<int, std::vector<int>> stencil_information: laplacian_stencil){
-        std::vector<int> neighbor_relative_position = stencil_information.second;
+      for (int i = 0; i < laplacian_stencil.size(); i++){
+        std::vector<int> neighbor_relative_position = laplacian_stencil[i];
         std::vector<int> neighbor_coordinate(nd, 0);
         for(int i = 0; i < nd; i++){
           neighbor_coordinate[i] = ix[i] + neighbor_relative_position[i];
         }
         bool virtual_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
-        cvm::real coefficient = calculate_weight_sum(neighbor_coordinate, weight_stencil[stencil_information.first])
-                                * weight_counts[stencil_information.first] / pow(2, (nd-1)*2);
-        std::pair<int, cvm::real> coefficient_regular_laplacian = neighbor_in_classic_laplacian_stencil[stencil_information.first];
+        cvm::real coefficient = calculate_weight_sum(neighbor_coordinate, weight_stencil[i])
+                                * weight_counts[i] / pow(2, (nd-1)*2);
+        std::pair<int, cvm::real> coefficient_regular_laplacian = neighbor_in_classic_laplacian_stencil[i];
         cvm::real coefficient_to_print = coefficient;
 
-
+        
         if (coefficient_regular_laplacian.first){
           coefficient+= coefficient_regular_laplacian.second * m;
         }
@@ -1804,15 +1403,11 @@ void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cv
         //   std::cout << "virtual point: " << virtual_point << std::endl;
         //   std::cout << std::endl;
         // }
-        } else {
+        } else {          
           std::vector<int> reference_point_coordinates(nd,0);
           computation_grid->wrap_to_edge(neighbor_coordinate, reference_point_coordinates);
           LA[computation_grid->address(ix)] += coefficient * A[computation_grid->address(reference_point_coordinates)];
 
-<<<<<<< HEAD
-void integrate_potential::nr_linbcg_sym(const bool weighted, const std::vector<cvm::real> &b,
-  std::vector<cvm::real> &x, const cvm::real &tol, const int itmax, int &iter, cvm::real &err)
-=======
           // if (test){
           //   std::cout << "laplacian coordinates: " << "[" << computation_grid->address(ix) << ", " << computation_grid->address(neighbor_coordinate) << "]" << std::endl;
           //   std::cout << "coefficient: " << coefficient_to_print * pow(2, (nd-1)*2)<< std::endl;
@@ -1839,8 +1434,11 @@ void integrate_potential::nr_linbcg_sym(const bool weighted, const std::vector<c
 }
 
 void integrate_potential::prepare_laplacian_calculation()
->>>>>>> new_weighted_poisson_solver
 {
+  laplacian_stencil.resize(std::pow(3, nd));
+  weight_stencil.resize(std::pow(3, nd));
+  weight_counts.resize(std::pow(3, nd));
+  neighbor_in_classic_laplacian_stencil.resize(std::pow(3, nd));
   for (int i = 0; i < std::pow(3, nd); i++) {
     std::string base_3 = convert_base_three(i);
     std::vector<int> direction;
@@ -1980,14 +1578,14 @@ cvm::real integrate_potential::get_regularized_weight(std::vector<int> &ix){
 void integrate_potential::get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix){
   // TODO: check if i cannot just use vector_value_smooth_instead/ old get_grad
   F.resize(nd);
-
+  
   size_t count = get_grad(F, ix);
   float multiplier = 1;
   if (count < min_count_F){
     multiplier = 0;
   }
   else if (count < max_count_F){
-    multiplier = (count - min_count_F) / (max_count_F - min_count_F);
+    multiplier = (count - min_count_F) / (max_count_F - min_count_F); 
   }
   if (multiplier != 1){
     for (int i = 0; i < nd; i++){
@@ -2097,7 +1695,7 @@ std::string integrate_potential::convert_base_three(int n)
   }
 
   // Reverse the string (since we built it from right to left)
-  std::reverse(result.begin(), result.end());
+  reverse(result.begin(), result.end());
 
   // Pad with leading zeros if necessary
   while (result.size() < nd) {
@@ -2127,7 +1725,7 @@ std::string integrate_potential::convert_base_two(int n, int length)
   }
 
   // Reverse the string (since we built it from right to left)
-  std::reverse(result.begin(), result.end());
+  reverse(result.begin(), result.end());
 
   // Pad with leading zeros if necessary
   while (result.size() < length) {
@@ -2155,15 +1753,10 @@ void integrate_potential::nr_linbcg_sym(const bool weighted, const std::vector<c
   func_pointer atimes =
       weighted ? &integrate_potential::laplacian_weighted<false> : &integrate_potential::laplacian;
 
-  typedef void (integrate_potential::*MemberFunction) (const std::vector<double>&, std::vector<double>&);
-  MemberFunction atimes = weighted ?
-    &integrate_potential::laplacian_weighted :
-    &integrate_potential::laplacian;
-
-  iter=0;
-  (this->*atimes)(x,r);
-  for (j=0;j<int(nt);j++) {
-    r[j]=b[j]-r[j];
+  iter = 0;
+  (this->*atimes)(x, r);
+  for (j = 0; j < int(nt); j++) {
+    r[j] = b[j] - r[j];
   }
   bnrm = l2norm(b);
   if (bnrm < EPS) {
@@ -2215,11 +1808,11 @@ void integrate_potential::extrapolate_potential(){
             }
           }
           std::vector<int> reference_index_in_small_grid(nd, 0);
-          bool need_to_extrapolate =
+          bool need_to_extrapolate = 
           computation_grid->wrap_to_edge(corresponding_index_in_small_grid, reference_index_in_small_grid);
           cvm::real potential_value = computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
           std::vector<cvm::real> relative_position(nd, 0);
-
+          
           if (need_to_extrapolate){
             for (int i = 0; i < nd; i++){
               relative_position[i] = corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i];
@@ -2236,7 +1829,7 @@ template<typename T>
   typename std::vector<T>::iterator integrate_potential::insertIntoSortedList(std::vector<T>& sortedList, const T& value) {
     // Find the first position where the element is not less than value
     auto it = std::lower_bound(sortedList.begin(), sortedList.end(), value);
-
+    
     // Insert the value at the found position and return iterator to inserted element
     return sortedList.insert(it, value);
 }
@@ -2247,4 +1840,19 @@ cvm::real integrate_potential::l2norm(const std::vector<cvm::real> &x)
   for (i = 0; i < x.size(); i++)
     sum += x[i] * x[i];
   return sqrt(sum);
+}
+inline void integrate_potential::reverse(std::string::iterator begin, std::string::iterator end)
+{
+  // Ensure end is after begin
+  if (begin >= end) return;
+  
+  // Move end iterator back by one since it points one past the last element
+  --end;
+  
+  // Swap elements from both ends moving toward the center until iterators meet
+  while (begin < end) {
+    std::swap(*begin, *end);
+    ++begin;
+    --end;
+  }
 }

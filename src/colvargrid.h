@@ -1987,10 +1987,10 @@ class integrate_potential : public colvar_grid_scalar
   // Stored as a flat vector like the divergence
   std::vector<cvm::real> fdiff_gradient;
   // TODO: change unordered_map to vector
-  std::unordered_map<int, std::vector<int>> laplacian_stencil;
-  std::unordered_map<int, std::vector<std::vector<int>>> weight_stencil;
-  std::unordered_map<int, float> weight_counts;
-  std::unordered_map<int, std::pair<bool, cvm::real>> neighbor_in_classic_laplacian_stencil;
+  std::vector<std::vector<int>> laplacian_stencil;
+  std::vector<std::vector<std::vector<int>>> weight_stencil;
+  std::vector<cvm::real> weight_counts;
+  std::vector<std::pair<bool, cvm::real>> neighbor_in_classic_laplacian_stencil;
   std::vector<std::vector<int>> surrounding_points_relative_positions;
 //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
@@ -2039,7 +2039,7 @@ class integrate_potential : public colvar_grid_scalar
 
   template<typename T>
   typename std::vector<T>::iterator insertIntoSortedList(std::vector<T>& sortedList, const T& value);
-
+  inline void reverse(std::string::iterator, std::string::iterator);
 
   void extrapolate_potential();
 };
