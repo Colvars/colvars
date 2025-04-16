@@ -5622,7 +5622,7 @@ group used in a \texttt{distance} component.
 \cvsubsubsec{Parameters for ABF}{sec:colvarbias_abf_params}
 
 ABF depends on parameters from each collective variable to define the grid on which free energy gradients are computed: see \ref{sec:colvar_grid_params} for details.
-Alternately, grid parameters can be set directly inside the ABF block by inserting a \texttt{grid} sub-block, as explained in \ref{sec:colvarbias_grid}.
+Alternately, grid parameters can be set directly inside the \texttt{abf} block by inserting a \texttt{grid} sub-block, as explained in \ref{sec:colvarbias_grid}.
 Other parameters to control the ABF runtime can be set in the ABF configuration block:
 
 \begin{itemize}
@@ -6271,6 +6271,8 @@ In summary, although it would be simpler to set the wall's position \texttt{uppe
 To enable a metadynamics-based calculation, a \texttt{metadynamics \{...\}} block must be included in the Colvars configuration file.
 
 By default, metadynamics bias energy and forces will be recorded onto a grid, the parameters of which can be defined within the definition of each \texttt{colvar}, as described in \ref{sec:colvar_grid_params}.
+Alternately, grid parameters can be set directly inside the \texttt{metadynamics} block by inserting a \texttt{grid} sub-block, as explained in \ref{sec:colvarbias_grid}.
+
 
 Other required keywords will be specified within the \texttt{metadynamics} block: these are \refkey{colvars}{colvarbias|colvars} (the names of the variables involved), \refkey{hillWeight}{metadynamics|hillWeight} (the weight parameter $W$), and the widths $2\sigma$ of the Gaussian hills in each dimension that can be given either as the single dimensionless parameter \refkey{hillWidth}{metadynamics|hillWidth}, or explicitly for each colvar with \refkey{gaussianSigmas}{metadynamics|gaussianSigmas}.
 
@@ -6967,6 +6969,9 @@ where $N$ is the total number of simulation steps, $\boldsymbol{\xi}'$ is the gr
 A(\boldsymbol{\xi}')=-k_{\mathrm{B}} T \ln{\langle \mathcal{P}(\boldsymbol{\xi}') \rangle} + A_0
 \end{equation}
 where $A_0$ is a constant to ensure $A(\boldsymbol{\xi}')$ on every grid of the histogram is not negative.
+
+The grid used for discretizing the free energy surface (PMF) computated by OPES is defined by the relevant options of the colvars.
+Alternately, grid parameters can be set directly inside the \texttt{opes\_metad} block by inserting a \texttt{grid} sub-block, as explained in \ref{sec:colvarbias_grid}.
 
 \begin{itemize}
 \item %
@@ -7825,6 +7830,10 @@ The list of options is as follows:
 	\texttt{yes}}{%
 	If this option is set to \texttt{yes}, the numerical gradients Eq.~(\ref{eq:amd-reweighting}) and (\ref{eq:cumulant-expansion}) with respect to $\xi$ are calculated. This option is generally used when $\xi$ is stratified into windows, and the corresponding free-energies are required to merge afterwards.
 }
+
+The grid used for discretizing the free energy computated by \texttt{reweightaMD} is defined by the relevant options of the colvars.
+Alternately, grid parameters can be set directly inside the \texttt{reweightaMD} block by inserting a \texttt{grid} sub-block, as explained in \ref{sec:colvarbias_grid}.
+
 
 \end{itemize}
 }
