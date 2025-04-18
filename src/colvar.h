@@ -260,7 +260,10 @@ public:
   /// Parse parameters for custom function with Lepton
   int init_custom_function(std::string const &conf);
 
-  /// Init defaults for grid options
+  /// Parse parameters for multiple-time stepping
+  int init_mts_parameters(std::string const &conf);
+
+  /// Parse parameters for grid definitions
   int init_grid_parameters(std::string const &conf);
 
   /// Consistency check for the grid paramaters
@@ -332,6 +335,9 @@ public:
   int collect_cvc_Jacobians();
   /// \brief Calculate the quantities associated to the colvar (but not to the CVCs)
   int calc_colvar_properties();
+
+  /// If the variable doesn't need all atoms at every step, update their list
+  int update_requested_atoms();
 
   /// Get the current applied force
   inline colvarvalue const applied_force() const

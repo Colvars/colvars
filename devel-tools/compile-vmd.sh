@@ -246,6 +246,8 @@ compile_vmd_target() {
     rm -f plugins
     ln -s ${VMDPLUGINDIR} plugins
 
+    retcode=1
+
     if VMDINSTALLBINDIR=${VMDINSTALLBINDIR} \
         VMDINSTALLLIBRARYDIR=${VMDINSTALLLIBRARYDIR} \
         ./configure LINUXAMD64 ${VMD_OPTS[@]} ; then

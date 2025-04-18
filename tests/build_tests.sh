@@ -218,7 +218,7 @@ for colvar in \
     "hbond" \
     "inertia" \
     "inertiaz" \
-    "rmsd" \
+    "rmsd" "rmsd-mts" \
     "eigenvector" \
     "eigenvector-difference" \
     "eigenvector-normalized" \
