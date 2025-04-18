@@ -15,10 +15,10 @@
 #include "colvarparse.h"
 #include "colvardeps.h"
 
-template <typename T1, typename T2>
+template <typename T1, typename T2, bool soa>
 struct rotation_derivative;
 
-
+#ifndef COLVARS_USE_SOA
 /// \brief Stores numeric id, mass and all mutable data for an atom,
 /// mostly used by a \link colvar::cvc \endlink
 ///
@@ -386,7 +386,7 @@ public:
   cvm::rotation rot;
 
   /// Rotation derivative;
-  rotation_derivative<cvm::atom, cvm::atom_pos>* rot_deriv;
+  rotation_derivative<cvm::atom, cvm::atom_pos, false>* rot_deriv;
 
   /// \brief Indicates that the user has explicitly set centerToReference or
   /// rotateReference, and the corresponding reference:
@@ -645,6 +645,6 @@ public:
   /// This overloads the base function in colvardeps
   void do_feature_side_effects(int id) override;
 };
-
+#endif
 
 #endif
