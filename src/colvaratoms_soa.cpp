@@ -13,7 +13,7 @@
 #ifdef COLVARS_USE_SOA
 
 std::vector<cvm::real> cvm::atom_group_soa::pos_aos_to_soa(const std::vector<cvm::atom_pos>& aos_in) {
-  static_assert(sizeof(cvm::atom_pos) == 3 * sizeof(cvm::real));
+  static_assert(sizeof(cvm::atom_pos) == 3 * sizeof(cvm::real), "The size of cvm::atom_pos requires to be 3 * the size of cvm::real.");
   std::vector<cvm::real> pos_soa(aos_in.size() * 3);
   const size_t offset_x = 0;
   const size_t offset_y = offset_x + aos_in.size();
@@ -544,19 +544,6 @@ int cvm::atom_group_soa::atom_modifier::add_atom_name_residue_range(
     return COLVARS_ERROR;
   }
   return COLVARS_OK;
-}
-
-int cvm::atom_group_soa::atom_modifier::from_aos(std::vector<simple_atom> const &atoms_in) {
-  colvarproxy* const p = cvm::main()->proxy;
-  m_atoms_ids.reserve(m_atoms_ids.size() + atoms_in.size());
-  m_atoms.reserve(m_atoms.size() + atoms_in.size());
-  int error_code = COLVARS_OK;
-  for (size_t i = 0; i < atoms_in.size(); ++i) {
-    // TODO: Is this correct?
-    p->increase_refcount(atoms_in[i].proxy_index);
-    error_code |= add_atom(atoms_in[i]);
-  }
-  return error_code;
 }
 
 void cvm::atom_group_soa::clear_soa() {
