@@ -1939,8 +1939,9 @@ class integrate_potential : public colvar_grid_scalar
     }
   }
 
-  // \brief Computes all the relative positions to calculate the laplacian at a specific point
+  // \brief Computes all the relative positions of objects necessary to calculate the laplacian at a specific point
   void prepare_laplacian_calculation();
+  // \brief For testing purposes only: print the different stencils computed in prepare_laplacian_calculation.
   void print_laplacian_preparations();
 
   // \brief Computes all the relative positions to calculate the divergence at a specific point
@@ -1980,17 +1981,24 @@ class integrate_potential : public colvar_grid_scalar
   float lambda_min = 0.1;
   size_t upper_threshold_count = 1;
   size_t lower_threshold_count = 1;
+  // Get G at a specific point where G is the gradient F if there is enough observation else it's F multiplied by a coefficient < 1
   void get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix);
+  // Get weight regularized by a lower and upper threshold and a ramp in between
   cvm::real get_regularized_weight(std::vector<int> &ix);
 
   // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
   // Stored as a flat vector like the divergence
   std::vector<cvm::real> fdiff_gradient;
-  // TODO: change unordered_map to vector
+  // positions of the points in the stencil relative to the stencil center
   std::vector<std::vector<int>> laplacian_stencil;
+  // positions of the weights relative to each stencil point to take into account in the weighted laplacian
   std::vector<std::vector<std::vector<int>>> weight_stencil;
+  // Coefficient of each point in the stencil
   std::vector<cvm::real> weight_counts;
+  // for each point in the stencil tells if it is also included in the classical laplacian stencil and what is its
+  // coefficient
   std::vector<std::pair<bool, cvm::real>> neighbor_in_classic_laplacian_stencil;
+  // relative coordinates (in the data grid) of the points to take into account in the divergence calculation
   std::vector<std::vector<int>> surrounding_points_relative_positions;
 //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
@@ -2033,6 +2041,7 @@ class integrate_potential : public colvar_grid_scalar
   // TODO: Ask if this is not better to have a list/dict with all the reference points for each virtual point since they're the same as
   // long as the grid doesn't change
   std::vector<cvm::real> compute_averaged_border_normal_gradients(std::vector<int> virtual_point_coordinates);
+  // Calculatse the sum of the weights for a given point of the stencil
   cvm::real calculate_weight_sum(std::vector<int> stencil_point, std::vector<std::vector<int>> directions);
   bool is_virtual_point(std::vector<int> coordinate);
 

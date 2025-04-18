@@ -579,8 +579,9 @@ integrate_potential::integrate_potential(std::shared_ptr<colvar_grid_gradient> g
   init_computation_nx_nt();
   divergence.resize(computation_nt);
   div_border_supplement.resize(computation_nt);
+  //TODO: ask if it's not better to put it in integrate
   prepare_divergence_calculation();
-
+  prepare_laplacian_calculation();
   // Expand grid by 1 bin in non-periodic dimensions
   for (size_t i = 0; i < nd; i++) {
     if (!periodic[i])
@@ -588,7 +589,6 @@ integrate_potential::integrate_potential(std::shared_ptr<colvar_grid_gradient> g
     // Shift the grid by half the bin width (values at edges instead of center of bins)
     lower_boundaries.push_back(gradients->lower_boundaries[i].real_value - 0.5 * widths[i]);
   }
-  //TODO: ask Jérôme if this is correct --> it wasn't and now it is
   setup(nx);
   computation_grid->periodic = periodic;
   computation_grid->setup(computation_nx);
@@ -1440,6 +1440,7 @@ void integrate_potential::prepare_laplacian_calculation()
   weight_counts.resize(std::pow(3, nd));
   neighbor_in_classic_laplacian_stencil.resize(std::pow(3, nd));
   for (int i = 0; i < std::pow(3, nd); i++) {
+    // for each point in the stencil (for each dimension the relative coordinate can be +1, 0 ,-1)
     std::string base_3 = convert_base_three(i);
     std::vector<int> direction;
     std::vector<std::vector<int>> weights_relative_positions = {
@@ -1596,6 +1597,14 @@ void integrate_potential::get_regularized_F(std::vector<cvm::real> &F, std::vect
 
 cvm::real integrate_potential::calculate_weight_sum(std::vector<int> stencil_point,
                                                 std::vector<std::vector<int>> directions)
+/*
+  This function is used to calculate the sum of the weights for a given point of the stencil
+  arguments:
+    stencil_point: the point of the stencil
+    directions: relative positions of the weights
+  return:
+    the sum of the weights
+*/
 {
   cvm::real weight_sum = 0;
   for (std::vector<int> direction : directions) {
