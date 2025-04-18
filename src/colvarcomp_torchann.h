@@ -10,7 +10,7 @@
 #ifndef COLVARCOMP_TORCH_H
 #define COLVARCOMP_TORCH_H
 
-// Declaration of torchann 
+// Declaration of torchann
 
 #include <memory>
 
@@ -18,7 +18,7 @@
 #include "colvarcomp.h"
 #include "colvarmodule.h"
 
-#ifdef COLVARS_TORCH 
+#ifdef COLVARS_TORCH
 
 #include <torch/torch.h>
 #include <torch/script.h>
@@ -59,6 +59,5 @@ public:
     virtual void calc_value();
 };
 #endif // COLVARS_TORCH checking
-       
-#endif 
 
+#endif
