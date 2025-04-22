@@ -214,6 +214,8 @@ for dir in ${DIRLIST} ; do
           RETVAL=$?
           output=${basename}.part0002
           for file in ${output}.* ; do
+            # Skip if no files match (avoid literal '*.')
+            [ -e "$file" ] || continue
             # Remove the part number
             mv -f ${file} ${file/.part0002/}
           done
@@ -235,6 +237,8 @@ for dir in ${DIRLIST} ; do
         RETVAL=$?
         output="${basename}.part0002"
         for file in ${output}.* ; do
+          # Skip if no files match (avoid literal '*.')
+          [ -e "$file" ] || continue
           # Remove the part number
           mv -f ${file} ${file/.part0002/}
         done
