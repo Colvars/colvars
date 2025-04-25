@@ -534,24 +534,24 @@ then
   if [ -d ${target_folder} ]
   then
     echo "${target} source tree seems to have already been patched."
-    echo "Updating to the current Colvars sources."
+    echo "Preserving files from the Gromacs tree."
   else
     mkdir ${target_folder}
     mkdir -p ${target_folder}/tests/refdata
+    condcopy gromacs/src/colvarproxy_gromacs_version.h "${target_folder}/colvarproxy_gromacs_version.h"
+    for src in ${source}/gromacs/src/applied_forces/colvars/*.* ; do
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target_folder}/${tgt}"
+    done
+    for src in ${source}/gromacs/src/applied_forces/colvars/tests/*.* ; do
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target_folder}/tests/${tgt}"
+    done
+    for src in ${source}/gromacs/src/applied_forces/colvars/tests/refdata/*.* ; do
+      tgt=$(basename ${src})
+      condcopy "${src}" "${target_folder}/tests/refdata/${tgt}"
+    done
   fi
-  condcopy gromacs/src/colvarproxy_gromacs_version.h "${target_folder}/colvarproxy_gromacs_version.h"
-  for src in ${source}/gromacs/src/applied_forces/colvars/*.* ; do
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target_folder}/${tgt}"
-  done
-  for src in ${source}/gromacs/src/applied_forces/colvars/tests/*.* ; do
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target_folder}/tests/${tgt}"
-  done
-  for src in ${source}/gromacs/src/applied_forces/colvars/tests/refdata/*.* ; do
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target_folder}/tests/refdata/${tgt}"
-  done
 
   echo ""
 
