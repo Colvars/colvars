@@ -302,6 +302,11 @@ int colvar::init(std::string const &conf)
     cvm::error("Error: timeStepFactor must be positive.\n");
     return COLVARS_ERROR;
   }
+  if (time_step_factor % cvm::proxy->time_step_factor() != 0) {
+    cvm::error("timeStepFactor for this variable (currently " + cvm::to_str(time_step_factor)
+        + ") must be a multiple of the global Colvars timestep multiplier ("
+        +  cvm::to_str(cvm::proxy->time_step_factor()) + ").\n", COLVARS_INPUT_ERROR);
+  }
   if (time_step_factor != 1) {
     enable(f_cv_multiple_ts);
   }
