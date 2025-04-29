@@ -3818,14 +3818,14 @@ This component requires that \MDENGINE{} is linked against the libTorch library;
   }
 
 \item %
-  \labelkey{colvar|torchANN|m_output_index}
+  \labelkey{colvar|torchANN|output_component}
   \keydef
-    {m\_output\_index}{%
+    {output\_component}{%
     \texttt{torchANN}}{%
-    Index of the component to use}{%
+    Index of the output node to use}{%
     0-based integer}{%
     0}{%
-    When the output of the ANN has multiple components, this option selects the component to be used as the collective variable.
+    This option specifies the index of the output node to be used as the value collective variable (see also the equivalent keyword \refkey{output\_component}{colvar|NeuralNetwork|output_component} in the built-in neural network implementation).
   }
 
 \item %
