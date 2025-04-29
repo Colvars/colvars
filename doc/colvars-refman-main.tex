@@ -1504,6 +1504,20 @@ conditions (PBCs):
     small periodic cell.}
 \end{itemize}
 
+\paragraph*{Example: ignoring PBCs in a distance between two groups.}  Using \texttt{forceNoPBC yes} when defining a
+\texttt{distance \{ ... \}} function lets Colvars ignore the minimum-image convention when computing the distance between the centers of mass of \texttt{group1} and \texttt{group2}.  (Note that the centers of mass themselves are always calculated as weighted averages anyway).
+
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~d\\
+\-~~distance~\{\\
+\-~~~~forceNoPBC~yes\\
+\-~~~~group1~\{~\ldots~\}\\
+\-~~~~group2~\{~\ldots~\}\\
+\-~~\}\\
+\-\}\\
+\end{cvexampleinput}
+
 
 \cvsubsec{Distances}{sec:cvc_distances}
 
@@ -3042,24 +3056,68 @@ component.
 \cvsubsubsec{\texttt{alchLambda}: alchemical lambda parameter.}{sec:cvc_alchlambda}
 \labelkey{colvar|alchLambda}
 
-The \texttt{alchLambda~\{\}} block defines a component returning the alchemical lambda parameter
-of the back-end simulation in \MDENGINE{}, provided that it is enabled using the appropriate options
-of \MDENGINE{}. This coordinate is obtained from the back-end at the beginning of a simulation, and
-synchronized from Colvars to \MDENGINE{} at every time step. This enables lambda-dynamics simulations.
-The \texttt{alchLambda} block itself takes no parameters, it should be left empty.
-In contrast, the \texttt{colvar} block containing it should define the relevant extended-system parameters
-to enable lambda dynamics, primarily \refkey{extendedMass}{colvar|extendedMass}:
+The \texttt{alchLambda} block defines a component returning the alchemical lambda parameter
+of the back-end simulation in \MDENGINE{}, provided that it is enabled within that software.
+\cvnamdonly{Specifically, the flag \texttt{alchOn} should be enabled, and \texttt{alchType}
+should be set to \texttt{TI}.}
+The current lambda value is obtained from the back-end at the beginning of a simulation, and
+synchronized from Colvars to \MDENGINE{} at every following time step.
+This enables lambda-dynamics simulations as documented in detail in \cite{Lagardere2023}.
+The \texttt{alchLambda} keyword itself takes no parameters.
+
+To run lambda-dynamics, the enclosing \texttt{colvar} block should contain extended-system
+parameters (\ref{sec:colvar_extended}) as in the following example:
 
 \begin{cvexampleinput}
 \-colvar~\{\\
 \-~~name~lambda\\
 \-~~extendedLagrangian~on\\
-\-~~extendedMass~400\\
-\-\\
-\-~~alchLambda~\{~\#~Keep~the~line~break\\
-\-~~\}\\
+\-~~extendedMass~150000\\
+\-~~extendedLangevinDamping~1000\\
+\\
+\-~~lowerBoundary~0\\
+\-~~upperBoundary~1\\
+\-~~reflectingLowerBoundary\\
+\-~~reflectingUpperBoundary\\
+\\
+\-~~alchLambda\\
 \-\}
 \end{cvexampleinput}
+
+These parameter values have been found  to give stable dynamics for a wide range of applications\cite{Lagardere2023}.
+Reflecting boundary conditions are recommended for lambda-dynamics to ensure that the alchemical
+variable remains precisely within its physical range.
+
+\cvnamdonly{
+The NAMD configuration file should also contain the parameters for setting up the alchemical simulation, for example:
+\begin{cvexampleinput}
+computeEnergies~~~~~~~~~1\\
+\\
+alch~~~~~~~~~~~~~~~~~~~~on\\
+alchType~~~~~~~~~~~~~~~~TI\\
+alchFile~~~~~~~~~~~~~~~~\$\{alchFile\}.pdb\\
+alchCol~~~~~~~~~~~~~~~~~B\\
+alchOutFile~~~~~~~~~~~~~\$\{outName\}.fepout\\
+alchOutFreq~~~~~~~~~~~~~100\\
+alchVdwLambdaEnd~~~~~~~~0.5\\
+alchElecLambdaStart~~~~~0.5\\
+alchVdWShiftCoeff~~~~~~~6.0\\
+alchlambda~~~~~~~~~~~~~~0\\
+\end{cvexampleinput}
+
+Here, the value of 1 for \texttt{computeEnergies} and TI for \texttt{alchType} are mandatory.
+All other parameters can be chosen freely as documented in the NAMD User's Guide.
+
+\paragraph{Special considerations for running lambda-dynamics in NAMD/Colvars.}
+As of NAMD 3.0, lambda-dynamics is not compatible with multiple timestepping. We recommend applying
+hydrogen mass repartitioning (HMR) to the topology and increasing the base timestep to 2~fs
+to limit the performance impact of disabling multiple timestepping.
+When running in parallel on CPUs, synchronization issues prevent lambda-dynamics trajectories from being
+fully reproducible.
+This can be circumvented by running NAMD in GPU-resident mode.
+} % end of \cvnamdonly
+
+
 
 \cvsubsubsec{\texttt{alchFlambda}: Force on the alchemical lambda parameter.}{sec:cvc_alchFlambda}
 \labelkey{colvar|alchFlambda}
@@ -3067,8 +3125,12 @@ to enable lambda dynamics, primarily \refkey{extendedMass}{colvar|extendedMass}:
 The \texttt{alchFlambda~\{\}} block defines a component returning the force exterted on the alchemical
 lambda parameter of the back-end simulation in \MDENGINE{}, provided that it is enabled using the appropriate options
 of \MDENGINE{}. This coordinate is obtained from the back-end at each time step of a simulation.
-The \texttt{alchfLambda} block itself takes no parameters, it should be left empty.
+The \texttt{alchFlambda} block itself takes no parameters, it should be left empty.
+
+
 } % end of \cvalchlambdaonly
+
+
 
 \cvsubsec{Raw data: building blocks for custom functions}{sec:cvc_raw}
 
@@ -4486,7 +4548,7 @@ Biasing forces are then applied to the extended degree
 of freedom, and the actual geometric colvar (function of Cartesian
 coordinates) only feels the force from the harmonic spring.
 This is particularly useful when combined with an \refkey{abf}{sec:colvarbias_abf} bias
-to perform eABF simulations (\ref{sec:eABF}).
+to perform eABF simulations (\ref{sec:colvarbias_abf_extended}).
 
 Note that for some biases (\refkey{harmonicWalls}{sec:colvarbias_harmonic_walls}, \refkey{histogram}{sec:colvarbias_histogram}),
 this masking behavior is controlled by the keyword \refkey{bypassExtendedLagrangian}{colvarbias|bypassExtendedLagrangian}.
@@ -4551,7 +4613,7 @@ coordinates and act directly on the actual colvars.
     positive decimal}{%
     This parameter specifies the fictitious mass in the case of an alchemical
     variable used in lambda-dynamics (\refkey{alchLambda}{colvar|alchLambda}).
-    Note that the dimension is not that of a usual mass. Its unit is the energy unit
+    Note that the dimension is not that of a usual mass: its unit is the energy unit
     (\ref{sec:units}) times fs$^2$.
     }
 }
@@ -5301,7 +5363,7 @@ All biasing and analysis methods implemented recognize the following options:
     This option is implemented by the \refkey{harmonicWalls}{sec:colvarbias_harmonic_walls} and
     \refkey{histogram}{sec:colvarbias_histogram} biases.
     It is only relevant if the bias is applied to one or several extended-Lagrangian colvars (\ref{sec:colvar_extended}),
-    for example within an eABF (\ref{sec:eABF}) simulation.
+    for example within an eABF (\ref{sec:colvarbias_abf_extended}) simulation.
     Usually, biases use the value of the extended coordinate as a proxy for the actual colvar, and their biasing forces are applied to the extended coordinates as well.
     If \texttt{bypassExtendedLagrangian} is enabled, the bias behaves as if there were no extended coordinates, and accesses the value of the underlying colvars, applying any biasing forces along the gradients of those variables.}
 
@@ -5396,7 +5458,7 @@ tabulated biasing potentials to one or more colvars. See
 
 Combining ABF with the extended Lagrangian feature (\ref{sec:colvar_extended})
 of the variables produces the extended-system ABF variant of the method
-(\ref{sec:eABF}).
+(\ref{sec:colvarbias_abf_extended}).
 
 ABF is based on the thermodynamic integration (TI) scheme for
 computing free energy profiles. The free energy as a function
@@ -5499,7 +5561,7 @@ Most commonly, the number of variables is one or two, sometimes three.
 The following conditions must be met for an ABF simulation to be possible and
 to produce an accurate estimate of the free energy profile.
 Note that these requirements do not apply when using the extended-system
-ABF method (\ref{sec:eABF}).
+ABF method (\ref{sec:colvarbias_abf_extended}).
 
 \begin{enumerate}
  \item \emph{Only linear combinations} of colvar components can be used in ABF calculations.
@@ -5659,13 +5721,12 @@ Other parameters to control the ABF runtime can be set in the ABF configuration 
   }
 \end{itemize}
 
-\cvnamdonly{
 \cvsubsubsec{Multiple-walker ABF}{sec:colvarbias_abf_shared}
 \label{sec:mw-ABF}
 
-This implements the multiple-walker ABF scheme described in \cite{Minoukadeh2010}. The reference for this
-implementation is \cite{Comer2014c}.
-This feature requires that \MDENGINE be compiled and executed with multiple-replica
+This implements the multiple-walker ABF scheme described in \cite{Minoukadeh2010}. The references for this
+implementation are \cite{Comer2014c} and \cite{Fiorin2024}.
+This feature requires that \MDENGINE{} be compiled and executed with multiple-replica
 support.
 
 If \refkey{shared}{abf|shared} is enabled, the total force samples will be synchronized among all replicas
@@ -5675,14 +5736,15 @@ Every \refkey{sharedFreq}{abf|sharedFreq} steps, the replicas communicate the sa
 Thus, it is as if total force samples among all replicas are gathered in a single shared buffer.
 Shared ABF allows all replicas to benefit from the sampling done by other replicas and can lead to faster convergence of the biasing force.
 
+\cvnamdonly{
 An implementation of the selection mechanism described in \cite{Comer2014c} is provided as a set of Tcl scripts in \texttt{colvartools/mwABF\_selection.tcl} in the Colvars repository.
 Compared with the initial implementation, the current implementation supports selection on sets of up to 3 colvars.
 To reduce noise, samples can be counted in a hybercube around the current bin (see Tcl script for details).
 A set of example NAMD inputs can be found in the \texttt{namd/tests/library/multiple\_walker\_abf} directory.
-
+} % end of \cvnamdonly
 
 \paragraph{Output files of multiple-walker ABF.}
-In multiple-walker ABF runs, each walker now outputs gradient and count files containing only data collected locally (this is a change in version 2024-01-06).
+In multiple-walker ABF runs, since Colvars version 2024-01-06, each walker outputs gradient and count files containing only data collected locally.
 In addition, the first walker outputs the collected data using the common prefix, with an additional \texttt{".all"} string (i.e. file names ending with \texttt{".all.count"}, \texttt{".all.grad"} etc.).
 
 
@@ -5708,7 +5770,6 @@ In addition, the first walker outputs the collected data using the common prefix
     Because this forces the replicas to synchronize, small values of this parameter may slightly reduce the overall throughput, especially on systems with unequal performance.
   }
 \end{itemize}
-}
 
 \cvsubsubsec{Output files}{sec:colvarbias_abf_output}
 
@@ -5841,8 +5902,7 @@ sampling and discretization on a grid). See Ref.\cite{Henin2021} for details.
 
 
 
-\cvsubsec{Extended-system Adaptive Biasing Force (eABF)}{sec:ecolvarbias_abf_extended}
-\label{sec:eABF}
+\cvsubsec{Extended-system Adaptive Biasing Force (eABF)}{sec:colvarbias_abf_extended}
 
 Extended-system ABF (eABF) is a variant of ABF (\ref{sec:colvarbias_abf})
 where the bias is not applied
@@ -5867,8 +5927,14 @@ where the angle brackets indicate a canonical average conditioned by $\lambda=\l
 At long simulation times, eABF produces a flat histogram of the extended variable $\lambda$,
 and a flattened histogram of $\xi$, whose exact shape depends on the strength of the coupling
 as defined by \texttt{extendedFluctuation} in the colvar.
-Coupling should be somewhat loose for faster exploration and convergence, but strong
-enough that the bias does help overcome barriers along the colvar $\xi$.\cite{Lesage2017}
+
+Coupling should be strong enough that the bias helps overcome barriers along the colvar.\cite{Lesage2017}
+A value of \texttt{extendedFluctuation} equal to the bin width is often reasonable.
+In the limit of strong coupling (small \texttt{extendedFluctuation}), the eABF free energy surface
+(\texttt{.pmf} file) becomes close to the true one, making the asymptotically more accurate but
+noisier CZAR estimator (\texttt{.czar.pmf} file) unnecessary.
+In practice, we recommend comparing these two free energy surfaces to decide which one to use.
+
 Distribution of the colvar may be assessed by plotting its histogram, which
 is written to the \outputName\texttt{.zcount} file in every eABF simulation.
 Note that a \texttt{histogram} bias (\ref{sec:colvarbias_histogram})
@@ -7154,7 +7220,7 @@ To activate an umbrella sampling simulation, the same keywords as in the previou
 
 \cvsubsubsec{Changing force constant}{sec:colvarbias_force_k_ti}
 
-The force constant of the harmonic restraint may also be changed to equilibrate \cite{Deng2009}.
+The force constant of the harmonic restraint may also be changed over time, either to introduce or remove a restraint smoothly, or to estimate a restraint free energy\cite{Deng2009}.
 
 \begin{itemize}
 
@@ -7185,7 +7251,7 @@ The force constant of the harmonic restraint may also be changed to equilibrate 
     suitably small value. It should be noted, however, that restraint
     free energy calculations may be handled more efficiently by an
     indirect route, through the
-    determination of a PMF for the restrained coordinate.\cite{Deng2009}}
+    determination of a free energy profile for the restrained coordinate.\cite{Deng2009}}
 
 \item %
   \keydef
