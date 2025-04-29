@@ -15,6 +15,7 @@
 
 #include "colvarcomp_torchann.h"
 
+
 #ifdef COLVARS_TORCH
 
 colvar::torchANN::torchANN()
@@ -40,8 +41,14 @@ int colvar::torchANN::init(std::string const &conf) {
     return cvm::error("Error: couldn't load libtorch model (see below).\n" + cvm::to_str(e.what()),
                       COLVARS_INPUT_ERROR);
   }
-  get_keyval(conf, "m_output_index", m_output_index, 0);
-  get_keyval(conf, "doubleInputTensor", use_double_input, false);
+
+  auto const legacy_keyword = get_keyval(conf, "m_output_index", m_output_index, m_output_index);
+  if (legacy_keyword) {
+    cvm::log("Warning: m_output_index is a deprecated keyword, please use output_component instead.\n");
+  }
+  get_keyval(conf, "output_component", m_output_index, m_output_index);
+
+  get_keyval(conf, "doubleInputTensor", use_double_input, use_double_input);
   //get_keyval(conf, "useGPU", use_gpu, false);
 
   cvc_indices.resize(cv.size(),0);
