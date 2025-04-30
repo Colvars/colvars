@@ -133,7 +133,7 @@ get_gromacs_minor_version_cmake() {
 }
 
 
-UPDATE_LEPTON=${UPDATE_LEPTON:-yes}
+UPDATE_LEPTON=${UPDATE_LEPTON:-no}
 
 copy_lepton() {
 
