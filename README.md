@@ -1,5 +1,7 @@
 # Collective variables module (Colvars)
 
+![Colvars logo](doc/logo/colvars-logo.svg)
+
 A software library for molecular simulation and analysis that provides a high-performance implementation of sampling algorithms defined on a reduced space of continuously differentiable functions (aka collective variables).
 
 First released in 2008 as part of the standard distribution of [NAMD](https://www.ks.uiuc.edu/Research/namd/) version 2.7b1, Colvars has also been integrated in [LAMMPS](https://lammps.sandia.gov/download.html), [VMD](https://www.ks.uiuc.edu/Research/vmd/), [GROMACS](http://www.gromacs.org/), and [Tinker-HP](https://tinker-hp.org/).  In VMD, interactive use is possible both from the command line and through the [Dashboard](vmd/cv_dashboard/README.md) graphical user interface.
