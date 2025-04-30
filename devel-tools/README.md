@@ -13,6 +13,11 @@ that precedes the changes added since the last time that the macros were
 updated.  A Git commit is auto-generated, which will also trigger a doc
 rebuild when pushed to GitHub.
 
+Note that the new doc will be pushed to the website under a folder named
+like the current branch; this means that if the commit described above is
+not the last commit in a pull request, direct-push access to master will be
+required for updating the doc.
+
 
 ### Git commit hooks
 
