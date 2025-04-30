@@ -748,14 +748,12 @@ void integrate_potential::set_weighted_div()
     std::vector<int> max_position;
     std::vector<int> min_position;
     sorted_counts = {};
-    int non_zero_counts = 0;
 
     //TODO: ask Jérôme if i should move that to constructor --> No
     for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix); gradients->incr(ix)) {
       size_t count = gradients->samples->value(ix);
       if (count > 0){
         insertIntoSortedList<size_t>(sorted_counts, count);
-        non_zero_counts++;
       }
     }
 
