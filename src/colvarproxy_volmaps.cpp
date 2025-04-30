@@ -114,7 +114,8 @@ int colvarproxy_volmaps::compute_volmap(int /* flags */,
                                         cvm::atom_iter /* atom_begin */,
                                         cvm::atom_iter /* atom_end */,
                                         cvm::real * /* value */,
-                                        cvm::real * /* atom_field */)
+                                        cvm::real * /* atom_field */,
+                                        int * /* inside */)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
