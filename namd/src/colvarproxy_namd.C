@@ -608,7 +608,7 @@ void colvarproxy_namd::calculate()
   #if !defined(NAMD_UNIFIED_REDUCTION)
   reduction->submit();
   #else
-  submitReduction();
+  // submitReduction();
   #endif
   #endif
 
