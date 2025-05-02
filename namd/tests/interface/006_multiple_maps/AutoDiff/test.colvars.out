@@ -4,7 +4,7 @@ colvars:   https://doi.org/10.1080/00268976.2013.813594
 colvars: as well as all other papers listed below for individual features used.
 colvars: This version was built with the C++11 standard or higher.
 colvars: Summary of compile-time features available in this build:
-colvars:   - SMP parallelism: enabled (num. threads = 4)
+colvars:   - SMP parallelism: not available
 colvars:   - Lepton custom functions: available
 colvars:   - Tcl interpreter: available
 colvars: Redefining the Tcl "cv" command to the new script interface.

@@ -417,6 +417,10 @@ then
     fi
   done
 
+  for patch_file in ${source}/namd/src/*.patch ; do
+    patch -p1 -N -d ${target} < ${patch_file} || true
+  done
+
   if [ $updated_makefile = 1 ] ; then
     echo ""
     echo "  *************************************************"
