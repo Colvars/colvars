@@ -105,6 +105,10 @@ EOF
         cmd+=(--with-python)
     fi
 
+    if [ -d "/opt/libtorch" ] ; then
+        cmd+=(--with-colvars-torch --torch-prefix /opt/libtorch)
+    fi
+
     eval ${cmd[@]}
 
     if pushd ${dirname} ; then
