@@ -2,8 +2,11 @@ colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars:   https://doi.org/10.1080/00268976.2013.813594
 colvars: as well as all other papers listed below for individual features used.
-colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
-colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - C++ language version: 201703
+colvars:   - Multiple replicas: enabled (replica number 1 of 1)
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: available
 colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: The final output state file will be "test.restart.colvars.state".
@@ -40,7 +43,11 @@ colvars:   group9 (4 atoms)
 colvars:   Protein_C-alpha_10 (1 atoms)
 colvars:   group10 (4 atoms)
 colvars:   heavy_atoms (51 atoms)
-colvars: # smp = on [default]
+colvars:   prot_N (10 atoms)
+colvars:   prot_CA (10 atoms)
+colvars:   prot_C (10 atoms)
+colvars:   prot_O (10 atoms)
+colvars: # smp = "cvcs" [default]
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # scriptedColvarForces = off [default]
@@ -49,7 +56,8 @@ colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "nn_0"
-colvars:   Initializing a new "torchANN" component.
+colvars:     Initializing a new "torchANN" component.
+colvars:     Warning: cannot cite unknown feature "torchANN colvar component (derived from linearCombination)"
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -60,7 +68,7 @@ colvars:     # scalable = on [default]
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
-colvars:     # period = 0 [default]
+colvars:     # period = 360 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
@@ -125,10 +133,10 @@ colvars:     # oneSiteTotalForce = off [default]
 colvars:     # modelFile = "identity.pt"
 colvars:     torch model loaded.
 colvars:     # m_output_index = 0
+colvars:     Warning: m_output_index is a deprecated keyword, please use output_component instead.
+colvars:     # output_component = 0 [default]
 colvars:     # doubleInputTensor = on
-colvars:     # useGPU = off [default]
 colvars:     Input dimension of model: 1
-colvars:     Use CPU.
 colvars:     Model's dtype: kFloat64.
 colvars:     Evaluating model with zero tensor succeeded.
 colvars:   All components initialized.
@@ -169,13 +177,14 @@ colvars:   # outputFreq = 10 [default]
 colvars:   # timeStepFactor = 1 [default]
 colvars:   WARNING: ABF should not be run without a thermostat or at 0 Kelvin!
 colvars:   # applyBias = on [default]
-colvars:   # updateBias = on [default]
 colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
 colvars:   # fullSamples = 0
+colvars:   # minSamples = 0 [default]
 colvars:   # inputPrefix =  [default]
 colvars:   # historyFreq = 0 [default]
 colvars:   # shared = off [default]
+colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
 colvars:   # CZARestimator = on [default]
 colvars:   # integrate = on [default]
@@ -193,11 +202,17 @@ colvars: updating grid object data (0 grid objects in total).
 colvars: 
 colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
 colvars: 
+colvars: - BAOA integrator:
+colvars:   BouRabee2010 https://doi.org/10.1137/090758842
+colvars: 
 colvars: - Colvars module:
 colvars: - Colvars-NAMD interface:
 colvars: - Optimal rotation via flexible fitting:
 colvars: - dihedral colvar component:
 colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - linearCombination colvar component:
+colvars:   Fiorin2024 https://doi.org/10.1021/acs.jpcb.4c05604
 colvars: 
 colvars: - ABF colvar bias implementation:
 colvars:   Henin2010 https://doi.org/10.1021/ct9004432
@@ -210,27 +225,24 @@ colvars: - NAMD engine:
 colvars: - Scalable center-of-mass computation (NAMD):
 colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
 colvars: 
-colvars: - torchANN colvar component:
-colvars:   n/a 
-colvars: 
 colvars: updating target temperature (T = 0 K).
 colvars: ----------------------------------------------------------------------
-colvars: Loading state from file "test.colvars.state".
-colvars:   Restarting collective variable "nn_0" from value: 60.3181
-colvars:   Restarting abf bias "abf1" from step number 0.
+colvars: Loading state from text file "test.colvars.state".
+colvars:   Restarting collective variable "nn_0" from value: 60.318
+colvars:   Restarted abf bias "abf1" with step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (4 scalable groups, 16 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
 colvars: updating target temperature (T = 0 K).
+colvars: Current simulation parameters: initial step = 20, integration timestep = 1
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Re-initialized atom group for variable "nn_0":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
 colvars: Re-initialized atom group for variable "nn_0":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: Re-initialized atom group for variable "nn_0":0/2. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: Re-initialized atom group for variable "nn_0":0/3. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: The restart output state file will be "test.restart.tmp.colvars.state".
-colvars: The final output state file will be "test.restart.colvars.state".
-colvars:   Prepared sample and gradient buffers at step 20.
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
