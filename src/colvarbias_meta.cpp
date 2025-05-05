@@ -322,13 +322,13 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
   size_t j;
   size_t jcount;
 
-  // in future remove the line below and uncomment the three following ones as reflection should be default with grids 
-  
+  // in future remove the line below and uncomment the three following ones as reflection should be default with grids
+
   use_reflection=false;
 
   //if (use_grids) {
-  //  use_reflection=true;  
-  //}  
+  //  use_reflection=true;
+  //}
 
   for ( i = 0; i < num_variables(); i++ ) {
      if (!variables(i)->is_enabled(f_cv_periodic)) {
@@ -341,7 +341,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
 
   for ( i = 0; i < num_variables(); i++ ) {
        if (variables(i)->value().type()!=colvarvalue::type_scalar) {
-	 use_reflection=false;        
+	 use_reflection=false;
          cvm::log("Note: CV number "+cvm::to_str(i)+" is not of scalar type. Hills reflection has been disabled as it can be used only with scalar variables.\n");
        }
   }
@@ -571,7 +571,7 @@ int colvarbias_meta::init_reflection_params(std::string const &conf)
      j=reflection_ulimit_cv[i];
      which_int_ulimit_cv[j]=i;
   }
-  
+
   return COLVARS_OK;
 }
 
@@ -1181,6 +1181,8 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
   } else {
     curr_bin = hills_energy->get_colvars_index(curr_values);
   }
+
+  bool index_ok = false;
 
   if (use_grids) {
 
@@ -1975,7 +1977,7 @@ void colvarbias_meta::rebin_grids_after_restart()
       // if there are hills, recompute the new grids from them
       cvm::log("Rebinning the energy and forces grids from "+
                cvm::to_str(hills.size())+" hills (this may take a bit)...\n");
-      project_hills(hills.begin(), hills.end(), 
+      project_hills(hills.begin(), hills.end(),
                     new_hills_energy.get(), new_hills_energy_gradients.get(),
                     which_int_llimit_cv, which_int_ulimit_cv,
                     reflection_llimit, reflection_ulimit, true);
