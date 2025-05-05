@@ -1,0 +1,46 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    # use a non-trivial width to test bias behavior
+    width 0.5
+    # The lower boundary is already defined at 0 for a distance function
+    lowerBoundary 3.2
+    upperBoundary 10.2
+
+    # not required to define hard limits but recommended to avoid unnecessary grid expansion
+    # likely to be activated by default with refletion in the future
+    hardUpperBoundary on
+    hardLowerBoundary on
+
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+metadynamics {
+    colvars        one
+    hillWeight     0.001
+    hillWidth      1.2533141373155001  # Old default
+    newHillFrequency 10
+    useHillsReflection on
+}
+
+harmonicWalls {
+    name wall_one
+    colvars one
+    forceConstant 1.0
+    lowerWalls 3.2
+    upperWalls 10.2
+}
