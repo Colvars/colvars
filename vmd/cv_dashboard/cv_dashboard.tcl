@@ -862,7 +862,8 @@ proc ::cv_dashboard::load_cv_traj { filenames } {
         if { $title == "" } {
           set title $line
           continue
-        } elseif { $title != $line } {
+        } elseif { [list {*}$title] != [list {*}$line] } {
+          # Compare strings converted to lists to ignore whitespace
           puts "Error: read incompatible title lines:\n$title\n$line"
           tk_messageBox -icon error -title "Colvars Dashboard Error"\
             -message "Read incompatible title lines in colvars.traj files:\n$title\n$line"
