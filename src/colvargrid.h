@@ -1895,10 +1895,10 @@ class integrate_potential : public colvar_grid_scalar
                       std::shared_ptr<colvar_grid_gradient> gradients);
 
   /// Constructor from a gradient grid (for processing grid files without a Colvars config)
-  integrate_potential(std::shared_ptr<colvar_grid_gradient> gradients);
+  integrate_potential(std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false);
 
   /// \brief Calculate potential from divergence (in 2D); return number of steps
-  int integrate(const int itmax, const cvm::real & tol, cvm::real & err, bool verbose = true, bool weighted = true);
+  int integrate(const int itmax, const cvm::real & tol, cvm::real & err, bool verbose = true);
 
   /// \brief Update matrix containing divergence and boundary conditions
   /// based on new gradient point value, in neighboring bins
@@ -1933,7 +1933,10 @@ class integrate_potential : public colvar_grid_scalar
       if (periodic[i]) {
         computation_nx[i] = nx[i];
       } else {
-        computation_nx[i] = nx[i] - 1;  // One less point for non-periodic dimensions
+        if (weighted)
+          computation_nx[i] = nx[i] - 1;  // One less point for non-periodic dimensions
+        else
+          computation_nx[i] = nx[i] + 1;
       }
       computation_nt*=computation_nx[i];
       computation_nxc[i] = computation_nt;
@@ -1960,8 +1963,10 @@ class integrate_potential : public colvar_grid_scalar
 
   std::vector<int> computation_nx;
   std::vector<int> computation_nxc;
-  size_t computation_nt;
 
+  size_t computation_nt;
+  bool weighted = false;
+  bool need_to_extrapolate_weighted_solution = false;
   // Reference to gradient grid
   std::shared_ptr<colvar_grid_gradient> gradients;
 
@@ -1987,9 +1992,6 @@ class integrate_potential : public colvar_grid_scalar
   // Get weight regularized by a lower and upper threshold and a ramp in between
   cvm::real get_regularized_weight(std::vector<int> &ix);
 
-  // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
-  // Stored as a flat vector like the divergence
-  std::vector<cvm::real> fdiff_gradient;
   // positions of the points in the stencil relative to the stencil center
   std::vector<std::vector<int>> laplacian_stencil;
   // positions of the weights relative to each stencil point to take into account in the weighted laplacian
