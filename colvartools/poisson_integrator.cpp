@@ -7,6 +7,8 @@
 
 
 int main (int argc, char *argv[]) {
+  bool weighted = false;
+  bool save_divergence = false;
 
   if (argc < 2) {
     std::cerr << "\n\nOne argument needed: gradient multicol file name.\n";
@@ -20,14 +22,19 @@ int main (int argc, char *argv[]) {
   std::shared_ptr<colvar_grid_count> count_ptr;
 
   // Look for matching count file
-  size_t pos = gradfile.rfind(std::string(".czar.grad"));
-  if (pos != std::string::npos) {
-    countfile = gradfile.substr(0,pos) + ".zcount";
-  } else {
-    pos = gradfile.rfind(std::string(".grad"));
+  if (argc == 2) {
+    size_t pos = gradfile.rfind(std::string(".czar.grad"));
     if (pos != std::string::npos) {
-      countfile = gradfile.substr(0,pos) + ".count";
+      countfile = gradfile.substr(0,pos) + ".zcount";
+    } else {
+      pos = gradfile.rfind(std::string(".grad"));
+      if (pos != std::string::npos) {
+        countfile = gradfile.substr(0,pos) + ".count";
+      }
     }
+  }
+  else if (argc > 2) {
+    countfile = argv[2];
   }
   if (countfile.size()) {
     struct stat buffer;
@@ -54,22 +61,39 @@ int main (int argc, char *argv[]) {
 
   grad_ptr->write_multicol("gradient_in.dat");
 
-  int itmax = 100;
+  int itmax = 1000;
   cvm::real err;
-  cvm::real tol = 1e-8;
+  cvm::real tol = 1e-3;
 
-  integrate_potential potential(grad_ptr);
+  integrate_potential potential(grad_ptr, weighted);
   potential.prepare_laplacian_calculation();
   // potential.print_laplacian_preparations();
 
-  potential.print_laplacian_preparations();
-  potential.set_div();
-  // potential.set_weighted_div();
-
-  colvar_grid_scalar div(potential);
-  div.data = potential.divergence;
-  div.write_multicol("divergence.dat");
-
+  // potential.print_laplacian_preparations();
+  if (save_divergence){
+    if (!weighted) {
+      potential.set_div();
+    }
+    else {
+      potential.set_weighted_div();
+      potential.laplacian_weighted<true>(potential.divergence, potential.data);
+      for (size_t i =0; i < itmax; i++) {
+        potential.divergence[i]   = potential.divergence[i] + potential.div_border_supplement[i];
+        if (potential.div_border_supplement[i] > tol) {
+          std::cout << "ola ";
+          std::cout << potential.div_border_supplement[i] << std::endl;
+        }
+      }
+    }
+    colvar_grid_scalar div(potential);
+    div.data = potential.divergence;
+    div.nx = potential.computation_grid->nx;
+    std::cout << div.nx[0] << " " << div.nx[1] << std::endl;
+    div.nt = potential.computation_grid->nt;
+    div.nxc = potential.computation_grid->nxc;
+    div.write_multicol("divergence.dat");
+    std::cout << "\nWriting divergence in multicol format to divergence.dat";
+  }
   // std::vector<cvm::real> laplacian_matrix (potential.computation_grid->nt, 0);
   // std::vector<cvm::real> test_vector (potential.computation_grid->nt, 1);
   // std::vector<cvm::real> complete_div (potential.computation_grid->nt, 0);
@@ -83,9 +107,8 @@ int main (int argc, char *argv[]) {
   // // saveVectorToCSV(potential.laplacian_matrix_test, "laplacian.csv");
 
 
-  potential.integrate(itmax, tol, err, true, true);
+  potential.integrate(itmax, tol, err, true);
   potential.set_zero_minimum();
-
   if (potential.num_variables() < 3) {
     std::cout << "\nWriting integrated potential in multicol format to " + gradfile + ".int\n";
     potential.write_multicol(std::string(gradfile + ".int"), "integrated potential");
