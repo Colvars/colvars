@@ -20,7 +20,7 @@
 #include "colvaratoms.h"
 #include "colvar_rotation_derivative.h"
 
-
+#ifndef COLVARS_USE_SOA
 cvm::atom::atom()
 {
   index = -1;
@@ -1559,5 +1559,5 @@ void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
 // Static members
 
 std::vector<colvardeps::feature *> cvm::atom_group::ag_features;
-
+#endif
 

@@ -29,6 +29,7 @@
 #include "colvaratoms.h"
 #include "colvarcomp.h"
 #include "colvars_memstream.h"
+#include "colvaratoms_soa.h"
 
 
 /// Track usage of Colvars features
@@ -763,7 +764,19 @@ colvar *colvarmodule::colvar_by_name(std::string const &name)
   return NULL;
 }
 
-
+#ifdef COLVARS_USE_SOA
+cvm::atom_group_soa *colvarmodule::atom_group_soa_by_name(std::string const& name) {
+  colvarmodule *cv = cvm::main();
+  for (std::vector<cvm::atom_group_soa *>::iterator agi = cv->named_atom_groups_soa.begin();
+       agi != cv->named_atom_groups_soa.end();
+       agi++) {
+    if ((*agi)->name == name) {
+      return (*agi);
+    }
+  }
+  return nullptr;
+}
+#else
 cvm::atom_group *colvarmodule::atom_group_by_name(std::string const &name)
 {
   colvarmodule *cv = cvm::main();
@@ -776,13 +789,30 @@ cvm::atom_group *colvarmodule::atom_group_by_name(std::string const &name)
   }
   return NULL;
 }
+#endif // COLVARS_USE_SOA
 
-
+#ifdef COLVARS_USE_SOA
+void colvarmodule::register_named_atom_group_soa(atom_group_soa *ag) {
+  named_atom_groups_soa.push_back(ag);
+}
+#else
 void colvarmodule::register_named_atom_group(atom_group *ag) {
   named_atom_groups.push_back(ag);
 }
+#endif // COLVARS_USE_SOA
 
-
+#ifdef COLVARS_USE_SOA
+void colvarmodule::unregister_named_atom_group_soa(atom_group_soa *ag) {
+  for (std::vector<cvm::atom_group_soa *>::iterator agi = named_atom_groups_soa.begin();
+       agi != named_atom_groups_soa.end();
+       agi++) {
+    if (*agi == ag) {
+      named_atom_groups_soa.erase(agi);
+      break;
+    }
+  }
+}
+#else
 void colvarmodule::unregister_named_atom_group(cvm::atom_group *ag)
 {
   for (std::vector<cvm::atom_group *>::iterator agi = named_atom_groups.begin();
@@ -794,7 +824,7 @@ void colvarmodule::unregister_named_atom_group(cvm::atom_group *ag)
     }
   }
 }
-
+#endif // COLVARS_USE_SOA
 
 int colvarmodule::change_configuration(std::string const &bias_name,
                                        std::string const &conf)
@@ -1337,7 +1367,11 @@ colvarmodule::~colvarmodule()
     colvarbias::delete_features();
     colvar::delete_features();
     colvar::cvc::delete_features();
+#ifdef COLVARS_USE_SOA
+    atom_group_soa::delete_features();
+#else
     atom_group::delete_features();
+#endif // COLVARS_USE_SOA
 
     delete
       reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_);
@@ -2188,7 +2222,47 @@ int colvarmodule::reset_index_groups()
   return COLVARS_OK;
 }
 
+#ifdef COLVARS_USE_SOA
+int cvm::load_coords(char const *file_name,
+                     std::vector<cvm::rvector> *pos,
+                     cvm::atom_group_soa *atoms,
+                     std::string const &pdb_field,
+                     double pdb_field_value)
+{
+  int error_code = COLVARS_OK;
 
+  std::string const ext(strlen(file_name) > 4 ?
+                        (file_name + (strlen(file_name) - 4)) :
+                        file_name);
+
+  atoms->create_sorted_ids();
+
+  std::vector<cvm::atom_pos> sorted_pos(atoms->size(), cvm::rvector(0.0));
+
+  // Differentiate between PDB and XYZ files
+  if (colvarparse::to_lower_cppstr(ext) == std::string(".xyz")) {
+    if (pdb_field.size() > 0) {
+      return cvm::error("Error: PDB column may not be specified "
+                        "for XYZ coordinate files.\n", COLVARS_INPUT_ERROR);
+    }
+    // For XYZ files, use internal parser
+    error_code |= cvm::main()->load_coords_xyz(file_name, &sorted_pos, atoms);
+  } else {
+    // Otherwise, call proxy function for PDB
+    error_code |= proxy->load_coords_pdb(file_name, sorted_pos, atoms->sorted_ids(), pdb_field,
+                                         pdb_field_value);
+  }
+
+  if (error_code != COLVARS_OK) return error_code;
+
+  std::vector<int> const &map = atoms->sorted_ids_map();
+  for (size_t i = 0; i < atoms->size(); i++) {
+    (*pos)[map[i]] = sorted_pos[i];
+  }
+
+  return error_code;
+}
+#else
 int cvm::load_coords(char const *file_name,
                      std::vector<cvm::rvector> *pos,
                      cvm::atom_group *atoms,
@@ -2228,8 +2302,119 @@ int cvm::load_coords(char const *file_name,
 
   return error_code;
 }
+#endif // COLVARS_USE_SOA
 
+#ifdef COLVARS_USE_SOA
+int cvm::load_coords_xyz(char const *filename,
+                         std::vector<rvector> *pos,
+                         cvm::atom_group_soa *atoms,
+                         bool keep_open)
+{
+  std::istream &xyz_is = proxy->input_stream(filename, "XYZ file");
+  size_t natoms;
+  char symbol[256];
+  std::string line;
+  cvm::real x = 0.0, y = 0.0, z = 0.0;
 
+  std::string const error_msg("Error: cannot parse XYZ file \""+
+                              std::string(filename)+"\".\n");
+
+  if ( ! (xyz_is >> natoms) ) {
+      // Return silent error when reaching the end of multi-frame files
+      return keep_open ? COLVARS_NO_SUCH_FRAME : cvm::error(error_msg, COLVARS_INPUT_ERROR);
+  }
+
+  ++xyz_reader_use_count;
+  if (xyz_reader_use_count < 2) {
+    cvm::log("Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.\n");
+  }
+
+  if (xyz_is.good()) {
+    // skip comment line
+    cvm::getline(xyz_is, line);
+    cvm::getline(xyz_is, line);
+    xyz_is.width(255);
+  } else {
+    proxy->close_input_stream(filename);
+    return cvm::error(error_msg, COLVARS_INPUT_ERROR);
+  }
+
+  if (pos->size() > natoms) {
+    proxy->close_input_stream(filename);
+    return cvm::error("File \"" + std::string(filename) + "\" contains fewer atoms (" + cvm::to_str(natoms)
+      + ") than expected (" + cvm::to_str(pos->size()) + ").", COLVARS_INPUT_ERROR);
+  }
+
+  std::vector<atom_pos>::iterator pos_i = pos->begin();
+  size_t xyz_natoms = 0;
+  if (pos->size() < natoms) { // Use specified indices
+    int next = 0; // indices are zero-based
+    if (!atoms) {
+      // In the other branch of this test, reading all positions from the file,
+      // a valid atom group pointer is not necessary
+      return cvm::error("Trying to read partial positions with invalid atom group pointer",
+                        COLVARS_BUG_ERROR);
+    }
+
+    if (static_cast<unsigned int>(atoms->sorted_ids().back()) > natoms) {
+      proxy->close_input_stream(filename);
+      return cvm::error("File \"" + std::string(filename) + "\" contains fewer atoms (" + cvm::to_str(natoms)
+        + ") than expected (" + cvm::to_str(atoms->sorted_ids().back()) + ").", COLVARS_INPUT_ERROR);
+    }
+
+    std::vector<int>::const_iterator index = atoms->sorted_ids().begin();
+
+    for ( ; pos_i != pos->end() ; pos_i++, index++) {
+      while ( next < *index ) {
+        cvm::getline(xyz_is, line);
+        next++;
+      }
+      if (xyz_is.good()) {
+        xyz_is >> symbol;
+        xyz_is >> x >> y >> z;
+        // XYZ files are assumed to be in Angstrom (as eg. VMD will)
+        (*pos_i)[0] = proxy->angstrom_to_internal(x);
+        (*pos_i)[1] = proxy->angstrom_to_internal(y);
+        (*pos_i)[2] = proxy->angstrom_to_internal(z);
+        xyz_natoms++;
+      } else {
+        proxy->close_input_stream(filename);
+        return cvm::error(error_msg, COLVARS_INPUT_ERROR);
+      }
+    }
+
+  } else {          // Use all positions
+
+    for ( ; pos_i != pos->end() ; pos_i++) {
+      if (xyz_is.good()) {
+        xyz_is >> symbol;
+        xyz_is >> x >> y >> z;
+        (*pos_i)[0] = proxy->angstrom_to_internal(x);
+        (*pos_i)[1] = proxy->angstrom_to_internal(y);
+        (*pos_i)[2] = proxy->angstrom_to_internal(z);
+        xyz_natoms++;
+      } else {
+        proxy->close_input_stream(filename);
+        return cvm::error(error_msg, COLVARS_INPUT_ERROR);
+      }
+    }
+  }
+
+  if (xyz_natoms != pos->size()) {
+    proxy->close_input_stream(filename);
+    return cvm::error("Error: The number of positions read from file \""+
+                      std::string(filename)+"\" does not match the number of "+
+                      "positions required: "+cvm::to_str(xyz_natoms)+" vs. "+
+                      cvm::to_str(pos->size())+".\n", COLVARS_INPUT_ERROR);
+  }
+
+  if (keep_open) {
+    return COLVARS_OK;
+  } else {
+    return proxy->close_input_stream(filename);
+  }
+}
+#else
 int cvm::load_coords_xyz(char const *filename,
                          std::vector<rvector> *pos,
                          cvm::atom_group *atoms,
@@ -2339,8 +2524,7 @@ int cvm::load_coords_xyz(char const *filename,
     return proxy->close_input_stream(filename);
   }
 }
-
-
+#endif // COLVARS_USE_SOA
 
 // Wrappers to proxy functions: these may go in the future
 
