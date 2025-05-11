@@ -9,6 +9,7 @@ This plugin depends on the source code of [NAMD](https://gitlab.com/tcbgUIUC/nam
 Commands to compile the plugin under this directory:
 ```sh
 mkdir build
+cd build
 cmake -DNAMD_DIR=<your_namd_git_directory>/ -DCMAKE_BUILD_TYPE=Release ../
 make -j4
 ```
