@@ -408,22 +408,23 @@ int colvarmodule::parse_global_params(std::string const &conf)
       if (proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::cvcs) != COLVARS_OK) {
         cvm::error("Colvars component-based parallelism is not implemented.\n");
         return COLVARS_INPUT_ERROR;
-      } else {
-        cvm::log("SMP parallelism will be applied to Colvars components.\n");
-        cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
       }
     } else if (smp == "inner_loop") {
       if (proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::inner_loop) != COLVARS_OK) {
         cvm::error("SMP parallelism inside the calculation of Colvars components is not implemented.\n");
         return COLVARS_INPUT_ERROR;
-      } else {
-        cvm::log("SMP parallelism will be applied inside the Colvars components.\n");
-      cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
       }
     } else {
       proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::none);
       cvm::log("SMP parallelism has been disabled.\n");
     }
+  }
+  if (smp == "cvcs" || smp == "on" || smp == "yes") {
+    cvm::log("SMP parallelism will be applied to Colvars components.\n");
+    cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
+  } else if (smp == "inner_loop") {
+    cvm::log("SMP parallelism will be applied inside the Colvars components.\n");
+    cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
   }
 
   bool b_analysis = true;
