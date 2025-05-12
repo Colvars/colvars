@@ -35,4 +35,5 @@ This plugin is still in its early stage, and has the following limitations:
 - Limited scripting support. You can call Colvars between `run`s by `gpuGlobalUpdateClient COLVARS cv <command>`. For example, you can reset Colvars by `gpuGlobalUpdateClient COLVARS cv reset`, and then load another configuration file by `gpuGlobalUpdateClient COLVARS cv configfile <new_config_file>`. However, you cannot use scripted Colvars force, and since this plugin uses an independent interpreter for the Colvars instance, so you cannot call NAMD's TCL procedures in the calculation of scripted CVs;
 - `volmap` is not available;
 - GaMD energy histograming/reweighting is not available (GaMD is not currently available in GPU-resident NAMD);
+- Minimization is not supported since `minimize` in the NAMD GPU-resident mode actually calls the GPU-offload code path;
 - SMP is not available.
