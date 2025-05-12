@@ -8,7 +8,7 @@ set(NAMD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." CACHE STRING "NAMD source code dir
 set(NAMD_HEADER_DIR "${NAMD_DIR}/src" CACHE STRING "NAMD header directory")
 set(CHARM_HEADER_DIR "${NAMD_DIR}/charm/include" CACHE STRING "Charm++ header directory")
 set(MOLFILE_PLUGIN_HEADER_DIR "${NAMD_DIR}/plugins/include" CACHE STRING "Molfile plugin header directory")
-set(COLVARS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../src" CACHE STRING "Colvars source code directory")
+set(COLVARS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src" CACHE STRING "Colvars source code directory")
 set(NAMD_TCL_INCLUDE_DIR "${NAMD_DIR}/tcl8.6.13-linux-x86_64-threaded/include" CACHE STRING "TCL header directory")
 set(NAMD_LEPTON_DIR "${NAMD_DIR}/lepton" CACHE STRING "Lepton library directory")
 set(NAMD_LEPTON_INCLUDE_DIR "${NAMD_LEPTON_DIR}/include" CACHE STRING "Lepton header directory")
