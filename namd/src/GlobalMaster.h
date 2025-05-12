@@ -8,7 +8,7 @@
    be done on atoms or groups of atoms on several nodes.  It is given
    the positions of atoms and groups, and provides a list of requested
    atoms, forces, and groups in return.
-   
+
    I'm not going to do groups for now, because they were done badly
    originally.  A better solution is necessary.  Hint: multiple
    groups are required.
@@ -71,13 +71,15 @@ class GlobalMaster {
   bool requestedTotalForces() { return totalForceRequested; }
 
   /* sets changedAtoms and changedForces to false again */
-  void clearChanged(); 
+  void clearChanged();
   virtual ~GlobalMaster(); // necessary for abstract classes '-P
 
   void check() const; // dies if there are problems with the rep invariants
 
   void setLattice(const Lattice *lat) { lattice = lat; }
-  
+
+  friend class colvarproxy_namd; // Temporary until refactoring is complete
+
  protected:
   GlobalMaster();
 
@@ -118,13 +120,13 @@ class GlobalMaster {
   IntList::const_iterator getGridObjIndexEnd();
   BigRealList::const_iterator getGridObjValueBegin();
   BigRealList::const_iterator getGridObjValueEnd();
-  
+
   /* these give you all the global forces being applied by masters */
   /* again, here we only need one end iterator */
   AtomIDList::const_iterator getLastAtomsForcedBegin();
   AtomIDList::const_iterator getLastAtomsForcedEnd();
   ForceList::const_iterator getLastForcesBegin();
-  
+
   /* These return the pointers to the lists of requested atom IDs
      and total forces on these atoms */
   AtomIDList::const_iterator getForceIdBegin();
@@ -133,7 +135,7 @@ class GlobalMaster {
 
   bool totalForceRequested;
   void requestTotalForce(bool yesno = true) { totalForceRequested = yesno; }
-  
+
   /* This helpful function returns an array with the masses of each of
      the groups whose positions we have.  */
   BigRealList::const_iterator getGroupMassBegin();
@@ -169,7 +171,7 @@ class GlobalMaster {
   AtomIDList::iterator lastAtomsForcedBegin;
   ForceList::iterator lastForcesBegin;
   AtomIDList::iterator lastAtomsForcedEnd;
-  
+
   /* These store all the total forces returned from the simulation */
   AtomIDList::iterator forceIdBegin;
   AtomIDList::iterator forceIdEnd;
@@ -185,7 +187,7 @@ class GlobalMaster {
   ForceList appForces; // the corresponding forces
 
   bool reqGroupsChanged;
-  ResizeArray<AtomIDList> reqGroups; // list of requested groups of atoms 
+  ResizeArray<AtomIDList> reqGroups; // list of requested groups of atoms
   ForceList grpForces; // the corresponding forces
 
   bool reqGridObjsChanged;
