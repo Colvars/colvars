@@ -78,11 +78,11 @@ EOF
     fi
 
     if [ "${label}" = "mpi" ] ; then
-        cmd+=(--charm-arch mpi-linux-${charm_arch_string})
+        cmd+=(--charm-arch mpi-linux-${charm_arch_string}-smp)
     fi
 
     if [ "${label}" = "netlrts" ] ; then
-        cmd+=(--charm-arch netlrts-linux-${charm_arch_string})
+        cmd+=(--charm-arch netlrts-linux-${charm_arch_string}-smp)
     fi
 
     if [ -z "${TCL_HOME}" ] ; then
