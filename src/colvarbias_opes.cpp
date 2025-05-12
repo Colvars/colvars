@@ -223,10 +223,9 @@ int colvarbias_opes::init(const std::string& conf) {
     m_num_threads = 1;
   }
 #else
-  // if (m_num_threads > 1) {
-  //   return cvm::error("Multithreading in OPES is not compiled.\n");
-  // }
-  m_num_threads = 1;
+  if (m_num_threads > 1) {
+    return cvm::error("Multi-threading requested in OPES, which is not supported by this build.\n");
+  }
 #endif
   bool serial = false;
   get_keyval(conf, "serial", serial, false);
