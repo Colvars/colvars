@@ -24,10 +24,10 @@ If you built your NAMD with `-DNAMD_NVTX_ENABLED`, then you also need to switch 
 This plugin is incompatible with the traditional way of using Colvars in NAMD, so you cannot use `colvars on` in your NAMD configuration and `numSteps` with it. Instead, please use the following TCL command in your NAMD configuration file before `run`:
 ```tcl
 gpuGlobal on
-gpuGlobalCreateClient <the_absolute_path_to_this_dir>/namd_cudaglobalmaster/build/libcudaglobalmastercolvars.so COLVARS <colvars_config_file>
+gpuGlobalCreateClient <the_absolute_path_to_this_dir>/build/libcudaglobalmastercolvars.so COLVARS <colvars_config_file>
 ```
 
-The example NAMD input file can be found in `namd_cudaglobalmaster/example/alad.namd`, which dynamically loads the shared library built above and runs an OPES simulation along the two dihedral angles of the alanine dipeptide.
+The example NAMD input file can be found in `<the_absolute_path_to_this_dir>/example/alad.namd`, which dynamically loads the shared library built above and runs an OPES simulation along the two dihedral angles of the alanine dipeptide.
 
 ## Limitations
 
