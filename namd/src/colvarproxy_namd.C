@@ -16,6 +16,7 @@
 #include "InfoStream.h"
 #include "Node.h"
 #include "Molecule.h"
+#include "GlobalMasterColvars.h"
 #include "GridForceGrid.h"
 #include "GridForceGrid.inl"
 #include "PDB.h"
@@ -41,6 +42,11 @@
 #include "colvarproxy.h"
 #include "colvarproxy_namd.h"
 #include "colvarscript.h"
+
+
+GlobalMasterColvars::GlobalMasterColvars() : proxy(new colvarproxy_namd(this)) {}
+
+void GlobalMasterColvars::calculate() { proxy->calculate(); }
 
 
 colvarproxy_namd::colvarproxy_namd(GlobalMaster *gm)

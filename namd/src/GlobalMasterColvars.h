@@ -3,23 +3,21 @@
 
 #include <memory>
 
-#include "colvarmodule.h"
-#include "colvarproxy.h"
-#include "colvarproxy_namd.h"
+#include "GlobalMaster.h"
 
+
+class colvarproxy_namd;
 
 class GlobalMasterColvars : public GlobalMaster {
 public:
 
-  GlobalMasterColvars() : cp(new colvarproxy_namd(this)) {}
+  GlobalMasterColvars();
 
-  void calculate() override {
-    cp->calculate();
-  }
+  void calculate() override;
 
 protected:
-  
-  std::unique_ptr<colvarproxy_namd> cp;
+
+  std::unique_ptr<colvarproxy_namd> proxy;
 };
 
 
