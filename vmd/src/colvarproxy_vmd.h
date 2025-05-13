@@ -22,6 +22,7 @@
 #include "colvarproxy.h"
 #include "colvartypes.h"
 #include "colvaratoms.h"
+#include "colvaratoms_soa.h"
 
 
 int tcl_colvars(ClientData clientData, Tcl_Interp *interp,
@@ -80,10 +81,17 @@ public:
                                            std::vector<const colvarvalue *> const &cvc_values,
                                            std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
+#ifdef COLVARS_USE_SOA
+  virtual int load_atoms_pdb(char const *filename,
+                             cvm::atom_group_soa &atoms,
+                             std::string const &pdb_field,
+                             double const pdb_field_value = 0.0);
+#else
   virtual int load_atoms_pdb(char const *filename,
                              cvm::atom_group &atoms,
                              std::string const &pdb_field,
                              double const pdb_field_value = 0.0);
+#endif // COLVARS_USE_SOA
 
   virtual int load_coords_pdb(char const *filename,
                               std::vector<cvm::atom_pos> &pos,
@@ -116,15 +124,23 @@ public:
 
   virtual int compute_volmap(int flags,
                              int volmap_id,
+#ifdef COLVARS_USE_SOA
+                             cvm::atom_group_soa* atoms,
+#else
                              cvm::atom_iter atom_begin,
                              cvm::atom_iter atom_end,
+#endif // COLVARS_USE_SOA
                              cvm::real *value,
                              cvm::real *atom_field);
 
   template<int flags>
   void compute_voldata(VolumetricData const *voldata,
+#ifdef COLVARS_USE_SOA
+                       cvm::atom_group_soa* atoms,
+#else
                        cvm::atom_iter atom_begin,
                        cvm::atom_iter atom_end,
+#endif // COLVARS_USE_SOA
                        cvm::real *value,
                        cvm::real *atom_field);
 
