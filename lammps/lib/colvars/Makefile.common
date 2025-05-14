@@ -49,6 +49,7 @@ COLVARS_SRCS = \
         colvar.cpp \
         colvardeps.cpp \
         colvargrid.cpp \
+        colvargrid_integrate.cpp \
         colvarmodule.cpp \
         colvarparams.cpp \
         colvarparse.cpp \
