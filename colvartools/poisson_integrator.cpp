@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "colvargrid.h"
+#include "colvargrid_integrate.h"
 #include "colvarproxy.h"
 
 
