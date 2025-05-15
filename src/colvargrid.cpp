@@ -641,9 +641,39 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
 
   } else if (nd <= 3) {
     if (weighted){
+      // find a nice first starting point
+      divergence.resize(nt);
+      set_div();
+      size_t actual_computation_nt = computation_nt;
+      computation_nt = nt;
+      nr_linbcg_sym(false, divergence, data, 1e-3, 50, iter, err);
+      for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
+        bool to_be_considered = true;
+        std::vector<int> smaller_grid_index = ix;
+        for (size_t i = 0; i < nd; i++) {
+          if (ix[i] == 0 or ix[i] == nx[i] - 1) {
+            to_be_considered = false;
+            break;
+          }
+          else
+            smaller_grid_index[i] -= 1;
+        }
+        if (to_be_considered) {
+          computation_grid->data[computation_grid->address(smaller_grid_index)] = data[address(ix)];
+        }
+      }
+      divergence.clear();
+      computation_nt = actual_computation_nt;
+      std::cout<< computation_nt << "\n";
+      divergence.resize(computation_nt);
       set_weighted_div();
-      // TODO: check why it doesn't work when replacing data by computation_grid->data
-      laplacian_weighted<true>(divergence, data);
+      // TODO: check why it doesn't work when replacing data by computation_grid->data (this was segmentation error)
+      // or data or if i use a temporary vector to store this useless laplacian calculation (probably ill-conditionned).
+      std::vector<cvm::real> temp = divergence;
+      std::vector<cvm::real> temp2(computation_grid->data);
+      laplacian_weighted<true>(divergence, computation_grid->data);
+      temp.clear();
+      temp2.clear();
       for (size_t i = 0; i < computation_nt; i++){
         divergence[i] += div_border_supplement[i];
       }
@@ -748,7 +778,7 @@ void integrate_potential::set_weighted_div()
     for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix); gradients->incr(ix)) {
       size_t count = gradients->samples->value(ix);
       if (count > 0){
-        insertIntoSortedList<size_t>(sorted_counts, count);
+        insert_into_sorted_list<size_t>(sorted_counts, count);
       }
     }
 
@@ -1807,7 +1837,7 @@ void integrate_potential::extrapolate_potential(){
         }
 };
 template<typename T>
-  typename std::vector<T>::iterator integrate_potential::insertIntoSortedList(std::vector<T>& sortedList, const T& value) {
+  typename std::vector<T>::iterator integrate_potential::insert_into_sorted_list(std::vector<T>& sortedList, const T& value) {
     // Find the first position where the element is not less than value
     auto it = std::lower_bound(sortedList.begin(), sortedList.end(), value);
 
