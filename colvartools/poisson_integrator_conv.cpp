@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "colvargrid.h"
+#include "colvargrid_integrate.h"
 #include "colvarproxy.h"
 
 // Integrate provided gradients while monitoring convergence towards a provided scalar grid

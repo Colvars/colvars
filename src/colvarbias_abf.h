@@ -19,6 +19,7 @@
 #include "colvarproxy.h"
 #include "colvarbias.h"
 #include "colvargrid.h"
+#include "colvargrid_integrate.h"
 #include "colvar_UIestimator.h"
 
 typedef cvm::real *gradient_t;

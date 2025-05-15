@@ -26,6 +26,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvar_neuralnetworkcompute.o \
 	$(DSTDIR)/colvardeps.o \
 	$(DSTDIR)/colvargrid.o \
+	$(DSTDIR)/colvargrid_integrate.o \
 	$(DSTDIR)/colvarmodule.o \
 	$(DSTDIR)/colvarparams.o \
 	$(DSTDIR)/colvarparse.o \
