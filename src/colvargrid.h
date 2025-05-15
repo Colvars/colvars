@@ -1980,10 +1980,10 @@ class integrate_potential : public colvar_grid_scalar
   cvm::real m;
   size_t sum_count;
   // max and min count to regularize F
-  size_t max_count_F = 1;
+  size_t max_count_F = 20000;
   size_t min_count_F = 0;
   // max and min count to regularize the weights
-  float lambda_max = 0.8;
+  float lambda_max = 0.85;
   float lambda_min = 0.1;
   size_t upper_threshold_count = 1;
   size_t lower_threshold_count = 1;
@@ -2048,7 +2048,7 @@ class integrate_potential : public colvar_grid_scalar
 
 
   template<typename T>
-  typename std::vector<T>::iterator insertIntoSortedList(std::vector<T>& sortedList, const T& value);
+  typename std::vector<T>::iterator insert_into_sorted_list(std::vector<T>& sortedList, const T& value);
   inline void reverse(std::string::iterator, std::string::iterator);
 
   void extrapolate_potential();
