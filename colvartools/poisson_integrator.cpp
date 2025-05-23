@@ -24,17 +24,17 @@ int main (int argc, char *argv[]) {
   cvm::real err;
   cvm::real tol = 1e-8;
 
-  integrate_potential potential(grad_ptr);
-  potential.set_div();
-  potential.integrate(itmax, tol, err);
-  potential.set_zero_minimum();
+  colvargrid_integrate fes(grad_ptr);
+  fes.set_div();
+  fes.integrate(itmax, tol, err);
+  fes.set_zero_minimum();
 
-  if (potential.num_variables() < 3) {
-    std::cout << "\nWriting integrated potential in multicol format to " + gradfile + ".int\n";
-    potential.write_multicol(std::string(gradfile + ".int"), "integrated potential");
+  if (fes.num_variables() < 3) {
+    std::cout << "\nWriting integrated free energy in multicol format to " + gradfile + ".int\n";
+    fes.write_multicol(std::string(gradfile + ".int"), "integrated free energy");
   } else { // Write 3D grids to more convenient DX format
-    std::cout << "\nWriting integrated potential in OpenDX format to " + gradfile + ".int.dx\n";
-    potential.write_opendx(std::string(gradfile + ".int.dx"), "integrated potential");
+    std::cout << "\nWriting integrated free energy in OpenDX format to " + gradfile + ".int.dx\n";
+    fes.write_opendx(std::string(gradfile + ".int.dx"), "integrated free energy");
   }
 
   delete proxy;
