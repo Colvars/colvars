@@ -231,12 +231,12 @@ int colvarbias_abf::init(std::string const &conf)
       cvm::error("Error: cannot integrate free energy in dimension > 3.\n");
       return COLVARS_ERROR;
     }
-    pmf.reset(new integrate_potential(colvars, gradients));
+    pmf.reset(new colvargrid_integrate(colvars, gradients));
     if (b_CZAR_estimator) {
-      czar_pmf.reset(new integrate_potential(colvars, czar_gradients));
+      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients));
     }
     if (shared_on) {
-      local_pmf.reset(new integrate_potential(colvars, local_gradients));
+      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
     }
     // Parameters for integrating initial (and final) gradient data
     get_keyval(conf, "integrateMaxIterations", integrate_iterations, 10000, colvarparse::parse_silent);
@@ -253,7 +253,7 @@ int colvarbias_abf::init(std::string const &conf)
     global_z_samples.reset(new colvar_grid_count(colvars, samples));
     global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
     global_czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
-    global_czar_pmf.reset(new integrate_potential(colvars, global_czar_gradients));
+    global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
   } else {
     // otherwise they are just aliases for the local CZAR grids
     global_z_samples = z_samples;
@@ -568,7 +568,7 @@ int colvarbias_abf::replica_share() {
     // in which case local arrays have not been initialized yet
     local_samples.reset(new colvar_grid_count(colvars, samples));
     local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
-    local_pmf.reset(new integrate_potential(colvars, local_gradients));
+    local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
   }
   // Calculate the delta gradient and count for the local replica
   last_gradients->delta_grid(*gradients);
@@ -689,7 +689,7 @@ int colvarbias_abf::replica_share_CZAR() {
       global_z_samples.reset(new colvar_grid_count(colvars, samples));
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
       global_czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
-      global_czar_pmf.reset(new integrate_potential(colvars, global_czar_gradients));
+      global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
     }
 
     // Start with data from replica 0
@@ -791,7 +791,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
   // The following are local aliases for the class' unique pointers
   colvar_grid_count *samples_out, *z_samples_out;
   colvar_grid_gradient *gradients_out, *z_gradients_out, *czar_gradients_out;
-  integrate_potential *pmf_out, *czar_pmf_out;
+  colvargrid_integrate *pmf_out, *czar_pmf_out;
 
   // In shared ABF, write grids containing local data only if requested
   if (local) {

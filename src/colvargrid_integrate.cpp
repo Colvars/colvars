@@ -4,7 +4,7 @@
 #include <iomanip>
 
 
-integrate_potential::integrate_potential(std::vector<colvar *> &colvars,
+colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
                                          std::shared_ptr<colvar_grid_gradient> gradients)
   : colvar_grid_scalar(colvars, gradients, true),
     b_smoothed(false),
@@ -36,7 +36,7 @@ integrate_potential::integrate_potential(std::vector<colvar *> &colvars,
 }
 
 
-integrate_potential::integrate_potential(std::shared_ptr<colvar_grid_gradient> gradients)
+colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients)
   : b_smoothed(false),
     gradients(gradients)
 {
@@ -60,7 +60,7 @@ integrate_potential::integrate_potential(std::shared_ptr<colvar_grid_gradient> g
 }
 
 
-int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::real & err, bool verbose)
+int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::real & err, bool verbose)
 {
   int iter = 0;
 
@@ -100,7 +100,7 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
 }
 
 
-void integrate_potential::set_div()
+void colvargrid_integrate::set_div()
 {
   if (nd == 1) return;
   for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
@@ -109,7 +109,7 @@ void integrate_potential::set_div()
 }
 
 
-void integrate_potential::update_div_neighbors(const std::vector<int> &ix0)
+void colvargrid_integrate::update_div_neighbors(const std::vector<int> &ix0)
 {
   std::vector<int> ix(ix0);
   int i, j, k;
@@ -147,7 +147,7 @@ void integrate_potential::update_div_neighbors(const std::vector<int> &ix0)
 }
 
 
-void integrate_potential::get_grad(cvm::real * g, std::vector<int> &ix)
+void colvargrid_integrate::get_grad(cvm::real * g, std::vector<int> &ix)
 {
   size_t i;
   bool edge = gradients->wrap_detect_edge(ix); // Detect edge if non-PBC
@@ -163,7 +163,7 @@ void integrate_potential::get_grad(cvm::real * g, std::vector<int> &ix)
 }
 
 
-void integrate_potential::update_div_local(const std::vector<int> &ix0)
+void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
 {
   const size_t linear_index = address(ix0);
   int i, j, k;
@@ -215,7 +215,7 @@ void integrate_potential::update_div_local(const std::vector<int> &ix0)
 
 /// Multiplication by sparse matrix representing Laplacian
 /// NOTE: Laplacian must be symmetric for solving with CG
-void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA)
+void colvargrid_integrate::atimes(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA)
 {
   if (nd == 2) {
     // DIMENSION 2
@@ -619,7 +619,7 @@ void integrate_potential::atimes(const std::vector<cvm::real> &A, std::vector<cv
 
 /*
 /// Inversion of preconditioner matrix (e.g. diagonal of the Laplacian)
-void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x)
+void colvargrid_integrate::asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x)
 {
   for (size_t i=0; i<int(nt); i++) {
     x[i] = b[i] * inv_lap_diag[i]; // Jacobi preconditioner - little benefit in tests so far
@@ -631,7 +631,7 @@ void integrate_potential::asolve(const std::vector<cvm::real> &b, std::vector<cv
 // b : RHS of equation
 // x : initial guess for the solution; output is solution
 // itol : convergence criterion
-void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const cvm::real &tol,
+void colvargrid_integrate::nr_linbcg_sym(const std::vector<cvm::real> &b, std::vector<cvm::real> &x, const cvm::real &tol,
   const int itmax, int &iter, cvm::real &err)
 {
   cvm::real ak,akden,bk,bkden,bknum,bnrm;
@@ -684,7 +684,7 @@ void integrate_potential::nr_linbcg_sym(const std::vector<cvm::real> &b, std::ve
   }
 }
 
-cvm::real integrate_potential::l2norm(const std::vector<cvm::real> &x)
+cvm::real colvargrid_integrate::l2norm(const std::vector<cvm::real> &x)
 {
   size_t i;
   cvm::real sum = 0.0;

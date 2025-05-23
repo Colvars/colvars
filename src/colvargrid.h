@@ -1857,7 +1857,7 @@ public:
   cvm::real grid_rmsd(colvar_grid_gradient const &other_grid) const;
 
   /// \brief If the grid is 1-dimensional, integrate it and write the
-  /// integral to a file (DEPRECATED by the integrate_potential class)
+  /// integral to a file (DEPRECATED by the colvargrid_integrate class)
   void write_1D_integral(std::ostream &os);
 
 };
