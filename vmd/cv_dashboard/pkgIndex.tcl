@@ -11,43 +11,34 @@
 
 proc init {} {
   set dir [file dirname [info script]]
-  set version_file [open "${dir}/VERSION"]
-  gets $version_file git_date
-  close $version_file
-  # Convert to Tcl-style package version number
-  set CV_DASHBOARD_VERSION [string map { "-" "." } $git_date]
+  source [file join $dir cv_dashboard_update.tcl]
+  set VERSION [::cv_dashboard::read_version $dir]
+  set ::cv_dashboard::version $VERSION
 
   # Compare with version with local package
-  source [file join $dir cv_dashboard_update.tcl]
-  set package_dir [::cv_dashboard::get_local_dir]
+  set local_dir [file join [::cv_dashboard::get_local_dir] "cv_dashboard"]
 
-  if { $package_dir ne $dir && [file exists $package_dir]} {
+  if { $local_dir ne [file dirname $dir] && [file exists $local_dir]} {
+    # There is a local package separate from this instance
     # Compare versions
-    set version_file [open [file join $package_dir "cv_dashboard" VERSION]]
-    gets $version_file git_date
-    close $version_file
-    set LOCAL_VERSION [string map { "-" "." } $git_date]
+    set LOCAL_VERSION [::cv_dashboard::read_version $local_dir]
 
-    if { [string compare $LOCAL_VERSION $CV_DASHBOARD_VERSION] > 0 } {
-      puts "Overriding current version ($CV_DASHBOARD_VERSION) with local installation of cv_dashboard from $package_dir ($LOCAL_VERSION)"
-      source [file join $package_dir "cv_dashboard" pkgIndex.tcl]
+    if { [string compare $LOCAL_VERSION $VERSION] > 0 } {
+      puts "Overriding current version ($VERSION) with local installation of cv_dashboard from $local_dir ($LOCAL_VERSION)"
+      source [file join $local_dir pkgIndex.tcl]
       return
     }
   }
 
-  # Only update local install
-  if { $package_dir eq $dir } {
-    set updated [::cv_dashboard::self_update]
-
-    if $updated {
-      # Source ourselves! Hoping this doesn't loop
-      source [file join $package_dir "cv_dashboard" pkgIndex.tcl]
-      return
-    }
+  # Now try to update local package from remote repository
+  if [::cv_dashboard::self_update] {
+    # Reload if necessary
+    source [file join $local_dir pkgIndex.tcl]
+    return
   }
 
-  # Finish initializing package
-  package ifneeded cv_dashboard $CV_DASHBOARD_VERSION "set env(CV_DASHBOARD_DIR) [list $dir]; [list source [file join $dir cv_dashboard.tcl]]"
+  # Finish initializing this version
+  package ifneeded cv_dashboard $VERSION "set env(CV_DASHBOARD_DIR) [list $dir]; [list source [file join $dir cv_dashboard.tcl]]"
 }
 
 init

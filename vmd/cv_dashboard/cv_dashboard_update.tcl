@@ -1,7 +1,11 @@
 ####################################
 # Self-update utilities
 
-namespace eval ::cv_dashboard {}
+namespace eval ::cv_dashboard {
+  variable repo_user "Colvars"
+  variable repo_name "colvars"
+  variable branch "dashboard_update"
+}
 
 proc ::cv_dashboard::check_version_file {} {
   variable version
@@ -19,7 +23,7 @@ proc ::cv_dashboard::check_version_file {} {
   }
 
   set fp [open $temp_file r]
-  set remote_version [string trim [read $fp]]
+  set remote_version [string map { "-" "." } [string trim [read $fp]]]
   close $fp
   file delete $temp_file
 
@@ -29,8 +33,8 @@ proc ::cv_dashboard::check_version_file {} {
 
 proc ::cv_dashboard::compare_versions {current latest} {
   # Versioned by date: e.g. 2025-05-21
-  set current_parts [split $current "-"]
-  set latest_parts [split $latest "-"]
+  set current_parts [split $current "."]
+  set latest_parts [split $latest "."]
 
   # Pad with zeros if needed
   while {[llength $current_parts] < 3} {lappend current_parts 0}
@@ -180,7 +184,6 @@ proc ::cv_dashboard::self_update {{force false}} {
     download_directory_smart $repo_user $repo_name "vmd/cv_dashboard" $branch $temp_dir
 
     # Replace current installation
-    puts "Installing update..."
     file delete -force $package_dir
     file rename $temp_dir $package_dir
 
@@ -245,23 +248,10 @@ proc ::cv_dashboard::cleanup_backups { package_dir {keep 2}} {
   }
 }
 
-proc ::cv_dashboard::load_newer_version {} {
-
-  # Try to load updated local version
-  set package_dir [get_local_dir]
-  if {[file exists $package_dir]} {
-    # Compare versions
-    set version_file [open [file join $package_dir "cv_dashboard" VERSION]]
-    gets $version_file LOCAL_VERSION
-    close $version_file
-    if { [string compare $LOCAL_VERSION $::cv_dashboard::version] > 0 } {
-      puts "Superseding current version ($::cv_dashboard::version) with local installation of cv_dashboard from $package_dir ($LOCAL_VERSION)"
-      package forget cv_dashboard
-      namespace delete ::cv_dashboard
-      source [file join $package_dir "cv_dashboard" pkgIndex.tcl]
-      package require cv_dashboard
-      return true
-    }
-  }
-  return false
+proc ::cv_dashboard::read_version { path } {
+  set version_file [open [file join $path VERSION]]
+  gets $version_file git_date
+  set version [string map { "-" "." } $git_date]
+  close $version_file
+  return $version
 }
