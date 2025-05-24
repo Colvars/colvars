@@ -26,12 +26,8 @@
 # - index group builder
 
 set dir [file dirname [info script]]
-set version_file [open "${dir}/VERSION"]
-gets $version_file git_date
-close $version_file
-# Convert to Tcl-style package version number
-set CV_DASHBOARD_VERSION [string map { "-" "." } $git_date]
-package provide cv_dashboard $CV_DASHBOARD_VERSION
+set VERSION [::cv_dashboard::read_version $dir]
+package provide cv_dashboard $VERSION
 
 namespace eval ::cv_dashboard {
   # General UI state
@@ -90,12 +86,6 @@ namespace eval ::cv_dashboard {
   # Array keping track of precomputed colvars trajectories for a given molecule
   # This is an array of dict, where the dictionary keys are colvar names
   array set colvar_trajectory {}
-
-  # Information for self-update
-  variable version $CV_DASHBOARD_VERSION
-  variable repo_user "Colvars"
-  variable repo_name "colvars"
-  variable branch "dashboard_update"
 }
 
 set script_dir [file dirname [info script]]
