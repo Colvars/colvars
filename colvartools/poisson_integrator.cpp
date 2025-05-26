@@ -5,10 +5,23 @@
 #include "colvargrid.h"
 #include "colvarproxy.h"
 
+void saveVectorToCSV(const std::vector<cvm::real>& vec, const std::string& filename) {
+    std::ofstream file(filename);
+    if (!file) {
+        std::cerr << "Error opening file\n";
+        return;
+    }
+
+    for (size_t i = 0; i < vec.size(); ++i) {
+        file << vec[i];
+        if (i != vec.size() - 1) file << ",";  // Separate values with commas
+    }
+    file.close();
+}
 
 int main (int argc, char *argv[]) {
-  bool weighted = false;
-  bool save_divergence = false;
+  bool weighted = true;
+  bool save_divergence = true;
 
   if (argc < 2) {
     std::cerr << "\n\nOne argument needed: gradient multicol file name.\n";
@@ -93,6 +106,7 @@ int main (int argc, char *argv[]) {
     div.nxc = potential.computation_grid->nxc;
     div.write_multicol("divergence.dat");
     std::cout << "\nWriting divergence in multicol format to divergence.dat";
+    saveVectorToCSV(potential.laplacian_matrix_test, "laplacian.csv");
   }
   // std::vector<cvm::real> laplacian_matrix (potential.computation_grid->nt, 0);
   // std::vector<cvm::real> test_vector (potential.computation_grid->nt, 1);
