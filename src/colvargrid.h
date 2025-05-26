@@ -1958,6 +1958,7 @@ class integrate_potential : public colvar_grid_scalar
   /// Array holding divergence + boundary terms (modified Neumann) if not periodic
   std::vector<cvm::real> div_border_supplement;
   std::vector<cvm::real> laplacian_matrix_test;
+
   protected:
 
 
@@ -1983,7 +1984,7 @@ class integrate_potential : public colvar_grid_scalar
   size_t max_count_F = 20000;
   size_t min_count_F = 0;
   // max and min count to regularize the weights
-  float lambda_max = 0.85;
+  float lambda_max = 0.8;
   float lambda_min = 0.1;
   size_t upper_threshold_count = 1;
   size_t lower_threshold_count = 1;

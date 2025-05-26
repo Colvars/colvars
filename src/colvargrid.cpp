@@ -671,7 +671,7 @@ int integrate_potential::integrate(const int itmax, const cvm::real &tol, cvm::r
       // or data or if i use a temporary vector to store this useless laplacian calculation (probably ill-conditionned).
       std::vector<cvm::real> temp = divergence;
       std::vector<cvm::real> temp2(computation_grid->data);
-      laplacian_weighted<true>(divergence, computation_grid->data);
+      laplacian_weighted<true>(divergence, temp2);
       temp.clear();
       temp2.clear();
       for (size_t i = 0; i < computation_nt; i++){
@@ -1391,14 +1391,14 @@ template<bool initialize_div_supplement> void integrate_potential::laplacian_wei
       div_border_supplement[computation_grid->address(ix)] = 0;
     }
   }
-  // laplacian_matrix_test = std::vector<cvm::real>(computation_nt*computation_nt, 0);
+  laplacian_matrix_test = std::vector<cvm::real>(computation_nt*computation_nt, 0);
   for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
         computation_grid->incr(ix)) {
       for (size_t i = 0; i < laplacian_stencil.size(); i++){
         std::vector<int> neighbor_relative_position = laplacian_stencil[i];
         std::vector<int> neighbor_coordinate(nd, 0);
-        for(size_t i = 0; i < nd; i++){
-          neighbor_coordinate[i] = ix[i] + neighbor_relative_position[i];
+        for(size_t dim = 0; dim < nd; dim++){
+          neighbor_coordinate[dim] = ix[dim] + neighbor_relative_position[dim];
         }
         bool virtual_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
         cvm::real coefficient = calculate_weight_sum(neighbor_coordinate, weight_stencil[i])
@@ -1407,17 +1407,17 @@ template<bool initialize_div_supplement> void integrate_potential::laplacian_wei
         coefficient+= coefficient_regular_laplacian * m;
         if (!virtual_point) {
           LA[computation_grid->address(ix)] += coefficient * A[computation_grid->address(neighbor_coordinate)];
-        // TODO: delete this after testing
-        // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
-        //   if (test){
-        //   std::cout << "laplacian coordinates: " << "[" << computation_grid->address(ix) << ", " << computation_grid->address(neighbor_coordinate) << "]" << std::endl;
-        //   std::cout << "coefficient: " << coefficient_to_print * pow(2, (nd-1)*2)<< std::endl;
-        //   std::cout << "weight sum: " << calculate_weight_sum(neighbor_coordinate, weight_stencil[stencil_information.first]) << std::endl;
-        //   std::cout << "weight counts: " << weight_counts[stencil_information.first] << std::endl;
-        //   std::cout << "classical laplacian: " << coefficient_regular_laplacian.first << " " << coefficient_regular_laplacian.second << std::endl;
-        //   std::cout << "virtual point: " << virtual_point << std::endl;
-        //   std::cout << std::endl;
-        // }
+          // TODO: delete this after testing
+          // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
+          //   if (test){
+          //   std::cout << "laplacian coordinates: " << "[" << computation_grid->address(ix) << ", " << computation_grid->address(neighbor_coordinate) << "]" << std::endl;
+          //   std::cout << "coefficient: " << coefficient_to_print * pow(2, (nd-1)*2)<< std::endl;
+          //   std::cout << "weight sum: " << calculate_weight_sum(neighbor_coordinate, weight_stencil[stencil_information.first]) << std::endl;
+          //   std::cout << "weight counts: " << weight_counts[stencil_information.first] << std::endl;
+          //   std::cout << "classical laplacian: " << coefficient_regular_laplacian.first << " " << coefficient_regular_laplacian.second << std::endl;
+          //   std::cout << "virtual point: " << virtual_point << std::endl;
+          //   std::cout << std::endl;
+          // }
         } else {
           std::vector<int> reference_point_coordinates(nd,0);
           computation_grid->wrap_to_edge(neighbor_coordinate, reference_point_coordinates);
@@ -1427,8 +1427,8 @@ template<bool initialize_div_supplement> void integrate_potential::laplacian_wei
           cvm::real div_supplement_term = 0;
           if (initialize_div_supplement){
             std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradients(neighbor_coordinate);
-            for (size_t i = 0; i < nd; i++){
-              div_supplement_term += averaged_normal_vector[i] * neighbor_relative_position[i] * widths[i];
+            for (size_t dim = 0; dim < nd; dim++){
+              div_supplement_term += averaged_normal_vector[dim] * neighbor_relative_position[dim] * widths[dim];
             }
           }
           div_border_supplement[computation_grid->address(ix)] -= div_supplement_term* coefficient;
@@ -1565,6 +1565,7 @@ std::vector<std::vector<int>> integrate_potential::update_weight_relative_positi
 cvm::real integrate_potential::get_regularized_weight(std::vector<int> &ix){
   cvm::real regularized_weight;
   size_t count = gradients->samples->value(ix);
+  // TODO: put switch here
   if (count < lower_threshold_count)
   {
     regularized_weight = lower_threshold_count;
@@ -1585,16 +1586,15 @@ void integrate_potential::get_regularized_F(std::vector<cvm::real> &F, std::vect
 
   size_t count = get_grad(F, ix);
   float multiplier = 1;
+  //TODO: put switch here
   if (count < min_count_F){
     multiplier = 0;
   }
   else if (count < max_count_F){
     multiplier = (count - min_count_F) / (max_count_F - min_count_F);
   }
-  if (multiplier != 1){
-    for (size_t i = 0; i < nd; i++){
-      F[i] = multiplier * F[i];
-    }
+  for (size_t i = 0; i < nd; i++){
+    F[i] = multiplier * F[i];
   }
 }
 
