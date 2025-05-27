@@ -20,7 +20,6 @@
 #include "colvar.h"
 #include "colvarbias.h"
 #include "colvars_memstream.h"
-
 #include "colvarcomp_torchann.h"
 
 std::map<std::string, std::function<colvar::cvc *()>> colvar::global_cvc_map =
@@ -1026,20 +1025,12 @@ void colvar::build_atom_list(void)
     for (size_t j = 0; j < cvcs[i]->atom_groups.size(); j++) {
       auto const &ag = *(cvcs[i]->atom_groups[j]);
       for (size_t k = 0; k < ag.size(); k++) {
-#ifdef COLVARS_USE_SOA
         temp_id_list.push_back(ag.id(k));
-#else
-        temp_id_list.push_back(ag[k].id);
-#endif // COLVARS_USE_SOA
       }
       if (ag.is_enabled(f_ag_fitting_group) && ag.is_enabled(f_ag_fit_gradients)) {
         auto const &fg = *(ag.fitting_group);
         for (size_t k = 0; k < fg.size(); k++) {
-#ifdef COLVARS_USE_SOA
           temp_id_list.push_back(fg.id(k));
-#else
-          temp_id_list.push_back(fg[k].id);
-#endif // COLVARS_USE_SOA
         }
       }
     }

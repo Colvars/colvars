@@ -38,7 +38,6 @@
 #include "colvar.h"
 #include "colvarbias.h"
 #include "colvaratoms.h"
-#include "colvaratoms_soa.h"
 #include "colvarproxy.h"
 #include "colvarproxy_namd.h"
 #include "colvarscript.h"
@@ -1034,11 +1033,7 @@ int colvarproxy_namd::load_coords_pdb(char const *pdb_filename,
 }
 
 int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
-#ifdef COLVARS_USE_SOA
                                      cvm::atom_group_soa& atoms,
-#else
-                                     cvm::atom_group &atoms,
-#endif // COLVARS_USE_SOA
                                      std::string const &pdb_field_str,
                                      double const pdb_field_value)
 {
@@ -1050,9 +1045,7 @@ int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
   size_t const pdb_natoms = pdb->num_atoms();
 
   e_pdb_field pdb_field_index = pdb_field_str2enum(pdb_field_str);
-#ifdef COLVARS_USE_SOA
   auto modify_atoms = atoms.get_atom_modifier();
-#endif // COLVARS_USE_SOA
   for (size_t ipdb = 0; ipdb < pdb_natoms; ipdb++) {
 
     double atom_pdb_field_value = 0.0;
@@ -1085,17 +1078,9 @@ int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
     }
 
     if (atoms.is_enabled(colvardeps::f_ag_scalable)) {
-#ifdef COLVARS_USE_SOA
       modify_atoms.add_atom_id(ipdb);
-#else
-      atoms.add_atom_id(ipdb);
-#endif // COLVARS_USE_SOA
     } else {
-#ifdef COLVARS_USE_SOA
       modify_atoms.add_atom(cvm::atom_group_soa::init_atom_from_proxy(this, ipdb+1));
-#else
-      atoms.add_atom(cvm::atom(ipdb+1));
-#endif // COLVARS_USE_SOA
     }
   }
 
@@ -1446,18 +1431,12 @@ int colvarproxy_namd::get_volmap_id_from_name(char const *volmap_name)
 
 template<class T, int flags>
 void colvarproxy_namd::GridForceGridLoop(T const *g,
-#ifdef COLVARS_USE_SOA
                                          cvm::atom_group_soa* ag,
-#else
-                                         cvm::atom_iter atom_begin,
-                                         cvm::atom_iter atom_end,
-#endif // COLVARS_USE_SOA
                                          cvm::real *value,
                                          cvm::real *atom_field)
 {
   float V = 0.0f;
   Vector dV(0.0);
-#ifdef COLVARS_USE_SOA
   for (size_t i = 0; i < ag->size(); ++i) {
     if (g->compute_VdV(Position(ag->pos_x(i), ag->pos_y(i), ag->pos_z(i)), V, dV)) {
       // out-of-bounds atom
@@ -1482,99 +1461,42 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
       }
     }
   }
-#else
-  int i = 0;
-  cvm::atom_iter ai = atom_begin;
-  for ( ; ai != atom_end; ai++, i++) {
-    if (g->compute_VdV(Position(ai->pos.x, ai->pos.y, ai->pos.z), V, dV)) {
-      // out-of-bounds atom
-      V = 0.0f;
-      dV = 0.0;
-    } else {
-      if (flags & volmap_flag_use_atom_field) {
-        *value += V * atom_field[i];
-        if (flags & volmap_flag_gradients) {
-          ai->grad += atom_field[i] * cvm::rvector(dV.x, dV.y, dV.z);
-        }
-      } else {
-        *value += V;
-        if (flags & volmap_flag_gradients) {
-          ai->grad += cvm::rvector(dV.x, dV.y, dV.z);
-        }
-      }
-    }
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
 template<class T>
 void colvarproxy_namd::getGridForceGridValue(int flags,
                                              T const *g,
-#ifdef COLVARS_USE_SOA
                                              cvm::atom_group_soa* ag,
-#else
-                                             cvm::atom_iter atom_begin,
-                                             cvm::atom_iter atom_end,
-#endif // COLVARS_USE_SOA
                                              cvm::real *value,
                                              cvm::real *atom_field)
 {
   if (flags & volmap_flag_use_atom_field) {
     int const new_flags = volmap_flag_use_atom_field | volmap_flag_gradients;
-#ifdef COLVARS_USE_SOA
     GridForceGridLoop<T, new_flags>(g, ag, value, atom_field);
-#else
-    GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
-                                    value, atom_field);
-#endif // COLVARS_USE_SOA
   } else {
     int const new_flags = volmap_flag_gradients;
-#ifdef COLVARS_USE_SOA
     GridForceGridLoop<T, new_flags>(g, ag, value, atom_field);
-#else
-    GridForceGridLoop<T, new_flags>(g, atom_begin, atom_end,
-                                    value, atom_field);
-#endif // COLVARS_USE_SOA
   }
 }
 
-#ifdef COLVARS_USE_SOA
 int colvarproxy_namd::compute_volmap(int flags,
                                      int volmap_id,
                                      cvm::atom_group_soa* ag,
                                      cvm::real *value,
                                      cvm::real *atom_field)
-#else
-int colvarproxy_namd::compute_volmap(int flags,
-                                     int volmap_id,
-                                     cvm::atom_iter atom_begin,
-                                     cvm::atom_iter atom_end,
-                                     cvm::real *value,
-                                     cvm::real *atom_field)
-#endif // COLVARS_USE_SOA
 {
   Molecule *mol = Node::Object()->molecule;
   GridforceGrid *grid = mol->get_gridfrc_grid(volmap_id);
   // Inheritance is not possible with GridForceGrid's design
   if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeFull) {
     GridforceFullMainGrid *g = dynamic_cast<GridforceFullMainGrid *>(grid);
-#ifdef COLVARS_USE_SOA
     getGridForceGridValue<GridforceFullMainGrid>(flags, g, ag,
                                                  value, atom_field);
-#else
-    getGridForceGridValue<GridforceFullMainGrid>(flags, g, atom_begin, atom_end,
-                                                 value, atom_field);
-#endif // COLVARS_USE_SOA
   } else if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeLite) {
     GridforceLiteGrid *g = dynamic_cast<GridforceLiteGrid *>(grid);
-#ifdef COLVARS_USE_SOA
     getGridForceGridValue<GridforceLiteGrid>(flags, g, ag,
                                              value, atom_field);
-#else
-    getGridForceGridValue<GridforceLiteGrid>(flags, g, atom_begin, atom_end,
-                                             value, atom_field);
-#endif // COLVARS_USE_SOA
   }
   return COLVARS_OK;
 }

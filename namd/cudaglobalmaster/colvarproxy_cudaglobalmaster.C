@@ -9,7 +9,6 @@
 #include "PDB.h"
 #include "colvarparse.h"
 #include "colvaratoms.h"
-#include "colvaratoms_soa.h"
 #include "ScriptTcl.h"
 #include "colvarscript.h"
 
@@ -126,11 +125,7 @@ public:
     const int deviceID, cudaStream_t stream);
   const bool atomsChanged() const {return mAtomsChanged;}
   int load_atoms_pdb(char const *filename,
-#ifdef COLVARS_USE_SOA
                      cvm::atom_group_soa& atoms,
-#else
-                     cvm::atom_group &atoms,
-#endif // COLVARS_USE_SOA
                      std::string const &pdb_field,
                      double const pdb_field_value) override;
   int load_coords_pdb(char const *filename,
@@ -541,11 +536,7 @@ int colvarproxy_impl::load_coords_pdb(char const *pdb_filename,
 
 // Copied from colvarproxy_namd.C
 int colvarproxy_impl::load_atoms_pdb(char const *pdb_filename,
-#ifdef COLVARS_USE_SOA
                                      cvm::atom_group_soa& atoms,
-#else
-                                     cvm::atom_group &atoms,
-#endif // COLVARS_USE_SOA
                                      std::string const &pdb_field_str,
                                      double const pdb_field_value)
 {
@@ -557,9 +548,7 @@ int colvarproxy_impl::load_atoms_pdb(char const *pdb_filename,
   size_t const pdb_natoms = pdb->num_atoms();
 
   e_pdb_field pdb_field_index = pdb_field_str2enum(pdb_field_str);
-#ifdef COLVARS_USE_SOA
   auto modify_atoms = atoms.get_atom_modifier();
-#endif // COLVARS_USE_SOA
   for (size_t ipdb = 0; ipdb < pdb_natoms; ipdb++) {
 
     double atom_pdb_field_value = 0.0;
@@ -590,20 +579,12 @@ int colvarproxy_impl::load_atoms_pdb(char const *pdb_filename,
     } else if (atom_pdb_field_value == 0.0) {
       continue;
     }
-#ifdef COLVARS_USE_SOA
     if (atoms.is_enabled(colvardeps::f_ag_scalable)) {
       modify_atoms.add_atom_id(ipdb);
     } else {
       modify_atoms.add_atom(
         cvm::atom_group_soa::init_atom_from_proxy(this, ipdb+1));
     }
-#else
-    if (atoms.is_enabled(colvardeps::f_ag_scalable)) {
-      atoms.add_atom_id(ipdb);
-    } else {
-      atoms.add_atom(cvm::atom(ipdb+1));
-    }
-#endif // COLVARS_USE_SOA
   }
 
   delete pdb;

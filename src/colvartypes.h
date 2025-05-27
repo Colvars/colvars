@@ -1401,16 +1401,11 @@ public:
   /// DOI: 10.1002/jcc.20110  PubMed: 15376254
   void calc_optimal_rotation(std::vector<atom_pos> const &pos1,
                              std::vector<atom_pos> const &pos2);
-#ifdef COLVARS_USE_SOA
   void calc_optimal_rotation_soa(
     std::vector<cvm::real> const &pos1,
     std::vector<cvm::real> const &pos2,
     const size_t num_atoms_pos1,
     const size_t num_atoms_pos2);
-#else
-  void calc_optimal_rotation(std::vector<cvm::atom> const &pos1,
-                             std::vector<atom_pos> const &pos2);
-#endif // COLVARS_USE_SOA
 
   /// Initialize member data
   int init();
@@ -1545,11 +1540,6 @@ protected:
   /// Build the correlation matrix C (used by calc_optimal_rotation())
   void build_correlation_matrix(std::vector<cvm::atom_pos> const &pos1,
                                 std::vector<cvm::atom_pos> const &pos2);
-#ifdef COLVARS_USE_SOA
-#else
-  void build_correlation_matrix(std::vector<cvm::atom> const &pos1,
-                                std::vector<cvm::atom_pos> const &pos2);
-#endif // COLVARS_USE_SOA
 
   /// \brief Actual implementation of `calc_optimal_rotation` (and called by it)
   void calc_optimal_rotation_impl();
