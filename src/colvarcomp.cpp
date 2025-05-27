@@ -163,30 +163,16 @@ int colvar::cvc::init_total_force_params(std::string const &conf)
   return COLVARS_OK;
 }
 
-#ifdef COLVARS_USE_SOA
 cvm::atom_group_soa *colvar::cvc::parse_group(std::string const &conf,
                                           char const *group_key,
                                           bool optional)
-#else
-cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
-                                          char const *group_key,
-                                          bool optional)
-#endif // COLVARS_USE_SOA
 {
   int error_code = COLVARS_OK;
-#ifdef COLVARS_USE_SOA
   cvm::atom_group_soa *group = nullptr;
-#else
-  cvm::atom_group *group = nullptr;
-#endif // COLVARS_USE_SOA
   std::string group_conf;
 
   if (key_lookup(conf, group_key, &group_conf)) {
-#ifdef COLVARS_USE_SOA
     group = new cvm::atom_group_soa(group_key);
-#else
-    group = new cvm::atom_group(group_key);
-#endif // COLVARS_USE_SOA
 
     if (b_try_scalable) {
       if (is_available(f_cvc_scalable_com)
@@ -409,21 +395,13 @@ void colvar::cvc::init_scalar_boundaries(cvm::real lb, cvm::real ub)
 }
 
 
-#ifdef COLVARS_USE_SOA
 void colvar::cvc::register_atom_group(cvm::atom_group_soa *ag)
 {
   atom_groups.push_back(ag);
   add_child(ag);
   enable(f_cvc_explicit_atom_groups);
 }
-#else
-void colvar::cvc::register_atom_group(cvm::atom_group *ag)
-{
-  atom_groups.push_back(ag);
-  add_child(ag);
-  enable(f_cvc_explicit_atom_groups);
-}
-#endif // COLVARS_USE_SOA
+
 
 colvarvalue const *colvar::cvc::get_param_grad(std::string const &param_name)
 {
@@ -505,50 +483,31 @@ void colvar::cvc::collect_gradients(std::vector<int> const &atom_ids, std::vecto
       const auto rot_inv = ag.rot.inverse().matrix();
 
       for (size_t k = 0; k < ag.size(); k++) {
-#ifdef COLVARS_USE_SOA
         size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
                                     ag.id(k)) - atom_ids.begin();
         atomic_gradients[a] += coeff * (rot_inv * cvm::rvector(ag.grad_x(k),
                                                                ag.grad_y(k),
                                                                ag.grad_z(k)));
-#else
-        size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                                    ag[k].id) - atom_ids.begin();
-        atomic_gradients[a] += coeff * (rot_inv * ag[k].grad);
-#endif // COLVARS_USE_SOA
       }
 
     } else {
 
       for (size_t k = 0; k < ag.size(); k++) {
-#ifdef COLVARS_USE_SOA
         size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
                                     ag.id(k)) - atom_ids.begin();
         atomic_gradients[a] += coeff * cvm::rvector(ag.grad_x(k),
                                                     ag.grad_y(k),
                                                     ag.grad_z(k));
-#else
-        size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                                    ag[k].id) - atom_ids.begin();
-        atomic_gradients[a] += coeff * ag[k].grad;
-#endif // COLVARS_USE_SOA
       }
     }
     if (ag.is_enabled(f_ag_fitting_group) && ag.is_enabled(f_ag_fit_gradients)) {
       auto const &fg = *(ag.fitting_group);
       for (size_t k = 0; k < fg.size(); k++) {
-#ifdef COLVARS_USE_SOA
         size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
                                     fg.id(k)) - atom_ids.begin();
         atomic_gradients[a] += coeff * cvm::rvector(fg.fit_gradients_x(k),
                                                     fg.fit_gradients_y(k),
                                                     fg.fit_gradients_z(k));
-#else
-        size_t a = std::lower_bound(atom_ids.begin(), atom_ids.end(),
-                                    fg[k].id) - atom_ids.begin();
-        // fit gradients are in the unrotated (simulation) frame
-        atomic_gradients[a] += coeff * fg.fit_gradients[k];
-#endif // COLVARS_USE_SOA
       }
     }
   }
@@ -624,7 +583,6 @@ void colvar::cvc::debug_gradients()
 
         // fit_gradients are in the simulation frame: we should print them in the rotated frame
         cvm::log("Fit gradients:\n");
-#ifdef COLVARS_USE_SOA
         for (j = 0; j < group_for_fit->size(); j++) {
           const cvm::rvector fit_grad(
             group_for_fit->fit_gradients_x(j),
@@ -636,48 +594,29 @@ void colvar::cvc::debug_gradients()
                     cvm::to_str(rot_0 * (fit_grad)) :
                     cvm::to_str(fit_grad)));
         }
-#else
-        for (j = 0; j < group_for_fit->fit_gradients.size(); j++) {
-          cvm::log((group->fitting_group ? std::string("refPosGroup") : group->key) +
-                  "[" + cvm::to_str(j) + "] = " +
-                  (group->is_enabled(f_ag_rotate) ?
-                    cvm::to_str(rot_0 * (group_for_fit->fit_gradients[j])) :
-                    cvm::to_str(group_for_fit->fit_gradients[j])));
-        }
-#endif // COLVARS_USE_SOA
       }
     }
 
     // debug the gradients
     for (size_t ia = 0; ia < group->size(); ia++) {
       // tests are best conducted in the unrotated (simulation) frame
-#ifdef COLVARS_USE_SOA
       const cvm::rvector g(group->grad_x(ia),
                            group->grad_y(ia),
                            group->grad_z(ia));
       cvm::rvector const atom_grad = (group->is_enabled(f_ag_rotate) ?
                                       rot_inv * g :
                                       g);
-#else
-      cvm::rvector const atom_grad = (group->is_enabled(f_ag_rotate) ?
-                                      rot_inv * ((*group)[ia].grad) :
-                                      (*group)[ia].grad);
-#endif // COLVARS_USE_SOA
       gradient_sum += atom_grad;
 
       for (size_t id = 0; id < 3; id++) {
         // (re)read original positions
         group->read_positions();
         // change one coordinate
-#ifdef COLVARS_USE_SOA
         switch (id) {
           case 0: group->pos_x(ia) += cvm::debug_gradients_step_size; break;
           case 1: group->pos_y(ia) += cvm::debug_gradients_step_size; break;
           case 2: group->pos_z(ia) += cvm::debug_gradients_step_size; break;
         }
-#else
-        (*group)[ia].pos[id] += cvm::debug_gradients_step_size;
-#endif // COLVARS_USE_SOA
         group->calc_required_properties();
         calc_value();
         cvm::real x_1 = x.real_value;
@@ -685,7 +624,6 @@ void colvar::cvc::debug_gradients()
         cvm::log("Atom "+cvm::to_str(ia)+", component "+cvm::to_str(id)+":\n");
         cvm::log("dx(actual) = "+cvm::to_str(x_1 - x_0,
                               21, 14)+"\n");
-#ifdef COLVARS_USE_SOA
         cvm::real dx_pred;
         const size_t fit_gradients_size =
           group->fitting_group ? group->fitting_group->size() : 0;
@@ -706,11 +644,6 @@ void colvar::cvc::debug_gradients()
                       atom_grad[2]);
             break;
         }
-#else
-        cvm::real const dx_pred = (group->fit_gradients.size()) ?
-          (cvm::debug_gradients_step_size * (atom_grad[id] + group->fit_gradients[ia][id])) :
-          (cvm::debug_gradients_step_size * atom_grad[id]);
-#endif // COLVARS_USE_SOA
         cvm::log("dx(interp) = "+cvm::to_str(dx_pred,
                               21, 14)+"\n");
         cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
@@ -727,13 +660,9 @@ void colvar::cvc::debug_gradients()
       for (size_t ia = 0; ia < ref_group->size(); ia++) {
 
         // fit gradients are in the unrotated (simulation) frame
-#ifdef COLVARS_USE_SOA
         cvm::rvector const atom_grad(ref_group->fit_gradients_x(ia),
                                      ref_group->fit_gradients_y(ia),
                                      ref_group->fit_gradients_z(ia));
-#else
-        cvm::rvector const atom_grad = ref_group->fit_gradients[ia];
-#endif // COLVARS_USE_SOA
         fit_gradient_sum += atom_grad;
 
         for (size_t id = 0; id < 3; id++) {
@@ -741,15 +670,11 @@ void colvar::cvc::debug_gradients()
           group->read_positions();
           ref_group->read_positions();
           // change one coordinate
-#ifdef COLVARS_USE_SOA
           switch (id) {
             case 0: ref_group->pos_x(ia) += cvm::debug_gradients_step_size; break;
             case 1: ref_group->pos_y(ia) += cvm::debug_gradients_step_size; break;
             case 2: ref_group->pos_z(ia) += cvm::debug_gradients_step_size; break;
           }
-#else
-          (*ref_group)[ia].pos[id] += cvm::debug_gradients_step_size;
-#endif // COLVARS_USE_SOA
           group->calc_required_properties();
           calc_value();
 

@@ -9,13 +9,11 @@
 
 #include "colvarmodule.h"
 #include "colvaratoms.h"
-#include "colvaratoms_soa.h"
 #include "colvarvalue.h"
 #include "colvar.h"
 #include "colvarcomp.h"
 
 template<int flags>
-#ifdef COLVARS_USE_SOA
 inline
 cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
                                                cvm::rvector const &inv_r0_vec,
@@ -36,16 +34,6 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
                                                cvm::real& g2z,
                                                bool **pairlist_elem,
                                                cvm::real pairlist_tol)
-#else
-cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
-                                               cvm::rvector const &r0_vec,
-                                               int en,
-                                               int ed,
-                                               cvm::atom &A1,
-                                               cvm::atom &A2,
-                                               bool **pairlist_elem,
-                                               cvm::real pairlist_tol)
-#endif // COLVARS_USE_SOA
 {
   if ((flags & ef_use_pairlist) && !(flags & ef_rebuild_pairlist)) {
     bool const within = **pairlist_elem;
@@ -55,27 +43,12 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
     }
   }
 
-#ifdef COLVARS_USE_SOA
   const cvm::atom_pos pos1{a1x, a1y, a1z};
   const cvm::atom_pos pos2{a2x, a2y, a2z};
   cvm::rvector const diff = cvm::position_distance(pos1, pos2);
   cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
                                diff.y * inv_r0_vec.y,
                                diff.z * inv_r0_vec.z);
-#else
-  cvm::rvector const r0sq_vec(r0_vec.x*r0_vec.x,
-                              r0_vec.y*r0_vec.y,
-                              r0_vec.z*r0_vec.z);
-  cvm::rvector const diff = cvm::position_distance(A1.pos, A2.pos);
-
-
-  cvm::rvector const scal_diff(diff.x/((flags & ef_anisotropic) ?
-                                       r0_vec.x : r0),
-                               diff.y/((flags & ef_anisotropic) ?
-                                       r0_vec.y : r0),
-                               diff.z/((flags & ef_anisotropic) ?
-                                       r0_vec.z : r0));
-#endif // COLVARS_USE_SOA
   cvm::real const l2 = scal_diff.norm2();
 
   // Assume en and ed are even integers, and avoid sqrt in the following
@@ -106,21 +79,9 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
     //Recognizing that func = (1.0-xn)/(1.0-xd), we can group together the "func" and get a version of dFdl2 that is 0
     //when func=0, which lets us skip this gradient calculation when func=0.
     cvm::real const dFdl2 = func * ((ed2*xd/((1.0-xd)*l2)) - (en2*xn/((1.0-xn)*l2)));
-#ifdef COLVARS_USE_SOA
     cvm::rvector const dl2dx((2.0 * inv_r0sq_vec.x) * diff.x,
                              (2.0 * inv_r0sq_vec.y) * diff.y,
                              (2.0 * inv_r0sq_vec.z) * diff.z);
-#else
-    cvm::rvector const dl2dx((2.0/((flags & ef_anisotropic) ? r0sq_vec.x :
-                                   r0*r0)) * diff.x,
-                             (2.0/((flags & ef_anisotropic) ? r0sq_vec.y :
-                                   r0*r0)) * diff.y,
-                             (2.0/((flags & ef_anisotropic) ? r0sq_vec.z :
-                                   r0*r0)) * diff.z);
-#endif // COLVARS_USE_SOA
-#ifdef COLVARS_USE_SOA
-    // G1 += (-1.0)*dFdl2*dl2dx;
-    // G2 +=        dFdl2*dl2dx;
     const cvm::rvector G = dFdl2*dl2dx;
     g1x += -1.0*G.x;
     g1y += -1.0*G.y;
@@ -128,10 +89,6 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
     g2x +=      G.x;
     g2y +=      G.y;
     g2z +=      G.z;
-#else
-    A1.grad += (-1.0)*dFdl2*dl2dx;
-    A2.grad +=        dFdl2*dl2dx;
-#endif // COLVARS_USE_SOA
   }
 
   return func;
@@ -161,11 +118,7 @@ int colvar::coordnum::init(std::string const &conf)
     return error_code | COLVARS_INPUT_ERROR;
   }
 
-#ifdef COLVARS_USE_SOA
   if (int atom_number = cvm::atom_group_soa::overlap(*group1, *group2)) {
-#else
-  if (int atom_number = cvm::atom_group::overlap(*group1, *group2)) {
-#endif // COLVARS_USE_SOA
     error_code |= cvm::error(
         "Error: group1 and group2 share a common atom (number: " + cvm::to_str(atom_number) + ")\n",
         COLVARS_INPUT_ERROR);
@@ -247,10 +200,6 @@ colvar::coordnum::~coordnum()
 
 template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
 {
-#ifdef COLVARS_USE_SOA
-  // cvm::rvector const r0sq_vec(r0_vec.x*r0_vec.x,
-  //                             r0_vec.y*r0_vec.y,
-  //                             r0_vec.z*r0_vec.z);
   const cvm::rvector inv_r0_vec(
     1.0 / ((flags & ef_anisotropic) ? r0_vec.x : r0),
     1.0 / ((flags & ef_anisotropic) ? r0_vec.y : r0),
@@ -259,9 +208,7 @@ template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
     inv_r0_vec.x*inv_r0_vec.x,
     inv_r0_vec.y*inv_r0_vec.y,
     inv_r0_vec.z*inv_r0_vec.z);
-#endif // COLVARS_USE_SOA
   if (b_group2_center_only) {
-#ifdef COLVARS_USE_SOA
     const cvm::atom_pos group2_com = group2->center_of_mass();
     cvm::rvector group2_com_grad(0, 0, 0);
     for (size_t i = 0; i < group1->size(); ++i) {
@@ -285,21 +232,7 @@ template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
     if (b_group2_center_only) {
       group2->set_weighted_gradient(group2_com_grad);
     }
-#else
-    cvm::atom group2_com_atom;
-    group2_com_atom.pos = group2->center_of_mass();
-    for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++) {
-      x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
-                                                *ai1, group2_com_atom,
-                                                pairlist_elem,
-                                                tolerance);
-    }
-    if (b_group2_center_only) {
-      group2->set_weighted_gradient(group2_com_atom.grad);
-    }
-#endif // COLVARS_USE_SOA
   } else {
-#ifdef COLVARS_USE_SOA
     for (size_t i = 0; i < group1->size(); ++i) {
       for (size_t j = 0; j < group2->size(); ++j) {
         x.real_value += switching_function<flags>(r0, inv_r0_vec,
@@ -320,16 +253,6 @@ template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
                                                   tolerance);
       }
     }
-#else
-    for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++) {
-      for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
-        x.real_value += switching_function<flags>(r0, r0_vec, en, ed,
-                                                  *ai1, *ai2,
-                                                  pairlist_elem,
-                                                  tolerance);
-      }
-    }
-#endif // COLVARS_USE_SOA
   }
 }
 
@@ -432,7 +355,6 @@ int colvar::h_bond::init(std::string const &conf)
     error_code |= cvm::error("Error: either acceptor or donor undefined.\n", COLVARS_INPUT_ERROR);
   }
 
-#ifdef COLVARS_USE_SOA
   register_atom_group(new cvm::atom_group_soa);
   {
     colvarproxy* const p = cvm::main()->proxy;
@@ -440,13 +362,6 @@ int colvar::h_bond::init(std::string const &conf)
     modify_atom.add_atom(cvm::atom_group_soa::init_atom_from_proxy(p, a_num));
     modify_atom.add_atom(cvm::atom_group_soa::init_atom_from_proxy(p, d_num));
   }
-#else
-  cvm::atom acceptor = cvm::atom(a_num);
-  cvm::atom donor    = cvm::atom(d_num);
-  register_atom_group(new cvm::atom_group);
-  atom_groups[0]->add_atom(acceptor);
-  atom_groups[0]->add_atom(donor);
-#endif // COLVARS_USE_SOA
 
   get_keyval(conf, "cutoff",   r0, r0);
   get_keyval(conf, "expNumer", en, en);
@@ -467,7 +382,6 @@ int colvar::h_bond::init(std::string const &conf)
   return error_code;
 }
 
-#ifdef COLVARS_USE_SOA
 colvar::h_bond::h_bond(cvm::atom_group_soa::simple_atom const &acceptor,
                        cvm::atom_group_soa::simple_atom const &donor,
                        cvm::real r0_i, int en_i, int ed_i)
@@ -481,27 +395,12 @@ colvar::h_bond::h_bond(cvm::atom_group_soa::simple_atom const &acceptor,
   modify_atom.add_atom(acceptor);
   modify_atom.add_atom(donor);
 }
-#else
-colvar::h_bond::h_bond(cvm::atom const &acceptor,
-                       cvm::atom const &donor,
-                       cvm::real r0_i, int en_i, int ed_i)
-  : h_bond()
-{
-  r0 = r0_i;
-  en = en_i;
-  ed = ed_i;
-  register_atom_group(new cvm::atom_group);
-  atom_groups[0]->add_atom(acceptor);
-  atom_groups[0]->add_atom(donor);
-}
-#endif // COLVARS_USE_SOA
 
 
 void colvar::h_bond::calc_value()
 {
   int const flags = coordnum::ef_null;
   cvm::rvector const r0_vec(0.0); // TODO enable the flag?
-#ifdef COLVARS_USE_SOA
   cvm::rvector G1, G2;
   const cvm::atom_pos A1{atom_groups[0]->pos_x(0),
                          atom_groups[0]->pos_y(0),
@@ -533,13 +432,6 @@ void colvar::h_bond::calc_value()
                                         atom_groups[0]->grad_z(1),
                                         NULL, 0.0);
   // Skip the gradient
-#else
-  x.real_value =
-    coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                        (*atom_groups[0])[0],
-                                        (*atom_groups[0])[1],
-                                        NULL, 0.0);
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -547,7 +439,6 @@ void colvar::h_bond::calc_gradients()
 {
   int const flags = coordnum::ef_gradients;
   cvm::rvector const r0_vec(0.0); // TODO enable the flag?
-#ifdef COLVARS_USE_SOA
   const cvm::rvector inv_r0_vec(
     1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.x : r0),
     1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.y : r0),
@@ -570,12 +461,6 @@ void colvar::h_bond::calc_gradients()
                                       atom_groups[0]->grad_y(1),
                                       atom_groups[0]->grad_z(1),
                                       NULL, 0.0);
-#else
-  coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                      (*atom_groups[0])[0],
-                                      (*atom_groups[0])[1],
-                                      NULL, 0.0);
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -654,7 +539,6 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
   size_t const n = group1->size();
 
   // Always isotropic (TODO: enable the ellipsoid?)
-#ifdef COLVARS_USE_SOA
 #define CALL_KERNEL(flags) do {                         \
   const cvm::rvector inv_r0_vec(                                  \
     1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.x : r0),   \
@@ -685,66 +569,21 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
     }                                                   \
   }                                                     \
 } while (0);
-#endif // COLVARS_USE_SOA
 
   if (use_pairlist) {
-
     if (rebuild_pairlist) {
       int const flags = compute_flags | coordnum::ef_use_pairlist |
         coordnum::ef_rebuild_pairlist;
-#ifdef COLVARS_USE_SOA
       CALL_KERNEL(flags);
-#else
-      for (i = 0; i < n - 1; i++) {
-        for (j = i + 1; j < n; j++) {
-          x.real_value +=
-            coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                                (*group1)[i],
-                                                (*group1)[j],
-                                                &pairlist_elem,
-                                                tolerance);
-        }
-      }
-#endif // COLVARS_USE_SOA
     } else {
       int const flags = compute_flags | coordnum::ef_use_pairlist;
-#ifdef COLVARS_USE_SOA
       CALL_KERNEL(flags);
-#else
-      for (i = 0; i < n - 1; i++) {
-        for (j = i + 1; j < n; j++) {
-          x.real_value +=
-            coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                                (*group1)[i],
-                                                (*group1)[j],
-                                                &pairlist_elem,
-                                                tolerance);
-        }
-      }
-#endif // COLVARS_USE_SOA
     }
-
   } else { // if (use_pairlist) {
-
     int const flags = compute_flags | coordnum::ef_null;
-#ifdef COLVARS_USE_SOA
       CALL_KERNEL(flags);
-#else
-    for (i = 0; i < n - 1; i++) {
-      for (j = i + 1; j < n; j++) {
-        x.real_value +=
-          coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                              (*group1)[i],
-                                              (*group1)[j],
-                                              &pairlist_elem,
-                                              tolerance);
-      }
-    }
-#endif // COLVARS_USE_SOA
   }
-#ifdef COLVARS_USE_SOA
 #undef CALL_KERNEL
-#endif // COLVARS_USE_SOA
   return COLVARS_OK;
 }
 
@@ -826,7 +665,6 @@ int colvar::groupcoordnum::init(std::string const &conf)
 
 void colvar::groupcoordnum::calc_value()
 {
-#ifdef COLVARS_USE_SOA
   const cvm::atom_pos A1 = group1->center_of_mass();
   const cvm::atom_pos A2 = group2->center_of_mass();
 #define CALL_KERNEL(flags) do { \
@@ -848,43 +686,19 @@ void colvar::groupcoordnum::calc_value()
                                                      G1.x, G1.y, G1.z, \
                                                      G2.x, G2.y, G2.z, NULL, 0.0); \
 } while (0);
-#else // COLVARS_USE_SOA
-  // create fake atoms to hold the com coordinates
-  cvm::atom group1_com_atom;
-  cvm::atom group2_com_atom;
-  group1_com_atom.pos = group1->center_of_mass();
-  group2_com_atom.pos = group2->center_of_mass();
-#endif // COLVARS_USE_SOA
   if (b_anisotropic) {
     int const flags = coordnum::ef_anisotropic;
-#ifdef COLVARS_USE_SOA
     CALL_KERNEL(flags);
-#else
-    x.real_value = coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                                       group1_com_atom,
-                                                       group2_com_atom,
-                                                       NULL, 0.0);
-#endif // COLVARS_USE_SOA
   } else {
     int const flags = coordnum::ef_null;
-#ifdef COLVARS_USE_SOA
     CALL_KERNEL(flags);
-#else
-    x.real_value = coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                                       group1_com_atom,
-                                                       group2_com_atom,
-                                                       NULL, 0.0);
-#endif // COLVARS_USE_SOA
   }
-#ifdef COLVARS_USE_SOA
 #undef CALL_KERNEL
-#endif // COLVARS_USE_SOA
 }
 
 
 void colvar::groupcoordnum::calc_gradients()
 {
-#ifdef COLVARS_USE_SOA
   const cvm::atom_pos A1 = group1->center_of_mass();
   const cvm::atom_pos A2 = group2->center_of_mass();
   cvm::rvector G1(0, 0, 0), G2(0, 0, 0);
@@ -903,39 +717,13 @@ void colvar::groupcoordnum::calc_gradients()
                                       G1.x, G1.y, G1.z, \
                                       G2.x, G2.y, G2.z, NULL, 0.0); \
 } while (0);
-#else
-  cvm::atom group1_com_atom;
-  cvm::atom group2_com_atom;
-  group1_com_atom.pos = group1->center_of_mass();
-  group2_com_atom.pos = group2->center_of_mass();
-#endif // COLVARS_USE_SOA
   if (b_anisotropic) {
     int const flags = coordnum::ef_gradients | coordnum::ef_anisotropic;
-#ifdef COLVARS_USE_SOA
     CALL_KERNEL(flags);
-#else
-    coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                        group1_com_atom,
-                                        group2_com_atom,
-                                        NULL, 0.0);
-#endif // COLVARS_USE_SOA
   } else {
     int const flags = coordnum::ef_gradients;
-#ifdef COLVARS_USE_SOA
     CALL_KERNEL(flags);
-#else
-    coordnum::switching_function<flags>(r0, r0_vec, en, ed,
-                                        group1_com_atom,
-                                        group2_com_atom,
-                                        NULL, 0.0);
-#endif // COLVARS_USE_SOA
   }
-
-#ifdef COLVARS_USE_SOA
   group1->set_weighted_gradient(G1);
   group2->set_weighted_gradient(G2);
-#else
-  group1->set_weighted_gradient(group1_com_atom.grad);
-  group2->set_weighted_gradient(group2_com_atom.grad);
-#endif // COLVARS_USE_SOA
 }

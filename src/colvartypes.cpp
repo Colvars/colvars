@@ -225,27 +225,6 @@ void colvarmodule::rotation::build_correlation_matrix(
   }
 }
 
-#ifdef COLVARS_USE_SOA
-#else
-void colvarmodule::rotation::build_correlation_matrix(
-                                        std::vector<cvm::atom> const &pos1,
-                                        std::vector<cvm::atom_pos> const &pos2)
-{
-  // build the correlation matrix
-  size_t i;
-  for (i = 0; i < pos1.size(); i++) {
-    C.xx += pos1[i].pos.x * pos2[i].x;
-    C.xy += pos1[i].pos.x * pos2[i].y;
-    C.xz += pos1[i].pos.x * pos2[i].z;
-    C.yx += pos1[i].pos.y * pos2[i].x;
-    C.yy += pos1[i].pos.y * pos2[i].y;
-    C.yz += pos1[i].pos.y * pos2[i].z;
-    C.zx += pos1[i].pos.z * pos2[i].x;
-    C.zy += pos1[i].pos.z * pos2[i].y;
-    C.zz += pos1[i].pos.z * pos2[i].z;
-  }
-}
-#endif // COLVARS_USE_SOA
 
 void colvarmodule::rotation::compute_overlap_matrix()
 {
@@ -323,7 +302,6 @@ void colvarmodule::rotation::calc_optimal_rotation(
   if (b_debug_gradients) debug_gradients<cvm::atom_pos, cvm::atom_pos, false>(*this, pos1, pos2);
 }
 
-#ifdef COLVARS_USE_SOA
 void colvarmodule::rotation::calc_optimal_rotation_soa(
   std::vector<cvm::real> const &pos1,
   std::vector<cvm::real> const &pos2,
@@ -352,19 +330,6 @@ void colvarmodule::rotation::calc_optimal_rotation_soa(
   calc_optimal_rotation_impl();
   if (b_debug_gradients) debug_gradients<cvm::real, cvm::real, true>(*this, pos1, pos2);
 }
-#else
-void colvarmodule::rotation::calc_optimal_rotation(
-                                        std::vector<cvm::atom> const &pos1,
-                                        std::vector<cvm::atom_pos> const &pos2)
-{
-  C.reset();
-  build_correlation_matrix(pos1, pos2);
-
-  calc_optimal_rotation_impl();
-
-  if (b_debug_gradients) debug_gradients<cvm::atom, cvm::atom_pos, false>(*this, pos1, pos2);
-}
-#endif // COLVARS_USE_SOA
 
 // Calculate the optimal rotation between two groups, and implement it
 // as a quaternion.  Uses the method documented in: Coutsias EA,

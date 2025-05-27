@@ -92,7 +92,6 @@ struct rotation_derivative {
   /// \brief Temporary variable that will be updated if prepare_derivative called
   cvm::real tmp_Q0Q0[4][4];
   cvm::real tmp_Q0Q0_L[4][4][4];
-#ifdef COLVARS_USE_SOA
   /*! @brief Constructor of the cvm::rotation::derivative class for SOA
     *  @param[in]  rot   The cvm::rotation object (must have called
     *                    `calc_optimal_rotation` before calling
@@ -112,21 +111,6 @@ struct rotation_derivative {
       m_rot(rot), m_pos1(pos1), m_pos2(pos2),
       m_num_atoms_pos1(num_atoms_pos1),
       m_num_atoms_pos2(num_atoms_pos2) {}
-#else
-  /*! @brief Constructor of the cvm::rotation::derivative class
-    *  @param[in]  rot   The cvm::rotation object (must have called
-    *                    `calc_optimal_rotation` before calling
-    *                    `calc_derivative_wrt_group1` and
-    *                    `calc_derivative_wrt_group2`)
-    *  @param[in]  pos1  The atom positions of group 1
-    *  @param[in]  pos2  The atom positions of group 2
-    */
-  rotation_derivative(
-    const cvm::rotation &rot,
-    const std::vector<T1> &pos1,
-    const std::vector<T2> &pos2):
-      m_rot(rot), m_pos1(pos1), m_pos2(pos2) {};
-#endif // COLVARS_USE_SOA
   /*! @brief This function must be called before `calc_derivative_wrt_group1`
     *         and `calc_derivative_wrt_group2` in order to prepare the tmp_Q0Q0
     *        and tmp_Q0Q0_L.
@@ -613,11 +597,7 @@ void debug_gradients(
             ", Q3 = "+cvm::to_str(Q3, cvm::cv_width, cvm::cv_prec)+
             ", Q0*Q3 = "+cvm::to_str(Q0.inner(Q3), cvm::cv_width, cvm::cv_prec)+
             "\n");
-#ifdef COLVARS_USE_SOA
   rotation_derivative<T1, T2, soa> deriv(rot, pos1, pos2, pos1.size() / 3, pos2.size() / 3);
-#else
-  rotation_derivative<T1, T2, soa> deriv(rot, pos1, pos2);
-#endif
   cvm::rvector dl0_2;
   cvm::vector1d<cvm::rvector> dq0_2(4);
   cvm::matrix2d<cvm::rvector> ds_2;

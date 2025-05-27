@@ -25,11 +25,8 @@
 #include "colvaratoms.h"
 #include "colvar.h"
 #include "colvar_geometricpath.h"
-
-// #ifdef COLVARS_USE_SOA
-#include "colvaratoms_soa.h"
-// #endif
-
+#include "colvaratoms.h"
+#include "colvarproxy.h"
 
 /// \brief Colvar component (base class for collective variables)
 ///
@@ -219,20 +216,11 @@ public:
   /// \brief Wrap value (for periodic/symmetric cvcs)
   virtual void wrap(colvarvalue &x_unwrapped) const;
 
-#ifdef COLVARS_USE_SOA
   /// \brief Pointers to all atom groups, to let colvars collect info
   /// e.g. atomic gradients
   std::vector<cvm::atom_group_soa *> atom_groups;
   /// \brief Store a pointer to new atom group, and list as child for dependencies
   void register_atom_group(cvm::atom_group_soa *ag);
-#else
-  /// \brief Pointers to all atom groups, to let colvars collect info
-  /// e.g. atomic gradients
-  std::vector<cvm::atom_group *> atom_groups;
-
-  /// \brief Store a pointer to new atom group, and list as child for dependencies
-  void register_atom_group(cvm::atom_group *ag);
-#endif // COLVARS_USE_SOA
 
   /// Pointer to the gradient of parameter param_name
   virtual colvarvalue const *get_param_grad(std::string const &param_name);
@@ -263,15 +251,9 @@ protected:
   /// Update the description string based on name and type
   int update_description();
 
-#ifdef COLVARS_USE_SOA
   /// Parse a group definition
   cvm::atom_group_soa *parse_group(std::string const &conf, char const *group_key,
                                bool optional = false);
-#else
-  /// Parse a group definition
-  cvm::atom_group *parse_group(std::string const &conf, char const *group_key,
-                               bool optional = false);
-#endif // COLVARS_USE_SOA
 
   /// \brief Parse options pertaining to total force calculation
   virtual int init_total_force_params(std::string const &conf);
@@ -347,17 +329,10 @@ class colvar::distance
   : public colvar::cvc
 {
 protected:
-#ifdef COLVARS_USE_SOA
   /// First atom group
   cvm::atom_group_soa  *group1 = nullptr;
   /// Second atom group
   cvm::atom_group_soa  *group2 = nullptr;
-#else
-  /// First atom group
-  cvm::atom_group  *group1 = nullptr;
-  /// Second atom group
-  cvm::atom_group  *group2 = nullptr;
-#endif // COLVARS_USE_SOA
   /// Vector distance, cached to be recycled
   cvm::rvector     dist_v;
 public:
@@ -425,21 +400,12 @@ class colvar::distance_z
   : public colvar::cvc
 {
 protected:
-#ifdef COLVARS_USE_SOA
   /// Main atom group
   cvm::atom_group_soa  *main = nullptr;
   /// Reference atom group
   cvm::atom_group_soa  *ref1 = nullptr;
   /// Optional, second ref atom group
   cvm::atom_group_soa  *ref2 = nullptr;
-#else
-  /// Main atom group
-  cvm::atom_group  *main = nullptr;
-  /// Reference atom group
-  cvm::atom_group  *ref1 = nullptr;
-  /// Optional, second ref atom group
-  cvm::atom_group  *ref2 = nullptr;
-#endif
   /// Vector on which the distance vector is projected
   cvm::rvector axis;
   /// Norm of the axis
@@ -486,11 +452,7 @@ class colvar::polar_phi
   : public colvar::cvc
 {
 protected:
-#ifdef COLVARS_USE_SOA
   cvm::atom_group_soa *atoms = nullptr;
-#else
-  cvm::atom_group *atoms = nullptr;
-#endif // COLVARS_USE_SOA
   cvm::real r, theta, phi;
 
 public:
@@ -512,11 +474,7 @@ public:
   virtual ~polar_theta() {}
   virtual int init(std::string const &conf);
 protected:
-#ifdef COLVARS_USE_SOA
   cvm::atom_group_soa *atoms = nullptr;
-#else
-  cvm::atom_group *atoms = nullptr;
-#endif // COLVARS_USE_SOA
   cvm::real r, theta, phi;
 public:
   virtual void calc_value();
@@ -530,17 +488,10 @@ class colvar::distance_inv
   : public colvar::cvc
 {
 protected:
-#ifdef COLVARS_USE_SOA
   /// First atom group
   cvm::atom_group_soa  *group1 = nullptr;
   /// Second atom group
   cvm::atom_group_soa  *group2 = nullptr;
-#else
-  /// First atom group
-  cvm::atom_group  *group1 = nullptr;
-  /// Second atom group
-  cvm::atom_group  *group2 = nullptr;
-#endif // COLVARS_USE_SOA
   /// Components of the distance vector orthogonal to the axis
   int exponent = 6;
 public:
@@ -559,17 +510,10 @@ class colvar::distance_pairs
   : public colvar::cvc
 {
 protected:
-#ifdef COLVARS_USE_SOA
   /// First atom group
   cvm::atom_group_soa  *group1 = nullptr;
   /// Second atom group
   cvm::atom_group_soa  *group2 = nullptr;
-#else
-  /// First atom group
-  cvm::atom_group  *group1 = nullptr;
-  /// Second atom group
-  cvm::atom_group  *group2 = nullptr;
-#endif // COLVARS_USE_SOA
 public:
   distance_pairs();
   virtual ~distance_pairs() {}
@@ -594,11 +538,7 @@ class colvar::dipole_magnitude
 {
 protected:
   /// Dipole atom group
-#ifdef COLVARS_USE_SOA
   cvm::atom_group_soa *atoms = nullptr;
-#else
-  cvm::atom_group *atoms = nullptr;
-#endif // COLVARS_USE_SOA
   cvm::atom_pos dipoleV;
 public:
   dipole_magnitude();
@@ -617,11 +557,7 @@ class colvar::gyration
 {
 protected:
   /// Atoms involved
-#ifdef COLVARS_USE_SOA
   cvm::atom_group_soa *atoms = nullptr;
-#else
-  cvm::atom_group *atoms = nullptr;
-#endif // COLVARS_USE_SOA
 public:
   gyration();
   virtual ~gyration() {}
@@ -674,11 +610,7 @@ class colvar::eigenvector
 protected:
 
   /// Atom group
-#ifdef COLVARS_USE_SOA
   cvm::atom_group_soa *atoms = nullptr;
-#else
-  cvm::atom_group *atoms = nullptr;
-#endif // COLVARS_USE_SOA
 
   /// Reference coordinates
   std::vector<cvm::atom_pos>  ref_pos;
@@ -708,22 +640,12 @@ class colvar::angle
   : public colvar::cvc
 {
 protected:
-#ifdef COLVARS_USE_SOA
   /// Atom group
   cvm::atom_group_soa  *group1 = nullptr;
   /// Atom group
   cvm::atom_group_soa  *group2 = nullptr;
   /// Atom group
   cvm::atom_group_soa  *group3 = nullptr;
-#else
-  /// Atom group
-  cvm::atom_group  *group1 = nullptr;
-  /// Atom group
-  cvm::atom_group  *group2 = nullptr;
-  /// Atom group
-  cvm::atom_group  *group3 = nullptr;
-#endif // COLVARS_USE_SOA
-
   /// Inter site vectors
   cvm::rvector r21, r23;
   /// Inter site vector norms
@@ -738,15 +660,10 @@ protected:
 public:
 
   angle();
-#ifdef COLVARS_USE_SOA
   /// \brief Initialize the three groups after three atoms
   angle(cvm::atom_group_soa::simple_atom const &a1,
         cvm::atom_group_soa::simple_atom const &a2,
         cvm::atom_group_soa::simple_atom const &a3);
-#else
-  /// \brief Initialize the three groups after three atoms
-  angle(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3);
-#endif // COLVARS_USE_SOA
   virtual ~angle() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -764,22 +681,12 @@ class colvar::dipole_angle
 {
 protected:
 
-#ifdef COLVARS_USE_SOA
   /// Atom group
   cvm::atom_group_soa  *group1 = nullptr;
   /// Atom group
   cvm::atom_group_soa  *group2 = nullptr;
   /// Atom group
   cvm::atom_group_soa  *group3 = nullptr;
-#else
-  /// Atom group
-  cvm::atom_group  *group1 = nullptr;
-  /// Atom group
-  cvm::atom_group  *group2 = nullptr;
-  /// Atom group
-  cvm::atom_group  *group3 = nullptr;
-#endif // COLVARS_USE_SOA
-
   /// Inter site vectors
   cvm::rvector r21, r23;
   /// Inter site vector norms
@@ -809,7 +716,6 @@ class colvar::dihedral
 {
 protected:
 
-#ifdef COLVARS_USE_SOA
   /// Atom group
   cvm::atom_group_soa  *group1 = nullptr;
   /// Atom group
@@ -818,16 +724,6 @@ protected:
   cvm::atom_group_soa  *group3 = nullptr;
   /// Atom group
   cvm::atom_group_soa  *group4 = nullptr;
-#else
-  /// Atom group
-  cvm::atom_group  *group1 = nullptr;
-  /// Atom group
-  cvm::atom_group  *group2 = nullptr;
-  /// Atom group
-  cvm::atom_group  *group3 = nullptr;
-  /// Atom group
-  cvm::atom_group  *group4 = nullptr;
-#endif // COLVARS_USE_SOA
   /// Inter site vectors
   cvm::rvector r12, r23, r34;
 
@@ -838,14 +734,10 @@ protected:
 public:
 
   /// \brief Initialize the four groups after four atoms
-#ifdef COLVARS_USE_SOA
   dihedral(cvm::atom_group_soa::simple_atom const &a1,
            cvm::atom_group_soa::simple_atom const &a2,
            cvm::atom_group_soa::simple_atom const &a3,
            cvm::atom_group_soa::simple_atom const &a4);
-#else
-  dihedral(cvm::atom const &a1, cvm::atom const &a2, cvm::atom const &a3, cvm::atom const &a4);
-#endif // COLVARS_USE_SOA
   dihedral();
   virtual ~dihedral() {}
   virtual int init(std::string  const &conf);
@@ -863,17 +755,10 @@ class colvar::coordnum
   : public colvar::cvc
 {
 protected:
-#ifdef COLVARS_USE_SOA
   /// First atom group
   cvm::atom_group_soa  *group1 = nullptr;
   /// Second atom group
   cvm::atom_group_soa  *group2 = nullptr;
-#else
-  /// First atom group
-  cvm::atom_group  *group1 = nullptr;
-  /// Second atom group
-  cvm::atom_group  *group2 = nullptr;
-#endif // COLVARS_USE_SOA
   /// \brief "Cutoff" for isotropic calculation (default)
   cvm::real     r0;
   /// \brief "Cutoff vector" for anisotropic calculation
@@ -920,7 +805,6 @@ public:
   /// atom \param Second atom \param pairlist_elem pointer to pair flag for
   /// this pair \param tolerance A pair is defined as having a larger
   /// coordination than this number
-#ifdef COLVARS_USE_SOA
   template<int flags>
   static cvm::real switching_function(cvm::real const &r0,
                                       cvm::rvector const &inv_r0_vec,
@@ -941,17 +825,6 @@ public:
                                       cvm::real& g2z,
                                       bool **pairlist_elem,
                                       cvm::real tolerance);
-#else
-  template<int flags>
-  static cvm::real switching_function(cvm::real const &r0,
-                                      cvm::rvector const &r0_vec,
-                                      int en,
-                                      int ed,
-                                      cvm::atom &A1,
-                                      cvm::atom &A2,
-                                      bool **pairlist_elem,
-                                      cvm::real tolerance);
-#endif // COLVARS_USE_SOA
 
   /// Workhorse function
   template<int flags> int compute_coordnum();
@@ -969,13 +842,8 @@ class colvar::selfcoordnum
   : public colvar::cvc
 {
 protected:
-#ifdef COLVARS_USE_SOA
   /// Selected atoms
   cvm::atom_group_soa  *group1 = nullptr;
-#else
-  /// Selected atoms
-  cvm::atom_group  *group1 = nullptr;
-#endif // COLVARS_USE_SOA
   /// \brief "Cutoff" for isotropic calculation (default)
   cvm::real     r0;
   /// Integer exponent of the function numerator
@@ -1043,15 +911,9 @@ protected:
   int ed = 8;
 public:
   /// Constructor for atoms already allocated
-#ifdef COLVARS_USE_SOA
   h_bond(cvm::atom_group_soa::simple_atom const &acceptor,
          cvm::atom_group_soa::simple_atom const &donor,
          cvm::real r0, int en, int ed);
-#else
-  h_bond(cvm::atom const &acceptor,
-         cvm::atom const &donor,
-         cvm::real r0, int en, int ed);
-#endif // COLVARS_USE_SOA
   h_bond();
   virtual ~h_bond() {}
   virtual int init(std::string const &conf);
@@ -1141,17 +1003,11 @@ class colvar::orientation
   : public colvar::cvc
 {
 protected:
-#ifdef COLVARS_USE_SOA
   /// Atom group
   cvm::atom_group_soa  *          atoms = nullptr;
-#else
-  /// Atom group
-  cvm::atom_group  *          atoms = nullptr;
-#endif // COLVARS_USE_SOA
   /// Center of geometry of the group
   cvm::atom_pos              atoms_cog;
 
-#ifdef COLVARS_USE_SOA
   /// Reference coordinates
   std::vector<cvm::real> ref_pos_soa;
   size_t num_ref_pos;
@@ -1159,13 +1015,6 @@ protected:
   /// Shifted atomic positions
   std::vector<cvm::real> shifted_pos_soa;
   size_t num_shifted_pos;
-#else
-  /// Reference coordinates
-  std::vector<cvm::atom_pos> ref_pos;
-
-  /// Shifted atomic positions
-  std::vector<cvm::atom_pos> shifted_pos;
-#endif // COLVARS_USE_SOA
 
   /// Rotation object
   cvm::rotation              rot;
@@ -1314,14 +1163,9 @@ class colvar::rmsd
 {
 protected:
 
-#ifdef COLVARS_USE_SOA
   // TODO: transfrom ref_pos to soa
   /// Atom group
   cvm::atom_group_soa  *          atoms = nullptr;
-#else
-  /// Atom group
-  cvm::atom_group  *          atoms = nullptr;
-#endif // COLVARS_USE_SOA
 
   /// Reference coordinates (for RMSD calculation only)
   /// Includes sets with symmetry permutations (n_permutations * n_atoms)
@@ -1354,13 +1198,8 @@ class colvar::cartesian
   : public colvar::cvc
 {
 protected:
-#ifdef COLVARS_USE_SOA
   /// Atom group
   cvm::atom_group_soa  *          atoms = nullptr;
-#else
-  /// Atom group
-  cvm::atom_group  *          atoms = nullptr;
-#endif // COLVARS_USE_SOA
   /// Which Cartesian coordinates to include
   std::vector<size_t> axes;
 public:
@@ -1424,25 +1263,15 @@ class colvar::CartesianBasedPath
 protected:
     virtual void computeDistanceBetweenReferenceFrames(std::vector<cvm::real>& result);
     virtual void computeDistanceToReferenceFrames(std::vector<cvm::real>& result);
-#ifdef COLVARS_USE_SOA
     /// Selected atoms
     cvm::atom_group_soa *atoms = nullptr;
-#else
-    /// Selected atoms
-    cvm::atom_group *atoms = nullptr;
-#endif // COLVARS_USE_SOA
     /// Fitting options
     bool has_user_defined_fitting = false;
     /// Reference frames
     std::vector<std::vector<cvm::atom_pos>> reference_frames;
     std::vector<std::vector<cvm::atom_pos>> reference_fitting_frames;
-#ifdef COLVARS_USE_SOA
     /// Atom groups for RMSD calculation together with reference frames
     std::vector<cvm::atom_group_soa*> comp_atoms;
-#else
-    /// Atom groups for RMSD calculation together with reference frames
-    std::vector<cvm::atom_group*> comp_atoms;
-#endif // COLVARS_USE_SOA
     /// Total number of reference frames
     size_t total_reference_frames = 0;
 public:
@@ -1752,11 +1581,7 @@ protected:
   int volmap_index = -1;
 
   /// Group of atoms selected internally (optional)
-#ifdef COLVARS_USE_SOA
   cvm::atom_group_soa *atoms = nullptr;
-#else
-  cvm::atom_group *atoms = nullptr;
-#endif // COLVARS_USE_SOA
 
   /// Weights assigned to each atom (default: uniform weights)
   std::vector<cvm::real> atom_weights;

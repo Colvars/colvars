@@ -438,21 +438,7 @@ int colvar::distance_inv::init(std::string const &conf)
     error_code |= cvm::error("Error: negative or zero exponent provided.\n", COLVARS_INPUT_ERROR);
   }
 
-  // for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++) {
-  //   for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
-  //     if (ai1->id == ai2->id) {
-  //       error_code |= cvm::error("Error: group1 and group2 have some atoms in common: this is not "
-  //                                "allowed for distanceInv.\n",
-  //                                COLVARS_INPUT_ERROR);
-  //     }
-  //   }
-  // }
-  // TODO: Is using overlap instead of the above loop correct?
-#ifdef COLVARS_USE_SOA
   if (cvm::atom_group_soa::overlap(*group1, *group2) != 0) {
-#else
-  if (cvm::atom_group::overlap(*group1, *group2) != 0) {
-#endif // COLVARS_USE_SOA
     error_code |= cvm::error("Error: group1 and group2 have some atoms in common: this is not "
                             "allowed for distanceInv.\n",
                             COLVARS_INPUT_ERROR);
@@ -470,7 +456,6 @@ int colvar::distance_inv::init(std::string const &conf)
 
 void colvar::distance_inv::calc_value()
 {
-#ifdef COLVARS_USE_SOA
 #define CALL_KERNEL(USE_PBC_MINIMUM_IMAGE) do {        \
   const int factor = -1*(exponent/2);                  \
   for (size_t i = 0; i < group1->size(); ++i) {        \
@@ -502,40 +487,11 @@ void colvar::distance_inv::calc_value()
     group1->grad_z(i) += g1.z; \
   }                            \
 } while (0);
-#endif // COLVARS_USE_SOA
   x.real_value = 0.0;
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
-#ifdef COLVARS_USE_SOA
     CALL_KERNEL(false);
-#else
-    for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++) {
-      for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
-        cvm::rvector const dv = ai2->pos - ai1->pos;
-        cvm::real const d2 = dv.norm2();
-        cvm::real const dinv = cvm::integer_power(d2, -1*(exponent/2));
-        x.real_value += dinv;
-        cvm::rvector const dsumddv = -1.0*(exponent/2) * dinv/d2 * 2.0 * dv;
-        ai1->grad += -1.0 * dsumddv;
-        ai2->grad +=        dsumddv;
-      }
-    }
-#endif // COLVARS_USE_SOA
   } else {
-#ifdef COLVARS_USE_SOA
     CALL_KERNEL(true);
-#else
-    for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++) {
-      for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
-        cvm::rvector const dv = cvm::position_distance(ai1->pos, ai2->pos);
-        cvm::real const d2 = dv.norm2();
-        cvm::real const dinv = cvm::integer_power(d2, -1*(exponent/2));
-        x.real_value += dinv;
-        cvm::rvector const dsumddv = -1.0*(exponent/2) * dinv/d2 * 2.0 * dv;
-        ai1->grad += -1.0 * dsumddv;
-        ai2->grad +=        dsumddv;
-      }
-    }
-#endif // COLVARS_USE_SOA
   }
 
   x.real_value *= 1.0 / cvm::real(group1->size() * group2->size());
@@ -544,7 +500,6 @@ void colvar::distance_inv::calc_value()
   cvm::real const dxdsum = (-1.0/(cvm::real(exponent))) *
     cvm::integer_power(x.real_value, exponent+1) /
     cvm::real(group1->size() * group2->size());
-#ifdef COLVARS_USE_SOA
   const size_t num_grads_xyz_group1 = 3 * group1->size();
   for (size_t i = 0; i < num_grads_xyz_group1; ++i) {
     group1->grad_x(i) = group1->grad_x(i) * dxdsum;
@@ -554,14 +509,6 @@ void colvar::distance_inv::calc_value()
     group2->grad_x(i) = group2->grad_x(i) * dxdsum;
   }
 #undef CALL_KERNEL
-#else
-  for (cvm::atom_iter ai1 = group1->begin(); ai1 != group1->end(); ai1++) {
-    ai1->grad *= dxdsum;
-  }
-  for (cvm::atom_iter ai2 = group2->begin(); ai2 != group2->end(); ai2++) {
-    ai2->grad *= dxdsum;
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -594,7 +541,6 @@ int colvar::distance_pairs::init(std::string const &conf)
 void colvar::distance_pairs::calc_value()
 {
   x.vector1d_value.resize(group1->size() * group2->size());
-#ifdef COLVARS_USE_SOA
 #define CALL_KERNEL(USE_PBC_MINIMUM_IMAGE) do {                    \
   for (size_t i1 = 0; i1 < group1->size(); ++i1) {                 \
     const cvm::atom_pos pos1(group1->pos_x(i1),                    \
@@ -621,42 +567,12 @@ void colvar::distance_pairs::calc_value()
     group1->grad_z(i1) += g1.z;*/                                    \
   }                                                                \
 } while (0);
-#endif // COLVARS_USE_SOA
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
-#ifdef COLVARS_USE_SOA
     CALL_KERNEL(false);
-#else
-    size_t i1, i2;
-    for (i1 = 0; i1 < group1->size(); i1++) {
-      for (i2 = 0; i2 < group2->size(); i2++) {
-        cvm::rvector const dv = (*group2)[i2].pos - (*group1)[i1].pos;
-        cvm::real const d = dv.norm();
-        x.vector1d_value[i1*group2->size() + i2] = d;
-        (*group1)[i1].grad = -1.0 * dv.unit();
-        (*group2)[i2].grad =  dv.unit();
-      }
-    }
-#endif // COLVARS_USE_SOA
   } else {
-#ifdef COLVARS_USE_SOA
     CALL_KERNEL(true);
-#else
-    size_t i1, i2;
-    for (i1 = 0; i1 < group1->size(); i1++) {
-      for (i2 = 0; i2 < group2->size(); i2++) {
-        cvm::rvector const dv = cvm::position_distance((*group1)[i1].pos,
-                                                       (*group2)[i2].pos);
-        cvm::real const d = dv.norm();
-        x.vector1d_value[i1*group2->size() + i2] = d;
-        (*group1)[i1].grad = -1.0 * dv.unit();
-        (*group2)[i2].grad =  dv.unit();
-      }
-    }
-#endif // COLVARS_USE_SOA
   }
-#ifdef COLVARS_USE_SOA
 #undef CALL_KERNEL
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -668,7 +584,6 @@ void colvar::distance_pairs::calc_gradients()
 
 void colvar::distance_pairs::apply_force(colvarvalue const &force)
 {
-#ifdef COLVARS_USE_SOA
 #define CALL_KERNEL(USE_PBC_MINIMUM_IMAGE) do {                         \
   auto group1_force_obj = group1->get_group_force_object();             \
   auto group2_force_obj = group2->get_group_force_object();             \
@@ -693,38 +608,12 @@ void colvar::distance_pairs::apply_force(colvarvalue const &force)
     group1_force_obj.add_atom_force(i1, f1);                            \
   }                                                                     \
 } while (0);
-#endif // COLVARS_USE_SOA
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
-#ifdef COLVARS_USE_SOA
     CALL_KERNEL(false);
-#else
-    size_t i1, i2;
-    for (i1 = 0; i1 < group1->size(); i1++) {
-      for (i2 = 0; i2 < group2->size(); i2++) {
-        cvm::rvector const dv = (*group2)[i2].pos - (*group1)[i1].pos;
-        (*group1)[i1].apply_force(force[i1*group2->size() + i2] * (-1.0) * dv.unit());
-        (*group2)[i2].apply_force(force[i1*group2->size() + i2] * dv.unit());
-      }
-    }
-#endif // COLVARS_USE_SOA
   } else {
-#ifdef COLVARS_USE_SOA
     CALL_KERNEL(true);
-#else
-    size_t i1, i2;
-    for (i1 = 0; i1 < group1->size(); i1++) {
-      for (i2 = 0; i2 < group2->size(); i2++) {
-        cvm::rvector const dv = cvm::position_distance((*group1)[i1].pos,
-                                                       (*group2)[i2].pos);
-        (*group1)[i1].apply_force(force[i1*group2->size() + i2] * (-1.0) * dv.unit());
-        (*group2)[i2].apply_force(force[i1*group2->size() + i2] * dv.unit());
-      }
-    }
-#endif // COLVARS_USE_SOA
   }
-#ifdef COLVARS_USE_SOA
 #undef CALL_KERNEL
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -779,18 +668,12 @@ void colvar::dipole_magnitude::calc_gradients()
 {
   cvm::real const aux1 = atoms->total_charge/atoms->total_mass;
   cvm::atom_pos const dipVunit = dipoleV.unit();
-#ifdef COLVARS_USE_SOA
   for (size_t i = 0; i < atoms->size(); ++i) {
     const cvm::rvector grad = (atoms->charge(i) - aux1 * atoms->mass(i)) * dipVunit;
     atoms->grad_x(i) = grad.x;
     atoms->grad_y(i) = grad.y;
     atoms->grad_z(i) = grad.z;
   }
-#else
-  for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
-    ai->grad = (ai->charge - aux1*ai->mass) * dipVunit;
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -814,14 +697,9 @@ int colvar::gyration::init(std::string const &conf)
     cvm::log("WARNING: explicit fitting parameters were provided for atom group \"atoms\".\n");
   } else {
     atoms->enable(f_ag_center);
-#ifdef COLVARS_USE_SOA
     std::vector<cvm::atom_pos> ref_pos_aos{cvm::atom_pos(0, 0, 0)};
     atoms->set_ref_pos_from_aos(ref_pos_aos);
     atoms->fit_gradients.assign(3 * atoms->size(), 0);
-#else
-    atoms->ref_pos.assign(1, cvm::atom_pos(0.0, 0.0, 0.0));
-    atoms->fit_gradients.assign(atoms->size(), cvm::rvector(0.0, 0.0, 0.0));
-#endif // COLVARS_USE_SOA
   }
 
   return error_code;
@@ -831,16 +709,10 @@ int colvar::gyration::init(std::string const &conf)
 void colvar::gyration::calc_value()
 {
   x.real_value = 0.0;
-#ifdef COLVARS_USE_SOA
   const size_t num_pos_xyz = 3 * atoms->size();
   for (size_t i = 0; i < num_pos_xyz; ++i) {
     x.real_value += atoms->pos_x(i) * atoms->pos_x(i);
   }
-#else
-  for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
-    x.real_value += (ai->pos).norm2();
-  }
-#endif // COLVARS_USE_SOA
   x.real_value = cvm::sqrt(x.real_value / cvm::real(atoms->size()));
 }
 
@@ -848,16 +720,10 @@ void colvar::gyration::calc_value()
 void colvar::gyration::calc_gradients()
 {
   cvm::real const drdx = 1.0/(cvm::real(atoms->size()) * x.real_value);
-#ifdef COLVARS_USE_SOA
   const size_t num_pos_xyz = 3 * atoms->size();
   for (size_t i = 0; i < num_pos_xyz; ++i) {
     atoms->grad_x(i) = drdx * atoms->pos_x(i);
   }
-#else
-  for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
-    ai->grad = drdx * ai->pos;
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -867,17 +733,11 @@ void colvar::gyration::calc_force_invgrads()
 
   cvm::real const dxdr = 1.0/x.real_value;
   ft.real_value = 0.0;
-#ifdef COLVARS_USE_SOA
   const size_t num_pos_xyz = 3 * atoms->size();
   for (size_t i = 0; i < num_pos_xyz; ++i) {
     ft.real_value += atoms->pos_x(i) * atoms->total_force_x(i);
   }
   ft.real_value *= dxdr;
-#else
-  for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
-    ft.real_value += dxdr * ai->pos * ai->total_force;
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -897,31 +757,19 @@ colvar::inertia::inertia()
 void colvar::inertia::calc_value()
 {
   x.real_value = 0.0;
-#ifdef COLVARS_USE_SOA
   const size_t num_pos_xyz = 3 * atoms->size();
   for (size_t i = 0; i < num_pos_xyz; ++i) {
     x.real_value += atoms->pos_x(i) * atoms->pos_x(i);
   }
-#else
-  for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
-    x.real_value += (ai->pos).norm2();
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
 void colvar::inertia::calc_gradients()
 {
-#ifdef COLVARS_USE_SOA
   const size_t num_pos_xyz = 3 * atoms->size();
   for (size_t i = 0; i < num_pos_xyz; ++i) {
     atoms->grad_x(i) = 2.0 * atoms->pos_x(i);
   }
-#else
-  for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
-    ai->grad = 2.0 * ai->pos;
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -951,7 +799,6 @@ int colvar::inertia_z::init(std::string const &conf)
 void colvar::inertia_z::calc_value()
 {
   x.real_value = 0.0;
-#ifdef COLVARS_USE_SOA
   for (size_t i = 0; i < atoms->size(); ++i) {
     const cvm::atom_pos pos(atoms->pos_x(i),
                             atoms->pos_y(i),
@@ -959,18 +806,11 @@ void colvar::inertia_z::calc_value()
     cvm::real const iprod = pos * axis;
     x.real_value += iprod * iprod;
   }
-#else
-  for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
-    cvm::real const iprod = ai->pos * axis;
-    x.real_value += iprod * iprod;
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
 void colvar::inertia_z::calc_gradients()
 {
-#ifdef COLVARS_USE_SOA
   for (size_t i = 0; i < atoms->size(); ++i) {
     const cvm::atom_pos pos(atoms->pos_x(i),
                             atoms->pos_y(i),
@@ -981,11 +821,6 @@ void colvar::inertia_z::calc_gradients()
     atoms->grad_y(i) = grad.y;
     atoms->grad_z(i) = grad.z;
   }
-#else
-  for (cvm::atom_iter ai = atoms->begin(); ai != atoms->end(); ai++) {
-    ai->grad = 2.0 * (ai->pos * axis) * axis;
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -1079,11 +914,7 @@ int colvar::rmsd::init(std::string const &conf)
     atoms->enable(f_ag_rotate);
     // default case: reference positions for calculating the rmsd are also those used
     // for fitting
-#ifdef COLVARS_USE_SOA
     atoms->set_ref_pos_from_aos(ref_pos);
-#else
-    atoms->ref_pos = ref_pos;
-#endif // COLVARS_USE_SOA
     atoms->center_ref_pos();
 
     cvm::log("This is a standard minimum RMSD, derivatives of the optimal rotation "
@@ -1150,34 +981,22 @@ void colvar::rmsd::calc_value()
   // rotational-translational fit is handled by the atom group
 
   x.real_value = 0.0;
-#ifdef COLVARS_USE_SOA
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     const cvm::atom_pos pos_ia(
       atoms->pos_x(ia), atoms->pos_y(ia), atoms->pos_z(ia));
     x.real_value += (pos_ia - ref_pos[ia]).norm2();
   }
-#else
-  for (size_t ia = 0; ia < atoms->size(); ia++) {
-    x.real_value += ((*atoms)[ia].pos - ref_pos[ia]).norm2();
-  }
-#endif // COLVARS_USE_SOA
   best_perm_index = 0;
 
   // Compute sum of squares for each symmetry permutation of atoms, keep the smallest
   size_t ref_pos_index = atoms->size();
   for (size_t ip = 1; ip < n_permutations; ip++) {
     cvm::real value = 0.0;
-#ifdef COLVARS_USE_SOA
     for (size_t ia = 0; ia < atoms->size(); ia++) {
       const cvm::atom_pos pos_ia(
         atoms->pos_x(ia), atoms->pos_y(ia), atoms->pos_z(ia));
       value += (pos_ia - ref_pos[ref_pos_index++]).norm2();
     }
-#else
-    for (size_t ia = 0; ia < atoms->size(); ia++) {
-      value += ((*atoms)[ia].pos - ref_pos[ref_pos_index++]).norm2();
-    }
-#endif // COLVARS_USE_SOA
     if (value < x.real_value) {
       x.real_value = value;
       best_perm_index = ip;
@@ -1196,7 +1015,6 @@ void colvar::rmsd::calc_gradients()
 
   // Use the appropriate symmetry permutation of reference positions to calculate gradients
   size_t const start = atoms->size() * best_perm_index;
-#ifdef COLVARS_USE_SOA
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     const cvm::atom_pos pos_ia(
       atoms->pos_x(ia), atoms->pos_y(ia), atoms->pos_z(ia));
@@ -1205,11 +1023,6 @@ void colvar::rmsd::calc_gradients()
     atoms->grad_y(ia) = grad.y;
     atoms->grad_z(ia) = grad.z;
   }
-#else
-  for (size_t ia = 0; ia < atoms->size(); ia++) {
-    (*atoms)[ia].grad = (drmsddx2 * 2.0 * ((*atoms)[ia].pos - ref_pos[start + ia]));
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -1219,16 +1032,10 @@ void colvar::rmsd::calc_force_invgrads()
   ft.real_value = 0.0;
 
   // Note: gradient square norm is 1/N_atoms
-#ifdef COLVARS_USE_SOA
   const size_t num_grad_xyz = 3 * atoms->size();
   for (size_t i = 0; i < num_grad_xyz; i++) {
     ft.real_value += atoms->grad_x(i) * atoms->total_force_x(i);
   }
-#else
-  for (size_t ia = 0; ia < atoms->size(); ia++) {
-    ft.real_value += (*atoms)[ia].grad * (*atoms)[ia].total_force;
-  }
-#endif // COLVARS_USE_SOA
   ft.real_value *= atoms->size();
 }
 
@@ -1377,11 +1184,7 @@ int colvar::eigenvector::init(std::string const &conf)
               "if this is not the desired behavior, disable them explicitly within the \"atoms\" block.\n");
     atoms->enable(f_ag_center);
     atoms->enable(f_ag_rotate);
-#ifdef COLVARS_USE_SOA
     atoms->set_ref_pos_from_aos(ref_pos);
-#else
-    atoms->ref_pos = ref_pos;
-#endif // COLVARS_USE_SOA
     atoms->center_ref_pos();
     atoms->disable(f_ag_fit_gradients); // cancel out if group is fitted on itself
                                         // and cvc is translationally invariant
@@ -1509,33 +1312,21 @@ int colvar::eigenvector::init(std::string const &conf)
 void colvar::eigenvector::calc_value()
 {
   x.real_value = 0.0;
-#ifdef COLVARS_USE_SOA
   for (size_t i = 0; i < atoms->size(); i++) {
     const cvm::atom_pos pos_i(
       atoms->pos_x(i), atoms->pos_y(i), atoms->pos_z(i));
     x.real_value += (pos_i - ref_pos[i]) * eigenvec[i];
   }
-#else
-  for (size_t i = 0; i < atoms->size(); i++) {
-    x.real_value += ((*atoms)[i].pos - ref_pos[i]) * eigenvec[i];
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
 void colvar::eigenvector::calc_gradients()
 {
-#ifdef COLVARS_USE_SOA
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     atoms->grad_x(ia) = eigenvec[ia].x;
     atoms->grad_y(ia) = eigenvec[ia].y;
     atoms->grad_z(ia) = eigenvec[ia].z;
   }
-#else
-  for (size_t ia = 0; ia < atoms->size(); ia++) {
-    (*atoms)[ia].grad = eigenvec[ia];
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -1543,18 +1334,11 @@ void colvar::eigenvector::calc_force_invgrads()
 {
   atoms->read_total_forces();
   ft.real_value = 0.0;
-#ifdef COLVARS_USE_SOA
   const size_t num_grad_xyz = 3 * atoms->size();
   for (size_t i = 0; i < num_grad_xyz; i++) {
     ft.real_value += atoms->grad_x(i) * atoms->total_force_x(i);
   }
   ft.real_value *= eigenvec_invnorm2;
-#else
-  for (size_t ia = 0; ia < atoms->size(); ia++) {
-    ft.real_value += eigenvec_invnorm2 * (*atoms)[ia].grad *
-      (*atoms)[ia].total_force;
-  }
-#endif // COLVARS_USE_SOA
 }
 
 
@@ -1655,13 +1439,9 @@ void colvar::cartesian::calc_value()
   size_t ia, j;
   for (ia = 0; ia < atoms->size(); ia++) {
     for (j = 0; j < dim; j++) {
-#ifdef COLVARS_USE_SOA
       const cvm::atom_pos pos_ia(
         atoms->pos_x(ia), atoms->pos_y(ia), atoms->pos_z(ia));
       x.vector1d_value[dim*ia + j] = pos_ia[axes[j]];
-#else
-      x.vector1d_value[dim*ia + j] = (*atoms)[ia].pos[axes[j]];
-#endif // COLVARS_USE_SOA
     }
   }
 }
