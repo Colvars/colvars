@@ -555,7 +555,9 @@ template<typename T1, typename T2, bool soa>
 void debug_gradients(
   cvm::rotation &rot,
   const std::vector<T1> &pos1,
-  const std::vector<T2> &pos2) {
+  const std::vector<T2> &pos2,
+  const size_t num_atoms_pos1,
+  const size_t num_atoms_pos2) {
   static_assert(
     std::is_same<T1, cvm::real>::value     ||
     std::is_same<T1, cvm::atom_pos>::value ||
@@ -597,7 +599,7 @@ void debug_gradients(
             ", Q3 = "+cvm::to_str(Q3, cvm::cv_width, cvm::cv_prec)+
             ", Q0*Q3 = "+cvm::to_str(Q0.inner(Q3), cvm::cv_width, cvm::cv_prec)+
             "\n");
-  rotation_derivative<T1, T2, soa> deriv(rot, pos1, pos2, pos1.size() / 3, pos2.size() / 3);
+  rotation_derivative<T1, T2, soa> deriv(rot, pos1, pos2, num_atoms_pos1, num_atoms_pos2);
   cvm::rvector dl0_2;
   cvm::vector1d<cvm::rvector> dq0_2(4);
   cvm::matrix2d<cvm::rvector> ds_2;

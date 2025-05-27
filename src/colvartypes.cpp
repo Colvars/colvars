@@ -299,7 +299,7 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
   calc_optimal_rotation_impl();
 
-  if (b_debug_gradients) debug_gradients<cvm::atom_pos, cvm::atom_pos, false>(*this, pos1, pos2);
+  if (b_debug_gradients) debug_gradients<cvm::atom_pos, cvm::atom_pos, false>(*this, pos1, pos2, pos1.size(), pos2.size());
 }
 
 void colvarmodule::rotation::calc_optimal_rotation_soa(
@@ -328,7 +328,7 @@ void colvarmodule::rotation::calc_optimal_rotation_soa(
     C.zz += pos1_z[i] * pos2_z[i];
   }
   calc_optimal_rotation_impl();
-  if (b_debug_gradients) debug_gradients<cvm::real, cvm::real, true>(*this, pos1, pos2);
+  if (b_debug_gradients) debug_gradients<cvm::real, cvm::real, true>(*this, pos1, pos2, num_atoms_pos1, num_atoms_pos2);
 }
 
 // Calculate the optimal rotation between two groups, and implement it

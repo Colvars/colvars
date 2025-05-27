@@ -1387,7 +1387,9 @@ public:
   friend void debug_gradients(
     cvm::rotation &rot,
     const std::vector<T1> &pos1,
-    const std::vector<T2> &pos2);
+    const std::vector<T2> &pos2,
+    const size_t num_atoms_pos1,
+    const size_t num_atoms_pos2);
 
   /// \brief Calculate the optimal rotation and store the
   /// corresponding eigenvalue and eigenvector in the arguments l0 and
