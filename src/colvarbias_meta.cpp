@@ -1182,19 +1182,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
     curr_bin = hills_energy->get_colvars_index(curr_values);
   }
 
-  bool index_ok = false;
-
-  if (use_grids) {
-
-    curr_bin = values ?
-      hills_energy->get_colvars_index(*values) :
-      hills_energy->get_colvars_index();
-
-    index_ok = hills_energy->index_ok(curr_bin);
-
-  }
-
-  if ( index_ok ) {
+  if (hills_energy->index_ok(curr_bin)) {
     for (ir = 0; ir < replicas.size(); ir++) {
       cvm::real const *f = &(replicas[ir]->hills_energy_gradients->value(curr_bin));
       for (ic = 0; ic < num_variables(); ic++) {
