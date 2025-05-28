@@ -78,11 +78,11 @@ EOF
     fi
 
     if [ "${label}" = "mpi" ] ; then
-        cmd+=(--charm-arch mpi-linux-${charm_arch_string})
+        cmd+=(--charm-arch mpi-linux-${charm_arch_string}-smp)
     fi
 
     if [ "${label}" = "netlrts" ] ; then
-        cmd+=(--charm-arch netlrts-linux-${charm_arch_string})
+        cmd+=(--charm-arch netlrts-linux-${charm_arch_string}-smp)
     fi
 
     if [ -z "${TCL_HOME}" ] ; then
@@ -103,6 +103,10 @@ EOF
         [ "x${python_version}" == "x3.8" ] ; then
         # Currently does not build with >= 3.9 API
         cmd+=(--with-python)
+    fi
+
+    if [ -d "/opt/libtorch" ] ; then
+        cmd+=(--with-colvars-torch --torch-prefix /opt/libtorch)
     fi
 
     eval ${cmd[@]}

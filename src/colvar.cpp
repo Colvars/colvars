@@ -2656,52 +2656,40 @@ std::ostream & colvar::write_traj_label(std::ostream & os)
 
 std::ostream & colvar::write_traj(std::ostream &os)
 {
-  os << " ";
+  os << " "
+     << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width);
   if (is_enabled(f_cv_output_value)) {
 
     if (is_enabled(f_cv_extended_Lagrangian) && !is_enabled(f_cv_external)) {
-      os << " "
-         << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-         << x;
+      os << " " << x;
     }
 
-    os << " "
-       << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-       << x_reported;
+    os << " " << x_reported;
   }
 
   if (is_enabled(f_cv_output_velocity)) {
 
     if (is_enabled(f_cv_extended_Lagrangian) && !is_enabled(f_cv_external)) {
-      os << " "
-         << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-         << v_fdiff;
+      os << " " << v_fdiff;
     }
 
-    os << " "
-       << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-       << v_reported;
+    os << " "  << v_reported;
   }
 
+  os <<  std::setprecision(cvm::en_prec) << std::setw(cvm::en_width);
+
   if (is_enabled(f_cv_output_energy)) {
-    os << " "
-       << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-       << potential_energy
-       << " "
-       << kinetic_energy;
+    os << " " << potential_energy
+       << " " << kinetic_energy;
   }
 
 
   if (is_enabled(f_cv_output_total_force)) {
-    os << " "
-       << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-       << ft_reported;
+    os << " " << ft_reported;
   }
 
   if (is_enabled(f_cv_output_applied_force)) {
-    os << " "
-       << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width)
-       << applied_force();
+    os << " " << applied_force();
   }
 
   return os;

@@ -408,22 +408,23 @@ int colvarmodule::parse_global_params(std::string const &conf)
       if (proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::cvcs) != COLVARS_OK) {
         cvm::error("Colvars component-based parallelism is not implemented.\n");
         return COLVARS_INPUT_ERROR;
-      } else {
-        cvm::log("SMP parallelism will be applied to Colvars components.\n");
-        cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
       }
     } else if (smp == "inner_loop") {
       if (proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::inner_loop) != COLVARS_OK) {
         cvm::error("SMP parallelism inside the calculation of Colvars components is not implemented.\n");
         return COLVARS_INPUT_ERROR;
-      } else {
-        cvm::log("SMP parallelism will be applied inside the Colvars components.\n");
-      cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
       }
     } else {
       proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::none);
       cvm::log("SMP parallelism has been disabled.\n");
     }
+  }
+  if (smp == "cvcs" || smp == "on" || smp == "yes") {
+    cvm::log("SMP parallelism will be applied to Colvars components.\n");
+    cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
+  } else if (smp == "inner_loop") {
+    cvm::log("SMP parallelism will be applied inside the Colvars components.\n");
+    cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
   }
 
   bool b_analysis = true;
@@ -2384,7 +2385,7 @@ template<typename T> std::string _to_str(T const &x,
 }
 
 
-template<typename T> std::string _to_str_vector(std::vector<T> const &x,
+template<typename T> std::string _to_str_vector(T const &x,
                                                 size_t width, size_t prec)
 {
   if (!x.size()) return std::string("");
@@ -2487,50 +2488,64 @@ std::string colvarmodule::to_str(cvm::matrix2d<cvm::real> const &x,
 std::string colvarmodule::to_str(std::vector<int> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<int>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<size_t> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<size_t>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<long int> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<long int>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<cvm::real> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<cvm::real>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<cvm::rvector> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<cvm::rvector>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<cvm::quaternion> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<cvm::quaternion>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<colvarvalue> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<colvarvalue>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
 
 std::string colvarmodule::to_str(std::vector<std::string> const &x,
                                  size_t width, size_t prec)
 {
-  return _to_str_vector<std::string>(x, width, prec);
+  return _to_str_vector(x, width, prec);
 }
+
+#if defined(COLVARS_CUDA)
+std::string colvarmodule::to_str(std::vector<cvm::real, CudaHostAllocator<cvm::real>> const &x,
+                                 size_t width, size_t prec)
+{
+  return _to_str_vector(x, width, prec);
+}
+
+std::string colvarmodule::to_str(std::vector<cvm::rvector, CudaHostAllocator<cvm::rvector>> const &x,
+                                 size_t width, size_t prec)
+{
+  return _to_str_vector(x, width, prec);
+}
+#endif
 
 
 std::string cvm::wrap_string(std::string const &s, size_t nchars)
