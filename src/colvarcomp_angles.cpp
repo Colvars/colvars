@@ -51,9 +51,6 @@ colvar::angle::angle(cvm::atom_group_soa::simple_atom const &a1,
     modify_group2.add_atom(a2);
     modify_group3.add_atom(a3);
   }
-  // group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
-  // group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
-  // group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
   register_atom_group(group1);
   register_atom_group(group2);
   register_atom_group(group3);
@@ -258,10 +255,6 @@ colvar::dihedral::dihedral(cvm::atom_group_soa::simple_atom const &a1,
     modify_group3.add_atom(a3);
     modify_group4.add_atom(a4);
   }
-  // group1 = new cvm::atom_group(std::vector<cvm::atom>(1, a1));
-  // group2 = new cvm::atom_group(std::vector<cvm::atom>(1, a2));
-  // group3 = new cvm::atom_group(std::vector<cvm::atom>(1, a3));
-  // group4 = new cvm::atom_group(std::vector<cvm::atom>(1, a4));
   register_atom_group(group1);
   register_atom_group(group2);
   register_atom_group(group3);
