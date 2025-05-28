@@ -288,6 +288,92 @@ int diagonalize_matrix(cvm::real m[4][4],
 #endif
 
 
+void colvarmodule::rotation::debug_gradients(
+  cvm::rotation &rot,
+  const std::vector<cvm::real> &pos1,
+  const std::vector<cvm::real> &pos2,
+  const size_t num_atoms_pos1,
+  const size_t num_atoms_pos2) {
+  // eigenvalues and eigenvectors
+  cvm::real const L0 = rot.S_eigval[0];
+  cvm::real const L1 = rot.S_eigval[1];
+  cvm::real const L2 = rot.S_eigval[2];
+  cvm::real const L3 = rot.S_eigval[3];
+  cvm::quaternion const Q0(rot.S_eigvec[0]);
+  cvm::quaternion const Q1(rot.S_eigvec[1]);
+  cvm::quaternion const Q2(rot.S_eigvec[2]);
+  cvm::quaternion const Q3(rot.S_eigvec[3]);
+
+  cvm::log("L0 = "+cvm::to_str(L0, cvm::cv_width, cvm::cv_prec)+
+            ", Q0 = "+cvm::to_str(Q0, cvm::cv_width, cvm::cv_prec)+
+            ", Q0*Q0 = "+cvm::to_str(Q0.inner(Q0), cvm::cv_width, cvm::cv_prec)+
+            "\n");
+  cvm::log("L1 = "+cvm::to_str(L1, cvm::cv_width, cvm::cv_prec)+
+            ", Q1 = "+cvm::to_str(Q1, cvm::cv_width, cvm::cv_prec)+
+            ", Q0*Q1 = "+cvm::to_str(Q0.inner(Q1), cvm::cv_width, cvm::cv_prec)+
+            "\n");
+  cvm::log("L2 = "+cvm::to_str(L2, cvm::cv_width, cvm::cv_prec)+
+            ", Q2 = "+cvm::to_str(Q2, cvm::cv_width, cvm::cv_prec)+
+            ", Q0*Q2 = "+cvm::to_str(Q0.inner(Q2), cvm::cv_width, cvm::cv_prec)+
+            "\n");
+  cvm::log("L3 = "+cvm::to_str(L3, cvm::cv_width, cvm::cv_prec)+
+            ", Q3 = "+cvm::to_str(Q3, cvm::cv_width, cvm::cv_prec)+
+            ", Q0*Q3 = "+cvm::to_str(Q0.inner(Q3), cvm::cv_width, cvm::cv_prec)+
+            "\n");
+  rotation_derivative deriv(rot, pos1, pos2, num_atoms_pos1, num_atoms_pos2);
+  cvm::rvector dl0_2;
+  cvm::vector1d<cvm::rvector> dq0_2(4);
+  cvm::matrix2d<cvm::rvector> ds_2;
+#ifdef COLVARS_LAMMPS
+    MathEigen::Jacobi<cvm::real,
+                      cvm::real[4],
+                      cvm::real[4][4]> *ecalc =
+        reinterpret_cast<MathEigen::Jacobi<cvm::real,
+                                           cvm::real[4],
+                                           cvm::real[4][4]> *>(rot.jacobi);
+#endif
+  deriv.prepare_derivative(rotation_derivative_dldq::use_dl | rotation_derivative_dldq::use_dq);
+  cvm::real S_new[4][4];
+  cvm::real S_new_eigval[4];
+  cvm::real S_new_eigvec[4][4];
+  // const size_t num_atoms = soa ? deriv.m_num_atoms_pos2 : pos2.size();
+  for (size_t ia = 0; ia < num_atoms_pos2; ++ia) {
+    deriv.template calc_derivative_wrt_group2<true, true, true>(ia, &dl0_2, &dq0_2, &ds_2);
+    // make an infitesimal move along each cartesian coordinate of
+    // this atom, and solve again the eigenvector problem
+    for (size_t comp = 0; comp < 3; comp++) {
+      std::memcpy(S_new, rot.S_backup, sizeof(cvm::real) * 4 * 4);
+      std::memset(S_new_eigval, 0, sizeof(cvm::real) * 4);
+      std::memset(S_new_eigvec, 0, sizeof(cvm::real) * 4 * 4);
+      for (size_t i = 0; i < 4; i++) {
+        for (size_t j = 0; j < 4; j++) {
+          S_new[i][j] +=
+            colvarmodule::debug_gradients_step_size * ds_2[i][j][comp];
+        }
+      }
+#ifdef COLVARS_LAMMPS
+      ecalc->Diagonalize(S_new, S_new_eigval, S_new_eigvec);
+#else
+      NR::diagonalize_matrix(S_new, S_new_eigval, S_new_eigvec);
+#endif
+      cvm::real const &L0_new = S_new_eigval[0];
+      cvm::quaternion const Q0_new(S_new_eigvec[0]);
+
+      cvm::real const DL0 = (dl0_2[comp]) * colvarmodule::debug_gradients_step_size;
+      cvm::quaternion const DQ0(dq0_2[0][comp] * colvarmodule::debug_gradients_step_size,
+                                dq0_2[1][comp] * colvarmodule::debug_gradients_step_size,
+                                dq0_2[2][comp] * colvarmodule::debug_gradients_step_size,
+                                dq0_2[3][comp] * colvarmodule::debug_gradients_step_size);
+
+      cvm::log(  "|(l_0+dl_0) - l_0^new|/l_0 = "+
+                cvm::to_str(cvm::fabs(L0+DL0 - L0_new)/L0, cvm::cv_width, cvm::cv_prec)+
+                ", |(q_0+dq_0) - q_0^new| = "+
+                cvm::to_str((Q0+DQ0 - Q0_new).norm(), cvm::cv_width, cvm::cv_prec)+
+                "\n");
+    }
+  }
+}
+
 // Calculate the rotation, plus its derivatives
 
 void colvarmodule::rotation::calc_optimal_rotation(
@@ -299,7 +385,12 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
   calc_optimal_rotation_impl();
 
-  if (b_debug_gradients) debug_gradients<cvm::atom_pos, cvm::atom_pos, false>(*this, pos1, pos2, pos1.size(), pos2.size());
+  if (b_debug_gradients) {
+    // debug_gradients<cvm::atom_pos, cvm::atom_pos, false>(*this, pos1, pos2, pos1.size(), pos2.size());
+    const std::vector<cvm::real> pos1_soa = cvm::atom_group_soa::pos_aos_to_soa(pos1);
+    const std::vector<cvm::real> pos2_soa = cvm::atom_group_soa::pos_aos_to_soa(pos2);
+    debug_gradients(*this, pos1_soa, pos2_soa, pos1.size(), pos2.size());
+  }
 }
 
 void colvarmodule::rotation::calc_optimal_rotation_soa(
@@ -328,7 +419,7 @@ void colvarmodule::rotation::calc_optimal_rotation_soa(
     C.zz += pos1_z[i] * pos2_z[i];
   }
   calc_optimal_rotation_impl();
-  if (b_debug_gradients) debug_gradients<cvm::real, cvm::real, true>(*this, pos1, pos2, num_atoms_pos1, num_atoms_pos2);
+  if (b_debug_gradients) debug_gradients(*this, pos1, pos2, num_atoms_pos1, num_atoms_pos2);
 }
 
 // Calculate the optimal rotation between two groups, and implement it

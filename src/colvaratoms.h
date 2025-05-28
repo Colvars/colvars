@@ -760,7 +760,7 @@ public:
   /// Total charge of the atom group
   cvm::real total_charge;
   /// Rotation derivative;
-  rotation_derivative<cvm::real, cvm::real, true>* rot_deriv;
+  rotation_derivative* rot_deriv;
   /// \brief Implementation of the feature list for atom group
   static std::vector<feature *> ag_features;
 private:

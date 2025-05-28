@@ -13,10 +13,10 @@
 #include "colvarcomp.h"
 #include "colvar_rotation_derivative.h"
 
-struct colvar::orientation::rotation_derivative_impl_: public rotation_derivative<cvm::real, cvm::real, true> {
+struct colvar::orientation::rotation_derivative_impl_: public rotation_derivative {
 public:
   rotation_derivative_impl_(colvar::orientation* orientation_cvc):
-   rotation_derivative<cvm::real, cvm::real, true>(
+   rotation_derivative(
     orientation_cvc->rot,
     orientation_cvc->ref_pos_soa,
     orientation_cvc->shifted_pos_soa,
