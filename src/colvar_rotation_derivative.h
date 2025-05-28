@@ -25,15 +25,6 @@ inline void read_atom_coord(
   *z = pos[ia].z;
 }
 
-template <typename T, typename std::enable_if<std::is_same<T, cvm::atom>::value, bool>::type = true>
-inline void read_atom_coord(
-  size_t ia, const std::vector<T>& pos,
-  cvm::real* _noalias x, cvm::real* _noalias y, cvm::real* _noalias z, size_t stride) {
-  *x = pos[ia].pos.x;
-  *y = pos[ia].pos.y;
-  *z = pos[ia].pos.z;
-}
-
 template <typename T, typename std::enable_if<std::is_same<T, cvm::real>::value, bool>::type = true>
 inline void read_atom_coord(
   size_t ia, const std::vector<T>& pos,

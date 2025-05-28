@@ -73,8 +73,6 @@ public:
 
   void init_tcl_pointers() override;
 
-  friend class cvm::atom;
-
   colvarproxy_namd();
   ~colvarproxy_namd();
 

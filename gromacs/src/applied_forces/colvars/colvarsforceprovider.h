@@ -170,8 +170,6 @@ private:
 
 
 public:
-    friend class cvm::atom;
-
     /*! \brief Construct ColvarsForceProvider from its parameters
      *
      * \param[in] colvarsConfigString Content of the colvars input file.
