@@ -1156,7 +1156,7 @@ void cvm::atom_group_soa::calc_apply_roto_translation()
 void cvm::atom_group_soa::setup_rotation_derivative() {
   if (rot_deriv != nullptr) delete rot_deriv;
   auto* group_for_fit = fitting_group ? fitting_group : this;
-  rot_deriv = new rotation_derivative<cvm::real, cvm::real, true>(
+  rot_deriv = new rotation_derivative(
     rot, group_for_fit->atoms_pos, ref_pos,
     group_for_fit->size(), num_ref_pos
   );
