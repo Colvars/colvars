@@ -15,10 +15,14 @@ proc ::cv_dashboard::check_version_file {} {
 
   # Download VERSION file from repo
   set version_url "https://raw.githubusercontent.com/$repo_user/$repo_name/$branch/vmd/cv_dashboard/VERSION"
-  set temp_file [file join [file dirname [info script]] "remote_version.txt"]
+  set temp_dir [get_local_dir]
+  file mkdir $temp_dir
+  set temp_file [file join $temp_dir "remote_version.txt"]
 
-  if {[catch {exec curl -L -o $temp_file $version_url 2>/dev/null}] &&
-      [catch {exec wget -O $temp_file $version_url 2>/dev/null}]} {
+  if {[catch {exec curl -L -s -o $temp_file $version_url}] &&
+      [catch {exec wget -O $temp_file $version_url}]} {
+    puts "exec curl -L -s -o $temp_file $version_url"
+    puts "exec wget -q -O $temp_file $version_url"
     error "Could not check version file"
   }
 
@@ -54,30 +58,49 @@ proc ::cv_dashboard::compare_versions {current latest} {
 }
 
 proc ::cv_dashboard::download_github_directory {user repo directory {branch "main"} {destdir "."}} {
-  set url "https://github.com/$user/$repo/archive/refs/heads/$branch.tar.gz"
-  set archive "[file join $destdir $repo.tar.gz]"
+  set url "https://github.com/$user/$repo/archive/refs/heads/$branch.zip"
+  set archive "[file join $destdir $repo.zip]"
   set temp_dir "[file join $destdir temp_$repo]"
 
   file mkdir $destdir
   file mkdir $temp_dir
 
-  # Download full repo
+  puts "Downloading $url"
+  # Download full repo as ZIP
   set downloaded 0
-  if {![catch {exec curl -L -o $archive $url 2>/dev/null}]} {
+  if {![catch {exec curl -L -s -o $archive $url}]} {
     set downloaded 1
-  } elseif {![catch {exec wget -O $archive $url 2>/dev/null}]} {
+  } elseif {![catch {exec wget -q -O $archive $url}]} {
     set downloaded 1
   } elseif {$::tcl_platform(platform) eq "windows" &&
-            ![catch {exec powershell -command "Invoke-WebRequest -Uri '$url' -OutFile '$archive'" 2>nul}]} {
+          ![catch {exec powershell -command "Invoke-WebRequest -Uri '$url' -OutFile '$archive'" 2>nul}]} {
     set downloaded 1
   }
 
   if {!$downloaded} {
-    error "Could not download: no suitable tool found"
+    error "Failed to download the repository archive."
   }
 
   # Extract to temp directory
-  exec tar -xzf $archive -C $temp_dir
+  set extracted 0
+
+  puts "Extracting archive..."
+  if {![catch {exec unzip -q $archive -d $temp_dir}]} {
+    set extracted 1
+  } elseif {$::tcl_platform(platform) eq "windows"} {
+    set ps_extract_script {
+      Add-Type -AssemblyName System.IO.Compression.FileSystem
+      [System.IO.Compression.ZipFile]::ExtractToDirectory('%ARCHIVE%', '%DEST%')
+    }
+    set ps_script [string map [list %ARCHIVE% $archive %DEST% $temp_dir] $ps_extract_script]
+    if {![catch {exec powershell -NoProfile -Command $ps_script}]} {
+      set extracted 1
+    }
+  }
+
+  if {!$extracted} {
+    error "Failed to extract ZIP archive."
+  }
   file delete $archive
 
   # Move specific directory to destination
