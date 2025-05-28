@@ -383,7 +383,6 @@ int cvm::atom_group_soa::atom_modifier::add_atom_numbers(std::string const &numb
       colvarproxy* const p = cvm::main()->proxy;
       for (size_t i = 0; i < atom_indexes.size(); i++) {
         add_atom(init_atom_from_proxy(p, atom_indexes[i]));
-        // add_atom(cvm::atom(atom_indexes[i]));
       }
     }
     if (cvm::get_error()) return COLVARS_ERROR;
@@ -412,7 +411,6 @@ int cvm::atom_group_soa::atom_modifier::add_atoms_of_group(atom_group_soa const 
         // We could use the atom copy constructor, but only if the source
         // group is not scalable - whereas this works in both cases
         // atom constructor expects 1-based atom number
-        // add_atom(cvm::atom(source_ids[i] + 1));
         add_atom(init_atom_from_proxy(p, source_ids[i] + 1));
       }
     }
@@ -459,7 +457,6 @@ int cvm::atom_group_soa::atom_modifier::add_index_group(std::string const &index
     m_atoms.reserve(m_atoms.size()+index_group.size());
     colvarproxy* const p = cvm::main()->proxy;
     for (size_t i = 0; i < index_group.size(); i++) {
-      // error_code |= add_atom(cvm::atom(index_group[i]));
       error_code |= add_atom(init_atom_from_proxy(p, index_group[i]));
     }
   }
@@ -486,7 +483,6 @@ int cvm::atom_group_soa::atom_modifier::add_atom_numbers_range(std::string const
         m_atoms.reserve(m_atoms.size() + (final - initial + 1));
         colvarproxy* const p = cvm::main()->proxy;
         for (int anum = initial; anum <= final; anum++) {
-          // add_atom(cvm::atom(anum));
           add_atom(init_atom_from_proxy(p, anum));
         }
       }
@@ -525,7 +521,6 @@ int cvm::atom_group_soa::atom_modifier::add_atom_name_residue_range(
         m_atoms.reserve(m_atoms.size() + (final - initial + 1));
         colvarproxy* const p = cvm::main()->proxy;
         for (int resid = initial; resid <= final; resid++) {
-          // add_atom(cvm::atom(resid, atom_name, psf_segid));
           add_atom(init_atom_from_proxy(p, resid, atom_name, psf_segid));
         }
       }
@@ -545,7 +540,6 @@ int cvm::atom_group_soa::atom_modifier::add_atom_name_residue_range(
 }
 
 void cvm::atom_group_soa::clear_soa() {
-  // Manually run cvm::atom::~atom()
   for (size_t i = 0; i < atoms_index.size(); ++i) {
     (cvm::main()->proxy)->clear_atom(atoms_index[i]);
   }
