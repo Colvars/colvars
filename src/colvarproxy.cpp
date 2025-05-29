@@ -535,9 +535,8 @@ int colvarproxy::parse_module_config()
   return error_code;
 }
 
-
 int colvarproxy::load_atoms_pdb(char const * /* filename */,
-                                cvm::atom_group & /* atoms */,
+                                cvm::atom_group_soa & /* atoms */,
                                 std::string const & /* pdb_field */,
                                 double /* pdb_field_value */)
 {
@@ -546,7 +545,6 @@ int colvarproxy::load_atoms_pdb(char const * /* filename */,
           engine_name() + ".\n",
       COLVARS_NOT_IMPLEMENTED);
 }
-
 
 int colvarproxy::load_coords_pdb(char const * /* filename */,
                                  std::vector<cvm::atom_pos> & /* pos */,

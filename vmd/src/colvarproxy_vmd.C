@@ -566,7 +566,7 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
 
 
 int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
-                                    cvm::atom_group &atoms,
+                                    cvm::atom_group_soa &atoms,
                                     std::string const &pdb_field_str,
                                     double const pdb_field_value)
 {
@@ -593,7 +593,7 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
   size_t const pdb_natoms = tmpmol->nAtoms;
 
   e_pdb_field pdb_field_index = pdb_field_str2enum(pdb_field_str);
-
+  auto modify_atoms = atoms.get_atom_modifier();
   for (size_t ipdb = 0; ipdb < pdb_natoms; ipdb++) {
 
     double atom_pdb_field_value = 0.0;
@@ -624,8 +624,7 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
     } else if (atom_pdb_field_value == 0.0) {
       continue;
     }
-
-    atoms.add_atom(cvm::atom(ipdb+1));
+    modify_atoms.add_atom(cvm::atom_group_soa::init_atom_from_proxy(this, ipdb+1));
   }
 
   vmd->molecule_delete(tmpmolid);
@@ -805,21 +804,18 @@ void colvarproxy_vmd::clear_volmap(int index)
 
 template<int flags>
 void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
-                                      cvm::atom_iter atom_begin,
-                                      cvm::atom_iter atom_end,
+                                      cvm::atom_group_soa* atoms,
                                       cvm::real *value,
                                       cvm::real *atom_field)
 {
   int i = 0;
   float coord[3], voxcoord[3], grad[3];
   cvm::rvector dV(0.0);
-  cvm::atom_iter ai = atom_begin;
   cvm::atom_pos const origin(0.0, 0.0, 0.0);
-
-  for ( ; ai != atom_end; ai++, i++) {
-
+  for (; i < atoms->size(); ++i) {
     // Wrap around the origin
-    cvm::rvector const wrapped_pos = position_distance(origin, ai->pos);
+    cvm::rvector const wrapped_pos = position_distance(
+      origin, cvm::atom_pos(atoms->pos_x(i), atoms->pos_y(i), atoms->pos_z(i)));
     coord[0] = internal_to_angstrom(wrapped_pos.x);
     coord[1] = internal_to_angstrom(wrapped_pos.y);
     coord[2] = internal_to_angstrom(wrapped_pos.z);
@@ -855,12 +851,17 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
     if (flags & volmap_flag_use_atom_field) {
       *value += V * atom_field[i];
       if (flags & volmap_flag_gradients) {
-        ai->grad += atom_field[i] * dV;
+        const cvm::rvector g = atom_field[i] * dV;
+        atoms->grad_x(i) += g.x;
+        atoms->grad_y(i) += g.y;
+        atoms->grad_z(i) += g.z;
       }
     } else {
       *value += V;
       if (flags & volmap_flag_gradients) {
-        ai->grad += dV;
+        atoms->grad_x(i) += dV.x;
+        atoms->grad_y(i) += dV.y;
+        atoms->grad_z(i) += dV.z;
       }
     }
   }
@@ -869,8 +870,7 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
 
 int colvarproxy_vmd::compute_volmap(int flags,
                                     int volmap_id,
-                                    cvm::atom_iter atom_begin,
-                                    cvm::atom_iter atom_end,
+                                    cvm::atom_group_soa* atoms,
                                     cvm::real *value,
                                     cvm::real *atom_field)
 {
@@ -883,11 +883,11 @@ int colvarproxy_vmd::compute_volmap(int flags,
       if (flags & volmap_flag_use_atom_field) {
         int const new_flags = volmap_flag_gradients |
           volmap_flag_use_atom_field;
-        compute_voldata<new_flags>(voldata, atom_begin, atom_end,
+        compute_voldata<new_flags>(voldata, atoms,
                                    value, atom_field);
       } else {
         int const new_flags = volmap_flag_gradients;
-        compute_voldata<new_flags>(voldata, atom_begin, atom_end,
+        compute_voldata<new_flags>(voldata, atoms,
                                    value, NULL);
       }
 
@@ -895,11 +895,11 @@ int colvarproxy_vmd::compute_volmap(int flags,
 
       if (flags & volmap_flag_use_atom_field) {
         int const new_flags = volmap_flag_use_atom_field;
-        compute_voldata<new_flags>(voldata, atom_begin, atom_end,
+        compute_voldata<new_flags>(voldata, atoms,
                                    value, atom_field);
       } else {
         int const new_flags = volmap_flag_null;
-        compute_voldata<new_flags>(voldata, atom_begin, atom_end,
+        compute_voldata<new_flags>(voldata, atoms,
                                    value, NULL);
       }
     }
