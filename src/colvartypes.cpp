@@ -338,7 +338,7 @@ void colvarmodule::rotation::debug_gradients(
   cvm::real S_new_eigvec[4][4];
   // const size_t num_atoms = soa ? deriv.m_num_atoms_pos2 : pos2.size();
   for (size_t ia = 0; ia < num_atoms_pos2; ++ia) {
-    deriv.template calc_derivative_wrt_group2<true, true, true>(ia, &dl0_2, &dq0_2, &ds_2);
+    deriv.calc_derivative_wrt_group2<true, true, true>(ia, &dl0_2, &dq0_2, &ds_2);
     // make an infitesimal move along each cartesian coordinate of
     // this atom, and solve again the eigenvector problem
     for (size_t comp = 0; comp < 3; comp++) {
