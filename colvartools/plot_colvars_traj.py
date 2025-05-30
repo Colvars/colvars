@@ -3,7 +3,7 @@
 # Invoke this script with --help for documentation.
 
 # Download link: https://github.com/Colvars/colvars/blob/master/colvartools/plot_colvars_traj.py?raw=true
-# This version was modified on: 2024-01-16
+# This version was modified on: 2025-05-30
 # Contact: giacomo.fiorin@gmail.com
 
 from __future__ import print_function
@@ -156,12 +156,11 @@ class Colvars_traj(object):
             self._end[self._keys[i-1]] = pos
         self._end[self._keys[-1]] = -1
 
-    def _parse_line(self, line, dict_buffer):
+    def _parse_line(self, step, line, dict_buffer):
         """
         Read in a data line from a colvars.traj file
         """
 
-        step = np.int64(line[0:self._end['step']])
         for v in self._keys[1:]:
             text = line[self._start[v]:self._end[v]].strip()
             if (v not in dict_buffer):
@@ -175,8 +174,9 @@ class Colvars_traj(object):
             dict_buffer[v]['cv_values'].append(v_v)
             dict_buffer[v]['cv_step'].append(step)
 
+
     def read_files(self, filenames, list_variables=False,
-                   first=0, last=None, every=1):
+                   first=0, last=None, every=1, concatenate_steps=False):
         """
         Read a series of colvars.traj files.
         filenames : list of strings
@@ -197,6 +197,7 @@ class Colvars_traj(object):
         else:
             last = np.int64(last)
 
+        step_offset = 0
         last_step = -1
         for f in [open(filename) for filename in filenames]:
 
@@ -218,13 +219,19 @@ class Colvars_traj(object):
 
                 step = np.int64(line[0:self._end['step']])
 
+                if step == 0 and last_step > 0 and concatenate_steps:
+                    step_offset = last_step
+
+                step += step_offset
+
                 if step == last_step:
-                    # Detect duplicated frames (upon restart)
+                    # Skip duplicated frames (upon restart)
                     continue
 
                 if ((self._frame >= first) and (self._frame <= last) and
                     (self._frame % every == 0)):
-                    self._parse_line(line, dict_buffer)
+                    self._parse_line(step, line, dict_buffer)
+
                 self._frame += 1
                 last_step = step
 
@@ -234,6 +241,7 @@ class Colvars_traj(object):
                 cv._step = np.concatenate((cv.steps, dict_buffer[key]['cv_step']), axis=0)
                 cv._colvar = np.concatenate((cv.values, dict_buffer[key]['cv_values']), axis=0)
             f.close()
+
 
     def as_pandas(self, keys=None):
         """
@@ -306,6 +314,12 @@ if (__name__ == '__main__'):
                         'variables to write or plot.',
                         default=[])
 
+    parser.add_argument('--concatenate-steps',
+                        action='store_true',
+                        help="For simulations where the individual jobs were not restarted, "
+                        "make the series of time steps continuous",
+                        default=False)
+
     parser.add_argument('--list-variables',
                         action='store_true',
                         help='List all names of collective variables '
@@ -366,7 +380,8 @@ if (__name__ == '__main__'):
                                 list_variables=args.list_variables,
                                 first=args.first,
                                 last=args.last,
-                                every=args.skip)
+                                every=args.skip,
+                                concatenate_steps=args.concatenate_steps)
 
     if (args.list_variables):
         print(r)
