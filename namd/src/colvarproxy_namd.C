@@ -80,6 +80,7 @@ colvarproxy_namd::colvarproxy_namd()
 
   update_target_temperature();
   set_integration_timestep(simparams->dt);
+  set_time_step_factor(simparams->globalMasterFrequency);
 
   random = Random(simparams->randomSeed);
 
@@ -362,8 +363,8 @@ void colvarproxy_namd::calculate()
   } else {
 
     // Use the time step number inherited from GlobalMaster
-    if ( step - previous_NAMD_step == 1 ) {
-      colvars->it++;
+    if ( step - previous_NAMD_step == time_step_factor() ) {
+      colvars->it += time_step_factor();
       b_simulation_continuing = false;
     } else {
 
