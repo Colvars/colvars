@@ -188,7 +188,7 @@ cvm::rvector colvarproxy_lammps::position_distance(cvm::atom_pos const &pos1,
   double xtmp = pos2.x - pos1.x;
   double ytmp = pos2.y - pos1.y;
   double ztmp = pos2.z - pos1.z;
-  _lmp->domain->minimum_image_big(xtmp,ytmp,ztmp);
+  _lmp->domain->minimum_image_big(FLERR, xtmp,ytmp,ztmp);
   return {xtmp, ytmp, ztmp};
 }
 
