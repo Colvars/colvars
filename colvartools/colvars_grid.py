@@ -535,6 +535,9 @@ class colvars_grid:
 
     def count_gradient_increments(self):
         ''' Compute and return incremental sample count and gradient estimate from a time series
+            that is, gradient and counts that were accumulated in the time segment between two
+            successive points in the series.
+            This can be  useful for fine analysis of convergence.
         '''
 
         gradient = self
