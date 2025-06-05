@@ -3,6 +3,8 @@
 # TODO check later for headers in the dependencies; conditional compilation
 # may give false results
 
+echo "Checking Colvars build recipes for NAMD and VMD, which do not use CMake"
+
 pushd $(git rev-parse --show-toplevel) 1> /dev/null
 retcode=0
 for f in src/colvar*.cpp src/colvar*.h ; do
@@ -18,22 +20,11 @@ for f in src/colvar*.cpp src/colvar*.h ; do
             echo "Error: ${prefix}.o entry missing from namd/colvars/src/Makefile.namd" >&2
             retcode=1
         fi
-        if ! grep -q ${f} lammps/lib/colvars/Makefile.common ; then
-            echo "Error: ${f} missing from lammps/lib/colvars/Makefile.common" >&2
-            retcode=1
-        fi
-        if ! grep -q "\$(COLVARS_OBJ_DIR)${prefix}.o" lammps/lib/colvars/Makefile.deps ; then
-            echo "Error: \$(COLVARS_OBJ_DIR)${prefix}.o missing from lammps/lib/colvars/Makefile.deps" >&2
-            retcode=1
-        fi
     else
         prefix=${f%.h}
         vmd_source=${f}
         if ! grep -q "colvars/src/${f}" namd/colvars/Make.depends ; then
             echo "Warning: colvars/src/${f} missing from namd/colvars/Make.depends" >&2
-        fi
-        if ! grep -q ${f} lammps/lib/colvars/Makefile.deps ; then
-            echo "Warning: ${f} missing from lammps/lib/colvars/Makefile.deps" >&2
         fi
     fi
     if ! grep -q ${vmd_source} vmd/src/colvars_files.pl ; then

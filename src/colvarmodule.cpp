@@ -764,38 +764,32 @@ colvar *colvarmodule::colvar_by_name(std::string const &name)
   return NULL;
 }
 
-
-cvm::atom_group *colvarmodule::atom_group_by_name(std::string const &name)
-{
+cvm::atom_group_soa *colvarmodule::atom_group_soa_by_name(std::string const& name) {
   colvarmodule *cv = cvm::main();
-  for (std::vector<cvm::atom_group *>::iterator agi = cv->named_atom_groups.begin();
-       agi != cv->named_atom_groups.end();
+  for (std::vector<cvm::atom_group_soa *>::iterator agi = cv->named_atom_groups_soa.begin();
+       agi != cv->named_atom_groups_soa.end();
        agi++) {
     if ((*agi)->name == name) {
       return (*agi);
     }
   }
-  return NULL;
+  return nullptr;
 }
 
-
-void colvarmodule::register_named_atom_group(atom_group *ag) {
-  named_atom_groups.push_back(ag);
+void colvarmodule::register_named_atom_group_soa(atom_group_soa *ag) {
+  named_atom_groups_soa.push_back(ag);
 }
 
-
-void colvarmodule::unregister_named_atom_group(cvm::atom_group *ag)
-{
-  for (std::vector<cvm::atom_group *>::iterator agi = named_atom_groups.begin();
-       agi != named_atom_groups.end();
+void colvarmodule::unregister_named_atom_group_soa(atom_group_soa *ag) {
+  for (std::vector<cvm::atom_group_soa *>::iterator agi = named_atom_groups_soa.begin();
+       agi != named_atom_groups_soa.end();
        agi++) {
     if (*agi == ag) {
-      named_atom_groups.erase(agi);
+      named_atom_groups_soa.erase(agi);
       break;
     }
   }
 }
-
 
 int colvarmodule::change_configuration(std::string const &bias_name,
                                        std::string const &conf)
@@ -1338,7 +1332,7 @@ colvarmodule::~colvarmodule()
     colvarbias::delete_features();
     colvar::delete_features();
     colvar::cvc::delete_features();
-    atom_group::delete_features();
+    atom_group_soa::delete_features();
 
     delete
       reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_);
@@ -2189,10 +2183,9 @@ int colvarmodule::reset_index_groups()
   return COLVARS_OK;
 }
 
-
 int cvm::load_coords(char const *file_name,
                      std::vector<cvm::rvector> *pos,
-                     cvm::atom_group *atoms,
+                     cvm::atom_group_soa *atoms,
                      std::string const &pdb_field,
                      double pdb_field_value)
 {
@@ -2230,10 +2223,9 @@ int cvm::load_coords(char const *file_name,
   return error_code;
 }
 
-
 int cvm::load_coords_xyz(char const *filename,
                          std::vector<rvector> *pos,
-                         cvm::atom_group *atoms,
+                         cvm::atom_group_soa *atoms,
                          bool keep_open)
 {
   std::istream &xyz_is = proxy->input_stream(filename, "XYZ file");
@@ -2340,8 +2332,6 @@ int cvm::load_coords_xyz(char const *filename,
     return proxy->close_input_stream(filename);
   }
 }
-
-
 
 // Wrappers to proxy functions: these may go in the future
 

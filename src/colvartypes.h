@@ -1380,14 +1380,20 @@ public:
   /// \brief The rotation itself (implemented as a quaternion)
   cvm::quaternion q;
 
-  template <typename T1, typename T2>
   friend struct rotation_derivative;
 
-  template<typename T1, typename T2>
-  friend void debug_gradients(
+  /*! @brief  Function for debugging gradients
+   *  @param[in]  pos1  Atom positions of group 1 in SOA (in xxxyyyzzz order)
+   *  @param[in]  pos2  Atom positions of group 2 in SOA (in xxxyyyzzz order)
+   *  @param[in]  num_atoms_pos1 Number of atoms of group 1
+   *  @param[in]  num_atoms_pos2 Number of atoms of group 2
+   */
+  void debug_gradients(
     cvm::rotation &rot,
-    const std::vector<T1> &pos1,
-    const std::vector<T2> &pos2);
+    const std::vector<cvm::real> &pos1,
+    const std::vector<cvm::real> &pos2,
+    const size_t num_atoms_pos1,
+    const size_t num_atoms_pos2);
 
   /// \brief Calculate the optimal rotation and store the
   /// corresponding eigenvalue and eigenvector in the arguments l0 and
@@ -1401,8 +1407,11 @@ public:
   /// DOI: 10.1002/jcc.20110  PubMed: 15376254
   void calc_optimal_rotation(std::vector<atom_pos> const &pos1,
                              std::vector<atom_pos> const &pos2);
-  void calc_optimal_rotation(std::vector<cvm::atom> const &pos1,
-                             std::vector<atom_pos> const &pos2);
+  void calc_optimal_rotation_soa(
+    std::vector<cvm::real> const &pos1,
+    std::vector<cvm::real> const &pos2,
+    const size_t num_atoms_pos1,
+    const size_t num_atoms_pos2);
 
   /// Initialize member data
   int init();
@@ -1536,8 +1545,6 @@ protected:
 
   /// Build the correlation matrix C (used by calc_optimal_rotation())
   void build_correlation_matrix(std::vector<cvm::atom_pos> const &pos1,
-                                std::vector<cvm::atom_pos> const &pos2);
-  void build_correlation_matrix(std::vector<cvm::atom> const &pos1,
                                 std::vector<cvm::atom_pos> const &pos2);
 
   /// \brief Actual implementation of `calc_optimal_rotation` (and called by it)
