@@ -1,0 +1,41 @@
+colvarsTrajFrequency    1
+
+indexFile ../Common/da.ndx
+
+
+colvar {
+
+    name d
+
+    outputAppliedForce on
+    width 0.5
+
+    lowerBoundary 0.0
+    upperBoundary 3.0
+
+    upperWall 2.5
+    upperWallConstant 4.184
+
+    distance {
+        group1 {
+            indexGroup Protein_C-alpha_1
+        }
+        group2 {
+            indexGroup Protein_C-alpha_10
+        }
+    }
+} 
+
+
+metadynamics {
+    colvars d
+
+    hillWeight 0.01
+    hillWidth      1.2533141373155001  # Old default
+    newHillFrequency 10
+
+    multipleReplicas  yes
+    replicaID         rep2
+    replicasRegistry  replicas.registry.txt
+    replicaUpdateFrequency 10
+}

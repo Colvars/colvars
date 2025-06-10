@@ -87,7 +87,11 @@ DIFF_PREC=6
 MIN_PREC=1
 
 cleanup_files() {
-  for script in test.tpr test.restart.tpr ; do
+  local -a scripts=("$*")
+  if [ -n "${1}" ] ; then
+    scripts=(test.tpr test.restart.tpr)
+  fi
+  for script in ${scripts[@]} ; do
     for f in ${script%.tpr}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
     rm -f ${script%.tpr}.*{BAK,old,backup}
     for f in ${script%.tpr}.*{state,state.dat,state.stripped,out,traj,histogram?.dat,histogram?.dx,corrfunc.dat,pmf}
@@ -98,7 +102,7 @@ cleanup_files() {
     rm -f
     rm -f *.out *.out.diff *.err # Delete output files regardless
     rm -f *.ndx *.xyz
-    rm -f test.dat
+    rm -f ${script%.tpr}.dat
   done
 }
 
@@ -143,34 +147,45 @@ for dir in ${DIRLIST} ; do
 
   cleanup_files
 
-  # Run simulation(s)
-  for basename in test test.restart ; do
+  simulations=(test test.restart)
+  if [ ${dir##*/} == "000_multiple_walkers_mtd" ] ; then
+    simulations=(test{.rep1,.rep2} test{.rep1,.rep2}.restart)
+  fi
 
-    # Input files
-    # Symbolink link to the colvars input file, index file, and xyz file
-    ln -sf test.in test.dat
-    ln -sf ../Common/da.ndx index.ndx
-    if grep -q "refPositionsFile rmsd_" test.dat
-    then
+  # Run simulation(s)
+  for basename in ${simulations[@]} ; do
+
+    # Create symlinks to the Colvars config file, index file, and xyz file
+    if [ -f ${basename}.in ] ; then
+      ln -sf ${basename}.in ${basename}.dat
+      ln -sf ../Common/da.ndx index.ndx
+      if grep -q "refPositionsFile rmsd_" ${basename}.dat
+      then
         ln -fs ../Common/rmsd_atoms_refpos.xyz ./
         ln -fs ../Common/rmsd_atoms_refpos2.xyz ./
         ln -fs ../Common/rmsd_atoms_random.xyz ./
-    fi
-    if grep -q "refPositionsFile heavy_" test.dat
-    then
+      fi
+      if grep -q "refPositionsFile heavy_" ${basename}.dat
+      then
         ln -fs ../Common/heavy_atoms_refpos.xyz heavy_atoms_refpos.xyz
+      fi
     fi
 
     # Try running the test
 
-
-    if [ "${basename}" == "test" ] ; then
-      ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+    if [ "${basename%.restart}" == "${basename}" ] ; then
+      # Initial run
+      MDP=../Common/test.mdp
+      if [ -f ${basename}.mdp ] ; then
+        MDP=${basename}.mdp
+      fi
+      ${BINARY} grompp -f ${MDP} -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
       ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} 2> ${basename}.err 1> ${basename}.out
       RETVAL=$?
     fi
 
-    if [ "${basename}" == "test.restart" ] ; then
+    if [ "${basename%.restart}" != "${basename}" ] ; then
+      # Restart run
 
       if [ -n "${FORCE_INPUT_STATE_FILE}" ] ; then
 
@@ -308,7 +323,7 @@ for dir in ${DIRLIST} ; do
     else
       echo " $(${TPUT_GREEN})Success!$(${TPUT_CLEAR})"
     fi
-    cleanup_files
+    cleanup_files ${simulations[@]}
   fi
 
   # # TODO: at this point, we may use the diff file to update the reference tests for harmless changes
