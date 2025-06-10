@@ -1,0 +1,44 @@
+metadynamics {
+  configuration {
+    step 20
+    name metadynamics1
+replicaID rep2
+  }
+
+hills_energy
+grid_parameters {
+  n_colvars 1
+  lower_boundaries  0
+  upper_boundaries  3
+  widths  0.5
+  sizes  6
+}
+ 1.11506217646254e-05 1.50258772652465e-03 1.58736498345797e-02
+ 1.31465005336798e-02 8.53571535087651e-04 4.34476050209705e-06
+
+hills_energy_gradients
+grid_parameters {
+  n_colvars 1
+  lower_boundaries  0
+  upper_boundaries  3
+  widths  0.5
+  sizes  6
+}
+ 1.37742239281998e-04 1.09101696819121e-02 3.44294188452561e-02
+ -3.84270412316102e-02 -6.84132462379211e-03 -5.69463206971664e-05
+hill {
+step           10
+weight  1.00000000000000e-02
+centers   1.46738163082984e+00
+widths   6.26657068657750e-01
+replicaID rep2
+}
+hill {
+step           20
+weight  1.00000000000000e-02
+centers   1.45857806111885e+00
+widths   6.26657068657750e-01
+replicaID rep2
+}
+}
+
