@@ -1,7 +1,7 @@
 #include "colvargrid_integrate.h"
 #include <iostream>
 #include <iomanip>
-
+// #include <omp.h>
 
 // Helper function to print vector<int>
 std::string vec_to_string(const std::vector<int> &vec)
@@ -84,6 +84,7 @@ colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient>
   else {
     computation_grid->periodic = periodic;
     computation_grid->setup(computation_nx);
+    // this -> data.clear();
   }
 
 
@@ -165,6 +166,7 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
       cvm::log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
     if (weighted && need_to_extrapolate_weighted_solution) {
       std::cout << "extrapolating potential" << std::endl;
+      // this->data.resize(nt);
       extrapolate_potential();
       std::cout << "potential extrapolated" << std::endl;
     }
@@ -280,6 +282,42 @@ void colvargrid_integrate::set_weighted_div()
     }
     m = static_cast<double>(sum_count)/ n_points / 1.5;
     std::cout << "mean: " << m * 1.5 << " lower_threshold: " << lower_threshold_count<< " upper threshold:" << upper_threshold_count << std::endl;
+  regularized_weights.resize(gradients->nt);
+  for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
+        gradients->incr(ix)) {
+    regularized_weights[gradients->address(ix)] = get_regularized_weight(ix);}
+
+  laplacian_coefficients.resize(computation_grid->data.size() * laplacian_stencil.size());
+  // laplacian_matrix_test = std::vector<cvm::real>(computation_nt*computation_nt, 0);
+  std::vector<int> neighbor_coordinate(nd);
+  std::vector<int> reference_point_coordinates(nd);
+  std::vector<cvm::real> averaged_normal_vector(nd);
+  cvm::real multiplicity = laplacian_stencil.size();
+
+  for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
+        computation_grid->incr(ix)) {
+      for (size_t i = 0; i < laplacian_stencil.size(); i++){
+        std::vector<int> neighbor_relative_position = laplacian_stencil[i];
+        for(size_t dim = 0; dim < nd; dim++){
+          neighbor_coordinate[dim] = ix[dim] + neighbor_relative_position[dim];
+        }
+        cvm::real coefficient = 0;
+        // Calculation of the laplacian coefficient
+        // coefficient = calculate_weight_sum(neighbor_coordinate,weight_stencil[i]); --> Simpler but longer to compute
+        // but only once
+        for (std::vector<int> direction : weight_stencil[i]) {
+          std::vector<int> weight_coordinate = neighbor_coordinate; // Initialize with stencil_point instead of size
+          for (size_t n = 0; n < nd && n < direction.size(); n++) {
+            weight_coordinate[n] += direction[n];
+          }
+          gradients->wrap_detect_edge(weight_coordinate);
+          coefficient += regularized_weights[gradients->address(weight_coordinate)] - m;
+        }
+        coefficient *= weight_counts[i] / pow(2, (nd-1)*2);
+        coefficient+= neighbor_in_classic_laplacian_stencil[i] * m;
+        laplacian_coefficients[computation_grid->address(ix)*multiplicity + i] += coefficient;
+    }
+  }
     for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
         computation_grid->incr(ix)) {
       update_weighted_div_local(ix);
@@ -435,7 +473,7 @@ Updates the divergence at the point ix0
 
     gradients->wrap_detect_edge(surrounding_point_coordinates);
     get_regularized_F(gradient_at_surrounding_point, surrounding_point_coordinates);
-    cvm::real weight = get_regularized_weight(surrounding_point_coordinates);
+    cvm::real weight = regularized_weights[gradients->address(surrounding_point_coordinates)];
 
     for (size_t i = 0; i < nd; i++) {
       div_at_point +=
@@ -866,47 +904,62 @@ void colvargrid_integrate::asolve(const std::vector<cvm::real> &b, std::vector<c
 /// NOTE: Laplacian must be symmetric for solving with CG
 template<bool initialize_div_supplement> void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA)
 {
-  if (initialize_div_supplement){
+  if (initialize_div_supplement) {
     div_border_supplement.resize(divergence.size());
   }
-  for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix); computation_grid->incr(ix)){
-    LA[computation_grid->address(ix)] = 0;
-    if (initialize_div_supplement){
-      div_border_supplement[computation_grid->address(ix)] = 0;
+    for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix); computation_grid->incr(ix)){
+      LA[computation_grid->address(ix)] = 0;
+      if (initialize_div_supplement)
+        div_border_supplement[computation_grid->address(ix)] = 0;
     }
-  }
+
   // laplacian_matrix_test = std::vector<cvm::real>(computation_nt*computation_nt, 0);
-  for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
-        computation_grid->incr(ix)) {
+  std::vector<int> neighbor_coordinate(nd);
+  std::vector<int> reference_point_coordinates(nd);
+  std::vector<cvm::real> averaged_normal_vector(nd);
+  cvm::real multiplicity = laplacian_stencil.size();
+
+  // #pragma omp parallel for
+  for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);computation_grid->incr(ix)) {
+
       for (size_t i = 0; i < laplacian_stencil.size(); i++){
         std::vector<int> neighbor_relative_position = laplacian_stencil[i];
-        std::vector<int> neighbor_coordinate(nd, 0);
         for(size_t dim = 0; dim < nd; dim++){
           neighbor_coordinate[dim] = ix[dim] + neighbor_relative_position[dim];
         }
         bool virtual_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
-        cvm::real coefficient = calculate_weight_sum(neighbor_coordinate, weight_stencil[i])
-                                * weight_counts[i] / pow(2, (nd-1)*2);
-        cvm::real coefficient_regular_laplacian = neighbor_in_classic_laplacian_stencil[i];
-        coefficient+= coefficient_regular_laplacian * m;
+        cvm::real coefficient = laplacian_coefficients[computation_grid->address(ix)*multiplicity + i];
+        // // Calculation of the laplacian coefficient
+        // for (std::vector<int> direction : weight_stencil[i]) {
+        //   std::vector<int> weight_coordinate = neighbor_coordinate; // Initialize with stencil_point instead of size
+        //   for (size_t n = 0; n < nd && n < direction.size(); n++) {
+        //     weight_coordinate[n] += direction[n];
+        //   }
+        //   gradients->wrap_detect_edge(weight_coordinate);
+        //   coefficient += regularized_weights[gradients->address(weight_coordinate)] - m;
+        // }
+        // coefficient *= weight_counts[i] / pow(2, (nd-1)*2);
+        // coefficient+= neighbor_in_classic_laplacian_stencil[i] * m;
+
         if (!virtual_point) {
+          // #pragma omp atomic
           LA[computation_grid->address(ix)] += coefficient * A[computation_grid->address(neighbor_coordinate)];
           // TODO: delete this after testing
           // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
         } else {
-          std::vector<int> reference_point_coordinates(nd,0);
           computation_grid->wrap_to_edge(neighbor_coordinate, reference_point_coordinates);
+          // #pragma omp atomic
           LA[computation_grid->address(ix)] += coefficient * A[computation_grid->address(reference_point_coordinates)];
           // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(reference_point_coordinates)] += coefficient;
 
-          cvm::real div_supplement_term = 0;
           if (initialize_div_supplement){
-            std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradients(neighbor_coordinate);
+            cvm::real div_supplement_term = 0;
+            averaged_normal_vector = compute_averaged_border_normal_gradients(neighbor_coordinate);
             for (size_t dim = 0; dim < nd; dim++){
               div_supplement_term += averaged_normal_vector[dim] * neighbor_relative_position[dim] * widths[dim];
             }
+            div_border_supplement[computation_grid->address(ix)] -= div_supplement_term* coefficient;
           }
-          div_border_supplement[computation_grid->address(ix)] -= div_supplement_term* coefficient;
         }
     }
   }
@@ -1073,7 +1126,7 @@ void colvargrid_integrate::get_regularized_F(std::vector<cvm::real> &F, std::vec
   }
 }
 
-cvm::real colvargrid_integrate::calculate_weight_sum(std::vector<int> stencil_point,
+inline cvm::real colvargrid_integrate::calculate_weight_sum(std::vector<int> stencil_point,
                                                 std::vector<std::vector<int>> directions)
 /*
   This function is used to calculate the sum of the weights for a given point of the stencil
@@ -1090,14 +1143,8 @@ cvm::real colvargrid_integrate::calculate_weight_sum(std::vector<int> stencil_po
     for (size_t i = 0; i < nd && i < direction.size(); i++) {
       weight_coordinate[i] += direction[i];
     }
-    // bool test = stencil_point[0] == 128 && stencil_point[1] == 118;
-
     gradients->wrap_detect_edge(weight_coordinate);
-    weight_sum += get_regularized_weight(weight_coordinate) - m;
-    // if (test){
-    //   std::cout << "weight_coordinate: " << vec_to_string(weight_coordinate) << std::endl;
-    //   std::cout << "weight_sum: " << weight_sum << std::endl;
-    // }
+    weight_sum += regularized_weights[gradients->address(weight_coordinate)] - m;
   }
   return weight_sum;
 }
