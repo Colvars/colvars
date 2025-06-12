@@ -85,6 +85,7 @@ for colvar in "distance" ; do
         "harmonicwalls-both-k-moving" \
         "linear-fixed" \
         "linear-k-moving" \
+        "neutral" \
         ; do
         create_test_dir ${colvar}_${bias}
         write_colvars_config ${colvar} ${bias}

@@ -121,7 +121,7 @@ colvarbias_histogram::~colvarbias_histogram()
 int colvarbias_histogram::update()
 {
   int error_code = COLVARS_OK;
-  // update base class
+  // update base class (read variables, zero out energy and forces)
   error_code |= colvarbias::update();
 
   if (cvm::debug()) {

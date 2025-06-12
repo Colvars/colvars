@@ -23,9 +23,6 @@ class colvarbias
   : public virtual colvarparse, public virtual colvardeps {
 public:
 
-  /// Name of this bias
-  std::string name;
-
   /// Keyword indicating the type of this bias
   std::string bias_type;
 
@@ -44,20 +41,34 @@ public:
     return colvars.size();
   }
 
-  /// Access the variables vector
-  inline std::vector<colvar *> *variables()
+  /// Access the vector of pointers to the colvar objects
+  inline std::vector<colvar *> * variables()
   {
     return &colvars;
   }
 
-  /// Access the i-th variable
+  /// Access the i-th colvar object
   inline colvar * variables(int i) const
   {
     return colvars[i];
   }
 
-  /// Retrieve colvar values and calculate their biasing forces
-  /// Some implementations may use calc_energy() and calc_forces()
+  /// Access the applied forces vector
+  inline std::vector<colvarvalue> * applied_forces()
+  {
+    return &colvar_forces;
+  }
+
+  /// Access the applied force on the i-th variable
+  inline colvarvalue * applied_forces(int i)
+  {
+    return &(colvar_forces[i]);
+  }
+
+  /// Retrieve colvar values and set to zero the energy and applied forces
+  /// Derived classes may or may not override calc_energy() and
+  /// calc_forces(), but should in general call colvarbias::update() at the
+  /// top of their own update() method
   virtual int update();
 
   /// Returns true if the current step represent a valid increment, whose data
@@ -234,10 +245,10 @@ public:
   int read_state_string(char const *buffer);
 
   /// Write a label to the trajectory file (comment line)
-  virtual std::ostream & write_traj_label(std::ostream &os);
+  virtual std::ostream & write_traj_label(std::ostream &os) /* override */;
 
   /// Output quantities such as the bias energy to the trajectory file
-  virtual std::ostream & write_traj(std::ostream &os);
+  virtual std::ostream & write_traj(std::ostream &os) /* override */;
 
   /// (Re)initialize the output files (does not write them yet)
   virtual int setup_output()
@@ -287,6 +298,12 @@ public:
     cvb_features.clear();
   }
 
+  /// Write the state of available features to a string
+  virtual std::string const get_features_state() const /* override */ ;
+
+  /// Read the state of available features from a string
+  virtual int set_features_state(std::string const &state_conf) /* override */ ;
+
 protected:
 
   /// \brief Pointers to collective variables to which the bias is
@@ -329,7 +346,7 @@ protected:
 class colvar_grid_gradient;
 class colvar_grid_count;
 
-/// \brief Base class for unconstrained thermodynamic-integration FE estimator
+/// Base class for unconstrained thermodynamic-integration FE estimator
 class colvarbias_ti : public virtual colvarbias {
 public:
 
@@ -371,5 +388,23 @@ protected:
   /// store the index of the variables then
   std::vector<int> ti_bin;
 };
+
+
+/// Class for a bias with no biasing forces (may still collect TI samples)
+class colvarbias_neutral : public virtual colvarbias_ti {
+public:
+
+  colvarbias_neutral(char const *key);
+
+  virtual ~colvarbias_neutral();
+
+  virtual int init(std::string const &conf) /* override */;
+
+  virtual std::string const get_state_params() const;
+
+  virtual int set_state_params(std::string const &state_conf);
+
+};
+
 
 #endif

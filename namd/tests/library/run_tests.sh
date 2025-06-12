@@ -221,7 +221,7 @@ for dir in ${DIRLIST} ; do
     if [ -f ${basename}.colvars.state ] ; then
       # Filter out the version number from the state files to allow comparisons
       grep -sv '^  version ' ${basename}.colvars.state | \
-        grep -sv '^  units ' \
+        grep -Esv '^    active (on|off)$' \
         > ${TMPDIR}/${basename}.colvars.state.stripped
       mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
     fi
