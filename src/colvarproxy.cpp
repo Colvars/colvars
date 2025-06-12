@@ -26,6 +26,7 @@ colvarproxy_atoms::colvarproxy_atoms()
   atoms_max_applied_force_id_ = -1;
   modified_atom_list_ = false;
   updated_masses_ = updated_charges_ = false;
+  atom_list_freq_ = 0;
 }
 
 
@@ -99,15 +100,20 @@ int colvarproxy_atoms::check_atom_id(cvm::residue_id const &residue,
 }
 
 
-void colvarproxy_atoms::clear_atom(int index)
+int colvarproxy_atoms::clear_atom(int index)
 {
-  if (((size_t) index) >= atoms_ids.size()) {
-    cvm::error("Error: trying to disable an atom that was not previously requested.\n",
-               COLVARS_INPUT_ERROR);
+  if (static_cast<size_t>(index) >= atoms_ids.size()) {
+    return cvm::error("Error: trying to unrequest an atom that was not "
+                      "previously requested.\n", COLVARS_BUG_ERROR);
+  }
+  if (index < 0) {
+    return cvm::error("Error: invalid argument to clear_atom().\n",
+                      COLVARS_BUG_ERROR);
   }
   if (atoms_refcount[index] > 0) {
     atoms_refcount[index] -= 1;
   }
+  return COLVARS_OK;
 }
 
 
@@ -118,6 +124,35 @@ size_t colvarproxy_atoms::get_num_active_atoms() const
     if (atoms_refcount[i] > 0) result++;
   }
   return result;
+}
+
+
+int colvarproxy_atoms::set_atom_list_frequency(int atom_list_freq)
+{
+  int const proxy_freq = atom_list_frequency();
+  if (proxy_freq > 0) {
+    if (atom_list_freq < proxy_freq) {
+      // Use the shortest number of steps among all variables
+      if ((atom_list_freq % proxy_freq) != 0) {
+        return cvm::error("Error: all values of atomListFrequency should be "
+                          "multiples of the same number (proxy_freq = "+
+                          cvm::to_str(proxy_freq)+").\n",
+                          COLVARS_INPUT_ERROR);
+      } else {
+        atom_list_frequency() = atom_list_freq;
+      }
+    } else {
+      if ((proxy_freq % atom_list_freq) != 0) {
+        return cvm::error("Error: all values of atomListFrequency should be "
+                          "multiples of the same number (proxy_freq = "+
+                          cvm::to_str(proxy_freq)+").\n",
+                          COLVARS_INPUT_ERROR);
+      }
+    }
+  } else {
+    atom_list_frequency() = atom_list_freq;
+  }
+  return COLVARS_OK;
 }
 
 

@@ -7,25 +7,22 @@ colvar {
     name one
 
     outputAppliedForce on
-    timeStepFactor 4
 
     width 0.5
 
-    distance {
-        group1 {
-            indexGroup group1
+    timeStepFactor 4
+
+    rmsd {
+        atoms {
+            indexGroup RMSD_atoms
         }
-        group2 {
-            indexGroup group2
-        }
+        refPositionsFile rmsd_atoms_refpos.xyz
     }
 } 
 
 harmonic {
-    name hp_one
     colvars        one
     centers        0.1
     forceConstant  0.001
-    outputEnergy   yes
     timeStepFactor 4
 }

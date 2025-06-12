@@ -30,11 +30,6 @@ struct rotation_derivative;
 
 class colvarmodule::atom {
 
-protected:
-
-  /// Index in the colvarproxy arrays (\b NOT in the global topology!)
-  int index;
-
 public:
 
   /// Identifier for the MD program (0-based)
@@ -103,6 +98,12 @@ public:
     vel = grad = total_force = cvm::rvector(0.0);
   }
 
+  /// Index of this atom in the internal arrays
+  inline int array_index() const
+  {
+    return index;
+  }
+
   /// Get the latest value of the mass
   inline void update_mass()
   {
@@ -148,6 +149,11 @@ public:
   {
     (cvm::proxy)->apply_atom_force(index, new_force);
   }
+
+protected:
+
+  /// Index in the colvarproxy arrays (\b NOT in the global topology!)
+  int index;
 };
 
 
