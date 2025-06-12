@@ -102,6 +102,8 @@ class colvargrid_integrate : public colvar_grid_scalar
   // Scalar grid containing interpolated weights, same mesh as FES and Laplacian
   // Stored as a flat vector like the divergence
   std::vector<cvm::real> weights;
+  std::vector<cvm::real> regularized_weights;
+  std::vector<cvm::real> laplacian_coefficients;
   std::vector<size_t> sorted_counts;
 
   // TODO: Add that as constructor arguments
