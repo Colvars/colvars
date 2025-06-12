@@ -447,6 +447,7 @@ Because these are static parameters, it is typically more convenient to use the 
     Input state file for the collective variables}{%
     UNIX filename}{%
     Keyword used to specify the input state file's name (\ref{sec:colvars_input}).
+    The file name is required to end in ``\texttt{.colvars.state}'': if it doesn't, Colvars will strip any further suffix following this string.
     If the input file is meant to be loaded within a Tcl script section, the \texttt{cv load} command may be used instead.
   }
 
@@ -752,6 +753,8 @@ After a configuration is fully defined, the ``\texttt{load}'' method may be used
 \cvscriptexampleinputcv{load}{"$<$oldjob$>$.colvars.state"}
 \noindent{}or more simply using the prefix of the state file itself:
 \cvscriptexampleinputcv{load}{"$<$oldjob$>$"}
+Anything following the ``\texttt{.colvars.state}'' suffix will be stripped.
+
 \cvlammpsonly{Note that the Colvars state is already loaded automatically as part of the LAMMPS restart file, when this is read via the LAMMPS \texttt{read\_restart} command; the ``\texttt{load}'' method allows to load a different state file after the fact.}
 \cvnamdonly{\noindent{}The latter version is particularly convenient in combination with the NAMD \texttt{reinitatoms} command, for example:\\
 \begin{mdexampleinput}
