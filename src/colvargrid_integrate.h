@@ -1,6 +1,8 @@
 #ifndef COLVARGRID_INTEGRATE_H
 #define COLVARGRID_INTEGRATE_H
 
+#include <iostream>
+
 #include "colvargrid.h"
 
 /// Integrate (1D, 2D or 3D) gradients
@@ -52,7 +54,7 @@ class colvargrid_integrate : public colvar_grid_scalar
   bool b_smoothed;
 
   /// \brief Initialize computation_nx based on nx and periodic boundaries
-  inline void init_computation_nx_nt() {
+  inline int init_computation_nx_nt() {
     computation_nx.resize(nd);
     computation_nt = 1;
     computation_nxc.resize(nd);
@@ -68,6 +70,15 @@ class colvargrid_integrate : public colvar_grid_scalar
       computation_nt*=computation_nx[i];
       computation_nxc[i] = computation_nt;
     }
+  #ifdef _OPENMP
+      m_num_threads = cvm::proxy->smp_num_threads();
+  #else
+      if (m_num_threads > 1) {
+        return cvm::error("Multi-threading requested in weighted integrator, which is not supported by this build.\n");
+      }
+  #endif
+    std::cout << m_num_threads << " : nb threads" << std::endl;
+    return 0;
   }
 
   // \brief Computes all the relative positions of objects necessary to calculate the laplacian at a specific point
@@ -117,6 +128,7 @@ class colvargrid_integrate : public colvar_grid_scalar
   float lambda_min = 0.2;
   size_t upper_threshold_count = 1;
   size_t lower_threshold_count = 1;
+  size_t m_num_threads = 1;
   // Get G at a specific point where G is the gradient F if there is enough observation else it's F multiplied by a coefficient < 1
   void get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix);
   // Get weight regularized by a lower and upper threshold and a ramp in between
