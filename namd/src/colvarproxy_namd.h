@@ -73,8 +73,6 @@ public:
 
   void init_tcl_pointers() override;
 
-  friend class cvm::atom;
-
   colvarproxy_namd();
   ~colvarproxy_namd();
 
@@ -201,9 +199,9 @@ public:
                                  cvm::atom_pos const &pos2) const;
 
   int load_atoms_pdb(char const *filename,
-                     cvm::atom_group &atoms,
+                     cvm::atom_group_soa &atoms,
                      std::string const &pdb_field,
-                     double const pdb_field_value) override;
+                     double pdb_field_value) override;
 
   int load_coords_pdb(char const *filename,
                       std::vector<cvm::atom_pos> &pos,
@@ -238,26 +236,23 @@ public:
   void clear_volmap(int index) override;
 
   int compute_volmap(int flags,
-                             int volmap_id,
-                             cvm::atom_iter atom_begin,
-                             cvm::atom_iter atom_end,
-                             cvm::real *value,
-                             cvm::real *atom_field) override;
+                     int volmap_id,
+                     cvm::atom_group_soa* ag,
+                     cvm::real *value,
+                     cvm::real *atom_field) override;
 
   /// Abstraction of the two types of NAMD volumetric maps
   template<class T>
   void getGridForceGridValue(int flags,
                              T const *grid,
-                             cvm::atom_iter atom_begin,
-                             cvm::atom_iter atom_end,
+                             cvm::atom_group_soa* ag,
                              cvm::real *value,
                              cvm::real *atom_field);
 
   /// Implementation of inner loop; allows for atom list computation and use
   template<class T, int flags>
   void GridForceGridLoop(T const *g,
-                         cvm::atom_iter atom_begin,
-                         cvm::atom_iter atom_end,
+                         cvm::atom_group_soa* ag,
                          cvm::real *value,
                          cvm::real *atom_field);
 
