@@ -3,6 +3,8 @@ include(CheckIncludeFile)
 project(cudaglobalmastercolvars LANGUAGES CXX)
 
 option(NAMD_TCL "If your NAMD is built with TCL, use ON" ON)
+option(USE_CUDA "Use the CUDA library (if your want to run NAMD on NVIDIA GPUs)" ON)
+option(USE_HIP "Use the HIP library (if your want to run NAMD on AMD GPUs)" OFF)
 option(NAMD_NVTX_ENABLED "If your NAMD is built with -DNAMD_NVTX_ENABLED, use ON" OFF)
 set(NAMD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." CACHE STRING "NAMD source code directory")
 set(NAMD_HEADER_DIR "${NAMD_DIR}/src" CACHE STRING "NAMD header directory")
@@ -13,10 +15,6 @@ set(NAMD_TCL_INCLUDE_DIR "${NAMD_DIR}/tcl8.6.13-linux-x86_64-threaded/include" C
 set(NAMD_LEPTON_DIR "${NAMD_DIR}/lepton" CACHE STRING "Lepton library directory")
 set(NAMD_LEPTON_INCLUDE_DIR "${NAMD_LEPTON_DIR}/include" CACHE STRING "Lepton header directory")
 set(NAMD_LEPTON_SOURCE_DIR "${NAMD_LEPTON_DIR}/src" CACHE STRING "Lepton source directory")
-
-if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-  set(CMAKE_CUDA_ARCHITECTURES native)
-endif()
 
 message(STATUS "NAMD_HEADER_DIR is ${NAMD_HEADER_DIR}")
 message(STATUS "CHARM_HEADER_DIR is ${CHARM_HEADER_DIR}")
@@ -49,14 +47,28 @@ endif()
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/[^.]*.cpp)
 file(GLOB LEPTON_SOURCES ${NAMD_LEPTON_SOURCE_DIR}/[^.]*.cpp)
 
-find_package(CUDAToolkit)
-include(CheckLanguage)
-check_language(CUDA)
-enable_language(CUDA)
+if(USE_CUDA)
+  if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES native)
+  endif()
+  find_package(CUDAToolkit)
+  include(CheckLanguage)
+  check_language(CUDA)
+  enable_language(CUDA)
+  if(NOT DEFINED CMAKE_CUDA_STANDARD)
+    set(CMAKE_CUDA_STANDARD 17)
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+  endif()
+endif()
 
-if(NOT DEFINED CMAKE_CUDA_STANDARD)
-  set(CMAKE_CUDA_STANDARD 17)
-  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+if(USE_HIP)
+  if(NOT DEFINED CMAKE_HIP_ARCHITECTURES)
+    set(CMAKE_HIP_ARCHITECTURES native)
+  endif()
+  find_package(hip)
+  include(CheckLanguage)
+  check_language(hip)
+  enable_language(hip)
 endif()
 
 if(NAMD_TCL)
@@ -78,7 +90,16 @@ if(NAMD_NVTX_ENABLED)
   add_definitions(-DNAMD_NVTX_ENABLED -DCUDAGLOBALMASTERCOLVARS_CUDA_PROFILING)
 endif()
 
-add_definitions(-DNAMD_CUDA -DNODEGROUP_FORCE_REGISTER -DCOLVARS_CUDA -DLEPTON)
+add_definitions(-DNODEGROUP_FORCE_REGISTER -DLEPTON)
+
+if(USE_CUDA)
+  add_definitions(-DNAMD_CUDA -DCOLVARS_CUDA)
+endif()
+
+if(USE_HIP)
+  add_definitions(-DNAMD_HIP -DCOLVARS_HIP)
+endif()
+
 add_library(
   cudaglobalmastercolvars SHARED
   colvarproxy_cudaglobalmaster.h
@@ -94,7 +115,15 @@ target_include_directories(cudaglobalmastercolvars
   PUBLIC "${MOLFILE_PLUGIN_HEADER_DIR}"
   PUBLIC "${NAMD_TCL_INCLUDE_DIR}"
   PUBLIC "${NAMD_LEPTON_INCLUDE_DIR}")
-target_link_libraries(cudaglobalmastercolvars CUDA::cudart CUDA::nvToolsExt)
 target_compile_options(cudaglobalmastercolvars PRIVATE -Wno-register)
-set_property(TARGET cudaglobalmastercolvars PROPERTY LANGUAGE CUDA)
-# set_property(TARGET cudaglobalmastercolvars PROPERTY CUDA_ARCHITECTURES OFF)
+
+if(USE_CUDA)
+  target_link_libraries(cudaglobalmastercolvars CUDA::cudart CUDA::nvToolsExt)
+  set_property(TARGET cudaglobalmastercolvars PROPERTY LANGUAGE CUDA)
+  # set_property(TARGET cudaglobalmastercolvars PROPERTY CUDA_ARCHITECTURES OFF)
+endif()
+
+if(USE_HIP)
+  # target_link_libraries(cudaglobalmastercolvars )
+  set_property(TARGET cudaglobalmastercolvars PROPERTY LANGUAGE HIP)
+endif()
