@@ -2533,7 +2533,7 @@ std::string colvarmodule::to_str(std::vector<std::string> const &x,
   return _to_str_vector(x, width, prec);
 }
 
-#if defined(COLVARS_CUDA)
+#if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
 std::string colvarmodule::to_str(std::vector<cvm::real, CudaHostAllocator<cvm::real>> const &x,
                                  size_t width, size_t prec)
 {
