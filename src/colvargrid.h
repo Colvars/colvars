@@ -90,6 +90,13 @@ public: // TODO create accessors for these after all instantiations work
     return addr;
   }
 
+  inline void index(size_t address, std::vector<int> &ix) {
+    for (int dim = nd - 1; dim >= 0; --dim) {
+      ix[dim] = address % nx[dim];
+      address /= nx[dim];
+    }
+  }
+
 public:
   /// Whether some colvars are periodic
   std::vector<bool>        periodic;
