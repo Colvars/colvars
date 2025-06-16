@@ -52,16 +52,17 @@ proc ::cv_dashboard::createWindow {} {
   # For touchpads and other systems with compatibility issues
   bind $w.cvtable <Alt-Button-1> {::cv_dashboard::cvContextMenu %x %y %X %Y}
 
-  bind $w.cvtable <Control-e> ::cv_dashboard::edit_cv
+  bind $w.cvtable <Control-e>        ::cv_dashboard::edit_cv
   bind $w.cvtable <Double-Button-1>  ::cv_dashboard::edit_cv
-  bind $w.cvtable <Control-n> ::cv_dashboard::add_cv
-  bind $w.cvtable <Control-Delete> ::cv_dashboard::del_cv
-  bind $w.cvtable <Control-a> { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
+  bind $w.cvtable <Control-n>        ::cv_dashboard::add_cv
+  bind $w.cvtable <Control-Delete>   ::cv_dashboard::del_cv
+  bind $w.cvtable <Control-a>     { .cv_dashboard_window.cvtable selection set $::cv_dashboard::cvs }
 
   bind $w.cvtable <Control-c> ::cv_dashboard::copy_cv
   bind $w.cvtable <Control-v> ::cv_dashboard::paste_cv
   bind $w.cvtable <Control-x> { ::cv_dashboard::copy_cv; ::cv_dashboard::del_cv }
 
+  bind $w <Control-g>      {::cv_dashboard::animate_gradient [::cv_dashboard::selected_colvars]}
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
@@ -1129,6 +1130,21 @@ proc ::cv_dashboard::hide_all_volmaps {} {
 #################################################################
 
 
+proc ::cv_dashboard::request_gradient { cv } {
+  run_cv colvar $cv set gradient 1
+  if { [run_cv colvar $cv get gradient] != 1 } {
+    tk_messageBox -icon error -title "Colvars Dashboard Error"\
+      -message "Colvar $cv does not support gradient computation.\nSee console for details."
+    continue
+  }
+  if { ([cv colvar $cv get scalar] == 1) && ([cv colvar $cv get scripted] == 0) &&  ([cv colvar $cv get custom_function] == 0)} {
+    # Only attempt to enable collect_gradients if usual conditions are met
+    run_cv colvar $cv set collect_gradient 1
+  }
+  run_cv colvar $cv update ;# required to get initial values of gradients
+}
+
+
 proc ::cv_dashboard::show_gradients { list } {
 
   foreach cv $list {
@@ -1136,18 +1152,8 @@ proc ::cv_dashboard::show_gradients { list } {
     foreach i [selected_comps $cv] {
       set cv_n_i [list $cv $n $i]
       if { ![info exists ::cv_dashboard::grad_objects($cv_n_i)] } {
-        run_cv colvar $cv set gradient 1
-        if { [run_cv colvar $cv get gradient] != 1 } {
-          tk_messageBox -icon error -title "Colvars Dashboard Error"\
-            -message "Colvar $cv does not support gradient computation.\nSee console for details."
-          continue
-        }
-        if { ([cv colvar $cv get scalar] == 1) && ([cv colvar $cv get scripted] == 0) &&  ([cv colvar $cv get custom_function] == 0)} {
-          # Only attempt to enable collect_gradients if usual conditions are met
-          run_cv colvar $cv set collect_gradient 1
-        }
-
-        run_cv colvar $cv update ;# required to get initial values of gradients
+        # Make sure gradient can be computed
+        request_gradient $cv
         # Associate empty list of objects to cv to request its update
         foreach i [selected_comps $cv] {
           set ::cv_dashboard::grad_objects($cv_n_i) {}
@@ -1176,6 +1182,77 @@ proc ::cv_dashboard::map_atom_ids { atomids } {
 }
 
 
+proc ::cv_dashboard::compute_gradient { cv_n_i } {
+
+  # CV name, number of scalar components, index of the requested scalar
+  lassign $cv_n_i cv n_comps i_comp
+
+  if [catch {set atom_ids_enabled [cv colvar $cv get collect_atom_ids]}] {
+    # Legacy back-end: assume things work to avoid flood of error messages
+    set atom_ids_enabled 1
+  }
+  if { ! $atom_ids_enabled } {
+    # Variable was reinitialized and may have lost its collect_gradient feature
+    run_cv colvar $cv set gradient 1
+    if { [run_cv colvar $cv get gradient] != 1 } {
+      tk_messageBox -icon error -title "Colvars Dashboard Error"\
+        -message "Colvar $cv does not support gradient computation.\nSee console for details."
+      unset ::cv_dashboard::grad_objects($cv_n_i)
+      continue
+    }
+    if { [catch {cv colvar $cv set collect_atom_ids 1}] == 0 && [cv colvar $cv get collect_atom_ids] != 1 } {
+      tk_messageBox -icon error -title "Colvars Dashboard Error"\
+        -message "Colvar $cv cannot provide atom IDs, possibly because it is computed in parallel or in an implicit way.\nSee console for details."
+      unset ::cv_dashboard::grad_objects($cv_n_i)
+      continue
+    }
+    # Try to enable collect_gradient but don't throw an error if that fails
+    run_cv colvar $cv set collect_gradient 1
+    if { [run_cv colvar $cv get collect_gradient] == 0 } {
+      puts "\[Colvars Dashboard\] Using alternate method to compute gradients: \"Failed dependency\" message above can be safely ignored."
+    }
+    # Update after enabling gradient computation (unnecessary outside this condition)
+    run_cv colvar $cv update
+  }
+
+  if { [run_cv colvar $cv get collect_gradient] == 1 } {
+    # Easy way: collect gradient is already enabled
+    return [run_cv colvar $cv getgradients]
+
+  } else {
+    # Use the force, Luke!
+    if { [info exists ::cv_dashboard::atom_id_map($cv)] } {
+      set atom_id_map $::cv_dashboard::atom_id_map($cv)
+    } else {
+      set atomids [run_cv colvar $cv getatomids]
+      set atom_id_map [map_atom_ids $atomids]
+      if { [llength $atom_id_map] == 0 } {
+        return
+      }
+      set ::cv_dashboard::atom_id_map($cv) $atom_id_map
+    }
+
+    cv resetatomappliedforces
+    cv colvar $cv resetbiasforce
+    set F [list]
+    for { set i 0 } { $i < $n_comps } { incr i } {
+      # force of 1 on the requested scalar component
+      lappend F [expr $i == $i_comp]
+    }
+    cv colvar $cv addforce $F
+    cv colvar $cv update  ;# propagate biasing force to total colvar force
+    cv colvar $cv communicateforces
+    set forces [cv getatomappliedforces]
+
+    set grads [list]
+    foreach i $atom_id_map {
+      lappend grads [lindex $forces $i]
+    }
+  }
+  return $grads
+}
+
+
 proc ::cv_dashboard::update_shown_gradients {} {
 
   set id 0
@@ -1186,86 +1263,25 @@ proc ::cv_dashboard::update_shown_gradients {} {
 
   foreach { cv_n_i objs } [array get ::cv_dashboard::grad_objects] {
 
-    # CV name, number of scalar components, index of the requested scalar
-    lassign $cv_n_i cv n_comps i_comp
-
     # Delete out-of-date graphical objects (arrows)
     foreach obj $objs {
       graphics $molid delete $obj
     }
 
+    set cv [lindex $cv_n_i 0]
     # Forget variables that have been deleted (*after* deleting the graphics above)
     if { [lsearch [run_cv list] $cv] == -1 } {
       unset ::cv_dashboard::grad_objects($cv_n_i)
       continue
     }
 
-    if [catch {set atom_ids_enabled [cv colvar $cv get collect_atom_ids]}] {
-      # Legacy back-end: assume things work to avoid flood of error messages
-      set atom_ids_enabled 1
-    }
-    if { ! $atom_ids_enabled } {
-      # Variable was reinitialized and may have lost its collect_gradient feature
-      run_cv colvar $cv set gradient 1
-      if { [run_cv colvar $cv get gradient] != 1 } {
-        tk_messageBox -icon error -title "Colvars Dashboard Error"\
-          -message "Colvar $cv does not support gradient computation.\nSee console for details."
-        unset ::cv_dashboard::grad_objects($cv_n_i)
-        continue
-      }
-      if { [catch {cv colvar $cv set collect_atom_ids 1}] == 0 && [cv colvar $cv get collect_atom_ids] != 1 } {
-        tk_messageBox -icon error -title "Colvars Dashboard Error"\
-          -message "Colvar $cv cannot provide atom IDs, possibly because it is computed in parallel or in an implicit way.\nSee console for details."
-        unset ::cv_dashboard::grad_objects($cv_n_i)
-        continue
-      }
-      # Try to enable collect_gradient but don't throw an error if that fails
-      run_cv colvar $cv set collect_gradient 1
-      if { [run_cv colvar $cv get collect_gradient] == 0 } {
-        puts "\[Colvars Dashboard\] Using alternate method to compute gradients: \"Failed dependency\" message above can be safely ignored."
-      }
-      # Update after enabling gradient computation (unnecessary outside this condition)
-      run_cv colvar $cv update
-    }
-    set atomids [run_cv colvar $cv getatomids]
-
-    if { [run_cv colvar $cv get collect_gradient] == 1 } {
-      # Easy way: collect gradient is already enabled
-      set grads [run_cv colvar $cv getgradients]
-    } else {
-      # Use the force, Luke!
-      if { [info exists ::cv_dashboard::atom_id_map($cv)] } {
-        set atom_id_map $::cv_dashboard::atom_id_map($cv)
-      } else {
-        set atom_id_map [map_atom_ids $atomids]
-        if { [llength $atom_id_map] == 0 } {
-          return
-        }
-        set ::cv_dashboard::atom_id_map($cv) $atom_id_map
-      }
-
-      cv resetatomappliedforces
-      cv colvar $cv resetbiasforce
-      set F [list]
-      for { set i 0 } { $i < $n_comps } { incr i } {
-        # force of 1 on the requested scalar component
-        lappend F [expr $i == $i_comp]
-      }
-      cv colvar $cv addforce $F
-      cv colvar $cv update  ;# propagate biasing force to total colvar force
-      cv colvar $cv communicateforces
-      set forces [cv getatomappliedforces]
-
-      set grads [list]
-      foreach i $atom_id_map {
-        lappend grads [lindex $forces $i]
-      }
-    }
+    set grads [compute_gradient $cv_n_i]
 
     # Get width if provided in colvar config
     set width 1.
     regexp -nocase -line {^\s*width\s+([\d\.e]*)} [get_cv_config $cv] match width
 
+    set atomids [run_cv colvar $cv getatomids]
     set new_objs [draw_vectors $atomids $grads $id $width]
     incr id
 
@@ -1298,6 +1314,98 @@ proc ::cv_dashboard::hide_all_gradients {} {
     run_cv colvar $cv set collect_gradient 0
   }
   array unset ::cv_dashboard::grad_objects *
+}
+
+
+#################################################################
+# Animate Gradient
+#################################################################
+
+proc ::cv_dashboard::animate_sine_vector_movement {selection vector_field magnitude period duration_ms} {
+    # Animate atom movement along a vector field according to a sine function
+    # selection: Atom selection to animate (e.g., "protein")
+    # vector_field: List of vectors (one per atom in selection) {vx vy vz}
+    # magnitude: Maximum displacement magnitude in Angstroms
+    # period: Oscillation period in milliseconds
+    # duration_ms: Total animation duration in milliseconds
+
+    set num_atoms [$selection num]
+    set orig_x [$selection get x]
+    set orig_y [$selection get y]
+    set orig_z [$selection get z]
+
+    if {[llength $vector_field] != $num_atoms} {
+        puts $vector_field
+        error "Vector field size doesn't match selection atom count $num_atoms"
+    }
+    set vec_x {}
+    set vec_y {}
+    set vec_z {}
+    set maxnorm 0.
+    foreach vec $vector_field {
+        set n [veclength $vec]
+        if {$n > $maxnorm} {set maxnorm $n}
+        lappend vec_x [lindex $vec 0]
+        lappend vec_y [lindex $vec 1]
+        lappend vec_z [lindex $vec 2]
+    }
+    if {$maxnorm == 0.} {return "Vector field is zero"}
+    set fact [expr 1./$maxnorm]
+    set vec_x [vecscale $fact $vec_x]
+    set vec_y [vecscale $fact $vec_y]
+    set vec_z [vecscale $fact $vec_z]
+
+    set start_time [clock milliseconds]
+    set ::animating 1
+
+    while {$::animating} {
+        set current_time [clock milliseconds]
+        set elapsed [expr {$current_time - $start_time}]
+
+        if {$elapsed >= $duration_ms} {
+            set ::animating 0
+        }
+
+        set phase [expr {2.0 * 3.14159265359 * $elapsed / $period}]
+        set displacement [expr {$magnitude * sin($phase)}]
+
+        set new_x [vecadd $orig_x [vecscale $vec_x $displacement]]
+        set new_y [vecadd $orig_y [vecscale $vec_y $displacement]]
+        set new_z [vecadd $orig_z [vecscale $vec_z $displacement]]
+        $selection set x $new_x
+        $selection set y $new_y
+        $selection set z $new_z
+        display update
+
+        # Control update rate (milliseconds)
+        after 10
+    }
+
+    $selection set x $orig_x
+    $selection set y $orig_y
+    $selection set z $orig_z
+    display update
+}
+
+
+proc ::cv_dashboard::animate_gradient { list } {
+
+  if {[llength $list] != 1} {
+    return "Select 1 CV to animate gradient"
+  }
+  set cv [lindex $list 0]
+  set n [llength [run_cv colvar $cv value]]
+  set l [selected_comps $cv]
+  if {[llength $l] != 1} {
+    return "Select 1 component to animate gradient"
+  }
+  set i [lindex $l 0]
+
+  set grads [compute_gradient [list $cv $n $i]]
+  set atomids [run_cv colvar $cv getatomids]
+
+  set sel [atomselect $::cv_dashboard::mol "index $atomids"]
+  ::cv_dashboard::animate_sine_vector_movement $sel $grads 1.5 1000 2000
 }
 
 
