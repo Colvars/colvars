@@ -46,8 +46,15 @@ Please note that this documentation is only supported for the master branch, and
 #include <vector>
 
 #if defined(COLVARS_CUDA)
-#include <iostream>
 #include <cuda_runtime.h>
+#endif
+
+#if defined(COLVARS_HIP)
+#include <hip/hip_runtime.h>
+#define cudaHostAllocMapped hipHostMallocMapped
+#define cudaHostAlloc hipHostMalloc
+#define cudaFreeHost hipHostFree
+#define cudaSuccess hipSuccess
 #endif
 
 class colvarparse;
@@ -88,7 +95,7 @@ public:
     return patch_version_int;
   }
 
-#if defined(COLVARS_CUDA)
+#if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
   template <typename T>
   class CudaHostAllocator {
   public:
@@ -729,7 +736,7 @@ public:
   static std::string to_str(std::vector<std::string> const &x,
                             size_t width = 0, size_t prec = 0);
 
-#if defined(COLVARS_CUDA)
+#if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
   static std::string to_str(std::vector<rvector, CudaHostAllocator<rvector>> const &x,
                             size_t width = 0, size_t prec = 0);
   static std::string to_str(std::vector<real, CudaHostAllocator<real>> const &x,

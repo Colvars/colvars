@@ -2,7 +2,16 @@
 #define COLVARPROXY_CUDAGLOBALMASTER_KERNEL_H
 
 #include "colvartypes.h"
+
+#ifdef NAMD_CUDA
 #include <cuda_runtime.h>
+#endif  // NAMD_CUDA
+
+#ifdef NAMD_HIP
+#include <hip/hip_runtime.h>
+#endif  // NAMD_HIP
+
+#include "HipDefines.h"
 
 /**
  * @brief: Convert the device data from xxxyyyzzz to xyzxyzxyz and copy them to the host memory

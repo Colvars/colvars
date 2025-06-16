@@ -5,7 +5,17 @@
 #include <string>
 #include <vector>
 #include <memory>
+
+#ifdef NAMD_CUDA
 #include <cuda_runtime.h>
+#endif // NAMD_CUDA
+
+#ifdef NAMD_HIP
+#include <hip/hip_runtime.h>
+#define cudaPeekAtLastError hipPeekAtLastError
+#endif  // NAMD_HIP
+
+#include "HipDefines.h"
 
 class Lattice;
 

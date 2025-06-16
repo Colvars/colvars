@@ -856,7 +856,7 @@ int colvarscript::set_result_text(std::vector<cvm::rvector> const &x,
   return set_result_text_from_str(x_str, obj);
 }
 
-#if defined(COLVARS_CUDA)
+#if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
 template <>
 int colvarscript::set_result_text(std::vector<cvm::real, cvm::CudaHostAllocator<cvm::real>> const &x,
                                   unsigned char *obj) {
@@ -931,7 +931,7 @@ int colvarscript::set_result_rvector_vec(std::vector<cvm::rvector> const &x,
   return set_result_text(x, obj);
 }
 
-#if defined (COLVARS_CUDA)
+#if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
 template <>
 int colvarscript::set_result_real_vec(std::vector<cvm::real, cvm::CudaHostAllocator<cvm::real>> const &x,
                                       unsigned char *obj) {

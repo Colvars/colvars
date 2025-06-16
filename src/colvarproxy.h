@@ -44,7 +44,7 @@ class colvarproxy_atoms {
 
 public:
 
-#if defined(COLVARS_CUDA)
+#if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
   template <typename T>
   using allocator_type = cvm::CudaHostAllocator<T>;
 #else
