@@ -36,11 +36,11 @@ tclForcesScript {
         }
       }
       #      print "[expr $t-1]   Force: ( $tot )   Torque: ( $torque )"
-      print "NUM. ATOMS REQUESTED:  [cv getnumatoms]"
-      print "NUM. ATOMS USED:       [cv getnumactiveatoms]"
-      print "NUM. ATOM GROUPS USED: [cv getnumactiveatomgroups]"
-      print [format "TOTAL FORCE:  \{ %.16f %.16f %.16f \}" {*}$tot]
-      print [format "TOTAL TORQUE: \{ %.16f %.16f %.16f \}" {*}$torque]
+      print "STEP $t: NUM. ATOMS:         [cv getnumatoms] (TOTAL)"
+      print "STEP $t: NUM. ATOMS:         [cv getnumactiveatoms] (ACTIVE)"
+      print "STEP $t: NUM. ATOM GROUPS:   [cv getnumactiveatomgroups]"
+      print [format "STEP $t: TOTAL FORCE:  \{ %.16f %.16f %.16f \}" {*}$tot]
+      print [format "STEP $t: TOTAL TORQUE: \{ %.16f %.16f %.16f \}" {*}$torque]
       array set prev_c [array get c]
     }
     incr t

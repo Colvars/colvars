@@ -71,9 +71,8 @@ public:
   /// Check whether it is possible to select atoms by residue number name
   virtual int check_atom_name_selections_available();
 
-  /// Select this atom for collective variables calculation, using name and
-  /// residue number.  Not all programs support this: leave this function as
-  /// is in those cases.
+  /// Prepare this atom using name and residue number (not all engines support
+  /// it, and this function does not necessarily need reimplementation.
   virtual int init_atom(cvm::residue_id const &residue,
                         std::string const     &atom_name,
                         std::string const     &segment_id);
@@ -83,9 +82,11 @@ public:
                             std::string const     &atom_name,
                             std::string const     &segment_id);
 
-  /// \brief Used by the atom class destructor: rather than deleting the array slot
-  /// (costly) set the corresponding atoms_refcount to zero
-  virtual void clear_atom(int index);
+  /// Used by the atom class destructor: set atoms_refcount entry to zero
+  virtual int clear_atom(int index);
+
+  /// Check that all calls use multiples of the same, use that number
+  virtual int set_atom_list_frequency(int atom_list_freq);
 
   /// Clear atomic data
   int reset();
@@ -109,6 +110,15 @@ public:
   inline void increase_refcount(int index)
   {
     atoms_refcount[index] += 1;
+  }
+
+  /// Decrease the reference count of the given atom
+  /// \param index Internal index in the Colvars arrays
+  inline void decrease_refcount(int index)
+  {
+    if (atoms_refcount[index] > 0) {
+      atoms_refcount[index] -= 1;
+    }
   }
 
   /// Get the charge of the given atom
@@ -259,12 +269,17 @@ public:
     return updated_charges_;
   }
 
+  /// Request/unrequest atoms at this frequency
+  inline int & atom_list_frequency()
+  {
+    return atom_list_freq_;
+  }
+
 protected:
 
-  /// \brief Array of 0-based integers used to uniquely associate atoms
-  /// within the host program
+  /// Array of integers used to identify atoms in the engine
   std::vector<int>          atoms_ids;
-  /// \brief Keep track of how many times each atom is used by a separate colvar object
+  /// Keep track of how many times each atom is used by a separate colvar object
   std::vector<size_t>       atoms_refcount;
   /// \brief Masses of the atoms (allow redefinition during a run, as done e.g. in LAMMPS)
   std::vector<cvm::real, allocator_type<cvm::real>>    atoms_masses;
@@ -291,6 +306,9 @@ protected:
 
   /// Whether the masses and charges have been updated from the host code
   bool updated_masses_, updated_charges_;
+
+  /// Request/unrequest atoms at this frequency
+  int atom_list_freq_;
 
   /// Used by all init_atom() functions: create a slot for an atom not
   /// requested yet; returns the index in the arrays

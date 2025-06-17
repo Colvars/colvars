@@ -73,10 +73,10 @@ int colvar::init(std::string const &conf)
 
   if ((cvm::colvar_by_name(this->name) != NULL) &&
       (cvm::colvar_by_name(this->name) != this)) {
-    cvm::error("Error: this colvar cannot have the same name, \""+this->name+
-                      "\", as another colvar.\n",
-               COLVARS_INPUT_ERROR);
-    return COLVARS_INPUT_ERROR;
+    error_code |= cvm::error("Error: this colvar cannot have the same name, \""+
+                             this->name+
+                             "\", as another colvar.\n",
+                             COLVARS_INPUT_ERROR);
   }
 
   // Initialize dependency members
@@ -298,14 +298,7 @@ int colvar::init(std::string const &conf)
 
   reset_bias_force();
 
-  get_keyval(conf, "timeStepFactor", time_step_factor, 1);
-  if (time_step_factor < 0) {
-    cvm::error("Error: timeStepFactor must be positive.\n");
-    return COLVARS_ERROR;
-  }
-  if (time_step_factor != 1) {
-    enable(f_cv_multiple_ts);
-  }
+  error_code |= init_mts_parameters(conf);
 
   error_code |= init_grid_parameters(conf);
 
@@ -508,6 +501,27 @@ int colvar::init_custom_function(std::string const &conf)
 }
 
 #endif // #ifdef LEPTON
+
+
+int colvar::init_mts_parameters(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+  get_keyval(conf, "timeStepFactor", time_step_factor, 1);
+  if (time_step_factor <= 0) {
+    return cvm::error("Error: timeStepFactor must be positive.\n",
+                      COLVARS_INPUT_ERROR);
+  } else {
+    if (time_step_factor != 1) {
+      enable(f_cv_multiple_ts);
+      for (size_t i = 0; i < cvcs.size(); i++) {
+        // Tell CVCs that atom lists will be refreshed only every
+        // time_step_factor steps
+        error_code |= (cvcs[i])->set_atom_list_frequency(time_step_factor);
+      }
+    }
+  }
+  return error_code;
+}
 
 
 int colvar::init_grid_parameters(std::string const &conf)
@@ -1736,6 +1750,16 @@ int colvar::collect_cvc_Jacobians()
   }
 
   return COLVARS_OK;
+}
+
+
+int colvar::update_requested_atoms()
+{
+  int error_code = COLVARS_OK;
+  for (size_t i = 0; i < cvcs.size(); i++) {
+    error_code |= (cvcs[i])->update_all_requested_atoms();
+  }
+  return error_code;
 }
 
 
