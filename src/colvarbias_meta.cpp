@@ -1011,7 +1011,7 @@ int colvarbias_meta::update_bias()
     cvm::real hills_scale=1.0;
 
     if (ebmeta) {
-      hills_scale *= 1.0/target_dist->value(target_dist->get_colvars_index());
+      hills_scale *= 1.0/target_dist->value(target_dist->get_colvars_index_bound());
       if(cvm::step_absolute() <= ebmeta_equil_steps) {
         cvm::real const hills_lambda =
           (cvm::real(ebmeta_equil_steps - cvm::step_absolute())) /
