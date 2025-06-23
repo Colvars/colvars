@@ -82,13 +82,14 @@ class colvargrid_integrate : public colvar_grid_scalar
   }
 
   // \brief Computes all the relative positions of objects necessary to calculate the laplacian at a specific point
-  void prepare_laplacian_calculation();
+  void prepare_laplacian_necessary_stencils();
   // \brief For testing purposes only: print the different stencils computed in prepare_laplacian_calculation.
   void print_laplacian_preparations();
 
   // \brief Computes all the relative positions to calculate the divergence at a specific point
-  void prepare_divergence_calculation();
+  void prepare_divergence_necessary_stencils();
 
+  void prepare_calculations();
   // TODO: put back in private after testing
   colvar_grid_scalar *computation_grid = new colvar_grid_scalar();
   template<bool initialize_div_supplement>  void laplacian_weighted(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
@@ -125,7 +126,7 @@ class colvargrid_integrate : public colvar_grid_scalar
   size_t min_count_F = 0;
   // max and min count to regularize the weights
   float lambda_max = 0.5;
-  float lambda_min = 0.2;
+  float lambda_min = 0.1;
   size_t upper_threshold_count = 1;
   size_t lower_threshold_count = 1;
   size_t m_num_threads = 1;
@@ -194,5 +195,6 @@ class colvargrid_integrate : public colvar_grid_scalar
   inline void reverse(std::string::iterator, std::string::iterator);
 
   void extrapolate_potential();
+  void extrapolate_data();
 };
 #endif
