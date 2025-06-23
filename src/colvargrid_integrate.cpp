@@ -1410,7 +1410,7 @@ void colvargrid_integrate::optimize_adam(bool weighted, const std::vector<cvm::r
     std::cout << "Initial Loss: " << std::fixed << std::setprecision(8) << err << std::endl;
 
     std::vector<cvm::real> grad(computation_nt, 0.0);
-    for (int t = 1; t <= itmax; ++t) {
+    for (iter = 1; iter <= itmax; ++iter) {
         (this->*atimes)(x, r);
         for (j = 0; j < int(computation_nt); j++) {
             r[j] = b[j] - r[j];
@@ -1439,12 +1439,13 @@ void colvargrid_integrate::optimize_adam(bool weighted, const std::vector<cvm::r
         cvm::real current_err = l2norm(r) / bnrm;
         average_err += current_err;
         // Calculate and print loss
-        if (t % 10 == 0 || t == 1) {
-            std::cout << "Iteration " << t << ", Loss: " << std::fixed << std::setprecision(8) << current_err <<
+        if (iter % 10 == 0 || iter == 1) {
+            std::cout << "Iteration " << iter << ", Loss: " << std::fixed << std::setprecision(8) << current_err <<
                     std::endl;
-            if (current_err < tol && t > 10) {
+            if (current_err < tol && iter > 10) {
                 // t > 10 to avoid early stopping
                 std::cout << "Converged " << std::endl;
+                err = current_err;
                 break;
             }
             if (average_err / 10.0 > err) {
