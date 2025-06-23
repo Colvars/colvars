@@ -55,7 +55,7 @@ proc load_cv_traj { filenames {molid "top"}} {
         continue
       }
       # Convert vector quantities to Tcl lists: ( 1.0 , 2.3 ) -> { 1.0 2.3 }
-      set line [regsub -all -- {,} [regsub -all -- {\)} [regsub -all -- {\(} $line "{"] "}"] " "]
+      set line [string map {"(" "{" ")" "}" "," " "} $line]
       lappend steps $line
     }
     close $fd

@@ -82,6 +82,13 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
     incr gridrow
   }
 
+  ttk::button $templates.strip_comments -text "Strip comments (Ctrl-m)" \
+        -command "::cv_dashboard::strip_comments $w.editor.fr.text" \
+        -padding "2 0 2 0"
+  grid $templates.strip_comments -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  bind $w <Control-m> "::cv_dashboard::strip_comments $w.editor.fr.text"
+  incr gridrow
+
   grid columnconfigure $templates 0 -weight 0
   grid columnconfigure $templates 1 -weight 1
   grid columnconfigure $templates 2 -weight 0
@@ -224,6 +231,34 @@ proc ::cv_dashboard::change_wrap {} {
 #################################################################
 # Helper functions for editor
 #################################################################
+
+
+# Override default paste behavior for text widgets
+bind Text <<Paste>> {
+    if {[%W cget -state] eq "normal"} {
+        set clip ""
+        if {[tk windowingsystem] eq "x11"} {
+            catch {set clip [::tk::GetSelection %W CLIPBOARD]}
+        } else {
+            catch {set clip [clipboard get]}
+        }
+        
+        if {$clip ne ""} {
+            %W configure -autoseparators 0
+            %W edit separator
+            
+            # Delete selection if it exists
+            if {[%W tag ranges sel] ne ""} {
+                %W delete sel.first sel.last
+            }
+            
+            %W insert insert $clip
+            %W edit separator
+            %W configure -autoseparators 1
+            %W see insert
+        }
+    }
+}
 
 
 # Process tab presses to indent/unindent text
@@ -507,6 +542,13 @@ proc ::cv_dashboard::editor_help {} {
 {Help text}
 }
 
+
+proc ::cv_dashboard::strip_comments {text_widget} {
+    set content [$text_widget get 1.0 end-1c]
+    set stripped [regsub -all -linestop {\s*\#.*} $content ""]
+    $text_widget delete 1.0 end
+    $text_widget insert 1.0 $stripped
+}
 
 
 #################################################################
