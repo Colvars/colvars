@@ -62,7 +62,8 @@ proc ::cv_dashboard::createWindow {} {
   bind $w.cvtable <Control-v> ::cv_dashboard::paste_cv
   bind $w.cvtable <Control-x> { ::cv_dashboard::copy_cv; ::cv_dashboard::del_cv }
 
-  bind $w <Control-g>      {::cv_dashboard::animate_gradient [::cv_dashboard::selected_colvars]}
+  bind $w <a>    {::cv_dashboard::animate_gradient [::cv_dashboard::selected_colvars]}
+  user add key a {::cv_dashboard::animate_gradient [::cv_dashboard::selected_colvars]}
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
@@ -1321,13 +1322,16 @@ proc ::cv_dashboard::hide_all_gradients {} {
 # Animate Gradient
 #################################################################
 
-proc ::cv_dashboard::animate_sine_vector_movement {selection vector_field magnitude period duration_ms} {
+proc ::cv_dashboard::animate_sine_vector_movement {selection vector_field magnitude period n_periods} {
     # Animate atom movement along a vector field according to a sine function
     # selection: Atom selection to animate (e.g., "protein")
     # vector_field: List of vectors (one per atom in selection) {vx vy vz}
     # magnitude: Maximum displacement magnitude in Angstroms
     # period: Oscillation period in milliseconds
-    # duration_ms: Total animation duration in milliseconds
+    # n_periods: Total animation duration in periods
+
+    # Control update rate (milliseconds)
+    set delay 10
 
     set num_atoms [$selection num]
     set orig_x [$selection get x]
@@ -1355,17 +1359,12 @@ proc ::cv_dashboard::animate_sine_vector_movement {selection vector_field magnit
     set vec_y [vecscale $fact $vec_y]
     set vec_z [vecscale $fact $vec_z]
 
+    set duration_ms [expr {$period * $n_periods}]
     set start_time [clock milliseconds]
-    set ::animating 1
+    set update_time $start_time
+    set elapsed 0
 
-    while {$::animating} {
-        set current_time [clock milliseconds]
-        set elapsed [expr {$current_time - $start_time}]
-
-        if {$elapsed >= $duration_ms} {
-            set ::animating 0
-        }
-
+    while {$elapsed < $duration_ms} {
         set phase [expr {2.0 * 3.14159265359 * $elapsed / $period}]
         set displacement [expr {$magnitude * sin($phase)}]
 
@@ -1375,10 +1374,13 @@ proc ::cv_dashboard::animate_sine_vector_movement {selection vector_field magnit
         $selection set x $new_x
         $selection set y $new_y
         $selection set z $new_z
+
+        set time_since_update [expr {[clock milliseconds] - $update_time}]
+        after [expr {$delay - $time_since_update}]
         display update
 
-        # Control update rate (milliseconds)
-        after 10
+        set update_time [clock milliseconds]
+        set elapsed [expr {$update_time - $start_time}]
     }
 
     $selection set x $orig_x
@@ -1405,7 +1407,7 @@ proc ::cv_dashboard::animate_gradient { list } {
   set atomids [run_cv colvar $cv getatomids]
 
   set sel [atomselect $::cv_dashboard::mol "index $atomids"]
-  ::cv_dashboard::animate_sine_vector_movement $sel $grads 1.5 1000 2000
+  ::cv_dashboard::animate_sine_vector_movement $sel $grads 1.5 1000 2
 }
 
 
