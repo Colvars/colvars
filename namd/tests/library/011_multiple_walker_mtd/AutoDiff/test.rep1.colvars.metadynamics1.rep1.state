@@ -2,6 +2,7 @@ metadynamics {
   configuration {
     step 100
     name metadynamics1
+    active on
     replicaID rep1
   }
   hills_energy

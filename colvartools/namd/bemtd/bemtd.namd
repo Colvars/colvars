@@ -1,0 +1,63 @@
+# -*- tcl -*-
+
+# Preamble: setting variables used in input/output file names
+set mol_name $env(mol_name)
+set ijob $env(ijob)
+
+set job replica-[format "%03d" [myReplica]]/${mol_name}.bemtd.replica-[format "%03d" [myReplica]].[format "%04d" ${ijob}]
+
+if { ${ijob} > 0 } {
+    # Define NAMD restart files if needed
+    set old replica-[format "%03d" [myReplica]]/${mol_name}.bemtd.replica-[format "%03d" [myReplica]].[format "%04d" [expr ${ijob} - 1]]
+    set coor_bin_file ${old}.coor
+    set vel_bin_file ${old}.vel
+}
+
+set numsteps $env(numsteps)
+set restart_freq 25000 ; # This will be used as exchange frequency as well
+
+# Include all standard MD simulation input
+source ../Common/common.namd
+
+colvars on
+
+# Define all variables and biases (same config for all replicas)
+cv configfile ${mol_name}-bemtd.colvars.in
+
+if { ${ijob} > 0 } {
+    # Load state file when the job is being restarted
+    cv load ${old}.colvars.state
+}
+
+# Load BE functions
+source ../colvars_replica_utils.tcl
+
+# Define and index the biases that should be exchanged.  At most one replica
+# can be assigned no biases, and in this case it should have the last index
+# (3 in this example).
+
+# However, a cleaner approach is to define one or more neutral "biases" may
+# be defined to track neutral replicas.
+
+add_bias_to_index 0 mtd_dist_N_O
+add_bias_to_index 1 mtd_dist_N_H1
+add_bias_to_index 2 mtd_dist_N_H2
+add_bias_to_index 3 neutral
+
+# Detect or initialize which bias is active at the beginning of the job.
+# IT MUST BE USED *AFTER* RESTARTING with "cv load" to work correctly
+set_bias_index
+
+# Set bias-exchange frequency; it's highly recommended to use the restart
+# frequency
+set exchange_freq [restartFreq]
+set_exchange_frequency ${exchange_freq}
+
+# Main loop
+set i_run 0
+set n_runs [expr ${numsteps}/${exchange_freq}]
+while { ${i_run} < ${n_runs} } {
+    # Short run followed by exchange
+    run_be_segment
+    incr i_run
+}

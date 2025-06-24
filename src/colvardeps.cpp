@@ -7,9 +7,13 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+#include <vector>
+#include <algorithm>
+#include <iostream>
+#include <iomanip>
 
 #include "colvarmodule.h"
-#include "colvarproxy.h"
+#include "colvarparse.h"
 #include "colvardeps.h"
 
 
@@ -103,6 +107,24 @@ void colvardeps::set_enabled(int feature_id, bool truefalse) {
   } else {
     disable(feature_id);
   }
+}
+
+
+int colvardeps::get_feature_id(std::string const &feature_name)
+{
+  int fid = 0;
+  std::vector<feature *> const &features_this = features();
+  for (fid = 0; fid < int(features_this.size()); fid++) {
+    if (colvarparse::to_lower_cppstr(features()[fid]->description) ==
+        colvarparse::to_lower_cppstr(feature_name)) {
+      break;
+    }
+  }
+  if (fid >= int(features_this.size())) {
+    // Set to an invalid value that's easy to detect
+    fid = -1;
+  }
+  return fid;
 }
 
 
@@ -466,6 +488,16 @@ void colvardeps::print_state() {
 }
 
 
+std::string const colvardeps::get_features_state() const {
+  return std::string("");
+}
+
+
+int colvardeps::set_features_state(std::string const &state_conf) {
+  return COLVARS_OK;
+}
+
+
 void colvardeps::add_child(colvardeps *child) {
 
   children.push_back(child);
@@ -537,4 +569,58 @@ void colvardeps::remove_all_children() {
     }
   }
   children.clear();
+}
+
+
+int colvardeps::init_features_output(std::vector<std::string> const &feature_names)
+{
+  int error_code = COLVARS_OK;
+
+  std::vector<feature *> const &features_this = features();
+
+  features_output.clear();
+  for (size_t i = 0; i < feature_names.size(); i++) {
+    std::string const &feature_name = feature_names[i];
+    int fid = get_feature_id(feature_name);
+    if (fid < 0 || fid >= int(features_this.size())) {
+      error_code |= cvm::error("Error: unknown feature \""+feature_name+
+                               "\".\n", COLVARS_INPUT_ERROR);
+    } else {
+      cvm::log("Will write the state of feature \""+feature_name+
+               "\" for \""+name+"\" to the trajectory file.\n");
+      features_output.push_back(fid);
+    }
+  }
+
+  // Enforce consistent output order for features
+  std::sort(features_output.begin(), features_output.end());
+  cvm::log("Features_output = " + cvm::to_str(features_output));
+
+  return error_code;
+}
+
+
+std::ostream & colvardeps::write_traj_label(std::ostream &os)
+{
+  std::vector<feature *> const &features_this = features();
+  for (size_t i = 0; i < features_output.size(); i++) {
+    int const fid = features_output[i];
+    os << " ";
+    os << (name + std::string("_") + (features_this[fid]->description));
+  }
+  return os;
+}
+
+
+std::ostream & colvardeps::write_traj(std::ostream &os)
+{
+  std::vector<feature *> const &features_this = features();
+  for (size_t i = 0; i < features_output.size(); i++) {
+    int const fid = features_output[i];
+    os << " ";
+    os << cvm::wrap_string(cvm::to_str(feature_states[i].enabled ? 1 : 0),
+                           (name + std::string("_") +
+                            (features_this[fid]->description)).size());
+  }
+  return os;
 }

@@ -1,0 +1,101 @@
+colvar {
+    name dist_N_O
+    outputAppliedForce on
+    upperBoundary 12.0
+    width 0.02
+    distance {
+        group1 {
+            psfSegID AMM1
+            atomNameResidueRange N1 1-1
+        }
+        group2 {
+            psfSegID WAT
+            atomNameResidueRange OH2 1-1
+        }
+    }
+} 
+
+
+metadynamics {
+    name mtd_dist_N_O
+    colvars dist_N_O
+    gaussianSigmas 0.1
+    hillWeight 0.001
+    outputEnergy yes
+    outputFeatures active
+}
+
+
+
+colvar {
+    name dist_N_H1
+    outputAppliedForce on
+    upperBoundary 12.0
+    width 0.02
+    distance {
+        group1 {
+            psfSegID AMM1
+            atomNameResidueRange N1 1-1
+        }
+        group2 {
+            psfSegID WAT
+            atomNameResidueRange H1 1-1
+        }
+    }
+} 
+
+
+metadynamics {
+    name mtd_dist_N_H1
+    colvars dist_N_H1
+    gaussianSigmas 0.1
+    hillWeight 0.001
+    outputEnergy yes
+    outputFeatures active
+}
+
+
+
+colvar {
+    name dist_N_H2
+    outputAppliedForce on
+    upperBoundary 12.0
+    width 0.02
+    distance {
+        group1 {
+            psfSegID AMM1
+            atomNameResidueRange N1 1-1
+        }
+        group2 {
+            psfSegID WAT
+            atomNameResidueRange H2 1-1
+        }
+    }
+} 
+
+
+metadynamics {
+    name mtd_dist_N_H2
+    colvars dist_N_H2
+    gaussianSigmas 0.1
+    hillWeight 0.001
+    outputEnergy yes
+    outputFeatures active
+}
+
+
+
+harmonicWalls {
+    name wall_dist_N_O
+    colvars dist_N_O
+    forceConstant 0.6
+    upperWalls 8.0
+}
+
+
+neutral {
+    name neutral
+    colvars dist_N_O
+    outputEnergy yes
+    outputFeatures active
+}

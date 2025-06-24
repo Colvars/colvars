@@ -2,6 +2,7 @@ metadynamics {
   configuration {
     step 20
     name metadynamics1
+    active on
   }
   hills_energy
 grid_parameters {

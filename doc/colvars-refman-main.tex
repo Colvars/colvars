@@ -7988,7 +7988,44 @@ The list of options is as follows:
 \end{itemize}
 
 
+\cvsubsec{Neutral bias}{sec:colvarbias_neutral}
+
+The \texttt{neutral~\{...\}} keyword defines a ``bias'' that has no biasing forces associated to it.
+Its main use case is in bias-exchange protocols, where it allows defining a ``neutral'' replica that samples the underlying probability distribution without aid from any external forces; convergence can then be estimated by comparing its distributions with those obtained from the computed PMFs.
+Optionally, a \texttt{neutral} bias can also collect thermodynamic-integration (TI) samples, subject to the conditions described in \ref{sec:colvarbias_ti}.
+
+For example, the following defines a neutral bias that ``acts'' on a single variable: although no forces are applied, a set of one or more variables are needed to fully define such a bias.
+Note also that the energy (which will be zero) and the state of the \texttt{active} flag will be reported, to allow unshuffling of the resulting set of trajectories when exchanges are performed
+
+\begin{cvexampleinput}
+colvar~\{\\
+\-~~name~d\\
+\-~~distance~\{~...~\}\\
+\}\\
+\\
+neutral~\{\\
+\-~~name~neutral\\
+\-~~colvars~d\\
+\-~~outputEnergy~on\\
+\-~~outputFeatures~active\\
+\}\\
+\end{cvexampleinput}
+
+The following keywords are accepted in a \texttt{neutral} bias definition:
+\begin{itemize}
+
+\item \dupkey{name}{\texttt{neutral}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{colvars}{\texttt{neutral}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{outputEnergy}{\texttt{neutral}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTIPMF}{\texttt{neutral}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{writeTISamples}{\texttt{neutral}}{sec:colvarbias}{biasing and analysis methods}
+\item \dupkey{stepZeroData}{\texttt{neutral}}{sec:colvarbias}{biasing and analysis methods}
+
+\end{itemize}
+
+
 \ifdefined\cvscriptcallbacks{
+
 \cvsubsec{Defining scripted biases}{sec:scripted_biases}
 
 Rather than using the biasing methods described above, it is possible to apply biases

@@ -109,6 +109,12 @@ int colvarbias::init(std::string const &conf)
   // Write energy to traj file?
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
 
+  // Trajectory output of feature flags
+  std::vector<std::string> feature_names;
+  if (get_keyval(conf, "outputFeatures", feature_names)) {
+    error_code |= colvardeps::init_features_output(feature_names);
+  }
+
   // How often to write full output files?
   get_keyval(conf, "outputFreq", output_freq, output_freq);
 
@@ -244,8 +250,10 @@ int colvarbias::reset()
 
 
 colvarbias::colvarbias()
-  : colvarparse(), has_data(false)
-{}
+  : colvarparse()
+{
+  has_data = false;
+}
 
 
 colvarbias::~colvarbias()
@@ -484,15 +492,20 @@ std::string const colvarbias::get_state_params() const
   std::ostringstream os;
   os << "    step " << cvm::step_absolute() << "\n"
      << "    name " << this->name << "\n";
+  os << get_features_state();
   return os.str();
 }
 
 
 int colvarbias::check_matching_state(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
+
+  matching_state = false;
+
   std::string check_name = "";
   colvarparse::get_keyval(conf, "name", check_name,
-                          std::string(""), colvarparse::parse_silent);
+                          std::string(""), colvarparse::parse_restart);
 
   if (check_name.size() == 0) {
     return cvm::error("Error: \""+bias_type+"\" block within the state file "
@@ -509,16 +522,19 @@ int colvarbias::check_matching_state(std::string const &conf)
     matching_state = true;
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
 int colvarbias::set_state_params(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
   colvarparse::get_keyval(conf, "step", state_file_step,
-                          cvm::step_absolute(), colvarparse::parse_silent);
+                          cvm::step_absolute(), colvarparse::parse_restart);
 
-  return COLVARS_OK;
+  error_code |= set_features_state(conf);
+
+  return error_code;
 }
 
 
@@ -757,9 +773,14 @@ cvm::memory_stream & colvarbias::read_state_data_key(cvm::memory_stream &is, std
 std::ostream & colvarbias::write_traj_label(std::ostream &os)
 {
   os << " ";
-  if (b_output_energy)
+
+  if (b_output_energy) {
     os << " E_"
        << cvm::wrap_string(this->name, cvm::en_width-2);
+  }
+
+  colvardeps::write_traj_label(os);
+
   return os;
 }
 
@@ -767,11 +788,35 @@ std::ostream & colvarbias::write_traj_label(std::ostream &os)
 std::ostream & colvarbias::write_traj(std::ostream &os)
 {
   os << " ";
-  if (b_output_energy)
+
+  if (b_output_energy) {
     os << " "
        << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width)
        << bias_energy;
+  }
+
+  colvardeps::write_traj(os);
+
   return os;
+}
+
+
+std::string const colvarbias::get_features_state() const
+{
+  std::ostringstream os;
+  os << "    active " << (is_enabled(f_cv_active) ? std::string("on") : std::string("off")) << "\n";
+  return os.str();
+}
+
+
+int colvarbias::set_features_state(std::string const &state_conf) {
+  int error_code = COLVARS_OK;
+  bool flag = is_enabled(f_cvb_active);
+  if (get_keyval(state_conf, "active", flag, flag,
+                 colvarparse::parse_restart)) {
+    set_enabled(f_cvb_active, flag);
+  }
+  return error_code;
 }
 
 
@@ -1061,6 +1106,39 @@ int colvarbias_ti::write_output_files()
     }
   }
 
+  return error_code;
+}
+
+
+colvarbias_neutral::colvarbias_neutral(char const *key)
+  : colvarbias(key), colvarbias_ti(key)
+{}
+
+
+colvarbias_neutral::~colvarbias_neutral()
+{}
+
+
+int colvarbias_neutral::init(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+  error_code |= colvarbias::init(conf);
+  error_code |= colvarbias_ti::init(conf);
+  return error_code;
+}
+
+
+std::string const colvarbias_neutral::get_state_params() const
+{
+  return colvarbias::get_state_params() + colvarbias_ti::get_state_params();
+}
+
+
+int colvarbias_neutral::set_state_params(std::string const &conf)
+{
+  int error_code = COLVARS_OK;
+  error_code |= colvarbias::set_state_params(conf);
+  error_code |= colvarbias_ti::set_state_params(conf);
   return error_code;
 }
 

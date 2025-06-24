@@ -72,6 +72,35 @@ CVSCRIPT(bias_binnum,
          return COLVARS_OK;
          )
 
+CVSCRIPT(bias_calcenergy,
+         "Recalculate the energy of this bias at the current colvar values\n"
+         "E : float - Energy value",
+         0, 0,
+         "",
+         if ( ( this_bias->colvarbias::update() |
+                this_bias->calc_energy(NULL) ) != COLVARS_OK) {
+           script->add_error_msg("Error: recalculating energy of bias " +
+                                 this_bias->name);
+           return COLVARSCRIPT_ERROR;
+         }
+         script->set_result_real(this_bias->get_energy());
+         return COLVARS_OK;
+         )
+
+CVSCRIPT(bias_calcforces,
+         "Recalculate the forces of this bias after a call to calcenergy\n"
+         "forces : array of colvarvalue objects - Applied colvar forces",
+         0, 0,
+         "",
+         if (this_bias->calc_forces(NULL) != COLVARS_OK) {
+           script->add_error_msg("Error: recalculating forces of bias " +
+                                 this_bias->name);
+           return COLVARSCRIPT_ERROR;
+         }
+         script->set_result_colvarvalue_vec(*(this_bias->applied_forces()));
+         return COLVARS_OK;
+         )
+
 CVSCRIPT(bias_delete,
          "Delete this bias",
          0, 0,
@@ -203,11 +232,11 @@ CVSCRIPT(bias_type,
          )
 
 CVSCRIPT(bias_update,
-         "Recompute this bias and return its up-to-date energy\n"
+         "Update all components of this bias and return its new energy\n"
          "E : float - Energy value",
          0, 0,
          "",
          this_bias->update();
-         script->set_result_colvarvalue(this_bias->get_energy());
+         script->set_result_real(this_bias->get_energy());
          return COLVARS_OK;
          )
