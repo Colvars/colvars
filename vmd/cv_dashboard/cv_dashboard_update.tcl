@@ -278,3 +278,39 @@ proc ::cv_dashboard::read_version { path } {
   close $version_file
   return $version
 }
+
+# Next functions are inspired by vmdprefs, but less invasive - reuse existing line, or append to .vmdrc
+
+proc ::cv_dashboard::vmdrc {} {
+  set rcPath $env(HOME)
+
+  # determine what system-specific filename to look for
+  switch [vmdinfo arch] {
+    WIN64 -
+    WIN32 { set vmdrcFileName vmd.rc }
+    default { set vmdrcFileName .vmdrc }
+  }
+
+  # make sure that we have write permission to rcPath (defaults to env(HOME))
+  if { ![file exists $rcPath] || ![file writable $rcPath] } {
+    puts "Cannot write VMDRC to the target directory:\n\n$rcPath\n\nMake sure that this folder exists and user has write permission."
+    return -1
+  }
+  return [file join $rcPath $vmdrcFileName]
+}
+
+
+# Mission: write self-update flag
+proc ::cv_dashboard::write_vmdrc {} {
+  set path [vmdrc]
+  if { $path == -1 } { return }
+
+  set flag $::cv_dashboard::self_update
+
+  if { [file exists $path] } {
+    # edit or append
+
+  } else {
+    # write new file
+  }
+}
