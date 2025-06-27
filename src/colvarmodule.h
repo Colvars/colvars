@@ -284,7 +284,6 @@ static inline real acos(real const &x)
   // allow these classes to access protected data
   class atom;
   class atom_group;
-  class atom_group;
   typedef std::vector<atom>::iterator       atom_iter;
   typedef std::vector<atom>::const_iterator atom_const_iter;
 
