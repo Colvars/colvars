@@ -63,13 +63,13 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
 
 
   ############# Templates #########################################
-  tk::labelframe  $w.editor.fl.templates -bd 2 -text "Templates" -padx 2 -pady 2
+  ttk::labelframe  $w.editor.fl.templates -text "Templates" -padding 2 -style cv.TLabelframe -labelanchor n
   set templates $w.editor.fl.templates
 
   foreach d { colvar component other } {
-    tk::label $templates.template_label_$d -font $::cv_dashboard::font -text "$d templates:"
-    ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no
-    $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
+    ttk::label $templates.template_label_$d -font $::cv_dashboard::font -text "$d templates:"
+    ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no \
+      -values [dict keys [set ::cv_dashboard::templates_$d]]
     bind $templates.pick_template_$d <<keyb_enter>> \
       "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]] $w.editor.fr.text"
     ttk::button $templates.insert_template_$d -text "Insert \[Enter\]" \
@@ -82,16 +82,24 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
     incr gridrow
   }
 
+  ttk::button $templates.strip_comments -text "Strip comments \[Ctrl-m\]" \
+        -command [list ::cv_dashboard::strip_comments $w.editor.fr.text] \
+        -padding "2 0 2 0"
+  grid $templates.strip_comments -row $gridrow -column 3 -columnspan 1 -pady 2 -padx 2 -sticky nsew
+  bind $w.editor <Control-m> [list ::cv_dashboard::strip_comments $w.editor.fr.text]
+  incr gridrow
+
   grid columnconfigure $templates 0 -weight 0
   grid columnconfigure $templates 1 -weight 1
   grid columnconfigure $templates 2 -weight 0
 
   ############# Various helpers ###################################
-  tk::labelframe  $w.editor.fl.helpers -bd 2 -text "Editing helpers" -padx 2 -pady 2
+  ttk::labelframe  $w.editor.fl.helpers -text "Editing helpers" -padding 2 -style cv.TLabelframe -labelanchor n
+
   set helpers $w.editor.fl.helpers
 
   ############# Atoms from seltext ################################
-  tk::label $helpers.seltext_label -font $::cv_dashboard::font -text "Atoms from selection text:"
+  ttk::label $helpers.seltext_label -font $::cv_dashboard::font -text "Atoms from selection text:"
   ttk::entry $helpers.seltext
   # Bind Return key in seltext entry to proc creating the atomNumbers line
   bind $helpers.seltext <<keyb_enter>> "::cv_dashboard::atoms_from_sel textbox"
@@ -104,7 +112,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   incr gridrow
 
   ############# Atoms from representation ################################
-  tk::label $helpers.rep_label -font $::cv_dashboard::font -text "Atoms from representation:"
+  ttk::label $helpers.rep_label -font $::cv_dashboard::font -text "Atoms from representation:"
   ttk::combobox $helpers.reps -justify left -state readonly -exportselection no
   ttk::button $helpers.refresh_reps -text "Refresh list" -command ::cv_dashboard::refresh_reps
   bind $helpers.reps <<ComboboxSelected>> "::cv_dashboard::atoms_from_sel reps"
@@ -120,8 +128,8 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
   ############# Atoms from atom, bond, angle, dihedral labels ####################
   ttk::button $helpers.labeled_atoms -text "Insert labeled atoms" -command {::cv_dashboard::insert_labels Atoms}
   ttk::button $helpers.labeled_var -text "Insert labeled..." -command {::cv_dashboard::insert_labels combo}
-  ttk::combobox $helpers.labels -justify left -state readonly -exportselection no
-  $helpers.labels configure -values [list Bonds Angles Dihedrals]
+  ttk::combobox $helpers.labels -justify left -state readonly -exportselection no \
+    -values [list Bonds Angles Dihedrals]
   $helpers.labels set Bonds
 
   grid $helpers.labeled_atoms -row $gridrow -column 0 -pady 2 -padx 2
@@ -146,7 +154,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
 
 
   ############# Doc links #########################################
-  tk::labelframe  $w.editor.fl.docs -bd 2 -text "Links to online documentation" -padx 2 -pady 2
+  ttk::labelframe  $w.editor.fl.docs -text "Links to online documentation" -padding 2 -style cv.TLabelframe -labelanchor n
   set docs $w.editor.fl.docs
 
   ttk::button $docs.onlinedoc1 -text "Collective variables" -style cv_link.TButton -padding "4 2 4 2"\
@@ -224,6 +232,34 @@ proc ::cv_dashboard::change_wrap {} {
 #################################################################
 # Helper functions for editor
 #################################################################
+
+
+# Override default paste behavior for text widgets
+bind Text <<Paste>> {
+    if {[%W cget -state] eq "normal"} {
+        set clip ""
+        if {[tk windowingsystem] eq "x11"} {
+            catch {set clip [::tk::GetSelection %W CLIPBOARD]}
+        } else {
+            catch {set clip [clipboard get]}
+        }
+        
+        if {$clip ne ""} {
+            %W configure -autoseparators 0
+            %W edit separator
+            
+            # Delete selection if it exists
+            if {[%W tag ranges sel] ne ""} {
+                %W delete sel.first sel.last
+            }
+            
+            %W insert insert $clip
+            %W edit separator
+            %W configure -autoseparators 1
+            %W see insert
+        }
+    }
+}
 
 
 # Process tab presses to indent/unindent text
@@ -508,6 +544,13 @@ proc ::cv_dashboard::editor_help {} {
 }
 
 
+proc ::cv_dashboard::strip_comments {text_widget} {
+    set content [$text_widget get 1.0 end-1c]
+    set stripped [regsub -all -linestop {\s*\#.*} $content ""]
+    $text_widget delete 1.0 end
+    $text_widget insert 1.0 $stripped
+}
+
 
 #################################################################
 # Editor window: Biases
@@ -583,13 +626,13 @@ proc ::cv_dashboard::edit_bias { {add false} {biases ""} {cvs ""} } {
   incr gridrow
 
   ############# Templates #########################################
-  # tk::labelframe  $w.editor.fl.templates -bd 2 -text "Templates" -padx 2 -pady 2
+  ttk::labelframe  $w.editor.fl.templates -text "Templates" -padding 2 -style cv.TLabelframe -labelanchor n
   set templates $w.bias_editor
 
   set d "bias"
-  tk::label $templates.template_label_$d -font $::cv_dashboard::font -text "$d templates:"
-  ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no
-  $templates.pick_template_$d configure -values [dict keys [set ::cv_dashboard::templates_$d]]
+  ttk::label $templates.template_label_$d -font $::cv_dashboard::font -text "$d templates:"
+  ttk::combobox $templates.pick_template_$d -justify left -state readonly -exportselection no \
+    -values [dict keys [set ::cv_dashboard::templates_$d]]
   bind $templates.pick_template_$d <<keyb_enter>> \
     "::cv_dashboard::insert_template $templates.pick_template_$d [list [set ::cv_dashboard::templates_$d]] $w.bias_editor.text"
   ttk::button $templates.insert_template_$d -text "Insert \[Enter\]" \

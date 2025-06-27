@@ -42,7 +42,7 @@ namespace eval ::cv_dashboard {
   # State variables for config editor
   variable being_edited
   variable backup_cfg
-  variable filetype        "atomsFile"
+  variable filetype        "refPositionsFile"
   variable colvar_configs  [dict create] ;# dictionary mapping names to cfg strings
   variable bias_configs    [dict create]
   variable global_config   [dict create]
@@ -887,7 +887,7 @@ proc ::cv_dashboard::load_cv_traj { filenames } {
         continue
       }
       # Convert vector quantities to Tcl lists: ( 1.0 , 2.3 ) -> { 1.0 2.3 }
-      set line [regsub -all -- {,} [regsub -all -- {\)} [regsub -all -- {\(} $line "{"] "}"] " "]
+      set line [string map {"(" "{" ")" "}" "," " "} $line]
       lappend steps $line
     }
     close $fd

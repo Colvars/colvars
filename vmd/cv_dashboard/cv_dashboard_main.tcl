@@ -16,6 +16,7 @@ proc ::cv_dashboard::createWindow {} {
 
   # TTK styles
   ttk::style configure cv_link.TButton -foreground blue
+  ttk::style configure cv.TLabelframe -borderwidth 2 -labeloutside false
 
   # Top bars of buttons
   set gridrow 0
@@ -62,7 +63,8 @@ proc ::cv_dashboard::createWindow {} {
   bind $w.cvtable <Control-v> ::cv_dashboard::paste_cv
   bind $w.cvtable <Control-x> { ::cv_dashboard::copy_cv; ::cv_dashboard::del_cv }
 
-  bind $w <Control-g>      {::cv_dashboard::animate_gradient [::cv_dashboard::selected_colvars]}
+  bind $w <a>    {::cv_dashboard::animate_gradient [::cv_dashboard::selected_colvars]}
+  user add key a {::cv_dashboard::animate_gradient [::cv_dashboard::selected_colvars]}
 
   event add <<keyb_enter>> <Return>   ;# Combine Return and keypad-Enter into a single virtual event
   event add <<keyb_enter>> <KP_Enter>
@@ -90,7 +92,8 @@ proc ::cv_dashboard::createWindow {} {
   grid [ttk::separator $main.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   incr gridrow
-  grid [tk::label $main.actions_text -font $::cv_dashboard::font -text "Colvar list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $main.actions_text -font $::cv_dashboard::font -text "Colvar list actions" -anchor n]  \
+      -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
 
@@ -110,7 +113,8 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::separator $main.sep_plots -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
   incr gridrow
-  grid [tk::label $main.viz_text -font $::cv_dashboard::font -text "Plots and real-time visualizations"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $main.viz_text -font $::cv_dashboard::font -text "Plots and real-time visualizations" -anchor n] \
+      -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
   incr gridrow
   grid [ttk::button $main.plot -text "Timeline plot" -command ::cv_dashboard::plot -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $main.plot2cv -text "Pairwise plot" -command {::cv_dashboard::plot 2cv} -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
@@ -151,7 +155,8 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::separator $main.sep_auto -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
   incr gridrow
-  grid [tk::label $main.auto_text -font $::cv_dashboard::font -text "Automatic colvars"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $main.auto_text -font $::cv_dashboard::font -text "Automatic colvars" -anchor n] \
+      -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
   incr gridrow
   grid [ttk::button $main.cvfromprotein -text "Protein/NA auto-colvars" -command ::cv_dashboard::auto_cv -padding "2 0 2 0"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::button $main.cvfromlabels -text "Colvars from VMD labels" -command ::cv_dashboard::cvs_from_labels -padding "2 0 2 0"] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
@@ -161,12 +166,12 @@ proc ::cv_dashboard::createWindow {} {
   incr gridrow
   grid [ttk::separator $main.sep_options -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
   incr gridrow
-  grid [tk::label $main.options_text -font $::cv_dashboard::font -text "General options"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $main.options_text -font $::cv_dashboard::font -text "General options" -anchor n] \
+      -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [tk::label $main.molTxt -font $::cv_dashboard::font -text "Molecule:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  ttk::combobox $main.mol -justify left -state readonly
-  $main.mol configure -values [molinfo list]
+  grid [ttk::label $main.molTxt -font $::cv_dashboard::font -text "Molecule:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  ttk::combobox $main.mol -justify left -state readonly -values [molinfo list]
   if { $::cv_dashboard::mol != -1 } {
     $main.mol set $::cv_dashboard::mol
   }
@@ -178,17 +183,16 @@ proc ::cv_dashboard::createWindow {} {
 
   # Units
   incr gridrow
-  grid [tk::label $main.unitTxt -font $::cv_dashboard::font -text "Units:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  ttk::combobox $main.units -justify left -state readonly
-  $main.units configure -values [array names ::cv_dashboard::text_to_units]
+  grid [ttk::label $main.unitTxt -font $::cv_dashboard::font -text "Units:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  ttk::combobox $main.units -justify left -state readonly -values [array names ::cv_dashboard::text_to_units]
   refresh_units
   grid $main.units -row $gridrow -column 1 -columnspan 2 -pady 2 -padx 2 -sticky nsew
   bind $main.units <<ComboboxSelected>> ::cv_dashboard::change_units
 
   # Frame display and track checkbox
   incr gridrow
-  grid [tk::label $main.frameTxt -font $::cv_dashboard::font -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
-  grid [tk::label $main.frame -font $::cv_dashboard::font -textvariable ::cv_dashboard::current_frame] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $main.frameTxt -font $::cv_dashboard::font -text "Frame:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $main.frame -font $::cv_dashboard::font -textvariable ::cv_dashboard::current_frame] -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::checkbutton $main.trackFrame -text "Track VMD frame" -command ::cv_dashboard::change_track_frame -variable ::cv_dashboard::track_frame] \
     -row $gridrow -column 2  -pady 2 -padx 2 -sticky nsew
 
@@ -263,7 +267,8 @@ proc ::cv_dashboard::createBiasesTab {} {
   grid [ttk::separator $biases.sep1 -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   incr gridrow
-  grid [tk::label $biases.actions_text -font $::cv_dashboard::font -text "Bias list actions"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $biases.actions_text -font $::cv_dashboard::font -text "Bias list actions" -anchor n] \
+      -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
   grid [ttk::button $biases.edit -text "Edit bias \[Ctrl-e\]" -command ::cv_dashboard::edit_bias -padding "2 0 2 0"] \
@@ -336,12 +341,13 @@ proc ::cv_dashboard::createStatsTab { gridrow } {
   grid [ttk::separator $stats.sep_stats -orient horizontal] -row $gridrow -column 0 -columnspan 3 -pady 5 -sticky ew
 
   incr gridrow
-  grid [tk::label $stats.stats_title -font $::cv_dashboard::font -text "Energy and force statistics"] -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $stats.stats_title -font $::cv_dashboard::font -text "Energy and force statistics" -anchor n] \
+       -row $gridrow -column 0 -columnspan 3 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
   # Energy/Force display
   set ::cv_dashboard::colvar_energy 0.0
-  grid [tk::label $stats.energyTxt -font $::cv_dashboard::font -text "Total energy:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $stats.energyTxt -font $::cv_dashboard::font -text "Total energy:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $stats.energy -textvariable ::cv_dashboard::colvar_energy -state readonly] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
 
@@ -349,13 +355,13 @@ proc ::cv_dashboard::createStatsTab { gridrow } {
   set ::cv_dashboard::atom_forces_rms 0.0
   set ::cv_dashboard::atom_forces_max 0.0
   set ::cv_dashboard::atom_forces_max_id -1
-  grid [tk::label $stats.rmsForceTxt -font $::cv_dashboard::font -text "RMS force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $stats.rmsForceTxt -font $::cv_dashboard::font -text "RMS force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $stats.rmsForce -textvariable ::cv_dashboard::atom_forces_rms -state readonly] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
-  grid [tk::label $stats.maxForceIDTxt -font $::cv_dashboard::font -text "Max force atom index:"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $stats.maxForceIDTxt -font $::cv_dashboard::font -text "Max force atom index:"] -row $gridrow -column 2 -pady 2 -padx 2 -sticky nsew
 
   incr gridrow
-  grid [tk::label $stats.maxForceTxt -font $::cv_dashboard::font -text "Max force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
+  grid [ttk::label $stats.maxForceTxt -font $::cv_dashboard::font -text "Max force:"] -row $gridrow -column 0 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $stats.maxForce -textvariable ::cv_dashboard::atom_forces_max -state readonly] \
     -row $gridrow -column 1 -pady 2 -padx 2 -sticky nsew
   grid [ttk::entry $stats.maxForceID -textvariable ::cv_dashboard::atom_forces_max_id -state readonly] \
@@ -1321,13 +1327,16 @@ proc ::cv_dashboard::hide_all_gradients {} {
 # Animate Gradient
 #################################################################
 
-proc ::cv_dashboard::animate_sine_vector_movement {selection vector_field magnitude period duration_ms} {
+proc ::cv_dashboard::animate_sine_vector_movement {selection vector_field magnitude period n_periods} {
     # Animate atom movement along a vector field according to a sine function
     # selection: Atom selection to animate (e.g., "protein")
     # vector_field: List of vectors (one per atom in selection) {vx vy vz}
     # magnitude: Maximum displacement magnitude in Angstroms
     # period: Oscillation period in milliseconds
-    # duration_ms: Total animation duration in milliseconds
+    # n_periods: Total animation duration in periods
+
+    # Control update rate (milliseconds)
+    set delay 10
 
     set num_atoms [$selection num]
     set orig_x [$selection get x]
@@ -1355,17 +1364,12 @@ proc ::cv_dashboard::animate_sine_vector_movement {selection vector_field magnit
     set vec_y [vecscale $fact $vec_y]
     set vec_z [vecscale $fact $vec_z]
 
+    set duration_ms [expr {$period * $n_periods}]
     set start_time [clock milliseconds]
-    set ::animating 1
+    set update_time $start_time
+    set elapsed 0
 
-    while {$::animating} {
-        set current_time [clock milliseconds]
-        set elapsed [expr {$current_time - $start_time}]
-
-        if {$elapsed >= $duration_ms} {
-            set ::animating 0
-        }
-
+    while {$elapsed < $duration_ms} {
         set phase [expr {2.0 * 3.14159265359 * $elapsed / $period}]
         set displacement [expr {$magnitude * sin($phase)}]
 
@@ -1375,10 +1379,13 @@ proc ::cv_dashboard::animate_sine_vector_movement {selection vector_field magnit
         $selection set x $new_x
         $selection set y $new_y
         $selection set z $new_z
+
+        set time_since_update [expr {[clock milliseconds] - $update_time}]
+        after [expr {$delay - $time_since_update}]
         display update
 
-        # Control update rate (milliseconds)
-        after 10
+        set update_time [clock milliseconds]
+        set elapsed [expr {$update_time - $start_time}]
     }
 
     $selection set x $orig_x
@@ -1405,7 +1412,7 @@ proc ::cv_dashboard::animate_gradient { list } {
   set atomids [run_cv colvar $cv getatomids]
 
   set sel [atomselect $::cv_dashboard::mol "index $atomids"]
-  ::cv_dashboard::animate_sine_vector_movement $sel $grads 1.5 1000 2000
+  ::cv_dashboard::animate_sine_vector_movement $sel $grads 1.5 1000 2
 }
 
 
