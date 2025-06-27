@@ -81,7 +81,7 @@ public:
                                            std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
   virtual int load_atoms_pdb(char const *filename,
-                             cvm::atom_group_soa &atoms,
+                             cvm::atom_group &atoms,
                              std::string const &pdb_field,
                              double const pdb_field_value = 0.0);
 
@@ -116,13 +116,13 @@ public:
 
   virtual int compute_volmap(int flags,
                              int volmap_id,
-                             cvm::atom_group_soa* atoms,
+                             cvm::atom_group* atoms,
                              cvm::real *value,
                              cvm::real *atom_field);
 
   template<int flags>
   void compute_voldata(VolumetricData const *voldata,
-                       cvm::atom_group_soa* atoms,
+                       cvm::atom_group* atoms,
                        cvm::real *value,
                        cvm::real *atom_field);
 

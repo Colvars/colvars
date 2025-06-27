@@ -163,16 +163,16 @@ int colvar::cvc::init_total_force_params(std::string const &conf)
   return COLVARS_OK;
 }
 
-cvm::atom_group_soa *colvar::cvc::parse_group(std::string const &conf,
+cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
                                           char const *group_key,
                                           bool optional)
 {
   int error_code = COLVARS_OK;
-  cvm::atom_group_soa *group = nullptr;
+  cvm::atom_group *group = nullptr;
   std::string group_conf;
 
   if (key_lookup(conf, group_key, &group_conf)) {
-    group = new cvm::atom_group_soa(group_key);
+    group = new cvm::atom_group(group_key);
 
     if (b_try_scalable) {
       if (is_available(f_cvc_scalable_com)
@@ -395,7 +395,7 @@ void colvar::cvc::init_scalar_boundaries(cvm::real lb, cvm::real ub)
 }
 
 
-void colvar::cvc::register_atom_group(cvm::atom_group_soa *ag)
+void colvar::cvc::register_atom_group(cvm::atom_group *ag)
 {
   atom_groups.push_back(ag);
   add_child(ag);

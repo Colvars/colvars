@@ -80,7 +80,7 @@ int colvar::CartesianBasedPath::init(std::string const &conf)
         } else {
             // parse a group of atoms for fitting
             std::string fitting_group_name = std::string("fittingAtoms") + cvm::to_str(i_frame);
-            cvm::atom_group_soa* tmp_fitting_atoms = new cvm::atom_group_soa(fitting_group_name.c_str());
+            cvm::atom_group* tmp_fitting_atoms = new cvm::atom_group(fitting_group_name.c_str());
             tmp_fitting_atoms->parse(fitting_conf);
             tmp_fitting_atoms->disable(f_ag_scalable);
             tmp_fitting_atoms->fit_gradients.assign(3 * tmp_fitting_atoms->size(), 0);

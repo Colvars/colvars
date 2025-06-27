@@ -387,8 +387,8 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
   if (b_debug_gradients) {
     // debug_gradients<cvm::atom_pos, cvm::atom_pos, false>(*this, pos1, pos2, pos1.size(), pos2.size());
-    const std::vector<cvm::real> pos1_soa = cvm::atom_group_soa::pos_aos_to_soa(pos1);
-    const std::vector<cvm::real> pos2_soa = cvm::atom_group_soa::pos_aos_to_soa(pos2);
+    const std::vector<cvm::real> pos1_soa = cvm::atom_group::pos_aos_to_soa(pos1);
+    const std::vector<cvm::real> pos2_soa = cvm::atom_group::pos_aos_to_soa(pos2);
     debug_gradients(*this, pos1_soa, pos2_soa, pos1.size(), pos2.size());
   }
 }

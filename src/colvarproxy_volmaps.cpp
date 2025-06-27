@@ -110,7 +110,7 @@ int colvarproxy_volmaps::get_volmap_id_from_name(char const *volmap_name)
 
 int colvarproxy_volmaps::compute_volmap(int /* flags */,
                                         int /* volmap_id */,
-                                        cvm::atom_group_soa* ag,
+                                        cvm::atom_group* ag,
                                         cvm::real * /* value */,
                                         cvm::real * /* atom_field */)
 {

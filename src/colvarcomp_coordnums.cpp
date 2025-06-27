@@ -118,7 +118,7 @@ int colvar::coordnum::init(std::string const &conf)
     return error_code | COLVARS_INPUT_ERROR;
   }
 
-  if (int atom_number = cvm::atom_group_soa::overlap(*group1, *group2)) {
+  if (int atom_number = cvm::atom_group::overlap(*group1, *group2)) {
     error_code |= cvm::error(
         "Error: group1 and group2 share a common atom (number: " + cvm::to_str(atom_number) + ")\n",
         COLVARS_INPUT_ERROR);
@@ -355,12 +355,12 @@ int colvar::h_bond::init(std::string const &conf)
     error_code |= cvm::error("Error: either acceptor or donor undefined.\n", COLVARS_INPUT_ERROR);
   }
 
-  register_atom_group(new cvm::atom_group_soa);
+  register_atom_group(new cvm::atom_group);
   {
     colvarproxy* const p = cvm::main()->proxy;
     auto modify_atom = atom_groups[0]->get_atom_modifier();
-    modify_atom.add_atom(cvm::atom_group_soa::init_atom_from_proxy(p, a_num));
-    modify_atom.add_atom(cvm::atom_group_soa::init_atom_from_proxy(p, d_num));
+    modify_atom.add_atom(cvm::atom_group::init_atom_from_proxy(p, a_num));
+    modify_atom.add_atom(cvm::atom_group::init_atom_from_proxy(p, d_num));
   }
 
   get_keyval(conf, "cutoff",   r0, r0);
@@ -382,15 +382,15 @@ int colvar::h_bond::init(std::string const &conf)
   return error_code;
 }
 
-colvar::h_bond::h_bond(cvm::atom_group_soa::simple_atom const &acceptor,
-                       cvm::atom_group_soa::simple_atom const &donor,
+colvar::h_bond::h_bond(cvm::atom_group::simple_atom const &acceptor,
+                       cvm::atom_group::simple_atom const &donor,
                        cvm::real r0_i, int en_i, int ed_i)
   : h_bond()
 {
   r0 = r0_i;
   en = en_i;
   ed = ed_i;
-  register_atom_group(new cvm::atom_group_soa);
+  register_atom_group(new cvm::atom_group);
   auto modify_atom = atom_groups[0]->get_atom_modifier();
   modify_atom.add_atom(acceptor);
   modify_atom.add_atom(donor);

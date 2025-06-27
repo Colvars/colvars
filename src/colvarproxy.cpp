@@ -536,7 +536,7 @@ int colvarproxy::parse_module_config()
 }
 
 int colvarproxy::load_atoms_pdb(char const * /* filename */,
-                                cvm::atom_group_soa & /* atoms */,
+                                cvm::atom_group & /* atoms */,
                                 std::string const & /* pdb_field */,
                                 double /* pdb_field_value */)
 {

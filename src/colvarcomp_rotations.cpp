@@ -106,7 +106,7 @@ int colvar::orientation::init(std::string const &conf)
   // (note that this won't be active for the orientation CVC itself, because
   // colvardeps prevents the flag's activation)
   rot.b_debug_gradients = is_enabled(f_cvc_debug_gradient);
-  ref_pos_soa = cvm::atom_group_soa::pos_aos_to_soa(ref_pos);
+  ref_pos_soa = cvm::atom_group::pos_aos_to_soa(ref_pos);
   num_ref_pos = ref_pos.size();
   num_shifted_pos = atoms->size();
   rot_deriv_impl = std::unique_ptr<rotation_derivative_impl_>(new rotation_derivative_impl_(this));

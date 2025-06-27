@@ -125,7 +125,7 @@ public:
     const int deviceID, cudaStream_t stream);
   const bool atomsChanged() const {return mAtomsChanged;}
   int load_atoms_pdb(char const *filename,
-                     cvm::atom_group_soa& atoms,
+                     cvm::atom_group& atoms,
                      std::string const &pdb_field,
                      double const pdb_field_value) override;
   int load_coords_pdb(char const *filename,
@@ -536,7 +536,7 @@ int colvarproxy_impl::load_coords_pdb(char const *pdb_filename,
 
 // Copied from colvarproxy_namd.C
 int colvarproxy_impl::load_atoms_pdb(char const *pdb_filename,
-                                     cvm::atom_group_soa& atoms,
+                                     cvm::atom_group& atoms,
                                      std::string const &pdb_field_str,
                                      double const pdb_field_value)
 {
@@ -583,7 +583,7 @@ int colvarproxy_impl::load_atoms_pdb(char const *pdb_filename,
       modify_atoms.add_atom_id(ipdb);
     } else {
       modify_atoms.add_atom(
-        cvm::atom_group_soa::init_atom_from_proxy(this, ipdb+1));
+        cvm::atom_group::init_atom_from_proxy(this, ipdb+1));
     }
   }
 

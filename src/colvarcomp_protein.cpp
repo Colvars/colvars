@@ -34,7 +34,7 @@ int colvar::alpha_angles::init(std::string const &conf)
   std::vector<int> residues;
 
   bool b_use_index_groups = false;
-  cvm::atom_group_soa group_CA, group_N, group_O;
+  cvm::atom_group group_CA, group_N, group_O;
 
   std::string residues_conf = "";
   std::string prefix;
@@ -122,9 +122,9 @@ int colvar::alpha_angles::init(std::string const &conf)
       for (size_t i = 0; i < residues.size()-2; i++) {
         theta.push_back(
           new colvar::angle(
-            cvm::atom_group_soa::init_atom_from_proxy(p, r[i  ], "CA", sid),
-            cvm::atom_group_soa::init_atom_from_proxy(p, r[i+1], "CA", sid),
-            cvm::atom_group_soa::init_atom_from_proxy(p, r[i+2], "CA", sid)));
+            cvm::atom_group::init_atom_from_proxy(p, r[i  ], "CA", sid),
+            cvm::atom_group::init_atom_from_proxy(p, r[i+1], "CA", sid),
+            cvm::atom_group::init_atom_from_proxy(p, r[i+2], "CA", sid)));
         register_atom_group(theta.back()->atom_groups[0]);
         register_atom_group(theta.back()->atom_groups[1]);
         register_atom_group(theta.back()->atom_groups[2]);
@@ -151,16 +151,16 @@ int colvar::alpha_angles::init(std::string const &conf)
           // Note: we need to call the atom copy constructor here because
           // the h_bond constructor does not make copies of the provided atoms
           hb.push_back(
-            new colvar::h_bond(cvm::atom_group_soa::init_atom_from_proxy(p,group_O[i]),
-                               cvm::atom_group_soa::init_atom_from_proxy(p,group_N[i+4]),
+            new colvar::h_bond(cvm::atom_group::init_atom_from_proxy(p,group_O[i]),
+                               cvm::atom_group::init_atom_from_proxy(p,group_N[i+4]),
                                r0, en, ed));
           register_atom_group(hb.back()->atom_groups[0]);
         }
       } else {
         for (size_t i = 0; i < residues.size()-4; i++) {
           hb.push_back(
-            new colvar::h_bond(cvm::atom_group_soa::init_atom_from_proxy(p,r[i  ], "O",  sid),
-                               cvm::atom_group_soa::init_atom_from_proxy(p,r[i+4], "N",  sid),
+            new colvar::h_bond(cvm::atom_group::init_atom_from_proxy(p,r[i  ], "O",  sid),
+                               cvm::atom_group::init_atom_from_proxy(p,r[i+4], "N",  sid),
                                r0, en, ed));
           register_atom_group(hb.back()->atom_groups[0]);
         }
@@ -360,7 +360,7 @@ int colvar::dihedPC::init(std::string const &conf)
   size_t n_residues;
   std::string residues_conf = "";
   std::string prefix;
-  cvm::atom_group_soa group_CA, group_N, group_C;
+  cvm::atom_group group_CA, group_N, group_C;
 
   // residueRange is mandatory for the topology-based case
   if (key_lookup(conf, "residueRange", &residues_conf)) {
@@ -484,10 +484,10 @@ int colvar::dihedPC::init(std::string const &conf)
     } else {
       theta.push_back(
         new colvar::dihedral(
-          cvm::atom_group_soa::init_atom_from_proxy(p,r[i  ], "N", sid),
-          cvm::atom_group_soa::init_atom_from_proxy(p,r[i  ], "CA", sid),
-          cvm::atom_group_soa::init_atom_from_proxy(p,r[i  ], "C", sid),
-          cvm::atom_group_soa::init_atom_from_proxy(p,r[i+1], "N", sid)));
+          cvm::atom_group::init_atom_from_proxy(p,r[i  ], "N", sid),
+          cvm::atom_group::init_atom_from_proxy(p,r[i  ], "CA", sid),
+          cvm::atom_group::init_atom_from_proxy(p,r[i  ], "C", sid),
+          cvm::atom_group::init_atom_from_proxy(p,r[i+1], "N", sid)));
     }
     register_atom_group(theta.back()->atom_groups[0]);
     register_atom_group(theta.back()->atom_groups[1]);
@@ -501,10 +501,10 @@ int colvar::dihedPC::init(std::string const &conf)
                                            group_C[i+1]));
     } else {
       theta.push_back(
-        new colvar::dihedral(cvm::atom_group_soa::init_atom_from_proxy(p,r[i  ], "C", sid),
-                             cvm::atom_group_soa::init_atom_from_proxy(p,r[i+1], "N", sid),
-                             cvm::atom_group_soa::init_atom_from_proxy(p,r[i+1], "CA", sid),
-                             cvm::atom_group_soa::init_atom_from_proxy(p,r[i+1], "C", sid)));
+        new colvar::dihedral(cvm::atom_group::init_atom_from_proxy(p,r[i  ], "C", sid),
+                             cvm::atom_group::init_atom_from_proxy(p,r[i+1], "N", sid),
+                             cvm::atom_group::init_atom_from_proxy(p,r[i+1], "CA", sid),
+                             cvm::atom_group::init_atom_from_proxy(p,r[i+1], "C", sid)));
     }
     register_atom_group(theta.back()->atom_groups[0]);
     register_atom_group(theta.back()->atom_groups[1]);

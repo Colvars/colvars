@@ -85,7 +85,7 @@ public:
   /// \param atom_field Array of atomic field values (if NULL, ones are used)
   virtual int compute_volmap(int flags,
                              int volmap_id,
-                             cvm::atom_group_soa* ag,
+                             cvm::atom_group* ag,
                              cvm::real *value,
                              cvm::real *atom_field);
 

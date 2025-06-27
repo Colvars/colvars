@@ -199,7 +199,7 @@ public:
                                  cvm::atom_pos const &pos2) const;
 
   int load_atoms_pdb(char const *filename,
-                     cvm::atom_group_soa &atoms,
+                     cvm::atom_group &atoms,
                      std::string const &pdb_field,
                      double pdb_field_value) override;
 
@@ -237,7 +237,7 @@ public:
 
   int compute_volmap(int flags,
                      int volmap_id,
-                     cvm::atom_group_soa* ag,
+                     cvm::atom_group* ag,
                      cvm::real *value,
                      cvm::real *atom_field) override;
 
@@ -245,14 +245,14 @@ public:
   template<class T>
   void getGridForceGridValue(int flags,
                              T const *grid,
-                             cvm::atom_group_soa* ag,
+                             cvm::atom_group* ag,
                              cvm::real *value,
                              cvm::real *atom_field);
 
   /// Implementation of inner loop; allows for atom list computation and use
   template<class T, int flags>
   void GridForceGridLoop(T const *g,
-                         cvm::atom_group_soa* ag,
+                         cvm::atom_group* ag,
                          cvm::real *value,
                          cvm::real *atom_field);
 

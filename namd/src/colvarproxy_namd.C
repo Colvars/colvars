@@ -1033,7 +1033,7 @@ int colvarproxy_namd::load_coords_pdb(char const *pdb_filename,
 }
 
 int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
-                                     cvm::atom_group_soa& atoms,
+                                     cvm::atom_group& atoms,
                                      std::string const &pdb_field_str,
                                      double const pdb_field_value)
 {
@@ -1080,7 +1080,7 @@ int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
     if (atoms.is_enabled(colvardeps::f_ag_scalable)) {
       modify_atoms.add_atom_id(ipdb);
     } else {
-      modify_atoms.add_atom(cvm::atom_group_soa::init_atom_from_proxy(this, ipdb+1));
+      modify_atoms.add_atom(cvm::atom_group::init_atom_from_proxy(this, ipdb+1));
     }
   }
 
@@ -1431,7 +1431,7 @@ int colvarproxy_namd::get_volmap_id_from_name(char const *volmap_name)
 
 template<class T, int flags>
 void colvarproxy_namd::GridForceGridLoop(T const *g,
-                                         cvm::atom_group_soa* ag,
+                                         cvm::atom_group* ag,
                                          cvm::real *value,
                                          cvm::real *atom_field)
 {
@@ -1467,7 +1467,7 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
 template<class T>
 void colvarproxy_namd::getGridForceGridValue(int flags,
                                              T const *g,
-                                             cvm::atom_group_soa* ag,
+                                             cvm::atom_group* ag,
                                              cvm::real *value,
                                              cvm::real *atom_field)
 {
@@ -1482,7 +1482,7 @@ void colvarproxy_namd::getGridForceGridValue(int flags,
 
 int colvarproxy_namd::compute_volmap(int flags,
                                      int volmap_id,
-                                     cvm::atom_group_soa* ag,
+                                     cvm::atom_group* ag,
                                      cvm::real *value,
                                      cvm::real *atom_field)
 {

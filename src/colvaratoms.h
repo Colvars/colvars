@@ -22,11 +22,11 @@
  * the use of SoA can significantly improve the
  * performance. There are two disadvantages of adopting SoA:
  *
- * 1. The insertion or delete of atoms in an object of \link cvm::atom_group_soa
+ * 1. The insertion or delete of atoms in an object of \link cvm::atom_group
  *    \endlink is not as handy as the AoS class \link cvm::atom_group \endlink.
- *    To solve this issue, this nested class \p cvm::atom_group_soa::atom_modifier
+ *    To solve this issue, this nested class \p cvm::atom_group::atom_modifier
  *    has been implemented as a temporary AoS class that shares the same
- *    interfaces like \p cvm::atom_group_soa::atom_modifier::add_atom_numbers
+ *    interfaces like \p cvm::atom_group::atom_modifier::add_atom_numbers
  *    as the traditional AoS class \link cvm::atom_group \endlink. To
  *    add or remove atoms in the SoA class, you can do the following:
  *    @code
@@ -38,7 +38,7 @@
  *    Specifically, when \p get_atom_modifier is called, the temporary AoS atom
  *    group will be created based on this SoA atom group, and after the
  *    modification of the temporary AoS atom group is completed, the
- *    destructor \p cvm::atom_group_soa::atom_modifier::~atom_modifier
+ *    destructor \p cvm::atom_group::atom_modifier::~atom_modifier
  *    will synchronize the changes back to this SoA atom group.
  *
  * 2. It would be difficult to reorder the atoms inside an SoA group.
@@ -48,7 +48,7 @@
  *    a group never changes.
  *
  */
-class cvm::atom_group_soa: public colvarparse, public colvardeps {
+class cvm::atom_group: public colvarparse, public colvardeps {
 public:
   /**
    *  @brief A helper function to re-arrange the a vector of
@@ -62,18 +62,18 @@ public:
    * @attention Will call \p init_dependencies() to initialize the
    *            dependency tree.
    */
-  atom_group_soa();
+  atom_group();
   /**
    * @brief Create a group object, assign a name to it
    */
-  atom_group_soa(char const *key_in);
+  atom_group(char const *key_in);
   /**
    * @brief Destructor
    *
    * @attention Will call \p clear_soa() to de-reference all atoms (if not scalable)
    *            from the proxy class.
    */
-  ~atom_group_soa() override;
+  ~atom_group() override;
   /**
    * @brief Set default values for common flags
    */
@@ -101,7 +101,7 @@ public:
   }
   /**
    * @brief A simplified class of \p cvm::atom that can be used with
-   *        \p cvm::atom_group_soa::atom_modifier
+   *        \p cvm::atom_group::atom_modifier
    */
   struct simple_atom {
     int proxy_index;
@@ -114,7 +114,7 @@ public:
     cvm::rvector grad;
   };
   /**
-   * @brief Initialize an instance of \p cvm::atom_group_soa::simple_atom
+   * @brief Initialize an instance of \p cvm::atom_group::simple_atom
    *        from \p colvarproxy
    * @param p The pointer to the \p colvarproxy instance.
    * @param residue The residue number of the atom
@@ -128,7 +128,7 @@ public:
     std::string const     &atom_name,
     std::string const     &segment_id);
   /**
-   * @brief Initialize an instance of \p cvm::atom_group_soa::simple_atom
+   * @brief Initialize an instance of \p cvm::atom_group::simple_atom
    *        from \p colvarproxy
    * @param p The pointer to the \p colvarproxy instance.
    * @param atom_number Atom index in the system topology (1-based)
@@ -137,12 +137,12 @@ public:
     colvarproxy* const p,
     int atom_number);
   /**
-   * @brief Initialize an instance of \p cvm::atom_group_soa::simple_atom
+   * @brief Initialize an instance of \p cvm::atom_group::simple_atom
    *        from \p colvarproxy
    * @param p The pointer to the \p colvarproxy instance.
-   * @param simple_atom The existing object of \p cvm::atom_group_soa::simple_atom
+   * @param simple_atom The existing object of \p cvm::atom_group::simple_atom
    *
-   * @attention The \p cvm::atom_group_soa::simple_atom::proxy_index of
+   * @attention The \p cvm::atom_group::simple_atom::proxy_index of
    *            input atom must be known. The reference count in the proxy
    *            will be increased.
    */
@@ -150,14 +150,14 @@ public:
     colvarproxy* const p,
     const simple_atom& atom);
   /**
-   * @brief The temporary AoS interface to modify \p cvm::atom_group_soa
+   * @brief The temporary AoS interface to modify \p cvm::atom_group
    */
   class atom_modifier {
   private:
     /**
      * @brief Pointer to the SoA atom group to be modified
      */
-    cvm::atom_group_soa* m_ag;
+    cvm::atom_group* m_ag;
     /**
      * @brief Internal atom IDs (populated during initialization)
      */
@@ -190,15 +190,15 @@ public:
     using atom_iter = decltype(m_atoms)::iterator;
     using const_atom_iter = decltype(m_atoms)::const_iterator;
     /**
-     * @brief Construct from \p cvm::atom_group_soa
+     * @brief Construct from \p cvm::atom_group
      *
-     * @attention Will call \p cvm::atom_group_soa::atom_modifier::update_from_soa()
+     * @attention Will call \p cvm::atom_group::atom_modifier::update_from_soa()
      */
-    atom_modifier(cvm::atom_group_soa* ag);
+    atom_modifier(cvm::atom_group* ag);
     /**
      * @brief Destructor
      *
-     * @attention Will call \p cvm::atom_group_soa::atom_modifier::sync_to_soa()
+     * @attention Will call \p cvm::atom_group::atom_modifier::sync_to_soa()
      */
     ~atom_modifier();
     /**
@@ -219,7 +219,7 @@ public:
     ///@{
     int add_atom(simple_atom const &a);
     int add_atom_numbers(std::string const &numbers_conf);
-    int add_atoms_of_group(const atom_group_soa *ag);
+    int add_atoms_of_group(const atom_group *ag);
     int add_index_group(std::string const &index_group_name, bool silent = false);
     int add_atom_numbers_range(std::string const &range_conf);
     int add_atom_name_residue_range(std::string const &psf_segid,
@@ -234,10 +234,10 @@ public:
   /**
    * @brief Get the atom modifier object associated with this SoA atom group.
    *
-   * @attention You can get only one instance of \p cvm::atom_group_soa::atom_modifier
+   * @attention You can get only one instance of \p cvm::atom_group::atom_modifier
    *            in a scope. To prevent acquiring multiple instances of \p atom_modifier
    *            at the same time which may corrupt the SoA layout. The associated
-   *            \p cvm::atom_group_soa::atom_modifier will try locking \p mutex_lock.
+   *            \p cvm::atom_group::atom_modifier will try locking \p mutex_lock.
    */
   atom_modifier get_atom_modifier() {
     return atom_modifier(this);
@@ -312,7 +312,7 @@ public:
    *
    * If yes, returns 1-based number of a common atom; else, returns 0
    */
-  static int overlap(const atom_group_soa &g1, const atom_group_soa &g2);
+  static int overlap(const atom_group &g1, const atom_group &g2);
   /**
    * @brief Get the current positions
    */
@@ -430,7 +430,7 @@ public:
   /**
    * @brief Shorthand: save the specified gradient on each atom,
    * weighting with the atom mass (mostly used in combination with
-   * \p cvm::atom_group_soa::center_of_mass() )
+   * \p cvm::atom_group::center_of_mass() )
    */
   void set_weighted_gradient(cvm::rvector const &grad);
   /**
@@ -638,22 +638,22 @@ public:
    */
   ///@{
   inline cvm::real& fit_gradients_x(size_t i) {
-    atom_group_soa *group_for_fit = fitting_group ? fitting_group : this;
+    atom_group *group_for_fit = fitting_group ? fitting_group : this;
     return group_for_fit->fit_gradients[i];}
   inline cvm::real& fit_gradients_y(size_t i) {
-    atom_group_soa *group_for_fit = fitting_group ? fitting_group : this;
+    atom_group *group_for_fit = fitting_group ? fitting_group : this;
     return group_for_fit->fit_gradients[i + group_for_fit->size()];}
   inline cvm::real& fit_gradients_z(size_t i) {
-    atom_group_soa *group_for_fit = fitting_group ? fitting_group : this;
+    atom_group *group_for_fit = fitting_group ? fitting_group : this;
     return group_for_fit->fit_gradients[i + 2 * group_for_fit->size()];}
   inline const cvm::real& fit_gradients_x(size_t i) const {
-    const atom_group_soa *group_for_fit = fitting_group ? fitting_group : this;
+    const atom_group *group_for_fit = fitting_group ? fitting_group : this;
     return group_for_fit->fit_gradients[i];}
   inline const cvm::real& fit_gradients_y(size_t i) const {
-    const atom_group_soa *group_for_fit = fitting_group ? fitting_group : this;
+    const atom_group *group_for_fit = fitting_group ? fitting_group : this;
     return group_for_fit->fit_gradients[i + group_for_fit->size()];}
   inline const cvm::real& fit_gradients_z(size_t i) const {
-    const atom_group_soa *group_for_fit = fitting_group ? fitting_group : this;
+    const atom_group *group_for_fit = fitting_group ? fitting_group : this;
     return group_for_fit->fit_gradients[i + 2 * group_for_fit->size()];}
   ///@}
   /**
@@ -694,7 +694,7 @@ public:
     /*! @brief Constructor of group_force_object
      *  @param ag The pointer to the atom group that forces will be applied on.
      */
-    group_force_object(cvm::atom_group_soa* ag);
+    group_force_object(cvm::atom_group* ag);
     /*! @brief Destructor of group_force_object
      */
     ~group_force_object();
@@ -725,8 +725,8 @@ public:
      */
     void add_atom_force(size_t i, const cvm::rvector& force);
   private:
-    cvm::atom_group_soa* m_ag;
-    cvm::atom_group_soa* m_group_for_fit;
+    cvm::atom_group* m_ag;
+    cvm::atom_group* m_group_for_fit;
     bool m_has_fitting_force;
     void apply_force_with_fitting_group();
   };
@@ -743,7 +743,7 @@ public:
   std::string key;
   /// \brief If f_ag_center or f_ag_rotate is true, use this group to
   /// define the transformation (default: this group itself)
-  cvm::atom_group_soa *fitting_group;
+  cvm::atom_group *fitting_group;
   /// The rotation calculated automatically if f_ag_rotate is defined
   cvm::rotation rot;
   /// \brief Don't apply any force on this group (use its coordinates

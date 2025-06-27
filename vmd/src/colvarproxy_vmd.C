@@ -566,7 +566,7 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
 
 
 int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
-                                    cvm::atom_group_soa &atoms,
+                                    cvm::atom_group &atoms,
                                     std::string const &pdb_field_str,
                                     double const pdb_field_value)
 {
@@ -624,7 +624,7 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
     } else if (atom_pdb_field_value == 0.0) {
       continue;
     }
-    modify_atoms.add_atom(cvm::atom_group_soa::init_atom_from_proxy(this, ipdb+1));
+    modify_atoms.add_atom(cvm::atom_group::init_atom_from_proxy(this, ipdb+1));
   }
 
   vmd->molecule_delete(tmpmolid);
@@ -804,7 +804,7 @@ void colvarproxy_vmd::clear_volmap(int index)
 
 template<int flags>
 void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
-                                      cvm::atom_group_soa* atoms,
+                                      cvm::atom_group* atoms,
                                       cvm::real *value,
                                       cvm::real *atom_field)
 {
@@ -870,7 +870,7 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
 
 int colvarproxy_vmd::compute_volmap(int flags,
                                     int volmap_id,
-                                    cvm::atom_group_soa* atoms,
+                                    cvm::atom_group* atoms,
                                     cvm::real *value,
                                     cvm::real *atom_field)
 {

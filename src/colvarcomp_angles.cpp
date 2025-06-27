@@ -36,13 +36,13 @@ int colvar::angle::init(std::string const &conf)
   return error_code;
 }
 
-colvar::angle::angle(cvm::atom_group_soa::simple_atom const &a1,
-                     cvm::atom_group_soa::simple_atom const &a2,
-                     cvm::atom_group_soa::simple_atom const &a3) : angle()
+colvar::angle::angle(cvm::atom_group::simple_atom const &a1,
+                     cvm::atom_group::simple_atom const &a2,
+                     cvm::atom_group::simple_atom const &a3) : angle()
 {
-  group1 = new cvm::atom_group_soa();
-  group2 = new cvm::atom_group_soa();
-  group3 = new cvm::atom_group_soa();
+  group1 = new cvm::atom_group();
+  group2 = new cvm::atom_group();
+  group3 = new cvm::atom_group();
   {
     auto modify_group1 = group1->get_atom_modifier();
     auto modify_group2 = group2->get_atom_modifier();
@@ -233,18 +233,18 @@ int colvar::dihedral::init(std::string const &conf)
   return error_code;
 }
 
-colvar::dihedral::dihedral(cvm::atom_group_soa::simple_atom const &a1,
-                           cvm::atom_group_soa::simple_atom const &a2,
-                           cvm::atom_group_soa::simple_atom const &a3,
-                           cvm::atom_group_soa::simple_atom const &a4)
+colvar::dihedral::dihedral(cvm::atom_group::simple_atom const &a1,
+                           cvm::atom_group::simple_atom const &a2,
+                           cvm::atom_group::simple_atom const &a3,
+                           cvm::atom_group::simple_atom const &a4)
   : dihedral()
 {
   b_1site_force = false;
 
-  group1 = new cvm::atom_group_soa();
-  group2 = new cvm::atom_group_soa();
-  group3 = new cvm::atom_group_soa();
-  group4 = new cvm::atom_group_soa();
+  group1 = new cvm::atom_group();
+  group2 = new cvm::atom_group();
+  group3 = new cvm::atom_group();
+  group4 = new cvm::atom_group();
   {
     auto modify_group1 = group1->get_atom_modifier();
     auto modify_group2 = group2->get_atom_modifier();

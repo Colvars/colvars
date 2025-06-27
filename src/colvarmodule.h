@@ -284,7 +284,7 @@ static inline real acos(real const &x)
   // allow these classes to access protected data
   class atom;
   class atom_group;
-  class atom_group_soa;
+  class atom_group;
   typedef std::vector<atom>::iterator       atom_iter;
   typedef std::vector<atom>::const_iterator atom_const_iter;
 
@@ -360,12 +360,12 @@ private:
   std::vector<int> colvars_smp_items;
 
   /// Array of named atom groups
-  std::vector<atom_group_soa *> named_atom_groups_soa;
+  std::vector<atom_group *> named_atom_groups_soa;
 
 public:
 
-  void register_named_atom_group_soa(atom_group_soa *ag);
-  void unregister_named_atom_group_soa(atom_group_soa *ag);
+  void register_named_atom_group_soa(atom_group *ag);
+  void unregister_named_atom_group_soa(atom_group *ag);
 
   /// Array of collective variables
   std::vector<colvar *> *variables();
@@ -619,7 +619,7 @@ public:
   static colvar * colvar_by_name(std::string const &name);
 
   /// Look up a named atom group by name; returns NULL if not found
-  static atom_group_soa * atom_group_soa_by_name(std::string const& name);
+  static atom_group * atom_group_soa_by_name(std::string const& name);
 
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
@@ -859,14 +859,14 @@ public:
   /// atoms whose pdb_field equals this
   static int load_coords(char const *filename,
                          std::vector<rvector> *pos,
-                         atom_group_soa *atoms,
+                         atom_group *atoms,
                          std::string const &pdb_field,
                          double pdb_field_value = 0.0);
 
   /// Load coordinates into an atom group from an XYZ file (assumes Angstroms)
   int load_coords_xyz(char const *filename,
                       std::vector<rvector> *pos,
-                      atom_group_soa *atoms,
+                      atom_group *atoms,
                       bool keep_open = false);
 
   /// Frequency for collective variables trajectory output
