@@ -1140,6 +1140,8 @@ int colvarbias_meta::update_replicas_registry()
 
 int colvarbias_meta::read_replica_files()
 {
+  auto *proxy = cvm::main()->proxy;
+
   // Note: we start from the 2nd replica.
   for (size_t ir = 1; ir < replicas.size(); ir++) {
 
@@ -1151,7 +1153,8 @@ int colvarbias_meta::read_replica_files()
                  ": reading the state of replica \""+
                  (replicas[ir])->replica_id+"\" from file \""+
                  (replicas[ir])->replica_state_file+"\".\n");
-        std::ifstream is((replicas[ir])->replica_state_file.c_str());
+        std::istream &is =
+            proxy->input_stream((replicas[ir])->replica_state_file, "replica state file");
         if ((replicas[ir])->read_state(is)) {
           // state file has been read successfully
           (replicas[ir])->replica_state_file_in_sync = true;
@@ -1164,7 +1167,7 @@ int colvarbias_meta::read_replica_files()
           (replicas[ir])->replica_state_file_in_sync = false;
           (replicas[ir])->update_status++;
         }
-        is.close();
+        proxy->close_input_stream((replicas[ir])->replica_state_file);
       } else {
         cvm::log("Metadynamics bias \""+this->name+"\""+
                  ": the state file of replica \""+
