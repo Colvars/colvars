@@ -206,39 +206,29 @@ for dir in ${DIRLIST} ; do
         rm -f ${NEW_MDP} ${NEW_CVCONF}
         ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend 2> ${basename}.err 1> ${basename}.out
         RETVAL=$?
-
-        output=${basename}.part0001
-        for file in ${output}.* ; do
-          # Remove the part number
-          mv -f ${file} ${file/.part0001/}
-        done
-
       else
 
         # Restart both GROMACS and Colvars using the GROMACS checkpoint file
         ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
         ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt 2> ${basename}.err 1> ${basename}.out
-
         RETVAL=$?
-        output=${basename}.part0002
-        for file in ${output}.* ; do
-          # Skip if no files match (avoid literal '*.')
-          [ -e "$file" ] || continue
-          # Remove the part number
-          mv -f ${file} ${file/.part0002/}
-        done
-
       fi
     fi
 
+    logfile=${basename}.log
+    if [ -s ${basename}.part0002.log ] ; then
+      logfile=${basename}.part0002.log
+    fi
+
     # Filter out the version numbers to allow comparisons
-    grep "^colvars:" ${basename}.log \
+    grep "^colvars:" ${logfile} \
       | grep -v 'Initializing the collective variables module' \
       | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
-    if [ -f ${basename}.colvars.state ] ; then
-      grep -sv 'version' ${basename}.colvars.state \
-           > ${TMPDIR}/${basename}.colvars.state.stripped && \
-        mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
+
+    if [ -s ${logfile%.log}.colvars.state ] ; then
+      grep -sv 'version' ${logfile%.log}.colvars.state \
+           > ${TMPDIR}/${logfile%.log}.colvars.state.stripped && \
+        mv -f ${TMPDIR}/${logfile%.log}.colvars.state.stripped ${logfile%.log}.colvars.state.stripped
     fi
 
     # If this test is used to generate the reference output files, copy them
@@ -257,7 +247,16 @@ for dir in ${DIRLIST} ; do
       fi
     fi
 
+  done
 
+  for file in * ; do
+    # Remove part numbers
+    if [ ${file} != ${file/.part0001/} ] ; then
+      mv -f ${file} ${file/.part0001/}
+    fi
+    if [ ${file} != ${file/.part0002/} ] ; then
+      mv -f ${file} ${file/.part0002/}
+    fi
   done
 
   # # now check results
