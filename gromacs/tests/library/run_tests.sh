@@ -103,12 +103,6 @@ cleanup_files() {
 }
 
 
-if ${BINARY} mdrun -colvars 2>&1 | grep -q 'Unknown command-line option -colvars' ; then
-  MDMODULES_INTERFACE=yes
-else
-  MDMODULES_INTERFACE=no
-fi
-
 for dir in ${DIRLIST} ; do
 
   if [ -f ${dir}/disabled ] ; then
@@ -169,81 +163,57 @@ for dir in ${DIRLIST} ; do
 
     # Try running the test
 
-    if [ "x${MDMODULES_INTERFACE}" == "xyes" ] ; then
 
-      if [ "${basename}" == "test" ] ; then
-        ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
-        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} 2> ${basename}.err 1> ${basename}.out
+    if [ "${basename}" == "test" ] ; then
+      ${BINARY} grompp -f ../Common/test.mdp -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+      ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} 2> ${basename}.err 1> ${basename}.out
+      RETVAL=$?
+    fi
+
+    if [ "${basename}" == "test.restart" ] ; then
+
+      if [ -n "${FORCE_INPUT_STATE_FILE}" ] ; then
+
+        # Restart GROMACS using the checkpoint but Colvars using its own state file
+
+        # Add defaultInputStateFile to the Colvars config
+        NEW_CVCONF=$(mktemp test.XXXXX.in)
+        cat test.in > ${NEW_CVCONF}
+        echo "defaultInputStateFile test.colvars.state" >> ${NEW_CVCONF}
+
+        NEW_MDP=$(mktemp test.XXXXX.mdp)
+        cat ../Common/test.mdp > ${NEW_MDP}
+        sed -i "s/test.in/${NEW_CVCONF}/" ${NEW_MDP}
+        # Mimic the initial step of a job restarted from checkpoint, to be
+        # consistent with reference outputs
+        echo "init-step = 20" >> ${NEW_MDP}
+        ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+        rm -f ${NEW_MDP} ${NEW_CVCONF}
+        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend 2> ${basename}.err 1> ${basename}.out
         RETVAL=$?
-      fi
 
-      if [ "${basename}" == "test.restart" ] ; then
+        output=${basename}.part0001
+        for file in ${output}.* ; do
+          # Remove the part number
+          mv -f ${file} ${file/.part0001/}
+        done
 
-        if [ -n "${FORCE_INPUT_STATE_FILE}" ] ; then
+      else
 
-          # Restart GROMACS using the checkpoint but Colvars using its own state file
+        # Restart both GROMACS and Colvars using the GROMACS checkpoint file
+        ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt 2> ${basename}.err 1> ${basename}.out
 
-          # Add defaultInputStateFile to the Colvars config
-          NEW_CVCONF=$(mktemp test.XXXXX.in)
-          cat test.in > ${NEW_CVCONF}
-          echo "defaultInputStateFile test.colvars.state" >> ${NEW_CVCONF}
-
-          NEW_MDP=$(mktemp test.XXXXX.mdp)
-          cat ../Common/test.mdp > ${NEW_MDP}
-          sed -i "s/test.in/${NEW_CVCONF}/" ${NEW_MDP}
-          # Mimic the initial step of a job restarted from checkpoint, to be
-          # consistent with reference outputs
-          echo "init-step = 20" >> ${NEW_MDP}
-          ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
-          rm -f ${NEW_MDP} ${NEW_CVCONF}
-          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend 2> ${basename}.err 1> ${basename}.out
-          RETVAL=$?
-
-          output=${basename}.part0001
-          for file in ${output}.* ; do
-            # Remove the part number
-            mv -f ${file} ${file/.part0001/}
-          done
-
-        else
-
-          # Restart both GROMACS and Colvars using the GROMACS checkpoint file
-          ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
-          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt 2> ${basename}.err 1> ${basename}.out
-
-          RETVAL=$?
-          output=${basename}.part0002
-          for file in ${output}.* ; do
-            # Skip if no files match (avoid literal '*.')
-            [ -e "$file" ] || continue
-            # Remove the part number
-            mv -f ${file} ${file/.part0002/}
-          done
-
-        fi
-      fi
-
-    else
-
-      if [ "${basename}" == "test" ] ; then
-        ln -fs ${basename}.in ${basename}.dat
-        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ../Common/${basename} -deffnm ${basename} -colvars test.dat &> ${basename}.out
         RETVAL=$?
-        ln -fs ${basename}.colvars.state{,.dat}
-      fi
-
-      if [ "${basename}" == "test.restart" ] ; then
-        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ../Common/${basename} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt -colvars ${basename%.restart}.dat -colvars_restart ${basename%.restart}.colvars.state.dat &> ${basename}.out
-        RETVAL=$?
-        output="${basename}.part0002"
+        output=${basename}.part0002
         for file in ${output}.* ; do
           # Skip if no files match (avoid literal '*.')
           [ -e "$file" ] || continue
           # Remove the part number
           mv -f ${file} ${file/.part0002/}
         done
-      fi
 
+      fi
     fi
 
     # Filter out the version numbers to allow comparisons
