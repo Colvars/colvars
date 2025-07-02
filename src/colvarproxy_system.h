@@ -111,7 +111,7 @@ public:
   virtual int send_alch_lambda();
 
   /// Request energy computation every freq steps (necessary for NAMD3, not all back-ends)
-  virtual int request_alch_energy_freq(int const freq) {
+  virtual int request_alch_energy_freq(int const /* freq */) {
     return COLVARS_OK;
   }
 
