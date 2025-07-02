@@ -7,9 +7,9 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
-#include <algorithm>
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
@@ -983,6 +983,7 @@ size_t colvarbias_meta::replica_share_freq() const
 int colvarbias_meta::update_replicas_registry()
 {
   int error_code = COLVARS_OK;
+  auto *proxy = cvm::main()->proxy;
 
   if (cvm::debug())
     cvm::log("Metadynamics bias \""+this->name+"\""+
@@ -990,18 +991,15 @@ int colvarbias_meta::update_replicas_registry()
              cvm::to_str(replicas.size())+" elements.\n");
 
   {
-    // copy the whole file into a string for convenience
+    // Load the whole file into a string
     std::string line("");
-    std::ifstream reg_file(replicas_registry_file.c_str());
-    if (reg_file.is_open()) {
+    std::istream &reg_file = proxy->input_stream(replicas_registry_file, "replica registry file");
+    if (reg_file) {
       replicas_registry.clear();
       while (colvarparse::getline_nocomments(reg_file, line))
-        replicas_registry.append(line+"\n");
-    } else {
-      error_code |= cvm::error("Error: failed to open file \""+
-                               replicas_registry_file+"\" for reading.\n",
-                               COLVARS_FILE_ERROR);
+        replicas_registry.append(line + "\n");
     }
+    proxy->close_input_stream(replicas_registry_file);
   }
 
   // now parse it
@@ -1083,7 +1081,8 @@ int colvarbias_meta::update_replicas_registry()
                ": reading the list file for replica \""+
                (replicas[ir])->replica_id+"\".\n");
 
-    std::ifstream list_is((replicas[ir])->replica_list_file.c_str());
+    std::istream &list_is =
+        proxy->input_stream((replicas[ir])->replica_list_file, "replica list file", false);
     std::string key;
     std::string new_state_file, new_hills_file;
     if (!(list_is >> key) ||
@@ -1108,6 +1107,7 @@ int colvarbias_meta::update_replicas_registry()
         (replicas[ir])->replica_hills_file = new_hills_file;
       }
     }
+    proxy->close_input_stream((replicas[ir])->replica_list_file);
   }
 
   if (cvm::debug())
@@ -1134,7 +1134,7 @@ int colvarbias_meta::read_replica_files()
                  (replicas[ir])->replica_id+"\" from file \""+
                  (replicas[ir])->replica_state_file+"\".\n");
         std::istream &is =
-            proxy->input_stream((replicas[ir])->replica_state_file, "replica state file");
+            proxy->input_stream((replicas[ir])->replica_state_file, "replica state file", false);
         if ((replicas[ir])->read_state(is)) {
           // state file has been read successfully
           (replicas[ir])->replica_state_file_in_sync = true;
@@ -1174,15 +1174,16 @@ int colvarbias_meta::read_replica_files()
 
       // read hills from the other replicas' files
 
-      std::ifstream is((replicas[ir])->replica_hills_file.c_str());
-      if (is.is_open()) {
+      std::istream &is =
+          proxy->input_stream((replicas[ir])->replica_hills_file, "replica hills file", false);
+      if (is) {
 
         // try to resume the previous position (if not the beginning)
         if ((replicas[ir])->replica_hills_file_pos > 0) {
           is.seekg((replicas[ir])->replica_hills_file_pos, std::ios::beg);
         }
 
-        if (!is.is_open()){
+        if (!is){
           // if fail (the file may have been overwritten), reset this
           // position
           is.clear();
@@ -1232,7 +1233,7 @@ int colvarbias_meta::read_replica_files()
                  cvm::to_str(replica_update_freq)+" steps.\n");
         (replicas[ir])->update_status++;
       }
-      is.close();
+      proxy->close_input_stream((replicas[ir])->replica_hills_file);
     }
 
     size_t const n_flush = (replica_update_freq/new_hill_freq + 1);
@@ -1726,8 +1727,10 @@ int colvarbias_meta::setup_output()
 
     // first check that it isn't already there
     bool registered_replica = false;
-    std::ifstream reg_is(replicas_registry_file.c_str());
-    if (reg_is.is_open()) {  // the file may not be there yet
+    // Open without failing on error: the file may not be there yet
+    std::istream &reg_is =
+        cvm::main()->proxy->input_stream(replicas_registry_file, "replicas registry file", false);
+    if (reg_is) {
       std::string existing_replica("");
       std::string existing_replica_file("");
       while ((reg_is >> existing_replica) && existing_replica.size() &&
@@ -1735,13 +1738,12 @@ int colvarbias_meta::setup_output()
         if (existing_replica == replica_id) {
           // this replica was already registered
           replica_list_file = existing_replica_file;
-          reg_is.close();
           registered_replica = true;
           break;
         }
       }
-      reg_is.close();
     }
+    cvm::main()->proxy->close_input_stream(replicas_registry_file);
 
     // if this replica was not included yet, we should generate a
     // new record for it: but first, we write this replica's files,
@@ -1772,11 +1774,11 @@ int colvarbias_meta::setup_output()
     // finally, add a new record for this replica to the registry
     if (! registered_replica) {
       std::ofstream reg_os(replicas_registry_file.c_str(), std::ios::app);
-      if (!reg_os) {
-        return cvm::get_error();
+      if (reg_os) {
+        reg_os << replica_id << " " << replica_list_file << "\n";
+      } else {
+        error_code |= COLVARS_FILE_ERROR;
       }
-      reg_os << replica_id << " " << replica_list_file << "\n";
-      cvm::proxy->close_output_stream(replicas_registry_file);
     }
   }
 
