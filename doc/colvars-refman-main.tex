@@ -6640,6 +6640,8 @@ The following options define the configuration for the ``well-tempered'' metadyn
     simulation.}
 \end{itemize}
 
+\textbf{Note:} usage of well-tempered metadynamics in combination with multiple walkers (\ref{sec:colvarbias_meta_mr}) is discouraged.  Should you want to use the two features, keep in mind that in Colvars, the well-tempered scaling factor is applied independently of the communication between replicas, i.e.\ each walker has its Gaussian hills scaled independently of the other walkers.
+
 
 \cvsubsubsec{Multiple-walker metadynamics}{sec:colvarbias_meta_mr}
 Metadynamics calculations can be performed concurrently by multiple replicas that share a common history.
