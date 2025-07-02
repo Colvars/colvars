@@ -48,6 +48,7 @@ public:
   virtual int init_replicas_params(std::string const &conf);
   virtual int init_well_tempered_params(std::string const &conf);
   virtual int init_ebmeta_params(std::string const &conf);
+  virtual int init_reflection_params(std::string const &conf);
 
   virtual int clear_state_data();
 
@@ -154,6 +155,14 @@ protected:
   /// the next hill in the list)
   std::list<hill>::const_iterator delete_hill(hill_iter &h);
 
+
+  /// \brief Check is current colvar value is within inversion or
+  /// reflection limits to assess whether to add a hill
+  bool check_reflection_limits(bool &ah);
+
+  /// \brief Multidimensional routine to reflect hills
+  int reflect_hill_multid(cvm::real const &h_scale);
+
   /// \brief Calculate the values of the hills, incrementing
   /// bias_energy
   virtual void calc_hills(hill_iter  h_first,
@@ -210,6 +219,38 @@ protected:
   /// \brief Biasing temperature in well-tempered metadynamics
   cvm::real  bias_temperature;
 
+  // hills reflection
+
+  /// \brief Whether using hills reflection
+  bool use_reflection;
+
+  /// \brief For which variables reflection limits are on
+
+  std::vector<int> reflection_llimit_cv;
+  std::vector<int> reflection_ulimit_cv;
+  cvm::real reflection_int;
+  size_t nrefvarsl;
+  size_t nrefvarsu;
+
+  /// \brief Limits for reflection
+  std::vector<cvm::real> reflection_llimit;
+  std::vector<cvm::real> reflection_ulimit;
+
+  /// \brief Multidimensional reflection : store cvs to use and pointers to the limits
+  std::vector<std::vector<bool> > reflection_usel;
+  std::vector<std::vector<cvm::real> > reflection_l;
+
+  /// \brief Multidimensional reflection states
+  std::vector<std::vector<size_t> > ref_state;
+
+  /// \brief For which variables hills forces beyond the boundaries(interval) must be removed
+
+  std::vector<int> which_int_llimit_cv;
+  std::vector<int> which_int_ulimit_cv;
+
+  /// \brief Current value of colvars to be modifed for calculation of energy and forces with interval
+  std::vector<colvarvalue> curr_values;
+
   /// Ensemble-biased metadynamics (EBmeta) flag
   bool       ebmeta;
 
@@ -232,8 +273,11 @@ protected:
   std::shared_ptr<colvar_grid_gradient> hills_energy_gradients;
 
   /// Project the selected hills onto grids
-  void project_hills(hill_iter h_first, hill_iter h_last, colvar_grid_scalar *ge,
-                     colvar_grid_gradient *gf, bool print_progress = false);
+  void project_hills(hill_iter h_first, hill_iter h_last,
+                     colvar_grid_scalar *ge, colvar_grid_gradient *gf,
+                     std::vector<int> const &w_int_llimit_cv, std::vector<int> const &w_int_ulimit_cv,
+                     std::vector<cvm::real> const &ref_llimit, std::vector<cvm::real> const &ref_ulimit,              
+                     bool print_progress = false);
 
 
   // Multiple Replicas variables and functions
