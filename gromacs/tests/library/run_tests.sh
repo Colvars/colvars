@@ -155,101 +155,108 @@ for dir in ${DIRLIST} ; do
   fi
 
   # Run simulation(s)
-  for basename in ${simulations[@]} ; do
-
-    # Create symlinks to the Colvars config file, index file, and xyz file
-    if [ -f ${basename}.in ] ; then
-      ln -sf ${basename}.in ${basename}.dat
-      ln -sf ../Common/da.ndx index.ndx
-      if grep -q "refPositionsFile rmsd_" ${basename}.dat
-      then
-        ln -fs ../Common/rmsd_atoms_refpos.xyz ./
-        ln -fs ../Common/rmsd_atoms_refpos2.xyz ./
-        ln -fs ../Common/rmsd_atoms_random.xyz ./
-      fi
-      if grep -q "refPositionsFile heavy_" ${basename}.dat
-      then
-        ln -fs ../Common/heavy_atoms_refpos.xyz heavy_atoms_refpos.xyz
-      fi
-    fi
-
-    # Try running the test
-
-    if [ "${basename%.restart}" == "${basename}" ] ; then
-      # Initial run
-      MDP=../Common/test.mdp
-      if [ -f ${basename}.mdp ] ; then
-        MDP=${basename}.mdp
-      fi
-      ${BINARY} grompp -f ${MDP} -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
-      ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} 2> ${basename}.err 1> ${basename}.out
+  if [ -f run.sh ]
+  then
+      # Special run script e.g. for interface tests
+      ./run.sh $BINARY
       RETVAL=$?
-    fi
+  else
+    for basename in ${simulations[@]} ; do
 
-    if [ "${basename%.restart}" != "${basename}" ] ; then
-      # Restart run
+      # Create symlinks to the Colvars config file, index file, and xyz file
+      if [ -f ${basename}.in ] ; then
+        ln -sf ${basename}.in ${basename}.dat
+        ln -sf ../Common/da.ndx index.ndx
+        if grep -q "refPositionsFile rmsd_" ${basename}.dat
+        then
+          ln -fs ../Common/rmsd_atoms_refpos.xyz ./
+          ln -fs ../Common/rmsd_atoms_refpos2.xyz ./
+          ln -fs ../Common/rmsd_atoms_random.xyz ./
+        fi
+        if grep -q "refPositionsFile heavy_" ${basename}.dat
+        then
+          ln -fs ../Common/heavy_atoms_refpos.xyz heavy_atoms_refpos.xyz
+        fi
+      fi
 
-      if [ -n "${FORCE_INPUT_STATE_FILE}" ] ; then
+      # Try running the test
 
-        # Restart GROMACS using the checkpoint but Colvars using its own state file
-
-        # Add defaultInputStateFile to the Colvars config
-        NEW_CVCONF=$(mktemp test.XXXXX.in)
-        cat test.in > ${NEW_CVCONF}
-        echo "defaultInputStateFile test.colvars.state" >> ${NEW_CVCONF}
-
-        NEW_MDP=$(mktemp test.XXXXX.mdp)
-        cat ../Common/test.mdp > ${NEW_MDP}
-        sed -i "s/test.in/${NEW_CVCONF}/" ${NEW_MDP}
-        # Mimic the initial step of a job restarted from checkpoint, to be
-        # consistent with reference outputs
-        echo "init-step = 20" >> ${NEW_MDP}
-        ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
-        rm -f ${NEW_MDP} ${NEW_CVCONF}
-        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend 2> ${basename}.err 1> ${basename}.out
+      if [ "${basename%.restart}" == "${basename}" ] ; then
+        # Initial run
+        MDP=../Common/test.mdp
+        if [ -f ${basename}.mdp ] ; then
+          MDP=${basename}.mdp
+        fi
+        ${BINARY} grompp -f ${MDP} -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} 2> ${basename}.err 1> ${basename}.out
         RETVAL=$?
-      else
-
-        # Restart both GROMACS and Colvars using the GROMACS checkpoint file
-        ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
-        ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt 2> ${basename}.err 1> ${basename}.out
-        RETVAL=$?
       fi
-    fi
 
-    logfile=${basename}.log
-    if [ -s ${basename}.part0002.log ] ; then
-      logfile=${basename}.part0002.log
-    fi
+      if [ "${basename%.restart}" != "${basename}" ] ; then
+        # Restart run
 
-    # Filter out the version numbers to allow comparisons
-    grep "^colvars:" ${logfile} \
-      | grep -v 'Initializing the collective variables module' \
-      | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
+        if [ -n "${FORCE_INPUT_STATE_FILE}" ] ; then
 
-    if [ -s ${logfile%.log}.colvars.state ] ; then
-      grep -sv 'version' ${logfile%.log}.colvars.state \
-           > ${TMPDIR}/${logfile%.log}.colvars.state.stripped && \
-        mv -f ${TMPDIR}/${logfile%.log}.colvars.state.stripped ${logfile%.log}.colvars.state.stripped
-    fi
+          # Restart GROMACS using the checkpoint but Colvars using its own state file
 
-    # If this test is used to generate the reference output files, copy them
-    if [ "x${gen_ref_output}" = 'xyes' ]; then
-      grep ':-) GROMACS -' ${basename}.out | head -n 1 > gromacs-version.txt
-      grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> gromacs-version.txt
-      grep 'Using GROMACS interface, version' ${basename}.out | head -n 1 >> gromacs-version.txt
-      cp ${basename}.colvars.state.stripped AutoDiff/
-      cp ${basename}.colvars.traj           AutoDiff/
-      cp ${basename}.colvars.out            AutoDiff/
-      if [ -f ${basename}.histogram1.dat ] ; then
-        cp -f ${basename}.histogram1.dat AutoDiff/
+          # Add defaultInputStateFile to the Colvars config
+          NEW_CVCONF=$(mktemp test.XXXXX.in)
+          cat test.in > ${NEW_CVCONF}
+          echo "defaultInputStateFile test.colvars.state" >> ${NEW_CVCONF}
+
+          NEW_MDP=$(mktemp test.XXXXX.mdp)
+          cat ../Common/test.mdp > ${NEW_MDP}
+          sed -i "s/test.in/${NEW_CVCONF}/" ${NEW_MDP}
+          # Mimic the initial step of a job restarted from checkpoint, to be
+          # consistent with reference outputs
+          echo "init-step = 20" >> ${NEW_MDP}
+          ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+          rm -f ${NEW_MDP} ${NEW_CVCONF}
+          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend 2> ${basename}.err 1> ${basename}.out
+          RETVAL=$?
+        else
+
+          # Restart both GROMACS and Colvars using the GROMACS checkpoint file
+          ${BINARY} convert-tpr -s ${basename%.restart}.tpr -nsteps 40 -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+          ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend -cpi ${basename%.restart}.cpt 2> ${basename}.err 1> ${basename}.out
+          RETVAL=$?
+        fi
       fi
-      if [ -f ${basename}.pmf ] ; then
-        cp -f ${basename}.pmf AutoDiff/
-      fi
-    fi
 
-  done
+      logfile=${basename}.log
+      if [ -s ${basename}.part0002.log ] ; then
+        logfile=${basename}.part0002.log
+      fi
+
+      # Filter out the version numbers to allow comparisons
+      grep "^colvars:" ${logfile} \
+        | grep -v 'Initializing the collective variables module' \
+        | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
+
+      if [ -s ${logfile%.log}.colvars.state ] ; then
+        grep -sv 'version' ${logfile%.log}.colvars.state \
+            > ${TMPDIR}/${logfile%.log}.colvars.state.stripped && \
+          mv -f ${TMPDIR}/${logfile%.log}.colvars.state.stripped ${logfile%.log}.colvars.state.stripped
+      fi
+
+      # If this test is used to generate the reference output files, copy them
+      if [ "x${gen_ref_output}" = 'xyes' ]; then
+        grep ':-) GROMACS -' ${basename}.out | head -n 1 > gromacs-version.txt
+        grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> gromacs-version.txt
+        grep 'Using GROMACS interface, version' ${basename}.out | head -n 1 >> gromacs-version.txt
+        cp ${basename}.colvars.state.stripped AutoDiff/
+        cp ${basename}.colvars.traj           AutoDiff/
+        cp ${basename}.colvars.out            AutoDiff/
+        if [ -f ${basename}.histogram1.dat ] ; then
+          cp -f ${basename}.histogram1.dat AutoDiff/
+        fi
+        if [ -f ${basename}.pmf ] ; then
+          cp -f ${basename}.pmf AutoDiff/
+        fi
+      fi
+
+    done
+  fi
 
   for file in * ; do
     # Remove part numbers
