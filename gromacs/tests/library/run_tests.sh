@@ -87,28 +87,30 @@ DIFF_PREC=6
 MIN_PREC=1
 
 cleanup_files() {
-  local -a scripts=("$*")
-  if [ -n "${1}" ] ; then
-    scripts=(test.tpr test.restart.tpr)
+  local -a scripts=("$@")
+  if (( $# == 0 )); then
+    scripts=(*.tpr)
   fi
-  for script in ${scripts[@]} ; do
-    for f in ${script%.tpr}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
-    rm -f ${script%.tpr}.*{BAK,old,backup}
-    for f in ${script%.tpr}.*{state,state.dat,state.stripped,out,traj,histogram?.dat,histogram?.dx,corrfunc.dat,pmf}
+  for script in "${scripts[@]}"; do
+    base="${script%.tpr}"
+    for f in ${base}.*diff; do if [ ! -s $f ]; then rm -f $f; fi; done # remove empty diffs only
+    rm -f ${base}.*{BAK,old,backup}
+    for f in ${base}.*{state,state.dat,state.stripped,out,traj,histogram?.dat,histogram?.dx,corrfunc.dat,pmf}
     do
       if [ ! -f "$f.diff" ]; then rm -f $f; fi # keep files that have a non-empty diff
     done
-    rm -f *.xtc *.trr *.edr *.cpt *.gro *.log \#*${script%.tpr}.*  #Gromacs files
-    rm -f
+    rm -f *.xtc *.trr *.edr *.cpt *.gro *.log mdout.mdp \#*  #Gromacs files
+    rm -f metadynamics1.*.txt replicas.registry.txt *.hills *.tpr
     rm -f *.out *.out.diff *.err # Delete output files regardless
     rm -f *.ndx *.xyz
-    rm -f ${script%.tpr}.dat
+    rm -f ${base}.dat
   done
 }
 
 
 for dir in ${DIRLIST} ; do
 
+  dir="${dir%/}" # Remove trailing / if present
   if [ -f ${dir}/disabled ] ; then
     continue
   fi
@@ -148,7 +150,7 @@ for dir in ${DIRLIST} ; do
   cleanup_files
 
   simulations=(test test.restart)
-  if [ ${dir##*/} == "000_multiple_walkers_mtd" ] ; then
+  if [ "${dir##*/}" = "000_multiple_walkers_mtd" ] ; then
     simulations=(test{.rep1,.rep2} test{.rep1,.rep2}.restart)
   fi
 
