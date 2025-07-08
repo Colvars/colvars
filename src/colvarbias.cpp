@@ -20,6 +20,8 @@
 
 colvarbias::colvarbias(char const *key)
 {
+  time_step_factor = cvm::proxy->time_step_factor();
+
   bias_type = colvarparse::to_lower_cppstr(key);
   state_keyword = bias_type;
 
@@ -27,8 +29,6 @@ colvarbias::colvarbias(char const *key)
   description = "uninitialized " + bias_type + " bias";
 
   colvarbias::init_dependencies();
-
-  time_step_factor = 1;
 
   has_data = false;
   b_output_energy = false;
@@ -117,8 +117,14 @@ int colvarbias::init(std::string const &conf)
 
   get_keyval(conf, "timeStepFactor", time_step_factor, time_step_factor);
   if (time_step_factor < 1) {
-    error_code |= cvm::error("Error: timeStepFactor must be 1 or greater.\n",
-                             COLVARS_INPUT_ERROR);
+    error_code |= cvm::error("Error: timeStepFactor must be 1 or greater.\n", COLVARS_INPUT_ERROR);
+  }
+  if (time_step_factor % cvm::proxy->time_step_factor() != 0) {
+    error_code |=
+        cvm::error("timeStepFactor for this bias (currently " + cvm::to_str(time_step_factor) +
+                       ") must be a multiple of the global Colvars timestep multiplier (" +
+                       cvm::to_str(cvm::proxy->time_step_factor()) + ").\n",
+                   COLVARS_INPUT_ERROR);
   }
 
   // Use the scaling factors from a grid?
