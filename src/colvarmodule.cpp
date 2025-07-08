@@ -447,19 +447,8 @@ int colvarmodule::parse_global_params(std::string const &conf)
                     colvarparse::parse_silent);
 
   parse->get_keyval(conf, "colvarsTrajFrequency", cv_traj_freq, cv_traj_freq);
-  if (cv_traj_freq % cvm::proxy->time_step_factor() != 0) {
-    cvm::error("colvarsTrajFrequency (currently " + cvm::to_str(cv_traj_freq)
-      + ") must be a multiple of the global Colvars timestep multiplier ("
-      +  cvm::to_str(cvm::proxy->time_step_factor()) + ").\n", COLVARS_INPUT_ERROR);
-  }
-
   parse->get_keyval(conf, "colvarsRestartFrequency",
                     restart_out_freq, restart_out_freq);
-  if (restart_out_freq % cvm::proxy->time_step_factor() != 0) {
-    cvm::error("colvarsRestartFrequency (currently " + cvm::to_str(restart_out_freq)
-      + ") must be a multiple of the global Colvars timestep multiplier ("
-      +  cvm::to_str(cvm::proxy->time_step_factor()) + ").\n", COLVARS_INPUT_ERROR);
-  }
 
   parse->get_keyval(conf, "scriptedColvarForces",
                     use_scripted_forces, use_scripted_forces);
