@@ -103,7 +103,7 @@ protected:
   std::vector<cvm::real> colvar_sigmas;
 
   /// \brief Number of simulation steps between two hills
-  size_t     new_hill_freq;
+  size_t     new_hill_freq = 0;
 
   /// Write the hill logfile
   bool b_hills_traj;
@@ -185,7 +185,7 @@ protected:
   bool       expand_grids;
 
   /// \brief How often the hills should be projected onto the grids
-  size_t     grids_freq;
+  size_t     grids_freq = 0;
 
   /// Keep hills in the restart file (e.g. to accurately rebin later)
   bool       keep_hills;
