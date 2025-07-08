@@ -30,7 +30,6 @@ colvarbias_meta::colvarbias_meta(char const *key)
   new_hill_freq = 1000;
 
   use_grids = true;
-  grids_freq = 0;
   rebin_grids = false;
 
   dump_fes = true;
@@ -69,9 +68,6 @@ int colvarbias_meta::init(std::string const &conf)
   get_keyval(conf, "newHillFrequency", new_hill_freq, new_hill_freq);
   if (new_hill_freq > 0) {
     enable(f_cvb_history_dependent);
-    if (grids_freq == 0) {
-      grids_freq = new_hill_freq;
-    }
   }
 
   get_keyval(conf, "gaussianSigmas", colvar_sigmas, colvar_sigmas);
@@ -114,6 +110,11 @@ int colvarbias_meta::init(std::string const &conf)
   get_keyval(conf, "useGrids", use_grids, use_grids);
 
   if (use_grids) {
+
+    if (grids_freq == 0) {
+      // Set default grid frequency
+      grids_freq = new_hill_freq;
+    }
 
     for (i = 0; i < num_variables(); i++) {
       if (2.0*colvar_sigmas[i] < variables(i)->width) {
