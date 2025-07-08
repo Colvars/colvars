@@ -74,24 +74,37 @@ def get_pr_authors(pr):
 
 def print_pr_report(kwargs):
 
-    ref_date = kwargs.get('since')
+    since_date = kwargs.get('since')
+    until_date = kwargs.get('until')
 
-    if not ref_date is None:
-        print()
-        print("The following is a list of pull requests since",
-              ref_date+":")
-        ref_date_ts = date_parser.parse(ref_date).timestamp()
+    msg = "The following is a list of"
+    if since_date is None and until_date is None:
+        msg += " all"
+    msg += " pull requests"
+
+    if since_date:
+        since_date_ts = date_parser.parse(since_date).timestamp()
+        msg += f" merged since {since_date}"
     else:
-        ref_date_ts = 0
-        print()
-        print("The following is a list of all pull requests:")
+        since_date_ts = 0
+
+    if until_date:
+        until_date_ts = date_parser.parse(until_date).timestamp()
+        if since_date:
+            msg += f" and until {until_date}"
+        else:
+            msg += f" merged until {until_date}"
+    else:
+        until_date_ts = 0
+
+    print(msg + ":")
 
     pr_db = get_pr_list(kwargs.get('state'), label=kwargs['label'])
     all_authors = []
     for pr in pr_db:
         pr['mergedAt'] = date_parser.parse(pr['mergedAt']).timestamp()
         pr_labels = [label['name'] for label in pr['labels']]
-        if pr['mergedAt'] > ref_date_ts and affects_backend(
+        if pr['mergedAt'] >= since_date_ts and pr['mergedAt'] <= until_date_ts and affects_backend(
                 pr_labels, kwargs.get('backend')):
             pr_authors = get_pr_authors(pr)
             all_authors += pr_authors
@@ -100,8 +113,7 @@ def print_pr_report(kwargs):
             print(" ", pr['url'], "("+", ".join(pr_authors)+")")
 
     print()
-    print("Authors:", ", ".join(sorted(list(set(all_authors)),
-                                       key=str.casefold)))
+    print("Authors:", ", ".join(sorted(list(set(all_authors)), key=str.casefold)))
 
 
 if __name__ == '__main__':
@@ -112,7 +124,10 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--since',
                         type=str,
-                        help="List PRs merged this date; default is all")
+                        help="List PRs merged since this date; default is all")
+    parser.add_argument('--until',
+                        type=str,
+                        help="List PRs merged until this date; default is all")
     parser.add_argument('--backend',
                         type=str,
                         choices=backends,
