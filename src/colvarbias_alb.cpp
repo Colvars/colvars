@@ -150,7 +150,7 @@ int colvarbias_alb::update()
   colvarproxy *proxy = cvm::main()->proxy;
 
   bias_energy = 0.0;
-  update_calls++;
+  update_calls += time_step_factor;
 
   if (cvm::debug())
     cvm::log("Updating the adaptive linear bias \""+this->name+"\".\n");
@@ -221,7 +221,7 @@ int colvarbias_alb::update()
     //reset means and sum of squares of differences
     for (size_t i = 0; i < num_variables(); i++) {
 
-      temp = 2. * (means[i] / (static_cast<cvm::real> (colvar_centers[i])) - 1) * ssd[i] / (update_calls - 1);
+      temp = 2. * (means[i] / (static_cast<cvm::real> (colvar_centers[i])) - 1) * ssd[i] / (update_calls - time_step_factor);
 
       if (proxy->target_temperature() > 0.0) {
         step_size = temp / (proxy->target_temperature() * proxy->boltzmann());
