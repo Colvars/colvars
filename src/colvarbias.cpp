@@ -164,11 +164,11 @@ int colvarbias::init_mts(std::string const &conf) {
   }
 
   for (auto *cv : colvars) {
-    if (cv->get_time_step_factor() != time_step_factor) {
+    if (time_step_factor % cv->get_time_step_factor()) {
       error_code |= cvm::error(
-          "Error: variable " + cv->description + " has a value of timeStepFactor (" +
-              cvm::to_str(cv->get_time_step_factor()) + ") different from that of bias " +
-              description + " (" + cvm::to_str(time_step_factor) + ").\n",
+          "Error: timeStepFactor for " + description + " (" + cvm::to_str(time_step_factor) +
+            ") should be a multiple of that of " + cv->description + " (" +
+            cvm::to_str(cv->get_time_step_factor()) + ").\n",
           COLVARS_INPUT_ERROR);
     }
   }
