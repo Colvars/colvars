@@ -30,7 +30,6 @@ colvarbias_meta::colvarbias_meta(char const *key)
   new_hill_freq = 1000;
 
   use_grids = true;
-  grids_freq = 0;
   rebin_grids = false;
 
   dump_fes = true;
@@ -69,9 +68,12 @@ int colvarbias_meta::init(std::string const &conf)
   get_keyval(conf, "newHillFrequency", new_hill_freq, new_hill_freq);
   if (new_hill_freq > 0) {
     enable(f_cvb_history_dependent);
-    if (grids_freq == 0) {
-      grids_freq = new_hill_freq;
-    }
+  }
+  if (new_hill_freq % time_step_factor != 0) {
+    error_code |= cvm::error("newHillFrequency (currently " + cvm::to_str(new_hill_freq) +
+                                 ") must be a multiple of timeStepFactor (" +
+                                 cvm::to_str(time_step_factor) + ").\n",
+                             COLVARS_INPUT_ERROR);
   }
 
   get_keyval(conf, "gaussianSigmas", colvar_sigmas, colvar_sigmas);
@@ -115,6 +117,11 @@ int colvarbias_meta::init(std::string const &conf)
 
   if (use_grids) {
 
+    if (grids_freq == 0) {
+      // Set default grid frequency
+      grids_freq = new_hill_freq;
+    }
+
     for (i = 0; i < num_variables(); i++) {
       if (2.0*colvar_sigmas[i] < variables(i)->width) {
         cvm::log("Warning: gaussianSigmas is too narrow for the grid "
@@ -123,6 +130,13 @@ int colvarbias_meta::init(std::string const &conf)
     }
 
     get_keyval(conf, "gridsUpdateFrequency", grids_freq, grids_freq);
+    if (grids_freq % time_step_factor != 0) {
+      error_code |= cvm::error("gridsUpdateFrequency (currently " + cvm::to_str(grids_freq) +
+                                   ") must be a multiple of timeStepFactor (" +
+                                   cvm::to_str(time_step_factor) + ").\n",
+                               COLVARS_INPUT_ERROR);
+    }
+
     get_keyval(conf, "rebinGrids", rebin_grids, rebin_grids);
 
     expand_grids = false;
@@ -168,6 +182,7 @@ int colvarbias_meta::init(std::string const &conf)
 
 int colvarbias_meta::init_replicas_params(std::string const &conf)
 {
+  int error_code = COLVARS_OK;
   colvarproxy *proxy = cvm::main()->proxy;
 
   // in all cases, the first replica is this bias itself
@@ -196,39 +211,46 @@ int colvarbias_meta::init_replicas_params(std::string const &conf)
         cvm::log("Setting replicaID from communication layer: replicaID = "+
                  replica_id+".\n");
       } else {
-        return cvm::error("Error: using more than one replica, but replicaID "
-                          "could not be obtained.\n", COLVARS_INPUT_ERROR);
+        error_code |= cvm::error("Error: using more than one replica, but replicaID "
+                                 "could not be obtained.\n",
+                                 COLVARS_INPUT_ERROR);
       }
     }
 
-    get_keyval(conf, "replicasRegistry", replicas_registry_file,
-               replicas_registry_file);
+    get_keyval(conf, "replicasRegistry", replicas_registry_file, replicas_registry_file);
     if (!replicas_registry_file.size()) {
-      return cvm::error("Error: the name of the \"replicasRegistry\" file "
-                        "must be provided.\n", COLVARS_INPUT_ERROR);
+      error_code |=
+          cvm::error("Error: the name of the \"replicasRegistry\" file must be provided.\n",
+                     COLVARS_INPUT_ERROR);
     }
 
-    get_keyval(conf, "replicaUpdateFrequency",
-               replica_update_freq, replica_update_freq);
+    get_keyval(conf, "replicaUpdateFrequency", replica_update_freq, replica_update_freq);
     if (replica_update_freq == 0) {
-      return cvm::error("Error: replicaUpdateFrequency must be positive.\n",
-                        COLVARS_INPUT_ERROR);
+      error_code |=
+          cvm::error("Error: replicaUpdateFrequency must be positive.\n", COLVARS_INPUT_ERROR);
+    }
+    if (replica_update_freq % time_step_factor != 0) {
+      error_code |= cvm::error(
+          "replicaUpdateFrequency (currently " + cvm::to_str(replica_update_freq) +
+              ") must be a multiple of timeStepFactor (" + cvm::to_str(time_step_factor) + ").\n",
+          COLVARS_INPUT_ERROR);
     }
 
     if (expand_grids) {
-      return cvm::error("Error: expandBoundaries is not supported when "
-                        "using more than one replicas; please allocate "
-                        "wide enough boundaries for each colvar"
-                        "ahead of time.\n", COLVARS_INPUT_ERROR);
+      error_code |=
+          cvm::error("Error: expandBoundaries is not supported when using more than one replicas; "
+                     "please allocate wide enough boundaries for each colvar ahead of time.\n",
+                     COLVARS_INPUT_ERROR);
     }
 
     if (keep_hills) {
-      return cvm::error("Error: multipleReplicas and keepHills are not "
-                        "supported together.\n", COLVARS_INPUT_ERROR);
+      error_code |=
+          cvm::error("Error: multipleReplicas and keepHills are not supported together.\n",
+                     COLVARS_INPUT_ERROR);
     }
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 

@@ -73,7 +73,7 @@ int colvarbias_abf::init(std::string const &conf)
   get_keyval(conf, "historyFreq", history_freq, 0);
   if (history_freq != 0) {
     if (output_freq == 0) {
-      cvm::error("Error: historyFreq must be a multiple of outputFreq.\n",
+      cvm::error("Error: historyFreq cannot be non-zero when outputFreq is zero.\n",
                  COLVARS_INPUT_ERROR);
     } else {
       if ((history_freq % output_freq) != 0) {
@@ -89,22 +89,13 @@ int colvarbias_abf::init(std::string const &conf)
     cvm::main()->cite_feature("Multiple-walker ABF implementation");
     cvm::main()->cite_feature("Updated multiple-walker ABF implementation");
 
-
-    // Cannot check this here because the replica communicator is obtained later
-    // in Gromacs
-
-    // if ((proxy->check_replicas_enabled() != COLVARS_OK) ||
-    //     (proxy->num_replicas() <= 1)) {
-    //   return cvm::error("Error: shared ABF requires more than one replica.",
-    //                     COLVARS_INPUT_ERROR);
-    // }
-    // cvm::log("shared ABF will be applied among "+
-    //          cvm::to_str(proxy->num_replicas()) + " replicas.\n");
-
     // If shared_freq is not set, we default to output_freq
     get_keyval(conf, "sharedFreq", shared_freq, output_freq);
     if ( shared_freq && output_freq % shared_freq ) {
       return cvm::error("Error: outputFreq must be a multiple of sharedFreq.\n");
+    }
+    if ( shared_freq && shared_freq % time_step_factor ) {
+      return cvm::error("Error: sharedFreq must be a multiple of timeStepFactor.\n");
     }
   }
 
@@ -118,7 +109,7 @@ int colvarbias_abf::init(std::string const &conf)
   for (i = 0; i < num_variables(); i++) {
 
     if (colvars[i]->value().type() != colvarvalue::type_scalar) {
-      cvm::error("Error: ABF bias can only use scalar-type variables.\n");
+      return cvm::error("Error: ABF bias can only use scalar-type variables.\n");
     }
     colvars[i]->enable(f_cv_grid); // Could be a child dependency of a f_cvb_use_grids feature
     if (hide_Jacobian) {
@@ -135,16 +126,12 @@ int colvarbias_abf::init(std::string const &conf)
       // If any colvar does not have current-step total force, then
       // we can't do step 0 data
       provide(f_cvb_step_zero_data, false);
-    }
-
-    // Cannot mix and match coarse time steps with ABF because it gives
-    // wrong total force averages - total force needs to be averaged over
-    // every time step
-    if (colvars[i]->get_time_step_factor() != time_step_factor) {
-      cvm::error("Error: " + colvars[i]->description + " has a value of timeStepFactor ("
-        + cvm::to_str(colvars[i]->get_time_step_factor()) + ") different from that of "
-        + description + " (" + cvm::to_str(time_step_factor) + ").\n");
-      return COLVARS_ERROR;
+      // And we cannot do MTS either
+      if (time_step_factor > 1) {
+        return cvm::error("Error: ABF cannot use timeStepFactor > 1 because " +
+          colvars[i]->description +
+          " does not provide total force estimates for the current timestep.\n");
+      }
     }
 
     // Here we could check for orthogonality of the Cartesian coordinates
@@ -349,7 +336,7 @@ int colvarbias_abf::update()
 
   // Share data first, so that 2d/3d PMF is refreshed using new data for mw-pABF.
   // shared_on can be true with shared_freq 0 if we are sharing via script
-  if (shared_on && shared_freq &&
+  if (shared_freq &&
       shared_last_step >= 0 &&                    // we have already collected some data
       cvm::step_absolute() > shared_last_step &&  // time has passed since the last sharing timestep
                                                   // (avoid re-sharing at last and first ts of successive run statements)
@@ -549,6 +536,8 @@ int colvarbias_abf::replica_share() {
 
   colvarproxy *proxy = cvm::main()->proxy;
 
+  // This check has to be deferred here rather than at init time, because the
+  // replica communicator is not available at init time in Gromacs
   if (proxy->check_replicas_enabled() != COLVARS_OK) {
     cvm::error("Error: shared ABF: No replicas.\n");
     return COLVARS_ERROR;
@@ -979,7 +968,7 @@ cvm::memory_stream & colvarbias_abf::write_state_data(cvm::memory_stream& os)
 template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
 {
   if ( input_prefix.size() > 0 ) {
-    cvm::error("ERROR: cannot provide both inputPrefix and a colvars state file.\n", COLVARS_INPUT_ERROR);
+    cvm::error("Error: cannot provide both inputPrefix and a colvars state file.\n", COLVARS_INPUT_ERROR);
   }
 
   if (! read_state_data_key(is, "samples")) {
