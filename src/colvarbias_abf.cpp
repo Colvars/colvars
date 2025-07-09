@@ -969,7 +969,7 @@ cvm::memory_stream & colvarbias_abf::write_state_data(cvm::memory_stream& os)
 template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
 {
   if ( input_prefix.size() > 0 ) {
-    cvm::error("ERROR: cannot provide both inputPrefix and a colvars state file.\n", COLVARS_INPUT_ERROR);
+    cvm::error("Error: cannot provide both inputPrefix and a colvars state file.\n", COLVARS_INPUT_ERROR);
   }
 
   if (! read_state_data_key(is, "samples")) {
