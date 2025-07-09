@@ -128,9 +128,9 @@ int colvarbias_abf::init(std::string const &conf)
       provide(f_cvb_step_zero_data, false);
       // And we cannot do MTS either
       if (time_step_factor > 1) {
-        return cvm::error("Error: ABF cannot use timeStepFactor > 1 because colvar \"" +
+        return cvm::error("Error: ABF cannot use timeStepFactor > 1 because " +
           colvars[i]->description +
-          "\" does not provide total force estimates for the current timestep.\n");
+          " does not provide total force estimates for the current timestep.\n");
       }
     }
 
