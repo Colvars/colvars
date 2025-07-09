@@ -106,17 +106,23 @@ int colvarbias::init(std::string const &conf)
 
   get_keyval_feature(this, conf, "stepZeroData", f_cvb_step_zero_data, is_enabled(f_cvb_step_zero_data));
 
+  // Parse multiple time stepping options
+  error_code |= init_mts(conf);
+
   // Write energy to traj file?
   get_keyval(conf, "outputEnergy", b_output_energy, b_output_energy);
 
   // How often to write full output files?
   get_keyval(conf, "outputFreq", output_freq, output_freq);
+  if (output_freq % time_step_factor != 0) {
+    error_code |= cvm::error(
+        "Error: in bias " + name + ", outputFreq (currently " + cvm::to_str(output_freq) +
+            ") must be a multiple of timeStepFactor (" + cvm::to_str(time_step_factor) + ").\n",
+        COLVARS_INPUT_ERROR);
+  }
 
   // Disabled by default in base class; default value can be overridden by derived class constructor
   get_keyval_feature(this, conf, "bypassExtendedLagrangian", f_cvb_bypass_ext_lagrangian, is_enabled(f_cvb_bypass_ext_lagrangian), parse_echo);
-
-  // Parse multiple time stepping options
-  error_code |= init_mts(conf);
 
   // Use the scaling factors from a grid?
   get_keyval_feature(this, conf, "scaledBiasingForce",
