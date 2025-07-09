@@ -109,7 +109,7 @@ int colvarbias_abf::init(std::string const &conf)
   for (i = 0; i < num_variables(); i++) {
 
     if (colvars[i]->value().type() != colvarvalue::type_scalar) {
-      cvm::error("Error: ABF bias can only use scalar-type variables.\n");
+      return cvm::error("Error: ABF bias can only use scalar-type variables.\n");
     }
     colvars[i]->enable(f_cv_grid); // Could be a child dependency of a f_cvb_use_grids feature
     if (hide_Jacobian) {
@@ -126,6 +126,12 @@ int colvarbias_abf::init(std::string const &conf)
       // If any colvar does not have current-step total force, then
       // we can't do step 0 data
       provide(f_cvb_step_zero_data, false);
+      // And we cannot do MTS either
+      if (time_step_factor > 1) {
+        return cvm::error("Error: ABF cannot use timeStepFactor > 1 because colvar \"" +
+          colvars[i]->description +
+          "\" does not provide total force estimates for the current timestep.\n");
+      }
     }
 
     // Here we could check for orthogonality of the Cartesian coordinates
