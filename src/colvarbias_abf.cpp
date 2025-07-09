@@ -73,7 +73,7 @@ int colvarbias_abf::init(std::string const &conf)
   get_keyval(conf, "historyFreq", history_freq, 0);
   if (history_freq != 0) {
     if (output_freq == 0) {
-      cvm::error("Error: historyFreq must be a multiple of outputFreq.\n",
+      cvm::error("Error: historyFreq cannot be non-zero when outputFreq is zero.\n",
                  COLVARS_INPUT_ERROR);
     } else {
       if ((history_freq % output_freq) != 0) {
@@ -89,22 +89,13 @@ int colvarbias_abf::init(std::string const &conf)
     cvm::main()->cite_feature("Multiple-walker ABF implementation");
     cvm::main()->cite_feature("Updated multiple-walker ABF implementation");
 
-
-    // Cannot check this here because the replica communicator is obtained later
-    // in Gromacs
-
-    // if ((proxy->check_replicas_enabled() != COLVARS_OK) ||
-    //     (proxy->num_replicas() <= 1)) {
-    //   return cvm::error("Error: shared ABF requires more than one replica.",
-    //                     COLVARS_INPUT_ERROR);
-    // }
-    // cvm::log("shared ABF will be applied among "+
-    //          cvm::to_str(proxy->num_replicas()) + " replicas.\n");
-
     // If shared_freq is not set, we default to output_freq
     get_keyval(conf, "sharedFreq", shared_freq, output_freq);
     if ( shared_freq && output_freq % shared_freq ) {
       return cvm::error("Error: outputFreq must be a multiple of sharedFreq.\n");
+    }
+    if ( shared_freq && shared_freq % time_step_factor ) {
+      return cvm::error("Error: sharedFreq must be a multiple of timeStepFactor.\n");
     }
   }
 
@@ -339,7 +330,7 @@ int colvarbias_abf::update()
 
   // Share data first, so that 2d/3d PMF is refreshed using new data for mw-pABF.
   // shared_on can be true with shared_freq 0 if we are sharing via script
-  if (shared_on && shared_freq &&
+  if (shared_freq &&
       shared_last_step >= 0 &&                    // we have already collected some data
       cvm::step_absolute() > shared_last_step &&  // time has passed since the last sharing timestep
                                                   // (avoid re-sharing at last and first ts of successive run statements)
@@ -539,6 +530,8 @@ int colvarbias_abf::replica_share() {
 
   colvarproxy *proxy = cvm::main()->proxy;
 
+  // This check has to be deferred here rather than at init time, because the
+  // replica communicator is not available at init time in Gromacs
   if (proxy->check_replicas_enabled() != COLVARS_OK) {
     cvm::error("Error: shared ABF: No replicas.\n");
     return COLVARS_ERROR;
