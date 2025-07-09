@@ -79,6 +79,12 @@ int colvarbias_opes::init(const std::string& conf) {
   m_temperature = cvm::proxy->target_temperature();
   m_kbt = m_temperature * cvm::proxy->boltzmann();
   get_keyval(conf, "newHillFrequency", m_pace);
+  if (m_pace % time_step_factor != 0) {
+    error_code |= cvm::error("newHillFrequency (currently " + cvm::to_str(m_pace) +
+                                 ") must be a multiple of timeStepFactor (" +
+                                 cvm::to_str(time_step_factor) + ").\n",
+                             COLVARS_INPUT_ERROR);
+  }
   get_keyval(conf, "barrier", m_barrier);
   get_keyval(conf, "explore", m_explore, false);
   if (m_barrier < 0) {
@@ -235,6 +241,12 @@ int colvarbias_opes::init(const std::string& conf) {
     colvarproxy *proxy = cvm::main()->proxy;
     get_keyval(conf, "replicaID", replica_id, replica_id);
     get_keyval(conf, "sharedFreq", shared_freq, output_freq);
+    if (shared_freq % time_step_factor != 0) {
+      error_code |= cvm::error("sharedFreq (currently " + cvm::to_str(shared_freq) +
+                                   ") must be a multiple of timeStepFactor (" +
+                                   cvm::to_str(time_step_factor) + ").\n",
+                               COLVARS_INPUT_ERROR);
+    }
     if (!replica_id.size()) {
       if (proxy->check_replicas_enabled() == COLVARS_OK) {
         // Obtain replicaID from the communicator
@@ -242,8 +254,9 @@ int colvarbias_opes::init(const std::string& conf) {
         cvm::log("Setting replicaID from communication layer: replicaID = "+
                  replica_id+".\n");
       } else {
-        return cvm::error("Error: using more than one replica, but replicaID "
-                          "could not be obtained.\n", COLVARS_INPUT_ERROR);
+        error_code |=
+            cvm::error("Error: using more than one replica, but replicaID could not be obtained.\n",
+                       COLVARS_INPUT_ERROR);
       }
     }
     m_num_walkers = proxy->num_replicas();
@@ -271,7 +284,11 @@ int colvarbias_opes::init(const std::string& conf) {
     key_lookup(conf, "grid", &grid_conf);
     m_reweight_grid.reset(new colvar_grid_scalar(m_pmf_cvs, nullptr, false, grid_conf));
     m_pmf_grid.reset(new colvar_grid_scalar(m_pmf_cvs, m_reweight_grid));
-    get_keyval(conf, "pmfHistoryFrequency", m_pmf_hist_freq, 0);
+    get_keyval(conf, "pmfHistoryFrequency", m_pmf_hist_freq, output_freq);
+    if ((m_pmf_hist_freq % output_freq) != 0) {
+      error_code |= cvm::error("Error: pmfHistoryFrequency must be a multiple of outputFreq.\n",
+                               COLVARS_INPUT_ERROR);
+    }
     if (comm == multiple_replicas) {
       get_keyval(conf, "pmfShared", m_pmf_shared, true);
       if (m_pmf_shared) {
@@ -287,6 +304,12 @@ int colvarbias_opes::init(const std::string& conf) {
   m_traj_line.neff = (1 + m_sum_weights) * (1 + m_sum_weights) / (1 + m_sum_weights2);
   m_traj_line.nker = m_kernels.size();
   get_keyval(conf, "printTrajectoryFrequency", m_traj_output_frequency, cvm::cv_traj_freq);
+  if (m_traj_output_frequency % time_step_factor != 0) {
+    error_code |= cvm::error(
+        "printTrajectoryFrequency (currently " + cvm::to_str(m_traj_output_frequency) +
+            ") must be a multiple of timeStepFactor (" + cvm::to_str(time_step_factor) + ").\n",
+        COLVARS_INPUT_ERROR);
+  }
   m_cv.resize(num_variables(), 0);
   showInfo();
   return error_code;
