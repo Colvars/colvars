@@ -69,6 +69,12 @@ int colvarbias_meta::init(std::string const &conf)
   if (new_hill_freq > 0) {
     enable(f_cvb_history_dependent);
   }
+  if (new_hill_freq % time_step_factor != 0) {
+    error_code |= cvm::error("newHillFrequency (currently " + cvm::to_str(new_hill_freq) +
+                                 ") must be a multiple of timeStepFactor (" +
+                                 cvm::to_str(time_step_factor) + ").\n",
+                             COLVARS_INPUT_ERROR);
+  }
 
   get_keyval(conf, "gaussianSigmas", colvar_sigmas, colvar_sigmas);
 
@@ -124,6 +130,13 @@ int colvarbias_meta::init(std::string const &conf)
     }
 
     get_keyval(conf, "gridsUpdateFrequency", grids_freq, grids_freq);
+    if (grids_freq % time_step_factor != 0) {
+      error_code |= cvm::error("gridsUpdateFrequency (currently " + cvm::to_str(grids_freq) +
+                                   ") must be a multiple of timeStepFactor (" +
+                                   cvm::to_str(time_step_factor) + ").\n",
+                               COLVARS_INPUT_ERROR);
+    }
+
     get_keyval(conf, "rebinGrids", rebin_grids, rebin_grids);
 
     expand_grids = false;
@@ -209,10 +222,14 @@ int colvarbias_meta::init_replicas_params(std::string const &conf)
                         "must be provided.\n", COLVARS_INPUT_ERROR);
     }
 
-    get_keyval(conf, "replicaUpdateFrequency",
-               replica_update_freq, replica_update_freq);
+    get_keyval(conf, "replicaUpdateFrequency", replica_update_freq, replica_update_freq);
     if (replica_update_freq == 0) {
-      return cvm::error("Error: replicaUpdateFrequency must be positive.\n",
+      return cvm::error("Error: replicaUpdateFrequency must be positive.\n", COLVARS_INPUT_ERROR);
+    }
+    if (replica_update_freq % time_step_factor != 0) {
+      return cvm::error("replicaUpdateFrequency (currently " + cvm::to_str(replica_update_freq) +
+                            ") must be a multiple of timeStepFactor (" +
+                            cvm::to_str(time_step_factor) + ").\n",
                         COLVARS_INPUT_ERROR);
     }
 
