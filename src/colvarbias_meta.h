@@ -44,14 +44,14 @@ public:
   colvarbias_meta(char const *key);
   ~colvarbias_meta();
 
-  int init(std::string const &conf);
+  int init(std::string const &conf) override;
   int init_replicas_params(std::string const &conf);
   int init_well_tempered_params(std::string const &conf);
   int init_ebmeta_params(std::string const &conf);
 
   int clear_state_data() override;
 
-  int update();
+  int update() override;
   int update_grid_params();
   int update_bias();
   int update_grid_data();
