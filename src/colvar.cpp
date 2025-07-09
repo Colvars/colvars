@@ -270,7 +270,7 @@ int colvar::init(std::string const &conf)
     // components may have different types only for scripted functions
     if (!(is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function)) && (colvarvalue::check_types(cvcs[i]->value(),
                                                                 cvcs[0]->value())) ) {
-      cvm::error("ERROR: you are defining this collective variable "
+      cvm::error("Error: you are defining this collective variable "
                  "by using components of different types. "
                  "You must use the same type in order to "
                  "sum them together.\n", COLVARS_INPUT_ERROR);
@@ -2119,7 +2119,7 @@ void colvar::communicate_forces()
 int colvar::set_cvc_flags(std::vector<bool> const &flags)
 {
   if (flags.size() != cvcs.size()) {
-    cvm::error("ERROR: Wrong number of CVC flags provided.");
+    cvm::error("Error: Wrong number of CVC flags provided.");
     return COLVARS_ERROR;
   }
   // We cannot enable or disable cvcs in the middle of a timestep or colvar evaluation sequence
@@ -2152,7 +2152,7 @@ int colvar::update_cvc_flags()
       }
     }
     if (!n_active_cvcs) {
-      cvm::error("ERROR: All CVCs are disabled for colvar " + this->name +"\n");
+      cvm::error("Error: All CVCs are disabled for colvar " + this->name +"\n");
       return COLVARS_ERROR;
     }
     cvc_flags.clear();

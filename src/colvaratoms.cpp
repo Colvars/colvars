@@ -971,7 +971,7 @@ void cvm::atom_group::update_total_mass() {
                    atoms_weight.begin(), [t_m](cvm::real x){return x/t_m;});
   }
   if (total_mass < 1e-15) {
-    cvm::error("ERROR: " + description + " has zero total mass.\n");
+    cvm::error("Error: " + description + " has zero total mass.\n");
   }
 }
 
