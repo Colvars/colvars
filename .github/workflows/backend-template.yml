@@ -180,7 +180,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: failed-library-test-output-${{ inputs.backend_name }}
+          name: failed-library-test-output-${{ inputs.backend_name }}-${{ inputs.backend_repo_ref }}
           path: |
             ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.diff
             ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.err
