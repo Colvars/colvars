@@ -43,5 +43,6 @@ COLVARSLIB = \
 	$(DSTDIR)/colvars_memstream.o \
 	$(DSTDIR)/colvartypes.o \
 	$(DSTDIR)/colvarvalue.o \
+	$(DSTDIR)/colvar_gpu_support.o \
 	$(DSTDIR)/nr_jacobi.o
         
