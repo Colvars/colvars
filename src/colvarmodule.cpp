@@ -2563,13 +2563,13 @@ std::string colvarmodule::to_str(std::vector<std::string> const &x,
 }
 
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
-std::string colvarmodule::to_str(std::vector<cvm::real, CudaHostAllocator<cvm::real>> const &x,
+std::string colvarmodule::to_str(std::vector<cvm::real, colvars_gpu::CudaHostAllocator<cvm::real>> const &x,
                                  size_t width, size_t prec)
 {
   return _to_str_vector(x, width, prec);
 }
 
-std::string colvarmodule::to_str(std::vector<cvm::rvector, CudaHostAllocator<cvm::rvector>> const &x,
+std::string colvarmodule::to_str(std::vector<cvm::rvector, colvars_gpu::CudaHostAllocator<cvm::rvector>> const &x,
                                  size_t width, size_t prec)
 {
   return _to_str_vector(x, width, prec);

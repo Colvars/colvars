@@ -12,6 +12,7 @@
 
 #include <functional>
 
+#include "colvar_gpu_support.h"
 #include "colvarmodule.h"
 #include "colvartypes.h"
 #include "colvarproxy_io.h"
@@ -46,7 +47,7 @@ public:
 
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
   template <typename T>
-  using allocator_type = cvm::CudaHostAllocator<T>;
+  using allocator_type = colvars_gpu::CudaHostAllocator<T>;
 #else
   template <typename T>
   using allocator_type = std::allocator<T>;
@@ -555,7 +556,8 @@ class colvarproxy
     public colvarproxy_replicas,
     public colvarproxy_script,
     public colvarproxy_tcl,
-    public colvarproxy_io
+    public colvarproxy_io,
+    public colvars_gpu::colvarproxy_gpu
 {
 
 public:
