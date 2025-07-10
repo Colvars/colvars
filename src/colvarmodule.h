@@ -46,18 +46,7 @@ Please note that this documentation is only supported for the master branch, and
 #include <iosfwd>
 #include <string>
 #include <vector>
-
-#if defined(COLVARS_CUDA)
-#include <cuda_runtime.h>
-#endif
-
-#if defined(COLVARS_HIP)
-#include <hip/hip_runtime.h>
-#define cudaHostAllocMapped hipHostMallocMapped
-#define cudaHostAlloc hipHostMalloc
-#define cudaFreeHost hipHostFree
-#define cudaSuccess hipSuccess
-#endif
+#include "colvar_gpu_support.h"
 
 class colvarparse;
 class colvar;
@@ -96,42 +85,6 @@ public:
   {
     return patch_version_int;
   }
-
-#if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
-  template <typename T>
-  class CudaHostAllocator {
-  public:
-    using value_type = T;
-
-    CudaHostAllocator() = default;
-
-    template<typename U>
-    constexpr CudaHostAllocator(const CudaHostAllocator<U>&) noexcept {}
-
-    friend bool operator==(const CudaHostAllocator&, const CudaHostAllocator&) { return true; }
-    friend bool operator!=(const CudaHostAllocator&, const CudaHostAllocator&) { return false; }
-
-    T* allocate(size_t n) {
-      T* ptr;
-      if (cudaHostAlloc(&ptr, n * sizeof(T), cudaHostAllocMapped) != cudaSuccess) {
-        throw std::bad_alloc();
-      }
-      return ptr;
-    }
-    void deallocate(T* ptr, size_t n) noexcept {
-      cudaFreeHost(ptr);
-    }
-    template<typename U, typename... Args>
-    void construct(U* p, Args&&... args) {
-        new(p) U(std::forward<Args>(args)...);
-    }
-
-    template<typename U>
-    void destroy(U* p) noexcept {
-        p->~U();
-    }
-  };
-#endif
 
 private:
 
@@ -738,9 +691,9 @@ public:
                             size_t width = 0, size_t prec = 0);
 
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
-  static std::string to_str(std::vector<rvector, CudaHostAllocator<rvector>> const &x,
+  static std::string to_str(std::vector<rvector, colvars_gpu::CudaHostAllocator<rvector>> const &x,
                             size_t width = 0, size_t prec = 0);
-  static std::string to_str(std::vector<real, CudaHostAllocator<real>> const &x,
+  static std::string to_str(std::vector<real, colvars_gpu::CudaHostAllocator<real>> const &x,
                             size_t width = 0, size_t prec = 0);
 #endif
 
