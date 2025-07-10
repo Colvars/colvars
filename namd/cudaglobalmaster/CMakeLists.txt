@@ -122,7 +122,11 @@ target_include_directories(cudaglobalmastercolvars
 target_compile_options(cudaglobalmastercolvars PRIVATE -Wno-register)
 
 if(USE_CUDA)
-  target_link_libraries(cudaglobalmastercolvars CUDA::cudart CUDA::nvToolsExt)
+  if(CUDAToolkit_VERSION_MAJOR GREATER_EQUAL 10)
+    target_link_libraries(cudaglobalmastercolvars CUDA::cudart CUDA::nvtx3)
+  else()
+    target_link_libraries(cudaglobalmastercolvars CUDA::cudart CUDA::nvToolsExt)
+  endif()
   set_property(TARGET cudaglobalmastercolvars PROPERTY LANGUAGE CUDA)
   # set_property(TARGET cudaglobalmastercolvars PROPERTY CUDA_ARCHITECTURES OFF)
 endif()
