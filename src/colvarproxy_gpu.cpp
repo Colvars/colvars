@@ -52,6 +52,17 @@ int colvarproxy_gpu::sync_all_streams() {
   return error_code;
 }
 
+int colvarproxy_gpu::sync_stream(colvars_gpu::gpu_stream_t* stream) {
+  int error_code = COLVARS_OK;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  error_code |= checkGPUError(cudaStreamSynchronize(*stream));
+#elif defined(COLVARS_SYCL)
+  // TODO: SYCL
+  error_code = COLVARS_NOT_IMPLEMENTED;
+#endif
+  return error_code;
+}
+
 int colvarproxy_gpu::get_default_device(gpu_dev_id_t* device) const {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
@@ -116,6 +127,32 @@ int colvarproxy_gpu::deallocate_device_T_async(void **pp, gpu_stream_t* stream) 
     error_code |= checkGPUError(cudaFreeAsync((void *)(*pp), *stream));
     *pp = nullptr;
   }
+#elif defined(COLVARS_SYCL)
+  // TODO: SYCL
+  error_code = COLVARS_NOT_IMPLEMENTED;
+#endif
+  return error_code;
+}
+
+int colvarproxy_gpu::clear_device_array_T(void *data, const size_t ndata, const size_t sizeofT) {
+  int error_code = COLVARS_OK;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  // if (data != nullptr) {
+  error_code |= checkGPUError(cudaMemset(data, 0, sizeofT*ndata));
+  // }
+#elif defined(COLVARS_SYCL)
+  // TODO: SYCL
+  error_code = COLVARS_NOT_IMPLEMENTED;
+#endif
+  return error_code;
+}
+
+int colvarproxy_gpu::clear_device_array_T_async(void *data, const size_t ndata, const size_t sizeofT, colvars_gpu::gpu_stream_t* stream) {
+  int error_code = COLVARS_OK;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  // if (data != nullptr) {
+  error_code |= checkGPUError(cudaMemsetAsync(data, 0, sizeofT*ndata, *stream));
+  // }
 #elif defined(COLVARS_SYCL)
   // TODO: SYCL
   error_code = COLVARS_NOT_IMPLEMENTED;
