@@ -81,6 +81,12 @@ enum class gpu_code_t {
   CUDA, HIP, SYCL, CPU
 };
 
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+#define COLVARS_HOST_DEVICE __device__ __host__
+#else
+#define COLVARS_HOST_DEVICE
+#endif
+
 // TODO: What about SYCL?
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
 template <typename T>
@@ -135,64 +141,6 @@ using gpu_dev_id_t = int;
 #define checkGPUError(ans) gpuAssert((ans), __FILE__, __LINE__);
 int gpuAssert(gpu_error_t code, const char *file, int line);
 #endif
-
-class colvarproxy_gpu {
-public:
-  colvarproxy_gpu():
-    support_gpu(false),
-    gpu_code_type_used(gpu_code_t::CPU),
-    gpu_id(0) {
-    gpu_code_type_supported.push_back(gpu_code_t::CPU);
-#if defined(COLVARS_CUDA)
-    gpu_code_type_supported.push_back(gpu_code_t::CUDA);
-    support_gpu = true;
-#elif defined(COLVARS_HIP)
-    gpu_code_type_supported.push_back(gpu_code_type::HIP);
-    support_gpu = true;
-#elif defined(COLVARS_SYCL)
-    gpu_code_type_supported.push_back(gpu_code_type::SYCL);
-    support_gpu = true;
-#endif // COLVARS_SYCL
-  }
-  virtual int set_gpu(gpu_dev_id_t* gpu_id_in = nullptr);
-  bool has_gpu_support() const {
-    return support_gpu;
-  }
-  gpu_code_t get_gpu_code_type() const {
-    return gpu_code_type_used;
-  }
-  int set_gpu_code_type(gpu_code_t gpu_code_type_in);
-  virtual int create_stream(gpu_stream_t* stream, gpu_dev_id_t* gpu_id_in = nullptr);
-  virtual int sync_all_streams();
-  virtual int get_default_device(gpu_dev_id_t* device) const;
-  template <typename T>
-  int allocate_device(T **pp, const size_t len, gpu_dev_id_t* gpu_id_in = nullptr) {
-    return allocate_device_T((void **)pp, len, sizeof(T), gpu_id_in);
-  }
-  template <typename T>
-  int allocate_device_async(T **pp, const size_t len, gpu_stream_t* stream, gpu_dev_id_t* gpu_id_in = nullptr) {
-    return allocate_device_T_async((void **)pp, len, sizeof(T), stream, gpu_id_in);
-  }
-  template <typename T>
-  int deallocate_device(T **pp) {
-    return deallocate_device_T((void **)pp);
-  }
-  template <typename T>
-  int deallocate_device_async(T **pp, gpu_stream_t* stream) {
-    return deallocate_device_T_async((void **)pp, stream);
-  }
-  virtual int allocate_device_T(void **pp, const size_t len, const size_t sizeofT, gpu_dev_id_t* gpu_id_in = nullptr);
-  virtual int deallocate_device_T(void **pp);
-  virtual int allocate_device_T_async(void **pp, const size_t len, const size_t sizeofT, gpu_stream_t* stream, gpu_dev_id_t* gpu_id_in = nullptr);
-  virtual int deallocate_device_T_async(void **pp, gpu_stream_t* stream);
-  ~colvarproxy_gpu();
-protected:
-  bool support_gpu;
-  gpu_code_t gpu_code_type_used;
-  std::vector<gpu_code_t> gpu_code_type_supported;
-  std::vector<gpu_stream_t> gpu_streams;
-  gpu_dev_id_t gpu_id;
-};
 
 } // namespace colvars_gpu
 

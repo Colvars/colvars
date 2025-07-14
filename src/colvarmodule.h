@@ -224,10 +224,12 @@ static inline real acos(real const &x)
   class rmatrix;
 
   // allow these classes to access protected data
-  class atom;
+  // struct atom;
+  // class atom_group_base;
   class atom_group;
-  typedef std::vector<atom>::iterator       atom_iter;
-  typedef std::vector<atom>::const_iterator atom_const_iter;
+  // class atom_group_gpu;
+  // typedef std::vector<atom>::iterator       atom_iter;
+  // typedef std::vector<atom>::const_iterator atom_const_iter;
 
   /// Module-wide error state
   /// see constants at the top of this file
