@@ -48,6 +48,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarproxy_system.C',
                     'colvarproxy_tcl.C',
                     'colvarproxy_vmd.C',
+                    'colvarproxy_gpu.C',
                     'colvarproxy_volmaps.C',
                     'colvarscript.C',
                     'colvarscript_commands.C',
@@ -56,6 +57,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvars_memstream.C',
                     'colvartypes.C',
                     'colvarvalue.C',
+                    'colvar_gpu_support.C',
                     'nr_jacobi.C');
 @colvars_h    =    ('colvar_UIestimator.h',
                     'colvar_arithmeticpath.h',
@@ -90,6 +92,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarproxy_system.h',
                     'colvarproxy_tcl.h',
                     'colvarproxy_vmd.h',
+                    'colvarproxy_gpu.h',
                     'colvarproxy_volmaps.h',
                     'colvarscript.h',
                     'colvarscript_commands.h',
@@ -99,4 +102,5 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvars_version.h',
                     'colvartypes.h',
                     'colvarvalue.h',
+                    'colvar_gpu_support.h',
                     'nr_jacobi.h');
