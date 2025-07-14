@@ -31,6 +31,7 @@ public:
   }
   int set_gpu_code_type(colvars_gpu::gpu_code_t gpu_code_type_in);
   virtual int create_stream(colvars_gpu::gpu_stream_t* stream, colvars_gpu::gpu_dev_id_t* gpu_id_in = nullptr);
+  virtual int sync_stream(colvars_gpu::gpu_stream_t* stream);
   virtual int sync_all_streams();
   virtual int get_default_device(colvars_gpu::gpu_dev_id_t* device) const;
   template <typename T>
@@ -49,10 +50,22 @@ public:
   int deallocate_device_async(T **pp, colvars_gpu::gpu_stream_t* stream) {
     return deallocate_device_T_async((void **)pp, stream);
   }
+  template <typename T>
+  int clear_device_array(T *data, const size_t ndata) {
+    clear_device_array_T(data, ndata, sizeof(T));
+  }
+  template <typename T>
+  int clear_device_array_async(T *data, const size_t ndata, colvars_gpu::gpu_stream_t* stream) {
+    clear_device_array_T_async(data, ndata, sizeof(T), stream);
+  }
   virtual int allocate_device_T(void **pp, const size_t len, const size_t sizeofT, colvars_gpu::gpu_dev_id_t* gpu_id_in = nullptr);
   virtual int deallocate_device_T(void **pp);
+  virtual int clear_device_array_T(void *data, const size_t ndata, const size_t sizeofT);
   virtual int allocate_device_T_async(void **pp, const size_t len, const size_t sizeofT, colvars_gpu::gpu_stream_t* stream, colvars_gpu::gpu_dev_id_t* gpu_id_in = nullptr);
   virtual int deallocate_device_T_async(void **pp, colvars_gpu::gpu_stream_t* stream);
+  virtual int clear_device_array_T_async(void *data, const size_t ndata, const size_t sizeofT, colvars_gpu::gpu_stream_t* stream);
+  virtual float* proxy_atoms_masses_gpu_float() {return nullptr;}
+  virtual float* proxy_atoms_charges_gpu_float() {return nullptr;}
   virtual cvm::real* proxy_atoms_masses_gpu() {return nullptr;}
   virtual cvm::real* proxy_atoms_charges_gpu() {return nullptr;}
   virtual cvm::real* proxy_atoms_positions_gpu() {return nullptr;}
