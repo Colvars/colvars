@@ -35,6 +35,7 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarproxy_replicas.o \
 	$(DSTDIR)/colvarproxy_system.o \
 	$(DSTDIR)/colvarproxy_tcl.o \
+	$(DSTDIR)/colvarproxy_gpu.o \
 	$(DSTDIR)/colvarproxy_volmaps.o \
 	$(DSTDIR)/colvarscript.o \
 	$(DSTDIR)/colvarscript_commands.o \
