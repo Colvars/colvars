@@ -12,7 +12,6 @@
 
 #include <functional>
 
-#include "colvar_gpu_support.h"
 #include "colvarmodule.h"
 #include "colvartypes.h"
 #include "colvarproxy_io.h"
@@ -20,6 +19,7 @@
 #include "colvarproxy_system.h"
 #include "colvarproxy_tcl.h"
 #include "colvarproxy_volmaps.h"
+#include "colvarproxy_gpu.h"
 
 /// \file colvarproxy.h
 /// \brief Colvars proxy classes
@@ -557,7 +557,7 @@ class colvarproxy
     public colvarproxy_script,
     public colvarproxy_tcl,
     public colvarproxy_io,
-    public colvars_gpu::colvarproxy_gpu
+    public colvarproxy_gpu
 {
 
 public:
