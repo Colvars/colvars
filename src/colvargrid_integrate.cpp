@@ -154,7 +154,10 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
         } else {
             set_div();
         }
-        optimize_adam(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
+        if (weighted || nd > 3)
+            optimize_adam(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
+        else
+            nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
         if (verbose)
             cvm::log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
         if (weighted && need_to_extrapolate_weighted_solution) {
