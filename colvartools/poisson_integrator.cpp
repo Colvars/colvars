@@ -126,11 +126,11 @@ int main (int argc, char *argv[]) {
   fes.set_zero_minimum();
   if (fes.num_variables() < 3) {
     if (weighted) {
-      fes.write_multicol(std::string(gradfile + ".weighted_int"), "integrated fes");
-      std::cout << "\nWriting integrated fes in multicol format to " + gradfile + ".weighted_int\n";
+      fes.write_multicol(std::string(gradfile + ".int"), "integrated fes");
+      std::cout << "\nWriting integrated fes in multicol format to " + gradfile + ".int\n";
     } else {
-      fes.write_multicol(std::string(gradfile + ".unweighted_int"), "integrated fes");
-      std::cout << "\nWriting integrated fes in multicol format to " + gradfile + ".unweighted_int\n";
+      fes.write_multicol(std::string(gradfile + ".int"), "integrated fes");
+      std::cout << "\nWriting integrated fes in multicol format to " + gradfile + ".int\n";
     }
   } else { // Write 3D grids to more convenient DX format
     std::cout << "\nWriting integrated free energy in OpenDX format to " + gradfile + ".int.dx\n";
