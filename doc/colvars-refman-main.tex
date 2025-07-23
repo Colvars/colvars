@@ -3804,7 +3804,7 @@ An example of configuration using \texttt{NeuralNetwork} is shown below:
 
 \cvsubsec{Torch-based collective variables}{sec:cvc_torchann}
 
-The \texttt{torchANN} keyword defines a component based on an artificial neural network (ANN) model previously trained using PyTorch. Similarly to the \texttt{linearCombination} and \texttt{neuralNetwork} components, the ANN model is expressed as a function of collective variable components. The model is loaded from a PyTorch-formatted file, defined by the keyword \texttt{modelFile}\cvgromacsonly{; the contents of this file are embedded in the TPR}.
+The \texttt{torchANN} keyword defines a scalar component based on an artificial neural network (ANN) model previously trained using PyTorch. Similarly to the \texttt{linearCombination} and \texttt{neuralNetwork} components, the ANN model is expressed as a function of collective variable components. The model is loaded from a PyTorch-formatted file, defined by the keyword \texttt{modelFile}\cvgromacsonly{; the contents of this file are embedded in the TPR}.
 
 This component requires that \MDENGINE{} is linked against the libTorch library; see \ref{sec:compilation_notes} for more details.
 
@@ -3818,6 +3818,7 @@ This component requires that \MDENGINE{} is linked against the libTorch library;
     Name of the file containing the model (PyTorch format)}{%
     filename}{%
     This file contains the PyTorch model, as saved for example by the \texttt{torch.jit.save()} function.
+    The model is assumed to take one-dimensional tensor (excluding batch dimension) as input.
   }
 
 \item %
@@ -3828,7 +3829,7 @@ This component requires that \MDENGINE{} is linked against the libTorch library;
     Index of the output node to use}{%
     0-based integer}{%
     0}{%
-    This option specifies the index of the output node to be used as the value collective variable (see also the equivalent keyword \refkey{output\_component}{colvar|NeuralNetwork|output_component} in the built-in neural network implementation).
+    This option specifies the index of the output node to be used as the value of collective variable (see also the equivalent keyword \refkey{output\_component}{colvar|NeuralNetwork|output_component} in the built-in neural network implementation).
   }
 
 \item %
@@ -3844,6 +3845,55 @@ This component requires that \MDENGINE{} is linked against the libTorch library;
 
 \end{cvcoptions}
 
+An example of creating a model file and defining a collective variable component using \texttt{torchANN} is shown below:
+
+\begin{mdexampleinput}
+\-import torch\\
+\-import torch.nn as nn\\
+\\
+\-\#~the~neural~network~model is a function: \\
+\-\#~~~~~$f=(f_1,f_2,f_3): \mathbb{R}^8\rightarrow \mathbb{R}^3$.\\
+\-model = nn.Sequential(nn.Linear(8, 100), \\
+\-~~~~~~~~~~~~~~~~~~~~~~nn.ReLU(), \\
+\-~~~~~~~~~~~~~~~~~~~~~~nn.Linear(100, 3))\\
+\#~train the model\\
+\-...\\
+\#~save~the~trained~model\\
+\-torch.jit.script(model).save("./model.pt")
+\end{mdexampleinput}
+
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~\#~define a scalar CV as $\xi=f_1(x_2,y_2,z_2,x_4,y_4,z_4, \phi, \psi)$, where\\
+\-~~\#~the map $f_1: \mathbb{R}^8\rightarrow \mathbb{R}$ is defined by the first component of the Torch model,\\
+\-~~\#~$(x_2,y_2,z_2)$ and $(x_4, y_4, z_4)$ are coordinates of the atoms with\\
+\-~~\#~atomNumbers $2$ and $4$, respectively, and $\phi,\psi$ are two torsion angles.\\
+\-~~name~nn\_output\_1\\
+\-~~torchann~\{\\
+\-~~~~modelFile~model.pt\\
+\-~~~~output\_component 0\\
+\-~~~~cartesian~\{\\
+\-~~~~~~atoms~\{\\
+\-~~~~~~~~atomNumbers \{\{2 4\}\}\\
+\-~~~~~~\}\\
+\-~~~~\}\\ 
+\-~~~~dihedral~\{\\
+\-~~~~~~name~001\\
+\-~~~~~~group1~\{atomnumbers~\{5\}\}\\
+\-~~~~~~group2~\{atomnumbers~\{7\}\}\\
+\-~~~~~~group3~\{atomnumbers~\{9\}\}\\
+\-~~~~~~group4~\{atomnumbers~\{15\}\}\\
+\-~~~~\}\\
+\-~~~~dihedral~\{\\
+\-~~~~~~name~002\\
+\-~~~~~~group1~\{atomnumbers~\{7\}\}\\
+\-~~~~~~group2~\{atomnumbers~\{9\}\}\\
+\-~~~~~~group3~\{atomnumbers~\{15\}\}\\
+\-~~~~~~group4~\{atomnumbers~\{17\}\}\\
+\-~~~~\}\\
+\-~~\}\\
+\-\}
+\end{cvexampleinput}
 
 \ifdefined\cvvmdornamd{
 
