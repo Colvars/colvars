@@ -2079,9 +2079,17 @@ int colvarmodule::error(std::string const &message, int code)
 
   std::string const trailing_newline = (message.size() > 0) ?
     (message[message.size()-1] == '\n' ? "" : "\n") : "";
+
+  std::string prefix = "Error: ";
+  if (message.size() >= 7) {
+    if (message.substr(0, 7) == prefix) {
+      prefix.clear();
+    }
+  }
+
   size_t const d = depth();
   if (d > 0) {
-    proxy->error((std::string(2*d, ' ')) + message + trailing_newline);
+    proxy->error((std::string(2*d, ' ')) + prefix + message + trailing_newline);
   } else {
     proxy->error(message + trailing_newline);
   }
