@@ -3818,7 +3818,7 @@ This component requires that \MDENGINE{} is linked against the libTorch library;
     Name of the file containing the model (PyTorch format)}{%
     filename}{%
     This file contains the PyTorch model, as saved for example by the \texttt{torch.jit.save()} function.
-    The model is assumed to take one-dimensional tensor (excluding batch dimension) as input.
+    The model is assumed to take a one-dimensional tensor (excluding batch dimension) as input.
   }
 
 \item %
@@ -3829,7 +3829,7 @@ This component requires that \MDENGINE{} is linked against the libTorch library;
     Index of the output node to use}{%
     0-based integer}{%
     0}{%
-    This option specifies the index of the output node to be used as the value of collective variable (see also the equivalent keyword \refkey{output\_component}{colvar|NeuralNetwork|output_component} in the built-in neural network implementation).
+    This option specifies the index of the output node to be used as the value of the collective variable (see also the equivalent keyword \refkey{output\_component}{colvar|NeuralNetwork|output_component} in the built-in neural network implementation).
   }
 
 \item %
@@ -3851,23 +3851,23 @@ An example of creating a model file and defining a collective variable component
 \-import torch\\
 \-import torch.nn as nn\\
 \\
-\-\#~the~neural~network~model is a function: \\
+\-\#~The~neural~network~model is a function: \\
 \-\#~~~~~$f=(f_1,f_2,f_3): \mathbb{R}^8\rightarrow \mathbb{R}^3$.\\
 \-model = nn.Sequential(nn.Linear(8, 100), \\
 \-~~~~~~~~~~~~~~~~~~~~~~nn.ReLU(), \\
 \-~~~~~~~~~~~~~~~~~~~~~~nn.Linear(100, 3))\\
-\#~train the model\\
+\#~Train the model\\
 \-...\\
-\#~save~the~trained~model\\
+\#~Save~the~trained~model\\
 \-torch.jit.script(model).save("./model.pt")
 \end{mdexampleinput}
 
 \begin{cvexampleinput}
 \-colvar~\{\\
-\-~~\#~define a scalar CV as $\xi=f_1(x_2,y_2,z_2,x_4,y_4,z_4, \phi, \psi)$, where\\
-\-~~\#~the map $f_1: \mathbb{R}^8\rightarrow \mathbb{R}$ is defined by the first component of the Torch model,\\
-\-~~\#~$(x_2,y_2,z_2)$ and $(x_4, y_4, z_4)$ are coordinates of the atoms with\\
-\-~~\#~atomNumbers $2$ and $4$, respectively, and $\phi,\psi$ are two torsion angles.\\
+\-~~\#~Define a scalar CV as $\xi=f_1(x_2,y_2,z_2,x_4,y_4,z_4, \phi, \psi)$, \\
+\-~~\#~i.e.~the function represented by the first component of the Torch model, \\
+\-~~\#~evaluated at the coordinates of the two atoms with atomNumbers 2 and 4,\\
+\-~~\#~and the two torsion angles $\phi,\psi$.\\
 \-~~name~nn\_output\_1\\
 \-~~torchann~\{\\
 \-~~~~modelFile~model.pt\\
