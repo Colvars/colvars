@@ -537,6 +537,7 @@ int colvarbias_meta::update_grid_params()
 
 int colvarbias_meta::update_bias()
 {
+  int error_code = COLVARS_OK;
   colvarproxy *proxy = cvm::main()->proxy;
   // add a new hill if the required time interval has passed
   if (((cvm::step_absolute() % new_hill_freq) == 0) &&
@@ -548,7 +549,8 @@ int colvarbias_meta::update_bias()
                ": adding a new hill at step "+cvm::to_str(cvm::step_absolute())+".\n");
     }
 
-    cvm::real hills_scale=1.0;
+    // Scaling factor, optionally used by EB-metadynamics or well-tempered metadynamics
+    cvm::real hills_scale = 1.0;
 
     if (ebmeta) {
       hills_scale *= 1.0/target_dist->value(target_dist->get_colvars_index());
@@ -561,35 +563,39 @@ int colvarbias_meta::update_bias()
     }
 
     if (well_tempered) {
+
       cvm::real hills_energy_sum_here = 0.0;
-      if (use_grids) {
-        std::vector<int> curr_bin = hills_energy->get_colvars_index();
-        const bool index_ok = hills_energy->index_ok(curr_bin);
-        if (index_ok) {
-          // TODO: Should I sum the energies from other replicas?
-          hills_energy_sum_here = hills_energy->value(curr_bin);
-        } else {
-          if (!keep_hills) {
-            // TODO: Should I sum the off-grid hills from other replicas?
-            calc_hills(hills_off_grid.begin(),
-                       hills_off_grid.end(),
-                       hills_energy_sum_here,
-                       &colvar_values);
+
+      for (size_t ir = 0; ir < replicas.size(); ir++) {
+        if (use_grids) {
+          std::vector<int> curr_bin = hills_energy->get_colvars_index();
+          const bool index_ok = hills_energy->index_ok(curr_bin);
+
+          if (index_ok) {
+            hills_energy_sum_here += replicas[ir]->hills_energy->value(curr_bin);
           } else {
-            // TODO: Is it better to compute the energy from all historic hills
-            //       when keepHills is on?
-            calc_hills(hills.begin(),
-                       hills.end(),
-                       hills_energy_sum_here,
-                       &colvar_values);
+            if (!keep_hills) {
+              calc_hills(replicas[ir]->hills_off_grid.begin(), replicas[ir]->hills_off_grid.end(),
+                         hills_energy_sum_here, &colvar_values);
+            } else {
+              // TODO: Is it better to compute the energy from all historic hills
+              //       when keepHills is on?
+              calc_hills(replicas[ir]->hills.begin(), replicas[ir]->hills.end(),
+                         hills_energy_sum_here, &colvar_values);
+            }
+            // cvm::log("WARNING: computing bias factor for off-grid hills. Hills energy: " +
+            // cvm::to_str(hills_energy_sum_here) + "\n");
           }
-          // cvm::log("WARNING: computing bias factor for off-grid hills. Hills energy: " + cvm::to_str(hills_energy_sum_here) + "\n");
+        } else {
+          calc_hills(replicas[ir]->hills.begin(), replicas[ir]->hills.end(), hills_energy_sum_here,
+                     nullptr);
         }
-      } else {
-        calc_hills(new_hills_begin, hills.end(), hills_energy_sum_here, NULL);
       }
-      hills_scale *= cvm::exp(-1.0*hills_energy_sum_here/(bias_temperature*proxy->boltzmann()));
+
+      hills_scale *=
+          cvm::exp(-1.0 * hills_energy_sum_here / (bias_temperature * proxy->boltzmann()));
     }
+
 
     switch (comm) {
 
@@ -608,15 +614,17 @@ int colvarbias_meta::update_bias()
       if (replica_hills_os) {
         write_hill(replica_hills_os, hills.back());
       } else {
-        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
-                          ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-                          " while writing hills for the other replicas.\n", COLVARS_FILE_ERROR);
+        error_code |=
+            cvm::error("Error: in metadynamics bias \"" + this->name + "\"" +
+                           ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") +
+                           " while writing hills for the other replicas.\n",
+                       COLVARS_FILE_ERROR);
       }
       break;
     }
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
