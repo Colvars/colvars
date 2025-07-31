@@ -7,10 +7,12 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+#include "colvar_gpu_support.h"
 #include "colvarmodule.h"
 #include "colvartypes.h"
 #include "colvaratoms.h"
 #include "colvar_rotation_derivative.h"
+#include "colvarproxy.h"
 
 #ifdef COLVARS_LAMMPS
 // Use open-source Jacobi implementation
@@ -20,6 +22,10 @@
 #include "nr_jacobi.h"
 #endif
 
+#if defined (COLVARS_CUDA)|| defined(COLVARS_HIP)
+#include "cuda/colvartypes_kernel.h"
+#elif defined (COLVARS_SYCL)
+#endif // defined(COLVARS_CUDA) ||defined (COLVARS_HIP)
 
 bool      colvarmodule::rotation::monitor_crossings = false;
 cvm::real colvarmodule::rotation::crossing_threshold = 1.0E-02;
@@ -290,8 +296,8 @@ int diagonalize_matrix(cvm::real m[4][4],
 
 void colvarmodule::rotation::debug_gradients(
   cvm::rotation &rot,
-  const std::vector<cvm::real> &pos1,
-  const std::vector<cvm::real> &pos2,
+  const cvm::ag_vector_real_t &pos1,
+  const cvm::ag_vector_real_t &pos2,
   const size_t num_atoms_pos1,
   const size_t num_atoms_pos2) {
   // eigenvalues and eigenvectors
@@ -387,15 +393,15 @@ void colvarmodule::rotation::calc_optimal_rotation(
 
   if (b_debug_gradients) {
     // debug_gradients<cvm::atom_pos, cvm::atom_pos, false>(*this, pos1, pos2, pos1.size(), pos2.size());
-    const std::vector<cvm::real> pos1_soa = cvm::atom_group::pos_aos_to_soa(pos1);
-    const std::vector<cvm::real> pos2_soa = cvm::atom_group::pos_aos_to_soa(pos2);
+    const cvm::ag_vector_real_t pos1_soa = cvm::atom_group::pos_aos_to_soa(pos1);
+    const cvm::ag_vector_real_t pos2_soa = cvm::atom_group::pos_aos_to_soa(pos2);
     debug_gradients(*this, pos1_soa, pos2_soa, pos1.size(), pos2.size());
   }
 }
 
 void colvarmodule::rotation::calc_optimal_rotation_soa(
-  std::vector<cvm::real> const &pos1,
-  std::vector<cvm::real> const &pos2,
+  cvm::ag_vector_real_t const &pos1,
+  cvm::ag_vector_real_t const &pos2,
   const size_t num_atoms_pos1,
   const size_t num_atoms_pos2) {
   C.reset();
@@ -484,3 +490,159 @@ void colvarmodule::rotation::calc_optimal_rotation_impl() {
     q_old = q;
   }
 }
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+namespace colvars_gpu {
+
+rotation_gpu::rotation_gpu():
+  d_S(nullptr), d_S_eigval(nullptr),
+  d_S_eigvec(nullptr), tbcount(nullptr),
+  d_q(nullptr), d_q_old(nullptr),
+  discontinuous_rotation(nullptr),
+  max_iteration_reached(nullptr), b_initialized(false) {}
+
+rotation_gpu::~rotation_gpu() {
+  colvarproxy* p = cvm::main()->proxy;
+  p->deallocate_device(&d_S);
+  p->deallocate_device(&d_S_eigval);
+  p->deallocate_device(&d_S_eigvec);
+  p->deallocate_device(&tbcount);
+  p->deallocate_device(&d_q);
+  p->deallocate_device(&d_q_old);
+  p->deallocate_host(&discontinuous_rotation);
+  p->deallocate_host(&max_iteration_reached);
+  p->deallocate_host(&h_C);
+  p->deallocate_host(&h_S);
+  p->deallocate_host(&h_S_eigval);
+  p->deallocate_host(&h_S_eigvec);
+  b_initialized = false;
+}
+
+int rotation_gpu::init(/*const colvars_gpu::gpu_stream_t& stream_in*/) {
+  int error_code = COLVARS_OK;
+  // stream = stream_in;
+  colvarproxy* p = cvm::main()->proxy;
+  error_code |= p->allocate_device(&d_S, 4 * 4);
+  error_code |= p->allocate_device(&d_S_eigval, 4);
+  error_code |= p->allocate_device(&d_S_eigvec, 4 * 4);
+  error_code |= p->allocate_device(&tbcount, 1);
+  error_code |= p->allocate_device(&d_q, 1);
+  error_code |= p->allocate_device(&d_q_old, 1);
+  error_code |= p->allocate_host(&discontinuous_rotation, 1);
+  error_code |= p->allocate_host(&max_iteration_reached, 1);
+  error_code |= p->allocate_host(&h_C, 1);
+  error_code |= p->allocate_host(&h_S, 4 * 4);
+  error_code |= p->allocate_host(&h_S_eigval, 4);
+  error_code |= p->allocate_host(&h_S_eigvec, 4 * 4);
+  max_iteration_reached[0] = 0;
+  discontinuous_rotation[0] = 0;
+  if (colvarmodule::rotation::monitor_crossings) {
+    error_code |= p->clear_device_array(&d_q_old, 1);
+  }
+  cvm::main()->cite_feature("Optimal rotation via flexible fitting");
+  b_initialized = true;
+  return error_code;
+}
+
+int rotation_gpu::add_optimal_rotation_nodes(
+  cvm::real* const d_pos1,
+  cvm::real* const d_pos2,
+  const size_t num_atoms_pos1,
+  const size_t num_atoms_pos2,
+  // cudaGraphNode_t& node,
+  cudaGraph_t& graph,
+  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
+  int error_code = COLVARS_OK;
+  // Add memset nodes
+  cudaGraphNode_t countSetNode, d_SSetNode;
+  error_code |= colvars_gpu::add_clear_array_node(
+    tbcount, 1, countSetNode, graph, {});
+  error_code |= colvars_gpu::add_clear_array_node(
+    d_S, 4*4, d_SSetNode, graph, {});
+  nodes_map["rotation_gpu_count_set"] = countSetNode;
+  nodes_map["rotation_gpu_S_set"] = d_SSetNode;
+  const cvm::real* d_pos1_x = d_pos1;
+  const cvm::real* d_pos1_y = d_pos1_x + num_atoms_pos1;
+  const cvm::real* d_pos1_z = d_pos1_y + num_atoms_pos1;
+  const cvm::real* d_pos2_x = d_pos2;
+  const cvm::real* d_pos2_y = d_pos2_x + num_atoms_pos2;
+  const cvm::real* d_pos2_z = d_pos2_y + num_atoms_pos2;
+  // Kernel node for building S
+  cudaGraphNode_t build_S_node;
+  std::vector<cudaGraphNode_t> dependencies;
+  ADD_DEPENDENCY(rotation_gpu_count_set, dependencies, nodes_map);
+  ADD_DEPENDENCY(rotation_gpu_S_set, dependencies, nodes_map);
+  // The coordinates are not always moved to origin, so these dependencies are conditional
+  ADD_DEPENDENCY_IF(move_to_origin, dependencies, nodes_map);
+  ADD_DEPENDENCY_IF(move_fitting_to_origin, dependencies, nodes_map);
+  // dependencies.push_back(countSetNode);
+  // dependencies.push_back(d_SSetNode);
+  error_code |= colvars_gpu::build_overlapping_matrix(
+    d_pos1_x, d_pos1_y, d_pos1_z,
+    d_pos2_x, d_pos2_y, d_pos2_z,
+    d_S, d_S_eigvec, h_C, tbcount, num_atoms_pos1,
+    build_S_node, graph, dependencies);
+  nodes_map["build_overlapping_matrix"] = build_S_node;
+  // Copy the overlapping matrix to host for CPU buffers
+  cudaGraphNode_t copy_DtoH_S_node;
+  error_code |= colvars_gpu::add_copy_node(
+    d_S, h_S, 4*4, cudaMemcpyDeviceToHost, copy_DtoH_S_node,
+    graph, {build_S_node});
+  nodes_map["copy_DtoH_S"] = copy_DtoH_S_node;
+  // Kernel node for eigensystem
+  // dependencies.push_back(buildSNode);
+  cudaGraphNode_t Jacobi4x4Node;
+  error_code |= colvars_gpu::jacobi_4x4(
+    d_S_eigvec, d_S_eigval,
+    max_iteration_reached, Jacobi4x4Node,
+    graph, {build_S_node});
+  nodes_map["eigendecomposition"] = Jacobi4x4Node;
+  cudaGraphNode_t getQNode;
+  error_code |= colvars_gpu::eigvec_get_q(
+    d_S_eigvec, d_q, colvarmodule::rotation::monitor_crossings,
+    colvarmodule::rotation::crossing_threshold,
+    d_q_old, discontinuous_rotation, getQNode,
+    graph, {Jacobi4x4Node});
+  // getQNode_out = getQNode;
+  nodes_map["calc_optimal_rotation"] = getQNode;
+  cudaGraphNode_t copy_DtoH_S_eigvec_node;
+  error_code |= colvars_gpu::add_copy_node(
+    d_S_eigvec, h_S_eigvec, 4*4,
+    cudaMemcpyDeviceToHost, copy_DtoH_S_eigvec_node,
+    graph, {Jacobi4x4Node});
+  nodes_map["copy_DtoH_S_eigvec"] = copy_DtoH_S_eigvec_node;
+  cudaGraphNode_t copy_DtoH_S_eigval_node;
+  error_code |= colvars_gpu::add_copy_node(
+    d_S_eigval, h_S_eigval, 4,
+    cudaMemcpyDeviceToHost, copy_DtoH_S_eigval_node,
+    graph, {Jacobi4x4Node});
+  nodes_map["copy_DtoH_S_eigval"] = copy_DtoH_S_eigval_node;
+  return error_code;
+}
+
+void rotation_gpu::after_sync_check() const {
+  if (max_iteration_reached[0]) {
+    cvm::error("Too many iterations in jacobi diagonalization.\n"
+               "This is usually the result of an ill-defined set of atoms for "
+               "rotational alignment (RMSD, rotateReference, etc).\n");
+    max_iteration_reached[0] = 0;
+  }
+  if (colvarmodule::rotation::monitor_crossings) {
+    if (discontinuous_rotation[0]) {
+      cvm::log("Warning: one molecular orientation has changed by more than "+
+                cvm::to_str(colvarmodule::rotation::crossing_threshold)+
+                ": discontinuous rotation ?\n");
+    }
+    discontinuous_rotation[0] = 0;
+  }
+}
+
+void rotation_gpu::to_cpu(cvm::rotation& rot) const {
+  std::memcpy(rot.get_S(), h_S, 4*4*sizeof(cvm::real));
+  std::memcpy(rot.get_S_backup(), h_S, 4*4*sizeof(cvm::real));
+  std::memcpy(rot.get_eigenvalues(), h_S_eigval, 4*sizeof(cvm::real));
+  std::memcpy(rot.get_eigenvectors(), h_S_eigvec, 4*4*sizeof(cvm::real));
+  *(rot.get_C()) = *h_C;
+}
+}
+#endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
