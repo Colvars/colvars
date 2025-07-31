@@ -1772,25 +1772,40 @@ void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
   if (cvm::debug()) {
     cvm::log("Applying force on main group " + m_ag->name + ":\n");
   }
+  if (m_ag->b_dummy) return;
   colvarproxy* const p = cvm::main()->proxy;
-  for (size_t ia = 0; ia < m_ag->size(); ++ia) {
-    // const cvm::rvector f_ia = rot_inv * m_ag->group_forces[ia];
-    // (*m_ag)[ia].apply_force(f_ia);
-    const int proxy_index = m_ag->atoms_index[ia];
-    const cvm::rvector f_ia{
-      rot_inv.xx * m_ag->group_forces_x(ia) +
-      rot_inv.xy * m_ag->group_forces_y(ia) +
-      rot_inv.xz * m_ag->group_forces_z(ia),
-      rot_inv.yx * m_ag->group_forces_x(ia) +
-      rot_inv.yy * m_ag->group_forces_y(ia) +
-      rot_inv.yz * m_ag->group_forces_z(ia),
-      rot_inv.zx * m_ag->group_forces_x(ia) +
-      rot_inv.zy * m_ag->group_forces_y(ia) +
-      rot_inv.zz * m_ag->group_forces_z(ia),
-    };
-    p->apply_atom_force(proxy_index, f_ia);
-    if (cvm::debug()) {
-      cvm::log(cvm::to_str(f_ia));
+  if (m_ag->is_enabled(f_ag_rotate)) {
+    for (size_t ia = 0; ia < m_ag->size(); ++ia) {
+      // const cvm::rvector f_ia = rot_inv * m_ag->group_forces[ia];
+      // (*m_ag)[ia].apply_force(f_ia);
+      const int proxy_index = m_ag->atoms_index[ia];
+      const cvm::rvector f_ia{
+        rot_inv.xx * m_ag->group_forces_x(ia) +
+        rot_inv.xy * m_ag->group_forces_y(ia) +
+        rot_inv.xz * m_ag->group_forces_z(ia),
+        rot_inv.yx * m_ag->group_forces_x(ia) +
+        rot_inv.yy * m_ag->group_forces_y(ia) +
+        rot_inv.yz * m_ag->group_forces_z(ia),
+        rot_inv.zx * m_ag->group_forces_x(ia) +
+        rot_inv.zy * m_ag->group_forces_y(ia) +
+        rot_inv.zz * m_ag->group_forces_z(ia),
+      };
+      p->apply_atom_force(proxy_index, f_ia);
+      if (cvm::debug()) {
+        cvm::log(cvm::to_str(f_ia));
+      }
+    }
+  } else {
+    for (size_t ia = 0; ia < m_ag->size(); ++ia) {
+      const int proxy_index = m_ag->atoms_index[ia];
+      const cvm::rvector f_ia{
+        m_ag->group_forces_x(ia),
+        m_ag->group_forces_y(ia),
+        m_ag->group_forces_z(ia)};
+      p->apply_atom_force(proxy_index, f_ia);
+      if (cvm::debug()) {
+        cvm::log(cvm::to_str(f_ia));
+      }
     }
   }
   // Gradients are only available with scalar components, so for a scalar component,
@@ -1798,7 +1813,7 @@ void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
   // computed. For a vector component, we can only know the forces on the fitting
   // group, but checking this flag can mimic results that the users expect (if
   // "enableFitGradients no" then there is no force on the fitting group).
-  if (!m_ag->b_dummy && m_ag->is_enabled(f_ag_fit_gradients)) {
+  if (m_ag->is_enabled(f_ag_fit_gradients)) {
     colvarproxy* const p = cvm::main()->proxy;
     auto accessor_main = [this](size_t i){
       return cvm::rvector(m_ag->group_forces_x(i),
