@@ -167,6 +167,11 @@ public:
     deallocateDeviceTransposeArrays();
     allocateDeviceTransposeArrays();
   }
+  float* proxy_atoms_masses_gpu_float() override {return d_mMass;}
+  float* proxy_atoms_charges_gpu_float() override {return d_mCharges;}
+  cvm::real* proxy_atoms_positions_gpu() override {return d_mPositions;}
+  cvm::real* proxy_atoms_total_forces_gpu() override {return d_mTotalForces;}
+  cvm::real* proxy_atoms_new_colvar_forces_gpu() override {return d_mAppliedForces;}
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
