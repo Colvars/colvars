@@ -191,8 +191,8 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   // Removes the need for proxy specializations to create this
   proxy->script = new colvarscript(proxy, this);
 
-  gpu_calc = nullptr;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  gpu_calc = nullptr;
   if (proxy->has_gpu_support()) {
     // checkGPUError(cudaGraphCreate(&read_data_graph, 0));
     // checkGPUError(cudaGraphCreate(&calc_fit_gradients_graph, 0));
@@ -1035,7 +1035,9 @@ int colvarmodule::calc_colvars()
   } else {
     cvm::increase_depth();
     if (proxy->has_gpu_support()) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
       error_code |= gpu_calc->calc_cvs(*variables_active(), this);
+#endif
     } else {
       // calculate colvars one at a time
       for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
@@ -1175,7 +1177,9 @@ int colvarmodule::update_colvar_forces()
     cvm::log("Communicating forces from the colvars to the atoms.\n");
   cvm::increase_depth();
   if (proxy->has_gpu_support()) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
     error_code |= gpu_calc->apply_forces(*variables_active(), this);
+#endif
   } else {
     for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
       if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
