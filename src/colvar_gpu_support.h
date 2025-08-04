@@ -88,9 +88,9 @@ namespace colvars_gpu {
 
 constexpr int default_block_size = 128;
 
-enum class gpu_code_t {
-  CUDA, HIP, SYCL, CPU
-};
+// enum class gpu_code_t {
+//   CUDA, HIP, SYCL, CPU
+// };
 
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 #define COLVARS_HOST_DEVICE __device__ __host__
@@ -141,13 +141,13 @@ public:
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 using gpu_stream_t = cudaStream_t;
 using gpu_error_t = cudaError_t;
-using gpu_dev_id_t = int;
+// using gpu_dev_id_t = int;
 #elif defined(COLVARS_SYCL)
 using gpu_stream_t = sycl::queue;
 #else
 using gpu_stream_t = int;
 using gpu_error_t = int;
-using gpu_dev_id_t = int;
+// using gpu_dev_id_t = int;
 #endif
 
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
