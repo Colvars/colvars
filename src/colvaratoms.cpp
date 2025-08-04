@@ -1,9 +1,13 @@
 #include "colvaratoms.h"
+#include "colvar_gpu_support.h"
 #include "colvar_rotation_derivative.h"
 #include "colvardeps.h"
 #include "colvarproxy.h"
 #include "colvarmodule.h"
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 #include "cuda/colvaratoms_kernel.h"
+#endif
 
 #include <numeric>
 #include <algorithm>
@@ -322,26 +326,8 @@ void cvm::atom_group::atom_modifier::sync_to_soa() const {
       m_ag->atoms_mass[i] = m_atoms[i].mass;
       m_ag->atoms_charge[i] = m_atoms[i].charge;
     }
-    colvarproxy* p = cvm::main()->proxy;
-#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
-    p->reallocate_device(&m_ag->gpu_buffers.d_atoms_index, m_ag->num_atoms);
-    p->reallocate_device(&m_ag->gpu_buffers.d_atoms_charge, m_ag->num_atoms);
-    p->reallocate_device(&m_ag->gpu_buffers.d_atoms_mass, m_ag->num_atoms);
-    p->reallocate_device(&m_ag->gpu_buffers.d_atoms_weight, m_ag->num_atoms);
-    p->reallocate_device(&m_ag->gpu_buffers.d_atoms_pos, 3 * m_ag->num_atoms);
-    p->reallocate_device(&m_ag->gpu_buffers.d_atoms_vel, 3 * m_ag->num_atoms);
-    p->reallocate_device(&m_ag->gpu_buffers.d_atoms_total_force, 3 * m_ag->num_atoms);
-    p->reallocate_device(&m_ag->gpu_buffers.d_atoms_grad, 3 * m_ag->num_atoms);
-    p->reallocate_device(&m_ag->gpu_buffers.d_atoms_applied_force, 3 * m_ag->num_atoms);
-    p->copy_HtoD(m_ag->atoms_index.data(), m_ag->gpu_buffers.d_atoms_index, m_ag->num_atoms);
-    p->copy_HtoD(m_ag->atoms_charge.data(), m_ag->gpu_buffers.d_atoms_charge, m_ag->num_atoms);
-    p->copy_HtoD(m_ag->atoms_mass.data(), m_ag->gpu_buffers.d_atoms_mass, m_ag->num_atoms);
-    p->copy_HtoD(m_ag->atoms_pos.data(), m_ag->gpu_buffers.d_atoms_pos, 3 * m_ag->num_atoms);
-    p->copy_HtoD(m_ag->atoms_vel.data(), m_ag->gpu_buffers.d_atoms_vel, 3 * m_ag->num_atoms);
-    p->copy_HtoD(m_ag->atoms_grad.data(), m_ag->gpu_buffers.d_atoms_grad, 3 * m_ag->num_atoms);
-    p->copy_HtoD(m_ag->atoms_total_force.data(), m_ag->gpu_buffers.d_atoms_total_force, 3 * m_ag->num_atoms);
-#elif defined(COLVARS_SYCL)
-    // TODO: SYCL
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP) || defined(COLVARS_SYCL)
+    m_ag->sync_to_gpu_buffers();
 #endif
   }
   m_ag->total_charge = m_total_charge;
@@ -599,18 +585,8 @@ void cvm::atom_group::clear_soa() {
   std::fill(atoms_total_force.begin(), atoms_total_force.end(), 0);
   std::fill(atoms_weight.begin(), atoms_weight.end(), 0);
   // Reset the GPU buffers if necessary
-#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
-  p->clear_device_array(gpu_buffers.d_atoms_index, num_atoms);
-  p->clear_device_array(gpu_buffers.d_atoms_mass, num_atoms);
-  p->clear_device_array(gpu_buffers.d_atoms_charge, num_atoms);
-  p->clear_device_array(gpu_buffers.d_atoms_weight, num_atoms);
-  p->clear_device_array(gpu_buffers.d_atoms_pos, 3 * num_atoms);
-  p->clear_device_array(gpu_buffers.d_atoms_grad, 3 * num_atoms);
-  p->clear_device_array(gpu_buffers.d_atoms_total_force, 3 * num_atoms);
-  p->clear_device_array(gpu_buffers.d_atoms_vel, 3 * num_atoms);
-  p->clear_device_array(gpu_buffers.d_atoms_applied_force, 3 * num_atoms);
-#elif defined(COLVARS_SYCL)
-  // TODO: COLVARS_SYCL
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP) || defined(COLVARS_SYCL)
+  clear_gpu_buffers();
 #endif
   // Reset the number of atoms
   num_atoms = 0;
@@ -1297,20 +1273,10 @@ void cvm::atom_group::read_velocities()
   if (p->has_gpu_support()) {
 #if 0
     // This is never used.
-    cvm::rmatrix rot_mat;
-    if (is_enabled(f_ag_rotate)) rot_mat = rot.matrix();
-    colvars_gpu::atoms_vel_from_proxy(
-      d_atoms_index, p->proxy_atoms_velocities(), d_atoms_vel,
-      is_enabled(f_ag_rotate), rot_mat, num_atoms, stream);
 #endif
   } else {
     if (is_enabled(f_ag_rotate)) {
-
       const auto rot_mat = rot.matrix();
-      // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-      //   ai->read_velocity();
-      //   ai->vel = rot_mat * ai->vel;
-      // }
       for (size_t i = 0; i < num_atoms; ++i) {
         const int proxy_index = atoms_index[i];
         const cvm::rvector vel = p->get_atom_velocity(proxy_index);
@@ -1318,11 +1284,7 @@ void cvm::atom_group::read_velocities()
         vel_y(i) = rot_mat.yx * vel.x + rot_mat.yy * vel.y + rot_mat.yz * vel.z;
         vel_z(i) = rot_mat.zx * vel.x + rot_mat.zy * vel.y + rot_mat.zz * vel.z;
       }
-
     } else {
-      // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-      //   ai->read_velocity();
-      // }
       for (size_t i = 0; i < num_atoms; ++i) {
         const int proxy_index = atoms_index[i];
         const cvm::rvector vel = p->get_atom_velocity(proxy_index);
@@ -1353,13 +1315,13 @@ void cvm::atom_group::read_total_forces()
     colvars_gpu::atoms_total_force_from_proxy(
       gpu_buffers.d_atoms_index, p->proxy_atoms_total_forces_gpu(),
       gpu_buffers.d_atoms_total_force, is_enabled(f_ag_rotate),
-      q_ptr, num_atoms, p->get_atom_ids()->size(), 0);
+      q_ptr, num_atoms, p->get_atom_ids()->size(), p->get_default_stream());
     // TODO: How can I check if the CVC has GPU implementation?
     // If the CVC only supports CPU, copy the data to host
-    p->copy_DtoH(
+    p->copy_DtoH_async(
       gpu_buffers.d_atoms_total_force, atoms_total_force.data(),
-      num_atoms);
-    // p->sync_stream(stream);
+      num_atoms, p->get_default_stream());
+    checkGPUError(cudaStreamSynchronize(p->get_default_stream()));
 #endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
   } else {
     if (is_enabled(f_ag_rotate)) {

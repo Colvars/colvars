@@ -886,6 +886,8 @@ private:
 public:
   int init_gpu();
   int destroy_gpu();
+  int sync_to_gpu_buffers();
+  int clear_gpu_buffers();
   int add_reset_atoms_data_nodes(
     cudaGraph_t& graph,
     std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
