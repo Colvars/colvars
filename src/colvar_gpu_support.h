@@ -10,14 +10,13 @@
 #include <cuda_runtime.h>
 #include <thrust/reduce.h>
 #include <thrust/device_ptr.h>
-#include <cusolverDn.h>
+// #include <cusolverDn.h>
 #endif // defined(COLVARS_CUDA)
 
 #if defined(COLVARS_HIP)
 #include <hip/hip_runtime.h>
 #include <thrust/reduce.h>
 #include <thrust/device_ptr.h>
-// TODO: cusolverDn.h in HIP
 
 #ifndef cudaError_t
 #define cudaError_t hipError_t
