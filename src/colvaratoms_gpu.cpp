@@ -1,11 +1,13 @@
 #include "colvaratoms.h"
 #include "colvar_gpu_support.h"
-// #include "colvar_rotation_derivative.h"
 #include "colvardeps.h"
 #include "colvarproxy.h"
 #include "colvarmodule.h"
-#include "cuda/colvaratoms_kernel.h"
 #include "colvarcomp.h"
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+#include "cuda/colvaratoms_kernel.h"
+#endif
 
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 int cvm::atom_group::init_gpu() {
@@ -78,6 +80,55 @@ int cvm::atom_group::destroy_gpu() {
   error_code |= p->deallocate_host(&gpu_buffers.h_com);
   error_code |= p->deallocate_host(&gpu_buffers.h_cog);
   error_code |= p->deallocate_host(&gpu_buffers.h_cog_orig);
+  return error_code;
+}
+
+int cvm::atom_group::sync_to_gpu_buffers() {
+  int error_code = COLVARS_OK;
+  colvarproxy* p = cvm::main()->proxy;
+  if (p->has_gpu_support()) {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+    error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_index, this->num_atoms);
+    error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_charge, this->num_atoms);
+    error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_mass, this->num_atoms);
+    error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_weight, this->num_atoms);
+    error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_pos, 3 * this->num_atoms);
+    error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_vel, 3 * this->num_atoms);
+    error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_total_force, 3 * this->num_atoms);
+    error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_grad, 3 * this->num_atoms);
+    error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_applied_force, 3 * this->num_atoms);
+    error_code |= p->copy_HtoD(this->atoms_index.data(), this->gpu_buffers.d_atoms_index, this->num_atoms);
+    error_code |= p->copy_HtoD(this->atoms_charge.data(), this->gpu_buffers.d_atoms_charge, this->num_atoms);
+    error_code |= p->copy_HtoD(this->atoms_mass.data(), this->gpu_buffers.d_atoms_mass, this->num_atoms);
+    error_code |= p->copy_HtoD(this->atoms_pos.data(), this->gpu_buffers.d_atoms_pos, 3 * this->num_atoms);
+    error_code |= p->copy_HtoD(this->atoms_vel.data(), this->gpu_buffers.d_atoms_vel, 3 * this->num_atoms);
+    error_code |= p->copy_HtoD(this->atoms_grad.data(), this->gpu_buffers.d_atoms_grad, 3 * this->num_atoms);
+    error_code |= p->copy_HtoD(this->atoms_total_force.data(), this->gpu_buffers.d_atoms_total_force, 3 * this->num_atoms);
+#elif defined(COLVARS_SYCL)
+    // TODO: SYCL
+#endif
+  }
+  return error_code;
+}
+
+int cvm::atom_group::clear_gpu_buffers() {
+  int error_code = COLVARS_OK;
+  colvarproxy* p = cvm::main()->proxy;
+  if (p->has_gpu_support()) {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+    p->clear_device_array(gpu_buffers.d_atoms_index, num_atoms);
+    p->clear_device_array(gpu_buffers.d_atoms_mass, num_atoms);
+    p->clear_device_array(gpu_buffers.d_atoms_charge, num_atoms);
+    p->clear_device_array(gpu_buffers.d_atoms_weight, num_atoms);
+    p->clear_device_array(gpu_buffers.d_atoms_pos, 3 * num_atoms);
+    p->clear_device_array(gpu_buffers.d_atoms_grad, 3 * num_atoms);
+    p->clear_device_array(gpu_buffers.d_atoms_total_force, 3 * num_atoms);
+    p->clear_device_array(gpu_buffers.d_atoms_vel, 3 * num_atoms);
+    p->clear_device_array(gpu_buffers.d_atoms_applied_force, 3 * num_atoms);
+#elif defined(COLVARS_SYCL)
+  // TODO: COLVARS_SYCL
+#endif
+  }
   return error_code;
 }
 
