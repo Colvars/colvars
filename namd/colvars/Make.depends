@@ -3,6 +3,7 @@ obj/colvar.o: \
 	colvars/src/colvar.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -31,6 +32,7 @@ obj/colvaratoms.o: \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarparse.h \
@@ -51,6 +53,7 @@ obj/colvarbias.o: \
 	colvars/src/colvarbias.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
@@ -74,6 +77,7 @@ obj/colvarbias_abf.o: \
 	colvars/src/colvarbias_abf.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarvalue.h \
@@ -104,6 +108,7 @@ obj/colvarbias_abmd.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -123,6 +128,7 @@ obj/colvarbias_alb.o: \
 	colvars/src/colvarbias_alb.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
@@ -145,6 +151,7 @@ obj/colvarbias_histogram.o: \
 	colvars/src/colvarbias_histogram.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
@@ -173,6 +180,7 @@ obj/colvarbias_histogram_reweight_amd.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -194,6 +202,7 @@ obj/colvarbias_meta.o: \
 	colvars/src/colvarbias_meta.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
@@ -218,6 +227,7 @@ obj/colvarbias_restraint.o: \
 	colvars/src/colvarbias_restraint.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
@@ -243,6 +253,7 @@ obj/colvarbias_opes.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -262,15 +273,16 @@ obj/colvarbias_opes.o: \
 obj/colvarcomp.o: \
 	obj/.exists \
 	colvars/src/colvarcomp.cpp \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvardeps.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvarparse.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
-	colvars/src/colvar.h \
-	colvars/src/colvarparse.h \
 	colvars/src/colvarparams.h \
-	colvars/src/colvardeps.h \
+	colvars/src/colvar.h \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvar_rotation_derivative.h \
@@ -288,6 +300,7 @@ obj/colvarcomp_angles.o: \
 	colvars/src/colvarcomp_angles.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar.h \
 	colvars/src/colvarvalue.h \
@@ -312,6 +325,7 @@ obj/colvarcomp_alchlambda.o: \
 	colvars/src/colvarcomp_alchlambda.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -337,6 +351,7 @@ obj/colvarcomp_apath.o: \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvar.h \
@@ -361,6 +376,7 @@ obj/colvarcomp_coordnums.o: \
 	colvars/src/colvarcomp_coordnums.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvardeps.h \
@@ -385,6 +401,7 @@ obj/colvarcomp_distances.o: \
 	colvars/src/colvarcomp_distances.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -409,6 +426,7 @@ obj/colvarcomp_gpath.o: \
 	colvars/src/colvarcomp_gpath.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -433,6 +451,7 @@ obj/colvarcomp_protein.o: \
 	colvars/src/colvarcomp_protein.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -457,6 +476,7 @@ obj/colvarcomp_rotations.o: \
 	colvars/src/colvarcomp_rotations.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -481,6 +501,7 @@ obj/colvarcomp_volmaps.o: \
 	colvars/src/colvarcomp_volmaps.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -506,6 +527,7 @@ obj/colvarcomp_combination.o: \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvardeps.h \
@@ -529,6 +551,7 @@ obj/colvarcomp_neuralnetwork.o: \
 	colvars/src/colvarcomp_neuralnetwork.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -555,6 +578,7 @@ obj/colvarcomp_torchann.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -581,6 +605,7 @@ obj/colvar_neuralnetworkcompute.o: \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -598,6 +623,7 @@ obj/colvardeps.o: \
 	colvars/src/colvardeps.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
@@ -617,6 +643,7 @@ obj/colvargrid.o: \
 	colvars/src/colvargrid.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -643,6 +670,7 @@ obj/colvargrid_integrate.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -655,6 +683,7 @@ obj/colvarmodule.o: \
 	colvars/src/colvarmodule.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarparse.h \
 	colvars/src/colvarvalue.h \
@@ -697,6 +726,7 @@ obj/colvarparams.o: \
 	colvars/src/colvarparams.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -707,6 +737,7 @@ obj/colvarparse.o: \
 	colvars/src/colvarparse.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -719,6 +750,7 @@ obj/colvarproxy.o: \
 	colvars/src/colvarproxy.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
@@ -745,6 +777,7 @@ obj/colvarproxy_io.o: \
 	colvars/src/colvarproxy_io.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy_io.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_io.o $(COPTC) colvars/src/colvarproxy_io.cpp
@@ -753,6 +786,7 @@ obj/colvarproxy_replicas.o: \
 	colvars/src/colvarproxy_replicas.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy_replicas.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_replicas.o $(COPTC) colvars/src/colvarproxy_replicas.cpp
@@ -761,6 +795,7 @@ obj/colvarproxy_system.o: \
 	colvars/src/colvarproxy_system.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy_system.h
@@ -770,6 +805,7 @@ obj/colvarproxy_tcl.o: \
 	colvars/src/colvarproxy_tcl.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvartypes.h \
@@ -792,13 +828,15 @@ obj/colvarproxy_gpu.o: \
 	colvars/src/colvarproxy_gpu.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h
+	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_gpu.o $(COPTC) colvars/src/colvarproxy_gpu.cpp
 obj/colvarproxy_volmaps.o: \
 	obj/.exists \
 	colvars/src/colvarproxy_volmaps.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvarmodule_utils.h
@@ -809,6 +847,7 @@ obj/colvarscript.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy_io.h \
@@ -832,6 +871,7 @@ obj/colvarscript_commands.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -857,6 +897,7 @@ obj/colvarscript_commands_bias.o: \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarproxy_io.h \
@@ -882,6 +923,7 @@ obj/colvarscript_commands_colvar.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -905,6 +947,7 @@ obj/colvars_memstream.o: \
 	colvars/src/colvars_memstream.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
@@ -913,9 +956,10 @@ obj/colvars_memstream.o: \
 obj/colvartypes.o: \
 	obj/.exists \
 	colvars/src/colvartypes.cpp \
+	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvardeps.h \
@@ -923,6 +967,13 @@ obj/colvartypes.o: \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvarparams.h \
 	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvarproxy_gpu.h \
 	colvars/src/nr_jacobi.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvartypes.o $(COPTC) colvars/src/colvartypes.cpp
 obj/colvarvalue.o: \
@@ -930,6 +981,7 @@ obj/colvarvalue.o: \
 	colvars/src/colvarvalue.cpp \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/colvartypes.h \
@@ -940,14 +992,41 @@ obj/colvar_gpu_support.o: \
 	colvars/src/colvar_gpu_support.cpp \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
-	colvars/src/colvars_version.h
+	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvar_gpu_support.o $(COPTC) colvars/src/colvar_gpu_support.cpp
+obj/colvar_gpu_calc.o: \
+	obj/.exists \
+	colvars/src/colvar_gpu_calc.cpp \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvar.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvar_geometricpath.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvar_gpu_calc.o $(COPTC) colvars/src/colvar_gpu_calc.cpp
 obj/nr_jacobi.o: \
 	obj/.exists \
 	colvars/src/nr_jacobi.cpp \
 	colvars/src/colvartypes.h \
+	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_gpu_calc.h \
 	colvars/src/nr_jacobi.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/nr_jacobi.o $(COPTC) colvars/src/nr_jacobi.cpp

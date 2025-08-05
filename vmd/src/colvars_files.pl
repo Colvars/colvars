@@ -58,6 +58,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvartypes.C',
                     'colvarvalue.C',
                     'colvar_gpu_support.C',
+                    'colvar_gpu_calc.C',
                     'nr_jacobi.C');
 @colvars_h    =    ('colvar_UIestimator.h',
                     'colvar_arithmeticpath.h',
@@ -103,4 +104,5 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvartypes.h',
                     'colvarvalue.h',
                     'colvar_gpu_support.h',
+                    'colvar_gpu_calc.h',
                     'nr_jacobi.h');

@@ -45,5 +45,6 @@ COLVARSLIB = \
 	$(DSTDIR)/colvartypes.o \
 	$(DSTDIR)/colvarvalue.o \
 	$(DSTDIR)/colvar_gpu_support.o \
+	$(DSTDIR)/colvar_gpu_calc.o \
 	$(DSTDIR)/nr_jacobi.o
         
