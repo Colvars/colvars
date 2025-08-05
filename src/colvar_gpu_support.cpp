@@ -3,7 +3,7 @@
 
 namespace colvars_gpu {
 
-int gpuAssert(gpu_error_t code, const char *file, int line)
+int gpuAssert(cudaError_t code, const char *file, int line)
 {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   if (code != cudaSuccess) {
