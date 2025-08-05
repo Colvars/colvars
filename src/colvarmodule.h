@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <memory>
 
 #include "colvars_version.h"
 #include "colvar_gpu_calc.h"

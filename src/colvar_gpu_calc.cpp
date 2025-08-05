@@ -163,8 +163,8 @@ int cvc_calc_value(const std::vector<colvar*>& colvars, colvarmodule* colvar_mod
         colvar_module->log(
           "Colvar component "+(*cvc)->name+
           " within colvar \""+(*cvi)->name+"\" has value "+
-          cvm::to_str((*cvc)->value(),
-          cvm::cv_width, cvm::cv_prec)+".\n");
+          colvar_module->to_str((*cvc)->value(),
+          colvar_module->cv_width, colvar_module->cv_prec)+".\n");
       }
     }
   }
@@ -202,6 +202,7 @@ int atom_group_calc_fit_gradients(
       // Iterate over all colvarcomp objects
       for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
         if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
+        if (!(*cvc)->is_enabled(colvardeps::f_cvc_gradient)) continue;
         if ((*cvc)->is_enabled(colvardeps::f_cvc_explicit_atom_groups)) {
           // Iterate over all atom groups
           // TODO: For the time being, a parent CVC own the atom groups from
@@ -267,6 +268,20 @@ int atom_group_calc_fit_gradients(
   return error_code;
 }
 
+int cvc_debug_gradients(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
+  int error_code = COLVARS_OK;
+  for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    const auto all_cvcs = (*cvi)->get_cvcs();
+    for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
+      if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
+      if (!(*cvc)->is_enabled(colvardeps::f_cvc_gradient)) continue;
+      if (!(*cvc)->is_enabled(colvardeps::f_cvc_debug_gradient)) continue;
+      (*cvc)->debug_gradients();
+    }
+  }
+  return error_code;
+}
+
 int cvc_calc_Jacobian_derivative(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
   int error_code = COLVARS_OK;
   for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
@@ -286,7 +301,7 @@ int cv_collect_cvc_data(const std::vector<colvar*>& colvars, colvarmodule* colva
   int error_code = COLVARS_OK;
   for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
     error_code |= (*cvi)->collect_cvc_data();
-    if (cvm::get_error()) {
+    if (colvar_module->get_error()) {
       return COLVARS_ERROR;
     }
   }
@@ -355,6 +370,8 @@ int colvarmodule_gpu_calc::calc_cvs(const std::vector<colvar*>& colvars, colvarm
     // Calculate fit gradients for atom groups
     checkColvarsError(atom_group_calc_fit_gradients(
       colvars, calc_fit_gradients_compute, colvar_module));
+    // Debug gradients
+    checkColvarsError(cvc_debug_gradients(colvars, colvar_module));
     // Calculate the Jacobian terms
     checkColvarsError(cvc_calc_Jacobian_derivative(colvars, colvar_module));
     // Calculate total force
@@ -420,7 +437,7 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
       for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
         if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
           (*cvi)->communicate_forces();
-          if (cvm::get_error()) {
+          if (colvar_module->get_error()) {
             return COLVARS_ERROR;
           }
         }
@@ -451,7 +468,7 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
       for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
         if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
           (*cvi)->communicate_forces();
-          if (cvm::get_error()) {
+          if (colvar_module->get_error()) {
             return COLVARS_ERROR;
           }
         }
