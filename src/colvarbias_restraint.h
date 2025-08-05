@@ -120,6 +120,9 @@ protected:
   /// \brief Changing force constant?
   bool b_chg_force_k;
 
+  /// \brief Changing wall locations?
+  bool b_chg_walls;
+  
   /// \brief Perform decoupling of the restraint?
   bool b_decoupling;
 
@@ -262,8 +265,10 @@ public:
   colvarbias_restraint_harmonic_walls(char const *key);
   virtual int init(std::string const &conf);
   virtual int update();
+  virtual int update_acc_work();
   virtual std::string const get_state_params() const;
   virtual int set_state_params(std::string const &conf);
+  virtual int change_configuration(std::string const &conf);
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
 
@@ -281,10 +286,30 @@ protected:
   /// \brief If both walls are defined, use this k for the upper
   cvm::real upper_wall_k;
 
+  /// \brief Location of the target lower wall, for moving the wall
+  std::vector<colvarvalue> target_lower_walls;
+
+    /// \brief Initial value of the lower walls
+  std::vector<colvarvalue> initial_lower_walls;
+
+  /// \brief Increment of the lower walls at each step
+  std::vector<colvarvalue> lower_walls_incr;
+
+  /// \brief Location of the target upper wall, for moving the wall
+  std::vector<colvarvalue> target_upper_walls;
+
+    /// \brief Initial value of upper lower walls
+  std::vector<colvarvalue> initial_upper_walls;
+
+  /// \brief Increment of the upper walls at each step
+  std::vector<colvarvalue> upper_walls_incr;
+
+
   virtual cvm::real colvar_distance(size_t i) const;
   virtual cvm::real restraint_potential(size_t i) const;
   virtual colvarvalue const restraint_force(size_t i) const;
   virtual cvm::real d_restraint_potential_dk(size_t i) const;
+  virtual int update_walls(cvm::real lambda);
 };
 
 
