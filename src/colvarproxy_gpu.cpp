@@ -53,7 +53,7 @@ int colvarproxy_gpu::deallocate_device_T(void **pp) {
   return error_code;
 }
 
-int colvarproxy_gpu::allocate_device_T_async(void **pp, const size_t len, const size_t sizeofT, gpu_stream_t stream) {
+int colvarproxy_gpu::allocate_device_T_async(void **pp, const size_t len, const size_t sizeofT, cudaStream_t stream) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   error_code |= checkGPUError(cudaMallocAsync(pp, sizeofT*len, stream));
@@ -64,7 +64,7 @@ int colvarproxy_gpu::allocate_device_T_async(void **pp, const size_t len, const 
   return error_code;
 }
 
-int colvarproxy_gpu::deallocate_device_T_async(void **pp, gpu_stream_t stream) {
+int colvarproxy_gpu::deallocate_device_T_async(void **pp, cudaStream_t stream) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   if (*pp != nullptr) {
@@ -91,7 +91,7 @@ int colvarproxy_gpu::clear_device_array_T(void *data, const size_t ndata, const 
   return error_code;
 }
 
-int colvarproxy_gpu::clear_device_array_T_async(void *data, const size_t ndata, const size_t sizeofT, colvars_gpu::gpu_stream_t stream) {
+int colvarproxy_gpu::clear_device_array_T_async(void *data, const size_t ndata, const size_t sizeofT, cudaStream_t stream) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   // if (data != nullptr) {
@@ -115,7 +115,7 @@ int colvarproxy_gpu::copy_HtoD_T(const void *h_array, void *d_array, size_t arra
   return error_code;
 }
 
-int colvarproxy_gpu::copy_HtoD_T_async(const void *h_array, void *d_array, size_t array_len, const size_t sizeofT, colvars_gpu::gpu_stream_t stream) {
+int colvarproxy_gpu::copy_HtoD_T_async(const void *h_array, void *d_array, size_t array_len, const size_t sizeofT, cudaStream_t stream) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   error_code |= checkGPUError(cudaMemcpyAsync(d_array, h_array, sizeofT*array_len, cudaMemcpyHostToDevice, stream));
@@ -137,7 +137,7 @@ int colvarproxy_gpu::copy_DtoH_T(const void *d_array, void *h_array, size_t arra
   return error_code;
 }
 
-int colvarproxy_gpu::copy_DtoH_T_async(const void *d_array, void *h_array, size_t array_len, const size_t sizeofT, colvars_gpu::gpu_stream_t stream) {
+int colvarproxy_gpu::copy_DtoH_T_async(const void *d_array, void *h_array, size_t array_len, const size_t sizeofT, cudaStream_t stream) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   error_code |= checkGPUError(cudaMemcpyAsync(h_array, d_array, sizeofT*array_len, cudaMemcpyDeviceToHost, stream));
@@ -159,7 +159,7 @@ int colvarproxy_gpu::copy_DtoD_T(const void *d_src, void *d_dst, size_t array_le
   return error_code;
 }
 
-int colvarproxy_gpu::copy_DtoD_T_async(const void *d_src, void *d_dst, size_t array_len, const size_t sizeofT, colvars_gpu::gpu_stream_t stream) {
+int colvarproxy_gpu::copy_DtoD_T_async(const void *d_src, void *d_dst, size_t array_len, const size_t sizeofT, cudaStream_t stream) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   error_code |= checkGPUError(cudaMemcpyAsync(d_dst, d_src, sizeofT*array_len, cudaMemcpyDeviceToDevice, stream));
