@@ -1781,6 +1781,9 @@ void cvm::atom_group::do_feature_side_effects(int id)
       }
       break;
   }
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  do_feature_side_effects_gpu(id);
+#endif
 }
 
 void cvm::atom_group::set_ref_pos_from_aos(const std::vector<cvm::atom_pos>& pos_aos) {

@@ -823,7 +823,13 @@ public:
 
   inline COLVARS_HOST_DEVICE cvm::real norm() const
   {
-    return cvm::sqrt(this->norm2());
+#if (!defined(__HIP_DEVICE_COMPILE__)) || (!defined (__CUDA_ARCH__))
+#define COLVARS_MATH_SQRT ::sqrt
+#else
+#define COLVARS_MATH_SQRT cvm::sqrt
+#endif
+    return COLVARS_MATH_SQRT(this->norm2());
+#undef COLVARS_MATH_SQRT
   }
 
   inline COLVARS_HOST_DEVICE cvm::rvector unit() const
@@ -988,7 +994,7 @@ public:
     : q0(q0i), q1(q1i), q2(q2i), q3(q3i)
   {}
 
-  inline COLVARS_HOST_DEVICE quaternion(cvm::vector1d<cvm::real> const &v)
+  inline quaternion(cvm::vector1d<cvm::real> const &v)
     : q0(v[0]), q1(v[1]), q2(v[2]), q3(v[3])
   {}
 
@@ -1030,7 +1036,7 @@ public:
     case 3:
       return this->q3;
     default:
-#if __HIP_DEVICE_COMPILE__ || (!defined (__CUDA_ARCH__))
+#if !(defined(__NVCC__) || defined(__HIPCC__))
       cvm::error("Error: incorrect quaternion component.\n");
 #endif
       return q0;
@@ -1049,7 +1055,7 @@ public:
     case 3:
       return this->q3;
     default:
-#if __HIP_DEVICE_COMPILE__ || (!defined (__CUDA_ARCH__))
+#if !(defined(__NVCC__) || defined(__HIPCC__))
       cvm::error("Error: trying to access a quaternion "
                  "component which is not between 0 and 3.\n");
 #endif
@@ -1076,7 +1082,13 @@ public:
   /// Norm of the quaternion
   inline COLVARS_HOST_DEVICE cvm::real norm() const
   {
-    return cvm::sqrt(this->norm2());
+#if (!defined(__HIP_DEVICE_COMPILE__)) || (!defined (__CUDA_ARCH__))
+#define COLVARS_MATH_SQRT ::sqrt
+#else
+#define COLVARS_MATH_SQRT cvm::sqrt
+#endif
+    return COLVARS_MATH_SQRT(this->norm2());
+#undef COLVARS_MATH_SQRT
   }
 
   /// Return the conjugate quaternion
@@ -1260,9 +1272,14 @@ public:
   {
     cvm::real const cos_omega = this->q0*Q2.q0 + this->q1*Q2.q1 +
       this->q2*Q2.q2 + this->q3*Q2.q3;
-
-    cvm::real const omega = cvm::acos( (cos_omega > 1.0) ? 1.0 :
-                                       ( (cos_omega < -1.0) ? -1.0 : cos_omega) );
+#if (!defined(__HIP_DEVICE_COMPILE__)) || (!defined (__CUDA_ARCH__))
+#define COLVARS_MATH_ACOS ::acos
+#else
+#define COLVARS_MATH_ACOS cvm::acos
+#endif
+    cvm::real const omega = COLVARS_MATH_ACOS( (cos_omega > 1.0) ? 1.0 :
+                                    ( (cos_omega < -1.0) ? -1.0 : cos_omega) );
+#undef COLVARS_MATH_ACOS
 
     // get the minimum distance: x and -x are the same quaternion
     if (cos_omega > 0.0)
@@ -1275,16 +1292,27 @@ public:
   /// to that provided by slerp
   inline COLVARS_HOST_DEVICE cvm::quaternion dist2_grad(cvm::quaternion const &Q2) const
   {
+#if (!defined(__HIP_DEVICE_COMPILE__)) || (!defined (__CUDA_ARCH__))
+#define COLVARS_MATH_ACOS ::acos
+#define COLVARS_MATH_SIN ::sin
+#define COLVARS_MATH_FABS ::fabs
+#else
+#define COLVARS_MATH_ACOS cvm::acos
+#define COLVARS_MATH_SIN cvm::sin
+#define COLVARS_MATH_FABS cvm::fabs
+#endif
     cvm::real const cos_omega = this->q0*Q2.q0 + this->q1*Q2.q1 + this->q2*Q2.q2 + this->q3*Q2.q3;
-    cvm::real const omega = cvm::acos( (cos_omega > 1.0) ? 1.0 :
+    cvm::real const omega = COLVARS_MATH_ACOS( (cos_omega > 1.0) ? 1.0 :
                                        ( (cos_omega < -1.0) ? -1.0 : cos_omega) );
-    cvm::real const sin_omega = cvm::sin(omega);
+    cvm::real const sin_omega = COLVARS_MATH_SIN(omega);
 
-    if (cvm::fabs(sin_omega) < 1.0E-14) {
+    if (COLVARS_MATH_FABS(sin_omega) < 1.0E-14) {
       // return a null 4d vector
       return cvm::quaternion(0.0, 0.0, 0.0, 0.0);
     }
-
+#undef COLVARS_MATH_ACOS
+#undef COLVARS_MATH_SIN
+#undef COLVARS_MATH_FABS
     cvm::quaternion const
       grad1((-1.0)*sin_omega*Q2.q0 + cos_omega*(this->q0-cos_omega*Q2.q0)/sin_omega,
             (-1.0)*sin_omega*Q2.q1 + cos_omega*(this->q1-cos_omega*Q2.q1)/sin_omega,
@@ -1540,12 +1568,12 @@ protected:
   void *jacobi;
 };
 
-#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 namespace colvars_gpu {
 class jacobi_gpu;
 class rotation_gpu {
 private:
-  // colvars_gpu::gpu_stream_t stream;
+  // cudaStream_t stream;
   /// Correlation matrix C (3, 3)
   // cvm::rmatrix* d_C;
   /// Overlap matrix S (4, 4)
@@ -1587,7 +1615,7 @@ public:
   /// Check if the object is initialized
   bool initialized() const {return b_initialized;}
   /// Initialize member data
-  int init(/*const colvars_gpu::gpu_stream_t& stream_in*/);
+  int init(/*const cudaStream_t& stream_in*/);
   /// \brief Calculate the optimal rotation and store the
   /// corresponding eigenvalue and eigenvector in the arguments l0 and
   /// q0; if the gradients have been previously requested, calculate
