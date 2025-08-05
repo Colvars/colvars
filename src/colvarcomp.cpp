@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <array>
 
+#include "colvar_gpu_support.h"
 #include "colvardeps.h"
 #include "colvarmodule.h"
 #include "colvarvalue.h"
@@ -566,7 +567,10 @@ void colvar::cvc::debug_gradients()
   // since atom coordinates are modified only within the current group
 
   cvm::log("Debugging gradients for " + description);
-
+  colvarproxy *p = cvm::main()->proxy;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  cudaStream_t stream = p->get_default_stream();
+#endif
   /**
    * @note Some CVCs change the gradients when running calc_value(), so it is
    * better to copy the original gradients out at first.
@@ -648,15 +652,24 @@ void colvar::cvc::debug_gradients()
 
       auto const this_atom = (*group)[ia];
       for (size_t id = 0; id < 3; id++) {
-        // (re)read original positions
-        group->read_positions();
-        // change one coordinate
-        switch (id) {
-          case 0: group->pos_x(ia) += cvm::debug_gradients_step_size; break;
-          case 1: group->pos_y(ia) += cvm::debug_gradients_step_size; break;
-          case 2: group->pos_z(ia) += cvm::debug_gradients_step_size; break;
+        if (p->has_gpu_support()) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+          group->read_positions_gpu_debug(
+            ia, id, is_enabled(f_cvc_require_cpu_buffers), stream);
+          group->calc_required_properties_gpu_debug(stream);
+          checkGPUError(cudaStreamSynchronize(stream));
+#endif
+        } else {
+          // (re)read original positions
+          group->read_positions();
+          // change one coordinate
+          switch (id) {
+            case 0: group->pos_x(ia) += cvm::debug_gradients_step_size; break;
+            case 1: group->pos_y(ia) += cvm::debug_gradients_step_size; break;
+            case 2: group->pos_z(ia) += cvm::debug_gradients_step_size; break;
+          }
+          group->calc_required_properties();
         }
-        group->calc_required_properties();
         calc_value();
         cvm::real x_1 = x.real_value;
         if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_1 = x[0];
@@ -689,8 +702,17 @@ void colvar::cvc::debug_gradients()
 
     if ((group->is_enabled(f_ag_fit_gradients)) && (group->fitting_group != NULL)) {
       auto *ref_group = group->fitting_group;
-      group->read_positions();
-      group->calc_required_properties();
+      if (p->has_gpu_support()) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+        group->read_positions_gpu_debug(
+          0, -1, is_enabled(f_cvc_require_cpu_buffers), stream);
+        group->calc_required_properties_gpu_debug(stream);
+        checkGPUError(cudaStreamSynchronize(stream));
+#endif
+      } else {
+        group->read_positions();
+        group->calc_required_properties();
+      }
 
       std::vector<cvm::rvector> fit_gradients = ag_gradients.at(group)[1];
       for (size_t ia = 0; ia < ref_group->size(); ia++) {
@@ -702,15 +724,26 @@ void colvar::cvc::debug_gradients()
 
         for (size_t id = 0; id < 3; id++) {
           // (re)read original positions
-          group->read_positions();
-          ref_group->read_positions();
-          // change one coordinate
-          switch (id) {
-            case 0: ref_group->pos_x(ia) += cvm::debug_gradients_step_size; break;
-            case 1: ref_group->pos_y(ia) += cvm::debug_gradients_step_size; break;
-            case 2: ref_group->pos_z(ia) += cvm::debug_gradients_step_size; break;
+          if (p->has_gpu_support()) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+            group->read_positions_gpu_debug(
+              0, -1, is_enabled(f_cvc_require_cpu_buffers), stream);
+            ref_group->read_positions_gpu_debug(
+              ia, id, is_enabled(f_cvc_require_cpu_buffers), stream);
+            group->calc_required_properties_gpu_debug(stream);
+            checkGPUError(cudaStreamSynchronize(stream));
+#endif
+          } else {
+            group->read_positions();
+            ref_group->read_positions();
+            // change one coordinate
+            switch (id) {
+              case 0: ref_group->pos_x(ia) += cvm::debug_gradients_step_size; break;
+              case 1: ref_group->pos_y(ia) += cvm::debug_gradients_step_size; break;
+              case 2: ref_group->pos_z(ia) += cvm::debug_gradients_step_size; break;
+            }
+            group->calc_required_properties();
           }
-          group->calc_required_properties();
           calc_value();
           cvm::real const x_1 = x.real_value;
 
