@@ -10,6 +10,7 @@ public:
   bool has_gpu_support() const {
     return support_gpu;
   }
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (COLVARS_SYCL)
   virtual cudaStream_t get_default_stream() {return (cudaStream_t)0;}
   template <typename T>
   int allocate_host(T **pp, const size_t len) {
@@ -95,6 +96,7 @@ public:
   virtual cvm::real* proxy_atoms_positions_gpu() {return nullptr;}
   virtual cvm::real* proxy_atoms_total_forces_gpu() {return nullptr;}
   virtual cvm::real* proxy_atoms_new_colvar_forces_gpu() {return nullptr;}
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   ~colvarproxy_gpu();
 protected:
   bool support_gpu;
