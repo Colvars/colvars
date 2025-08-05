@@ -66,6 +66,84 @@ int atoms_pos_from_proxy(
     dependencies.size(), &kernelNodeParams));
 }
 
+int atoms_pos_from_proxy(
+  const int* atoms_proxy_index,
+  const cvm::real* atoms_pos_proxy,
+  cvm::real* atoms_pos_ag,
+  int num_atoms,
+  int proxy_stride,
+  cudaStream_t stream) {
+  const int block_size = default_block_size;
+  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const cvm::real* atoms_pos_x_proxy = atoms_pos_proxy;
+  const cvm::real* atoms_pos_y_proxy = atoms_pos_x_proxy + proxy_stride;
+  const cvm::real* atoms_pos_z_proxy = atoms_pos_y_proxy + proxy_stride;
+  cvm::real* atoms_pos_x_ag = atoms_pos_ag;
+  cvm::real* atoms_pos_y_ag = atoms_pos_x_ag + num_atoms;
+  cvm::real* atoms_pos_z_ag = atoms_pos_y_ag + num_atoms;
+  void* args[] =
+    {&atoms_proxy_index,
+     &atoms_pos_x_proxy,
+     &atoms_pos_y_proxy,
+     &atoms_pos_z_proxy,
+     &atoms_pos_x_ag,
+     &atoms_pos_y_ag,
+     &atoms_pos_z_ag,
+     &num_atoms};
+  return checkGPUError(cudaLaunchKernel((void*)atoms_pos_from_proxy_kernel,
+    num_blocks, block_size, args, 0, stream));
+}
+
+__global__ void change_one_coordinate_kernel(
+  cvm::real* __restrict atoms_pos_ag,
+  size_t array_id, cvm::real step_size) {
+  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  if (i == 0) {
+    atoms_pos_ag[array_id] += step_size;
+  }
+}
+
+int change_one_coordinate(
+  cvm::real* atoms_pos_ag, size_t atom_id_in_group, int xyz,
+  cvm::real step_size, size_t num_atoms, cudaStream_t stream) {
+  int error_code = COLVARS_OK;
+  if (xyz > 0 && xyz < 3) {
+    size_t array_id = num_atoms * xyz + atom_id_in_group;
+    void* args[] = {&atoms_pos_ag, &array_id, &step_size};
+    error_code |= checkGPUError(cudaLaunchKernel(
+      (void*)change_one_coordinate_kernel,
+      1, 1, args, 0, stream));
+  }
+  return error_code;
+}
+
+int change_one_coordinate(
+  cvm::real* atoms_pos_ag,
+  size_t atom_id_in_group, int xyz,
+  cvm::real step_size,
+  size_t num_atoms,
+  cudaGraphNode_t& node,
+  cudaGraph_t& graph,
+  const std::vector<cudaGraphNode_t>& dependencies) {
+  size_t array_id = num_atoms * xyz + atom_id_in_group;
+  void* args[] = {&atoms_pos_ag, &array_id, &step_size};
+  cudaKernelNodeParams kernelNodeParams = {0};
+  kernelNodeParams.func           = (void*)change_one_coordinate_kernel;
+  kernelNodeParams.gridDim        = dim3(1, 1, 1);
+  kernelNodeParams.blockDim       = dim3(1, 1, 1);
+  kernelNodeParams.sharedMemBytes = 0;
+  kernelNodeParams.kernelParams   = args;
+  kernelNodeParams.extra          = NULL;
+  if (node == 0) {
+    return checkGPUError(cudaGraphAddKernelNode(
+      &node, graph, dependencies.data(),
+      dependencies.size(), &kernelNodeParams));
+  } else {
+    return checkGPUError(cudaGraphKernelNodeSetParams(
+      node, &kernelNodeParams));
+  }
+}
+
 template <int BLOCK_SIZE, bool b_cog, bool b_com>
 __global__ void atoms_calc_cog_com_kernel(
   const cvm::real* __restrict atoms_mass,
@@ -271,7 +349,7 @@ void atoms_total_force_from_proxy(
   cvm::quaternion* q,
   int num_atoms,
   int proxy_stride,
-  colvars_gpu::gpu_stream_t stream) {
+  cudaStream_t stream) {
   if (num_atoms == 0) return;
   const int block_size = default_block_size;
   const int grid = (num_atoms + block_size - 1) / block_size;
@@ -395,13 +473,16 @@ int apply_colvar_force_to_proxy(
     dependencies.size(), &kernelNodeParams));
 }
 
-// loop 1: iterate over the main atom group
+/**
+ * @brief Calculate the gradients of rotated positions wrt quaternion
+ */
 template <bool B_ag_center,
           bool B_ag_rotate,
-          int BLOCK_SIZE,
-          typename main_force_accessor_T>
+          int BLOCK_SIZE>
 __global__ void calc_fit_forces_impl_loop1_kernel(
-  main_force_accessor_T accessor_main,
+  const cvm::real* __restrict atoms_grad_or_force_x,
+  const cvm::real* __restrict atoms_grad_or_force_y,
+  const cvm::real* __restrict atoms_grad_or_force_z,
   const cvm::real* __restrict atoms_pos_unrotated_x,
   const cvm::real* __restrict atoms_pos_unrotated_y,
   const cvm::real* __restrict atoms_pos_unrotated_z,
@@ -424,7 +505,10 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   cvm::rvector main_grad{0, 0, 0};
   if (i < main_group_size) {
     if (B_ag_center || B_ag_rotate) {
-      main_grad = accessor_main(i);
+      main_grad = cvm::rvector{
+        atoms_grad_or_force_x[i],
+        atoms_grad_or_force_y[i],
+        atoms_grad_or_force_z[i]};
     }
     if (B_ag_rotate) {
       cvm::quaternion const dxdq =
@@ -510,12 +594,12 @@ int calc_fit_gradients_impl_loop1(
   const cvm::real* grad_x = main_grad;
   const cvm::real* grad_y = grad_x + num_atoms_main;
   const cvm::real* grad_z = grad_y + num_atoms_main;
-  auto access_fitting = [grad_x, grad_y, grad_z] __device__ (int i){
-    return cvm::rvector{grad_x[i], grad_y[i], grad_z[i]};
-  };
+  // auto access_fitting = [grad_x, grad_y, grad_z] __device__ (int i){
+  //   return cvm::rvector{grad_x[i], grad_y[i], grad_z[i]};
+  // };
   void* args[] = {
-    &access_fitting,
-    // &grad_x, &grad_y, &grad_z,
+    // &access_fitting,
+    &grad_x, &grad_y, &grad_z,
     &pos_x, &pos_y, &pos_z,
     &q, &num_atoms_main, &num_atoms_fitting,
     &atom_grad, &sum_dxdq, &tbcount};
@@ -527,15 +611,15 @@ int calc_fit_gradients_impl_loop1(
   kernelNodeParams.extra          = NULL;
   if (ag_center && ag_rotate) {
     kernelNodeParams.func =
-      (void*)calc_fit_forces_impl_loop1_kernel<true, true, block_size, decltype(access_fitting)>;
+      (void*)calc_fit_forces_impl_loop1_kernel<true, true, block_size>;
   }
   if (ag_center && !ag_rotate) {
     kernelNodeParams.func =
-      (void*)calc_fit_forces_impl_loop1_kernel<true, false, block_size, decltype(access_fitting)>;
+      (void*)calc_fit_forces_impl_loop1_kernel<true, false, block_size>;
   }
   if (!ag_center && ag_rotate) {
     kernelNodeParams.func =
-      (void*)calc_fit_forces_impl_loop1_kernel<false, true, block_size, decltype(access_fitting)>;
+      (void*)calc_fit_forces_impl_loop1_kernel<false, true, block_size>;
   }
   if (!ag_center && !ag_rotate) {
     return COLVARS_OK;
@@ -549,12 +633,18 @@ int calc_fit_gradients_impl_loop1(
 template <bool B_ag_center,
           bool B_ag_rotate,
           int BLOCK_SIZE,
-          typename fitting_force_accessor_T>
+          bool do_fit_gradients>
 __global__ void calc_fit_forces_impl_loop2_kernel(
-  fitting_force_accessor_T accessor_fitting,
+  cvm::real* __restrict fit_grad_x,
+  cvm::real* __restrict fit_grad_y,
+  cvm::real* __restrict fit_grad_z,
   colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* __restrict atom_grad,
   const double4* __restrict sum_dxdq,
+  const int* __restrict atoms_proxy_index,
+  cvm::real* __restrict proxy_new_force_x,
+  cvm::real* __restrict proxy_new_force_y,
+  cvm::real* __restrict proxy_new_force_z,
   const int group_for_fit_size) {
   const int i = threadIdx.x + blockIdx.x * blockDim.x;
   if (i < group_for_fit_size) {
@@ -574,7 +664,17 @@ __global__ void calc_fit_forces_impl_loop2_kernel(
                             sum_dxdq->z * dq0_1[2] +
                             sum_dxdq->w * dq0_1[3];
     }
-    accessor_fitting(i, fitting_force_grad);
+    // accessor_fitting(i, fitting_force_grad);
+    if (do_fit_gradients) {
+      fit_grad_x[i] = fitting_force_grad.x;
+      fit_grad_y[i] = fitting_force_grad.y;
+      fit_grad_z[i] = fitting_force_grad.z;
+    } else {
+      const int pid = atoms_proxy_index[i];
+      atomicAdd(&(proxy_new_force_x[pid]), fitting_force_grad.x);
+      atomicAdd(&(proxy_new_force_y[pid]), fitting_force_grad.y);
+      atomicAdd(&(proxy_new_force_z[pid]), fitting_force_grad.z);
+    }
   }
 }
 
@@ -593,15 +693,25 @@ int calc_fit_gradients_impl_loop2(
   cvm::real* fit_grad_x = fit_grad;
   cvm::real* fit_grad_y = fit_grad_x + group_for_fit_size;
   cvm::real* fit_grad_z = fit_grad_y + group_for_fit_size;
-  auto access_fitting = [fit_grad_x, fit_grad_y, fit_grad_z] __device__ (
-    int i, const cvm::rvector& grad){
-    fit_grad_x[i] = grad.x;
-    fit_grad_y[i] = grad.y;
-    fit_grad_z[i] = grad.z;
-  };
+  // auto access_fitting = [fit_grad_x, fit_grad_y, fit_grad_z] __device__ (
+  //   int i, const cvm::rvector& grad){
+  //   fit_grad_x[i] = grad.x;
+  //   fit_grad_y[i] = grad.y;
+  //   fit_grad_z[i] = grad.z;
+  // };
+  const int* atoms_proxy_index = nullptr;
+  cvm::real* proxy_new_force_x = nullptr;
+  cvm::real* proxy_new_force_y = nullptr;
+  cvm::real* proxy_new_force_z = nullptr;
   void* args[] = {
-    &access_fitting,
-    &rot_deriv, &atom_grad, &sum_dxdq, &group_for_fit_size};
+    // &access_fitting,
+    &fit_grad_x, &fit_grad_y, &fit_grad_z,
+    &rot_deriv, &atom_grad, &sum_dxdq,
+    &atoms_proxy_index,
+    &proxy_new_force_x,
+    &proxy_new_force_y,
+    &proxy_new_force_z,
+    &group_for_fit_size};
   cudaKernelNodeParams kernelNodeParams = {0};
   kernelNodeParams.gridDim        = dim3(num_blocks, 1, 1);
   kernelNodeParams.blockDim       = dim3(block_size, 1, 1);
@@ -610,15 +720,15 @@ int calc_fit_gradients_impl_loop2(
   kernelNodeParams.extra          = NULL;
   if (ag_center && ag_rotate) {
     kernelNodeParams.func =
-      (void*)calc_fit_forces_impl_loop2_kernel<true, true, block_size, decltype(access_fitting)>;
+      (void*)calc_fit_forces_impl_loop2_kernel<true, true, block_size, true>;
   }
   if (ag_center && !ag_rotate) {
     kernelNodeParams.func =
-      (void*)calc_fit_forces_impl_loop2_kernel<true, false, block_size, decltype(access_fitting)>;
+      (void*)calc_fit_forces_impl_loop2_kernel<true, false, block_size, true>;
   }
   if (!ag_center && ag_rotate) {
     kernelNodeParams.func =
-      (void*)calc_fit_forces_impl_loop2_kernel<false, true, block_size, decltype(access_fitting)>;
+      (void*)calc_fit_forces_impl_loop2_kernel<false, true, block_size, true>;
   }
   if (!ag_center && !ag_rotate) {
     return COLVARS_OK;
@@ -773,6 +883,207 @@ int accumulate_cpu_force(
   kernelNodeParams.sharedMemBytes = 0;
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
+  return checkGPUError(cudaGraphAddKernelNode(
+    &node, graph, dependencies.data(),
+    dependencies.size(), &kernelNodeParams));
+}
+
+__global__ void apply_force_with_inverse_rotation_kernel(
+  const cvm::real* __restrict atoms_force_x,
+  const cvm::real* __restrict atoms_force_y,
+  const cvm::real* __restrict atoms_force_z,
+  const cvm::quaternion* q,
+  int* __restrict atoms_proxy_index,
+  cvm::real* __restrict proxy_new_force_x,
+  cvm::real* __restrict proxy_new_force_y,
+  cvm::real* __restrict proxy_new_force_z,
+  const int num_atoms) {
+  const cvm::rmatrix rot_inv = q->conjugate().rotation_matrix();
+  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  if (i < num_atoms) {
+    const cvm::rvector f_ia{
+      rot_inv.xx * atoms_force_x[i] +
+      rot_inv.xy * atoms_force_y[i] +
+      rot_inv.xz * atoms_force_z[i],
+      rot_inv.yx * atoms_force_x[i] +
+      rot_inv.yy * atoms_force_y[i] +
+      rot_inv.yz * atoms_force_z[i],
+      rot_inv.zx * atoms_force_x[i] +
+      rot_inv.zy * atoms_force_y[i] +
+      rot_inv.zz * atoms_force_z[i],
+    };
+    const int pid = atoms_proxy_index[i];
+    atomicAdd(&(proxy_new_force_x[pid]), f_ia.x);
+    atomicAdd(&(proxy_new_force_y[pid]), f_ia.y);
+    atomicAdd(&(proxy_new_force_z[pid]), f_ia.z);
+  }
+}
+
+int apply_force_with_inverse_rotation(
+  const cvm::real* atoms_force,
+  const cvm::quaternion* q,
+  const int* atoms_proxy_index,
+  cvm::real* proxy_new_force,
+  int num_atoms,
+  int proxy_stride,
+  cudaGraphNode_t& node,
+  cudaGraph_t& graph,
+  const std::vector<cudaGraphNode_t>& dependencies) {
+  const int block_size = default_block_size;
+  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const cvm::real* atoms_force_x = atoms_force;
+  const cvm::real* atoms_force_y = atoms_force_x + num_atoms;
+  const cvm::real* atoms_force_z = atoms_force_y + num_atoms;
+  cvm::real* proxy_new_force_x = proxy_new_force;
+  cvm::real* proxy_new_force_y = proxy_new_force_x + proxy_stride;
+  cvm::real* proxy_new_force_z = proxy_new_force_y + proxy_stride;
+  void* args[] =
+    {&atoms_force_x,
+     &atoms_force_y,
+     &atoms_force_z,
+     &q,
+     &atoms_proxy_index,
+     &proxy_new_force_x,
+     &proxy_new_force_y,
+     &proxy_new_force_z,
+     &num_atoms};
+  cudaKernelNodeParams kernelNodeParams = {0};
+  kernelNodeParams.func           = (void*)apply_force_with_inverse_rotation_kernel;
+  kernelNodeParams.gridDim        = dim3(num_blocks, 1, 1);
+  kernelNodeParams.blockDim       = dim3(block_size, 1, 1);
+  kernelNodeParams.sharedMemBytes = 0;
+  kernelNodeParams.kernelParams   = args;
+  kernelNodeParams.extra          = NULL;
+  return checkGPUError(cudaGraphAddKernelNode(
+    &node, graph, dependencies.data(),
+    dependencies.size(), &kernelNodeParams));
+}
+
+__global__ void apply_force_kernel(
+  const cvm::real* __restrict atoms_force_x,
+  const cvm::real* __restrict atoms_force_y,
+  const cvm::real* __restrict atoms_force_z,
+  int* __restrict atoms_proxy_index,
+  cvm::real* __restrict proxy_new_force_x,
+  cvm::real* __restrict proxy_new_force_y,
+  cvm::real* __restrict proxy_new_force_z,
+  const int num_atoms) {
+  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  if (i < num_atoms) {
+    const int pid = atoms_proxy_index[i];
+    atomicAdd(&(proxy_new_force_x[pid]), atoms_force_x[i]);
+    atomicAdd(&(proxy_new_force_y[pid]), atoms_force_y[i]);
+    atomicAdd(&(proxy_new_force_z[pid]), atoms_force_z[i]);
+  }
+}
+
+int apply_force(
+  const cvm::real* atoms_force,
+  const int* atoms_proxy_index,
+  cvm::real* proxy_new_force,
+  int num_atoms,
+  int proxy_stride,
+  cudaGraphNode_t& node,
+  cudaGraph_t& graph,
+  const std::vector<cudaGraphNode_t>& dependencies) {
+  const int block_size = default_block_size;
+  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const cvm::real* atoms_force_x = atoms_force;
+  const cvm::real* atoms_force_y = atoms_force_x + num_atoms;
+  const cvm::real* atoms_force_z = atoms_force_y + num_atoms;
+  cvm::real* proxy_new_force_x = proxy_new_force;
+  cvm::real* proxy_new_force_y = proxy_new_force_x + proxy_stride;
+  cvm::real* proxy_new_force_z = proxy_new_force_y + proxy_stride;
+  void* args[] =
+    {&atoms_force_x,
+     &atoms_force_y,
+     &atoms_force_z,
+     &atoms_proxy_index,
+     &proxy_new_force_x,
+     &proxy_new_force_y,
+     &proxy_new_force_z,
+     &num_atoms};
+  cudaKernelNodeParams kernelNodeParams = {0};
+  kernelNodeParams.func           = (void*)apply_force_kernel;
+  kernelNodeParams.gridDim        = dim3(num_blocks, 1, 1);
+  kernelNodeParams.blockDim       = dim3(block_size, 1, 1);
+  kernelNodeParams.sharedMemBytes = 0;
+  kernelNodeParams.kernelParams   = args;
+  kernelNodeParams.extra          = NULL;
+  return checkGPUError(cudaGraphAddKernelNode(
+    &node, graph, dependencies.data(),
+    dependencies.size(), &kernelNodeParams));
+}
+
+int calc_fit_forces_impl_loop1(
+  const cvm::real* pos_unrotated,
+  cvm::real* main_force,
+  const cvm::quaternion* q,
+  int num_atoms_main,
+  int num_atoms_fitting,
+  double3* atom_grad,
+  double4* sum_dxdq,
+  unsigned int* tbcount,
+  bool ag_center, bool ag_rotate,
+  cudaGraphNode_t& node,
+  cudaGraph_t& graph,
+  const std::vector<cudaGraphNode_t>& dependencies) {
+  return calc_fit_gradients_impl_loop1(
+    pos_unrotated, main_force, q, num_atoms_main,
+    num_atoms_fitting, atom_grad, sum_dxdq, tbcount,
+    ag_center, ag_rotate, node, graph, dependencies);
+}
+
+int calc_fit_forces_impl_loop2(
+  colvars_gpu::rotation_derivative_gpu* rot_deriv,
+  const double3* atom_grad,
+  const double4* sum_dxdq,
+  const int* atoms_proxy_index,
+  cvm::real* proxy_new_force,
+  int group_for_fit_size,
+  int proxy_stride,
+  bool ag_center, bool ag_rotate,
+  cudaGraphNode_t& node,
+  cudaGraph_t& graph,
+  const std::vector<cudaGraphNode_t>& dependencies) {
+  const int block_size = default_block_size;
+  const int num_blocks = (group_for_fit_size + block_size - 1) / block_size;
+  cvm::real* fit_grad_x = nullptr;
+  cvm::real* fit_grad_y = nullptr;
+  cvm::real* fit_grad_z = nullptr;
+  cvm::real* proxy_new_force_x = proxy_new_force;
+  cvm::real* proxy_new_force_y = proxy_new_force_x + proxy_stride;
+  cvm::real* proxy_new_force_z = proxy_new_force_y + proxy_stride;
+  void* args[] = {
+    // &access_fitting,
+    &fit_grad_x, &fit_grad_y, &fit_grad_z,
+    &rot_deriv, &atom_grad, &sum_dxdq,
+    &atoms_proxy_index,
+    &proxy_new_force_x,
+    &proxy_new_force_y,
+    &proxy_new_force_z,
+    &group_for_fit_size};
+  cudaKernelNodeParams kernelNodeParams = {0};
+  kernelNodeParams.gridDim        = dim3(num_blocks, 1, 1);
+  kernelNodeParams.blockDim       = dim3(block_size, 1, 1);
+  kernelNodeParams.sharedMemBytes = 0;
+  kernelNodeParams.kernelParams   = args;
+  kernelNodeParams.extra          = NULL;
+  if (ag_center && ag_rotate) {
+    kernelNodeParams.func =
+      (void*)calc_fit_forces_impl_loop2_kernel<true, true, block_size, false>;
+  }
+  if (ag_center && !ag_rotate) {
+    kernelNodeParams.func =
+      (void*)calc_fit_forces_impl_loop2_kernel<true, false, block_size, false>;
+  }
+  if (!ag_center && ag_rotate) {
+    kernelNodeParams.func =
+      (void*)calc_fit_forces_impl_loop2_kernel<false, true, block_size, false>;
+  }
+  if (!ag_center && !ag_rotate) {
+    return COLVARS_OK;
+  }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
     dependencies.size(), &kernelNodeParams));

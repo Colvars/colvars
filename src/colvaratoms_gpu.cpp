@@ -14,6 +14,12 @@ int cvm::atom_group::init_gpu() {
   int error_code = COLVARS_OK;
   colvarproxy *p = cvm::main()->proxy;
   // error_code |= checkGPUError(cudaStreamCreate(&stream));
+  std::memset(&gpu_buffers, 0, sizeof(gpu_buffers));
+  std::memset(&debug_graphs, 0, sizeof(debug_graphs));
+  std::memset(&calc_fit_gradients_gpu_info, 0,
+              sizeof(calc_fit_gradients_gpu_info));
+  std::memset(&calc_fit_forces_gpu_info, 0,
+              sizeof(calc_fit_forces_gpu_info));
   error_code |= p->allocate_device(&gpu_buffers.d_com, 1);
   error_code |= p->allocate_device(&gpu_buffers.d_cog, 1);
   error_code |= p->allocate_device(&gpu_buffers.d_cog_orig, 1);
@@ -22,26 +28,15 @@ int cvm::atom_group::init_gpu() {
   error_code |= p->allocate_host(&gpu_buffers.h_com, 1);
   error_code |= p->allocate_host(&gpu_buffers.h_cog, 1);
   error_code |= p->allocate_host(&gpu_buffers.h_cog_orig, 1);
-  gpu_buffers.d_atoms_index = nullptr;
-  gpu_buffers.d_atoms_pos = nullptr;
-  gpu_buffers.d_atoms_charge = nullptr;
-  gpu_buffers.d_atoms_vel = nullptr;
-  gpu_buffers.d_atoms_mass = nullptr;
-  gpu_buffers.d_atoms_grad = nullptr;
-  gpu_buffers.d_atoms_total_force = nullptr;
-  gpu_buffers.d_atoms_weight = nullptr;
-  gpu_buffers.d_atoms_applied_force = nullptr;
-  gpu_buffers.d_fit_gradients = nullptr;
-  gpu_buffers.d_fit_gradients_size = 0;
   rot_deriv_gpu = nullptr;
-  gpu_buffers.d_ref_pos = nullptr;
-  gpu_buffers.d_atoms_pos_unrotated = nullptr;
-  gpu_buffers.d_atoms_pos_unrotated_size = 0;
   // error_code |= checkGPUError(cudaStreamCreate(&stream_ag_force));
   // std::memset(&calc_fit_gradients_info, 0, sizeof(calc_fit_gradients_info));
   error_code |= p->allocate_device(&calc_fit_gradients_gpu_info.d_atom_grad, 1);
   error_code |= p->allocate_device(&calc_fit_gradients_gpu_info.d_sum_dxdq, 1);
   error_code |= p->allocate_device(&calc_fit_gradients_gpu_info.d_tbcount, 1);
+  error_code |= p->allocate_device(&calc_fit_forces_gpu_info.d_atom_grad, 1);
+  error_code |= p->allocate_device(&calc_fit_forces_gpu_info.d_sum_dxdq, 1);
+  error_code |= p->allocate_device(&calc_fit_forces_gpu_info.d_tbcount, 1);
   error_code |= p->allocate_host(&h_sum_applied_colvar_force, 1);
   use_apply_colvar_force = false;
   use_group_force = false;
@@ -75,11 +70,23 @@ int cvm::atom_group::destroy_gpu() {
   error_code |= p->deallocate_device(&calc_fit_gradients_gpu_info.d_atom_grad);
   error_code |= p->deallocate_device(&calc_fit_gradients_gpu_info.d_sum_dxdq);
   error_code |= p->deallocate_device(&calc_fit_gradients_gpu_info.d_tbcount);
+  error_code |= p->deallocate_device(&calc_fit_forces_gpu_info.d_atom_grad);
+  error_code |= p->deallocate_device(&calc_fit_forces_gpu_info.d_sum_dxdq);
+  error_code |= p->deallocate_device(&calc_fit_forces_gpu_info.d_tbcount);
   // error_code |= checkGPUError(cudaStreamDestroy(stream_ag_force));
   error_code |= p->deallocate_host(&h_sum_applied_colvar_force);
   error_code |= p->deallocate_host(&gpu_buffers.h_com);
   error_code |= p->deallocate_host(&gpu_buffers.h_cog);
   error_code |= p->deallocate_host(&gpu_buffers.h_cog_orig);
+  if (debug_graphs.graph_calc_required_properties) {
+    error_code |= checkGPUError(cudaGraphDestroy(
+      debug_graphs.graph_calc_required_properties));
+  }
+  if (debug_graphs.graph_exec_calc_required_properties) {
+    error_code |= checkGPUError(cudaGraphExecDestroy(
+      debug_graphs.graph_exec_calc_required_properties));
+  }
+  debug_graphs.initialized = false;
   return error_code;
 }
 
@@ -207,7 +214,8 @@ int cvm::atom_group::add_read_positions_nodes(
 
 int cvm::atom_group::add_calc_required_properties_nodes(
   cudaGraph_t& graph,
-  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
+  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
+  const std::vector<cudaGraphNode_t>& extra_initial_dependencies) {
   int error_code = COLVARS_OK;
   colvarproxy* p = cvm::main()->proxy;
   // COM and COG of the main group
@@ -243,8 +251,8 @@ int cvm::atom_group::add_calc_required_properties_nodes(
       nodes_map["reset_cog"] = reset_cog_node;
       // Add kernel node
       cudaGraphNode_t calc_com_cog_node;
-      std::vector<cudaGraphNode_t> dependencies;
-      ADD_DEPENDENCY(read_positions, dependencies, nodes_map);
+      std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
+      ADD_DEPENDENCY_IF(read_positions, dependencies, nodes_map);
       ADD_DEPENDENCY(reset_com_cog_tbcounter, dependencies, nodes_map);
       ADD_DEPENDENCY(reset_com, dependencies, nodes_map);
       ADD_DEPENDENCY(reset_cog, dependencies, nodes_map);
@@ -281,8 +289,8 @@ int cvm::atom_group::add_calc_required_properties_nodes(
               graph, {});
             nodes_map["reset_fitting_group_cog"] = reset_fitting_group_cog_node;
             // Add COG kernel node
-            std::vector<cudaGraphNode_t> dependencies;
-            ADD_DEPENDENCY(read_fitting_group_positions, dependencies, nodes_map);
+            std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
+            ADD_DEPENDENCY_IF(read_fitting_group_positions, dependencies, nodes_map);
             ADD_DEPENDENCY(reset_fitting_group_cog, dependencies, nodes_map);
             ADD_DEPENDENCY(reset_fitting_group_cog_tbcounter, dependencies, nodes_map);
             cudaGraphNode_t calc_fitting_group_cog_node;
@@ -362,11 +370,11 @@ int cvm::atom_group::add_calc_required_properties_nodes(
       // Save the unrotated frame for fit gradients
       if (is_enabled(f_ag_fit_gradients) && !b_dummy) {
         if (p->has_gpu_support()) {
-          if (gpu_buffers.d_atoms_pos_unrotated == nullptr) {
-            // TODO: Avoid allocation here
-            p->allocate_device(&gpu_buffers.d_atoms_pos_unrotated, 3 * num_atoms);
-            gpu_buffers.d_atoms_pos_unrotated_size = num_atoms;
-          }
+          // if (gpu_buffers.d_atoms_pos_unrotated == nullptr) {
+          //   // TODO: Avoid allocation here
+          //   p->allocate_device(&gpu_buffers.d_atoms_pos_unrotated, 3 * num_atoms);
+          //   gpu_buffers.d_atoms_pos_unrotated_size = num_atoms;
+          // }
           std::vector<cudaGraphNode_t> dependencies;
           ADD_DEPENDENCY(move_to_origin, dependencies, nodes_map);
           cudaGraphNode_t copy_unrotated_positions_node;
@@ -669,6 +677,7 @@ int cvm::atom_group::add_calc_fit_gradients_nodes(
   bool use_cpu_buffers) {
   int error_code = COLVARS_OK;
   if (b_dummy || ! is_enabled(f_ag_fit_gradients)) return error_code;
+  if (!is_enabled(f_cvc_explicit_gradient)) return error_code;
   cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
   colvarproxy* p = cvm::main()->proxy;
   if (p->has_gpu_support()) {
@@ -722,39 +731,37 @@ int cvm::atom_group::add_calc_fit_gradients_nodes(
         graph, dependencies_main);
       nodes_map["calc_fit_gradients_loop1"] = calc_fit_forces_loop1_node;
       // Loop over the fitting group
-      if (is_enabled(f_ag_fit_gradients)) {
-        if (gpu_buffers.d_fit_gradients == nullptr) {
-          // TODO: Avoid allocation here
-          error_code |= p->allocate_device(&gpu_buffers.d_fit_gradients, 3 * group_for_fit->size());
-          gpu_buffers.d_fit_gradients_size = group_for_fit->size();
+      // if (gpu_buffers.d_fit_gradients == nullptr) {
+      //   // TODO: Avoid allocation here
+      //   error_code |= p->allocate_device(&gpu_buffers.d_fit_gradients, 3 * group_for_fit->size());
+      //   gpu_buffers.d_fit_gradients_size = group_for_fit->size();
+      // }
+      cudaGraphNode_t calc_fit_forces_loop2_node;
+      std::vector<cudaGraphNode_t> dependencies_fit_gradients;
+      ADD_DEPENDENCY(calc_fit_gradients_loop1, dependencies_fit_gradients, nodes_map);
+      ADD_DEPENDENCY_IF(prepare_rotation_derivative, dependencies_fit_gradients, nodes_map);
+      error_code |= colvars_gpu::calc_fit_gradients_impl_loop2(
+        gpu_buffers.d_fit_gradients, rot_deriv_gpu,
+        calc_fit_gradients_gpu_info.d_atom_grad,
+        calc_fit_gradients_gpu_info.d_sum_dxdq,
+        group_for_fit->size(),
+        is_enabled(f_ag_center),
+        is_enabled(f_ag_rotate),
+        calc_fit_forces_loop2_node,
+        graph, dependencies_fit_gradients);
+      nodes_map["calc_fit_gradients_loop2"] = calc_fit_forces_loop2_node;
+      if (use_cpu_buffers) {
+        if (fit_gradients.empty()) {
+          fit_gradients.resize(group_for_fit->size());
         }
-        cudaGraphNode_t calc_fit_forces_loop2_node;
-        std::vector<cudaGraphNode_t> dependencies_fit_gradients;
-        ADD_DEPENDENCY(calc_fit_gradients_loop1, dependencies_fit_gradients, nodes_map);
-        ADD_DEPENDENCY_IF(prepare_rotation_derivative, dependencies_fit_gradients, nodes_map);
-        error_code |= colvars_gpu::calc_fit_gradients_impl_loop2(
-          gpu_buffers.d_fit_gradients, rot_deriv_gpu,
-          calc_fit_gradients_gpu_info.d_atom_grad,
-          calc_fit_gradients_gpu_info.d_sum_dxdq,
-          group_for_fit->size(),
-          is_enabled(f_ag_center),
-          is_enabled(f_ag_rotate),
-          calc_fit_forces_loop2_node,
-          graph, dependencies_fit_gradients);
-        nodes_map["calc_fit_gradients_loop2"] = calc_fit_forces_loop2_node;
-        if (use_cpu_buffers) {
-          if (fit_gradients.empty()) {
-            fit_gradients.resize(group_for_fit->size());
-          }
-          cudaGraphNode_t copy_fit_gradients_DtoH_node;
-          std::vector<cudaGraphNode_t> dependencies_copy_fit_gradients;
-          ADD_DEPENDENCY(calc_fit_gradients_loop2, dependencies_copy_fit_gradients, nodes_map);
-          error_code |= colvars_gpu::add_copy_node(
-            gpu_buffers.d_fit_gradients, fit_gradients.data(), 3 * group_for_fit->size(),
-            cudaMemcpyDeviceToHost, copy_fit_gradients_DtoH_node, graph,
-            dependencies_copy_fit_gradients);
-          nodes_map["copy_fit_gradients_DtoH"] = copy_fit_gradients_DtoH_node;
-        }
+        cudaGraphNode_t copy_fit_gradients_DtoH_node;
+        std::vector<cudaGraphNode_t> dependencies_copy_fit_gradients;
+        ADD_DEPENDENCY(calc_fit_gradients_loop2, dependencies_copy_fit_gradients, nodes_map);
+        error_code |= colvars_gpu::add_copy_node(
+          gpu_buffers.d_fit_gradients, fit_gradients.data(), 3 * group_for_fit->size(),
+          cudaMemcpyDeviceToHost, copy_fit_gradients_DtoH_node, graph,
+          dependencies_copy_fit_gradients);
+        nodes_map["copy_fit_gradients_DtoH"] = copy_fit_gradients_DtoH_node;
       }
     }
   }
@@ -771,7 +778,8 @@ int cvm::atom_group::begin_apply_force_gpu() {
 
 int cvm::atom_group::add_apply_force_nodes(
   cudaGraph_t& graph,
-  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
+  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
+  const std::vector<cudaGraphNode_t>& extra_initial_dependencies) {
   int error_code = COLVARS_OK;
   if (b_dummy) return error_code;
   colvarproxy* p = cvm::main()->proxy;
@@ -808,7 +816,7 @@ int cvm::atom_group::add_apply_force_nodes(
       }
     }
     cudaGraphNode_t apply_colvar_force_to_proxy_node;
-    std::vector<cudaGraphNode_t> dependencies;
+    std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
     ADD_DEPENDENCY_IF(copy_grad_HtoD, dependencies, nodes_map);
     error_code |= colvars_gpu::apply_colvar_force_to_proxy(
       gpu_buffers.d_atoms_index,
@@ -821,6 +829,7 @@ int cvm::atom_group::add_apply_force_nodes(
     nodes_map["apply_colvar_force_to_proxy"] = apply_colvar_force_to_proxy_node;
   }
   if (use_group_force) {
+    std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
     if (all_require_cpu_buffers) {
       // All CVCs using this group require CPU buffers, so
       // we can directly copy the data from group_forces to
@@ -828,7 +837,7 @@ int cvm::atom_group::add_apply_force_nodes(
       cudaGraphNode_t copy_forces_HtoD_node;
       error_code |= colvars_gpu::add_copy_node(
         group_forces.data(), gpu_buffers.d_atoms_applied_force, 3 * num_atoms,
-        cudaMemcpyHostToDevice, copy_forces_HtoD_node, graph, {});
+        cudaMemcpyHostToDevice, copy_forces_HtoD_node, graph, dependencies);
       nodes_map["copy_forces_HtoD"] = copy_forces_HtoD_node;
     } else {
       if (any_require_cpu_buffers) {
@@ -837,19 +846,147 @@ int cvm::atom_group::add_apply_force_nodes(
         cudaGraphNode_t accumulate_cpu_force_node;
         error_code |= colvars_gpu::accumulate_cpu_force(
           group_forces.data(), gpu_buffers.d_atoms_applied_force, num_atoms,
-          accumulate_cpu_force_node, graph, {});
+          accumulate_cpu_force_node, graph, dependencies);
         nodes_map["accumulate_cpu_force"] = accumulate_cpu_force_node;
       }
     }
+    ADD_DEPENDENCY_IF(copy_forces_HtoD, dependencies, nodes_map);
+    ADD_DEPENDENCY_IF(accumulate_cpu_force, dependencies, nodes_map);
     if (is_enabled(f_ag_rotate)) {
       // Rotate the forces back and add them to proxy
+      cudaGraphNode_t apply_force_with_inverse_rotation_node;
+      error_code |= colvars_gpu::apply_force_with_inverse_rotation(
+        group_forces.data(), rot_gpu.get_q(), gpu_buffers.d_atoms_index,
+        p->proxy_atoms_new_colvar_forces_gpu(), num_atoms,
+        p->get_atom_group_ids()->size(),
+        apply_force_with_inverse_rotation_node,
+        graph, dependencies);
+      nodes_map["apply_force_with_inverse_rotation"] =
+        apply_force_with_inverse_rotation_node;
     } else {
       // Just add the forces to proxy
+      cudaGraphNode_t apply_force_node;
+      error_code |= colvars_gpu::apply_force(
+        group_forces.data(), gpu_buffers.d_atoms_index,
+        p->proxy_atoms_new_colvar_forces_gpu(), num_atoms,
+        p->get_atom_group_ids()->size(), apply_force_node,
+        graph, dependencies);
+      nodes_map["apply_force"] = apply_force_node;
     }
+    // ADD_DEPENDENCY_IF(apply_force_with_inverse_rotation, dependencies, nodes_map);
+    // ADD_DEPENDENCY_IF(apply_force, dependencies, nodes_map);
+    // dependencies = extra_initial_dependencies;
     if (is_enabled(f_ag_fit_gradients)) {
+      auto* group_for_fit = this->fitting_group ? this->fitting_group : this;
       // Compute the forces on the fitting group and add them to proxy
+      // Clear the temporary variables
+      cudaGraphNode_t clear_atoms_grad_node;
+      cudaGraphNode_t clear_sum_dxdq_node;
+      cudaGraphNode_t clear_tbcount_node;
+      error_code |= colvars_gpu::add_clear_array_node(
+        calc_fit_forces_gpu_info.d_atom_grad,
+        1, clear_atoms_grad_node, graph, {});
+      error_code |= colvars_gpu::add_clear_array_node(
+        calc_fit_forces_gpu_info.d_sum_dxdq,
+        1, clear_sum_dxdq_node, graph, {});
+      error_code |= colvars_gpu::add_clear_array_node(
+        calc_fit_forces_gpu_info.d_tbcount,
+        1, clear_tbcount_node, graph, {});
+      nodes_map["clear_atoms_grad"] = clear_atoms_grad_node;
+      nodes_map["clear_sum_dxdq"] = clear_sum_dxdq_node;
+      nodes_map["clear_tbcount"] = clear_tbcount_node;
+      ADD_DEPENDENCY_IF(clear_atoms_grad, dependencies, nodes_map);
+      ADD_DEPENDENCY_IF(clear_sum_dxdq, dependencies, nodes_map);
+      ADD_DEPENDENCY_IF(clear_tbcount, dependencies, nodes_map);
+      cudaGraphNode_t calc_fit_forces_loop1_node;
+      error_code |= colvars_gpu::calc_fit_forces_impl_loop1(
+        gpu_buffers.d_atoms_pos_unrotated,
+        gpu_buffers.d_atoms_applied_force,
+        rot_gpu.get_q(),
+        num_atoms, group_for_fit->size(),
+        calc_fit_forces_gpu_info.d_atom_grad,
+        calc_fit_forces_gpu_info.d_sum_dxdq,
+        calc_fit_forces_gpu_info.d_tbcount,
+        is_enabled(f_ag_center),
+        is_enabled(f_ag_rotate),
+        calc_fit_forces_loop1_node,
+        graph, dependencies);
+      nodes_map["calc_fit_forces_loop1"] = calc_fit_forces_loop1_node;
+      // Compute the forces on the fitting group and add them back to proxy
+      cudaGraphNode_t calc_fit_forces_loop2_node;
+      error_code |= colvars_gpu::calc_fit_forces_impl_loop2(
+        rot_deriv_gpu,
+        calc_fit_forces_gpu_info.d_atom_grad,
+        calc_fit_forces_gpu_info.d_sum_dxdq,
+        gpu_buffers.d_atoms_index, p->proxy_atoms_new_colvar_forces_gpu(),
+        group_for_fit->size(), p->get_atom_group_ids()->size(),
+        is_enabled(f_ag_center),
+        is_enabled(f_ag_rotate),
+        calc_fit_forces_loop2_node, graph,
+        {calc_fit_forces_loop1_node});
+      nodes_map["calc_fit_forces_loop2"] = calc_fit_forces_loop2_node;
     }
   }
   return error_code;
+}
+
+int cvm::atom_group::read_positions_gpu_debug(
+  size_t change_atom_i, int xyz, bool to_cpu, cudaStream_t stream) {
+  int error_code = COLVARS_OK;
+  colvarproxy *p = cvm::main()->proxy;
+  if (p->has_gpu_support()) {
+    error_code |= colvars_gpu::atoms_pos_from_proxy(
+      gpu_buffers.d_atoms_index, p->proxy_atoms_positions_gpu(),
+      gpu_buffers.d_atoms_pos, num_atoms, p->get_atom_ids()->size(),
+      stream);
+    error_code |= colvars_gpu::change_one_coordinate(
+      gpu_buffers.d_atoms_pos, change_atom_i, xyz,
+      cvm::debug_gradients_step_size, num_atoms, stream);
+    if (to_cpu) {
+      error_code |= p->copy_DtoH(
+        gpu_buffers.d_atoms_pos, atoms_pos.data(), 3 * num_atoms);
+    }
+    // error_code |= checkGPUError(cudaStreamSynchronize(stream));
+  }
+  return error_code;
+}
+
+int cvm::atom_group::calc_required_properties_gpu_debug(cudaStream_t stream) {
+  int error_code = COLVARS_OK;
+  colvarproxy *p = cvm::main()->proxy;
+  if (p->has_gpu_support() && debug_graphs.initialized) {
+    std::unordered_map<std::string, cudaGraphNode_t> nodes_map;
+    error_code |= add_calc_required_properties_nodes(
+      debug_graphs.graph_calc_required_properties, nodes_map);
+    error_code |= checkGPUError(cudaGraphInstantiate(
+      &debug_graphs.graph_exec_calc_required_properties, debug_graphs.graph_calc_required_properties));
+    debug_graphs.initialized = true;
+  }
+  error_code |= checkGPUError(cudaGraphLaunch(
+    debug_graphs.graph_exec_calc_required_properties, stream));
+  return error_code;
+}
+
+void cvm::atom_group::do_feature_side_effects_gpu(int id) {
+  switch (id) {
+    case f_ag_fit_gradients: {
+      colvarproxy* p = cvm::main()->proxy;
+      if (p->has_gpu_support()) {
+        if (gpu_buffers.d_atoms_pos_unrotated == nullptr) {
+          p->allocate_device(&gpu_buffers.d_atoms_pos_unrotated, 3 * num_atoms);
+          gpu_buffers.d_atoms_pos_unrotated_size = num_atoms;
+        }
+        if (is_enabled(f_ag_center) || is_enabled(f_ag_rotate)) {
+          atom_group *group_for_fit = fitting_group ? fitting_group : this;
+          if (gpu_buffers.d_fit_gradients == nullptr) {
+            p->allocate_device(&gpu_buffers.d_fit_gradients,
+                               3 * group_for_fit->size());
+            gpu_buffers.d_fit_gradients_size = group_for_fit->size();
+          }
+        }
+      }
+      break;
+    }
+  }
 }
 #endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)

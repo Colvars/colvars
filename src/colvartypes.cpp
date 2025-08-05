@@ -518,7 +518,7 @@ rotation_gpu::~rotation_gpu() {
   b_initialized = false;
 }
 
-int rotation_gpu::init(/*const colvars_gpu::gpu_stream_t& stream_in*/) {
+int rotation_gpu::init(/*const cudaStream_t& stream_in*/) {
   int error_code = COLVARS_OK;
   // stream = stream_in;
   colvarproxy* p = cvm::main()->proxy;

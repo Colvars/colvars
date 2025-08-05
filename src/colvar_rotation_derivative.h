@@ -25,13 +25,13 @@ enum class rotation_derivative_dldq {
   use_dq = 1 << 1
 };
 
-inline constexpr rotation_derivative_dldq operator|(rotation_derivative_dldq Lhs, rotation_derivative_dldq Rhs) {
+inline COLVARS_HOST_DEVICE constexpr rotation_derivative_dldq operator|(rotation_derivative_dldq Lhs, rotation_derivative_dldq Rhs) {
   return static_cast<rotation_derivative_dldq>(
     static_cast<std::underlying_type<rotation_derivative_dldq>::type>(Lhs) |
     static_cast<std::underlying_type<rotation_derivative_dldq>::type>(Rhs));
 }
 
-inline constexpr bool operator&(rotation_derivative_dldq Lhs, rotation_derivative_dldq Rhs)
+inline COLVARS_HOST_DEVICE constexpr bool operator&(rotation_derivative_dldq Lhs, rotation_derivative_dldq Rhs)
 {
   return (static_cast<std::underlying_type<rotation_derivative_dldq>::type>(Lhs) &
           static_cast<std::underlying_type<rotation_derivative_dldq>::type>(Rhs));
@@ -634,7 +634,7 @@ struct rotation_derivative_gpu {
   cvm::real* tmp_Q0Q0;
   cvm::real* tmp_Q0Q0_L;
   /// \brief CUDA stream
-  // colvars_gpu::gpu_stream_t stream;
+  // cudaStream_t stream;
   /// \brief colvarproxy for GPU memory management
   // colvarproxy* proxy;
   /*! @brief Constructor of the cvm::rotation::derivative class for SOA

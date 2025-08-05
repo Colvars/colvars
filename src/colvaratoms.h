@@ -868,7 +868,7 @@ private:
     double3* d_atom_grad;
     double4* d_sum_dxdq;
     unsigned int* d_tbcount;
-  } calc_fit_gradients_gpu_info;
+  } calc_fit_gradients_gpu_info, calc_fit_forces_gpu_info;
   /// \brief For intercepting the forces applied from the CPU interface
   cvm::real* h_sum_applied_colvar_force;
   /// \brief If the CPU code path use apply_colvar_force(),
@@ -881,8 +881,15 @@ private:
   colvars_gpu::rotation_gpu rot_gpu;
   /// \brief GPU Rotation derivative;
   colvars_gpu::rotation_derivative_gpu* rot_deriv_gpu;
-#endif
-#if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
+  /// \brief Separate CUDA graphs for supporting debug gradients
+  struct {
+    bool initialized;
+    // cudaGraphNode_t node_change_one_atom;
+    // cudaGraph_t graph_read_positions;
+    // cudaGraphExec_t graph_exec_read_positions;
+    cudaGraph_t graph_calc_required_properties;
+    cudaGraphExec_t graph_exec_calc_required_properties;
+  } debug_graphs;
 public:
   int init_gpu();
   int destroy_gpu();
@@ -896,7 +903,8 @@ public:
     std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
   int add_calc_required_properties_nodes(
     cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
+    const std::vector<cudaGraphNode_t>& extra_initial_dependencies = {});
   int add_update_cpu_buffers_nodes(
     cudaGraph_t& graph,
     std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
@@ -904,12 +912,16 @@ public:
   int begin_apply_force_gpu();
   int add_apply_force_nodes(
     cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
-
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
+    const std::vector<cudaGraphNode_t>& extra_initial_dependencies = {});
   int add_calc_fit_gradients_nodes(
     cudaGraph_t& graph,
     std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
     bool use_cpu_buffers = false);
+  // For debug gradients
+  int read_positions_gpu_debug(size_t change_atom_i, int xyz, bool to_cpu, cudaStream_t stream);
+  int calc_required_properties_gpu_debug(cudaStream_t stream);
+  void do_feature_side_effects_gpu(int id);
 #elif defined (COLVARS_SYCL)
   // TODO
 #endif

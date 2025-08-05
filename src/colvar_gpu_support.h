@@ -8,79 +8,161 @@
 
 #if defined(COLVARS_CUDA)
 #include <cuda_runtime.h>
-#include <thrust/reduce.h>
-#include <thrust/device_ptr.h>
-// #include <cusolverDn.h>
 #endif // defined(COLVARS_CUDA)
 
 #if defined(COLVARS_HIP)
-#include <hip/hip_runtime.h>
-#include <thrust/reduce.h>
-#include <thrust/device_ptr.h>
-
 #ifndef cudaError_t
 #define cudaError_t hipError_t
-#endif
-
-#ifndef cudaSuccess
-#define cudaSuccess hipSuccess
-#endif
-
-#ifndef cudaGetErrorString
-#define cudaGetErrorString hipGetErrorString
-#endif
-
-#ifndef cudaStreamDestroy
-#define cudaStreamDestroy hipStreamDestroy
-#endif
-
-#ifndef cudaStreamCreate
-#define cudaStreamCreate hipStreamCreate
-#endif
-
-#ifndef cudaStreamSynchronize
-#define cudaStreamSynchronize hipStreamSynchronize
-#endif
-
-#ifndef cudaStream_t
-#define cudaStream_t hipStream_t
-#endif
-
-#ifndef cudaSetDevice
-#define cudaSetDevice hipSetDevice
-#endif
-
-#ifndef cudaGetDevice
-#define cudaGetDevice hipGetDevice
-#endif
-
-#ifndef cudaMalloc
-#define cudaMalloc hipMalloc
-#endif
+#endif // cudaError_t
 
 #ifndef cudaFree
 #define cudaFree hipFree
-#endif
-
-#ifndef cudaMallocAsync
-#define cudaMallocAsync hipMallocAsync
-#endif
-
-#ifndef cudaFreeAsync
-#define cudaFreeAsync hipFreeAsync
-#endif
-
-#ifndef cudaHostAllocMapped
-#define cudaHostAllocMapped hipHostMallocMapped
-#endif
-
-#ifndef cudaHostAlloc
-#define cudaHostAlloc hipHostMalloc
-#endif
+#endif // cudaFree
 
 #ifndef cudaFreeHost
-#define cudaFreeHost hipHostFree
-#endif
+#define cudaFreeHost hipFreeHost
+#endif // cudaFreeHost
+
+#ifndef cudaGetErrorString
+#define cudaGetErrorString hipGetErrorString
+#endif // cudaGetErrorString
+
+#ifndef cudaGraphAddChildGraphNode
+#define cudaGraphAddChildGraphNode hipGraphAddChildGraphNode
+#endif // cudaGraphAddChildGraphNode
+
+#ifndef cudaGraphAddKernelNode
+#define cudaGraphAddKernelNode hipGraphAddKernelNode
+#endif // cudaGraphAddKernelNode
+
+#ifndef cudaGraphAddMemcpyNode
+#define cudaGraphAddMemcpyNode hipGraphAddMemcpyNode
+#endif // cudaGraphAddMemcpyNode
+
+#ifndef cudaGraphAddMemsetNode
+#define cudaGraphAddMemsetNode hipGraphAddMemsetNode
+#endif // cudaGraphAddMemsetNode
+
+#ifndef cudaGraphCreate
+#define cudaGraphCreate hipGraphCreate
+#endif // cudaGraphCreate
+
+#ifndef cudaGraphDestroy
+#define cudaGraphDestroy hipGraphDestroy
+#endif // cudaGraphDestroy
+
+#ifndef cudaGraphExecDestroy
+#define cudaGraphExecDestroy hipGraphExecDestroy
+#endif // cudaGraphExecDestroy
+
+#ifndef cudaGraphExecMemcpyNodeSetParams
+#define cudaGraphExecMemcpyNodeSetParams hipGraphExecMemcpyNodeSetParams
+#endif // cudaGraphExecMemcpyNodeSetParams
+
+#ifndef cudaGraphExec_t
+#define cudaGraphExec_t hipGraphExec_t
+#endif // cudaGraphExec_t
+
+#ifndef cudaGraphInstantiate
+#define cudaGraphInstantiate hipGraphInstantiate
+#endif // cudaGraphInstantiate
+
+#ifndef cudaGraphLaunch
+#define cudaGraphLaunch hipGraphLaunch
+#endif // cudaGraphLaunch
+
+#ifndef cudaGraphNode_t
+#define cudaGraphNode_t hipGraphNode_t
+#endif // cudaGraphNode_t
+
+#ifndef cudaGraph_t
+#define cudaGraph_t hipGraph_t
+#endif // cudaGraph_t
+
+#ifndef cudaHostAllocMapped
+#define cudaHostAllocMapped hipHostAllocMapped
+#endif // cudaHostAllocMapped
+
+#ifndef cudaKernelNodeParams
+#define cudaKernelNodeParams hipKernelNodeParams
+#endif // cudaKernelNodeParams
+
+#ifndef cudaMalloc
+#define cudaMalloc hipMalloc
+#endif // cudaMalloc
+
+#ifndef cudaMallocHost
+#define cudaMallocHost hipMallocHost
+#endif // cudaMallocHost
+
+#ifndef cudaMemcpy
+#define cudaMemcpy hipMemcpy
+#endif // cudaMemcpy
+
+#ifndef cudaMemcpy3DParms
+#define cudaMemcpy3DParms hipMemcpy3DParms
+#endif // cudaMemcpy3DParms
+
+#ifndef cudaMemcpyAsync
+#define cudaMemcpyAsync hipMemcpyAsync
+#endif // cudaMemcpyAsync
+
+#ifndef cudaMemcpyDeviceToDevice
+#define cudaMemcpyDeviceToDevice hipMemcpyDeviceToDevice
+#endif // cudaMemcpyDeviceToDevice
+
+#ifndef cudaMemcpyDeviceToHost
+#define cudaMemcpyDeviceToHost hipMemcpyDeviceToHost
+#endif // cudaMemcpyDeviceToHost
+
+#ifndef cudaMemcpyHostToDevice
+#define cudaMemcpyHostToDevice hipMemcpyHostToDevice
+#endif // cudaMemcpyHostToDevice
+
+#ifndef cudaMemcpyKind
+#define cudaMemcpyKind hipMemcpyKind
+#endif // cudaMemcpyKind
+
+#ifndef cudaMemset
+#define cudaMemset hipMemset
+#endif // cudaMemset
+
+#ifndef cudaMemsetAsync
+#define cudaMemsetAsync hipMemsetAsync
+#endif // cudaMemsetAsync
+
+#ifndef cudaStreamCreate
+#define cudaStreamCreate hipStreamCreate
+#endif // cudaStreamCreate
+
+#ifndef cudaStreamDestroy
+#define cudaStreamDestroy hipStreamDestroy
+#endif // cudaStreamDestroy
+
+#ifndef cudaStreamSynchronize
+#define cudaStreamSynchronize hipStreamSynchronize
+#endif // cudaStreamSynchronize
+
+#ifndef cudaStream_t
+#define cudaStream_t hipStream_t
+#endif // cudaStream_t
+
+#ifndef cudaSuccess
+#define cudaSuccess hipSuccess
+#endif // cudaSuccess
+
+#ifndef make_cudaExtent
+#define make_cudaExtent make_hipExtent
+#endif // make_cudaExtent
+
+#ifndef make_cudaPitchedPtr
+#define make_cudaPitchedPtr make_hipPitchedPtr
+#endif // make_cudaPitchedPtr
+
+#ifndef make_cudaPos
+#define make_cudaPos make_hipPos
+#endif // make_cudaPos
+
 #endif // defined(COLVARS_HIP)
 
 namespace colvars_gpu {
@@ -137,20 +219,8 @@ public:
 #endif
 
 
-#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
-using gpu_stream_t = cudaStream_t;
-using gpu_error_t = cudaError_t;
-// using gpu_dev_id_t = int;
-#elif defined(COLVARS_SYCL)
-using gpu_stream_t = sycl::queue;
-#else
-using gpu_stream_t = int;
-using gpu_error_t = int;
-// using gpu_dev_id_t = int;
-#endif
-
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
-int gpuAssert(gpu_error_t code, const char *file, int line);
+int gpuAssert(cudaError_t code, const char *file, int line);
 #endif
 
 } // namespace colvars_gpu
