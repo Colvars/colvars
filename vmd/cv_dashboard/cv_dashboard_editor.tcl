@@ -626,7 +626,6 @@ proc ::cv_dashboard::edit_bias { {add false} {biases ""} {cvs ""} } {
   incr gridrow
 
   ############# Templates #########################################
-  ttk::labelframe  $w.editor.fl.templates -text "Templates" -padding 2 -style cv.TLabelframe -labelanchor n
   set templates $w.bias_editor
 
   set d "bias"

@@ -122,8 +122,8 @@ private:
   cvm::real smoothing_factor(cvm::real weight);
 
   // shared ABF
-  bool    shared_on;
-  size_t  shared_freq;
+  bool    shared_on   = false;
+  size_t  shared_freq = 0;
   cvm::step_number shared_last_step;
 
   // Share between replicas -- may be called independently of update

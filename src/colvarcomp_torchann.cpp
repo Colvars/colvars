@@ -110,6 +110,8 @@ int colvar::torchANN::init(std::string const &conf) {
                              COLVARS_INPUT_ERROR);
   }
 
+  x.type(colvarvalue::type_scalar);
+
   return error_code;
 }
 
