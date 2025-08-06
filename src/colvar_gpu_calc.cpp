@@ -318,9 +318,11 @@ int colvarmodule_gpu_calc::compute_gpu_graph_t::init() {
   graph_exec_initialized = false;
   if (graph_exec) {
     error_code |= checkGPUError(cudaGraphExecDestroy(graph_exec));
+    graph_exec = NULL;
   }
   if (graph) {
     error_code |= checkGPUError(cudaGraphDestroy(graph));
+    graph = NULL;
   }
   nodes.clear();
   error_code |= checkGPUError(cudaGraphCreate(&graph, 0));
@@ -330,9 +332,11 @@ int colvarmodule_gpu_calc::compute_gpu_graph_t::init() {
 colvarmodule_gpu_calc::compute_gpu_graph_t::~compute_gpu_graph_t() {
   if (graph_exec) {
     checkGPUError(cudaGraphExecDestroy(graph_exec));
+    graph_exec = NULL;
   }
   if (graph) {
     checkGPUError(cudaGraphDestroy(graph));
+    graph = NULL;
   }
   nodes.clear();
   graph_exec_initialized = false;
@@ -343,6 +347,7 @@ int colvarmodule_gpu_calc::init() {
   error_code |= read_data_compute.init();
   error_code |= calc_fit_gradients_compute.init();
   error_code |= apply_forces_compute.init();
+  forced_atom_groups.clear();
   return error_code;
 }
 
