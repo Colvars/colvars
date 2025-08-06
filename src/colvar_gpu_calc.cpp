@@ -5,6 +5,8 @@
 #include "colvar.h"
 #include "colvarcomp.h"
 
+#include <iostream>
+
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 using namespace colvars_gpu;
@@ -73,8 +75,8 @@ int atom_group_read_data_gpu(
           // https://github.com/Colvars/colvars/pull/700
           std::vector<cvm::atom_group *>& ags = (*cvc)->atom_groups;
           for (auto ag = ags.begin(); ag != ags.end(); ++ag) {
-            if ((*ag)->size() > 0 &&
-                (*ag)->is_enabled(colvardeps::f_ag_active)) {
+            if ((*ag)->size() > 0 /*&&
+                (*ag)->is_enabled(colvardeps::f_ag_active)*/) {
               all_unique_atom_groups.push_back(*ag);
             }
           }
@@ -135,6 +137,12 @@ int atom_group_read_data_gpu(
     error_code |= checkGPUError(cudaGraphInstantiate(&g.graph_exec, g.graph));
     if (error_code != COLVARS_OK) return error_code;
     g.graph_exec_initialized = true;
+    if (colvar_module->debug()) {
+      // Debug graph
+      const std::string filename = cvm::output_prefix() + "_read_data.dot";
+      cvm::log("Writing read data graph to " + filename);
+      g.dump_graph(filename.c_str());
+    }
   }
   // Launch the graph
   error_code |= checkGPUError(cudaGraphLaunch(g.graph_exec, stream));
@@ -211,7 +219,7 @@ int atom_group_calc_fit_gradients(
           std::vector<cvm::atom_group *>& ags = (*cvc)->atom_groups;
           for (auto ag = ags.begin(); ag != ags.end(); ++ag) {
             if ((*ag)->size() > 0 &&
-                (*ag)->is_enabled(colvardeps::f_ag_active) &&
+                // (*ag)->is_enabled(colvardeps::f_ag_active) &&
                 (*ag)->is_enabled(colvardeps::f_ag_fit_gradients)) {
               all_unique_atom_groups.push_back(*ag);
             }
@@ -261,6 +269,12 @@ int atom_group_calc_fit_gradients(
     error_code |= checkGPUError(cudaGraphInstantiate(&g.graph_exec, g.graph));
     if (error_code != COLVARS_OK) return error_code;
     g.graph_exec_initialized = true;
+    if (colvar_module->debug()) {
+      // Debug graph
+      const std::string filename = cvm::output_prefix() + "_fit_gradients.dot";
+      cvm::log("Writing fit gradients graph to " + filename);
+      g.dump_graph(filename.c_str());
+    }
   }
   // Launch the graph
   error_code |= checkGPUError(cudaGraphLaunch(g.graph_exec, stream));
@@ -340,6 +354,11 @@ colvarmodule_gpu_calc::compute_gpu_graph_t::~compute_gpu_graph_t() {
   }
   nodes.clear();
   graph_exec_initialized = false;
+}
+
+void colvarmodule_gpu_calc::compute_gpu_graph_t::dump_graph(const char* filename) {
+  cudaGraphDebugDotFlags dotFlags = cudaGraphDebugDotFlagsVerbose;
+  checkGPUError(cudaGraphDebugDotPrint(graph, filename, dotFlags));
 }
 
 int colvarmodule_gpu_calc::init() {
@@ -463,8 +482,14 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
           &child_graph_node, apply_forces_compute.graph, NULL, 0, ag_graph)));
         checkColvarsError(checkGPUError(cudaGraphDestroy(ag_graph)));
       }
-      checkColvarsError( checkGPUError(cudaGraphInstantiate(&apply_forces_compute.graph_exec, apply_forces_compute.graph)));
+      checkColvarsError(checkGPUError(cudaGraphInstantiate(&apply_forces_compute.graph_exec, apply_forces_compute.graph)));
       apply_forces_compute.graph_exec_initialized = true;
+      // Debug graph
+      if (colvar_module->debug()) {
+        const std::string filename = cvm::output_prefix() + "_apply_forces.dot";
+        cvm::log("Writing apply forces graph to " + filename);
+        apply_forces_compute.dump_graph(filename.c_str());
+      }
     } else {
       for (auto it = forced_atom_groups.begin(); it != forced_atom_groups.end(); ++it) {
         cvm::atom_group* ag = dynamic_cast<cvm::atom_group*>((*it));
