@@ -805,6 +805,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
       p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
       p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
       p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
+      rot_gpu.init();
     }
 #endif
     setup_rotation_derivative();
@@ -1791,6 +1792,14 @@ m_has_fitting_force(m_ag->is_enabled(f_ag_center) || m_ag->is_enabled(f_ag_rotat
 }
 
 cvm::atom_group::group_force_object::~group_force_object() {
+  colvarproxy* const p = cvm::main()->proxy;
+  if (p->has_gpu_support()) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    m_ag->use_group_force = true;
+    // CPU forces are already intercepted into group_forces
+    return;
+#endif
+  }
   if (m_has_fitting_force) {
     apply_force_with_fitting_group();
   }
@@ -1818,56 +1827,48 @@ void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
     cvm::log("Applying force on main group " + m_ag->name + ":\n");
   }
   colvarproxy* const p = cvm::main()->proxy;
-  if (p->has_gpu_support()) {
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    m_ag->use_group_force = true;
-    // CPU forces are already intercepted into group_forces
-    return;
-#endif
-  } else {
-    for (size_t ia = 0; ia < m_ag->size(); ++ia) {
-      // const cvm::rvector f_ia = rot_inv * m_ag->group_forces[ia];
-      // (*m_ag)[ia].apply_force(f_ia);
-      const int proxy_index = m_ag->atoms_index[ia];
-      const cvm::rvector f_ia{
-        rot_inv.xx * m_ag->group_forces_x(ia) +
-        rot_inv.xy * m_ag->group_forces_y(ia) +
-        rot_inv.xz * m_ag->group_forces_z(ia),
-        rot_inv.yx * m_ag->group_forces_x(ia) +
-        rot_inv.yy * m_ag->group_forces_y(ia) +
-        rot_inv.yz * m_ag->group_forces_z(ia),
-        rot_inv.zx * m_ag->group_forces_x(ia) +
-        rot_inv.zy * m_ag->group_forces_y(ia) +
-        rot_inv.zz * m_ag->group_forces_z(ia),
-      };
-      p->apply_atom_force(proxy_index, f_ia);
-      if (cvm::debug()) {
-        cvm::log(cvm::to_str(f_ia));
-      }
+  for (size_t ia = 0; ia < m_ag->size(); ++ia) {
+    // const cvm::rvector f_ia = rot_inv * m_ag->group_forces[ia];
+    // (*m_ag)[ia].apply_force(f_ia);
+    const int proxy_index = m_ag->atoms_index[ia];
+    const cvm::rvector f_ia{
+      rot_inv.xx * m_ag->group_forces_x(ia) +
+      rot_inv.xy * m_ag->group_forces_y(ia) +
+      rot_inv.xz * m_ag->group_forces_z(ia),
+      rot_inv.yx * m_ag->group_forces_x(ia) +
+      rot_inv.yy * m_ag->group_forces_y(ia) +
+      rot_inv.yz * m_ag->group_forces_z(ia),
+      rot_inv.zx * m_ag->group_forces_x(ia) +
+      rot_inv.zy * m_ag->group_forces_y(ia) +
+      rot_inv.zz * m_ag->group_forces_z(ia),
+    };
+    p->apply_atom_force(proxy_index, f_ia);
+    if (cvm::debug()) {
+      cvm::log(cvm::to_str(f_ia));
     }
-    // Gradients are only available with scalar components, so for a scalar component,
-    // if f_ag_fit_gradients is disabled, then the forces on the fitting group is not
-    // computed. For a vector component, we can only know the forces on the fitting
-    // group, but checking this flag can mimic results that the users expect (if
-    // "enableFitGradients no" then there is no force on the fitting group).
-    if (!m_ag->b_dummy && m_ag->is_enabled(f_ag_fit_gradients)) {
-      colvarproxy* const p = cvm::main()->proxy;
-      auto accessor_main = [this](size_t i){
-        return cvm::rvector(m_ag->group_forces_x(i),
-                            m_ag->group_forces_y(i),
-                            m_ag->group_forces_z(i));};
-      auto accessor_fitting = [this, p](size_t j, const cvm::rvector& fitting_force){
-        // (*(m_group_for_fit))[j].apply_force(fitting_force);
-        const int proxy_index = m_group_for_fit->atoms_index[j];
-        p->apply_atom_force(proxy_index, fitting_force);
-      };
-      if (cvm::debug()) {
-        cvm::log("Applying force on the fitting group of main group" + m_ag->name + ":\n");
-      }
-      m_ag->calc_fit_forces(accessor_main, accessor_fitting);
-      if (cvm::debug()) {
-        cvm::log("Done applying force on the fitting group of main group" + m_ag->name + ":\n");
-      }
+  }
+  // Gradients are only available with scalar components, so for a scalar component,
+  // if f_ag_fit_gradients is disabled, then the forces on the fitting group is not
+  // computed. For a vector component, we can only know the forces on the fitting
+  // group, but checking this flag can mimic results that the users expect (if
+  // "enableFitGradients no" then there is no force on the fitting group).
+  if (!m_ag->b_dummy && m_ag->is_enabled(f_ag_fit_gradients)) {
+    colvarproxy* const p = cvm::main()->proxy;
+    auto accessor_main = [this](size_t i){
+      return cvm::rvector(m_ag->group_forces_x(i),
+                          m_ag->group_forces_y(i),
+                          m_ag->group_forces_z(i));};
+    auto accessor_fitting = [this, p](size_t j, const cvm::rvector& fitting_force){
+      // (*(m_group_for_fit))[j].apply_force(fitting_force);
+      const int proxy_index = m_group_for_fit->atoms_index[j];
+      p->apply_atom_force(proxy_index, fitting_force);
+    };
+    if (cvm::debug()) {
+      cvm::log("Applying force on the fitting group of main group" + m_ag->name + ":\n");
+    }
+    m_ag->calc_fit_forces(accessor_main, accessor_fitting);
+    if (cvm::debug()) {
+      cvm::log("Done applying force on the fitting group of main group" + m_ag->name + ":\n");
     }
   }
 }
