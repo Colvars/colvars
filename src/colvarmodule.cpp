@@ -2494,6 +2494,10 @@ std::string colvarmodule::to_str(char const *x)
   return std::string("\"")+std::string(x)+std::string("\"");
 }
 
+std::string colvarmodule::to_str(const void* ptr) {
+  return _to_str<const void*>(ptr, 0, 0);
+}
+
 std::string colvarmodule::to_str(bool x)
 {
   return (x ? "on" : "off");
