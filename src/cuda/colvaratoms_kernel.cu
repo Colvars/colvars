@@ -191,9 +191,15 @@ __global__ void atoms_calc_cog_com_kernel(
   if (isLastBlockDone) {
     if (threadIdx.x == 0) {
       if (b_cog) {
-        h_cog_out->x = cog_out->x;
-        h_cog_out->y = cog_out->y;
-        h_cog_out->z = cog_out->z;
+        cog.x = cog_out->x / num_atoms;
+        cog.y = cog_out->y / num_atoms;
+        cog.z = cog_out->z / num_atoms;
+        cog_out->x = cog.x;
+        cog_out->y = cog.y;
+        cog_out->z = cog.z;
+        h_cog_out->x = cog.x;
+        h_cog_out->y = cog.y;
+        h_cog_out->z = cog.z;
       }
       if (b_com) {
         com.x = com_out->x / total_mass;
