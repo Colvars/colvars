@@ -992,6 +992,13 @@ void cvm::atom_group::do_feature_side_effects_gpu(int id) {
       }
       break;
     }
+    case f_ag_rotate: {
+      colvarproxy* p = cvm::main()->proxy;
+      if (p->has_gpu_support()) {
+        rot_gpu.init();
+      }
+      break;
+    }
   }
 }
 #endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
