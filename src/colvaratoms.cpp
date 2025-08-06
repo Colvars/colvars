@@ -818,6 +818,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
       p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
       p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
       p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
+      rot_gpu.init();
     }
 #endif
     setup_rotation_derivative();
@@ -1811,6 +1812,14 @@ m_has_fitting_force(m_ag->is_enabled(f_ag_center) || m_ag->is_enabled(f_ag_rotat
 }
 
 cvm::atom_group::group_force_object::~group_force_object() {
+  colvarproxy* const p = cvm::main()->proxy;
+  if (p->has_gpu_support()) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    m_ag->use_group_force = true;
+    // CPU forces are already intercepted into group_forces
+    return;
+#endif
+  }
   if (m_has_fitting_force) {
     apply_force_with_fitting_group();
   }

@@ -30,6 +30,7 @@ public:
     compute_gpu_graph_t();
     int init();
     ~compute_gpu_graph_t();
+    void dump_graph(const char* filename);
     bool graph_exec_initialized;
     cudaGraph_t graph;
     cudaGraphExec_t graph_exec;
