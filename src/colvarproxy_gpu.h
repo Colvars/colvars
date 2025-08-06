@@ -97,7 +97,7 @@ public:
   virtual cvm::real* proxy_atoms_total_forces_gpu() {return nullptr;}
   virtual cvm::real* proxy_atoms_new_colvar_forces_gpu() {return nullptr;}
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  ~colvarproxy_gpu();
+  virtual ~colvarproxy_gpu();
 protected:
   bool support_gpu;
 };

@@ -91,6 +91,9 @@ int prepare_derivative(
   kernelNodeParams.sharedMemBytes = 0;
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
+  if (cvm::debug()) {
+    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+  }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
     dependencies.size(), &kernelNodeParams));
