@@ -2,6 +2,7 @@
 #define COLVAR_GPU_SUPPORT_H
 
 #include <vector>
+#include <iostream>
 
 #define COLVARS_STRINGIFY(s) STRINGIFY_HELPER(s)
 #define STRINGIFY_HELPER(s) #s
@@ -231,27 +232,24 @@ int gpuAssert(cudaError_t code, const char *file, int line);
 
 namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
+
+int add_clear_array_node_impl(
+  void* dst, const size_t num_elements, const size_t sizeofT,
+  cudaGraphNode_t& node_out, cudaGraph_t& graph,
+  const std::vector<cudaGraphNode_t>& dependencies);
+
+int add_copy_node_impl(
+  const void* src, void* dst, const size_t num_elements, const size_t sizeofT,
+  cudaMemcpyKind kind, cudaGraphNode_t& node_out, cudaGraph_t& graph,
+  const std::vector<cudaGraphNode_t>& dependencies);
+
 template <typename T>
 int add_clear_array_node(
   T* dst, const size_t num_elements,
   cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  // size_t elementSize, width;
-  const size_t sizeofT = sizeof(T);
-  /**< Size of each element in bytes. Must be 1, 2, or 4. */
-  const size_t elementSize =
-    (sizeofT % 4 == 0) ? 4 :
-    ((sizeofT % 2 == 0) ? 2 : 1);
-  const size_t width = num_elements * (sizeofT / elementSize);
-  cudaMemsetParams memsetParams = {0};
-  memsetParams.dst         = (void*)dst;
-  memsetParams.value       = 0;
-  memsetParams.elementSize = elementSize;
-  memsetParams.width       = width;
-  memsetParams.height      = 1;
-  return checkGPUError(cudaGraphAddMemsetNode(
-    &node_out, graph, dependencies.data(),
-    dependencies.size(), &memsetParams));
+  return add_clear_array_node_impl(
+    dst, num_elements, sizeof(T), node_out, graph, dependencies);
 }
 
 template <typename T>
@@ -259,47 +257,10 @@ int add_copy_node(
   const T* src, T* dst, size_t num_elements,
   cudaMemcpyKind kind, cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  cudaMemcpy3DParms    memcpyParams     = {0};
-  memcpyParams.kind     = kind;
-  memcpyParams.srcArray = NULL;
-  memcpyParams.srcPos   = make_cudaPos(0, 0, 0);
-  memcpyParams.srcPtr   = make_cudaPitchedPtr(
-    (void*)src, sizeof(T) * num_elements, num_elements, 1);
-  memcpyParams.dstArray = NULL;
-  memcpyParams.dstPos   = make_cudaPos(0, 0, 0);
-  memcpyParams.dstPtr   = make_cudaPitchedPtr(
-    (void*)dst, sizeof(T) * num_elements, num_elements, 1);
-  memcpyParams.extent   = make_cudaExtent(sizeof(T) * num_elements, 1, 1);
-  return checkGPUError(
-    cudaGraphAddMemcpyNode(
-      &node_out, graph, dependencies.data(),
-      dependencies.size(), &memcpyParams));
+  return add_copy_node_impl(src, dst, num_elements, sizeof(T),
+                            kind, node_out, graph, dependencies);
 }
 
-template <typename T>
-int update_copy_node(
-  const T* src, T* dst, size_t num_elements,
-  cudaMemcpyKind kind, cudaGraphNode_t& node,
-  cudaGraphExec_t& graph_exec) {
-  cudaMemcpy3DParms    memcpyParams     = {0};
-  memcpyParams.kind     = kind;
-  memcpyParams.srcArray = NULL;
-  memcpyParams.srcPos   = make_cudaPos(0, 0, 0);
-  memcpyParams.srcPtr   = make_cudaPitchedPtr(
-    (void*)src, sizeof(T) * num_elements, num_elements, 1);
-  memcpyParams.dstArray = NULL;
-  memcpyParams.dstPos   = make_cudaPos(0, 0, 0);
-  memcpyParams.dstPtr   = make_cudaPitchedPtr(
-    (void*)dst, sizeof(T) * num_elements, num_elements, 1);
-  memcpyParams.extent   = make_cudaExtent(sizeof(T) * num_elements, 1, 1);
-  int error_code = checkGPUError(
-    cudaGraphMemcpyNodeSetParams(node, &memcpyParams));
-  error_code |= checkGPUError(
-    cudaGraphExecMemcpyNodeSetParams(
-    graph_exec, node,
-    &memcpyParams));
-  return error_code;
-}
 #endif
 }
 
