@@ -609,6 +609,9 @@ public:
   static std::string to_str(char const *s);
 
   /// Convert to string for output purposes
+  static std::string to_str(const void* ptr);
+
+  /// Convert to string for output purposes
   static std::string to_str(std::string const &s);
 
   /// Convert to string for output purposes
