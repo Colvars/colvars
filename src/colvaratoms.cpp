@@ -1231,6 +1231,12 @@ void cvm::atom_group::center_ref_pos()
     ref_pos_y(i) -= ref_pos_cog.y;
     ref_pos_z(i) -= ref_pos_cog.z;
   }
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  colvarproxy* p = cvm::main()->proxy;
+  if (p->has_gpu_support()) {
+    p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
+  }
+#endif
 }
 
 void cvm::atom_group::rotate(const cvm::rmatrix& rot_mat) {
@@ -1790,6 +1796,13 @@ void cvm::atom_group::do_feature_side_effects(int id)
 void cvm::atom_group::set_ref_pos_from_aos(const std::vector<cvm::atom_pos>& pos_aos) {
   num_ref_pos = pos_aos.size();
   ref_pos = cvm::atom_group::pos_aos_to_soa(pos_aos);
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  colvarproxy* p = cvm::main()->proxy;
+  if (p->has_gpu_support()) {
+    p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
+    p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
+  }
+#endif
 }
 
 cvm::atom_group::group_force_object cvm::atom_group::get_group_force_object() {
