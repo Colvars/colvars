@@ -1,0 +1,57 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+    name eulerTheta
+    outputAppliedForce on
+    eulerTheta {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+}
+
+colvar {
+    name eulerPhi
+    outputAppliedForce on
+    eulerPhi {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+}
+
+colvar {
+    name eulerPsi
+    outputAppliedForce on
+    eulerPsi {
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+}
+
+harmonic {
+    colvars      eulerPsi
+    forceConstant   0.1
+    centers  0
+    outputEnergy on
+}
+
+harmonic {
+    colvars      eulerPhi
+    forceConstant   0.1
+    centers  0
+    outputEnergy on
+}
+
+harmonic {
+    colvars      eulerTheta
+    forceConstant   0.1
+    centers  0
+    outputEnergy on
+}

@@ -1209,7 +1209,7 @@ int colvarbias_restraint_harmonic_walls::update()
 
   error_code |= colvarbias_restraint::update();
 
-  error_code |= colvarbias_restraint_k_moving::update_acc_work();
+  error_code |= colvarbias_restraint_harmonic_walls::update_acc_work();
 
  if (!cvm::main()->proxy->simulation_running()) {
     return COLVARS_OK;
@@ -1288,13 +1288,25 @@ int colvarbias_restraint_harmonic_walls::update_acc_work()
   if (!cvm::main()->proxy->simulation_running()) {
     return COLVARS_OK;
   }
-  if (b_chg_walls) {
+  if (b_chg_force_k || b_chg_walls) {
     if (is_enabled(f_cvb_output_acc_work)) {
-      if ((cvm::step_relative() > 0) &&
-          (cvm::step_absolute() - first_step <= target_nsteps)) {
+      if (cvm::step_relative() > 0) {
+        cvm::real dU_dk = 0.0;
         for (size_t i = 0; i < num_variables(); i++) {
-          // project forces on the calculated increments at this step
-          acc_work += colvar_forces[i] * (upper_walls_incr[i]+lower_walls_incr[i]); //not sure if that's the correct implementation!
+          dU_dk += d_restraint_potential_dk(i);
+        }
+        acc_work += dU_dk * force_k_incr;
+
+        cvm::real dU_dwall = 0.0;
+        for (size_t i = 0; i < num_variables(); i++) {
+          cvm::real const dist = colvar_distance(i);
+          if (dist > 0.0) {
+              dU_dwall = force_k * upper_wall_k * dist/(variables(i)->width);
+              acc_work += dU_dwall * upper_walls_incr[i];
+          } else{
+              dU_dwall += force_k * lower_wall_k * dist/(variables(i)->width);
+              acc_work += dU_dwall * lower_walls_incr[i];
+          }
         }
       }
     }

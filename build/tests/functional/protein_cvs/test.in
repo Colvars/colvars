@@ -1,0 +1,19 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+    name alpha
+    alpha {
+        prefix prot_
+    }
+}
+
+colvar {
+    name dihedPC
+    dihedralPC {
+        prefix prot_
+        vectorFile eigenvectors-localmin
+        vectorNumber 2
+    }
+}
