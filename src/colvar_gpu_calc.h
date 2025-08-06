@@ -35,8 +35,8 @@ public:
     cudaGraphExec_t graph_exec;
     std::vector<compute_node_t> nodes;
   };
-  colvarmodule_gpu_calc();
-  ~colvarmodule_gpu_calc();
+  colvarmodule_gpu_calc() {}
+  ~colvarmodule_gpu_calc() {}
   int init();
   int calc_cvs(const std::vector<colvar*>& colvars, colvarmodule* colvar_module);
   int apply_forces(const std::vector<colvar*>& colvars, colvarmodule* colvar_module);

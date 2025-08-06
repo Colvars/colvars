@@ -194,9 +194,8 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   gpu_calc = nullptr;
   if (proxy->has_gpu_support()) {
-    // checkGPUError(cudaGraphCreate(&read_data_graph, 0));
-    // checkGPUError(cudaGraphCreate(&calc_fit_gradients_graph, 0));
-    gpu_calc = std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc>(new colvars_gpu::colvarmodule_gpu_calc);
+    gpu_calc = std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc>(
+      new colvars_gpu::colvarmodule_gpu_calc);
     gpu_calc->init();
   }
 #endif

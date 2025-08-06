@@ -928,28 +928,6 @@ public:
   using ag_vector_real_t = std::vector<real, allocator_type<real>>;
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  // struct compute_node_t {
-  //   // XXX TODO: There should be an independent data structure for AST
-  //   // For the time being I have to hack the colvardeps which serves
-  //   // partially as an AST (without any type information). There are two
-  //   // kinds of dependencies, namely (i) the dependencies between computational
-  //   // operations (cv-cvc, cvc-cvc and cvc-atom groups), and (ii) the
-  //   // dependencies of different features. (i) should be similar to an AST
-  //   // in a compiler, while (ii) should be a checker walking over the AST.
-  //   colvardeps* colvar_node;
-  //   cudaGraphNode_t child_graph_node;
-  //   bool require_cpu_buffers;
-  // };
-  //
-  // bool read_data_graph_initialized;
-  // std::vector<compute_node_t> read_data_nodes;
-  // cudaGraph_t read_data_graph;
-  // cudaGraphExec_t read_data_graph_exec;
-  //
-  // bool calc_fit_gradients_graph_initialized;
-  // std::vector<compute_node_t> calc_fit_gradients_nodes;
-  // cudaGraph_t calc_fit_gradients_graph;
-  // cudaGraphExec_t calc_fit_gradients_graph_exec;
   std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc> gpu_calc;
 #endif
 };
