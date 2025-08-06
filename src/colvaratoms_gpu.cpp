@@ -677,7 +677,6 @@ int cvm::atom_group::add_calc_fit_gradients_nodes(
   bool use_cpu_buffers) {
   int error_code = COLVARS_OK;
   if (b_dummy || ! is_enabled(f_ag_fit_gradients)) return error_code;
-  if (!is_enabled(f_cvc_explicit_gradient)) return error_code;
   cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
   colvarproxy* p = cvm::main()->proxy;
   if (p->has_gpu_support()) {
@@ -752,7 +751,7 @@ int cvm::atom_group::add_calc_fit_gradients_nodes(
       nodes_map["calc_fit_gradients_loop2"] = calc_fit_forces_loop2_node;
       if (use_cpu_buffers) {
         if (fit_gradients.empty()) {
-          fit_gradients.resize(group_for_fit->size());
+          fit_gradients.resize(3 * group_for_fit->size());
         }
         cudaGraphNode_t copy_fit_gradients_DtoH_node;
         std::vector<cudaGraphNode_t> dependencies_copy_fit_gradients;
@@ -968,6 +967,9 @@ int cvm::atom_group::calc_required_properties_gpu_debug(cudaStream_t stream) {
 }
 
 void cvm::atom_group::do_feature_side_effects_gpu(int id) {
+  if (cvm::debug()) {
+    cvm::log("cvm::atom_group::do_feature_side_effects_gpu.\n");
+  }
   switch (id) {
     case f_ag_fit_gradients: {
       colvarproxy* p = cvm::main()->proxy;
@@ -981,6 +983,9 @@ void cvm::atom_group::do_feature_side_effects_gpu(int id) {
           if (gpu_buffers.d_fit_gradients == nullptr) {
             p->allocate_device(&gpu_buffers.d_fit_gradients,
                                3 * group_for_fit->size());
+            if (cvm::debug()) {
+              cvm::log("allocate d_fit_gradients at " + cvm::to_str((void*)gpu_buffers.d_fit_gradients) + " size " + cvm::to_str(3 * group_for_fit->size()) + "\n");
+            }
             gpu_buffers.d_fit_gradients_size = group_for_fit->size();
           }
         }
