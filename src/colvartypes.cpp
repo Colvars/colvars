@@ -522,25 +522,27 @@ int rotation_gpu::init(/*const cudaStream_t& stream_in*/) {
   int error_code = COLVARS_OK;
   // stream = stream_in;
   colvarproxy* p = cvm::main()->proxy;
-  error_code |= p->allocate_device(&d_S, 4 * 4);
-  error_code |= p->allocate_device(&d_S_eigval, 4);
-  error_code |= p->allocate_device(&d_S_eigvec, 4 * 4);
-  error_code |= p->allocate_device(&tbcount, 1);
-  error_code |= p->allocate_device(&d_q, 1);
-  error_code |= p->allocate_device(&d_q_old, 1);
-  error_code |= p->allocate_host(&discontinuous_rotation, 1);
-  error_code |= p->allocate_host(&max_iteration_reached, 1);
-  error_code |= p->allocate_host(&h_C, 1);
-  error_code |= p->allocate_host(&h_S, 4 * 4);
-  error_code |= p->allocate_host(&h_S_eigval, 4);
-  error_code |= p->allocate_host(&h_S_eigvec, 4 * 4);
-  max_iteration_reached[0] = 0;
-  discontinuous_rotation[0] = 0;
-  if (colvarmodule::rotation::monitor_crossings) {
-    error_code |= p->clear_device_array(&d_q_old, 1);
+  if (!b_initialized) {
+    error_code |= p->allocate_device(&d_S, 4 * 4);
+    error_code |= p->allocate_device(&d_S_eigval, 4);
+    error_code |= p->allocate_device(&d_S_eigvec, 4 * 4);
+    error_code |= p->allocate_device(&tbcount, 1);
+    error_code |= p->allocate_device(&d_q, 1);
+    error_code |= p->allocate_device(&d_q_old, 1);
+    error_code |= p->allocate_host(&discontinuous_rotation, 1);
+    error_code |= p->allocate_host(&max_iteration_reached, 1);
+    error_code |= p->allocate_host(&h_C, 1);
+    error_code |= p->allocate_host(&h_S, 4 * 4);
+    error_code |= p->allocate_host(&h_S_eigval, 4);
+    error_code |= p->allocate_host(&h_S_eigvec, 4 * 4);
+    max_iteration_reached[0] = 0;
+    discontinuous_rotation[0] = 0;
+    if (colvarmodule::rotation::monitor_crossings) {
+      error_code |= p->clear_device_array(&d_q_old, 1);
+    }
+    cvm::main()->cite_feature("Optimal rotation via flexible fitting");
+    b_initialized = true;
   }
-  cvm::main()->cite_feature("Optimal rotation via flexible fitting");
-  b_initialized = true;
   return error_code;
 }
 
