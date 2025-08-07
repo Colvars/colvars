@@ -167,6 +167,17 @@ public:
     deallocateDeviceTransposeArrays();
     allocateDeviceTransposeArrays();
   }
+  smp_mode_t get_smp_mode() const override {
+    return smp_mode_t::none;
+  }
+  int set_smp_mode(smp_mode_t mode) override {
+    if (mode != smp_mode_t::none) {
+      return COLVARS_ERROR;
+    }
+    else {
+      return COLVARS_OK;
+    }
+  }
   float* proxy_atoms_masses_gpu_float() override {return d_mMass;}
   float* proxy_atoms_charges_gpu_float() override {return d_mCharges;}
   cvm::real* proxy_atoms_positions_gpu() override {return d_mPositions;}
@@ -233,6 +244,9 @@ colvarproxy_impl::colvarproxy_impl(
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   boltzmann_ = 0.001987191;
   angstrom_value_ = 1.;
+#if defined (COLVARS_GPU_RESIDENT) && (defined (COLVARS_CUDA) || defined (COLVARS_HIP))
+  support_gpu = true;
+#endif
 }
 
 colvarproxy_impl::~colvarproxy_impl() {
@@ -265,6 +279,9 @@ int colvarproxy_impl::setup() {
   error_code |= colvars->update_engine_parameters();
   error_code |= colvars->setup_input();
   error_code |= colvars->setup_output();
+  if (has_gpu_support()) {
+    cvm::log("Warning: the GPU support in Colvars is still experimental!\n");
+  }
   return error_code;
 }
 
