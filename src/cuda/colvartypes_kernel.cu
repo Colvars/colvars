@@ -159,60 +159,6 @@ int build_overlapping_matrix(
     dependencies.size(), &kernelNodeParams));
 }
 
-__global__ void eigvec_get_q_kernel(
-  const cvm::real* S_eigvec,
-  cvm::quaternion* q,
-  bool monitor_crossings,
-  cvm::real crossing_threshold,
-  cvm::quaternion* q_old,
-  int* discontinuous_rotation) {
-  if (threadIdx.x == 0) {
-    const int max_eigenvalue_index = 0;
-    q->q0 = S_eigvec[max_eigenvalue_index*4+0];
-    q->q1 = S_eigvec[max_eigenvalue_index*4+1];
-    q->q2 = S_eigvec[max_eigenvalue_index*4+2];
-    q->q3 = S_eigvec[max_eigenvalue_index*4+3];
-    if (monitor_crossings) {
-      if (q_old->norm2() > 0) {
-        q->match(*q_old);
-        if (q_old->inner(*q) < (1.0 - crossing_threshold)) {
-          atomicAdd(discontinuous_rotation, 1);
-        }
-      }
-    }
-  }
-}
-
-int eigvec_get_q(
-  const cvm::real* S_eigvec,
-  cvm::quaternion* q,
-  bool monitor_crossings,
-  cvm::real crossing_threshold,
-  cvm::quaternion* q_old,
-  int* discontinuous_rotation,
-  cudaGraphNode_t& node,
-  cudaGraph_t& graph,
-  const std::vector<cudaGraphNode_t>& dependencies) {
-  // const int block_size = default_block_size;
-  void* args[] = {
-    &S_eigvec, &q, &monitor_crossings,
-    &crossing_threshold, &q_old,
-    &discontinuous_rotation};
-  cudaKernelNodeParams kernelNodeParams = {0};
-  kernelNodeParams.func           = (void*)eigvec_get_q_kernel;
-  kernelNodeParams.gridDim        = dim3(1, 1, 1);
-  kernelNodeParams.blockDim       = dim3(1, 1, 1);
-  kernelNodeParams.sharedMemBytes = 0;
-  kernelNodeParams.kernelParams   = args;
-  kernelNodeParams.extra          = NULL;
-  if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
-  }
-  return checkGPUError(cudaGraphAddKernelNode(
-    &node, graph, dependencies.data(),
-    dependencies.size(), &kernelNodeParams));
-}
-
 #define JACOBI_MAX_ITERATION 50
 #define JACOBI_TOLERANCE 1e-16
 __inline__ __device__ void apply_jacobi(
@@ -266,7 +212,12 @@ __inline__ __device__ void compute_c_s(
 
 // Use exactly 2 threads
 __global__ void jacobi_4x4_kernel(
-  double* A_in, double* eigvals, int* max_reached) {
+  double* A_in, double* eigvals, int* max_reached,
+  cvm::quaternion* q,
+  bool monitor_crossings,
+  cvm::real crossing_threshold,
+  cvm::quaternion* q_old,
+  int* discontinuous_rotation) {
   __shared__ double A[4*4];
   __shared__ double V[4*4];
   const int idx = threadIdx.x;
@@ -426,6 +377,18 @@ __global__ void jacobi_4x4_kernel(
     eigvals[1] = A[1*4+1];
     eigvals[2] = A[2*4+2];
     eigvals[3] = A[3*4+3];
+    q->q0 = V[0];
+    q->q1 = V[4];
+    q->q2 = V[8];
+    q->q3 = V[12];
+    if (monitor_crossings) {
+      if (q_old->norm2() > 0) {
+        q->match(*q_old);
+        if (q_old->inner(*q) < (1.0 - crossing_threshold)) {
+          atomicAdd(discontinuous_rotation, 1);
+        }
+      }
+    }
   }
 }
 #undef JACOBI_MAX_ITERATION
@@ -435,11 +398,19 @@ int jacobi_4x4(
   double* S_eigvec,
   double* S_eigval,
   int* max_reached,
+  cvm::quaternion* q,
+  bool monitor_crossings,
+  cvm::real crossing_threshold,
+  cvm::quaternion* q_old,
+  int* discontinuous_rotation,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
   void* args[] = {
-    &S_eigvec, &S_eigval, &max_reached};
+    &S_eigvec, &S_eigval, &max_reached,
+    &q, &monitor_crossings,
+    &crossing_threshold, &q_old,
+    &discontinuous_rotation};
   cudaKernelNodeParams kernelNodeParams = {0};
   kernelNodeParams.func           = (void*)jacobi_4x4_kernel;
   kernelNodeParams.gridDim        = dim3(1, 1, 1);
