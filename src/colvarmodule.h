@@ -229,8 +229,8 @@ static inline real acos(real const &x)
   /// \brief 3x3 matrix of real numbers
   class rmatrix;
 
-  // allow these classes to access protected data
-  // struct atom;
+  // NOTE: Just here for ensuring the compilation of GROMACS with Colvars
+  struct atom;
   // class atom_group_base;
   class atom_group;
   // class atom_group_gpu;
