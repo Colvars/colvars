@@ -48,6 +48,31 @@ obj/colvaratoms.o: \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvarproxy_gpu.h
 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvaratoms.o $(COPTC) colvars/src/colvaratoms.cpp
+obj/colvaratoms_gpu.o: \
+	obj/.exists \
+	colvars/src/colvaratoms_gpu.cpp \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h
+	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvaratoms_gpu.o $(COPTC) colvars/src/colvaratoms_gpu.cpp
 obj/colvarbias.o: \
 	obj/.exists \
 	colvars/src/colvarbias.cpp \
