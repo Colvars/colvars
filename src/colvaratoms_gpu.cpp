@@ -14,32 +14,35 @@ int cvm::atom_group::init_gpu() {
   int error_code = COLVARS_OK;
   colvarproxy *p = cvm::main()->proxy;
   // error_code |= checkGPUError(cudaStreamCreate(&stream));
-  std::memset(&gpu_buffers, 0, sizeof(gpu_buffers));
-  std::memset(&debug_graphs, 0, sizeof(debug_graphs));
-  std::memset(&calc_fit_gradients_gpu_info, 0,
-              sizeof(calc_fit_gradients_gpu_info));
-  std::memset(&calc_fit_forces_gpu_info, 0,
-              sizeof(calc_fit_forces_gpu_info));
-  error_code |= p->allocate_device(&gpu_buffers.d_com, 1);
-  error_code |= p->allocate_device(&gpu_buffers.d_cog, 1);
-  error_code |= p->allocate_device(&gpu_buffers.d_cog_orig, 1);
-  error_code |= p->allocate_device(&gpu_buffers.d_ref_pos_cog, 1);
-  error_code |= p->allocate_device(&gpu_buffers.d_com_cog_tbcount, 1);
-  error_code |= p->allocate_host(&gpu_buffers.h_com, 1);
-  error_code |= p->allocate_host(&gpu_buffers.h_cog, 1);
-  error_code |= p->allocate_host(&gpu_buffers.h_cog_orig, 1);
+  error_code |= p->reallocate_device(&gpu_buffers.d_com, 1);
+  error_code |= p->reallocate_device(&gpu_buffers.d_cog, 1);
+  error_code |= p->reallocate_device(&gpu_buffers.d_cog_orig, 1);
+  error_code |= p->reallocate_device(&gpu_buffers.d_ref_pos_cog, 1);
+  error_code |= p->reallocate_device(&gpu_buffers.d_com_cog_tbcount, 1);
+  error_code |= p->reallocate_host(&gpu_buffers.h_com, 1);
+  error_code |= p->reallocate_host(&gpu_buffers.h_cog, 1);
+  error_code |= p->reallocate_host(&gpu_buffers.h_cog_orig, 1);
   rot_deriv_gpu = nullptr;
   // error_code |= checkGPUError(cudaStreamCreate(&stream_ag_force));
   // std::memset(&calc_fit_gradients_info, 0, sizeof(calc_fit_gradients_info));
-  error_code |= p->allocate_device(&calc_fit_gradients_gpu_info.d_atom_grad, 1);
-  error_code |= p->allocate_device(&calc_fit_gradients_gpu_info.d_sum_dxdq, 1);
-  error_code |= p->allocate_device(&calc_fit_gradients_gpu_info.d_tbcount, 1);
-  error_code |= p->allocate_device(&calc_fit_forces_gpu_info.d_atom_grad, 1);
-  error_code |= p->allocate_device(&calc_fit_forces_gpu_info.d_sum_dxdq, 1);
-  error_code |= p->allocate_device(&calc_fit_forces_gpu_info.d_tbcount, 1);
-  error_code |= p->allocate_host(&h_sum_applied_colvar_force, 1);
+  error_code |= p->reallocate_device(&calc_fit_gradients_gpu_info.d_atom_grad, 1);
+  error_code |= p->reallocate_device(&calc_fit_gradients_gpu_info.d_sum_dxdq, 1);
+  error_code |= p->reallocate_device(&calc_fit_gradients_gpu_info.d_tbcount, 1);
+  error_code |= p->reallocate_device(&calc_fit_forces_gpu_info.d_atom_grad, 1);
+  error_code |= p->reallocate_device(&calc_fit_forces_gpu_info.d_sum_dxdq, 1);
+  error_code |= p->reallocate_device(&calc_fit_forces_gpu_info.d_tbcount, 1);
+  error_code |= p->reallocate_host(&h_sum_applied_colvar_force, 1);
   use_apply_colvar_force = false;
   use_group_force = false;
+  if (debug_graphs.graph_calc_required_properties) {
+    error_code |= checkGPUError(cudaGraphDestroy(
+      debug_graphs.graph_calc_required_properties));
+  }
+  if (debug_graphs.graph_exec_calc_required_properties) {
+    error_code |= checkGPUError(cudaGraphExecDestroy(
+      debug_graphs.graph_exec_calc_required_properties));
+  }
+  debug_graphs.initialized = false;
   return error_code;
 }
 
