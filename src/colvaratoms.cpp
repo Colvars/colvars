@@ -107,7 +107,11 @@ cvm::atom_group::atom_group():
 {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   std::memset(&gpu_buffers, 0, sizeof(gpu_buffers));
-  std::memset(&calc_fit_gradients_gpu_info, 0, sizeof(calc_fit_gradients_gpu_info));
+  std::memset(&debug_graphs, 0, sizeof(debug_graphs));
+  std::memset(&calc_fit_gradients_gpu_info, 0,
+              sizeof(calc_fit_gradients_gpu_info));
+  std::memset(&calc_fit_forces_gpu_info, 0,
+              sizeof(calc_fit_forces_gpu_info));
   rot_deriv_gpu = nullptr;
 #endif
   key = "unnamed";
@@ -1199,6 +1203,7 @@ void cvm::atom_group::setup_rotation_derivative() {
   // we can access it on device
   colvarproxy* p = cvm::main()->proxy;
   if (rot_deriv_gpu != nullptr) {
+    rot_deriv_gpu->~rotation_derivative_gpu();
     p->deallocate_host(&rot_deriv_gpu);
   }
   p->allocate_host(&rot_deriv_gpu, 1);
