@@ -60,6 +60,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarvalue.C',
                     'colvar_gpu_support.C',
                     'colvar_gpu_calc.C',
+                    'colvar_rotation_derivative.C',
                     'nr_jacobi.C');
 @colvars_h    =    ('colvar_UIestimator.h',
                     'colvar_arithmeticpath.h',
