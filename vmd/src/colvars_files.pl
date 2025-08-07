@@ -12,6 +12,7 @@ $colvars_defines = " -DVMDCOLVARS";
 @colvars_cc      = ();
 @colvars_cu      = ();
 @colvars_ccpp    = ('colvaratoms.C',
+                    'colvaratoms_gpu.C',
                     'colvarbias.C',
                     'colvarbias_abf.C',
                     'colvarbias_abmd.C',
@@ -66,6 +67,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvar_neuralnetworkcompute.h',
                     'colvar_rotation_derivative.h',
                     'colvaratoms.h',
+                    'colvaratoms_gpu.h',
                     'colvarbias.h',
                     'colvarbias_abf.h',
                     'colvarbias_abmd.h',
