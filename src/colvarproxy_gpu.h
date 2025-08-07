@@ -32,6 +32,13 @@ public:
     return error_code;
   }
   template <typename T>
+  int reallocate_host(T **pp, const size_t len) {
+    int error_code = COLVARS_OK;
+    error_code |= deallocate_host(pp);
+    error_code |= allocate_host_T((void **)pp, len, sizeof(T));
+    return error_code;
+  }
+  template <typename T>
   int allocate_device_async(T **pp, const size_t len, cudaStream_t stream) {
     return allocate_device_T_async((void **)pp, len, sizeof(T), stream);
   }

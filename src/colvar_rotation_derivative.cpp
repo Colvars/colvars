@@ -26,8 +26,8 @@ int rotation_derivative_gpu::init(
   m_num_atoms_pos1 = num_atoms_pos1;
   m_num_atoms_pos2 = num_atoms_pos2;
   colvarproxy* p = cvm::main()->proxy;
-  error_code |= p->allocate_device(&tmp_Q0Q0, 4 * 4);
-  error_code |= p->allocate_device(&tmp_Q0Q0_L, 4 * 4 * 4);
+  error_code |= p->reallocate_device(&tmp_Q0Q0, 4 * 4);
+  error_code |= p->reallocate_device(&tmp_Q0Q0_L, 4 * 4 * 4);
   return error_code;
 }
 
