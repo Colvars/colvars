@@ -9,6 +9,9 @@
 
 #if defined(COLVARS_CUDA)
 #include <cuda_runtime.h>
+#ifdef COLVARS_NVTX_PROFILING
+#include <nvtx3/nvToolsExt.h>
+#endif
 #endif // defined(COLVARS_CUDA)
 
 #if defined(COLVARS_HIP)
@@ -261,7 +264,24 @@ int add_copy_node(
                             kind, node_out, graph, dependencies);
 }
 
-#endif
+// NVTX Profiling
+#if defined (COLVARS_NVTX_PROFILING)
+class colvar_nvtx_prof {
+public:
+  colvar_nvtx_prof();
+  void set_name_color(const std::string& name_in, const uint32_t color_in);
+  inline void start() {
+    nvtxRangePushEx(&nvtx_event_attr);
+  }
+  inline void stop() {
+    nvtxRangePop();
+  }
+private:
+  std::string nvtx_event_name;
+  nvtxEventAttributes_t nvtx_event_attr;
+};
+#endif // defined (COLVARS_NVTX_PROFILING)
+#endif // defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
 #define ADD_DEPENDENCY(fieldName, dependencies_vector, nodes_map) do {\
