@@ -35,6 +35,8 @@ rotation_derivative_gpu::~rotation_derivative_gpu() {
   colvarproxy* p = cvm::main()->proxy;
   p->deallocate_device(&tmp_Q0Q0);
   p->deallocate_device(&tmp_Q0Q0_L);
+  tmp_Q0Q0 = nullptr;
+  tmp_Q0Q0_L = nullptr;
 }
 
 int rotation_derivative_gpu::add_prepare_derivative_nodes(
