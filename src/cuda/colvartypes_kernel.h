@@ -24,21 +24,15 @@ int build_overlapping_matrix(
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
 
-int eigvec_get_q(
-  const cvm::real* S_eigvec,
+int jacobi_4x4(
+  double* S_eigvec,
+  double* S_eigval,
+  int* max_reached,
   cvm::quaternion* q,
   bool monitor_crossings,
   cvm::real crossing_threshold,
   cvm::quaternion* q_old,
   int* discontinuous_rotation,
-  cudaGraphNode_t& node,
-  cudaGraph_t& graph,
-  const std::vector<cudaGraphNode_t>& dependencies);
-
-int jacobi_4x4(
-  double* S_eigvec,
-  double* S_eigval,
-  int* max_reached,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
