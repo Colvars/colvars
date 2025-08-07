@@ -595,21 +595,15 @@ int rotation_gpu::add_optimal_rotation_nodes(
     graph, {build_S_node});
   nodes_map["copy_DtoH_S"] = copy_DtoH_S_node;
   // Kernel node for eigensystem
-  // dependencies.push_back(buildSNode);
   cudaGraphNode_t Jacobi4x4Node;
   error_code |= colvars_gpu::jacobi_4x4(
     d_S_eigvec, d_S_eigval,
-    max_iteration_reached, Jacobi4x4Node,
-    graph, {build_S_node});
-  nodes_map["eigendecomposition"] = Jacobi4x4Node;
-  cudaGraphNode_t getQNode;
-  error_code |= colvars_gpu::eigvec_get_q(
-    d_S_eigvec, d_q, colvarmodule::rotation::monitor_crossings,
+    max_iteration_reached,
+    d_q, colvarmodule::rotation::monitor_crossings,
     colvarmodule::rotation::crossing_threshold,
-    d_q_old, discontinuous_rotation, getQNode,
-    graph, {Jacobi4x4Node});
-  // getQNode_out = getQNode;
-  nodes_map["calc_optimal_rotation"] = getQNode;
+    d_q_old, discontinuous_rotation,
+    Jacobi4x4Node, graph, {build_S_node});
+  nodes_map["calc_optimal_rotation"] = Jacobi4x4Node;
   cudaGraphNode_t copy_DtoH_S_eigvec_node;
   error_code |= colvars_gpu::add_copy_node(
     d_S_eigvec, h_S_eigvec, 4*4,
