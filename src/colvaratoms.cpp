@@ -112,6 +112,7 @@ cvm::atom_group::atom_group():
               sizeof(calc_fit_gradients_gpu_info));
   std::memset(&calc_fit_forces_gpu_info, 0,
               sizeof(calc_fit_forces_gpu_info));
+  h_sum_applied_colvar_force = nullptr;
   rot_deriv_gpu = nullptr;
 #endif
   key = "unnamed";
@@ -1207,6 +1208,7 @@ void cvm::atom_group::setup_rotation_derivative() {
     p->deallocate_host(&rot_deriv_gpu);
   }
   p->allocate_host(&rot_deriv_gpu, 1);
+  rot_deriv_gpu = new (rot_deriv_gpu) colvars_gpu::rotation_derivative_gpu();
   rot_deriv_gpu->init(
     &rot_gpu,
     group_for_fit->gpu_buffers.d_atoms_pos,
