@@ -31,7 +31,7 @@ set(COLVARS_CUDA_SOURCE ${COLVARS_CUDA_DIR}/colvaratoms_kernel.cu
 
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/[^.]*.cpp)
 
-add_definitions(-DCOLVARS_CUDA -DCOLVARS_DEBUG)
+add_definitions(-DCOLVARS_CUDA)
 
 add_executable(
   run_colvars_test_cuda
@@ -45,9 +45,9 @@ target_include_directories(run_colvars_test_cuda
   PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
 
 if(CUDAToolkit_VERSION_MAJOR GREATER_EQUAL 10)
-  target_link_libraries(run_colvars_test_cuda CUDA::cudart CUDA::nvtx3)
+  target_link_libraries(run_colvars_test_cuda CUDA::cudart CUDA::nvtx3 stdc++exp)
 else()
-  target_link_libraries(run_colvars_test_cuda CUDA::cudart CUDA::nvToolsExt)
+  target_link_libraries(run_colvars_test_cuda CUDA::cudart CUDA::nvToolsExt stdc++exp)
 endif()
 set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE CUDA)
 # set_property(TARGET run_colvars_test_cuda PROPERTY CUDA_ARCHITECTURES OFF)

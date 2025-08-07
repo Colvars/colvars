@@ -1,14 +1,27 @@
 #include "colvar_gpu_support.h"
 #include "colvarmodule.h"
 
+#if defined(__has_include)
+# if __has_include(<stacktrace>)
+#  define use_cpp_stacktrace
+#  include <stacktrace>
+# endif
+
+#endif
+
 namespace colvars_gpu {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 int gpuAssert(cudaError_t code, const char *file, int line)
 {
   if (code != cudaSuccess) {
-    const std::string error =
+    std::string error =
       std::string("GPUassert: ") +
       cudaGetErrorString(code) + " " + file + ", line " + cvm::to_str(line);
+#ifdef use_cpp_stacktrace
+#ifdef __cpp_lib_stacktrace
+      error += "\nBacktrace:\n" + std::to_string(std::stacktrace::current()) + "\n";
+#endif
+#endif
     return cvm::error(error, COLVARS_ERROR);
   }
   return COLVARS_OK;

@@ -569,7 +569,7 @@ public:
   colvarproxy();
 
   /// Destructor
-  ~colvarproxy() override;
+  virtual ~colvarproxy() override;
 
   inline std::string const &engine_name() const
   {
