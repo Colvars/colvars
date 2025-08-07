@@ -499,7 +499,10 @@ rotation_gpu::rotation_gpu():
   d_S_eigvec(nullptr), tbcount(nullptr),
   d_q(nullptr), d_q_old(nullptr),
   discontinuous_rotation(nullptr),
-  max_iteration_reached(nullptr), b_initialized(false) {}
+  max_iteration_reached(nullptr), b_initialized(false),
+  h_C(nullptr), h_S(nullptr), h_S_eigval(nullptr),
+  h_S_eigvec(nullptr)
+{}
 
 rotation_gpu::~rotation_gpu() {
   colvarproxy* p = cvm::main()->proxy;
