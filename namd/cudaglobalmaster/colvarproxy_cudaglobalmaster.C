@@ -754,12 +754,13 @@ void colvarproxy_impl::calculate() {
   if (mClient->requestUpdateLattice()) {
     ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
   }
-  // NOTE: I think the implementation in Colvars will syncrhonize the stream before
-  // calculating CVCs anyway, so I can skip it here.
-  if (!has_gpu_support()) {
-    // Synchronize the stream to make sure the host buffers are ready
-    cudaCheck(cudaStreamSynchronize(mStream));
-  }
+  // // NOTE: I think the implementation in Colvars will syncrhonize the stream before
+  // // calculating CVCs anyway, so I can skip it here.
+  // if (!has_gpu_support()) {
+  //   // Synchronize the stream to make sure the host buffers are ready
+  //   cudaCheck(cudaStreamSynchronize(mStream));
+  // }
+  cudaCheck(cudaStreamSynchronize(mStream));
   // iout << "colvarproxy_impl::calculate at step " << step << "\n" << endi;
   if (first_timestep) {
     // TODO: Do I really need to call them again?
