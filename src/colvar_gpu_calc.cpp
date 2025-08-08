@@ -5,7 +5,7 @@
 #include "colvar.h"
 #include "colvarcomp.h"
 
-#include <iostream>
+// #include <iostream>
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
@@ -578,7 +578,9 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
     apply_forces_prof.start();
 #endif
     checkColvarsError(checkGPUError(cudaGraphLaunch(apply_forces_compute.graph_exec, stream)));
-    checkColvarsError(checkGPUError(cudaStreamSynchronize(stream)));
+    // NOTE: The synchronization here should be unnecessary because we use the proxy stream,
+    // which will be synchronized by the MD engine anyway.
+    // checkColvarsError(checkGPUError(cudaStreamSynchronize(stream)));
 #if defined (COLVARS_NVTX_PROFILING)
     apply_forces_prof.stop();
 #endif
