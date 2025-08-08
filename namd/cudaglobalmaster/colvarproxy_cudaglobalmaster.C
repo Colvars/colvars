@@ -183,6 +183,7 @@ public:
   cvm::real* proxy_atoms_positions_gpu() override {return d_mPositions;}
   cvm::real* proxy_atoms_total_forces_gpu() override {return d_mTotalForces;}
   cvm::real* proxy_atoms_new_colvar_forces_gpu() override {return d_mAppliedForces;}
+  cudaStream_t get_default_stream() override {return mStream;}
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
@@ -703,9 +704,11 @@ void colvarproxy_impl::onBuffersUpdated() {
   // TODO: Colvars does not support GPU, so we have to copy the buffers manually
   const size_t numAtoms = atoms_ids.size();
   if (numAtoms > 0) {
-    transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
-    if (mClient->requestUpdateAtomTotalForces()) {
-      transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
+    if (!has_gpu_support()) {
+      transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
+      if (mClient->requestUpdateAtomTotalForces()) {
+        transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
+      }
     }
     if (mClient->requestUpdateMasses()) {
       copy_float_to_host_double(d_mMass, d_trans_mMass, numAtoms, mStream);
@@ -730,12 +733,14 @@ void colvarproxy_impl::calculate() {
   cudaCheck(cudaSetDevice(m_device_id));
   // The following memcpy operations are supposed to be overlapped with the NB kernel
   if (numAtoms > 0) {
-    // Transform the arrays for Colvars
-    auto &colvars_pos = *(modify_atom_positions());
-    ::copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
-    if (mClient->requestUpdateAtomTotalForces()) {
-      auto &colvars_total_force = *(modify_atom_total_forces());
-      ::copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
+    if (!has_gpu_support()) {
+      // Transform the arrays for Colvars
+      auto &colvars_pos = *(modify_atom_positions());
+      ::copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
+      if (mClient->requestUpdateAtomTotalForces()) {
+        auto &colvars_total_force = *(modify_atom_total_forces());
+        ::copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
+      }
     }
     if (mClient->requestUpdateMasses()) {
       auto &colvars_mass = *(modify_atom_masses());
@@ -745,9 +750,9 @@ void colvarproxy_impl::calculate() {
       auto &colvars_charge  = *(modify_atom_charges());
       ::copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
     }
-    if (mClient->requestUpdateLattice()) {
-      ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
-    }
+  }
+  if (mClient->requestUpdateLattice()) {
+    ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
   }
   // Synchronize the stream to make sure the host buffers are ready
   cudaCheck(cudaStreamSynchronize(mStream));
@@ -820,13 +825,14 @@ void colvarproxy_impl::calculate() {
   nvtxRangePop();
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   // Update applied forces
-
-  auto &colvars_applied_force = *(modify_atom_applied_forces());
-  if (numAtoms > 0) {
-    ::copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
-    transpose_from_host_rvector(
-      d_mAppliedForces, d_trans_mAppliedForces,
-      numAtoms, mStream);
+  if (!has_gpu_support()) {
+    auto &colvars_applied_force = *(modify_atom_applied_forces());
+    if (numAtoms > 0) {
+      ::copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
+      transpose_from_host_rvector(
+        d_mAppliedForces, d_trans_mAppliedForces,
+        numAtoms, mStream);
+    }
   }
   // NOTE: I think I can skip the syncrhonization here because this client
   //       share the same stream as the CudaGlobalMasterServer object
