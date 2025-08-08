@@ -455,6 +455,9 @@ int colvarmodule_gpu_calc::calc_cvs(const std::vector<colvar*>& colvars, colvarm
     // Read data to atom groups
     checkColvarsError(atom_group_read_data_gpu(
       colvars, read_data_compute, colvar_module));
+    // Wait for extra information (for example, lattice) from the MD engine
+    // before the CPU loop
+    checkColvarsError(p->wait_for_extra_info_ready());
     // Calculate CVC values
     checkColvarsError(cvc_calc_value(colvars, colvar_module));
     // Calculate CVC gradients
