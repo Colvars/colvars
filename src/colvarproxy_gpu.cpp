@@ -97,6 +97,10 @@ int colvarproxy_gpu::copy_DtoD_T_async(const void *d_src, void *d_dst, size_t ar
   return error_code;
 }
 
+int colvarproxy_gpu::wait_for_extra_info_ready() {
+  return COLVARS_OK;
+}
+
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 colvarproxy_gpu::~colvarproxy_gpu() {
