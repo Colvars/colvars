@@ -212,6 +212,9 @@ __global__ void atoms_calc_cog_com_kernel(
         h_com_out->y = com.y;
         h_com_out->z = com.z;
       }
+      // printf("tbcount = %p\n", (void*)tbcount);
+      tbcount[0] = 0;
+      __threadfence();
     }
   }
 }
@@ -489,7 +492,7 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   const int group_for_fit_size,
   double3* __restrict atom_grad,
   double4* __restrict sum_dxdq,
-  unsigned int* __restrict count) {
+  unsigned int* __restrict tbcount) {
   const int i = threadIdx.x + blockIdx.x * blockDim.x;
   __shared__ bool isLastBlockDone;
   if (threadIdx.x == 0) {
@@ -541,7 +544,7 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
     atomicAdd(&(sum_dxdq->z), sum_dxdq_z);
     atomicAdd(&(sum_dxdq->w), sum_dxdq_w);
     __threadfence();
-    unsigned int value = atomicInc(count, gridDim.x);
+    unsigned int value = atomicInc(tbcount, gridDim.x);
     isLastBlockDone = (value == (gridDim.x - 1));
   }
   __syncthreads();
@@ -567,6 +570,7 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
         atom_grad->y = main_grad.y;
         atom_grad->z = main_grad.z;
       }
+      tbcount[0] = 0;
     }
   }
 }

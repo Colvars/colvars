@@ -538,6 +538,7 @@ int rotation_gpu::init(/*const cudaStream_t& stream_in*/) {
     error_code |= p->allocate_host(&h_S, 4 * 4);
     error_code |= p->allocate_host(&h_S_eigval, 4);
     error_code |= p->allocate_host(&h_S_eigvec, 4 * 4);
+    error_code |= p->clear_device_array(tbcount, 1);
     max_iteration_reached[0] = 0;
     discontinuous_rotation[0] = 0;
     if (colvarmodule::rotation::monitor_crossings) {
@@ -559,12 +560,9 @@ int rotation_gpu::add_optimal_rotation_nodes(
   std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
   int error_code = COLVARS_OK;
   // Add memset nodes
-  cudaGraphNode_t countSetNode, d_SSetNode;
-  error_code |= colvars_gpu::add_clear_array_node(
-    tbcount, 1, countSetNode, graph, {});
+  cudaGraphNode_t d_SSetNode;
   error_code |= colvars_gpu::add_clear_array_node(
     d_S, 4*4, d_SSetNode, graph, {});
-  nodes_map["rotation_gpu_count_set"] = countSetNode;
   nodes_map["rotation_gpu_S_set"] = d_SSetNode;
   const cvm::real* d_pos1_x = d_pos1;
   const cvm::real* d_pos1_y = d_pos1_x + num_atoms_pos1;
@@ -575,12 +573,10 @@ int rotation_gpu::add_optimal_rotation_nodes(
   // Kernel node for building S
   cudaGraphNode_t build_S_node;
   std::vector<cudaGraphNode_t> dependencies;
-  ADD_DEPENDENCY(rotation_gpu_count_set, dependencies, nodes_map);
   ADD_DEPENDENCY(rotation_gpu_S_set, dependencies, nodes_map);
   // The coordinates are not always moved to origin, so these dependencies are conditional
   ADD_DEPENDENCY_IF(move_to_origin, dependencies, nodes_map);
   ADD_DEPENDENCY_IF(move_fitting_to_origin, dependencies, nodes_map);
-  // dependencies.push_back(countSetNode);
   // dependencies.push_back(d_SSetNode);
   error_code |= colvars_gpu::build_overlapping_matrix(
     d_pos1_x, d_pos1_y, d_pos1_z,
