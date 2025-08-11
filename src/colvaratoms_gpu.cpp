@@ -19,6 +19,7 @@ int cvm::atom_group::init_gpu() {
   error_code |= p->reallocate_device(&gpu_buffers.d_cog_orig, 1);
   error_code |= p->reallocate_device(&gpu_buffers.d_ref_pos_cog, 1);
   error_code |= p->reallocate_device(&gpu_buffers.d_com_cog_tbcount, 1);
+  error_code |= p->clear_device_array(gpu_buffers.d_com_cog_tbcount, 1);
   error_code |= p->reallocate_host(&gpu_buffers.h_com, 1);
   error_code |= p->reallocate_host(&gpu_buffers.h_cog, 1);
   error_code |= p->reallocate_host(&gpu_buffers.h_cog_orig, 1);
@@ -28,9 +29,11 @@ int cvm::atom_group::init_gpu() {
   error_code |= p->reallocate_device(&calc_fit_gradients_gpu_info.d_atom_grad, 1);
   error_code |= p->reallocate_device(&calc_fit_gradients_gpu_info.d_sum_dxdq, 1);
   error_code |= p->reallocate_device(&calc_fit_gradients_gpu_info.d_tbcount, 1);
+  error_code |= p->clear_device_array(calc_fit_gradients_gpu_info.d_tbcount, 1);
   error_code |= p->reallocate_device(&calc_fit_forces_gpu_info.d_atom_grad, 1);
   error_code |= p->reallocate_device(&calc_fit_forces_gpu_info.d_sum_dxdq, 1);
   error_code |= p->reallocate_device(&calc_fit_forces_gpu_info.d_tbcount, 1);
+  error_code |= p->clear_device_array(calc_fit_forces_gpu_info.d_tbcount, 1);
   error_code |= p->reallocate_host(&h_sum_applied_colvar_force, 1);
   use_apply_colvar_force = false;
   use_group_force = false;
@@ -235,13 +238,6 @@ int cvm::atom_group::add_calc_required_properties_nodes(
     error_code |= cvm::error("BUG: GPU buffers are not implemented with scalable atom group.\n");
   } else {
     if (p->has_gpu_support()) {
-      // Reset thread-block counter
-      cudaGraphNode_t reset_com_cog_tbcounter_node;
-      error_code |= colvars_gpu::add_clear_array_node(
-        gpu_buffers.d_com_cog_tbcount, 1,
-        reset_com_cog_tbcounter_node,
-        graph, {});
-      nodes_map["reset_com_cog_tbcounter"] = reset_com_cog_tbcounter_node;
       // Reset center-of-mass
       cudaGraphNode_t reset_com_node;
       error_code |= colvars_gpu::add_clear_array_node(
@@ -256,7 +252,7 @@ int cvm::atom_group::add_calc_required_properties_nodes(
       cudaGraphNode_t calc_com_cog_node;
       std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
       ADD_DEPENDENCY_IF(read_positions, dependencies, nodes_map);
-      ADD_DEPENDENCY(reset_com_cog_tbcounter, dependencies, nodes_map);
+      // ADD_DEPENDENCY(reset_com_cog_tbcounter, dependencies, nodes_map);
       ADD_DEPENDENCY(reset_com, dependencies, nodes_map);
       ADD_DEPENDENCY(reset_cog, dependencies, nodes_map);
       error_code |= colvars_gpu::atoms_calc_cog_com(
@@ -277,13 +273,6 @@ int cvm::atom_group::add_calc_required_properties_nodes(
           fitting_group->cog = fitting_group->dummy_atom_pos;
         } else {
           if (p->has_gpu_support()) {
-            // Reset thread-block counter
-            cudaGraphNode_t reset_fitting_group_cog_tbcounter_node;
-            error_code |= colvars_gpu::add_clear_array_node(
-              fitting_group->gpu_buffers.d_com_cog_tbcount, 1,
-              reset_fitting_group_cog_tbcounter_node,
-              graph, {});
-            nodes_map["reset_fitting_group_cog_tbcounter"] = reset_fitting_group_cog_tbcounter_node;
             // Reset fitting group COG
             cudaGraphNode_t reset_fitting_group_cog_node;
             error_code |= colvars_gpu::add_clear_array_node(
@@ -295,7 +284,7 @@ int cvm::atom_group::add_calc_required_properties_nodes(
             std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
             ADD_DEPENDENCY_IF(read_fitting_group_positions, dependencies, nodes_map);
             ADD_DEPENDENCY(reset_fitting_group_cog, dependencies, nodes_map);
-            ADD_DEPENDENCY(reset_fitting_group_cog_tbcounter, dependencies, nodes_map);
+            // ADD_DEPENDENCY(reset_fitting_group_cog_tbcounter, dependencies, nodes_map);
             cudaGraphNode_t calc_fitting_group_cog_node;
             error_code |= colvars_gpu::atoms_calc_cog(
               fitting_group->gpu_buffers.d_atoms_pos,
@@ -476,12 +465,6 @@ int cvm::atom_group::add_calc_required_properties_nodes(
       std::vector<cudaGraphNode_t> dependencies;
       // We reuse the atomic thread block counter so we need to wait for calc_com_cog
       ADD_DEPENDENCY(calc_com_cog, dependencies, nodes_map);
-      cudaGraphNode_t reset_com_cog_tbcounter2_node;
-      error_code |= colvars_gpu::add_clear_array_node(
-        gpu_buffers.d_com_cog_tbcount, 1,
-        reset_com_cog_tbcounter2_node,
-        graph, dependencies);
-      nodes_map["reset_com_cog_tbcounter2"] = reset_com_cog_tbcounter2_node;
       // Reset center-of-mass
       // COM or COG may be used in any of the following operations:
       //   move_to_origin, move_fitting_to_origin, save_cog_orig
@@ -499,7 +482,7 @@ int cvm::atom_group::add_calc_required_properties_nodes(
         gpu_buffers.d_cog, 1, reset_cog2_node, graph, dependencies);
       nodes_map["reset_cog2"] = reset_cog2_node;
       // Re-calculate COM and COG
-      ADD_DEPENDENCY(reset_com_cog_tbcounter2, dependencies, nodes_map);
+      // ADD_DEPENDENCY(reset_com_cog_tbcounter2, dependencies, nodes_map);
       ADD_DEPENDENCY(reset_com2, dependencies, nodes_map);
       ADD_DEPENDENCY(reset_cog2, dependencies, nodes_map);
       ADD_DEPENDENCY_IF(rotate, dependencies, nodes_map);
@@ -517,13 +500,6 @@ int cvm::atom_group::add_calc_required_properties_nodes(
         // fitting_group->d_com_cog_tbcount is used in calc_fitting_group_cog
         // so we have to wait for the previous operation.
         ADD_DEPENDENCY(calc_fitting_group_cog, dependencies, nodes_map);
-        cudaGraphNode_t reset_fitting_group_cog_tbcounter2_node;
-        error_code |= colvars_gpu::add_clear_array_node(
-          fitting_group->gpu_buffers.d_com_cog_tbcount, 1,
-          reset_fitting_group_cog_tbcounter2_node,
-          graph, dependencies);
-        nodes_map["reset_fitting_group_cog_tbcounter2"] =
-          reset_fitting_group_cog_tbcounter2_node;
         // The following operations may or may not exist,
         // but if any of them exist, we need to wait for them before
         // resetting the fitting group COG.
@@ -536,8 +512,8 @@ int cvm::atom_group::add_calc_required_properties_nodes(
           graph, dependencies);
         nodes_map["reset_fitting_group_cog2"] = reset_fitting_group_cog2_node;
         // Re-calculate fitting group COG
-        ADD_DEPENDENCY(
-          reset_fitting_group_cog_tbcounter2, dependencies, nodes_map);
+        // ADD_DEPENDENCY(
+        //   reset_fitting_group_cog_tbcounter2, dependencies, nodes_map);
         ADD_DEPENDENCY(reset_fitting_group_cog2, dependencies, nodes_map);
         ADD_DEPENDENCY_IF(rotate_fitting_group, dependencies, nodes_map);
         ADD_DEPENDENCY_IF(move_fitting_group_to_ref_cog, dependencies, nodes_map);
@@ -686,19 +662,19 @@ int cvm::atom_group::add_calc_fit_gradients_nodes(
     // First, clear the temporary variables
     cudaGraphNode_t clear_atoms_grad_node;
     cudaGraphNode_t clear_sum_dxdq_node;
-    cudaGraphNode_t clear_tbcount_node;
+    // cudaGraphNode_t clear_tbcount_node;
     error_code |= colvars_gpu::add_clear_array_node(
       calc_fit_gradients_gpu_info.d_atom_grad,
       1, clear_atoms_grad_node, graph, {});
     error_code |= colvars_gpu::add_clear_array_node(
       calc_fit_gradients_gpu_info.d_sum_dxdq,
       1, clear_sum_dxdq_node, graph, {});
-    error_code |= colvars_gpu::add_clear_array_node(
-      calc_fit_gradients_gpu_info.d_tbcount,
-      1, clear_tbcount_node, graph, {});
+    // error_code |= colvars_gpu::add_clear_array_node(
+    //   calc_fit_gradients_gpu_info.d_tbcount,
+    //   1, clear_tbcount_node, graph, {});
     nodes_map["clear_atoms_grad"] = clear_atoms_grad_node;
     nodes_map["clear_sum_dxdq"] = clear_sum_dxdq_node;
-    nodes_map["clear_tbcount"] = clear_tbcount_node;
+    // nodes_map["clear_tbcount"] = clear_tbcount_node;
     // If the CVC updates the gradients on CPU, then we need to copy them to GPU
     if (use_cpu_buffers) {
       cudaGraphNode_t copy_grad_HtoD_node;
@@ -718,7 +694,7 @@ int cvm::atom_group::add_calc_fit_gradients_nodes(
       std::vector<cudaGraphNode_t> dependencies_main;
       ADD_DEPENDENCY(clear_atoms_grad, dependencies_main, nodes_map);
       ADD_DEPENDENCY(clear_sum_dxdq, dependencies_main, nodes_map);
-      ADD_DEPENDENCY(clear_tbcount, dependencies_main, nodes_map);
+      // ADD_DEPENDENCY(clear_tbcount, dependencies_main, nodes_map);
       ADD_DEPENDENCY_IF(copy_grad_HtoD, dependencies_main, nodes_map);
       cudaGraphNode_t calc_fit_forces_loop1_node;
       error_code |= colvars_gpu::calc_fit_gradients_impl_loop1(
