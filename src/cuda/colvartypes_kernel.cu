@@ -117,6 +117,8 @@ __global__ void build_overlapping_matrix_kernel(
       S_eigvec[3*4+3] = - C.xx - C.yy + C.zz;
       // Save the data to host memory
       memcpy(h_C, &C, sizeof(cvm::rmatrix));
+      // Reset the atomic counter
+      tbcount[0] = 0;
     }
   }
 }
