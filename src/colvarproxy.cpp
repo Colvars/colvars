@@ -18,7 +18,7 @@
 #include "colvarscript.h"
 #include "colvarmodule_utils.h"
 
-
+#include <algorithm>
 
 colvarproxy_atoms::colvarproxy_atoms()
 {
@@ -286,7 +286,7 @@ colvarproxy_smp::smp_mode_t colvarproxy_smp::get_preferred_smp_mode() const {
 
 int colvarproxy_smp::set_smp_mode(smp_mode_t mode) {
   std::vector<colvarproxy_smp::smp_mode_t> available_modes = get_available_smp_modes();
-  std::vector<colvarproxy_smp::smp_mode_t>::const_iterator it = std::find(available_modes.begin(), available_modes.end(), mode);
+  auto it = std::find(available_modes.begin(), available_modes.end(), mode);
   if (it != available_modes.end()) {
     smp_mode = *it;
     return COLVARS_OK;
