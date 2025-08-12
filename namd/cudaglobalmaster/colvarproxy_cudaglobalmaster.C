@@ -169,16 +169,33 @@ public:
     deallocateDeviceTransposeArrays();
     allocateDeviceTransposeArrays();
   }
-  smp_mode_t get_smp_mode() const override {
+  smp_mode_t get_preferred_smp_mode() const override {
     return smp_mode_t::none;
   }
+  std::vector<smp_mode_t> get_available_smp_modes() const override {
+    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
+      smp_mode_t::none,
+      smp_mode_t::gpu
+    };
+    return available_modes;
+  }
   int set_smp_mode(smp_mode_t mode) override {
-    if (mode != smp_mode_t::none) {
-      return COLVARS_ERROR;
-    }
-    else {
+    if ((mode == smp_mode_t::none) || (mode == smp_mode_t::gpu)) {
+      smp_mode = mode;
+      if (mode == smp_mode_t::gpu) {
+        support_gpu = true;
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+        mEventAttrib.message.ascii = "Colvars GPU";
+#endif
+      } else {
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+        mEventAttrib.message.ascii = "Colvars CPU";
+#endif
+        support_gpu = false;
+      }
       return COLVARS_OK;
     }
+    return COLVARS_NOT_IMPLEMENTED;
   }
   float* proxy_atoms_masses_gpu_float() override {return d_mMass;}
   float* proxy_atoms_charges_gpu_float() override {return d_mCharges;}
@@ -240,20 +257,13 @@ colvarproxy_impl::colvarproxy_impl(
   first_timestep(true), previous_NAMD_step(0),
   simParams(s), molecule(m), mScriptTcl(t) {
   colvars = nullptr;
-#if defined (COLVARS_GPU_RESIDENT) && (defined (COLVARS_CUDA) || defined (COLVARS_HIP))
-  support_gpu = true;
-#endif
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   mEventAttrib.version = NVTX_VERSION;
   mEventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
   mEventAttrib.colorType = NVTX_COLOR_ARGB;
   mEventAttrib.color = 0xFF880000;
   mEventAttrib.messageType = NVTX_MESSAGE_TYPE_ASCII;
-#if defined (COLVARS_GPU_RESIDENT) && (defined (COLVARS_CUDA) || defined (COLVARS_HIP))
-  mEventAttrib.message.ascii = "Colvars GPU";
-#else
   mEventAttrib.message.ascii = "Colvars CPU";
-#endif
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   boltzmann_ = 0.001987191;
   angstrom_value_ = 1.;
