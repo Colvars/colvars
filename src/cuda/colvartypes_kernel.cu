@@ -24,7 +24,8 @@ __global__ void build_overlapping_matrix_kernel(
   cvm::rmatrix* __restrict h_C,
   unsigned int* __restrict tbcount,
   int num_atoms) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int gridSize = blockDim.x * gridDim.x;
   __shared__ bool isLastBlockDone;
   if (threadIdx.x == 0) {
     isLastBlockDone = false;
@@ -32,19 +33,20 @@ __global__ void build_overlapping_matrix_kernel(
   __syncthreads();
   cvm::rmatrix C;
   C.reset();
-  if (i < num_atoms) {
-    C.xx = pos1_x[i] * pos2_x[i];
-    C.xy = pos1_x[i] * pos2_y[i];
-    C.xz = pos1_x[i] * pos2_z[i];
-    C.yx = pos1_y[i] * pos2_x[i];
-    C.yy = pos1_y[i] * pos2_y[i];
-    C.yz = pos1_y[i] * pos2_z[i];
-    C.zx = pos1_z[i] * pos2_x[i];
-    C.zy = pos1_z[i] * pos2_y[i];
-    C.zz = pos1_z[i] * pos2_z[i];
+  while (i < num_atoms) {
+    C.xx += pos1_x[i] * pos2_x[i];
+    C.xy += pos1_x[i] * pos2_y[i];
+    C.xz += pos1_x[i] * pos2_z[i];
+    C.yx += pos1_y[i] * pos2_x[i];
+    C.yy += pos1_y[i] * pos2_y[i];
+    C.yz += pos1_y[i] * pos2_z[i];
+    C.zx += pos1_z[i] * pos2_x[i];
+    C.zy += pos1_z[i] * pos2_y[i];
+    C.zz += pos1_z[i] * pos2_z[i];
+    i += gridSize;
   }
   __syncthreads();
-  typedef cub::BlockReduce<double, BLOCK_SIZE> BlockReduce;
+  typedef cub::BlockReduce<double, BLOCK_SIZE, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY> BlockReduce;
   __shared__ typename BlockReduce::TempStorage temp_storage;
   C.xx = BlockReduce(temp_storage).Sum(C.xx); __syncthreads();
   C.xy = BlockReduce(temp_storage).Sum(C.xy); __syncthreads();
@@ -134,13 +136,14 @@ int build_overlapping_matrix(
   cvm::real* S_eigvec,
   cvm::rmatrix* h_C,
   unsigned int* tbcount,
-  int num_atoms,
+  unsigned int num_atoms,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
   // if (num_atoms == 0) return;
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
+  num_blocks = std::min(default_reduce_max_num_blocks, num_blocks);
   void* args[] = {
     &pos1_x, &pos1_y, &pos1_z,
     &pos2_x, &pos2_y, &pos2_z,

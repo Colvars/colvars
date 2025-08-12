@@ -18,8 +18,8 @@ __global__ void atoms_pos_from_proxy_kernel(
   cvm::real* __restrict atoms_pos_x_ag,
   cvm::real* __restrict atoms_pos_y_ag,
   cvm::real* __restrict atoms_pos_z_ag,
-  int num_atoms) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int num_atoms) {
+  const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   if (i < num_atoms) {
     const int proxy_index = atoms_proxy_index[i];
     atoms_pos_x_ag[i] = atoms_pos_x_proxy[proxy_index];
@@ -32,13 +32,13 @@ int atoms_pos_from_proxy(
   const int* atoms_proxy_index,
   const cvm::real* atoms_pos_proxy,
   cvm::real* atoms_pos_ag,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  const unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
   const cvm::real* atoms_pos_x_proxy = atoms_pos_proxy;
   const cvm::real* atoms_pos_y_proxy = atoms_pos_x_proxy + proxy_stride;
   const cvm::real* atoms_pos_z_proxy = atoms_pos_y_proxy + proxy_stride;
@@ -73,11 +73,11 @@ int atoms_pos_from_proxy(
   const int* atoms_proxy_index,
   const cvm::real* atoms_pos_proxy,
   cvm::real* atoms_pos_ag,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaStream_t stream) {
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  const unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
   const cvm::real* atoms_pos_x_proxy = atoms_pos_proxy;
   const cvm::real* atoms_pos_y_proxy = atoms_pos_x_proxy + proxy_stride;
   const cvm::real* atoms_pos_z_proxy = atoms_pos_y_proxy + proxy_stride;
@@ -103,7 +103,7 @@ int atoms_pos_from_proxy(
 __global__ void change_one_coordinate_kernel(
   cvm::real* __restrict atoms_pos_ag,
   size_t array_id, cvm::real step_size) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   if (i == 0) {
     atoms_pos_ag[array_id] += step_size;
   }
@@ -111,7 +111,7 @@ __global__ void change_one_coordinate_kernel(
 
 int change_one_coordinate(
   cvm::real* atoms_pos_ag, size_t atom_id_in_group, int xyz,
-  cvm::real step_size, size_t num_atoms, cudaStream_t stream) {
+  cvm::real step_size, unsigned int num_atoms, cudaStream_t stream) {
   int error_code = COLVARS_OK;
   if (xyz > 0 && xyz < 3) {
     size_t array_id = num_atoms * xyz + atom_id_in_group;
@@ -138,8 +138,9 @@ __global__ void atoms_calc_cog_com_kernel(
   cvm::rvector* __restrict h_com_out,
   cvm::real total_mass,
   unsigned int* __restrict tbcount,
-  int num_atoms) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int num_atoms) {
+  unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int gridSize = blockDim.x * gridDim.x;
   __shared__ bool isLastBlockDone;
   if (threadIdx.x == 0) {
     isLastBlockDone = false;
@@ -147,20 +148,21 @@ __global__ void atoms_calc_cog_com_kernel(
   __syncthreads();
   cvm::rvector cog{0, 0, 0};
   cvm::rvector com{0, 0, 0};
-  if (i < num_atoms) {
+  while (i < num_atoms) {
     if (b_cog) {
-      cog.x = atoms_pos_x_ag[i];
-      cog.y = atoms_pos_y_ag[i];
-      cog.z = atoms_pos_z_ag[i];
+      cog.x += atoms_pos_x_ag[i];
+      cog.y += atoms_pos_y_ag[i];
+      cog.z += atoms_pos_z_ag[i];
     }
     if (b_com) {
-      com.x = atoms_mass[i] * atoms_pos_x_ag[i];
-      com.y = atoms_mass[i] * atoms_pos_y_ag[i];
-      com.z = atoms_mass[i] * atoms_pos_z_ag[i];
+      com.x += atoms_mass[i] * atoms_pos_x_ag[i];
+      com.y += atoms_mass[i] * atoms_pos_y_ag[i];
+      com.z += atoms_mass[i] * atoms_pos_z_ag[i];
     }
+    i += gridSize;
   }
   __syncthreads();
-  typedef cub::BlockReduce<double, BLOCK_SIZE> BlockReduce;
+  typedef cub::BlockReduce<double, BLOCK_SIZE, cub::BLOCK_REDUCE_RAKING_COMMUTATIVE_ONLY> BlockReduce;
   __shared__ typename BlockReduce::TempStorage temp_storage;
   if (b_cog) {
     cog.x = BlockReduce(temp_storage).Sum(cog.x); __syncthreads();
@@ -222,7 +224,7 @@ __global__ void atoms_calc_cog_com_kernel(
 int atoms_calc_cog_com(
   const cvm::real* atoms_pos_ag,
   const cvm::real* atoms_mass,
-  int num_atoms,
+  unsigned int num_atoms,
   cvm::rvector* cog_out,
   cvm::rvector* com_out,
   cvm::rvector* h_cog_out,
@@ -232,8 +234,9 @@ int atoms_calc_cog_com(
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
+  num_blocks = std::min(default_reduce_max_num_blocks, num_blocks);
   const cvm::real* atoms_pos_x_ag = atoms_pos_ag;
   const cvm::real* atoms_pos_y_ag = atoms_pos_x_ag + num_atoms;
   const cvm::real* atoms_pos_z_ag = atoms_pos_y_ag + num_atoms;
@@ -266,15 +269,16 @@ int atoms_calc_cog_com(
 
 int atoms_calc_cog(
   const cvm::real* atoms_pos_ag,
-  int num_atoms,
+  unsigned int num_atoms,
   cvm::rvector* cog_out,
   cvm::rvector* h_cog_out,
   unsigned int* tbcount,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
+  num_blocks = std::min(default_reduce_max_num_blocks, num_blocks);
   const cvm::real* atoms_pos_x_ag = atoms_pos_ag;
   const cvm::real* atoms_pos_y_ag = atoms_pos_x_ag + num_atoms;
   const cvm::real* atoms_pos_z_ag = atoms_pos_y_ag + num_atoms;
@@ -319,8 +323,8 @@ __global__ void atoms_total_force_from_proxy_kernel(
   cvm::real* __restrict atoms_total_force_y_ag,
   cvm::real* __restrict atoms_total_force_z_ag,
   cvm::quaternion* __restrict q,
-  int num_atoms) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int num_atoms) {
+  const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   cvm::rmatrix rot_mat;
   if (ag_rotate) {
     rot_mat = q->rotation_matrix();
@@ -348,12 +352,12 @@ void atoms_total_force_from_proxy(
   cvm::real* atoms_total_force_ag,
   bool rotate,
   cvm::quaternion* q,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaStream_t stream) {
   if (num_atoms == 0) return;
-  const int block_size = default_block_size;
-  const int grid = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  const unsigned int grid = (num_atoms + block_size - 1) / block_size;
   const cvm::real* atoms_total_force_x_proxy = atoms_total_force_proxy;
   const cvm::real* atoms_total_force_y_proxy = atoms_total_force_x_proxy + proxy_stride;
   const cvm::real* atoms_total_force_z_proxy = atoms_total_force_y_proxy + proxy_stride;
@@ -395,12 +399,12 @@ __global__ void apply_colvar_force_to_proxy_kernel(
   const cvm::real* __restrict grad_z,
   cvm::real* force_ptr,
   cvm::quaternion* q,
-  int num_atoms) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int num_atoms) {
+  const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   const cvm::real force = (*force_ptr);
   const cvm::rmatrix rot_inv = q->conjugate().rotation_matrix();
   if (i < num_atoms) {
-    const int proxy_index = atoms_proxy_index[i];
+    const unsigned int proxy_index = atoms_proxy_index[i];
     cvm::real fx, fy, fz;
     if (ag_rotate) {
       fx = force * (rot_inv.xx * grad_x[i] +
@@ -430,14 +434,14 @@ int apply_colvar_force_to_proxy(
   cvm::real* colvar_force,
   bool rotate,
   cvm::quaternion* q,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
   // if (num_atoms == 0) return;
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  const unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
   cvm::real* atoms_applied_force_x_proxy = atoms_applied_force_proxy;
   cvm::real* atoms_applied_force_y_proxy = atoms_applied_force_x_proxy + proxy_stride;
   cvm::real* atoms_applied_force_z_proxy = atoms_applied_force_y_proxy + proxy_stride;
@@ -488,12 +492,13 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   const cvm::real* __restrict atoms_pos_unrotated_y,
   const cvm::real* __restrict atoms_pos_unrotated_z,
   const cvm::quaternion* __restrict q,
-  const int main_group_size,
-  const int group_for_fit_size,
+  const unsigned int main_group_size,
+  const unsigned int group_for_fit_size,
   double3* __restrict atom_grad,
   double4* __restrict sum_dxdq,
   unsigned int* __restrict tbcount) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int gridSize = blockDim.x * gridDim.x;
   __shared__ bool isLastBlockDone;
   if (threadIdx.x == 0) {
     isLastBlockDone = false;
@@ -504,7 +509,7 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   double sum_dxdq_z = 0;
   double sum_dxdq_w = 0;
   cvm::rvector main_grad{0, 0, 0};
-  if (i < main_group_size) {
+  while (i < main_group_size) {
     if (B_ag_center || B_ag_rotate) {
       main_grad = cvm::rvector{
         atoms_grad_or_force_x[i],
@@ -524,6 +529,7 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
       sum_dxdq_z = dxdq[2];
       sum_dxdq_w = dxdq[3];
     }
+    i += gridSize;
   }
   __syncthreads();
   typedef cub::BlockReduce<double, BLOCK_SIZE> BlockReduce;
@@ -579,8 +585,8 @@ int calc_fit_gradients_impl_loop1(
   const cvm::real* pos_unrotated,
   cvm::real* main_grad,
   const cvm::quaternion* q,
-  int num_atoms_main,
-  int num_atoms_fitting,
+  unsigned int num_atoms_main,
+  unsigned int num_atoms_fitting,
   double3* atom_grad,
   double4* sum_dxdq,
   unsigned int* tbcount,
@@ -588,8 +594,9 @@ int calc_fit_gradients_impl_loop1(
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms_main + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  unsigned int num_blocks = (num_atoms_main + block_size - 1) / block_size;
+  num_blocks = std::min(default_reduce_max_num_blocks, num_blocks);
   const cvm::real* pos_x = pos_unrotated;
   const cvm::real* pos_y = pos_x + num_atoms_main;
   const cvm::real* pos_z = pos_y + num_atoms_main;
@@ -650,8 +657,8 @@ __global__ void calc_fit_forces_impl_loop2_kernel(
   cvm::real* __restrict proxy_new_force_x,
   cvm::real* __restrict proxy_new_force_y,
   cvm::real* __restrict proxy_new_force_z,
-  const int group_for_fit_size) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  const unsigned int group_for_fit_size) {
+  const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   if (i < group_for_fit_size) {
     cvm::rvector fitting_force_grad{0, 0, 0};
     if (B_ag_center) {
@@ -688,13 +695,13 @@ int calc_fit_gradients_impl_loop2(
   colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* atom_grad,
   const double4* sum_dxdq,
-  int group_for_fit_size,
+  unsigned int group_for_fit_size,
   bool ag_center, bool ag_rotate,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  const int block_size = default_block_size;
-  const int num_blocks = (group_for_fit_size + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  const unsigned int num_blocks = (group_for_fit_size + block_size - 1) / block_size;
   cvm::real* fit_grad_x = fit_grad;
   cvm::real* fit_grad_y = fit_grad_x + group_for_fit_size;
   cvm::real* fit_grad_z = fit_grad_y + group_for_fit_size;
@@ -752,8 +759,8 @@ __global__ void apply_translation_kernel(
   cvm::real* __restrict atoms_pos_z_ag,
   cvm::real translation_vector_factor,
   const cvm::rvector* __restrict translation_vector,
-  int num_atoms) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int num_atoms) {
+  const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   if (i < num_atoms) {
     atoms_pos_x_ag[i] += translation_vector_factor * translation_vector->x;
     atoms_pos_y_ag[i] += translation_vector_factor * translation_vector->y;
@@ -765,12 +772,12 @@ int apply_translation(
   cvm::real* atoms_pos_ag,
   cvm::real translation_vector_factor,
   const cvm::rvector* translation_vector,
-  int num_atoms,
+  unsigned int num_atoms,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  const unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
   cvm::real* atoms_pos_x_ag = atoms_pos_ag;
   cvm::real* atoms_pos_y_ag = atoms_pos_x_ag + num_atoms;
   cvm::real* atoms_pos_z_ag = atoms_pos_y_ag + num_atoms;
@@ -802,7 +809,9 @@ __global__ void rotate_with_quaternion_kernel(
   cvm::real* __restrict pos_z,
   cvm::quaternion* __restrict q, int num_atoms) {
   const auto rot_mat = q->rotation_matrix();
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+  // unsigned int gridSize = blockDim.x * gridDim.x;
+  // while (i < num_atoms) {
   if (i < num_atoms) {
     const cvm::real new_x = rot_mat.xx * pos_x[i] +
                             rot_mat.xy * pos_y[i] +
@@ -816,18 +825,19 @@ __global__ void rotate_with_quaternion_kernel(
     pos_x[i] = new_x;
     pos_y[i] = new_y;
     pos_z[i] = new_z;
+    // i += gridSize;
   }
 }
 
 int rotate_with_quaternion(
   cvm::real* atoms_pos_ag,
   cvm::quaternion* q,
-  int num_atoms,
+  unsigned int num_atoms,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
   cvm::real* atoms_pos_x_ag = atoms_pos_ag;
   cvm::real* atoms_pos_y_ag = atoms_pos_x_ag + num_atoms;
   cvm::real* atoms_pos_z_ag = atoms_pos_y_ag + num_atoms;
@@ -858,8 +868,8 @@ __global__ void accumulate_cpu_force_kernel(
   cvm::real* __restrict d_atoms_force_x,
   cvm::real* __restrict d_atoms_force_y,
   cvm::real* __restrict d_atoms_force_z,
-  const int num_atoms) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  const unsigned int num_atoms) {
+  const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   if (i < num_atoms) {
     d_atoms_force_x[i] += h_atoms_force_x[i];
     d_atoms_force_y[i] += h_atoms_force_y[i];
@@ -870,7 +880,7 @@ __global__ void accumulate_cpu_force_kernel(
 int accumulate_cpu_force(
   const cvm::real* h_atoms_force,
   cvm::real* d_atoms_force,
-  int num_atoms,
+  unsigned int num_atoms,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
@@ -880,8 +890,8 @@ int accumulate_cpu_force(
   cvm::real* d_atoms_force_x = d_atoms_force;
   cvm::real* d_atoms_force_y = d_atoms_force_x + num_atoms;
   cvm::real* d_atoms_force_z = d_atoms_force_y + num_atoms;
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  const unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
   void* args[] = {
     &h_atoms_force_x,
     &h_atoms_force_y,
@@ -914,9 +924,9 @@ __global__ void apply_force_with_inverse_rotation_kernel(
   cvm::real* __restrict proxy_new_force_x,
   cvm::real* __restrict proxy_new_force_y,
   cvm::real* __restrict proxy_new_force_z,
-  const int num_atoms) {
+  const unsigned int num_atoms) {
   const cvm::rmatrix rot_inv = q->conjugate().rotation_matrix();
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   if (i < num_atoms) {
     const cvm::rvector f_ia{
       rot_inv.xx * atoms_force_x[i] +
@@ -941,13 +951,13 @@ int apply_force_with_inverse_rotation(
   const cvm::quaternion* q,
   const int* atoms_proxy_index,
   cvm::real* proxy_new_force,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  const int block_size = default_block_size;
-  const int num_blocks = (num_atoms + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  const unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
   const cvm::real* atoms_force_x = atoms_force;
   const cvm::real* atoms_force_y = atoms_force_x + num_atoms;
   const cvm::real* atoms_force_z = atoms_force_y + num_atoms;
@@ -987,8 +997,8 @@ __global__ void apply_force_kernel(
   cvm::real* __restrict proxy_new_force_x,
   cvm::real* __restrict proxy_new_force_y,
   cvm::real* __restrict proxy_new_force_z,
-  const int num_atoms) {
-  const int i = threadIdx.x + blockIdx.x * blockDim.x;
+  const unsigned int num_atoms) {
+  const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   if (i < num_atoms) {
     const int pid = atoms_proxy_index[i];
     atomicAdd(&(proxy_new_force_x[pid]), atoms_force_x[i]);
@@ -1001,8 +1011,8 @@ int apply_force(
   const cvm::real* atoms_force,
   const int* atoms_proxy_index,
   cvm::real* proxy_new_force,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
@@ -1042,8 +1052,8 @@ int calc_fit_forces_impl_loop1(
   const cvm::real* pos_unrotated,
   cvm::real* main_force,
   const cvm::quaternion* q,
-  int num_atoms_main,
-  int num_atoms_fitting,
+  unsigned int num_atoms_main,
+  unsigned int num_atoms_fitting,
   double3* atom_grad,
   double4* sum_dxdq,
   unsigned int* tbcount,
@@ -1066,8 +1076,8 @@ int calc_fit_forces_impl_loop2(
   const double4* sum_dxdq,
   const int* atoms_proxy_index,
   cvm::real* proxy_new_force,
-  int group_for_fit_size,
-  int proxy_stride,
+  unsigned int group_for_fit_size,
+  unsigned int proxy_stride,
   bool ag_center, bool ag_rotate,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
