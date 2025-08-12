@@ -14,8 +14,8 @@ int atoms_pos_from_proxy(
   const int* atoms_proxy_index,
   const cvm::real* atoms_pos_proxy,
   cvm::real* atoms_pos_ag,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
@@ -25,21 +25,21 @@ int atoms_pos_from_proxy(
   const int* atoms_proxy_index,
   const cvm::real* atoms_pos_proxy,
   cvm::real* atoms_pos_ag,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaStream_t stream);
 
 int change_one_coordinate(
   cvm::real* atoms_pos_ag,
   size_t atom_id_in_group, int xyz,
   cvm::real step_size,
-  size_t num_atoms,
+  unsigned int num_atoms,
   cudaStream_t stream);
 
 int atoms_calc_cog_com(
   const cvm::real* atoms_pos_ag,
   const cvm::real* atoms_mass,
-  int num_atoms,
+  unsigned int num_atoms,
   cvm::rvector* cog_out,
   cvm::rvector* com_out,
   cvm::rvector* h_cog_out,
@@ -52,7 +52,7 @@ int atoms_calc_cog_com(
 
 int atoms_calc_cog(
   const cvm::real* atoms_pos_ag,
-  int num_atoms,
+  unsigned int num_atoms,
   cvm::rvector* cog_out,
   cvm::rvector* h_cog_out,
   unsigned int* tbcount,
@@ -66,8 +66,8 @@ void atoms_total_force_from_proxy(
   cvm::real* atoms_total_force_ag,
   bool rotate,
   cvm::quaternion* q,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaStream_t stream);
 
 int apply_colvar_force_to_proxy(
@@ -77,8 +77,8 @@ int apply_colvar_force_to_proxy(
   cvm::real* colvar_force,
   bool rotate,
   cvm::quaternion* q,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
@@ -86,7 +86,7 @@ int apply_colvar_force_to_proxy(
 int accumulate_cpu_force(
   const cvm::real* h_atoms_force,
   cvm::real* d_atoms_force,
-  int num_atoms,
+  unsigned int num_atoms,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
@@ -95,8 +95,8 @@ int calc_fit_gradients_impl_loop1(
   const cvm::real* pos_unrotated,
   cvm::real* main_grad,
   const cvm::quaternion* q,
-  int num_atoms_main,
-  int num_atoms_fitting,
+  unsigned int num_atoms_main,
+  unsigned int num_atoms_fitting,
   double3* atom_grad,
   double4* sum_dxdq,
   unsigned int* tbcount,
@@ -110,7 +110,7 @@ int calc_fit_gradients_impl_loop2(
   colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* atom_grad,
   const double4* sum_dxdq,
-  int group_for_fit_size,
+  unsigned int group_for_fit_size,
   bool ag_center, bool ag_rotate,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
@@ -120,7 +120,7 @@ int apply_translation(
   cvm::real* atoms_pos_ag,
   cvm::real translation_vector_factor,
   const cvm::rvector* translation_vector,
-  int num_atoms,
+  unsigned int num_atoms,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
@@ -128,7 +128,7 @@ int apply_translation(
 int rotate_with_quaternion(
   cvm::real* atoms_pos_ag,
   cvm::quaternion* q,
-  int num_atoms,
+  unsigned int num_atoms,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
@@ -138,8 +138,8 @@ int apply_force_with_inverse_rotation(
   const cvm::quaternion* q,
   const int* atoms_proxy_index,
   cvm::real* proxy_new_force,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
@@ -148,8 +148,8 @@ int apply_force(
   const cvm::real* atoms_force,
   const int* atoms_proxy_index,
   cvm::real* proxy_new_force,
-  int num_atoms,
-  int proxy_stride,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
@@ -158,8 +158,8 @@ int calc_fit_forces_impl_loop1(
   const cvm::real* pos_unrotated,
   cvm::real* main_force,
   const cvm::quaternion* q,
-  int num_atoms_main,
-  int num_atoms_fitting,
+  unsigned int num_atoms_main,
+  unsigned int num_atoms_fitting,
   double3* atom_grad,
   double4* sum_dxdq,
   unsigned int* tbcount,
@@ -174,8 +174,8 @@ int calc_fit_forces_impl_loop2(
   const double4* sum_dxdq,
   const int* atoms_proxy_index,
   cvm::real* proxy_new_force,
-  int group_for_fit_size,
-  int proxy_stride,
+  unsigned int group_for_fit_size,
+  unsigned int proxy_stride,
   bool ag_center, bool ag_rotate,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
