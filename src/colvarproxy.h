@@ -461,7 +461,7 @@ class colvarproxy_smp {
 
 public:
 
-  enum class smp_mode_t {cvcs, inner_loop, none};
+  enum class smp_mode_t {cvcs, inner_loop, gpu, none};
 
   /// Constructor
   colvarproxy_smp();
@@ -471,6 +471,12 @@ public:
 
   /// Get the current SMP mode
   virtual smp_mode_t get_smp_mode() const;
+
+  /// Get available SMP modes
+  virtual std::vector<smp_mode_t> get_available_smp_modes() const;
+
+  /// Get the preferred SMP mode
+  virtual smp_mode_t get_preferred_smp_mode() const;
 
   /// Set the current SMP mode
   virtual int set_smp_mode(smp_mode_t mode);

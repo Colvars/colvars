@@ -193,11 +193,6 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   gpu_calc = nullptr;
-  if (proxy->has_gpu_support()) {
-    gpu_calc = std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc>(
-      new colvars_gpu::colvarmodule_gpu_calc);
-    gpu_calc->init();
-  }
 #endif
 }
 
@@ -433,7 +428,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
   }
 
   std::string smp;
-  if (parse->get_keyval(conf, "smp", smp, "cvcs")) {
+  if (parse->get_keyval(conf, "smp", smp)) {
     if (smp == "cvcs" || smp == "on" || smp == "yes") {
       if (proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::cvcs) != COLVARS_OK) {
         cvm::error("Colvars component-based parallelism is not implemented.\n");
@@ -444,17 +439,77 @@ int colvarmodule::parse_global_params(std::string const &conf)
         cvm::error("SMP parallelism inside the calculation of Colvars components is not implemented.\n");
         return COLVARS_INPUT_ERROR;
       }
+    } else if (smp == "gpu") {
+      if (proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::gpu) != COLVARS_OK) {
+        cvm::error("GPU parallelism is not implemented.\n");
+        return COLVARS_INPUT_ERROR;
+      } else {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+        gpu_calc = std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc>(
+          new colvars_gpu::colvarmodule_gpu_calc);
+        gpu_calc->init();
+        cvm::log("EXPERIMENTAL GPU parallelism will be applied inside:\n");
+        cvm::log("   - atom groups\n");
+#endif
+      }
     } else {
       proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::none);
       cvm::log("SMP parallelism has been disabled.\n");
     }
-  }
-  if (smp == "cvcs" || smp == "on" || smp == "yes") {
-    cvm::log("SMP parallelism will be applied to Colvars components.\n");
-    cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
-  } else if (smp == "inner_loop") {
-    cvm::log("SMP parallelism will be applied inside the Colvars components.\n");
-    cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
+  } else {
+    cvm::log("SMP parallelism is not set.\n");
+    cvm::log("Available SMP parallelism modes of this proxy are:\n");
+    const auto available_smp_modes = proxy->get_available_smp_modes();
+    for (size_t i = 0; i < available_smp_modes.size(); ++i) {
+      switch (available_smp_modes[i]) {
+        case colvarproxy_smp::smp_mode_t::cvcs: {
+          cvm::log("   - cvcs\n");
+          break;
+        }
+        case colvarproxy_smp::smp_mode_t::inner_loop: {
+          cvm::log("   - inner_loop\n");
+          break;
+        }
+        case colvarproxy_smp::smp_mode_t::gpu: {
+          cvm::log("   - gpu\n");
+          break;
+        }
+        case colvarproxy_smp::smp_mode_t::none: {
+          cvm::log("   - none\n");
+          break;
+        }
+      }
+    }
+    cvm::log("Set SMP parallelism to the preferred (default) mode to the proxy.\n");
+    // Find the proxy's preferred SMP mode if SMP is not defined
+    colvarproxy_smp::smp_mode_t preferred_smp_mode = proxy->get_preferred_smp_mode();
+    proxy->set_smp_mode(preferred_smp_mode);
+    switch (preferred_smp_mode) {
+      case colvarproxy_smp::smp_mode_t::cvcs: {
+        cvm::log("SMP parallelism will be applied to Colvars components.\n");
+        cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
+        break;
+      }
+      case colvarproxy_smp::smp_mode_t::inner_loop: {
+        cvm::log("SMP parallelism will be applied inside the Colvars components.\n");
+        cvm::log("  - SMP parallelism: enabled (num. threads = " + to_str(proxy->smp_num_threads()) + ")\n");
+        break;
+      }
+      case colvarproxy_smp::smp_mode_t::gpu: {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+        gpu_calc = std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc>(
+          new colvars_gpu::colvarmodule_gpu_calc);
+        gpu_calc->init();
+#endif
+        cvm::log("EXPERIMENTAL GPU parallelism will be applied inside:\n");
+        cvm::log("   - atom groups\n");
+        break;
+      }
+      case colvarproxy_smp::smp_mode_t::none: {
+        cvm::log("SMP parallelism is disabled by default.\n");
+        break;
+      }
+    }
   }
 
   bool b_analysis = true;
@@ -1031,19 +1086,21 @@ int colvarmodule::calc_colvars()
     }
     cvm::decrease_depth();
 
+  } else if (proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+    cvm::increase_depth();
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    error_code |= gpu_calc->calc_cvs(*variables_active(), this);
+#else
+    return cvm::error("GPU calculation is not implemented.\n");
+#endif
+    cvm::decrease_depth();
   } else {
     cvm::increase_depth();
-    if (proxy->has_gpu_support()) {
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-      error_code |= gpu_calc->calc_cvs(*variables_active(), this);
-#endif
-    } else {
-      // calculate colvars one at a time
-      for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
-        error_code |= (*cvi)->calc();
-        if (cvm::get_error()) {
-          return COLVARS_ERROR;
-        }
+    // calculate colvars one at a time
+    for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
+      error_code |= (*cvi)->calc();
+      if (cvm::get_error()) {
+        return COLVARS_ERROR;
       }
     }
     cvm::decrease_depth();
@@ -1175,7 +1232,7 @@ int colvarmodule::update_colvar_forces()
   if (cvm::debug())
     cvm::log("Communicating forces from the colvars to the atoms.\n");
   cvm::increase_depth();
-  if (proxy->has_gpu_support()) {
+  if (proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
     error_code |= gpu_calc->apply_forces(*variables_active(), this);
 #endif
@@ -1398,31 +1455,6 @@ colvarmodule::~colvarmodule()
 
     // The proxy object will be deallocated last (if at all)
     proxy = NULL;
-
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    // if (proxy->has_gpu_support()) {
-    //   if (calc_fit_gradients_graph_exec) {
-    //     checkGPUError(cudaGraphExecDestroy(calc_fit_gradients_graph_exec));
-    //     calc_fit_gradients_graph_exec = NULL;
-    //   }
-    //   if (calc_fit_gradients_graph) {
-    //     checkGPUError(cudaGraphDestroy(calc_fit_gradients_graph));
-    //     calc_fit_gradients_graph = NULL;
-    //   }
-    //   calc_fit_gradients_nodes.clear();
-    //   calc_fit_gradients_graph_initialized = false;
-    //   if (read_data_graph_exec) {
-    //     checkGPUError(cudaGraphExecDestroy(read_data_graph_exec));
-    //     read_data_graph_exec = NULL;
-    //   }
-    //   if (read_data_graph) {
-    //     checkGPUError(cudaGraphDestroy(read_data_graph));
-    //     read_data_graph = NULL;
-    //   }
-    //   read_data_nodes.clear();
-    //   read_data_graph_initialized = false;
-    // }
-#endif
   }
 }
 

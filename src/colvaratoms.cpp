@@ -819,12 +819,10 @@ int cvm::atom_group::parse(std::string const &group_conf)
   if (is_enabled(f_ag_rotate)) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
     colvarproxy* p = cvm::main()->proxy;
-    if (p->has_gpu_support()) {
-      p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
-      p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
-      p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
-      rot_gpu.init();
-    }
+    p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
+    p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
+    p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
+    rot_gpu.init();
 #endif
     setup_rotation_derivative();
   }
@@ -1022,7 +1020,7 @@ void cvm::atom_group::update_total_mass() {
     const double t_m = total_mass;
     std::transform(atoms_mass.begin(), atoms_mass.end(),
                    atoms_weight.begin(), [t_m](cvm::real x){return x/t_m;});
-    if (p->has_gpu_support()) {
+    if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
       // thrust::device_ptr<cvm::real> p_mass = thrust::device_pointer_cast(d_atoms_mass);
       // total_mass = thrust::reduce(p_mass, p_mass + num_atoms);
@@ -1240,7 +1238,7 @@ void cvm::atom_group::center_ref_pos()
   }
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   colvarproxy* p = cvm::main()->proxy;
-  if (p->has_gpu_support()) {
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
     p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
   }
 #endif
@@ -1284,7 +1282,7 @@ void cvm::atom_group::read_velocities()
   if (b_dummy) return;
 
   colvarproxy *p = cvm::main()->proxy;
-  if (p->has_gpu_support()) {
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if 0
     // This is never used.
 #endif
@@ -1315,7 +1313,7 @@ void cvm::atom_group::read_total_forces()
   if (b_dummy) return;
 
   colvarproxy *p = cvm::main()->proxy;
-  if (p->has_gpu_support()) {
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
     // TODO: At this point, I don't know if read_total_forces
     // is called before or after getting the positions, so
@@ -1700,7 +1698,7 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
   }
 
   colvarproxy* const p = cvm::main()->proxy;
-  if (p->has_gpu_support()) {
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
     use_apply_colvar_force = true;
     h_sum_applied_colvar_force[0] += force;
@@ -1805,7 +1803,7 @@ void cvm::atom_group::set_ref_pos_from_aos(const std::vector<cvm::atom_pos>& pos
   ref_pos = cvm::atom_group::pos_aos_to_soa(pos_aos);
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   colvarproxy* p = cvm::main()->proxy;
-  if (p->has_gpu_support()) {
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
     p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
     p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
   }
@@ -1821,7 +1819,7 @@ m_ag(ag), m_group_for_fit(m_ag->fitting_group ? m_ag->fitting_group : m_ag),
 m_has_fitting_force(m_ag->is_enabled(f_ag_center) || m_ag->is_enabled(f_ag_rotate)) {
   // We need to store the CPU forces in case of the GPU-resident mode
   colvarproxy* const p = cvm::main()->proxy;
-  if (m_has_fitting_force || p->has_gpu_support()) {
+  if (m_has_fitting_force || p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
     if (m_ag->group_forces.size() != 3 * m_ag->size()) {
       m_ag->group_forces.assign(3 * m_ag->size(), 0);
     } else {
@@ -1833,7 +1831,7 @@ m_has_fitting_force(m_ag->is_enabled(f_ag_center) || m_ag->is_enabled(f_ag_rotat
 
 cvm::atom_group::group_force_object::~group_force_object() {
   colvarproxy* const p = cvm::main()->proxy;
-  if (p->has_gpu_support()) {
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
     m_ag->use_group_force = true;
     // CPU forces are already intercepted into group_forces
@@ -1848,7 +1846,7 @@ cvm::atom_group::group_force_object::~group_force_object() {
 void cvm::atom_group::group_force_object::add_atom_force(
   size_t i, const cvm::rvector& force) {
   colvarproxy* const p = cvm::main()->proxy;
-  if (m_has_fitting_force || p->has_gpu_support()) {
+  if (m_has_fitting_force || p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
     // m_ag->group_forces[i] += force;
     m_ag->group_forces_x(i) += force.x;
     m_ag->group_forces_y(i) += force.y;
