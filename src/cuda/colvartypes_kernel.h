@@ -19,7 +19,7 @@ int build_overlapping_matrix(
   cvm::real* S_eigvec,
   cvm::rmatrix* h_C,
   unsigned int* tbcount,
-  int num_atoms,
+  unsigned int num_atoms,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
