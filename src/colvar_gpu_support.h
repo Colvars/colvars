@@ -171,9 +171,11 @@
 
 namespace colvars_gpu {
 
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 constexpr unsigned int default_block_size = 128;
 static unsigned int default_reduce_max_num_blocks = 64;
 // static unsigned int default_atom_wise_num_blocks = 64;
+#endif
 
 // enum class gpu_code_t {
 //   CUDA, HIP, SYCL, CPU
