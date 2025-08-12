@@ -619,7 +619,7 @@ void colvar::cvc::debug_gradients()
       gradient_sum += atom_grad;
 
       for (size_t id = 0; id < 3; id++) {
-        if (p->has_gpu_support()) {
+        if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
           group->read_positions_gpu_debug(
             ia, id, is_enabled(f_cvc_require_cpu_buffers), stream);
@@ -673,7 +673,7 @@ void colvar::cvc::debug_gradients()
 
     if ((group->is_enabled(f_ag_fit_gradients)) && (group->fitting_group != NULL)) {
       auto *ref_group = group->fitting_group;
-      if (p->has_gpu_support()) {
+      if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
         group->read_positions_gpu_debug(
           0, -1, is_enabled(f_cvc_require_cpu_buffers), stream);
@@ -695,7 +695,7 @@ void colvar::cvc::debug_gradients()
 
         for (size_t id = 0; id < 3; id++) {
           // (re)read original positions
-          if (p->has_gpu_support()) {
+          if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
             group->read_positions_gpu_debug(
               0, -1, is_enabled(f_cvc_require_cpu_buffers), stream);
