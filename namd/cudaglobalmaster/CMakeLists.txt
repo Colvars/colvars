@@ -6,7 +6,6 @@ option(NAMD_TCL "If your NAMD is built with TCL, use ON" ON)
 option(USE_CUDA "Use the CUDA library (if your want to run NAMD on NVIDIA GPUs)" ON)
 option(USE_HIP "Use the HIP library (if your want to run NAMD on AMD GPUs)" OFF)
 option(NAMD_NVTX_ENABLED "If your NAMD is built with -DNAMD_NVTX_ENABLED, use ON" OFF)
-option(COLVARS_GPU "Try running Colvars code on GPU (highly experimental!)" OFF)
 set(NAMD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." CACHE STRING "NAMD source code directory")
 set(NAMD_HEADER_DIR "${NAMD_DIR}/src" CACHE STRING "NAMD header directory")
 set(CHARM_HEADER_DIR "${NAMD_DIR}/charm/include" CACHE STRING "Charm++ header directory")
@@ -114,11 +113,6 @@ endif()
 
 if(USE_HIP)
   add_definitions(-DNAMD_HIP -DCOLVARS_HIP)
-endif()
-
-if(COLVARS_GPU)
-  message(WARNING "You are using the EXPERIMENTAL Colvars GPU code!")
-  add_definitions(-DCOLVARS_GPU_RESIDENT)
 endif()
 
 add_library(
