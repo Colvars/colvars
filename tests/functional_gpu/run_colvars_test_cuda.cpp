@@ -36,16 +36,21 @@ public:
   cvm::real* proxy_atoms_total_forces_gpu() override {return d_mTotalForces;}
   cvm::real* proxy_atoms_new_colvar_forces_gpu() override {return d_mAppliedForces;}
   cudaStream_t get_default_stream() override {return stream;}
-  smp_mode_t get_smp_mode() const override {
-    return smp_mode_t::none;
+  smp_mode_t get_preferred_smp_mode() const override {
+    return smp_mode_t::gpu;
+  }
+  std::vector<smp_mode_t> get_available_smp_modes() const override {
+    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
+      smp_mode_t::gpu
+    };
+    return available_modes;
   }
   int set_smp_mode(smp_mode_t mode) override {
-    if (mode != smp_mode_t::none) {
-      return COLVARS_ERROR;
+    if (mode == smp_mode_t::gpu) {
+      smp_mode = mode;
+      support_gpu = true;
     }
-    else {
-      return COLVARS_OK;
-    }
+    return COLVARS_NOT_IMPLEMENTED;
   }
   void init_cvm() {
     colvars = new colvarmodule(this);

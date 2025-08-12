@@ -126,6 +126,18 @@ public:
 
   int set_smp_mode(smp_mode_t mode) override;
 
+  smp_mode_t get_preferred_smp_mode() const override {
+    return smp_mode_t::cvcs;
+  }
+  std::vector<smp_mode_t> get_available_smp_modes() const override {
+    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
+      smp_mode_t::cvcs,
+      smp_mode_t::inner_loop,
+      smp_mode_t::none
+    };
+    return available_modes;
+  }
+
   int smp_loop(int n_items, std::function<int (int)> const &worker) override;
 
   int smp_biases_loop() override;

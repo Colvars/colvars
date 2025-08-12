@@ -445,35 +445,33 @@ int colvarmodule_gpu_calc::calc_cvs(const std::vector<colvar*>& colvars, colvarm
   if (error_code != COLVARS_OK) return error_code;\
 } while (0);
   colvarproxy* p = colvar_module->proxy;
-  if (p->has_gpu_support()) {
-    // Update flags
-    checkColvarsError(cv_update_flags(colvars));
-    // Calculate total force
-    if (colvar_module->step_relative() > 0) {
-      checkColvarsError(cvc_calc_total_force(colvars, colvar_module, false));
-    }
-    // Read data to atom groups
-    checkColvarsError(atom_group_read_data_gpu(
-      colvars, read_data_compute, colvar_module));
-    // Wait for extra information (for example, lattice) from the MD engine
-    // before the CPU loop
-    checkColvarsError(p->wait_for_extra_info_ready());
-    // Calculate CVC values
-    checkColvarsError(cvc_calc_value(colvars, colvar_module));
-    // Calculate CVC gradients
-    checkColvarsError(cvc_calc_gradients(colvars, colvar_module));
-    // Calculate fit gradients for atom groups
-    checkColvarsError(atom_group_calc_fit_gradients(
-      colvars, calc_fit_gradients_compute, colvar_module));
-    // Debug gradients
-    checkColvarsError(cvc_debug_gradients(colvars, colvar_module));
-    // Calculate the Jacobian terms
-    checkColvarsError(cvc_calc_Jacobian_derivative(colvars, colvar_module));
-    // Calculate total force
-    checkColvarsError(cvc_calc_total_force(colvars, colvar_module, true));
-    // Collect CVC data
-    checkColvarsError(cv_collect_cvc_data(colvars, colvar_module));
+  // Update flags
+  checkColvarsError(cv_update_flags(colvars));
+  // Calculate total force
+  if (colvar_module->step_relative() > 0) {
+    checkColvarsError(cvc_calc_total_force(colvars, colvar_module, false));
   }
+  // Read data to atom groups
+  checkColvarsError(atom_group_read_data_gpu(
+    colvars, read_data_compute, colvar_module));
+  // Wait for extra information (for example, lattice) from the MD engine
+  // before the CPU loop
+  checkColvarsError(p->wait_for_extra_info_ready());
+  // Calculate CVC values
+  checkColvarsError(cvc_calc_value(colvars, colvar_module));
+  // Calculate CVC gradients
+  checkColvarsError(cvc_calc_gradients(colvars, colvar_module));
+  // Calculate fit gradients for atom groups
+  checkColvarsError(atom_group_calc_fit_gradients(
+    colvars, calc_fit_gradients_compute, colvar_module));
+  // Debug gradients
+  checkColvarsError(cvc_debug_gradients(colvars, colvar_module));
+  // Calculate the Jacobian terms
+  checkColvarsError(cvc_calc_Jacobian_derivative(colvars, colvar_module));
+  // Calculate total force
+  checkColvarsError(cvc_calc_total_force(colvars, colvar_module, true));
+  // Collect CVC data
+  checkColvarsError(cv_collect_cvc_data(colvars, colvar_module));
 #undef checkColvarsError
   return error_code;
 }
@@ -485,109 +483,106 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
   if (error_code != COLVARS_OK) return error_code;\
 } while (0);
   colvarproxy* p = colvar_module->proxy;
-  if (p->has_gpu_support()) {
-    if (!apply_forces_compute.graph_exec_initialized) {
-      forced_atom_groups.clear();
-      // Find all unique atom groups requiring forces
-      std::vector<cvm::atom_group*> all_unique_atom_groups;
-      for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-        const auto all_cvcs = (*cvi)->get_cvcs();
-        // Iterate over all colvarcomp objects
-        if (!(*cvi)->is_enabled(colvardeps::f_cv_apply_force)) continue;
-        for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
-          if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
-          // Iterate over all atom groups
-          // TODO: For the time being, a parent CVC own the atom groups from
-          // its children CVCs, but this may be changed by
-          // https://github.com/Colvars/colvars/pull/700
-          std::vector<cvm::atom_group *>& ags = (*cvc)->atom_groups;
-          for (auto ag = ags.begin(); ag != ags.end(); ++ag) {
-            if ((*ag)->size() > 0) {
-              all_unique_atom_groups.push_back(*ag);
-            }
-          }
-        }
-      }
-      std::sort(all_unique_atom_groups.begin(),
-              all_unique_atom_groups.end());
-      auto last = std::unique(all_unique_atom_groups.begin(),
-                              all_unique_atom_groups.end());
-      all_unique_atom_groups.erase(last, all_unique_atom_groups.end());
-      // Save the atom groups
-      forced_atom_groups.insert(forced_atom_groups.end(),
-                                all_unique_atom_groups.begin(),
-                                all_unique_atom_groups.end());
-      /**
-       * @attention There are two CPU routines for applying forces on
-       * an atom group, namely (i) apply_colvar_force for a scalar force,
-       * and (ii) apply_force for a vector force on the COM. However, at
-       * this moment, I have no idea which one is called for a specific
-       * atom group, so I need to call communicate_forces() once.
-       */
-      // Clear the h_sum_applied_colvar_force, use_group_force and use_apply_colvar_force
-      for (auto it = all_unique_atom_groups.begin(); it != all_unique_atom_groups.end(); ++it) {
-        cvm::atom_group* ag = *it;
-        checkColvarsError(ag->begin_apply_force_gpu());
-      }
-      for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-        if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
-          (*cvi)->communicate_forces();
-          if (colvar_module->get_error()) {
-            return COLVARS_ERROR;
-          }
-        }
-      }
-      /**
-       * @note Now I expect either use_apply_colvar_force or use_group_force
-       * is set in any of the atom groups, so build the CUDA graph.
-       */
-      using node_map_t = std::unordered_map<std::string, cudaGraphNode_t>;
-      // Add apply force CUDA graph nodes
-      for (auto ag = all_unique_atom_groups.begin(); ag != all_unique_atom_groups.end(); ++ag) {
-        node_map_t ag_node_map;
-        cudaGraph_t ag_graph;
-        checkColvarsError(checkGPUError(cudaGraphCreate(&ag_graph, 0)));
-        checkColvarsError((*ag)->add_apply_force_nodes(ag_graph, ag_node_map));
-        cudaGraphNode_t child_graph_node;
-        checkColvarsError(checkGPUError(cudaGraphAddChildGraphNode(
-          &child_graph_node, apply_forces_compute.graph, NULL, 0, ag_graph)));
-        checkColvarsError(checkGPUError(cudaGraphDestroy(ag_graph)));
-      }
-      checkColvarsError(checkGPUError(cudaGraphInstantiate(&apply_forces_compute.graph_exec, apply_forces_compute.graph)));
-      apply_forces_compute.graph_exec_initialized = true;
-      // Debug graph
-      if (colvar_module->debug()) {
-        const std::string filename = cvm::output_prefix() + "_apply_forces.dot";
-        cvm::log("Writing apply forces graph to " + filename);
-        apply_forces_compute.dump_graph(filename.c_str());
-      }
-    } else {
-      for (auto it = forced_atom_groups.begin(); it != forced_atom_groups.end(); ++it) {
-        cvm::atom_group* ag = dynamic_cast<cvm::atom_group*>((*it));
-        checkColvarsError(ag->begin_apply_force_gpu());
-      }
-      for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-        if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
-          (*cvi)->communicate_forces();
-          if (colvar_module->get_error()) {
-            return COLVARS_ERROR;
+  if (!apply_forces_compute.graph_exec_initialized) {
+    forced_atom_groups.clear();
+    // Find all unique atom groups requiring forces
+    std::vector<cvm::atom_group*> all_unique_atom_groups;
+    for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+      const auto all_cvcs = (*cvi)->get_cvcs();
+      // Iterate over all colvarcomp objects
+      if (!(*cvi)->is_enabled(colvardeps::f_cv_apply_force)) continue;
+      for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
+        if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
+        // Iterate over all atom groups
+        // TODO: For the time being, a parent CVC own the atom groups from
+        // its children CVCs, but this may be changed by
+        // https://github.com/Colvars/colvars/pull/700
+        std::vector<cvm::atom_group *>& ags = (*cvc)->atom_groups;
+        for (auto ag = ags.begin(); ag != ags.end(); ++ag) {
+          if ((*ag)->size() > 0) {
+            all_unique_atom_groups.push_back(*ag);
           }
         }
       }
     }
-    colvarproxy* p = colvar_module->proxy;
-    cudaStream_t stream = p->get_default_stream();
-#if defined (COLVARS_NVTX_PROFILING)
-    apply_forces_prof.start();
-#endif
-    checkColvarsError(checkGPUError(cudaGraphLaunch(apply_forces_compute.graph_exec, stream)));
-    // NOTE: The synchronization here should be unnecessary because we use the proxy stream,
-    // which will be synchronized by the MD engine anyway.
-    // checkColvarsError(checkGPUError(cudaStreamSynchronize(stream)));
-#if defined (COLVARS_NVTX_PROFILING)
-    apply_forces_prof.stop();
-#endif
+    std::sort(all_unique_atom_groups.begin(),
+            all_unique_atom_groups.end());
+    auto last = std::unique(all_unique_atom_groups.begin(),
+                            all_unique_atom_groups.end());
+    all_unique_atom_groups.erase(last, all_unique_atom_groups.end());
+    // Save the atom groups
+    forced_atom_groups.insert(forced_atom_groups.end(),
+                              all_unique_atom_groups.begin(),
+                              all_unique_atom_groups.end());
+    /**
+      * @attention There are two CPU routines for applying forces on
+      * an atom group, namely (i) apply_colvar_force for a scalar force,
+      * and (ii) apply_force for a vector force on the COM. However, at
+      * this moment, I have no idea which one is called for a specific
+      * atom group, so I need to call communicate_forces() once.
+      */
+    // Clear the h_sum_applied_colvar_force, use_group_force and use_apply_colvar_force
+    for (auto it = all_unique_atom_groups.begin(); it != all_unique_atom_groups.end(); ++it) {
+      cvm::atom_group* ag = *it;
+      checkColvarsError(ag->begin_apply_force_gpu());
+    }
+    for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+      if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
+        (*cvi)->communicate_forces();
+        if (colvar_module->get_error()) {
+          return COLVARS_ERROR;
+        }
+      }
+    }
+    /**
+      * @note Now I expect either use_apply_colvar_force or use_group_force
+      * is set in any of the atom groups, so build the CUDA graph.
+      */
+    using node_map_t = std::unordered_map<std::string, cudaGraphNode_t>;
+    // Add apply force CUDA graph nodes
+    for (auto ag = all_unique_atom_groups.begin(); ag != all_unique_atom_groups.end(); ++ag) {
+      node_map_t ag_node_map;
+      cudaGraph_t ag_graph;
+      checkColvarsError(checkGPUError(cudaGraphCreate(&ag_graph, 0)));
+      checkColvarsError((*ag)->add_apply_force_nodes(ag_graph, ag_node_map));
+      cudaGraphNode_t child_graph_node;
+      checkColvarsError(checkGPUError(cudaGraphAddChildGraphNode(
+        &child_graph_node, apply_forces_compute.graph, NULL, 0, ag_graph)));
+      checkColvarsError(checkGPUError(cudaGraphDestroy(ag_graph)));
+    }
+    checkColvarsError(checkGPUError(cudaGraphInstantiate(&apply_forces_compute.graph_exec, apply_forces_compute.graph)));
+    apply_forces_compute.graph_exec_initialized = true;
+    // Debug graph
+    if (colvar_module->debug()) {
+      const std::string filename = cvm::output_prefix() + "_apply_forces.dot";
+      cvm::log("Writing apply forces graph to " + filename);
+      apply_forces_compute.dump_graph(filename.c_str());
+    }
+  } else {
+    for (auto it = forced_atom_groups.begin(); it != forced_atom_groups.end(); ++it) {
+      cvm::atom_group* ag = dynamic_cast<cvm::atom_group*>((*it));
+      checkColvarsError(ag->begin_apply_force_gpu());
+    }
+    for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+      if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
+        (*cvi)->communicate_forces();
+        if (colvar_module->get_error()) {
+          return COLVARS_ERROR;
+        }
+      }
+    }
   }
+  cudaStream_t stream = p->get_default_stream();
+#if defined (COLVARS_NVTX_PROFILING)
+  apply_forces_prof.start();
+#endif
+  checkColvarsError(checkGPUError(cudaGraphLaunch(apply_forces_compute.graph_exec, stream)));
+  // NOTE: The synchronization here should be unnecessary because we use the proxy stream,
+  // which will be synchronized by the MD engine anyway.
+  // checkColvarsError(checkGPUError(cudaStreamSynchronize(stream)));
+#if defined (COLVARS_NVTX_PROFILING)
+  apply_forces_prof.stop();
+#endif
 #undef checkColvarsError
   return error_code;
 }
