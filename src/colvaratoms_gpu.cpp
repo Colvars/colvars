@@ -153,8 +153,8 @@ error_code |= colvars_gpu::add_clear_array_node( \
   clear_ ## fieldName ## _node , graph, {});\
   nodes_map[COLVARS_STRINGIFY(clear_ ## fieldName)] = clear_ ## fieldName ## _node;\
 } while (0);
-    ADD_CLEAR_FIELD_NODE(atoms_pos, num_atoms);
-    ADD_CLEAR_FIELD_NODE(atoms_vel, num_atoms);
+    // ADD_CLEAR_FIELD_NODE(atoms_pos, num_atoms);
+    // ADD_CLEAR_FIELD_NODE(atoms_vel, num_atoms);
     ADD_CLEAR_FIELD_NODE(atoms_grad, num_atoms);
     ADD_CLEAR_FIELD_NODE(atoms_total_force, num_atoms);
     ADD_CLEAR_FIELD_NODE(atoms_applied_force, num_atoms);
@@ -173,7 +173,7 @@ int cvm::atom_group::add_read_positions_nodes(
     cudaGraphNode_t read_positions_node;
     std::vector<cudaGraphNode_t> dependencies;
     // We must wait for the clearing of device arrays
-    ADD_DEPENDENCY(clear_atoms_pos, dependencies, nodes_map);
+    // ADD_DEPENDENCY(clear_atoms_pos, dependencies, nodes_map);
     error_code |= colvars_gpu::atoms_pos_from_proxy(
       gpu_buffers.d_atoms_index, p->proxy_atoms_positions_gpu(),
       gpu_buffers.d_atoms_pos, num_atoms, p->get_atom_ids()->size(),
