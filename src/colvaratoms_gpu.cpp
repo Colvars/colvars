@@ -689,7 +689,7 @@ int cvm::atom_group::add_calc_fit_gradients_nodes(
     ADD_DEPENDENCY(calc_fit_gradients_loop1, dependencies_fit_gradients, nodes_map);
     ADD_DEPENDENCY_IF(prepare_rotation_derivative, dependencies_fit_gradients, nodes_map);
     error_code |= colvars_gpu::calc_fit_gradients_impl_loop2(
-      gpu_buffers.d_fit_gradients, rot_deriv_gpu,
+      group_for_fit->gpu_buffers.d_fit_gradients, rot_deriv_gpu,
       calc_fit_gradients_gpu_info.d_atom_grad,
       calc_fit_gradients_gpu_info.d_sum_dxdq,
       group_for_fit->size(),
@@ -699,14 +699,14 @@ int cvm::atom_group::add_calc_fit_gradients_nodes(
       graph, dependencies_fit_gradients);
     nodes_map["calc_fit_gradients_loop2"] = calc_fit_forces_loop2_node;
     if (use_cpu_buffers) {
-      if (fit_gradients.empty()) {
-        fit_gradients.resize(3 * group_for_fit->size());
+      if (group_for_fit->fit_gradients.empty()) {
+        group_for_fit->fit_gradients.resize(3 * group_for_fit->size());
       }
       cudaGraphNode_t copy_fit_gradients_DtoH_node;
       std::vector<cudaGraphNode_t> dependencies_copy_fit_gradients;
       ADD_DEPENDENCY(calc_fit_gradients_loop2, dependencies_copy_fit_gradients, nodes_map);
       error_code |= colvars_gpu::add_copy_node(
-        gpu_buffers.d_fit_gradients, fit_gradients.data(), 3 * group_for_fit->size(),
+        group_for_fit->gpu_buffers.d_fit_gradients, group_for_fit->fit_gradients.data(), 3 * group_for_fit->size(),
         cudaMemcpyDeviceToHost, copy_fit_gradients_DtoH_node, graph,
         dependencies_copy_fit_gradients);
       nodes_map["copy_fit_gradients_DtoH"] = copy_fit_gradients_DtoH_node;
@@ -891,17 +891,24 @@ int cvm::atom_group::read_positions_gpu_debug(
   if (to_cpu) {
     error_code |= p->copy_DtoH(
       gpu_buffers.d_atoms_pos, atoms_pos.data(), 3 * num_atoms);
+    error_code |= checkGPUError(cudaStreamSynchronize(stream));
   }
   // error_code |= checkGPUError(cudaStreamSynchronize(stream));
   return error_code;
 }
 
-int cvm::atom_group::calc_required_properties_gpu_debug(cudaStream_t stream) {
+int cvm::atom_group::calc_required_properties_gpu_debug(bool to_cpu, cudaStream_t stream) {
   int error_code = COLVARS_OK;
-  if (debug_graphs.initialized) {
+  if (!debug_graphs.initialized) {
+    // Create the debug graph
+    error_code |= checkGPUError(cudaGraphCreate(&debug_graphs.graph_calc_required_properties, 0));
     std::unordered_map<std::string, cudaGraphNode_t> nodes_map;
     error_code |= add_calc_required_properties_nodes(
       debug_graphs.graph_calc_required_properties, nodes_map);
+    if (to_cpu) {
+      error_code |= add_update_cpu_buffers_nodes(
+        debug_graphs.graph_calc_required_properties, nodes_map);
+    }
     error_code |= checkGPUError(cudaGraphInstantiate(
       &debug_graphs.graph_exec_calc_required_properties, debug_graphs.graph_calc_required_properties));
     debug_graphs.initialized = true;
@@ -924,13 +931,14 @@ void cvm::atom_group::do_feature_side_effects_gpu(int id) {
       }
       if (is_enabled(f_ag_center) || is_enabled(f_ag_rotate)) {
         atom_group *group_for_fit = fitting_group ? fitting_group : this;
-        if (gpu_buffers.d_fit_gradients == nullptr) {
-          p->allocate_device(&gpu_buffers.d_fit_gradients,
+        if (group_for_fit->gpu_buffers.d_fit_gradients == nullptr) {
+          p->allocate_device(&group_for_fit->gpu_buffers.d_fit_gradients,
                               3 * group_for_fit->size());
+          p->clear_device_array(group_for_fit->gpu_buffers.d_fit_gradients, 3 * group_for_fit->size());
           if (cvm::debug()) {
-            cvm::log("allocate d_fit_gradients at " + cvm::to_str((void*)gpu_buffers.d_fit_gradients) + " size " + cvm::to_str(3 * group_for_fit->size()) + "\n");
+            cvm::log("allocate d_fit_gradients at " + cvm::to_str((void*)group_for_fit->gpu_buffers.d_fit_gradients) + " size " + cvm::to_str(3 * group_for_fit->size()) + "\n");
           }
-          gpu_buffers.d_fit_gradients_size = group_for_fit->size();
+          group_for_fit->gpu_buffers.d_fit_gradients_size = group_for_fit->size();
         }
       }
       break;
