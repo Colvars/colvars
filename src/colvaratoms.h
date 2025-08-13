@@ -920,7 +920,7 @@ public:
     bool use_cpu_buffers = false);
   // For debug gradients
   int read_positions_gpu_debug(size_t change_atom_i, int xyz, bool to_cpu, cudaStream_t stream);
-  int calc_required_properties_gpu_debug(cudaStream_t stream);
+  int calc_required_properties_gpu_debug(bool to_cpu, cudaStream_t stream);
   void do_feature_side_effects_gpu(int id);
 #elif defined (COLVARS_SYCL)
   // TODO
