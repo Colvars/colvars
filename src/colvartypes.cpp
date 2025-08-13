@@ -638,6 +638,7 @@ void rotation_gpu::to_cpu(cvm::rotation& rot) const {
   std::memcpy(rot.get_eigenvalues(), h_S_eigval, 4*sizeof(cvm::real));
   std::memcpy(rot.get_eigenvectors(), h_S_eigvec, 4*4*sizeof(cvm::real));
   *(rot.get_C()) = *h_C;
+  rot.q = cvm::quaternion{h_S_eigvec[0], h_S_eigvec[1], h_S_eigvec[2], h_S_eigvec[3]};
 }
 }
 #endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
