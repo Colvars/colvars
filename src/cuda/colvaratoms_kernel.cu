@@ -113,7 +113,7 @@ int change_one_coordinate(
   cvm::real* atoms_pos_ag, size_t atom_id_in_group, int xyz,
   cvm::real step_size, unsigned int num_atoms, cudaStream_t stream) {
   int error_code = COLVARS_OK;
-  if (xyz > 0 && xyz < 3) {
+  if (xyz >= 0 && xyz < 3) {
     size_t array_id = num_atoms * xyz + atom_id_in_group;
     void* args[] = {&atoms_pos_ag, &array_id, &step_size};
     if (cvm::debug()) {
