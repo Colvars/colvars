@@ -162,6 +162,13 @@ int atom_group_read_data_gpu(
       g.dump_graph(filename.c_str());
     }
   }
+  // We need to reset the atom group data if it requires CPU buffers
+  for (auto it = g.nodes.begin(); it != g.nodes.end(); ++it) {
+    cvm::atom_group* atoms = dynamic_cast<cvm::atom_group*>(it->colvar_node);
+    if (it->require_cpu_buffers) {
+      atoms->reset_atoms_data();
+    }
+  }
 #if defined (COLVARS_NVTX_PROFILING)
   ag_read_data_prof.start();
 #endif // defined (COLVARS_NVTX_PROFILING)

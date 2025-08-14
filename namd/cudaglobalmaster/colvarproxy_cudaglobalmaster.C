@@ -723,7 +723,7 @@ void colvarproxy_impl::onBuffersUpdated() {
               colvars_applied_force.end(),
               cvm::rvector(0, 0, 0));
   } else {
-    cudaCheck(cudaMemsetAsync(proxy_atoms_new_colvar_forces_gpu(), 0, 3 *numAtoms, mStream));
+    cudaCheck(cudaMemsetAsync(proxy_atoms_new_colvar_forces_gpu(), 0, 3 * numAtoms * sizeof(double), mStream));
   }
   // Clear the previous bias energy
   mBiasEnergy = 0;
