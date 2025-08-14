@@ -1,18 +1,22 @@
 #include "colvaratoms.h"
+#include "colvar_gpu_support.h"
 #include "colvar_rotation_derivative.h"
 #include "colvardeps.h"
 #include "colvarproxy.h"
 #include "colvarmodule.h"
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+#include "cuda/colvaratoms_kernel.h"
+#endif
 
 #include <numeric>
 #include <algorithm>
 #include <list>
 #include <iomanip>
 
-
-std::vector<cvm::real> cvm::atom_group::pos_aos_to_soa(const std::vector<cvm::atom_pos>& aos_in) {
+cvm::ag_vector_real_t cvm::atom_group::pos_aos_to_soa(const std::vector<cvm::atom_pos>& aos_in) {
   static_assert(sizeof(cvm::atom_pos) == 3 * sizeof(cvm::real), "The size of cvm::atom_pos requires to be 3 * the size of cvm::real.");
-  std::vector<cvm::real> pos_soa(aos_in.size() * 3);
+  cvm::ag_vector_real_t pos_soa(aos_in.size() * 3);
   const size_t offset_x = 0;
   const size_t offset_y = offset_x + aos_in.size();
   const size_t offset_z = offset_y + aos_in.size();
@@ -88,6 +92,16 @@ cvm::atom_group::atom_group():
   rot_deriv(nullptr), num_atoms(0), index(-1),
   num_ref_pos(0)
 {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  std::memset(&gpu_buffers, 0, sizeof(gpu_buffers));
+  std::memset(&debug_graphs, 0, sizeof(debug_graphs));
+  std::memset(&calc_fit_gradients_gpu_info, 0,
+              sizeof(calc_fit_gradients_gpu_info));
+  std::memset(&calc_fit_forces_gpu_info, 0,
+              sizeof(calc_fit_forces_gpu_info));
+  h_sum_applied_colvar_force = nullptr;
+  rot_deriv_gpu = nullptr;
+#endif
   key = "unnamed";
   init();
 }
@@ -113,6 +127,9 @@ cvm::atom_group::~atom_group() {
     delete rot_deriv;
     rot_deriv = nullptr;
   }
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  destroy_gpu();
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
 cvm::atom_group::atom_modifier::atom_modifier(cvm::atom_group* ag): m_ag(ag)
@@ -127,21 +144,22 @@ cvm::atom_group::atom_modifier::atom_modifier(cvm::atom_group* ag): m_ag(ag)
 }
 
 cvm::atom_group::atom_modifier::~atom_modifier() {
-  m_ag->modify_lock.unlock();
   if (cvm::get_error() == COLVARS_OK) {
     sync_to_soa();
   }
+  m_ag->modify_lock.unlock();
 }
 
 int cvm::atom_group::init()
 {
+  int error_code = COLVARS_OK;
   if (!key.size()) key = "unnamed";
   description = "atom group " + key;
   // These may be overwritten by parse(), if a name is provided
 
   // atoms.clear();
   this->clear_soa();
-  atom_group::init_dependencies();
+  error_code |= atom_group::init_dependencies();
   index = -1;
 
   b_dummy = false;
@@ -157,7 +175,13 @@ int cvm::atom_group::init()
   cog.reset();
   com.reset();
 
-  return COLVARS_OK;
+#if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
+  error_code |= init_gpu();
+#elif defined (COLVARS_SYCL)
+  // TODO
+#endif
+
+  return error_code;
 }
 
 int cvm::atom_group::init_dependencies() {
@@ -254,6 +278,10 @@ void cvm::atom_group::atom_modifier::update_from_soa() {
 }
 
 void cvm::atom_group::atom_modifier::sync_to_soa() const {
+// #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+//   const size_t num_atoms_original = m_ag->num_atoms;
+//   const bool reallocate = num_atoms_original != m_atoms.size();
+// #endif
   m_ag->num_atoms = m_atoms.size();
   m_ag->atoms_ids = m_atoms_ids;
   if (!m_ag->is_enabled(f_ag_scalable)) {
@@ -290,6 +318,9 @@ void cvm::atom_group::atom_modifier::sync_to_soa() const {
       m_ag->atoms_mass[i] = m_atoms[i].mass;
       m_ag->atoms_charge[i] = m_atoms[i].charge;
     }
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP) || defined(COLVARS_SYCL)
+    m_ag->sync_to_gpu_buffers();
+#endif
   }
   // m_ag->total_charge = m_total_charge;
   // m_ag->total_mass = m_total_mass;
@@ -301,14 +332,6 @@ int cvm::atom_group::atom_modifier::add_atom(const simple_atom& a) {
   if (a.id < 0) {
     return cvm::error("Error: invalid atom number " + cvm::to_str(a.id), COLVARS_INPUT_ERROR);
   }
-  // for (size_t i = 0; i < m_atoms_ids.size(); i++) {
-  //   if (m_atoms_ids[i] == a.id) {
-  //     if (cvm::debug())
-  //       cvm::log("Discarding doubly counted atom with number "+
-  //                cvm::to_str(a.id+1)+".\n");
-  //     return COLVARS_OK;
-  //   }
-  // }
   auto map_it = m_atoms_ids_count.find(a.id);
   if (map_it != m_atoms_ids_count.end()) {
     if (cvm::debug()) {
@@ -540,8 +563,9 @@ int cvm::atom_group::atom_modifier::add_atom_name_residue_range(
 }
 
 void cvm::atom_group::clear_soa() {
+  colvarproxy* p = cvm::main()->proxy;
   for (size_t i = 0; i < atoms_index.size(); ++i) {
-    (cvm::main()->proxy)->clear_atom(atoms_index[i]);
+    p->clear_atom(atoms_index[i]);
   }
   // Then clear all arrays in SOA
   std::fill(atoms_index.begin(), atoms_index.end(), 0);
@@ -552,6 +576,10 @@ void cvm::atom_group::clear_soa() {
   std::fill(atoms_grad.begin(), atoms_grad.end(), 0);
   std::fill(atoms_total_force.begin(), atoms_total_force.end(), 0);
   std::fill(atoms_weight.begin(), atoms_weight.end(), 0);
+  // Reset the GPU buffers if necessary
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP) || defined(COLVARS_SYCL)
+  clear_gpu_buffers();
+#endif
   // Reset the number of atoms
   num_atoms = 0;
   // Other fields should be untouched
@@ -775,7 +803,16 @@ int cvm::atom_group::parse(std::string const &group_conf)
     cvm::log(print_atom_ids());
   }
 
-  if (is_enabled(f_ag_rotate)) setup_rotation_derivative();
+  if (is_enabled(f_ag_rotate)) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    colvarproxy* p = cvm::main()->proxy;
+    p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
+    p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
+    p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
+    rot_gpu.init();
+#endif
+    setup_rotation_derivative();
+  }
 
   return error_code;
 }
@@ -958,8 +995,9 @@ void cvm::atom_group::update_total_mass() {
     return;
   }
 
+  colvarproxy *p = cvm::main()->proxy;
   if (is_enabled(f_ag_scalable)) {
-    total_mass = (cvm::main()->proxy)->get_atom_group_mass(index);
+    total_mass = p->get_atom_group_mass(index);
   } else {
     // total_mass = 0.0
     // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
@@ -969,6 +1007,15 @@ void cvm::atom_group::update_total_mass() {
     const double t_m = total_mass;
     std::transform(atoms_mass.begin(), atoms_mass.end(),
                    atoms_weight.begin(), [t_m](cvm::real x){return x/t_m;});
+    if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+      // thrust::device_ptr<cvm::real> p_mass = thrust::device_pointer_cast(d_atoms_mass);
+      // total_mass = thrust::reduce(p_mass, p_mass + num_atoms);
+      p->copy_HtoD(atoms_weight.data(), gpu_buffers.d_atoms_weight, num_atoms);
+#elif defined(COLVARS_SYCL)
+      // TODO
+#endif
+    }
   }
   if (total_mass < 1e-15) {
     cvm::error("Error: " + description + " has zero total mass.\n");
@@ -981,8 +1028,9 @@ void cvm::atom_group::update_total_charge() {
     return;
   }
 
+  colvarproxy *p = cvm::main()->proxy;
   if (is_enabled(f_ag_scalable)) {
-    total_charge = (cvm::main()->proxy)->get_atom_group_charge(index);
+    total_charge = p->get_atom_group_charge(index);
   } else {
     // total_charge = 0.0;
     // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
@@ -1051,13 +1099,6 @@ int cvm::atom_group::create_sorted_ids()
 }
 
 int cvm::atom_group::overlap(const atom_group &g1, const atom_group &g2) {
-  // for (cvm::atom_const_iter ai1 = g1.begin(); ai1 != g1.end(); ai1++) {
-  //   for (cvm::atom_const_iter ai2 = g2.begin(); ai2 != g2.end(); ai2++) {
-  //     if (ai1->id == ai2->id) {
-  //       return (ai1->id + 1); // 1-based index to allow boolean usage
-  //     }
-  //   }
-  // }
   for (auto ai1 = g1.atoms_ids.cbegin(); ai1 != g1.atoms_ids.cend(); ++ai1) {
     for (auto ai2 = g2.atoms_ids.cbegin(); ai2 != g2.atoms_ids.cend(); ++ai2) {
       if ((*ai1) == (*ai2)) {
@@ -1072,12 +1113,8 @@ void cvm::atom_group::read_positions()
 {
   if (b_dummy) return;
 
-  // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-  //   ai->read_position();
-  // }
-  // TODO: Should I check if this group is scalable?
+  colvarproxy *p = cvm::main()->proxy;
   if (!is_enabled(f_ag_scalable)) {
-    colvarproxy *p = cvm::main()->proxy;
     for (size_t i = 0; i < num_atoms; ++i) {
       const int proxy_index = atoms_index[i];
       const cvm::rvector pos = p->get_atom_position(proxy_index);
@@ -1087,8 +1124,9 @@ void cvm::atom_group::read_positions()
     }
   }
 
-  if (fitting_group)
+  if (fitting_group) {
     fitting_group->read_positions();
+  }
 }
 
 void cvm::atom_group::calc_apply_roto_translation()
@@ -1111,10 +1149,6 @@ void cvm::atom_group::calc_apply_roto_translation()
 
   if (is_enabled(f_ag_fit_gradients) && !b_dummy) {
     // Save the unrotated frame for fit gradients
-    // pos_unrotated.resize(size());
-    // for (size_t i = 0; i < size(); ++i) {
-    //   pos_unrotated[i] = atoms[i].pos;
-    // }
     atoms_pos_unrotated = atoms_pos;
   }
 
@@ -1127,18 +1161,8 @@ void cvm::atom_group::calc_apply_roto_translation()
       group_for_fit->size(), num_ref_pos);
     const auto rot_mat = rot.matrix();
 
-    // cvm::atom_iter ai;
-    // for (ai = this->begin(); ai != this->end(); ai++) {
-    //   ai->pos = rot_mat * ai->pos;
-    // }
-    // if (fitting_group) {
-    //   for (ai = fitting_group->begin(); ai != fitting_group->end(); ai++) {
-    //     ai->pos = rot_mat * ai->pos;
-    //   }
-    // }
     this->rotate(rot_mat);
-    if (fitting_group/* && (fitting_group != this)*/) {
-      // TODO: Should I check if fitting_group != this
+    if (fitting_group) {
       fitting_group->rotate(rot_mat);
     }
   }
@@ -1160,6 +1184,21 @@ void cvm::atom_group::setup_rotation_derivative() {
     rot, group_for_fit->atoms_pos, ref_pos,
     group_for_fit->size(), num_ref_pos
   );
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  // Allocate rot_deriv_gpu on pinned memory so that
+  // we can access it on device
+  colvarproxy* p = cvm::main()->proxy;
+  if (rot_deriv_gpu != nullptr) {
+    rot_deriv_gpu->~rotation_derivative_gpu();
+    p->deallocate_host(&rot_deriv_gpu);
+  }
+  p->allocate_host(&rot_deriv_gpu, 1);
+  rot_deriv_gpu = new (rot_deriv_gpu) colvars_gpu::rotation_derivative_gpu();
+  rot_deriv_gpu->init(
+    &rot_gpu,
+    group_for_fit->gpu_buffers.d_atoms_pos,
+    gpu_buffers.d_ref_pos, group_for_fit->size(), num_ref_pos);
+#endif
 }
 
 void cvm::atom_group::center_ref_pos()
@@ -1184,6 +1223,12 @@ void cvm::atom_group::center_ref_pos()
     ref_pos_y(i) -= ref_pos_cog.y;
     ref_pos_z(i) -= ref_pos_cog.z;
   }
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  colvarproxy* p = cvm::main()->proxy;
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+    p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
+  }
+#endif
 }
 
 void cvm::atom_group::rotate(const cvm::rmatrix& rot_mat) {
@@ -1223,33 +1268,29 @@ void cvm::atom_group::read_velocities()
 {
   if (b_dummy) return;
 
-  if (is_enabled(f_ag_rotate)) {
-
-    const auto rot_mat = rot.matrix();
-    // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-    //   ai->read_velocity();
-    //   ai->vel = rot_mat * ai->vel;
-    // }
-    colvarproxy *p = cvm::main()->proxy;
-    for (size_t i = 0; i < num_atoms; ++i) {
-      const int proxy_index = atoms_index[i];
-      const cvm::rvector vel = p->get_atom_velocity(proxy_index);
-      vel_x(i) = rot_mat.xx * vel.x + rot_mat.xy * vel.y + rot_mat.xz * vel.z;
-      vel_y(i) = rot_mat.yx * vel.x + rot_mat.yy * vel.y + rot_mat.yz * vel.z;
-      vel_z(i) = rot_mat.zx * vel.x + rot_mat.zy * vel.y + rot_mat.zz * vel.z;
-    }
-
+  colvarproxy *p = cvm::main()->proxy;
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+#if 0
+    // This is never used.
+#endif
   } else {
-    // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-    //   ai->read_velocity();
-    // }
-    colvarproxy *p = cvm::main()->proxy;
-    for (size_t i = 0; i < num_atoms; ++i) {
-      const int proxy_index = atoms_index[i];
-      const cvm::rvector vel = p->get_atom_velocity(proxy_index);
-      vel_x(i) = vel.x;
-      vel_y(i) = vel.y;
-      vel_z(i) = vel.z;
+    if (is_enabled(f_ag_rotate)) {
+      const auto rot_mat = rot.matrix();
+      for (size_t i = 0; i < num_atoms; ++i) {
+        const int proxy_index = atoms_index[i];
+        const cvm::rvector vel = p->get_atom_velocity(proxy_index);
+        vel_x(i) = rot_mat.xx * vel.x + rot_mat.xy * vel.y + rot_mat.xz * vel.z;
+        vel_y(i) = rot_mat.yx * vel.x + rot_mat.yy * vel.y + rot_mat.yz * vel.z;
+        vel_z(i) = rot_mat.zx * vel.x + rot_mat.zy * vel.y + rot_mat.zz * vel.z;
+      }
+    } else {
+      for (size_t i = 0; i < num_atoms; ++i) {
+        const int proxy_index = atoms_index[i];
+        const cvm::rvector vel = p->get_atom_velocity(proxy_index);
+        vel_x(i) = vel.x;
+        vel_y(i) = vel.y;
+        vel_z(i) = vel.z;
+      }
     }
   }
 }
@@ -1258,40 +1299,53 @@ void cvm::atom_group::read_total_forces()
 {
   if (b_dummy) return;
 
-  if (is_enabled(f_ag_rotate)) {
-
-    const auto rot_mat = rot.matrix();
-    // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-    //   ai->read_total_force();
-    //   ai->total_force = rot_mat * ai->total_force;
-    // }
-    colvarproxy *p = cvm::main()->proxy;
-    for (size_t i = 0; i < num_atoms; ++i) {
-      const int proxy_index = atoms_index[i];
-      const cvm::rvector total_force = p->get_atom_total_force(proxy_index);
-      total_force_x(i) = rot_mat.xx * total_force.x +
-                         rot_mat.xy * total_force.y +
-                         rot_mat.xz * total_force.z;
-      total_force_y(i) = rot_mat.yx * total_force.x +
-                         rot_mat.yy * total_force.y +
-                         rot_mat.yz * total_force.z;
-      total_force_z(i) = rot_mat.zx * total_force.x +
-                         rot_mat.zy * total_force.y +
-                         rot_mat.zz * total_force.z;
+  colvarproxy *p = cvm::main()->proxy;
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+    // TODO: At this point, I don't know if read_total_forces
+    // is called before or after getting the positions, so
+    // what can I do to put it in the graph?
+    // The current workaround is to ensure everything is ready.
+    // p->sync_stream(stream);
+    cvm::quaternion* q_ptr = nullptr;
+    if (is_enabled(f_ag_rotate)) {
+      q_ptr = rot_gpu.get_q();
     }
-
+    colvars_gpu::atoms_total_force_from_proxy(
+      gpu_buffers.d_atoms_index, p->proxy_atoms_total_forces_gpu(),
+      gpu_buffers.d_atoms_total_force, is_enabled(f_ag_rotate),
+      q_ptr, num_atoms, p->get_atom_ids()->size(), p->get_default_stream());
+    // TODO: How can I check if the CVC has GPU implementation?
+    // If the CVC only supports CPU, copy the data to host
+    p->copy_DtoH_async(
+      gpu_buffers.d_atoms_total_force, atoms_total_force.data(),
+      3 * num_atoms, p->get_default_stream());
+    checkGPUError(cudaStreamSynchronize(p->get_default_stream()));
+#endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
   } else {
-
-    // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-    //   ai->read_total_force();
-    // }
-    colvarproxy *p = cvm::main()->proxy;
-    for (size_t i = 0; i < num_atoms; ++i) {
-      const int proxy_index = atoms_index[i];
-      const cvm::rvector total_force = p->get_atom_total_force(proxy_index);
-      total_force_x(i) = total_force.x;
-      total_force_y(i) = total_force.y;
-      total_force_z(i) = total_force.z;
+    if (is_enabled(f_ag_rotate)) {
+      const auto rot_mat = rot.matrix();
+      for (size_t i = 0; i < num_atoms; ++i) {
+        const int proxy_index = atoms_index[i];
+        const cvm::rvector total_force = p->get_atom_total_force(proxy_index);
+        total_force_x(i) = rot_mat.xx * total_force.x +
+                           rot_mat.xy * total_force.y +
+                           rot_mat.xz * total_force.z;
+        total_force_y(i) = rot_mat.yx * total_force.x +
+                           rot_mat.yy * total_force.y +
+                           rot_mat.yz * total_force.z;
+        total_force_z(i) = rot_mat.zx * total_force.x +
+                           rot_mat.zy * total_force.y +
+                           rot_mat.zz * total_force.z;
+      }
+    } else {
+      for (size_t i = 0; i < num_atoms; ++i) {
+        const int proxy_index = atoms_index[i];
+        const cvm::rvector total_force = p->get_atom_total_force(proxy_index);
+        total_force_x(i) = total_force.x;
+        total_force_y(i) = total_force.y;
+        total_force_z(i) = total_force.z;
+      }
     }
   }
 }
@@ -1299,6 +1353,7 @@ void cvm::atom_group::read_total_forces()
 int cvm::atom_group::calc_required_properties()
 {
   // TODO check if the com is needed?
+  // colvarproxy* p = cvm::main()->proxy;
   calc_center_of_mass();
   calc_center_of_geometry();
 
@@ -1507,7 +1562,7 @@ void cvm::atom_group::calc_fit_forces(
     calc_fit_forces_impl<false, false, main_force_accessor_T, fitting_force_accessor_T>(accessor_main, accessor_fitting);
 }
 
-std::vector<cvm::real> cvm::atom_group::positions() const
+cvm::ag_vector_real_t cvm::atom_group::positions() const
 {
   if (b_dummy) {
     cvm::error("Error: positions are not available "
@@ -1525,10 +1580,11 @@ std::vector<cvm::real> cvm::atom_group::positions() const
   // for ( ; ai != this->end(); ++xi, ++ai) {
   //   *xi = ai->pos;
   // }
+  // std::vector<cvm::real> pos_out(atoms_pos.begin(), atoms_pos.end());
   return atoms_pos;
 }
 
-std::vector<cvm::real> cvm::atom_group::positions_shifted(cvm::rvector const &shift) const
+cvm::ag_vector_real_t cvm::atom_group::positions_shifted(cvm::rvector const &shift) const
 {
   if (b_dummy) {
     cvm::error("Error: positions are not available "
@@ -1547,7 +1603,7 @@ std::vector<cvm::real> cvm::atom_group::positions_shifted(cvm::rvector const &sh
   //   *xi = (ai->pos + shift);
   // }
   // return x;
-  std::vector<cvm::real> shifted = atoms_pos;
+  cvm::ag_vector_real_t shifted = atoms_pos;
   for (size_t i = 0; i < num_atoms; ++i) {
     shifted[i]             += shift.x;
     shifted[i+num_atoms]   += shift.y;
@@ -1621,14 +1677,18 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
     return;
   }
 
-  if (is_enabled(f_ag_rotate)) {
+  colvarproxy* const p = cvm::main()->proxy;
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+    use_apply_colvar_force = true;
+    h_sum_applied_colvar_force[0] += force;
+    // Just intercept the force and return
+    return;
+#endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  }
 
-    // rotate forces back to the original frame
+  if (is_enabled(f_ag_rotate)) {
     const auto rot_inv = rot.inverse().matrix();
-    // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-    //   ai->apply_force(rot_inv * (force * ai->grad));
-    // }
-    colvarproxy* const p = cvm::main()->proxy;
     for (size_t i = 0; i < num_atoms; ++i) {
       const int proxy_index = atoms_index[i];
       // The calculation is reordered since A(λ*f) = λ*(Af)
@@ -1640,12 +1700,7 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
       };
       p->apply_atom_force(proxy_index, f);
     }
-
   } else {
-
-    // for (cvm::atom_iter ai = this->begin(); ai != this->end(); ai++) {
-    //   ai->apply_force(force * ai->grad);
-    // }
     colvarproxy* const p = cvm::main()->proxy;
     for (size_t i = 0; i < num_atoms; ++i) {
       const int proxy_index = atoms_index[i];
@@ -1659,12 +1714,9 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
   }
 
   if ((is_enabled(f_ag_center) || is_enabled(f_ag_rotate)) && is_enabled(f_ag_fit_gradients)) {
-
     atom_group *group_for_fit = fitting_group ? fitting_group : this;
-    colvarproxy* const p = cvm::main()->proxy;
     // Fit gradients are already calculated in "laboratory" frame
     for (size_t j = 0; j < group_for_fit->size(); j++) {
-      // (*group_for_fit)[j].apply_force(force * group_for_fit->fit_gradients[j]);
       const int proxy_index = group_for_fit->atoms_index[j];
       const cvm::rvector f{
         force * group_for_fit->fit_gradients_x(j),
@@ -1721,11 +1773,21 @@ void cvm::atom_group::do_feature_side_effects(int id)
       }
       break;
   }
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  do_feature_side_effects_gpu(id);
+#endif
 }
 
 void cvm::atom_group::set_ref_pos_from_aos(const std::vector<cvm::atom_pos>& pos_aos) {
   num_ref_pos = pos_aos.size();
   ref_pos = cvm::atom_group::pos_aos_to_soa(pos_aos);
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  colvarproxy* p = cvm::main()->proxy;
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+    p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
+    p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
+  }
+#endif
 }
 
 cvm::atom_group::group_force_object cvm::atom_group::get_group_force_object() {
@@ -1735,7 +1797,9 @@ cvm::atom_group::group_force_object cvm::atom_group::get_group_force_object() {
 cvm::atom_group::group_force_object::group_force_object(cvm::atom_group* ag):
 m_ag(ag), m_group_for_fit(m_ag->fitting_group ? m_ag->fitting_group : m_ag),
 m_has_fitting_force(m_ag->is_enabled(f_ag_center) || m_ag->is_enabled(f_ag_rotate)) {
-  if (m_has_fitting_force) {
+  // We need to store the CPU forces in case of the GPU-resident mode
+  colvarproxy* const p = cvm::main()->proxy;
+  if (m_has_fitting_force || p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
     if (m_ag->group_forces.size() != 3 * m_ag->size()) {
       m_ag->group_forces.assign(3 * m_ag->size(), 0);
     } else {
@@ -1746,6 +1810,14 @@ m_has_fitting_force(m_ag->is_enabled(f_ag_center) || m_ag->is_enabled(f_ag_rotat
 }
 
 cvm::atom_group::group_force_object::~group_force_object() {
+  colvarproxy* const p = cvm::main()->proxy;
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    m_ag->use_group_force = true;
+    // CPU forces are already intercepted into group_forces
+    return;
+#endif
+  }
   if (m_has_fitting_force) {
     apply_force_with_fitting_group();
   }
@@ -1753,7 +1825,8 @@ cvm::atom_group::group_force_object::~group_force_object() {
 
 void cvm::atom_group::group_force_object::add_atom_force(
   size_t i, const cvm::rvector& force) {
-  if (m_has_fitting_force) {
+  colvarproxy* const p = cvm::main()->proxy;
+  if (m_has_fitting_force || p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
     // m_ag->group_forces[i] += force;
     m_ag->group_forces_x(i) += force.x;
     m_ag->group_forces_y(i) += force.y;
@@ -1761,7 +1834,6 @@ void cvm::atom_group::group_force_object::add_atom_force(
   } else {
     // Apply the force directly if we don't use fitting
     // (*m_ag)[i].apply_force(force);
-    colvarproxy* const p = cvm::main()->proxy;
     const int proxy_index = m_ag->atoms_index[i];
     p->apply_atom_force(proxy_index, force);
   }
