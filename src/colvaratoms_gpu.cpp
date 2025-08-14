@@ -771,7 +771,7 @@ int cvm::atom_group::add_apply_force_nodes(
       gpu_buffers.d_atoms_grad,
       h_sum_applied_colvar_force,
       is_enabled(f_ag_rotate),
-      q, num_atoms, p->get_atom_group_ids()->size(),
+      q, num_atoms, p->get_atom_ids()->size(),
       apply_colvar_force_to_proxy_node, graph, dependencies);
     nodes_map["apply_colvar_force_to_proxy"] = apply_colvar_force_to_proxy_node;
   }
@@ -805,7 +805,7 @@ int cvm::atom_group::add_apply_force_nodes(
       error_code |= colvars_gpu::apply_force_with_inverse_rotation(
         group_forces.data(), rot_gpu.get_q(), gpu_buffers.d_atoms_index,
         p->proxy_atoms_new_colvar_forces_gpu(), num_atoms,
-        p->get_atom_group_ids()->size(),
+        p->get_atom_ids()->size(),
         apply_force_with_inverse_rotation_node,
         graph, dependencies);
       nodes_map["apply_force_with_inverse_rotation"] =
@@ -816,7 +816,7 @@ int cvm::atom_group::add_apply_force_nodes(
       error_code |= colvars_gpu::apply_force(
         group_forces.data(), gpu_buffers.d_atoms_index,
         p->proxy_atoms_new_colvar_forces_gpu(), num_atoms,
-        p->get_atom_group_ids()->size(), apply_force_node,
+        p->get_atom_ids()->size(), apply_force_node,
         graph, dependencies);
       nodes_map["apply_force"] = apply_force_node;
     }
@@ -866,7 +866,7 @@ int cvm::atom_group::add_apply_force_nodes(
         calc_fit_forces_gpu_info.d_atom_grad,
         calc_fit_forces_gpu_info.d_sum_dxdq,
         gpu_buffers.d_atoms_index, p->proxy_atoms_new_colvar_forces_gpu(),
-        group_for_fit->size(), p->get_atom_group_ids()->size(),
+        group_for_fit->size(), p->get_atom_ids()->size(),
         is_enabled(f_ag_center),
         is_enabled(f_ag_rotate),
         calc_fit_forces_loop2_node, graph,
