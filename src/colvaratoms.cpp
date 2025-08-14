@@ -1332,7 +1332,7 @@ void cvm::atom_group::read_total_forces()
     // If the CVC only supports CPU, copy the data to host
     p->copy_DtoH_async(
       gpu_buffers.d_atoms_total_force, atoms_total_force.data(),
-      num_atoms, p->get_default_stream());
+      3 * num_atoms, p->get_default_stream());
     checkGPUError(cudaStreamSynchronize(p->get_default_stream()));
 #endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
   } else {
