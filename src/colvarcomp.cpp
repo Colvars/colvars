@@ -724,6 +724,9 @@ void colvar::cvc::debug_gradients()
           is_enabled(f_cvc_require_cpu_buffers), stream);
         checkGPUError(cudaStreamSynchronize(stream));
         group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
+        if (group->fitting_group) {
+          group->fitting_group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
+        }
 #endif
       } else {
         group->read_positions();
