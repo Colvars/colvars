@@ -1186,7 +1186,7 @@ int colvar::eigenvector::init(std::string const &conf)
     atoms->enable(f_ag_rotate);
     atoms->set_ref_pos_from_aos(ref_pos);
     atoms->center_ref_pos();
-    atoms->disable(f_ag_fit_gradients); // cancel out if group is fitted on itself
+    atoms->enable(f_ag_fit_gradients); // cancel out if group is fitted on itself
                                         // and cvc is translationally invariant
   }
   atoms->setup_rotation_derivative();

@@ -597,6 +597,7 @@ void colvar::cvc::debug_gradients()
       }
     }
 
+    const bool add_fit_gradients_to_main = group->is_enabled(f_ag_fit_gradients) && group_for_fit == group;
     // debug the gradients
     for (size_t ia = 0; ia < group->size(); ia++) {
       // tests are best conducted in the unrotated (simulation) frame
@@ -624,25 +625,19 @@ void colvar::cvc::debug_gradients()
         cvm::log("Atom "+cvm::to_str(ia)+", component "+cvm::to_str(id)+":\n");
         cvm::log("dx(actual) = "+cvm::to_str(x_1 - x_0,
                               21, 14)+"\n");
-        cvm::real dx_pred;
-        const size_t fit_gradients_size =
-          group->fitting_group ? group->fitting_group->size() : 0;
-        switch (id) {
-          case 0:
-            dx_pred = cvm::debug_gradients_step_size * (fit_gradients_size ?
-                      atom_grad[0] + group->fit_gradients_x(ia):
-                      atom_grad[0]);
-            break;
-          case 1:
-            dx_pred = cvm::debug_gradients_step_size * (fit_gradients_size ?
-                      atom_grad[1] + group->fit_gradients_y(ia):
-                      atom_grad[1]);
-            break;
-          case 2:
-            dx_pred = cvm::debug_gradients_step_size * (fit_gradients_size ?
-                      atom_grad[2] + group->fit_gradients_z(ia):
-                      atom_grad[2]);
-            break;
+        cvm::real dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
+        if (add_fit_gradients_to_main) {
+          switch (id) {
+            case 0:
+              dx_pred += cvm::debug_gradients_step_size * (group_for_fit->fit_gradients_x(ia));
+              break;
+            case 1:
+              dx_pred += cvm::debug_gradients_step_size * (group_for_fit->fit_gradients_y(ia));
+              break;
+            case 2:
+              dx_pred += cvm::debug_gradients_step_size * (group_for_fit->fit_gradients_z(ia));
+              break;
+          }
         }
         cvm::log("dx(interp) = "+cvm::to_str(dx_pred,
                               21, 14)+"\n");
