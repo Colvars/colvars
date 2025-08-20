@@ -908,6 +908,10 @@ protected:
   /// Track usage of Colvars features
   usage *usage_;
 
+  /// Records the maximum gradient discrepancy evaluated by debugGradients
+  /// see cvc::debug_gradients()
+  real max_gradient_error = 0.;
+
 public:
 
   /// Version of the most recent state file read
@@ -944,6 +948,17 @@ public:
 
   /// Calculate the energy and forces of scripted biases
   int calc_scripted_forces();
+
+  /// Update the maximum gradient discrepancy evaluated by debugGradients
+  /// in this instance of colvarmodule
+  /// see cvc::debug_gradients()
+  void record_gradient_error(real error) {
+    if (error > max_gradient_error) max_gradient_error = error;
+  }
+
+  real get_max_gradient_error() {
+    return max_gradient_error;
+  }
 
   /// \brief Pointer to the proxy object, used to retrieve atomic data
   /// from the hosting program; it is static in order to be accessible
