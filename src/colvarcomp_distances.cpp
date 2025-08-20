@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include "colvardeps.h"
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvar.h"
@@ -1184,6 +1185,7 @@ int colvar::eigenvector::init(std::string const &conf)
               "if this is not the desired behavior, disable them explicitly within the \"atoms\" block.\n");
     atoms->enable(f_ag_center);
     atoms->enable(f_ag_rotate);
+    atoms->enable(f_ag_fit_gradients);
     atoms->set_ref_pos_from_aos(ref_pos);
     atoms->center_ref_pos();
   }
