@@ -7,7 +7,7 @@
 #include "colvarproxy.h"
 #include "colvarproxy_stub.h"
 
-extern "C" int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
   if (argc < 2 || argc > 4) {
     std::cerr << "Wrong number of arguments.\n"
               << "Usage: run_colvars_test <configuration_file> [XYZ_trajectory_file] [output_prefix]"
@@ -53,6 +53,18 @@ extern "C" int main(int argc, char *argv[]) {
     (unsigned char *) "listinputfiles" };
   err |= run_colvarscript_command(2, args);
   cvm::log("  " + std::string(get_colvarscript_result()));
+
+  double const max_gradient_error = proxy->colvars->get_max_gradient_error();
+  if (max_gradient_error > 0.) {
+    cvm::log("Max gradient error (debugGradients): " + cvm::to_str(max_gradient_error));
+
+    double threshold = 1e-4;
+    // Fail test if error is above threshold
+    if (max_gradient_error > threshold) {
+      cvm::log("Error: gradient inaccuracy is above threshold (" + cvm::to_str(threshold) + ")");
+      err = 1;
+    }
+  }
 
   delete proxy;
 

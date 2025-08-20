@@ -6,7 +6,7 @@
 #include "colvarscript.h"
 #include "colvartypes.h"
 
-extern "C" int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
   colvarproxy_stub *proxy = new colvarproxy_stub();
   proxy->set_unit_system("real", false);
