@@ -630,23 +630,19 @@ struct rotation_derivative_gpu {
   size_t m_num_atoms_pos1;
   /// \brief Number of atoms in group1 (used in SOA)
   size_t m_num_atoms_pos2;
-  /// \brief Temporary variable that will be updated if prepare_derivative called
+  /// \brief GPU temporary variable that will be updated if prepare_derivative called
   cvm::real* tmp_Q0Q0;
   cvm::real* tmp_Q0Q0_L;
-  /// \brief CUDA stream
-  // cudaStream_t stream;
-  /// \brief colvarproxy for GPU memory management
-  // colvarproxy* proxy;
   /*! @brief Constructor of the cvm::rotation::derivative class for SOA
-    *  @param[in]  rot   The cvm::rotation object (must have called
-    *                    `calc_optimal_rotation` before calling
-    *                    `calc_derivative_wrt_group1` and
-    *                    `calc_derivative_wrt_group2`)
-    *  @param[in]  pos1  The atom positions of group 1
-    *  @param[in]  pos2  The atom positions of group 2
-    *  @param[in]  num_atoms_pos1 The number of atoms in group1
-    *  @param[in]  num_atoms_pos2 The number of atoms in group2
-    */
+   *  @param[in]  rot   The cvm::rotation object (must have called
+   *                    `calc_optimal_rotation` before calling
+   *                    `calc_derivative_wrt_group1` and
+   *                    `calc_derivative_wrt_group2`)
+   *  @param[in]  pos1  The atom positions of group 1
+   *  @param[in]  pos2  The atom positions of group 2
+   *  @param[in]  num_atoms_pos1 The number of atoms in group1
+   *  @param[in]  num_atoms_pos2 The number of atoms in group2
+   */
   rotation_derivative_gpu();
   int init(
     const colvars_gpu::rotation_gpu* rot,
