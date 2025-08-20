@@ -473,7 +473,7 @@ then
 
   # Use the Dashboard's Makefile to patch the plugin tree
   if pushd ${source}/vmd/cv_dashboard > /dev/null ; then
-    DASHBOARD_VERSION=$(grep ^VERSION Makefile.local | cut -d' ' -f 3)
+    DASHBOARD_VERSION=$(cat VERSION)
     if [ -d ${target}/noarch ] ; then
       # This is an already-installed plugin tree
       DASHBOARD_DESTINATION=${target}/noarch/tcl/cv_dashboard${DASHBOARD_VERSION}
