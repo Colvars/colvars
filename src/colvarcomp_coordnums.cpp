@@ -54,7 +54,14 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
   cvm::real const xn = cvm::integer_power(l2, en2);
   cvm::real const xd = cvm::integer_power(l2, ed2);
   //The subtraction and division stretches the function back to the range of [0,1] from [pairlist_tol,1]
-  cvm::real const func = (((1.0-xn)/(1.0-xd)) - pairlist_tol) / (1.0-pairlist_tol);
+  cvm::real const func_no_pairlist = (1.0-xn)/(1.0-xd);
+  cvm::real func, inv_one_pairlist_tol;
+  if (flags & ef_use_pairlist) {
+    inv_one_pairlist_tol = 1 / (1.0-pairlist_tol);
+    func = (func_no_pairlist - pairlist_tol) * inv_one_pairlist_tol;
+  } else {
+    func = func_no_pairlist;
+  }
 
   if (flags & ef_rebuild_pairlist) {
     //Particles just outside of the cutoff also are considered if they come near.
@@ -74,7 +81,12 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
     //                                        func*ed2*(xd/l2))*(-1.0);
     //Recognizing that func = (1.0-xn)/(1.0-xd), we can group together the "func" and get a version of dFdl2 that is 0
     //when func=0, which lets us skip this gradient calculation when func=0.
-    cvm::real const dFdl2 = func * ((ed2*xd/((1.0-xd)*l2)) - (en2*xn/((1.0-xn)*l2)));
+    cvm::real dFdl2;
+    if (flags & ef_use_pairlist) {
+      dFdl2 = func_no_pairlist * inv_one_pairlist_tol * ((ed2*xd/((1.0-xd)*l2)) - (en2*xn/((1.0-xn)*l2)));
+    } else {
+      dFdl2 = func * ((ed2*xd/((1.0-xd)*l2)) - (en2*xn/((1.0-xn)*l2)));
+    }
     cvm::rvector const dl2dx((2.0/((flags & ef_anisotropic) ? r0sq_vec.x :
                                    r0*r0)) * diff.x,
                              (2.0/((flags & ef_anisotropic) ? r0sq_vec.y :
