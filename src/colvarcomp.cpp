@@ -670,8 +670,7 @@ void colvar::cvc::debug_gradients()
         cvm::real rel_error = cvm::fabs (x_1-x_0 - dx_pred) / cvm::fabs (x_1-x_0);
         cvm::main()->record_gradient_error(rel_error);
         cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
-                  cvm::to_str(cvm::fabs(x_1 - x_0 - dx_pred) /
-                              cvm::fabs(x_1 - x_0), 12, 5)+"\n");
+                  cvm::to_str(rel_error, 12, 5)+"\n");
       }
     }
 
