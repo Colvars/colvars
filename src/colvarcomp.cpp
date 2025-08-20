@@ -552,7 +552,6 @@ void colvar::cvc::apply_force(colvarvalue const &cvforce)
   }
 }
 
-
 void colvar::cvc::debug_gradients()
 {
   // this function should work for any scalar cvc:
@@ -607,9 +606,6 @@ void colvar::cvc::debug_gradients()
 
     const auto rot_0 = group->rot.matrix();
 
-    cvm::real x_0 = x.real_value;
-    if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_0 = x[0];
-
     // cvm::log("gradients     = "+cvm::to_str (gradients)+"\n");
 
     auto *group_for_fit = group->fitting_group ? group->fitting_group : group;
@@ -636,10 +632,6 @@ void colvar::cvc::debug_gradients()
       }
     }
 
-    /**
-     * @note Some CVCs change the gradients when running calc_value(), so it is
-     * better to copy the original gradients out at first.
-     */
     std::vector<cvm::rvector> gradients = ag_gradients.at(group)[0];
     // debug the gradients
     for (size_t ia = 0; ia < group->size(); ia++) {
@@ -660,15 +652,30 @@ void colvar::cvc::debug_gradients()
         calc_value();
         cvm::real x_1 = x.real_value;
         if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_1 = x[0];
+
+        // (re)read original positions
+        group->read_positions();
+        // change one coordinate
+        switch (id) {
+          case 0: group->pos_x(ia) -= cvm::debug_gradients_step_size; break;
+          case 1: group->pos_y(ia) -= cvm::debug_gradients_step_size; break;
+          case 2: group->pos_z(ia) -= cvm::debug_gradients_step_size; break;
+        }
+        group->calc_required_properties();
+        calc_value();
+        cvm::real x_2 = x.real_value;
+        if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_2 = x[0];
+
+        cvm::real const num_diff = 0.5 * (x_1 - x_2);
         cvm::log("Atom "+cvm::to_str(ia)+", component "+cvm::to_str(id)+":\n");
-        cvm::log("dx(actual) = "+cvm::to_str(x_1 - x_0,
+        cvm::log("dx(actual) = "+cvm::to_str(num_diff,
                               21, 14)+"\n");
         cvm::real dx_pred = cvm::debug_gradients_step_size * gradients[ia][id];
         cvm::log("dx(interp) = "+cvm::to_str(dx_pred,
                               21, 14)+"\n");
-        cvm::real rel_error = cvm::fabs (x_1-x_0 - dx_pred) / cvm::fabs (x_1-x_0);
+        cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
         cvm::main()->record_gradient_error(rel_error);
-        cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
+        cvm::log("|dx(actual) - dx(interp)|/(|dx(actual)| + |dx(interp)|) = "+
                   cvm::to_str(rel_error, 12, 5)+"\n");
       }
     }
@@ -697,18 +704,29 @@ void colvar::cvc::debug_gradients()
           }
           group->calc_required_properties();
           calc_value();
-
           cvm::real const x_1 = x.real_value;
+
+          // (re)read original positions
+          group->read_positions();
+          ref_group->read_positions();
+          // change one coordinate
+          switch (id) {
+            case 0: ref_group->pos_x(ia) -= cvm::debug_gradients_step_size; break;
+            case 1: ref_group->pos_y(ia) -= cvm::debug_gradients_step_size; break;
+            case 2: ref_group->pos_z(ia) -= cvm::debug_gradients_step_size; break;
+          }
+          group->calc_required_properties();
+          calc_value();
+          cvm::real const x_2 = x.real_value;
+
+          cvm::real const num_diff = 0.5 * (x_1 - x_2);
           cvm::log("refPosGroup atom "+cvm::to_str(ia)+", component "+cvm::to_str (id)+":\n");
-          cvm::log("dx(actual) = "+cvm::to_str (x_1 - x_0, 21, 14)+"\n");
-
+          cvm::log("dx(actual) = "+cvm::to_str (num_diff, 21, 14)+"\n");
           cvm::real const dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
-
           cvm::log("dx(interp) = "+cvm::to_str (dx_pred, 21, 14)+"\n");
-
-          cvm::real rel_error = cvm::fabs (x_1-x_0 - dx_pred) / cvm::fabs (x_1-x_0);
+          cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
           cvm::main()->record_gradient_error(rel_error);
-          cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
+          cvm::log ("|dx(actual) - dx(interp)|/(|dx(actual)| + |dx(interp)|) = "+
                     cvm::to_str(rel_error, 12, 5) + ".\n");
         }
       }
