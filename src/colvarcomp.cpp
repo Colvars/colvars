@@ -606,7 +606,6 @@ void colvar::cvc::debug_gradients()
     if (group->b_dummy) continue;
 
     const auto rot_0 = group->rot.matrix();
-    const auto rot_inv = group->rot.inverse().matrix();
 
     cvm::real x_0 = x.real_value;
     if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_0 = x[0];
