@@ -639,11 +639,12 @@ void colvar::cvc::debug_gradients()
               break;
           }
         }
-        cvm::log("dx(interp) = "+cvm::to_str(dx_pred,
-                              21, 14)+"\n");
-        cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
-                  cvm::to_str(cvm::fabs(x_1 - x_0 - dx_pred) /
-                              cvm::fabs(x_1 - x_0), 12, 5)+"\n");
+        cvm::log("dx(interp) = "+cvm::to_str(dx_pred, 21, 14)+"\n");
+
+        cvm::real rel_error = cvm::fabs (x_1-x_0 - dx_pred) / cvm::fabs (x_1-x_0);
+        cvm::main()->record_gradient_error(rel_error);
+        cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
+                  cvm::to_str(rel_error, 12, 5) + ".\n");
       }
     }
 
@@ -675,18 +676,16 @@ void colvar::cvc::debug_gradients()
 
           cvm::real const x_1 = x.real_value;
           cvm::log("refPosGroup atom "+cvm::to_str(ia)+", component "+cvm::to_str (id)+":\n");
-          cvm::log("dx(actual) = "+cvm::to_str (x_1 - x_0,
-                                21, 14)+"\n");
+          cvm::log("dx(actual) = "+cvm::to_str (x_1 - x_0, 21, 14)+"\n");
 
           cvm::real const dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
 
-          cvm::log("dx(interp) = "+cvm::to_str (dx_pred,
-                                21, 14)+"\n");
+          cvm::log("dx(interp) = "+cvm::to_str (dx_pred, 21, 14)+"\n");
+
+          cvm::real rel_error = cvm::fabs (x_1-x_0 - dx_pred) / cvm::fabs (x_1-x_0);
+          cvm::main()->record_gradient_error(rel_error);
           cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
-                    cvm::to_str(cvm::fabs (x_1 - x_0 - dx_pred) /
-                                cvm::fabs (x_1 - x_0),
-                                12, 5)+
-                    ".\n");
+                    cvm::to_str(rel_error, 12, 5) + ".\n");
         }
       }
     }

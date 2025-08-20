@@ -5,7 +5,7 @@
 #include "colvarscript.h"
 
 
-extern "C" int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
   colvarproxy *proxy = new colvarproxy();
   proxy->colvars = new colvarmodule(proxy);
