@@ -844,24 +844,26 @@ private:
     cvm::real* d_atoms_applied_force;
     /// \brief GPU fit gradients
     cvm::real* d_fit_gradients;
-    size_t d_fit_gradients_size;
     /// \brief GPU reference coordinates for f_ag_center or f_ag_rotate
     cvm::real* d_ref_pos;
     /// \brief GPU atom positions (size: 3 * num_atoms)
     cvm::real* d_atoms_pos_unrotated;
-    size_t d_atoms_pos_unrotated_size;
     /// \brief GPU center-of-mass
     cvm::rvector* d_com;
     /// \brief GPU center-of-geometry
     cvm::rvector* d_cog;
+    /// \brief GPU center of geometry before any fitting
     cvm::rvector* d_cog_orig;
+    /// \brief GPU center of geometry of the reference coordinates
     cvm::rvector* d_ref_pos_cog;
     /// \brief GPU atomic counter for reduction
     unsigned int* d_com_cog_tbcount;
-    /// \brief COG and COM on pinned memory for CPU compatibility
-    cvm::rvector *h_com;
-    cvm::rvector *h_cog;
-    cvm::rvector *h_cog_orig;
+    /// \brief Center-of-mass on the host-pinned memory for CPU compatibility
+    cvm::rvector* h_com;
+    /// \brief Center-of-geometry on the host-pinned memory for CPU compatibility
+    cvm::rvector* h_cog;
+    /// \brief Center-of-geometry before any fitting on the host-pinned memory for CPU compatibility
+    cvm::rvector* h_cog_orig;
   } gpu_buffers;
   /// \brief Temporary variables for calc_fit_gradients GPU kernel
   struct {
