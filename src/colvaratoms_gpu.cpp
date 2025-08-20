@@ -927,7 +927,7 @@ void cvm::atom_group::do_feature_side_effects_gpu(int id) {
       colvarproxy* p = cvm::main()->proxy;
       if (gpu_buffers.d_atoms_pos_unrotated == nullptr) {
         p->allocate_device(&gpu_buffers.d_atoms_pos_unrotated, 3 * num_atoms);
-        gpu_buffers.d_atoms_pos_unrotated_size = num_atoms;
+        // gpu_buffers.d_atoms_pos_unrotated_size = num_atoms;
       }
       if (is_enabled(f_ag_center) || is_enabled(f_ag_rotate)) {
         atom_group *group_for_fit = fitting_group ? fitting_group : this;
@@ -938,7 +938,7 @@ void cvm::atom_group::do_feature_side_effects_gpu(int id) {
           if (cvm::debug()) {
             cvm::log("allocate d_fit_gradients at " + cvm::to_str((void*)group_for_fit->gpu_buffers.d_fit_gradients) + " size " + cvm::to_str(3 * group_for_fit->size()) + "\n");
           }
-          group_for_fit->gpu_buffers.d_fit_gradients_size = group_for_fit->size();
+          // group_for_fit->gpu_buffers.d_fit_gradients_size = group_for_fit->size();
         }
       }
       break;
