@@ -10,6 +10,7 @@ colvar {
   upperBoundary 3.5
 
   dihedralPC {
+    debugGradients on
     psfSegID BH
     residueRange 1-10
     vectorFile ../Common/eigenvectors-localmin
@@ -29,6 +30,7 @@ colvar {
   upperBoundary 3.5
 
   dihedralPC {
+    debugGradients on
     psfSegID BH
     residueRange 1-10
     vectorFile ../Common/eigenvectors-localmin

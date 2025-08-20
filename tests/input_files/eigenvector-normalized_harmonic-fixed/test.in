@@ -11,6 +11,7 @@ colvar {
     width 0.5
 
     eigenvector {
+        debugGradients on
         atoms {
             indexGroup RMSD_atoms
         }
