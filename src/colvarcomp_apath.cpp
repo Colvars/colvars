@@ -348,9 +348,11 @@ void colvar::aspathCV::apply_force(colvarvalue const &force) {
                 }
                 cvm::log("dx(actual) = "+cvm::to_str(analytical_grad, 21, 14)+"\n");
                 cvm::log("dx(interp) = "+cvm::to_str(grad, 21, 14)+"\n");
-                cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
-                  cvm::to_str((analytical_grad - grad).norm() /
-                              (analytical_grad).norm(), 12, 5)+"\n");
+
+                cvm::real rel_error = (analytical_grad - grad).norm() / (analytical_grad).norm();
+                cvm::main()->record_gradient_error(rel_error);
+                cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
+                            cvm::to_str(rel_error, 12, 5) + ".\n");
             }
         }
     }
@@ -454,9 +456,11 @@ void colvar::azpathCV::apply_force(colvarvalue const &force) {
                 }
                 cvm::log("dx(actual) = "+cvm::to_str(analytical_grad, 21, 14)+"\n");
                 cvm::log("dx(interp) = "+cvm::to_str(grad, 21, 14)+"\n");
-                cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
-                  cvm::to_str((analytical_grad - grad).norm() /
-                              (analytical_grad).norm(), 12, 5)+"\n");
+
+                cvm::real rel_error = (analytical_grad - grad).norm() / (analytical_grad).norm();
+                cvm::main()->record_gradient_error(rel_error);
+                cvm::log ("|dx(actual) - dx(interp)|/|dx(actual)| = "+
+                            cvm::to_str(rel_error, 12, 5) + ".\n");
             }
         }
     }

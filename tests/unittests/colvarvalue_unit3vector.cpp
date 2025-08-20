@@ -4,7 +4,7 @@
 #include "colvarvalue.h"
 
 
-extern "C" int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
   colvarvalue x(colvarvalue::type_unit3vector);
   x.rvector_value = cvm::rvector(1.0, 0.1, 0.0);
