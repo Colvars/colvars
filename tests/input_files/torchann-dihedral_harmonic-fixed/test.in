@@ -1,4 +1,4 @@
-colvarsTrajFrequency    1
+colvarsTrajFrequency 1
 colvarsRestartFrequency 10
 indexFile index.ndx
 
@@ -13,6 +13,7 @@ colvar {
   extendedTemp 300
 
   torchann {
+    debugGradients on
     modelFile identity.pt
     m_output_index 0
     period 360
@@ -34,6 +35,7 @@ colvar {
     }
   }
 }
+
 
 harmonic {
     colvars        one

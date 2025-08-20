@@ -11,6 +11,7 @@ colvar {
     width 3.0
 
     spinAngle {
+        debugGradients on
         atoms {
             indexGroup RMSD_atoms
         }
