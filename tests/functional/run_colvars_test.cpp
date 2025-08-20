@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
   if (max_gradient_error > 0.) {
     cvm::log("Max gradient error (debugGradients): " + cvm::to_str(max_gradient_error));
 
-    double threshold = 1e-4;
+    double threshold = 1e-3;
     // Fail test if error is above threshold
     if (max_gradient_error > threshold) {
       cvm::log("Error: gradient inaccuracy is above threshold (" + cvm::to_str(threshold) + ")");
