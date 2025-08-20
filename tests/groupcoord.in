@@ -7,6 +7,7 @@ colvar {
     width 0.5
 
     groupCoord {
+        debugGradients on
         group1 {
             indexGroup group1
         }

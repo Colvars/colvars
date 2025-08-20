@@ -6,6 +6,7 @@ colvar {
     name eulerTheta
     outputAppliedForce on
     eulerTheta {
+        debugGradients on
         atoms {
             indexGroup RMSD_atoms
         }
@@ -17,6 +18,7 @@ colvar {
     name eulerPhi
     outputAppliedForce on
     eulerPhi {
+        debugGradients on
         atoms {
             indexGroup RMSD_atoms
         }
@@ -28,6 +30,7 @@ colvar {
     name eulerPsi
     outputAppliedForce on
     eulerPsi {
+        debugGradients on
         atoms {
             indexGroup RMSD_atoms
         }

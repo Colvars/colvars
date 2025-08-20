@@ -38,6 +38,7 @@ create_test_dir() {
 
 
 write_colvars_config() {
+    local workdir=${WORKDIR%/}
     local colvar=$1
     local bias=$2
     local filename=$3
@@ -52,6 +53,13 @@ write_colvars_config() {
     if [ "x$bias" != "x" ] ; then
         echo '' >> ${filename}
         cat ${bias}.in >> ${filename}
+    fi
+    if [ ${workdir##*/} == "input_files" ] ; then
+        # Remove directory prefix
+        sed -i 's/..\/Common\///' ${filename}
+    else
+         # Activate gradient debugging only in functional tests
+        sed -i '/debugGradients/d' ${filename}
     fi
 }
 
