@@ -980,12 +980,10 @@ public:
     reset();
   }
 
-  /// \brief Set the q0 component to 1 and the others to 0 (quaternion
-  /// representing no rotation)
+  /// \brief Set all components to zero (null quaternion)
   inline void reset()
   {
-    q0 = 1.0;
-    q1 = q2 = q3 = 0.0;
+    q0 = q1 = q2 = q3 = 0.0;
   }
 
   /// Tell the number of characters required to print a quaternion, given that of a real number
@@ -1341,7 +1339,7 @@ public:
   bool b_debug_gradients;
 
   /// \brief The rotation itself (implemented as a quaternion)
-  cvm::quaternion q;
+  cvm::quaternion q{1.0, 0.0, 0.0, 0.0};
 
   friend struct rotation_derivative;
 
