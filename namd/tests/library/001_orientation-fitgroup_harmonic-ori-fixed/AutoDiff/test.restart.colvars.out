@@ -159,7 +159,7 @@ colvars:
 colvars: updating target temperature (T = 0 K).
 colvars: ----------------------------------------------------------------------
 colvars: Loading state from text file "test.colvars.state".
-colvars:   Restarting collective variable "one" from value: ( 0.429494 , -0.0677227 , -0.464875 , -0.771259 )
+colvars:   Restarting collective variable "one" from value: ( 0.429496 , -0.0677235 , -0.464882 , -0.771253 )
 colvars:   Restarted harmonic bias "harmonic1" with step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
