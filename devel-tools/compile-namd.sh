@@ -22,9 +22,9 @@ compile_namd_target() {
     local dirname_prefix="Linux-x86_64-g++"
 
     local label="multicore"
-    if hash mpicxx >& /dev/null ; then
-        label="mpi"
-    fi
+#     if hash mpicxx >& /dev/null ; then
+#         label="mpi"
+#     fi
 
     while [ $# -ge 1 ]; do
         if [ -f "${1}/src/NamdTypes.h" ] ; then
@@ -101,6 +101,7 @@ EOF
     eval ${cmd[@]}
 
     if pushd ${dirname} ; then
+        make depends
         make -j$(nproc --all)
         ret_code=$?
         popd
