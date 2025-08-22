@@ -20,20 +20,20 @@ env:
 
 jobs:
 
-  namd-main:
-    name: NAMD (main)
+  namd-3-0:
+    name: NAMD (3.0.x)
     # Prevent running this job on PRs across different accounts, because
     # secrets wouldn't be shared
     uses: ./.github/workflows/backend-template.yml
     with:
       backend_name: NAMD
       backend_repo: Colvars/namd
-      backend_repo_ref: main
+      backend_repo_ref: release-3-0-fixes
       path_compile_script: devel-tools/compile-namd.sh
       test_lib_directory: namd/tests/library
       test_interface_directory: namd/tests/interface
-      rpath_exe: Linux-x86_64-g++.mpi/namd3
-      container_name: CentOS7-devel
+      rpath_exe: Linux-x86_64-g++.multicore/namd3
+      container_name: CentOS9-devel
     secrets:
       # Choice of license by UIUC prevents sharing the code, hence the secret
       private_key: ${{ secrets.PULL_NAMD_KEY }}

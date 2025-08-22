@@ -58,7 +58,7 @@ colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "one"
-colvars:     Initializing a new "eigenvector" component.
+colvars:     Initializing a new "orientation" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -69,37 +69,43 @@ colvars:     # scalable = on [default]
 colvars:       Initializing atom group "atoms".
 colvars:       # name = "" [default]
 colvars:       # centerToOrigin = off [default]
-colvars:       # centerToReference = off [default]
-colvars:       # rotateToReference = off [default]
+colvars:       # centerToReference = on
+colvars:       # rotateToReference = on
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "RMSD_atoms"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
+colvars:       Within atom group "atoms":
+colvars:       Initializing atom group "fittingGroup".
+colvars:       # name = "" [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
+colvars:       # atomsOfGroup = "" [default]
+colvars:       # indexGroup = "heavy_atoms"
+colvars:       # psfSegID =  [default]
+colvars:       # atomsFile = "" [default]
+colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
 colvars:       # enableFitGradients = on [default]
+colvars:       # printAtomIDs = off [default]
+colvars:       Atom group "fittingGroup" defined with 51 atoms requested: total mass = 674.397, total charge = -7.64.
+colvars:       # refPositions =  [default]
+colvars:       # refPositionsFile = "heavy_atoms_refpos.xyz"
+colvars:       # refPositionsCol = "" [default]
+colvars:       Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.
+colvars:       Warning: atom group "atoms" will be aligned to a fixed orientation given by the reference positions provided.  If the internal structure of the group changes too much (i.e. its RMSD is comparable to its radius of gyration), the optimal rotation and its gradients may become discontinuous.  If that happens, use fittingGroup (or a different definition for it if already defined) to align the coordinates.
+colvars:       # enableFitGradients = off
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "atoms" defined with 10 atoms requested: total mass = 120.11, total charge = 0.53.
 colvars:     # refPositions =  [default]
-colvars:     # refPositionsFile = "rmsd_atoms_refpos.xyz"
+colvars:     # refPositionsFile = "rmsd_atoms_refpos2.xyz"
 colvars:     # refPositionsCol = "" [default]
-colvars:     Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.
-colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating the vector projection: if this is not the desired behavior, disable them explicitly within the "atoms" block.
-colvars:     # vector =  [default]
-colvars:     # vectorFile = "rmsd_atoms_random.xyz"
-colvars:     # vectorCol = "" [default]
-colvars:     Geometric center of the provided vector: ( 2.23122 , -1.11745 , -1.91143 )
-colvars:     # differenceVector = off [default]
-colvars:     Centering the provided vector to zero.
-colvars:     # normalizeVector = off [default]
-colvars:     The norm of the vector is |v| = 23.5625.
+colvars:     Centering the reference coordinates on the origin by subtracting the center of geometry at ( 0.0422 , -0.1463 , -0.0241 ); it is assumed that each atom is the closest periodic image to the center of geometry.
+colvars:     # closestToQuaternion = ( 1 , 0 , 0 , 0 ) [default]
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 0.5
-colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0.5 [default]
-colvars:   # hardLowerBoundary = off [default]
-colvars:   # hardUpperBoundary = off [default]
-colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -120,8 +126,8 @@ colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 10 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
-colvars:   # centers = { 0.1 }
-colvars:   # targetCenters = { 0.1 } [default]
+colvars:   # centers = { ( 1 , 0 , 0 , 0 ) }
+colvars:   # targetCenters = { ( 1 , 0 , 0 , 0 ) } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 0.001
 colvars:   # decoupling = off [default]
@@ -133,7 +139,7 @@ colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
-colvars: updating atomic data (10 atoms).
+colvars: updating atomic data (51 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
 colvars: 
@@ -142,8 +148,9 @@ colvars:
 colvars: - Colvars module:
 colvars: - Colvars-NAMD interface:
 colvars: - Harmonic colvar bias implementation:
+colvars: - Moving frame of reference:
 colvars: - Optimal rotation via flexible fitting:
-colvars: - eigenvector colvar component:
+colvars: - orientation colvar component:
 colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
 colvars: 
 colvars: - NAMD engine:
@@ -152,11 +159,11 @@ colvars:
 colvars: updating target temperature (T = 0 K).
 colvars: ----------------------------------------------------------------------
 colvars: Loading state from text file "test.colvars.state".
-colvars:   Restarting collective variable "one" from value: 9.96577
+colvars:   Restarting collective variable "one" from value: ( 0.429496 , -0.0677235 , -0.464882 , -0.771253 )
 colvars:   Restarted harmonic bias "harmonic1" with step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
-colvars: updating atomic data (10 atoms).
+colvars: updating atomic data (51 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
 colvars: updating target temperature (T = 0 K).

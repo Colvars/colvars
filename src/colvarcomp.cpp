@@ -592,6 +592,7 @@ void colvar::cvc::debug_gradients()
       }
     }
 
+    const bool add_fit_gradients_to_main = group->is_enabled(f_ag_fit_gradients) && group_for_fit == group;
     // debug the gradients
     for (size_t ia = 0; ia < group->size(); ia++) {
 
@@ -613,7 +614,7 @@ void colvar::cvc::debug_gradients()
         cvm::log("Atom "+cvm::to_str(ia)+", component "+cvm::to_str(id)+":\n");
         cvm::log("dx(actual) = "+cvm::to_str(x_1 - x_0,
                               21, 14)+"\n");
-        cvm::real const dx_pred = (group->fit_gradients.size()) ?
+        cvm::real const dx_pred = add_fit_gradients_to_main ?
           (cvm::debug_gradients_step_size * (atom_grad[id] + group->fit_gradients[ia][id])) :
           (cvm::debug_gradients_step_size * atom_grad[id]);
         cvm::log("dx(interp) = "+cvm::to_str(dx_pred,

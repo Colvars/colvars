@@ -135,6 +135,7 @@ void colvar::orientation::apply_force(colvarvalue const &force)
   cvm::quaternion const &FQ = force.quaternion_value;
 
   if (!atoms->noforce) {
+    const cvm::real sign = (rot.q).inner(ref_quat) >= 0.0 ? 1.0 : -1.0;
     rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
     cvm::vector1d<cvm::rvector> dq0_2;
 
@@ -143,14 +144,14 @@ void colvar::orientation::apply_force(colvarvalue const &force)
       for (size_t ia = 0; ia < atoms->size(); ia++) {
         rot_deriv_impl->calc_derivative_wrt_group2(ia, nullptr, &dq0_2);
         for (size_t i = 0; i < 4; i++) {
-          (*atoms)[ia].apply_force(rot_inv * (FQ[i] * dq0_2[i]));
+          (*atoms)[ia].apply_force(rot_inv * (sign * FQ[i] * dq0_2[i]));
         }
       }
     } else {
       for (size_t ia = 0; ia < atoms->size(); ia++) {
         rot_deriv_impl->calc_derivative_wrt_group2(ia, nullptr, &dq0_2);
         for (size_t i = 0; i < 4; i++) {
-          (*atoms)[ia].apply_force(FQ[i] * dq0_2[i]);
+          (*atoms)[ia].apply_force(sign * FQ[i] * dq0_2[i]);
         }
       }
     }
@@ -208,8 +209,9 @@ void colvar::orientation_angle::calc_value()
 
 void colvar::orientation_angle::calc_gradients()
 {
+  const cvm::real sign = (rot.q).q0 >= 0.0 ? 1.0 : -1.0;
   cvm::real const dxdq0 =
-    ( ((rot.q).q0 * (rot.q).q0 < 1.0) ?
+    sign * ( ((rot.q).q0 * (rot.q).q0 < 1.0) ?
       ((180.0 / PI) * (-2.0) / cvm::sqrt(1.0 - ((rot.q).q0 * (rot.q).q0))) :
       0.0 );
 
