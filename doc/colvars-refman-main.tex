@@ -5252,10 +5252,16 @@ The following options have default values appropriate for the vast majority of a
     the gradients of some colvars include terms proportional to
     $\partial{}R/\partial\mathbf{x}_{i}$ (rotational gradients) and
     $\partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$ (translational gradients).
+    In practice, these terms are calculated as follows,\newline
+    $\begin{aligned}
+\nabla_k \zeta(\mathbf{X})&=\sum_{l,\rm main}\left[\nabla_l f \cdot \nabla_k R\left(\mathbf{x}_l-\mathbf{\bar{x}}^{\rm (fit)}\right) - \frac{1}{n^{\rm (fit)}} \nabla_l f \cdot R \mathbbm{1}\right] \\
+&=\left(\sum_{l,\rm main}\nabla_l f \cdot\frac{\partial R}{\partial q_0}\left(\mathbf{x}_l-\mathbf{\bar{x}}^{\rm (fit)}\right), \sum_{l,\rm main}\nabla_l f \cdot\frac{\partial R}{\partial q_1}\left(\mathbf{x}_l-\mathbf{\bar{x}}^{\rm (fit)}\right), \sum_{l,\rm main}\nabla_l f \cdot\frac{\partial R}{\partial q_2}\left(\mathbf{x}_l-\mathbf{\bar{x}}^{\rm (fit)}\right), \right.\\
+&\left.\sum_{l,\rm main}\nabla_l f \cdot\frac{\partial R}{\partial q_3}\left(\mathbf{x}_l-\mathbf{\bar{x}}^{\rm (fit)}\right)\right) \cdot \left(\nabla_k q_0, \nabla_k q_1, \nabla_k q_2, \nabla_k q_3\right)-\frac{1}{n^{\rm (fit)}} R^{\intercal}\sum_{l,\rm main}{\nabla_l f}
+\end{aligned}$\newline
     By default, these terms are calculated and included in the total gradients;
     if this option is set to \texttt{off}, they are neglected.
-    In the case of a minimum RMSD component, this flag is automatically disabled because the contributions of those derivatives to the gradients cancel out; other types of variable will require projecting each of the gradients of the variable onto each of the gradients of the roto-translation (i.e.{} a $O(N^2)$ loop).
-    When \refkey{fittingGroup}{atom-group|fittingGroup} is enabled, the computation is a $O(N\times{}M)$ loop for all variables, including RMSDs.
+    In the case of a minimum RMSD component, this flag is automatically disabled because the contributions of those derivatives to the gradients cancel out; other types of variable will require projecting each of the gradients of the variable onto each of the gradients of the roto-translation.
+    When \refkey{fittingGroup}{atom-group|fittingGroup} is enabled, the computation is a $O(n^{(\rm fit)}+n^{(\rm main)})$ loop for all variables, including RMSDs.
 }
 
 \end{itemize}
