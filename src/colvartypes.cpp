@@ -322,7 +322,7 @@ void colvarmodule::rotation::debug_gradients(
             "\n");
   rotation_derivative deriv(rot, pos1, pos2, num_atoms_pos1, num_atoms_pos2);
   cvm::rvector dl0_2;
-  cvm::vector1d<cvm::rvector> dq0_2(4);
+  std::array<cvm::rvector, 4> dq0_2;
   cvm::matrix2d<cvm::rvector> ds_2;
 #ifdef COLVARS_LAMMPS
     MathEigen::Jacobi<cvm::real,
