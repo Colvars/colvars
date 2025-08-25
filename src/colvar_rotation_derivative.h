@@ -4,6 +4,7 @@
 #include "colvartypes.h"
 #include <type_traits>
 #include <cstring>
+#include <array>
 
 #ifndef _noalias
 #if defined(__INTEL_COMPILER) || (defined(__PGI) && !defined(__NVCOMPILER))
@@ -328,7 +329,7 @@ struct rotation_derivative {
   void calc_derivative_impl(
     const cvm::rvector (&ds)[4][4],
     cvm::rvector* _noalias const dl0_out,
-    cvm::vector1d<cvm::rvector>* _noalias const dq0_out,
+    std::array<cvm::rvector, 4>* _noalias const dq0_out,
     cvm::matrix2d<cvm::rvector>* _noalias const ds_out) const {
     if (use_ds) {
       // this code path is for debug_gradients, so not necessary to unroll the loop
@@ -367,7 +368,7 @@ struct rotation_derivative {
     }
     if (use_dq) {
       // we can skip this check if a fixed-size array is used
-      if (dq0_out->size() != 4) dq0_out->resize(4);
+      // if (dq0_out->size() != 4) dq0_out->resize(4);
       /* manually loop unrolling of the following loop:
         dq0_1.reset();
         for (size_t p = 0; p < 4; p++) {
@@ -463,7 +464,7 @@ struct rotation_derivative {
   template <bool use_dl, bool use_dq, bool use_ds>
   void calc_derivative_wrt_group1(
     size_t ia, cvm::rvector* _noalias const dl0_1_out = nullptr,
-    cvm::vector1d<cvm::rvector>* _noalias const dq0_1_out = nullptr,
+    std::array<cvm::rvector, 4>* _noalias const dq0_1_out = nullptr,
     cvm::matrix2d<cvm::rvector>* _noalias const ds_1_out = nullptr) const {
       // if (dl0_1_out == nullptr && dq0_1_out == nullptr) return;
       const cvm::real a2x = m_pos2[ia];
@@ -489,7 +490,7 @@ struct rotation_derivative {
   template <bool use_dl, bool use_dq, bool use_ds>
   void calc_derivative_wrt_group2(
     size_t ia, cvm::rvector* _noalias const dl0_2_out = nullptr,
-    cvm::vector1d<cvm::rvector>* _noalias const dq0_2_out = nullptr,
+    std::array<cvm::rvector, 4>* _noalias const dq0_2_out = nullptr,
     cvm::matrix2d<cvm::rvector>* _noalias const ds_2_out = nullptr) const {
     // if (dl0_2_out == nullptr && dq0_2_out == nullptr) return;
     const cvm::real a1x = m_pos1[ia];

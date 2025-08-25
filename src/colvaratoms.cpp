@@ -1460,7 +1460,7 @@ void cvm::atom_group::calc_fit_forces_impl(
   const auto rot_inv = rot.inverse().matrix();
   // temporary variables for computing and summing derivatives
   cvm::real sum_dxdq[4] = {0, 0, 0, 0};
-  cvm::vector1d<cvm::rvector> dq0_1(4);
+  std::array<cvm::rvector, 4> dq0_1;
   // loop 1: iterate over the current atom group
   for (size_t i = 0; i < size(); i++) {
     if (B_ag_center) {
