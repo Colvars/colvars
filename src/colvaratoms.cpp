@@ -1464,20 +1464,21 @@ void cvm::atom_group::calc_fit_forces_impl(
   std::array<cvm::rvector, 4> dq0_1;
   // loop 1: iterate over the current atom group
   for (size_t i = 0; i < size(); i++) {
+    cvm::rvector const main_vec = accessor_main(i);
     if (B_ag_center) {
-      atom_grad += accessor_main(i);
+      atom_grad += main_vec;
     }
     if (B_ag_rotate) {
       // Project the forces or gradients to the rotation matrix elements
-      C[0][0] += accessor_main(i).x * pos_unrotated_x(i);
-      C[0][1] += accessor_main(i).x * pos_unrotated_y(i);
-      C[0][2] += accessor_main(i).x * pos_unrotated_z(i);
-      C[1][0] += accessor_main(i).y * pos_unrotated_x(i);
-      C[1][1] += accessor_main(i).y * pos_unrotated_y(i);
-      C[1][2] += accessor_main(i).y * pos_unrotated_z(i);
-      C[2][0] += accessor_main(i).z * pos_unrotated_x(i);
-      C[2][1] += accessor_main(i).z * pos_unrotated_y(i);
-      C[2][2] += accessor_main(i).z * pos_unrotated_z(i);
+      C[0][0] += main_vec.x * pos_unrotated_x(i);
+      C[0][1] += main_vec.x * pos_unrotated_y(i);
+      C[0][2] += main_vec.x * pos_unrotated_z(i);
+      C[1][0] += main_vec.y * pos_unrotated_x(i);
+      C[1][1] += main_vec.y * pos_unrotated_y(i);
+      C[1][2] += main_vec.y * pos_unrotated_z(i);
+      C[2][0] += main_vec.z * pos_unrotated_x(i);
+      C[2][1] += main_vec.z * pos_unrotated_y(i);
+      C[2][2] += main_vec.z * pos_unrotated_z(i);
     }
   }
   if (B_ag_rotate) {
