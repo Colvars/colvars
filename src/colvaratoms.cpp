@@ -29,7 +29,20 @@ cvm::atom_group::simple_atom cvm::atom_group::init_atom_from_proxy(
   cvm::residue_id const &residue,
   std::string const     &atom_name,
   std::string const     &segment_id) {
-  const int atom_proxy_index = p->init_atom(residue, atom_name, segment_id);
+  int atom_proxy_index = p->init_atom(residue, atom_name, segment_id);
+  if (cvm::get_error()) {
+    // Error condition already reported by p->init_atom()
+    // return bogus atom, counting on caller to check for errors
+    return cvm::atom_group::simple_atom{
+      /*.proxy_index = */atom_proxy_index,
+      /*.id = */0,
+      /*.mass = */0.0,
+      /*.charge = */0.0,
+      /*.pos = */{0, 0, 0},
+      /*.vel = */{0, 0, 0},
+      /*.total_force = */{0, 0, 0},
+      /*.grad = */{0, 0, 0}};
+  }
   const int atom_id = p->get_atom_id(atom_proxy_index);
   const cvm::real atom_mass = p->get_atom_mass(atom_proxy_index);
   const cvm::real atom_charge = p->get_atom_charge(atom_proxy_index);

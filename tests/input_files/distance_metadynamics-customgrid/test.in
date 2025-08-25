@@ -1,0 +1,34 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    distance {
+        debugGradients on
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+metadynamics {
+    colvars          one
+    hillWeight       0.001
+    newHillFrequency 10
+    gaussianSigmas   0.31332853432887503  # Reproduce default value of hillWidth
+    grid {
+        width 0.5  # This is the same as the colvar definition, to reuse reference file for tests
+        # lowerBoundary   0.0  # This is already set by default for a distance component
+        upperBoundary    10.0
+    }
+}

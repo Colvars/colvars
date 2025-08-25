@@ -1,0 +1,49 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+    outputAppliedForce on
+    width 0.5
+
+    polarTheta {
+        debugGradients on
+        atoms {
+            indexGroup RMSD_atoms
+            centerToReference yes
+            rotateToReference yes
+            fittingGroup {
+                indexGroup heavy_atoms
+            }
+            refPositionsFile heavy_atoms_refpos.xyz
+        }
+    }
+} 
+
+colvar {
+
+    name two
+    outputAppliedForce on
+    width 0.5
+
+    polarPhi {
+        debugGradients on
+        atoms {
+            indexGroup RMSD_atoms
+            centerToReference yes
+            rotateToReference yes
+            fittingGroup {
+                indexGroup heavy_atoms
+            }
+            refPositionsFile heavy_atoms_refpos.xyz
+        }
+    }
+} 
+
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+}

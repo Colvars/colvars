@@ -489,6 +489,9 @@ int colvar::dihedPC::init(std::string const &conf)
           cvm::atom_group::init_atom_from_proxy(p,r[i  ], "C", sid),
           cvm::atom_group::init_atom_from_proxy(p,r[i+1], "N", sid)));
     }
+    if (cvm::get_error()) {
+      return cvm::get_error();
+    }
     register_atom_group(theta.back()->atom_groups[0]);
     register_atom_group(theta.back()->atom_groups[1]);
     register_atom_group(theta.back()->atom_groups[2]);
@@ -505,6 +508,9 @@ int colvar::dihedPC::init(std::string const &conf)
                              cvm::atom_group::init_atom_from_proxy(p,r[i+1], "N", sid),
                              cvm::atom_group::init_atom_from_proxy(p,r[i+1], "CA", sid),
                              cvm::atom_group::init_atom_from_proxy(p,r[i+1], "C", sid)));
+    }
+    if (cvm::get_error()) {
+      return cvm::get_error();
     }
     register_atom_group(theta.back()->atom_groups[0]);
     register_atom_group(theta.back()->atom_groups[1]);
