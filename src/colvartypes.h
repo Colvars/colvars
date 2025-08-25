@@ -12,6 +12,7 @@
 
 #include <sstream> // TODO specialize templates and replace this with iosfwd
 #include <vector>
+#include <array>
 
 #ifdef COLVARS_LAMMPS
 // Use open-source Jacobi implementation
