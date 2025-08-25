@@ -26,12 +26,8 @@
 # - index group builder
 
 set dir [file dirname [info script]]
-set version_file [open "${dir}/VERSION"]
-gets $version_file CV_DASHBOARD_VERSION
-close $version_file
-# Convert to Tcl-style package version number
-set CV_DASHBOARD_TCL_VERSION [string map { "-" "." } $CV_DASHBOARD_VERSION]
-package provide cv_dashboard $CV_DASHBOARD_TCL_VERSION
+set VERSION [::cv_dashboard::read_version $dir]
+package provide cv_dashboard $VERSION
 
 namespace eval ::cv_dashboard {
   # General UI state
