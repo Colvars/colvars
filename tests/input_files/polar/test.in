@@ -1,23 +1,22 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
 colvar {
 
     name one
-
     outputAppliedForce on
-
     width 0.5
 
-    orientationAngle {
-        debugGradients on
+    polartheta {
         atoms {
             indexGroup RMSD_atoms
             centerToReference yes
             rotateToReference yes
-            enableFitGradients no # Not available because gradients are implicit
-            refPositionsGroup {
+            fittingGroup {
                 indexGroup heavy_atoms
             }
             refPositionsFile heavy_atoms_refpos.xyz
         }
-        refPositionsFile rmsd_atoms_refpos.xyz
     }
 } 

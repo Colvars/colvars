@@ -1,0 +1,33 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.2
+
+    lowerBoundary 1.0
+    upperBoundary 12.0
+
+    distance {
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+metadynamics {
+    colvars        one
+    gaussianSigmas 2.0
+    hillWeight     1.0e-14
+    newHillFrequency 10
+    rebinGrids yes
+    writeHillsTrajectory yes
+}

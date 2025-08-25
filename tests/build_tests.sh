@@ -12,6 +12,7 @@ if [ -n "${1}" ] ; then
         exit 1
     fi
 fi
+echo "Using working directory $WORKDIR"
 
 # Create a directory (or find an existing one) and set the variable $dirname
 create_test_dir() {
@@ -57,6 +58,8 @@ write_colvars_config() {
     if [ ${workdir##*/} == "input_files" ] ; then
         # Remove directory prefix
         sed -i 's/..\/Common\///' ${filename}
+        # Functional tests do not support outputVelocity
+        sed -i '/outputVelocity/d' ${filename}
     else
          # Activate gradient debugging only in functional tests
         sed -i '/debugGradients/d' ${filename}
@@ -150,12 +153,14 @@ write_colvars_config "distance-extended" ""
 create_test_dir "distance-runave"
 write_colvars_config "distance-runave" ""
 
-create_test_dir "distance-autocorrfunc"
-write_colvars_config "distance-autocorrfunc" ""
+ #  Velocity autocorrelation and correlation functions are not available in functional tests
+if [[ ! "$WORKDIR" =~ input_files/?$ ]] ; then
+    create_test_dir "distance-autocorrfunc"
+    write_colvars_config "distance-autocorrfunc" ""
 
-create_test_dir "distance-corrfunc"
-write_colvars_config "distance-corrfunc" ""
-
+    create_test_dir "distance-corrfunc"
+    write_colvars_config "distance-corrfunc" ""
+fi
 
 for colvar in "distance-grid" ; do
     for bias in \
@@ -204,10 +209,11 @@ m4 < distancez.in.m4 > distancez.in
 m4 -Dfitgroup < distancez.in.m4 > distancez-fitgroup.in
 m4 -Daxis -DdistanceZ=distanceXY < distancez.in.m4 > distancexy-axis.in
 
-m4 -Dorientation=orientationAngle < orientation.in > orientationangle.in
-m4 -Dorientation=orientationAngle < orientation-fitgroup.in > orientationangle-fitgroup.in
-m4 -Dorientation=orientationProj < orientation.in > orientationproj.in
-m4 -Dorientation=orientationProj < orientation-fitgroup.in > orientationproj-fitgroup.in
+# Do not regenerate those to keep debugGradients line
+# m4 -Dorientation=orientationAngle < orientation.in > orientationangle.in
+# m4 -Dorientation=orientationAngle < orientation-fitgroup.in > orientationangle-fitgroup.in
+# m4 -Dorientation=orientationProj  < orientation.in > orientationproj.in
+# m4 -Dorientation=orientationProj  < orientation-fitgroup.in > orientationproj-fitgroup.in
 
 # Tests of individual collective variables
 for colvar in \
@@ -235,6 +241,7 @@ for colvar in \
     "selfcoordnum" "selfcoordnum-pairlist" \
     "torchann-dihedral" \
     "orientationangle" "orientationproj" \
+    "polar" \
    ; do
     for bias in \
         "harmonic-fixed" \
@@ -288,15 +295,20 @@ create_test_dir ${colvar}-fitgroup_${bias}
 write_colvars_config ${colvar}-fitgroup ${bias}
 
 
-colvar="dihedralPC"
-bias="abf2d"
-create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias}
+# Variables that are not available in functional tests
+# dihedralPC is covered by protein_cvs
+if [[ ! "$WORKDIR" =~ input_files/?$ ]] ; then
+    echo "Adding dihedralPC tests"
+    colvar="dihedralPC"
+    bias="abf2d"
+    create_test_dir ${colvar}_${bias}
+    write_colvars_config ${colvar} ${bias}
 
-colvar="dihedralPC"
-bias="metadynamics-2d"
-create_test_dir ${colvar}_${bias}
-write_colvars_config ${colvar} ${bias}
+    colvar="dihedralPC"
+    bias="metadynamics-2d"
+    create_test_dir ${colvar}_${bias}
+    write_colvars_config ${colvar} ${bias}
+fi
 
 colvar="distancepairs"
 bias="linear-distancepairs"
@@ -313,8 +325,13 @@ bias="harmonic-fixed-euler"
 create_test_dir ${colvar}_${bias}
 write_colvars_config ${colvar} ${bias}
 
-create_test_dir protein_cvs
-write_colvars_config protein_cvs
+for colvar in \
+    "protein_cvs" \
+    ; do
+    create_test_dir ${colvar}
+    write_colvars_config ${colvar} ""
+done
+
 
 # TODO uncomment this and the add two-dimensional regtests
 # # Generate two-variables versions of bias configurations
