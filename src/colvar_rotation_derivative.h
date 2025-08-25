@@ -330,10 +330,10 @@ struct rotation_derivative {
     const cvm::rvector (&ds)[4][4],
     cvm::rvector* _noalias const dl0_out,
     std::array<cvm::rvector, 4>* _noalias const dq0_out,
-    cvm::matrix2d<cvm::rvector>* _noalias const ds_out) const {
+    std::array<std::array<cvm::rvector, 4>, 4>* _noalias const ds_out) const {
     if (use_ds) {
       // this code path is for debug_gradients, so not necessary to unroll the loop
-      *ds_out = cvm::matrix2d<cvm::rvector>(4, 4);
+      *ds_out = std::array<std::array<cvm::rvector, 4>, 4>();
       for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
           (*ds_out)[i][j] = ds[i][j];
@@ -465,7 +465,7 @@ struct rotation_derivative {
   void calc_derivative_wrt_group1(
     size_t ia, cvm::rvector* _noalias const dl0_1_out = nullptr,
     std::array<cvm::rvector, 4>* _noalias const dq0_1_out = nullptr,
-    cvm::matrix2d<cvm::rvector>* _noalias const ds_1_out = nullptr) const {
+    std::array<std::array<cvm::rvector, 4>, 4>* _noalias const ds_1_out = nullptr) const {
       // if (dl0_1_out == nullptr && dq0_1_out == nullptr) return;
       const cvm::real a2x = m_pos2[ia];
       const cvm::real a2y = m_pos2[ia + m_num_atoms_pos2];
@@ -491,7 +491,7 @@ struct rotation_derivative {
   void calc_derivative_wrt_group2(
     size_t ia, cvm::rvector* _noalias const dl0_2_out = nullptr,
     std::array<cvm::rvector, 4>* _noalias const dq0_2_out = nullptr,
-    cvm::matrix2d<cvm::rvector>* _noalias const ds_2_out = nullptr) const {
+    std::array<std::array<cvm::rvector, 4>, 4>* _noalias const ds_2_out = nullptr) const {
     // if (dl0_2_out == nullptr && dq0_2_out == nullptr) return;
     const cvm::real a1x = m_pos1[ia];
     const cvm::real a1y = m_pos1[ia + m_num_atoms_pos1];
