@@ -1231,36 +1231,37 @@ public:
                                   vec.z * ( q1 * pos.x + q2 * pos.y + q3 * pos.z)));
   }
 
-  /// \brief Calculate the sums of element-wise products of a given matrix with respect to dR/dq0, dR/dq1, dR/dq2 and dR/dq3
-  /// \param C A 3x3 matrix
-  /// \return A 4-element tuple (see the detailed documentation below).
-  ///
-  /// This function is mainly used for projecting the gradients or forces on
-  /// a rotation matrix to the gradients or forces on the quaternion of the
-  /// same rotation matrix. Mathematically, let \f$C\f$ be the matrix
-  /// \f[
-  /// \begin{bmatrix}
-  /// \frac{\partial f}{\partial R_{00}} & \frac{\partial f}{\partial R_{01}} & \frac{\partial f}{\partial R_{02}} \\
-  /// \frac{\partial f}{\partial R_{10}} & \frac{\partial f}{\partial R_{11}} & \frac{\partial f}{\partial R_{12}} \\
-  /// \frac{\partial f}{\partial R_{20}} & \frac{\partial f}{\partial R_{21}} & \frac{\partial f}{\partial R_{22}}
-  /// \end{bmatrix}
-  /// \f]
-  /// and \f$\frac{{\rm d}R}{{\rm d}q_{i}}\f$ be
-  /// \f[
-  /// \begin{bmatrix}
-  /// \frac{\partial R_{00}}{\partial q_i} & \frac{\partial R_{01}}{\partial q_i} & \frac{\partial R_{02}}{\partial q_i} \\
-  /// \frac{\partial R_{10}}{\partial q_i} & \frac{\partial R_{11}}{\partial q_i} & \frac{\partial R_{12}}{\partial q_i} \\
-  /// \frac{\partial R_{20}}{\partial q_i} & \frac{\partial R_{21}}{\partial q_i} & \frac{\partial R_{22}}{\partial q_i}
-  /// \end{bmatrix}
-  /// \f]
-  /// This function returns
-  /// \f[
-  /// \left[\mathbf{e}^T\left(C \odot \frac{{\rm d}R}{{\rm d}q_0}\right)\mathbf{e},
-  ///       \mathbf{e}^T\left(C \odot \frac{{\rm d}R}{{\rm d}q_1}\right)\mathbf{e},
-  ///       \mathbf{e}^T\left(C \odot \frac{{\rm d}R}{{\rm d}q_2}\right)\mathbf{e},
-  ///       \mathbf{e}^T\left(C \odot \frac{{\rm d}R}{{\rm d}q_3}\right)\mathbf{e}\right]
-  /// \f]
-  /// where \f$\mathbf{e}\f$ is \f$[1, 1, 1]\f$ and \f$\odot\f$ is the element-wise product (Hadamard product).
+  /** \brief Calculate the sums of element-wise products of a given matrix with respect to dR/dq0, dR/dq1, dR/dq2 and dR/dq3
+   *  \param C A 3x3 matrix
+   *  \return A 4-element tuple (see the detailed documentation below).
+   *
+   *  This function is mainly used for projecting the gradients or forces on
+   *  a rotation matrix to the gradients or forces on the quaternion of the
+   *  same rotation matrix. Mathematically, let \f$C\f$ be the matrix
+   *  \f[
+   *  \begin{bmatrix}
+   *  \frac{\partial f}{\partial R_{00}} & \frac{\partial f}{\partial R_{01}} & \frac{\partial f}{\partial R_{02}} \\
+   *  \frac{\partial f}{\partial R_{10}} & \frac{\partial f}{\partial R_{11}} & \frac{\partial f}{\partial R_{12}} \\
+   *  \frac{\partial f}{\partial R_{20}} & \frac{\partial f}{\partial R_{21}} & \frac{\partial f}{\partial R_{22}}
+   *  \end{bmatrix}
+   *  \f]
+   *  and \f$\frac{{\rm d}R}{{\rm d}q_{i}}\f$ be
+   *  \f[
+   *  \begin{bmatrix}
+   *  \frac{\partial R_{00}}{\partial q_i} & \frac{\partial R_{01}}{\partial q_i} & \frac{\partial R_{02}}{\partial q_i} \\
+   *  \frac{\partial R_{10}}{\partial q_i} & \frac{\partial R_{11}}{\partial q_i} & \frac{\partial R_{12}}{\partial q_i} \\
+   *  \frac{\partial R_{20}}{\partial q_i} & \frac{\partial R_{21}}{\partial q_i} & \frac{\partial R_{22}}{\partial q_i}
+   *  \end{bmatrix}
+   *  \f]
+   *  This function returns
+   *  \f[
+   *  \left[\mathbf{e}^T\left(C \odot \frac{{\rm d}R}{{\rm d}q_0}\right)\mathbf{e},
+   *        \mathbf{e}^T\left(C \odot \frac{{\rm d}R}{{\rm d}q_1}\right)\mathbf{e},
+   *        \mathbf{e}^T\left(C \odot \frac{{\rm d}R}{{\rm d}q_2}\right)\mathbf{e},
+   *        \mathbf{e}^T\left(C \odot \frac{{\rm d}R}{{\rm d}q_3}\right)\mathbf{e}\right]
+   *  \f]
+   *  where \f$\mathbf{e}\f$ is \f$[1, 1, 1]\f$ and \f$\odot\f$ is the element-wise product (Hadamard product).
+   */
   inline std::array<cvm::real, 4> derivative_element_wise_product_sum(const cvm::real (&C)[3][3]) const {
     return std::array<cvm::real, 4>{
       2.0 * ( q0 * C[0][0] - q3 * C[0][1] + q2 * C[0][2] +
