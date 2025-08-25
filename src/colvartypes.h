@@ -1263,7 +1263,7 @@ public:
    *  where \f$\mathbf{e}\f$ is \f$[1, 1, 1]\f$ and \f$\odot\f$ is the element-wise product (Hadamard product).
    */
   inline std::array<cvm::real, 4> derivative_element_wise_product_sum(const cvm::real (&C)[3][3]) const {
-    return std::array<cvm::real, 4>{
+    return std::array<cvm::real, 4>{{
       2.0 * ( q0 * C[0][0] - q3 * C[0][1] + q2 * C[0][2] +
               q3 * C[1][0] + q0 * C[1][1] - q1 * C[1][2] +
              -q2 * C[2][0] + q1 * C[2][1] + q0 * C[2][2]),
@@ -1276,7 +1276,7 @@ public:
       2.0 * (-q3 * C[0][0] - q0 * C[0][1] + q1 * C[0][2] +
               q0 * C[1][0] - q3 * C[1][1] + q2 * C[1][2] +
               q1 * C[2][0] + q2 * C[2][1] + q3 * C[2][2])
-    };
+    }};
   }
 
   /// \brief Return the cosine between the orientation frame
