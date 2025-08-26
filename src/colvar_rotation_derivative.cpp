@@ -45,7 +45,7 @@ int rotation_derivative_gpu::add_prepare_derivative_nodes(
   std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
   int error_code = COLVARS_OK;
   cudaGraphNode_t node;
-  colvars_gpu::prepare_derivative(
+  error_code |= colvars_gpu::prepare_derivative(
     require_dl_dq, m_rot->d_S_eigval,
     m_rot->d_S_eigvec, tmp_Q0Q0,
     tmp_Q0Q0_L, node, graph, {});
