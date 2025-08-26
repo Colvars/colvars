@@ -161,8 +161,8 @@ int colvarproxy_stub::read_frame_xyz(const char *filename)
 {
   int err = colvars->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
   if ( !err ) {
-    colvars->it++;
     colvars->calc();
+    colvars->it++;
   }
   return err;
 }
