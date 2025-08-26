@@ -458,11 +458,13 @@ public:
    *
    *  This function is used to (i) project the gradients of CV with respect to
    *  rotated main group atoms to fitting group atoms, or (ii) project the forces
-   *  on rotated main group atoms to fitting group atoms, by the following two steps
+   *  on rotated main group atoms to fitting group atoms, by the following three steps
    *  (using the goal (ii) for example):
-   *  (1) Loop over the positions of main group atoms and call cvm::quaternion::position_derivative_inner
-   *      to project the forces on rotated main group atoms to the forces on quaternion.
-   *  (2) Loop over the positions of fitting group atoms, compute the gradients of
+   *  (1) Loop over the positions of main group atoms and project the forces on rotated main group
+   *      atoms to the forces on the nine rotation matrix elements;
+   *  (2) Project the forces on the rotation matrix elements to the forces on the four
+   *      components of the corresponding quaternion \f$\mathbf{q}\f$;
+   *  (3) Loop over the positions of fitting group atoms, compute the gradients of
    *      \f$\mathbf{q}\f$ with respect to the position of each atom, and then multiply
    *      that with the force on \f$\mathbf{q}\f$ (chain rule).
    */
