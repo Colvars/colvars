@@ -96,7 +96,7 @@ proc grad_fdiff {func x0 dx {widths {}}} {
 }
 
 # User front-end
-# Outputs dx, relative RMSD for given dx
+# Outputs dx, relative RMSE for given dx
 # for decreasing values of dx
 
 proc test_grad {func x0 {dx 1.} {widths {}}} {
@@ -105,9 +105,11 @@ proc test_grad {func x0 {dx 1.} {widths {}}} {
     calc_${func} {*}$x0
 
     set ga [calc_${func}_gradient {*}$x0]
-    for {set n 0} {$n < 5} {incr n} {
+    puts "dx       Relative RMSE       Computed gradient      Finite-difference gradient"
+    for {set n 0} {$n < 6} {incr n} {
         set gd [grad_fdiff $func $x0 $dx $widths]
-        puts "$dx [expr sqrt([msd $ga $gd] / [vveclength2 $ga])]"
+        set rmse [expr sqrt([msd $ga $gd] / [vveclength2 $ga])]
+        puts "[format "%8g" $dx] [format "%10g" $rmse]  $ga    $gd"
         set dx [expr {$dx / 10.}]
     }
 }
