@@ -510,11 +510,11 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   double sum_dxdq_w = 0;
   cvm::rvector main_grad{0, 0, 0};
   while (i < main_group_size) {
+    const cvm::rvector g{atoms_grad_or_force_x[i],
+                         atoms_grad_or_force_y[i],
+                         atoms_grad_or_force_z[i]};
     if (B_ag_center || B_ag_rotate) {
-      main_grad += cvm::rvector{
-        atoms_grad_or_force_x[i],
-        atoms_grad_or_force_y[i],
-        atoms_grad_or_force_z[i]};
+      main_grad += g;
     }
     if (B_ag_rotate) {
       cvm::quaternion const dxdq =
@@ -523,7 +523,7 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
             atoms_pos_unrotated_x[i],
             atoms_pos_unrotated_y[i],
             atoms_pos_unrotated_z[i]},
-          main_grad);
+          g);
       sum_dxdq_x += dxdq[0];
       sum_dxdq_y += dxdq[1];
       sum_dxdq_z += dxdq[2];

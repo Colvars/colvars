@@ -1240,6 +1240,7 @@ void cvm::atom_group::center_ref_pos()
   colvarproxy* p = cvm::main()->proxy;
   if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
     p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
+    p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, 3 * num_ref_pos);
   }
 #endif
 }
@@ -1866,13 +1867,6 @@ void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
   }
   if (m_ag->b_dummy) return;
   colvarproxy* const p = cvm::main()->proxy;
-  if (p->has_gpu_support()) {
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    m_ag->use_group_force = true;
-    // CPU forces are already intercepted into group_forces
-    return;
-#endif
-  }
   if (m_ag->is_enabled(f_ag_rotate)) {
     for (size_t ia = 0; ia < m_ag->size(); ++ia) {
       // const cvm::rvector f_ia = rot_inv * m_ag->group_forces[ia];
