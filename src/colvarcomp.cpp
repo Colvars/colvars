@@ -617,7 +617,7 @@ void colvar::cvc::debug_gradients()
         size_t j;
 
         // fit_gradients are in the simulation frame: we should print them in the rotated frame
-        cvm::log("Fit gradients:\n");
+        cvm::log("Fit gradients for group " + group->key + ":\n");
         for (j = 0; j < group_for_fit->size(); j++) {
           const cvm::rvector fit_grad(
             group_for_fit->fit_gradients_x(j),
@@ -639,6 +639,7 @@ void colvar::cvc::debug_gradients()
       const cvm::rvector g = gradients[ia];
       gradient_sum += g;
 
+      cvm::log("Gradients for group " + group->key + ":\n");
       for (size_t id = 0; id < 3; id++) {
         // (re)read original positions
         group->read_positions();
@@ -720,7 +721,7 @@ void colvar::cvc::debug_gradients()
           cvm::real const x_2 = x.real_value;
 
           cvm::real const num_diff = 0.5 * (x_1 - x_2);
-          cvm::log("refPosGroup atom "+cvm::to_str(ia)+", component "+cvm::to_str (id)+":\n");
+          cvm::log("fittingGroup atom "+cvm::to_str(ia)+", component "+cvm::to_str (id)+":\n");
           cvm::log("dx(actual) = "+cvm::to_str (num_diff, 21, 14)+"\n");
           cvm::real const dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
           cvm::log("dx(interp) = "+cvm::to_str (dx_pred, 21, 14)+"\n");
