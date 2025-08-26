@@ -1240,6 +1240,7 @@ void cvm::atom_group::center_ref_pos()
   colvarproxy* p = cvm::main()->proxy;
   if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
     p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
+    p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
     p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, 3 * num_ref_pos);
   }
 #endif
