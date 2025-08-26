@@ -639,6 +639,8 @@ void colvar::cvc::debug_gradients()
       const cvm::rvector g = gradients[ia];
       gradient_sum += g;
 
+      auto const this_atom = (*group)[ia];
+
       cvm::log("Gradients for group " + group->key + ":\n");
       for (size_t id = 0; id < 3; id++) {
         // (re)read original positions
@@ -668,16 +670,16 @@ void colvar::cvc::debug_gradients()
         if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_2 = x[0];
 
         cvm::real const num_diff = 0.5 * (x_1 - x_2);
-        cvm::log("Atom "+cvm::to_str(ia)+", component "+cvm::to_str(id)+":\n");
-        cvm::log("dx(actual) = "+cvm::to_str(num_diff,
-                              21, 14)+"\n");
+        cvm::log("Atom " + cvm::to_str(ia) + ", ID = " + cvm::to_str(this_atom.id) +
+                 ", component " + cvm::to_str(id) + ":\n");
+        cvm::log("dx(actual) = " + cvm::to_str(num_diff, 21, 14) + "\n");
         cvm::real dx_pred = cvm::debug_gradients_step_size * gradients[ia][id];
-        cvm::log("dx(interp) = "+cvm::to_str(dx_pred,
-                              21, 14)+"\n");
-        cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
+        cvm::log("dx(interp) = " + cvm::to_str(dx_pred, 21, 14) + "\n");
+        cvm::real rel_error =
+            cvm::fabs(num_diff - dx_pred) / (cvm::fabs(num_diff) + cvm::fabs(dx_pred));
         cvm::main()->record_gradient_error(rel_error);
-        cvm::log("|dx(actual) - dx(interp)|/(|dx(actual)| + |dx(interp)|) = "+
-                  cvm::to_str(rel_error, 12, 5)+"\n");
+        cvm::log("|dx(actual) - dx(interp)|/(|dx(actual)| + |dx(interp)|) = " +
+                 cvm::to_str(rel_error, 12, 5) + "\n");
       }
     }
 
