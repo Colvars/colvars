@@ -157,7 +157,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   use_scripted_forces = false;
   scripting_after_biases = false;
 
-  colvarmodule::debug_gradients_step_size = 1.0e-07;
+  colvarmodule::debug_gradients_step_size = 1.0e-05;
 
   colvarmodule::rotation::monitor_crossings = false;
   colvarmodule::rotation::crossing_threshold = 1.0e-02;
