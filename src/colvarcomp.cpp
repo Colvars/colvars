@@ -623,7 +623,7 @@ void colvar::cvc::debug_gradients()
             group_for_fit->fit_gradients_x(j),
             group_for_fit->fit_gradients_y(j),
             group_for_fit->fit_gradients_z(j));
-          cvm::log((group->fitting_group ? std::string("refPosGroup") : group->key) +
+          cvm::log((group->fitting_group ? std::string("fittingGroup") : group->key) +
                   "[" + cvm::to_str(j) + "] = " +
                   (group->is_enabled(f_ag_rotate) ?
                     cvm::to_str(rot_0 * (fit_grad)) :
@@ -632,6 +632,7 @@ void colvar::cvc::debug_gradients()
       }
     }
 
+    cvm::log("Gradients for group " + group->key + ":\n");
     std::vector<cvm::rvector> gradients = ag_gradients.at(group)[0];
     // debug the gradients
     for (size_t ia = 0; ia < group->size(); ia++) {
@@ -640,8 +641,6 @@ void colvar::cvc::debug_gradients()
       gradient_sum += g;
 
       auto const this_atom = (*group)[ia];
-
-      cvm::log("Gradients for group " + group->key + ":\n");
       for (size_t id = 0; id < 3; id++) {
         // (re)read original positions
         group->read_positions();
@@ -670,16 +669,15 @@ void colvar::cvc::debug_gradients()
         if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_2 = x[0];
 
         cvm::real const num_diff = 0.5 * (x_1 - x_2);
-        cvm::log("Atom " + cvm::to_str(ia) + ", ID = " + cvm::to_str(this_atom.id) +
-                 ", component " + cvm::to_str(id) + ":\n");
-        cvm::log("dx(actual) = " + cvm::to_str(num_diff, 21, 14) + "\n");
-        cvm::real dx_pred = cvm::debug_gradients_step_size * gradients[ia][id];
-        cvm::log("dx(interp) = " + cvm::to_str(dx_pred, 21, 14) + "\n");
-        cvm::real rel_error =
-            cvm::fabs(num_diff - dx_pred) / (cvm::fabs(num_diff) + cvm::fabs(dx_pred));
+        cvm::real const dx_pred = cvm::debug_gradients_step_size * gradients[ia][id];
+        cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
         cvm::main()->record_gradient_error(rel_error);
-        cvm::log("|dx(actual) - dx(interp)|/(|dx(actual)| + |dx(interp)|) = " +
-                 cvm::to_str(rel_error, 12, 5) + "\n");
+
+        cvm::log("Atom "+cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
+                  ", comp. " + cvm::to_str(id) + ":" + \
+                  "  dx(actual) = " + cvm::to_str (num_diff, 19, 12) + \
+                  "  dx(interp) = " + cvm::to_str (dx_pred, 19, 12) + \
+                  "  rel. error = " + cvm::to_str(rel_error, 12, 5) + ".\n");
       }
     }
 
@@ -691,6 +689,7 @@ void colvar::cvc::debug_gradients()
       std::vector<cvm::rvector> fit_gradients = ag_gradients.at(group)[1];
       for (size_t ia = 0; ia < ref_group->size(); ia++) {
 
+        auto const this_atom = (*ref_group)[ia];
         // fit gradients are in the unrotated (simulation) frame
         cvm::rvector const atom_grad = fit_gradients[ia];
         fit_gradient_sum += atom_grad;
@@ -723,14 +722,15 @@ void colvar::cvc::debug_gradients()
           cvm::real const x_2 = x.real_value;
 
           cvm::real const num_diff = 0.5 * (x_1 - x_2);
-          cvm::log("fittingGroup atom "+cvm::to_str(ia)+", component "+cvm::to_str (id)+":\n");
-          cvm::log("dx(actual) = "+cvm::to_str (num_diff, 21, 14)+"\n");
           cvm::real const dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
-          cvm::log("dx(interp) = "+cvm::to_str (dx_pred, 21, 14)+"\n");
           cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
           cvm::main()->record_gradient_error(rel_error);
-          cvm::log ("|dx(actual) - dx(interp)|/(|dx(actual)| + |dx(interp)|) = "+
-                    cvm::to_str(rel_error, 12, 5) + ".\n");
+
+          cvm::log("fittingGroup atom " + cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
+                    ", comp. " + cvm::to_str(id) + ":" + \
+                    "  dx(actual) = " + cvm::to_str (num_diff, 19, 12) + \
+                    "  dx(interp) = " + cvm::to_str (dx_pred, 19, 12) + \
+                    "  rel. error = " + cvm::to_str(rel_error, 12, 5) + ".\n");
         }
       }
     }
