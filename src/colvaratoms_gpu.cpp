@@ -878,7 +878,7 @@ int cvm::atom_group::add_apply_force_nodes(
 }
 
 int cvm::atom_group::read_positions_gpu_debug(
-  size_t change_atom_i, int xyz, bool to_cpu, cudaStream_t stream) {
+  size_t change_atom_i, int xyz, bool to_cpu, double sign, cudaStream_t stream) {
   int error_code = COLVARS_OK;
   colvarproxy *p = cvm::main()->proxy;
   error_code |= colvars_gpu::atoms_pos_from_proxy(
@@ -887,7 +887,7 @@ int cvm::atom_group::read_positions_gpu_debug(
     stream);
   error_code |= colvars_gpu::change_one_coordinate(
     gpu_buffers.d_atoms_pos, change_atom_i, xyz,
-    cvm::debug_gradients_step_size, num_atoms, stream);
+    sign * cvm::debug_gradients_step_size, num_atoms, stream);
   if (to_cpu) {
     error_code |= p->copy_DtoH(
       gpu_buffers.d_atoms_pos, atoms_pos.data(), 3 * num_atoms);
