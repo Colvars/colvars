@@ -633,17 +633,18 @@ struct rotation_derivative_gpu {
   /// \brief GPU temporary variable that will be updated if prepare_derivative called
   cvm::real* tmp_Q0Q0;
   cvm::real* tmp_Q0Q0_L;
-  /*! @brief Constructor of the cvm::rotation::derivative class for SOA
-   *  @param[in]  rot   The cvm::rotation object (must have called
-   *                    `calc_optimal_rotation` before calling
-   *                    `calc_derivative_wrt_group1` and
-   *                    `calc_derivative_wrt_group2`)
+  /*! @brief Constructor
+   *
+   *  The object of this class is expected to be constructed on host-pinned memory.
+   */
+  rotation_derivative_gpu();
+  /*! @brief Initialization of the rotation_derivative_gpu class
+   *  @param[in]  rot   The colvars_gpu::rotation_gpu object
    *  @param[in]  pos1  The atom positions of group 1
    *  @param[in]  pos2  The atom positions of group 2
    *  @param[in]  num_atoms_pos1 The number of atoms in group1
    *  @param[in]  num_atoms_pos2 The number of atoms in group2
    */
-  rotation_derivative_gpu();
   int init(
     const colvars_gpu::rotation_gpu* rot,
     const cvm::real* d_pos1,
@@ -651,11 +652,19 @@ struct rotation_derivative_gpu {
     const size_t num_atoms_pos1,
     const size_t num_atoms_pos2);
   ~rotation_derivative_gpu();
-  /*! @brief This function must be called before `calc_derivative_wrt_group1`
-   *         and `calc_derivative_wrt_group2` in order to prepare the tmp_Q0Q0
-   *        and tmp_Q0Q0_L.
+  /*! @brief Add a "prepare_rotation_derivative" node to the CUDA graph
    *  @param[in] require_dl_dq Require the calculation of the derivatives of L or/and Q
    *                           with respect to atoms.
+   *  @param[in] graph The CUDA graph where the node would be added
+   *  @param[out] nodes_map A map from operation names to cudaGraphNode_t
+   *  for dependency lookup. A node termed as "prepare_rotation_derivative" would
+   *  be added into the nodes_map.
+   *  @return COLVARS_OK if success and COLVARS_ERROR otherwise
+   *
+   * The corresponding graph must be executed before `calc_derivative_wrt_group1`
+   * and `calc_derivative_wrt_group2` in order to prepare the tmp_Q0Q0
+   * and tmp_Q0Q0_L.
+   *
    */
   int add_prepare_derivative_nodes(
     rotation_derivative_dldq require_dl_dq,
@@ -663,16 +672,16 @@ struct rotation_derivative_gpu {
     std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
 
   /*! @brief Actual implementation of the derivative calculation
-    *  @param[in]  ds  The derivative of matrix S with respect to an atom of
-    *                  either group 1 or group 2
-    *  @param[out] dl0_out The output of derivative of L
-    *  @param[out] dq0_out The output of derivative of Q
-    */
+   *  @param[in]  ds  The derivative of matrix S with respect to an atom of
+   *                  either group 1 or group 2
+   *  @param[out] dl0_out The output of derivative of L
+   *  @param[out] dq0_out The output of derivative of Q
+   */
   template <bool use_dl, bool use_dq/*, bool use_ds*/>
   inline COLVARS_DEVICE void calc_derivative_impl(
     const cvm::rvector (&ds)[4][4],
     cvm::rvector* _noalias const dl0_out,
-    cvm::rvector* _noalias const dq0_out) {
+    cvm::rvector* _noalias const dq0_out) const {
     if (use_dl) {
       *dl0_out = tmp_Q0Q0[0*4+0] * ds[0][0] +
                  tmp_Q0Q0[0*4+1] * ds[0][1] +
@@ -773,7 +782,7 @@ struct rotation_derivative_gpu {
   inline COLVARS_DEVICE void calc_derivative_wrt_group1(
     int ia,
     cvm::rvector* _noalias const dl0_1_out,
-    cvm::rvector* _noalias const dq0_1_out) {
+    cvm::rvector* _noalias const dq0_1_out) const {
     const cvm::real a2x = m_d_pos2[ia];
     const cvm::real a2y = m_d_pos2[ia + m_num_atoms_pos2];
     const cvm::real a2z = m_d_pos2[ia + 2 * m_num_atoms_pos2];
@@ -796,7 +805,7 @@ struct rotation_derivative_gpu {
   inline COLVARS_DEVICE void calc_derivative_wrt_group2(
     int ia,
     cvm::rvector* _noalias const dl0_2_out,
-    cvm::rvector* _noalias const dq0_2_out) {
+    cvm::rvector* _noalias const dq0_2_out) const {
     const cvm::real a1x = m_d_pos1[ia];
     const cvm::real a1y = m_d_pos1[ia + m_num_atoms_pos1];
     const cvm::real a1z = m_d_pos1[ia + 2 * m_num_atoms_pos1];

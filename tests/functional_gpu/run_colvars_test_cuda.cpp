@@ -1,7 +1,7 @@
 // #define COLVARS_DEBUG true
 #include "colvar_gpu_support.h"
 #include "colvarmodule.h"
-// #include "colvarscript.h"
+#include "colvarscript.h"
 #include "colvarproxy.h"
 
 #include <iostream>
@@ -309,12 +309,24 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // cvm::log("Input files read during this test:");
-  // unsigned char * args[2] = {
-  //   (unsigned char *) "cv",
-  //   (unsigned char *) "listinputfiles" };
-  // err |= run_colvarscript_command(2, args);
-  // cvm::log("  " + std::string(get_colvarscript_result()));
+  cvm::log("Input files read during this test:");
+  unsigned char * args[2] = {
+    (unsigned char *) "cv",
+    (unsigned char *) "listinputfiles" };
+  err |= run_colvarscript_command(2, args);
+  cvm::log("  " + std::string(get_colvarscript_result()));
+
+  double const max_gradient_error = proxy->colvars->get_max_gradient_error();
+  if (max_gradient_error > 0.) {
+    cvm::log("Max gradient error (debugGradients): " + cvm::to_str(max_gradient_error));
+
+    double threshold = 1e-3;
+    // Fail test if error is above threshold
+    if (max_gradient_error > threshold) {
+      cvm::log("Error: gradient inaccuracy is above threshold (" + cvm::to_str(threshold) + ")");
+      err = 1;
+    }
+  }
 
   delete proxy;
   return err;
