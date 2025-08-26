@@ -185,12 +185,14 @@ int colvar::coordnum::init(std::string const &conf)
                         COLVARS_INPUT_ERROR);
       // return and do not allocate the pairlists below
     }
+    size_t n;
     if (b_group2_center_only) {
-      pairlist = new bool[group1->size()];
+      n = group1->size();
+    } else {
+      n = group1->size() * group2->size();
     }
-    else {
-      pairlist = new bool[group1->size() * group2->size()];
-    }
+    pairlist = new bool[n];
+    for (size_t i = 0; i < n; i++) pairlist[i] = true;
   }
 
   init_scalar_boundaries(0.0, b_group2_center_only ?
@@ -520,7 +522,9 @@ int colvar::selfcoordnum::init(std::string const &conf)
       error_code |= cvm::error("Error: non-positive pairlistfrequency provided.\n",
                                COLVARS_INPUT_ERROR);
     }
-    pairlist = new bool[(group1->size()-1) * (group1->size()-1)];
+    size_t n = (group1->size()-1) * (group1->size()-1);
+    pairlist = new bool[n];
+    for (size_t i = 0; i < n; i++) pairlist[i] = true;
   }
 
   init_scalar_boundaries(0.0, static_cast<cvm::real>((group1->size()-1) *
