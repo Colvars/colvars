@@ -1,16 +1,12 @@
 diff --git a/cmake/Modules/Packages/COLVARS.cmake b/cmake/Modules/Packages/COLVARS.cmake
-index b943a0345e..ebee306f43 100644
+index afef315120..b4dc738626 100644
 --- a/cmake/Modules/Packages/COLVARS.cmake
 +++ b/cmake/Modules/Packages/COLVARS.cmake
-@@ -30,6 +30,11 @@ if(BUILD_OMP)
-   target_link_libraries(colvars PRIVATE OpenMP::OpenMP_CXX)
+@@ -27,6 +27,7 @@ if(BUILD_OMP)
  endif()
  
-+if(BUILD_MPI)
+ if(BUILD_MPI)
 +  target_compile_definitions(colvars PUBLIC -DCOLVARS_MPI)
-+  target_link_libraries(colvars PUBLIC MPI::MPI_CXX)
-+endif()
-+
- if(COLVARS_DEBUG)
-   # Need to export the define publicly to be valid in interface code
-   target_compile_definitions(colvars PUBLIC -DCOLVARS_DEBUG)
+   target_link_libraries(colvars PUBLIC MPI::MPI_CXX)
+ endif()
+ 
