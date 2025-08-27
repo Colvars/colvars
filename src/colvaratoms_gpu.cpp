@@ -318,9 +318,8 @@ int cvm::atom_group::add_calc_required_properties_nodes(
           fitting_group ? fitting_group->gpu_buffers.d_cog : this->gpu_buffers.d_cog;
         // Apply translation
         std::vector<cudaGraphNode_t> dependencies;
-        ADD_DEPENDENCY(save_cog_orig, dependencies, nodes_map);
+        ADD_DEPENDENCY(calc_com_cog, dependencies, nodes_map);
         // d_rpg_cog could be the COG of the fitting group, so we need to wait for it
-        ADD_DEPENDENCY_IF(save_fitting_group_cog_orig, dependencies, nodes_map);
         ADD_DEPENDENCY_IF(calc_fitting_group_cog, dependencies, nodes_map);
         cudaGraphNode_t move_to_origin_node;
         error_code |= colvars_gpu::apply_translation(
@@ -331,12 +330,17 @@ int cvm::atom_group::add_calc_required_properties_nodes(
         nodes_map["move_to_origin"] = move_to_origin_node;
         if (fitting_group) {
           std::vector<cudaGraphNode_t> dependencies_fitting_group_translate;
-          ADD_DEPENDENCY(save_fitting_group_cog_orig,
-                          dependencies_fitting_group_translate,
-                          nodes_map);
+          // ADD_DEPENDENCY(save_fitting_group_cog_orig,
+          //                 dependencies_fitting_group_translate,
+          //                 nodes_map);
+          ADD_DEPENDENCY(calc_fitting_group_cog, dependencies_fitting_group_translate, nodes_map);
+          // XXX TODO: FIGURE OUT WHY I NEED THIS TO GET RID OF THE RACE CONDITION???
+          // XXX NOTE: "move_to_origin" cannot be any of its uplevel nodes, and I have to use it
+          // to get the correct results.
+          ADD_DEPENDENCY_IF(move_to_origin, dependencies_fitting_group_translate, nodes_map);
           cudaGraphNode_t move_fitting_to_origin_node;
           error_code |= colvars_gpu::apply_translation(
-            fitting_group->gpu_buffers.d_atoms_pos, -1.0, d_rpg_cog,
+            fitting_group->gpu_buffers.d_atoms_pos, -1.0, fitting_group->gpu_buffers.d_cog,
             fitting_group->num_atoms,
             move_fitting_to_origin_node,
             graph,
@@ -896,7 +900,6 @@ int cvm::atom_group::read_positions_gpu_debug(
       gpu_buffers.d_atoms_pos, atoms_pos.data(), 3 * num_atoms);
     error_code |= checkGPUError(cudaStreamSynchronize(stream));
   }
-  // error_code |= checkGPUError(cudaStreamSynchronize(stream));
   return error_code;
 }
 
