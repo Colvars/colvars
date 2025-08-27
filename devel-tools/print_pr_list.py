@@ -10,6 +10,16 @@ import subprocess
 backends = set(['GROMACS', 'LAMMPS', 'NAMD', 'TinkerHP', 'VMD'])
 
 
+def run_cmd(cmd):
+    try:
+        txt = subprocess.check_output(
+            cmd, shell=True, stderr=subprocess.STDOUT).decode('UTF-8')
+    except subprocess.CalledProcessError as e:
+        print(e.output.decode('UTF-8'))
+        raise Exception("Error calling gh command.")
+    return txt
+
+
 def affects_backend(labels, backend=None):
     if backend is None:
         # Without a backend specified, this PR affects everything
@@ -32,24 +42,23 @@ def get_pr_list(state='merged', target='master', label=None):
     cmd = f"gh pr list --base {target} --state {state} --limit 10000 --json number,url,mergedAt,title,author,labels"
     if label:
         cmd += f" --label {label}"
-    try:
-        txt = subprocess.check_output(
-            cmd, shell=True, stderr=subprocess.STDOUT).decode('UTF-8')
-    except subprocess.CalledProcessError as e:
-        print(e.output.decode('UTF-8'))
-        raise Exception("Error calling gh command.")
+    txt = run_cmd(cmd)
     return json.loads(txt)
 
 
 def get_pr_commits(number):
     cmd = f"gh pr view {number} --json commits"
-    try:
-        txt = subprocess.check_output(
-            cmd, shell=True, stderr=subprocess.STDOUT).decode('UTF-8')
-    except subprocess.CalledProcessError as e:
-        print(e.output.decode('UTF-8'))
-        raise Exception("Error calling gh command.")
+    txt = run_cmd(cmd)
     return json.loads(txt)['commits']
+
+
+def get_pr_commits_after_rebase(number):
+    cmd = f"gh pr view {number} --json headRefOid"
+    txt = run_cmd(cmd)
+    pr_head = json.loads(txt)['headRefOid']
+    cmd = f"git log --oneline master..{pr_head}"
+    txt = run_cmd(cmd)
+    return txt
 
 
 def get_commits_authors(commits):
@@ -109,6 +118,8 @@ def print_pr_report(kwargs):
                 pr_labels, kwargs.get('backend')):
             pr_authors = get_pr_authors(pr)
             all_authors += pr_authors
+            if kwargs['format'] == 'commits':
+                print(get_pr_commits_after_rebase(pr['number']))
             if kwargs['format'] == 'numbers':
                 print(pr['number'])
             if kwargs['format'] == 'message':
@@ -151,8 +162,9 @@ if __name__ == '__main__':
                         help="List PRs targeting this branch")
     parser.add_argument('--format',
                         default='message',
-                        choices=['message', 'numbers'],
-                        help="Print the report as either a human-readable message, or just a list of PR numbers")
+                        choices=['message', 'numbers', 'commits'],
+                        help="Print the report as either a human-readable message, "
+                        "a list of PR numbers, or a list of commits after rebased into master")
     kwargs = vars(parser.parse_args())
 
     print_pr_report(kwargs)
