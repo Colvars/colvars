@@ -739,6 +739,17 @@ void colvar::cvc::debug_gradients()
           "  Fit gradient sum: " + cvm::to_str(fit_gradient_sum) +
           "  Total " + cvm::to_str(gradient_sum + fit_gradient_sum));
   }
+
+  // Do cleanups
+  // Reset the atom groups and restore the CV value after debugging gradients
+  for (size_t ig = 0; ig < atom_groups.size(); ig++) {
+    cvm::atom_group *group = atom_groups[ig];
+    if (group->b_dummy) continue;
+    // (re)read original positions
+    group->read_positions();
+    group->calc_required_properties();
+    calc_value();
+  }
   return;
 }
 
