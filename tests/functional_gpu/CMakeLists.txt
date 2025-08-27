@@ -47,9 +47,9 @@ target_include_directories(run_colvars_test_cuda
   PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
 
 if(CUDAToolkit_VERSION_MAJOR GREATER_EQUAL 10)
-  target_link_libraries(run_colvars_test_cuda CUDA::cudart CUDA::nvtx3 stdc++exp)
+  target_link_libraries(run_colvars_test_cuda CUDA::cudart CUDA::nvtx3)
 else()
-  target_link_libraries(run_colvars_test_cuda CUDA::cudart CUDA::nvToolsExt stdc++exp)
+  target_link_libraries(run_colvars_test_cuda CUDA::cudart CUDA::nvToolsExt)
 endif()
 set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE CUDA)
 # set_property(TARGET run_colvars_test_cuda PROPERTY CUDA_ARCHITECTURES OFF)
