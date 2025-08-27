@@ -95,7 +95,7 @@ def print_pr_report(kwargs):
         else:
             msg += f" merged until {until_date}"
     else:
-        until_date_ts = 0
+        until_date_ts = 2**36
 
     if kwargs['format'] == 'message':
         print(msg + ":")
