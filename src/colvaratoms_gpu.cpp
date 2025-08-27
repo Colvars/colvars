@@ -319,6 +319,9 @@ int cvm::atom_group::add_calc_required_properties_nodes(
         // Apply translation
         std::vector<cudaGraphNode_t> dependencies;
         ADD_DEPENDENCY(save_cog_orig, dependencies, nodes_map);
+        // d_rpg_cog could be the COG of the fitting group, so we need to wait for it
+        ADD_DEPENDENCY_IF(save_fitting_group_cog_orig, dependencies, nodes_map);
+        ADD_DEPENDENCY_IF(calc_fitting_group_cog, dependencies, nodes_map);
         cudaGraphNode_t move_to_origin_node;
         error_code |= colvars_gpu::apply_translation(
           gpu_buffers.d_atoms_pos, -1.0, d_rpg_cog,
