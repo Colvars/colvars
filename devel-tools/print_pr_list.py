@@ -27,9 +27,9 @@ def affects_backend(labels, backend=None):
     return False
 
 
-def get_pr_list(state='merged', label=None):
+def get_pr_list(state='merged', target='master', label=None):
     # 10,000 sounds like a reasonable limit for the Colvars repo
-    cmd = f"gh pr list --state {state} --limit 10000 --json number,url,mergedAt,title,author,labels"
+    cmd = f"gh pr list --base {target} --state {state} --limit 10000 --json number,url,mergedAt,title,author,labels"
     if label:
         cmd += f" --label {label}"
     try:
@@ -100,7 +100,7 @@ def print_pr_report(kwargs):
     if kwargs['format'] == 'message':
         print(msg + ":")
 
-    pr_db = get_pr_list(state=kwargs['state'], label=kwargs['label'])
+    pr_db = get_pr_list(state=kwargs['state'], target=kwargs['target'], label=kwargs['label'])
     all_authors = []
     for pr in pr_db:
         pr['mergedAt'] = date_parser.parse(pr['mergedAt']).timestamp()
@@ -145,6 +145,10 @@ if __name__ == '__main__':
                         default='merged',
                         choices=['open', 'closed', 'merged', 'all'],
                         help="List PRs in this state")
+    parser.add_argument('--target',
+                        default='master',
+                        type=str,
+                        help="List PRs targeting this branch")
     parser.add_argument('--format',
                         default='message',
                         choices=['message', 'numbers'],
