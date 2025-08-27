@@ -54,7 +54,7 @@ public:
   }
   void init_cvm() {
     colvars = new colvarmodule(this);
-    cvm::log("Using minimal testing interface.\n");
+    cvm::log("Using minimal CUDA testing interface.\n");
 
     colvars->cv_traj_freq = 0; // I/O will be handled explicitly
     colvars->restart_out_freq = 0;
@@ -243,8 +243,8 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename)
   }
   copy_HtoD(positions_soa.data(), d_mPositions, 3 * numAtoms);
   if ( !err ) {
-    colvars->it++;
     colvars->calc();
+    colvars->it++;
   }
   mAtomsChanged = false;
   return err;
