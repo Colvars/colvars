@@ -97,9 +97,10 @@ def print_pr_report(kwargs):
     else:
         until_date_ts = 0
 
-    print(msg + ":")
+    if kwargs['format'] == 'message':
+        print(msg + ":")
 
-    pr_db = get_pr_list(kwargs.get('state'), label=kwargs['label'])
+    pr_db = get_pr_list(state=kwargs['state'], label=kwargs['label'])
     all_authors = []
     for pr in pr_db:
         pr['mergedAt'] = date_parser.parse(pr['mergedAt']).timestamp()
@@ -108,12 +109,16 @@ def print_pr_report(kwargs):
                 pr_labels, kwargs.get('backend')):
             pr_authors = get_pr_authors(pr)
             all_authors += pr_authors
-            print()
-            print("-", pr['number'], pr['title'])
-            print(" ", pr['url'], "("+", ".join(pr_authors)+")")
+            if kwargs['format'] == 'numbers':
+                print(pr['number'])
+            if kwargs['format'] == 'message':
+                print()
+                print("-", pr['number'], pr['title'])
+                print(" ", pr['url'], "("+", ".join(pr_authors)+")")
 
-    print()
-    print("Authors:", ", ".join(sorted(list(set(all_authors)), key=str.casefold)))
+    if kwargs['format'] == 'message':
+        print()
+        print("Authors:", ", ".join(sorted(list(set(all_authors)), key=str.casefold)))
 
 
 if __name__ == '__main__':
@@ -137,10 +142,13 @@ if __name__ == '__main__':
                         type=str,
                         help="List only PRs with this label")
     parser.add_argument('--state',
-                        type=str,
                         default='merged',
                         choices=['open', 'closed', 'merged', 'all'],
                         help="List PRs in this state")
+    parser.add_argument('--format',
+                        default='message',
+                        choices=['message', 'numbers'],
+                        help="Print the report as either a human-readable message, or just a list of PR numbers")
     kwargs = vars(parser.parse_args())
 
     print_pr_report(kwargs)
