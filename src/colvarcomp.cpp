@@ -859,8 +859,26 @@ void colvar::cvc::debug_gradients()
       group->grad_z(ia) = 0;
     }
     // (re)read original positions
-    group->read_positions();
-    group->calc_required_properties();
+    if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+      group->read_positions_gpu_debug(
+        0, -1, is_enabled(f_cvc_require_cpu_buffers), -1.0, stream);
+      if (group->fitting_group) {
+        group->fitting_group->read_positions_gpu_debug(
+          0, -1, is_enabled(f_cvc_require_cpu_buffers), -1.0, stream);
+      }
+      group->calc_required_properties_gpu_debug(
+        is_enabled(f_cvc_require_cpu_buffers), stream);
+      checkGPUError(cudaStreamSynchronize(stream));
+      group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
+      if (group->fitting_group) {
+        group->fitting_group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
+      }
+#endif
+    } else {
+      group->read_positions();
+      group->calc_required_properties();
+    }
   }
   calc_value();
   calc_gradients();
