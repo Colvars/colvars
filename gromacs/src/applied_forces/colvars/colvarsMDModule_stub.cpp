@@ -46,7 +46,6 @@
 
 #include "gromacs/domdec/localatomsetmanager.h"
 #include "gromacs/fileio/checkpoint.h"
-#include "gromacs/mdtypes/commrec.h"
 #include "gromacs/mdtypes/imdmodule.h"
 #include "gromacs/mdtypes/imdpoptionprovider.h"
 #include "gromacs/utility/keyvaluetreebuilder.h"
@@ -88,6 +87,8 @@ public:
 
     void subscribeToSimulationSetupNotifications(MDModulesNotifiers* /*notifier*/) override {}
 
+    void subscribeToSimulationRunNotifications(MDModulesNotifiers* /*notifier*/) override {}
+
     IMdpOptionProvider* mdpOptionProvider() override { return &colvarsOptionsStub_; }
 
     IMDOutputProvider* outputProvider() override { return nullptr; }
@@ -108,7 +109,6 @@ private:
     ColvarsOptions colvarsOptionsStub_;
 };
 
-
 } // namespace
 
 std::unique_ptr<IMDModule> ColvarsModuleInfo::create()
@@ -116,6 +116,9 @@ std::unique_ptr<IMDModule> ColvarsModuleInfo::create()
     return std::make_unique<ColvarsMDModule>();
 }
 
-const std::string ColvarsModuleInfo::name_ = "colvars";
+std::string colvarsDescription()
+{
+    return "disabled";
+}
 
 } // namespace gmx

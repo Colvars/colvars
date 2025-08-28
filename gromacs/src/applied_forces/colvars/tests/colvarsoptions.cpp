@@ -50,14 +50,12 @@
 
 #include <gtest/gtest.h>
 
+#include "gromacs/applied_forces/colvars/colvarsMDModule.h"
 #include "gromacs/fileio/confio.h"
 #include "gromacs/gmxpreprocess/grompp.h"
 #include "gromacs/math/paddedvector.h"
-#include "gromacs/math/vectypes.h"
 #include "gromacs/mdrunutility/mdmodulesnotifiers.h"
-#include "gromacs/mdtypes/inputrec.h"
-#include "gromacs/options/options.h"
-#include "gromacs/options/treesupport.h"
+#include "gromacs/mdtypes/imdpoptionprovider_test_helper.h"
 #include "gromacs/selection/indexutil.h"
 #include "gromacs/topology/atoms.h"
 #include "gromacs/topology/index.h"
@@ -67,11 +65,10 @@
 #include "gromacs/utility/keyvaluetree.h"
 #include "gromacs/utility/keyvaluetreebuilder.h"
 #include "gromacs/utility/keyvaluetreemdpwriter.h"
-#include "gromacs/utility/keyvaluetreetransform.h"
 #include "gromacs/utility/smalloc.h"
-#include "gromacs/utility/stringcompare.h"
 #include "gromacs/utility/stringstream.h"
 #include "gromacs/utility/textwriter.h"
+#include "gromacs/utility/vectypes.h"
 
 #include "testutils/cmdlinetest.h"
 #include "testutils/refdata.h"
@@ -89,28 +86,12 @@ static const std::string colvarsConfig = "colvars_sample.dat";
 class ColvarsOptionsTest : public ::testing::Test
 {
 public:
-    void setFromMdpValues(const KeyValueTreeObject& ColvarsMdpValues)
-    {
-        // Setup options
-        Options colvarsModuleOptions;
-        colvarsOptions_.initMdpOptions(&colvarsModuleOptions);
-
-        // Add rules to transform mdp inputs to colvars data
-        KeyValueTreeTransformer transform;
-        transform.rules()->addRule().keyMatchType("/", StringCompareType::CaseAndDashInsensitive);
-
-        colvarsOptions_.initMdpTransform(transform.rules());
-
-        // Execute the transform on the mdpValues
-        auto transformedMdpValues = transform.transform(ColvarsMdpValues, nullptr);
-        assignOptionsFromKeyValueTree(&colvarsModuleOptions, transformedMdpValues.object(), nullptr);
-    }
-
     static KeyValueTreeObject ColvarsBuildDefaulMdpValues()
     {
         // Prepare MDP inputs
         KeyValueTreeBuilder mdpValueBuilder;
-        mdpValueBuilder.rootObject().addValue(c_colvarsModuleName + "-active", std::string("true"));
+        mdpValueBuilder.rootObject().addValue(std::string(ColvarsModuleInfo::sc_name) + "-active",
+                                              std::string("true"));
         return mdpValueBuilder.build();
     }
 
@@ -118,15 +99,18 @@ public:
     {
         // Prepare MDP inputs
         KeyValueTreeBuilder mdpValueBuilder;
-        mdpValueBuilder.rootObject().addValue(c_colvarsModuleName + "-active", std::string("true"));
-        mdpValueBuilder.rootObject().addValue(c_colvarsModuleName + "-configfile", colvarsConfig);
-        mdpValueBuilder.rootObject().addValue(c_colvarsModuleName + "-seed", std::string("12345789"));
+        mdpValueBuilder.rootObject().addValue(std::string(ColvarsModuleInfo::sc_name) + "-active",
+                                              std::string("true"));
+        mdpValueBuilder.rootObject().addValue(
+                std::string(ColvarsModuleInfo::sc_name) + "-configfile", colvarsConfig);
+        mdpValueBuilder.rootObject().addValue(std::string(ColvarsModuleInfo::sc_name) + "-seed",
+                                              std::string("12345789"));
         return mdpValueBuilder.build();
     }
 
 #if GMX_HAVE_COLVARS
 
-    void PrepareInputColvarsPreProcessor(const std::string& fileName)
+    void prepareInputColvarsPreProcessor(const std::string& fileName, ColvarsOptions* colvarsOptions)
     {
 
         // Path to the sample colvars input file
@@ -168,7 +152,7 @@ public:
                 gmx::constArrayRefFromArray(reinterpret_cast<gmx::RVec*>(coords), atoms.nr);
 
         // Populate attributes outside the use of the defined callbacks.
-        colvarsOptions_.setParameters(colvarsConfigFile, atoms, x, pbcType, box, 300);
+        colvarsOptions->setParameters(colvarsConfigFile, atoms, x, pbcType, box, 300);
     }
 
     void deleteInputColvarsPreProcessor()
@@ -180,9 +164,8 @@ public:
 #endif // GMX_HAVE_COLVARS
 
 protected:
-    rvec*          coords;
-    t_atoms        atoms;
-    ColvarsOptions colvarsOptions_;
+    rvec*   coords;
+    t_atoms atoms;
 };
 
 
@@ -196,7 +179,8 @@ TEST_F(ColvarsOptionsTest, OutputNoDefaultValuesWhenInactive)
     KeyValueTreeBuilder       builder;
     KeyValueTreeObjectBuilder builderObject = builder.rootObject();
 
-    colvarsOptions_.buildMdpOutput(&builderObject);
+    ColvarsOptions colvarsOptions;
+    colvarsOptions.buildMdpOutput(&builderObject);
     {
         TextWriter writer(&stream);
         writeKeyValueTreeAsMdp(&writer, builder.build());
@@ -213,14 +197,15 @@ TEST_F(ColvarsOptionsTest, OutputDefaultValuesWhenActive)
 {
 
     // Activate colvars
-    setFromMdpValues(ColvarsBuildDefaulMdpValues());
+    ColvarsOptions colvarsOptions;
+    test::fillOptionsFromMdpValues(ColvarsBuildDefaulMdpValues(), &colvarsOptions);
 
     // Transform module data into a flat key-value tree for output.
     StringOutputStream        stream;
     KeyValueTreeBuilder       builder;
     KeyValueTreeObjectBuilder builderObject = builder.rootObject();
 
-    colvarsOptions_.buildMdpOutput(&builderObject);
+    colvarsOptions.buildMdpOutput(&builderObject);
     {
         TextWriter writer(&stream);
         writeKeyValueTreeAsMdp(&writer, builder.build());
@@ -237,14 +222,15 @@ TEST_F(ColvarsOptionsTest, OutputValuesWhenActive)
 {
 
     // Activate colvars
-    setFromMdpValues(ColvarsBuildInputMdpValues());
+    ColvarsOptions colvarsOptions;
+    test::fillOptionsFromMdpValues(ColvarsBuildInputMdpValues(), &colvarsOptions);
 
     // Transform module data into a flat key-value tree for output.
     StringOutputStream        stream;
     KeyValueTreeBuilder       builder;
     KeyValueTreeObjectBuilder builderObject = builder.rootObject();
 
-    colvarsOptions_.buildMdpOutput(&builderObject);
+    colvarsOptions.buildMdpOutput(&builderObject);
     {
         TextWriter writer(&stream);
         writeKeyValueTreeAsMdp(&writer, builder.build());
@@ -261,37 +247,41 @@ TEST_F(ColvarsOptionsTest, OutputValuesWhenActive)
 
 TEST_F(ColvarsOptionsTest, OptionSetsActive)
 {
-    EXPECT_FALSE(colvarsOptions_.isActive());
-    setFromMdpValues(ColvarsBuildDefaulMdpValues());
-    EXPECT_TRUE(colvarsOptions_.isActive());
+    ColvarsOptions colvarsOptions;
+    EXPECT_FALSE(colvarsOptions.isActive());
+    test::fillOptionsFromMdpValues(ColvarsBuildDefaulMdpValues(), &colvarsOptions);
+    EXPECT_TRUE(colvarsOptions.isActive());
 }
 
 TEST_F(ColvarsOptionsTest, InternalsToKvtAndBack)
 {
 
     // Activate colvars
-    setFromMdpValues(ColvarsBuildInputMdpValues());
+    ColvarsOptions colvarsOptions;
+    test::fillOptionsFromMdpValues(ColvarsBuildInputMdpValues(), &colvarsOptions);
     // Set up parameters with a test system
-    PrepareInputColvarsPreProcessor("4water");
+    prepareInputColvarsPreProcessor("4water", &colvarsOptions);
 
     // Write parameters to the KVT
     KeyValueTreeBuilder builder;
-    colvarsOptions_.writeInternalParametersToKvt(builder.rootObject());
+    MDLogger            logger;
+    colvarsOptions.setLogger(logger);
+    colvarsOptions.writeInternalParametersToKvt(builder.rootObject());
     const auto inputTree = builder.build();
 
     // Copy internal parameters
-    auto refColvarsInputContent = colvarsOptions_.colvarsConfigContent();
-    auto refColvarsCoordinates  = colvarsOptions_.colvarsAtomCoords();
-    auto refTemperature         = colvarsOptions_.colvarsEnsTemp();
-    auto refSeed                = colvarsOptions_.colvarsSeed();
+    auto refColvarsInputContent = colvarsOptions.colvarsConfigContent();
+    auto refColvarsCoordinates  = colvarsOptions.colvarsAtomCoords();
+    auto refTemperature         = colvarsOptions.colvarsEnsTemp();
+    auto refSeed                = colvarsOptions.colvarsSeed();
 
     // Retrieve paramaters from the KVT
-    colvarsOptions_.readInternalParametersFromKvt(inputTree);
+    colvarsOptions.readInternalParametersFromKvt(inputTree);
 
     // Check parameters taken back from KVT
-    EXPECT_EQ(refColvarsInputContent, colvarsOptions_.colvarsConfigContent());
+    EXPECT_EQ(refColvarsInputContent, colvarsOptions.colvarsConfigContent());
 
-    auto actualColvarsCoordinates = colvarsOptions_.colvarsAtomCoords();
+    auto actualColvarsCoordinates = colvarsOptions.colvarsAtomCoords();
     EXPECT_REAL_EQ(refColvarsCoordinates[0][XX], actualColvarsCoordinates[0][XX]);
     EXPECT_REAL_EQ(refColvarsCoordinates[0][YY], actualColvarsCoordinates[0][YY]);
     EXPECT_REAL_EQ(refColvarsCoordinates[0][ZZ], actualColvarsCoordinates[0][ZZ]);
@@ -299,8 +289,8 @@ TEST_F(ColvarsOptionsTest, InternalsToKvtAndBack)
     EXPECT_REAL_EQ(refColvarsCoordinates[1][YY], actualColvarsCoordinates[1][YY]);
     EXPECT_REAL_EQ(refColvarsCoordinates[1][ZZ], actualColvarsCoordinates[1][ZZ]);
 
-    EXPECT_EQ(refTemperature, colvarsOptions_.colvarsEnsTemp());
-    EXPECT_EQ(refSeed, colvarsOptions_.colvarsSeed());
+    EXPECT_EQ(refTemperature, colvarsOptions.colvarsEnsTemp());
+    EXPECT_EQ(refSeed, colvarsOptions.colvarsSeed());
 
     deleteInputColvarsPreProcessor();
 }
@@ -309,16 +299,17 @@ TEST_F(ColvarsOptionsTest, InternalsToKvtAndBack)
 TEST_F(ColvarsOptionsTest, RetrieveEdrFilename)
 {
     // Activate colvars
-    setFromMdpValues(ColvarsBuildInputMdpValues());
+    ColvarsOptions colvarsOptions;
+    test::fillOptionsFromMdpValues(ColvarsBuildInputMdpValues(), &colvarsOptions);
 
     std::string refEdrFilename = "output/ener.edr";
-    colvarsOptions_.processEdrFilename(EdrOutputFilename{ refEdrFilename });
+    colvarsOptions.processEdrFilename(EdrOutputFilename{ refEdrFilename });
     const std::string ref = std::filesystem::path("output/ener").make_preferred().string();
-    EXPECT_EQ(ref, colvarsOptions_.colvarsOutputPrefix());
+    EXPECT_EQ(ref, colvarsOptions.colvarsOutputPrefix());
 
     refEdrFilename = "sim.part1.edr";
-    colvarsOptions_.processEdrFilename(EdrOutputFilename{ refEdrFilename });
-    EXPECT_EQ("sim.part1", colvarsOptions_.colvarsOutputPrefix());
+    colvarsOptions.processEdrFilename(EdrOutputFilename{ refEdrFilename });
+    EXPECT_EQ("sim.part1", colvarsOptions.colvarsOutputPrefix());
 }
 #endif // GMX_HAVE_COLVARS
 
