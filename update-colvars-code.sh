@@ -538,6 +538,16 @@ then
 
   # Copy MDModules files to the "src/gromacs/src/applied_forces/colvars" folder
   target_folder=${target}/src/gromacs/applied_forces/colvars
+
+  for patch_file in ${source}/gromacs/src/applied_forces/colvars/*.diff ; do
+    if [ -s ${patch_file} ] ; then
+      # Do not exit if the patch fails - already applied
+      set +e
+      patch -p1 -N -d ${target} < ${patch_file}
+      set -e
+    fi
+  done
+
   if [ -d ${target_folder} ]
   then
     echo "${target} source tree seems to have already been patched."
