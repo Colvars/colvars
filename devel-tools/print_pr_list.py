@@ -10,6 +10,16 @@ import subprocess
 backends = set(['GROMACS', 'LAMMPS', 'NAMD', 'TinkerHP', 'VMD'])
 
 
+def run_cmd(cmd):
+    try:
+        txt = subprocess.check_output(
+            cmd, shell=True, stderr=subprocess.STDOUT).decode('UTF-8')
+    except subprocess.CalledProcessError as e:
+        print(e.output.decode('UTF-8'))
+        raise Exception("Error calling gh command.")
+    return txt
+
+
 def affects_backend(labels, backend=None):
     if backend is None:
         # Without a backend specified, this PR affects everything
@@ -27,29 +37,28 @@ def affects_backend(labels, backend=None):
     return False
 
 
-def get_pr_list(state='merged', label=None):
+def get_pr_list(state='merged', target='master', label=None):
     # 10,000 sounds like a reasonable limit for the Colvars repo
-    cmd = f"gh pr list --state {state} --limit 10000 --json number,url,mergedAt,title,author,labels"
+    cmd = f"gh pr list --base {target} --state {state} --limit 10000 --json number,url,mergedAt,title,author,labels"
     if label:
         cmd += f" --label {label}"
-    try:
-        txt = subprocess.check_output(
-            cmd, shell=True, stderr=subprocess.STDOUT).decode('UTF-8')
-    except subprocess.CalledProcessError as e:
-        print(e.output.decode('UTF-8'))
-        raise Exception("Error calling gh command.")
+    txt = run_cmd(cmd)
     return json.loads(txt)
 
 
 def get_pr_commits(number):
     cmd = f"gh pr view {number} --json commits"
-    try:
-        txt = subprocess.check_output(
-            cmd, shell=True, stderr=subprocess.STDOUT).decode('UTF-8')
-    except subprocess.CalledProcessError as e:
-        print(e.output.decode('UTF-8'))
-        raise Exception("Error calling gh command.")
+    txt = run_cmd(cmd)
     return json.loads(txt)['commits']
+
+
+def get_pr_commits_after_rebase(number):
+    cmd = f"gh pr view {number} --json headRefOid"
+    txt = run_cmd(cmd)
+    pr_head = json.loads(txt)['headRefOid']
+    cmd = f"git log --oneline master..{pr_head}"
+    txt = run_cmd(cmd)
+    return txt
 
 
 def get_commits_authors(commits):
@@ -74,34 +83,53 @@ def get_pr_authors(pr):
 
 def print_pr_report(kwargs):
 
-    ref_date = kwargs.get('since')
+    since_date = kwargs.get('since')
+    until_date = kwargs.get('until')
 
-    if not ref_date is None:
-        print()
-        print("The following is a list of pull requests since",
-              ref_date+":")
-        ref_date_ts = date_parser.parse(ref_date).timestamp()
+    msg = "The following is a list of"
+    if since_date is None and until_date is None:
+        msg += " all"
+    msg += " pull requests"
+
+    if since_date:
+        since_date_ts = date_parser.parse(since_date).timestamp()
+        msg += f" merged since {since_date}"
     else:
-        ref_date_ts = 0
-        print()
-        print("The following is a list of all pull requests:")
+        since_date_ts = 0
 
-    pr_db = get_pr_list(kwargs.get('state'), label=kwargs['label'])
+    if until_date:
+        until_date_ts = date_parser.parse(until_date).timestamp()
+        if since_date:
+            msg += f" and until {until_date}"
+        else:
+            msg += f" merged until {until_date}"
+    else:
+        until_date_ts = 2**36
+
+    if kwargs['format'] == 'message':
+        print(msg + ":")
+
+    pr_db = get_pr_list(state=kwargs['state'], target=kwargs['target'], label=kwargs['label'])
     all_authors = []
     for pr in pr_db:
         pr['mergedAt'] = date_parser.parse(pr['mergedAt']).timestamp()
         pr_labels = [label['name'] for label in pr['labels']]
-        if pr['mergedAt'] > ref_date_ts and affects_backend(
+        if pr['mergedAt'] >= since_date_ts and pr['mergedAt'] <= until_date_ts and affects_backend(
                 pr_labels, kwargs.get('backend')):
             pr_authors = get_pr_authors(pr)
             all_authors += pr_authors
-            print()
-            print("-", pr['number'], pr['title'])
-            print(" ", pr['url'], "("+", ".join(pr_authors)+")")
+            if kwargs['format'] == 'commits':
+                print(get_pr_commits_after_rebase(pr['number']))
+            if kwargs['format'] == 'numbers':
+                print(pr['number'])
+            if kwargs['format'] == 'message':
+                print()
+                print("-", pr['number'], pr['title'])
+                print(" ", pr['url'], "("+", ".join(pr_authors)+")")
 
-    print()
-    print("Authors:", ", ".join(sorted(list(set(all_authors)),
-                                       key=str.casefold)))
+    if kwargs['format'] == 'message':
+        print()
+        print("Authors:", ", ".join(sorted(list(set(all_authors)), key=str.casefold)))
 
 
 if __name__ == '__main__':
@@ -112,7 +140,10 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--since',
                         type=str,
-                        help="List PRs merged this date; default is all")
+                        help="List PRs merged since this date; default is all")
+    parser.add_argument('--until',
+                        type=str,
+                        help="List PRs merged until this date; default is all")
     parser.add_argument('--backend',
                         type=str,
                         choices=backends,
@@ -122,10 +153,18 @@ if __name__ == '__main__':
                         type=str,
                         help="List only PRs with this label")
     parser.add_argument('--state',
-                        type=str,
                         default='merged',
                         choices=['open', 'closed', 'merged', 'all'],
                         help="List PRs in this state")
+    parser.add_argument('--target',
+                        default='master',
+                        type=str,
+                        help="List PRs targeting this branch")
+    parser.add_argument('--format',
+                        default='message',
+                        choices=['message', 'numbers', 'commits'],
+                        help="Print the report as either a human-readable message, "
+                        "a list of PR numbers, or a list of commits after rebased into master")
     kwargs = vars(parser.parse_args())
 
     print_pr_report(kwargs)
