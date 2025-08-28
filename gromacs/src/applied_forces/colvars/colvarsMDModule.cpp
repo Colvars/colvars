@@ -41,6 +41,7 @@
 #include "gmxpre.h"
 
 #include "colvarsMDModule.h"
+#include "colvars_version.h"
 
 #include <functional>
 #include <memory>
