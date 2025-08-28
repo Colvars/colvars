@@ -1,0 +1,12 @@
+diff --git a/src/tcl_commands.C b/src/tcl_commands.C
+index 270d074c8..769c8aab0 100755
+--- a/src/tcl_commands.C
++++ b/src/tcl_commands.C
+@@ -31,6 +31,7 @@
+ #include "vmd.h"
+ #if defined(VMDCOLVARS)
+ #include "colvarproxy_vmd.h"
++#include "colvars_version.h"
+ #endif
+ 
+ 

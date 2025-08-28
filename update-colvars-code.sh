@@ -445,6 +445,13 @@ then
     condcopy "${src}" "${target}/src/${tgt}.C"
   done
 
+  if [ -f ${source}/vmd/src/tcl_commands.C.diff ] ; then
+    # Do not exit if the patch fails - already applied in development branch
+    set +e
+    patch -p1 -N -d ${target} < ${source}/vmd/src/tcl_commands.C.diff
+    set -e
+  fi
+
   # Update replacement text for the Colvars manual
   condcopy "${source}/vmd/doc/ug_colvars.tex" \
            "${target}/doc/ug_colvars.tex"
