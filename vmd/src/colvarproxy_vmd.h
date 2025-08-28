@@ -10,8 +10,6 @@
 #ifndef COLVARPROXY_VMD_H
 #define COLVARPROXY_VMD_H
 
-#include "colvarproxy_vmd_version.h"
-
 #include <tcl.h>
 
 #include "DrawMolecule.h"

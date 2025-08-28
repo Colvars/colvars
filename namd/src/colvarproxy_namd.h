@@ -15,8 +15,6 @@
 #define NAMD_VERSION_NUMBER 34471681
 #endif
 
-#include "colvarproxy_namd_version.h"
-
 #include "Vector.h"
 #include "ResizeArray.h"
 #include "NamdTypes.h"

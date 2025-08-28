@@ -23,6 +23,7 @@
 #include "colvarscript.h"
 #include "colvarproxy.h"
 #include "colvarproxy_vmd.h"
+#include "colvarproxy_vmd_version.h"
 
 
 namespace {

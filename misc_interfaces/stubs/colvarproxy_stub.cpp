@@ -13,8 +13,10 @@
 #include "colvarscript.h"
 #include "colvaratoms.h"
 #include "colvarproxy.h"
-
 #include "colvarproxy_stub.h"
+#include "colvars_version.h"
+
+#define COLVARPROXY_VERSION COLVARS_VERSION
 
 
 colvarproxy_stub::colvarproxy_stub()

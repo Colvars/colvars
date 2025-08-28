@@ -29,6 +29,26 @@
 #include "colvaratoms.h"
 #include "colvarcomp.h"
 #include "colvars_memstream.h"
+#include "colvars_version.h"
+
+
+
+std::string colvarmodule::version() const
+{
+  return std::string(COLVARS_VERSION);
+}
+
+
+int colvarmodule::version_number() const
+{
+  return version_int;
+}
+
+
+int colvarmodule::patch_version_number() const
+{
+  return COLVARS_PATCH_VERSION;
+}
 
 
 /// Track usage of Colvars features

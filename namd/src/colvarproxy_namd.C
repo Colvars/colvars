@@ -40,6 +40,7 @@
 #include "colvaratoms.h"
 #include "colvarproxy.h"
 #include "colvarproxy_namd.h"
+#include "colvarproxy_namd_version.h"
 #include "colvarscript.h"
 
 
