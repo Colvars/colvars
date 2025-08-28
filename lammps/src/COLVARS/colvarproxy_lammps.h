@@ -10,8 +10,6 @@
 #ifndef COLVARPROXY_LAMMPS_H
 #define COLVARPROXY_LAMMPS_H
 
-#include "colvarproxy_lammps_version.h"    // IWYU pragma: export
-
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 

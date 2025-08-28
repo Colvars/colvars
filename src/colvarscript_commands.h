@@ -669,7 +669,7 @@ CVSCRIPT(cv_version,
          "version : string - Colvars version",
          0, 0,
          "",
-         script->set_result_str(COLVARS_VERSION);
+         script->set_result_str(cvm::main()->version());
          return COLVARS_OK;
          )
 

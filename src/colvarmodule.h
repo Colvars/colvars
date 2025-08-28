@@ -12,8 +12,6 @@
 
 #include <cstdint>
 
-#include "colvars_version.h"
-
 #ifndef COLVARS_DEBUG
 #define COLVARS_DEBUG false
 #endif
@@ -80,22 +78,13 @@ class colvarmodule {
 public:
 
   /// Get the version string (YYYY-MM-DD format)
-  std::string version() const
-  {
-    return std::string(COLVARS_VERSION);
-  }
+  std::string version() const;
 
   /// Get the version number (higher = more recent)
-  int version_number() const
-  {
-    return version_int;
-  }
+  int version_number() const;
 
-  /// Get the patch version number (non-zero in patch releases of other packages)
-  int patch_version_number() const
-  {
-    return patch_version_int;
-  }
+  /// Get the patch version number (non-zero only in the patch releases of other packages)
+  int patch_version_number() const;
 
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
   template <typename T>
@@ -135,10 +124,10 @@ public:
 
 private:
 
-  /// Integer representing the version string (allows comparisons)
+  /// Integer representing the version string; value will be set in colvarmodule.cpp
   int version_int = 0;
 
-  /// Patch version number (non-zero in patch releases of other packages)
+  /// Patch version number; value will be set in colvarmodule.cpp
   int patch_version_int = 0;
 
 public:

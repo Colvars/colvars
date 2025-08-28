@@ -10,8 +10,6 @@
 #ifndef COLVARPROXY_STANDALONE_H
 #define COLVARPROXY_STANDALONE_H
 
-#define COLVARPROXY_VERSION COLVARS_VERSION
-
 
 // Non-functional implementation that doesn't raise errors when critical
 // functions aren't implemented
