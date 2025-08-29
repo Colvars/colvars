@@ -797,6 +797,12 @@ int apply_translation(
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
     cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log("x_ptr = " + cvm::to_str((void*)atoms_pos_x_ag) + "\n");
+    cvm::log("y_ptr = " + cvm::to_str((void*)atoms_pos_y_ag) + "\n");
+    cvm::log("z_ptr = " + cvm::to_str((void*)atoms_pos_z_ag) + "\n");
+    cvm::log("pos = " + cvm::to_str((void*)translation_vector) + "\n");
+    cvm::log("factor = " + cvm::to_str(translation_vector_factor) + "\n");
+    cvm::log("num_atoms = " + cvm::to_str((int)num_atoms) + "\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
