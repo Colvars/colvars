@@ -1459,26 +1459,31 @@ void cvm::atom_group::calc_fit_forces_impl(
   // the rotation matrix contribution to the gradients
   const auto rot_inv = rot.inverse().matrix();
   // temporary variables for computing and summing derivatives
-  cvm::real sum_dxdq[4] = {0, 0, 0, 0};
-  cvm::vector1d<cvm::rvector> dq0_1(4);
+  std::array<cvm::real, 4> sum_dxdq;
+  cvm::real C[3][3] = {{0}};
+  std::array<cvm::rvector, 4> dq0_1;
   // loop 1: iterate over the current atom group
   for (size_t i = 0; i < size(); i++) {
+    cvm::rvector const main_vec = accessor_main(i);
     if (B_ag_center) {
-      atom_grad += accessor_main(i);
+      atom_grad += main_vec;
     }
     if (B_ag_rotate) {
-      // calculate \partial(R(q) \vec{x}_i)/\partial q) \cdot \partial\xi/\partial\vec{x}_i
-      cvm::quaternion const dxdq =
-        rot.q.position_derivative_inner(
-          cvm::rvector{pos_unrotated_x(i),
-                       pos_unrotated_y(i),
-                       pos_unrotated_z(i)},
-          accessor_main(i));
-      sum_dxdq[0] += dxdq[0];
-      sum_dxdq[1] += dxdq[1];
-      sum_dxdq[2] += dxdq[2];
-      sum_dxdq[3] += dxdq[3];
+      // Project the forces or gradients to the rotation matrix elements
+      C[0][0] += main_vec.x * pos_unrotated_x(i);
+      C[0][1] += main_vec.x * pos_unrotated_y(i);
+      C[0][2] += main_vec.x * pos_unrotated_z(i);
+      C[1][0] += main_vec.y * pos_unrotated_x(i);
+      C[1][1] += main_vec.y * pos_unrotated_y(i);
+      C[1][2] += main_vec.y * pos_unrotated_z(i);
+      C[2][0] += main_vec.z * pos_unrotated_x(i);
+      C[2][1] += main_vec.z * pos_unrotated_y(i);
+      C[2][2] += main_vec.z * pos_unrotated_z(i);
     }
+  }
+  if (B_ag_rotate) {
+    // Project the forces or gradients to the quaternion
+    sum_dxdq = rot.q.derivative_element_wise_product_sum(C);
   }
   if (B_ag_center) {
     if (B_ag_rotate) atom_grad = rot_inv * atom_grad;

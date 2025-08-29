@@ -144,7 +144,7 @@ void colvar::orientation::apply_force(colvarvalue const &force)
   if (!atoms->noforce) {
     const cvm::real sign = (rot.q).inner(ref_quat) >= 0.0 ? 1.0 : -1.0;
     rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-    cvm::vector1d<cvm::rvector> dq0_2;
+    std::array<cvm::rvector, 4> dq0_2;
     auto ag_force = atoms->get_group_force_object();
     for (size_t ia = 0; ia < atoms->size(); ia++) {
       rot_deriv_impl->calc_derivative_wrt_group2<false, true, false>(ia, nullptr, &dq0_2);
@@ -214,7 +214,7 @@ void colvar::orientation_angle::calc_gradients()
       0.0 );
 
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  cvm::vector1d<cvm::rvector> dq0_2;
+  std::array<cvm::rvector, 4> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv_impl->calc_derivative_wrt_group2<false, true, false>(ia, nullptr, &dq0_2);
     const cvm::rvector g = dxdq0 * dq0_2[0];
@@ -277,7 +277,7 @@ void colvar::orientation_proj::calc_gradients()
 {
   cvm::real const dxdq0 = 2.0 * 2.0 * (rot.q).q0;
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  cvm::vector1d<cvm::rvector> dq0_2;
+  std::array<cvm::rvector, 4> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv_impl->calc_derivative_wrt_group2<false, true, false>(ia, nullptr, &dq0_2);
     const cvm::rvector g = dxdq0 * dq0_2[0];
@@ -328,7 +328,7 @@ void colvar::tilt::calc_gradients()
   cvm::quaternion const dxdq = rot.dcos_theta_dq(axis);
 
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  cvm::vector1d<cvm::rvector> dq0_2;
+  std::array<cvm::rvector, 4> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv_impl->calc_derivative_wrt_group2<false, true, false>(ia, nullptr, &dq0_2);
     cvm::rvector grad(0, 0, 0);
@@ -368,7 +368,7 @@ void colvar::spin_angle::calc_gradients()
   cvm::quaternion const dxdq = rot.dspin_angle_dq(axis);
 
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  cvm::vector1d<cvm::rvector> dq0_2;
+  std::array<cvm::rvector, 4> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv_impl->calc_derivative_wrt_group2<false, true, false>(ia, nullptr, &dq0_2);
     cvm::rvector grad(0, 0, 0);
@@ -419,7 +419,7 @@ void colvar::euler_phi::calc_gradients()
   const cvm::real dxdq2 = (180.0/PI) * (-4 * q2 * (-2 * q0 * q1 - 2 * q2 * q3) + 2 * q3 * (-2 * q1 * q1 - 2 * q2 * q2 + 1)) / denominator;
   const cvm::real dxdq3 = (180.0/PI) * 2 * q2 * (-2 * q1 * q1 - 2 * q2 * q2 + 1) / denominator;
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  cvm::vector1d<cvm::rvector> dq0_2;
+  std::array<cvm::rvector, 4> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv_impl->calc_derivative_wrt_group2<false, true, false>(ia, nullptr, &dq0_2);
     const cvm::rvector grad = (dxdq0 * dq0_2[0]) +
@@ -470,7 +470,7 @@ void colvar::euler_psi::calc_gradients()
   const cvm::real dxdq2 = (180.0/PI) * (2 * q1 * (-2 * q2 * q2 - 2 * q3 * q3 + 1) - 4 * q2 * (-2 * q0 * q3 - 2 * q1 * q2)) / denominator;
   const cvm::real dxdq3 = (180.0/PI) * (2 * q0 * (-2 * q2 * q2 - 2 * q3 * q3 + 1) - 4 * q3 * (-2 * q0 * q3 - 2 * q1 * q2)) / denominator;
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  cvm::vector1d<cvm::rvector> dq0_2;
+  std::array<cvm::rvector, 4> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv_impl->calc_derivative_wrt_group2<false, true, false>(ia, nullptr, &dq0_2);
     const cvm::rvector grad = (dxdq0 * dq0_2[0]) +
@@ -519,7 +519,7 @@ void colvar::euler_theta::calc_gradients()
   const cvm::real dxdq2 = (180.0/PI) * 2 * q0 / denominator;
   const cvm::real dxdq3 = (180.0/PI) * -2 * q1 / denominator;
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  cvm::vector1d<cvm::rvector> dq0_2;
+  std::array<cvm::rvector, 4> dq0_2;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     rot_deriv_impl->calc_derivative_wrt_group2<false, true, false>(ia, nullptr, &dq0_2);
     const cvm::rvector grad = (dxdq0 * dq0_2[0]) +

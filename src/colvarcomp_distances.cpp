@@ -1044,7 +1044,7 @@ void colvar::rmsd::calc_Jacobian_derivative()
     cvm::matrix2d<cvm::rvector> grad_rot_mat(3, 3);
     // gradients of products of 2 quaternion components
     cvm::rvector g11, g22, g33, g01, g02, g03, g12, g13, g23;
-    cvm::vector1d<cvm::rvector> dq;
+    std::array<cvm::rvector, 4> dq;
     atoms->rot_deriv->prepare_derivative(rotation_derivative_dldq::use_dq);
     for (size_t ia = 0; ia < atoms->size(); ia++) {
 
@@ -1344,7 +1344,7 @@ void colvar::eigenvector::calc_Jacobian_derivative()
 
   cvm::real sum = 0.0;
 
-  cvm::vector1d<cvm::rvector> dq_1;
+  std::array<cvm::rvector, 4> dq_1;
   atoms->rot_deriv->prepare_derivative(rotation_derivative_dldq::use_dq);
   for (size_t ia = 0; ia < atoms->size(); ia++) {
 
