@@ -100,13 +100,16 @@ protected:
 
 /// Options to change the restraint configuration over time (shared between centers and k moving)
 class colvarbias_restraint_moving
-  : public virtual colvarparse, public virtual colvardeps {
+  : public virtual colvarbias_restraint,
+    public virtual colvarparse,
+    public virtual colvardeps {
 public:
 
-  colvarbias_restraint_moving(char const *key);
+  colvarbias_restraint_moving(char const *key) : colvarbias_restraint(key) {}
   // Note: despite the diamond inheritance, most of this function gets only executed once
   virtual int init(std::string const &conf);
-  virtual int update() { return COLVARS_OK; }
+  virtual int update() override;
+
   virtual int change_configuration(std::string const & /* conf */) { return COLVARS_NOT_IMPLEMENTED; }
 
   virtual std::string const get_state_params() const;
@@ -115,36 +118,81 @@ public:
 protected:
 
   /// \brief Moving target?
-  bool b_chg_centers;
+  bool b_chg_centers = false;
 
   /// \brief Changing force constant?
-  bool b_chg_force_k;
+  bool b_chg_force_k = false;
 
   /// \brief Changing wall locations?
-  bool b_chg_walls;
-  
-  /// \brief Perform decoupling of the restraint?
+  bool b_chg_walls = false;
+
+  /// @brief Update the force constant by interpolating between initial and target
+  virtual void update_k(cvm::real lambda) {}
+  /// @brief Update the centers by interpolating between initial and target
+  virtual void update_centers(cvm::real lambda) {}
+  /// @brief Update the walls by interpolating between initial and target
+  virtual void update_walls(cvm::real lambda) {}
+  /// \brief Additional details to add to the log message when moving restraints are updated
+  virtual std::string restraint_log_details() const { return ""; }
+  /// \brief Compute the derivative of the free energy wrt lambda due to changing k
+  virtual cvm::real dU_dlambda_k() const { return 0.0; }
+  /// \brief Compute the derivative of the free energy wrt lambda due to changing centers
+  virtual cvm::real dU_dlambda_centers() const { return 0.0; }
+  /// \brief Compute the derivative of the free energy wrt lambda due to changing walls
+  virtual cvm::real dU_dlambda_walls() const { return 0.0; }
+
+  /// \brief Perform decoupling of the restraint? If yes, lambda goes from 1 to 0
   bool b_decoupling;
 
   /// \brief Number of stages over which to perform the change
   /// If zero, perform a continuous change
-  int target_nstages;
+  /// First step is ignored, then steps within each run of target_nsteps
+  /// count for one stage.
+  int target_nstages = 0;
 
   /// \brief Number of current stage of the perturbation
-  int stage;
+  /// Starts at 0, goes up to target_nstages during the perturbation
+  int stage = 0;
 
-    /// \brief Lambda-schedule for custom varying force constant
+  /// \brief Accumulating restraint FE derivative wrt lambda
+  cvm::real dA_dlambda = 0.0;
+
+  /// \brief Update the stage number based on the current step
+  /// Note: this is idempotent so multiple calls are safe
+  inline void update_stage() {
+    stage = (cvm::step_absolute() - first_step) / target_nsteps;
+    if (stage > target_nstages) {
+      stage = target_nstages;
+    }
+  }
+
+  /// \brief Get lambda value for the current stage
+  inline cvm::real current_lambda() const {
+    cvm::real lambda;
+    if (lambda_schedule.size()) {
+      lambda = lambda_schedule[stage];
+    } else {
+      lambda = cvm::real(stage) / cvm::real(target_nstages);
+      if (b_decoupling) lambda = 1.0 - lambda;
+    }
+    return lambda;
+  }
+
+  /// \brief Lambda-schedule for custom varying force constant
   std::vector<cvm::real> lambda_schedule;
 
   /// \brief Number of steps required to reach the target force constant
   /// or restraint centers
-  cvm::step_number target_nsteps;
+  cvm::step_number target_nsteps = 0;
+
+  /// \brief Equilibration steps for restraint FE calculation through TI
+  cvm::step_number target_equil_steps = 0;
 
   /// \brief Timestep at which the restraint starts moving
-  cvm::step_number first_step;
+  cvm::step_number first_step = 0;
 
   /// \brief Accumulated work (computed when outputAccumulatedWork == true)
-  cvm::real acc_work;
+  cvm::real acc_work = 0.0;
 };
 
 
@@ -157,7 +205,6 @@ public:
 
   colvarbias_restraint_centers_moving(char const *key);
   virtual int init(std::string const &conf);
-  virtual int update();
   virtual int change_configuration(std::string const & /* conf */) { return COLVARS_NOT_IMPLEMENTED; }
 
   virtual std::string const get_state_params() const;
@@ -177,7 +224,10 @@ protected:
   std::vector<colvarvalue> centers_incr;
 
   /// \brief Update the centers by interpolating between initial and target
-  virtual int update_centers(cvm::real lambda);
+  void update_centers(cvm::real lambda) override;
+
+  /// \brief Compute the derivative of the free energy wrt lambda due to changing centers
+  cvm::real dU_dlambda_centers() const override;
 
   /// Whether to write the current restraint centers to the trajectory file
   bool b_output_centers;
@@ -196,7 +246,6 @@ public:
 
   colvarbias_restraint_k_moving(char const *key);
   virtual int init(std::string const &conf);
-  virtual int update();
   virtual int change_configuration(std::string const & /* conf */) { return COLVARS_NOT_IMPLEMENTED; }
 
   virtual std::string const get_state_params() const;
@@ -215,15 +264,14 @@ protected:
   /// \brief Exponent for varying the force constant
   cvm::real lambda_exp;
 
-  /// \brief Intermediate quantity to compute the restraint free energy
-  /// (in TI, would be the accumulating FE derivative)
-  cvm::real restraint_FE;
-
-  /// \brief Equilibration steps for restraint FE calculation through TI
-  cvm::real target_equil_steps;
-
   /// \brief Increment of the force constant at each step
   cvm::real force_k_incr;
+
+  /// \brief Update the force constant by interpolating between initial and target
+  void update_k(cvm::real lambda) override;
+
+  /// \brief Compute the derivative of the free energy wrt lambda due to changing k
+  cvm::real dU_dlambda_k() const override;
 
   /// Update the accumulated work
   int update_acc_work();
@@ -304,12 +352,20 @@ protected:
   /// \brief Increment of the upper walls at each step
   std::vector<colvarvalue> upper_walls_incr;
 
+  /// \brief Signed distance to relevant wall (lower if below, upper if above)
+  /// In PBC, only sees the closer of the two walls
+  /// If negative, relates to lower wall - if positive, to upper wall
+  cvm::real colvar_distance(size_t i) const;
 
-  virtual cvm::real colvar_distance(size_t i) const;
+  /// \brief Update the walls by interpolating between initial and target
+  void update_walls(cvm::real lambda) override;
+
+  /// \brief Compute the derivative of the free energy wrt lambda due to changing walls
+  cvm::real dU_dlambda_walls() const override;
+
   virtual cvm::real restraint_potential(size_t i) const;
   virtual colvarvalue const restraint_force(size_t i) const;
   virtual cvm::real d_restraint_potential_dk(size_t i) const;
-  virtual int update_walls(cvm::real lambda);
 };
 
 
