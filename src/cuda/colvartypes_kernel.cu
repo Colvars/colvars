@@ -165,14 +165,15 @@ int build_overlapping_matrix(
 }
 
 #define JACOBI_MAX_ITERATION 50
-#define JACOBI_TOLERANCE 1e-16
+#define JACOBI_TOLERANCE 1e-8
+template <int p, int q>
 __inline__ __device__ void apply_jacobi(
-  // const double* __restrict old_A,
   double* __restrict A,
-  int p, int q, double c, double s) {
-  const double c2 = c*c;
-  const double s2 = s*s;
-  const double cs = c*s;
+  const double c,
+  const double s,
+  const double c2,
+  const double s2,
+  const double cs) {
   #pragma unroll
   for (int i = 0; i < 4; ++i) {
     const double oip = A[i*4+p];
@@ -193,8 +194,9 @@ __inline__ __device__ void apply_jacobi(
   A[q*4+p] = 0;
 }
 
+template <int p, int q>
 __inline__ __device__ void multiply_jacobi(
-  double* __restrict V, int p, int q, double c, double s) {
+  double* __restrict V, double c, double s) {
   #pragma unroll
   for (int i = 0; i < 4; ++i) {
     const double oip = V[i*4+p];
@@ -205,14 +207,14 @@ __inline__ __device__ void multiply_jacobi(
 }
 
 __inline__ __device__ void compute_c_s(
-  double a_pq, double a_pp, double a_qq, double& c, double& s) {
+  double a_pq, double a_pp, double a_qq, double& c, double& s, double& c2, double& s2, double& cs) {
   const double theta = 0.5 * (a_qq - a_pp) / a_pq;
   const double t = 1 / (sqrt(theta * theta + 1.0) + fabs(theta));
-  // const double t = sqrt(theta * theta + 1.0) - fabs(theta);
   c = rsqrt(t * t + 1.0);
   s = theta < 0 ? -t * c : t * c;
-  // const double phi = 0.5 * atan2(2 * a_pq, a_qq - a_pp);
-  // sincos(phi, &s, &c);
+  c2 = c * c;
+  s2 = s * s;
+  cs = c * s;
 }
 
 // Use exactly 2 threads
@@ -257,12 +259,12 @@ __global__ void jacobi_4x4_kernel(
   const int p_ids[] = {0, 2, 0, 1, 0, 1};
   const int q_ids[] = {1, 3, 2, 3, 3, 2};
   double off_diag_sum =
-    A[0*4+1]*A[0*4+1]+A[0*4+2]*A[0*4+2]+A[0*4+3]*A[0*4+3]+
-    A[1*4+2]*A[1*4+2]+A[1*4+3]*A[1*4+3]+
-    A[2*4+3]*A[2*4+3];
+    fabs(A[0*4+1]) + fabs(A[0*4+2]) + fabs(A[0*4+3]) +
+    fabs(A[1*4+2]) + fabs(A[1*4+3]) +
+    fabs(A[2*4+3]);
   int iteration = 0;
   while (off_diag_sum > JACOBI_TOLERANCE) {
-    double c = 0, s = 0;
+    double c = 0, s = 0, c2 = 0, s2 = 0, cs = 0;
     bool rotate = false;
     int p = p_ids[idx];
     int q = q_ids[idx];
@@ -271,17 +273,17 @@ __global__ void jacobi_4x4_kernel(
       rotate = true;
       const double a_pp = A[p*4+p];
       const double a_qq = A[q*4+q];
-      compute_c_s(a_pq, a_pp, a_qq, c, s);
+      compute_c_s(a_pq, a_pp, a_qq, c, s, c2, s2, cs);
     }
     __syncwarp();
     if (idx == 0 && rotate) {
-      apply_jacobi(A, 0, 1, c, s);
-      multiply_jacobi(V, 0, 1, c, s);
+      apply_jacobi<0, 1>(A, c, s, c2, s2, cs);
+      multiply_jacobi<0, 1>(V, c, s);
     }
     __syncwarp();
     if (idx == 1 && rotate) {
-      apply_jacobi(A, 2, 3, c, s);
-      multiply_jacobi(V, 2, 3, c, s);
+      apply_jacobi<2, 3>(A, c, s, c2, s2, cs);
+      multiply_jacobi<2, 3>(V, c, s);
     }
     __syncwarp();
     rotate = false;
@@ -292,17 +294,17 @@ __global__ void jacobi_4x4_kernel(
       rotate = true;
       const double a_pp = A[p*4+p];
       const double a_qq = A[q*4+q];
-      compute_c_s(a_pq, a_pp, a_qq, c, s);
+      compute_c_s(a_pq, a_pp, a_qq, c, s, c2, s2, cs);
     }
     __syncwarp();
     if (idx == 0 && rotate) {
-      apply_jacobi(A, 0, 2, c, s);
-      multiply_jacobi(V, 0, 2, c, s);
+      apply_jacobi<0, 2>(A, c, s, c2, s2, cs);
+      multiply_jacobi<0, 2>(V, c, s);
     }
     __syncwarp();
     if (idx == 1 && rotate) {
-      apply_jacobi(A, 1, 3, c, s);
-      multiply_jacobi(V, 1, 3, c, s);
+      apply_jacobi<1, 3>(A, c, s, c2, s2, cs);
+      multiply_jacobi<1, 3>(V, c, s);
     }
     __syncwarp();
     rotate = false;
@@ -313,23 +315,23 @@ __global__ void jacobi_4x4_kernel(
       rotate = true;
       const double a_pp = A[p*4+p];
       const double a_qq = A[q*4+q];
-      compute_c_s(a_pq, a_pp, a_qq, c, s);
+      compute_c_s(a_pq, a_pp, a_qq, c, s, c2, s2, cs);
     }
     __syncwarp();
     if (idx == 0 && rotate) {
-      apply_jacobi(A, 0, 3, c, s);
-      multiply_jacobi(V, 0, 3, c, s);
+      apply_jacobi<0, 3>(A, c, s, c2, s2, cs);
+      multiply_jacobi<0, 3>(V, c, s);
     }
     __syncwarp();
     if (idx == 1 && rotate) {
-      apply_jacobi(A, 1, 2, c, s);
-      multiply_jacobi(V, 1, 2, c, s);
+      apply_jacobi<1, 2>(A, c, s, c2, s2, cs);
+      multiply_jacobi<1, 2>(V, c, s);
     }
     __syncwarp();
     off_diag_sum =
-      A[0*4+1]*A[0*4+1]+A[0*4+2]*A[0*4+2]+A[0*4+3]*A[0*4+3]+
-      A[1*4+2]*A[1*4+2]+A[1*4+3]*A[1*4+3]+
-      A[2*4+3]*A[2*4+3];
+      fabs(A[0*4+1]) + fabs(A[0*4+2]) + fabs(A[0*4+3]) +
+      fabs(A[1*4+2]) + fabs(A[1*4+3]) +
+      fabs(A[2*4+3]);
     // Check the number of iterations
     ++iteration;
     if (iteration > JACOBI_MAX_ITERATION) {
@@ -341,25 +343,27 @@ __global__ void jacobi_4x4_kernel(
   double p;
   if (idx == 0) {
     int k;
+    // We only require to sort the leading eigenvector to the first column
+    k = 0;
+    p = A[0*4+0];
+    // Find the index of the leading eigenvalue
     #pragma unroll
-    for (int i0 = 0; i0 < 4; ++i0) {
-      k = i0;
-      p = A[i0*4+i0];
-      for (int j0 = i0 + 1; j0 < 4; ++j0) {
-        // Using ">=" is much slower
-        if (A[j0*4+j0] > p) {
-          k = j0;
-          p = A[j0*4+j0];
-        }
+    for (int i0 = 1; i0 < 4; ++i0) {
+      if (A[i0*4+i0] > p) {
+        p = A[i0*4+i0];
+        k = i0;
       }
-      if (k != i0) {
-        A[k*4+k] = A[i0*4+i0];
-        A[i0*4+i0] = p;
-        for (int j0 = 0; j0 < 4; ++j0) {
-          p = V[j0*4+i0];
-          V[j0*4+i0] = V[j0*4+k];
-          V[j0*4+k] = p;
-        }
+    }
+    if (k != 0) {
+      // Move the leading eigenvalue
+      A[k*4+k] = A[0*4+0];
+      A[0*4+0] = p;
+      // Move the corresponding leading eigenvector
+      #pragma unroll
+      for (int j0 = 0; j0 < 4; ++j0) {
+        p = V[j0*4+0];
+        V[j0*4+0] = V[j0*4+k];
+        V[j0*4+k] = p;
       }
     }
     A_in[0] = V[0];
