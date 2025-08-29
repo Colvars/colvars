@@ -91,6 +91,9 @@ def print_pr_report(kwargs):
         msg += " all"
     msg += " pull requests"
 
+    if kwargs.get('backend') is not None:
+        msg += f" affecting {kwargs['backend']}"
+
     if since_date:
         since_date_ts = date_parser.parse(since_date).timestamp()
         msg += f" merged since {since_date}"
