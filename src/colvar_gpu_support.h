@@ -290,7 +290,11 @@ private:
 
 #define ADD_DEPENDENCY(fieldName, dependencies_vector, nodes_map) do {\
   const std::string s = COLVARS_STRINGIFY(fieldName) ;\
-  try { dependencies_vector.push_back(nodes_map.at(s)); }\
+  try { dependencies_vector.push_back(nodes_map.at(s));\
+    if (cvm::debug()) {\
+      cvm::log("Function " + cvm::to_str(__func__) + " depends on node \"" + s + "\"\n");\
+    }\
+  }\
   catch (const std::out_of_range& oor) { \
     return cvm::error(cvm::to_str("BUG: cannot find node ") + s); } \
 } while (0);
@@ -299,6 +303,11 @@ private:
   const std::string s = COLVARS_STRINGIFY(fieldName) ;\
   if (auto search = nodes_map.find(s); search != nodes_map.end()) {\
     dependencies_vector.push_back(search->second);\
+    if (cvm::debug()) {\
+      cvm::log("Function " + cvm::to_str(__func__) + " depends on node\" " + search->first + "\"\n");\
+    }\
+  } else {\
+    if (cvm::debug()) { cvm::log("Function " + cvm::to_str(__func__) + " cannot depend on node\" " + s + "\"\n");}\
   }\
 } while (0);
 
