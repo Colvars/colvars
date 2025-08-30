@@ -571,6 +571,7 @@ void colvar::cvc::debug_gradients()
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   cudaStream_t stream = p->get_default_stream();
   checkGPUError(cudaStreamSynchronize(stream));
+  const bool to_cpu = is_enabled(f_cvc_require_cpu_buffers);
 #endif
   /**
    * @note Some CVCs change the gradients when running calc_value(), so it is
@@ -655,19 +656,9 @@ void colvar::cvc::debug_gradients()
       for (size_t id = 0; id < 3; id++) {
         if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-          group->read_positions_gpu_debug(
-            ia, id, is_enabled(f_cvc_require_cpu_buffers), 1, stream);
-          if (group->fitting_group) {
-            group->fitting_group->read_positions_gpu_debug(
-              0, -1, is_enabled(f_cvc_require_cpu_buffers), 1, stream);
-          }
-          group->calc_required_properties_gpu_debug(
-            is_enabled(f_cvc_require_cpu_buffers), stream);
-          checkGPUError(cudaStreamSynchronize(stream));
-          group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
-          if (group->fitting_group) {
-            group->fitting_group->after_read_data_sync(true, stream);
-          }
+          group->read_positions_gpu_debug(false, ia, id, to_cpu, 1, stream);
+          group->calc_required_properties_gpu_debug(to_cpu, stream);
+          group->after_read_data_sync(to_cpu, stream);
 #endif
         } else {
           // (re)read original positions
@@ -686,19 +677,9 @@ void colvar::cvc::debug_gradients()
 
         if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-          group->read_positions_gpu_debug(
-            ia, id, is_enabled(f_cvc_require_cpu_buffers), -1, stream);
-          if (group->fitting_group) {
-            group->fitting_group->read_positions_gpu_debug(
-              0, -1, is_enabled(f_cvc_require_cpu_buffers), -1, stream);
-          }
-          group->calc_required_properties_gpu_debug(
-            is_enabled(f_cvc_require_cpu_buffers), stream);
-          checkGPUError(cudaStreamSynchronize(stream));
-          group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
-          if (group->fitting_group) {
-            group->fitting_group->after_read_data_sync(true, stream);
-          }
+          group->read_positions_gpu_debug(false, ia, id, to_cpu, -1, stream);
+          group->calc_required_properties_gpu_debug(to_cpu, stream);
+          group->after_read_data_sync(to_cpu, stream);
 #endif
         } else {
           // (re)read original positions
@@ -732,19 +713,9 @@ void colvar::cvc::debug_gradients()
       auto *ref_group = group->fitting_group;
       if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-        group->read_positions_gpu_debug(
-          0, -1, is_enabled(f_cvc_require_cpu_buffers), 1.0, stream);
-        if (group->fitting_group) {
-          group->fitting_group->read_positions_gpu_debug(
-            0, -1, is_enabled(f_cvc_require_cpu_buffers), 1.0, stream);
-        }
-        group->calc_required_properties_gpu_debug(
-          is_enabled(f_cvc_require_cpu_buffers), stream);
-        checkGPUError(cudaStreamSynchronize(stream));
-        group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
-        if (group->fitting_group) {
-          group->fitting_group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
-        }
+        group->read_positions_gpu_debug(false, 0, -1, to_cpu, 1.0, stream);
+        group->calc_required_properties_gpu_debug(to_cpu, stream);
+        group->after_read_data_sync(to_cpu, stream);
 #endif
       } else {
         group->read_positions();
@@ -763,22 +734,9 @@ void colvar::cvc::debug_gradients()
           // (re)read original positions
           if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-            group->read_positions_gpu_debug(
-              0, -1, is_enabled(f_cvc_require_cpu_buffers), 1.0, stream);
-            if (group->fitting_group) {
-              group->fitting_group->read_positions_gpu_debug(
-                0, -1, is_enabled(f_cvc_require_cpu_buffers), 1.0, stream);
-            }
-            ref_group->read_positions_gpu_debug(
-              ia, id, is_enabled(f_cvc_require_cpu_buffers), 1.0, stream);
-            group->calc_required_properties_gpu_debug(
-              is_enabled(f_cvc_require_cpu_buffers), stream);
-            checkGPUError(cudaStreamSynchronize(stream));
-            group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
-            if (group->fitting_group) {
-              group->fitting_group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
-            }
-            ref_group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
+            group->read_positions_gpu_debug(true, ia, id, to_cpu, 1.0, stream);
+            group->calc_required_properties_gpu_debug(to_cpu, stream);
+            group->after_read_data_sync(to_cpu, stream);
 #endif
           } else {
             group->read_positions();
@@ -797,22 +755,9 @@ void colvar::cvc::debug_gradients()
           // (re)read original positions
           if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-            group->read_positions_gpu_debug(
-              0, -1, is_enabled(f_cvc_require_cpu_buffers), -1.0, stream);
-            if (group->fitting_group) {
-              group->fitting_group->read_positions_gpu_debug(
-                0, -1, is_enabled(f_cvc_require_cpu_buffers), -1.0, stream);
-            }
-            ref_group->read_positions_gpu_debug(
-              ia, id, is_enabled(f_cvc_require_cpu_buffers), -1.0, stream);
-            group->calc_required_properties_gpu_debug(
-              is_enabled(f_cvc_require_cpu_buffers), stream);
-            checkGPUError(cudaStreamSynchronize(stream));
-            group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
-            if (group->fitting_group) {
-              group->fitting_group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
-            }
-            ref_group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
+            group->read_positions_gpu_debug(true, ia, id, to_cpu, -1.0, stream);
+            group->calc_required_properties_gpu_debug(to_cpu, stream);
+            group->after_read_data_sync(to_cpu, stream);
 #endif
           } else {
             group->read_positions();
@@ -861,19 +806,9 @@ void colvar::cvc::debug_gradients()
     // (re)read original positions
     if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-      group->read_positions_gpu_debug(
-        0, -1, is_enabled(f_cvc_require_cpu_buffers), -1.0, stream);
-      if (group->fitting_group) {
-        group->fitting_group->read_positions_gpu_debug(
-          0, -1, is_enabled(f_cvc_require_cpu_buffers), -1.0, stream);
-      }
-      group->calc_required_properties_gpu_debug(
-        is_enabled(f_cvc_require_cpu_buffers), stream);
-      checkGPUError(cudaStreamSynchronize(stream));
-      group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
-      if (group->fitting_group) {
-        group->fitting_group->after_read_data_sync(is_enabled(f_cvc_require_cpu_buffers), stream);
-      }
+      group->read_positions_gpu_debug(false, 0, -1, to_cpu, -1.0, stream);
+      group->calc_required_properties_gpu_debug(to_cpu, stream);
+      group->after_read_data_sync(to_cpu, stream);
 #endif
     } else {
       group->read_positions();
