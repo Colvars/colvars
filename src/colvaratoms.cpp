@@ -1489,20 +1489,19 @@ void cvm::atom_group::calc_fit_forces_impl(
     if (B_ag_rotate) atom_grad = rot_inv * atom_grad;
     atom_grad *= (-1.0)/(cvm::real(group_for_fit->size()));
   }
+  cvm::rmatrix dxdC;
   // loop 2: iterate over the fitting group
-  if (B_ag_rotate) rot_deriv->prepare_derivative(rotation_derivative_dldq::use_dq);
+  if (B_ag_rotate) {
+    rot_deriv->prepare_derivative(rotation_derivative_dldq::use_dq);
+    dxdC = rot_deriv->compute_dxdC<4>(sum_dxdq);
+  }
   for (size_t j = 0; j < group_for_fit->size(); j++) {
     cvm::rvector fitting_force_grad{0, 0, 0};
     if (B_ag_center) {
       fitting_force_grad += atom_grad;
     }
     if (B_ag_rotate) {
-      rot_deriv->calc_derivative_wrt_group1<false, true, false>(j, nullptr, &dq0_1);
-      // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
-      fitting_force_grad += sum_dxdq[0] * dq0_1[0] +
-                            sum_dxdq[1] * dq0_1[1] +
-                            sum_dxdq[2] * dq0_1[2] +
-                            sum_dxdq[3] * dq0_1[3];
+      fitting_force_grad += rot_deriv->compute_dxdgroup1(j, dxdC);
     }
     if (cvm::debug()) {
       cvm::log(cvm::to_str(fitting_force_grad));
