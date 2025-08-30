@@ -503,6 +503,45 @@ struct rotation_derivative {
       {{-a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}, { 0.0,  a1z,  a1y}, {-a1x, -a1y,  a1z}}};
     calc_derivative_impl<use_dl, use_dq, use_ds>(ds_2, dl0_2_out, dq0_2_out, ds_2_out);
   }
+
+  template <int N>
+  inline cvm::rmatrix compute_dxdC(const std::array<cvm::real, N> sum_dxdq) const {
+    cvm::rmatrix result;
+    for (int i = 0; i < N; ++i) {
+      result.xx += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][0] + tmp_Q0Q0_L[i][1][1] - tmp_Q0Q0_L[i][2][2] - tmp_Q0Q0_L[i][3][3] );
+      result.xy += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][3] + tmp_Q0Q0_L[i][1][2] + tmp_Q0Q0_L[i][2][1] + tmp_Q0Q0_L[i][3][0] );
+      result.xz += sum_dxdq[i] * (-tmp_Q0Q0_L[i][0][2] + tmp_Q0Q0_L[i][1][3] - tmp_Q0Q0_L[i][2][0] + tmp_Q0Q0_L[i][3][1] );
+      result.yx += sum_dxdq[i] * (-tmp_Q0Q0_L[i][0][3] + tmp_Q0Q0_L[i][1][2] + tmp_Q0Q0_L[i][2][1] - tmp_Q0Q0_L[i][3][0] );
+      result.yy += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][0] - tmp_Q0Q0_L[i][1][1] + tmp_Q0Q0_L[i][2][2] - tmp_Q0Q0_L[i][3][3] );
+      result.yz += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][1] + tmp_Q0Q0_L[i][1][0] + tmp_Q0Q0_L[i][2][3] + tmp_Q0Q0_L[i][3][2] );
+      result.zx += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][2] + tmp_Q0Q0_L[i][1][3] + tmp_Q0Q0_L[i][2][0] + tmp_Q0Q0_L[i][3][1] );
+      result.zy += sum_dxdq[i] * (-tmp_Q0Q0_L[i][0][1] - tmp_Q0Q0_L[i][1][0] + tmp_Q0Q0_L[i][2][3] + tmp_Q0Q0_L[i][3][2]);
+      result.zz += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][0] - tmp_Q0Q0_L[i][1][1] - tmp_Q0Q0_L[i][2][2] + tmp_Q0Q0_L[i][3][3] );
+    }
+    return result;
+  }
+
+  inline cvm::rvector compute_dxdgroup1(size_t ia, const cvm::rmatrix& dxdC) const {
+    const cvm::real a2x = m_pos2[ia];
+    const cvm::real a2y = m_pos2[ia + m_num_atoms_pos2];
+    const cvm::real a2z = m_pos2[ia + 2 * m_num_atoms_pos2];
+    const cvm::rvector result{
+      dxdC.xx * a2x + dxdC.xy * a2y + dxdC.xz * a2z,
+      dxdC.yx * a2x + dxdC.yy * a2y + dxdC.yz * a2z,
+      dxdC.zx * a2x + dxdC.zy * a2y + dxdC.zz * a2z};
+    return result;
+  }
+
+  inline cvm::rvector compute_dxdgroup2(size_t ia, const cvm::rmatrix& dxdC) const {
+    const cvm::real a1x = m_pos1[ia];
+    const cvm::real a1y = m_pos1[ia + m_num_atoms_pos2];
+    const cvm::real a1z = m_pos1[ia + 2 * m_num_atoms_pos2];
+    const cvm::rvector result{
+      dxdC.xx * a1x + dxdC.yx * a1y + dxdC.zx * a1z,
+      dxdC.xy * a1x + dxdC.yy * a1y + dxdC.zy * a1z,
+      dxdC.xz * a1x + dxdC.yz * a1y + dxdC.zz * a1z};
+    return result;
+  }
 };
 
 #endif // COLVAR_ROTATION_DERIVATIVE
