@@ -42,9 +42,15 @@ struct rotation_derivative {
   /// \brief Reference to the rotation
   const cvm::rotation &m_rot;
   /// \brief Reference to the atom positions of group 1
-  const std::vector<cvm::real> &m_pos1;
+  // const std::vector<cvm::real> &m_pos1;
+  std::vector<cvm::real>::const_iterator pos1x;
+  std::vector<cvm::real>::const_iterator pos1y;
+  std::vector<cvm::real>::const_iterator pos1z;
   /// \brief Reference to the atom positions of group 2
-  const std::vector<cvm::real> &m_pos2;
+  // const std::vector<cvm::real> &m_pos2;
+  std::vector<cvm::real>::const_iterator pos2x;
+  std::vector<cvm::real>::const_iterator pos2y;
+  std::vector<cvm::real>::const_iterator pos2z;
   /// \brief Number of atoms in group1 (used in SOA)
   size_t m_num_atoms_pos1;
   /// \brief Number of atoms in group1 (used in SOA)
@@ -68,7 +74,13 @@ struct rotation_derivative {
     const std::vector<cvm::real> &pos2,
     const size_t num_atoms_pos1,
     const size_t num_atoms_pos2):
-      m_rot(rot), m_pos1(pos1), m_pos2(pos2),
+      m_rot(rot),
+      pos1x(pos1.cbegin()),
+      pos1y(pos1x + num_atoms_pos1),
+      pos1z(pos1y + num_atoms_pos1),
+      pos2x(pos2.cbegin()),
+      pos2y(pos2x + num_atoms_pos2),
+      pos2z(pos2y + num_atoms_pos2),
       m_num_atoms_pos1(num_atoms_pos1),
       m_num_atoms_pos2(num_atoms_pos2) {}
   /*! @brief This function must be called before `calc_derivative_wrt_group1`
@@ -467,9 +479,9 @@ struct rotation_derivative {
     std::array<cvm::rvector, 4>* _noalias const dq0_1_out = nullptr,
     std::array<std::array<cvm::rvector, 4>, 4>* _noalias const ds_1_out = nullptr) const {
       // if (dl0_1_out == nullptr && dq0_1_out == nullptr) return;
-      const cvm::real a2x = m_pos2[ia];
-      const cvm::real a2y = m_pos2[ia + m_num_atoms_pos2];
-      const cvm::real a2z = m_pos2[ia + 2 * m_num_atoms_pos2];
+      const cvm::real a2x = *(pos2x + ia);
+      const cvm::real a2y = *(pos2y + ia);
+      const cvm::real a2z = *(pos2z + ia);
       const cvm::rvector ds_1[4][4] = {
         {{ a2x,  a2y,  a2z}, { 0.0, a2z,  -a2y}, {-a2z,  0.0,  a2x}, { a2y, -a2x,  0.0}},
         {{ 0.0,  a2z, -a2y}, { a2x, -a2y, -a2z}, { a2y,  a2x,  0.0}, { a2z,  0.0,  a2x}},
@@ -493,9 +505,9 @@ struct rotation_derivative {
     std::array<cvm::rvector, 4>* _noalias const dq0_2_out = nullptr,
     std::array<std::array<cvm::rvector, 4>, 4>* _noalias const ds_2_out = nullptr) const {
     // if (dl0_2_out == nullptr && dq0_2_out == nullptr) return;
-    const cvm::real a1x = m_pos1[ia];
-    const cvm::real a1y = m_pos1[ia + m_num_atoms_pos1];
-    const cvm::real a1z = m_pos1[ia + 2 * m_num_atoms_pos1];
+    const cvm::real a1x = *(pos1x + ia);
+    const cvm::real a1y = *(pos1y + ia);
+    const cvm::real a1z = *(pos1z + ia);
     const cvm::rvector ds_2[4][4] = {
       {{ a1x,  a1y,  a1z}, { 0.0, -a1z,  a1y}, { a1z,  0.0, -a1x}, {-a1y,  a1x,  0.0}},
       {{ 0.0, -a1z,  a1y}, { a1x, -a1y, -a1z}, { a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}},
@@ -504,27 +516,36 @@ struct rotation_derivative {
     calc_derivative_impl<use_dl, use_dq, use_ds>(ds_2, dl0_2_out, dq0_2_out, ds_2_out);
   }
 
-  template <int N>
-  inline cvm::rmatrix compute_dxdC(const std::array<cvm::real, N> sum_dxdq) const {
+  template <int i>
+  inline cvm::rmatrix project_force_to_C_from_dxdqi(cvm::real f_on_q) const {
+    static_assert((i < 4) && (i >= 0), "i must be in [0, 3] in project_force_to_C_from_dxdqi.");
     cvm::rmatrix result;
-    for (int i = 0; i < N; ++i) {
-      result.xx += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][0] + tmp_Q0Q0_L[i][1][1] - tmp_Q0Q0_L[i][2][2] - tmp_Q0Q0_L[i][3][3] );
-      result.xy += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][3] + tmp_Q0Q0_L[i][1][2] + tmp_Q0Q0_L[i][2][1] + tmp_Q0Q0_L[i][3][0] );
-      result.xz += sum_dxdq[i] * (-tmp_Q0Q0_L[i][0][2] + tmp_Q0Q0_L[i][1][3] - tmp_Q0Q0_L[i][2][0] + tmp_Q0Q0_L[i][3][1] );
-      result.yx += sum_dxdq[i] * (-tmp_Q0Q0_L[i][0][3] + tmp_Q0Q0_L[i][1][2] + tmp_Q0Q0_L[i][2][1] - tmp_Q0Q0_L[i][3][0] );
-      result.yy += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][0] - tmp_Q0Q0_L[i][1][1] + tmp_Q0Q0_L[i][2][2] - tmp_Q0Q0_L[i][3][3] );
-      result.yz += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][1] + tmp_Q0Q0_L[i][1][0] + tmp_Q0Q0_L[i][2][3] + tmp_Q0Q0_L[i][3][2] );
-      result.zx += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][2] + tmp_Q0Q0_L[i][1][3] + tmp_Q0Q0_L[i][2][0] + tmp_Q0Q0_L[i][3][1] );
-      result.zy += sum_dxdq[i] * (-tmp_Q0Q0_L[i][0][1] - tmp_Q0Q0_L[i][1][0] + tmp_Q0Q0_L[i][2][3] + tmp_Q0Q0_L[i][3][2]);
-      result.zz += sum_dxdq[i] * ( tmp_Q0Q0_L[i][0][0] - tmp_Q0Q0_L[i][1][1] - tmp_Q0Q0_L[i][2][2] + tmp_Q0Q0_L[i][3][3] );
-    }
+    result.xx = f_on_q * ( tmp_Q0Q0_L[i][0][0] + tmp_Q0Q0_L[i][1][1] - tmp_Q0Q0_L[i][2][2] - tmp_Q0Q0_L[i][3][3] );
+    result.xy = f_on_q * ( tmp_Q0Q0_L[i][0][3] + tmp_Q0Q0_L[i][1][2] + tmp_Q0Q0_L[i][2][1] + tmp_Q0Q0_L[i][3][0] );
+    result.xz = f_on_q * (-tmp_Q0Q0_L[i][0][2] + tmp_Q0Q0_L[i][1][3] - tmp_Q0Q0_L[i][2][0] + tmp_Q0Q0_L[i][3][1] );
+    result.yx = f_on_q * (-tmp_Q0Q0_L[i][0][3] + tmp_Q0Q0_L[i][1][2] + tmp_Q0Q0_L[i][2][1] - tmp_Q0Q0_L[i][3][0] );
+    result.yy = f_on_q * ( tmp_Q0Q0_L[i][0][0] - tmp_Q0Q0_L[i][1][1] + tmp_Q0Q0_L[i][2][2] - tmp_Q0Q0_L[i][3][3] );
+    result.yz = f_on_q * ( tmp_Q0Q0_L[i][0][1] + tmp_Q0Q0_L[i][1][0] + tmp_Q0Q0_L[i][2][3] + tmp_Q0Q0_L[i][3][2] );
+    result.zx = f_on_q * ( tmp_Q0Q0_L[i][0][2] + tmp_Q0Q0_L[i][1][3] + tmp_Q0Q0_L[i][2][0] + tmp_Q0Q0_L[i][3][1] );
+    result.zy = f_on_q * (-tmp_Q0Q0_L[i][0][1] - tmp_Q0Q0_L[i][1][0] + tmp_Q0Q0_L[i][2][3] + tmp_Q0Q0_L[i][3][2] );
+    result.zz = f_on_q * ( tmp_Q0Q0_L[i][0][0] - tmp_Q0Q0_L[i][1][1] - tmp_Q0Q0_L[i][2][2] + tmp_Q0Q0_L[i][3][3] );
     return result;
   }
 
-  inline cvm::rvector compute_dxdgroup1(size_t ia, const cvm::rmatrix& dxdC) const {
-    const cvm::real a2x = m_pos2[ia];
-    const cvm::real a2y = m_pos2[ia + m_num_atoms_pos2];
-    const cvm::real a2z = m_pos2[ia + 2 * m_num_atoms_pos2];
+  template <typename dim4_array_t>
+  inline cvm::rmatrix project_force_to_C_from_dxdq(const dim4_array_t& sum_dxdq) const {
+    cvm::rmatrix result;
+    result += project_force_to_C_from_dxdqi<0>(sum_dxdq[0]);
+    result += project_force_to_C_from_dxdqi<1>(sum_dxdq[1]);
+    result += project_force_to_C_from_dxdqi<2>(sum_dxdq[2]);
+    result += project_force_to_C_from_dxdqi<3>(sum_dxdq[3]);
+    return result;
+  }
+
+  inline cvm::rvector project_force_to_group1(size_t ia, const cvm::rmatrix& dxdC) const {
+    const cvm::real a2x = *(pos2x + ia);
+    const cvm::real a2y = *(pos2y + ia);
+    const cvm::real a2z = *(pos2z + ia);
     const cvm::rvector result{
       dxdC.xx * a2x + dxdC.xy * a2y + dxdC.xz * a2z,
       dxdC.yx * a2x + dxdC.yy * a2y + dxdC.yz * a2z,
@@ -532,10 +553,10 @@ struct rotation_derivative {
     return result;
   }
 
-  inline cvm::rvector compute_dxdgroup2(size_t ia, const cvm::rmatrix& dxdC) const {
-    const cvm::real a1x = m_pos1[ia];
-    const cvm::real a1y = m_pos1[ia + m_num_atoms_pos2];
-    const cvm::real a1z = m_pos1[ia + 2 * m_num_atoms_pos2];
+  inline cvm::rvector project_force_to_group2(size_t ia, const cvm::rmatrix& dxdC) const {
+    const cvm::real a1x = *(pos1x + ia);
+    const cvm::real a1y = *(pos1y + ia);
+    const cvm::real a1z = *(pos1z + ia);
     const cvm::rvector result{
       dxdC.xx * a1x + dxdC.yx * a1y + dxdC.zx * a1z,
       dxdC.xy * a1x + dxdC.yy * a1y + dxdC.zy * a1z,
