@@ -516,6 +516,22 @@ struct rotation_derivative {
     calc_derivative_impl<use_dl, use_dq, use_ds>(ds_2, dl0_2_out, dq0_2_out, ds_2_out);
   }
 
+  /*! @brief Project the force on \f$q_i\f$ (or the gradient of
+   *  \f$\frac{\mathrm{d}x}{\mathrm{d}q_i}\f$) to the force on the correlation
+   *  matrix \f$C=\mathbf{r}_1^\intercal\mathbf{r}_2\f$, where \f$\mathbf{r}_1\f$ and
+   *  \f$\mathbf{r}_2\f$ are \f$N\times 3\f$ matrices containing the atom
+   *  positions of atom group 1 and atom group 2 after centering on origin.
+   *
+   *  This function can be only called after
+   *  prepare_derivative(rotation_derivative_dldq::use_dq). It mulitplies the input with
+   *  \f$\frac{\mathrm{d}q_i}{\mathrm{d}C}\f$.
+   *
+   *  @tparam i The i-th component of the quaternion, must be in the range [0, 3]
+   *  @param[in] f_on_q The force on \f$q_i\f$ or the gradient of \f$\frac{\mathrm{d}x}{\mathrm{d}q_i}\f$
+   *
+   *  @return A 3x3 matrix. The matrix element at row \f$j\f$ and column \f$k\f$
+   *  is \f$f_{q_i}\frac{\mathrm{d}q_i}{\mathrm{d}C_{jk}}\f$.
+   */
   template <int i>
   inline cvm::rmatrix project_force_to_C_from_dxdqi(cvm::real f_on_q) const {
     static_assert((i < 4) && (i >= 0), "i must be in [0, 3] in project_force_to_C_from_dxdqi.");
@@ -532,6 +548,23 @@ struct rotation_derivative {
     return result;
   }
 
+  /*! @brief Project the force on \f$\mathbf{q}\f$ (or the gradient of
+   *  \f$\frac{\mathrm{d}x}{\mathrm{d}q_i}\f$) to the force on the correlation
+   *  matrix \f$C=\mathbf{r}_1^\intercal\mathbf{r}_2\f$, where \f$\mathbf{r}_1\f$ and
+   *  \f$\mathbf{r}_2\f$ are \f$N\times 3\f$ matrices containing the atom
+   *  positions of atom group 1 and atom group 2 after centering on origin.
+   *
+   *  See also project_force_to_C_from_dxdqi().
+   *
+   *  @tparam dim4_array_t The type of force acting on \f$\mathbf{q}\f$.
+   *
+   *  @param[in] sum_dxdq The force on \f$\mathbf{q}\f$ or the gradient vector
+   *  \f$(\frac{\mathrm{d}x}{\mathrm{d}q_0}, \frac{\mathrm{d}x}{\mathrm{d}q_1}, \frac{\mathrm{d}x}{\mathrm{d}q_2}, \frac{\mathrm{d}x}{\mathrm{d}q_3})\f$.
+   *
+   *  @return A 3x3 matrix. The matrix element at row \f$j\f$ and column \f$k\f$
+   *  is \f$\sum_{i=0}^3 f_{q_i}\frac{\mathrm{d}q_i}{\mathrm{d}C_{jk}}\f$.
+   *
+   */
   template <typename dim4_array_t>
   inline cvm::rmatrix project_force_to_C_from_dxdq(const dim4_array_t& sum_dxdq) const {
     cvm::rmatrix result;
@@ -542,6 +575,16 @@ struct rotation_derivative {
     return result;
   }
 
+  /*! @brief Project the force on the correlation matrix \f$C\f$ to \f$\mathbf{r}_1\f$
+   *
+   *  Let \f$C=\mathbf{r}_1^\intercal\mathbf{r}_2\f$, and the force on \f$C\f$ be
+   *  \f$F_{C}\f$. This function returns the force on the i-th atom of \f$\mathbf{r}_1\f$.
+   *
+   *  @param[in] ia The atom index of the i-th atom in \f$\mathbf{r}_1\f$
+   *  @param[in] dxdC The 3x3 matrix containing the forces on each element of \f$C\f$
+   *
+   *  @return The force on the i-th atom of \f$\mathbf{r}_1\f$
+   */
   inline cvm::rvector project_force_to_group1(size_t ia, const cvm::rmatrix& dxdC) const {
     const cvm::real a2x = *(pos2x + ia);
     const cvm::real a2y = *(pos2y + ia);
@@ -553,6 +596,16 @@ struct rotation_derivative {
     return result;
   }
 
+  /*! @brief Project the force on the correlation matrix \f$C\f$ to \f$\mathbf{r}_2\f$
+   *
+   *  Let \f$C=\mathbf{r}_1^\intercal\mathbf{r}_2\f$, and the force on \f$C\f$ be
+   *  \f$F_{C}\f$. This function returns the force on the i-th atom of \f$\mathbf{r}_2\f$.
+   *
+   *  @param[in] ia The atom index of the i-th atom in \f$\mathbf{r}_2\f$
+   *  @param[in] dxdC The 3x3 matrix containing the forces on each element of \f$C\f$
+   *
+   *  @return The force on the i-th atom of \f$\mathbf{r}_2\f$
+   */
   inline cvm::rvector project_force_to_group2(size_t ia, const cvm::rmatrix& dxdC) const {
     const cvm::real a1x = *(pos1x + ia);
     const cvm::real a1y = *(pos1y + ia);
