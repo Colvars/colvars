@@ -144,10 +144,10 @@ void colvar::orientation::apply_force(colvarvalue const &force)
   if (!atoms->noforce) {
     const cvm::real sign = (rot.q).inner(ref_quat) >= 0.0 ? 1.0 : -1.0;
     rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-    const cvm::rmatrix dxdC = rot_deriv_impl->compute_dxdC<4>({{FQ.q0, FQ.q1, FQ.q2, FQ.q3}});
+    const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdq(FQ);
     auto ag_force = atoms->get_group_force_object();
     for (size_t ia = 0; ia < atoms->size(); ia++) {
-      const auto f_ia = sign * (rot_deriv_impl->compute_dxdgroup2(ia, dxdC));
+      const auto f_ia = sign * (rot_deriv_impl->project_force_to_group2(ia, dxdC));
       ag_force.add_atom_force(ia, f_ia);
     }
   }
@@ -210,9 +210,9 @@ void colvar::orientation_angle::calc_gradients()
       0.0 );
 
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  const cvm::rmatrix dxdC = rot_deriv_impl->compute_dxdC<1>({{dxdq0}});
+  const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdqi<0>(dxdq0);
   for (size_t ia = 0; ia < atoms->size(); ia++) {
-    const cvm::rvector g = rot_deriv_impl->compute_dxdgroup2(ia, dxdC);
+    const cvm::rvector g = rot_deriv_impl->project_force_to_group2(ia, dxdC);
     atoms->grad_x(ia) = g.x;
     atoms->grad_y(ia) = g.y;
     atoms->grad_z(ia) = g.z;
@@ -272,9 +272,9 @@ void colvar::orientation_proj::calc_gradients()
 {
   cvm::real const dxdq0 = 2.0 * 2.0 * (rot.q).q0;
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  const cvm::rmatrix dxdC = rot_deriv_impl->compute_dxdC<1>({{dxdq0}});
+  const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdqi<0>(dxdq0);
   for (size_t ia = 0; ia < atoms->size(); ia++) {
-    const cvm::rvector g = rot_deriv_impl->compute_dxdgroup2(ia, dxdC);
+    const cvm::rvector g = rot_deriv_impl->project_force_to_group2(ia, dxdC);
     atoms->grad_x(ia) = g.x;
     atoms->grad_y(ia) = g.y;
     atoms->grad_z(ia) = g.z;
@@ -322,9 +322,9 @@ void colvar::tilt::calc_gradients()
   cvm::quaternion const dxdq = rot.dcos_theta_dq(axis);
 
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  const cvm::rmatrix dxdC = rot_deriv_impl->compute_dxdC<4>({{dxdq.q0, dxdq.q1, dxdq.q2, dxdq.q3}});
+  const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdq(dxdq);
   for (size_t ia = 0; ia < atoms->size(); ia++) {
-    const cvm::rvector grad = rot_deriv_impl->compute_dxdgroup2(ia, dxdC);
+    const cvm::rvector grad = rot_deriv_impl->project_force_to_group2(ia, dxdC);
     atoms->grad_x(ia) = grad.x;
     atoms->grad_y(ia) = grad.y;
     atoms->grad_z(ia) = grad.z;
@@ -358,9 +358,9 @@ void colvar::spin_angle::calc_gradients()
   cvm::quaternion const dxdq = rot.dspin_angle_dq(axis);
 
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  const cvm::rmatrix dxdC = rot_deriv_impl->compute_dxdC<4>({{dxdq.q0, dxdq.q1, dxdq.q2, dxdq.q3}});
+  const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdq(dxdq);
   for (size_t ia = 0; ia < atoms->size(); ia++) {
-    const cvm::rvector grad = rot_deriv_impl->compute_dxdgroup2(ia, dxdC);
+    const cvm::rvector grad = rot_deriv_impl->project_force_to_group2(ia, dxdC);
     atoms->grad_x(ia) = grad.x;
     atoms->grad_y(ia) = grad.y;
     atoms->grad_z(ia) = grad.z;
@@ -405,9 +405,9 @@ void colvar::euler_phi::calc_gradients()
   const cvm::real dxdq2 = (180.0/PI) * (-4 * q2 * (-2 * q0 * q1 - 2 * q2 * q3) + 2 * q3 * (-2 * q1 * q1 - 2 * q2 * q2 + 1)) / denominator;
   const cvm::real dxdq3 = (180.0/PI) * 2 * q2 * (-2 * q1 * q1 - 2 * q2 * q2 + 1) / denominator;
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  const cvm::rmatrix dxdC = rot_deriv_impl->compute_dxdC<4>({{dxdq0, dxdq1, dxdq2, dxdq3}});
+  const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdq(std::array<cvm::real, 4>{{dxdq0, dxdq1, dxdq2, dxdq3}});
   for (size_t ia = 0; ia < atoms->size(); ia++) {
-    const cvm::rvector grad = rot_deriv_impl->compute_dxdgroup2(ia, dxdC);
+    const cvm::rvector grad = rot_deriv_impl->project_force_to_group2(ia, dxdC);
     atoms->grad_x(ia) = grad.x;
     atoms->grad_y(ia) = grad.y;
     atoms->grad_z(ia) = grad.z;
@@ -452,9 +452,9 @@ void colvar::euler_psi::calc_gradients()
   const cvm::real dxdq2 = (180.0/PI) * (2 * q1 * (-2 * q2 * q2 - 2 * q3 * q3 + 1) - 4 * q2 * (-2 * q0 * q3 - 2 * q1 * q2)) / denominator;
   const cvm::real dxdq3 = (180.0/PI) * (2 * q0 * (-2 * q2 * q2 - 2 * q3 * q3 + 1) - 4 * q3 * (-2 * q0 * q3 - 2 * q1 * q2)) / denominator;
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  const cvm::rmatrix dxdC = rot_deriv_impl->compute_dxdC<4>({{dxdq0, dxdq1, dxdq2, dxdq3}});
+  const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdq(std::array<cvm::real, 4>{{dxdq0, dxdq1, dxdq2, dxdq3}});
   for (size_t ia = 0; ia < atoms->size(); ia++) {
-    const cvm::rvector grad = rot_deriv_impl->compute_dxdgroup2(ia, dxdC);
+    const cvm::rvector grad = rot_deriv_impl->project_force_to_group2(ia, dxdC);
     atoms->grad_x(ia) = grad.x;
     atoms->grad_y(ia) = grad.y;
     atoms->grad_z(ia) = grad.z;
@@ -497,9 +497,9 @@ void colvar::euler_theta::calc_gradients()
   const cvm::real dxdq2 = (180.0/PI) * 2 * q0 / denominator;
   const cvm::real dxdq3 = (180.0/PI) * -2 * q1 / denominator;
   rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
-  const cvm::rmatrix dxdC = rot_deriv_impl->compute_dxdC<4>({{dxdq0, dxdq1, dxdq2, dxdq3}});
+  const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdq(std::array<cvm::real, 4>{{dxdq0, dxdq1, dxdq2, dxdq3}});
   for (size_t ia = 0; ia < atoms->size(); ia++) {
-    const cvm::rvector grad = rot_deriv_impl->compute_dxdgroup2(ia, dxdC);
+    const cvm::rvector grad = rot_deriv_impl->project_force_to_group2(ia, dxdC);
     atoms->grad_x(ia) = grad.x;
     atoms->grad_y(ia) = grad.y;
     atoms->grad_z(ia) = grad.z;
