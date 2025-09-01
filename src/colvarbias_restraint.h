@@ -107,13 +107,12 @@ public:
 
   colvarbias_restraint_moving(char const *key) : colvarbias_restraint(key) {}
   // Note: despite the diamond inheritance, most of this function gets only executed once
-  virtual int init(std::string const &conf);
+  virtual int init(std::string const &conf) override;
   virtual int update() override;
+  virtual int change_configuration(std::string const & /* conf */) override { return COLVARS_NOT_IMPLEMENTED; }
 
-  virtual int change_configuration(std::string const & /* conf */) { return COLVARS_NOT_IMPLEMENTED; }
-
-  virtual std::string const get_state_params() const;
-  virtual int set_state_params(std::string const &conf);
+  virtual std::string const get_state_params() const override;
+  virtual int set_state_params(std::string const &conf) override;
 
 protected:
 
@@ -204,13 +203,13 @@ class colvarbias_restraint_centers_moving
 public:
 
   colvarbias_restraint_centers_moving(char const *key);
-  virtual int init(std::string const &conf);
-  virtual int change_configuration(std::string const & /* conf */) { return COLVARS_NOT_IMPLEMENTED; }
+  virtual int init(std::string const &conf) override;
+  virtual int change_configuration(std::string const & /* conf */) override { return COLVARS_NOT_IMPLEMENTED; }
 
-  virtual std::string const get_state_params() const;
-  virtual int set_state_params(std::string const &conf);
-  virtual std::ostream & write_traj_label(std::ostream &os);
-  virtual std::ostream & write_traj(std::ostream &os);
+  virtual std::string const get_state_params() const override;
+  virtual int set_state_params(std::string const &conf) override;
+  virtual std::ostream & write_traj_label(std::ostream &os) override;
+  virtual std::ostream & write_traj(std::ostream &os) override;
 
 protected:
 
@@ -245,13 +244,13 @@ class colvarbias_restraint_k_moving
 public:
 
   colvarbias_restraint_k_moving(char const *key);
-  virtual int init(std::string const &conf);
-  virtual int change_configuration(std::string const & /* conf */) { return COLVARS_NOT_IMPLEMENTED; }
+  virtual int init(std::string const &conf) override;
+  virtual int change_configuration(std::string const & /* conf */) override { return COLVARS_NOT_IMPLEMENTED; }
 
-  virtual std::string const get_state_params() const;
-  virtual int set_state_params(std::string const &conf);
-  virtual std::ostream & write_traj_label(std::ostream &os);
-  virtual std::ostream & write_traj(std::ostream &os);
+  virtual std::string const get_state_params() const override;
+  virtual int set_state_params(std::string const &conf) override;
+  virtual std::ostream & write_traj_label(std::ostream &os) override;
+  virtual std::ostream & write_traj(std::ostream &os) override;
 
 protected:
 
@@ -311,14 +310,14 @@ class colvarbias_restraint_harmonic_walls
 public:
 
   colvarbias_restraint_harmonic_walls(char const *key);
-  virtual int init(std::string const &conf);
-  virtual int update();
+  virtual int init(std::string const &conf) override;
+  virtual int update() override;
   virtual int update_acc_work();
-  virtual std::string const get_state_params() const;
-  virtual int set_state_params(std::string const &conf);
-  virtual int change_configuration(std::string const &conf);
-  virtual std::ostream & write_traj_label(std::ostream &os);
-  virtual std::ostream & write_traj(std::ostream &os);
+  virtual std::string const get_state_params() const override;
+  virtual int set_state_params(std::string const &conf) override;
+  virtual int change_configuration(std::string const &conf) override;
+  virtual std::ostream & write_traj_label(std::ostream &os) override;
+  virtual std::ostream & write_traj(std::ostream &os) override;
 
 protected:
 
@@ -363,9 +362,9 @@ protected:
   /// \brief Compute the derivative of the free energy wrt lambda due to changing walls
   cvm::real dU_dlambda_walls() const override;
 
-  virtual cvm::real restraint_potential(size_t i) const;
-  virtual colvarvalue const restraint_force(size_t i) const;
-  virtual cvm::real d_restraint_potential_dk(size_t i) const;
+  virtual cvm::real restraint_potential(size_t i) const override;
+  virtual colvarvalue const restraint_force(size_t i) const override;
+  virtual cvm::real d_restraint_potential_dk(size_t i) const override;
 };
 
 
