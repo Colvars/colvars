@@ -946,6 +946,19 @@ public:
                         m.yx*r.x + m.yy*r.y + m.yz*r.z,
                         m.zx*r.x + m.zy*r.y + m.zz*r.z);
   }
+
+  inline rmatrix& operator+=(const rmatrix& rhs) {
+    this->xx += rhs.xx;
+    this->xy += rhs.xy;
+    this->xz += rhs.xz;
+    this->yx += rhs.yx;
+    this->yy += rhs.yy;
+    this->yz += rhs.yz;
+    this->zx += rhs.zx;
+    this->zy += rhs.zy;
+    this->zz += rhs.zz;
+    return *this;
+  }
 };
 
 
