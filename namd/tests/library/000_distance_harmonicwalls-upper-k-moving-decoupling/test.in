@@ -24,7 +24,7 @@ harmonicWalls {
     colvars        one
 
     upperWalls     0.2
-    upperWallConstant  0.001
+    forceConstant  0.001
 
     decoupling yes
     lambdaExponent  4
