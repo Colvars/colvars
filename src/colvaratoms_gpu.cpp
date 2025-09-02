@@ -79,7 +79,6 @@ int cvm::atom_group::destroy_gpu() {
   error_code |= p->deallocate_device(&calc_fit_forces_gpu_info.d_atom_grad);
   error_code |= p->deallocate_device(&calc_fit_forces_gpu_info.d_sum_dxdq);
   error_code |= p->deallocate_device(&calc_fit_forces_gpu_info.d_tbcount);
-  // error_code |= checkGPUError(cudaStreamDestroy(stream_ag_force));
   error_code |= p->deallocate_host(&h_sum_applied_colvar_force);
   error_code |= p->deallocate_host(&gpu_buffers.h_com);
   error_code |= p->deallocate_host(&gpu_buffers.h_cog);
@@ -87,10 +86,12 @@ int cvm::atom_group::destroy_gpu() {
   if (debug_graphs.graph_calc_required_properties) {
     error_code |= checkGPUError(cudaGraphDestroy(
       debug_graphs.graph_calc_required_properties));
+    debug_graphs.graph_calc_required_properties = nullptr;
   }
   if (debug_graphs.graph_exec_calc_required_properties) {
     error_code |= checkGPUError(cudaGraphExecDestroy(
       debug_graphs.graph_exec_calc_required_properties));
+    debug_graphs.graph_exec_calc_required_properties = nullptr;
   }
   debug_graphs.initialized = false;
   return error_code;
