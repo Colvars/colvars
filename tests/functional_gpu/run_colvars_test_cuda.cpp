@@ -242,6 +242,8 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename)
     positions_soa[i+2*numAtoms] = positions[i].z;
   }
   copy_HtoD(positions_soa.data(), d_mPositions, 3 * numAtoms);
+  clear_device_array(d_mAppliedForces, 3 * numAtoms);
+  clear_device_array(d_mTotalForces, 3 * numAtoms);
   if ( !err ) {
     colvars->calc();
     colvars->it++;
