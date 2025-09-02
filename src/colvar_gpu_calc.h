@@ -36,7 +36,7 @@ public:
     cudaGraphExec_t graph_exec;
     std::vector<compute_node_t> nodes;
   };
-  colvarmodule_gpu_calc() {}
+  colvarmodule_gpu_calc();
   ~colvarmodule_gpu_calc() {}
   int init();
   int calc_cvs(const std::vector<colvar*>& colvars, colvarmodule* colvar_module);
@@ -50,6 +50,46 @@ private:
    * have to use colvardeps as a workaround.
    */
   std::vector<colvardeps*> forced_atom_groups;
+  // Timers for profiling
+  #if defined (COLVARS_NVTX_PROFILING)
+  colvars_gpu::colvar_nvtx_prof ag_read_data_prof;
+  colvars_gpu::colvar_nvtx_prof cvc_calc_value_prof;
+  colvars_gpu::colvar_nvtx_prof cvc_calc_gradients_prof;
+  colvars_gpu::colvar_nvtx_prof ag_calc_fit_gradients_prof;
+  colvars_gpu::colvar_nvtx_prof cvc_calc_Jacobian_derivative_prof;
+  colvars_gpu::colvar_nvtx_prof cvc_calc_total_force_prof;
+  colvars_gpu::colvar_nvtx_prof cv_collect_cvc_data_prof;
+  colvars_gpu::colvar_nvtx_prof apply_forces_prof;
+  #endif
+
+  int cv_update_flags(const std::vector<colvar*>& colvars);
+  int cvc_calc_total_force(
+    const std::vector<colvar*>& colvars,
+    colvarmodule* colvar_module,
+    bool use_current_step = false);
+  int atom_group_read_data_gpu(
+    const std::vector<colvar*>& colvars,
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
+    colvarmodule* colvar_module);
+  int cvc_calc_value(
+    const std::vector<colvar*>& colvars,
+    colvarmodule* colvar_module);
+  int cvc_calc_gradients(
+    const std::vector<colvar*>& colvars,
+    colvarmodule* colvar_module);
+  int atom_group_calc_fit_gradients(
+    const std::vector<colvar*>& colvars,
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
+    colvarmodule* colvar_module);
+  int cvc_debug_gradients(
+    const std::vector<colvar*>& colvars,
+    colvarmodule* colvar_module);
+  int cvc_calc_Jacobian_derivative(
+    const std::vector<colvar*>& colvars,
+    colvarmodule* colvar_module);
+  int cv_collect_cvc_data(
+    const std::vector<colvar*>& colvars,
+    colvarmodule* colvar_module);
 };
 }
 
