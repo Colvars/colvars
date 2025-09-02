@@ -1540,7 +1540,7 @@ void cvm::atom_group::calc_fit_forces_impl(
   }
   if (B_ag_rotate) {
     // Project the forces or gradients to the quaternion
-    sum_dxdq = rot.q.derivative_element_wise_product_sum(C);
+    sum_dxdq = rot.q.derivative_element_wise_product_sum<decltype(sum_dxdq)>(C);
   }
   if (B_ag_center) {
     if (B_ag_rotate) atom_grad = rot_inv * atom_grad;
