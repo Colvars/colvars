@@ -5,26 +5,11 @@
 #include "colvar.h"
 #include "colvarcomp.h"
 
-// #include <iostream>
-
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 using namespace colvars_gpu;
 
-namespace {
-
-#if defined (COLVARS_NVTX_PROFILING)
-colvars_gpu::colvar_nvtx_prof ag_read_data_prof;
-colvars_gpu::colvar_nvtx_prof cvc_calc_value_prof;
-colvars_gpu::colvar_nvtx_prof cvc_calc_gradients_prof;
-colvars_gpu::colvar_nvtx_prof ag_calc_fit_gradients_prof;
-colvars_gpu::colvar_nvtx_prof cvc_calc_Jacobian_derivative_prof;
-colvars_gpu::colvar_nvtx_prof cvc_calc_total_force_prof;
-colvars_gpu::colvar_nvtx_prof cv_collect_cvc_data_prof;
-colvars_gpu::colvar_nvtx_prof apply_forces_prof;
-#endif
-
-int cv_update_flags(const std::vector<colvar*>& colvars) {
+int colvarmodule_gpu_calc::cv_update_flags(const std::vector<colvar*>& colvars) {
   int error_code = COLVARS_OK;
   for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
     error_code |= (*cvi)->update_cvc_flags();
@@ -33,10 +18,10 @@ int cv_update_flags(const std::vector<colvar*>& colvars) {
   return error_code;
 }
 
-int cvc_calc_total_force(
+int colvarmodule_gpu_calc::cvc_calc_total_force(
   const std::vector<colvar*>& colvars,
   colvarmodule* colvar_module,
-  bool use_current_step = false) {
+  bool use_current_step) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_NVTX_PROFILING)
   cvc_calc_total_force_prof.start();
@@ -70,7 +55,7 @@ int cvc_calc_total_force(
   return error_code;
 }
 
-int atom_group_read_data_gpu(
+int colvarmodule_gpu_calc::atom_group_read_data_gpu(
   const std::vector<colvar*>& colvars,
   colvarmodule_gpu_calc::compute_gpu_graph_t& g,
   colvarmodule* colvar_module) {
@@ -158,7 +143,7 @@ int atom_group_read_data_gpu(
     if (colvar_module->debug()) {
       // Debug graph
       const std::string filename = cvm::output_prefix() + "_read_data.dot";
-      cvm::log("Writing read data graph to " + filename);
+      colvar_module->log("Writing read data graph to " + filename);
       g.dump_graph(filename.c_str());
     }
   }
@@ -191,7 +176,7 @@ int atom_group_read_data_gpu(
   return error_code;
 }
 
-int cvc_calc_value(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
+int colvarmodule_gpu_calc::cvc_calc_value(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_NVTX_PROFILING)
   cvc_calc_value_prof.start();
@@ -217,7 +202,7 @@ int cvc_calc_value(const std::vector<colvar*>& colvars, colvarmodule* colvar_mod
   return error_code;
 }
 
-int cvc_calc_gradients(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
+int colvarmodule_gpu_calc::cvc_calc_gradients(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_NVTX_PROFILING)
   cvc_calc_gradients_prof.start();
@@ -238,7 +223,7 @@ int cvc_calc_gradients(const std::vector<colvar*>& colvars, colvarmodule* colvar
   return error_code;
 }
 
-int atom_group_calc_fit_gradients(
+int colvarmodule_gpu_calc::atom_group_calc_fit_gradients(
   const std::vector<colvar*>& colvars,
   colvarmodule_gpu_calc::compute_gpu_graph_t& g,
   colvarmodule* colvar_module) {
@@ -316,7 +301,7 @@ int atom_group_calc_fit_gradients(
     if (colvar_module->debug()) {
       // Debug graph
       const std::string filename = cvm::output_prefix() + "_fit_gradients.dot";
-      cvm::log("Writing fit gradients graph to " + filename);
+      colvar_module->log("Writing fit gradients graph to " + filename);
       g.dump_graph(filename.c_str());
     }
   }
@@ -334,7 +319,7 @@ int atom_group_calc_fit_gradients(
   return error_code;
 }
 
-int cvc_debug_gradients(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
+int colvarmodule_gpu_calc::cvc_debug_gradients(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
   int error_code = COLVARS_OK;
   for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
     const auto all_cvcs = (*cvi)->get_cvcs();
@@ -348,7 +333,7 @@ int cvc_debug_gradients(const std::vector<colvar*>& colvars, colvarmodule* colva
   return error_code;
 }
 
-int cvc_calc_Jacobian_derivative(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
+int colvarmodule_gpu_calc::cvc_calc_Jacobian_derivative(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_NVTX_PROFILING)
   cvc_calc_Jacobian_derivative_prof.start();
@@ -369,7 +354,7 @@ int cvc_calc_Jacobian_derivative(const std::vector<colvar*>& colvars, colvarmodu
   return error_code;
 }
 
-int cv_collect_cvc_data(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
+int colvarmodule_gpu_calc::cv_collect_cvc_data(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_NVTX_PROFILING)
   cv_collect_cvc_data_prof.start();
@@ -386,20 +371,8 @@ int cv_collect_cvc_data(const std::vector<colvar*>& colvars, colvarmodule* colva
   return error_code;
 }
 
-}
-
 colvarmodule_gpu_calc::compute_gpu_graph_t::compute_gpu_graph_t():
 graph_exec_initialized(false), graph(NULL), graph_exec(NULL) {
-#if defined (COLVARS_NVTX_PROFILING)
-  ag_read_data_prof.set_name_color("ag_read_data", 0xc36eff);
-  cvc_calc_value_prof.set_name_color("cvc_calc_value", 0x99dfff);
-  cvc_calc_gradients_prof.set_name_color("cvc_calc_gradients", 0x0a78ff);
-  ag_calc_fit_gradients_prof.set_name_color("ag_calc_fit_gradients", 0xff6c6e);
-  cvc_calc_Jacobian_derivative_prof.set_name_color("cvc_calc_Jacobian_derivative", 0x91ff5e);
-  cvc_calc_total_force_prof.set_name_color("cvc_calc_total_force", 0xfff242);
-  cv_collect_cvc_data_prof.set_name_color("cv_collect_cvc_data", 0xff742f);
-  apply_forces_prof.set_name_color("apply_forces", 0xff89a3);
-#endif
 }
 
 int colvarmodule_gpu_calc::compute_gpu_graph_t::init() {
@@ -434,6 +407,19 @@ colvarmodule_gpu_calc::compute_gpu_graph_t::~compute_gpu_graph_t() {
 void colvarmodule_gpu_calc::compute_gpu_graph_t::dump_graph(const char* filename) {
   cudaGraphDebugDotFlags dotFlags = cudaGraphDebugDotFlagsVerbose;
   checkGPUError(cudaGraphDebugDotPrint(graph, filename, dotFlags));
+}
+
+colvarmodule_gpu_calc::colvarmodule_gpu_calc() {
+#if defined (COLVARS_NVTX_PROFILING)
+  ag_read_data_prof.set_name_color("ag_read_data", 0xc36eff);
+  cvc_calc_value_prof.set_name_color("cvc_calc_value", 0x99dfff);
+  cvc_calc_gradients_prof.set_name_color("cvc_calc_gradients", 0x0a78ff);
+  ag_calc_fit_gradients_prof.set_name_color("ag_calc_fit_gradients", 0xff6c6e);
+  cvc_calc_Jacobian_derivative_prof.set_name_color("cvc_calc_Jacobian_derivative", 0x91ff5e);
+  cvc_calc_total_force_prof.set_name_color("cvc_calc_total_force", 0xfff242);
+  cv_collect_cvc_data_prof.set_name_color("cv_collect_cvc_data", 0xff742f);
+  apply_forces_prof.set_name_color("apply_forces", 0xff89a3);
+#endif
 }
 
 int colvarmodule_gpu_calc::init() {
@@ -562,7 +548,7 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
     // Debug graph
     if (colvar_module->debug()) {
       const std::string filename = cvm::output_prefix() + "_apply_forces.dot";
-      cvm::log("Writing apply forces graph to " + filename);
+      colvar_module->log("Writing apply forces graph to " + filename);
       apply_forces_compute.dump_graph(filename.c_str());
     }
   } else {
