@@ -131,8 +131,6 @@ protected:
   virtual void update_centers(cvm::real /* lambda */) {}
   /// @brief Update the walls by interpolating between initial and target
   virtual void update_walls(cvm::real /* lambda */) {}
-  /// \brief Additional details to add to the log message when moving restraints are updated
-  virtual std::string restraint_log_details() const { return ""; }
   /// \brief Compute the derivative of the free energy wrt lambda due to changing k
   virtual cvm::real dU_dlambda_k() const { return 0.0; }
   /// \brief Compute the derivative of the free energy wrt lambda due to changing centers
