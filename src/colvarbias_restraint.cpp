@@ -233,42 +233,37 @@ int colvarbias_restraint_moving::update() {
   if (!cvm::main()->proxy->simulation_running()) return COLVARS_OK;
 
   if (target_nstages) {
-    if (((cvm::step_absolute() - first_step) % target_nsteps == 0)
-                && (cvm::step_absolute() > first_step)) {
-      update_stage();
-      cvm::real lambda = current_lambda();
-      if (b_chg_force_k) update_k(lambda);
-      if (b_chg_centers) update_centers(lambda);
-      if (b_chg_walls) update_walls(lambda);
-
-      dA_dlambda /= cvm::real(target_nsteps - target_equil_steps);
-
-      std::string msg = "Moving restraint \"" + this->name + "\" stage " + cvm::to_str(stage) +
-                        ", lambda= " + cvm::to_str(lambda) +
-                        " : dA/dlambda= " + cvm::to_str(dA_dlambda) +
-                        restraint_log_details() +
-                        " at step " + cvm::to_str(cvm::step_absolute());
-      cvm::log(msg);
-      dA_dlambda = 0.0;
-    }
     // Accumulate free energy derivative at every step except 0
-    if (cvm::step_absolute() > first_step) {
+    // (there are n+1 calls to update() in an n-step simulation)
+    if (cvm::step_absolute() - first_step > 0) {
       if (b_chg_force_k) dA_dlambda += dU_dlambda_k();
       if (b_chg_centers) dA_dlambda += dU_dlambda_centers();
       if (b_chg_walls) dA_dlambda += dU_dlambda_walls();
-    }
 
-  } else if (cvm::step_absolute() <= first_step + target_nsteps) {
+      if ((cvm::step_absolute() - first_step) % target_nsteps == 0) {
+
+        cvm::real lambda = current_lambda();
+        dA_dlambda /= cvm::real(target_nsteps - target_equil_steps);
+        std::string msg = "Restraint \"" + this->name + "\" end of stage " + cvm::to_str(stage) +
+                          " at step " + cvm::to_str(cvm::step_absolute()) +
+                          ", lambda= " + cvm::to_str(lambda) +
+                          " : dA/dlambda= " + cvm::to_str(dA_dlambda);
+        cvm::log(msg);
+        dA_dlambda = 0.0;
+
+        update_stage();
+        lambda = current_lambda();
+        if (b_chg_force_k) update_k(lambda);
+        if (b_chg_centers) update_centers(lambda);
+        if (b_chg_walls) update_walls(lambda);
+      }
+    }
+  } else if (cvm::step_absolute() - first_step <= target_nsteps) {
     // Continuous update (slow growth)
     cvm::real lambda = current_lambda();
     if (b_chg_force_k) update_k(lambda);
     if (b_chg_centers) update_centers(lambda);
     if (b_chg_walls) update_walls(lambda);
-    if (is_enabled(f_cvb_output_acc_work) && (cvm::step_relative() > 0)) {
-      if (b_chg_force_k) dA_dlambda += dU_dlambda_k();
-      if (b_chg_centers) dA_dlambda += dU_dlambda_centers();
-      if (b_chg_walls) dA_dlambda += dU_dlambda_walls();
-    }
   }
 
   return COLVARS_OK;
@@ -430,14 +425,12 @@ int colvarbias_restraint_centers_moving::update_acc_work()
   if (!cvm::main()->proxy->simulation_running()) {
     return COLVARS_OK;
   }
-  if (b_chg_centers) {
-    if (is_enabled(f_cvb_output_acc_work)) {
-      if ((cvm::step_relative() > 0) &&
-          (cvm::step_absolute() - first_step <= target_nsteps)) {
-        for (size_t i = 0; i < num_variables(); i++) {
-          // project forces on the calculated increments at this step
-          acc_work += colvar_forces[i] * centers_incr[i];
-        }
+  if (b_chg_centers && is_enabled(f_cvb_output_acc_work)) {
+    if ((cvm::step_relative() > 0) &&
+        (cvm::step_absolute() - first_step <= target_nsteps)) {
+      for (size_t i = 0; i < num_variables(); i++) {
+        // project forces on the calculated increments at this step
+        acc_work += colvar_forces[i] * centers_incr[i];
       }
     }
   }
@@ -629,15 +622,14 @@ int colvarbias_restraint_k_moving::update_acc_work()
   if (!cvm::main()->proxy->simulation_running()) {
     return COLVARS_OK;
   }
-  if (b_chg_force_k) {
-    if (is_enabled(f_cvb_output_acc_work)) {
-      if (cvm::step_relative() > 0) {
-        cvm::real dU_dk = 0.0;
-        for (size_t i = 0; i < num_variables(); i++) {
-          dU_dk += d_restraint_potential_dk(i);
-        }
-        acc_work += dU_dk * force_k_incr;
+  if (b_chg_force_k && is_enabled(f_cvb_output_acc_work)) {
+    if ((cvm::step_relative() > 0) &&
+        (cvm::step_absolute() - first_step <= target_nsteps)) {
+      cvm::real dU_dk = 0.0;
+      for (size_t i = 0; i < num_variables(); i++) {
+        dU_dk += d_restraint_potential_dk(i);
       }
+      acc_work += dU_dk * force_k_incr;
     }
   }
   return COLVARS_OK;
@@ -1177,6 +1169,7 @@ int colvarbias_restraint_harmonic_walls::update()
 
   error_code |= colvarbias_restraint::update();
 
+  error_code |= colvarbias_restraint_k_moving::update_acc_work();
   error_code |= colvarbias_restraint_harmonic_walls::update_acc_work();
 
   return error_code;
@@ -1188,23 +1181,15 @@ int colvarbias_restraint_harmonic_walls::update_acc_work()
   if (!cvm::main()->proxy->simulation_running()) {
     return COLVARS_OK;
   }
-  if ((b_chg_force_k || b_chg_walls) && is_enabled(f_cvb_output_acc_work)) {
-    if (cvm::step_relative() > 0) {
-      cvm::real dU_dk = 0.0;
-      for (size_t i = 0; i < num_variables(); i++) {
-        dU_dk += d_restraint_potential_dk(i);
-      }
-      acc_work += dU_dk * force_k_incr;
-
-      cvm::real dU_dwall = 0.0;
+  if (b_chg_walls && is_enabled(f_cvb_output_acc_work)) {
+    if ((cvm::step_relative() > 0) &&
+        (cvm::step_absolute() - first_step <= target_nsteps)) {
       for (size_t i = 0; i < num_variables(); i++) {
         cvm::real const dist = colvar_distance(i);
         if (dist > 0.0) {
-            dU_dwall = force_k * upper_wall_k * dist/(variables(i)->width);
-            acc_work += dU_dwall * upper_walls_incr[i];
+          acc_work += colvar_forces[i] * upper_walls_incr[i];
         } else{
-            dU_dwall += force_k * lower_wall_k * dist/(variables(i)->width);
-            acc_work += dU_dwall * lower_walls_incr[i];
+          acc_work += colvar_forces[i] * lower_walls_incr[i];
         }
       }
     }
