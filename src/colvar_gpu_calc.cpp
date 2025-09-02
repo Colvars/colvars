@@ -99,11 +99,11 @@ int colvarmodule_gpu_calc::atom_group_read_data_gpu(
       cudaGraph_t ag_graph;
       error_code |= checkGPUError(cudaGraphCreate(&ag_graph, 0));
       if (error_code != COLVARS_OK) return error_code;
-      error_code |= (*ag)->add_reset_atoms_data_nodes(ag_graph, ag_node_map);
+      error_code |= (*ag)->get_gpu_atom_group()->add_reset_atoms_data_nodes(*ag, ag_graph, ag_node_map);
       if (error_code != COLVARS_OK) return error_code;
-      error_code |= (*ag)->add_read_positions_nodes(ag_graph, ag_node_map);
+      error_code |= (*ag)->get_gpu_atom_group()->add_read_positions_nodes(*ag, ag_graph, ag_node_map);
       if (error_code != COLVARS_OK) return error_code;
-      error_code |= (*ag)->add_calc_required_properties_nodes(ag_graph, ag_node_map);
+      error_code |= (*ag)->get_gpu_atom_group()->add_calc_required_properties_nodes(*ag, ag_graph, ag_node_map);
       if (error_code != COLVARS_OK) return error_code;
       // Check all parents of this ag to see if any of the parents require CPU buffers
       std::vector<colvardeps*> ag_parents = (*ag)->get_parents();
@@ -122,7 +122,7 @@ int colvarmodule_gpu_calc::atom_group_read_data_gpu(
         }
       }
       if (require_cpu_buffers) {
-        error_code |= (*ag)->add_update_cpu_buffers_nodes(ag_graph, ag_node_map);
+        error_code |= (*ag)->get_gpu_atom_group()->add_update_cpu_buffers_nodes(*ag, ag_graph, ag_node_map);
         if (error_code != COLVARS_OK) return error_code;
       }
       cudaGraphNode_t child_graph_node;
@@ -169,7 +169,8 @@ int colvarmodule_gpu_calc::atom_group_read_data_gpu(
   for (auto it = g.nodes.begin(); it != g.nodes.end(); ++it) {
     cvm::atom_group* atoms = dynamic_cast<cvm::atom_group*>(it->colvar_node);
     if (it->require_cpu_buffers) {
-      error_code |= atoms->after_read_data_sync(true, stream);
+      error_code |= atoms->get_gpu_atom_group()->after_read_data_sync(
+        atoms, true, stream);
       if (error_code != COLVARS_OK) return error_code;
     }
   }
@@ -284,8 +285,8 @@ int colvarmodule_gpu_calc::atom_group_calc_fit_gradients(
           // Ignore
         }
       }
-      error_code |= (*ag)->add_calc_fit_gradients_nodes(
-        ag_graph, ag_node_map, require_cpu_buffers);
+      error_code |= (*ag)->get_gpu_atom_group()->add_calc_fit_gradients_nodes(
+        *ag, ag_graph, ag_node_map, require_cpu_buffers);
       if (error_code != COLVARS_OK) return error_code;
       cudaGraphNode_t child_graph_node;
       error_code |= checkGPUError(cudaGraphAddChildGraphNode(
@@ -517,7 +518,7 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
     // Clear the h_sum_applied_colvar_force, use_group_force and use_apply_colvar_force
     for (auto it = all_unique_atom_groups.begin(); it != all_unique_atom_groups.end(); ++it) {
       cvm::atom_group* ag = *it;
-      checkColvarsError(ag->begin_apply_force_gpu());
+      checkColvarsError(ag->get_gpu_atom_group()->begin_apply_force_gpu());
     }
     for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
       if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
@@ -537,7 +538,7 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
       node_map_t ag_node_map;
       cudaGraph_t ag_graph;
       checkColvarsError(checkGPUError(cudaGraphCreate(&ag_graph, 0)));
-      checkColvarsError((*ag)->add_apply_force_nodes(ag_graph, ag_node_map));
+      checkColvarsError((*ag)->get_gpu_atom_group()->add_apply_force_nodes(*ag, ag_graph, ag_node_map));
       cudaGraphNode_t child_graph_node;
       checkColvarsError(checkGPUError(cudaGraphAddChildGraphNode(
         &child_graph_node, apply_forces_compute.graph, NULL, 0, ag_graph)));
@@ -554,7 +555,7 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
   } else {
     for (auto it = forced_atom_groups.begin(); it != forced_atom_groups.end(); ++it) {
       cvm::atom_group* ag = dynamic_cast<cvm::atom_group*>((*it));
-      checkColvarsError(ag->begin_apply_force_gpu());
+      checkColvarsError(ag->get_gpu_atom_group()->begin_apply_force_gpu());
     }
     for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
       if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {

@@ -1,13 +1,8 @@
 #include "colvaratoms.h"
-#include "colvar_gpu_support.h"
 #include "colvar_rotation_derivative.h"
 #include "colvardeps.h"
 #include "colvarproxy.h"
 #include "colvarmodule.h"
-
-#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
-#include "cuda/colvaratoms_kernel.h"
-#endif
 
 #include <numeric>
 #include <algorithm>
@@ -106,14 +101,8 @@ cvm::atom_group::atom_group():
   num_ref_pos(0)
 {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  std::memset(&gpu_buffers, 0, sizeof(gpu_buffers));
-  std::memset(&debug_graphs, 0, sizeof(debug_graphs));
-  std::memset(&calc_fit_gradients_gpu_info, 0,
-              sizeof(calc_fit_gradients_gpu_info));
-  std::memset(&calc_fit_forces_gpu_info, 0,
-              sizeof(calc_fit_forces_gpu_info));
-  h_sum_applied_colvar_force = nullptr;
-  rot_deriv_gpu = nullptr;
+  gpu_atom_group = std::unique_ptr<colvars_gpu::colvaratoms_gpu>(
+    new colvars_gpu::colvaratoms_gpu());
 #endif
   key = "unnamed";
   init();
@@ -140,9 +129,6 @@ cvm::atom_group::~atom_group() {
     delete rot_deriv;
     rot_deriv = nullptr;
   }
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  destroy_gpu();
-#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
 cvm::atom_group::atom_modifier::atom_modifier(cvm::atom_group* ag): m_ag(ag)
@@ -189,7 +175,7 @@ int cvm::atom_group::init()
   com.reset();
 
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
-  error_code |= init_gpu();
+  error_code |= gpu_atom_group->init_gpu();
 #elif defined (COLVARS_SYCL)
   // TODO
 #endif
@@ -332,7 +318,7 @@ void cvm::atom_group::atom_modifier::sync_to_soa() const {
       m_ag->atoms_charge[i] = m_atoms[i].charge;
     }
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP) || defined(COLVARS_SYCL)
-    m_ag->sync_to_gpu_buffers();
+    m_ag->gpu_atom_group->sync_to_gpu_buffers(m_ag);
 #endif
   }
   m_ag->total_charge = m_total_charge;
@@ -591,7 +577,7 @@ void cvm::atom_group::clear_soa() {
   std::fill(atoms_weight.begin(), atoms_weight.end(), 0);
   // Reset the GPU buffers if necessary
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP) || defined(COLVARS_SYCL)
-  clear_gpu_buffers();
+  gpu_atom_group->clear_gpu_buffers(this);
 #endif
   // Reset the number of atoms
   num_atoms = 0;
@@ -818,11 +804,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
   if (is_enabled(f_ag_rotate)) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    colvarproxy* p = cvm::main()->proxy;
-    p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
-    p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
-    p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
-    rot_gpu.init();
+    gpu_atom_group->setup_rotation(this);
 #endif
     setup_rotation_derivative();
   }
@@ -1024,7 +1006,7 @@ void cvm::atom_group::update_total_mass() {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
       // thrust::device_ptr<cvm::real> p_mass = thrust::device_pointer_cast(d_atoms_mass);
       // total_mass = thrust::reduce(p_mass, p_mass + num_atoms);
-      p->copy_HtoD(atoms_weight.data(), gpu_buffers.d_atoms_weight, num_atoms);
+      p->copy_HtoD(atoms_weight.data(), gpu_atom_group->get_gpu_buffers().d_atoms_weight, num_atoms);
 #elif defined(COLVARS_SYCL)
       // TODO
 #endif
@@ -1200,17 +1182,7 @@ void cvm::atom_group::setup_rotation_derivative() {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   // Allocate rot_deriv_gpu on pinned memory so that
   // we can access it on device
-  colvarproxy* p = cvm::main()->proxy;
-  if (rot_deriv_gpu != nullptr) {
-    rot_deriv_gpu->~rotation_derivative_gpu();
-    p->deallocate_host(&rot_deriv_gpu);
-  }
-  p->allocate_host(&rot_deriv_gpu, 1);
-  rot_deriv_gpu = new (rot_deriv_gpu) colvars_gpu::rotation_derivative_gpu();
-  rot_deriv_gpu->init(
-    &rot_gpu,
-    group_for_fit->gpu_buffers.d_atoms_pos,
-    gpu_buffers.d_ref_pos, group_for_fit->size(), num_ref_pos);
+  gpu_atom_group->setup_rotation_derivative(this);
 #endif
 }
 
@@ -1239,9 +1211,7 @@ void cvm::atom_group::center_ref_pos()
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   colvarproxy* p = cvm::main()->proxy;
   if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
-    p->copy_HtoD(&ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
-    p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
-    p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, 3 * num_ref_pos);
+    gpu_atom_group->setup_rotation(this);
   }
 #endif
 }
@@ -1322,20 +1292,7 @@ void cvm::atom_group::read_total_forces()
     // what can I do to put it in the graph?
     // The current workaround is to ensure everything is ready.
     // p->sync_stream(stream);
-    cvm::quaternion* q_ptr = nullptr;
-    if (is_enabled(f_ag_rotate)) {
-      q_ptr = rot_gpu.get_q();
-    }
-    colvars_gpu::atoms_total_force_from_proxy(
-      gpu_buffers.d_atoms_index, p->proxy_atoms_total_forces_gpu(),
-      gpu_buffers.d_atoms_total_force, is_enabled(f_ag_rotate),
-      q_ptr, num_atoms, p->get_atom_ids()->size(), p->get_default_stream());
-    // TODO: How can I check if the CVC has GPU implementation?
-    // If the CVC only supports CPU, copy the data to host
-    p->copy_DtoH_async(
-      gpu_buffers.d_atoms_total_force, atoms_total_force.data(),
-      3 * num_atoms, p->get_default_stream());
-    checkGPUError(cudaStreamSynchronize(p->get_default_stream()));
+    gpu_atom_group->read_total_forces(this);
 #endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
   } else {
     if (is_enabled(f_ag_rotate)) {
@@ -1702,8 +1659,7 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
   colvarproxy* const p = cvm::main()->proxy;
   if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
-    use_apply_colvar_force = true;
-    h_sum_applied_colvar_force[0] += force;
+    gpu_atom_group->apply_colvar_force_from_cpu(force);
     // Just intercept the force and return
     return;
 #endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
@@ -1796,7 +1752,7 @@ void cvm::atom_group::do_feature_side_effects(int id)
       break;
   }
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  do_feature_side_effects_gpu(id);
+  gpu_atom_group->do_feature_side_effects_gpu(this, id);
 #endif
 }
 
@@ -1806,8 +1762,9 @@ void cvm::atom_group::set_ref_pos_from_aos(const std::vector<cvm::atom_pos>& pos
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   colvarproxy* p = cvm::main()->proxy;
   if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
-    p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
-    p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
+    // p->reallocate_device(&gpu_buffers.d_ref_pos, ref_pos.size());
+    // p->copy_HtoD(ref_pos.data(), gpu_buffers.d_ref_pos, ref_pos.size());
+    gpu_atom_group->setup_rotation(this);
   }
 #endif
 }
@@ -1835,7 +1792,7 @@ cvm::atom_group::group_force_object::~group_force_object() {
   colvarproxy* const p = cvm::main()->proxy;
   if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    m_ag->use_group_force = true;
+    m_ag->gpu_atom_group->set_use_cpu_group_force(true);
     // CPU forces are already intercepted into group_forces
     return;
 #endif
