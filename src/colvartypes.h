@@ -1210,7 +1210,10 @@ public:
   }
 
   /** \brief Calculate the sums of element-wise products of a given matrix with respect to dR/dq0, dR/dq1, dR/dq2 and dR/dq3
+   *
+   *  \tparam T The type of returning array (could be std::array or cuda::std::array)
    *  \param C A 3x3 matrix
+   *
    *  \return A 4-element tuple (see the detailed documentation below).
    *
    *  This function is mainly used for projecting the gradients or forces on
@@ -1240,8 +1243,9 @@ public:
    *  \f]
    *  where \f$\mathbf{e}\f$ is \f$[1, 1, 1]\f$ and \f$\odot\f$ is the element-wise product (Hadamard product).
    */
-  inline COLVARS_HOST_DEVICE std::array<cvm::real, 4> derivative_element_wise_product_sum(const cvm::real (&C)[3][3]) const {
-    return std::array<cvm::real, 4>{{
+  template <typename T>
+  inline COLVARS_HOST_DEVICE T derivative_element_wise_product_sum(const cvm::real (&C)[3][3]) const {
+    return T{{
       2.0 * ( q0 * C[0][0] - q3 * C[0][1] + q2 * C[0][2] +
               q3 * C[1][0] + q0 * C[1][1] - q1 * C[1][2] +
              -q2 * C[2][0] + q1 * C[2][1] + q0 * C[2][2]),
