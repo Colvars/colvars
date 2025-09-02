@@ -545,7 +545,7 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
   get_keyval(conf, "decoupling", b_decoupling, b_decoupling);
   if (b_decoupling) {
     target_force_k = force_k;
-    force_k = 0.0;
+    starting_force_k = 0.0;
     b_chg_force_k = true;
   }
 
@@ -555,9 +555,8 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
       return COLVARS_ERROR;
     }
     b_chg_force_k = true;
+    starting_force_k = force_k;
   }
-
-  starting_force_k = force_k;
 
   if (!b_chg_force_k) {
     return COLVARS_OK;
@@ -592,10 +591,6 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
 
 void colvarbias_restraint_k_moving::update_k(cvm::real lambda) {
   cvm::real const force_k_old = force_k;
-  cvm::log("starting_force_k: " + cvm::to_str(starting_force_k) + "\n");
-  cvm::log("target_force_k: " + cvm::to_str(target_force_k) + "\n");
-  cvm::log("lambda: " + cvm::to_str(lambda) + "\n");
-  cvm::log("lambda_exp: " + cvm::to_str(lambda_exp) + "\n");
 
   force_k = starting_force_k + (target_force_k - starting_force_k) * cvm::pow(lambda, lambda_exp);
   force_k_incr = force_k - force_k_old;
@@ -867,7 +862,6 @@ get_keyval(conf, "targetUpperWalls", target_upper_walls, target_upper_walls);
   colvarbias_restraint::init(conf);
   colvarbias_restraint_moving::init(conf);
   colvarbias_restraint_k_moving::init(conf);
-  // colvarbias_restraint_centers_moving::init(conf);
 
   cvm::main()->cite_feature("harmonicWalls colvar bias implementation");
 
