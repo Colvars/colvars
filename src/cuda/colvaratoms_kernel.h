@@ -60,7 +60,7 @@ int atoms_calc_cog(
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
 
-void atoms_total_force_from_proxy(
+int atoms_total_force_from_proxy(
   const int* atoms_proxy_index,
   const cvm::real* atoms_total_force_proxy,
   cvm::real* atoms_total_force_ag,

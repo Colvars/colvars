@@ -1,6 +1,7 @@
 #ifndef COLVARATOMS_SOA_H
 #define COLVARATOMS_SOA_H
 
+#include "colvaratoms_gpu.h"
 #include "colvarmodule.h"
 #include "colvardeps.h"
 #include "colvar_rotation_derivative.h"
@@ -823,109 +824,12 @@ private:
   /// \brief Lock for modifier
   std::mutex modify_lock;
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
-  struct {
-    /// \brief GPU atom proxy indices (size: num_atoms)
-    int* d_atoms_index;
-    /// \brief GPU atom positions (size: 3 * num_atoms)
-    cvm::real* d_atoms_pos;
-    /// \brief GPU atom charges (size: num_atoms)
-    cvm::real* d_atoms_charge;
-    /// \brief GPU atom velocities (size: 3 * num_atoms)
-    cvm::real* d_atoms_vel;
-    /// \brief GPU atom mass (size: num_atoms)
-    cvm::real* d_atoms_mass;
-    /// \brief GPU atom gradients (size: 3 * num_atoms)
-    cvm::real* d_atoms_grad;
-    /// \brief GPU atom total forces (size: 3 * num_atoms)
-    cvm::real* d_atoms_total_force;
-    /// \brief Atom masses divided by total mass (size: num_atoms)
-    cvm::real* d_atoms_weight;
-    /// \brief GPU atom applied force
-    cvm::real* d_atoms_applied_force;
-    /// \brief GPU fit gradients
-    cvm::real* d_fit_gradients;
-    /// \brief GPU reference coordinates for f_ag_center or f_ag_rotate
-    cvm::real* d_ref_pos;
-    /// \brief GPU atom positions (size: 3 * num_atoms)
-    cvm::real* d_atoms_pos_unrotated;
-    /// \brief GPU center-of-mass
-    cvm::rvector* d_com;
-    /// \brief GPU center-of-geometry
-    cvm::rvector* d_cog;
-    /// \brief GPU center of geometry before any fitting
-    cvm::rvector* d_cog_orig;
-    /// \brief GPU center of geometry of the reference coordinates
-    cvm::rvector* d_ref_pos_cog;
-    /// \brief GPU atomic counter for reduction
-    unsigned int* d_com_cog_tbcount;
-    /// \brief Center-of-mass on the host-pinned memory for CPU compatibility
-    cvm::rvector* h_com;
-    /// \brief Center-of-geometry on the host-pinned memory for CPU compatibility
-    cvm::rvector* h_cog;
-    /// \brief Center-of-geometry before any fitting on the host-pinned memory for CPU compatibility
-    cvm::rvector* h_cog_orig;
-  } gpu_buffers;
-  /// \brief Temporary variables for calc_fit_gradients GPU kernel
-  struct {
-    double3* d_atom_grad;
-    double4* d_sum_dxdq;
-    unsigned int* d_tbcount;
-  } calc_fit_gradients_gpu_info, calc_fit_forces_gpu_info;
-  /// \brief For intercepting the forces applied from the CPU interface
-  cvm::real* h_sum_applied_colvar_force;
-  /// \brief If the CPU code path use apply_colvar_force(),
-  /// this will be set to true, and then reset to false in begin_apply_force_gpu()
-  bool use_apply_colvar_force;
-  /// \brief If the CPU code path use group_force_object,
-  /// this will be set to true, and then reset to false in begin_apply_force_gpu()
-  bool use_group_force;
-  /// \brief GPU rotation object
-  colvars_gpu::rotation_gpu rot_gpu;
-  /// \brief GPU Rotation derivative;
-  colvars_gpu::rotation_derivative_gpu* rot_deriv_gpu;
-  /// \brief Separate CUDA graphs for supporting debug gradients
-  struct {
-    bool initialized;
-    // cudaGraphNode_t node_change_one_atom;
-    // cudaGraph_t graph_read_positions;
-    // cudaGraphExec_t graph_exec_read_positions;
-    cudaGraph_t graph_calc_required_properties;
-    cudaGraphExec_t graph_exec_calc_required_properties;
-  } debug_graphs;
+  std::unique_ptr<colvars_gpu::colvaratoms_gpu> gpu_atom_group;
+  friend class colvars_gpu::colvaratoms_gpu;
 public:
-  int init_gpu();
-  int destroy_gpu();
-  int sync_to_gpu_buffers();
-  int clear_gpu_buffers();
-  int add_reset_atoms_data_nodes(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
-  int add_read_positions_nodes(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
-  int add_calc_required_properties_nodes(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
-    const std::vector<cudaGraphNode_t>& extra_initial_dependencies = {});
-  int add_update_cpu_buffers_nodes(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
-  int after_read_data_sync(bool copy_to_cpu, cudaStream_t stream);
-  int begin_apply_force_gpu();
-  int add_apply_force_nodes(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
-    const std::vector<cudaGraphNode_t>& extra_initial_dependencies = {});
-  int add_calc_fit_gradients_nodes(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
-    bool use_cpu_buffers = false);
-  // For debug gradients
-  int read_positions_gpu_debug(
-    bool change_fitting_group, size_t change_atom_i,
-    int xyz, bool to_cpu, double sign, cudaStream_t stream);
-  int calc_required_properties_gpu_debug(bool to_cpu, cudaStream_t stream);
-  void do_feature_side_effects_gpu(int id);
+  std::unique_ptr<colvars_gpu::colvaratoms_gpu>& get_gpu_atom_group() {
+    return gpu_atom_group;
+  }
 #elif defined (COLVARS_SYCL)
   // TODO
 #endif
