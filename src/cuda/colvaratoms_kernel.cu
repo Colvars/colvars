@@ -347,7 +347,7 @@ __global__ void atoms_total_force_from_proxy_kernel(
   }
 }
 
-void atoms_total_force_from_proxy(
+int atoms_total_force_from_proxy(
   const int* atoms_proxy_index,
   const cvm::real* atoms_total_force_proxy,
   cvm::real* atoms_total_force_ag,
@@ -356,7 +356,7 @@ void atoms_total_force_from_proxy(
   unsigned int num_atoms,
   unsigned int proxy_stride,
   cudaStream_t stream) {
-  if (num_atoms == 0) return;
+  if (num_atoms == 0) return COLVARS_OK;
   const unsigned int block_size = default_block_size;
   const unsigned int grid = (num_atoms + block_size - 1) / block_size;
   const cvm::real* atoms_total_force_x_proxy = atoms_total_force_proxy;
@@ -379,11 +379,11 @@ void atoms_total_force_from_proxy(
     cvm::log("Run " + cvm::to_str(__func__) + " kernel.\n");
   }
   if (rotate) {
-    checkGPUError(cudaLaunchKernel(
+    return checkGPUError(cudaLaunchKernel(
       (void*)atoms_total_force_from_proxy_kernel<true>,
       grid, block_size, args, 0, stream));
   } else {
-    checkGPUError(cudaLaunchKernel(
+    return checkGPUError(cudaLaunchKernel(
       (void*)atoms_total_force_from_proxy_kernel<false>,
       grid, block_size, args, 0, stream));
   }
