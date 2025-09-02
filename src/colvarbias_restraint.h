@@ -243,10 +243,11 @@ public:
 
 protected:
 
-  /// \brief Restraint force constant (target value)
+  /// \brief Restraint force constant (target value at lambda = 1)
   cvm::real target_force_k;
 
-  /// \brief Restraint force constant (starting value)
+  /// \brief Restraint force constant at lambda = 0
+  /// (generally starting value, but is final value in the decoupling case)
   cvm::real starting_force_k;
 
   /// \brief Exponent for varying the force constant
