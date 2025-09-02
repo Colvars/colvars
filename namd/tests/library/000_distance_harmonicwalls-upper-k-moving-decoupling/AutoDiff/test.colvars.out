@@ -2,12 +2,14 @@ colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars:   https://doi.org/10.1080/00268976.2013.813594
 colvars: as well as all other papers listed below for individual features used.
-colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
-colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - C++ language version: 201703
+colvars:   - Multiple replicas: enabled (replica number 1 of 1)
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: available
 colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: The restart output state file will be "test.tmp.colvars.state".
 colvars: The final output state file will be "test.colvars.state".
-colvars: Opening trajectory file "test.colvars.traj".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -41,7 +43,13 @@ colvars:   group9 (4 atoms)
 colvars:   Protein_C-alpha_10 (1 atoms)
 colvars:   group10 (4 atoms)
 colvars:   heavy_atoms (51 atoms)
-colvars: # smp = on [default]
+colvars:   prot_N (10 atoms)
+colvars:   prot_CA (10 atoms)
+colvars:   prot_C (10 atoms)
+colvars:   prot_O (10 atoms)
+colvars: # smp = "cvcs" [default]
+colvars: SMP parallelism will be applied to Colvars components.
+colvars:   - SMP parallelism: enabled (num. threads = 4)
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # scriptedColvarForces = off [default]
@@ -50,7 +58,7 @@ colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "one"
-colvars:   Initializing a new "distance" component.
+colvars:     Initializing a new "distance" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -107,28 +115,35 @@ colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
+colvars:   # targetLowerWalls =  [default]
+colvars:   # targetUpperWalls =  [default]
 colvars:   Initializing a new "harmonicwalls" instance.
 colvars:   # name = "harmonicwalls1" [default]
 colvars:   # colvars = { one }
 colvars:   # stepZeroData = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # outputEnergy = on
 colvars:   # outputFreq = 10 [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
-colvars:   # forceConstant = 1 [default]
+colvars:   # forceConstant = 0.001
 colvars:   # decoupling = on
-colvars:   # targetForceConstant = 1 [default]
+colvars:   # targetForceConstant = 0.001 [default]
+colvars:   Initial step for restraint change: 0
 colvars:   # targetNumSteps = 10
+colvars:   # targetEquilSteps = 0 [default]
 colvars:   # targetNumStages = 2
 colvars:   # outputAccumulatedWork = off [default]
-colvars:   # targetEquilSteps = 0 [default]
 colvars:   # lambdaSchedule =  [default]
 colvars:   # lambdaExponent = 4
 colvars:   # lowerWalls = { 0 } [default]
 colvars:   Lower walls were not provided.
 colvars:   # upperWalls = { 0.2 }
-colvars:   # upperWallConstant = 0.001
+colvars:   # upperWallConstant = 0.001 [default]
+colvars:   # targetLowerWalls = { 0 } [default]
+colvars:   Target lower walls were not provided.
+colvars:   # targetUpperWalls = { 0 } [default]
+colvars:   Target upper walls were not provided.
 colvars:   The upper wall force constant for colvar "one" will be rescaled to 0.004 according to the specified width (0.5).
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
@@ -153,22 +168,24 @@ colvars: - NAMD engine:
 colvars: - Scalable center-of-mass computation (NAMD):
 colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
 colvars: 
+colvars: updating target temperature (T = 0 K).
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (2 scalable groups, 8 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 0 K).
+colvars: Current simulation parameters: initial step = 0, integration timestep = 1
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
 colvars: The restart output state file will be "test.tmp.colvars.state".
-colvars: The final output state file will be "test.colvars.state".
-colvars:   Restraint harmonicwalls1, stage 0 : lambda = 1, k = 1
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
-colvars:   Restraint harmonicwalls1 Lambda= 1 dA/dLambda= 79.4786
-colvars:   Restraint harmonicwalls1, stage 1 : lambda = 0.5, k = 0.0625
+colvars:   Restraint "harmonicwalls1" end of stage 0 at step 10, lambda= 1 : dA/dlambda= 0.0724117
+colvars:   Updated force constant for the restraint bias "harmonicwalls1": 6.25e-05.
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.tmp.colvars.state".
-colvars:   Restraint harmonicwalls1 Lambda= 0.5 dA/dLambda= 9.039
-colvars:   Restraint harmonicwalls1, stage 2 : lambda = 0, k = 0
+colvars:   Restraint "harmonicwalls1" end of stage 1 at step 20, lambda= 0.5 : dA/dlambda= 0.009128
+colvars:   Updated force constant for the restraint bias "harmonicwalls1": 0.
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.tmp.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".
