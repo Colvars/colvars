@@ -4,6 +4,7 @@
 
 #if defined(COLVARS_CUDA)
 #include <cub/block/block_reduce.cuh>
+#include <cuda/std/array>
 #endif
 
 // TODO: HIP CUB
@@ -504,10 +505,7 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
     isLastBlockDone = false;
   }
   __syncthreads();
-  double sum_dxdq_x = 0;
-  double sum_dxdq_y = 0;
-  double sum_dxdq_z = 0;
-  double sum_dxdq_w = 0;
+  cvm::real C[3][3] = {{0}};
   cvm::rvector main_grad{0, 0, 0};
   while (i < main_group_size) {
     const cvm::rvector g{atoms_grad_or_force_x[i],
@@ -517,38 +515,44 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
       main_grad += g;
     }
     if (B_ag_rotate) {
-      cvm::quaternion const dxdq =
-        q->position_derivative_inner(
-          cvm::rvector{
-            atoms_pos_unrotated_x[i],
-            atoms_pos_unrotated_y[i],
-            atoms_pos_unrotated_z[i]},
-          g);
-      sum_dxdq_x += dxdq[0];
-      sum_dxdq_y += dxdq[1];
-      sum_dxdq_z += dxdq[2];
-      sum_dxdq_w += dxdq[3];
+      C[0][0] += g.x * atoms_pos_unrotated_x[i];
+      C[0][1] += g.x * atoms_pos_unrotated_y[i];
+      C[0][2] += g.x * atoms_pos_unrotated_z[i];
+      C[1][0] += g.y * atoms_pos_unrotated_x[i];
+      C[1][1] += g.y * atoms_pos_unrotated_y[i];
+      C[1][2] += g.y * atoms_pos_unrotated_z[i];
+      C[2][0] += g.z * atoms_pos_unrotated_x[i];
+      C[2][1] += g.z * atoms_pos_unrotated_y[i];
+      C[2][2] += g.z * atoms_pos_unrotated_z[i];
     }
     i += gridSize;
   }
   __syncthreads();
-  typedef cub::BlockReduce<double, BLOCK_SIZE> BlockReduce;
+  typedef cub::BlockReduce<cvm::real, BLOCK_SIZE> BlockReduce;
   __shared__ typename BlockReduce::TempStorage temp_storage;
   main_grad.x = BlockReduce(temp_storage).Sum(main_grad.x); __syncthreads();
   main_grad.y = BlockReduce(temp_storage).Sum(main_grad.y); __syncthreads();
   main_grad.z = BlockReduce(temp_storage).Sum(main_grad.z); __syncthreads();
-  sum_dxdq_x = BlockReduce(temp_storage).Sum(sum_dxdq_x); __syncthreads();
-  sum_dxdq_y = BlockReduce(temp_storage).Sum(sum_dxdq_y); __syncthreads();
-  sum_dxdq_z = BlockReduce(temp_storage).Sum(sum_dxdq_z); __syncthreads();
-  sum_dxdq_w = BlockReduce(temp_storage).Sum(sum_dxdq_w); __syncthreads();
+  C[0][0] = BlockReduce(temp_storage).Sum(C[0][0]); __syncthreads();
+  C[0][1] = BlockReduce(temp_storage).Sum(C[0][1]); __syncthreads();
+  C[0][2] = BlockReduce(temp_storage).Sum(C[0][2]); __syncthreads();
+  C[1][0] = BlockReduce(temp_storage).Sum(C[1][0]); __syncthreads();
+  C[1][1] = BlockReduce(temp_storage).Sum(C[1][1]); __syncthreads();
+  C[1][2] = BlockReduce(temp_storage).Sum(C[1][2]); __syncthreads();
+  C[2][0] = BlockReduce(temp_storage).Sum(C[2][0]); __syncthreads();
+  C[2][1] = BlockReduce(temp_storage).Sum(C[2][1]); __syncthreads();
+  C[2][2] = BlockReduce(temp_storage).Sum(C[2][2]); __syncthreads();
   if (threadIdx.x == 0) {
+    cuda::std::array<cvm::real, 4> partial_dxdq;
+    partial_dxdq =
+      q->derivative_element_wise_product_sum<decltype(partial_dxdq)>(C);
     atomicAdd(&(atom_grad->x), main_grad.x);
     atomicAdd(&(atom_grad->y), main_grad.y);
     atomicAdd(&(atom_grad->z), main_grad.z);
-    atomicAdd(&(sum_dxdq->x), sum_dxdq_x);
-    atomicAdd(&(sum_dxdq->y), sum_dxdq_y);
-    atomicAdd(&(sum_dxdq->z), sum_dxdq_z);
-    atomicAdd(&(sum_dxdq->w), sum_dxdq_w);
+    atomicAdd(&(sum_dxdq->x), partial_dxdq[0]);
+    atomicAdd(&(sum_dxdq->y), partial_dxdq[1]);
+    atomicAdd(&(sum_dxdq->z), partial_dxdq[2]);
+    atomicAdd(&(sum_dxdq->w), partial_dxdq[3]);
     __threadfence();
     unsigned int value = atomicInc(tbcount, gridDim.x);
     isLastBlockDone = (value == (gridDim.x - 1));
@@ -603,11 +607,7 @@ int calc_fit_gradients_impl_loop1(
   const cvm::real* grad_x = main_grad;
   const cvm::real* grad_y = grad_x + num_atoms_main;
   const cvm::real* grad_z = grad_y + num_atoms_main;
-  // auto access_fitting = [grad_x, grad_y, grad_z] __device__ (int i){
-  //   return cvm::rvector{grad_x[i], grad_y[i], grad_z[i]};
-  // };
   void* args[] = {
-    // &access_fitting,
     &grad_x, &grad_y, &grad_z,
     &pos_x, &pos_y, &pos_z,
     &q, &num_atoms_main, &num_atoms_fitting,
