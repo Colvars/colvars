@@ -244,14 +244,13 @@ int colvarbias_restraint_moving::update() {
       dA_dlambda /= cvm::real(target_nsteps - target_equil_steps);
 
       std::string msg = "Moving restraint \"" + this->name + "\" stage " + cvm::to_str(stage) +
-                        ", lambda=" + cvm::to_str(lambda) +
-                        " : dA/dlambda=" + cvm::to_str(dA_dlambda) +
+                        ", lambda= " + cvm::to_str(lambda) +
+                        " : dA/dlambda= " + cvm::to_str(dA_dlambda) +
                         restraint_log_details() +
                         " at step " + cvm::to_str(cvm::step_absolute());
       cvm::log(msg);
       dA_dlambda = 0.0;
     }
-
     // Accumulate free energy derivative at every step except 0
     if (cvm::step_absolute() > first_step) {
       if (b_chg_force_k) dA_dlambda += dU_dlambda_k();
@@ -259,7 +258,7 @@ int colvarbias_restraint_moving::update() {
       if (b_chg_walls) dA_dlambda += dU_dlambda_walls();
     }
 
-  } else if (cvm::step_absolute() - first_step <= target_nsteps) {
+  } else if (cvm::step_absolute() <= first_step + target_nsteps) {
     // Continuous update (slow growth)
     cvm::real lambda = current_lambda();
     if (b_chg_force_k) update_k(lambda);
@@ -273,6 +272,24 @@ int colvarbias_restraint_moving::update() {
   }
 
   return COLVARS_OK;
+}
+
+
+cvm::real colvarbias_restraint_moving::current_lambda() const {
+  cvm::real lambda;
+  if (target_nstages) {
+    if (lambda_schedule.size()) {
+      lambda = lambda_schedule[stage];
+    } else {
+      lambda = cvm::real(stage) / cvm::real(target_nstages);
+      if (b_decoupling) lambda = 1.0 - lambda;
+    }
+  } else {
+    lambda = cvm::real(cvm::step_absolute() - first_step) / cvm::real(target_nsteps);
+    if (lambda > 1.0) lambda = 1.0;
+    if (b_decoupling) lambda = 1.0 - lambda;
+  }
+  return lambda;
 }
 
 
@@ -582,11 +599,18 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
 
 void colvarbias_restraint_k_moving::update_k(cvm::real lambda) {
   cvm::real const force_k_old = force_k;
+  cvm::log("starting_force_k: " + cvm::to_str(starting_force_k) + "\n");
+  cvm::log("target_force_k: " + cvm::to_str(target_force_k) + "\n");
+  cvm::log("lambda: " + cvm::to_str(lambda) + "\n");
+  cvm::log("lambda_exp: " + cvm::to_str(lambda_exp) + "\n");
+
   force_k = starting_force_k + (target_force_k - starting_force_k) * cvm::pow(lambda, lambda_exp);
   force_k_incr = force_k - force_k_old;
-  if (!target_nstages && (cvm::step_absolute() - first_step > target_nsteps)) {
+  if (!target_nstages && (cvm::step_absolute() > first_step + target_nsteps)) {
     force_k_incr = 0.0;
   }
+  cvm::log("Updated force constant for the restraint bias \""+
+           this->name+"\": "+cvm::to_str(force_k)+".\n");
 }
 
 

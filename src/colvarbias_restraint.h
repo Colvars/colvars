@@ -126,11 +126,11 @@ protected:
   bool b_chg_walls = false;
 
   /// @brief Update the force constant by interpolating between initial and target
-  virtual void update_k(cvm::real lambda) {}
+  virtual void update_k(cvm::real /* lambda */) {}
   /// @brief Update the centers by interpolating between initial and target
-  virtual void update_centers(cvm::real lambda) {}
+  virtual void update_centers(cvm::real /* lambda */) {}
   /// @brief Update the walls by interpolating between initial and target
-  virtual void update_walls(cvm::real lambda) {}
+  virtual void update_walls(cvm::real /* lambda */) {}
   /// \brief Additional details to add to the log message when moving restraints are updated
   virtual std::string restraint_log_details() const { return ""; }
   /// \brief Compute the derivative of the free energy wrt lambda due to changing k
@@ -166,16 +166,7 @@ protected:
   }
 
   /// \brief Get lambda value for the current stage
-  inline cvm::real current_lambda() const {
-    cvm::real lambda;
-    if (lambda_schedule.size()) {
-      lambda = lambda_schedule[stage];
-    } else {
-      lambda = cvm::real(stage) / cvm::real(target_nstages);
-      if (b_decoupling) lambda = 1.0 - lambda;
-    }
-    return lambda;
-  }
+  cvm::real current_lambda() const;
 
   /// \brief Lambda-schedule for custom varying force constant
   std::vector<cvm::real> lambda_schedule;
