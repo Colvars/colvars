@@ -26,6 +26,7 @@ __global__ void atoms_pos_from_proxy_kernel(
     atoms_pos_x_ag[i] = atoms_pos_x_proxy[proxy_index];
     atoms_pos_y_ag[i] = atoms_pos_y_proxy[proxy_index];
     atoms_pos_z_ag[i] = atoms_pos_z_proxy[proxy_index];
+    // printf("(proxy) ptr = %p, pos = (%lf, %lf, %lf)\n", atoms_pos_x_ag + i, atoms_pos_x_ag[i], atoms_pos_y_ag[i],  atoms_pos_z_ag[i]);
   }
 }
 
@@ -127,13 +128,16 @@ int change_one_coordinate(
   return error_code;
 }
 
-template <int BLOCK_SIZE, bool b_cog, bool b_com>
+template <int BLOCK_SIZE, bool b_cog, bool b_com, bool save_cog>
 __global__ void atoms_calc_cog_com_kernel(
   const cvm::real* __restrict atoms_mass,
   const cvm::real* __restrict atoms_pos_x_ag,
   const cvm::real* __restrict atoms_pos_y_ag,
   const cvm::real* __restrict atoms_pos_z_ag,
+  cvm::rvector* __restrict cog_tmp,
   cvm::rvector* __restrict cog_out,
+  cvm::rvector* __restrict cog_saved,
+  cvm::rvector* __restrict com_tmp,
   cvm::rvector* __restrict com_out,
   cvm::rvector* __restrict h_cog_out,
   cvm::rvector* __restrict h_com_out,
@@ -177,14 +181,14 @@ __global__ void atoms_calc_cog_com_kernel(
   }
   if (threadIdx.x == 0) {
     if (b_cog) {
-      atomicAdd(&(cog_out->x), cog.x);
-      atomicAdd(&(cog_out->y), cog.y);
-      atomicAdd(&(cog_out->z), cog.z);
+      atomicAdd(&(cog_tmp->x), cog.x);
+      atomicAdd(&(cog_tmp->y), cog.y);
+      atomicAdd(&(cog_tmp->z), cog.z);
     }
     if (b_com) {
-      atomicAdd(&(com_out->x), com.x);
-      atomicAdd(&(com_out->y), com.y);
-      atomicAdd(&(com_out->z), com.z);
+      atomicAdd(&(com_tmp->x), com.x);
+      atomicAdd(&(com_tmp->y), com.y);
+      atomicAdd(&(com_tmp->z), com.z);
     }
     __threadfence();
     unsigned int value = atomicInc(tbcount, gridDim.x);
@@ -194,23 +198,36 @@ __global__ void atoms_calc_cog_com_kernel(
   if (isLastBlockDone) {
     if (threadIdx.x == 0) {
       if (b_cog) {
-        cog.x = cog_out->x / num_atoms;
-        cog.y = cog_out->y / num_atoms;
-        cog.z = cog_out->z / num_atoms;
+        cog.x = cog_tmp->x / num_atoms;
+        cog.y = cog_tmp->y / num_atoms;
+        cog.z = cog_tmp->z / num_atoms;
         cog_out->x = cog.x;
         cog_out->y = cog.y;
         cog_out->z = cog.z;
         h_cog_out->x = cog.x;
         h_cog_out->y = cog.y;
         h_cog_out->z = cog.z;
+        if (save_cog) {
+          cog_saved->x = cog.x;
+          cog_saved->y = cog.y;
+          cog_saved->z = cog.z;
+        }
+        // Clear the temporary vector
+        cog_tmp->x = 0;
+        cog_tmp->y = 0;
+        cog_tmp->z = 0;
+        // printf("main = %d, (calc_cog) atom group = %p, COG = (%lf, %lf, %lf)\n", int(b_cog && b_com), atoms_pos_x_ag, cog.x, cog.y, cog.z);
       }
       if (b_com) {
-        com.x = com_out->x / total_mass;
-        com.y = com_out->y / total_mass;
-        com.z = com_out->z / total_mass;
+        com.x = com_tmp->x / total_mass;
+        com.y = com_tmp->y / total_mass;
+        com.z = com_tmp->z / total_mass;
         com_out->x = com.x;
         com_out->y = com.y;
         com_out->z = com.z;
+        com_tmp->x = 0;
+        com_tmp->y = 0;
+        com_tmp->z = 0;
         h_com_out->x = com.x;
         h_com_out->y = com.y;
         h_com_out->z = com.z;
@@ -226,8 +243,11 @@ int atoms_calc_cog_com(
   const cvm::real* atoms_pos_ag,
   const cvm::real* atoms_mass,
   unsigned int num_atoms,
-  cvm::rvector* cog_out,
-  cvm::rvector* com_out,
+  cvm::rvector* d_cog_tmp,
+  cvm::rvector* d_cog_out,
+  cvm::rvector* d_cog_origin,
+  cvm::rvector* d_com_tmp,
+  cvm::rvector* d_com_out,
   cvm::rvector* h_cog_out,
   cvm::rvector* h_com_out,
   cvm::real total_mass,
@@ -246,15 +266,24 @@ int atoms_calc_cog_com(
      &atoms_pos_x_ag,
      &atoms_pos_y_ag,
      &atoms_pos_z_ag,
-     &cog_out,
-     &com_out,
+     &d_cog_tmp,
+     &d_cog_out,
+     &d_cog_origin,
+     &d_com_tmp,
+     &d_com_out,
      &h_cog_out,
      &h_com_out,
      &total_mass,
      &tbcount,
      &num_atoms};
   cudaKernelNodeParams kernelNodeParams = {0};
-  kernelNodeParams.func           = (void*)atoms_calc_cog_com_kernel<block_size, true, true>;
+  if (d_cog_origin == nullptr) {
+    kernelNodeParams.func =
+      (void*)atoms_calc_cog_com_kernel<block_size, true, true, false>;
+  } else {
+    kernelNodeParams.func =
+      (void*)atoms_calc_cog_com_kernel<block_size, true, true, true>;
+  }
   kernelNodeParams.gridDim        = dim3(num_blocks, 1, 1);
   kernelNodeParams.blockDim       = dim3(block_size, 1, 1);
   kernelNodeParams.sharedMemBytes = 0;
@@ -271,7 +300,9 @@ int atoms_calc_cog_com(
 int atoms_calc_cog(
   const cvm::real* atoms_pos_ag,
   unsigned int num_atoms,
-  cvm::rvector* cog_out,
+  cvm::rvector* d_cog_tmp,
+  cvm::rvector* d_cog_out,
+  cvm::rvector* d_cog_origin,
   cvm::rvector* h_cog_out,
   unsigned int* tbcount,
   cudaGraphNode_t& node,
@@ -284,7 +315,8 @@ int atoms_calc_cog(
   const cvm::real* atoms_pos_y_ag = atoms_pos_x_ag + num_atoms;
   const cvm::real* atoms_pos_z_ag = atoms_pos_y_ag + num_atoms;
   const cvm::real* atoms_mass = nullptr;
-  const cvm::rvector* com_out = nullptr;
+  const cvm::rvector* d_com_tmp = nullptr;
+  const cvm::rvector* d_com_out = nullptr;
   const cvm::rvector* h_com_out = nullptr;
   cvm::real total_mass = 0.0;
   void* args[] =
@@ -292,15 +324,22 @@ int atoms_calc_cog(
      &atoms_pos_x_ag,
      &atoms_pos_y_ag,
      &atoms_pos_z_ag,
-     &cog_out,
-     &com_out,
+     &d_cog_tmp,
+     &d_cog_out,
+     &d_cog_origin,
+     &d_com_tmp,
+     &d_com_out,
      &h_cog_out,
      &h_com_out,
      &total_mass,
      &tbcount,
      &num_atoms};
   cudaKernelNodeParams kernelNodeParams = {0};
-  kernelNodeParams.func           = (void*)atoms_calc_cog_com_kernel<block_size, true, false>;
+  if (d_cog_origin == nullptr) {
+    kernelNodeParams.func = (void*)atoms_calc_cog_com_kernel<block_size, true, false, false>;
+  } else {
+    kernelNodeParams.func = (void*)atoms_calc_cog_com_kernel<block_size, true, false, true>;
+  }
   kernelNodeParams.gridDim        = dim3(num_blocks, 1, 1);
   kernelNodeParams.blockDim       = dim3(block_size, 1, 1);
   kernelNodeParams.sharedMemBytes = 0;
@@ -543,16 +582,18 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   C[2][1] = BlockReduce(temp_storage).Sum(C[2][1]); __syncthreads();
   C[2][2] = BlockReduce(temp_storage).Sum(C[2][2]); __syncthreads();
   if (threadIdx.x == 0) {
-    cuda::std::array<cvm::real, 4> partial_dxdq;
-    partial_dxdq =
-      q->derivative_element_wise_product_sum<decltype(partial_dxdq)>(C);
+    if (B_ag_rotate) {
+      cuda::std::array<cvm::real, 4> partial_dxdq;
+      partial_dxdq =
+        q->derivative_element_wise_product_sum<decltype(partial_dxdq)>(C);
+      atomicAdd(&(sum_dxdq->x), partial_dxdq[0]);
+      atomicAdd(&(sum_dxdq->y), partial_dxdq[1]);
+      atomicAdd(&(sum_dxdq->z), partial_dxdq[2]);
+      atomicAdd(&(sum_dxdq->w), partial_dxdq[3]);
+    }
     atomicAdd(&(atom_grad->x), main_grad.x);
     atomicAdd(&(atom_grad->y), main_grad.y);
     atomicAdd(&(atom_grad->z), main_grad.z);
-    atomicAdd(&(sum_dxdq->x), partial_dxdq[0]);
-    atomicAdd(&(sum_dxdq->y), partial_dxdq[1]);
-    atomicAdd(&(sum_dxdq->z), partial_dxdq[2]);
-    atomicAdd(&(sum_dxdq->w), partial_dxdq[3]);
     __threadfence();
     unsigned int value = atomicInc(tbcount, gridDim.x);
     isLastBlockDone = (value == (gridDim.x - 1));
@@ -761,10 +802,17 @@ __global__ void apply_translation_kernel(
   const cvm::rvector* __restrict translation_vector,
   unsigned int num_atoms) {
   const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+  // if (i == 0) {
+  //   printf("(translation) atom group = %p, COG = (%lf, %lf, %lf), factor = %lf\n", atoms_pos_x_ag, translation_vector->x, translation_vector->y, translation_vector->z, translation_vector_factor);
+  // }
   if (i < num_atoms) {
+    // double x = atoms_pos_x_ag[i];
+    // double y = atoms_pos_y_ag[i];
+    // double z = atoms_pos_z_ag[i];
     atoms_pos_x_ag[i] += translation_vector_factor * translation_vector->x;
     atoms_pos_y_ag[i] += translation_vector_factor * translation_vector->y;
     atoms_pos_z_ag[i] += translation_vector_factor * translation_vector->z;
+    // printf("(translation) ptr = %p, from = (%lf, %lf, %lf), pos = (%lf, %lf, %lf)\n", atoms_pos_x_ag + i, x, y, z, atoms_pos_x_ag[i], atoms_pos_y_ag[i],  atoms_pos_z_ag[i]);
   }
 }
 
