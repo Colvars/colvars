@@ -1,12 +1,9 @@
 .PHONY: all functional gromacs lammps namd
 
+all: functional lammps namd # gromacs
 
 functional:
 	./build_tests.sh input_files/
-
-
-all: functional lammps namd # gromacs
-
 
 # GROMACS tests need manual adjustments
 # gromacs:
