@@ -166,7 +166,7 @@ jobs:
           path: 'openmm-source'
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: cpp
 
@@ -174,7 +174,7 @@ jobs:
         run: cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
 
   build-linux-x86_64-clang-analyzer:
