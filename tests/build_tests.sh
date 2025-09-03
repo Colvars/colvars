@@ -19,9 +19,15 @@ create_test_dir() {
 
     local workdir=${WORKDIR%/}
 
-    if ls $workdir/ | grep -q "^[0-9]\{3\}_${1}$" ; then
-        dirname=`ls $WORKDIR/ | grep "^[0-9]\{3\}_${1}$"`
-        dirname=${WORKDIR}/${dirname}
+    if [ ${workdir##*/} == "input_files" ] ; then
+        # In input_files, look for directory without numerical prefix
+        existing_dir=$(find "$workdir" -maxdepth 1 -type d -name "${1}" -print -quit)
+    else
+        # Otherwise look for directory with numerical prefix
+        existing_dir=$(find "$workdir" -maxdepth 1 -type d -name "[0-9][0-9][0-9]_${1}" -print -quit)
+    fi
+    if [ -n "$existing_dir" ]; then
+        dirname="$existing_dir"
         return
     fi
 
@@ -46,23 +52,24 @@ write_colvars_config() {
     if [ -z "${filename}" ] ; then
         filename=${dirname}/test.in
     fi
-    echo 'colvarsTrajFrequency 1' > ${filename}
-    echo 'colvarsRestartFrequency 10' >> ${filename}
-    cat indexfile.in >> ${filename}
+
+    echo 'colvarsTrajFrequency 1' > "${filename}"
+    echo 'colvarsRestartFrequency 10' >> "${filename}"
+    cat indexfile.in >> "${filename}"
     echo '' >> ${filename}
-    cat ${colvar}.in >> ${filename}
+    cat ${colvar}.in >> "${filename}"
     if [ "x$bias" != "x" ] ; then
         echo '' >> ${filename}
-        cat ${bias}.in >> ${filename}
+        cat ${bias}.in >> "${filename}"
     fi
     if [ ${workdir##*/} == "input_files" ] ; then
         # Remove directory prefix
-        sed -i 's/..\/Common\///' ${filename}
+        sed -i 's/..\/Common\///' "${filename}"
         # Functional tests do not support outputVelocity
-        sed -i '/outputVelocity/d' ${filename}
+        sed -i '/outputVelocity/d' "${filename}"
     else
          # Activate gradient debugging only in functional tests
-        sed -i '/debugGradients/d' ${filename}
+        sed -i '/debugGradients/d' "${filename}"
     fi
 }
 
@@ -94,6 +101,8 @@ for colvar in "distance" ; do
         "harmonicwalls-upper-k-moving" \
         "harmonicwalls-upper-k-moving-decoupling" \
         "harmonicwalls-both-k-moving" \
+        "harmonicwalls-upper-moving" \
+        "harmonicwalls-upper-moving-staged" \
         "linear-fixed" \
         "linear-k-moving" \
         ; do
@@ -209,7 +218,7 @@ m4 < distancez.in.m4 > distancez.in
 m4 -Dfitgroup < distancez.in.m4 > distancez-fitgroup.in
 m4 -Daxis -DdistanceZ=distanceXY < distancez.in.m4 > distancexy-axis.in
 
-# Do not regenerate those to keep debugGradients line
+# Do not regenerate those to keep debugGradients line, absent from orientation.in
 # m4 -Dorientation=orientationAngle < orientation.in > orientationangle.in
 # m4 -Dorientation=orientationAngle < orientation-fitgroup.in > orientationangle-fitgroup.in
 # m4 -Dorientation=orientationProj  < orientation.in > orientationproj.in
@@ -298,7 +307,6 @@ write_colvars_config ${colvar}-fitgroup ${bias}
 # Variables that are not available in functional tests
 # dihedralPC is covered by protein_cvs
 if [[ ! "$WORKDIR" =~ input_files/?$ ]] ; then
-    echo "Adding dihedralPC tests"
     colvar="dihedralPC"
     bias="abf2d"
     create_test_dir ${colvar}_${bias}
