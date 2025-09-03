@@ -203,7 +203,6 @@ int colvaratoms_gpu::add_read_positions_nodes(
   if (!cpu_atoms->is_enabled(colvardeps::f_ag_scalable)) {
     cudaGraphNode_t read_positions_node;
     std::vector<cudaGraphNode_t> dependencies;
-    // ADD_DEPENDENCY_IF(clear_atoms_pos, dependencies, nodes_map);
     error_code |= colvars_gpu::atoms_pos_from_proxy(
       gpu_buffers.d_atoms_index, p->proxy_atoms_positions_gpu(),
       gpu_buffers.d_atoms_pos, cpu_atoms->num_atoms, p->get_atom_ids()->size(),
@@ -243,7 +242,9 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
     // Add kernel node for COG and COM
     cudaGraphNode_t calc_com_cog_node;
     std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
-    ADD_DEPENDENCY_IF(read_positions, dependencies, nodes_map);
+    colvars_gpu::prepare_dependencies(
+      {{"read_positions", true}},
+      dependencies, nodes_map, "calc_cog_com_main");
     error_code |= colvars_gpu::atoms_calc_cog_com(
       gpu_buffers.d_atoms_pos, gpu_buffers.d_atoms_mass, cpu_atoms->num_atoms,
       gpu_buffers.d_cog_tmp, gpu_buffers.d_cog, gpu_buffers.d_cog_orig,
@@ -264,7 +265,9 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
       } else {
         // Add COG kernel node
         std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
-        ADD_DEPENDENCY_IF(read_fitting_group_positions, dependencies, nodes_map);
+        colvars_gpu::prepare_dependencies(
+          {{"read_fitting_group_positions", true}},
+          dependencies, nodes_map, "calc_cog_fitting");
         cudaGraphNode_t calc_fitting_group_cog_node;
         error_code |= colvars_gpu::atoms_calc_cog(
           cpu_atoms->fitting_group->gpu_atom_group->gpu_buffers.d_atoms_pos,
@@ -288,10 +291,12 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
         this->gpu_buffers.d_cog;
       // Apply translation
       std::vector<cudaGraphNode_t> dependencies;
-      ADD_DEPENDENCY(calc_com_cog, dependencies, nodes_map);
       // d_rpg_cog could be the COG of the fitting group, so we need to wait for it
-      ADD_DEPENDENCY_IF(read_positions, dependencies, nodes_map);
-      ADD_DEPENDENCY_IF(calc_fitting_group_cog, dependencies, nodes_map);
+      colvars_gpu::prepare_dependencies(
+        {{"calc_com_cog", false},
+        {"read_positions", true},
+        {"calc_fitting_group_cog", true}},
+        dependencies, nodes_map, "apply_translation_main");
       cudaGraphNode_t move_to_origin_node;
       error_code |= colvars_gpu::apply_translation(
         gpu_buffers.d_atoms_pos, -1.0, d_rpg_cog,
@@ -301,8 +306,10 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
       nodes_map["move_to_origin"] = move_to_origin_node;
       if (cpu_atoms->fitting_group) {
         std::vector<cudaGraphNode_t> dependencies_fitting_group_translate;
-        ADD_DEPENDENCY(calc_fitting_group_cog, dependencies_fitting_group_translate, nodes_map);
-        ADD_DEPENDENCY_IF(read_fitting_group_positions, dependencies_fitting_group_translate, nodes_map);
+        colvars_gpu::prepare_dependencies(
+          {{"calc_fitting_group_cog", false},
+           {"read_fitting_group_positions", true}},
+           dependencies_fitting_group_translate, nodes_map, "apply_translation_fitting");
         cudaGraphNode_t move_fitting_to_origin_node;
         error_code |= colvars_gpu::apply_translation(
           cpu_atoms->fitting_group->gpu_atom_group->gpu_buffers.d_atoms_pos, -1.0,
@@ -318,8 +325,9 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
     // Save the unrotated frame for fit gradients
     if (cpu_atoms->is_enabled(colvardeps::f_ag_fit_gradients) && !cpu_atoms->b_dummy) {
       std::vector<cudaGraphNode_t> dependencies;
-      ADD_DEPENDENCY_IF(read_positions, dependencies, nodes_map);
-      ADD_DEPENDENCY_IF(move_to_origin, dependencies, nodes_map);
+      colvars_gpu::prepare_dependencies(
+        {{"read_positions", true}, {"move_to_origin", true}},
+        dependencies, nodes_map, "copy_unrotated_positions");
       cudaGraphNode_t copy_unrotated_positions_node;
       error_code |= colvars_gpu::add_copy_node(
         gpu_buffers.d_atoms_pos, gpu_buffers.d_atoms_pos_unrotated,
@@ -339,13 +347,15 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
         cpu_atoms->num_ref_pos, graph, nodes_map);
       // Rotate atoms
       std::vector<cudaGraphNode_t> dependencies_rotate;
-      ADD_DEPENDENCY(calc_optimal_rotation, dependencies_rotate, nodes_map);
-      // If we have f_ag_fit_gradients, then we need to wait for the copying of unrotated positions
-      ADD_DEPENDENCY_IF(copy_unrotated_positions, dependencies_rotate, nodes_map);
-      // The atom group may be moved to origin (but not always)
-      ADD_DEPENDENCY_IF(move_to_origin, dependencies_rotate, nodes_map);
+      // If we have f_ag_fit_gradients, then we need to wait for the copying of unrotated positions.
+      // The atom group may be moved to origin (but not always).
       // The rotation should also wait after the COG and COM done
-      ADD_DEPENDENCY_IF(calc_com_cog, dependencies_rotate, nodes_map);
+      colvars_gpu::prepare_dependencies(
+        {{"calc_optimal_rotation", false},
+         {"copy_unrotated_positions", true},
+         {"move_to_origin", true},
+         {"calc_com_cog", true}},
+        dependencies_rotate, nodes_map, "rotate_main");
       cudaGraphNode_t rotate_node;
       error_code |= colvars_gpu::rotate_with_quaternion(
         gpu_buffers.d_atoms_pos, rot_gpu.get_q(), cpu_atoms->num_atoms,
@@ -354,14 +364,11 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
       nodes_map["rotate"] = rotate_node;
       if (cpu_atoms->fitting_group) {
         std::vector<cudaGraphNode_t> dependencies_rotate_fitting_group;
-        ADD_DEPENDENCY(calc_optimal_rotation,
-                        dependencies_rotate_fitting_group,
-                        nodes_map);
-        ADD_DEPENDENCY_IF(move_fitting_to_origin,
-                          dependencies_rotate_fitting_group,
-                          nodes_map);
-        ADD_DEPENDENCY_IF(calc_fitting_group_cog,
-                          dependencies_rotate_fitting_group, nodes_map);
+        colvars_gpu::prepare_dependencies(
+          {{"calc_optimal_rotation", false},
+           {"move_fitting_to_origin", true},
+           {"calc_fitting_group_cog", true}},
+          dependencies_rotate_fitting_group, nodes_map, "rotate_fitting");
         cudaGraphNode_t rotate_fitting_group_node;
         error_code |= colvars_gpu::rotate_with_quaternion(
           cpu_atoms->fitting_group->gpu_atom_group->gpu_buffers.d_atoms_pos,
@@ -377,12 +384,14 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
     // align with the center of geometry of ref_pos
     if (cpu_atoms->is_enabled(colvardeps::f_ag_center) && !cpu_atoms->is_enabled(colvardeps::f_ag_center_origin)) {
       std::vector<cudaGraphNode_t> dependencies_move_to_ref_cog;
-      ADD_DEPENDENCY(calc_com_cog, dependencies_move_to_ref_cog, nodes_map);
       // It looks like that the moving to COG of ref_pos can depend on
       // any of the following operations, so I add them all.
-      ADD_DEPENDENCY_IF(rotate, dependencies_move_to_ref_cog, nodes_map);
-      ADD_DEPENDENCY_IF(copy_unrotated_positions, dependencies_move_to_ref_cog, nodes_map);
-      ADD_DEPENDENCY_IF(move_to_origin, dependencies_move_to_ref_cog, nodes_map);
+      colvars_gpu::prepare_dependencies(
+        {{"calc_com_cog", false},
+         {"rotate", true},
+         {"copy_unrotated_positions", true},
+         {"move_to_origin", true}},
+         dependencies_move_to_ref_cog, nodes_map, "apply_translation_main_2");
       cudaGraphNode_t move_to_ref_cog_node;
       error_code |= colvars_gpu::apply_translation(
         gpu_buffers.d_atoms_pos, 1.0, gpu_buffers.d_ref_pos_cog, cpu_atoms->num_atoms,
@@ -391,18 +400,12 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
       nodes_map["move_to_ref_cog"] = move_to_ref_cog_node;
       if (cpu_atoms->fitting_group) {
         std::vector<cudaGraphNode_t> dependencies_move_fitting_group_to_ref_cog;
-        ADD_DEPENDENCY_IF(
-          calc_fitting_group_cog,
-          dependencies_move_fitting_group_to_ref_cog,
-          nodes_map);
-        ADD_DEPENDENCY_IF(
-          move_fitting_to_origin,
-          dependencies_move_fitting_group_to_ref_cog,
-          nodes_map);
-        ADD_DEPENDENCY_IF(
-          rotate_fitting_group,
-          dependencies_move_fitting_group_to_ref_cog,
-          nodes_map);
+        colvars_gpu::prepare_dependencies(
+        {{"calc_fitting_group_cog", true},
+         {"move_fitting_to_origin", true},
+         {"rotate_fitting_group", true}},
+         dependencies_move_fitting_group_to_ref_cog,
+         nodes_map, "apply_translation_fitting_2");
         cudaGraphNode_t move_fitting_group_to_ref_cog_node;
         error_code |= colvars_gpu::apply_translation(
           cpu_atoms->fitting_group->gpu_atom_group->gpu_buffers.d_atoms_pos, 1.0,
@@ -417,11 +420,13 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
 
     // update COM and COG after fitting
     std::vector<cudaGraphNode_t> dependencies;
-    ADD_DEPENDENCY(calc_com_cog, dependencies, nodes_map);
-    ADD_DEPENDENCY_IF(move_to_origin, dependencies, nodes_map);
-    ADD_DEPENDENCY_IF(move_fitting_to_origin, dependencies, nodes_map);
-    ADD_DEPENDENCY_IF(rotate, dependencies, nodes_map);
-    ADD_DEPENDENCY_IF(move_to_ref_cog, dependencies, nodes_map);
+    colvars_gpu::prepare_dependencies(
+      {{"calc_com_cog", false},
+      {"move_to_origin", true},
+      {"move_fitting_to_origin", true},
+      {"rotate", true},
+      {"move_to_ref_cog", true}},
+      dependencies, nodes_map, "calc_cog_com_main_2");
     cudaGraphNode_t calc_com_cog2_node;
     error_code |= colvars_gpu::atoms_calc_cog_com(
       gpu_buffers.d_atoms_pos, gpu_buffers.d_atoms_mass, cpu_atoms->num_atoms,
@@ -433,12 +438,14 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
     nodes_map["calc_com_cog2"] = calc_com_cog2_node;
     if (cpu_atoms->fitting_group) {
       dependencies.clear();
-      ADD_DEPENDENCY(calc_fitting_group_cog, dependencies, nodes_map);
       // The following operations may or may not exist,
       // but if any of them exist, we need to wait for them
-      ADD_DEPENDENCY_IF(move_fitting_to_origin, dependencies, nodes_map);
-      ADD_DEPENDENCY_IF(rotate_fitting_group, dependencies, nodes_map);
-      ADD_DEPENDENCY_IF(move_fitting_group_to_ref_cog, dependencies, nodes_map);
+      colvars_gpu::prepare_dependencies(
+        {{"calc_fitting_group_cog", false},
+        {"move_fitting_to_origin", true},
+        {"rotate_fitting_group", true},
+        {"move_fitting_group_to_ref_cog", true}},
+        dependencies, nodes_map, "calc_cog_com_fitting_2");
       cudaGraphNode_t calc_fitting_group_cog2_node;
       error_code |= colvars_gpu::atoms_calc_cog(
         cpu_atoms->fitting_group->gpu_atom_group->gpu_buffers.d_atoms_pos,
@@ -464,10 +471,12 @@ int colvaratoms_gpu::add_update_cpu_buffers_nodes(
   if (cpu_atoms->b_dummy) return error_code;
   if (!cpu_atoms->is_enabled(colvardeps::f_ag_scalable)) {
     std::vector<cudaGraphNode_t> dependencies;
-    ADD_DEPENDENCY_IF(read_positions, dependencies, nodes_map);
-    ADD_DEPENDENCY_IF(move_to_origin, dependencies, nodes_map);
-    ADD_DEPENDENCY_IF(rotate, dependencies, nodes_map);
-    ADD_DEPENDENCY_IF(move_to_ref_cog, dependencies, nodes_map);
+    colvars_gpu::prepare_dependencies(
+      {{"read_positions", true},
+       {"move_to_origin", true},
+       {"rotate", true},
+       {"move_to_ref_cog", true}},
+      dependencies, nodes_map, "copy_atoms_to_host");
     cudaGraphNode_t copy_atoms_to_host_node;
     error_code |= colvars_gpu::add_copy_node(
       gpu_buffers.d_atoms_pos, cpu_atoms->atoms_pos.data(), 3 * cpu_atoms->num_atoms,
@@ -476,10 +485,12 @@ int colvaratoms_gpu::add_update_cpu_buffers_nodes(
     nodes_map["copy_atoms_to_host"] = copy_atoms_to_host_node;
     if (cpu_atoms->fitting_group) {
       dependencies.clear();
-      ADD_DEPENDENCY_IF(read_fitting_group_positions, dependencies, nodes_map);
-      ADD_DEPENDENCY_IF(move_fitting_to_origin, dependencies, nodes_map);
-      ADD_DEPENDENCY_IF(rotate_fitting_group, dependencies, nodes_map);
-      ADD_DEPENDENCY_IF(move_fitting_group_to_ref_cog, dependencies, nodes_map);
+      colvars_gpu::prepare_dependencies(
+      {{"read_fitting_group_positions", true},
+       {"move_fitting_to_origin", true},
+       {"rotate_fitting_group", true},
+       {"move_fitting_group_to_ref_cog", true}},
+      dependencies, nodes_map, "copy_fitting_group_atoms_to_host");
       cudaGraphNode_t copy_fitting_group_atoms_to_host_node;
       error_code |= colvars_gpu::add_copy_node(
         cpu_atoms->fitting_group->gpu_atom_group->gpu_buffers.d_atoms_pos,
@@ -496,7 +507,9 @@ int colvaratoms_gpu::add_update_cpu_buffers_nodes(
           cpu_atoms->atoms_pos_unrotated.resize(3 * cpu_atoms->num_atoms);
         }
         dependencies.clear();
-        ADD_DEPENDENCY_IF(copy_unrotated_positions, dependencies, nodes_map);
+        colvars_gpu::prepare_dependencies(
+          {{"copy_unrotated_positions", true}},
+          dependencies, nodes_map, "copy_unrotated_positions_to_host");
         cudaGraphNode_t copy_unrotated_positions_to_host_node;
         error_code |= colvars_gpu::add_copy_node(
           gpu_buffers.d_atoms_pos_unrotated,
@@ -607,9 +620,11 @@ int colvaratoms_gpu::add_calc_fit_gradients_nodes(
   // Loop over the main group atoms (does not require rot_deriv_gpu)
   if (cpu_atoms->is_enabled(colvardeps::f_ag_rotate) || cpu_atoms->is_enabled(colvardeps::f_ag_center)) {
     std::vector<cudaGraphNode_t> dependencies_main;
-    ADD_DEPENDENCY(clear_atoms_grad, dependencies_main, nodes_map);
-    ADD_DEPENDENCY(clear_sum_dxdq, dependencies_main, nodes_map);
-    ADD_DEPENDENCY_IF(copy_grad_HtoD, dependencies_main, nodes_map);
+    colvars_gpu::prepare_dependencies(
+    {{"clear_atoms_grad", false},
+     {"clear_sum_dxdq", false},
+     {"copy_grad_HtoD", true}}, dependencies_main,
+     nodes_map, "calc_fit_gradients_loop1");
     cudaGraphNode_t calc_fit_forces_loop1_node;
     error_code |= colvars_gpu::calc_fit_gradients_impl_loop1(
       gpu_buffers.d_atoms_pos_unrotated, gpu_buffers.d_atoms_grad, rot_gpu.get_q(),
@@ -625,8 +640,10 @@ int colvaratoms_gpu::add_calc_fit_gradients_nodes(
     // Loop over the fitting group
     cudaGraphNode_t calc_fit_forces_loop2_node;
     std::vector<cudaGraphNode_t> dependencies_fit_gradients;
-    ADD_DEPENDENCY(calc_fit_gradients_loop1, dependencies_fit_gradients, nodes_map);
-    ADD_DEPENDENCY_IF(prepare_rotation_derivative, dependencies_fit_gradients, nodes_map);
+    colvars_gpu::prepare_dependencies(
+      {{"calc_fit_gradients_loop1", false},
+       {"prepare_rotation_derivative", true}},
+      dependencies_fit_gradients, nodes_map, "calc_fit_gradients_loop2");
     error_code |= colvars_gpu::calc_fit_gradients_impl_loop2(
       group_for_fit->gpu_atom_group->gpu_buffers.d_fit_gradients, rot_deriv_gpu,
       calc_fit_gradients_gpu_info.d_atom_grad,
@@ -643,7 +660,10 @@ int colvaratoms_gpu::add_calc_fit_gradients_nodes(
       }
       cudaGraphNode_t copy_fit_gradients_DtoH_node;
       std::vector<cudaGraphNode_t> dependencies_copy_fit_gradients;
-      ADD_DEPENDENCY(calc_fit_gradients_loop2, dependencies_copy_fit_gradients, nodes_map);
+      colvars_gpu::prepare_dependencies(
+        {{"calc_fit_gradients_loop2", false}},
+        dependencies_copy_fit_gradients, nodes_map,
+        "copy_fit_gradients_DtoH");
       error_code |= colvars_gpu::add_copy_node(
         group_for_fit->gpu_atom_group->gpu_buffers.d_fit_gradients,
         group_for_fit->fit_gradients.data(), 3 * group_for_fit->size(),
@@ -704,7 +724,9 @@ int colvaratoms_gpu::add_apply_force_nodes(
     }
     cudaGraphNode_t apply_colvar_force_to_proxy_node;
     std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
-    ADD_DEPENDENCY_IF(copy_grad_HtoD, dependencies, nodes_map);
+    colvars_gpu::prepare_dependencies(
+      {{"copy_grad_HtoD", true}},
+      dependencies, nodes_map, "apply_colvar_force_to_proxy");
     error_code |= colvars_gpu::apply_colvar_force_to_proxy(
       gpu_buffers.d_atoms_index,
       p->proxy_atoms_new_colvar_forces_gpu(),
@@ -737,8 +759,9 @@ int colvaratoms_gpu::add_apply_force_nodes(
         nodes_map["accumulate_cpu_force"] = accumulate_cpu_force_node;
       }
     }
-    ADD_DEPENDENCY_IF(copy_forces_HtoD, dependencies, nodes_map);
-    ADD_DEPENDENCY_IF(accumulate_cpu_force, dependencies, nodes_map);
+    colvars_gpu::prepare_dependencies(
+      {{"copy_forces_HtoD", true}, {"accumulate_cpu_force", true}},
+      dependencies, nodes_map, "apply_force_main");
     if (cpu_atoms->is_enabled(colvardeps::f_ag_rotate)) {
       // Rotate the forces back and add them to proxy
       cudaGraphNode_t apply_force_with_inverse_rotation_node;
@@ -752,17 +775,14 @@ int colvaratoms_gpu::add_apply_force_nodes(
         apply_force_with_inverse_rotation_node;
     } else {
       // Just add the forces to proxy
-      cudaGraphNode_t apply_force_node;
+      cudaGraphNode_t apply_force_main_node;
       error_code |= colvars_gpu::apply_force(
         cpu_atoms->group_forces.data(), gpu_buffers.d_atoms_index,
         p->proxy_atoms_new_colvar_forces_gpu(), cpu_atoms->num_atoms,
-        p->get_atom_ids()->size(), apply_force_node,
+        p->get_atom_ids()->size(), apply_force_main_node,
         graph, dependencies);
-      nodes_map["apply_force"] = apply_force_node;
+      nodes_map["apply_force_main"] = apply_force_main_node;
     }
-    // ADD_DEPENDENCY_IF(apply_force_with_inverse_rotation, dependencies, nodes_map);
-    // ADD_DEPENDENCY_IF(apply_force, dependencies, nodes_map);
-    // dependencies = extra_initial_dependencies;
     if (cpu_atoms->is_enabled(colvardeps::f_ag_fit_gradients)) {
       auto* group_for_fit = cpu_atoms->fitting_group ? cpu_atoms->fitting_group : cpu_atoms;
       // Compute the forces on the fitting group and add them to proxy
@@ -782,9 +802,11 @@ int colvaratoms_gpu::add_apply_force_nodes(
       nodes_map["clear_atoms_grad"] = clear_atoms_grad_node;
       nodes_map["clear_sum_dxdq"] = clear_sum_dxdq_node;
       nodes_map["clear_tbcount"] = clear_tbcount_node;
-      ADD_DEPENDENCY_IF(clear_atoms_grad, dependencies, nodes_map);
-      ADD_DEPENDENCY_IF(clear_sum_dxdq, dependencies, nodes_map);
-      ADD_DEPENDENCY_IF(clear_tbcount, dependencies, nodes_map);
+      colvars_gpu::prepare_dependencies(
+        {{"clear_atoms_grad", false},
+         {"clear_sum_dxdq", false},
+         {"clear_tbcount", false}},
+        dependencies, nodes_map, "calc_fit_forces_loop1");
       cudaGraphNode_t calc_fit_forces_loop1_node;
       error_code |= colvars_gpu::calc_fit_forces_impl_loop1(
         gpu_buffers.d_atoms_pos_unrotated,

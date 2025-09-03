@@ -70,6 +70,35 @@ int add_copy_node_impl(
     dst, src, sizeofT * num_elements, kind));
 }
 
+int prepare_dependencies(
+  const std::vector<std::pair<std::string, bool>>& node_names,
+  std::vector<cudaGraphNode_t>& dependencies,
+  const std::unordered_map<std::string, cudaGraphNode_t>& map,
+  const std::string& caller_operation_name) {
+  int error_code = COLVARS_OK;
+  for (auto it = node_names.begin(); it != node_names.end(); ++it) {
+    const std::string node_name = it->first;
+    const bool allow_not_found = it->second;
+    if (auto search = map.find(node_name); search != map.end()) {
+      dependencies.push_back(search->second);
+      if (cvm::debug()) {
+        cvm::log("Operation " + caller_operation_name +
+                " depends on node\" " + node_name + "\"\n");
+      }
+    } else {
+      if (!allow_not_found) {
+        error_code |= cvm::error("BUG: cannot find node " + node_name + "\n");
+      } else {
+        if (cvm::debug()) {
+          cvm::log("Operation " + caller_operation_name +
+                  " cannot depend on node\" " + node_name + "\"\n");
+        }
+      }
+    }
+  }
+  return error_code;
+}
+
 #if defined (COLVARS_NVTX_PROFILING)
 colvar_nvtx_prof::colvar_nvtx_prof(): nvtx_event_name("Colvars") {
   std::memset(&nvtx_event_attr, 0, sizeof(nvtx_event_attr));

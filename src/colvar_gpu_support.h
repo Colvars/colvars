@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <unordered_map>
 
 #define COLVARS_STRINGIFY(s) STRINGIFY_HELPER(s)
 #define STRINGIFY_HELPER(s) #s
@@ -268,6 +269,12 @@ int add_copy_node(
                             kind, node_out, graph, dependencies);
 }
 
+int prepare_dependencies(
+  const std::vector<std::pair<std::string, bool>>& node_names,
+  std::vector<cudaGraphNode_t>& dependencies,
+  const std::unordered_map<std::string, cudaGraphNode_t>& map,
+  const std::string& caller_operation_name = "");
+
 // NVTX Profiling
 #if defined (COLVARS_NVTX_PROFILING)
 class colvar_nvtx_prof {
@@ -287,28 +294,5 @@ private:
 #endif // defined (COLVARS_NVTX_PROFILING)
 #endif // defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 }
-
-#define ADD_DEPENDENCY(fieldName, dependencies_vector, nodes_map) do {\
-  const std::string s = COLVARS_STRINGIFY(fieldName) ;\
-  try { dependencies_vector.push_back(nodes_map.at(s));\
-    if (cvm::debug()) {\
-      cvm::log("Function " + cvm::to_str(__func__) + " depends on node \"" + s + "\"\n");\
-    }\
-  }\
-  catch (const std::out_of_range& oor) { \
-    return cvm::error(cvm::to_str("BUG: cannot find node ") + s); } \
-} while (0);
-
-#define ADD_DEPENDENCY_IF(fieldName, dependencies_vector, nodes_map) do {\
-  const std::string s = COLVARS_STRINGIFY(fieldName) ;\
-  if (auto search = nodes_map.find(s); search != nodes_map.end()) {\
-    dependencies_vector.push_back(search->second);\
-    if (cvm::debug()) {\
-      cvm::log("Function " + cvm::to_str(__func__) + " depends on node\" " + search->first + "\"\n");\
-    }\
-  } else {\
-    if (cvm::debug()) { cvm::log("Function " + cvm::to_str(__func__) + " cannot depend on node\" " + s + "\"\n");}\
-  }\
-} while (0);
 
 #endif // COLVAR_GPU_SUPPORT_H
