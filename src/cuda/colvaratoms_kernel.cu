@@ -572,15 +572,17 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   main_grad.x = BlockReduce(temp_storage).Sum(main_grad.x); __syncthreads();
   main_grad.y = BlockReduce(temp_storage).Sum(main_grad.y); __syncthreads();
   main_grad.z = BlockReduce(temp_storage).Sum(main_grad.z); __syncthreads();
-  C[0][0] = BlockReduce(temp_storage).Sum(C[0][0]); __syncthreads();
-  C[0][1] = BlockReduce(temp_storage).Sum(C[0][1]); __syncthreads();
-  C[0][2] = BlockReduce(temp_storage).Sum(C[0][2]); __syncthreads();
-  C[1][0] = BlockReduce(temp_storage).Sum(C[1][0]); __syncthreads();
-  C[1][1] = BlockReduce(temp_storage).Sum(C[1][1]); __syncthreads();
-  C[1][2] = BlockReduce(temp_storage).Sum(C[1][2]); __syncthreads();
-  C[2][0] = BlockReduce(temp_storage).Sum(C[2][0]); __syncthreads();
-  C[2][1] = BlockReduce(temp_storage).Sum(C[2][1]); __syncthreads();
-  C[2][2] = BlockReduce(temp_storage).Sum(C[2][2]); __syncthreads();
+  if (B_ag_rotate) {
+    C[0][0] = BlockReduce(temp_storage).Sum(C[0][0]); __syncthreads();
+    C[0][1] = BlockReduce(temp_storage).Sum(C[0][1]); __syncthreads();
+    C[0][2] = BlockReduce(temp_storage).Sum(C[0][2]); __syncthreads();
+    C[1][0] = BlockReduce(temp_storage).Sum(C[1][0]); __syncthreads();
+    C[1][1] = BlockReduce(temp_storage).Sum(C[1][1]); __syncthreads();
+    C[1][2] = BlockReduce(temp_storage).Sum(C[1][2]); __syncthreads();
+    C[2][0] = BlockReduce(temp_storage).Sum(C[2][0]); __syncthreads();
+    C[2][1] = BlockReduce(temp_storage).Sum(C[2][1]); __syncthreads();
+    C[2][2] = BlockReduce(temp_storage).Sum(C[2][2]); __syncthreads();
+  }
   if (threadIdx.x == 0) {
     if (B_ag_rotate) {
       cuda::std::array<cvm::real, 4> partial_dxdq;
