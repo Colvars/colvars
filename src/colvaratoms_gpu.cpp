@@ -423,7 +423,6 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
     colvars_gpu::prepare_dependencies(
       {{"calc_com_cog", false},
       {"move_to_origin", true},
-      {"move_fitting_to_origin", true},
       {"rotate", true},
       {"move_to_ref_cog", true}},
       dependencies, nodes_map, "calc_cog_com_main_2");
