@@ -5,16 +5,16 @@ configuration {
 
 colvar {
   name one
-  x  3.21959149873580e+00
+  x       3.2195914987358
 }
 
 restraint {
   configuration {
     step 20
     name linear1
-    firstStep            0
-    forceConstant -1.00000000000000e-01
-    accumulatedWork -1.25888053272315e+00
+firstStep            0
+forceConstant -1.00000000000000e-01
+accumulatedWork -6.28004184932663e-01
   }
 }
 
