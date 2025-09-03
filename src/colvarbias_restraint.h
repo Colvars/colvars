@@ -105,7 +105,10 @@ class colvarbias_restraint_moving
     public virtual colvardeps {
 public:
 
-  colvarbias_restraint_moving(char const *key) : colvarbias_restraint(key) {}
+  colvarbias_restraint_moving(char const *key)
+    : colvarbias(key),
+      colvarbias_ti(key),
+      colvarbias_restraint(key) {}
   // Note: despite the diamond inheritance, most of this function gets only executed once
   virtual int init(std::string const &conf) override;
   virtual int update() override;
