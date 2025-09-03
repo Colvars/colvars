@@ -35,12 +35,14 @@ struct colvaratoms_gpu_buffer_t {
   cvm::real* d_atoms_pos_unrotated;
   /// \brief GPU center-of-mass
   cvm::rvector* d_com;
+  /// \brief GPU temporary buffer for COM, used for avoiding memset
+  cvm::rvector* d_com_tmp;
   /// \brief GPU center-of-geometry
   cvm::rvector* d_cog;
+  /// \brief GPU temporary buffer for COG, used for avoiding memset
+  cvm::rvector* d_cog_tmp;
   /// \brief GPU center of geometry before any fitting
   cvm::rvector* d_cog_orig;
-  /// \brief GPU center of geometry of the reference coordinates
-  cvm::rvector* d_ref_pos_cog;
   /// \brief GPU atomic counter for reduction
   unsigned int* d_com_cog_tbcount;
   /// \brief Center-of-mass on the host-pinned memory for CPU compatibility
@@ -49,6 +51,8 @@ struct colvaratoms_gpu_buffer_t {
   cvm::rvector* h_cog;
   /// \brief Center-of-geometry before any fitting on the host-pinned memory for CPU compatibility
   cvm::rvector* h_cog_orig;
+  /// \brief GPU center of geometry of the reference coordinates
+  cvm::rvector* d_ref_pos_cog;
 };
 
 struct colvaratoms_gpu_calc_fit_info_t {
