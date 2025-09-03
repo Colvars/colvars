@@ -575,10 +575,10 @@ int rotation_gpu::add_optimal_rotation_nodes(
   std::vector<cudaGraphNode_t> dependencies;
   // The coordinates are not always moved to origin, so these dependencies are conditional
   colvars_gpu::prepare_dependencies(
-    {{"read_positions", true},
-     {"read_fitting_group_positions", true},
-     {"move_to_origin", true},
-     {"move_fitting_to_origin", true}}, dependencies, nodes_map,
+    {{"read_positions_main", true},
+     {"read_positions_fitting", true},
+     {"move_to_origin_main", true},
+     {"move_to_origin_fitting", true}}, dependencies, nodes_map,
      "build_overlapping_matrix");
   dependencies.push_back(d_SSetNode);
   error_code |= colvars_gpu::build_overlapping_matrix(
