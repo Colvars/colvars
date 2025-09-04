@@ -7335,6 +7335,7 @@ To activate an umbrella sampling simulation, the same keywords as in the previou
 \begin{itemize}
 
 \item %
+  \labelkey{harmonic|targetNumStages}
   \keydef
     {targetNumStages}{%
     \texttt{harmonic}}{%
@@ -7541,6 +7542,26 @@ The \texttt{harmonicWalls} bias implements the following options:
     When only one set of walls is defined (\texttt{lowerWall} or \texttt{upperWalls}), only the respective force constant is changed.
     \textbf{Note:} if only one of the two force constants is meant to change over time, it is possible to use two instances of \texttt{harmonicWalls}, and apply the changing schedule only to one of them.
   }
+
+\item %
+\key
+  {targetLowerWalls}{%
+  \texttt{harmonicWalls}}{%
+  Change the lower wall value(s) towards these values}{%
+  positive decimal}{%
+  This keyword allows changing the lower wall position over time.
+  By default, this change is continuous over \texttt{targetEquilSteps}. In that case, the non-equilibrium work performed can be obtained by enabling  \texttt{outputAccumulatedWork}.
+  If \texttt{targetNumStages} is provided, the change happens in the given number of increments. See \refkey{targetNumStages}{harmonic|targetNumStages} for details.
+}
+
+\item %
+\key
+  {targetUpperWalls}{%
+  \texttt{harmonicWalls}}{%
+  Change the upper wall value(s) towards these values}{%
+  positive decimal}{%
+  Analogous to \texttt{targetLowerWalls}.
+}
 
 \item \dupkey{targetNumSteps}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
 \item \dupkey{lambdaExponent}{\texttt{harmonicWalls}}{sec:colvarbias_harmonic}{harmonic restraints}
