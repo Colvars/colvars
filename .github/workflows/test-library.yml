@@ -160,13 +160,12 @@ jobs:
           path: 'wiki'
 
       - name: Update wiki page describing versions
-        working-directory: wiki
         if: contains(github.event.head_commit.message, '[update-doc]')
         run: |
-          bash ../doc/print_engine_versions.sh > List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
-          git add List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
-          git commit -m "Update list of Colvars versions page"
-          git push origin master
+          bash doc/print_engine_versions.sh > wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
+          git -C wiki add List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
+          git -C wiki commit -m "Update list of Colvars versions page"
+          git -C wiki push origin master
 
 
   codeql:
