@@ -1,12 +1,12 @@
 diff --git a/src/gromacs/applied_forces/colvars/colvarsMDModule.cpp b/src/gromacs/applied_forces/colvars/colvarsMDModule.cpp
-index 46df82f723..061cb066b4 100644
+index 46df82f723..91e624c03c 100644
 --- a/src/gromacs/applied_forces/colvars/colvarsMDModule.cpp
 +++ b/src/gromacs/applied_forces/colvars/colvarsMDModule.cpp
-@@ -41,6 +41,7 @@
- #include "gmxpre.h"
- 
- #include "colvarsMDModule.h"
+@@ -56,6 +56,7 @@
+ #include "gromacs/utility/mpicomm.h"
+ #include "gromacs/utility/stringutil.h"
+
 +#include "colvars_version.h"
- 
- #include <functional>
- #include <memory>
+ #include "colvarsforceprovider.h"
+ #include "colvarsoptions.h"
+ #include "colvarssimulationsparameters.h"

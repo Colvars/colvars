@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8acf71e985..494254aac0 100644
+index 05a4af8533..91bb2fda98 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -691,6 +691,8 @@ include(gmxManageMuparser)
+@@ -693,6 +693,8 @@ include(gmxManageMuparser)
  
  include(gmxManageColvars)
  
@@ -10,13 +10,13 @@ index 8acf71e985..494254aac0 100644
 +
  include(gmxManagePlumed)
  
- ##################################################
+ include(gmxManageFMM)
 diff --git a/src/gromacs/CMakeLists.txt b/src/gromacs/CMakeLists.txt
-index d932509388..1e841b5b84 100644
+index 2025bc836e..33ab48924c 100644
 --- a/src/gromacs/CMakeLists.txt
 +++ b/src/gromacs/CMakeLists.txt
-@@ -460,6 +460,8 @@ target_link_libraries(libgromacs PRIVATE lmfit)
- target_link_libraries(libgromacs PRIVATE muparser::muparser)
+@@ -480,6 +480,8 @@ if (HAVE_MUPARSER)
+ endif()
  gmx_manage_colvars()
  target_link_libraries(libgromacs PRIVATE colvars)
 +gmx_manage_lepton()
