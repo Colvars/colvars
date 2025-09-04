@@ -87,3 +87,6 @@ for package in GROMACS LAMMPS NAMD VMD ; do
     print_tag_versions ${package} ${package,,}- | ${sort_command}
     echo
 done
+
+echo
+echo "This page was last updated on: $(date +'%Y-%m-%d')"
