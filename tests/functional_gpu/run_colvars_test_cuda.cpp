@@ -7,6 +7,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#if defined(STUB_OUTPUT_FORCE)
+#include <iomanip>
+#endif // defined(STUB_OUTPUT_FORCE)
 
 #define COLVARPROXY_VERSION COLVARS_VERSION
 
@@ -244,10 +247,27 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename)
   copy_HtoD(positions_soa.data(), d_mPositions, 3 * numAtoms);
   clear_device_array(d_mAppliedForces, 3 * numAtoms);
   clear_device_array(d_mTotalForces, 3 * numAtoms);
+#if defined(STUB_OUTPUT_FORCE)
+  const std::string force_filename = colvars->output_prefix() + "_forces_" + cvm::to_str(colvars->it) + ".dat";
+#endif // defined(STUB_OUTPUT_FORCE)
   if ( !err ) {
     colvars->calc();
     colvars->it++;
   }
+  colvarproxy_atoms::atom_buffer_real_t h_applied_forces(3 * numAtoms);
+  copy_DtoH(d_mAppliedForces, h_applied_forces.data(), 3 * numAtoms);
+#if defined(STUB_OUTPUT_FORCE)
+  std::ofstream ofs(force_filename);
+  for (size_t i = 0; i < numAtoms; ++i) {
+    const cvm::real fx = h_applied_forces[i];
+    const cvm::real fy = h_applied_forces[i + numAtoms];
+    const cvm::real fz = h_applied_forces[i + 2 * numAtoms];
+    ofs << std::scientific << std::setprecision(12) << std::setw(20) << fx << std::setw(0) << " ";
+    ofs << std::scientific << std::setprecision(12) << std::setw(20) << fy << std::setw(0) << " ";
+    ofs << std::scientific << std::setprecision(12) << std::setw(20) << fz << std::setw(0) << " ";
+    ofs << std::endl;
+  }
+#endif // defined(STUB_OUTPUT_FORCE)
   mAtomsChanged = false;
   return err;
 }
