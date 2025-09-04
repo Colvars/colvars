@@ -2,8 +2,8 @@ name: "Version maintenance"
 
 on:
   push:
-    # branches:
-    #   - master
+    branches:
+      - master
 
 jobs:
 
