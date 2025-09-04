@@ -11,10 +11,14 @@ source ${TOPDIR}/devel-tools/version_functions.sh
 
 reformat_lammps_version() {
     local lammpsversion=$1
-    python3 -c "
+    if [ ${lammpsversion} == develop ] ; then
+        echo ${lammpsversion}
+    else
+        python3 -c "
 import datetime
 print(datetime.datetime.strptime('${lammpsversion}','%d%b%Y').strftime('%Y-%m-%d'))
 "
+    fi
 }
 
 
@@ -62,9 +66,10 @@ sort_lammps_versions(){
 
 
 for package in GROMACS LAMMPS NAMD VMD ; do
-    echo "[Versions included in ${package}](#versions-included-in-${package})"
-    echo
+    echo -n " [[${package}](#versions-included-in-${package})]"
 done
+echo
+echo
 
 
 for package in GROMACS LAMMPS NAMD VMD ; do
