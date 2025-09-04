@@ -508,13 +508,13 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
     forced_atom_groups.insert(forced_atom_groups.end(),
                               all_unique_atom_groups.begin(),
                               all_unique_atom_groups.end());
-    /**
-      * @attention There are two CPU routines for applying forces on
-      * an atom group, namely (i) apply_colvar_force for a scalar force,
-      * and (ii) apply_force for a vector force on the COM. However, at
-      * this moment, I have no idea which one is called for a specific
-      * atom group, so I need to call communicate_forces() once.
-      */
+    /*
+     * NOTE: There are two CPU routines for applying forces on
+     * an atom group, namely (i) apply_colvar_force for a scalar force,
+     * and (ii) apply_force for a vector force on the COM. However, at
+     * this moment, I have no idea which one is called for a specific
+     * atom group, so I need to call communicate_forces() once.
+     */
     // Clear the h_sum_applied_colvar_force, use_group_force and use_apply_colvar_force
     for (auto it = all_unique_atom_groups.begin(); it != all_unique_atom_groups.end(); ++it) {
       cvm::atom_group* ag = *it;
@@ -528,10 +528,10 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
         }
       }
     }
-    /**
-      * @note Now I expect either use_apply_colvar_force or use_group_force
-      * is set in any of the atom groups, so build the CUDA graph.
-      */
+    /*
+     * Now I expect either use_apply_colvar_force or use_group_force
+     * is set in any of the atom groups, so build the CUDA graph.
+     */
     using node_map_t = std::unordered_map<std::string, cudaGraphNode_t>;
     // Add apply force CUDA graph nodes
     for (auto ag = all_unique_atom_groups.begin(); ag != all_unique_atom_groups.end(); ++ag) {
