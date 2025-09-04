@@ -1,0 +1,29 @@
+configuration {
+  step            5
+  dt 1.000000e+00
+  version 2025-08-30
+  units real
+}
+
+colvar {
+  name one
+  x        2.209909667263
+}
+
+abf {
+  configuration {
+    step 5
+    name abf1
+  }
+
+samples
+ 0 0 0 0 0 3 1 0
+ 0 0 0 0 0 0 0 0
+ 0 0 0 0
+
+gradient
+ 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0
+ 0 0 0 0
+}
+
