@@ -77,16 +77,16 @@ if(BUILD_TESTS)
       get_filename_component(TEST_NAME ${TEST_CONFIG_FILE} DIRECTORY)
       get_filename_component(TEST_NAME ${TEST_NAME} NAME)
       add_test(NAME ${TEST_NAME}
-        COMMAND run_colvars_test_cuda ${TEST_NAME}/test.in trajectory.xyz
+        COMMAND run_colvars_test_cuda ${TEST_NAME}/test.in trajectory.xyz "${TEST_NAME}/test_out"
         WORKING_DIRECTORY
-        ${CMAKE_CURRENT_BINARY_DIR}/tests/functional)
+        ${CMAKE_CURRENT_BINARY_DIR}/tests/functional_gpu)
     endforeach()
 
     # Copy input files (coordinates, index files, etc)
     add_custom_command(TARGET copy_test_files POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${COLVARS_SOURCE_DIR}/tests/input_files
-        ${CMAKE_BINARY_DIR}/tests/functional
+        ${CMAKE_BINARY_DIR}/tests/functional_gpu
       COMMENT "Copying test input files"
     )
 
