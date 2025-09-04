@@ -1,0 +1,23 @@
+configuration {
+  step            5
+  dt 1.000000e+00
+  version 2025-08-30
+  units real
+}
+
+colvar {
+  name one
+  x        2.209909667263
+}
+
+abmd {
+  configuration {
+    step 5
+    name abmd1
+    refValue  0.00000000000000e+00
+    stoppingValue 5.00000000000000e+01
+    forceConstant 1.00000000000000e+01
+    decreasing off
+  }
+}
+
