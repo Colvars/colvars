@@ -50,7 +50,11 @@ print_tag_versions() {
 
     for branch in ${branches[@]} ; do
         local package_version=${branch#${tag_prefix}}
-        colvars_version=$(get_colvarmodule_version ${branch})
+        if [ -n "${remote}" ] ; then
+            colvars_version=$(get_colvarmodule_version ${remote}/${branch})
+        else
+            colvars_version=$(get_colvarmodule_version ${branch})
+        fi
         if [ ${package} == LAMMPS ] ; then
             lammps_version=$(reformat_lammps_version ${package_version#*_})" "
         fi
