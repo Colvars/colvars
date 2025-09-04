@@ -9,6 +9,13 @@
 
 #include <iostream>
 
+#define STUB_OUTPUT_FORCE
+
+#if defined(STUB_OUTPUT_FORCE)
+#include <fstream>
+#include <iomanip>
+#endif // defined(STUB_OUTPUT_FORCE)
+
 #include "colvarmodule.h"
 #include "colvarscript.h"
 #include "colvaratoms.h"
@@ -162,9 +169,24 @@ int colvarproxy_stub::init_atom(int atom_number)
 int colvarproxy_stub::read_frame_xyz(const char *filename)
 {
   int err = colvars->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
+#if defined(STUB_OUTPUT_FORCE)
+  const std::string force_filename = colvars->output_prefix() + "_forces_" + cvm::to_str(colvars->it) + ".dat";
+#endif // defined(STUB_OUTPUT_FORCE)
   if ( !err ) {
+    auto& new_forces = *(modify_atom_applied_forces());
+    std::fill(new_forces.begin(), new_forces.end(), cvm::rvector{0, 0, 0});
     colvars->calc();
     colvars->it++;
+#if defined(STUB_OUTPUT_FORCE)
+    const size_t numAtoms = modify_atom_positions()->size();
+    std::ofstream ofs(force_filename);
+    for (size_t i = 0; i < numAtoms; ++i) {
+      ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].x << std::setw(0) << " ";
+      ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].y << std::setw(0) << " ";
+      ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].z << std::setw(0) << " ";
+      ofs << std::endl;
+    }
+#endif // defined(STUB_OUTPUT_FORCE)
   }
   return err;
 }
