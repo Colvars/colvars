@@ -1,0 +1,19 @@
+configuration {
+  step            5
+  dt 1.000000e+00
+  version 2025-08-30
+  units real
+}
+
+colvar {
+  name one
+  x (       0.6960527529369 ,     -0.28796150663947 ,     -0.45074404569889 ,      0.47897655588754 )
+}
+
+restraint {
+  configuration {
+    step 5
+    name harmonic1
+  }
+}
+

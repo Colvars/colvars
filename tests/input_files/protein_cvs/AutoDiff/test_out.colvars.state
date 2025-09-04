@@ -1,0 +1,17 @@
+configuration {
+  step            5
+  dt 1.000000e+00
+  version 2025-08-30
+  units real
+}
+
+colvar {
+  name alpha
+  x                  -nan
+}
+
+colvar {
+  name dihedPC
+  x                  -nan
+}
+
