@@ -30,7 +30,7 @@ if(BUILD_TESTS)
         get_filename_component(TEST_NAME ${TEST_CONFIG_FILE} DIRECTORY)
         get_filename_component(TEST_NAME ${TEST_NAME} NAME)
         add_test(NAME ${TEST_NAME}
-          COMMAND run_colvars_test ${TEST_NAME}/test.in trajectory.xyz
+          COMMAND run_colvars_test ${TEST_NAME}/test.in trajectory.xyz "${TEST_NAME}/test_out"
           WORKING_DIRECTORY
           ${CMAKE_CURRENT_BINARY_DIR}/tests/functional)
       endforeach()
