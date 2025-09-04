@@ -173,14 +173,12 @@
 namespace colvars_gpu {
 
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+/// \brief Default block size for CUDA kernels
 constexpr unsigned int default_block_size = 128;
+/// \brief Default maximum number of blocks for reduction kernels
 static unsigned int default_reduce_max_num_blocks = 64;
 // static unsigned int default_atom_wise_num_blocks = 64;
 #endif
-
-// enum class gpu_code_t {
-//   CUDA, HIP, SYCL, CPU
-// };
 
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 #define COLVARS_HOST_DEVICE __device__ __host__
@@ -192,6 +190,14 @@ static unsigned int default_reduce_max_num_blocks = 64;
 
 // TODO: What about SYCL?
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
+/**
+ * @brief Allocator for pinned host memory using cudaHostAlloc
+ *
+ * This allocator can be used with STL containers to allocate pinned
+ * host memory that is page-locked and directly accessible by the GPU.
+ *
+ * @tparam T The type of elements to allocate
+ */
 template <typename T>
 class CudaHostAllocator {
 public:
@@ -229,28 +235,55 @@ public:
 
 
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
+/**
+ * @brief Check for CUDA errors and report them
+ *
+ * @param code The CUDA error code to check
+ * @param file The source file where the error occurred
+ * @param line The line number in the source file
+ * @return COLVARS_OK if no error, otherwise the COLVARS_ERROR
+ */
 int gpuAssert(cudaError_t code, const char *file, int line);
 #endif
 
 } // namespace colvars_gpu
 
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
+/// \define checkGPUError(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+/// \brief Macro to check for CUDA errors
 #define checkGPUError(ans) colvars_gpu::gpuAssert((ans), __FILE__, __LINE__);
 #endif
 
 namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 
+/**
+ * @brief Add a CUDA graph node to clear an array to zero (used by add_clear_array_node)
+ */
 int add_clear_array_node_impl(
   void* dst, const size_t num_elements, const size_t sizeofT,
   cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
 
+/**
+ * @brief Add a CUDA graph node to copy an array (used by add_copy_node)
+ */
 int add_copy_node_impl(
   const void* src, void* dst, const size_t num_elements, const size_t sizeofT,
   cudaMemcpyKind kind, cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
 
+/**
+ * @brief Add a CUDA graph node to clear an array to zero
+ *
+ * @tparam T The type of elements in the array
+ * @param dst Pointer to the device array to clear
+ * @param num_elements Number of elements in the array
+ * @param node_out Output parameter to receive the created CUDA graph node
+ * @param graph The CUDA graph to which the node will be added
+ * @param dependencies A vector of CUDA graph nodes that this node depends on
+ * @return COLVARS_OK if successful, otherwise COLVARS_ERROR
+ */
 template <typename T>
 int add_clear_array_node(
   T* dst, const size_t num_elements,
@@ -260,6 +293,19 @@ int add_clear_array_node(
     dst, num_elements, sizeof(T), node_out, graph, dependencies);
 }
 
+/**
+ * @brief Add a CUDA graph node to copy an array
+ *
+ * @tparam T The type of elements in the array
+ * @param src Pointer to the source array
+ * @param dst Pointer to the destination array
+ * @param num_elements Number of elements to copy
+ * @param kind The type of copy (cudaMemcpyKind)
+ * @param node_out Output parameter to receive the created CUDA graph node
+ * @param graph The CUDA graph to which the node will be added
+ * @param dependencies A vector of CUDA graph nodes that this node depends on
+ * @return COLVARS_OK if successful, otherwise COLVARS_ERROR
+ */
 template <typename T>
 int add_copy_node(
   const T* src, T* dst, size_t num_elements,
@@ -269,6 +315,19 @@ int add_copy_node(
                             kind, node_out, graph, dependencies);
 }
 
+/**
+ * @brief Prepare a list of CUDA graph node dependencies
+ *
+ * This function looks up the specified node names in the provided map
+ * and collects the corresponding CUDA graph nodes into the dependencies vector.
+ * If any node name is not found, an error is reported.
+ *
+ * @param[in] node_names A vector of pairs containing node names and a boolean indicating if they are optional
+ * @param[out] dependencies A vector to store the collected CUDA graph nodes
+ * @param[in] map A map from node names to CUDA graph nodes
+ * @param[in] caller_operation_name Optional name of the calling operation for error reporting
+ * @return COLVARS_OK if all required nodes are found, otherwise COLVARS_ERROR
+ */
 int prepare_dependencies(
   const std::vector<std::pair<std::string, bool>>& node_names,
   std::vector<cudaGraphNode_t>& dependencies,
@@ -277,6 +336,13 @@ int prepare_dependencies(
 
 // NVTX Profiling
 #if defined (COLVARS_NVTX_PROFILING)
+/**
+ * @brief Class for managing NVTX profiling ranges
+ *
+ * This class encapsulates the functionality to create and manage NVTX
+ * profiling ranges. It allows setting a name and color for the range,
+ * and provides methods to start and stop the profiling range.
+ */
 class colvar_nvtx_prof {
 public:
   colvar_nvtx_prof();
