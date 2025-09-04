@@ -8,6 +8,9 @@ fi
 
 source ${TOPDIR}/devel-tools/version_functions.sh
 
+if [ -n "${GITHUB_ACTION}" ] ; then
+    export remote=origin
+fi
 
 reformat_lammps_version() {
     local lammpsversion=$1
@@ -38,7 +41,14 @@ print_tag_versions() {
         echo "${lammps_version}${package_version} | [${colvars_version}](https://github.com/Colvars/colvars/releases/tag/${tag})"
     done
 
-    for branch in $(git branch -l --format='%(refname)' | sed -s 's/refs\/heads\///' | grep ^${tag_prefix}) ; do
+    local -a branches
+    if [ -n "${remote}" ] ; then
+        branches=($(git branch -r --format='%(refname)' | grep "refs/remotes/${remote}" | sed -s "s/refs\/remotes\/${remote}\///" | grep ^${tag_prefix}))
+    else
+        branches=($(git branch -l --format='%(refname)' | sed -s 's/refs\/heads\///' | grep ^${tag_prefix}))
+    fi
+
+    for branch in ${branches[@]} ; do
         local package_version=${branch#${tag_prefix}}
         colvars_version=$(get_colvarmodule_version ${branch})
         if [ ${package} == LAMMPS ] ; then
