@@ -3,6 +3,7 @@ include(CheckIncludeFile)
 project(run_colvars_test_cuda LANGUAGES CXX)
 
 option(BUILD_TESTS "Build tests" ON)
+option(OUTPUT_FORCE "Output the applied forces for debugging" ON)
 
 if(NOT EXISTS ${COLVARS_SOURCE_DIR})
   set(COLVARS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." CACHE STRING "Colvars source code directory")
@@ -34,6 +35,10 @@ set(COLVARS_CUDA_SOURCE ${COLVARS_CUDA_DIR}/colvaratoms_kernel.cu
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
 add_definitions(-DCOLVARS_CUDA)
+
+if(OUTPUT_FORCE)
+  add_definitions(-DSTUB_OUTPUT_FORCE)
+endif()
 
 add_executable(
   run_colvars_test_cuda
