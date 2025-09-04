@@ -28,6 +28,8 @@ def affects_backend(labels, backend=None):
         raise Exception("Invalid backend:", backend)
     if 'testing' in labels:
         return False
+    if 'maintenance' in labels:
+        return False
     has_backend_labels = False
     for label in labels:
         if label in backends:
