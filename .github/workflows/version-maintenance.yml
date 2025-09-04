@@ -1,0 +1,41 @@
+name: "Version maintenance"
+
+on:
+  push:
+    # branches:
+    #   - master
+
+jobs:
+
+  update-wiki:
+    name: Update Wiki repo
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout Colvars repo
+        uses: actions/checkout@v4
+
+      - name: Checkout Wiki repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'Colvars/colvars.wiki'
+          path: 'wiki'
+
+      - name: Cache the SSH key for the runner
+        env: 
+          SSH_KEY: ${{ secrets.PULL_PUSH_COLVARS_KEY }}
+        run: |
+          mkdir -p -m 700 ~/.ssh
+          echo "${SSH_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "CI runner"
+          
+      - name: Update Wiki page that lists Colvars versions
+        run: |
+          bash doc/print_engine_versions.sh > wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
+          if ! git -C wiki diff --quiet ; then
+              git -C wiki add List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
+              git -C wiki commit -m "Update list of Colvars versions"
+              git -C wiki push origin master
+          fi
