@@ -35,6 +35,7 @@ jobs:
           
       - name: Update Wiki page that lists Colvars versions
         run: |
+          git fetch --all
           bash doc/print_engine_versions.sh > wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
           if ! git -C wiki diff --quiet ; then
               git -C wiki add List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
