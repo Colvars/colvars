@@ -10,6 +10,7 @@ jobs:
   update-wiki:
     name: Update Wiki repo
     runs-on: ubuntu-latest
+    if: ${{ github.repository == 'Colvars/colvars' }}
     steps:
 
       - name: Checkout Colvars repo in full
