@@ -5,6 +5,11 @@
 #include "colvartypes.h"
 #include "colvar_rotation_derivative.h"
 
+/**
+ * @file colvaratoms_gpu.h
+ * @brief Declaration of the class for calculating atom group properties on GPU
+ */
+
 namespace colvars_gpu {
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
