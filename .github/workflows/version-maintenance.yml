@@ -12,11 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: Checkout Colvars repo
-        uses: actions/checkout@v4
+      - name: Checkout Colvars repo in full
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Checkout Wiki repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: 'Colvars/colvars.wiki'
           path: 'wiki'
