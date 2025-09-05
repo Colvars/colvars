@@ -485,6 +485,14 @@ jobs:
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
           bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
 
+      - name: Save failed library test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-library-test-output-intel-oneAPI
+          path: |
+            ${{ github.workspace }}/build/Testing/Temporary/*.log
+
       - name: Keep only one cache besides the one from this job
         shell: bash
         env:
@@ -578,3 +586,12 @@ jobs:
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel-arm64.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: Save failed library test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-library-test-output-ARM64
+          path: |
+            ${{ github.workspace }}/build_C++20/Testing/Temporary/*.log
+            ${{ github.workspace }}/build_g++11_C++20/Testing/Temporary/*.log
