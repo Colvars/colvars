@@ -78,6 +78,7 @@ sort_lammps_versions(){
     sort -r | cut -d' ' -f2-
 }
 
+echo "This page only lists major (feature) releases of simulation packages, not patch releases (e.g. NAMD 3.0.2). Patch release generally do not contain a specific version of the Colvars master branch, but the same version as the previous major release, possibly with later fixes added."
 
 for package in GROMACS LAMMPS NAMD VMD ; do
     echo -n " [[${package}](#versions-included-in-${package})]"
@@ -88,10 +89,6 @@ echo
 
 for package in GROMACS LAMMPS NAMD VMD ; do
     echo "### Versions included in ${package}"
-    if [ ${package} == NAMD ] ; then
-        echo "(Note: the Colvars version included in NAMD 2.12 is the same as the one included in 2.12b1 with only bugfixes applied: therefore, NAMD 2.12 does not correspond to a specific version of the Colvars source tree)"
-        echo
-    fi
     echo "${package} version | Colvars version"
     echo "-------------- | ---------------"
     sort_command=sort_versions
