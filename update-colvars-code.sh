@@ -275,13 +275,6 @@ then
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
 
-  # Update makefiles for library
-  for src in ${source}/lammps/lib/colvars/Makefile.{common,deps}
-  do \
-    tgt=$(basename ${src})
-    condcopy "${src}" "${target}/lib/colvars/${tgt}"
-  done
-
   for src in \
     ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} \
     ${source}/lammps/src/COLVARS/fix_colvars.{cpp,h} \
