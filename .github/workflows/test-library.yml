@@ -78,6 +78,14 @@ jobs:
       - name: Build library with debug code enabled (GCC)
         run: cmake -D COLVARS_DEBUG=ON -P devel-tools/build_test_library.cmake
 
+      - name: Save failed library test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-library-test-output-basic-check
+          path: |
+            ${{ github.workspace }}/build/Testing/Temporary/*.log
+
       - name: Check whether secrets are available
         id: checksecrets
         env:
