@@ -36,7 +36,7 @@ jobs:
 
       - name: Install build dependencies for library
         run: |
-          sudo apt -y install ccache tcl8.6-dev clang
+          sudo apt -y install ccache tcl8.6-dev clang bash
 
       - name: Test build recipes
         run: bash devel-tools/check_build_recipes
