@@ -93,7 +93,7 @@ do
       break
     else
       # Test absolute error
-      ${SPIFF} -a 1e-${DIFF_ABS_PREC} $f $base > /dev/null
+      ${SPIFF} -m -a 1e-${DIFF_ABS_PREC} $f $base > /dev/null
       RETVAL=$?
       if [ $RETVAL -eq 0 ]
       then
