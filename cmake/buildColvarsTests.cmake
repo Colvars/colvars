@@ -33,6 +33,10 @@ if(BUILD_TESTS)
           COMMAND run_colvars_test ${TEST_NAME}/test.in trajectory.xyz "${TEST_NAME}/test_out"
           WORKING_DIRECTORY
           ${CMAKE_CURRENT_BINARY_DIR}/tests/functional)
+        add_test(NAME "${TEST_NAME}_spiff"
+          COMMAND sh compare_test.sh ${TEST_NAME}
+          WORKING_DIRECTORY
+          ${CMAKE_CURRENT_BINARY_DIR}/tests/functional)
       endforeach()
 
       # Copy input files (coordinates, index files, etc)
