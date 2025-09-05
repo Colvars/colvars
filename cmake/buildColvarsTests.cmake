@@ -34,7 +34,7 @@ if(BUILD_TESTS)
           WORKING_DIRECTORY
           ${CMAKE_CURRENT_BINARY_DIR}/tests/functional)
         add_test(NAME "${TEST_NAME}_spiff"
-          COMMAND sh compare_test.sh ${TEST_NAME}
+          COMMAND bash compare_test.sh ${TEST_NAME}
           WORKING_DIRECTORY
           ${CMAKE_CURRENT_BINARY_DIR}/tests/functional)
       endforeach()
