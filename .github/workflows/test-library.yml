@@ -85,6 +85,7 @@ jobs:
           name: failed-library-test-output-basic-check
           path: |
             ${{ github.workspace }}/build/Testing/Temporary/*.log
+            ${{ github.workspace }}/build-gcc/Testing/Temporary/*.log
 
       - name: Check whether secrets are available
         id: checksecrets
