@@ -85,9 +85,9 @@ jobs:
         with:
           path: |
             ~/ccache_${{ inputs.container_name }}
-          key: ${{ runner.os }}-build-${{ inputs.backend_name }}-${{ github.sha }}
+          key: Backends_${{ inputs.backend_name }}_${{ inputs.container_name }}_${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ inputs.backend_name }}-
+            Backends_${{ inputs.backend_name }}_${{ inputs.container_name }}
 
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v4
@@ -180,7 +180,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: failed-library-test-output-${{ inputs.backend_name }}-${{ inputs.backend_repo_ref }}
+          name: failed_library_test_output_${{ inputs.backend_name }}_${{ inputs.backend_repo_ref }}_${{ inputs.container_name }}
           path: |
             ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.diff
             ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.err
@@ -201,7 +201,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: failed-interface-test-output-${{ inputs.backend_name }}
+          name: failed_library_test_output_${{ inputs.backend_name }}_${{ inputs.backend_repo_ref }}_${{ inputs.container_name }}
           path: |
             ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.diff
             ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.err
