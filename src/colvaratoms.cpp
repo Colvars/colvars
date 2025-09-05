@@ -304,8 +304,8 @@ void cvm::atom_group::atom_modifier::sync_to_soa() const {
       m_ag->atoms_charge[i] = m_atoms[i].charge;
     }
   }
-  // m_ag->total_charge = m_total_charge;
-  // m_ag->total_mass = m_total_mass;
+  m_ag->total_charge = m_total_charge;
+  m_ag->total_mass = m_total_mass;
   // m_ag->update_total_charge();
   // m_ag->update_total_mass();
 }
