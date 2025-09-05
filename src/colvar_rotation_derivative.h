@@ -42,9 +42,15 @@ struct rotation_derivative {
   /// \brief Reference to the rotation
   const cvm::rotation &m_rot;
   /// \brief Reference to the atom positions of group 1
-  const std::vector<cvm::real> &m_pos1;
+  // const std::vector<cvm::real> &m_pos1;
+  std::vector<cvm::real>::const_iterator pos1x;
+  std::vector<cvm::real>::const_iterator pos1y;
+  std::vector<cvm::real>::const_iterator pos1z;
   /// \brief Reference to the atom positions of group 2
-  const std::vector<cvm::real> &m_pos2;
+  // const std::vector<cvm::real> &m_pos2;
+  std::vector<cvm::real>::const_iterator pos2x;
+  std::vector<cvm::real>::const_iterator pos2y;
+  std::vector<cvm::real>::const_iterator pos2z;
   /// \brief Number of atoms in group1 (used in SOA)
   size_t m_num_atoms_pos1;
   /// \brief Number of atoms in group1 (used in SOA)
@@ -68,7 +74,13 @@ struct rotation_derivative {
     const std::vector<cvm::real> &pos2,
     const size_t num_atoms_pos1,
     const size_t num_atoms_pos2):
-      m_rot(rot), m_pos1(pos1), m_pos2(pos2),
+      m_rot(rot),
+      pos1x(pos1.cbegin()),
+      pos1y(pos1x + num_atoms_pos1),
+      pos1z(pos1y + num_atoms_pos1),
+      pos2x(pos2.cbegin()),
+      pos2y(pos2x + num_atoms_pos2),
+      pos2z(pos2y + num_atoms_pos2),
       m_num_atoms_pos1(num_atoms_pos1),
       m_num_atoms_pos2(num_atoms_pos2) {}
   /*! @brief This function must be called before `calc_derivative_wrt_group1`
@@ -467,9 +479,9 @@ struct rotation_derivative {
     std::array<cvm::rvector, 4>* _noalias const dq0_1_out = nullptr,
     std::array<std::array<cvm::rvector, 4>, 4>* _noalias const ds_1_out = nullptr) const {
       // if (dl0_1_out == nullptr && dq0_1_out == nullptr) return;
-      const cvm::real a2x = m_pos2[ia];
-      const cvm::real a2y = m_pos2[ia + m_num_atoms_pos2];
-      const cvm::real a2z = m_pos2[ia + 2 * m_num_atoms_pos2];
+      const cvm::real a2x = *(pos2x + ia);
+      const cvm::real a2y = *(pos2y + ia);
+      const cvm::real a2z = *(pos2z + ia);
       const cvm::rvector ds_1[4][4] = {
         {{ a2x,  a2y,  a2z}, { 0.0, a2z,  -a2y}, {-a2z,  0.0,  a2x}, { a2y, -a2x,  0.0}},
         {{ 0.0,  a2z, -a2y}, { a2x, -a2y, -a2z}, { a2y,  a2x,  0.0}, { a2z,  0.0,  a2x}},
@@ -493,15 +505,116 @@ struct rotation_derivative {
     std::array<cvm::rvector, 4>* _noalias const dq0_2_out = nullptr,
     std::array<std::array<cvm::rvector, 4>, 4>* _noalias const ds_2_out = nullptr) const {
     // if (dl0_2_out == nullptr && dq0_2_out == nullptr) return;
-    const cvm::real a1x = m_pos1[ia];
-    const cvm::real a1y = m_pos1[ia + m_num_atoms_pos1];
-    const cvm::real a1z = m_pos1[ia + 2 * m_num_atoms_pos1];
+    const cvm::real a1x = *(pos1x + ia);
+    const cvm::real a1y = *(pos1y + ia);
+    const cvm::real a1z = *(pos1z + ia);
     const cvm::rvector ds_2[4][4] = {
       {{ a1x,  a1y,  a1z}, { 0.0, -a1z,  a1y}, { a1z,  0.0, -a1x}, {-a1y,  a1x,  0.0}},
       {{ 0.0, -a1z,  a1y}, { a1x, -a1y, -a1z}, { a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}},
       {{ a1z,  0.0, -a1x}, { a1y,  a1x,  0.0}, {-a1x,  a1y, -a1z}, { 0.0,  a1z,  a1y}},
       {{-a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}, { 0.0,  a1z,  a1y}, {-a1x, -a1y,  a1z}}};
     calc_derivative_impl<use_dl, use_dq, use_ds>(ds_2, dl0_2_out, dq0_2_out, ds_2_out);
+  }
+
+  /*! @brief Project the force on \f$q_i\f$ (or the gradient of
+   *  \f$\frac{\mathrm{d}x}{\mathrm{d}q_i}\f$) to the force on the correlation
+   *  matrix \f$C=\mathbf{r}_1^\intercal\mathbf{r}_2\f$, where \f$\mathbf{r}_1\f$ and
+   *  \f$\mathbf{r}_2\f$ are \f$N\times 3\f$ matrices containing the atom
+   *  positions of atom group 1 and atom group 2 after centering on origin.
+   *
+   *  This function can be only called after
+   *  prepare_derivative(rotation_derivative_dldq::use_dq). It mulitplies the input with
+   *  \f$\frac{\mathrm{d}q_i}{\mathrm{d}C}\f$.
+   *
+   *  @tparam i The i-th component of the quaternion, must be in the range [0, 3]
+   *  @param[in] f_on_q The force on \f$q_i\f$ or the gradient of \f$\frac{\mathrm{d}x}{\mathrm{d}q_i}\f$
+   *
+   *  @return A 3x3 matrix. The matrix element at row \f$j\f$ and column \f$k\f$
+   *  is \f$f_{q_i}\frac{\mathrm{d}q_i}{\mathrm{d}C_{jk}}\f$.
+   */
+  template <int i>
+  inline cvm::rmatrix project_force_to_C_from_dxdqi(cvm::real f_on_q) const {
+    static_assert((i < 4) && (i >= 0), "i must be in [0, 3] in project_force_to_C_from_dxdqi.");
+    cvm::rmatrix result;
+    result.xx = f_on_q * ( tmp_Q0Q0_L[i][0][0] + tmp_Q0Q0_L[i][1][1] - tmp_Q0Q0_L[i][2][2] - tmp_Q0Q0_L[i][3][3] );
+    result.xy = f_on_q * ( tmp_Q0Q0_L[i][0][3] + tmp_Q0Q0_L[i][1][2] + tmp_Q0Q0_L[i][2][1] + tmp_Q0Q0_L[i][3][0] );
+    result.xz = f_on_q * (-tmp_Q0Q0_L[i][0][2] + tmp_Q0Q0_L[i][1][3] - tmp_Q0Q0_L[i][2][0] + tmp_Q0Q0_L[i][3][1] );
+    result.yx = f_on_q * (-tmp_Q0Q0_L[i][0][3] + tmp_Q0Q0_L[i][1][2] + tmp_Q0Q0_L[i][2][1] - tmp_Q0Q0_L[i][3][0] );
+    result.yy = f_on_q * ( tmp_Q0Q0_L[i][0][0] - tmp_Q0Q0_L[i][1][1] + tmp_Q0Q0_L[i][2][2] - tmp_Q0Q0_L[i][3][3] );
+    result.yz = f_on_q * ( tmp_Q0Q0_L[i][0][1] + tmp_Q0Q0_L[i][1][0] + tmp_Q0Q0_L[i][2][3] + tmp_Q0Q0_L[i][3][2] );
+    result.zx = f_on_q * ( tmp_Q0Q0_L[i][0][2] + tmp_Q0Q0_L[i][1][3] + tmp_Q0Q0_L[i][2][0] + tmp_Q0Q0_L[i][3][1] );
+    result.zy = f_on_q * (-tmp_Q0Q0_L[i][0][1] - tmp_Q0Q0_L[i][1][0] + tmp_Q0Q0_L[i][2][3] + tmp_Q0Q0_L[i][3][2] );
+    result.zz = f_on_q * ( tmp_Q0Q0_L[i][0][0] - tmp_Q0Q0_L[i][1][1] - tmp_Q0Q0_L[i][2][2] + tmp_Q0Q0_L[i][3][3] );
+    return result;
+  }
+
+  /*! @brief Project the force on \f$\mathbf{q}\f$ (or the gradient of
+   *  \f$\frac{\mathrm{d}x}{\mathrm{d}q_i}\f$) to the force on the correlation
+   *  matrix \f$C=\mathbf{r}_1^\intercal\mathbf{r}_2\f$, where \f$\mathbf{r}_1\f$ and
+   *  \f$\mathbf{r}_2\f$ are \f$N\times 3\f$ matrices containing the atom
+   *  positions of atom group 1 and atom group 2 after centering on origin.
+   *
+   *  See also project_force_to_C_from_dxdqi().
+   *
+   *  @tparam dim4_array_t The type of force acting on \f$\mathbf{q}\f$.
+   *
+   *  @param[in] sum_dxdq The force on \f$\mathbf{q}\f$ or the gradient vector
+   *  \f$(\frac{\mathrm{d}x}{\mathrm{d}q_0}, \frac{\mathrm{d}x}{\mathrm{d}q_1}, \frac{\mathrm{d}x}{\mathrm{d}q_2}, \frac{\mathrm{d}x}{\mathrm{d}q_3})\f$.
+   *
+   *  @return A 3x3 matrix. The matrix element at row \f$j\f$ and column \f$k\f$
+   *  is \f$\sum_{i=0}^3 f_{q_i}\frac{\mathrm{d}q_i}{\mathrm{d}C_{jk}}\f$.
+   *
+   */
+  template <typename dim4_array_t>
+  inline cvm::rmatrix project_force_to_C_from_dxdq(const dim4_array_t& sum_dxdq) const {
+    cvm::rmatrix result;
+    result += project_force_to_C_from_dxdqi<0>(sum_dxdq[0]);
+    result += project_force_to_C_from_dxdqi<1>(sum_dxdq[1]);
+    result += project_force_to_C_from_dxdqi<2>(sum_dxdq[2]);
+    result += project_force_to_C_from_dxdqi<3>(sum_dxdq[3]);
+    return result;
+  }
+
+  /*! @brief Project the force on the correlation matrix \f$C\f$ to \f$\mathbf{r}_1\f$
+   *
+   *  Let \f$C=\mathbf{r}_1^\intercal\mathbf{r}_2\f$, and the force on \f$C\f$ be
+   *  \f$F_{C}\f$. This function returns the force on the i-th atom of \f$\mathbf{r}_1\f$.
+   *
+   *  @param[in] ia The atom index of the i-th atom in \f$\mathbf{r}_1\f$
+   *  @param[in] dxdC The 3x3 matrix containing the forces on each element of \f$C\f$
+   *
+   *  @return The force on the i-th atom of \f$\mathbf{r}_1\f$
+   */
+  inline cvm::rvector project_force_to_group1(size_t ia, const cvm::rmatrix& dxdC) const {
+    const cvm::real a2x = *(pos2x + ia);
+    const cvm::real a2y = *(pos2y + ia);
+    const cvm::real a2z = *(pos2z + ia);
+    const cvm::rvector result{
+      dxdC.xx * a2x + dxdC.xy * a2y + dxdC.xz * a2z,
+      dxdC.yx * a2x + dxdC.yy * a2y + dxdC.yz * a2z,
+      dxdC.zx * a2x + dxdC.zy * a2y + dxdC.zz * a2z};
+    return result;
+  }
+
+  /*! @brief Project the force on the correlation matrix \f$C\f$ to \f$\mathbf{r}_2\f$
+   *
+   *  Let \f$C=\mathbf{r}_1^\intercal\mathbf{r}_2\f$, and the force on \f$C\f$ be
+   *  \f$F_{C}\f$. This function returns the force on the i-th atom of \f$\mathbf{r}_2\f$.
+   *
+   *  @param[in] ia The atom index of the i-th atom in \f$\mathbf{r}_2\f$
+   *  @param[in] dxdC The 3x3 matrix containing the forces on each element of \f$C\f$
+   *
+   *  @return The force on the i-th atom of \f$\mathbf{r}_2\f$
+   */
+  inline cvm::rvector project_force_to_group2(size_t ia, const cvm::rmatrix& dxdC) const {
+    const cvm::real a1x = *(pos1x + ia);
+    const cvm::real a1y = *(pos1y + ia);
+    const cvm::real a1z = *(pos1z + ia);
+    const cvm::rvector result{
+      dxdC.xx * a1x + dxdC.yx * a1y + dxdC.zx * a1z,
+      dxdC.xy * a1x + dxdC.yy * a1y + dxdC.zy * a1z,
+      dxdC.xz * a1x + dxdC.yz * a1y + dxdC.zz * a1z};
+    return result;
   }
 };
 
