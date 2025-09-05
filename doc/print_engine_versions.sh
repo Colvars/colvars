@@ -78,14 +78,15 @@ sort_lammps_versions(){
     sort -r | cut -d' ' -f2-
 }
 
-echo "This page only lists major (feature) releases of simulation packages, not patch releases (e.g. NAMD 3.0.2). Patch release generally do not contain a specific version of the Colvars master branch, but the same version as the previous major release, possibly with later fixes added."
-
 for package in GROMACS LAMMPS NAMD VMD ; do
     echo -n " [[${package}](#versions-included-in-${package})]"
 done
 echo
 echo
 
+echo "This page only lists major (feature) releases of simulation packages, not patch releases (e.g. NAMD 3.0.2). Patch release generally do not contain a specific version of the Colvars master branch, but the same version as the previous major release, possibly with later fixes added."
+echo
+echo
 
 for package in GROMACS LAMMPS NAMD VMD ; do
     echo "### Versions included in ${package}"
