@@ -38,8 +38,8 @@ EOF
 
     dnf -y install intel-oneapi-compiler-dpcpp-cpp intel-oneapi-mpi-devel #intel-basekit intel-hpckit
     cat > /etc/profile.d/oneapi.sh << EOF
-if [ -z "${ONEAPI_ROOT}" ] ; then
-    echo "Usage of Intel oneAPI is subject to the license agreement at: https://www.intel.com/content/www/us/en/developer/articles/license/end-user-license-agreement.html"
+if [ -z "\${ONEAPI_ROOT}" ] ; then
+    echo "Usage of Intel oneAPI is subject to the license agreement at: https://www.intel.com/content/www/us/en/developer/articles/license/end-user-license-agreement.html" >&2
     source /opt/intel/oneapi/setvars.sh > /dev/null
 fi
 EOF
