@@ -20,6 +20,8 @@ if [ ! -d ${TOPDIR} ] ; then
   exit 1
 fi
 
+echo "Top level directory is ${TOPDIR}"
+
 SPIFF=$(${TOPDIR}/devel-tools/get_spiff)
 if [ $? != 0 ] ; then
     echo "Error: spiff is not available and could not be downloaded/built." >& 2
