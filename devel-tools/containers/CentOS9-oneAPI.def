@@ -23,6 +23,7 @@ From: CentOS9.sif
         "@Development Tools" \
         gcc gcc-c++ \
         git cmake ccache ninja-build mold \
+        ncurses-devel \
         Lmod openmpi-devel tbb-devel fftw-devel tcl-devel
 
     cat > /etc/yum.repos.d/oneAPI.repo << EOF
