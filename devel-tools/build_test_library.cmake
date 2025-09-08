@@ -149,15 +149,19 @@ execute_process(
   RESULT_VARIABLE result
   )
 
+option(RUN_TESTS "Run library tests" ON)
+
 if(NOT result EQUAL 0)
   message(FATAL_ERROR "Error building library.")
 else()
-  execute_process(
-    COMMAND ${CMAKE_CTEST_COMMAND}
-    WORKING_DIRECTORY ${BUILD_DIR}
-    RESULT_VARIABLE result
-  )
-  if(NOT result EQUAL 0)
-    message(FATAL_ERROR "Error running library tests.")
+  if(RUN_TESTS)
+    execute_process(
+      COMMAND ${CMAKE_CTEST_COMMAND}
+      WORKING_DIRECTORY ${BUILD_DIR}
+      RESULT_VARIABLE result
+    )
+    if(NOT result EQUAL 0)
+      message(FATAL_ERROR "Error running library tests.")
+    endif()
   endif()
 endif()
