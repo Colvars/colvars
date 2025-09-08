@@ -159,6 +159,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: cpp
+          build-mode: manual
 
       - name: Build Colvars library with CMake
         run: cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
