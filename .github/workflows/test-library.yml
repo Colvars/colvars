@@ -201,15 +201,16 @@ jobs:
           path: 'openmm-source'
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: cpp
+          build-mode: manual
 
       - name: Build Colvars library with CMake
         run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
 
   static-analyser:
