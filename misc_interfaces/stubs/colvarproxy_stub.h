@@ -41,8 +41,9 @@ public:
 
   /// @brief Read next frame from XYZ file and call cvm::calc()
   /// @param filename Input XYZ file
+  /// @param write_force_file Write the applied forces to files
   /// @return Error code
-  int read_frame_xyz(const char *filename);
+  int read_frame_xyz(const char *filename, const bool write_force_file = false);
 };
 
 
