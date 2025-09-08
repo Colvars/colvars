@@ -1,6 +1,5 @@
-
-BootStrap: localimage
-From: CentOS9.sif
+BootStrap: docker
+From: quay.io/centos/centos:stream9
 
 
 %help
