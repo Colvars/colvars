@@ -7,13 +7,22 @@
 #include "colvarproxy.h"
 #include "colvarproxy_stub.h"
 
+#include "CLI11.hpp"
+
 int main(int argc, char *argv[]) {
-  if (argc < 2 || argc > 4) {
-    std::cerr << "Wrong number of arguments.\n"
-              << "Usage: run_colvars_test <configuration_file> [XYZ_trajectory_file] [output_prefix]"
-              << std::endl;
-    return 1;
-  }
+  CLI::App app{"Colvars stub interface for testing"};
+  argv = app.ensure_utf8(argv);
+  std::string configuration_file;
+  std::string output_prefix;
+  std::string trajectory_file;
+  bool output_force = false;
+  app.add_option("-c,--configuration_file", configuration_file, "Input Colvars configuration file")->required(true);
+  app.add_option("-t,--trajectory_file", trajectory_file, "Input trajectory file")->required(true);
+  const auto output_prefix_option =
+    app.add_option("-o,--output_prefix", output_prefix, "Output file prefix")->required(false);
+  app.add_flag("--force,!--no-force", output_force, "Write the force files")->needs(output_prefix_option);
+  CLI11_PARSE(app, argc, argv);
+
   int err = 0;
 
   colvarproxy_stub *proxy = new colvarproxy_stub();
@@ -21,26 +30,26 @@ int main(int argc, char *argv[]) {
   err |= proxy->set_unit_system("real", false);
 
   if (argc > 3) {
-    err |= proxy->set_output_prefix(argv[3]);
+    err |= proxy->set_output_prefix(output_prefix);
   }
   err |= proxy->colvars->setup_input();
   err |= proxy->colvars->setup_output();
-  err |= proxy->colvars->read_config_file(argv[1]);
+  err |= proxy->colvars->read_config_file(configuration_file.c_str());
 
   if (argc > 2) {
     // Read number of atoms from XYZ header
-    std::ifstream ifs(argv[2]);
+    std::ifstream ifs(trajectory_file);
     int natoms;
     ifs >> natoms;
     ifs.close();
     cvm::log("Reading trajectory for " + cvm::to_str(natoms)
-              + " atoms from XYZ file " + argv[2]);
+              + " atoms from XYZ file " + trajectory_file);
     for (int ai = 0; ai < natoms; ai++) {
       proxy->init_atom(ai+1);
     }
     int io_err = 0;
     while (!io_err) {
-      io_err = proxy->read_frame_xyz(argv[2]);
+      io_err = proxy->read_frame_xyz(trajectory_file.c_str(), output_force);
       if (!io_err) cvm::log("Frame " + cvm::to_str(cvm::step_absolute()));
     }
     proxy->post_run();
