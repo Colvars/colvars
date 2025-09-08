@@ -447,10 +447,10 @@ jobs:
           CC: icx
           CXX: icpx
           CXX_STANDARD: 11
-          # BASH_ENV: "/etc/profile.d/oneapi.sh"
+          BASH_ENV: "/etc/profile.d/oneapi.sh"
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
-          bash -c "source /etc/profile.d/oneapi.sh && cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
+          bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
 
       - name: Intel oneAPI 2024.2, C++14
         shell: bash
@@ -458,10 +458,10 @@ jobs:
           CC: icx
           CXX: icpx
           CXX_STANDARD: 14
-          # BASH_ENV: "/etc/profile.d/oneapi.sh"
+          BASH_ENV: "/etc/profile.d/oneapi.sh"
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
-          bash -c "source /etc/profile.d/oneapi.sh && cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
+          bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
 
       - name: Intel oneAPI 2024.2, C++17
         shell: bash
@@ -469,10 +469,10 @@ jobs:
           CC: icx
           CXX: icpx
           CXX_STANDARD: 17
-          # BASH_ENV: "/etc/profile.d/oneapi.sh"
+          BASH_ENV: "/etc/profile.d/oneapi.sh"
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
-          bash -c "source /etc/profile.d/oneapi.sh && cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
+          bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
 
       - name: Intel oneAPI 2024.2, C++20
         shell: bash
@@ -480,10 +480,10 @@ jobs:
           CC: icx
           CXX: icpx
           CXX_STANDARD: 20
-          # BASH_ENV: "/etc/profile.d/oneapi.sh"
+          BASH_ENV: "/etc/profile.d/oneapi.sh"
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
-          bash -c "source /etc/profile.d/oneapi.sh && cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
+          bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
 
       - name: Save failed library test artifact
         if: ${{ failure() }}
