@@ -265,7 +265,7 @@ jobs:
         working-directory: build
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
-          run-clang-tidy -header-filter=.* -warnings-as-errors \* | tee clang-tidy.log
+          run-clang-tidy -header-filter=.* -warnings-as-errors \* >& clang-tidy.log
 
       - name: Archive warnings artifacts
         uses: actions/upload-artifact@v4
