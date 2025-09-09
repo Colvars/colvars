@@ -171,7 +171,7 @@ jobs:
           languages: cpp
 
       - name: Build Colvars library with CMake
-        run: cmake -P devel-tools/build_test_library.cmake
+        run: cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
