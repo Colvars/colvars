@@ -49,8 +49,14 @@ public:
     return config_string;
   }
 
+#ifdef __clang__
+#define PARSE_MODE_IS_FLAG [[clang::flag_enum]]
+#else
+#define PARSE_MODE_IS_FLAG
+#endif
+
   /// How a keyword is parsed in a string
-  enum Parse_Mode {
+  enum PARSE_MODE_IS_FLAG Parse_Mode {
     /// Zero for all flags
     parse_null = 0,
     /// Print the value of a keyword if it is given
