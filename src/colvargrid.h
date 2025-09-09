@@ -56,7 +56,7 @@ public: // TODO create accessors for these after all instantiations work
 
   /// \brief Multiplicity of each datum (allow the binning of
   /// non-scalar types such as atomic gradients)
-  size_t mult;
+  size_t mult = 1;
 
   /// Total number of grid points
   size_t nt;
@@ -1803,11 +1803,6 @@ public:
     }
 
     cvm::real *p = &(data[address(ix)]);
-
-    // Appease Clang analyzer, which likes to assume that mult is zero
-    #ifdef __clang_analyzer__
-    assert(mult > 0);
-    #endif
 
     for (size_t imult = 0; imult < mult; imult++) {
       grad[imult] = fact * p[imult];
