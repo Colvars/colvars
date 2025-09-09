@@ -20,13 +20,13 @@
 
 colvarbias_restraint::colvarbias_restraint(char const *key)
   : colvarbias(key), colvarbias_ti(key)
-{
-  state_keyword = "restraint";
-}
+{}
 
 
 int colvarbias_restraint::init(std::string const &conf)
 {
+  state_keyword = "restraint";
+
   int err = colvarbias::init(conf);
   if (err != COLVARS_OK) {
     return err;
