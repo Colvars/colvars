@@ -144,25 +144,6 @@ jobs:
           git config --global user.name "CI runner"
           bash update_website.sh ${{ github.workspace }}/website
 
-      # - name: Checkout wiki repository
-      #   uses: actions/checkout@v4
-      #   if: contains(github.event.head_commit.message, '[update-doc]')
-      #   with:
-      #     ssh-key: ${{ secrets.PULL_PUSH_COLVARS_GITHUB_IO }}
-      #     repository: 'Colvars/colvars.wiki'
-      #     path: 'wiki'
-
-      # - name: Update wiki page describing versions
-      #   if: contains(github.event.head_commit.message, '[update-doc]')
-      #   run: |
-      #     bash doc/print_engine_versions.sh > wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
-      #     export GIT_SSH="ssh -i ~/.ssh/website"
-      #     git config --global user.email "noreply@github.com"
-      #     git config --global user.name "CI runner"
-      #     git -C wiki add List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
-      #     git -C wiki commit -m "Update list of Colvars versions page"
-      #     git -C wiki push origin master
-
 
   codeql:
     name: CodeQL analysis
