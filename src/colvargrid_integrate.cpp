@@ -171,7 +171,7 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
 
   if (nd == 2) {
     // gradients at grid points surrounding the current scalar grid point
-    cvm::real g00[2], g01[2], g10[2], g11[2];
+    cvm::real g00[2]{}, g01[2]{}, g10[2]{}, g11[2]{};
 
     get_grad(g11, ix);
     ix[0] = ix0[0] - 1;
