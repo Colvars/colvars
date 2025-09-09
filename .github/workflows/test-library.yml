@@ -299,7 +299,7 @@ jobs:
           path: ${{github.workspace}}/build/Testing/Temporary/LastTest.log
 
 
-  build-linux-x86_64-many:
+  build-linux-x86_64-gcc-clang:
     name: Linux x86_64 (GCC, Clang)
     runs-on: ubuntu-latest
     needs: basicchecks
@@ -315,8 +315,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/ccache
-          key: ${{ runner.os }}-build-multiple-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-multiple-
+          key: ${{ runner.os }}-build-gcc-clang-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-gcc-clang-
 
       - name: Get small downloadable packages
         uses: actions/checkout@v4
@@ -332,32 +332,11 @@ jobs:
           sudo apt update
           sudo apt install -y apptainer-suid
 
-      - name: Get container images for build dependencies
+      - name: Get container images for build environment
         shell: bash
         working-directory: devel-tools
         run: |
-          apptainer pull CentOS7-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS7-devel
           apptainer pull CentOS9-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel
-
-      - name: GCC 4.8, C++11 (CentOS 7)
-        env:
-          CXX_STANDARD: 11
-          CXX: g++
-          CXX_VERSION: 4.8
-          CC: gcc
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
-
-      - name: Clang 3.4, C++11 (CentOS 7)
-        env:
-          CXX_STANDARD: 11
-          CXX: clang++
-          CXX_VERSION: 11
-          CC: clang
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS7-devel.sif \
-          cmake3 -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: GCC 11, C++11 (CentOS 9)
         env:
@@ -369,7 +348,7 @@ jobs:
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: GCC 11, C++20 (CentOS 9)
+      - name: GCC 11, C++17 (CentOS 9)
         env:
           CXX_STANDARD: 20
           CXX: g++
@@ -387,7 +366,7 @@ jobs:
           CC: gcc
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
-          scl enable gcc-toolset-12 -- \
+          scl enable gcc-toolset-${CXX_VERSION} -- \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: GCC 13, C++20 (CentOS 9)
@@ -398,25 +377,46 @@ jobs:
           CC: gcc
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
-          scl enable gcc-toolset-13 -- \
+          scl enable gcc-toolset-${CXX_VERSION} -- \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: Clang 16, C++11 (CentOS 9)
+      - name: GCC 14, C++20 (CentOS 9)
+        env:
+          CXX_STANDARD: 20
+          CXX: g++
+          CXX_VERSION: 14
+          CC: gcc
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          scl enable gcc-toolset-${CXX_VERSION} -- \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: Clang 20, C++11 (CentOS 9)
         env:
           CXX_STANDARD: 11
-          CXX: clang++
-          CXX_VERSION: 16
-          CC: clang
+          CXX: clang++-20
+          CXX_VERSION: 20
+          CC: clang-20
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: Clang 16, C++20 (CentOS 9)
+      - name: Clang 20, C++17 (CentOS 9)
         env:
           CXX_STANDARD: 20
-          CXX: clang++
-          CXX_VERSION: 16
-          CC: clang
+          CXX: clang++-20
+          CXX_VERSION: 17
+          CC: clang-20
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: Clang 20, C++20 (CentOS 9)
+        env:
+          CXX_STANDARD: 20
+          CXX: clang++-20
+          CXX_VERSION: 20
+          CC: clang-20
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
@@ -426,7 +426,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh Linux-build-multiple-
+          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-gcc-clang-
 
 
   build-linux-x86_64-sun:
