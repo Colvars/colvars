@@ -225,6 +225,56 @@ jobs:
           path: warnings_analyzer.log
 
 
+  build-linux-x86_64-clang-tidy:
+    name: Linux x86_64 (Clang tidy)
+    runs-on: ubuntu-latest
+    needs: basicchecks
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout OpenMM (for Lepton library)
+        uses: actions/checkout@v4
+        with:
+          repository: 'openmm/openmm'
+          ref: 'master'
+          path: 'openmm-source'
+
+      - name: Install Apptainer
+        shell: bash
+        run: |
+          sudo add-apt-repository -y ppa:apptainer/ppa
+          sudo apt update
+          sudo apt install -y apptainer-suid
+
+      - name: Get container images for build dependencies
+        shell: bash
+        working-directory: devel-tools
+        run: |
+          apptainer pull CentOS9-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel
+
+      - name: Configure and build the library (but do not run tests)
+        env:
+          CXX: clang++
+          CC: clang
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
+
+      - name: Run "run-clang-tidy" in the "build" folder
+        working-directory: build
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          run-clang-tidy -header-filter=.* -warnings-as-errors \* | tee clang-tidy.log
+
+      - name: Archive warnings artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: clang_tidy_log
+          path: build/clang-tidy.log
+
+
   address-sanitizer:
     name: Linux x86_64 (Clang address sanitizer)
     runs-on: ubuntu-latest
