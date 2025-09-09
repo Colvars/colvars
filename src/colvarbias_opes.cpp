@@ -1186,7 +1186,7 @@ int colvarbias_opes::update() {
     writeTrajBuffer();
     if (m_pmf_grid_on) error_code |= collectSampleToPMFGrid();
     m_is_first_step = false;
-    return COLVARS_OK;
+    return error_code;
   }
   error_code |= update_opes();
   if (error_code != COLVARS_OK) return error_code;
@@ -1632,6 +1632,7 @@ size_t colvarbias_opes::getMergeableKernel(const std::vector<cvm::real>& giver_c
 #else
       cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
+      (void) min_norm2; // Silence Clang analyzer
     }
   } else {
     if (m_num_threads == 1) {
@@ -1710,6 +1711,7 @@ size_t colvarbias_opes::getMergeableKernel(const std::vector<cvm::real>& giver_c
 #else
       cvm::error("OPES cannot run because this binary is not linked with a supported threading library.\n");
 #endif
+      (void) min_norm2; // Silence Clang analyzer
     }
   }
   if (num_parallel > 1) {
