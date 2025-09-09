@@ -1,8 +1,16 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
+colvars: Summary of compile-time features available in this build:
+colvars:   - C++ language version: 201703
+colvars:   - Multiple replicas: not available
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: not available
 colvars: ----------------------------------------------------------------------
-colvars: Reading new configuration from file "test.dat":
+colvars: Start colvars Initialization.
+colvars: ----------------------------------------------------------------------
+colvars: Reading new configuration:
 colvars: # units = "" [default]
 colvars: # indexFile = "index.ndx"
 colvars: The following index groups are currently defined:
@@ -34,15 +42,22 @@ colvars:   group9 (4 atoms)
 colvars:   Protein_C-alpha_10 (1 atoms)
 colvars:   group10 (4 atoms)
 colvars:   heavy_atoms (51 atoms)
-colvars: # smp = on [default]
+colvars:   prot_N (10 atoms)
+colvars:   prot_CA (10 atoms)
+colvars:   prot_C (10 atoms)
+colvars:   prot_O (10 atoms)
+colvars: # smp = "cvcs" [default]
+colvars: SMP parallelism will be applied to Colvars components.
+colvars:   - SMP parallelism: enabled (num. threads = 2)
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # defaultInputStateFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "one"
-colvars:   Initializing a new "distance" component.
+colvars:     Initializing a new "distance" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -52,27 +67,27 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "group1"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group1" defined with 4 atoms requested: total mass = 54.028, total charge = -0.72.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "group2"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group2" defined with 4 atoms requested: total mass = 54.028, total charge = -0.4.
@@ -82,7 +97,9 @@ colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 0.05
 colvars:   # lowerBoundary = 0 [default]
-colvars:   # upperBoundary = 0 [default]
+colvars:   # upperBoundary = 0.05 [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = off [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -98,35 +115,68 @@ colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new "linear" instance.
 colvars:   # name = "linear1" [default]
 colvars:   # colvars = { one }
-colvars:   # outputEnergy = on
+colvars:   # stepZeroData = off [default]
 colvars:   # timeStepFactor = 1 [default]
+colvars:   # outputEnergy = on
+colvars:   # outputFreq = 10 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # centers = { 0.01 }
 colvars:   # targetCenters = { 0.01 } [default]
 colvars:   # outputCenters = off [default]
 colvars:   # forceConstant = 0.004184
+colvars:   # decoupling = off [default]
 colvars:   # targetForceConstant = -0.4184
+colvars:   Initial step for restraint change: 0
 colvars:   # targetNumSteps = 10
+colvars:   # targetEquilSteps = 0 [default]
 colvars:   # targetNumStages = 0 [default]
 colvars:   # outputAccumulatedWork = on
-colvars:   # targetEquilSteps = 0 [default]
 colvars:   # lambdaSchedule =  [default]
-colvars:   # targetForceExponent = 1 [default]
+colvars:   # lambdaExponent = 1 [default]
 colvars:   The force constant for colvar "one" will be rescaled to 0.08368 according to the specified width (0.05).
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables module (re)initialized.
 colvars: ----------------------------------------------------------------------
+colvars: Current simulation parameters: initial step = 0, integration timestep = 1
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Re-initialized atom group for variable "one":0/0. 4 atoms: total mass = 54.028, total charge = -0.72.
 colvars: Re-initialized atom group for variable "one":0/1. 4 atoms: total mass = 54.028, total charge = -0.4.
-colvars: The restart output state file will be "test.restart.colvars.state".
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - GROMACS engine:
+colvars:   Abraham2015 https://doi.org/10.1016/j.softx.2015.06.001
+colvars: 
+colvars: - Colvars module:
+colvars: - Optimal rotation via flexible fitting:
+colvars: - distance colvar component:
+colvars: - harmonicWalls colvar bias implementation:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - Colvars-GROMACS interface:
+colvars:   Fiorin2024 https://doi.org/10.1021/acs.jpcb.4c05604
+colvars: 
 colvars: The final output state file will be "test.colvars.state".
-colvars: Writing to colvar trajectory file "test.colvars.traj".
+colvars: ----------------------------------------------------------------------
+colvars: End colvars Initialization.
+colvars: 
+colvars: Updated force constant for the restraint bias "linear1": 0.004184.
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
-colvars: Saving collective variables state to "test.restart.colvars.state".
+colvars: Updated force constant for the restraint bias "linear1": -0.0380744.
+colvars: Updated force constant for the restraint bias "linear1": -0.0803328.
+colvars: Updated force constant for the restraint bias "linear1": -0.122591.
+colvars: Updated force constant for the restraint bias "linear1": -0.16485.
+colvars: Updated force constant for the restraint bias "linear1": -0.207108.
+colvars: Updated force constant for the restraint bias "linear1": -0.249366.
+colvars: Updated force constant for the restraint bias "linear1": -0.291625.
+colvars: Updated force constant for the restraint bias "linear1": -0.333883.
+colvars: Updated force constant for the restraint bias "linear1": -0.376142.
+colvars: Updated force constant for the restraint bias "linear1": -0.4184.
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
-colvars: Saving collective variables state to "test.restart.colvars.state".
 colvars: Saving collective variables state to "test.colvars.state".
-colvars: Resetting the Collective Variables module.
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.colvars.state".
+colvars: Saving collective variables state to "test.colvars.state".
