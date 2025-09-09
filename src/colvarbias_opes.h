@@ -35,7 +35,7 @@ public:
     cvm::real m_height;
     std::vector<cvm::real> m_center;
     std::vector<cvm::real> m_sigma;
-    kernel() {}
+    kernel(): m_height(0) {}
     kernel(cvm::real h, const std::vector<cvm::real>& c,
            const std::vector<cvm::real>& s):
       m_height(h), m_center(c), m_sigma(s) {}
