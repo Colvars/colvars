@@ -236,7 +236,7 @@ jobs:
 
 
   address-sanitizer:
-    name: Clang address sanitizer
+    name: Linux x86_64 (Clang address sanitizer)
     runs-on: ubuntu-latest
     needs: basicchecks
     env:
