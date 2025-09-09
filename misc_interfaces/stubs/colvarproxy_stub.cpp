@@ -8,6 +8,8 @@
 // Colvars repository at GitHub.
 
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 
 #include "colvarmodule.h"
 #include "colvarscript.h"
@@ -159,12 +161,28 @@ int colvarproxy_stub::init_atom(int atom_number)
 }
 
 
-int colvarproxy_stub::read_frame_xyz(const char *filename)
+int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_force_file)
 {
   int err = colvars->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
+  std::string force_filename;
+  if (write_force_file) {
+    force_filename = colvars->output_prefix() + "_forces_" + cvm::to_str(colvars->it) + ".dat";
+  }
   if ( !err ) {
+    auto& new_forces = *(modify_atom_applied_forces());
+    std::fill(new_forces.begin(), new_forces.end(), cvm::rvector{0, 0, 0});
     colvars->calc();
     colvars->it++;
+    if (write_force_file) {
+      const size_t numAtoms = modify_atom_positions()->size();
+      std::ofstream ofs(force_filename);
+      for (size_t i = 0; i < numAtoms; ++i) {
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].x << std::setw(0) << " ";
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].y << std::setw(0) << " ";
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].z << std::setw(0) << " ";
+        ofs << std::endl;
+      }
+    }
   }
   return err;
 }

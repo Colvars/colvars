@@ -1,0 +1,24 @@
+configuration {
+  step            5
+  dt 1.000000e+00
+  version 2025-08-30
+  units real
+}
+
+colvar {
+  name one
+  x        2.209909667263
+}
+
+histogram {
+  configuration {
+    step 5
+    name histogram1
+  }
+
+grid
+ 0 0 0 0 0 0 0 2
+ 2 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0
+}
+
