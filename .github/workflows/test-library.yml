@@ -177,17 +177,13 @@ jobs:
         uses: github/codeql-action/analyze@v2
 
 
-  static-analyser:
-    name: Clang 14 Static Analyser
+  build-linux-x86_64-clang-analyzer:
+    name: Linux x86_64 (Clang analyzer)
     runs-on: ubuntu-latest
     needs: basicchecks
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install build dependencies for library
-        run: |
-          sudo apt -y install tcl8.6-dev clang-14 clang-tools-14
 
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v4
@@ -196,23 +192,37 @@ jobs:
           ref: 'master'
           path: 'openmm-source'
 
-      - name: Perform Clang Static Analyser
-        env:
-          CXX: clang++-14
-          CC: clang-14
+      - name: Install Apptainer
+        shell: bash
         run: |
-          scan-build-14 --use-cc=clang-14 --use-c++=clang++-14 cmake -P devel-tools/build_test_library.cmake 2>&1 | tee build_analyser.log
-          grep "CMake Error" build_analyser.log > build_errors.log || true
+          sudo add-apt-repository -y ppa:apptainer/ppa
+          sudo apt update
+          sudo apt install -y apptainer-suid
+
+      - name: Get container images for build dependencies
+        shell: bash
+        working-directory: devel-tools
+        run: |
+          apptainer pull CentOS9-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel
+
+      - name: Run build with Clang static analyser
+        env:
+          CXX: clang++
+          CC: clang
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          scan-build --use-cc=clang --use-c++=clang++ cmake -P devel-tools/build_test_library.cmake 2>&1 | tee build_analyzer.log
+          grep "error:" build_analyzer.log > build_errors.log || true
           if [ -s build_errors.log ] ; then
-            echo "Found compiler errors during build"
-            cat build_analyser.log
+            echo "Found scan-build errors during build"
+            cat build_analyzer.log
             exit 1
           fi
 
       - name: Analyze logs
         run: | # Retrieve warnings generated but not the ones of OpenMM
-          awk '/colvars\/colvars\/[^openmm].*warning:/,/warning.*generated|^$/' build_analyser.log | tee warnings_analyser.log || true
-          if [ -s warnings_analyser.log ] ; then
+          awk '/colvars\/colvars\/[^openmm].*warning:/,/warning.*generated|^$/' build_analyzer.log | tee warnings_analyzer.log || true
+          if [ -s warnings_analyzer.log ] ; then
             echo "Found compiler warning during build"
             exit 1
           fi
@@ -221,8 +231,8 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: warnings_clang_static_analyser
-          path: warnings_analyser.log
+          name: warnings_clang_static_analyzer
+          path: warnings_analyzer.log
 
 
   address-sanitizer:
@@ -256,7 +266,7 @@ jobs:
         run: |
           apptainer pull CentOS9-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel
 
-      - name: Build with Clang 16 and address sanitizer
+      - name: Build with Clang and address sanitizer
         env:
           CXX: clang++
           CC: clang

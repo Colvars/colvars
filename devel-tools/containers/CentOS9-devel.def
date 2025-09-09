@@ -18,8 +18,10 @@ From: quay.io/centos/centos:stream9
     dnf -y install \
         bc man-db vim emacs tcsh which bash-completion rsync screen tmux \
         "@Development Tools" \
-        gcc gcc-c++ gcc-gfortran cppcheck \
-        gcc-toolset-{12,13} clang clang-tools-extra \
+        gcc gcc-c++ gcc-gfortran \
+        gcc-toolset-{12,13,14} \
+        clang clang-tools-extra clang-analyzer \
+        cppcheck \
         autoconf automake cvs git subversion mercurial \
         cmake ccache ninja-build mold \
         Lmod openmpi-devel tbb-devel fftw-devel tcl-devel \
