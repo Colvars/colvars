@@ -57,11 +57,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   endif()
 endif()
 
-# # Note: disabled +w flags for Sun compiler due to their inconsistency
-# target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w>)
-# # Uncomment the line below to enable more thorough checks with Sun Compiler
-# target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:+w2>)
-
 # Tell MSVC to actually report the C++ version
 target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
 # Use "production level" warnings, but silence those known to be harmless
@@ -69,7 +64,6 @@ target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W3 /wd4244 /wd
 
 if(WARNINGS_ARE_ERRORS)
   target_compile_options(colvars PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Intel>>:-Werror>)
-  target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:SunPro>:-xwe>)
   target_compile_options(colvars PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/WX>)
 endif()
 
@@ -179,7 +173,7 @@ if(DEFINED ENV{CMAKE_COVERAGE})
   set(CMAKE_COVERAGE $ENV{CMAKE_COVERAGE})
 endif()
 option(ENABLE_COVERAGE "Enable code coverage reporting" ${CMAKE_COVERAGE})
-if(ENABLE_COVERAGE AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL "SunPro") AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"))
+if(ENABLE_COVERAGE AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"))
   target_compile_options(colvars PUBLIC --coverage)
   target_link_options(colvars PUBLIC --coverage)
 endif()
