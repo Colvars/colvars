@@ -253,29 +253,18 @@ jobs:
       - name: Install Apptainer
         shell: bash
         run: |
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          sudo apt update
-          sudo apt install -y apptainer-suid
-
-      - name: Get container images for build dependencies
-        shell: bash
-        working-directory: devel-tools
-        run: |
-          apptainer pull CentOS9-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel
+          sudo apt -y bash install ccache tcl8.6-dev clang clang-tidy
 
       - name: Configure and build the library (but do not run tests)
         env:
+          CMAKE_BUILD_DIR: build
           CXX: clang++
           CC: clang
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
-          cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
+        run: cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
 
       - name: Run "run-clang-tidy" in the "build" folder
         working-directory: build
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
-          run-clang-tidy -header-filter=.* -warnings-as-errors \* >& clang-tidy.log
+        run: bash ${{ github.workspace }}/devel-tools/run_clang_tidy.sh &> clang-tidy.log
 
       - name: Archive warnings artifacts
         uses: actions/upload-artifact@v4
