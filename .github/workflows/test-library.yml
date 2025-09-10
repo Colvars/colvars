@@ -240,7 +240,7 @@ jobs:
           ref: 'master'
           path: 'openmm-source'
 
-      - name: Install Apptainer
+      - name: Install build dependencies, clang-tidy and bash for library
         shell: bash
         run: |
           sudo apt -y install bash ccache tcl8.6-dev clang clang-tidy
@@ -252,7 +252,7 @@ jobs:
           CC: clang
         run: cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
 
-      - name: Run "run-clang-tidy" in the "build" folder
+      - name: Run "run_clang_tidy.sh" in the "build" folder
         working-directory: build
         run: bash ${{ github.workspace }}/devel-tools/run_clang_tidy.sh &> clang-tidy.log
 
