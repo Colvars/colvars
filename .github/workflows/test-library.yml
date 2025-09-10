@@ -253,16 +253,18 @@ jobs:
       - name: Install build dependencies, clang-tidy and bash for library
         shell: bash
         run: |
-          sudo apt -y install bash ccache tcl8.6-dev clang clang-tidy
+          sudo apt -y install bash ccache tcl8.6-dev clang-20 clang-tidy-20
 
       - name: Configure and build the library (but do not run tests)
         env:
           CMAKE_BUILD_DIR: build
-          CXX: clang++
-          CC: clang
+          CXX: clang++-20
+          CC: clang-20
         run: cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
 
       - name: Run "run_clang_tidy.sh" in the "build" folder
+        env:
+          CLANG_TIDY: clang-tidy-20
         working-directory: build
         run: bash ${{ github.workspace }}/devel-tools/run_clang_tidy.sh &> clang-tidy.log
 
