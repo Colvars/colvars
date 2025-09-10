@@ -243,7 +243,7 @@ jobs:
       - name: Install Apptainer
         shell: bash
         run: |
-          sudo apt -y bash install ccache tcl8.6-dev clang clang-tidy
+          sudo apt -y install bash ccache tcl8.6-dev clang clang-tidy
 
       - name: Configure and build the library (but do not run tests)
         env:
