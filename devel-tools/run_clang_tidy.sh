@@ -23,25 +23,17 @@ COLVARS_SOURCE_DIR="$TOPDIR/src"
 # Find all source files that are required to build the run_colvars_test
 COLVARS_STUB_SOURCE_DIR="$TOPDIR/misc_interfaces/stubs"
 COLVARS_TEST_SOURCE_DIR="$TOPDIR/tests/functional/"
-COLVARS_SOURCE_FILES=$(find $COLVARS_STUB_SOURCE_DIR $COLVARS_TEST_SOURCE_DIR $COLVARS_SOURCE_DIR -name "*.cpp")
+COLVARS_SOURCE_FILES=($(find $COLVARS_STUB_SOURCE_DIR $COLVARS_TEST_SOURCE_DIR $COLVARS_SOURCE_DIR -name "*.cpp"))
 
-num_test_failed=0
-all_output=""
-# Run clang-tidy over all files and save the results
-for colvars_src_file in $COLVARS_SOURCE_FILES; do
-  clang_tidy_command="$CLANG_TIDY_BINARY -p=$COLVARS_BUILD_DIR --warnings-as-errors='*' $colvars_src_file"
-  echo "Running $clang_tidy_command"
-  output="$(eval $clang_tidy_command 2>&1)" || exit_code=$?
-  all_output+="$output"
-  if [[ $exit_code -gt 0 ]]; then
-    num_test_failed=`expr $num_test_failed + 1`
-  fi
-done
+printf '%s\n' ${COLVARS_SOURCE_FILES[@]} | \
+    xargs -I{} -P $(nproc) \
+    bash -c "$CLANG_TIDY_BINARY -p=$COLVARS_BUILD_DIR -header-filter=.* --warnings-as-errors='*' '{}' > '{}'.log"
 
-if [[ $num_test_failed -gt 0 ]]; then
-  echo "There are $num_test_failed test(s) failed."
-  echo "$all_output"
-  exit 1
-else
-  exit 0
+retcode=$?
+
+if [ $retcode != 0 ] ; then
+    cat "${COLVARS_SOURCE_FILES[@]/%/.log}"
+    exit $retcode
 fi
+
+exit 0
