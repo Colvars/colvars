@@ -74,6 +74,8 @@ public:
     parse_override = (1<<17),
     /// The call is being executed from a read_restart() function
     parse_restart = (1<<18),
+    /// Provide explicitly to silence clang-tidy warnings
+    parse_required_restart = (1<<16) | (1<<18),
     /// Alias for old default behavior (should be phased out)
     parse_normal = (1<<1) | (1<<2) | (1<<17),
     /// Settings for a deprecated keyword
@@ -392,11 +394,11 @@ protected:
 
 
 /// Bitwise OR between two Parse_mode flags
-inline colvarparse::Parse_Mode operator | (colvarparse::Parse_Mode const &mode1,
-                                           colvarparse::Parse_Mode const &mode2)
+inline constexpr colvarparse::Parse_Mode operator|(colvarparse::Parse_Mode mode1,
+                                                   colvarparse::Parse_Mode mode2)
 {
-  return static_cast<colvarparse::Parse_Mode>(static_cast<int>(mode1) |
-                                              static_cast<int>(mode2));
+  using T = std::underlying_type_t<colvarparse::Parse_Mode>;
+  return static_cast<colvarparse::Parse_Mode>(static_cast<T>(mode1) | static_cast<T>(mode2));
 }
 
 #endif
