@@ -397,7 +397,7 @@ protected:
 inline constexpr colvarparse::Parse_Mode operator|(colvarparse::Parse_Mode mode1,
                                                    colvarparse::Parse_Mode mode2)
 {
-  using T = std::underlying_type_t<colvarparse::Parse_Mode>;
+  using T = std::underlying_type<colvarparse::Parse_Mode>::type;
   return static_cast<colvarparse::Parse_Mode>(static_cast<T>(mode1) | static_cast<T>(mode2));
 }
 
