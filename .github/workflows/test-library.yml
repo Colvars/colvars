@@ -250,7 +250,7 @@ jobs:
           CMAKE_BUILD_DIR: build
           CXX: clang++-20
           CC: clang-20
-        run: cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
+        run: cmake -DBUILD_TARGETS=OFF -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
 
       - name: Run "run_clang_tidy.sh" in the "build" folder
         env:

@@ -150,12 +150,16 @@ if(NOT result EQUAL 0)
   message(FATAL_ERROR "Error generating CMake buildsystem.")
 endif()
 
-execute_process(
-  COMMAND ${CMAKE_COMMAND}
-  --build ${BUILD_DIR}
-  --parallel
-  RESULT_VARIABLE result
+option(BUILD_TARGETS "Build library and related tools" ON)
+
+if(BUILD_TARGETS)
+  execute_process(
+    COMMAND ${CMAKE_COMMAND}
+    --build ${BUILD_DIR}
+    --parallel
+    RESULT_VARIABLE result
   )
+endif()
 
 option(RUN_TESTS "Run library tests" ON)
 
