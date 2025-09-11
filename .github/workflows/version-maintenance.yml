@@ -43,3 +43,12 @@ jobs:
               git -C wiki commit -m "Update list of Colvars versions"
               git -C wiki push origin master
           fi
+
+      - name: Update "Colvars release notes" Wiki page
+        run: |
+          ./devel-tools/print_pr_list.py --format notes > wiki/Colvars-release-notes.md
+          if ! git -C wiki diff --quiet ; then
+              git -C wiki add Colvars-release-notes.md
+              git -C wiki commit -m "Update Colvars release notes"
+              git -C wiki push origin master
+          fi
