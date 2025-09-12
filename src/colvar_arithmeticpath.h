@@ -16,7 +16,10 @@ using std::vector;
 template <typename scalar_type>
 class ArithmeticPathBase {
 public:
-    ArithmeticPathBase() {}
+    ArithmeticPathBase():
+        lambda(scalar_type(0)), num_elements(0), total_frames(0),
+        max_exponent(scalar_type(0)), saved_exponent_sum(scalar_type(0)),
+        normalization_factor(scalar_type(0)), saved_s(scalar_type(0)) {}
     ~ArithmeticPathBase() {}
     void initialize(size_t p_num_elements, size_t p_total_frames, scalar_type p_lambda, const vector<scalar_type>& p_weights);
     void reComputeLambda(const vector<scalar_type>& rmsd_between_refs);

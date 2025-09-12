@@ -179,9 +179,9 @@ int colvarbias::init_mts(std::string const &conf) {
 
 int colvarbias::init_dependencies() {
   int i;
-  if (features().size() == 0) {
+  if (colvarbias::features().size() == 0) {
     for (i = 0; i < f_cvb_ntot; i++) {
-      modify_features().push_back(new feature);
+      colvarbias::modify_features().push_back(new feature);
     }
 
     init_feature(f_cvb_active, "active", f_type_dynamic);
