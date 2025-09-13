@@ -1469,7 +1469,7 @@ void cvm::atom_group::calc_fit_forces_impl(
       atom_grad += main_vec;
     }
     if (B_ag_rotate) {
-      // Project the forces or gradients to the rotation matrix elements
+      // Project the forces or gradients acting on the rotated frame atoms to the rotation matrix elements
       C[0][0] += main_vec.x * pos_unrotated_x(i);
       C[0][1] += main_vec.x * pos_unrotated_y(i);
       C[0][2] += main_vec.x * pos_unrotated_z(i);
@@ -1482,27 +1482,29 @@ void cvm::atom_group::calc_fit_forces_impl(
     }
   }
   if (B_ag_rotate) {
-    // Project the forces or gradients to the quaternion
+    // Project the forces or gradients acting on the rotation matrix elements to the quaternion components
     sum_dxdq = rot.q.derivative_element_wise_product_sum(C);
   }
   if (B_ag_center) {
     if (B_ag_rotate) atom_grad = rot_inv * atom_grad;
     atom_grad *= (-1.0)/(cvm::real(group_for_fit->size()));
   }
+  cvm::rmatrix dxdC;
   // loop 2: iterate over the fitting group
-  if (B_ag_rotate) rot_deriv->prepare_derivative(rotation_derivative_dldq::use_dq);
+  if (B_ag_rotate) {
+    // Compute the derivatives of quaternion components with respect to the overlapping matrix
+    rot_deriv->prepare_derivative(rotation_derivative_dldq::use_dq);
+    // Project the forces acting on q to the forces on the 9 elements of the correlation matrix C
+    dxdC = rot_deriv->project_force_to_C_from_dxdq(sum_dxdq);
+  }
   for (size_t j = 0; j < group_for_fit->size(); j++) {
     cvm::rvector fitting_force_grad{0, 0, 0};
     if (B_ag_center) {
       fitting_force_grad += atom_grad;
     }
     if (B_ag_rotate) {
-      rot_deriv->calc_derivative_wrt_group1<false, true, false>(j, nullptr, &dq0_1);
-      // multiply by {\partial q}/\partial\vec{x}_j and add it to the fit gradients
-      fitting_force_grad += sum_dxdq[0] * dq0_1[0] +
-                            sum_dxdq[1] * dq0_1[1] +
-                            sum_dxdq[2] * dq0_1[2] +
-                            sum_dxdq[3] * dq0_1[3];
+      // Project the forces acting on C to the forces on group1 (the fitting group atoms in the simulation frame)
+      fitting_force_grad += rot_deriv->project_force_to_group1(j, dxdC);
     }
     if (cvm::debug()) {
       cvm::log(cvm::to_str(fitting_force_grad));
