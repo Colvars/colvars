@@ -16,6 +16,7 @@
 #include "InfoStream.h"
 #include "Node.h"
 #include "Molecule.h"
+#include "GlobalMasterColvars.h"
 #include "GridForceGrid.h"
 #include "GridForceGrid.inl"
 #include "PDB.h"

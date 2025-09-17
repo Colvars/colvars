@@ -3,23 +3,145 @@
 
 #include <memory>
 
-#include "colvarmodule.h"
-#include "colvarproxy.h"
-#include "colvarproxy_namd.h"
+#include "GlobalMaster.h"
 
+
+class colvarproxy_namd;
 
 class GlobalMasterColvars : public GlobalMaster {
 public:
 
-  GlobalMasterColvars() : proxy(new colvarproxy_namd(this)) {}
+  GlobalMasterColvars();
 
-  void calculate() override {
-    proxy->calculate();
+  ~GlobalMasterColvars();
+
+  void reset();
+
+  void calculate() override;
+
+  inline void requestTotalForcePublic(bool yesno = true)
+  {
+    requestTotalForce(yesno);
+  }
+
+  inline AtomIDList &modifyRequestedAtomsPublic()
+  {
+    return modifyRequestedAtoms();
+  }
+
+  inline AtomIDList &modifyForcedAtomsPublic()
+  {
+    return modifyForcedAtoms();
+  }
+
+  inline ForceList &modifyAppliedForcesPublic()
+  {
+    return modifyAppliedForces();
+  }
+
+  inline ResizeArray<AtomIDList> &modifyRequestedGroupsPublic()
+  {
+    return modifyRequestedGroups();
+  }
+
+  inline ForceList &modifyGroupForcesPublic()
+  {
+    return modifyGroupForces();
+  }
+
+  inline IntList &modifyRequestedGridObjectsPublic()
+  {
+    return modifyRequestedGridObjects();
+  }
+
+  inline BigRealList &modifyGridObjForcesPublic()
+  {
+    return modifyGridObjForces();
+  }
+
+  inline AtomIDList::const_iterator getAtomIdBeginPublic()
+  {
+    return getAtomIdBegin();
+  }
+
+  inline AtomIDList::const_iterator getAtomIdEndPublic()
+  {
+    return getAtomIdEnd();
+  }
+
+  inline PositionList::const_iterator getAtomPositionBeginPublic()
+  {
+    return getAtomPositionBegin();
+  }
+
+  inline PositionList::const_iterator getGroupPositionBeginPublic()
+  {
+    return getGroupPositionBegin();
+  }
+
+  inline PositionList::const_iterator getGroupPositionEndPublic()
+  {
+    return getGroupPositionEnd();
+  }
+
+  inline ForceList::const_iterator getGroupTotalForceBeginPublic()
+  {
+    return getGroupTotalForceBegin();
+  }
+
+  inline ForceList::const_iterator getGroupTotalForceEndPublic()
+  {
+    return getGroupTotalForceEnd();
+  }
+
+  inline IntList::const_iterator getGridObjIndexBeginPublic()
+  {
+    return getGridObjIndexBegin();
+  }
+
+  inline IntList::const_iterator getGridObjIndexEndPublic()
+  {
+    return getGridObjIndexEnd();
+  }
+
+  inline BigRealList::const_iterator getGridObjValueBeginPublic()
+  {
+    return getGridObjValueBegin();
+  }
+
+  inline BigRealList::const_iterator getGridObjValueEndPublic()
+  {
+    return getGridObjValueEnd();
+  }
+
+  inline AtomIDList::const_iterator getForceIdBeginPublic()
+  {
+    return getForceIdBegin();
+  }
+
+  inline AtomIDList::const_iterator getForceIdEndPublic()
+  {
+    return getForceIdEnd();
+  }
+
+  inline ForceList::const_iterator getTotalForcePublic()
+  {
+    return getTotalForce();
+  }
+
+  inline void addReductionEnergyPublic(int reductionTag, BigReal energy)
+  {
+    addReductionEnergy(reductionTag, energy);
+  }
+
+  inline Lattice const *get_lattice() const
+  {
+    return lattice;
   }
 
 protected:
 
-  std::unique_ptr<colvarproxy_namd> cp;
+  std::unique_ptr<colvarproxy_namd> proxy;
 };
 
 
