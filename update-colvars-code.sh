@@ -374,6 +374,13 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
+  for diff in *.diff ; do
+    if [ -s ${diff} ] ; then
+      set +e
+      patch -p1 -N -d "${target}" < "${diff}"
+      set -e
+    fi
+  done
 
   # Update abf_integrate
   for src in ${source}/colvartools/*h ${source}/colvartools/*cpp
