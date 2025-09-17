@@ -367,9 +367,8 @@ then
 
   # Update NAMD interface files
   for src in \
-      ${source}/namd/src/colvarproxy_namd.h \
-      ${source}/namd/src/colvarproxy_namd_version.h \
-      ${source}/namd/src/colvarproxy_namd.C
+      ${source}/namd/src/*.h \
+      ${source}/namd/src/*.C
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
