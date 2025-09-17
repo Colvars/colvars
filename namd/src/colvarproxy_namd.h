@@ -42,7 +42,8 @@ class colvarproxy_namd : public colvarproxy {
 
 protected:
 
-  GlobalMaster *globalmaster;  // raw pointer as placeholder only
+  /// Pointer to the parent GlobalMaster object
+  GlobalMasterColvars *globalmaster = nullptr;
 
   /// \brief Array of atom indices (relative to the colvarproxy arrays),
   /// usedfor faster copy of atomic data
@@ -79,7 +80,7 @@ public:
 
   friend class cvm::atom;
 
-  colvarproxy_namd(GlobalMaster *gm);
+  colvarproxy_namd(GlobalMasterColvars *gm);
   ~colvarproxy_namd();
 
   int setup() override;
