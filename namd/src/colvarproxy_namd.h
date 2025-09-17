@@ -15,6 +15,10 @@
 #define NAMD_VERSION_NUMBER 34471681
 #endif
 
+#include <memory>
+
+#include "colvarproxy_namd_version.h"
+
 #include "Vector.h"
 #include "ResizeArray.h"
 #include "NamdTypes.h"
@@ -32,11 +36,13 @@
 #define GLOBAL_MASTER_CKLOOP_CALC_BIASES 2001
 #define GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES 2002
 
-/// \brief Communication between colvars and NAMD (implementation of
-/// \link colvarproxy \endlink)
-class colvarproxy_namd : public colvarproxy, public GlobalMaster {
+
+/// Communication between colvars and NAMD (implementation of \link colvarproxy \endlink)
+class colvarproxy_namd : public colvarproxy {
 
 protected:
+
+  GlobalMaster *globalmaster;  // raw pointer as placeholder only
 
   /// \brief Array of atom indices (relative to the colvarproxy arrays),
   /// usedfor faster copy of atomic data
@@ -71,7 +77,9 @@ public:
 
   void init_tcl_pointers() override;
 
-  colvarproxy_namd();
+  friend class cvm::atom;
+
+  colvarproxy_namd(GlobalMaster *gm);
   ~colvarproxy_namd();
 
   int setup() override;
