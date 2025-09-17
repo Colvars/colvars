@@ -346,9 +346,6 @@ then
              "${target}/lepton/Make.depends"
     condcopy "${source}/namd/lepton/Makefile.namd" \
              "${target}/lepton/Makefile.namd"
-    if ! grep -q lepton/Makefile.namd "${target}/Makefile" ; then
-      patch -p1 -N -d ${target} < namd/Makefile.patch
-    fi
   fi
 
   # Copy library files to the "colvars" folder
@@ -373,7 +370,7 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
   done
-  for diff in *.diff ; do
+  for diff in ${source}/namd/*.patch ${source}/namd/src/*.diff ; do
     if [ -s ${diff} ] ; then
       set +e
       patch -p1 -N -d "${target}" < "${diff}"
