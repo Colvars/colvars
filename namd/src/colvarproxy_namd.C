@@ -1523,7 +1523,7 @@ int colvarproxy_namd::smp_loop(int n_items, std::function<int (int)> const &work
       worker(i);
     }
 #if CMK_TRACE_ENABLED
-    traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_ITEM, before, CmiWallTimer());
+    globalmaster->traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_ITEM, before, CmiWallTimer());
 #endif
   };
   const int numChunks = smp_num_threads() > n_items ?
@@ -1557,7 +1557,7 @@ void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *p
   }
   cvm::decrease_depth();
 #if CMK_TRACE_ENABLED
-  traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_BIASES,before,CmiWallTimer());
+  globalmaster->traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_BIASES,before,CmiWallTimer());
 #endif
 }
 
@@ -1587,7 +1587,7 @@ void calc_cv_scripted_forces(int paramNum, void *param)
   }
   cv->calc_scripted_forces();
 #if CMK_TRACE_ENABLED
-  traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES,before,CmiWallTimer());
+  globalmaster->traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES,before,CmiWallTimer());
 #endif
 }
 
