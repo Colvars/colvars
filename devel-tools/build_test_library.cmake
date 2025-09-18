@@ -33,25 +33,28 @@ endif()
 
 # If available, use pre-downloaded TCL libraries
 if(EXISTS "${COLVARS_SOURCE_DIR}/devel-tools/packages")
-  if(DEFINED CMAKE_SYSTEM_NAME)
-    # On Linux and macOS, test if we are using Intel
-    if (DEFINED CMAKE_HOST_SYSTEM_PROCESSOR)
-      if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  if(DEFINED CMAKE_HOST_SYSTEM_NAME)
+    if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" OR ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin")
+      execute_process(
+        COMMAND uname -m
+        OUTPUT_VARIABLE CMAKE_HOST_SYSTEM_PROCESSOR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+      if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
         set(TCL_DIR "${COLVARS_SOURCE_DIR}/devel-tools/packages/tcl8.6.13-linux-x86_64-threaded")
         set(TCL_LIBRARY "libtcl8.6.a")
       endif()
-      if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+      if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
         set(TCL_DIR "${COLVARS_SOURCE_DIR}/devel-tools/packages/tcl8.5.9-macosx-x86_64-threaded")
         set(TCL_LIBRARY "libtcl8.5.a")
       endif()
     endif()
     # Assume Intel when using Windows
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
       set(TCL_DIR "${COLVARS_SOURCE_DIR}/devel-tools/packages/tcl8.5.9-win64")
       set(TCL_LIBRARY "tcl85.lib")
     endif()
   endif()
-
 endif()
 
 if(COLVARS_TCL AND DEFINED TCL_DIR)
