@@ -806,6 +806,7 @@ std::ostream & colvarbias_restraint_harmonic::write_traj(std::ostream &os)
 
 int colvarbias_restraint_harmonic::change_configuration(std::string const &conf)
 {
+  cvm::log("Warning: Updating configuration mid-run for an existing restraint is unsupported, and will raise an error in a future release.  The supported method is deleting the restraint and re-creating, which will also do a better error check.");
   return colvarbias_restraint_centers::change_configuration(conf) |
     colvarbias_restraint_k::change_configuration(conf);
 }
