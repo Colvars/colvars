@@ -145,4 +145,11 @@ protected:
 };
 
 
+namespace {
+  // Constants used for profiling CkLoop calls
+  constexpr int32_t GLOBAL_MASTER_CKLOOP_CALC_ITEM = 2000;
+  constexpr int32_t GLOBAL_MASTER_CKLOOP_CALC_BIASES = 2001;
+  constexpr int32_t GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES = 2002;
+}
+
 #endif
