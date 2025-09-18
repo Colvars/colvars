@@ -174,13 +174,13 @@ protected:
 
   /// \brief Number of steps required to reach the target force constant
   /// or restraint centers
-  cvm::step_number target_nsteps = 0;
+  cvm::step_number target_nsteps = 0L;
 
   /// \brief Equilibration steps for restraint FE calculation through TI
-  cvm::step_number target_equil_steps = 0;
+  cvm::step_number target_equil_steps = 0L;
 
   /// \brief Timestep at which the restraint starts moving
-  cvm::step_number first_step = 0;
+  cvm::step_number first_step = 0L;
 
   /// \brief Accumulated work (computed when outputAccumulatedWork == true)
   cvm::real acc_work = 0.0;
