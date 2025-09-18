@@ -141,9 +141,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install build dependencies for library
-        run: |
-          sudo apt-get -y install tcl8.6-dev
+      - name: Get small downloadable packages
+        uses: actions/checkout@v4
+        with:
+          repository: 'Colvars/build-tools-packages'
+          ref: 'master'
+          path: 'devel-tools/packages'
 
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v4
@@ -153,7 +156,7 @@ jobs:
           path: 'openmm-source'
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: cpp
 
@@ -161,7 +164,7 @@ jobs:
         run: cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
 
   build-linux-x86_64-clang-analyzer:
