@@ -1273,7 +1273,8 @@ int colvarbias_restraint_harmonic_walls::set_state_params(std::string const &con
 
 int colvarbias_restraint_harmonic_walls::change_configuration(std::string const &conf)
 {
-  return  colvarbias_restraint_k::change_configuration(conf);
+  return cvm::error("Updating configuration mid-run is not supported for harmonicWalls.",
+                    COLVARS_NOT_IMPLEMENTED);
 }
 
 std::ostream & colvarbias_restraint_harmonic_walls::write_traj_label(std::ostream &os)
@@ -1356,8 +1357,8 @@ int colvarbias_restraint_linear::update()
 
 int colvarbias_restraint_linear::change_configuration(std::string const &conf)
 {
-  // Only makes sense to change the force constant
-  return colvarbias_restraint_k::change_configuration(conf);
+  return cvm::error("Updating configuration mid-run is not supported for a linear bias.",
+                    COLVARS_NOT_IMPLEMENTED);
 }
 
 
