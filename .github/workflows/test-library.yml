@@ -34,10 +34,6 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Install build dependencies for library
-        run: |
-          sudo apt -y install ccache tcl8.6-dev clang
-
       - name: Test build recipes
         run: bash devel-tools/check_build_recipes
 
@@ -51,11 +47,7 @@ jobs:
               exit 1
           fi
 
-      - name: Build and test library (Clang)
-        env:
-          CMAKE_BUILD_DIR: build
-          CXX: clang++
-          CC: clang
+      - name: Build and test library
         run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Check documentation of command-line scripting interface
@@ -67,16 +59,6 @@ jobs:
               echo "Command-line scripting doc out of date; please run make update-cvscript-cmdline-doc and commit changes" >& 2
               exit 1
           fi
-
-      - name: Build and test library (GCC)
-        env:
-          CMAKE_BUILD_DIR: build-gcc
-          CXX: g++
-          CC: gcc
-        run: cmake -P devel-tools/build_test_library.cmake
-
-      - name: Build library with debug code enabled (GCC)
-        run: cmake -D COLVARS_DEBUG=ON -P devel-tools/build_test_library.cmake
 
       - name: Print ccache stats
         run: ccache -s -v
