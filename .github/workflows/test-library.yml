@@ -3,6 +3,7 @@ name: "Library"
 on:
   push:
 
+# TODO Uncomment the ccache part when installation of Ubuntu packages on GitHub Actions becomes fast again
 
 jobs:
 
@@ -12,20 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       hassecrets: ${{ steps.checksecrets.outputs.hassecrets }}
-    env:
-      CCACHE: ccache
-      CCACHE_DIR: ${{ github.workspace }}/ccache
+    # env:
+    #   CCACHE: ccache
+    #   CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
       - name: Checkout Colvars
         uses: actions/checkout@v4
 
-      - name: Load compiler cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/ccache
-          key: ${{ runner.os }}-build-basic-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-basic-
+      # - name: Load compiler cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ github.workspace }}/ccache
+      #     key: ${{ runner.os }}-build-basic-${{ github.sha }}
+      #     restore-keys: ${{ runner.os }}-build-basic-
 
       - name: Get small downloadable packages
         uses: actions/checkout@v4
@@ -34,9 +35,9 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Install ccache
-        run: |
-          sudo apt -y install ccache
+      # - name: Install ccache
+      #   run: |
+      #     sudo apt -y install ccache
 
       - name: Test build recipes
         run: bash devel-tools/check_build_recipes
@@ -64,15 +65,15 @@ jobs:
               exit 1
           fi
 
-      - name: Print ccache stats
-        run: ccache -s -v
+      # - name: Print ccache stats
+      #   run: ccache -s -v
 
-      - name: Keep only one cache besides the one from this job
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-basic-
+      # - name: Keep only one cache besides the one from this job
+      #   shell: bash
+      #   env:
+      #     GH_TOKEN: ${{ github.token }}
+      #   run: |
+      #     bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-basic-
 
 
   build-doc:
