@@ -55,7 +55,7 @@ public:
    *         \link cvm::atom_pos \endlink (in AoS style xyz...xyz) to
    *         an SoA vector (x...xy...yz...z)
    */
-  static std::vector<cvm::real> pos_aos_to_soa(const std::vector<cvm::atom_pos>& aos_in);
+  static ag_vector_real_t pos_aos_to_soa(const std::vector<cvm::atom_pos>& aos_in);
   /**
    * @brief Default constructor
    *
@@ -372,7 +372,7 @@ public:
   /**
    * @brief Return a copy of the current atom positions
    */
-  std::vector<cvm::real> positions() const;
+  cvm::ag_vector_real_t positions() const;
   /**
    * @brief Return the center of geometry of the atomic positions
    */
@@ -403,7 +403,7 @@ public:
   /**
    * @brief Return a copy of the current atom positions, shifted by a constant vector
    */
-  std::vector<cvm::real> positions_shifted(cvm::rvector const &shift) const;
+  cvm::ag_vector_real_t positions_shifted(cvm::rvector const &shift) const;
   /**
    * @brief Return a copy of the current atom velocities
    */
@@ -756,7 +756,7 @@ public:
   /// cvc's (eg rmsd, eigenvector) will not override the user's choice
   bool b_user_defined_fit;
   /// \brief Derivatives of the fitting transformation
-  std::vector<cvm::real> fit_gradients;
+  cvm::ag_vector_real_t fit_gradients;
   /// Total mass of the atom group
   cvm::real total_mass;
   /// Total charge of the atom group
@@ -768,10 +768,10 @@ public:
 private:
   /// \brief Number of atoms
   size_t num_atoms;
-  /// \brief SOA atom indices (size: num_atoms)
+  /// \brief SOA atom proxy indices (size: num_atoms)
   std::vector<int> atoms_index;
   /// \brief SOA atom positions (size: 3 * num_atoms)
-  std::vector<cvm::real> atoms_pos;
+  cvm::ag_vector_real_t atoms_pos;
   /// \brief SOA atom charges (size: num_atoms)
   std::vector<cvm::real> atoms_charge;
   /// \brief SOA atom velocities (size: 3 * num_atoms)
@@ -779,7 +779,7 @@ private:
   /// \brief SOA atom mass (size: num_atoms)
   std::vector<cvm::real> atoms_mass;
   /// \brief SOA atom gradients (size: 3 * num_atoms)
-  std::vector<cvm::real> atoms_grad;
+  cvm::ag_vector_real_t atoms_grad;
   /// \brief SOA atom total forces (size: 3 * num_atoms)
   std::vector<cvm::real> atoms_total_force;
   /// \brief Atom masses divided by total mass (size: num_atoms)
@@ -798,9 +798,9 @@ private:
   /// \brief The temporary forces acting on the main group atoms.
   ///        Currently this is only used for calculating the fitting group forces for
   ///        non-scalar components.
-  std::vector<cvm::real> group_forces;
+  cvm::ag_vector_real_t group_forces;
   /// \brief use reference coordinates for f_ag_center or f_ag_rotate
-  std::vector<cvm::real> ref_pos;
+  cvm::ag_vector_real_t ref_pos;
   size_t num_ref_pos; // TODO: Do I really need this?
   /// \brief Center of geometry of the reference coordinates; regardless
   /// of whether f_ag_center is true, ref_pos is centered to zero at
@@ -811,7 +811,7 @@ private:
   /// \brief Center of geometry before any fitting
   cvm::atom_pos cog_orig;
   /// \brief Unrotated atom positions for fit gradients
-  std::vector<cvm::real> atoms_pos_unrotated;
+  cvm::ag_vector_real_t atoms_pos_unrotated;
   /// \brief Center of mass
   cvm::atom_pos com;
   /// \brief The derivative of a scalar variable with respect to the COM
@@ -822,6 +822,95 @@ private:
   cvm::rvector dip;
   /// \brief Lock for modifier
   std::mutex modify_lock;
+#if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
+  struct {
+    /// \brief GPU atom proxy indices (size: num_atoms)
+    int* d_atoms_index;
+    /// \brief GPU atom positions (size: 3 * num_atoms)
+    cvm::real* d_atoms_pos;
+    /// \brief GPU atom charges (size: num_atoms)
+    cvm::real* d_atoms_charge;
+    /// \brief GPU atom velocities (size: 3 * num_atoms)
+    cvm::real* d_atoms_vel;
+    /// \brief GPU atom mass (size: num_atoms)
+    cvm::real* d_atoms_mass;
+    /// \brief GPU atom gradients (size: 3 * num_atoms)
+    cvm::real* d_atoms_grad;
+    /// \brief GPU atom total forces (size: 3 * num_atoms)
+    cvm::real* d_atoms_total_force;
+    /// \brief Atom masses divided by total mass (size: num_atoms)
+    cvm::real* d_atoms_weight;
+    /// \brief GPU atom applied force
+    cvm::real* d_atoms_applied_force;
+    /// \brief GPU fit gradients
+    cvm::real* d_fit_gradients;
+    size_t d_fit_gradients_size;
+    /// \brief GPU reference coordinates for f_ag_center or f_ag_rotate
+    cvm::real* d_ref_pos;
+    /// \brief GPU atom positions (size: 3 * num_atoms)
+    cvm::real* d_atoms_pos_unrotated;
+    size_t d_atoms_pos_unrotated_size;
+    /// \brief GPU center-of-mass
+    cvm::rvector* d_com;
+    /// \brief GPU center-of-geometry
+    cvm::rvector* d_cog;
+    cvm::rvector* d_cog_orig;
+    cvm::rvector* d_ref_pos_cog;
+    /// \brief GPU atomic counter for reduction
+    unsigned int* d_com_cog_tbcount;
+    /// \brief COG and COM on pinned memory for CPU compatibility
+    cvm::rvector *h_com;
+    cvm::rvector *h_cog;
+    cvm::rvector *h_cog_orig;
+  } gpu_buffers;
+  /// \brief Temporary variables for calc_fit_gradients GPU kernel
+  struct {
+    double3* d_atom_grad;
+    double4* d_sum_dxdq;
+    unsigned int* d_tbcount;
+  } calc_fit_gradients_gpu_info;
+  /// \brief For intercepting the forces applied from the CPU interface
+  cvm::real* h_sum_applied_colvar_force;
+  /// \brief If the CPU code path use apply_colvar_force(),
+  /// this will be set to true, and then reset to false in begin_apply_force_gpu()
+  bool use_apply_colvar_force;
+  /// \brief If the CPU code path use group_force_object,
+  /// this will be set to true, and then reset to false in begin_apply_force_gpu()
+  bool use_group_force;
+  /// \brief GPU rotation object
+  colvars_gpu::rotation_gpu rot_gpu;
+  /// \brief GPU Rotation derivative;
+  colvars_gpu::rotation_derivative_gpu* rot_deriv_gpu;
+#endif
+#if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
+public:
+  int init_gpu();
+  int destroy_gpu();
+  int add_reset_atoms_data_nodes(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
+  int add_read_positions_nodes(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
+  int add_calc_required_properties_nodes(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
+  int add_update_cpu_buffers_nodes(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
+  int after_read_data_sync(bool copy_to_cpu, cudaStream_t stream);
+  int begin_apply_force_gpu();
+  int add_apply_force_nodes(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
+
+  int add_calc_fit_gradients_nodes(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
+    bool use_cpu_buffers = false);
+#elif defined (COLVARS_SYCL)
+  // TODO
+#endif
 };
 
 #endif // COLVARATOMS_SOA_H

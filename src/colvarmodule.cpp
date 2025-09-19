@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "colvarmodule.h"
+#include "colvar_gpu_support.h"
 #include "colvarparse.h"
 #include "colvarproxy.h"
 #include "colvar.h"
@@ -189,6 +190,16 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   // Removes the need for proxy specializations to create this
   proxy->script = new colvarscript(proxy, this);
+
+  gpu_calc = nullptr;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  if (proxy->has_gpu_support()) {
+    // checkGPUError(cudaGraphCreate(&read_data_graph, 0));
+    // checkGPUError(cudaGraphCreate(&calc_fit_gradients_graph, 0));
+    gpu_calc = std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc>(new colvars_gpu::colvarmodule_gpu_calc);
+    gpu_calc->init();
+  }
+#endif
 }
 
 
@@ -1022,13 +1033,16 @@ int colvarmodule::calc_colvars()
     cvm::decrease_depth();
 
   } else {
-
-    // calculate colvars one at a time
     cvm::increase_depth();
-    for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
-      error_code |= (*cvi)->calc();
-      if (cvm::get_error()) {
-        return COLVARS_ERROR;
+    if (proxy->has_gpu_support()) {
+      error_code |= gpu_calc->calc_cvs(*variables_active(), this);
+    } else {
+      // calculate colvars one at a time
+      for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
+        error_code |= (*cvi)->calc();
+        if (cvm::get_error()) {
+          return COLVARS_ERROR;
+        }
       }
     }
     cvm::decrease_depth();
@@ -1160,11 +1174,15 @@ int colvarmodule::update_colvar_forces()
   if (cvm::debug())
     cvm::log("Communicating forces from the colvars to the atoms.\n");
   cvm::increase_depth();
-  for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
-    if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
-      (*cvi)->communicate_forces();
-      if (cvm::get_error()) {
-        return COLVARS_ERROR;
+  if (proxy->has_gpu_support()) {
+    error_code |= gpu_calc->apply_forces(*variables_active(), this);
+  } else {
+    for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
+      if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
+        (*cvi)->communicate_forces();
+        if (cvm::get_error()) {
+          return COLVARS_ERROR;
+        }
       }
     }
   }
@@ -1377,6 +1395,31 @@ colvarmodule::~colvarmodule()
 
     // The proxy object will be deallocated last (if at all)
     proxy = NULL;
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    // if (proxy->has_gpu_support()) {
+    //   if (calc_fit_gradients_graph_exec) {
+    //     checkGPUError(cudaGraphExecDestroy(calc_fit_gradients_graph_exec));
+    //     calc_fit_gradients_graph_exec = NULL;
+    //   }
+    //   if (calc_fit_gradients_graph) {
+    //     checkGPUError(cudaGraphDestroy(calc_fit_gradients_graph));
+    //     calc_fit_gradients_graph = NULL;
+    //   }
+    //   calc_fit_gradients_nodes.clear();
+    //   calc_fit_gradients_graph_initialized = false;
+    //   if (read_data_graph_exec) {
+    //     checkGPUError(cudaGraphExecDestroy(read_data_graph_exec));
+    //     read_data_graph_exec = NULL;
+    //   }
+    //   if (read_data_graph) {
+    //     checkGPUError(cudaGraphDestroy(read_data_graph));
+    //     read_data_graph = NULL;
+    //   }
+    //   read_data_nodes.clear();
+    //   read_data_graph_initialized = false;
+    // }
+#endif
   }
 }
 
