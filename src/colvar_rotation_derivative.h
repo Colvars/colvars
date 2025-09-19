@@ -1,6 +1,7 @@
 #ifndef COLVAR_ROTATION_DERIVATIVE
 #define COLVAR_ROTATION_DERIVATIVE
 
+#include "colvar_gpu_support.h"
 #include "colvartypes.h"
 #include <type_traits>
 #include <cstring>
@@ -43,14 +44,14 @@ struct rotation_derivative {
   const cvm::rotation &m_rot;
   /// \brief Reference to the atom positions of group 1
   // const std::vector<cvm::real> &m_pos1;
-  std::vector<cvm::real>::const_iterator pos1x;
-  std::vector<cvm::real>::const_iterator pos1y;
-  std::vector<cvm::real>::const_iterator pos1z;
+  cvm::ag_vector_real_t::const_iterator pos1x;
+  cvm::ag_vector_real_t::const_iterator pos1y;
+  cvm::ag_vector_real_t::const_iterator pos1z;
   /// \brief Reference to the atom positions of group 2
   // const std::vector<cvm::real> &m_pos2;
-  std::vector<cvm::real>::const_iterator pos2x;
-  std::vector<cvm::real>::const_iterator pos2y;
-  std::vector<cvm::real>::const_iterator pos2z;
+  cvm::ag_vector_real_t::const_iterator pos2x;
+  cvm::ag_vector_real_t::const_iterator pos2y;
+  cvm::ag_vector_real_t::const_iterator pos2z;
   /// \brief Number of atoms in group1 (used in SOA)
   size_t m_num_atoms_pos1;
   /// \brief Number of atoms in group1 (used in SOA)
@@ -70,8 +71,8 @@ struct rotation_derivative {
     */
   rotation_derivative(
     const cvm::rotation &rot,
-    const std::vector<cvm::real> &pos1,
-    const std::vector<cvm::real> &pos2,
+    const cvm::ag_vector_real_t &pos1,
+    const cvm::ag_vector_real_t &pos2,
     const size_t num_atoms_pos1,
     const size_t num_atoms_pos2):
       m_rot(rot),
@@ -122,209 +123,207 @@ struct rotation_derivative {
       tmp_Q0Q0_L[0][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[0] +
                             (Q2[0] * Q0[0]) / (L0-L2) * Q2[0] +
                             (Q3[0] * Q0[0]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[1] +
-                            (Q2[0] * Q0[0]) / (L0-L2) * Q2[1] +
-                            (Q3[0] * Q0[0]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[2] +
-                            (Q2[0] * Q0[0]) / (L0-L2) * Q2[2] +
-                            (Q3[0] * Q0[0]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[3] +
-                            (Q2[0] * Q0[0]) / (L0-L2) * Q2[3] +
-                            (Q3[0] * Q0[0]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[0] +
                             (Q2[0] * Q0[1]) / (L0-L2) * Q2[0] +
                             (Q3[0] * Q0[1]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[1] +
-                            (Q2[0] * Q0[1]) / (L0-L2) * Q2[1] +
-                            (Q3[0] * Q0[1]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[2] +
-                            (Q2[0] * Q0[1]) / (L0-L2) * Q2[2] +
-                            (Q3[0] * Q0[1]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[3] +
-                            (Q2[0] * Q0[1]) / (L0-L2) * Q2[3] +
-                            (Q3[0] * Q0[1]) / (L0-L3) * Q3[3];
-
-
       tmp_Q0Q0_L[0][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[0] +
                             (Q2[0] * Q0[2]) / (L0-L2) * Q2[0] +
                             (Q3[0] * Q0[2]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[1] +
-                            (Q2[0] * Q0[2]) / (L0-L2) * Q2[1] +
-                            (Q3[0] * Q0[2]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[2] +
-                            (Q2[0] * Q0[2]) / (L0-L2) * Q2[2] +
-                            (Q3[0] * Q0[2]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[3] +
-                            (Q2[0] * Q0[2]) / (L0-L2) * Q2[3] +
-                            (Q3[0] * Q0[2]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[0] +
                             (Q2[0] * Q0[3]) / (L0-L2) * Q2[0] +
                             (Q3[0] * Q0[3]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[1] +
-                            (Q2[0] * Q0[3]) / (L0-L2) * Q2[1] +
-                            (Q3[0] * Q0[3]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[2] +
-                            (Q2[0] * Q0[3]) / (L0-L2) * Q2[2] +
-                            (Q3[0] * Q0[3]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[3] +
-                            (Q2[0] * Q0[3]) / (L0-L2) * Q2[3] +
-                            (Q3[0] * Q0[3]) / (L0-L3) * Q3[3];
 
       tmp_Q0Q0_L[0][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[0] +
                             (Q2[1] * Q0[0]) / (L0-L2) * Q2[0] +
                             (Q3[1] * Q0[0]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[1] +
-                            (Q2[1] * Q0[0]) / (L0-L2) * Q2[1] +
-                            (Q3[1] * Q0[0]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[2] +
-                            (Q2[1] * Q0[0]) / (L0-L2) * Q2[2] +
-                            (Q3[1] * Q0[0]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[3] +
-                            (Q2[1] * Q0[0]) / (L0-L2) * Q2[3] +
-                            (Q3[1] * Q0[0]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[0] +
                             (Q2[1] * Q0[1]) / (L0-L2) * Q2[0] +
                             (Q3[1] * Q0[1]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[1] +
-                            (Q2[1] * Q0[1]) / (L0-L2) * Q2[1] +
-                            (Q3[1] * Q0[1]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[2] +
-                            (Q2[1] * Q0[1]) / (L0-L2) * Q2[2] +
-                            (Q3[1] * Q0[1]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[3] +
-                            (Q2[1] * Q0[1]) / (L0-L2) * Q2[3] +
-                            (Q3[1] * Q0[1]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[0] +
                             (Q2[1] * Q0[2]) / (L0-L2) * Q2[0] +
                             (Q3[1] * Q0[2]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[1] +
-                            (Q2[1] * Q0[2]) / (L0-L2) * Q2[1] +
-                            (Q3[1] * Q0[2]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[2] +
-                            (Q2[1] * Q0[2]) / (L0-L2) * Q2[2] +
-                            (Q3[1] * Q0[2]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[3] +
-                            (Q2[1] * Q0[2]) / (L0-L2) * Q2[3] +
-                            (Q3[1] * Q0[2]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[0] +
                             (Q2[1] * Q0[3]) / (L0-L2) * Q2[0] +
                             (Q3[1] * Q0[3]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[1] +
-                            (Q2[1] * Q0[3]) / (L0-L2) * Q2[1] +
-                            (Q3[1] * Q0[3]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[2] +
-                            (Q2[1] * Q0[3]) / (L0-L2) * Q2[2] +
-                            (Q3[1] * Q0[3]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[3] +
-                            (Q2[1] * Q0[3]) / (L0-L2) * Q2[3] +
-                            (Q3[1] * Q0[3]) / (L0-L3) * Q3[3];
-
 
       tmp_Q0Q0_L[0][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[0] +
                             (Q2[2] * Q0[0]) / (L0-L2) * Q2[0] +
                             (Q3[2] * Q0[0]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[1] +
-                            (Q2[2] * Q0[0]) / (L0-L2) * Q2[1] +
-                            (Q3[2] * Q0[0]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[2] +
-                            (Q2[2] * Q0[0]) / (L0-L2) * Q2[2] +
-                            (Q3[2] * Q0[0]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[3] +
-                            (Q2[2] * Q0[0]) / (L0-L2) * Q2[3] +
-                            (Q3[2] * Q0[0]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[0] +
                             (Q2[2] * Q0[1]) / (L0-L2) * Q2[0] +
                             (Q3[2] * Q0[1]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[1] +
-                            (Q2[2] * Q0[1]) / (L0-L2) * Q2[1] +
-                            (Q3[2] * Q0[1]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[2] +
-                            (Q2[2] * Q0[1]) / (L0-L2) * Q2[2] +
-                            (Q3[2] * Q0[1]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[3] +
-                            (Q2[2] * Q0[1]) / (L0-L2) * Q2[3] +
-                            (Q3[2] * Q0[1]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[0] +
                             (Q2[2] * Q0[2]) / (L0-L2) * Q2[0] +
                             (Q3[2] * Q0[2]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[1] +
-                            (Q2[2] * Q0[2]) / (L0-L2) * Q2[1] +
-                            (Q3[2] * Q0[2]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[2] +
-                            (Q2[2] * Q0[2]) / (L0-L2) * Q2[2] +
-                            (Q3[2] * Q0[2]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[3] +
-                            (Q2[2] * Q0[2]) / (L0-L2) * Q2[3] +
-                            (Q3[2] * Q0[2]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[0] +
                             (Q2[2] * Q0[3]) / (L0-L2) * Q2[0] +
                             (Q3[2] * Q0[3]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[1] +
-                            (Q2[2] * Q0[3]) / (L0-L2) * Q2[1] +
-                            (Q3[2] * Q0[3]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[2] +
-                            (Q2[2] * Q0[3]) / (L0-L2) * Q2[2] +
-                            (Q3[2] * Q0[3]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[3] +
-                            (Q2[2] * Q0[3]) / (L0-L2) * Q2[3] +
-                            (Q3[2] * Q0[3]) / (L0-L3) * Q3[3];
 
       tmp_Q0Q0_L[0][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[0] +
                             (Q2[3] * Q0[0]) / (L0-L2) * Q2[0] +
                             (Q3[3] * Q0[0]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[1] +
-                            (Q2[3] * Q0[0]) / (L0-L2) * Q2[1] +
-                            (Q3[3] * Q0[0]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[2] +
-                            (Q2[3] * Q0[0]) / (L0-L2) * Q2[2] +
-                            (Q3[3] * Q0[0]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[3] +
-                            (Q2[3] * Q0[0]) / (L0-L2) * Q2[3] +
-                            (Q3[3] * Q0[0]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[0] +
                             (Q2[3] * Q0[1]) / (L0-L2) * Q2[0] +
                             (Q3[3] * Q0[1]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[1] +
-                            (Q2[3] * Q0[1]) / (L0-L2) * Q2[1] +
-                            (Q3[3] * Q0[1]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[2] +
-                            (Q2[3] * Q0[1]) / (L0-L2) * Q2[2] +
-                            (Q3[3] * Q0[1]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[3] +
-                            (Q2[3] * Q0[1]) / (L0-L2) * Q2[3] +
-                            (Q3[3] * Q0[1]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[0] +
                             (Q2[3] * Q0[2]) / (L0-L2) * Q2[0] +
                             (Q3[3] * Q0[2]) / (L0-L3) * Q3[0];
-      tmp_Q0Q0_L[1][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[1] +
-                            (Q2[3] * Q0[2]) / (L0-L2) * Q2[1] +
-                            (Q3[3] * Q0[2]) / (L0-L3) * Q3[1];
-      tmp_Q0Q0_L[2][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[2] +
-                            (Q2[3] * Q0[2]) / (L0-L2) * Q2[2] +
-                            (Q3[3] * Q0[2]) / (L0-L3) * Q3[2];
-      tmp_Q0Q0_L[3][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[3] +
-                            (Q2[3] * Q0[2]) / (L0-L2) * Q2[3] +
-                            (Q3[3] * Q0[2]) / (L0-L3) * Q3[3];
-
       tmp_Q0Q0_L[0][3][3] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[0] +
                             (Q2[3] * Q0[3]) / (L0-L2) * Q2[0] +
                             (Q3[3] * Q0[3]) / (L0-L3) * Q3[0];
+
+      tmp_Q0Q0_L[1][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[1] +
+                            (Q2[0] * Q0[0]) / (L0-L2) * Q2[1] +
+                            (Q3[0] * Q0[0]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[1] +
+                            (Q2[0] * Q0[1]) / (L0-L2) * Q2[1] +
+                            (Q3[0] * Q0[1]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[1] +
+                            (Q2[0] * Q0[2]) / (L0-L2) * Q2[1] +
+                            (Q3[0] * Q0[2]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[1] +
+                            (Q2[0] * Q0[3]) / (L0-L2) * Q2[1] +
+                            (Q3[0] * Q0[3]) / (L0-L3) * Q3[1];
+
+      tmp_Q0Q0_L[1][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[1] +
+                            (Q2[1] * Q0[0]) / (L0-L2) * Q2[1] +
+                            (Q3[1] * Q0[0]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[1] +
+                            (Q2[1] * Q0[1]) / (L0-L2) * Q2[1] +
+                            (Q3[1] * Q0[1]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[1] +
+                            (Q2[1] * Q0[2]) / (L0-L2) * Q2[1] +
+                            (Q3[1] * Q0[2]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[1] +
+                            (Q2[1] * Q0[3]) / (L0-L2) * Q2[1] +
+                            (Q3[1] * Q0[3]) / (L0-L3) * Q3[1];
+
+      tmp_Q0Q0_L[1][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[1] +
+                            (Q2[2] * Q0[0]) / (L0-L2) * Q2[1] +
+                            (Q3[2] * Q0[0]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[1] +
+                            (Q2[2] * Q0[1]) / (L0-L2) * Q2[1] +
+                            (Q3[2] * Q0[1]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[1] +
+                            (Q2[2] * Q0[2]) / (L0-L2) * Q2[1] +
+                            (Q3[2] * Q0[2]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[1] +
+                            (Q2[2] * Q0[3]) / (L0-L2) * Q2[1] +
+                            (Q3[2] * Q0[3]) / (L0-L3) * Q3[1];
+
+      tmp_Q0Q0_L[1][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[1] +
+                            (Q2[3] * Q0[0]) / (L0-L2) * Q2[1] +
+                            (Q3[3] * Q0[0]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[1] +
+                            (Q2[3] * Q0[1]) / (L0-L2) * Q2[1] +
+                            (Q3[3] * Q0[1]) / (L0-L3) * Q3[1];
+      tmp_Q0Q0_L[1][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[1] +
+                            (Q2[3] * Q0[2]) / (L0-L2) * Q2[1] +
+                            (Q3[3] * Q0[2]) / (L0-L3) * Q3[1];
       tmp_Q0Q0_L[1][3][3] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[1] +
                             (Q2[3] * Q0[3]) / (L0-L2) * Q2[1] +
                             (Q3[3] * Q0[3]) / (L0-L3) * Q3[1];
+
+      tmp_Q0Q0_L[2][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[2] +
+                            (Q2[0] * Q0[0]) / (L0-L2) * Q2[2] +
+                            (Q3[0] * Q0[0]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[2] +
+                            (Q2[0] * Q0[1]) / (L0-L2) * Q2[2] +
+                            (Q3[0] * Q0[1]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[2] +
+                            (Q2[0] * Q0[2]) / (L0-L2) * Q2[2] +
+                            (Q3[0] * Q0[2]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[2] +
+                            (Q2[0] * Q0[3]) / (L0-L2) * Q2[2] +
+                            (Q3[0] * Q0[3]) / (L0-L3) * Q3[2];
+
+      tmp_Q0Q0_L[2][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[2] +
+                            (Q2[1] * Q0[0]) / (L0-L2) * Q2[2] +
+                            (Q3[1] * Q0[0]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[2] +
+                            (Q2[1] * Q0[1]) / (L0-L2) * Q2[2] +
+                            (Q3[1] * Q0[1]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[2] +
+                            (Q2[1] * Q0[2]) / (L0-L2) * Q2[2] +
+                            (Q3[1] * Q0[2]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[2] +
+                            (Q2[1] * Q0[3]) / (L0-L2) * Q2[2] +
+                            (Q3[1] * Q0[3]) / (L0-L3) * Q3[2];
+
+      tmp_Q0Q0_L[2][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[2] +
+                            (Q2[2] * Q0[0]) / (L0-L2) * Q2[2] +
+                            (Q3[2] * Q0[0]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[2] +
+                            (Q2[2] * Q0[1]) / (L0-L2) * Q2[2] +
+                            (Q3[2] * Q0[1]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[2] +
+                            (Q2[2] * Q0[2]) / (L0-L2) * Q2[2] +
+                            (Q3[2] * Q0[2]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[2] +
+                            (Q2[2] * Q0[3]) / (L0-L2) * Q2[2] +
+                            (Q3[2] * Q0[3]) / (L0-L3) * Q3[2];
+
+      tmp_Q0Q0_L[2][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[2] +
+                            (Q2[3] * Q0[0]) / (L0-L2) * Q2[2] +
+                            (Q3[3] * Q0[0]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[2] +
+                            (Q2[3] * Q0[1]) / (L0-L2) * Q2[2] +
+                            (Q3[3] * Q0[1]) / (L0-L3) * Q3[2];
+      tmp_Q0Q0_L[2][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[2] +
+                            (Q2[3] * Q0[2]) / (L0-L2) * Q2[2] +
+                            (Q3[3] * Q0[2]) / (L0-L3) * Q3[2];
       tmp_Q0Q0_L[2][3][3] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[2] +
                             (Q2[3] * Q0[3]) / (L0-L2) * Q2[2] +
                             (Q3[3] * Q0[3]) / (L0-L3) * Q3[2];
+
+      tmp_Q0Q0_L[3][0][0] = (Q1[0] * Q0[0]) / (L0-L1) * Q1[3] +
+                            (Q2[0] * Q0[0]) / (L0-L2) * Q2[3] +
+                            (Q3[0] * Q0[0]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][0][1] = (Q1[0] * Q0[1]) / (L0-L1) * Q1[3] +
+                            (Q2[0] * Q0[1]) / (L0-L2) * Q2[3] +
+                            (Q3[0] * Q0[1]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][0][2] = (Q1[0] * Q0[2]) / (L0-L1) * Q1[3] +
+                            (Q2[0] * Q0[2]) / (L0-L2) * Q2[3] +
+                            (Q3[0] * Q0[2]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][0][3] = (Q1[0] * Q0[3]) / (L0-L1) * Q1[3] +
+                            (Q2[0] * Q0[3]) / (L0-L2) * Q2[3] +
+                            (Q3[0] * Q0[3]) / (L0-L3) * Q3[3];
+
+      tmp_Q0Q0_L[3][1][0] = (Q1[1] * Q0[0]) / (L0-L1) * Q1[3] +
+                            (Q2[1] * Q0[0]) / (L0-L2) * Q2[3] +
+                            (Q3[1] * Q0[0]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][1][1] = (Q1[1] * Q0[1]) / (L0-L1) * Q1[3] +
+                            (Q2[1] * Q0[1]) / (L0-L2) * Q2[3] +
+                            (Q3[1] * Q0[1]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][1][2] = (Q1[1] * Q0[2]) / (L0-L1) * Q1[3] +
+                            (Q2[1] * Q0[2]) / (L0-L2) * Q2[3] +
+                            (Q3[1] * Q0[2]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][1][3] = (Q1[1] * Q0[3]) / (L0-L1) * Q1[3] +
+                            (Q2[1] * Q0[3]) / (L0-L2) * Q2[3] +
+                            (Q3[1] * Q0[3]) / (L0-L3) * Q3[3];
+
+      tmp_Q0Q0_L[3][2][0] = (Q1[2] * Q0[0]) / (L0-L1) * Q1[3] +
+                            (Q2[2] * Q0[0]) / (L0-L2) * Q2[3] +
+                            (Q3[2] * Q0[0]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][2][1] = (Q1[2] * Q0[1]) / (L0-L1) * Q1[3] +
+                            (Q2[2] * Q0[1]) / (L0-L2) * Q2[3] +
+                            (Q3[2] * Q0[1]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][2][2] = (Q1[2] * Q0[2]) / (L0-L1) * Q1[3] +
+                            (Q2[2] * Q0[2]) / (L0-L2) * Q2[3] +
+                            (Q3[2] * Q0[2]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][2][3] = (Q1[2] * Q0[3]) / (L0-L1) * Q1[3] +
+                            (Q2[2] * Q0[3]) / (L0-L2) * Q2[3] +
+                            (Q3[2] * Q0[3]) / (L0-L3) * Q3[3];
+
+      tmp_Q0Q0_L[3][3][0] = (Q1[3] * Q0[0]) / (L0-L1) * Q1[3] +
+                            (Q2[3] * Q0[0]) / (L0-L2) * Q2[3] +
+                            (Q3[3] * Q0[0]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][3][1] = (Q1[3] * Q0[1]) / (L0-L1) * Q1[3] +
+                            (Q2[3] * Q0[1]) / (L0-L2) * Q2[3] +
+                            (Q3[3] * Q0[1]) / (L0-L3) * Q3[3];
+      tmp_Q0Q0_L[3][3][2] = (Q1[3] * Q0[2]) / (L0-L1) * Q1[3] +
+                            (Q2[3] * Q0[2]) / (L0-L2) * Q2[3] +
+                            (Q3[3] * Q0[2]) / (L0-L3) * Q3[3];
       tmp_Q0Q0_L[3][3][3] = (Q1[3] * Q0[3]) / (L0-L1) * Q1[3] +
                             (Q2[3] * Q0[3]) / (L0-L2) * Q2[3] +
                             (Q3[3] * Q0[3]) / (L0-L3) * Q3[3];
@@ -617,5 +616,204 @@ struct rotation_derivative {
     return result;
   }
 };
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+namespace colvars_gpu {
+struct rotation_derivative_gpu {
+  /// \brief Reference to the rotation
+  const colvars_gpu::rotation_gpu *m_rot;
+  /// \brief Reference to the atom positions of group 1
+  const cvm::real* m_d_pos1;
+  /// \brief Reference to the atom positions of group 2
+  const cvm::real* m_d_pos2;
+  /// \brief Number of atoms in group1 (used in SOA)
+  size_t m_num_atoms_pos1;
+  /// \brief Number of atoms in group1 (used in SOA)
+  size_t m_num_atoms_pos2;
+  /// \brief Temporary variable that will be updated if prepare_derivative called
+  cvm::real* tmp_Q0Q0;
+  cvm::real* tmp_Q0Q0_L;
+  /// \brief CUDA stream
+  // colvars_gpu::gpu_stream_t stream;
+  /// \brief colvarproxy for GPU memory management
+  // colvarproxy* proxy;
+  /*! @brief Constructor of the cvm::rotation::derivative class for SOA
+    *  @param[in]  rot   The cvm::rotation object (must have called
+    *                    `calc_optimal_rotation` before calling
+    *                    `calc_derivative_wrt_group1` and
+    *                    `calc_derivative_wrt_group2`)
+    *  @param[in]  pos1  The atom positions of group 1
+    *  @param[in]  pos2  The atom positions of group 2
+    *  @param[in]  num_atoms_pos1 The number of atoms in group1
+    *  @param[in]  num_atoms_pos2 The number of atoms in group2
+    */
+  rotation_derivative_gpu();
+  int init(
+    const colvars_gpu::rotation_gpu* rot,
+    const cvm::real* d_pos1,
+    const cvm::real* d_pos2,
+    const size_t num_atoms_pos1,
+    const size_t num_atoms_pos2);
+  ~rotation_derivative_gpu();
+  /*! @brief This function must be called before `calc_derivative_wrt_group1`
+   *         and `calc_derivative_wrt_group2` in order to prepare the tmp_Q0Q0
+   *        and tmp_Q0Q0_L.
+   *  @param[in] require_dl_dq Require the calculation of the derivatives of L or/and Q
+   *                           with respect to atoms.
+   */
+  int add_prepare_derivative_nodes(
+    rotation_derivative_dldq require_dl_dq,
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
+
+  /*! @brief Actual implementation of the derivative calculation
+    *  @param[in]  ds  The derivative of matrix S with respect to an atom of
+    *                  either group 1 or group 2
+    *  @param[out] dl0_out The output of derivative of L
+    *  @param[out] dq0_out The output of derivative of Q
+    */
+  template <bool use_dl, bool use_dq/*, bool use_ds*/>
+  inline COLVARS_DEVICE void calc_derivative_impl(
+    const cvm::rvector (&ds)[4][4],
+    cvm::rvector* _noalias const dl0_out,
+    cvm::rvector* _noalias const dq0_out) {
+    if (use_dl) {
+      *dl0_out = tmp_Q0Q0[0*4+0] * ds[0][0] +
+                 tmp_Q0Q0[0*4+1] * ds[0][1] +
+                 tmp_Q0Q0[0*4+2] * ds[0][2] +
+                 tmp_Q0Q0[0*4+3] * ds[0][3] +
+                 tmp_Q0Q0[1*4+0] * ds[1][0] +
+                 tmp_Q0Q0[1*4+1] * ds[1][1] +
+                 tmp_Q0Q0[1*4+2] * ds[1][2] +
+                 tmp_Q0Q0[1*4+3] * ds[1][3] +
+                 tmp_Q0Q0[2*4+0] * ds[2][0] +
+                 tmp_Q0Q0[2*4+1] * ds[2][1] +
+                 tmp_Q0Q0[2*4+2] * ds[2][2] +
+                 tmp_Q0Q0[2*4+3] * ds[2][3] +
+                 tmp_Q0Q0[3*4+0] * ds[3][0] +
+                 tmp_Q0Q0[3*4+1] * ds[3][1] +
+                 tmp_Q0Q0[3*4+2] * ds[3][2] +
+                 tmp_Q0Q0[3*4+3] * ds[3][3];
+    }
+    if (use_dq) {
+      dq0_out[0] = tmp_Q0Q0_L[0*16+0*4+0] * ds[0][0] +
+                   tmp_Q0Q0_L[0*16+0*4+1] * ds[0][1] +
+                   tmp_Q0Q0_L[0*16+0*4+2] * ds[0][2] +
+                   tmp_Q0Q0_L[0*16+0*4+3] * ds[0][3] +
+                   tmp_Q0Q0_L[0*16+1*4+0] * ds[1][0] +
+                   tmp_Q0Q0_L[0*16+1*4+1] * ds[1][1] +
+                   tmp_Q0Q0_L[0*16+1*4+2] * ds[1][2] +
+                   tmp_Q0Q0_L[0*16+1*4+3] * ds[1][3] +
+                   tmp_Q0Q0_L[0*16+2*4+0] * ds[2][0] +
+                   tmp_Q0Q0_L[0*16+2*4+1] * ds[2][1] +
+                   tmp_Q0Q0_L[0*16+2*4+2] * ds[2][2] +
+                   tmp_Q0Q0_L[0*16+2*4+3] * ds[2][3] +
+                   tmp_Q0Q0_L[0*16+3*4+0] * ds[3][0] +
+                   tmp_Q0Q0_L[0*16+3*4+1] * ds[3][1] +
+                   tmp_Q0Q0_L[0*16+3*4+2] * ds[3][2] +
+                   tmp_Q0Q0_L[0*16+3*4+3] * ds[3][3];
+
+      dq0_out[1] = tmp_Q0Q0_L[1*16+0*4+0] * ds[0][0] +
+                   tmp_Q0Q0_L[1*16+0*4+1] * ds[0][1] +
+                   tmp_Q0Q0_L[1*16+0*4+2] * ds[0][2] +
+                   tmp_Q0Q0_L[1*16+0*4+3] * ds[0][3] +
+                   tmp_Q0Q0_L[1*16+1*4+0] * ds[1][0] +
+                   tmp_Q0Q0_L[1*16+1*4+1] * ds[1][1] +
+                   tmp_Q0Q0_L[1*16+1*4+2] * ds[1][2] +
+                   tmp_Q0Q0_L[1*16+1*4+3] * ds[1][3] +
+                   tmp_Q0Q0_L[1*16+2*4+0] * ds[2][0] +
+                   tmp_Q0Q0_L[1*16+2*4+1] * ds[2][1] +
+                   tmp_Q0Q0_L[1*16+2*4+2] * ds[2][2] +
+                   tmp_Q0Q0_L[1*16+2*4+3] * ds[2][3] +
+                   tmp_Q0Q0_L[1*16+3*4+0] * ds[3][0] +
+                   tmp_Q0Q0_L[1*16+3*4+1] * ds[3][1] +
+                   tmp_Q0Q0_L[1*16+3*4+2] * ds[3][2] +
+                   tmp_Q0Q0_L[1*16+3*4+3] * ds[3][3];
+
+      dq0_out[2] = tmp_Q0Q0_L[2*16+0*4+0] * ds[0][0] +
+                   tmp_Q0Q0_L[2*16+0*4+1] * ds[0][1] +
+                   tmp_Q0Q0_L[2*16+0*4+2] * ds[0][2] +
+                   tmp_Q0Q0_L[2*16+0*4+3] * ds[0][3] +
+                   tmp_Q0Q0_L[2*16+1*4+0] * ds[1][0] +
+                   tmp_Q0Q0_L[2*16+1*4+1] * ds[1][1] +
+                   tmp_Q0Q0_L[2*16+1*4+2] * ds[1][2] +
+                   tmp_Q0Q0_L[2*16+1*4+3] * ds[1][3] +
+                   tmp_Q0Q0_L[2*16+2*4+0] * ds[2][0] +
+                   tmp_Q0Q0_L[2*16+2*4+1] * ds[2][1] +
+                   tmp_Q0Q0_L[2*16+2*4+2] * ds[2][2] +
+                   tmp_Q0Q0_L[2*16+2*4+3] * ds[2][3] +
+                   tmp_Q0Q0_L[2*16+3*4+0] * ds[3][0] +
+                   tmp_Q0Q0_L[2*16+3*4+1] * ds[3][1] +
+                   tmp_Q0Q0_L[2*16+3*4+2] * ds[3][2] +
+                   tmp_Q0Q0_L[2*16+3*4+3] * ds[3][3];
+
+      dq0_out[3] = tmp_Q0Q0_L[3*16+0*4+0] * ds[0][0] +
+                   tmp_Q0Q0_L[3*16+0*4+1] * ds[0][1] +
+                   tmp_Q0Q0_L[3*16+0*4+2] * ds[0][2] +
+                   tmp_Q0Q0_L[3*16+0*4+3] * ds[0][3] +
+                   tmp_Q0Q0_L[3*16+1*4+0] * ds[1][0] +
+                   tmp_Q0Q0_L[3*16+1*4+1] * ds[1][1] +
+                   tmp_Q0Q0_L[3*16+1*4+2] * ds[1][2] +
+                   tmp_Q0Q0_L[3*16+1*4+3] * ds[1][3] +
+                   tmp_Q0Q0_L[3*16+2*4+0] * ds[2][0] +
+                   tmp_Q0Q0_L[3*16+2*4+1] * ds[2][1] +
+                   tmp_Q0Q0_L[3*16+2*4+2] * ds[2][2] +
+                   tmp_Q0Q0_L[3*16+2*4+3] * ds[2][3] +
+                   tmp_Q0Q0_L[3*16+3*4+0] * ds[3][0] +
+                   tmp_Q0Q0_L[3*16+3*4+1] * ds[3][1] +
+                   tmp_Q0Q0_L[3*16+3*4+2] * ds[3][2] +
+                   tmp_Q0Q0_L[3*16+3*4+3] * ds[3][3];
+    }
+  }
+  /*! @brief Calculate the derivatives of S, the leading eigenvalue L and
+   *         the leading eigenvector Q with respect to `m_pos1`
+   *  @param[in]  ia        The index the of atom
+   *  @param[out] dl0_1_out The output of derivative of L with respect to
+   *                        ia-th atom of group 1
+   *  @param[out] dq0_1_out The output of derivative of Q with respect to
+   *                        ia-th atom of group 1
+   */
+  template <bool use_dl, bool use_dq/*, bool use_ds*/>
+  inline COLVARS_DEVICE void calc_derivative_wrt_group1(
+    int ia,
+    cvm::rvector* _noalias const dl0_1_out,
+    cvm::rvector* _noalias const dq0_1_out) {
+    const cvm::real a2x = m_d_pos2[ia];
+    const cvm::real a2y = m_d_pos2[ia + m_num_atoms_pos2];
+    const cvm::real a2z = m_d_pos2[ia + 2 * m_num_atoms_pos2];
+    const cvm::rvector ds_1[4][4] = {
+      {{ a2x,  a2y,  a2z}, { 0.0, a2z,  -a2y}, {-a2z,  0.0,  a2x}, { a2y, -a2x,  0.0}},
+      {{ 0.0,  a2z, -a2y}, { a2x, -a2y, -a2z}, { a2y,  a2x,  0.0}, { a2z,  0.0,  a2x}},
+      {{-a2z,  0.0,  a2x}, { a2y,  a2x,  0.0}, {-a2x,  a2y, -a2z}, { 0.0,  a2z,  a2y}},
+      {{ a2y, -a2x,  0.0}, { a2z,  0.0,  a2x}, { 0.0,  a2z,  a2y}, {-a2x, -a2y,  a2z}}};
+    calc_derivative_impl<use_dl, use_dq>(ds_1, dl0_1_out, dq0_1_out);
+  }
+  /*! @brief Calculate the derivatives of S, the leading eigenvalue L and
+   *         the leading eigenvector Q with respect to `m_pos2`
+   *  @param[in]  ia        The index the of atom
+   *  @param[out] dl0_2_out The output of derivative of L with respect to
+   *                        ia-th atom of group 2
+   *  @param[out] dq0_2_out The output of derivative of Q with respect to
+   *                        ia-th atom of group 2
+   */
+  template <bool use_dl, bool use_dq/*, bool use_ds*/>
+  inline COLVARS_DEVICE void calc_derivative_wrt_group2(
+    int ia,
+    cvm::rvector* _noalias const dl0_2_out,
+    cvm::rvector* _noalias const dq0_2_out) {
+    const cvm::real a1x = m_d_pos1[ia];
+    const cvm::real a1y = m_d_pos1[ia + m_num_atoms_pos1];
+    const cvm::real a1z = m_d_pos1[ia + 2 * m_num_atoms_pos1];
+    const cvm::rvector ds_2[4][4] = {
+      {{ a1x,  a1y,  a1z}, { 0.0, -a1z,  a1y}, { a1z,  0.0, -a1x}, {-a1y,  a1x,  0.0}},
+      {{ 0.0, -a1z,  a1y}, { a1x, -a1y, -a1z}, { a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}},
+      {{ a1z,  0.0, -a1x}, { a1y,  a1x,  0.0}, {-a1x,  a1y, -a1z}, { 0.0,  a1z,  a1y}},
+      {{-a1y,  a1x,  0.0}, { a1z,  0.0,  a1x}, { 0.0,  a1z,  a1y}, {-a1x, -a1y,  a1z}}};
+    calc_derivative_impl<use_dl, use_dq>(ds_2, dl0_2_out, dq0_2_out);
+  }
+};
+}
+#elif defined(COLVARS_SYCL)
+#endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
 #endif // COLVAR_ROTATION_DERIVATIVE

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <array>
 
+#include "colvardeps.h"
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvar.h"
@@ -294,6 +295,8 @@ int colvar::cvc::init_dependencies() {
     // require_feature_children(f_cvc_scalable, f_ag_scalable);
     // require_feature_children(f_cvc_scalable_com, f_ag_scalable_com);
 
+    init_feature(f_cvc_require_cpu_buffers, "require_cpu_buffers", f_type_static);
+
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
       if (is_not_set(i)) {
@@ -327,6 +330,9 @@ int colvar::cvc::init_dependencies() {
 
   // Use minimum-image distances by default
   enable(f_cvc_pbc_minimum_image);
+
+  // Use CPU buffers by default
+  enable(f_cvc_require_cpu_buffers);
 
   // Features that are implemented by default if their requirements are
   feature_states[f_cvc_one_site_total_force].available = true;

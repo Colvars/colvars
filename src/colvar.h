@@ -660,6 +660,11 @@ public:
   /// \brief function for sorting cvcs by their names
   static bool compare_cvc(const colvar::cvc* const i, const colvar::cvc* const j);
 
+  /// \brief Get all colvarcomp objects
+  const std::vector<std::shared_ptr<colvar::cvc>>& get_cvcs() const {
+    return cvcs;
+  }
+
 protected:
 
   /// Array of components objects
