@@ -44,8 +44,19 @@ if(NOT EXISTS ${NAMD_LEPTON_SOURCE_DIR})
   message(FATAL_ERROR "The Lepton source directory ${NAMD_LEPTON_SOURCE_DIR} does not exist!")
 endif()
 
+if(NOT(USE_CUDA OR USE_HIP))
+  message(FATAL_ERROR "This plugin depends on either CUDA or HIP")
+endif()
+
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/[^.]*.cpp)
 file(GLOB LEPTON_SOURCES ${NAMD_LEPTON_SOURCE_DIR}/[^.]*.cpp)
+
+set(COLVARS_CUDA_HEADER ${COLVARS_SOURCE_DIR}/cuda/colvaratoms_kernel.h
+                        ${COLVARS_SOURCE_DIR}/cuda/colvar_rotation_derivative_kernel.h
+                        ${COLVARS_SOURCE_DIR}/cuda/colvartypes_kernel.h)
+set(COLVARS_CUDA_SOURCE ${COLVARS_SOURCE_DIR}/cuda/colvaratoms_kernel.cu
+                        ${COLVARS_SOURCE_DIR}/cuda/colvar_rotation_derivative_kernel.cu
+                        ${COLVARS_SOURCE_DIR}/cuda/colvartypes_kernel.cu)
 
 if(USE_CUDA)
   if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
@@ -111,7 +122,9 @@ add_library(
   colvarproxy_cudaglobalmaster_kernel.h
   colvarproxy_cudaglobalmaster_kernel.cu
   ${LEPTON_SOURCES}
-  ${COLVARS_SOURCES})
+  ${COLVARS_SOURCES}
+  ${COLVARS_CUDA_HEADER}
+  ${COLVARS_CUDA_SOURCE})
 target_include_directories(cudaglobalmastercolvars
   PUBLIC "${COLVARS_SOURCE_DIR}"
   PUBLIC "${NAMD_HEADER_DIR}"
@@ -140,4 +153,6 @@ if(USE_HIP)
   set_source_files_properties(colvarproxy_cudaglobalmaster.C PROPERTIES LANGUAGE CXX)
   set_source_files_properties(colvarproxy_cudaglobalmaster_kernel.cu PROPERTIES LANGUAGE HIP)
   set_source_files_properties(colvarproxy_cudaglobalmaster_kernel.h PROPERTIES LANGUAGE HIP)
+  set_source_files_properties(${COLVARS_CUDA_HEADER} PROPERTIES LANGUAGE HIP)
+  set_source_files_properties(${COLVARS_CUDA_SOURCE} PROPERTIES LANGUAGE HIP)
 endif()
