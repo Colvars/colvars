@@ -3,7 +3,7 @@
 
 #include "colvar_rotation_derivative.h"
 #include "colvarmodule.h"
-#include "colvar_gpu_support.h"
+// #include "colvar_gpu_support.h"
 #include "colvartypes.h"
 
 #if defined(COLVARS_CUDA) || defined(COVLARS_HIP)
@@ -99,11 +99,13 @@ int accumulate_cpu_force(
 int calc_fit_gradients_impl_loop1(
   const cvm::real* pos_unrotated,
   cvm::real* main_grad,
+  const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const cvm::quaternion* q,
   unsigned int num_atoms_main,
   unsigned int num_atoms_fitting,
   double3* atom_grad,
-  double4* sum_dxdq,
+  double* sum_dxdq,
+  cvm::rmatrix* dxdC,
   unsigned int* tbcount,
   bool ag_center, bool ag_rotate,
   cudaGraphNode_t& node,
@@ -112,9 +114,9 @@ int calc_fit_gradients_impl_loop1(
 
 int calc_fit_gradients_impl_loop2(
   cvm::real* fit_grad,
-  colvars_gpu::rotation_derivative_gpu* rot_deriv,
+  const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* atom_grad,
-  const double4* sum_dxdq,
+  const cvm::rmatrix* dxdC,
   unsigned int group_for_fit_size,
   bool ag_center, bool ag_rotate,
   cudaGraphNode_t& node,
@@ -162,11 +164,13 @@ int apply_force(
 int calc_fit_forces_impl_loop1(
   const cvm::real* pos_unrotated,
   cvm::real* main_force,
+  const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const cvm::quaternion* q,
   unsigned int num_atoms_main,
   unsigned int num_atoms_fitting,
   double3* atom_grad,
-  double4* sum_dxdq,
+  double* sum_dxdq,
+  cvm::rmatrix* dxdC,
   unsigned int* tbcount,
   bool ag_center, bool ag_rotate,
   cudaGraphNode_t& node,
@@ -174,9 +178,9 @@ int calc_fit_forces_impl_loop1(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int calc_fit_forces_impl_loop2(
-  colvars_gpu::rotation_derivative_gpu* rot_deriv,
+  const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* atom_grad,
-  const double4* sum_dxdq,
+  const cvm::rmatrix* dxdC,
   const int* atoms_proxy_index,
   cvm::real* proxy_new_force,
   unsigned int group_for_fit_size,

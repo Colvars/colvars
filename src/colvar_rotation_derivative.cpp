@@ -7,7 +7,9 @@
 
 namespace colvars_gpu {
 rotation_derivative_gpu::rotation_derivative_gpu():
-  m_rot(nullptr), m_d_pos1(nullptr), m_d_pos2(nullptr),
+  m_rot(nullptr),
+  d_pos1x(nullptr), d_pos1y(nullptr), d_pos1z(nullptr),
+  d_pos2x(nullptr), d_pos2y(nullptr), d_pos2z(nullptr),
   m_num_atoms_pos1(0),
   m_num_atoms_pos2(0),
   tmp_Q0Q0(nullptr), tmp_Q0Q0_L(nullptr) {
@@ -21,8 +23,12 @@ int rotation_derivative_gpu::init(
   const size_t num_atoms_pos2) {
   int error_code = COLVARS_OK;
   m_rot = rot;
-  m_d_pos1 = d_pos1;
-  m_d_pos2 = d_pos2;
+  d_pos1x = d_pos1;
+  d_pos1y = d_pos1x + num_atoms_pos1;
+  d_pos1z = d_pos1y + num_atoms_pos1;
+  d_pos2x = d_pos2;
+  d_pos2y = d_pos2x + num_atoms_pos2;
+  d_pos2z = d_pos2y + num_atoms_pos2;
   m_num_atoms_pos1 = num_atoms_pos1;
   m_num_atoms_pos2 = num_atoms_pos2;
   colvarproxy* p = cvm::main()->proxy;

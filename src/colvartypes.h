@@ -957,7 +957,7 @@ public:
                         m.zx*r.x + m.zy*r.y + m.zz*r.z);
   }
 
-  inline rmatrix& operator+=(const rmatrix& rhs) {
+  inline COLVARS_HOST_DEVICE rmatrix& operator+=(const rmatrix& rhs) {
     this->xx += rhs.xx;
     this->xy += rhs.xy;
     this->xz += rhs.xz;

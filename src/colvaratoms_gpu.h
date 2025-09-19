@@ -70,7 +70,9 @@ struct colvaratoms_gpu_calc_fit_info_t {
   /// \brief Fit gradients due to centering
   double3* d_atom_grad;
   /// \brief Gradients of the CV with respect to the quaternion
-  double4* d_sum_dxdq;
+  double* d_sum_dxdq;
+  /// \brief Gradients of the CV with respect to the correlation matrix
+  cvm::rmatrix* d_dxdC;
   /// \brief GPU atomic counter for block reduction
   unsigned int* d_tbcount;
 };
