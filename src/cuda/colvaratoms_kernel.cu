@@ -531,11 +531,13 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   const cvm::real* __restrict atoms_pos_unrotated_x,
   const cvm::real* __restrict atoms_pos_unrotated_y,
   const cvm::real* __restrict atoms_pos_unrotated_z,
+  const colvars_gpu::rotation_derivative_gpu* __restrict rot_deriv,
   const cvm::quaternion* __restrict q,
   const unsigned int main_group_size,
   const unsigned int group_for_fit_size,
   double3* __restrict atom_grad,
-  double4* __restrict sum_dxdq,
+  double* __restrict sum_dxdq,
+  cvm::rmatrix* __restrict dxdC,
   unsigned int* __restrict tbcount) {
   unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   unsigned int gridSize = blockDim.x * gridDim.x;
@@ -588,10 +590,10 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
       cuda::std::array<cvm::real, 4> partial_dxdq;
       partial_dxdq =
         q->derivative_element_wise_product_sum<decltype(partial_dxdq)>(C);
-      atomicAdd(&(sum_dxdq->x), partial_dxdq[0]);
-      atomicAdd(&(sum_dxdq->y), partial_dxdq[1]);
-      atomicAdd(&(sum_dxdq->z), partial_dxdq[2]);
-      atomicAdd(&(sum_dxdq->w), partial_dxdq[3]);
+      atomicAdd(&(sum_dxdq[0]), partial_dxdq[0]);
+      atomicAdd(&(sum_dxdq[1]), partial_dxdq[1]);
+      atomicAdd(&(sum_dxdq[2]), partial_dxdq[2]);
+      atomicAdd(&(sum_dxdq[3]), partial_dxdq[3]);
     }
     atomicAdd(&(atom_grad->x), main_grad.x);
     atomicAdd(&(atom_grad->y), main_grad.y);
@@ -602,6 +604,49 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   }
   __syncthreads();
   if (isLastBlockDone) {
+    // Compute dxdC in a single warp
+#if defined (COLVARS_CUDA)
+    const unsigned int warpID = threadIdx.x / 32;
+#elif defined (COLVARS_HIP)
+    const unsigned int warpID = threadIdx.x / 64;
+#endif
+    if (warpID == 0) {
+      const unsigned int tid = threadIdx.x;
+      cvm::rmatrix dxdq_dqdC;
+      dxdq_dqdC.reset();
+      if (tid < 4) {
+        dxdq_dqdC += rot_deriv->project_force_to_C_from_dxdqi(tid, sum_dxdq[tid]);
+      }
+      __syncwarp();
+      using WarpReduce = cub::WarpReduce<cvm::real, 4>;
+      __shared__ typename WarpReduce::TempStorage warp_temp_storage;
+      dxdq_dqdC.xx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xx); __syncwarp();
+      dxdq_dqdC.xy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xy); __syncwarp();
+      dxdq_dqdC.xz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xz); __syncwarp();
+      dxdq_dqdC.yx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yx); __syncwarp();
+      dxdq_dqdC.yy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yy); __syncwarp();
+      dxdq_dqdC.yz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yz); __syncwarp();
+      dxdq_dqdC.zx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zx); __syncwarp();
+      dxdq_dqdC.zy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zy); __syncwarp();
+      dxdq_dqdC.zz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zz); __syncwarp();
+      if (tid == 0) {
+        dxdC->xx = dxdq_dqdC.xx;
+        dxdC->xy = dxdq_dqdC.xy;
+        dxdC->xz = dxdq_dqdC.xz;
+        dxdC->yx = dxdq_dqdC.yx;
+        dxdC->yy = dxdq_dqdC.yy;
+        dxdC->yz = dxdq_dqdC.yz;
+        dxdC->zx = dxdq_dqdC.zx;
+        dxdC->zy = dxdq_dqdC.zy;
+        dxdC->zz = dxdq_dqdC.zz;
+        // Clear the sum_dxdq array for the next reduction
+        sum_dxdq[0] = 0;
+        sum_dxdq[1] = 0;
+        sum_dxdq[2] = 0;
+        sum_dxdq[3] = 0;
+      }
+    }
+    __syncthreads();
     if (threadIdx.x == 0) {
       if (B_ag_center) {
         main_grad.x = atom_grad->x;
@@ -631,11 +676,13 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
 int calc_fit_gradients_impl_loop1(
   const cvm::real* pos_unrotated,
   cvm::real* main_grad,
+  const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const cvm::quaternion* q,
   unsigned int num_atoms_main,
   unsigned int num_atoms_fitting,
   double3* atom_grad,
-  double4* sum_dxdq,
+  double* sum_dxdq,
+  cvm::rmatrix* dxdC,
   unsigned int* tbcount,
   bool ag_center, bool ag_rotate,
   cudaGraphNode_t& node,
@@ -653,8 +700,9 @@ int calc_fit_gradients_impl_loop1(
   void* args[] = {
     &grad_x, &grad_y, &grad_z,
     &pos_x, &pos_y, &pos_z,
-    &q, &num_atoms_main, &num_atoms_fitting,
-    &atom_grad, &sum_dxdq, &tbcount};
+    &rot_deriv, &q,
+    &num_atoms_main, &num_atoms_fitting,
+    &atom_grad, &sum_dxdq, &dxdC, &tbcount};
   cudaKernelNodeParams kernelNodeParams = {0};
   kernelNodeParams.gridDim        = dim3(num_blocks, 1, 1);
   kernelNodeParams.blockDim       = dim3(block_size, 1, 1);
@@ -693,16 +741,17 @@ __global__ void calc_fit_forces_impl_loop2_kernel(
   cvm::real* __restrict fit_grad_x,
   cvm::real* __restrict fit_grad_y,
   cvm::real* __restrict fit_grad_z,
-  colvars_gpu::rotation_derivative_gpu* rot_deriv,
+  const colvars_gpu::rotation_derivative_gpu* __restrict rot_deriv,
   const double3* __restrict atom_grad,
-  const double4* __restrict sum_dxdq,
+  const cvm::rmatrix* __restrict dxdC,
   const int* __restrict atoms_proxy_index,
   cvm::real* __restrict proxy_new_force_x,
   cvm::real* __restrict proxy_new_force_y,
   cvm::real* __restrict proxy_new_force_z,
   const unsigned int group_for_fit_size) {
-  const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
-  if (i < group_for_fit_size) {
+  unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+  const unsigned int gridSize = blockDim.x * gridDim.x;
+  while (i < group_for_fit_size) {
     cvm::rvector fitting_force_grad{0, 0, 0};
     if (B_ag_center) {
       fitting_force_grad.x += atom_grad->x;
@@ -710,14 +759,7 @@ __global__ void calc_fit_forces_impl_loop2_kernel(
       fitting_force_grad.z += atom_grad->z;
     }
     if (B_ag_rotate) {
-      cvm::rvector dq0_1[4];
-      #pragma unroll
-      for (int j = 0; j < 4; ++j) {dq0_1[j].set(0);}
-      rot_deriv->calc_derivative_wrt_group1<false, true>(i, nullptr, dq0_1);
-      fitting_force_grad += sum_dxdq->x * dq0_1[0] +
-                            sum_dxdq->y * dq0_1[1] +
-                            sum_dxdq->z * dq0_1[2] +
-                            sum_dxdq->w * dq0_1[3];
+      fitting_force_grad += rot_deriv->project_force_to_group1(i, *dxdC);
     }
     // accessor_fitting(i, fitting_force_grad);
     if (do_fit_gradients) {
@@ -730,14 +772,15 @@ __global__ void calc_fit_forces_impl_loop2_kernel(
       atomicAdd(&(proxy_new_force_y[pid]), fitting_force_grad.y);
       atomicAdd(&(proxy_new_force_z[pid]), fitting_force_grad.z);
     }
+    i += gridSize;
   }
 }
 
 int calc_fit_gradients_impl_loop2(
   cvm::real* fit_grad,
-  colvars_gpu::rotation_derivative_gpu* rot_deriv,
+  const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* atom_grad,
-  const double4* sum_dxdq,
+  const cvm::rmatrix* dxdC,
   unsigned int group_for_fit_size,
   bool ag_center, bool ag_rotate,
   cudaGraphNode_t& node,
@@ -748,20 +791,13 @@ int calc_fit_gradients_impl_loop2(
   cvm::real* fit_grad_x = fit_grad;
   cvm::real* fit_grad_y = fit_grad_x + group_for_fit_size;
   cvm::real* fit_grad_z = fit_grad_y + group_for_fit_size;
-  // auto access_fitting = [fit_grad_x, fit_grad_y, fit_grad_z] __device__ (
-  //   int i, const cvm::rvector& grad){
-  //   fit_grad_x[i] = grad.x;
-  //   fit_grad_y[i] = grad.y;
-  //   fit_grad_z[i] = grad.z;
-  // };
   const int* atoms_proxy_index = nullptr;
   cvm::real* proxy_new_force_x = nullptr;
   cvm::real* proxy_new_force_y = nullptr;
   cvm::real* proxy_new_force_z = nullptr;
   void* args[] = {
-    // &access_fitting,
     &fit_grad_x, &fit_grad_y, &fit_grad_z,
-    &rot_deriv, &atom_grad, &sum_dxdq,
+    &rot_deriv, &atom_grad, &dxdC,
     &atoms_proxy_index,
     &proxy_new_force_x,
     &proxy_new_force_y,
@@ -804,17 +840,10 @@ __global__ void apply_translation_kernel(
   const cvm::rvector* __restrict translation_vector,
   unsigned int num_atoms) {
   const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
-  // if (i == 0) {
-  //   printf("(translation) atom group = %p, COG = (%lf, %lf, %lf), factor = %lf\n", atoms_pos_x_ag, translation_vector->x, translation_vector->y, translation_vector->z, translation_vector_factor);
-  // }
   if (i < num_atoms) {
-    // double x = atoms_pos_x_ag[i];
-    // double y = atoms_pos_y_ag[i];
-    // double z = atoms_pos_z_ag[i];
     atoms_pos_x_ag[i] += translation_vector_factor * translation_vector->x;
     atoms_pos_y_ag[i] += translation_vector_factor * translation_vector->y;
     atoms_pos_z_ag[i] += translation_vector_factor * translation_vector->z;
-    // printf("(translation) ptr = %p, from = (%lf, %lf, %lf), pos = (%lf, %lf, %lf)\n", atoms_pos_x_ag + i, x, y, z, atoms_pos_x_ag[i], atoms_pos_y_ag[i],  atoms_pos_z_ag[i]);
   }
 }
 
@@ -866,9 +895,9 @@ __global__ void rotate_with_quaternion_kernel(
   cvm::quaternion* __restrict q, int num_atoms) {
   const auto rot_mat = q->rotation_matrix();
   unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
-  // unsigned int gridSize = blockDim.x * gridDim.x;
-  // while (i < num_atoms) {
-  if (i < num_atoms) {
+  unsigned int gridSize = blockDim.x * gridDim.x;
+  while (i < num_atoms) {
+  // if (i < num_atoms) {
     const cvm::real new_x = rot_mat.xx * pos_x[i] +
                             rot_mat.xy * pos_y[i] +
                             rot_mat.xz * pos_z[i];
@@ -881,7 +910,7 @@ __global__ void rotate_with_quaternion_kernel(
     pos_x[i] = new_x;
     pos_y[i] = new_y;
     pos_z[i] = new_z;
-    // i += gridSize;
+    i += gridSize;
   }
 }
 
@@ -1107,11 +1136,13 @@ int apply_force(
 int calc_fit_forces_impl_loop1(
   const cvm::real* pos_unrotated,
   cvm::real* main_force,
+  const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const cvm::quaternion* q,
   unsigned int num_atoms_main,
   unsigned int num_atoms_fitting,
   double3* atom_grad,
-  double4* sum_dxdq,
+  double* sum_dxdq,
+  cvm::rmatrix* dxdC,
   unsigned int* tbcount,
   bool ag_center, bool ag_rotate,
   cudaGraphNode_t& node,
@@ -1121,15 +1152,15 @@ int calc_fit_forces_impl_loop1(
     cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return calc_fit_gradients_impl_loop1(
-    pos_unrotated, main_force, q, num_atoms_main,
-    num_atoms_fitting, atom_grad, sum_dxdq, tbcount,
+    pos_unrotated, main_force, rot_deriv, q, num_atoms_main,
+    num_atoms_fitting, atom_grad, sum_dxdq, dxdC, tbcount,
     ag_center, ag_rotate, node, graph, dependencies);
 }
 
 int calc_fit_forces_impl_loop2(
-  colvars_gpu::rotation_derivative_gpu* rot_deriv,
+  const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* atom_grad,
-  const double4* sum_dxdq,
+  const cvm::rmatrix* dxdC,
   const int* atoms_proxy_index,
   cvm::real* proxy_new_force,
   unsigned int group_for_fit_size,
@@ -1138,8 +1169,8 @@ int calc_fit_forces_impl_loop2(
   cudaGraphNode_t& node,
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  const int block_size = default_block_size;
-  const int num_blocks = (group_for_fit_size + block_size - 1) / block_size;
+  const unsigned int block_size = default_block_size;
+  const unsigned int num_blocks = (group_for_fit_size + block_size - 1) / block_size;
   cvm::real* fit_grad_x = nullptr;
   cvm::real* fit_grad_y = nullptr;
   cvm::real* fit_grad_z = nullptr;
@@ -1147,9 +1178,8 @@ int calc_fit_forces_impl_loop2(
   cvm::real* proxy_new_force_y = proxy_new_force_x + proxy_stride;
   cvm::real* proxy_new_force_z = proxy_new_force_y + proxy_stride;
   void* args[] = {
-    // &access_fitting,
     &fit_grad_x, &fit_grad_y, &fit_grad_z,
-    &rot_deriv, &atom_grad, &sum_dxdq,
+    &rot_deriv, &atom_grad, &dxdC,
     &atoms_proxy_index,
     &proxy_new_force_x,
     &proxy_new_force_y,
