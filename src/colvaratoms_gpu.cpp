@@ -624,7 +624,7 @@ int colvaratoms_gpu::add_calc_fit_gradients_nodes(
     std::vector<cudaGraphNode_t> dependencies_main;
     error_code |= colvars_gpu::prepare_dependencies(
     {{"clear_atoms_grad", false},
-     {"prepare_rotation_derivative", false},
+     {"prepare_rotation_derivative", true},
      {"copy_grad_HtoD", true}}, dependencies_main,
      nodes_map, "calc_fit_gradients_loop1");
     cudaGraphNode_t calc_fit_forces_loop1_node;
@@ -645,8 +645,7 @@ int colvaratoms_gpu::add_calc_fit_gradients_nodes(
     cudaGraphNode_t calc_fit_forces_loop2_node;
     std::vector<cudaGraphNode_t> dependencies_fit_gradients;
     error_code |= colvars_gpu::prepare_dependencies(
-      {{"calc_fit_gradients_loop1", false},
-       {"prepare_rotation_derivative", false}},
+      {{"calc_fit_gradients_loop1", false}},
       dependencies_fit_gradients, nodes_map, "calc_fit_gradients_loop2");
     error_code |= colvars_gpu::calc_fit_gradients_impl_loop2(
       group_for_fit->gpu_atom_group->gpu_buffers.d_fit_gradients, rot_deriv_gpu,
@@ -777,6 +776,11 @@ int colvaratoms_gpu::add_apply_force_nodes(
         graph, dependencies);
       nodes_map["apply_force_with_inverse_rotation"] =
         apply_force_with_inverse_rotation_node;
+      // Prepare the derivative with respect to fit gradients
+      if (rot_deriv_gpu) {
+        error_code |= rot_deriv_gpu->add_prepare_derivative_nodes(
+          rotation_derivative_dldq::use_dq, graph, nodes_map);
+      }
     } else {
       // Just add the forces to proxy
       cudaGraphNode_t apply_force_main_node;
@@ -792,24 +796,13 @@ int colvaratoms_gpu::add_apply_force_nodes(
       // Compute the forces on the fitting group and add them to proxy
       // Clear the temporary variables
       cudaGraphNode_t clear_atoms_grad_node;
-      cudaGraphNode_t clear_sum_dxdq_node;
-      cudaGraphNode_t clear_tbcount_node;
       error_code |= colvars_gpu::add_clear_array_node(
         calc_fit_forces_gpu_info.d_atom_grad,
         1, clear_atoms_grad_node, graph, {});
-      error_code |= colvars_gpu::add_clear_array_node(
-        calc_fit_forces_gpu_info.d_sum_dxdq,
-        1, clear_sum_dxdq_node, graph, {});
-      error_code |= colvars_gpu::add_clear_array_node(
-        calc_fit_forces_gpu_info.d_tbcount,
-        1, clear_tbcount_node, graph, {});
       nodes_map["clear_atoms_grad"] = clear_atoms_grad_node;
-      nodes_map["clear_sum_dxdq"] = clear_sum_dxdq_node;
-      nodes_map["clear_tbcount"] = clear_tbcount_node;
       error_code |= colvars_gpu::prepare_dependencies(
         {{"clear_atoms_grad", false},
-         {"clear_sum_dxdq", false},
-         {"clear_tbcount", false}},
+         {"prepare_rotation_derivative", true}},
         dependencies, nodes_map, "calc_fit_forces_loop1");
       cudaGraphNode_t calc_fit_forces_loop1_node;
       error_code |= colvars_gpu::calc_fit_forces_impl_loop1(
