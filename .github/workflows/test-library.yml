@@ -258,6 +258,14 @@ jobs:
         working-directory: build
         run: bash ${{ github.workspace }}/devel-tools/run_clang_tidy.sh &> clang-tidy.log
 
+      - name: Print clang-tidy errors to screen
+        if: failure()
+        working-directory: build
+        shell: bash
+        run: |
+          cat clang-tidy.log >&2
+          exit 1
+
       - name: Archive warnings artifacts
         uses: actions/upload-artifact@v4
         if: failure()
