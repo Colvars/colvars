@@ -147,15 +147,21 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
             laplacian_weighted<true>(divergence, temp2);
             temp.clear();
             temp2.clear();
+            cvm::real average = 0;
             for (size_t i = 0; i < computation_nt; i++) {
                 divergence[i] += div_border_supplement[i];
+                average += divergence[i];
+            }
+            average = average / static_cast<cvm::real> (computation_nt);
+            for (size_t i = 0; i < computation_nt; i++) {
+                divergence[i] = divergence[i] - average;
             }
             div_border_supplement.clear();
         } else {
             set_div();
         }
         if (weighted || nd > 3)
-            optimize_adam(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
+            nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
         else
             nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
         if (verbose)
@@ -852,7 +858,7 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
                 for (size_t dim = 0; dim < nd; dim++) {
                     neighbor_coordinate[dim] = ix[dim] + neighbor_relative_position[dim];
                 }
-                bool virtual_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
+                bool is_ghost_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
                 cvm::real coefficient = laplacian_coefficients[grid_address * multiplicity + i];
                 // // Calculation of the laplacian coefficient, when memory is not sufficient to precompute them
                 // cvm::real coefficient =0;
@@ -867,7 +873,7 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
                 // coefficient *= weight_counts[i] / pow(2, (nd-1)*2);
                 // coefficient+= neighbor_in_classic_laplacian_stencil[i] * m;
 
-                if (!virtual_point) {
+                if (!is_ghost_point) {
                     LA[grid_address] += coefficient * A[computation_grid->address(neighbor_coordinate)];
                     // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
                 } else {
@@ -892,53 +898,55 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
 #ifdef _OPENMP
 #pragma omp parallel for // schedule(static, 128)
 
-    for (size_t grid_address = 0; grid_address < computation_grid->nt; grid_address++) {
-        std::vector<int> neighbor_coordinate(nd);
-        std::vector<int> reference_point_coordinates(nd);
-        std::vector<cvm::real> averaged_normal_vector(nd);
-        cvm::real multiplicity = laplacian_stencil.size();
-        std::vector<int> ix(nd);
-        computation_grid->index(grid_address, ix);
-        for (size_t i = 0; i < laplacian_stencil.size(); i++) {
-            std::vector<int> neighbor_relative_position = laplacian_stencil[i];
-            for (size_t dim = 0; dim < nd; dim++) {
-                neighbor_coordinate[dim] = ix[dim] + neighbor_relative_position[dim];
-            }
-            bool virtual_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
-            cvm::real coefficient = laplacian_coefficients[grid_address * multiplicity + i];
-            // // Calculation of the laplacian coefficient, when memory is not sufficient to precompute them
-            // cvm::real coefficient =0;
-            // for (std::vector<int> direction : weight_stencil[i]) {
-            //   std::vector<int> weight_coordinate = neighbor_coordinate; // Initialize with stencil_point instead of size
-            //   for (size_t n = 0; n < nd && n < direction.size(); n++) {
-            //     weight_coordinate[n] += direction[n];
-            //   }
-            //   gradients->wrap_detect_edge(weight_coordinate);
-            //   coefficient += regularized_weights[gradients->address(weight_coordinate)] - m;
-            // }
-            // coefficient *= weight_counts[i] / pow(2, (nd-1)*2);
-            // coefficient+= neighbor_in_classic_laplacian_stencil[i] * m;
+        for (size_t grid_address = 0; grid_address < computation_grid->nt; grid_address++) {
+            std::vector<int> neighbor_coordinate(nd);
+            std::vector<int> reference_point_coordinates(nd);
+            std::vector<cvm::real> averaged_normal_vector(nd);
+            cvm::real multiplicity = laplacian_stencil.size();
+            std::vector<int> ix(nd);
+            computation_grid->index(grid_address, ix);
+            for (size_t i = 0; i < laplacian_stencil.size(); i++) {
+                std::vector<int> neighbor_relative_position = laplacian_stencil[i];
+                for (size_t dim = 0; dim < nd; dim++) {
+                    neighbor_coordinate[dim] = ix[dim] + neighbor_relative_position[dim];
+                }
+                bool is_ghost_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
+                cvm::real coefficient = laplacian_coefficients[grid_address * multiplicity + i];
+                // TODO: Update this comment
+                // // Calculation of the laplacian coefficient, when memory is not sufficient to precompute them
+                // cvm::real coefficient =0;
+                // for (std::vector<int> direction : weight_stencil[i]) {
+                //   std::vector<int> weight_coordinate = neighbor_coordinate; // Initialize with stencil_point instead of size
+                //   for (size_t n = 0; n < nd && n < direction.size(); n++) {
+                //     weight_coordinate[n] += direction[n];
+                //   }
+                //   gradients->wrap_detect_edge(weight_coordinate);
+                //   coefficient += regularized_weights[gradients->address(weight_coordinate)] - m;
+                // }
+                // coefficient *= weight_counts[i] / pow(2, (nd-1)*2);
+                // coefficient+= neighbor_in_classic_laplacian_stencil[i] * m;
 
-            if (!virtual_point) {
-                LA[grid_address] += coefficient * A[computation_grid->address(neighbor_coordinate)];
-                // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
-            } else {
-                computation_grid->wrap_to_edge(neighbor_coordinate, reference_point_coordinates);
-                LA[grid_address] += coefficient * A[computation_grid->address(reference_point_coordinates)];
-                // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(reference_point_coordinates)] += coefficient;
+                if (!is_ghost_point) {
+                    LA[grid_address] += coefficient * A[computation_grid->address(neighbor_coordinate)];
+                    // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
+                } else {
+                    computation_grid->wrap_to_edge(neighbor_coordinate, reference_point_coordinates);
+                    LA[grid_address] += coefficient * A[computation_grid->address(reference_point_coordinates)];
+                    // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(reference_point_coordinates)] += coefficient;
 
-                if (initialize_div_supplement) {
-                    cvm::real div_supplement_term = 0;
-                    averaged_normal_vector = compute_averaged_border_normal_gradients(neighbor_coordinate);
-                    for (size_t dim = 0; dim < nd; dim++) {
-                        div_supplement_term += averaged_normal_vector[dim] * neighbor_relative_position[dim] * widths[
-                            dim];
+                    if (initialize_div_supplement) {
+                        cvm::real div_supplement_term = 0;
+                        averaged_normal_vector = compute_averaged_border_normal_gradients(neighbor_coordinate);
+                        for (size_t dim = 0; dim < nd; dim++) {
+                            div_supplement_term += averaged_normal_vector[dim] * neighbor_relative_position[dim] *
+                                    widths[
+                                        dim];
+                        }
+                        div_border_supplement[grid_address] -= div_supplement_term * coefficient;
                     }
-                    div_border_supplement[grid_address] -= div_supplement_term * coefficient;
                 }
             }
         }
-    }
 #else
         cvm::error("multiple threads required in weighted poisson integration, but this binary is not linked "
             "with a supported threading library.\n");
@@ -947,74 +955,48 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
 }
 
 void colvargrid_integrate::prepare_laplacian_necessary_stencils() {
-    laplacian_stencil.resize(std::pow(3, nd));
-    weight_stencil.resize(std::pow(3, nd));
-    weight_counts.resize(std::pow(3, nd));
-    neighbor_in_classic_laplacian_stencil.resize(std::pow(3, nd));
-    for (int i = 0; i < std::pow(3, nd); i++) {
-        // for each point in the stencil (for each dimension the relative coordinate can be +1, 0 ,-1)
-        std::string base_3 = convert_base_three(i);
-        std::vector<int> direction;
-        std::vector<std::vector<int> > weights_relative_positions = {
-            {}
-        }; // relative to the point of the stencil
-        double weights_count = 0;
-        int dim = 0;
-        int number_of_non_zero_coordinates = 0;
-        int non_zero_coordinate = -1;
-        for (char direction_j: base_3) {
-            int displacement_j = direction_j - '0';
-            displacement_j -= 1;
-            direction.push_back(displacement_j);
-            switch (displacement_j) {
-                case -1:
-                    weights_count += 1.0 / (widths[dim] * widths[dim]);
-                    weights_relative_positions =
-                            update_weight_relative_positions(weights_relative_positions, std::vector<int>{1});
-                    non_zero_coordinate = dim;
-                    number_of_non_zero_coordinates++;
-                    break;
-                case 0:
-                    weights_count += -1.0 / (widths[dim] * widths[dim]);
-                    weights_relative_positions =
-                            update_weight_relative_positions(weights_relative_positions, std::vector<int>{0, 1});
-                    break;
-                case 1:
-                    weights_count += 1.0 / (widths[dim] * widths[dim]);
-                    weights_relative_positions =
-                            update_weight_relative_positions(weights_relative_positions, std::vector<int>{0});
-                    non_zero_coordinate = dim;
-                    number_of_non_zero_coordinates++;
-                    break;
-            }
-            dim++;
-        }
-        // Store computed values in stencil maps
-        laplacian_stencil[i] = direction;
-        weight_stencil[i] = weights_relative_positions;
-        weight_counts[i] = weights_count;
+    laplacian_stencil.resize(2 * nd + 1);
+    weight_stencil.resize(2 * nd);
+    weight_counts.resize(2 * nd);
 
-        // Store classic laplacian stencil information
-        if (number_of_non_zero_coordinates <= 1) {
-            if (non_zero_coordinate != -1)
-                neighbor_in_classic_laplacian_stencil[i] =
-                        1 / (widths[non_zero_coordinate] * widths[non_zero_coordinate]);
-            else {
-                float sum = 0;
-                for (size_t i = 0; i < nd; i++) {
-                    sum -= 2 / (widths[i] * widths[i]);
+    for (size_t dim = 0; dim < nd; dim++) {
+        std::vector<int> relative_position_left(nd, 0);
+        relative_position_left[dim] = -1;
+        std::vector<int> relative_position_right(nd, 0);
+        relative_position_right[dim] = 1;
+        laplacian_stencil[2 * dim] = relative_position_left;
+        laplacian_stencil[2 * dim + 1] = relative_position_right;
+        weight_counts[2 * dim] = 1 / (widths[dim] * widths[dim]) * (1 / std::pow(2, nd - 1));
+        weight_counts[2 * dim + 1] = 1 / (widths[dim] * widths[dim]) * (1 / std::pow(2, nd - 1));
+        weight_stencil[2 * dim].resize(std::pow(2, nd - 1));
+        weight_stencil[2 * dim + 1].resize(std::pow(2, nd - 1));
+
+        for (int weights_to_average_relative_pos = 0; weights_to_average_relative_pos < std::pow(2, nd - 1);
+             weights_to_average_relative_pos++) {
+            std::string base_2 = convert_base_two(weights_to_average_relative_pos, nd - 1);
+            weight_stencil[2 * dim][weights_to_average_relative_pos].resize(nd);
+            weight_stencil[2 * dim + 1][weights_to_average_relative_pos].resize(nd);
+            int off_set = 0;
+            for (size_t k = 0; k < nd; k++) {
+                if (k != dim) {
+                    weight_stencil[2 * dim][weights_to_average_relative_pos][k] = base_2[k+off_set] - '0';
+                    weight_stencil[2 * dim + 1][weights_to_average_relative_pos][k] = base_2[k+off_set] - '0';
+                } else {
+                    off_set = -1;
+                    weight_stencil[2 * dim][weights_to_average_relative_pos][dim] = 0;
+                    weight_stencil[2 * dim + 1][weights_to_average_relative_pos][dim] = 1;
                 }
-                neighbor_in_classic_laplacian_stencil[i] = sum;
             }
-        } else {
-            neighbor_in_classic_laplacian_stencil[i] = 0;
         }
     }
+    laplacian_stencil[2 * nd] = std::vector<int>(nd, 0);
+    // coefficient for the point where we compute the laplacian
+    // is the sum of the stencil's point coefficient. we don't count it in the stencil
 }
 
 void colvargrid_integrate::print_laplacian_preparations() {
-    for (int i = 0; i < std::pow(3, nd); i++) {
-        std::cout << "Stencil " << i << " is [";
+    for (size_t i = 0; i < laplacian_stencil.size(); i++) {
+        std::cout << "Laplacian stencil " << i << " is [";
         for (size_t j = 0; j < laplacian_stencil[i].size(); ++j) {
             std::cout << laplacian_stencil[i][j];
             if (j < laplacian_stencil[i].size() - 1)
@@ -1024,7 +1006,7 @@ void colvargrid_integrate::print_laplacian_preparations() {
     }
     std::cout << std::endl;
     std::cout << "weight stencil" << std::endl;
-    for (int i = 0; i < std::pow(3, nd); i++) {
+    for (size_t i = 0; i < weight_stencil.size(); i++) {
         std::cout << "Stencil " << i << " is [";
         for (size_t j = 0; j < weight_stencil[i].size(); ++j) {
             std::cout << vec_to_string(weight_stencil[i][j]);
@@ -1035,17 +1017,10 @@ void colvargrid_integrate::print_laplacian_preparations() {
     }
     std::cout << std::endl;
     std::cout << "weight_counts" << std::endl;
-    for (size_t i = 0; i < std::pow(3, nd); i++) {
+    for (size_t i = 0; i < weight_counts.size(); i++) {
         std::cout << "Stencil " << i << " is [";
         std::cout << weight_counts[i] << "]" << std::endl;
     }
-    std::cout << std::endl;
-    std::cout << "neighbor_in_classic_laplacian_stencil" << std::endl;
-    for (size_t i = 0; i < std::pow(3, nd); i++) {
-        std::cout << "Stencil " << i << " is [";
-        std::cout << neighbor_in_classic_laplacian_stencil[i] << "]" << std::endl;
-    }
-    std::cout << std::endl;
 }
 
 void colvargrid_integrate::prepare_calculations() {
@@ -1076,8 +1051,7 @@ void colvargrid_integrate::prepare_calculations() {
         }
         n_points++;
     }
-    m = static_cast<double>(sum_count) / n_points / 1.5;
-    std::cout << "mean: " << m * 1.5 << " lower_threshold: " << lower_threshold_count << " upper threshold:" <<
+    std::cout << " lower_threshold: " << lower_threshold_count << " upper threshold:" <<
             upper_threshold_count << std::endl;
     regularized_weights.resize(gradients->nt);
     for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
@@ -1092,52 +1066,34 @@ void colvargrid_integrate::prepare_calculations() {
     std::vector<cvm::real> averaged_normal_vector(nd);
     cvm::real multiplicity = laplacian_stencil.size();
     // Precalculation of the laplacian coefficient
-
+    cvm::real diagonal_coeff;
     for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
          computation_grid->incr(ix)) {
-        for (size_t i = 0; i < laplacian_stencil.size(); i++) {
+        diagonal_coeff = 0;
+        for (size_t i = 0; i < laplacian_stencil.size() - 1; i++) {
             std::vector<int> neighbor_relative_position = laplacian_stencil[i];
             for (size_t dim = 0; dim < nd; dim++) {
                 neighbor_coordinate[dim] = ix[dim] + neighbor_relative_position[dim];
             }
             cvm::real coefficient = 0;
             //  --> Calling the function makes the code simpler but takes longer to compute
-            // coefficient = calculate_weight_sum(neighbor_coordinate,weight_stencil[i]);
+            // coefficient = calculate_weight_sum(ix,weight_stencil[i]);
             for (std::vector<int> direction: weight_stencil[i]) {
-                std::vector<int> weight_coordinate = neighbor_coordinate;
+                std::vector<int> weight_coordinate = ix;
                 // Initialize with stencil_point instead of size
                 for (size_t n = 0; n < nd && n < direction.size(); n++) {
                     weight_coordinate[n] += direction[n];
                 }
                 gradients->wrap_detect_edge(weight_coordinate);
-                coefficient += regularized_weights[gradients->address(weight_coordinate)] - m;
+                coefficient += regularized_weights[gradients->address(weight_coordinate)];
             }
-            coefficient *= weight_counts[i] / pow(2, (nd - 1) * 2);
-            coefficient += neighbor_in_classic_laplacian_stencil[i] * m;
+            coefficient *= weight_counts[i];
             laplacian_coefficients[computation_grid->address(ix) * multiplicity + i] += coefficient;
+            diagonal_coeff += coefficient;
         }
+        laplacian_coefficients[computation_grid->address(ix) * multiplicity + (2 * nd)] += -diagonal_coeff;
     }
 }
-
-std::vector<std::vector<int> > colvargrid_integrate::update_weight_relative_positions(
-    std::vector<std::vector<int> > &weights_relative_positions, std::vector<int> direction) {
-    std::vector<std::vector<int> > result;
-
-    // For each weight direction and each existing relative position,
-    // create a new position by appending the weight direction
-    for (int weight_direction: direction) {
-        for (const auto &weight_relative_position: weights_relative_positions) {
-            // Clone the original position
-            std::vector<int> weight_relative_position_clone = weight_relative_position;
-            // Append the new direction
-            weight_relative_position_clone.push_back(weight_direction);
-            // Add to result
-            result.push_back(weight_relative_position_clone);
-        }
-    }
-    return result;
-}
-
 
 cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix) {
     cvm::real regularized_weight;
@@ -1150,7 +1106,7 @@ cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix) {
     } else {
         regularized_weight = count;
     }
-    return regularized_weight;
+    return regularized_weight / upper_threshold_count;
 }
 
 void colvargrid_integrate::get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix) {
@@ -1170,12 +1126,12 @@ void colvargrid_integrate::get_regularized_F(std::vector<cvm::real> &F, std::vec
     }
 }
 
-inline cvm::real colvargrid_integrate::calculate_weight_sum(std::vector<int> stencil_point,
+inline cvm::real colvargrid_integrate::calculate_weight_sum(std::vector<int> point,
                                                             std::vector<std::vector<int> > directions)
 /*
   This function is used to calculate the sum of the weights for a given point of the stencil
   arguments:
-    stencil_point: the point of the stencil
+    point: Point at which we're calculating the weighted laplacian
     directions: relative positions of the weights
   return:
     the sum of the weights
@@ -1183,12 +1139,12 @@ inline cvm::real colvargrid_integrate::calculate_weight_sum(std::vector<int> ste
 {
     cvm::real weight_sum = 0;
     for (std::vector<int> direction: directions) {
-        std::vector<int> weight_coordinate = stencil_point; // Initialize with stencil_point instead of size
+        std::vector<int> weight_coordinate = point; // Initialize with stencil_point instead of size
         for (size_t i = 0; i < nd && i < direction.size(); i++) {
             weight_coordinate[i] += direction[i];
         }
         gradients->wrap_detect_edge(weight_coordinate);
-        weight_sum += regularized_weights[gradients->address(weight_coordinate)] - m;
+        weight_sum += regularized_weights[gradients->address(weight_coordinate)];
     }
     return weight_sum;
 }
@@ -1563,13 +1519,12 @@ void colvargrid_integrate::extrapolate_data() {
                         }
                     }
                 }
-                if (known_neighbors >0) {
+                if (known_neighbors > 0) {
                     for (size_t d = 0; d < nd; d++) {
                         interpolated[address(ix) * nd + d] = interpolated_gradient[d] / weight_total;
                     }
                     known[gradients->address(ix)] = step;
-                }
-                else
+                } else
                     converged = false;
             }
         }
