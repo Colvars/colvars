@@ -23,7 +23,6 @@ void saveVectorToCSV(const std::vector<cvm::real>& vec, const std::string& filen
 int main (int argc, char *argv[]) {
   bool weighted = true;
   bool save_divergence = false;
-
   if (argc < 2) {
     std::cerr << "\n\nOne argument needed: gradient multicol file name.\n";
     return 1;
@@ -50,6 +49,7 @@ int main (int argc, char *argv[]) {
   else if (argc > 2) {
     countfile = argv[2];
   }
+  std::cout << countfile << std::endl;
   if (countfile.size()) {
     struct stat buffer;
     if (stat(countfile.c_str(), &buffer) == 0) {
@@ -75,7 +75,7 @@ int main (int argc, char *argv[]) {
 
   grad_ptr->write_multicol("gradient_in.dat");
 
-  int itmax = 1000;
+  int itmax = 10000;
   cvm::real err;
   cvm::real tol = 2e-3;
 
@@ -83,7 +83,6 @@ int main (int argc, char *argv[]) {
   fes.prepare_laplacian_necessary_stencils();
   // fes.print_laplacian_preparations();
 
-  // fes.print_laplacian_preparations();
   if (save_divergence){
     if (!weighted) {
       fes.set_div();
@@ -111,15 +110,14 @@ int main (int argc, char *argv[]) {
   }
   // std::vector<cvm::real> laplacian_matrix (fes.computation_grid->nt, 0);
   // std::vector<cvm::real> test_vector (fes.computation_grid->nt, 1);
-  // std::vector<cvm::real> complete_div (fes.computation_grid->nt, 0);
-  // //
+  // // std::vector<cvm::real> complete_div (fes.computation_grid->nt, 0);
+  // // //
   // fes.laplacian_weighted<true>(test_vector, laplacian_matrix);
   // for (int i = 0; i < fes.computation_grid->nt; i++){
   // complete_div[i] = fes.divergence[i] + fes.div_border_supplement[i];
   // }
   // std::cout << fes.divergence.size() << " " << fes.div_border_supplement.size() << std::endl;
   // saveVectorToCSV(complete_div, "divergence.csv");
-  // // saveVectorToCSV(fes.laplacian_matrix_test, "laplacian.csv");
 
 
   fes.integrate(itmax, tol, err, true);
@@ -136,6 +134,8 @@ int main (int argc, char *argv[]) {
     std::cout << "\nWriting integrated free energy in OpenDX format to " + gradfile + ".int.dx\n";
     fes.write_opendx(std::string(gradfile + ".int.dx"), "integrated free energy");
   }
+  saveVectorToCSV(fes.laplacian_matrix_test, "laplacian.csv");
+
 
   delete proxy;
   return 0;
