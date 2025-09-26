@@ -119,7 +119,6 @@ class colvargrid_integrate : public colvar_grid_scalar
   std::vector<size_t> sorted_counts;
 
   // TODO: Add that as constructor arguments
-  cvm::real m;
   size_t sum_count;
   // max and min count to regularize F
   size_t max_count_F = 1;
