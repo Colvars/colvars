@@ -312,6 +312,8 @@ int colvar::init(std::string const &conf)
   }
   if (time_step_factor > 1) {
     enable(f_cv_multiple_ts);
+  } else {
+    enable(f_cv_awake); // this colvar is always awake
   }
 
   error_code |= init_grid_parameters(conf);
