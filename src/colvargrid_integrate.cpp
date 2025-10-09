@@ -76,7 +76,7 @@ colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient>
     for (size_t i = 0; i < nd; i++) {
         if (!periodic[i]) need_to_extrapolate_weighted_solution = true;
     }
-    if (!weighted || !need_to_extrapolate_weighted_solution) {
+    if (!need_to_extrapolate_weighted_solution) {
         computation_grid = this;
     } else {
         computation_grid->periodic = periodic;
@@ -110,66 +110,52 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
             // If not, sum should be zero
             set_value(ix, sum);
         }
-    } else if (nd <= 3) {
-        if (weighted) {
-            // // find a nice first starting point
-            // divergence.resize(nt);
-            // set_div();
-            // size_t actual_computation_nt = computation_nt;
-            // computation_nt = nt;
-            // nr_linbcg_sym(false, divergence, data, 1e-3, 50, iter, err);
-            // for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
-            //   bool to_be_considered = true;
-            //   std::vector<int> smaller_grid_index = ix;
-            //   for (size_t i = 0; i < nd; i++) {
-            //     if (ix[i] == 0 or ix[i] == nx[i] - 1) {
-            //       to_be_considered = false;
-            //       break;
-            //     }
-            //     else
-            //       smaller_grid_index[i] -= 1;
-            //   }
-            //   if (to_be_considered) {
-            //     computation_grid->data[computation_grid->address(smaller_grid_index)] = data[address(ix)];
-            //   }
-            // }
-            divergence.clear();
-            // computation_nt = actual_computation_nt;
-            // std::cout<< computation_nt << "\n";
-            divergence.resize(computation_nt);
+    } else {
+        divergence.clear();
+        divergence.resize(computation_nt);
+        if (weighted || nd > 3) {
             prepare_calculations();
             // extrapolate_data();
             set_weighted_div();
-            // TODO: check why it doesn't work when replacing data by computation_grid->data (this was segmentation error)
-            // or data or if i use a temporary vector to store this useless laplacian calculation (probably ill-conditionned).
             std::vector<cvm::real> temp = divergence;
             std::vector<cvm::real> temp2(computation_grid->data);
             laplacian_weighted<true>(divergence, temp2);
             temp.clear();
             temp2.clear();
-            cvm::real average = 0;
             for (size_t i = 0; i < computation_nt; i++) {
                 divergence[i] += div_border_supplement[i];
-                average += divergence[i];
-            }
-            average = average / static_cast<cvm::real> (computation_nt);
-            for (size_t i = 0; i < computation_nt; i++) {
-                divergence[i] = divergence[i] - average;
             }
             div_border_supplement.clear();
         } else {
             set_div();
         }
-        if (weighted || nd > 3)
+
+        cvm::real average = 0;
+        for (size_t i = 0; i < computation_nt; i++) {
+            average += divergence[i];
+            }
+        average = average / static_cast<cvm::real>(computation_nt);
+        for (size_t i = 0; i < computation_nt; i++) {
+            divergence[i] = divergence[i] - average;
+        }
+
+        if (weighted || nd > 3) {
+            if (nd > 3) {
+                std::cout << "WARNING: Integration of potential of dimension higher than 3 requires a lot of memory." << std::endl;
+            }
             nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
+        }
         else
             nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
         if (verbose)
             cvm::log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
-        if (weighted && need_to_extrapolate_weighted_solution) {
+        if (need_to_extrapolate_weighted_solution) {
             std::cout << "extrapolating potential" << std::endl;
             // this->data.resize(nt);
+            // if (weighted)
             extrapolate_potential();
+            // else
+                // extrapolate_potential_unweighted();
             std::cout << "potential extrapolated" << std::endl;
         }
 
@@ -231,9 +217,10 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
         //   printf("\n");
         // }
         // DEBUG 2 ###########################
-    } else {
-        cvm::error("Cannot integrate PMF in dimension > 3\n");
     }
+    // else {
+    //     cvm::error("Cannot integrate PMF in dimension > 3\n");
+    // }
 
     return iter;
 }
@@ -243,7 +230,7 @@ void colvargrid_integrate::set_div() {
     if (nd == 1)
         return;
 
-    for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
+    for (std::vector<int> ix = computation_grid->new_index(); computation_grid -> index_ok(ix); computation_grid -> incr(ix)) {
         update_div_local(ix);
     }
 }
@@ -290,26 +277,6 @@ void colvargrid_integrate::update_div_neighbors(const std::vector<int> &ix0) {
     }
 }
 
-
-size_t colvargrid_integrate::get_grad(cvm::real *g, std::vector<int> &ix) {
-    size_t i;
-    bool edge = gradients->wrap_detect_edge(ix); // Detect edge if non-PBC
-
-    if (edge) {
-        for (i = 0; i < nd; i++) {
-            g[i] = 0.0;
-        }
-        return 0;
-    }
-
-    gradients->vector_value_smoothed(ix, g, b_smoothed);
-    if (gradients->samples)
-        return gradients->samples->value(ix);
-    else
-        return 0;
-}
-
-
 size_t colvargrid_integrate::get_grad(std::vector<cvm::real> &g, std::vector<int> &ix) {
     size_t count = gradients->samples->value(ix);
     gradients->vector_value(ix, g);
@@ -318,55 +285,108 @@ size_t colvargrid_integrate::get_grad(std::vector<cvm::real> &g, std::vector<int
 
 
 void colvargrid_integrate::update_div_local(const std::vector<int> &ix0) {
-    const size_t linear_index = address(ix0);
-    int i, j, k;
+    const size_t linear_index = computation_grid -> address(ix0);
     std::vector<int> ix = ix0;
 
     if (nd == 2) {
         // gradients at grid points surrounding the current scalar grid point
-        cvm::real g00[2], g01[2], g10[2], g11[2];
+        std::vector<cvm::real> g00(2,0), g01(2,0), g10(2,0), g11(2,0);
+
+
+        get_grad(g00, ix);
+        ix[0] = ix0[0] + 1;
+
+        get_grad(g10, ix);
+        ix[1] = ix0[1] + 1;
 
         get_grad(g11, ix);
-        ix[0] = ix0[0] - 1;
-        get_grad(g01, ix);
-        ix[1] = ix0[1] - 1;
-        get_grad(g00, ix);
         ix[0] = ix0[0];
-        get_grad(g10, ix);
+
+        get_grad(g01, ix);
+        ix = ix0;
 
         divergence[linear_index] = ((g10[0] - g00[0] + g11[0] - g01[0]) / widths[0]
                                     + (g01[1] - g00[1] + g11[1] - g10[1]) / widths[1]) * 0.5;
-    } else if (nd == 3) {
-        cvm::real gc[24]; // stores 3d gradients in 8 contiguous bins
-        int index = 0;
-
-        ix[0] = ix0[0] - 1;
-        for (i = 0; i < 2; i++) {
-            ix[1] = ix0[1] - 1;
-            for (j = 0; j < 2; j++) {
-                ix[2] = ix0[2] - 1;
-                for (k = 0; k < 2; k++) {
-                    get_grad(gc + index, ix);
-                    index += 3;
-                    ix[2]++;
-                }
-                ix[1]++;
-            }
-            ix[0]++;
+        cvm::real supplement = 0;
+        cvm::real supplement_coefficient = 1;
+        if ((ix0[0] == 0 || ix0[0] == computation_nx[0] - 1) && !periodic[0]) {
+            cvm::real coefficient = (ix[0] == 0) ? 1.0 : -1.0;
+            supplement_coefficient = 0.5 * supplement_coefficient;
+            supplement += coefficient * (g10[0] + g00[0] + g11[0] + g01[0]) * 0.25 * 2 / widths[0];
+        } if ((ix0[1] == 0 || ix0[1] == computation_nx[1] - 1) && !periodic[1]) {
+            cvm::real coefficient = (ix[1] == 0) ? 1.0 : -1.0;
+            supplement_coefficient = 0.5 * supplement_coefficient;
+            supplement += coefficient * (g01[1] + g00[1] + g11[1] + g10[1]) * 0.25 * 2 / widths[1];
         }
+        divergence[linear_index] += supplement;
+        divergence[linear_index] *= supplement_coefficient;
+    } else if (nd == 3) {
+        // 8 gradient vectors, each of size 3
+        std::vector<cvm::real> g000(3, 0.0), g001(3, 0.0), g010(3, 0.0), g011(3, 0.0);
+        std::vector<cvm::real> g100(3, 0.0), g101(3, 0.0), g110(3, 0.0), g111(3, 0.0);
 
+        // Start at ix0
+        ix[0] = ix0[0];
+        ix[1] = ix0[1];
+        ix[2] = ix0[2];
+
+        // Fill the 8 corners, shifting with +1
+        get_grad(g000, ix);            // (0,0,0)
+
+        ix[2] = ix0[2] + 1;
+        get_grad(g001, ix);            // (0,0,1)
+
+        ix[1] = ix0[1] + 1;
+        ix[2] = ix0[2];
+        get_grad(g011, ix);            // (0,1,1)
+
+        ix[2] = ix0[2] - 1 + 1; // or reset properly
+        ix[2] = ix0[2];
+        get_grad(g010, ix);            // (0,1,0)
+
+        ix[0] = ix0[0] + 1;
+        ix[1] = ix0[1];
+        ix[2] = ix0[2];
+        get_grad(g100, ix);            // (1,0,0)
+
+        ix[2] = ix0[2] + 1;
+        get_grad(g101, ix);            // (1,0,1)
+
+        ix[1] = ix0[1] + 1;
+        ix[2] = ix0[2];
+        get_grad(g111, ix);            // (1,1,1)
+
+        ix[2] = ix0[2] - 1 + 1; // ensure reset
+        ix[2] = ix0[2];
+        get_grad(g110, ix);            // (1,1,0)
+        ix = ix0;
         divergence[linear_index] =
-        ((gc[3 * 4] - gc[0] + gc[3 * 5] - gc[3 * 1] + gc[3 * 6] - gc[3 * 2] + gc[3 * 7] - gc[3 * 3])
-         / widths[0]
-         + (gc[3 * 2 + 1] - gc[0 + 1] + gc[3 * 3 + 1] - gc[3 * 1 + 1] + gc[3 * 6 + 1] - gc[3 * 4 + 1] + gc[3 * 7 + 1] -
-            gc[3 * 5 + 1])
-         / widths[1]
-         + (gc[3 * 1 + 2] - gc[0 + 2] + gc[3 * 3 + 2] - gc[3 * 2 + 2] + gc[3 * 5 + 2] - gc[3 * 4 + 2] + gc[3 * 7 + 2] -
-            gc[3 * 6 + 2])
-         / widths[2]) * 0.25;
+        ((g100[0] - g000[0] + g101[0] - g001[0] + g110[0] - g010[0] + g111[0] - g011[0]) / widths[0]
+         + (g010[1] - g000[1] + g011[1] - g001[1] + g110[1] - g100[1] + g111[1] - g101[1]) / widths[1]
+         + (g001[2] - g000[2] + g011[2] - g010[2] + g101[2] - g100[2] + g111[2] - g110[2]) / widths[2]
+        ) * 0.25;
+        cvm::real supplement = 0;
+        cvm::real supplement_coefficient = 1;
+        if ((ix0[0] == 0 || ix0[0] == computation_nx[0] - 1) && !periodic[0]) {
+            cvm::real coefficient = (ix[0] == 0) ? 1.0 : -1.0;
+            supplement_coefficient *= 0.5;
+            supplement = coefficient * (g100[0] + g000[0] + g101[0] + g001[0] + g110[0] + g010[0] + g111[0] + g011[0])
+                    * 0.125 * 2 * widths[0];
+        } if ((ix0[1] == 0 || ix0[1] == computation_nx[1] - 1) && !periodic[1]) {
+            cvm::real coefficient = (ix[1] == 0) ? 1.0 : -1.0;
+            supplement_coefficient *= 0.5;
+            supplement += coefficient * (g010[1] + g000[1] + g011[1] + g001[1] + g110[1] + g100[1] + g111[1] + g101[1])
+                    * widths[1] * 2 * 0.125;
+        } if ((ix0[2] == 0 || ix0[2] == computation_nx[2] - 1) && !periodic[2]) {
+            cvm::real coefficient = (ix[2] == 0) ? 1.0 : -1.0;
+            supplement_coefficient *= 0.5;
+            supplement += coefficient * (g001[2] - g000[2] + g011[2] - g010[2] + g101[2] - g100[2] + g111[2] - g110[2])
+                    * 0.125 * 2 * widths[2];
+        }
+        divergence[linear_index] += supplement;
+        divergence[linear_index] *= supplement_coefficient;
     }
 }
-
 
 inline size_t min(size_t a, size_t b) { return a < b ? a : b; }
 
@@ -393,7 +413,7 @@ Updates the divergence at the point ix0
     for (std::vector<int> surrounding_point_relative_position:
          surrounding_points_relative_positions) {
         std::vector<int> surrounding_point_coordinates = ix0;
-        std::vector<cvm::real> gradient_at_surrounding_point(0, nd);
+        std::vector<cvm::real> gradient_at_surrounding_point(nd, 0);
         for (size_t i = 0; i < nd; i++) {
             surrounding_point_coordinates[i] += surrounding_point_relative_position[i];
         }
@@ -423,8 +443,8 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
         cvm::real fact;
         const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
         const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
-        const int h = nx[1];
-        const int w = nx[0];
+        const int h = computation_nx[1];
+        const int w = computation_nx[0];
         // offsets for 4 reference points of the Laplacian stencil
         int xm = -h;
         int xp = h;
@@ -560,9 +580,9 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
         const cvm::real ffx = 1.0 / (widths[0] * widths[0]);
         const cvm::real ffy = 1.0 / (widths[1] * widths[1]);
         const cvm::real ffz = 1.0 / (widths[2] * widths[2]);
-        const int h = nx[2]; // height
-        const int d = nx[1]; // depth
-        const int w = nx[0]; // width
+        const int h = computation_nx[2]; // height
+        const int d = computation_nx[1]; // depth
+        const int w = computation_nx[0]; // width
         // offsets for 6 reference points of the Laplacian stencil
         int xm = -d * h;
         int xp = d * h;
@@ -829,7 +849,10 @@ void colvargrid_integrate::asolve(const std::vector<cvm::real> &b, std::vector<c
   return;
 }*/
 
+template<bool initialize_div_supplement>
+void colvargrid_integrate::compute_laplacian_weighted_result_precomputed(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA, size_t grid_address) {
 
+}
 /// Multiplication by sparse matrix representing Laplacian
 /// NOTE: Laplacian must be symmetric for solving with CG
 template<bool initialize_div_supplement>
@@ -843,9 +866,10 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
         if (initialize_div_supplement)
             div_border_supplement[computation_grid->address(ix)] = 0;
     }
-    // for testing
+    // for testing, uncomment lines involving laplacian_matrix_test
     // laplacian_matrix_test = std::vector<cvm::real>(computation_nt*computation_nt, 0);
     if (m_num_threads == 1) {
+
         for (size_t grid_address = 0; grid_address < computation_grid->nt; grid_address++) {
             std::vector<int> neighbor_coordinate(nd);
             std::vector<int> reference_point_coordinates(nd);
@@ -860,19 +884,6 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
                 }
                 bool is_ghost_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
                 cvm::real coefficient = laplacian_coefficients[grid_address * multiplicity + i];
-                // // Calculation of the laplacian coefficient, when memory is not sufficient to precompute them
-                // cvm::real coefficient =0;
-                // for (std::vector<int> direction : weight_stencil[i]) {
-                //   std::vector<int> weight_coordinate = neighbor_coordinate; // Initialize with stencil_point instead of size
-                //   for (size_t n = 0; n < nd && n < direction.size(); n++) {
-                //     weight_coordinate[n] += direction[n];
-                //   }
-                //   gradients->wrap_detect_edge(weight_coordinate);
-                //   coefficient += regularized_weights[gradients->address(weight_coordinate)] - m;
-                // }
-                // coefficient *= weight_counts[i] / pow(2, (nd-1)*2);
-                // coefficient+= neighbor_in_classic_laplacian_stencil[i] * m;
-
                 if (!is_ghost_point) {
                     LA[grid_address] += coefficient * A[computation_grid->address(neighbor_coordinate)];
                     // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
@@ -883,17 +894,69 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
 
                     if (initialize_div_supplement) {
                         cvm::real div_supplement_term = 0;
-                        averaged_normal_vector = compute_averaged_border_normal_gradients(neighbor_coordinate);
+                        averaged_normal_vector = compute_averaged_border_normal_gradient(neighbor_coordinate);
                         for (size_t dim = 0; dim < nd; dim++) {
                             div_supplement_term += averaged_normal_vector[dim] * neighbor_relative_position[dim] *
-                                    widths[
-                                        dim];
+                                    widths[dim];
                         }
                         div_border_supplement[grid_address] -= div_supplement_term * coefficient;
                     }
                 }
             }
         }
+
+        // // Without precomputation of the laplacian coefficients
+        // for (size_t grid_address = 0; grid_address < computation_grid->nt; grid_address++) {
+        //     std::vector<int> neighbor_coordinate(nd);
+        //     std::vector<int> reference_point_coordinates(nd);
+        //     std::vector<cvm::real> averaged_normal_vector(nd);
+        //     std::vector<int> ix(nd);
+        //     computation_grid->index(grid_address, ix);
+        //     cvm::real diagonal_coeff= 0;
+        //     for (size_t i = 0; i < laplacian_stencil.size() - 1; i++) {
+        //
+        //         std::vector<int> neighbor_relative_position = laplacian_stencil[i];
+        //         for (size_t dim = 0; dim < nd; dim++) {
+        //             neighbor_coordinate[dim] = ix[dim] + neighbor_relative_position[dim];
+        //         }
+        //
+        //         cvm::real coefficient = 0;
+        //
+        //         for (std::vector<int> direction: weight_stencil[i]) {
+        //             std::vector<int> weight_coordinate = ix;
+        //             // Initialize with stencil_point instead of size
+        //             for (size_t n = 0; n < nd && n < direction.size(); n++) {
+        //                 weight_coordinate[n] += direction[n];
+        //             }
+        //             gradients->wrap_detect_edge(weight_coordinate);
+        //             coefficient += regularized_weights[gradients->address(weight_coordinate)];
+        //         }
+        //         coefficient *= weight_counts[i];
+        //         diagonal_coeff += coefficient;
+        //         bool is_ghost_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
+        //         if (!is_ghost_point) {
+        //             LA[grid_address] += coefficient * A[computation_grid->address(neighbor_coordinate)];
+        //             // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
+        //         } else {
+        //             computation_grid->wrap_to_edge(neighbor_coordinate, reference_point_coordinates);
+        //             LA[grid_address] += coefficient * A[computation_grid->address(reference_point_coordinates)];
+        //             // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(reference_point_coordinates)] += coefficient;
+        //
+        //             if (initialize_div_supplement) {
+        //                 cvm::real div_supplement_term = 0;
+        //                 averaged_normal_vector = compute_averaged_border_normal_gradient(neighbor_coordinate);
+        //                 for (size_t dim = 0; dim < nd; dim++) {
+        //                     div_supplement_term += averaged_normal_vector[dim] * neighbor_relative_position[dim] *
+        //                             widths[dim];
+        //                 }
+        //                 div_border_supplement[grid_address] -= div_supplement_term * coefficient;
+        //             }
+        //         }
+        //     }
+        //     LA[grid_address] += -diagonal_coeff * A[grid_address];
+        // }
+
+
     } else {
 #ifdef _OPENMP
 #pragma omp parallel for // schedule(static, 128)
@@ -912,19 +975,6 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
                 }
                 bool is_ghost_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
                 cvm::real coefficient = laplacian_coefficients[grid_address * multiplicity + i];
-                // TODO: Update this comment
-                // // Calculation of the laplacian coefficient, when memory is not sufficient to precompute them
-                // cvm::real coefficient =0;
-                // for (std::vector<int> direction : weight_stencil[i]) {
-                //   std::vector<int> weight_coordinate = neighbor_coordinate; // Initialize with stencil_point instead of size
-                //   for (size_t n = 0; n < nd && n < direction.size(); n++) {
-                //     weight_coordinate[n] += direction[n];
-                //   }
-                //   gradients->wrap_detect_edge(weight_coordinate);
-                //   coefficient += regularized_weights[gradients->address(weight_coordinate)] - m;
-                // }
-                // coefficient *= weight_counts[i] / pow(2, (nd-1)*2);
-                // coefficient+= neighbor_in_classic_laplacian_stencil[i] * m;
 
                 if (!is_ghost_point) {
                     LA[grid_address] += coefficient * A[computation_grid->address(neighbor_coordinate)];
@@ -936,7 +986,7 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
 
                     if (initialize_div_supplement) {
                         cvm::real div_supplement_term = 0;
-                        averaged_normal_vector = compute_averaged_border_normal_gradients(neighbor_coordinate);
+                        averaged_normal_vector = compute_averaged_border_normal_gradient(neighbor_coordinate);
                         for (size_t dim = 0; dim < nd; dim++) {
                             div_supplement_term += averaged_normal_vector[dim] * neighbor_relative_position[dim] *
                                     widths[
@@ -947,6 +997,56 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
                 }
             }
         }
+
+        // // Without precomputation of the laplacian coefficients
+        // for (size_t grid_address = 0; grid_address < computation_grid->nt; grid_address++) {
+        //     std::vector<int> neighbor_coordinate(nd);
+        //     std::vector<int> reference_point_coordinates(nd);
+        //     std::vector<cvm::real> averaged_normal_vector(nd);
+        //     std::vector<int> ix(nd);
+        //     computation_grid->index(grid_address, ix);
+        //     cvm::real diagonal_coeff= 0;
+        //
+        //     for (size_t i = 0; i < laplacian_stencil.size() - 1; i++) {
+        //         std::vector<int> neighbor_relative_position = laplacian_stencil[i];
+        //         for (size_t dim = 0; dim < nd; dim++) {
+        //             neighbor_coordinate[dim] = ix[dim] + neighbor_relative_position[dim];
+        //         }
+        //         cvm::real coefficient = 0;
+        //         for (std::vector<int> direction: weight_stencil[i]) {
+        //             std::vector<int> weight_coordinate = ix;
+        //             // Initialize with stencil_point instead of size
+        //             for (size_t n = 0; n < nd && n < direction.size(); n++) {
+        //                 weight_coordinate[n] += direction[n];
+        //             }
+        //             gradients->wrap_detect_edge(weight_coordinate);
+        //             coefficient += regularized_weights[gradients->address(weight_coordinate)];
+        //         }
+        //         coefficient *= weight_counts[i];
+        //         diagonal_coeff += coefficient;
+        //         bool is_ghost_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
+        //         if (!is_ghost_point) {
+        //             LA[grid_address] += coefficient * A[computation_grid->address(neighbor_coordinate)];
+        //             // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
+        //         } else {
+        //             computation_grid->wrap_to_edge(neighbor_coordinate, reference_point_coordinates);
+        //             LA[grid_address] += coefficient * A[computation_grid->address(reference_point_coordinates)];
+        //             // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(reference_point_coordinates)] += coefficient;
+        //
+        //             if (initialize_div_supplement) {
+        //                 cvm::real div_supplement_term = 0;
+        //                 averaged_normal_vector = compute_averaged_border_normal_gradient(neighbor_coordinate);
+        //                 for (size_t dim = 0; dim < nd; dim++) {
+        //                     div_supplement_term += averaged_normal_vector[dim] * neighbor_relative_position[dim] *
+        //                             widths[dim];
+        //                 }
+        //                 div_border_supplement[grid_address] -= div_supplement_term * coefficient;
+        //             }
+        //         }
+        //     }
+        //     LA[grid_address] += -diagonal_coeff * A[grid_address];
+        // }
+
 #else
         cvm::error("multiple threads required in weighted poisson integration, but this binary is not linked "
             "with a supported threading library.\n");
@@ -979,8 +1079,8 @@ void colvargrid_integrate::prepare_laplacian_necessary_stencils() {
             int off_set = 0;
             for (size_t k = 0; k < nd; k++) {
                 if (k != dim) {
-                    weight_stencil[2 * dim][weights_to_average_relative_pos][k] = base_2[k+off_set] - '0';
-                    weight_stencil[2 * dim + 1][weights_to_average_relative_pos][k] = base_2[k+off_set] - '0';
+                    weight_stencil[2 * dim][weights_to_average_relative_pos][k] = base_2[k + off_set] - '0';
+                    weight_stencil[2 * dim + 1][weights_to_average_relative_pos][k] = base_2[k + off_set] - '0';
                 } else {
                     off_set = -1;
                     weight_stencil[2 * dim][weights_to_average_relative_pos][dim] = 0;
@@ -1058,8 +1158,8 @@ void colvargrid_integrate::prepare_calculations() {
          gradients->incr(ix)) {
         regularized_weights[gradients->address(ix)] = get_regularized_weight(ix);
     }
-
-    laplacian_coefficients.resize(computation_grid->data.size() * laplacian_stencil.size());
+    laplacian_coefficients.clear();
+    laplacian_coefficients.resize(computation_grid->data.size() * laplacian_stencil.size(),0);
     // laplacian_matrix_test = std::vector<cvm::real>(computation_nt*computation_nt, 0);
     std::vector<int> neighbor_coordinate(nd);
     std::vector<int> reference_point_coordinates(nd);
@@ -1098,7 +1198,6 @@ void colvargrid_integrate::prepare_calculations() {
 cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix) {
     cvm::real regularized_weight;
     size_t count = gradients->samples->value(ix);
-    // TODO: put switch here
     if (count < lower_threshold_count) {
         regularized_weight = lower_threshold_count;
     } else if (count > upper_threshold_count) {
@@ -1106,16 +1205,14 @@ cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix) {
     } else {
         regularized_weight = count;
     }
-    return regularized_weight / upper_threshold_count;
+    return 1; //regularized_weight;
 }
 
 void colvargrid_integrate::get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix) {
-    // TODO: check if i cannot just use vector_value_smooth_instead/ old get_grad
-    F.resize(nd);
+    // F.resize(nd);
 
     size_t count = get_grad(F, ix);
     float multiplier = 1;
-    //TODO: put switch here
     if (count < min_count_F) {
         multiplier = 0;
     } else if (count < max_count_F) {
@@ -1149,7 +1246,7 @@ inline cvm::real colvargrid_integrate::calculate_weight_sum(std::vector<int> poi
     return weight_sum;
 }
 
-std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_gradients(
+std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_gradient(
     std::vector<int> virtual_point_coordinates) {
     // bool test = virtual_point_coordinates[0] == 129 && virtual_point_coordinates[1] == 69;
     std::vector<int> reference_point_coordinates(nd, 0); // Initialize with correct size
@@ -1435,7 +1532,7 @@ void colvargrid_integrate::extrapolate_potential() {
             for (size_t i = 0; i < nd; i++) {
                 relative_position[i] = corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i];
             }
-            std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradients(
+            std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradient(
                 corresponding_index_in_small_grid);
             for (size_t i = 0; i < nd; i++) {
                 potential_value += averaged_normal_vector[i] * relative_position[i] * widths[i];
@@ -1444,6 +1541,127 @@ void colvargrid_integrate::extrapolate_potential() {
         data[address(ix)] = potential_value;
     }
 };
+// TODO: in reality, we don't actually need to do that we can just use normal extrapolate, though it's not coherent
+void colvargrid_integrate::extrapolate_potential_unweighted() {
+    for (std::vector<int> ix = new_index(); index_ok(ix);
+         incr(ix)) {
+        std::vector<int> corresponding_index_in_small_grid(ix);
+        for (size_t i = 0; i < nd; i++) {
+            if (!periodic[i]) {
+                corresponding_index_in_small_grid[i] = ix[i] - 1;
+            }
+        }
+        std::vector<int> reference_index_in_small_grid(nd, 0);
+        bool need_to_extrapolate =
+                computation_grid->wrap_to_edge(corresponding_index_in_small_grid, reference_index_in_small_grid);
+        std::vector<cvm::real> relative_position(nd, 0);
+        cvm::real potential_value = computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
+        double only_one = 0;
+        std::vector<int> reference_index_in_small_grid_maybe(reference_index_in_small_grid);
+        if (need_to_extrapolate) {
+            for (size_t i = 0; i < nd; i++) {
+                relative_position[i] = corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i];
+                only_one += std::abs(relative_position[i]);
+                if (relative_position[i] !=0) {
+                    reference_index_in_small_grid_maybe[i] -= relative_position[i];
+                }
+            }
+            bool two_or_more = only_one > 1;
+            if (!two_or_more){
+                potential_value = computation_grid->data[computation_grid->address(reference_index_in_small_grid_maybe)];
+                std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradient_classic(
+                   corresponding_index_in_small_grid);
+                for (size_t i = 0; i < nd; i++) {
+                    potential_value += averaged_normal_vector[i] * relative_position[i] * 2 * widths[i];
+                }
+            }
+            else {
+                potential_value = computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
+                std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradient(
+                   corresponding_index_in_small_grid);
+                for (size_t i = 0; i < nd; i++) {
+                    potential_value += averaged_normal_vector[i] * relative_position[i] * widths[i];
+                }
+            }
+        }
+        data[address(ix)] = potential_value;
+        }
+};
+
+std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_gradient_classic(const std::vector<int> & ix0) {
+    //TODO: maybe do it while computing the div and store it in a vector<vector<real>>>
+    std::vector<int> ix(ix0);
+    std::vector<cvm::real> averaged_gradient(nd, 0);
+    if (nd == 2) {
+        std::vector<cvm::real> g00(2,0), g01(2,0), g10(2,0), g11(2,0);
+        ix[0] = ix0[0] + 1;
+        get_grad(g10, ix);
+        ix[1] = ix0[1] + 1;
+        get_grad(g11, ix);
+        ix[0] = ix0[0];
+        get_grad(g01, ix);
+
+        if ((ix0[0] == 0 || ix0[0] == nx[0]) && !periodic[0]) {
+            averaged_gradient[0] =  (g10[0] + g00[0] + g11[0] + g01[0]);
+        } else if ((ix0[1] == 0 || ix0[1] == nx[1]) && !periodic[1]) {
+            averaged_gradient[1] += (g01[1] + g00[1] + g11[1] + g10[1]);
+        }
+    }
+    else if (nd ==3) {
+        std::vector<cvm::real> g000(3, 0.0), g001(3, 0.0), g010(3, 0.0), g011(3, 0.0);
+        std::vector<cvm::real> g100(3, 0.0), g101(3, 0.0), g110(3, 0.0), g111(3, 0.0);
+
+        // Start at ix0
+        ix[0] = ix0[0];
+        ix[1] = ix0[1];
+        ix[2] = ix0[2];
+
+        // Fill the 8 corners, shifting with +1
+        get_grad(g000, ix);            // (0,0,0)
+
+        ix[2] = ix0[2] + 1;
+        get_grad(g001, ix);            // (0,0,1)
+
+        ix[1] = ix0[1] + 1;
+        ix[2] = ix0[2];
+        get_grad(g011, ix);            // (0,1,1)
+
+        ix[2] = ix0[2] - 1 + 1; // or reset properly
+        ix[2] = ix0[2];
+        get_grad(g010, ix);            // (0,1,0)
+
+        ix[0] = ix0[0] + 1;
+        ix[1] = ix0[1];
+        ix[2] = ix0[2];
+        get_grad(g100, ix);            // (1,0,0)
+
+        ix[2] = ix0[2] + 1;
+        get_grad(g101, ix);            // (1,0,1)
+
+        ix[1] = ix0[1] + 1;
+        ix[2] = ix0[2];
+        get_grad(g111, ix);            // (1,1,1)
+
+        ix[2] = ix0[2] - 1 + 1; // ensure reset
+        ix[2] = ix0[2];
+        get_grad(g110, ix);            // (1,1,0)
+
+        if ((ix0[0] == 0 || ix0[0] == nx[0]) && !periodic[0]) {
+            averaged_gradient[0] =  (g100[0] + g000[0] + g101[0] + g001[0] + g110[0] + g010[0] + g111[0] + g011[0])
+                    * 0.125;
+        } else if ((ix0[1] == 0 || ix0[1] == nx[1]) && !periodic[1]) {
+
+            averaged_gradient[1]=  (g010[1] + g000[1] + g011[1] + g001[1] + g110[1] + g100[1] + g111[1] + g101[1])
+                    * 0.125;
+        } else if ((ix0[2] == 0 || ix0[2] == nx[2]) && !periodic[2]) {
+
+            averaged_gradient[2]= (g001[2] - g000[2] + g011[2] - g010[2] + g101[2] - g100[2] + g111[2] - g110[2])
+                    * 0.125 ;
+        }
+    }
+    return averaged_gradient;
+};
+
 
 template<typename T>
 typename std::vector<T>::iterator colvargrid_integrate::insert_into_sorted_list(
