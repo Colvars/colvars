@@ -68,6 +68,9 @@ public:
 
 
 protected:
+    bool weighted = false;
+    bool precompute = true;
+
     colvar_grid_scalar *computation_grid = new colvar_grid_scalar();
     std::vector<cvm::real> div_border_supplement;
 
@@ -75,8 +78,7 @@ protected:
     std::vector<int> computation_nxc;
 
     size_t computation_nt;
-    bool weighted = false;
-    bool need_to_extrapolate_weighted_solution = false;
+    bool need_to_extrapolate_solution = false;
     // Reference to gradient grid
     std::shared_ptr<colvar_grid_gradient> gradients;
     std::vector<cvm::real> divergence;
@@ -152,10 +154,13 @@ protected:
     void laplacian_weighted(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
 
     template<bool initialize_div_supplement>
-    void compute_laplacian_weighted_result_precomputed(const std::vector<cvm::real> &x, std::vector<cvm::real> &r, size_t grid_address);
+    void linewise_laplacian_weighted_precomputed(const std::vector<cvm::real> &x, std::vector<cvm::real> &r, size_t grid_address);
 
     template<bool initialize_div_supplement>
-    void compute_laplacian_weighted_result(const std::vector<cvm::real> &x, std::vector<cvm::real> &r, std::vector<int> ix);
+    void linewise_laplacian_weighted_otf(const std::vector<cvm::real> &x, std::vector<cvm::real> &r, size_t grid_address);
+
+    template<bool initialize_div_supplement>
+    void linewise_laplacian_weighted(const std::vector<cvm::real> &x, std::vector<cvm::real> &r, size_t grid_address);
     /// Compute gradient of whole potential grid by finite difference
     // void compute_grad(const std::vector<cvm::real> &A, std::vector<cvm::real> &G);
 
