@@ -21,7 +21,7 @@ void saveVectorToCSV(const std::vector<cvm::real> &vec, const std::string &filen
 }
 
 int main(int argc, char *argv[]) {
-    bool weighted = true;
+    bool weighted = false;
     bool save_divergence = false; // For testing: need to uncomment lines and put divergence back in public
     int itmax = 1000;
     cvm::real err;
