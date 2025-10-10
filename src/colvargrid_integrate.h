@@ -94,8 +94,8 @@ protected:
     size_t max_count_F = 1;
     size_t min_count_F = 0;
     // max and min count to regularize the weights
-    float lambda_max = 0.3;
-    float lambda_min = 0.3;
+    float lambda_max = 0.5;
+    float lambda_min = 0.1;
     size_t upper_threshold_count = 1;
     size_t lower_threshold_count = 1;
     size_t m_num_threads = 1;
