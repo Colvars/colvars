@@ -65,8 +65,6 @@ public:
     /// Array holding divergence + boundary terms (modified Neumann) if not periodic
     std::vector<cvm::real> laplacian_matrix_test;
 
-
-
 protected:
     bool weighted = false;
     bool precompute = true;
@@ -91,7 +89,6 @@ protected:
     std::vector<cvm::real> laplacian_coefficients;
     std::vector<size_t> sorted_counts;
 
-    // TODO: Add that as constructor arguments
     size_t sum_count;
     // max and min count to regularize F
     size_t max_count_F = 1;
@@ -122,11 +119,10 @@ protected:
     std::vector<std::vector<int> > surrounding_points_relative_positions;
     //   std::vector<cvm::real> inv_lap_diag; // Inverse of the diagonal of the Laplacian; for conditioning
 
-  /// Obtain the gradient vector at given location ix, if available
-  /// or zero if it is on the edge of the gradient grid
-  /// ix gets wrapped in PBC
-  /// Returns the sample count in given bin if available, or 1 for all
-  size_t get_grad(std::vector<cvm::real> &g, std::vector<int> &ix);
+    /// Obtain the gradient vector at given location ix, if available
+    /// ix needs to be wrapped beforehand in PBC, if necessary
+    /// Returns the sample count in given bin if available.
+    size_t get_grad(std::vector<cvm::real> &g, std::vector<int> ix);
 
     /// \brief Solve linear system based on CG, valid for symmetric matrices only
     /// atimes : left multiplication by LHS symmetric matrix
@@ -153,42 +149,48 @@ protected:
     template<bool initialize_div_supplement>
     void laplacian_weighted(const std::vector<cvm::real> &x, std::vector<cvm::real> &r);
 
+    /// Computes the line result of the weighted laplacian matrix multiplied by x and stores it in the appropriate line
+    /// in r. Uses the coefficients that must be precomputed.
     template<bool initialize_div_supplement>
-    void linewise_laplacian_weighted_precomputed(const std::vector<cvm::real> &x, std::vector<cvm::real> &r, size_t grid_address);
-
+    void linewise_laplacian_weighted_precomputed(const std::vector<cvm::real> &x, std::vector<cvm::real> &r,
+                                                 size_t grid_address);
+    /// Computes the line result of the weighted laplacian matrix multiplied by x and stores it in the appropriate line
+    /// in r. Calculates laplacian coefficients on the fly.
     template<bool initialize_div_supplement>
-    void linewise_laplacian_weighted_otf(const std::vector<cvm::real> &x, std::vector<cvm::real> &r, size_t grid_address);
-
-    template<bool initialize_div_supplement>
-    void linewise_laplacian_weighted(const std::vector<cvm::real> &x, std::vector<cvm::real> &r, size_t grid_address);
+    void linewise_laplacian_weighted_otf(const std::vector<cvm::real> &x, std::vector<cvm::real> &r,
+                                         size_t grid_address);
+    typedef void (colvargrid_integrate::*func_pointer)(const std::vector<cvm::real> &, std::vector<cvm::real> &, size_t);
+    func_pointer linewise_laplacian_weighted;
     /// Compute gradient of whole potential grid by finite difference
     // void compute_grad(const std::vector<cvm::real> &A, std::vector<cvm::real> &G);
 
 
     //   /// Inversion of preconditioner matrix
     //   void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x);
+
+    /// Converts a number in base 3.
     std::string convert_base_three(int n);
 
     std::string convert_base_two(int n, size_t length);
 
-    std::vector<std::vector<int> > update_weight_relative_positions(
-        std::vector<std::vector<int> > &weights_relative_positions, std::vector<int> direction);
-
+    /// Computes the normal border gradient for ghost points calculations in the weighted scheme.
     std::vector<cvm::real> compute_averaged_border_normal_gradient(std::vector<int> virtual_point_coordinates);
-    std::vector<cvm::real> compute_averaged_border_normal_gradient_classic(const std::vector<int> & ix0);
 
-    // Calculatse the sum of the weights for a given point of the stencil
-    cvm::real calculate_weight_sum(std::vector<int> stencil_point, std::vector<std::vector<int> > directions);
-
-    bool is_virtual_point(std::vector<int> coordinate);
-
+    /// Computes the normal border gradient for ghost points calculations in the unweighted scheme, i.e. like Long Chen.
+    std::vector<cvm::real> compute_averaged_border_normal_gradient_classic(const std::vector<int> &ix0);
 
     template<typename T>
     typename std::vector<T>::iterator insert_into_sorted_list(std::vector<T> &sortedList, const T &value);
 
     inline void reverse(std::string::iterator, std::string::iterator);
 
+    /// From the smaller resolution grid, use order 1taylor expansion to find the value on a grid with 2 more cell in each
+    /// dimension. This means, we assigned the ghost points values which are the ones we assigned during the laplacian
+    /// calculation.
     void extrapolate_potential();
+
+    // Same as extrapolate potential, but we assign the values we assumed in the unweighted laplacian scheme. For corner
+    // points also use order 1 Taylor expansion.
     void extrapolate_potential_unweighted();
 
     /// \brief From the cells with estimate of the gradient of the free energy propagates the information through
