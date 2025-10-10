@@ -120,6 +120,9 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
             set_weighted_div();
             std::vector<cvm::real> temp = divergence;
             std::vector<cvm::real> temp2(computation_grid->data);
+            linewise_laplacian_weighted =
+            precompute ? &colvargrid_integrate::linewise_laplacian_weighted_precomputed<true> :
+    &colvargrid_integrate::linewise_laplacian_weighted_otf<true>;
             laplacian_weighted<true>(divergence, temp2);
             temp.clear();
             temp2.clear();
@@ -277,7 +280,7 @@ void colvargrid_integrate::update_div_neighbors(const std::vector<int> &ix0) {
     }
 }
 
-size_t colvargrid_integrate::get_grad(std::vector<cvm::real> &g, std::vector<int> &ix) {
+size_t colvargrid_integrate::get_grad(std::vector<cvm::real> &g, std::vector<int> ix) {
     size_t count = gradients->samples->value(ix);
     gradients->vector_value(ix, g);
     return count;
@@ -949,10 +952,7 @@ void colvargrid_integrate::linewise_laplacian_weighted_otf(const std::vector<cvm
 /// NOTE: Laplacian must be symmetric for solving with CG
 template<bool initialize_div_supplement>
 void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA) {
-    typedef void (colvargrid_integrate::*func_pointer)(const std::vector<cvm::real> &, std::vector<cvm::real> &, size_t);
-    func_pointer linewise_laplacian_weighted =
-            precompute ? &colvargrid_integrate::linewise_laplacian_weighted_precomputed<initialize_div_supplement> :
-    &colvargrid_integrate::linewise_laplacian_weighted_otf<initialize_div_supplement>;
+
     if (initialize_div_supplement) {
         div_border_supplement.resize(divergence.size());
     }
@@ -1090,7 +1090,7 @@ void colvargrid_integrate::prepare_calculations() {
         std::size_t required = (laplacian_stencil.size() + 2) * computation_nt * sizeof(cvm::real);
         double gigabytes = required / (1024.0 * 1024.0 * 1024.0);
         precompute = gigabytes < 2;
-        std::string print_precompute = precompute? "" : " not ";
+        std::string print_precompute = precompute? " " : " not ";
         std::cout << "Laplacian computation will" << print_precompute <<"be done on the fly, precomputing requires " << gigabytes << "GB of memory" << std::endl;
         if (precompute) {
             laplacian_coefficients.clear();
@@ -1158,29 +1158,6 @@ void colvargrid_integrate::get_regularized_F(std::vector<cvm::real> &F, std::vec
     for (size_t i = 0; i < nd; i++) {
         F[i] = multiplier * F[i];
     }
-}
-
-inline cvm::real colvargrid_integrate::calculate_weight_sum(std::vector<int> point,
-                                                            std::vector<std::vector<int> > directions)
-/*
-  This function is used to calculate the sum of the weights for a given point of the stencil
-  arguments:
-    point: Point at which we're calculating the weighted laplacian
-    directions: relative positions of the weights
-  return:
-    the sum of the weights
-*/
-{
-    cvm::real weight_sum = 0;
-    for (std::vector<int> direction: directions) {
-        std::vector<int> weight_coordinate = point; // Initialize with stencil_point instead of size
-        for (size_t i = 0; i < nd && i < direction.size(); i++) {
-            weight_coordinate[i] += direction[i];
-        }
-        gradients->wrap_detect_edge(weight_coordinate);
-        weight_sum += regularized_weights[gradients->address(weight_coordinate)];
-    }
-    return weight_sum;
 }
 
 std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_gradient(
@@ -1316,7 +1293,9 @@ void colvargrid_integrate::nr_linbcg_sym(const bool weighted, const std::vector<
                                                        std::vector<double> &);
     func_pointer atimes =
             weighted ? &colvargrid_integrate::laplacian_weighted<false> : &colvargrid_integrate::laplacian;
-
+    linewise_laplacian_weighted =
+            precompute ? &colvargrid_integrate::linewise_laplacian_weighted_precomputed<false> :
+    &colvargrid_integrate::linewise_laplacian_weighted_otf<false>;
     iter = 0;
     (this->*atimes)(x, r);
     for (j = 0; j < int(computation_nt); j++) {
@@ -1375,7 +1354,9 @@ void colvargrid_integrate::optimize_adam(bool weighted, const std::vector<cvm::r
                                                        std::vector<double> &);
     func_pointer atimes =
             weighted ? &colvargrid_integrate::laplacian_weighted<false> : &colvargrid_integrate::laplacian;
-
+    linewise_laplacian_weighted =
+            precompute ? &colvargrid_integrate::linewise_laplacian_weighted_precomputed<false> :
+    &colvargrid_integrate::linewise_laplacian_weighted_otf<false>;
     std::vector<cvm::real> m(computation_nt, 0.0); // First moment vector
     std::vector<cvm::real> v(computation_nt, 0.0); // Second moment vector
     std::vector<cvm::real> v_hat_sqrt_eps(computation_nt);
@@ -1478,7 +1459,7 @@ void colvargrid_integrate::extrapolate_potential() {
         data[address(ix)] = potential_value;
     }
 };
-// TODO: in reality, we don't actually need to do that we can just use normal extrapolate, though it's not coherent
+// In reality, we don't actually need to do that we can just use normal extrapolate, though it's not coherent
 void colvargrid_integrate::extrapolate_potential_unweighted() {
     for (std::vector<int> ix = new_index(); index_ok(ix);
          incr(ix)) {
