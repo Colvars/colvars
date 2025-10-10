@@ -21,7 +21,7 @@ void saveVectorToCSV(const std::vector<cvm::real> &vec, const std::string &filen
 }
 
 int main(int argc, char *argv[]) {
-    bool weighted = false;
+    bool weighted = true;
     bool save_divergence = false; // For testing: need to uncomment lines and put divergence back in public
     int itmax = 1000;
     cvm::real err;
@@ -82,7 +82,9 @@ int main(int argc, char *argv[]) {
 
 
     colvargrid_integrate fes(grad_ptr, weighted);
-    fes.prepare_laplacian_necessary_stencils();
+
+    // ####################### TESTING ##################################
+    // fes.prepare_laplacian_necessary_stencils();
     // fes.print_laplacian_preparations();
     // If want to test by saving div then put div_supplement and divergence in public.
     // if (save_divergence) {
