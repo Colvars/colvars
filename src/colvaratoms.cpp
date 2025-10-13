@@ -213,7 +213,7 @@ int cvm::atom_group::init_dependencies() {
   // default as unavailable, not enabled
   feature_states.reserve(f_ag_ntot);
   for (i = feature_states.size(); i < colvardeps::f_ag_ntot; i++) {
-    feature_states.push_back(feature_state(false, false));
+    feature_states.emplace_back(false, false);
   }
 
   // Features that are implemented (or not) by all atom groups

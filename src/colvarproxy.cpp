@@ -54,9 +54,9 @@ int colvarproxy_atoms::add_atom_slot(int atom_id)
   atoms_refcount.push_back(1);
   atoms_masses.push_back(1.0);
   atoms_charges.push_back(0.0);
-  atoms_positions.push_back(cvm::rvector(0.0, 0.0, 0.0));
-  atoms_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-  atoms_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
+  atoms_positions.emplace_back(0.0, 0.0, 0.0);
+  atoms_total_forces.emplace_back(0.0, 0.0, 0.0);
+  atoms_new_colvar_forces.emplace_back(0.0, 0.0, 0.0);
   modified_atom_list_ = true;
   return (atoms_ids.size() - 1);
 }
@@ -181,9 +181,9 @@ int colvarproxy_atom_groups::add_atom_group_slot(int atom_group_id)
   atom_groups_refcount.push_back(1);
   atom_groups_masses.push_back(1.0);
   atom_groups_charges.push_back(0.0);
-  atom_groups_coms.push_back(cvm::rvector(0.0, 0.0, 0.0));
-  atom_groups_total_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
-  atom_groups_new_colvar_forces.push_back(cvm::rvector(0.0, 0.0, 0.0));
+  atom_groups_coms.emplace_back(0.0, 0.0, 0.0);
+  atom_groups_total_forces.emplace_back(0.0, 0.0, 0.0);
+  atom_groups_new_colvar_forces.emplace_back(0.0, 0.0, 0.0);
   return (atom_groups_ids.size() - 1);
 }
 
@@ -503,7 +503,7 @@ int colvarproxy::request_deletion()
 
 void colvarproxy::add_config(std::string const &cmd, std::string const &conf)
 {
-  reinterpret_cast<std::list<std::pair<std::string, std::string> > *>(config_queue_)->push_back(std::make_pair(cmd, conf));
+  reinterpret_cast<std::list<std::pair<std::string, std::string> > *>(config_queue_)->emplace_back(cmd, conf);
 }
 
 

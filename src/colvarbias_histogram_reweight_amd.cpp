@@ -318,7 +318,7 @@ void colvarbias_reweightaMD::compute_cumulant_expansion_factor(
 template <typename OST> OST & colvarbias_reweightaMD::write_state_data_template_(OST& os)
 {
   std::ios::fmtflags flags(os.flags());
-  os.setf(std::ios::fmtflags(std::ios::dec), std::ios::floatfield);
+  os.unsetf(std::ios::floatfield);
   write_state_data_key(os, "grid");
   grid->write_raw(os, 8);
   write_state_data_key(os, "grid_count");

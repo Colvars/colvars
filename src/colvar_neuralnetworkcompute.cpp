@@ -246,15 +246,15 @@ bool neuralNetworkCompute::addDenseLayer(const denseLayer& layer) {
     if (m_dense_layers.empty()) {
         // add layer to this ann directly if m_dense_layers is empty
         m_dense_layers.push_back(layer);
-        m_layers_output.push_back(std::vector<double>(layer.getOutputSize()));
-        m_grads_tmp.push_back(std::vector<std::vector<double>>(layer.getOutputSize(), std::vector<double>(layer.getInputSize(), 0)));
+        m_layers_output.emplace_back(layer.getOutputSize());
+        m_grads_tmp.emplace_back(layer.getOutputSize(), std::vector<double>(layer.getInputSize(), 0));
         return true;
     } else {
         // otherwise, we need to check if the output of last layer in m_dense_layers matches the input of layer to be added
         if (m_dense_layers.back().getOutputSize() == layer.getInputSize()) {
             m_dense_layers.push_back(layer);
-            m_layers_output.push_back(std::vector<double>(layer.getOutputSize()));
-            m_grads_tmp.push_back(std::vector<std::vector<double>>(layer.getOutputSize(), std::vector<double>(layer.getInputSize(), 0)));
+            m_layers_output.emplace_back(layer.getOutputSize());
+            m_grads_tmp.emplace_back(layer.getOutputSize(), std::vector<double>(layer.getInputSize(), 0));
             return true;
         } else {
             return false;

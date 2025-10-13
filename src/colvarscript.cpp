@@ -481,7 +481,7 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
                    str+"\n", COLVARS_INPUT_ERROR);
         break;
       }
-      new_result.push_back(std::string(""));
+      new_result.emplace_back("");
       while (str[i] != '\"') {
         new_result.back().append(1, str[i]);
         if (i >= str.length()) {

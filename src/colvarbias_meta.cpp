@@ -1705,7 +1705,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is)
   }
 
   hill_iter const hills_end = hills.end();
-  hills.push_back(hill(h_it, h_weight, h_centers, h_sigmas, h_replica));
+  hills.emplace_back(h_it, h_weight, h_centers, h_sigmas, h_replica);
   if (new_hills_begin == hills_end) {
     // if new_hills_begin is unset, set it for the first time
     new_hills_begin = hills.end();
