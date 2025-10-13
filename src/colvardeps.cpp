@@ -421,14 +421,14 @@ void colvardeps::require_feature_children(int f, int g) {
 
 
 void colvardeps::require_feature_alt(int f, int g, int h) {
-  features()[f]->requires_alt.push_back(std::vector<int>(2));
+  features()[f]->requires_alt.emplace_back(2);
   features()[f]->requires_alt.back()[0] = g;
   features()[f]->requires_alt.back()[1] = h;
 }
 
 
 void colvardeps::require_feature_alt(int f, int g, int h, int i) {
-  features()[f]->requires_alt.push_back(std::vector<int>(3));
+  features()[f]->requires_alt.emplace_back(3);
   features()[f]->requires_alt.back()[0] = g;
   features()[f]->requires_alt.back()[1] = h;
   features()[f]->requires_alt.back()[2] = i;
@@ -436,7 +436,7 @@ void colvardeps::require_feature_alt(int f, int g, int h, int i) {
 
 
 void colvardeps::require_feature_alt(int f, int g, int h, int i, int j) {
-  features()[f]->requires_alt.push_back(std::vector<int>(4));
+  features()[f]->requires_alt.emplace_back(4);
   features()[f]->requires_alt.back()[0] = g;
   features()[f]->requires_alt.back()[1] = h;
   features()[f]->requires_alt.back()[2] = i;

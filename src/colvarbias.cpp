@@ -248,7 +248,7 @@ int colvarbias::init_dependencies() {
   // Initialize feature_states for each instance
   feature_states.reserve(f_cvb_ntot);
   for (i = feature_states.size(); i < f_cvb_ntot; i++) {
-    feature_states.push_back(feature_state(true, false));
+    feature_states.emplace_back(true, false);
     // Most features are available, so we set them so
     // and list exceptions below
   }
@@ -352,7 +352,7 @@ int colvarbias::add_colvar(std::string const &cv_name)
     // although possibly not at all timesteps
     add_child(cv);
 
-    colvar_forces.push_back(colvarvalue());
+    colvar_forces.emplace_back();
     colvar_forces.back().type(cv->value()); // make sure each force is initialized to zero
     colvar_forces.back().is_derivative(); // colvar constraints are not applied to the force
     colvar_forces.back().reset();

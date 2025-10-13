@@ -308,7 +308,7 @@ int colvar::cvc::init_dependencies() {
   feature_states.reserve(f_cvc_ntot);
   for (i = feature_states.size(); i < colvardeps::f_cvc_ntot; i++) {
     bool avail = is_dynamic(i) ? false : true;
-    feature_states.push_back(feature_state(avail, false));
+    feature_states.emplace_back(avail, false);
   }
 
   // Features that are implemented by all cvcs by default

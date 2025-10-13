@@ -77,14 +77,14 @@ int colvar::neuralNetwork::init(std::string const &conf)
                 return cvm::error("Unknown activation function name: \"" + function_name + "\".\n",
                                COLVARS_INPUT_ERROR);
             }
-            activation_functions.push_back(std::make_pair(false, function_name));
+            activation_functions.emplace_back(false, function_name);
             cvm::log(std::string{"The activation function for layer["} + cvm::to_str(num_activation_functions + 1) + std::string{"] is "} + function_name + '\n');
             ++num_activation_functions;
 #ifdef LEPTON
         } else if (key_lookup(conf, lookup_key_custom.c_str())) {
             std::string function_expression;
             get_keyval(conf, lookup_key_custom.c_str(), function_expression, std::string(""));
-            activation_functions.push_back(std::make_pair(true, function_expression));
+            activation_functions.emplace_back(true, function_expression);
             cvm::log(std::string{"The custom activation function for layer["} + cvm::to_str(num_activation_functions + 1) + std::string{"] is "} + function_expression + '\n');
             ++num_activation_functions;
 #endif

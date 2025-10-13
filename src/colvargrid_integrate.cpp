@@ -49,7 +49,7 @@ colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient>
   for (size_t i = 0; i < nd; i++ ) {
     if (!periodic[i]) nx[i]++;
     // Shift the grid by half the bin width (values at edges instead of center of bins)
-    lower_boundaries.push_back(gradients->lower_boundaries[i].real_value - 0.5 * widths[i]);
+    lower_boundaries.emplace_back(gradients->lower_boundaries[i].real_value - 0.5 * widths[i]);
   }
 
   setup(nx);
