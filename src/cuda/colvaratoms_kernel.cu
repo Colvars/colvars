@@ -816,7 +816,6 @@ __global__ void calc_fit_forces_impl_loop2_kernel(
       atomicAdd(&(proxy_new_force_x[pid]), fitting_force_grad.x);
       atomicAdd(&(proxy_new_force_y[pid]), fitting_force_grad.y);
       atomicAdd(&(proxy_new_force_z[pid]), fitting_force_grad.z);
-      printf("proxy_id = %d, fx = %lf, fy = %lf, fz = %lf\n", pid, fitting_force_grad.x, fitting_force_grad.y, fitting_force_grad.z);
     }
     i += gridSize;
   }
