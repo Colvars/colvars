@@ -3,7 +3,6 @@ include(CheckIncludeFile)
 project(run_colvars_test_cuda LANGUAGES CXX)
 
 option(BUILD_TESTS "Build tests" ON)
-option(OUTPUT_FORCE "Output the applied forces for debugging" ON)
 
 if(NOT EXISTS ${COLVARS_SOURCE_DIR})
   set(COLVARS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." CACHE STRING "Colvars source code directory")
@@ -36,12 +35,9 @@ file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
 add_definitions(-DCOLVARS_CUDA)
 
-if(OUTPUT_FORCE)
-  add_definitions(-DSTUB_OUTPUT_FORCE)
-endif()
-
 add_executable(
   run_colvars_test_cuda
+  CLI11.hpp
   run_colvars_test_cuda.cpp
   ${COLVARS_SOURCES}
   ${COLVARS_CUDA_HEADER}
@@ -77,7 +73,11 @@ if(BUILD_TESTS)
       get_filename_component(TEST_NAME ${TEST_CONFIG_FILE} DIRECTORY)
       get_filename_component(TEST_NAME ${TEST_NAME} NAME)
       add_test(NAME ${TEST_NAME}
-        COMMAND run_colvars_test_cuda ${TEST_NAME}/test.in trajectory.xyz "${TEST_NAME}/test_out"
+        COMMAND run_colvars_test_cuda --configuration_file ${TEST_NAME}/test.in --trajectory_file trajectory.xyz --output_prefix "${TEST_NAME}/test_out" --force
+        WORKING_DIRECTORY
+        ${CMAKE_CURRENT_BINARY_DIR}/tests/functional_gpu)
+      add_test(NAME "${TEST_NAME}_spiff"
+        COMMAND bash compare_test.sh ${TEST_NAME}
         WORKING_DIRECTORY
         ${CMAKE_CURRENT_BINARY_DIR}/tests/functional_gpu)
     endforeach()
