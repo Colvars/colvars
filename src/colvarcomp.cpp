@@ -745,11 +745,18 @@ void colvar::cvc::debug_gradients()
   for (size_t ig = 0; ig < atom_groups.size(); ig++) {
     cvm::atom_group *group = atom_groups[ig];
     if (group->b_dummy) continue;
+    // Clear the gradients, because some CVCs may calculate the gradients in calc_value()
+    for (size_t ia = 0; ia < group->size(); ia++) {
+      group->grad_x(ia) = 0;
+      group->grad_y(ia) = 0;
+      group->grad_z(ia) = 0;
+    }
     // (re)read original positions
     group->read_positions();
     group->calc_required_properties();
-    calc_value();
   }
+  calc_value();
+  calc_gradients();
   return;
 }
 
