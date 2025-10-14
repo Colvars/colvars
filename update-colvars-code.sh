@@ -115,7 +115,7 @@ if [ ${code} == "GROMACS" ] ; then
   fi
 fi
 
-COLVARS_VERSION=$(grep define $(dirname $0)/src/colvars_version.h | cut -d' ' -f 3 | tr -d '"')
+COLVARS_VERSION=$(grep '^#define COLVARS_VERSION' $(dirname $0)/src/colvars_version.h | cut -d' ' -f 3 | tr -d '"')
 if [ -z "${COLVARS_VERSION}" ] ; then
   echo "Error reading Colvars version." >&2
   exit 1
