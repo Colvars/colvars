@@ -8,9 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#if defined(STUB_OUTPUT_FORCE)
 #include <iomanip>
-#endif // defined(STUB_OUTPUT_FORCE)
 
 #define COLVARPROXY_VERSION COLVARS_VERSION
 
@@ -29,7 +27,7 @@ public:
   int init_atom(int atom_number) override;
   int check_atom_id(int atom_number) override;
   void clear_atom(int index) override;
-  int read_frame_xyz(const char *filename);
+  int read_frame_xyz(const char *filename, const bool write_force_file = false);
   void reallocate() {
     deallocateDeviceArrays();
     allocateDeviceArrays();
@@ -222,7 +220,7 @@ void colvarproxy_stub_gpu::clear_atom(int index) {
   mAtomsChanged = true;
 }
 
-int colvarproxy_stub_gpu::read_frame_xyz(const char *filename)
+int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_force_file)
 {
   std::vector<cvm::rvector> positions(atoms_ids.size());
   int err = colvars->load_coords_xyz(filename, &positions, nullptr, true);
@@ -248,27 +246,28 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename)
   copy_HtoD(positions_soa.data(), d_mPositions, 3 * numAtoms);
   clear_device_array(d_mAppliedForces, 3 * numAtoms);
   clear_device_array(d_mTotalForces, 3 * numAtoms);
-#if defined(STUB_OUTPUT_FORCE)
-  const std::string force_filename = colvars->output_prefix() + "_forces_" + cvm::to_str(colvars->it) + ".dat";
-#endif // defined(STUB_OUTPUT_FORCE)
+  std::string force_filename;
+  if (write_force_file) {
+    force_filename = colvars->output_prefix() + "_forces_" + cvm::to_str(colvars->it) + ".dat";
+  }
   if ( !err ) {
     colvars->calc();
     colvars->it++;
+    colvarproxy_atoms::atom_buffer_real_t h_applied_forces(3 * numAtoms);
+    copy_DtoH(d_mAppliedForces, h_applied_forces.data(), 3 * numAtoms);
+    if (write_force_file) {
+      std::ofstream ofs(force_filename);
+      for (size_t i = 0; i < numAtoms; ++i) {
+        const cvm::real fx = h_applied_forces[i];
+        const cvm::real fy = h_applied_forces[i + numAtoms];
+        const cvm::real fz = h_applied_forces[i + 2 * numAtoms];
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << fx << std::setw(0) << " ";
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << fy << std::setw(0) << " ";
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << fz << std::setw(0) << " ";
+        ofs << std::endl;
+      }
+    }
   }
-  colvarproxy_atoms::atom_buffer_real_t h_applied_forces(3 * numAtoms);
-  copy_DtoH(d_mAppliedForces, h_applied_forces.data(), 3 * numAtoms);
-#if defined(STUB_OUTPUT_FORCE)
-  std::ofstream ofs(force_filename);
-  for (size_t i = 0; i < numAtoms; ++i) {
-    const cvm::real fx = h_applied_forces[i];
-    const cvm::real fy = h_applied_forces[i + numAtoms];
-    const cvm::real fz = h_applied_forces[i + 2 * numAtoms];
-    ofs << std::scientific << std::setprecision(12) << std::setw(20) << fx << std::setw(0) << " ";
-    ofs << std::scientific << std::setprecision(12) << std::setw(20) << fy << std::setw(0) << " ";
-    ofs << std::scientific << std::setprecision(12) << std::setw(20) << fz << std::setw(0) << " ";
-    ofs << std::endl;
-  }
-#endif // defined(STUB_OUTPUT_FORCE)
   mAtomsChanged = false;
   return err;
 }
@@ -324,7 +323,7 @@ int main(int argc, char *argv[]) {
     }
     int io_err = 0;
     while (!io_err) {
-      io_err = proxy->read_frame_xyz(trajectory_file.c_str());
+      io_err = proxy->read_frame_xyz(trajectory_file.c_str(), output_force);
       err = cvm::get_error();
       if (err != COLVARS_OK) {
         cvm::log("Error occurred!\n");
