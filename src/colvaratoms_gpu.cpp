@@ -690,6 +690,7 @@ int colvaratoms_gpu::add_apply_force_nodes(
   const cvm::atom_group* cpu_atoms, cudaGraph_t& graph,
   std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
   const std::vector<cudaGraphNode_t>& extra_initial_dependencies) {
+  cvm::log("use_group_force = " + cvm::to_str((int)use_group_force) + " , use_apply_colvar_force = " + cvm::to_str((int)use_apply_colvar_force));
   int error_code = COLVARS_OK;
   if (cpu_atoms->b_dummy) return error_code;
   colvarproxy* p = cvm::main()->proxy;
@@ -725,20 +726,35 @@ int colvaratoms_gpu::add_apply_force_nodes(
         return cvm::error(error);
       }
     }
-    cudaGraphNode_t apply_colvar_force_to_proxy_node;
+    cudaGraphNode_t apply_main_colvar_force_to_proxy_node;
     std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
     error_code |= colvars_gpu::prepare_dependencies(
       {{"copy_grad_to_device", true}},
-      dependencies, nodes_map, "apply_colvar_force_to_proxy");
-    error_code |= colvars_gpu::apply_colvar_force_to_proxy(
+      dependencies, nodes_map, "apply_main_colvar_force_to_proxy");
+    error_code |= colvars_gpu::apply_main_colvar_force_to_proxy(
       gpu_buffers.d_atoms_index,
       p->proxy_atoms_new_colvar_forces_gpu(),
       gpu_buffers.d_atoms_grad,
       h_sum_applied_colvar_force,
       cpu_atoms->is_enabled(colvardeps::f_ag_rotate),
       q, cpu_atoms->num_atoms, p->get_atom_ids()->size(),
-      apply_colvar_force_to_proxy_node, graph, dependencies);
-    nodes_map["apply_colvar_force_to_proxy"] = apply_colvar_force_to_proxy_node;
+      apply_main_colvar_force_to_proxy_node, graph, dependencies);
+    nodes_map["apply_main_colvar_force_to_proxy"] = apply_main_colvar_force_to_proxy_node;
+    if ((cpu_atoms->is_enabled(colvardeps::f_ag_center) ||
+         cpu_atoms->is_enabled(colvardeps::f_ag_rotate)) &&
+        cpu_atoms->is_enabled(colvardeps::f_ag_fit_gradients)) {
+      cudaGraphNode_t apply_fitting_colvar_force_to_proxy_node;
+      auto* group_for_fit = cpu_atoms->fitting_group ? cpu_atoms->fitting_group : cpu_atoms;
+      dependencies = extra_initial_dependencies;
+      error_code |= colvars_gpu::apply_fitting_colvar_force_to_proxy(
+        group_for_fit->gpu_atom_group->gpu_buffers.d_atoms_index,
+        p->proxy_atoms_new_colvar_forces_gpu(),
+        group_for_fit->gpu_atom_group->gpu_buffers.d_fit_gradients,
+        h_sum_applied_colvar_force, group_for_fit->size(),
+        p->get_atom_ids()->size(),
+        apply_fitting_colvar_force_to_proxy_node, graph, dependencies);
+      nodes_map["apply_fitting_colvar_force_to_proxy"] = apply_fitting_colvar_force_to_proxy_node;
+    }
   }
   if (use_group_force) {
     std::vector<cudaGraphNode_t> dependencies = extra_initial_dependencies;
@@ -825,7 +841,8 @@ int colvaratoms_gpu::add_apply_force_nodes(
         rot_deriv_gpu,
         calc_fit_forces_gpu_info.d_atom_grad,
         calc_fit_forces_gpu_info.d_dxdC,
-        gpu_buffers.d_atoms_index, p->proxy_atoms_new_colvar_forces_gpu(),
+        group_for_fit->gpu_atom_group->gpu_buffers.d_atoms_index,
+        p->proxy_atoms_new_colvar_forces_gpu(),
         group_for_fit->size(), p->get_atom_ids()->size(),
         cpu_atoms->is_enabled(colvardeps::f_ag_center),
         cpu_atoms->is_enabled(colvardeps::f_ag_rotate),

@@ -467,7 +467,7 @@ __global__ void apply_colvar_force_to_proxy_kernel(
   }
 }
 
-int apply_colvar_force_to_proxy(
+int apply_main_colvar_force_to_proxy(
   const int* atoms_proxy_index,
   cvm::real* atoms_applied_force_proxy,
   const cvm::real* atoms_grad_ag,
@@ -513,6 +513,51 @@ int apply_colvar_force_to_proxy(
   } else {
     kernelNodeParams.func = (void*)apply_colvar_force_to_proxy_kernel<false>;
   }
+  return checkGPUError(cudaGraphAddKernelNode(
+    &node, graph, dependencies.data(),
+    dependencies.size(), &kernelNodeParams));
+}
+
+int apply_fitting_colvar_force_to_proxy(
+  const int* atoms_proxy_index,
+  cvm::real* atoms_applied_force_proxy,
+  const cvm::real* atoms_grad_ag,
+  cvm::real* colvar_force,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
+  cudaGraphNode_t& node,
+  cudaGraph_t& graph,
+  const std::vector<cudaGraphNode_t>& dependencies) {
+  const unsigned int block_size = default_block_size;
+  const unsigned int num_blocks = (num_atoms + block_size - 1) / block_size;
+  cvm::real* atoms_applied_force_x_proxy = atoms_applied_force_proxy;
+  cvm::real* atoms_applied_force_y_proxy = atoms_applied_force_x_proxy + proxy_stride;
+  cvm::real* atoms_applied_force_z_proxy = atoms_applied_force_y_proxy + proxy_stride;
+  const cvm::real* grad_x = atoms_grad_ag;
+  const cvm::real* grad_y = grad_x + num_atoms;
+  const cvm::real* grad_z = grad_y + num_atoms;
+  const cvm::quaternion* q = nullptr;
+  void* args[] = {
+    &atoms_proxy_index,
+    &atoms_applied_force_x_proxy,
+    &atoms_applied_force_y_proxy,
+    &atoms_applied_force_z_proxy,
+    &grad_x,
+    &grad_y,
+    &grad_z,
+    &colvar_force,
+    &q,
+    &num_atoms};
+  cudaKernelNodeParams kernelNodeParams = {0};
+  kernelNodeParams.gridDim        = dim3(num_blocks, 1, 1);
+  kernelNodeParams.blockDim       = dim3(block_size, 1, 1);
+  kernelNodeParams.sharedMemBytes = 0;
+  kernelNodeParams.kernelParams   = args;
+  kernelNodeParams.extra          = NULL;
+  if (cvm::debug()) {
+    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+  }
+  kernelNodeParams.func = (void*)apply_colvar_force_to_proxy_kernel<false>;
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
     dependencies.size(), &kernelNodeParams));
@@ -771,6 +816,7 @@ __global__ void calc_fit_forces_impl_loop2_kernel(
       atomicAdd(&(proxy_new_force_x[pid]), fitting_force_grad.x);
       atomicAdd(&(proxy_new_force_y[pid]), fitting_force_grad.y);
       atomicAdd(&(proxy_new_force_z[pid]), fitting_force_grad.z);
+      printf("proxy_id = %d, fx = %lf, fy = %lf, fz = %lf\n", pid, fitting_force_grad.x, fitting_force_grad.y, fitting_force_grad.z);
     }
     i += gridSize;
   }
@@ -1206,9 +1252,9 @@ int calc_fit_forces_impl_loop2(
   if (!ag_center && !ag_rotate) {
     return COLVARS_OK;
   }
-  if (cvm::debug()) {
+  // if (cvm::debug()) {
     cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
-  }
+  // }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
     dependencies.size(), &kernelNodeParams));
