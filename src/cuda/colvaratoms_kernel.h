@@ -75,13 +75,24 @@ int atoms_total_force_from_proxy(
   unsigned int proxy_stride,
   cudaStream_t stream);
 
-int apply_colvar_force_to_proxy(
+int apply_main_colvar_force_to_proxy(
   const int* atoms_proxy_index,
   cvm::real* atoms_applied_force_proxy,
   const cvm::real* atoms_grad_ag,
   cvm::real* colvar_force,
   bool rotate,
   cvm::quaternion* q,
+  unsigned int num_atoms,
+  unsigned int proxy_stride,
+  cudaGraphNode_t& node,
+  cudaGraph_t& graph,
+  const std::vector<cudaGraphNode_t>& dependencies);
+
+int apply_fitting_colvar_force_to_proxy(
+  const int* atoms_proxy_index,
+  cvm::real* atoms_applied_force_proxy,
+  const cvm::real* atoms_grad_ag,
+  cvm::real* colvar_force,
   unsigned int num_atoms,
   unsigned int proxy_stride,
   cudaGraphNode_t& node,
