@@ -3,6 +3,7 @@ include(CheckIncludeFile)
 project(run_colvars_test_cuda LANGUAGES CXX)
 
 option(BUILD_TESTS "Build tests" ON)
+option(COLVARS_LEPTON "Build Colvars with Lepton" ON)
 
 if(NOT EXISTS ${COLVARS_SOURCE_DIR})
   set(COLVARS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." CACHE STRING "Colvars source code directory")
@@ -33,7 +34,37 @@ set(COLVARS_CUDA_SOURCE ${COLVARS_CUDA_DIR}/colvaratoms_kernel.cu
 
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
+# Build Lepton
+if(COLVARS_LEPTON)
+  if(NOT DEFINED LEPTON_DIR)
+    set(LEPTON_DIR "${COLVARS_SOURCE_DIR}/openmm-source/libraries/lepton")
+    if(NOT EXISTS ${LEPTON_DIR})
+      # Try the parent folder
+      get_filename_component(LEPTON_DIR ${COLVARS_SOURCE_DIR} DIRECTORY)
+      set(LEPTON_DIR "${LEPTON_DIR}/openmm-source/libraries/lepton")
+    endif()
+    if(NOT EXISTS ${LEPTON_DIR})
+      # Giving up, cloning OpenMM into a sub-folder
+      execute_process(COMMAND git clone --depth=1 https://github.com/openmm/openmm.git "${COLVARS_SOURCE_DIR}/openmm-source")
+      set(LEPTON_DIR "${COLVARS_SOURCE_DIR}/openmm-source/libraries/lepton")
+    endif()
+    message(STATUS "Using Lepton library from: ${LEPTON_DIR}")
+  endif()
+  file(GLOB LEPTON_SOURCES ${LEPTON_DIR}/src/[^.]*.cpp)
+  add_library(lepton OBJECT ${LEPTON_SOURCES})
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(lepton PRIVATE /DLEPTON_BUILDING_STATIC_LIBRARY /wd4267)
+  endif()
+  set_property(TARGET lepton PROPERTY POSITION_INDEPENDENT_CODE 1)
+  target_include_directories(lepton PRIVATE ${LEPTON_DIR}/include)
+  # Silence warnings for Lepton
+  target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare -Wno-unknown-warning-option>)
+endif()
+
 add_definitions(-DCOLVARS_CUDA)
+if(COLVARS_LEPTON)
+  add_definitions(-DLEPTON)
+endif()
 
 add_executable(
   run_colvars_test_cuda
@@ -45,13 +76,19 @@ add_executable(
 target_include_directories(run_colvars_test_cuda
   PUBLIC "${COLVARS_SOURCE_DIR}/src"
   PUBLIC "${COLVARS_CUDA_DIR}"
-  PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
+  PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}"
+  PUBLIC $<$<BOOL:${COLVARS_LEPTON}>:${LEPTON_DIR}/include>)
 
 if(CUDAToolkit_VERSION_MAJOR GREATER_EQUAL 10)
-  target_link_libraries(run_colvars_test_cuda CUDA::cudart CUDA::nvtx3)
+  target_link_libraries(run_colvars_test_cuda PUBLIC CUDA::cudart PUBLIC CUDA::nvtx3)
 else()
-  target_link_libraries(run_colvars_test_cuda CUDA::cudart CUDA::nvToolsExt)
+  target_link_libraries(run_colvars_test_cuda PUBLIC CUDA::cudart PUBLIC CUDA::nvToolsExt)
 endif()
+
+if(COLVARS_LEPTON)
+  target_link_libraries(run_colvars_test_cuda PUBLIC lepton)
+endif()
+
 set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE CUDA)
 # set_property(TARGET run_colvars_test_cuda PROPERTY CUDA_ARCHITECTURES OFF)
 
