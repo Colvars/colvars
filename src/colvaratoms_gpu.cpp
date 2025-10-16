@@ -690,7 +690,6 @@ int colvaratoms_gpu::add_apply_force_nodes(
   const cvm::atom_group* cpu_atoms, cudaGraph_t& graph,
   std::unordered_map<std::string, cudaGraphNode_t>& nodes_map,
   const std::vector<cudaGraphNode_t>& extra_initial_dependencies) {
-  cvm::log("use_group_force = " + cvm::to_str((int)use_group_force) + " , use_apply_colvar_force = " + cvm::to_str((int)use_apply_colvar_force));
   int error_code = COLVARS_OK;
   if (cpu_atoms->b_dummy) return error_code;
   colvarproxy* p = cvm::main()->proxy;
