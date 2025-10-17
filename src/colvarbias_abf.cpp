@@ -355,8 +355,15 @@ int colvarbias_abf::update()
 
         // get total force and subtract previous ABF force if necessary
         update_system_force();
+        // TODO: change here depending on kernel grid or not
 
-        gradients->acc_force(force_bin, system_force);
+        std::vector<cvm::real> cv(num_variables(),0);
+        // Here use num_variables or no ?
+        for (size_t dim = 0; dim < num_variables(); dim++) {
+          cv[dim] = samples ->use_actual_value[dim] ? samples ->cv[dim]->actual_value() : samples ->cv[dim]->value();
+        }
+        // gradients->acc_force(force_bin, system_force);
+        gradients-> acc_force_kernelized(cv, system_force, true, std::vector<int>(num_variables(),2));
         if ( b_integrate ) {
           pmf->update_div_neighbors(force_bin);
         }
