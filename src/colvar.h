@@ -665,6 +665,11 @@ public:
     return cvcs;
   }
 
+  /// \brief Get all colvarcomp objects
+  std::vector<std::shared_ptr<colvar::cvc>>& get_cvcs() {
+    return cvcs;
+  }
+
 protected:
 
   /// Array of components objects
