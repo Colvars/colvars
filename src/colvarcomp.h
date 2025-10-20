@@ -158,6 +158,37 @@ public:
   /// \brief Calculate the divergence of the inverse atomic gradients
   virtual void calc_Jacobian_derivative();
 
+  // TODO: Maybe this should be a feature in colvarsdep but I am still constantly confused by colvarsdep
+  /// \brief Check the GPU availability
+  virtual bool has_gpu_implementation() const { return false; }
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  /// \brief Calculate the variable on GPU
+  virtual int add_calc_value_node(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map)
+  { return COLVARS_NOT_IMPLEMENTED; }
+
+  /// \brief Calculate the atomic gradients, to be reused later in
+  /// order to apply forces on GPU
+  virtual int add_calc_gradients_node(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map)
+  { return COLVARS_NOT_IMPLEMENTED; }
+
+  /// \brief Calculate the total force from the system using the
+  /// inverse atomic gradients on GPU
+  virtual int add_calc_force_invgrads_node(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map)
+  { return COLVARS_NOT_IMPLEMENTED; }
+
+  /// \brief Calculate the divergence of the inverse atomic gradients on GPU
+  virtual int add_calc_Jacobian_derivative_node(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map)
+  { return COLVARS_NOT_IMPLEMENTED; }
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
   /// \brief Return the previously calculated value
   colvarvalue const & value() const;
