@@ -16,6 +16,10 @@
 #include "colvarcomp.h"
 #include "colvar_rotation_derivative.h"
 
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+#include "cuda/colvarcomp_distance_kernel.h"
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+
 
 colvar::distance::distance()
 {
@@ -823,8 +827,17 @@ colvar::rmsd::rmsd()
   init_as_distance();
   provide(f_cvc_inv_gradient);
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  ref_pos_gpu = nullptr;
-  // h_rmsd_out = nullptr;
+  d_ref_pos_soa = nullptr;
+  d_permutation_msds = nullptr;
+  d_tbcounts = nullptr;
+  h_rmsd = nullptr;
+  h_best_perm_index = nullptr;
+  d_ft = nullptr;
+  h_ft = nullptr;
+  d_jd = nullptr;
+  h_jd = nullptr;
+  d_tbcount_ft = nullptr;
+  d_tbcount_jd = nullptr;
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   if (colvar::rmsd::has_gpu_implementation()) {
     disable(f_cvc_require_cpu_buffers);
@@ -834,8 +847,19 @@ colvar::rmsd::rmsd()
 colvar::rmsd::~rmsd() {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   colvarproxy* p = cvm::proxy;
-  p->deallocate_device(&ref_pos_gpu);
-  // p->deallocate_host(&h_rmsd_out);
+  if (colvar::rmsd::has_gpu_implementation()) {
+    p->deallocate_device(&d_ref_pos_soa);
+    p->deallocate_device(&d_permutation_msds);
+    p->deallocate_device(&d_tbcounts);
+    p->deallocate_host(&h_rmsd);
+    p->deallocate_host(&h_best_perm_index);
+    p->deallocate_device(&d_ft);
+    p->deallocate_device(&d_jd);
+    p->deallocate_host(&h_ft);
+    p->deallocate_host(&h_jd);
+    p->deallocate_device(&d_tbcount_ft);
+    p->deallocate_device(&d_tbcount_jd);
+  }
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
@@ -951,9 +975,24 @@ int colvar::rmsd::init(std::string const &conf)
   if (has_gpu_implementation()) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_GPU)
     colvarproxy* p = cvm::proxy;
-    error_code |= p->reallocate_device(&ref_pos_gpu, 3 * num_ref_pos);
-    error_code |= p->copy_HtoD(ref_pos_soa.data(), ref_pos_gpu, 3 * num_ref_pos);
-    // error_code |= p->reallocate_host(&h_rmsd_out, n_permutations);
+    error_code |= p->reallocate_device(&d_ref_pos_soa, 3 * num_ref_pos);
+    error_code |= p->copy_HtoD(ref_pos_soa.data(), d_ref_pos_soa, 3 * num_ref_pos);
+    error_code |= p->reallocate_device(&d_permutation_msds, n_permutations);
+    error_code |= p->reallocate_device(&d_tbcounts, n_permutations);
+    error_code |= p->reallocate_host(&h_rmsd, 1);
+    error_code |= p->reallocate_host(&h_best_perm_index, 1);
+    error_code |= p->clear_device_array(d_permutation_msds, n_permutations);
+    error_code |= p->clear_device_array(d_tbcounts, n_permutations);
+    error_code |= p->reallocate_device(&d_ft, 1);
+    error_code |= p->clear_device_array(d_ft, 1);
+    error_code |= p->reallocate_device(&d_jd, 1);
+    error_code |= p->clear_device_array(d_jd, 1);
+    error_code |= p->reallocate_host(&h_ft, 1);
+    error_code |= p->reallocate_host(&h_jd, 1);
+    error_code |= p->allocate_device(&d_tbcount_ft, 1);
+    error_code |= p->allocate_device(&d_tbcount_jd, 1);
+    error_code |= p->clear_device_array(d_tbcount_ft, 1);
+    error_code |= p->clear_device_array(d_tbcount_jd, 1);
 #endif // (COLVARS_CUDA) || defined (COLVARS_GPU)
   }
   return error_code;
@@ -1137,6 +1176,115 @@ void colvar::rmsd::calc_Jacobian_derivative()
     0.0;
 }
 
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+int colvar::rmsd::add_calc_value_node(
+  cudaGraph_t& graph,
+  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
+  int error_code = COLVARS_OK;
+  std::vector<cudaGraphNode_t> calc_value_rmsd(n_permutations, nullptr);
+  auto& gpu_buffers = atoms->get_gpu_atom_group()->get_gpu_buffers();
+  error_code |= colvars_gpu::calc_value_rmsd(
+    d_ref_pos_soa, gpu_buffers.d_atoms_pos,
+    d_permutation_msds, permutation_msds.data(),
+    atoms->size(), n_permutations, num_ref_pos,
+    d_tbcounts, calc_value_rmsd, graph, {});
+  for (int i = 0; i < n_permutations; ++i) {
+    const std::string node_name = name + "_calc_value_permute_" + cvm::to_str(i);
+    nodes_map[node_name] = calc_value_rmsd[i];
+  }
+  return error_code;
+}
+
+int colvar::rmsd::calc_value_after_gpu() {
+  best_perm_index = std::min_element(
+    permutation_msds.begin(), permutation_msds.end()) - permutation_msds.begin();
+  x.real_value = permutation_msds[best_perm_index];
+  x.real_value /= cvm::real(atoms->size()); // MSD
+  x.real_value = cvm::sqrt(x.real_value);
+  // Save the results to host-pinned memory for further gradients calculation
+  *h_best_perm_index = best_perm_index;
+  *h_rmsd = x.real_value;
+  return COLVARS_OK;
+}
+
+int colvar::rmsd::add_calc_gradients_node(
+  cudaGraph_t& graph,
+  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
+  int error_code = COLVARS_OK;
+  auto& gpu_buffers = atoms->get_gpu_atom_group()->get_gpu_buffers();
+  cudaGraphNode_t calc_gradients_rmsd;
+  error_code |= colvars_gpu::calc_gradients_rmsd(
+    h_rmsd, h_best_perm_index, d_ref_pos_soa,
+    gpu_buffers.d_atoms_pos, gpu_buffers.d_atoms_grad,
+    atoms->size(), num_ref_pos, calc_gradients_rmsd, graph, {});
+  const std::string node_name = name + "_calc_gradients";
+  nodes_map[node_name] = calc_gradients_rmsd;
+  return error_code;
+}
+
+int colvar::rmsd::add_calc_force_invgrads_node(
+  cudaGraph_t& graph,
+  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
+  int error_code = COLVARS_OK;
+  auto& gpu_buffers = atoms->get_gpu_atom_group()->get_gpu_buffers();
+  // If I explicitly read the total force to gpu_buffer.d_atoms_total_force
+  // there would be a race condition if the underlyding atom group is used
+  // by multiple other CVCs, so I have to fuse the reading of total force
+  // with the Jacobian derivative calculation, and left
+  // gpu_buffer.d_atoms_total_force unchanged.
+  cudaGraphNode_t calc_force_invgrads;
+  colvarproxy *p = cvm::main()->proxy;
+  const auto& rot = atoms->get_gpu_atom_group()->get_rot_gpu();
+  error_code |= colvars_gpu::calc_force_invgrads_rmsd(
+    atoms->is_enabled(f_ag_rotate),
+    gpu_buffers.d_atoms_index,
+    p->proxy_atoms_total_forces_gpu(),
+    rot.get_q(), gpu_buffers.d_atoms_grad, d_ft, h_ft,
+    atoms->size(), p->get_atom_ids()->size(), d_tbcount_ft,
+    calc_force_invgrads, graph, {});
+  const std::string node_name = name + "_calc_force_invgrads";
+  nodes_map[node_name] = calc_force_invgrads;
+  return error_code;
+}
+
+int colvar::rmsd::calc_force_invgrads_after_gpu() {
+  ft.real_value = *h_ft;
+  return COLVARS_OK;
+}
+
+int colvar::rmsd::add_calc_Jacobian_derivative_node(
+  cudaGraph_t& graph,
+  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
+  int error_code = COLVARS_OK;
+  const auto& rot = atoms->get_gpu_atom_group()->get_rot_gpu();
+  auto* rot_deriv = atoms->get_gpu_atom_group()->get_rot_deriv_gpu();
+  if (atoms->is_enabled(f_ag_rotate)) {
+    if (rot_deriv == nullptr) {
+      return cvm::error("BUG: rot_deriv is null.\n");
+    }
+    error_code |= rot_deriv->add_prepare_derivative_nodes(
+      rotation_derivative_dldq::use_dq, graph, nodes_map);
+  }
+  cudaGraphNode_t calc_Jacobian_derivative;
+  std::vector<cudaGraphNode_t> dependencies;
+  if (atoms->is_enabled(f_ag_rotate)) {
+    error_code |= colvars_gpu::prepare_dependencies(
+      {{"prepare_rotation_derivative", true}}, dependencies, nodes_map);
+  }
+  error_code |= colvars_gpu::calc_Jacobian_derivative_rmsd(
+    atoms->is_enabled(f_ag_center), atoms->is_enabled(f_ag_rotate),
+    h_best_perm_index, d_ref_pos_soa, rot.get_q(),
+    rot_deriv, h_rmsd, d_jd, h_jd, atoms->size(),
+    num_ref_pos, d_tbcount_jd, calc_Jacobian_derivative,
+    graph, dependencies);
+  return error_code;
+}
+
+int colvar::rmsd::calc_Jacobian_derivative_after_gpu() {
+  jd.real_value = *h_jd;
+  return COLVARS_OK;
+}
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 
 colvar::eigenvector::eigenvector()
