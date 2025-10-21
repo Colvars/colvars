@@ -45,6 +45,7 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
           node_map_t cvc_node_map;
           cudaGraph_t cvc_graph;
           if ((*cvc)->has_gpu_implementation()) {
+            error_code |= checkGPUError(cudaGraphCreate(&cvc_graph, 0));
             error_code |= (*cvc)->add_calc_force_invgrads_node(cvc_graph, cvc_node_map);
             cudaGraphNode_t child_graph_node;
             error_code |= checkGPUError(cudaGraphAddChildGraphNode(
@@ -250,6 +251,7 @@ int colvarmodule_gpu_calc::cvc_calc_value(
         cudaGraph_t cvc_graph;
         if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
         if ((*cvc)->has_gpu_implementation()) {
+          error_code |= checkGPUError(cudaGraphCreate(&cvc_graph, 0));
           error_code |= (*cvc)->add_calc_value_node(cvc_graph, cvc_node_map);
           cudaGraphNode_t child_graph_node;
           error_code |= checkGPUError(cudaGraphAddChildGraphNode(
@@ -302,6 +304,15 @@ int colvarmodule_gpu_calc::cvc_calc_value(
     error_code |= checkGPUError(cudaStreamSynchronize(stream));
     if (error_code != COLVARS_OK) return error_code;
   }
+  for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    const auto all_cvcs = (*cvi)->get_cvcs();
+    for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
+      if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
+      if ((*cvc)->has_gpu_implementation()) {
+        error_code |= (*cvc)->calc_value_after_gpu();
+      }
+    }
+  }
 #if defined (COLVARS_NVTX_PROFILING)
   cvc_calc_value_prof.stop();
 #endif // defined (COLVARS_NVTX_PROFILING)
@@ -327,6 +338,7 @@ int colvarmodule_gpu_calc::cvc_calc_gradients(
         cudaGraph_t cvc_graph;
         if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
         if ((*cvc)->has_gpu_implementation()) {
+          error_code |= checkGPUError(cudaGraphCreate(&cvc_graph, 0));
           error_code |= (*cvc)->add_calc_gradients_node(cvc_graph, cvc_node_map);
           cudaGraphNode_t child_graph_node;
           error_code |= checkGPUError(cudaGraphAddChildGraphNode(
@@ -510,6 +522,7 @@ int colvarmodule_gpu_calc::cvc_calc_Jacobian_derivative(
         if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
         if (calc_jacobian) {
           if ((*cvc)->has_gpu_implementation()) {
+            error_code |= checkGPUError(cudaGraphCreate(&cvc_graph, 0));
             error_code |= (*cvc)->add_calc_Jacobian_derivative_node(cvc_graph, cvc_node_map);
             cudaGraphNode_t child_graph_node;
             error_code |= checkGPUError(cudaGraphAddChildGraphNode(
