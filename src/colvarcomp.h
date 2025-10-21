@@ -1201,25 +1201,46 @@ protected:
 
   /// Reference coordinates (for RMSD calculation only)
   /// Includes sets with symmetry permutations (n_permutations * n_atoms)
-  std::vector<cvm::atom_pos>  ref_pos;
+  size_t num_ref_pos;
+  cvm::ag_vector_real_t  ref_pos_soa;
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  cvm::real* ref_pos_gpu;
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
   /// Number of permutations of symmetry-related atoms
   size_t n_permutations = 1;
+  cvm::ag_vector_real_t permutation_msds;
 
   /// Index of the permutation yielding the smallest RMSD (0 for identity)
   size_t best_perm_index = 0;
 
   /// Permutation RMSD input parsing
-  int init_permutation(std::string const &conf);
+  int init_permutation(std::vector<cvm::atom_pos>& ref_pos, std::string const &conf);
 
 public:
   rmsd();
-  virtual ~rmsd() {}
-  virtual int init(std::string const &conf);
-  virtual void calc_value();
-  virtual void calc_gradients();
-  virtual void calc_force_invgrads();
-  virtual void calc_Jacobian_derivative();
+  bool has_gpu_implementation() const override;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  int add_calc_value_node(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) override;
+  int add_calc_gradients_node(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) override;
+  int add_calc_force_invgrads_node(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) override;
+  int add_calc_Jacobian_derivative_node(
+    cudaGraph_t& graph,
+    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) override;
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  virtual ~rmsd();
+  virtual int init(std::string const &conf) override;
+  virtual void calc_value() override;
+  virtual void calc_gradients() override;
+  virtual void calc_force_invgrads() override;
+  virtual void calc_Jacobian_derivative() override;
 };
 
 

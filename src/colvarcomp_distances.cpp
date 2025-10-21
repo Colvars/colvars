@@ -822,6 +822,34 @@ colvar::rmsd::rmsd()
   set_function_type("rmsd");
   init_as_distance();
   provide(f_cvc_inv_gradient);
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  ref_pos_gpu = nullptr;
+  // h_rmsd_out = nullptr;
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  if (colvar::rmsd::has_gpu_implementation()) {
+    disable(f_cvc_require_cpu_buffers);
+  }
+}
+
+colvar::rmsd::~rmsd() {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  colvarproxy* p = cvm::proxy;
+  p->deallocate_device(&ref_pos_gpu);
+  // p->deallocate_host(&h_rmsd_out);
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+}
+
+bool colvar::rmsd::has_gpu_implementation() const {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  const colvarproxy* p = cvm::proxy;
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu){
+    return true;
+  } else {
+    return false;
+  }
+#else
+  return false;
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
 
@@ -843,6 +871,7 @@ int colvar::rmsd::init(std::string const &conf)
   }
   if (b_Jacobian_derivative) provide(f_cvc_Jacobian);
 
+  std::vector<cvm::atom_pos> ref_pos;
   // the following is a simplified version of the corresponding atom group options;
   // we need this because the reference coordinates defined inside the atom group
   // may be used only for fitting, and even more so if fitting_group is used
@@ -915,13 +944,23 @@ int colvar::rmsd::init(std::string const &conf)
   }
   atoms->setup_rotation_derivative();
 
-  error_code |= init_permutation(conf);
+  error_code |= init_permutation(ref_pos, conf);
 
+  num_ref_pos = ref_pos.size();
+  ref_pos_soa = cvm::atom_group::pos_aos_to_soa(ref_pos);
+  if (has_gpu_implementation()) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_GPU)
+    colvarproxy* p = cvm::proxy;
+    error_code |= p->reallocate_device(&ref_pos_gpu, 3 * num_ref_pos);
+    error_code |= p->copy_HtoD(ref_pos_soa.data(), ref_pos_gpu, 3 * num_ref_pos);
+    // error_code |= p->reallocate_host(&h_rmsd_out, n_permutations);
+#endif // (COLVARS_CUDA) || defined (COLVARS_GPU)
+  }
   return error_code;
 }
 
 
-int colvar::rmsd::init_permutation(std::string const &conf)
+int colvar::rmsd::init_permutation(std::vector<cvm::atom_pos>& ref_pos, std::string const &conf)
 {
   int error_code = COLVARS_OK;
   std::string perm_conf;
@@ -964,6 +1003,8 @@ int colvar::rmsd::init_permutation(std::string const &conf)
     }
   }
 
+  permutation_msds.assign(n_permutations, 0);
+
   return error_code;
 }
 
@@ -971,29 +1012,24 @@ int colvar::rmsd::init_permutation(std::string const &conf)
 void colvar::rmsd::calc_value()
 {
   // rotational-translational fit is handled by the atom group
-
-  x.real_value = 0.0;
-  for (size_t ia = 0; ia < atoms->size(); ia++) {
-    const cvm::atom_pos pos_ia(
-      atoms->pos_x(ia), atoms->pos_y(ia), atoms->pos_z(ia));
-    x.real_value += (pos_ia - ref_pos[ia]).norm2();
-  }
-  best_perm_index = 0;
-
-  // Compute sum of squares for each symmetry permutation of atoms, keep the smallest
-  size_t ref_pos_index = atoms->size();
-  for (size_t ip = 1; ip < n_permutations; ip++) {
-    cvm::real value = 0.0;
+  permutation_msds.assign(n_permutations, 0);
+  // x.real_value = 0.0;
+  for (size_t ip = 0; ip < n_permutations; ip++) {
+    const auto ref_pos_x = ref_pos_soa.begin() + ip * atoms->size();
+    const auto ref_pos_y = ref_pos_x + num_ref_pos;
+    const auto ref_pos_z = ref_pos_y + num_ref_pos;
     for (size_t ia = 0; ia < atoms->size(); ia++) {
-      const cvm::atom_pos pos_ia(
-        atoms->pos_x(ia), atoms->pos_y(ia), atoms->pos_z(ia));
-      value += (pos_ia - ref_pos[ref_pos_index++]).norm2();
-    }
-    if (value < x.real_value) {
-      x.real_value = value;
-      best_perm_index = ip;
+      const cvm::real diff_x = atoms->pos_x(ia) - ref_pos_x[ia];
+      const cvm::real diff_y = atoms->pos_y(ia) - ref_pos_y[ia];
+      const cvm::real diff_z = atoms->pos_z(ia) - ref_pos_z[ia];
+      permutation_msds[ip] += diff_x * diff_x + diff_y * diff_y + diff_z * diff_z;
     }
   }
+
+  best_perm_index = std::min_element(
+    permutation_msds.begin(), permutation_msds.end()) - permutation_msds.begin();
+
+  x.real_value = permutation_msds[best_perm_index];
   x.real_value /= cvm::real(atoms->size()); // MSD
   x.real_value = cvm::sqrt(x.real_value);
 }
@@ -1006,11 +1042,16 @@ void colvar::rmsd::calc_gradients()
     0.0;
 
   // Use the appropriate symmetry permutation of reference positions to calculate gradients
-  size_t const start = atoms->size() * best_perm_index;
+  // size_t const start = atoms->size() * best_perm_index;
+  const auto ref_pos_x = ref_pos_soa.begin() + best_perm_index * atoms->size();
+  const auto ref_pos_y = ref_pos_x + num_ref_pos;
+  const auto ref_pos_z = ref_pos_y + num_ref_pos;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     const cvm::atom_pos pos_ia(
       atoms->pos_x(ia), atoms->pos_y(ia), atoms->pos_z(ia));
-    const cvm::rvector grad = (drmsddx2 * 2.0 * (pos_ia - ref_pos[start + ia]));
+    const cvm::atom_pos ref_pos_ia(
+      ref_pos_x[ia], ref_pos_y[ia], ref_pos_z[ia]);
+    const cvm::rvector grad = (drmsddx2 * 2.0 * (pos_ia - ref_pos_ia));
     atoms->grad_x(ia) = grad.x;
     atoms->grad_y(ia) = grad.y;
     atoms->grad_z(ia) = grad.z;
@@ -1046,6 +1087,9 @@ void colvar::rmsd::calc_Jacobian_derivative()
     cvm::rvector g11, g22, g33, g01, g02, g03, g12, g13, g23;
     std::array<cvm::rvector, 4> dq;
     atoms->rot_deriv->prepare_derivative(rotation_derivative_dldq::use_dq);
+    const auto ref_pos_x = ref_pos_soa.begin() + best_perm_index * atoms->size();
+    const auto ref_pos_y = ref_pos_x + num_ref_pos;
+    const auto ref_pos_z = ref_pos_y + num_ref_pos;
     for (size_t ia = 0; ia < atoms->size(); ia++) {
 
       // Gradient of optimal quaternion wrt current Cartesian position
@@ -1072,7 +1116,7 @@ void colvar::rmsd::calc_Jacobian_derivative()
       grad_rot_mat[1][2] =  2.0 * (g23 - g01);
       grad_rot_mat[2][2] = -2.0 * (g11 + g22);
 
-      cvm::atom_pos &y = ref_pos[ia];
+      const cvm::atom_pos y(ref_pos_x[ia], ref_pos_y[ia], ref_pos_z[ia]);
 
       for (size_t alpha = 0; alpha < 3; alpha++) {
         for (size_t beta = 0; beta < 3; beta++) {
