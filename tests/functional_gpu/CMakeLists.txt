@@ -27,9 +27,11 @@ set(COLVARS_CUDA_DIR ${COLVARS_SOURCE_DIR}/src/cuda)
 
 set(COLVARS_CUDA_HEADER ${COLVARS_CUDA_DIR}/colvaratoms_kernel.h
                         ${COLVARS_CUDA_DIR}/colvar_rotation_derivative_kernel.h
+                        ${COLVARS_CUDA_DIR}/colvarcomp_distance_kernel.h
                         ${COLVARS_CUDA_DIR}/colvartypes_kernel.h)
 set(COLVARS_CUDA_SOURCE ${COLVARS_CUDA_DIR}/colvaratoms_kernel.cu
                         ${COLVARS_CUDA_DIR}/colvar_rotation_derivative_kernel.cu
+                        ${COLVARS_CUDA_DIR}/colvarcomp_distance_kernel.cu
                         ${COLVARS_CUDA_DIR}/colvartypes_kernel.cu)
 
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
