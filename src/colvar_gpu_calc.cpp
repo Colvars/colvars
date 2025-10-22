@@ -495,7 +495,11 @@ int colvarmodule_gpu_calc::cvc_debug_gradients(const std::vector<colvar*>& colva
       if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
       if (!(*cvc)->is_enabled(colvardeps::f_cvc_gradient)) continue;
       if (!(*cvc)->is_enabled(colvardeps::f_cvc_debug_gradient)) continue;
-      (*cvc)->debug_gradients();
+      if ((*cvc)->has_gpu_implementation()) {
+        (*cvc)->debug_gradients_gpu(calc_value_compute, calc_gradients_compute);
+      } else {
+        (*cvc)->debug_gradients();
+      }
     }
   }
   return error_code;
