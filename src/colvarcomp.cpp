@@ -18,7 +18,6 @@
 #include "colvarcomp.h"
 
 
-
 colvar::cvc::cvc()
 {
   description = "uninitialized colvar component";
@@ -834,6 +833,278 @@ void colvar::cvc::debug_gradients()
   calc_gradients();
   return;
 }
+
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+int colvar::cvc::debug_gradients_gpu(
+  colvars_gpu::colvarmodule_gpu_calc::compute_gpu_graph_t& calc_value_graph,
+  colvars_gpu::colvarmodule_gpu_calc::compute_gpu_graph_t& calc_gradients_graph) {
+  int error_code = COLVARS_OK;
+  // this function should work for any scalar cvc:
+  // the only difference will be the name of the atom group (here, "group")
+  // NOTE: this assumes that groups for this cvc are non-overlapping,
+  // since atom coordinates are modified only within the current group
+
+  cvm::log("Debugging GPU gradients for " + description);
+  colvarproxy *p = cvm::main()->proxy;
+  cudaStream_t stream = p->get_default_stream();
+  error_code |= checkGPUError(cudaStreamSynchronize(stream));
+
+  /**
+   * @note Some CVCs change the gradients when running calc_value(), so it is
+   * better to copy the original gradients out at first.
+   */
+  // using pos_vector_t = std::vector<cvm::rvector, cvm::allocator_type<cvm::rvector>>;
+  std::unordered_map<cvm::atom_group*, std::array<cvm::ag_vector_real_t, 2>> ag_gradients;
+  for (size_t ig = 0; ig < atom_groups.size(); ig++) {
+    auto *group = atom_groups[ig];
+    if (group->b_dummy) continue;
+    const auto& rot = group->get_gpu_atom_group()->get_rot_gpu();
+    auto *group_for_fit = group->fitting_group ? group->fitting_group : group;
+    const bool add_fit_gradients_to_main =
+      group->is_enabled(f_ag_fit_gradients) && group_for_fit == group;
+    std::array<cvm::ag_vector_real_t, 2> gradients;
+    gradients[0].assign(3 * group->size(), 0);
+    // Copy gradients DtoH
+    error_code |= p->copy_DtoH(
+      group->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
+      gradients[0].data(), 3 * group->size());
+    cvm::ag_vector_real_t fit_gradients;
+    if (add_fit_gradients_to_main) {
+      fit_gradients.assign(3 * group_for_fit->size(), 0);
+      error_code |= p->copy_DtoH(
+        group_for_fit->get_gpu_atom_group()->get_gpu_buffers().d_fit_gradients,
+        fit_gradients.data(), 3 * group_for_fit->size());
+    }
+    if (group->is_enabled(f_ag_rotate)) {
+      cvm::rotation rot_cpu;
+      rot.to_cpu(rot_cpu);
+      const auto rot_inv = rot_cpu.inverse().matrix();
+      auto grad_x = gradients[0].begin();
+      auto grad_y = grad_x + group->size();
+      auto grad_z = grad_y + group->size();
+      const auto fit_gradients_x = fit_gradients.begin();
+      const auto fit_gradients_y = fit_gradients_x + group_for_fit->size();
+      const auto fit_gradients_z = fit_gradients_y + group_for_fit->size();
+      for (size_t ia = 0; ia < group->size(); ia++) {
+        cvm::rvector g(grad_x[ia], grad_y[ia], grad_z[ia]);
+        g = rot_inv * g;
+        if (add_fit_gradients_to_main) {
+          g.x += fit_gradients_x[ia];
+          g.y += fit_gradients_y[ia];
+          g.z += fit_gradients_z[ia];
+        }
+        grad_x[ia] = g.x;
+        grad_y[ia] = g.y;
+        grad_z[ia] = g.z;
+      }
+    }
+    if ((group->is_enabled(f_ag_fit_gradients)) &&
+        (group->fitting_group != nullptr)) {
+      auto *ref_group = group->fitting_group;
+      gradients[1].assign(3 * ref_group->size(), 0);
+      error_code |= p->copy_DtoH(
+        ref_group->get_gpu_atom_group()->get_gpu_buffers().d_fit_gradients,
+        fit_gradients.data(), 3 * ref_group->size());
+    }
+    ag_gradients[group] = gradients;
+  }
+
+  for (size_t ig = 0; ig < atom_groups.size(); ig++) {
+    auto *group = atom_groups[ig];
+    if (group->b_dummy) continue;
+
+    auto *group_for_fit = group->fitting_group ? group->fitting_group : group;
+    cvm::atom_pos fit_gradient_sum, gradient_sum;
+
+    // print the values of the fit gradients
+    if (group->is_enabled(f_ag_center) || group->is_enabled(f_ag_rotate)) {
+      if (group->is_enabled(f_ag_fit_gradients)) {
+        auto& group_for_fit_gpu = group_for_fit->get_gpu_atom_group();
+        // Obtain the rotation matrix from GPU
+        cvm::rotation rot_cpu;
+        group_for_fit_gpu->get_rot_gpu().to_cpu(rot_cpu);
+        const auto rot_0 = rot_cpu.matrix();
+        // fit_gradients are in the simulation frame: we should print them in the rotated frame
+        cvm::log("Fit gradients for group " + group->key + ":\n");
+        // Synchronized copy the fit gradients from GPU
+        cvm::ag_vector_real_t h_fit_gradients(3 * group_for_fit->size());
+        error_code |= p->copy_DtoH(
+          group_for_fit_gpu->get_gpu_buffers().d_fit_gradients,
+          h_fit_gradients.data(), 3 * group_for_fit->size());
+        const auto h_fit_gradients_x = h_fit_gradients.begin();
+        const auto h_fit_gradients_y = h_fit_gradients_x + group_for_fit->size();
+        const auto h_fit_gradients_z = h_fit_gradients_y + group_for_fit->size();
+        for (size_t j = 0; j < group_for_fit->size(); j++) {
+          const cvm::rvector fit_grad(
+            h_fit_gradients_x[j],
+            h_fit_gradients_y[j],
+            h_fit_gradients_z[j]);
+          cvm::log((group->fitting_group ? std::string("fittingGroup") : group->key) +
+              "[" + cvm::to_str(j) + "] = " +
+              (group->is_enabled(f_ag_rotate) ?
+                cvm::to_str(rot_0 * (fit_grad)) :
+                cvm::to_str(fit_grad)));
+        }
+      }
+    }
+
+    cvm::log("Gradients for group " + group->key + ":\n");
+    const auto gradients_x = ag_gradients.at(group)[0].begin();
+    const auto gradients_y = gradients_x + group->size();
+    const auto gradients_z = gradients_y + group->size();
+    // debug the gradients
+    for (size_t ia = 0; ia < group->size(); ia++) {
+      // tests are best conducted in the unrotated (simulation) frame
+      const cvm::rvector g {gradients_x[ia], gradients_y[ia], gradients_z[ia]};
+      gradient_sum += g;
+
+      auto const this_atom = (*group)[ia];
+      for (size_t id = 0; id < 3; id++) {
+        // Compute CV in case of x+Δx
+        // Read data and change a position
+        error_code |= group->get_gpu_atom_group()->read_positions_gpu_debug(
+          group, false, ia, id, false, 1, stream);
+        error_code |= group->get_gpu_atom_group()->calc_required_properties_gpu_debug(
+          group, false, stream);
+        error_code |= group->get_gpu_atom_group()->after_read_data_sync(
+          group, false, stream);
+        // Calculate value (assume the graph has been built)
+        error_code |= checkGPUError(cudaGraphLaunch(calc_value_graph.graph_exec, stream));
+        // Synchronize stream
+        error_code |= checkGPUError(cudaStreamSynchronize(stream));
+        // Update the x
+        error_code |= calc_value_after_gpu();
+        cvm::real x_1 = x.real_value;
+        if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_1 = x[0];
+
+        // Compute CV in case of x-Δx
+        // Read data and change a position
+        error_code |= group->get_gpu_atom_group()->read_positions_gpu_debug(group, false, ia, id, false, -1, stream);
+        error_code |= group->get_gpu_atom_group()->calc_required_properties_gpu_debug(group, false, stream);
+        error_code |= group->get_gpu_atom_group()->after_read_data_sync(group, false, stream);
+        // Calculate value (assume the graph has been built)
+        error_code |= checkGPUError(cudaGraphLaunch(calc_value_graph.graph_exec, stream));
+        // Synchronize stream
+        error_code |= checkGPUError(cudaStreamSynchronize(stream));
+        // Update the x
+        error_code |= calc_value_after_gpu();
+        cvm::real x_2 = x.real_value;
+        if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_2 = x[0];
+
+        cvm::real const num_diff = 0.5 * (x_1 - x_2);
+        cvm::real const dx_pred = cvm::debug_gradients_step_size * g[id];
+        cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
+        cvm::main()->record_gradient_error(rel_error);
+
+        cvm::log("Atom "+cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
+                  ", comp. " + cvm::to_str(id) + ":" + \
+                  "  dx(actual) = " + cvm::to_str (num_diff, 19, 12) + \
+                  "  dx(interp) = " + cvm::to_str (dx_pred, 19, 12) + \
+                  "  rel. error = " + cvm::to_str(rel_error, 12, 5) + ".\n");
+      }
+    }
+
+    if ((group->is_enabled(f_ag_fit_gradients)) && (group->fitting_group != nullptr)) {
+      auto *ref_group = group->fitting_group;
+      error_code |= group->get_gpu_atom_group()->read_positions_gpu_debug(
+        group, false, 0, -1, false, 1.0, stream);
+      error_code |= group->get_gpu_atom_group()->calc_required_properties_gpu_debug(
+        group, false, stream);
+      error_code |= group->get_gpu_atom_group()->after_read_data_sync(
+        group, false, stream);
+
+      const auto fit_gradients_x = ag_gradients.at(group)[1].begin();
+      const auto fit_gradients_y = fit_gradients_x + ref_group->size();
+      const auto fit_gradients_z = fit_gradients_y + ref_group->size();
+      for (size_t ia = 0; ia < ref_group->size(); ia++) {
+
+        auto const this_atom = (*ref_group)[ia];
+        // fit gradients are in the unrotated (simulation) frame
+        cvm::rvector const atom_grad{
+          fit_gradients_x[ia],
+          fit_gradients_y[ia],
+          fit_gradients_z[ia]};
+        fit_gradient_sum += atom_grad;
+
+        for (size_t id = 0; id < 3; id++) {
+          error_code |= group->get_gpu_atom_group()->read_positions_gpu_debug(
+            group, true, ia, id, false, 1.0, stream);
+          error_code |= group->get_gpu_atom_group()->calc_required_properties_gpu_debug(
+            group, false, stream);
+          error_code |= group->get_gpu_atom_group()->after_read_data_sync(
+            group, false, stream);
+          // Calculate value (assume the graph has been built)
+          error_code |= checkGPUError(cudaGraphLaunch(calc_value_graph.graph_exec, stream));
+          // Synchronize stream
+          error_code |= checkGPUError(cudaStreamSynchronize(stream));
+          // Update the x
+          error_code |= calc_value_after_gpu();
+          cvm::real const x_1 = x.real_value;
+
+          error_code |= group->get_gpu_atom_group()->read_positions_gpu_debug(
+            group, true, ia, id, false, -1.0, stream);
+          error_code |= group->get_gpu_atom_group()->calc_required_properties_gpu_debug(
+            group, false, stream);
+          error_code |= group->get_gpu_atom_group()->after_read_data_sync(
+            group, false, stream);
+          // Calculate value (assume the graph has been built)
+          error_code |= checkGPUError(cudaGraphLaunch(calc_value_graph.graph_exec, stream));
+          // Synchronize stream
+          error_code |= checkGPUError(cudaStreamSynchronize(stream));
+          // Update the x
+          error_code |= calc_value_after_gpu();
+          cvm::real const x_2 = x.real_value;
+
+          cvm::real const num_diff = 0.5 * (x_1 - x_2);
+          cvm::real const dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
+          cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
+          cvm::main()->record_gradient_error(rel_error);
+
+          cvm::log("fittingGroup atom " + cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
+                    ", comp. " + cvm::to_str(id) + ":" + \
+                    "  dx(actual) = " + cvm::to_str (num_diff, 19, 12) + \
+                    "  dx(interp) = " + cvm::to_str (dx_pred, 19, 12) + \
+                    "  rel. error = " + cvm::to_str(rel_error, 12, 5) + ".\n");
+        }
+
+      }
+    }
+    cvm::log("Gradient sum: " +  cvm::to_str(gradient_sum) +
+          "  Fit gradient sum: " + cvm::to_str(fit_gradient_sum) +
+          "  Total " + cvm::to_str(gradient_sum + fit_gradient_sum));
+  }
+  // Do cleanups
+  // Reset the atom groups and restore the CV value after debugging gradients
+  for (size_t ig = 0; ig < atom_groups.size(); ig++) {
+    cvm::atom_group *group = atom_groups[ig];
+    if (group->b_dummy) continue;
+    // Clear the gradients, because some CVCs may calculate the gradients in calc_value()
+    auto& group_gpu = group->get_gpu_atom_group();
+    error_code |= p->clear_device_array(
+      group_gpu->get_gpu_buffers().d_atoms_grad,
+      group->size() * 3);
+    // (re)read original positions
+    error_code |= group->get_gpu_atom_group()->read_positions_gpu_debug(
+      group, false, 0, -1, false, -1.0, stream);
+    error_code |= group->get_gpu_atom_group()->calc_required_properties_gpu_debug(
+      group, false, stream);
+    error_code |= group->get_gpu_atom_group()->after_read_data_sync(
+      group, false, stream);
+  }
+  // Calculate value (assume the graph has been built)
+  error_code |= checkGPUError(cudaGraphLaunch(calc_value_graph.graph_exec, stream));
+  // Synchronize stream
+  error_code |= checkGPUError(cudaStreamSynchronize(stream));
+  // Update the x
+  error_code |= calc_value_after_gpu();
+  // Calculate the gradients again
+  error_code |= checkGPUError(cudaGraphLaunch(calc_gradients_graph.graph_exec, stream));
+  // Synchronize stream
+  error_code |= checkGPUError(cudaStreamSynchronize(stream));
+  return error_code;
+}
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 
 cvm::real colvar::cvc::dist2(colvarvalue const &x1, colvarvalue const &x2) const
