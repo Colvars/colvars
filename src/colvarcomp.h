@@ -27,6 +27,7 @@
 #include "colvar_geometricpath.h"
 #include "colvaratoms.h"
 #include "colvarproxy.h"
+#include "colvar_gpu_calc.h"
 
 /// \brief Colvar component (base class for collective variables)
 ///
@@ -197,6 +198,11 @@ public:
 
   /// \brief CPU-side calculation after the graph in add_calc_Jacobian_derivative_node is done on GPU
   virtual int calc_Jacobian_derivative_after_gpu() { return COLVARS_OK; }
+
+  /// \brief Calculate finite-difference gradients alongside the analytical ones, for each Cartesian component on GPU
+  virtual int debug_gradients_gpu(
+    colvars_gpu::colvarmodule_gpu_calc::compute_gpu_graph_t& calc_value_graph,
+    colvars_gpu::colvarmodule_gpu_calc::compute_gpu_graph_t& calc_gradients_graph);
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
   /// \brief Return the previously calculated value
