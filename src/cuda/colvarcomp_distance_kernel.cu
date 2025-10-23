@@ -53,7 +53,6 @@ __global__ void calc_value_rmsd_kernel(
       *h_msd = *d_msd;
       *tbcount = 0;
       *d_msd = 0;
-      // printf("CUDA RMSD = %lf\n", sqrt((*h_msd) /num_atoms));
     }
   }
 }
@@ -278,10 +277,10 @@ int calc_force_invgrads_rmsd(
     &atoms_total_force_x_proxy,
     &atoms_total_force_y_proxy,
     &atoms_total_force_z_proxy,
+    &q,
     &grad_x,
     &grad_y,
     &grad_z,
-    &q,
     &d_ft,
     &h_ft,
     &num_atoms,
