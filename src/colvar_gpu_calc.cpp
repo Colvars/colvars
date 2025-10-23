@@ -104,6 +104,23 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
     error_code |= checkGPUError(cudaStreamSynchronize(stream));
     if (error_code != COLVARS_OK) return error_code;
   }
+  for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    // Calculate CVC total force
+    if (!(*cvi)->is_enabled(colvardeps::f_cv_total_force_calc)) continue;
+    const bool do_total_force =
+      use_current_step ?
+       (*cvi)->is_enabled(colvardeps::f_cv_total_force_current_step) :
+      !(*cvi)->is_enabled(colvardeps::f_cv_total_force_current_step);
+    const auto all_cvcs = (*cvi)->get_cvcs();
+    if (do_total_force) {
+      for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
+        if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
+        if ((*cvc)->has_gpu_implementation()) {
+          error_code |= (*cvc)->calc_force_invgrads_after_gpu();
+        }
+      }
+    }
+  }
 #if defined (COLVARS_NVTX_PROFILING)
   cvc_calc_total_force_prof.stop();
 #endif // defined (COLVARS_NVTX_PROFILING)
@@ -573,6 +590,18 @@ int colvarmodule_gpu_calc::cvc_calc_Jacobian_derivative(
   if (g.graph_exec_initialized) {
     error_code |= checkGPUError(cudaStreamSynchronize(stream));
     if (error_code != COLVARS_OK) return error_code;
+  }
+  for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    const auto all_cvcs = (*cvi)->get_cvcs();
+    const bool calc_jacobian = (*cvi)->is_enabled(colvardeps::f_cv_Jacobian);
+    for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
+      if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
+      if (calc_jacobian) {
+        if ((*cvc)->has_gpu_implementation()) {
+          error_code |= (*cvc)->calc_Jacobian_derivative_after_gpu();
+        }
+      }
+    }
   }
 #if defined (COLVARS_NVTX_PROFILING)
   cvc_calc_Jacobian_derivative_prof.stop();
