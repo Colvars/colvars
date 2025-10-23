@@ -905,7 +905,7 @@ int colvar::cvc::debug_gradients_gpu(
       gradients[1].assign(3 * ref_group->size(), 0);
       error_code |= p->copy_DtoH(
         ref_group->get_gpu_atom_group()->get_gpu_buffers().d_fit_gradients,
-        fit_gradients.data(), 3 * ref_group->size());
+        gradients[1].data(), 3 * ref_group->size());
     }
     ag_gradients[group] = gradients;
   }
@@ -920,10 +920,11 @@ int colvar::cvc::debug_gradients_gpu(
     // print the values of the fit gradients
     if (group->is_enabled(f_ag_center) || group->is_enabled(f_ag_rotate)) {
       if (group->is_enabled(f_ag_fit_gradients)) {
+        const auto& rot = group->get_gpu_atom_group()->get_rot_gpu();
         auto& group_for_fit_gpu = group_for_fit->get_gpu_atom_group();
         // Obtain the rotation matrix from GPU
         cvm::rotation rot_cpu;
-        group_for_fit_gpu->get_rot_gpu().to_cpu(rot_cpu);
+        rot.to_cpu(rot_cpu);
         const auto rot_0 = rot_cpu.matrix();
         // fit_gradients are in the simulation frame: we should print them in the rotated frame
         cvm::log("Fit gradients for group " + group->key + ":\n");
