@@ -709,10 +709,7 @@ int colvaratoms_gpu::add_apply_force_nodes(
   const bool any_require_cpu_buffers = std::any_of(parent_components.begin(), parent_components.end(), check_cvc_cpu_buffers);
   const bool all_require_cpu_buffers = std::all_of(parent_components.begin(), parent_components.end(), check_cvc_cpu_buffers);
   if (use_apply_colvar_force) {
-    cvm::quaternion* q = nullptr;
-    if (rot_gpu.initialized()) {
-      q = rot_gpu.get_q();
-    }
+    const cvm::quaternion* q = rot_gpu.initialized() ? rot_gpu.get_q() : nullptr;
     if (any_require_cpu_buffers) {
       cudaGraphNode_t copy_grad_to_device;
       error_code |= colvars_gpu::add_copy_node(
