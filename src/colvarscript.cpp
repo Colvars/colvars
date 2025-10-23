@@ -858,7 +858,7 @@ int colvarscript::set_result_text(std::vector<cvm::rvector> const &x,
 
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
 template <>
-int colvarscript::set_result_text(std::vector<cvm::real, cvm::CudaHostAllocator<cvm::real>> const &x,
+int colvarscript::set_result_text(std::vector<cvm::real, colvars_gpu::CudaHostAllocator<cvm::real>> const &x,
                                   unsigned char *obj) {
   std::string x_str("");
   pack_vector_elements_text(x, x_str);
@@ -866,7 +866,7 @@ int colvarscript::set_result_text(std::vector<cvm::real, cvm::CudaHostAllocator<
 }
 
 template <>
-int colvarscript::set_result_text(std::vector<cvm::rvector, cvm::CudaHostAllocator<cvm::rvector>> const &x,
+int colvarscript::set_result_text(std::vector<cvm::rvector, colvars_gpu::CudaHostAllocator<cvm::rvector>> const &x,
                                   unsigned char *obj) {
   std::string x_str("");
   for (size_t i = 0; i < x.size(); i++) {
@@ -933,13 +933,13 @@ int colvarscript::set_result_rvector_vec(std::vector<cvm::rvector> const &x,
 
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
 template <>
-int colvarscript::set_result_real_vec(std::vector<cvm::real, cvm::CudaHostAllocator<cvm::real>> const &x,
+int colvarscript::set_result_real_vec(std::vector<cvm::real, colvars_gpu::CudaHostAllocator<cvm::real>> const &x,
                                       unsigned char *obj) {
   return set_result_text(x, obj);
 }
 
 template <>
-int colvarscript::set_result_rvector_vec(std::vector<cvm::rvector, cvm::CudaHostAllocator<cvm::rvector>> const &x,
+int colvarscript::set_result_rvector_vec(std::vector<cvm::rvector, colvars_gpu::CudaHostAllocator<cvm::rvector>> const &x,
                                       unsigned char *obj) {
   return set_result_text(x, obj);
 }
