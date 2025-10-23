@@ -1,7 +1,6 @@
 #include "colvargrid_integrate.h"
 #include <iostream>
 #include <iomanip>
-#include <omp.h>
 
 
 // Helper function to print vector<int>
@@ -1090,8 +1089,8 @@ void colvargrid_integrate::prepare_calculations() {
         std::size_t required = (laplacian_stencil.size() + 2) * computation_nt * sizeof(cvm::real);
         double gigabytes = required / (1024.0 * 1024.0 * 1024.0);
         precompute = gigabytes < 2;
-        std::string print_precompute = precompute? " " : " not ";
-        std::cout << "Laplacian computation will" << print_precompute <<"be done on the fly, precomputing requires " << gigabytes << "GB of memory" << std::endl;
+        std::string print_precompute = precompute? "precomputed; precomputing will use " : "computed on the fly, as precomputing would use ";
+        std::cout << "Laplacian computation will be " << print_precompute << gigabytes << " GB of memory" << std::endl;
         if (precompute) {
             laplacian_coefficients.clear();
             laplacian_coefficients.resize(computation_grid->data.size() * laplacian_stencil.size(),0);
