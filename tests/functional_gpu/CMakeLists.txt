@@ -91,6 +91,8 @@ if(COLVARS_LEPTON)
   target_link_libraries(run_colvars_test_cuda PUBLIC lepton)
 endif()
 
+target_link_libraries(run_colvars_test_cuda PUBLIC stdc++exp)
+
 set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE CUDA)
 # set_property(TARGET run_colvars_test_cuda PROPERTY CUDA_ARCHITECTURES OFF)
 
