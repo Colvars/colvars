@@ -53,10 +53,12 @@ file(GLOB LEPTON_SOURCES ${NAMD_LEPTON_SOURCE_DIR}/[^.]*.cpp)
 
 set(COLVARS_CUDA_HEADER ${COLVARS_SOURCE_DIR}/cuda/colvaratoms_kernel.h
                         ${COLVARS_SOURCE_DIR}/cuda/colvar_rotation_derivative_kernel.h
-                        ${COLVARS_SOURCE_DIR}/cuda/colvartypes_kernel.h)
+                        ${COLVARS_SOURCE_DIR}/cuda/colvartypes_kernel.h
+                        ${COLVARS_SOURCE_DIR}/cuda/colvarcomp_distance_kernel.h)
 set(COLVARS_CUDA_SOURCE ${COLVARS_SOURCE_DIR}/cuda/colvaratoms_kernel.cu
                         ${COLVARS_SOURCE_DIR}/cuda/colvar_rotation_derivative_kernel.cu
-                        ${COLVARS_SOURCE_DIR}/cuda/colvartypes_kernel.cu)
+                        ${COLVARS_SOURCE_DIR}/cuda/colvartypes_kernel.cu
+                        ${COLVARS_SOURCE_DIR}/cuda/colvarcomp_distance_kernel.cu)
 
 if(USE_CUDA)
   if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
