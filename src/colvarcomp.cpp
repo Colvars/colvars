@@ -16,7 +16,7 @@
 #include "colvarvalue.h"
 #include "colvar.h"
 #include "colvarcomp.h"
-
+#include "colvarcomp_harmonicforceconstant.h"
 
 
 colvar::cvc::cvc()

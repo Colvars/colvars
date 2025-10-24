@@ -19,8 +19,10 @@
 
 
 colvarbias_restraint::colvarbias_restraint(char const *key)
-  : colvarbias(key), colvarbias_ti(key)
-{}
+  : colvarbias(key), colvarbias_ti(key) {
+  dynamic_k_cv = NULL;
+  k_derivative = 0.0;
+}
 
 
 int colvarbias_restraint::init(std::string const &conf)
@@ -70,6 +72,16 @@ colvarbias_restraint::~colvarbias_restraint()
 {
 }
 
+void colvarbias_restraint::set_dynamic_k_cv(colvar *cv)
+{
+  dynamic_k_cv = cv;
+  cvm->log("Harmonic restraint '" + this->name + "' is now dynamically controlled by colvar '" + cv->name + "'.\n");
+}
+
+cvm::real colvarbias_restraint::get_k_derivative() const
+{
+  return k_derivative;
+}
 
 std::string const colvarbias_restraint::get_state_params() const
 {
@@ -731,13 +743,60 @@ int colvarbias_restraint_harmonic::update()
   // update the TI estimator (if defined)
   error_code |= colvarbias_ti::update();
 
-  // update parameters (centers or force constant)
+  // update parameters (centers or force constant if using the old moving restraint feature)
   error_code |= colvarbias_restraint_moving::update();
 
-  // update restraint energy and forces
-  error_code |= colvarbias_restraint::update();
+  // ----------------- CUSTOM LOGIC STARTS HERE -----------------
+  // This block replaces the original call to "colvarbias_restraint::update()"
 
-  // update accumulated work using the current forces
+  // Base class update zeros energy and forces, must be called first
+  colvarbias::update();
+
+  // Main loop for energy and force calculation
+  for (size_t i = 0; i < num_variables(); i++) {
+
+    // Get the squared distance to the center, this is the (xi - xi_0)^2 term
+    cvm::real const dist2 = variables(i)->dist2(variables(i)->value(), colvar_centers[i]);
+    // Get the squared width for scaling
+    cvm::real const w_sq = variables(i)->width * variables(i)->width;
+    
+    // The force constant from config is treated as the maximum value (k_max)
+    cvm::real const k_max = force_k;
+    cvm::real current_k = k_max;
+
+    if (dynamic_k_cv) {
+      // If controlled by our new CV, scale k by the CV's value (lambda)
+      current_k *= dynamic_k_cv->value();
+    }
+    
+    // Calculate potential energy using current_k
+    // This is equivalent to what "restraint_potential(i)" did
+    bias_energy += 0.5 * current_k / w_sq * dist2;
+    
+    // Calculate force on the original collective variable
+    // This is equivalent to what "restraint_force(i)" did
+    colvar_forces[i].type(variables(i)->value());
+    colvar_forces[i].is_derivative();
+    colvar_forces[i] = -0.5 * current_k / w_sq * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
+    
+    // Calculate and apply thermodynamic force F_lambda to our new CV
+    if (dynamic_k_cv) {
+      // U = 0.5 * (k_max * lambda) / w^2 * dist^2
+      // dU/d_lambda = 0.5 * k_max / w^2 * dist^2
+      cvm::real const dU_dlambda = 0.5 * k_max / w_sq * dist2;
+      this->k_derivative = -dU_dlambda; // F_lambda = -dU/d_lambda
+
+      // Apply this force to the component(s) of the controlling CV
+      for (size_t j = 0; j < dynamic_k_cv->components.size(); j++) {
+        (dynamic_k_cv->components[j])->apply_force(this->k_derivative);
+      }
+    } else {
+      this->k_derivative = 0.0;
+    }
+  }
+  // ------------------ CUSTOM LOGIC ENDS HERE ------------------
+
+  // update accumulated work using the current forces (for legacy features)
   error_code |= colvarbias_restraint_centers_moving::update_acc_work();
   error_code |= colvarbias_restraint_k_moving::update_acc_work();
 

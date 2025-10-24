@@ -40,6 +40,11 @@ public:
   virtual int set_state_params(std::string const &conf);
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
+  
+  /// Allow a harmonicForceConstant CV to register itself
+  void set_dynamic_k_cv(colvar *cv);
+  /// Allow a harmonicForceConstant CV to get the thermodynamic force
+  cvm::real get_k_derivative() const;
 
   /// \brief Constructor
   colvarbias_restraint(char const *key);
@@ -58,6 +63,10 @@ protected:
 
   /// \brief Derivative of the potential function with respect to the force constant
   virtual cvm::real d_restraint_potential_dk(size_t i) const = 0;
+  
+  cvm::real k_derivative; /// Derivative of the bias energy with respect to k_max
+  colvar *dynamic_k_cv;   /// Pointer to the colvar that dynamically controls the force constant
+  
 };
 
 
