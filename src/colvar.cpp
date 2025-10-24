@@ -21,6 +21,7 @@
 #include "colvarbias.h"
 #include "colvars_memstream.h"
 #include "colvarcomp_torchann.h"
+#include "colvarcomp_harmonicforceconstant.h"
 
 std::map<std::string, std::function<colvar::cvc *()>> colvar::global_cvc_map =
     std::map<std::string, std::function<colvar::cvc *()>>();
@@ -926,6 +927,7 @@ void colvar::define_component_types()
   add_component_type<eigenvector>("eigenvector", "eigenvector");
   add_component_type<alch_lambda>("alchemical coupling parameter", "alchLambda");
   add_component_type<alch_Flambda>("force on alchemical coupling parameter", "alchFLambda");
+  add_component_type<cvc_harmonicforceconstant>("force constant as a dynamic variable", "harmonicForceConstant");
   add_component_type<aspath>("arithmetic path collective variables (s)", "aspath");
   add_component_type<azpath>("arithmetic path collective variables (z)", "azpath");
   add_component_type<gspath>("geometrical path collective variables (s)", "gspath");
