@@ -1295,14 +1295,10 @@ public:
 };
 
 
-/// Class for accumulating a scalar function on a grid
+/// Class for scalar function on a grid
 class colvar_grid_scalar : public colvar_grid<cvm::real>
 {
 public:
-
-  /// \brief Provide the associated sample count by which each binned value
-  /// should be divided
-  std::shared_ptr<colvar_grid_count> samples;
 
   /// Default constructor
   colvar_grid_scalar();
@@ -1330,8 +1326,6 @@ public:
     (void) imult;
     // only legal value of imult here is 0
     data[address(ix)] += new_value;
-    if (samples)
-      samples->incr_count(ix);
     has_data = true;
   }
 
@@ -1555,11 +1549,7 @@ public:
                  "larger than 1 in a scalar data grid.\n");
       return 0.;
     }
-    if (samples) {
-      return ( (s = samples->value(ix)) > 0) ?
-        (data[address(ix) + imult] / cvm::real(s)) :
-        0.0;
-    } else {
+    else {
       return data[address(ix) + imult];
     }
   }
@@ -1576,15 +1566,8 @@ public:
       return;
     }
     if (add) {
-      if (samples)
-        // Special case if samples == 0 and value != 0
-        data[address(ix)] += new_value * samples->new_value(ix);
-      else
         data[address(ix)] += new_value;
     } else {
-      if (samples)
-        data[address(ix)] = new_value * samples->value(ix);
-      else
         data[address(ix)] = new_value;
     }
     has_data = true;
