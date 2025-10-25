@@ -360,11 +360,10 @@ int colvarmodule::parse_config(std::string &conf)
   // Link biases to their corresponding CV components, now that all are created
   cvm::log("Linking biases to their corresponding CV components.\n");
   for (size_t i = 0; i < colvars.size(); i++) {
-    for (size_t j = 0; j < colvars[i]->cvcs.size(); j++) {
-      if (colvars[i]->cvcs[j]->link_bias(this) != COLVARS_OK) {
-        error("Error: Failed to link bias for colvar " + colvars[i]->name, COLVARS_INPUT_ERROR);
-        return COLVARS_INPUT_ERROR;
-      }
+    // 现在调用 colvar 自己的公共函数来处理其内部的 CVC
+    if (colvars[i]->link_biases(this) != COLVARS_OK) {
+      // 错误消息已经在 colvar::link_biases 中打印，我们只需返回错误
+      return COLVARS_INPUT_ERROR;
     }
   }
 

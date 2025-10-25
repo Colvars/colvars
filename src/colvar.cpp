@@ -325,6 +325,14 @@ int colvar::init(std::string const &conf)
 
     static_cast<colvar::alch_lambda *>(cvcs[0].get())->init_alchemy(time_step_factor);
   }
+  
+  // 修正：为 harmonicForceConstant 添加 f_cv_external 标志
+  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "harmonicForceConstant") {
+    cvm::log("Enabling f_cv_external for harmonicForceConstant CV.\n");
+    enable(f_cv_external);
+    // 这将告诉 extendedLagrangian 积分器
+    // f_system 来自 cvcs[0]->total_force() (即 ft)
+  }
 
   // If using scripted biases, any colvar may receive bias forces
   if (cvm::scripted_forces()) {
@@ -823,7 +831,7 @@ template <typename def_class_name>
 void colvar::add_component_type(char const *def_description, char const *def_config_key)
 {
   if (global_cvc_map.count(def_config_key) == 0) {
-    global_cvc_map[def_config_key] = []() {
+    global_cvc_map[def_config_key] = []() -> colvar::cvc* {
       return new def_class_name();
     };
     global_cvc_desc_map[def_config_key] = std::string(def_description);
@@ -3067,6 +3075,19 @@ int colvar::calc_runave()
   }
 
   return error_code;
+}
+
+int colvar::link_biases(colvarmodule *cvm)
+{
+  for (size_t j = 0; j < cvcs.size(); j++) {
+    if (cvcs[j]->link_bias(cvm, this) != COLVARS_OK) {
+      // 注意：这里我们使用 cvm::error 而不是 this->error
+      cvm::error("Error: Failed to link bias for component " + cvcs[j]->name +
+                 " in colvar " + this->name, COLVARS_INPUT_ERROR);
+      return COLVARS_INPUT_ERROR;
+    }
+  }
+  return COLVARS_OK;
 }
 
 // Static members
