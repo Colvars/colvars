@@ -105,7 +105,7 @@ public:
   virtual int init(std::string const &conf);
   
   /// After all biases are initialized, link those that need it
-  virtual int link_bias(colvarmodule * /* cvm */) { return COLVARS_OK; }
+  virtual int link_bias(colvarmodule * /* cvm */, colvar * /* cv */) { return COLVARS_OK; }
 
   /// \brief Initialize dependency tree
   virtual int init_dependencies();

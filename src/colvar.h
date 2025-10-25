@@ -111,6 +111,9 @@ public:
     cv_features.clear();
   }
 
+  /// \brief (ĞÂÌí¼Ó) Link this colvar's components to any required biases
+  int link_biases(colvarmodule *cvm);
+
   /// Implements possible actions to be carried out
   /// when a given feature is enabled
   /// This overloads the base function in colvardeps
@@ -247,7 +250,7 @@ public:
 
   /// Constructor
   colvar();
-
+  
   /// Main init function
   int init(std::string const &conf);
 

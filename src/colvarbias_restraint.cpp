@@ -75,7 +75,7 @@ colvarbias_restraint::~colvarbias_restraint()
 void colvarbias_restraint::set_dynamic_k_cv(colvar *cv)
 {
   dynamic_k_cv = cv;
-  cvm->log("Harmonic restraint '" + this->name + "' is now dynamically controlled by colvar '" + cv->name + "'.\n");
+  cvm::log("Harmonic restraint '" + this->name + "' is now dynamically controlled by colvar '" + cv->name + "'.\n");
 }
 
 cvm::real colvarbias_restraint::get_k_derivative() const
@@ -765,16 +765,11 @@ int colvarbias_restraint_harmonic::update()
     cvm::real current_k = k_max;
 
     if (dynamic_k_cv) {
-      // If controlled by our new CV, scale k by the CV's value (lambda)
       current_k *= dynamic_k_cv->value();
     }
     
-    // Calculate potential energy using current_k
-    // This is equivalent to what "restraint_potential(i)" did
     bias_energy += 0.5 * current_k / w_sq * dist2;
     
-    // Calculate force on the original collective variable
-    // This is equivalent to what "restraint_force(i)" did
     colvar_forces[i].type(variables(i)->value());
     colvar_forces[i].is_derivative();
     colvar_forces[i] = -0.5 * current_k / w_sq * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
@@ -786,10 +781,15 @@ int colvarbias_restraint_harmonic::update()
       cvm::real const dU_dlambda = 0.5 * k_max / w_sq * dist2;
       this->k_derivative = -dU_dlambda; // F_lambda = -dU/d_lambda
 
-      // Apply this force to the component(s) of the controlling CV
+      // 修正：移除这个错误的循环！
+      // CVC 将在下一个时间步的 calc_force_invgrads() 阶段
+      // 通过 get_k_derivative() 主动获取这个力。
+      /*
       for (size_t j = 0; j < dynamic_k_cv->components.size(); j++) {
         (dynamic_k_cv->components[j])->apply_force(this->k_derivative);
       }
+      */
+      
     } else {
       this->k_derivative = 0.0;
     }
