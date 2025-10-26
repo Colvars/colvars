@@ -10,11 +10,14 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <cmath> // 需要 cmath
+#include <limits> // 需要 limits
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarvalue.h"
 #include "colvarbias_restraint.h"
+#include "colvarcomp_harmonicforceconstant.h"
 
 
 
@@ -740,63 +743,137 @@ int colvarbias_restraint_harmonic::update()
 {
   int error_code = COLVARS_OK;
 
-  // update the TI estimator (if defined)
+  // 更新 TI 估计量 (如果定义了)
   error_code |= colvarbias_ti::update();
 
-  // update parameters (centers or force constant if using the old moving restraint feature)
+  // 更新参数 (中心或力常数，如果使用旧的移动约束功能)
   error_code |= colvarbias_restraint_moving::update();
 
-  // ----------------- CUSTOM LOGIC STARTS HERE -----------------
-  // This block replaces the original call to "colvarbias_restraint::update()"
+  // ----------------- 自定义逻辑开始于此 -----------------
+  // 这个块替换了对 "colvarbias_restraint::update()" 的原始调用
 
-  // Base class update zeros energy and forces, must be called first
+  // 基类 update 会将能量和力归零，必须首先调用
   colvarbias::update();
 
-  // Main loop for energy and force calculation
+  // 能量和力计算的主循环
   for (size_t i = 0; i < num_variables(); i++) {
 
-    // Get the squared distance to the center, this is the (xi - xi_0)^2 term
+    // 获取到中心的距离平方，即 (xi - xi_0)^2 项
     cvm::real const dist2 = variables(i)->dist2(variables(i)->value(), colvar_centers[i]);
-    // Get the squared width for scaling
+    // 获取用于缩放的宽度平方
     cvm::real const w_sq = variables(i)->width * variables(i)->width;
-    
-    // The force constant from config is treated as the maximum value (k_max)
-    cvm::real const k_max = force_k;
-    cvm::real current_k = k_max;
 
-    if (dynamic_k_cv) {
-      current_k *= dynamic_k_cv->value();
-    }
-    
-    bias_energy += 0.5 * current_k / w_sq * dist2;
-    
-    colvar_forces[i].type(variables(i)->value());
-    colvar_forces[i].is_derivative();
-    colvar_forces[i] = -0.5 * current_k / w_sq * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
-    
-    // Calculate and apply thermodynamic force F_lambda to our new CV
-    if (dynamic_k_cv) {
-      // U = 0.5 * (k_max * lambda) / w^2 * dist^2
-      // dU/d_lambda = 0.5 * k_max / w^2 * dist^2
-      cvm::real const dU_dlambda = 0.5 * k_max / w_sq * dist2;
+    // 来自配置的力常数被视为最大值 (k_max)
+    cvm::real const k_max = force_k;
+    cvm::real current_k = k_max; // 默认情况下，当前力常数等于 k_max
+
+    // ------ 针对 kExponent 的修改逻辑开始 ------
+    if (dynamic_k_cv) { // 检查是否有动态力常数 CV 在控制
+      // 获取原始 lambda 值 (范围 0 到 1)
+      cvm::real raw_lambda = dynamic_k_cv->value().real_value;
+
+      // 获取指数 n (kExponent)
+      cvm::real exponent_n = 1.0; // 默认为 1.0
+      cvc_harmonicforceconstant* hfc_cvc = nullptr;
+      // 假设 harmonicForceConstant 是第一个 (且唯一一个) component
+      if (dynamic_k_cv->num_cvcs() == 1) {
+          // 安全地尝试将第一个 component 转换为 harmonicForceConstant 类型
+          hfc_cvc = dynamic_cast<cvc_harmonicforceconstant*>(dynamic_k_cv->get_cvc_ptr(0));
+      }
+
+      if (hfc_cvc) {
+          // 如果转换成功，获取 exponent
+          exponent_n = hfc_cvc->get_k_exponent();
+      } else {
+          // 如果 dynamic_cast 失败或没有 component，发出警告或错误
+          // 这里暂时使用默认值 1.0 并发出警告
+          cvm::log("Warning: Could not retrieve kExponent from the controlling harmonicForceConstant CV component. Using exponent 1.0.");
+      }
+
+      // 计算有效缩放因子 lambda_eff = lambda^n
+      // 需要处理 lambda < 0 的情况（尽管边界设为[0,1]，扩展拉格朗日动力学可能短暂超出）
+      cvm::real effective_lambda = 0.0;
+      if (raw_lambda >= 0.0) {
+           effective_lambda = cvm::pow(raw_lambda, exponent_n);
+      } else {
+           // 如果 lambda 意外为负，根据 n 的奇偶性处理或设为0以避免复数
+           if (exponent_n == static_cast<int>(exponent_n)) { // 如果 n 是整数
+              effective_lambda = cvm::pow(raw_lambda, exponent_n);
+           } else {
+              cvm::log("Warning: lambda < 0 and kExponent is not an integer. Setting effective lambda to 0.");
+              effective_lambda = 0.0;
+           }
+      }
+
+       // 检查计算结果是否有限
+      if (!std::isfinite(effective_lambda)) {
+           cvm::log("Warning: Effective lambda calculation resulted in non-finite value (lambda=" + cvm::to_str(raw_lambda) + ", n=" + cvm::to_str(exponent_n) + "). Setting to 0.");
+           effective_lambda = 0.0;
+      }
+
+      // 使用有效缩放因子计算当前力常数
+      current_k = k_max * effective_lambda;
+
+      // 计算偏置能量 (使用 current_k)
+      bias_energy += 0.5 * current_k / w_sq * dist2;
+
+      // 计算施加在 *原始* CV 上的力 (使用 current_k) - 这部分逻辑不变
+      colvar_forces[i].type(variables(i)->value());
+      colvar_forces[i].is_derivative();
+      colvar_forces[i] = -0.5 * current_k / w_sq * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
+
+      // 计算热力学力 F_lambda = -dU/d_lambda
+      // U = 0.5 * k_eff / w^2 * dist^2,  k_eff = k_max * lambda^n
+      // dU/d_lambda = (dU/d_k_eff) * (d_k_eff / d_lambda)
+      // d_k_eff / d_lambda = k_max * n * lambda^(n-1)
+
+      // 计算导数因子 d(lambda^n)/d_lambda = n * lambda^(n-1)
+      cvm::real derivative_factor;
+      if (raw_lambda == 0.0) {
+          if (exponent_n < 1.0) {
+              // 在 lambda=0 处，如果 n<1，导数是无穷大
+              derivative_factor = std::numeric_limits<cvm::real>::infinity();
+              cvm::log("Warning: Derivative factor for kExponent < 1 is infinite at lambda=0. Setting thermodynamic force to 0.");
+              // 设置为 0 以避免 NaN/Inf 问题，即使可能不完全精确
+              derivative_factor = 0.0;
+          } else if (exponent_n == 1.0) {
+              derivative_factor = 1.0;
+          } else { // exponent_n > 1.0
+              // 在 lambda=0 处，如果 n>1，导数为 0
+              derivative_factor = 0.0;
+          }
+      } else if (raw_lambda < 0.0 && exponent_n != static_cast<int>(exponent_n)) {
+           // 如果 lambda < 0 且 n 不是整数，导数可能是复数或未定义
+           cvm::log("Warning: lambda < 0 and kExponent is not an integer. Cannot compute derivative factor reliably. Setting thermodynamic force to 0.");
+           derivative_factor = 0.0;
+      }
+      else {
+          derivative_factor = exponent_n * cvm::pow(raw_lambda, exponent_n - 1.0);
+      }
+
+      // 再次检查计算结果是否有限
+      if (!std::isfinite(derivative_factor)) {
+           cvm::log("Warning: Derivative factor calculation resulted in non-finite value (lambda=" + cvm::to_str(raw_lambda) + ", n=" + cvm::to_str(exponent_n) + "). Setting thermodynamic force to 0.");
+           derivative_factor = 0.0;
+      }
+
+      // dU/d_lambda = (1/2 * dist^2 / w^2) * k_max * derivative_factor
+      cvm::real const dU_dlambda = 0.5 * k_max / w_sq * dist2 * derivative_factor;
       this->k_derivative = -dU_dlambda; // F_lambda = -dU/d_lambda
 
-      // 修正：移除这个错误的循环！
-      // CVC 将在下一个时间步的 calc_force_invgrads() 阶段
-      // 通过 get_k_derivative() 主动获取这个力。
-      /*
-      for (size_t j = 0; j < dynamic_k_cv->components.size(); j++) {
-        (dynamic_k_cv->components[j])->apply_force(this->k_derivative);
-      }
-      */
-      
-    } else {
+    } else { // 如果没有 dynamic_k_cv 控制
+      // 保持原有逻辑：计算能量和原子力，热力学力为 0
+      bias_energy += 0.5 * current_k / w_sq * dist2;
+      colvar_forces[i].type(variables(i)->value());
+      colvar_forces[i].is_derivative();
+      colvar_forces[i] = -0.5 * current_k / w_sq * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
       this->k_derivative = 0.0;
     }
+    // ------ 针对 kExponent 的修改逻辑结束 ------
   }
-  // ------------------ CUSTOM LOGIC ENDS HERE ------------------
+  // ------------------ 自定义逻辑结束于此 ------------------
 
-  // update accumulated work using the current forces (for legacy features)
+  // 使用当前力更新累积功 (用于旧功能)
   error_code |= colvarbias_restraint_centers_moving::update_acc_work();
   error_code |= colvarbias_restraint_k_moving::update_acc_work();
 

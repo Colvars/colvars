@@ -7,14 +7,26 @@
 cvc_harmonicforceconstant::cvc_harmonicforceconstant()
     : cvc() // 修正：构造函数调用
 {
+  set_function_type("harmonicForceConstant"); // 最好也在这里设置类型
+
+  provide(f_cvc_explicit_gradient, false); // 禁用显式梯度
+  provide(f_cvc_gradient, false);          // 禁用梯度 (不能施加力)
+  provide(f_cvc_collect_atom_ids, false); // 禁用原子ID收集
+
+  provide(f_cvc_inv_gradient);             // 提供总力计算 (通过 calc_force_invgrads 实现)
+  provide(f_cvc_Jacobian);                 // 提供雅可比导数计算
+  
   harmonic_bias = NULL;
   is_linked = false; // 修正：初始化 is_linked
+  k_exponent = 1.0; // 默认值
 
   // 修正：'is_extended_lagrangian' 不是 CVC 的成员。
   // 它在 colvar 级别通过 f_cv_external 标志控制。
 
   // 修正：使用基类函数来设置边界和类型
   init_scalar_boundaries(0.0, 1.0); 
+  
+  x.type(colvarvalue::type_scalar);
 
   // 修正：'value_' 不存在。使用继承的成员 'x'
   x.real_value = 0.0; // 初始化值 (默认 k=0)
@@ -29,6 +41,16 @@ int cvc_harmonicforceconstant::init(std::string const &conf)
     cvm::error("Error: Missing required parameter harmonicName for harmonicForceConstant component.");
     return COLVARS_INPUT_ERROR;
   }
+  
+  // 新增: 解析 kExponent
+  if (get_keyval(conf, "kExponent", k_exponent, k_exponent)) {
+    if (k_exponent <= 0.0) {
+        cvm::error("Error: kExponent must be positive for harmonicForceConstant component.", COLVARS_INPUT_ERROR);
+        return COLVARS_INPUT_ERROR;
+    }
+    cvm::log("Using exponent kExponent = " + cvm::to_str(k_exponent) + " for force constant scaling.\n");
+  }
+  
   return COLVARS_OK;
 }
 
@@ -79,6 +101,10 @@ void cvc_harmonicforceconstant::calc_force_invgrads()
   }
 }
 
+void cvc_harmonicforceconstant::calc_Jacobian_derivative() {
+  jd.type(colvarvalue::type_scalar); // 确保类型设置
+  jd.real_value = 0.0;
+}
 
 void cvc_harmonicforceconstant::apply_force(colvarvalue const &force)
 {
