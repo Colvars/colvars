@@ -3090,6 +3090,23 @@ int colvar::link_biases(colvarmodule *cvm)
   return COLVARS_OK;
 }
 
+colvar::cvc* colvar::get_cvc_ptr(size_t index) {
+  if (index < cvcs.size()) {
+    // .get() 从 std::shared_ptr 获取原始指针
+    return cvcs[index].get();
+  }
+  // 如果索引无效，返回空指针
+  return nullptr;
+}
+
+// Const 版本
+colvar::cvc const* colvar::get_cvc_ptr(size_t index) const {
+  if (index < cvcs.size()) {
+    return cvcs[index].get();
+  }
+  return nullptr;
+}
+
 // Static members
 
 std::vector<colvardeps::feature *> colvar::cv_features;

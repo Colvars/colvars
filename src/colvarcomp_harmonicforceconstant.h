@@ -26,12 +26,18 @@ public:
 
   // 修正：这个函数应该为空
   virtual void apply_force(colvarvalue const &force);
+  
+  virtual void calc_Jacobian_derivative();
+  
+  cvm::real get_k_exponent() const { return k_exponent; }
 
 protected:
   // 要控制的 harmonic 偏置的名称
   std::string harmonic_bias_name;
   // 指向 harmonic 偏置实例的指针
   colvarbias_restraint *harmonic_bias;
+  
+  cvm::real k_exponent = 1.0;
   
   // 修正：添加 is_linked 成员变量
   bool is_linked;
