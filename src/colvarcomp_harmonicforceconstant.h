@@ -6,40 +6,51 @@
 #include "colvar.h"
 #include "colvarcomp.h"
 
-// 前向声明以避免循环依赖
+// Forward declaration to avoid circular dependency with the bias class.
 class colvarbias_restraint;
 
+/// \brief A fictitious coordinate representing the normalized force constant of a harmonic restraint.
+///
+/// This CVC allows a harmonic restraint's force constant (k) to be treated as a
+/// dynamic variable, lambda, evolving between 0 and 1. The potential energy of the
+/// restraint is defined as U(x, lambda) = 0.5 * (k_max * lambda^n) * (x-x_0)^2.
+/// This CVC reports the thermodynamic force F_lambda = -dU/d_lambda, enabling
+/// enhanced sampling methods (like ABF or Metadynamics) to reconstruct the free energy
+/// profile associated with growing or disappearing the restraint.
 class cvc_harmonicforceconstant : public colvar::cvc {
 public:
   cvc_harmonicforceconstant();
   virtual int init(std::string const &conf);
   virtual ~cvc_harmonicforceconstant() {}
 
-  // 这个函数将在所有 CV 和 Bias 初始化后被调用
+  /// Called after all colvars and biases are initialized to link to the target restraint.
   virtual int link_bias(colvarmodule *cvm, colvar *cv);
 
   virtual void calc_value();
   virtual void calc_gradients();
   
-  // 修正：这是 CVC 报告其系统力（F_lambda）的正确函数
+  /// This CVC reports the thermodynamic force F_lambda, so this function is implemented.
   virtual void calc_force_invgrads(); 
 
-  // 修正：这个函数应该为空
+  /// The force applied to this CVC is handled by the parent colvar's extended Lagrangian dynamics.
   virtual void apply_force(colvarvalue const &force);
   
+  /// The Jacobian derivative for this 1D fictitious coordinate is zero.
   virtual void calc_Jacobian_derivative();
   
+  /// Returns the exponent used for scaling the force constant.
   cvm::real get_k_exponent() const { return k_exponent; }
 
 protected:
-  // 要控制的 harmonic 偏置的名称
+  /// The name of the harmonic bias to be controlled.
   std::string harmonic_bias_name;
-  // 指向 harmonic 偏置实例的指针
+  /// A pointer to the instance of the harmonic bias.
   colvarbias_restraint *harmonic_bias;
   
+  /// Exponent 'n' for the force constant scaling, k = k_max * lambda^n.
   cvm::real k_exponent = 1.0;
   
-  // 修正：添加 is_linked 成员变量
+  /// Flag to ensure the link_bias function is executed only once.
   bool is_linked;
 };
 

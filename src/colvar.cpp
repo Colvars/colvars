@@ -326,12 +326,12 @@ int colvar::init(std::string const &conf)
     static_cast<colvar::alch_lambda *>(cvcs[0].get())->init_alchemy(time_step_factor);
   }
   
-  // 修正：为 harmonicForceConstant 添加 f_cv_external 标志
+  // Enable the f_cv_external flag for harmonicForceConstant CVs
   if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "harmonicForceConstant") {
     cvm::log("Enabling f_cv_external for harmonicForceConstant CV.\n");
     enable(f_cv_external);
-    // 这将告诉 extendedLagrangian 积分器
-    // f_system 来自 cvcs[0]->total_force() (即 ft)
+    // This will bypass the calculation of the harmonic potential in extendedLagrangian,
+    // and the system force will be provided by cvcs[0]->total_force() (as ft).
   }
 
   // If using scripted biases, any colvar may receive bias forces
@@ -3081,7 +3081,6 @@ int colvar::link_biases(colvarmodule *cvm)
 {
   for (size_t j = 0; j < cvcs.size(); j++) {
     if (cvcs[j]->link_bias(cvm, this) != COLVARS_OK) {
-      // 注意：这里我们使用 cvm::error 而不是 this->error
       cvm::error("Error: Failed to link bias for component " + cvcs[j]->name +
                  " in colvar " + this->name, COLVARS_INPUT_ERROR);
       return COLVARS_INPUT_ERROR;
@@ -3092,14 +3091,14 @@ int colvar::link_biases(colvarmodule *cvm)
 
 colvar::cvc* colvar::get_cvc_ptr(size_t index) {
   if (index < cvcs.size()) {
-    // .get() 从 std::shared_ptr 获取原始指针
+    // .get() retrieves the raw pointer from the std::shared_ptr
     return cvcs[index].get();
   }
-  // 如果索引无效，返回空指针
+  // Return a null pointer if the index is out of bounds
   return nullptr;
 }
 
-// Const 版本
+// Const version of the function
 colvar::cvc const* colvar::get_cvc_ptr(size_t index) const {
   if (index < cvcs.size()) {
     return cvcs[index].get();

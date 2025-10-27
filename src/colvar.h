@@ -113,10 +113,10 @@ public:
     cv_features.clear();
   }
 
-  /// \brief (新添加) Link this colvar's components to any required biases
+  /// \brief Link this colvar's components to any required biases
   int link_biases(colvarmodule *cvm);
   
-  /// \brief (新添加) Get a pointer to the i-th component (CVC)
+  /// \brief Get a pointer to the i-th component (CVC)
   cvc* get_cvc_ptr(size_t index);
   cvc const* get_cvc_ptr(size_t index) const; // Const version too
 
