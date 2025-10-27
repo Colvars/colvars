@@ -1210,7 +1210,7 @@ public:
     }
   }
 
-
+  using base_class::value_output;
   /// \brief Return the value of the function at ix divided by its
   /// number of samples (if the count grid is defined)
   inline scalar_type_class value_output(std::vector<int> const &ix,
@@ -1225,9 +1225,9 @@ public:
       return this->data[this->address(ix) + imult];
     }
   }
-
+  using base_class::value_input;
   /// Enter or add value but also deal with count grid
-   void value_input(std::vector<int> const &ix,
+  void value_input(std::vector<int> const &ix,
                            cvm::real const &new_value,
                            size_t const &imult = 0,
                            bool add = false)
@@ -1448,7 +1448,7 @@ public:
   int min_samples;
 
   /// Write the current grid parameters to a string
-  std::string get_state_params() const;
+  std::string get_state_params() const override;
 
   /// Read new grid parameters from a string
   int parse_params(std::string const &conf,
