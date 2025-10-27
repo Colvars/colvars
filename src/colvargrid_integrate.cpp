@@ -971,8 +971,8 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
 #ifdef _OPENMP
 #pragma omp parallel for // schedule(static, 128)
 
-        for (size_t grid_address = 0; grid_address < computation_grid->nt; grid_address++) {
-            (this->*linewise_laplacian_weighted)(A, LA, grid_address);
+        for (int grid_address_int = 0; grid_address_int < computation_grid->nt; grid_address_int++) {
+            (this->*linewise_laplacian_weighted)(A, LA, static_cast<size_t>(grid_address_int));
         }
 #else
         cvm::error("multiple threads required in weighted poisson integration, but this binary is not linked "
