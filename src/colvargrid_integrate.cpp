@@ -1052,7 +1052,6 @@ void colvargrid_integrate::print_laplacian_preparations() {
 
 void colvargrid_integrate::prepare_calculations() {
     if (weighted) {
-        sum_count = 0;
         std::vector<int> max_position;
         std::vector<int> min_position;
         sorted_counts = {};
@@ -1067,18 +1066,6 @@ void colvargrid_integrate::prepare_calculations() {
         upper_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * (1 - lambda_max))];
         lower_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * lambda_min)];
         sorted_counts.clear();
-        size_t n_points = 0;
-        for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix); gradients->incr(ix)) {
-            size_t count = gradients->samples->value(ix);
-            if (count < lower_threshold_count) {
-                sum_count += lower_threshold_count;
-            } else if (count > upper_threshold_count) {
-                sum_count += upper_threshold_count;
-            } else {
-                sum_count += count;
-            }
-            n_points++;
-        }
         std::cout << " lower_threshold: " << lower_threshold_count << " upper threshold:" <<
                 upper_threshold_count << std::endl;
         regularized_weights.resize(gradients->nt);
