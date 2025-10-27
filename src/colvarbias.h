@@ -15,8 +15,7 @@
 #include "colvar.h"
 #include "colvarparse.h"
 #include "colvardeps.h"
-
-class colvar_grid_scalar;
+#include "colvargrid.h"
 
 /// \brief Collective variable bias, base class
 class colvarbias
@@ -330,7 +329,6 @@ protected:
 
 
 class colvar_grid_gradient;
-class colvar_grid_count;
 
 /// \brief Base class for unconstrained thermodynamic-integration FE estimator
 class colvarbias_ti : public virtual colvarbias {
