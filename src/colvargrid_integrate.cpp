@@ -968,12 +968,10 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
             (this->*linewise_laplacian_weighted)(A, LA, grid_address);
         }
     } else {
-        int computation_nt_int = static_cast<int>(computation_grid->nt);
-
 #ifdef _OPENMP
 #pragma omp parallel for // schedule(static, 128)
 
-        for (int grid_address_int = 0; grid_address_int < computation_nt_int; grid_address_int++) {
+        for (int grid_address_int = 0; grid_address_int < static_cast<int>(computation_grid->nt); grid_address_int++) {
             (this->*linewise_laplacian_weighted)(A, LA, static_cast<size_t>(grid_address_int));
         }
 #else
