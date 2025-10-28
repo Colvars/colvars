@@ -107,14 +107,10 @@ protected:
 
   // positions of the points in the stencil relative to the stencil center
   std::vector<std::vector<int>> laplacian_stencil;
-  // positions of the weights relative to each stencil point to take into account in the weighted
-  // laplacian
+  // positions of the weights to average for each stencil point. This position is relative to the stencil point
   std::vector<std::vector<std::vector<int>>> weight_stencil;
   // Coefficient of each point in the stencil
   std::vector<cvm::real> weight_counts;
-  // for each point in the stencil tells if it is also included in the classical laplacian stencil
-  // and what is its coefficient
-  std::vector<cvm::real> neighbor_in_classic_laplacian_stencil;
   // relative coordinates (in the data grid) of the points to take into account in the divergence
   // calculation
   std::vector<std::vector<int>> surrounding_points_relative_positions;
