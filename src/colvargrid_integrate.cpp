@@ -329,6 +329,7 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
     divergence[linear_index] = ((g10[0] - g00[0] + g11[0] - g01[0]) / widths[0] +
                                 (g01[1] - g00[1] + g11[1] - g10[1]) / widths[1]) *
                                0.5;
+    // handle boundary conditions
     cvm::real supplement = 0;
     cvm::real supplement_coefficient = 1;
     if ((ix0[0] == 0 || ix0[0] == computation_nx[0] - 1) && !periodic[0]) {
@@ -342,6 +343,7 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
       supplement += coefficient * (g01[1] + g00[1] + g11[1] + g10[1]) * 0.25 * 2 / widths[1];
     }
     divergence[linear_index] += supplement;
+    // See Long Chen's paper: multiply boundary line to conserve symmetry
     divergence[linear_index] *= supplement_coefficient;
 
   } else if (nd == 3) {
@@ -943,7 +945,10 @@ void colvargrid_integrate::linewise_laplacian_weighted_precomputed(const std::ve
     }
   }
 }
-
+/// Calculate the multiplication by the laplacian matrix at the line grid_address
+/// I.e. Calculates the discrete laplacian of a function at a given point of the grid whose adress is grid_address
+/// Note: To store all the coefficients of the laplacian in a test matrix, uncomment the lines with
+/// "laplacian_matrix_test"
 template <bool initialize_div_supplement>
 void colvargrid_integrate::linewise_laplacian_weighted_otf(const std::vector<cvm::real> &A,
                                                            std::vector<cvm::real> &LA,
@@ -963,10 +968,10 @@ void colvargrid_integrate::linewise_laplacian_weighted_otf(const std::vector<cvm
     }
 
     cvm::real coefficient = 0;
-
+    // sum all the weights that will be averaged
     for (std::vector<int> direction : weight_stencil[i]) {
       std::vector<int> weight_coordinate = ix;
-      // Initialize with stencil_point instead of size
+      // compute weights' positions in the data grid
       for (size_t n = 0; n < nd && n < direction.size(); n++) {
         weight_coordinate[n] += direction[n];
       }
