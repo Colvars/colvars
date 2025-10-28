@@ -18,7 +18,7 @@ std::string vec_to_string(const std::vector<int> &vec)
 };
 
 colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
-                                           std::shared_ptr<colvar_grid_gradient> gradients)
+                                           std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted)
     : colvar_grid_scalar(colvars, gradients, true), b_smoothed(false), gradients(gradients)
 {
   // parent class colvar_grid_scalar is constructed with add_extra_bin option set to true
@@ -27,6 +27,7 @@ colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
   if (nd > 1) {
     cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
     divergence.resize(nt);
+    weighted = is_weighted;
 
     // Compute inverse of Laplacian diagonal for Jacobi preconditioning
     // For now all code related to preconditioning is commented out
@@ -92,7 +93,6 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
                                     bool verbose)
 {
   int iter = 0;
-
   if (nd == 1 && !weighted) {
     cvm::real sum = 0.0;
     cvm::real corr;
