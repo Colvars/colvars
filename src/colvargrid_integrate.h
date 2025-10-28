@@ -12,10 +12,9 @@ public:
 
   virtual ~colvargrid_integrate() {}
 
-
   /// Constructor from a vector of colvars + gradient grid
   colvargrid_integrate(std::vector<colvar *> &colvars,
-                       std::shared_ptr<colvar_grid_gradient> gradients);
+                       std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false);
 
   /// Constructor from a gradient grid (for processing grid files without a Colvars config)
   colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false);
