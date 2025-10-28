@@ -75,11 +75,14 @@ private:
   int       integrate_iterations;
   /// Tolerance for integrating PMF at startup and for file output
   cvm::real integrate_tol;
+  /// Whether to integrate with weights PMF at startup and for file output
+  bool integrate_weighted;
   /// Max number of CG iterations for integrating PMF at on-the-fly pABF updates
   int       pabf_integrate_iterations;
   /// Tolerance for integrating PMF at on-the-fly pABF updates
   cvm::real pabf_integrate_tol;
-
+  /// Whether to use a weighted integration to calculate the free energy.
+  bool pabf_integrate_weighted;
   /// Cap the biasing force to be applied? (option maxForce)
   bool                    cap_force;
   /// Maximum force to be applied
