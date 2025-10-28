@@ -218,20 +218,24 @@ int colvarbias_abf::init(std::string const &conf)
       cvm::error("Error: cannot integrate free energy in dimension > 3.\n");
       return COLVARS_ERROR;
     }
-    pmf.reset(new colvargrid_integrate(colvars, gradients));
+    // Parameters for integrating initial (and final) gradient data
+    get_keyval(conf, "integrateMaxIterations", integrate_iterations, 10000, colvarparse::parse_silent);
+    get_keyval(conf, "integrateTol", integrate_tol, 1e-6, colvarparse::parse_silent);
+    get_keyval(conf, "integrateWeighted", integrate_weighted, false, colvarparse::parse_silent);
+    // TODO: Are those
+    // Projected ABF, updating the integrated PMF on the fly
+    get_keyval(conf, "pABFintegrateFreq", pabf_freq, 0, colvarparse::parse_silent);
+    get_keyval(conf, "pABFintegrateMaxIterations", pabf_integrate_iterations, 100, colvarparse::parse_silent);
+    get_keyval(conf, "pABFintegrateTol", pabf_integrate_tol, 1e-4, colvarparse::parse_silent);
+    get_keyval(conf, "pABFintegrateWeighted", pabf_integrate_weighted, false, colvarparse::parse_silent);
+
+    pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted));
     if (b_CZAR_estimator) {
       czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients));
     }
     if (shared_on) {
       local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
     }
-    // Parameters for integrating initial (and final) gradient data
-    get_keyval(conf, "integrateMaxIterations", integrate_iterations, 10000, colvarparse::parse_silent);
-    get_keyval(conf, "integrateTol", integrate_tol, 1e-6, colvarparse::parse_silent);
-    // Projected ABF, updating the integrated PMF on the fly
-    get_keyval(conf, "pABFintegrateFreq", pabf_freq, 0, colvarparse::parse_silent);
-    get_keyval(conf, "pABFintegrateMaxIterations", pabf_integrate_iterations, 100, colvarparse::parse_silent);
-    get_keyval(conf, "pABFintegrateTol", pabf_integrate_tol, 1e-4, colvarparse::parse_silent);
   }
 
   if (b_CZAR_estimator && shared_on && cvm::main()->proxy->replica_index() == 0) {
