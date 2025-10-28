@@ -3,10 +3,12 @@
 #include <cstdio>
 #include <iostream>
 #include <iomanip>
+#include <iostream>
 
 
 // Helper function to print vector<int>
-std::string vec_to_string(const std::vector<int> &vec) {
+std::string vec_to_string(const std::vector<int> &vec)
+{
   std::ostringstream oss;
   oss << "[";
   for (size_t i = 0; i < vec.size(); ++i) {
@@ -20,9 +22,8 @@ std::string vec_to_string(const std::vector<int> &vec) {
 
 colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
                                          std::shared_ptr<colvar_grid_gradient> gradients)
-  : colvar_grid_scalar(colvars, gradients, true),
-    b_smoothed(false),
-      gradients(gradients) {
+    : colvar_grid_scalar(colvars, gradients, true), b_smoothed(false), gradients(gradients)
+{
   // parent class colvar_grid_scalar is constructed with add_extra_bin option set to true
   // hence PMF grid is wider than gradient grid if non-PBC
 
@@ -49,8 +50,10 @@ colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
 }
 
 
-colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted)
-    : b_smoothed(false), gradients(gradients) {
+colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients,
+                                           bool is_weighted)
+    : b_smoothed(false), gradients(gradients)
+{
   nd = gradients->num_variables();
   nx = gradients->number_of_points_vec();
   widths = gradients->widths;
@@ -89,7 +92,8 @@ colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient>
 
 
 int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::real &err,
-                                    bool verbose) {
+                                    bool verbose)
+{
   int iter = 0;
 
   if (nd == 1 && !weighted) {
@@ -122,8 +126,8 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
       std::vector<cvm::real> temp = divergence;
       std::vector<cvm::real> temp2(computation_grid->data);
             linewise_laplacian_weighted =
-            precompute ? &colvargrid_integrate::linewise_laplacian_weighted_precomputed<true> :
-    &colvargrid_integrate::linewise_laplacian_weighted_otf<true>;
+          precompute ? &colvargrid_integrate::linewise_laplacian_weighted_precomputed<true>
+                     : &colvargrid_integrate::linewise_laplacian_weighted_otf<true>;
       laplacian_weighted<true>(divergence, temp2);
       temp.clear();
       temp2.clear();
@@ -146,11 +150,12 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
 
         if (weighted || nd > 3) {
             if (nd > 3) {
-                std::cout << "WARNING: Integration of potential of dimension higher than 3 requires a lot of memory." << std::endl;
+        std::cout << "WARNING: Integration of potential of dimension higher than 3 requires a lot "
+                     "of memory."
+                  << std::endl;
             }
             nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
-        }
-        else
+    } else
             nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
     if (verbose)
       cvmodule->log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
@@ -179,7 +184,8 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
     // // Compute terms of the Laplacian matrix
     // std::vector<cvm::real> lap_mat(nt, 0.);
 
-    // std::vector<size_t> cols = {0, 1, 2, 3, 4, 5, nt - 6, nt - 5, nt - 4, nt - 3, nt - 2, nt - 1};
+    // std::vector<size_t> cols = {0, 1, 2, 3, 4, 5, nt - 6, nt - 5, nt - 4, nt - 3, nt - 2, nt -
+    // 1};
 
     // for (size_t i = 0; i < cols.size(); i++) {
     //   this->reset();
@@ -231,22 +237,26 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
 }
 
 
-void colvargrid_integrate::set_div() {
+void colvargrid_integrate::set_div()
+{
   if (nd == 1)
     return;
-    for (std::vector<int> ix = computation_grid->new_index(); computation_grid -> index_ok(ix); computation_grid -> incr(ix)) {
+  for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
+       computation_grid->incr(ix)) {
     update_div_local(ix);
   }
 }
 
-void colvargrid_integrate::set_weighted_div() {
+void colvargrid_integrate::set_weighted_div()
+{
     for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
         computation_grid->incr(ix)) {
       update_weighted_div_local(ix);
     }
 }
 
-void colvargrid_integrate::update_div_neighbors(const std::vector<int> &ix0) {
+void colvargrid_integrate::update_div_neighbors(const std::vector<int> &ix0)
+{
   std::vector<int> ix(ix0);
   int i, j, k;
 
@@ -281,20 +291,22 @@ void colvargrid_integrate::update_div_neighbors(const std::vector<int> &ix0) {
   }
 }
 
-size_t colvargrid_integrate::get_grad(std::vector<cvm::real> &g, std::vector<int> ix) {
+size_t colvargrid_integrate::get_grad(std::vector<cvm::real> &g, std::vector<int> ix)
+{
   size_t count = gradients->samples->value(ix);
   gradients->vector_value(ix, g);
   return count;
 }
 
 
-void colvargrid_integrate::update_div_local(const std::vector<int> &ix0) {
-    const size_t linear_index = computation_grid -> address(ix0);
+void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
+{
+  const size_t linear_index = computation_grid->address(ix0);
   std::vector<int> ix = ix0;
 
   if (nd == 2) {
     // gradients at grid points surrounding the current scalar grid point
-        std::vector<cvm::real> g00(2,0), g01(2,0), g10(2,0), g11(2,0);
+    std::vector<cvm::real> g00(2, 0), g01(2, 0), g10(2, 0), g11(2, 0);
 
 
         get_grad(g00, ix);
@@ -317,15 +329,17 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0) {
 
         ix = ix0;
 
-        divergence[linear_index] = ((g10[0] - g00[0] + g11[0] - g01[0]) / widths[0]
-                                    + (g01[1] - g00[1] + g11[1] - g10[1]) / widths[1]) * 0.5;
+    divergence[linear_index] = ((g10[0] - g00[0] + g11[0] - g01[0]) / widths[0] +
+                                (g01[1] - g00[1] + g11[1] - g10[1]) / widths[1]) *
+                               0.5;
         cvm::real supplement = 0;
         cvm::real supplement_coefficient = 1;
         if ((ix0[0] == 0 || ix0[0] == computation_nx[0] - 1) && !periodic[0]) {
             cvm::real coefficient = (ix[0] == 0) ? 1.0 : -1.0;
             supplement_coefficient = 0.5 * supplement_coefficient;
             supplement += coefficient * (g10[0] + g00[0] + g11[0] + g01[0]) * 0.25 * 2 / widths[0];
-        } if ((ix0[1] == 0 || ix0[1] == computation_nx[1] - 1) && !periodic[1]) {
+    }
+    if ((ix0[1] == 0 || ix0[1] == computation_nx[1] - 1) && !periodic[1]) {
             cvm::real coefficient = (ix[1] == 0) ? 1.0 : -1.0;
             supplement_coefficient = 0.5 * supplement_coefficient;
             supplement += coefficient * (g01[1] + g00[1] + g11[1] + g10[1]) * 0.25 * 2 / widths[1];
@@ -372,10 +386,13 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0) {
         computation_grid->wrap_detect_edge(ix);
         get_grad(g110, ix);            // (1,1,0)
     divergence[linear_index] =
-        ((g100[0] - g000[0] + g101[0] - g001[0] + g110[0] - g010[0] + g111[0] - g011[0]) / widths[0]
-         + (g010[1] - g000[1] + g011[1] - g001[1] + g110[1] - g100[1] + g111[1] - g101[1]) / widths[1]
-         + (g001[2] - g000[2] + g011[2] - g010[2] + g101[2] - g100[2] + g111[2] - g110[2]) / widths[2]
-        ) * 0.25;
+        ((g100[0] - g000[0] + g101[0] - g001[0] + g110[0] - g010[0] + g111[0] - g011[0]) /
+             widths[0] +
+         (g010[1] - g000[1] + g011[1] - g001[1] + g110[1] - g100[1] + g111[1] - g101[1]) /
+             widths[1] +
+         (g001[2] - g000[2] + g011[2] - g010[2] + g101[2] - g100[2] + g111[2] - g110[2]) /
+             widths[2]) *
+        0.25;
         cvm::real supplement = 0;
         cvm::real supplement_coefficient = 1;
 
@@ -383,18 +400,25 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0) {
         if ((ix0[0] == 0 || ix0[0] == computation_nx[0] - 1) && !periodic[0]) {
             cvm::real coefficient = (ix[0] == 0) ? 1.0 : -1.0;
             supplement_coefficient *= 0.5;
-            supplement = coefficient * (g100[0] + g000[0] + g101[0] + g001[0] + g110[0] + g010[0] + g111[0] + g011[0])
-                    * 0.125 * 2 * widths[0];
-        } if ((ix0[1] == 0 || ix0[1] == computation_nx[1] - 1) && !periodic[1]) {
+      supplement = coefficient *
+                   (g100[0] + g000[0] + g101[0] + g001[0] + g110[0] + g010[0] + g111[0] + g011[0]) *
+                   0.125 * 2 * widths[0];
+    }
+    if ((ix0[1] == 0 || ix0[1] == computation_nx[1] - 1) && !periodic[1]) {
             cvm::real coefficient = (ix[1] == 0) ? 1.0 : -1.0;
             supplement_coefficient *= 0.5;
-            supplement += coefficient * (g010[1] + g000[1] + g011[1] + g001[1] + g110[1] + g100[1] + g111[1] + g101[1])
-                    * widths[1] * 2 * 0.125;
-        } if ((ix0[2] == 0 || ix0[2] == computation_nx[2] - 1) && !periodic[2]) {
+      supplement +=
+          coefficient *
+          (g010[1] + g000[1] + g011[1] + g001[1] + g110[1] + g100[1] + g111[1] + g101[1]) *
+          widths[1] * 2 * 0.125;
+    }
+    if ((ix0[2] == 0 || ix0[2] == computation_nx[2] - 1) && !periodic[2]) {
             cvm::real coefficient = (ix[2] == 0) ? 1.0 : -1.0;
             supplement_coefficient *= 0.5;
-            supplement += coefficient * (g001[2] - g000[2] + g011[2] - g010[2] + g101[2] - g100[2] + g111[2] - g110[2])
-                    * 0.125 * 2 * widths[2];
+      supplement +=
+          coefficient *
+          (g001[2] - g000[2] + g011[2] - g010[2] + g101[2] - g100[2] + g111[2] - g110[2]) * 0.125 *
+          2 * widths[2];
         }
         divergence[linear_index] += supplement;
         divergence[linear_index] *= supplement_coefficient;
@@ -403,13 +427,14 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0) {
 
 inline size_t min(size_t a, size_t b) { return a < b ? a : b; }
 
-void colvargrid_integrate::prepare_divergence_necessary_stencils() {
+void colvargrid_integrate::prepare_divergence_necessary_stencils()
+{
   surrounding_points_relative_positions.clear();
   size_t n_combinations = pow(2, nd);
   for (size_t i = 0; i < n_combinations; i++) {
     std::string binary = convert_base_two(i, nd);
     std::vector<int> surrounding_point_relative_position = {};
-        for (char move_j: binary) {
+    for (char move_j : binary) {
       surrounding_point_relative_position.push_back(move_j - '0');
     }
     surrounding_points_relative_positions.push_back(surrounding_point_relative_position);
@@ -423,7 +448,7 @@ Updates the divergence at the point ix0
 {
   const size_t linear_index = computation_grid->address(ix0);
   cvm::real div_at_point = 0;
-    for (std::vector<int> surrounding_point_relative_position:
+  for (std::vector<int> surrounding_point_relative_position :
         surrounding_points_relative_positions) {
     std::vector<int> surrounding_point_coordinates = ix0;
         std::vector<cvm::real> gradient_at_surrounding_point(nd, 0);
@@ -436,18 +461,17 @@ Updates the divergence at the point ix0
     cvm::real weight = regularized_weights[gradients->address(surrounding_point_coordinates)];
 
     for (size_t i = 0; i < nd; i++) {
-      div_at_point +=
-                    pow(-1, surrounding_point_relative_position[i] + 1) * gradient_at_surrounding_point[i] * weight /
-                    widths[i];
+      div_at_point += pow(-1, surrounding_point_relative_position[i] + 1) *
+                      gradient_at_surrounding_point[i] * weight / widths[i];
     }
   }
-  divergence[linear_index] =
-        div_at_point / pow(2, nd - 1);
+  divergence[linear_index] = div_at_point / pow(2, nd - 1);
 }
 
 /// Multiplication by sparse matrix representing Laplacian
 /// NOTE: Laplacian must be symmetric for solving with CG
-void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA) {
+void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA)
+{
   if (nd == 2) {
     // DIMENSION 2
 
@@ -537,8 +561,10 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
     fact = periodic[0] ? 1.0 : 0.5; // for i == 0
     for (i = 0; i < w; i++) {
       // Factor of 1/2 on x edges if non-periodic
-      if (i == 1) fact = 1.0;
-      if (i == w - 1) fact = periodic[0] ? 1.0 : 0.5;
+      if (i == 1)
+        fact = 1.0;
+      if (i == w - 1)
+        fact = periodic[0] ? 1.0 : 0.5;
             for (j = 1; j < h - 1; j++) {
         LA[li] += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
         li++;
@@ -617,8 +643,10 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
         for (i = 1; i < w - 1; i++) {
             for (j = 0; j < d; j++) {
                 // full range of y
-        if (j == 1) fact *= ifacty;
-                if (j == d - 1) fact *= facty;
+        if (j == 1)
+          fact *= ifacty;
+        if (j == d - 1)
+          fact *= facty;
         LA[li] = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
         li++;
         fact *= ifactz;
@@ -640,8 +668,10 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       xp =  d * h;
       fact = facty * factz;
             for (j = 0; j < d; j++) {
-        if (j == 1) fact *= ifacty;
-                if (j == d - 1) fact *= facty;
+        if (j == 1)
+          fact *= ifacty;
+        if (j == d - 1)
+          fact *= facty;
         LA[li]  = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
         LA[li2] = fact * ffx * (A[li2 - xp] + A[li2 - xm] - 2.0 * A[li2]);
         li++;
@@ -664,8 +694,10 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       xp =  d * h;
       fact = facty * factz;
             for (j = 0; j < d; j++) {
-        if (j == 1) fact *= ifacty;
-                if (j == d - 1) fact *= facty;
+        if (j == 1)
+          fact *= ifacty;
+        if (j == d - 1)
+          fact *= facty;
         LA[li]  = fact * ffx * (A[li + xp] - A[li]);
         LA[li2] = fact * ffx * (A[li2 + xm] - A[li2]);
         li++;
@@ -692,8 +724,10 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
     fact = factx * factz;
         for (i = 0; i < w; i++) {
             // full range of x
-      if (i == 1) fact *= ifactx;
-            if (i == w - 1) fact *= factx;
+      if (i == 1)
+        fact *= ifactx;
+      if (i == w - 1)
+        fact *= factx;
             for (j = 1; j < d - 1; j++) {
         LA[li] += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
         li++;
@@ -716,8 +750,10 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       yp = h;
       fact = factx * factz;
             for (i = 0; i < w; i++) {
-        if (i == 1) fact *= ifactx;
-                if (i == w - 1) fact *= factx;
+        if (i == 1)
+          fact *= ifactx;
+        if (i == w - 1)
+          fact *= factx;
         LA[li]  += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
         LA[li2] += fact * ffy * (A[li2 - yp] + A[li2 - ym] - 2.0 * A[li2]);
         li++;
@@ -742,8 +778,10 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       yp =  h;
       fact = factx * factz;
             for (i = 0; i < w; i++) {
-        if (i == 1) fact *= ifactx;
-                if (i == w - 1) fact *= factx;
+        if (i == 1)
+          fact *= ifactx;
+        if (i == w - 1)
+          fact *= factx;
         LA[li]  += fact * ffy * (A[li + yp] - A[li]);
         LA[li2] += fact * ffy * (A[li2 + ym] - A[li2]);
         li++;
@@ -772,8 +810,10 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
     fact = factx * facty;
         for (i = 0; i < w; i++) {
             // full range of x
-      if (i == 1) fact *= ifactx;
-            if (i == w - 1) fact *= factx;
+      if (i == 1)
+        fact *= ifactx;
+      if (i == w - 1)
+        fact *= factx;
             for (k = 1; k < h - 1; k++) {
         LA[li] += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
         li++;
@@ -803,8 +843,10 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       zp = 1;
       fact = factx * facty;
             for (i = 0; i < w; i++) {
-        if (i == 1) fact *= ifactx;
-                if (i == w - 1) fact *= factx;
+        if (i == 1)
+          fact *= ifactx;
+        if (i == w - 1)
+          fact *= factx;
         LA[li]  += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
         LA[li2] += fact * ffz * (A[li2 - zp] + A[li2 - zm] - 2.0 * A[li2]);
         li  += h;
@@ -827,8 +869,10 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       zp = 1;
       fact = factx * facty;
             for (i = 0; i < w; i++) {
-        if (i == 1) fact *= ifactx;
-                if (i == w - 1) fact *= factx;
+        if (i == 1)
+          fact *= ifactx;
+        if (i == w - 1)
+          fact *= factx;
         LA[li]  += fact * ffz * (A[li + zp] - A[li]);
         LA[li2] += fact * ffz * (A[li2 + zm] - A[li2]);
         li  += h;
@@ -862,8 +906,11 @@ void colvargrid_integrate::asolve(const std::vector<cvm::real> &b, std::vector<c
   return;
 }*/
 
-template<bool initialize_div_supplement>
-void colvargrid_integrate::linewise_laplacian_weighted_precomputed(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA, size_t grid_address) {
+template <bool initialize_div_supplement>
+void colvargrid_integrate::linewise_laplacian_weighted_precomputed(const std::vector<cvm::real> &A,
+                                                                   std::vector<cvm::real> &LA,
+                                                                   size_t grid_address)
+{
   std::vector<int> neighbor_coordinate(nd);
   std::vector<int> reference_point_coordinates(nd);
   std::vector<cvm::real> averaged_normal_vector(nd);
@@ -879,18 +926,20 @@ void colvargrid_integrate::linewise_laplacian_weighted_precomputed(const std::ve
                 cvm::real coefficient = laplacian_coefficients[grid_address * multiplicity + i];
                 if (!is_ghost_point) {
                     LA[grid_address] += coefficient * A[computation_grid->address(neighbor_coordinate)];
-          // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
+      // laplacian_matrix_test[computation_grid->address(ix) * computation_nt +
+      // computation_grid->address(neighbor_coordinate)] += coefficient;
         } else {
           computation_grid->wrap_to_edge(neighbor_coordinate, reference_point_coordinates);
                     LA[grid_address] += coefficient * A[computation_grid->address(reference_point_coordinates)];
-          // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(reference_point_coordinates)] += coefficient;
+      // laplacian_matrix_test[computation_grid->address(ix) * computation_nt +
+      // computation_grid->address(reference_point_coordinates)] += coefficient;
 
                     if (initialize_div_supplement) {
             cvm::real div_supplement_term = 0;
                         averaged_normal_vector = compute_averaged_border_normal_gradient(neighbor_coordinate);
                         for (size_t dim = 0; dim < nd; dim++) {
-                            div_supplement_term += averaged_normal_vector[dim] * neighbor_relative_position[dim] *
-                                    widths[dim];
+          div_supplement_term +=
+              averaged_normal_vector[dim] * neighbor_relative_position[dim] * widths[dim];
             }
                         div_border_supplement[grid_address] -= div_supplement_term * coefficient;
         }
@@ -898,14 +947,17 @@ void colvargrid_integrate::linewise_laplacian_weighted_precomputed(const std::ve
   }
 }
 
-template<bool initialize_div_supplement>
-void colvargrid_integrate::linewise_laplacian_weighted_otf(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA, size_t grid_address) {
+template <bool initialize_div_supplement>
+void colvargrid_integrate::linewise_laplacian_weighted_otf(const std::vector<cvm::real> &A,
+                                                           std::vector<cvm::real> &LA,
+                                                           size_t grid_address)
+{
         std::vector<int> neighbor_coordinate(nd);
         std::vector<int> reference_point_coordinates(nd);
         std::vector<cvm::real> averaged_normal_vector(nd);
         std::vector<int> ix(nd);
         computation_grid->index(grid_address, ix);
-        cvm::real diagonal_coeff= 0;
+  cvm::real diagonal_coeff = 0;
         for (size_t i = 0; i < laplacian_stencil.size() - 1; i++) {
 
             std::vector<int> neighbor_relative_position = laplacian_stencil[i];
@@ -915,7 +967,7 @@ void colvargrid_integrate::linewise_laplacian_weighted_otf(const std::vector<cvm
 
             cvm::real coefficient = 0;
 
-            for (std::vector<int> direction: weight_stencil[i]) {
+    for (std::vector<int> direction : weight_stencil[i]) {
                 std::vector<int> weight_coordinate = ix;
                 // Initialize with stencil_point instead of size
                 for (size_t n = 0; n < nd && n < direction.size(); n++) {
@@ -929,18 +981,20 @@ void colvargrid_integrate::linewise_laplacian_weighted_otf(const std::vector<cvm
             bool is_ghost_point = computation_grid->wrap_detect_edge(neighbor_coordinate);
                 if (!is_ghost_point) {
                 LA[grid_address] += coefficient * A[computation_grid->address(neighbor_coordinate)];
-                // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(neighbor_coordinate)] += coefficient;
+      // laplacian_matrix_test[computation_grid->address(ix) * computation_nt +
+      // computation_grid->address(neighbor_coordinate)] += coefficient;
             } else {
                 computation_grid->wrap_to_edge(neighbor_coordinate, reference_point_coordinates);
                 LA[grid_address] += coefficient * A[computation_grid->address(reference_point_coordinates)];
-                // laplacian_matrix_test[computation_grid->address(ix) * computation_nt + computation_grid->address(reference_point_coordinates)] += coefficient;
+      // laplacian_matrix_test[computation_grid->address(ix) * computation_nt +
+      // computation_grid->address(reference_point_coordinates)] += coefficient;
 
                 if (initialize_div_supplement) {
                     cvm::real div_supplement_term = 0;
                         averaged_normal_vector = compute_averaged_border_normal_gradient(neighbor_coordinate);
                     for (size_t dim = 0; dim < nd; dim++) {
-                            div_supplement_term += averaged_normal_vector[dim] * neighbor_relative_position[dim] *
-                                widths[dim];
+          div_supplement_term +=
+              averaged_normal_vector[dim] * neighbor_relative_position[dim] * widths[dim];
                     }
                     div_border_supplement[grid_address] -= div_supplement_term * coefficient;
                 }
@@ -951,20 +1005,23 @@ void colvargrid_integrate::linewise_laplacian_weighted_otf(const std::vector<cvm
 
 /// Multiplication by sparse matrix representing Laplacian
 /// NOTE: Laplacian must be symmetric for solving with CG
-template<bool initialize_div_supplement>
-void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, std::vector<cvm::real> &LA) {
+template <bool initialize_div_supplement>
+void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A,
+                                              std::vector<cvm::real> &LA)
+{
 
     if (initialize_div_supplement) {
         div_border_supplement.resize(divergence.size());
     }
-    for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix); computation_grid->
-         incr(ix)) {
+  for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
+       computation_grid->incr(ix)) {
         LA[computation_grid->address(ix)] = 0;
         if (initialize_div_supplement)
             div_border_supplement[computation_grid->address(ix)] = 0;
     }
-    // for testing, uncomment lines involving laplacian_matrix_test, also in linewise_laplacian_weighted
-    // laplacian_matrix_test = std::vector<cvm::real>(computation_nt*computation_nt, 0);
+  // for testing, uncomment lines involving laplacian_matrix_test, also in
+  // linewise_laplacian_weighted laplacian_matrix_test =
+  // std::vector<cvm::real>(computation_nt*computation_nt, 0);
     if (m_num_threads == 1) {
         for (size_t grid_address = 0; grid_address < computation_grid->nt; grid_address++) {
             (this->*linewise_laplacian_weighted)(A, LA, grid_address);
@@ -973,17 +1030,20 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A, s
 #ifdef _OPENMP
 #pragma omp parallel for // schedule(static, 128)
 
-        for (int grid_address_int = 0; grid_address_int < static_cast<int>(computation_grid->nt); grid_address_int++) {
+    for (int grid_address_int = 0; grid_address_int < static_cast<int>(computation_grid->nt);
+         grid_address_int++) {
             (this->*linewise_laplacian_weighted)(A, LA, static_cast<size_t>(grid_address_int));
         }
 #else
-        cvm::error("multiple threads required in weighted poisson integration, but this binary is not linked "
+    cvm::error(
+        "multiple threads required in weighted poisson integration, but this binary is not linked "
                    "with a supported threading library.\n");
 #endif
     }
 }
 
-void colvargrid_integrate::prepare_laplacian_necessary_stencils() {
+void colvargrid_integrate::prepare_laplacian_necessary_stencils()
+{
     laplacian_stencil.resize(2 * nd + 1);
     weight_stencil.resize(2 * nd);
     weight_counts.resize(2 * nd);
@@ -1000,8 +1060,8 @@ void colvargrid_integrate::prepare_laplacian_necessary_stencils() {
         weight_stencil[2 * dim].resize(std::pow(2, nd - 1));
         weight_stencil[2 * dim + 1].resize(std::pow(2, nd - 1));
 
-        for (int weights_to_average_relative_pos = 0; weights_to_average_relative_pos < std::pow(2, nd - 1);
-             weights_to_average_relative_pos++) {
+    for (int weights_to_average_relative_pos = 0;
+         weights_to_average_relative_pos < std::pow(2, nd - 1); weights_to_average_relative_pos++) {
             std::string base_2 = convert_base_two(weights_to_average_relative_pos, nd - 1);
             weight_stencil[2 * dim][weights_to_average_relative_pos].resize(nd);
             weight_stencil[2 * dim + 1][weights_to_average_relative_pos].resize(nd);
@@ -1009,7 +1069,8 @@ void colvargrid_integrate::prepare_laplacian_necessary_stencils() {
             for (size_t k = 0; k < nd; k++) {
                 if (k != dim) {
                     weight_stencil[2 * dim][weights_to_average_relative_pos][k] = base_2[k + off_set] - '0';
-                    weight_stencil[2 * dim + 1][weights_to_average_relative_pos][k] = base_2[k + off_set] - '0';
+          weight_stencil[2 * dim + 1][weights_to_average_relative_pos][k] =
+              base_2[k + off_set] - '0';
     } else {
                     off_set = -1;
                     weight_stencil[2 * dim][weights_to_average_relative_pos][dim] = 0;
@@ -1023,7 +1084,8 @@ void colvargrid_integrate::prepare_laplacian_necessary_stencils() {
     // is the sum of the stencil's point coefficient. we don't count it in the stencil
 }
 
-void colvargrid_integrate::print_laplacian_preparations() {
+void colvargrid_integrate::print_laplacian_preparations()
+{
     for (size_t i = 0; i < laplacian_stencil.size(); i++) {
         std::cout << "Laplacian stencil " << i << " is [";
     for (size_t j = 0; j < laplacian_stencil[i].size(); ++j) {
@@ -1052,24 +1114,27 @@ void colvargrid_integrate::print_laplacian_preparations() {
   }
 }
 
-void colvargrid_integrate::prepare_calculations() {
+void colvargrid_integrate::prepare_calculations()
+{
     if (weighted) {
     std::vector<int> max_position;
     std::vector<int> min_position;
     sorted_counts = {};
 
-    for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix); gradients->incr(ix)) {
+    for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
+         gradients->incr(ix)) {
         size_t count = gradients->samples->value(ix);
         if (count > 0) {
             insert_into_sorted_list<size_t>(sorted_counts, count);
         }
     }
 
-    upper_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * (1 - lambda_max))];
+    upper_threshold_count =
+        sorted_counts[static_cast<int>(sorted_counts.size() * (1 - lambda_max))];
     lower_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * lambda_min)];
     sorted_counts.clear();
-    std::cout << " lower_threshold: " << lower_threshold_count << " upper threshold:" <<
-            upper_threshold_count << std::endl;
+    std::cout << " lower_threshold: " << lower_threshold_count
+              << " upper threshold:" << upper_threshold_count << std::endl;
     regularized_weights.resize(gradients->nt);
     for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
          gradients->incr(ix)) {
@@ -1078,11 +1143,13 @@ void colvargrid_integrate::prepare_calculations() {
         std::size_t required = (laplacian_stencil.size() + 2) * computation_nt * sizeof(cvm::real);
         double gigabytes = required / (1024.0 * 1024.0 * 1024.0);
         precompute = gigabytes < 2;
-        std::string print_precompute = precompute? "precomputed; precomputing will use " : "computed on the fly, as precomputing would use ";
-        std::cout << "Laplacian computation will be " << print_precompute << gigabytes << " GB of memory" << std::endl;
+    std::string print_precompute = precompute ? "precomputed; precomputing will use "
+                                              : "computed on the fly, as precomputing would use ";
+    std::cout << "Laplacian computation will be " << print_precompute << gigabytes
+              << " GB of memory" << std::endl;
         if (precompute) {
     laplacian_coefficients.clear();
-    laplacian_coefficients.resize(computation_grid->data.size() * laplacian_stencil.size(),0);
+      laplacian_coefficients.resize(computation_grid->data.size() * laplacian_stencil.size(), 0);
     // laplacian_matrix_test = std::vector<cvm::real>(computation_nt*computation_nt, 0);
     std::vector<int> neighbor_coordinate(nd);
     std::vector<int> reference_point_coordinates(nd);
@@ -1101,7 +1168,7 @@ void colvargrid_integrate::prepare_calculations() {
             cvm::real coefficient = 0;
             //  --> Calling the function makes the code simpler but takes longer to compute
             // coefficient = calculate_weight_sum(ix,weight_stencil[i]);
-            for (std::vector<int> direction: weight_stencil[i]) {
+          for (std::vector<int> direction : weight_stencil[i]) {
                 std::vector<int> weight_coordinate = ix;
                 // Initialize with stencil_point instead of size
                 for (size_t n = 0; n < nd && n < direction.size(); n++) {
@@ -1114,13 +1181,15 @@ void colvargrid_integrate::prepare_calculations() {
             laplacian_coefficients[computation_grid->address(ix) * multiplicity + i] += coefficient;
             diagonal_coeff += coefficient;
         }
-        laplacian_coefficients[computation_grid->address(ix) * multiplicity + (2 * nd)] += -diagonal_coeff;
+        laplacian_coefficients[computation_grid->address(ix) * multiplicity + (2 * nd)] +=
+            -diagonal_coeff;
     }
         }
     }
 }
 
-cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix) {
+cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix)
+{
   cvm::real regularized_weight;
   size_t count = gradients->samples->value(ix);
     if (count < lower_threshold_count) {
@@ -1133,7 +1202,8 @@ cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix) {
     return regularized_weight;
 }
 
-void colvargrid_integrate::get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix) {
+void colvargrid_integrate::get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix)
+{
     // F.resize(nd);
 
   size_t count = get_grad(F, ix);
@@ -1149,14 +1219,16 @@ void colvargrid_integrate::get_regularized_F(std::vector<cvm::real> &F, std::vec
 }
 
 std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_gradient(
-    std::vector<int> virtual_point_coordinates) {
+    std::vector<int> virtual_point_coordinates)
+{
   // bool test = virtual_point_coordinates[0] == 129 && virtual_point_coordinates[1] == 69;
     std::vector<int> reference_point_coordinates(nd, 0); // Initialize with correct size
   gradients->wrap_to_edge(virtual_point_coordinates, reference_point_coordinates);
   std::vector<int> directions_to_average_along;
   std::vector<bool> normal_directions(nd);
   for (size_t i = 0; i < nd; i++) {
-    if ((0 <= virtual_point_coordinates[i] && virtual_point_coordinates[i] < computation_nx[i]) || periodic[i]) {
+    if ((0 <= virtual_point_coordinates[i] && virtual_point_coordinates[i] < computation_nx[i]) ||
+        periodic[i]) {
       directions_to_average_along.push_back(i);
       normal_directions[i] = false;
     } else {
@@ -1164,7 +1236,7 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
     }
   }
   // Find the positions of the gradients to average
-    std::vector<std::vector<int> > gradients_to_average_relative_positions;
+  std::vector<std::vector<int>> gradients_to_average_relative_positions;
   if (directions_to_average_along.size() == 0) {
     std::vector<int> zero_vector(nd, 0);
     gradients_to_average_relative_positions.push_back(zero_vector);
@@ -1172,7 +1244,8 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
     for (int i = 0; i < pow(2, directions_to_average_along.size()); i++) {
       std::vector<int> gradient_to_average_relative_position(nd, 0);
       std::string binary = convert_base_two(i, directions_to_average_along.size());
-      for (size_t bit_position = 0; bit_position < directions_to_average_along.size(); bit_position++) {
+      for (size_t bit_position = 0; bit_position < directions_to_average_along.size();
+           bit_position++) {
         gradient_to_average_relative_position[directions_to_average_along[bit_position]] =
             binary[bit_position] - '0';
       }
@@ -1184,7 +1257,8 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
   std::vector<cvm::real> averaged_bordered_normal_gradient(nd, 0);
   // averaging the gradients
   for (size_t i = 0; i < gradients_to_average_relative_positions.size(); i++) {
-    std::vector<int> gradient_position(reference_point_coordinates); // Initialize with reference_point_coordinates
+    std::vector<int> gradient_position(
+        reference_point_coordinates); // Initialize with reference_point_coordinates
     // if (test){
     //   std::cout<< "gradient_position: " << vec_to_string(gradient_position) << std::endl;
     //   std::cout << vec_to_string(gradients_to_average_relative_positions[i]) << std::endl;
@@ -1210,7 +1284,8 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
   return averaged_bordered_normal_gradient;
 }
 
-std::string colvargrid_integrate::convert_base_three(int n) {
+std::string colvargrid_integrate::convert_base_three(int n)
+{
   std::string result = "";
   // Convert to base 3
   while (n > 0) {
@@ -1239,7 +1314,8 @@ std::string colvargrid_integrate::convert_base_three(int n) {
   return result;
 }
 
-std::string colvargrid_integrate::convert_base_two(int n, size_t length) {
+std::string colvargrid_integrate::convert_base_two(int n, size_t length)
+{
   std::string result = "";
 
   // Convert to base 2
@@ -1272,18 +1348,19 @@ std::string colvargrid_integrate::convert_base_two(int n, size_t length) {
 
 void colvargrid_integrate::nr_linbcg_sym(const bool weighted, const std::vector<cvm::real> &b,
                                         std::vector<cvm::real> &x, const cvm::real &tol,
-                                         const int itmax, int &iter, cvm::real &err) {
+                                         const int itmax, int &iter, cvm::real &err)
+{
   cvm::real ak, akden, bk, bkden, bknum, bnrm;
   const cvm::real EPS = 1.0e-14;
   int j;
   std::vector<cvm::real> p(computation_nt), r(computation_nt), z(computation_nt);
   typedef void (colvargrid_integrate::*func_pointer)(const std::vector<double> &,
                                                       std::vector<double> &);
-  func_pointer atimes =
-      weighted ? &colvargrid_integrate::laplacian_weighted<false> : &colvargrid_integrate::laplacian;
+  func_pointer atimes = weighted ? &colvargrid_integrate::laplacian_weighted<false>
+                                 : &colvargrid_integrate::laplacian;
     linewise_laplacian_weighted =
-            precompute ? &colvargrid_integrate::linewise_laplacian_weighted_precomputed<false> :
-    &colvargrid_integrate::linewise_laplacian_weighted_otf<false>;
+      precompute ? &colvargrid_integrate::linewise_laplacian_weighted_precomputed<false>
+                 : &colvargrid_integrate::linewise_laplacian_weighted_otf<false>;
   iter = 0;
   (this->*atimes)(x, r);
   for (j = 0; j < int(computation_nt); j++) {
@@ -1330,9 +1407,10 @@ void colvargrid_integrate::nr_linbcg_sym(const bool weighted, const std::vector<
 }
 
 // --- ADAM Optimizer ---
-void colvargrid_integrate::optimize_adam(bool weighted, const std::vector<cvm::real> &b, std::vector<cvm::real> &x,
-                      const cvm::real &tol, const int itmax, int &iter, cvm::real &err
-) {
+void colvargrid_integrate::optimize_adam(bool weighted, const std::vector<cvm::real> &b,
+                                         std::vector<cvm::real> &x, const cvm::real &tol,
+                                         const int itmax, int &iter, cvm::real &err)
+{
   cvm::real bnrm;
   const cvm::real EPS = 1.0e-14;
   int j;
@@ -1340,11 +1418,11 @@ void colvargrid_integrate::optimize_adam(bool weighted, const std::vector<cvm::r
   x = std::vector<cvm::real>(computation_nt, 0);
   typedef void (colvargrid_integrate::*func_pointer)(const std::vector<double> &,
                                                     std::vector<double> &);
-  func_pointer atimes =
-     weighted ? &colvargrid_integrate::laplacian_weighted<false> : &colvargrid_integrate::laplacian;
+  func_pointer atimes = weighted ? &colvargrid_integrate::laplacian_weighted<false>
+                                 : &colvargrid_integrate::laplacian;
     linewise_laplacian_weighted =
-            precompute ? &colvargrid_integrate::linewise_laplacian_weighted_precomputed<false> :
-    &colvargrid_integrate::linewise_laplacian_weighted_otf<false>;
+      precompute ? &colvargrid_integrate::linewise_laplacian_weighted_precomputed<false>
+                 : &colvargrid_integrate::linewise_laplacian_weighted_otf<false>;
   std::vector<cvm::real> m(computation_nt, 0.0); // First moment vector
   std::vector<cvm::real> v(computation_nt, 0.0); // Second moment vector
   std::vector<cvm::real> v_hat_sqrt_eps(computation_nt);
@@ -1377,7 +1455,7 @@ void colvargrid_integrate::optimize_adam(bool weighted, const std::vector<cvm::r
     for (j = 0; j < int(computation_nt); j++) {
       r[j] = b[j] - r[j];
     }
-    //don't forget to update to substract
+    // don't forget to update to substract
 
 
     beta1_t *= beta1;
@@ -1402,8 +1480,8 @@ void colvargrid_integrate::optimize_adam(bool weighted, const std::vector<cvm::r
     average_err += current_err;
     // Calculate and print loss
         if (iter % 10 == 0 || iter == 1) {
-            std::cout << "Iteration " << iter << ", Loss: " << std::fixed << std::setprecision(8) << current_err <<
-                    std::endl;
+      std::cout << "Iteration " << iter << ", Loss: " << std::fixed << std::setprecision(8)
+                << current_err << std::endl;
             if (current_err < tol && iter > 10) {
                 // t > 10 to avoid early stopping
              std::cout << "Converged " << std::endl;
@@ -1419,9 +1497,9 @@ void colvargrid_integrate::optimize_adam(bool weighted, const std::vector<cvm::r
   }
 }
 
-void colvargrid_integrate::extrapolate_potential() {
-  for (std::vector<int> ix = new_index(); index_ok(ix);
-         incr(ix)) {
+void colvargrid_integrate::extrapolate_potential()
+{
+  for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
           std::vector<int> corresponding_index_in_small_grid = ix;
         for (size_t i = 0; i < nd; i++) {
             if (!periodic[i]) {
@@ -1429,17 +1507,19 @@ void colvargrid_integrate::extrapolate_potential() {
             }
           }
           std::vector<int> reference_index_in_small_grid(nd, 0);
-          bool need_to_extrapolate =
-          computation_grid->wrap_to_edge(corresponding_index_in_small_grid, reference_index_in_small_grid);
-          cvm::real potential_value = computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
+    bool need_to_extrapolate = computation_grid->wrap_to_edge(corresponding_index_in_small_grid,
+                                                              reference_index_in_small_grid);
+    cvm::real potential_value =
+        computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
           std::vector<cvm::real> relative_position(nd, 0);
 
         if (need_to_extrapolate) {
             for (size_t i = 0; i < nd; i++) {
-              relative_position[i] = corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i];
+        relative_position[i] =
+            corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i];
             }
-            std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradient(
-                corresponding_index_in_small_grid);
+      std::vector<cvm::real> averaged_normal_vector =
+          compute_averaged_border_normal_gradient(corresponding_index_in_small_grid);
             for (size_t i = 0; i < nd; i++) {
               potential_value += averaged_normal_vector[i] * relative_position[i] * widths[i];
             }
@@ -1447,10 +1527,11 @@ void colvargrid_integrate::extrapolate_potential() {
           data[address(ix)] = potential_value;
         }
 };
-// In reality, we don't actually need to do that we can just use normal extrapolate, though it's not coherent
-void colvargrid_integrate::extrapolate_potential_unweighted() {
-    for (std::vector<int> ix = new_index(); index_ok(ix);
-         incr(ix)) {
+// In reality, we don't actually need to do that we can just use normal extrapolate, though it's not
+// coherent
+void colvargrid_integrate::extrapolate_potential_unweighted()
+{
+  for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
         std::vector<int> corresponding_index_in_small_grid(ix);
         for (size_t i = 0; i < nd; i++) {
             if (!periodic[i]) {
@@ -1458,33 +1539,36 @@ void colvargrid_integrate::extrapolate_potential_unweighted() {
             }
         }
         std::vector<int> reference_index_in_small_grid(nd, 0);
-        bool need_to_extrapolate =
-                computation_grid->wrap_to_edge(corresponding_index_in_small_grid, reference_index_in_small_grid);
+    bool need_to_extrapolate = computation_grid->wrap_to_edge(corresponding_index_in_small_grid,
+                                                              reference_index_in_small_grid);
         std::vector<cvm::real> relative_position(nd, 0);
-        cvm::real potential_value = computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
+    cvm::real potential_value =
+        computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
         double only_one = 0;
         std::vector<int> reference_index_in_small_grid_maybe(reference_index_in_small_grid);
         if (need_to_extrapolate) {
             for (size_t i = 0; i < nd; i++) {
-                relative_position[i] = corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i];
+        relative_position[i] =
+            corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i];
                 only_one += std::abs(relative_position[i]);
-                if (relative_position[i] !=0) {
+        if (relative_position[i] != 0) {
                     reference_index_in_small_grid_maybe[i] -= relative_position[i];
                 }
             }
             bool two_or_more = only_one > 1;
-            if (!two_or_more){
-                potential_value = computation_grid->data[computation_grid->address(reference_index_in_small_grid_maybe)];
-                std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradient_classic(
-                   corresponding_index_in_small_grid);
+      if (!two_or_more) {
+        potential_value =
+            computation_grid->data[computation_grid->address(reference_index_in_small_grid_maybe)];
+        std::vector<cvm::real> averaged_normal_vector =
+            compute_averaged_border_normal_gradient_classic(corresponding_index_in_small_grid);
                 for (size_t i = 0; i < nd; i++) {
                     potential_value += averaged_normal_vector[i] * relative_position[i] * 2 * widths[i];
                 }
-            }
-            else {
-                potential_value = computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
-                std::vector<cvm::real> averaged_normal_vector = compute_averaged_border_normal_gradient(
-                   corresponding_index_in_small_grid);
+      } else {
+        potential_value =
+            computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
+        std::vector<cvm::real> averaged_normal_vector =
+            compute_averaged_border_normal_gradient(corresponding_index_in_small_grid);
                 for (size_t i = 0; i < nd; i++) {
                     potential_value += averaged_normal_vector[i] * relative_position[i] * widths[i];
                 }
@@ -1494,12 +1578,14 @@ void colvargrid_integrate::extrapolate_potential_unweighted() {
         }
 };
 
-std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_gradient_classic(const std::vector<int> & ix0) {
-    //TODO: maybe do it while computing the div and store it in a vector<vector<real>>>
+std::vector<cvm::real>
+colvargrid_integrate::compute_averaged_border_normal_gradient_classic(const std::vector<int> &ix0)
+{
+  // TODO: maybe do it while computing the div and store it in a vector<vector<real>>>
     std::vector<int> ix(ix0);
     std::vector<cvm::real> averaged_gradient(nd, 0);
     if (nd == 2) {
-        std::vector<cvm::real> g00(2,0), g01(2,0), g10(2,0), g11(2,0);
+    std::vector<cvm::real> g00(2, 0), g01(2, 0), g10(2, 0), g11(2, 0);
         ix[0] = ix0[0] + 1;
         get_grad(g10, ix);
         ix[1] = ix0[1] + 1;
@@ -1512,8 +1598,7 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
         } else if ((ix0[1] == 0 || ix0[1] == nx[1]) && !periodic[1]) {
             averaged_gradient[1] += (g01[1] + g00[1] + g11[1] + g10[1]);
         }
-    }
-    else if (nd ==3) {
+  } else if (nd == 3) {
         std::vector<cvm::real> g000(3, 0.0), g001(3, 0.0), g010(3, 0.0), g011(3, 0.0);
         std::vector<cvm::real> g100(3, 0.0), g101(3, 0.0), g110(3, 0.0), g111(3, 0.0);
 
@@ -1553,25 +1638,26 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
         get_grad(g110, ix);            // (1,1,0)
 
         if ((ix0[0] == 0 || ix0[0] == nx[0]) && !periodic[0]) {
-            averaged_gradient[0] =  (g100[0] + g000[0] + g101[0] + g001[0] + g110[0] + g010[0] + g111[0] + g011[0])
-                    * 0.125;
+      averaged_gradient[0] =
+          (g100[0] + g000[0] + g101[0] + g001[0] + g110[0] + g010[0] + g111[0] + g011[0]) * 0.125;
         } else if ((ix0[1] == 0 || ix0[1] == nx[1]) && !periodic[1]) {
 
-            averaged_gradient[1]=  (g010[1] + g000[1] + g011[1] + g001[1] + g110[1] + g100[1] + g111[1] + g101[1])
-                    * 0.125;
+      averaged_gradient[1] =
+          (g010[1] + g000[1] + g011[1] + g001[1] + g110[1] + g100[1] + g111[1] + g101[1]) * 0.125;
         } else if ((ix0[2] == 0 || ix0[2] == nx[2]) && !periodic[2]) {
 
-            averaged_gradient[2]= (g001[2] - g000[2] + g011[2] - g010[2] + g101[2] - g100[2] + g111[2] - g110[2])
-                    * 0.125 ;
+      averaged_gradient[2] =
+          (g001[2] - g000[2] + g011[2] - g010[2] + g101[2] - g100[2] + g111[2] - g110[2]) * 0.125;
         }
     }
     return averaged_gradient;
 };
 
 
-template<typename T>
-typename std::vector<T>::iterator colvargrid_integrate::insert_into_sorted_list(
-    std::vector<T> &sortedList, const T &value) {
+template <typename T>
+typename std::vector<T>::iterator
+colvargrid_integrate::insert_into_sorted_list(std::vector<T> &sortedList, const T &value)
+{
     // Find the first position where the element is not less than value
     auto it = std::lower_bound(sortedList.begin(), sortedList.end(), value);
 
@@ -1579,7 +1665,8 @@ typename std::vector<T>::iterator colvargrid_integrate::insert_into_sorted_list(
     return sortedList.insert(it, value);
 }
 
-cvm::real colvargrid_integrate::l2norm(const std::vector<cvm::real> &x) {
+cvm::real colvargrid_integrate::l2norm(const std::vector<cvm::real> &x)
+{
   size_t i;
   cvm::real sum = 0.0;
   for (i = 0; i < x.size(); i++)
@@ -1587,9 +1674,11 @@ cvm::real colvargrid_integrate::l2norm(const std::vector<cvm::real> &x) {
   return sqrt(sum);
 }
 
-inline void colvargrid_integrate::reverse(std::string::iterator begin, std::string::iterator end) {
+inline void colvargrid_integrate::reverse(std::string::iterator begin, std::string::iterator end)
+{
   // Ensure end is after begin
-  if (begin >= end) return;
+  if (begin >= end)
+    return;
 
   // Move end iterator back by one since it points one past the last element
   --end;
@@ -1604,8 +1693,9 @@ inline void colvargrid_integrate::reverse(std::string::iterator begin, std::stri
   }
 }
 
-void colvargrid_integrate::extrapolate_data() {
-    //TODO: add the count thresholds' calculation ?
+void colvargrid_integrate::extrapolate_data()
+{
+  // TODO: add the count thresholds' calculation ?
     bool converged = false;
     size_t step = 1;
     std::vector<cvm::real> interpolated(gradients->data);
