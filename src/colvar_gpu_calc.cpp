@@ -493,11 +493,13 @@ int colvarmodule_gpu_calc::atom_group_calc_fit_gradients(
 #if defined (COLVARS_NVTX_PROFILING)
   ag_calc_fit_gradients_prof.start();
 #endif // defined (COLVARS_NVTX_PROFILING)
-  // Launch the graph
-  error_code |= checkGPUError(cudaGraphLaunch(g.graph_exec, stream));
-  if (error_code != COLVARS_OK) return error_code;
-  error_code |= checkGPUError(cudaStreamSynchronize(stream));
-  if (error_code != COLVARS_OK) return error_code;
+  // Launch the graph only when there are actually nodes
+  if (!g.nodes.empty()) {
+    error_code |= checkGPUError(cudaGraphLaunch(g.graph_exec, stream));
+    if (error_code != COLVARS_OK) return error_code;
+    error_code |= checkGPUError(cudaStreamSynchronize(stream));
+    if (error_code != COLVARS_OK) return error_code;
+  }
 #if defined (COLVARS_NVTX_PROFILING)
   ag_calc_fit_gradients_prof.stop();
 #endif // defined (COLVARS_NVTX_PROFILING)
