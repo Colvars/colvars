@@ -91,7 +91,11 @@ if(COLVARS_LEPTON)
   target_link_libraries(run_colvars_test_cuda PUBLIC lepton)
 endif()
 
-target_link_libraries(run_colvars_test_cuda PUBLIC stdc++exp)
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU)$")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.3)
+    target_link_libraries(run_colvars_test_cuda PUBLIC stdc++exp)
+  endif()
+endif()
 
 set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE CUDA)
 # set_property(TARGET run_colvars_test_cuda PROPERTY CUDA_ARCHITECTURES OFF)
