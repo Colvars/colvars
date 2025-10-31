@@ -2,6 +2,7 @@
 #include "colvarmodule.h"
 
 #include <cstring>
+#include <iostream>
 
 #if defined(__has_include)
 # if __has_include(<stacktrace>)
@@ -24,7 +25,9 @@ int gpuAssert(cudaError_t code, const char *file, int line)
       error += "\nBacktrace:\n" + std::to_string(std::stacktrace::current()) + "\n";
 #endif
 #endif
-    return cvm::error(error, COLVARS_ERROR);
+    // cvm::error() may not be available in the construction of colvarproxy
+    std::cerr << error << std::endl;
+    return COLVARS_ERROR;
   }
   return COLVARS_OK;
 }
