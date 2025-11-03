@@ -2100,12 +2100,17 @@ void colvarmodule::log(std::string const &message, int min_log_level)
 
   std::string const trailing_newline = (message.size() > 0) ?
     (message[message.size()-1] == '\n' ? "" : "\n") : "";
-  // allow logging when the module is not fully initialized
-  size_t const d = (cvm::main() != NULL) ? depth() : 0;
-  if (d > 0) {
-    proxy->log((std::string(2*d, ' ')) + message + trailing_newline);
-  } else {
-    proxy->log(message + trailing_newline);
+
+  if (proxy) { // This may run before cvm construction
+    // allow logging when the module is not fully initialized
+    size_t const d = (cvm::main() != NULL) ? depth() : 0;
+    if (d > 0) {
+      proxy->log((std::string(2*d, ' ')) + message + trailing_newline);
+    } else {
+      proxy->log(message + trailing_newline);
+    }
+  } else { // Safe without a proxy pointer
+    std::cout << message + trailing_newline;
   }
 }
 
@@ -2150,9 +2155,11 @@ void colvarmodule::set_error_bits(int code)
     cvm::log("Error: set_error_bits() received negative error code.\n");
     return;
   }
-  proxy->smp_lock();
-  errorCode |= code | COLVARS_ERROR;
-  proxy->smp_unlock();
+  if (proxy) { // This may run before cvm construction
+    proxy->smp_lock();
+    errorCode |= code | COLVARS_ERROR;
+    proxy->smp_unlock();
+  }
 }
 
 
@@ -2185,14 +2192,19 @@ int colvarmodule::error(std::string const &message, int code)
     }
   }
 
-  size_t const d = depth();
-  if (d > 0) {
-    proxy->error((std::string(2*d, ' ')) + prefix + message + trailing_newline);
-  } else {
-    proxy->error(message + trailing_newline);
-  }
+  if (proxy) { // This may run before cvm construction
+    size_t const d = depth();
+    if (d > 0) {
+      proxy->error((std::string(2*d, ' ')) + prefix + message + trailing_newline);
+    } else {
+      proxy->error(message + trailing_newline);
+    }
+    return get_error();
 
-  return get_error();
+  } else { // Safe without a proxy pointer
+    std::cerr << prefix + message + trailing_newline;
+    return code;
+  }
 }
 
 
@@ -2755,7 +2767,7 @@ std::string colvarmodule::usage::report(int flag)
 
 
 // shared pointer to the proxy object
-colvarproxy *colvarmodule::proxy = NULL;
+colvarproxy *colvarmodule::proxy = nullptr;
 
 // static runtime data
 cvm::real colvarmodule::debug_gradients_step_size = 1.0e-07;
