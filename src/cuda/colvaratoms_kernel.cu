@@ -10,7 +10,7 @@
 // TODO: HIP CUB
 
 namespace colvars_gpu {
-#if defined(COLVARS_CUDA) || defined(COVLARS_HIP)
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 __global__ void atoms_pos_from_proxy_kernel(
   const int* __restrict atoms_proxy_index,
   const cvm::real* __restrict atoms_pos_x_proxy,
@@ -1260,5 +1260,5 @@ int calc_fit_forces_impl_loop2(
 }
 
 #elif defined(COLVARS_SYCL)
-#endif // defined(COLVARS_CUDA) || defined(COVLARS_HIP)
+#endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 };

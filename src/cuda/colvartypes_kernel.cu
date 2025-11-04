@@ -9,7 +9,7 @@
 // TODO: HIP CUB
 
 namespace colvars_gpu {
-#if defined(COLVARS_CUDA) || defined(COVLARS_HIP)
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
 template <int BLOCK_SIZE>
 __global__ void build_overlapping_matrix_kernel(
@@ -678,5 +678,5 @@ int jacobi_4x4(
 }
 
 #elif defined(COLVARS_SYCL)
-#endif // defined(COLVARS_CUDA) || defined(COVLARS_HIP)
+#endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 }
