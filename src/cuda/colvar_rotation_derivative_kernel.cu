@@ -1,6 +1,6 @@
 #include "colvar_rotation_derivative_kernel.h"
 
-#if defined(COLVARS_CUDA) || defined(COVLARS_HIP)
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
 namespace colvars_gpu {
 
@@ -101,4 +101,4 @@ int prepare_derivative(
 
 }
 
-#endif // defined(COLVARS_CUDA) || defined(COVLARS_HIP)
+#endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
