@@ -29,11 +29,13 @@ int colvar::linearCombination::init(std::string const &conf)
             for (auto it_sub_cvc_conf = sub_cvc_confs.begin(); it_sub_cvc_conf != sub_cvc_confs.end(); ++it_sub_cvc_conf) {
                 cv.push_back((it_cv_map->second)());
                 cv.back()->init(*(it_sub_cvc_conf));
-                // TODO: GPU support for nested CVs
-                return cvm::error(
-                    "Nested CV " + cv.back()->name +
-                    " has GPU implementation but this is not supported in " +
-                    this->name + ". Please consider using \" smp off\" ");
+                if (cv.back()->has_gpu_implementation()) {
+                    // TODO: GPU support for nested CVs
+                    return cvm::error(
+                        "Nested CV " + cv.back()->name +
+                        " has GPU implementation but this is not supported in " +
+                        this->name + ". Please consider using \"smp off\" ");
+                }
             }
         }
     }
