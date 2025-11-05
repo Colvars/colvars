@@ -521,7 +521,7 @@ int colvar::CVBasedPath::init(std::string const &conf)
                     return cvm::error(
                         "Nested CV " + cv.back()->name +
                         " has GPU implementation but this is not supported in " +
-                        this->name + ". Please consider using \" smp off\" ");
+                        this->name + ". Please consider using \"smp off\" ");
                 }
             }
         }
