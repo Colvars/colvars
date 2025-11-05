@@ -839,9 +839,6 @@ colvar::rmsd::rmsd()
   d_tbcount_ft = nullptr;
   d_tbcount_jd = nullptr;
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  if (colvar::rmsd::has_gpu_implementation()) {
-    disable(f_cvc_require_cpu_buffers);
-  }
 }
 
 colvar::rmsd::~rmsd() {
@@ -993,6 +990,7 @@ int colvar::rmsd::init(std::string const &conf)
     error_code |= p->allocate_device(&d_tbcount_jd, 1);
     error_code |= p->clear_device_array(d_tbcount_ft, 1);
     error_code |= p->clear_device_array(d_tbcount_jd, 1);
+    disable(f_cvc_require_cpu_buffers);
 #endif // (COLVARS_CUDA) || defined (COLVARS_GPU)
   }
   return error_code;
