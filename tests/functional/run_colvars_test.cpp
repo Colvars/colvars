@@ -8,8 +8,37 @@
 #include "colvarproxy_stub.h"
 
 #include "CLI11.hpp"
+#include <cfenv>
+
+
+// Portable FP trap initialization
+void enable_fp_traps_portable() {
+    std::feclearexcept(FE_ALL_EXCEPT);
+
+    #if defined(__GLIBC__) && defined(_GNU_SOURCE)
+    // GNU libc with extensions
+    feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+    std::cout << "Using GNU feenableexcept()\n";
+    #elif defined(__APPLE__) && defined(__aarch64__)
+    // macOS on ARM - different approach needed
+    // fesetenv(FE_DFL_ENV);  // macOS specific
+    std::cout << "macOS ARM - FP trapping may not be available\n";
+    #else
+    // Standards compliant fallback
+    try {
+        fesetexceptflag(FE_ALL_EXCEPT, FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+        std::cout << "Using standards-compliant FP control\n";
+    } catch (...) {
+        std::cout << "FP trapping not supported on this platform\n";
+    }
+    #endif
+}
 
 int main(int argc, char *argv[]) {
+
+  // Trap floating-point exceptions
+  enable_fp_traps_portable();
+
   CLI::App app{"Colvars stub interface for testing"};
   argv = app.ensure_utf8(argv);
   std::string configuration_file;
