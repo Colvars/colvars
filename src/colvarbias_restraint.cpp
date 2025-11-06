@@ -230,7 +230,11 @@ int colvarbias_restraint_moving::init(std::string const &conf)
 
 
 int colvarbias_restraint_moving::update() {
-  if (!cvm::main()->proxy->simulation_running()) return COLVARS_OK;
+  if (!cvm::main()->proxy->simulation_running() ||
+      (!b_chg_centers && !b_chg_force_k && !b_chg_walls)) {
+    // Nothing to update
+    return COLVARS_OK;
+  }
 
   if (target_nstages) {
     // Accumulate free energy derivative at every step except 0
@@ -258,7 +262,7 @@ int colvarbias_restraint_moving::update() {
         if (b_chg_walls) update_walls(lambda);
       }
     }
-  } else if (cvm::step_absolute() - first_step <= target_nsteps) {
+  } else if (target_nsteps && (cvm::step_absolute() - first_step <= target_nsteps)) {
     // Continuous update (slow growth)
     cvm::real lambda = current_lambda();
     if (b_chg_force_k) update_k(lambda);
@@ -271,7 +275,7 @@ int colvarbias_restraint_moving::update() {
 
 
 cvm::real colvarbias_restraint_moving::current_lambda() const {
-  cvm::real lambda;
+  cvm::real lambda = 0.;
   if (target_nstages) {
     if (lambda_schedule.size()) {
       lambda = lambda_schedule[stage];
@@ -279,7 +283,7 @@ cvm::real colvarbias_restraint_moving::current_lambda() const {
       lambda = cvm::real(stage) / cvm::real(target_nstages);
       if (b_decoupling) lambda = 1.0 - lambda;
     }
-  } else {
+  } else if (target_nsteps) {
     lambda = cvm::real(cvm::step_absolute() - first_step) / cvm::real(target_nsteps);
     if (lambda > 1.0) lambda = 1.0;
     if (b_decoupling) lambda = 1.0 - lambda;
