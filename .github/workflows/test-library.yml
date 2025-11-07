@@ -396,6 +396,16 @@ jobs:
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
+      - name: Clang 20, C++20, check floating-point exceptions, Debug build (CentOS 9)
+        env:
+          CXX_STANDARD: 20
+          CXX: clang++-20
+          CXX_VERSION: 20
+          CC: clang-20
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -D TRAP_FPE=ON -D CMAKE_BUILD_TYPE=Debug -P devel-tools/build_test_library.cmake
+
       - name: Keep only one cache besides the one from this job
         shell: bash
         env:
