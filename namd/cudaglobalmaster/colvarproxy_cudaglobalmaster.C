@@ -757,30 +757,7 @@ void colvarproxy_impl::calculate() {
     }
   }
   previous_NAMD_step = step;
-  if (mClient->requestUpdateLattice()) {
-    unit_cell_x.set(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
-    unit_cell_y.set(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
-    unit_cell_z.set(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
-    const Vector a1(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
-    const Vector a2(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
-    const Vector a3(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
-    const int p1 = ( a1.length2() ? 1 : 0 );
-    const int p2 = ( a2.length2() ? 1 : 0 );
-    const int p3 = ( a3.length2() ? 1 : 0 );
-    if (!p1 && !p2 && !p3) {
-      boundaries_type = boundaries_non_periodic;
-      reset_pbc_lattice();
-    } else if (p1 && p2 && p3) {
-      if (( ! ( a1.y || a1.z || a2.x || a2.z || a3.x || a3.y ) )) {
-        boundaries_type = boundaries_pbc_ortho;
-      } else {
-        boundaries_type = boundaries_pbc_triclinic;
-      }
-      colvarproxy_system::update_pbc_lattice();
-    } else {
-      boundaries_type = boundaries_unsupported;
-    }
-  }
+
   // Run Colvars
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxRangePushEx(&mEventAttrib);

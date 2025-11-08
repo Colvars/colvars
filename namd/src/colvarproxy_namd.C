@@ -388,29 +388,6 @@ void colvarproxy_namd::calculate()
   previous_NAMD_step = step;
   if (accelMDOn) update_accelMD_info();
 
-  {
-    Vector const a = lattice->a();
-    Vector const b = lattice->b();
-    Vector const c = lattice->c();
-    unit_cell_x.set(a.x, a.y, a.z);
-    unit_cell_y.set(b.x, b.y, c.z);
-    unit_cell_z.set(c.x, c.y, c.z);
-  }
-
-  if (!lattice->a_p() && !lattice->b_p() && !lattice->c_p()) {
-    boundaries_type = boundaries_non_periodic;
-    reset_pbc_lattice();
-  } else if (lattice->a_p() && lattice->b_p() && lattice->c_p()) {
-    if (lattice->orthogonal()) {
-      boundaries_type = boundaries_pbc_ortho;
-    } else {
-      boundaries_type = boundaries_pbc_triclinic;
-    }
-    colvarproxy_system::update_pbc_lattice();
-  } else {
-    boundaries_type = boundaries_unsupported;
-  }
-
   if (cvm::debug()) {
     cvm::log(std::string(cvm::line_marker)+
              "colvarproxy_namd, step no. "+cvm::to_str(colvars->it)+"\n"+
