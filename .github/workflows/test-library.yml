@@ -404,7 +404,7 @@ jobs:
           CC: clang-20
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
-          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -D TRAP_FPE=ON -D CMAKE_BUILD_TYPE=Debug -P devel-tools/build_test_library.cmake
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -D TRAP_FPE=ON -D CMAKE_CXX_FLAGS="-ffp-model=strict" -P devel-tools/build_test_library.cmake
 
       - name: Keep only one cache besides the one from this job
         shell: bash
