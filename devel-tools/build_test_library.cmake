@@ -130,6 +130,11 @@ if(NOT DEFINED ENV{CXX})
   endif()
 endif()
 
+if(MSVC)
+  # Workaround for https://gitlab.kitware.com/cmake/cmake/-/issues/27116
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /GR")
+endif()
+
 execute_process(
   COMMAND ${CMAKE_COMMAND}
   -S cmake
