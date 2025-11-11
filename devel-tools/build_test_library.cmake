@@ -131,8 +131,8 @@ if(NOT DEFINED ENV{CXX})
 endif()
 
 # See https://stackoverflow.com/questions/26836361/check-if-generating-a-visual-studio-solution-or-makefile-from-cmake
-message(STATUS "The CMake generator is ${CMAKE_GENERATOR}.")
-if(CMAKE_GENERATOR MATCHES "Visual Studio")
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+  # TODO: Here I assume that MSVC is used on Windows, but it may not always be true
   # Workaround for https://gitlab.kitware.com/cmake/cmake/-/issues/27116
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /GR")
 endif()
