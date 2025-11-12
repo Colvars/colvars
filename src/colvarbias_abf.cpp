@@ -180,17 +180,33 @@ int colvarbias_abf::init(std::string const &conf)
     /// Optional custom configuration string for grid parameters
     std::string grid_conf;
     key_lookup(conf, "grid", &grid_conf);
+    if (get_keyval(conf, "smoothing", smoothing) && smoothing > 0.0) {
+      // Doing smoothed ABF
+      b_smoothed = true;
+      weights.reset(new colvar_grid_scalar(colvars, grid_conf));
+      gradients.reset(new colvar_grid_gradient(colvars, weights));
+      weights->has_parent_data = true;
+    } else {
+      // Doing standard discretized ABF
+      b_smoothed = false;
+      samples.reset(new colvar_grid_count(colvars, grid_conf));
+      gradients.reset(new colvar_grid_gradient(colvars, samples)); // Also use samples as template for sizes
+      samples->has_parent_data = true;
+    }
 
-    samples.reset(new colvar_grid_count(colvars, grid_conf));
   }
-  gradients.reset(new colvar_grid_gradient(colvars, samples)); // Also use samples as template for sizes
 
   gradients->full_samples = full_samples;
   gradients->min_samples = min_samples;
 
   if (shared_on) {
-    local_samples.reset(new colvar_grid_count(colvars, samples));
-    local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
+    if (b_smoothed)
+      local_samples.reset(new colvar_grid_count(colvars, samples));
+    else {
+      local_weights.reset(new colvar_grid_scalar(colvars, weights));
+      local_gradients.reset(new colvar_grid_gradient(colvars, local_weights));
+    }
+
   }
 
   // Data for eABF z-based estimator

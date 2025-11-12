@@ -102,6 +102,8 @@ private:
   std::shared_ptr<colvar_grid_gradient> gradients;
   /// n-dim grid of number of samples
   std::shared_ptr<colvar_grid_count>    samples;
+  /// n-dim grid of sampling weights for smoothed ABF
+  std::shared_ptr<colvar_grid_scalar>    weights;
   /// n-dim grid of pmf (dimension 1 to 3)
   std::shared_ptr<colvargrid_integrate>  pmf;
   /// n-dim grid: average force on "real" coordinate for eABF z-based estimator
@@ -112,7 +114,8 @@ private:
   std::shared_ptr<colvar_grid_gradient> czar_gradients;
   /// n-dim grid of CZAR pmf (dimension 1 to 3)
   std::shared_ptr<colvargrid_integrate>  czar_pmf;
-
+  /// use kernel grid version of ABF ?
+  bool b_smoothed;
   /// Calculate system force for all colvars
   int update_system_force();
 
@@ -142,14 +145,18 @@ private:
   // eABF/CZAR local data last shared
   std::unique_ptr<colvar_grid_gradient> z_gradients_in;
   std::shared_ptr<colvar_grid_count>    z_samples_in;
+  std::shared_ptr<colvar_grid_scalar>    z_weights_in;
+
   // ABF data from local replica only in shared ABF
   std::shared_ptr<colvar_grid_gradient> local_gradients;
   std::shared_ptr<colvar_grid_count>    local_samples;
+  std::shared_ptr<colvar_grid_scalar> local_weights;
   std::unique_ptr<colvargrid_integrate>  local_pmf;
   // eABF/CZAR data collected from all replicas in shared eABF on replica 0
   // if non-shared, aliases of regular CZAR grids, for output purposes
   std::shared_ptr<colvar_grid_gradient> global_z_gradients;
   std::shared_ptr<colvar_grid_count>    global_z_samples;
+  std::shared_ptr<colvar_grid_scalar>    global_z_weights;
   std::shared_ptr<colvar_grid_gradient> global_czar_gradients;
   std::shared_ptr<colvargrid_integrate>  global_czar_pmf;
 
