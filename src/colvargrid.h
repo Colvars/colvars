@@ -1419,7 +1419,8 @@ public:
   /// \brief Provide the sample count by which each binned value
   /// should be divided
   std::shared_ptr<colvar_grid_count> samples;
-
+  /// Continuous weights instead of samples, eg. for smoothed ABF
+  std::shared_ptr<colvar_grid_scalar> weights;
   /// Default constructor
   colvar_grid_gradient();
 
@@ -1436,12 +1437,19 @@ public:
 
   /// Constructor from a multicol file
   colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in = nullptr);
+  colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_scalar> weights_in = nullptr);
+
 
   /// Constructor from a vector of colvars and a pointer to the count grid, with extra params
   colvar_grid_gradient(std::vector<colvar *> &colvars,
                        std::shared_ptr<colvar_grid_count> samples_in = nullptr,
                        std::shared_ptr<const colvar_grid_params> params = nullptr,
                        std::string config = std::string());
+  colvar_grid_gradient(std::vector<colvar *> &colvars,
+                       std::shared_ptr<colvar_grid_scalar> weights_in,
+                       std::shared_ptr<const colvar_grid_params> params,
+                       std::string config);
+
 
   /// Parameters for smoothing data with low sampling
   int full_samples;
@@ -1537,9 +1545,15 @@ public:
 
   /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
-  inline void acc_force(std::vector<int> const &ix, cvm::real const *forces) {
+  inline void acc_force(std::vector<int> const &ix, cvm::real const *forces, bool b_smoothed = false,
+                              cvm::real fact = 1.0) {
     for (size_t imult = 0; imult < mult; imult++) {
-      data[address(ix) + imult] -= forces[imult];
+      data[address(ix) + imult] -= forces[imult] * fact;
+    }
+    if (samples)
+      samples->incr_count(ix);
+    if (b_smoothed && weights) {
+      weights->incr_weight(ix,fact);
     }
   }
 
