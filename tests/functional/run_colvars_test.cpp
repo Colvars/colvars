@@ -11,27 +11,15 @@
 
 #if defined(COLVARS_TRAP_FPE)
 #include <cfenv>
-// Portable FP trap initialization
-void enable_fp_traps_portable() {
+// Enable common floating-point exceptions on Linux/glibc
+void enable_fp_traps() {
     std::feclearexcept(FE_ALL_EXCEPT);
-
-    #if defined(__GLIBC__) && defined(_GNU_SOURCE)
-    // GNU libc with extensions
+#ifdef __GLIBC__
     feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
-    std::cout << "Using GNU feenableexcept()\n";
-    #elif defined(__APPLE__) && defined(__aarch64__)
-    // macOS on ARM - different approach needed
-    // fesetenv(FE_DFL_ENV);  // macOS specific
-    std::cout << "macOS ARM - FP trapping may not be available\n";
-    #else
-    // Standards compliant fallback
-    try {
-        fesetexceptflag(FE_ALL_EXCEPT, FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
-        std::cout << "Using standards-compliant FP control\n";
-    } catch (...) {
-        std::cout << "FP trapping not supported on this platform\n";
-    }
-    #endif
+    std::cout << "Floating-point traps enabled (glibc)\n";
+#else
+    std::cout << "feenableexcept() not available on this platform\n";
+#endif
 }
 #endif
 
@@ -40,7 +28,7 @@ int main(int argc, char *argv[]) {
 
   #if defined(COLVARS_TRAP_FPE)
   // Trap floating-point exceptions
-  enable_fp_traps_portable();
+  enable_fp_traps();
   #endif
 
   CLI::App app{"Colvars stub interface for testing"};
