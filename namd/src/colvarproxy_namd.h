@@ -71,8 +71,6 @@ public:
 
   void init_tcl_pointers() override;
 
-  friend class cvm::atom;
-
   colvarproxy_namd(GlobalMasterColvars *gm);
   ~colvarproxy_namd();
 
