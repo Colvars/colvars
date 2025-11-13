@@ -134,12 +134,6 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   // save to Node for Tcl script access
   Node::Object()->colvars = colvars;
 
-#ifdef NAMD_TCL
-  have_scripts = true;
-#else
-  have_scripts = false;
-#endif
-
   if (simparams->firstTimestep != 0) {
     colvars->set_initial_step(static_cast<cvm::step_number>(simparams->firstTimestep));
   }
