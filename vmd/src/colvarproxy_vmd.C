@@ -85,15 +85,9 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   // both fields are taken from data structures already available
   updated_masses_ = updated_charges_ = true;
 
-  // Do we have scripts?
-  // For now colvars depend on Tcl, but this may not always be the case
-  // in the future
 #if defined(VMDTCL)
-  have_scripts = true;
   // Need to set this before constructing colvarmodule, which creates colvarscript object
   set_tcl_interp(interp);
-#else
-  have_scripts = false;
 #endif
 
   colvars = new colvarmodule(this);
