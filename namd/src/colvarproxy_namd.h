@@ -37,6 +37,21 @@ class SimParameters;
 
 /// Communication between colvars and NAMD (implementation of \link colvarproxy \endlink)
 class colvarproxy_namd : public colvarproxy {
+public:
+
+  colvarproxy_namd();
+  ~colvarproxy_namd();
+
+  /// Tell the proxy that it will be using the GlobalMaster interface
+  void set_gm_object(GlobalMasterColvars *gm);
+
+  /// Initialize proxy data based on the chosen interface
+  int init(); // no override
+
+  /// Initialize the module
+  int init_module(); // no override
+
+  void init_tcl_pointers() override;
 
 protected:
 
@@ -48,7 +63,7 @@ protected:
   std::vector<int> atoms_map;
 
   /// Pointer to the NAMD simulation input object
-  SimParameters *simparams;
+  SimParameters *simparams = nullptr;
 
   /// Pointer to Controller object
   Controller const *controller;
@@ -56,8 +71,10 @@ protected:
   /// NAMD-style PRNG object
   std::unique_ptr<Random> random;
 
-  bool first_timestep;
-  cvm::step_number previous_NAMD_step;
+  /// Use to distinguish between "run 0" and actual runs
+  bool first_timestep = true;
+
+  cvm::step_number previous_NAMD_step = 0L;
 
   /// Used to submit restraint energy as MISC
 #if !defined (NAMD_UNIFIED_REDUCTION)
@@ -73,11 +90,6 @@ protected:
   void update_accelMD_info();
 
 public:
-
-  void init_tcl_pointers() override;
-
-  colvarproxy_namd(GlobalMasterColvars *gm);
-  ~colvarproxy_namd();
 
   int setup() override;
   int reset() override;
