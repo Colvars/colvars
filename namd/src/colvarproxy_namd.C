@@ -9,31 +9,33 @@
 
 #include <errno.h>
 
-#include "common.h"
-#include "fstream_namd.h"
+#include "ConfigList.h"
+#include "Controller.h"
+#include "DataExchanger.h"
 #include "Debug.h"
-#include "BackEnd.h"
-#include "InfoStream.h"
-#include "Node.h"
-#include "Molecule.h"
+#include "GlobalMaster.h"
 #include "GlobalMasterColvars.h"
 #include "GridForceGrid.h"
 #include "GridForceGrid.inl"
-#include "PDB.h"
-#include "PDBData.h"
-#include "ReductionMgr.h"
-#include "ScriptTcl.h"
+#include "InfoStream.h"
+#include "Lattice.h"
+#include "Molecule.h"
 #include "NamdState.h"
-#include "Controller.h"
-#include "PatchData.h"
+#include "NamdTypes.h"
+#include "Node.h"
+#include "PDB.h"
+#include "Random.h"
+#include "ReductionMgr.h"
+#include "ResizeArray.h"
+#include "ScriptTcl.h"
+#include "SimParameters.h"
+#include "Vector.h"
+#include "common.h"
+#include "fstream_namd.h"
 
 #ifdef NAMD_TCL
 #include <tcl.h>
 #endif
-
-// For replica exchange
-#include "converse.h"
-#include "DataExchanger.h"
 
 #include "colvarmodule.h"
 #include "colvar.h"
@@ -42,7 +44,6 @@
 #include "colvarproxy.h"
 #include "colvarproxy_namd.h"
 #include "colvarproxy_namd_version.h"
-#include "colvarscript.h"
 
 
 colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
@@ -85,7 +86,7 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   set_integration_timestep(simparams->dt);
   set_time_step_factor(simparams->globalMasterFrequency);
 
-  random = Random(simparams->randomSeed);
+  random.reset(new Random(simparams->randomSeed));
 
   // both fields are taken from data structures already available
   updated_masses_ = updated_charges_ = true;
@@ -617,10 +618,18 @@ void colvarproxy_namd::calculate()
   }
 }
 
+
+cvm::real colvarproxy_namd::rand_gaussian() { return random->gaussian(); }
+
+
 void colvarproxy_namd::update_accelMD_info() {
   // This aMD factor is from previous step!
   amd_weight_factor = std::exp(controller->accelMDdV / (target_temperature() * boltzmann()));
 }
+
+cvm::real colvarproxy_namd::get_accelMD_factor() const { return amd_weight_factor; }
+
+bool colvarproxy_namd::accelMD_enabled() const { return accelMDOn; }
 
 
 // Callback functions
