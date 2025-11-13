@@ -57,9 +57,9 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   version_int = get_version_from_string(COLVARPROXY_VERSION);
 #if CMK_TRACE_ENABLED
   if ( 0 == CkMyPe() ) {
-    globalmaster->traceRegisterUserEvent("GM COLVAR item", GLOBAL_MASTER_CKLOOP_CALC_ITEM);
-    globalmaster->traceRegisterUserEvent("GM COLVAR bias", GLOBAL_MASTER_CKLOOP_CALC_BIASES );
-    globalmaster->traceRegisterUserEvent("GM COLVAR scripted bias", GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES );
+    traceRegisterUserEvent("GM COLVAR item", GLOBAL_MASTER_CKLOOP_CALC_ITEM);
+    traceRegisterUserEvent("GM COLVAR bias", GLOBAL_MASTER_CKLOOP_CALC_BIASES );
+    traceRegisterUserEvent("GM COLVAR scripted bias", GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES );
   }
 #endif
   first_timestep = true;
@@ -1532,7 +1532,7 @@ int colvarproxy_namd::smp_loop(int n_items, std::function<int (int)> const &work
       worker(i);
     }
 #if CMK_TRACE_ENABLED
-    globalmaster->traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_ITEM, before, CmiWallTimer());
+    traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_ITEM, before, CmiWallTimer());
 #endif
   };
   const int numChunks = smp_num_threads() > n_items ?
@@ -1566,7 +1566,7 @@ void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *p
   }
   cvm::decrease_depth();
 #if CMK_TRACE_ENABLED
-  globalmaster->traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_BIASES,before,CmiWallTimer());
+  traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_BIASES,before,CmiWallTimer());
 #endif
 }
 
@@ -1596,7 +1596,7 @@ void calc_cv_scripted_forces(int paramNum, void *param)
   }
   cv->calc_scripted_forces();
 #if CMK_TRACE_ENABLED
-  globalmaster->traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES,before,CmiWallTimer());
+  traceUserBracketEvent(GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES,before,CmiWallTimer());
 #endif
 }
 
