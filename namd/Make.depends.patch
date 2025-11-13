@@ -1,39 +1,45 @@
 diff --git a/Make.depends b/Make.depends
-index 994b3914..1d54373f 100644
+index 994b3914..5d760c3c 100644
 --- a/Make.depends
 +++ b/Make.depends
-@@ -6398,6 +6398,45 @@ obj/GlobalMasterTMD.o: \
+@@ -3827,19 +3827,6 @@ obj/ComputeMgr.o: \
+ 	src/GlobalMasterMisc.h \
+ 	src/GlobalMasterFreeEnergy.h \
+ 	src/GlobalMasterColvars.h \
+-	colvars/src/colvarmodule.h \
+-	colvars/src/colvarproxy.h \
+-	colvars/src/colvarmodule.h \
+-	colvars/src/colvartypes.h \
+-	colvars/src/colvarproxy_io.h \
+-	colvars/src/colvarproxy_replicas.h \
+-	colvars/src/colvarproxy_system.h \
+-	colvars/src/colvarproxy_tcl.h \
+-	colvars/src/colvarproxy_volmaps.h \
+-	src/colvarproxy_namd.h \
+-	src/Random.h \
+-	src/ConfigList.h \
+-	colvars/src/colvarvalue.h \
+ 	src/PatchData.h \
+ 	inc/PatchData.decl.h \
+ 	src/Sequencer.h \
+@@ -6398,6 +6385,31 @@ obj/GlobalMasterTMD.o: \
  	src/fitrms.h \
  	src/Debug.h
  	$(CXX) $(CXXFLAGS) $(COPTO)obj/GlobalMasterTMD.o $(COPTC) src/GlobalMasterTMD.C
 +obj/GlobalMasterColvars.o: \
 +	obj/.exists \
 +	src/GlobalMasterColvars.C \
-+	src/Controller.h \
++	src/GlobalMaster.h \
++	src/NamdTypes.h \
 +	src/common.h \
 +	src/Vector.h \
-+	src/Tensor.h \
-+	src/Lattice.h \
-+	src/NamdTypes.h \
 +	src/CudaRecord.h \
 +	src/HipDefines.h \
 +	src/ResizeArray.h \
 +	src/ResizeArrayRaw.h \
-+	src/fstream_namd.h \
-+	src/DataExchanger.h \
-+	src/main.h \
-+	inc/DataExchanger.decl.h \
-+	src/Pointer.h \
-+	src/GlobalMaster.h \
 +	src/GlobalMasterColvars.h \
 +	src/colvarproxy_namd.h \
 +	src/colvarproxy_namd_version.h \
-+	src/SimParameters.h \
-+	src/imd.h \
-+	src/MGridforceParams.h \
-+	src/GroupRestraintsParam.h \
-+	src/Random.h \
-+	src/ConfigList.h \
 +	colvars/src/colvarmodule.h \
 +	colvars/src/colvarproxy.h \
 +	colvars/src/colvarmodule.h \
@@ -48,12 +54,457 @@ index 994b3914..1d54373f 100644
  obj/Matrix4Symmetry.o: \
  	obj/.exists \
  	src/Matrix4Symmetry.C \
-@@ -6637,6 +6676,8 @@ obj/colvarproxy_namd.o: \
+@@ -6604,141 +6616,54 @@ obj/GlobalMasterMisc.o: \
+ obj/colvarproxy_namd.o: \
+ 	obj/.exists \
+ 	src/colvarproxy_namd.C \
++	src/ConfigList.h \
+ 	src/common.h \
+-	src/fstream_namd.h \
+-	src/Debug.h \
+-	src/BackEnd.h \
+-	src/InfoStream.h \
+-	src/Node.h \
+-	src/main.h \
+-	src/ProcessorPrivate.h \
+-	src/BOCgroup.h \
+-	inc/Node.decl.h \
+-	src/Molecule.h \
+-	src/NamdTypes.h \
++	src/Controller.h \
+ 	src/Vector.h \
++	src/Tensor.h \
++	src/Lattice.h \
++	src/NamdTypes.h \
+ 	src/CudaRecord.h \
+ 	src/HipDefines.h \
+ 	src/ResizeArray.h \
+ 	src/ResizeArrayRaw.h \
+-	src/structures.h \
+-	src/UniqueSet.h \
+-	src/UniqueSetRaw.h \
+-	src/Hydrogen.h \
+-	src/SortableResizeArray.h \
+-	src/GromacsTopFile.h \
++	src/fstream_namd.h \
++	src/DataExchanger.h \
++	src/main.h \
++	inc/DataExchanger.decl.h \
++	src/Pointer.h \
++	src/Debug.h \
++	src/GlobalMaster.h \
++	src/GlobalMasterColvars.h \
+ 	src/GridForceGrid.h \
+-	src/Tensor.h \
+ 	src/SimParameters.h \
+-	src/Lattice.h \
+ 	src/imd.h \
+ 	src/MGridforceParams.h \
+ 	src/GroupRestraintsParam.h \
  	src/MStream.h \
++	src/GridForceGrid.inl \
++	src/InfoStream.h \
++	src/Molecule.h \
++	src/structures.h \
++	src/UniqueSet.h \
++	src/UniqueSetRaw.h \
++	src/Hydrogen.h \
++	src/SortableResizeArray.h \
++	src/GromacsTopFile.h \
  	plugins/include/molfile_plugin.h \
  	plugins/include/vmdplugin.h \
-+	src/GlobalMasterColvars.h \
-+	src/GlobalMaster.h \
- 	src/GridForceGrid.inl \
+-	src/GridForceGrid.inl \
++	src/NamdState.h \
++	src/Node.h \
++	src/ProcessorPrivate.h \
++	src/BOCgroup.h \
++	inc/Node.decl.h \
  	src/PDB.h \
  	src/parm.h \
+ 	src/ReadAmberParm.h \
+ 	src/PDBData.h \
++	src/Random.h \
+ 	src/ReductionMgr.h \
+ 	src/ScriptTcl.h \
+-	src/NamdState.h \
+-	src/Controller.h \
+-	src/PatchData.h \
+-	src/ComputeCUDAMgr.h \
+-	src/CudaUtils.h \
+-	inc/ComputeCUDAMgr.decl.h \
+-	src/CudaNonbondedTables.h \
+-	src/CudaComputeNonbonded.h \
+-	src/Compute.h \
+-	src/Box.h \
+-	src/OwnerBox.h \
+-	src/PatchTypes.h \
+-	src/ComputeNonbondedUtil.h \
+-	src/CudaTileListKernel.h \
+-	src/CudaTileListKernel.hip.h \
+-	src/CudaComputeNonbondedKernel.h \
+-	src/CudaComputeNonbondedKernel.hip.h \
+-	src/CudaComputeGBISKernel.h \
+-	src/ComputeMgr.h \
+-	src/GlobalMaster.h \
+-	src/GlobalMasterServer.h \
+-	inc/ComputeMgr.decl.h \
+-	src/CudaPmeSolverUtil.h \
+-	src/PmeSolverUtil.h \
+-	src/PmeBase.h \
+-	src/MathArray.h \
+-	src/Array.h \
+-	src/CudaPmeSolverUtilKernel.h \
+-	src/ComputeBondedCUDA.h \
+-	src/ComputeAniso.h \
+-	src/ComputeHomeTuples.h \
+-	src/HomePatch.h \
+-	src/Patch.h \
+-	src/UniqueSortedArray.h \
+-	src/SortedArray.h \
+-	src/AVXTiles.h \
+-	src/PatchMap.h \
+-	src/HomePatchList.h \
+-	src/ResizeArrayIter.h \
+-	src/MigrateAtomsMsg.h \
+-	src/Migration.h \
+-	inc/PatchMgr.decl.h \
+-	src/Settle.h \
+-	src/PatchMap.inl \
+-	src/AtomMap.h \
+-	src/PatchMgr.h \
+-	src/ProxyMgr.h \
+-	src/UniqueSetIter.h \
+-	inc/ProxyMgr.decl.h \
+-	src/Parameters.h \
+-	src/strlib.h \
+-	src/TupleString.h \
+-	src/xxh3.h \
+-	src/xxhash.h \
+-	src/Priorities.h \
+-	src/LdbCoordinator.h \
+-	inc/LdbCoordinator.decl.h \
+-	inc/NamdCentLB.decl.h \
+-	inc/NamdHybridLB.decl.h \
+-	inc/NamdDummyLB.decl.h \
+-	src/ComputeSelfTuples.h \
+-	src/ComputeAniso.inl \
+-	src/ComputeMap.h \
+-	src/ComputeOneFourNbTholes.h \
+-	src/ComputeThole.h \
+-	src/ComputeThole.inl \
+-	src/ComputeBondedCUDAKernel.h \
+-	src/TupleTypesCUDA.h \
+-	src/MigrationBondedCUDAKernel.h \
+-	inc/PatchData.decl.h \
+-	src/Sequencer.h \
+-	src/SequencerCUDA.h \
+-	src/SequencerCUDAKernel.h \
+-	src/MShakeKernel.h \
+-	src/ComputeRestraintsCUDA.h \
+-	src/ComputeSMDCUDA.h \
+-	src/ComputeGroupRestraintsCUDA.h \
+-	src/ComputeGridForceCUDA.h \
+-	src/GridforceGridCUDAKernel.h \
+-	src/GridforceGridCUDA.h \
+-	src/ComputeLonepairsCUDA.h \
+-	src/ComputeConsForceCUDA.h \
+-	src/MigrationCUDAKernel.h \
+-	src/GlobalGPUMgr.h \
+-	inc/GlobalGPUMgr.decl.h \
+-	src/SynchronousCollectives.h \
+-	inc/SynchronousCollectives.decl.h \
+-	inc/SynchronousCollectives.def.h \
+-	src/BroadcastObject.h \
+-	src/BroadcastMgr.h \
+-	inc/BroadcastMgr.decl.h \
+-	src/BroadcastClient.h \
+-	src/DataExchanger.h \
+-	inc/DataExchanger.decl.h \
+-	src/Pointer.h \
+ 	colvars/src/colvarmodule.h \
+ 	colvars/src/colvar.h \
+ 	colvars/src/colvarmodule.h \
+@@ -6758,16 +6683,69 @@ obj/colvarproxy_namd.o: \
+ 	colvars/src/colvarproxy_tcl.h \
+ 	colvars/src/colvarproxy_volmaps.h \
+ 	src/colvarproxy_namd.h \
+-	src/Random.h \
+-	src/ConfigList.h \
+-	colvars/src/colvarvalue.h \
+ 	src/colvarproxy_namd_version.h \
++	colvars/src/colvarvalue.h
++	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_namd.o $(COPTC) src/colvarproxy_namd.C
++obj/colvarproxy_cudaglobalmaster.o: \
++	obj/.exists \
++	src/colvarproxy_cudaglobalmaster.C \
++	src/CudaGlobalMasterClient.h \
++	src/CudaUtils.h \
++	src/HipDefines.h \
++	src/NamdTypes.h \
++	src/common.h \
++	src/Vector.h \
++	src/CudaRecord.h \
++	src/ResizeArray.h \
++	src/ResizeArrayRaw.h \
++	src/colvarproxy_cudaglobalmaster.h \
++	src/colvarproxy_cudaglobalmaster_kernel.h \
++	colvars/src/colvartypes.h \
++	colvars/src/colvarmodule.h \
++	colvars/src/colvarproxy.h \
++	colvars/src/colvartypes.h \
++	colvars/src/colvarproxy_io.h \
++	colvars/src/colvarproxy_replicas.h \
++	colvars/src/colvarproxy_system.h \
++	colvars/src/colvarproxy_tcl.h \
++	colvars/src/colvarproxy_volmaps.h \
++	src/Molecule.h \
++	src/structures.h \
++	src/UniqueSet.h \
++	src/UniqueSetRaw.h \
++	src/Hydrogen.h \
++	src/SortableResizeArray.h \
++	src/GromacsTopFile.h \
++	src/GridForceGrid.h \
++	src/Tensor.h \
++	src/SimParameters.h \
++	src/Lattice.h \
++	src/imd.h \
++	src/MGridforceParams.h \
++	src/GroupRestraintsParam.h \
++	src/MStream.h \
++	plugins/include/molfile_plugin.h \
++	plugins/include/vmdplugin.h \
++	src/InfoStream.h \
++	src/fstream_namd.h \
++	src/PDB.h \
++	src/parm.h \
++	src/ReadAmberParm.h \
++	src/PDBData.h \
++	colvars/src/colvarparse.h \
++	colvars/src/colvarvalue.h \
++	colvars/src/colvarparams.h \
++	colvars/src/colvaratoms.h \
++	colvars/src/colvardeps.h \
++	colvars/src/colvarparse.h \
++	colvars/src/colvar_rotation_derivative.h \
++	src/ScriptTcl.h \
+ 	colvars/src/colvarscript.h \
+ 	colvars/src/colvarproxy.h \
+ 	colvars/src/colvarscript_commands.h \
+ 	colvars/src/colvarscript_commands_colvar.h \
+ 	colvars/src/colvarscript_commands_bias.h
+-	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_namd.o $(COPTC) src/colvarproxy_namd.C
++	$(CXX) $(CXXFLAGS) $(COPTO)obj/colvarproxy_cudaglobalmaster.o $(COPTC) src/colvarproxy_cudaglobalmaster.C
+ obj/GridForceGrid.o: \
+ 	obj/.exists \
+ 	src/GridForceGrid.C \
+@@ -10805,7 +10783,7 @@ obj/MigrationBondedCUDAKernel.o: \
+ 	src/Tensor.h \
+ 	src/ComputeBondedCUDAKernel.h \
+ 	src/CudaNonbondedTables.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/MigrationBondedCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`MigrationBondedCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/MigrationBondedCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`MigrationBondedCUDAKernel.cu
+ obj/MigrationCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/MigrationCUDAKernel.cu \
+@@ -10825,7 +10803,7 @@ obj/MigrationCUDAKernel.o: \
+ 	src/CudaNonbondedTables.h \
+ 	src/CudaComputeNonbondedKernel.hip.h \
+ 	src/CudaTileListKernel.hip.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/MigrationCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`MigrationCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/MigrationCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`MigrationCUDAKernel.cu
+ obj/SequencerCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/SequencerCUDAKernel.cu \
+@@ -10844,7 +10822,7 @@ obj/SequencerCUDAKernel.o: \
+ 	src/Lattice.h \
+ 	src/Tensor.h \
+ 	src/structures.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/SequencerCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`SequencerCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/SequencerCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`SequencerCUDAKernel.cu
+ obj/ComputeBondedCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/ComputeBondedCUDAKernel.cu \
+@@ -10861,7 +10839,7 @@ obj/ComputeBondedCUDAKernel.o: \
+ 	src/CudaNonbondedTables.h \
+ 	src/CudaComputeNonbondedInteractions.h \
+ 	src/DeviceCUDA.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/ComputeBondedCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeBondedCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/ComputeBondedCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeBondedCUDAKernel.cu
+ obj/ComputeLonepairsCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/ComputeLonepairsCUDAKernel.cu \
+@@ -10872,14 +10850,14 @@ obj/ComputeLonepairsCUDAKernel.o: \
+ 	src/ComputeLonepairsCUDAKernel.h \
+ 	src/Vector.h \
+ 	src/common.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/ComputeLonepairsCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeLonepairsCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/ComputeLonepairsCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeLonepairsCUDAKernel.cu
+ obj/ComputePmeCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/ComputePmeCUDAKernel.cu \
+ 	src/HipDefines.h \
+ 	src/ComputePmeCUDAKernel.h \
+ 	src/CudaUtils.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/ComputePmeCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputePmeCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/ComputePmeCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputePmeCUDAKernel.cu
+ obj/ComputeGridForceCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/ComputeGridForceCUDAKernel.cu \
+@@ -10896,7 +10874,7 @@ obj/ComputeGridForceCUDAKernel.o: \
+ 	src/CudaUtils.h \
+ 	src/GridforceGridCUDAKernel.h \
+ 	src/GridforceGridCUDA.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/ComputeGridForceCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeGridForceCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/ComputeGridForceCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeGridForceCUDAKernel.cu
+ obj/ComputeRestraintsCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/ComputeRestraintsCUDAKernel.cu \
+@@ -10911,7 +10889,7 @@ obj/ComputeRestraintsCUDAKernel.o: \
+ 	src/ResizeArrayRaw.h \
+ 	src/Tensor.h \
+ 	src/CudaUtils.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/ComputeRestraintsCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeRestraintsCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/ComputeRestraintsCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeRestraintsCUDAKernel.cu
+ obj/ComputeConsForceCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/ComputeConsForceCUDAKernel.cu \
+@@ -10926,7 +10904,7 @@ obj/ComputeConsForceCUDAKernel.o: \
+ 	src/ResizeArrayRaw.h \
+ 	src/Tensor.h \
+ 	src/CudaUtils.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/ComputeConsForceCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeConsForceCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/ComputeConsForceCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeConsForceCUDAKernel.cu
+ obj/ComputeGlobalMasterVirialCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/ComputeGlobalMasterVirialCUDAKernel.cu \
+@@ -10941,7 +10919,7 @@ obj/ComputeGlobalMasterVirialCUDAKernel.o: \
+ 	src/ResizeArrayRaw.h \
+ 	src/Tensor.h \
+ 	src/CudaUtils.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/ComputeGlobalMasterVirialCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeGlobalMasterVirialCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/ComputeGlobalMasterVirialCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeGlobalMasterVirialCUDAKernel.cu
+ obj/ComputeSMDCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/ComputeSMDCUDAKernel.cu \
+@@ -10957,7 +10935,7 @@ obj/ComputeSMDCUDAKernel.o: \
+ 	src/Tensor.h \
+ 	src/CudaUtils.h \
+ 	src/ComputeCOMCudaKernel.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/ComputeSMDCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeSMDCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/ComputeSMDCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeSMDCUDAKernel.cu
+ obj/ComputeGroupRes1GroupCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/ComputeGroupRes1GroupCUDAKernel.cu \
+@@ -10973,7 +10951,7 @@ obj/ComputeGroupRes1GroupCUDAKernel.o: \
+ 	src/Tensor.h \
+ 	src/CudaUtils.h \
+ 	src/ComputeCOMCudaKernel.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/ComputeGroupRes1GroupCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeGroupRes1GroupCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/ComputeGroupRes1GroupCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeGroupRes1GroupCUDAKernel.cu
+ obj/ComputeGroupRes2GroupCUDAKernel.o: \
+ 	obj/.exists \
+ 	src/ComputeGroupRes2GroupCUDAKernel.cu \
+@@ -10989,7 +10967,7 @@ obj/ComputeGroupRes2GroupCUDAKernel.o: \
+ 	src/Tensor.h \
+ 	src/CudaUtils.h \
+ 	src/ComputeCOMCudaKernel.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/ComputeGroupRes2GroupCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeGroupRes2GroupCUDAKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/ComputeGroupRes2GroupCUDAKernel.o $(COPTC) `$(NATIVEPATH) src/`ComputeGroupRes2GroupCUDAKernel.cu
+ obj/CudaComputeGBISKernel.o: \
+ 	obj/.exists \
+ 	src/CudaComputeGBISKernel.cu \
+@@ -11000,7 +10978,7 @@ obj/CudaComputeGBISKernel.o: \
+ 	src/CudaTileListKernel.hip.h \
+ 	src/DeviceCUDA.h \
+ 	src/ComputeGBIS.inl
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/CudaComputeGBISKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaComputeGBISKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/CudaComputeGBISKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaComputeGBISKernel.cu
+ obj/CudaComputeNonbondedKernel.o: \
+ 	obj/.exists \
+ 	src/CudaComputeNonbondedKernel.cu \
+@@ -11012,7 +10990,7 @@ obj/CudaComputeNonbondedKernel.o: \
+ 	src/CudaNonbondedTables.h \
+ 	src/DeviceCUDA.h \
+ 	src/CudaComputeNonbondedInteractions.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/CudaComputeNonbondedKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaComputeNonbondedKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/CudaComputeNonbondedKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaComputeNonbondedKernel.cu
+ obj/CudaComputeNonbondedKernelHip.o: \
+ 	obj/.exists \
+ 	src/CudaComputeNonbondedKernelHip.cu \
+@@ -11035,7 +11013,7 @@ obj/CudaComputeNonbondedKernelHip.o: \
+ 	src/CudaNonbondedTables.h \
+ 	src/DeviceCUDA.h \
+ 	src/CudaComputeNonbondedInteractions.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/CudaComputeNonbondedKernelHip.o $(COPTC) `$(NATIVEPATH) src/`CudaComputeNonbondedKernelHip.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/CudaComputeNonbondedKernelHip.o $(COPTC) `$(NATIVEPATH) src/`CudaComputeNonbondedKernelHip.cu
+ obj/CudaPmeSolverUtilKernel.o: \
+ 	obj/.exists \
+ 	src/CudaPmeSolverUtilKernel.cu \
+@@ -11043,7 +11021,7 @@ obj/CudaPmeSolverUtilKernel.o: \
+ 	src/CudaUtils.h \
+ 	src/CudaRecord.h \
+ 	src/CudaPmeSolverUtilKernel.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/CudaPmeSolverUtilKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaPmeSolverUtilKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/CudaPmeSolverUtilKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaPmeSolverUtilKernel.cu
+ obj/CudaTileListKernel.o: \
+ 	obj/.exists \
+ 	src/CudaTileListKernel.cu \
+@@ -11054,7 +11032,7 @@ obj/CudaTileListKernel.o: \
+ 	src/CudaRecord.h \
+ 	src/CudaNonbondedTables.h \
+ 	src/DeviceCUDA.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/CudaTileListKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaTileListKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/CudaTileListKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaTileListKernel.cu
+ obj/CudaTileListKernelHip.o: \
+ 	obj/.exists \
+ 	src/CudaTileListKernelHip.cu \
+@@ -11065,13 +11043,13 @@ obj/CudaTileListKernelHip.o: \
+ 	src/CudaRecord.h \
+ 	src/CudaNonbondedTables.h \
+ 	src/DeviceCUDA.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/CudaTileListKernelHip.o $(COPTC) `$(NATIVEPATH) src/`CudaTileListKernelHip.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/CudaTileListKernelHip.o $(COPTC) `$(NATIVEPATH) src/`CudaTileListKernelHip.cu
+ obj/DeviceCUDAkernel.o: \
+ 	obj/.exists \
+ 	src/DeviceCUDAkernel.cu \
+ 	src/CudaUtils.h \
+ 	src/HipDefines.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/DeviceCUDAkernel.o $(COPTC) `$(NATIVEPATH) src/`DeviceCUDAkernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/DeviceCUDAkernel.o $(COPTC) `$(NATIVEPATH) src/`DeviceCUDAkernel.cu
+ obj/MShakeKernel.o: \
+ 	obj/.exists \
+ 	src/MShakeKernel.cu \
+@@ -11079,7 +11057,7 @@ obj/MShakeKernel.o: \
+ 	src/MShakeKernel.h \
+ 	src/CudaUtils.h \
+ 	src/HipDefines.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/MShakeKernel.o $(COPTC) `$(NATIVEPATH) src/`MShakeKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/MShakeKernel.o $(COPTC) `$(NATIVEPATH) src/`MShakeKernel.cu
+ obj/CudaGlobalMasterServerKernel.o: \
+ 	obj/.exists \
+ 	src/CudaGlobalMasterServerKernel.cu \
+@@ -11096,7 +11074,7 @@ obj/CudaGlobalMasterServerKernel.o: \
+ 	src/CudaGlobalMasterServer.h \
+ 	src/Lattice.h \
+ 	src/Tensor.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/CudaGlobalMasterServerKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaGlobalMasterServerKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/CudaGlobalMasterServerKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaGlobalMasterServerKernel.cu
+ obj/CudaGlobalMasterClientKernel.o: \
+ 	obj/.exists \
+ 	src/CudaGlobalMasterClientKernel.cu \
+@@ -11105,7 +11083,13 @@ obj/CudaGlobalMasterClientKernel.o: \
+ 	src/HipDefines.h \
+ 	src/Vector.h \
+ 	src/common.h
+-	$(CUDACC) $(CUDACCOPTS) $(COPTO)obj/CudaGlobalMasterClientKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaGlobalMasterClientKernel.cu
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/CudaGlobalMasterClientKernel.o $(COPTC) `$(NATIVEPATH) src/`CudaGlobalMasterClientKernel.cu
++obj/colvarproxy_cudaglobalmaster_kernel.o: \
++	obj/.exists \
++	src/colvarproxy_cudaglobalmaster_kernel.cu \
++	src/colvarproxy_cudaglobalmaster_kernel.h \
++	src/HipDefines.h
++	$(CUDACC) $(CUDACCOPTS) $(COPTI)$(COLVARSINCDIR) $(COPTO)obj/colvarproxy_cudaglobalmaster_kernel.o $(COPTC) `$(NATIVEPATH) src/`colvarproxy_cudaglobalmaster_kernel.cu
+ obj/dcdplugin.o: \
+ 	obj/.exists \
+ 	plugins/molfile_plugin/src/dcdplugin.c \

@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 960f7718..85126dff 100644
+index cdd4eab2..fea69b30 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -231,6 +231,7 @@ OBJS = \
+@@ -239,12 +239,14 @@ OBJS = \
  	$(DSTDIR)/GlobalMasterTcl.o \
  	$(DSTDIR)/GlobalMasterSMD.o \
  	$(DSTDIR)/GlobalMasterTMD.o \
@@ -10,3 +10,34 @@ index 960f7718..85126dff 100644
  	$(DSTDIR)/Matrix4Symmetry.o \
  	$(DSTDIR)/GlobalMasterSymmetry.o \
  	$(DSTDIR)/GlobalMasterFreeEnergy.o \
+ 	$(DSTDIR)/GlobalMasterEasy.o \
+ 	$(DSTDIR)/GlobalMasterMisc.o \
+ 	$(DSTDIR)/colvarproxy_namd.o \
++	$(DSTDIR)/colvarproxy_cudaglobalmaster.o \
+ 	$(DSTDIR)/GridForceGrid.o \
+ 	$(DSTDIR)/GridforceGridCUDA.o \
+ 	$(DSTDIR)/GromacsTopFile.o \
+@@ -428,7 +430,9 @@ CUDAOBJSRAW = \
+ 	$(DSTDIR)/DeviceCUDAkernel.o \
+ 	$(DSTDIR)/MShakeKernel.o \
+ 	$(DSTDIR)/CudaGlobalMasterServerKernel.o \
+-	$(DSTDIR)/CudaGlobalMasterClientKernel.o
++	$(DSTDIR)/CudaGlobalMasterClientKernel.o \
++	$(DSTDIR)/colvarproxy_cudaglobalmaster_kernel.o \
++
+ 
+ CUDAOBJSRAWSTATIC = $(CUDAOBJSRAW) \
+ 	$(DSTDIR)/CudaPmeSolverUtilKernel_dlink.o
+@@ -765,9 +769,9 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
+ 	for i in $(CUDAOBJSRAW) ; do \
+ 	      SRCFILE=`basename $$i .o`.cu ; \
+ 	      $(ECHO) "checking dependencies for $(SRCDIR)/$$SRCFILE" ; \
+-	      g++ -D NAMD_NVCC -x c++ -std=c++17 -MM $(CUDA) $(SRCDIR)/$$SRCFILE | \
+-	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) /usr/include /usr/local $(CUDADIR) $(CUBDIR) >> $(DEPENDFILE); \
+-	      $(ECHO) '	$$(CUDACC) $$(CUDACCOPTS) $$(COPTO)'$$i '$$(COPTC)' \
++	      g++ -D NAMD_NVCC -x c++ -std=c++17 -MM $(COPTI)$(COLVARSINCDIR) $(CUDA) $(SRCDIR)/$$SRCFILE | \
++	      perl $(SRCDIR)/dc.pl $(CHARMINC) $(TCLDIR) $(FFTDIR) $(COLVARSINCDIR) /usr/include /usr/local $(CUDADIR) $(CUBDIR) >> $(DEPENDFILE); \
++	      $(ECHO) '	$$(CUDACC) $$(CUDACCOPTS) $$(COPTI)$$(COLVARSINCDIR) $$(COPTO)'$$i '$$(COPTC)' \
+ 		'`$$(NATIVEPATH) $(SRCDIR)/`'$$SRCFILE >> $(DEPENDFILE) ; \
+ 	done; \
+ 	for i in $(PLUGINOBJS) ; do \
