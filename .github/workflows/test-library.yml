@@ -596,3 +596,51 @@ jobs:
           path: |
             ${{ github.workspace }}/build_C++20/Testing/Temporary/*.log
             ${{ github.workspace }}/build_g++11_C++20/Testing/Temporary/*.log
+
+  build-linux-x86_64-self-hosted:
+    name: Linux x86_64 (self-hosted)
+    runs-on: [self-hosted, linux, x64]
+    needs: basicchecks
+    env:
+      CCACHE: ccache
+      CMAKE_GENERATOR: Ninja
+      CCACHE_DIR: ${{ github.workspace }}/ccache
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load compiler ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/ccache
+          key: ${{ runner.os }}-${{ runner.arch }}-self-hosted-build-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-self-hosted-build-
+
+      - name: Get small downloadable packages
+        uses: actions/checkout@v4
+        with:
+          repository: 'Colvars/build-tools-packages'
+          ref: 'master'
+          path: 'devel-tools/packages'
+
+      - name: Get container images for build environment
+        shell: bash
+        working-directory: devel-tools
+        run: |
+          apptainer pull CentOS9-devel.sif oras://ghcr.io/colvars/devel-containers:CentOS9-devel
+
+      - name: Build with C++17 and Clang
+        env:
+          CXX_STANDARD: 17
+          CXX: clang++
+          CC: clang
+        run: |
+          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
+
+      - name: Keep only one cache besides the one from this job
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-${{ runner.arch }}-self-hosted-build-
