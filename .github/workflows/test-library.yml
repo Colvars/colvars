@@ -599,6 +599,7 @@ jobs:
 
   build-linux-x86_64-self-hosted:
     name: Linux x86_64 (self-hosted)
+    if: github.repository_visibility == 'private'
     runs-on: [self-hosted, linux, x64]
     needs: basicchecks
     env:
