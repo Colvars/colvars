@@ -31,6 +31,7 @@
 
 class Controller;
 class GlobalMasterColvars;
+class GridforceFullMainGrid;
 class Random;
 class SimParameters;
 
@@ -52,21 +53,46 @@ public:
   int init_module(); // no override
 
   void init_tcl_pointers() override;
+  int setup() override;
+  int reset() override;
+
+  /// Get the target temperature from the NAMD thermostats supported so far
+  int update_target_temperature();
+
+  /// Create map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
+  void init_atoms_map();
+
+  /// Update map to reflect other requested atoms, including other GlobalMaster objects
+  int update_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);
+
+  /// Create and zero out data buffers for atoms requested through GlobalMaster
+  int setup_gm_atom_buffers();
+
+  /// Create and zero out data buffers for atom groups requested through GlobalMaster
+  int setup_gm_atom_group_buffers();
+
+  /// Create and zero out data buffers for grid objects requested through GlobalMaster
+  int setup_gm_volmap_buffers();
+
+  /// Read the current coordinates and total forces
+  void read_gm_atom_buffers();
+
+  /// Send Colvars forces to GlobalMaster
+  void send_gm_atom_forces();
 
 protected:
 
   /// Pointer to the parent GlobalMaster object
   GlobalMasterColvars *globalmaster = nullptr;
 
-  /// \brief Array of atom indices (relative to the colvarproxy arrays),
-  /// usedfor faster copy of atomic data
+  /// Map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
   std::vector<int> atoms_map;
 
   /// Pointer to the NAMD simulation input object
   SimParameters *simparams = nullptr;
 
   /// Pointer to Controller object
-  Controller const *controller;
+  Controller const *controller = nullptr;
 
   /// NAMD-style PRNG object
   std::unique_ptr<Random> random;
@@ -90,19 +116,6 @@ protected:
   void update_accelMD_info();
 
 public:
-
-  int setup() override;
-  int reset() override;
-
-  /// Get the target temperature from the NAMD thermostats supported so far
-  int update_target_temperature();
-
-  /// Allocate an atoms map with the same size as the NAMD topology
-  void init_atoms_map();
-
-  // synchronize the local arrays with requested or forced atoms
-  int update_atoms_map(AtomIDList::const_iterator begin,
-                       AtomIDList::const_iterator end);
 
   void calculate();
 
@@ -252,20 +265,28 @@ public:
 
   int check_volmaps_available() override;
 
-  int init_volmap_by_id(int volmap_id) override;
+  /// Select a MGridForces map for computation by NAMD
+  int request_engine_volmap_by_id(int volmap_id) override;
 
-  int init_volmap_by_name(const char *volmap_name) override;
+  /// Select a MGridForces map for computation by NAMD
+  int request_engine_volmap_by_name(std::string const &volmap_name) override;
 
-  int check_volmap_by_id(int volmap_id) override;
+  /// Add map to GlobalMaster client (if not already in them)
+  void request_globalmaster_volmap(int volmap_id);
 
-  int check_volmap_by_name(char const *volmap_name) override;
+  /// Select a MGridForces map for internal computation (frontend)
+  int init_internal_volmap_by_id(int volmap_id) override;
 
-  int get_volmap_id_from_name(char const *volmap_name) override;
+  /// Select a MGridForces map for internal computation (frontend)
+  int init_internal_volmap_by_name(std::string const &volmap_name) override;
 
-  void clear_volmap(int index) override;
+  /// Load a map internally independent from MGridForces
+  int load_internal_volmap_from_file(std::string const &filename) override;
+
+  int clear_volmap(int index) override;
 
   int compute_volmap(int flags,
-                     int volmap_id,
+                     int index,
                      cvm::atom_group* ag,
                      cvm::real *value,
                      cvm::real *atom_field) override;
@@ -312,6 +333,10 @@ public:
   /// Get energy derivative with respect to lambda
   int get_dE_dlambda(cvm::real* dE_dlambda);
 
+protected:
+
+  /// Pointers to internally managed maps (set to nullptr for maps loaded by NAMD)
+  std::vector<std::unique_ptr<GridforceFullMainGrid>> internal_gridforce_grids_;
 };
 
 

@@ -434,18 +434,66 @@ void colvarproxy_namd::calculate()
   }
 
   previous_NAMD_step = step;
+
   if (accelMDOn) update_accelMD_info();
 
-  auto *lattice = globalmaster->get_lattice();
-  boundaries_.set_boundaries(lattice->a_p(), lattice->b_p(), lattice->c_p(),
-                             cvm::rvector{lattice->a().x, lattice->a().y, lattice->a().z},
-                             cvm::rvector{lattice->b().x, lattice->b().y, lattice->b().z},
-                             cvm::rvector{lattice->c().x, lattice->c().y, lattice->c().z});
+  if (globalmaster) {
+    auto *lattice = globalmaster->get_lattice();
+    boundaries_.set_boundaries(lattice->a_p(), lattice->b_p(), lattice->c_p(),
+                               cvm::rvector{lattice->a().x, lattice->a().y, lattice->a().z},
+                               cvm::rvector{lattice->b().x, lattice->b().y, lattice->b().z},
+                               cvm::rvector{lattice->c().x, lattice->c().y, lattice->c().z});
+    read_gm_atom_buffers();
+  }
 
   if (cvm::debug()) {
-    cvmodule->log(std::string(cvm::line_marker)+
-             "colvarproxy_namd, step no. "+cvm::to_str(cvmodule->it)+"\n"+
-             "Updating atomic data arrays.\n");
+    print_input_atomic_data();
+  }
+  // call the collective variable module
+  if (cvmodule->calc() != COLVARS_OK) {
+    error("Error in the collective variables module.\n");
+  }
+
+  if (total_force_requested) {
+    // Total forces will be valid at the next step (this function is only called once)
+    set_total_forces_valid();
+  }
+
+  if (cvm::debug()) {
+    print_output_atomic_data();
+  }
+
+  if (globalmaster) {
+    send_gm_atom_forces();
+  }
+
+  // send MISC energy
+  #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
+  if(!simparams->CUDASOAintegrate) {
+    reduction->submit();
+  }
+  #else
+  #if !defined(NAMD_UNIFIED_REDUCTION)
+  reduction->submit();
+  #else
+  // submitReduction();
+  #endif
+  #endif
+
+  // NAMD does not destruct GlobalMaster objects, so we must remember
+  // to write all output files at the end of a run
+  if (step == simparams->N) {
+    post_run();
+  }
+
+}
+
+
+void colvarproxy_namd::read_gm_atom_buffers()
+{
+  if (cvm::debug()) {
+    cvmodule->log(std::string(cvm::line_marker) + "colvarproxy_namd, step no. " +
+             cvm::to_str(cvmodule->it) + "\n" + "Updating atomic data arrays from GlobalMaster.\n");
   }
 
   // must delete the forces applied at the previous step: we can do
@@ -596,25 +644,11 @@ void colvarproxy_namd::calculate()
     }
   }
 #endif
+}
 
-  if (cvm::debug()) {
-    print_input_atomic_data();
-  }
 
-  // call the collective variable module
-  if (cvmodule->calc() != COLVARS_OK) {
-    cvmodule->error("Error in the collective variables module.\n", COLVARS_ERROR);
-  }
-
-  if (total_force_requested) {
-    // Total forces will be valid at the next step (this function is only called once)
-    set_total_forces_valid();
-  }
-
-  if (cvm::debug()) {
-    print_output_atomic_data();
-  }
-
+void colvarproxy_namd::send_gm_atom_forces()
+{
   // communicate all forces to the MD integrator
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     cvm::rvector const &f = atoms_new_colvar_forces[i];
@@ -647,25 +681,6 @@ void colvarproxy_namd::calculate()
     }
   }
 #endif
-
-  // send MISC energy
-  #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
-  if(!simparams->CUDASOAintegrate) {
-    reduction->submit();
-  }
-  #else
-  #if !defined(NAMD_UNIFIED_REDUCTION)
-  reduction->submit();
-  #else
-  // submitReduction();
-  #endif
-  #endif
-
-  // NAMD does not destruct GlobalMaster objects, so we must remember
-  // to write all output files at the end of a run
-  if (step == simparams->N) {
-    post_run();
-  }
 }
 
 
@@ -729,9 +744,11 @@ void colvarproxy_namd::add_energy(cvm::real energy)
   #if !defined(NAMD_UNIFIED_REDUCTION)
   reduction->item(REDUCTION_MISC_ENERGY) += energy;
   #else
-  globalmaster->addReductionEnergyPublic(REDUCTION_MISC_ENERGY, energy);
-  #endif
-  #endif
+  if (globalmaster) {
+    globalmaster->addReductionEnergyPublic(REDUCTION_MISC_ENERGY, energy);
+  }
+#endif
+#endif
 }
 
 void colvarproxy_namd::request_total_force(bool yesno)
