@@ -902,53 +902,43 @@ cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
 
 
 
-enum e_pdb_field {
-  e_pdb_none,
-  e_pdb_occ,
-  e_pdb_beta,
-  e_pdb_x,
-  e_pdb_y,
-  e_pdb_z,
-  e_pdb_ntot
+enum class e_pdb_field {
+  none,
+  occ,
+  beta,
+  x,
+  y,
+  z,
+  ntot
 };
 
+namespace {
 
 e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
 {
-  e_pdb_field pdb_field = e_pdb_none;
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("O")) {
-    pdb_field = e_pdb_occ;
+  e_pdb_field pdb_field = e_pdb_field::none;
+  if (colvarparse::to_lower_cppstr(pdb_field_str) == colvarparse::to_lower_cppstr("O")) {
+    pdb_field = e_pdb_field::occ;
   }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("B")) {
-    pdb_field = e_pdb_beta;
+  if (colvarparse::to_lower_cppstr(pdb_field_str) == colvarparse::to_lower_cppstr("B")) {
+    pdb_field = e_pdb_field::beta;
   }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("X")) {
-    pdb_field = e_pdb_x;
+  if (colvarparse::to_lower_cppstr(pdb_field_str) == colvarparse::to_lower_cppstr("X")) {
+    pdb_field = e_pdb_field::x;
   }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("Y")) {
-    pdb_field = e_pdb_y;
+  if (colvarparse::to_lower_cppstr(pdb_field_str) == colvarparse::to_lower_cppstr("Y")) {
+    pdb_field = e_pdb_field::y;
   }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("Z")) {
-    pdb_field = e_pdb_z;
+  if (colvarparse::to_lower_cppstr(pdb_field_str) == colvarparse::to_lower_cppstr("Z")) {
+    pdb_field = e_pdb_field::z;
   }
-
-  if (pdb_field == e_pdb_none) {
-    cvm::error("Error: unsupported PDB field, \""+
-               pdb_field_str+"\".\n", COLVARS_INPUT_ERROR);
+  if (pdb_field == e_pdb_field::none) {
+    cvm::error("Error: unsupported PDB field, \"" + pdb_field_str + "\".\n", COLVARS_INPUT_ERROR);
   }
-
   return pdb_field;
 }
+
+} // namespace
 
 
 int colvarproxy_namd::load_coords_pdb(char const *pdb_filename,
@@ -986,19 +976,19 @@ int colvarproxy_namd::load_coords_pdb(char const *pdb_filename,
         double atom_pdb_field_value = 0.0;
 
         switch (pdb_field_index) {
-        case e_pdb_occ:
+        case e_pdb_field::occ:
           atom_pdb_field_value = (pdb->atom(ipdb))->occupancy();
           break;
-        case e_pdb_beta:
+        case e_pdb_field::beta:
           atom_pdb_field_value = (pdb->atom(ipdb))->temperaturefactor();
           break;
-        case e_pdb_x:
+        case e_pdb_field::x:
           atom_pdb_field_value = (pdb->atom(ipdb))->xcoor();
           break;
-        case e_pdb_y:
+        case e_pdb_field::y:
           atom_pdb_field_value = (pdb->atom(ipdb))->ycoor();
           break;
-        case e_pdb_z:
+        case e_pdb_field::z:
           atom_pdb_field_value = (pdb->atom(ipdb))->zcoor();
           break;
         default:
@@ -1081,19 +1071,19 @@ int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
     double atom_pdb_field_value = 0.0;
 
     switch (pdb_field_index) {
-    case e_pdb_occ:
+    case e_pdb_field::occ:
       atom_pdb_field_value = (pdb->atom(ipdb))->occupancy();
       break;
-    case e_pdb_beta:
+    case e_pdb_field::beta:
       atom_pdb_field_value = (pdb->atom(ipdb))->temperaturefactor();
       break;
-    case e_pdb_x:
+    case e_pdb_field::x:
       atom_pdb_field_value = (pdb->atom(ipdb))->xcoor();
       break;
-    case e_pdb_y:
+    case e_pdb_field::y:
       atom_pdb_field_value = (pdb->atom(ipdb))->ycoor();
       break;
-    case e_pdb_z:
+    case e_pdb_field::z:
       atom_pdb_field_value = (pdb->atom(ipdb))->zcoor();
       break;
     default:
