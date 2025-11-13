@@ -31,7 +31,6 @@
 
 class Controller;
 class GlobalMasterColvars;
-class GridforceFullMainGrid;
 class Random;
 class SimParameters;
 
@@ -204,14 +203,14 @@ public:
 
   void update_atom_properties(int index);
 
-  enum e_pdb_field {
-    e_pdb_none,
-    e_pdb_occ,
-    e_pdb_beta,
-    e_pdb_x,
-    e_pdb_y,
-    e_pdb_z,
-    e_pdb_ntot
+  enum class e_pdb_field {
+    none,
+    occ,
+    beta,
+    x,
+    y,
+    z,
+    ntot
   };
 
   e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str);
@@ -241,28 +240,20 @@ public:
 
   int check_volmaps_available() override;
 
-  /// Select a MGridForces map for computation by NAMD
-  int request_engine_volmap_by_id(int volmap_id) override;
+  int init_volmap_by_id(int volmap_id) override;
 
-  /// Select a MGridForces map for computation by NAMD
-  int request_engine_volmap_by_name(std::string const &volmap_name) override;
+  int init_volmap_by_name(const char *volmap_name) override;
 
-  /// Add map to GlobalMaster client (if not already in them)
-  void request_globalmaster_volmap(int volmap_id);
+  int check_volmap_by_id(int volmap_id) override;
 
-  /// Select a MGridForces map for internal computation (frontend)
-  int init_internal_volmap_by_id(int volmap_id) override;
+  int check_volmap_by_name(char const *volmap_name) override;
 
-  /// Select a MGridForces map for internal computation (frontend)
-  int init_internal_volmap_by_name(std::string const &volmap_name) override;
+  int get_volmap_id_from_name(char const *volmap_name) override;
 
-  /// Load a map internally independent from MGridForces
-  int load_internal_volmap_from_file(std::string const &filename) override;
-
-  int clear_volmap(int index) override;
+  void clear_volmap(int index) override;
 
   int compute_volmap(int flags,
-                     int index,
+                     int volmap_id,
                      cvm::atom_group* ag,
                      cvm::real *value,
                      cvm::real *atom_field) override;
@@ -309,10 +300,6 @@ public:
   /// Get energy derivative with respect to lambda
   int get_dE_dlambda(cvm::real* dE_dlambda);
 
-protected:
-
-  /// Pointers to internally managed maps (set to nullptr for maps loaded by NAMD)
-  std::vector<std::unique_ptr<GridforceFullMainGrid>> internal_gridforce_grids_;
 };
 
 
