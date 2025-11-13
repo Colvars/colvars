@@ -1,6 +1,8 @@
 #ifndef COLVARPROXY_CUDAGLOBALMASTER_H
 #define COLVARPROXY_CUDAGLOBALMASTER_H
 
+#if defined(NAMD_CUDA) || defined(NAMD_HIP)
+
 #include "CudaGlobalMasterClient.h"
 #include <string>
 #include <vector>
@@ -80,5 +82,7 @@ private:
   std::vector<AtomID> mEmpty;
   std::string mTCLResult;
 };
+
+#endif // #if defined(NAMD_CUDA) || defined(NAMD_HIP)
 
 #endif // COLVARPROXY_CUDAGLOBALMASTER_H

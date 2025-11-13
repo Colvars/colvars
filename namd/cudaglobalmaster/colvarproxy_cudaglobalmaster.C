@@ -1,3 +1,5 @@
+#if defined(NAMD_CUDA) || defined(NAMD_HIP)
+
 #include "CudaGlobalMasterClient.h"
 #include "colvar_gpu_support.h"
 #include "colvarproxy_cudaglobalmaster.h"
@@ -12,6 +14,7 @@
 #include "colvaratoms.h"
 #include "ScriptTcl.h"
 #include "colvarscript.h"
+
 
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
 #include <nvtx3/nvToolsExt.h>
@@ -1159,3 +1162,5 @@ int CudaGlobalMasterColvars::updateFromTCLCommand(const std::vector<std::string>
   delete[] objv;
   return error_code;
 }
+
+#endif // #if defined(NAMD_CUDA) || defined(NAMD_HIP)
