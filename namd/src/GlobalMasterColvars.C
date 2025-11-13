@@ -1,11 +1,8 @@
 // -*- c++ -*-
 
-#include "Controller.h"
-#include "DataExchanger.h"
 #include "GlobalMaster.h"
 #include "GlobalMasterColvars.h"
 #include "colvarproxy_namd.h"
-#include "converse.h"
 
 
 GlobalMasterColvars::GlobalMasterColvars() : proxy(new colvarproxy_namd(this)) {}
