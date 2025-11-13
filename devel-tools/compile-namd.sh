@@ -139,6 +139,10 @@ EOF
     if pushd ${dirname} ; then
         make -j$(nproc --all)
         ret_code=$?
+        if [ ${ret_code} == 0 ] && [ -d colvars/namd/cudaglobalmaster ] && echo "${label}" | grep -q "cuda" ; then
+            make -j$(nproc --all) libcudaglobalmastercolvars.so
+            ret_code=$?
+        fi
         popd
     else
         ret_code=1
