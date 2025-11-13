@@ -11,8 +11,6 @@ jobs:
 
     name: Basic checks
     runs-on: ubuntu-latest
-    outputs:
-      hassecrets: ${{ steps.checksecrets.outputs.hassecrets }}
     # env:
     #   CCACHE: ccache
     #   CCACHE_DIR: ${{ github.workspace }}/ccache
@@ -542,6 +540,7 @@ jobs:
       - name: Build and test library with CMake
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Darwin -P devel-tools/build_test_library.cmake
+
 
   build-linux-ARM64-gcc:
     name: Linux ARM64 (GCC, Clang)
