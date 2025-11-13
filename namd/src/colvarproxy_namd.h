@@ -19,18 +19,15 @@
 
 #include "colvarproxy_namd_version.h"
 
-#include "Vector.h"
-#include "ResizeArray.h"
-#include "NamdTypes.h"
-#include "SimParameters.h"
-#include "Lattice.h"
-#include "GlobalMaster.h"
-#include "Random.h"
-#include "ConfigList.h"
-
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarvalue.h"
+
+
+class Controller;
+class GlobalMasterColvars;
+class Random;
+class SimParameters;
 
 
 /// Communication between colvars and NAMD (implementation of \link colvarproxy \endlink)
@@ -52,7 +49,7 @@ protected:
   Controller const *controller;
 
   /// NAMD-style PRNG object
-  Random random;
+  std::unique_ptr<Random> random;
 
   bool first_timestep;
   cvm::step_number previous_NAMD_step;
@@ -113,18 +110,11 @@ public:
                                    std::vector<const colvarvalue *> const &cvcs,
                                    std::vector<cvm::matrix2d<cvm::real> > &gradient) override;
 
-  cvm::real rand_gaussian() override
-  {
-    return random.gaussian();
-  }
+  cvm::real rand_gaussian() override;
 
-  cvm::real get_accelMD_factor() const override {
-    return amd_weight_factor;
-  }
+  cvm::real get_accelMD_factor() const override;
 
-  bool accelMD_enabled() const override {
-    return accelMDOn;
-  }
+  bool accelMD_enabled() const override;
 
 #if CMK_SMP && USE_CKLOOP
   colvarproxy::smp_mode_t get_smp_mode() const override;
