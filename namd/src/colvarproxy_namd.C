@@ -433,24 +433,91 @@ void colvarproxy_namd::calculate()
   }
 
   previous_NAMD_step = step;
+
   if (accelMDOn) update_accelMD_info();
 
-  auto *lattice = globalmaster->get_lattice();
+  update_lattice();
 
-  {
-    Vector const a = lattice->a();
-    Vector const b = lattice->b();
-    Vector const c = lattice->c();
-    unit_cell_x.set(a.x, a.y, a.z);
-    unit_cell_y.set(b.x, b.y, b.z);
-    unit_cell_z.set(c.x, c.y, c.z);
+  if (globalmaster) {
+    read_gm_atom_buffers();
   }
 
-  if (!lattice->a_p() && !lattice->b_p() && !lattice->c_p()) {
+  if (cvm::debug()) {
+    print_input_atomic_data();
+  }
+  // call the collective variable module
+  if (cvmodule->calc() != COLVARS_OK) {
+    error("Error in the collective variables module.\n");
+  }
+
+  if (total_force_requested) {
+    // Total forces will be valid at the next step (this function is only called once)
+    set_total_forces_valid();
+  }
+
+  if (cvm::debug()) {
+    print_output_atomic_data();
+  }
+
+  if (globalmaster) {
+    send_gm_atom_forces();
+  }
+
+  // send MISC energy
+  #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
+  if(!simparams->CUDASOAintegrate) {
+    reduction->submit();
+  }
+  #else
+  #if !defined(NAMD_UNIFIED_REDUCTION)
+  reduction->submit();
+  #else
+  // submitReduction();
+  #endif
+  #endif
+
+  // NAMD does not destruct GlobalMaster objects, so we must remember
+  // to write all output files at the end of a run
+  if (step == simparams->N) {
+    post_run();
+  }
+
+}
+
+
+void colvarproxy_namd::update_lattice()
+{
+  if (globalmaster) {
+    // Copy the Lattice object
+    auto *l = globalmaster->get_lattice();
+    if (!l) {
+      boundaries_type = boundaries_unsupported;
+      return;
+    }
+    if (!l->a_p() && !l->b_p() && !l->c_p()) {
+      boundaries_type = boundaries_non_periodic;
+      reset_pbc_lattice();
+      return;
+    } else {
+      lattice.set(l->a(), l->b(), l->c(), l->origin());
+    }
+  }
+
+  unit_cell_x.set(lattice.a().x, lattice.a().y, lattice.a().z);
+  unit_cell_y.set(lattice.b().x, lattice.b().y, lattice.b().z);
+  unit_cell_z.set(lattice.c().x, lattice.c().y, lattice.c().z);
+
+  if (cvm::debug()) {
+    cvmodule->log("unit_cell_x = " + cvm::to_str(unit_cell_x));
+    cvmodule->log("unit_cell_y = " + cvm::to_str(unit_cell_y));
+    cvmodule->log("unit_cell_z = " + cvm::to_str(unit_cell_z));
+  }
+
+  if (!lattice.a_p() && !lattice.b_p() && !lattice.c_p()) {
     boundaries_type = boundaries_non_periodic;
     reset_pbc_lattice();
-  } else if (lattice->a_p() && lattice->b_p() && lattice->c_p()) {
-    if (lattice->orthogonal()) {
+  } else if (lattice.a_p() && lattice.b_p() && lattice.c_p()) {
+    if (lattice.orthogonal()) {
       boundaries_type = boundaries_pbc_ortho;
     } else {
       boundaries_type = boundaries_pbc_triclinic;
@@ -459,11 +526,14 @@ void colvarproxy_namd::calculate()
   } else {
     boundaries_type = boundaries_unsupported;
   }
+}
 
+
+void colvarproxy_namd::read_gm_atom_buffers()
+{
   if (cvm::debug()) {
-    cvmodule->log(std::string(cvm::line_marker)+
-             "colvarproxy_namd, step no. "+cvm::to_str(cvmodule->it)+"\n"+
-             "Updating atomic data arrays.\n");
+    cvmodule->log(std::string(cvm::line_marker) + "colvarproxy_namd, step no. " +
+             cvm::to_str(cvmodule->it) + "\n" + "Updating atomic data arrays from GlobalMaster.\n");
   }
 
   // must delete the forces applied at the previous step: we can do
@@ -614,25 +684,11 @@ void colvarproxy_namd::calculate()
     }
   }
 #endif
+}
 
-  if (cvm::debug()) {
-    print_input_atomic_data();
-  }
 
-  // call the collective variable module
-  if (cvmodule->calc() != COLVARS_OK) {
-    cvmodule->error("Error in the collective variables module.\n", COLVARS_ERROR);
-  }
-
-  if (total_force_requested) {
-    // Total forces will be valid at the next step (this function is only called once)
-    set_total_forces_valid();
-  }
-
-  if (cvm::debug()) {
-    print_output_atomic_data();
-  }
-
+void colvarproxy_namd::send_gm_atom_forces()
+{
   // communicate all forces to the MD integrator
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     cvm::rvector const &f = atoms_new_colvar_forces[i];
@@ -665,25 +721,6 @@ void colvarproxy_namd::calculate()
     }
   }
 #endif
-
-  // send MISC energy
-  #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
-  if(!simparams->CUDASOAintegrate) {
-    reduction->submit();
-  }
-  #else
-  #if !defined(NAMD_UNIFIED_REDUCTION)
-  reduction->submit();
-  #else
-  // submitReduction();
-  #endif
-  #endif
-
-  // NAMD does not destruct GlobalMaster objects, so we must remember
-  // to write all output files at the end of a run
-  if (step == simparams->N) {
-    post_run();
-  }
 }
 
 
@@ -747,9 +784,11 @@ void colvarproxy_namd::add_energy(cvm::real energy)
   #if !defined(NAMD_UNIFIED_REDUCTION)
   reduction->item(REDUCTION_MISC_ENERGY) += energy;
   #else
-  globalmaster->addReductionEnergyPublic(REDUCTION_MISC_ENERGY, energy);
-  #endif
-  #endif
+  if (globalmaster) {
+    globalmaster->addReductionEnergyPublic(REDUCTION_MISC_ENERGY, energy);
+  }
+#endif
+#endif
 }
 
 void colvarproxy_namd::request_total_force(bool yesno)
@@ -942,8 +981,7 @@ cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
 {
   Position const p1(pos1.x, pos1.y, pos1.z);
   Position const p2(pos2.x, pos2.y, pos2.z);
-  // return p2 - p1
-  Vector const d = lattice->delta(p2, p1);
+  Vector const d = (boundaries_type == boundaries_non_periodic) ? (p2 - p1) : lattice.delta(p2, p1);
   return cvm::rvector(d.x, d.y, d.z);
 }
 
