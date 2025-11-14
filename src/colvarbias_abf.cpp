@@ -179,12 +179,13 @@ int colvarbias_abf::init(std::string const &conf)
   {
     /// Optional custom configuration string for grid parameters
     std::string grid_conf;
+    cvm::real smoothing;
     key_lookup(conf, "grid", &grid_conf);
     if (get_keyval(conf, "smoothing", smoothing) && smoothing > 0.0) {
       // Doing smoothed ABF
       b_smoothed = true;
       weights.reset(new colvar_grid_scalar(colvars, grid_conf));
-      gradients.reset(new colvar_grid_gradient(colvars, weights));
+      gradients.reset(new colvar_grid_gradient(colvars, weights,nullptr));
       weights->has_parent_data = true;
     } else {
       // Doing standard discretized ABF
@@ -224,7 +225,7 @@ int colvarbias_abf::init(std::string const &conf)
     z_samples->request_actual_value();
     z_gradients.reset(new colvar_grid_gradient(colvars, z_samples));
     z_gradients->request_actual_value();
-    czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
+    czar_gradients.reset(new colvar_grid_gradient(colvars, samples, nullptr));
   }
 
   get_keyval(conf, "integrate", b_integrate, num_variables() <= 3); // Integrate for output if d<=3
@@ -259,7 +260,7 @@ int colvarbias_abf::init(std::string const &conf)
     // Allocate grids for collected global data, on replica 0 only
     global_z_samples.reset(new colvar_grid_count(colvars, samples));
     global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-    global_czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
+    global_czar_gradients.reset(new colvar_grid_gradient(colvars, samples, nullptr));
     global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
   } else {
     // otherwise they are just aliases for the local CZAR grids
@@ -696,8 +697,9 @@ int colvarbias_abf::replica_share_CZAR() {
       // Allocate grids for collective data, on replica 0 only
       // overriding CZAR grids that are equal to local ones by default
       global_z_samples.reset(new colvar_grid_count(colvars, samples));
-      global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-      global_czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
+      global_z_gradients = std::make_shared<colvar_grid_gradient>(colvars, global_z_samples);
+      global_czar_gradients.reset(new colvar_grid_gradient(colvars, samples, nullptr)); //TODO: ask if there's not a problem ?
+       // shouldn't samples and nullptr be inversed ?
       global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
     }
 
