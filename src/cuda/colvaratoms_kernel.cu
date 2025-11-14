@@ -1031,7 +1031,7 @@ int accumulate_cpu_force(
     &d_atoms_force_z,
     &num_atoms};
   cudaKernelNodeParams kernelNodeParams = {0};
-  kernelNodeParams.func           = (void*)accumulate_cpu_force;
+  kernelNodeParams.func           = (void*)accumulate_cpu_force_kernel;
   kernelNodeParams.gridDim        = dim3(num_blocks, 1, 1);
   kernelNodeParams.blockDim       = dim3(block_size, 1, 1);
   kernelNodeParams.sharedMemBytes = 0;
