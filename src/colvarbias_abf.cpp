@@ -179,6 +179,7 @@ int colvarbias_abf::init(std::string const &conf)
   {
     /// Optional custom configuration string for grid parameters
     std::string grid_conf;
+    cvm::real smoothing;
     key_lookup(conf, "grid", &grid_conf);
     if (get_keyval(conf, "smoothing", smoothing) && smoothing > 0.0) {
       // Doing smoothed ABF
@@ -575,7 +576,7 @@ int colvarbias_abf::replica_share() {
     // in which case local arrays have not been initialized yet
     local_samples.reset(new colvar_grid_count(colvars, samples));
     local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
-    local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted));
+    local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
   }
   // Calculate the delta gradient and count for the local replica
   last_gradients->delta_grid(*gradients);
