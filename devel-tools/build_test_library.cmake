@@ -18,6 +18,15 @@ if(EXISTS "/opt/libtorch")
   endif()
 endif()
 
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebinfo)
+endif()
+
+if(TRAP_FPE)
+  message("Trapping floating-point exceptions in functional tests")
+  set(DEFINE_TRAP_FPE "-DCOLVARS_TRAP_FPE=ON")
+endif()
+
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 11)
 endif()
@@ -121,16 +130,24 @@ if(NOT DEFINED ENV{CXX})
   endif()
 endif()
 
+# See https://stackoverflow.com/questions/26836361/check-if-generating-a-visual-studio-solution-or-makefile-from-cmake
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+  # TODO: Here I assume that MSVC is used on Windows, but it may not always be true
+  # Workaround for https://gitlab.kitware.com/cmake/cmake/-/issues/27116
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /GR")
+endif()
+
 execute_process(
   COMMAND ${CMAKE_COMMAND}
   -S cmake
   -B ${BUILD_DIR}
   -D COLVARS_DEBUG=${COLVARS_DEBUG}
-  -D CMAKE_BUILD_TYPE=RelWithDebinfo
+  -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
   -D WARNINGS_ARE_ERRORS=ON
   -D CMAKE_VERBOSE_MAKEFILE=ON
   -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+  -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
   ${DEFINE_CXX_COMPILER}
   ${DEFINE_CC_CCACHE}
   ${DEFINE_CXX_CCACHE}
@@ -140,6 +157,7 @@ execute_process(
   ${DEFINE_TCL_LIBRARY}
   ${DEFINE_TORCH}
   ${DEFINE_TORCH_PREFIX}
+  ${DEFINE_TRAP_FPE}
   -D COLVARS_LEPTON=${COLVARS_LEPTON}
   -D LEPTON_DIR=${LEPTON_DIR}
   -D CMAKE_PREFIX_PATH="/opt/libtorch/share/cmake"

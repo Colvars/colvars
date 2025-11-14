@@ -701,7 +701,10 @@ void colvar::cvc::debug_gradients()
 
         cvm::real const num_diff = 0.5 * (x_1 - x_2);
         cvm::real const dx_pred = cvm::debug_gradients_step_size * gradients[ia][id];
-        cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
+        cvm::real norm = (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
+        cvm::real const eps = 1.e-14;
+        if (norm < eps) norm = eps;
+        cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / norm;
         cvm::main()->record_gradient_error(rel_error);
 
         cvm::log("Atom "+cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
