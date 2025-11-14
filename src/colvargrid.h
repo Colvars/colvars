@@ -1562,7 +1562,7 @@ public:
   }
     /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
-  inline void acc_abf_force(std::vector<colvarvalue> const &cv,
+  inline void acc_abf_force(std::vector<colvarvalue> const &cv_value,
                         cvm::real const *force,
                         bool b_smoothed,
                         cvm::real smoothing) {
@@ -1577,12 +1577,12 @@ public:
 
       case 1:
         // for cosine-based function, non-zero between -smoothing and +smoothing
-        imin = value_to_bin_scalar(cv[0], 0) - int(smoothing);
-        imax = value_to_bin_scalar(cv[0], 0) + int(smoothing);
+        imin = value_to_bin_scalar(cv_value[0], 0) - int(smoothing);
+        imax = value_to_bin_scalar(cv_value[0], 0) + int(smoothing);
         for (i = imin; i <= imax; i++) {
           // Delta is the distance from the center of bin i to the current cv value
           // Smoothing is expressed in units of width
-          cvm::real delta = (cv[0] - bin_to_value_scalar(i, 0)) / (smoothing * widths[0]);
+          cvm::real delta = (cv_value[0] - bin_to_value_scalar(i, 0)) / (smoothing * widths[0]);
           // weight function has integral dx, same as the discrete case (function equal to 1 over one bin)
           cvm::real fact = 0.5 * (cos(delta * PI) + 1.) / smoothing;
           bin[0] = i;
@@ -1592,16 +1592,16 @@ public:
 
       case 2:
         // for cosine-based function, non-zero between -smoothing and +smoothing
-        imin = value_to_bin_scalar(cv[0], 0) - int(smoothing);
-        imax = value_to_bin_scalar(cv[0], 0) + int(smoothing);
-        jmin = value_to_bin_scalar(cv[1], 1) - int(smoothing);
-        jmax = value_to_bin_scalar(cv[1], 1) + int(smoothing);
+        imin = value_to_bin_scalar(cv_value[0], 0) - int(smoothing);
+        imax = value_to_bin_scalar(cv_value[0], 0) + int(smoothing);
+        jmin = value_to_bin_scalar(cv_value[1], 1) - int(smoothing);
+        jmax = value_to_bin_scalar(cv_value[1], 1) + int(smoothing);
         for (i = imin; i <= imax; i++) {
           for (j = jmin; j <= jmax; j++) {
             // Delta is the distance from the center of bin i,j to the current cv value
             // Smoothing is expressed in units of width
-            cvm::real delta0 = (cv[0] - bin_to_value_scalar(i, 0)) / (widths[0]);
-            cvm::real delta1 = (cv[1] - bin_to_value_scalar(j, 1)) / (widths[1]);
+            cvm::real delta0 = (cv_value[0] - bin_to_value_scalar(i, 0)) / (widths[0]);
+            cvm::real delta1 = (cv_value[1] - bin_to_value_scalar(j, 1)) / (widths[1]);
             cvm::real delta = sqrt(delta0 * delta0 + delta1 * delta1) / smoothing;
             // weight function has integral dx, same as the discrete case (function equal to 1 over one bin)
             cvm::real fact = 0.5 * (cos(delta * PI) + 1.) / (smoothing * smoothing);
