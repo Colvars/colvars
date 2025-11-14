@@ -1405,6 +1405,10 @@ public:
     }
     return sqrt(sum2 / this->data.size());
   };
+  void increase(std::vector<int> const &ix, cvm::real fact)
+  {
+    this->data[this->address(ix)] += fact;
+  }
 };
 
 
@@ -1436,19 +1440,19 @@ public:
   //                      std::string config = std::string());
 
   /// Constructor from a multicol file
-  colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in = nullptr);
-  colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_scalar> weights_in = nullptr);
+  explicit colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in = nullptr);
+  explicit colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_scalar> weights_in= nullptr);
 
 
-  /// Constructor from a vector of colvars and a pointer to the count grid, with extra params
-  colvar_grid_gradient(std::vector<colvar *> &colvars,
+  /// Constructor from a vector of colvars and a pointer to the count grid
+  explicit colvar_grid_gradient(std::vector<colvar *> &colvars,
                        std::shared_ptr<colvar_grid_count> samples_in = nullptr,
                        std::shared_ptr<const colvar_grid_params> params = nullptr,
                        std::string config = std::string());
-  colvar_grid_gradient(std::vector<colvar *> &colvars,
+  explicit  colvar_grid_gradient(std::vector<colvar *> &colvars,
                        std::shared_ptr<colvar_grid_scalar> weights_in,
-                       std::shared_ptr<const colvar_grid_params> params,
-                       std::string config);
+                       std::shared_ptr<const colvar_grid_params> params = nullptr,
+                       std::string config = std::string());
 
 
   /// Parameters for smoothing data with low sampling
@@ -1551,9 +1555,73 @@ public:
       data[address(ix) + imult] -= forces[imult] * fact;
     }
     if (samples)
-      samples->incr_count(ix);
-    if (b_smoothed && weights) {
-      weights->incr_weight(ix,fact);
+      samples->increase(ix, fact);
+    else if (b_smoothed && weights) {
+      weights->increase(ix,fact);
+    }
+  }
+    /// \brief Accumulate the gradient based on the force (i.e. sums the
+  /// opposite of the force)
+  inline void acc_abf_force(std::vector<colvarvalue> const &cv,
+                        cvm::real const *force,
+                        bool b_smoothed,
+                        cvm::real smoothing) {
+
+    int i, imin, imax, j, jmin, jmax;
+    std::vector<int> bin(nd, 0);
+
+    if (b_smoothed) { // Distribute over smoothing function (cosine)
+      // Separate out 1D and 2D cases, as walking an arbitrary dimension grid
+      // is a little more complicated (see abf_integrate for an example)
+      switch (nd) {
+
+      case 1:
+        // for cosine-based function, non-zero between -smoothing and +smoothing
+        imin = value_to_bin_scalar(cv[0], 0) - int(smoothing);
+        imax = value_to_bin_scalar(cv[0], 0) + int(smoothing);
+        for (i = imin; i <= imax; i++) {
+          // Delta is the distance from the center of bin i to the current cv value
+          // Smoothing is expressed in units of width
+          cvm::real delta = (cv[0] - bin_to_value_scalar(i, 0)) / (smoothing * widths[0]);
+          // weight function has integral dx, same as the discrete case (function equal to 1 over one bin)
+          cvm::real fact = 0.5 * (cos(delta * PI) + 1.) / smoothing;
+          bin[0] = i;
+          acc_force(bin, force, true, fact);
+        }
+        break;
+
+      case 2:
+        // for cosine-based function, non-zero between -smoothing and +smoothing
+        imin = value_to_bin_scalar(cv[0], 0) - int(smoothing);
+        imax = value_to_bin_scalar(cv[0], 0) + int(smoothing);
+        jmin = value_to_bin_scalar(cv[1], 1) - int(smoothing);
+        jmax = value_to_bin_scalar(cv[1], 1) + int(smoothing);
+        for (i = imin; i <= imax; i++) {
+          for (j = jmin; j <= jmax; j++) {
+            // Delta is the distance from the center of bin i,j to the current cv value
+            // Smoothing is expressed in units of width
+            cvm::real delta0 = (cv[0] - bin_to_value_scalar(i, 0)) / (widths[0]);
+            cvm::real delta1 = (cv[1] - bin_to_value_scalar(j, 1)) / (widths[1]);
+            cvm::real delta = sqrt(delta0 * delta0 + delta1 * delta1) / smoothing;
+            // weight function has integral dx, same as the discrete case (function equal to 1 over one bin)
+            cvm::real fact = 0.5 * (cos(delta * PI) + 1.) / (smoothing * smoothing);
+            bin[0] = i;
+            bin[1] = j;
+            acc_force(bin, force, true, fact);
+          }
+        }
+        break;
+
+      default:
+        cvm::error("Error: smoothed ABF is not implemented for dimension > 2.\n");
+        return;
+      }
+
+    } else {
+      for (size_t i = 0; i < nd; i++) {
+        bin[i] = current_bin_scalar(i);
+      }
+      acc_force(bin, force);
     }
   }
 

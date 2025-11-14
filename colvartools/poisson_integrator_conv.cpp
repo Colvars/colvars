@@ -17,7 +17,8 @@ int main (int argc, char *argv[]) {
   proxy->colvars = new colvarmodule(proxy); // This could be omitted if we used the colvarproxy_stub class
 
   std::string gradfile (argv[1]);
-  std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
+  std::shared_ptr<colvar_grid_count> const nullpointer = nullptr;
+  std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile, nullpointer);
   if (cvm::get_error()) { return -1; }
 
   cvm::real err = 1.;

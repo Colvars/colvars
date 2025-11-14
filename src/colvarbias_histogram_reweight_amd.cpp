@@ -33,9 +33,10 @@ int colvarbias_reweightaMD::init(std::string const &conf) {
   grid_count.reset(new colvar_grid_scalar(colvars, nullptr, false, grid_conf));
   grid_count->request_actual_value();
   grid->request_actual_value();
+  std::shared_ptr<colvar_grid_count> nullpointer =  nullptr;
   pmf_grid_exp_avg.reset(new colvar_grid_scalar(colvars, grid_count));
   if (b_write_gradients) {
-    grad_grid_exp_avg.reset(new colvar_grid_gradient(colvars, nullptr, grid_count));
+    grad_grid_exp_avg.reset(new colvar_grid_gradient(colvars, nullpointer, grid_count));
   }
   if (b_use_cumulant_expansion) {
     grid_dV.reset(new colvar_grid_scalar(colvars, grid_count));
@@ -44,7 +45,7 @@ int colvarbias_reweightaMD::init(std::string const &conf) {
     grid_dV->request_actual_value();
     grid_dV_square->request_actual_value();
     if (b_write_gradients) {
-      grad_grid_cumulant.reset(new colvar_grid_gradient(colvars, nullptr, grid_count));
+      grad_grid_cumulant.reset(new colvar_grid_gradient(colvars, nullpointer, grid_count));
     }
   }
   previous_bin.assign(num_variables(), -1);
