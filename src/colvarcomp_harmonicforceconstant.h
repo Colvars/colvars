@@ -23,9 +23,6 @@ public:
   virtual int init(std::string const &conf);
   virtual ~cvc_harmonicforceconstant() {}
 
-  /// Called after all colvars and biases are initialized to link to the target restraint.
-  virtual int link_bias(colvarmodule *cvm, colvar *cv);
-
   virtual void calc_value();
   virtual void calc_gradients();
   
@@ -40,18 +37,21 @@ public:
   
   /// Returns the exponent used for scaling the force constant.
   cvm::real get_k_exponent() const { return k_exponent; }
+  
+  /// \brief Returns the name of the harmonic bias this CVC is configured to control.
+  std::string const& get_harmonic_bias_name() const { return harmonic_bias_name; }
+  
+  void set_parent(colvar* p) { parent = p; }
 
 protected:
   /// The name of the harmonic bias to be controlled.
   std::string harmonic_bias_name;
-  /// A pointer to the instance of the harmonic bias.
-  colvarbias_restraint *harmonic_bias;
-  
+
   /// Exponent 'n' for the force constant scaling, k = k_max * lambda^n.
   cvm::real k_exponent = 1.0;
   
-  /// Flag to ensure the link_bias function is executed only once.
-  bool is_linked;
+  colvar* parent = nullptr;
+  
 };
 
 #endif

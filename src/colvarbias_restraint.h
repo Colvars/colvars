@@ -41,10 +41,6 @@ public:
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
   
-  /// \brief Allow a harmonicForceConstant CV to register itself for controlling this restraint.
-  /// \param cv Pointer to the controlling colvar.
-  void set_dynamic_k_cv(colvar *cv);
-  
   /// \brief Allow a harmonicForceConstant CV to retrieve the calculated thermodynamic force.
   /// \return The thermodynamic force, defined as -dU/d_lambda.
   cvm::real get_k_derivative() const;
@@ -104,6 +100,7 @@ public:
   colvarbias_restraint_k(char const *key);
   virtual int init(std::string const &conf);
   virtual int change_configuration(std::string const &conf);
+  cvm::real get_force_k() const { return force_k; }
 
 protected:
 
@@ -303,6 +300,10 @@ public:
   virtual std::ostream & write_traj(std::ostream &os);
   virtual int change_configuration(std::string const &conf);
   virtual cvm::real energy_difference(std::string const &conf);
+  
+  /// \brief Calculate the derivative of the potential energy with respect to the effective force constant.
+  /// This is needed by the controlling harmonicForceConstant CV.
+  cvm::real get_dU_d_k_eff() const;
 
 protected:
 

@@ -112,9 +112,6 @@ public:
     }
     cv_features.clear();
   }
-
-  /// \brief Link this colvar's components to any required biases
-  int link_biases(colvarmodule *cvm);
   
   /// \brief Get a pointer to the i-th component (CVC)
   cvc* get_cvc_ptr(size_t index);

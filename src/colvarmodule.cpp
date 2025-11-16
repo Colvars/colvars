@@ -352,14 +352,6 @@ int colvarmodule::parse_config(std::string &conf)
     return get_error();
   }
 
-  // Link biases to their corresponding CV components, now that all are created
-  cvm::log("Linking biases to their corresponding CV components.\n");
-  for (size_t i = 0; i < colvars.size(); i++) {
-    if (colvars[i]->link_biases(this) != COLVARS_OK) {
-      return COLVARS_INPUT_ERROR;
-    }
-  }
-
   // Done parsing known keywords, check that all keywords found were valid ones
   if (catch_input_errors(parse->check_keywords(conf, "colvarmodule"))) {
     return get_error();
