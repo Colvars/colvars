@@ -70,7 +70,7 @@ int atoms_total_force_from_proxy(
   const cvm::real* atoms_total_force_proxy,
   cvm::real* atoms_total_force_ag,
   bool rotate,
-  cvm::quaternion* q,
+  const cvm::quaternion* q,
   unsigned int num_atoms,
   unsigned int proxy_stride,
   cudaStream_t stream);
@@ -81,7 +81,7 @@ int apply_main_colvar_force_to_proxy(
   const cvm::real* atoms_grad_ag,
   cvm::real* colvar_force,
   bool rotate,
-  cvm::quaternion* q,
+  const cvm::quaternion* q,
   unsigned int num_atoms,
   unsigned int proxy_stride,
   cudaGraphNode_t& node,
@@ -145,7 +145,7 @@ int apply_translation(
 
 int rotate_with_quaternion(
   cvm::real* atoms_pos_ag,
-  cvm::quaternion* q,
+  const cvm::quaternion* q,
   unsigned int num_atoms,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,

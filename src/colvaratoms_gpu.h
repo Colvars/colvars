@@ -334,6 +334,16 @@ public:
    * @param[in] yesno True to use the CPU group force, false otherwise
    */
   void set_use_cpu_group_force(bool yesno) { use_group_force = yesno; }
+  /**
+   * @brief Getter of the internal GPU rotation object
+   */
+  colvars_gpu::rotation_gpu& get_rot_gpu() { return rot_gpu; }
+  const colvars_gpu::rotation_gpu& get_rot_gpu() const { return rot_gpu; }
+  /**
+   * @brief Getter of the internal GPU rotation derivative object
+   */
+  colvars_gpu::rotation_derivative_gpu* get_rot_deriv_gpu() { return rot_deriv_gpu; }
+  const colvars_gpu::rotation_derivative_gpu* get_rot_deriv_gpu() const { return rot_deriv_gpu; }
 private:
   colvaratoms_gpu_buffer_t gpu_buffers;
   /// \brief Temporary variables for calc_fit_gradients GPU kernel

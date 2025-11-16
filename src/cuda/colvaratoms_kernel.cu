@@ -362,7 +362,7 @@ __global__ void atoms_total_force_from_proxy_kernel(
   cvm::real* __restrict atoms_total_force_x_ag,
   cvm::real* __restrict atoms_total_force_y_ag,
   cvm::real* __restrict atoms_total_force_z_ag,
-  cvm::quaternion* __restrict q,
+  const cvm::quaternion* __restrict q,
   unsigned int num_atoms) {
   const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   cvm::rmatrix rot_mat;
@@ -391,7 +391,7 @@ int atoms_total_force_from_proxy(
   const cvm::real* atoms_total_force_proxy,
   cvm::real* atoms_total_force_ag,
   bool rotate,
-  cvm::quaternion* q,
+  const cvm::quaternion* q,
   unsigned int num_atoms,
   unsigned int proxy_stride,
   cudaStream_t stream) {
@@ -437,8 +437,8 @@ __global__ void apply_colvar_force_to_proxy_kernel(
   const cvm::real* __restrict grad_x,
   const cvm::real* __restrict grad_y,
   const cvm::real* __restrict grad_z,
-  cvm::real* force_ptr,
-  cvm::quaternion* q,
+  cvm::real* __restrict force_ptr,
+  const cvm::quaternion* __restrict q,
   unsigned int num_atoms) {
   const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   const cvm::real force = (*force_ptr);
@@ -473,7 +473,7 @@ int apply_main_colvar_force_to_proxy(
   const cvm::real* atoms_grad_ag,
   cvm::real* colvar_force,
   bool rotate,
-  cvm::quaternion* q,
+  const cvm::quaternion* q,
   unsigned int num_atoms,
   unsigned int proxy_stride,
   cudaGraphNode_t& node,
@@ -937,7 +937,7 @@ __global__ void rotate_with_quaternion_kernel(
   cvm::real* __restrict pos_x,
   cvm::real* __restrict pos_y,
   cvm::real* __restrict pos_z,
-  cvm::quaternion* __restrict q, int num_atoms) {
+  const cvm::quaternion* __restrict q, int num_atoms) {
   const auto rot_mat = q->rotation_matrix();
   unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   unsigned int gridSize = blockDim.x * gridDim.x;
@@ -961,7 +961,7 @@ __global__ void rotate_with_quaternion_kernel(
 
 int rotate_with_quaternion(
   cvm::real* atoms_pos_ag,
-  cvm::quaternion* q,
+  const cvm::quaternion* q,
   unsigned int num_atoms,
   cudaGraphNode_t& node,
   cudaGraph_t& graph,

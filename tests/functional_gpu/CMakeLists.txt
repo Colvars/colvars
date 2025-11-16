@@ -27,9 +27,11 @@ set(COLVARS_CUDA_DIR ${COLVARS_SOURCE_DIR}/src/cuda)
 
 set(COLVARS_CUDA_HEADER ${COLVARS_CUDA_DIR}/colvaratoms_kernel.h
                         ${COLVARS_CUDA_DIR}/colvar_rotation_derivative_kernel.h
+                        ${COLVARS_CUDA_DIR}/colvarcomp_distance_kernel.h
                         ${COLVARS_CUDA_DIR}/colvartypes_kernel.h)
 set(COLVARS_CUDA_SOURCE ${COLVARS_CUDA_DIR}/colvaratoms_kernel.cu
                         ${COLVARS_CUDA_DIR}/colvar_rotation_derivative_kernel.cu
+                        ${COLVARS_CUDA_DIR}/colvarcomp_distance_kernel.cu
                         ${COLVARS_CUDA_DIR}/colvartypes_kernel.cu)
 
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
@@ -87,6 +89,12 @@ endif()
 
 if(COLVARS_LEPTON)
   target_link_libraries(run_colvars_test_cuda PUBLIC lepton)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU)$")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.3)
+    target_link_libraries(run_colvars_test_cuda PUBLIC stdc++exp)
+  endif()
 endif()
 
 set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE CUDA)
