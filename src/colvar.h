@@ -54,6 +54,8 @@ class colvar : public colvarparse, public colvardeps {
 
 public:
 
+  class cvc;
+
   /// Name
   std::string name;
 
@@ -110,6 +112,13 @@ public:
     }
     cv_features.clear();
   }
+
+  /// \brief Link this colvar's components to any required biases
+  int link_biases(colvarmodule *cvm);
+  
+  /// \brief Get a pointer to the i-th component (CVC)
+  cvc* get_cvc_ptr(size_t index);
+  cvc const* get_cvc_ptr(size_t index) const; // Const version too
 
   /// Implements possible actions to be carried out
   /// when a given feature is enabled
@@ -247,7 +256,7 @@ public:
 
   /// Constructor
   colvar();
-
+  
   /// Main init function
   int init(std::string const &conf);
 
