@@ -39,6 +39,29 @@ int colvarbias_restraint::init(std::string const &conf)
   enable(f_cvb_apply_force);
 
   colvarbias_ti::init(conf);
+  
+  // reverse-lookup logic
+  colvarmodule *cvm = cvm::main();
+  for (size_t i = 0; i < cvm->num_variables(); ++i) {
+    colvar* cv = (*(cvm->variables()))[i];
+    for (size_t j = 0; j < cv->num_cvcs(); ++j) {
+      cvc_harmonicforceconstant* hfc_cvc = dynamic_cast<cvc_harmonicforceconstant*>(cv->get_cvc_ptr(j));
+      
+      if (hfc_cvc && hfc_cvc->get_harmonic_bias_name() == this->name) {
+        if (this->dynamic_k_cv != NULL) {
+          return cvm->error("Error: Harmonic restraint '" + this->name + "' is targeted by multiple harmonicForceConstant CVs ('" + this->dynamic_k_cv->name + "' and '" + cv->name + "').", COLVARS_INPUT_ERROR);
+        }
+        this->dynamic_k_cv = cv;
+        
+        if (!dynamic_k_cv->is_enabled(f_cv_external)) {
+          return cvm::error("Error: Colvar '" + dynamic_k_cv->name + "' must be an external variable to control a restraint.", COLVARS_INPUT_ERROR);
+        }
+      }
+    }
+  }
+  if (dynamic_k_cv) {
+      cvm::log("Harmonic restraint '" + this->name + "' is linked and will be dynamically controlled by colvar '" + dynamic_k_cv->name + "'.\n");
+  }
 
   if (cvm::debug())
     cvm::log("Initializing a new restraint bias.\n");
@@ -46,6 +69,16 @@ int colvarbias_restraint::init(std::string const &conf)
   return COLVARS_OK;
 }
 
+cvm::real colvarbias_restraint_harmonic::get_dU_d_k_eff() const
+{
+  cvm::real dU_d_k_eff = 0.0;
+  for (size_t i = 0; i < num_variables(); i++) {
+    // dU/dk_eff = 0.5 * (x-x0)^2 / w^2
+    dU_d_k_eff += 0.5 * variables(i)->dist2(variables(i)->value(), colvar_centers[i]) / 
+                  (variables(i)->width * variables(i)->width);
+  }
+  return dU_d_k_eff;
+}
 
 int colvarbias_restraint::update()
 {
@@ -73,12 +106,6 @@ int colvarbias_restraint::update()
 
 colvarbias_restraint::~colvarbias_restraint()
 {
-}
-
-void colvarbias_restraint::set_dynamic_k_cv(colvar *cv)
-{
-  dynamic_k_cv = cv;
-  cvm::log("Harmonic restraint '" + this->name + "' is now dynamically controlled by colvar '" + cv->name + "'.\n");
 }
 
 cvm::real colvarbias_restraint::get_k_derivative() const
@@ -752,122 +779,36 @@ int colvarbias_restraint_harmonic::update()
   // The base class update() zeros out energy and forces, so it must be called first.
   colvarbias::update();
 
-  // Loop over all associated collective variables
-  for (size_t i = 0; i < num_variables(); i++) {
-
-    // Get the squared distance of the variable from its center, i.e., (xi - xi_0)^2
-    cvm::real const dist2 = variables(i)->dist2(variables(i)->value(), colvar_centers[i]);
-    // Get the squared width of the variable
-    cvm::real const w_sq = variables(i)->width * variables(i)->width;
-
-    // The configured force constant is the target maximum value (k_max)
-    cvm::real const k_max = force_k;
-    cvm::real current_k = k_max; // By default, the current force constant is k_max
-
-    // ------ Logic for dynamically controlled force constant begins ------
-    if (dynamic_k_cv) { // Check if a harmonicForceConstant CV is in control
-      // Get the raw lambda value from the controlling CV (typically in [0, 1])
-      cvm::real raw_lambda = dynamic_k_cv->value().real_value;
-
-      // Get the exponent n (kExponent)
-      cvm::real exponent_n = 1.0; // Default to 1.0 for linear scaling
-      cvc_harmonicforceconstant* hfc_cvc = nullptr;
-      // Assume the harmonicForceConstant is the first (and only) component of its colvar
-      if (dynamic_k_cv->num_cvcs() == 1) {
-          // Safely attempt to cast the component to the correct type
-          hfc_cvc = dynamic_cast<cvc_harmonicforceconstant*>(dynamic_k_cv->get_cvc_ptr(0));
+  // Determine current force constant
+  cvm::real current_k = force_k;
+  if (dynamic_k_cv) {
+    cvm::real raw_lambda = dynamic_k_cv->value().real_value;
+    cvm::real exponent_n = 1.0;
+    
+    if (dynamic_k_cv->num_cvcs() == 1) {
+      if (auto* hfc_cvc = dynamic_cast<cvc_harmonicforceconstant*>(dynamic_k_cv->get_cvc_ptr(0))) {
+        exponent_n = hfc_cvc->get_k_exponent();
       }
-
-      if (hfc_cvc) {
-          // If the cast is successful, get the user-defined exponent
-          exponent_n = hfc_cvc->get_k_exponent();
-      } else {
-          // If dynamic_cast fails or there's no component, use the default and warn the user
-          cvm::log("Warning: Could not retrieve kExponent from the controlling harmonicForceConstant CV component. Using exponent 1.0.");
-      }
-
-      // Calculate the effective lambda: lambda_eff = lambda^n
-      // Handle the case where lambda might temporarily go below 0 during enhanced sampling
-      cvm::real effective_lambda = 0.0;
-      if (raw_lambda >= 0.0) {
-           effective_lambda = cvm::pow(raw_lambda, exponent_n);
-      } else {
-           // If lambda is negative, only compute the power if n is an integer to avoid complex numbers
-           if (exponent_n == static_cast<int>(exponent_n)) {
-              effective_lambda = cvm::pow(raw_lambda, exponent_n);
-           } else {
-              cvm::log("Warning: lambda < 0 and kExponent is not an integer. Setting effective lambda to 0.");
-              effective_lambda = 0.0;
-           }
-      }
-
-       // Check for non-finite results (e.g., from 0^negative)
-      if (!std::isfinite(effective_lambda)) {
-           cvm::log("Warning: Effective lambda calculation resulted in non-finite value (lambda=" + cvm::to_str(raw_lambda) + ", n=" + cvm::to_str(exponent_n) + "). Setting to 0.");
-           effective_lambda = 0.0;
-      }
-
-      // Calculate the current force constant using the effective lambda
-      current_k = k_max * effective_lambda;
-
-      // Calculate the bias energy using the current force constant
-      bias_energy += 0.5 * current_k / w_sq * dist2;
-
-      // Calculate the force on the *original* restrained CV
-      colvar_forces[i].type(variables(i)->value());
-      colvar_forces[i].is_derivative();
-      colvar_forces[i] = -0.5 * current_k / w_sq * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
-
-      // Calculate the thermodynamic force on the lambda CV: F_lambda = -dU/d_lambda
-      // U = 0.5 * k_eff / w^2 * dist^2, where k_eff = k_max * lambda^n
-      // The chain rule gives: dU/d_lambda = (dU/d_k_eff) * (d_k_eff / d_lambda)
-      // d_k_eff / d_lambda = k_max * n * lambda^(n-1)
-      
-      // Calculate the derivative factor d(lambda^n)/d_lambda = n * lambda^(n-1)
-      cvm::real derivative_factor;
-      if (raw_lambda == 0.0) {
-          if (exponent_n < 1.0) {
-              // At lambda=0, the derivative is infinite for n<1
-              derivative_factor = std::numeric_limits<cvm::real>::infinity();
-              cvm::log("Warning: Derivative factor for kExponent < 1 is infinite at lambda=0. Setting thermodynamic force to 0.");
-              // Set to 0 to avoid NaN/Inf issues
-              derivative_factor = 0.0;
-          } else if (exponent_n == 1.0) {
-              derivative_factor = 1.0;
-          } else { // exponent_n > 1.0
-              // At lambda=0, the derivative is 0 for n>1
-              derivative_factor = 0.0;
-          }
-      } else if (raw_lambda < 0.0 && exponent_n != static_cast<int>(exponent_n)) {
-           // If lambda < 0 and n is not an integer, the derivative is complex and undefined in this context
-           cvm::log("Warning: lambda < 0 and kExponent is not an integer. Cannot compute derivative factor reliably. Setting thermodynamic force to 0.");
-           derivative_factor = 0.0;
-      }
-      else {
-          derivative_factor = exponent_n * cvm::pow(raw_lambda, exponent_n - 1.0);
-      }
-
-      // Final check for non-finite derivative factor
-      if (!std::isfinite(derivative_factor)) {
-           cvm::log("Warning: Derivative factor calculation resulted in non-finite value (lambda=" + cvm::to_str(raw_lambda) + ", n=" + cvm::to_str(exponent_n) + "). Setting thermodynamic force to 0.");
-           derivative_factor = 0.0;
-      }
-
-      // dU/d_lambda = (1/2 * dist^2 / w^2) * k_max * derivative_factor
-      cvm::real const dU_dlambda = 0.5 * k_max / w_sq * dist2 * derivative_factor;
-      this->k_derivative = -dU_dlambda; // F_lambda = -dU/d_lambda
-
-    } else { // If not controlled by a dynamic CV
-      // Execute the original logic and set the thermodynamic force to zero
-      bias_energy += 0.5 * current_k / w_sq * dist2;
-      colvar_forces[i].type(variables(i)->value());
-      colvar_forces[i].is_derivative();
-      colvar_forces[i] = -0.5 * current_k / w_sq * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
-      this->k_derivative = 0.0;
     }
-   // ------ Logic for dynamically controlled force constant ends ------
+    cvm::real effective_lambda = (raw_lambda >= 0.0) ? cvm::pow(raw_lambda, exponent_n) : 0.0;
+    if (!std::isfinite(effective_lambda)) {
+        effective_lambda = 0.0;
+    }
+    current_k = force_k * effective_lambda;
   }
 
+  // Loop over variables to calculate energy and forces using current_k
+  for (size_t i = 0; i < num_variables(); i++) {
+    cvm::real const w_sq = variables(i)->width * variables(i)->width;
+    cvm::real const dist2 = variables(i)->dist2(variables(i)->value(), colvar_centers[i]);
+    
+    bias_energy += 0.5 * current_k / w_sq * dist2;
+    
+    colvar_forces[i].type(variables(i)->value());
+    colvar_forces[i].is_derivative();
+    colvar_forces[i] = -0.5 * current_k / w_sq * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
+  }
+  
   // Update accumulated work using the current forces (if moving restraints are active)
   error_code |= colvarbias_restraint_centers_moving::update_acc_work();
   error_code |= colvarbias_restraint_k_moving::update_acc_work();

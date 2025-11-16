@@ -16,9 +16,7 @@ cvc_harmonicforceconstant::cvc_harmonicforceconstant()
   provide(f_cvc_inv_gradient);
   // The Jacobian derivative is zero for a 1D fictitious coordinate.
   provide(f_cvc_Jacobian);
-  
-  harmonic_bias = NULL;
-  is_linked = false;
+
   k_exponent = 1.0; // Default to linear scaling
 
   // The colvar object controls the extended Lagrangian dynamics via the f_cv_external flag.
@@ -52,30 +50,46 @@ int cvc_harmonicforceconstant::init(std::string const &conf)
   return COLVARS_OK;
 }
 
-int cvc_harmonicforceconstant::link_bias(colvarmodule *cvm, colvar *cv)
+void cvc_harmonicforceconstant::calc_force_invgrads()
 {
-  if (is_linked) return COLVARS_OK; // Already linked, do nothing.
-
-  colvarbias *bias = cvm->bias_by_name(harmonic_bias_name);
+  // Default to zero force
+  ft.real_value = 0.0;
+  // Find the harmonic bias this CVC is linked to
+  colvarbias *bias = cvm::main()->bias_by_name(this->harmonic_bias_name);
   if (!bias) {
-    cvm->error("Error: Cannot find harmonic bias named '" + harmonic_bias_name + "' for harmonicForceConstant component.");
-    return COLVARS_INPUT_ERROR;
+    // This might happen during initialization, it's not an error yet.
+    return;
   }
-  
-  // Attempt to cast the generic bias to a restraint.
-  harmonic_bias = dynamic_cast<colvarbias_restraint *>(bias);
-  if (!harmonic_bias) {
-    cvm->error("Error: Bias '" + harmonic_bias_name + "' is not a harmonic restraint.");
-    return COLVARS_INPUT_ERROR;
+  colvarbias_restraint_harmonic* h_bias = dynamic_cast<colvarbias_restraint_harmonic*>(bias);
+  if (!h_bias) {
+    cvm::error("Error: Bias '" + this->harmonic_bias_name + "' is not a harmonic restraint.", COLVARS_INPUT_ERROR);
+    return;
   }
+  // Get the maximum force constant from the bias
+  // NOTE: This requires access to a protected member. A cleaner solution would be
+  // to add a public getter `get_force_k()` to `colvarbias_restraint_k`.
+  // For now, we assume we can get it. Let's add that getter.
+  // In `colvarbias_restraint.h`, in `colvarbias_restraint_k`, add:
+  //   cvm::real get_force_k() const { return force_k; }
   
-  // Register this CV with the harmonic bias to enable dynamic control.
-  // The 'cv' parameter is the parent colvar that owns this CVC.
-  harmonic_bias->set_dynamic_k_cv(cv);
-  is_linked = true;
-  cvm::log("Successfully linked harmonicForceConstant component to harmonic bias '" + harmonic_bias_name + "'.\n");
-
-  return COLVARS_OK;
+  cvm::real k_max = h_bias->get_force_k(); // Assuming you add this getter
+  cvm::real raw_lambda = parent->value().real_value; // Use the parent colvar's value
+  // Calculate thermodynamic force F_lambda = -dU/d_lambda
+  cvm::real dU_d_k_eff = h_bias->get_dU_d_k_eff();
+  cvm::real d_k_eff_d_lambda;
+  if (raw_lambda == 0.0) {
+      if (k_exponent < 1.0) d_k_eff_d_lambda = std::numeric_limits<cvm::real>::infinity();
+      else if (k_exponent == 1.0) d_k_eff_d_lambda = k_max;
+      else d_k_eff_d_lambda = 0.0;
+  } else {
+      d_k_eff_d_lambda = k_max * k_exponent * cvm::pow(raw_lambda, k_exponent - 1.0);
+  }
+  if (!std::isfinite(d_k_eff_d_lambda)) {
+      cvm::log("Warning: Derivative factor for k is non-finite in CVC. Setting thermodynamic force to 0.");
+      d_k_eff_d_lambda = 0.0;
+  }
+  // F_lambda = -dU/d_lambda = - (dU/dk_eff) * (dk_eff/d_lambda)
+  ft.real_value = -1.0 * dU_d_k_eff * d_k_eff_d_lambda;
 }
 
 void cvc_harmonicforceconstant::calc_value()
@@ -88,19 +102,6 @@ void cvc_harmonicforceconstant::calc_gradients()
 {
   // This is a fictitious coordinate and has no gradients with respect to atomic positions.
   // This function does nothing.
-}
-
-void cvc_harmonicforceconstant::calc_force_invgrads()
-{
-  // This function computes the "total force" on the fictitious coordinate, which is F_lambda = -dU/d_lambda.
-  // This force is calculated and cached within the controlled harmonic bias.
-  if (is_linked && harmonic_bias) {
-    // Retrieve F_lambda calculated in the previous timestep by the bias
-    // and store it in this CVC's 'ft' (total_force) member.
-    ft.real_value = harmonic_bias->get_k_derivative();
-  } else {
-    ft.real_value = 0.0;
-  }
 }
 
 void cvc_harmonicforceconstant::calc_Jacobian_derivative() {

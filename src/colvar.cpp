@@ -884,6 +884,9 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
     }
 
     cvcs.back()->setup();
+    if (auto* hfc_cvc = dynamic_cast<cvc_harmonicforceconstant*>(cvcs.back().get())) {
+        hfc_cvc->set_parent(this);
+    }
     if (cvm::debug()) {
       cvm::log("Done initializing a \"" + std::string(def_config_key) + "\" component" +
                (cvm::debug() ? ", named \"" + cvcs.back()->name + "\"" : "") + ".\n");
@@ -3075,18 +3078,6 @@ int colvar::calc_runave()
   }
 
   return error_code;
-}
-
-int colvar::link_biases(colvarmodule *cvm)
-{
-  for (size_t j = 0; j < cvcs.size(); j++) {
-    if (cvcs[j]->link_bias(cvm, this) != COLVARS_OK) {
-      cvm::error("Error: Failed to link bias for component " + cvcs[j]->name +
-                 " in colvar " + this->name, COLVARS_INPUT_ERROR);
-      return COLVARS_INPUT_ERROR;
-    }
-  }
-  return COLVARS_OK;
 }
 
 colvar::cvc* colvar::get_cvc_ptr(size_t index) {
