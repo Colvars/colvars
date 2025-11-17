@@ -1006,11 +1006,11 @@ void colvar::rmsd::calc_gradients()
     0.0;
 
   // Use the appropriate symmetry permutation of reference positions to calculate gradients
-  size_t const start = atoms->size() * best_perm_index;
+  size_t const best_perm_start = atoms->size() * best_perm_index;
   for (size_t ia = 0; ia < atoms->size(); ia++) {
     const cvm::atom_pos pos_ia(
       atoms->pos_x(ia), atoms->pos_y(ia), atoms->pos_z(ia));
-    const cvm::rvector grad = (drmsddx2 * 2.0 * (pos_ia - ref_pos[start + ia]));
+    const cvm::rvector grad = (drmsddx2 * 2.0 * (pos_ia - ref_pos[best_perm_start + ia]));
     atoms->grad_x(ia) = grad.x;
     atoms->grad_y(ia) = grad.y;
     atoms->grad_z(ia) = grad.z;
@@ -1039,6 +1039,8 @@ void colvar::rmsd::calc_Jacobian_derivative()
 
   // The rotation term only applies is coordinates are rotated
   if (atoms->is_enabled(f_ag_rotate)) {
+    // Use the best symmetry permutation of reference positions
+    size_t const best_perm_start = atoms->size() * best_perm_index;
 
     // gradient of the rotation matrix
     cvm::matrix2d<cvm::rvector> grad_rot_mat(3, 3);
@@ -1072,7 +1074,7 @@ void colvar::rmsd::calc_Jacobian_derivative()
       grad_rot_mat[1][2] =  2.0 * (g23 - g01);
       grad_rot_mat[2][2] = -2.0 * (g11 + g22);
 
-      cvm::atom_pos &y = ref_pos[ia];
+      cvm::atom_pos const &y = ref_pos[best_perm_start + ia];
 
       for (size_t alpha = 0; alpha < 3; alpha++) {
         for (size_t beta = 0; beta < 3; beta++) {
