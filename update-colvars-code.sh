@@ -377,6 +377,28 @@ then
     fi
   done
 
+  # Update the Colvars CUDA source files
+  # echo "Copy Colvars CUDA source files"
+  mkdir -p "${target}/colvars/src/cuda"
+  for src in ${source}/src/cuda/*.h ${source}/src/cuda/*.cu
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/colvars/src/cuda/${tgt}"
+  done
+
+  # Update the NAMD CudaGlobalMaster interface files
+  # echo "Copy Colvars-NAMD CudaGlobalMaster interface files"
+  mkdir -p "${target}/colvars/namd/cudaglobalmaster"
+  for src in \
+      ${source}/namd/cudaglobalmaster/*.h \
+      ${source}/namd/cudaglobalmaster/*.C \
+      ${source}/namd/cudaglobalmaster/*.cu \
+      ${source}/namd/cudaglobalmaster/CMakeLists.txt
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/colvars/namd/cudaglobalmaster/${tgt}"
+  done
+
   # Update abf_integrate
   for src in ${source}/colvartools/*h ${source}/colvartools/*cpp
   do \
