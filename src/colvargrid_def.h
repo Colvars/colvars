@@ -25,7 +25,7 @@
 template <class T>
 colvar_grid<T>::colvar_grid(std::string const &filename, size_t mult_i)
 {
-std::istream &is = cvm::main()->proxy->input_stream(filename, "multicol grid file");
+std::istream &is = cvmodule->proxy->input_stream(filename, "multicol grid file");
 if (!is) {
   return;
 }
@@ -37,8 +37,8 @@ std::string  hash;
 size_t i;
 
 if ( !(is >> hash) || (hash != "#") ) {
-  cvm::error("Error reading grid at position "+
-              cvm::to_str(static_cast<size_t>(is.tellg()))+
+  cvmodule->error("Error reading grid at position "+
+              cvmodule->to_str(static_cast<size_t>(is.tellg()))+
               " in stream(read \"" + hash + "\")\n");
   return;
 }
@@ -52,8 +52,8 @@ std::vector<int>       periodic_in(nd);
 
 for (i = 0; i < nd; i++ ) {
   if ( !(is >> hash) || (hash != "#") ) {
-    cvm::error("Error reading grid at position "+
-                cvm::to_str(static_cast<size_t>(is.tellg()))+
+    cvmodule->error("Error reading grid at position "+
+                cvmodule->to_str(static_cast<size_t>(is.tellg()))+
                 " in stream(read \"" + hash + "\")\n");
     return;
   }
@@ -74,7 +74,7 @@ for (i = 0; i < nd; i++ ) {
 is.clear();
 is.seekg(0);
 read_multicol(is);
-cvm::main()->proxy->close_input_stream(filename);
+cvmodule->proxy->close_input_stream(filename);
 }
 
 
@@ -90,7 +90,7 @@ template <class T, class IST> IST &read_restart_template_(colvar_grid<T> &g, IST
   is.clear();
   is.seekg(start_pos);
   is.setstate(std::ios::failbit);
-  cvm::error("Error: in reading grid state from stream at position " + cvm::to_str(error_pos) +
+  cvmodule->error("Error: in reading grid state from stream at position " + cvmodule->to_str(error_pos) +
                  "\n",
              COLVARS_INPUT_ERROR);
   return is;
@@ -138,7 +138,7 @@ template <class T, class IST> IST &read_raw_template_(colvar_grid<T> &g, IST &is
         is.clear();
         is.seekg(start_pos);
         is.setstate(std::ios::failbit);
-        cvm::error(
+        cvmodule->error(
             "Error: failed to read all of the grid points from file.  Possible explanations: grid "
             "parameters in the configuration (lowerBoundary, upperBoundary, width) are different "
             "from those in the file, or the file is corrupt/incomplete.\n",
@@ -232,8 +232,8 @@ template <class T> std::string colvar_grid<T>::get_state_params() const
 template <class T> int colvar_grid<T>::parse_params(std::string const &conf,
                                                     colvarparse::Parse_Mode const parse_mode)
 {
-  if (cvm::debug())
-    cvm::log("Reading grid configuration from string.\n");
+  if (cvmodule->debug())
+    cvmodule->log("Reading grid configuration from string.\n");
 
   std::vector<int> old_nx = nx;
   std::vector<colvarvalue> old_lb = lower_boundaries;
@@ -245,10 +245,10 @@ template <class T> int colvar_grid<T>::parse_params(std::string const &conf,
     // this is only used in state files
     colvarparse::get_keyval(conf, "n_colvars", nd_in, nd, colvarparse::parse_silent);
     if (nd_in != nd) {
-      cvm::error("Error: trying to read data for a grid "
+      cvmodule->error("Error: trying to read data for a grid "
                  "that contains a different number of colvars ("+
-                 cvm::to_str(nd_in)+") than the grid defined "
-                 "in the configuration file("+cvm::to_str(nd)+
+                 cvmodule->to_str(nd_in)+") than the grid defined "
+                 "in the configuration file("+cvmodule->to_str(nd)+
                  ").\n");
       return COLVARS_ERROR;
     }
@@ -321,20 +321,20 @@ std::istream & colvar_grid<T>::read_multicol(std::istream &is, bool add)
   std::vector<int>      bin;
 
   if ( cv.size() > 0 && cv.size() != nd ) {
-    cvm::error("Cannot read grid file: number of variables in file differs from number referenced by grid.\n");
+    cvmodule->error("Cannot read grid file: number of variables in file differs from number referenced by grid.\n");
     return is;
   }
 
   if ( !(is >> hash) || (hash != "#") ) {
-    cvm::error("Error reading grid at position "+
-               cvm::to_str(static_cast<size_t>(is.tellg()))+
+    cvmodule->error("Error reading grid at position "+
+               cvmodule->to_str(static_cast<size_t>(is.tellg()))+
                " in stream(read \"" + hash + "\")\n", COLVARS_INPUT_ERROR);
     return is;
   }
 
   is >> n;
   if ( n != nd ) {
-    cvm::error("Error reading grid: wrong number of collective variables.\n");
+    cvmodule->error("Error reading grid: wrong number of collective variables.\n");
     return is;
   }
 
@@ -349,8 +349,8 @@ std::istream & colvar_grid<T>::read_multicol(std::istream &is, bool add)
   remap = false;
   for (size_t i = 0; i < nd; i++ ) {
     if ( !(is >> hash) || (hash != "#") ) {
-      cvm::error("Error reading grid at position "+
-                 cvm::to_str(static_cast<size_t>(is.tellg()))+
+      cvmodule->error("Error reading grid at position "+
+                 cvmodule->to_str(static_cast<size_t>(is.tellg()))+
                  " in stream(read \"" + hash + "\")\n");
       return is;
     }
@@ -361,8 +361,8 @@ std::istream & colvar_grid<T>::read_multicol(std::istream &is, bool add)
     if ( (cvm::fabs(lower - lower_boundaries[i].real_value) > 1.0e-10) ||
          (cvm::fabs(width - widths[i] ) > 1.0e-10) ||
          (nx_read[i] != nx[i]) ) {
-      cvm::log("Warning: reading from different grid definition (colvar "
-               + cvm::to_str(i+1) + "); remapping data on new grid.\n");
+      cvmodule->log("Warning: reading from different grid definition (colvar "
+               + cvmodule->to_str(i+1) + "); remapping data on new grid.\n");
       remap = true;
     }
   }
@@ -413,12 +413,12 @@ int colvar_grid<T>::read_multicol(std::string const &filename,
                                   std::string description,
                                   bool add)
 {
-  std::istream &is = cvm::main()->proxy->input_stream(filename, description);
+  std::istream &is = cvmodule->proxy->input_stream(filename, description);
   if (!is) {
     return COLVARS_FILE_ERROR;
   }
   if (colvar_grid<T>::read_multicol(is, add)) {
-    cvm::main()->proxy->close_input_stream(filename);
+    cvmodule->proxy->close_input_stream(filename);
     return COLVARS_OK;
   }
   return COLVARS_FILE_ERROR;
@@ -439,8 +439,8 @@ std::ostream & colvar_grid<T>::write_multicol(std::ostream &os) const
   os.setf(std::ios::scientific, std::ios::floatfield);
   for (size_t i = 0; i < nd; i++) {
     os << "# "
-       << std::setw(cvm::cv_width) << std::setprecision(cvm::cv_prec) << lower_boundaries[i] << " "
-       << std::setw(cvm::cv_width) << std::setprecision(cvm::cv_prec) << widths[i] << " "
+       << std::setw(cvmodule->cv_width) << std::setprecision(cvmodule->cv_prec) << lower_boundaries[i] << " "
+       << std::setw(cvmodule->cv_width) << std::setprecision(cvmodule->cv_prec) << widths[i] << " "
        << std::setw(10) << nx[i] << "  "
        << periodic[i] << "\n";
   }
@@ -454,13 +454,13 @@ std::ostream & colvar_grid<T>::write_multicol(std::ostream &os) const
 
     for (size_t i = 0; i < nd; i++) {
       os << " "
-         << std::setw(cvm::cv_width) << std::setprecision(cvm::cv_prec)
+         << std::setw(cvmodule->cv_width) << std::setprecision(cvmodule->cv_prec)
          << bin_to_value_scalar(ix[i], i);
     }
     os << " ";
     for (size_t imult = 0; imult < mult; imult++) {
       os << " "
-         << std::setw(cvm::cv_width) << std::setprecision(cvm::cv_prec)
+         << std::setw(cvmodule->cv_width) << std::setprecision(cvmodule->cv_prec)
          << value_output(ix, imult);
     }
     os << "\n";
@@ -478,13 +478,13 @@ int colvar_grid<T>::write_multicol(std::string const &filename,
                                    std::string description) const
 {
   int error_code = COLVARS_OK;
-  std::ostream &os = cvm::main()->proxy->output_stream(filename, description);
+  std::ostream &os = cvmodule->proxy->output_stream(filename, description);
   if (!os) {
     return COLVARS_FILE_ERROR;
   }
   error_code |= colvar_grid<T>::write_multicol(os) ? COLVARS_OK :
     COLVARS_FILE_ERROR;
-  cvm::main()->proxy->close_output_stream(filename);
+  cvmodule->proxy->close_output_stream(filename);
   return error_code;
 }
 
@@ -536,13 +536,13 @@ int colvar_grid<T>::write_opendx(std::string const &filename,
                                  std::string description) const
 {
   int error_code = COLVARS_OK;
-  std::ostream &os = cvm::main()->proxy->output_stream(filename, description);
+  std::ostream &os = cvmodule->proxy->output_stream(filename, description);
   if (!os) {
     return COLVARS_FILE_ERROR;
   }
   error_code |= colvar_grid<T>::write_opendx(os) ? COLVARS_OK :
     COLVARS_FILE_ERROR;
-  cvm::main()->proxy->close_output_stream(filename);
+  cvmodule->proxy->close_output_stream(filename);
   return error_code;
 }
 

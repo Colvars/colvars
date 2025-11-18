@@ -327,7 +327,7 @@ private: // TODO
 /// Get a pointer to the main colvarscript object
 inline static colvarscript *colvarscript_obj()
 {
-  return cvm::main()->proxy->script;
+  return cvmodule->proxy->script;
 }
 
 
@@ -385,13 +385,13 @@ int colvarscript::check_cmd_nargs(char const *cmd,
 {
   int const shift = cmd_arg_shift<T>();
   if (objc < shift+n_args_min) {
-    add_error_msg("Insufficient number of arguments ("+cvm::to_str(objc)+
+    add_error_msg("Insufficient number of arguments ("+cvmodule->to_str(objc)+
                   ") for script function \""+std::string(cmd)+
                   "\":\n"+get_command_full_help(cmd));
     return COLVARSCRIPT_ERROR;
   }
   if (objc > shift+n_args_max) {
-    add_error_msg("Too many arguments ("+cvm::to_str(objc)+
+    add_error_msg("Too many arguments ("+cvmodule->to_str(objc)+
                   ") for script function \""+std::string(cmd)+
                   "\":\n"+get_command_full_help(cmd));
     return COLVARSCRIPT_ERROR;

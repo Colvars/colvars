@@ -24,11 +24,11 @@ int main(int argc, char *argv[]) {
 
   int err = 0;
   while (!err) {
-    cvm::log("Frame " + cvm::to_str(cvm::step_absolute()));
+    cvmodule->log("Frame " + cvmodule->to_str(cvmodule->step_absolute()));
     err = proxy->read_frame_xyz("da-traj.xyz");
   }
   proxy->post_run();
-  cvm::log("Done");
+  cvmodule->log("Done");
 
   delete proxy;
 
