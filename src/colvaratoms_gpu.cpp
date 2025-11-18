@@ -26,7 +26,7 @@ colvaratoms_gpu::~colvaratoms_gpu() {
 
 int colvaratoms_gpu::init_gpu() {
   int error_code = COLVARS_OK;
-  colvarproxy *p = cvm::main()->proxy;
+  colvarproxy *p = cvmodule->proxy;
   // error_code |= checkGPUError(cudaStreamCreate(&stream));
   error_code |= p->reallocate_device(&gpu_buffers.d_com, 1);
   error_code |= p->reallocate_device(&gpu_buffers.d_com_tmp, 1);
@@ -76,7 +76,7 @@ int colvaratoms_gpu::init_gpu() {
 
 int colvaratoms_gpu::destroy_gpu() {
   int error_code = COLVARS_OK;
-  colvarproxy* p = cvm::main()->proxy;
+  colvarproxy* p = cvmodule->proxy;
   error_code |= p->deallocate_device(&gpu_buffers.d_atoms_index);
   error_code |= p->deallocate_device(&gpu_buffers.d_atoms_pos);
   error_code |= p->deallocate_device(&gpu_buffers.d_atoms_charge);
@@ -128,7 +128,7 @@ int colvaratoms_gpu::destroy_gpu() {
 
 int colvaratoms_gpu::sync_to_gpu_buffers(const cvm::atom_group* cpu_atoms) {
   int error_code = COLVARS_OK;
-  colvarproxy* p = cvm::main()->proxy;
+  colvarproxy* p = cvmodule->proxy;
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
   error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_index, cpu_atoms->num_atoms);
   error_code |= p->reallocate_device(&this->gpu_buffers.d_atoms_charge, cpu_atoms->num_atoms);
@@ -154,7 +154,7 @@ int colvaratoms_gpu::sync_to_gpu_buffers(const cvm::atom_group* cpu_atoms) {
 
 int colvaratoms_gpu::clear_gpu_buffers(const cvm::atom_group* cpu_atoms) {
   int error_code = COLVARS_OK;
-  colvarproxy* p = cvm::main()->proxy;
+  colvarproxy* p = cvmodule->proxy;
   size_t num_atoms = cpu_atoms->size();
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
   error_code |= p->clear_device_array(gpu_buffers.d_atoms_index, num_atoms);
@@ -202,7 +202,7 @@ int colvaratoms_gpu::add_read_positions_nodes(
   std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
   int error_code = COLVARS_OK;
   if (cpu_atoms->b_dummy) return error_code;
-  colvarproxy *p = cvm::main()->proxy;
+  colvarproxy *p = cvmodule->proxy;
   if (!cpu_atoms->is_enabled(colvardeps::f_ag_scalable)) {
     cudaGraphNode_t read_positions_main;
     std::vector<cudaGraphNode_t> dependencies;
@@ -238,7 +238,7 @@ int colvaratoms_gpu::add_calc_required_properties_nodes(
   if (cpu_atoms->b_dummy) {
     return error_code;
   } else if (cpu_atoms->is_enabled(colvardeps::f_ag_scalable)) {
-    error_code |= cvm::error("BUG: GPU buffers are not implemented with scalable atom group.\n");
+    error_code |= cvmodule->error("BUG: GPU buffers are not implemented with scalable atom group.\n");
     return error_code;
   } else {
     // Add kernel node for COG and COM
@@ -530,11 +530,11 @@ int colvaratoms_gpu::after_read_data_sync(
   // Update the COM
   if (cpu_atoms->b_dummy) {
     cpu_atoms->com = cpu_atoms->dummy_atom_pos;
-    if (cvm::debug()) {
-      cvm::log("Dummy atom center of mass = "+cvm::to_str(cpu_atoms->com)+"\n");
+    if (cvmodule->debug()) {
+      cvmodule->log("Dummy atom center of mass = "+cvmodule->to_str(cpu_atoms->com)+"\n");
     }
   } else if (cpu_atoms->is_enabled(colvardeps::f_ag_scalable)) {
-    cpu_atoms->com = (cvm::proxy)->get_atom_group_com(cpu_atoms->index);
+    cpu_atoms->com = (cvmodule->proxy)->get_atom_group_com(cpu_atoms->index);
   } else {
     cpu_atoms->com.reset();
     if (copy_to_cpu) {
@@ -689,7 +689,7 @@ int colvaratoms_gpu::add_apply_force_nodes(
   const std::vector<cudaGraphNode_t>& extra_initial_dependencies) {
   int error_code = COLVARS_OK;
   if (cpu_atoms->b_dummy) return error_code;
-  colvarproxy* p = cvm::main()->proxy;
+  colvarproxy* p = cvmodule->proxy;
   // Check if any of the parent CVCs require CPU buffers
   // Get all parents
   const std::vector<colvardeps*> parents = cpu_atoms->get_parents();
@@ -716,7 +716,7 @@ int colvaratoms_gpu::add_apply_force_nodes(
       if (!all_require_cpu_buffers) {
         const std::string error = "BUG: either none of the CVCs or "
           " all of the CVCs require CPU buffers!\n";
-        return cvm::error(error);
+        return cvmodule->error(error);
       }
     }
     cudaGraphNode_t apply_main_colvar_force_to_proxy_node;
@@ -852,7 +852,7 @@ int colvaratoms_gpu::read_positions_gpu_debug(
   size_t change_atom_i, int xyz,
   bool to_cpu, double sign, cudaStream_t stream) {
   int error_code = COLVARS_OK;
-  colvarproxy *p = cvm::main()->proxy;
+  colvarproxy *p = cvmodule->proxy;
   error_code |= colvars_gpu::atoms_pos_from_proxy(
     gpu_buffers.d_atoms_index, p->proxy_atoms_positions_gpu(),
     gpu_buffers.d_atoms_pos, cpu_atoms->num_atoms, p->get_atom_ids()->size(),
@@ -868,12 +868,12 @@ int colvaratoms_gpu::read_positions_gpu_debug(
   if (!change_fitting_group) {
     error_code |= colvars_gpu::change_one_coordinate(
       gpu_buffers.d_atoms_pos, change_atom_i, xyz,
-      sign * cvm::debug_gradients_step_size, cpu_atoms->num_atoms, stream);
+      sign * cvmodule->debug_gradients_step_size, cpu_atoms->num_atoms, stream);
   } else {
     if (cpu_atoms->fitting_group) {
       error_code |= colvars_gpu::change_one_coordinate(
         cpu_atoms->fitting_group->gpu_atom_group->gpu_buffers.d_atoms_pos, change_atom_i, xyz,
-        sign * cvm::debug_gradients_step_size, cpu_atoms->fitting_group->num_atoms, stream);
+        sign * cvmodule->debug_gradients_step_size, cpu_atoms->fitting_group->num_atoms, stream);
     }
   }
   if (to_cpu) {
@@ -914,12 +914,12 @@ int colvaratoms_gpu::calc_required_properties_gpu_debug(
 
 void colvaratoms_gpu::do_feature_side_effects_gpu(
   cvm::atom_group* cpu_atoms, int id) {
-  if (cvm::debug()) {
-    cvm::log("cvm::atom_group::do_feature_side_effects_gpu.\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("cvm::atom_group::do_feature_side_effects_gpu.\n");
   }
   switch (id) {
     case colvardeps::f_ag_fit_gradients: {
-      colvarproxy* p = cvm::main()->proxy;
+      colvarproxy* p = cvmodule->proxy;
       if (gpu_buffers.d_atoms_pos_unrotated == nullptr) {
         p->allocate_device(&gpu_buffers.d_atoms_pos_unrotated, 3 * cpu_atoms->num_atoms);
       }
@@ -943,7 +943,7 @@ void colvaratoms_gpu::do_feature_side_effects_gpu(
 
 int colvaratoms_gpu::setup_rotation(const cvm::atom_group* cpu_atoms) {
   int error_code = COLVARS_OK;
-  colvarproxy* p = cvm::main()->proxy;
+  colvarproxy* p = cvmodule->proxy;
   error_code |= p->reallocate_device(&gpu_buffers.d_ref_pos, cpu_atoms->ref_pos.size());
   error_code |=p->copy_HtoD(cpu_atoms->ref_pos.data(), gpu_buffers.d_ref_pos, cpu_atoms->ref_pos.size());
   error_code |=p->copy_HtoD(&cpu_atoms->ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
@@ -954,7 +954,7 @@ int colvaratoms_gpu::setup_rotation(const cvm::atom_group* cpu_atoms) {
 int colvaratoms_gpu::setup_rotation_derivative(const cvm::atom_group* cpu_atoms) {
   int error_code = COLVARS_OK;
   auto* group_for_fit = cpu_atoms->fitting_group ? cpu_atoms->fitting_group : cpu_atoms;
-  colvarproxy* p = cvm::main()->proxy;
+  colvarproxy* p = cvmodule->proxy;
   if (rot_deriv_gpu != nullptr) {
     rot_deriv_gpu->~rotation_derivative_gpu();
     error_code |= p->deallocate_host(&rot_deriv_gpu);
@@ -970,7 +970,7 @@ int colvaratoms_gpu::setup_rotation_derivative(const cvm::atom_group* cpu_atoms)
 
 int colvaratoms_gpu::read_total_forces(cvm::atom_group* cpu_atoms) {
   int error_code = COLVARS_OK;
-  colvarproxy *p = cvm::main()->proxy;
+  colvarproxy *p = cvmodule->proxy;
   cvm::quaternion* q_ptr = nullptr;
   if (cpu_atoms->is_enabled(colvardeps::f_ag_rotate)) {
     q_ptr = rot_gpu.get_q();

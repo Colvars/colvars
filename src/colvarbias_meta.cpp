@@ -54,7 +54,7 @@ int colvarbias_meta::init(std::string const &conf)
   error_code |= colvarbias::init(conf);
   error_code |= colvarbias_ti::init(conf);
 
-  cvm::main()->cite_feature("Metadynamics colvar bias implementation");
+  cvmodule->cite_feature("Metadynamics colvar bias implementation");
 
   enable(f_cvb_calc_pmf);
 
@@ -62,7 +62,7 @@ int colvarbias_meta::init(std::string const &conf)
   if (hill_weight > 0.0) {
     enable(f_cvb_apply_force);
   } else {
-    cvm::error("Error: hillWeight must be provided, and a positive number.\n", COLVARS_INPUT_ERROR);
+    cvmodule->error("Error: hillWeight must be provided, and a positive number.\n", COLVARS_INPUT_ERROR);
   }
 
   get_keyval(conf, "newHillFrequency", new_hill_freq, new_hill_freq);
@@ -70,9 +70,9 @@ int colvarbias_meta::init(std::string const &conf)
     enable(f_cvb_history_dependent);
   }
   if (new_hill_freq % time_step_factor != 0) {
-    error_code |= cvm::error("newHillFrequency (currently " + cvm::to_str(new_hill_freq) +
+    error_code |= cvmodule->error("newHillFrequency (currently " + cvmodule->to_str(new_hill_freq) +
                                  ") must be a multiple of timeStepFactor (" +
-                                 cvm::to_str(time_step_factor) + ").\n",
+                                 cvmodule->to_str(time_step_factor) + ").\n",
                              COLVARS_INPUT_ERROR);
   }
 
@@ -81,23 +81,23 @@ int colvarbias_meta::init(std::string const &conf)
   get_keyval(conf, "hillWidth", hill_width, hill_width);
 
   if ((colvar_sigmas.size() > 0) && (hill_width > 0.0)) {
-    error_code |= cvm::error("Error: hillWidth and gaussianSigmas are "
+    error_code |= cvmodule->error("Error: hillWidth and gaussianSigmas are "
                              "mutually exclusive.", COLVARS_INPUT_ERROR);
   }
 
   if (hill_width > 0.0) {
     colvar_sigmas.resize(num_variables());
     // Print the calculated sigma parameters
-    cvm::log("Half-widths of the Gaussian hills (sigma's):\n");
+    cvmodule->log("Half-widths of the Gaussian hills (sigma's):\n");
     for (i = 0; i < num_variables(); i++) {
       colvar_sigmas[i] = variables(i)->width * hill_width / 2.0;
-      cvm::log(variables(i)->name+std::string(": ")+
-               cvm::to_str(colvar_sigmas[i]));
+      cvmodule->log(variables(i)->name+std::string(": ")+
+               cvmodule->to_str(colvar_sigmas[i]));
     }
   }
 
   if (colvar_sigmas.size() == 0) {
-    error_code |= cvm::error("Error: positive values are required for "
+    error_code |= cvmodule->error("Error: positive values are required for "
                              "either hillWidth or gaussianSigmas.",
                              COLVARS_INPUT_ERROR);
   }
@@ -106,7 +106,7 @@ int colvarbias_meta::init(std::string const &conf)
     bool b_replicas = false;
     get_keyval(conf, "multipleReplicas", b_replicas, false);
     if (b_replicas) {
-      cvm::main()->cite_feature("Multiple-walker metadynamics colvar bias implementation");
+      cvmodule->cite_feature("Multiple-walker metadynamics colvar bias implementation");
   comm = multiple_replicas;
     } else {
       comm = single_replica;
@@ -124,16 +124,16 @@ int colvarbias_meta::init(std::string const &conf)
 
     for (i = 0; i < num_variables(); i++) {
       if (2.0*colvar_sigmas[i] < variables(i)->width) {
-        cvm::log("Warning: gaussianSigmas is too narrow for the grid "
+        cvmodule->log("Warning: gaussianSigmas is too narrow for the grid "
                  "spacing along "+variables(i)->name+".");
       }
     }
 
     get_keyval(conf, "gridsUpdateFrequency", grids_freq, grids_freq);
     if (grids_freq % time_step_factor != 0) {
-      error_code |= cvm::error("gridsUpdateFrequency (currently " + cvm::to_str(grids_freq) +
+      error_code |= cvmodule->error("gridsUpdateFrequency (currently " + cvmodule->to_str(grids_freq) +
                                    ") must be a multiple of timeStepFactor (" +
-                                   cvm::to_str(time_step_factor) + ").\n",
+                                   cvmodule->to_str(time_step_factor) + ").\n",
                                COLVARS_INPUT_ERROR);
     }
 
@@ -144,7 +144,7 @@ int colvarbias_meta::init(std::string const &conf)
       variables(i)->enable(f_cv_grid); // Could be a child dependency of a f_cvb_use_grids feature
       if (variables(i)->expand_boundaries) {
         expand_grids = true;
-        cvm::log("Metadynamics bias \""+this->name+"\""+
+        cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                  ": Will expand grids when the colvar \""+
                  variables(i)->name+"\" approaches its boundaries.\n");
@@ -172,8 +172,8 @@ int colvarbias_meta::init(std::string const &conf)
   error_code |= init_well_tempered_params(conf);
   error_code |= init_ebmeta_params(conf);
 
-  if (cvm::debug())
-    cvm::log("Done initializing the metadynamics bias \""+this->name+"\""+
+  if (cvmodule->debug())
+    cvmodule->log("Done initializing the metadynamics bias \""+this->name+"\""+
              ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+".\n");
 
   return error_code;
@@ -183,7 +183,7 @@ int colvarbias_meta::init(std::string const &conf)
 int colvarbias_meta::init_replicas_params(std::string const &conf)
 {
   int error_code = COLVARS_OK;
-  colvarproxy *proxy = cvm::main()->proxy;
+  colvarproxy *proxy = cvmodule->proxy;
 
   // in all cases, the first replica is this bias itself
   if (replicas.size() == 0) {
@@ -200,18 +200,18 @@ int colvarbias_meta::init_replicas_params(std::string const &conf)
 
     if (dump_replica_fes && (! dump_fes)) {
       dump_fes = true;
-      cvm::log("Enabling \"writeFreeEnergyFile\".\n");
+      cvmodule->log("Enabling \"writeFreeEnergyFile\".\n");
     }
 
     get_keyval(conf, "replicaID", replica_id, replica_id);
     if (!replica_id.size()) {
       if (proxy->check_replicas_enabled() == COLVARS_OK) {
         // Obtain replicaID from the communicator
-        replica_id = cvm::to_str(proxy->replica_index());
-        cvm::log("Setting replicaID from communication layer: replicaID = "+
+        replica_id = cvmodule->to_str(proxy->replica_index());
+        cvmodule->log("Setting replicaID from communication layer: replicaID = "+
                  replica_id+".\n");
       } else {
-        error_code |= cvm::error("Error: using more than one replica, but replicaID "
+        error_code |= cvmodule->error("Error: using more than one replica, but replicaID "
                                  "could not be obtained.\n",
                                  COLVARS_INPUT_ERROR);
       }
@@ -220,32 +220,32 @@ int colvarbias_meta::init_replicas_params(std::string const &conf)
     get_keyval(conf, "replicasRegistry", replicas_registry_file, replicas_registry_file);
     if (!replicas_registry_file.size()) {
       error_code |=
-          cvm::error("Error: the name of the \"replicasRegistry\" file must be provided.\n",
+          cvmodule->error("Error: the name of the \"replicasRegistry\" file must be provided.\n",
                      COLVARS_INPUT_ERROR);
     }
 
     get_keyval(conf, "replicaUpdateFrequency", replica_update_freq, replica_update_freq);
     if (replica_update_freq == 0) {
       error_code |=
-          cvm::error("Error: replicaUpdateFrequency must be positive.\n", COLVARS_INPUT_ERROR);
+          cvmodule->error("Error: replicaUpdateFrequency must be positive.\n", COLVARS_INPUT_ERROR);
     }
     if (replica_update_freq % time_step_factor != 0) {
-      error_code |= cvm::error(
-          "replicaUpdateFrequency (currently " + cvm::to_str(replica_update_freq) +
-              ") must be a multiple of timeStepFactor (" + cvm::to_str(time_step_factor) + ").\n",
+      error_code |= cvmodule->error(
+          "replicaUpdateFrequency (currently " + cvmodule->to_str(replica_update_freq) +
+              ") must be a multiple of timeStepFactor (" + cvmodule->to_str(time_step_factor) + ").\n",
           COLVARS_INPUT_ERROR);
     }
 
     if (expand_grids) {
       error_code |=
-          cvm::error("Error: expandBoundaries is not supported when using more than one replicas; "
+          cvmodule->error("Error: expandBoundaries is not supported when using more than one replicas; "
                      "please allocate wide enough boundaries for each colvar ahead of time.\n",
                      COLVARS_INPUT_ERROR);
     }
 
     if (keep_hills) {
       error_code |=
-          cvm::error("Error: multipleReplicas and keepHills are not supported together.\n",
+          cvmodule->error("Error: multipleReplicas and keepHills are not supported together.\n",
                      COLVARS_INPUT_ERROR);
     }
   }
@@ -260,12 +260,12 @@ int colvarbias_meta::init_well_tempered_params(std::string const &conf)
   get_keyval(conf, "wellTempered", well_tempered, false);
   get_keyval(conf, "biasTemperature", bias_temperature, -1.0);
   if ((bias_temperature == -1.0) && well_tempered) {
-    cvm::error("Error: biasTemperature must be set to a positive value.\n",
+    cvmodule->error("Error: biasTemperature must be set to a positive value.\n",
                COLVARS_INPUT_ERROR);
   }
   if (well_tempered) {
-    cvm::log("Well-tempered metadynamics is used.\n");
-    cvm::log("The bias temperature is "+cvm::to_str(bias_temperature)+".\n");
+    cvmodule->log("Well-tempered metadynamics is used.\n");
+    cvmodule->log("The bias temperature is "+cvmodule->to_str(bias_temperature)+".\n");
   }
   return COLVARS_OK;
 }
@@ -277,9 +277,9 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
   // for ebmeta
   get_keyval(conf, "ebMeta", ebmeta, false);
   if(ebmeta){
-    cvm::main()->cite_feature("Ensemble-biased metadynamics (ebMetaD)");
+    cvmodule->cite_feature("Ensemble-biased metadynamics (ebMetaD)");
     if (use_grids && expand_grids) {
-      error_code |= cvm::error("Error: expandBoundaries is not supported with "
+      error_code |= cvmodule->error("Error: expandBoundaries is not supported with "
                                "ebMeta; please allocate wide enough boundaries "
                                "for each colvar ahead of time and set "
                                "targetDistFile accordingly.\n",
@@ -294,7 +294,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
     cvm::real min_val = target_dist->minimum_value();
     cvm::real max_val = target_dist->maximum_value();
     if (min_val < 0.0) {
-      error_code |= cvm::error("Error: Target distribution of EBMetaD "
+      error_code |= cvmodule->error("Error: Target distribution of EBMetaD "
                                "has negative values!.\n",
                                COLVARS_INPUT_ERROR);
     }
@@ -305,21 +305,21 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
       target_dist->remove_small_values(target_dist_min_val);
     } else {
       if (target_dist_min_val==0) {
-        cvm::log("NOTE: targetDistMinVal is set to zero, the minimum value of the target \n");
-        cvm::log(" distribution will be set as the minimum positive value.\n");
+        cvmodule->log("NOTE: targetDistMinVal is set to zero, the minimum value of the target \n");
+        cvmodule->log(" distribution will be set as the minimum positive value.\n");
         cvm::real min_pos_val = target_dist->minimum_pos_value();
         if (min_pos_val <= 0.0){
-          error_code |= cvm::error("Error: Target distribution of EBMetaD has "
+          error_code |= cvmodule->error("Error: Target distribution of EBMetaD has "
                                    "negative or zero minimum positive value.\n",
                                    COLVARS_INPUT_ERROR);
         }
         if (min_val == 0.0){
-          cvm::log("WARNING: Target distribution has zero values.\n");
-          cvm::log("Zeros will be converted to the minimum positive value.\n");
+          cvmodule->log("WARNING: Target distribution has zero values.\n");
+          cvmodule->log("Zeros will be converted to the minimum positive value.\n");
           target_dist->remove_small_values(min_pos_val);
         }
       } else {
-        error_code |= cvm::error("Error: targetDistMinVal must be a value "
+        error_code |= cvmodule->error("Error: targetDistMinVal must be a value "
                                  "between 0 and 1.\n", COLVARS_INPUT_ERROR);
       }
     }
@@ -337,7 +337,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
 colvarbias_meta::~colvarbias_meta()
 {
   colvarbias_meta::clear_state_data();
-  colvarproxy *proxy = cvm::main()->proxy;
+  colvarproxy *proxy = cvmodule->proxy;
   proxy->close_output_stream(replica_hills_file);
   proxy->close_output_stream(hills_traj_file_name());
 }
@@ -391,11 +391,11 @@ colvarbias_meta::add_hill(colvarbias_meta::hill const &h)
 std::list<colvarbias_meta::hill>::const_iterator
 colvarbias_meta::delete_hill(hill_iter &h)
 {
-  if (cvm::debug()) {
-    cvm::log("Deleting hill from the metadynamics bias \""+this->name+"\""+
+  if (cvmodule->debug()) {
+    cvmodule->log("Deleting hill from the metadynamics bias \""+this->name+"\""+
              ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
              ", with step number "+
-             cvm::to_str(h->it)+(h->replica.size() ?
+             cvmodule->to_str(h->it)+(h->replica.size() ?
                                  ", replica id \""+h->replica :
                                  "")+".\n");
   }
@@ -442,7 +442,7 @@ int colvarbias_meta::update()
   }
 
   if (comm != single_replica &&
-      (cvm::step_absolute() % replica_update_freq) == 0) {
+      (cvmodule->step_absolute() % replica_update_freq) == 0) {
     // sync with the other replicas (if needed)
     error_code |= replica_share();
   }
@@ -459,11 +459,11 @@ int colvarbias_meta::update_grid_params()
   if (use_grids) {
 
     std::vector<int> curr_bin = hills_energy->get_colvars_index();
-    if (cvm::debug()) {
-      cvm::log("Metadynamics bias \""+this->name+"\""+
+    if (cvmodule->debug()) {
+      cvmodule->log("Metadynamics bias \""+this->name+"\""+
                ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                ": current coordinates on the grid: "+
-               cvm::to_str(curr_bin)+".\n");
+               cvmodule->to_str(curr_bin)+".\n");
     }
 
     if (expand_grids) {
@@ -496,11 +496,11 @@ int colvarbias_meta::update_grid_params()
             curr_bin[i] += extra_points;
 
             changed_lb = true;
-            cvm::log("Metadynamics bias \""+this->name+"\""+
+            cvmodule->log("Metadynamics bias \""+this->name+"\""+
                      ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                      ": new lower boundary for colvar \""+
                      variables(i)->name+"\", at "+
-                     cvm::to_str(new_lower_boundaries[i])+".\n");
+                     cvmodule->to_str(new_lower_boundaries[i])+".\n");
           }
 
         if (!variables(i)->is_enabled(f_cv_hard_upper_boundary))
@@ -510,11 +510,11 @@ int colvarbias_meta::update_grid_params()
             new_size += extra_points;
 
             changed_ub = true;
-            cvm::log("Metadynamics bias \""+this->name+"\""+
+            cvmodule->log("Metadynamics bias \""+this->name+"\""+
                      ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                      ": new upper boundary for colvar \""+
                      variables(i)->name+"\", at "+
-                     cvm::to_str(new_upper_boundaries[i])+".\n");
+                     cvmodule->to_str(new_upper_boundaries[i])+".\n");
           }
 
         if (changed_lb || changed_ub)
@@ -547,9 +547,9 @@ int colvarbias_meta::update_grid_params()
         hills_energy_gradients.reset(new_hills_energy_gradients);
 
         curr_bin = hills_energy->get_colvars_index();
-        if (cvm::debug())
-          cvm::log("Coordinates on the new grid: "+
-                   cvm::to_str(curr_bin)+".\n");
+        if (cvmodule->debug())
+          cvmodule->log("Coordinates on the new grid: "+
+                   cvmodule->to_str(curr_bin)+".\n");
       }
     }
   }
@@ -559,24 +559,24 @@ int colvarbias_meta::update_grid_params()
 
 int colvarbias_meta::update_bias()
 {
-  colvarproxy *proxy = cvm::main()->proxy;
+  colvarproxy *proxy = cvmodule->proxy;
   // add a new hill if the required time interval has passed
-  if (((cvm::step_absolute() % new_hill_freq) == 0) &&
+  if (((cvmodule->step_absolute() % new_hill_freq) == 0) &&
       can_accumulate_data() && is_enabled(f_cvb_history_dependent)) {
 
-    if (cvm::debug()) {
-      cvm::log("Metadynamics bias \""+this->name+"\""+
+    if (cvmodule->debug()) {
+      cvmodule->log("Metadynamics bias \""+this->name+"\""+
                ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-               ": adding a new hill at step "+cvm::to_str(cvm::step_absolute())+".\n");
+               ": adding a new hill at step "+cvmodule->to_str(cvmodule->step_absolute())+".\n");
     }
 
     cvm::real hills_scale=1.0;
 
     if (ebmeta) {
       hills_scale *= 1.0/target_dist->value(target_dist->get_colvars_index());
-      if(cvm::step_absolute() <= ebmeta_equil_steps) {
+      if(cvmodule->step_absolute() <= ebmeta_equil_steps) {
         cvm::real const hills_lambda =
-          (cvm::real(ebmeta_equil_steps - cvm::step_absolute())) /
+          (cvm::real(ebmeta_equil_steps - cvmodule->step_absolute())) /
           (cvm::real(ebmeta_equil_steps));
         hills_scale = hills_lambda + (1-hills_lambda)*hills_scale;
       }
@@ -605,7 +605,7 @@ int colvarbias_meta::update_bias()
                        hills_energy_sum_here,
                        &colvar_values);
           }
-          // cvm::log("WARNING: computing bias factor for off-grid hills. Hills energy: " + cvm::to_str(hills_energy_sum_here) + "\n");
+          // cvmodule->log("WARNING: computing bias factor for off-grid hills. Hills energy: " + cvmodule->to_str(hills_energy_sum_here) + "\n");
         }
       } else {
         calc_hills(new_hills_begin, hills.end(), hills_energy_sum_here, NULL);
@@ -617,20 +617,20 @@ int colvarbias_meta::update_bias()
 
     case single_replica:
 
-      add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
+      add_hill(hill(cvmodule->step_absolute(), hill_weight*hills_scale,
                     colvar_values, colvar_sigmas));
 
       break;
 
     case multiple_replicas:
-      add_hill(hill(cvm::step_absolute(), hill_weight*hills_scale,
+      add_hill(hill(cvmodule->step_absolute(), hill_weight*hills_scale,
                     colvar_values, colvar_sigmas, replica_id));
       std::ostream &replica_hills_os =
-        cvm::proxy->output_stream(replica_hills_file, "replica hills file");
+        cvmodule->proxy->output_stream(replica_hills_file, "replica hills file");
       if (replica_hills_os) {
         write_hill(replica_hills_os, hills.back());
       } else {
-        return cvm::error("Error: in metadynamics bias \""+this->name+"\""+
+        return cvmodule->error("Error: in metadynamics bias \""+this->name+"\""+
                           ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                           " while writing hills for the other replicas.\n", COLVARS_FILE_ERROR);
       }
@@ -644,7 +644,7 @@ int colvarbias_meta::update_bias()
 
 int colvarbias_meta::update_grid_data()
 {
-  if ((cvm::step_absolute() % grids_freq) == 0) {
+  if ((cvmodule->step_absolute() % grids_freq) == 0) {
     // map the most recent gaussians to the grids
     project_hills(new_hills_begin, hills.end(), hills_energy.get(), hills_energy_gradients.get());
     new_hills_begin = hills.end();
@@ -692,12 +692,12 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     for (ir = 0; ir < replicas.size(); ir++) {
 
       bias_energy += replicas[ir]->hills_energy->value(curr_bin);
-      if (cvm::debug()) {
-        cvm::log("Metadynamics bias \""+this->name+"\""+
+      if (cvmodule->debug()) {
+        cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                  ": current coordinates on the grid: "+
-                 cvm::to_str(curr_bin)+".\n");
-        cvm::log("Grid energy = "+cvm::to_str(bias_energy)+".\n");
+                 cvmodule->to_str(curr_bin)+".\n");
+        cvmodule->log("Grid energy = "+cvmodule->to_str(bias_energy)+".\n");
       }
     }
   } else {
@@ -718,8 +718,8 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
                replicas[ir]->hills.end(),
                bias_energy,
                values);
-    if (cvm::debug()) {
-      cvm::log("Hills energy = "+cvm::to_str(bias_energy)+".\n");
+    if (cvmodule->debug()) {
+      cvmodule->log("Hills energy = "+cvmodule->to_str(bias_energy)+".\n");
     }
   }
 
@@ -773,8 +773,8 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
   // now include the hills that have not been binned yet (starting
   // from new_hills_begin)
 
-  if (cvm::debug()) {
-    cvm::log("Metadynamics bias \""+this->name+"\""+
+  if (cvmodule->debug()) {
+    cvmodule->log("Metadynamics bias \""+this->name+"\""+
              ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
              ": adding the forces from the other replicas.\n");
   }
@@ -786,8 +786,8 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
                        replicas[ir]->hills.end(),
                        colvar_forces,
                        values);
-      if (cvm::debug()) {
-        cvm::log("Hills forces = "+cvm::to_str(colvar_forces)+".\n");
+      if (cvmodule->debug()) {
+        cvmodule->log("Hills forces = "+cvmodule->to_str(colvar_forces)+".\n");
       }
     }
   }
@@ -908,8 +908,8 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
                                     colvar_grid_gradient       *hg,
                                     bool print_progress)
 {
-  if (cvm::debug())
-    cvm::log("Metadynamics bias \""+this->name+"\""+
+  if (cvmodule->debug())
+    cvmodule->log("Metadynamics bias \""+this->name+"\""+
              ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
              ": projecting hills.\n");
 
@@ -960,18 +960,18 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
           os << std::setw(6) << std::setprecision(2)
              << 100.0 * progress
              << "% done.";
-          cvm::log(os.str());
+          cvmodule->log(os.str());
         }
       }
     }
 
   } else {
-    cvm::error("No grid object provided in metadynamics::project_hills()\n",
+    cvmodule->error("No grid object provided in metadynamics::project_hills()\n",
                COLVARS_BUG_ERROR);
   }
 
   if (print_progress) {
-    cvm::log("100.00% done.\n");
+    cvmodule->log("100.00% done.\n");
   }
 
   if (! keep_hills) {
@@ -1005,7 +1005,7 @@ int colvarbias_meta::replica_share()
   int error_code = COLVARS_OK;
   // sync with the other replicas (if needed)
   if (comm == multiple_replicas) {
-    colvarproxy *proxy = cvm::main()->proxy;
+    colvarproxy *proxy = cvmodule->proxy;
     // reread the replicas registry
     error_code |= update_replicas_registry();
     // empty the output buffer
@@ -1025,12 +1025,12 @@ size_t colvarbias_meta::replica_share_freq() const
 int colvarbias_meta::update_replicas_registry()
 {
   int error_code = COLVARS_OK;
-  auto *proxy = cvm::main()->proxy;
+  auto *proxy = cvmodule->proxy;
 
-  if (cvm::debug())
-    cvm::log("Metadynamics bias \""+this->name+"\""+
+  if (cvmodule->debug())
+    cvmodule->log("Metadynamics bias \""+this->name+"\""+
              ": updating the list of replicas, currently containing "+
-             cvm::to_str(replicas.size())+" elements.\n");
+             cvmodule->to_str(replicas.size())+" elements.\n");
 
   {
     // Load the whole file into a string
@@ -1064,8 +1064,8 @@ int colvarbias_meta::update_replicas_registry()
       for (size_t ir = 0; ir < replicas.size(); ir++) {
         if (new_replica == (replicas[ir])->replica_id) {
           // this replica was already added
-          if (cvm::debug())
-            cvm::log("Metadynamics bias \""+this->name+"\""+
+          if (cvmodule->debug())
+            cvmodule->log("Metadynamics bias \""+this->name+"\""+
                      ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                      ": skipping a replica already loaded, \""+
                      (replicas[ir])->replica_id+"\".\n");
@@ -1076,7 +1076,7 @@ int colvarbias_meta::update_replicas_registry()
 
       if (!already_loaded) {
         // add this replica to the registry
-        cvm::log("Metadynamics bias \""+this->name+"\""+
+        cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ": accessing replica \""+new_replica+"\".\n");
         replicas.push_back(new colvarbias_meta("metadynamics"));
         (replicas.back())->replica_id = new_replica;
@@ -1112,14 +1112,14 @@ int colvarbias_meta::update_replicas_registry()
       }
     }
   } else {
-    error_code |= cvm::error("Error: cannot read the replicas registry file \""+
+    error_code |= cvmodule->error("Error: cannot read the replicas registry file \""+
                              replicas_registry+"\".\n", COLVARS_FILE_ERROR);
   }
 
   // now (re)read the list file of each replica
   for (size_t ir = 0; ir < replicas.size(); ir++) {
-    if (cvm::debug())
-      cvm::log("Metadynamics bias \""+this->name+"\""+
+    if (cvmodule->debug())
+      cvmodule->log("Metadynamics bias \""+this->name+"\""+
                ": reading the list file for replica \""+
                (replicas[ir])->replica_id+"\".\n");
 
@@ -1133,14 +1133,14 @@ int colvarbias_meta::update_replicas_registry()
         !(list_is >> key) ||
         !(key == std::string("hillsFile")) ||
         !(list_is >> new_hills_file)) {
-      cvm::log("Metadynamics bias \""+this->name+"\""+
+      cvmodule->log("Metadynamics bias \""+this->name+"\""+
                ": failed to read the file \""+
                (replicas[ir])->replica_list_file+"\": will try again after "+
-               cvm::to_str(replica_update_freq)+" steps.\n");
+               cvmodule->to_str(replica_update_freq)+" steps.\n");
       (replicas[ir])->update_status++;
     } else {
       if (new_state_file != (replicas[ir])->replica_state_file) {
-        cvm::log("Metadynamics bias \""+this->name+"\""+
+        cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ": replica \""+(replicas[ir])->replica_id+
                  "\" has supplied a new state file, \""+new_state_file+
                  "\".\n");
@@ -1152,9 +1152,9 @@ int colvarbias_meta::update_replicas_registry()
     proxy->close_input_stream((replicas[ir])->replica_list_file);
   }
 
-  if (cvm::debug())
-    cvm::log("Metadynamics bias \""+this->name+"\": the list of replicas contains "+
-             cvm::to_str(replicas.size())+" elements.\n");
+  if (cvmodule->debug())
+    cvmodule->log("Metadynamics bias \""+this->name+"\": the list of replicas contains "+
+             cvmodule->to_str(replicas.size())+" elements.\n");
 
   return error_code;
 }
@@ -1162,7 +1162,7 @@ int colvarbias_meta::update_replicas_registry()
 
 int colvarbias_meta::read_replica_files()
 {
-  auto *proxy = cvm::main()->proxy;
+  auto *proxy = cvmodule->proxy;
 
   // Note: we start from the 2nd replica.
   for (size_t ir = 1; ir < replicas.size(); ir++) {
@@ -1171,7 +1171,7 @@ int colvarbias_meta::read_replica_files()
     if ( (! (replicas[ir])->has_data) ||
          (! (replicas[ir])->replica_state_file_in_sync) ) {
       if ((replicas[ir])->replica_state_file.size()) {
-        cvm::log("Metadynamics bias \""+this->name+"\""+
+        cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ": reading the state of replica \""+
                  (replicas[ir])->replica_id+"\" from file \""+
                  (replicas[ir])->replica_state_file+"\".\n");
@@ -1182,20 +1182,20 @@ int colvarbias_meta::read_replica_files()
           (replicas[ir])->replica_state_file_in_sync = true;
           (replicas[ir])->update_status = 0;
         } else {
-          cvm::log("Failed to read the file \""+
+          cvmodule->log("Failed to read the file \""+
                    (replicas[ir])->replica_state_file+
                    "\": will try again in "+
-                   cvm::to_str(replica_update_freq)+" steps.\n");
+                   cvmodule->to_str(replica_update_freq)+" steps.\n");
           (replicas[ir])->replica_state_file_in_sync = false;
           (replicas[ir])->update_status++;
         }
         proxy->close_input_stream((replicas[ir])->replica_state_file);
       } else {
-        cvm::log("Metadynamics bias \""+this->name+"\""+
+        cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ": the state file of replica \""+
                  (replicas[ir])->replica_id+"\" is currently undefined: "
                  "will try again after "+
-                 cvm::to_str(replica_update_freq)+" steps.\n");
+                 cvmodule->to_str(replica_update_freq)+" steps.\n");
         (replicas[ir])->update_status++;
       }
     }
@@ -1208,8 +1208,8 @@ int colvarbias_meta::read_replica_files()
     // now read the hills added after writing the state file
     if ((replicas[ir])->replica_hills_file.size()) {
 
-      if (cvm::debug())
-        cvm::log("Metadynamics bias \""+this->name+"\""+
+      if (cvmodule->debug())
+        cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ": checking for new hills from replica \""+
                  (replicas[ir])->replica_id+"\" in the file \""+
                  (replicas[ir])->replica_hills_file+"\".\n");
@@ -1236,27 +1236,27 @@ int colvarbias_meta::read_replica_files()
           (replicas[ir])->replica_state_file_in_sync = false;
           // and record the failure
           (replicas[ir])->update_status++;
-          cvm::log("Failed to read the file \""+(replicas[ir])->replica_hills_file+
+          cvmodule->log("Failed to read the file \""+(replicas[ir])->replica_hills_file+
                    "\" at the previous position: will try again in "+
-                   cvm::to_str(replica_update_freq)+" steps.\n");
+                   cvmodule->to_str(replica_update_freq)+" steps.\n");
         } else {
 
           while ((replicas[ir])->read_hill(is)) {
-            cvm::log("Metadynamics bias \""+this->name+"\""+
+            cvmodule->log("Metadynamics bias \""+this->name+"\""+
                      ": received a hill from replica \""+
                      (replicas[ir])->replica_id+
                      "\" at step "+
-                     cvm::to_str(((replicas[ir])->hills.back()).it)+".\n");
+                     cvmodule->to_str(((replicas[ir])->hills.back()).it)+".\n");
           }
           is.clear();
           // store the position for the next read
           (replicas[ir])->replica_hills_file_pos = is.tellg();
-          if (cvm::debug()) {
-            cvm::log("Metadynamics bias \""+this->name+"\""+
+          if (cvmodule->debug()) {
+            cvmodule->log("Metadynamics bias \""+this->name+"\""+
                      ": stopped reading file \""+
                      (replicas[ir])->replica_hills_file+
                      "\" at position "+
-                     cvm::to_str((replicas[ir])->replica_hills_file_pos)+".\n");
+                     cvmodule->to_str((replicas[ir])->replica_hills_file_pos)+".\n");
           }
 
           // test whether this is the end of the file
@@ -1269,10 +1269,10 @@ int colvarbias_meta::read_replica_files()
         }
 
       } else {
-        cvm::log("Failed to read the file \""+
+        cvmodule->log("Failed to read the file \""+
                  (replicas[ir])->replica_hills_file+
                  "\": will try again in "+
-                 cvm::to_str(replica_update_freq)+" steps.\n");
+                 cvmodule->to_str(replica_update_freq)+" steps.\n");
         (replicas[ir])->update_status++;
       }
       proxy->close_input_stream((replicas[ir])->replica_hills_file);
@@ -1281,11 +1281,11 @@ int colvarbias_meta::read_replica_files()
     size_t const n_flush = (replica_update_freq/new_hill_freq + 1);
     if ((replicas[ir])->update_status > 3*n_flush) {
       // TODO: suspend the calculation?
-      cvm::log("WARNING: metadynamics bias \""+this->name+"\""+
+      cvmodule->log("WARNING: metadynamics bias \""+this->name+"\""+
                " could not read information from replica \""+
                (replicas[ir])->replica_id+
                "\" after more than "+
-               cvm::to_str((replicas[ir])->update_status * replica_update_freq)+
+               cvmodule->to_str((replicas[ir])->update_status * replica_update_freq)+
                " steps.  Ensure that it is still running.\n");
     }
   }
@@ -1304,16 +1304,16 @@ int colvarbias_meta::set_state_params(std::string const &state_conf)
   colvarparse::get_keyval(state_conf, "keepHills", restart_keep_hills, false,
                           colvarparse::parse_restart);
 
-  if ((!restart_keep_hills) && (cvm::main()->restart_version_number() < 20210604)) {
+  if ((!restart_keep_hills) && (cvmodule->restart_version_number() < 20210604)) {
     if (keep_hills) {
-      cvm::log("Warning: could not ensure that keepHills was enabled when "
+      cvmodule->log("Warning: could not ensure that keepHills was enabled when "
                "this state file was written; because it is enabled now, "
                "it is assumed that it was also then, but please verify.\n");
       restart_keep_hills = true;
     }
   } else {
     if (restart_keep_hills) {
-      cvm::log("This state file/stream contains explicit hills.\n");
+      cvmodule->log("This state file/stream contains explicit hills.\n");
     }
   }
 
@@ -1321,7 +1321,7 @@ int colvarbias_meta::set_state_params(std::string const &state_conf)
   if (colvarparse::get_keyval(state_conf, "replicaID", check_replica,
                               std::string(""), colvarparse::parse_restart) &&
       (check_replica != this->replica_id)) {
-    return cvm::error("Error: in the state file , the "
+    return cvmodule->error("Error: in the state file , the "
                       "\"metadynamics\" block has a different replicaID ("+
                       check_replica+" instead of "+replica_id+").\n",
                       COLVARS_INPUT_ERROR);
@@ -1344,7 +1344,7 @@ IST & colvarbias_meta::read_grid_data_template_(IST& is, std::string const &key,
       is.setstate(std::ios::failbit);
       if (!rebin_grids) {
         if ((backup_grid == nullptr) || (comm == single_replica)) {
-          cvm::error("Error: couldn't read grid data for metadynamics bias \""+
+          cvmodule->error("Error: couldn't read grid data for metadynamics bias \""+
                      this->name+"\""+
                      ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                      "; if useGrids was off when the state file was written, "
@@ -1371,8 +1371,8 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
     bool const need_backup = has_data;
 
     if (need_backup) {
-      if (cvm::debug())
-        cvm::log("Backing up grids for metadynamics bias \"" + this->name + "\"" +
+      if (cvmodule->debug())
+        cvmodule->log("Backing up grids for metadynamics bias \"" + this->name + "\"" +
                  ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") + ".\n");
 
       hills_energy_backup = std::move(hills_energy);
@@ -1389,11 +1389,11 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
                                                         hills_energy_gradients_backup.get());
 
     if (is) {
-      cvm::log("  successfully read the biasing potential and its gradients from grids.\n");
+      cvmodule->log("  successfully read the biasing potential and its gradients from grids.\n");
     } else {
       if (need_backup) {
-        if (cvm::debug())
-          cvm::log("Restoring grids from backup for metadynamics bias \"" + this->name + "\"" +
+        if (cvmodule->debug())
+          cvmodule->log("Restoring grids from backup for metadynamics bias \"" + this->name + "\"" +
                    ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") + ".\n");
         // Restoring content from original grid
         hills_energy->copy_grid(*hills_energy_backup);
@@ -1409,34 +1409,34 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
   size_t const old_hills_size = hills.size();
   hill_iter old_hills_end = hills.end();
   hill_iter old_hills_off_grid_end = hills_off_grid.end();
-  if (cvm::debug()) {
-    cvm::log("Before reading hills from the state file, there are "+
-             cvm::to_str(hills.size())+" hills in memory.\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("Before reading hills from the state file, there are "+
+             cvmodule->to_str(hills.size())+" hills in memory.\n");
   }
 
   // Read any hills following the grid data (if any)
   while (read_hill(is)) {
-    if (cvm::debug()) {
-      cvm::log("Read a previously saved hill under the "
+    if (cvmodule->debug()) {
+      cvmodule->log("Read a previously saved hill under the "
                "metadynamics bias \"" +
-               this->name + "\", created at step " + cvm::to_str((hills.back()).it) +
-               "; position in stream is " + cvm::to_str(is.tellg()) + ".\n");
+               this->name + "\", created at step " + cvmodule->to_str((hills.back()).it) +
+               "; position in stream is " + cvmodule->to_str(is.tellg()) + ".\n");
     }
   }
 
   is.clear();
 
   new_hills_begin = hills.end();
-  cvm::log("  successfully read "+cvm::to_str(hills.size() - old_hills_size)+
+  cvmodule->log("  successfully read "+cvmodule->to_str(hills.size() - old_hills_size)+
            " explicit hills from state.\n");
 
   if (existing_hills) {
     // Prune any hills that pre-existed those just read
     hills.erase(hills.begin(), old_hills_end);
     hills_off_grid.erase(hills_off_grid.begin(), old_hills_off_grid_end);
-    if (cvm::debug()) {
-      cvm::log("After pruning the old hills, there are now "+
-               cvm::to_str(hills.size())+" hills in memory.\n");
+    if (cvmodule->debug()) {
+      cvmodule->log("After pruning the old hills, there are now "+
+               cvmodule->to_str(hills.size())+" hills in memory.\n");
     }
   }
 
@@ -1445,7 +1445,7 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 
   if (use_grids) {
     if (!hills_off_grid.empty()) {
-      cvm::log(cvm::to_str(hills_off_grid.size())+" hills are near the "
+      cvmodule->log(cvmodule->to_str(hills_off_grid.size())+" hills are near the "
                "grid boundaries: they will be computed analytically "
                "and saved to the state files.\n");
     }
@@ -1453,8 +1453,8 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 
   colvarbias_ti::read_state_data(is);
 
-  if (cvm::debug())
-    cvm::log("colvarbias_meta::read_restart() done\n");
+  if (cvmodule->debug())
+    cvmodule->log("colvarbias_meta::read_restart() done\n");
 
   has_data = true;
 
@@ -1493,26 +1493,26 @@ void colvarbias_meta::rebin_grids_after_restart()
     std::shared_ptr<colvar_grid_gradient> new_hills_energy_gradients(
         new colvar_grid_gradient(colvars, nullptr, new_hills_energy));
 
-    if (cvm::debug()) {
+    if (cvmodule->debug()) {
       std::ostringstream tmp_os;
       tmp_os << "hills_energy parameters:\n";
       tmp_os << hills_energy->get_state_params();
       tmp_os << "new_hills_energy parameters:\n";
       tmp_os << new_hills_energy->get_state_params();
-      cvm::log(tmp_os.str());
+      cvmodule->log(tmp_os.str());
     }
 
     if (restart_keep_hills && !hills.empty()) {
       // if there are hills, recompute the new grids from them
-      cvm::log("Rebinning the energy and forces grids from "+
-               cvm::to_str(hills.size())+" hills (this may take a bit)...\n");
+      cvmodule->log("Rebinning the energy and forces grids from "+
+               cvmodule->to_str(hills.size())+" hills (this may take a bit)...\n");
       project_hills(hills.begin(), hills.end(), new_hills_energy.get(),
                     new_hills_energy_gradients.get(), true);
-      cvm::log("rebinning done.\n");
+      cvmodule->log("rebinning done.\n");
 
     } else {
       // otherwise, use the grids in the restart file
-      cvm::log("Rebinning the energy and forces grids "
+      cvmodule->log("Rebinning the energy and forces grids "
                "from the grids in the restart file.\n");
       new_hills_energy->map_grid(*hills_energy);
       new_hills_energy_gradients->map_grid(*hills_energy_gradients);
@@ -1545,14 +1545,14 @@ OST &colvarbias_meta::write_hill_template_(OST &os, colvarbias_meta::hill const 
 
   write_state_data_key(os, "step", false);
   if (formatted)
-    os << std::setw(cvm::it_width);
+    os << std::setw(cvmodule->it_width);
   os << h.it;
   if (formatted)
     os << "\n";
 
   write_state_data_key(os, "weight", false);
   if (formatted)
-    os << std::setprecision(cvm::en_prec) << std::setw(cvm::en_width);
+    os << std::setprecision(cvmodule->en_prec) << std::setw(cvmodule->en_width);
   os << h.W;
   if (formatted)
     os << "\n";
@@ -1561,7 +1561,7 @@ OST &colvarbias_meta::write_hill_template_(OST &os, colvarbias_meta::hill const 
   write_state_data_key(os, "centers", false);
   for (i = 0; i < (h.centers).size(); i++) {
     if (formatted)
-      os << " " << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width);
+      os << " " << std::setprecision(cvmodule->cv_prec) << std::setw(cvmodule->cv_width);
     os << h.centers[i];
   }
   if (formatted)
@@ -1571,7 +1571,7 @@ OST &colvarbias_meta::write_hill_template_(OST &os, colvarbias_meta::hill const 
   write_state_data_key(os, "widths", false);
   for (i = 0; i < (h.sigmas).size(); i++) {
     if (formatted)
-      os << " " << std::setprecision(cvm::cv_prec) << std::setw(cvm::cv_width);
+      os << " " << std::setprecision(cvmodule->cv_prec) << std::setw(cvmodule->cv_width);
     os << 2.0 * h.sigmas[i];
   }
   if (formatted)
@@ -1609,7 +1609,7 @@ template <typename IST> IST &hill_stream_error(IST &is, size_t start_pos, std::s
   is.clear();
   is.seekg(start_pos);
   is.setstate(std::ios::failbit);
-  cvm::error("Error: in reading data for keyword \"" + key + "\" from stream.\n",
+  cvmodule->error("Error: in reading data for keyword \"" + key + "\" from stream.\n",
              COLVARS_INPUT_ERROR);
   return is;
 }
@@ -1682,7 +1682,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is)
         return hill_stream_error<IST>(is, start_pos, "replicaID");
       }
       if (h_replica != replica_id) {
-        cvm::error("Error: trying to read a hill created by replica \"" + h_replica +
+        cvmodule->error("Error: trying to read a hill created by replica \"" + h_replica +
                        "\" for replica \"" + replica_id + "\"; did you swap output files?\n",
                    COLVARS_INPUT_ERROR);
         return hill_stream_error<IST>(is, start_pos, "replicaID");
@@ -1698,8 +1698,8 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is)
   }
 
   if ((h_it <= state_file_step) && !restart_keep_hills) {
-    if (cvm::debug())
-      cvm::log("Skipping a hill older than the state file for metadynamics bias \"" + this->name +
+    if (cvmodule->debug())
+      cvmodule->log("Skipping a hill older than the state file for metadynamics bias \"" + this->name +
                "\"" + ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") + "\n");
     return is;
   }
@@ -1743,8 +1743,8 @@ int colvarbias_meta::setup_output()
 {
   int error_code = COLVARS_OK;
 
-  output_prefix = cvm::output_prefix();
-  if (cvm::main()->num_biases_feature(colvardeps::f_cvb_calc_pmf) > 1) {
+  output_prefix = cvmodule->output_prefix();
+  if (cvmodule->num_biases_feature(colvardeps::f_cvb_calc_pmf) > 1) {
     // if this is not the only free energy integrator, append
     // this bias's name, to distinguish it from the output of the other
     // biases producing a .pmf file
@@ -1753,17 +1753,17 @@ int colvarbias_meta::setup_output()
 
   if (comm == multiple_replicas) {
 
-    auto const pwd = cvm::main()->proxy->get_current_work_dir();
+    auto const pwd = cvmodule->proxy->get_current_work_dir();
     replica_list_file =
-        cvm::main()->proxy->join_paths(pwd, this->name + "." + replica_id + ".files.txt");
+        cvmodule->proxy->join_paths(pwd, this->name + "." + replica_id + ".files.txt");
     // replica_hills_file and replica_state_file are those written
     // by the current replica; within the mirror biases, they are
     // those by another replica
-    replica_hills_file = cvm::main()->proxy->join_paths(
-        pwd, cvm::output_prefix() + ".colvars." + this->name + "." + replica_id + ".hills");
+    replica_hills_file = cvmodule->proxy->join_paths(
+        pwd, cvmodule->output_prefix() + ".colvars." + this->name + "." + replica_id + ".hills");
 
-    replica_state_file = cvm::main()->proxy->join_paths(
-        pwd, cvm::output_prefix() + ".colvars." + this->name + "." + replica_id + ".state");
+    replica_state_file = cvmodule->proxy->join_paths(
+        pwd, cvmodule->output_prefix() + ".colvars." + this->name + "." + replica_id + ".state");
 
     // now register this replica
 
@@ -1771,7 +1771,7 @@ int colvarbias_meta::setup_output()
     bool registered_replica = false;
     // Open without failing on error: the file may not be there yet
     std::istream &reg_is =
-        cvm::main()->proxy->input_stream(replicas_registry_file, "replicas registry file", false);
+        cvmodule->proxy->input_stream(replicas_registry_file, "replicas registry file", false);
     if (reg_is) {
       std::string existing_replica("");
       std::string existing_replica_file("");
@@ -1785,7 +1785,7 @@ int colvarbias_meta::setup_output()
         }
       }
     }
-    cvm::main()->proxy->close_input_stream(replicas_registry_file);
+    cvmodule->proxy->close_input_stream(replicas_registry_file);
 
     // if this replica was not included yet, we should generate a
     // new record for it: but first, we write this replica's files,
@@ -1804,11 +1804,11 @@ int colvarbias_meta::setup_output()
 
     // if we're running without grids, use a growing list of "hills" files
     // otherwise, just one state file and one "hills" file as buffer
-    std::ostream &list_os = cvm::proxy->output_stream(replica_list_file, "replica list file");
+    std::ostream &list_os = cvmodule->proxy->output_stream(replica_list_file, "replica list file");
     if (list_os) {
       list_os << "stateFile " << replica_state_file << "\n";
       list_os << "hillsFile " << replica_hills_file << "\n";
-      cvm::proxy->close_output_stream(replica_list_file);
+      cvmodule->proxy->close_output_stream(replica_list_file);
     } else {
       error_code |= COLVARS_FILE_ERROR;
     }
@@ -1826,7 +1826,7 @@ int colvarbias_meta::setup_output()
 
   if (b_hills_traj) {
     std::ostream &hills_traj_os =
-      cvm::proxy->output_stream(hills_traj_file_name(), "hills trajectory file");
+      cvmodule->proxy->output_stream(hills_traj_file_name(), "hills trajectory file");
     if (!hills_traj_os) {
       error_code |= COLVARS_FILE_ERROR;
     }
@@ -1838,7 +1838,7 @@ int colvarbias_meta::setup_output()
 
 std::string const colvarbias_meta::hills_traj_file_name() const
 {
-  return std::string(cvm::output_prefix()+
+  return std::string(cvmodule->output_prefix()+
                      ".colvars."+this->name+
                      ( (comm != single_replica) ?
                        ("."+replica_id) :
@@ -1929,9 +1929,9 @@ int colvarbias_meta::write_output_files()
   }
   if (b_hills_traj) {
     std::ostream &hills_traj_os =
-        cvm::proxy->output_stream(hills_traj_file_name(), "hills trajectory file");
+        cvmodule->proxy->output_stream(hills_traj_file_name(), "hills trajectory file");
     hills_traj_os << hills_traj_os_buf.str();
-    cvm::proxy->flush_output_stream(hills_traj_file_name());
+    cvmodule->proxy->flush_output_stream(hills_traj_file_name());
     // clear the buffer
     hills_traj_os_buf.str("");
     hills_traj_os_buf.clear();
@@ -1942,7 +1942,7 @@ int colvarbias_meta::write_output_files()
 
 void colvarbias_meta::write_pmf()
 {
-  colvarproxy *proxy = cvm::main()->proxy;
+  colvarproxy *proxy = cvmodule->proxy;
   // allocate a new grid to store the pmf
   colvar_grid_scalar *pmf = new colvar_grid_scalar(*hills_energy);
   pmf->setup();
@@ -1976,7 +1976,7 @@ void colvarbias_meta::write_pmf()
       std::string const fes_file_name(this->output_prefix +
                                       ((comm != single_replica) ? ".partial" : "") +
                                       (dump_fes_save ?
-                                       "."+cvm::to_str(cvm::step_absolute()) : "") +
+                                       "."+cvmodule->to_str(cvmodule->step_absolute()) : "") +
                                       ".pmf");
       pmf->write_multicol(fes_file_name, "PMF file");
     }
@@ -2012,7 +2012,7 @@ void colvarbias_meta::write_pmf()
     }
     std::string const fes_file_name(this->output_prefix +
                                     (dump_fes_save ?
-                                     "."+cvm::to_str(cvm::step_absolute()) : "") +
+                                     "."+cvmodule->to_str(cvmodule->step_absolute()) : "") +
                                     ".pmf");
     pmf->write_multicol(fes_file_name, "partial PMF file");
   }
@@ -2024,10 +2024,10 @@ void colvarbias_meta::write_pmf()
 
 int colvarbias_meta::write_replica_state_file()
 {
-  colvarproxy *proxy = cvm::proxy;
+  colvarproxy *proxy = cvmodule->proxy;
 
-  if (cvm::debug()) {
-    cvm::log("Writing replica state file for bias \""+name+"\"\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("Writing replica state file for bias \""+name+"\"\n");
   }
 
   int error_code = COLVARS_OK;
@@ -2035,10 +2035,10 @@ int colvarbias_meta::write_replica_state_file()
   // Write to temporary state file
   std::string const tmp_state_file(replica_state_file+".tmp");
   error_code |= proxy->remove_file(tmp_state_file);
-  std::ostream &rep_state_os = cvm::proxy->output_stream(tmp_state_file, "temporary state file");
+  std::ostream &rep_state_os = cvmodule->proxy->output_stream(tmp_state_file, "temporary state file");
   if (rep_state_os) {
     if (!write_state(rep_state_os)) {
-      error_code |= cvm::error("Error: in writing to temporary file \""+
+      error_code |= cvmodule->error("Error: in writing to temporary file \""+
                                tmp_state_file+"\".\n", COLVARS_FILE_ERROR);
     }
   }
@@ -2053,7 +2053,7 @@ int colvarbias_meta::write_replica_state_file()
 int colvarbias_meta::reopen_replica_buffer_file()
 {
   int error_code = COLVARS_OK;
-  colvarproxy *proxy = cvm::proxy;
+  colvarproxy *proxy = cvmodule->proxy;
   if (proxy->output_stream(replica_hills_file, "replica hills file")) {
     error_code |= proxy->close_output_stream(replica_hills_file);
   }
@@ -2072,7 +2072,7 @@ std::string colvarbias_meta::hill::output_traj()
 {
   std::ostringstream os;
   os.setf(std::ios::fixed, std::ios::floatfield);
-  os << std::setw(cvm::it_width) << it << " ";
+  os << std::setw(cvmodule->it_width) << it << " ";
 
   os.setf(std::ios::scientific, std::ios::floatfield);
 
@@ -2080,20 +2080,20 @@ std::string colvarbias_meta::hill::output_traj()
   os << "  ";
   for (i = 0; i < centers.size(); i++) {
     os << " ";
-    os << std::setprecision(cvm::cv_prec)
-       << std::setw(cvm::cv_width)  << centers[i];
+    os << std::setprecision(cvmodule->cv_prec)
+       << std::setw(cvmodule->cv_width)  << centers[i];
   }
 
   os << "  ";
   for (i = 0; i < sigmas.size(); i++) {
     os << " ";
-    os << std::setprecision(cvm::cv_prec)
-       << std::setw(cvm::cv_width) << sigmas[i];
+    os << std::setprecision(cvmodule->cv_prec)
+       << std::setw(cvmodule->cv_width) << sigmas[i];
   }
 
   os << "  ";
-  os << std::setprecision(cvm::en_prec)
-     << std::setw(cvm::en_width) << W << "\n";
+  os << std::setprecision(cvmodule->en_prec)
+     << std::setw(cvmodule->en_width) << W << "\n";
 
   return os.str();
 }
@@ -2117,12 +2117,12 @@ colvarbias_meta::hill::hill(cvm::step_number it_in,
     centers[i] = cv_values[i];
     sigmas[i] = cv_sigmas[i];
   }
-  if (cvm::debug()) {
-    cvm::log("New hill, applied to "+cvm::to_str(cv_values.size())+
+  if (cvmodule->debug()) {
+    cvmodule->log("New hill, applied to "+cvmodule->to_str(cv_values.size())+
              " collective variables, with centers "+
-             cvm::to_str(centers)+", sigmas "+
-             cvm::to_str(sigmas)+" and weight "+
-             cvm::to_str(W)+".\n");
+             cvmodule->to_str(centers)+", sigmas "+
+             cvmodule->to_str(sigmas)+" and weight "+
+             cvmodule->to_str(W)+".\n");
   }
 }
 

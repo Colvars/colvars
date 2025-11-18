@@ -87,7 +87,7 @@ template <typename scalar_type>
 void ArithmeticPathBase<scalar_type>::reComputeLambda(const vector<scalar_type>& rmsd_between_refs) {
     scalar_type mean_square_displacements = 0.0;
     for (size_t i_frame = 1; i_frame < total_frames; ++i_frame) {
-        cvm::log(std::string("Distance between frame ") + cvm::to_str(i_frame) + " and " + cvm::to_str(i_frame + 1) + " is " + cvm::to_str(rmsd_between_refs[i_frame - 1]) + std::string("\n"));
+        cvmodule->log(std::string("Distance between frame ") + cvmodule->to_str(i_frame) + " and " + cvmodule->to_str(i_frame + 1) + " is " + cvmodule->to_str(rmsd_between_refs[i_frame - 1]) + std::string("\n"));
         mean_square_displacements += rmsd_between_refs[i_frame - 1] * rmsd_between_refs[i_frame - 1];
     }
     mean_square_displacements /= scalar_type(total_frames - 1);

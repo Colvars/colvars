@@ -53,7 +53,7 @@ CVSCRIPT(bias_local_sample_count,
              return COLVARSCRIPT_ERROR;
            }
          }
-         script->set_result_str(cvm::to_str(this_bias->local_sample_count(radius)));
+         script->set_result_str(cvmodule->to_str(this_bias->local_sample_count(radius)));
          return COLVARS_OK;
          )
 
@@ -120,7 +120,7 @@ CVSCRIPT(bias_help,
            if (cmdstr.size()) {
              script->set_result_str(script->get_command_cmdline_help(colvarscript::use_bias,
                                                                      cmdstr));
-             return cvm::get_error();
+             return cvmodule->get_error();
            } else {
              return COLVARSCRIPT_ERROR;
            }
@@ -152,7 +152,7 @@ CVSCRIPT(bias_save,
          1, 1,
          "prefix : string - Prefix for the state file of this bias",
          std::string const prefix =
-           cvm::state_file_prefix(script->obj_to_str(script->get_bias_cmd_arg(0, objc, objv)));
+           cvmodule->state_file_prefix(script->obj_to_str(script->get_bias_cmd_arg(0, objc, objv)));
          return this_bias->write_state_prefix(prefix);
          )
 
