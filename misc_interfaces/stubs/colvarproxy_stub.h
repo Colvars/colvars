@@ -39,7 +39,7 @@ public:
 
   int check_atom_id(int atom_number) override;
 
-  /// @brief Read next frame from XYZ file and call cvm::calc()
+  /// @brief Read next frame from XYZ file and call cvmodule->calc()
   /// @param filename Input XYZ file
   /// @param write_force_file Write the applied forces to files
   /// @return Error code

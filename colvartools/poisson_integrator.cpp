@@ -18,7 +18,7 @@ int main (int argc, char *argv[]) {
 
   std::string gradfile (argv[1]);
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
-  if (cvm::get_error()) { return -1; }
+  if (cvmodule->get_error()) { return -1; }
 
   int itmax = 10000;
   cvm::real err;
