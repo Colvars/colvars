@@ -9,7 +9,28 @@
 
 #include "CLI11.hpp"
 
+#if defined(COLVARS_TRAP_FPE)
+#include <cfenv>
+// Enable common floating-point exceptions on Linux/glibc
+void enable_fp_traps() {
+    std::feclearexcept(FE_ALL_EXCEPT);
+#ifdef __GLIBC__
+    feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+    std::cout << "Floating-point traps enabled (glibc)\n";
+#else
+    std::cout << "feenableexcept() not available on this platform\n";
+#endif
+}
+#endif
+
+
 int main(int argc, char *argv[]) {
+
+  #if defined(COLVARS_TRAP_FPE)
+  // Trap floating-point exceptions
+  enable_fp_traps();
+  #endif
+
   CLI::App app{"Colvars stub interface for testing"};
   argv = app.ensure_utf8(argv);
   std::string configuration_file;
