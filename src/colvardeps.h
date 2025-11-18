@@ -448,7 +448,7 @@ public:
   inline void check_enabled(int f, std::string const &reason) const
   {
     if (! is_enabled(f)) {
-      cvm::error("Error: "+reason+" requires that the feature \""+
+      cvmodule->error("Error: "+reason+" requires that the feature \""+
                  features()[f]->description+"\" is active.\n", COLVARS_BUG_ERROR);
     }
   }

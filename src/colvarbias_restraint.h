@@ -160,7 +160,7 @@ protected:
   /// \brief Update the stage number based on the current step
   /// Note: this is idempotent so multiple calls are safe
   inline void update_stage() {
-    stage = (cvm::step_absolute() - first_step) / target_nsteps;
+    stage = (cvmodule->step_absolute() - first_step) / target_nsteps;
     if (stage > target_nstages) {
       stage = target_nstages;
     }

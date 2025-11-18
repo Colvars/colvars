@@ -165,7 +165,7 @@ protected:
     // using the gradient of the square distance to calculate the
     // velocity (non-scalar variables automatically taken into
     // account)
-    cvm::real dt = cvm::dt();
+    cvm::real dt = cvmodule->dt();
     return ( ( (dt > 0.0) ? (1.0/dt) : 1.0 ) *
              0.5 * dist2_lgrad(xnew, xold) );
   }
@@ -767,8 +767,8 @@ inline void colvar::add_bias_force(colvarvalue const &force)
 {
   check_enabled(f_cv_apply_force,
                 std::string("applying a force to the variable \""+name+"\""));
-  if (cvm::debug()) {
-    cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("Adding biasing force "+cvmodule->to_str(force)+" to colvar \""+name+"\".\n");
   }
   fb += force;
 }
@@ -776,8 +776,8 @@ inline void colvar::add_bias_force(colvarvalue const &force)
 
 inline void colvar::add_bias_force_actual_value(colvarvalue const &force)
 {
-  if (cvm::debug()) {
-    cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("Adding biasing force "+cvmodule->to_str(force)+" to colvar \""+name+"\".\n");
   }
   fb_actual += force;
 }

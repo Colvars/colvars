@@ -142,7 +142,7 @@ int colvarmodule_gpu_calc::atom_group_read_data_gpu(
     g.graph_exec_initialized = true;
     if (colvar_module->debug()) {
       // Debug graph
-      const std::string filename = cvm::output_prefix() + "_read_data.dot";
+      const std::string filename = cvmodule->output_prefix() + "_read_data.dot";
       colvar_module->log("Writing read data graph to " + filename);
       g.dump_graph(filename.c_str());
     }
@@ -301,7 +301,7 @@ int colvarmodule_gpu_calc::atom_group_calc_fit_gradients(
     g.graph_exec_initialized = true;
     if (colvar_module->debug()) {
       // Debug graph
-      const std::string filename = cvm::output_prefix() + "_fit_gradients.dot";
+      const std::string filename = cvmodule->output_prefix() + "_fit_gradients.dot";
       colvar_module->log("Writing fit gradients graph to " + filename);
       g.dump_graph(filename.c_str());
     }
@@ -548,7 +548,7 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
     apply_forces_compute.graph_exec_initialized = true;
     // Debug graph
     if (colvar_module->debug()) {
-      const std::string filename = cvm::output_prefix() + "_apply_forces.dot";
+      const std::string filename = cvmodule->output_prefix() + "_apply_forces.dot";
       colvar_module->log("Writing apply forces graph to " + filename);
       apply_forces_compute.dump_graph(filename.c_str());
     }

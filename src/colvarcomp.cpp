@@ -51,9 +51,9 @@ int colvar::cvc::set_function_type(std::string const &type)
 {
   function_types.push_back(type);
   update_description();
-  cvm::main()->cite_feature(function_types[0]+" colvar component");
+  cvmodule->cite_feature(function_types[0]+" colvar component");
   for (size_t i = function_types.size()-1; i > 0; i--) {
-    cvm::main()->cite_feature(function_types[i]+" colvar component"+
+    cvmodule->cite_feature(function_types[i]+" colvar component"+
                               " (derived from "+function_types[i-1]+")");
   }
   return COLVARS_OK;
@@ -62,20 +62,20 @@ int colvar::cvc::set_function_type(std::string const &type)
 
 int colvar::cvc::init(std::string const &conf)
 {
-  if (cvm::debug())
-    cvm::log("Initializing cvc base object.\n");
+  if (cvmodule->debug())
+    cvmodule->log("Initializing cvc base object.\n");
 
   int error_code = COLVARS_OK;
 
   std::string const old_name(name);
 
   if (name.size() > 0) {
-    cvm::log("Updating configuration for component \""+name+"\"\n");
+    cvmodule->log("Updating configuration for component \""+name+"\"\n");
   }
 
   if (get_keyval(conf, "name", name, name)) {
     if ((name != old_name) && (old_name.size() > 0)) {
-      error_code |= cvm::error("Error: cannot rename component \"" + old_name +
+      error_code |= cvmodule->error("Error: cannot rename component \"" + old_name +
                                    "\" after initialization (new name = \"" + name + "\")",
                                COLVARS_INPUT_ERROR);
       name = old_name;
@@ -86,7 +86,7 @@ int colvar::cvc::init(std::string const &conf)
   get_keyval(conf, "componentCoeff", sup_coeff, sup_coeff);
   get_keyval(conf, "componentExp", sup_np, sup_np);
   if (sup_coeff != 1.0 || sup_np != 1) {
-    cvm::main()->cite_feature("Linear and polynomial combination of colvar components");
+    cvmodule->cite_feature("Linear and polynomial combination of colvar components");
   }
   // TODO these could be condensed into get_keyval()
   register_param("componentCoeff", reinterpret_cast<void *>(&sup_coeff));
@@ -101,10 +101,10 @@ int colvar::cvc::init(std::string const &conf)
   if (period != 0.0) {
     if (!is_available(f_cvc_periodic)) {
       error_code |=
-          cvm::error("Error: invalid use of period and/or "
+          cvmodule->error("Error: invalid use of period and/or "
                      "wrapAround in a \"" +
-                         function_type() + "\" component.\n" + "Period: " + cvm::to_str(period) +
-                         " wrapAround: " + cvm::to_str(wrap_center),
+                         function_type() + "\" component.\n" + "Period: " + cvmodule->to_str(period) +
+                         " wrapAround: " + cvmodule->to_str(wrap_center),
                      COLVARS_INPUT_ERROR);
     } else {
       enable(f_cvc_periodic);
@@ -112,7 +112,7 @@ int colvar::cvc::init(std::string const &conf)
   }
 
   if ((wrap_center != 0.0) && !is_enabled(f_cvc_periodic)) {
-    error_code |= cvm::error("Error: wrapAround was defined for a non-periodic component.\n",
+    error_code |= cvmodule->error("Error: wrapAround was defined for a non-periodic component.\n",
                              COLVARS_INPUT_ERROR);
   }
 
@@ -130,8 +130,8 @@ int colvar::cvc::init(std::string const &conf)
   // Attempt scalable calculations when in parallel? (By default yes, if available)
   get_keyval(conf, "scalable", b_try_scalable, b_try_scalable);
 
-  if (cvm::debug())
-    cvm::log("Done initializing cvc base object.\n");
+  if (cvmodule->debug())
+    cvmodule->log("Done initializing cvc base object.\n");
 
   return error_code;
 }
@@ -139,16 +139,16 @@ int colvar::cvc::init(std::string const &conf)
 
 int colvar::cvc::init_total_force_params(std::string const &conf)
 {
-  if (cvm::get_error()) return COLVARS_ERROR;
+  if (cvmodule->get_error()) return COLVARS_ERROR;
 
   if (get_keyval_feature(this, conf, "oneSiteSystemForce",
                          f_cvc_one_site_total_force, is_enabled(f_cvc_one_site_total_force))) {
-    cvm::log("Warning: keyword \"oneSiteSystemForce\" is deprecated: "
+    cvmodule->log("Warning: keyword \"oneSiteSystemForce\" is deprecated: "
              "please use \"oneSiteTotalForce\" instead.\n");
   }
   if (get_keyval_feature(this, conf, "oneSiteTotalForce",
                          f_cvc_one_site_total_force, is_enabled(f_cvc_one_site_total_force))) {
-    cvm::log("Computing total force on group 1 only\n");
+    cvmodule->log("Computing total force on group 1 only\n");
   }
 
   if (! is_enabled(f_cvc_one_site_total_force)) {
@@ -192,7 +192,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
     }
 
     if (group_conf.empty()) {
-      error_code |= cvm::error("Error: atom group \"" + group->key + "\" has no definition.\n",
+      error_code |= cvmodule->error("Error: atom group \"" + group->key + "\" has no definition.\n",
                                COLVARS_INPUT_ERROR);
       delete group;
       group = nullptr;
@@ -201,11 +201,11 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
       return group;
     }
 
-    cvm::increase_depth();
+    cvmodule->increase_depth();
     error_code |= group->parse(group_conf);
     if (error_code != COLVARS_OK) {
       error_code |=
-          cvm::error("Error: in definition of atom group \"" + std::string(group_key) + "\".",
+          cvmodule->error("Error: in definition of atom group \"" + std::string(group_key) + "\".",
                      COLVARS_INPUT_ERROR);
       delete group;
       group = nullptr;
@@ -213,13 +213,13 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
       register_atom_group(group);
       error_code |= group->check_keywords(group_conf, group_key);
     }
-    cvm::decrease_depth();
+    cvmodule->decrease_depth();
 
   } else {
 
     if (!optional) {
       error_code |=
-          cvm::error("Error: atom group \"" + std::string(group_key) + "\" is required.\n",
+          cvmodule->error("Error: atom group \"" + std::string(group_key) + "\" is required.\n",
                      COLVARS_INPUT_ERROR);
     }
   }
@@ -301,7 +301,7 @@ int colvar::cvc::init_dependencies() {
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
       if (is_not_set(i)) {
-        cvm::error("Uninitialized feature " + cvm::to_str(i) + " in " + description);
+        cvmodule->error("Uninitialized feature " + cvmodule->to_str(i) + " in " + description);
       }
     }
   }
@@ -339,7 +339,7 @@ int colvar::cvc::init_dependencies() {
   feature_states[f_cvc_one_site_total_force].available = true;
 
   // Features That are implemented only for certain simulation engine configurations
-  feature_states[f_cvc_scalable_com].available = (cvm::proxy->scalable_group_coms() == COLVARS_OK);
+  feature_states[f_cvc_scalable_com].available = (cvmodule->proxy->scalable_group_coms() == COLVARS_OK);
   feature_states[f_cvc_scalable].available = feature_states[f_cvc_scalable_com].available;
 
   return COLVARS_OK;
@@ -524,7 +524,7 @@ void colvar::cvc::collect_gradients(std::vector<int> const &atom_ids, std::vecto
 
 void colvar::cvc::calc_force_invgrads()
 {
-  cvm::error("Error: calculation of inverse gradients is not implemented "
+  cvmodule->error("Error: calculation of inverse gradients is not implemented "
              "for colvar components of type \""+function_type()+"\".\n",
              COLVARS_NOT_IMPLEMENTED);
 }
@@ -532,7 +532,7 @@ void colvar::cvc::calc_force_invgrads()
 
 void colvar::cvc::calc_Jacobian_derivative()
 {
-  cvm::error("Error: calculation of Jacobian derivatives is not implemented "
+  cvmodule->error("Error: calculation of Jacobian derivatives is not implemented "
              "for colvar components of type \""+function_type()+"\".\n",
              COLVARS_NOT_IMPLEMENTED);
 }
@@ -566,8 +566,8 @@ void colvar::cvc::debug_gradients()
   // NOTE: this assumes that groups for this cvc are non-overlapping,
   // since atom coordinates are modified only within the current group
 
-  cvm::log("Debugging gradients for " + description);
-  colvarproxy *p = cvm::main()->proxy;
+  cvmodule->log("Debugging gradients for " + description);
+  colvarproxy *p = cvmodule->proxy;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   cudaStream_t stream = p->get_default_stream();
   checkGPUError(cudaStreamSynchronize(stream));
@@ -618,7 +618,7 @@ void colvar::cvc::debug_gradients()
 
     const auto rot_0 = group->rot.matrix();
 
-    // cvm::log("gradients     = "+cvm::to_str (gradients)+"\n");
+    // cvmodule->log("gradients     = "+cvmodule->to_str (gradients)+"\n");
 
     auto *group_for_fit = group->fitting_group ? group->fitting_group : group;
     cvm::atom_pos fit_gradient_sum, gradient_sum;
@@ -629,22 +629,22 @@ void colvar::cvc::debug_gradients()
         size_t j;
 
         // fit_gradients are in the simulation frame: we should print them in the rotated frame
-        cvm::log("Fit gradients for group " + group->key + ":\n");
+        cvmodule->log("Fit gradients for group " + group->key + ":\n");
         for (j = 0; j < group_for_fit->size(); j++) {
           const cvm::rvector fit_grad(
             group_for_fit->fit_gradients_x(j),
             group_for_fit->fit_gradients_y(j),
             group_for_fit->fit_gradients_z(j));
-          cvm::log((group->fitting_group ? std::string("fittingGroup") : group->key) +
-                  "[" + cvm::to_str(j) + "] = " +
+          cvmodule->log((group->fitting_group ? std::string("fittingGroup") : group->key) +
+                  "[" + cvmodule->to_str(j) + "] = " +
                   (group->is_enabled(f_ag_rotate) ?
-                    cvm::to_str(rot_0 * (fit_grad)) :
-                    cvm::to_str(fit_grad)));
+                    cvmodule->to_str(rot_0 * (fit_grad)) :
+                    cvmodule->to_str(fit_grad)));
         }
       }
     }
 
-    cvm::log("Gradients for group " + group->key + ":\n");
+    cvmodule->log("Gradients for group " + group->key + ":\n");
     std::vector<cvm::rvector> gradients = ag_gradients.at(group)[0];
     // debug the gradients
     for (size_t ia = 0; ia < group->size(); ia++) {
@@ -668,9 +668,9 @@ void colvar::cvc::debug_gradients()
           group->read_positions();
           // change one coordinate
           switch (id) {
-            case 0: group->pos_x(ia) += cvm::debug_gradients_step_size; break;
-            case 1: group->pos_y(ia) += cvm::debug_gradients_step_size; break;
-            case 2: group->pos_z(ia) += cvm::debug_gradients_step_size; break;
+            case 0: group->pos_x(ia) += cvmodule->debug_gradients_step_size; break;
+            case 1: group->pos_y(ia) += cvmodule->debug_gradients_step_size; break;
+            case 2: group->pos_z(ia) += cvmodule->debug_gradients_step_size; break;
           }
           group->calc_required_properties();
         }
@@ -689,9 +689,9 @@ void colvar::cvc::debug_gradients()
           group->read_positions();
           // change one coordinate
           switch (id) {
-            case 0: group->pos_x(ia) -= cvm::debug_gradients_step_size; break;
-            case 1: group->pos_y(ia) -= cvm::debug_gradients_step_size; break;
-            case 2: group->pos_z(ia) -= cvm::debug_gradients_step_size; break;
+            case 0: group->pos_x(ia) -= cvmodule->debug_gradients_step_size; break;
+            case 1: group->pos_y(ia) -= cvmodule->debug_gradients_step_size; break;
+            case 2: group->pos_z(ia) -= cvmodule->debug_gradients_step_size; break;
           }
           group->calc_required_properties();
         }
@@ -700,15 +700,15 @@ void colvar::cvc::debug_gradients()
         if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_2 = x[0];
 
         cvm::real const num_diff = 0.5 * (x_1 - x_2);
-        cvm::real const dx_pred = cvm::debug_gradients_step_size * gradients[ia][id];
+        cvm::real const dx_pred = cvmodule->debug_gradients_step_size * gradients[ia][id];
         cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
-        cvm::main()->record_gradient_error(rel_error);
+        cvmodule->record_gradient_error(rel_error);
 
-        cvm::log("Atom "+cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
-                  ", comp. " + cvm::to_str(id) + ":" + \
-                  "  dx(actual) = " + cvm::to_str (num_diff, 19, 12) + \
-                  "  dx(interp) = " + cvm::to_str (dx_pred, 19, 12) + \
-                  "  rel. error = " + cvm::to_str(rel_error, 12, 5) + ".\n");
+        cvmodule->log("Atom "+cvmodule->to_str(ia) + ", ID " + cvmodule->to_str(this_atom.id) + \
+                  ", comp. " + cvmodule->to_str(id) + ":" + \
+                  "  dx(actual) = " + cvmodule->to_str (num_diff, 19, 12) + \
+                  "  dx(interp) = " + cvmodule->to_str (dx_pred, 19, 12) + \
+                  "  rel. error = " + cvmodule->to_str(rel_error, 12, 5) + ".\n");
       }
     }
 
@@ -752,9 +752,9 @@ void colvar::cvc::debug_gradients()
             ref_group->read_positions();
             // change one coordinate
             switch (id) {
-              case 0: ref_group->pos_x(ia) += cvm::debug_gradients_step_size; break;
-              case 1: ref_group->pos_y(ia) += cvm::debug_gradients_step_size; break;
-              case 2: ref_group->pos_z(ia) += cvm::debug_gradients_step_size; break;
+              case 0: ref_group->pos_x(ia) += cvmodule->debug_gradients_step_size; break;
+              case 1: ref_group->pos_y(ia) += cvmodule->debug_gradients_step_size; break;
+              case 2: ref_group->pos_z(ia) += cvmodule->debug_gradients_step_size; break;
             }
             group->calc_required_properties();
           }
@@ -776,9 +776,9 @@ void colvar::cvc::debug_gradients()
             ref_group->read_positions();
             // change one coordinate
             switch (id) {
-              case 0: ref_group->pos_x(ia) -= cvm::debug_gradients_step_size; break;
-              case 1: ref_group->pos_y(ia) -= cvm::debug_gradients_step_size; break;
-              case 2: ref_group->pos_z(ia) -= cvm::debug_gradients_step_size; break;
+              case 0: ref_group->pos_x(ia) -= cvmodule->debug_gradients_step_size; break;
+              case 1: ref_group->pos_y(ia) -= cvmodule->debug_gradients_step_size; break;
+              case 2: ref_group->pos_z(ia) -= cvmodule->debug_gradients_step_size; break;
             }
             group->calc_required_properties();
           }
@@ -786,22 +786,22 @@ void colvar::cvc::debug_gradients()
           cvm::real const x_2 = x.real_value;
 
           cvm::real const num_diff = 0.5 * (x_1 - x_2);
-          cvm::real const dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
+          cvm::real const dx_pred = cvmodule->debug_gradients_step_size * atom_grad[id];
           cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
-          cvm::main()->record_gradient_error(rel_error);
+          cvmodule->record_gradient_error(rel_error);
 
-          cvm::log("fittingGroup atom " + cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
-                    ", comp. " + cvm::to_str(id) + ":" + \
-                    "  dx(actual) = " + cvm::to_str (num_diff, 19, 12) + \
-                    "  dx(interp) = " + cvm::to_str (dx_pred, 19, 12) + \
-                    "  rel. error = " + cvm::to_str(rel_error, 12, 5) + ".\n");
+          cvmodule->log("fittingGroup atom " + cvmodule->to_str(ia) + ", ID " + cvmodule->to_str(this_atom.id) + \
+                    ", comp. " + cvmodule->to_str(id) + ":" + \
+                    "  dx(actual) = " + cvmodule->to_str (num_diff, 19, 12) + \
+                    "  dx(interp) = " + cvmodule->to_str (dx_pred, 19, 12) + \
+                    "  rel. error = " + cvmodule->to_str(rel_error, 12, 5) + ".\n");
         }
       }
     }
 
-    cvm::log("Gradient sum: " +  cvm::to_str(gradient_sum) +
-          "  Fit gradient sum: " + cvm::to_str(fit_gradient_sum) +
-          "  Total " + cvm::to_str(gradient_sum + fit_gradient_sum));
+    cvmodule->log("Gradient sum: " +  cvmodule->to_str(gradient_sum) +
+          "  Fit gradient sum: " + cvmodule->to_str(fit_gradient_sum) +
+          "  Total " + cvmodule->to_str(gradient_sum + fit_gradient_sum));
   }
 
   // Do cleanups

@@ -30,7 +30,7 @@ colvarproxy_stub::colvarproxy_stub()
   updated_masses_ = updated_charges_ = true;
 
   colvars = new colvarmodule(this);
-  cvm::log("Using minimal testing interface.\n");
+  cvmodule->log("Using minimal testing interface.\n");
 
   colvars->cv_traj_freq = 0; // I/O will be handled explicitly
   colvars->restart_out_freq = 0;
@@ -85,7 +85,7 @@ int colvarproxy_stub::set_unit_system(std::string const &units_in,
   // colvarmodule sets this flag if new units are requested while colvars are already defined
   if (check_only) {
     if ((units != "" && units_in != units) || (units == "" && units_in != "real")) {
-      cvm::error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
+      cvmodule->error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
                   + units + "\".\nReset the Colvars Module or delete all variables to change the unit.\n");
       return COLVARS_ERROR;
     } else {
@@ -107,7 +107,7 @@ int colvarproxy_stub::set_unit_system(std::string const &units_in,
     angstrom_value_ = 0.1;    // nm
     kcal_mol_value_ = 4.184;  // kJ/mol
   } else {
-    cvm::error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
+    cvmodule->error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
     return COLVARS_ERROR;
   }
 
@@ -166,7 +166,7 @@ int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_forc
   int err = colvars->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
   std::string force_filename;
   if (write_force_file) {
-    force_filename = colvars->output_prefix() + "_forces_" + cvm::to_str(colvars->it) + ".dat";
+    force_filename = colvars->output_prefix() + "_forces_" + cvmodule->to_str(colvars->it) + ".dat";
   }
   if ( !err ) {
     auto& new_forces = *(modify_atom_applied_forces());

@@ -26,13 +26,17 @@
 /// need to parse input inherit from this
 class colvarparse : public colvarparams {
 
+protected:
+
+  colvarmodule *cvmodule = nullptr;
+
 public:
 
   /// Default constructor
   colvarparse();
 
   /// Constructor that stores the object's config string
-  colvarparse(const std::string& conf);
+  colvarparse(colvarmodule *cvmodule_in, const std::string& conf);
 
   /// Set the object ready to parse a new configuration string
   void clear();

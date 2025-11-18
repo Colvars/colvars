@@ -51,7 +51,7 @@ void colvarproxy_lammps::init()
   // Create instance of scripting interface
   script = new colvarscript(this, colvars);
 
-  cvm::log("Using LAMMPS interface, version " + cvm::to_str(COLVARPROXY_VERSION) + ".\n");
+  cvmodule->log("Using LAMMPS interface, version " + cvmodule->to_str(COLVARPROXY_VERSION) + ".\n");
 
   colvars->cite_feature("LAMMPS engine");
   colvars->cite_feature("Colvars-LAMMPS interface");
@@ -106,12 +106,12 @@ int colvarproxy_lammps::setup()
 
 double colvarproxy_lammps::compute()
 {
-  if (cvm::debug()) {
-    cvm::log(std::string(cvm::line_marker) +
+  if (cvmodule->debug()) {
+    cvmodule->log(std::string(cvmodule->line_marker) +
         "colvarproxy_lammps step no. " +
-        cvm::to_str(_lmp->update->ntimestep) + " [first - last = " +
-        cvm::to_str(_lmp->update->beginstep) + " - " +
-        cvm::to_str(_lmp->update->endstep) + "]\n");
+        cvmodule->to_str(_lmp->update->ntimestep) + " [first - last = " +
+        cvmodule->to_str(_lmp->update->beginstep) + " - " +
+        cvmodule->to_str(_lmp->update->endstep) + "]\n");
   }
 
   if (first_timestep) {
@@ -152,9 +152,9 @@ double colvarproxy_lammps::compute()
     boundaries_type = boundaries_unsupported;
   }
 
-  if (cvm::debug()) {
-    cvm::log(std::string(cvm::line_marker) +
-             "colvarproxy_lammps, step no. " + cvm::to_str(colvarmodule::it) + "\n" +
+  if (cvmodule->debug()) {
+    cvmodule->log(std::string(cvmodule->line_marker) +
+             "colvarproxy_lammps, step no. " + cvmodule->to_str(colvarmodule::it) + "\n" +
              "Updating internal data.\n");
   }
 
@@ -164,22 +164,22 @@ double colvarproxy_lammps::compute()
 
   bias_energy = 0.0;
 
-  if (cvm::debug()) {
-    cvm::log("atoms_ids = " + cvm::to_str(atoms_ids) + "\n");
-    cvm::log("atoms_refcount = " + cvm::to_str(atoms_refcount) + "\n");
-    cvm::log("atoms_positions = " + cvm::to_str(atoms_positions) + "\n");
-    cvm::log("atoms_new_colvar_forces = " + cvm::to_str(atoms_new_colvar_forces) + "\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("atoms_ids = " + cvmodule->to_str(atoms_ids) + "\n");
+    cvmodule->log("atoms_refcount = " + cvmodule->to_str(atoms_refcount) + "\n");
+    cvmodule->log("atoms_positions = " + cvmodule->to_str(atoms_positions) + "\n");
+    cvmodule->log("atoms_new_colvar_forces = " + cvmodule->to_str(atoms_new_colvar_forces) + "\n");
   }
 
   // Call the collective variable module
   if (colvars->calc() != COLVARS_OK)
-    cvm::error("Error in the collective variables module.\n", COLVARS_ERROR);
+    cvmodule->error("Error in the collective variables module.\n", COLVARS_ERROR);
 
-  if (cvm::debug()) {
-    cvm::log("atoms_ids = " + cvm::to_str(atoms_ids) + "\n");
-    cvm::log("atoms_refcount = " + cvm::to_str(atoms_refcount) + "\n");
-    cvm::log("atoms_positions = " + cvm::to_str(atoms_positions) + "\n");
-    cvm::log("atoms_new_colvar_forces = " + cvm::to_str(atoms_new_colvar_forces) + "\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("atoms_ids = " + cvmodule->to_str(atoms_ids) + "\n");
+    cvmodule->log("atoms_refcount = " + cvmodule->to_str(atoms_refcount) + "\n");
+    cvmodule->log("atoms_positions = " + cvmodule->to_str(atoms_positions) + "\n");
+    cvmodule->log("atoms_new_colvar_forces = " + cvmodule->to_str(atoms_new_colvar_forces) + "\n");
   }
 
   return bias_energy;
@@ -225,8 +225,8 @@ char const *colvarproxy_lammps::script_obj_to_str(unsigned char *obj)
 
 std::vector<std::string> colvarproxy_lammps::script_obj_to_str_vector(unsigned char *obj)
 {
-  if (cvm::debug()) {
-    cvm::log("Called colvarproxy_lammps::script_obj_to_str_vector().\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("Called colvarproxy_lammps::script_obj_to_str_vector().\n");
   }
   std::string const input(reinterpret_cast<char *>(obj));
   return LAMMPS_NS::utils::split_words(input); // :-)))
@@ -238,7 +238,7 @@ int colvarproxy_lammps::set_unit_system(std::string const &units_in, bool /*chec
 {
   std::string lmp_units = _lmp->update->unit_style;
   if (units_in != lmp_units) {
-    cvm::error("Error: Specified unit system for Colvars \"" + units_in  +
+    cvmodule->error("Error: Specified unit system for Colvars \"" + units_in  +
                "\" is incompatible with LAMMPS internal units (" + lmp_units + ").\n");
     return COLVARS_ERROR;
   }
@@ -251,13 +251,13 @@ int colvarproxy_lammps::check_atom_id(int atom_number)
 {
   int const aid = atom_number;
 
-  if (cvm::debug())
-    log("Adding atom " + cvm::to_str(atom_number) + " for collective variables calculation.\n");
+  if (cvmodule->debug())
+    log("Adding atom " + cvmodule->to_str(atom_number) + " for collective variables calculation.\n");
 
   // TODO add upper boundary check?
   if ((aid < 0)) {
-    cvm::error("Error: invalid atom number specified, "  +
-               cvm::to_str(atom_number) + "\n", COLVARS_INPUT_ERROR);
+    cvmodule->error("Error: invalid atom number specified, "  +
+               cvmodule->to_str(atom_number) + "\n", COLVARS_INPUT_ERROR);
     return COLVARS_INPUT_ERROR;
   }
 
