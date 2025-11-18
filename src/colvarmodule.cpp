@@ -197,12 +197,6 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 }
 
 
-colvarmodule * colvarmodule::main()
-{
-  return proxy ? proxy->colvars : NULL;
-}
-
-
 std::vector<colvar *> *colvarmodule::variables()
 {
   return &colvars;
@@ -859,7 +853,6 @@ colvar *colvarmodule::colvar_by_name(std::string const &name)
 }
 
 cvm::atom_group *colvarmodule::atom_group_soa_by_name(std::string const& name) {
-  colvarmodule *cv = this->main();
   for (std::vector<cvm::atom_group *>::iterator agi = this->named_atom_groups_soa.begin();
        agi != this->named_atom_groups_soa.end();
        agi++) {
@@ -2101,7 +2094,7 @@ void colvarmodule::log(std::string const &message, int min_log_level)
 
   if (proxy) { // This may run before cvm construction
     // allow logging when the module is not fully initialized
-    size_t const d = (this->main() != NULL) ? depth() : 0;
+    size_t const d = depth();
     if (d > 0) {
       proxy->log((std::string(2*d, ' ')) + message + trailing_newline);
     } else {
@@ -2130,7 +2123,6 @@ void colvarmodule::decrease_depth()
 size_t & colvarmodule::depth()
 {
   // NOTE: do not call log() or error() here, to avoid recursion
-  colvarmodule *cv = this->main();
   if (proxy->get_smp_mode() == colvarproxy::smp_mode_t::cvcs) {
     int const nt = proxy->smp_num_threads();
     if (int(this->depth_v.size()) != nt) {
