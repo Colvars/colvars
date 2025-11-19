@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index cdd4eab2..fea69b30 100644
+index c92a09dc..42be96ea 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -239,12 +239,14 @@ OBJS = \
@@ -17,7 +17,7 @@ index cdd4eab2..fea69b30 100644
  	$(DSTDIR)/GridForceGrid.o \
  	$(DSTDIR)/GridforceGridCUDA.o \
  	$(DSTDIR)/GromacsTopFile.o \
-@@ -428,7 +430,9 @@ CUDAOBJSRAW = \
+@@ -429,7 +431,9 @@ CUDAOBJSRAW = \
  	$(DSTDIR)/DeviceCUDAkernel.o \
  	$(DSTDIR)/MShakeKernel.o \
  	$(DSTDIR)/CudaGlobalMasterServerKernel.o \
@@ -28,7 +28,7 @@ index cdd4eab2..fea69b30 100644
  
  CUDAOBJSRAWSTATIC = $(CUDAOBJSRAW) \
  	$(DSTDIR)/CudaPmeSolverUtilKernel_dlink.o
-@@ -765,9 +769,9 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
+@@ -769,9 +773,9 @@ depends: $(MKINCDIR) $(CIFILES) $(MKDSTDIR) $(DEPENDFILE)
  	for i in $(CUDAOBJSRAW) ; do \
  	      SRCFILE=`basename $$i .o`.cu ; \
  	      $(ECHO) "checking dependencies for $(SRCDIR)/$$SRCFILE" ; \
