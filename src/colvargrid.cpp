@@ -9,18 +9,12 @@
 
 #include <ctime>
 
-#include "colvar.h"
-#include "colvargrid.h"
-#include "colvargrid_def.h"
 #include "colvarmodule.h"
 #include "colvarparse.h"
 #include "colvarvalue.h"
-
-#include <fstream>
-#include <sstream>
-
-// #include <algorithm>
-#include <iostream>
+#include "colvar.h"
+#include "colvargrid.h"
+#include "colvargrid_def.h"
 
 colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
                                      std::string config)
@@ -34,8 +28,7 @@ colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
 
 colvar_grid_count::colvar_grid_count(std::string &filename)
 : colvar_grid<size_t>(filename, 1)
-{
-}
+{}
 
 std::string colvar_grid_count::get_state_params() const
 {
