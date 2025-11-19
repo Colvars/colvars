@@ -1565,7 +1565,7 @@ public:
   inline void acc_abf_force(std::vector<colvarvalue> const &cv_value,
                         cvm::real const *force,
                         bool b_smoothed,
-                        cvm::real smoothing) {
+                        cvm::real smoothing = 2.0) {
 
     int i, imin, imax, j, jmin, jmax;
     std::vector<int> bin(nd, 0);
