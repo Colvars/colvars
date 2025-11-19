@@ -222,19 +222,18 @@ int colvarbias_abf::init(std::string const &conf)
     get_keyval(conf, "integrateMaxIterations", integrate_iterations, 10000, colvarparse::parse_silent);
     get_keyval(conf, "integrateTol", integrate_tol, 1e-6, colvarparse::parse_silent);
     get_keyval(conf, "integrateWeighted", integrate_weighted, false, colvarparse::parse_silent);
-    // TODO: Are those
     // Projected ABF, updating the integrated PMF on the fly
     get_keyval(conf, "pABFintegrateFreq", pabf_freq, 0, colvarparse::parse_silent);
     get_keyval(conf, "pABFintegrateMaxIterations", pabf_integrate_iterations, 100, colvarparse::parse_silent);
     get_keyval(conf, "pABFintegrateTol", pabf_integrate_tol, 1e-4, colvarparse::parse_silent);
-    get_keyval(conf, "pABFintegrateWeighted", pabf_integrate_weighted, false, colvarparse::parse_silent);
 
     pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted));
     if (b_CZAR_estimator) {
+      // Possible extension: weighted integration for CZAR surface
       czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients));
     }
     if (shared_on) {
-      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
+      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted));
     }
   }
 
@@ -561,7 +560,7 @@ int colvarbias_abf::replica_share() {
     // in which case local arrays have not been initialized yet
     local_samples.reset(new colvar_grid_count(colvars, samples));
     local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
-    local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
+    local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted));
   }
   // Calculate the delta gradient and count for the local replica
   last_gradients->delta_grid(*gradients);
