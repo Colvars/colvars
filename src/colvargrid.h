@@ -1024,6 +1024,8 @@ public:
   colvar_grid_count(std::vector<colvar *>  &colvars,
                     std::string            config);
 
+  /// Constructor from a multicol file
+  /// used by poisson_integrator
   colvar_grid_count(std::string &filename);
 
   /// Increment the counter at given position
