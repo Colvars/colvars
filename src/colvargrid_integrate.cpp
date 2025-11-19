@@ -18,58 +18,40 @@ std::string vec_to_string(const std::vector<int> &vec)
 };
 
 colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
-                                           std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted)
-    : colvar_grid_scalar(colvars, gradients, true), b_smoothed(false), gradients(gradients)
+                                           std::shared_ptr<colvar_grid_gradient> gradients_in,
+                                           bool weighted_in)
+    : colvar_grid_scalar(colvars, gradients_in, true),
+      b_smoothed(false),
+      gradients(gradients_in),
+      weighted(weighted_in)
 {
   // parent class colvar_grid_scalar is constructed with add_extra_bin option set to true
   // hence PMF grid is wider than gradient grid if non-PBC
 
-  if (nd > 1) {
-    cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
-    divergence.resize(nt);
-    weighted = is_weighted;
-  }
+  init_Poisson_computation();
 }
 
 
-colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients,
-                                           bool is_weighted)
-    : b_smoothed(false), gradients(gradients)
+colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients_in,
+                                           bool weighted_in)
+    : b_smoothed(false),
+      gradients(gradients_in),
+      weighted(weighted_in)
 {
   nd = gradients->num_variables();
   nx = gradients->number_of_points_vec();
   widths = gradients->widths;
   periodic = gradients->periodic;
-  weighted = is_weighted;
-  init_computation_nx_nt();
+
   // Expand grid by 1 bin in non-periodic dimensions
   for (size_t i = 0; i < nd; i++) {
-    if (!periodic[i])
-      nx[i]++;
+    if (!periodic[i]) nx[i]++;
     // Shift the grid by half the bin width (values at edges instead of center of bins)
     lower_boundaries.push_back(gradients->lower_boundaries[i].real_value - 0.5 * widths[i]);
   }
   setup(nx);
-  if (nd > 1 || weighted) {
-    divergence.resize(computation_nt);
-  }
-  if (weighted) {
-    div_border_supplement.resize(computation_nt);
-    prepare_divergence_stencils();
-    prepare_laplacian_stencils();
-  }
-  need_to_extrapolate_solution = false;
-  for (size_t i = 0; i < nd; i++) {
-    if (!periodic[i])
-      need_to_extrapolate_solution = true;
-  }
-  if (!need_to_extrapolate_solution) {
-    computation_grid = this;
-  } else {
-    computation_grid->periodic = periodic;
-    computation_grid->setup(computation_nx);
-    // this -> data.clear();
-  }
+
+  init_Poisson_computation();
 }
 
 
@@ -202,11 +184,9 @@ void colvargrid_integrate::update_div_neighbors(const std::vector<int> &ix0)
   }
 }
 
-size_t colvargrid_integrate::get_grad(std::vector<cvm::real> &g, std::vector<int> ix)
+void colvargrid_integrate::get_grad(std::vector<cvm::real> &g, std::vector<int> ix)
 {
-  size_t count = gradients->samples->value(ix);
   gradients->vector_value(ix, g);
-  return count;
 }
 
 
@@ -359,7 +339,7 @@ void colvargrid_integrate::update_weighted_div_local(const std::vector<int> &ix0
     }
 
     gradients->wrap_detect_edge(surrounding_point_coordinates);
-    get_regularized_F(gradient_at_surrounding_point, surrounding_point_coordinates);
+    get_regularized_grad(gradient_at_surrounding_point, surrounding_point_coordinates);
     cvm::real weight = regularized_weights[gradients->address(surrounding_point_coordinates)];
 
     for (size_t i = 0; i < nd; i++) {
@@ -1067,9 +1047,10 @@ cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix)
   return regularized_weight;
 }
 
-void colvargrid_integrate::get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix)
+void colvargrid_integrate::get_regularized_grad(std::vector<cvm::real> &F, std::vector<int> &ix)
 {
-  size_t count = get_grad(F, ix);
+  size_t count = gradients->samples->value(ix);
+  gradients->vector_value(ix, F);
   float multiplier = 1;
   if (count < min_count_F) {
     multiplier = 0;
@@ -1124,7 +1105,11 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
       gradient_position[j] += gradients_to_average_relative_positions[i][j];
     }
     std::vector<cvm::real> gradient(nd);
-    get_regularized_F(gradient, gradient_position);
+    if (weighted) {
+      get_regularized_grad(gradient, gradient_position);
+    } else {
+      get_grad(gradient, gradient_position);
+    }
     for (size_t j = 0; j < nd; j++) {
       averaged_border_normal_gradient[j] += gradient[j];
     }
@@ -1207,8 +1192,8 @@ void colvargrid_integrate::nr_linbcg_sym(const bool weighted, const std::vector<
     }
     //     asolve(r,z);  // precon
     err = l2norm(r) / bnrm;
-    // if (cvm::debug())
-    std::cout << "iter=" << std::setw(4) << iter + 1 << std::setw(12) << err << std::endl;
+    if (cvm::debug())
+      std::cout << "iter=" << std::setw(4) << iter + 1 << std::setw(12) << err << std::endl;
     if (err <= tol)
       break;
   }
