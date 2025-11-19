@@ -99,7 +99,7 @@ protected:
 
   // Get G at a specific point where G is the gradient F if there is enough observation else it's F
   // multiplied by a coefficient < 1
-  void get_regularized_F(std::vector<cvm::real> &F, std::vector<int> &ix);
+  void get_regularized_grad(std::vector<cvm::real> &F, std::vector<int> &ix);
 
   // Get weight regularized by a lower and upper threshold and a ramp in between
   cvm::real get_regularized_weight(std::vector<int> &ix);
@@ -118,8 +118,7 @@ protected:
 
   /// Obtain the gradient vector at given location ix, if available
   /// ix needs to be wrapped beforehand in PBC, if necessary
-  /// Returns the sample count in given bin if available.
-  size_t get_grad(std::vector<cvm::real> &g, std::vector<int> ix);
+  void get_grad(std::vector<cvm::real> &g, std::vector<int> ix);
 
   /// \brief Solve linear system based on CG, valid for symmetric matrices only
   /// atimes : left multiplication by LHS symmetric matrix
@@ -178,9 +177,15 @@ protected:
   // /// information through interpolation to other cells where data is lacking
   // void extrapolate_data();
 
-  /// \brief Initialize computation_nx based on nx and periodic boundaries
-  inline int init_computation_nx_nt()
+  /// \brief Initialize grid sizes and OpenMP threads for Poisson integration
+  inline int init_Poisson_computation()
   {
+    if (nd == 1 && !weighted) {
+      return COLVARS_OK;
+    }
+
+    cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
+
     computation_nx.resize(nd);
     computation_nt = 1;
     computation_nxc.resize(nd);
@@ -193,6 +198,25 @@ protected:
       computation_nt *= computation_nx[i];
       computation_nxc[i] = computation_nt;
     }
+    divergence.resize(computation_nt);
+
+    if (weighted) {
+      div_border_supplement.resize(computation_nt);
+      prepare_divergence_stencils();
+      prepare_laplacian_stencils();
+    }
+    need_to_extrapolate_solution = false;
+    for (size_t i = 0; i < nd; i++) {
+      if (!periodic[i])
+        need_to_extrapolate_solution = true;
+    }
+    if (!need_to_extrapolate_solution) {
+      computation_grid = this;
+    } else {
+      computation_grid->periodic = periodic;
+      computation_grid->setup(computation_nx);
+    }
+
 #ifdef _OPENMP
     m_num_threads = cvm::proxy->smp_num_threads();
 #else
