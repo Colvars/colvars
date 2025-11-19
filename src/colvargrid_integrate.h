@@ -47,16 +47,12 @@ public:
   /// \brief Flag requesting the use of a smoothed version of the gradient (default: false)
   bool b_smoothed;
 
-  // \brief For testing purposes only: print the different stencils computed in
-  // prepare_laplacian_calculation.
-  void print_laplacian_preparations();
-
   // \brief Computes all the relative positions of objects necessary to calculate the laplacian at a
   // specific point
-  void prepare_laplacian_necessary_stencils();
+  void prepare_laplacian_stencils();
 
   // \brief Computes all the relative positions to calculate the divergence at a specific point
-  void prepare_divergence_necessary_stencils();
+  void prepare_divergence_stencils();
 
   void prepare_calculations();
 
@@ -87,15 +83,18 @@ protected:
   std::vector<cvm::real> laplacian_coefficients;
   std::vector<size_t> sorted_counts;
 
-  size_t sum_count;
-  // max and min count to regularize F
+  /// Tunable parameters for weighted integration
+  /// max and min count to regularize F, see user documentation
   size_t max_count_F = 1;
   size_t min_count_F = 0;
-  // max and min count to regularize the weights
+  /// max and min count to regularize the weights, see user documentation
   float lambda_max = 0.5f;
   float lambda_min = 0.1f;
   size_t upper_threshold_count = 1;
   size_t lower_threshold_count = 1;
+
+  /// Number of threads for weighted integration
+  /// sets itself to number of available OpenMP threads
   size_t m_num_threads = 1;
 
   // Get G at a specific point where G is the gradient F if there is enough observation else it's F
@@ -134,10 +133,7 @@ protected:
                      std::vector<cvm::real> &x, const cvm::real &tol, const int itmax, int &iter,
                      cvm::real &err);
 
-  void optimize_adam(bool weighted, const std::vector<cvm::real> &b, std::vector<cvm::real> &x,
-                     const cvm::real &tol, const int itmax, int &iter, cvm::real &err);
-
-  /// l2 norm of a vector
+  /// L2 norm of a vector
   cvm::real l2norm(const std::vector<cvm::real> &x);
 
   /// @brief Multiplication by sparse matrix representing Lagrangian (or its transpose)
@@ -161,45 +157,26 @@ protected:
   typedef void (colvargrid_integrate::*func_pointer)(const std::vector<cvm::real> &,
                                                      std::vector<cvm::real> &, size_t);
   func_pointer linewise_laplacian_weighted;
-  /// Compute gradient of whole potential grid by finite difference
-  // void compute_grad(const std::vector<cvm::real> &A, std::vector<cvm::real> &G);
 
-
-  //   /// Inversion of preconditioner matrix
-  //   void asolve(const std::vector<cvm::real> &b, std::vector<cvm::real> &x);
-
-  /// Converts a number in base 3.
-  std::string convert_base_three(int n);
-
-  std::string convert_base_two(int n, size_t length);
+  std::vector<int> convert_base_two(int n, size_t length);
 
   /// Computes the normal border gradient for ghost points calculations in the weighted scheme.
   std::vector<cvm::real>
-  compute_averaged_border_normal_gradient(std::vector<int> virtual_point_coordinates);
-
-  /// Computes the normal border gradient for ghost points calculations in the unweighted scheme,
-  /// i.e. like Long Chen.
-  std::vector<cvm::real>
-  compute_averaged_border_normal_gradient_classic(const std::vector<int> &ix0);
+  compute_averaged_border_normal_gradient(std::vector<int> ghost_point_coordinates);
 
   template <typename T>
   typename std::vector<T>::iterator insert_into_sorted_list(std::vector<T> &sortedList,
                                                             const T &value);
 
-  inline void reverse(std::string::iterator, std::string::iterator);
-
-  /// From the smaller resolution grid, use order 1taylor expansion to find the value on a grid with
+  /// From the smaller resolution grid, use order-1 Taylor expansion to find the value on a grid with
   /// 2 more cell in each dimension. This means, we assigned the ghost points values which are the
   /// ones we assigned during the laplacian calculation.
   void extrapolate_potential();
 
-  // Same as extrapolate potential, but we assign the values we assumed in the unweighted laplacian
-  // scheme. For corner points also use order 1 Taylor expansion.
-  void extrapolate_potential_unweighted();
-
-  /// \brief From the cells with estimate of the gradient of the free energy propagates the
-  /// information through interpolation to other cells where data is lacking
-  void extrapolate_data();
+  // Potential enhancement, needs testing
+  // /// \brief From the cells with estimate of the gradient of the free energy propagates the
+  // /// information through interpolation to other cells where data is lacking
+  // void extrapolate_data();
 
   /// \brief Initialize computation_nx based on nx and periodic boundaries
   inline int init_computation_nx_nt()
@@ -224,8 +201,10 @@ protected:
                         "by this build.\n");
     }
 #endif
-    std::cout << m_num_threads << " : nb threads" << std::endl;
-    return 0;
+    if (weighted) {
+      cvm::log("Will perform weighted Poisson integrator using " + cvm::to_str(m_num_threads) + " threads.");
+    }
+    return COLVARS_OK;
   }
 };
 #endif
