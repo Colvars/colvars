@@ -81,8 +81,6 @@ private:
   int       pabf_integrate_iterations;
   /// Tolerance for integrating PMF at on-the-fly pABF updates
   cvm::real pabf_integrate_tol;
-  /// Whether to use a weighted integration to calculate the free energy.
-  bool pabf_integrate_weighted;
   /// Cap the biasing force to be applied? (option maxForce)
   bool                    cap_force;
   /// Maximum force to be applied
