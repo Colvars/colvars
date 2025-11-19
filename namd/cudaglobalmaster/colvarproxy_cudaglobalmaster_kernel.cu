@@ -1,5 +1,7 @@
 #include "colvarproxy_cudaglobalmaster_kernel.h"
 
+#if defined (NAMD_CUDA) || defined (NAMD_HIP)
+
 __global__ void transpose_to_host_rvector_kernel(
   const double* __restrict d_data_in,
   cvm::rvector* __restrict h_data_out,
@@ -72,3 +74,5 @@ void copy_float_to_host_double(
   copy_float_to_host_double_kernel<<<grid, block_size, 0, stream>>>(
     d_data_in, h_data_out, num_atoms);
 }
+
+#endif // defined (NAMD_CUDA) || defined (NAMD_HIP)

@@ -17,6 +17,8 @@
 
 #include "HipDefines.h"
 
+#if defined (NAMD_CUDA) || defined (NAMD_HIP)
+
 class Lattice;
 
 class colvarproxy_impl;
@@ -80,5 +82,7 @@ private:
   std::vector<AtomID> mEmpty;
   std::string mTCLResult;
 };
+
+#endif // defined (NAMD_CUDA) || defined (NAMD_HIP)
 
 #endif // COLVARPROXY_CUDAGLOBALMASTER_H

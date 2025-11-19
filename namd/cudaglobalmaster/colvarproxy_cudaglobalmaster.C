@@ -18,6 +18,8 @@
 #include <nvtx3/nvToolsExtCuda.h>
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
 
+#if defined (NAMD_CUDA) || defined (NAMD_HIP)
+
 #if defined (__linux__) || defined (__APPLE__)
 extern "C" {
   CudaGlobalMasterColvars* allocator() {
@@ -1159,3 +1161,5 @@ int CudaGlobalMasterColvars::updateFromTCLCommand(const std::vector<std::string>
   delete[] objv;
   return error_code;
 }
+
+#endif // defined (NAMD_CUDA) || defined (NAMD_HIP)
