@@ -3,6 +3,8 @@
 
 #include "colvartypes.h"
 
+#if defined (NAMD_CUDA) || defined (NAMD_HIP)
+
 #ifdef NAMD_CUDA
 #include <cuda_runtime.h>
 #endif  // NAMD_CUDA
@@ -39,5 +41,7 @@ void copy_float_to_host_double(
   cvm::real* h_data_out,
   const int num_atoms,
   cudaStream_t stream);
+
+#endif // defined (NAMD_CUDA) || defined (NAMD_HIP)
 
 #endif // COLVARPROXY_CUDAGLOBALMASTER_KERNEL_H
