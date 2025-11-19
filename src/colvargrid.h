@@ -74,7 +74,7 @@ public: // TODO create accessors for these after all instantiations work
   /// Do we request actual value (for extended-system colvars)?
   std::vector<bool> use_actual_value;
 
-  /// Get the low-level index corresponding to an index
+  /// Get the low-level (unrolled) address corresponding to an index
   inline size_t address(std::vector<int> const &ix) const
   {
     size_t addr = 0;
@@ -90,6 +90,7 @@ public: // TODO create accessors for these after all instantiations work
     return addr;
   }
 
+  /// Inverse of address(): n-dim index from linear address
   inline void index(size_t address, std::vector<int> &ix) {
     for (int dim = nd - 1; dim >= 0; --dim) {
       ix[dim] = address % nx[dim];
@@ -1195,7 +1196,7 @@ public:
 
   /// \brief Return the log-gradient from finite differences
   /// on the *same* grid for dimension n
-  /// (colvar_grid_count)
+  /// Order-1 centered difference, or order-2 difference on grid edges
   inline cvm::real log_gradient_finite_diff(const std::vector<int> &ix0,
                                             int n = 0, int offset = 0)
   {
