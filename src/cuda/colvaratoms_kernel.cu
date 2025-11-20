@@ -1000,9 +1000,11 @@ __global__ void accumulate_cpu_force_kernel(
   const unsigned int num_atoms) {
   const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   if (i < num_atoms) {
-    d_atoms_force_x[i] += h_atoms_force_x[i];
-    d_atoms_force_y[i] += h_atoms_force_y[i];
-    d_atoms_force_z[i] += h_atoms_force_z[i];
+    // Because the same atom group may be referenced by multiple CVCs,
+    // so I have to use atomicAdd to accumulate the forces
+    atomicAdd(&(d_atoms_force_x[i]), h_atoms_force_x[i]);
+    atomicAdd(&(d_atoms_force_y[i]), h_atoms_force_y[i]);
+    atomicAdd(&(d_atoms_force_z[i]), h_atoms_force_z[i]);
   }
 }
 
