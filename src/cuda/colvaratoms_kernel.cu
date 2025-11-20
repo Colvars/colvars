@@ -26,7 +26,6 @@ __global__ void atoms_pos_from_proxy_kernel(
     atoms_pos_x_ag[i] = atoms_pos_x_proxy[proxy_index];
     atoms_pos_y_ag[i] = atoms_pos_y_proxy[proxy_index];
     atoms_pos_z_ag[i] = atoms_pos_z_proxy[proxy_index];
-    // printf("(proxy) ptr = %p, pos = (%lf, %lf, %lf)\n", atoms_pos_x_ag + i, atoms_pos_x_ag[i], atoms_pos_y_ag[i],  atoms_pos_z_ag[i]);
   }
 }
 
@@ -1251,9 +1250,9 @@ int calc_fit_forces_impl_loop2(
   if (!ag_center && !ag_rotate) {
     return COLVARS_OK;
   }
-  // if (cvm::debug()) {
+  if (cvm::debug()) {
     cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
-  // }
+  }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
     dependencies.size(), &kernelNodeParams));
