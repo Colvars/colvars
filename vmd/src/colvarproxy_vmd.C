@@ -90,7 +90,9 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   set_tcl_interp(interp);
 #endif
 
-  colvars = new colvarmodule(this);
+  colvars = new colvarmodule();
+  colvars->init(this);
+
   cvm::log("Using VMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 

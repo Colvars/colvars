@@ -14,7 +14,8 @@ int main (int argc, char *argv[]) {
   }
 
   colvarproxy *proxy = new colvarproxy();
-  proxy->colvars = new colvarmodule(proxy); // This could be omitted if we used the colvarproxy_stub class
+  proxy->colvars = new colvarmodule(); // This could be omitted if we used the colvarproxy_stub class
+  proxy->colvars->init(proxy);
 
   std::string gradfile (argv[1]);
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);

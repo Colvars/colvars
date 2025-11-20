@@ -113,7 +113,8 @@ int colvarproxy_namd::init(GlobalMasterColvars *gm)
   globalmaster = gm;
 
   // initialize module: this object will be the communication proxy
-  colvars = new colvarmodule(this);
+  colvars = new colvarmodule();
+  colvars->init(this);
 
   cvm::log("Using NAMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");

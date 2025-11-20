@@ -8,7 +8,8 @@
 int main(int argc, char *argv[]) {
 
   colvarproxy *proxy = new colvarproxy();
-  proxy->colvars = new colvarmodule(proxy);
+  proxy->colvars = new colvarmodule();
+  proxy->colvars->init(proxy);
 
   proxy->backup_file("nonexistent.txt");
   proxy->remove_file("nonexistent.txt");

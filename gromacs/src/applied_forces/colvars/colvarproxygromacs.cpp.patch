@@ -1,14 +1,24 @@
 diff --git a/src/gromacs/applied_forces/colvars/colvarproxygromacs.cpp b/src/gromacs/applied_forces/colvars/colvarproxygromacs.cpp
-index 76b350c611..37e5b53647 100644
+index 76b350c611..e0eaedfd61 100644
 --- a/src/gromacs/applied_forces/colvars/colvarproxygromacs.cpp
 +++ b/src/gromacs/applied_forces/colvars/colvarproxygromacs.cpp
 @@ -79,9 +79,6 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
      // Retrieve masses and charges from input file
      updated_masses_ = updated_charges_ = true;
- 
+
 -    // User-scripted forces are not available in GROMACS
 -    have_scripts = false;
 -
      angstrom_value_ = 0.1;
- 
+
      // From Gnu units
+@@ -117,7 +114,8 @@ ColvarProxyGromacs::ColvarProxyGromacs(const std::string& colvarsConfigString,
+             input_streams_[inputName] = new std::istringstream(content);
+         }
+
+-        colvars = new colvarmodule(this);
++        colvars = new colvarmodule();
++        colvars->init(this);
+         cvm::log(cvm::line_marker);
+         cvm::log("Start colvars Initialization.");
+

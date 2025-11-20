@@ -29,7 +29,8 @@ colvarproxy_stub::colvarproxy_stub()
   // both fields are taken from data structures already available
   updated_masses_ = updated_charges_ = true;
 
-  colvars = new colvarmodule(this);
+  colvars = new colvarmodule();
+  colvars->init(this);
   cvm::log("Using minimal testing interface.\n");
 
   colvars->cv_traj_freq = 0; // I/O will be handled explicitly

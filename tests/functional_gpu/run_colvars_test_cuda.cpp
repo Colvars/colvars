@@ -55,7 +55,8 @@ public:
     return COLVARS_NOT_IMPLEMENTED;
   }
   void init_cvm() {
-    colvars = new colvarmodule(this);
+    colvars = new colvarmodule();
+    colvars->init(this);
     cvm::log("Using minimal CUDA testing interface.\n");
 
     colvars->cv_traj_freq = 0; // I/O will be handled explicitly
