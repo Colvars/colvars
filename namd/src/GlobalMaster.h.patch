@@ -1,0 +1,13 @@
+diff --git a/src/GlobalMaster.h b/src/GlobalMaster.h
+index bb27f2ee..373913c5 100644
+--- a/src/GlobalMaster.h
++++ b/src/GlobalMaster.h
+@@ -81,6 +81,8 @@ class GlobalMaster {
+  protected:
+   GlobalMaster();
+ 
++  virtual void init() {}
++
+   /* This will be called after the pointers to lists below have been
+      initialized correctly by processData.  It should perform any
+      required caluation and update the atom/force lists. */

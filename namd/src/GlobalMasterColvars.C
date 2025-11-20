@@ -5,7 +5,13 @@
 #include "colvarproxy_namd.h"
 
 
-GlobalMasterColvars::GlobalMasterColvars() : proxy(new colvarproxy_namd(this)) {}
+GlobalMasterColvars::GlobalMasterColvars() {}
+
+void GlobalMasterColvars::init()
+{
+  proxy.reset(new colvarproxy_namd());
+  proxy->init(this);
+}
 
 GlobalMasterColvars::~GlobalMasterColvars() { reset(); }
 

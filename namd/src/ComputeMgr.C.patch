@@ -1,0 +1,18 @@
+diff --git a/src/ComputeMgr.C b/src/ComputeMgr.C
+index 96cbb387..343111b5 100644
+--- a/src/ComputeMgr.C
++++ b/src/ComputeMgr.C
+@@ -1082,8 +1082,11 @@ ComputeMgr::createComputes(ComputeMap *map)
+             masterServerObject->addClient(new GlobalMasterMisc());
+         if ( simParams->freeEnergyOn )
+             masterServerObject->addClient(new GlobalMasterFreeEnergy());
+-	if ( simParams->colvarsOn )
+-	    masterServerObject->addClient(new GlobalMasterColvars());
++	if ( simParams->colvarsOn ) {
++          auto *m = new GlobalMasterColvars();
++          masterServerObject->addClient(m);
++          m->init();
++        }
+ 
+     }
+ 

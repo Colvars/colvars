@@ -71,10 +71,14 @@ public:
 
   void init_tcl_pointers() override;
 
-  colvarproxy_namd(GlobalMasterColvars *gm);
+  colvarproxy_namd();
   ~colvarproxy_namd();
 
+  /// Initialize Colvars module and interface with GlobalMaster
+  int init(GlobalMasterColvars *gm);
+
   int setup() override;
+
   int reset() override;
 
   /// Get the target temperature from the NAMD thermostats supported so far

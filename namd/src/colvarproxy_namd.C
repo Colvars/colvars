@@ -46,8 +46,7 @@
 #include "colvarproxy_namd_version.h"
 
 
-colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
-  : globalmaster(gm)
+colvarproxy_namd::colvarproxy_namd()
 {
   engine_name_ = "NAMD";
 #if CMK_SMP && USE_CKLOOP
@@ -63,7 +62,6 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   }
 #endif
   first_timestep = true;
-  globalmaster->requestTotalForcePublic(total_force_requested);
 
   boltzmann_ = 0.001987191;
 
@@ -74,9 +72,6 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
 
   if (cvm::debug())
     iout << "Info: initializing the colvars proxy object.\n" << endi;
-
-  // find the configuration file, if provided
-  StringList *config = Node::Object()->configList->find("colvarsConfig");
 
   // find the input state file
   StringList *input_restart = Node::Object()->configList->find("colvarsInput");
@@ -110,6 +105,12 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   }
 
   init_atoms_map();
+}
+
+
+int colvarproxy_namd::init(GlobalMasterColvars *gm)
+{
+  globalmaster = gm;
 
   // initialize module: this object will be the communication proxy
   colvars = new colvarmodule(this);
@@ -118,6 +119,9 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
   colvars->cite_feature("NAMD engine");
   colvars->cite_feature("Colvars-NAMD interface");
+
+  // find the configuration file, if provided
+  StringList *config = Node::Object()->configList->find("colvarsConfig");
 
   errno = 0;
   for ( ; config; config = config->next ) {
@@ -150,6 +154,8 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
 
   if (cvm::debug())
     iout << "Info: done initializing the colvars proxy object.\n" << endi;
+
+  return COLVARS_OK;
 }
 
 
