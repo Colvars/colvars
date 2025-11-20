@@ -26,12 +26,12 @@
 
 class colvardeps;
 
-class colvarscript  {
+class colvarscript {
 
 private:
 
   colvarproxy *proxy_;
-  colvarmodule *colvars;
+  colvarmodule *cvmodule;
 
   inline colvarscript() {} // no-argument construction forbidden
 
@@ -191,7 +191,7 @@ public:
   /// Pointer to the Colvars main object
   inline colvarmodule *module()
   {
-    return this->colvars;
+    return this->cvmodule;
   }
 
   /// Pointer to the colvarproxy object (interface with host engine)
@@ -385,13 +385,13 @@ int colvarscript::check_cmd_nargs(char const *cmd,
 {
   int const shift = cmd_arg_shift<T>();
   if (objc < shift+n_args_min) {
-    add_error_msg("Insufficient number of arguments ("+cvmodule->to_str(objc)+
+    add_error_msg("Insufficient number of arguments ("+cvm::to_str(objc)+
                   ") for script function \""+std::string(cmd)+
                   "\":\n"+get_command_full_help(cmd));
     return COLVARSCRIPT_ERROR;
   }
   if (objc > shift+n_args_max) {
-    add_error_msg("Too many arguments ("+cvmodule->to_str(objc)+
+    add_error_msg("Too many arguments ("+cvm::to_str(objc)+
                   ") for script function \""+std::string(cmd)+
                   "\":\n"+get_command_full_help(cmd));
     return COLVARSCRIPT_ERROR;

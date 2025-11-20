@@ -93,7 +93,7 @@ int colvar::orientation::init(std::string const &conf)
   ref_cog /= cvm::real(ref_pos.size());
   cvmodule->log("Centering the reference coordinates on the origin by subtracting "
            "the center of geometry at "+
-           cvmodule->to_str(-1.0 * ref_cog)+"; it is "
+           cvm::to_str(-1.0 * ref_cog)+"; it is "
            "assumed that each atom is the closest "
            "periodic image to the center of geometry.\n");
   for (i = 0; i < ref_pos.size(); i++) {
@@ -299,7 +299,7 @@ int colvar::tilt::init(std::string const &conf)
   get_keyval(conf, "axis", axis, cvm::rvector(0.0, 0.0, 1.0));
   if (axis.norm2() != 1.0) {
     axis /= axis.norm();
-    cvmodule->log("Normalizing rotation axis to "+cvmodule->to_str(axis)+".\n");
+    cvmodule->log("Normalizing rotation axis to "+cvm::to_str(axis)+".\n");
   }
 
   return error_code;
