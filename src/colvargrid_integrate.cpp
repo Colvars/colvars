@@ -25,7 +25,7 @@ colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
 //     std::vector<cvm::real> id(nt), lap_col(nt);
 //     for (int i = 0; i < nt; i++) {
 //       if (i % (nt / 100) == 0)
-//         cvmodule->log(cvmodule->to_str(i));
+//         cvmodule->log(cvm::to_str(i));
 //       id[i] = 1.;
 //       atimes(id, lap_col);
 //       id[i] = 0.;
@@ -90,7 +90,7 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
 
     nr_linbcg_sym(divergence, data, tol, itmax, iter, err);
     if (verbose)
-      cvmodule->log("Integrated in " + cvmodule->to_str(iter) + " steps, error: " + cvmodule->to_str(err));
+      cvmodule->log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
 
   } else {
     cvmodule->error("Cannot integrate PMF in dimension > 3\n");

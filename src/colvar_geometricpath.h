@@ -177,8 +177,8 @@ void GeometricPathBase<element_type, scalar_type, path_type>::determineClosestFr
             "the neighbouring frame\n"
             "         Please check your configuration or increase restraint on z(σ)\n");
         for (size_t i_frame = 0; i_frame < frame_index.size(); ++i_frame) {
-            message += "Frame index: " + cvmodule->to_str(frame_index[i_frame]) +
-                       " ; optimal RMSD = " + cvmodule->to_str(frame_distances[frame_index[i_frame]]) +
+            message += "Frame index: " + cvm::to_str(frame_index[i_frame]) +
+                       " ; optimal RMSD = " + cvm::to_str(frame_distances[frame_index[i_frame]]) +
                        "\n";
         }
     }

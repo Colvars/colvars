@@ -53,7 +53,7 @@ CVSCRIPT(bias_local_sample_count,
              return COLVARSCRIPT_ERROR;
            }
          }
-         script->set_result_str(cvmodule->to_str(this_bias->local_sample_count(radius)));
+         script->set_result_str(cvm::to_str(this_bias->local_sample_count(radius)));
          return COLVARS_OK;
          )
 

@@ -96,9 +96,9 @@ int colvarbias_alb::init(std::string const &conf)
   }
 
   if (update_freq % time_step_factor != 0) {
-    error_code |= cvmodule->error("updateFrequency (currently " + cvmodule->to_str(update_freq) +
+    error_code |= cvmodule->error("updateFrequency (currently " + cvm::to_str(update_freq) +
                                  ") must be a multiple of timeStepFactor (" +
-                                 cvmodule->to_str(time_step_factor) + ").\n",
+                                 cvm::to_str(time_step_factor) + ").\n",
                              COLVARS_INPUT_ERROR);
   }
 

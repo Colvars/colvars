@@ -444,15 +444,6 @@ public:
   /// \brief print all enabled features and those of children, for debugging
   void print_state();
 
-  /// \brief Check that a feature is enabled, raising COLVARS_BUG_ERROR if not
-  inline void check_enabled(int f, std::string const &reason) const
-  {
-    if (! is_enabled(f)) {
-      cvmodule->error("Error: "+reason+" requires that the feature \""+
-                 features()[f]->description+"\" is active.\n", COLVARS_BUG_ERROR);
-    }
-  }
-
   /// Return the parents
   std::vector<colvardeps *> get_parents() const {return parents;}
 

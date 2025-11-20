@@ -31,7 +31,7 @@ void colvarproxy_replicas::set_replicas_mpi_communicator(replicas_mpi_comm_t com
     MPI_Comm_rank(comm, &replicas_mpi_rank);
     MPI_Comm_size(comm, &replicas_mpi_num);
     cvmodule->log("Enabling multiple replicas: this is replica number " +
-             cvmodule->to_str(replica_index() + 1) + " of " + cvmodule->to_str(num_replicas()) + ".\n");
+             cvm::to_str(replica_index() + 1) + " of " + cvm::to_str(num_replicas()) + ".\n");
   }
 #endif
 }
