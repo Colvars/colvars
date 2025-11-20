@@ -123,8 +123,8 @@ public:
   inline static void check_sizes(vector1d<T> const &v1, vector1d<T> const &v2)
   {
     if (v1.size() != v2.size()) {
-      cvmodule->error("Error: trying to perform an operation between vectors of different sizes, "+
-                 cvmodule->to_str(v1.size())+" and "+cvmodule->to_str(v2.size())+".\n");
+      cvm::error_static("Error: trying to perform an operation between vectors of different sizes, "+
+                 cvm::to_str(v1.size())+" and "+cvm::to_str(v2.size())+".\n");
     }
   }
 
@@ -253,7 +253,7 @@ public:
   inline vector1d<T> const slice(size_t const i1, size_t const i2) const
   {
     if ((i2 < i1) || (i2 >= this->size())) {
-      cvmodule->error("Error: trying to slice a vector using incorrect boundaries.\n");
+      cvm::error_static("Error: trying to slice a vector using incorrect boundaries.\n");
     }
     vector1d<T> result(i2 - i1);
     size_t i;
@@ -268,7 +268,7 @@ public:
                           vector1d<T> const &v)
   {
     if ((i2 < i1) || (i2 >= this->size())) {
-      cvmodule->error("Error: trying to slice a vector using incorrect boundaries.\n");
+      cvm::error_static("Error: trying to slice a vector using incorrect boundaries.\n");
     }
     size_t i;
     for (i = 0; i < (i2 - i1); i++) {
@@ -331,7 +331,8 @@ public:
     if (this->size() == 0) return std::string("");
     std::ostringstream os;
     os.setf(std::ios::scientific, std::ios::floatfield);
-    os.precision(cvmodule->cv_prec);
+    // os.precision(cvmodule->cv_prec);
+    os.precision(14);
     os << (*this)[0];
     size_t i;
     for (i = 1; i < this->size(); i++) {
@@ -401,7 +402,7 @@ protected:
     inline int set(cvm::vector1d<T> const &v) const
     {
       if (v.size() != length) {
-        return cvmodule->error("Error: setting a matrix row from a vector of "
+        return cvm::error_static("Error: setting a matrix row from a vector of "
                           "incompatible size.\n", COLVARS_BUG_ERROR);
       }
       for (size_t i = 0; i < length; i++) data[i] = v[i];
@@ -551,12 +552,12 @@ public:
   {
     if ((m1.outer_length != m2.outer_length) ||
         (m1.inner_length != m2.inner_length)) {
-      cvmodule->error("Error: trying to perform an operation between "
+      cvm::error_static("Error: trying to perform an operation between "
                  "matrices of different sizes, "+
-                 cvmodule->to_str(m1.outer_length)+"x"+
-                 cvmodule->to_str(m1.inner_length)+" and "+
-                 cvmodule->to_str(m2.outer_length)+"x"+
-                 cvmodule->to_str(m2.inner_length)+".\n");
+                 cvm::to_str(m1.outer_length)+"x"+
+                 cvm::to_str(m1.inner_length)+" and "+
+                 cvm::to_str(m2.outer_length)+"x"+
+                 cvm::to_str(m2.inner_length)+".\n");
     }
   }
 
@@ -649,10 +650,10 @@ public:
   {
     vector1d<T> result(m.inner_length);
     if (m.outer_length != v.size()) {
-      cvmodule->error("Error: trying to multiply a vector and a matrix "
+      cvm::error_static("Error: trying to multiply a vector and a matrix "
                  "of incompatible sizes, "+
-                  cvmodule->to_str(v.size()) + " and " +
-                 cvmodule->to_str(m.outer_length)+"x"+cvmodule->to_str(m.inner_length) +
+                  cvm::to_str(v.size()) + " and " +
+                 cvm::to_str(m.outer_length)+"x"+cvm::to_str(m.inner_length) +
                  ".\n");
     } else {
       size_t i, k;
@@ -697,7 +698,8 @@ public:
     if (this->size() == 0) return std::string("");
     std::ostringstream os;
     os.setf(std::ios::scientific, std::ios::floatfield);
-    os.precision(cvmodule->cv_prec);
+    // os.precision(cvmodule->cv_prec);
+    os.precision(14);
     os << (*this)[0];
     size_t i;
     for (i = 1; i < data.size(); i++) {
@@ -1037,7 +1039,7 @@ public:
       return this->q3;
     default:
 #if !(defined(__NVCC__) || defined(__HIPCC__))
-      cvmodule->error("Error: incorrect quaternion component.\n");
+      cvm::error_static("Error: incorrect quaternion component.\n");
 #endif
       return q0;
     }
@@ -1056,7 +1058,7 @@ public:
       return this->q3;
     default:
 #if !(defined(__NVCC__) || defined(__HIPCC__))
-      cvmodule->error("Error: trying to access a quaternion "
+      cvm::error_static("Error: trying to access a quaternion "
                  "component which is not between 0 and 3.\n");
 #endif
       return 0.0;

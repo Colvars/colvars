@@ -13,6 +13,7 @@
 #include "colvar_neuralnetworkcompute.h"
 #include "colvarparse.h"
 #include "colvarproxy.h"
+#include "colvarmodule.h"
 
 namespace neuralnetworkCV {
 std::map<std::string, std::pair<std::function<double(double)>, std::function<double(double)>>> activation_function_map
@@ -34,17 +35,18 @@ std::map<std::string, std::pair<std::function<double(double)>, std::function<dou
 #ifdef LEPTON
 customActivationFunction::customActivationFunction():
 expression(), value_evaluator(nullptr), gradient_evaluator(nullptr),
-input_reference(nullptr), derivative_reference(nullptr) {}
+input_reference(nullptr), derivative_reference(nullptr), cvmodule(nullptr) {
+}
 
-customActivationFunction::customActivationFunction(const std::string& expression_string):
+customActivationFunction::customActivationFunction(const std::string& expression_string, colvarmodule *cvmodule):
 expression(), value_evaluator(nullptr), gradient_evaluator(nullptr),
-input_reference(nullptr), derivative_reference(nullptr) {
+input_reference(nullptr), derivative_reference(nullptr), cvmodule(cvmodule) {
     setExpression(expression_string);
 }
 
 customActivationFunction::customActivationFunction(const customActivationFunction& source):
 expression(), value_evaluator(nullptr), gradient_evaluator(nullptr),
-input_reference(nullptr), derivative_reference(nullptr) {
+input_reference(nullptr), derivative_reference(nullptr), cvmodule(source.cvmodule) {
     // check if the source object is initialized
     if (source.value_evaluator != nullptr) {
         this->setExpression(source.expression);
@@ -116,7 +118,14 @@ double customActivationFunction::derivative(double x) const {
 }
 #endif
 
-denseLayer::denseLayer(const std::string& weights_file, const std::string& biases_file, const std::function<double(double)>& f, const std::function<double(double)>& df): m_activation_function(f), m_activation_function_derivative(df) {
+denseLayer::denseLayer(const std::string& weights_file,
+    const std::string& biases_file,
+    const std::function<double(double)>& f,
+    const std::function<double(double)>& df,
+    colvarmodule *cvmodule)
+    : m_activation_function(f),
+      m_activation_function_derivative(df),
+      cvmodule(cvmodule) {
 #ifdef LEPTON
     m_use_custom_activation = false;
 #endif
@@ -124,9 +133,12 @@ denseLayer::denseLayer(const std::string& weights_file, const std::string& biase
 }
 
 #ifdef LEPTON
-denseLayer::denseLayer(const std::string& weights_file, const std::string& biases_file, const std::string& custom_activation_expression) {
+denseLayer::denseLayer(const std::string& weights_file,
+    const std::string& biases_file,
+    const std::string& custom_activation_expression,
+    colvarmodule *cvmodule) : cvmodule(cvmodule) {
     m_use_custom_activation = true;
-    m_custom_activation_function = customActivationFunction(custom_activation_expression);
+    m_custom_activation_function = customActivationFunction(custom_activation_expression, cvmodule);
     readFromFile(weights_file, biases_file);
 }
 #endif

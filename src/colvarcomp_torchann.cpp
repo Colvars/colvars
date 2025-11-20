@@ -38,7 +38,7 @@ int colvar::torchANN::init(std::string const &conf) {
     nn.to(torch::kCPU);
     cvmodule->log("torch model loaded.") ;
   } catch (const std::exception & e) {
-    return cvmodule->error("Error: couldn't load libtorch model (see below).\n" + cvmodule->to_str(e.what()),
+    return cvmodule->error("Error: couldn't load libtorch model (see below).\n" + cvm::to_str(e.what()),
                       COLVARS_INPUT_ERROR);
   }
 
@@ -61,7 +61,7 @@ int colvar::torchANN::init(std::string const &conf) {
     if (i_cv < cv.size() - 1)
       cvc_indices[i_cv+1] = num_inputs;
   }
-  cvmodule->log("Input dimension of model: " + cvmodule->to_str(num_inputs));
+  cvmodule->log("Input dimension of model: " + cvm::to_str(num_inputs));
 
   // initialize the input tensor
   auto options = torch::TensorOptions().dtype(torch::kFloat32).requires_grad(true);
@@ -106,7 +106,7 @@ int colvar::torchANN::init(std::string const &conf) {
     cvmodule->log("Evaluating model with zero tensor succeeded.");
   } catch (const std::exception & e) {
     error_code |= cvmodule->error("Error: evaluating model with zero tensor failed (see below).\n" +
-                                 cvmodule->to_str(e.what()),
+                                 cvm::to_str(e.what()),
                              COLVARS_INPUT_ERROR);
   }
 

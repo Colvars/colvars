@@ -38,7 +38,7 @@ size_t i;
 
 if ( !(is >> hash) || (hash != "#") ) {
   cvmodule->error("Error reading grid at position "+
-              cvmodule->to_str(static_cast<size_t>(is.tellg()))+
+              cvm::to_str(static_cast<size_t>(is.tellg()))+
               " in stream(read \"" + hash + "\")\n");
   return;
 }
@@ -53,7 +53,7 @@ std::vector<int>       periodic_in(nd);
 for (i = 0; i < nd; i++ ) {
   if ( !(is >> hash) || (hash != "#") ) {
     cvmodule->error("Error reading grid at position "+
-                cvmodule->to_str(static_cast<size_t>(is.tellg()))+
+                cvm::to_str(static_cast<size_t>(is.tellg()))+
                 " in stream(read \"" + hash + "\")\n");
     return;
   }
@@ -90,7 +90,7 @@ template <class T, class IST> IST &read_restart_template_(colvar_grid<T> &g, IST
   is.clear();
   is.seekg(start_pos);
   is.setstate(std::ios::failbit);
-  cvmodule->error("Error: in reading grid state from stream at position " + cvmodule->to_str(error_pos) +
+  cvmodule->error("Error: in reading grid state from stream at position " + cvm::to_str(error_pos) +
                  "\n",
              COLVARS_INPUT_ERROR);
   return is;
@@ -247,8 +247,8 @@ template <class T> int colvar_grid<T>::parse_params(std::string const &conf,
     if (nd_in != nd) {
       cvmodule->error("Error: trying to read data for a grid "
                  "that contains a different number of colvars ("+
-                 cvmodule->to_str(nd_in)+") than the grid defined "
-                 "in the configuration file("+cvmodule->to_str(nd)+
+                 cvm::to_str(nd_in)+") than the grid defined "
+                 "in the configuration file("+cvm::to_str(nd)+
                  ").\n");
       return COLVARS_ERROR;
     }
@@ -327,7 +327,7 @@ std::istream & colvar_grid<T>::read_multicol(std::istream &is, bool add)
 
   if ( !(is >> hash) || (hash != "#") ) {
     cvmodule->error("Error reading grid at position "+
-               cvmodule->to_str(static_cast<size_t>(is.tellg()))+
+               cvm::to_str(static_cast<size_t>(is.tellg()))+
                " in stream(read \"" + hash + "\")\n", COLVARS_INPUT_ERROR);
     return is;
   }
@@ -350,7 +350,7 @@ std::istream & colvar_grid<T>::read_multicol(std::istream &is, bool add)
   for (size_t i = 0; i < nd; i++ ) {
     if ( !(is >> hash) || (hash != "#") ) {
       cvmodule->error("Error reading grid at position "+
-                 cvmodule->to_str(static_cast<size_t>(is.tellg()))+
+                 cvm::to_str(static_cast<size_t>(is.tellg()))+
                  " in stream(read \"" + hash + "\")\n");
       return is;
     }
@@ -362,7 +362,7 @@ std::istream & colvar_grid<T>::read_multicol(std::istream &is, bool add)
          (cvm::fabs(width - widths[i] ) > 1.0e-10) ||
          (nx_read[i] != nx[i]) ) {
       cvmodule->log("Warning: reading from different grid definition (colvar "
-               + cvmodule->to_str(i+1) + "); remapping data on new grid.\n");
+               + cvm::to_str(i+1) + "); remapping data on new grid.\n");
       remap = true;
     }
   }

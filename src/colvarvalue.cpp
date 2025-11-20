@@ -75,7 +75,7 @@ colvarvalue::colvarvalue(cvm::vector1d<cvm::real> const &v,
 {
   if ((vti != type_vector) && (v.size() != num_dimensions(vti))) {
     cvmodule->error("Error: trying to initialize a variable of type \""+type_desc(vti)+
-               "\" using a vector of size "+cvmodule->to_str(v.size())+
+               "\" using a vector of size "+cvm::to_str(v.size())+
                ".\n");
     value_type = type_notset;
   } else {
@@ -724,9 +724,9 @@ colvarvalue const colvarvalue::interpolate(colvarvalue const &x1,
   case colvarvalue::type_unit3vector:
   case colvarvalue::type_quaternion:
     if (interp.norm()/cvm::sqrt(d2) < 1.0e-6) {
-      cvmodule->error("Error: interpolation between "+cvmodule->to_str(x1)+" and "+
-                 cvmodule->to_str(x2)+" with lambda = "+cvmodule->to_str(lambda)+
-                 " is undefined: result = "+cvmodule->to_str(interp)+"\n",
+      cvmodule->error("Error: interpolation between "+cvm::to_str(x1)+" and "+
+                 cvm::to_str(x2)+" with lambda = "+cvm::to_str(lambda)+
+                 " is undefined: result = "+cvm::to_str(interp)+"\n",
                  COLVARS_INPUT_ERROR);
     }
     interp.apply_constraints();
@@ -745,7 +745,7 @@ std::string colvarvalue::to_simple_string() const
 {
   switch (type()) {
   case colvarvalue::type_scalar:
-    return cvmodule->to_str(real_value, 0, cvmodule->cv_prec);
+    return cvm::to_str(real_value, 0, cvmodule->cv_prec);
     break;
   case colvarvalue::type_3vector:
   case colvarvalue::type_unit3vector:

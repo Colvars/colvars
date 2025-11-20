@@ -45,7 +45,7 @@ int colvarbias::init(std::string const &conf)
 {
   int error_code = COLVARS_OK;
 
-  name = bias_type + cvmodule->to_str(rank);
+  name = bias_type + cvm::to_str(rank);
   colvarparse::set_string(conf);
 
   size_t i = 0;
@@ -116,8 +116,8 @@ int colvarbias::init(std::string const &conf)
   get_keyval(conf, "outputFreq", output_freq, output_freq);
   if (output_freq % time_step_factor != 0) {
     error_code |= cvmodule->error(
-        "Error: in bias " + name + ", outputFreq (currently " + cvmodule->to_str(output_freq) +
-            ") must be a multiple of timeStepFactor (" + cvmodule->to_str(time_step_factor) + ").\n",
+        "Error: in bias " + name + ", outputFreq (currently " + cvm::to_str(output_freq) +
+            ") must be a multiple of timeStepFactor (" + cvm::to_str(time_step_factor) + ").\n",
         COLVARS_INPUT_ERROR);
   }
 
@@ -157,18 +157,18 @@ int colvarbias::init_mts(std::string const &conf) {
 
   if (time_step_factor % cvmodule->proxy->time_step_factor() != 0) {
     error_code |=
-        cvmodule->error("timeStepFactor for this bias (currently " + cvmodule->to_str(time_step_factor) +
+        cvmodule->error("timeStepFactor for this bias (currently " + cvm::to_str(time_step_factor) +
                        ") must be a multiple of the global Colvars timestep multiplier (" +
-                       cvmodule->to_str(cvmodule->proxy->time_step_factor()) + ").\n",
+                       cvm::to_str(cvmodule->proxy->time_step_factor()) + ").\n",
                    COLVARS_INPUT_ERROR);
   }
 
   for (auto *cv : colvars) {
-    if (time_step_factor % cvmodule->get_time_step_factor()) {
+    if (time_step_factor % cv->get_time_step_factor()) {
       error_code |= cvmodule->error(
-          "Error: timeStepFactor for " + description + " (" + cvmodule->to_str(time_step_factor) +
-            ") should be a multiple of that of " + cvmodule->description + " (" +
-            cvmodule->to_str(cvmodule->get_time_step_factor()) + ").\n",
+          "Error: timeStepFactor for " + cv->description + " (" + cvm::to_str(time_step_factor) +
+            ") should be a multiple of that of " + cv->description + " (" +
+            cvm::to_str(cv->get_time_step_factor()) + ").\n",
           COLVARS_INPUT_ERROR);
     }
   }
@@ -240,7 +240,7 @@ int colvarbias::init_dependencies() {
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_cvb_ntot; i++) {
       if (is_not_set(i)) {
-        cvmodule->error("Uninitialized feature " + cvmodule->to_str(i) + " in " + description);
+        cvmodule->error("Uninitialized feature " + cvm::to_str(i) + " in " + description);
       }
     }
   }
@@ -341,7 +341,7 @@ int colvarbias::add_colvar(std::string const &cv_name)
 
     if (cvmodule->debug()) {
       cvmodule->log("Applying this bias to collective variable \""+
-               cvmodule->name+"\".\n");
+               cv->name+"\".\n");
     }
 
     colvars.push_back(cv);
@@ -352,7 +352,7 @@ int colvarbias::add_colvar(std::string const &cv_name)
     add_child(cv);
 
     colvar_forces.push_back(colvarvalue());
-    colvar_forces.back().type(cvmodule->value()); // make sure each force is initialized to zero
+    colvar_forces.back().type(cv->value()); // make sure each force is initialized to zero
     colvar_forces.back().is_derivative(); // colvar constraints are not applied to the force
     colvar_forces.back().reset();
     previous_colvar_forces.push_back(colvar_forces.back());
@@ -585,20 +585,21 @@ cvm::memory_stream & colvarbias::write_state(cvm::memory_stream &os)
 
 template <typename IST, typename SPT>
 void raise_error_rewind(IST &is, SPT start_pos, std::string const &bias_type,
-                        std::string const &bias_name, std::string const added_msg = "")
+                        std::string const &bias_name, colvarmodule *cvmodule,
+                        std::string const added_msg = "")
 {
   auto state = is.rdstate();
   is.clear();
   is.seekg(start_pos);
   is.setstate(state | std::ios::failbit);
   cvmodule->error("Error: in reading state for \"" + bias_type + "\" bias \"" + bias_name +
-                 "\" at position " + cvmodule->to_str(static_cast<size_t>(is.tellg())) + " in stream." +
+                 "\" at position " + cvm::to_str(static_cast<size_t>(is.tellg())) + " in stream." +
              added_msg + "\n",
              COLVARS_INPUT_ERROR);
 }
 
 
-template <typename IST> IST & colvarbias::read_state_template_(IST &is)
+template <typename IST> IST & colvarbias::read_state_template_(IST &is, colvarmodule *cvmodule)
 {
   auto const start_pos = is.tellg();
 
@@ -609,14 +610,14 @@ template <typename IST> IST & colvarbias::read_state_template_(IST &is)
       if (! std::is_same<IST, cvm::memory_stream>::value) {
         // Formatted input only
         if (!(is >> brace) || !(brace == "{") ) {
-          raise_error_rewind(is, start_pos, bias_type, name);
+          raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
           return is;
         }
       }
 
       if (!(is >> colvarparse::read_block("configuration", &conf)) ||
           (check_matching_state(conf) != COLVARS_OK)) {
-        raise_error_rewind(is, start_pos, bias_type, name);
+        raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
         return is;
       }
 
@@ -627,7 +628,7 @@ template <typename IST> IST & colvarbias::read_state_template_(IST &is)
     }
 
   } else {
-    raise_error_rewind(is, start_pos, bias_type, name);
+    raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
     return is;
   }
 
@@ -638,7 +639,7 @@ template <typename IST> IST & colvarbias::read_state_template_(IST &is)
   }
 
   if ((set_state_params(conf) != COLVARS_OK) || !read_state_data(is)) {
-    raise_error_rewind(is, start_pos, bias_type, name);
+    raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
   }
 
   if (! std::is_same<IST, cvm::memory_stream>::value) {
@@ -646,14 +647,14 @@ template <typename IST> IST & colvarbias::read_state_template_(IST &is)
     if (brace != "}") {
       cvmodule->error("Error: corrupt restart information for \""+bias_type+"\" bias \""+
                  this->name+"\": no matching brace at position "+
-                 cvmodule->to_str(static_cast<size_t>(is.tellg()))+
+                 cvm::to_str(static_cast<size_t>(is.tellg()))+
                  " in stream.\n");
-      raise_error_rewind(is, start_pos, bias_type, name);
+      raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
     }
   }
 
   cvmodule->log("Restarted " + bias_type + " bias \"" + name + "\" with step number " +
-           cvmodule->to_str(state_file_step) + ".\n");
+           cvm::to_str(state_file_step) + ".\n");
 
   return is;
 }
@@ -661,13 +662,13 @@ template <typename IST> IST & colvarbias::read_state_template_(IST &is)
 
 std::istream &colvarbias::read_state(std::istream &is)
 {
-  return read_state_template_<std::istream>(is);
+  return read_state_template_<std::istream>(is, cvmodule);
 }
 
 
 cvm::memory_stream &colvarbias::read_state(cvm::memory_stream &is)
 {
-  return read_state_template_<cvm::memory_stream>(is);
+  return read_state_template_<cvm::memory_stream>(is, cvmodule);
 }
 
 
@@ -764,12 +765,12 @@ IST &colvarbias::read_state_data_key_template_(IST &is, std::string const &key)
   std::string key_in;
   if (is >> key_in) {
     if (key_in != key) {
-      raise_error_rewind(is, start_pos, bias_type, name,
+      raise_error_rewind(is, start_pos, bias_type, name, cvmodule,
                          "  Expected keyword \"" + std::string(key) + "\", found \"" + key_in +
                              "\".");
     }
   } else {
-    raise_error_rewind(is, start_pos, bias_type, name);
+    raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
   }
   return is;
 }
@@ -924,7 +925,7 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
   size_t i;
 
   if (cvmodule->debug()) {
-    cvmodule->log("TI bin for bias \"" + name + "\" = " + cvmodule->to_str(ti_bin) + ".\n");
+    cvmodule->log("TI bin for bias \"" + name + "\" = " + cvm::to_str(ti_bin) + ".\n");
   }
 
   for (i = 0; i < num_variables(); i++) {

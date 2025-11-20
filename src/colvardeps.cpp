@@ -131,7 +131,7 @@ int colvardeps::enable(int feature_id,
   bool ok;
 
   if (feature_id < 0 || feature_id >= int(features().size())) {
-    cvmodule->error("Error: colvardeps::enable() called with invalid feature_id " + cvmodule->to_str(feature_id) + "\n");
+    cvmodule->error("Error: colvardeps::enable() called with invalid feature_id " + cvm::to_str(feature_id) + "\n");
     return COLVARS_ERROR;
   }
   feature *f = features()[feature_id];
@@ -152,7 +152,7 @@ int colvardeps::enable(int feature_id,
       // as requirement is enabled
       fs->ref_count++;
       if (cvmodule->debug())
-        cvmodule->log("DEPS: bumping ref_count to " + cvmodule->to_str(fs->ref_count) + "\n");
+        cvmodule->log("DEPS: bumping ref_count to " + cvm::to_str(fs->ref_count) + "\n");
     }
     // Do not try to further resolve deps
     return COLVARS_OK;
@@ -251,7 +251,7 @@ int colvardeps::enable(int feature_id,
         cvmodule->increase_depth();
         for (j=0; j<f->requires_alt[i].size(); j++) {
           int g = f->requires_alt[i][j];
-          cvmodule->log(cvmodule->to_str(j+1) + ". " + features()[g]->description + "\n");
+          cvmodule->log(cvm::to_str(j+1) + ". " + features()[g]->description + "\n");
           enable(g, false, false, true); // Just for printing error output
         }
         cvmodule->decrease_depth();
@@ -321,7 +321,7 @@ int colvardeps::disable(int feature_id) {
 
   if (fs->ref_count > 1) {
     cvmodule->error("Error: cannot disable feature \"" + f->description
-     + "\" in " + description + " because of " + cvmodule->to_str(fs->ref_count-1)
+     + "\" in " + description + " because of " + cvm::to_str(fs->ref_count-1)
      + " remaining references.\n" );
     return COLVARS_ERROR;
   }
@@ -380,7 +380,7 @@ int colvardeps::decr_ref_count(int feature_id) {
 
   if (rc <= 0) {
     cvmodule->error("Error: cannot decrease reference count of feature \"" + f->description
-      +  "\" in " + description + ", which is " + cvmodule->to_str(rc) + ".\n");
+      +  "\" in " + description + ", which is " + cvm::to_str(rc) + ".\n");
     return COLVARS_ERROR;
   }
 
@@ -451,12 +451,12 @@ void colvardeps::print_state() {
     std::string onoff = is_enabled(i) ? "ON " : "   ";
     // Only display refcount if non-zero for less clutter
     std::string refcount = feature_states[i].ref_count != 0 ?
-      " (" + cvmodule->to_str(feature_states[i].ref_count) + ") " : "";
+      " (" + cvm::to_str(feature_states[i].ref_count) + ") " : "";
     cvmodule->log("- " + onoff + features()[i]->description + refcount + "\n");
   }
   cvmodule->increase_depth();
   for (i=0; i<children.size(); i++) {
-    cvmodule->log("* child " + cvmodule->to_str(i+1));
+    cvmodule->log("* child " + cvm::to_str(i+1));
     children[i]->print_state();
   }
   cvmodule->decrease_depth();
