@@ -765,10 +765,13 @@ inline colvarvalue const & colvar::total_force() const
 
 inline void colvar::add_bias_force(colvarvalue const &force)
 {
-  check_enabled(f_cv_apply_force,
-                std::string("applying a force to the variable \""+name+"\""));
+  if (! is_enabled(f_cv_apply_force)) {
+    cvmodule->error("Error: applying a force to the variable \""+name+" requires that the feature \""+
+                features()[f_cv_apply_force]->description+"\" is active.\n", COLVARS_BUG_ERROR);
+  }
+
   if (cvmodule->debug()) {
-    cvmodule->log("Adding biasing force "+cvmodule->to_str(force)+" to colvar \""+name+"\".\n");
+    cvmodule->log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
   }
   fb += force;
 }
@@ -777,7 +780,7 @@ inline void colvar::add_bias_force(colvarvalue const &force)
 inline void colvar::add_bias_force_actual_value(colvarvalue const &force)
 {
   if (cvmodule->debug()) {
-    cvmodule->log("Adding biasing force "+cvmodule->to_str(force)+" to colvar \""+name+"\".\n");
+    cvmodule->log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
   }
   fb_actual += force;
 }

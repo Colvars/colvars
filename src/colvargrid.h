@@ -161,8 +161,8 @@ public:
             size_t const &mult_i = 1)
   {
     if (cvmodule->debug()) {
-      cvmodule->log("Allocating grid: multiplicity = "+cvmodule->to_str(mult_i)+
-               ", dimensions = "+cvmodule->to_str(nx_i)+".\n");
+      cvmodule->log("Allocating grid: multiplicity = "+cvm::to_str(mult_i)+
+               ", dimensions = "+cvm::to_str(nx_i)+".\n");
     }
 
     mult = mult_i;
@@ -179,7 +179,7 @@ public:
     for (int i = nd-1; i >= 0; i--) {
       if (nx[i] <= 0) {
         cvmodule->error("Error: providing an invalid number of grid points, "+
-                   cvmodule->to_str(nx[i])+".\n", COLVARS_BUG_ERROR);
+                   cvm::to_str(nx[i])+".\n", COLVARS_BUG_ERROR);
         return COLVARS_ERROR;
       }
       nxc[i] = nt;
@@ -187,7 +187,7 @@ public:
     }
 
     if (cvmodule->debug()) {
-      cvmodule->log("Total number of grid elements = "+cvmodule->to_str(nt)+".\n");
+      cvmodule->log("Total number of grid elements = "+cvm::to_str(nt)+".\n");
     }
 
     data.reserve(nt);
@@ -287,8 +287,8 @@ public:
     size_t i;
 
     if (cvmodule->debug()) {
-      cvmodule->log("Allocating a grid for "+cvmodule->to_str(colvars.size())+
-               " collective variables, multiplicity = "+cvmodule->to_str(mult_i)+".\n");
+      cvmodule->log("Allocating a grid for "+cvm::to_str(colvars.size())+
+               " collective variables, multiplicity = "+cvm::to_str(mult_i)+".\n");
     }
 
     for (i =  0; i < nd; i++) {
@@ -339,8 +339,8 @@ public:
 
       if (params->nd != nd) {
         cvmodule->error("Trying to initialize grid from template with wrong dimension (" +
-                    cvmodule->to_str(params->nd) + " instead of " +
-                    cvmodule->to_str(this->nd) + ").");
+                    cvm::to_str(params->nd) + " instead of " +
+                    cvm::to_str(this->nd) + ").");
         return COLVARS_ERROR;
       }
 
@@ -395,17 +395,17 @@ public:
 
       if (cvm::fabs(nbins - cvm::real(nbins_round)) > 1.0E-10) {
         cvmodule->log("Warning: grid interval("+
-                 cvmodule->to_str(lower_boundaries[i], cvmodule->cv_width, cvmodule->cv_prec)+" - "+
-                 cvmodule->to_str(upper_boundaries[i], cvmodule->cv_width, cvmodule->cv_prec)+
+                 cvm::to_str(lower_boundaries[i], cvmodule->cv_width, cvmodule->cv_prec)+" - "+
+                 cvm::to_str(upper_boundaries[i], cvmodule->cv_width, cvmodule->cv_prec)+
                  ") is not commensurate to its bin width("+
-                 cvmodule->to_str(widths[i], cvmodule->cv_width, cvmodule->cv_prec)+").\n");
+                 cvm::to_str(widths[i], cvmodule->cv_width, cvmodule->cv_prec)+").\n");
         upper_boundaries[i].real_value = lower_boundaries[i].real_value +
           (nbins_round * widths[i]);
       }
 
       if (cvmodule->debug())
-        cvmodule->log("Number of points is "+cvmodule->to_str((int) nbins_round)+
-                 " for the colvar no. "+cvmodule->to_str(i+1)+".\n");
+        cvmodule->log("Number of points is "+cvm::to_str((int) nbins_round)+
+                 " for the colvar no. "+cvm::to_str(i+1)+".\n");
 
       nx.push_back(nbins_round);
     }
@@ -423,7 +423,7 @@ public:
       } else {
         if (ix[i] < 0 || ix[i] >= nx[i]) {
           cvmodule->error("Trying to wrap illegal index vector (non-PBC) for a grid point: "
-                     + cvmodule->to_str(ix), COLVARS_BUG_ERROR);
+                     + cvm::to_str(ix), COLVARS_BUG_ERROR);
           return;
         }
       }

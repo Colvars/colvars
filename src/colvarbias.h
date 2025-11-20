@@ -208,7 +208,7 @@ public:
 private:
 
   /// Generic stream reading function (formatted and not)
-  template <typename IST> IST & read_state_template_(IST &is);
+  template <typename IST> IST & read_state_template_(IST &is, colvarmodule *cvmodule);
 
 public:
 

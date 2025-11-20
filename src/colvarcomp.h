@@ -825,7 +825,8 @@ public:
                                       cvm::real& g2y,
                                       cvm::real& g2z,
                                       bool **pairlist_elem,
-                                      cvm::real tolerance);
+                                      cvm::real tolerance,
+                                      colvarmodule *cvmodule);
 
   /// Workhorse function
   template<int flags> int compute_coordnum();

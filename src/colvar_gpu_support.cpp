@@ -18,7 +18,7 @@ int gpuAssert(cudaError_t code, const char *file, int line)
   if (code != cudaSuccess) {
     std::string error =
       std::string("GPUassert: ") +
-      cudaGetErrorString(code) + " " + file + ", line " + cvmodule->to_str(line);
+      cudaGetErrorString(code) + " " + file + ", line " + cvm::to_str(line);
 #ifdef use_cpp_stacktrace
 #ifdef __cpp_lib_stacktrace
       error += "\nBacktrace:\n" + std::to_string(std::stacktrace::current()) + "\n";
@@ -46,9 +46,9 @@ int add_clear_array_node_impl(
   memsetParams.height      = 1;
   if (cvmodule->debug()) {
     cvmodule->log(
-      "Add a memset clear node: ptr = " + cvmodule->to_str(dst) +
-      " width = " + cvmodule->to_str(width) + " elementSize = " +
-      cvmodule->to_str(elementSize) + "\n");
+      "Add a memset clear node: ptr = " + cvm::to_str(dst) +
+      " width = " + cvm::to_str(width) + " elementSize = " +
+      cvm::to_str(elementSize) + "\n");
   }
   return checkGPUError(cudaGraphAddMemsetNode(
     &node_out, graph, dependencies.data(),
@@ -61,9 +61,9 @@ int add_copy_node_impl(
   const std::vector<cudaGraphNode_t>& dependencies) {
   if (cvmodule->debug()) {
     cvmodule->log(
-      "Add a memcpy node: src = " + cvmodule->to_str(src) +
-      " dst = " + cvmodule->to_str(dst) + " num_elements = " +
-      cvmodule->to_str(num_elements) + "\n");
+      "Add a memcpy node: src = " + cvm::to_str(src) +
+      " dst = " + cvm::to_str(dst) + " num_elements = " +
+      cvm::to_str(num_elements) + "\n");
   }
   return checkGPUError(cudaGraphAddMemcpyNode1D(
     &node_out, graph, dependencies.data(), dependencies.size(),

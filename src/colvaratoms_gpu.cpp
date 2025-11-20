@@ -534,7 +534,7 @@ int colvaratoms_gpu::after_read_data_sync(
   if (cpu_atoms->b_dummy) {
     cpu_atoms->com = cpu_atoms->dummy_atom_pos;
     if (cvmodule->debug()) {
-      cvmodule->log("Dummy atom center of mass = "+cvmodule->to_str(cpu_atoms->com)+"\n");
+      cvmodule->log("Dummy atom center of mass = "+cvm::to_str(cpu_atoms->com)+"\n");
     }
   } else if (cpu_atoms->is_enabled(colvardeps::f_ag_scalable)) {
     cpu_atoms->com = (cvmodule->proxy)->get_atom_group_com(cpu_atoms->index);

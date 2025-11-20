@@ -741,6 +741,15 @@ public:
   /// Print a message to the main log and set global error code
   int error(std::string const &message, int code = -1);
 
+  /// Print an error message to stderr
+  /// Used in lightweight objects that do not have access to cvmodule
+  /// Typically fatal errors that reflect bugs, so hopefully rare
+  static int error_static(std::string const &message, int code = -1) {
+    std::cerr << "Colvars error: " << message << std::endl;
+    exit(code);
+    return code; // appease compiler that thinks we're going to return from this
+  }
+
 private:
 
   /// Level of logging requested by the user

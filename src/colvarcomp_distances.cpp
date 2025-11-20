@@ -179,7 +179,7 @@ int colvar::distance_z::init(std::string const &conf)
       }
       if (axis.norm2() != 1.0) {
         axis = axis.unit();
-        cvmodule->log("The normalized axis is: "+cvmodule->to_str(axis)+".\n");
+        cvmodule->log("The normalized axis is: "+cvm::to_str(axis)+".\n");
       }
     }
     fixed_axis = true;
@@ -781,7 +781,7 @@ int colvar::inertia_z::init(std::string const &conf)
     }
     if (axis.norm2() != 1.0) {
       axis = axis.unit();
-      cvmodule->log("The normalized axis is: "+cvmodule->to_str(axis)+".\n");
+      cvmodule->log("The normalized axis is: "+cvm::to_str(axis)+".\n");
     }
   }
   return error_code;
@@ -850,9 +850,9 @@ int colvar::rmsd::init(std::string const &conf)
     cvmodule->log("Using reference positions from configuration file to calculate the variable.\n");
     if (ref_pos.size() != atoms->size()) {
       error_code |= cvmodule->error("Error: the number of reference positions provided (" +
-                                   cvmodule->to_str(ref_pos.size()) +
+                                   cvm::to_str(ref_pos.size()) +
                                    ") does not match the number of atoms of group \"atoms\" (" +
-                                   cvmodule->to_str(atoms->size()) + ").\n",
+                                   cvm::to_str(atoms->size()) + ").\n",
                                COLVARS_INPUT_ERROR);
     }
   } else { // Only look for ref pos file if ref positions not already provided
@@ -891,8 +891,8 @@ int colvar::rmsd::init(std::string const &conf)
 
   if (ref_pos.size() != atoms->size()) {
     error_code |=
-        cvmodule->error("Error: found " + cvmodule->to_str(ref_pos.size()) +
-                       " reference positions for RMSD; expected " + cvmodule->to_str(atoms->size()),
+        cvmodule->error("Error: found " + cvm::to_str(ref_pos.size()) +
+                       " reference positions for RMSD; expected " + cvm::to_str(atoms->size()),
                    COLVARS_INPUT_ERROR);
   }
 
@@ -938,12 +938,12 @@ int colvar::rmsd::init_permutation(std::string const &conf)
         std::vector<int> const &ids = atoms->ids();
         size_t const ia = std::find(ids.begin(), ids.end(), index-1) - ids.begin();
         if (ia == atoms->size()) {
-          error_code |= cvmodule->error("Error: atom id " + cvmodule->to_str(index) +
+          error_code |= cvmodule->error("Error: atom id " + cvm::to_str(index) +
                                        " is not a member of group \"atoms\".",
                                    COLVARS_INPUT_ERROR);
         }
         if (std::find(perm.begin(), perm.end(), ia) != perm.end()) {
-          error_code |= cvmodule->error("Error: atom id " + cvmodule->to_str(index) +
+          error_code |= cvmodule->error("Error: atom id " + cvm::to_str(index) +
                                        " is mentioned more than once in atomPermutation list.",
                                    COLVARS_INPUT_ERROR);
         }
@@ -951,11 +951,11 @@ int colvar::rmsd::init_permutation(std::string const &conf)
       }
       if (perm.size() != atoms->size()) {
         error_code |= cvmodule->error(
-            "Error: symmetry permutation in input contains " + cvmodule->to_str(perm.size()) +
-                " indices, but group \"atoms\" contains " + cvmodule->to_str(atoms->size()) + " atoms.",
+            "Error: symmetry permutation in input contains " + cvm::to_str(perm.size()) +
+                " indices, but group \"atoms\" contains " + cvm::to_str(atoms->size()) + " atoms.",
             COLVARS_INPUT_ERROR);
       }
-      cvmodule->log("atomPermutation = " + cvmodule->to_str(perm));
+      cvmodule->log("atomPermutation = " + cvm::to_str(perm));
       n_permutations++;
       // Record a copy of reference positions in new order
       for (size_t ia = 0; ia < atoms->size(); ia++) {
@@ -1229,7 +1229,7 @@ int colvar::eigenvector::init(std::string const &conf)
     eig_center += eigenvec[eil];
   }
   eig_center *= 1.0 / atoms->size();
-  cvmodule->log("Geometric center of the provided vector: "+cvmodule->to_str(eig_center)+"\n");
+  cvmodule->log("Geometric center of the provided vector: "+cvm::to_str(eig_center)+"\n");
 
   bool b_difference_vector = false;
   get_keyval(conf, "differenceVector", b_difference_vector, false);
@@ -1293,7 +1293,7 @@ int colvar::eigenvector::init(std::string const &conf)
     eigenvec_invnorm2 = 1.0/eigenvec_invnorm2;
   } else {
     cvmodule->log("The norm of the vector is |v| = "+
-             cvmodule->to_str(1.0/cvm::sqrt(eigenvec_invnorm2))+".\n");
+             cvm::to_str(1.0/cvm::sqrt(eigenvec_invnorm2))+".\n");
   }
 
   return error_code;

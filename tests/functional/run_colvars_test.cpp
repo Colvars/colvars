@@ -32,9 +32,9 @@ int main(int argc, char *argv[]) {
   if (argc > 3) {
     err |= proxy->set_output_prefix(output_prefix);
   }
-  err |= proxy->colvars->setup_input();
-  err |= proxy->colvars->setup_output();
-  err |= proxy->colvars->read_config_file(configuration_file.c_str());
+  err |= proxy->cvmodule->setup_input();
+  err |= proxy->cvmodule->setup_output();
+  err |= proxy->cvmodule->read_config_file(configuration_file.c_str());
 
   if (argc > 2) {
     // Read number of atoms from XYZ header
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     int natoms;
     ifs >> natoms;
     ifs.close();
-    cvmodule->log("Reading trajectory for " + cvmodule->to_str(natoms)
+    cvmodule->log("Reading trajectory for " + cvm::to_str(natoms)
               + " atoms from XYZ file " + trajectory_file);
     for (int ai = 0; ai < natoms; ai++) {
       proxy->init_atom(ai+1);
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     int io_err = 0;
     while (!io_err) {
       io_err = proxy->read_frame_xyz(trajectory_file.c_str(), output_force);
-      if (!io_err) cvmodule->log("Frame " + cvmodule->to_str(cvmodule->step_absolute()));
+      if (!io_err) cvmodule->log("Frame " + cvm::to_str(cvmodule->step_absolute()));
     }
     proxy->post_run();
     cvmodule->log("Done");
@@ -63,14 +63,14 @@ int main(int argc, char *argv[]) {
   err |= run_colvarscript_command(2, args);
   cvmodule->log("  " + std::string(get_colvarscript_result()));
 
-  double const max_gradient_error = proxy->colvars->get_max_gradient_error();
+  double const max_gradient_error = proxy->cvmodule->get_max_gradient_error();
   if (max_gradient_error > 0.) {
-    cvmodule->log("Max gradient error (debugGradients): " + cvmodule->to_str(max_gradient_error));
+    cvmodule->log("Max gradient error (debugGradients): " + cvm::to_str(max_gradient_error));
 
     double threshold = 1e-3;
     // Fail test if error is above threshold
     if (max_gradient_error > threshold) {
-      cvmodule->log("Error: gradient inaccuracy is above threshold (" + cvmodule->to_str(threshold) + ")");
+      cvmodule->log("Error: gradient inaccuracy is above threshold (" + cvm::to_str(threshold) + ")");
       err = 1;
     }
   }

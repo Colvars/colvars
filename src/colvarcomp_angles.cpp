@@ -157,7 +157,7 @@ void colvar::dipole_angle::calc_value()
   group1->calc_dipole(g1_pos);
 
   r21 = group1->dipole();
-  cvmodule->log("r21 = " + cvmodule->to_str(r21) + " ; g1_pos = " + cvmodule->to_str(g1_pos) + "\n");
+  cvmodule->log("r21 = " + cvm::to_str(r21) + " ; g1_pos = " + cvm::to_str(g1_pos) + "\n");
   r21l = r21.norm();
   r23  = is_enabled(f_cvc_pbc_minimum_image) ?
     cvmodule->position_distance(g2_pos, g3_pos) :

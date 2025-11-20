@@ -201,7 +201,7 @@ int colvar::customColvar::init(std::string const &conf)
                 // Define variables for cvc values
                 for (size_t i = 0; i < cv.size(); ++i) {
                     for (size_t j = 0; j < cv[i]->value().size(); ++j) {
-                        std::string vn = cv[i]->name + (cv[i]->value().size() > 1 ? cvmodule->to_str(j+1) : "");
+                        std::string vn = cv[i]->name + (cv[i]->value().size() > 1 ? cvm::to_str(j+1) : "");
                         try {
                             ref = &value_evaluators.back()->getVariableReference(vn);
                         } catch (...) {
@@ -218,12 +218,12 @@ int colvar::customColvar::init(std::string const &conf)
         // Now define derivative with respect to each scalar sub-component
         for (size_t i = 0; i < cv.size(); ++i) {
             for (size_t j = 0; j < cv[i]->value().size(); ++j) {
-                std::string vn = cv[i]->name + (cv[i]->value().size() > 1 ? cvmodule->to_str(j+1) : "");
+                std::string vn = cv[i]->name + (cv[i]->value().size() > 1 ? cvm::to_str(j+1) : "");
                 for (size_t c = 0; c < pexprs.size(); ++c) {
                     gradient_evaluators.push_back(new Lepton::CompiledExpression(pexprs[c].differentiate(vn).createCompiledExpression()));
                     for (size_t k = 0; k < cv.size(); ++k) {
                         for (size_t l = 0; l < cv[k]->value().size(); l++) {
-                            std::string vvn = cv[k]->name + (cv[k]->value().size() > 1 ? cvmodule->to_str(l+1) : "");
+                            std::string vvn = cv[k]->name + (cv[k]->value().size() > 1 ? cvm::to_str(l+1) : "");
                             try {
                                 ref = &gradient_evaluators.back()->getVariableReference(vvn);
                             } catch (...) {

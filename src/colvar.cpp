@@ -68,7 +68,7 @@ int colvar::init(std::string const &conf)
   int error_code = COLVARS_OK;
 
   get_keyval(conf, "name", this->name,
-             (std::string("colvar")+cvmodule->to_str(cvmodule->variables()->size())));
+             (std::string("colvar")+cvm::to_str(cvmodule->variables()->size())));
 
   if ((cvmodule->colvar_by_name(this->name) != NULL) &&
       (cvmodule->colvar_by_name(this->name) != this)) {
@@ -156,7 +156,7 @@ int colvar::init(std::string const &conf)
     if(cvcs.size() > 1) {
       cvmodule->log("Sorted list of components for this scripted colvar:\n");
       for (i = 0; i < cvcs.size(); i++) {
-        cvmodule->log(cvmodule->to_str(i+1) + " " + cvcs[i]->name);
+        cvmodule->log(cvm::to_str(i+1) + " " + cvcs[i]->name);
       }
     }
 
@@ -173,7 +173,7 @@ int colvar::init(std::string const &conf)
       cvmodule->log ("This collective variable is a "+
                 colvarvalue::type_desc(cvc_value.type())+
                 ((cvc_value.size() > 1) ? " with "+
-                 cvmodule->to_str(cvc_value.size())+" individual components.\n" :
+                 cvm::to_str(cvc_value.size())+" individual components.\n" :
                  ".\n"));
     x.type(cvc_value);
     x_reported.type(cvc_value);
@@ -303,9 +303,9 @@ int colvar::init(std::string const &conf)
   }
   if (time_step_factor % cvmodule->proxy->time_step_factor() != 0) {
     error_code |=
-        cvmodule->error("timeStepFactor for this variable (currently " + cvmodule->to_str(time_step_factor) +
+        cvmodule->error("timeStepFactor for this variable (currently " + cvm::to_str(time_step_factor) +
                        ") must be a multiple of the global Colvars timestep multiplier (" +
-                       cvmodule->to_str(cvmodule->proxy->time_step_factor()) + ").\n",
+                       cvm::to_str(cvmodule->proxy->time_step_factor()) + ").\n",
                    COLVARS_INPUT_ERROR);
   }
   if (time_step_factor > 1) {
@@ -393,7 +393,7 @@ int colvar::init_custom_function(std::string const &conf)
       for (size_t i = 0; i < cvcs.size(); i++) {
         for (size_t j = 0; j < cvcs[i]->value().size(); j++) {
           std::string vn = cvcs[i]->name +
-              (cvcs[i]->value().size() > 1 ? cvmodule->to_str(j+1) : "");
+              (cvcs[i]->value().size() > 1 ? cvm::to_str(j+1) : "");
           try {
             ref =&value_evaluators.back()->getVariableReference(vn);
           }
@@ -418,7 +418,7 @@ int colvar::init_custom_function(std::string const &conf)
   for (size_t i = 0; i < cvcs.size(); i++) {
     for (size_t j = 0; j < cvcs[i]->value().size(); j++) {
       std::string vn = cvcs[i]->name +
-          (cvcs[i]->value().size() > 1 ? cvmodule->to_str(j+1) : "");
+          (cvcs[i]->value().size() > 1 ? cvm::to_str(j+1) : "");
       // Element ordering: we want the
       // gradient vector of derivatives of all elements of the colvar
       // wrt to a given element of a cvc ([i][j])
@@ -429,7 +429,7 @@ int colvar::init_custom_function(std::string const &conf)
         for (size_t k = 0; k < cvcs.size(); k++) {
           for (size_t l = 0; l < cvcs[k]->value().size(); l++) {
             std::string vvn = cvcs[k]->name +
-                (cvcs[k]->value().size() > 1 ? cvmodule->to_str(l+1) : "");
+                (cvcs[k]->value().size() > 1 ? cvm::to_str(l+1) : "");
             try {
               ref = &gradient_evaluators.back()->getVariableReference(vvn);
             }
@@ -486,13 +486,13 @@ int colvar::init_custom_function(std::string const &conf)
   x_reported.type(x);
   cvmodule->log(std::string("Expecting colvar value of type ")
     + colvarvalue::type_desc(x.type())
-    + (x.type()==colvarvalue::type_vector ? " of size " + cvmodule->to_str(x.size()) : "")
+    + (x.type()==colvarvalue::type_vector ? " of size " + cvm::to_str(x.size()) : "")
     + ".\n");
 
   if (x.size() != value_evaluators.size()) {
     cvmodule->error("Error: based on custom function type, expected "
-               + cvmodule->to_str(x.size()) + " scalar expressions, but "
-               + cvmodule->to_str(value_evaluators.size()) + " were found.\n");
+               + cvm::to_str(x.size()) + " scalar expressions, but "
+               + cvm::to_str(value_evaluators.size()) + " were found.\n");
     return COLVARS_INPUT_ERROR;
   }
 
@@ -621,8 +621,8 @@ int colvar::parse_legacy_wall_params(std::string const &conf)
                                  "explicitly.\n", COLVARS_INPUT_ERROR);
       }
       lw_conf = std::string("\n\
-    lowerWallConstant "+cvmodule->to_str(lower_wall_k*width*width)+"\n\
-    lowerWalls "+cvmodule->to_str(lower_wall)+"\n");
+    lowerWallConstant "+cvm::to_str(lower_wall_k*width*width)+"\n\
+    lowerWalls "+cvm::to_str(lower_wall)+"\n");
     }
 
     if (get_keyval(conf, "upperWallConstant", upper_wall_k, 0.0,
@@ -634,16 +634,16 @@ int colvar::parse_legacy_wall_params(std::string const &conf)
                                  "explicitly.\n", COLVARS_INPUT_ERROR);
       }
       uw_conf = std::string("\n\
-    upperWallConstant "+cvmodule->to_str(upper_wall_k*width*width)+"\n\
-    upperWalls "+cvmodule->to_str(upper_wall)+"\n");
+    upperWallConstant "+cvm::to_str(upper_wall_k*width*width)+"\n\
+    upperWalls "+cvm::to_str(upper_wall)+"\n");
     }
 
     if (lw_conf.size() && uw_conf.size()) {
       if (lower_wall >= upper_wall) {
         error_code |= cvmodule->error("Error: the upper wall, "+
-                                 cvmodule->to_str(upper_wall)+
+                                 cvm::to_str(upper_wall)+
                                  ", is not higher than the lower wall, "+
-                                 cvmodule->to_str(lower_wall)+".\n",
+                                 cvm::to_str(lower_wall)+".\n",
                                  COLVARS_INPUT_ERROR);
       }
     }
@@ -654,7 +654,7 @@ int colvar::parse_legacy_wall_params(std::string const &conf)
 harmonicWalls {\n\
     name "+this->name+"w\n\
     colvars "+this->name+"\n"+lw_conf+uw_conf+"\
-    timeStepFactor "+cvmodule->to_str(time_step_factor)+"\n"+
+    timeStepFactor "+cvm::to_str(time_step_factor)+"\n"+
                              "}\n");
       error_code |= cvmodule->append_new_config(walls_conf);
     }
@@ -671,9 +671,9 @@ int colvar::check_grid_parameters()
   if (is_enabled(f_cv_lower_boundary) && is_enabled(f_cv_upper_boundary)) {
     if (lower_boundary >= upper_boundary) {
       error_code |= cvmodule->error("Error: the upper boundary, "+
-                               cvmodule->to_str(upper_boundary)+
+                               cvm::to_str(upper_boundary)+
                                ", is not higher than the lower boundary, "+
-                               cvmodule->to_str(lower_boundary)+".\n",
+                               cvm::to_str(lower_boundary)+".\n",
                                COLVARS_INPUT_ERROR);
     }
   }
@@ -737,7 +737,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
         return COLVARS_INPUT_ERROR;
       }
       ext_force_k = proxy->boltzmann() * temp / (tolerance * tolerance);
-      cvmodule->log("Computed extended system force constant: " + cvmodule->to_str(ext_force_k) + " [E]/U^2\n");
+      cvmodule->log("Computed extended system force constant: " + cvm::to_str(ext_force_k) + " [E]/U^2\n");
 
       get_keyval(conf, "extendedTimeConstant", extended_period, 200.0);
       if (extended_period <= 0.0) {
@@ -745,7 +745,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
       }
       ext_mass = (proxy->boltzmann() * temp * extended_period * extended_period)
         / (4.0 * PI * PI * tolerance * tolerance);
-      cvmodule->log("Computed fictitious mass: " + cvmodule->to_str(ext_mass) + " [E]/(U/fs)^2   (U: colvar unit)\n");
+      cvmodule->log("Computed fictitious mass: " + cvm::to_str(ext_mass) + " [E]/(U/fs)^2   (U: colvar unit)\n");
     }
     {
       bool b_output_energy;
@@ -879,7 +879,7 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
 
     def_conf = "";
     if (cvmodule->debug()) {
-      cvmodule->log("Parsed " + cvmodule->to_str(cvcs.size()) + " components at this time.\n");
+      cvmodule->log("Parsed " + cvm::to_str(cvcs.size()) + " components at this time.\n");
     }
   }
 
@@ -985,7 +985,7 @@ int colvar::init_components(std::string const &conf)
   for (i = 0; i < cvcs.size(); i++) {
     for (j = i + 1; j < cvcs.size(); j++) {
       if (cvcs[i]->name == cvcs[j]->name) {
-        error_code |= cvmodule->error("Components " + cvmodule->to_str(i) + " and " + cvmodule->to_str(j) +
+        error_code |= cvmodule->error("Components " + cvm::to_str(i) + " and " + cvm::to_str(j) +
                                      " cannot have the same name \"" + cvcs[i]->name + "\".\n",
                                  COLVARS_INPUT_ERROR);
       }
@@ -1056,7 +1056,7 @@ void colvar::build_atom_list(void)
   atomic_gradients.resize(atom_ids.size());
   if (atom_ids.size()) {
     if (cvmodule->debug())
-      cvmodule->log("Colvar: created atom list with " + cvmodule->to_str(atom_ids.size()) + " atoms.\n");
+      cvmodule->log("Colvar: created atom list with " + cvm::to_str(atom_ids.size()) + " atoms.\n");
   } else {
     cvmodule->log("Warning: colvar components communicated no atom IDs.\n");
   }
@@ -1271,7 +1271,7 @@ int colvar::init_dependencies() {
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_cv_ntot; i++) {
       if (is_not_set(i)) {
-        cvmodule->error("Uninitialized feature " + cvmodule->to_str(i) + " in " + description);
+        cvmodule->error("Uninitialized feature " + cvm::to_str(i) + " in " + description);
       }
     }
   }
@@ -1414,7 +1414,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 {
   if (cvmodule->debug())
     cvmodule->log("Calculating colvar \""+this->name+"\", components "+
-             cvmodule->to_str(first_cvc)+" through "+cvmodule->to_str(first_cvc+num_cvcs)+".\n");
+             cvm::to_str(first_cvc)+" through "+cvm::to_str(first_cvc+num_cvcs)+".\n");
 
   int error_code = COLVARS_OK;
 
@@ -1502,9 +1502,9 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
     (cvcs[i])->read_data();
     (cvcs[i])->calc_value();
     if (cvmodule->debug())
-      cvmodule->log("Colvar component no. "+cvmodule->to_str(i+1)+
+      cvmodule->log("Colvar component no. "+cvm::to_str(i+1)+
                 " within colvar \""+this->name+"\" has value "+
-                cvmodule->to_str((cvcs[i])->value(),
+                cvm::to_str((cvcs[i])->value(),
                 cvmodule->cv_width, cvmodule->cv_prec)+".\n");
   }
   cvmodule->decrease_depth();
@@ -1564,7 +1564,7 @@ int colvar::collect_cvc_values()
 
   if (cvmodule->debug())
     cvmodule->log("Colvar \""+this->name+"\" has value "+
-              cvmodule->to_str(x, cvmodule->cv_width, cvmodule->cv_prec)+".\n");
+              cvm::to_str(x, cvmodule->cv_width, cvmodule->cv_prec)+".\n");
 
   if (after_restart) {
     x_old = x_restart;
@@ -1572,8 +1572,8 @@ int colvar::collect_cvc_values()
       cvm::real const jump2 = dist2(x, x_restart) / (width*width);
       if (jump2 > 0.25) {
         cvmodule->error("Error: the calculated value of colvar \""+name+
-                   "\":\n"+cvmodule->to_str(x)+"\n differs greatly from the value "
-                   "last read from the state file:\n"+cvmodule->to_str(x_restart)+
+                   "\":\n"+cvm::to_str(x)+"\n differs greatly from the value "
+                   "last read from the state file:\n"+cvm::to_str(x_restart)+
                    "\nPossible causes are changes in configuration, "
                    "wrong state file, or how PBC wrapping is handled.\n",
                    COLVARS_INPUT_ERROR);
@@ -1675,9 +1675,9 @@ int colvar::collect_cvc_total_forces()
     for (size_t i = 0; i < cvcs.size();  i++) {
       if (!cvcs[i]->is_enabled()) continue;
           if (cvmodule->debug())
-          cvmodule->log("Colvar component no. "+cvmodule->to_str(i+1)+
+          cvmodule->log("Colvar component no. "+cvm::to_str(i+1)+
               " within colvar \""+this->name+"\" has total force "+
-              cvmodule->to_str((cvcs[i])->total_force(),
+              cvm::to_str((cvcs[i])->total_force(),
               cvmodule->cv_width, cvmodule->cv_prec)+".\n");
       // linear combination is assumed
       ft += (cvcs[i])->total_force() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
@@ -1730,9 +1730,9 @@ int colvar::collect_cvc_Jacobians()
     for (size_t i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
         if (cvmodule->debug())
-          cvmodule->log("Colvar component no. "+cvmodule->to_str(i+1)+
+          cvmodule->log("Colvar component no. "+cvm::to_str(i+1)+
             " within colvar \""+this->name+"\" has Jacobian derivative"+
-            cvmodule->to_str((cvcs[i])->Jacobian_derivative(),
+            cvm::to_str((cvcs[i])->Jacobian_derivative(),
             cvmodule->cv_width, cvmodule->cv_prec)+".\n");
       // linear combination is assumed
       fj += (cvcs[i])->Jacobian_derivative() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
@@ -1784,7 +1784,7 @@ int colvar::calc_colvar_properties()
       cvm::real const jump2 = dist2(x, x_old) / (width*width);
       if (jump2 > 0.25) {
         cvmodule->log("Detected discrete jump in colvar value from "
-            + cvmodule->to_str(x_old) + " to " + cvmodule->to_str(x) + ".\n");
+            + cvm::to_str(x_old) + " to " + cvm::to_str(x) + ".\n");
         cvmodule->log("Reinitializing extended coordinate to colvar value.\n");
         x_ext = x;
       } else {
@@ -1882,9 +1882,9 @@ void colvar::update_extended_Lagrangian()
     cvm::step_number n_timesteps = cvmodule->step_relative() - prev_timestep;
     if (n_timesteps != 0 && n_timesteps != time_step_factor) {
       cvmodule->error("Error: extended-Lagrangian " + description + " has timeStepFactor " +
-        cvmodule->to_str(time_step_factor) + ", but was activated after " + cvmodule->to_str(n_timesteps) +
-        " steps at timestep " + cvmodule->to_str(cvmodule->step_absolute()) + " (relative step: " +
-        cvmodule->to_str(cvmodule->step_relative()) + ").\n" +
+        cvm::to_str(time_step_factor) + ", but was activated after " + cvm::to_str(n_timesteps) +
+        " steps at timestep " + cvm::to_str(cvmodule->step_absolute()) + " (relative step: " +
+        cvm::to_str(cvmodule->step_relative()) + ").\n" +
         "Make sure that this colvar is requested by biases at multiples of timeStepFactor.\n");
       return;
     }
@@ -1995,7 +1995,7 @@ void colvar::update_extended_Lagrangian()
     v_ext = -0.5 * (prev_v_ext + v_ext);
     if ((is_enabled(f_cv_reflecting_lower_boundary) && (x_ext - lower_boundary) < 0.0) ||
         (is_enabled(f_cv_reflecting_upper_boundary) && (x_ext - upper_boundary) > 0.0)) {
-      cvmodule->error("Error: extended coordinate value " + cvmodule->to_str(x_ext) + " is still outside boundaries after reflection.\n");
+      cvmodule->error("Error: extended coordinate value " + cvm::to_str(x_ext) + " is still outside boundaries after reflection.\n");
     }
   }
 
@@ -2033,7 +2033,7 @@ void colvar::communicate_forces()
   size_t i;
   if (cvmodule->debug()) {
     cvmodule->log("Communicating forces from colvar \""+this->name+"\".\n");
-    cvmodule->log("Force to be applied: " + cvmodule->to_str(f) + "\n");
+    cvmodule->log("Force to be applied: " + cvm::to_str(f) + "\n");
   }
 
   if (is_enabled(f_cv_scripted)) {
@@ -2415,7 +2415,7 @@ int colvar::set_state_params(std::string const &conf)
                              name+"\" .\n", COLVARS_INPUT_ERROR);
   } else {
     cvmodule->log("Restarting collective variable \""+name+"\" from value: "+
-             cvmodule->to_str(x)+"\n");
+             cvm::to_str(x)+"\n");
     x_restart = x;
     after_restart = true;
     // Externally driven cv (e.g. alchemical lambda) is imposed by restart value
@@ -2483,7 +2483,7 @@ cvm::memory_stream &colvar::read_state(cvm::memory_stream &is)
   is.setstate(std::ios::failbit);
 
   std::string error_msg("Error: in reading state data for colvar \"" + name + " at position " +
-                        cvmodule->to_str(error_pos) + " in unformatted stream.\n");
+                        cvm::to_str(error_pos) + " in unformatted stream.\n");
   if (key.size() && key != "colvar") {
     error_msg += "; the keyword read was \"" + key + "\", but \"colvar\" was expected";
   }

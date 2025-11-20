@@ -70,9 +70,9 @@ int colvarbias_meta::init(std::string const &conf)
     enable(f_cvb_history_dependent);
   }
   if (new_hill_freq % time_step_factor != 0) {
-    error_code |= cvmodule->error("newHillFrequency (currently " + cvmodule->to_str(new_hill_freq) +
+    error_code |= cvmodule->error("newHillFrequency (currently " + cvm::to_str(new_hill_freq) +
                                  ") must be a multiple of timeStepFactor (" +
-                                 cvmodule->to_str(time_step_factor) + ").\n",
+                                 cvm::to_str(time_step_factor) + ").\n",
                              COLVARS_INPUT_ERROR);
   }
 
@@ -92,7 +92,7 @@ int colvarbias_meta::init(std::string const &conf)
     for (i = 0; i < num_variables(); i++) {
       colvar_sigmas[i] = variables(i)->width * hill_width / 2.0;
       cvmodule->log(variables(i)->name+std::string(": ")+
-               cvmodule->to_str(colvar_sigmas[i]));
+               cvm::to_str(colvar_sigmas[i]));
     }
   }
 
@@ -131,9 +131,9 @@ int colvarbias_meta::init(std::string const &conf)
 
     get_keyval(conf, "gridsUpdateFrequency", grids_freq, grids_freq);
     if (grids_freq % time_step_factor != 0) {
-      error_code |= cvmodule->error("gridsUpdateFrequency (currently " + cvmodule->to_str(grids_freq) +
+      error_code |= cvmodule->error("gridsUpdateFrequency (currently " + cvm::to_str(grids_freq) +
                                    ") must be a multiple of timeStepFactor (" +
-                                   cvmodule->to_str(time_step_factor) + ").\n",
+                                   cvm::to_str(time_step_factor) + ").\n",
                                COLVARS_INPUT_ERROR);
     }
 
@@ -207,7 +207,7 @@ int colvarbias_meta::init_replicas_params(std::string const &conf)
     if (!replica_id.size()) {
       if (proxy->check_replicas_enabled() == COLVARS_OK) {
         // Obtain replicaID from the communicator
-        replica_id = cvmodule->to_str(proxy->replica_index());
+        replica_id = cvm::to_str(proxy->replica_index());
         cvmodule->log("Setting replicaID from communication layer: replicaID = "+
                  replica_id+".\n");
       } else {
@@ -231,8 +231,8 @@ int colvarbias_meta::init_replicas_params(std::string const &conf)
     }
     if (replica_update_freq % time_step_factor != 0) {
       error_code |= cvmodule->error(
-          "replicaUpdateFrequency (currently " + cvmodule->to_str(replica_update_freq) +
-              ") must be a multiple of timeStepFactor (" + cvmodule->to_str(time_step_factor) + ").\n",
+          "replicaUpdateFrequency (currently " + cvm::to_str(replica_update_freq) +
+              ") must be a multiple of timeStepFactor (" + cvm::to_str(time_step_factor) + ").\n",
           COLVARS_INPUT_ERROR);
     }
 
@@ -265,7 +265,7 @@ int colvarbias_meta::init_well_tempered_params(std::string const &conf)
   }
   if (well_tempered) {
     cvmodule->log("Well-tempered metadynamics is used.\n");
-    cvmodule->log("The bias temperature is "+cvmodule->to_str(bias_temperature)+".\n");
+    cvmodule->log("The bias temperature is "+cvm::to_str(bias_temperature)+".\n");
   }
   return COLVARS_OK;
 }
@@ -395,7 +395,7 @@ colvarbias_meta::delete_hill(hill_iter &h)
     cvmodule->log("Deleting hill from the metadynamics bias \""+this->name+"\""+
              ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
              ", with step number "+
-             cvmodule->to_str(h->it)+(h->replica.size() ?
+             cvm::to_str(h->it)+(h->replica.size() ?
                                  ", replica id \""+h->replica :
                                  "")+".\n");
   }
@@ -463,7 +463,7 @@ int colvarbias_meta::update_grid_params()
       cvmodule->log("Metadynamics bias \""+this->name+"\""+
                ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                ": current coordinates on the grid: "+
-               cvmodule->to_str(curr_bin)+".\n");
+               cvm::to_str(curr_bin)+".\n");
     }
 
     if (expand_grids) {
@@ -500,7 +500,7 @@ int colvarbias_meta::update_grid_params()
                      ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                      ": new lower boundary for colvar \""+
                      variables(i)->name+"\", at "+
-                     cvmodule->to_str(new_lower_boundaries[i])+".\n");
+                     cvm::to_str(new_lower_boundaries[i])+".\n");
           }
 
         if (!variables(i)->is_enabled(f_cv_hard_upper_boundary))
@@ -514,7 +514,7 @@ int colvarbias_meta::update_grid_params()
                      ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                      ": new upper boundary for colvar \""+
                      variables(i)->name+"\", at "+
-                     cvmodule->to_str(new_upper_boundaries[i])+".\n");
+                     cvm::to_str(new_upper_boundaries[i])+".\n");
           }
 
         if (changed_lb || changed_ub)
@@ -549,7 +549,7 @@ int colvarbias_meta::update_grid_params()
         curr_bin = hills_energy->get_colvars_index();
         if (cvmodule->debug())
           cvmodule->log("Coordinates on the new grid: "+
-                   cvmodule->to_str(curr_bin)+".\n");
+                   cvm::to_str(curr_bin)+".\n");
       }
     }
   }
@@ -567,7 +567,7 @@ int colvarbias_meta::update_bias()
     if (cvmodule->debug()) {
       cvmodule->log("Metadynamics bias \""+this->name+"\""+
                ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
-               ": adding a new hill at step "+cvmodule->to_str(cvmodule->step_absolute())+".\n");
+               ": adding a new hill at step "+cvm::to_str(cvmodule->step_absolute())+".\n");
     }
 
     cvm::real hills_scale=1.0;
@@ -605,7 +605,7 @@ int colvarbias_meta::update_bias()
                        hills_energy_sum_here,
                        &colvar_values);
           }
-          // cvmodule->log("WARNING: computing bias factor for off-grid hills. Hills energy: " + cvmodule->to_str(hills_energy_sum_here) + "\n");
+          // cvmodule->log("WARNING: computing bias factor for off-grid hills. Hills energy: " + cvm::to_str(hills_energy_sum_here) + "\n");
         }
       } else {
         calc_hills(new_hills_begin, hills.end(), hills_energy_sum_here, NULL);
@@ -696,8 +696,8 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
         cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                  ": current coordinates on the grid: "+
-                 cvmodule->to_str(curr_bin)+".\n");
-        cvmodule->log("Grid energy = "+cvmodule->to_str(bias_energy)+".\n");
+                 cvm::to_str(curr_bin)+".\n");
+        cvmodule->log("Grid energy = "+cvm::to_str(bias_energy)+".\n");
       }
     }
   } else {
@@ -719,7 +719,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
                bias_energy,
                values);
     if (cvmodule->debug()) {
-      cvmodule->log("Hills energy = "+cvmodule->to_str(bias_energy)+".\n");
+      cvmodule->log("Hills energy = "+cvm::to_str(bias_energy)+".\n");
     }
   }
 
@@ -787,7 +787,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
                        colvar_forces,
                        values);
       if (cvmodule->debug()) {
-        cvmodule->log("Hills forces = "+cvmodule->to_str(colvar_forces)+".\n");
+        cvmodule->log("Hills forces = "+cvm::to_str(colvar_forces)+".\n");
       }
     }
   }
@@ -1030,7 +1030,7 @@ int colvarbias_meta::update_replicas_registry()
   if (cvmodule->debug())
     cvmodule->log("Metadynamics bias \""+this->name+"\""+
              ": updating the list of replicas, currently containing "+
-             cvmodule->to_str(replicas.size())+" elements.\n");
+             cvm::to_str(replicas.size())+" elements.\n");
 
   {
     // Load the whole file into a string
@@ -1136,7 +1136,7 @@ int colvarbias_meta::update_replicas_registry()
       cvmodule->log("Metadynamics bias \""+this->name+"\""+
                ": failed to read the file \""+
                (replicas[ir])->replica_list_file+"\": will try again after "+
-               cvmodule->to_str(replica_update_freq)+" steps.\n");
+               cvm::to_str(replica_update_freq)+" steps.\n");
       (replicas[ir])->update_status++;
     } else {
       if (new_state_file != (replicas[ir])->replica_state_file) {
@@ -1154,7 +1154,7 @@ int colvarbias_meta::update_replicas_registry()
 
   if (cvmodule->debug())
     cvmodule->log("Metadynamics bias \""+this->name+"\": the list of replicas contains "+
-             cvmodule->to_str(replicas.size())+" elements.\n");
+             cvm::to_str(replicas.size())+" elements.\n");
 
   return error_code;
 }
@@ -1185,7 +1185,7 @@ int colvarbias_meta::read_replica_files()
           cvmodule->log("Failed to read the file \""+
                    (replicas[ir])->replica_state_file+
                    "\": will try again in "+
-                   cvmodule->to_str(replica_update_freq)+" steps.\n");
+                   cvm::to_str(replica_update_freq)+" steps.\n");
           (replicas[ir])->replica_state_file_in_sync = false;
           (replicas[ir])->update_status++;
         }
@@ -1195,7 +1195,7 @@ int colvarbias_meta::read_replica_files()
                  ": the state file of replica \""+
                  (replicas[ir])->replica_id+"\" is currently undefined: "
                  "will try again after "+
-                 cvmodule->to_str(replica_update_freq)+" steps.\n");
+                 cvm::to_str(replica_update_freq)+" steps.\n");
         (replicas[ir])->update_status++;
       }
     }
@@ -1238,7 +1238,7 @@ int colvarbias_meta::read_replica_files()
           (replicas[ir])->update_status++;
           cvmodule->log("Failed to read the file \""+(replicas[ir])->replica_hills_file+
                    "\" at the previous position: will try again in "+
-                   cvmodule->to_str(replica_update_freq)+" steps.\n");
+                   cvm::to_str(replica_update_freq)+" steps.\n");
         } else {
 
           while ((replicas[ir])->read_hill(is)) {
@@ -1246,7 +1246,7 @@ int colvarbias_meta::read_replica_files()
                      ": received a hill from replica \""+
                      (replicas[ir])->replica_id+
                      "\" at step "+
-                     cvmodule->to_str(((replicas[ir])->hills.back()).it)+".\n");
+                     cvm::to_str(((replicas[ir])->hills.back()).it)+".\n");
           }
           is.clear();
           // store the position for the next read
@@ -1256,7 +1256,7 @@ int colvarbias_meta::read_replica_files()
                      ": stopped reading file \""+
                      (replicas[ir])->replica_hills_file+
                      "\" at position "+
-                     cvmodule->to_str((replicas[ir])->replica_hills_file_pos)+".\n");
+                     cvm::to_str((replicas[ir])->replica_hills_file_pos)+".\n");
           }
 
           // test whether this is the end of the file
@@ -1272,7 +1272,7 @@ int colvarbias_meta::read_replica_files()
         cvmodule->log("Failed to read the file \""+
                  (replicas[ir])->replica_hills_file+
                  "\": will try again in "+
-                 cvmodule->to_str(replica_update_freq)+" steps.\n");
+                 cvm::to_str(replica_update_freq)+" steps.\n");
         (replicas[ir])->update_status++;
       }
       proxy->close_input_stream((replicas[ir])->replica_hills_file);
@@ -1285,7 +1285,7 @@ int colvarbias_meta::read_replica_files()
                " could not read information from replica \""+
                (replicas[ir])->replica_id+
                "\" after more than "+
-               cvmodule->to_str((replicas[ir])->update_status * replica_update_freq)+
+               cvm::to_str((replicas[ir])->update_status * replica_update_freq)+
                " steps.  Ensure that it is still running.\n");
     }
   }
@@ -1411,7 +1411,7 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
   hill_iter old_hills_off_grid_end = hills_off_grid.end();
   if (cvmodule->debug()) {
     cvmodule->log("Before reading hills from the state file, there are "+
-             cvmodule->to_str(hills.size())+" hills in memory.\n");
+             cvm::to_str(hills.size())+" hills in memory.\n");
   }
 
   // Read any hills following the grid data (if any)
@@ -1419,15 +1419,15 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
     if (cvmodule->debug()) {
       cvmodule->log("Read a previously saved hill under the "
                "metadynamics bias \"" +
-               this->name + "\", created at step " + cvmodule->to_str((hills.back()).it) +
-               "; position in stream is " + cvmodule->to_str(is.tellg()) + ".\n");
+               this->name + "\", created at step " + cvm::to_str((hills.back()).it) +
+               "; position in stream is " + cvm::to_str(is.tellg()) + ".\n");
     }
   }
 
   is.clear();
 
   new_hills_begin = hills.end();
-  cvmodule->log("  successfully read "+cvmodule->to_str(hills.size() - old_hills_size)+
+  cvmodule->log("  successfully read "+cvm::to_str(hills.size() - old_hills_size)+
            " explicit hills from state.\n");
 
   if (existing_hills) {
@@ -1436,7 +1436,7 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
     hills_off_grid.erase(hills_off_grid.begin(), old_hills_off_grid_end);
     if (cvmodule->debug()) {
       cvmodule->log("After pruning the old hills, there are now "+
-               cvmodule->to_str(hills.size())+" hills in memory.\n");
+               cvm::to_str(hills.size())+" hills in memory.\n");
     }
   }
 
@@ -1445,7 +1445,7 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 
   if (use_grids) {
     if (!hills_off_grid.empty()) {
-      cvmodule->log(cvmodule->to_str(hills_off_grid.size())+" hills are near the "
+      cvmodule->log(cvm::to_str(hills_off_grid.size())+" hills are near the "
                "grid boundaries: they will be computed analytically "
                "and saved to the state files.\n");
     }
@@ -1505,7 +1505,7 @@ void colvarbias_meta::rebin_grids_after_restart()
     if (restart_keep_hills && !hills.empty()) {
       // if there are hills, recompute the new grids from them
       cvmodule->log("Rebinning the energy and forces grids from "+
-               cvmodule->to_str(hills.size())+" hills (this may take a bit)...\n");
+               cvm::to_str(hills.size())+" hills (this may take a bit)...\n");
       project_hills(hills.begin(), hills.end(), new_hills_energy.get(),
                     new_hills_energy_gradients.get(), true);
       cvmodule->log("rebinning done.\n");
@@ -1604,7 +1604,7 @@ cvm::memory_stream &colvarbias_meta::write_hill(cvm::memory_stream &os,
 }
 
 
-template <typename IST> IST &hill_stream_error(IST &is, size_t start_pos, std::string const &key)
+template <typename IST> IST &hill_stream_error(IST &is, size_t start_pos, std::string const &key, colvarmodule *cvmodule)
 {
   is.clear();
   is.seekg(start_pos);
@@ -1615,7 +1615,7 @@ template <typename IST> IST &hill_stream_error(IST &is, size_t start_pos, std::s
 }
 
 
-template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is)
+template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colvarmodule *cvmodule)
 {
   if (!is)
     return is; // do nothing if failbit is set
@@ -1635,7 +1635,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is)
   if (formatted) {
     std::string brace;
     if (!(is >> brace) || (brace != "{")) {
-      return hill_stream_error<IST>(is, start_pos, "hill");
+      return hill_stream_error<IST>(is, start_pos, "hill", cvmodule);
     }
   }
 
@@ -1649,19 +1649,19 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is)
   std::string h_replica;
 
   if (!read_state_data_key(is, "step") || !(is >> h_it)) {
-    return hill_stream_error<IST>(is, start_pos, "step");
+    return hill_stream_error<IST>(is, start_pos, "step", cvmodule);
   }
 
   if (read_state_data_key(is, "weight")) {
     if (!(is >> h_weight)) {
-      return hill_stream_error<IST>(is, start_pos, "weight");
+      return hill_stream_error<IST>(is, start_pos, "weight", cvmodule);
     }
   }
 
   if (read_state_data_key(is, "centers")) {
     for (size_t i = 0; i < num_variables(); i++) {
       if (!(is >> h_centers[i])) {
-        return hill_stream_error<IST>(is, start_pos, "centers");
+        return hill_stream_error<IST>(is, start_pos, "centers", cvmodule);
       }
     }
   }
@@ -1669,7 +1669,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is)
   if (read_state_data_key(is, "widths")) {
     for (size_t i = 0; i < num_variables(); i++) {
       if (!(is >> h_sigmas[i])) {
-        return hill_stream_error<IST>(is, start_pos, "widths");
+        return hill_stream_error<IST>(is, start_pos, "widths", cvmodule);
       }
       // For backward compatibility, read the widths instead of the sigmas
       h_sigmas[i] /= 2.0;
@@ -1679,13 +1679,13 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is)
   if (comm != single_replica) {
     if (read_state_data_key(is, "replicaID")) {
       if (!(is >> h_replica)) {
-        return hill_stream_error<IST>(is, start_pos, "replicaID");
+        return hill_stream_error<IST>(is, start_pos, "replicaID", cvmodule);
       }
       if (h_replica != replica_id) {
         cvmodule->error("Error: trying to read a hill created by replica \"" + h_replica +
                        "\" for replica \"" + replica_id + "\"; did you swap output files?\n",
                    COLVARS_INPUT_ERROR);
-        return hill_stream_error<IST>(is, start_pos, "replicaID");
+        return hill_stream_error<IST>(is, start_pos, "replicaID", cvmodule);
       }
     }
   }
@@ -1693,7 +1693,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is)
   if (formatted) {
     std::string brace;
     if (!(is >> brace) || (brace != "}")) {
-      return hill_stream_error<IST>(is, start_pos, "hill");
+      return hill_stream_error<IST>(is, start_pos, "hill", cvmodule);
     }
   }
 
@@ -1729,13 +1729,13 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is)
 
 std::istream &colvarbias_meta::read_hill(std::istream &is)
 {
-  return read_hill_template_<std::istream>(is);
+  return read_hill_template_<std::istream>(is, cvmodule);
 }
 
 
 cvm::memory_stream &colvarbias_meta::read_hill(cvm::memory_stream &is)
 {
-  return read_hill_template_<cvm::memory_stream>(is);
+  return read_hill_template_<cvm::memory_stream>(is, cvmodule);
 }
 
 
@@ -1976,7 +1976,7 @@ void colvarbias_meta::write_pmf()
       std::string const fes_file_name(this->output_prefix +
                                       ((comm != single_replica) ? ".partial" : "") +
                                       (dump_fes_save ?
-                                       "."+cvmodule->to_str(cvmodule->step_absolute()) : "") +
+                                       "."+cvm::to_str(cvmodule->step_absolute()) : "") +
                                       ".pmf");
       pmf->write_multicol(fes_file_name, "PMF file");
     }
@@ -2012,7 +2012,7 @@ void colvarbias_meta::write_pmf()
     }
     std::string const fes_file_name(this->output_prefix +
                                     (dump_fes_save ?
-                                     "."+cvmodule->to_str(cvmodule->step_absolute()) : "") +
+                                     "."+cvm::to_str(cvmodule->step_absolute()) : "") +
                                     ".pmf");
     pmf->write_multicol(fes_file_name, "partial PMF file");
   }
@@ -2103,13 +2103,14 @@ colvarbias_meta::hill::hill(cvm::step_number it_in,
                             cvm::real W_in,
                             std::vector<colvarvalue> const &cv_values,
                             std::vector<cvm::real> const &cv_sigmas,
-                            std::string const &replica_in)
+                            std::string const &replica_in, colvarmodule *cvmodule_in)
   : it(it_in),
     sW(1.0),
     W(W_in),
     centers(cv_values.size()),
     sigmas(cv_values.size()),
-    replica(replica_in)
+    replica(replica_in),
+    cvmodule(cvmodule_in)
 {
   hill_value = 0.0;
   for (size_t i = 0; i < cv_values.size(); i++) {
@@ -2118,11 +2119,11 @@ colvarbias_meta::hill::hill(cvm::step_number it_in,
     sigmas[i] = cv_sigmas[i];
   }
   if (cvmodule->debug()) {
-    cvmodule->log("New hill, applied to "+cvmodule->to_str(cv_values.size())+
+    cvmodule->log("New hill, applied to "+cvm::to_str(cv_values.size())+
              " collective variables, with centers "+
-             cvmodule->to_str(centers)+", sigmas "+
-             cvmodule->to_str(sigmas)+" and weight "+
-             cvmodule->to_str(W)+".\n");
+             cvm::to_str(centers)+", sigmas "+
+             cvm::to_str(sigmas)+" and weight "+
+             cvm::to_str(W)+".\n");
   }
 }
 
@@ -2134,7 +2135,8 @@ colvarbias_meta::hill::hill(colvarbias_meta::hill const &h)
     W(h.W),
     centers(h.centers),
     sigmas(h.sigmas),
-    replica(h.replica)
+    replica(h.replica),
+    cvmodule(h.cvmodule)
 {
   hill_value = 0.0;
 }

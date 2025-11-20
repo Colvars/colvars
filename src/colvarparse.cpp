@@ -126,7 +126,7 @@ void colvarparse::mark_key_set_user(std::string const &key_str,
 {
   key_set_modes[to_lower_cppstr(key_str)] = key_set_user;
   if (parse_mode & parse_echo) {
-    cvmodule->log("# "+key_str+" = "+cvmodule->to_str(value)+"\n",
+    cvmodule->log("# "+key_str+" = "+cvm::to_str(value)+"\n",
              cvmodule->log_user_params());
   }
   if (parse_mode & parse_deprecation_warning) {
@@ -143,7 +143,7 @@ void colvarparse::mark_key_set_default(std::string const &key_str,
 {
   key_set_modes[to_lower_cppstr(key_str)] = key_set_default;
   if (parse_mode & parse_echo_default) {
-    cvmodule->log("# "+key_str+" = "+cvmodule->to_str(def_value)+
+    cvmodule->log("# "+key_str+" = "+cvm::to_str(def_value)+
              " [default]\n", cvmodule->log_default_params());
   }
 }
@@ -265,7 +265,7 @@ bool colvarparse::_get_keyval_scalar_(std::string const &conf,
 
       if (parse_mode & parse_required) {
         if (cvmodule->debug()) {
-          cvmodule->log("get_keyval, parse_required = "+cvmodule->to_str(parse_mode & parse_required)+
+          cvmodule->log("get_keyval, parse_required = "+cvm::to_str(parse_mode & parse_required)+
                    "\n");
         }
         error_key_required(key_str, parse_mode);

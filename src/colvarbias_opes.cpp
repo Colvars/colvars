@@ -80,9 +80,9 @@ int colvarbias_opes::init(const std::string& conf) {
   m_kbt = m_temperature * cvmodule->proxy->boltzmann();
   get_keyval(conf, "newHillFrequency", m_pace);
   if (m_pace % time_step_factor != 0) {
-    error_code |= cvmodule->error("newHillFrequency (currently " + cvmodule->to_str(m_pace) +
+    error_code |= cvmodule->error("newHillFrequency (currently " + cvm::to_str(m_pace) +
                                  ") must be a multiple of timeStepFactor (" +
-                                 cvmodule->to_str(time_step_factor) + ").\n",
+                                 cvm::to_str(time_step_factor) + ").\n",
                              COLVARS_INPUT_ERROR);
   }
   get_keyval(conf, "barrier", m_barrier);
@@ -154,7 +154,7 @@ int colvarbias_opes::init(const std::string& conf) {
   if (m_sigma_min.size() > 0 && !m_adaptive_sigma) {
     for (size_t i = 0; i < num_variables(); ++i) {
       if (m_sigma_min[i] > m_sigma0[i]) {
-        return cvmodule->error("gaussianSigmaMin of variable " + cvmodule->to_str(i) + " should be smaller than sigma");
+        return cvmodule->error("gaussianSigmaMin of variable " + cvm::to_str(i) + " should be smaller than sigma");
       }
     }
   }
@@ -201,7 +201,7 @@ int colvarbias_opes::init(const std::string& conf) {
         return cvmodule->error("the second of neighborListParam must be greater than 0", COLVARS_INPUT_ERROR);
       }
       if (nlist_param[1] > min_PARAM_1) {
-        return cvmodule->error("the second of neighborListParam must be smaller to avoid systematic errors. Largest suggested value is: 1.16-1/sqrt(param_0) = " + cvmodule->to_str(min_PARAM_1), COLVARS_INPUT_ERROR);
+        return cvmodule->error("the second of neighborListParam must be smaller to avoid systematic errors. Largest suggested value is: 1.16-1/sqrt(param_0) = " + cvm::to_str(min_PARAM_1), COLVARS_INPUT_ERROR);
       }
       m_nlist_param = nlist_param;
     }
@@ -242,15 +242,15 @@ int colvarbias_opes::init(const std::string& conf) {
     get_keyval(conf, "replicaID", replica_id, replica_id);
     get_keyval(conf, "sharedFreq", shared_freq, output_freq);
     if (shared_freq % time_step_factor != 0) {
-      error_code |= cvmodule->error("sharedFreq (currently " + cvmodule->to_str(shared_freq) +
+      error_code |= cvmodule->error("sharedFreq (currently " + cvm::to_str(shared_freq) +
                                    ") must be a multiple of timeStepFactor (" +
-                                   cvmodule->to_str(time_step_factor) + ").\n",
+                                   cvm::to_str(time_step_factor) + ").\n",
                                COLVARS_INPUT_ERROR);
     }
     if (!replica_id.size()) {
       if (proxy->check_replicas_enabled() == COLVARS_OK) {
         // Obtain replicaID from the communicator
-        replica_id = cvmodule->to_str(proxy->replica_index());
+        replica_id = cvm::to_str(proxy->replica_index());
         cvmodule->log("Setting replicaID from communication layer: replicaID = "+
                  replica_id+".\n");
       } else {
@@ -306,8 +306,8 @@ int colvarbias_opes::init(const std::string& conf) {
   get_keyval(conf, "printTrajectoryFrequency", m_traj_output_frequency, cvmodule->cv_traj_freq);
   if (m_traj_output_frequency % time_step_factor != 0) {
     error_code |= cvmodule->error(
-        "printTrajectoryFrequency (currently " + cvmodule->to_str(m_traj_output_frequency) +
-            ") must be a multiple of timeStepFactor (" + cvmodule->to_str(time_step_factor) + ").\n",
+        "printTrajectoryFrequency (currently " + cvm::to_str(m_traj_output_frequency) +
+            ") must be a multiple of timeStepFactor (" + cvm::to_str(time_step_factor) + ").\n",
         COLVARS_INPUT_ERROR);
   }
   m_cv.resize(num_variables(), 0);
@@ -320,41 +320,41 @@ void colvarbias_opes::showInfo() const {
   auto printInfo = [&](const std::string& info, const std::string& val){
     cvmodule->log(this->name + ": " + info + val + "\n");
   };
-  printInfo("temperature = ", cvmodule->to_str(m_kbt / cvmodule->proxy->boltzmann()));
-  printInfo("beta = ", cvmodule->to_str(1.0 / m_kbt));
-  printInfo("depositing new kernels with newHillFrequency = ", cvmodule->to_str(m_pace));
-  printInfo("expected barrier is ", cvmodule->to_str(m_barrier));
-  printInfo("using target distribution with biasfactor (gamma) = ", m_inf_biasfactor ? "inf" : cvmodule->to_str(m_biasfactor));
+  printInfo("temperature = ", cvm::to_str(m_kbt / cvmodule->proxy->boltzmann()));
+  printInfo("beta = ", cvm::to_str(1.0 / m_kbt));
+  printInfo("depositing new kernels with newHillFrequency = ", cvm::to_str(m_pace));
+  printInfo("expected barrier is ", cvm::to_str(m_barrier));
+  printInfo("using target distribution with biasfactor (gamma) = ", m_inf_biasfactor ? "inf" : cvm::to_str(m_biasfactor));
   if (m_inf_biasfactor) {
     cvmodule->log("  (thus a uniform flat target distribution, no well-tempering)\n");
     cvmodule->log(this->name + ": " + "the equivalent bias temperature = inf\n");
   } else {
-    cvmodule->log(this->name + ": " + "the equivalent bias temperature = " + cvmodule->to_str(cvmodule->proxy->target_temperature() * (m_biasfactor - 1)));
+    cvmodule->log(this->name + ": " + "the equivalent bias temperature = " + cvm::to_str(cvmodule->proxy->target_temperature() * (m_biasfactor - 1)));
   }
   if (m_adaptive_sigma) {
-    printInfo("adaptive sigma will be used, with adaptiveSigmaStride = ", cvmodule->to_str(m_adaptive_sigma_stride));
+    printInfo("adaptive sigma will be used, with adaptiveSigmaStride = ", cvm::to_str(m_adaptive_sigma_stride));
     size_t x = std::ceil(m_adaptive_sigma_stride / m_pace);
-    printInfo("  thus the first x kernel depositions will be skipped, x = adaptiveSigmaStride/newHillFrequency = ", cvmodule->to_str(x));
+    printInfo("  thus the first x kernel depositions will be skipped, x = adaptiveSigmaStride/newHillFrequency = ", cvm::to_str(x));
   } else {
     std::string sigmas;
     for (size_t i = 0; i < num_variables(); ++i) {
-      sigmas += " " + cvmodule->to_str(m_sigma0[i]);
+      sigmas += " " + cvm::to_str(m_sigma0[i]);
     }
     cvmodule->log(this->name + ": kernels have initial gaussianSigma = " + sigmas + "\n");
   }
   if (m_fixed_sigma) {
     cvmodule->log(this->name + " fixedGaussianSigma: gaussianSigma will not decrease as the simulation proceeds\n");
   }
-  printInfo("kernels are truncated with kernelCutoff = ", cvmodule->to_str(m_cutoff));
+  printInfo("kernels are truncated with kernelCutoff = ", cvm::to_str(m_cutoff));
   if (m_cutoff < 3.5) {
     cvmodule->log(this->name + " +++ WARNING +++ probably kernels are truncated too much\n");
   }
-  printInfo("the value at cutoff is = ", cvmodule->to_str(m_val_at_cutoff));
-  printInfo("regularization epsilon = ", cvmodule->to_str(m_epsilon));
+  printInfo("the value at cutoff is = ", cvm::to_str(m_val_at_cutoff));
+  printInfo("regularization epsilon = ", cvm::to_str(m_epsilon));
   if (m_val_at_cutoff > m_epsilon*(1+1e-6)) {
     cvmodule->log(this->name + " +++ WARNING +++ the kernelCutoff might be too small for the given epsilon\n");
   }
-  printInfo("kernels will be compressed when closer than compression_threshold = ", cvmodule->to_str(m_compression_threshold));
+  printInfo("kernels will be compressed when closer than compression_threshold = ", cvm::to_str(m_compression_threshold));
   if (m_compression_threshold2 == 0) {
     cvmodule->log(this->name + " +++ WARNING +++ kernels will never merge, expect slowdowns\n");
   }
@@ -362,19 +362,19 @@ void colvarbias_opes::showInfo() const {
     cvmodule->log(this->name + " -- RECURSIVE_MERGE_OFF: only one merge for each new kernel will be attempted. This is faster only if total number of kernels does not grow too much\n");
   }
   if (m_nlist) {
-    cvmodule->log(this->name + " neighborList: using neighbor list for kernels, with parameters: " + cvmodule->to_str(m_nlist_param[0]) + " " + cvmodule->to_str(m_nlist_param[1]) + "\n");
+    cvmodule->log(this->name + " neighborList: using neighbor list for kernels, with parameters: " + cvm::to_str(m_nlist_param[0]) + " " + cvm::to_str(m_nlist_param[1]) + "\n");
     if (m_nlist_pace_reset) {
       cvmodule->log(this->name + " neighborListNewHillReset: forcing the neighbor list to update every time when depositing a new hill\n");
     }
   }
   if (m_no_zed) {
-    printInfo("noZed: using fixed normalization factor = ", cvmodule->to_str(m_zed));
+    printInfo("noZed: using fixed normalization factor = ", cvm::to_str(m_zed));
   }
   if (comm == multiple_replicas && m_num_walkers > 1) {
     cvmodule->log(this->name + " if multiple replicas are present, they will share the same bias\n");
   }
   if (m_num_threads > 1) {
-    printInfo("using multiple threads per simulation: ", cvmodule->to_str(m_num_threads));
+    printInfo("using multiple threads per simulation: ", cvm::to_str(m_num_threads));
   }
   cvmodule->cite_feature("OPES");
   if (m_adaptive_sigma || m_explore) {
@@ -597,7 +597,7 @@ int colvarbias_opes::update_opes() {
       if (cvmodule->proxy->replica_index() == 0) {
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           if (cvmodule->proxy->replica_comm_recv((char*)&(replica_sum_heights[p - 1]), sizeof(cvm::real), p) != sizeof(cvm::real)) {
-            return cvmodule->error("Error: receiving sum of weights from replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error: receiving sum of weights from replica " + cvm::to_str(p));
           }
         }
       } else {
@@ -613,7 +613,7 @@ int colvarbias_opes::update_opes() {
         }
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           if (cvmodule->proxy->replica_comm_send((char*)&sum_heights, sizeof(cvm::real), p) != sizeof(cvm::real)) {
-            return cvmodule->error("Error: sending sum of weights to replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error: sending sum of weights to replica " + cvm::to_str(p));
           }
         }
       } else {
@@ -627,7 +627,7 @@ int colvarbias_opes::update_opes() {
       if (cvmodule->proxy->replica_index() == 0) {
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           if (cvmodule->proxy->replica_comm_recv((char*)&(replica_sum_heights2[p - 1]), sizeof(cvm::real), p) != sizeof(cvm::real)) {
-            return cvmodule->error("Error: getting sum of weights2 from replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error: getting sum of weights2 from replica " + cvm::to_str(p));
           }
         }
       } else {
@@ -643,7 +643,7 @@ int colvarbias_opes::update_opes() {
         }
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           if (cvmodule->proxy->replica_comm_send((char*)&sum_heights2, sizeof(cvm::real), p) != sizeof(cvm::real)) {
-            return cvmodule->error("Error: sending sum of weights2 to replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error: sending sum of weights2 to replica " + cvm::to_str(p));
           }
         }
       } else {
@@ -679,7 +679,7 @@ int colvarbias_opes::update_opes() {
         if (m_sigma_min.size() == 0) {
           for (size_t i = 0; i < num_variables(); ++i) {
             if (m_sigma0[i] < 1e-6) {
-              cvmodule->error("Adaptive sigma is suspiciously small for CV " + cvmodule->to_str(i) + "\nManually provide sigma or set a safe sigma_min to avoid possible issues\n");
+              cvmodule->error("Adaptive sigma is suspiciously small for CV " + cvm::to_str(i) + "\nManually provide sigma or set a safe sigma_min to avoid possible issues\n");
               return COLVARS_ERROR;
             }
           }
@@ -743,12 +743,12 @@ int colvarbias_opes::update_opes() {
         all_height[0] = height;
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           if (cvmodule->proxy->replica_comm_recv((char*)&(all_height[p]), sizeof(decltype(all_height)::value_type), p) != sizeof(decltype(all_height)::value_type)) {
-            return cvmodule->error("Error: on receiving height on replica 0 from replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error: on receiving height on replica 0 from replica " + cvm::to_str(p));
           }
         }
       } else {
         if (cvmodule->proxy->replica_comm_send((char*)&height, sizeof(decltype(height)), 0) != sizeof(cvm::real)) {
-          return cvmodule->error("Error: on sending height to replica 0 from replica " + cvmodule->to_str(my_replica));
+          return cvmodule->error("Error: on sending height to replica 0 from replica " + cvm::to_str(my_replica));
         }
       }
       cvmodule->proxy->replica_comm_barrier();
@@ -757,13 +757,13 @@ int colvarbias_opes::update_opes() {
         const int send_size = sizeof(decltype(all_height)::value_type) * all_height.size();
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           if (cvmodule->proxy->replica_comm_send((char*)all_height.data(), send_size, p) != send_size) {
-            return cvmodule->error("Error: on sending heights from replica 0 to replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error: on sending heights from replica 0 to replica " + cvm::to_str(p));
           }
         }
       } else {
         const int recv_size = sizeof(decltype(all_height)::value_type) * all_height.size();
         if (cvmodule->proxy->replica_comm_recv((char*)all_height.data(), recv_size, 0) != recv_size) {
-          return cvmodule->error("Error: on receiving heights from replica 0 to replica " + cvmodule->to_str(my_replica));
+          return cvmodule->error("Error: on receiving heights from replica 0 to replica " + cvm::to_str(my_replica));
         }
       }
       cvmodule->proxy->replica_comm_barrier();
@@ -775,13 +775,13 @@ int colvarbias_opes::update_opes() {
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           cvm::real* recv_start_ptr = &(all_center[p * m_cv.size()]);
           if (cvmodule->proxy->replica_comm_recv((char*)recv_start_ptr, recv_size, p) != recv_size) {
-            return cvmodule->error("Error on receiving centers from replica 0 to replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error on receiving centers from replica 0 to replica " + cvm::to_str(p));
           }
         }
       } else {
         const int send_size = sizeof(decltype(m_cv)::value_type) * m_cv.size();
         if (cvmodule->proxy->replica_comm_send((char*)m_cv.data(), send_size, 0) != send_size) {
-          return cvmodule->error("Error on sending centers to replica 0 from replica " + cvmodule->to_str(my_replica));
+          return cvmodule->error("Error on sending centers to replica 0 from replica " + cvm::to_str(my_replica));
         }
       }
       cvmodule->proxy->replica_comm_barrier();
@@ -790,13 +790,13 @@ int colvarbias_opes::update_opes() {
         const int send_size = sizeof(decltype(all_center)::value_type) * all_center.size();
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           if (cvmodule->proxy->replica_comm_send((char*)all_center.data(), send_size, p) != send_size) {
-            return cvmodule->error("Error on sending centers from replica 0 to replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error on sending centers from replica 0 to replica " + cvm::to_str(p));
           }
         }
       } else {
         const int recv_size = sizeof(decltype(all_center)::value_type) * all_center.size();
         if (cvmodule->proxy->replica_comm_recv((char*)all_center.data(), recv_size, 0) != recv_size) {
-          return cvmodule->error("Error on receiving centers from replica 0 to replica " + cvmodule->to_str(my_replica));
+          return cvmodule->error("Error on receiving centers from replica 0 to replica " + cvm::to_str(my_replica));
         }
       }
       cvmodule->proxy->replica_comm_barrier();
@@ -808,13 +808,13 @@ int colvarbias_opes::update_opes() {
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           cvm::real* recv_start_ptr = &(all_sigma[p * m_cv.size()]);
           if (cvmodule->proxy->replica_comm_recv((char*)recv_start_ptr, recv_size, p) != recv_size) {
-            return cvmodule->error("Error on receiving sigmas from replica 0 to replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error on receiving sigmas from replica 0 to replica " + cvm::to_str(p));
           }
         }
       } else {
         const int send_size = sizeof(decltype(sigma)::value_type) * sigma.size();
         if (cvmodule->proxy->replica_comm_send((char*)sigma.data(), send_size, 0) != send_size) {
-          return cvmodule->error("Error on sending sigmas to replica 0 from replica " + cvmodule->to_str(my_replica));
+          return cvmodule->error("Error on sending sigmas to replica 0 from replica " + cvm::to_str(my_replica));
         }
       }
       cvmodule->proxy->replica_comm_barrier();
@@ -823,13 +823,13 @@ int colvarbias_opes::update_opes() {
         const int send_size = sizeof(decltype(all_sigma)::value_type) * all_sigma.size();
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           if (cvmodule->proxy->replica_comm_send((char*)all_sigma.data(), send_size, p) != send_size) {
-            return cvmodule->error("Error on sending sigmas from replica 0 to replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error on sending sigmas from replica 0 to replica " + cvm::to_str(p));
           }
         }
       } else {
         const int recv_size = sizeof(decltype(all_sigma)::value_type) * all_sigma.size();
         if (cvmodule->proxy->replica_comm_recv((char*)all_sigma.data(), recv_size, 0) != recv_size) {
-          return cvmodule->error("Error on receiving sigmas from replica 0 to replica " + cvmodule->to_str(my_replica));
+          return cvmodule->error("Error on receiving sigmas from replica 0 to replica " + cvm::to_str(my_replica));
         }
       }
       cvmodule->proxy->replica_comm_barrier();
@@ -839,12 +839,12 @@ int colvarbias_opes::update_opes() {
         all_logweight[0] = log_weight;
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           if (cvmodule->proxy->replica_comm_recv((char*)&(all_logweight[p]), sizeof(decltype(all_logweight)::value_type), p) != sizeof(decltype(all_logweight)::value_type)) {
-            return cvmodule->error("Error on receiving log_weight on replica 0 from replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error on receiving log_weight on replica 0 from replica " + cvm::to_str(p));
           }
         }
       } else {
         if (cvmodule->proxy->replica_comm_send((char*)&log_weight, sizeof(decltype(log_weight)), 0) != sizeof(cvm::real)) {
-          return cvmodule->error("Error on sending log_weight to replica 0 from replica " + cvmodule->to_str(my_replica));
+          return cvmodule->error("Error on sending log_weight to replica 0 from replica " + cvm::to_str(my_replica));
         }
       }
       cvmodule->proxy->replica_comm_barrier();
@@ -853,13 +853,13 @@ int colvarbias_opes::update_opes() {
         const int send_size = sizeof(decltype(all_logweight)::value_type) * all_logweight.size();
         for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
           if (cvmodule->proxy->replica_comm_send((char*)all_logweight.data(), send_size, p) != send_size) {
-            return cvmodule->error("Error on sending log_weight from replica 0 to replica " + cvmodule->to_str(p));
+            return cvmodule->error("Error on sending log_weight from replica 0 to replica " + cvm::to_str(p));
           }
         }
       } else {
         const int recv_size = sizeof(decltype(all_logweight)::value_type) * all_logweight.size();
         if (cvmodule->proxy->replica_comm_recv((char*)all_logweight.data(), recv_size, 0) != recv_size) {
-          return cvmodule->error("Error on receiving log_weight from replica 0 to replica " + cvmodule->to_str(my_replica));
+          return cvmodule->error("Error on receiving log_weight from replica 0 to replica " + cvm::to_str(my_replica));
         }
       }
       cvmodule->proxy->replica_comm_barrier();
@@ -872,13 +872,13 @@ int colvarbias_opes::update_opes() {
           all_nlist_size[0] = m_nlist_index.size();
           for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
             if (cvmodule->proxy->replica_comm_recv((char*)&(all_nlist_size[p]), sizeof(int), p) != sizeof(int)) {
-              return cvmodule->error("Error on receiving neighbor list size from replica " + cvmodule->to_str(p));
+              return cvmodule->error("Error on receiving neighbor list size from replica " + cvm::to_str(p));
             }
           }
         } else {
           const int nlist_size = m_nlist_index.size();
           if (cvmodule->proxy->replica_comm_send((char*)&nlist_size, sizeof(int), 0) != sizeof(int)) {
-            return cvmodule->error("Error on sending neighbor list size from replica " + cvmodule->to_str(my_replica));
+            return cvmodule->error("Error on sending neighbor list size from replica " + cvm::to_str(my_replica));
           }
         }
         cvmodule->proxy->replica_comm_barrier();
@@ -887,13 +887,13 @@ int colvarbias_opes::update_opes() {
           const int send_size = sizeof(int) * all_nlist_size.size();
           for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
             if (cvmodule->proxy->replica_comm_send((char*)all_nlist_size.data(), send_size, p) != send_size) {
-              return cvmodule->error("Error on sending neighbor list sizes from replica 0 to replica " + cvmodule->to_str(p));
+              return cvmodule->error("Error on sending neighbor list sizes from replica 0 to replica " + cvm::to_str(p));
             }
           }
         } else {
           const int recv_size = sizeof(int) * all_nlist_size.size();
           if (cvmodule->proxy->replica_comm_recv((char*)all_nlist_size.data(), recv_size, 0) != recv_size) {
-            return cvmodule->error("Error on receiving neighbor list sizes to replica " + cvmodule->to_str(my_replica));
+            return cvmodule->error("Error on receiving neighbor list sizes to replica " + cvm::to_str(my_replica));
           }
         }
         cvmodule->proxy->replica_comm_barrier();
@@ -912,13 +912,13 @@ int colvarbias_opes::update_opes() {
               size_t* recv_start_ptr = &(all_nlist_index[recv_start[p]]);
               const int recv_size = all_nlist_size[p] * sizeof(decltype(all_nlist_index)::value_type);
               if (cvmodule->proxy->replica_comm_recv((char*)recv_start_ptr, recv_size, p) != recv_size) {
-                return cvmodule->error("Error on receiving neighbor list from replica " + cvmodule->to_str(p));
+                return cvmodule->error("Error on receiving neighbor list from replica " + cvm::to_str(p));
               }
             }
           } else {
             const int send_size = sizeof(decltype(m_nlist_index)::value_type) * m_nlist_index.size();
             if (cvmodule->proxy->replica_comm_send((char*)m_nlist_index.data(), send_size, 0) != send_size) {
-              return cvmodule->error("Error on sending neighbor list from replica " + cvmodule->to_str(my_replica));
+              return cvmodule->error("Error on sending neighbor list from replica " + cvm::to_str(my_replica));
             }
           }
           cvmodule->proxy->replica_comm_barrier();
@@ -927,13 +927,13 @@ int colvarbias_opes::update_opes() {
             const int send_size = sizeof(decltype(all_nlist_index)::value_type) * tot_size;
             for (int p = 1; p < cvmodule->proxy->num_replicas(); ++p) {
               if (cvmodule->proxy->replica_comm_send((char*)all_nlist_index.data(), send_size, p) != send_size) {
-                return cvmodule->error("Error on sending total neighbor list to replica " + cvmodule->to_str(p));
+                return cvmodule->error("Error on sending total neighbor list to replica " + cvm::to_str(p));
               }
             }
           } else {
             const int recv_size = sizeof(decltype(all_nlist_index)::value_type) * tot_size;
             if (cvmodule->proxy->replica_comm_recv((char*)all_nlist_index.data(), recv_size, 0) != recv_size) {
-              return cvmodule->error("Error on receiving total neighbor list on replica " + cvmodule->to_str(my_replica));
+              return cvmodule->error("Error on receiving total neighbor list on replica " + cvm::to_str(my_replica));
             }
           }
           cvmodule->proxy->replica_comm_barrier();
@@ -1357,30 +1357,30 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
     m_inf_biasfactor = false;
   }
   if (std::abs(old_biasfactor - m_biasfactor) > 1e-6 * m_biasfactor) {
-    cvmodule->log("WARNING: previous bias factor was " + cvmodule->to_str(old_biasfactor) +
-             " while now it is " + cvmodule->to_str(m_biasfactor) +
+    cvmodule->log("WARNING: previous bias factor was " + cvm::to_str(old_biasfactor) +
+             " while now it is " + cvm::to_str(m_biasfactor) +
              " (the new one is used).\n");
   }
   cvm::real old_epsilon;
   readFieldReal("epsilon", old_epsilon);
   if (std::abs(old_epsilon - m_epsilon) > 1e-6 * m_epsilon) {
-    cvmodule->log("WARNING: previous epsilon was " + cvmodule->to_str(old_epsilon) +
-             " while now it is " + cvmodule->to_str(m_epsilon) +
+    cvmodule->log("WARNING: previous epsilon was " + cvm::to_str(old_epsilon) +
+             " while now it is " + cvm::to_str(m_epsilon) +
              " (the new one is used).\n");
   }
   cvm::real old_cutoff;
   readFieldReal("kernel_cutoff", old_cutoff);
   if (std::abs(old_cutoff - m_cutoff) > 1e-6 * m_cutoff) {
-    cvmodule->log("WARNING: previous cutoff was " + cvmodule->to_str(old_cutoff) +
-             " while now it is " + cvmodule->to_str(m_cutoff) +
+    cvmodule->log("WARNING: previous cutoff was " + cvm::to_str(old_cutoff) +
+             " while now it is " + cvm::to_str(m_cutoff) +
              " (the new one is used).\n");
   }
   m_cutoff2 = m_cutoff * m_cutoff;
   cvm::real old_compression_threshold;
   readFieldReal("compression_threshold", old_compression_threshold);
   if (std::abs(old_compression_threshold - m_compression_threshold) > 1e-6 * m_compression_threshold) {
-    cvmodule->log("WARNING: previous cutoff was " + cvmodule->to_str(old_compression_threshold) +
-             " while now it is " + cvmodule->to_str(m_compression_threshold) +
+    cvmodule->log("WARNING: previous cutoff was " + cvm::to_str(old_compression_threshold) +
+             " while now it is " + cvm::to_str(m_compression_threshold) +
              " (the new one is used).\n");
   }
   m_compression_threshold2 = m_compression_threshold * m_compression_threshold;
@@ -1869,12 +1869,12 @@ int colvarbias_opes::computePMF() {
       for (int p = 1; p < cvmodule->proxy->num_replicas(); p++) {
         const size_t start_pos = (p - 1) * samples_n;
         if (cvmodule->proxy->replica_comm_recv((char*)&(buffer[start_pos]), msg_size, p) != msg_size) {
-          return cvmodule->error("Error getting shared OPES reweighting histogram from replica " + cvmodule->to_str(p));
+          return cvmodule->error("Error getting shared OPES reweighting histogram from replica " + cvm::to_str(p));
         }
       }
     } else {
       if (cvmodule->proxy->replica_comm_send((char*)(&(m_reweight_grid->data[0])), msg_size, 0) != msg_size) {
-        return cvmodule->error("Error sending shared OPES reweighting histogram from replica " + cvmodule->to_str(cvmodule->proxy->replica_index()));
+        return cvmodule->error("Error sending shared OPES reweighting histogram from replica " + cvm::to_str(cvmodule->proxy->replica_index()));
       }
     }
     cvmodule->proxy->replica_comm_barrier();

@@ -349,7 +349,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
   clear_str_result();
 
   if (cvmodule->debug()) {
-    cvmodule->log("Called script run with " + cvmodule->to_str(objc) + " args:");
+    cvmodule->log("Called script run with " + cvm::to_str(objc) + " args:");
     for (int i = 0; i < objc; i++) {
       cvmodule->log(obj_to_str(objv[i]));
     }
@@ -496,7 +496,7 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
   }
 
   if (cvmodule->debug()) {
-    cvmodule->log("result = "+cvmodule->to_str(new_result)+".\n");
+    cvmodule->log("result = "+cvm::to_str(new_result)+".\n");
   }
 
   return new_result;
@@ -510,7 +510,7 @@ int colvarscript::proc_features(colvardeps *obj,
   std::string const subcmd(obj_to_str(objv[3]));
 
   if (cvmodule->debug()) {
-    cvmodule->log("Called proc_features() with " + cvmodule->to_str(objc) + " args:");
+    cvmodule->log("Called proc_features() with " + cvm::to_str(objc) + " args:");
     for (int i = 0; i < objc; i++) {
       cvmodule->log(obj_to_str(objv[i]));
     }
@@ -542,7 +542,7 @@ int colvarscript::proc_features(colvardeps *obj,
       }
 
       if (subcmd == "get") {
-        set_result_str(cvmodule->to_str(obj->is_enabled(fid) ? 1 : 0));
+        set_result_str(cvm::to_str(obj->is_enabled(fid) ? 1 : 0));
         return COLVARS_OK;
       }
 
@@ -727,7 +727,7 @@ extern "C" int tcl_run_colvarscript_command(ClientData /* clientData */,
   unsigned char * arg_pointers_[100];
   if (objc > 100) {
     std::string const errstr = "Too many positional arguments ("+
-      cvmodule->to_str(objc)+") passed to the \"cv\" command.\n";
+      cvm::to_str(objc)+") passed to the \"cv\" command.\n";
     Tcl_SetResult(interp, const_cast<char *>(errstr.c_str()), TCL_VOLATILE);
     return TCL_ERROR;
   }
@@ -786,7 +786,7 @@ int colvarscript::pack_vector_elements_text(T const &x,
   x_str.clear();
   for (size_t i = 0; i < x.size(); ++i) {
     if (i > 0) x_str.append(1, ' ');
-    x_str += cvmodule->to_str(x[i]);
+    x_str += cvm::to_str(x[i]);
   }
   return COLVARS_OK;
 }
@@ -796,7 +796,7 @@ int colvarscript::pack_vector_elements_text(T const &x,
 
 template <>
 int colvarscript::set_result_text(int const &x, unsigned char *obj) {
-  std::string const x_str = cvmodule->to_str(x);
+  std::string const x_str = cvm::to_str(x);
   return set_result_text_from_str(x_str, obj);
 }
 
@@ -811,7 +811,7 @@ int colvarscript::set_result_text(std::vector<int> const &x,
 
 template <>
 int colvarscript::set_result_text(long int const &x, unsigned char *obj) {
-  std::string const x_str = cvmodule->to_str(x);
+  std::string const x_str = cvm::to_str(x);
   return set_result_text_from_str(x_str, obj);
 }
 
@@ -826,7 +826,7 @@ int colvarscript::set_result_text(std::vector<long int> const &x,
 
 template <>
 int colvarscript::set_result_text(cvm::real const &x, unsigned char *obj) {
-  std::string const x_str = cvmodule->to_str(x);
+  std::string const x_str = cvm::to_str(x);
   return set_result_text_from_str(x_str, obj);
 }
 

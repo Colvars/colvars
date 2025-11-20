@@ -325,7 +325,7 @@ int colvarproxy_smp::smp_biases_loop()
       colvarbias *b = (*(cvmodule->biases_active()))[i];
       if (cvmodule->debug()) {
         cvmodule->log("Calculating bias \""+b->name+"\" on thread "+
-                 cvmodule->to_str(smp_thread_id())+"\n");
+                 cvm::to_str(smp_thread_id())+"\n");
       }
       b->update();
     }
@@ -351,7 +351,7 @@ int colvarproxy_smp::smp_biases_script_loop()
       colvarbias *b = (*(cvmodule->biases_active()))[i];
       if (cvmodule->debug()) {
         cvmodule->log("Calculating bias \""+b->name+"\" on thread "+
-                 cvmodule->to_str(smp_thread_id())+"\n");
+                 cvm::to_str(smp_thread_id())+"\n");
       }
       b->update();
     }
@@ -455,7 +455,7 @@ int colvarproxy_script::run_colvar_gradient_callback(std::string const & /* name
 
 colvarproxy::colvarproxy()
 {
-  colvars = NULL;
+  cvmodule = NULL;
   // By default, simulation engines allow to immediately request atoms
   engine_ready_ = true;
   b_simulation_running = true;
@@ -470,9 +470,9 @@ colvarproxy::colvarproxy()
 colvarproxy::~colvarproxy()
 {
   close_output_streams();
-  if (colvars != NULL) {
-    delete colvars;
-    colvars = NULL;
+  if (cvmodule != NULL) {
+    delete cvmodule;
+    cvmodule = NULL;
   }
   delete reinterpret_cast<std::list<std::pair<std::string, std::string> > *>(config_queue_);
 }
@@ -528,9 +528,9 @@ int colvarproxy::parse_module_config()
   while (config_queue->size() > 0) {
     std::pair<std::string, std::string> const &p = config_queue->front();
     if (p.first == "config") {
-      error_code |= colvars->read_config_string(p.second);
+      error_code |= cvmodule->read_config_string(p.second);
     } else if (p.first == "configfile") {
-      error_code |= colvars->read_config_file(p.second.c_str());
+      error_code |= cvmodule->read_config_file(p.second.c_str());
     } else {
       error_code |= cvmodule->error(std::string("Error: invalid keyword \"") +
                                p.first +
@@ -602,9 +602,9 @@ int colvarproxy::end_of_step()
 int colvarproxy::post_run()
 {
   int error_code = COLVARS_OK;
-  if (colvars->output_prefix().size()) {
-    error_code |= colvars->write_restart_file(cvmodule->output_prefix()+".colvars.state");
-    error_code |= colvars->write_output_files();
+  if (cvmodule->output_prefix().size()) {
+    error_code |= cvmodule->write_restart_file(cvmodule->output_prefix()+".colvars.state");
+    error_code |= cvmodule->write_output_files();
   }
   error_code |= flush_output_streams();
   return error_code;
@@ -615,79 +615,79 @@ void colvarproxy::print_input_atomic_data()
 {
   cvmodule->log(cvmodule->line_marker);
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
-           "atoms_ids[size = "+cvmodule->to_str(atoms_ids.size())+
-           "] = "+cvmodule->to_str(atoms_ids)+"\n");
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
+           "atoms_ids[size = "+cvm::to_str(atoms_ids.size())+
+           "] = "+cvm::to_str(atoms_ids)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
-           "atoms_refcount[size = "+cvmodule->to_str(atoms_refcount.size())+
-           "] = "+cvmodule->to_str(atoms_refcount)+"\n");
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
+           "atoms_refcount[size = "+cvm::to_str(atoms_refcount.size())+
+           "] = "+cvm::to_str(atoms_refcount)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
-           "atoms_masses[size = "+cvmodule->to_str(atoms_masses.size())+
-           "] = "+cvmodule->to_str(atoms_masses)+"\n");
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
+           "atoms_masses[size = "+cvm::to_str(atoms_masses.size())+
+           "] = "+cvm::to_str(atoms_masses)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
-           "atoms_charges[size = "+cvmodule->to_str(atoms_charges.size())+
-           "] = "+cvmodule->to_str(atoms_charges)+"\n");
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
+           "atoms_charges[size = "+cvm::to_str(atoms_charges.size())+
+           "] = "+cvm::to_str(atoms_charges)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
-           "atoms_positions[size = "+cvmodule->to_str(atoms_positions.size())+
-           "] = "+cvmodule->to_str(atoms_positions,
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
+           "atoms_positions[size = "+cvm::to_str(atoms_positions.size())+
+           "] = "+cvm::to_str(atoms_positions,
                               cvmodule->cv_width,
                               cvmodule->cv_prec)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atoms_total_forces[size = "+
-           cvmodule->to_str(atoms_total_forces.size())+
-           "] = "+cvmodule->to_str(atoms_total_forces,
+           cvm::to_str(atoms_total_forces.size())+
+           "] = "+cvm::to_str(atoms_total_forces,
                               cvmodule->cv_width,
                               cvmodule->cv_prec)+"\n");
 
   cvmodule->log(cvmodule->line_marker);
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
-           "atom_groups_ids[size = "+cvmodule->to_str(atom_groups_ids.size())+
-           "] = "+cvmodule->to_str(atom_groups_ids)+"\n");
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
+           "atom_groups_ids[size = "+cvm::to_str(atom_groups_ids.size())+
+           "] = "+cvm::to_str(atom_groups_ids)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atom_groups_refcount[size = "+
-           cvmodule->to_str(atom_groups_refcount.size())+
-           "] = "+cvmodule->to_str(atom_groups_refcount)+"\n");
+           cvm::to_str(atom_groups_refcount.size())+
+           "] = "+cvm::to_str(atom_groups_refcount)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atom_groups_masses[size = "+
-           cvmodule->to_str(atom_groups_masses.size())+
-           "] = "+cvmodule->to_str(atom_groups_masses)+"\n");
+           cvm::to_str(atom_groups_masses.size())+
+           "] = "+cvm::to_str(atom_groups_masses)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atom_groups_charges[size = "+
-           cvmodule->to_str(atom_groups_charges.size())+
-           "] = "+cvmodule->to_str(atom_groups_charges)+"\n");
+           cvm::to_str(atom_groups_charges.size())+
+           "] = "+cvm::to_str(atom_groups_charges)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atom_groups_coms[size = "+
-           cvmodule->to_str(atom_groups_coms.size())+
-           "] = "+cvmodule->to_str(atom_groups_coms,
+           cvm::to_str(atom_groups_coms.size())+
+           "] = "+cvm::to_str(atom_groups_coms,
                               cvmodule->cv_width,
                               cvmodule->cv_prec)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atom_groups_total_forces[size = "+
-           cvmodule->to_str(atom_groups_total_forces.size())+
-           "] = "+cvmodule->to_str(atom_groups_total_forces,
+           cvm::to_str(atom_groups_total_forces.size())+
+           "] = "+cvm::to_str(atom_groups_total_forces,
                               cvmodule->cv_width,
                               cvmodule->cv_prec)+"\n");
 
   cvmodule->log(cvmodule->line_marker);
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
-           "volmaps_ids[size = "+cvmodule->to_str(volmaps_ids.size())+
-           "] = "+cvmodule->to_str(volmaps_ids)+"\n");
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
+           "volmaps_ids[size = "+cvm::to_str(volmaps_ids.size())+
+           "] = "+cvm::to_str(volmaps_ids)+"\n");
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
-           "volmaps_values[size = "+cvmodule->to_str(volmaps_values.size())+
-           "] = "+cvmodule->to_str(volmaps_values)+"\n");
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
+           "volmaps_values[size = "+cvm::to_str(volmaps_values.size())+
+           "] = "+cvm::to_str(volmaps_values)+"\n");
 
   cvmodule->log(cvmodule->line_marker);
 }
@@ -696,23 +696,23 @@ void colvarproxy::print_input_atomic_data()
 void colvarproxy::print_output_atomic_data()
 {
   cvmodule->log(cvmodule->line_marker);
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
-           "atoms_new_colvar_forces = "+cvmodule->to_str(atoms_new_colvar_forces,
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
+           "atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces,
                                                     colvarmodule::cv_width,
                                                     colvarmodule::cv_prec)+"\n");
   cvmodule->log(cvmodule->line_marker);
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atom_groups_new_colvar_forces = "+
-           cvmodule->to_str(atom_groups_new_colvar_forces,
+           cvm::to_str(atom_groups_new_colvar_forces,
                        colvarmodule::cv_width,
                        colvarmodule::cv_prec)+"\n");
 
   cvmodule->log(cvmodule->line_marker);
 
-  cvmodule->log("Step "+cvmodule->to_str(cvmodule->step_absolute())+", "+
+  cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "volmaps_new_colvar_forces = "+
-           cvmodule->to_str(volmaps_new_colvar_forces)+"\n");
+           cvm::to_str(volmaps_new_colvar_forces)+"\n");
 
   cvmodule->log(cvmodule->line_marker);
 }

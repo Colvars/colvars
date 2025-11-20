@@ -103,8 +103,8 @@ int colvar::cvc::init(std::string const &conf)
       error_code |=
           cvmodule->error("Error: invalid use of period and/or "
                      "wrapAround in a \"" +
-                         function_type() + "\" component.\n" + "Period: " + cvmodule->to_str(period) +
-                         " wrapAround: " + cvmodule->to_str(wrap_center),
+                         function_type() + "\" component.\n" + "Period: " + cvm::to_str(period) +
+                         " wrapAround: " + cvm::to_str(wrap_center),
                      COLVARS_INPUT_ERROR);
     } else {
       enable(f_cvc_periodic);
@@ -301,7 +301,7 @@ int colvar::cvc::init_dependencies() {
     // check that everything is initialized
     for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
       if (is_not_set(i)) {
-        cvmodule->error("Uninitialized feature " + cvmodule->to_str(i) + " in " + description);
+        cvmodule->error("Uninitialized feature " + cvm::to_str(i) + " in " + description);
       }
     }
   }
@@ -618,7 +618,7 @@ void colvar::cvc::debug_gradients()
 
     const auto rot_0 = group->rot.matrix();
 
-    // cvmodule->log("gradients     = "+cvmodule->to_str (gradients)+"\n");
+    // cvmodule->log("gradients     = "+cvm::to_str (gradients)+"\n");
 
     auto *group_for_fit = group->fitting_group ? group->fitting_group : group;
     cvm::atom_pos fit_gradient_sum, gradient_sum;
@@ -636,10 +636,10 @@ void colvar::cvc::debug_gradients()
             group_for_fit->fit_gradients_y(j),
             group_for_fit->fit_gradients_z(j));
           cvmodule->log((group->fitting_group ? std::string("fittingGroup") : group->key) +
-                  "[" + cvmodule->to_str(j) + "] = " +
+                  "[" + cvm::to_str(j) + "] = " +
                   (group->is_enabled(f_ag_rotate) ?
-                    cvmodule->to_str(rot_0 * (fit_grad)) :
-                    cvmodule->to_str(fit_grad)));
+                    cvm::to_str(rot_0 * (fit_grad)) :
+                    cvm::to_str(fit_grad)));
         }
       }
     }
@@ -704,11 +704,11 @@ void colvar::cvc::debug_gradients()
         cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
         cvmodule->record_gradient_error(rel_error);
 
-        cvmodule->log("Atom "+cvmodule->to_str(ia) + ", ID " + cvmodule->to_str(this_atom.id) + \
-                  ", comp. " + cvmodule->to_str(id) + ":" + \
-                  "  dx(actual) = " + cvmodule->to_str (num_diff, 19, 12) + \
-                  "  dx(interp) = " + cvmodule->to_str (dx_pred, 19, 12) + \
-                  "  rel. error = " + cvmodule->to_str(rel_error, 12, 5) + ".\n");
+        cvmodule->log("Atom "+cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
+                  ", comp. " + cvm::to_str(id) + ":" + \
+                  "  dx(actual) = " + cvm::to_str (num_diff, 19, 12) + \
+                  "  dx(interp) = " + cvm::to_str (dx_pred, 19, 12) + \
+                  "  rel. error = " + cvm::to_str(rel_error, 12, 5) + ".\n");
       }
     }
 
@@ -790,18 +790,18 @@ void colvar::cvc::debug_gradients()
           cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
           cvmodule->record_gradient_error(rel_error);
 
-          cvmodule->log("fittingGroup atom " + cvmodule->to_str(ia) + ", ID " + cvmodule->to_str(this_atom.id) + \
-                    ", comp. " + cvmodule->to_str(id) + ":" + \
-                    "  dx(actual) = " + cvmodule->to_str (num_diff, 19, 12) + \
-                    "  dx(interp) = " + cvmodule->to_str (dx_pred, 19, 12) + \
-                    "  rel. error = " + cvmodule->to_str(rel_error, 12, 5) + ".\n");
+          cvmodule->log("fittingGroup atom " + cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
+                    ", comp. " + cvm::to_str(id) + ":" + \
+                    "  dx(actual) = " + cvm::to_str (num_diff, 19, 12) + \
+                    "  dx(interp) = " + cvm::to_str (dx_pred, 19, 12) + \
+                    "  rel. error = " + cvm::to_str(rel_error, 12, 5) + ".\n");
         }
       }
     }
 
-    cvmodule->log("Gradient sum: " +  cvmodule->to_str(gradient_sum) +
-          "  Fit gradient sum: " + cvmodule->to_str(fit_gradient_sum) +
-          "  Total " + cvmodule->to_str(gradient_sum + fit_gradient_sum));
+    cvmodule->log("Gradient sum: " +  cvm::to_str(gradient_sum) +
+          "  Fit gradient sum: " + cvm::to_str(fit_gradient_sum) +
+          "  Total " + cvm::to_str(gradient_sum + fit_gradient_sum));
   }
 
   // Do cleanups

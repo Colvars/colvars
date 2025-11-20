@@ -29,15 +29,15 @@ colvarproxy_stub::colvarproxy_stub()
   // both fields are taken from data structures already available
   updated_masses_ = updated_charges_ = true;
 
-  colvars = new colvarmodule(this);
+  cvmodule = new colvarmodule(this);
   cvmodule->log("Using minimal testing interface.\n");
 
-  colvars->cv_traj_freq = 0; // I/O will be handled explicitly
-  colvars->restart_out_freq = 0;
+  cvmodule->cv_traj_freq = 0; // I/O will be handled explicitly
+  cvmodule->restart_out_freq = 0;
   cvm::rotation::monitor_crossings = false; // Avoid unnecessary error messages
 
-  colvars->setup_input();
-  colvars->setup_output();
+  cvmodule->setup_input();
+  cvmodule->setup_output();
 
   colvarproxy_stub::setup();
 }
@@ -51,10 +51,10 @@ int colvarproxy_stub::setup()
 {
   boundaries_type = boundaries_non_periodic;
   reset_pbc_lattice();
-  colvars->it = colvars->it_restart = 0;
+  cvmodule->it = cvmodule->it_restart = 0;
 
-  if (colvars) {
-    return colvars->update_engine_parameters();
+  if (cvmodule) {
+    return cvmodule->update_engine_parameters();
   }
   return COLVARS_OK;
 }
@@ -163,16 +163,16 @@ int colvarproxy_stub::init_atom(int atom_number)
 
 int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_force_file)
 {
-  int err = colvars->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
+  int err = cvmodule->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
   std::string force_filename;
   if (write_force_file) {
-    force_filename = colvars->output_prefix() + "_forces_" + cvmodule->to_str(colvars->it) + ".dat";
+    force_filename = cvmodule->output_prefix() + "_forces_" + cvm::to_str(cvmodule->it) + ".dat";
   }
   if ( !err ) {
     auto& new_forces = *(modify_atom_applied_forces());
     std::fill(new_forces.begin(), new_forces.end(), cvm::rvector{0, 0, 0});
-    colvars->calc();
-    colvars->it++;
+    cvmodule->calc();
+    cvmodule->it++;
     if (write_force_file) {
       const size_t numAtoms = modify_atom_positions()->size();
       std::ofstream ofs(force_filename);

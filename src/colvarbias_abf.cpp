@@ -292,7 +292,8 @@ int colvarbias_abf::init(std::string const &conf)
         UI_width.push_back(colvars[i]->width);
         UI_krestr.push_back(colvars[i]->force_constant());
       }
-      eabf_UI = UIestimator::UIestimator(UI_lowerboundary,
+      eabf_UI = UIestimator::UIestimator(cvmodule,
+                                         UI_lowerboundary,
                                          UI_upperboundary,
                                          UI_width,
                                          UI_krestr,                // force constant in eABF
@@ -378,9 +379,9 @@ int colvarbias_abf::update()
         cvm::real err;
         int iter = pmf->integrate(integrate_iterations, integrate_tol, err);
         if ( iter == integrate_iterations ) {
-          cvmodule->log("Warning: PMF integration did not converge to " + cvmodule->to_str(integrate_tol)
-            + " in " + cvmodule->to_str(integrate_iterations)
-            + " steps. Residual error: " +  cvmodule->to_str(err));
+          cvmodule->log("Warning: PMF integration did not converge to " + cvm::to_str(integrate_tol)
+            + " in " + cvm::to_str(integrate_iterations)
+            + " steps. Residual error: " +  cvm::to_str(err));
         }
       }
     }
@@ -550,7 +551,7 @@ int colvarbias_abf::replica_share() {
   shared_on = true; // If called by a script, inform the rest of the code that we're sharing, eg. CZAR
 
   // Share gradients for shared ABF.
-  cvmodule->log("shared ABF: Sharing gradient and samples among replicas at step "+cvmodule->to_str(cvmodule->step_absolute()) );
+  cvmodule->log("shared ABF: Sharing gradient and samples among replicas at step "+cvm::to_str(cvmodule->step_absolute()) );
 
   if (!local_samples) {
     // We arrive here if sharing has just been enabled by a script
@@ -639,7 +640,7 @@ int colvarbias_abf::replica_share() {
   last_samples->copy_grid(*samples);
   shared_last_step = cvmodule->step_absolute();
 
-  cvmodule->log("RMSD btw. local and global ABF gradients: " + cvmodule->to_str(gradients->grid_rmsd(*local_gradients)));
+  cvmodule->log("RMSD btw. local and global ABF gradients: " + cvm::to_str(gradients->grid_rmsd(*local_gradients)));
 
   if (b_integrate) {
     cvm::real err;
@@ -651,7 +652,7 @@ int colvarbias_abf::replica_share() {
     local_pmf->set_div();
     local_pmf->integrate(integrate_iterations, integrate_tol, err);
     local_pmf->set_zero_minimum();
-    cvmodule->log("RMSD btw. local and global ABF FES: " + cvmodule->to_str(pmf->grid_rmsd(*local_pmf)));
+    cvmodule->log("RMSD btw. local and global ABF FES: " + cvm::to_str(pmf->grid_rmsd(*local_pmf)));
   }
   return COLVARS_OK;
 }
@@ -660,7 +661,7 @@ int colvarbias_abf::replica_share() {
 int colvarbias_abf::replica_share_CZAR() {
   colvarproxy *proxy = cvmodule->proxy;
 
-  cvmodule->log("shared eABF: Gathering CZAR gradient and samples from replicas at step "+cvmodule->to_str(cvmodule->step_absolute()) );
+  cvmodule->log("shared eABF: Gathering CZAR gradient and samples from replicas at step "+cvm::to_str(cvmodule->step_absolute()) );
 
   // Count of data items.
   size_t samples_n = z_samples->raw_data_num();
@@ -864,7 +865,7 @@ int colvarbias_abf::current_bin() {
 /// Give the count at a given bin index.
 int colvarbias_abf::bin_count(int bin_index) {
   if (bin_index < 0 || bin_index >= bin_num()) {
-    cvmodule->error("Error: Tried to get bin count from invalid bin index "+cvmodule->to_str(bin_index));
+    cvmodule->error("Error: Tried to get bin count from invalid bin index "+cvm::to_str(bin_index));
     return -1;
   }
   return int(samples->get_value(bin_index));

@@ -105,7 +105,7 @@ int colvar::alpha_angles::init(std::string const &conf)
   if (hb_coeff < 1.0) {
     if (b_use_index_groups) {
       if (group_CA.size() < 5) {
-        return cvmodule->error("Not enough atoms (" + cvmodule->to_str(group_CA.size()) + ") in index group \"" + prefix + "CA\"",
+        return cvmodule->error("Not enough atoms (" + cvm::to_str(group_CA.size()) + ") in index group \"" + prefix + "CA\"",
                           COLVARS_INPUT_ERROR);
       }
       for (size_t i = 0; i < group_CA.size()-2; i++) {
@@ -144,7 +144,7 @@ int colvar::alpha_angles::init(std::string const &conf)
       colvarproxy* const p = cvmodule->proxy;
       if (b_use_index_groups) {
         if (group_N.size() < 5) {
-          return cvmodule->error("Not enough atoms (" + cvmodule->to_str(group_N.size()) + ") in index group \"" + prefix + "N\"",
+          return cvmodule->error("Not enough atoms (" + cvm::to_str(group_N.size()) + ") in index group \"" + prefix + "N\"",
                             COLVARS_INPUT_ERROR);
         }
         for (size_t i = 0; i < group_N.size()-4; i++) {
@@ -209,10 +209,10 @@ void colvar::alpha_angles::calc_value()
       x.real_value += theta_norm * f;
 
       if (cvmodule->debug())
-        cvmodule->log("Calpha-Calpha angle no. "+cvmodule->to_str(i+1)+" in \""+
+        cvmodule->log("Calpha-Calpha angle no. "+cvm::to_str(i+1)+" in \""+
                   this->name+"\" has a value of "+
-                  (cvmodule->to_str((theta[i])->value().real_value))+
-                  " degrees, f = "+cvmodule->to_str(f)+".\n");
+                  (cvm::to_str((theta[i])->value().real_value))+
+                  " degrees, f = "+cvm::to_str(f)+".\n");
     }
   }
 
@@ -225,9 +225,9 @@ void colvar::alpha_angles::calc_value()
       (hb[i])->calc_value();
       x.real_value += hb_norm * (hb[i])->value().real_value;
       if (cvmodule->debug())
-        cvmodule->log("Hydrogen bond no. "+cvmodule->to_str(i+1)+" in \""+
+        cvmodule->log("Hydrogen bond no. "+cvm::to_str(i+1)+" in \""+
                   this->name+"\" has a value of "+
-                  (cvmodule->to_str((hb[i])->value().real_value))+".\n");
+                  (cvm::to_str((hb[i])->value().real_value))+".\n");
     }
   }
 }
@@ -468,8 +468,8 @@ int colvar::dihedPC::init(std::string const &conf)
   }
 
   if ( coeffs.size() != 4 * (n_residues - 1)) {
-    error_code |= cvmodule->error("Error: wrong number of coefficients: " + cvmodule->to_str(coeffs.size()) +
-                             ". Expected " + cvmodule->to_str(4 * (n_residues - 1)) +
+    error_code |= cvmodule->error("Error: wrong number of coefficients: " + cvm::to_str(coeffs.size()) +
+                             ". Expected " + cvm::to_str(4 * (n_residues - 1)) +
                              " (4 coeffs per residue, minus one residue).\n",
                              COLVARS_INPUT_ERROR);
   }

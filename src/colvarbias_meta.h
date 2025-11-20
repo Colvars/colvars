@@ -138,7 +138,7 @@ protected:
   /// Write a hill to an unformatted stream
   cvm::memory_stream &write_hill(cvm::memory_stream &os, hill const &h);
 
-  template <typename IST> IST &read_hill_template_(IST &is);
+  template <typename IST> IST &read_hill_template_(IST &is, colvarmodule *cvmodule);
 
   /// Read a new hill from a formatted stream
   std::istream & read_hill(std::istream &is);
@@ -326,6 +326,7 @@ protected:
   /// Identity of the replica who added this hill
   std::string replica;
 
+  colvarmodule *cvmodule;
 public:
 
   friend class colvarbias_meta;
@@ -339,7 +340,8 @@ public:
   hill(cvm::step_number it, cvm::real W,
        std::vector<colvarvalue> const &cv_values,
        std::vector<cvm::real> const &cv_sigmas,
-       std::string const &replica = "");
+       std::string const &replica = "",
+       colvarmodule *cvmodule = nullptr);
 
   /// Copy constructor
   hill(colvarbias_meta::hill const &h);

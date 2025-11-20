@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
   x.apply_constraints();
 
   std::cout << "x               = "
-            << cvmodule->to_str(x, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+            << cvm::to_str(x, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
 
   {
     colvarvalue y(colvarvalue::type_unit3vector);
@@ -21,12 +21,12 @@ int main(int argc, char *argv[]) {
     colvarvalue const xtoy = 0.5*x.dist2_grad(y);
     colvarvalue const ytox = 0.5*y.dist2_grad(x);
     std::cout << "y               = "
-              << cvmodule->to_str(y, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+              << cvm::to_str(y, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
 
     std::cout << "x.dist2_grad(y) = "
-              << cvmodule->to_str(xtoy, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+              << cvm::to_str(xtoy, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
     std::cout << "y.dist2_grad(x) = "
-              << cvmodule->to_str(ytox, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+              << cvm::to_str(ytox, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
   }
 
   {
@@ -37,12 +37,12 @@ int main(int argc, char *argv[]) {
     colvarvalue const xtoy = 0.5*x.dist2_grad(y);
     colvarvalue const ytox = 0.5*y.dist2_grad(x);
     std::cout << "y               = "
-              << cvmodule->to_str(y, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+              << cvm::to_str(y, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
 
     std::cout << "x.dist2_grad(y) = "
-              << cvmodule->to_str(xtoy, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+              << cvm::to_str(xtoy, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
     std::cout << "y.dist2_grad(x) = "
-              << cvmodule->to_str(ytox, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+              << cvm::to_str(ytox, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
   }
 
   // Below 10^-8, (1 - cos^2) = 1 in dist2_grad()
@@ -54,21 +54,21 @@ int main(int argc, char *argv[]) {
     std::cout << std::endl;
     std::cout << "Epsilon    =    " << eps << std::endl;
     std::cout << "y          = "
-              << cvmodule->to_str(y, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+              << cvm::to_str(y, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
 
     colvarvalue xtoy = 0.5*x.dist2_grad(y);
 
     colvarvalue xminusy = x - y;
 
     std::cout << "dist2_grad = "
-              << cvmodule->to_str(xtoy, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+              << cvm::to_str(xtoy, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
     std::cout << "difference = "
-              << cvmodule->to_str(xminusy, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+              << cvm::to_str(xminusy, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
     for (size_t c = 0; c < 3; c++) {
       xtoy[c] /= xminusy[c];
     }
     std::cout << "ratio      = "
-              << cvmodule->to_str(xtoy, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
+              << cvm::to_str(xtoy, cvmodule->cv_width, cvmodule->cv_prec) << std::endl;
   }
 
   return 0;

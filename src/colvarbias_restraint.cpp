@@ -60,7 +60,7 @@ int colvarbias_restraint::update()
 
   if (cvmodule->debug())
     cvmodule->log("Current forces for the restraint bias \""+
-             this->name+"\": "+cvmodule->to_str(colvar_forces)+".\n");
+             this->name+"\": "+cvm::to_str(colvar_forces)+".\n");
 
   return COLVARS_OK;
 }
@@ -119,7 +119,7 @@ int colvarbias_restraint_centers::init(std::string const &conf)
   if (get_keyval(conf, "centers", colvar_centers, colvar_centers)) {
     for (i = 0; i < num_variables(); i++) {
       if (cvmodule->debug()) {
-        cvmodule->log("colvarbias_restraint: parsing initial centers, i = "+cvmodule->to_str(i)+".\n");
+        cvmodule->log("colvarbias_restraint: parsing initial centers, i = "+cvm::to_str(i)+".\n");
       }
       colvar_centers[i].apply_constraints();
     }
@@ -198,7 +198,7 @@ int colvarbias_restraint_moving::init(std::string const &conf)
 
     first_step = cvmodule->step_absolute();
 
-    cvmodule->log("Initial step for restraint change: " + cvmodule->to_str(first_step) + "\n");
+    cvmodule->log("Initial step for restraint change: " + cvm::to_str(first_step) + "\n");
 
     get_keyval(conf, "targetNumSteps", target_nsteps, target_nsteps);
     if (!target_nsteps) {
@@ -244,10 +244,10 @@ int colvarbias_restraint_moving::update() {
 
         cvm::real lambda = current_lambda();
         dA_dlambda /= cvm::real(target_nsteps - target_equil_steps);
-        std::string msg = "Restraint \"" + this->name + "\" end of stage " + cvmodule->to_str(stage) +
-                          " at step " + cvmodule->to_str(cvmodule->step_absolute()) +
-                          ", lambda= " + cvmodule->to_str(lambda) +
-                          " : dA/dlambda= " + cvmodule->to_str(dA_dlambda);
+        std::string msg = "Restraint \"" + this->name + "\" end of stage " + cvm::to_str(stage) +
+                          " at step " + cvm::to_str(cvmodule->step_absolute()) +
+                          ", lambda= " + cvm::to_str(lambda) +
+                          " : dA/dlambda= " + cvm::to_str(dA_dlambda);
         cvmodule->log(msg);
         dA_dlambda = 0.0;
 
@@ -385,7 +385,7 @@ void colvarbias_restraint_centers_moving::update_centers(cvm::real lambda)
 {
   if (cvmodule->debug()) {
     cvmodule->log("Updating centers for the restraint bias \""+
-             this->name+"\": "+cvmodule->to_str(colvar_centers)+".\n");
+             this->name+"\": "+cvm::to_str(colvar_centers)+".\n");
   }
   size_t i;
   for (i = 0; i < num_variables(); i++) {
@@ -398,7 +398,7 @@ void colvarbias_restraint_centers_moving::update_centers(cvm::real lambda)
   }
   if (cvmodule->debug()) {
     cvmodule->log("New centers for the restraint bias \""+
-             this->name+"\": "+cvmodule->to_str(colvar_centers)+".\n");
+             this->name+"\": "+cvm::to_str(colvar_centers)+".\n");
   }
 
   if (!target_nstages && (cvmodule->step_absolute() - first_step > target_nsteps)) {
@@ -598,7 +598,7 @@ void colvarbias_restraint_k_moving::update_k(cvm::real lambda) {
     force_k_incr = 0.0;
   }
   cvmodule->log("Updated force constant for the restraint bias \""+
-           this->name+"\": "+cvmodule->to_str(force_k)+".\n");
+           this->name+"\": "+cvm::to_str(force_k)+".\n");
 }
 
 
@@ -716,8 +716,8 @@ int colvarbias_restraint_harmonic::init(std::string const &conf)
     cvm::real const w = variables(i)->width;
     cvmodule->log("The force constant for colvar \""+variables(i)->name+
              "\" will be rescaled to "+
-             cvmodule->to_str(force_k/(w*w))+
-             " according to the specified width ("+cvmodule->to_str(w)+").\n");
+             cvm::to_str(force_k/(w*w))+
+             " according to the specified width ("+cvm::to_str(w)+").\n");
   }
 
   return COLVARS_OK;
@@ -966,9 +966,9 @@ bool b_null_target_lower_walls = false;
     for (i = 0; i < num_variables(); i++) {
       if (lower_walls[i] >= upper_walls[i]) {
         return cvmodule->error("Error: one upper wall, "+
-                          cvmodule->to_str(upper_walls[i])+
+                          cvm::to_str(upper_walls[i])+
                           ", is not higher than the lower wall, "+
-                          cvmodule->to_str(lower_walls[i])+".\n",
+                          cvm::to_str(lower_walls[i])+".\n",
                           COLVARS_INPUT_ERROR);
       }
       if (variables(i)->dist2(lower_walls[i], upper_walls[i]) < 1.0e-12) {
@@ -981,9 +981,9 @@ bool b_null_target_lower_walls = false;
       for (i = 0; i < num_variables(); i++) {
         if (target_lower_walls[i] >= target_upper_walls[i]) {
           return cvmodule->error("Error: one target upper wall, "+
-                            cvmodule->to_str(target_upper_walls[i])+
+                            cvm::to_str(target_upper_walls[i])+
                             ", will be lower then the target lower wall, "+
-                            cvmodule->to_str(target_lower_walls[i])+".\n",
+                            cvm::to_str(target_lower_walls[i])+".\n",
                             COLVARS_INPUT_ERROR);
       }
     }
@@ -992,9 +992,9 @@ bool b_null_target_lower_walls = false;
       for (i = 0; i < num_variables(); i++) {
         if (target_lower_walls[i] >= upper_walls[i]) {
           return cvmodule->error("Error: one upper wall, "+
-                            cvmodule->to_str(upper_walls[i])+
+                            cvm::to_str(upper_walls[i])+
                             ", will be surpressed by the target lower wall, "+
-                            cvmodule->to_str(target_lower_walls[i])+".\n",
+                            cvm::to_str(target_lower_walls[i])+".\n",
                             COLVARS_INPUT_ERROR);
       }
     }
@@ -1004,9 +1004,9 @@ bool b_null_target_lower_walls = false;
       for (i = 0; i < num_variables(); i++) {
         if (lower_walls[i] >= target_upper_walls[i]) {
           return cvmodule->error("Error: one target upper wall, "+
-                            cvmodule->to_str(target_upper_walls[i])+
+                            cvm::to_str(target_upper_walls[i])+
                             ", will surpress the lower wall, "+
-                            cvmodule->to_str(lower_walls[i])+".\n",
+                            cvm::to_str(lower_walls[i])+".\n",
                             COLVARS_INPUT_ERROR);
       }
     }
@@ -1045,8 +1045,8 @@ bool b_null_target_lower_walls = false;
       cvm::real const w = variables(i)->width;
       cvmodule->log("The lower wall force constant for colvar \""+
                variables(i)->name+"\" will be rescaled to "+
-               cvmodule->to_str(lower_wall_k * force_k / (w*w))+
-               " according to the specified width ("+cvmodule->to_str(w)+").\n");
+               cvm::to_str(lower_wall_k * force_k / (w*w))+
+               " according to the specified width ("+cvm::to_str(w)+").\n");
     }
   }
 
@@ -1055,8 +1055,8 @@ bool b_null_target_lower_walls = false;
       cvm::real const w = variables(i)->width;
       cvmodule->log("The upper wall force constant for colvar \""+
                variables(i)->name+"\" will be rescaled to "+
-               cvmodule->to_str(upper_wall_k * force_k / (w*w))+
-               " according to the specified width ("+cvmodule->to_str(w)+").\n");
+               cvm::to_str(upper_wall_k * force_k / (w*w))+
+               " according to the specified width ("+cvm::to_str(w)+").\n");
     }
   }
 
@@ -1087,7 +1087,7 @@ void colvarbias_restraint_harmonic_walls::update_walls(cvm::real lambda)
 
     if (cvmodule->debug()) {
       cvmodule->log("Updating upper walls for the restraint bias \""+
-              this->name+"\": "+cvmodule->to_str(lower_walls)+".\n");
+              this->name+"\": "+cvm::to_str(lower_walls)+".\n");
     }
 
     size_t i;
@@ -1102,14 +1102,14 @@ void colvarbias_restraint_harmonic_walls::update_walls(cvm::real lambda)
     }
     if (cvmodule->debug()) {
       cvmodule->log("New upper walls for the restraint bias \""+
-              this->name+"\": "+cvmodule->to_str(upper_walls)+".\n");
+              this->name+"\": "+cvm::to_str(upper_walls)+".\n");
     }
   }
 
   if (target_lower_walls.size() > 0){
     if (cvmodule->debug()) {
       cvmodule->log("Updating lower walls for the restraint bias \""+
-              this->name+"\": "+cvmodule->to_str(lower_walls)+".\n");
+              this->name+"\": "+cvm::to_str(lower_walls)+".\n");
     }
 
     size_t i;
@@ -1123,7 +1123,7 @@ void colvarbias_restraint_harmonic_walls::update_walls(cvm::real lambda)
     }
     if (cvmodule->debug()) {
       cvmodule->log("New lower walls for the restraint bias \""+
-              this->name+"\": "+cvmodule->to_str(lower_walls)+".\n");
+              this->name+"\": "+cvm::to_str(lower_walls)+".\n");
     }
   }
   if (!target_nstages && (cvmodule->step_absolute() - first_step > target_nsteps)) {
@@ -1327,8 +1327,8 @@ int colvarbias_restraint_linear::init(std::string const &conf)
     cvm::real const w = variables(i)->width;
     cvmodule->log("The force constant for colvar \""+variables(i)->name+
              "\" will be rescaled to "+
-             cvmodule->to_str(force_k / w)+
-             " according to the specified width ("+cvmodule->to_str(w)+").\n");
+             cvm::to_str(force_k / w)+
+             " according to the specified width ("+cvm::to_str(w)+").\n");
   }
 
   return COLVARS_OK;
@@ -1477,9 +1477,9 @@ int colvarbias_restraint_histogram::init(std::string const &conf)
 
   if (lower_boundary >= upper_boundary) {
     error_code |= cvmodule->error("Error: the upper boundary, "+
-                             cvmodule->to_str(upper_boundary)+
+                             cvm::to_str(upper_boundary)+
                              ", is not higher than the lower boundary, "+
-                             cvmodule->to_str(lower_boundary)+".\n",
+                             cvm::to_str(lower_boundary)+".\n",
                              COLVARS_INPUT_ERROR);
   }
 
@@ -1488,10 +1488,10 @@ int colvarbias_restraint_histogram::init(std::string const &conf)
 
   if (cvm::fabs(nbins - cvm::real(nbins_round)) > 1.0E-10) {
     cvmodule->log("Warning: grid interval ("+
-             cvmodule->to_str(lower_boundary, cvmodule->cv_width, cvmodule->cv_prec)+" - "+
-             cvmodule->to_str(upper_boundary, cvmodule->cv_width, cvmodule->cv_prec)+
+             cvm::to_str(lower_boundary, cvmodule->cv_width, cvmodule->cv_prec)+" - "+
+             cvm::to_str(upper_boundary, cvmodule->cv_width, cvmodule->cv_prec)+
              ") is not commensurate to its bin width ("+
-             cvmodule->to_str(width, cvmodule->cv_width, cvmodule->cv_prec)+").\n");
+             cvm::to_str(width, cvmodule->cv_width, cvmodule->cv_prec)+").\n");
   }
 
   p.resize(nbins_round);

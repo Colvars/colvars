@@ -33,7 +33,8 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
                                                cvm::real& g2y,
                                                cvm::real& g2z,
                                                bool **pairlist_elem,
-                                               cvm::real pairlist_tol)
+                                               cvm::real pairlist_tol,
+                                               colvarmodule *cvmodule)
 {
   if ((flags & ef_use_pairlist) && !(flags & ef_rebuild_pairlist)) {
     bool const within = **pairlist_elem;
@@ -45,7 +46,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
 
   const cvm::atom_pos pos1{a1x, a1y, a1z};
   const cvm::atom_pos pos2{a2x, a2y, a2z};
-  cvm::rvector const diff = cvmodule->position_distance(pos1, pos2);
+  cvm::rvector const diff = cvmodule->proxy->position_distance(pos1, pos2);
   cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
                                diff.y * inv_r0_vec.y,
                                diff.z * inv_r0_vec.z);
@@ -132,7 +133,7 @@ int colvar::coordnum::init(std::string const &conf)
 
   if (int atom_number = cvm::atom_group::overlap(*group1, *group2)) {
     error_code |= cvmodule->error(
-        "Error: group1 and group2 share a common atom (number: " + cvmodule->to_str(atom_number) + ")\n",
+        "Error: group1 and group2 share a common atom (number: " + cvm::to_str(atom_number) + ")\n",
         COLVARS_INPUT_ERROR);
   }
 
@@ -241,7 +242,8 @@ template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
                                                 group2_com_grad.y,
                                                 group2_com_grad.z,
                                                 pairlist_elem,
-                                                tolerance);
+                                                tolerance,
+                                                cvmodule);
     }
     if (b_group2_center_only) {
       group2->set_weighted_gradient(group2_com_grad);
@@ -264,7 +266,8 @@ template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
                                                   group2->grad_y(j),
                                                   group2->grad_z(j),
                                                   pairlist_elem,
-                                                  tolerance);
+                                                  tolerance,
+                                                  cvmodule);
       }
     }
   }
@@ -444,7 +447,7 @@ void colvar::h_bond::calc_value()
                                         atom_groups[0]->grad_x(1),
                                         atom_groups[0]->grad_y(1),
                                         atom_groups[0]->grad_z(1),
-                                        NULL, 0.0);
+                                        NULL, 0.0, cvmodule);
   // Skip the gradient
 }
 
@@ -474,7 +477,7 @@ void colvar::h_bond::calc_gradients()
                                       atom_groups[0]->grad_x(1),
                                       atom_groups[0]->grad_y(1),
                                       atom_groups[0]->grad_z(1),
-                                      NULL, 0.0);
+                                      NULL, 0.0, cvmodule);
 }
 
 
@@ -581,7 +584,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
           group1->grad_x(j),                            \
           group1->grad_y(j),                            \
           group1->grad_z(j),                            \
-          &pairlist_elem, tolerance);                   \
+          &pairlist_elem, tolerance, cvmodule);         \
     }                                                   \
   }                                                     \
 } while (0);
@@ -700,7 +703,7 @@ void colvar::groupcoordnum::calc_value()
                                                      A1.x, A1.y, A1.z, \
                                                      A2.x, A2.y, A2.z, \
                                                      G1.x, G1.y, G1.z, \
-                                                     G2.x, G2.y, G2.z, NULL, 0.0); \
+                                                     G2.x, G2.y, G2.z, NULL, 0.0, cvmodule); \
 } while (0);
   if (b_anisotropic) {
     int const flags = coordnum::ef_anisotropic;
@@ -731,7 +734,7 @@ void colvar::groupcoordnum::calc_gradients()
                                       A1.x, A1.y, A1.z, \
                                       A2.x, A2.y, A2.z, \
                                       G1.x, G1.y, G1.z, \
-                                      G2.x, G2.y, G2.z, NULL, 0.0); \
+                                      G2.x, G2.y, G2.z, NULL, 0.0, cvmodule); \
 } while (0);
   if (b_anisotropic) {
     int const flags = coordnum::ef_gradients | coordnum::ef_anisotropic;

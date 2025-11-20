@@ -34,12 +34,12 @@ int colvar::neuralNetwork::init(std::string const &conf)
     size_t num_layers_weight = 0;
     std::vector<std::string> weight_files;
     while (has_weight_files) {
-        std::string lookup_key = std::string{"layer"} + cvmodule->to_str(num_layers_weight + 1) + std::string{"_WeightsFile"};
+        std::string lookup_key = std::string{"layer"} + cvm::to_str(num_layers_weight + 1) + std::string{"_WeightsFile"};
         if (key_lookup(conf, lookup_key.c_str())) {
             std::string weight_filename;
             get_keyval(conf, lookup_key.c_str(), weight_filename, std::string(""));
             weight_files.push_back(weight_filename);
-            cvmodule->log(std::string{"Will read layer["} + cvmodule->to_str(num_layers_weight + 1) + std::string{"] weights from "} + weight_filename + '\n');
+            cvmodule->log(std::string{"Will read layer["} + cvm::to_str(num_layers_weight + 1) + std::string{"] weights from "} + weight_filename + '\n');
             ++num_layers_weight;
         } else {
             has_weight_files = false;
@@ -50,12 +50,12 @@ int colvar::neuralNetwork::init(std::string const &conf)
     size_t num_layers_bias = 0;
     std::vector<std::string> bias_files;
     while (has_bias_files) {
-        std::string lookup_key = std::string{"layer"} + cvmodule->to_str(num_layers_bias + 1) + std::string{"_BiasesFile"};
+        std::string lookup_key = std::string{"layer"} + cvm::to_str(num_layers_bias + 1) + std::string{"_BiasesFile"};
         if (key_lookup(conf, lookup_key.c_str())) {
             std::string bias_filename;
             get_keyval(conf, lookup_key.c_str(), bias_filename, std::string(""));
             bias_files.push_back(bias_filename);
-            cvmodule->log(std::string{"Will read layer["} + cvmodule->to_str(num_layers_bias + 1) + std::string{"] biases from "} + bias_filename + '\n');
+            cvmodule->log(std::string{"Will read layer["} + cvm::to_str(num_layers_bias + 1) + std::string{"] biases from "} + bias_filename + '\n');
             ++num_layers_bias;
         } else {
             has_bias_files = false;
@@ -67,8 +67,8 @@ int colvar::neuralNetwork::init(std::string const &conf)
     // pair(is_custom_function, function_string)
     std::vector<std::pair<bool, std::string>> activation_functions;
     while (has_activation_functions) {
-        std::string lookup_key = std::string{"layer"} + cvmodule->to_str(num_activation_functions + 1) + std::string{"_activation"};
-        std::string lookup_key_custom = std::string{"layer"} + cvmodule->to_str(num_activation_functions + 1) + std::string{"_custom_activation"};
+        std::string lookup_key = std::string{"layer"} + cvm::to_str(num_activation_functions + 1) + std::string{"_activation"};
+        std::string lookup_key_custom = std::string{"layer"} + cvm::to_str(num_activation_functions + 1) + std::string{"_custom_activation"};
         if (key_lookup(conf, lookup_key.c_str())) {
             // Ok, this is not a custom function
             std::string function_name;
@@ -78,14 +78,14 @@ int colvar::neuralNetwork::init(std::string const &conf)
                                COLVARS_INPUT_ERROR);
             }
             activation_functions.push_back(std::make_pair(false, function_name));
-            cvmodule->log(std::string{"The activation function for layer["} + cvmodule->to_str(num_activation_functions + 1) + std::string{"] is "} + function_name + '\n');
+            cvmodule->log(std::string{"The activation function for layer["} + cvm::to_str(num_activation_functions + 1) + std::string{"] is "} + function_name + '\n');
             ++num_activation_functions;
 #ifdef LEPTON
         } else if (key_lookup(conf, lookup_key_custom.c_str())) {
             std::string function_expression;
             get_keyval(conf, lookup_key_custom.c_str(), function_expression, std::string(""));
             activation_functions.push_back(std::make_pair(true, function_expression));
-            cvmodule->log(std::string{"The custom activation function for layer["} + cvmodule->to_str(num_activation_functions + 1) + std::string{"] is "} + function_expression + '\n');
+            cvmodule->log(std::string{"The custom activation function for layer["} + cvm::to_str(num_activation_functions + 1) + std::string{"] is "} + function_expression + '\n');
             ++num_activation_functions;
 #endif
         } else {
@@ -108,9 +108,9 @@ int colvar::neuralNetwork::init(std::string const &conf)
         if (activation_functions[i_layer].first) {
             // use custom function as activation function
             try {
-                d = denseLayer(weight_files[i_layer], bias_files[i_layer], activation_functions[i_layer].second);
+                d = denseLayer(weight_files[i_layer], bias_files[i_layer], activation_functions[i_layer].second, cvmodule);
             } catch (std::exception &ex) {
-                return cvmodule->error("Error on initializing layer " + cvmodule->to_str(i_layer) +
+                return cvmodule->error("Error on initializing layer " + cvm::to_str(i_layer) +
                                            " (" + ex.what() + ")\n",
                                        COLVARS_INPUT_ERROR);
             }
@@ -120,9 +120,9 @@ int colvar::neuralNetwork::init(std::string const &conf)
             const auto& f = activation_function_map[activation_functions[i_layer].second].first;
             const auto& df = activation_function_map[activation_functions[i_layer].second].second;
             try {
-                d = denseLayer(weight_files[i_layer], bias_files[i_layer], f, df);
+                d = denseLayer(weight_files[i_layer], bias_files[i_layer], f, df, cvmodule);
             } catch (std::exception &ex) {
-                return cvmodule->error("Error on initializing layer " + cvmodule->to_str(i_layer) +
+                return cvmodule->error("Error on initializing layer " + cvm::to_str(i_layer) +
                                            " (" + ex.what() + ")\n",
                                        COLVARS_INPUT_ERROR);
             }
@@ -133,12 +133,12 @@ int colvar::neuralNetwork::init(std::string const &conf)
         if (nn->addDenseLayer(d)) {
             if (cvmodule->debug()) {
                 // show information about the neural network
-                cvmodule->log("Layer " + cvmodule->to_str(i_layer) + " : has " + cvmodule->to_str(d.getInputSize()) + " input nodes and " + cvmodule->to_str(d.getOutputSize()) + " output nodes.\n");
+                cvmodule->log("Layer " + cvm::to_str(i_layer) + " : has " + cvm::to_str(d.getInputSize()) + " input nodes and " + cvm::to_str(d.getOutputSize()) + " output nodes.\n");
                 for (size_t i_output = 0; i_output < d.getOutputSize(); ++i_output) {
                     for (size_t j_input = 0; j_input < d.getInputSize(); ++j_input) {
-                        cvmodule->log("    weights[" + cvmodule->to_str(i_output) + "][" + cvmodule->to_str(j_input) + "] = " + cvmodule->to_str(d.getWeight(i_output, j_input)));
+                        cvmodule->log("    weights[" + cvm::to_str(i_output) + "][" + cvm::to_str(j_input) + "] = " + cvm::to_str(d.getWeight(i_output, j_input)));
                     }
-                    cvmodule->log("    biases[" + cvmodule->to_str(i_output) + "] = " + cvmodule->to_str(d.getBias(i_output)) + "\n");
+                    cvmodule->log("    biases[" + cvm::to_str(i_output) + "] = " + cvm::to_str(d.getBias(i_output)) + "\n");
                 }
             }
         } else {

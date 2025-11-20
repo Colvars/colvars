@@ -58,7 +58,7 @@ class colvarmodule::usage {
 public:
 
   /// Constructor
-  usage();
+  usage(colvarmodule *cvmodule_in);
 
   /// Increment usage count for the given feature; return error if not found
   int cite_feature(std::string const &feature);
@@ -68,6 +68,8 @@ public:
 
   /// Generate a report for used features (0 = URL, 1 = BibTeX)
   std::string report(int flag);
+
+  colvarmodule *cvmodule;
 
 protected:
 
@@ -107,7 +109,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   restart_version_str.clear();
   restart_version_int = 0;
 
-  usage_ = new usage();
+  usage_ = new usage(this);
   usage_->cite_feature("Colvars module");
 
   if (proxy != NULL) {
@@ -1067,7 +1069,7 @@ int colvarmodule::calc_colvars()
     this->decrease_depth();
 
     // calculate active colvar components in parallel
-    error_code |= proxy->smp_loop(variables_active_smp()->size(), [](int i) {
+    error_code |= proxy->smp_loop(variables_active_smp()->size(), [this](int i) {
         return this->calc_component_smp(i);
       });
 
@@ -2198,7 +2200,7 @@ int colvarmodule::error(std::string const &message, int code)
 }
 
 
-int this->read_index_file(char const *filename)
+int colvarmodule::read_index_file(char const *filename)
 {
   std::istream &is = proxy->input_stream(filename, "index file");
 
@@ -2302,7 +2304,7 @@ int colvarmodule::reset_index_groups()
   return COLVARS_OK;
 }
 
-int this->load_coords(char const *file_name,
+int colvarmodule::load_coords(char const *file_name,
                      std::vector<cvm::rvector> *pos,
                      cvm::atom_group *atoms,
                      std::string const &pdb_field,
@@ -2342,7 +2344,7 @@ int this->load_coords(char const *file_name,
   return error_code;
 }
 
-int this->load_coords_xyz(char const *filename,
+int colvarmodule::load_coords_xyz(char const *filename,
                          std::vector<rvector> *pos,
                          cvm::atom_group *atoms,
                          bool keep_open)
@@ -2455,26 +2457,26 @@ int this->load_coords_xyz(char const *filename,
 // Wrappers to proxy functions: these may go in the future
 
 
-cvm::real this->dt()
+cvm::real colvarmodule::dt()
 {
   return proxy->dt();
 }
 
 
-void this->request_total_force()
+void colvarmodule::request_total_force()
 {
   proxy->request_total_force(true);
 }
 
 
-cvm::rvector this->position_distance(cvm::atom_pos const &pos1,
+cvm::rvector colvarmodule::position_distance(cvm::atom_pos const &pos1,
                                     cvm::atom_pos const &pos2)
 {
   return proxy->position_distance(pos1, pos2);
 }
 
 
-cvm::real this->rand_gaussian(void)
+cvm::real colvarmodule::rand_gaussian(void)
 {
   return proxy->rand_gaussian();
 }
@@ -2661,7 +2663,7 @@ std::string colvarmodule::to_str(std::vector<cvm::rvector, colvars_gpu::CudaHost
 #endif
 
 
-std::string this->wrap_string(std::string const &s, size_t nchars)
+std::string colvarmodule::wrap_string(std::string const &s, size_t nchars)
 {
   if (!s.size()) {
     return std::string(nchars, ' ');
@@ -2685,7 +2687,8 @@ std::string colvarmodule::feature_report(int flag)
 }
 
 
-colvarmodule::usage::usage()
+colvarmodule::usage::usage(colvarmodule *cvmodule_in)
+  : cvmodule(cvmodule_in)
 {
 #include "colvarmodule_refs.h"
 }
@@ -2696,7 +2699,7 @@ int colvarmodule::usage::cite_feature(std::string const &feature)
     feature_count_[feature] += 1;
     return cite_paper(feature_paper_map_[feature]);
   }
-  this->log("Warning: cannot cite unknown feature \""+feature+"\"\n");
+  cvmodule->log("Warning: cannot cite unknown feature \""+feature+"\"\n");
   return COLVARS_OK;
 }
 
@@ -2706,7 +2709,7 @@ int colvarmodule::usage::cite_paper(std::string const &paper)
     paper_count_[paper] += 1;
     return COLVARS_OK;
   }
-  this->log("Warning: cannot cite unknown paper \""+paper+"\"\n");
+  cvmodule->log("Warning: cannot cite unknown paper \""+paper+"\"\n");
   return COLVARS_OK;
 }
 

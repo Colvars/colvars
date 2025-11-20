@@ -248,7 +248,7 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
   clear_device_array(d_mTotalForces, 3 * numAtoms);
   std::string force_filename;
   if (write_force_file) {
-    force_filename = colvars->output_prefix() + "_forces_" + cvmodule->to_str(colvars->it) + ".dat";
+    force_filename = colvars->output_prefix() + "_forces_" + cvm::to_str(colvars->it) + ".dat";
   }
   if ( !err ) {
     colvars->calc();
@@ -312,7 +312,7 @@ int main(int argc, char *argv[]) {
     int natoms;
     ifs >> natoms;
     ifs.close();
-    cvmodule->log("Reading trajectory for " + cvmodule->to_str(natoms)
+    cvmodule->log("Reading trajectory for " + cvm::to_str(natoms)
               + " atoms from XYZ file " + trajectory_file);
     for (int ai = 0; ai < natoms; ai++) {
       proxy->init_atom(ai+1);
@@ -328,7 +328,7 @@ int main(int argc, char *argv[]) {
       if (err != COLVARS_OK) {
         cvmodule->log("Error occurred!\n");
       }
-      if (!io_err) cvmodule->log("Frame " + cvmodule->to_str(cvmodule->step_absolute()));
+      if (!io_err) cvmodule->log("Frame " + cvm::to_str(cvmodule->step_absolute()));
     }
     proxy->post_run();
     cvmodule->log("Done");
@@ -347,12 +347,12 @@ int main(int argc, char *argv[]) {
 
   double const max_gradient_error = proxy->colvars->get_max_gradient_error();
   if (max_gradient_error > 0.) {
-    cvmodule->log("Max gradient error (debugGradients): " + cvmodule->to_str(max_gradient_error));
+    cvmodule->log("Max gradient error (debugGradients): " + cvm::to_str(max_gradient_error));
 
     double threshold = 1e-3;
     // Fail test if error is above threshold
     if (max_gradient_error > threshold) {
-      cvmodule->log("Error: gradient inaccuracy is above threshold (" + cvmodule->to_str(threshold) + ")");
+      cvmodule->log("Error: gradient inaccuracy is above threshold (" + cvm::to_str(threshold) + ")");
       err = 1;
     }
   }
