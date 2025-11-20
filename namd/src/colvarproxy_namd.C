@@ -718,12 +718,12 @@ void colvarproxy_namd::error(std::string const &message)
   case COLVARS_MEMORY_ERROR:
     errno = ENOMEM; break;
   }
-  char const *msg = "Error in the collective variables module "
-    "(see above for details)";
+  std::string const errmsg("Errors in the Colvars module (check the full output for details)\n\n" +
+                           message);
   if (errno) {
-    NAMD_err(msg);
+    NAMD_err(errmsg.c_str());
   } else {
-    NAMD_die(msg);
+    NAMD_die(errmsg.c_str());
   }
 }
 
