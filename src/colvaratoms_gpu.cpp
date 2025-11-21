@@ -4,10 +4,7 @@
 #include "colvarproxy.h"
 #include "colvarmodule.h"
 #include "colvarcomp.h"
-
-#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 #include "cuda/colvaratoms_kernel.h"
-#endif
 
 namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
