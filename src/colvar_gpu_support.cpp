@@ -24,7 +24,7 @@ int gpuAssert(cudaError_t code, const char *file, int line)
       error += "\nBacktrace:\n" + std::to_string(std::stacktrace::current()) + "\n";
 #endif
 #endif
-    return cvm::error(error, COLVARS_ERROR);
+    return cvmodule->error(error, COLVARS_ERROR);
   }
   return COLVARS_OK;
 }
@@ -44,8 +44,8 @@ int add_clear_array_node_impl(
   memsetParams.elementSize = elementSize;
   memsetParams.width       = width;
   memsetParams.height      = 1;
-  if (cvm::debug()) {
-    cvm::log(
+  if (cvmodule->debug()) {
+    cvmodule->log(
       "Add a memset clear node: ptr = " + cvm::to_str(dst) +
       " width = " + cvm::to_str(width) + " elementSize = " +
       cvm::to_str(elementSize) + "\n");
@@ -59,8 +59,8 @@ int add_copy_node_impl(
   const void* src, void* dst, const size_t num_elements, const size_t sizeofT,
   cudaMemcpyKind kind, cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  if (cvm::debug()) {
-    cvm::log(
+  if (cvmodule->debug()) {
+    cvmodule->log(
       "Add a memcpy node: src = " + cvm::to_str(src) +
       " dst = " + cvm::to_str(dst) + " num_elements = " +
       cvm::to_str(num_elements) + "\n");
@@ -81,16 +81,16 @@ int prepare_dependencies(
     const bool allow_not_found = it->second;
     if (auto search = map.find(node_name); search != map.end()) {
       dependencies.push_back(search->second);
-      if (cvm::debug()) {
-        cvm::log("Operation " + caller_operation_name +
+      if (cvmodule->debug()) {
+        cvmodule->log("Operation " + caller_operation_name +
                 " depends on node\" " + node_name + "\"\n");
       }
     } else {
       if (!allow_not_found) {
-        error_code |= cvm::error("BUG: cannot find node " + node_name + "\n");
+        error_code |= cvmodule->error("BUG: cannot find node " + node_name + "\n");
       } else {
-        if (cvm::debug()) {
-          cvm::log("Operation " + caller_operation_name +
+        if (cvmodule->debug()) {
+          cvmodule->log("Operation " + caller_operation_name +
                   " cannot depend on node\" " + node_name + "\"\n");
         }
       }

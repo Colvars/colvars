@@ -2,7 +2,7 @@
 
 // This file is part of the Collective Variables module (Colvars).
 // The original version of Colvars and its updates are located at:
-// https://github.com/Colvars/colvars
+// https://github.com/Colvars/cvmodule
 // Please update all Colvars source files before making any changes.
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
@@ -31,7 +31,7 @@ extern "C" int tcl_run_colvarscript_command(ClientData clientData,
 
 colvarscript::colvarscript(colvarproxy *p, colvarmodule *m)
  : proxy_(p),
-   colvars(m)
+   cvmodule(m)
 {
   cmdline_main_cmd_ = std::string("cv");
   cmd_names = NULL;
@@ -42,13 +42,14 @@ colvarscript::colvarscript(colvarproxy *p, colvarmodule *m)
   // TODO put this in backend functions so we don't have to delete
   Tcl_Interp *const interp = proxy()->get_tcl_interp();
   if (interp == NULL) {
-    cvm::error("Error: trying to construct colvarscript without a Tcl interpreter.\n");
+    cvmodule->error("Error: trying to construct colvarscript without a Tcl interpreter.\n");
     return;
   }
-  Tcl_DeleteCommand(interp, "cv");
+  bool deleted = (Tcl_DeleteCommand(interp, "cv") == TCL_OK);
   Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
                        (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
-  cvm::log("Redefining the Tcl \"cv\" command to the new script interface.\n");
+  if (deleted)
+    cvmodule->log("Redefining the Tcl \"cv\" command to the new script interface.\n");
 #endif
 }
 
@@ -64,8 +65,8 @@ colvarscript::~colvarscript()
 
 int colvarscript::init_commands()
 {
-  if (cvm::debug()) {
-    cvm::log("Called colvarcript::init_commands()\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("Called colvarcript::init_commands()\n");
   }
 
   cmd_help.resize(colvarscript::cv_n_commands);
@@ -132,7 +133,7 @@ int colvarscript::init_command(colvarscript::command const &comm,
     std::string line;
     for (int iarg = 0; iarg < n_args_max; iarg++) {
       if (! std::getline(is, line)) {
-        return cvm::error("Error: could not initialize help string for scripting "
+        return cvmodule->error("Error: could not initialize help string for scripting "
                           "command \""+std::string(name)+"\".\n", COLVARS_BUG_ERROR);
       }
       cmd_arghelp[comm].push_back(line);
@@ -158,9 +159,9 @@ int colvarscript::init_command(colvarscript::command const &comm,
   }
 
   cmd_fns[comm] = fn;
-  if (cvm::debug()) {
-    cvm::log("Defined command \""+std::string(name)+"\", with help string:\n");
-    cvm::log(get_command_full_help(name));
+  if (cvmodule->debug()) {
+    cvmodule->log("Defined command \""+std::string(name)+"\", with help string:\n");
+    cvmodule->log(get_command_full_help(name));
   }
 
   return COLVARS_OK;
@@ -177,7 +178,7 @@ std::string colvarscript::get_cmd_prefix(colvarscript::Object_type t)
   case use_bias:
     return std::string("bias_"); break;
   default:
-    cvm::error("Error: undefined colvarscript object type.", COLVARS_BUG_ERROR);
+    cvmodule->error("Error: undefined colvarscript object type.", COLVARS_BUG_ERROR);
     return std::string("");
   }
 }
@@ -190,7 +191,7 @@ char const *colvarscript::get_command_help(char const *cmd)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_help[c].c_str();
   }
-  cvm::error("Error: command "+std::string(cmd)+
+  cvmodule->error("Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
@@ -202,7 +203,7 @@ char const *colvarscript::get_command_rethelp(char const *cmd)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_rethelp[c].c_str();
   }
-  cvm::error("Error: command "+std::string(cmd)+
+  cvmodule->error("Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
@@ -214,7 +215,7 @@ char const *colvarscript::get_command_arghelp(char const *cmd, int i)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_arghelp[c][i].c_str();
   }
-  cvm::error("Error: command "+std::string(cmd)+
+  cvmodule->error("Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
@@ -226,7 +227,7 @@ int colvarscript::get_command_n_args_min(char const *cmd)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_n_args_min[c];
   }
-  cvm::error("Error: command "+std::string(cmd)+
+  cvmodule->error("Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return -1;
 }
@@ -238,7 +239,7 @@ int colvarscript::get_command_n_args_max(char const *cmd)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_n_args_max[c];
   }
-  cvm::error("Error: command "+std::string(cmd)+
+  cvmodule->error("Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return -1;
 }
@@ -250,7 +251,7 @@ char const *colvarscript::get_command_full_help(char const *cmd)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_full_help[c].c_str();
   }
-  cvm::error("Error: command "+std::string(cmd)+
+  cvmodule->error("Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
@@ -339,7 +340,7 @@ std::string colvarscript::get_command_cmdline_help(colvarscript::Object_type t,
     return get_command_cmdline_syntax(t, c)+"\n\n"+
       get_command_full_help(cmd_names[c]);
   }
-  cvm::set_error_bits(COLVARS_INPUT_ERROR);
+  cvmodule->set_error_bits(COLVARS_INPUT_ERROR);
   return std::string("Could not find scripting command \""+cmd+"\".");
 }
 
@@ -348,10 +349,10 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 {
   clear_str_result();
 
-  if (cvm::debug()) {
-    cvm::log("Called script run with " + cvm::to_str(objc) + " args:");
+  if (cvmodule->debug()) {
+    cvmodule->log("Called script run with " + cvm::to_str(objc) + " args:");
     for (int i = 0; i < objc; i++) {
-      cvm::log(obj_to_str(objv[i]));
+      cvmodule->log(obj_to_str(objv[i]));
     }
   }
 
@@ -385,7 +386,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
     }
     std::string const name(obj_to_str(objv[2]));
     std::string const subcmd(obj_to_str(objv[3]));
-    obj_for_cmd = reinterpret_cast<void *>(cvm::colvar_by_name(name));
+    obj_for_cmd = reinterpret_cast<void *>(cvmodule->colvar_by_name(name));
     if (obj_for_cmd == NULL) {
       if (subcmd != std::string("help")) {
         // Unless asking for help, a valid colvar name must be given
@@ -408,7 +409,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
     }
     std::string const name(obj_to_str(objv[2]));
     std::string const subcmd(obj_to_str(objv[3]));
-    obj_for_cmd = reinterpret_cast<void *>(cvm::bias_by_name(name));
+    obj_for_cmd = reinterpret_cast<void *>(cvmodule->bias_by_name(name));
     if (obj_for_cmd == NULL) {
       if ((subcmd == "") || (subcmd != std::string("help"))) {
         // Unless asking for help, a valid bias name must be given
@@ -452,8 +453,8 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 char *colvarscript::obj_to_str(unsigned char *obj)
 {
   char *strobj = reinterpret_cast<char *>(obj);
-  if (cvm::debug()) {
-    cvm::log("Using simple-cast script::obj_to_str(): result = \"" +
+  if (cvmodule->debug()) {
+    cvmodule->log("Using simple-cast script::obj_to_str(): result = \"" +
              (strobj ? std::string(strobj) : std::string("(null)")) + "\"");
   }
   return strobj;
@@ -462,8 +463,8 @@ char *colvarscript::obj_to_str(unsigned char *obj)
 
 std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
 {
-  if (cvm::debug()) {
-    cvm::log("Using simple-cast colvarscript::obj_to_str_vector().\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("Using simple-cast colvarscript::obj_to_str_vector().\n");
   }
 
   std::vector<std::string> new_result;
@@ -477,7 +478,7 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
     if (c == '\"') {
       i++;
       if (i >= str.length()) {
-        cvm::error("Error: could not split the following string:\n"+
+        cvmodule->error("Error: could not split the following string:\n"+
                    str+"\n", COLVARS_INPUT_ERROR);
         break;
       }
@@ -485,7 +486,7 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
       while (str[i] != '\"') {
         new_result.back().append(1, str[i]);
         if (i >= str.length()) {
-          cvm::error("Error: could not split the following string:\n"+
+          cvmodule->error("Error: could not split the following string:\n"+
                      str+"\n", COLVARS_INPUT_ERROR);
           break;
         } else {
@@ -495,8 +496,8 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
     }
   }
 
-  if (cvm::debug()) {
-    cvm::log("result = "+cvm::to_str(new_result)+".\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("result = "+cvm::to_str(new_result)+".\n");
   }
 
   return new_result;
@@ -509,10 +510,10 @@ int colvarscript::proc_features(colvardeps *obj,
   // size was already checked before calling
   std::string const subcmd(obj_to_str(objv[3]));
 
-  if (cvm::debug()) {
-    cvm::log("Called proc_features() with " + cvm::to_str(objc) + " args:");
+  if (cvmodule->debug()) {
+    cvmodule->log("Called proc_features() with " + cvm::to_str(objc) + " args:");
     for (int i = 0; i < objc; i++) {
-      cvm::log(obj_to_str(objv[i]));
+      cvmodule->log(obj_to_str(objv[i]));
     }
   }
 
@@ -576,14 +577,14 @@ int colvarscript::proc_features(colvardeps *obj,
 
 int colvarscript::unsupported_op()
 {
-  return cvm::error("Error: unsupported script operation.\n",
+  return cvmodule->error("Error: unsupported script operation.\n",
                     COLVARS_NOT_IMPLEMENTED);
 }
 
 
 int colvarscript::set_result_str(std::string const &s)
 {
-  if (cvm::get_error() != COLVARS_OK) {
+  if (cvmodule->get_error() != COLVARS_OK) {
     // Avoid overwriting the error message
     modify_str_result() += s;
   } else {
@@ -613,10 +614,9 @@ int colvarscript::clear_str_result()
 extern "C"
 int run_colvarscript_command(int objc, unsigned char *const objv[])
 {
-  colvarmodule *cv = cvm::main();
   colvarscript *script = cv ? cv->proxy->script : NULL;
   if (!script) {
-    cvm::error("Called run_colvarscript_command without a script object.\n",
+    cvmodule->error("Called run_colvarscript_command without a script object.\n",
                COLVARS_BUG_ERROR);
     return -1;
   }
@@ -630,7 +630,7 @@ const char * get_colvarscript_result()
 {
   colvarscript *script = colvarscript_obj();
   if (!script) {
-    cvm::error("Called get_colvarscript_result without a script object.\n");
+    cvmodule->error("Called get_colvarscript_result without a script object.\n");
     return NULL;
   }
   return script->str_result().c_str();
@@ -649,9 +649,9 @@ int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid);
 extern "C" {
   int Colvars_Init(Tcl_Interp *interp) {
     colvarproxy *proxy = new colvarproxy();
-    colvarmodule *colvars = new colvarmodule(proxy);
+    colvarmodule *cv = new colvarmodule(proxy);
     proxy->set_tcl_interp(interp);
-    proxy->colvars = colvars;
+    proxy->cvmodule = cv;
     Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
                          (ClientData *) NULL, (Tcl_CmdDeleteProc *) NULL);
     Tcl_EvalEx(interp, "package provide colvars", -1, 0);
@@ -665,9 +665,7 @@ extern "C" int tcl_run_colvarscript_command(ClientData /* clientData */,
                                             Tcl_Interp *my_interp,
                                             int objc, Tcl_Obj *const objv[])
 {
-  colvarmodule *colvars = cvm::main();
-
-  if (!colvars) {
+  if (!cvmodule) {
 #if defined(VMDTCL)
 
     if (objc == 2) {
@@ -715,7 +713,7 @@ extern "C" int tcl_run_colvarscript_command(ClientData /* clientData */,
     return TCL_ERROR;
   }
 
-  colvarproxy *proxy = colvars->proxy;
+  colvarproxy *proxy = cvmodule->proxy;
   Tcl_Interp *interp = my_interp ? my_interp : proxy->get_tcl_interp();
   colvarscript *script = colvarscript_obj();
   if (!script) {
@@ -725,7 +723,7 @@ extern "C" int tcl_run_colvarscript_command(ClientData /* clientData */,
     return TCL_ERROR;
   }
 
-  cvm::clear_error();
+  cvmodule->clear_error();
 
   unsigned char * arg_pointers_[100];
   if (objc > 100) {

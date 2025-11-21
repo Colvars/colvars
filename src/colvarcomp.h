@@ -67,7 +67,7 @@
 ///
 
 class colvar::cvc
-  : public colvarparse, public colvardeps
+  : public colvardeps
 {
 public:
 
@@ -96,6 +96,8 @@ public:
   /// Constructor
   cvc();
 
+  cvc(colvarmodule *cvmodule_in);
+
   /// Destructor
   virtual ~cvc();
 
@@ -105,7 +107,7 @@ public:
   virtual int init(std::string const &conf);
 
   /// \brief Initialize dependency tree
-  virtual int init_dependencies();
+  int init_dependencies() override;
 
   /// \brief After construction, set data related to dependency handling
   int setup();
@@ -237,10 +239,10 @@ public:
   inline void set_value(colvarvalue const &new_value, bool now=false) {
     x = new_value;
     // Cache value to be communicated to back-end between time steps
-    cvm::proxy->set_alch_lambda(x.real_value);
+    cvmodule->proxy->set_alch_lambda(x.real_value);
     if (now) {
       // If requested (e.g. upon restarting), sync to back-end
-      cvm::proxy->send_alch_lambda();
+      cvmodule->proxy->send_alch_lambda();
     }
   }
 
@@ -825,7 +827,8 @@ public:
                                       cvm::real& g2y,
                                       cvm::real& g2z,
                                       bool **pairlist_elem,
-                                      cvm::real tolerance);
+                                      cvm::real tolerance,
+                                      colvarmodule *cvmodule);
 
   /// Workhorse function
   template<int flags> int compute_coordnum();
