@@ -208,7 +208,7 @@ int colvarbias_abf::init(std::string const &conf)
     z_samples->request_actual_value();
     z_gradients.reset(new colvar_grid_gradient(colvars, z_samples));
     z_gradients->request_actual_value();
-    czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
+    czar_gradients.reset(new colvar_grid_gradient(colvars, z_samples, samples));
   }
 
   get_keyval(conf, "integrate", b_integrate, num_variables() <= 3); // Integrate for output if d<=3
@@ -832,9 +832,11 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     if (cvm::step_relative() > 0) {
       for (std::vector<int> iz_bin = czar_gradients_out->new_index();
             czar_gradients_out->index_ok(iz_bin); czar_gradients_out->incr(iz_bin)) {
+        unsigned long count = z_samples_out->value_output(iz_bin, 1);
+        czar_gradients_out->samples->set_value(iz_bin, count, 1);
         for (size_t n = 0; n < czar_gradients_out->multiplicity(); n++) {
           czar_gradients_out->set_value(iz_bin, z_gradients_out->value_output(iz_bin, n)
-            - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n), n);
+            - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n)* static_cast<cvm::real>(count), n);
         }
       }
     }
@@ -914,9 +916,12 @@ int colvarbias_abf::read_gradients_samples()
   if (b_CZAR_estimator) {
     // Now copy real CZAR gradients (divided by total count) to the final grid
     for (std::vector<int> ix = czar_gradients->new_index();
-          czar_gradients->index_ok(ix); czar_gradients->incr(ix)) {
+      czar_gradients->index_ok(ix); czar_gradients->incr(ix)) {
+      unsigned long count = z_samples->value_output(ix, 1);
+      czar_gradients->samples->set_value(ix, count, 1);
       for (size_t n = 0; n < czar_gradients->multiplicity(); n++) {
-        czar_gradients->set_value(ix, czar_gradients_in->value_output(ix, n), n);
+        cvm::real czar_gradient_sum = czar_gradients_in->value_output(ix, n)* static_cast<cvm::real>(count);
+          czar_gradients->set_value(ix,  czar_gradient_sum, n);
       }
     }
   }

@@ -22,8 +22,9 @@ colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
                                            bool weighted_in)
     : colvar_grid_scalar(colvars, gradients_in, true),
       b_smoothed(false),
-      gradients(gradients_in),
-      weighted(weighted_in)
+      weighted(weighted_in),
+      gradients(gradients_in)
+
 {
   // parent class colvar_grid_scalar is constructed with add_extra_bin option set to true
   // hence PMF grid is wider than gradient grid if non-PBC
@@ -35,8 +36,8 @@ colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
 colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients_in,
                                            bool weighted_in)
     : b_smoothed(false),
-      gradients(gradients_in),
-      weighted(weighted_in)
+      weighted(weighted_in),
+      gradients(gradients_in)
 {
   nd = gradients->num_variables();
   nx = gradients->number_of_points_vec();
