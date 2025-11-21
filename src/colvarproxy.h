@@ -565,7 +565,7 @@ class colvarproxy
 
 public:
 
-  /// Pointer to the main object
+  /// Pointer to the associated colvarmodule object
   colvarmodule *cvmodule;
 
   /// Constructor
