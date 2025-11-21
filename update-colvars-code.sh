@@ -277,6 +277,13 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
+  # Update the Colvars CUDA source files
+  mkdir -p "${target}/lib/colvars/cuda"
+  for src in ${source}/src/cuda/*.h ${source}/src/cuda/*.cu
+  do
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/lib/colvars/cuda/${tgt}"
+  done
 
   for src in \
     ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} \
