@@ -6,3 +6,11 @@ LEPTONOBJS = \
 	$(DSTDIR)/Operation.o \
 	$(DSTDIR)/ParsedExpression.o \
 	$(DSTDIR)/Parser.o 
+LEPTONSHAREDOBJS = \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/CompiledExpression.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/CompiledVectorExpression.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/ExpressionProgram.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/ExpressionTreeNode.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/Operation.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/ParsedExpression.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/Parser.o

@@ -13,6 +13,7 @@
 #include "colvaratoms.h"
 #include "colvar_rotation_derivative.h"
 #include "colvarproxy.h"
+#include "cuda/colvartypes_kernel.h"
 
 #ifdef COLVARS_LAMMPS
 // Use open-source Jacobi implementation
@@ -21,11 +22,6 @@
 // Fall back to NR routine
 #include "nr_jacobi.h"
 #endif
-
-#if defined (COLVARS_CUDA)|| defined(COLVARS_HIP)
-#include "cuda/colvartypes_kernel.h"
-#elif defined (COLVARS_SYCL)
-#endif // defined(COLVARS_CUDA) ||defined (COLVARS_HIP)
 
 bool      colvarmodule::rotation::monitor_crossings = false;
 cvm::real colvarmodule::rotation::crossing_threshold = 1.0E-02;
