@@ -698,15 +698,15 @@ void colvarproxy::print_output_atomic_data()
   cvmodule->log(cvmodule->line_marker);
   cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces,
-                                                    colvarmodule::cv_width,
-                                                    colvarmodule::cv_prec)+"\n");
+                                                    cvmodule->cv_width,
+                                                    cvmodule->cv_prec)+"\n");
   cvmodule->log(cvmodule->line_marker);
 
   cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atom_groups_new_colvar_forces = "+
            cvm::to_str(atom_groups_new_colvar_forces,
-                       colvarmodule::cv_width,
-                       colvarmodule::cv_prec)+"\n");
+                       cvmodule->cv_width,
+                       cvmodule->cv_prec)+"\n");
 
   cvmodule->log(cvmodule->line_marker);
 

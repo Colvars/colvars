@@ -121,7 +121,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   }
 
   proxy = proxy_in; // Pointer to the proxy object
-  parse = new colvarparse(); // Parsing object for global options
+  parse = new colvarparse(this); // Parsing object for global options
   version_int = proxy->get_version_from_string(COLVARS_VERSION);
 
   this->log(this->line_marker);
@@ -175,7 +175,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   // "it_restart" will be set by the input state file, if any;
   // "it" should be updated by the proxy
-  colvarmodule::it = colvarmodule::it_restart = 0;
+  cvmodule->it = colvarmodule::it_restart = 0;
 
   use_scripted_forces = false;
   scripting_after_biases = false;
@@ -585,7 +585,7 @@ int colvarmodule::parse_colvars(std::string const &conf)
     if (colvar_conf.size()) {
       this->log(this->line_marker);
       this->increase_depth();
-      colvars.push_back(new colvar());
+      colvars.push_back(new colvar(this));
       if (((colvars.back())->init(colvar_conf) != COLVARS_OK) ||
           ((colvars.back())->check_keywords(colvar_conf, "colvar") != COLVARS_OK)) {
         this->log("Error while constructing colvar number " +
@@ -657,7 +657,7 @@ int colvarmodule::parse_biases_type(std::string const &conf,
       this->log(this->line_marker);
       this->increase_depth();
       int &bias_count = (*num_biases_types_used)[type_keyword];
-      biases.push_back(new bias_type(type_keyword.c_str()));
+      biases.push_back(new bias_type(this, type_keyword.c_str()));
       bias_count += 1;
       biases.back()->rank = bias_count;
       biases.back()->init(bias_conf);

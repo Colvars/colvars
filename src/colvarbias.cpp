@@ -18,7 +18,8 @@
 #include "colvars_memstream.h"
 
 
-colvarbias::colvarbias(char const *key)
+colvarbias::colvarbias(colvarmodule *cvmodule_in, char const *key)
+  : colvardeps(cvmodule_in)
 {
   time_step_factor = cvmodule->proxy->time_step_factor();
 
@@ -278,7 +279,7 @@ int colvarbias::reset()
 
 
 colvarbias::colvarbias()
-  : colvarparse(), has_data(false)
+  : has_data(false)
 {}
 
 
@@ -809,9 +810,7 @@ std::ostream & colvarbias::write_traj(std::ostream &os)
 }
 
 
-
 colvarbias_ti::colvarbias_ti(char const *key)
-  : colvarbias(key)
 {
   colvarproxy *proxy = cvmodule->proxy;
   provide(f_cvb_calc_ti_samples);

@@ -32,12 +32,28 @@ namespace {
 }
 
 
-colvarparse::colvarparse()
-  : keyword_delimiters_left("\n"+std::string(white_space)+"}"),
+// colvarparse::colvarparse()
+//   : keyword_delimiters_left("\n"+std::string(white_space)+"}"),
+//     keyword_delimiters_right("\n"+std::string(white_space)+"{")
+// {
+//   colvarparse::clear();
+// }
+
+
+colvarparse::colvarparse(colvarmodule *cvmodule_in)
+  : cvmodule(cvmodule_in),
+    keyword_delimiters_left("\n"+std::string(white_space)+"}"),
     keyword_delimiters_right("\n"+std::string(white_space)+"{")
-{
-  colvarparse::clear();
-}
+{}
+
+
+// colvarparse::colvarparse(colvarmodule *cvmodule_in, const std::string& conf)
+//   : cvmodule(cvmodule_in),
+//     keyword_delimiters_left("\n"+std::string(white_space)+"}"),
+//     keyword_delimiters_right("\n"+std::string(white_space)+"{")
+// {
+//   colvarparse::set_string(conf);
+// }
 
 
 void colvarparse::clear()
@@ -45,16 +61,6 @@ void colvarparse::clear()
   config_string.clear();
   clear_keyword_registry();
 }
-
-
-colvarparse::colvarparse(colvarmodule *cvmodule_in, const std::string& conf)
-  : cvmodule(cvmodule_in),
-    keyword_delimiters_left("\n"+std::string(white_space)+"}"),
-    keyword_delimiters_right("\n"+std::string(white_space)+"{")
-{
-  colvarparse::set_string(conf);
-}
-
 
 void colvarparse::set_string(std::string const &conf)
 {
