@@ -1,9 +1,8 @@
 #include "colvar_rotation_derivative.h"
 #include "colvarproxy.h"
+#include "cuda/colvar_rotation_derivative_kernel.h"
 
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
-
-#include "cuda/colvar_rotation_derivative_kernel.h"
 
 namespace colvars_gpu {
 rotation_derivative_gpu::rotation_derivative_gpu():
