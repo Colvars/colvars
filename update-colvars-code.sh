@@ -461,6 +461,13 @@ then
     tgt=$(basename ${src%.cpp})
     condcopy "${src}" "${target}/src/${tgt}.C"
   done
+  # Update the Colvars CUDA code
+  mkdir -p "${target}/src/cuda"
+  for src in ${source}/src/cuda/*.h ${source}/src/cuda/*.cu
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/src/cuda/${tgt}"
+  done
 
   if [ -f ${source}/vmd/src/tcl_commands.C.patch ] ; then
     # Do not exit if the patch fails - already applied in development branch
