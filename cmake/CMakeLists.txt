@@ -178,5 +178,6 @@ if(ENABLE_COVERAGE AND (NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"))
   target_link_options(colvars PUBLIC --coverage)
 endif()
 
+include_directories(${COLVARS_SOURCE_DIR}/src)
 
 include(buildColvarsTests)
