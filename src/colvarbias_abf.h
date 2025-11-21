@@ -108,7 +108,7 @@ private:
   std::shared_ptr<colvar_grid_gradient> z_gradients;
   /// n-dim grid of number of samples on "real" coordinate for eABF z-based estimator
   std::shared_ptr<colvar_grid_count>    z_samples;
-  /// n-dim grid containing CZAR estimatr of "real" free energy gradients
+  /// n-dim grid containing CZAR estimator of "real" free energy gradients
   std::shared_ptr<colvar_grid_gradient> czar_gradients;
   /// n-dim grid of CZAR pmf (dimension 1 to 3)
   std::shared_ptr<colvargrid_integrate>  czar_pmf;
