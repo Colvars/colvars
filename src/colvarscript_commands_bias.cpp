@@ -24,10 +24,12 @@
   int CVSCRIPT_COMM_FNAME(COMM)(void *pobj,                             \
                                 int objc, unsigned char *const objv[])  \
   {                                                                     \
-    if (cvmodule->debug()) {                                                 \
+    colvarbias *this_bias = colvarbias_obj(pobj);                       \
+    colvarmodule *cvmodule = this_bias->cvmodule;                     \
+    if (cvmodule->debug()) {                                            \
       cvmodule->log("Executing script function \""+std::string(#COMM)+"\""); \
     }                                                                   \
-    colvarscript *script = colvarscript_obj();                          \
+    colvarscript *script = cvmodule->proxy->script;                     \
     script->clear_str_result();                                         \
     if (script->check_bias_cmd_nargs(#COMM,                             \
                                      objc, N_ARGS_MIN, N_ARGS_MAX) !=   \
@@ -38,7 +40,6 @@
       /* Silence unused parameter warning */                            \
       (void) objv;                                                      \
     }                                                                   \
-    colvarbias *this_bias = colvarbias_obj(pobj);                       \
     FN_BODY;                                                            \
   }
 #undef CVSCRIPT

@@ -18,8 +18,8 @@
 
 
 
-colvarbias_restraint::colvarbias_restraint(char const *key)
-  : colvarbias(key), colvarbias_ti(key)
+colvarbias_restraint::colvarbias_restraint(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key), colvarbias_ti(key)
 {}
 
 
@@ -96,8 +96,8 @@ std::ostream & colvarbias_restraint::write_traj(std::ostream &os)
 
 
 
-colvarbias_restraint_centers::colvarbias_restraint_centers(char const *key)
-  : colvarbias(key), colvarbias_ti(key), colvarbias_restraint(key)
+colvarbias_restraint_centers::colvarbias_restraint_centers(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key), colvarbias_ti(key), colvarbias_restraint(key)
 {
 }
 
@@ -155,8 +155,8 @@ int colvarbias_restraint_centers::change_configuration(std::string const &conf)
 
 
 
-colvarbias_restraint_k::colvarbias_restraint_k(char const *key)
-  : colvarbias(key), colvarbias_ti(key), colvarbias_restraint(key)
+colvarbias_restraint_k::colvarbias_restraint_k(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key), colvarbias_ti(key), colvarbias_restraint(key)
 {
   force_k = -1.0;
   check_positive_k = true;
@@ -324,8 +324,8 @@ int colvarbias_restraint_moving::set_state_params(std::string const &conf)
 }
 
 
-colvarbias_restraint_centers_moving::colvarbias_restraint_centers_moving(char const *key)
-  : colvarbias(key),
+colvarbias_restraint_centers_moving::colvarbias_restraint_centers_moving(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key),
     colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_centers(key),
@@ -526,8 +526,8 @@ std::ostream & colvarbias_restraint_centers_moving::write_traj(std::ostream &os)
 
 
 
-colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(char const *key)
-  : colvarbias(key),
+colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key),
     colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_k(key),
@@ -694,8 +694,8 @@ std::ostream & colvarbias_restraint_k_moving::write_traj(std::ostream &os)
 
 
 
-colvarbias_restraint_harmonic::colvarbias_restraint_harmonic(char const *key)
-  : colvarbias(key),
+colvarbias_restraint_harmonic::colvarbias_restraint_harmonic(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key),
     colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_centers(key),
@@ -836,8 +836,8 @@ cvm::real colvarbias_restraint_harmonic::energy_difference(std::string const &co
 
 
 
-colvarbias_restraint_harmonic_walls::colvarbias_restraint_harmonic_walls(char const *key)
-  : colvarbias(key),
+colvarbias_restraint_harmonic_walls::colvarbias_restraint_harmonic_walls(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key),
     colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_k(key),
@@ -1298,8 +1298,8 @@ std::ostream & colvarbias_restraint_harmonic_walls::write_traj(std::ostream &os)
 
 
 
-colvarbias_restraint_linear::colvarbias_restraint_linear(char const *key)
-  : colvarbias(key),
+colvarbias_restraint_linear::colvarbias_restraint_linear(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key),
     colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_centers(key),

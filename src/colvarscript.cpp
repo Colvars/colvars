@@ -45,10 +45,11 @@ colvarscript::colvarscript(colvarproxy *p, colvarmodule *m)
     cvmodule->error("Error: trying to construct colvarscript without a Tcl interpreter.\n");
     return;
   }
-  Tcl_DeleteCommand(interp, "cv");
+  bool deleted = (Tcl_DeleteCommand(interp, "cv") == TCL_OK);
   Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
                        (ClientData) this, (Tcl_CmdDeleteProc *) NULL);
-  cvmodule->log("Redefining the Tcl \"cv\" command to the new script interface.\n");
+  if (deleted)
+    cvmodule->log("Redefining the Tcl \"cv\" command to the new script interface.\n");
 #endif
 }
 

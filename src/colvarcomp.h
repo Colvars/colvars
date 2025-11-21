@@ -68,7 +68,7 @@
 ///
 
 class colvar::cvc
-  : public colvarparse, public colvardeps
+  : public colvardeps
 {
 public:
 
@@ -97,6 +97,8 @@ public:
   /// Constructor
   cvc();
 
+  cvc(colvarmodule *cvmodule_in);
+
   /// Destructor
   virtual ~cvc();
 
@@ -106,7 +108,7 @@ public:
   virtual int init(std::string const &conf);
 
   /// \brief Initialize dependency tree
-  virtual int init_dependencies();
+  int init_dependencies() override;
 
   /// \brief After construction, set data related to dependency handling
   int setup();

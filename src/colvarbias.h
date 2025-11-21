@@ -20,7 +20,7 @@ class colvar_grid_scalar;
 
 /// \brief Collective variable bias, base class
 class colvarbias
-  : public virtual colvarparse, public virtual colvardeps {
+  : public colvardeps {
 public:
 
   /// Name of this bias
@@ -107,7 +107,7 @@ public:
   virtual void analyze() {}
 
   /// \brief Constructor
-  colvarbias(char const *key);
+  colvarbias(colvarmodule *cvmodule_in, char const *key);
 
   /// \brief Parse config string and (re)initialize
   virtual int init(std::string const &conf);
@@ -116,12 +116,12 @@ public:
   virtual int init_mts(std::string const &conf);
 
   /// \brief Initialize dependency tree
-  virtual int init_dependencies();
+  int init_dependencies() override;
 
   /// \brief Set to zero all mutable data
   virtual int reset();
 
-private:
+protected:
 
   /// Default constructor
   colvarbias();

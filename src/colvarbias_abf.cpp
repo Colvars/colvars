@@ -14,8 +14,8 @@
 #include "colvarbias_abf.h"
 #include "colvars_memstream.h"
 
-colvarbias_abf::colvarbias_abf(char const *key)
-  : colvarbias(key),
+colvarbias_abf::colvarbias_abf(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key),
     b_UI_estimator(false),
     b_CZAR_estimator(false),
     pabf_freq(0),

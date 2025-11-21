@@ -119,7 +119,7 @@ double colvarproxy_lammps::compute()
   } else {
     // Use the time step number from LAMMPS Update object
     if (_lmp->update->ntimestep - previous_step == 1) {
-      colvarmodule::it++;
+      cvmodule->it++;
       b_simulation_continuing = false;
     } else {
       // Cases covered by this condition:
@@ -154,7 +154,7 @@ double colvarproxy_lammps::compute()
 
   if (cvmodule->debug()) {
     cvmodule->log(std::string(cvmodule->line_marker) +
-             "colvarproxy_lammps, step no. " + cvm::to_str(colvarmodule::it) + "\n" +
+             "colvarproxy_lammps, step no. " + cvm::to_str(cvmodule->it) + "\n" +
              "Updating internal data.\n");
   }
 

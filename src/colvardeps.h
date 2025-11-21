@@ -31,11 +31,14 @@
 /// all its children dependencies are dereferenced (free_children_deps)
 /// While the object is inactive, no dependency solving is done on children
 /// it is done when the object is activated back (restore_children_deps)
-class colvardeps {
+class colvardeps : public colvarparse {
 public:
 
   colvardeps();
+  colvardeps(colvarmodule *cvmodule_in);
   virtual ~colvardeps();
+
+public:
 
   // Subclasses should initialize the following members:
 
@@ -134,13 +137,24 @@ public:
   inline bool is_static(int id) { return features()[id]->type == f_type_static; }
   inline bool is_user(int id) { return features()[id]->type == f_type_user; }
 
+  /// Never populated, used to return a reference to an empty array
+  static std::vector<feature *> dummy_features;
+
   // Accessor to array of all features with deps, static in most derived classes
   // Subclasses with dynamic dependency trees may override this
   // with a non-static array
   // Intermediate classes (colvarbias and colvarcomp, which are also base classes)
   // implement this as virtual to allow overriding
-  virtual const std::vector<feature *> &features() const = 0;
-  virtual std::vector<feature *>&modify_features() = 0;
+  virtual const std::vector<feature *> &features() const
+  {
+    cvmodule->error("Base class features() function called - please report a bug.", COLVARS_BUG_ERROR);
+    return dummy_features;
+  };
+  virtual std::vector<feature *>&modify_features()
+  {
+    cvmodule->error("Base class modify_features() function called - please report a bug", COLVARS_BUG_ERROR);
+    return dummy_features;
+  };
 
   void add_child(colvardeps *child);
 
@@ -421,7 +435,7 @@ public:
   };
 
   /// Initialize dependency tree for object of a derived class
-  virtual int init_dependencies() = 0;
+  virtual int init_dependencies() { return COLVARS_OK; }
 
   /// Make feature f require feature g within the same object
   void require_feature_self(int f, int g);

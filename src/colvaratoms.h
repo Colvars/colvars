@@ -49,7 +49,7 @@
  *    a group never changes.
  *
  */
-class cvm::atom_group: public colvarparse, public colvardeps {
+class cvm::atom_group: public colvardeps {
 public:
   /**
    *  @brief A helper function to re-arrange the a vector of
