@@ -1,0 +1,1626 @@
+obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster.C \
+	colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster.h \
+	colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_bias.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	plugins/include/molfile_plugin.h \
+	plugins/include/vmdplugin.h \
+	src/CudaGlobalMasterClient.h \
+	src/CudaRecord.h \
+	src/CudaUtils.h \
+	src/CudaUtils.h \
+	src/GridForceGrid.h \
+	src/GromacsTopFile.h \
+	src/GroupRestraintsParam.h \
+	src/HipDefines.h \
+	src/HipDefines.h \
+	src/Hydrogen.h \
+	src/InfoStream.h \
+	src/Lattice.h \
+	src/MGridforceParams.h \
+	src/MStream.h \
+	src/Molecule.h \
+	src/NamdTypes.h \
+	src/PDB.h \
+	src/PDBData.h \
+	src/ReadAmberParm.h \
+	src/ResizeArray.h \
+	src/ResizeArrayRaw.h \
+	src/ScriptTcl.h \
+	src/SimParameters.h \
+	src/SortableResizeArray.h \
+	src/Tensor.h \
+	src/UniqueSet.h \
+	src/UniqueSetRaw.h \
+	src/Vector.h \
+	src/common.h \
+	src/fstream_namd.h \
+	src/imd.h \
+	src/parm.h \
+	src/structures.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster.o $(COPTC) colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster.C
+obj/libcudaglobalmastercolvars/colvar.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.cpp \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_torchann.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvar.o $(COPTC) colvars/src/colvar.cpp
+obj/libcudaglobalmastercolvars/colvaratoms.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.cpp \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvaratoms.o $(COPTC) colvars/src/colvaratoms.cpp
+obj/libcudaglobalmastercolvars/colvaratoms_gpu.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.cpp \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/cuda/colvaratoms_kernel.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvaratoms_gpu.o $(COPTC) colvars/src/colvaratoms_gpu.cpp
+obj/libcudaglobalmastercolvars/colvarbias.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.cpp \
+	colvars/src/colvarbias.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvargrid.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarbias.o $(COPTC) colvars/src/colvarbias.cpp
+obj/libcudaglobalmastercolvars/colvarbias_abf.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_UIestimator.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvarbias_abf.cpp \
+	colvars/src/colvarbias_abf.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvargrid.h \
+	colvars/src/colvargrid_integrate.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarbias_abf.o $(COPTC) colvars/src/colvarbias_abf.cpp
+obj/libcudaglobalmastercolvars/colvarbias_abmd.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvarbias_abmd.cpp \
+	colvars/src/colvarbias_abmd.h \
+	colvars/src/colvarbias_restraint.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarbias_abmd.o $(COPTC) colvars/src/colvarbias_abmd.cpp
+obj/libcudaglobalmastercolvars/colvarbias_alb.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvarbias_alb.cpp \
+	colvars/src/colvarbias_alb.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarbias_alb.o $(COPTC) colvars/src/colvarbias_alb.cpp
+obj/libcudaglobalmastercolvars/colvarbias_histogram.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvarbias_histogram.cpp \
+	colvars/src/colvarbias_histogram.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvargrid.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarbias_histogram.o $(COPTC) colvars/src/colvarbias_histogram.cpp
+obj/libcudaglobalmastercolvars/colvarbias_histogram_reweight_amd.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvarbias_histogram.h \
+	colvars/src/colvarbias_histogram_reweight_amd.cpp \
+	colvars/src/colvarbias_histogram_reweight_amd.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvargrid.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarbias_histogram_reweight_amd.o $(COPTC) colvars/src/colvarbias_histogram_reweight_amd.cpp
+obj/libcudaglobalmastercolvars/colvarbias_meta.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvarbias_meta.cpp \
+	colvars/src/colvarbias_meta.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvargrid.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarbias_meta.o $(COPTC) colvars/src/colvarbias_meta.cpp
+obj/libcudaglobalmastercolvars/colvarbias_restraint.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvarbias_restraint.cpp \
+	colvars/src/colvarbias_restraint.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarbias_restraint.o $(COPTC) colvars/src/colvarbias_restraint.cpp
+obj/libcudaglobalmastercolvars/colvarbias_opes.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvarbias_opes.cpp \
+	colvars/src/colvarbias_opes.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvargrid.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarbias_opes.o $(COPTC) colvars/src/colvarbias_opes.cpp
+obj/libcudaglobalmastercolvars/colvarcomp.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.cpp \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp.o $(COPTC) colvars/src/colvarcomp.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_angles.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_angles.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_angles.o $(COPTC) colvars/src/colvarcomp_angles.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_alchlambda.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_alchlambda.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_alchlambda.o $(COPTC) colvars/src/colvarcomp_alchlambda.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_apath.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_arithmeticpath.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_apath.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_apath.o $(COPTC) colvars/src/colvarcomp_apath.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_coordnums.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_coordnums.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_coordnums.o $(COPTC) colvars/src/colvarcomp_coordnums.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_distances.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_distances.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_distances.o $(COPTC) colvars/src/colvarcomp_distances.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_gpath.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_gpath.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_gpath.o $(COPTC) colvars/src/colvarcomp_gpath.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_protein.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_protein.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_protein.o $(COPTC) colvars/src/colvarcomp_protein.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_rotations.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_rotations.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_rotations.o $(COPTC) colvars/src/colvarcomp_rotations.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_volmaps.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_volmaps.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_volmaps.o $(COPTC) colvars/src/colvarcomp_volmaps.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_combination.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_combination.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_combination.o $(COPTC) colvars/src/colvarcomp_combination.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_neuralnetwork.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_neuralnetworkcompute.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_neuralnetwork.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_neuralnetwork.o $(COPTC) colvars/src/colvarcomp_neuralnetwork.cpp
+obj/libcudaglobalmastercolvars/colvarcomp_torchann.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_torchann.cpp \
+	colvars/src/colvarcomp_torchann.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_torchann.o $(COPTC) colvars/src/colvarcomp_torchann.cpp
+obj/libcudaglobalmastercolvars/colvar_neuralnetworkcompute.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_neuralnetworkcompute.cpp \
+	colvars/src/colvar_neuralnetworkcompute.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_neuralnetworkcompute.o $(COPTC) colvars/src/colvar_neuralnetworkcompute.cpp
+obj/libcudaglobalmastercolvars/colvardeps.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvardeps.cpp \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvardeps.o $(COPTC) colvars/src/colvardeps.cpp
+obj/libcudaglobalmastercolvars/colvargrid.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvargrid.cpp \
+	colvars/src/colvargrid.h \
+	colvars/src/colvargrid_def.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvargrid.o $(COPTC) colvars/src/colvargrid.cpp
+obj/libcudaglobalmastercolvars/colvargrid_integrate.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvargrid.h \
+	colvars/src/colvargrid_integrate.cpp \
+	colvars/src/colvargrid_integrate.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvargrid_integrate.o $(COPTC) colvars/src/colvargrid_integrate.cpp
+obj/libcudaglobalmastercolvars/colvarmodule.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_UIestimator.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvarbias_abf.h \
+	colvars/src/colvarbias_abmd.h \
+	colvars/src/colvarbias_alb.h \
+	colvars/src/colvarbias_histogram.h \
+	colvars/src/colvarbias_histogram_reweight_amd.h \
+	colvars/src/colvarbias_meta.h \
+	colvars/src/colvarbias_opes.h \
+	colvars/src/colvarbias_restraint.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvargrid.h \
+	colvars/src/colvargrid_integrate.h \
+	colvars/src/colvarmodule.cpp \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarmodule_refs.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_bias.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarmodule.o $(COPTC) colvars/src/colvarmodule.cpp
+obj/libcudaglobalmastercolvars/colvarparams.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.cpp \
+	colvars/src/colvarparams.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarparams.o $(COPTC) colvars/src/colvarparams.cpp
+obj/libcudaglobalmastercolvars/colvarparse.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.cpp \
+	colvars/src/colvarparse.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarparse.o $(COPTC) colvars/src/colvarparse.cpp
+obj/libcudaglobalmastercolvars/colvarproxy.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarmodule_utils.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.cpp \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_bias.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy.o $(COPTC) colvars/src/colvarproxy.cpp
+obj/libcudaglobalmastercolvars/colvarproxy_io.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarproxy_io.cpp \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvars_version.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_io.o $(COPTC) colvars/src/colvarproxy_io.cpp
+obj/libcudaglobalmastercolvars/colvarproxy_replicas.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarproxy_replicas.cpp \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvars_version.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_replicas.o $(COPTC) colvars/src/colvarproxy_replicas.cpp
+obj/libcudaglobalmastercolvars/colvarproxy_system.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarproxy_system.cpp \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_system.o $(COPTC) colvars/src/colvarproxy_system.cpp
+obj/libcudaglobalmastercolvars/colvarproxy_tcl.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.cpp \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_tcl.o $(COPTC) colvars/src/colvarproxy_tcl.cpp
+obj/libcudaglobalmastercolvars/colvarproxy_gpu.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarproxy_gpu.cpp \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvars_version.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_gpu.o $(COPTC) colvars/src/colvarproxy_gpu.cpp
+obj/libcudaglobalmastercolvars/colvarproxy_volmaps.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarmodule_utils.h \
+	colvars/src/colvarproxy_volmaps.cpp \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_volmaps.o $(COPTC) colvars/src/colvarproxy_volmaps.cpp
+obj/libcudaglobalmastercolvars/colvarscript.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarscript.cpp \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_bias.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarscript.o $(COPTC) colvars/src/colvarscript.cpp
+obj/libcudaglobalmastercolvars/colvarscript_commands.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarscript_commands.cpp \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_bias.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarscript_commands.o $(COPTC) colvars/src/colvarscript_commands.cpp
+obj/libcudaglobalmastercolvars/colvarscript_commands_bias.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarbias.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_bias.cpp \
+	colvars/src/colvarscript_commands_bias.h \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarscript_commands_bias.o $(COPTC) colvars/src/colvarscript_commands_bias.cpp
+obj/libcudaglobalmastercolvars/colvarscript_commands_colvar.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvarscript.h \
+	colvars/src/colvarscript_commands.h \
+	colvars/src/colvarscript_commands_bias.h \
+	colvars/src/colvarscript_commands_colvar.cpp \
+	colvars/src/colvarscript_commands_colvar.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarscript_commands_colvar.o $(COPTC) colvars/src/colvarscript_commands_colvar.cpp
+obj/libcudaglobalmastercolvars/colvars_memstream.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_memstream.cpp \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvars_memstream.o $(COPTC) colvars/src/colvars_memstream.cpp
+obj/libcudaglobalmastercolvars/colvartypes.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.cpp \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/cuda/colvartypes_kernel.h \
+	colvars/src/nr_jacobi.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvartypes.o $(COPTC) colvars/src/colvartypes.cpp
+obj/libcudaglobalmastercolvars/colvarvalue.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.cpp \
+	colvars/src/colvarvalue.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarvalue.o $(COPTC) colvars/src/colvarvalue.cpp
+obj/libcudaglobalmastercolvars/colvar_gpu_support.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.cpp \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_gpu_support.o $(COPTC) colvars/src/colvar_gpu_support.cpp
+obj/libcudaglobalmastercolvars/colvar_gpu_calc.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_calc.cpp \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_gpu_calc.o $(COPTC) colvars/src/colvar_gpu_calc.cpp
+obj/libcudaglobalmastercolvars/colvar_rotation_derivative.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.cpp \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/cuda/colvar_rotation_derivative_kernel.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_rotation_derivative.o $(COPTC) colvars/src/colvar_rotation_derivative.cpp
+obj/libcudaglobalmastercolvars/nr_jacobi.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/nr_jacobi.cpp \
+	colvars/src/nr_jacobi.h
+	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/nr_jacobi.o $(COPTC) colvars/src/nr_jacobi.cpp
+obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster_kernel.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.cu \
+	colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.h \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	src/HipDefines.h
+	$(CUDACC) $(COLVARSCUDAGMPLUGINCCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster_kernel.o $(COPTC) colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.cu
+obj/libcudaglobalmastercolvars/colvaratoms_kernel.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvartypes.h \
+	colvars/src/cuda/colvaratoms_kernel.cu \
+	colvars/src/cuda/colvaratoms_kernel.h
+	$(CUDACC) $(COLVARSCUDAGMPLUGINCCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvaratoms_kernel.o $(COPTC) colvars/src/cuda/colvaratoms_kernel.cu
+obj/libcudaglobalmastercolvars/colvar_rotation_derivative_kernel.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/cuda/colvar_rotation_derivative_kernel.cu \
+	colvars/src/cuda/colvar_rotation_derivative_kernel.h
+	$(CUDACC) $(COLVARSCUDAGMPLUGINCCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_rotation_derivative_kernel.o $(COPTC) colvars/src/cuda/colvar_rotation_derivative_kernel.cu
+obj/libcudaglobalmastercolvars/colvartypes_kernel.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_calc.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/cuda/colvartypes_kernel.cu \
+	colvars/src/cuda/colvartypes_kernel.h
+	$(CUDACC) $(COLVARSCUDAGMPLUGINCCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvartypes_kernel.o $(COPTC) colvars/src/cuda/colvartypes_kernel.cu
+	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/CompiledExpression.o $(COPTC) lepton/src/CompiledExpression.cpp
+	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/CompiledVectorExpression.o $(COPTC) lepton/src/CompiledVectorExpression.cpp
+	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/ExpressionProgram.o $(COPTC) lepton/src/ExpressionProgram.cpp
+	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/ExpressionTreeNode.o $(COPTC) lepton/src/ExpressionTreeNode.cpp
+	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/Operation.o $(COPTC) lepton/src/Operation.cpp
+	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/ParsedExpression.o $(COPTC) lepton/src/ParsedExpression.cpp
+	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/Parser.o $(COPTC) lepton/src/Parser.cpp

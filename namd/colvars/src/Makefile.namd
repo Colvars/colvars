@@ -49,4 +49,58 @@ COLVARSLIB = \
 	$(DSTDIR)/colvar_gpu_calc.o \
 	$(DSTDIR)/colvar_rotation_derivative.o \
 	$(DSTDIR)/nr_jacobi.o
-        
+COLVARSPLUGINLIB = \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvar.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvaratoms.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvaratoms_gpu.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarbias.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarbias_abf.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarbias_abmd.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarbias_alb.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarbias_histogram.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarbias_histogram_reweight_amd.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarbias_meta.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarbias_restraint.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarbias_opes.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_angles.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_alchlambda.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_apath.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_coordnums.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_distances.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_gpath.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_protein.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_rotations.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_volmaps.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_combination.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_neuralnetwork.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_torchann.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvar_neuralnetworkcompute.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvardeps.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvargrid.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvargrid_integrate.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarmodule.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarparams.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarparse.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarproxy.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarproxy_io.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarproxy_replicas.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarproxy_system.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarproxy_tcl.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarproxy_gpu.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarproxy_volmaps.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarscript.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarscript_commands.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarscript_commands_bias.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarscript_commands_colvar.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvars_memstream.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvartypes.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarvalue.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvar_gpu_support.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvar_gpu_calc.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvar_rotation_derivative.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/nr_jacobi.o
+COLVARSPLUGINCUDALIB = \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvaratoms_kernel.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvar_rotation_derivative_kernel.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvartypes_kernel.o
