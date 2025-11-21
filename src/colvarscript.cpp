@@ -649,7 +649,8 @@ int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid);
 extern "C" {
   int Colvars_Init(Tcl_Interp *interp) {
     colvarproxy *proxy = new colvarproxy();
-    colvarmodule *colvars = new colvarmodule(proxy);
+    colvarmodule *colvars = new colvarmodule();
+    colvars->init(proxy);
     proxy->set_tcl_interp(interp);
     proxy->colvars = colvars;
     Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,

@@ -94,7 +94,7 @@ namespace {
 }
 
 
-colvarmodule::colvarmodule(colvarproxy *proxy_in)
+colvarmodule::colvarmodule()
 {
   depth_s = 0;
   log_level_ = 10;
@@ -109,8 +109,12 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   usage_ = new usage();
   usage_->cite_feature("Colvars module");
+}
 
-  if (proxy != NULL) {
+
+void colvarmodule::init(colvarproxy *proxy_in)
+{
+  if (proxy) {
     // TODO relax this error to handle multiple molecules in VMD
     // once the module is not static anymore
     cvm::error("Error: trying to allocate the collective "
