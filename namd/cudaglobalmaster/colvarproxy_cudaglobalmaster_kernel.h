@@ -3,8 +3,6 @@
 
 #include "colvartypes.h"
 
-#if defined (NAMD_CUDA) || defined (NAMD_HIP)
-
 #ifdef NAMD_CUDA
 #include <cuda_runtime.h>
 #endif  // NAMD_CUDA
@@ -14,6 +12,8 @@
 #endif  // NAMD_HIP
 
 #include "HipDefines.h"
+
+#if defined (NAMD_CUDA) || defined (NAMD_HIP)
 
 /**
  * @brief: Convert the device data from xxxyyyzzz to xyzxyzxyz and copy them to the host memory
