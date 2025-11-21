@@ -50,7 +50,7 @@
 /// \link colvarvalue \endlink type, you should also add its
 /// initialization line in the \link colvar \endlink constructor.
 
-class colvar : public colvarparse, public colvardeps {
+class colvar : public colvardeps {
 
 public:
 
@@ -248,6 +248,8 @@ public:
   /// Constructor
   colvar();
 
+  colvar(colvarmodule *cvmodule_in);
+
   /// Main init function
   int init(std::string const &conf);
 
@@ -276,7 +278,7 @@ public:
   int init_output_flags(std::string const &conf);
 
   /// \brief Initialize dependency tree
-  virtual int init_dependencies();
+  int init_dependencies() override;
 
 private:
 

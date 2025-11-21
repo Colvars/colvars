@@ -18,7 +18,12 @@
 #include "colvarcomp.h"
 
 
-colvar::cvc::cvc()
+
+colvar::cvc::cvc() {}
+
+
+colvar::cvc::cvc(colvarmodule *cvmodule_in)
+  : colvardeps(cvmodule_in)
 {
   description = "uninitialized colvar component";
   cvc::init_dependencies();

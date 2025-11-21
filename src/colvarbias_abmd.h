@@ -15,11 +15,12 @@
 
 /// \brief Adiabatic Bias MD
 class colvarbias_abmd
-  : public colvarbias_ti
+  : public virtual colvarbias,
+    public virtual colvarbias_ti
 {
 public:
 
-  colvarbias_abmd(char const *key);
+  colvarbias_abmd(colvarmodule *cvmodule_in, char const *key);
   virtual int init(std::string const &conf);
   virtual int update();
   virtual std::string const get_state_params() const;

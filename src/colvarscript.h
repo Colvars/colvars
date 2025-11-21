@@ -325,9 +325,9 @@ private: // TODO
 
 
 /// Get a pointer to the main colvarscript object
-inline static colvarscript *colvarscript_obj()
+inline static colvarscript *colvarscript_obj(void *pobj)
 {
-  return cvmodule->proxy->script;
+  return  reinterpret_cast<colvarscript *>(pobj);;
 }
 
 
@@ -453,6 +453,5 @@ extern "C" {
   const char * get_colvarscript_result();
 
 }
-
 
 #endif // #ifndef COLVARSCRIPT_H
