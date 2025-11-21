@@ -526,6 +526,14 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/${tgt}"
   done
+
+  # Update the Colvars CUDA source files
+  mkdir -p "${target_folder}/cuda"
+  for src in ${source}/src/cuda/*.h ${source}/src/cuda/*.cu
+  do
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target_folder}/cuda/${tgt}"
+  done
   echo ""
 
   # Patch CMake build recipes when applicable

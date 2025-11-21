@@ -1,0 +1,12 @@
+diff --git a/cmake/gmxManageColvars.cmake b/cmake/gmxManageColvars.cmake
+index 938af439e6..a78300cfce 100644
+--- a/cmake/gmxManageColvars.cmake
++++ b/cmake/gmxManageColvars.cmake
+@@ -45,6 +45,7 @@ function(gmx_manage_colvars)
+         set(COLVARS_DIR "${CMAKE_SOURCE_DIR}/src/external/colvars")
+         file(GLOB COLVARS_SOURCES ${COLVARS_DIR}/*.cpp)
+         add_library(colvars_objlib OBJECT ${COLVARS_SOURCES})
++        target_include_directories(colvars_objlib PRIVATE ${COLVARS_DIR})
+         if(GMX_LIB_MPI)
+             target_compile_definitions(colvars_objlib PRIVATE -DCOLVARS_MPI)
+         endif()
