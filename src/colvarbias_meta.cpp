@@ -19,8 +19,8 @@
 #include "colvars_memstream.h"
 
 
-colvarbias_meta::colvarbias_meta(char const *key)
-  : colvarbias(key), colvarbias_ti(key)
+colvarbias_meta::colvarbias_meta(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key), colvarbias_ti(key)
 {
   new_hills_begin = hills.end();
 

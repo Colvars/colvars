@@ -16,8 +16,8 @@
 #include "colvars_memstream.h"
 
 
-colvarbias_histogram::colvarbias_histogram(char const *key)
-  : colvarbias(key),
+colvarbias_histogram::colvarbias_histogram(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key),
     grid(NULL), out_name("")
 {
   provide(f_cvb_bypass_ext_lagrangian); // Allow histograms of actual cv for extended-Lagrangian

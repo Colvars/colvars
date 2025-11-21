@@ -41,7 +41,7 @@ public:
   /// Communication between different replicas
   Communication comm;
 
-  colvarbias_meta(char const *key);
+  colvarbias_meta(colvarmodule *cvmodule_in, char const *key);
   ~colvarbias_meta();
 
   int init(std::string const &conf) override;
