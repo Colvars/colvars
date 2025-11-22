@@ -1772,6 +1772,7 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
 {
   auto pos = is.tellg();
   std::string word;
+  colvarparse parse_restart; // Throwaway parsing object to get object names from restart blocks
 
   while (is) {
     pos = is.tellg();
@@ -1822,9 +1823,15 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
     }
 
     if (is.tellg() == pos) {
-      // This block has not been read by any object: discard it and move on
-      // to the next one
-      is >> colvarparse::read_block(word, NULL);
+      // This block has not been read by any object: discard it , print warning and move on
+      std::string conf;
+      is >> colvarparse::read_block(word, &conf);
+      std::string name;
+      if (parse_restart.key_lookup(conf, "name", &name)) {
+        cvm::log("Warning: input state file contains unknown " + word + " object \"" + name + "\", discarding.\n");
+      } else {
+        cvm::log("Warning: input state file contains unknown " + word + " object, discarding.\n");
+      }
     }
 
     if (!is) break;
