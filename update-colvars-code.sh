@@ -396,6 +396,12 @@ then
   # Update the NAMD CudaGlobalMaster interface files
   # echo "Copy Colvars-NAMD CudaGlobalMaster interface files"
   mkdir -p "${target}/colvars/namd/cudaglobalmaster"
+  condcopy "${source}/namd/cudaglobalmaster/Make.depends" \
+           "${target}/colvars/namd/cudaglobalmaster/Make.depends"
+  condcopy "${source}/namd/cudaglobalmaster/Makefile_common.namd" \
+           "${target}/colvars/namd/cudaglobalmaster/Makefile_common.namd"
+  condcopy "${source}/namd/cudaglobalmaster/Makefile_cuda.namd" \
+           "${target}/colvars/namd/cudaglobalmaster/Makefile_cuda.namd"
   for src in \
       ${source}/namd/cudaglobalmaster/*.h \
       ${source}/namd/cudaglobalmaster/*.C \
