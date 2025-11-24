@@ -63,7 +63,7 @@ protected:
   bool weighted = false;
   bool precompute = true;
 
-  colvar_grid_scalar *computation_grid = new colvar_grid_scalar();
+  std::shared_ptr<colvar_grid_scalar> computation_grid;
   std::vector<cvm::real> div_border_supplement;
 
   std::vector<int> computation_nx;
@@ -211,8 +211,9 @@ protected:
         need_to_extrapolate_solution = true;
     }
     if (!need_to_extrapolate_solution) {
-      computation_grid = this;
+      computation_grid.reset(this);
     } else {
+      computation_grid = std::make_shared<colvar_grid_scalar>();
       computation_grid->periodic = periodic;
       computation_grid->setup(computation_nx);
     }
