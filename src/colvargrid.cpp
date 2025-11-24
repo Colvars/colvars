@@ -24,14 +24,16 @@ colvar_grid_count::colvar_grid_count()
   mult = 1;
 }
 
-colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
+colvar_grid_count::colvar_grid_count(colvarmodule *cvmodule_in,
+                                     std::vector<colvar *>  &colvars,
                                      std::string config)
-  : colvar_grid<size_t>(colvars, 0, 1, false, nullptr, config)
+  : colvar_grid<size_t>(cvmodule_in, colvars, 0, 1, false, nullptr, config)
 {}
 
-colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
+colvar_grid_count::colvar_grid_count(colvarmodule *cvmodule_in,
+                                     std::vector<colvar *>  &colvars,
                                      std::shared_ptr<const colvar_grid_params> params)
-  : colvar_grid<size_t>(colvars, 0, 1, false, params)
+  : colvar_grid<size_t>(cvmodule_in, colvars, 0, 1, false, params)
 {}
 
 std::string colvar_grid_count::get_state_params() const

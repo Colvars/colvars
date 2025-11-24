@@ -1078,7 +1078,7 @@ int colvarbias_meta::update_replicas_registry()
         // add this replica to the registry
         cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ": accessing replica \""+new_replica+"\".\n");
-        replicas.push_back(new colvarbias_meta("metadynamics"));
+        replicas.push_back(new colvarbias_meta(cvmodule, "metadynamics"));
         (replicas.back())->replica_id = new_replica;
         (replicas.back())->replica_list_file = new_replica_file;
         (replicas.back())->replica_state_file = "";

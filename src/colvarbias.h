@@ -20,7 +20,7 @@ class colvar_grid_scalar;
 
 /// \brief Collective variable bias, base class
 class colvarbias
-  : public colvardeps {
+  : public virtual colvardeps {
 public:
 
   /// Name of this bias
