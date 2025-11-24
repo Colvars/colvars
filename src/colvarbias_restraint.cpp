@@ -96,8 +96,8 @@ std::ostream & colvarbias_restraint::write_traj(std::ostream &os)
 
 
 
-colvarbias_restraint_centers::colvarbias_restraint_centers(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key), colvarbias_ti(key), colvarbias_restraint(key)
+colvarbias_restraint_centers::colvarbias_restraint_centers(char const *key)
+  : colvarbias_ti(key)
 {
 }
 
@@ -155,8 +155,8 @@ int colvarbias_restraint_centers::change_configuration(std::string const &conf)
 
 
 
-colvarbias_restraint_k::colvarbias_restraint_k(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key), colvarbias_ti(key), colvarbias_restraint(key)
+colvarbias_restraint_k::colvarbias_restraint_k(char const *key)
+  : colvarbias_ti(key), colvarbias_restraint(key)
 {
   force_k = -1.0;
   check_positive_k = true;
@@ -320,9 +320,8 @@ int colvarbias_restraint_moving::set_state_params(std::string const &conf)
 }
 
 
-colvarbias_restraint_centers_moving::colvarbias_restraint_centers_moving(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key),
-    colvarbias_ti(key),
+colvarbias_restraint_centers_moving::colvarbias_restraint_centers_moving(char const *key)
+  : colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_centers(key),
     colvarbias_restraint_moving(key)
@@ -522,9 +521,8 @@ std::ostream & colvarbias_restraint_centers_moving::write_traj(std::ostream &os)
 
 
 
-colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key),
-    colvarbias_ti(key),
+colvarbias_restraint_k_moving::colvarbias_restraint_k_moving(char const *key)
+  : colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_k(key),
     colvarbias_restraint_moving(key)
@@ -1303,7 +1301,7 @@ colvarbias_restraint_linear::colvarbias_restraint_linear(colvarmodule *cvmodule_
     colvarbias_restraint_moving(key),
     colvarbias_restraint_k(key),
     colvarbias_restraint_centers_moving(key),
-    colvarbias_restraint_k_moving(key)
+    colvarbias_restraint_k_moving(cvmodule_in, key)
 {
   check_positive_k = false;
 }
@@ -1441,8 +1439,8 @@ std::ostream & colvarbias_restraint_linear::write_traj(std::ostream &os)
 
 
 
-colvarbias_restraint_histogram::colvarbias_restraint_histogram(char const *key)
-  : colvarbias(key)
+colvarbias_restraint_histogram::colvarbias_restraint_histogram(colvarmodule *cvmodule_in, char const *key)
+  : colvarbias(cvmodule_in, key)
 {
   lower_boundary = 0.0;
   upper_boundary = 0.0;

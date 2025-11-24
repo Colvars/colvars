@@ -23,7 +23,8 @@
 
 
 template <class T>
-colvar_grid<T>::colvar_grid(std::string const &filename, size_t mult_i)
+colvar_grid<T>::colvar_grid(colvarmodule *cvmodule_in, std::string const &filename, size_t mult_i)
+  : cvmodule(cvmodule_in)
 {
 std::istream &is = cvmodule->proxy->input_stream(filename, "multicol grid file");
 if (!is) {

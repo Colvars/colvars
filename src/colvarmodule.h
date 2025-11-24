@@ -406,7 +406,7 @@ public:
 
   /// Allow reading from Windows text files using using std::getline
   /// (which can still be used when the text is produced by Colvars itself)
-  std::istream & getline(std::istream &is, std::string &line);
+  static std::istream & getline(std::istream &is, std::string &line);
 
   /// Parse the few module's global parameters
   int parse_global_params(std::string const &conf);
@@ -737,6 +737,12 @@ public:
   /// \param message Message to print
   /// \param min_log_level Only print if cvmodule->log_level() >= min_log_level
   void log(std::string const &message, int min_log_level = 10);
+
+  /// Print a message to stderr
+  /// Used in lightweight objects that do not have access to cvmodule
+  static void log_static(std::string const &message) {
+    std::cout << "Colvars: " << message << std::endl;
+  }
 
   /// Print a message to the main log and set global error code
   int error(std::string const &message, int code = -1);

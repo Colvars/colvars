@@ -336,7 +336,7 @@ int colvarmodule::parse_config(std::string &conf)
   }
 
   // Check that the input has only ASCII characters, and warn otherwise
-  colvarparse::check_ascii(conf);
+  parse->check_ascii(conf);
 
   // Parse global options
   if (catch_input_errors(parse_global_params(conf))) {

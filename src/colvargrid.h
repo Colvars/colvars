@@ -209,14 +209,14 @@ public:
   }
 
 
-  /// Default constructor
-  colvar_grid() : has_data(false)
-  {
-    nd = nt = 0;
-    mult = 1;
-    has_parent_data = false;
-    this->setup();
-  }
+  // /// Default constructor
+  // colvar_grid() : has_data(false)
+  // {
+  //   nd = nt = 0;
+  //   mult = 1;
+  //   has_parent_data = false;
+  //   this->setup();
+  // }
 
   /// Destructor
   virtual ~colvar_grid()
@@ -226,7 +226,7 @@ public:
   /// parameters from another grid, but doesn't reallocate stuff;
   /// setup() must be called after that;
   colvar_grid(colvar_grid<T> const &g) : colvar_grid_params(colvar_grid_params(g)),
-                                         colvarparse(),
+                                         colvarparse(colvarparse(g)),
                                          mult(g.mult),
                                          data(),
                                          cv(g.cv),
@@ -242,10 +242,11 @@ public:
   /// of grid points along each dimension \param t Initial value for
   /// the function at each point (optional) \param mult_i Multiplicity
   /// of each value
-  colvar_grid(std::vector<int> const &nx_i,
+  colvar_grid(colvarmodule *cvmodule_in,
+              std::vector<int> const &nx_i,
               T const &t = T(),
               size_t mult_i = 1)
-    : has_parent_data(false), has_data(false)
+    : colvarparse(cvmodule_in), has_parent_data(false), has_data(false)
   {
     this->setup(nx_i, t, mult_i);
   }
@@ -253,13 +254,14 @@ public:
   /// \brief Constructor from a vector of colvars or an optional grid config string
   /// \param add_extra_bin requests that non-periodic dimensions are extended
   /// by 1 bin to accommodate the integral (PMF) of another gridded quantity (gradient)
-  colvar_grid(std::vector<colvar *> const &colvars,
+  colvar_grid(colvarmodule *cvmodule_in,
+              std::vector<colvar *> const &colvars,
               T const &t = T(),
               size_t mult_i = 1,
               bool add_extra_bin = false,
               std::shared_ptr<const colvar_grid_params> params = nullptr,
               std::string config = std::string())
-    : has_parent_data(false), has_data(false)
+    : colvarparse(cvmodule_in), has_parent_data(false), has_data(false)
   {
     (void) t;
     this->init_from_colvars(colvars, mult_i, add_extra_bin, params, config);
@@ -268,7 +270,7 @@ public:
   /// \brief Constructor from a multicol file
   /// \param filename multicol file containing data to be read
   /// \param multi_i multiplicity of the data - if 0, assume gradient multiplicity (mult = nd)
-  colvar_grid(std::string const &filename, size_t mult_i = 1);
+  colvar_grid(colvarmodule *cvmodule_in, std::string const &filename, size_t mult_i = 1);
 
   int init_from_colvars(std::vector<colvar *> const &colvars,
                         size_t mult_i = 1,
@@ -1010,10 +1012,12 @@ public:
   {}
 
   /// Constructor from a vector of colvars or a config string
-  colvar_grid_count(std::vector<colvar *>  &colvars,
+  colvar_grid_count(colvarmodule *cvmodule_in,
+                    std::vector<colvar *>  &colvars,
                     std::shared_ptr<const colvar_grid_params> params = nullptr);
 
-  colvar_grid_count(std::vector<colvar *>  &colvars,
+  colvar_grid_count(colvarmodule *cvmodule_in,
+                    std::vector<colvar *>  &colvars,
                     std::string            config);
 
   /// Increment the counter at given position
