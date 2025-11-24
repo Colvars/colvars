@@ -914,14 +914,11 @@ int colvarbias_abf::read_gradients_samples()
   }
 
   if (b_CZAR_estimator) {
-    // Now copy real CZAR gradients (divided by total count) to the final grid
+    // Now copy real CZAR gradients (is the sum for each count) to the final grid
     for (std::vector<int> ix = czar_gradients->new_index();
-      czar_gradients->index_ok(ix); czar_gradients->incr(ix)) {
-      unsigned long count = z_samples->value_output(ix, 1);
-      czar_gradients->samples->set_value(ix, count, 1);
+          czar_gradients->index_ok(ix); czar_gradients->incr(ix)) {
       for (size_t n = 0; n < czar_gradients->multiplicity(); n++) {
-        cvm::real czar_gradient_sum = czar_gradients_in->value_output(ix, n)* static_cast<cvm::real>(count);
-          czar_gradients->set_value(ix,  czar_gradient_sum, n);
+        czar_gradients->set_value(ix, czar_gradients_in->value_output(ix, n), n);
       }
     }
   }
