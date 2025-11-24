@@ -1577,7 +1577,7 @@ obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster_kernel.o: \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	src/HipDefines.h
-	$(CUDACC) $(COLVARSCUDAGMPLUGINCCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster_kernel.o $(COPTC) colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.cu
+	$(CUDACC) $(COLVARSCUDAGMPLUGINCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster_kernel.o $(COPTC) colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.cu
 obj/libcudaglobalmastercolvars/colvaratoms_kernel.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar_gpu_calc.h \
@@ -1591,7 +1591,7 @@ obj/libcudaglobalmastercolvars/colvaratoms_kernel.o: \
 	colvars/src/colvartypes.h \
 	colvars/src/cuda/colvaratoms_kernel.cu \
 	colvars/src/cuda/colvaratoms_kernel.h
-	$(CUDACC) $(COLVARSCUDAGMPLUGINCCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvaratoms_kernel.o $(COPTC) colvars/src/cuda/colvaratoms_kernel.cu
+	$(CUDACC) $(COLVARSCUDAGMPLUGINCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvaratoms_kernel.o $(COPTC) colvars/src/cuda/colvaratoms_kernel.cu
 obj/libcudaglobalmastercolvars/colvar_rotation_derivative_kernel.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar_gpu_calc.h \
@@ -1604,7 +1604,7 @@ obj/libcudaglobalmastercolvars/colvar_rotation_derivative_kernel.o: \
 	colvars/src/colvartypes.h \
 	colvars/src/cuda/colvar_rotation_derivative_kernel.cu \
 	colvars/src/cuda/colvar_rotation_derivative_kernel.h
-	$(CUDACC) $(COLVARSCUDAGMPLUGINCCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_rotation_derivative_kernel.o $(COPTC) colvars/src/cuda/colvar_rotation_derivative_kernel.cu
+	$(CUDACC) $(COLVARSCUDAGMPLUGINCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_rotation_derivative_kernel.o $(COPTC) colvars/src/cuda/colvar_rotation_derivative_kernel.cu
 obj/libcudaglobalmastercolvars/colvartypes_kernel.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar_gpu_calc.h \
@@ -1616,7 +1616,7 @@ obj/libcudaglobalmastercolvars/colvartypes_kernel.o: \
 	colvars/src/colvartypes.h \
 	colvars/src/cuda/colvartypes_kernel.cu \
 	colvars/src/cuda/colvartypes_kernel.h
-	$(CUDACC) $(COLVARSCUDAGMPLUGINCCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvartypes_kernel.o $(COPTC) colvars/src/cuda/colvartypes_kernel.cu
+	$(CUDACC) $(COLVARSCUDAGMPLUGINCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvartypes_kernel.o $(COPTC) colvars/src/cuda/colvartypes_kernel.cu
 obj/libcudaglobalmastercolvars/CompiledExpression.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	lepton/include/lepton/CompiledExpression.h \
