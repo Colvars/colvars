@@ -1617,10 +1617,83 @@ obj/libcudaglobalmastercolvars/colvartypes_kernel.o: \
 	colvars/src/cuda/colvartypes_kernel.cu \
 	colvars/src/cuda/colvartypes_kernel.h
 	$(CUDACC) $(COLVARSCUDAGMPLUGINCCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvartypes_kernel.o $(COPTC) colvars/src/cuda/colvartypes_kernel.cu
+obj/libcudaglobalmastercolvars/CompiledExpression.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/src/CompiledExpression.cpp
 	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/CompiledExpression.o $(COPTC) lepton/src/CompiledExpression.cpp
+obj/libcudaglobalmastercolvars/CompiledVectorExpression.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	lepton/include/lepton/CompiledVectorExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/src/CompiledVectorExpression.cpp
 	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/CompiledVectorExpression.o $(COPTC) lepton/src/CompiledVectorExpression.cpp
+obj/libcudaglobalmastercolvars/ExpressionProgram.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/src/ExpressionProgram.cpp
 	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/ExpressionProgram.o $(COPTC) lepton/src/ExpressionProgram.cpp
+obj/libcudaglobalmastercolvars/ExpressionTreeNode.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/src/ExpressionTreeNode.cpp
 	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/ExpressionTreeNode.o $(COPTC) lepton/src/ExpressionTreeNode.cpp
+obj/libcudaglobalmastercolvars/Operation.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/src/MSVC_erfc.h \
+	lepton/src/Operation.cpp
 	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/Operation.o $(COPTC) lepton/src/Operation.cpp
+obj/libcudaglobalmastercolvars/ParsedExpression.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CompiledVectorExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/src/ParsedExpression.cpp
 	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/ParsedExpression.o $(COPTC) lepton/src/ParsedExpression.cpp
+obj/libcudaglobalmastercolvars/Parser.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h \
+	lepton/src/Parser.cpp
 	$(CXX) $(COLVARSCUDAGMPLUGINLEPTONCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/Parser.o $(COPTC) lepton/src/Parser.cpp
