@@ -64,8 +64,11 @@ int main(int argc, char *argv[])
         }
     }
 
+    count_ptr->write_multicol("counts.dat");
+
     std::cout << "Reading gradient file " << gradfile << std::endl;
     std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile, count_ptr);
+    // std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
 
     if (!grad_ptr || grad_ptr->nd == 0)
     {
@@ -77,7 +80,6 @@ int main(int argc, char *argv[])
     grad_ptr->write_multicol("gradient_in.dat");
 
     colvargrid_integrate fes(grad_ptr, weighted);
-
     fes.integrate(itmax, tol, err, true);
     fes.set_zero_minimum();
     if (fes.num_variables() < 3)

@@ -44,6 +44,7 @@ colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient>
   widths = gradients->widths;
   periodic = gradients->periodic;
 
+
   // Expand grid by 1 bin in non-periodic dimensions
   for (size_t i = 0; i < nd; i++) {
     if (!periodic[i]) nx[i]++;
@@ -195,25 +196,27 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
 {
   const size_t linear_index = computation_grid->address(ix0);
   std::vector<int> ix = ix0;
-
   if (nd == 2) {
     // gradients at grid points surrounding the current scalar grid point
     std::vector<cvm::real> g00(2, 0), g01(2, 0), g10(2, 0), g11(2, 0);
-
     get_grad(g00, ix);
+    bool edge;
 
     ix[0] = ix0[0] + 1;
-    computation_grid->wrap_detect_edge(ix);
+    edge = wrap_detect_edge(ix);
+    if (edge) cvm::log("attention : " + cvm::to_str(ix[0]) + " , " +cvm::to_str(ix[1]));
     get_grad(g10, ix);
 
     ix[0] = ix0[0] + 1;
     ix[1] = ix0[1] + 1;
-    computation_grid->wrap_detect_edge(ix);
+    edge = wrap_detect_edge(ix);
+    if (edge) cvm::log("attention : " + cvm::to_str(ix[0]) + " , " +cvm::to_str(ix[1]));
     get_grad(g11, ix);
 
     ix[0] = ix0[0];
     ix[1] = ix0[1] + 1;
-    computation_grid->wrap_detect_edge(ix);
+    edge = wrap_detect_edge(ix);
+    if (edge) cvm::log("attention : " + cvm::to_str(ix[0]) + " , " +cvm::to_str(ix[1]));
     get_grad(g01, ix);
 
     ix = ix0;
@@ -243,38 +246,36 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
     std::vector<cvm::real> g000(3, 0.0), g001(3, 0.0), g010(3, 0.0), g011(3, 0.0);
     std::vector<cvm::real> g100(3, 0.0), g101(3, 0.0), g110(3, 0.0), g111(3, 0.0);
 
-
     // Fill the 8 corners, shifting with +1
     get_grad(g000, ix); // (0,0,0)
-
     ix[2] = ix0[2] + 1;
-    computation_grid->wrap_detect_edge(ix);
+    wrap_detect_edge(ix);
     get_grad(g001, ix); // (0,0,1)
 
     ix[1] = ix0[1] + 1;
-    computation_grid->wrap_detect_edge(ix);
+    wrap_detect_edge(ix);
     get_grad(g011, ix); // (0,1,1)
 
     ix[2] = ix0[2];
-    computation_grid->wrap_detect_edge(ix);
+    wrap_detect_edge(ix);
     get_grad(g010, ix); // (0,1,0)
 
     ix[0] = ix0[0] + 1;
     ix[1] = ix0[1];
     ix[2] = ix0[2];
-    computation_grid->wrap_detect_edge(ix);
+    wrap_detect_edge(ix);
     get_grad(g100, ix); // (1,0,0)
 
     ix[2] = ix0[2] + 1;
-    computation_grid->wrap_detect_edge(ix);
+    wrap_detect_edge(ix);
     get_grad(g101, ix); // (1,0,1)
 
     ix[1] = ix0[1] + 1;
-    computation_grid->wrap_detect_edge(ix);
+    wrap_detect_edge(ix);
     get_grad(g111, ix); // (1,1,1)
 
     ix[2] = ix0[2];
-    computation_grid->wrap_detect_edge(ix);
+    wrap_detect_edge(ix);
     get_grad(g110, ix); // (1,1,0)
     divergence[linear_index] =
         ((g100[0] - g000[0] + g101[0] - g001[0] + g110[0] - g010[0] + g111[0] - g011[0]) /
@@ -322,7 +323,7 @@ void colvargrid_integrate::prepare_divergence_stencils()
   surrounding_points_relative_positions.clear();
   size_t n_combinations = pow(2, nd);
   for (size_t i = 0; i < n_combinations; i++) {
-    std::vector<int> surrounding_point_relative_position = convert_base_two(i, nd);
+    surrounding_points_relative_positions.push_back(convert_base_two(i, nd));
   }
 }
 
@@ -1127,15 +1128,33 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
 }
 
 
+#include <vector>
+#include <cmath>
+
 std::vector<int> colvargrid_integrate::convert_base_two(int n, size_t length)
 {
+  // 1. Handle negative numbers if necessary.
+  // Here we cast to unsigned to treat the bits raw (Two's Complement view)
+  // or use std::abs() if you only wanted the magnitude.
+  unsigned int un = static_cast<unsigned int>(n);
+
   std::vector<int> result(length, 0);
-  size_t i = length-1;
-  while (n > 0) {
-    int bit = n % 2;
-    result[i--] = bit;
-    n >>= 1;
+
+  // Start from the end of the vector
+  size_t i = length;
+
+  // Loop while we have bits to process AND space in the vector
+  while (un > 0) {
+    // Decrement first to handle size_t 0 index correctly
+    i--;
+
+    // Use bitwise AND for speed and safety
+    result[i] = un & 1;
+
+    // Logical right shift
+    un >>= 1;
   }
+
   return result;
 }
 
