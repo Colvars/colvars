@@ -7,7 +7,11 @@
 #include <cuda/std/array>
 #endif
 
-// TODO: HIP CUB
+#if defined (COLVARS_HIP)
+#include <hipcub/block/block_reduce.hpp>
+// Require libhipcxx
+#include <cuda/std/array>
+#endif
 
 namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
