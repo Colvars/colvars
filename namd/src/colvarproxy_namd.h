@@ -19,6 +19,11 @@
 
 #include "colvarproxy_namd_version.h"
 
+// For NAMD_UNIFIED_REDUCTION and AtomIDList
+#include "NamdTypes.h"
+// For CMK_SMP && USE_CKLOOP
+#include "Node.h"
+
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarvalue.h"
