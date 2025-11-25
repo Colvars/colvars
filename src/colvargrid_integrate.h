@@ -63,7 +63,7 @@ protected:
   bool weighted = false;
   bool precompute = true;
 
-  std::shared_ptr<colvar_grid_scalar> computation_grid;
+  colvar_grid_scalar* computation_grid;
   std::vector<cvm::real> div_border_supplement;
 
   std::vector<int> computation_nx;
@@ -178,6 +178,7 @@ protected:
   // void extrapolate_data();
 
   /// \brief Initialize grid sizes and OpenMP threads for Poisson integration
+  // Must be used after we initialize nx, the dimensions' sizes of the extrapolated solution
   inline int init_Poisson_computation()
   {
     if (nd == 1 && !weighted) {
@@ -185,7 +186,6 @@ protected:
     }
 
     cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
-
     computation_nx.resize(nd);
     computation_nt = 1;
     computation_nxc.resize(nd);
@@ -193,7 +193,7 @@ protected:
       if (periodic[i]) {
         computation_nx[i] = nx[i];
       } else {
-        computation_nx[i] = nx[i] - 1; // One less point for non-periodic dimensions
+        computation_nx[i] = nx[i] - 2; // One point less than data size for non-periodic dimensions
       }
       computation_nt *= computation_nx[i];
       computation_nxc[i] = computation_nt;
@@ -211,12 +211,13 @@ protected:
         need_to_extrapolate_solution = true;
     }
     if (!need_to_extrapolate_solution) {
-      computation_grid.reset(this);
+      computation_grid = this;
     } else {
-      computation_grid = std::make_shared<colvar_grid_scalar>();
+      computation_grid = new colvar_grid_scalar();
       computation_grid->periodic = periodic;
       computation_grid->setup(computation_nx);
     }
+    cvm::log(cvm::to_str(nx[0]) + " " + "computation : " + cvm::to_str(computation_nx[0]));
 
 #ifdef _OPENMP
     m_num_threads = cvm::proxy->smp_num_threads();
