@@ -12,7 +12,7 @@
 
 #define COLVARPROXY_VERSION COLVARS_VERSION
 
-#if defined (COLVARS_CUDA)
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 class colvarproxy_stub_gpu : public colvarproxy {
 public:
   colvarproxy_stub_gpu();
@@ -362,5 +362,5 @@ int main(int argc, char *argv[]) {
 #else
   std::cout << "This program requires CUDA to test." << std::endl;
   return 1;
-#endif // defined (COLVARS_CUDA)
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }

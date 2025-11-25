@@ -2,26 +2,54 @@ cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 include(CheckIncludeFile)
 project(run_colvars_test_cuda LANGUAGES CXX)
 
+# Supported GPU types
+set(gpu_type_avail CUDA HIP)
+
 option(BUILD_TESTS "Build tests" ON)
 option(COLVARS_LEPTON "Build Colvars with Lepton" ON)
+set(GPU_TYPE CUDA CACHE STRING "GPU Type")
+set_property(CACHE GPU_TYPE PROPERTY STRINGS ${gpu_type_avail})
+
+if(GPU_TYPE STREQUAL "CUDA")
+  message(STATUS "Build the test interface with CUDA")
+else()
+  message(STATUS "Build the test interface with HIP")
+endif()
+
+if(GPU_TYPE STREQUAL "CUDA")
+  if(NOT DEFINED CMAKE_CUDA_STANDARD)
+    set(CMAKE_CUDA_STANDARD 17)
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+  endif()
+
+  if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES native)
+  endif()
+
+  find_package(CUDAToolkit)
+  include(CheckLanguage)
+  check_language(CUDA)
+  enable_language(CUDA)
+else()
+  if(NOT DEFINED CMAKE_HIP_STANDARD)
+    set(CMAKE_HIP_STANDARD 17)
+    set(CMAKE_HIP_STANDARD_REQUIRED ON)
+  endif()
+
+  if(NOT DEFINED CMAKE_HIP_ARCHITECTURES)
+    set(CMAKE_HIP_ARCHITECTURES native)
+  endif()
+
+  find_package(hip)
+  include(CheckLanguage)
+  check_language(HIP)
+  enable_language(HIP)
+  find_package(libhipcxx)
+endif()
 
 if(NOT EXISTS ${COLVARS_SOURCE_DIR})
   set(COLVARS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." CACHE STRING "Colvars source code directory")
 endif()
-
-if(NOT DEFINED CMAKE_CUDA_STANDARD)
-  set(CMAKE_CUDA_STANDARD 17)
-  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-endif()
-
-if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-  set(CMAKE_CUDA_ARCHITECTURES native)
-endif()
-
-find_package(CUDAToolkit)
-include(CheckLanguage)
-check_language(CUDA)
-enable_language(CUDA)
 
 set(COLVARS_CUDA_DIR ${COLVARS_SOURCE_DIR}/src/cuda)
 
@@ -61,7 +89,12 @@ if(COLVARS_LEPTON)
   target_compile_options(lepton PRIVATE $<$<CXX_COMPILER_ID:Clang>:-Wno-tautological-undefined-compare -Wno-unknown-warning-option>)
 endif()
 
-add_definitions(-DCOLVARS_CUDA)
+if(GPU_TYPE STREQUAL "CUDA")
+  add_definitions(-DCOLVARS_CUDA)
+else()
+  add_definitions(-DCOLVARS_HIP)
+endif()
+
 if(COLVARS_LEPTON)
   add_definitions(-DLEPTON)
 endif()
@@ -79,18 +112,27 @@ target_include_directories(run_colvars_test_cuda
   PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}"
   PUBLIC $<$<BOOL:${COLVARS_LEPTON}>:${LEPTON_DIR}/include>)
 
-if(CUDAToolkit_VERSION_MAJOR GREATER_EQUAL 10)
-  target_link_libraries(run_colvars_test_cuda PUBLIC CUDA::cudart PUBLIC CUDA::nvtx3)
+if(GPU_TYPE STREQUAL "CUDA")
+  set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE CUDA)
+  if(CUDAToolkit_VERSION_MAJOR GREATER_EQUAL 10)
+    target_link_libraries(run_colvars_test_cuda PRIVATE CUDA::cudart PRIVATE CUDA::nvtx3)
+  else()
+    target_link_libraries(run_colvars_test_cuda PRIVATE CUDA::cudart PRIVATE CUDA::nvToolsExt)
+  endif()
 else()
-  target_link_libraries(run_colvars_test_cuda PUBLIC CUDA::cudart PUBLIC CUDA::nvToolsExt)
+  target_link_libraries(run_colvars_test_cuda PRIVATE hip::device hip::host PRIVATE libhipcxx::libhipcxx)
+  set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE HIP)
+  set_source_files_properties(${COLVARS_SOURCES} PROPERTIES LANGUAGE CXX)
+  set_source_files_properties(${LEPTON_SOURCES} PROPERTIES LANGUAGE CXX)
+  set_source_files_properties(CLI11.hpp PROPERTIES LANGUAGE CXX)
+  set_source_files_properties(run_colvars_test_cuda.cpp PROPERTIES LANGUAGE CXX)
+  set_source_files_properties(${COLVARS_CUDA_HEADER} PROPERTIES LANGUAGE HIP)
+  set_source_files_properties(${COLVARS_CUDA_SOURCE} PROPERTIES LANGUAGE HIP)
 endif()
 
 if(COLVARS_LEPTON)
   target_link_libraries(run_colvars_test_cuda PUBLIC lepton)
 endif()
-
-set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE CUDA)
-# set_property(TARGET run_colvars_test_cuda PROPERTY CUDA_ARCHITECTURES OFF)
 
 if(BUILD_TESTS)
   if(UNIX)
