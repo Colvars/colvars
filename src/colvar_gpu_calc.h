@@ -122,6 +122,14 @@ public:
 private:
   /// \brief CUDA graph for reading data to GPU and calculating required properties
   compute_gpu_graph_t read_data_compute;
+  /// \brief CUDA graph for calculating CVCs
+  compute_gpu_graph_t calc_value_compute;
+  /// \brief CUDA graph for calculating CVC gradients
+  compute_gpu_graph_t calc_gradients_compute;
+  /// \brief CUDA graph for calculating CVC Jacobians
+  compute_gpu_graph_t calc_Jacobian_derivative_compute;
+  /// \brief CUDA graph for calculating CVC total forces
+  compute_gpu_graph_t calc_total_force_compute;
   /// \brief CUDA graph for calculating fit gradients
   compute_gpu_graph_t calc_fit_gradients_compute;
   /// \brief CUDA graph for applying forces to atom groups
@@ -153,6 +161,7 @@ private:
   int cv_update_flags(const std::vector<colvar*>& colvars);
   int cvc_calc_total_force(
     const std::vector<colvar*>& colvars,
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
     colvarmodule* colvar_module,
     bool use_current_step = false);
   int atom_group_read_data_gpu(
@@ -161,9 +170,11 @@ private:
     colvarmodule* colvar_module);
   int cvc_calc_value(
     const std::vector<colvar*>& colvars,
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
     colvarmodule* colvar_module);
   int cvc_calc_gradients(
     const std::vector<colvar*>& colvars,
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
     colvarmodule* colvar_module);
   int atom_group_calc_fit_gradients(
     const std::vector<colvar*>& colvars,
@@ -174,6 +185,7 @@ private:
     colvarmodule* colvar_module);
   int cvc_calc_Jacobian_derivative(
     const std::vector<colvar*>& colvars,
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
     colvarmodule* colvar_module);
   int cv_collect_cvc_data(
     const std::vector<colvar*>& colvars,
