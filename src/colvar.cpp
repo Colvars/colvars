@@ -725,7 +725,7 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
       enable(f_cv_total_force_calc);
     } else {
       // Standard case of coupling to a geometric colvar
-      if (temp <= 0.0) { // Then a finite temperature is required
+      if (temp <= 0.0 && proxy->simulation_running()) { // Then a finite temperature is required
         if (temp_provided)
           cvm::error("Error: \"extendedTemp\" must be positive.\n", COLVARS_INPUT_ERROR);
         else
