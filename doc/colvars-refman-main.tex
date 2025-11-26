@@ -3317,7 +3317,7 @@ This is a helper CV which can be defined as a mathematical expression (see \ref{
 \cvsubsubsec{\texttt{gspathCV}: progress along a path defined in CV space.}{sec:cvc_gspathCV}
 \labelkey{colvar|gspathCV}
 
-In the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} block all vectors, namely $\mathbf{z}$ and $\mathbf{s}_{k}$ are defined in CV space.  More specifically, $\mathbf{z} = \left[{\xi}_{1}, \cdots, {\xi}_{n}\right]$, where ${\xi}_{i}$ is the $i$-th CV. $\mathbf{s}_{k} = \left[{\xi}_{k,1}, \cdots, {\xi}_{k,n}\right]$, where ${\xi}_{k,i}$ means the $i$-th CV of the $k$-th reference frame. It should be note that these two CVs requires the \texttt{pathFile} option, which specifies a path file. Each line in the path file contains a set of space-seperated CV value of the reference frame. The sequence of reference frames matches the sequence of the lines.
+In the \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} block all vectors, namely $\mathbf{z}$ and $\mathbf{s}_{k}$ are defined in CV space.  More specifically, $\mathbf{z} = \left[{\xi}_{1}, \cdots, {\xi}_{n}\right]$, where ${\xi}_{i}$ is the $i$-th CV. $\mathbf{s}_{k} = \left[{\xi}_{k,1}, \cdots, {\xi}_{k,n}\right]$, where ${\xi}_{k,i}$ means the $i$-th CV of the $k$-th reference frame. It should be note that these two CVs requires the \texttt{pathFile} option, which specifies a path file. Each line in the path file contains a set of space-seperated CV value of the reference frame. The sequence of reference frames matches the sequence of the lines. The values of sub-CVs defined in \texttt{gspathCV~\{...\}} and the \texttt{gzpathCV~\{...\}} are passed as $\mathbf{z}$ \textbf{by their sorted names}. It is very important to manually specify the \texttt{name} fields of the sub-CVs, and if the \texttt{name} fields are not specified, Colvars would assign default names to sub-CVs, which would yield unexpected behavior.
 
 
 \begin{cvcoptions}
@@ -3450,7 +3450,7 @@ $[0:1]$.
 
 \cvsubsubsec{\texttt{aspathCV}: progress along a path defined in CV space.}{sec:cvc_aspathCV}
 
-This colvar component computes the $s$ variable.
+This colvar component computes the $s$ variable. The values of sub-CVs are passed \textbf{by their sorted names}. It is very important to manually specify the \texttt{name} fields of the sub-CVs, and if the \texttt{name} fields are not specified, Colvars would assign default names to sub-CVs, which would yield unexpected behavior.
 
 \labelkey{colvar|aspathCV}
 
@@ -3488,7 +3488,7 @@ This colvar component computes the $s$ variable.
 
 \cvsubsubsec{\texttt{azpathCV}: distance from a path defined in CV space.}{sec:cvc_azpathCV}
 
-This colvar component computes the $z$ variable. Options are the same as in \ref{sec:cvc_aspathCV}.
+This colvar component computes the $z$ variable. Options are the same as in \ref{sec:cvc_aspathCV}. The values of sub-CVs are passed \textbf{by their sorted names}. It is very important to manually specify the \texttt{name} fields of the sub-CVs, and if the \texttt{name} fields are not specified, Colvars would assign default names to sub-CVs, which would yield unexpected behavior.
 
 The usage of \texttt{azpathCV} and \texttt{aspathCV} is illustrated below:
 
@@ -3670,7 +3670,7 @@ The usage of \texttt{azpath} and \texttt{aspath} is illustrated below:
 
 This colvar component computes a non-linear combination of other scalar colvar components, where the transformation is defined by a dense neural network.\cite{Chen2022}
 The network can be optimized using any framework, and its parameters are provided to Colvars in plain text files, as detailed below.
-An example Python script to export the parameters of a TensorFlow model is provided in \texttt{colvartools/extract\_weights\_biases.py} in the Colvars source tree.
+An example Python script to export the parameters of a TensorFlow model is provided in \texttt{colvartools/extract\_weights\_biases.py} in the Colvars source tree. The values of sub-CVs are passed \textbf{by their sorted names}. It is very important to manually specify the \texttt{name} fields of the sub-CVs, and if the \texttt{name} fields are not specified, Colvars would assign default names to sub-CVs, which would yield unexpected behavior.
 
 \begin{figure}[!ht]
 	\centering
