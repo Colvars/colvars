@@ -1822,9 +1822,16 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
     }
 
     if (is.tellg() == pos) {
-      // This block has not been read by any object: discard it and move on
-      // to the next one
-      is >> colvarparse::read_block(word, NULL);
+      // This block has not been read by any object: discard it, print warning and move on
+      std::string conf;
+      is >> colvarparse::read_block(word, &conf);
+      std::string name;
+      colvarparse parse_tmp;
+      if (parse_tmp.key_lookup(conf, "name", &name)) {
+        cvm::log("Warning: input state file contains unknown " + word + " object \"" + name + "\", discarding.\n");
+      } else {
+        cvm::log("Warning: input state file contains unknown " + word + " object, discarding.\n");
+      }
     }
 
     if (!is) break;

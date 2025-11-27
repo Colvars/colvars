@@ -1090,8 +1090,8 @@ When the ``\texttt{input}'' keyword is used, the contents of the file \texttt{$<
 
 
 \cvnamdonly{\cvsubsubsec{Restarting in NAMD.}{}
-Before the Colvars module is initialized in NAMD, the \texttt{colvarsInput} keyword can be used to give the name of a state file.
-After initialization of the Colvars module, a state file may be loaded at any time with the Tcl command \texttt{cv load}.
+When the initial configuration is provided using \texttt{colvarsConfig}, \texttt{colvarsInput} can be used to give the name of a state file to be read immediately at startup.
+Once the Colvars module is initialized, a state file may be loaded dynamically at any time with the Tcl command \texttt{cv load}.
 Both versions support loading Colvars state files in either format (binary or text).
 } % end \cvnamdonly
 
