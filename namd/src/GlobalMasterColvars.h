@@ -15,6 +15,8 @@ public:
 
   ~GlobalMasterColvars();
 
+  void init() override;
+
   void reset();
 
   void calculate() override;

@@ -416,18 +416,14 @@ int colvarproxy_smp::smp_unlock()
 
 
 
-colvarproxy_script::colvarproxy_script()
-{
-  script = NULL;
-  have_scripts = false;
-}
+colvarproxy_script::colvarproxy_script() {}
 
 
 colvarproxy_script::~colvarproxy_script()
 {
-  if (script != NULL) {
+  if (script) {
     delete script;
-    script = NULL;
+    script = nullptr;
   }
 }
 

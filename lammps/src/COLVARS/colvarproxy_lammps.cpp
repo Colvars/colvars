@@ -46,7 +46,8 @@ void colvarproxy_lammps::init()
   version_int = get_version_from_string(COLVARPROXY_VERSION);
 
   // create the colvarmodule instance
-  colvars = new colvarmodule(this);
+  colvars = new colvarmodule();
+  colvars->init(this);
 
   // Create instance of scripting interface
   script = new colvarscript(this, colvars);

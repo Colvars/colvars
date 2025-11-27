@@ -370,13 +370,11 @@ public:
   size_t size() const;
 
   /// Constructor
-  /// \param Pointer to instance of the proxy class (communicate with engine)
-  colvarmodule(colvarproxy *proxy);
-
-private:
-
-  /// Cannot initialize the main object without a proxy
   colvarmodule();
+
+  /// Initialize interface with proxy and other complex objects
+  /// \param Pointer to instance of the proxy class (communicate with engine)
+  void init(colvarproxy *proxy);
 
 public:
 
