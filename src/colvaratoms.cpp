@@ -928,6 +928,12 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf) {
     if (b_fit_gradients && (is_enabled(f_ag_center) || is_enabled(f_ag_rotate))) {
       enable(f_ag_fit_gradients);
     }
+
+    if (!b_fit_gradients && (is_enabled(f_ag_center) || is_enabled(f_ag_rotate))) {
+      cvm::log(
+        "Warning: the fit gradients are manually disabled, which shouldn't be, "
+        "unless you are sure that the forces on the fitting group are exactly zero.\n");
+    }
   }
 
   return COLVARS_OK;
