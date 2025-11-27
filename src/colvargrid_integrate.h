@@ -10,7 +10,13 @@ class colvargrid_integrate : public colvar_grid_scalar {
 public:
   colvargrid_integrate() {};
 
-  virtual ~colvargrid_integrate() {}
+  virtual ~colvargrid_integrate()
+  {
+    if (need_to_extrapolate_solution && computation_grid != nullptr) {
+      delete computation_grid;
+      computation_grid = nullptr;
+    }
+  }
 
   /// Constructor from a vector of colvars + gradient grid
   colvargrid_integrate(std::vector<colvar *> &colvars,
