@@ -277,6 +277,13 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/lib/colvars/${tgt}"
   done
+  # Update the Colvars CUDA source files
+  mkdir -p "${target}/lib/colvars/cuda"
+  for src in ${source}/src/cuda/*.h ${source}/src/cuda/*.cu
+  do
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/lib/colvars/cuda/${tgt}"
+  done
 
   for src in \
     ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} \
@@ -389,6 +396,12 @@ then
   # Update the NAMD CudaGlobalMaster interface files
   # echo "Copy Colvars-NAMD CudaGlobalMaster interface files"
   mkdir -p "${target}/colvars/namd/cudaglobalmaster"
+  condcopy "${source}/namd/cudaglobalmaster/Make.depends" \
+           "${target}/colvars/namd/cudaglobalmaster/Make.depends"
+  condcopy "${source}/namd/cudaglobalmaster/Makefile_common.namd" \
+           "${target}/colvars/namd/cudaglobalmaster/Makefile_common.namd"
+  condcopy "${source}/namd/cudaglobalmaster/Makefile_cuda.namd" \
+           "${target}/colvars/namd/cudaglobalmaster/Makefile_cuda.namd"
   for src in \
       ${source}/namd/cudaglobalmaster/*.h \
       ${source}/namd/cudaglobalmaster/*.C \
@@ -461,6 +474,13 @@ then
     tgt=$(basename ${src%.cpp})
     condcopy "${src}" "${target}/src/${tgt}.C"
   done
+  # Update the Colvars CUDA code
+  mkdir -p "${target}/src/cuda"
+  for src in ${source}/src/cuda/*.h ${source}/src/cuda/*.cu
+  do \
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target}/src/cuda/${tgt}"
+  done
 
   if [ -f ${source}/vmd/src/tcl_commands.C.patch ] ; then
     # Do not exit if the patch fails - already applied in development branch
@@ -525,6 +545,14 @@ then
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/${tgt}"
+  done
+
+  # Update the Colvars CUDA source files
+  mkdir -p "${target_folder}/cuda"
+  for src in ${source}/src/cuda/*.h ${source}/src/cuda/*.cu
+  do
+    tgt=$(basename ${src})
+    condcopy "${src}" "${target_folder}/cuda/${tgt}"
   done
   echo ""
 
