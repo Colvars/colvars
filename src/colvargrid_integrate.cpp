@@ -2,7 +2,6 @@
 #include <iomanip>
 #include <iostream>
 
-
 // Helper function to print vector<int>
 std::string vec_to_string(const std::vector<int> &vec)
 {
@@ -1106,6 +1105,7 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
     for (size_t j = 0; j < nd; j++) {
       gradient_position[j] += gradients_to_average_relative_positions[i][j];
     }
+    wrap_detect_edge(gradient_position);
     std::vector<cvm::real> gradient(nd);
     if (weighted) {
       get_regularized_grad(gradient, gradient_position);
@@ -1127,9 +1127,6 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
   return averaged_border_normal_gradient;
 }
 
-
-#include <vector>
-#include <cmath>
 
 std::vector<int> colvargrid_integrate::convert_base_two(int n, size_t length)
 {
@@ -1222,7 +1219,7 @@ void colvargrid_integrate::nr_linbcg_sym(const bool weighted, const std::vector<
 
 void colvargrid_integrate::extrapolate_potential()
 {
-  for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
+  for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix); gradients->incr(ix)) {
     std::vector<int> corresponding_index_in_small_grid = ix;
     for (size_t i = 0; i < nd; i++) {
       if (!periodic[i]) {
