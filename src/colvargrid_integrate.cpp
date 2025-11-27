@@ -1206,7 +1206,7 @@ void colvargrid_integrate::nr_linbcg_sym(const bool weighted, const std::vector<
 
 void colvargrid_integrate::extrapolate_potential()
 {
-  for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix); gradients->incr(ix)) {
+  for (std::vector<int> ix = new_index(); index_ok(ix); incr(ix)) {
     std::vector<int> corresponding_index_in_small_grid = ix;
     for (size_t i = 0; i < nd; i++) {
       if (!periodic[i]) {
@@ -1219,11 +1219,10 @@ void colvargrid_integrate::extrapolate_potential()
     cvm::real potential_value =
         computation_grid->data[computation_grid->address(reference_index_in_small_grid)];
     std::vector<cvm::real> relative_position(nd, 0);
-
     if (need_to_extrapolate) {
       for (size_t i = 0; i < nd; i++) {
         relative_position[i] =
-            corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i];
+            std::min(corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i], 1);
       }
       std::vector<cvm::real> averaged_normal_vector =
           compute_averaged_border_normal_gradient(corresponding_index_in_small_grid);
