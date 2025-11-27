@@ -1130,25 +1130,12 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
 
 std::vector<int> colvargrid_integrate::convert_base_two(int n, size_t length)
 {
-  // 1. Handle negative numbers if necessary.
-  // Here we cast to unsigned to treat the bits raw (Two's Complement view)
-  // or use std::abs() if you only wanted the magnitude.
   unsigned int un = static_cast<unsigned int>(n);
-
   std::vector<int> result(length, 0);
-
-  // Start from the end of the vector
   size_t i = length;
-
-  // Loop while we have bits to process AND space in the vector
   while (un > 0) {
-    // Decrement first to handle size_t 0 index correctly
     i--;
-
-    // Use bitwise AND for speed and safety
     result[i] = un & 1;
-
-    // Logical right shift
     un >>= 1;
   }
 
