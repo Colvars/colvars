@@ -203,19 +203,16 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
 
     ix[0] = ix0[0] + 1;
     edge = wrap_detect_edge(ix);
-    if (edge) cvm::log("attention : " + cvm::to_str(ix[0]) + " , " +cvm::to_str(ix[1]));
     get_grad(g10, ix);
 
     ix[0] = ix0[0] + 1;
     ix[1] = ix0[1] + 1;
     edge = wrap_detect_edge(ix);
-    if (edge) cvm::log("attention : " + cvm::to_str(ix[0]) + " , " +cvm::to_str(ix[1]));
     get_grad(g11, ix);
 
     ix[0] = ix0[0];
     ix[1] = ix0[1] + 1;
     edge = wrap_detect_edge(ix);
-    if (edge) cvm::log("attention : " + cvm::to_str(ix[0]) + " , " +cvm::to_str(ix[1]));
     get_grad(g01, ix);
 
     ix = ix0;
