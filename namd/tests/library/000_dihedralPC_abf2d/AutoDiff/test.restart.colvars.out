@@ -166,6 +166,8 @@ colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
 colvars:   # CZARestimator = on [default]
 colvars:   # integrate = on [default]
+colvars:   36 computation : 34
+colvars:   36 computation : 34
 colvars:   # UIestimator = off [default]
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
@@ -364,10 +366,10 @@ colvars: The restart output state file will be "test.restart.tmp.colvars.state".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
-colvars:   Integrated in 119 steps, error: 8.39554e-07
-colvars:   Integrated in 10000 steps, error: -nan
+colvars:   Integrated in 116 steps, error: 8.52761e-07
+colvars:   Integrated in 115 steps, error: 8.33265e-07
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.restart.colvars.traj".
 colvars: Saving collective variables state to "test.restart.tmp.colvars.state".
-colvars:   Integrated in 114 steps, error: 8.51161e-07
-colvars:   Integrated in 10000 steps, error: -nan
+colvars:   Integrated in 109 steps, error: 9.89828e-07
+colvars:   Integrated in 105 steps, error: 7.61874e-07
 colvars: Saving collective variables state to "test.restart.colvars.state".
