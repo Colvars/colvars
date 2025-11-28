@@ -1,0 +1,4 @@
+abf {
+    colvars        eulerPhi eulerTheta
+    integrateWeighted yes
+}
