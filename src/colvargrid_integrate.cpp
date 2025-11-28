@@ -199,20 +199,19 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
     // gradients at grid points surrounding the current scalar grid point
     std::vector<cvm::real> g00(2, 0), g01(2, 0), g10(2, 0), g11(2, 0);
     get_grad(g00, ix);
-    bool edge;
 
     ix[0] = ix0[0] + 1;
-    edge = wrap_detect_edge(ix);
+    wrap_detect_edge(ix);
     get_grad(g10, ix);
 
     ix[0] = ix0[0] + 1;
     ix[1] = ix0[1] + 1;
-    edge = wrap_detect_edge(ix);
+    wrap_detect_edge(ix);
     get_grad(g11, ix);
 
     ix[0] = ix0[0];
     ix[1] = ix0[1] + 1;
-    edge = wrap_detect_edge(ix);
+    wrap_detect_edge(ix);
     get_grad(g01, ix);
 
     ix = ix0;
