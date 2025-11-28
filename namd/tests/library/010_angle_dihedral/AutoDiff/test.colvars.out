@@ -236,6 +236,7 @@ colvars:   # shared = off [default]
 colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
 colvars:   # integrate = on [default]
+colvars:   31 computation : 29
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
@@ -292,8 +293,8 @@ colvars: Re-initialized atom group for variable "dihedral":0/0. 1 atoms: total m
 colvars: Re-initialized atom group for variable "dihedral":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
-colvars:   Integrated in 104 steps, error: 8.56105e-07
-colvars:   Integrated in 1 steps, error: 5.31523e-07
-colvars:   Integrated in 104 steps, error: 8.91893e-07
-colvars:   Integrated in 1 steps, error: 5.79252e-07
+colvars:   Integrated in 101 steps, error: 7.52291e-07
+colvars:   Integrated in 1 steps, error: 4.93282e-07
+colvars:   Integrated in 101 steps, error: 7.84409e-07
+colvars:   Integrated in 1 steps, error: 5.4078e-07
 colvars: Saving collective variables state to "test.colvars.state".
