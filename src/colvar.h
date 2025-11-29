@@ -50,7 +50,7 @@
 /// \link colvarvalue \endlink type, you should also add its
 /// initialization line in the \link colvar \endlink constructor.
 
-class colvar : public colvarparse, public colvardeps {
+class colvar : public colvardeps {
 
 public:
 
@@ -165,7 +165,7 @@ protected:
     // using the gradient of the square distance to calculate the
     // velocity (non-scalar variables automatically taken into
     // account)
-    cvm::real dt = cvm::dt();
+    cvm::real dt = cvmodule->dt();
     return ( ( (dt > 0.0) ? (1.0/dt) : 1.0 ) *
              0.5 * dist2_lgrad(xnew, xold) );
   }
@@ -248,6 +248,8 @@ public:
   /// Constructor
   colvar();
 
+  colvar(colvarmodule *cvmodule_in);
+
   /// Main init function
   int init(std::string const &conf);
 
@@ -276,7 +278,7 @@ public:
   int init_output_flags(std::string const &conf);
 
   /// \brief Initialize dependency tree
-  virtual int init_dependencies();
+  int init_dependencies() override;
 
 private:
 
@@ -765,10 +767,13 @@ inline colvarvalue const & colvar::total_force() const
 
 inline void colvar::add_bias_force(colvarvalue const &force)
 {
-  check_enabled(f_cv_apply_force,
-                std::string("applying a force to the variable \""+name+"\""));
-  if (cvm::debug()) {
-    cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
+  if (! is_enabled(f_cv_apply_force)) {
+    cvmodule->error("Error: applying a force to the variable \""+name+" requires that the feature \""+
+                features()[f_cv_apply_force]->description+"\" is active.\n", COLVARS_BUG_ERROR);
+  }
+
+  if (cvmodule->debug()) {
+    cvmodule->log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
   }
   fb += force;
 }
@@ -776,8 +781,8 @@ inline void colvar::add_bias_force(colvarvalue const &force)
 
 inline void colvar::add_bias_force_actual_value(colvarvalue const &force)
 {
-  if (cvm::debug()) {
-    cvm::log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
+  if (cvmodule->debug()) {
+    cvmodule->log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
   }
   fb_actual += force;
 }

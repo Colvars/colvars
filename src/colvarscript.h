@@ -26,12 +26,12 @@
 
 class colvardeps;
 
-class colvarscript  {
+class colvarscript {
 
 private:
 
   colvarproxy *proxy_;
-  colvarmodule *colvars;
+  colvarmodule *cvmodule;
 
   inline colvarscript() {} // no-argument construction forbidden
 
@@ -191,7 +191,7 @@ public:
   /// Pointer to the Colvars main object
   inline colvarmodule *module()
   {
-    return this->colvars;
+    return this->cvmodule;
   }
 
   /// Pointer to the colvarproxy object (interface with host engine)
@@ -325,9 +325,9 @@ private: // TODO
 
 
 /// Get a pointer to the main colvarscript object
-inline static colvarscript *colvarscript_obj()
+inline static colvarscript *colvarscript_obj(void *pobj)
 {
-  return cvm::main()->proxy->script;
+  return  reinterpret_cast<colvarscript *>(pobj);;
 }
 
 
@@ -453,6 +453,5 @@ extern "C" {
   const char * get_colvarscript_result();
 
 }
-
 
 #endif // #ifndef COLVARSCRIPT_H

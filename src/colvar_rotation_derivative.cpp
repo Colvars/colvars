@@ -31,14 +31,14 @@ int rotation_derivative_gpu::init(
   d_pos2z = d_pos2y + num_atoms_pos2;
   m_num_atoms_pos1 = num_atoms_pos1;
   m_num_atoms_pos2 = num_atoms_pos2;
-  colvarproxy* p = cvm::main()->proxy;
+  colvarproxy* p = cvmodule->proxy;
   error_code |= p->reallocate_device(&tmp_Q0Q0, 4 * 4);
   error_code |= p->reallocate_device(&tmp_Q0Q0_L, 4 * 4 * 4);
   return error_code;
 }
 
 rotation_derivative_gpu::~rotation_derivative_gpu() {
-  colvarproxy* p = cvm::main()->proxy;
+  colvarproxy* p = cvmodule->proxy;
   p->deallocate_device(&tmp_Q0Q0);
   p->deallocate_device(&tmp_Q0Q0_L);
   tmp_Q0Q0 = nullptr;
