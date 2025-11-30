@@ -447,7 +447,8 @@ Because these are static parameters, it is typically more convenient to use the 
     Input state file for the collective variables}{%
     UNIX filename}{%
     Keyword used to specify the input state file's name (\ref{sec:colvars_input}).
-    The file name is required to end in ``\texttt{.colvars.state}'': if it doesn't, Colvars will strip any further suffix following this string.
+    If file name contains ``\texttt{.colvars.state}'', Colvars will strip any further suffix following this string.
+    If not, the suffix wil be appended.
     When intending to load an input state file after startup, e.g.\ within a Tcl script section, the \texttt{cv load} command should be used instead.
   }
 
