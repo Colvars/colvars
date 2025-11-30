@@ -448,7 +448,7 @@ Because these are static parameters, it is typically more convenient to use the 
     UNIX filename}{%
     Keyword used to specify the input state file's name (\ref{sec:colvars_input}).
     The file name is required to end in ``\texttt{.colvars.state}'': if it doesn't, Colvars will strip any further suffix following this string.
-    If the input file is meant to be loaded within a Tcl script section, the \texttt{cv load} command may be used instead.
+    When intending to load an input state file after startup, e.g.\ within a Tcl script section, the \texttt{cv load} command should be used instead.
   }
 
 \end{itemize}
@@ -1060,7 +1060,7 @@ The step number read from a state file overrides any value that \MDENGINE{} prov
 This means that the step number used internally by Colvars may not always match the step number reported by \MDENGINE{}.
 \cvnamdonly{This is particularly inmportant in NAMD, which represents step numbers as a 32-bit integers that overflows after $\sim$ 2 billion steps, effectively negating the usefulness of the \texttt{firstTimeStep} keyword.  However, step numbers are implemented correctly in the Colvars state file.}
 
-\cvgromacsonly{\cvsubsubsec{Restarting in GROMACS.}{}
+\cvgromacsonly{\cvsubsubsec{Restarting in GROMACS.}{sec:colvars_input_gromacs}
   \ifdefined\gromacsmdmodule
   Beginning with GROMACS 2024, all information necessary to restart Colvars is included in the checkpoint ``\texttt{.cpt}'' file.
   No special provisions are therefore needed compared to a GROMACS simulation without Colvars enabled.
@@ -1073,7 +1073,7 @@ This means that the step number used internally by Colvars may not always match 
   \fi
 }
 
-\cvlammpsonly{\cvsubsubsec{Restarting in LAMMPS.}{}
+\cvlammpsonly{\cvsubsubsec{Restarting in LAMMPS.}{sec:colvars_input_lammps}
 For continuing a Colvars-based simulation, the recommended method is using the standard LAMMPS \texttt{read\_restart} command, which reads the Colvars state data from the LAMMPS restart file (in binary format).
 \begin{mdexampleinput}
 \-read\_restart~\emph{filename}
@@ -1089,10 +1089,18 @@ When the ``\texttt{input}'' keyword is used, the contents of the file \texttt{$<
 } % end \cvlammpsonly
 
 
-\cvnamdonly{\cvsubsubsec{Restarting in NAMD.}{}
-When the initial configuration is provided using \texttt{colvarsConfig}, \texttt{colvarsInput} can be used to give the name of a state file to be read immediately at startup.
-Once the Colvars module is initialized, a state file may be loaded dynamically at any time with the Tcl command \texttt{cv load}.
-Both versions support loading Colvars state files in either format (binary or text).
+\cvnamdonly{\cvsubsubsec{Restarting in NAMD.}{sec:colvars_input_namd}
+When the initial configuration is provided using the NAMD keyword \texttt{colvarsConfig}, the \texttt{colvarsInput} NAMD keyword can be used to give the name of a state file, which will be read immediately at startup.
+On the other hand, for loading an input state file after startup, the Tcl command \texttt{cv load} (see \ref{sec:cv_scripting} and \ref{sec:cv_command_loadsave}) is also available.
+Note that the two approaches \emph{are not interchangeable}: because the \texttt{colvarsConfig} and \texttt{colvarsInput} keywords are processed at NAMD startup, their effect \emph{precedes} any command included in the Tcl-scripted portion of a NAMD simulation script, including \texttt{cv load}.
+
+To ensure that the Colvars configuration is always loaded before an input state file is read, one should \emph{either}:
+\begin{itemize}
+\item use the keywords \texttt{colvarsConfig} and \texttt{colvarsInput} if the Colvars configuration never changes during the NAMD run, \emph{or}
+\item use the Tcl commands \texttt{cv config} (or \texttt{cv configfile}) and \texttt{cv load} to manage Colvars from the Tcl-scripted portion of a NAMD input script.
+\end{itemize}
+
+The \texttt{colvarsInput} keyword and the \texttt{cv load} command both support loading Colvars state files in either binary or text formats.
 } % end \cvnamdonly
 
 
