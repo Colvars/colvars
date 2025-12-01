@@ -6,7 +6,9 @@
 #include <cub/block/block_reduce.cuh>
 #endif
 
-// TODO: HIP CUB
+#if defined (COLVARS_HIP)
+#include <hipcub/block/block_reduce.hpp>
+#endif
 
 namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
