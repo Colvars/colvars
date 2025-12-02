@@ -199,6 +199,12 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 }
 
 
+colvarmodule * colvarmodule::main()
+{
+  return proxy ? proxy->cvmodule : NULL;
+}
+
+
 std::vector<colvar *> *colvarmodule::variables()
 {
   return &colvars;
@@ -2765,3 +2771,5 @@ std::string colvarmodule::usage::report(int flag)
   return result;
 }
 
+// Static pointer to the proxy object
+colvarproxy *colvarmodule::proxy = nullptr;
