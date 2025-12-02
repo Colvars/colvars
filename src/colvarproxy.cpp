@@ -84,7 +84,7 @@ int colvarproxy_atoms::init_atom(cvm::residue_id const & /* residue */,
                                  std::string const     & /* atom_name */,
                                  std::string const     & /* segment_id */)
 {
-  cvmodule->error("Error: initializing an atom by name and residue number is currently not supported.\n",
+  cvm::error_static("Error: initializing an atom by name and residue number is currently not supported.\n",
              COLVARS_NOT_IMPLEMENTED);
   return COLVARS_NOT_IMPLEMENTED;
 }
@@ -102,7 +102,7 @@ int colvarproxy_atoms::check_atom_id(cvm::residue_id const &residue,
 void colvarproxy_atoms::clear_atom(int index)
 {
   if (((size_t) index) >= atoms_ids.size()) {
-    cvmodule->error("Error: trying to disable an atom that was not previously requested.\n",
+    cvm::error_static("Error: trying to disable an atom that was not previously requested.\n",
                COLVARS_INPUT_ERROR);
   }
   if (atoms_refcount[index] > 0) {
@@ -196,7 +196,7 @@ int colvarproxy_atom_groups::scalable_group_coms()
 
 int colvarproxy_atom_groups::init_atom_group(std::vector<int> const & /* atoms_ids */)
 {
-  cvmodule->error("Error: initializing a group outside of the Colvars module "
+  cvm::error_static("Error: initializing a group outside of the Colvars module "
              "is currently not supported.\n",
              COLVARS_NOT_IMPLEMENTED);
   return COLVARS_NOT_IMPLEMENTED;
@@ -206,7 +206,7 @@ int colvarproxy_atom_groups::init_atom_group(std::vector<int> const & /* atoms_i
 void colvarproxy_atom_groups::clear_atom_group(int index)
 {
   if (((size_t) index) >= atom_groups_ids.size()) {
-    cvmodule->error("Error: trying to disable an atom group "
+    cvm::error_static("Error: trying to disable an atom group "
                "that was not previously requested.\n",
                COLVARS_INPUT_ERROR);
   }
@@ -300,14 +300,14 @@ int colvarproxy_smp::smp_loop(int n_items, std::function<int (int)> const &worke
 {
   int error_code = COLVARS_OK;
 #if defined(_OPENMP)
-  cvmodule->increase_depth();
+  cvm::main()->increase_depth();
 #pragma omp parallel for
   for (int i = 0; i < n_items; i++) {
     int const retcode = worker(i);
 #pragma omp atomic
     error_code |= retcode;
   }
-  cvmodule->decrease_depth();
+  cvm::main()->decrease_depth();
 #else
   error_code |= COLVARS_NOT_IMPLEMENTED;
 #endif
@@ -321,16 +321,16 @@ int colvarproxy_smp::smp_biases_loop()
 #pragma omp parallel
   {
 #pragma omp for
-    for (int i = 0; i < static_cast<int>(cvmodule->biases_active()->size()); i++) {
-      colvarbias *b = (*(cvmodule->biases_active()))[i];
-      if (cvmodule->debug()) {
-        cvmodule->log("Calculating bias \""+b->name+"\" on thread "+
+    for (int i = 0; i < static_cast<int>(cvm::main()->biases_active()->size()); i++) {
+      colvarbias *b = (*(cvm::main()->biases_active()))[i];
+      if (cvm::main()->debug()) {
+        cvm::main()->log("Calculating bias \""+b->name+"\" on thread "+
                  cvm::to_str(smp_thread_id())+"\n");
       }
       b->update();
     }
   }
-  return cvmodule->get_error();
+  return cvm::main()->get_error();
 #else
   return COLVARS_NOT_IMPLEMENTED;
 #endif
@@ -344,19 +344,19 @@ int colvarproxy_smp::smp_biases_script_loop()
   {
 #pragma omp single nowait
     {
-      cvmodule->calc_scripted_forces();
+      cvm::main()->calc_scripted_forces();
     }
 #pragma omp for
-    for (int i = 0; i < static_cast<int>(cvmodule->biases_active()->size()); i++) {
-      colvarbias *b = (*(cvmodule->biases_active()))[i];
-      if (cvmodule->debug()) {
-        cvmodule->log("Calculating bias \""+b->name+"\" on thread "+
+    for (int i = 0; i < static_cast<int>(cvm::main()->biases_active()->size()); i++) {
+      colvarbias *b = (*(cvm::main()->biases_active()))[i];
+      if (cvm::main()->debug()) {
+        cvm::main()->log("Calculating bias \""+b->name+"\" on thread "+
                  cvm::to_str(smp_thread_id())+"\n");
       }
       b->update();
     }
   }
-  return cvmodule->get_error();
+  return cvm::main()->get_error();
 #else
   return COLVARS_NOT_IMPLEMENTED;
 #endif
