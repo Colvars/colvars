@@ -72,7 +72,7 @@ void colvarproxy_system::add_energy(cvm::real /* energy */) {}
 void colvarproxy_system::request_total_force(bool yesno)
 {
   if (yesno == true)
-    cvmodule->error("Error: total forces are currently not implemented.\n",
+    cvm::error_static("Error: total forces are currently not implemented.\n",
                COLVARS_NOT_IMPLEMENTED);
 }
 
@@ -101,7 +101,7 @@ void colvarproxy_system::update_pbc_lattice()
 
   if (boundaries_type == boundaries_unsupported ||
       boundaries_type == boundaries_non_periodic) {
-    cvmodule->error("Error: setting PBC lattice with unsupported boundaries.\n",
+    cvm::error_static("Error: setting PBC lattice with unsupported boundaries.\n",
                COLVARS_BUG_ERROR);
     return;
   }
@@ -137,7 +137,7 @@ cvm::rvector colvarproxy_system::position_distance(cvm::atom_pos const &pos1,
   const
 {
   if (boundaries_type == boundaries_unsupported) {
-    cvmodule->error("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
+    cvm::error_static("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
   }
 
   cvm::rvector diff = (pos2 - pos1);
@@ -161,7 +161,7 @@ cvm::rvector colvarproxy_system::position_distance(cvm::atom_pos const &pos1,
 
 int colvarproxy_system::get_molid(int &)
 {
-  cvmodule->error("Error: only VMD allows the use of multiple \"molecules\", "
+  cvm::error_static("Error: only VMD allows the use of multiple \"molecules\", "
              "i.e. multiple molecular systems.", COLVARS_NOT_IMPLEMENTED);
   return -1;
 }
@@ -169,7 +169,7 @@ int colvarproxy_system::get_molid(int &)
 
 int colvarproxy_system::get_alch_lambda(cvm::real * /* lambda */)
 {
-  return cvmodule->error("Error in get_alch_lambda: alchemical lambda dynamics is not supported by this build.",
+  return cvm::error_static("Error in get_alch_lambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
@@ -183,27 +183,27 @@ void colvarproxy_system::set_alch_lambda(cvm::real lambda)
 
 int colvarproxy_system::send_alch_lambda()
 {
-  return cvmodule->error("Error in set_alch_lambda: alchemical lambda dynamics is not supported by this build.",
+  return cvm::error_static("Error in set_alch_lambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
 
 int colvarproxy_system::get_dE_dlambda(cvm::real * /* force */)
 {
-  return cvmodule->error("Error in get_dE_dlambda: alchemical lambda dynamics is not supported by this build.",
+  return cvm::error_static("Error in get_dE_dlambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
 
 int colvarproxy_system::apply_force_dE_dlambda(cvm::real* /* force */)
 {
-  return cvmodule->error("Error in apply_force_dE_dlambda: function is not implemented by this build.",
+  return cvm::error_static("Error in apply_force_dE_dlambda: function is not implemented by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
 
 int colvarproxy_system::get_d2E_dlambda2(cvm::real*)
 {
-  return cvmodule->error("Error in get_d2E_dlambda2: function is not implemented by this build.",
+  return cvm::error_static("Error in get_d2E_dlambda2: function is not implemented by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }

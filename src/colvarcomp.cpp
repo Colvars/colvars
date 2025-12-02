@@ -66,7 +66,7 @@ int colvar::cvc::set_function_type(std::string const &type)
 
 int colvar::cvc::init(std::string const &conf)
 {
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Initializing cvc base object.\n");
 
   int error_code = COLVARS_OK;
@@ -134,7 +134,7 @@ int colvar::cvc::init(std::string const &conf)
   // Attempt scalable calculations when in parallel? (By default yes, if available)
   get_keyval(conf, "scalable", b_try_scalable, b_try_scalable);
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done initializing cvc base object.\n");
 
   return error_code;

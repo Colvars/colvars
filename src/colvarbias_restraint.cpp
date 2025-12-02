@@ -36,7 +36,7 @@ int colvarbias_restraint::init(std::string const &conf)
 
   colvarbias_ti::init(conf);
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Initializing a new restraint bias.\n");
 
   return COLVARS_OK;
@@ -56,10 +56,10 @@ int colvarbias_restraint::update()
     colvar_forces[i] = restraint_force(i);
   }
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done updating the restraint bias \""+this->name+"\".\n");
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Current forces for the restraint bias \""+
              this->name+"\": "+cvm::to_str(colvar_forces)+".\n");
 
@@ -119,7 +119,7 @@ int colvarbias_restraint_centers::init(std::string const &conf)
 
   if (get_keyval(conf, "centers", colvar_centers, colvar_centers)) {
     for (i = 0; i < num_variables(); i++) {
-      if (cvmodule->debug()) {
+      if (cvm::debug()) {
         cvmodule->log("colvarbias_restraint: parsing initial centers, i = "+cvm::to_str(i)+".\n");
       }
       colvar_centers[i].apply_constraints();
@@ -336,7 +336,7 @@ int colvarbias_restraint_centers_moving::init(std::string const &conf)
 {
   colvarbias_restraint_centers::init(conf);
 
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("colvarbias_restraint: parsing target centers.\n");
   }
 
@@ -383,7 +383,7 @@ int colvarbias_restraint_centers_moving::init(std::string const &conf)
 
 void colvarbias_restraint_centers_moving::update_centers(cvm::real lambda)
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Updating centers for the restraint bias \""+
              this->name+"\": "+cvm::to_str(colvar_centers)+".\n");
   }
@@ -396,7 +396,7 @@ void colvarbias_restraint_centers_moving::update_centers(cvm::real lambda)
     colvar_centers[i] = c_new;
     variables(i)->wrap(colvar_centers[i]);
   }
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("New centers for the restraint bias \""+
              this->name+"\": "+cvm::to_str(colvar_centers)+".\n");
   }
@@ -1084,7 +1084,7 @@ void colvarbias_restraint_harmonic_walls::update_walls(cvm::real lambda)
 {
   if (target_upper_walls.size() > 0){
 
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Updating upper walls for the restraint bias \""+
               this->name+"\": "+cvm::to_str(lower_walls)+".\n");
     }
@@ -1099,14 +1099,14 @@ void colvarbias_restraint_harmonic_walls::update_walls(cvm::real lambda)
       upper_walls[i] = c_new;
       variables(i)->wrap(upper_walls[i]);
     }
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("New upper walls for the restraint bias \""+
               this->name+"\": "+cvm::to_str(upper_walls)+".\n");
     }
   }
 
   if (target_lower_walls.size() > 0){
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Updating lower walls for the restraint bias \""+
               this->name+"\": "+cvm::to_str(lower_walls)+".\n");
     }
@@ -1120,7 +1120,7 @@ void colvarbias_restraint_harmonic_walls::update_walls(cvm::real lambda)
       lower_walls[i] = c_new;
       variables(i)->wrap(lower_walls[i]);
     }
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("New lower walls for the restraint bias \""+
               this->name+"\": "+cvm::to_str(lower_walls)+".\n");
     }
@@ -1567,7 +1567,7 @@ colvarbias_restraint_histogram::~colvarbias_restraint_histogram()
 
 int colvarbias_restraint_histogram::update()
 {
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Updating the histogram restraint bias \""+this->name+"\".\n");
 
   size_t vector_size = 0;

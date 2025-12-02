@@ -488,7 +488,7 @@ bool colvarproxy::io_available()
 
 int colvarproxy::reset()
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("colvarproxy::reset()\n");
   }
   int error_code = COLVARS_OK;

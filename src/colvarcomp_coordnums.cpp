@@ -357,7 +357,7 @@ int colvar::h_bond::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Initializing h_bond object.\n");
 
   set_function_type("hBond");
@@ -393,7 +393,7 @@ int colvar::h_bond::init(std::string const &conf)
     error_code |= cvmodule->error("Error: negative exponent(s) provided.\n", COLVARS_INPUT_ERROR);
   }
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done initializing h_bond object.\n");
 
   return error_code;

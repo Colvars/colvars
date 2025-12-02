@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
   unsigned char * args[2] = {
     (unsigned char *) "cv",
     (unsigned char *) "listinputfiles" };
-  err |= run_colvarscript_command(2, args);
+  err |= run_colvarscript_command(proxy->script, 2, args);
   cvmodule->log("  " + std::string(get_colvarscript_result()));
 
   double const max_gradient_error = proxy->cvmodule->get_max_gradient_error();

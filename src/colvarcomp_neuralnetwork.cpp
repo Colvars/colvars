@@ -131,7 +131,7 @@ int colvar::neuralNetwork::init(std::string const &conf)
 #endif
         // add a new dense layer to network
         if (nn->addDenseLayer(d)) {
-            if (cvmodule->debug()) {
+            if (cvm::debug()) {
                 // show information about the neural network
                 cvmodule->log("Layer " + cvm::to_str(i_layer) + " : has " + cvm::to_str(d.getInputSize()) + " input nodes and " + cvm::to_str(d.getOutputSize()) + " output nodes.\n");
                 for (size_t i_output = 0; i_output < d.getOutputSize(); ++i_output) {

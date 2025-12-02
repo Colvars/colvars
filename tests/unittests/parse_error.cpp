@@ -11,8 +11,8 @@ int main(int argc, char *argv[]) {
   colvarproxy_stub *proxy = new colvarproxy_stub();
   proxy->set_unit_system("real", false);
   proxy->set_output_prefix("test.out");
-  proxy->colvars->setup_input();
-  proxy->colvars->setup_output();
+  proxy->cvmodule->setup_input();
+  proxy->cvmodule->setup_output();
 
   // Hard-coded for decaalanine system
   const int natoms = 104;
@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     proxy->init_atom(ai+1);
   }
 
-  int err = proxy->colvars->read_config_file("test_error.in");
+  int err = proxy->cvmodule->read_config_file("test_error.in");
 
   delete proxy;
 

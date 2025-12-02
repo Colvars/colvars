@@ -147,7 +147,7 @@ int colvarbias_alb::init(std::string const &conf)
   }
 
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log(" bias.\n");
 
   return error_code;
@@ -166,7 +166,7 @@ int colvarbias_alb::update()
   bias_energy = 0.0;
   update_calls += time_step_factor;
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Updating the adaptive linear bias \""+this->name+"\".\n");
 
   //log the moments of the CVs

@@ -677,7 +677,7 @@ void colvargrid_integrate::nr_linbcg_sym(const std::vector<cvm::real> &b, std::v
     }
 //     asolve(r,z);  // precon
     err = l2norm(r)/bnrm;
-    if (cvmodule->debug())
+    if (cvm::debug())
       std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
     if (err <= tol)
       break;

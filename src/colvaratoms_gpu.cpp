@@ -533,7 +533,7 @@ int colvaratoms_gpu::after_read_data_sync(
   // Update the COM
   if (cpu_atoms->b_dummy) {
     cpu_atoms->com = cpu_atoms->dummy_atom_pos;
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Dummy atom center of mass = "+cvm::to_str(cpu_atoms->com)+"\n");
     }
   } else if (cpu_atoms->is_enabled(colvardeps::f_ag_scalable)) {
@@ -920,7 +920,7 @@ int colvaratoms_gpu::calc_required_properties_gpu_debug(
 
 void colvaratoms_gpu::do_feature_side_effects_gpu(
   cvm::atom_group* cpu_atoms, int id) {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("cvm::atom_group::do_feature_side_effects_gpu.\n");
   }
   switch (id) {

@@ -453,7 +453,7 @@ extern "C" {
 
   /// Generic wrapper for string-based scripting
   // New: requires pointer to colvarscript object - TODO - pass it in ctypes Python example
-  int run_colvarscript_command(int objc, unsigned char *const objv[]);
+  int run_colvarscript_command(colvarscript *script, int objc, unsigned char *const objv[]);
 
   /// Get the string result of a script call
   const char * get_colvarscript_result();

@@ -188,7 +188,7 @@ int colvar::customColvar::init(std::string const &conf)
         cvmodule->log("This colvar uses a custom function.\n");
         do {
             expr = expr_in;
-            if (cvmodule->debug())
+            if (cvm::debug())
                 cvmodule->log("Parsing expression \"" + expr + "\".\n");
             try {
                 pexpr = Lepton::Parser::parse(expr);

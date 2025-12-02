@@ -772,7 +772,7 @@ inline void colvar::add_bias_force(colvarvalue const &force)
                 features()[f_cv_apply_force]->description+"\" is active.\n", COLVARS_BUG_ERROR);
   }
 
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
   }
   fb += force;
@@ -781,7 +781,7 @@ inline void colvar::add_bias_force(colvarvalue const &force)
 
 inline void colvar::add_bias_force_actual_value(colvarvalue const &force)
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Adding biasing force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
   }
   fb_actual += force;

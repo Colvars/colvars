@@ -173,7 +173,7 @@ int colvar::init(std::string const &conf)
 
   if (!(is_enabled(f_cv_scripted) || is_enabled(f_cv_custom_function))) {
     colvarvalue const &cvc_value = (cvcs[0])->value();
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log ("This collective variable is a "+
                 colvarvalue::type_desc(cvc_value.type())+
                 ((cvc_value.size() > 1) ? " with "+
@@ -196,7 +196,7 @@ int colvar::init(std::string const &conf)
   //       enable(task_gradients);
 
       if ((cvcs[i])->sup_np != 1) {
-        if (cvmodule->debug() && lin)
+        if (cvm::debug() && lin)
           cvmodule->log("Warning: You are using a non-linear polynomial "
                     "combination to define this collective variable, "
                     "some biasing methods may be unavailable.\n");
@@ -351,7 +351,7 @@ int colvar::init(std::string const &conf)
 
   error_code |= parse_analysis(conf);
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done initializing collective variable \""+this->name+"\".\n");
 
   return error_code;
@@ -378,7 +378,7 @@ int colvar::init_custom_function(std::string const &conf)
 
   do {
     expr = expr_in;
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Parsing expression \"" + expr + "\".\n");
     try {
       pexpr = Lepton::Parser::parse(expr);
@@ -440,7 +440,7 @@ int colvar::init_custom_function(std::string const &conf)
             catch (...) { // Variable is absent from derivative
               // To keep the same workflow, we use a pointer to a double here
               // that will receive CVC values - even though none was allocated by Lepton
-              if (cvmodule->debug()) {
+              if (cvm::debug()) {
                 cvmodule->log("Warning: Variable " + vvn + " is absent from derivative of \"" + expr + "\" wrt " + vn + ".\n");
               }
               ref = &dev_null;
@@ -844,7 +844,7 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
     cvmodule->increase_depth();
     cvmodule->log("Initializing "
              "a new \""+std::string(def_config_key)+"\" component"+
-             (cvmodule->debug() ? ", with configuration:\n"+def_conf
+             (cvm::debug() ? ", with configuration:\n"+def_conf
               : ".\n"));
     cvc *cvcp = global_cvc_map[def_config_key]();
     if (!cvcp) {
@@ -876,13 +876,13 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
     }
 
     cvcs.back()->setup();
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Done initializing a \"" + std::string(def_config_key) + "\" component" +
-               (cvmodule->debug() ? ", named \"" + cvcs.back()->name + "\"" : "") + ".\n");
+               (cvm::debug() ? ", named \"" + cvcs.back()->name + "\"" : "") + ".\n");
     }
 
     def_conf = "";
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Parsed " + cvm::to_str(cvcs.size()) + " components at this time.\n");
     }
   }
@@ -1059,7 +1059,7 @@ void colvar::build_atom_list(void)
 
   atomic_gradients.resize(atom_ids.size());
   if (atom_ids.size()) {
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Colvar: created atom list with " + cvm::to_str(atom_ids.size()) + " atoms.\n");
   } else {
     cvmodule->log("Warning: colvar components communicated no atom IDs.\n");
@@ -1070,7 +1070,7 @@ void colvar::build_atom_list(void)
 int colvar::parse_analysis(std::string const &conf)
 {
 
-  //   if (cvmodule->debug())
+  //   if (cvm::debug())
   //     cvmodule->log ("Parsing analysis flags for collective variable \""+
   //               this->name+"\".\n");
 
@@ -1416,7 +1416,7 @@ int colvar::calc()
 
 int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 {
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Calculating colvar \""+this->name+"\", components "+
              cvm::to_str(first_cvc)+" through "+cvm::to_str(first_cvc+num_cvcs)+".\n");
 
@@ -1440,7 +1440,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   }
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done calculating colvar \""+this->name+"\".\n");
 
   return error_code;
@@ -1449,7 +1449,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
 
 int colvar::collect_cvc_data()
 {
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Calculating colvar \""+this->name+"\"'s properties.\n");
 
   int error_code = COLVARS_OK;
@@ -1468,7 +1468,7 @@ int colvar::collect_cvc_data()
   }
   error_code |= calc_colvar_properties();
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done calculating colvar \""+this->name+"\"'s properties.\n");
 
   return error_code;
@@ -1493,7 +1493,7 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
 
   // calculate the value of the colvar
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Calculating colvar components.\n");
 
   // First, calculate component values
@@ -1505,7 +1505,7 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
     cvc_count++;
     (cvcs[i])->read_data();
     (cvcs[i])->calc_value();
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Colvar component no. "+cvm::to_str(i+1)+
                 " within colvar \""+this->name+"\" has value "+
                 cvm::to_str((cvcs[i])->value(),
@@ -1566,7 +1566,7 @@ int colvar::collect_cvc_values()
     }
   }
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Colvar \""+this->name+"\" has value "+
               cvm::to_str(x, cvmodule->cv_width, cvmodule->cv_prec)+".\n");
 
@@ -1595,7 +1595,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Calculating gradients of colvar \""+this->name+"\".\n");
 
   // calculate the gradients of each component
@@ -1615,7 +1615,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
         (cvcs[i])->debug_gradients();
     }
 
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Done calculating gradients of colvar \""+this->name+"\".\n");
   }
 
@@ -1648,7 +1648,7 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
   size_t i, cvc_count;
 
   if (is_enabled(f_cv_total_force_calc)) {
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Calculating total force of colvar \""+this->name+"\".\n");
 
     cvmodule->increase_depth();
@@ -1663,7 +1663,7 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
     cvmodule->decrease_depth();
 
 
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Done calculating total force of colvar \""+this->name+"\".\n");
   }
 
@@ -1678,7 +1678,7 @@ int colvar::collect_cvc_total_forces()
 
     for (size_t i = 0; i < cvcs.size();  i++) {
       if (!cvcs[i]->is_enabled()) continue;
-          if (cvmodule->debug())
+          if (cvm::debug())
           cvmodule->log("Colvar component no. "+cvm::to_str(i+1)+
               " within colvar \""+this->name+"\" has total force "+
               cvm::to_str((cvcs[i])->total_force(),
@@ -1733,7 +1733,7 @@ int colvar::collect_cvc_Jacobians()
     fj.reset();
     for (size_t i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
-        if (cvmodule->debug())
+        if (cvm::debug())
           cvmodule->log("Colvar component no. "+cvm::to_str(i+1)+
             " within colvar \""+this->name+"\" has Jacobian derivative"+
             cvm::to_str((cvcs[i])->Jacobian_derivative(),
@@ -1830,7 +1830,7 @@ int colvar::calc_colvar_properties()
 
 cvm::real colvar::update_forces_energy()
 {
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Updating colvar \""+this->name+"\".\n");
 
   // set to zero the applied force
@@ -1868,7 +1868,7 @@ cvm::real colvar::update_forces_energy()
     f += fb_actual;
   }
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done updating colvar \""+this->name+"\".\n");
   return (potential_energy + kinetic_energy);
 }
@@ -1876,7 +1876,7 @@ cvm::real colvar::update_forces_energy()
 
 void colvar::update_extended_Lagrangian()
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Updating extended-Lagrangian degree of freedom.\n");
   }
 
@@ -2016,7 +2016,7 @@ void colvar::update_extended_Lagrangian()
 
 int colvar::end_of_step()
 {
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("End of step for colvar \""+this->name+"\".\n");
 
   // Used for fdiff_velocity and for detecting jumps for extended Lagrangian colvars
@@ -2035,7 +2035,7 @@ int colvar::end_of_step()
 void colvar::communicate_forces()
 {
   size_t i;
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Communicating forces from colvar \""+this->name+"\".\n");
     cvmodule->log("Force to be applied: " + cvm::to_str(f) + "\n");
   }
@@ -2113,7 +2113,7 @@ void colvar::communicate_forces()
     }
   }
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done communicating forces from colvar \""+this->name+"\".\n");
 }
 
@@ -2397,7 +2397,7 @@ int colvar::check_matching_state(std::string const &conf)
   }
 
   if (check_name != name)  {
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Ignoring state of colvar \""+check_name+
                "\": this colvar is named \""+name+"\".\n");
     }
@@ -2999,7 +2999,7 @@ int colvar::calc_runave()
 
     // first-step operationsf
 
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Colvar \""+this->name+
                 "\": initializing running average calculation.\n");
 
