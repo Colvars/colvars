@@ -972,9 +972,13 @@ void colvargrid_integrate::prepare_calculations()
       }
     }
 
-    upper_threshold_count =
-        sorted_counts[static_cast<int>(sorted_counts.size() * (1 - lambda_max))];
-    lower_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * lambda_min)];
+    if (sorted_counts.size()) {
+      lower_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * lambda_min)];
+      upper_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * (1 - lambda_max))];
+    } else {
+      lower_threshold_count = 1;
+      upper_threshold_count = 1;
+    }
     sorted_counts.clear();
     regularized_weights.resize(gradients->nt);
     for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
