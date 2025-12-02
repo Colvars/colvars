@@ -61,4 +61,7 @@ colvar {
 
 abf {
     colvars        eulerPhi eulerTheta
+    grid {
+        widths 5 5
+    }
 }
