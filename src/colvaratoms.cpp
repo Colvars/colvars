@@ -333,7 +333,7 @@ int cvm::atom_group::atom_modifier::add_atom(const simple_atom& a) {
   }
   auto map_it = m_atoms_ids_count.find(a.id);
   if (map_it != m_atoms_ids_count.end()) {
-    if (m_ag->cvmodule->debug()) {
+    if (cvm::debug()) {
       m_ag->cvmodule->log("Discarding doubly counted atom with number "+
               cvm::to_str(a.id+1)+".\n");
     }
@@ -778,7 +778,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
   // Calculate all required properties (such as total mass)
   setup();
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done initializing atom group \""+key+"\".\n");
 
   {
@@ -940,7 +940,7 @@ int cvm::atom_group::atom_modifier::add_atom_id(int aid) {
 
   // for (size_t i = 0; i < m_atoms_ids.size(); i++) {
   //   if (m_atoms_ids[i] == aid) {
-  //     if (cvmodule->debug())
+  //     if (cvm::debug())
   //       cvmodule->log("Discarding doubly counted atom with number "+
   //                cvm::to_str(aid+1)+".\n");
   //     return COLVARS_OK;
@@ -948,7 +948,7 @@ int cvm::atom_group::atom_modifier::add_atom_id(int aid) {
   // }
   auto map_it = m_atoms_ids_count.find(aid);
   if (map_it != m_atoms_ids_count.end()) {
-    if (m_ag->cvmodule->debug()) {
+    if (cvm::debug()) {
       m_ag->cvmodule->log("Discarding doubly counted atom with number "+
               cvm::to_str(aid+1)+".\n");
     }
@@ -1374,7 +1374,7 @@ int cvm::atom_group::calc_center_of_mass()
 {
   if (b_dummy) {
     com = dummy_atom_pos;
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Dummy atom center of mass = "+cvm::to_str(com)+"\n");
     }
   } else if (is_enabled(f_ag_scalable)) {
@@ -1434,7 +1434,7 @@ void cvm::atom_group::calc_fit_gradients()
 {
   if (b_dummy || ! is_enabled(f_ag_fit_gradients)) return;
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Calculating fit gradients.\n");
 
   cvm::atom_group *group_for_fit = fitting_group ? fitting_group : this;
@@ -1458,7 +1458,7 @@ void cvm::atom_group::calc_fit_gradients()
   if (!is_enabled(f_ag_center) && !is_enabled(f_ag_rotate))
     calc_fit_forces_impl<false, false>(accessor_main, accessor_fitting);
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done calculating fit gradients.\n");
 }
 
@@ -1520,7 +1520,7 @@ void cvm::atom_group::calc_fit_forces_impl(
       // Project the forces acting on C to the forces on group1 (the fitting group atoms in the simulation frame)
       fitting_force_grad += rot_deriv->project_force_to_group1(j, dxdC);
     }
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log(cvm::to_str(fitting_force_grad));
     }
     accessor_fitting(j, fitting_force_grad);
@@ -1639,7 +1639,7 @@ cvm::rvector cvm::atom_group::total_force() const {
 
 void cvm::atom_group::apply_colvar_force(cvm::real const &force)
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Communicating a colvar force from atom group to the MD engine.\n");
   }
 
@@ -1708,7 +1708,7 @@ void cvm::atom_group::apply_colvar_force(cvm::real const &force)
 
 void cvm::atom_group::apply_force(cvm::rvector const &force)
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Communicating a colvar force from atom group to the MD engine.\n");
   }
 
@@ -1820,7 +1820,7 @@ void cvm::atom_group::group_force_object::add_atom_force(
 
 void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
   const cvm::rmatrix rot_inv = m_ag->rot.inverse().matrix();
-  if (m_ag->cvmodule->debug()) {
+  if (cvm::debug()) {
     m_ag->cvmodule->log("Applying force on main group " + m_ag->name + ":\n");
   }
   if (m_ag->b_dummy) return;
@@ -1842,7 +1842,7 @@ void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
         rot_inv.zz * m_ag->group_forces_z(ia),
       };
       p->apply_atom_force(proxy_index, f_ia);
-      if (m_ag->cvmodule->debug()) {
+      if (cvm::debug()) {
         m_ag->cvmodule->log(cvm::to_str(f_ia));
       }
     }
@@ -1854,7 +1854,7 @@ void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
         m_ag->group_forces_y(ia),
         m_ag->group_forces_z(ia)};
       p->apply_atom_force(proxy_index, f_ia);
-      if (m_ag->cvmodule->debug()) {
+      if (cvm::debug()) {
         m_ag->cvmodule->log(cvm::to_str(f_ia));
       }
     }
@@ -1875,11 +1875,11 @@ void cvm::atom_group::group_force_object::apply_force_with_fitting_group() {
       const int proxy_index = m_group_for_fit->atoms_index[j];
       p->apply_atom_force(proxy_index, fitting_force);
     };
-    if (m_ag->cvmodule->debug()) {
+    if (cvm::debug()) {
       m_ag->cvmodule->log("Applying force on the fitting group of main group" + m_ag->name + ":\n");
     }
     m_ag->calc_fit_forces(accessor_main, accessor_fitting);
-    if (m_ag->cvmodule->debug()) {
+    if (cvm::debug()) {
       m_ag->cvmodule->log("Done applying force on the fitting group of main group" + m_ag->name + ":\n");
     }
   }

@@ -172,7 +172,7 @@ int colvarbias_abf::init(std::string const &conf)
   system_force = new cvm::real [num_variables()];
 
   // Construct empty grids based on the colvars
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Allocating count and free energy gradient grids.\n");
   }
 
@@ -320,7 +320,7 @@ colvarbias_abf::~colvarbias_abf()
 
 int colvarbias_abf::update()
 {
-  if (cvmodule->debug()) cvmodule->log("Updating ABF bias " + this->name);
+  if (cvm::debug()) cvmodule->log("Updating ABF bias " + this->name);
 
   size_t i;
   for (i = 0; i < num_variables(); i++) {
@@ -1048,7 +1048,7 @@ cvm::memory_stream & colvarbias_abf::read_state_data(cvm::memory_stream& is)
 
 int colvarbias_abf::write_output_files()
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("ABF bias trying to write gradients and samples to disk");
   }
 
