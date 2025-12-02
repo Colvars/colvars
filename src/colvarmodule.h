@@ -935,6 +935,9 @@ public:
   /// from the hosting program
   colvarproxy *proxy = nullptr;
 
+  /// \brief Access the one instance of the Colvars module
+  static colvarmodule *main();
+
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   template <typename T>
   using allocator_type = colvars_gpu::CudaHostAllocator<T>;
