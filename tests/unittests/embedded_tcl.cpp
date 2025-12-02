@@ -8,7 +8,7 @@
 int main(int argc, char *argv[]) {
 
   colvarproxy *proxy = new colvarproxy();
-  proxy->colvars = new colvarmodule(proxy);
+  proxy->cvmodule = new colvarmodule(proxy);
 
   int res = proxy->tcl_run_script("puts \"\n(Tcl) Tcl script running successfully using embedded interpreter.\"");
 

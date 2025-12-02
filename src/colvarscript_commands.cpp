@@ -89,7 +89,7 @@ int cvscript_command_n_args_max(char const *c)
   {                                                                     \
     colvarscript *script = colvarscript_obj(pobj);                      \
     colvarmodule *cvmodule = script->module();                          \
-    if (cvmodule->debug()) {                                            \
+    if (cvm::debug()) {                                            \
       cvmodule->log("Executing script function \""+std::string(#COMM)+"\""); \
     }                                                                   \
     script->clear_str_result();                                         \

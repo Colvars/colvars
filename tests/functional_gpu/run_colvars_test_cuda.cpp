@@ -299,9 +299,9 @@ int main(int argc, char *argv[]) {
   if (argc > 3) {
     err |= proxy->set_output_prefix(output_prefix);
   }
-  err |= proxy->colvars->setup_input();
-  err |= proxy->colvars->setup_output();
-  err |= proxy->colvars->read_config_file(configuration_file.c_str());
+  err |= proxy->cvmodule->setup_input();
+  err |= proxy->cvmodule->setup_output();
+  err |= proxy->cvmodule->read_config_file(configuration_file.c_str());
   if (err != COLVARS_OK) {
     cvmodule->log("Error occurred!\n");
   }
@@ -342,10 +342,10 @@ int main(int argc, char *argv[]) {
   unsigned char * args[2] = {
     (unsigned char *) "cv",
     (unsigned char *) "listinputfiles" };
-  err |= run_colvarscript_command(2, args);
+  err |= run_colvarscript_command(proxy->script, 2, args);
   cvmodule->log("  " + std::string(get_colvarscript_result()));
 
-  double const max_gradient_error = proxy->colvars->get_max_gradient_error();
+  double const max_gradient_error = proxy->cvmodule->get_max_gradient_error();
   if (max_gradient_error > 0.) {
     cvmodule->log("Max gradient error (debugGradients): " + cvm::to_str(max_gradient_error));
 

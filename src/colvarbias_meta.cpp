@@ -172,7 +172,7 @@ int colvarbias_meta::init(std::string const &conf)
   error_code |= init_well_tempered_params(conf);
   error_code |= init_ebmeta_params(conf);
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done initializing the metadynamics bias \""+this->name+"\""+
              ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+".\n");
 
@@ -391,7 +391,7 @@ colvarbias_meta::add_hill(colvarbias_meta::hill const &h)
 std::list<colvarbias_meta::hill>::const_iterator
 colvarbias_meta::delete_hill(hill_iter &h)
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Deleting hill from the metadynamics bias \""+this->name+"\""+
              ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
              ", with step number "+
@@ -459,7 +459,7 @@ int colvarbias_meta::update_grid_params()
   if (use_grids) {
 
     std::vector<int> curr_bin = hills_energy->get_colvars_index();
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Metadynamics bias \""+this->name+"\""+
                ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                ": current coordinates on the grid: "+
@@ -547,7 +547,7 @@ int colvarbias_meta::update_grid_params()
         hills_energy_gradients.reset(new_hills_energy_gradients);
 
         curr_bin = hills_energy->get_colvars_index();
-        if (cvmodule->debug())
+        if (cvm::debug())
           cvmodule->log("Coordinates on the new grid: "+
                    cvm::to_str(curr_bin)+".\n");
       }
@@ -564,7 +564,7 @@ int colvarbias_meta::update_bias()
   if (((cvmodule->step_absolute() % new_hill_freq) == 0) &&
       can_accumulate_data() && is_enabled(f_cvb_history_dependent)) {
 
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Metadynamics bias \""+this->name+"\""+
                ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                ": adding a new hill at step "+cvm::to_str(cvmodule->step_absolute())+".\n");
@@ -692,7 +692,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     for (ir = 0; ir < replicas.size(); ir++) {
 
       bias_energy += replicas[ir]->hills_energy->value(curr_bin);
-      if (cvmodule->debug()) {
+      if (cvm::debug()) {
         cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                  ": current coordinates on the grid: "+
@@ -718,7 +718,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
                replicas[ir]->hills.end(),
                bias_energy,
                values);
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Hills energy = "+cvm::to_str(bias_energy)+".\n");
     }
   }
@@ -773,7 +773,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
   // now include the hills that have not been binned yet (starting
   // from new_hills_begin)
 
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Metadynamics bias \""+this->name+"\""+
              ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
              ": adding the forces from the other replicas.\n");
@@ -786,7 +786,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
                        replicas[ir]->hills.end(),
                        colvar_forces,
                        values);
-      if (cvmodule->debug()) {
+      if (cvm::debug()) {
         cvmodule->log("Hills forces = "+cvm::to_str(colvar_forces)+".\n");
       }
     }
@@ -908,7 +908,7 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
                                     colvar_grid_gradient       *hg,
                                     bool print_progress)
 {
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Metadynamics bias \""+this->name+"\""+
              ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
              ": projecting hills.\n");
@@ -1027,7 +1027,7 @@ int colvarbias_meta::update_replicas_registry()
   int error_code = COLVARS_OK;
   auto *proxy = cvmodule->proxy;
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Metadynamics bias \""+this->name+"\""+
              ": updating the list of replicas, currently containing "+
              cvm::to_str(replicas.size())+" elements.\n");
@@ -1064,7 +1064,7 @@ int colvarbias_meta::update_replicas_registry()
       for (size_t ir = 0; ir < replicas.size(); ir++) {
         if (new_replica == (replicas[ir])->replica_id) {
           // this replica was already added
-          if (cvmodule->debug())
+          if (cvm::debug())
             cvmodule->log("Metadynamics bias \""+this->name+"\""+
                      ((comm != single_replica) ? ", replica \""+replica_id+"\"" : "")+
                      ": skipping a replica already loaded, \""+
@@ -1118,7 +1118,7 @@ int colvarbias_meta::update_replicas_registry()
 
   // now (re)read the list file of each replica
   for (size_t ir = 0; ir < replicas.size(); ir++) {
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Metadynamics bias \""+this->name+"\""+
                ": reading the list file for replica \""+
                (replicas[ir])->replica_id+"\".\n");
@@ -1152,7 +1152,7 @@ int colvarbias_meta::update_replicas_registry()
     proxy->close_input_stream((replicas[ir])->replica_list_file);
   }
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Metadynamics bias \""+this->name+"\": the list of replicas contains "+
              cvm::to_str(replicas.size())+" elements.\n");
 
@@ -1208,7 +1208,7 @@ int colvarbias_meta::read_replica_files()
     // now read the hills added after writing the state file
     if ((replicas[ir])->replica_hills_file.size()) {
 
-      if (cvmodule->debug())
+      if (cvm::debug())
         cvmodule->log("Metadynamics bias \""+this->name+"\""+
                  ": checking for new hills from replica \""+
                  (replicas[ir])->replica_id+"\" in the file \""+
@@ -1251,7 +1251,7 @@ int colvarbias_meta::read_replica_files()
           is.clear();
           // store the position for the next read
           (replicas[ir])->replica_hills_file_pos = is.tellg();
-          if (cvmodule->debug()) {
+          if (cvm::debug()) {
             cvmodule->log("Metadynamics bias \""+this->name+"\""+
                      ": stopped reading file \""+
                      (replicas[ir])->replica_hills_file+
@@ -1371,7 +1371,7 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
     bool const need_backup = has_data;
 
     if (need_backup) {
-      if (cvmodule->debug())
+      if (cvm::debug())
         cvmodule->log("Backing up grids for metadynamics bias \"" + this->name + "\"" +
                  ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") + ".\n");
 
@@ -1392,7 +1392,7 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
       cvmodule->log("  successfully read the biasing potential and its gradients from grids.\n");
     } else {
       if (need_backup) {
-        if (cvmodule->debug())
+        if (cvm::debug())
           cvmodule->log("Restoring grids from backup for metadynamics bias \"" + this->name + "\"" +
                    ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") + ".\n");
         // Restoring content from original grid
@@ -1409,14 +1409,14 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
   size_t const old_hills_size = hills.size();
   hill_iter old_hills_end = hills.end();
   hill_iter old_hills_off_grid_end = hills_off_grid.end();
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Before reading hills from the state file, there are "+
              cvm::to_str(hills.size())+" hills in memory.\n");
   }
 
   // Read any hills following the grid data (if any)
   while (read_hill(is)) {
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Read a previously saved hill under the "
                "metadynamics bias \"" +
                this->name + "\", created at step " + cvm::to_str((hills.back()).it) +
@@ -1434,7 +1434,7 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
     // Prune any hills that pre-existed those just read
     hills.erase(hills.begin(), old_hills_end);
     hills_off_grid.erase(hills_off_grid.begin(), old_hills_off_grid_end);
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("After pruning the old hills, there are now "+
                cvm::to_str(hills.size())+" hills in memory.\n");
     }
@@ -1453,7 +1453,7 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 
   colvarbias_ti::read_state_data(is);
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("colvarbias_meta::read_restart() done\n");
 
   has_data = true;
@@ -1493,7 +1493,7 @@ void colvarbias_meta::rebin_grids_after_restart()
     std::shared_ptr<colvar_grid_gradient> new_hills_energy_gradients(
         new colvar_grid_gradient(colvars, nullptr, new_hills_energy));
 
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       std::ostringstream tmp_os;
       tmp_os << "hills_energy parameters:\n";
       tmp_os << hills_energy->get_state_params();
@@ -1698,7 +1698,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colva
   }
 
   if ((h_it <= state_file_step) && !restart_keep_hills) {
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Skipping a hill older than the state file for metadynamics bias \"" + this->name +
                "\"" + ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") + "\n");
     return is;
@@ -2026,7 +2026,7 @@ int colvarbias_meta::write_replica_state_file()
 {
   colvarproxy *proxy = cvmodule->proxy;
 
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Writing replica state file for bias \""+name+"\"\n");
   }
 
@@ -2118,7 +2118,7 @@ colvarbias_meta::hill::hill(cvm::step_number it_in,
     centers[i] = cv_values[i];
     sigmas[i] = cv_sigmas[i];
   }
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("New hill, applied to "+cvm::to_str(cv_values.size())+
              " collective variables, with centers "+
              cvm::to_str(centers)+", sigmas "+
