@@ -26,15 +26,16 @@ int main(int argc, char *argv[]) {
   int err = 0;
 
   colvarproxy_stub *proxy = new colvarproxy_stub();
+  colvarmodule *cvmodule = proxy->cvmodule;
   // Initialize simple unit system to test file input
   err |= proxy->set_unit_system("real", false);
 
   if (argc > 3) {
     err |= proxy->set_output_prefix(output_prefix);
   }
-  err |= proxy->cvmodule->setup_input();
-  err |= proxy->cvmodule->setup_output();
-  err |= proxy->cvmodule->read_config_file(configuration_file.c_str());
+  err |= cvmodule->setup_input();
+  err |= cvmodule->setup_output();
+  err |= cvmodule->read_config_file(configuration_file.c_str());
 
   if (argc > 2) {
     // Read number of atoms from XYZ header

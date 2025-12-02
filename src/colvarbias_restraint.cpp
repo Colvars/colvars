@@ -18,8 +18,9 @@
 
 
 
-colvarbias_restraint::colvarbias_restraint(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key), colvarbias_ti(key)
+colvarbias_restraint::colvarbias_restraint(char const *key)
+  : colvarbias_ti(key)
+  // intermediate in virtual inheritance, no need to initialize base class colvarbias
 {}
 
 
@@ -1301,7 +1302,7 @@ colvarbias_restraint_linear::colvarbias_restraint_linear(colvarmodule *cvmodule_
     colvarbias_restraint_moving(key),
     colvarbias_restraint_k(key),
     colvarbias_restraint_centers_moving(key),
-    colvarbias_restraint_k_moving(cvmodule_in, key)
+    colvarbias_restraint_k_moving(key)
 {
   check_positive_k = false;
 }

@@ -279,7 +279,7 @@ public:
   /// \brief Finite difference step size (if there is no dynamics, or
   /// if gradients need to be tested independently from the size of
   /// dt)
-  real debug_gradients_step_size = 1.0e-07;
+  static real debug_gradients_step_size;
 
 private:
 
@@ -751,9 +751,12 @@ public:
   /// Used in lightweight objects that do not have access to cvmodule
   /// Typically fatal errors that reflect bugs, so hopefully rare
   static int error_static(std::string const &message, int code = -1) {
-    std::cerr << "Colvars error: " << message << std::endl;
-    exit(code);
-    return code; // appease compiler that thinks we're going to return from this
+    // Drastic version
+    // std::cerr << "Colvars error: " << message << std::endl;
+    // exit(code);
+    // Temporary version
+    code = colvarmodule::main()->error(message, code);
+    return code;
   }
 
 private:
@@ -934,8 +937,10 @@ public:
   /// \brief Pointer to the proxy object, used to retrieve atomic data
   /// from the hosting program
   colvarproxy *proxy = nullptr;
+  /// Temporary static pointer to unique proxy object
+  static colvarproxy *proxy_static;
 
-  /// \brief Access the one instance of the Colvars module
+  /// \brief Access the main instance of the Colvars module
   static colvarmodule *main();
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)

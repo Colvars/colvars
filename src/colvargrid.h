@@ -79,7 +79,7 @@ public: // TODO create accessors for these after all instantiations work
     size_t addr = 0;
     for (size_t i = 0; i < nd; i++) {
       addr += ix[i]*static_cast<size_t>(nxc[i]);
-      if (cvmodule->debug()) {
+      if (cvm::debug()) {
         if (ix[i] >= nx[i]) {
           cvmodule->error("Error: exceeding bounds in colvar_grid.\n", COLVARS_BUG_ERROR);
           return 0;
@@ -160,7 +160,7 @@ public:
             T const &t = T(),
             size_t const &mult_i = 1)
   {
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Allocating grid: multiplicity = "+cvm::to_str(mult_i)+
                ", dimensions = "+cvm::to_str(nx_i)+".\n");
     }
@@ -178,7 +178,7 @@ public:
     nt = mult;
     for (int i = nd-1; i >= 0; i--) {
       if (nx[i] <= 0) {
-        cvmodule->error("Error: providing an invalid number of grid points, "+
+        cvm::error_static("Error: providing an invalid number of grid points, "+
                    cvm::to_str(nx[i])+".\n", COLVARS_BUG_ERROR);
         return COLVARS_ERROR;
       }
@@ -186,7 +186,7 @@ public:
       nt *= nx[i];
     }
 
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Total number of grid elements = "+cvm::to_str(nt)+".\n");
     }
 
@@ -209,14 +209,14 @@ public:
   }
 
 
-  // /// Default constructor
-  // colvar_grid() : has_data(false)
-  // {
-  //   nd = nt = 0;
-  //   mult = 1;
-  //   has_parent_data = false;
-  //   this->setup();
-  // }
+  /// Default constructor
+  colvar_grid() : colvarparse(cvm::main()), has_data(false)
+  {
+    nd = nt = 0;
+    mult = 1;
+    has_parent_data = false;
+    this->setup();
+  }
 
   /// Destructor
   virtual ~colvar_grid()
@@ -226,7 +226,7 @@ public:
   /// parameters from another grid, but doesn't reallocate stuff;
   /// setup() must be called after that;
   colvar_grid(colvar_grid<T> const &g) : colvar_grid_params(colvar_grid_params(g)),
-                                         colvarparse(colvarparse(g)),
+                                         colvarparse(cvm::main()),
                                          mult(g.mult),
                                          data(),
                                          cv(g.cv),
@@ -242,11 +242,10 @@ public:
   /// of grid points along each dimension \param t Initial value for
   /// the function at each point (optional) \param mult_i Multiplicity
   /// of each value
-  colvar_grid(colvarmodule *cvmodule_in,
-              std::vector<int> const &nx_i,
+  colvar_grid(std::vector<int> const &nx_i,
               T const &t = T(),
               size_t mult_i = 1)
-    : colvarparse(cvmodule_in), has_parent_data(false), has_data(false)
+    : colvarparse(cvm::main()), has_parent_data(false), has_data(false)
   {
     this->setup(nx_i, t, mult_i);
   }
@@ -254,14 +253,13 @@ public:
   /// \brief Constructor from a vector of colvars or an optional grid config string
   /// \param add_extra_bin requests that non-periodic dimensions are extended
   /// by 1 bin to accommodate the integral (PMF) of another gridded quantity (gradient)
-  colvar_grid(colvarmodule *cvmodule_in,
-              std::vector<colvar *> const &colvars,
+  colvar_grid(std::vector<colvar *> const &colvars,
               T const &t = T(),
               size_t mult_i = 1,
               bool add_extra_bin = false,
               std::shared_ptr<const colvar_grid_params> params = nullptr,
               std::string config = std::string())
-    : colvarparse(cvmodule_in), has_parent_data(false), has_data(false)
+    : colvarparse(cvm::main()), has_parent_data(false), has_data(false)
   {
     (void) t;
     this->init_from_colvars(colvars, mult_i, add_extra_bin, params, config);
@@ -270,7 +268,7 @@ public:
   /// \brief Constructor from a multicol file
   /// \param filename multicol file containing data to be read
   /// \param multi_i multiplicity of the data - if 0, assume gradient multiplicity (mult = nd)
-  colvar_grid(colvarmodule *cvmodule_in, std::string const &filename, size_t mult_i = 1);
+  colvar_grid(std::string const &filename, size_t mult_i = 1);
 
   int init_from_colvars(std::vector<colvar *> const &colvars,
                         size_t mult_i = 1,
@@ -278,7 +276,7 @@ public:
                         std::shared_ptr<const colvar_grid_params> params = nullptr,
                         std::string config = std::string())
   {
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Reading grid configuration from collective variables.\n");
     }
 
@@ -288,14 +286,14 @@ public:
 
     size_t i;
 
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Allocating a grid for "+cvm::to_str(colvars.size())+
                " collective variables, multiplicity = "+cvm::to_str(mult_i)+".\n");
     }
 
     for (i =  0; i < nd; i++) {
       if (cv[i]->value().type() != colvarvalue::type_scalar) {
-        cvmodule->error("Colvar grids can only be automatically "
+        cvm::error_static("Colvar grids can only be automatically "
                    "constructed for scalar variables.  "
                    "ABF and histogram can not be used; metadynamics "
                    "can be used with useGrids disabled.\n", COLVARS_INPUT_ERROR);
@@ -303,7 +301,7 @@ public:
       }
 
       if (cv[i]->width <= 0.0) {
-        cvmodule->error("Tried to initialize a grid on a "
+        cvm::error_static("Tried to initialize a grid on a "
                    "variable with negative or zero width.\n", COLVARS_INPUT_ERROR);
         return COLVARS_ERROR;
       }
@@ -333,14 +331,14 @@ public:
       this->check_keywords(config, "grid");
 
       if (params) {
-        cvmodule->error("Error: init_from_colvars was passed both a grid config and a template grid.", COLVARS_BUG_ERROR);
+        cvm::error_static("Error: init_from_colvars was passed both a grid config and a template grid.", COLVARS_BUG_ERROR);
         return COLVARS_BUG_ERROR;
       }
     } else if (params) {
       // Match grid sizes with template
 
       if (params->nd != nd) {
-        cvmodule->error("Trying to initialize grid from template with wrong dimension (" +
+        cvm::error_static("Trying to initialize grid from template with wrong dimension (" +
                     cvm::to_str(params->nd) + " instead of " +
                     cvm::to_str(this->nd) + ").");
         return COLVARS_ERROR;
@@ -377,7 +375,7 @@ public:
 
   int init_from_boundaries()
   {
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Configuring grid dimensions from colvars boundaries.\n");
     }
 
@@ -405,7 +403,7 @@ public:
           (nbins_round * widths[i]);
       }
 
-      if (cvmodule->debug())
+      if (cvm::debug())
         cvmodule->log("Number of points is "+cvm::to_str((int) nbins_round)+
                  " for the colvar no. "+cvm::to_str(i+1)+".\n");
 
@@ -424,7 +422,7 @@ public:
         ix[i] = (ix[i] + nx[i]) % nx[i]; // Avoid modulo with negative operands (implementation-defined)
       } else {
         if (ix[i] < 0 || ix[i] >= nx[i]) {
-          cvmodule->error("Trying to wrap illegal index vector (non-PBC) for a grid point: "
+          cvm::error_static("Trying to wrap illegal index vector (non-PBC) for a grid point: "
                      + cvm::to_str(ix), COLVARS_BUG_ERROR);
           return;
         }
@@ -588,13 +586,13 @@ public:
   {
 
     if (other_grid.multiplicity() != this->multiplicity()) {
-      cvmodule->error("Error: trying to subtract two grids with "
+      cvm::error_static("Error: trying to subtract two grids with "
                  "different multiplicity.\n");
       return;
     }
 
     if (other_grid.data.size() != this->data.size()) {
-      cvmodule->error("Error: trying to subtract two grids with "
+      cvm::error_static("Error: trying to subtract two grids with "
                  "different size.\n");
       return;
     }
@@ -612,13 +610,13 @@ public:
   void copy_grid(colvar_grid<T> const &other_grid)
   {
     if (other_grid.multiplicity() != this->multiplicity()) {
-      cvmodule->error("Error: trying to copy two grids with "
+      cvm::error_static("Error: trying to copy two grids with "
                  "different multiplicity.\n");
       return;
     }
 
     if (other_grid.data.size() != this->data.size()) {
-      cvmodule->error("Error: trying to copy two grids with "
+      cvm::error_static("Error: trying to copy two grids with "
                  "different size.\n");
       return;
     }
@@ -761,7 +759,7 @@ public:
   void map_grid(colvar_grid<T> const &other_grid)
   {
     if (other_grid.multiplicity() != this->multiplicity()) {
-      cvmodule->error("Error: trying to merge two grids with values of "
+      cvm::error_static("Error: trying to merge two grids with values of "
                  "different multiplicity.\n");
       return;
     }
@@ -774,7 +772,7 @@ public:
     std::vector<int> ix = this->new_index();
     std::vector<int> oix = other_grid.new_index();
 
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Remapping grid...\n");
     for ( ; this->index_ok(ix); this->incr(ix)) {
 
@@ -795,7 +793,7 @@ public:
     }
 
     has_data = true;
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("Remapping done.\n");
   }
 
@@ -805,7 +803,7 @@ public:
                 cvm::real scale_factor = 1.0)
   {
     if (other_grid.multiplicity() != this->multiplicity()) {
-      cvmodule->error("Error: trying to sum togetehr two grids with values of "
+      cvm::error_static("Error: trying to sum togetehr two grids with values of "
                  "different multiplicity.\n");
       return;
     }
@@ -914,7 +912,7 @@ public:
                                    upper_boundaries[i])) > 1.0E-10) ||
            (cvm::sqrt(cv[i]->dist2(cv[i]->width,
                                    widths[i])) > 1.0E-10) ) {
-        cvmodule->error("Error: restart information for a grid is "
+        cvm::error_static("Error: restart information for a grid is "
                    "inconsistent with that of its colvars.\n");
         return;
       }
@@ -937,7 +935,7 @@ public:
            (cvm::fabs(other_grid.widths[i] -
                       widths[i]) > 1.0E-10) ||
            (data.size() != other_grid.data.size()) ) {
-        cvmodule->error("Error: inconsistency between "
+        cvm::error_static("Error: inconsistency between "
                    "two grids that are supposed to be equal, "
                    "aside from the data stored.\n");
         return;
@@ -962,6 +960,16 @@ public:
 
   /// Read all grid parameters and data from an unformatted stream
   cvm::memory_stream &read_raw(cvm::memory_stream &is);
+
+private:
+
+  /// Helper method for read_restart
+  template <class IST> IST& read_restart_template_(IST& is);
+
+  /// Helper method for read_raw
+  template <class IST> IST& read_raw_template_(IST& is);
+
+public:
 
   /// Write all grid data to a formatted stream (without labels, as they are represented in memory)
   /// \param[in,out] os Stream object
@@ -1012,12 +1020,10 @@ public:
   {}
 
   /// Constructor from a vector of colvars or a config string
-  colvar_grid_count(colvarmodule *cvmodule_in,
-                    std::vector<colvar *>  &colvars,
+  colvar_grid_count(std::vector<colvar *>  &colvars,
                     std::shared_ptr<const colvar_grid_params> params = nullptr);
 
-  colvar_grid_count(colvarmodule *cvmodule_in,
-                    std::vector<colvar *>  &colvars,
+  colvar_grid_count(std::vector<colvar *>  &colvars,
                     std::string            config);
 
   /// Increment the counter at given position
@@ -1173,7 +1179,7 @@ public:
       }
       break;
     default:
-      cvmodule->error("Error: local_sample_count is not implemented for grids of dimension > 3", COLVARS_NOT_IMPLEMENTED);
+      cvm::error_static("Error: local_sample_count is not implemented for grids of dimension > 3", COLVARS_NOT_IMPLEMENTED);
       break;
     }
 
@@ -1204,7 +1210,7 @@ public:
       if (A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (cvm::logn(A1) - cvm::logn(A0))
+        return (cvmodule->logn(A1) - cvmodule->logn(A0))
           / (widths[n] * 2.);
       }
     } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
@@ -1216,7 +1222,7 @@ public:
       if (A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (cvm::logn(A1) - cvm::logn(A0))
+        return (cvmodule->logn(A1) - cvmodule->logn(A0))
           / (widths[n] * 2.);
       }
     } else {
@@ -1229,8 +1235,8 @@ public:
       if (A0 * A1 * A2 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (-1.5 * cvm::logn(A0) + 2. * cvm::logn(A1)
-          - 0.5 * cvm::logn(A2)) * increment / widths[n];
+        return (-1.5 * cvmodule->logn(A0) + 2. * cvmodule->logn(A1)
+          - 0.5 * cvmodule->logn(A2)) * increment / widths[n];
       }
     }
   }
@@ -1428,7 +1434,7 @@ public:
       //                  001    011     101   111      000    010   100    110
       grad[2] = 0.25 * ((p[1] + p[3] + p[5] + p[7]) - (p[0] + p[2] + p[4] + p[6])) / widths[2];
     } else {
-      cvmodule->error("Finite differences available in dimension 2 and 3 only.");
+      cvm::error_static("Finite differences available in dimension 2 and 3 only.");
     }
   }
 
@@ -1452,7 +1458,7 @@ public:
       if (A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (cvm::logn(A1) - cvm::logn(A0))
+        return (cvmodule->logn(A1) - cvmodule->logn(A0))
           / (widths[n] * 2.);
       }
     } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
@@ -1464,7 +1470,7 @@ public:
       if (A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (cvm::logn(A1) - cvm::logn(A0))
+        return (cvmodule->logn(A1) - cvmodule->logn(A0))
           / (widths[n] * 2.);
       }
     } else {
@@ -1477,8 +1483,8 @@ public:
       if (A0 * A1 * A2 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (-1.5 * cvm::logn(A0) + 2. * cvm::logn(A1)
-          - 0.5 * cvm::logn(A2)) * increment / widths[n];
+        return (-1.5 * cvmodule->logn(A0) + 2. * cvmodule->logn(A1)
+          - 0.5 * cvmodule->logn(A2)) * increment / widths[n];
       }
     }
   }
@@ -1536,7 +1542,7 @@ public:
   {
     int s;
     if (imult > 0) {
-      cvmodule->error("Error: trying to access a component "
+      cvm::error_static("Error: trying to access a component "
                  "larger than 1 in a scalar data grid.\n");
       return 0.;
     }
@@ -1556,7 +1562,7 @@ public:
                            bool add = false) override
   {
     if (imult > 0) {
-      cvmodule->error("Error: trying to access a component "
+      cvm::error_static("Error: trying to access a component "
                  "larger than 1 in a scalar data grid.\n");
       return;
     }

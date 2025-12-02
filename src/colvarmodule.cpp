@@ -121,6 +121,8 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   }
 
   proxy = proxy_in; // Pointer to the proxy object
+  proxy_static = proxy_in; // Temporary - assume single proxy & module objects
+
   parse = new colvarparse(this); // Parsing object for global options
   version_int = proxy->get_version_from_string(COLVARS_VERSION);
 
@@ -175,7 +177,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   // "it_restart" will be set by the input state file, if any;
   // "it" should be updated by the proxy
-  cvmodule->it = colvarmodule::it_restart = 0;
+  it = it_restart = 0;
 
   use_scripted_forces = false;
   scripting_after_biases = false;
@@ -201,7 +203,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
 colvarmodule * colvarmodule::main()
 {
-  return proxy ? proxy->cvmodule : NULL;
+  return proxy_static ? proxy_static->cvmodule : nullptr;
 }
 
 
@@ -2765,4 +2767,6 @@ std::string colvarmodule::usage::report(int flag)
 }
 
 // Static pointer to the proxy object
-colvarproxy *colvarmodule::proxy = nullptr;
+colvarproxy *colvarmodule::proxy_static = nullptr;
+
+cvm::real colvarmodule::debug_gradients_step_size = 1.0e-07;
