@@ -27,7 +27,7 @@
                                 int objc, unsigned char *const objv[])  \
   {                                                                     \
     colvar *this_colvar = colvar_obj(pobj);                             \
-    colvarmodule *cvmodule = this_colvar->cvmodule;                     \
+    colvarmodule *cvmodule = this_colvar->get_cvmodule();               \
     if (cvmodule->debug()) {                                                 \
       cvmodule->log("Executing script function \""+std::string(#COMM)+"\""); \
     }                                                                   \

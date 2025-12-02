@@ -32,6 +32,8 @@ protected:
 
 public:
 
+  colvarmodule *get_cvmodule() { return cvmodule; }
+
   /// Default constructor
   // colvarparse();
 
