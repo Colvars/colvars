@@ -324,12 +324,17 @@ private: // TODO
 };
 
 
-/// Get a pointer to the main colvarscript object
+/// Get a pointer to the colvarscript object pointed to by pobj
 inline static colvarscript *colvarscript_obj(void *pobj)
 {
-  return  reinterpret_cast<colvarscript *>(pobj);;
+  return reinterpret_cast<colvarscript *>(pobj);
 }
 
+/// Get a pointer to the main colvarscript object
+inline static colvarscript *colvarscript_obj()
+{
+  return cvm::main()->proxy->script;
+}
 
 /// Get a pointer to the colvar object pointed to by pobj
 inline static colvar *colvar_obj(void *pobj)
@@ -447,6 +452,7 @@ int colvarscript::cmd_arg_shift()
 extern "C" {
 
   /// Generic wrapper for string-based scripting
+  // New: requires pointer to colvarscript object - TODO - pass it in ctypes Python example
   int run_colvarscript_command(int objc, unsigned char *const objv[]);
 
   /// Get the string result of a script call
