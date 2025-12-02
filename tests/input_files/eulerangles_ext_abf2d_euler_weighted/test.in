@@ -62,4 +62,7 @@ colvar {
 abf {
     colvars        eulerPhi eulerTheta
     integrateWeighted yes
+    grid {
+        widths 5 5
+    }
 }
