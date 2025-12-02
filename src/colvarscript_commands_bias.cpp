@@ -26,7 +26,7 @@
   {                                                                     \
     colvarbias *this_bias = colvarbias_obj(pobj);                       \
     colvarmodule *cvmodule = this_bias->get_cvmodule();                 \
-    if (cvmodule->debug()) {                                            \
+    if (cvm::debug()) {                                            \
       cvmodule->log("Executing script function \""+std::string(#COMM)+"\""); \
     }                                                                   \
     colvarscript *script = cvmodule->proxy->script;                     \

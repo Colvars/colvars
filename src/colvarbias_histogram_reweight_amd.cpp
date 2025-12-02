@@ -59,7 +59,7 @@ int colvarbias_reweightaMD::update() {
     // update base class
     error_code |= colvarbias::update();
 
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Updating histogram bias " + this->name);
     }
 

@@ -38,13 +38,13 @@ void colvarproxy_tcl::init_tcl_pointers()
 #if defined(COLVARS_TCL)
   if (tcl_interp_ == NULL) {
     // Allocate a dedicated Tcl interpreter for Colvars
-    cvmodule->log("colvars: Allocating Tcl interpreter.\n");
+    cvm::main()->log("colvars: Allocating Tcl interpreter.\n");
     set_tcl_interp(Tcl_CreateInterp());
   } else {
-    cvmodule->error("Error: init_tcl_pointers called with non-NULL tcl_interp_\n");
+    cvm::error_static("Error: init_tcl_pointers called with non-NULL tcl_interp_\n");
   }
 #else
-  cvmodule->error("Error: Tcl support is not available in this build.\n");
+  cvm::error_static("Error: Tcl support is not available in this build.\n");
 #endif
 }
 
@@ -66,8 +66,8 @@ int colvarproxy_tcl::tcl_run_script(std::string const &script)
   Tcl_Interp *const interp = get_tcl_interp();
   int err = Tcl_Eval(interp, script.c_str());
   if (err != TCL_OK) {
-    cvmodule->log("Error while executing Tcl script:\n");
-    cvmodule->error(Tcl_GetStringResult(interp));
+    cvm::main()->log("Error while executing Tcl script:\n");
+    cvm::error_static(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
   return cvmodule->get_error();
@@ -83,8 +83,8 @@ int colvarproxy_tcl::tcl_run_file(std::string const &fileName)
   Tcl_Interp *const interp = get_tcl_interp();
   int err = Tcl_EvalFile(interp, fileName.c_str());
   if (err != TCL_OK) {
-    cvmodule->log("Error while executing Tcl script file \"" + fileName + "\":\n");
-    cvmodule->error(Tcl_GetStringResult(interp));
+    cvm::main()->log("Error while executing Tcl script file \"" + fileName + "\":\n");
+    cvm::error_static(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
   return cvmodule->get_error();
@@ -99,7 +99,7 @@ int colvarproxy_tcl::tcl_run_force_callback()
 #if defined(COLVARS_TCL)
   Tcl_Interp *const interp = get_tcl_interp();
   if (Tcl_FindCommand(interp, "calc_colvar_forces", NULL, 0) == NULL) {
-    cvmodule->error("Error: Colvars force procedure calc_colvar_forces is not defined.\n");
+    cvm::error_static("Error: Colvars force procedure calc_colvar_forces is not defined.\n");
     return COLVARS_ERROR;
   }
 
@@ -107,8 +107,8 @@ int colvarproxy_tcl::tcl_run_force_callback()
     + cvm::to_str(cvmodule->step_absolute());
   int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
-    cvmodule->log("Error while executing calc_colvar_forces:\n");
-    cvmodule->error(Tcl_GetStringResult(interp));
+    cvm::main()->log("Error while executing calc_colvar_forces:\n");
+    cvm::error_static(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
   return cvmodule->get_error();
@@ -130,7 +130,7 @@ int colvarproxy_tcl::tcl_run_colvar_callback(
 
   std::string cmd = std::string("calc_") + name;
   if (Tcl_FindCommand(interp, cmd.c_str(), NULL, 0) == NULL) {
-    cvmodule->error("Error: scripted colvar procedure \"" + cmd + "\" is not defined.\n");
+    cvm::error_static("Error: scripted colvar procedure \"" + cmd + "\" is not defined.\n");
     return COLVARS_ERROR;
   }
 
@@ -141,15 +141,15 @@ int colvarproxy_tcl::tcl_run_colvar_callback(
   int err = Tcl_Eval(interp, cmd.c_str());
   const char *result = Tcl_GetStringResult(interp);
   if (err != TCL_OK) {
-    return cvmodule->error(std::string("Error while executing ")
+    return cvm::error_static(std::string("Error while executing ")
                       + cmd + std::string(":\n") +
                       std::string(Tcl_GetStringResult(interp)),
                       COLVARS_ERROR);
   }
   std::istringstream is(result);
   if (value.from_simple_string(is.str()) != COLVARS_OK) {
-    cvmodule->log("Error parsing colvar value from script:");
-    cvmodule->error(result);
+    cvm::main()->log("Error parsing colvar value from script:");
+    cvm::error_static(result);
     return COLVARS_ERROR;
   }
   return cvmodule->get_error();
@@ -177,7 +177,7 @@ int colvarproxy_tcl::tcl_run_colvar_gradient_callback(
 
   std::string cmd = std::string("calc_") + name + "_gradient";
   if (Tcl_FindCommand(interp, cmd.c_str(), NULL, 0) == NULL) {
-    cvmodule->error("Error: scripted colvar gradient procedure \"" + cmd + "\" is not defined.\n");
+    cvm::error_static("Error: scripted colvar gradient procedure \"" + cmd + "\" is not defined.\n");
     return COLVARS_ERROR;
   }
 
@@ -187,7 +187,7 @@ int colvarproxy_tcl::tcl_run_colvar_gradient_callback(
   }
   int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
-    return cvmodule->error(std::string("Error while executing ")
+    return cvm::error_static(std::string("Error while executing ")
                       + cmd + std::string(":\n") +
                       std::string(Tcl_GetStringResult(interp)),
                       COLVARS_ERROR);
@@ -197,7 +197,7 @@ int colvarproxy_tcl::tcl_run_colvar_gradient_callback(
   Tcl_ListObjGetElements(interp, Tcl_GetObjResult(interp),
                          &n, &list);
   if (n != int(gradient.size())) {
-    cvmodule->error("Error parsing list of gradient values from script: found "
+    cvm::error_static("Error parsing list of gradient values from script: found "
                + cvm::to_str(n) + " values instead of " +
                cvm::to_str(gradient.size()));
     return COLVARS_ERROR;
@@ -205,9 +205,9 @@ int colvarproxy_tcl::tcl_run_colvar_gradient_callback(
   for (i = 0; i < gradient.size(); i++) {
     std::istringstream is(Tcl_GetString(list[i]));
     if (gradient[i].from_simple_string(is.str()) != COLVARS_OK) {
-      cvmodule->log("Gradient matrix size: " + cvm::to_str(gradient[i].size()));
-      cvmodule->log("Gradient string: " + cvm::to_str(Tcl_GetString(list[i])));
-      cvmodule->error("Error parsing gradient value from script", COLVARS_ERROR);
+      cvm::main()->log("Gradient matrix size: " + cvm::to_str(gradient[i].size()));
+      cvm::main()->log("Gradient string: " + cvm::to_str(Tcl_GetString(list[i])));
+      cvm::error_static("Error parsing gradient value from script", COLVARS_ERROR);
       return COLVARS_ERROR;
     }
   }

@@ -28,7 +28,7 @@
   {                                                                     \
     colvar *this_colvar = colvar_obj(pobj);                             \
     colvarmodule *cvmodule = this_colvar->get_cvmodule();               \
-    if (cvmodule->debug()) {                                                 \
+    if (cvm::debug()) {                                                 \
       cvmodule->log("Executing script function \""+std::string(#COMM)+"\""); \
     }                                                                   \
     colvarscript *script = cvmodule->proxy->script;                     \

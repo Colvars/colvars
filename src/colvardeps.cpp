@@ -13,6 +13,12 @@
 #include "colvardeps.h"
 
 
+// Temporary cheat using global static pointer
+colvardeps::colvardeps()
+  : colvarparse(cvm::main())
+{}
+
+
 colvardeps::colvardeps(colvarmodule *cvmodulein)
   : colvarparse(cvmodulein)
 {}
@@ -48,7 +54,7 @@ void colvardeps::free_children_deps() {
   // Cannot be in the base class destructor because it needs the derived class features()
   size_t i,j,fid;
 
-  if (cvmodule->debug()) cvmodule->log("DEPS: freeing children deps for " + description + "\n");
+  if (cvm::debug()) cvmodule->log("DEPS: freeing children deps for " + description + "\n");
 
   cvmodule->increase_depth();
   for (fid = 0; fid < feature_states.size(); fid++) {
@@ -56,7 +62,7 @@ void colvardeps::free_children_deps() {
       for (i=0; i<features()[fid]->requires_children.size(); i++) {
         int g = features()[fid]->requires_children[i];
         for (j=0; j<children.size(); j++) {
-          if (cvmodule->debug()) cvmodule->log("DEPS: dereferencing children's "
+          if (cvm::debug()) cvmodule->log("DEPS: dereferencing children's "
             + children[j]->features()[g]->description + "\n");
           children[j]->decr_ref_count(g);
         }
@@ -78,7 +84,7 @@ void colvardeps::restore_children_deps() {
       for (i=0; i<features()[fid]->requires_children.size(); i++) {
         int g = features()[fid]->requires_children[i];
         for (j=0; j<children.size(); j++) {
-          if (cvmodule->debug()) cvmodule->log("DEPS: re-enabling children's "
+          if (cvm::debug()) cvmodule->log("DEPS: re-enabling children's "
             + children[j]->features()[g]->description + "\n");
           children[j]->enable(g, false, false);
         }
@@ -142,7 +148,7 @@ int colvardeps::enable(int feature_id,
   // dry_run can be true because parent object is not active, yet we are displaying an error message
   // then error is set to true
 
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("DEPS: " + description +
       (dry_run ? " testing " : " enabling ") +  (error ? " [error] " : "") +
       "\"" + f->description +"\"\n");
@@ -153,7 +159,7 @@ int colvardeps::enable(int feature_id,
       // This is a dependency: prevent disabling this feature as long
       // as requirement is enabled
       fs->ref_count++;
-      if (cvmodule->debug())
+      if (cvm::debug())
         cvmodule->log("DEPS: bumping ref_count to " + cvm::to_str(fs->ref_count) + "\n");
     }
     // Do not try to further resolve deps
@@ -191,7 +197,7 @@ int colvardeps::enable(int feature_id,
   // reminder: exclusions must be mutual for this to work
   for (i=0; i<f->requires_exclude.size(); i++) {
     feature *g = features()[f->requires_exclude[i]];
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log(f->description + " requires exclude " + g->description + "\n");
     if (is_enabled(f->requires_exclude[i])) {
       if (!dry_run || error) {
@@ -207,7 +213,7 @@ int colvardeps::enable(int feature_id,
 
   // 2) solve internal deps (self)
   for (i=0; i<f->requires_self.size(); i++) {
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log(f->description + " requires self " + features()[f->requires_self[i]]->description + "\n");
     res = enable(f->requires_self[i], dry_run, false, error);
     if (res != COLVARS_OK) {
@@ -232,7 +238,7 @@ int colvardeps::enable(int feature_id,
     ok = false;
     for (j=0; j<f->requires_alt[i].size(); j++) {
       int g = f->requires_alt[i][j];
-      if (cvmodule->debug())
+      if (cvm::debug())
         cvmodule->log(f->description + " requires alt " + features()[g]->description + "\n");
       res = enable(g, true, false, error);  // see if available
       if (res == COLVARS_OK) {
@@ -301,7 +307,7 @@ int colvardeps::enable(int feature_id,
       restore_children_deps();
     }
     do_feature_side_effects(feature_id);
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("DEPS: feature \"" + f->description + "\" in "
         + description + " enabled, ref_count = 1." + "\n");
   }
@@ -314,7 +320,7 @@ int colvardeps::disable(int feature_id) {
   feature *f = features()[feature_id];
   feature_state *fs = &feature_states[feature_id];
 
-  if (cvmodule->debug()) cvmodule->log("DEPS: disabling feature \""
+  if (cvm::debug()) cvmodule->log("DEPS: disabling feature \""
       + f->description + "\" in " + description + "\n");
 
   if (fs->enabled == false) {
@@ -330,14 +336,14 @@ int colvardeps::disable(int feature_id) {
 
   // internal deps (self)
   for (i=0; i<f->requires_self.size(); i++) {
-    if (cvmodule->debug()) cvmodule->log("DEPS: dereferencing self "
+    if (cvm::debug()) cvmodule->log("DEPS: dereferencing self "
       + features()[f->requires_self[i]]->description + "\n");
     decr_ref_count(f->requires_self[i]);
   }
 
   // alternates
   for (i=0; i<fs->alternate_refs.size(); i++) {
-    if (cvmodule->debug()) cvmodule->log("DEPS: dereferencing alt "
+    if (cvm::debug()) cvmodule->log("DEPS: dereferencing alt "
       + features()[fs->alternate_refs[i]]->description + "\n");
     decr_ref_count(fs->alternate_refs[i]);
   }
@@ -354,7 +360,7 @@ int colvardeps::disable(int feature_id) {
     for (i=0; i<f->requires_children.size(); i++) {
       int g = f->requires_children[i];
       for (j=0; j<children.size(); j++) {
-        if (cvmodule->debug()) cvmodule->log("DEPS: dereferencing children's "
+        if (cvm::debug()) cvmodule->log("DEPS: dereferencing children's "
           + children[j]->features()[g]->description + "\n");
         children[j]->decr_ref_count(g);
       }
@@ -376,7 +382,7 @@ int colvardeps::decr_ref_count(int feature_id) {
   int &rc = feature_states[feature_id].ref_count;
   feature *f = features()[feature_id];
 
-  if (cvmodule->debug())
+  if (cvm::debug())
       cvmodule->log("DEPS: decreasing reference count of \"" + f->description
         + "\" in " + description + ".\n");
 
@@ -389,7 +395,7 @@ int colvardeps::decr_ref_count(int feature_id) {
   rc--;
   if (rc == 0 && f->is_dynamic()) {
     // we can auto-disable this feature
-    if (cvmodule->debug())
+    if (cvm::debug())
       cvmodule->log("DEPS will now auto-disable dynamic feature \"" + f->description
      + "\" in " + description + ".\n");
     disable(feature_id);
@@ -479,7 +485,7 @@ void colvardeps::add_child(colvardeps *child) {
     if (is_enabled(fid)) {
       for (i=0; i<features()[fid]->requires_children.size(); i++) {
         int g = features()[fid]->requires_children[i];
-        if (cvmodule->debug()) cvmodule->log("DEPS: re-enabling children's "
+        if (cvm::debug()) cvmodule->log("DEPS: re-enabling children's "
           + child->features()[g]->description + "\n");
         child->enable(g, false, false);
       }

@@ -18,7 +18,7 @@ int main (int argc, char *argv[]) {
 
   std::string gradfile (argv[1]);
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
-  if (cvmodule->get_error()) { return -1; }
+  if (proxy->cvmodule->get_error()) { return -1; }
 
   cvm::real err = 1.;
   cvm::real tol = 1e-10;
@@ -28,10 +28,10 @@ int main (int argc, char *argv[]) {
 
   // Load reference
   colvar_grid_scalar ref(gradfile + ".ref");
-  if (cvmodule->get_error()) { return -1; }
+  if (proxy->cvmodule->get_error()) { return -1; }
 
   if (ref.number_of_points() != fes.number_of_points()) {
-    cvmodule->error("Reference grid has wrong number of points: " + cvm::to_str(ref.number_of_points()) + "\n");
+    proxy->cvmodule->error("Reference grid has wrong number of points: " + cvm::to_str(ref.number_of_points()) + "\n");
     return -1;
   }
 

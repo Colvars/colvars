@@ -34,7 +34,7 @@
 class colvardeps : public colvarparse {
 public:
 
-  colvardeps();
+  colvardeps ();
   colvardeps(colvarmodule *cvmodule_in);
   virtual ~colvardeps();
 

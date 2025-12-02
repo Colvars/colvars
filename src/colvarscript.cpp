@@ -65,7 +65,7 @@ colvarscript::~colvarscript()
 
 int colvarscript::init_commands()
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Called colvarcript::init_commands()\n");
   }
 
@@ -159,7 +159,7 @@ int colvarscript::init_command(colvarscript::command const &comm,
   }
 
   cmd_fns[comm] = fn;
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Defined command \""+std::string(name)+"\", with help string:\n");
     cvmodule->log(get_command_full_help(name));
   }
@@ -349,7 +349,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 {
   clear_str_result();
 
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Called script run with " + cvm::to_str(objc) + " args:");
     for (int i = 0; i < objc; i++) {
       cvmodule->log(obj_to_str(objv[i]));
@@ -453,7 +453,7 @@ int colvarscript::run(int objc, unsigned char *const objv[])
 char *colvarscript::obj_to_str(unsigned char *obj)
 {
   char *strobj = reinterpret_cast<char *>(obj);
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Using simple-cast script::obj_to_str(): result = \"" +
              (strobj ? std::string(strobj) : std::string("(null)")) + "\"");
   }
@@ -463,7 +463,7 @@ char *colvarscript::obj_to_str(unsigned char *obj)
 
 std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Using simple-cast colvarscript::obj_to_str_vector().\n");
   }
 
@@ -496,7 +496,7 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
     }
   }
 
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("result = "+cvm::to_str(new_result)+".\n");
   }
 
@@ -510,7 +510,7 @@ int colvarscript::proc_features(colvardeps *obj,
   // size was already checked before calling
   std::string const subcmd(obj_to_str(objv[3]));
 
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Called proc_features() with " + cvm::to_str(objc) + " args:");
     for (int i = 0; i < objc; i++) {
       cvmodule->log(obj_to_str(objv[i]));

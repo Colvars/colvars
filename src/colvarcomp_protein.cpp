@@ -208,7 +208,7 @@ void colvar::alpha_angles::calc_value()
 
       x.real_value += theta_norm * f;
 
-      if (cvmodule->debug())
+      if (cvm::debug())
         cvmodule->log("Calpha-Calpha angle no. "+cvm::to_str(i+1)+" in \""+
                   this->name+"\" has a value of "+
                   (cvm::to_str((theta[i])->value().real_value))+
@@ -224,7 +224,7 @@ void colvar::alpha_angles::calc_value()
     for (size_t i = 0; i < hb.size(); i++) {
       (hb[i])->calc_value();
       x.real_value += hb_norm * (hb[i])->value().real_value;
-      if (cvmodule->debug())
+      if (cvm::debug())
         cvmodule->log("Hydrogen bond no. "+cvm::to_str(i+1)+" in \""+
                   this->name+"\" has a value of "+
                   (cvm::to_str((hb[i])->value().real_value))+".\n");
@@ -351,7 +351,7 @@ int colvar::dihedPC::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Initializing dihedral PC object.\n");
 
   bool b_use_index_groups = false;
@@ -518,7 +518,7 @@ int colvar::dihedPC::init(std::string const &conf)
     register_atom_group(theta.back()->atom_groups[3]);
   }
 
-  if (cvmodule->debug())
+  if (cvm::debug())
     cvmodule->log("Done initializing dihedPC object.\n");
 
   return error_code;

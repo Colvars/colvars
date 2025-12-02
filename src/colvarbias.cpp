@@ -141,7 +141,7 @@ int colvarbias::init(std::string const &conf)
 
   // Now that children are defined, we can solve dependencies
   enable(f_cvb_active);
-  if (cvmodule->debug()) print_state();
+  if (cvm::debug()) print_state();
 
   return error_code;
 }
@@ -340,7 +340,7 @@ int colvarbias::add_colvar(std::string const &cv_name)
 {
   if (colvar *cv = cvmodule->colvar_by_name(cv_name)) {
 
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Applying this bias to collective variable \""+
                cv->name+"\".\n");
     }
@@ -370,7 +370,7 @@ int colvarbias::add_colvar(std::string const &cv_name)
 
 int colvarbias::update()
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Updating the "+bias_type+" bias \""+this->name+"\".\n");
   }
 
@@ -434,7 +434,7 @@ int colvarbias::communicate_forces()
     }
   }
   for (i = 0; i < num_variables(); i++) {
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Communicating a force to colvar \""+
                variables(i)->name+"\".\n");
     }
@@ -534,7 +534,7 @@ int colvarbias::check_matching_state(std::string const &conf)
   }
 
   if (check_name != this->name) {
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("Ignoring state of bias \""+check_name+
                "\": this bias is named \""+name+"\".\n");
     }
@@ -558,7 +558,7 @@ int colvarbias::set_state_params(std::string const &conf)
 
 std::ostream & colvarbias::write_state(std::ostream &os)
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Writing formatted state for bias \""+name+"\"\n");
   }
   os.setf(std::ios::scientific, std::ios::floatfield);
@@ -575,7 +575,7 @@ std::ostream & colvarbias::write_state(std::ostream &os)
 
 cvm::memory_stream & colvarbias::write_state(cvm::memory_stream &os)
 {
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Writing unformatted state for bias \""+name+"\"\n");
   }
   os << state_keyword << std::string("configuration") << get_state_params();
@@ -724,7 +724,7 @@ int colvarbias::read_state_string(char const *buffer)
 {
   if (buffer != NULL) {
     size_t const buffer_size = strlen(buffer);
-    if (cvmodule->debug()) {
+    if (cvm::debug()) {
       cvmodule->log("colvarbias::read_state_string() with argument:\n");
       cvmodule->log(buffer);
     }
@@ -915,7 +915,7 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
 
   has_data = true;
 
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Updating system forces for bias "+this->name+"\n");
   }
 
@@ -923,7 +923,7 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
 
   size_t i;
 
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("TI bin for bias \"" + name + "\" = " + cvm::to_str(ti_bin) + ".\n");
   }
 
@@ -949,7 +949,7 @@ int colvarbias_ti::update_system_forces(std::vector<colvarvalue> const
         }
       }
       if (cvmodule->step_relative() > 0 || is_enabled(f_cvb_step_zero_data)) {
-        if (cvmodule->debug()) {
+        if (cvm::debug()) {
           cvmodule->log("Accumulating TI forces for bias \"" + name + "\".\n");
         }
         ti_avg_forces->acc_value(ti_bin, ti_system_forces);
@@ -1011,7 +1011,7 @@ std::istream & colvarbias_ti::read_state_data(std::istream &is)
   if (! is_enabled(f_cvb_calc_ti_samples)) {
     return is;
   }
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Reading state data for the TI estimator.\n");
   }
   if (! read_state_data_key(is, "histogram")) {
@@ -1026,7 +1026,7 @@ std::istream & colvarbias_ti::read_state_data(std::istream &is)
   if (! ti_avg_forces->read_raw(is)) {
     return is;
   }
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Done reading state data for the TI estimator.\n");
   }
   return is;
@@ -1038,7 +1038,7 @@ cvm::memory_stream & colvarbias_ti::read_state_data(cvm::memory_stream &is)
   if (! is_enabled(f_cvb_calc_ti_samples)) {
     return is;
   }
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Reading state data for the TI estimator.\n");
   }
   if (! read_state_data_key(is, "histogram")) {
@@ -1053,7 +1053,7 @@ cvm::memory_stream & colvarbias_ti::read_state_data(cvm::memory_stream &is)
   if (! ti_avg_forces->read_raw(is)) {
     return is;
   }
-  if (cvmodule->debug()) {
+  if (cvm::debug()) {
     cvmodule->log("Done reading state data for the TI estimator.\n");
   }
   return is;
