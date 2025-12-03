@@ -24,7 +24,7 @@ int main (int argc, char *argv[]) {
   cvm::real tol = 1e-10;
 
   colvargrid_integrate fes(grad_ptr);
-  fes.set_div();
+  fes.set_unweighted_div();
 
   // Load reference
   colvar_grid_scalar ref(gradfile + ".ref");
