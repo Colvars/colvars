@@ -268,7 +268,7 @@ int colvarbias_abf::init(std::string const &conf)
   if ( input_prefix.size() > 0 ) {
     read_gradients_samples();
     // Update divergence to account for input data
-    pmf->set_div();
+    pmf->set_unweighted_div();
   }
 
   // if extendedLangrangian is on, then call UI estimator
@@ -648,10 +648,9 @@ int colvarbias_abf::replica_share() {
     cvm::real err;
 
     // Update whole divergence field to account for newly shared gradients
-    pmf->set_div();
     pmf->integrate(integrate_iterations, integrate_tol, err);
     pmf->set_zero_minimum();
-    local_pmf->set_div();
+    local_pmf->set_unweighted_div();
     local_pmf->integrate(integrate_iterations, integrate_tol, err);
     local_pmf->set_zero_minimum();
     cvm::log("RMSD btw. local and global ABF FES: " + cvm::to_str(pmf->grid_rmsd(*local_pmf)));
@@ -845,7 +844,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     if (b_integrate) {
       // Do numerical integration (to high precision) and output a PMF
       cvm::real err;
-      czar_pmf_out->set_div();
+      czar_pmf_out->set_unweighted_div();
       czar_pmf_out->integrate(integrate_iterations, integrate_tol, err);
       czar_pmf_out->set_zero_minimum();
       write_grid_to_file<colvar_grid_scalar>(czar_pmf_out, prefix + ".czar.pmf", close);
@@ -991,7 +990,7 @@ template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
   }
   if (b_integrate) {
     // Update divergence to account for restart data
-    pmf->set_div();
+    pmf->set_unweighted_div();
   }
 
   if (shared_on) {
