@@ -230,7 +230,7 @@ int colvarbias_abf::init(std::string const &conf)
     pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted));
     if (b_CZAR_estimator) {
       // Possible extension: weighted integration for CZAR surface
-      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients, integrate_weighted));
+      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients));
     }
     if (shared_on) {
       local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted));
