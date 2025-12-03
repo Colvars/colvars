@@ -84,7 +84,7 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
     divergence.clear();
     divergence.resize(computation_nt);
     if (weighted || nd > 3) {
-      if (weighted && !samples)
+      if (weighted && !gradients->samples)
         cvm::error("Error: Trying to perform weighted Poisson integration without a samples grid.", COLVARS_BUG_ERROR);
       prepare_calculations();
       // extrapolate_data(); // Potential enhancement, needs testing
@@ -102,7 +102,7 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
       }
       div_border_supplement.clear();
     } else {
-      set_div();
+      set_unweighted_div();
     }
 
     cvm::real average = 0;
@@ -133,7 +133,7 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
 }
 
 
-void colvargrid_integrate::set_div()
+void colvargrid_integrate::set_unweighted_div()
 {
   if (nd == 1)
     return;
