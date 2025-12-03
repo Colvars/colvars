@@ -2,6 +2,7 @@
 #define COLVARGRID_INTEGRATE_H
 
 #include <iostream>
+#include <utility>
 
 #include "colvargrid.h"
 
@@ -41,10 +42,14 @@ public:
 
   /// \brief Set matrix containing divergence and boundary conditions
   /// based on complete gradient grid
-  void set_div();
+  void set_unweighted_div();
 
   void set_weighted_div();
 
+  void set_div(){
+    if (weighted) set_weighted_div();
+    else set_unweighted_div();
+  };
 
   /// \brief Add constant to potential so that its minimum value is zero
   /// Useful e.g. for output
