@@ -230,7 +230,7 @@ int colvarbias_abf::init(std::string const &conf)
     pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted));
     if (b_CZAR_estimator) {
       // Possible extension: weighted integration for CZAR surface
-      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients));
+      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients, integrate_weighted));
     }
     if (shared_on) {
       local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted));
@@ -680,7 +680,7 @@ int colvarbias_abf::replica_share_CZAR() {
       // overriding CZAR grids that are equal to local ones by default
       global_z_samples.reset(new colvar_grid_count(colvars, samples));
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-      global_czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
+      global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
       global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
     }
 
