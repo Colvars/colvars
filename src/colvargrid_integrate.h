@@ -2,6 +2,7 @@
 #define COLVARGRID_INTEGRATE_H
 
 #include <iostream>
+#include <utility>
 
 #include "colvargrid.h"
 
