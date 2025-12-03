@@ -229,8 +229,7 @@ int colvarbias_abf::init(std::string const &conf)
 
     pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted));
     if (b_CZAR_estimator) {
-      // Possible extension: weighted integration for CZAR surface
-      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients));
+      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients, integrate_weighted));
     }
     if (shared_on) {
       local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted));
@@ -826,7 +825,9 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     }
     cvm::log("gradients : " + cvm::to_str(czar_gradients_out->nx) + " multiplicity : " + cvm::to_str(czar_gradients_out->multiplicity()));
     cvm::log("samples : " + cvm::to_str(z_samples_out->nx) + " multiplicity : " + cvm::to_str(z_samples_out->multiplicity()));
-
+    if (czar_gradients_out->nx[0] != z_samples_out->nx[0] || czar_gradients_out->nx[1] != z_samples_out->nx[1]) {
+      cvm::error("How is it possible ?", COLVARS_ERROR | COLVARS_BUG_ERROR);
+    }
     // Update the CZAR estimator of gradients, except at step 0
     // in which case we preserve any existing data (e.g. read via inputPrefix, used to join strata in stratified eABF)
     if (cvm::step_relative() > 0) {
