@@ -268,7 +268,7 @@ int colvarbias_abf::init(std::string const &conf)
   if ( input_prefix.size() > 0 ) {
     read_gradients_samples();
     // Update divergence to account for input data
-    pmf->set_unweighted_div();
+    pmf->set_div();
   }
 
   // if extendedLangrangian is on, then call UI estimator
@@ -650,7 +650,6 @@ int colvarbias_abf::replica_share() {
     // Update whole divergence field to account for newly shared gradients
     pmf->integrate(integrate_iterations, integrate_tol, err);
     pmf->set_zero_minimum();
-    local_pmf->set_unweighted_div();
     local_pmf->integrate(integrate_iterations, integrate_tol, err);
     local_pmf->set_zero_minimum();
     cvm::log("RMSD btw. local and global ABF FES: " + cvm::to_str(pmf->grid_rmsd(*local_pmf)));
@@ -679,7 +678,7 @@ int colvarbias_abf::replica_share_CZAR() {
       // overriding CZAR grids that are equal to local ones by default
       global_z_samples.reset(new colvar_grid_count(colvars, samples));
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-      global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
+      global_czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
       global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
     }
 
@@ -825,6 +824,8 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     if (b_czar_window_file) {
       write_grid_to_file<colvar_grid_gradient>(z_gradients_out, prefix + ".zgrad", close);
     }
+    cvm::log("gradients : " + cvm::to_str(czar_gradients_out->nx) + " multiplicity : " + cvm::to_str(czar_gradients_out->multiplicity()));
+    cvm::log("samples : " + cvm::to_str(z_samples_out->nx) + " multiplicity : " + cvm::to_str(z_samples_out->multiplicity()));
 
     // Update the CZAR estimator of gradients, except at step 0
     // in which case we preserve any existing data (e.g. read via inputPrefix, used to join strata in stratified eABF)
@@ -844,7 +845,6 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     if (b_integrate) {
       // Do numerical integration (to high precision) and output a PMF
       cvm::real err;
-      czar_pmf_out->set_unweighted_div();
       czar_pmf_out->integrate(integrate_iterations, integrate_tol, err);
       czar_pmf_out->set_zero_minimum();
       write_grid_to_file<colvar_grid_scalar>(czar_pmf_out, prefix + ".czar.pmf", close);
@@ -990,7 +990,7 @@ template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
   }
   if (b_integrate) {
     // Update divergence to account for restart data
-    pmf->set_unweighted_div();
+    pmf->set_div();
   }
 
   if (shared_on) {
