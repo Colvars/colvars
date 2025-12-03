@@ -84,6 +84,8 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
     divergence.clear();
     divergence.resize(computation_nt);
     if (weighted || nd > 3) {
+      if (weighted && !samples)
+        cvm::error("Error: Trying to perform weighted Poisson integration without a samples grid.", COLVARS_BUG_ERROR);
       prepare_calculations();
       // extrapolate_data(); // Potential enhancement, needs testing
       set_weighted_div();
@@ -153,29 +155,30 @@ void colvargrid_integrate::update_div_neighbors(const std::vector<int> &ix0)
 {
   std::vector<int> ix(ix0);
   int i, j, k;
-
+  bool edge;
   // If not periodic, expanded grid ensures that upper neighbors of ix0 are valid grid points
   if (nd == 1) {
     return;
   } else if (nd == 2) {
-    update_div_local(ix);
+    edge = computation_grid->wrap_detect_edge(ix);
+    if (!edge) update_div_local(ix);
     ix[0]++;
-    wrap(ix);
-    update_div_local(ix);
+    edge = computation_grid->wrap_detect_edge(ix);
+    if (!edge) update_div_local(ix);
     ix[1]++;
-    wrap(ix);
-    update_div_local(ix);
+    edge = computation_grid->wrap_detect_edge(ix);
+    if (!edge) update_div_local(ix);
     ix[0]--;
-    wrap(ix);
-    update_div_local(ix);
+    edge = computation_grid->wrap_detect_edge(ix);
+    if (!edge) update_div_local(ix);
   } else if (nd == 3) {
     for (i = 0; i < 2; i++) {
       ix[1] = ix0[1];
       for (j = 0; j < 2; j++) {
         ix[2] = ix0[2];
         for (k = 0; k < 2; k++) {
-          wrap(ix);
-          update_div_local(ix);
+          edge = computation_grid->wrap_detect_edge(ix);
+          if (!edge) update_div_local(ix);
           ix[2]++;
         }
         ix[1]++;
