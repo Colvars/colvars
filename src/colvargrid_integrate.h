@@ -207,8 +207,6 @@ protected:
     divergence.resize(computation_nt);
 
     if (weighted) {
-      if (!samples) cvm::error("Error: Trying to perform weighted Poisson integration without a samples grid.", COLVARS_BUG_ERROR);
-
       div_border_supplement.resize(computation_nt);
       prepare_divergence_stencils();
       prepare_laplacian_stencils();
