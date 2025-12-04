@@ -19,7 +19,12 @@
 
 
 
-colvar::cvc::cvc() {}
+colvar::cvc::cvc()
+ : colvardeps(cvm::main())
+{
+  description = "uninitialized colvar component";
+  cvc::init_dependencies();
+}
 
 
 colvar::cvc::cvc(colvarmodule *cvmodule_in)
