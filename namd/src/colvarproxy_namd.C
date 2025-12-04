@@ -112,12 +112,12 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   init_atoms_map();
 
   // initialize module: this object will be the communication proxy
-  colvars = new colvarmodule(this);
+  cvmodule = new colvarmodule(this);
 
   cvm::log("Using NAMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
-  colvars->cite_feature("NAMD engine");
-  colvars->cite_feature("Colvars-NAMD interface");
+  cvmodule->cite_feature("NAMD engine");
+  cvmodule->cite_feature("Colvars-NAMD interface");
 
   errno = 0;
   for ( ; config; config = config->next ) {
@@ -127,9 +127,9 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   // Trigger immediate initialization of the module
   colvarproxy::parse_module_config();
   colvarproxy_namd::setup();
-  colvars->update_engine_parameters();
-  colvars->setup_input();
-  colvars->setup_output();
+  cvmodule->update_engine_parameters();
+  cvmodule->setup_input();
+  cvmodule->setup_output();
 
   // save to Node for Tcl script access
   Node::Object()->colvars = colvars;
@@ -141,7 +141,7 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
 #endif
 
   if (simparams->firstTimestep != 0) {
-    colvars->set_initial_step(static_cast<cvm::step_number>(simparams->firstTimestep));
+    cvmodule->set_initial_step(static_cast<cvm::step_number>(simparams->firstTimestep));
   }
 
 #if !defined (NAMD_UNIFIED_REDUCTION)
@@ -240,7 +240,7 @@ int colvarproxy_namd::setup()
 {
   int error_code = colvarproxy::setup();
 
-  if (colvars->size() == 0) {
+  if (cvmodule->size() == 0) {
     // Module is empty, nothing to do
     return COLVARS_OK;
   }
@@ -296,10 +296,10 @@ int colvarproxy_namd::setup()
 #endif
 
   size_t const new_features_hash =
-    std::hash<std::string>{}(colvars->feature_report(0));
+    std::hash<std::string>{}(cvmodule->feature_report(0));
   if (new_features_hash != features_hash) {
     // Nag only once, there may be many run commands
-    log(std::string("\n")+colvars->feature_report(0)+std::string("\n"));
+    log(std::string("\n")+cvmodule->feature_report(0)+std::string("\n"));
     features_hash = new_features_hash;
   }
 
@@ -345,9 +345,9 @@ void colvarproxy_namd::calculate()
     // First run after the proxy is constructed
 
     colvarproxy_namd::setup();
-    colvars->update_engine_parameters();
-    colvars->setup_input();
-    colvars->setup_output();
+    cvmodule->update_engine_parameters();
+    cvmodule->setup_input();
+    cvmodule->setup_output();
     // Controller is only available after full startup phase, so now
     controller = &Node::Object()->state->getController();
 
@@ -357,7 +357,7 @@ void colvarproxy_namd::calculate()
 
     // Use the time step number inherited from GlobalMaster
     if ( step - previous_NAMD_step == time_step_factor() ) {
-      colvars->it += time_step_factor();
+      cvmodule->it += time_step_factor();
       b_simulation_continuing = false;
     } else {
 
@@ -372,7 +372,7 @@ void colvarproxy_namd::calculate()
       colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
       colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
       colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
-      colvars->setup_output();
+      cvmodule->setup_output();
 
     }
   }
@@ -407,7 +407,7 @@ void colvarproxy_namd::calculate()
 
   if (cvm::debug()) {
     cvm::log(std::string(cvm::line_marker)+
-             "colvarproxy_namd, step no. "+cvm::to_str(colvars->it)+"\n"+
+             "colvarproxy_namd, step no. "+cvm::to_str(cvmodule->it)+"\n"+
              "Updating atomic data arrays.\n");
   }
 
@@ -557,7 +557,7 @@ void colvarproxy_namd::calculate()
   }
 
   // call the collective variable module
-  if (colvars->calc() != COLVARS_OK) {
+  if (cvmodule->calc() != COLVARS_OK) {
     cvm::error("Error in the collective variables module.\n", COLVARS_ERROR);
   }
 
@@ -1208,7 +1208,7 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
     cvm::log("Requesting from NAMD a group of size "+cvm::to_str(atoms_ids.size())+
         " for collective variables calculation.\n");
 
-  colvars->cite_feature("Scalable center-of-mass computation (NAMD)");
+  cvmodule->cite_feature("Scalable center-of-mass computation (NAMD)");
 
   // Note: modifyRequestedGroups is supposed to be in sync with the colvarproxy arrays,
   // and to stay that way during a simulation
@@ -1397,7 +1397,7 @@ int colvarproxy_namd::check_volmap_by_id(int volmap_id)
     return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
                       ") for map.\n", COLVARS_INPUT_ERROR);
   }
-  colvars->cite_feature("GridForces volumetric map implementation for NAMD");
+  cvmodule->cite_feature("GridForces volumetric map implementation for NAMD");
   return COLVARS_OK;
 }
 
@@ -1412,7 +1412,7 @@ int colvarproxy_namd::check_volmap_by_name(char const *volmap_name)
     return cvm::error("Error: invalid map name \""+std::string(volmap_name)+
                       "\".\n", COLVARS_INPUT_ERROR);
   }
-  colvars->cite_feature("GridForces volumetric map implementation for NAMD");
+  cvmodule->cite_feature("GridForces volumetric map implementation for NAMD");
   return COLVARS_OK;
 }
 
@@ -1549,13 +1549,13 @@ int colvarproxy_namd::smp_loop(int n_items, std::function<int (int)> const &work
 void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *param)
 {
   colvarproxy_namd *proxy = (colvarproxy_namd *) param;
-  colvarmodule *cv = proxy->colvars;
+  colvarmodule *cvmodule = proxy->cvmodule;
 #if CMK_TRACE_ENABLED
   double before = CmiWallTimer();
 #endif
   cvm::increase_depth();
   for (int i = first; i <= last; i++) {
-    colvarbias *b = (*(cv->biases_active()))[i];
+    colvarbias *b = (*(cvmodule->biases_active()))[i];
     if (cvm::debug()) {
       cvm::log("["+cvm::to_str(proxy->smp_thread_id())+"/"+cvm::to_str(proxy->smp_num_threads())+
                "]: calc_cv_biases_smp(), first = "+cvm::to_str(first)+
@@ -1573,12 +1573,11 @@ void calc_cv_biases_smp(int first, int last, void *result, int paramNum, void *p
 
 int colvarproxy_namd::smp_biases_loop()
 {
-  colvarmodule *cv = this->colvars;
-  const int numChunks = smp_num_threads() > cv->variables_active_smp()->size() ?
-                        cv->variables_active_smp()->size() :
+  const int numChunks = smp_num_threads() > cvmodule->variables_active_smp()->size() ?
+                        cvmodule->variables_active_smp()->size() :
                         smp_num_threads();
   CkLoop_Parallelize(calc_cv_biases_smp, 1, this,
-                     numChunks, 0, cv->biases_active()->size()-1);
+                     numChunks, 0, cvmodule->biases_active()->size()-1);
   return cvm::get_error();
 }
 
@@ -1586,7 +1585,7 @@ int colvarproxy_namd::smp_biases_loop()
 void calc_cv_scripted_forces(int paramNum, void *param)
 {
   colvarproxy_namd *proxy = (colvarproxy_namd *) param;
-  colvarmodule *cv = proxy->colvars;
+  colvarmodule *cvmodule = proxy->cvmodule;
 #if CMK_TRACE_ENABLED
   double before = CmiWallTimer();
 #endif
@@ -1603,9 +1602,8 @@ void calc_cv_scripted_forces(int paramNum, void *param)
 
 int colvarproxy_namd::smp_biases_script_loop()
 {
-  colvarmodule *cv = this->colvars;
   CkLoop_Parallelize(calc_cv_biases_smp, 1, this,
-                     cv->biases_active()->size(), 0, cv->biases_active()->size()-1,
+                     cvmodule->biases_active()->size(), 0, cvmodule->biases_active()->size()-1,
                      1, NULL, CKLOOP_NONE,
                      calc_cv_scripted_forces, 1, this);
   return cvm::get_error();

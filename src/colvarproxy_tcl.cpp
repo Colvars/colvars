@@ -23,7 +23,7 @@
 
 colvarproxy_tcl::colvarproxy_tcl()
 {
-  tcl_interp_ = NULL;
+  tcl_interp_ = nullptr;
 }
 
 
@@ -36,9 +36,10 @@ void colvarproxy_tcl::init_tcl_pointers()
 {
   // This is overloaded by NAMD and VMD proxies to use the local interpreters
 #if defined(COLVARS_TCL)
-  if (tcl_interp_ == NULL) {
+  if (tcl_interp_ == nullptr) {
     // Allocate a dedicated Tcl interpreter for Colvars
-    cvm::main()->log("colvars: Allocating Tcl interpreter.\n");
+    // We may not have an allocated module yet
+    cvm::log_static("colvars: Allocating Tcl interpreter.\n");
     set_tcl_interp(Tcl_CreateInterp());
   } else {
     cvm::error_static("Error: init_tcl_pointers called with non-NULL tcl_interp_\n");
@@ -70,7 +71,7 @@ int colvarproxy_tcl::tcl_run_script(std::string const &script)
     cvm::error_static(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
-  return cvmodule->get_error();
+  return cvm::main()->get_error();
 #else
   return COLVARS_NOT_IMPLEMENTED;
 #endif
@@ -87,7 +88,7 @@ int colvarproxy_tcl::tcl_run_file(std::string const &fileName)
     cvm::error_static(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
-  return cvmodule->get_error();
+  return cvm::main()->get_error();
 #else
   return COLVARS_NOT_IMPLEMENTED;
 #endif
@@ -104,14 +105,14 @@ int colvarproxy_tcl::tcl_run_force_callback()
   }
 
   std::string cmd = std::string("calc_colvar_forces ")
-    + cvm::to_str(cvmodule->step_absolute());
+    + cvm::to_str(cvm::main()->step_absolute());
   int err = Tcl_Eval(interp, cmd.c_str());
   if (err != TCL_OK) {
     cvm::main()->log("Error while executing calc_colvar_forces:\n");
     cvm::error_static(Tcl_GetStringResult(interp));
     return COLVARS_ERROR;
   }
-  return cvmodule->get_error();
+  return cvm::main()->get_error();
 #else
   return COLVARS_NOT_IMPLEMENTED;
 #endif
@@ -152,7 +153,7 @@ int colvarproxy_tcl::tcl_run_colvar_callback(
     cvm::error_static(result);
     return COLVARS_ERROR;
   }
-  return cvmodule->get_error();
+  return cvm::main()->get_error();
 
 #else
 
@@ -212,7 +213,7 @@ int colvarproxy_tcl::tcl_run_colvar_gradient_callback(
     }
   }
 
-  return cvmodule->get_error();
+  return cvm::main()->get_error();
 
 #else
 

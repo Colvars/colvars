@@ -741,7 +741,11 @@ public:
   /// Print a message to stderr
   /// Used in lightweight objects that do not have access to cvmodule
   static void log_static(std::string const &message) {
-    std::cout << "Colvars: " << message << std::endl;
+    if (colvarmodule::main()) {
+      colvarmodule::main()->log(message);
+    } else {
+      std::cout << "Colvars: " << message << std::endl;
+    }
   }
 
   /// Print a message to the main log and set global error code
@@ -751,11 +755,12 @@ public:
   /// Used in lightweight objects that do not have access to cvmodule
   /// Typically fatal errors that reflect bugs, so hopefully rare
   static int error_static(std::string const &message, int code = -1) {
-    // Drastic version
-    // std::cerr << "Colvars error: " << message << std::endl;
-    // exit(code);
-    // Temporary version
-    code = colvarmodule::main()->error(message, code);
+    if (colvarmodule::main()) {
+      code = colvarmodule::main()->error(message, code);
+    } else {
+      std::cerr << "Colvars: " << message << std::endl;
+      exit(-1);
+    }
     return code;
   }
 

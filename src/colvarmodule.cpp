@@ -1467,7 +1467,6 @@ int colvarmodule::reset()
   // Iterate backwards because we are deleting the elements as we go
   while (!biases.empty()) {
     colvarbias* tail = biases.back();
-    biases.pop_back();
     delete tail; // the bias destructor updates the biases array
   }
   biases.clear();
@@ -1479,7 +1478,6 @@ int colvarmodule::reset()
   // Iterate backwards because we are deleting the elements as we go
   while (!colvars.empty()) {
     colvar* cvi = colvars.back();
-    colvars.pop_back();
     delete cvi; // the colvar destructor updates the colvars array
   };
   colvars.clear();

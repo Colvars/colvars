@@ -246,8 +246,6 @@ public:
 
 
   /// Constructor
-  colvar();
-
   colvar(colvarmodule *cvmodule_in);
 
   /// Main init function

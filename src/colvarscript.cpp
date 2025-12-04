@@ -648,9 +648,8 @@ int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid);
 extern "C" {
   int Colvars_Init(Tcl_Interp *interp) {
     colvarproxy *proxy = new colvarproxy();
-    colvarmodule *cv = new colvarmodule(proxy);
+    proxy->cvmodule = new colvarmodule(proxy);
     proxy->set_tcl_interp(interp);
-    proxy->cvmodule = cv;
     Tcl_CreateObjCommand(interp, "cv", tcl_run_colvarscript_command,
                          (ClientData *) proxy->script, (Tcl_CmdDeleteProc *) nullptr);
     Tcl_EvalEx(interp, "package provide colvars", -1, 0);
@@ -664,6 +663,8 @@ extern "C" int tcl_run_colvarscript_command(ClientData clientData,
                                             Tcl_Interp *my_interp,
                                             int objc, Tcl_Obj *const objv[])
 {
+  colvarscript *script = colvarscript_obj(clientData);
+  colvarmodule *cvmodule = script->module();
   if (!cvmodule) {
 #if defined(VMDTCL)
 
@@ -714,7 +715,7 @@ extern "C" int tcl_run_colvarscript_command(ClientData clientData,
 
   colvarproxy *proxy = cvmodule->proxy;
   Tcl_Interp *interp = my_interp ? my_interp : proxy->get_tcl_interp();
-  colvarscript *script = colvarscript_obj(clientData);
+
   if (!script) {
     char const *errstr = "Called tcl_run_colvarscript_command "
       "without a Colvars script interface set up.\n";
