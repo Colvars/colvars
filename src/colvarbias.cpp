@@ -346,7 +346,7 @@ int colvarbias::add_colvar(std::string const &cv_name)
     }
 
     colvars.push_back(cv);
-    cvmodule->biases.push_back(this); // add back-reference to this bias to colvar
+    cv->biases.push_back(this); // add back-reference to this bias to colvar
 
     // Add dependency link. All biases need at least the value of each colvar
     // although possibly not at all timesteps
