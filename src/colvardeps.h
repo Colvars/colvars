@@ -38,8 +38,6 @@ public:
   colvardeps(colvarmodule *cvmodule_in);
   virtual ~colvardeps();
 
-public:
-
   // Subclasses should initialize the following members:
 
   std::string description; // reference to object name (cv, cvc etc.)
@@ -137,24 +135,13 @@ public:
   inline bool is_static(int id) { return features()[id]->type == f_type_static; }
   inline bool is_user(int id) { return features()[id]->type == f_type_user; }
 
-  /// Never populated, used to return a reference to an empty array
-  static std::vector<feature *> dummy_features;
-
   // Accessor to array of all features with deps, static in most derived classes
   // Subclasses with dynamic dependency trees may override this
   // with a non-static array
   // Intermediate classes (colvarbias and colvarcomp, which are also base classes)
   // implement this as virtual to allow overriding
-  virtual const std::vector<feature *> &features() const
-  {
-    cvmodule->error("Base class features() function called - please report a bug.", COLVARS_BUG_ERROR);
-    return dummy_features;
-  };
-  virtual std::vector<feature *>&modify_features()
-  {
-    cvmodule->error("Base class modify_features() function called - please report a bug", COLVARS_BUG_ERROR);
-    return dummy_features;
-  };
+  virtual const std::vector<feature *> &features() const = 0;
+  virtual std::vector<feature *>&modify_features() = 0;
 
   void add_child(colvardeps *child);
 
@@ -435,7 +422,7 @@ public:
   };
 
   /// Initialize dependency tree for object of a derived class
-  virtual int init_dependencies() { return COLVARS_OK; }
+  virtual int init_dependencies() = 0;
 
   /// Make feature f require feature g within the same object
   void require_feature_self(int f, int g);
