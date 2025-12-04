@@ -345,7 +345,7 @@ public:
     std::stringstream stream(s);
     size_t i = 0;
     if (this->size()) {
-      while ((stream >> (*this)[i]) && (i < this->size())) {
+      while ((i < this->size()) && (stream >> (*this)[i])) {
         i++;
       }
       if (i < this->size()) {
