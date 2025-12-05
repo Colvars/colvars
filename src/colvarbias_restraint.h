@@ -40,6 +40,10 @@ public:
   virtual int set_state_params(std::string const &conf);
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
+  
+  /// \brief Allow a harmonicForceConstant CV to retrieve the calculated thermodynamic force.
+  /// \return The thermodynamic force, defined as -dU/d_lambda.
+  cvm::real get_k_derivative() const;
 
   /// \brief Constructor
   colvarbias_restraint(char const *key);
@@ -58,6 +62,15 @@ protected:
 
   /// \brief Derivative of the potential function with respect to the force constant
   virtual cvm::real d_restraint_potential_dk(size_t i) const = 0;
+  
+  /// \brief Derivative of the bias energy with respect to the dynamic parameter lambda (F_lambda = -dU/d_lambda).
+  /// This is the thermodynamic force applied to the controlling harmonicForceConstant CV.
+  cvm::real k_derivative;
+  
+  /// \brief Pointer to the colvar that dynamically controls the force constant (if any).
+  /// This is typically a harmonicForceConstant CV.
+  colvar *dynamic_k_cv;
+  
 };
 
 
@@ -87,6 +100,7 @@ public:
   colvarbias_restraint_k(char const *key);
   virtual int init(std::string const &conf);
   virtual int change_configuration(std::string const &conf);
+  cvm::real get_force_k() const { return force_k; }
 
 protected:
 
@@ -286,6 +300,10 @@ public:
   virtual std::ostream & write_traj(std::ostream &os);
   virtual int change_configuration(std::string const &conf);
   virtual cvm::real energy_difference(std::string const &conf);
+  
+  /// \brief Calculate the derivative of the potential energy with respect to the effective force constant.
+  /// This is needed by the controlling harmonicForceConstant CV.
+  cvm::real get_dU_d_k_eff() const;
 
 protected:
 

@@ -21,6 +21,7 @@
 #include "colvarbias.h"
 #include "colvars_memstream.h"
 #include "colvarcomp_torchann.h"
+#include "colvarcomp_harmonicforceconstant.h"
 
 std::map<std::string, std::function<colvar::cvc *()>> colvar::global_cvc_map =
     std::map<std::string, std::function<colvar::cvc *()>>();
@@ -323,6 +324,14 @@ int colvar::init(std::string const &conf)
     enable(f_cv_external);
 
     static_cast<colvar::alch_lambda *>(cvcs[0].get())->init_alchemy(time_step_factor);
+  }
+  
+  // Enable the f_cv_external flag for harmonicForceConstant CVs
+  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "harmonicForceConstant") {
+    cvm::log("Enabling f_cv_external for harmonicForceConstant CV.\n");
+    enable(f_cv_external);
+    // This will bypass the calculation of the harmonic potential in extendedLagrangian,
+    // and the system force will be provided by cvcs[0]->total_force() (as ft).
   }
 
   // If using scripted biases, any colvar may receive bias forces
@@ -822,7 +831,7 @@ template <typename def_class_name>
 void colvar::add_component_type(char const *def_description, char const *def_config_key)
 {
   if (global_cvc_map.count(def_config_key) == 0) {
-    global_cvc_map[def_config_key] = []() {
+    global_cvc_map[def_config_key] = []() -> colvar::cvc* {
       return new def_class_name();
     };
     global_cvc_desc_map[def_config_key] = std::string(def_description);
@@ -875,6 +884,9 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
     }
 
     cvcs.back()->setup();
+    if (auto* hfc_cvc = dynamic_cast<cvc_harmonicforceconstant*>(cvcs.back().get())) {
+        hfc_cvc->set_parent(this);
+    }
     if (cvm::debug()) {
       cvm::log("Done initializing a \"" + std::string(def_config_key) + "\" component" +
                (cvm::debug() ? ", named \"" + cvcs.back()->name + "\"" : "") + ".\n");
@@ -926,6 +938,7 @@ void colvar::define_component_types()
   add_component_type<eigenvector>("eigenvector", "eigenvector");
   add_component_type<alch_lambda>("alchemical coupling parameter", "alchLambda");
   add_component_type<alch_Flambda>("force on alchemical coupling parameter", "alchFLambda");
+  add_component_type<cvc_harmonicforceconstant>("force constant as a dynamic variable", "harmonicForceConstant");
   add_component_type<aspath>("arithmetic path collective variables (s)", "aspath");
   add_component_type<azpath>("arithmetic path collective variables (z)", "azpath");
   add_component_type<gspath>("geometrical path collective variables (s)", "gspath");
@@ -3065,6 +3078,23 @@ int colvar::calc_runave()
   }
 
   return error_code;
+}
+
+colvar::cvc* colvar::get_cvc_ptr(size_t index) {
+  if (index < cvcs.size()) {
+    // .get() retrieves the raw pointer from the std::shared_ptr
+    return cvcs[index].get();
+  }
+  // Return a null pointer if the index is out of bounds
+  return nullptr;
+}
+
+// Const version of the function
+colvar::cvc const* colvar::get_cvc_ptr(size_t index) const {
+  if (index < cvcs.size()) {
+    return cvcs[index].get();
+  }
+  return nullptr;
 }
 
 // Static members
