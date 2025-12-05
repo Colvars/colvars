@@ -26,8 +26,15 @@
   int CVSCRIPT_COMM_FNAME(COMM)(void *pobj,                             \
                                 int objc, unsigned char *const objv[])  \
   {                                                                     \
-    colvar *this_colvar = colvar_obj(pobj);                             \
-    colvarmodule *cvmodule = this_colvar->get_cvmodule();               \
+    colvar *this_colvar = nullptr;                                      \
+    colvarmodule *cvmodule = nullptr;                                   \
+    if (colvarscript::is_valid(static_cast<colvarscript *>(pobj))) {    \
+      colvarscript *script = colvarscript_obj(pobj);                    \
+      cvmodule = script->module();                                      \
+    } else {                                                            \
+      this_colvar = colvar_obj(pobj);                                   \
+      cvmodule = this_colvar->get_cvmodule();                           \
+    }                                                                   \
     if (cvm::debug()) {                                                 \
       cvmodule->log("Executing script function \""+std::string(#COMM)+"\""); \
     }                                                                   \
@@ -40,7 +47,7 @@
     }                                                                   \
     if (objc > 1) {                                                     \
       /* Silence unused parameter warning */                            \
-      (void) objv[0];                                                    \
+      (void) objv[0];                                                   \
     }                                                                   \
     FN_BODY;                                                            \
   }
