@@ -39,7 +39,7 @@ void colvarproxy_tcl::init_tcl_pointers()
   if (tcl_interp_ == nullptr) {
     // Allocate a dedicated Tcl interpreter for Colvars
     // We may not have an allocated module yet
-    cvm::log_static("colvars: Allocating Tcl interpreter.\n");
+    cvm::log_static("Allocating Tcl interpreter.\n");
     set_tcl_interp(Tcl_CreateInterp());
   } else {
     cvm::error_static("Error: init_tcl_pointers called with non-NULL tcl_interp_\n");
