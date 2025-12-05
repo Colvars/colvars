@@ -23,10 +23,23 @@
 #define COLVARSCRIPT_ERROR -1
 #define COLVARSCRIPT_OK 0
 
+#define COLVARSCRIPT_MAGIC 0x5349474E
 
 class colvardeps;
 
 class colvarscript {
+
+public:
+  /// This magic number is used to validate colvarscript pointers
+  uint32_t const magic = COLVARSCRIPT_MAGIC;
+
+  /// Validate colvarscript pointer to catch invalid pointers passed by legacy code
+  /// e.g. legacy NAMD Tcl interface
+  static bool is_valid(const colvarscript* script_ptr) {
+    if (!script_ptr) return false;
+    // if address is inaccessible, this will sefgault
+    return script_ptr->magic == COLVARSCRIPT_MAGIC;
+  }
 
 private:
 

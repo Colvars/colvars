@@ -617,13 +617,13 @@ int colvarbias_meta::update_bias()
 
     case single_replica:
 
-      add_hill(hill(cvmodule->step_absolute(), hill_weight*hills_scale,
+      add_hill(hill(cvmodule, cvmodule->step_absolute(), hill_weight*hills_scale,
                     colvar_values, colvar_sigmas));
 
       break;
 
     case multiple_replicas:
-      add_hill(hill(cvmodule->step_absolute(), hill_weight*hills_scale,
+      add_hill(hill(cvmodule, cvmodule->step_absolute(), hill_weight*hills_scale,
                     colvar_values, colvar_sigmas, replica_id));
       std::ostream &replica_hills_os =
         cvmodule->proxy->output_stream(replica_hills_file, "replica hills file");
@@ -1705,7 +1705,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colva
   }
 
   hill_iter const hills_end = hills.end();
-  hills.push_back(hill(h_it, h_weight, h_centers, h_sigmas, h_replica));
+  hills.push_back(hill(cvmodule, h_it, h_weight, h_centers, h_sigmas, h_replica));
   if (new_hills_begin == hills_end) {
     // if new_hills_begin is unset, set it for the first time
     new_hills_begin = hills.end();
@@ -2099,11 +2099,12 @@ std::string colvarbias_meta::hill::output_traj()
 }
 
 
-colvarbias_meta::hill::hill(cvm::step_number it_in,
+colvarbias_meta::hill::hill(colvarmodule *cvmodule_in,
+                            cvm::step_number it_in,
                             cvm::real W_in,
                             std::vector<colvarvalue> const &cv_values,
                             std::vector<cvm::real> const &cv_sigmas,
-                            std::string const &replica_in, colvarmodule *cvmodule_in)
+                            std::string const &replica_in)
   : it(it_in),
     sW(1.0),
     W(W_in),
