@@ -402,7 +402,7 @@ enum e_pdb_field {
   e_pdb_ntot
 };
 
-e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
+e_pdb_field colvarproxy_vmd::pdb_field_str2enum(std::string const &pdb_field_str)
 {
   e_pdb_field pdb_field = e_pdb_none;
 

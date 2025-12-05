@@ -201,6 +201,18 @@ public:
   cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                  cvm::atom_pos const &pos2) const;
 
+  enum e_pdb_field {
+    e_pdb_none,
+    e_pdb_occ,
+    e_pdb_beta,
+    e_pdb_x,
+    e_pdb_y,
+    e_pdb_z,
+    e_pdb_ntot
+  };
+
+  e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str);
+
   int load_atoms_pdb(char const *filename,
                      cvm::atom_group &atoms,
                      std::string const &pdb_field,

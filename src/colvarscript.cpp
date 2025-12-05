@@ -66,7 +66,7 @@ colvarscript::~colvarscript()
 int colvarscript::init_commands()
 {
   if (cvm::debug()) {
-    cvmodule->log("Called colvarcript::init_commands()\n");
+    cvmodule->log("Called colvarscript::init_commands()\n");
   }
 
   cmd_help.resize(colvarscript::cv_n_commands);
@@ -664,6 +664,11 @@ extern "C" int tcl_run_colvarscript_command(ClientData clientData,
                                             int objc, Tcl_Obj *const objv[])
 {
   colvarscript *script = colvarscript_obj(clientData);
+  if (!colvarscript::is_valid(script)) {
+    char const *errstr = "Error: invalid colvarscript pointer - Colvars might be compiled with an incompatible legacy version of NAMD.\n";
+    Tcl_SetResult(my_interp, const_cast<char *>(errstr), TCL_VOLATILE);
+    return TCL_ERROR;
+  }
   colvarmodule *cvmodule = script->module();
   if (!cvmodule) {
 #if defined(VMDTCL)
