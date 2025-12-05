@@ -669,14 +669,14 @@ extern "C" int tcl_run_colvarscript_command(ClientData clientData,
                                             int objc, Tcl_Obj *const objv[])
 {
   colvarscript *script = colvarscript_obj(clientData);
+  colvarmodule *cvmodule = nullptr;
+
   if (!colvarscript::is_valid(script)) {
-    char const *errstr = "Error: invalid colvarscript pointer - Colvars might be compiled with an incompatible legacy version of NAMD.\n";
-    Tcl_SetResult(my_interp, const_cast<char *>(errstr), TCL_VOLATILE);
-    return TCL_ERROR;
-  }
-  colvarmodule *cvmodule = script->module();
-  if (!cvmodule) {
+
 #if defined(VMDTCL)
+    // In VMD, tell the user to initialize using the script interface
+    // This code should be moved to a function in colvarproxy_vmd.C
+    // possibly a general proxy routine for initializing Colvars on demand
 
     if (objc == 2) {
       if (!strcmp(Tcl_GetString(objv[1]), "molid")) {
@@ -714,12 +714,21 @@ extern "C" int tcl_run_colvarscript_command(ClientData clientData,
 
     Tcl_SetResult(my_interp, (char *) "First, setup the Colvars module with: "
                   "cv molid <id>|top", TCL_STATIC);
-
+    return TCL_OK;
+  }
 #else
+    // Other engines than VMD cannot continue without a valid colvarscript object
+    char const *errstr = "Error: invalid colvarscript pointer - Colvars may be compiled with an incompatible back-end version.\n";
+    Tcl_SetResult(my_interp, const_cast<char *>(errstr), TCL_VOLATILE);
+    return TCL_ERROR;
+  }
+#endif
+
+  cvmodule = script->module();
+  if (!cvmodule) {
     Tcl_SetResult(my_interp,
                   const_cast<char *>("Error: Colvars module not yet initialized"),
                   TCL_STATIC);
-#endif
     return TCL_ERROR;
   }
 
