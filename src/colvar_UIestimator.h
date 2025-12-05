@@ -226,7 +226,6 @@ namespace UIestimator {
             const std::vector<double> & width_in,
             const std::vector<double> & krestr_in,                // force constant in eABF
             const std::string & output_filename_in,              // the prefix of output files
-            const int output_freq_in,
             const bool restart_in,                              // whether restart from a .count and a .grad file
             const std::vector<std::string> & input_filename_in,   // the prefixes of input files
             const double temperature_in)
@@ -236,7 +235,6 @@ namespace UIestimator {
                 width(width_in),
                 krestr(krestr_in),
                 output_filename(output_filename_in),
-                output_freq(output_freq_in),
                 restart(restart_in),
                 input_filename(input_filename_in),
                 temperature(temperature_in)
@@ -361,7 +359,6 @@ namespace UIestimator {
         std::vector<double> width;
         std::vector<double> krestr;
         std::string output_filename;
-        int output_freq;
         bool restart;
         std::vector<std::string> input_filename;
         double temperature;

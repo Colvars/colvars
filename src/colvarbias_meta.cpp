@@ -1604,18 +1604,18 @@ cvm::memory_stream &colvarbias_meta::write_hill(cvm::memory_stream &os,
 }
 
 
-template <typename IST> IST &hill_stream_error(IST &is, size_t start_pos, std::string const &key, colvarmodule *cvmodule)
+template <typename IST> IST &hill_stream_error(IST &is, size_t start_pos, std::string const &key, colvarmodule *cvmodule_in)
 {
   is.clear();
   is.seekg(start_pos);
   is.setstate(std::ios::failbit);
-  cvmodule->error("Error: in reading data for keyword \"" + key + "\" from stream.\n",
+  cvmodule_in->error("Error: in reading data for keyword \"" + key + "\" from stream.\n",
              COLVARS_INPUT_ERROR);
   return is;
 }
 
 
-template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colvarmodule *cvmodule)
+template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colvarmodule *cvmodule_in)
 {
   if (!is)
     return is; // do nothing if failbit is set
@@ -1635,7 +1635,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colva
   if (formatted) {
     std::string brace;
     if (!(is >> brace) || (brace != "{")) {
-      return hill_stream_error<IST>(is, start_pos, "hill", cvmodule);
+      return hill_stream_error<IST>(is, start_pos, "hill", cvmodule_in);
     }
   }
 
@@ -1649,19 +1649,19 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colva
   std::string h_replica;
 
   if (!read_state_data_key(is, "step") || !(is >> h_it)) {
-    return hill_stream_error<IST>(is, start_pos, "step", cvmodule);
+    return hill_stream_error<IST>(is, start_pos, "step", cvmodule_in);
   }
 
   if (read_state_data_key(is, "weight")) {
     if (!(is >> h_weight)) {
-      return hill_stream_error<IST>(is, start_pos, "weight", cvmodule);
+      return hill_stream_error<IST>(is, start_pos, "weight", cvmodule_in);
     }
   }
 
   if (read_state_data_key(is, "centers")) {
     for (size_t i = 0; i < num_variables(); i++) {
       if (!(is >> h_centers[i])) {
-        return hill_stream_error<IST>(is, start_pos, "centers", cvmodule);
+        return hill_stream_error<IST>(is, start_pos, "centers", cvmodule_in);
       }
     }
   }
@@ -1669,7 +1669,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colva
   if (read_state_data_key(is, "widths")) {
     for (size_t i = 0; i < num_variables(); i++) {
       if (!(is >> h_sigmas[i])) {
-        return hill_stream_error<IST>(is, start_pos, "widths", cvmodule);
+        return hill_stream_error<IST>(is, start_pos, "widths", cvmodule_in);
       }
       // For backward compatibility, read the widths instead of the sigmas
       h_sigmas[i] /= 2.0;
@@ -1679,13 +1679,13 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colva
   if (comm != single_replica) {
     if (read_state_data_key(is, "replicaID")) {
       if (!(is >> h_replica)) {
-        return hill_stream_error<IST>(is, start_pos, "replicaID", cvmodule);
+        return hill_stream_error<IST>(is, start_pos, "replicaID", cvmodule_in);
       }
       if (h_replica != replica_id) {
-        cvmodule->error("Error: trying to read a hill created by replica \"" + h_replica +
+        cvmodule_in->error("Error: trying to read a hill created by replica \"" + h_replica +
                        "\" for replica \"" + replica_id + "\"; did you swap output files?\n",
                    COLVARS_INPUT_ERROR);
-        return hill_stream_error<IST>(is, start_pos, "replicaID", cvmodule);
+        return hill_stream_error<IST>(is, start_pos, "replicaID", cvmodule_in);
       }
     }
   }
@@ -1693,7 +1693,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colva
   if (formatted) {
     std::string brace;
     if (!(is >> brace) || (brace != "}")) {
-      return hill_stream_error<IST>(is, start_pos, "hill", cvmodule);
+      return hill_stream_error<IST>(is, start_pos, "hill", cvmodule_in);
     }
   }
 
