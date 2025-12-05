@@ -49,7 +49,7 @@
  *    a group never changes.
  *
  */
-class cvm::atom_group: public colvarparse, public colvardeps {
+class cvm::atom_group: public colvardeps {
 public:
   /**
    *  @brief A helper function to re-arrange the a vector of
@@ -91,7 +91,7 @@ public:
    */
   int init_dependencies() override;
   /// \brief Implementation of the feature list accessor for atom group
-  const std::vector<feature *> &features() const override { return ag_features; }
+  virtual const std::vector<feature *> &features() const override { return ag_features; }
   std::vector<feature *> &modify_features() override { return ag_features; }
   static void delete_features()
   {

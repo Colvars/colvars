@@ -26,15 +26,16 @@ int main(int argc, char *argv[]) {
   int err = 0;
 
   colvarproxy_stub *proxy = new colvarproxy_stub();
+  colvarmodule *cvmodule = proxy->cvmodule;
   // Initialize simple unit system to test file input
   err |= proxy->set_unit_system("real", false);
 
   if (argc > 3) {
     err |= proxy->set_output_prefix(output_prefix);
   }
-  err |= proxy->colvars->setup_input();
-  err |= proxy->colvars->setup_output();
-  err |= proxy->colvars->read_config_file(configuration_file.c_str());
+  err |= cvmodule->setup_input();
+  err |= cvmodule->setup_output();
+  err |= cvmodule->read_config_file(configuration_file.c_str());
 
   if (argc > 2) {
     // Read number of atoms from XYZ header
@@ -42,7 +43,7 @@ int main(int argc, char *argv[]) {
     int natoms;
     ifs >> natoms;
     ifs.close();
-    cvm::log("Reading trajectory for " + cvm::to_str(natoms)
+    cvmodule->log("Reading trajectory for " + cvm::to_str(natoms)
               + " atoms from XYZ file " + trajectory_file);
     for (int ai = 0; ai < natoms; ai++) {
       proxy->init_atom(ai+1);
@@ -50,27 +51,27 @@ int main(int argc, char *argv[]) {
     int io_err = 0;
     while (!io_err) {
       io_err = proxy->read_frame_xyz(trajectory_file.c_str(), output_force);
-      if (!io_err) cvm::log("Frame " + cvm::to_str(cvm::step_absolute()));
+      if (!io_err) cvmodule->log("Frame " + cvm::to_str(cvmodule->step_absolute()));
     }
     proxy->post_run();
-    cvm::log("Done");
+    cvmodule->log("Done");
   }
 
-  cvm::log("Input files read during this test:");
+  cvmodule->log("Input files read during this test:");
   unsigned char * args[2] = {
     (unsigned char *) "cv",
     (unsigned char *) "listinputfiles" };
-  err |= run_colvarscript_command(2, args);
-  cvm::log("  " + std::string(get_colvarscript_result()));
+  err |= run_colvarscript_command(proxy->script, 2, args);
+  cvmodule->log("  " + std::string(get_colvarscript_result()));
 
-  double const max_gradient_error = proxy->colvars->get_max_gradient_error();
+  double const max_gradient_error = proxy->cvmodule->get_max_gradient_error();
   if (max_gradient_error > 0.) {
-    cvm::log("Max gradient error (debugGradients): " + cvm::to_str(max_gradient_error));
+    cvmodule->log("Max gradient error (debugGradients): " + cvm::to_str(max_gradient_error));
 
     double threshold = 1e-3;
     // Fail test if error is above threshold
     if (max_gradient_error > threshold) {
-      cvm::log("Error: gradient inaccuracy is above threshold (" + cvm::to_str(threshold) + ")");
+      cvmodule->log("Error: gradient inaccuracy is above threshold (" + cvm::to_str(threshold) + ")");
       err = 1;
     }
   }

@@ -1,0 +1,15 @@
+diff --git a/src/gromacs/applied_forces/colvars/colvarspreprocessor.cpp b/src/gromacs/applied_forces/colvars/colvarspreprocessor.cpp
+index 16c0f8ceba..c671eef78d 100644
+--- a/src/gromacs/applied_forces/colvars/colvarspreprocessor.cpp
++++ b/src/gromacs/applied_forces/colvars/colvarspreprocessor.cpp
+@@ -78,8 +78,8 @@ ColvarsPreProcessor::ColvarsPreProcessor(const std::string&   colvarsConfigStrin
+     // Initialize t_pbc struct
+     set_pbc(&gmxPbc_, pbcType, box);
+ 
+-    cvm::log(cvm::line_marker);
+-    cvm::log("End colvars Initialization.\n\n");
++    cvmodule->log(cvmodule->line_marker);
++    cvmodule->log("End colvars Initialization.\n\n");
+ }
+ 
+ std::vector<RVec> ColvarsPreProcessor::getColvarsCoords()

@@ -241,35 +241,35 @@ static inline real acos(real const &x)
   /// see constants at the top of this file
 private:
 
-  static int errorCode;
+  int errorCode = 0;
 
 public:
 
-  static void set_error_bits(int code);
+  void set_error_bits(int code);
 
-  static bool get_error_bit(int code);
+  bool get_error_bit(int code);
 
-  static inline int get_error()
+  inline int get_error()
   {
     return errorCode;
   }
 
-  static void clear_error();
+  void clear_error();
 
   /// Current step number
-  static step_number it;
+  step_number it = 0;
   /// Starting step number for this run
-  static step_number it_restart;
+  step_number it_restart = 0;
 
   /// Return the current step number from the beginning of this run
-  static inline step_number step_relative()
+  inline step_number step_relative()
   {
     return it - it_restart;
   }
 
   /// Return the current step number from the beginning of the whole
   /// calculation
-  static inline step_number step_absolute()
+  inline step_number step_absolute()
   {
     return it;
   }
@@ -288,10 +288,9 @@ private:
 
 public:
   /// Accessor for the above
-  static inline std::string &output_prefix()
+  inline std::string &output_prefix()
   {
-    colvarmodule *cv = colvarmodule::main();
-    return cv->cvm_output_prefix;
+    return this->cvm_output_prefix;
   }
 
 private:
@@ -321,7 +320,7 @@ public:
 
   /* TODO: implement named CVCs
   /// Array of named (reusable) collective variable components
-  static std::vector<cvc *>     cvcs;
+  std::vector<cvc *>     cvcs;
   /// Named cvcs register themselves at initialization time
   inline void register_cvc(cvc *p) {
     cvcs.push_back(p);
@@ -538,7 +537,7 @@ public:
   int write_state_buffer(std::vector<unsigned char> &buffer);
 
   /// Strips .colvars.state from filename and checks that it is not empty
-  static std::string state_file_prefix(char const *filename);
+  std::string state_file_prefix(char const *filename);
 
   /// Open a trajectory file if requested (and leave it open)
   int open_traj_file(std::string const &file_name);
@@ -556,19 +555,19 @@ public:
   /// Write all other output files
   int write_output_files();
   /// Backup a file before writing it
-  static int backup_file(char const *filename);
+  int backup_file(char const *filename);
 
   /// Write the state into a string
   int write_restart_string(std::string &output);
 
   /// Look up a bias by name; returns NULL if not found
-  static colvarbias * bias_by_name(std::string const &name);
+  colvarbias * bias_by_name(std::string const &name);
 
   /// Look up a colvar by name; returns NULL if not found
-  static colvar * colvar_by_name(std::string const &name);
+  colvar * colvar_by_name(std::string const &name);
 
   /// Look up a named atom group by name; returns NULL if not found
-  static atom_group * atom_group_soa_by_name(std::string const& name);
+  atom_group * atom_group_soa_by_name(std::string const& name);
 
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
@@ -604,6 +603,8 @@ public:
   int read_traj(char const *traj_filename,
                 long        traj_read_begin,
                 long        traj_read_end);
+
+  // In a first phase, keep to_str() static
 
   /// Convert to string for output purposes
   static std::string to_str(char const *s);
@@ -702,27 +703,29 @@ public:
   static std::string wrap_string(std::string const &s,
                                  size_t nchars);
 
-  /// Number of characters to represent a time step
-  static size_t const it_width;
-  /// Number of digits to represent a collective variables value(s)
-  static size_t const cv_prec;
-  /// Number of characters to represent a collective variables value(s)
-  static size_t const cv_width;
-  /// Number of digits to represent the collective variables energy
-  static size_t const en_prec;
-  /// Number of characters to represent the collective variables energy
-  static size_t const en_width;
-  /// Line separator in the log output
-  static const char * const line_marker;
+  // i/o constants
 
+  /// Number of characters to represent a time step
+  size_t const it_width = 12;
+  /// Number of digits to represent a collective variables value(s)
+  size_t const cv_prec = 14;
+  /// Number of characters to represent a collective variables value(s)
+  size_t const cv_width = 21;
+  /// Number of digits to represent the collective variables energy
+  size_t const en_prec = 14;
+  /// Number of characters to represent the collective variables energy
+  size_t const en_width = 21;
+  /// Line separator in the log output
+  const char * const line_marker = (const char *)
+    "----------------------------------------------------------------------\n";
 
   // proxy functions
 
   /// \brief Time step of MD integrator (fs)
-  static real dt();
+  real dt();
 
   /// Request calculation of total force from MD engine
-  static void request_total_force();
+  void request_total_force();
 
   /// Track usage of the given Colvars feature
   int cite_feature(std::string const &feature);
@@ -732,58 +735,81 @@ public:
 
   /// Print a message to the main log
   /// \param message Message to print
-  /// \param min_log_level Only print if cvm::log_level() >= min_log_level
-  static void log(std::string const &message, int min_log_level = 10);
+  /// \param min_log_level Only print if cvmodule->log_level() >= min_log_level
+  void log(std::string const &message, int min_log_level = 10);
+
+  /// Print a message to stderr
+  /// Used in lightweight objects that do not have access to cvmodule
+  static void log_static(std::string const &message) {
+    if (colvarmodule::main()) {
+      colvarmodule::main()->log(message);
+    } else {
+      std::cout << "colvars: " << message << std::endl;
+    }
+  }
 
   /// Print a message to the main log and set global error code
-  static int error(std::string const &message, int code = -1);
+  int error(std::string const &message, int code = -1);
+
+  /// Print an error message to stderr
+  /// Used in lightweight objects that do not have access to cvmodule
+  /// Typically fatal errors that reflect bugs, so hopefully rare
+  static int error_static(std::string const &message, int code = -1) {
+    if (colvarmodule::main()) {
+      code = colvarmodule::main()->error(message, code);
+    } else {
+      std::cerr << "colvars: " << message << std::endl;
+      exit(-1);
+    }
+    return code;
+  }
 
 private:
 
   /// Level of logging requested by the user
-  static int log_level_;
+  int log_level_ = 10;
 
 public:
 
   /// Level of logging requested by the user
-  static inline int log_level()
+  inline int log_level()
   {
     return log_level_;
   }
 
   /// Level at which initialization messages are logged
-  static inline int log_init_messages()
+  inline int log_init_messages()
   {
     return 1;
   }
 
   /// Level at which a keyword's user-provided value is logged
-  static inline int log_user_params()
+  inline int log_user_params()
   {
     return 2;
   }
 
   /// Level at which a keyword's default value is logged
-  static inline int log_default_params()
+  inline int log_default_params()
   {
     return 3;
   }
 
   /// Level at which output-file operations are logged
-  static inline int log_output_files()
+  inline int log_output_files()
   {
     return 4;
   }
 
   /// Level at which input-file operations (configuration, state) are logged
-  static inline int log_input_files()
+  inline int log_input_files()
   {
     return 5;
   }
 
   /// \brief Get the distance between two atomic positions with pbcs handled
   /// correctly
-  static rvector position_distance(atom_pos const &pos1,
+  rvector position_distance(atom_pos const &pos1,
                                    atom_pos const &pos2);
 
   /// \brief Names of .ndx files that have been loaded
@@ -809,7 +835,7 @@ public:
   /// and this string is non-empty, select atoms for which this field is
   /// non-zero \param pdb_field_value (optional) if non-zero, select only
   /// atoms whose pdb_field equals this
-  static int load_coords(char const *filename,
+  int load_coords(char const *filename,
                          std::vector<rvector> *pos,
                          atom_group *atoms,
                          std::string const &pdb_field,
@@ -822,15 +848,15 @@ public:
                       bool keep_open = false);
 
   /// Frequency for collective variables trajectory output
-  static size_t cv_traj_freq;
+  size_t cv_traj_freq = 0;
 
   /// Frequency for saving output restarts
-  static size_t restart_out_freq;
+  size_t restart_out_freq = 0;
   /// Output restart file name
   std::string   restart_out_name;
 
   /// Pseudo-random number with Gaussian distribution
-  static real rand_gaussian();
+  real rand_gaussian();
 
 protected:
 
@@ -880,24 +906,24 @@ public:
   }
 
   /// Get the current object depth in the hierarchy
-  static size_t & depth();
+  size_t & depth();
 
   /// Increase the depth (number of indentations in the output)
-  static void increase_depth();
+  void increase_depth();
 
   /// Decrease the depth (number of indentations in the output)
-  static void decrease_depth();
+  void decrease_depth();
 
-  static inline bool scripted_forces()
+  inline bool scripted_forces()
   {
     return use_scripted_forces;
   }
 
   /// Use scripted colvars forces?
-  static bool use_scripted_forces;
+  bool use_scripted_forces = false;
 
   /// Wait for all biases before calculating scripted forces?
-  static bool scripting_after_biases;
+  bool scripting_after_biases = true;
 
   /// Calculate the energy and forces of scripted biases
   int calc_scripted_forces();
@@ -914,11 +940,12 @@ public:
   }
 
   /// \brief Pointer to the proxy object, used to retrieve atomic data
-  /// from the hosting program; it is static in order to be accessible
-  /// from static functions in the colvarmodule class
-  static colvarproxy *proxy;
+  /// from the hosting program
+  colvarproxy *proxy = nullptr;
+  /// Temporary static pointer to unique proxy object
+  static colvarproxy *proxy_static;
 
-  /// \brief Access the one instance of the Colvars module
+  /// \brief Access the main instance of the Colvars module
   static colvarmodule *main();
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)

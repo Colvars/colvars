@@ -14,11 +14,11 @@ int main (int argc, char *argv[]) {
   }
 
   colvarproxy *proxy = new colvarproxy();
-  proxy->colvars = new colvarmodule(proxy); // This could be omitted if we used the colvarproxy_stub class
+  proxy->cvmodule = new colvarmodule(proxy); // This could be omitted if we used the colvarproxy_stub class
 
   std::string gradfile (argv[1]);
   std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
-  if (cvm::get_error()) { return -1; }
+  if (proxy->cvmodule->get_error()) { return -1; }
 
   cvm::real err = 1.;
   cvm::real tol = 1e-10;
@@ -28,10 +28,10 @@ int main (int argc, char *argv[]) {
 
   // Load reference
   colvar_grid_scalar ref(gradfile + ".ref");
-  if (cvm::get_error()) { return -1; }
+  if (proxy->cvmodule->get_error()) { return -1; }
 
   if (ref.number_of_points() != fes.number_of_points()) {
-    cvm::error("Reference grid has wrong number of points: " + cvm::to_str(ref.number_of_points()) + "\n");
+    proxy->cvmodule->error("Reference grid has wrong number of points: " + cvm::to_str(ref.number_of_points()) + "\n");
     return -1;
   }
 

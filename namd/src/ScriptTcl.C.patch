@@ -1,0 +1,18 @@
+diff --git a/src/ScriptTcl.C b/src/ScriptTcl.C
+index 682ebfa1..997c73cb 100644
+--- a/src/ScriptTcl.C
++++ b/src/ScriptTcl.C
+@@ -1560,7 +1560,12 @@ int ScriptTcl::Tcl_colvars(ClientData clientData,
+ {
+   ScriptTcl *script = (ScriptTcl *) clientData;
+   script->initcheck();
+-  return tcl_run_colvarscript_command(clientData, interp, objc, objv);
++  colvarmodule *cvmodule = Node::Object()->colvars;
++  if (!cvmodule) {
++    Tcl_SetResult(interp, (char *)"Colvars module not active", TCL_VOLATILE);
++    return TCL_ERROR;
++  }
++  return tcl_run_colvarscript_command(cvmodule->proxy->script, interp, objc, objv);
+ }
+ 
+ int ScriptTcl::Tcl_checkpoint(ClientData clientData,

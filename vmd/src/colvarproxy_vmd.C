@@ -28,6 +28,8 @@
 
 namespace {
   // Keep pointers to relevant runtime objects
+  // These global variables may include a registry of colvarmodule
+  // (or proxy) instances associated with each molecule
   VMDApp *colvars_vmd_ptr = NULL;
   colvarproxy_vmd *colvarproxy_vmd_ptr = NULL;
 }
@@ -50,7 +52,8 @@ int tcl_colvars(ClientData clientData, Tcl_Interp *interp,
   if (colvars_vmd_ptr == NULL) {
     colvars_vmd_ptr = (VMDApp *) clientData;
   }
-  return tcl_run_colvarscript_command(clientData, interp, objc, objv);
+  colvarscript *script = colvarproxy_vmd_ptr ? colvarproxy_vmd_ptr->script : nullptr;
+  return tcl_run_colvarscript_command(script, interp, objc, objv);
 }
 
 
@@ -59,8 +62,8 @@ int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid_input)
   VMDApp *const vmd = colvars_vmd_ptr;
   int molid = molid_input == -(1<<16) ? vmd->molecule_top() : molid_input;
   if (vmd->molecule_valid_id(molid)) {
-    colvarproxy_vmd_ptr = new colvarproxy_vmd(interp, vmd, molid);
-    return (cvm::get_error() == COLVARS_OK) ? TCL_OK : TCL_ERROR;
+    colvarproxy_vmd_ptr = new colvarproxy_vmd(interp, vmd, molid); // also constructs colvarmodule
+    return (colvarproxy_vmd_ptr->cvmodule->get_error() == COLVARS_OK) ? TCL_OK : TCL_ERROR;
   } else {
     Tcl_SetResult(interp, (char *) "Error: molecule not found.",
                   TCL_STATIC);
@@ -96,15 +99,15 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   have_scripts = false;
 #endif
 
-  colvars = new colvarmodule(this);
-  cvm::log("Using VMD interface, version "+
+  cvmodule = new colvarmodule(this);
+  cvmodule->log("Using VMD interface, version "+
            cvm::to_str(COLVARPROXY_VERSION)+".\n");
 
-  colvars->cite_feature("VMD engine");
-  colvars->cite_feature("Colvars-VMD interface (command line)");
+  cvmodule->cite_feature("VMD engine");
+  cvmodule->cite_feature("Colvars-VMD interface (command line)");
 
-  colvars->cv_traj_freq = 0; // I/O will be handled explicitly
-  colvars->restart_out_freq = 0;
+  cvmodule->cv_traj_freq = 0; // I/O will be handled explicitly
+  cvmodule->restart_out_freq = 0;
   cvm::rotation::monitor_crossings = false; // Avoid unnecessary error messages
 
   // Default to VMD's native unit system, but do not set the units string
@@ -112,8 +115,8 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
   angstrom_value_ = 1.;
   kcal_mol_value_ = 1.;
 
-  colvars->setup_input();
-  colvars->setup_output();
+  cvmodule->setup_input();
+  cvmodule->setup_output();
 
   // set the same seed as in Measure.C
   vmd_srandom(38572111);
@@ -146,7 +149,7 @@ int colvarproxy_vmd::setup()
     return COLVARS_ERROR;
   }
 
-  return colvars->update_engine_parameters();
+  return cvmodule->update_engine_parameters();
 }
 
 
@@ -162,7 +165,7 @@ int colvarproxy_vmd::set_unit_system(std::string const &units_in, bool check_onl
   // colvarmodule sets this flag if new units are requested while colvars are already defined
   if (check_only) {
     if ((units != "" && units_in != units) || (units == "" && units_in != "real")) {
-      cvm::error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
+      cvmodule->error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
                   + units + "\".\nReset the Colvars Module or delete all variables to change the unit.\n");
       return COLVARS_ERROR;
     } else {
@@ -184,7 +187,7 @@ int colvarproxy_vmd::set_unit_system(std::string const &units_in, bool check_onl
     angstrom_value_ = 0.1;    // nm
     kcal_mol_value_ = 4.184;  // kJ/mol
   } else {
-    cvm::error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
+    cvmodule->error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
     return COLVARS_ERROR;
   }
 
@@ -299,7 +302,7 @@ int colvarproxy_vmd::update_atomic_properties()
 void colvarproxy_vmd::request_total_force(bool yesno)
 {
   if ((yesno == true) && (total_force_requested == false)) {
-    cvm::log("Warning: a bias requested total forces, which are undefined in VMD.  "
+    cvmodule->log("Warning: a bias requested total forces, which are undefined in VMD.  "
              "This is only meaningful when analyzing a simulation where these were used, "
              "provided that a state file is loaded.\n");
   }
@@ -343,7 +346,7 @@ int colvarproxy_vmd::set_frame(long int f)
   if (vmdmol->get_frame(f) != NULL) {
 
     vmdmol_frame = f;
-    colvars->it = f;
+    cvmodule->it = f;
 
     update_input();
 
@@ -392,17 +395,7 @@ int colvarproxy_vmd::run_colvar_gradient_callback(
 #endif
 
 
-enum e_pdb_field {
-  e_pdb_none,
-  e_pdb_occ,
-  e_pdb_beta,
-  e_pdb_x,
-  e_pdb_y,
-  e_pdb_z,
-  e_pdb_ntot
-};
-
-e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
+colvarproxy_vmd::e_pdb_field colvarproxy_vmd::pdb_field_str2enum(std::string const &pdb_field_str)
 {
   e_pdb_field pdb_field = e_pdb_none;
 
@@ -432,7 +425,7 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
   }
 
   if (pdb_field == e_pdb_none) {
-    cvm::error("Error: unsupported PDB field, \""+
+    cvmodule->error("Error: unsupported PDB field, \""+
                      pdb_field_str+"\".\n");
   }
 
@@ -447,7 +440,7 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
                                      double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0 && indices.size() == 0) {
-    cvm::error("Bug alert: either PDB field should be defined or list of "
+    cvmodule->error("Bug alert: either PDB field should be defined or list of "
                "atom IDs should be available when loading atom coordinates!\n",
                COLVARS_BUG_ERROR);
     return COLVARS_ERROR;
@@ -467,7 +460,7 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
   int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", tmpspec);
   delete tmpspec;
   if (tmpmolid < 0) {
-    cvm::error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
+    cvmodule->error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
                COLVARS_FILE_ERROR);
     return COLVARS_ERROR;
   }
@@ -527,7 +520,7 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
       if (!pos_allocated) {
         pos.push_back(cvm::atom_pos(0.0, 0.0, 0.0));
       } else if (ipos >= pos.size()) {
-        cvm::error("Error: the PDB file \""+
+        cvmodule->error("Error: the PDB file \""+
                    std::string(pdb_filename)+
                    "\" contains coordinates for "
                    "more atoms than needed.\n", COLVARS_INPUT_ERROR);
@@ -544,7 +537,7 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
 
     if (ipos < pos.size() || (!use_pdb_field && current_index != indices.end())) {
       size_t n_requested = use_pdb_field ? pos.size() : indices.size();
-      cvm::error("Error: number of matching records in the PDB file \""+
+      cvmodule->error("Error: number of matching records in the PDB file \""+
                  std::string(pdb_filename)+"\" ("+cvm::to_str(ipos)+
                  ") does not match the number of requested coordinates ("+
                  cvm::to_str(n_requested)+").\n", COLVARS_INPUT_ERROR);
@@ -562,7 +555,7 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
   }
 
   vmd->molecule_delete(tmpmolid);
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return (cvmodule->get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 
@@ -572,9 +565,9 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
                                     double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0) {
-    cvm::log("Error: must define which PDB field to use "
+    cvmodule->log("Error: must define which PDB field to use "
              "in order to define atoms from a PDB file.\n");
-    cvm::set_error_bits(COLVARS_INPUT_ERROR);
+    cvmodule->set_error_bits(COLVARS_INPUT_ERROR);
     return COLVARS_ERROR;
   }
 
@@ -584,7 +577,7 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
   delete tmpspec;
 
   if (tmpmolid < 0) {
-    cvm::error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
+    cvmodule->error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
                COLVARS_FILE_ERROR);
     return COLVARS_ERROR;
   }
@@ -629,7 +622,7 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
   }
 
   vmd->molecule_delete(tmpmolid);
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return (cvmodule->get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 
@@ -640,11 +633,11 @@ int colvarproxy_vmd::check_atom_id(int atom_number)
   int const aid(atom_number-1);
 
   if (cvm::debug())
-    cvm::log("Adding atom "+cvm::to_str(aid+1)+
+    cvmodule->log("Adding atom "+cvm::to_str(aid+1)+
              " for collective variables calculation.\n");
 
   if ( (aid < 0) || (aid >= vmdmol->nAtoms) ) {
-    cvm::error("Error: invalid atom number specified, "+
+    cvmodule->error("Error: invalid atom number specified, "+
                cvm::to_str(atom_number)+"\n");
     return COLVARS_INPUT_ERROR;
   }
@@ -714,7 +707,7 @@ int colvarproxy_vmd::check_atom_id(cvm::residue_id const &resid,
 
 
   if (aid < 0) {
-    cvm::error("Error: could not find atom \""+
+    cvmodule->error("Error: could not find atom \""+
                atom_name+"\" in residue "+
                cvm::to_str(resid)+
                ( (segment_id.size()) ?
@@ -743,7 +736,7 @@ int colvarproxy_vmd::init_atom(cvm::residue_id const &resid,
   }
 
   if (cvm::debug())
-    cvm::log("Adding atom \""+
+    cvmodule->log("Adding atom \""+
              atom_name+"\" in residue "+
              cvm::to_str(resid)+
              " (index "+cvm::to_str(aid)+
@@ -790,7 +783,7 @@ int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
 int colvarproxy_vmd::check_volmap_by_id(int volmap_id)
 {
   if ((volmap_id < 0) || (volmap_id >= vmdmol->num_volume_data())) {
-    return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
+    return cvmodule->error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
                       ") for map.\n", COLVARS_INPUT_ERROR);
   }
   return COLVARS_OK;
@@ -809,7 +802,7 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
                                       cvm::real *value,
                                       cvm::real *atom_field)
 {
-  int i = 0;
+  size_t i = 0;
   float coord[3], voxcoord[3], grad[3];
   cvm::rvector dV(0.0);
   cvm::atom_pos const origin(0.0, 0.0, 0.0);

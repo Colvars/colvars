@@ -22,16 +22,16 @@ namespace colvars_gpu {
  * @note This class is basically a GPU version of colvarmodule::calc_colvars().
  * In the future, the atom groups are supposed to be shared among CVCs,
  * so instead of iterating over all colvars and computing them one by one,
- * this class will flatten the colvardeps* tree, then compute all 
+ * this class will flatten the colvardeps* tree, then compute all
  * atom groups in one pass with CUDA graphs, then all CVCs, and finally
  * collect the colvar values.
  */
 class colvarmodule_gpu_calc {
 public:
   /**
-   * @brief A struct for holding a compute node in the CUDA graph 
+   * @brief A struct for holding a compute node in the CUDA graph
    * and its corresponding atom group or CVC (child of colvardeps)
-   * 
+   *
    * @note There should be an independent data structure for AST
    * For the time being I have to hack the colvardeps which serves
    * partially as an AST (without any type information). There are two
@@ -80,7 +80,7 @@ public:
   ~colvarmodule_gpu_calc() {}
   /**
    * @brief Initialize all the GPU compute graphs
-   * 
+   *
    * @return COLVARS_OK if succeeded
    */
   int init();
@@ -91,7 +91,7 @@ public:
    * 1. Call `cv_update_flags` to update the flags of all colvars and cvcs
    * 2. If the current step is greater than 0, call `cvc_calc_total_force`
    *    to calculate the total force on each CVC
-   * 3. Call `atom_group_read_data_gpu` to read the atom positions to GPU 
+   * 3. Call `atom_group_read_data_gpu` to read the atom positions to GPU
    *    buffers and calculate the required properties
    * 4. Call `cvc_calc_value` to calculate the values of all CVCs
    * 5. Call `cvc_calc_gradients` to calculate the gradients of all CVCs
@@ -104,10 +104,10 @@ public:
    * launched for "atom_group_read_data_gpu" and "atom_group_calc_fit_gradients".
    *
    * @param[in] colvars A vector of all colvar objects
-   * @param[in] colvar_module The main colvarmodule object
+   * @param[in] cvmodule The main colvarmodule object
    * @return COLVARS_OK if succeeded
    */
-  int calc_cvs(const std::vector<colvar*>& colvars, colvarmodule* colvar_module);
+  int calc_cvs(const std::vector<colvar*>& colvars, colvarmodule* cvmodule);
   /**
    * @brief Apply the forces to the atom groups from the CVCs
    *
@@ -115,10 +115,10 @@ public:
    * instantiated. On subsequent calls, the existing CUDA graph will be launched.
    *
    * @param[in] colvars A vector of all colvar objects
-   * @param[in] colvar_module The main colvarmodule object
+   * @param[in] cvmodule The main colvarmodule object
    * @return COLVARS_OK if succeeded
    */
-  int apply_forces(const std::vector<colvar*>& colvars, colvarmodule* colvar_module);
+  int apply_forces(const std::vector<colvar*>& colvars, colvarmodule* cvmodule);
 private:
   /// \brief CUDA graph for reading data to GPU and calculating required properties
   compute_gpu_graph_t read_data_compute;
@@ -153,31 +153,31 @@ private:
   int cv_update_flags(const std::vector<colvar*>& colvars);
   int cvc_calc_total_force(
     const std::vector<colvar*>& colvars,
-    colvarmodule* colvar_module,
+    colvarmodule* cvmodule,
     bool use_current_step = false);
   int atom_group_read_data_gpu(
     const std::vector<colvar*>& colvars,
     colvarmodule_gpu_calc::compute_gpu_graph_t& g,
-    colvarmodule* colvar_module);
+    colvarmodule* cvmodule);
   int cvc_calc_value(
     const std::vector<colvar*>& colvars,
-    colvarmodule* colvar_module);
+    colvarmodule* cvmodule);
   int cvc_calc_gradients(
     const std::vector<colvar*>& colvars,
-    colvarmodule* colvar_module);
+    colvarmodule* cvmodule);
   int atom_group_calc_fit_gradients(
     const std::vector<colvar*>& colvars,
     colvarmodule_gpu_calc::compute_gpu_graph_t& g,
-    colvarmodule* colvar_module);
+    colvarmodule* cvmodule);
   int cvc_debug_gradients(
     const std::vector<colvar*>& colvars,
-    colvarmodule* colvar_module);
+    colvarmodule* cvmodule);
   int cvc_calc_Jacobian_derivative(
     const std::vector<colvar*>& colvars,
-    colvarmodule* colvar_module);
+    colvarmodule* cvmodule);
   int cv_collect_cvc_data(
     const std::vector<colvar*>& colvars,
-    colvarmodule* colvar_module);
+    colvarmodule* cvmodule);
   /// @}
 };
 }

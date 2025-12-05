@@ -35,7 +35,7 @@ std::string cvm::rvector::to_simple_string() const
 {
   std::ostringstream os;
   os.setf(std::ios::scientific, std::ios::floatfield);
-  os.precision(cvm::cv_prec);
+  os.precision(cvm::main()->cv_prec);
   os << x << " " << y << " " << z;
   return os.str();
 }
@@ -90,7 +90,7 @@ std::string cvm::quaternion::to_simple_string() const
 {
   std::ostringstream os;
   os.setf(std::ios::scientific, std::ios::floatfield);
-  os.precision(cvm::cv_prec);
+  os.precision(cvm::main()->cv_prec);
   os << q0 << " " << q1 << " " << q2 << " " << q3;
   return os.str();
 }
@@ -310,21 +310,21 @@ void colvarmodule::rotation::debug_gradients(
   cvm::quaternion const Q2(rot.S_eigvec[2]);
   cvm::quaternion const Q3(rot.S_eigvec[3]);
 
-  cvm::log("L0 = "+cvm::to_str(L0, cvm::cv_width, cvm::cv_prec)+
-            ", Q0 = "+cvm::to_str(Q0, cvm::cv_width, cvm::cv_prec)+
-            ", Q0*Q0 = "+cvm::to_str(Q0.inner(Q0), cvm::cv_width, cvm::cv_prec)+
+  cvm::log_static("L0 = "+cvm::to_str(L0, cvm::main()->cv_width, cvm::main()->cv_prec)+
+            ", Q0 = "+cvm::to_str(Q0, cvm::main()->cv_width, cvm::main()->cv_prec)+
+            ", Q0*Q0 = "+cvm::to_str(Q0.inner(Q0), cvm::main()->cv_width, cvm::main()->cv_prec)+
             "\n");
-  cvm::log("L1 = "+cvm::to_str(L1, cvm::cv_width, cvm::cv_prec)+
-            ", Q1 = "+cvm::to_str(Q1, cvm::cv_width, cvm::cv_prec)+
-            ", Q0*Q1 = "+cvm::to_str(Q0.inner(Q1), cvm::cv_width, cvm::cv_prec)+
+  cvm::log_static("L1 = "+cvm::to_str(L1, cvm::main()->cv_width, cvm::main()->cv_prec)+
+            ", Q1 = "+cvm::to_str(Q1, cvm::main()->cv_width, cvm::main()->cv_prec)+
+            ", Q0*Q1 = "+cvm::to_str(Q0.inner(Q1), cvm::main()->cv_width, cvm::main()->cv_prec)+
             "\n");
-  cvm::log("L2 = "+cvm::to_str(L2, cvm::cv_width, cvm::cv_prec)+
-            ", Q2 = "+cvm::to_str(Q2, cvm::cv_width, cvm::cv_prec)+
-            ", Q0*Q2 = "+cvm::to_str(Q0.inner(Q2), cvm::cv_width, cvm::cv_prec)+
+  cvm::log_static("L2 = "+cvm::to_str(L2, cvm::main()->cv_width, cvm::main()->cv_prec)+
+            ", Q2 = "+cvm::to_str(Q2, cvm::main()->cv_width, cvm::main()->cv_prec)+
+            ", Q0*Q2 = "+cvm::to_str(Q0.inner(Q2), cvm::main()->cv_width, cvm::main()->cv_prec)+
             "\n");
-  cvm::log("L3 = "+cvm::to_str(L3, cvm::cv_width, cvm::cv_prec)+
-            ", Q3 = "+cvm::to_str(Q3, cvm::cv_width, cvm::cv_prec)+
-            ", Q0*Q3 = "+cvm::to_str(Q0.inner(Q3), cvm::cv_width, cvm::cv_prec)+
+  cvm::log_static("L3 = "+cvm::to_str(L3, cvm::main()->cv_width, cvm::main()->cv_prec)+
+            ", Q3 = "+cvm::to_str(Q3, cvm::main()->cv_width, cvm::main()->cv_prec)+
+            ", Q0*Q3 = "+cvm::to_str(Q0.inner(Q3), cvm::main()->cv_width, cvm::main()->cv_prec)+
             "\n");
   rotation_derivative deriv(rot, pos1, pos2, num_atoms_pos1, num_atoms_pos2);
   cvm::rvector dl0_2;
@@ -371,10 +371,10 @@ void colvarmodule::rotation::debug_gradients(
                                 dq0_2[2][comp] * colvarmodule::debug_gradients_step_size,
                                 dq0_2[3][comp] * colvarmodule::debug_gradients_step_size);
 
-      cvm::log(  "|(l_0+dl_0) - l_0^new|/l_0 = "+
-                cvm::to_str(cvm::fabs(L0+DL0 - L0_new)/L0, cvm::cv_width, cvm::cv_prec)+
+      cvm::log_static(  "|(l_0+dl_0) - l_0^new|/l_0 = "+
+                cvm::to_str(cvm::fabs(L0+DL0 - L0_new)/L0, cvm::main()->cv_width, cvm::main()->cv_prec)+
                 ", |(q_0+dq_0) - q_0^new| = "+
-                cvm::to_str((Q0+DQ0 - Q0_new).norm(), cvm::cv_width, cvm::cv_prec)+
+                cvm::to_str((Q0+DQ0 - Q0_new).norm(), cvm::main()->cv_width, cvm::main()->cv_prec)+
                 "\n");
     }
   }
@@ -445,7 +445,7 @@ void colvarmodule::rotation::calc_optimal_rotation_impl() {
         S_backup_out[i][j] = S_backup[i][j];
       }
     }
-    cvm::log("S     = "+cvm::to_str(S_backup_out, cvm::cv_width, cvm::cv_prec)+"\n");
+    cvm::log_static("S     = "+cvm::to_str(S_backup_out, cvm::main()->cv_width, cvm::main()->cv_prec)+"\n");
   }
 
 
@@ -462,18 +462,18 @@ void colvarmodule::rotation::calc_optimal_rotation_impl() {
   int ierror = NR::diagonalize_matrix(S, S_eigval, S_eigvec);
 #endif
   if (ierror) {
-    cvm::log("Failed to diagonalize the following overlapping matrix:\n");
+    cvm::log_static("Failed to diagonalize the following overlapping matrix:\n");
     for (size_t i = 0; i < 4; ++i) {
       for (size_t j = 0; j < 4; ++j) {
-        cvm::log(cvm::to_str(S[i][j]) + " ");
+        cvm::log_static(cvm::to_str(S[i][j]) + " ");
       }
-      cvm::log("\n");
+      cvm::log_static("\n");
     }
-    cvm::log("The corresponding correlation matrix is:\n");
-    cvm::log(" " + cvm::to_str(C.xx) + " " + cvm::to_str(C.xy) + " " + cvm::to_str(C.xz));
-    cvm::log(" " + cvm::to_str(C.yx) + " " + cvm::to_str(C.yy) + " " + cvm::to_str(C.yz));
-    cvm::log(" " + cvm::to_str(C.zx) + " " + cvm::to_str(C.zy) + " " + cvm::to_str(C.zz) + "\n");
-    cvm::error("Too many iterations in jacobi diagonalization.\n"
+    cvm::log_static("The corresponding correlation matrix is:\n");
+    cvm::log_static(" " + cvm::to_str(C.xx) + " " + cvm::to_str(C.xy) + " " + cvm::to_str(C.xz));
+    cvm::log_static(" " + cvm::to_str(C.yx) + " " + cvm::to_str(C.yy) + " " + cvm::to_str(C.yz));
+    cvm::log_static(" " + cvm::to_str(C.zx) + " " + cvm::to_str(C.zy) + " " + cvm::to_str(C.zz) + "\n");
+    cvm::error_static("Too many iterations in jacobi diagonalization.\n"
                "This is usually the result of an ill-defined set of atoms for "
                "rotational alignment (RMSD, rotateReference, etc).\n");
   }
@@ -483,7 +483,7 @@ void colvarmodule::rotation::calc_optimal_rotation_impl() {
     if (q_old.norm2() > 0.0) {
       q.match(q_old);
       if (q_old.inner(q) < (1.0 - crossing_threshold)) {
-        cvm::log("Warning: one molecular orientation has changed by more than "+
+        cvm::log_static("Warning: one molecular orientation has changed by more than "+
                  cvm::to_str(crossing_threshold)+": discontinuous rotation ?\n");
       }
     }
@@ -620,14 +620,14 @@ int rotation_gpu::add_optimal_rotation_nodes(
 
 void rotation_gpu::after_sync_check() const {
   if (max_iteration_reached[0]) {
-    cvm::error("Too many iterations in jacobi diagonalization.\n"
+    cvm::error_static("Too many iterations in jacobi diagonalization.\n"
                "This is usually the result of an ill-defined set of atoms for "
                "rotational alignment (RMSD, rotateReference, etc).\n");
     max_iteration_reached[0] = 0;
   }
   if (colvarmodule::rotation::monitor_crossings) {
     if (discontinuous_rotation[0]) {
-      cvm::log("Warning: one molecular orientation has changed by more than "+
+      cvm::main()->log("Warning: one molecular orientation has changed by more than "+
                 cvm::to_str(colvarmodule::rotation::crossing_threshold)+
                 ": discontinuous rotation ?\n");
     }

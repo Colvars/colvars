@@ -99,7 +99,7 @@ public:
    *
    * All variables are expected to initialize to 0.
    */
-  colvaratoms_gpu();
+  colvaratoms_gpu(colvarmodule *cvmodule_in);
   /**
    * @brief Destructor
    */
@@ -176,7 +176,7 @@ public:
     std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
   /**
    * @brief Add nodes for calculating the required properties to the CUDA graph
-   * 
+   *
    * This function adds nodes for calculating COM, COG, rotation matrix,
    * rotated positions, and reference COG to the CUDA graph.
    *
@@ -185,7 +185,7 @@ public:
    * @param[in,out] nodes_map A map to store the added nodes with operation name
    * @param[in] extra_initial_dependencies Additional dependencies to be added
    *        to the initial nodes
-   * @return COLVARS_OK if succeeded   
+   * @return COLVARS_OK if succeeded
    */
   int add_calc_required_properties_nodes(
     const cvm::atom_group* cpu_atoms, cudaGraph_t& graph,
@@ -207,7 +207,7 @@ public:
     std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
   /**
    * @brief Update the CPU COM, COG and rotation object after GPU synchronization
-   * 
+   *
    * @param[in] cpu_atoms CPU atom group class
    * @param[in] copy_to_cpu If true, copy the COM, COG and rotation object to CPU buffers
    * @param[in] stream CUDA stream to be synchronized
@@ -221,7 +221,7 @@ public:
   int begin_apply_force_gpu();
   /**
    * @brief Add nodes for applying forces to the CUDA graph
-   * 
+   *
    * @param[in] cpu_atoms CPU atom group class
    * @param[in] graph CUDA graph object
    * @param[in,out] nodes_map A map to store the added nodes with operation name
@@ -235,7 +235,7 @@ public:
     const std::vector<cudaGraphNode_t>& extra_initial_dependencies = {});
   /**
    * @brief Add nodes for calculating the fit gradients to the CUDA graph
-   * 
+   *
    * @param[in] cpu_atoms CPU atom group class
    * @param[in] graph CUDA graph object
    * @param[in,out] nodes_map A map to store the added nodes with operation name
@@ -251,7 +251,7 @@ public:
    *
    * This function reads the atom positions from the proxy buffer to the atom group GPU buffer,
    * and optionally modifies one of the coordinates for testing the numerical gradients.
-   * 
+   *
    * @param[in] cpu_atoms CPU atom group class
    * @param[in] change_fitting_group If true, change the fitting group atom position
    * @param[in] change_atom_i Index of the atom to be changed
@@ -266,7 +266,7 @@ public:
     int xyz, bool to_cpu, double sign, cudaStream_t stream);
   /**
    * @brief Function for calculating the required properties used for debug gradients
-   * 
+   *
    * @param[in] cpu_atoms CPU atom group class
    * @param[in] to_cpu If true, copy the calculated properties to CPU buffers
    * @param[in] stream CUDA stream to be used
@@ -278,7 +278,7 @@ public:
    * @brief Function to be called when a colvardeps feature is enabled
    *
    * This function performs any side effects needed when a feature is enabled.
-   * Specifically, it allocates the GPU buffers for unrotated positions if 
+   * Specifically, it allocates the GPU buffers for unrotated positions if
    * f_ag_fit_gradients is enabled, and sets up the rotation object if
    * f_ag_rotate is enabled.
    *
@@ -354,6 +354,8 @@ private:
   colvars_gpu::rotation_gpu rot_gpu;
   /// \brief GPU Rotation derivative;
   colvars_gpu::rotation_derivative_gpu* rot_deriv_gpu;
+  /// \brief Pointer to the parent colvarmodule
+  colvarmodule *cvmodule;
 };
 
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)

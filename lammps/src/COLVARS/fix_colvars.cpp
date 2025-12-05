@@ -880,7 +880,7 @@ void FixColvars::write_restart(FILE *fp)
 {
   if (comm->me == 0) {
     cvm::memory_stream ms;
-    if (proxy->colvars->write_state(ms)) {
+    if (proxy->cvmodule->write_state(ms)) {
       int len_cv_state = ms.length();
       // Will write the buffer's length twice, so that the fix can read it later, too
       int len = len_cv_state + sizeof(int);
@@ -901,7 +901,7 @@ void FixColvars::restart(char *buf)
     // Read the buffer's length, then load it into Colvars starting right past that location
     int length = *(reinterpret_cast<int *>(buf));
     auto *colvars_state_buffer = reinterpret_cast<unsigned char *>(buf + sizeof(int));
-    if (proxy->colvars->set_input_state_buffer(length, colvars_state_buffer) != COLVARS_OK) {
+    if (proxy->cvmodule->set_input_state_buffer(length, colvars_state_buffer) != COLVARS_OK) {
       error->all(FLERR, "Failed to set the Colvars input state from string buffer");
     }
   }
@@ -914,7 +914,7 @@ void FixColvars::post_run()
   if (comm->me == 0) {
     proxy->post_run();
     if (lmp->citeme) {
-      lmp->citeme->add(proxy->colvars->feature_report(1));
+      lmp->citeme->add(proxy->cvmodule->feature_report(1));
     }
   }
 }

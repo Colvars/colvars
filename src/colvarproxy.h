@@ -144,7 +144,7 @@ public:
   /// Read the current velocity of the given atom
   inline cvm::rvector get_atom_velocity(int /* index */)
   {
-    cvm::error("Error: reading the current velocity of an atom "
+    cvm::error_static("Error: reading the current velocity of an atom "
                "is not yet implemented.\n",
                COLVARS_NOT_IMPLEMENTED);
     return cvm::rvector(0.0);
@@ -363,7 +363,7 @@ public:
   /// Read the current velocity of the given atom group
   inline cvm::rvector get_atom_group_velocity(int /* index */)
   {
-    cvm::error("Error: reading the current velocity of an atom group is not yet implemented.\n",
+    cvm::error_static("Error: reading the current velocity of an atom group is not yet implemented.\n",
                COLVARS_NOT_IMPLEMENTED);
     return cvm::rvector(0.0);
   }
@@ -511,7 +511,7 @@ protected:
   omp_lock_t *omp_lock_state;
 
   /// Whether threaded parallelization should be used (TODO: make this a
-  /// cvm::deps feature)
+  /// cvmodule->deps feature)
   smp_mode_t smp_mode;
 };
 
@@ -568,8 +568,8 @@ class colvarproxy
 
 public:
 
-  /// Pointer to the main object
-  colvarmodule *colvars;
+  /// Pointer to the associated colvarmodule object
+  colvarmodule *cvmodule;
 
   /// Constructor
   colvarproxy();

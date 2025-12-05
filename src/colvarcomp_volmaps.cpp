@@ -33,7 +33,7 @@ int colvar::map_total::init(std::string const &conf)
 
   if ((volmap_name.size() > 0) && (volmap_id >= 0)) {
     error_code |=
-        cvm::error("Error: mapName and mapID are mutually exclusive.\n", COLVARS_INPUT_ERROR);
+        cvm::error_static("Error: mapName and mapID are mutually exclusive.\n", COLVARS_INPUT_ERROR);
   }
 
   // Parse optional group
@@ -62,12 +62,12 @@ int colvar::map_total::init(std::string const &conf)
 
   if (get_keyval(conf, "atomWeights", atom_weights, atom_weights)) {
     if (!atoms) {
-      error_code |= cvm::error("Error: weights can only be assigned when atoms "
+      error_code |= cvm::error_static("Error: weights can only be assigned when atoms "
                                "are selected explicitly in Colvars.\n",
                                COLVARS_INPUT_ERROR);
     } else {
       if (atoms->size() != atom_weights.size()) {
-        error_code |= cvm::error("Error: if defined, the number of weights ("+
+        error_code |= cvm::error_static("Error: if defined, the number of weights ("+
                                  cvm::to_str(atom_weights.size())+
                                  ") must equal the number of atoms ("+
                                  cvm::to_str(atoms->size())+
