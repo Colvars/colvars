@@ -393,6 +393,8 @@ int colvarscript::run(int objc, unsigned char *const objv[])
         add_error_msg("Colvar not found: " + name);
         return COLVARSCRIPT_ERROR;
       }
+      // Pass script pointer instead
+      obj_for_cmd = reinterpret_cast<void *>(this);
     }
     cmd_fn = get_cmd_fn(get_cmd_prefix(use_colvar)+subcmd);
     cmdline += std::string(" name ")+subcmd;
@@ -416,6 +418,8 @@ int colvarscript::run(int objc, unsigned char *const objv[])
         add_error_msg("Bias not found: " + name);
         return COLVARSCRIPT_ERROR;
       }
+      // Pass script pointer instead
+      obj_for_cmd = reinterpret_cast<void *>(this);
     }
     cmd_fn = get_cmd_fn(get_cmd_prefix(use_bias)+subcmd);
     cmdline += std::string(" name ")+subcmd;
@@ -642,6 +646,7 @@ const char * get_colvarscript_result()
 // Function used by VMD to set up the module
 int tcl_colvars_vmd_init(Tcl_Interp *interp, int molid);
 #endif
+
 
 #if !defined(VMDTCL) && !defined(NAMD_TCL)
 // Initialize Colvars when loaded as a shared library into Tcl interpreter
