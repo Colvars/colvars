@@ -138,7 +138,7 @@ protected:
   /// Write a hill to an unformatted stream
   cvm::memory_stream &write_hill(cvm::memory_stream &os, hill const &h);
 
-  template <typename IST> IST &read_hill_template_(IST &is, colvarmodule *cvmodule);
+  template <typename IST> IST &read_hill_template_(IST &is, colvarmodule *cvmodule_in);
 
   /// Read a new hill from a formatted stream
   std::istream & read_hill(std::istream &is);
