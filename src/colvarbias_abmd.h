@@ -30,6 +30,26 @@ public:
   std::ostream & write_traj_label(std::ostream &os) override;
   std::ostream & write_traj(std::ostream &os) override;
 
+  std::ostream & write_state_data(std::ostream &os) override {
+    return colvarbias_ti::write_state_data(os);
+  }
+
+  cvm::memory_stream & write_state_data(cvm::memory_stream &os) override {
+    return colvarbias_ti::write_state_data(os);
+  }
+
+  std::istream & read_state_data(std::istream &is) override {
+    return colvarbias_ti::read_state_data(is);
+  }
+
+  cvm::memory_stream & read_state_data(cvm::memory_stream &is) override {
+    return colvarbias_ti::read_state_data(is);
+  }
+
+  int write_output_files() override {
+    return colvarbias_ti::write_output_files();
+  }
+
 protected:
 
   /// \brief Location of the moving wall
