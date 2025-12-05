@@ -744,7 +744,7 @@ public:
     if (colvarmodule::main()) {
       colvarmodule::main()->log(message);
     } else {
-      std::cout << "Colvars: " << message << std::endl;
+      std::cout << "colvars: " << message << std::endl;
     }
   }
 
@@ -758,7 +758,7 @@ public:
     if (colvarmodule::main()) {
       code = colvarmodule::main()->error(message, code);
     } else {
-      std::cerr << "Colvars: " << message << std::endl;
+      std::cerr << "colvars: " << message << std::endl;
       exit(-1);
     }
     return code;
