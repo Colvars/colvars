@@ -332,16 +332,17 @@ public:
   friend class colvarbias_meta;
 
   /// Constructor of a hill object
+  /// \param cvmodule Pointer to the colvarmodule object
   /// \param it Step number at which the hill was added
   /// \param W Weight of the hill (energy units)
   /// \param cv_values Array of collective variable values
   /// \param cv_sigmas Array of collective variable values
   /// \param replica ID of the replica that creates the hill (optional)
-  hill(cvm::step_number it, cvm::real W,
+  hill(colvarmodule *cvmodule,
+       cvm::step_number it, cvm::real W,
        std::vector<colvarvalue> const &cv_values,
        std::vector<cvm::real> const &cv_sigmas,
-       std::string const &replica = "",
-       colvarmodule *cvmodule = nullptr);
+       std::string const &replica = "");
 
   /// Copy constructor
   hill(colvarbias_meta::hill const &h);
