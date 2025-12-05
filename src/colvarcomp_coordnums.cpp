@@ -34,7 +34,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
                                                cvm::real& g2z,
                                                bool **pairlist_elem,
                                                cvm::real pairlist_tol,
-                                               colvarmodule *cvmodule)
+                                               colvarmodule *cvmodule_in)
 {
   if ((flags & ef_use_pairlist) && !(flags & ef_rebuild_pairlist)) {
     bool const within = **pairlist_elem;
@@ -46,7 +46,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
 
   const cvm::atom_pos pos1{a1x, a1y, a1z};
   const cvm::atom_pos pos2{a2x, a2y, a2z};
-  cvm::rvector const diff = cvmodule->proxy->position_distance(pos1, pos2);
+  cvm::rvector const diff = cvmodule_in->proxy->position_distance(pos1, pos2);
   cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
                                diff.y * inv_r0_vec.y,
                                diff.z * inv_r0_vec.z);

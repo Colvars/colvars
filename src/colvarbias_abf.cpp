@@ -298,7 +298,6 @@ int colvarbias_abf::init(std::string const &conf)
                                          UI_width,
                                          UI_krestr,                // force constant in eABF
                                          output_prefix,              // the prefix of output files
-                                         cvmodule->restart_out_freq,
                                          UI_restart,                    // whether restart from a .count and a .grad file
                                          input_prefix,   // the prefixes of input files
                                          proxy->target_temperature());

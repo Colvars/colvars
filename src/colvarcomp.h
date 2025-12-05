@@ -113,12 +113,12 @@ public:
   int setup();
 
   /// \brief Implementation of the feature list accessor for colvar
-  virtual const std::vector<feature *> &features() const
+  virtual const std::vector<feature *> &features() const override
   {
     return cvc_features;
   }
 
-  virtual std::vector<feature *> &modify_features()
+  virtual std::vector<feature *> &modify_features() override
   {
     return cvc_features;
   }
@@ -229,7 +229,7 @@ public:
   virtual colvarvalue const *get_param_grad(std::string const &param_name);
 
   /// Set the named parameter to the given value
-  virtual int set_param(std::string const &param_name, void const *new_value);
+  virtual int set_param(std::string const &param_name, void const *new_value) override;
 
   /// \brief Whether or not this CVC will be computed in parallel whenever possible
   bool b_try_scalable = true;
@@ -828,7 +828,7 @@ public:
                                       cvm::real& g2z,
                                       bool **pairlist_elem,
                                       cvm::real tolerance,
-                                      colvarmodule *cvmodule);
+                                      colvarmodule *cvmodule_in);
 
   /// Workhorse function
   template<int flags> int compute_coordnum();

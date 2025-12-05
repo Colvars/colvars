@@ -96,11 +96,11 @@ public:
   static std::vector<feature *> cv_features;
 
   /// \brief Implementation of the feature list accessor for colvar
-  virtual const std::vector<feature *> &features() const
+  virtual const std::vector<feature *> &features() const override
   {
     return cv_features;
   }
-  virtual std::vector<feature *> &modify_features()
+  virtual std::vector<feature *> &modify_features() override
   {
     return cv_features;
   }
@@ -114,7 +114,7 @@ public:
   /// Implements possible actions to be carried out
   /// when a given feature is enabled
   /// This overloads the base function in colvardeps
-  void do_feature_side_effects(int id);
+  void do_feature_side_effects(int id) override;
 
   /// List of biases that depend on this colvar
   std::vector<colvarbias *> biases;

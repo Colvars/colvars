@@ -208,7 +208,7 @@ public:
 private:
 
   /// Generic stream reading function (formatted and not)
-  template <typename IST> IST & read_state_template_(IST &is, colvarmodule *cvmodule);
+  template <typename IST> IST & read_state_template_(IST &is, colvarmodule *cvmodule_in);
 
 public:
 
@@ -275,11 +275,11 @@ public:
   static std::vector<feature *> cvb_features;
 
   /// \brief Implementation of the feature list accessor for colvarbias
-  virtual const std::vector<feature *> &features() const
+  virtual const std::vector<feature *> &features() const override
   {
     return cvb_features;
   }
-  virtual std::vector<feature *> &modify_features()
+  virtual std::vector<feature *> &modify_features() override
   {
     return cvb_features;
   }
