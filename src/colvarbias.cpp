@@ -600,7 +600,7 @@ void raise_error_rewind(IST &is, SPT start_pos, std::string const &bias_type,
 }
 
 
-template <typename IST> IST & colvarbias::read_state_template_(IST &is, colvarmodule *cvmodule)
+template <typename IST> IST & colvarbias::read_state_template_(IST &is, colvarmodule *cvmodule_in)
 {
   auto const start_pos = is.tellg();
 
@@ -611,14 +611,14 @@ template <typename IST> IST & colvarbias::read_state_template_(IST &is, colvarmo
       if (! std::is_same<IST, cvm::memory_stream>::value) {
         // Formatted input only
         if (!(is >> brace) || !(brace == "{") ) {
-          raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
+          raise_error_rewind(is, start_pos, bias_type, name, cvmodule_in);
           return is;
         }
       }
 
       if (!(is >> colvarparse::read_block("configuration", &conf)) ||
           (check_matching_state(conf) != COLVARS_OK)) {
-        raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
+        raise_error_rewind(is, start_pos, bias_type, name, cvmodule_in);
         return is;
       }
 
@@ -629,7 +629,7 @@ template <typename IST> IST & colvarbias::read_state_template_(IST &is, colvarmo
     }
 
   } else {
-    raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
+    raise_error_rewind(is, start_pos, bias_type, name, cvmodule_in);
     return is;
   }
 
@@ -640,21 +640,21 @@ template <typename IST> IST & colvarbias::read_state_template_(IST &is, colvarmo
   }
 
   if ((set_state_params(conf) != COLVARS_OK) || !read_state_data(is)) {
-    raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
+    raise_error_rewind(is, start_pos, bias_type, name, cvmodule_in);
   }
 
   if (! std::is_same<IST, cvm::memory_stream>::value) {
     is >> brace;
     if (brace != "}") {
-      cvmodule->error("Error: corrupt restart information for \""+bias_type+"\" bias \""+
+      cvmodule_in->error("Error: corrupt restart information for \""+bias_type+"\" bias \""+
                  this->name+"\": no matching brace at position "+
                  cvm::to_str(static_cast<size_t>(is.tellg()))+
                  " in stream.\n");
-      raise_error_rewind(is, start_pos, bias_type, name, cvmodule);
+      raise_error_rewind(is, start_pos, bias_type, name, cvmodule_in);
     }
   }
 
-  cvmodule->log("Restarted " + bias_type + " bias \"" + name + "\" with step number " +
+  cvmodule_in->log("Restarted " + bias_type + " bias \"" + name + "\" with step number " +
            cvm::to_str(state_file_step) + ".\n");
 
   return is;
