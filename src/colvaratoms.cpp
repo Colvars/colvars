@@ -102,7 +102,7 @@ cvm::atom_group::atom_group():
 {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   gpu_atom_group = std::unique_ptr<colvars_gpu::colvaratoms_gpu>(
-    new colvars_gpu::colvaratoms_gpu());
+    new colvars_gpu::colvaratoms_gpu(cvmodule));
 #endif
   key = "unnamed";
   init();
