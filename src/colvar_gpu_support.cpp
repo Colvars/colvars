@@ -24,7 +24,7 @@ int gpuAssert(cudaError_t code, const char *file, int line)
       error += "\nBacktrace:\n" + std::to_string(std::stacktrace::current()) + "\n";
 #endif
 #endif
-    return cvmodule->error(error, COLVARS_ERROR);
+    return cvm::error_static(error, COLVARS_ERROR);
   }
   return COLVARS_OK;
 }
@@ -45,7 +45,7 @@ int add_clear_array_node_impl(
   memsetParams.width       = width;
   memsetParams.height      = 1;
   if (cvm::debug()) {
-    cvmodule->log(
+    cvm::log_static(
       "Add a memset clear node: ptr = " + cvm::to_str(dst) +
       " width = " + cvm::to_str(width) + " elementSize = " +
       cvm::to_str(elementSize) + "\n");
@@ -60,7 +60,7 @@ int add_copy_node_impl(
   cudaMemcpyKind kind, cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
   if (cvm::debug()) {
-    cvmodule->log(
+    cvm::log_static(
       "Add a memcpy node: src = " + cvm::to_str(src) +
       " dst = " + cvm::to_str(dst) + " num_elements = " +
       cvm::to_str(num_elements) + "\n");
@@ -82,15 +82,15 @@ int prepare_dependencies(
     if (auto search = map.find(node_name); search != map.end()) {
       dependencies.push_back(search->second);
       if (cvm::debug()) {
-        cvmodule->log("Operation " + caller_operation_name +
+        cvm::log_static("Operation " + caller_operation_name +
                 " depends on node\" " + node_name + "\"\n");
       }
     } else {
       if (!allow_not_found) {
-        error_code |= cvmodule->error("BUG: cannot find node " + node_name + "\n");
+        error_code |= cvm::error_static("BUG: cannot find node " + node_name + "\n");
       } else {
         if (cvm::debug()) {
-          cvmodule->log("Operation " + caller_operation_name +
+          cvm::log_static("Operation " + caller_operation_name +
                   " cannot depend on node\" " + node_name + "\"\n");
         }
       }

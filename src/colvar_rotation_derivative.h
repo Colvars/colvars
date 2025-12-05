@@ -620,6 +620,8 @@ struct rotation_derivative {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 namespace colvars_gpu {
 struct rotation_derivative_gpu {
+  /// \brief Pointer to the parent colvarmodule
+  colvarmodule* cvmodule;
   /// \brief Reference to the rotation
   const colvars_gpu::rotation_gpu *m_rot;
   /// \brief Reference to the atom positions of group 1
@@ -641,7 +643,7 @@ struct rotation_derivative_gpu {
    *
    *  The object of this class is expected to be constructed on host-pinned memory.
    */
-  rotation_derivative_gpu();
+  rotation_derivative_gpu(colvarmodule* cmodule_in);
   /*! @brief Initialization of the rotation_derivative_gpu class
    *  @param[in]  rot   The colvars_gpu::rotation_gpu object
    *  @param[in]  pos1  The atom positions of group 1

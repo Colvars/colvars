@@ -5,7 +5,8 @@
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
 namespace colvars_gpu {
-rotation_derivative_gpu::rotation_derivative_gpu():
+rotation_derivative_gpu::rotation_derivative_gpu(colvarmodule* cvmodule_in):
+  cvmodule(cvmodule_in),
   m_rot(nullptr),
   d_pos1x(nullptr), d_pos1y(nullptr), d_pos1z(nullptr),
   d_pos2x(nullptr), d_pos2y(nullptr), d_pos2z(nullptr),
