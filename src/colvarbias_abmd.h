@@ -21,12 +21,14 @@ class colvarbias_abmd
 public:
 
   colvarbias_abmd(colvarmodule *cvmodule_in, char const *key);
-  virtual int init(std::string const &conf);
-  virtual int update();
-  virtual std::string const get_state_params() const;
-  virtual int set_state_params(std::string const &conf);
-  virtual std::ostream & write_traj_label(std::ostream &os);
-  virtual std::ostream & write_traj(std::ostream &os);
+  ~colvarbias_abmd() = default;
+
+  int init(std::string const &conf) override;
+  int update() override;
+  std::string const get_state_params() const  override;
+  int set_state_params(std::string const &conf) override;
+  std::ostream & write_traj_label(std::ostream &os) override;
+  std::ostream & write_traj(std::ostream &os) override;
 
 protected:
 
