@@ -12,7 +12,8 @@
 namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
-colvaratoms_gpu::colvaratoms_gpu() {
+colvaratoms_gpu::colvaratoms_gpu(colvarmodule *cvmodule_in)
+  : cvmodule(cvmodule_in) {
   std::memset(&gpu_buffers, 0, sizeof(gpu_buffers));
   std::memset(&debug_graphs, 0, sizeof(debug_graphs));
   std::memset(&calc_fit_gradients_gpu_info, 0, sizeof(calc_fit_gradients_gpu_info));
@@ -966,7 +967,7 @@ int colvaratoms_gpu::setup_rotation_derivative(const cvm::atom_group* cpu_atoms)
     error_code |= p->deallocate_host(&rot_deriv_gpu);
   }
   error_code |= p->allocate_host(&rot_deriv_gpu, 1);
-  rot_deriv_gpu = new (rot_deriv_gpu) colvars_gpu::rotation_derivative_gpu();
+  rot_deriv_gpu = new (rot_deriv_gpu) colvars_gpu::rotation_derivative_gpu(cvmodule);
   error_code |= rot_deriv_gpu->init(
     &rot_gpu,
     group_for_fit->gpu_atom_group->gpu_buffers.d_atoms_pos,
