@@ -1,16 +1,16 @@
 diff --git a/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp b/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp
-index 5860eed790..1e091ee438 100644
+index 5860eed790..8a3232131c 100644
 --- a/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp
 +++ b/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp
 @@ -201,7 +201,7 @@ ColvarsForceProvider::ColvarsForceProvider(const std::string& colvarsConfigStrin
- 
+
      if (doParsing_)
      {
 -        colvars->setup_output();
 +        cvmodule->setup_output();
      }
- 
- 
+
+
 @@ -258,7 +258,7 @@ ColvarsForceProvider::ColvarsForceProvider(const std::string& colvarsConfigStrin
          {
              if (stateToCheckpoint_.nColvarsAtoms_ != nColvarsAtoms)
@@ -21,18 +21,18 @@ index 5860eed790..1e091ee438 100644
                          "file");
              }
 @@ -271,8 +271,8 @@ ColvarsForceProvider::ColvarsForceProvider(const std::string& colvarsConfigStrin
- 
+
              int errorCode = colvarproxy::setup();
              // Read input state file
 -            errorCode |= colvars->set_input_state_buffer(stateToCheckpoint_.colvarStateFile_);
 -            errorCode |= colvars->setup_input();
 +            errorCode |= cvmodule->set_input_state_buffer(stateToCheckpoint_.colvarStateFile_);
 +            errorCode |= cvmodule->setup_input();
- 
+
              if (errorCode != COLVARS_OK)
              {
 @@ -303,19 +303,19 @@ ColvarsForceProvider::ColvarsForceProvider(const std::string& colvarsConfigStrin
- 
+
      if (mpiComm.isMainRank() && cvm::debug())
      {
 -        cvm::log("atoms_ids = " + cvm::to_str(atoms_ids) + "\n");
@@ -49,7 +49,7 @@ index 5860eed790..1e091ee438 100644
 +        cvmodule->log(cvmodule->line_marker);
          log("Done initializing the colvars proxy object.\n");
      }
- 
+
      if (mpiComm.isMainRank())
      {
 -        cvm::log(cvm::line_marker);
@@ -58,18 +58,22 @@ index 5860eed790..1e091ee438 100644
 +        cvmodule->log("End colvars Initialization.\n\n");
      }
  }
- 
-@@ -347,7 +347,7 @@ void ColvarsForceProvider::calculateForces(const ForceProviderInput& forceProvid
+
+@@ -347,8 +347,10 @@ void ColvarsForceProvider::calculateForces(const ForceProviderInput& forceProvid
      const rvec* xPointer = &(x.data()->as_vec());
      const auto& box      = forceProviderInput.box_;
- 
+
 -    colvars->it = forceProviderInput.step_;
-+    cvmodule->it = forceProviderInput.step_;
- 
- 
+-
++    if (cvmodule) // Only one thread has a pointer to the module
++    {
++        cvmodule->it = forceProviderInput.step_; // 'it' is not a static class member anymore
++    }
+
      // Eventually there needs to be an interface to update local data upon neighbor search
-@@ -389,9 +389,9 @@ void ColvarsForceProvider::calculateForces(const ForceProviderInput& forceProvid
- 
+     // We could check if by chance all atoms are in one node, and skip communication
+@@ -389,9 +391,9 @@ void ColvarsForceProvider::calculateForces(const ForceProviderInput& forceProvid
+
          biasEnergy = 0.0;
          // Call the collective variable module to fill atoms_new_colvar_forces
 -        if (colvars->calc() != COLVARS_OK)
@@ -78,9 +82,9 @@ index 5860eed790..1e091ee438 100644
 -            cvm::error("Error calling colvars->calc()\n");
 +            cvmodule->error("Error calling cvmodule->calc()\n");
          }
- 
+
          // Copy the forces to C array for broadcasting
-@@ -462,7 +462,7 @@ void ColvarsForceProvider::add_energy(cvm::real energy)
+@@ -462,7 +464,7 @@ void ColvarsForceProvider::add_energy(cvm::real energy)
  void ColvarsForceProvider::writeCheckpointData(MDModulesWriteCheckpointData checkpointWriting,
                                                 std::string_view             moduleName)
  {
@@ -88,4 +92,3 @@ index 5860eed790..1e091ee438 100644
 +    cvmodule->write_state_buffer(stateToCheckpoint_.colvarStateFile_);
      stateToCheckpoint_.writeState(checkpointWriting.builder_, moduleName);
  }
- 
