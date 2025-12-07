@@ -414,11 +414,15 @@ void colvarproxy_namd::calculate()
   // If new atomic positions or forces have been requested by other
   // GlobalMaster objects, add these to the atom map as well
   size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
-  if ( (atoms_map.size() != n_all_atoms) ||
-       (int(atoms_ids.size()) < (globalmaster->getAtomIdEndPublic() - globalmaster->getAtomIdBeginPublic())) ||
-       (int(atoms_ids.size()) < (globalmaster->getForceIdEndPublic() - globalmaster->getForceIdBeginPublic())) ) {
+  if (modified_atom_list() ||               /* Colvars just requested new atoms */
+      (atoms_map.size() != n_all_atoms) ||  /* The system topology has changed */
+      (int(atoms_ids.size()) <              /* Another GlobalMaster requested new atoms */
+       (globalmaster->getAtomIdEndPublic() - globalmaster->getAtomIdBeginPublic())) ||
+      (int(atoms_ids.size()) <              /* Another GlobalMaster requested new total forces */
+       (globalmaster->getForceIdEndPublic() - globalmaster->getForceIdBeginPublic()))) {
     update_atoms_map(globalmaster->getAtomIdBeginPublic(), globalmaster->getAtomIdEndPublic());
     update_atoms_map(globalmaster->getForceIdBeginPublic(), globalmaster->getForceIdEndPublic());
+    reset_modified_atom_list(); // reset the flag as needed
   }
 
   // prepare local arrays
