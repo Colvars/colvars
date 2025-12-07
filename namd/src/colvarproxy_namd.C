@@ -262,8 +262,8 @@ int colvarproxy_namd::setup()
   }
 
   size_t n_group_atoms = 0;
-  for (int ig = 0; ig < globalmaster->modifyRequestedGroupsPublic().size(); ig++) {
-    n_group_atoms += globalmaster->modifyRequestedGroupsPublic()[ig].size();
+  for (int ig = 0; ig < globalmaster->getRequestedGroups().size(); ig++) {
+    n_group_atoms += globalmaster->getRequestedGroups()[ig].size();
   }
 
   log("updating group data ("+cvm::to_str(atom_groups_ids.size())+
@@ -271,7 +271,7 @@ int colvarproxy_namd::setup()
       cvm::to_str(n_group_atoms)+" atoms in total).\n");
 
   // Note: groupMassBegin, groupMassEnd may be used here, but they won't work for charges
-  for (int ig = 0; ig < globalmaster->modifyRequestedGroupsPublic().size(); ig++) {
+  for (int ig = 0; ig < globalmaster->getRequestedGroups().size(); ig++) {
 
     // update mass and charge
     update_group_properties(ig);
@@ -284,7 +284,7 @@ int colvarproxy_namd::setup()
 #if NAMD_VERSION_NUMBER >= 34471681
   log("updating grid object data ("+cvm::to_str(volmaps_ids.size())+
       " grid objects in total).\n");
-  for (int imap = 0; imap < globalmaster->modifyGridObjForcesPublic().size(); imap++) {
+  for (int imap = 0; imap < globalmaster->getRequestedGridObjects().size(); imap++) {
     volmaps_new_colvar_forces[imap] = 0.0;
   }
 #endif
