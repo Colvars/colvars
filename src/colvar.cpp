@@ -1427,7 +1427,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     return error_code;
   }
 
-  if ((cvm::step_relative() > 0) && (!is_enabled(f_cv_total_force_current_step))){
+  if ((!firststep) && (!is_enabled(f_cv_total_force_current_step))){
     // Use Jacobian derivative from previous timestep
     error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   }
@@ -1439,6 +1439,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     // Use Jacobian derivative from this timestep
     error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   }
+  firststep = false;
 
   if (cvm::debug())
     cvm::log("Done calculating colvar \""+this->name+"\".\n");

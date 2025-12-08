@@ -119,6 +119,9 @@ public:
   /// List of biases that depend on this colvar
   std::vector<colvarbias *> biases;
 
+  /// \brief Is this the first step of calculating CVCs? (useful for total forces)
+  bool firststep = true;
+
 protected:
 
 
