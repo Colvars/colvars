@@ -37,6 +37,8 @@
 #include <tcl.h>
 #endif
 
+#include <algorithm>
+
 #include "colvarmodule.h"
 #include "colvar.h"
 #include "colvarbias.h"
@@ -319,7 +321,13 @@ int colvarproxy_namd::reset()
 
   globalmaster->reset();
 
-  atoms_map.clear();
+  // atoms_map.clear();
+  // TODO: There's no other way to re-initialize the atoms_map after
+  // clearing and then reloading a new configuration file, so we just
+  // assume that the number of atoms is unchanged, and reset the atoms_map
+  // to -1. However, this might be problematic if NAMD supports to
+  // reload a new system with different number of atoms in the future.
+  std::fill(atoms_map.begin(), atoms_map.end(), -1);
 
   // Clear internal atomic data
   error_code |= colvarproxy::reset();
