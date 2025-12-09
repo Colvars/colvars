@@ -492,7 +492,8 @@ void colvarproxy_namd::calculate()
 
       for ( ; a_i != a_e; ++a_i, ++f_i ) {
         if (atoms_map[*a_i] < 0) {
-          cvm::error("Bug: atoms_map at " + cvm::to_str(*a_i) + " is less than zero!\n");
+          cvm::error("Bug: atoms_map at " + cvm::to_str(*a_i) + " is less than zero!\n",
+                     COLVARS_BUG_ERROR);
         }
         atoms_total_forces[atoms_map[*a_i]] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
         n_total_forces++;
@@ -856,7 +857,7 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
 
   int const index = add_atom_slot(aid);
   if (atoms_map.empty()) {
-    cvm::error("Bug: atoms_map is empty in colvarproxy_namd::init_atom!");
+    cvm::error("Bug: atoms_map is empty in colvarproxy_namd::init_atom!", COLVARS_BUG_ERROR);
   }
   atoms_map[aid] = index;
   globalmaster->modifyRequestedAtomsPublic().add(aid);
