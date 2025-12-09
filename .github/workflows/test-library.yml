@@ -435,7 +435,7 @@ jobs:
           sudo apt install -y apptainer-suid
 
       - name: Get container images for build dependencies
-        run: devel-tools/get_container CentOS9-devel-oneAPI
+        run: devel-tools/get_container CentOS9-oneAPI
 
       - name: Intel oneAPI 2024.2, C++11
         shell: bash
