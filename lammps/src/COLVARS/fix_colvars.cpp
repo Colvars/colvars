@@ -497,7 +497,6 @@ void FixColvars::setup(int vflag)
 
     std::vector<int>           &tp = *(proxy->modify_atom_types());
     std::vector<cvm::atom_pos> &cd = *(proxy->modify_atom_positions());
-    std::vector<cvm::rvector>  &of = *(proxy->modify_atom_total_forces());
     std::vector<cvm::real>     &m  = *(proxy->modify_atom_masses());
     std::vector<cvm::real>     &q  = *(proxy->modify_atom_charges());
 
@@ -507,8 +506,6 @@ void FixColvars::setup(int vflag)
     for (i=0; i<num_coords; ++i) {
       const tagint k = atom->map(taglist[i]);
       if ((k >= 0) && (k < nlocal)) {
-
-        of[i].x = of[i].y = of[i].z = 0.0;
 
         if (unwrap_flag) {
           const int ix = (image[k] & IMGMASK) - IMGMAX;
@@ -558,11 +555,14 @@ void FixColvars::setup(int vflag)
 
           m[j] = comm_buf[k].m;
           q[j] = comm_buf[k].q;
-
-          of[j].x = of[j].y = of[j].z = 0.0;
         }
       }
     }
+
+    if (proxy->total_forces_enabled()) {
+      proxy->set_total_forces_invalid();
+    }
+
   } else { // me != 0
 
     // copy coordinate data into communication buffer
@@ -871,6 +871,11 @@ void FixColvars::end_of_step()
       MPI_Recv(&tmp, 0, MPI_INT, 0, 0, world, MPI_STATUS_IGNORE);
       MPI_Rsend(comm_buf, nme*size_one, MPI_BYTE, 0, 0, world);
     }
+
+    if (proxy->total_forces_enabled()) {
+      proxy->set_total_forces_valid();
+    }
+
   }
 }
 

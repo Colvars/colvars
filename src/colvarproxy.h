@@ -626,6 +626,18 @@ public:
     return engine_ready_;
   }
 
+  /// Are total forces currently valid? (They would not be right after configuration change)
+  inline bool total_forces_valid() const
+  {
+    return total_forces_valid_;
+  }
+
+  /// Mark the total forces as invalid (due to e.g. a configuration change)
+  void set_total_forces_invalid();
+
+  /// Mark the total forces as up to date
+  void set_total_forces_valid();
+
   /// Enqueue new configuration text, to be parsed as soon as possible
   void add_config(std::string const &cmd, std::string const &conf);
 
@@ -691,6 +703,9 @@ protected:
 
   /// Whether the engine allows to fully initialize Colvars immediately
   bool engine_ready_;
+
+  /// Whether the total forces are currently valid
+  bool total_forces_valid_ = false;
 
   /// Collected error messages
   std::string error_output;

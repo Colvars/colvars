@@ -609,6 +609,21 @@ int colvarproxy::post_run()
 }
 
 
+void colvarproxy::set_total_forces_invalid()
+{
+  std::fill(atoms_total_forces.begin(), atoms_total_forces.end(), cvm::rvector(0.0, 0.0, 0.0));
+  std::fill(atom_groups_total_forces.begin(), atom_groups_total_forces.end(),
+            cvm::rvector(0.0, 0.0, 0.0));
+  total_forces_valid_ = false;
+}
+
+
+void colvarproxy::set_total_forces_valid()
+{
+  total_forces_valid_ = true;
+}
+
+
 void colvarproxy::print_input_atomic_data()
 {
   cvm::log(cvm::line_marker);
