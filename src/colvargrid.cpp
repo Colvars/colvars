@@ -337,7 +337,7 @@ colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars,
                                            std::shared_ptr<colvar_grid_count> samples_in,
                                            std::shared_ptr<const colvar_grid_params> params,
                                            std::string config)
-  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params, config), samples(samples_in)
+  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params ? params : samples_in, config), samples(samples_in)
 {
   if (samples_in)
     samples_in->has_parent_data = true;
