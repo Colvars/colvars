@@ -2,9 +2,9 @@ colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars:   https://doi.org/10.1080/00268976.2013.813594
 colvars: as well as all other papers listed below for individual features used.
-colvars: This version was built with the C++11 standard or higher.
 colvars: Summary of compile-time features available in this build:
-colvars:   - SMP parallelism: enabled (num. threads = 4)
+colvars:   - C++ language version: 201703
+colvars:   - Multiple replicas: enabled (replica number 1 of 1)
 colvars:   - Lepton custom functions: available
 colvars:   - Tcl interpreter: available
 colvars: Redefining the Tcl "cv" command to the new script interface.
@@ -43,7 +43,19 @@ colvars:   group9 (4 atoms)
 colvars:   Protein_C-alpha_10 (1 atoms)
 colvars:   group10 (4 atoms)
 colvars:   heavy_atoms (51 atoms)
-colvars: # smp = on [default]
+colvars:   prot_N (10 atoms)
+colvars:   prot_CA (10 atoms)
+colvars:   prot_C (10 atoms)
+colvars:   prot_O (10 atoms)
+colvars: # smp = "" [default]
+colvars: SMP parallelism is not set.
+colvars: Available SMP parallelism modes of this proxy are:
+colvars:    - cvcs
+colvars:    - inner_loop
+colvars:    - none
+colvars: Set SMP parallelism to the preferred (default) mode to the proxy.
+colvars: SMP parallelism will be applied to Colvars components.
+colvars:   - SMP parallelism: enabled (num. threads = 4)
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # scriptedColvarForces = off [default]
@@ -52,7 +64,7 @@ colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "one"
-colvars:   Initializing a new "distance" component.
+colvars:     Initializing a new "distance" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -113,9 +125,9 @@ colvars:   Initializing a new "abf" instance.
 colvars:   # name = "abf1" [default]
 colvars:   # colvars = { one }
 colvars:   # stepZeroData = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 10 [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   WARNING: ABF should not be run without a thermostat or at 0 Kelvin!
 colvars:   # applyBias = on [default]
 colvars:   # hideJacobian = off [default]
@@ -127,9 +139,9 @@ colvars:   # historyFreq = 0 [default]
 colvars:   # shared = off [default]
 colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
-colvars:   # lowerBoundaries = { 1 }
-colvars:   # upperBoundaries = { 5 }
-colvars:   # widths = { 0.2 }
+colvars:   # lowerBoundary = { 1 }
+colvars:   # upperBoundary = { 5 }
+colvars:   # width = { 0.2 }
 colvars:   # integrate = on [default]
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
