@@ -1150,6 +1150,13 @@ Like the trajectory file, these additional files are needed only for analyzing a
 
 \cvnamdonly{Lastly, the total energy of all biases or restraints applied to the colvars appears under the NAMD standard output, under the MISC column.}
 
+\cvgromacsonly{
+  \textbf{Note:} please note that appending output files is not supported for all Colvars output files, and is therefore disabled: when running with the same output prefix, existing files will be backed up and replaced.  When using Colvars, we highly recommend that you run GROMACS as:
+\begin{mdexampleinput}
+\-gmx~mdrun~-s~topol.tpr~-noappend~...\\
+\end{mdexampleinput}
+}
+
 
 \cvsubsec{File formats}{sec:colvars_file_formats}
 
