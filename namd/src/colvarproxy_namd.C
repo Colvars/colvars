@@ -259,7 +259,6 @@ int colvarproxy_namd::setup()
 
     // zero out mutable arrays
     atoms_positions[i] = cvm::rvector(0.0, 0.0, 0.0);
-    atoms_total_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
     atoms_new_colvar_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
@@ -279,7 +278,6 @@ int colvarproxy_namd::setup()
     update_group_properties(ig);
 
     atom_groups_coms[ig] = cvm::rvector(0.0, 0.0, 0.0);
-    atom_groups_total_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
     atom_groups_new_colvar_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
@@ -290,6 +288,13 @@ int colvarproxy_namd::setup()
     volmaps_new_colvar_forces[imap] = 0.0;
   }
 #endif
+
+  if (total_force_requested && modified_atom_list()) {
+    if (cvm::debug()) {
+      log("zeroing out buffers total forces on atom and groups.\n");
+    }
+    set_total_forces_invalid();
+  }
 
   size_t const new_features_hash =
     std::hash<std::string>{}(colvars->feature_report(0));
@@ -568,6 +573,11 @@ void colvarproxy_namd::calculate()
   // call the collective variable module
   if (colvars->calc() != COLVARS_OK) {
     cvm::error("Error in the collective variables module.\n", COLVARS_ERROR);
+  }
+
+  if (total_force_requested) {
+    // Total forces will be valid at the next step (this function is only called once)
+    set_total_forces_valid();
   }
 
   if (cvm::debug()) {
