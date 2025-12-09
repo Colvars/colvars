@@ -1644,6 +1644,16 @@ int colvar::collect_cvc_gradients()
 
 int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
 {
+  auto *proxy = cvm::main()->proxy;
+  if (!proxy->total_forces_valid()) {
+    if (cvm::debug()) {
+      cvm::log("Skipping total force computation for colvar \"" + name +
+               "\", because we do not have up to date total forces at this step.");
+    }
+    ft.reset();
+    return COLVARS_OK;
+  }
+
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
 
