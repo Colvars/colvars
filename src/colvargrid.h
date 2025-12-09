@@ -17,7 +17,6 @@
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
-#include "colvarproxy.h"
 
 
 /// \brief Unified base class for grid of values of a function of several collective
