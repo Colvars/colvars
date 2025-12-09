@@ -81,8 +81,9 @@ public: // TODO create accessors for these after all instantiations work
     for (size_t i = 0; i < nd; i++) {
       addr += ix[i]*static_cast<size_t>(nxc[i]);
       if (cvm::debug()) {
-        if (ix[i] >= nx[i]) {
-          cvm::error("Error: exceeding bounds in colvar_grid.\n", COLVARS_BUG_ERROR);
+        if (ix[i] >= nx[i] || ix[i] < 0) {
+          cvm::error("Error: index along dimension " + cvm::to_str(i) + " (" + cvm::to_str(ix[i])
+            + ") exceeds bounds in colvar_grid.\n", COLVARS_BUG_ERROR);
           return 0;
         }
       }
@@ -1639,7 +1640,7 @@ public:
   /// Constructor from a multicol file
   colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in = nullptr);
 
-  /// Constructor from a vector of colvars and a pointer to the count grid
+  /// Constructor from a vector of colvars and a pointer to the count grid, with extra params
   colvar_grid_gradient(std::vector<colvar *> &colvars,
                        std::shared_ptr<colvar_grid_count> samples_in = nullptr,
                        std::shared_ptr<const colvar_grid_params> params = nullptr,
