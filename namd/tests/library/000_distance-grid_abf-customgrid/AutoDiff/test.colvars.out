@@ -140,7 +140,7 @@ colvars:   # shared = off [default]
 colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
 colvars:   # lowerBoundary = { 1 }
-colvars:   # upperBoundary = { 5 }
+colvars:   # upperBoundary = { 6 }
 colvars:   # width = { 0.2 }
 colvars:   # integrate = on [default]
 colvars:   Finished ABF setup.
