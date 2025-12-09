@@ -135,10 +135,7 @@ jobs:
           sudo apt install -y apptainer-suid
 
       - name: Get container images for build dependencies
-        shell: bash
-        working-directory: devel-tools
-        run: |
-          apptainer pull ${{ inputs.container_name }}.sif oras://ghcr.io/colvars/devel-containers:${{ inputs.container_name }}
+        run: devel-tools/get_container ${{ inputs.container_name }}
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
