@@ -837,10 +837,9 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
       for (std::vector<int> iz_bin = czar_gradients_out->new_index();
             czar_gradients_out->index_ok(iz_bin); czar_gradients_out->incr(iz_bin)) {
         unsigned long count = z_samples_out->value_output(iz_bin);
-        czar_gradients_out->samples->set_value(iz_bin, count);
         for (size_t n = 0; n < czar_gradients_out->multiplicity(); n++) {
           czar_gradients_out->set_value(iz_bin, z_gradients_out->value_output(iz_bin, n)
-            - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n)* static_cast<cvm::real>(count), n);
+            - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n) * static_cast<cvm::real>(count), n);
         }
       }
     }
@@ -903,7 +902,6 @@ int colvarbias_abf::read_gradients_samples()
       // Read eABF z-averaged data for CZAR
       err |= z_samples->read_multicol(prefix + ".zcount", "eABF z-histogram file", true);
       err |= z_gradients->read_multicol(prefix + ".zgrad", "eABF z-gradient file", true);
-      czar_gradients = std::make_shared<colvar_grid_gradient>(colvars, z_samples);
       err |= czar_gradients->read_multicol(prefix + ".czar.grad", "eABF CZAR gradient file", true);
     }
   }
