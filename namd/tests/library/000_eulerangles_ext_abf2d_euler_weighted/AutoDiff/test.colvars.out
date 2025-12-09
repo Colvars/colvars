@@ -256,10 +256,9 @@ colvars:   # upperBoundary = { 180, 180 } [default]
 colvars:   # width = { 5, 5 } [default]
 colvars:   # CZARestimator = on [default]
 colvars:   # integrate = on [default]
-colvars:   360 computation : 360
-colvars:   Will perform weighted Poisson integrator using 1 threads.
 colvars:   72 computation : 72
 colvars:   Will perform weighted Poisson integrator using 1 threads.
+colvars:   72 computation : 72
 colvars:   # UIestimator = off [default]
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
@@ -312,4 +311,22 @@ colvars:   Initializing extended coordinate to colvar value.
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
 colvars: Saving collective variables state to "test.tmp.colvars.state".
-colvars:   Error: Trying to perform weighted Poisson integration without a samples grid.
+colvars:   Laplacian computation will be precomputed; precomputing will use 0.000131428 GB of memory.
+colvars:   Integrated in 123 steps, error: 9.79117e-07
+colvars:   DEBUG: gradients : { 72, 36 } multiplicity : 2
+colvars:   DEBUG: samples : { 72, 36 } multiplicity : 1
+colvars:   DEBUG: Gradient Data Size: 5184
+colvars:   DEBUG: Samples Data Size:  2592
+colvars:   DEBUG: Gradient Multiplicity: 2
+colvars:   Integrated in 129 steps, error: 9.00012e-07
+colvars: Synchronizing (emptying the buffer of) trajectory file "test.colvars.traj".
+colvars: Saving collective variables state to "test.tmp.colvars.state".
+colvars:   Laplacian computation will be precomputed; precomputing will use 0.000131428 GB of memory.
+colvars:   Integrated in 112 steps, error: 9.85849e-07
+colvars:   DEBUG: gradients : { 72, 36 } multiplicity : 2
+colvars:   DEBUG: samples : { 72, 36 } multiplicity : 1
+colvars:   DEBUG: Gradient Data Size: 5184
+colvars:   DEBUG: Samples Data Size:  2592
+colvars:   DEBUG: Gradient Multiplicity: 2
+colvars:   Integrated in 131 steps, error: 9.36093e-07
+colvars: Saving collective variables state to "test.colvars.state".
