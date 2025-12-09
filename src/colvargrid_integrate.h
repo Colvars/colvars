@@ -190,58 +190,6 @@ protected:
 
   /// \brief Initialize grid sizes and OpenMP threads for Poisson integration
   // Must be used after we initialize nx, the dimensions' sizes of the extrapolated solution
-  inline int init_Poisson_computation()
-  {
-    if (nd == 1 && !weighted) {
-      return COLVARS_OK;
-    }
-
-    cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
-    computation_nx.resize(nd);
-    computation_nt = 1;
-    computation_nxc.resize(nd);
-    for (size_t i = 0; i < nd; i++) {
-      if (periodic[i]) {
-        computation_nx[i] = nx[i];
-      } else {
-        computation_nx[i] = nx[i] - 2; // One point less than data size for non-periodic dimensions
-      }
-      computation_nt *= computation_nx[i];
-      computation_nxc[i] = computation_nt;
-    }
-    divergence.resize(computation_nt);
-
-    if (weighted) {
-      div_border_supplement.resize(computation_nt);
-      prepare_divergence_stencils();
-      prepare_laplacian_stencils();
-    }
-    need_to_extrapolate_solution = false;
-    for (size_t i = 0; i < nd; i++) {
-      if (!periodic[i])
-        need_to_extrapolate_solution = true;
-    }
-    if (!need_to_extrapolate_solution) {
-      computation_grid = this;
-    } else {
-      computation_grid = new colvar_grid_scalar();
-      computation_grid->periodic = periodic;
-      computation_grid->setup(computation_nx);
-    }
-    cvm::log(cvm::to_str(nx[0]) + " " + "computation : " + cvm::to_str(computation_nx[0]));
-
-#ifdef _OPENMP
-    m_num_threads = cvm::proxy->smp_num_threads();
-#else
-    if (m_num_threads > 1) {
-      return cvm::error("Multi-threading requested in weighted integrator, which is not supported "
-                        "by this build.\n");
-    }
-#endif
-    if (weighted) {
-      cvm::log("Will perform weighted Poisson integrator using " + cvm::to_str(m_num_threads) + " threads.");
-    }
-    return COLVARS_OK;
-  }
+  int init_Poisson_computation();
 };
 #endif
