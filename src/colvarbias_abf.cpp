@@ -823,17 +823,6 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     if (b_czar_window_file) {
       write_grid_to_file<colvar_grid_gradient>(z_gradients_out, prefix + ".zgrad", close);
     }
-    cvm::log("DEBUG: gradients : " + cvm::to_str(czar_gradients_out->nx) + " multiplicity : " + cvm::to_str(czar_gradients_out->multiplicity()));
-    cvm::log("DEBUG: samples : " + cvm::to_str(z_samples_out->nx) + " multiplicity : " + cvm::to_str(z_samples_out->multiplicity()));
-    cvm::log("DEBUG: Gradient Data Size: " + cvm::to_str(czar_gradients_out->data.size()));
-    cvm::log("DEBUG: Samples Data Size:  " + cvm::to_str(z_samples_out->data.size()));
-    // Also check multiplicity to ensure we aren't comparing apples to oranges
-    cvm::log("DEBUG: Gradient Multiplicity: " + cvm::to_str(czar_gradients_out->multiplicity()));
-    if (czar_gradients_out->nx[0] != z_samples_out->nx[0] || (czar_gradients_out->nd != 1 && (czar_gradients_out->nx[1] != z_samples_out->nx[1]))) {
-      cvm::log("gradients : " + cvm::to_str(czar_gradients_out->nx) + " multiplicity : " + cvm::to_str(czar_gradients_out->multiplicity()));
-      cvm::log("samples : " + cvm::to_str(z_samples_out->nx) + " multiplicity : " + cvm::to_str(z_samples_out->multiplicity()));
-      cvm::error("How is it possible ?", COLVARS_ERROR | COLVARS_BUG_ERROR);
-    }
     // Update the CZAR estimator of gradients, except at step 0
     // in which case we preserve any existing data (e.g. read via inputPrefix, used to join strata in stratified eABF)
     if (cvm::step_relative() > 0) {
@@ -846,13 +835,11 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
         }
       }
     }
-    // TODO: should we write the accumulated or the average gradients
     write_grid_to_file<colvar_grid_gradient>(czar_gradients_out, prefix + ".czar.grad", close);
 
     if (b_integrate) {
       // Do numerical integration (to high precision) and output a PMF
       cvm::real err;
-      // TODO: but if we don't multiply by count, won't this be wrong as well ?
       czar_pmf_out->integrate(integrate_iterations, integrate_tol, err);
       czar_pmf_out->set_zero_minimum();
       write_grid_to_file<colvar_grid_scalar>(czar_pmf_out, prefix + ".czar.pmf", close);
@@ -890,7 +877,6 @@ int colvarbias_abf::colvarbias_abf::local_sample_count(int radius) {
 int colvarbias_abf::read_gradients_samples()
 {
   int err = COLVARS_OK;
-  cvm::log("we read the gradients files at one point");
 
   for ( size_t i = 0; i < input_prefix.size(); i++ ) {
     std::string prefix = input_prefix[i];
