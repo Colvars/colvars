@@ -708,9 +708,7 @@ int colvarmodule_gpu_calc::calc_cvs(const std::vector<colvar*>& colvars, colvarm
   // Update flags
   checkColvarsError(cv_update_flags(colvars));
   // Calculate total force
-  if (colvar_module->step_relative() > 0) {
-    checkColvarsError(cvc_calc_total_force(colvars, calc_total_force_compute, colvar_module, false));
-  }
+  checkColvarsError(cvc_calc_total_force(colvars, calc_total_force_compute, colvar_module, false));
   // Read data to atom groups
   checkColvarsError(atom_group_read_data_gpu(
     colvars, read_data_compute, colvar_module));
