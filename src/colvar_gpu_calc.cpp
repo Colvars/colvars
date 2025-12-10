@@ -29,6 +29,7 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
 #if defined (COLVARS_NVTX_PROFILING)
   cvc_calc_total_force_prof.start();
 #endif // defined (COLVARS_NVTX_PROFILING)
+  const bool total_force_valid = colvar_module->proxy ? colvar_module->proxy->total_forces_valid() : false;
   if (!g.graph_exec_initialized) {
     using node_map_t = std::unordered_map<std::string, cudaGraphNode_t>;
     for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
@@ -91,8 +92,15 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
       const auto all_cvcs = (*cvi)->get_cvcs();
       for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
         if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
+// <<<<<<< HEAD
         if (!(*cvc)->has_gpu_implementation()) {
           (*cvc)->calc_force_invgrads();
+          if (total_force_valid) {
+            (*cvc)->calc_force_invgrads();
+          } else {
+            // TODO: (*cvc)->ft is a protected member. How could I do the reset?
+          }
+// >>>>>>> ddd82771 (fix: skip the total force calc in the GPU code path if unavailable)
         }
       }
       if (colvar_module->debug()) {
