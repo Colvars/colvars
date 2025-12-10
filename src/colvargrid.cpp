@@ -35,7 +35,7 @@ colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars,
                                            std::shared_ptr<colvar_grid_scalar> weights_in,
                                            std::shared_ptr<const colvar_grid_params> params,
                                            std::string config)
-  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params, config), samples(NULL), weights(weights_in) //TODO are we sure ?
+  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params, config), samples(NULL), weights(weights_in)
 {
   if (weights_in)
     weights_in->has_parent_data = true;
@@ -189,7 +189,11 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
       size_t const samples_here = samples->value(ix);
       if (samples_here)
         integral += (value(ix) / cvm::real(samples_here) - corr) * cv[0]->width;
-    } else {
+    } else if (weights) {
+      size_t const weights_here = weights->value(ix);
+      if (weights_here)
+        integral += (value(ix) / cvm::real(weights_here) - corr) * cv[0]->width;
+    }else {
       integral += (value(ix) - corr) * cv[0]->width;
     }
 

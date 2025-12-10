@@ -1520,7 +1520,8 @@ public:
   inline void vector_value(std::vector<int> const &ix, std::vector<cvm::real> &v) const
   {
     cvm::real const * p = &value(ix);
-    if (samples) {
+
+    if (samples ) {
       int count = samples->value(ix);
       if (count) {
         cvm::real invcount = 1.0 / count;
@@ -1532,7 +1533,21 @@ public:
           v[i] = 0.0;
         }
       }
-    } else {
+    }
+    else if (weights) {
+      cvm::real weight = weights->value(ix);
+      if (weight) {
+        cvm::real invcount = 1.0 / weight;
+        for (size_t i = 0; i < mult; i++) {
+          v[i] = invcount * p[i];
+        }
+      } else {
+        for (size_t i = 0; i < mult; i++) {
+          v[i] = 0.0;
+        }
+      }
+    }
+    else {
       for (size_t i = 0; i < mult; i++) {
         v[i] = p[i];
       }
@@ -1554,9 +1569,12 @@ public:
     for (size_t imult = 0; imult < mult; imult++) {
       data[address(ix) + imult] -= forces[imult] * fact;
     }
-    if (samples)
+    if (samples) {
+      cvm::log("we indeed increased the count");
       samples->increase(ix, fact);
+    }
     else if (b_smoothed && weights) {
+      cvm::log("we indeed increased the weights");
       weights->increase(ix,fact);
     }
   }
@@ -1627,12 +1645,13 @@ public:
 
   /// \brief Return the value of the function at ix divided by its
   /// number of samples (if the count grid is defined)
+  // TODO: change here
   virtual cvm::real value_output(std::vector<int> const &ix,
                                  size_t const &imult = 0) const override
   {
     int s;
-    if (samples) {
-      return ( (s = samples->value(ix)) > 0) ?
+    if (samples || weights) {
+      return ( (s = samples ? cvm::real(samples->value(ix)) : weights->value(ix)) > 0) ?
         (data[address(ix) + imult] / cvm::real(s)) :
         0.0;
     } else {
@@ -1664,8 +1683,8 @@ public:
   {
     cvm::real weight, fact;
 
-    if (samples) {
-      weight = cvm::real(samples->value(ix));
+    if (samples || weights) {
+      weight = samples ? cvm::real(samples->value(ix)) : weights->value(ix);
     } else {
       weight = 1.;
     }
@@ -1687,8 +1706,8 @@ public:
   {
     cvm::real weight, fact;
 
-    if (samples) {
-      weight = cvm::real(samples->value(ix));
+    if (samples || weights) {
+      weight = samples ? cvm::real(samples->value(ix)) : weights->value(ix);
     } else {
       weight = 1.;
     }

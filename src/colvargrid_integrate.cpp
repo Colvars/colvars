@@ -970,7 +970,16 @@ void colvargrid_integrate::prepare_calculations()
 
     for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
          gradients->incr(ix)) {
-      size_t count = gradients->samples->value(ix);
+      cvm::real count;
+      if (gradients-> samples) {
+        count = gradients->samples->value(ix);
+      }
+      else if (gradients->weights) {
+        count = gradients->weights->value(ix);
+      }
+      else {
+        count = 1;
+      }
       if (count > 0) {
         insert_into_sorted_list<size_t>(sorted_counts, count);
       }
@@ -1041,7 +1050,14 @@ void colvargrid_integrate::prepare_calculations()
 cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix)
 {
   cvm::real regularized_weight;
-  size_t count = gradients->samples->value(ix);
+  cvm::real count;
+
+  if (gradients->samples)
+    count = static_cast<cvm::real>(gradients->samples->value(ix));
+  else if (gradients->weights)
+    count = gradients->weights->value(ix);
+  else
+    return 1;
   if (count < lower_threshold_count) {
     regularized_weight = lower_threshold_count;
   } else if (count > upper_threshold_count) {
@@ -1054,7 +1070,13 @@ cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix)
 
 void colvargrid_integrate::get_regularized_grad(std::vector<cvm::real> &F, std::vector<int> &ix)
 {
-  size_t count = gradients->samples->value(ix);
+  cvm::real count;
+  if (gradients->samples)
+    count = static_cast<cvm::real>(gradients->samples->value(ix));
+  else if (gradients->weights)
+    count = gradients->weights->value(ix);
+  else
+    count = 1;
   gradients->vector_value(ix, F);
   cvm::real multiplier = 1.;
   if (count < min_count_F) {

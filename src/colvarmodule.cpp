@@ -963,6 +963,8 @@ int colvarmodule::calc()
   if (restart_out_freq && (cvm::step_relative() > 0) &&
       ((cvm::step_absolute() % restart_out_freq) == 0)) {
 
+    cvm::log("do we go here ?");
+
     if (restart_out_name.size()) {
       // Write restart file, if different from main output
       error_code |= write_restart_file(restart_out_name);
@@ -1275,9 +1277,11 @@ int colvarmodule::write_restart_file(std::string const &out_name)
   cvm::log("Saving collective variables state to \""+out_name+"\".\n");
   std::ostream &restart_out_os = proxy->output_stream(out_name, "state file");
   if (!restart_out_os) return COLVARS_FILE_ERROR;
-
   if (binary_restart) {
+    cvm::log("so binary restart");
     cvm::memory_stream mem_os;
+    cvm::log("mem_os ??");
+
     if (!write_state(mem_os)) {
       return cvm::error("Error: in writing binary state information to file.\n", COLVARS_ERROR);
     }
@@ -1290,8 +1294,10 @@ int colvarmodule::write_restart_file(std::string const &out_name)
       return cvm::error("Error: in writing restart file.\n", COLVARS_FILE_ERROR);
     }
   }
-
+  cvm::log("does the problem come from closing ?");
   proxy->close_output_stream(out_name);
+  cvm::log("No ?");
+
 
   // Take the opportunity to flush colvars.traj
 
