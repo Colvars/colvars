@@ -118,6 +118,7 @@ private:
   std::shared_ptr<colvargrid_integrate>  czar_pmf;
   /// use kernel grid version of ABF ?
   bool b_smoothed;
+  int smoothing;
   /// Calculate system force for all colvars
   int update_system_force();
 
@@ -144,6 +145,7 @@ private:
   // Data just after the last share (start of cycle) in shared ABF
   std::unique_ptr<colvar_grid_gradient> last_gradients;
   std::shared_ptr<colvar_grid_count>    last_samples;
+  std::shared_ptr<colvar_grid_scalar>    last_weights;
   // eABF/CZAR local data last shared
   std::unique_ptr<colvar_grid_gradient> z_gradients_in;
   std::shared_ptr<colvar_grid_count>    z_samples_in;
