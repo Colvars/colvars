@@ -1407,6 +1407,10 @@ int colvar::calc()
     error_code |= update_cvc_flags();
     if (error_code != COLVARS_OK) return error_code;
     error_code |= calc_cvcs();
+    if (!cvm::main()->proxy->total_forces_valid()) {
+      // Zero out the colvar total force when atomic total forces are not available
+      ft.reset();
+    }
     if (error_code != COLVARS_OK) return error_code;
     error_code |= collect_cvc_data();
   }
@@ -1427,9 +1431,13 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     return error_code;
   }
 
-  if ((cvm::step_relative() > 0) && (!is_enabled(f_cv_total_force_current_step))){
-    // Use Jacobian derivative from previous timestep
+  if (cvm::main()->proxy->total_forces_valid() && (!is_enabled(f_cv_total_force_current_step))) {
+    // Use Jacobian derivative computed at previous timestep and the total forces from the same
+    // step, collected just now from the engine
     error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
+  } else {
+    // Zero out the colvar total force when atomic total forces are not available
+    ft.reset();
   }
   // atom coordinates are updated by the next line
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
@@ -1644,13 +1652,8 @@ int colvar::collect_cvc_gradients()
 
 int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
 {
-  auto *proxy = cvm::main()->proxy;
-  if (!proxy->total_forces_valid()) {
-    if (cvm::debug()) {
-      cvm::log("Skipping total force computation for colvar \"" + name +
-               "\", because we do not have up to date total forces at this step.");
-    }
-    ft.reset();
+  if (!cvm::main()->proxy->total_forces_valid()) {
+    // This is not a step when valid total forces are available
     return COLVARS_OK;
   }
 
