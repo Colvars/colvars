@@ -34,7 +34,7 @@ public:
   int updateFromTCLCommand(const std::vector<std::string>& arguments) override;
   void onBuffersUpdated() override;
   void calculate() override;
-  void setStep(int64_t step) override;
+  void setStep(int64_t step, int startup, int doMigration) override;
   cudaStream_t getStream() override;
   bool requestedAtomsChanged() override;
   bool requestedForcedAtomsChanged() override { return requestedAtomsChanged(); }
@@ -76,6 +76,7 @@ public:
     return CudaGlobalMasterClient::replica_comm_send(msg_data, msg_len, dest_rep);
   }
   int64_t getStep() const {return m_step;}
+  int isStartupStep() const {return m_is_startup_step;}
   std::string getTCLUpdateResult() override {return mTCLResult;}
 private:
   std::unique_ptr<colvarproxy_impl> mImpl;
