@@ -846,6 +846,10 @@ void FixColvars::end_of_step()
         }
       }
 
+      if (proxy->total_forces_enabled()) {
+        proxy->set_total_forces_valid();
+      }
+
     } else { // me != 0
       /* copy total force data into communication buffer */
       nme = 0;
@@ -862,10 +866,6 @@ void FixColvars::end_of_step()
       /* blocking receive to wait until it is our turn to send data. */
       MPI_Recv(&tmp, 0, MPI_INT, 0, 0, world, MPI_STATUS_IGNORE);
       MPI_Rsend(comm_buf, nme*size_one, MPI_BYTE, 0, 0, world);
-    }
-
-    if (proxy->total_forces_enabled()) {
-      proxy->set_total_forces_valid();
     }
 
   }
