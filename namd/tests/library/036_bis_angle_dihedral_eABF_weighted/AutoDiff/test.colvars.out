@@ -122,7 +122,17 @@ colvars:   # upperBoundary = 180
 colvars:   # hardLowerBoundary = on [default]
 colvars:   # hardUpperBoundary = on [default]
 colvars:   # expandBoundaries = off [default]
-colvars:   # extendedLagrangian = off [default]
+colvars:   # extendedLagrangian = on
+colvars:   Enabling the extended Lagrangian term for colvar "angle".
+colvars:   # extendedTemp = 500
+colvars:   # extendedFluctuation = 0.1
+colvars:   Computed extended system force constant: 99.3595 [E]/U^2
+colvars:   # extendedTimeConstant = 200
+colvars:   Computed fictitious mass: 100672 [E]/(U/fs)^2   (U: colvar unit)
+colvars:   # outputEnergy = off [default]
+colvars:   # extendedLangevinDamping = 0
+colvars:   # reflectingLowerBoundary = off [default]
+colvars:   # reflectingUpperBoundary = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
 colvars:   # outputTotalForce = on
@@ -235,9 +245,12 @@ colvars:   # historyFreq = 5
 colvars:   # shared = off [default]
 colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
+colvars:   # CZARestimator = on [default]
 colvars:   # integrate = on [default]
 colvars:   31 computation : 29
 colvars:   Will perform weighted Poisson integrator using 1 threads.
+colvars:   31 computation : 29
+colvars:   # UIestimator = off [default]
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
@@ -259,11 +272,14 @@ colvars: - dihedral colvar component:
 colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
 colvars: 
 colvars: - ABF colvar bias implementation:
-colvars: - Internal-forces free energy estimator:
 colvars:   Henin2010 https://doi.org/10.1021/ct9004432
 colvars: 
 colvars: - Poisson integration of 2D/3D free energy surfaces:
 colvars:   Henin2021 https://doi.org/10.1021/acs.jctc.1c00593
+colvars: 
+colvars: - CZAR eABF estimator:
+colvars: - eABF implementation:
+colvars:   Lesage2017 https://doi.org/10.1021/acs.jpcb.6b10055
 colvars: 
 colvars: - NAMD engine:
 colvars: - Scalable center-of-mass computation (NAMD):
@@ -294,12 +310,17 @@ colvars: Re-initialized atom group for variable "dihedral":0/0. 1 atoms: total m
 colvars: Re-initialized atom group for variable "dihedral":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
+colvars:   Initializing extended coordinate to colvar value.
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 98 steps, error: 9.25651e-07
+colvars:   Integrated in 98 steps, error: 8.91766e-07
+colvars:   Integrated in 99 steps, error: 9.71074e-07
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 1 steps, error: 6.37713e-07
+colvars:   Integrated in 1 steps, error: 5.94781e-07
+colvars:   Integrated in 1 steps, error: 7.42342e-07
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 99 steps, error: 9.51457e-07
+colvars:   Integrated in 97 steps, error: 9.67162e-07
+colvars:   Integrated in 99 steps, error: 8.42445e-07
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 1 steps, error: 6.46878e-07
+colvars:   Integrated in 1 steps, error: 6.47535e-07
+colvars:   Integrated in 1 steps, error: 5.79576e-07
 colvars: Saving collective variables state to "test.colvars.state".
