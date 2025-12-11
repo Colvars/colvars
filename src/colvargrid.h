@@ -1560,6 +1560,13 @@ public:
     for (size_t imult = 0; imult < mult; imult++) {
       data[address(ix) + imult] += values[imult].real_value;
     }
+    if (samples) {
+      samples->increase(ix,1);
+    }
+    else if (weights) {
+      cvm::error("acc value with weights not yet implemented");
+      weights->increase(ix,1);
+    }
   }
 
   /// \brief Accumulate the gradient based on the force (i.e. sums the
@@ -1730,9 +1737,17 @@ public:
                            bool add = false) override
   {
     if (add) {
-      data[address(ix) + imult] += new_value;
+      if (samples) {
+        data[address(ix) + imult] += new_value * samples->new_value(ix);
+      }
+      else
+        data[address(ix) + imult] += new_value;
+
     } else {
-      data[address(ix) + imult] = new_value;
+      if (samples)
+        data[address(ix) + imult] = new_value * samples->value(ix);
+      else
+        data[address(ix) + imult] = new_value;
     }
     has_data = true;
   }
