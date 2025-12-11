@@ -53,9 +53,9 @@ private:
   bool    b_integrate;
 
   /// Number of samples per bin before applying the full biasing force
-  size_t  full_samples;
+  cvm::real  full_samples;
   /// Number of samples per bin before applying a scaled-down biasing force
-  size_t  min_samples;
+  cvm::real  min_samples;
   /// Latest absolute time step at which history files were written
   cvm::step_number history_last_step;
   /// Write CZAR output file for stratified eABF (.zgrad)
@@ -90,14 +90,16 @@ private:
 
   /// Current bin in sample grid
   std::vector<int>  bin;
-  /// Current position
-  std::vector<colvarvalue>  position;
+  /// Current bin in sample grid
+  std::vector<cvm::real>  position;
   /// Current bin in force grid
   std::vector<int> force_bin;
+  /// Current position in force grid
+  std::vector<cvm::real>  force_position;
   /// Cuurent bin in "actual" coordinate, when running extended Lagrangian dynamics
   std::vector<int> z_bin;
   /// Cuurent bin in "actual" coordinate, when running extended Lagrangian dynamics
-  std::vector<colvarvalue> z_position;
+  std::vector<cvm::real> z_position;
   /// Measured instantaneous system force
   gradient_t system_force;
 
