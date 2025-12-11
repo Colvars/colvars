@@ -981,7 +981,7 @@ void colvargrid_integrate::prepare_calculations()
         count = 1;
       }
       if (count > 0) {
-        insert_into_sorted_list<size_t>(sorted_counts, count);
+        insert_into_sorted_list<cvm::real>(sorted_counts, count);
       }
     }
 
@@ -1320,7 +1320,6 @@ cvm::real colvargrid_integrate::l2norm(const std::vector<cvm::real> &x)
       computation_grid->periodic = periodic;
       computation_grid->setup(computation_nx);
     }
-    cvm::log(cvm::to_str(nx[0]) + " " + "computation : " + cvm::to_str(computation_nx[0]));
 
 #ifdef _OPENMP
     m_num_threads = cvm::proxy->smp_num_threads();

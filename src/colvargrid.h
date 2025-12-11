@@ -10,6 +10,7 @@
 #ifndef COLVARGRID_H
 #define COLVARGRID_H
 
+#include <algorithm>
 #include <iosfwd>
 #include <memory>
 
@@ -1333,7 +1334,7 @@ public:
       else
         return 0;
     }
-    size_t count = 0;
+    scalar_type_class count = 0;
     size_t nbins = 0;
     int i, j, k;
     bool edge;
@@ -1409,9 +1410,9 @@ public:
     }
     return sqrt(sum2 / this->data.size());
   };
-  void increase(std::vector<int> const &ix, cvm::real fact)
+  void increase(std::vector<int> const &ix, scalar_type_class fact = 1)
   {
-    this->data[this->address(ix)] += static_cast<scalar_type_class>(fact);
+    this->data[this->address(ix)] += fact;
   }
   /// \brief Get the binned count indexed by ix from the newly read data
   inline scalar_type_class const & new_value(std::vector<int> const &ix)
@@ -1530,7 +1531,7 @@ public:
   {
     cvm::real const * p = &value(ix);
 
-    if (samples ) {
+    if (samples) {
       int count = samples->value(ix);
       if (count) {
         cvm::real invcount = 1.0 / count;
@@ -1545,18 +1546,20 @@ public:
     }
     else if (weights) {
       cvm::real weight = weights->value(ix);
-      if (weight) {
+      if (weight > 0) {
+        // cvm::log( "we use weights" + cvm::to_str(weight) );
+        // cvm::log("gradients is : [" + cvm::to_str(p[0]) + " " + cvm::to_str(p[1]) + "]");
         cvm::real invcount = 1.0 / weight;
         for (size_t i = 0; i < mult; i++) {
           v[i] = invcount * p[i];
         }
+        // cvm::log("gradients is : [" + cvm::to_str(v[0]) + " " + cvm::to_str(v[1]) + "]");
       } else {
         for (size_t i = 0; i < mult; i++) {
           v[i] = 0.0;
         }
       }
-    }
-    else {
+    } else {
       for (size_t i = 0; i < mult; i++) {
         v[i] = p[i];
       }
@@ -1573,8 +1576,7 @@ public:
       samples->increase(ix,1);
     }
     else if (weights) {
-      cvm::error("acc value with weights not yet implemented");
-      weights->increase(ix,1);
+      cvm::error("acc_value is only in use for ti bias and shouldn't be used with non-integer weights", COLVARS_ERROR);
     }
   }
 
@@ -1582,76 +1584,133 @@ public:
   /// opposite of the force)
   inline void acc_force(std::vector<int> const &ix, cvm::real const *forces, bool b_smoothed = false,
                               cvm::real fact = 1.0) {
-    cvm::log("we're accumulating force of ix = " + cvm::to_str(ix));
     for (size_t imult = 0; imult < mult; imult++) {
       data[address(ix) + imult] -= forces[imult] * fact;
     }
     if (samples) {
-      cvm::log("we indeed increased the count");
-      samples->increase(ix, 1.0);
+      samples->increase(ix, 1);
     }
-    else if (b_smoothed && weights) {
-      cvm::log("we indeed increased the weights");
+    else if (weights) {
       weights->increase(ix,fact);
     }
+    // cvm::log("we increase count to " + cvm::to_str(samples ? samples->value(ix) : weights->value(ix)));
+    // cvm::log("force input : " + cvm::to_str(*forces) + " reweighted forces = " + cvm::to_str(std::vector<cvm::real>{data[address(ix)], data[address(ix) + 1]}));
   }
     /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
-  inline void acc_abf_force(std::vector<colvarvalue> const &cv_value, std::vector<int> const &bin_value,
+  /// TODO: explain what CV value is
+  inline void acc_abf_force(std::vector<cvm::real> const &cv_value, std::vector<int> const &bin_value,
                         cvm::real const *force,
                         bool b_smoothed,
                         cvm::real smoothing = 2.0) {
 
     int i, imin, imax, j, jmin, jmax;
+    cvm::real ixmin, ixmax;
     std::vector<int> bin(nd, 0);
-
-    if (b_smoothed) { // Distribute over smoothing function (cosine)
+    cvm::real sigma = smoothing * 0.66;
+    // TODO && count < threshold
+    if (b_smoothed && weights->value(bin_value) < full_samples) {
+      // Distribute over smoothing function (cosine)
       // Separate out 1D and 2D cases, as walking an arbitrary dimension grid
       // is a little more complicated (see abf_integrate for an example)
+
+
       switch (nd) {
 
       case 1:
         // for cosine-based function, non-zero between -smoothing and +smoothing
-        imin = value_to_bin_scalar(cv_value[0], 0) - int(smoothing);
-        imax = value_to_bin_scalar(cv_value[0], 0) + int(smoothing);
+        imin = cvm::floor(std::max(cv_value[0] - smoothing,static_cast<cvm::real>(0)));
+        imax = cvm::floor(std::min(cv_value[0] + smoothing, static_cast<cvm::real>(nx[0])));
         for (i = imin; i <= imax; i++) {
           // Delta is the distance from the center of bin i to the current cv value
           // Smoothing is expressed in units of width
-          cvm::real delta = (cv_value[0] - bin_to_value_scalar(i, 0)) / (smoothing * widths[0]);
+          cvm::real delta = (cv_value[0] -  (i+0.5)) / smoothing;
           // weight function has integral dx, same as the discrete case (function equal to 1 over one bin)
           cvm::real fact = 0.5 * (cos(delta * PI) + 1.) / smoothing;
           bin[0] = i;
-          acc_force(bin, force, true, fact);
+          if (index_ok( std::vector<int>({i})))
+            acc_force(bin, force, true, fact);
         }
         break;
 
       case 2:
         // for cosine-based function, non-zero between -smoothing and +smoothing
-        imin = value_to_bin_scalar(cv_value[0], 0) - int(smoothing);
-        imax = value_to_bin_scalar(cv_value[0], 0) + int(smoothing);
-        jmin = value_to_bin_scalar(cv_value[1], 1) - int(smoothing);
-        jmax = value_to_bin_scalar(cv_value[1], 1) + int(smoothing);
+        // TODO: Handle periodic case as well !
+        imin = cvm::floor(std::max(cv_value[0] - smoothing,static_cast<cvm::real>(0)));
+        imax = cvm::floor(std::min(cv_value[0] + smoothing, static_cast<cvm::real>(nx[0]) - 1));
+        jmin = cvm::floor(std::max(cv_value[1] - smoothing,static_cast<cvm::real>(0)));
+        jmax = cvm::floor(std::min(cv_value[1] + smoothing, static_cast<cvm::real>(nx[1]) - 1));
         for (i = imin; i <= imax; i++) {
           for (j = jmin; j <= jmax; j++) {
             // Delta is the distance from the center of bin i,j to the current cv value
             // Smoothing is expressed in units of width
-            cvm::real delta0 = (cv_value[0] - bin_to_value_scalar(i, 0)) / (widths[0]);
-            cvm::real delta1 = (cv_value[1] - bin_to_value_scalar(j, 1)) / (widths[1]);
+            cvm::real delta0 = (cv_value[0] - (i+0.5));
+            cvm::real delta1 = (cv_value[1] - (j+0.5));
             cvm::real delta = sqrt(delta0 * delta0 + delta1 * delta1) / smoothing;
             // weight function has integral dx, same as the discrete case (function equal to 1 over one bin)
             cvm::real fact = 0.5 * (cos(delta * PI) + 1.) / (smoothing * smoothing);
             bin[0] = i;
             bin[1] = j;
-            acc_force(bin, force, true, fact);
+            if (index_ok(bin))
+              acc_force(bin, force, true, fact);
           }
         }
         break;
 
       default:
-        cvm::error("Error: smoothed ABF is not implemented for dimension > 2.\n");
+        cvm::error("Error: smoothed ABF is not implemented for dimension > 2.\n", COLVARS_NOT_IMPLEMENTED);
         return;
       }
-
+    std::vector<int>ix_min(nd, 0);
+    std::vector<int>ix_max(nd, 0);
+    for (int i =0; i < nd; i++) {
+      // TODO: handle periodic case as well
+      ixmin = cv_value[0] - smoothing;
+      ixmax = cv_value[0] + smoothing;
+      if (!periodic[i]) {
+        ixmin = std::max(ixmin,static_cast<cvm::real>(0));
+        ixmax = std::min(ixmax, static_cast<cvm::real>(nx[0]) - 1);
+      }
+      ix_min[i] = cvm::floor(ixmin);
+      ix_max[i] = cvm::floor(ixmax);
+    }
+    std::vector<cvm::real>coeffs(std::pow(2,nd), 0);
+    cvm::real coeff;
+    cvm::real sum = 0;
+    cvm::real dist = 0;
+    std::vector<bool>stop_vec(nd, false);
+    cvm::real stop = 1;
+    int i = 0;
+    for (std::vector<int> ix = ix_min; ix < ix_max; incr(ix)) {
+      dist = 0;
+      coeff;
+      stop = 1;
+      std::vector<int>ix_copy = std::vector<int>(ix);
+      for (int dim = 0; dim < nd; dim++) {
+        if (!index_ok(ix)) {
+          if (periodic[dim]) {
+            ix_copy[dim] = ix_copy[dim];
+          }
+          else {
+            stop = 0;
+            break;
+          }
+        }
+        dist += std::pow(ix[dim] +0.5 - cv_value[dim], 2);
+      }
+      coeff = cvm::exp(-dist/sigma);
+      sum += coeff * stop;
+      coeffs[i] = coeff;
+      i++;
+    }
+    i = 0;
+      //TODO: finish here
+    for (std::vector<int> ix = ix_min; ix < ix_max; incr(ix)) {
+      acc_force(bin, force, true, coeffs[i]/sum);
+      i++;
+    }
+    //
+    //
     } else {
       cvm::log("we update the force with acc_force, force = " + cvm::to_str(force[0]) + " " + cvm::to_str(force[1]));
       acc_force(bin_value, force);
@@ -1660,15 +1719,13 @@ public:
 
   /// \brief Return the value of the function at ix divided by its
   /// number of samples (if the count grid is defined)
-  // TODO: change here
   virtual cvm::real value_output(std::vector<int> const &ix,
                                  size_t const &imult = 0) const override
   {
-    int s;
+    cvm::real s;
     if (samples || weights) {
-      return ( (s = samples ? cvm::real(samples->value(ix)) : weights->value(ix)) > 0) ?
-        (data[address(ix) + imult] / cvm::real(s)) :
-        0.0;
+      s = samples ? static_cast<cvm::real>(samples->value(ix)) : weights->value(ix);
+      return s > 0 ?(data[address(ix) + imult] / s) : 0.0;
     }
     return data[address(ix) + imult];
   }
@@ -1720,12 +1777,13 @@ public:
   {
     cvm::real weight, fact;
 
-    if (samples || weights) {
-      weight = samples ? static_cast<cvm::real>(samples->value(ix)) : weights->value(ix);
+    if (samples) {
+      weight = static_cast<cvm::real>(samples->value(ix));
+    } else if (weights) {
+      weight = weights->value(ix);
     } else {
       weight = 1.;
     }
-
     if (smoothed) {
       fact = smooth_inverse_weight(weight);
     } else {
@@ -1747,15 +1805,15 @@ public:
                            bool add = false) override
   {
     if (add) {
-      if (samples) {
-        data[address(ix) + imult] += new_value * samples-> new_value(ix);
+      if (samples || weights) {
+        data[address(ix) + imult] += new_value * (samples? samples-> new_value(ix) : weights->value(ix));
       }
       else
         data[address(ix) + imult] += new_value;
 
     } else {
-      if (samples)
-        data[address(ix) + imult] = new_value * samples-> value(ix);
+      if (samples || weights)
+        data[address(ix) + imult] = new_value * (samples? samples-> new_value(ix) : weights->value(ix));
       else
         data[address(ix) + imult] = new_value;
     }
