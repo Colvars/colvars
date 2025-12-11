@@ -81,6 +81,9 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
   for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
     // Calculate CVC total force
     if (!(*cvi)->is_enabled(colvardeps::f_cv_total_force_calc)) continue;
+    if (!total_force_valid) {
+      (*cvi)->reset_total_force();
+    }
     const bool do_total_force =
       use_current_step ?
        (*cvi)->is_enabled(colvardeps::f_cv_total_force_current_step) :
@@ -92,15 +95,8 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
       const auto all_cvcs = (*cvi)->get_cvcs();
       for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
         if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
-// <<<<<<< HEAD
-        if (!(*cvc)->has_gpu_implementation()) {
+        if ((*cvc)->is_enabled(colvardeps::f_cvc_active) && total_force_valid) {
           (*cvc)->calc_force_invgrads();
-          if (total_force_valid) {
-            (*cvc)->calc_force_invgrads();
-          } else {
-            // TODO: (*cvc)->ft is a protected member. How could I do the reset?
-          }
-// >>>>>>> ddd82771 (fix: skip the total force calc in the GPU code path if unavailable)
         }
       }
       if (colvar_module->debug()) {
