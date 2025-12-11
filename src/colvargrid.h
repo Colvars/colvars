@@ -1637,8 +1637,9 @@ public:
 
     } else {
       for (size_t i = 0; i < nd; i++) {
-        bin[i] = current_bin_scalar(i);
+        bin[i] = static_cast<int>(cvm::floor((cv_value[i])));
       }
+      cvm::log("we update the force with acc_force");
       acc_force(bin, force);
     }
   }
@@ -1654,9 +1655,8 @@ public:
       return ( (s = samples ? cvm::real(samples->value(ix)) : weights->value(ix)) > 0) ?
         (data[address(ix) + imult] / cvm::real(s)) :
         0.0;
-    } else {
-      return data[address(ix) + imult];
     }
+    return data[address(ix) + imult];
   }
 
   /// Compute the inverse weight corresponding to smoothing factor as in ABF
