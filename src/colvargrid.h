@@ -1580,7 +1580,7 @@ public:
   }
     /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
-  inline void acc_abf_force(std::vector<colvarvalue> const &cv_value,
+  inline void acc_abf_force(std::vector<colvarvalue> const &cv_value, std::vector<int> const &bin_value,
                         cvm::real const *force,
                         bool b_smoothed,
                         cvm::real smoothing = 2.0) {
@@ -1636,11 +1636,8 @@ public:
       }
 
     } else {
-      for (size_t i = 0; i < nd; i++) {
-        bin[i] = static_cast<int>(cvm::floor((cv_value[i])));
-      }
       cvm::log("we update the force with acc_force");
-      acc_force(bin, force);
+      acc_force(bin_value, force);
     }
   }
 
