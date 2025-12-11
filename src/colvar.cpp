@@ -1462,7 +1462,7 @@ int colvar::collect_cvc_data()
 
   int error_code = COLVARS_OK;
 
-  if ((cvm::step_relative() > 0) && (!is_enabled(f_cv_total_force_current_step))){
+  if (cvm::main()->proxy->total_forces_valid() && (!is_enabled(f_cv_total_force_current_step))) {
     // Total force depends on Jacobian derivative from previous timestep
     // collect_cvc_total_forces() uses the previous value of jd
     error_code |= collect_cvc_total_forces();
