@@ -1409,7 +1409,7 @@ int colvar::calc()
     error_code |= calc_cvcs();
     if (!cvm::main()->proxy->total_forces_valid()) {
       // Zero out the colvar total force when atomic total forces are not available
-      ft.reset();
+      reset_total_force();
     }
     if (error_code != COLVARS_OK) return error_code;
     error_code |= collect_cvc_data();
@@ -1437,7 +1437,7 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
   } else {
     // Zero out the colvar total force when atomic total forces are not available
-    ft.reset();
+    reset_total_force();
   }
   // atom coordinates are updated by the next line
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
@@ -1687,6 +1687,7 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
 int colvar::collect_cvc_total_forces()
 {
   if (is_enabled(f_cv_total_force_calc)) {
+
     ft.reset();
 
     for (size_t i = 0; i < cvcs.size();  i++) {
