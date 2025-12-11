@@ -238,7 +238,7 @@ int colvarbias_abf::init(std::string const &conf)
     z_gradients->request_actual_value();
     if (b_smoothed) {
       std::shared_ptr<colvar_grid_scalar> nullpointer = nullptr;
-      czar_gradients.reset(new colvar_grid_gradient(colvars, weights));
+      czar_gradients.reset(new colvar_grid_gradient(colvars, z_weights));
     }
     else {
       std::shared_ptr<colvar_grid_count> nullpointer = nullptr;
@@ -277,7 +277,7 @@ int colvarbias_abf::init(std::string const &conf)
     if (b_smoothed) {
       global_z_weights.reset(new colvar_grid_scalar(colvars, weights));
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_weights));
-      global_czar_gradients.reset(new colvar_grid_gradient(colvars, weights));
+      global_czar_gradients.reset(new colvar_grid_gradient(colvars, z_weights));
     }
     else {
       global_czar_gradients.reset(new colvar_grid_gradient(colvars, z_samples));
@@ -383,7 +383,6 @@ int colvarbias_abf::update()
   for (i = 0; i < num_variables(); i++) {
     if (!b_smoothed) {
       position[i] = (samples->use_actual_value[i] ? samples->cv[i] -> actual_value().real_value : samples->cv[i]->value().real_value - samples->lower_boundaries[i].real_value) / (samples->widths[i]);
-
       bin[i] = samples->current_bin_scalar(i);
 
     }
