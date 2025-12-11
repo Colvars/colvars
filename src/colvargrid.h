@@ -64,7 +64,7 @@ public: // TODO create accessors for these after all instantiations work
   std::vector<T> data;
 
   /// Newly read data (used for count grids, when adding several grids read from disk)
-  std::vector<size_t> new_data;
+  std::vector<T> new_data;
 
   /// Colvars collected in this grid
   std::vector<colvar *> cv;
@@ -1239,6 +1239,10 @@ public:
     }
     if (add) {
         this->data[this->address(ix)] += new_value;
+        if (this->has_parent_data) {
+          // save newly read data for inputting parent grid
+          this->new_data[this->address(ix)] = static_cast<scalar_type_class>(new_value);
+        }
     } else {
         this->data[this->address(ix)] = new_value;
     }
@@ -1407,7 +1411,12 @@ public:
   };
   void increase(std::vector<int> const &ix, cvm::real fact)
   {
-    this->data[this->address(ix)] += fact;
+    this->data[this->address(ix)] += static_cast<scalar_type_class>(fact);
+  }
+  /// \brief Get the binned count indexed by ix from the newly read data
+  inline scalar_type_class const & new_value(std::vector<int> const &ix)
+  {
+    return this->new_data[this->address(ix)];
   }
 };
 
@@ -1573,12 +1582,13 @@ public:
   /// opposite of the force)
   inline void acc_force(std::vector<int> const &ix, cvm::real const *forces, bool b_smoothed = false,
                               cvm::real fact = 1.0) {
+    cvm::log("we're accumulating force of ix = " + cvm::to_str(ix));
     for (size_t imult = 0; imult < mult; imult++) {
       data[address(ix) + imult] -= forces[imult] * fact;
     }
     if (samples) {
       cvm::log("we indeed increased the count");
-      samples->increase(ix, fact);
+      samples->increase(ix, 1.0);
     }
     else if (b_smoothed && weights) {
       cvm::log("we indeed increased the weights");
@@ -1643,7 +1653,7 @@ public:
       }
 
     } else {
-      cvm::log("we update the force with acc_force");
+      cvm::log("we update the force with acc_force, force = " + cvm::to_str(force[0]) + " " + cvm::to_str(force[1]));
       acc_force(bin_value, force);
     }
   }
@@ -1711,7 +1721,7 @@ public:
     cvm::real weight, fact;
 
     if (samples || weights) {
-      weight = samples ? cvm::real(samples->value(ix)) : weights->value(ix);
+      weight = samples ? static_cast<cvm::real>(samples->value(ix)) : weights->value(ix);
     } else {
       weight = 1.;
     }
@@ -1738,14 +1748,14 @@ public:
   {
     if (add) {
       if (samples) {
-        data[address(ix) + imult] += new_value * samples->new_value(ix);
+        data[address(ix) + imult] += new_value * samples-> new_value(ix);
       }
       else
         data[address(ix) + imult] += new_value;
 
     } else {
       if (samples)
-        data[address(ix) + imult] = new_value * samples->value(ix);
+        data[address(ix) + imult] = new_value * samples-> value(ix);
       else
         data[address(ix) + imult] = new_value;
     }

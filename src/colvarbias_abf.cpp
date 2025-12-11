@@ -382,13 +382,9 @@ int colvarbias_abf::update()
   size_t i;
   for (i = 0; i < num_variables(); i++) {
     if (!b_smoothed) {
-      cvm::log("are there samples ?" + cvm::to_str(static_cast<bool>(samples)));
-      cvm::log(cvm::to_str(i) + " " + cvm::to_str(samples->cv.size())  + cvm::to_str(samples->widths.size()) + " " );
-      cvm::log(cvm::to_str(cvm::to_str(samples->cv[i]->value())));
       position[i] = (samples->use_actual_value[i] ? samples->cv[i] -> actual_value().real_value : samples->cv[i]->value().real_value - samples->lower_boundaries[i].real_value) / (samples->widths[i]);
-      cvm::log("we update the positions, so what is wrong ?");
+
       bin[i] = samples->current_bin_scalar(i);
-      cvm::log("we update the bins, so what is wrong ?");
 
     }
     else {
@@ -399,8 +395,9 @@ int colvarbias_abf::update()
     if (colvars[i]->is_enabled(f_cv_total_force_current_step)) {
       force_bin[i] = bin[i];
     }
-
   }
+  cvm::log("value of the cv =  " + cvm::to_str(position));
+  cvm::log("value of the bin =  " + cvm::to_str(bin));
 
   // ***********************************************************
   // ******  ABF Part I: update the FE gradient estimate  ******
@@ -552,6 +549,7 @@ int colvarbias_abf::update_system_force()
         - colvar_forces[i].real_value;
     }
   }
+  cvm::log("the problem comes from the system force ? system_force = " + cvm::to_str(system_force[0]) + " " + cvm::to_str(system_force[1]));
   return COLVARS_OK;
 }
 
@@ -581,7 +579,7 @@ int colvarbias_abf::calc_biasing_force(std::vector<cvm::real> &force)
     // Calculate ramp factor that ensures smooth introduction of the force
     cvm::real coeff;
     if (!b_smoothed) {
-       coeff = samples->value(bin);
+       coeff = static_cast<cvm::real>(samples->value(bin));
     }
     else {
       coeff = weights->value(bin);
