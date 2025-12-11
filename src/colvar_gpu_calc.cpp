@@ -24,12 +24,15 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
   colvarmodule* colvar_module,
   bool use_current_step) {
   int error_code = COLVARS_OK;
+  const bool total_force_valid = colvar_module->proxy ? colvar_module->proxy->total_forces_valid() : false;
+  if (!total_force_valid) {
+    return error_code;
+  }
   colvarproxy* p = colvar_module->proxy;
   cudaStream_t stream = p->get_default_stream();
 #if defined (COLVARS_NVTX_PROFILING)
   cvc_calc_total_force_prof.start();
 #endif // defined (COLVARS_NVTX_PROFILING)
-  const bool total_force_valid = colvar_module->proxy ? colvar_module->proxy->total_forces_valid() : false;
   if (!g.graph_exec_initialized) {
     using node_map_t = std::unordered_map<std::string, cudaGraphNode_t>;
     for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
@@ -78,12 +81,12 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
     error_code |= checkGPUError(cudaGraphLaunch(g.graph_exec, stream));
     if (error_code != COLVARS_OK) return error_code;
   }
+#if defined (COLVARS_NVTX_PROFILING)
+  cvc_calc_total_force_prof.start();
+#endif // defined (COLVARS_NVTX_PROFILING)
   for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
     // Calculate CVC total force
     if (!(*cvi)->is_enabled(colvardeps::f_cv_total_force_calc)) continue;
-    if (!total_force_valid) {
-      (*cvi)->reset_total_force();
-    }
     const bool do_total_force =
       use_current_step ?
        (*cvi)->is_enabled(colvardeps::f_cv_total_force_current_step) :
@@ -94,8 +97,7 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
       }
       const auto all_cvcs = (*cvi)->get_cvcs();
       for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
-        if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
-        if ((*cvc)->is_enabled(colvardeps::f_cvc_active) && total_force_valid) {
+        if ((*cvc)->is_enabled(colvardeps::f_cvc_active)) {
           (*cvc)->calc_force_invgrads();
         }
       }
@@ -617,11 +619,16 @@ int colvarmodule_gpu_calc::cvc_calc_Jacobian_derivative(
 
 int colvarmodule_gpu_calc::cv_collect_cvc_data(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
   int error_code = COLVARS_OK;
+  const bool total_force_valid = colvar_module->proxy ? colvar_module->proxy->total_forces_valid() : false;
 #if defined (COLVARS_NVTX_PROFILING)
   cv_collect_cvc_data_prof.start();
 #endif // defined (COLVARS_NVTX_PROFILING)
   for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-    error_code |= (*cvi)->collect_cvc_data();
+    if (total_force_valid) {
+      error_code |= (*cvi)->collect_cvc_data();
+    } else {
+      (*cvi)->reset_total_force();
+    }
     if (colvar_module->get_error()) {
       return COLVARS_ERROR;
     }

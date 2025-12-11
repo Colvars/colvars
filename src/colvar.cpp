@@ -1407,10 +1407,6 @@ int colvar::calc()
     error_code |= update_cvc_flags();
     if (error_code != COLVARS_OK) return error_code;
     error_code |= calc_cvcs();
-    if (!cvm::main()->proxy->total_forces_valid()) {
-      // Zero out the colvar total force when atomic total forces are not available
-      reset_total_force();
-    }
     if (error_code != COLVARS_OK) return error_code;
     error_code |= collect_cvc_data();
   }
@@ -1435,9 +1431,6 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     // Use Jacobian derivative computed at previous timestep and the total forces from the same
     // step, collected just now from the engine
     error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
-  } else {
-    // Zero out the colvar total force when atomic total forces are not available
-    reset_total_force();
   }
   // atom coordinates are updated by the next line
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
@@ -1475,6 +1468,11 @@ int colvar::collect_cvc_data()
     error_code |= collect_cvc_total_forces();
   }
   error_code |= calc_colvar_properties();
+
+  if (!cvm::main()->proxy->total_forces_valid()) {
+    // Zero out the colvar total force when atomic total forces are not available
+    reset_total_force();
+  }
 
   if (cvm::debug())
     cvm::log("Done calculating colvar \""+this->name+"\"'s properties.\n");
