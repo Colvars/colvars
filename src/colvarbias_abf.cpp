@@ -430,7 +430,7 @@ int colvarbias_abf::update()
         // get total force and subtract previous ABF force if necessary
         update_system_force();
         cvm::log("we go up until acc_abf_force");
-        gradients->acc_abf_force(position, system_force, b_smoothed, smoothing);
+        gradients->acc_abf_force(position, bin, system_force, b_smoothed, smoothing);
         if ( b_integrate ) {
           pmf->update_div_neighbors(force_bin);
         }
@@ -450,7 +450,7 @@ int colvarbias_abf::update()
           // If we are outside the range of z, the force has not been obtained above
           // the function is just an accessor, so cheap to call again anyway
           update_system_force();
-          z_gradients->acc_abf_force(z_position, system_force, b_smoothed, smoothing);
+          z_gradients->acc_abf_force(z_position, z_bin, system_force, b_smoothed, smoothing);
         }
       }
 
