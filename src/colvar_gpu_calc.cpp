@@ -619,16 +619,13 @@ int colvarmodule_gpu_calc::cvc_calc_Jacobian_derivative(
 
 int colvarmodule_gpu_calc::cv_collect_cvc_data(const std::vector<colvar*>& colvars, colvarmodule* colvar_module) {
   int error_code = COLVARS_OK;
-  const bool total_force_valid = colvar_module->proxy ? colvar_module->proxy->total_forces_valid() : false;
 #if defined (COLVARS_NVTX_PROFILING)
   cv_collect_cvc_data_prof.start();
 #endif // defined (COLVARS_NVTX_PROFILING)
   for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
-    if (total_force_valid) {
-      error_code |= (*cvi)->collect_cvc_data();
-    } else {
-      (*cvi)->reset_total_force();
-    }
+    // If the total forces are not available, it will be reset in
+    // collect_cvc_total_forces anyway (called by collect_cvc_data)
+    error_code |= (*cvi)->collect_cvc_data();
     if (colvar_module->get_error()) {
       return COLVARS_ERROR;
     }

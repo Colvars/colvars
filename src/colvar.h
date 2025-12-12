@@ -82,13 +82,6 @@ public:
   /// subtracted.
   colvarvalue const & total_force() const;
 
-  /// Reset the total force to zero
-  inline void reset_total_force()
-  {
-    ft.reset();
-    ft_reported.reset();
-  }
-
   /// \brief Typical fluctuation amplitude for this collective
   /// variable (e.g. local width of a free energy basin)
   ///
