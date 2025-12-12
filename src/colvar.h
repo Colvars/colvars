@@ -86,6 +86,7 @@ public:
   inline void reset_total_force()
   {
     ft.reset();
+    ft_reported.reset();
   }
 
   /// \brief Typical fluctuation amplitude for this collective
