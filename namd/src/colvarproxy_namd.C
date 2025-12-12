@@ -37,6 +37,8 @@
 #include <tcl.h>
 #endif
 
+#include <algorithm>
+
 #include "colvarmodule.h"
 #include "colvar.h"
 #include "colvarbias.h"
@@ -133,12 +135,6 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
 
   // save to Node for Tcl script access
   Node::Object()->colvars = colvars;
-
-#ifdef NAMD_TCL
-  have_scripts = true;
-#else
-  have_scripts = false;
-#endif
 
   if (simparams->firstTimestep != 0) {
     colvars->set_initial_step(static_cast<cvm::step_number>(simparams->firstTimestep));
@@ -263,13 +259,12 @@ int colvarproxy_namd::setup()
 
     // zero out mutable arrays
     atoms_positions[i] = cvm::rvector(0.0, 0.0, 0.0);
-    atoms_total_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
     atoms_new_colvar_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
   size_t n_group_atoms = 0;
-  for (int ig = 0; ig < globalmaster->modifyRequestedGroupsPublic().size(); ig++) {
-    n_group_atoms += globalmaster->modifyRequestedGroupsPublic()[ig].size();
+  for (int ig = 0; ig < globalmaster->getRequestedGroups().size(); ig++) {
+    n_group_atoms += globalmaster->getRequestedGroups()[ig].size();
   }
 
   log("updating group data ("+cvm::to_str(atom_groups_ids.size())+
@@ -277,23 +272,29 @@ int colvarproxy_namd::setup()
       cvm::to_str(n_group_atoms)+" atoms in total).\n");
 
   // Note: groupMassBegin, groupMassEnd may be used here, but they won't work for charges
-  for (int ig = 0; ig < globalmaster->modifyRequestedGroupsPublic().size(); ig++) {
+  for (int ig = 0; ig < globalmaster->getRequestedGroups().size(); ig++) {
 
     // update mass and charge
     update_group_properties(ig);
 
     atom_groups_coms[ig] = cvm::rvector(0.0, 0.0, 0.0);
-    atom_groups_total_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
     atom_groups_new_colvar_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
 #if NAMD_VERSION_NUMBER >= 34471681
   log("updating grid object data ("+cvm::to_str(volmaps_ids.size())+
       " grid objects in total).\n");
-  for (int imap = 0; imap < globalmaster->modifyGridObjForcesPublic().size(); imap++) {
+  for (int imap = 0; imap < globalmaster->getRequestedGridObjects().size(); imap++) {
     volmaps_new_colvar_forces[imap] = 0.0;
   }
 #endif
+
+  if (total_force_requested && modified_atom_list()) {
+    if (cvm::debug()) {
+      log("zeroing out buffers total forces on atom and groups.\n");
+    }
+    set_total_forces_invalid();
+  }
 
   size_t const new_features_hash =
     std::hash<std::string>{}(colvars->feature_report(0));
@@ -325,7 +326,13 @@ int colvarproxy_namd::reset()
 
   globalmaster->reset();
 
-  atoms_map.clear();
+  // atoms_map.clear();
+  // TODO: There's no other way to re-initialize the atoms_map after
+  // clearing and then reloading a new configuration file, so we just
+  // assume that the number of atoms is unchanged, and reset the atoms_map
+  // to -1. However, this might be problematic if NAMD supports to
+  // reload a new system with different number of atoms in the future.
+  std::fill(atoms_map.begin(), atoms_map.end(), -1);
 
   // Clear internal atomic data
   error_code |= colvarproxy::reset();
@@ -420,11 +427,15 @@ void colvarproxy_namd::calculate()
   // If new atomic positions or forces have been requested by other
   // GlobalMaster objects, add these to the atom map as well
   size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
-  if ( (atoms_map.size() != n_all_atoms) ||
-       (int(atoms_ids.size()) < (globalmaster->getAtomIdEndPublic() - globalmaster->getAtomIdBeginPublic())) ||
-       (int(atoms_ids.size()) < (globalmaster->getForceIdEndPublic() - globalmaster->getForceIdBeginPublic())) ) {
+  if (modified_atom_list() ||               /* Colvars just requested new atoms */
+      (atoms_map.size() != n_all_atoms) ||  /* The system topology has changed */
+      (int(atoms_ids.size()) <              /* Another GlobalMaster requested new atoms */
+       (globalmaster->getAtomIdEndPublic() - globalmaster->getAtomIdBeginPublic())) ||
+      (int(atoms_ids.size()) <              /* Another GlobalMaster requested new total forces */
+       (globalmaster->getForceIdEndPublic() - globalmaster->getForceIdBeginPublic()))) {
     update_atoms_map(globalmaster->getAtomIdBeginPublic(), globalmaster->getAtomIdEndPublic());
     update_atoms_map(globalmaster->getForceIdBeginPublic(), globalmaster->getForceIdEndPublic());
+    reset_modified_atom_list(); // reset the flag as needed
   }
 
   // prepare local arrays
@@ -480,6 +491,10 @@ void colvarproxy_namd::calculate()
       ForceList::const_iterator f_i = globalmaster->getTotalForcePublic();
 
       for ( ; a_i != a_e; ++a_i, ++f_i ) {
+        if (atoms_map[*a_i] < 0) {
+          cvm::error("Bug: atoms_map at " + cvm::to_str(*a_i) + " is less than zero!\n",
+                     COLVARS_BUG_ERROR);
+        }
         atoms_total_forces[atoms_map[*a_i]] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
         n_total_forces++;
       }
@@ -559,6 +574,11 @@ void colvarproxy_namd::calculate()
   // call the collective variable module
   if (colvars->calc() != COLVARS_OK) {
     cvm::error("Error in the collective variables module.\n", COLVARS_ERROR);
+  }
+
+  if (total_force_requested) {
+    // Total forces will be valid at the next step (this function is only called once)
+    set_total_forces_valid();
   }
 
   if (cvm::debug()) {
@@ -836,6 +856,9 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
         ") for collective variables calculation.\n");
 
   int const index = add_atom_slot(aid);
+  if (atoms_map.empty()) {
+    cvm::error("Bug: atoms_map is empty in colvarproxy_namd::init_atom!", COLVARS_BUG_ERROR);
+  }
   atoms_map[aid] = index;
   globalmaster->modifyRequestedAtomsPublic().add(aid);
   update_atom_properties(index);

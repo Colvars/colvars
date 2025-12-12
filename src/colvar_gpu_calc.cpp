@@ -24,6 +24,10 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
   colvarmodule* colvar_module,
   bool use_current_step) {
   int error_code = COLVARS_OK;
+  const bool total_force_valid = colvar_module->proxy ? colvar_module->proxy->total_forces_valid() : false;
+  if (!total_force_valid) {
+    return error_code;
+  }
   colvarproxy* p = colvar_module->proxy;
   cudaStream_t stream = p->get_default_stream();
 #if defined (COLVARS_NVTX_PROFILING)
@@ -617,6 +621,8 @@ int colvarmodule_gpu_calc::cv_collect_cvc_data(const std::vector<colvar*>& colva
   cv_collect_cvc_data_prof.start();
 #endif // defined (COLVARS_NVTX_PROFILING)
   for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    // If the total forces are not available, it will be reset in
+    // collect_cvc_total_forces anyway (called by collect_cvc_data)
     error_code |= (*cvi)->collect_cvc_data();
     if (colvar_module->get_error()) {
       return COLVARS_ERROR;

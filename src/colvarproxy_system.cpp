@@ -7,6 +7,7 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+#include <algorithm>
 
 #include "colvarmodule.h"
 #include "colvartypes.h"

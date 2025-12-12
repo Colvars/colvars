@@ -39,6 +39,11 @@ public:
     return modifyAppliedForces();
   }
 
+  inline ResizeArray<AtomIDList> const &getRequestedGroups() const
+  {
+    return reqGroups;
+  }
+
   inline ResizeArray<AtomIDList> &modifyRequestedGroupsPublic()
   {
     return modifyRequestedGroups();
@@ -47,6 +52,11 @@ public:
   inline ForceList &modifyGroupForcesPublic()
   {
     return modifyGroupForces();
+  }
+
+  inline IntList const &getRequestedGridObjects() const
+  {
+    return reqGridObjs;
   }
 
   inline IntList &modifyRequestedGridObjectsPublic()
