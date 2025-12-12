@@ -1455,7 +1455,7 @@ int colvar::collect_cvc_data()
 
   int error_code = COLVARS_OK;
 
-  if (cvm::main()->proxy->total_forces_valid() && (!is_enabled(f_cv_total_force_current_step))) {
+  if (!is_enabled(f_cv_total_force_current_step)) {
     // Total force depends on Jacobian derivative from previous timestep
     // collect_cvc_total_forces() uses the previous value of jd
     error_code |= collect_cvc_total_forces();
@@ -1468,11 +1468,6 @@ int colvar::collect_cvc_data()
     error_code |= collect_cvc_total_forces();
   }
   error_code |= calc_colvar_properties();
-
-  if (!cvm::main()->proxy->total_forces_valid()) {
-    // Zero out the colvar total force when atomic total forces are not available
-    reset_total_force();
-  }
 
   if (cvm::debug())
     cvm::log("Done calculating colvar \""+this->name+"\"'s properties.\n");
@@ -1688,24 +1683,26 @@ int colvar::collect_cvc_total_forces()
 
     ft.reset();
 
-    for (size_t i = 0; i < cvcs.size();  i++) {
-      if (!cvcs[i]->is_enabled()) continue;
-          if (cvm::debug())
-          cvm::log("Colvar component no. "+cvm::to_str(i+1)+
-              " within colvar \""+this->name+"\" has total force "+
-              cvm::to_str((cvcs[i])->total_force(),
-              cvm::cv_width, cvm::cv_prec)+".\n");
-      // linear combination is assumed
-      ft += (cvcs[i])->total_force() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
-    }
+    if (cvm::main()->proxy->total_forces_valid()) {
+      for (size_t i = 0; i < cvcs.size();  i++) {
+        if (!cvcs[i]->is_enabled()) continue;
+            if (cvm::debug())
+            cvm::log("Colvar component no. "+cvm::to_str(i+1)+
+                " within colvar \""+this->name+"\" has total force "+
+                cvm::to_str((cvcs[i])->total_force(),
+                cvm::cv_width, cvm::cv_prec)+".\n");
+        // linear combination is assumed
+        ft += (cvcs[i])->total_force() * (cvcs[i])->sup_coeff / active_cvc_square_norm;
+      }
 
-    if (!(is_enabled(f_cv_hide_Jacobian) && is_enabled(f_cv_subtract_applied_force))) {
-      // This is by far the most common case
-      // Add the Jacobian force to the total force, and don't apply any silent
-      // correction internally: biases such as colvarbias_abf will handle it
-      // If f_cv_hide_Jacobian is enabled, a force of -fj is present in ft due to the
-      // Jacobian-compensating force
-      ft += fj;
+      if (!(is_enabled(f_cv_hide_Jacobian) && is_enabled(f_cv_subtract_applied_force))) {
+        // This is by far the most common case
+        // Add the Jacobian force to the total force, and don't apply any silent
+        // correction internally: biases such as colvarbias_abf will handle it
+        // If f_cv_hide_Jacobian is enabled, a force of -fj is present in ft due to the
+        // Jacobian-compensating force
+        ft += fj;
+      }
     }
   }
 
