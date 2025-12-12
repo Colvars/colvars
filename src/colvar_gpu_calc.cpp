@@ -81,9 +81,6 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
     error_code |= checkGPUError(cudaGraphLaunch(g.graph_exec, stream));
     if (error_code != COLVARS_OK) return error_code;
   }
-#if defined (COLVARS_NVTX_PROFILING)
-  cvc_calc_total_force_prof.start();
-#endif // defined (COLVARS_NVTX_PROFILING)
   for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
     // Calculate CVC total force
     if (!(*cvi)->is_enabled(colvardeps::f_cv_total_force_calc)) continue;
@@ -97,7 +94,8 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
       }
       const auto all_cvcs = (*cvi)->get_cvcs();
       for (auto cvc = all_cvcs.begin(); cvc != all_cvcs.end(); ++cvc) {
-        if ((*cvc)->is_enabled(colvardeps::f_cvc_active)) {
+        if (!(*cvc)->is_enabled(colvardeps::f_cvc_active)) continue;
+        if (!(*cvc)->has_gpu_implementation()) {
           (*cvc)->calc_force_invgrads();
         }
       }
