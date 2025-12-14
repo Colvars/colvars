@@ -351,6 +351,12 @@ public:
   /// Apply a force to the actual value (only meaningful with extended Lagrangian)
   void add_bias_force_actual_value(colvarvalue const &force);
 
+  /// \brief Accumulator for system forces determined internally (e.g. by harmonic restraints on lambda)
+  colvarvalue system_force_accumulator;
+
+  /// \brief Add to the system force accumulator
+  void add_system_force(colvarvalue const &force);
+
   /// \brief Collect all forces on this colvar, integrate internal
   /// equations of motion of internal degrees of freedom; see also
   /// colvar::communicate_forces()
@@ -793,6 +799,8 @@ inline void colvar::reset_bias_force() {
   fb.reset();
   fb_actual.type(value());
   fb_actual.reset();
+  system_force_accumulator.type(value());
+  system_force_accumulator.reset();
 }
 
 
