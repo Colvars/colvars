@@ -112,6 +112,10 @@ public:
     }
     cv_features.clear();
   }
+  
+  /// \brief Get a pointer to the i-th component (CVC)
+  cvc* get_cvc_ptr(size_t index);
+  cvc const* get_cvc_ptr(size_t index) const; // Const version too
 
   /// Implements possible actions to be carried out
   /// when a given feature is enabled
@@ -667,6 +671,11 @@ public:
 
   /// \brief function for sorting cvcs by their names
   static bool compare_cvc(const colvar::cvc* const i, const colvar::cvc* const j);
+
+  /// \brief Get all colvarcomp objects
+  const std::vector<std::shared_ptr<colvar::cvc>>& get_cvcs() const {
+    return cvcs;
+  }
 
 protected:
 

@@ -45,12 +45,16 @@ then
   shift
 fi
 
+# Assume forward patching
+PATCH_OPTS="-p1 --forward -s"
+
 # Undocumented flag
 reverse=0
 if [ $1 = "-R" ]
 then
   echo "Reverse: updating git tree from downstream tree"
   reverse=1
+  PATCH_OPTS="-p1 --reverse -s"
   shift
 fi
 
@@ -211,11 +215,9 @@ condcopy() {
   then
     a=$2
     b=$1
-    PATCH_OPT="-R"
   else
     a=$1
     b=$2
-    PATCH_OPT=""
   fi
 
   updated_file=0
@@ -261,6 +263,7 @@ checkfile() {
 }
 
 
+
 # Update LAMMPS tree
 if [ ${code} = "LAMMPS" ]
 then
@@ -284,11 +287,9 @@ then
     condcopy "${src}" "${target}/src/COLVARS/${tgt}"
   done
 
-  if [ -f ${source}/lammps/COLVARS.cmake.diff ] ; then
+  if [ -f ${source}/lammps/COLVARS.cmake.patch ] ; then
     # Do not exit if the patch fails - already applied in development branch
-    set +e
-    patch -p1 -N -d ${target} < ${source}/lammps/COLVARS.cmake.diff
-    set -e
+    patch ${PATCH_OPTS} -d ${target} < ${source}/lammps/COLVARS.cmake.patch || true
   fi
 
   downloaded_pdf=0
@@ -346,9 +347,6 @@ then
              "${target}/lepton/Make.depends"
     condcopy "${source}/namd/lepton/Makefile.namd" \
              "${target}/lepton/Makefile.namd"
-    if ! grep -q lepton/Makefile.namd "${target}/Makefile" ; then
-      patch -p1 -N -d ${target} < namd/Makefile.patch
-    fi
   fi
 
   # Copy library files to the "colvars" folder
@@ -367,12 +365,16 @@ then
 
   # Update NAMD interface files
   for src in \
-      ${source}/namd/src/colvarproxy_namd.h \
-      ${source}/namd/src/colvarproxy_namd_version.h \
-      ${source}/namd/src/colvarproxy_namd.C
+      ${source}/namd/src/*.h \
+      ${source}/namd/src/*.C
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"
+  done
+  for patch in ${source}/namd/*.patch ${source}/namd/src/*.patch ; do
+    if [ -s ${patch} ] ; then
+      patch ${PATCH_OPTS} -d "${target}" < "${patch}" || true
+    fi
   done
 
   # Update abf_integrate
@@ -438,11 +440,9 @@ then
     condcopy "${src}" "${target}/src/${tgt}.C"
   done
 
-  if [ -f ${source}/vmd/src/tcl_commands.C.diff ] ; then
+  if [ -f ${source}/vmd/src/tcl_commands.C.patch ] ; then
     # Do not exit if the patch fails - already applied in development branch
-    set +e
-    patch -p1 -N -d ${target} < ${source}/vmd/src/tcl_commands.C.diff
-    set -e
+    patch ${PATCH_OPTS} -d ${target} < ${source}/vmd/src/tcl_commands.C.patch || true
   fi
 
   # Update replacement text for the Colvars manual
@@ -495,7 +495,6 @@ if [ ${code} = "GROMACS" ]
 then
 
   target_folder=${target}/src/external/colvars
-  patch_opts="-p1 --forward -s"
 
   mkdir -p ${target_folder}
 
@@ -508,21 +507,21 @@ then
   echo ""
 
   # Patch CMake build recipes when applicable
-  if [ -s ${source}/gromacs/gmxManageColvars.cmake.diff ] ; then
-    patch ${patch_opts} -d ${target} < ${source}/gromacs/gmxManageColvars.cmake.diff || true
+  if [ -s ${source}/gromacs/gmxManageColvars.cmake.patch ] ; then
+    patch ${PATCH_OPTS} -d ${target} < ${source}/gromacs/gmxManageColvars.cmake.patch || true
   fi
-  if [ -s ${source}/gromacs/CMakeLists.txt.diff ] ; then
-    patch ${patch_opts} -d ${target} < ${source}/gromacs/CMakeLists.txt.diff || true
+  if [ -s ${source}/gromacs/CMakeLists.txt.patch ] ; then
+    patch ${PATCH_OPTS} -d ${target} < ${source}/gromacs/CMakeLists.txt.patch || true
   fi
-  if [ -s ${source}/gromacs/CMakeLists.txt.diff ] ; then
-    patch ${patch_opts} -d ${target} < ${source}/gromacs/CMakeLists.txt.diff || true
+  if [ -s ${source}/gromacs/CMakeLists.txt.patch ] ; then
+    patch ${PATCH_OPTS} -d ${target} < ${source}/gromacs/CMakeLists.txt.patch || true
   fi
 
   if [ "x${UPDATE_LEPTON}" == "xyes" ] ; then
     echo -n "(note: adding/updating Lepton)"
     copy_lepton ${target}/src/external/ || exit 1
-    if [ -s ${source}/gromacs/CMakeLists.txt.Lepton.diff ] ; then
-      patch ${patch_opts} -d ${target} < ${source}/gromacs/CMakeLists.txt.Lepton.diff || true
+    if [ -s ${source}/gromacs/CMakeLists.txt.Lepton.patch ] ; then
+      patch ${PATCH_OPTS} -d ${target} < ${source}/gromacs/CMakeLists.txt.Lepton.patch || true
     fi
     condcopy ${source}/gromacs/cmake/gmxManageLepton.cmake "${target}/cmake/gmxManageLepton.cmake"
   fi
@@ -532,12 +531,10 @@ then
   # Copy MDModules files to the "src/gromacs/src/applied_forces/colvars" folder
   target_folder=${target}/src/gromacs/applied_forces/colvars
 
-  for patch_file in ${source}/gromacs/src/applied_forces/colvars/*.diff ; do
+  for patch_file in ${source}/gromacs/src/applied_forces/colvars/*.patch ; do
     if [ -s ${patch_file} ] ; then
       # Do not exit if the patch fails - already applied
-      set +e
-      patch -p1 -N -d ${target} < ${patch_file}
-      set -e
+      patch ${PATCH_OPTS} -d ${target} < ${patch_file} || true
     fi
   done
 
@@ -567,7 +564,7 @@ then
 
   # Apply patch for Gromacs files
   if [ -s ${source}/gromacs/gromacs-mdmodules.patch ] ; then
-    patch ${patch_opts} -d ${target} < ${source}/gromacs/gromacs-mdmodules.patch || true
+    patch ${PATCH_OPTS} -d ${target} < ${source}/gromacs/gromacs-mdmodules.patch || true
   fi
   ret_val=$?
   if [ $ret_val -ne 0 ]

@@ -1,4 +1,5 @@
 #include "CudaGlobalMasterClient.h"
+#include "colvar_gpu_support.h"
 #include "colvarproxy_cudaglobalmaster.h"
 #include "colvarproxy_cudaglobalmaster_kernel.h"
 #include "colvarproxy.h"
@@ -14,6 +15,7 @@
 
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
 #include <nvtx3/nvToolsExt.h>
+#include <nvtx3/nvToolsExtCuda.h>
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
 
 #if defined (__linux__) || defined (__APPLE__)
@@ -167,6 +169,42 @@ public:
     deallocateDeviceTransposeArrays();
     allocateDeviceTransposeArrays();
   }
+  smp_mode_t get_preferred_smp_mode() const override {
+    return smp_mode_t::none;
+  }
+  std::vector<smp_mode_t> get_available_smp_modes() const override {
+    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
+      smp_mode_t::none,
+      smp_mode_t::gpu
+    };
+    return available_modes;
+  }
+  int set_smp_mode(smp_mode_t mode) override {
+    if ((mode == smp_mode_t::none) || (mode == smp_mode_t::gpu)) {
+      smp_mode = mode;
+      if (mode == smp_mode_t::gpu) {
+        support_gpu = true;
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+        mEventAttrib.message.ascii = "Colvars GPU";
+#endif
+      } else {
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+        mEventAttrib.message.ascii = "Colvars CPU";
+#endif
+        support_gpu = false;
+      }
+      return COLVARS_OK;
+    }
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+  float* proxy_atoms_masses_gpu_float() override {return d_mMass;}
+  float* proxy_atoms_charges_gpu_float() override {return d_mCharges;}
+  cvm::real* proxy_atoms_positions_gpu() override {return d_mPositions;}
+  cvm::real* proxy_atoms_total_forces_gpu() override {return d_mTotalForces;}
+  cvm::real* proxy_atoms_new_colvar_forces_gpu() override {return d_mAppliedForces;}
+  cudaStream_t get_default_stream() override {return mStream;}
+  void set_lattice();
+  int wait_for_extra_info_ready() override;
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
@@ -214,7 +252,8 @@ colvarproxy_impl::colvarproxy_impl(
   d_trans_mMass(nullptr),
   d_trans_mCharges(nullptr),
   h_mLattice(nullptr),
-  mBiasEnergy(0), mAtomsChanged(false),
+  mBiasEnergy(0), mStream(0),
+  mAtomsChanged(false),
   first_timestep(true), previous_NAMD_step(0),
   simParams(s), molecule(m), mScriptTcl(t) {
   colvars = nullptr;
@@ -236,10 +275,12 @@ colvarproxy_impl::~colvarproxy_impl() {
 }
 
 int colvarproxy_impl::reset() {
+  int error_code = COLVARS_OK;
   deallocateDeviceArrays();
   deallocateDeviceTransposeArrays();
   mAtomsChanged = true;
-  return colvarproxy::reset();
+  error_code |= colvarproxy::reset();
+  return error_code;
 }
 
 int colvarproxy_impl::setup() {
@@ -260,6 +301,9 @@ int colvarproxy_impl::setup() {
   error_code |= colvars->update_engine_parameters();
   error_code |= colvars->setup_input();
   error_code |= colvars->setup_output();
+  if (has_gpu_support()) {
+    cvm::log("Warning: the GPU support in Colvars is still experimental!\n");
+  }
   return error_code;
 }
 
@@ -667,35 +711,46 @@ int colvarproxy_impl::replica_comm_send(char* msg_data, int msg_len, int dest_re
 }
 
 void colvarproxy_impl::onBuffersUpdated() {
-  // Clear the previous applied forces
-  auto &colvars_applied_force = *(modify_atom_applied_forces());
-  // TODO: Why do I need to clean the applied forces manually?
-  std::fill(colvars_applied_force.begin(),
-            colvars_applied_force.end(),
-            cvm::rvector(0, 0, 0));
-  // Clear the previous bias energy
-  mBiasEnergy = 0;
+  const size_t numAtoms = atoms_ids.size();
   int savedDevice;
   cudaCheck(cudaGetDevice(&savedDevice));
   cudaCheck(cudaSetDevice(m_device_id));
-  // TODO: Colvars does not support GPU, so we have to copy the buffers manually
-  const size_t numAtoms = atoms_ids.size();
+  if (!has_gpu_support()) {
+    // Clear the previous applied forces
+    auto &colvars_applied_force = *(modify_atom_applied_forces());
+    // TODO: Why do I need to clean the applied forces manually?
+    std::fill(colvars_applied_force.begin(),
+              colvars_applied_force.end(),
+              cvm::rvector(0, 0, 0));
+  } else {
+    cudaCheck(cudaMemsetAsync(proxy_atoms_new_colvar_forces_gpu(), 0, 3 * numAtoms * sizeof(double), mStream));
+  }
+  // Clear the previous bias energy
+  mBiasEnergy = 0;
+  bool sync = false;
   if (numAtoms > 0) {
-    transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
-    if (mClient->requestUpdateAtomTotalForces()) {
-      transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
+    if (!has_gpu_support()) {
+      transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
+      if (mClient->requestUpdateAtomTotalForces()) {
+        transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
+      }
+      sync = true;
     }
     if (mClient->requestUpdateMasses()) {
       copy_float_to_host_double(d_mMass, d_trans_mMass, numAtoms, mStream);
+      sync = true;
     }
     if (mClient->requestUpdateCharges()) {
       copy_float_to_host_double(d_mCharges, d_trans_mCharges, numAtoms, mStream);
+      sync = true;
     }
   }
-  // Check if CUDA kernels are successfully executed
-  cudaCheck(cudaPeekAtLastError());
-  // Ensure the above kernels are done before the NB forces
-  cudaCheck(cudaStreamSynchronize(mStream));
+  if (sync) {
+    // Check if CUDA kernels are successfully executed
+    cudaCheck(cudaPeekAtLastError());
+    // Ensure the above kernels are done before the NB forces
+    cudaCheck(cudaStreamSynchronize(mStream));
+  }
   // Restore the GPU device
   cudaCheck(cudaSetDevice(savedDevice));
 }
@@ -708,30 +763,34 @@ void colvarproxy_impl::calculate() {
   cudaCheck(cudaSetDevice(m_device_id));
   // The following memcpy operations are supposed to be overlapped with the NB kernel
   if (numAtoms > 0) {
-    // Transform the arrays for Colvars
-    auto &colvars_pos = *(modify_atom_positions());
-    copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
-    if (mClient->requestUpdateAtomTotalForces()) {
-      auto &colvars_total_force = *(modify_atom_total_forces());
-      copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
+    if (!has_gpu_support()) {
+      // Transform the arrays for Colvars
+      auto &colvars_pos = *(modify_atom_positions());
+      ::copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
+      if (mClient->requestUpdateAtomTotalForces()) {
+        auto &colvars_total_force = *(modify_atom_total_forces());
+        ::copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
+      }
     }
     if (mClient->requestUpdateMasses()) {
       auto &colvars_mass = *(modify_atom_masses());
-      copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
+      ::copy_DtoH(d_trans_mMass, colvars_mass.data(), numAtoms, mStream);
     }
     if (mClient->requestUpdateCharges()) {
       auto &colvars_charge  = *(modify_atom_charges());
-      copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
-    }
-    if (mClient->requestUpdateLattice()) {
-      copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+      ::copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
     }
   }
-  // Synchronize the stream to make sure the host buffers are ready
-  cudaCheck(cudaStreamSynchronize(mStream));
-  // iout << "colvarproxy_impl::calculate at step " << step << "\n" << endi;
+  if (mClient->requestUpdateLattice()) {
+    ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+  }
+  // NOTE: I think the implementation in Colvars will syncrhonize the stream before
+  // calculating CVCs anyway, so I can skip it here.
+  if (!has_gpu_support()) {
+    // Synchronize the stream to make sure the host buffers are ready
+    cudaCheck(cudaStreamSynchronize(mStream));
+  }
   if (first_timestep) {
-    // TODO: Do I really need to call them again?
     // setup();
     update_target_temperature();
     colvars->update_engine_parameters();
@@ -757,28 +816,9 @@ void colvarproxy_impl::calculate() {
     }
   }
   previous_NAMD_step = step;
-  if (mClient->requestUpdateLattice()) {
-    unit_cell_x.set(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
-    unit_cell_y.set(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
-    unit_cell_z.set(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
-    const Vector a1(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
-    const Vector a2(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
-    const Vector a3(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
-    const int p1 = ( a1.length2() ? 1 : 0 );
-    const int p2 = ( a2.length2() ? 1 : 0 );
-    const int p3 = ( a3.length2() ? 1 : 0 );
-    if (!p1 && !p2 && !p3) {
-      boundaries_type = boundaries_non_periodic;
-      reset_pbc_lattice();
-    } else if (p1 && p2 && p3) {
-      if (( ! ( a1.y || a1.z || a2.x || a2.z || a3.x || a3.y ) )) {
-        boundaries_type = boundaries_pbc_ortho;
-      } else {
-        boundaries_type = boundaries_pbc_triclinic;
-      }
-      colvarproxy_system::update_pbc_lattice();
-    } else {
-      boundaries_type = boundaries_unsupported;
+  if (!has_gpu_support()) {
+    if (mClient->requestUpdateLattice()) {
+      set_lattice();
     }
   }
   // Run Colvars
@@ -798,13 +838,14 @@ void colvarproxy_impl::calculate() {
   nvtxRangePop();
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   // Update applied forces
-
-  auto &colvars_applied_force = *(modify_atom_applied_forces());
-  if (numAtoms > 0) {
-    copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
-    transpose_from_host_rvector(
-      d_mAppliedForces, d_trans_mAppliedForces,
-      numAtoms, mStream);
+  if (!has_gpu_support()) {
+    auto &colvars_applied_force = *(modify_atom_applied_forces());
+    if (numAtoms > 0) {
+      ::copy_HtoD(colvars_applied_force.data(), d_trans_mAppliedForces, numAtoms, mStream);
+      transpose_from_host_rvector(
+        d_mAppliedForces, d_trans_mAppliedForces,
+        numAtoms, mStream);
+    }
   }
   // NOTE: I think I can skip the syncrhonization here because this client
   //       share the same stream as the CudaGlobalMasterServer object
@@ -951,6 +992,39 @@ int colvarproxy_impl::run_colvar_gradient_callback(
 {
   return colvarproxy::tcl_run_colvar_gradient_callback(name, cvc_values,
                                                        gradient);
+}
+
+void colvarproxy_impl::set_lattice() {
+  unit_cell_x.set(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
+  unit_cell_y.set(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
+  unit_cell_z.set(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
+  const Vector a1(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
+  const Vector a2(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
+  const Vector a3(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
+  const int p1 = ( a1.length2() ? 1 : 0 );
+  const int p2 = ( a2.length2() ? 1 : 0 );
+  const int p3 = ( a3.length2() ? 1 : 0 );
+  if (!p1 && !p2 && !p3) {
+    boundaries_type = boundaries_non_periodic;
+    reset_pbc_lattice();
+  } else if (p1 && p2 && p3) {
+    if (( ! ( a1.y || a1.z || a2.x || a2.z || a3.x || a3.y ) )) {
+      boundaries_type = boundaries_pbc_ortho;
+    } else {
+      boundaries_type = boundaries_pbc_triclinic;
+    }
+    colvarproxy_system::update_pbc_lattice();
+  } else {
+    boundaries_type = boundaries_unsupported;
+  }
+}
+
+int colvarproxy_impl::wait_for_extra_info_ready() {
+  int error_code = COLVARS_OK;
+  if (mClient->requestUpdateLattice()) {
+    set_lattice();
+  }
+  return error_code;
 }
 
 CudaGlobalMasterColvars::CudaGlobalMasterColvars():

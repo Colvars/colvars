@@ -12,6 +12,7 @@ $colvars_defines = " -DVMDCOLVARS";
 @colvars_cc      = ();
 @colvars_cu      = ();
 @colvars_ccpp    = ('colvaratoms.C',
+                    'colvaratoms_gpu.C',
                     'colvarbias.C',
                     'colvarbias_abf.C',
                     'colvarbias_abmd.C',
@@ -48,6 +49,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarproxy_system.C',
                     'colvarproxy_tcl.C',
                     'colvarproxy_vmd.C',
+                    'colvarproxy_gpu.C',
                     'colvarproxy_volmaps.C',
                     'colvarscript.C',
                     'colvarscript_commands.C',
@@ -56,6 +58,9 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvars_memstream.C',
                     'colvartypes.C',
                     'colvarvalue.C',
+                    'colvar_gpu_support.C',
+                    'colvar_gpu_calc.C',
+                    'colvar_rotation_derivative.C',
                     'nr_jacobi.C');
 @colvars_h    =    ('colvar_UIestimator.h',
                     'colvar_arithmeticpath.h',
@@ -63,6 +68,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvar_neuralnetworkcompute.h',
                     'colvar_rotation_derivative.h',
                     'colvaratoms.h',
+                    'colvaratoms_gpu.h',
                     'colvarbias.h',
                     'colvarbias_abf.h',
                     'colvarbias_abmd.h',
@@ -90,6 +96,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarproxy_system.h',
                     'colvarproxy_tcl.h',
                     'colvarproxy_vmd.h',
+                    'colvarproxy_gpu.h',
                     'colvarproxy_volmaps.h',
                     'colvarscript.h',
                     'colvarscript_commands.h',
@@ -99,4 +106,6 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvars_version.h',
                     'colvartypes.h',
                     'colvarvalue.h',
+                    'colvar_gpu_support.h',
+                    'colvar_gpu_calc.h',
                     'nr_jacobi.h');
