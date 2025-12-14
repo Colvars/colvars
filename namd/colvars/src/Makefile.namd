@@ -1,7 +1,6 @@
 COLVARSLIB = \
 	$(DSTDIR)/colvar.o \
 	$(DSTDIR)/colvaratoms.o \
-	$(DSTDIR)/colvaratoms_gpu.o \
 	$(DSTDIR)/colvarbias.o \
 	$(DSTDIR)/colvarbias_abf.o \
 	$(DSTDIR)/colvarbias_abmd.o \
@@ -37,7 +36,6 @@ COLVARSLIB = \
 	$(DSTDIR)/colvarproxy_replicas.o \
 	$(DSTDIR)/colvarproxy_system.o \
 	$(DSTDIR)/colvarproxy_tcl.o \
-	$(DSTDIR)/colvarproxy_gpu.o \
 	$(DSTDIR)/colvarproxy_volmaps.o \
 	$(DSTDIR)/colvarscript.o \
 	$(DSTDIR)/colvarscript_commands.o \
@@ -46,8 +44,5 @@ COLVARSLIB = \
 	$(DSTDIR)/colvars_memstream.o \
 	$(DSTDIR)/colvartypes.o \
 	$(DSTDIR)/colvarvalue.o \
-	$(DSTDIR)/colvar_gpu_support.o \
-	$(DSTDIR)/colvar_gpu_calc.o \
-	$(DSTDIR)/colvar_rotation_derivative.o \
 	$(DSTDIR)/nr_jacobi.o
         

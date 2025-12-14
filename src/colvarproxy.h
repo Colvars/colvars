@@ -19,7 +19,6 @@
 #include "colvarproxy_system.h"
 #include "colvarproxy_tcl.h"
 #include "colvarproxy_volmaps.h"
-#include "colvarproxy_gpu.h"
 
 /// \file colvarproxy.h
 /// \brief Colvars proxy classes
@@ -47,7 +46,7 @@ public:
 
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
   template <typename T>
-  using allocator_type = colvars_gpu::CudaHostAllocator<T>;
+  using allocator_type = cvm::CudaHostAllocator<T>;
 #else
   template <typename T>
   using allocator_type = std::allocator<T>;
@@ -461,7 +460,7 @@ class colvarproxy_smp {
 
 public:
 
-  enum class smp_mode_t {cvcs, inner_loop, gpu, none};
+  enum class smp_mode_t {cvcs, inner_loop, none};
 
   /// Constructor
   colvarproxy_smp();
@@ -471,12 +470,6 @@ public:
 
   /// Get the current SMP mode
   virtual smp_mode_t get_smp_mode() const;
-
-  /// Get available SMP modes
-  virtual std::vector<smp_mode_t> get_available_smp_modes() const;
-
-  /// Get the preferred SMP mode
-  virtual smp_mode_t get_preferred_smp_mode() const;
 
   /// Set the current SMP mode
   virtual int set_smp_mode(smp_mode_t mode);
@@ -562,8 +555,7 @@ class colvarproxy
     public colvarproxy_replicas,
     public colvarproxy_script,
     public colvarproxy_tcl,
-    public colvarproxy_io,
-    public colvarproxy_gpu
+    public colvarproxy_io
 {
 
 public:
@@ -575,7 +567,7 @@ public:
   colvarproxy();
 
   /// Destructor
-  virtual ~colvarproxy() override;
+  ~colvarproxy() override;
 
   inline std::string const &engine_name() const
   {

@@ -394,8 +394,6 @@ public:
     f_cvc_scalable_com,
     /// \brief Build list of atoms involved in CVC calculation
     f_cvc_collect_atom_ids,
-    /// \brief This CVC requires CPU buffers
-    f_cvc_require_cpu_buffers,
     /// Number of CVC features
     f_cvc_ntot
   };
@@ -452,12 +450,6 @@ public:
                  features()[f]->description+"\" is active.\n", COLVARS_BUG_ERROR);
     }
   }
-
-  /// Return the parents
-  std::vector<colvardeps *> get_parents() const {return parents;}
-
-  /// Return the children
-  std::vector<colvardeps *> get_children() const {return children;}
 
 };
 

@@ -219,7 +219,6 @@ public:
   /// \brief Pointers to all atom groups, to let colvars collect info
   /// e.g. atomic gradients
   std::vector<cvm::atom_group *> atom_groups;
-
   /// \brief Store a pointer to new atom group, and list as child for dependencies
   void register_atom_group(cvm::atom_group *ag);
 
@@ -1001,11 +1000,11 @@ protected:
   cvm::atom_pos              atoms_cog;
 
   /// Reference coordinates
-  cvm::ag_vector_real_t ref_pos_soa;
+  std::vector<cvm::real> ref_pos_soa;
   size_t num_ref_pos;
 
   /// Shifted atomic positions
-  cvm::ag_vector_real_t shifted_pos_soa;
+  std::vector<cvm::real> shifted_pos_soa;
   size_t num_shifted_pos;
 
   /// Rotation object

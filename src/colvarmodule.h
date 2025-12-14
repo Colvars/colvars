@@ -11,11 +11,6 @@
 #define COLVARMODULE_H
 
 #include <cstdint>
-#include <unordered_map>
-#include <memory>
-
-#include "colvars_version.h"
-#include "colvar_gpu_calc.h"
 
 #ifndef COLVARS_DEBUG
 #define COLVARS_DEBUG false
@@ -49,14 +44,24 @@ Please note that this documentation is only supported for the master branch, and
 #include <iosfwd>
 #include <string>
 #include <vector>
-#include "colvar_gpu_support.h"
+
+#if defined(COLVARS_CUDA)
+#include <cuda_runtime.h>
+#endif
+
+#if defined(COLVARS_HIP)
+#include <hip/hip_runtime.h>
+#define cudaHostAllocMapped hipHostMallocMapped
+#define cudaHostAlloc hipHostMalloc
+#define cudaFreeHost hipHostFree
+#define cudaSuccess hipSuccess
+#endif
 
 class colvarparse;
 class colvar;
 class colvarbias;
 class colvarproxy;
 class colvarvalue;
-class colvardeps;
 
 
 /// \brief Collective variables module (main class)
@@ -80,6 +85,42 @@ public:
 
   /// Get the patch version number (non-zero only in the patch releases of other packages)
   int patch_version_number() const;
+
+#if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
+  template <typename T>
+  class CudaHostAllocator {
+  public:
+    using value_type = T;
+
+    CudaHostAllocator() = default;
+
+    template<typename U>
+    constexpr CudaHostAllocator(const CudaHostAllocator<U>&) noexcept {}
+
+    friend bool operator==(const CudaHostAllocator&, const CudaHostAllocator&) { return true; }
+    friend bool operator!=(const CudaHostAllocator&, const CudaHostAllocator&) { return false; }
+
+    T* allocate(size_t n) {
+      T* ptr;
+      if (cudaHostAlloc(&ptr, n * sizeof(T), cudaHostAllocMapped) != cudaSuccess) {
+        throw std::bad_alloc();
+      }
+      return ptr;
+    }
+    void deallocate(T* ptr, size_t n) noexcept {
+      cudaFreeHost(ptr);
+    }
+    template<typename U, typename... Args>
+    void construct(U* p, Args&&... args) {
+        new(p) U(std::forward<Args>(args)...);
+    }
+
+    template<typename U>
+    void destroy(U* p) noexcept {
+        p->~U();
+    }
+  };
+#endif
 
 private:
 
@@ -229,13 +270,11 @@ static inline real acos(real const &x)
   /// \brief 3x3 matrix of real numbers
   class rmatrix;
 
-  // NOTE: Just here for ensuring the compilation of GROMACS with Colvars
-  struct atom;
-  // class atom_group_base;
+  // allow these classes to access protected data
+  class atom;
   class atom_group;
-  // class atom_group_gpu;
-  // typedef std::vector<atom>::iterator       atom_iter;
-  // typedef std::vector<atom>::const_iterator atom_const_iter;
+  typedef std::vector<atom>::iterator       atom_iter;
+  typedef std::vector<atom>::const_iterator atom_const_iter;
 
   /// Module-wide error state
   /// see constants at the top of this file
@@ -609,9 +648,6 @@ public:
   static std::string to_str(char const *s);
 
   /// Convert to string for output purposes
-  static std::string to_str(const void* ptr);
-
-  /// Convert to string for output purposes
   static std::string to_str(std::string const &s);
 
   /// Convert to string for output purposes
@@ -691,9 +727,9 @@ public:
                             size_t width = 0, size_t prec = 0);
 
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
-  static std::string to_str(std::vector<rvector, colvars_gpu::CudaHostAllocator<rvector>> const &x,
+  static std::string to_str(std::vector<rvector, CudaHostAllocator<rvector>> const &x,
                             size_t width = 0, size_t prec = 0);
-  static std::string to_str(std::vector<real, colvars_gpu::CudaHostAllocator<real>> const &x,
+  static std::string to_str(std::vector<real, CudaHostAllocator<real>> const &x,
                             size_t width = 0, size_t prec = 0);
 #endif
 
@@ -921,19 +957,8 @@ public:
   /// \brief Access the one instance of the Colvars module
   static colvarmodule *main();
 
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  template <typename T>
-  using allocator_type = colvars_gpu::CudaHostAllocator<T>;
-#else
-  template <typename T>
-  using allocator_type = std::allocator<T>;
-#endif
-  using ag_vector_real_t = std::vector<real, allocator_type<real>>;
-
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc> gpu_calc;
-#endif
 };
+
 
 /// Shorthand for the frequently used type prefix
 typedef colvarmodule cvm;

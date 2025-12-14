@@ -18,7 +18,7 @@
 #include "colvarscript.h"
 #include "colvarmodule_utils.h"
 
-#include <algorithm>
+
 
 colvarproxy_atoms::colvarproxy_atoms()
 {
@@ -243,10 +243,9 @@ void colvarproxy_atom_groups::compute_max_atom_groups_applied_force()
 
 colvarproxy_smp::colvarproxy_smp()
 {
-  smp_mode = smp_mode_t::none; // May be disabled by user option
+  smp_mode = smp_mode_t::cvcs; // May be disabled by user option
   omp_lock_state = NULL;
 #if defined(_OPENMP)
-  smp_mode = smp_mode_t::cvcs;
   if (omp_get_thread_num() == 0) {
     omp_lock_state = new omp_lock_t;
     omp_init_lock(omp_lock_state);
@@ -267,32 +266,25 @@ colvarproxy_smp::~colvarproxy_smp()
 }
 
 colvarproxy::smp_mode_t colvarproxy_smp::get_smp_mode() const {
-  return smp_mode;
-}
-
-std::vector<colvarproxy_smp::smp_mode_t> colvarproxy_smp::get_available_smp_modes() const {
-  std::vector<colvarproxy_smp::smp_mode_t> modes;
 #if defined(_OPENMP)
-  modes.push_back(colvarproxy_smp::smp_mode_t::cvcs);
-  modes.push_back(colvarproxy_smp::smp_mode_t::inner_loop);
+  return smp_mode;
+#else
+  return colvarproxy::smp_mode_t::none;
 #endif
-  modes.push_back(colvarproxy_smp::smp_mode_t::none);
-  return modes;
-}
-
-colvarproxy_smp::smp_mode_t colvarproxy_smp::get_preferred_smp_mode() const {
-  return get_available_smp_modes()[0];
 }
 
 int colvarproxy_smp::set_smp_mode(smp_mode_t mode) {
-  std::vector<colvarproxy_smp::smp_mode_t> available_modes = get_available_smp_modes();
-  auto it = std::find(available_modes.begin(), available_modes.end(), mode);
-  if (it != available_modes.end()) {
-    smp_mode = *it;
-    return COLVARS_OK;
-  } else {
+#if defined(_OPENMP)
+  smp_mode = mode;
+  return COLVARS_OK;
+#else
+  if (mode != colvarproxy::smp_mode_t::none) {
     return COLVARS_NOT_IMPLEMENTED;
+  } else {
+    smp_mode = colvarproxy::smp_mode_t::none;
   }
+  return COLVARS_OK;
+#endif
 }
 
 
@@ -483,8 +475,7 @@ colvarproxy::~colvarproxy()
 bool colvarproxy::io_available()
 {
   return ((get_smp_mode() != smp_mode_t::none) && smp_thread_id() == 0) ||
-         (get_smp_mode() == smp_mode_t::none) ||
-         (get_smp_mode() == smp_mode_t::gpu);
+    (get_smp_mode() == smp_mode_t::none);
 }
 
 

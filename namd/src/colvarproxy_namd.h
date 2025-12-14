@@ -15,28 +15,28 @@
 #define NAMD_VERSION_NUMBER 34471681
 #endif
 
-#include <memory>
-
-#include "colvarproxy_namd_version.h"
+#include "Vector.h"
+#include "ResizeArray.h"
+#include "NamdTypes.h"
+#include "SimParameters.h"
+#include "Lattice.h"
+#include "GlobalMaster.h"
+#include "Random.h"
+#include "ConfigList.h"
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
 #include "colvarvalue.h"
 
+#define GLOBAL_MASTER_CKLOOP_CALC_ITEM 2000
+#define GLOBAL_MASTER_CKLOOP_CALC_BIASES 2001
+#define GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES 2002
 
-class Controller;
-class GlobalMasterColvars;
-class Random;
-class SimParameters;
-
-
-/// Communication between colvars and NAMD (implementation of \link colvarproxy \endlink)
-class colvarproxy_namd : public colvarproxy {
+/// \brief Communication between colvars and NAMD (implementation of
+/// \link colvarproxy \endlink)
+class colvarproxy_namd : public colvarproxy, public GlobalMaster {
 
 protected:
-
-  /// Pointer to the parent GlobalMaster object
-  GlobalMasterColvars *globalmaster = nullptr;
 
   /// \brief Array of atom indices (relative to the colvarproxy arrays),
   /// usedfor faster copy of atomic data
@@ -49,7 +49,7 @@ protected:
   Controller const *controller;
 
   /// NAMD-style PRNG object
-  std::unique_ptr<Random> random;
+  Random random;
 
   bool first_timestep;
   cvm::step_number previous_NAMD_step;
@@ -71,7 +71,7 @@ public:
 
   void init_tcl_pointers() override;
 
-  colvarproxy_namd(GlobalMasterColvars *gm);
+  colvarproxy_namd();
   ~colvarproxy_namd();
 
   int setup() override;
@@ -108,28 +108,23 @@ public:
                                    std::vector<const colvarvalue *> const &cvcs,
                                    std::vector<cvm::matrix2d<cvm::real> > &gradient) override;
 
-  cvm::real rand_gaussian() override;
+  cvm::real rand_gaussian() override
+  {
+    return random.gaussian();
+  }
 
-  cvm::real get_accelMD_factor() const override;
+  cvm::real get_accelMD_factor() const override {
+    return amd_weight_factor;
+  }
 
-  bool accelMD_enabled() const override;
+  bool accelMD_enabled() const override {
+    return accelMDOn;
+  }
 
 #if CMK_SMP && USE_CKLOOP
   colvarproxy::smp_mode_t get_smp_mode() const override;
 
   int set_smp_mode(smp_mode_t mode) override;
-
-  smp_mode_t get_preferred_smp_mode() const override {
-    return smp_mode_t::cvcs;
-  }
-  std::vector<smp_mode_t> get_available_smp_modes() const override {
-    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
-      smp_mode_t::cvcs,
-      smp_mode_t::inner_loop,
-      smp_mode_t::none
-    };
-    return available_modes;
-  }
 
   int smp_loop(int n_items, std::function<int (int)> const &worker) override;
 

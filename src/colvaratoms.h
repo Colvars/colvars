@@ -1,7 +1,6 @@
 #ifndef COLVARATOMS_SOA_H
 #define COLVARATOMS_SOA_H
 
-#include "colvaratoms_gpu.h"
 #include "colvarmodule.h"
 #include "colvardeps.h"
 #include "colvar_rotation_derivative.h"
@@ -56,7 +55,7 @@ public:
    *         \link cvm::atom_pos \endlink (in AoS style xyz...xyz) to
    *         an SoA vector (x...xy...yz...z)
    */
-  static ag_vector_real_t pos_aos_to_soa(const std::vector<cvm::atom_pos>& aos_in);
+  static std::vector<cvm::real> pos_aos_to_soa(const std::vector<cvm::atom_pos>& aos_in);
   /**
    * @brief Default constructor
    *
@@ -373,7 +372,7 @@ public:
   /**
    * @brief Return a copy of the current atom positions
    */
-  cvm::ag_vector_real_t positions() const;
+  std::vector<cvm::real> positions() const;
   /**
    * @brief Return the center of geometry of the atomic positions
    */
@@ -404,7 +403,7 @@ public:
   /**
    * @brief Return a copy of the current atom positions, shifted by a constant vector
    */
-  cvm::ag_vector_real_t positions_shifted(cvm::rvector const &shift) const;
+  std::vector<cvm::real> positions_shifted(cvm::rvector const &shift) const;
   /**
    * @brief Return a copy of the current atom velocities
    */
@@ -757,7 +756,7 @@ public:
   /// cvc's (eg rmsd, eigenvector) will not override the user's choice
   bool b_user_defined_fit;
   /// \brief Derivatives of the fitting transformation
-  cvm::ag_vector_real_t fit_gradients;
+  std::vector<cvm::real> fit_gradients;
   /// Total mass of the atom group
   cvm::real total_mass;
   /// Total charge of the atom group
@@ -769,10 +768,10 @@ public:
 private:
   /// \brief Number of atoms
   size_t num_atoms;
-  /// \brief SOA atom proxy indices (size: num_atoms)
+  /// \brief SOA atom indices (size: num_atoms)
   std::vector<int> atoms_index;
   /// \brief SOA atom positions (size: 3 * num_atoms)
-  cvm::ag_vector_real_t atoms_pos;
+  std::vector<cvm::real> atoms_pos;
   /// \brief SOA atom charges (size: num_atoms)
   std::vector<cvm::real> atoms_charge;
   /// \brief SOA atom velocities (size: 3 * num_atoms)
@@ -780,7 +779,7 @@ private:
   /// \brief SOA atom mass (size: num_atoms)
   std::vector<cvm::real> atoms_mass;
   /// \brief SOA atom gradients (size: 3 * num_atoms)
-  cvm::ag_vector_real_t atoms_grad;
+  std::vector<cvm::real> atoms_grad;
   /// \brief SOA atom total forces (size: 3 * num_atoms)
   std::vector<cvm::real> atoms_total_force;
   /// \brief Atom masses divided by total mass (size: num_atoms)
@@ -799,9 +798,9 @@ private:
   /// \brief The temporary forces acting on the main group atoms.
   ///        Currently this is only used for calculating the fitting group forces for
   ///        non-scalar components.
-  cvm::ag_vector_real_t group_forces;
+  std::vector<cvm::real> group_forces;
   /// \brief use reference coordinates for f_ag_center or f_ag_rotate
-  cvm::ag_vector_real_t ref_pos;
+  std::vector<cvm::real> ref_pos;
   size_t num_ref_pos; // TODO: Do I really need this?
   /// \brief Center of geometry of the reference coordinates; regardless
   /// of whether f_ag_center is true, ref_pos is centered to zero at
@@ -812,7 +811,7 @@ private:
   /// \brief Center of geometry before any fitting
   cvm::atom_pos cog_orig;
   /// \brief Unrotated atom positions for fit gradients
-  cvm::ag_vector_real_t atoms_pos_unrotated;
+  std::vector<cvm::real> atoms_pos_unrotated;
   /// \brief Center of mass
   cvm::atom_pos com;
   /// \brief The derivative of a scalar variable with respect to the COM
@@ -823,16 +822,6 @@ private:
   cvm::rvector dip;
   /// \brief Lock for modifier
   std::mutex modify_lock;
-#if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
-  std::unique_ptr<colvars_gpu::colvaratoms_gpu> gpu_atom_group;
-  friend class colvars_gpu::colvaratoms_gpu;
-public:
-  std::unique_ptr<colvars_gpu::colvaratoms_gpu>& get_gpu_atom_group() {
-    return gpu_atom_group;
-  }
-#elif defined (COLVARS_SYCL)
-  // TODO
-#endif
 };
 
 #endif // COLVARATOMS_SOA_H
