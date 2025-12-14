@@ -1727,12 +1727,13 @@ int colvar::collect_cvc_total_forces()
       // Jacobian-compensating force
       ft += fj;
     }
+
+    if (is_enabled(f_cv_total_force_current_step)) {
+      // Report total force value without waiting for calc_colvar_properties()
+      ft_reported = ft;
+    }
   }
 
-  if (is_enabled(f_cv_total_force_current_step)) {
-   // Report total force value without waiting for calc_colvar_properties()
-    ft_reported = ft;
-  }
   return COLVARS_OK;
 }
 
