@@ -319,19 +319,17 @@ int colvar::init(std::string const &conf)
 
   error_code |= init_grid_parameters(conf);
 
-  // Detect if we have a single component that is an alchemical lambda
-  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "alchLambda") {
+  // Detect if we have a single component that is an external parameter
+  if (is_enabled(f_cv_single_cvc) && (cvcs[0]->function_type() == "alchLambda")) {
     enable(f_cv_external);
-
     static_cast<colvar::alch_lambda *>(cvcs[0].get())->init_alchemy(time_step_factor);
   }
-  
-  // Enable the f_cv_external flag for harmonicForceConstant CVs
-  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "harmonicForceConstant") {
-    cvm::log("Enabling f_cv_external for harmonicForceConstant CV.\n");
-    enable(f_cv_external);
-    // This will bypass the calculation of the harmonic potential in extendedLagrangian,
-    // and the system force will be provided by cvcs[0]->total_force() (as ft).
+  // harmonicForceConstant: fictitious external coordinate integrated internally
+  // Needs to behave as an external parameter so that f_cv_apply_force can be enabled
+  // (it has no atomic gradients).
+  if (is_enabled(f_cv_single_cvc) && (cvcs[0]->function_type() == "harmonicForceConstant")) {
+    enable(f_cv_external); 
+    cvm::log("Enabled external parameter mode for harmonicForceConstant to allow extended Lagrangian dynamics.\n");
   }
 
   // If using scripted biases, any colvar may receive bias forces
@@ -362,6 +360,24 @@ int colvar::init(std::string const &conf)
     cvm::log("Done initializing collective variable \""+this->name+"\".\n");
 
   return error_code;
+}
+
+
+void colvar::add_system_force(colvarvalue const &force)
+{
+  if (cvm::debug()) {
+    cvm::log("Adding system force "+cvm::to_str(force)+" to colvar \""+name+"\".\n");
+  }
+  system_force_accumulator += force;
+
+  if (is_enabled(f_cv_external)) {
+    if (cvcs.size() > 0 && cvcs[0]->function_type() == "harmonicForceConstant") {
+        if (ft_reported.type() != value().type()) {
+            ft_reported.type(value());
+        }
+        ft_reported = system_force_accumulator;
+    }
+  }
 }
 
 
@@ -730,8 +746,12 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
       get_keyval(conf, "extendedMass", ext_mass);
       // Ensure that the computed restraint energy term is zero
       ext_force_k = 0.0;
-      // Then we need forces from the back-end
-      enable(f_cv_total_force_calc);
+
+      if (is_enabled(f_cv_single_cvc) && (cvcs[0]->function_type() == "harmonicForceConstant")) {
+        // bypass the requirement of jacobian
+      } else {
+        enable(f_cv_total_force_calc);
+      }
     } else {
       // Standard case of coupling to a geometric colvar
       if (temp <= 0.0) { // Then a finite temperature is required
@@ -884,9 +904,6 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
     }
 
     cvcs.back()->setup();
-    if (auto* hfc_cvc = dynamic_cast<cvc_harmonicforceconstant*>(cvcs.back().get())) {
-        hfc_cvc->set_parent(this);
-    }
     if (cvm::debug()) {
       cvm::log("Done initializing a \"" + std::string(def_config_key) + "\" component" +
                (cvm::debug() ? ", named \"" + cvcs.back()->name + "\"" : "") + ".\n");
@@ -1708,12 +1725,13 @@ int colvar::collect_cvc_total_forces()
       // Jacobian-compensating force
       ft += fj;
     }
+
+    if (is_enabled(f_cv_total_force_current_step)) {
+      // Report total force value without waiting for calc_colvar_properties()
+      ft_reported = ft;
+    }
   }
 
-  if (is_enabled(f_cv_total_force_current_step)) {
-   // Report total force value without waiting for calc_colvar_properties()
-    ft_reported = ft;
-  }
   return COLVARS_OK;
 }
 
@@ -1930,8 +1948,14 @@ void colvar::update_extended_Lagrangian()
   colvarvalue f_system(fr.type()); // force exterted by the system on the extended DOF
 
   if (is_enabled(f_cv_external)) {
-    // Add "alchemical" force from external variable
-    f_system = cvcs[0]->total_force();
+    // External parameter case:
+    // - alchLambda obtains system force from backend (dE/dlambda)
+    // - harmonicForceConstant is a fictitious internal coordinate: no backend system force
+    if (is_enabled(f_cv_single_cvc) && (cvcs[0]->function_type() == "harmonicForceConstant")) {
+      f_system = system_force_accumulator;
+    } else {
+      f_system = cvcs[0]->total_force();
+    }
     // f is now irrelevant because we are not applying atomic forces in the simulation
     // just driving the external variable lambda
   } else {
@@ -3080,21 +3104,9 @@ int colvar::calc_runave()
   return error_code;
 }
 
-colvar::cvc* colvar::get_cvc_ptr(size_t index) {
-  if (index < cvcs.size()) {
-    // .get() retrieves the raw pointer from the std::shared_ptr
-    return cvcs[index].get();
-  }
-  // Return a null pointer if the index is out of bounds
-  return nullptr;
-}
-
-// Const version of the function
-colvar::cvc const* colvar::get_cvc_ptr(size_t index) const {
-  if (index < cvcs.size()) {
-    return cvcs[index].get();
-  }
-  return nullptr;
+colvarvalue const & colvar::total_force() const
+{
+  return ft_reported;
 }
 
 // Static members

@@ -17,14 +17,11 @@
 #include "colvarproxy.h"
 #include "colvarvalue.h"
 #include "colvarbias_restraint.h"
-#include "colvarcomp_harmonicforceconstant.h"
 
 
 
 colvarbias_restraint::colvarbias_restraint(char const *key)
   : colvarbias(key), colvarbias_ti(key) {
-  dynamic_k_cv = NULL;
-  k_derivative = 0.0;
 }
 
 
@@ -40,44 +37,10 @@ int colvarbias_restraint::init(std::string const &conf)
 
   colvarbias_ti::init(conf);
   
-  // reverse-lookup logic
-  colvarmodule *cvm = cvm::main();
-  for (size_t i = 0; i < cvm->num_variables(); ++i) {
-    colvar* cv = (*(cvm->variables()))[i];
-    for (size_t j = 0; j < cv->num_cvcs(); ++j) {
-      cvc_harmonicforceconstant* hfc_cvc = dynamic_cast<cvc_harmonicforceconstant*>(cv->get_cvc_ptr(j));
-      
-      if (hfc_cvc && hfc_cvc->get_harmonic_bias_name() == this->name) {
-        if (this->dynamic_k_cv != NULL) {
-          return cvm->error("Error: Harmonic restraint '" + this->name + "' is targeted by multiple harmonicForceConstant CVs ('" + this->dynamic_k_cv->name + "' and '" + cv->name + "').", COLVARS_INPUT_ERROR);
-        }
-        this->dynamic_k_cv = cv;
-        
-        if (!dynamic_k_cv->is_enabled(f_cv_external)) {
-          return cvm::error("Error: Colvar '" + dynamic_k_cv->name + "' must be an external variable to control a restraint.", COLVARS_INPUT_ERROR);
-        }
-      }
-    }
-  }
-  if (dynamic_k_cv) {
-      cvm::log("Harmonic restraint '" + this->name + "' is linked and will be dynamically controlled by colvar '" + dynamic_k_cv->name + "'.\n");
-  }
-
   if (cvm::debug())
     cvm::log("Initializing a new restraint bias.\n");
 
   return COLVARS_OK;
-}
-
-cvm::real colvarbias_restraint_harmonic::get_dU_d_k_eff() const
-{
-  cvm::real dU_d_k_eff = 0.0;
-  for (size_t i = 0; i < num_variables(); i++) {
-    // dU/dk_eff = 0.5 * (x-x0)^2 / w^2
-    dU_d_k_eff += 0.5 * variables(i)->dist2(variables(i)->value(), colvar_centers[i]) / 
-                  (variables(i)->width * variables(i)->width);
-  }
-  return dU_d_k_eff;
 }
 
 int colvarbias_restraint::update()
@@ -106,11 +69,6 @@ int colvarbias_restraint::update()
 
 colvarbias_restraint::~colvarbias_restraint()
 {
-}
-
-cvm::real colvarbias_restraint::get_k_derivative() const
-{
-  return k_derivative;
 }
 
 std::string const colvarbias_restraint::get_state_params() const
@@ -306,6 +264,12 @@ int colvarbias_restraint_moving::update() {
     if (b_chg_force_k) update_k(lambda);
     if (b_chg_centers) update_centers(lambda);
     if (b_chg_walls) update_walls(lambda);
+  }
+
+  // For dynamicForceConstantLambda mode: always update k based on the lambda CV value
+  // This is needed because the above conditions may not be satisfied when targetNumSteps is not set
+  if (b_dynamic_force_k) {
+    update_k(0.0);  // The argument is ignored in update_k() when b_dynamic_force_k is true
   }
 
   return COLVARS_OK;
@@ -600,41 +564,98 @@ int colvarbias_restraint_k_moving::init(std::string const &conf)
     starting_force_k = force_k;
   }
 
+  // --- dynamicForceConstantLambda: drive k using an external lambda colvar ---
+  // Note: this enables b_chg_force_k so that colvarbias_restraint_moving::update()
+  // will call update_k() every step.
+  force_k_max = force_k; // store k_max
+  if (get_keyval(conf, "dynamicForceConstantLambda",
+                 dynamic_force_k_lambda_cv_name,
+                 std::string(""))) {
+    b_dynamic_force_k = true;
+    b_chg_force_k = true;  // IMPORTANT: ensure moving::update() calls update_k()
+    starting_force_k = force_k; // not strictly needed, but keeps state consistent
+    get_keyval(conf, "dynamicForceConstantExponent",
+               dynamic_force_k_exponent, 1.0);
+    if (dynamic_force_k_exponent < 1.0) {
+      return cvm::error("Error: dynamicForceConstantExponent must be >= 1.0.\n",
+                        COLVARS_INPUT_ERROR);
+    }
+    dynamic_force_k_lambda_cv = cvm::colvar_by_name(dynamic_force_k_lambda_cv_name);
+    if (!dynamic_force_k_lambda_cv) {
+      return cvm::error("Error: dynamicForceConstantLambda \"" +
+                        dynamic_force_k_lambda_cv_name +
+                        "\" does not match any defined colvar.\n",
+                        COLVARS_INPUT_ERROR);
+    }
+    if (!dynamic_force_k_lambda_cv->is_enabled(f_cv_extended_Lagrangian)) {
+      return cvm::error("Error: dynamicForceConstantLambda colvar \"" +
+                        dynamic_force_k_lambda_cv_name +
+                        "\" must have extendedLagrangian enabled.\n",
+                        COLVARS_INPUT_ERROR);
+    }
+    if (!dynamic_force_k_lambda_cv->is_enabled(f_cv_scalar)) {
+      return cvm::error("Error: dynamicForceConstantLambda colvar \"" +
+                        dynamic_force_k_lambda_cv_name +
+                        "\" must be scalar.\n",
+                        COLVARS_INPUT_ERROR);
+    }
+    // Disallow legacy time-dependent k schedule options
+    if (b_decoupling || (target_force_k > 0.0)) {
+      return cvm::error("Error: dynamicForceConstantLambda is not compatible with "
+                        "targetForceConstant/decoupling in this version.\n",
+                        COLVARS_INPUT_ERROR);
+    }
+    cvm::log("Restraint \"" + name + "\" will use dynamic force constant: "
+             "k_eff = k_max * lambda^n, with lambda colvar \"" +
+             dynamic_force_k_lambda_cv_name + "\" and n=" +
+             cvm::to_str(dynamic_force_k_exponent) + ".\n");
+  }
+
   if (!b_chg_force_k) {
     return COLVARS_OK;
   }
 
-  // parse moving restraint options
-  colvarbias_restraint_moving::init(conf);
+  // parse moving restraint options (only for time-dependent k schedules)
+  if (!b_dynamic_force_k) {
+    colvarbias_restraint_moving::init(conf);
+    if (get_keyval(conf, "lambdaSchedule", lambda_schedule, lambda_schedule) &&
+        target_nstages > 0) {
+      cvm::error("Error: targetNumStages and lambdaSchedule are incompatible.\n", COLVARS_INPUT_ERROR);
+      return cvm::get_error();
+    }
 
-  if (get_keyval(conf, "lambdaSchedule", lambda_schedule, lambda_schedule) &&
-      target_nstages > 0) {
-    cvm::error("Error: targetNumStages and lambdaSchedule are incompatible.\n", COLVARS_INPUT_ERROR);
-    return cvm::get_error();
-  }
+    if (lambda_schedule.size()) {
+      // There is one more lambda-point than stages
+      target_nstages = lambda_schedule.size() - 1;
+    }
 
-  if (lambda_schedule.size()) {
-    // There is one more lambda-point than stages
-    target_nstages = lambda_schedule.size() - 1;
-  }
-
-  if ((get_keyval(conf, "targetForceExponent", lambda_exp, lambda_exp, parse_deprecated)
-    || get_keyval(conf, "lambdaExponent", lambda_exp, lambda_exp))
-    && !b_chg_force_k) {
-    cvm::error("Error: cannot set lambdaExponent unless a changing force constant is active.\n", COLVARS_INPUT_ERROR);
-  }
-  if (lambda_exp < 1.0) {
-    cvm::log("Warning: for all practical purposes, lambdaExponent should be 1.0 or greater.\n");
+    if ((get_keyval(conf, "targetForceExponent", lambda_exp, lambda_exp, parse_deprecated)
+      || get_keyval(conf, "lambdaExponent", lambda_exp, lambda_exp))
+      && !b_chg_force_k) {
+      cvm::error("Error: cannot set lambdaExponent unless a changing force constant is active.\n", COLVARS_INPUT_ERROR);
+    }
+    if (lambda_exp < 1.0) {
+      cvm::log("Warning: for all practical purposes, lambdaExponent should be 1.0 or greater.\n");
+    }
   }
 
   return COLVARS_OK;
 }
 
 
-void colvarbias_restraint_k_moving::update_k(cvm::real lambda) {
+void colvarbias_restraint_k_moving::update_k(cvm::real lambda_in) {
+  if (b_dynamic_force_k) {
+    cvm::real lambda_dyn = dynamic_force_k_lambda_cv->value().real_value;
+    if (lambda_dyn < 0.0) lambda_dyn = 0.0;
+    if (lambda_dyn > 1.0) lambda_dyn = 1.0;
+    force_k = force_k_max * cvm::pow(lambda_dyn, dynamic_force_k_exponent);
+    force_k_incr = 0.0; // dynamic k doesn't accumulate work in same way
+    return;
+  }
+  // original moving-k behavior
   cvm::real const force_k_old = force_k;
 
-  force_k = starting_force_k + (target_force_k - starting_force_k) * cvm::pow(lambda, lambda_exp);
+  force_k = starting_force_k + (target_force_k - starting_force_k) * cvm::pow(lambda_in, lambda_exp);
   force_k_incr = force_k - force_k_old;
   if (!target_nstages && (cvm::step_absolute() > first_step + target_nsteps)) {
     force_k_incr = 0.0;
@@ -643,6 +664,25 @@ void colvarbias_restraint_k_moving::update_k(cvm::real lambda) {
            this->name+"\": "+cvm::to_str(force_k)+".\n");
 }
 
+void colvarbias_restraint_k_moving::apply_dynamic_lambda_force()
+{
+  if (!b_dynamic_force_k) return;
+  cvm::real lambda = dynamic_force_k_lambda_cv->value().real_value;
+  if (lambda < 0.0) lambda = 0.0;
+  if (lambda > 1.0) lambda = 1.0;
+  cvm::real dU_dk = 0.0;
+  for (size_t i = 0; i < num_variables(); i++) {
+    dU_dk += d_restraint_potential_dk(i);
+  }
+  cvm::real const dk_dlambda =
+    force_k_max * dynamic_force_k_exponent *
+    ((dynamic_force_k_exponent == 1.0) ? 1.0 : cvm::pow(lambda, dynamic_force_k_exponent - 1.0));
+  cvm::real const F_lambda = - dU_dk * dk_dlambda;
+  colvarvalue f_l;
+  f_l.type(colvarvalue::type_scalar);
+  f_l.real_value = F_lambda;
+  dynamic_force_k_lambda_cv->add_system_force(f_l);
+}
 
 cvm::real colvarbias_restraint_k_moving::dU_dlambda_k() const {
   if (force_k == 0.0) return 0.0;
@@ -775,47 +815,17 @@ int colvarbias_restraint_harmonic::update()
 
   // update parameters (this is where moving restraints are implemented)
   error_code |= colvarbias_restraint_moving::update();
-
-  // The base class update() zeros out energy and forces, so it must be called first.
-  colvarbias::update();
-
-  // Determine current force constant
-  cvm::real current_k = force_k;
-  if (dynamic_k_cv) {
-    cvm::real raw_lambda = dynamic_k_cv->value().real_value;
-    cvm::real exponent_n = 1.0;
-    
-    if (dynamic_k_cv->num_cvcs() == 1) {
-      if (auto* hfc_cvc = dynamic_cast<cvc_harmonicforceconstant*>(dynamic_k_cv->get_cvc_ptr(0))) {
-        exponent_n = hfc_cvc->get_k_exponent();
-      }
-    }
-    cvm::real effective_lambda = (raw_lambda >= 0.0) ? cvm::pow(raw_lambda, exponent_n) : 0.0;
-    if (!std::isfinite(effective_lambda)) {
-        effective_lambda = 0.0;
-    }
-    current_k = force_k * effective_lambda;
-  }
-
-  // Loop over variables to calculate energy and forces using current_k
-  for (size_t i = 0; i < num_variables(); i++) {
-    cvm::real const w_sq = variables(i)->width * variables(i)->width;
-    cvm::real const dist2 = variables(i)->dist2(variables(i)->value(), colvar_centers[i]);
-    
-    bias_energy += 0.5 * current_k / w_sq * dist2;
-    
-    colvar_forces[i].type(variables(i)->value());
-    colvar_forces[i].is_derivative();
-    colvar_forces[i] = -0.5 * current_k / w_sq * variables(i)->dist2_lgrad(variables(i)->value(), colvar_centers[i]);
-  }
+  
+  error_code |= colvarbias_restraint::update();
   
   // Update accumulated work using the current forces (if moving restraints are active)
   error_code |= colvarbias_restraint_centers_moving::update_acc_work();
   error_code |= colvarbias_restraint_k_moving::update_acc_work();
 
+  // Apply thermodynamic force to dynamic lambda CV (if active)
+  colvarbias_restraint_k_moving::apply_dynamic_lambda_force();
   return error_code;
 }
-
 
 cvm::real colvarbias_restraint_harmonic::restraint_potential(size_t i) const
 {

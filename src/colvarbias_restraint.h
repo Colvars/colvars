@@ -40,10 +40,6 @@ public:
   virtual int set_state_params(std::string const &conf);
   virtual std::ostream & write_traj_label(std::ostream &os);
   virtual std::ostream & write_traj(std::ostream &os);
-  
-  /// \brief Allow a harmonicForceConstant CV to retrieve the calculated thermodynamic force.
-  /// \return The thermodynamic force, defined as -dU/d_lambda.
-  cvm::real get_k_derivative() const;
 
   /// \brief Constructor
   colvarbias_restraint(char const *key);
@@ -62,15 +58,7 @@ protected:
 
   /// \brief Derivative of the potential function with respect to the force constant
   virtual cvm::real d_restraint_potential_dk(size_t i) const = 0;
-  
-  /// \brief Derivative of the bias energy with respect to the dynamic parameter lambda (F_lambda = -dU/d_lambda).
-  /// This is the thermodynamic force applied to the controlling harmonicForceConstant CV.
-  cvm::real k_derivative;
-  
-  /// \brief Pointer to the colvar that dynamically controls the force constant (if any).
-  /// This is typically a harmonicForceConstant CV.
-  colvar *dynamic_k_cv;
-  
+
 };
 
 
@@ -141,6 +129,10 @@ protected:
 
   /// \brief Changing wall locations?
   bool b_chg_walls = false;
+
+  /// \brief Dynamic force constant driven by external lambda CV?
+  /// If true, update_k() should be called every step
+  bool b_dynamic_force_k = false;
 
   /// @brief Update the force constant by interpolating between initial and target
   virtual void update_k(cvm::real /* lambda */) {}
@@ -270,6 +262,16 @@ protected:
   /// \brief Exponent for varying the force constant
   cvm::real lambda_exp;
 
+  // --- Dynamic k driven by an external lambda colvar (extended-Lagrangian CV) ---
+  // Note: b_dynamic_force_k is defined in base class colvarbias_restraint_moving
+  std::string dynamic_force_k_lambda_cv_name;
+  colvar *dynamic_force_k_lambda_cv = nullptr;
+  cvm::real dynamic_force_k_exponent = 1.0;
+  cvm::real force_k_max = 0.0; // store k_max = user "forceConstant"
+  
+  // Apply thermodynamic force to lambda CV: F_lambda = - dU/dlambda
+  void apply_dynamic_lambda_force();
+
   /// \brief Increment of the force constant at each step
   cvm::real force_k_incr;
 
@@ -301,15 +303,12 @@ public:
   virtual int change_configuration(std::string const &conf);
   virtual cvm::real energy_difference(std::string const &conf);
   
-  /// \brief Calculate the derivative of the potential energy with respect to the effective force constant.
-  /// This is needed by the controlling harmonicForceConstant CV.
-  cvm::real get_dU_d_k_eff() const;
-
 protected:
 
   virtual cvm::real restraint_potential(size_t i) const;
   virtual colvarvalue const restraint_force(size_t i) const;
   virtual cvm::real d_restraint_potential_dk(size_t i) const;
+
 };
 
 

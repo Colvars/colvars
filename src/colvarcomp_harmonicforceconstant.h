@@ -9,24 +9,22 @@
 // Forward declaration to avoid circular dependency with the bias class.
 class colvarbias_restraint;
 
-/// \brief A fictitious coordinate representing the normalized force constant of a harmonic restraint.
+/// \brief A fictitious scalar coordinate (lambda in [0,1]) intended for extended-Lagrangian dynamics.
 ///
-/// This CVC allows a harmonic restraint's force constant (k) to be treated as a
-/// dynamic variable, lambda, evolving between 0 and 1. The potential energy of the
-/// restraint is defined as U(x, lambda) = 0.5 * (k_max * lambda^n) * (x-x_0)^2.
-/// This CVC reports the thermodynamic force F_lambda = -dU/d_lambda, enabling
-/// enhanced sampling methods (like ABF or Metadynamics) to reconstruct the free energy
-/// profile associated with growing or disappearing the restraint.
+/// This CVC does not depend on atomic coordinates and provides no gradients.
+/// It is meant to be used as an extended-Lagrangian CV whose value is integrated
+/// by colvar::update_extended_Lagrangian().
+/// Forces from biases are applied via colvar::add_bias_force() on the parent colvar.
 class cvc_harmonicforceconstant : public colvar::cvc {
 public:
   cvc_harmonicforceconstant();
-  virtual int init(std::string const &conf);
+  virtual int init(std::string const &conf) override;
   virtual ~cvc_harmonicforceconstant() {}
 
   virtual void calc_value();
   virtual void calc_gradients();
   
-  /// This CVC reports the thermodynamic force F_lambda, so this function is implemented.
+  /// No total/system force is computed for this fictitious coordinate.
   virtual void calc_force_invgrads(); 
 
   /// The force applied to this CVC is handled by the parent colvar's extended Lagrangian dynamics.
@@ -35,23 +33,10 @@ public:
   /// The Jacobian derivative for this 1D fictitious coordinate is zero.
   virtual void calc_Jacobian_derivative();
   
-  /// Returns the exponent used for scaling the force constant.
-  cvm::real get_k_exponent() const { return k_exponent; }
+  /// Store the value locally; do NOT talk to the MD engine.
+  virtual void set_value(colvarvalue const &new_value, bool now=false) override;
   
-  /// \brief Returns the name of the harmonic bias this CVC is configured to control.
-  std::string const& get_harmonic_bias_name() const { return harmonic_bias_name; }
-  
-  void set_parent(colvar* p) { parent = p; }
-
 protected:
-  /// The name of the harmonic bias to be controlled.
-  std::string harmonic_bias_name;
-
-  /// Exponent 'n' for the force constant scaling, k = k_max * lambda^n.
-  cvm::real k_exponent = 1.0;
-  
-  colvar* parent = nullptr;
-  
 };
 
 #endif

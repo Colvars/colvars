@@ -624,12 +624,6 @@ int colvarmodule::parse_biases(std::string const &conf)
   if (cvm::debug())
     cvm::log("Initializing the collective variables biases.\n");
 
-  /// initialize ABF instances
-  parse_biases_type<colvarbias_abf>(conf, "abf");
-
-  /// initialize ABMD instances
-  parse_biases_type<colvarbias_abmd>(conf, "abmd");
-
   /// initialize adaptive linear biases
   parse_biases_type<colvarbias_alb>(conf, "ALB");
 
@@ -647,6 +641,12 @@ int colvarmodule::parse_biases(std::string const &conf)
 
   /// initialize linear restraints
   parse_biases_type<colvarbias_restraint_linear>(conf, "linear");
+
+  /// initialize ABF instances
+  parse_biases_type<colvarbias_abf>(conf, "abf");
+
+  /// initialize ABMD instances
+  parse_biases_type<colvarbias_abmd>(conf, "abmd");
 
   /// initialize metadynamics instances
   parse_biases_type<colvarbias_meta>(conf, "metadynamics");

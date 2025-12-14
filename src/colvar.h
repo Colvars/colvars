@@ -112,10 +112,6 @@ public:
     }
     cv_features.clear();
   }
-  
-  /// \brief Get a pointer to the i-th component (CVC)
-  cvc* get_cvc_ptr(size_t index);
-  cvc const* get_cvc_ptr(size_t index) const; // Const version too
 
   /// Implements possible actions to be carried out
   /// when a given feature is enabled
@@ -356,6 +352,12 @@ public:
 
   /// Apply a force to the actual value (only meaningful with extended Lagrangian)
   void add_bias_force_actual_value(colvarvalue const &force);
+
+  /// \brief Accumulator for system forces determined internally (e.g. by harmonic restraints on lambda)
+  colvarvalue system_force_accumulator;
+
+  /// \brief Add to the system force accumulator
+  void add_system_force(colvarvalue const &force);
 
   /// \brief Collect all forces on this colvar, integrate internal
   /// equations of motion of internal degrees of freedom; see also
@@ -757,13 +759,6 @@ inline colvarvalue const & colvar::velocity() const
   return v_reported;
 }
 
-
-inline colvarvalue const & colvar::total_force() const
-{
-  return ft_reported;
-}
-
-
 inline void colvar::add_bias_force(colvarvalue const &force)
 {
   check_enabled(f_cv_apply_force,
@@ -789,6 +784,8 @@ inline void colvar::reset_bias_force() {
   fb.reset();
   fb_actual.type(value());
   fb_actual.reset();
+  system_force_accumulator.type(value());
+  system_force_accumulator.reset();
 }
 
 

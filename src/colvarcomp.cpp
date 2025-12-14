@@ -14,7 +14,6 @@
 #include "colvarvalue.h"
 #include "colvar.h"
 #include "colvarcomp.h"
-#include "colvarcomp_harmonicforceconstant.h"
 
 
 colvar::cvc::cvc()
@@ -797,6 +796,10 @@ void colvar::cvc::wrap(colvarvalue &x_unwrapped) const
   }
 }
 
+void colvar::cvc::set_value(colvarvalue const &new_value, bool /*now*/)
+{
+  x = new_value;
+}
 
 // Static members
 
