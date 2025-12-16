@@ -457,7 +457,6 @@ int colvarbias_abf::update()
       if ( pabf_freq && cvm::step_relative() % pabf_freq == 0 ) {
         cvm::real err;
         std::vector<int> ix_test = {16,29};
-        cvm::log("the gradient before integration is :" +cvm::to_str(pmf->gradients->value(ix_test,0)) + cvm::to_str(pmf->gradients->value(ix_test,0)));
         int iter = pmf->integrate(integrate_iterations, integrate_tol, err);
         if ( iter == integrate_iterations ) {
           cvm::log("Warning: PMF integration did not converge to " + cvm::to_str(integrate_tol)
