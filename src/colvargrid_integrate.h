@@ -75,7 +75,7 @@ protected:
   bool weighted = false;
   bool precompute = true;
 
-  colvar_grid_scalar* computation_grid = nullptr;
+  colvar_grid_scalar* computation_grid;
   std::vector<cvm::real> div_border_supplement;
 
   std::vector<int> computation_nx;
@@ -108,8 +108,6 @@ protected:
   /// Number of threads for weighted integration
   /// sets itself to number of available OpenMP threads
   size_t m_num_threads = 1;
-
-  bool is_calculations_prepared = false;
 
   // Get G at a specific point where G is the gradient F if there is enough observation else it's F
   // multiplied by a coefficient < 1
