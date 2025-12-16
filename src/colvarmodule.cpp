@@ -1294,10 +1294,7 @@ int colvarmodule::write_restart_file(std::string const &out_name)
       return cvm::error("Error: in writing restart file.\n", COLVARS_FILE_ERROR);
     }
   }
-  cvm::log("does the problem come from closing ?");
   proxy->close_output_stream(out_name);
-  cvm::log("No ?");
-
 
   // Take the opportunity to flush colvars.traj
 
