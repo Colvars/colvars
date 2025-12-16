@@ -1410,6 +1410,8 @@ public:
     }
     return sqrt(sum2 / this->data.size());
   };
+
+
   void increase(std::vector<int> const &ix, scalar_type_class fact = 1)
   {
     this->data[this->address(ix)] += fact;
@@ -1805,14 +1807,13 @@ public:
   {
     if (add) {
       if (samples || weights) {
-        data[address(ix) + imult] += new_value * (samples? samples-> new_value(ix) : weights->value(ix));
+        data[address(ix) + imult] += new_value * (samples ? samples->new_value(ix) : weights->new_value(ix));
       }
       else
         data[address(ix) + imult] += new_value;
-
     } else {
       if (samples || weights)
-        data[address(ix) + imult] = new_value * (samples? samples-> new_value(ix) : weights->value(ix));
+        data[address(ix) + imult] = new_value * (samples ? samples->value(ix) : weights->value(ix));
       else
         data[address(ix) + imult] = new_value;
     }
