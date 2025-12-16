@@ -1045,6 +1045,7 @@ void colvargrid_integrate::prepare_calculations()
       }
     }
   }
+  is_calculations_prepared = true;
 }
 
 cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix)

@@ -46,6 +46,8 @@ public:
   void set_weighted_div();
 
   void set_div(){
+    if (!is_calculations_prepared)
+      prepare_calculations();
     if (weighted) set_weighted_div();
     else set_unweighted_div();
   };
@@ -107,6 +109,8 @@ protected:
   /// sets itself to number of available OpenMP threads
   size_t m_num_threads = 1;
 
+
+  bool is_calculations_prepared = false;
   // Get G at a specific point where G is the gradient F if there is enough observation else it's F
   // multiplied by a coefficient < 1
   void get_regularized_grad(std::vector<cvm::real> &F, std::vector<int> &ix);
