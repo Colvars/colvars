@@ -426,7 +426,7 @@ int colvarbias_abf::update()
         // Only if requested and within bounds of the grid...
         // get total force and subtract previous ABF force if necessary
         update_system_force();
-        cvm::log("the count is : " + cvm::to_str(samples? samples->value(bin) : weights->value(bin)) + " and we do acc_abf_force");
+        // cvm::log("the count is : " + cvm::to_str(samples? samples->value(bin) : weights->value(bin)) + " and we do acc_abf_force");
         gradients->acc_abf_force(force_position, force_bin, system_force, b_smoothed, smoothing);
         if ( b_integrate ) {
           pmf->update_div_neighbors(force_bin);
@@ -554,7 +554,7 @@ int colvarbias_abf::update_system_force()
         - colvar_forces[i].real_value;
     }
   }
-  cvm::log("the problem comes from the system force ? system_force = " + cvm::to_str(system_force[0]) + " " + cvm::to_str(system_force[1]));
+  // cvm::log("the problem comes from the system force ? system_force = " + cvm::to_str(system_force[0]) + " " + cvm::to_str(system_force[1]));
   return COLVARS_OK;
 }
 
