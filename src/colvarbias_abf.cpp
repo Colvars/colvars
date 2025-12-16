@@ -912,8 +912,8 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
   colvarproxy *proxy = cvm::main()->proxy;
 
   // The following are local aliases for the class' unique pointers
-  colvar_grid_count *samples_out, *z_samples_out = nullptr;
-  colvar_grid_scalar *weights_out, *z_weights_out = nullptr;
+  colvar_grid_count *samples_out =nullptr, *z_samples_out = nullptr;
+  colvar_grid_scalar *weights_out = nullptr, *z_weights_out = nullptr;
   colvar_grid_gradient *gradients_out, *z_gradients_out, *czar_gradients_out;
   colvargrid_integrate *pmf_out, *czar_pmf_out;
 
@@ -951,9 +951,9 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     czar_gradients_out = global_czar_gradients.get();
     czar_pmf_out = global_czar_pmf.get();
   }
-  if (b_smoothed)
+  if (b_smoothed && weights_out != nullptr)
     write_grid_to_file<colvar_grid_scalar>(weights_out, prefix + ".count", close);
-  else
+  else if (!b_smoothed && samples_out != nullptr)
     write_grid_to_file<colvar_grid_count>(samples_out, prefix + ".count", close);
   write_grid_to_file<colvar_grid_gradient>(gradients_out, prefix + ".grad", close);
 
