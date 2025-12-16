@@ -1711,7 +1711,7 @@ public:
     //
     //
     } else {
-      cvm::log("we update the force with acc_force, force = " + cvm::to_str(force[0]) + " " + cvm::to_str(force[1]));
+      // cvm::log("we update the force with acc_force, force = " + cvm::to_str(force[0]) + " " + cvm::to_str(force[1]));
       acc_force(bin_value, force);
     }
   }
