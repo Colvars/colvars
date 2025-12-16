@@ -1216,7 +1216,7 @@ protected:
 
   /// Reference coordinates (for RMSD calculation only)
   /// Includes sets with symmetry permutations (n_permutations * n_atoms)
-  size_t num_ref_pos;
+  size_t num_ref_pos = 0;
   cvm::ag_vector_real_t  ref_pos_soa;
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
