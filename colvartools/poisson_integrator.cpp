@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     // (Moved after parsing so we don't allocate memory if help/error is printed)
     colvarproxy *proxy = new colvarproxy();
     proxy->colvars = new colvarmodule(proxy);
-    std::shared_ptr<colvar_grid_count> count_ptr;
+    std::shared_ptr<colvar_grid_scalar> count_ptr;
 
     // Deduce countfile if not provided by user
     if (countfile.empty())
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
         if (stat(countfile.c_str(), &buffer) == 0)
         {
             std::cout << "Found associated count file " << countfile << ", reading...\n";
-            count_ptr.reset(new colvar_grid_count(countfile));
+            count_ptr.reset(new colvar_grid_scalar(countfile));
             if (!count_ptr || count_ptr->nd == 0)
             {
                 // catch constructor failure
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     std::cout << "Reading gradient file " << gradfile << std::endl;
     std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile, count_ptr);
 
-    if (!grad_ptr || grad_ptr->nd == 0 || grad_ptr->nd != grad_ptr->multiplicity() || cvm::get_error() != COLVARS_OK)
+    if (!grad_ptr || grad_ptr->nd == 0)
     {
         // catch constructor failure
         cvm::error("Error reading gradient grid.");
