@@ -1663,7 +1663,7 @@ public:
       }
     std::vector<int>ix_min(nd, 0);
     std::vector<int>ix_max(nd, 0);
-    for (int i =0; i < nd; i++) {
+    for (size_t i =0; i < nd; i++) {
       // TODO: handle periodic case as well
       ixmin = cv_value[0] - smoothing;
       ixmax = cv_value[0] + smoothing;
@@ -1683,10 +1683,9 @@ public:
     int i = 0;
     for (std::vector<int> ix = ix_min; ix < ix_max; incr(ix)) {
       dist = 0;
-      coeff;
       stop = 1;
       std::vector<int>ix_copy = std::vector<int>(ix);
-      for (int dim = 0; dim < nd; dim++) {
+      for (size_t dim = 0; dim < nd; dim++) {
         if (!index_ok(ix)) {
           if (periodic[dim]) {
             ix_copy[dim] = ix_copy[dim];
