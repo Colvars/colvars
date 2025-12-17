@@ -1637,7 +1637,7 @@ public:
       cvm::real dist = 0;
       std::vector<bool>stop_vec(nd, false);
       // TODO: we can parallelize here i think
-      for (std::vector<int> ix = ix_min; ix < ix_max; incr(ix)) {
+      for (std::vector<int> ix = ix_min; ix <= ix_max; incr(ix)) {
         dist = 0;
         std::vector<int>ix_copy = std::vector<int>(ix);
         for (size_t dim = 0; dim < nd; dim++) {
