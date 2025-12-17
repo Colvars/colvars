@@ -1612,6 +1612,7 @@ public:
     std::vector<int> bin(nd, 0);
     // We process points where exp(-d^2 / 2sigma^2) > 10^-3
     // This implies distance < 3.72 * sigma
+    cvm::real inv_squared_smooth = 1/ (smoothing*smoothing);
     cvm::real const cutoff_factor = 3.72;
     // TODO: make sure that this is not > min nx /2
     cvm::real const cutoff = cutoff_factor * smoothing; // take like floor()
@@ -1621,8 +1622,8 @@ public:
       std::vector<int>ix_max(nd, 0);
       std::vector<int>periodic_offset(nd,0);
       for (size_t i =0; i < nd; i++) {
-        ixmin = cv_value[0] - cutoff;
-        ixmax = cv_value[0] + cutoff;
+        ixmin = cv_value[i] - cutoff;
+        ixmax = cv_value[i] + cutoff;
         int cut_ixmin = static_cast<int>(cvm::floor(std::max(ixmin,static_cast<cvm::real>(0))));
         int cut_ixmax = static_cast<int>(cvm::floor(std::min(ixmax, static_cast<cvm::real>(nx[0]) - 1)));
         if (periodic[i]) {
@@ -1645,7 +1646,7 @@ public:
             }
           dist += std::pow(ix_copy[dim] +0.5 - cv_value[dim], 2);
         }
-        acc_force(ix_copy, force, true, cvm::exp(-dist/smoothing));
+        acc_force(ix_copy, force, true, cvm::exp(-dist * inv_squared_smooth));
       }
     } else {
       // cvm::log("we update the force with acc_force, force = " + cvm::to_str(force[0]) + " " + cvm::to_str(force[1]));
