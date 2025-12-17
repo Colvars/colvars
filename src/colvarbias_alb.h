@@ -59,10 +59,10 @@ protected:
   /// \brief how quickly to change the coupling constant
   std::vector<cvm::real> coupling_rate;
 
-  // \brief if we're equilibrating our estimates or collecting data
+  /// \brief if we're equilibrating our estimates or collecting data
   bool b_equilibration;
 
-  // \brief If the coupling range should be increased
+  /// \brief If the coupling range should be increased
   bool b_hard_coupling_range;
 
 

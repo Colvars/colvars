@@ -367,6 +367,10 @@ std::istream & colvar_grid<T>::read_multicol(std::istream &is, bool add)
     }
   }
 
+  // Possible improvement:
+  // - read line by line to ensure that layout is compatible with stated multiplicity
+  // - detect end of file when not remapping
+
   if ( remap ) {
     // re-grid data
     while (is.good()) {
