@@ -1612,7 +1612,7 @@ public:
     std::vector<int> bin(nd, 0);
     // We process points where exp(-d^2 / 2sigma^2) > 10^-3
     // This implies distance < 3.72 * sigma
-    cvm::real inv_squared_smooth = 1/ (smoothing*smoothing);
+    cvm::real inv_squared_smooth = 1/ (std::min(smoothing*smoothing, 1e-5));
     cvm::real const cutoff_factor = 3.72;
     // TODO: make sure that this is not > min nx /2
     cvm::real const cutoff = cutoff_factor * smoothing; // take like floor()
