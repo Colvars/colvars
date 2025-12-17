@@ -1469,6 +1469,9 @@ public:
   /// Parameters for smoothing data with low sampling
   int full_samples;
   int min_samples;
+  // TOD: maybe make those class members
+  // int smoothing;
+  // int cutoff;
 
   /// Write the current grid parameters to a string
   std::string get_state_params() const override;
@@ -1610,7 +1613,8 @@ public:
     // We process points where exp(-d^2 / 2sigma^2) > 10^-3
     // This implies distance < 3.72 * sigma
     cvm::real const cutoff_factor = 3.72;
-    cvm::real const cutoff = cvm::logn(cutoff_factor * smoothing)/static_cast<cvm::real>(nd); // take like floor(ln()/nd)
+    // TODO: make sure that this is not > min nx /2
+    cvm::real const cutoff = cutoff_factor * smoothing; // take like floor()
 
     if (b_smoothed && weights->value(bin_value) < full_samples) {
       std::vector<int>ix_min(nd, 0);
@@ -1619,10 +1623,10 @@ public:
       for (size_t i =0; i < nd; i++) {
         ixmin = cv_value[0] - cutoff;
         ixmax = cv_value[0] + cutoff;
-        int cut_ixmin = cvm::floor(std::max(ixmin,static_cast<cvm::real>(0)));
-        int cut_ixmax = cvm::floor(std::min(ixmax, static_cast<cvm::real>(nx[0]) - 1));
+        int cut_ixmin = static_cast<int>(cvm::floor(std::max(ixmin,static_cast<cvm::real>(0))));
+        int cut_ixmax = static_cast<int>(cvm::floor(std::min(ixmax, static_cast<cvm::real>(nx[0]) - 1)));
         if (periodic[i]) {
-          periodic_offset[i] = cut_ixmin - ixmin - ixmax + cut_ixmax;
+          periodic_offset[i] = cut_ixmin - static_cast<int>(cvm::floor(ixmin)) - static_cast<int>(cvm::floor(ixmax)) + cut_ixmax;
           cut_ixmin = cut_ixmin + periodic_offset[i];
           cut_ixmax = cut_ixmax + periodic_offset[i];
         }
