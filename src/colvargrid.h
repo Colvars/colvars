@@ -1022,7 +1022,6 @@ struct scalar_type_map<scalar_type::integer> {
   using type = size_t;
 };
 
-// Step 3: use enum as template parameter
 template <scalar_type T>
 class colvar_grid_scalar_function : public colvar_grid<typename scalar_type_map<T>::type>
 {
@@ -1606,112 +1605,44 @@ public:
                         bool b_smoothed,
                         cvm::real smoothing = 2.0) {
 
-    int i, imin, imax, j, jmin, jmax;
     cvm::real ixmin, ixmax;
     std::vector<int> bin(nd, 0);
-    cvm::real sigma = smoothing * 0.66;
-    // TODO && count < threshold
+    // We process points where exp(-d^2 / 2sigma^2) > 10^-3
+    // This implies distance < 3.72 * sigma
+    cvm::real const cutoff_factor = 3.72;
+    cvm::real const cutoff = cvm::logn(cutoff_factor * smoothing)/static_cast<cvm::real>(nd); // take like floor(ln()/nd)
+
     if (b_smoothed && weights->value(bin_value) < full_samples) {
-      // Distribute over smoothing function (cosine)
-      // Separate out 1D and 2D cases, as walking an arbitrary dimension grid
-      // is a little more complicated (see abf_integrate for an example)
-
-
-      switch (nd) {
-
-      case 1:
-        // for cosine-based function, non-zero between -smoothing and +smoothing
-        imin = cvm::floor(std::max(cv_value[0] - smoothing,static_cast<cvm::real>(0)));
-        imax = cvm::floor(std::min(cv_value[0] + smoothing, static_cast<cvm::real>(nx[0])));
-        for (i = imin; i <= imax; i++) {
-          // Delta is the distance from the center of bin i to the current cv value
-          // Smoothing is expressed in units of width
-          cvm::real delta = (cv_value[0] -  (i+0.5)) / smoothing;
-          // weight function has integral dx, same as the discrete case (function equal to 1 over one bin)
-          cvm::real fact = 0.5 * (cos(delta * PI) + 1.) / smoothing;
-          bin[0] = i;
-          if (index_ok( std::vector<int>({i})))
-            acc_force(bin, force, true, fact);
+      std::vector<int>ix_min(nd, 0);
+      std::vector<int>ix_max(nd, 0);
+      std::vector<int>periodic_offset(nd,0);
+      for (size_t i =0; i < nd; i++) {
+        ixmin = cv_value[0] - cutoff;
+        ixmax = cv_value[0] + cutoff;
+        int cut_ixmin = cvm::floor(std::max(ixmin,static_cast<cvm::real>(0)));
+        int cut_ixmax = cvm::floor(std::min(ixmax, static_cast<cvm::real>(nx[0]) - 1));
+        if (periodic[i]) {
+          periodic_offset[i] = cut_ixmin - ixmin - ixmax + cut_ixmax;
+          cut_ixmin = cut_ixmin + periodic_offset[i];
+          cut_ixmax = cut_ixmax + periodic_offset[i];
         }
-        break;
-
-      case 2:
-        // for cosine-based function, non-zero between -smoothing and +smoothing
-        // TODO: Handle periodic case as well !
-        imin = cvm::floor(std::max(cv_value[0] - smoothing,static_cast<cvm::real>(0)));
-        imax = cvm::floor(std::min(cv_value[0] + smoothing, static_cast<cvm::real>(nx[0]) - 1));
-        jmin = cvm::floor(std::max(cv_value[1] - smoothing,static_cast<cvm::real>(0)));
-        jmax = cvm::floor(std::min(cv_value[1] + smoothing, static_cast<cvm::real>(nx[1]) - 1));
-        for (i = imin; i <= imax; i++) {
-          for (j = jmin; j <= jmax; j++) {
-            // Delta is the distance from the center of bin i,j to the current cv value
-            // Smoothing is expressed in units of width
-            cvm::real delta0 = (cv_value[0] - (i+0.5));
-            cvm::real delta1 = (cv_value[1] - (j+0.5));
-            cvm::real delta = sqrt(delta0 * delta0 + delta1 * delta1) / smoothing;
-            // weight function has integral dx, same as the discrete case (function equal to 1 over one bin)
-            cvm::real fact = 0.5 * (cos(delta * PI) + 1.) / (smoothing * smoothing);
-            bin[0] = i;
-            bin[1] = j;
-            if (index_ok(bin))
-              acc_force(bin, force, true, fact);
-          }
+        ix_min[i] = cut_ixmin;
+        ix_max[i] = cut_ixmax;
+      }
+      cvm::real dist = 0;
+      std::vector<bool>stop_vec(nd, false);
+      // TODO: we can parallelize here i think
+      for (std::vector<int> ix = ix_min; ix < ix_max; incr(ix)) {
+        dist = 0;
+        std::vector<int>ix_copy = std::vector<int>(ix);
+        for (size_t dim = 0; dim < nd; dim++) {
+            if (periodic[dim]) {
+              ix_copy[dim] = (ix_copy[dim] - periodic_offset[dim]) % nx[dim];
+            }
+          dist += std::pow(ix_copy[dim] +0.5 - cv_value[dim], 2);
         }
-        break;
-
-      default:
-        cvm::error("Error: smoothed ABF is not implemented for dimension > 2.\n", COLVARS_NOT_IMPLEMENTED);
-        return;
+        acc_force(ix_copy, force, true, cvm::exp(-dist/smoothing));
       }
-    std::vector<int>ix_min(nd, 0);
-    std::vector<int>ix_max(nd, 0);
-    for (size_t i =0; i < nd; i++) {
-      // TODO: handle periodic case as well
-      ixmin = cv_value[0] - smoothing;
-      ixmax = cv_value[0] + smoothing;
-      if (!periodic[i]) {
-        ixmin = std::max(ixmin,static_cast<cvm::real>(0));
-        ixmax = std::min(ixmax, static_cast<cvm::real>(nx[0]) - 1);
-      }
-      ix_min[i] = cvm::floor(ixmin);
-      ix_max[i] = cvm::floor(ixmax);
-    }
-    std::vector<cvm::real>coeffs(std::pow(2,nd), 0);
-    cvm::real coeff;
-    cvm::real sum = 0;
-    cvm::real dist = 0;
-    std::vector<bool>stop_vec(nd, false);
-    cvm::real stop = 1;
-    int i = 0;
-    for (std::vector<int> ix = ix_min; ix < ix_max; incr(ix)) {
-      dist = 0;
-      stop = 1;
-      std::vector<int>ix_copy = std::vector<int>(ix);
-      for (size_t dim = 0; dim < nd; dim++) {
-        if (!index_ok(ix)) {
-          if (periodic[dim]) {
-            ix_copy[dim] = ix_copy[dim];
-          }
-          else {
-            stop = 0;
-            break;
-          }
-        }
-        dist += std::pow(ix[dim] +0.5 - cv_value[dim], 2);
-      }
-      coeff = cvm::exp(-dist/sigma);
-      sum += coeff * stop;
-      coeffs[i] = coeff;
-      i++;
-    }
-    i = 0;
-      //TODO: finish here
-    for (std::vector<int> ix = ix_min; ix < ix_max; incr(ix)) {
-      acc_force(bin, force, true, coeffs[i]/sum);
-      i++;
-    }
-    //
-    //
     } else {
       // cvm::log("we update the force with acc_force, force = " + cvm::to_str(force[0]) + " " + cvm::to_str(force[1]));
       acc_force(bin_value, force);
