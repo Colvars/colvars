@@ -204,8 +204,11 @@ int colvarbias_abf::init(std::string const &conf)
   gradients->min_samples = min_samples;
 
   if (shared_on) {
-    if (!b_smoothed)
+    if (!b_smoothed) {
+      //TODO: check this line
       local_samples.reset(new colvar_grid_count(colvars, samples));
+      local_samples.reset(new colvar_grid_count(colvars, local_samples));
+    }
     else {
       local_weights.reset(new colvar_grid_scalar(colvars, weights));
       local_gradients.reset(new colvar_grid_gradient(colvars, local_weights));
@@ -387,17 +390,12 @@ int colvarbias_abf::update()
     else {
       bin[i] = weights->current_bin_scalar(i);
       position[i] = ((weights->use_actual_value[i] ? weights->cv[i] -> actual_value().real_value : weights->cv[i]->value().real_value) - weights->lower_boundaries[i].real_value)/(weights->widths[i]);
-      cvm::log("position is after assignment?" + cvm::to_str(position[i]));
     }
-    cvm::log("position is before entering the loop?" + cvm::to_str(position[i]));
     if (colvars[i]->is_enabled(f_cv_total_force_current_step)) {
-      cvm::log("position is ?" + cvm::to_str(position[i]));
       force_bin[i] = bin[i];
       force_position[i] = position[i];
     }
   }
-  cvm::log("value of the cv =  " + cvm::to_str(position) + "force position is:"+ cvm::to_str(force_position));
-  cvm::log("value of the bin =  " + cvm::to_str(bin) + "force bin is :" + cvm::to_str(force_bin));
 
   // ***********************************************************
   // ******  ABF Part I: update the FE gradient estimate  ******
@@ -611,7 +609,6 @@ int colvarbias_abf::calc_biasing_force(std::vector<cvm::real> &force)
       }
     }
   }
-  cvm::log("does it come from the biasing force ?" +cvm::to_str((force)));
   return COLVARS_OK;
 }
 
