@@ -58,11 +58,11 @@ public:
   /// \brief Flag requesting the use of a smoothed version of the gradient (default: false)
   bool b_smoothed;
 
-  // \brief Computes all the relative positions of objects necessary to calculate the laplacian at a
+  /// \brief Computes all the relative positions of objects necessary to calculate the laplacian at a
   // specific point
   void prepare_laplacian_stencils();
 
-  // \brief Computes all the relative positions to calculate the divergence at a specific point
+  /// \brief Computes all the relative positions to calculate the divergence at a specific point
   void prepare_divergence_stencils();
 
   void prepare_calculations();
