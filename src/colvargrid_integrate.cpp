@@ -1056,11 +1056,11 @@ void colvargrid_integrate::get_regularized_grad(std::vector<cvm::real> &F, std::
 {
   size_t count = gradients->samples->value(ix);
   gradients->vector_value(ix, F);
-  float multiplier = 1;
+  cvm::real multiplier = 1.;
   if (count < min_count_F) {
     multiplier = 0;
   } else if (count < max_count_F) {
-    multiplier = (count - min_count_F) / (max_count_F - min_count_F);
+    multiplier = static_cast<cvm::real>(count - min_count_F) / static_cast<cvm::real>(max_count_F - min_count_F);
   }
   for (size_t i = 0; i < nd; i++) {
     F[i] = multiplier * F[i];
