@@ -3,4 +3,5 @@ abf {
     grid {
         widths 5 5
     }
+    smoothing 1
 }
