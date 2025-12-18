@@ -1469,9 +1469,12 @@ public:
   /// Parameters for smoothing data with low sampling
   int full_samples;
   int min_samples;
-  // TOD: maybe make those class members
-  // int smoothing;
-  // int cutoff;
+  // TODO: maybe make those class members
+  cvm::real kernel_params = 0;
+  int cutoff = 0;
+  cvm::real inv_squared_smooth;
+  bool kernel_params_computed = false;
+  cvm::real const cutoff_factor = 3.72;
 
   /// Write the current grid parameters to a string
   std::string get_state_params() const override;
@@ -1646,10 +1649,17 @@ public:
       std::vector<int> bin(nd, 0);
       // We process points where exp(-d^2 / 2sigma^2) > 10^-3
       // This implies distance < 3.72 * sigma
-      cvm::real inv_squared_smooth = 1/ (std::max(smoothing*smoothing, 1e-5));
-      cvm::real const cutoff_factor = 3.72;
-      // TODO: make sure that this is not > min nx /2
-      cvm::real const cutoff = cutoff_factor * smoothing; // take like floor()
+      if (!kernel_params_computed) {
+        if (smoothing < 0)
+          cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
+        kernel_params = smoothing;
+        inv_squared_smooth = 1/ (std::max(smoothing*smoothing, 1e-5));
+        cutoff = cutoff_factor * smoothing; // take like floor()
+        for (int i = 0; i < nd; i++) {
+          cutoff = std::min(cutoff, nx[i]/2);
+        }
+        kernel_params_computed = true;
+      }
       std::vector<int>ix_min(nd, 0);
       std::vector<int>ix_max(nd, 0);
       std::vector<int>periodic_offset(nd,0);
