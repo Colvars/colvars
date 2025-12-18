@@ -1655,7 +1655,7 @@ public:
         kernel_params = smoothing;
         inv_squared_smooth = 1/ (std::max(smoothing*smoothing, 1e-5));
         cutoff = cutoff_factor * smoothing; // take like floor()
-        for (int i = 0; i < nd; i++) {
+        for (size_t i = 0; i < nd; i++) {
           cutoff = std::min(cutoff, nx[i]/2);
         }
         kernel_params_computed = true;
