@@ -204,9 +204,8 @@ int colvarbias_abf::init(std::string const &conf)
 
   if (shared_on) {
     if (!smoothing) {
-      //TODO: check this line
       local_samples.reset(new colvar_grid_count(colvars, samples));
-      local_samples.reset(new colvar_grid_count(colvars, local_samples));
+      local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
     }
     else {
       local_weights.reset(new colvar_grid_scalar(colvars, weights));
