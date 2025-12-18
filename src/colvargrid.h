@@ -1601,41 +1601,7 @@ public:
       weights->increase(ix,fact);
     }
   }
-  /// \brief Checks if a vector is between min and max coordinates
-  bool index_ok_min_max(std::vector<int> const &ix, std::vector<int> const ix_min, std::vector<int> const ix_max) const
-  {
-    // TODO : add size check
-    for (size_t i = 0; i < nd; i++) {
-      if ( (ix[i] < ix_min[i]) || (ix[i] > ix_max[i]))
-        return false;
-    }
-    return true;
-  }
-  /// \brief Increase weight inside a rectangle block defined by ix_min and ix_max
 
-  inline void incr_min_max(std::vector<int> &ix, std::vector<int> const ix_min, std::vector<int> const ix_max) const
-  {
-    for (int i = ix.size()-1; i >= 0; i--) {
-
-      ix[i]++;
-
-      if (ix[i] > ix_max[i]) {
-
-        if (i > 0) {
-          ix[i] = ix_min[i];
-          continue;
-        } else {
-          // this is the last iteration, a non-valid index is being
-          // set for the outer index, which will be caught by
-          // index_ok()
-          // ix[0] = ix_min[0];
-          return;
-        }
-      } else {
-        return;
-      }
-    }
-  }
   /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
   /// cv_value corresponds to the grid coordinates i.e. (3.5,6.2) inside the grid of dimension nx
