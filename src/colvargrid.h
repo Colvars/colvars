@@ -1467,13 +1467,13 @@ public:
 
 
   /// Parameters for smoothing data with low sampling
-  int full_samples;
-  int min_samples;
+  cvm::real full_samples;
+  cvm::real min_samples;
   // TODO: maybe make those class members
   cvm::real kernel_params = 0;
   int cutoff = 0;
   cvm::real inv_squared_smooth;
-  bool kernel_params_computed = false;
+  cvm::real smoothing_param;
   cvm::real const cutoff_factor = 3.72;
 
   /// Write the current grid parameters to a string
@@ -1589,7 +1589,7 @@ public:
 
   /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
-  inline void acc_force(std::vector<int> const &ix, cvm::real const *forces, bool b_smoothed = false,
+  inline void acc_force(std::vector<int> const &ix, cvm::real const *forces,
                               cvm::real fact = 1.0) {
     for (size_t imult = 0; imult < mult; imult++) {
       data[address(ix) + imult] -= forces[imult] * fact;
@@ -1600,18 +1600,20 @@ public:
     else if (weights) {
       weights->increase(ix,fact);
     }
-    // cvm::log("we increase count to " + cvm::to_str(samples ? samples->value(ix) : weights->value(ix)));
-    // cvm::log("force input : " + cvm::to_str(*forces) + " reweighted forces = " + cvm::to_str(std::vector<cvm::real>{data[address(ix)], data[address(ix) + 1]}));
   }
-  bool index_ok_two_vec(std::vector<int> const &ix, std::vector<int> const ix_min, std::vector<int> const ix_max) const
+  /// \brief Checks if a vector is between min and max coordinates
+  bool index_ok_min_max(std::vector<int> const &ix, std::vector<int> const ix_min, std::vector<int> const ix_max) const
   {
+    // TODO : add size check
     for (size_t i = 0; i < nd; i++) {
       if ( (ix[i] < ix_min[i]) || (ix[i] > ix_max[i]))
         return false;
     }
     return true;
   }
-  inline void incr_two_vec(std::vector<int> &ix, std::vector<int> const ix_min, std::vector<int> const ix_max) const
+  /// \brief Increase weight inside a rectangle block defined by ix_min and ix_max
+
+  inline void incr_min_max(std::vector<int> &ix, std::vector<int> const ix_min, std::vector<int> const ix_max) const
   {
     for (int i = ix.size()-1; i >= 0; i--) {
 
@@ -1634,68 +1636,76 @@ public:
       }
     }
   }
-    /// \brief Accumulate the gradient based on the force (i.e. sums the
+  /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
-  /// TODO: explain what CV value is
-  inline void acc_abf_force(std::vector<cvm::real> const &cv_value, std::vector<int> const &bin_value,
-                        cvm::real const *force,
-                        bool b_smoothed,
-                        cvm::real smoothing = 2.0) {
+  /// cv_value corresponds to the grid coordinates i.e. (3.5,6.2) inside the grid of dimension nx
+  inline void acc_force(std::vector<cvm::real> const &cv_value,
+                      std::vector<int> const &bin_value,
+                      cvm::real const *force,
+                      cvm::real smoothing = 0) {
 
-
-
-    if (b_smoothed && weights->value(bin_value) < full_samples) {
-      cvm::real ixmin, ixmax;
-      std::vector<int> bin(nd, 0);
-      // We process points where exp(-d^2 / 2sigma^2) > 10^-3
-      // This implies distance < 3.72 * sigma
-      if (!kernel_params_computed) {
-        if (smoothing < 0)
-          cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
-        kernel_params = smoothing;
-        inv_squared_smooth = 1/ (std::max(smoothing*smoothing, 1e-5));
-        cutoff = cutoff_factor * smoothing; // take like floor()
-        for (size_t i = 0; i < nd; i++) {
-          cutoff = std::min(cutoff, nx[i]/2);
-        }
-        kernel_params_computed = true;
+  if (smoothing && weights->value(bin_value) < full_samples) {
+    if (smoothing_param!=smoothing) {
+      if (smoothing < 0)
+        cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
+      kernel_params = smoothing;
+      inv_squared_smooth = 1/ (std::max(smoothing*smoothing, 1e-5));
+      cutoff = cutoff_factor * smoothing; // take like floor()
+      for (size_t i = 0; i < nd; i++) {
+        cutoff = std::min(cutoff, nx[i]/2);
       }
-      std::vector<int>ix_min(nd, 0);
-      std::vector<int>ix_max(nd, 0);
-      std::vector<int>periodic_offset(nd,0);
-      for (size_t i =0; i < nd; i++) {
-        ixmin = cv_value[i] - cutoff;
-        ixmax = cv_value[i] + cutoff;
-        int cut_ixmin = static_cast<int>(cvm::floor(std::max(ixmin,static_cast<cvm::real>(0))));
-        int cut_ixmax = static_cast<int>(cvm::floor(std::min(ixmax, static_cast<cvm::real>(nx[0]) - 1)));
-        if (periodic[i]) {
-          periodic_offset[i] = cut_ixmin - static_cast<int>(cvm::floor(ixmin)) - static_cast<int>(cvm::floor(ixmax)) + cut_ixmax;
-          cut_ixmin = cut_ixmin + periodic_offset[i];
-          cut_ixmax = cut_ixmax + periodic_offset[i];
-        }
-        ix_min[i] = cut_ixmin;
-        ix_max[i] = cut_ixmax;
-      }
-      cvm::real dist = 0;
-      std::vector<bool>stop_vec(nd, false);
-      // TODO: we can parallelize here i think
-      for (std::vector<int> ix = ix_min; index_ok_two_vec(ix, ix_min, ix_max); incr_two_vec(ix, ix_min, ix_max)) {
-        dist = 0;
-        std::vector<int>ix_copy = std::vector<int>(ix);
-        for (size_t dim = 0; dim < nd; dim++) {
-            if (periodic[dim]) {
-              ix_copy[dim] = (ix_copy[dim] - periodic_offset[dim]) % nx[dim];
-            }
-          dist += std::pow(ix_copy[dim] +0.5 - cv_value[dim], 2);
-        }
-        acc_force(ix_copy, force, true, cvm::exp(-dist * inv_squared_smooth));
-      }
-    } else {
-      // cvm::log("we update the force with acc_force, force = " + cvm::to_str(force[0]) + " " + cvm::to_str(force[1]));
-      acc_force(bin_value, force);
+      smoothing_param = smoothing;
     }
-  }
+    // We will use these to iterate
+    std::vector<int> ix_min(nd);
+    std::vector<int> ix_max(nd);
+    std::vector<int> current_ix(nd);
+    std::vector<int> wrapped_ix(nd);
 
+    for (size_t i = 0; i < nd; i++) {
+      // Calculate raw bounds (can be negative or > nx[i])
+      ix_min[i] = static_cast<int>(cvm::floor(cv_value[i] - cutoff));
+      ix_max[i] = static_cast<int>(cvm::floor(cv_value[i] + cutoff));
+
+      // If NOT periodic, clamp to grid boundaries
+      if (!periodic[i]) {
+        if (ix_min[i] < 0) ix_min[i] = 0;
+        if (ix_max[i] >= nx[i]) ix_max[i] = nx[i] - 1;
+      }
+      current_ix[i] = ix_min[i];
+    }
+
+    bool done = false;
+    while (!done) {
+      cvm::real dist_sq = 0;
+      for (size_t i = 0; i < nd; i++) {
+        cvm::real diff = (static_cast<cvm::real>(current_ix[i]) + 0.5) - cv_value[i];
+        dist_sq += diff * diff;
+        if (periodic[i]) {
+          wrapped_ix[i] = (current_ix[i] % (int)nx[i] + (int)nx[i]) % (int)nx[i];
+        } else {
+          wrapped_ix[i] = current_ix[i];
+        }
+      }
+      cvm::real weight = cvm::exp(-dist_sq * inv_squared_smooth);
+      acc_force(wrapped_ix, force, weight);
+
+      for (int i = nd - 1; i >= 0; i--) {
+        if (++current_ix[i] > ix_max[i]) {
+          if (i == 0) {
+            done = true;
+            break;
+          }
+          current_ix[i] = ix_min[i];
+        } else {
+          break;
+        }
+      }
+    }
+  } else {
+    acc_force(bin_value, force);
+  }
+}
   /// \brief Return the value of the function at ix divided by its
   /// number of samples (if the count grid is defined)
   virtual cvm::real value_output(std::vector<int> const &ix,
