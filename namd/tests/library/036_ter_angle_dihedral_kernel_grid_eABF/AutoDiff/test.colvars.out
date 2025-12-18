@@ -245,8 +245,8 @@ colvars:   # historyFreq = 5
 colvars:   # shared = off [default]
 colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
-colvars:   # smoothing = 0 [default]
-colvars:   Standard ABF is in use
+colvars:   # smoothing = 2
+colvars:   Kernel version of abf is in use
 colvars:   # CZARestimator = on [default]
 colvars:   # integrate = on [default]
 colvars:   # UIestimator = off [default]
@@ -310,32 +310,12 @@ colvars: Re-initialized atom group for variable "dihedral":0/1. 1 atoms: total m
 colvars: Re-initialized atom group for variable "dihedral":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars:   Initializing extended coordinate to colvar value.
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   Integrated in 99 steps, error: 9.71074e-07
-colvars:   Integrated in 99 steps, error: 9.71074e-07
-colvars:   Integrated in 1 steps, error: 7.42342e-07
-colvars:   Integrated in 1 steps, error: 7.42342e-07
-colvars:   ix is :{ 16, 8 } and corresponding address :976size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 7 } and corresponding address :974size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 7 } and corresponding address :974size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 7 } and corresponding address :974size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 7 } and corresponding address :974size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 7 } and corresponding address :974size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 7 } and corresponding address :974size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 7 } and corresponding address :974size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 7 } and corresponding address :974size of gradient grid is:{ 60, 2 } off,off
-colvars:   ix is :{ 16, 7 } and corresponding address :974size of gradient grid is:{ 60, 2 } off,off
-colvars:   Integrated in 100 steps, error: 7.8827e-07
-colvars:   Integrated in 99 steps, error: 8.42445e-07
-colvars:   Integrated in 1 steps, error: 5.33906e-07
-colvars:   Integrated in 1 steps, error: 5.79576e-07
+colvars:   Integrated in 108 steps, error: 8.74097e-07
+colvars:   Integrated in 99 steps, error: 9.71156e-07
+colvars:   Integrated in 1 steps, error: 6.14167e-07
+colvars:   Integrated in 1 steps, error: 7.42403e-07
+colvars:   Integrated in 98 steps, error: 9.25378e-07
+colvars:   Integrated in 99 steps, error: 8.40897e-07
+colvars:   Integrated in 1 steps, error: 6.09815e-07
+colvars:   Integrated in 1 steps, error: 5.78514e-07
 colvars: Saving collective variables state to "test.colvars.state".
