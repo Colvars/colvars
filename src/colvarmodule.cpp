@@ -963,8 +963,6 @@ int colvarmodule::calc()
   if (restart_out_freq && (cvm::step_relative() > 0) &&
       ((cvm::step_absolute() % restart_out_freq) == 0)) {
 
-    cvm::log("do we go here ?");
-
     if (restart_out_name.size()) {
       // Write restart file, if different from main output
       error_code |= write_restart_file(restart_out_name);

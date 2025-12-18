@@ -1600,6 +1600,37 @@ public:
     // cvm::log("we increase count to " + cvm::to_str(samples ? samples->value(ix) : weights->value(ix)));
     // cvm::log("force input : " + cvm::to_str(*forces) + " reweighted forces = " + cvm::to_str(std::vector<cvm::real>{data[address(ix)], data[address(ix) + 1]}));
   }
+  bool index_ok_two_vec(std::vector<int> const &ix, std::vector<int> const ix_min, std::vector<int> const ix_max) const
+  {
+    for (size_t i = 0; i < nd; i++) {
+      if ( (ix[i] < ix_min[i]) || (ix[i] > ix_max[i]))
+        return false;
+    }
+    return true;
+  }
+  inline void incr_two_vec(std::vector<int> &ix, std::vector<int> const ix_min, std::vector<int> const ix_max) const
+  {
+    for (int i = ix.size()-1; i >= 0; i--) {
+
+      ix[i]++;
+
+      if (ix[i] > ix_max[i]) {
+
+        if (i > 0) {
+          ix[i] = ix_min[i];
+          continue;
+        } else {
+          // this is the last iteration, a non-valid index is being
+          // set for the outer index, which will be caught by
+          // index_ok()
+          // ix[0] = ix_min[0];
+          return;
+        }
+      } else {
+        return;
+      }
+    }
+  }
     /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
   /// TODO: explain what CV value is
@@ -1608,16 +1639,17 @@ public:
                         bool b_smoothed,
                         cvm::real smoothing = 2.0) {
 
-    cvm::real ixmin, ixmax;
-    std::vector<int> bin(nd, 0);
-    // We process points where exp(-d^2 / 2sigma^2) > 10^-3
-    // This implies distance < 3.72 * sigma
-    cvm::real inv_squared_smooth = 1/ (std::max(smoothing*smoothing, 1e-5));
-    cvm::real const cutoff_factor = 3.72;
-    // TODO: make sure that this is not > min nx /2
-    cvm::real const cutoff = cutoff_factor * smoothing; // take like floor()
+
 
     if (b_smoothed && weights->value(bin_value) < full_samples) {
+      cvm::real ixmin, ixmax;
+      std::vector<int> bin(nd, 0);
+      // We process points where exp(-d^2 / 2sigma^2) > 10^-3
+      // This implies distance < 3.72 * sigma
+      cvm::real inv_squared_smooth = 1/ (std::max(smoothing*smoothing, 1e-5));
+      cvm::real const cutoff_factor = 3.72;
+      // TODO: make sure that this is not > min nx /2
+      cvm::real const cutoff = cutoff_factor * smoothing; // take like floor()
       std::vector<int>ix_min(nd, 0);
       std::vector<int>ix_max(nd, 0);
       std::vector<int>periodic_offset(nd,0);
@@ -1637,7 +1669,7 @@ public:
       cvm::real dist = 0;
       std::vector<bool>stop_vec(nd, false);
       // TODO: we can parallelize here i think
-      for (std::vector<int> ix = ix_min; ix <= ix_max; incr(ix)) {
+      for (std::vector<int> ix = ix_min; index_ok_two_vec(ix, ix_min, ix_max); incr_two_vec(ix, ix_min, ix_max)) {
         dist = 0;
         std::vector<int>ix_copy = std::vector<int>(ix);
         for (size_t dim = 0; dim < nd; dim++) {
