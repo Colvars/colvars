@@ -63,4 +63,5 @@ abf {
     fullSamples 1
     outputFreq 5
     historyFreq 5
+    smoothing 2.0
 }
