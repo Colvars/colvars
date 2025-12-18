@@ -185,14 +185,13 @@ int colvarbias_abf::init(std::string const &conf)
     if (get_keyval(conf, "smoothing", smoothing) && smoothing > 0.0) {
       // Doing smoothed ABF
       cvm::log("Kernel version of abf is in use");
-      b_smoothed = true;
       weights.reset(new colvar_grid_scalar(colvars, grid_conf));
       gradients.reset(new colvar_grid_gradient(colvars, weights));
       weights->has_parent_data = true;
     } else {
+      smoothing = 0;
       // Doing standard discretized ABF
       cvm::log("Standard ABF is in use");
-      b_smoothed = false;
       samples.reset(new colvar_grid_count(colvars, grid_conf));
       gradients.reset(new colvar_grid_gradient(colvars, samples)); // Also use samples as template for sizes
       samples->has_parent_data = true;
@@ -204,7 +203,7 @@ int colvarbias_abf::init(std::string const &conf)
   gradients->min_samples = min_samples;
 
   if (shared_on) {
-    if (!b_smoothed) {
+    if (!smoothing) {
       //TODO: check this line
       local_samples.reset(new colvar_grid_count(colvars, samples));
       local_samples.reset(new colvar_grid_count(colvars, local_samples));
@@ -228,7 +227,7 @@ int colvarbias_abf::init(std::string const &conf)
 
     z_bin.assign(num_variables(), 0);
     z_position.assign(num_variables(), 0);
-    if (b_smoothed) {
+    if (smoothing) {
       z_weights.reset(new colvar_grid_scalar(colvars, weights));
       z_gradients.reset(new colvar_grid_gradient(colvars, z_weights));
       z_weights->request_actual_value();
@@ -240,7 +239,7 @@ int colvarbias_abf::init(std::string const &conf)
     }
 
     z_gradients->request_actual_value();
-    if (b_smoothed) {
+    if (smoothing) {
       std::shared_ptr<colvar_grid_scalar> nullpointer = nullptr;
       czar_gradients.reset(new colvar_grid_gradient(colvars, z_weights));
     }
@@ -278,7 +277,7 @@ int colvarbias_abf::init(std::string const &conf)
   if (b_CZAR_estimator && shared_on && cvm::main()->proxy->replica_index() == 0) {
     // The pointers below are used for outputting CZAR data
     // Allocate grids for collected global data, on replica 0 only
-    if (b_smoothed) {
+    if (smoothing) {
       global_z_weights.reset(new colvar_grid_scalar(colvars, weights));
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_weights));
       global_czar_gradients.reset(new colvar_grid_gradient(colvars, z_weights));
@@ -302,7 +301,7 @@ int colvarbias_abf::init(std::string const &conf)
   // This used to be only if "shared" was defined,
   // but now we allow calling share externally (e.g. from Tcl).
   if (b_CZAR_estimator) {
-    if (b_smoothed) {
+    if (smoothing) {
       z_weights_in.reset(new colvar_grid_scalar(colvars, weights));
       z_gradients_in.reset(new colvar_grid_gradient(colvars, z_weights_in));
     }
@@ -312,7 +311,7 @@ int colvarbias_abf::init(std::string const &conf)
     }
 
   }
-  if (b_smoothed) {
+  if (smoothing) {
     last_weights.reset(new colvar_grid_scalar(colvars, weights));
     last_gradients.reset(new colvar_grid_gradient(colvars, last_weights));
   }
@@ -384,7 +383,7 @@ int colvarbias_abf::update()
   if (cvm::debug()) cvm::log("Updating ABF bias " + this->name);
   size_t i;
   for (i = 0; i < num_variables(); i++) {
-    if (!b_smoothed) {
+    if (!smoothing) {
       bin[i] = samples->current_bin_scalar(i);
     }
     else {
@@ -425,7 +424,7 @@ int colvarbias_abf::update()
         // get total force and subtract previous ABF force if necessary
         update_system_force();
         // cvm::log("the count is : " + cvm::to_str(samples? samples->value(bin) : weights->value(bin)) + " and we do acc_abf_force");
-        gradients->acc_abf_force(force_position, force_bin, system_force, b_smoothed, smoothing);
+        gradients->acc_force(force_position, force_bin, system_force, smoothing);
         if ( b_integrate ) {
           pmf->update_div_neighbors(force_bin);
         }
@@ -433,7 +432,7 @@ int colvarbias_abf::update()
 
       if ( z_gradients ) {
         for (i = 0; i < num_variables(); i++) {
-          if (b_smoothed) {
+          if (smoothing) {
             z_bin[i] = z_weights->current_bin_scalar(i);
             z_position[i] = (z_weights->use_actual_value[i] ? z_weights->cv[i] -> actual_value().real_value : z_weights->cv[i]->value().real_value - z_weights->lower_boundaries[i].real_value)/ z_weights->widths[i];
           }
@@ -448,7 +447,7 @@ int colvarbias_abf::update()
           // If we are outside the range of z, the force has not been obtained above
           // the function is just an accessor, so cheap to call again anyway
           update_system_force();
-          z_gradients->acc_abf_force(z_position, z_bin, system_force, b_smoothed, smoothing);
+          z_gradients->acc_force(z_position, z_bin, system_force, smoothing);
         }
       }
 
@@ -581,7 +580,7 @@ int colvarbias_abf::calc_biasing_force(std::vector<cvm::real> &force)
     pmf->vector_gradient_finite_diff(bin, force);
     // Calculate ramp factor that ensures smooth introduction of the force
     cvm::real coeff;
-    if (!b_smoothed) {
+    if (!smoothing) {
        coeff = static_cast<cvm::real>(samples->value(bin));
     }
     else {
@@ -641,7 +640,7 @@ int colvarbias_abf::replica_share() {
   if (!local_samples || !local_weights) {
     // We arrive here if sharing has just been enabled by a script
     // in which case local arrays have not been initialized yet
-    if (b_smoothed) {
+    if (smoothing) {
       local_samples.reset(new colvar_grid_count(colvars, weights));
       local_gradients.reset(new colvar_grid_gradient(colvars, local_weights));
       local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
@@ -656,7 +655,7 @@ int colvarbias_abf::replica_share() {
   last_gradients->delta_grid(*gradients);
   // Add the delta gradient and count to the accumulated local data
   local_gradients->add_grid(*last_gradients);
-  if (b_smoothed) {
+  if (smoothing) {
     last_weights->delta_grid(*weights);
     local_weights->add_grid(*last_weights);
   } else {
@@ -666,7 +665,7 @@ int colvarbias_abf::replica_share() {
 
 
   // Count of data items.
-  size_t samples_n = b_smoothed? weights -> raw_data_num() : samples->raw_data_num();
+  size_t samples_n = smoothing? weights -> raw_data_num() : samples->raw_data_num();
   size_t gradients_n = gradients->raw_data_num();
 
   size_t samp_start = gradients_n * sizeof(cvm::real);
@@ -689,7 +688,7 @@ int colvarbias_abf::replica_share() {
       // Combine the delta gradient and count of the other replicas
       // with Replica 0's current state (including its delta).
       gradients->add_grid(*last_gradients);
-      if (b_smoothed) {
+      if (smoothing) {
         last_weights->raw_data_in((cvm::real*)(&msg_data[samp_start]));
         weights->add_grid(*last_weights);
       }else {
@@ -701,7 +700,7 @@ int colvarbias_abf::replica_share() {
 
     // Now we must send the combined gradient to the other replicas.
     gradients->raw_data_out((cvm::real*)(&msg_data[0]));
-    if (b_smoothed)
+    if (smoothing)
       weights->raw_data_out((cvm::real*)(&msg_data[samp_start]));
     else
       samples->raw_data_out((size_t*)(&msg_data[samp_start]));
@@ -718,7 +717,7 @@ int colvarbias_abf::replica_share() {
     // All other replicas send their delta gradient and count.
     // Cast the raw char data to the gradient and samples.
     last_gradients->raw_data_out((cvm::real*)(&msg_data[0]));
-    if (b_smoothed) last_weights->raw_data_out((cvm::real*)(&msg_data[samp_start]));
+    if (smoothing) last_weights->raw_data_out((cvm::real*)(&msg_data[samp_start]));
     else last_samples->raw_data_out((size_t*)(&msg_data[samp_start]));
 
     if (proxy->replica_comm_send(msg_data, msg_total, 0) != msg_total) {
@@ -732,7 +731,7 @@ int colvarbias_abf::replica_share() {
     }
     // We sync to the combined gradient computed by Replica 0.
     gradients->raw_data_in((cvm::real*)(&msg_data[0]));
-    if (b_smoothed)
+    if (smoothing)
       weights->raw_data_in((cvm::real*)(&msg_data[samp_start]));
     else
       samples->raw_data_in((size_t*)(&msg_data[samp_start]));
@@ -746,7 +745,7 @@ int colvarbias_abf::replica_share() {
 
   // Copy the current gradient and count values into last.
   last_gradients->copy_grid(*gradients);
-  if (b_smoothed)
+  if (smoothing)
     last_weights->copy_grid(*weights);
   else
     last_samples->copy_grid(*samples);
@@ -789,7 +788,7 @@ int colvarbias_abf::replica_share_CZAR() {
 
       // since colvar_grid is derived from colvar_grid params using samples as a colvar_grid_param allows to have access
       // to all of samples' parameters
-      if (b_smoothed) {
+      if (smoothing) {
         global_z_weights.reset(new colvar_grid_scalar(colvars, weights));
         global_z_gradients = std::make_shared<colvar_grid_gradient>(colvars, global_z_weights);
         global_czar_gradients.reset(new colvar_grid_gradient(colvars, weights));
@@ -804,7 +803,7 @@ int colvarbias_abf::replica_share_CZAR() {
 
     // Start with data from replica 0
     global_z_gradients->copy_grid(*z_gradients);
-    if (b_smoothed)
+    if (smoothing)
       global_z_weights->copy_grid(*z_weights);
     else
       global_z_samples->copy_grid(*z_samples);
@@ -820,7 +819,7 @@ int colvarbias_abf::replica_share_CZAR() {
       // Map the deltas from the others into the grids.
       // Re-use z_gradients_in, erasing its contents each time
       z_gradients_in->raw_data_in((cvm::real*)(&msg_data[0]));
-      if (b_smoothed) {
+      if (smoothing) {
         z_weights_in->raw_data_in((cvm::real*)(&msg_data[samp_start]));
         global_z_weights ->add_grid(*z_weights_in);
       } else {
@@ -834,7 +833,7 @@ int colvarbias_abf::replica_share_CZAR() {
   } else {
     // All other replicas send their current z gradient and z count.
     z_gradients->raw_data_out((cvm::real*)(&msg_data[0]));
-    if (b_smoothed)
+    if (smoothing)
       z_weights->raw_data_out((cvm::real*)(&msg_data[samp_start]));
     else
       z_samples->raw_data_out((size_t*)(&msg_data[samp_start]));
@@ -921,7 +920,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     // Update the divergence before integrating the local PMF below
     // only needs to happen here, just before output
     local_pmf->set_div();
-    if (b_smoothed) {
+    if (smoothing) {
       weights_out = local_weights.get();
       z_weights_out = z_weights.get();
     }
@@ -936,7 +935,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     gradients_out = gradients.get();
     pmf_out = pmf.get();
     // Note: outside of shared ABF, "global" CZAR grids are just the local ones
-    if (b_smoothed) {
+    if (smoothing) {
       weights_out = weights.get();
       z_weights_out = global_z_weights.get();
     }
@@ -948,9 +947,9 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     czar_gradients_out = global_czar_gradients.get();
     czar_pmf_out = global_czar_pmf.get();
   }
-  if (b_smoothed && weights_out != nullptr)
+  if (smoothing && weights_out != nullptr)
     write_grid_to_file<colvar_grid_scalar>(weights_out, prefix + ".count", close);
-  else if (!b_smoothed && samples_out != nullptr)
+  else if (!smoothing && samples_out != nullptr)
     write_grid_to_file<colvar_grid_count>(samples_out, prefix + ".count", close);
   write_grid_to_file<colvar_grid_gradient>(gradients_out, prefix + ".grad", close);
 
@@ -965,7 +964,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
 
   if (b_CZAR_estimator) {
     // Write eABF CZAR-related quantities
-    if (b_smoothed)
+    if (smoothing)
       write_grid_to_file<colvar_grid_scalar>(z_weights_out, prefix + ".zcount", close);
     else
       write_grid_to_file<colvar_grid_count>(z_samples_out, prefix + ".zcount", close);
@@ -977,7 +976,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     if (cvm::step_relative() > 0) {
       for (std::vector<int> iz_bin = czar_gradients_out->new_index();
             czar_gradients_out->index_ok(iz_bin); czar_gradients_out->incr(iz_bin)) {
-        if (b_smoothed) {
+        if (smoothing) {
           cvm::real weight = z_weights_out->value_output(iz_bin);
           czar_gradients_out->weights->set_value(iz_bin, weight);
 
@@ -1053,7 +1052,7 @@ int colvarbias_abf::read_gradients_samples()
     std::string prefix = input_prefix[i];
 
     // For user-provided files, the per-bias naming scheme may not apply
-    if (b_smoothed)
+    if (smoothing)
       err |= weights->read_multicol(prefix + ".count", "ABF samples file", true);
     else
       err |= samples->read_multicol(prefix + ".count", "ABF samples file", true);
@@ -1065,7 +1064,7 @@ int colvarbias_abf::read_gradients_samples()
     }
     if (b_CZAR_estimator) {
       // Read eABF z-averaged data for CZAR
-      if (b_smoothed)
+      if (smoothing)
         err |= z_weights->read_multicol(prefix + ".zcount", "eABF z-histogram file", true);
       else
         err |= z_samples->read_multicol(prefix + ".zcount", "eABF z-histogram file", true);
@@ -1084,7 +1083,7 @@ template <typename OST> OST & colvarbias_abf::write_state_data_template_(OST &os
   os.setf(std::ios::fmtflags(0), std::ios::floatfield); // default floating-point format
 
   write_state_data_key(os, "samples");
-  if (b_smoothed)
+  if (smoothing)
     weights->write_raw(os, 8);
   else
     samples->write_raw(os, 8);
@@ -1094,7 +1093,7 @@ template <typename OST> OST & colvarbias_abf::write_state_data_template_(OST &os
 
   if (shared_on) {
     write_state_data_key(os, "local_samples");
-    if (b_smoothed)
+    if (smoothing)
       local_weights->write_raw(os, 8);
     else
       local_samples->write_raw(os, 8);
@@ -1105,7 +1104,7 @@ template <typename OST> OST & colvarbias_abf::write_state_data_template_(OST &os
   if (b_CZAR_estimator) {
     os.setf(std::ios::fmtflags(0), std::ios::floatfield); // default floating-point format
     write_state_data_key(os, "z_samples");
-    if (b_smoothed)
+    if (smoothing)
       z_weights->write_raw(os, 8);
     else
       z_samples->write_raw(os, 8);
@@ -1140,7 +1139,7 @@ template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
   if (! read_state_data_key(is, "samples")) {
     return is;
   }
-  if (b_smoothed) {
+  if (smoothing) {
     if (! weights->read_raw(is)) {
       return is;
     }
@@ -1166,7 +1165,7 @@ template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
     if (! read_state_data_key(is, "local_samples")) {
       return is;
     }
-    if (b_smoothed){
+    if (smoothing){
       if (! local_weights->read_raw(is)) {
         return is;
       }
@@ -1189,7 +1188,7 @@ template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
     if (! read_state_data_key(is, "z_samples")) {
       return is;
     }
-    if (b_smoothed) {
+    if (smoothing) {
       if (! z_weights->read_raw(is)) {
         return is;
       }
@@ -1211,7 +1210,7 @@ template <typename IST> IST &colvarbias_abf::read_state_data_template_(IST &is)
   // reproducing the state after the last sharing step of previous run
   if (shared_on) {
     last_gradients->copy_grid(*gradients);
-    if (b_smoothed)
+    if (smoothing)
       last_weights->copy_grid(*weights);
     else
       last_samples->copy_grid(*samples);

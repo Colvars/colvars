@@ -122,8 +122,7 @@ private:
   /// n-dim grid of CZAR pmf (dimension 1 to 3)
   std::shared_ptr<colvargrid_integrate>  czar_pmf;
   /// use kernel grid version of ABF ?
-  bool b_smoothed;
-  int smoothing;
+  cvm::real smoothing;
   /// Calculate system force for all colvars
   int update_system_force();
 
