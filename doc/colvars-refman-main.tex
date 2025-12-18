@@ -5990,9 +5990,12 @@ Maximum iterations for free energy integration}
     \begin{equation}
       \nabla\cdot \theta \nabla A_t = \nabla \cdot G_t.
     \end{equation}
-  With $\theta$, the weights, corresponding to how much an area has been visited during the simulation. Doing so, the
-  most visited cells which corresponds to the cells where the gradient is the best known have more importance in the
-  free energy calculation.
+  With $\theta$, the weights, corresponding to how much an area has been visited during the simulation. The weights values
+  are all strictly superior to 0 so the problem is well-posed. For any cell with zero visits, its weight is assigned to
+  the value corresponding to the 10th percentile of the visit-count distribution. Moreover, visit counts are capped at
+  the 50th percentile measured from the upper tail (i.e., the 50th percentile from the lower tail). The choice of the
+  percentile is hard code. The goal is that the most visited cells which corresponds to the cells where the gradient is
+  the best known have more importance in the free energy calculation.
   }
 \end{itemize}
 
