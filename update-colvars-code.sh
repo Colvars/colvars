@@ -10,8 +10,15 @@ set -e
 LC_ALL=C
 export LC_ALL
 
-if hash git >& /dev/null ; then
+# Detect Git
+if [ -z "${GIT}" ] && hash git >& /dev/null ; then
   GIT=$(hash -t git)
+fi
+if [ -n "${GIT}" ] ; then
+  if [ ! -x "${GIT}" ] ; then
+    echo "Error: \$GIT variable defined, but its value is not an executable: \"$GIT\"" >&2
+    exit 1
+  fi
 fi
 
 if [ $# -lt 1 ]
