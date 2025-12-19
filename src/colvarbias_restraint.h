@@ -87,6 +87,7 @@ public:
   colvarbias_restraint_k(char const *key);
   virtual int init(std::string const &conf);
   virtual int change_configuration(std::string const &conf);
+  cvm::real get_force_k() const { return force_k; }
 
 protected:
 
@@ -127,6 +128,10 @@ protected:
 
   /// \brief Changing wall locations?
   bool b_chg_walls = false;
+
+  /// \brief Dynamic force constant driven by external lambda CV?
+  /// If true, update_k() should be called every step
+  bool b_dynamic_force_k = false;
 
   /// @brief Update the force constant by interpolating between initial and target
   virtual void update_k(cvm::real /* lambda */) {}
@@ -255,6 +260,16 @@ protected:
 
   /// \brief Exponent for varying the force constant
   cvm::real lambda_exp;
+
+  // --- Dynamic k driven by an external lambda colvar (extended-Lagrangian CV) ---
+  // Note: b_dynamic_force_k is defined in base class colvarbias_restraint_moving
+  std::string dynamic_force_k_lambda_cv_name;
+  colvar *dynamic_force_k_lambda_cv = nullptr;
+  cvm::real dynamic_force_k_exponent = 1.0;
+  cvm::real force_k_max = 0.0; // store k_max = user "forceConstant"
+  
+  // Apply thermodynamic force to lambda CV: F_lambda = - dU/dlambda
+  void apply_dynamic_lambda_force();
 
   /// \brief Increment of the force constant at each step
   cvm::real force_k_incr;
