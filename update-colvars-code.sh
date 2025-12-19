@@ -240,6 +240,7 @@ check_target_makefile() {
   local file=$1
   if [ -n "${GIT}" ] ; then
     if ! git -C $(dirname ${file}) diff --quiet ${file} ; then
+      echo "File ${file} was modified"
       updated_makefile=$((${updated_makefile} || 1))
     fi
   else
@@ -363,8 +364,11 @@ then
            > "${target}/colvars/src/Makefile.namd"
   check_target_makefile "${target}/colvars/src/Makefile.namd"
 
-  # TODO automatically generate the file below as well
-  condcopy "${source}/namd/colvars/Make.depends" "${target}/colvars/Make.depends"
+  # Optionally copy over the Colvars library's Make.depends
+  if [ -s "${source}/namd/colvars/Make.depends" ] ; then
+    condcopy "${source}/namd/colvars/Make.depends" "${target}/colvars/Make.depends"
+    check_target_makefile "${target}/colvars/Make.depends"
+  fi
 
   # Update NAMD interface files
   for src in \
@@ -425,7 +429,8 @@ then
 
   # One last check that each file is correctly included in the dependencies
   for file in ${target}/colvars/src/*.{cpp,h} ; do
-    if ! grep -q ${file} ${target}/colvars/Make.depends ; then
+    if ! grep -q ${file#${target}/} ${target}/colvars/Make.depends ; then
+      echo "File ${file#${target}/} is missing from the Colvars library's Make.depends"
       updated_makefile=1
     fi
   done
