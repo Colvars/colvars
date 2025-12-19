@@ -10,8 +10,7 @@ set -e
 LC_ALL=C
 export LC_ALL
 
-if [ -z "${GIT}" ] ; then
-  hash git
+if hash git >& /dev/null ; then
   GIT=$(hash -t git)
 fi
 
@@ -143,10 +142,6 @@ copy_lepton() {
 
   local target_path=${1}
 
-  if [ -z "${GIT}" ] && hash git 2> /dev/null ; then
-    local GIT=$(hash -t git)
-  fi
-
   if [ -d ${source}/openmm-source ] ; then
     OPENMM_SOURCE=${source}/openmm-source
   elif [ -d ${source}/../openmm-source ] ; then
@@ -236,32 +231,6 @@ condcopy() {
     fi
   fi
 }
-
-
-# Check files related to, but not part of the Colvars module
-checkfile() {
-  if [ $reverse -eq 1 ]
-  then
-    a=$2
-    b=$1
-  else
-    a=$1
-    b=$2
-  fi
-  diff -uNw "${a}" "${b}" > $(basename ${a}).diff
-  if [ -s $(basename ${a}).diff ]
-  then
-    echo "Differences found between ${a} and ${b} -- Check $(basename ${a}).diff and merge changes as needed, or use the -f flag."
-    if [ $force_update = 1 ]
-    then
-      echo "Overwriting ${b}, as requested by the -f flag."
-      cp "$a" "$b"
-    fi
-  else
-    rm -f $(basename ${a}).diff
-  fi
-}
-
 
 
 # Update LAMMPS tree
