@@ -772,7 +772,11 @@ int colvarbias_abf::replica_share_CZAR() {
 
   // Count of data items.
   // TODO: here with b_smoothed ?
-  size_t samples_n = z_samples->raw_data_num();
+  size_t samples_n;
+  if (smoothing)
+    samples_n = z_weights->raw_data_num();
+  else
+    samples_n = z_samples->raw_data_num();
   size_t gradients_n = z_gradients->raw_data_num();
 
   size_t samp_start = gradients_n*sizeof(cvm::real);
@@ -963,9 +967,9 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
 
   if (b_CZAR_estimator) {
     // Write eABF CZAR-related quantities
-    if (smoothing)
+    if (smoothing && z_weights_out != nullptr)
       write_grid_to_file<colvar_grid_scalar>(z_weights_out, prefix + ".zcount", close);
-    else
+    else if (smoothing && z_samples_out != nullptr)
       write_grid_to_file<colvar_grid_count>(z_samples_out, prefix + ".zcount", close);
     if (b_czar_window_file) {
       write_grid_to_file<colvar_grid_gradient>(z_gradients_out, prefix + ".zgrad", close);
@@ -975,7 +979,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     if (cvm::step_relative() > 0) {
       for (std::vector<int> iz_bin = czar_gradients_out->new_index();
             czar_gradients_out->index_ok(iz_bin); czar_gradients_out->incr(iz_bin)) {
-        if (smoothing) {
+        if (smoothing && z_weights_out != nullptr) {
           cvm::real weight = z_weights_out->value_output(iz_bin);
           czar_gradients_out->weights->set_value(iz_bin, weight);
 
