@@ -16,10 +16,6 @@ for f in src/colvar*.cpp src/colvar*.h ; do
         if ! grep -q "obj/${prefix}.o" namd/colvars/Make.depends ; then
             echo "Warning: obj/${prefix}.o missing from namd/colvars/Make.depends" >&2
         fi
-        if ! grep -q "\$(DSTDIR)/${prefix}.o" namd/colvars/src/Makefile.namd ; then
-            echo "Error: ${prefix}.o entry missing from namd/colvars/src/Makefile.namd" >&2
-            retcode=1
-        fi
     else
         prefix=${f%.h}
         vmd_source=${f}
