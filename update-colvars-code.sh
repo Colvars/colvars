@@ -390,14 +390,6 @@ then
   condcopy "${source}/colvartools/Makefile" \
            "${target}/lib/abf_integrate/Makefile"
 
-  # Is this a devel branch of NAMD 3?
-  if echo $NAMD_VERSION | grep -q '3.0a'
-  then
-    echo "Detected a devel version of NAMD 3:"
-    echo "Assuming version number below 2.14b1 to disable Volmaps"
-    sed -i 's/\#define\ NAMD_VERSION_NUMBER\ 34471681/\#define\ NAMD_VERSION_NUMBER\ 34471680/' ${target}/src/colvarproxy_namd.h
-  fi
-
   # Update replacement text for the Colvars manual
   condcopy "${source}/namd/ug/ug_colvars.tex" \
            "${target}/ug/ug_colvars.tex"
