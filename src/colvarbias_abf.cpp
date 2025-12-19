@@ -208,7 +208,7 @@ int colvarbias_abf::init(std::string const &conf)
     z_samples->request_actual_value();
     z_gradients.reset(new colvar_grid_gradient(colvars, z_samples));
     z_gradients->request_actual_value();
-    czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
+    czar_gradients.reset(new colvar_grid_gradient(colvars, z_samples));
   }
 
   get_keyval(conf, "integrate", b_integrate, num_variables() <= 3); // Integrate for output if d<=3
@@ -218,20 +218,22 @@ int colvarbias_abf::init(std::string const &conf)
       cvm::error("Error: cannot integrate free energy in dimension > 3.\n");
       return COLVARS_ERROR;
     }
-    pmf.reset(new colvargrid_integrate(colvars, gradients));
-    if (b_CZAR_estimator) {
-      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients));
-    }
-    if (shared_on) {
-      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
-    }
     // Parameters for integrating initial (and final) gradient data
     get_keyval(conf, "integrateMaxIterations", integrate_iterations, 10000, colvarparse::parse_silent);
     get_keyval(conf, "integrateTol", integrate_tol, 1e-6, colvarparse::parse_silent);
+    get_keyval(conf, "integrateWeighted", integrate_weighted, false, colvarparse::parse_silent);
     // Projected ABF, updating the integrated PMF on the fly
     get_keyval(conf, "pABFintegrateFreq", pabf_freq, 0, colvarparse::parse_silent);
     get_keyval(conf, "pABFintegrateMaxIterations", pabf_integrate_iterations, 100, colvarparse::parse_silent);
     get_keyval(conf, "pABFintegrateTol", pabf_integrate_tol, 1e-4, colvarparse::parse_silent);
+
+    pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted));
+    if (b_CZAR_estimator) {
+      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients));
+    }
+    if (shared_on) {
+      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted));
+    }
   }
 
   if (b_CZAR_estimator && shared_on && cvm::main()->proxy->replica_index() == 0) {
@@ -239,7 +241,7 @@ int colvarbias_abf::init(std::string const &conf)
     // Allocate grids for collected global data, on replica 0 only
     global_z_samples.reset(new colvar_grid_count(colvars, samples));
     global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-    global_czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
+    global_czar_gradients.reset(new colvar_grid_gradient(colvars, z_samples, samples));
     global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
   } else {
     // otherwise they are just aliases for the local CZAR grids
@@ -557,7 +559,7 @@ int colvarbias_abf::replica_share() {
     // in which case local arrays have not been initialized yet
     local_samples.reset(new colvar_grid_count(colvars, samples));
     local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
-    local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
+    local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted));
   }
   // Calculate the delta gradient and count for the local replica
   last_gradients->delta_grid(*gradients);
@@ -645,10 +647,8 @@ int colvarbias_abf::replica_share() {
     cvm::real err;
 
     // Update whole divergence field to account for newly shared gradients
-    pmf->set_div();
     pmf->integrate(integrate_iterations, integrate_tol, err);
     pmf->set_zero_minimum();
-    local_pmf->set_div();
     local_pmf->integrate(integrate_iterations, integrate_tol, err);
     local_pmf->set_zero_minimum();
     cvm::log("RMSD btw. local and global ABF FES: " + cvm::to_str(pmf->grid_rmsd(*local_pmf)));
@@ -677,7 +677,7 @@ int colvarbias_abf::replica_share_CZAR() {
       // overriding CZAR grids that are equal to local ones by default
       global_z_samples.reset(new colvar_grid_count(colvars, samples));
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-      global_czar_gradients.reset(new colvar_grid_gradient(colvars, nullptr, samples));
+      global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
       global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
     }
 
@@ -823,15 +823,15 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     if (b_czar_window_file) {
       write_grid_to_file<colvar_grid_gradient>(z_gradients_out, prefix + ".zgrad", close);
     }
-
     // Update the CZAR estimator of gradients, except at step 0
     // in which case we preserve any existing data (e.g. read via inputPrefix, used to join strata in stratified eABF)
     if (cvm::step_relative() > 0) {
       for (std::vector<int> iz_bin = czar_gradients_out->new_index();
             czar_gradients_out->index_ok(iz_bin); czar_gradients_out->incr(iz_bin)) {
+        unsigned long count = z_samples_out->value_output(iz_bin);
         for (size_t n = 0; n < czar_gradients_out->multiplicity(); n++) {
           czar_gradients_out->set_value(iz_bin, z_gradients_out->value_output(iz_bin, n)
-            - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n), n);
+            - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n) * static_cast<cvm::real>(count), n);
         }
       }
     }
@@ -840,7 +840,6 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     if (b_integrate) {
       // Do numerical integration (to high precision) and output a PMF
       cvm::real err;
-      czar_pmf_out->set_div();
       czar_pmf_out->integrate(integrate_iterations, integrate_tol, err);
       czar_pmf_out->set_zero_minimum();
       write_grid_to_file<colvar_grid_scalar>(czar_pmf_out, prefix + ".czar.pmf", close);
@@ -878,16 +877,6 @@ int colvarbias_abf::colvarbias_abf::local_sample_count(int radius) {
 int colvarbias_abf::read_gradients_samples()
 {
   int err = COLVARS_OK;
-  // Reading the CZAR gradients is necessary for joining strata in stratified eABF
-  std::unique_ptr<colvar_grid_gradient> czar_gradients_in;
-
-  if (b_CZAR_estimator) {
-    // CZAR gradients are usually computed as needed from z-gradients and z_samples
-    // Therefore the czar_gradients grid is not linked to a sampling grid
-    // Here we define a temporary czar_gradients grid linked to z_samples,
-    // to correctly average input gradients if overlapping
-    czar_gradients_in.reset(new colvar_grid_gradient(colvars, z_samples));
-  }
 
   for ( size_t i = 0; i < input_prefix.size(); i++ ) {
     std::string prefix = input_prefix[i];
@@ -904,17 +893,7 @@ int colvarbias_abf::read_gradients_samples()
       // Read eABF z-averaged data for CZAR
       err |= z_samples->read_multicol(prefix + ".zcount", "eABF z-histogram file", true);
       err |= z_gradients->read_multicol(prefix + ".zgrad", "eABF z-gradient file", true);
-      err |= czar_gradients_in->read_multicol(prefix + ".czar.grad", "eABF CZAR gradient file", true);
-    }
-  }
-
-  if (b_CZAR_estimator) {
-    // Now copy real CZAR gradients (divided by total count) to the final grid
-    for (std::vector<int> ix = czar_gradients->new_index();
-          czar_gradients->index_ok(ix); czar_gradients->incr(ix)) {
-      for (size_t n = 0; n < czar_gradients->multiplicity(); n++) {
-        czar_gradients->set_value(ix, czar_gradients_in->value_output(ix, n), n);
-      }
+      err |= czar_gradients->read_multicol(prefix + ".czar.grad", "eABF CZAR gradient file", true);
     }
   }
   return err;
