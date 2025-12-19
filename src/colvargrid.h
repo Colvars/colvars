@@ -1554,13 +1554,10 @@ public:
     else if (weights) {
       cvm::real weight = weights->value(ix);
       if (weight > 0) {
-        // cvm::log( "we use weights" + cvm::to_str(weight) );
-        // cvm::log("gradients is : [" + cvm::to_str(p[0]) + " " + cvm::to_str(p[1]) + "]");
         cvm::real invcount = 1.0 / weight;
         for (size_t i = 0; i < mult; i++) {
           v[i] = invcount * p[i];
         }
-        // cvm::log("gradients is : [" + cvm::to_str(v[0]) + " " + cvm::to_str(v[1]) + "]");
       } else {
         for (size_t i = 0; i < mult; i++) {
           v[i] = 0.0;
