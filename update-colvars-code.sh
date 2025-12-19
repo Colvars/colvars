@@ -10,9 +10,15 @@ set -e
 LC_ALL=C
 export LC_ALL
 
-if [ -z "${GIT}" ] ; then
-  hash git
+# Detect Git
+if [ -z "${GIT}" ] && hash git >& /dev/null ; then
   GIT=$(hash -t git)
+fi
+if [ -n "${GIT}" ] ; then
+  if [ ! -x "${GIT}" ] ; then
+    echo "Error: \$GIT variable defined, but its value is not an executable: \"$GIT\"" >&2
+    exit 1
+  fi
 fi
 
 if [ $# -lt 1 ]
@@ -31,11 +37,6 @@ EOF
    exit 1
 fi
 
-# Was the target Makefile changed?
-updated_makefile=0
-
-# Was the last file updated?
-updated_file=0
 
 force_update=0
 if [ $1 = "-f" ]
@@ -143,10 +144,6 @@ copy_lepton() {
 
   local target_path=${1}
 
-  if [ -z "${GIT}" ] && hash git 2> /dev/null ; then
-    local GIT=$(hash -t git)
-  fi
-
   if [ -d ${source}/openmm-source ] ; then
     OPENMM_SOURCE=${source}/openmm-source
   elif [ -d ${source}/../openmm-source ] ; then
@@ -220,8 +217,6 @@ condcopy() {
     b=$2
   fi
 
-  updated_file=0
-
   if [ -d $(dirname "$b") ]
   then
     if [ $checkonly -eq 1 ]
@@ -230,7 +225,6 @@ condcopy() {
     else
       if ! cmp -s "$a" "$b" ; then
         cp "$a" "$b"
-        updated_file=1
       fi
       echo -n '.'
     fi
@@ -238,30 +232,21 @@ condcopy() {
 }
 
 
-# Check files related to, but not part of the Colvars module
-checkfile() {
-  if [ $reverse -eq 1 ]
-  then
-    a=$2
-    b=$1
-  else
-    a=$1
-    b=$2
+# Set updated_makefile to 1 if file is changed
+check_target_makefile() {
+  if [ -z "${updated_makefile}" ] ; then
+    updated_makefile=0
   fi
-  diff -uNw "${a}" "${b}" > $(basename ${a}).diff
-  if [ -s $(basename ${a}).diff ]
-  then
-    echo "Differences found between ${a} and ${b} -- Check $(basename ${a}).diff and merge changes as needed, or use the -f flag."
-    if [ $force_update = 1 ]
-    then
-      echo "Overwriting ${b}, as requested by the -f flag."
-      cp "$a" "$b"
+  local file=$1
+  if [ -n "${GIT}" ] ; then
+    if ! git -C $(dirname ${file}) diff --quiet ${file} ; then
+      echo "File ${file} was modified"
+      updated_makefile=$((${updated_makefile} || 1))
     fi
   else
-    rm -f $(basename ${a}).diff
+    updated_makefile=1
   fi
 }
-
 
 
 # Update LAMMPS tree
@@ -347,13 +332,21 @@ if [ ${code} = "NAMD" ]
 then
   NAMD_VERSION=$(grep ^NAMD_VERSION ${target}/Makefile | cut -d' ' -f3)
 
+  updated_makefile=0
+
   if [ "x${UPDATE_LEPTON}" == "xyes" ] ; then
     echo -n "(note: updating Lepton)"
-    copy_lepton ${target}/ || exit 1
-    condcopy "${source}/namd/lepton/Make.depends" \
-             "${target}/lepton/Make.depends"
-    condcopy "${source}/namd/lepton/Makefile.namd" \
-             "${target}/lepton/Makefile.namd"
+
+    if ! copy_lepton ${target}/ ; then
+      echo "Error: in updating Lepton" >&2
+      exit 1
+    fi
+
+    condcopy "${source}/namd/lepton/Make.depends" "${target}/lepton/Make.depends"
+    check_target_makefile "${target}/lepton/Make.depends"
+
+    condcopy "${source}/namd/lepton/Makefile.namd" "${target}/lepton/Makefile.namd"
+    check_target_makefile "${target}/lepton/Makefile.namd"
   fi
 
   # Copy library files to the "colvars" folder
@@ -362,13 +355,20 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/colvars/src/${tgt}"
   done
-  condcopy "${source}/namd/colvars/src/Makefile.namd" \
-           "${target}/colvars/src/Makefile.namd"
-  if [ $updated_file = 1 ] ; then
-    updated_makefile=1
+
+  # Generate Makefile for library files
+  ${source}/devel-tools/generate-makefile.sh \
+           COLVARSSRCS '$(COLVARSSRCDIR)' \
+           COLVARSLIB '$(DSTDIR)' \
+           ${source}/src/*.cpp \
+           > "${target}/colvars/src/Makefile.namd"
+  check_target_makefile "${target}/colvars/src/Makefile.namd"
+
+  # Optionally copy over the Colvars library's Make.depends
+  if [ -s "${source}/namd/colvars/Make.depends" ] ; then
+    condcopy "${source}/namd/colvars/Make.depends" "${target}/colvars/Make.depends"
+    check_target_makefile "${target}/colvars/Make.depends"
   fi
-  condcopy "${source}/namd/colvars/Make.depends" \
-           "${target}/colvars/Make.depends"
 
   # Update NAMD interface files
   for src in \
@@ -421,14 +421,6 @@ then
   condcopy "${source}/colvartools/Makefile" \
            "${target}/lib/abf_integrate/Makefile"
 
-  # Is this a devel branch of NAMD 3?
-  if echo $NAMD_VERSION | grep -q '3.0a'
-  then
-    echo "Detected a devel version of NAMD 3:"
-    echo "Assuming version number below 2.14b1 to disable Volmaps"
-    sed -i 's/\#define\ NAMD_VERSION_NUMBER\ 34471681/\#define\ NAMD_VERSION_NUMBER\ 34471680/' ${target}/src/colvarproxy_namd.h
-  fi
-
   # Update replacement text for the Colvars manual
   condcopy "${source}/namd/ug/ug_colvars.tex" \
            "${target}/ug/ug_colvars.tex"
@@ -437,20 +429,21 @@ then
 
   # One last check that each file is correctly included in the dependencies
   for file in ${target}/colvars/src/*.{cpp,h} ; do
-    if [ ! -f ${target}/colvars/Make.depends ] || \
-       [ ! -f ${target}/lepton/Make.depends ] ; then
-      updated_makefile=1
-      break
-    fi
-    if ! grep -q ${file} ${target}/colvars/Make.depends ; then
+    if ! grep -q ${file#${target}/} ${target}/colvars/Make.depends ; then
+      echo "File ${file#${target}/} is missing from the Colvars library's Make.depends"
       updated_makefile=1
     fi
   done
 
-  if [ $updated_makefile = 1 ] ; then
+  if [ $updated_makefile != 0 ] ; then
     echo ""
     echo "  *************************************************"
-    echo "    Please run \"make depends\" in the NAMD tree."
+    if [ -n "${GIT}" ] ; then
+      echo "    NAMD Makefiles were modified from their Git version:"
+    else
+      echo "    NAMD Makefiles were probably modified:"
+    fi
+    echo "    please run \"make depends\" in the NAMD tree."
     echo "  *************************************************"
   fi
 
