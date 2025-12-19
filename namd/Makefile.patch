@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 960f7718..85126dff 100644
+index f824e77c..e589a680 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -231,6 +231,7 @@ OBJS = \
+@@ -239,6 +239,7 @@ OBJS = \
  	$(DSTDIR)/GlobalMasterTcl.o \
  	$(DSTDIR)/GlobalMasterSMD.o \
  	$(DSTDIR)/GlobalMasterTMD.o \
