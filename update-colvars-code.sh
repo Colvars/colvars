@@ -37,11 +37,6 @@ EOF
    exit 1
 fi
 
-# Was the target Makefile changed?
-updated_makefile=0
-
-# Was the last file updated?
-updated_file=0
 
 force_update=0
 if [ $1 = "-f" ]
@@ -222,8 +217,6 @@ condcopy() {
     b=$2
   fi
 
-  updated_file=0
-
   if [ -d $(dirname "$b") ]
   then
     if [ $checkonly -eq 1 ]
@@ -232,10 +225,25 @@ condcopy() {
     else
       if ! cmp -s "$a" "$b" ; then
         cp "$a" "$b"
-        updated_file=1
       fi
       echo -n '.'
     fi
+  fi
+}
+
+
+# Set updated_makefile to 1 if file is changed
+check_target_makefile() {
+  if [ -z "${updated_makefile}" ] ; then
+    updated_makefile=0
+  fi
+  local file=$1
+  if [ -n "${GIT}" ] ; then
+    if ! git -C $(dirname ${file}) diff --quiet ${file} ; then
+      updated_makefile=$((${updated_makefile} || 1))
+    fi
+  else
+    updated_makefile=1
   fi
 }
 
@@ -323,13 +331,21 @@ if [ ${code} = "NAMD" ]
 then
   NAMD_VERSION=$(grep ^NAMD_VERSION ${target}/Makefile | cut -d' ' -f3)
 
+  updated_makefile=0
+
   if [ "x${UPDATE_LEPTON}" == "xyes" ] ; then
     echo -n "(note: updating Lepton)"
-    copy_lepton ${target}/ || exit 1
-    condcopy "${source}/namd/lepton/Make.depends" \
-             "${target}/lepton/Make.depends"
-    condcopy "${source}/namd/lepton/Makefile.namd" \
-             "${target}/lepton/Makefile.namd"
+
+    if ! copy_lepton ${target}/ ; then
+      echo "Error: in updating Lepton" >&2
+      exit 1
+    fi
+
+    condcopy "${source}/namd/lepton/Make.depends" "${target}/lepton/Make.depends"
+    check_target_makefile "${target}/lepton/Make.depends"
+
+    condcopy "${source}/namd/lepton/Makefile.namd" "${target}/lepton/Makefile.namd"
+    check_target_makefile "${target}/lepton/Makefile.namd"
   fi
 
   # Copy library files to the "colvars" folder
@@ -338,13 +354,17 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/colvars/src/${tgt}"
   done
-  condcopy "${source}/namd/colvars/src/Makefile.namd" \
-           "${target}/colvars/src/Makefile.namd"
-  if [ $updated_file = 1 ] ; then
-    updated_makefile=1
-  fi
-  condcopy "${source}/namd/colvars/Make.depends" \
-           "${target}/colvars/Make.depends"
+
+  # Generate Makefile for library files
+  ${source}/devel-tools/generate-namd-makefile.sh \
+           COLVARSSRCS '$(COLVARSSRCDIR)' \
+           COLVARSLIB '$(DSTDIR)' \
+           ${source}/src/*.cpp \
+           > "${target}/colvars/src/Makefile.namd"
+  check_target_makefile "${target}/colvars/src/Makefile.namd"
+
+  # TODO automatically generate the file below as well
+  condcopy "${source}/namd/colvars/Make.depends" "${target}/colvars/Make.depends"
 
   # Update NAMD interface files
   for src in \
@@ -405,20 +425,20 @@ then
 
   # One last check that each file is correctly included in the dependencies
   for file in ${target}/colvars/src/*.{cpp,h} ; do
-    if [ ! -f ${target}/colvars/Make.depends ] || \
-       [ ! -f ${target}/lepton/Make.depends ] ; then
-      updated_makefile=1
-      break
-    fi
     if ! grep -q ${file} ${target}/colvars/Make.depends ; then
       updated_makefile=1
     fi
   done
 
-  if [ $updated_makefile = 1 ] ; then
+  if [ $updated_makefile != 0 ] ; then
     echo ""
     echo "  *************************************************"
-    echo "    Please run \"make depends\" in the NAMD tree."
+    if [ -n "${GIT}" ] ; then
+      echo "    NAMD Makefiles were modified from their Git version:"
+    else
+      echo "    NAMD Makefiles were probably modified:"
+    fi
+    echo "    please run \"make depends\" in the NAMD tree."
     echo "  *************************************************"
   fi
 
