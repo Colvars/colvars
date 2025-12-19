@@ -1,59 +1,281 @@
 diff --git a/Make.depends b/Make.depends
-index 994b3914..1d54373f 100644
+index 9f59cb57..4469c823 100644
 --- a/Make.depends
 +++ b/Make.depends
-@@ -6398,6 +6398,45 @@ obj/GlobalMasterTMD.o: \
- 	src/fitrms.h \
- 	src/Debug.h
+@@ -3667,16 +3667,6 @@ obj/ComputeMap.o: \
+ 	$(CXX) $(CXXFLAGS) $(COPTO)obj/ComputeMap.o $(COPTC) src/ComputeMap.C
+ obj/ComputeMgr.o: \
+ 	obj/.exists \
+-	colvars/src/colvarmodule.h \
+-	colvars/src/colvarmodule.h \
+-	colvars/src/colvarproxy.h \
+-	colvars/src/colvarproxy_io.h \
+-	colvars/src/colvarproxy_replicas.h \
+-	colvars/src/colvarproxy_system.h \
+-	colvars/src/colvarproxy_tcl.h \
+-	colvars/src/colvarproxy_volmaps.h \
+-	colvars/src/colvartypes.h \
+-	colvars/src/colvarvalue.h \
+ 	inc/BroadcastMgr.decl.h \
+ 	inc/ComputeCUDAMgr.decl.h \
+ 	inc/ComputeMgr.decl.h \
+@@ -3777,7 +3767,6 @@ obj/ComputeMgr.o: \
+ 	src/ComputeTclBC.h \
+ 	src/ComputeThole.h \
+ 	src/ComputeThole.inl \
+-	src/ConfigList.h \
+ 	src/Controller.h \
+ 	src/CudaComputeGBISKernel.h \
+ 	src/CudaComputeNonbonded.h \
+@@ -3857,7 +3846,6 @@ obj/ComputeMgr.o: \
+ 	src/Priorities.h \
+ 	src/ProcessorPrivate.h \
+ 	src/ProxyMgr.h \
+-	src/Random.h \
+ 	src/ReadAmberParm.h \
+ 	src/ReductionMgr.h \
+ 	src/ResizeArray.h \
+@@ -3880,7 +3868,6 @@ obj/ComputeMgr.o: \
+ 	src/UniqueSortedArray.h \
+ 	src/Vector.h \
+ 	src/WorkDistrib.h \
+-	src/colvarproxy_namd.h \
+ 	src/common.h \
+ 	src/dlloader.h \
+ 	src/fstream_namd.h \
+@@ -6430,6 +6417,40 @@ obj/GlobalMasterTMD.o: \
+ 	src/parm.h \
+ 	src/structures.h
  	$(CXX) $(CXXFLAGS) $(COPTO)obj/GlobalMasterTMD.o $(COPTC) src/GlobalMasterTMD.C
 +obj/GlobalMasterColvars.o: \
 +	obj/.exists \
-+	src/GlobalMasterColvars.C \
-+	src/Controller.h \
-+	src/common.h \
-+	src/Vector.h \
-+	src/Tensor.h \
-+	src/Lattice.h \
-+	src/NamdTypes.h \
-+	src/CudaRecord.h \
-+	src/HipDefines.h \
-+	src/ResizeArray.h \
-+	src/ResizeArrayRaw.h \
-+	src/fstream_namd.h \
-+	src/DataExchanger.h \
-+	src/main.h \
-+	inc/DataExchanger.decl.h \
-+	src/Pointer.h \
-+	src/GlobalMaster.h \
-+	src/GlobalMasterColvars.h \
-+	src/colvarproxy_namd.h \
-+	src/colvarproxy_namd_version.h \
-+	src/SimParameters.h \
-+	src/imd.h \
-+	src/MGridforceParams.h \
-+	src/GroupRestraintsParam.h \
-+	src/Random.h \
-+	src/ConfigList.h \
++	colvars/src/colvar_gpu_calc.h \
++	colvars/src/colvar_gpu_support.h \
++	colvars/src/colvarmodule.h \
 +	colvars/src/colvarmodule.h \
 +	colvars/src/colvarproxy.h \
-+	colvars/src/colvarmodule.h \
-+	colvars/src/colvartypes.h \
++	colvars/src/colvarproxy_gpu.h \
 +	colvars/src/colvarproxy_io.h \
 +	colvars/src/colvarproxy_replicas.h \
 +	colvars/src/colvarproxy_system.h \
 +	colvars/src/colvarproxy_tcl.h \
 +	colvars/src/colvarproxy_volmaps.h \
-+	colvars/src/colvarvalue.h
++	colvars/src/colvars_version.h \
++	colvars/src/colvartypes.h \
++	colvars/src/colvarvalue.h \
++	inc/Node.decl.h \
++	src/BOCgroup.h \
++	src/CudaRecord.h \
++	src/GlobalMaster.h \
++	src/GlobalMasterColvars.C \
++	src/GlobalMasterColvars.h \
++	src/HipDefines.h \
++	src/NamdTypes.h \
++	src/Node.h \
++	src/ProcessorPrivate.h \
++	src/ResizeArray.h \
++	src/ResizeArrayRaw.h \
++	src/Vector.h \
++	src/colvarproxy_namd.h \
++	src/colvarproxy_namd_version.h \
++	src/common.h \
++	src/main.h
 +	$(CXX) $(CXXFLAGS) $(COPTO)obj/GlobalMasterColvars.o $(COPTC) src/GlobalMasterColvars.C
  obj/Matrix4Symmetry.o: \
  	obj/.exists \
- 	src/Matrix4Symmetry.C \
-@@ -6637,6 +6676,8 @@ obj/colvarproxy_namd.o: \
- 	src/MStream.h \
+ 	src/CudaRecord.h \
+@@ -6637,8 +6658,11 @@ obj/colvarproxy_namd.o: \
+ 	obj/.exists \
+ 	colvars/src/colvar.h \
+ 	colvars/src/colvar.h \
++	colvars/src/colvar_gpu_calc.h \
++	colvars/src/colvar_gpu_support.h \
+ 	colvars/src/colvar_rotation_derivative.h \
+ 	colvars/src/colvaratoms.h \
++	colvars/src/colvaratoms_gpu.h \
+ 	colvars/src/colvarbias.h \
+ 	colvars/src/colvardeps.h \
+ 	colvars/src/colvarmodule.h \
+@@ -6646,148 +6670,57 @@ obj/colvarproxy_namd.o: \
+ 	colvars/src/colvarparams.h \
+ 	colvars/src/colvarparse.h \
+ 	colvars/src/colvarproxy.h \
+-	colvars/src/colvarproxy.h \
++	colvars/src/colvarproxy_gpu.h \
+ 	colvars/src/colvarproxy_io.h \
+ 	colvars/src/colvarproxy_replicas.h \
+ 	colvars/src/colvarproxy_system.h \
+ 	colvars/src/colvarproxy_tcl.h \
+ 	colvars/src/colvarproxy_volmaps.h \
+-	colvars/src/colvarscript.h \
+-	colvars/src/colvarscript_commands.h \
+-	colvars/src/colvarscript_commands_bias.h \
+-	colvars/src/colvarscript_commands_colvar.h \
++	colvars/src/colvars_version.h \
+ 	colvars/src/colvartypes.h \
+ 	colvars/src/colvarvalue.h \
+ 	colvars/src/colvarvalue.h \
+-	inc/BroadcastMgr.decl.h \
+-	inc/ComputeCUDAMgr.decl.h \
+-	inc/ComputeMgr.decl.h \
+ 	inc/DataExchanger.decl.h \
+-	inc/GlobalGPUMgr.decl.h \
+-	inc/LdbCoordinator.decl.h \
+-	inc/NamdCentLB.decl.h \
+-	inc/NamdDummyLB.decl.h \
+-	inc/NamdHybridLB.decl.h \
+ 	inc/Node.decl.h \
+-	inc/PatchData.decl.h \
+-	inc/PatchMgr.decl.h \
+-	inc/ProxyMgr.decl.h \
+-	inc/SynchronousCollectives.decl.h \
+-	inc/SynchronousCollectives.def.h \
  	plugins/include/molfile_plugin.h \
  	plugins/include/vmdplugin.h \
+-	src/AVXTiles.h \
+-	src/Array.h \
+-	src/AtomMap.h \
+ 	src/BOCgroup.h \
+-	src/BackEnd.h \
+-	src/Box.h \
+-	src/BroadcastClient.h \
+-	src/BroadcastMgr.h \
+-	src/BroadcastObject.h \
+-	src/CollectiveDeviceBuffer.h \
+-	src/Compute.h \
+-	src/ComputeAniso.h \
+-	src/ComputeAniso.inl \
+-	src/ComputeBondedCUDA.h \
+-	src/ComputeBondedCUDAKernel.h \
+-	src/ComputeCUDAMgr.h \
+-	src/ComputeConsForceCUDA.h \
+-	src/ComputeGridForceCUDA.h \
+-	src/ComputeGroupRestraintsCUDA.h \
+-	src/ComputeHomeTuples.h \
+-	src/ComputeLonepairsCUDA.h \
+-	src/ComputeMap.h \
+-	src/ComputeMgr.h \
+-	src/ComputeNonbondedUtil.h \
+-	src/ComputeOneFourNbTholes.h \
+-	src/ComputeRestraintsCUDA.h \
+-	src/ComputeSMDCUDA.h \
+-	src/ComputeSelfTuples.h \
+-	src/ComputeThole.h \
+-	src/ComputeThole.inl \
+ 	src/ConfigList.h \
+ 	src/Controller.h \
+-	src/CudaComputeGBISKernel.h \
+-	src/CudaComputeNonbonded.h \
+-	src/CudaComputeNonbondedKernel.h \
+-	src/CudaComputeNonbondedKernel.hip.h \
+-	src/CudaNonbondedTables.h \
+-	src/CudaPmeSolverUtil.h \
+-	src/CudaPmeSolverUtilKernel.h \
+ 	src/CudaRecord.h \
+-	src/CudaTileListKernel.h \
+-	src/CudaTileListKernel.hip.h \
+-	src/CudaUtils.h \
+ 	src/DataExchanger.h \
+ 	src/Debug.h \
+-	src/DevicePatchMap.h \
+-	src/GlobalGPUMgr.h \
+ 	src/GlobalMaster.h \
+-	src/GlobalMasterServer.h \
 +	src/GlobalMasterColvars.h \
-+	src/GlobalMaster.h \
+ 	src/GridForceGrid.h \
  	src/GridForceGrid.inl \
+-	src/GridforceGridCUDA.h \
+-	src/GridforceGridCUDAKernel.h \
+ 	src/GromacsTopFile.h \
+ 	src/GroupRestraintsParam.h \
+ 	src/HipDefines.h \
+-	src/HomePatch.h \
+-	src/HomePatchList.h \
+ 	src/Hydrogen.h \
+ 	src/InfoStream.h \
+ 	src/Lattice.h \
+-	src/LdbCoordinator.h \
+ 	src/MGridforceParams.h \
+-	src/MShakeKernel.h \
+ 	src/MStream.h \
+-	src/MathArray.h \
+-	src/MigrateAtomsMsg.h \
+-	src/Migration.h \
+-	src/MigrationBondedCUDAKernel.h \
+-	src/MigrationCUDAKernel.h \
+ 	src/Molecule.h \
+ 	src/NamdState.h \
+ 	src/NamdTypes.h \
+ 	src/Node.h \
+-	src/OwnerBox.h \
  	src/PDB.h \
+ 	src/PDBData.h \
+-	src/Parameters.h \
+-	src/Patch.h \
+-	src/PatchData.h \
+-	src/PatchMap.h \
+-	src/PatchMap.inl \
+-	src/PatchMgr.h \
+-	src/PatchTypes.h \
+-	src/PmeBase.h \
+-	src/PmeSolverUtil.h \
+ 	src/Pointer.h \
+-	src/Priorities.h \
+ 	src/ProcessorPrivate.h \
+-	src/ProxyMgr.h \
+ 	src/Random.h \
+ 	src/ReadAmberParm.h \
+ 	src/ReductionMgr.h \
+ 	src/ResizeArray.h \
+-	src/ResizeArrayIter.h \
+ 	src/ResizeArrayRaw.h \
+ 	src/ScriptTcl.h \
+-	src/Sequencer.h \
+-	src/SequencerCUDA.h \
+-	src/SequencerCUDAKernel.h \
+-	src/Settle.h \
+ 	src/SimParameters.h \
+ 	src/SortableResizeArray.h \
+-	src/SortedArray.h \
+-	src/SynchronousCollectives.h \
+ 	src/Tensor.h \
+-	src/TupleString.h \
+-	src/TupleTypesCUDA.h \
+ 	src/UniqueSet.h \
+-	src/UniqueSetIter.h \
+ 	src/UniqueSetRaw.h \
+-	src/UniqueSortedArray.h \
+ 	src/Vector.h \
+ 	src/colvarproxy_namd.C \
+ 	src/colvarproxy_namd.h \
+@@ -6797,10 +6730,7 @@ obj/colvarproxy_namd.o: \
+ 	src/imd.h \
+ 	src/main.h \
  	src/parm.h \
+-	src/strlib.h \
+-	src/structures.h \
+-	src/xxh3.h \
+-	src/xxhash.h
++	src/structures.h
+ 	$(CXX) $(COLVARSCXXFLAGS) $(COPTO)obj/colvarproxy_namd.o $(COPTC) src/colvarproxy_namd.C
+ obj/GridForceGrid.o: \
+ 	obj/.exists \
+@@ -9240,14 +9170,18 @@ obj/RefineTorusLB.o: \
+ 	$(CXX) $(CXXFLAGS) $(COPTO)obj/RefineTorusLB.o $(COPTC) src/RefineTorusLB.C
+ obj/ScriptTcl.o: \
+ 	obj/.exists \
++	colvars/src/colvar_gpu_calc.h \
++	colvars/src/colvar_gpu_support.h \
+ 	colvars/src/colvarmodule.h \
+ 	colvars/src/colvarmodule.h \
+ 	colvars/src/colvarproxy.h \
++	colvars/src/colvarproxy_gpu.h \
+ 	colvars/src/colvarproxy_io.h \
+ 	colvars/src/colvarproxy_replicas.h \
+ 	colvars/src/colvarproxy_system.h \
+ 	colvars/src/colvarproxy_tcl.h \
+ 	colvars/src/colvarproxy_volmaps.h \
++	colvars/src/colvars_version.h \
+ 	colvars/src/colvarscript.h \
+ 	colvars/src/colvarscript_commands.h \
+ 	colvars/src/colvarscript_commands_bias.h \
