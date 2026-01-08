@@ -61,6 +61,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
   cvm::real const h = l2 - 1.0;
   cvm::real const en2_r = (cvm::real) en2;
   cvm::real const ed2_r = (cvm::real) ed2;
+  cvm::real func_no_pairlist;
 
   if (std::abs(h) < eps_l2) {
     // Order-2 Taylor expansion: c0 + c1*h + c2*h^2
