@@ -17,18 +17,18 @@
 namespace neuralnetworkCV {
 std::map<std::string, std::pair<std::function<double(double)>, std::function<double(double)>>> activation_function_map
 {
-    {"tanh",     {[](double x){return std::tanh(x);},
-                  [](double x){return 1.0 - std::tanh(x) * std::tanh(x);}}},
-    {"sigmoid",  {[](double x){return 1.0 / (1.0 + std::exp(-x));},
-                  [](double x){return std::exp(-x) / ((1.0 + std::exp(-x)) * (1.0 + std::exp(-x)));}}},
+    {"tanh",     {[](double x){return cvm::tanh(x);},
+                  [](double x){return 1.0 - cvm::tanh(x) * cvm::tanh(x);}}},
+    {"sigmoid",  {[](double x){return 1.0 / (1.0 + cvm::exp(-x));},
+                  [](double x){return cvm::exp(-x) / ((1.0 + cvm::exp(-x)) * (1.0 + cvm::exp(-x)));}}},
     {"linear",   {[](double x){return x;},
                   [](double /*x*/){return 1.0;}}},
     {"relu",     {[](double x){return x < 0. ? 0. : x;},
                   [](double x){return x < 0. ? 0. : 1.;}}},
     {"lrelu100", {[](double x){return x < 0. ? 0.01 * x : x;},
                   [](double x){return x < 0. ? 0.01     : 1.;}}},
-    {"elu",      {[](double x){return x < 0. ? std::exp(x)-1. : x;},
-                  [](double x){return x < 0. ? std::exp(x)    : 1.;}}}
+    {"elu",      {[](double x){return x < 0. ? cvm::exp(x)-1. : x;},
+                  [](double x){return x < 0. ? cvm::exp(x)    : 1.;}}}
 };
 
 #ifdef LEPTON
