@@ -143,7 +143,7 @@ int colvarbias_opes::init(const std::string& conf) {
     }
     if (m_explore) {
       for (size_t i = 0; i < num_variables(); ++i) {
-        m_sigma0[i] *= std::sqrt(m_biasfactor);
+        m_sigma0[i] *= cvm::sqrt(m_biasfactor);
       }
     }
   }
@@ -158,22 +158,22 @@ int colvarbias_opes::init(const std::string& conf) {
       }
     }
   }
-  get_keyval(conf, "epsilon", m_epsilon, std::exp(-m_barrier/m_bias_prefactor/m_kbt));
+  get_keyval(conf, "epsilon", m_epsilon, cvm::exp(-m_barrier/m_bias_prefactor/m_kbt));
   if (m_epsilon <= 0) {
     return cvm::error("you must choose a value of epsilon greater than zero");
   }
-  m_sum_weights = std::pow(m_epsilon, m_bias_prefactor);
+  m_sum_weights = cvm::pow(m_epsilon, m_bias_prefactor);
   m_sum_weights2 = m_sum_weights * m_sum_weights;
   if (m_explore) {
-    get_keyval(conf, "kernelCutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_kbt));
+    get_keyval(conf, "kernelCutoff", m_cutoff, cvm::sqrt(2.0*m_barrier/m_kbt));
   } else {
-    get_keyval(conf, "kernelCutoff", m_cutoff, std::sqrt(2.0*m_barrier/m_bias_prefactor/m_kbt));
+    get_keyval(conf, "kernelCutoff", m_cutoff, cvm::sqrt(2.0*m_barrier/m_bias_prefactor/m_kbt));
   }
   if (m_cutoff <= 0) {
     return cvm::error("you must choose a value of kernelCutoff greater than zero");
   }
   m_cutoff2 = m_cutoff * m_cutoff;
-  m_val_at_cutoff = std::exp(-0.5 * m_cutoff2);
+  m_val_at_cutoff = cvm::exp(-0.5 * m_cutoff2);
   get_keyval(conf, "compressionThreshold", m_compression_threshold, 1);
   if (m_compression_threshold != 0) {
     if (m_compression_threshold < 0 || m_compression_threshold > m_cutoff) {
@@ -196,7 +196,7 @@ int colvarbias_opes::init(const std::string& conf) {
       if (nlist_param[0] <= 1.0) {
         return cvm::error("the first of neighborListParam must be greater than 1.0. The smaller the first, the smaller should be the second as well", COLVARS_INPUT_ERROR);
       }
-      const cvm::real min_PARAM_1 = (1.-1./std::sqrt(nlist_param[0]))+0.16;
+      const cvm::real min_PARAM_1 = (1.-1./cvm::sqrt(nlist_param[0]))+0.16;
       if (nlist_param[1] <= 0) {
         return cvm::error("the second of neighborListParam must be greater than 0", COLVARS_INPUT_ERROR);
       }
@@ -333,7 +333,7 @@ void colvarbias_opes::showInfo() const {
   }
   if (m_adaptive_sigma) {
     printInfo("adaptive sigma will be used, with adaptiveSigmaStride = ", cvm::to_str(m_adaptive_sigma_stride));
-    size_t x = std::ceil(m_adaptive_sigma_stride / m_pace);
+    size_t x = cvm::ceil(m_adaptive_sigma_stride / m_pace);
     printInfo("  thus the first x kernel depositions will be skipped, x = adaptiveSigmaStride/newHillFrequency = ", cvm::to_str(x));
   } else {
     std::string sigmas;
@@ -393,7 +393,7 @@ cvm::real colvarbias_opes::evaluateKernel(
       return 0;
     }
   }
-  return G.m_height * (std::exp(-0.5 * norm2) - m_val_at_cutoff);
+  return G.m_height * (cvm::exp(-0.5 * norm2) - m_val_at_cutoff);
 }
 
 cvm::real colvarbias_opes::evaluateKernel(
@@ -409,7 +409,7 @@ cvm::real colvarbias_opes::evaluateKernel(
       return 0;
     }
   }
-  const cvm::real val = G.m_height * (std::exp(-0.5 * norm2) - m_val_at_cutoff);
+  const cvm::real val = G.m_height * (cvm::exp(-0.5 * norm2) - m_val_at_cutoff);
   // The derivative of norm2 with respect to x
   for (size_t i = 0; i < num_variables(); ++i) {
     accumulated_derivative[i] -= val * dist[i] / G.m_sigma[i];
@@ -674,7 +674,7 @@ int colvarbias_opes::update_opes() {
           m_av_M2[i] *= m_biasfactor;
         }
         for (size_t i = 0; i < num_variables(); ++i) {
-          m_sigma0[i] = std::sqrt(m_av_M2[i] / m_adaptive_counter / factor);
+          m_sigma0[i] = cvm::sqrt(m_av_M2[i] / m_adaptive_counter / factor);
         }
         if (m_sigma_min.size() == 0) {
           for (size_t i = 0; i < num_variables(); ++i) {
@@ -690,7 +690,7 @@ int colvarbias_opes::update_opes() {
         }
       }
       for (size_t i = 0; i < num_variables(); ++i) {
-        sigma[i] = std::sqrt(m_av_M2[i] / m_adaptive_counter / factor);
+        sigma[i] = cvm::sqrt(m_av_M2[i] / m_adaptive_counter / factor);
       }
       if (m_sigma_min.size() == 0) {
         bool sigma_less_than_threshold = false;
@@ -713,7 +713,7 @@ int colvarbias_opes::update_opes() {
     if (!m_fixed_sigma) {
       const cvm::real size = m_explore ? m_counter : m_neff;
       const size_t ncv = num_variables();
-      const cvm::real s_rescaling = std::pow(size * (ncv + 2.0) / 4, -1.0 / (4.0 + ncv));
+      const cvm::real s_rescaling = cvm::pow(size * (ncv + 2.0) / 4, -1.0 / (4.0 + ncv));
       for (size_t i = 0; i < num_variables(); ++i) {
         sigma[i] *= s_rescaling;
       }
@@ -1356,21 +1356,21 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
     old_biasfactor = std::stod(old_biasfactor_str);
     m_inf_biasfactor = false;
   }
-  if (std::abs(old_biasfactor - m_biasfactor) > 1e-6 * m_biasfactor) {
+  if (cvm::fabs(old_biasfactor - m_biasfactor) > 1e-6 * m_biasfactor) {
     cvm::log("WARNING: previous bias factor was " + cvm::to_str(old_biasfactor) +
              " while now it is " + cvm::to_str(m_biasfactor) +
              " (the new one is used).\n");
   }
   cvm::real old_epsilon;
   readFieldReal("epsilon", old_epsilon);
-  if (std::abs(old_epsilon - m_epsilon) > 1e-6 * m_epsilon) {
+  if (cvm::fabs(old_epsilon - m_epsilon) > 1e-6 * m_epsilon) {
     cvm::log("WARNING: previous epsilon was " + cvm::to_str(old_epsilon) +
              " while now it is " + cvm::to_str(m_epsilon) +
              " (the new one is used).\n");
   }
   cvm::real old_cutoff;
   readFieldReal("kernel_cutoff", old_cutoff);
-  if (std::abs(old_cutoff - m_cutoff) > 1e-6 * m_cutoff) {
+  if (cvm::fabs(old_cutoff - m_cutoff) > 1e-6 * m_cutoff) {
     cvm::log("WARNING: previous cutoff was " + cvm::to_str(old_cutoff) +
              " while now it is " + cvm::to_str(m_cutoff) +
              " (the new one is used).\n");
@@ -1378,7 +1378,7 @@ template <typename IST> IST& colvarbias_opes::read_state_data_template_(IST &is)
   m_cutoff2 = m_cutoff * m_cutoff;
   cvm::real old_compression_threshold;
   readFieldReal("compression_threshold", old_compression_threshold);
-  if (std::abs(old_compression_threshold - m_compression_threshold) > 1e-6 * m_compression_threshold) {
+  if (cvm::fabs(old_compression_threshold - m_compression_threshold) > 1e-6 * m_compression_threshold) {
     cvm::log("WARNING: previous cutoff was " + cvm::to_str(old_compression_threshold) +
              " while now it is " + cvm::to_str(m_compression_threshold) +
              " (the new one is used).\n");
