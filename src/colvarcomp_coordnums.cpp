@@ -57,8 +57,16 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
 
   cvm::real const xn = cvm::integer_power(l2, en2);
   cvm::real const xd = cvm::integer_power(l2, ed2);
-  //The subtraction and division stretches the function back to the range of [0,1] from [pairlist_tol,1]
-  cvm::real const func_no_pairlist = (1.0-xn)/(1.0-xd);
+  cvm::real const eps = 1.0e-8;
+  cvm::real const h = l2 - 1.0;
+  cvm::real const en2_r = (cvm::real) en2;
+  cvm::real const ed2_r = (cvm::real) ed2;
+
+  // Function value: 1st-order Taylor expansion around l2 = 1
+  cvm::real const func_no_pairlist = (std::abs(h) < eps) ?
+    (en2_r / ed2_r) + h * (en2_r * (en2_r - ed2_r) / (2.0 * ed2_r)) :
+    (1.0 - xn) / (1.0 - xd);
+
   cvm::real func, inv_one_pairlist_tol;
   if (flags & ef_use_pairlist) {
     inv_one_pairlist_tol = 1 / (1.0-pairlist_tol);
@@ -77,23 +85,19 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
     return 0;
 
   if (flags & ef_gradients) {
-    //This is the old, completely correct expression for dFdl2:
-    //cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2) -
-    //                                        func*ed2*(xd/l2))*(-1.0);
-    //This can become:
-    //cvm::real const dFdl2 = (1.0/(1.0-xd))*(en2*(xn/l2)*(1.0-xn)/(1.0-xn) -
-    //                                        func*ed2*(xd/l2))*(-1.0);
-    //Recognizing that func = (1.0-xn)/(1.0-xd), we can group together the "func" and get a version of dFdl2 that is 0
-    //when func=0, which lets us skip this gradient calculation when func=0.
-    cvm::real dFdl2;
-    if (flags & ef_use_pairlist) {
-      dFdl2 = func_no_pairlist * inv_one_pairlist_tol * ((ed2*xd/((1.0-xd)*l2)) - (en2*xn/((1.0-xn)*l2)));
-    } else {
-      dFdl2 = func * ((ed2*xd/((1.0-xd)*l2)) - (en2*xn/((1.0-xn)*l2)));
-    }
+    // Logarithmic derivative: 1st-order Taylor expansion around l2 = 1
+    cvm::real const log_deriv = (std::abs(h) < eps) ?
+      0.5 * (en2_r - ed2_r) + h * ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0) / 12.0) :
+      ((ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2)));
+
+    cvm::real const dFdl2 = (flags & ef_use_pairlist) ?
+      func_no_pairlist * inv_one_pairlist_tol * log_deriv :
+      func * log_deriv;
+
     cvm::rvector const dl2dx((2.0 * inv_r0sq_vec.x) * diff.x,
                              (2.0 * inv_r0sq_vec.y) * diff.y,
                              (2.0 * inv_r0sq_vec.z) * diff.z);
+
     const cvm::rvector G = dFdl2*dl2dx;
     g1x += -1.0*G.x;
     g1y += -1.0*G.y;
