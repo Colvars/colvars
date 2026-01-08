@@ -62,10 +62,15 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
   cvm::real const en2_r = (cvm::real) en2;
   cvm::real const ed2_r = (cvm::real) ed2;
 
-  // Function value: 1st-order Taylor expansion around l2 = 1
-  cvm::real const func_no_pairlist = (cvm::fabs(h) < eps_l2) ?
-    (en2_r / ed2_r) + h * (en2_r * (en2_r - ed2_r) / (2.0 * ed2_r)) :
-    (1.0 - xn) / (1.0 - xd);
+  if (std::abs(h) < eps_l2) {
+    // Order-2 Taylor expansion: c0 + c1*h + c2*h^2
+    cvm::real const c0 = en2_r / ed2_r;
+    cvm::real const c1 = (en2_r * (en2_r - ed2_r)) / (2.0 * ed2_r);
+    cvm::real const c2 = (en2_r * (en2_r - ed2_r) * (2.0 * en2_r - ed2_r - 3.0)) / (12.0 * ed2_r);
+    func_no_pairlist = c0 + h * (c1 + h * c2);
+  } else {
+    func_no_pairlist = (1.0 - xn) / (1.0 - xd);
+  }
 
   cvm::real func, inv_one_pairlist_tol;
   if (flags & ef_use_pairlist) {
@@ -86,10 +91,14 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
 
   if (flags & ef_gradients) {
     // Logarithmic derivative: 1st-order Taylor expansion around l2 = 1
-    cvm::real const log_deriv = (cvm::fabs(h) < eps_l2) ?
-      0.5 * (en2_r - ed2_r) + h * ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0) / 12.0) :
-      ((ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2)));
-
+    cvm::real log_deriv;
+    if (std::abs(h) < eps_l2) {
+      cvm::real const g0 = 0.5 * (en2_r - ed2_r);
+      cvm::real const g1 = ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0)) / 12.0;
+      log_deriv = g0 + h * g1;
+    } else {
+      log_deriv = (ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2));
+    }
     cvm::real const dFdl2 = (flags & ef_use_pairlist) ?
       func_no_pairlist * inv_one_pairlist_tol * log_deriv :
       func * log_deriv;
