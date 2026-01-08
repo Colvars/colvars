@@ -127,6 +127,12 @@ public:
   }
 
   /// Reimplemented to work around MS compiler issues
+  static inline real ceil(real const &x)
+  {
+    return ::ceil(static_cast<double>(x));
+  }
+
+  /// Reimplemented to work around MS compiler issues
   static inline real fabs(real const &x)
   {
     return ::fabs(static_cast<double>(x));
@@ -193,6 +199,12 @@ static inline real acos(real const &x)
   static inline real atan2(real const &x, real const &y)
   {
     return ::atan2(static_cast<double>(x), static_cast<double>(y));
+  }
+
+  /// Reimplemented to work around MS compiler issues
+  static inline real tanh(real const &x)
+  {
+    return ::tanh(static_cast<double>(x));
   }
 
   /// Reimplemented to work around MS compiler issues
