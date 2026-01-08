@@ -63,7 +63,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
   cvm::real const ed2_r = (cvm::real) ed2;
 
   // Function value: 1st-order Taylor expansion around l2 = 1
-  cvm::real const func_no_pairlist = (std::abs(h) < eps_l2) ?
+  cvm::real const func_no_pairlist = (cvm::fabs(h) < eps_l2) ?
     (en2_r / ed2_r) + h * (en2_r * (en2_r - ed2_r) / (2.0 * ed2_r)) :
     (1.0 - xn) / (1.0 - xd);
 
@@ -86,7 +86,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
 
   if (flags & ef_gradients) {
     // Logarithmic derivative: 1st-order Taylor expansion around l2 = 1
-    cvm::real const log_deriv = (std::abs(h) < eps_l2) ?
+    cvm::real const log_deriv = (cvm::fabs(h) < eps_l2) ?
       0.5 * (en2_r - ed2_r) + h * ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0) / 12.0) :
       ((ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2)));
 

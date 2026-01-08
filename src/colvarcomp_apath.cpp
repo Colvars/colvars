@@ -149,7 +149,7 @@ int colvar::aspath::init(std::string const &conf)
     cvm::real p_lambda;
     get_keyval(conf, "lambda", p_lambda, -1.0);
     const size_t num_atoms = atoms->size();
-    std::vector<cvm::real> p_weights(num_atoms, std::sqrt(1.0 / num_atoms));
+    std::vector<cvm::real> p_weights(num_atoms, cvm::sqrt(1.0 / num_atoms));
     // ArithmeticPathCV::ArithmeticPathBase<cvm::atom_pos, cvm::real, ArithmeticPathCV::path_sz::S>::initialize(num_atoms, total_reference_frames, p_lambda, reference_frames[0], p_weights);
     if (impl_) impl_.reset();
     impl_ = std::unique_ptr<ArithmeticPathImpl>(new ArithmeticPathImpl(num_atoms, total_reference_frames, p_lambda, p_weights));
@@ -207,7 +207,7 @@ int colvar::azpath::init(std::string const &conf)
     cvm::real p_lambda;
     get_keyval(conf, "lambda", p_lambda, -1.0);
     const size_t num_atoms = atoms->size();
-    std::vector<cvm::real> p_weights(num_atoms, std::sqrt(1.0 / num_atoms));
+    std::vector<cvm::real> p_weights(num_atoms, cvm::sqrt(1.0 / num_atoms));
     if (impl_) impl_.reset();
     impl_ = std::unique_ptr<ArithmeticPathImpl>(new ArithmeticPathImpl(num_atoms, total_reference_frames, p_lambda, p_weights));
     cvm::log(std::string("Lambda is ") + cvm::to_str(impl_->get_lambda()) + std::string("\n"));
