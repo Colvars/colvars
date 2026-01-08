@@ -456,10 +456,9 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
   // next index to be looked up in PDB file (if list is supplied)
   std::vector<int>::const_iterator current_index = indices.begin();
 
-  FileSpec *tmpspec = new FileSpec();
-  tmpspec->autobonds = 0;
-  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", tmpspec);
-  delete tmpspec;
+  FileSpec tmpspec;
+  tmpspec.autobonds = 0;
+  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", &tmpspec);
   if (tmpmolid < 0) {
     cvm::error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
                COLVARS_FILE_ERROR);
@@ -572,10 +571,9 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
     return COLVARS_ERROR;
   }
 
-  FileSpec *tmpspec = new FileSpec();
-  tmpspec->autobonds = 0;
-  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", tmpspec);
-  delete tmpspec;
+  FileSpec tmpspec;
+  tmpspec.autobonds = 0;
+  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", &tmpspec);
 
   if (tmpmolid < 0) {
     cvm::error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
@@ -760,7 +758,7 @@ int colvarproxy_vmd::check_volmaps_available()
 }
 
 
-int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
+int colvarproxy_vmd::init_internal_volmap_by_id(int volmap_id)
 {
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
     if (volmaps_ids[i] == volmap_id) {
@@ -772,8 +770,10 @@ int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
 
   int index = -1;
 
-  int error_code = check_volmap_by_id(volmap_id);
-  if (error_code == COLVARS_OK) {
+  if ((volmap_id < 0) || (volmap_id >= vmdmol->num_volume_data())) {
+    cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
+               ") for map.\n", COLVARS_INPUT_ERROR);
+  } else {
     index = add_volmap_slot(volmap_id);
   }
 
@@ -781,13 +781,29 @@ int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
 }
 
 
-int colvarproxy_vmd::check_volmap_by_id(int volmap_id)
+int colvarproxy_vmd::load_internal_volmap_from_file(std::string const &filename)
 {
-  if ((volmap_id < 0) || (volmap_id >= vmdmol->num_volume_data())) {
-    return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
-                      ") for map.\n", COLVARS_INPUT_ERROR);
+  // For simplicity, we do not make distinctions between maps loaded using
+  // VMD commands vs. using Colvars input: both kinds of maps are loaded and
+  // managed by the Molecule object
+  for (size_t i = 0; i < volmaps_ids.size(); i++) {
+    if (volmaps_filenames[i] == filename) {
+      // this map has already been loaded
+      volmaps_refcount[i] += 1;
+      return i;
+    }
   }
-  return COLVARS_OK;
+
+  // Load a new map
+  FileSpec tmpspec;
+  tmpspec.autobonds = 0;
+  int tmpmolid = vmd->molecule_load(vmdmolid, filename.c_str(), "dx", &tmpspec);
+  int volmap_id = vmdmol->num_volume_data() - 1;
+
+  int index = add_volmap_slot(volmap_id);
+  volmaps_filenames[index] = filename;
+
+  return index;
 }
 
 
@@ -864,13 +880,14 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
 
 
 int colvarproxy_vmd::compute_volmap(int flags,
-                                    int volmap_id,
+                                    int index,
                                     cvm::atom_group* atoms,
                                     cvm::real *value,
                                     cvm::real *atom_field)
 {
   int error_code = COLVARS_OK;
-  VolumetricData const *voldata = vmdmol->get_volume_data(volmap_id);
+  int const volmap_id = volmaps_ids[index];
+  auto const *voldata = vmdmol->get_volume_data(volmap_id);
   if (voldata != NULL) {
 
     if (flags & volmap_flag_gradients) {
@@ -900,8 +917,8 @@ int colvarproxy_vmd::compute_volmap(int flags,
     }
   } else {
     // Error message
-    error_code |=
-      const_cast<colvarproxy_vmd *>(this)->check_volmap_by_id(volmap_id);
+    error_code |= cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
+                             ") for map.\n", COLVARS_INPUT_ERROR);
   }
   return error_code;
 }

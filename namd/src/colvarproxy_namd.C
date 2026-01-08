@@ -19,6 +19,7 @@
 #include "GridForceGrid.inl"
 #include "InfoStream.h"
 #include "Lattice.h"
+#include "MGridforceParams.h"
 #include "Molecule.h"
 #include "NamdState.h"
 #include "NamdTypes.h"
@@ -1350,112 +1351,154 @@ int colvarproxy_namd::check_volmaps_available()
 }
 
 
-int colvarproxy_namd::init_volmap_by_id(int volmap_id)
+int colvarproxy_namd::request_engine_volmap_by_id(int volmap_id)
 {
+  int const index = init_internal_volmap_by_id(volmap_id);
+
+  if (index >= 0) {
+    // Request the map from GlobalMaster
+    // may have been already flagged for internal use without being requested
+    request_globalmaster_volmap(volmap_id);
+    colvars->cite_feature("GridForces volumetric map implementation for NAMD");
+  }
+
+  return index;
+}
+
+
+int colvarproxy_namd::request_engine_volmap_by_name(std::string const &volmap_name)
+{
+  if (volmap_name.empty()) {
+    cvm::error("Error: no map name provided.", COLVARS_INPUT_ERROR);
+    return -1;
+  }
+
+  int index = init_internal_volmap_by_name(volmap_name);
+
+  if (index >= 0) {
+    request_globalmaster_volmap(volmaps_ids[index]);
+    colvars->cite_feature("GridForces volumetric map implementation for NAMD");
+  }
+
+  return index;
+}
+
+
+void colvarproxy_namd::request_globalmaster_volmap(int volmap_id)
+{
+  for (auto goi_i = globalmaster->getGridObjIndexBeginPublic();
+       goi_i != globalmaster->getGridObjIndexEndPublic(); goi_i++) {
+    if (*goi_i == volmap_id) {
+      // Map was already added to GlobalMaster
+      return;
+    }
+  }
+
+  // Check that the scale factor is correctly set to zero (ComputeGlobal relies on that)x
+  Molecule *mol = Node::Object()->molecule;
+  Vector const gfScale = mol->get_gridfrc_grid(volmap_id)->get_scale();
+  if ((gfScale.x != 0.0) || (gfScale.y != 0.0) || (gfScale.z != 0.0)) {
+    cvm::error("Error: GridForce map with numeric ID "+cvm::to_str(volmap_id)+
+               " has non-zero scale factors.\n", COLVARS_INPUT_ERROR);
+  }
+
+  globalmaster->modifyRequestedGridObjectsPublic().add(volmap_id);
+}
+
+
+int colvarproxy_namd::init_internal_volmap_by_id(int volmap_id)
+{
+  Molecule *mol = Node::Object()->molecule;
+  int index = -1;
+  if ((volmap_id < 0) || (volmap_id >= mol->numGridforceGrids)) {
+    cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+") for MGridForces map.\n",
+               COLVARS_INPUT_ERROR);
+    return -1;
+  } else {
+    for (size_t i = 0; i < volmaps_ids.size(); i++) {
+      if (volmaps_ids[i] == volmap_id) {
+        // this map has already been requested
+        volmaps_refcount[i] += 1;
+        index = i;
+        break;
+      }
+    }
+  }
+
+  if (index < 0) {
+    index = add_volmap_slot(volmap_id);
+    internal_gridforce_grids_.push_back(nullptr); // Not loading this map internally in Colvars
+    colvars->cite_feature("GridForces volumetric map implementation for NAMD");
+  }
+
+  return index;
+}
+
+
+int colvarproxy_namd::init_internal_volmap_by_name(std::string const &volmap_name)
+{
+  if (volmap_name.empty()) {
+    cvm::error("Error: no grid object name provided.", COLVARS_INPUT_ERROR);
+    return -1;
+  }
+
+  int volmap_id = simparams->mgridforcelist.index_for_key(volmap_name.c_str());
+  int index = -1;
+  if (volmap_id < 0) {
+    cvm::error("Error: cannot find a MGridForces map with the name \""+volmap_name+"\".\n",
+               COLVARS_INPUT_ERROR);
+  } else {
+    index = init_internal_volmap_by_id(volmap_id);
+  }
+
+  return index;
+}
+
+
+int colvarproxy_namd::load_internal_volmap_from_file(std::string const &filename)
+{
+  // Maps loaded internally in Colvars have their filename recorded
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
-    if (volmaps_ids[i] == volmap_id) {
-      // this map has already been requested
+    if (volmaps_filenames[i] == filename) {
+      // this map has already been loaded
       volmaps_refcount[i] += 1;
       return i;
     }
   }
 
-  int error_code = check_volmap_by_id(volmap_id);
-  int index = -1;
-  if (error_code == COLVARS_OK) {
-    index = add_volmap_slot(volmap_id);
-    globalmaster->modifyRequestedGridObjectsPublic().add(volmap_id);
-  }
+  auto *grid = new GridforceFullMainGrid(-1);
 
-  return (error_code == COLVARS_OK) ? index : -1;
-}
+  // Parameter set suitable for current Colvars use cases (single mapTotal CVs and Multi-Map)
+  MGridforceParams mgridParams;
+  mgridParams.gridforceCheckSize = FALSE;
+  mgridParams.gridforceCont[0] = mgridParams.gridforceCont[1] = mgridParams.gridforceCont[2] = TRUE;
 
+  grid->initialize(const_cast<char *>(filename.c_str()), simparams, &mgridParams, -1);
 
-int colvarproxy_namd::init_volmap_by_name(char const *volmap_name)
-{
-  if (volmap_name == NULL) {
-    return cvm::error("Error: no grid object name provided.", COLVARS_INPUT_ERROR);
-  }
+  int index = add_volmap_slot(-1);
+  volmaps_filenames[index] = filename;
+  internal_gridforce_grids_.push_back(std::unique_ptr<GridforceFullMainGrid>(grid));
 
-  int error_code = COLVARS_OK;
-
-  error_code |= check_volmap_by_name(volmap_name);
-
-  int index = -1;
-  if (error_code == COLVARS_OK) {
-
-    int volmap_id = simparams->mgridforcelist.index_for_key(volmap_name);
-
-    // Check that the scale factor is correctly set to zero
-    Molecule *mol = Node::Object()->molecule;
-    GridforceGrid const *grid = mol->get_gridfrc_grid(volmap_id);
-    Vector const gfScale = grid->get_scale();
-    if ((gfScale.x != 0.0) || (gfScale.y != 0.0) || (gfScale.z != 0.0)) {
-      error_code |= cvm::error("Error: GridForce map \""+
-                               std::string(volmap_name)+
-                               "\" has non-zero scale factors.\n",
-                               COLVARS_INPUT_ERROR);
-    }
-
-    for (size_t i = 0; i < volmaps_ids.size(); i++) {
-      if (volmaps_ids[i] == volmap_id) {
-        // this map has already been requested
-        volmaps_refcount[i] += 1;
-        return i;
-      }
-    }
-
-    index = add_volmap_slot(volmap_id);
-    globalmaster->modifyRequestedGridObjectsPublic().add(volmap_id);
-  }
-
-  return (error_code == COLVARS_OK) ? index : -1;
-}
-
-
-int colvarproxy_namd::check_volmap_by_id(int volmap_id)
-{
-  Molecule *mol = Node::Object()->molecule;
-  if ((volmap_id < 0) || (volmap_id >= mol->numGridforceGrids)) {
-    return cvm::error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
-                      ") for map.\n", COLVARS_INPUT_ERROR);
-  }
-  colvars->cite_feature("GridForces volumetric map implementation for NAMD");
-  return COLVARS_OK;
-}
-
-
-int colvarproxy_namd::check_volmap_by_name(char const *volmap_name)
-{
-  if (volmap_name == NULL) {
-    return cvm::error("Error: no grid object name provided.", COLVARS_INPUT_ERROR);
-  }
-  int volmap_id = simparams->mgridforcelist.index_for_key(volmap_name);
-  if (volmap_id < 0) {
-    return cvm::error("Error: invalid map name \""+std::string(volmap_name)+
-                      "\".\n", COLVARS_INPUT_ERROR);
-  }
-  colvars->cite_feature("GridForces volumetric map implementation for NAMD");
-  return COLVARS_OK;
+  return index;
 }
 
 
 void colvarproxy_namd::clear_volmap(int index)
 {
-  // TODO remove from GlobalMaster
   colvarproxy::clear_volmap(index);
-}
-
-
-int colvarproxy_namd::get_volmap_id_from_name(char const *volmap_name)
-{
-  int const volmap_id =
-    simparams->mgridforcelist.index_for_key(volmap_name);
-  if (volmap_id < 0) {
-    // Print error
-    check_volmap_by_name(volmap_name);
+  if (volmaps_refcount[index] == 0) {
+    int const volmap_id = volmaps_ids[index];
+    if (volmap_id >= 0) {
+      // Remove map from GlobalMaster
+      int const id_index_in_gm = globalmaster->modifyRequestedGridObjectsPublic().find(volmap_id);
+      if (id_index_in_gm >= 0) {
+        globalmaster->modifyRequestedGridObjectsPublic().del(id_index_in_gm, 1);
+      }
+    } else {
+      // Delete internal map
+      internal_gridforce_grids_[index].reset(nullptr);
+    }
   }
-  return volmap_id;
 }
 
 
@@ -1511,13 +1554,16 @@ void colvarproxy_namd::getGridForceGridValue(int flags,
 }
 
 int colvarproxy_namd::compute_volmap(int flags,
-                                     int volmap_id,
+                                     int index,
                                      cvm::atom_group* ag,
                                      cvm::real *value,
                                      cvm::real *atom_field)
 {
   Molecule *mol = Node::Object()->molecule;
-  GridforceGrid *grid = mol->get_gridfrc_grid(volmap_id);
+  // Pointer to NAMD_managed object if volmap_id >= 0, internal object otherwise
+  GridforceGrid *grid = volmaps_ids[index] >= 0 ?
+    mol->get_gridfrc_grid(volmaps_ids[index]) :
+    internal_gridforce_grids_[index].get();
   // Inheritance is not possible with GridForceGrid's design
   if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeFull) {
     GridforceFullMainGrid *g = dynamic_cast<GridforceFullMainGrid *>(grid);
