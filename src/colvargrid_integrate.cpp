@@ -85,7 +85,7 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
     divergence.clear();
     divergence.resize(computation_nt);
     if (weighted || nd > 3) {
-      if (weighted && !gradients->samples)
+      if (weighted && !gradients->samples && !gradients->weights)
         cvm::error("Error: Trying to perform weighted Poisson integration without a samples grid.", COLVARS_BUG_ERROR);
       prepare_calculations();
       // extrapolate_data(); // Potential enhancement, needs testing
@@ -970,9 +970,18 @@ void colvargrid_integrate::prepare_calculations()
 
     for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
          gradients->incr(ix)) {
-      size_t count = gradients->samples->value(ix);
+      cvm::real count;
+      if (gradients-> samples) {
+        count = gradients->samples->value(ix);
+      }
+      else if (gradients->weights) {
+        count = gradients->weights->value(ix);
+      }
+      else {
+        count = 1;
+      }
       if (count > 0) {
-        insert_into_sorted_list<size_t>(sorted_counts, count);
+        insert_into_sorted_list<cvm::real>(sorted_counts, count);
       }
     }
 
@@ -1036,12 +1045,20 @@ void colvargrid_integrate::prepare_calculations()
       }
     }
   }
+  is_calculations_prepared = true;
 }
 
 cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix)
 {
   cvm::real regularized_weight;
-  size_t count = gradients->samples->value(ix);
+  cvm::real count;
+
+  if (gradients->samples)
+    count = static_cast<cvm::real>(gradients->samples->value(ix));
+  else if (gradients->weights)
+    count = gradients->weights->value(ix);
+  else
+    return 1;
   if (count < lower_threshold_count) {
     regularized_weight = lower_threshold_count;
   } else if (count > upper_threshold_count) {
@@ -1054,7 +1071,13 @@ cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix)
 
 void colvargrid_integrate::get_regularized_grad(std::vector<cvm::real> &F, std::vector<int> &ix)
 {
-  size_t count = gradients->samples->value(ix);
+  cvm::real count;
+  if (gradients->samples)
+    count = static_cast<cvm::real>(gradients->samples->value(ix));
+  else if (gradients->weights)
+    count = gradients->weights->value(ix);
+  else
+    count = 1;
   gradients->vector_value(ix, F);
   cvm::real multiplier = 1.;
   if (count < min_count_F) {
@@ -1298,7 +1321,6 @@ cvm::real colvargrid_integrate::l2norm(const std::vector<cvm::real> &x)
       computation_grid->periodic = periodic;
       computation_grid->setup(computation_nx);
     }
-    cvm::log(cvm::to_str(nx[0]) + " " + "computation : " + cvm::to_str(computation_nx[0]));
 
 #ifdef _OPENMP
     m_num_threads = cvm::proxy->smp_num_threads();

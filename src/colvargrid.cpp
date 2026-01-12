@@ -16,320 +16,8 @@
 #include "colvargrid.h"
 #include "colvargrid_def.h"
 
-colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
-                                     std::string config)
-  : colvar_grid<size_t>(colvars, 0, 1, false, nullptr, config)
-{}
-
-colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
-                                     std::shared_ptr<const colvar_grid_params> params)
-  : colvar_grid<size_t>(colvars, 0, 1, false, params)
-{}
-
-colvar_grid_count::colvar_grid_count(std::string &filename)
-: colvar_grid<size_t>(filename, 1)
-{}
-
-std::string colvar_grid_count::get_state_params() const
-{
-  return colvar_grid<size_t>::get_state_params();
-}
-
-int colvar_grid_count::parse_params(std::string const &conf,
-                                    colvarparse::Parse_Mode const parse_mode)
-{
-  return colvar_grid<size_t>::parse_params(conf, parse_mode);
-}
-
-std::istream & colvar_grid_count::read_restart(std::istream &is)
-{
-  return colvar_grid<size_t>::read_restart(is);
-}
-
-cvm::memory_stream & colvar_grid_count::read_restart(cvm::memory_stream &is)
-{
-  return colvar_grid<size_t>::read_restart(is);
-}
-
-std::ostream & colvar_grid_count::write_restart(std::ostream &os)
-{
-  return colvar_grid<size_t>::write_restart(os);
-}
-
-cvm::memory_stream & colvar_grid_count::write_restart(cvm::memory_stream &os)
-{
-  return colvar_grid<size_t>::write_restart(os);
-}
-
-std::istream &colvar_grid_count::read_raw(std::istream &is)
-{
-  return colvar_grid<size_t>::read_raw(is);
-}
-
-cvm::memory_stream &colvar_grid_count::read_raw(cvm::memory_stream &is)
-{
-  return colvar_grid<size_t>::read_raw(is);
-}
-
-std::ostream &colvar_grid_count::write_raw(std::ostream &os, size_t const buf_size) const
-{
-  return colvar_grid<size_t>::write_raw(os, buf_size);
-}
-
-cvm::memory_stream &colvar_grid_count::write_raw(cvm::memory_stream &os,
-                                                 size_t const buf_size) const
-{
-  return colvar_grid<size_t>::write_raw(os, buf_size);
-}
-
-std::istream & colvar_grid_count::read_multicol(std::istream &is, bool add)
-{
-  return colvar_grid<size_t>::read_multicol(is, add);
-}
-
-int colvar_grid_count::read_multicol(std::string const &filename,
-                                     std::string description,
-                                     bool add)
-{
-  return colvar_grid<size_t>::read_multicol(filename, description, add);
-}
-
-std::ostream & colvar_grid_count::write_multicol(std::ostream &os) const
-{
-  return colvar_grid<size_t>::write_multicol(os);
-}
-
-int colvar_grid_count::write_multicol(std::string const &filename,
-                                      std::string description) const
-{
-  return colvar_grid<size_t>::write_multicol(filename, description);
-}
-
-std::ostream & colvar_grid_count::write_opendx(std::ostream &os) const
-{
-  return colvar_grid<size_t>::write_opendx(os);
-}
-
-int colvar_grid_count::write_opendx(std::string const &filename,
-                                    std::string description) const
-{
-  return colvar_grid<size_t>::write_opendx(filename, description);
-}
-
-
-
-colvar_grid_scalar::colvar_grid_scalar()
-  : colvar_grid<cvm::real>(), samples(NULL)
-{}
-
-colvar_grid_scalar::colvar_grid_scalar(colvar_grid_scalar const &g)
-  : colvar_grid<cvm::real>(g), samples(NULL)
-{
-}
-
-colvar_grid_scalar::colvar_grid_scalar(std::vector<colvar *> &colvars,
-                                       std::shared_ptr<const colvar_grid_params> params,
-                                       bool add_extra_bin,
-                                       std::string config)
-  : colvar_grid<cvm::real>(colvars, 0.0, 1, add_extra_bin, params, config), samples(NULL)
-{
-}
-
-colvar_grid_scalar::colvar_grid_scalar(std::string const &filename)
-  : colvar_grid<cvm::real>(filename, 1),
-    samples(nullptr)
-{
-}
-
-colvar_grid_scalar::~colvar_grid_scalar()
-{
-}
-
-std::string colvar_grid_scalar::get_state_params() const
-{
-  return colvar_grid<cvm::real>::get_state_params();
-}
-
-int colvar_grid_scalar::parse_params(std::string const &conf,
-                                    colvarparse::Parse_Mode const parse_mode)
-{
-  return colvar_grid<cvm::real>::parse_params(conf, parse_mode);
-}
-
-std::istream &colvar_grid_scalar::read_restart(std::istream &is)
-{
-  return colvar_grid<cvm::real>::read_restart(is);
-}
-
-cvm::memory_stream &colvar_grid_scalar::read_restart(cvm::memory_stream &is)
-{
-  return colvar_grid<cvm::real>::read_restart(is);
-}
-
-std::ostream &colvar_grid_scalar::write_restart(std::ostream &os)
-{
-  return colvar_grid<cvm::real>::write_restart(os);
-}
-
-cvm::memory_stream &colvar_grid_scalar::write_restart(cvm::memory_stream &os)
-{
-  return colvar_grid<cvm::real>::write_restart(os);
-}
-
-std::istream &colvar_grid_scalar::read_raw(std::istream &is)
-{
-  return colvar_grid<cvm::real>::read_raw(is);
-}
-
-cvm::memory_stream &colvar_grid_scalar::read_raw(cvm::memory_stream &is)
-{
-  return colvar_grid<cvm::real>::read_raw(is);
-}
-
-std::ostream &colvar_grid_scalar::write_raw(std::ostream &os, size_t const buf_size) const
-{
-  return colvar_grid<cvm::real>::write_raw(os, buf_size);
-}
-
-cvm::memory_stream &colvar_grid_scalar::write_raw(cvm::memory_stream &os,
-                                                  size_t const buf_size) const
-{
-  return colvar_grid<cvm::real>::write_raw(os, buf_size);
-}
-
-std::istream & colvar_grid_scalar::read_multicol(std::istream &is, bool add)
-{
-  return colvar_grid<cvm::real>::read_multicol(is, add);
-}
-
-int colvar_grid_scalar::read_multicol(std::string const &filename,
-                                      std::string description,
-                                      bool add)
-{
-  return colvar_grid<cvm::real>::read_multicol(filename, description, add);
-}
-
-std::ostream & colvar_grid_scalar::write_multicol(std::ostream &os) const
-{
-  return colvar_grid<cvm::real>::write_multicol(os);
-}
-
-int colvar_grid_scalar::write_multicol(std::string const &filename,
-                                       std::string description) const
-{
-  return colvar_grid<cvm::real>::write_multicol(filename, description);
-}
-
-std::ostream & colvar_grid_scalar::write_opendx(std::ostream &os) const
-{
-  return colvar_grid<cvm::real>::write_opendx(os);
-}
-
-int colvar_grid_scalar::write_opendx(std::string const &filename,
-                                     std::string description) const
-{
-  return colvar_grid<cvm::real>::write_opendx(filename, description);
-}
-
-
-cvm::real colvar_grid_scalar::maximum_value() const
-{
-  cvm::real max = data[0];
-  for (size_t i = 0; i < nt; i++) {
-    if (data[i] > max) max = data[i];
-  }
-  return max;
-}
-
-
-cvm::real colvar_grid_scalar::minimum_value() const
-{
-  cvm::real min = data[0];
-  for (size_t i = 0; i < nt; i++) {
-    if (data[i] < min) min = data[i];
-  }
-  return min;
-}
-
-cvm::real colvar_grid_scalar::minimum_pos_value() const
-{
-  cvm::real minpos = data[0];
-  size_t i;
-  for (i = 0; i < nt; i++) {
-    if(data[i] > 0) {
-      minpos = data[i];
-      break;
-    }
-  }
-  for (i = 0; i < nt; i++) {
-    if (data[i] > 0 && data[i] < minpos) minpos = data[i];
-  }
-  return minpos;
-}
-
-cvm::real colvar_grid_scalar::integral() const
-{
-  cvm::real sum = 0.0;
-  for (size_t i = 0; i < nt; i++) {
-    sum += data[i];
-  }
-  cvm::real bin_volume = 1.0;
-  for (size_t id = 0; id < widths.size(); id++) {
-    bin_volume *= widths[id];
-  }
-  return bin_volume * sum;
-}
-
-
-cvm::real colvar_grid_scalar::entropy() const
-{
-  cvm::real sum = 0.0;
-  for (size_t i = 0; i < nt; i++) {
-    if (data[i] >0) {
-      sum += -1.0 * data[i] * cvm::logn(data[i]);
-    }
-  }
-  cvm::real bin_volume = 1.0;
-  for (size_t id = 0; id < widths.size(); id++) {
-    bin_volume *= widths[id];
-  }
-  return bin_volume * sum;
-}
-
-/// \brief Return the RMSD between this grid's data and another one
-/// Grids must have the same dimensions.
-cvm::real colvar_grid_scalar::grid_rmsd(colvar_grid_scalar const &other_grid) const
-{
-  if (other_grid.data.size() != this->data.size()) {
-    cvm::error("Error: trying to subtract two grids with "
-                "different size.\n");
-    return -1.;
-  }
-
-  cvm::real sum2 = 0.0;
-
-  if (samples && other_grid.samples) {
-    for (size_t i = 0; i < data.size(); i++) {
-      size_t n = samples->get_value(i);
-      cvm::real us = n ? data[i] / n : 0.0;
-      n = other_grid.samples->get_value(i);
-      cvm::real them = n ? other_grid.data[i ] / n : 0.0;
-      cvm::real d = us - them;
-      sum2 += d*d;
-    }
-  } else {
-    for (size_t i = 0; i < data.size(); i++) {
-      cvm::real d = other_grid.data[i] - data[i];
-      sum2 += d*d;
-    }
-  }
-
-  return sqrt(sum2/this->data.size());
-}
-
-
 colvar_grid_gradient::colvar_grid_gradient()
-  : colvar_grid<cvm::real>(), samples(NULL)
+  : colvar_grid<cvm::real>(), samples(NULL), weights(NULL)
 {}
 
 
@@ -337,15 +25,26 @@ colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars,
                                            std::shared_ptr<colvar_grid_count> samples_in,
                                            std::shared_ptr<const colvar_grid_params> params,
                                            std::string config)
-  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params ? params : samples_in, config), samples(samples_in)
+  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params ? params : samples_in, config), samples(samples_in), weights(NULL)
 {
   if (samples_in)
     samples_in->has_parent_data = true;
 }
 
+colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars,
+                                           std::shared_ptr<colvar_grid_scalar> weights_in,
+                                           std::shared_ptr<const colvar_grid_params> params,
+                                           std::string config)
+  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params ? params : weights_in, config), samples(NULL), weights(weights_in)
+{
+  if (weights_in)
+    weights_in->has_parent_data = true;
+}
+
+
 colvar_grid_gradient::colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in)
   : colvar_grid<cvm::real>(filename, 0),
-    samples(samples_in)
+    samples(samples_in), weights(NULL)
 {
   // We have called the colvar_grid constructor, which doesn't know about samples
   if (samples) {
@@ -353,6 +52,21 @@ colvar_grid_gradient::colvar_grid_gradient(std::string const &filename, std::sha
     for (size_t i = 0; i < samples->data.size(); i++) {
       for (size_t a = 0; a < nd; a++) {
         data[i*nd+a] *= samples->data[i];
+      }
+    }
+  }
+}
+
+colvar_grid_gradient::colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_scalar> weights_in)
+  : colvar_grid<cvm::real>(filename, 0),
+    samples(NULL), weights(weights_in)
+{
+  // We have called the colvar_grid constructor, which doesn't know about samples
+  if (weights) {
+    // Need to multiply by weights
+    for (size_t i = 0; i < weights->data.size(); i++) {
+      for (size_t a = 0; a < nd; a++) {
+        data[i*nd+a] *= weights->data[i];
       }
     }
   }
@@ -475,7 +189,11 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
       size_t const samples_here = samples->value(ix);
       if (samples_here)
         integral += (value(ix) / cvm::real(samples_here) - corr) * cv[0]->width;
-    } else {
+    } else if (weights) {
+      size_t const weights_here = weights->value(ix);
+      if (weights_here)
+        integral += (value(ix) / cvm::real(weights_here) - corr) * cv[0]->width;
+    }else {
       integral += (value(ix) - corr) * cv[0]->width;
     }
 

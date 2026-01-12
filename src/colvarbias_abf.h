@@ -53,9 +53,9 @@ private:
   bool    b_integrate;
 
   /// Number of samples per bin before applying the full biasing force
-  size_t  full_samples;
+  cvm::real  full_samples;
   /// Number of samples per bin before applying a scaled-down biasing force
-  size_t  min_samples;
+  cvm::real  min_samples;
   /// Latest absolute time step at which history files were written
   cvm::step_number history_last_step;
   /// Write CZAR output file for stratified eABF (.zgrad)
@@ -90,11 +90,16 @@ private:
 
   /// Current bin in sample grid
   std::vector<int>  bin;
+  /// Current bin in sample grid
+  std::vector<cvm::real>  position;
   /// Current bin in force grid
   std::vector<int> force_bin;
+  /// Current position in force grid
+  std::vector<cvm::real>  force_position;
   /// Cuurent bin in "actual" coordinate, when running extended Lagrangian dynamics
   std::vector<int> z_bin;
-
+  /// Cuurent bin in "actual" coordinate, when running extended Lagrangian dynamics
+  std::vector<cvm::real> z_position;
   /// Measured instantaneous system force
   gradient_t system_force;
 
@@ -102,17 +107,22 @@ private:
   std::shared_ptr<colvar_grid_gradient> gradients;
   /// n-dim grid of number of samples
   std::shared_ptr<colvar_grid_count>    samples;
+  /// n-dim grid of sampling weights for smoothed ABF
+  std::shared_ptr<colvar_grid_scalar>    weights;
   /// n-dim grid of pmf (dimension 1 to 3)
   std::shared_ptr<colvargrid_integrate>  pmf;
   /// n-dim grid: average force on "real" coordinate for eABF z-based estimator
   std::shared_ptr<colvar_grid_gradient> z_gradients;
   /// n-dim grid of number of samples on "real" coordinate for eABF z-based estimator
   std::shared_ptr<colvar_grid_count>    z_samples;
+  std::shared_ptr<colvar_grid_scalar>    z_weights;
+
   /// n-dim grid containing CZAR estimator of "real" free energy gradients
   std::shared_ptr<colvar_grid_gradient> czar_gradients;
   /// n-dim grid of CZAR pmf (dimension 1 to 3)
   std::shared_ptr<colvargrid_integrate>  czar_pmf;
-
+  /// use kernel grid version of ABF ?
+  cvm::real smoothing;
   /// Calculate system force for all colvars
   int update_system_force();
 
@@ -139,17 +149,22 @@ private:
   // Data just after the last share (start of cycle) in shared ABF
   std::unique_ptr<colvar_grid_gradient> last_gradients;
   std::shared_ptr<colvar_grid_count>    last_samples;
+  std::shared_ptr<colvar_grid_scalar>    last_weights;
   // eABF/CZAR local data last shared
   std::unique_ptr<colvar_grid_gradient> z_gradients_in;
   std::shared_ptr<colvar_grid_count>    z_samples_in;
+  std::shared_ptr<colvar_grid_scalar>    z_weights_in;
+
   // ABF data from local replica only in shared ABF
   std::shared_ptr<colvar_grid_gradient> local_gradients;
   std::shared_ptr<colvar_grid_count>    local_samples;
+  std::shared_ptr<colvar_grid_scalar> local_weights;
   std::unique_ptr<colvargrid_integrate>  local_pmf;
   // eABF/CZAR data collected from all replicas in shared eABF on replica 0
   // if non-shared, aliases of regular CZAR grids, for output purposes
   std::shared_ptr<colvar_grid_gradient> global_z_gradients;
   std::shared_ptr<colvar_grid_count>    global_z_samples;
+  std::shared_ptr<colvar_grid_scalar>    global_z_weights;
   std::shared_ptr<colvar_grid_gradient> global_czar_gradients;
   std::shared_ptr<colvargrid_integrate>  global_czar_pmf;
 

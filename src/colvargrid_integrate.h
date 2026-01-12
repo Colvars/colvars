@@ -7,6 +7,7 @@
 /// Integrate (1D, 2D or 3D) gradients
 class colvargrid_integrate : public colvar_grid_scalar {
 public:
+
   colvargrid_integrate() {};
 
   virtual ~colvargrid_integrate()
@@ -45,6 +46,8 @@ public:
   void set_weighted_div();
 
   void set_div(){
+    if (!is_calculations_prepared)
+      prepare_calculations();
     if (weighted) set_weighted_div();
     else set_unweighted_div();
   };
@@ -90,7 +93,7 @@ protected:
   std::vector<cvm::real> weights;
   std::vector<cvm::real> regularized_weights;
   std::vector<cvm::real> laplacian_coefficients;
-  std::vector<size_t> sorted_counts;
+  std::vector<cvm::real> sorted_counts;
 
   /// Tunable parameters for weighted integration
   /// max and min count to regularize F, see user documentation
@@ -99,13 +102,15 @@ protected:
   /// max and min count to regularize the weights, see user documentation
   float lambda_max = 0.5f;
   float lambda_min = 0.1f;
-  size_t upper_threshold_count = 1;
-  size_t lower_threshold_count = 1;
+  cvm::real upper_threshold_count = 1;
+  cvm::real lower_threshold_count = 1;
 
   /// Number of threads for weighted integration
   /// sets itself to number of available OpenMP threads
   size_t m_num_threads = 1;
 
+
+  bool is_calculations_prepared = false;
   // Get G at a specific point where G is the gradient F if there is enough observation else it's F
   // multiplied by a coefficient < 1
   void get_regularized_grad(std::vector<cvm::real> &F, std::vector<int> &ix);

@@ -10,6 +10,7 @@
 #ifndef COLVARGRID_H
 #define COLVARGRID_H
 
+#include <algorithm>
 #include <iosfwd>
 #include <memory>
 
@@ -17,7 +18,6 @@
 #include "colvarmodule.h"
 #include "colvarvalue.h"
 #include "colvarparse.h"
-
 
 /// \brief Unified base class for grid of values of a function of several collective
 /// variables
@@ -65,7 +65,7 @@ public: // TODO create accessors for these after all instantiations work
   std::vector<T> data;
 
   /// Newly read data (used for count grids, when adding several grids read from disk)
-  std::vector<size_t> new_data;
+  std::vector<T> new_data;
 
   /// Colvars collected in this grid
   std::vector<colvar *> cv;
@@ -903,7 +903,7 @@ public:
   }
 
   /// Write the current grid parameters to a string
-  std::string get_state_params() const;
+  virtual std::string get_state_params() const;
 
   /// Read new grid parameters from a string
   int parse_params(std::string const &conf,
@@ -1004,323 +1004,49 @@ public:
 };
 
 
-
-/// \brief Colvar_grid derived class to hold counters in discrete
-/// n-dim colvar space
-class colvar_grid_count : public colvar_grid<size_t>
-{
-public:
-
-  /// Default constructor
-  colvar_grid_count();
-
-  /// Destructor
-  virtual ~colvar_grid_count()
-  {}
-
-  /// Constructor from a vector of colvars or a config string
-  colvar_grid_count(std::vector<colvar *>  &colvars,
-                    std::shared_ptr<const colvar_grid_params> params = nullptr);
-
-  colvar_grid_count(std::vector<colvar *>  &colvars,
-                    std::string            config);
-
-  /// Constructor from a multicol file
-  /// used by poisson_integrator
-  colvar_grid_count(std::string &filename);
-
-  /// Increment the counter at given position
-  inline void incr_count(std::vector<int> const &ix)
-  {
-    ++(data[this->address(ix)]);
-  }
-
-  /// \brief Get the binned count indexed by ix from the newly read data
-  inline size_t const & new_value(std::vector<int> const &ix)
-  {
-    return new_data[address(ix)];
-  }
-
-  /// Write the current grid parameters to a string
-  std::string get_state_params() const;
-
-  /// Read new grid parameters from a string
-  int parse_params(std::string const &conf,
-                   colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal);
-
-  /// Read all grid parameters and data from a formatted stream
-  std::istream & read_restart(std::istream &is);
-
-  /// Read all grid parameters and data from an unformatted stream
-  cvm::memory_stream & read_restart(cvm::memory_stream &is);
-
-  /// Write all grid parameters and data to a formatted stream
-  std::ostream & write_restart(std::ostream &os);
-
-  /// Write all grid parameters and data to an unformatted stream
-  cvm::memory_stream & write_restart(cvm::memory_stream &os);
-
-  /// Read all grid parameters and data from a formatted stream
-  std::istream &read_raw(std::istream &is);
-
-  /// Read all grid parameters and data from an unformatted stream
-  cvm::memory_stream &read_raw(cvm::memory_stream &is);
-
-  /// Write all grid data to a formatted stream (without labels, as they are represented in memory)
-  /// \param[in,out] os Stream object
-  /// \param[in] buf_size Number of values per line
-  std::ostream &write_raw(std::ostream &os, size_t const buf_size = 3) const;
-
-  /// Write all grid data to an unformatted stream
-  /// \param[in,out] os Stream object
-  /// \param[in] buf_size Number of values per line (note: ignored because there is no formatting)
-  cvm::memory_stream &write_raw(cvm::memory_stream &os, size_t const buf_size = 3) const;
-
-  /// Read a grid written by write_multicol(), incrementin if data is true
-  std::istream & read_multicol(std::istream &is, bool add = false);
-
-  /// Read a grid written by write_multicol(), incrementing if add is true
-  int read_multicol(std::string const &filename,
-                            std::string description = "grid file",
-                            bool add = false);
-
-  /// Write grid in a format which is both human-readable and gnuplot-friendly
-  std::ostream & write_multicol(std::ostream &os) const;
-
-  /// Write grid in a format which is both human-readable and gnuplot-friendly
-  int write_multicol(std::string const &filename,
-                     std::string description = "grid file") const;
-
-  /// Write the grid data without labels, as they are represented in memory
-  std::ostream & write_opendx(std::ostream &os) const;
-
-  /// Write the grid data without labels, as they are represented in memory
-  int write_opendx(std::string const &filename,
-                   std::string description = "grid file") const;
-
-  /// Enter or add a value, but also handle parent grid
-  virtual void value_input(std::vector<int> const &ix,
-                           size_t const &t,
-                           size_t const &imult = 0,
-                           bool add = false)
-  {
-    (void) imult;
-    if (add) {
-      data[address(ix)] += t;
-      if (this->has_parent_data) {
-        // save newly read data for inputting parent grid
-        new_data[address(ix)] = t;
-      }
-    } else {
-      data[address(ix)] = t;
-    }
-    has_data = true;
-  }
-
-  /// \brief Return the average number of samples in a given "radius" around current bin
-  /// Really a hypercube of length 2*radius + 1
-  inline int local_sample_count(int radius)
-  {
-    std::vector<int> ix0 = new_index();
-    std::vector<int> ix = new_index();
-
-    for (size_t i = 0; i < nd; i++) {
-      ix0[i] = current_bin_scalar_bound(i);
-    }
-    if (radius < 1) {
-      // Simple case: no averaging
-      if (index_ok(ix0))
-        return value(ix0);
-      else
-        return 0;
-    }
-    size_t count = 0;
-    size_t nbins = 0;
-    int i, j, k;
-    bool edge;
-    ix = ix0;
-    // Treat each dimension separately to simplify code
-    switch (nd)
-    {
-    case 1:
-      for (i = -radius; i <= radius; i++) {
-        ix[0] = ix0[0] + i;
-        edge = wrap_detect_edge(ix);
-        if (!edge) {
-          nbins++;
-          count += value(ix);
-        }
-      }
-      break;
-    case 2:
-      for (i = -radius; i <= radius; i++) {
-        ix[0] = ix0[0] + i;
-        for (j = -radius; j <= radius; j++) {
-          ix[1] = ix0[1] + j;
-          edge = wrap_detect_edge(ix);
-          if (!edge) {
-            nbins++;
-            count += value(ix);
-          }
-        }
-      }
-      break;
-    case 3:
-      for (i = -radius; i <= radius; i++) {
-        ix[0] = ix0[0] + i;
-        for (j = -radius; j <= radius; j++) {
-          ix[1] = ix0[1] + j;
-          for (k = -radius; k <= radius; k++) {
-            ix[2] = ix0[2] + k;
-            edge = wrap_detect_edge(ix);
-            if (!edge) {
-              nbins++;
-              count += value(ix);
-            }
-          }
-        }
-      }
-      break;
-    default:
-      cvm::error("Error: local_sample_count is not implemented for grids of dimension > 3", COLVARS_NOT_IMPLEMENTED);
-      break;
-    }
-
-    if (nbins)
-      // Integer division - an error on the order of 1 doesn't matter
-      return count / nbins;
-    else
-      return 0.0;
-  }
-
-
-  /// \brief Return the log-gradient from finite differences
-  /// on the *same* grid for dimension n
-  /// Order-1 centered difference, or order-2 difference on grid edges
-  inline cvm::real log_gradient_finite_diff(const std::vector<int> &ix0,
-                                            int n = 0, int offset = 0)
-  {
-    cvm::real Am1, A0, A1, A2; // values at locations -1, 0, +1, +2
-    std::vector<int> ix = ix0;
-
-    // TODO this can be rewritten more concisely with wrap_edge()
-    if (periodic[n]) {
-      ix[n]--; wrap(ix);
-      Am1 = value(ix) + offset;
-      ix = ix0; wrap(ix);
-      A0 = value(ix) + offset; // Used just to detect gaps
-      ix[n]++; wrap(ix);
-      A1 = value(ix) + offset;
-      if (Am1 * A0 * A1 == 0) {
-        return 0.; // can't handle 0, and don't compute derivative over a gap
-      } else {
-        return (cvm::logn(A1) - cvm::logn(Am1))
-          / (widths[n] * 2.);
-      }
-    } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
-      ix[n]--;
-      Am1 = value(ix) + offset;
-      ix = ix0;
-      A0 = value(ix) + offset;
-      ix[n]++;
-      A1 = value(ix) + offset;
-      if (Am1 * A0 * A1 == 0) {
-        return 0.; // can't handle 0, and don't compute derivative over a gap
-      } else {
-        return (cvm::logn(A1) - cvm::logn(Am1))
-          / (widths[n] * 2.);
-      }
-    } else {
-      // edge: use 2nd order derivative
-      int increment = (ix[n] == 0 ? 1 : -1);
-      // move right from left edge, or the other way around
-      A0 = value(ix) + offset;
-      ix[n] += increment; A1 = value(ix) + offset;
-      ix[n] += increment; A2 = value(ix) + offset;
-      if (A0 * A1 * A2 == 0) {
-        return 0.; // can't handle 0
-      } else {
-        return (-1.5 * cvm::logn(A0) + 2. * cvm::logn(A1)
-          - 0.5 * cvm::logn(A2)) * increment / widths[n];
-      }
-    }
-  }
-
-
-  /// \brief Return the gradient of discrete count from finite differences
-  /// on the *same* grid for dimension n
-  /// (colvar_grid_count)
-  inline cvm::real gradient_finite_diff(const std::vector<int> &ix0,
-                                        int n = 0)
-  {
-    cvm::real Am1, A0, A1, A2;
-    std::vector<int> ix = ix0;
-
-    // FIXME this can be rewritten more concisely with wrap_edge()
-    if (periodic[n]) {
-      ix[n]--; wrap(ix);
-      Am1 = value(ix);
-      ix = ix0; wrap(ix);
-      A0 = value(ix); // Used just to detect gaps
-      ix[n]++; wrap(ix);
-      A1 = value(ix);
-      if (Am1 * A0 * A1 == 0) {
-        return 0.; // can't handle empty bins
-      } else {
-        return (A1 - Am1) / (widths[n] * 2.);
-      }
-    } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
-      ix[n]--;
-      Am1 = value(ix);
-      ix = ix0;
-      A0 = value(ix);
-      ix[n]++;
-      A1 = value(ix);
-      if (Am1 * A0 * A1 == 0) {
-        return 0.; // can't handle empty bins
-      } else {
-        return (A1 - Am1) / (widths[n] * 2.);
-      }
-    } else {
-      // edge: use 2nd order derivative
-      int increment = (ix[n] == 0 ? 1 : -1);
-      // move right from left edge, or the other way around
-      A0 = value(ix);
-      ix[n] += increment; A1 = value(ix);
-      ix[n] += increment; A2 = value(ix);
-      return (-1.5 * A0 + 2. * A1
-          - 0.5 * A2) * increment / widths[n];
-    }
-  }
+enum class scalar_type {
+  real,
+  integer
 };
 
+template <scalar_type T>
+struct scalar_type_map;
 
-/// Class for accumulating a scalar function on a grid
-class colvar_grid_scalar : public colvar_grid<cvm::real>
+template <>
+struct scalar_type_map<scalar_type::real> {
+  using type = cvm::real;
+};
+
+template <>
+struct scalar_type_map<scalar_type::integer> {
+  using type = size_t;
+};
+
+template <scalar_type T>
+class colvar_grid_scalar_function : public colvar_grid<typename scalar_type_map<T>::type>
 {
 public:
-
-  /// \brief Provide the associated sample count by which each binned value
-  /// should be divided
-  std::shared_ptr<colvar_grid_count> samples;
-
+  using base_class = colvar_grid<typename scalar_type_map<T>::type>;
+  using scalar_type_class = typename scalar_type_map<T>::type;
   /// Default constructor
-  colvar_grid_scalar();
+  colvar_grid_scalar_function(): base_class(){};
 
   /// Copy constructor (needed because of the grad pointer)
-  colvar_grid_scalar(colvar_grid_scalar const &g);
+  colvar_grid_scalar_function(colvar_grid_scalar_function const &g) : base_class(g){};
+  colvar_grid_scalar_function(std::vector<colvar *>  &colvars,std::string config): base_class(colvars, 0, 1, false, nullptr,
+    config){};
 
   /// Destructor
-  virtual ~colvar_grid_scalar();
+  virtual ~colvar_grid_scalar_function(){};
 
   /// Constructor from a vector of colvars
-  colvar_grid_scalar(std::vector<colvar *> &colvars,
+  colvar_grid_scalar_function(std::vector<colvar *> &colvars,
                      std::shared_ptr<const colvar_grid_params> params = nullptr,
                      bool add_extra_bin = false,
-                     std::string config = std::string());
+                     std::string config = std::string()): base_class(colvars, 0.0, 1, add_extra_bin, params, config){};
 
   /// Constructor from a multicol file
-  colvar_grid_scalar(std::string const &filename);
+  colvar_grid_scalar_function(std::string const &filename):base_class(filename, 1){};
 
   /// Accumulate the value
   inline void acc_value(std::vector<int> const &ix,
@@ -1329,68 +1055,9 @@ public:
   {
     (void) imult;
     // only legal value of imult here is 0
-    data[address(ix)] += new_value;
-    if (samples)
-      samples->incr_count(ix);
-    has_data = true;
+    this->data[this->address(ix)] += new_value;
+    this->has_data = true;
   }
-
-  /// Write the current grid parameters to a string
-  std::string get_state_params() const;
-
-  /// Read new grid parameters from a string
-  int parse_params(std::string const &conf,
-                   colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal);
-
-  /// Read all grid parameters and data from a formatted stream
-  std::istream & read_restart(std::istream &is);
-
-  /// Read all grid parameters and data from an unformatted stream
-  cvm::memory_stream & read_restart(cvm::memory_stream &is);
-
-  /// Write all grid parameters and data to a formatted stream
-  std::ostream & write_restart(std::ostream &os);
-
-  /// Write all grid parameters and data to an unformatted stream
-  cvm::memory_stream & write_restart(cvm::memory_stream &os);
-
-  /// Read all grid parameters and data from a formatted stream
-  std::istream &read_raw(std::istream &is);
-
-  /// Read all grid parameters and data from an unformatted stream
-  cvm::memory_stream &read_raw(cvm::memory_stream &is);
-
-  /// Write all grid data to a formatted stream (without labels, as they are represented in memory)
-  /// \param[in,out] os Stream object
-  /// \param[in] buf_size Number of values per line
-  std::ostream &write_raw(std::ostream &os, size_t const buf_size = 3) const;
-
-  /// Write all grid data to an unformatted stream
-  /// \param[in,out] os Stream object
-  /// \param[in] buf_size Number of values per line (note: ignored because there is no formatting)
-  cvm::memory_stream &write_raw(cvm::memory_stream &os, size_t const buf_size = 3) const;
-
-  /// Read a grid written by write_multicol(), incrementin if data is true
-  std::istream & read_multicol(std::istream &is, bool add = false);
-
-  /// Read a grid written by write_multicol(), incrementing if add is true
-  int read_multicol(std::string const &filename,
-                    std::string description = "grid file",
-                    bool add = false);
-
-  /// Write grid in a format which is both human-readable and gnuplot-friendly
-  std::ostream & write_multicol(std::ostream &os) const;
-
-  /// Write grid in a format which is both human-readable and gnuplot-friendly
-  int write_multicol(std::string const &filename,
-                     std::string description = "grid file") const;
-
-  /// Write the grid data without labels, as they are represented in memory
-  std::ostream & write_opendx(std::ostream &os) const;
-
-  /// Write the grid data without labels, as they are represented in memory
-  int write_opendx(std::string const &filename,
-                   std::string description = "grid file") const;
 
   /// \brief Return the gradient of the scalar field from finite differences
   /// Input coordinates are those of gradient grid, shifted wrt scalar grid
@@ -1402,19 +1069,19 @@ public:
     std::vector<int> ix;
     size_t i, j, k, n;
 
-    if (nd == 2) {
+     if (this->nd == 2) {
       for (n = 0; n < 2; n++) {
         ix = ix0;
-        A0 = value(ix);
-        ix[n]++; wrap(ix);
-        A1 = value(ix);
-        ix[1-n]++; wrap(ix);
-        A1 += value(ix);
-        ix[n]--; wrap(ix);
-        A0 += value(ix);
-        grad[n] = 0.5 * (A1 - A0) / widths[n];
+        A0 = this->value(ix);
+        ix[n]++; this->wrap(ix);
+        A1 = this->value(ix);
+        ix[1-n]++; this->wrap(ix);
+        A1 += this->value(ix);
+        ix[n]--; this->wrap(ix);
+        A0 += this->value(ix);
+        grad[n] = 0.5 * (A1 - A0) / this->widths[n];
       }
-    } else if (nd == 3) {
+    } else if (this->nd == 3) {
 
       cvm::real p[8]; // potential values within cube, indexed in binary (4 i + 2 j + k)
       ix = ix0;
@@ -1424,8 +1091,8 @@ public:
         for (j = 0; j<2; j++) {
           ix[2] = ix0[2];
           for (k = 0; k<2; k++) {
-            wrap(ix);
-            p[index++] = value(ix);
+            this->wrap(ix);
+            p[index++] = this->value(ix);
             ix[2]++;
           }
           ix[1]++;
@@ -1435,11 +1102,11 @@ public:
 
       // The following would be easier to read using binary literals
       //                  100    101    110    111      000    001    010   011
-      grad[0] = 0.25 * ((p[4] + p[5] + p[6] + p[7]) - (p[0] + p[1] + p[2] + p[3])) / widths[0];
+      grad[0] = 0.25 * ((p[4] + p[5] + p[6] + p[7]) - (p[0] + p[1] + p[2] + p[3])) / this->widths[0];
       //                  010     011    110   111      000    001    100   101
-      grad[1] = 0.25 * ((p[2] + p[3] + p[6] + p[7]) - (p[0] + p[1] + p[4] + p[5])) / widths[1];
+      grad[1] = 0.25 * ((p[2] + p[3] + p[6] + p[7]) - (p[0] + p[1] + p[4] + p[5])) / this->widths[1];
       //                  001    011     101   111      000    010   100    110
-      grad[2] = 0.25 * ((p[1] + p[3] + p[5] + p[7]) - (p[0] + p[2] + p[4] + p[6])) / widths[2];
+      grad[2] = 0.25 * ((p[1] + p[3] + p[5] + p[7]) - (p[0] + p[2] + p[4] + p[6])) / this->widths[2];
     } else {
       cvm::error("Finite differences available in dimension 2 and 3 only.");
     }
@@ -1456,42 +1123,42 @@ public:
     std::vector<int> ix = ix0;
 
     // TODO this can be rewritten more concisely with wrap_edge()
-    if (periodic[n]) {
-      ix[n]--; wrap(ix);
-      A0 = value(ix) + offset;
+    if (this->periodic[n]) {
+      ix[n]--; this->wrap(ix);
+      A0 = this->value(ix) + offset;
       ix = ix0;
-      ix[n]++; wrap(ix);
-      A1 = value(ix) + offset;
+      ix[n]++; this->wrap(ix);
+      A1 = this->value(ix) + offset;
       if (A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
         return (cvm::logn(A1) - cvm::logn(A0))
-          / (widths[n] * 2.);
+          / (this->widths[n] * 2.);
       }
-    } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
+    } else if (ix[n] > 0 && ix[n] < this->nx[n]-1) { // not an edge
       ix[n]--;
-      A0 = value(ix) + offset;
+      A0 = this->value(ix) + offset;
       ix = ix0;
       ix[n]++;
-      A1 = value(ix) + offset;
+      A1 = this->value(ix) + offset;
       if (A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
         return (cvm::logn(A1) - cvm::logn(A0))
-          / (widths[n] * 2.);
+          / (this->widths[n] * 2.);
       }
     } else {
       // edge: use 2nd order derivative
       int increment = (ix[n] == 0 ? 1 : -1);
       // move right from left edge, or the other way around
-      A0 = value(ix) + offset;
-      ix[n] += increment; A1 = value(ix) + offset;
-      ix[n] += increment; A2 = value(ix) + offset;
+      A0 = this->value(ix) + offset;
+      ix[n] += increment; A1 = this->value(ix) + offset;
+      ix[n] += increment; A2 = this->value(ix) + offset;
       if (A0 * A1 * A2 == 0) {
         return 0.; // can't handle empty bins
       } else {
         return (-1.5 * cvm::logn(A0) + 2. * cvm::logn(A1)
-          - 0.5 * cvm::logn(A2)) * increment / widths[n];
+          - 0.5 * cvm::logn(A2)) * increment / this->widths[n];
       }
     }
   }
@@ -1507,68 +1174,63 @@ public:
     std::vector<int> ix = ix0;
 
     // FIXME this can be rewritten more concisely with wrap_edge()
-    if (periodic[n]) {
-      ix[n]--; wrap(ix);
-      Am1 = value(ix);
-      ix = ix0; wrap(ix);
-      A0 = value(ix); // Used just to detect gaps
-      ix[n]++; wrap(ix);
-      A1 = value(ix);
+    if (this->periodic[n]) {
+      ix[n]--; this->wrap(ix);
+      Am1 = this->value(ix);
+      ix = ix0; this->wrap(ix);
+      A0 = this->value(ix); // Used just to detect gaps
+      ix[n]++; this->wrap(ix);
+      A1 = this->value(ix);
       if (Am1 * A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (A1 - Am1) / (widths[n] * 2.);
+        return (A1 - Am1) / (this->widths[n] * 2.);
       }
-    } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
+    } else if (ix[n] > 0 && ix[n] < this->nx[n]-1) { // not an edge
       ix[n]--;
-      Am1 = value(ix);
+      Am1 = this->value(ix);
       ix = ix0;
-      A0 = value(ix);
+      A0 = this->value(ix);
       ix[n]++;
-      A1 = value(ix);
+      A1 = this->value(ix);
       if (Am1 * A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (A1 - Am1) / (widths[n] * 2.);
+        return (A1 - Am1) / (this->widths[n] * 2.);
       }
     } else {
       // edge: use 2nd order derivative
       int increment = (ix[n] == 0 ? 1 : -1);
       // move right from left edge, or the other way around
-      A0 = value(ix);
-      ix[n] += increment; A1 = value(ix);
-      ix[n] += increment; A2 = value(ix);
+      A0 = this->value(ix);
+      ix[n] += increment; A1 = this->value(ix);
+      ix[n] += increment; A2 = this->value(ix);
       return (-1.5 * A0 + 2. * A1
-          - 0.5 * A2) * increment / widths[n];
+          - 0.5 * A2) * increment / this->widths[n];
     }
   }
 
-
+  using base_class::value_output;
   /// \brief Return the value of the function at ix divided by its
   /// number of samples (if the count grid is defined)
-  virtual inline cvm::real value_output(std::vector<int> const &ix,
-                                        size_t const &imult = 0) const override
+  inline scalar_type_class value_output(std::vector<int> const &ix,
+                                        size_t const &imult = 0) const
   {
-    int s;
     if (imult > 0) {
       cvm::error("Error: trying to access a component "
                  "larger than 1 in a scalar data grid.\n");
       return 0.;
     }
-    if (samples) {
-      return ( (s = samples->value(ix)) > 0) ?
-        (data[address(ix) + imult] / cvm::real(s)) :
-        0.0;
-    } else {
-      return data[address(ix) + imult];
+    else {
+      return this->data[this->address(ix) + imult];
     }
   }
-
+  using base_class::value_input;
   /// Enter or add value but also deal with count grid
-  virtual void value_input(std::vector<int> const &ix,
+  void value_input(std::vector<int> const &ix,
                            cvm::real const &new_value,
                            size_t const &imult = 0,
-                           bool add = false) override
+                           bool add = false)
   {
     if (imult > 0) {
       cvm::error("Error: trying to access a component "
@@ -1576,42 +1238,193 @@ public:
       return;
     }
     if (add) {
-      if (samples)
-        // Special case if samples == 0 and value != 0
-        data[address(ix)] += new_value * samples->new_value(ix);
-      else
-        data[address(ix)] += new_value;
+        this->data[this->address(ix)] += new_value;
+        if (this->has_parent_data) {
+          // save newly read data for inputting parent grid
+          this->new_data[this->address(ix)] = static_cast<scalar_type_class>(new_value);
+        }
     } else {
-      if (samples)
-        data[address(ix)] = new_value * samples->value(ix);
-      else
-        data[address(ix)] = new_value;
+        this->data[this->address(ix)] = new_value;
     }
-    has_data = true;
+    this->has_data = true;
   }
 
+
   /// \brief Return the highest value
-  cvm::real maximum_value() const;
+  cvm::real maximum_value() const{
+    cvm::real max = this->data[0];
+    for (size_t i = 0; i < this->nt; i++) {
+      if (this->data[i] > max)
+        max = this->data[i];
+    }
+    return max;
+  };
 
   /// \brief Return the lowest value
-  cvm::real minimum_value() const;
+  cvm::real minimum_value() const{
+    cvm::real min = this->data[0];
+    for (size_t i = 0; i < this->nt; i++) {
+      if (this->data[i] < min)
+        min = this->data[i];
+    }
+    return min;
+  };
 
   /// \brief Return the lowest positive value
-  cvm::real minimum_pos_value() const;
+  cvm::real minimum_pos_value() const{
+    cvm::real minpos = this->data[0];
+    size_t i;
+    for (i = 0; i < this->nt; i++) {
+      if (this->data[i] > 0) {
+        minpos = this->data[i];
+        break;
+      }
+    }
+    for (i = 0; i < this->nt; i++) {
+      if (this->data[i] > 0 && this->data[i] < minpos)
+        minpos = this->data[i];
+    }
+    return minpos;
+  };
 
   /// \brief Calculates the integral of the map (uses widths if they are defined)
-  cvm::real integral() const;
+  cvm::real integral() const{
+    cvm::real sum = 0.0;
+    for (size_t i = 0; i < this->nt; i++) {
+      sum += this->data[i];
+    }
+    cvm::real bin_volume = 1.0;
+    for (size_t id = 0; id < this->widths.size(); id++) {
+      bin_volume *= this->widths[id];
+    }
+    return bin_volume * sum;
+  };
 
   /// \brief Assuming that the map is a normalized probability density,
   ///        calculates the entropy (uses widths if they are defined)
-  cvm::real entropy() const;
+  cvm::real entropy() const{
+    cvm::real sum = 0.0;
+    for (size_t i = 0; i < this->nt; i++) {
+      if (this->data[i] > 0) {
+        sum += -1.0 * this->data[i] * cvm::logn(this->data[i]);
+      }
+    }
+    cvm::real bin_volume = 1.0;
+    for (size_t id = 0; id < this->widths.size(); id++) {
+      bin_volume *= this->widths[id];
+    }
+    return bin_volume * sum;
+  };
+
+  /// \brief Return the average number of samples in a given "radius" around current bin
+  /// Really a hypercube of length 2*radius + 1
+  inline int local_sample_count(int radius)
+  {
+    std::vector<int> ix0 = this->new_index();
+    std::vector<int> ix = this->new_index();
+
+    for (size_t i = 0; i < this->nd; i++) {
+      ix0[i] = this->current_bin_scalar_bound(i);
+    }
+    if (radius < 1) {
+      // Simple case: no averaging
+      if (this->index_ok(ix0))
+        return this->value(ix0);
+      else
+        return 0;
+    }
+    scalar_type_class count = 0;
+    size_t nbins = 0;
+    int i, j, k;
+    bool edge;
+    ix = ix0;
+    // Treat each dimension separately to simplify code
+    switch (this->nd)
+    {
+      case 1:
+        for (i = -radius; i <= radius; i++) {
+          ix[0] = ix0[0] + i;
+          edge = this->wrap_detect_edge(ix);
+          if (!edge) {
+            nbins++;
+            count += this->value(ix);
+          }
+        }
+        break;
+      case 2:
+        for (i = -radius; i <= radius; i++) {
+          ix[0] = ix0[0] + i;
+          for (j = -radius; j <= radius; j++) {
+            ix[1] = ix0[1] + j;
+            edge = this->wrap_detect_edge(ix);
+            if (!edge) {
+              nbins++;
+              count += this->value(ix);
+            }
+          }
+        }
+        break;
+      case 3:
+        for (i = -radius; i <= radius; i++) {
+          ix[0] = ix0[0] + i;
+          for (j = -radius; j <= radius; j++) {
+            ix[1] = ix0[1] + j;
+            for (k = -radius; k <= radius; k++) {
+              ix[2] = ix0[2] + k;
+              edge = this->wrap_detect_edge(ix);
+              if (!edge) {
+                nbins++;
+                count += this->value(ix);
+              }
+            }
+          }
+        }
+        break;
+      default:
+        cvm::error("Error: local_sample_count is not implemented for grids of dimension > 3", COLVARS_NOT_IMPLEMENTED);
+        break;
+    }
+
+    if (nbins)
+      // Integer division - an error on the order of 1 doesn't matter
+        return count / nbins;
+    else
+      return 0.0;
+  }
+
 
   /// \brief Return the RMSD between this grid's data and another one
   /// Grids must have the same dimensions.
-  cvm::real grid_rmsd(colvar_grid_scalar const &other_grid) const;
+  cvm::real grid_rmsd(colvar_grid_scalar_function const &other_grid) const{
+    if (other_grid.data.size() != this->data.size()) {
+      cvm::error("Error: trying to subtract two grids with "
+                 "different size.\n");
+      return -1.;
+    }
+
+    cvm::real sum2 = 0.0;
+    for (size_t i = 0; i < this->data.size(); i++) {
+      cvm::real d = other_grid.data[i] - this->data[i];
+      sum2 += d * d;
+    }
+    return sqrt(sum2 / this->data.size());
+  };
+
+
+  void increase(std::vector<int> const &ix, scalar_type_class fact = 1)
+  {
+    this->data[this->address(ix)] += fact;
+  }
+  /// \brief Get the binned count indexed by ix from the newly read data
+  inline scalar_type_class const & new_value(std::vector<int> const &ix)
+  {
+    return this->new_data[this->address(ix)];
+  }
 };
 
 
+typedef colvar_grid_scalar_function<scalar_type::real> colvar_grid_scalar;
+typedef colvar_grid_scalar_function<scalar_type::integer> colvar_grid_count;
 
 /// Class for accumulating the gradient of a scalar function on a grid
 class colvar_grid_gradient : public colvar_grid<cvm::real>
@@ -1621,7 +1434,8 @@ public:
   /// \brief Provide the sample count by which each binned value
   /// should be divided
   std::shared_ptr<colvar_grid_count> samples;
-
+  /// Continuous weights instead of samples, eg. for smoothed ABF
+  std::shared_ptr<colvar_grid_scalar> weights;
   /// Default constructor
   colvar_grid_gradient();
 
@@ -1637,20 +1451,33 @@ public:
   //                      std::string config = std::string());
 
   /// Constructor from a multicol file
-  colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in = nullptr);
+  explicit colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in = nullptr);
+  explicit colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_scalar> weights_in= nullptr);
 
-  /// Constructor from a vector of colvars and a pointer to the count grid, with extra params
-  colvar_grid_gradient(std::vector<colvar *> &colvars,
+
+  /// Constructor from a vector of colvars and a pointer to the count grid
+  explicit colvar_grid_gradient(std::vector<colvar *> &colvars,
                        std::shared_ptr<colvar_grid_count> samples_in = nullptr,
                        std::shared_ptr<const colvar_grid_params> params = nullptr,
                        std::string config = std::string());
+  explicit  colvar_grid_gradient(std::vector<colvar *> &colvars,
+                       std::shared_ptr<colvar_grid_scalar> weights_in,
+                       std::shared_ptr<const colvar_grid_params> params = nullptr,
+                       std::string config = std::string());
+
 
   /// Parameters for smoothing data with low sampling
-  int full_samples;
-  int min_samples;
+  cvm::real full_samples;
+  cvm::real min_samples;
+  // TODO: maybe make those class members
+  cvm::real kernel_params = 0;
+  int cutoff = 0;
+  cvm::real inv_squared_smooth;
+  cvm::real smoothing_param;
+  cvm::real const cutoff_factor = 3.72;
 
   /// Write the current grid parameters to a string
-  std::string get_state_params() const;
+  std::string get_state_params() const override;
 
   /// Read new grid parameters from a string
   int parse_params(std::string const &conf,
@@ -1710,10 +1537,24 @@ public:
   inline void vector_value(std::vector<int> const &ix, std::vector<cvm::real> &v) const
   {
     cvm::real const * p = &value(ix);
+
     if (samples) {
       int count = samples->value(ix);
       if (count) {
         cvm::real invcount = 1.0 / count;
+        for (size_t i = 0; i < mult; i++) {
+          v[i] = invcount * p[i];
+        }
+      } else {
+        for (size_t i = 0; i < mult; i++) {
+          v[i] = 0.0;
+        }
+      }
+    }
+    else if (weights) {
+      cvm::real weight = weights->value(ix);
+      if (weight > 0) {
+        cvm::real invcount = 1.0 / weight;
         for (size_t i = 0; i < mult; i++) {
           v[i] = invcount * p[i];
         }
@@ -1735,33 +1576,110 @@ public:
     for (size_t imult = 0; imult < mult; imult++) {
       data[address(ix) + imult] += values[imult].real_value;
     }
-    if (samples)
-      samples->incr_count(ix);
+    if (samples) {
+      samples->increase(ix,1);
+    }
+    else if (weights) {
+      cvm::error("acc_value is only in use for ti bias and shouldn't be used with non-integer weights", COLVARS_ERROR);
+    }
   }
 
   /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
-  inline void acc_force(std::vector<int> const &ix, cvm::real const *forces) {
+  inline void acc_force(std::vector<int> const &ix, cvm::real const *forces,
+                              cvm::real fact = 1.0) {
     for (size_t imult = 0; imult < mult; imult++) {
-      data[address(ix) + imult] -= forces[imult];
+      data[address(ix) + imult] -= forces[imult] * fact;
     }
-    if (samples)
-      samples->incr_count(ix);
+    if (samples) {
+      samples->increase(ix, 1);
+    }
+    else if (weights) {
+      weights->increase(ix,fact);
+    }
   }
 
+  /// \brief Accumulate the gradient based on the force (i.e. sums the
+  /// opposite of the force)
+  /// cv_value corresponds to the grid coordinates i.e. (3.5,6.2) inside the grid of dimension nx
+  inline void acc_force(std::vector<cvm::real> const &cv_value,
+                      std::vector<int> const &bin_value,
+                      cvm::real const *force,
+                      cvm::real smoothing = 0) {
+
+  if (smoothing && weights->value(bin_value) < full_samples) {
+    if (smoothing_param!=smoothing) {
+      if (smoothing < 0)
+        cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
+      kernel_params = smoothing;
+      inv_squared_smooth = 1/ (std::max(smoothing*smoothing, 1e-5));
+      cutoff = cutoff_factor * smoothing; // take like floor()
+      for (size_t i = 0; i < nd; i++) {
+        cutoff = std::min(cutoff, nx[i]/2);
+      }
+      smoothing_param = smoothing;
+    }
+    // We will use these to iterate
+    std::vector<int> ix_min(nd);
+    std::vector<int> ix_max(nd);
+    std::vector<int> current_ix(nd);
+    std::vector<int> wrapped_ix(nd);
+
+    for (size_t i = 0; i < nd; i++) {
+      // Calculate raw bounds (can be negative or > nx[i])
+      ix_min[i] = static_cast<int>(cvm::floor(cv_value[i] - cutoff));
+      ix_max[i] = static_cast<int>(cvm::floor(cv_value[i] + cutoff));
+
+      // If NOT periodic, clamp to grid boundaries
+      if (!periodic[i]) {
+        if (ix_min[i] < 0) ix_min[i] = 0;
+        if (ix_max[i] >= nx[i]) ix_max[i] = nx[i] - 1;
+      }
+      current_ix[i] = ix_min[i];
+    }
+
+    bool done = false;
+    while (!done) {
+      cvm::real dist_sq = 0;
+      for (size_t i = 0; i < nd; i++) {
+        cvm::real diff = (static_cast<cvm::real>(current_ix[i]) + 0.5) - cv_value[i];
+        dist_sq += diff * diff;
+        if (periodic[i]) {
+          wrapped_ix[i] = (current_ix[i] % (int)nx[i] + (int)nx[i]) % (int)nx[i];
+        } else {
+          wrapped_ix[i] = current_ix[i];
+        }
+      }
+      cvm::real weight = cvm::exp(-dist_sq * inv_squared_smooth);
+      acc_force(wrapped_ix, force, weight);
+
+      for (int i = nd - 1; i >= 0; i--) {
+        if (++current_ix[i] > ix_max[i]) {
+          if (i == 0) {
+            done = true;
+            break;
+          }
+          current_ix[i] = ix_min[i];
+        } else {
+          break;
+        }
+      }
+    }
+  } else {
+    acc_force(bin_value, force);
+  }
+}
   /// \brief Return the value of the function at ix divided by its
   /// number of samples (if the count grid is defined)
   virtual cvm::real value_output(std::vector<int> const &ix,
                                  size_t const &imult = 0) const override
   {
-    int s;
-    if (samples) {
-      return ( (s = samples->value(ix)) > 0) ?
-        (data[address(ix) + imult] / cvm::real(s)) :
-        0.0;
-    } else {
-      return data[address(ix) + imult];
+    cvm::real s;
+    if (samples || weights) {
+      s = samples ? static_cast<cvm::real>(samples->value(ix)) : weights->value(ix);
+      return s > 0 ?(data[address(ix) + imult] / s) : 0.0;
     }
+    return data[address(ix) + imult];
   }
 
   /// Compute the inverse weight corresponding to smoothing factor as in ABF
@@ -1788,8 +1706,8 @@ public:
   {
     cvm::real weight, fact;
 
-    if (samples) {
-      weight = cvm::real(samples->value(ix));
+    if (samples || weights) {
+      weight = samples ? cvm::real(samples->value(ix)) : weights->value(ix);
     } else {
       weight = 1.;
     }
@@ -1812,11 +1730,12 @@ public:
     cvm::real weight, fact;
 
     if (samples) {
-      weight = cvm::real(samples->value(ix));
+      weight = static_cast<cvm::real>(samples->value(ix));
+    } else if (weights) {
+      weight = weights->value(ix);
     } else {
       weight = 1.;
     }
-
     if (smoothed) {
       fact = smooth_inverse_weight(weight);
     } else {
@@ -1838,13 +1757,14 @@ public:
                            bool add = false) override
   {
     if (add) {
-      if (samples)
-        data[address(ix) + imult] += new_value * samples->new_value(ix);
+      if (samples || weights) {
+        data[address(ix) + imult] += new_value * (samples ? samples->new_value(ix) : weights->new_value(ix));
+      }
       else
         data[address(ix) + imult] += new_value;
     } else {
-      if (samples)
-        data[address(ix) + imult] = new_value * samples->value(ix);
+      if (samples || weights)
+        data[address(ix) + imult] = new_value * (samples ? samples->value(ix) : weights->value(ix));
       else
         data[address(ix) + imult] = new_value;
     }
@@ -1876,5 +1796,6 @@ public:
   void write_1D_integral(std::ostream &os);
 
 };
+ #include "colvargrid_def.h"
 
  #endif
