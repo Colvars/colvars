@@ -1016,15 +1016,14 @@ bool b_null_target_lower_walls = false;
     }
   }
 
-
-    if (lower_wall_k * upper_wall_k == 0.0) {
+    if (lower_wall_k * upper_wall_k == 0.0 && !b_chg_force_k) {
       cvm::error("Error: lowerWallConstant and upperWallConstant, "
                  "when defined, must both be positive.\n",
                  COLVARS_INPUT_ERROR);
       return COLVARS_INPUT_ERROR;
     }
     force_k = cvm::sqrt(lower_wall_k * upper_wall_k);
-    // transform the two constants to relative values using gemetric mean as ref
+    // transform the two constants to relative values using geometric mean as ref
     // to preserve force_k if provided as single parameter
     // (allow changing both via force_k)
     lower_wall_k /= force_k;
