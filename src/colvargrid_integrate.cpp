@@ -317,7 +317,7 @@ void colvargrid_integrate::update_weighted_div_local(const std::vector<int> &ix0
 {
   const size_t linear_index = computation_grid->address(ix0);
   cvm::real div_at_point = 0;
-  for (std::vector<int> surrounding_point_relative_position :
+  for (const std::vector<int>& surrounding_point_relative_position :
        surrounding_points_relative_positions) {
     std::vector<int> surrounding_point_coordinates = ix0;
     std::vector<cvm::real> gradient_at_surrounding_point(nd, 0);
@@ -330,7 +330,7 @@ void colvargrid_integrate::update_weighted_div_local(const std::vector<int> &ix0
     cvm::real weight = regularized_weights[gradients->address(surrounding_point_coordinates)];
 
     for (size_t i = 0; i < nd; i++) {
-      div_at_point += pow(-1, surrounding_point_relative_position[i] + 1) *
+      div_at_point +=  (((surrounding_point_relative_position[i] & 1) << 1) - 1) *
                       gradient_at_surrounding_point[i] * weight / widths[i];
     }
   }
@@ -1053,7 +1053,7 @@ void colvargrid_integrate::get_regularized_grad(std::vector<cvm::real> &F, std::
     F[i] = multiplier * F[i];
   }
 }
-
+// TODO: check if there's not a more optimized version avoiding push_back calls
 std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_gradient(
     std::vector<int> ghost_point_coordinates)
 {
@@ -1071,12 +1071,13 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
     }
   }
   // Find the positions of the gradients to average
+  size_t nb_averaged_gradients = static_cast<int>(cvm::integer_power(2, static_cast<int>(directions_to_average_along.size())));
   std::vector<std::vector<int>> gradients_to_average_relative_positions;
   if (directions_to_average_along.size() == 0) {
     std::vector<int> zero_vector(nd, 0);
     gradients_to_average_relative_positions.push_back(zero_vector);
   } else {
-    for (int i = 0; i < pow(2, directions_to_average_along.size()); i++) {
+    for (int i = 0; i < nb_averaged_gradients; i++) {
       std::vector<int> gradient_to_average_relative_position(nd, 0);
       std::vector<int> binary = convert_base_two(i, directions_to_average_along.size());
       for (size_t bit_position = 0; bit_position < directions_to_average_along.size();
