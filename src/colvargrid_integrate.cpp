@@ -1071,7 +1071,7 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
     }
   }
   // Find the positions of the gradients to average
-  size_t nb_averaged_gradients = static_cast<int>(cvm::integer_power(2, static_cast<int>(directions_to_average_along.size())));
+  const int nb_averaged_gradients = static_cast<int>(cvm::integer_power(2, static_cast<int>(directions_to_average_along.size())));
   std::vector<std::vector<int>> gradients_to_average_relative_positions;
   if (directions_to_average_along.size() == 0) {
     std::vector<int> zero_vector(nd, 0);
