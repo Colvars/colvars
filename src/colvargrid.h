@@ -73,20 +73,29 @@ public: // TODO create accessors for these after all instantiations work
   /// Do we request actual value (for extended-system colvars)?
   std::vector<bool> use_actual_value;
 
-  /// Get the low-level index corresponding to an index
+  /// Get the low-level (unrolled) address corresponding to an index
   inline size_t address(std::vector<int> const &ix) const
   {
     size_t addr = 0;
     for (size_t i = 0; i < nd; i++) {
       addr += ix[i]*static_cast<size_t>(nxc[i]);
       if (cvm::debug()) {
-        if (ix[i] >= nx[i]) {
-          cvm::error("Error: exceeding bounds in colvar_grid.\n", COLVARS_BUG_ERROR);
+        if (ix[i] >= nx[i] || ix[i] < 0) {
+          cvm::error("Error: index along dimension " + cvm::to_str(i) + " (" + cvm::to_str(ix[i])
+            + ") exceeds bounds in colvar_grid.\n", COLVARS_BUG_ERROR);
           return 0;
         }
       }
     }
     return addr;
+  }
+
+  /// Inverse of address(): n-dim index from linear address
+  inline void index(size_t address, std::vector<int> &ix) {
+    for (int dim = nd - 1; dim >= 0; --dim) {
+      ix[dim] = address % nx[dim];
+      address /= nx[dim];
+    }
   }
 
 public:
@@ -1016,6 +1025,10 @@ public:
   colvar_grid_count(std::vector<colvar *>  &colvars,
                     std::string            config);
 
+  /// Constructor from a multicol file
+  /// used by poisson_integrator
+  colvar_grid_count(std::string &filename);
+
   /// Increment the counter at given position
   inline void incr_count(std::vector<int> const &ix)
   {
@@ -1183,36 +1196,38 @@ public:
 
   /// \brief Return the log-gradient from finite differences
   /// on the *same* grid for dimension n
-  /// (colvar_grid_count)
+  /// Order-1 centered difference, or order-2 difference on grid edges
   inline cvm::real log_gradient_finite_diff(const std::vector<int> &ix0,
                                             int n = 0, int offset = 0)
   {
-    cvm::real A0, A1, A2;
+    cvm::real Am1, A0, A1, A2; // values at locations -1, 0, +1, +2
     std::vector<int> ix = ix0;
 
     // TODO this can be rewritten more concisely with wrap_edge()
     if (periodic[n]) {
       ix[n]--; wrap(ix);
-      A0 = value(ix) + offset;
-      ix = ix0;
+      Am1 = value(ix) + offset;
+      ix = ix0; wrap(ix);
+      A0 = value(ix) + offset; // Used just to detect gaps
       ix[n]++; wrap(ix);
       A1 = value(ix) + offset;
-      if (A0 * A1 == 0) {
-        return 0.; // can't handle empty bins
+      if (Am1 * A0 * A1 == 0) {
+        return 0.; // can't handle 0, and don't compute derivative over a gap
       } else {
-        return (cvm::logn(A1) - cvm::logn(A0))
+        return (cvm::logn(A1) - cvm::logn(Am1))
           / (widths[n] * 2.);
       }
     } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
       ix[n]--;
-      A0 = value(ix) + offset;
+      Am1 = value(ix) + offset;
       ix = ix0;
+      A0 = value(ix) + offset;
       ix[n]++;
       A1 = value(ix) + offset;
-      if (A0 * A1 == 0) {
-        return 0.; // can't handle empty bins
+      if (Am1 * A0 * A1 == 0) {
+        return 0.; // can't handle 0, and don't compute derivative over a gap
       } else {
-        return (cvm::logn(A1) - cvm::logn(A0))
+        return (cvm::logn(A1) - cvm::logn(Am1))
           / (widths[n] * 2.);
       }
     } else {
@@ -1223,7 +1238,7 @@ public:
       ix[n] += increment; A1 = value(ix) + offset;
       ix[n] += increment; A2 = value(ix) + offset;
       if (A0 * A1 * A2 == 0) {
-        return 0.; // can't handle empty bins
+        return 0.; // can't handle 0
       } else {
         return (-1.5 * cvm::logn(A0) + 2. * cvm::logn(A1)
           - 0.5 * cvm::logn(A2)) * increment / widths[n];
@@ -1238,31 +1253,33 @@ public:
   inline cvm::real gradient_finite_diff(const std::vector<int> &ix0,
                                         int n = 0)
   {
-    cvm::real A0, A1, A2;
+    cvm::real Am1, A0, A1, A2;
     std::vector<int> ix = ix0;
 
     // FIXME this can be rewritten more concisely with wrap_edge()
     if (periodic[n]) {
       ix[n]--; wrap(ix);
-      A0 = value(ix);
-      ix = ix0;
+      Am1 = value(ix);
+      ix = ix0; wrap(ix);
+      A0 = value(ix); // Used just to detect gaps
       ix[n]++; wrap(ix);
       A1 = value(ix);
-      if (A0 * A1 == 0) {
+      if (Am1 * A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (A1 - A0) / (widths[n] * 2.);
+        return (A1 - Am1) / (widths[n] * 2.);
       }
     } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
       ix[n]--;
-      A0 = value(ix);
+      Am1 = value(ix);
       ix = ix0;
+      A0 = value(ix);
       ix[n]++;
       A1 = value(ix);
-      if (A0 * A1 == 0) {
+      if (Am1 * A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (A1 - A0) / (widths[n] * 2.);
+        return (A1 - Am1) / (widths[n] * 2.);
       }
     } else {
       // edge: use 2nd order derivative
@@ -1285,7 +1302,7 @@ public:
 
   /// \brief Provide the associated sample count by which each binned value
   /// should be divided
-  colvar_grid_count *samples;
+  std::shared_ptr<colvar_grid_count> samples;
 
   /// Default constructor
   colvar_grid_scalar();
@@ -1486,31 +1503,33 @@ public:
   inline cvm::real gradient_finite_diff(const std::vector<int> &ix0,
                                         int n = 0)
   {
-    cvm::real A0, A1, A2;
+    cvm::real Am1, A0, A1, A2;
     std::vector<int> ix = ix0;
 
     // FIXME this can be rewritten more concisely with wrap_edge()
     if (periodic[n]) {
       ix[n]--; wrap(ix);
-      A0 = value(ix);
-      ix = ix0;
+      Am1 = value(ix);
+      ix = ix0; wrap(ix);
+      A0 = value(ix); // Used just to detect gaps
       ix[n]++; wrap(ix);
       A1 = value(ix);
-      if (A0 * A1 == 0) {
+      if (Am1 * A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return (A1 - A0) / (widths[n] * 2.);
+        return (A1 - Am1) / (widths[n] * 2.);
       }
     } else if (ix[n] > 0 && ix[n] < nx[n]-1) { // not an edge
       ix[n]--;
-      A0 = value(ix);
+      Am1 = value(ix);
       ix = ix0;
+      A0 = value(ix);
       ix[n]++;
       A1 = value(ix);
-      if (A0 * A1 == 0) {
+      if (Am1 * A0 * A1 == 0) {
         return 0.; // can't handle empty bins
       } else {
-        return cvm::real(A1 - A0) / (widths[n] * 2.);
+        return (A1 - Am1) / (widths[n] * 2.);
       }
     } else {
       // edge: use 2nd order derivative
@@ -1519,8 +1538,8 @@ public:
       A0 = value(ix);
       ix[n] += increment; A1 = value(ix);
       ix[n] += increment; A2 = value(ix);
-      return (-1.5 * cvm::real(A0) + 2. * cvm::real(A1)
-          - 0.5 * cvm::real(A2)) * increment / widths[n];
+      return (-1.5 * A0 + 2. * A1
+          - 0.5 * A2) * increment / widths[n];
     }
   }
 
@@ -1558,6 +1577,7 @@ public:
     }
     if (add) {
       if (samples)
+        // Special case if samples == 0 and value != 0
         data[address(ix)] += new_value * samples->new_value(ix);
       else
         data[address(ix)] += new_value;
@@ -1617,9 +1637,9 @@ public:
   //                      std::string config = std::string());
 
   /// Constructor from a multicol file
-  colvar_grid_gradient(std::string const &filename);
+  colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in = nullptr);
 
-  /// Constructor from a vector of colvars and a pointer to the count grid
+  /// Constructor from a vector of colvars and a pointer to the count grid, with extra params
   colvar_grid_gradient(std::vector<colvar *> &colvars,
                        std::shared_ptr<colvar_grid_count> samples_in = nullptr,
                        std::shared_ptr<const colvar_grid_params> params = nullptr,
@@ -1783,6 +1803,7 @@ public:
     return fact * data[address(ix)];
   }
 
+
   /// \brief Obtain the vector value of the function at ix divided by its
   /// number of samples (if the count grid is defined), possibly smoothed
   /// by a ramp function going from 0 to 1 between minSamples and fullSamples.
@@ -1801,7 +1822,6 @@ public:
     } else {
       fact = weight > 0. ? 1. / weight : 0.;
     }
-
     cvm::real *p = &(data[address(ix)]);
 
     for (size_t imult = 0; imult < mult; imult++) {
@@ -1857,5 +1877,4 @@ public:
 
 };
 
-#endif
-
+ #endif

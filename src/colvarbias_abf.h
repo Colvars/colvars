@@ -75,11 +75,12 @@ private:
   int       integrate_iterations;
   /// Tolerance for integrating PMF at startup and for file output
   cvm::real integrate_tol;
+  /// Whether to integrate with weights PMF at startup and for file output
+  bool integrate_weighted;
   /// Max number of CG iterations for integrating PMF at on-the-fly pABF updates
   int       pabf_integrate_iterations;
   /// Tolerance for integrating PMF at on-the-fly pABF updates
   cvm::real pabf_integrate_tol;
-
   /// Cap the biasing force to be applied? (option maxForce)
   bool                    cap_force;
   /// Maximum force to be applied
@@ -107,7 +108,7 @@ private:
   std::shared_ptr<colvar_grid_gradient> z_gradients;
   /// n-dim grid of number of samples on "real" coordinate for eABF z-based estimator
   std::shared_ptr<colvar_grid_count>    z_samples;
-  /// n-dim grid containing CZAR estimatr of "real" free energy gradients
+  /// n-dim grid containing CZAR estimator of "real" free energy gradients
   std::shared_ptr<colvar_grid_gradient> czar_gradients;
   /// n-dim grid of CZAR pmf (dimension 1 to 3)
   std::shared_ptr<colvargrid_integrate>  czar_pmf;
