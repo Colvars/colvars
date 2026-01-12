@@ -72,7 +72,7 @@ protected:
   bool weighted = false;
   bool precompute = true;
 
-  colvar_grid_scalar* computation_grid;
+  colvar_grid_scalar* computation_grid = nullptr;
   std::vector<cvm::real> div_border_supplement;
 
   std::vector<int> computation_nx;

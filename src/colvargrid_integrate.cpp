@@ -3,20 +3,6 @@
 #include <iomanip>
 #include <iostream>
 
-// Helper function to print vector<int>
-std::string vec_to_string(const std::vector<int> &vec)
-{
-  std::ostringstream oss;
-  oss << "[";
-  for (size_t i = 0; i < vec.size(); ++i) {
-    oss << vec[i];
-    if (i < vec.size() - 1)
-      oss << ", ";
-  }
-  oss << "]";
-  return oss.str();
-};
-
 colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
                                            std::shared_ptr<colvar_grid_gradient> gradients_in,
                                            bool weighted_in)
@@ -941,14 +927,14 @@ void colvargrid_integrate::prepare_laplacian_stencils()
       std::vector<int> binary = convert_base_two(weights_to_average_relative_pos, nd - 1);
       weight_stencil[2 * dim][weights_to_average_relative_pos].resize(nd);
       weight_stencil[2 * dim + 1][weights_to_average_relative_pos].resize(nd);
-      int off_set = 0;
+      int offset = 0;
       for (size_t k = 0; k < nd; k++) {
         if (k != dim) {
-          weight_stencil[2 * dim][weights_to_average_relative_pos][k] = binary[k + off_set];
+          weight_stencil[2 * dim][weights_to_average_relative_pos][k] = binary[k + offset];
           weight_stencil[2 * dim + 1][weights_to_average_relative_pos][k] =
-              binary[k + off_set];
+              binary[k + offset];
         } else {
-          off_set = -1;
+          offset = -1;
           weight_stencil[2 * dim][weights_to_average_relative_pos][dim] = 0;
           weight_stencil[2 * dim + 1][weights_to_average_relative_pos][dim] = 1;
         }
