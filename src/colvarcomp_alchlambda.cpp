@@ -84,6 +84,15 @@ void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
   // Forces, if any, are applied in colvar::update_extended_Lagrangian()
 }
 
+void colvar::alch_lambda::set_value(colvarvalue const &new_value, bool now)
+{
+  x = new_value;
+  cvm::proxy->set_alch_lambda(x.real_value);
+  if (now) {
+    cvm::proxy->send_alch_lambda();
+  }
+}
+
 
 colvar::alch_Flambda::alch_Flambda()
 {

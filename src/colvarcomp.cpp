@@ -1148,6 +1148,12 @@ void colvar::cvc::wrap(colvarvalue &x_unwrapped) const
 }
 
 
+void colvar::cvc::set_value(colvarvalue const &new_value, bool /*now*/)
+{
+  x = new_value;
+}
+
+
 // Static members
 
 std::vector<colvardeps::feature *> colvar::cvc::cvc_features;
