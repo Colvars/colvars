@@ -12,6 +12,7 @@
 #include "colvarvalue.h"
 #include "colvar.h"
 #include "colvarcomp.h"
+#include "colvarcomp_coordnums.h"
 
 template<int flags>
 inline
