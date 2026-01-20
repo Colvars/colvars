@@ -79,6 +79,7 @@ $colvars_defines = " -DVMDCOLVARS";
                     'colvarbias_restraint.h',
                     'colvarbias_opes.h',
                     'colvarcomp.h',
+                    'colvarcomp_coordnums.h',
                     'colvarcomp_torchann.h',
                     'colvardeps.h',
                     'colvargrid.h',
