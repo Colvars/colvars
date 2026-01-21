@@ -30,22 +30,43 @@ int colvar::coordnum::init(std::string const &conf)
   int error_code = cvc::init(conf);
 
   group1 = parse_group(conf, "group1");
-  group2 = parse_group(conf, "group2");
 
-  if (!group1 || !group2) {
+  if (!group1) {
     return error_code | COLVARS_INPUT_ERROR;
   }
 
-  if (int atom_number = cvm::atom_group::overlap(*group1, *group2)) {
-    error_code |= cvm::error(
-        "Error: group1 and group2 share a common atom (number: " + cvm::to_str(atom_number) + ")\n",
-        COLVARS_INPUT_ERROR);
+  if (group1->b_dummy) {
+    error_code |= cvm::error("Error: group1 may not be a dummy atom\n", COLVARS_INPUT_ERROR);
   }
 
-  if (group1->b_dummy) {
-    error_code |=
-        cvm::error("Error: only group2 is allowed to be a dummy atom\n", COLVARS_INPUT_ERROR);
+  if (function_type() != "selfCoordNum") {
+
+    group2 = parse_group(conf, "group2");
+    if (!group2) {
+      return error_code | COLVARS_INPUT_ERROR;
+    }
+
+    if (int atom_number = cvm::atom_group::overlap(*group1, *group2)) {
+      error_code |= cvm::error("Error: group1 and group2 share a common atom (number: " +
+                                   cvm::to_str(atom_number) + ")\n",
+                               COLVARS_INPUT_ERROR);
+    }
+
+    get_keyval(conf, "group2CenterOnly", b_group2_center_only, group2->b_dummy);
+
+    if (b_group2_center_only) {
+      num_pairs = group1->size();
+    } else {
+      num_pairs = group1->size() * group2->size();
+    }
+
+  } else {
+
+    // selfCoordNum case
+    num_pairs = (group1->size() * (group1->size() - 1)) / 2;
   }
+
+  init_scalar_boundaries(0.0, num_pairs);
 
   // Get the default value from r0_vec to report it
   cvm::real r0 = r0_vec[0];
@@ -85,8 +106,6 @@ int colvar::coordnum::init(std::string const &conf)
     cvm::log("Warning: only minimum-image distances are used by this variable.\n");
   }
 
-  get_keyval(conf, "group2CenterOnly", b_group2_center_only, group2->b_dummy);
-
   get_keyval(conf, "tolerance", tolerance, tolerance);
   if (tolerance > 0) {
     cvm::main()->cite_feature("coordNum pairlist");
@@ -96,20 +115,9 @@ int colvar::coordnum::init(std::string const &conf)
                         COLVARS_INPUT_ERROR);
       // return and do not allocate the pairlists below
     }
-    size_t n;
-    if (b_group2_center_only) {
-      n = group1->size();
-    } else {
-      n = group1->size() * group2->size();
-    }
-    pairlist = new bool[n];
-    for (size_t i = 0; i < n; i++) pairlist[i] = true;
+    pairlist = new bool[num_pairs];
+    for (size_t i = 0; i < num_pairs; i++) pairlist[i] = true;
   }
-
-  init_scalar_boundaries(0.0, b_group2_center_only ?
-                         static_cast<cvm::real>(group1->size()) :
-                         static_cast<cvm::real>(group1->size() *
-                                                group2->size()));
 
   return error_code;
 }
@@ -376,68 +384,6 @@ void colvar::h_bond::calc_gradients()
 colvar::selfcoordnum::selfcoordnum()
 {
   set_function_type("selfCoordNum");
-  x.type(colvarvalue::type_scalar);
-  cvm::real const r0 = cvm::main()->proxy->angstrom_to_internal(4.0);
-  r0_vec = {r0, r0, r0};
-}
-
-
-int colvar::selfcoordnum::init(std::string const &conf)
-{
-  int error_code = cvc::init(conf);
-
-  group1 = parse_group(conf, "group1");
-
-  if (!group1 || group1->size() == 0) {
-    return error_code | COLVARS_INPUT_ERROR;
-  }
-
-  cvm::real r0 = r0_vec[0];
-  bool const b_redefined_cutoff = get_keyval(conf, "cutoff", r0, r0);
-  if (b_redefined_cutoff) {
-    r0_vec = {r0, r0, r0};
-  }
-  get_keyval(conf, "expNumer", en, en);
-  get_keyval(conf, "expDenom", ed, ed);
-
-
-  if ((en % 2) || (ed % 2)) {
-    error_code |= cvm::error("Error: odd exponent(s) provided, can only use even ones.\n",
-                             COLVARS_INPUT_ERROR);
-  }
-
-  if ((en <= 0) || (ed <= 0)) {
-    error_code |= cvm::error("Error: negative exponent(s) provided.\n", COLVARS_INPUT_ERROR);
-  }
-
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    cvm::log("Warning: only minimum-image distances are used by this variable.\n");
-  }
-
-  get_keyval(conf, "tolerance", tolerance, tolerance);
-  if (tolerance > 0) {
-    get_keyval(conf, "pairListFrequency", pairlist_freq, pairlist_freq);
-    if ( ! (pairlist_freq > 0) ) {
-      error_code |= cvm::error("Error: non-positive pairlistfrequency provided.\n",
-                               COLVARS_INPUT_ERROR);
-    }
-    size_t n = (group1->size()-1) * (group1->size()-1);
-    pairlist = new bool[n];
-    for (size_t i = 0; i < n; i++) pairlist[i] = true;
-  }
-
-  init_scalar_boundaries(0.0, static_cast<cvm::real>((group1->size()-1) *
-                                                     (group1->size()-1)));
-
-  return error_code;
-}
-
-
-colvar::selfcoordnum::~selfcoordnum()
-{
-  if (pairlist) {
-    delete [] pairlist;
-  }
 }
 
 
