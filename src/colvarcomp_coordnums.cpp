@@ -134,7 +134,7 @@ template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
     const cvm::atom_pos group2_com = group2->center_of_mass();
     cvm::rvector group2_com_grad(0, 0, 0);
     for (size_t i = 0; i < group1->size(); ++i) {
-      x.real_value += switching_function<flags>(r0, inv_r0_vec,
+      x.real_value += switching_function<flags>(inv_r0_vec,
                                                 inv_r0sq_vec, en, ed,
                                                 group1->pos_x(i),
                                                 group1->pos_y(i),
@@ -157,7 +157,7 @@ template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
   } else {
     for (size_t i = 0; i < group1->size(); ++i) {
       for (size_t j = 0; j < group2->size(); ++j) {
-        x.real_value += switching_function<flags>(r0, inv_r0_vec,
+        x.real_value += switching_function<flags>(inv_r0_vec,
                                                   inv_r0sq_vec, en, ed,
                                                   group1->pos_x(i),
                                                   group1->pos_y(i),
@@ -339,7 +339,7 @@ void colvar::h_bond::calc_value()
     inv_r0_vec.y*inv_r0_vec.y,
     inv_r0_vec.z*inv_r0_vec.z);
   x.real_value =
-    coordnum::switching_function<flags>(r0, inv_r0_vec, inv_r0sq_vec, en, ed,
+    coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                         atom_groups[0]->pos_x(0),
                                         atom_groups[0]->pos_y(0),
                                         atom_groups[0]->pos_z(0),
@@ -369,7 +369,7 @@ void colvar::h_bond::calc_gradients()
     inv_r0_vec.x*inv_r0_vec.x,
     inv_r0_vec.y*inv_r0_vec.y,
     inv_r0_vec.z*inv_r0_vec.z);
-  coordnum::switching_function<flags>(r0, inv_r0_vec, inv_r0sq_vec, en, ed,
+  coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                       atom_groups[0]->pos_x(0),
                                       atom_groups[0]->pos_y(0),
                                       atom_groups[0]->pos_z(0),
@@ -476,7 +476,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
     for (j = i + 1; j < n; j++) {                       \
       x.real_value +=                                   \
         coordnum::switching_function<flags>(            \
-          r0, inv_r0_vec, inv_r0sq_vec, en, ed,         \
+          inv_r0_vec, inv_r0sq_vec, en, ed,             \
           group1->pos_x(i),                             \
           group1->pos_y(i),                             \
           group1->pos_z(i),                             \
@@ -604,7 +604,7 @@ void colvar::groupcoordnum::calc_value()
   const cvm::rvector r0sq_vec(r0_vec.x*r0_vec.x,   \
                               r0_vec.y*r0_vec.y,   \
                               r0_vec.z*r0_vec.z);  \
-  x.real_value = coordnum::switching_function<flags>(r0, inv_r0_vec, inv_r0sq_vec, en, ed, \
+  x.real_value = coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed, \
                                                      A1.x, A1.y, A1.z, \
                                                      A2.x, A2.y, A2.z, \
                                                      G1.x, G1.y, G1.z, \
@@ -635,7 +635,7 @@ void colvar::groupcoordnum::calc_gradients()
     inv_r0_vec.x*inv_r0_vec.x,                          \
     inv_r0_vec.y*inv_r0_vec.y,                          \
     inv_r0_vec.z*inv_r0_vec.z);                         \
-  coordnum::switching_function<flags>(r0, inv_r0_vec, inv_r0sq_vec, en, ed, \
+  coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed, \
                                       A1.x, A1.y, A1.z, \
                                       A2.x, A2.y, A2.z, \
                                       G1.x, G1.y, G1.z, \
