@@ -5277,7 +5277,7 @@ The following options have default values appropriate for the vast majority of a
     By default, these terms are calculated and included in the total gradients;
     if this option is set to \texttt{off}, they are neglected.
     In the case of a minimum RMSD component, this flag is automatically disabled because the contributions of those derivatives to the gradients cancel out; other types of variable will require projecting each of the gradients of the variable onto each of the gradients of the roto-translation.
-    When \refkey{fittingGroup}{atom-group|fittingGroup} is enabled, the computation is a $O(n^{(\rm fit)}+n^{(\rm main)})$ loop for all variables, including RMSDs.
+    When \refkey{fittingGroup}{atom-group|fittingGroup} is enabled, the computation is a $O(n^{(\rm fit)}+n^{(\rm main)})$ loop for all variables, including RMSDs. \textbf{In general, this option should be always on, unless you are sure that the forces acting on the fitting group are zero.}
 }
 
 \end{itemize}
