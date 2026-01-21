@@ -162,9 +162,7 @@ template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
                                                 pairlist_elem,
                                                 tolerance);
     }
-    if (b_group2_center_only) {
-      group2->set_weighted_gradient(group2_com_grad);
-    }
+    group2->set_weighted_gradient(group2_com_grad);
   } else {
     for (size_t i = 0; i < group1->size(); ++i) {
       for (size_t j = 0; j < group2->size(); ++j) {
