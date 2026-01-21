@@ -70,6 +70,9 @@ protected:
   /// Integer exponent of the function denominator
   int ed = 12;
 
+  /// The number of pairwise distances being calculated
+  size_t num_pairs = 0;
+
   /// If true, group2 will be treated as a single atom
   bool b_group2_center_only = false;
 
@@ -87,32 +90,16 @@ protected:
 
 /// \brief Colvar component: self-coordination number within a group
 /// (colvarvalue::type_scalar type, range [0:N*(N-1)/2])
-class colvar::selfcoordnum : public colvar::cvc {
+class colvar::selfcoordnum : public colvar::coordnum {
 public:
 
   selfcoordnum();
-  ~selfcoordnum();
-  virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
 
+protected:
   /// Main workhorse function
   template <int flags> int compute_selfcoordnum();
-
-protected:
-  /// Selected atoms
-  cvm::atom_group *group1 = nullptr;
-  /// Cutoff distances along each dimension
-  cvm::rvector r0_vec;
-  /// Integer exponent of the function numerator
-  int en = 6;
-  /// Integer exponent of the function denominator
-  int ed = 12;
-  cvm::real tolerance = 0.0;
-  int pairlist_freq = 100;
-
-  bool *pairlist = nullptr;
-
 };
 
 
