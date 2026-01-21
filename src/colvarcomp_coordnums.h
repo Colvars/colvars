@@ -32,7 +32,6 @@ public:
   enum {
     ef_null = 0,
     ef_gradients = 1,
-    ef_anisotropic = (1 << 8),
     ef_use_pairlist = (1 << 9),
     ef_rebuild_pairlist = (1 << 10)
   };
@@ -64,12 +63,8 @@ protected:
   cvm::atom_group *group1 = nullptr;
   /// Second atom group
   cvm::atom_group *group2 = nullptr;
-  /// \brief "Cutoff" for isotropic calculation (default)
-  cvm::real r0;
-  /// \brief "Cutoff vector" for anisotropic calculation
+  /// Cutoff distances along each dimension
   cvm::rvector r0_vec;
-  /// \brief Whether r/r0 or \vec{r}*\vec{1/r0_vec} should be used
-  bool b_anisotropic = false;
   /// Integer exponent of the function numerator
   int en = 6;
   /// Integer exponent of the function denominator
@@ -107,8 +102,8 @@ public:
 protected:
   /// Selected atoms
   cvm::atom_group *group1 = nullptr;
-  /// \brief "Cutoff" for isotropic calculation (default)
-  cvm::real r0;
+  /// Cutoff distances along each dimension
+  cvm::rvector r0_vec;
   /// Integer exponent of the function numerator
   int en = 6;
   /// Integer exponent of the function denominator
@@ -132,13 +127,8 @@ public:
   virtual void calc_gradients();
 
 protected:
-  /// \brief "Cutoff" for isotropic calculation (default)
-  cvm::real r0;
-  /// \brief "Cutoff vector" for anisotropic calculation
+  /// Cutoff distances along each dimension
   cvm::rvector r0_vec;
-  /// \brief Wheter dist/r0 or \vec{dist}*\vec{1/r0_vec} should ne be
-  /// used
-  bool b_anisotropic = false;
   /// Integer exponent of the function numerator
   int en = 6;
   /// Integer exponent of the function denominator
@@ -161,8 +151,8 @@ public:
   virtual void calc_gradients();
 
 protected:
-  /// \brief "Cutoff" distance between acceptor and donor
-  cvm::real r0;
+  /// Cutoff distances along each dimension
+  cvm::rvector r0_vec;
   /// Integer exponent of the function numerator
   int en = 6;
   /// Integer exponent of the function denominator
