@@ -19,11 +19,9 @@ colvar::coordnum::coordnum()
 {
   set_function_type("coordNum");
   x.type(colvarvalue::type_scalar);
-  colvarproxy *proxy = cvmodule->proxy;
-  r0 = proxy->angstrom_to_internal(4.0);
-  r0_vec = cvm::rvector(proxy->angstrom_to_internal(4.0),
-                        proxy->angstrom_to_internal(4.0),
-                        proxy->angstrom_to_internal(4.0));
+  cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(4.0);
+  r0_vec = {r0, r0, r0};
+  // Default upper boundary not yet known
 }
 
 
@@ -49,20 +47,26 @@ int colvar::coordnum::init(std::string const &conf)
         cvmodule->error("Error: only group2 is allowed to be a dummy atom\n", COLVARS_INPUT_ERROR);
   }
 
-  bool const b_isotropic = get_keyval(conf, "cutoff", r0, r0);
+  // Get the default value from r0_vec to report it
+  cvm::real r0 = r0_vec[0];
+  bool const b_redefined_cutoff = get_keyval(conf, "cutoff", r0, r0);
 
   if (get_keyval(conf, "cutoff3", r0_vec, r0_vec)) {
-    if (b_isotropic) {
-      error_code |= cvmodule->error("Error: cannot specify \"cutoff\" and \"cutoff3\" "
-                               "at the same time.\n",
-                               COLVARS_INPUT_ERROR);
+
+    if (b_redefined_cutoff) {
+      error_code |=
+          cvmodule->error("Error: cannot specify \"cutoff\" and \"cutoff3\" at the same time.\n",
+                          COLVARS_INPUT_ERROR);
     }
 
-    b_anisotropic = true;
     // remove meaningless negative signs
     if (r0_vec.x < 0.0) r0_vec.x *= -1.0;
     if (r0_vec.y < 0.0) r0_vec.y *= -1.0;
     if (r0_vec.z < 0.0) r0_vec.z *= -1.0;
+  } else {
+    if (b_redefined_cutoff) {
+      r0_vec = {r0, r0, r0};
+    }
   }
 
   get_keyval(conf, "expNumer", en, en);
@@ -122,14 +126,14 @@ colvar::coordnum::~coordnum()
 
 template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
 {
-  const cvm::rvector inv_r0_vec(
-    1.0 / ((flags & ef_anisotropic) ? r0_vec.x : r0),
-    1.0 / ((flags & ef_anisotropic) ? r0_vec.y : r0),
-    1.0 / ((flags & ef_anisotropic) ? r0_vec.z : r0));
-  cvm::rvector const inv_r0sq_vec(
+  const cvm::rvector inv_r0_vec{
+    1.0 / r0_vec.x,
+    1.0 / r0_vec.y,
+    1.0 / r0_vec.z};
+  cvm::rvector const inv_r0sq_vec{
     inv_r0_vec.x*inv_r0_vec.x,
     inv_r0_vec.y*inv_r0_vec.y,
-    inv_r0_vec.z*inv_r0_vec.z);
+    inv_r0_vec.z*inv_r0_vec.z};
   if (b_group2_center_only) {
     const cvm::atom_pos group2_com = group2->center_of_mass();
     cvm::rvector group2_com_grad(0, 0, 0);
@@ -189,41 +193,17 @@ template<int compute_flags> int colvar::coordnum::compute_coordnum()
 
   bool *pairlist_elem = use_pairlist ? pairlist : NULL;
 
-  if (b_anisotropic) {
-
-    if (use_pairlist) {
-      if (rebuild_pairlist) {
-        int const flags = compute_flags | ef_anisotropic | ef_use_pairlist |
-          ef_rebuild_pairlist;
-        main_loop<flags>(&pairlist_elem);
-      } else {
-        int const flags = compute_flags | ef_anisotropic | ef_use_pairlist;
-        main_loop<flags>(&pairlist_elem);
-      }
-
+  if (use_pairlist) {
+    if (rebuild_pairlist) {
+      int const flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
+      main_loop<flags>(&pairlist_elem);
     } else {
-
-      int const flags = compute_flags | ef_anisotropic;
-      main_loop<flags>(NULL);
+      int const flags = compute_flags | ef_use_pairlist;
+      main_loop<flags>(&pairlist_elem);
     }
-
   } else {
-
-    if (use_pairlist) {
-
-      if (rebuild_pairlist) {
-        int const flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
-        main_loop<flags>(&pairlist_elem);
-      } else {
-        int const flags = compute_flags | ef_use_pairlist;
-        main_loop<flags>(&pairlist_elem);
-      }
-
-    } else {
-
-      int const flags = compute_flags;
-      main_loop<flags>(NULL);
-    }
+    int const flags = compute_flags;
+    main_loop<flags>(NULL);
   }
 
   return COLVARS_OK;
@@ -252,8 +232,8 @@ void colvar::coordnum::calc_gradients()
 
 colvar::h_bond::h_bond()
 {
-  colvarproxy *proxy = cvmodule->proxy;
-  r0 = proxy->angstrom_to_internal(3.3);
+  cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(3.3);
+  r0_vec = {r0, r0, r0};
   set_function_type("hBond");
   x.type(colvarvalue::type_scalar);
   init_scalar_boundaries(0.0, 1.0);
@@ -287,7 +267,11 @@ int colvar::h_bond::init(std::string const &conf)
     modify_atom.add_atom(cvm::atom_group::init_atom_from_proxy(p, d_num));
   }
 
-  get_keyval(conf, "cutoff",   r0, r0);
+  cvm::real r0 = r0_vec[0];
+  bool const b_redefined_cutoff = get_keyval(conf, "cutoff", r0, r0);
+  if (b_redefined_cutoff) {
+    r0_vec = {r0, r0, r0};
+  }
   get_keyval(conf, "expNumer", en, en);
   get_keyval(conf, "expDenom", ed, ed);
 
@@ -311,7 +295,7 @@ colvar::h_bond::h_bond(cvm::atom_group::simple_atom const &acceptor,
                        cvm::real r0_i, int en_i, int ed_i)
   : h_bond()
 {
-  r0 = r0_i;
+  r0_vec = {r0_i, r0_i, r0_i};
   en = en_i;
   ed = ed_i;
   register_atom_group(new cvm::atom_group);
@@ -324,7 +308,6 @@ colvar::h_bond::h_bond(cvm::atom_group::simple_atom const &acceptor,
 void colvar::h_bond::calc_value()
 {
   int const flags = coordnum::ef_null;
-  cvm::rvector const r0_vec(0.0); // TODO enable the flag?
   cvm::rvector G1, G2;
   const cvm::atom_pos A1{atom_groups[0]->pos_x(0),
                          atom_groups[0]->pos_y(0),
@@ -332,14 +315,18 @@ void colvar::h_bond::calc_value()
   const cvm::atom_pos A2{atom_groups[0]->pos_x(1),
                          atom_groups[0]->pos_y(1),
                          atom_groups[0]->pos_z(1)};
-  const cvm::rvector inv_r0_vec(
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.x : r0),
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.y : r0),
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.z : r0));
-  cvm::rvector const inv_r0sq_vec(
-    inv_r0_vec.x*inv_r0_vec.x,
-    inv_r0_vec.y*inv_r0_vec.y,
-    inv_r0_vec.z*inv_r0_vec.z);
+
+  const cvm::rvector inv_r0_vec{
+    1.0 / r0_vec.x,
+    1.0 / r0_vec.y,
+    1.0 / r0_vec.z
+  };
+  cvm::rvector const inv_r0sq_vec{
+    inv_r0_vec.x * inv_r0_vec.x,
+    inv_r0_vec.y * inv_r0_vec.y,
+    inv_r0_vec.z * inv_r0_vec.z
+  };
+
   x.real_value =
     coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                         atom_groups[0]->pos_x(0),
@@ -362,15 +349,16 @@ void colvar::h_bond::calc_value()
 void colvar::h_bond::calc_gradients()
 {
   int const flags = coordnum::ef_gradients;
-  cvm::rvector const r0_vec(0.0); // TODO enable the flag?
-  const cvm::rvector inv_r0_vec(
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.x : r0),
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.y : r0),
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.z : r0));
-  cvm::rvector const inv_r0sq_vec(
+  const cvm::rvector inv_r0_vec{
+    1.0 / r0_vec.x,
+    1.0 / r0_vec.y,
+    1.0 / r0_vec.z
+  };
+  cvm::rvector const inv_r0sq_vec{
     inv_r0_vec.x*inv_r0_vec.x,
     inv_r0_vec.y*inv_r0_vec.y,
-    inv_r0_vec.z*inv_r0_vec.z);
+    inv_r0_vec.z*inv_r0_vec.z
+  };
   coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                       atom_groups[0]->pos_x(0),
                                       atom_groups[0]->pos_y(0),
@@ -388,12 +376,12 @@ void colvar::h_bond::calc_gradients()
 }
 
 
-
 colvar::selfcoordnum::selfcoordnum()
 {
   set_function_type("selfCoordNum");
   x.type(colvarvalue::type_scalar);
-  r0 = cvmodule->proxy->angstrom_to_internal(4.0);
+  cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(4.0);
+  r0_vec = {r0, r0, r0};
 }
 
 
@@ -407,7 +395,11 @@ int colvar::selfcoordnum::init(std::string const &conf)
     return error_code | COLVARS_INPUT_ERROR;
   }
 
-  get_keyval(conf, "cutoff", r0, r0);
+  cvm::real r0 = r0_vec[0];
+  bool const b_redefined_cutoff = get_keyval(conf, "cutoff", r0, r0);
+  if (b_redefined_cutoff) {
+    r0_vec = {r0, r0, r0};
+  }
   get_keyval(conf, "expNumer", en, en);
   get_keyval(conf, "expDenom", ed, ed);
 
@@ -454,8 +446,6 @@ colvar::selfcoordnum::~selfcoordnum()
 
 template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
 {
-  cvm::rvector const r0_vec(0.0); // TODO enable the flag?
-
   bool const use_pairlist = (pairlist != NULL);
   bool const rebuild_pairlist = (pairlist != NULL) &&
     (cvmodule->step_relative() % pairlist_freq == 0);
@@ -466,14 +456,16 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
 
   // Always isotropic (TODO: enable the ellipsoid?)
 #define CALL_KERNEL(flags) do {                         \
-  const cvm::rvector inv_r0_vec(                                  \
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.x : r0),   \
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.y : r0),   \
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.z : r0));  \
-  cvm::rvector const inv_r0sq_vec(                                \
-    inv_r0_vec.x*inv_r0_vec.x,                                    \
-    inv_r0_vec.y*inv_r0_vec.y,                                    \
-    inv_r0_vec.z*inv_r0_vec.z);                                   \
+  const cvm::rvector inv_r0_vec{                        \
+    1.0 / r0_vec.x,                                     \
+    1.0 / r0_vec.y,                                     \
+    1.0 / r0_vec.z                                      \
+  };                                                    \
+  cvm::rvector const inv_r0sq_vec{                      \
+    inv_r0_vec.x*inv_r0_vec.x,                          \
+    inv_r0_vec.y*inv_r0_vec.y,                          \
+    inv_r0_vec.z*inv_r0_vec.z                           \
+  };                                                    \
   for (i = 0; i < n - 1; i++) {                         \
     for (j = i + 1; j < n; j++) {                       \
       x.real_value +=                                   \
@@ -537,11 +529,8 @@ colvar::groupcoordnum::groupcoordnum()
   set_function_type("groupCoord");
   x.type(colvarvalue::type_scalar);
   init_scalar_boundaries(0.0, 1.0);
-  colvarproxy *proxy = cvmodule->proxy;
-  r0 = proxy->angstrom_to_internal(4.0);
-  r0_vec = cvm::rvector(proxy->angstrom_to_internal(4.0),
-                        proxy->angstrom_to_internal(4.0),
-                        proxy->angstrom_to_internal(4.0));
+  cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(4.0);
+  r0_vec = {r0, r0, r0};
 }
 
 
@@ -554,19 +543,23 @@ int colvar::groupcoordnum::init(std::string const &conf)
     return cvmodule->error("Error: neither group can be a dummy atom\n", COLVARS_INPUT_ERROR);
   }
 
-  bool const b_scale = get_keyval(conf, "cutoff", r0, r0);
+  cvm::real r0 = r0_vec[0];
+  bool const b_redefined_cutoff = get_keyval(conf, "cutoff", r0, r0);
 
   if (get_keyval(conf, "cutoff3", r0_vec, r0_vec)) {
-    if (b_scale) {
+    if (b_redefined_cutoff) {
       error_code |=
           cvmodule->error("Error: cannot specify \"cutoff\" and \"cutoff3\" at the same time.\n",
                      COLVARS_INPUT_ERROR);
     }
-    b_anisotropic = true;
     // remove meaningless negative signs
     if (r0_vec.x < 0.0) r0_vec.x *= -1.0;
     if (r0_vec.y < 0.0) r0_vec.y *= -1.0;
     if (r0_vec.z < 0.0) r0_vec.z *= -1.0;
+  } else {
+    if (b_redefined_cutoff) {
+      r0_vec = {r0, r0, r0};
+    }
   }
 
   get_keyval(conf, "expNumer", en, en);
@@ -593,32 +586,25 @@ void colvar::groupcoordnum::calc_value()
 {
   const cvm::atom_pos A1 = group1->center_of_mass();
   const cvm::atom_pos A2 = group2->center_of_mass();
-#define CALL_KERNEL(flags) do { \
-  const cvm::rvector inv_r0_vec(                         \
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.x : r0),    \
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.y : r0),    \
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.z : r0));   \
-  cvm::rvector const inv_r0sq_vec(                       \
-    inv_r0_vec.x*inv_r0_vec.x,                           \
-    inv_r0_vec.y*inv_r0_vec.y,                           \
-    inv_r0_vec.z*inv_r0_vec.z);                          \
-  cvm::rvector G1, G2; \
-  const cvm::rvector r0sq_vec(r0_vec.x*r0_vec.x,   \
-                              r0_vec.y*r0_vec.y,   \
-                              r0_vec.z*r0_vec.z);  \
+#define CALL_KERNEL(flags) do {                    \
+  const cvm::rvector inv_r0_vec{                   \
+    1.0 / r0_vec.x,                                \
+    1.0 / r0_vec.y,                                \
+    1.0 / r0_vec.z                                 \
+  };                                               \
+  cvm::rvector const inv_r0sq_vec{                 \
+    inv_r0_vec.x*inv_r0_vec.x,                     \
+    inv_r0_vec.y*inv_r0_vec.y,                     \
+    inv_r0_vec.z*inv_r0_vec.z                      \
+  };                                               \
+  cvm::rvector G1, G2;                             \
   x.real_value = coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed, \
                                                      A1.x, A1.y, A1.z, \
                                                      A2.x, A2.y, A2.z, \
                                                      G1.x, G1.y, G1.z, \
                                                      G2.x, G2.y, G2.z, NULL, 0.0, cvmodule); \
 } while (0);
-  if (b_anisotropic) {
-    int const flags = coordnum::ef_anisotropic;
-    CALL_KERNEL(flags);
-  } else {
-    int const flags = coordnum::ef_null;
-    CALL_KERNEL(flags);
-  }
+  CALL_KERNEL(coordnum::ef_null);
 #undef CALL_KERNEL
 }
 
@@ -629,27 +615,24 @@ void colvar::groupcoordnum::calc_gradients()
   const cvm::atom_pos A2 = group2->center_of_mass();
   cvm::rvector G1(0, 0, 0), G2(0, 0, 0);
 #define CALL_KERNEL(flags) do { \
-  const cvm::rvector inv_r0_vec(                        \
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.x : r0),    \
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.y : r0),    \
-    1.0 / ((flags & coordnum::ef_anisotropic) ? r0_vec.z : r0));   \
-  cvm::rvector const inv_r0sq_vec(                      \
-    inv_r0_vec.x*inv_r0_vec.x,                          \
-    inv_r0_vec.y*inv_r0_vec.y,                          \
-    inv_r0_vec.z*inv_r0_vec.z);                         \
+  const cvm::rvector inv_r0_vec{              \
+    1.0 / r0_vec.x,                           \
+    1.0 / r0_vec.y,                           \
+    1.0 / r0_vec.z                            \
+  };                                          \
+  cvm::rvector const inv_r0sq_vec{            \
+    inv_r0_vec.x*inv_r0_vec.x,                \
+    inv_r0_vec.y*inv_r0_vec.y,                \
+    inv_r0_vec.z*inv_r0_vec.z                 \
+  };                                          \
   coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed, \
                                       A1.x, A1.y, A1.z, \
                                       A2.x, A2.y, A2.z, \
                                       G1.x, G1.y, G1.z, \
                                       G2.x, G2.y, G2.z, NULL, 0.0, cvmodule); \
 } while (0);
-  if (b_anisotropic) {
-    int const flags = coordnum::ef_gradients | coordnum::ef_anisotropic;
-    CALL_KERNEL(flags);
-  } else {
-    int const flags = coordnum::ef_gradients;
-    CALL_KERNEL(flags);
-  }
+  int const flags = coordnum::ef_gradients;
+  CALL_KERNEL(flags);
   group1->set_weighted_gradient(G1);
   group2->set_weighted_gradient(G2);
 }
