@@ -45,7 +45,7 @@ public:
   /// this pair \param tolerance A pair is defined as having a larger
   /// coordination than this number
   template <int flags>
-  static cvm::real switching_function(cvm::real const &r0, cvm::rvector const &inv_r0_vec,
+  static cvm::real switching_function(cvm::rvector const &inv_r0_vec,
                                       cvm::rvector const &inv_r0sq_vec, int en, int ed,
                                       const cvm::real a1x, const cvm::real a1y, const cvm::real a1z,
                                       const cvm::real a2x, const cvm::real a2y, const cvm::real a2z,
@@ -171,8 +171,7 @@ protected:
 
 
 template<int flags>
-cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
-                                               cvm::rvector const &inv_r0_vec,
+cvm::real colvar::coordnum::switching_function(cvm::rvector const &inv_r0_vec,
                                                cvm::rvector const &inv_r0sq_vec,
                                                int en,
                                                int ed,
