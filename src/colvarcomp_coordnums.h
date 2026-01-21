@@ -170,4 +170,110 @@ protected:
 };
 
 
+template<int flags>
+cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
+                                               cvm::rvector const &inv_r0_vec,
+                                               cvm::rvector const &inv_r0sq_vec,
+                                               int en,
+                                               int ed,
+                                               const cvm::real a1x,
+                                               const cvm::real a1y,
+                                               const cvm::real a1z,
+                                               const cvm::real a2x,
+                                               const cvm::real a2y,
+                                               const cvm::real a2z,
+                                               cvm::real& g1x,
+                                               cvm::real& g1y,
+                                               cvm::real& g1z,
+                                               cvm::real& g2x,
+                                               cvm::real& g2y,
+                                               cvm::real& g2z,
+                                               bool **pairlist_elem,
+                                               cvm::real pairlist_tol)
+{
+  if ((flags & ef_use_pairlist) && !(flags & ef_rebuild_pairlist)) {
+    bool const within = **pairlist_elem;
+    (*pairlist_elem)++;
+    if (!within) {
+      return 0.0;
+    }
+  }
+
+  const cvm::atom_pos pos1{a1x, a1y, a1z};
+  const cvm::atom_pos pos2{a2x, a2y, a2z};
+  cvm::rvector const diff = cvm::position_distance(pos1, pos2);
+  cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
+                               diff.y * inv_r0_vec.y,
+                               diff.z * inv_r0_vec.z);
+  cvm::real const l2 = scal_diff.norm2();
+
+  // Assume en and ed are even integers, and avoid sqrt in the following
+  int const en2 = en/2;
+  int const ed2 = ed/2;
+
+  cvm::real const xn = cvm::integer_power(l2, en2);
+  cvm::real const xd = cvm::integer_power(l2, ed2);
+  cvm::real const eps_l2 = 1.0e-7;
+  cvm::real const h = l2 - 1.0;
+  cvm::real const en2_r = (cvm::real) en2;
+  cvm::real const ed2_r = (cvm::real) ed2;
+  cvm::real func_no_pairlist;
+
+  if (std::abs(h) < eps_l2) {
+    // Order-2 Taylor expansion: c0 + c1*h + c2*h^2
+    cvm::real const c0 = en2_r / ed2_r;
+    cvm::real const c1 = (en2_r * (en2_r - ed2_r)) / (2.0 * ed2_r);
+    cvm::real const c2 = (en2_r * (en2_r - ed2_r) * (2.0 * en2_r - ed2_r - 3.0)) / (12.0 * ed2_r);
+    func_no_pairlist = c0 + h * (c1 + h * c2);
+  } else {
+    func_no_pairlist = (1.0 - xn) / (1.0 - xd);
+  }
+
+  cvm::real func, inv_one_pairlist_tol;
+  if (flags & ef_use_pairlist) {
+    inv_one_pairlist_tol = 1 / (1.0-pairlist_tol);
+    func = (func_no_pairlist - pairlist_tol) * inv_one_pairlist_tol;
+  } else {
+    func = func_no_pairlist;
+  }
+
+  if (flags & ef_rebuild_pairlist) {
+    //Particles just outside of the cutoff also are considered if they come near.
+    **pairlist_elem = (func > (-pairlist_tol * 0.5)) ? true : false;
+    (*pairlist_elem)++;
+  }
+  //If the value is too small, we need to exclude it, rather than let it contribute to the sum or the gradients.
+  if (func < 0)
+    return 0;
+
+  if (flags & ef_gradients) {
+    // Logarithmic derivative: 1st-order Taylor expansion around l2 = 1
+    cvm::real log_deriv;
+    if (std::abs(h) < eps_l2) {
+      cvm::real const g0 = 0.5 * (en2_r - ed2_r);
+      cvm::real const g1 = ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0)) / 12.0;
+      log_deriv = g0 + h * g1;
+    } else {
+      log_deriv = (ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2));
+    }
+    cvm::real const dFdl2 = (flags & ef_use_pairlist) ?
+      func_no_pairlist * inv_one_pairlist_tol * log_deriv :
+      func * log_deriv;
+
+    cvm::rvector const dl2dx((2.0 * inv_r0sq_vec.x) * diff.x,
+                             (2.0 * inv_r0sq_vec.y) * diff.y,
+                             (2.0 * inv_r0sq_vec.z) * diff.z);
+
+    const cvm::rvector G = dFdl2*dl2dx;
+    g1x += -1.0*G.x;
+    g1y += -1.0*G.y;
+    g1z += -1.0*G.z;
+    g2x +=      G.x;
+    g2y +=      G.y;
+    g2z +=      G.z;
+  }
+
+  return func;
+}
+
 #endif // COLVARCOMP_COORDNUM_H
