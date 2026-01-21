@@ -1,0 +1,13 @@
+diff --git a/src/GlobalMaster.C b/src/GlobalMaster.C
+index 49f8b89c..0215747e 100644
+--- a/src/GlobalMaster.C
++++ b/src/GlobalMaster.C
+@@ -93,6 +93,8 @@ GlobalMaster::GlobalMaster() {
+   groupPositionEnd = 0;
+   groupMassBegin = 0;
+   groupMassEnd = 0;
++  gridObjIndexBegin = 0;
++  gridObjIndexEnd = 0;
+   gridObjValueBegin = 0;
+   gridObjValueEnd = 0;
+   lastAtomsForcedBegin = 0;
