@@ -142,7 +142,8 @@ colvar::coordnum::~coordnum()
 }
 
 
-template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
+template <bool use_group1_com, bool use_group2_com, int flags>
+void colvar::coordnum::main_loop(bool **pairlist_elem)
 {
   const cvm::rvector inv_r0_vec{
     1.0 / r0_vec.x,
@@ -152,54 +153,51 @@ template<int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
     inv_r0_vec.x*inv_r0_vec.x,
     inv_r0_vec.y*inv_r0_vec.y,
     inv_r0_vec.z*inv_r0_vec.z};
-  if (b_group2_center_only) {
-    const cvm::atom_pos group2_com = group2->center_of_mass();
-    cvm::rvector group2_com_grad(0, 0, 0);
-    for (size_t i = 0; i < group1->size(); ++i) {
-      x.real_value += switching_function<flags>(inv_r0_vec,
-                                                inv_r0sq_vec, en, ed,
-                                                group1->pos_x(i),
-                                                group1->pos_y(i),
-                                                group1->pos_z(i),
-                                                group2_com.x,
-                                                group2_com.y,
-                                                group2_com.z,
-                                                group1->grad_x(i),
-                                                group1->grad_y(i),
-                                                group1->grad_z(i),
-                                                group2_com_grad.x,
-                                                group2_com_grad.y,
-                                                group2_com_grad.z,
-                                                pairlist_elem,
-                                                tolerance);
+
+  size_t const group1_num_coords = use_group1_com ? 1 : group1->size();
+  size_t const group2_num_coords = use_group2_com ? 1 : group2->size();
+
+  cvm::atom_pos const group1_com = group1->center_of_mass();
+  cvm::atom_pos const group2_com = group2->center_of_mass();
+  cvm::rvector group1_com_grad, group2_com_grad;
+
+  for (size_t i = 0; i < group1_num_coords; ++i) {
+
+    cvm::real const x1 = use_group1_com ? group1_com.x : group1->pos_x(i);
+    cvm::real const y1 = use_group1_com ? group1_com.y : group1->pos_y(i);
+    cvm::real const z1 = use_group1_com ? group1_com.z : group1->pos_z(i);
+
+    cvm::real &gx1 = use_group1_com ? group1_com_grad.x : group1->grad_x(i);
+    cvm::real &gy1 = use_group1_com ? group1_com_grad.y : group1->grad_y(i);
+    cvm::real &gz1 = use_group1_com ? group1_com_grad.z : group1->grad_z(i);
+
+    for (size_t j = 0; j < group2_num_coords; ++j) {
+
+      cvm::real const x2 = use_group2_com ? group2_com.x : group2->pos_x(j);
+      cvm::real const y2 = use_group2_com ? group2_com.y : group2->pos_y(j);
+      cvm::real const z2 = use_group2_com ? group2_com.z : group2->pos_z(j);
+
+      cvm::real &gx2 = use_group2_com ? group2_com_grad.x : group2->grad_x(j);
+      cvm::real &gy2 = use_group2_com ? group2_com_grad.y : group2->grad_y(j);
+      cvm::real &gz2 = use_group2_com ? group2_com_grad.z : group2->grad_z(j);
+
+      x.real_value += switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                                x1, y1, z1, x2, y2, z2,
+                                                gx1, gy1, gz1, gx2, gy2, gz2,
+                                                pairlist_elem, tolerance);
     }
+  }
+
+  if (use_group1_com) {
+    group1->set_weighted_gradient(group1_com_grad);
+  }
+  if (use_group2_com) {
     group2->set_weighted_gradient(group2_com_grad);
-  } else {
-    for (size_t i = 0; i < group1->size(); ++i) {
-      for (size_t j = 0; j < group2->size(); ++j) {
-        x.real_value += switching_function<flags>(inv_r0_vec,
-                                                  inv_r0sq_vec, en, ed,
-                                                  group1->pos_x(i),
-                                                  group1->pos_y(i),
-                                                  group1->pos_z(i),
-                                                  group2->pos_x(j),
-                                                  group2->pos_y(j),
-                                                  group2->pos_z(j),
-                                                  group1->grad_x(i),
-                                                  group1->grad_y(i),
-                                                  group1->grad_z(i),
-                                                  group2->grad_x(j),
-                                                  group2->grad_y(j),
-                                                  group2->grad_z(j),
-                                                  pairlist_elem,
-                                                  tolerance);
-      }
-    }
   }
 }
 
 
-template<int compute_flags> int colvar::coordnum::compute_coordnum()
+template<bool use_group1_com, bool use_group2_com, int compute_flags> int colvar::coordnum::compute_coordnum()
 {
   bool const use_pairlist = (pairlist != NULL);
   bool const rebuild_pairlist = (pairlist != NULL) &&
@@ -210,14 +208,14 @@ template<int compute_flags> int colvar::coordnum::compute_coordnum()
   if (use_pairlist) {
     if (rebuild_pairlist) {
       int const flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
-      main_loop<flags>(&pairlist_elem);
+      main_loop<use_group1_com, use_group2_com, flags>(&pairlist_elem);
     } else {
       int const flags = compute_flags | ef_use_pairlist;
-      main_loop<flags>(&pairlist_elem);
+      main_loop<use_group1_com, use_group2_com, flags>(&pairlist_elem);
     }
   } else {
     int const flags = compute_flags;
-    main_loop<flags>(NULL);
+    main_loop<use_group1_com, use_group2_com, flags>(NULL);
   }
 
   return COLVARS_OK;
@@ -228,9 +226,40 @@ void colvar::coordnum::calc_value()
 {
   x.real_value = 0.0;
   if (is_enabled(f_cvc_gradient)) {
-    compute_coordnum<ef_gradients>();
+
+    constexpr int flags = ef_gradients;
+
+    if (b_group1_center_only) {
+      if (b_group2_center_only) {
+        compute_coordnum<true, true, flags>();
+      } else {
+        compute_coordnum<true, false, flags>();
+      }
+    } else {
+      if (b_group2_center_only) {
+        compute_coordnum<false, true, flags>();
+      } else {
+        compute_coordnum<false, false, flags>();
+      }
+    }
+
   } else {
-    compute_coordnum<ef_null>();
+
+    constexpr int flags = ef_null;
+
+    if (b_group1_center_only) {
+      if (b_group2_center_only) {
+        compute_coordnum<true, true, flags>();
+      } else {
+        compute_coordnum<true, false, flags>();
+      }
+    } else {
+      if (b_group2_center_only) {
+        compute_coordnum<false, true, flags>();
+      } else {
+        compute_coordnum<false, false, flags>();
+      }
+    }
   }
 }
 
@@ -475,64 +504,23 @@ void colvar::selfcoordnum::calc_gradients()
 }
 
 
-
-colvar::groupcoordnum::groupcoordnum()
-{
-  set_function_type("groupCoord");
-}
+colvar::groupcoordnum::groupcoordnum() { set_function_type("groupCoord"); }
 
 
 void colvar::groupcoordnum::calc_value()
 {
-  const cvm::atom_pos A1 = group1->center_of_mass();
-  const cvm::atom_pos A2 = group2->center_of_mass();
-#define CALL_KERNEL(flags) do {                    \
-  const cvm::rvector inv_r0_vec{                   \
-    1.0 / r0_vec.x,                                \
-    1.0 / r0_vec.y,                                \
-    1.0 / r0_vec.z                                 \
-  };                                               \
-  cvm::rvector const inv_r0sq_vec{                 \
-    inv_r0_vec.x*inv_r0_vec.x,                     \
-    inv_r0_vec.y*inv_r0_vec.y,                     \
-    inv_r0_vec.z*inv_r0_vec.z                      \
-  };                                               \
-  cvm::rvector G1, G2;                             \
-  x.real_value = coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed, \
-                                                     A1.x, A1.y, A1.z, \
-                                                     A2.x, A2.y, A2.z, \
-                                                     G1.x, G1.y, G1.z, \
-                                                     G2.x, G2.y, G2.z, NULL, 0.0); \
-} while (0);
-  CALL_KERNEL(coordnum::ef_null);
-#undef CALL_KERNEL
+  x.real_value = 0.0;
+  if (is_enabled(f_cvc_gradient)) {
+    constexpr int flags = ef_gradients;
+    compute_coordnum<true, true, flags>();
+  } else {
+    constexpr int flags = ef_null;
+    compute_coordnum<true, true, flags>();
+  }
 }
 
 
 void colvar::groupcoordnum::calc_gradients()
 {
-  const cvm::atom_pos A1 = group1->center_of_mass();
-  const cvm::atom_pos A2 = group2->center_of_mass();
-  cvm::rvector G1(0, 0, 0), G2(0, 0, 0);
-#define CALL_KERNEL(flags) do { \
-  const cvm::rvector inv_r0_vec{              \
-    1.0 / r0_vec.x,                           \
-    1.0 / r0_vec.y,                           \
-    1.0 / r0_vec.z                            \
-  };                                          \
-  cvm::rvector const inv_r0sq_vec{            \
-    inv_r0_vec.x*inv_r0_vec.x,                \
-    inv_r0_vec.y*inv_r0_vec.y,                \
-    inv_r0_vec.z*inv_r0_vec.z                 \
-  };                                          \
-  coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed, \
-                                      A1.x, A1.y, A1.z, \
-                                      A2.x, A2.y, A2.z, \
-                                      G1.x, G1.y, G1.z, \
-                                      G2.x, G2.y, G2.z, NULL, 0.0); \
-} while (0);
-  int const flags = coordnum::ef_gradients;
-  CALL_KERNEL(flags);
-  group1->set_weighted_gradient(G1);
-  group2->set_weighted_gradient(G2);
+  // Gradients are computed by calc_value() if f_cvc_gradients is enabled
 }
