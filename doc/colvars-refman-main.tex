@@ -5947,19 +5947,19 @@ The free energy surface itself can be computed depending on the value of \texttt
 {\texttt{yes}}
 {
   This option, active by default when the dimension of the colvar space is 3 or less, enables the calculation of an integrated free energy surface every time ABF output files are written.
-  In dimension 2 or 3, integration is performed by solving a Poisson equation:~\cite{Henin2021}
+  In dimension 2 or 3, by default integration is performed by solving an unweighted Poisson equation:~\cite{Henin2021}
   \begin{equation}
    \nabla^2 A_t = \nabla \cdot G_t
   \end{equation}
-  wehere $G_t$ is the estimated gradient at time $t$, and $A_t$ is corresponding free energy surface.
+  where $G_t$ is the estimated gradient at time $t$, and $A_t$ is corresponding free energy surface.
   The free energy surface is written under the file name \texttt{<outputName>.pmf},
   in a plain text format (see \ref{sec:colvar_multicolumn_grid}) that can be read by most data plotting
   and analysis programs (e.g.{} Gnuplot).
   Periodic boundary conditions are applied to periodic coordinates, and Neumann boundary
   conditions otherwise (imposed free energy gradient at the boundary of the domain).
   The grid used for free energy discretization is extended by one point along
-  non-periodic coordinates, but not along periodic coordinates. See ref.~\cite{Henin2021}
-  for details.
+  non-periodic coordinates, but not along periodic coordinates. See ref.~\cite{Henin2021}, ~\cite{ChenFDM101}
+  for implementation details.
 }
 
 \item \keydef{integrateTol}{\texttt{abf}}{%
@@ -5981,6 +5981,22 @@ Maximum iterations for free energy integration}
   is stopped when the number of iterations reaches \texttt{integrateMaxIterations},
   unless the RMS error has reached \texttt{integrateTol} before.
 }
+\item \keydef{integrateWeighted}{\texttt{abf}}{%
+  Use weighted method to integrate free energy surface from ABF gradients}
+{boolean}
+{\texttt{no}}{
+  This option is disabled by default. If activated, the calculation of the free energy will be performed using weighted
+  integration. This means solving the following weighted Poisson equation:
+    \begin{equation}
+      \nabla\cdot \theta \nabla A_t = \nabla \cdot G_t.
+    \end{equation}
+  With $\theta$, the weights, corresponding to how much an area has been visited during the simulation. The weights values
+  are all strictly superior to 0 so the problem is well-posed. For any cell with zero visits, its weight is assigned to
+  the value corresponding to the 10th percentile of the visit-count distribution. Moreover, visit counts are capped at
+  the 50th percentile measured from the upper tail (i.e., the 50th percentile from the lower tail). The choice of the
+  percentile is hard code. The goal is that the most visited cells which corresponds to the cells where the gradient is
+  the best known have more importance in the free energy calculation.
+  }
 \end{itemize}
 
 

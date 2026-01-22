@@ -2,14 +2,25 @@ colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars:   https://doi.org/10.1080/00268976.2013.813594
 colvars: as well as all other papers listed below for individual features used.
-colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
-colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - C++ language version: 201703
+colvars:   - Multiple replicas: enabled (replica number 1 of 1)
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: available
 colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: The final output state file will be "test.colvars.state".
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
 colvars: # units = "" [default]
-colvars: # smp = on [default]
+colvars: # smp = "" [default]
+colvars: SMP parallelism is not set.
+colvars: Available SMP parallelism modes of this proxy are:
+colvars:    - cvcs
+colvars:    - inner_loop
+colvars:    - none
+colvars: Set SMP parallelism to the preferred (default) mode to the proxy.
+colvars: SMP parallelism will be applied to Colvars components.
+colvars:   - SMP parallelism: enabled (num. threads = 4)
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # scriptedColvarForces = off [default]
@@ -18,7 +29,7 @@ colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "s"
-colvars:   Initializing a new "rmsd" component.
+colvars:     Initializing a new "rmsd" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -45,7 +56,7 @@ colvars:     # refPositionsCol = "" [default]
 colvars:     Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.
 colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
-colvars:   Initializing a new "rmsd" component.
+colvars:     Initializing a new "rmsd" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -83,14 +94,14 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 0.05
 colvars:   # lowerBoundary = -0.2
 colvars:   # upperBoundary = 1.2
+colvars:   # hardLowerBoundary = off [default]
+colvars:   # hardUpperBoundary = off [default]
+colvars:   # expandBoundaries = off [default]
 colvars:   Reading legacy options lowerWall and lowerWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
 colvars:   # lowerWall = -0.2
 colvars:   Reading legacy options upperWall and upperWallConstant: consider using a harmonicWalls restraint (caution: force constant would then be scaled by width^2).
 colvars:   # upperWall = 1.2
 colvars:   Generating a new harmonicWalls bias for compatibility purposes.
-colvars:   # hardLowerBoundary = off [default]
-colvars:   # hardUpperBoundary = off [default]
-colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = on
 colvars:   Enabling the extended Lagrangian term for colvar "s".
 colvars:   # extendedTemp = 300 [default]
@@ -112,7 +123,7 @@ colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "z"
-colvars:   Initializing a new "rmsd" component.
+colvars:     Initializing a new "rmsd" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -138,7 +149,7 @@ colvars:     # refPositionsFile = "../Common/da.xyz"
 colvars:     # refPositionsCol = "" [default]
 colvars:     Enabling "centerToReference" and "rotateToReference", to minimize RMSD before calculating it as a variable: if this is not the desired behavior, disable them explicitly within the "atoms" block.
 colvars:     This is a standard minimum RMSD, derivatives of the optimal rotation will not be computed as they cancel out in the gradients.
-colvars:   Initializing a new "rmsd" component.
+colvars:     Initializing a new "rmsd" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -204,26 +215,37 @@ colvars:   Initializing a new "abf" instance.
 colvars:   # name = "abf1" [default]
 colvars:   # colvars = { s, z }
 colvars:   # stepZeroData = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 0 [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # applyBias = on [default]
-colvars:   # updateBias = on [default]
 colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
 colvars:   # fullSamples = 0
+colvars:   # minSamples = 0 [default]
 colvars:   # inputPrefix =  [default]
 colvars:   # historyFreq = 0 [default]
 colvars:   # shared = off [default]
+colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
 colvars:   # CZARestimator = on [default]
 colvars:   # integrate = on [default]
+colvars:   29 computation : 27
+colvars:   29 computation : 27
 colvars:   # UIestimator = off [default]
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
 colvars: # units = "" [default]
-colvars: # smp = on [default]
+colvars: # smp = "" [default]
+colvars: SMP parallelism is not set.
+colvars: Available SMP parallelism modes of this proxy are:
+colvars:    - cvcs
+colvars:    - inner_loop
+colvars:    - none
+colvars: Set SMP parallelism to the preferred (default) mode to the proxy.
+colvars: SMP parallelism will be applied to Colvars components.
+colvars:   - SMP parallelism: enabled (num. threads = 4)
 colvars: # colvarsTrajFrequency = 1 [default]
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # scriptedColvarForces = off [default]
@@ -232,13 +254,15 @@ colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables initialized, 2 in total.
 colvars: ----------------------------------------------------------------------
+colvars:   # targetLowerWalls =  [default]
+colvars:   # targetUpperWalls =  [default]
 colvars:   Initializing a new "harmonicwalls" instance.
 colvars:   # name = "sw"
 colvars:   # colvars = { s }
 colvars:   # stepZeroData = off [default]
+colvars:   # timeStepFactor = 1
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 0 [default]
-colvars:   # timeStepFactor = 1
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # forceConstant = 1 [default]
@@ -248,6 +272,10 @@ colvars:   # lowerWalls = { -0.2 }
 colvars:   # upperWalls = { 1.2 }
 colvars:   # lowerWallConstant = 0.025
 colvars:   # upperWallConstant = 0.025
+colvars:   # targetLowerWalls = { 0 } [default]
+colvars:   Target lower walls were not provided.
+colvars:   # targetUpperWalls = { 0 } [default]
+colvars:   Target upper walls were not provided.
 colvars:   The lower wall force constant for colvar "s" will be rescaled to 10 according to the specified width (0.05).
 colvars:   The upper wall force constant for colvar "s" will be rescaled to 10 according to the specified width (0.05).
 colvars: ----------------------------------------------------------------------
@@ -272,6 +300,9 @@ colvars: - harmonicWalls colvar bias implementation:
 colvars: - rmsd colvar component:
 colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
 colvars: 
+colvars: - Scripted functions (Tcl):
+colvars:   Fiorin2024 https://doi.org/10.1021/acs.jpcb.4c05604
+colvars: 
 colvars: - ABF colvar bias implementation:
 colvars:   Henin2010 https://doi.org/10.1021/ct9004432
 colvars: 
@@ -285,27 +316,26 @@ colvars:
 colvars: - NAMD engine:
 colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
 colvars: 
-colvars: - Scripted functions (Tcl):
-colvars:   n/a 
-colvars: 
 colvars: updating target temperature (T = 300 K).
 colvars: Updating NAMD interface:
 colvars: updating atomic data (104 atoms).
 colvars: updating group data (0 scalable groups, 0 atoms in total).
 colvars: updating grid object data (0 grid objects in total).
 colvars: updating target temperature (T = 300 K).
+colvars: Current simulation parameters: initial step = 0, integration timestep = 0.5
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Re-initialized atom group for variable "s":0/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
 colvars: Re-initialized atom group for variable "s":1/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
 colvars: Re-initialized atom group for variable "z":0/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
 colvars: Re-initialized atom group for variable "z":1/0. 104 atoms: total mass = 727.821, total charge = 6.70552e-08.
-colvars: The final output state file will be "test.colvars.state".
 colvars: PathCV WARNING: less than 2 RMSDs are above threshold, selecting 2 closest images
 colvars: PathCV STEP 1   next pathCV flags  1 1
-colvars:   Prepared sample and gradient buffers at step 0.
+colvars:   Initializing extended coordinate to colvar value.
+colvars:   Initializing extended coordinate to colvar value.
 colvars: PathCV WARNING: less than 2 RMSDs are above threshold, selecting 2 closest images
 colvars: PathCV STEP 6   next pathCV flags  1 1
 colvars: PathCV WARNING: less than 2 RMSDs are above threshold, selecting 2 closest images
 colvars: PathCV STEP 11   next pathCV flags  1 1
 colvars: Saving collective variables state to "test.colvars.state".
-colvars:   Integrated in 143 steps, error: 9.02625e-07
-colvars:   Integrated in 142 steps, error: 9.86746e-07
+colvars:   Integrated in 137 steps, error: 9.92079e-07
+colvars:   Integrated in 136 steps, error: 8.87757e-07

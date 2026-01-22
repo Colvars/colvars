@@ -16,14 +16,6 @@
 #include "colvargrid.h"
 #include "colvargrid_def.h"
 
-
-
-colvar_grid_count::colvar_grid_count()
-  : colvar_grid<size_t>()
-{
-  mult = 1;
-}
-
 colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
                                      std::string config)
   : colvar_grid<size_t>(colvars, 0, 1, false, nullptr, config)
@@ -32,6 +24,10 @@ colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
 colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
                                      std::shared_ptr<const colvar_grid_params> params)
   : colvar_grid<size_t>(colvars, 0, 1, false, params)
+{}
+
+colvar_grid_count::colvar_grid_count(std::string &filename)
+: colvar_grid<size_t>(filename, 1)
 {}
 
 std::string colvar_grid_count::get_state_params() const
@@ -337,33 +333,29 @@ colvar_grid_gradient::colvar_grid_gradient()
 {}
 
 
-// colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars, std::string config)
-//   : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, nullptr, config), samples(NULL)
-// {}
-
-// colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars,
-//                                            std::shared_ptr<colvar_grid_count> samples_in)
-//   : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, samples_in), samples(samples_in)
-// {
-//   if (samples_in)
-//     samples_in->has_parent_data = true;
-// }
-
 colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars,
                                            std::shared_ptr<colvar_grid_count> samples_in,
                                            std::shared_ptr<const colvar_grid_params> params,
                                            std::string config)
-  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params, config), samples(samples_in)
+  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params ? params : samples_in, config), samples(samples_in)
 {
   if (samples_in)
     samples_in->has_parent_data = true;
 }
 
-
-colvar_grid_gradient::colvar_grid_gradient(std::string const &filename)
+colvar_grid_gradient::colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in)
   : colvar_grid<cvm::real>(filename, 0),
-    samples(nullptr)
+    samples(samples_in)
 {
+  // We have called the colvar_grid constructor, which doesn't know about samples
+  if (samples) {
+    // Need to multiply by weights
+    for (size_t i = 0; i < samples->data.size(); i++) {
+      for (size_t a = 0; a < nd; a++) {
+        data[i*nd+a] *= samples->data[i];
+      }
+    }
+  }
 }
 
 std::string colvar_grid_gradient::get_state_params() const

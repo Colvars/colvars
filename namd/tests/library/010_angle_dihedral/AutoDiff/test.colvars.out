@@ -1,9 +1,13 @@
 colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
-colvars:  https://dx.doi.org/10.1080/00268976.2013.813594
-colvars: in any publication based on this calculation.
-colvars: SMP parallelism is enabled; if needed, use "smp off" to override this.
-colvars: This version was built with the C++11 standard or higher.
+colvars:   https://doi.org/10.1080/00268976.2013.813594
+colvars: as well as all other papers listed below for individual features used.
+colvars: Summary of compile-time features available in this build:
+colvars:   - C++ language version: 201703
+colvars:   - Multiple replicas: enabled (replica number 1 of 1)
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: available
+colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "test.in":
 colvars: # units = "" [default]
@@ -37,15 +41,28 @@ colvars:   group9 (4 atoms)
 colvars:   Protein_C-alpha_10 (1 atoms)
 colvars:   group10 (4 atoms)
 colvars:   heavy_atoms (51 atoms)
-colvars: # smp = on [default]
+colvars:   prot_N (10 atoms)
+colvars:   prot_CA (10 atoms)
+colvars:   prot_C (10 atoms)
+colvars:   prot_O (10 atoms)
+colvars: # smp = "" [default]
+colvars: SMP parallelism is not set.
+colvars: Available SMP parallelism modes of this proxy are:
+colvars:    - cvcs
+colvars:    - inner_loop
+colvars:    - none
+colvars: Set SMP parallelism to the preferred (default) mode to the proxy.
+colvars: SMP parallelism will be applied to Colvars components.
+colvars:   - SMP parallelism: enabled (num. threads = 4)
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "angle"
-colvars:   Initializing a new "angle" component.
+colvars:     Initializing a new "angle" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -55,42 +72,42 @@ colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "Protein_C-alpha_1"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group1".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.011, total charge = -0.1.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "Protein_C-alpha_2"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group2".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group3".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "Protein_C-alpha_3"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group3".
 colvars:       # printAtomIDs = off [default]
@@ -102,8 +119,8 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 6
 colvars:   # lowerBoundary = 0
 colvars:   # upperBoundary = 180
-colvars:   # hardLowerBoundary = off [default]
-colvars:   # hardUpperBoundary = off [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = on [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -116,66 +133,66 @@ colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "dihedral"
-colvars:   Initializing a new "dihedral" component.
+colvars:     Initializing a new "dihedral" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
-colvars:     # period = 0 [default]
+colvars:     # period = 360 [default]
 colvars:     # wrapAround = 0 [default]
 colvars:     # forceNoPBC = off [default]
 colvars:     # scalable = on [default]
 colvars:       Initializing atom group "group1".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "Protein_C-alpha_4"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group1".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group1" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group2".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "Protein_C-alpha_5"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group2".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group2" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group3".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "Protein_C-alpha_6"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group3".
 colvars:       # printAtomIDs = off [default]
 colvars:       Atom group "group3" defined with 1 atoms requested: total mass = 12.011, total charge = 0.07.
 colvars:       Initializing atom group "group4".
 colvars:       # name = "" [default]
-colvars:       # centerReference = off [default]
-colvars:       # rotateReference = off [default]
+colvars:       # centerToOrigin = off [default]
+colvars:       # centerToReference = off [default]
+colvars:       # rotateToReference = off [default]
 colvars:       # atomsOfGroup = "" [default]
 colvars:       # indexGroup = "Protein_C-alpha_7"
 colvars:       # psfSegID =  [default]
 colvars:       # atomsFile = "" [default]
 colvars:       # dummyAtom = ( 0 , 0 , 0 ) [default]
-colvars:       # enableForces = on [default]
 colvars:       # enableFitGradients = on [default]
 colvars:       Enabling scalable calculation for group "group4".
 colvars:       # printAtomIDs = off [default]
@@ -188,7 +205,7 @@ colvars:   # width = 6
 colvars:   # lowerBoundary = 0
 colvars:   # upperBoundary = 180
 colvars:   # hardLowerBoundary = off [default]
-colvars:   # hardUpperBoundary = off [default]
+colvars:   # hardUpperBoundary = on [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -205,24 +222,21 @@ colvars:   Initializing a new "abf" instance.
 colvars:   # name = "abf1" [default]
 colvars:   # colvars = { angle, dihedral }
 colvars:   # stepZeroData = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # outputEnergy = off [default]
 colvars:   # outputFreq = 5
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # applyBias = on [default]
-colvars:   # updateBias = on [default]
 colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
 colvars:   # fullSamples = 1
+colvars:   # minSamples = 0 [default]
 colvars:   # inputPrefix =  [default]
 colvars:   # historyFreq = 5
 colvars:   # shared = off [default]
+colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
 colvars:   # integrate = on [default]
-colvars:   # pABFintegrateFreq = 0 [default]
-colvars:   # integrateInitMaxIterations = 10000 [default]
-colvars:   # integrateInitTol = 1e-06 [default]
-colvars:   # integrateMaxIterations = 100 [default]
-colvars:   # integrateTol = 0.0001 [default]
+colvars:   31 computation : 29
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
 colvars: Collective variables biases initialized, 1 in total.
@@ -232,6 +246,31 @@ colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (7 scalable groups, 7 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: 
+colvars: SUMMARY OF COLVARS FEATURES USED SO FAR AND THEIR CITATIONS:
+colvars: 
+colvars: - Colvars module:
+colvars: - Colvars-NAMD interface:
+colvars: - Optimal rotation via flexible fitting:
+colvars: - angle colvar component:
+colvars: - dihedral colvar component:
+colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
+colvars: 
+colvars: - ABF colvar bias implementation:
+colvars: - Internal-forces free energy estimator:
+colvars:   Henin2010 https://doi.org/10.1021/ct9004432
+colvars: 
+colvars: - Poisson integration of 2D/3D free energy surfaces:
+colvars:   Henin2021 https://doi.org/10.1021/acs.jctc.1c00593
+colvars: 
+colvars: - NAMD engine:
+colvars: - Scalable center-of-mass computation (NAMD):
+colvars:   Phillips2020 https://doi.org/10.1063/5.0014475
+colvars: 
+colvars: updating target temperature (T = 300 K).
+colvars: Current simulation parameters: initial step = 0, integration timestep = 0.5
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Re-initialized atom group for variable "angle":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
 colvars: Re-initialized atom group for variable "angle":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "angle":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
@@ -240,11 +279,13 @@ colvars: Re-initialized atom group for variable "dihedral":0/1. 1 atoms: total m
 colvars: Re-initialized atom group for variable "dihedral":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: The final output state file will be "test.colvars.state".
-colvars: Opening trajectory file "test.colvars.traj".
-colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: Updating NAMD interface:
 colvars: updating atomic data (0 atoms).
 colvars: updating group data (7 scalable groups, 7 atoms in total).
+colvars: updating grid object data (0 grid objects in total).
+colvars: updating target temperature (T = 300 K).
+colvars: Current simulation parameters: initial step = 0, integration timestep = 0.5
+colvars: Updating atomic parameters (masses, charges, etc).
 colvars: Re-initialized atom group for variable "angle":0/0. 1 atoms: total mass = 12.011, total charge = -0.1.
 colvars: Re-initialized atom group for variable "angle":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "angle":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
@@ -252,10 +293,8 @@ colvars: Re-initialized atom group for variable "dihedral":0/0. 1 atoms: total m
 colvars: Re-initialized atom group for variable "dihedral":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
-colvars: The final output state file will be "test.colvars.state".
-colvars:   Prepared sample and gradient buffers at step 0.
-colvars:   Integrated in 107 steps, error: 9.214e-07
-colvars:   Integrated in 1 steps, error: 5.94947e-07
-colvars:   Integrated in 108 steps, error: 6.6371e-07
-colvars:   Integrated in 1 steps, error: 4.65611e-07
+colvars:   Integrated in 101 steps, error: 7.52291e-07
+colvars:   Integrated in 1 steps, error: 4.93282e-07
+colvars:   Integrated in 101 steps, error: 7.84409e-07
+colvars:   Integrated in 1 steps, error: 5.4078e-07
 colvars: Saving collective variables state to "test.colvars.state".
