@@ -52,13 +52,21 @@ int colvar::coordnum::init(std::string const &conf)
                                COLVARS_INPUT_ERROR);
     }
 
-    get_keyval(conf, "group2CenterOnly", b_group2_center_only, group2->b_dummy);
-
-    if (b_group2_center_only) {
-      num_pairs = group1->size();
-    } else {
-      num_pairs = group1->size() * group2->size();
+    if (function_type() == "coordNum") {
+      get_keyval(conf, "group1CenterOnly", b_group1_center_only, group2->b_dummy);
+      get_keyval(conf, "group2CenterOnly", b_group2_center_only, group2->b_dummy);
     }
+
+    if (function_type() == "groupCoord") {
+      // In groupCoord, these flags are hard-coded
+      b_group1_center_only = true;
+      b_group2_center_only = true;
+    }
+
+    size_t const group1_num_coords = b_group1_center_only ? 1 : group1->size();
+    size_t const group2_num_coords = b_group2_center_only ? 1 : group2->size();
+
+    num_pairs = group1_num_coords * group2_num_coords;
 
   } else {
 
@@ -106,17 +114,20 @@ int colvar::coordnum::init(std::string const &conf)
     cvm::log("Warning: only minimum-image distances are used by this variable.\n");
   }
 
-  get_keyval(conf, "tolerance", tolerance, tolerance);
-  if (tolerance > 0) {
-    cvm::main()->cite_feature("coordNum pairlist");
-    get_keyval(conf, "pairListFrequency", pairlist_freq, pairlist_freq);
-    if ( ! (pairlist_freq > 0) ) {
-      return cvm::error("Error: non-positive pairlistfrequency provided.\n",
-                        COLVARS_INPUT_ERROR);
-      // return and do not allocate the pairlists below
+  if (function_type() != "groupCoord") {
+    // All coordNum variables may benefit from a pairlist, except groupCoord
+    get_keyval(conf, "tolerance", tolerance, tolerance);
+    if (tolerance > 0) {
+      cvm::main()->cite_feature("coordNum pairlist");
+      get_keyval(conf, "pairListFrequency", pairlist_freq, pairlist_freq);
+      if ( ! (pairlist_freq > 0) ) {
+        return cvm::error("Error: non-positive pairlistfrequency provided.\n",
+                          COLVARS_INPUT_ERROR);
+        // return and do not allocate the pairlists below
+      }
+      pairlist = new bool[num_pairs];
+      for (size_t i = 0; i < num_pairs; i++) pairlist[i] = true;
     }
-    pairlist = new bool[num_pairs];
-    for (size_t i = 0; i < num_pairs; i++) pairlist[i] = true;
   }
 
   return error_code;
@@ -468,58 +479,6 @@ void colvar::selfcoordnum::calc_gradients()
 colvar::groupcoordnum::groupcoordnum()
 {
   set_function_type("groupCoord");
-  x.type(colvarvalue::type_scalar);
-  init_scalar_boundaries(0.0, 1.0);
-  cvm::real const r0 = cvm::main()->proxy->angstrom_to_internal(4.0);
-  r0_vec = {r0, r0, r0};
-}
-
-
-int colvar::groupcoordnum::init(std::string const &conf)
-{
-  int error_code = distance::init(conf);
-
-  // group1 and group2 are already initialized by distance()
-  if (group1->b_dummy || group2->b_dummy) {
-    return cvm::error("Error: neither group can be a dummy atom\n", COLVARS_INPUT_ERROR);
-  }
-
-  cvm::real r0 = r0_vec[0];
-  bool const b_redefined_cutoff = get_keyval(conf, "cutoff", r0, r0);
-
-  if (get_keyval(conf, "cutoff3", r0_vec, r0_vec)) {
-    if (b_redefined_cutoff) {
-      error_code |=
-          cvm::error("Error: cannot specify \"cutoff\" and \"cutoff3\" at the same time.\n",
-                     COLVARS_INPUT_ERROR);
-    }
-    // remove meaningless negative signs
-    if (r0_vec.x < 0.0) r0_vec.x *= -1.0;
-    if (r0_vec.y < 0.0) r0_vec.y *= -1.0;
-    if (r0_vec.z < 0.0) r0_vec.z *= -1.0;
-  } else {
-    if (b_redefined_cutoff) {
-      r0_vec = {r0, r0, r0};
-    }
-  }
-
-  get_keyval(conf, "expNumer", en, en);
-  get_keyval(conf, "expDenom", ed, ed);
-
-  if ((en % 2) || (ed % 2)) {
-    error_code |= cvm::error("Error: odd exponent(s) provided, can only use even ones.\n",
-                             COLVARS_INPUT_ERROR);
-  }
-
-  if ((en <= 0) || (ed <= 0)) {
-    error_code |= cvm::error("Error: negative exponent(s) provided.\n", COLVARS_INPUT_ERROR);
-  }
-
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    cvm::log("Warning: only minimum-image distances are used by this variable.\n");
-  }
-
-  return error_code;
 }
 
 
