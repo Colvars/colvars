@@ -53,10 +53,10 @@ public:
                                       bool **pairlist_elem, cvm::real tolerance);
 
   /// Workhorse function
-  template <int flags> int compute_coordnum();
+  template <bool use_group1_com, bool use_group2_com, int flags> int compute_coordnum();
 
   /// Workhorse function
-  template <int flags> void main_loop(bool **pairlist_elem);
+  template <bool use_group1_com, bool use_group2_com, int flags> void main_loop(bool **pairlist_elem);
 
 protected:
   /// First atom group
