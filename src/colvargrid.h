@@ -1603,7 +1603,7 @@ public:
                       cvm::real const *force,
                       cvm::real smoothing = 0) {
 
-  if (smoothing && weights->value(bin_value) < full_samples) { // && weights->value(bin_value) < full_samples
+  if (smoothing && weights->value(bin_value) < full_samples) {
       if (smoothing < 0)
         cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
       cvm::real kernel_params = smoothing * (1 - std::max(0.,weights->value(bin_value)-min_samples) / (full_samples-min_samples)); // * weights->value(bin_value) / full_samples
