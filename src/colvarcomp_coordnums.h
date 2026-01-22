@@ -73,6 +73,9 @@ protected:
   /// The number of pairwise distances being calculated
   size_t num_pairs = 0;
 
+  /// If true, group1 will be treated as a single atom
+  bool b_group1_center_only = false;
+
   /// If true, group2 will be treated as a single atom
   bool b_group2_center_only = false;
 
@@ -105,21 +108,12 @@ protected:
 
 /// \brief Colvar component: coordination number between two groups
 /// (colvarvalue::type_scalar type, range [0:N1*N2])
-class colvar::groupcoordnum : public colvar::distance {
+class colvar::groupcoordnum : public colvar::coordnum {
 public:
   groupcoordnum();
   virtual ~groupcoordnum() {}
-  virtual int init(std::string const &conf);
   virtual void calc_value();
   virtual void calc_gradients();
-
-protected:
-  /// Cutoff distances along each dimension
-  cvm::rvector r0_vec;
-  /// Integer exponent of the function numerator
-  int en = 6;
-  /// Integer exponent of the function denominator
-  int ed = 12;
 };
 
 
