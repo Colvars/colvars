@@ -993,8 +993,10 @@ void colvargrid_integrate::prepare_calculations()
       cvm::real multiplicity = laplacian_stencil.size();
       // Precalculation of the laplacian coefficient
       cvm::real diagonal_coeff;
+      size_t coeff_address;
       for (std::vector<int> ix = computation_grid->new_index(); computation_grid->index_ok(ix);
            computation_grid->incr(ix)) {
+        coeff_address = computation_grid->address(ix) * multiplicity;
         diagonal_coeff = 0;
         for (size_t i = 0; i < laplacian_stencil.size() - 1; i++) {
           std::vector<int> neighbor_relative_position = laplacian_stencil[i];
@@ -1014,10 +1016,10 @@ void colvargrid_integrate::prepare_calculations()
             coefficient += regularized_weights[gradients->address(weight_coordinate)];
           }
           coefficient *= weight_counts[i];
-          laplacian_coefficients[computation_grid->address(ix) * multiplicity + i] += coefficient;
+          laplacian_coefficients[coeff_address + i] += coefficient;
           diagonal_coeff += coefficient;
         }
-        laplacian_coefficients[computation_grid->address(ix) * multiplicity + (2 * nd)] +=
+        laplacian_coefficients[coeff_address + (2 * nd)] +=
             -diagonal_coeff;
       }
     }
