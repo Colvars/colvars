@@ -1470,10 +1470,6 @@ public:
   cvm::real full_samples;
   cvm::real min_samples;
   // TODO: maybe make those class members
-  cvm::real kernel_params = 0;
-  int cutoff = 0;
-  cvm::real inv_squared_smooth;
-  cvm::real smoothing_param;
   cvm::real const cutoff_factor = 3.72;
 
   /// Write the current grid parameters to a string
@@ -1607,18 +1603,15 @@ public:
                       cvm::real const *force,
                       cvm::real smoothing = 0) {
 
-  if (smoothing && weights->value(bin_value) < full_samples) {
-    if (smoothing_param!=smoothing) {
+  if (smoothing && weights->value(bin_value) < full_samples) { // && weights->value(bin_value) < full_samples
       if (smoothing < 0)
         cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
-      kernel_params = smoothing;
-      inv_squared_smooth = 1/ (std::max(smoothing*smoothing, 1e-5));
-      cutoff = cutoff_factor * smoothing; // take like floor()
+      cvm::real kernel_params = smoothing * (1 - std::max(0.,weights->value(bin_value)-min_samples) / (full_samples-min_samples)); // * weights->value(bin_value) / full_samples
+      cvm::real inv_squared_smooth = 1/ (std::max(kernel_params*kernel_params, 1e-5));
+      int cutoff = static_cast<int>(cvm::floor(cutoff_factor * kernel_params)); // take like floor()
       for (size_t i = 0; i < nd; i++) {
         cutoff = std::min(cutoff, nx[i]/2);
       }
-      smoothing_param = smoothing;
-    }
     // We will use these to iterate
     std::vector<int> ix_min(nd);
     std::vector<int> ix_max(nd);
