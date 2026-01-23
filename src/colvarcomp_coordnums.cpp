@@ -425,6 +425,33 @@ colvar::selfcoordnum::selfcoordnum()
 }
 
 
+template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop(bool **pairlist_elem)
+{
+  cvm::rvector const inv_r0_vec{
+    1.0 / r0_vec.x,
+    1.0 / r0_vec.y,
+    1.0 / r0_vec.z};
+  cvm::rvector const inv_r0sq_vec{
+    inv_r0_vec.x * inv_r0_vec.x,
+    inv_r0_vec.y * inv_r0_vec.y,
+    inv_r0_vec.z * inv_r0_vec.z};
+
+  size_t const n = group1->size();
+
+  for (size_t i = 0; i < n - 1; i++) {
+    for (size_t j = i + 1; j < n; j++) {
+      x.real_value += switching_function<flags>(
+          inv_r0_vec, inv_r0sq_vec, en, ed,
+          group1->pos_x(i), group1->pos_y(i), group1->pos_z(i),
+          group1->pos_x(j), group1->pos_y(j), group1->pos_z(j),
+          group1->grad_x(i), group1->grad_y(i), group1->grad_z(i),
+          group1->grad_x(j), group1->grad_y(j), group1->grad_z(j),
+          pairlist_elem, tolerance);
+    }
+  }
+}
+
+
 template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
 {
   bool const use_pairlist = (pairlist != NULL);
@@ -432,57 +459,19 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
     (cvm::step_relative() % pairlist_freq == 0);
 
   bool *pairlist_elem = use_pairlist ? pairlist : NULL;
-  size_t i = 0, j = 0;
-  size_t const n = group1->size();
-
-  // Always isotropic (TODO: enable the ellipsoid?)
-#define CALL_KERNEL(flags) do {                         \
-  const cvm::rvector inv_r0_vec{                        \
-    1.0 / r0_vec.x,                                     \
-    1.0 / r0_vec.y,                                     \
-    1.0 / r0_vec.z                                      \
-  };                                                    \
-  cvm::rvector const inv_r0sq_vec{                      \
-    inv_r0_vec.x*inv_r0_vec.x,                          \
-    inv_r0_vec.y*inv_r0_vec.y,                          \
-    inv_r0_vec.z*inv_r0_vec.z                           \
-  };                                                    \
-  for (i = 0; i < n - 1; i++) {                         \
-    for (j = i + 1; j < n; j++) {                       \
-      x.real_value +=                                   \
-        coordnum::switching_function<flags>(            \
-          inv_r0_vec, inv_r0sq_vec, en, ed,             \
-          group1->pos_x(i),                             \
-          group1->pos_y(i),                             \
-          group1->pos_z(i),                             \
-          group1->pos_x(j),                             \
-          group1->pos_y(j),                             \
-          group1->pos_z(j),                             \
-          group1->grad_x(i),                            \
-          group1->grad_y(i),                            \
-          group1->grad_z(i),                            \
-          group1->grad_x(j),                            \
-          group1->grad_y(j),                            \
-          group1->grad_z(j),                            \
-          &pairlist_elem, tolerance);                   \
-    }                                                   \
-  }                                                     \
-} while (0);
 
   if (use_pairlist) {
     if (rebuild_pairlist) {
-      int const flags = compute_flags | coordnum::ef_use_pairlist |
-        coordnum::ef_rebuild_pairlist;
-      CALL_KERNEL(flags);
+      int const flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
+      selfcoordnum_sequential_loop<flags>(&pairlist_elem);
     } else {
-      int const flags = compute_flags | coordnum::ef_use_pairlist;
-      CALL_KERNEL(flags);
+      int const flags = compute_flags | ef_use_pairlist;
+      selfcoordnum_sequential_loop<flags>(&pairlist_elem);
     }
   } else { // if (use_pairlist) {
-    int const flags = compute_flags | coordnum::ef_null;
-      CALL_KERNEL(flags);
+    int const flags = compute_flags | ef_null;
+    selfcoordnum_sequential_loop<flags>(&pairlist_elem);
   }
-#undef CALL_KERNEL
   return COLVARS_OK;
 }
 
