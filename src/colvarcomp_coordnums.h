@@ -57,8 +57,19 @@ protected:
   cvm::atom_group *group1 = nullptr;
   /// Second atom group
   cvm::atom_group *group2 = nullptr;
+
   /// Cutoff distances along each dimension
   cvm::rvector r0_vec;
+
+  /// Inverse of r0_vec
+  cvm::rvector inv_r0_vec;
+
+  /// Square of inv_r0_vec
+  cvm::rvector inv_r0sq_vec;
+
+  /// Set r0_vec and related fields
+  void update_cutoffs(cvm::rvector const &r0_vec_i);
+
   /// Integer exponent of the function numerator
   int en = 6;
   /// Integer exponent of the function denominator
