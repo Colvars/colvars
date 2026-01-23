@@ -140,6 +140,7 @@ int colvar::coordnum::init(std::string const &conf)
     get_keyval(conf, "tolerance", tolerance, tolerance);
     if (tolerance > 0) {
       cvm::main()->cite_feature("coordNum pairlist");
+      compute_tolerance_l2_max();
       get_keyval(conf, "pairListFrequency", pairlist_freq, pairlist_freq);
       if ( ! (pairlist_freq > 0) ) {
         return cvm::error("Error: non-positive pairlistfrequency provided.\n",
@@ -159,6 +160,30 @@ colvar::coordnum::~coordnum()
 {
   if (pairlist) {
     delete [] pairlist;
+  }
+}
+
+
+void colvar::coordnum::compute_tolerance_l2_max()
+{
+  cvm::real l2 = 1.001;
+  cvm::real F = 0.0;
+  cvm::real dFdl2 = 0.0;
+  constexpr size_t num_iters_max = 1000000;
+  constexpr cvm::real result_tol = 1.0e-6;
+  constexpr cvm::real dF_tol = 1.0e-9;
+  size_t i;
+  // Find the value of l2 such that F(l2) = 0 using the Newton method
+  for (i = 0; i < num_iters_max; i++) {
+    F = switching_function<ef_use_pairlist | ef_gradients>(l2, dFdl2, en, ed, tolerance);
+    if ((std::fabs(F) < result_tol) || (std::fabs(dFdl2) < dF_tol)) {
+      break;
+    }
+    l2 -= F / dFdl2;
+  }
+  tolerance_l2_max = l2;
+  if (cvm::debug()) {
+    cvm::log("Found max valid l2 in " + cvm::to_str(i+1) + " iterations, result = " + cvm::to_str(l2) + " f(result) = " + cvm::to_str(F));
   }
 }
 
@@ -200,7 +225,7 @@ template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coor
         compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                      x1, y1, z1, x2, y2, z2,
                                      gx1, gy1, gz1, gx2, gy2, gz2,
-                                     tolerance) :
+                                     tolerance, tolerance_l2_max) :
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
@@ -410,7 +435,7 @@ void colvar::h_bond::calc_value()
                                                         atom_groups[0]->grad_x(1),
                                                         atom_groups[0]->grad_y(1),
                                                         atom_groups[0]->grad_z(1),
-                                                        0.0);
+                                                        0.0, 1.0e20);
   // Skip the gradient
 }
 
@@ -441,7 +466,7 @@ void colvar::h_bond::calc_gradients()
                                          atom_groups[0]->grad_x(1),
                                          atom_groups[0]->grad_y(1),
                                          atom_groups[0]->grad_z(1),
-                                         0.0);
+                                         0.0, 1.0e20);
 }
 
 
@@ -468,7 +493,7 @@ template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop(bool
                                      group1->pos_x(j), group1->pos_y(j), group1->pos_z(j),
                                      group1->grad_x(i), group1->grad_y(i), group1->grad_z(i),
                                      group1->grad_x(j), group1->grad_y(j), group1->grad_z(j),
-                                     tolerance) :
+                                     tolerance, tolerance_l2_max) :
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
