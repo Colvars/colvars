@@ -142,8 +142,7 @@ colvar::coordnum::~coordnum()
 }
 
 
-template <bool use_group1_com, bool use_group2_com, int flags>
-void colvar::coordnum::main_loop(bool **pairlist_elem)
+template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
 {
   const cvm::rvector inv_r0_vec{
     1.0 / r0_vec.x,
@@ -181,10 +180,26 @@ void colvar::coordnum::main_loop(bool **pairlist_elem)
       cvm::real &gy2 = use_group2_com ? group2_com_grad.y : group2->grad_y(j);
       cvm::real &gz2 = use_group2_com ? group2_com_grad.z : group2->grad_z(j);
 
-      x.real_value += switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                                x1, y1, z1, x2, y2, z2,
-                                                gx1, gy1, gz1, gx2, gy2, gz2,
-                                                pairlist_elem, tolerance);
+      bool const within =
+          ((flags & ef_use_pairlist) && (**pairlist_elem || (flags & ef_rebuild_pairlist))) ||
+          !(flags & ef_use_pairlist);
+
+      cvm::real const partial = within ?
+        switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                  x1, y1, z1, x2, y2, z2,
+                                  gx1, gy1, gz1, gx2, gy2, gz2,
+                                  tolerance) :
+        0.0;
+
+      if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+        **pairlist_elem = partial > 0.0 ? true : false;
+      }
+
+      x.real_value += partial;
+
+      if (flags & ef_use_pairlist) {
+        (*pairlist_elem)++;
+      }
     }
   }
 
@@ -384,7 +399,7 @@ void colvar::h_bond::calc_value()
                                         atom_groups[0]->grad_x(1),
                                         atom_groups[0]->grad_y(1),
                                         atom_groups[0]->grad_z(1),
-                                        NULL, 0.0);
+                                        0.0);
   // Skip the gradient
 }
 
@@ -415,7 +430,7 @@ void colvar::h_bond::calc_gradients()
                                       atom_groups[0]->grad_x(1),
                                       atom_groups[0]->grad_y(1),
                                       atom_groups[0]->grad_z(1),
-                                      NULL, 0.0);
+                                      0.0);
 }
 
 
@@ -440,13 +455,29 @@ template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop(bool
 
   for (size_t i = 0; i < n - 1; i++) {
     for (size_t j = i + 1; j < n; j++) {
-      x.real_value += switching_function<flags>(
-          inv_r0_vec, inv_r0sq_vec, en, ed,
-          group1->pos_x(i), group1->pos_y(i), group1->pos_z(i),
-          group1->pos_x(j), group1->pos_y(j), group1->pos_z(j),
-          group1->grad_x(i), group1->grad_y(i), group1->grad_z(i),
-          group1->grad_x(j), group1->grad_y(j), group1->grad_z(j),
-          pairlist_elem, tolerance);
+
+      bool const within =
+        ((flags & ef_use_pairlist) && (**pairlist_elem || (flags & ef_rebuild_pairlist))) ||
+        !(flags & ef_use_pairlist);
+
+      cvm::real const partial = within ?
+        switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                  group1->pos_x(i), group1->pos_y(i), group1->pos_z(i),
+                                  group1->pos_x(j), group1->pos_y(j), group1->pos_z(j),
+                                  group1->grad_x(i), group1->grad_y(i), group1->grad_z(i),
+                                  group1->grad_x(j), group1->grad_y(j), group1->grad_z(j),
+                                  tolerance) :
+        0.0;
+
+      if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+        **pairlist_elem = partial > 0.0 ? true : false;
+      }
+
+      x.real_value += partial;
+
+      if (flags & ef_use_pairlist) {
+        (*pairlist_elem)++;
+      }
     }
   }
 }
