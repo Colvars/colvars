@@ -36,13 +36,7 @@ public:
     ef_rebuild_pairlist = (1 << 10)
   };
 
-  /// \brief Calculate a coordination number through the function
-  /// (1-x**n)/(1-x**m), where x = |A1-A2|/r0 \param r0, r0_vec "cutoff" for
-  /// the coordination number (scalar or vector depending on user choice)
-  /// \param en Numerator exponent \param ed Denominator exponent \param First
-  /// atom \param Second atom \param pairlist_elem pointer to pair flag for
-  /// this pair \param tolerance A pair is defined as having a larger
-  /// coordination than this number
+  /// Main kernel for the coordination number
   template <int flags>
   static cvm::real switching_function(cvm::rvector const &inv_r0_vec,
                                       cvm::rvector const &inv_r0sq_vec, int en, int ed,
@@ -50,7 +44,7 @@ public:
                                       const cvm::real a2x, const cvm::real a2y, const cvm::real a2z,
                                       cvm::real &g1x, cvm::real &g1y, cvm::real &g1z,
                                       cvm::real &g2x, cvm::real &g2y, cvm::real &g2z,
-                                      bool **pairlist_elem, cvm::real tolerance);
+                                      cvm::real tolerance);
 
   /// Workhorse function
   template <bool use_group1_com, bool use_group2_com, int flags> int compute_coordnum();
@@ -160,17 +154,8 @@ cvm::real colvar::coordnum::switching_function(cvm::rvector const &inv_r0_vec,
                                                cvm::real& g2x,
                                                cvm::real& g2y,
                                                cvm::real& g2z,
-                                               bool **pairlist_elem,
                                                cvm::real pairlist_tol)
 {
-  if ((flags & ef_use_pairlist) && !(flags & ef_rebuild_pairlist)) {
-    bool const within = **pairlist_elem;
-    (*pairlist_elem)++;
-    if (!within) {
-      return 0.0;
-    }
-  }
-
   const cvm::atom_pos pos1{a1x, a1y, a1z};
   const cvm::atom_pos pos2{a2x, a2y, a2z};
   cvm::rvector const diff = cvm::position_distance(pos1, pos2);
@@ -209,12 +194,8 @@ cvm::real colvar::coordnum::switching_function(cvm::rvector const &inv_r0_vec,
     func = func_no_pairlist;
   }
 
-  if (flags & ef_rebuild_pairlist) {
-    //Particles just outside of the cutoff also are considered if they come near.
-    **pairlist_elem = (func > (-pairlist_tol * 0.5)) ? true : false;
-    (*pairlist_elem)++;
-  }
-  //If the value is too small, we need to exclude it, rather than let it contribute to the sum or the gradients.
+  // If the value is too small and we are correcting for the tolerance, the result is negative
+  // and we need to exclude it rather than let it contribute to the sum or the gradients.
   if (func < 0)
     return 0;
 
