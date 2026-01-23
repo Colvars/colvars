@@ -20,10 +20,27 @@ colvar::coordnum::coordnum()
   set_function_type("coordNum");
   x.type(colvarvalue::type_scalar);
   cvm::real const r0 = cvm::main()->proxy->angstrom_to_internal(4.0);
-  r0_vec = {r0, r0, r0};
-  // Default upper boundary not yet known
+  update_cutoffs({r0, r0, r0});
+  // Boundaries will be set later, when the number of pairs is known
 }
 
+
+void colvar::coordnum::update_cutoffs(cvm::rvector const &r0_vec_i)
+{
+  r0_vec = r0_vec_i;
+
+  inv_r0_vec = {
+    1.0 / r0_vec.x,
+    1.0 / r0_vec.y,
+    1.0 / r0_vec.z
+  };
+
+  inv_r0sq_vec = {
+    inv_r0_vec.x * inv_r0_vec.x,
+    inv_r0_vec.y * inv_r0_vec.y,
+    inv_r0_vec.z * inv_r0_vec.z
+  };
+}
 
 int colvar::coordnum::init(std::string const &conf)
 {
@@ -91,9 +108,12 @@ int colvar::coordnum::init(std::string const &conf)
     if (r0_vec.x < 0.0) r0_vec.x *= -1.0;
     if (r0_vec.y < 0.0) r0_vec.y *= -1.0;
     if (r0_vec.z < 0.0) r0_vec.z *= -1.0;
+
+    update_cutoffs(r0_vec);
+
   } else {
     if (b_redefined_cutoff) {
-      r0_vec = {r0, r0, r0};
+      update_cutoffs({r0, r0, r0});
     }
   }
 
@@ -144,15 +164,6 @@ colvar::coordnum::~coordnum()
 
 template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
 {
-  const cvm::rvector inv_r0_vec{
-    1.0 / r0_vec.x,
-    1.0 / r0_vec.y,
-    1.0 / r0_vec.z};
-  cvm::rvector const inv_r0sq_vec{
-    inv_r0_vec.x*inv_r0_vec.x,
-    inv_r0_vec.y*inv_r0_vec.y,
-    inv_r0_vec.z*inv_r0_vec.z};
-
   size_t const group1_num_coords = use_group1_com ? 1 : group1->size();
   size_t const group2_num_coords = use_group2_com ? 1 : group2->size();
 
@@ -442,15 +453,6 @@ colvar::selfcoordnum::selfcoordnum()
 
 template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop(bool **pairlist_elem)
 {
-  cvm::rvector const inv_r0_vec{
-    1.0 / r0_vec.x,
-    1.0 / r0_vec.y,
-    1.0 / r0_vec.z};
-  cvm::rvector const inv_r0sq_vec{
-    inv_r0_vec.x * inv_r0_vec.x,
-    inv_r0_vec.y * inv_r0_vec.y,
-    inv_r0_vec.z * inv_r0_vec.z};
-
   size_t const n = group1->size();
 
   for (size_t i = 0; i < n - 1; i++) {
