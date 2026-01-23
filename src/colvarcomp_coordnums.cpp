@@ -42,6 +42,7 @@ void colvar::coordnum::update_cutoffs(cvm::rvector const &r0_vec_i)
   };
 }
 
+
 int colvar::coordnum::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
@@ -196,10 +197,10 @@ template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coor
           !(flags & ef_use_pairlist);
 
       cvm::real const partial = within ?
-        switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                  x1, y1, z1, x2, y2, z2,
-                                  gx1, gy1, gz1, gx2, gy2, gz2,
-                                  tolerance) :
+        compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                     x1, y1, z1, x2, y2, z2,
+                                     gx1, gy1, gz1, gx2, gy2, gz2,
+                                     tolerance) :
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
@@ -396,21 +397,20 @@ void colvar::h_bond::calc_value()
     inv_r0_vec.z * inv_r0_vec.z
   };
 
-  x.real_value =
-    coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                        atom_groups[0]->pos_x(0),
-                                        atom_groups[0]->pos_y(0),
-                                        atom_groups[0]->pos_z(0),
-                                        atom_groups[0]->pos_x(1),
-                                        atom_groups[0]->pos_y(1),
-                                        atom_groups[0]->pos_z(1),
-                                        atom_groups[0]->grad_x(0),
-                                        atom_groups[0]->grad_y(0),
-                                        atom_groups[0]->grad_z(0),
-                                        atom_groups[0]->grad_x(1),
-                                        atom_groups[0]->grad_y(1),
-                                        atom_groups[0]->grad_z(1),
-                                        0.0);
+  x.real_value = coordnum::compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                                        atom_groups[0]->pos_x(0),
+                                                        atom_groups[0]->pos_y(0),
+                                                        atom_groups[0]->pos_z(0),
+                                                        atom_groups[0]->pos_x(1),
+                                                        atom_groups[0]->pos_y(1),
+                                                        atom_groups[0]->pos_z(1),
+                                                        atom_groups[0]->grad_x(0),
+                                                        atom_groups[0]->grad_y(0),
+                                                        atom_groups[0]->grad_z(0),
+                                                        atom_groups[0]->grad_x(1),
+                                                        atom_groups[0]->grad_y(1),
+                                                        atom_groups[0]->grad_z(1),
+                                                        0.0);
   // Skip the gradient
 }
 
@@ -428,20 +428,20 @@ void colvar::h_bond::calc_gradients()
     inv_r0_vec.y*inv_r0_vec.y,
     inv_r0_vec.z*inv_r0_vec.z
   };
-  coordnum::switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                      atom_groups[0]->pos_x(0),
-                                      atom_groups[0]->pos_y(0),
-                                      atom_groups[0]->pos_z(0),
-                                      atom_groups[0]->pos_x(1),
-                                      atom_groups[0]->pos_y(1),
-                                      atom_groups[0]->pos_z(1),
-                                      atom_groups[0]->grad_x(0),
-                                      atom_groups[0]->grad_y(0),
-                                      atom_groups[0]->grad_z(0),
-                                      atom_groups[0]->grad_x(1),
-                                      atom_groups[0]->grad_y(1),
-                                      atom_groups[0]->grad_z(1),
-                                      0.0);
+  coordnum::compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                         atom_groups[0]->pos_x(0),
+                                         atom_groups[0]->pos_y(0),
+                                         atom_groups[0]->pos_z(0),
+                                         atom_groups[0]->pos_x(1),
+                                         atom_groups[0]->pos_y(1),
+                                         atom_groups[0]->pos_z(1),
+                                         atom_groups[0]->grad_x(0),
+                                         atom_groups[0]->grad_y(0),
+                                         atom_groups[0]->grad_z(0),
+                                         atom_groups[0]->grad_x(1),
+                                         atom_groups[0]->grad_y(1),
+                                         atom_groups[0]->grad_z(1),
+                                         0.0);
 }
 
 
@@ -463,12 +463,12 @@ template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop(bool
         !(flags & ef_use_pairlist);
 
       cvm::real const partial = within ?
-        switching_function<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                  group1->pos_x(i), group1->pos_y(i), group1->pos_z(i),
-                                  group1->pos_x(j), group1->pos_y(j), group1->pos_z(j),
-                                  group1->grad_x(i), group1->grad_y(i), group1->grad_z(i),
-                                  group1->grad_x(j), group1->grad_y(j), group1->grad_z(j),
-                                  tolerance) :
+        compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                     group1->pos_x(i), group1->pos_y(i), group1->pos_z(i),
+                                     group1->pos_x(j), group1->pos_y(j), group1->pos_z(j),
+                                     group1->grad_x(i), group1->grad_y(i), group1->grad_z(i),
+                                     group1->grad_x(j), group1->grad_y(j), group1->grad_z(j),
+                                     tolerance) :
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
