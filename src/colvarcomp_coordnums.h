@@ -54,7 +54,7 @@ public:
                                          const cvm::real a2x, const cvm::real a2y, const cvm::real a2z,
                                          cvm::real &g1x, cvm::real &g1y, cvm::real &g1z,
                                          cvm::real &g2x, cvm::real &g2y, cvm::real &g2z,
-                                         cvm::real pairlist_tol);
+                                         cvm::real pairlist_tol, cvm::real pairlist_tol_l2_max);
 
   /// Workhorse function
   template <bool use_group1_com, bool use_group2_com, int flags> int compute_coordnum();
@@ -96,6 +96,12 @@ protected:
 
   /// Tolerance for the pair list
   cvm::real tolerance = 0.0;
+
+  /// Value of the squared scaled distance (l^2) that matches the given tolerance
+  cvm::real tolerance_l2_max = 1.0e20;
+
+  /// Recompute the value of tolerance_l2_max
+  void compute_tolerance_l2_max();
 
   /// Frequency of update of the pair list
   int pairlist_freq = 100;
@@ -234,7 +240,8 @@ cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv_r0_vec
                                                   cvm::real& g2x,
                                                   cvm::real& g2y,
                                                   cvm::real& g2z,
-                                                  cvm::real pairlist_tol)
+                                                  cvm::real pairlist_tol,
+                                                  cvm::real pairlist_tol_l2_max)
 {
   const cvm::atom_pos pos1{a1x, a1y, a1z};
   const cvm::atom_pos pos2{a2x, a2y, a2z};
@@ -243,6 +250,12 @@ cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv_r0_vec
                                diff.y * inv_r0_vec.y,
                                diff.z * inv_r0_vec.z);
   cvm::real const l2 = scal_diff.norm2();
+  if (flags & ef_use_pairlist) {
+    if (l2 > pairlist_tol_l2_max) {
+      // Exit if the distance is such that F(l2) < pairlist_tol
+      return 0.0;
+    }
+  }
 
   cvm::real dFdl2 = 0.0;
   cvm::real F = switching_function<flags>(l2, dFdl2, en, ed, pairlist_tol);
