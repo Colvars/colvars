@@ -100,7 +100,9 @@ public:
   virtual void calc_value();
   virtual void calc_gradients();
 
-protected:
+  /// Workhorse function
+  template <int flags> void selfcoordnum_sequential_loop(bool **pairlist_elem);
+
   /// Main workhorse function
   template <int flags> int compute_selfcoordnum();
 };
