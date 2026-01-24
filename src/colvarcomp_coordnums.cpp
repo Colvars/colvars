@@ -147,8 +147,8 @@ int colvar::coordnum::init(std::string const &conf)
                           COLVARS_INPUT_ERROR);
         // return and do not allocate the pairlists below
       }
-      pairlist = new bool[num_pairs];
-      for (size_t i = 0; i < num_pairs; i++) pairlist[i] = true;
+      pairlist.resize(num_pairs);
+      std::fill(pairlist.begin(), pairlist.end(), true);
     }
   }
 
@@ -156,12 +156,7 @@ int colvar::coordnum::init(std::string const &conf)
 }
 
 
-colvar::coordnum::~coordnum()
-{
-  if (pairlist) {
-    delete [] pairlist;
-  }
-}
+colvar::coordnum::~coordnum() {}
 
 
 void colvar::coordnum::compute_tolerance_l2_max()
@@ -188,7 +183,7 @@ void colvar::coordnum::compute_tolerance_l2_max()
 }
 
 
-template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coordnum::main_loop(bool **pairlist_elem)
+template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coordnum::main_loop()
 {
   size_t const group1_num_coords = use_group1_com ? 1 : group1->size();
   size_t const group2_num_coords = use_group2_com ? 1 : group2->size();
@@ -196,6 +191,8 @@ template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coor
   cvm::atom_pos const group1_com = group1->center_of_mass();
   cvm::atom_pos const group2_com = group2->center_of_mass();
   cvm::rvector group1_com_grad, group2_com_grad;
+
+  auto pairlist_elem = pairlist.begin();
 
   for (size_t i = 0; i < group1_num_coords; ++i) {
 
@@ -218,7 +215,7 @@ template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coor
       cvm::real &gz2 = use_group2_com ? group2_com_grad.z : group2->grad_z(j);
 
       bool const within =
-          ((flags & ef_use_pairlist) && (**pairlist_elem || (flags & ef_rebuild_pairlist))) ||
+          ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
           !(flags & ef_use_pairlist);
 
       cvm::real const partial = within ?
@@ -229,13 +226,13 @@ template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coor
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
-        **pairlist_elem = partial > 0.0 ? true : false;
+        *pairlist_elem = partial > 0.0 ? true : false;
       }
 
       x.real_value += partial;
 
       if (flags & ef_use_pairlist) {
-        (*pairlist_elem)++;
+        pairlist_elem++;
       }
     }
   }
@@ -251,23 +248,20 @@ template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coor
 
 template<bool use_group1_com, bool use_group2_com, int compute_flags> int colvar::coordnum::compute_coordnum()
 {
-  bool const use_pairlist = (pairlist != NULL);
-  bool const rebuild_pairlist = (pairlist != NULL) &&
-    (cvm::step_relative() % pairlist_freq == 0);
-
-  bool *pairlist_elem = use_pairlist ? pairlist : NULL;
+  bool const use_pairlist = !pairlist.empty();
+  bool const rebuild_pairlist = use_pairlist && (cvm::step_relative() % pairlist_freq == 0);
 
   if (use_pairlist) {
     if (rebuild_pairlist) {
       int const flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
-      main_loop<use_group1_com, use_group2_com, flags>(&pairlist_elem);
+      main_loop<use_group1_com, use_group2_com, flags>();
     } else {
       int const flags = compute_flags | ef_use_pairlist;
-      main_loop<use_group1_com, use_group2_com, flags>(&pairlist_elem);
+      main_loop<use_group1_com, use_group2_com, flags>();
     }
   } else {
     int const flags = compute_flags;
-    main_loop<use_group1_com, use_group2_com, flags>(NULL);
+    main_loop<use_group1_com, use_group2_com, flags>();
   }
 
   return COLVARS_OK;
@@ -476,15 +470,16 @@ colvar::selfcoordnum::selfcoordnum()
 }
 
 
-template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop(bool **pairlist_elem)
+template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop()
 {
   size_t const n = group1->size();
+  auto pairlist_elem = pairlist.begin();
 
   for (size_t i = 0; i < n - 1; i++) {
     for (size_t j = i + 1; j < n; j++) {
 
       bool const within =
-        ((flags & ef_use_pairlist) && (**pairlist_elem || (flags & ef_rebuild_pairlist))) ||
+        ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
         !(flags & ef_use_pairlist);
 
       cvm::real const partial = within ?
@@ -497,13 +492,13 @@ template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop(bool
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
-        **pairlist_elem = partial > 0.0 ? true : false;
+        *pairlist_elem = partial > 0.0 ? true : false;
       }
 
       x.real_value += partial;
 
       if (flags & ef_use_pairlist) {
-        (*pairlist_elem)++;
+        pairlist_elem++;
       }
     }
   }
@@ -512,23 +507,20 @@ template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop(bool
 
 template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
 {
-  bool const use_pairlist = (pairlist != NULL);
-  bool const rebuild_pairlist = (pairlist != NULL) &&
-    (cvm::step_relative() % pairlist_freq == 0);
-
-  bool *pairlist_elem = use_pairlist ? pairlist : NULL;
+  bool const use_pairlist = !pairlist.empty();
+  bool const rebuild_pairlist = use_pairlist && (cvm::step_relative() % pairlist_freq == 0);
 
   if (use_pairlist) {
     if (rebuild_pairlist) {
       int const flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
-      selfcoordnum_sequential_loop<flags>(&pairlist_elem);
+      selfcoordnum_sequential_loop<flags>();
     } else {
       int const flags = compute_flags | ef_use_pairlist;
-      selfcoordnum_sequential_loop<flags>(&pairlist_elem);
+      selfcoordnum_sequential_loop<flags>();
     }
-  } else { // if (use_pairlist) {
+  } else {
     int const flags = compute_flags | ef_null;
-    selfcoordnum_sequential_loop<flags>(&pairlist_elem);
+    selfcoordnum_sequential_loop<flags>();
   }
   return COLVARS_OK;
 }
