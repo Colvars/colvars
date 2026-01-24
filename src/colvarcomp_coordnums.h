@@ -60,7 +60,7 @@ public:
   template <bool use_group1_com, bool use_group2_com, int flags> int compute_coordnum();
 
   /// Workhorse function
-  template <bool use_group1_com, bool use_group2_com, int flags> void main_loop(bool **pairlist_elem);
+  template <bool use_group1_com, bool use_group2_com, int flags> void main_loop();
 
 protected:
   /// First atom group
@@ -107,7 +107,7 @@ protected:
   int pairlist_freq = 100;
 
   /// Pair list
-  bool *pairlist = nullptr;
+  std::vector<bool> pairlist;
 
 };
 
@@ -122,7 +122,7 @@ public:
   virtual void calc_gradients();
 
   /// Workhorse function
-  template <int flags> void selfcoordnum_sequential_loop(bool **pairlist_elem);
+  template <int flags> void selfcoordnum_sequential_loop();
 
   /// Main workhorse function
   template <int flags> int compute_selfcoordnum();
