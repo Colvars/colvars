@@ -1622,7 +1622,7 @@ public:
 
     for (size_t i = 0; i < nd; i++) {
       // can be negative or > nx[i] to allow for distance calculation
-      int i_min = static_cast<int>(std::floor(cv_value[i] - cutoff));
+      int i_min = static_cast<int>(std::ceil(cv_value[i] - cutoff));
       int i_max = static_cast<int>(std::floor(cv_value[i] + cutoff));
 
       if (!periodic[i]) {
