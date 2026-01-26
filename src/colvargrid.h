@@ -1604,56 +1604,78 @@ public:
                       cvm::real smoothing = 0) {
 
   if (smoothing && weights->value(bin_value) < full_samples) {
-      if (smoothing < 0)
-        cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
-      cvm::real kernel_params = smoothing * (1 - std::max(0.,weights->value(bin_value)-min_samples) / (full_samples-min_samples)); // * weights->value(bin_value) / full_samples
-      cvm::real inv_squared_smooth = 1/ (std::max(kernel_params*kernel_params, 1e-5));
-      int cutoff = static_cast<int>(cvm::floor(cutoff_factor * kernel_params)); // take like floor()
-      for (size_t i = 0; i < nd; i++) {
-        cutoff = std::min(cutoff, nx[i]/2);
-      }
-    // We will use these to iterate
-    std::vector<int> ix_min(nd);
-    std::vector<int> ix_max(nd);
-    std::vector<int> current_ix(nd);
-    std::vector<int> wrapped_ix(nd);
+    if (smoothing < 0)
+      cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
+
+    cvm::real kernel_params = smoothing; // * (1 - std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples)); //TODO: uncomment
+    cvm::real inv_squared_smooth = 1.0 / (std::max(kernel_params * kernel_params, 1e-5));
+    int cutoff = static_cast<int>(cvm::floor(cutoff_factor * kernel_params));
 
     for (size_t i = 0; i < nd; i++) {
-      // Calculate raw bounds (can be negative or > nx[i])
-      ix_min[i] = static_cast<int>(cvm::floor(cv_value[i] - cutoff));
-      ix_max[i] = static_cast<int>(cvm::floor(cv_value[i] + cutoff));
-
-      // If NOT periodic, clamp to grid boundaries
-      if (!periodic[i]) {
-        if (ix_min[i] < 0) ix_min[i] = 0;
-        if (ix_max[i] >= nx[i]) ix_max[i] = nx[i] - 1;
-      }
-      current_ix[i] = ix_min[i];
+      cutoff = std::min(cutoff, nx[i] / 2);
     }
 
-    bool done = false;
-    while (!done) {
-      cvm::real dist_sq = 0;
-      for (size_t i = 0; i < nd; i++) {
-        cvm::real diff = (static_cast<cvm::real>(current_ix[i]) + 0.5) - cv_value[i];
-        dist_sq += diff * diff;
+    // 1. Pre-calculate 1D weights and wrapped indices for each dimension
+    std::vector<std::vector<cvm::real>> w_1d(nd);
+    std::vector<std::vector<int>> idx_1d(nd);
+    cvm::real total_sum = 1.0;
+
+    for (size_t i = 0; i < nd; i++) {
+      // can be negative or > nx[i] to allow for distance calculation
+      int i_min = static_cast<int>(std::floor(cv_value[i] - cutoff));
+      int i_max = static_cast<int>(std::floor(cv_value[i] + cutoff));
+
+      if (!periodic[i]) {
+          if (i_min < 0) i_min = 0;
+          if (i_max >= nx[i]) i_max = nx[i] - 1;
+      }
+      w_1d[i].resize(i_max - i_min + 1);
+      cvm::real dim_sum = 0.0;
+      int counter = 0;
+      for (int ix = i_min; ix <= i_max; ix++) {
+        // Calculate 1D Gaussian component
+        cvm::real diff = (static_cast<cvm::real>(ix) + 0.5) - cv_value[i];
+        cvm::real weight = cvm::exp(-diff * diff * inv_squared_smooth);
+
+        w_1d[i][counter++] = weight;
+        dim_sum += weight;
+
         if (periodic[i]) {
-          wrapped_ix[i] = (current_ix[i] % (int)nx[i] + (int)nx[i]) % (int)nx[i];
+          // Safe modulo for negative numbers
+          idx_1d[i].push_back((ix % nx[i] + nx[i]) % nx[i]);
         } else {
-          wrapped_ix[i] = current_ix[i];
+          idx_1d[i].push_back(ix);
         }
       }
-      cvm::real weight = cvm::exp(-dist_sq * inv_squared_smooth);
-      acc_force(wrapped_ix, force, weight);
+      // The N-D sum is the product of the 1D sums
+      // total_sum *= dim_sum; //TODO : UNCOMMENT
+    }
 
+    cvm::real inv_total_sum = 1.0 / total_sum;
+
+    std::vector<int> current_ix(nd, 0);
+    std::vector<int> wrapped_ix(nd);
+    bool done = false;
+
+    while (!done) {
+      cvm::real combined_weight = inv_total_sum;
+      for (size_t i = 0; i < nd; i++) {
+        int local_pos = current_ix[i];
+        combined_weight *= w_1d[i][local_pos];
+        wrapped_ix[i] = idx_1d[i][local_pos];
+      }
+
+      acc_force(wrapped_ix, force, combined_weight);
+
+      // iterates through the kernel support
       for (int i = nd - 1; i >= 0; i--) {
-        if (++current_ix[i] > ix_max[i]) {
+        if (++current_ix[i] >= static_cast<int>(w_1d[i].size())) {
           if (i == 0) {
-            done = true;
-            break;
+              done = true;
+              break;
           }
-          current_ix[i] = ix_min[i];
-        } else {
+          current_ix[i] = 0;
+      } else {
           break;
         }
       }
