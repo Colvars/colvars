@@ -1615,7 +1615,6 @@ public:
       cutoff = std::min(cutoff, nx[i] / 2);
     }
 
-    // 1. Pre-calculate 1D weights and wrapped indices for each dimension
     std::vector<std::vector<cvm::real>> w_1d(nd);
     std::vector<std::vector<int>> idx_1d(nd);
     cvm::real total_sum = 1.0;
