@@ -1607,7 +1607,7 @@ public:
     if (smoothing < 0)
       cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
 
-    cvm::real kernel_params = smoothing; // * (1 - std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples)); //TODO: uncomment
+    cvm::real kernel_params = smoothing * (1 - std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples)); //TODO: uncomment
     cvm::real inv_squared_smooth = 1.0 / (std::max(kernel_params * kernel_params, 1e-5));
     int cutoff = static_cast<int>(cvm::floor(cutoff_factor * kernel_params));
 
