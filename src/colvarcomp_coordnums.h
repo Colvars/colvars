@@ -165,7 +165,7 @@ protected:
 
 
 template <int flags>
-cvm::real colvar::coordnum::switching_function(cvm::real const &l2, cvm::real &dFdl2,
+inline cvm::real colvar::coordnum::switching_function(cvm::real const &l2, cvm::real &dFdl2,
                                                int en, int ed,
                                                cvm::real pairlist_tol)
 {
@@ -224,7 +224,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &l2, cvm::real &d
 
 
 template<int flags>
-cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
+inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
                                                   cvm::rvector const &inv_r0sq_vec,
                                                   int en,
                                                   int ed,
