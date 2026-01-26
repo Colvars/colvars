@@ -1630,7 +1630,7 @@ public:
           if (i_max >= nx[i]) i_max = nx[i] - 1;
       }
       w_1d[i].resize(i_max - i_min + 1);
-      // cvm::real dim_sum = 0.0;
+      cvm::real dim_sum = 0.0;
       int counter = 0;
       for (int ix = i_min; ix <= i_max; ix++) {
         // Calculate 1D Gaussian component
@@ -1638,7 +1638,7 @@ public:
         cvm::real weight = cvm::exp(-diff * diff * inv_squared_smooth);
 
         w_1d[i][counter++] = weight;
-        // dim_sum += weight;
+        dim_sum += weight;
 
         if (periodic[i]) {
           // Safe modulo for negative numbers
@@ -1648,7 +1648,7 @@ public:
         }
       }
       // The N-D sum is the product of the 1D sums
-      // total_sum *= dim_sum; //TODO : UNCOMMENT
+      total_sum *= dim_sum;
     }
 
     cvm::real inv_total_sum = 1.0 / total_sum;
