@@ -147,8 +147,11 @@ int colvar::coordnum::init(std::string const &conf)
                           COLVARS_INPUT_ERROR);
         // return and do not allocate the pairlists below
       }
-      pairlist.resize(num_pairs);
-      std::fill(pairlist.begin(), pairlist.end(), true);
+      pairlist.reset(new bool[num_pairs]);
+      auto *pairlist_elem = pairlist.get();
+      for (size_t ip = 0; ip < num_pairs; ip++, pairlist_elem++) {
+        *pairlist_elem = true;
+      }
     }
   }
 
@@ -192,7 +195,7 @@ template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coor
   cvm::atom_pos const group2_com = group2->center_of_mass();
   cvm::rvector group1_com_grad, group2_com_grad;
 
-  auto pairlist_elem = pairlist.begin();
+  bool *pairlist_elem = pairlist.get();
 
   for (size_t i = 0; i < group1_num_coords; ++i) {
 
@@ -248,7 +251,7 @@ template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coor
 
 template<bool use_group1_com, bool use_group2_com, int compute_flags> int colvar::coordnum::compute_coordnum()
 {
-  bool const use_pairlist = !pairlist.empty();
+  bool const use_pairlist = pairlist.get();
   bool const rebuild_pairlist = use_pairlist && (cvm::step_relative() % pairlist_freq == 0);
 
   if (use_pairlist) {
@@ -473,7 +476,7 @@ colvar::selfcoordnum::selfcoordnum()
 template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop()
 {
   size_t const n = group1->size();
-  auto pairlist_elem = pairlist.begin();
+  bool *pairlist_elem = pairlist.get();
 
   for (size_t i = 0; i < n - 1; i++) {
     for (size_t j = i + 1; j < n; j++) {
@@ -507,7 +510,7 @@ template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop()
 
 template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
 {
-  bool const use_pairlist = !pairlist.empty();
+  bool const use_pairlist = pairlist.get();
   bool const rebuild_pairlist = use_pairlist && (cvm::step_relative() % pairlist_freq == 0);
 
   if (use_pairlist) {

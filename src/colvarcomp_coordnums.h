@@ -107,7 +107,7 @@ protected:
   int pairlist_freq = 100;
 
   /// Pair list
-  std::vector<bool> pairlist;
+  std::unique_ptr<bool []> pairlist;
 
 };
 
