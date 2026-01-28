@@ -186,7 +186,8 @@ void colvar::coordnum::compute_tolerance_l2_max()
 }
 
 
-template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coordnum::main_loop()
+template <bool use_group1_com, bool use_group2_com, int flags>
+void inline colvar::coordnum::main_loop()
 {
   size_t const group1_num_coords = use_group1_com ? 1 : group1->size();
   size_t const group2_num_coords = use_group2_com ? 1 : group2->size();
@@ -249,7 +250,8 @@ template <bool use_group1_com, bool use_group2_com, int flags> void colvar::coor
 }
 
 
-template<bool use_group1_com, bool use_group2_com, int compute_flags> int colvar::coordnum::compute_coordnum()
+template <bool use_group1_com, bool use_group2_com, int compute_flags>
+int colvar::coordnum::compute_coordnum()
 {
   bool const use_pairlist = pairlist.get();
   bool const rebuild_pairlist = use_pairlist && (cvm::step_relative() % pairlist_freq == 0);
@@ -473,7 +475,7 @@ colvar::selfcoordnum::selfcoordnum()
 }
 
 
-template<int flags> void colvar::selfcoordnum::selfcoordnum_sequential_loop()
+template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_loop()
 {
   size_t const n = group1->size();
   bool *pairlist_elem = pairlist.get();
