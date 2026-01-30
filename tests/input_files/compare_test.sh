@@ -22,13 +22,17 @@ fi
 
 echo "Top level directory is ${TOPDIR}"
 
-SPIFF=$(${TOPDIR}/devel-tools/get_spiff)
-if [ $? != 0 ] ; then
+if hash spiff >& /dev/null ; then
+  SPIFF=spiff
+else
+  SPIFF=$(${TOPDIR}/devel-tools/get_spiff)
+  if [ $? != 0 ] ; then
     echo "Error: spiff is not available and could not be downloaded/built." >& 2
     exit 1
-else
+  else
     echo "Using spiff executable from $SPIFF"
     hash -p ${SPIFF} spiff
+  fi
 fi
 
 dir=$1

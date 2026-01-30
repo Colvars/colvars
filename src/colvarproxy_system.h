@@ -85,9 +85,41 @@ public:
   /// Pass restraint energy value for current timestep to MD engine
   virtual void add_energy(cvm::real energy);
 
-  /// \brief Get the PBC-aware distance vector between two positions
+  /// Use the PBC functions from the Colvars library (as opposed to MD engine)
+  inline bool & use_internal_pbc() { return use_internal_pbc_; }
+
+  /// Get the PBC-aware distance vector between two positions (using the MD engine's convention)
   virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                          cvm::atom_pos const &pos2) const;
+
+  /// Inline version of position_distance()
+  cvm::rvector position_distance_internal(cvm::atom_pos const &pos1,
+                                          cvm::atom_pos const &pos2) const;
+
+  /// Kernel used by position_distance_internal()
+  /// @param pos1 First position
+  /// @param pos2 Second position
+  /// @param a Unit cell vector
+  /// @param b Unit cell vector
+  /// @param c Unit cell vector
+  /// @param a_r Reciprocal cell vector
+  /// @param b_r Reciprocal cell vector
+  /// @param c_r Reciprocal cell vector
+  /// @param a_p Is this dimension periodic?
+  /// @param b_p Is this dimension periodic?
+  /// @param c_p Is this dimension periodic?
+  /// @return (pos2 - pos1) without periodicity, minimum-image difference otherwise
+  static cvm::rvector position_distance_kernel(cvm::atom_pos const &pos1,
+                                               cvm::atom_pos const &pos2,
+                                               cvm::rvector const &a,
+                                               cvm::rvector const &b,
+                                               cvm::rvector const &c,
+                                               cvm::rvector const &a_r,
+                                               cvm::rvector const &b_r,
+                                               cvm::rvector const &c_r,
+                                               bool a_p = false,
+                                               bool b_p = false,
+                                               bool c_p = false);
 
   /// Recompute PBC reciprocal lattice (assumes XYZ periodicity)
   void update_pbc_lattice();
@@ -179,11 +211,14 @@ protected:
   /// Whether the total forces have been requested
   bool total_force_requested;
 
-  /// \brief Type of boundary conditions
+  /// Use the PBC functions from the Colvars library (as opposed to MD engine)
+  bool use_internal_pbc_ = false;
+
+  /// Type of boundary conditions defined for the current computation
   ///
   /// Orthogonal and triclinic cells are made available to objects.
   /// For any other conditions (mixed periodicity, triclinic cells in LAMMPS)
-  /// minimum-image distances are computed by the host engine regardless.
+  /// minimum-image distances are computed by the host engine by default
   enum Boundaries_type {
     boundaries_non_periodic,
     boundaries_pbc_ortho,
@@ -200,5 +235,60 @@ protected:
   /// Reciprocal lattice vectors
   cvm::rvector reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z;
 };
+
+
+inline cvm::rvector colvarproxy_system::position_distance_internal(cvm::atom_pos const &pos1,
+                                                                   cvm::atom_pos const &pos2) const
+{
+  if (boundaries_type == boundaries_unsupported) {
+    cvm::error("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
+    return cvm::rvector({0.0, 0.0, 0.0});
+  }
+
+  if (boundaries_type == boundaries_non_periodic) {
+    return pos2 - pos1;
+  }
+
+  // Periodicity flags are hard-coded, because this is the only case supported so far other than
+  // the two above
+  return position_distance_kernel(pos1, pos2, unit_cell_x, unit_cell_y, unit_cell_z,
+                                  reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z,
+                                  true, true, true);
+}
+
+
+inline cvm::rvector colvarproxy_system::position_distance_kernel(cvm::atom_pos const &pos1,
+                                                                 cvm::atom_pos const &pos2,
+                                                                 cvm::rvector const &a,
+                                                                 cvm::rvector const &b,
+                                                                 cvm::rvector const &c,
+                                                                 cvm::rvector const &a_r,
+                                                                 cvm::rvector const &b_r,
+                                                                 cvm::rvector const &c_r,
+                                                                 bool a_p,
+                                                                 bool b_p,
+                                                                 bool c_p)
+{
+  cvm::rvector diff = (pos2 - pos1);
+
+  cvm::real const x_shift = std::floor(a_r * diff + 0.5);
+  cvm::real const y_shift = std::floor(b_r * diff + 0.5);
+  cvm::real const z_shift = std::floor(c_r * diff + 0.5);
+
+  if (a_p) {
+    diff.x -= x_shift * a.x + y_shift * b.x + z_shift * c.x;
+  }
+
+  if (b_p) {
+    diff.y -= x_shift * a.y + y_shift * b.y + z_shift * c.y;
+  }
+
+  if (c_p) {
+    diff.z -= x_shift * a.z + y_shift * b.z + z_shift * c.z;
+  }
+
+  return diff;
+}
+
 
 #endif
