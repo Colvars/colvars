@@ -1967,6 +1967,19 @@ function is summed over all pairs of atoms in \texttt{group1} and
     This number defines the $m$ exponent for the switching function.}
 
 \item %
+  \labelkey{colvar|coordNum|group1CenterOnly}
+  \keydef
+    {group1CenterOnly}{%
+    \texttt{coordNum}}{%
+    Use only \texttt{group1}'s center of
+    mass}{%
+    boolean}{%
+    \texttt{off}}{%
+    If this option is \texttt{on}, only contacts between the center of mass of \texttt{group1} and atoms of \texttt{group2} are calculated (by default, the sum extends over all pairs of atoms in \texttt{group1} and \texttt{group2}).
+    If \texttt{group1} is a \texttt{dummyAtom}, this option is set to \texttt{yes} by default.
+}
+
+\item %
   \labelkey{colvar|coordNum|group2CenterOnly}
   \keydef
     {group2CenterOnly}{%
@@ -2013,13 +2026,9 @@ function is summed over all pairs of atoms in \texttt{group1} and
 
 \end{cvcoptions}
 
-This component returns a dimensionless number, which ranges from
-approximately 0 (all interatomic distances are much larger than the
-cutoff) to $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$ (all distances
-are less than the cutoff), or $N_{\mathtt{group1}}$ if
-\texttt{group2CenterOnly} is used.  For performance reasons, at least
-one of \texttt{group1} and \texttt{group2} should be of limited size or \texttt{group2CenterOnly} should be used: the cost of the loop over all pairs grows as $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$.
-Setting $\mathtt{tolerance} > 0$ ameliorates this to some degree, although every pair is still checked to regenerate the pair  list.
+This component returns a dimensionless number, which ranges from 0 (all interatomic distances are much larger than the cutoff) to $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$ (all possible pairwise distances are much smaller than the cutoff).
+The computational cost also grows with the number of pairwise distances calculated, unless either \texttt{group1CenterOnly} or \texttt{group2CenterOnly} are used.
+Setting $\mathtt{tolerance} > 0$ could mitigate this by looping over pairs less frequently than every step.
 
 
 
