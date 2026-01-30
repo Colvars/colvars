@@ -192,6 +192,8 @@ void inline colvar::coordnum::main_loop()
   size_t const group1_num_coords = use_group1_com ? 1 : group1->size();
   size_t const group2_num_coords = use_group2_com ? 1 : group2->size();
 
+  bool const b_use_internal_pbc = cvm::main()->proxy->use_internal_pbc();
+  
   cvm::atom_pos const group1_com = group1->center_of_mass();
   cvm::atom_pos const group2_com = group2->center_of_mass();
   cvm::rvector group1_com_grad, group2_com_grad;

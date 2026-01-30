@@ -80,6 +80,9 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 {
   engine_name_ = "VMD";
   version_int = get_version_from_string(COLVARPROXY_VERSION);
+
+  use_internal_pbc_ = true;
+
   b_simulation_running = false;
 
   // both fields are taken from data structures already available
