@@ -21,6 +21,7 @@ colvar::coordnum::coordnum()
   x.type(colvarvalue::type_scalar);
   cvm::real const r0 = cvm::main()->proxy->angstrom_to_internal(4.0);
   update_cutoffs({r0, r0, r0});
+  b_use_internal_pbc = cvm::main()->proxy->use_internal_pbc();
   // Boundaries will be set later, when the number of pairs is known
 }
 
@@ -46,6 +47,8 @@ void colvar::coordnum::update_cutoffs(cvm::rvector const &r0_vec_i)
 int colvar::coordnum::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
+
+  get_keyval(conf, "useInternalPBC", b_use_internal_pbc, b_use_internal_pbc);
 
   group1 = parse_group(conf, "group1");
 
@@ -192,8 +195,6 @@ void inline colvar::coordnum::main_loop()
   size_t const group1_num_coords = use_group1_com ? 1 : group1->size();
   size_t const group2_num_coords = use_group2_com ? 1 : group2->size();
 
-  bool const b_use_internal_pbc = cvm::main()->proxy->use_internal_pbc();
-  
   cvm::atom_pos const group1_com = group1->center_of_mass();
   cvm::atom_pos const group2_com = group2->center_of_mass();
   cvm::rvector group1_com_grad, group2_com_grad;
@@ -225,10 +226,15 @@ void inline colvar::coordnum::main_loop()
           !(flags & ef_use_pairlist);
 
       cvm::real const partial = within ?
-        compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                     x1, y1, z1, x2, y2, z2,
-                                     gx1, gy1, gz1, gx2, gy2, gz2,
-                                     tolerance, tolerance_l2_max) :
+        (b_use_internal_pbc ?
+         compute_pair_coordnum<flags | ef_use_internal_pbc>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                                            x1, y1, z1, x2, y2, z2,
+                                                            gx1, gy1, gz1, gx2, gy2, gz2,
+                                                            tolerance, tolerance_l2_max) :
+         compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                      x1, y1, z1, x2, y2, z2,
+                                      gx1, gy1, gz1, gx2, gy2, gz2,
+                                      tolerance, tolerance_l2_max) ) :
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
@@ -483,19 +489,37 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
   bool *pairlist_elem = pairlist.get();
 
   for (size_t i = 0; i < n - 1; i++) {
+
+    cvm::real const x1 = group1->pos_x(i);
+    cvm::real const y1 = group1->pos_y(i);
+    cvm::real const z1 = group1->pos_z(i);
+    cvm::real &gx1 = group1->grad_x(i);
+    cvm::real &gy1 = group1->grad_y(i);
+    cvm::real &gz1 = group1->grad_z(i);
+
     for (size_t j = i + 1; j < n; j++) {
+
+      cvm::real const x2 = group1->pos_x(j);
+      cvm::real const y2 = group1->pos_y(j);
+      cvm::real const z2 = group1->pos_z(j);
+      cvm::real &gx2 = group1->grad_x(j);
+      cvm::real &gy2 = group1->grad_y(j);
+      cvm::real &gz2 = group1->grad_z(j);
 
       bool const within =
         ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
         !(flags & ef_use_pairlist);
 
       cvm::real const partial = within ?
-        compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                     group1->pos_x(i), group1->pos_y(i), group1->pos_z(i),
-                                     group1->pos_x(j), group1->pos_y(j), group1->pos_z(j),
-                                     group1->grad_x(i), group1->grad_y(i), group1->grad_z(i),
-                                     group1->grad_x(j), group1->grad_y(j), group1->grad_z(j),
-                                     tolerance, tolerance_l2_max) :
+        (b_use_internal_pbc ?
+         compute_pair_coordnum<flags | ef_use_internal_pbc>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                                            x1, y1, z1, x2, y2, z2,
+                                                            gx1, gy1, gz1, gx2, gy2, gz2,
+                                                            tolerance, tolerance_l2_max) :
+         compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                      x1, y1, z1, x2, y2, z2,
+                                      gx1, gy1, gz1, gx2, gy2, gz2,
+                                      tolerance, tolerance_l2_max) ) :
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
