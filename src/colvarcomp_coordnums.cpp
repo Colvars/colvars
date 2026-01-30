@@ -266,14 +266,14 @@ int colvar::coordnum::compute_coordnum()
 
   if (use_pairlist) {
     if (rebuild_pairlist) {
-      int const flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
+      constexpr int flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
       main_loop<use_group1_com, use_group2_com, flags>();
     } else {
-      int const flags = compute_flags | ef_use_pairlist;
+      constexpr int flags = compute_flags | ef_use_pairlist;
       main_loop<use_group1_com, use_group2_com, flags>();
     }
   } else {
-    int const flags = compute_flags;
+    constexpr int flags = compute_flags;
     main_loop<use_group1_com, use_group2_com, flags>();
   }
 
@@ -409,7 +409,7 @@ colvar::h_bond::h_bond(cvm::atom_group::simple_atom const &acceptor,
 
 void colvar::h_bond::calc_value()
 {
-  int const flags = coordnum::ef_null;
+  constexpr int flags = coordnum::ef_null;
   cvm::rvector G1, G2;
   const cvm::atom_pos A1{atom_groups[0]->pos_x(0),
                          atom_groups[0]->pos_y(0),
@@ -449,7 +449,7 @@ void colvar::h_bond::calc_value()
 
 void colvar::h_bond::calc_gradients()
 {
-  int const flags = coordnum::ef_gradients;
+  int constexpr flags = coordnum::ef_gradients;
   const cvm::rvector inv_r0_vec{
     1.0 / r0_vec.x,
     1.0 / r0_vec.y,
@@ -543,14 +543,14 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
 
   if (use_pairlist) {
     if (rebuild_pairlist) {
-      int const flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
+      int constexpr flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
       selfcoordnum_sequential_loop<flags>();
     } else {
-      int const flags = compute_flags | ef_use_pairlist;
+      int constexpr flags = compute_flags | ef_use_pairlist;
       selfcoordnum_sequential_loop<flags>();
     }
   } else {
-    int const flags = compute_flags | ef_null;
+    int constexpr flags = compute_flags | ef_null;
     selfcoordnum_sequential_loop<flags>();
   }
   return COLVARS_OK;
