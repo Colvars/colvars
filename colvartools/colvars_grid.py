@@ -485,10 +485,6 @@ class colvars_grid:
             print('Can only compute the gradient of a scalar dataset')
             return None
 
-        if self.dim != 2:
-            print('Can only compute the gradient of a 2d dataset for now')
-            return None
-
         grad = colvars_grid()
         grad.dim = self.dim
         grad.nsets = self.dim
@@ -500,35 +496,47 @@ class colvars_grid:
 
         # Gradient grid is shorter by one along non-periodic dimensions
         grad.nx = [self.nx[i] if self.pbc[i] else self.nx[i] - 1 for i in range(self.dim)]
-        # Gradient grid is shifted by half a bin width
+
+        # Gradient grid is shifted by half a bin width (centered in the cell)
         grad.xmin = list(np.array(self.xmin) + np.array(self.dx) * 0.5)
 
-        for data in self.histdata[0]: # Assuming single dataset
-            # Need a properly shaped array
-            p = data.reshape(self.nx)
+        # Pre-calculate slicing tuples for efficiency
+        # This allows us to slice generically like arr[:, 1:, :] without knowing dimensions
+        slices_pre = []
+        slices_post = []
+        for d in range(self.dim):
+            sl_pre = [slice(None)] * self.dim
+            sl_post = [slice(None)] * self.dim
 
-            # Extend periodic dimensions by replicating first column/row
-            if (self.pbc[0]):
-                p = np.concatenate((p, p[:1]))
-            if (self.pbc[1]):
-                p = np.concatenate((p, p[:,:1]), axis=1)
+            sl_pre[d] = slice(0, -1)    # Equivalent to :-1
+            sl_post[d] = slice(1, None) # Equivalent to 1:
 
-            # Truncated / shifted arrays
-            pp = p[1:, 1:]
-            pm = p[1:, :-1]
-            mp = p[:-1, 1:]
-            mm = p[:-1, :-1]
+            slices_pre.append(tuple(sl_pre))
+            slices_post.append(tuple(sl_post))
 
-            # 4-point formula in 2D
-            pgradx = 0.5 * ((pm + pp) - (mm + mp)) / self.dx[0]
-            pgrady = 0.5 * ((mp + pp) - (mm + pm)) / self.dx[1]
+        for data in self.histdata[0]:
+            p = np.array(data).reshape(self.nx)
 
-            grad.histdata[0].append(pgradx.reshape(-1)) # Flattened array
-            grad.histdata[1].append(pgrady.reshape(-1)) # Flattened array
+            # This creates a generic pad_width like [(0,1), (0,0), (0,1)]
+            pad_width = [(0, 1) if periodic else (0, 0) for periodic in self.pbc]
+            if any(self.pbc):
+                p = np.pad(p, pad_width, mode='wrap')
 
-        # Data contains last items in history
-        grad.data.append(grad.histdata[0][-1])
-        grad.data.append(grad.histdata[1][-1])
+            for d in range(self.dim):
+                # Finite Difference along the active dimension 'd'
+                comp = (p[slices_post[d]] - p[slices_pre[d]]) / self.dx[d]
+
+                # Average along all other dimensions to center the grid
+                for avg_d in range(self.dim):
+                    if avg_d == d:
+                        continue
+                    comp = 0.5 * (comp[slices_pre[avg_d]] + comp[slices_post[avg_d]])
+
+                grad.histdata[d].append(comp.flatten())
+
+        # Update current data pointers
+        for d in range(self.dim):
+            grad.data.append(grad.histdata[d][-1])
 
         return grad
 
@@ -543,7 +551,7 @@ class colvars_grid:
         gradient = self
         count = self.count
         assert count is not None, "This grid is not associated with a sample count grid"
-    
+
         # Incremental sample count
         dc = colvars_grid()
         dc.dim = count.dim
