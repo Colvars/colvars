@@ -238,6 +238,7 @@ colvars:   # outputFreq = 5
 colvars:   # applyBias = on [default]
 colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
+colvars:   # DXhistory = off [default]
 colvars:   # fullSamples = 1
 colvars:   # minSamples = 0.5 [default]
 colvars:   # inputPrefix =  [default]
