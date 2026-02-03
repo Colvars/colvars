@@ -310,12 +310,12 @@ colvars: Re-initialized atom group for variable "dihedral":0/1. 1 atoms: total m
 colvars: Re-initialized atom group for variable "dihedral":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars:   Initializing extended coordinate to colvar value.
-colvars:   Integrated in 108 steps, error: 8.74097e-07
-colvars:   Integrated in 99 steps, error: 9.71156e-07
-colvars:   Integrated in 1 steps, error: 6.14167e-07
-colvars:   Integrated in 1 steps, error: 7.42403e-07
-colvars:   Integrated in 98 steps, error: 9.25378e-07
-colvars:   Integrated in 99 steps, error: 8.40897e-07
-colvars:   Integrated in 1 steps, error: 6.09815e-07
-colvars:   Integrated in 1 steps, error: 5.78514e-07
+colvars:   Integrated in 114 steps, error: 8.41912e-07
+colvars:   Integrated in 99 steps, error: 9.70968e-07
+colvars:   Integrated in 1 steps, error: 5.50133e-07
+colvars:   Integrated in 1 steps, error: 7.42262e-07
+colvars:   Integrated in 105 steps, error: 8.44313e-07
+colvars:   Integrated in 99 steps, error: 8.40713e-07
+colvars:   Integrated in 1 steps, error: 5.56156e-07
+colvars:   Integrated in 1 steps, error: 5.78382e-07
 colvars: Saving collective variables state to "test.colvars.state".
