@@ -1603,7 +1603,7 @@ public:
                       cvm::real const *force,
                       cvm::real smoothing = 0) {
 
-  if (smoothing && weights->value(bin_value) < full_samples) {
+  if (smoothing) { // TODO: && weights->value(bin_value) < full_samples
     if (smoothing < 0)
       cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
 
@@ -1621,8 +1621,8 @@ public:
 
     for (size_t i = 0; i < nd; i++) {
       // can be negative or > nx[i] to allow for distance calculation
-      int i_min = static_cast<int>(std::ceil(cv_value[i] - cutoff));
-      int i_max = static_cast<int>(std::floor(cv_value[i] + cutoff));
+      int i_min = static_cast<int>(std::floor(cv_value[i] - cutoff));
+      int i_max = static_cast<int>(std::ceil(cv_value[i] + cutoff));
 
       if (!periodic[i]) {
           if (i_min < 0) i_min = 0;
