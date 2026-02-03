@@ -1610,74 +1610,77 @@ public:
     cvm::real kernel_params = smoothing * (1 - std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples)); //TODO: uncomment
     cvm::real inv_squared_smooth = 1.0 / (std::max(kernel_params * kernel_params, 1e-5));
     int cutoff = static_cast<int>(cvm::floor(cutoff_factor * kernel_params));
-
-    for (size_t i = 0; i < nd; i++) {
-      cutoff = std::min(cutoff, nx[i] / 2);
-    }
-
-    std::vector<std::vector<cvm::real>> w_1d(nd);
-    std::vector<std::vector<int>> idx_1d(nd);
-    cvm::real total_sum = 1.0;
-
-    for (size_t i = 0; i < nd; i++) {
-      // can be negative or > nx[i] to allow for distance calculation
-      int i_min = static_cast<int>(std::floor(cv_value[i] - cutoff));
-      int i_max = static_cast<int>(std::ceil(cv_value[i] + cutoff));
-
-      if (!periodic[i]) {
-          if (i_min < 0) i_min = 0;
-          if (i_max >= nx[i]) i_max = nx[i] - 1;
-      }
-      w_1d[i].resize(i_max - i_min + 1);
-      cvm::real dim_sum = 0.0;
-      int counter = 0;
-      for (int ix = i_min; ix <= i_max; ix++) {
-        // Calculate 1D Gaussian component
-        cvm::real diff = (static_cast<cvm::real>(ix) + 0.5) - cv_value[i];
-        cvm::real weight = cvm::exp(-diff * diff * inv_squared_smooth);
-
-        w_1d[i][counter++] = weight;
-        dim_sum += weight;
-
-        if (periodic[i]) {
-          // Safe modulo for negative numbers
-          idx_1d[i].push_back((ix % nx[i] + nx[i]) % nx[i]);
-        } else {
-          idx_1d[i].push_back(ix);
-        }
-      }
-      // The N-D sum is the product of the 1D sums
-      total_sum *= dim_sum;
-    }
-
-    cvm::real inv_total_sum = 1.0 / total_sum;
-
-    std::vector<int> current_ix(nd, 0);
-    std::vector<int> wrapped_ix(nd);
-    bool done = false;
-
-    while (!done) {
-      cvm::real combined_weight = inv_total_sum;
+    if (cutoff > 0) {
       for (size_t i = 0; i < nd; i++) {
-        int local_pos = current_ix[i];
-        combined_weight *= w_1d[i][local_pos];
-        wrapped_ix[i] = idx_1d[i][local_pos];
+        cutoff = std::min(cutoff, nx[i] / 2);
       }
 
-      acc_force(wrapped_ix, force, combined_weight);
+      std::vector<std::vector<cvm::real>> w_1d(nd);
+      std::vector<std::vector<int>> idx_1d(nd);
+      cvm::real total_sum = 1.0;
 
-      // iterates through the kernel support
-      for (int i = nd - 1; i >= 0; i--) {
-        if (++current_ix[i] >= static_cast<int>(w_1d[i].size())) {
-          if (i == 0) {
+      for (size_t i = 0; i < nd; i++) {
+        // can be negative or > nx[i] to allow for distance calculation
+        int i_min = static_cast<int>(std::floor(cv_value[i] - cutoff));
+        int i_max = static_cast<int>(std::ceil(cv_value[i] + cutoff));
+
+        if (!periodic[i]) {
+            if (i_min < 0) i_min = 0;
+            if (i_max >= nx[i]) i_max = nx[i] - 1;
+        }
+        w_1d[i].resize(i_max - i_min + 1);
+        cvm::real dim_sum = 0.0;
+        int counter = 0;
+        for (int ix = i_min; ix <= i_max; ix++) {
+          // Calculate 1D Gaussian component
+          cvm::real diff = (static_cast<cvm::real>(ix) + 0.5) - cv_value[i];
+          cvm::real weight = cvm::exp(-diff * diff * inv_squared_smooth);
+
+          w_1d[i][counter++] = weight;
+          dim_sum += weight;
+
+          if (periodic[i]) {
+            // Safe modulo for negative numbers
+            idx_1d[i].push_back((ix % nx[i] + nx[i]) % nx[i]);
+          } else {
+            idx_1d[i].push_back(ix);
+          }
+        }
+        // The N-D sum is the product of the 1D sums
+        total_sum *= dim_sum;
+      }
+
+      cvm::real inv_total_sum = 1.0 / total_sum;
+
+      std::vector<int> current_ix(nd, 0);
+      std::vector<int> wrapped_ix(nd);
+      bool done = false;
+
+      while (!done) {
+        cvm::real combined_weight = inv_total_sum;
+        for (size_t i = 0; i < nd; i++) {
+          int local_pos = current_ix[i];
+          combined_weight *= w_1d[i][local_pos];
+          wrapped_ix[i] = idx_1d[i][local_pos];
+        }
+
+        acc_force(wrapped_ix, force, combined_weight);
+
+        // iterates through the kernel support
+        for (int i = nd - 1; i >= 0; i--) {
+          if (++current_ix[i] >= static_cast<int>(w_1d[i].size())) {
+            if (i == 0) {
               done = true;
               break;
+            }
+            current_ix[i] = 0;
+          } else {
+            break;
           }
-          current_ix[i] = 0;
-      } else {
-          break;
         }
       }
+    } else {
+      acc_force(bin_value, force);
     }
   } else {
     acc_force(bin_value, force);
