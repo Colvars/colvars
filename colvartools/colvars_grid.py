@@ -224,9 +224,9 @@ class colvars_grid:
                     for j in range(ny):
                         x = self.xmin[0] + self.dx[0] * (i + .5)
                         y = self.xmin[1] + self.dx[1] * (j + .5)
-                        f.write(f'{x} {y} ')
+                        f.write(f'{x:.11g} {y:.11g} ')
                         for d in self.data:
-                            f.write(f'{d[flat_index]} ')
+                            f.write(f'{d[flat_index]:.11g} ')
                         flat_index += 1
                         f.write('\n')
             elif self.dim == 3:
@@ -237,18 +237,18 @@ class colvars_grid:
                             x = self.xmin[0] + self.dx[0] * (i + .5)
                             y = self.xmin[1] + self.dx[1] * (j + .5)
                             z = self.xmin[2] + self.dx[2] * (k + .5)
-                            f.write(f'{x} {y} {z} ')
+                            f.write(f'{x:.11g} {y:.11g} {z:.11g} ')
                             for d in self.data:
-                                f.write(f'{d[flat_index]} ')
+                                f.write(f'{d[flat_index]:.11g} ')
                             flat_index += 1
                             f.write('\n')
             f.close()
 
     @staticmethod
     def list2str(l):
-        ''' Utility function to serialize a list into a string
+        ''' Utility function to serialize a list of floating point numbers into a string
         '''
-        return ' '.join([str(i) for i in l])
+        return ' '.join(f'{i:.11g}' for i in l)
 
     def write_dx(self, filename, dataset=None, frame=None):
         '''Write a single dataset to a dx file'''
