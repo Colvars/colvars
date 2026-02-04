@@ -55,6 +55,7 @@ int colvarbias_abf::init(std::string const &conf)
     cvm::log("Jacobian (geometric) forces will be included in reported free energy gradients.\n");
   }
 
+  get_keyval(conf, "DXhistory", history_saved_as_dx,false);
   full_samples = 200;
   get_keyval(conf, "fullSamples", full_samples, full_samples);
   get_keyval(conf, "minSamples", min_samples, full_samples / 2);
@@ -872,7 +873,10 @@ template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
   if (!os) {
     return cvm::error("Error opening file " + filename + " for writing.\n", COLVARS_ERROR | COLVARS_FILE_ERROR);
   }
-  grid->write_multicol(os);
+  if (history_saved_as_dx)
+    grid->write_opendx(os);
+  else
+    grid->write_multicol(os);
   if (close) {
     cvm::proxy->close_output_stream(filename);
   } else {

@@ -123,6 +123,10 @@ private:
   std::shared_ptr<colvargrid_integrate>  czar_pmf;
   /// use kernel grid version of ABF ?
   cvm::real smoothing;
+
+  /// save history files in the .dx format
+  bool history_saved_as_dx;
+
   /// Calculate system force for all colvars
   int update_system_force();
 
