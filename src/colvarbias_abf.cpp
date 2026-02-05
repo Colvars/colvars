@@ -440,8 +440,8 @@ int colvarbias_abf::update()
             z_position[i] = (z_samples->use_actual_value[i] ? z_samples->cv[i] -> actual_value().real_value : z_samples->cv[i]->value().real_value - z_samples->lower_boundaries[i].real_value)/z_samples->widths[i];
           }
         }
-        bool is_ok = (z_samples ? z_samples->index_ok(bin) : false) ||
-             (z_weights ? z_weights->index_ok(bin) : false);
+        bool is_ok = (z_samples ? z_samples->index_ok(z_bin) : false) ||
+             (z_weights ? z_weights->index_ok(z_bin) : false);
         if (is_ok) {
           // If we are outside the range of z, the force has not been obtained above
           // the function is just an accessor, so cheap to call again anyway
@@ -634,8 +634,8 @@ int colvarbias_abf::replica_share() {
 
   // Share gradients for shared ABF.
   cvm::log("shared ABF: Sharing gradient and samples among replicas at step "+cvm::to_str(cvm::step_absolute()) );
-
-  if (!local_samples || !local_weights) {
+  bool no_local_coeffs = static_cast<bool>(smoothing)? !local_weights : !local_samples;
+  if (no_local_coeffs) {
     // We arrive here if sharing has just been enabled by a script
     // in which case local arrays have not been initialized yet
     if (smoothing) {
