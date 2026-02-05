@@ -1614,7 +1614,7 @@ public:
       for (size_t i = 0; i < nd; i++) {
         cutoff = std::min(cutoff, nx[i] / 2);
       }
-
+      //TODO : make those class members and init them to max size i.e. nd, ceil(cutoff_factor * smoothing)
       std::vector<std::vector<cvm::real>> w_1d(nd);
       std::vector<std::vector<int>> idx_1d(nd);
       cvm::real total_sum = 1.0;
@@ -1668,6 +1668,7 @@ public:
 
         // iterates through the kernel support
         for (int i = nd - 1; i >= 0; i--) {
+          // TODO: change a create a vector with the sizes
           if (++current_ix[i] >= static_cast<int>(w_1d[i].size())) {
             if (i == 0) {
               done = true;
