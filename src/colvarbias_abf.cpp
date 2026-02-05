@@ -868,12 +868,12 @@ size_t colvarbias_abf::replica_share_freq() const
 
 template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
                                                           std::string const &filename,
-                                                          bool close) {
+                                                          bool close, bool write_dx) {
   std::ostream &os = cvm::proxy->output_stream(filename, "multicolumn grid file");
   if (!os) {
     return cvm::error("Error opening file " + filename + " for writing.\n", COLVARS_ERROR | COLVARS_FILE_ERROR);
   }
-  if (history_saved_as_dx)
+  if (write_dx)
     grid->write_opendx(os);
   else
     grid->write_multicol(os);
@@ -908,7 +908,7 @@ template <class T> int colvarbias_abf::write_grid_to_file(T const *grid,
 }
 
 
-void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool close, bool local)
+void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool close, bool local, bool write_dx)
 {
   colvarproxy *proxy = cvm::main()->proxy;
 
@@ -953,10 +953,10 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     czar_pmf_out = global_czar_pmf.get();
   }
   if (smoothing && weights_out != nullptr)
-    write_grid_to_file<colvar_grid_scalar>(weights_out, prefix + ".count", close);
+    write_grid_to_file<colvar_grid_scalar>(weights_out, prefix + ".count", close, write_dx);
   else if (!smoothing && samples_out != nullptr)
-    write_grid_to_file<colvar_grid_count>(samples_out, prefix + ".count", close);
-  write_grid_to_file<colvar_grid_gradient>(gradients_out, prefix + ".grad", close);
+    write_grid_to_file<colvar_grid_count>(samples_out, prefix + ".count", close, write_dx);
+  write_grid_to_file<colvar_grid_gradient>(gradients_out, prefix + ".grad", close, write_dx);
 
   if (b_integrate) {
     // Do numerical integration (to high precision) and output a PMF
@@ -1269,7 +1269,7 @@ int colvarbias_abf::write_output_files()
       (!shared_on || cvm::main()->proxy->replica_index() == 0) && // if shared, only on replica 0
       (cvm::step_absolute() % history_freq == 0) &&               // at requested frequency
       (cvm::step_absolute() != history_last_step)) {              // not twice the same timestep
-    write_gradients_samples(master_prefix + ".hist", false);
+    write_gradients_samples(master_prefix + ".hist", false, false, history_saved_as_dx);
     history_last_step = cvm::step_absolute();
   }
   if (b_UI_estimator) {

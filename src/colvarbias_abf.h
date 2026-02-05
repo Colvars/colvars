@@ -185,7 +185,7 @@ private:
 
   /// Write human-readable FE gradients and sample count, and DX file in dim > 2
   /// \param local write grids contining replica-local data in shared ABF
-  void write_gradients_samples(const std::string &prefix, bool close = true, bool local = false);
+  void write_gradients_samples(const std::string &prefix, bool close = true, bool local = false, bool history_dx = false);
 
   /// Read human-readable FE gradients and sample count (if not using restart)
   int read_gradients_samples();
@@ -193,7 +193,7 @@ private:
   /// Shorthand template used in write_gradient_samples()
   template <class T> int write_grid_to_file(T const *grid,
                                             std::string const &name,
-                                            bool close);
+                                            bool close, bool write_dx =false);
 
 private:
 
