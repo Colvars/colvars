@@ -179,6 +179,37 @@ public:
     return false;
   }
 
+  void get_lattice(
+    cvm::rvector& unit_cell_x_out,
+    cvm::rvector& unit_cell_y_out,
+    cvm::rvector& unit_cell_z_out,
+    cvm::rvector& reciprocal_cell_x_out,
+    cvm::rvector& reciprocal_cell_y_out,
+    cvm::rvector& reciprocal_cell_z_out) const {
+    unit_cell_x_out = unit_cell_x;
+    unit_cell_y_out = unit_cell_y;
+    unit_cell_z_out = unit_cell_z;
+    reciprocal_cell_x_out = reciprocal_cell_x;
+    reciprocal_cell_y_out = reciprocal_cell_y;
+    reciprocal_cell_z_out = reciprocal_cell_z;
+  }
+
+  /// Type of boundary conditions defined for the current computation
+  ///
+  /// Orthogonal and triclinic cells are made available to objects.
+  /// For any other conditions (mixed periodicity, triclinic cells in LAMMPS)
+  /// minimum-image distances are computed by the host engine by default
+  enum Boundaries_type {
+    boundaries_non_periodic,
+    boundaries_pbc_ortho,
+    boundaries_pbc_triclinic,
+    boundaries_unsupported
+  };
+
+  Boundaries_type get_boundary_type() const {
+    return boundaries_type;
+  }
+
 protected:
 
   /// Next value of lambda to be sent to back-end
@@ -213,18 +244,6 @@ protected:
 
   /// Use the PBC functions from the Colvars library (as opposed to MD engine)
   bool use_internal_pbc_ = false;
-
-  /// Type of boundary conditions defined for the current computation
-  ///
-  /// Orthogonal and triclinic cells are made available to objects.
-  /// For any other conditions (mixed periodicity, triclinic cells in LAMMPS)
-  /// minimum-image distances are computed by the host engine by default
-  enum Boundaries_type {
-    boundaries_non_periodic,
-    boundaries_pbc_ortho,
-    boundaries_pbc_triclinic,
-    boundaries_unsupported
-  };
 
   /// Type of boundary conditions
   Boundaries_type boundaries_type;
