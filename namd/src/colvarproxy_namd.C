@@ -48,15 +48,37 @@
 #include "colvarproxy_namd_version.h"
 
 
-colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
-  : globalmaster(gm)
+colvarproxy_namd::colvarproxy_namd()
+  : colvarproxy()
 {
+  if (cvm::debug())
+    iout << "colvars: initializing colvarproxy_namd object.\n" << endi;
+
   engine_name_ = "NAMD";
+
+  version_int = get_version_from_string(COLVARPROXY_VERSION);
+
+  boltzmann_ = 0.001987191;
+
+  angstrom_value_ = 1.0;
+
+  // In NAMD, masses and charges are already available when initializing Colvars
+  updated_masses_ = updated_charges_ = true;
+}
+
+
+void colvarproxy_namd::set_gm_object(GlobalMasterColvars *gm)
+{
+  globalmaster = gm;
+}
+
+
+int colvarproxy_namd::init()
+{
 #if CMK_SMP && USE_CKLOOP
   charm_lock_state = CmiCreateLock();
 #endif
 
-  version_int = get_version_from_string(COLVARPROXY_VERSION);
 #if CMK_TRACE_ENABLED
   if ( 0 == CkMyPe() ) {
     traceRegisterUserEvent("GM COLVAR item", GLOBAL_MASTER_CKLOOP_CALC_ITEM);
@@ -64,39 +86,11 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
     traceRegisterUserEvent("GM COLVAR scripted bias", GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES );
   }
 #endif
-  first_timestep = true;
-  globalmaster->requestTotalForcePublic(total_force_requested);
 
-  boltzmann_ = 0.001987191;
-
-  angstrom_value_ = 1.;
-
-  // initialize pointers to NAMD configuration data
   simparams = Node::Object()->simParameters;
-
-  if (cvm::debug())
-    iout << "Info: initializing the colvars proxy object.\n" << endi;
-
-  // find the configuration file, if provided
-  StringList *config = Node::Object()->configList->find("colvarsConfig");
-
-  // find the input state file
-  StringList *input_restart = Node::Object()->configList->find("colvarsInput");
-  colvarproxy_io::set_input_prefix(input_restart ? input_restart->data : "");
 
   update_target_temperature();
   set_integration_timestep(simparams->dt);
-  set_time_step_factor(simparams->globalMasterFrequency);
-
-  random.reset(new Random(simparams->randomSeed));
-
-  // both fields are taken from data structures already available
-  updated_masses_ = updated_charges_ = true;
-
-  // Take the output prefixes from the NAMD input
-  colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
-  colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
-  colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
 
   if (simparams->accelMDOn) {
     accelMDOn = true;
@@ -105,53 +99,86 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   }
   amd_weight_factor = 1.0;
 
-  // check if it is possible to save output configuration
-  if ((!output_prefix_str.size()) && (!restart_output_prefix_str.size())) {
-    error("Error: neither the final output state file or "
-          "the output restart file could be defined, exiting.\n");
-  }
-
-  init_atoms_map();
-
-  // initialize module: this object will be the communication proxy
-  colvars = new colvarmodule(this);
-
-  cvm::log("Using NAMD interface, version "+
-           cvm::to_str(COLVARPROXY_VERSION)+".\n");
-  colvars->cite_feature("NAMD engine");
-  colvars->cite_feature("Colvars-NAMD interface");
-
-  errno = 0;
-  for ( ; config; config = config->next ) {
-    add_config("configfile", config->data);
-  }
-
-  // Trigger immediate initialization of the module
-  colvarproxy::parse_module_config();
-  colvarproxy_namd::setup();
-  colvars->update_engine_parameters();
-  colvars->setup_input();
-  colvars->setup_output();
-
-  // save to Node for Tcl script access
-  Node::Object()->colvars = colvars;
-
-  if (simparams->firstTimestep != 0) {
-    colvars->set_initial_step(static_cast<cvm::step_number>(simparams->firstTimestep));
-  }
+  random.reset(new Random(simparams->randomSeed));
 
 #if !defined (NAMD_UNIFIED_REDUCTION)
   reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
 #endif
 
-  #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
+#if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
   CProxy_PatchData cpdata(CkpvAccess(BOCclass_group).patchData);
   PatchData *patchData = cpdata.ckLocalBranch();
   nodeReduction = patchData->reduction;
-  #endif
+#endif
 
-  if (cvm::debug())
-    iout << "Info: done initializing the colvars proxy object.\n" << endi;
+  // If an input state file was provided for Colvars via NAMD script, record its name
+  auto *input_state_from_namd = Node::Object()->configList->find("colvarsInput");
+  if (input_state_from_namd) {
+    colvarproxy_io::set_input_prefix(input_state_from_namd->data);
+  }
+
+  // Take the default output prefixes from the NAMD script
+  colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
+  colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
+  colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
+
+  // check if it is possible to save output configuration
+  if ((!output_prefix_str.size()) && (!restart_output_prefix_str.size())) {
+    error("Error: neither the final output state file or the output restart file could be defined, "
+          "exiting.\n");
+    return COLVARS_INPUT_ERROR;
+  }
+
+  if (globalmaster) {
+    set_time_step_factor(simparams->globalMasterFrequency);
+    init_atoms_map();
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_namd::init_module()
+{
+  int error_code = COLVARS_OK;
+
+  if (! colvars) {
+    // initialize module: this object will be the communication proxy
+    colvars = new colvarmodule(this);
+
+    cvm::log("Using NAMD interface, version " + cvm::to_str(COLVARPROXY_VERSION) + ".\n");
+    colvars->cite_feature("NAMD engine");
+    colvars->cite_feature("Colvars-NAMD interface");
+
+    // save to Node for Tcl script access
+    Node::Object()->colvars = colvars;
+
+    if (simparams->firstTimestep != 0) {
+      colvars->set_initial_step(static_cast<cvm::step_number>(simparams->firstTimestep));
+    }
+
+  } else {
+    error("Error: trying to allocate the Colvars module twice");
+    return COLVARS_BUG_ERROR;
+  }
+
+  // find the configuration file, if provided
+  StringList *config = Node::Object()->configList->find("colvarsConfig");
+  errno = 0;
+  for ( ; config; config = config->next ) {
+    add_config("configfile", config->data);
+  }
+
+  if (colvars) {
+    // Trigger immediate initialization of the module
+    error_code |= colvarproxy::parse_module_config();
+    error_code |= colvarproxy_namd::setup();
+    error_code |= colvars->update_engine_parameters();
+    error_code |= colvars->setup_input();
+    error_code |= colvars->setup_output();
+  }
+
+  return COLVARS_OK;
 }
 
 
@@ -234,12 +261,12 @@ int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
 
 int colvarproxy_namd::setup()
 {
-  int error_code = colvarproxy::setup();
-
   if (colvars->size() == 0) {
     // Module is empty, nothing to do
     return COLVARS_OK;
   }
+
+  int error_code = colvarproxy::setup();
 
   log("Updating NAMD interface:\n");
 
@@ -251,6 +278,32 @@ int colvarproxy_namd::setup()
         "as is the default option in NAMD.\n");
   }
 
+  if (globalmaster) {
+    error_code |= setup_gm_atom_buffers();
+    error_code |= setup_gm_atom_group_buffers();
+    error_code |= setup_gm_volmap_buffers();
+  }
+
+  size_t const new_features_hash = std::hash<std::string>{}(colvars->feature_report(0));
+  if (new_features_hash != features_hash) {
+    // Nag only once, there may be many run commands with the same configuration
+    log(std::string("\n") + colvars->feature_report(0) + std::string("\n"));
+    features_hash = new_features_hash;
+  }
+
+  update_target_temperature();
+  log("updating target temperature (T = " + cvm::to_str(target_temperature()) + " K).\n");
+
+  // Note: not needed currently, but may be in the future if NAMD allows
+  // redefining the timestep
+  set_integration_timestep(simparams->dt);
+
+  return error_code;
+}
+
+
+int colvarproxy_namd::setup_gm_atom_buffers()
+{
   log("updating atomic data ("+cvm::to_str(atoms_ids.size())+" atoms).\n");
 
   size_t i;
@@ -262,6 +315,12 @@ int colvarproxy_namd::setup()
     atoms_new_colvar_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
+  return COLVARS_OK;
+}
+
+
+int colvarproxy_namd::setup_gm_atom_group_buffers()
+{
   size_t n_group_atoms = 0;
   for (int ig = 0; ig < globalmaster->getRequestedGroups().size(); ig++) {
     n_group_atoms += globalmaster->getRequestedGroups()[ig].size();
@@ -280,7 +339,12 @@ int colvarproxy_namd::setup()
     atom_groups_coms[ig] = cvm::rvector(0.0, 0.0, 0.0);
     atom_groups_new_colvar_forces[ig] = cvm::rvector(0.0, 0.0, 0.0);
   }
+  return COLVARS_OK;
+}
 
+
+int colvarproxy_namd::setup_gm_volmap_buffers()
+{
 #if NAMD_VERSION_NUMBER >= 34471681
   log("updating grid object data ("+cvm::to_str(volmaps_ids.size())+
       " grid objects in total).\n");
@@ -385,24 +449,91 @@ void colvarproxy_namd::calculate()
   }
 
   previous_NAMD_step = step;
+
   if (accelMDOn) update_accelMD_info();
 
-  auto *lattice = globalmaster->get_lattice();
+  update_lattice();
 
-  {
-    Vector const a = lattice->a();
-    Vector const b = lattice->b();
-    Vector const c = lattice->c();
-    unit_cell_x.set(a.x, a.y, a.z);
-    unit_cell_y.set(b.x, b.y, b.z);
-    unit_cell_z.set(c.x, c.y, c.z);
+  if (globalmaster) {
+    read_gm_atom_buffers();
   }
 
-  if (!lattice->a_p() && !lattice->b_p() && !lattice->c_p()) {
+  if (cvm::debug()) {
+    print_input_atomic_data();
+  }
+  // call the collective variable module
+  if (colvars->calc() != COLVARS_OK) {
+    error("Error in the collective variables module.\n");
+  }
+
+  if (total_force_requested) {
+    // Total forces will be valid at the next step (this function is only called once)
+    set_total_forces_valid();
+  }
+
+  if (cvm::debug()) {
+    print_output_atomic_data();
+  }
+
+  if (globalmaster) {
+    send_gm_atom_forces();
+  }
+
+  // send MISC energy
+  #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
+  if(!simparams->CUDASOAintegrate) {
+    reduction->submit();
+  }
+  #else
+  #if !defined(NAMD_UNIFIED_REDUCTION)
+  reduction->submit();
+  #else
+  // submitReduction();
+  #endif
+  #endif
+
+  // NAMD does not destruct GlobalMaster objects, so we must remember
+  // to write all output files at the end of a run
+  if (step == simparams->N) {
+    post_run();
+  }
+
+}
+
+
+void colvarproxy_namd::update_lattice()
+{
+  if (globalmaster) {
+    // Copy the Lattice object
+    auto *l = globalmaster->get_lattice();
+    if (!l) {
+      boundaries_type = boundaries_unsupported;
+      return;
+    }
+    if (!l->a_p() && !l->b_p() && !l->c_p()) {
+      boundaries_type = boundaries_non_periodic;
+      reset_pbc_lattice();
+      return;
+    } else {
+      lattice.set(l->a(), l->b(), l->c(), l->origin());
+    }
+  }
+
+  unit_cell_x.set(lattice.a().x, lattice.a().y, lattice.a().z);
+  unit_cell_y.set(lattice.b().x, lattice.b().y, lattice.b().z);
+  unit_cell_z.set(lattice.c().x, lattice.c().y, lattice.c().z);
+
+  if (cvm::debug()) {
+    cvm::log("unit_cell_x = " + cvm::to_str(unit_cell_x));
+    cvm::log("unit_cell_y = " + cvm::to_str(unit_cell_y));
+    cvm::log("unit_cell_z = " + cvm::to_str(unit_cell_z));
+  }
+
+  if (!lattice.a_p() && !lattice.b_p() && !lattice.c_p()) {
     boundaries_type = boundaries_non_periodic;
     reset_pbc_lattice();
-  } else if (lattice->a_p() && lattice->b_p() && lattice->c_p()) {
-    if (lattice->orthogonal()) {
+  } else if (lattice.a_p() && lattice.b_p() && lattice.c_p()) {
+    if (lattice.orthogonal()) {
       boundaries_type = boundaries_pbc_ortho;
     } else {
       boundaries_type = boundaries_pbc_triclinic;
@@ -411,11 +542,14 @@ void colvarproxy_namd::calculate()
   } else {
     boundaries_type = boundaries_unsupported;
   }
+}
 
+
+void colvarproxy_namd::read_gm_atom_buffers()
+{
   if (cvm::debug()) {
-    cvm::log(std::string(cvm::line_marker)+
-             "colvarproxy_namd, step no. "+cvm::to_str(colvars->it)+"\n"+
-             "Updating atomic data arrays.\n");
+    cvm::log(std::string(cvm::line_marker) + "colvarproxy_namd, step no. " +
+             cvm::to_str(colvars->it) + "\n" + "Updating atomic data arrays from GlobalMaster.\n");
   }
 
   // must delete the forces applied at the previous step: we can do
@@ -566,25 +700,11 @@ void colvarproxy_namd::calculate()
     }
   }
 #endif
+}
 
-  if (cvm::debug()) {
-    print_input_atomic_data();
-  }
 
-  // call the collective variable module
-  if (colvars->calc() != COLVARS_OK) {
-    cvm::error("Error in the collective variables module.\n", COLVARS_ERROR);
-  }
-
-  if (total_force_requested) {
-    // Total forces will be valid at the next step (this function is only called once)
-    set_total_forces_valid();
-  }
-
-  if (cvm::debug()) {
-    print_output_atomic_data();
-  }
-
+void colvarproxy_namd::send_gm_atom_forces()
+{
   // communicate all forces to the MD integrator
   for (size_t i = 0; i < atoms_ids.size(); i++) {
     cvm::rvector const &f = atoms_new_colvar_forces[i];
@@ -617,25 +737,6 @@ void colvarproxy_namd::calculate()
     }
   }
 #endif
-
-  // send MISC energy
-  #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
-  if(!simparams->CUDASOAintegrate) {
-    reduction->submit();
-  }
-  #else
-  #if !defined(NAMD_UNIFIED_REDUCTION)
-  reduction->submit();
-  #else
-  // submitReduction();
-  #endif
-  #endif
-
-  // NAMD does not destruct GlobalMaster objects, so we must remember
-  // to write all output files at the end of a run
-  if (step == simparams->N) {
-    post_run();
-  }
 }
 
 
@@ -699,9 +800,11 @@ void colvarproxy_namd::add_energy(cvm::real energy)
   #if !defined(NAMD_UNIFIED_REDUCTION)
   reduction->item(REDUCTION_MISC_ENERGY) += energy;
   #else
-  globalmaster->addReductionEnergyPublic(REDUCTION_MISC_ENERGY, energy);
-  #endif
-  #endif
+  if (globalmaster) {
+    globalmaster->addReductionEnergyPublic(REDUCTION_MISC_ENERGY, energy);
+  }
+#endif
+#endif
 }
 
 void colvarproxy_namd::request_total_force(bool yesno)
@@ -710,7 +813,7 @@ void colvarproxy_namd::request_total_force(bool yesno)
     cvm::log("colvarproxy_namd::request_total_force()\n");
   }
   total_force_requested = yesno;
-  globalmaster->requestTotalForcePublic(total_force_requested);
+  if (globalmaster) globalmaster->requestTotalForcePublic(total_force_requested);
   if (cvm::debug()) {
     cvm::log("colvarproxy_namd::request_total_force() end\n");
   }
@@ -890,65 +993,52 @@ void colvarproxy_namd::update_atom_properties(int index)
 
 
 cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
-                                                 cvm::atom_pos const &pos2)
-  const
+                                                 cvm::atom_pos const &pos2) const
 {
   Position const p1(pos1.x, pos1.y, pos1.z);
   Position const p2(pos2.x, pos2.y, pos2.z);
-  // return p2 - p1
-  Vector const d = globalmaster->get_lattice()->delta(p2, p1);
+  Vector const d = (boundaries_type == boundaries_non_periodic) ? (p2 - p1) : lattice.delta(p2, p1);
   return cvm::rvector(d.x, d.y, d.z);
 }
 
 
-
-enum e_pdb_field {
-  e_pdb_none,
-  e_pdb_occ,
-  e_pdb_beta,
-  e_pdb_x,
-  e_pdb_y,
-  e_pdb_z,
-  e_pdb_ntot
+enum class e_pdb_field {
+  none,
+  occ,
+  beta,
+  x,
+  y,
+  z,
+  ntot
 };
 
+namespace {
 
 e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
 {
-  e_pdb_field pdb_field = e_pdb_none;
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("O")) {
-    pdb_field = e_pdb_occ;
+  e_pdb_field pdb_field = e_pdb_field::none;
+  if (colvarparse::to_lower_cppstr(pdb_field_str) == colvarparse::to_lower_cppstr("O")) {
+    pdb_field = e_pdb_field::occ;
   }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("B")) {
-    pdb_field = e_pdb_beta;
+  if (colvarparse::to_lower_cppstr(pdb_field_str) == colvarparse::to_lower_cppstr("B")) {
+    pdb_field = e_pdb_field::beta;
   }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("X")) {
-    pdb_field = e_pdb_x;
+  if (colvarparse::to_lower_cppstr(pdb_field_str) == colvarparse::to_lower_cppstr("X")) {
+    pdb_field = e_pdb_field::x;
   }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("Y")) {
-    pdb_field = e_pdb_y;
+  if (colvarparse::to_lower_cppstr(pdb_field_str) == colvarparse::to_lower_cppstr("Y")) {
+    pdb_field = e_pdb_field::y;
   }
-
-  if (colvarparse::to_lower_cppstr(pdb_field_str) ==
-      colvarparse::to_lower_cppstr("Z")) {
-    pdb_field = e_pdb_z;
+  if (colvarparse::to_lower_cppstr(pdb_field_str) == colvarparse::to_lower_cppstr("Z")) {
+    pdb_field = e_pdb_field::z;
   }
-
-  if (pdb_field == e_pdb_none) {
-    cvm::error("Error: unsupported PDB field, \""+
-               pdb_field_str+"\".\n", COLVARS_INPUT_ERROR);
+  if (pdb_field == e_pdb_field::none) {
+    cvm::error("Error: unsupported PDB field, \"" + pdb_field_str + "\".\n", COLVARS_INPUT_ERROR);
   }
-
   return pdb_field;
 }
+
+} // namespace
 
 
 int colvarproxy_namd::load_coords_pdb(char const *pdb_filename,
@@ -986,19 +1076,19 @@ int colvarproxy_namd::load_coords_pdb(char const *pdb_filename,
         double atom_pdb_field_value = 0.0;
 
         switch (pdb_field_index) {
-        case e_pdb_occ:
+        case e_pdb_field::occ:
           atom_pdb_field_value = (pdb->atom(ipdb))->occupancy();
           break;
-        case e_pdb_beta:
+        case e_pdb_field::beta:
           atom_pdb_field_value = (pdb->atom(ipdb))->temperaturefactor();
           break;
-        case e_pdb_x:
+        case e_pdb_field::x:
           atom_pdb_field_value = (pdb->atom(ipdb))->xcoor();
           break;
-        case e_pdb_y:
+        case e_pdb_field::y:
           atom_pdb_field_value = (pdb->atom(ipdb))->ycoor();
           break;
-        case e_pdb_z:
+        case e_pdb_field::z:
           atom_pdb_field_value = (pdb->atom(ipdb))->zcoor();
           break;
         default:
@@ -1081,19 +1171,19 @@ int colvarproxy_namd::load_atoms_pdb(char const *pdb_filename,
     double atom_pdb_field_value = 0.0;
 
     switch (pdb_field_index) {
-    case e_pdb_occ:
+    case e_pdb_field::occ:
       atom_pdb_field_value = (pdb->atom(ipdb))->occupancy();
       break;
-    case e_pdb_beta:
+    case e_pdb_field::beta:
       atom_pdb_field_value = (pdb->atom(ipdb))->temperaturefactor();
       break;
-    case e_pdb_x:
+    case e_pdb_field::x:
       atom_pdb_field_value = (pdb->atom(ipdb))->xcoor();
       break;
-    case e_pdb_y:
+    case e_pdb_field::y:
       atom_pdb_field_value = (pdb->atom(ipdb))->ycoor();
       break;
-    case e_pdb_z:
+    case e_pdb_field::z:
       atom_pdb_field_value = (pdb->atom(ipdb))->zcoor();
       break;
     default:

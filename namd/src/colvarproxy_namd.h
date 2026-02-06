@@ -17,6 +17,8 @@
 
 #include <memory>
 
+#include "Lattice.h"
+
 #include "colvarproxy_namd_version.h"
 
 // For NAMD_UNIFIED_REDUCTION and AtomIDList
@@ -37,27 +39,75 @@ class SimParameters;
 
 /// Communication between colvars and NAMD (implementation of \link colvarproxy \endlink)
 class colvarproxy_namd : public colvarproxy {
+public:
+
+  colvarproxy_namd();
+  ~colvarproxy_namd();
+
+  /// Tell the proxy that it will be using the GlobalMaster interface
+  void set_gm_object(GlobalMasterColvars *gm);
+
+  /// Initialize proxy data based on the chosen interface
+  int init(); // no override
+
+  /// Initialize the module
+  int init_module(); // no override
+
+  void init_tcl_pointers() override;
+  int setup() override;
+  int reset() override;
+
+  /// Get the target temperature from the NAMD thermostats supported so far
+  int update_target_temperature();
+
+  /// Create map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
+  void init_atoms_map();
+
+  /// Update map to reflect other requested atoms, including other GlobalMaster objects
+  int update_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);
+
+  /// Create and zero out data buffers for atoms requested through GlobalMaster
+  int setup_gm_atom_buffers();
+
+  /// Create and zero out data buffers for atom groups requested through GlobalMaster
+  int setup_gm_atom_group_buffers();
+
+  /// Create and zero out data buffers for grid objects requested through GlobalMaster
+  int setup_gm_volmap_buffers();
+
+  /// Read the current simulation PBC lattice
+  void update_lattice();
+
+  /// Read the current coordinates and total forces
+  void read_gm_atom_buffers();
+
+  /// Send Colvars forces to GlobalMaster
+  void send_gm_atom_forces();
 
 protected:
 
   /// Pointer to the parent GlobalMaster object
   GlobalMasterColvars *globalmaster = nullptr;
 
-  /// \brief Array of atom indices (relative to the colvarproxy arrays),
-  /// usedfor faster copy of atomic data
+  /// Map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
   std::vector<int> atoms_map;
 
   /// Pointer to the NAMD simulation input object
-  SimParameters *simparams;
+  SimParameters *simparams = nullptr;
 
   /// Pointer to Controller object
-  Controller const *controller;
+  Controller const *controller = nullptr;
+
+  /// PBC lattice object
+  Lattice lattice;
 
   /// NAMD-style PRNG object
   std::unique_ptr<Random> random;
 
-  bool first_timestep;
-  cvm::step_number previous_NAMD_step;
+  /// Use to distinguish between "run 0" and actual runs
+  bool first_timestep = true;
+
+  cvm::step_number previous_NAMD_step = 0L;
 
   /// Used to submit restraint energy as MISC
 #if !defined (NAMD_UNIFIED_REDUCTION)
@@ -73,24 +123,6 @@ protected:
   void update_accelMD_info();
 
 public:
-
-  void init_tcl_pointers() override;
-
-  colvarproxy_namd(GlobalMasterColvars *gm);
-  ~colvarproxy_namd();
-
-  int setup() override;
-  int reset() override;
-
-  /// Get the target temperature from the NAMD thermostats supported so far
-  int update_target_temperature();
-
-  /// Allocate an atoms map with the same size as the NAMD topology
-  void init_atoms_map();
-
-  // synchronize the local arrays with requested or forced atoms
-  int update_atoms_map(AtomIDList::const_iterator begin,
-                       AtomIDList::const_iterator end);
 
   void calculate();
 
