@@ -573,12 +573,12 @@ namespace {
     else return funcs_[select<flags>()][n-1][m-1];
   }
 
+  void init_funcs_to_nullptr() {
+    std::memset(funcs_, 0, sizeof(compute_pair_coordnum_type)*16*12*12);
+  }
+
   template <int n, int m>
   void set_func() {
-    for (int i = 0; i < 16; ++i) {
-      funcs_[i][n-1][m-1] = nullptr;
-    }
-
     funcs_[select<colvar::coordnum::ef_gradients>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<colvar::coordnum::ef_gradients, n, m>;
     funcs_[select<colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
@@ -659,6 +659,7 @@ colvar::selfcoordnum::selfcoordnum()
 {
   set_function_type("selfCoordNum");
   // NOTE: I only enable the most commonly used template since enabling too many of them would slow down the compilation...
+  init_funcs_to_nullptr();
   // set_func<1, 1>();
   // set_func<1, 2>();
   // set_func<1, 3>();
