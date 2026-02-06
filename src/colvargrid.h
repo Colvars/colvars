@@ -1566,6 +1566,15 @@ public:
     }
   }
 
+  inline cvm::real adapt_kernel(int adaptation, cvm::real smoothing, std::vector<int> const &bin_value)
+  {
+    switch (adaptation) {
+      case 0:
+        return smoothing * (1 - (std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples))*10);
+      default:
+        return 0;
+    }
+  }
 
   /// \brief Accumulate the value
   inline void acc_value(std::vector<int> const &ix, std::vector<colvarvalue> const &values) {
@@ -1603,13 +1612,13 @@ public:
                       cvm::real const *force,
                       cvm::real smoothing = 0) {
 
-  if (smoothing && weights->value(bin_value) < full_samples) {
+  if (smoothing && weights->value(bin_value) < full_samples * 0.1) {
     if (smoothing < 0)
       cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
 
-    cvm::real kernel_params = smoothing * (1 - std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples));
-    cvm::real inv_squared_smooth = 1.0 / (std::max(kernel_params * kernel_params, 1e-5));
-    int cutoff = static_cast<int>(cvm::floor(cutoff_factor * kernel_params));
+    cvm::real bandwidth = smoothing * (1 - (std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples))*10);
+    cvm::real inv_squared_smooth = 1.0 / (std::max(bandwidth * bandwidth, 1e-5));
+    int cutoff = static_cast<int>(cvm::floor(cutoff_factor * bandwidth));
     if (cutoff > 0) {
       for (size_t i = 0; i < nd; i++) {
         cutoff = std::min(cutoff, nx[i] / 2);

@@ -953,10 +953,10 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     czar_pmf_out = global_czar_pmf.get();
   }
   if (smoothing && weights_out != nullptr)
-    write_grid_to_file<colvar_grid_scalar>(weights_out, prefix + ".count", close, write_dx);
+    write_grid_to_file<colvar_grid_scalar>(weights_out, prefix + ".count", close);
   else if (!smoothing && samples_out != nullptr)
-    write_grid_to_file<colvar_grid_count>(samples_out, prefix + ".count", close, write_dx);
-  write_grid_to_file<colvar_grid_gradient>(gradients_out, prefix + ".grad", close, write_dx);
+    write_grid_to_file<colvar_grid_count>(samples_out, prefix + ".count", close);
+  write_grid_to_file<colvar_grid_gradient>(gradients_out, prefix + ".grad", close);
 
   if (b_integrate) {
     // Do numerical integration (to high precision) and output a PMF
@@ -964,7 +964,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     // Divergence has already been updated on the fly for the global PMF (member data 'pmf')
     pmf_out->integrate(integrate_iterations, integrate_tol, err);
     pmf_out->set_zero_minimum();
-    write_grid_to_file<colvar_grid_scalar>(pmf_out, prefix + ".pmf", close);
+    write_grid_to_file<colvar_grid_scalar>(pmf_out, prefix + ".pmf", close, write_dx);
   }
 
   if (b_CZAR_estimator) {
@@ -1006,7 +1006,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
       cvm::real err;
       czar_pmf_out->integrate(integrate_iterations, integrate_tol, err);
       czar_pmf_out->set_zero_minimum();
-      write_grid_to_file<colvar_grid_scalar>(czar_pmf_out, prefix + ".czar.pmf", close);
+      write_grid_to_file<colvar_grid_scalar>(czar_pmf_out, prefix + ".czar.pmf", close, write_dx);
     }
   }
   return;
