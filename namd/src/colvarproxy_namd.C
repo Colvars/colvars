@@ -394,7 +394,7 @@ void colvarproxy_namd::calculate()
     Vector const b = lattice->b();
     Vector const c = lattice->c();
     unit_cell_x.set(a.x, a.y, a.z);
-    unit_cell_y.set(b.x, b.y, c.z);
+    unit_cell_y.set(b.x, b.y, b.z);
     unit_cell_z.set(c.x, c.y, c.z);
   }
 
