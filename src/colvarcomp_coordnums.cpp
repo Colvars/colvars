@@ -561,11 +561,7 @@ namespace {
 
   template <int flags>
   inline constexpr int select() {
-    constexpr const bool ef_gradients = flags & colvar::coordnum::ef_gradients;
-    constexpr const bool ef_use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
-    constexpr const bool ef_use_pairlist = flags & colvar::coordnum::ef_use_pairlist;
-    constexpr const bool ef_rebuild_pairlist = flags & colvar::coordnum::ef_rebuild_pairlist;
-    return int(ef_gradients) + (int(ef_use_internal_pbc) << 1) + (int(ef_use_pairlist) << 2) + (int(ef_rebuild_pairlist) << 3);
+    return int(bool(flags & colvar::coordnum::ef_gradients)) + (int(bool(flags & colvar::coordnum::ef_use_internal_pbc)) << 1) + (int(bool(flags & colvar::coordnum::ef_use_pairlist)) << 2) + (int(bool(flags & colvar::coordnum::ef_rebuild_pairlist)) << 3);
   }
 
   template <int flags>
