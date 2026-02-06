@@ -490,8 +490,6 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
     cvm::main()->proxy->get_lattice(
       unit_cell_x, unit_cell_y, unit_cell_z,
       reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z);
-    // cvm::log("unit_cell_x = " + cvm::to_str(unit_cell_x) + "\n");
-    // cvm::log("reciprocal_cell_x = " + cvm::to_str(reciprocal_cell_x) + "\n");
   }
   colvarproxy_system::Boundaries_type boundaries_type = cvm::main()->proxy->get_boundary_type();
   if (flags & ef_use_internal_pbc) {
