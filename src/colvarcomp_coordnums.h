@@ -64,8 +64,7 @@ public:
   template <int flags, int en, int ed>
   static cvm::real compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
                                          cvm::rvector const &inv_r0sq_vec,
-                                         const cvm::real a1x, const cvm::real a1y, const cvm::real a1z,
-                                         const cvm::real a2x, const cvm::real a2y, const cvm::real a2z,
+                                         const cvm::rvector& diff,
                                          cvm::real &g1x, cvm::real &g1y, cvm::real &g1z,
                                          cvm::real &g2x, cvm::real &g2y, cvm::real &g2z,
                                          cvm::real pairlist_tol, cvm::real pairlist_tol_l2_max);
@@ -358,12 +357,13 @@ inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv
 template<int flags, int en, int ed>
 inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
                                                          cvm::rvector const &inv_r0sq_vec,
-                                                         const cvm::real a1x,
-                                                         const cvm::real a1y,
-                                                         const cvm::real a1z,
-                                                         const cvm::real a2x,
-                                                         const cvm::real a2y,
-                                                         const cvm::real a2z,
+                                                         const cvm::rvector& diff,
+                                                         // const cvm::real a1x,
+                                                         // const cvm::real a1y,
+                                                         // const cvm::real a1z,
+                                                         // const cvm::real a2x,
+                                                         // const cvm::real a2y,
+                                                         // const cvm::real a2z,
                                                          cvm::real& g1x,
                                                          cvm::real& g1y,
                                                          cvm::real& g1z,
@@ -373,11 +373,11 @@ inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv
                                                          cvm::real pairlist_tol,
                                                          cvm::real pairlist_tol_l2_max)
 {
-  const cvm::atom_pos pos1{a1x, a1y, a1z};
-  const cvm::atom_pos pos2{a2x, a2y, a2z};
-  cvm::rvector const diff = (flags & ef_use_internal_pbc)
-                                ? cvm::main()->proxy->position_distance_internal(pos1, pos2)
-                                : cvm::main()->proxy->position_distance(pos1, pos2);
+  // const cvm::atom_pos pos1{a1x, a1y, a1z};
+  // const cvm::atom_pos pos2{a2x, a2y, a2z};
+  // cvm::rvector const diff = (flags & ef_use_internal_pbc)
+  //                               ? cvm::main()->proxy->position_distance_internal(pos1, pos2)
+  //                               : cvm::main()->proxy->position_distance(pos1, pos2);
 
   cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
                                diff.y * inv_r0_vec.y,
