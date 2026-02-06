@@ -481,35 +481,63 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
   size_t const natoms = group1->size();
   bool *pairlist_elem = pairlist.get();
 
+  /// Bravais lattice vectors
+  cvm::rvector unit_cell_x, unit_cell_y, unit_cell_z;
+  /// Reciprocal lattice vectors
+  cvm::rvector reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z;
+
+  if (flags & ef_use_internal_pbc) {
+    cvm::main()->proxy->get_lattice(
+      unit_cell_x, unit_cell_y, unit_cell_z,
+      reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z);
+    // cvm::log("unit_cell_x = " + cvm::to_str(unit_cell_x) + "\n");
+    // cvm::log("reciprocal_cell_x = " + cvm::to_str(reciprocal_cell_x) + "\n");
+  }
+  colvarproxy_system::Boundaries_type boundaries_type = cvm::main()->proxy->get_boundary_type();
+  if (flags & ef_use_internal_pbc) {
+    if (boundaries_type == colvarproxy_system::Boundaries_type::boundaries_unsupported) {
+      cvm::error("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
+    }
+  }
+
   for (size_t i = 0; i < natoms - 1; i++) {
 
     cvm::real const x1 = group1->pos_x(i);
     cvm::real const y1 = group1->pos_y(i);
     cvm::real const z1 = group1->pos_z(i);
     cvm::rvector g1{0, 0, 0};
-    // cvm::real &gx1 = group1->grad_x(i);
-    // cvm::real &gy1 = group1->grad_y(i);
-    // cvm::real &gz1 = group1->grad_z(i);
 
     for (size_t j = i + 1; j < natoms; j++) {
-
       cvm::real const x2 = group1->pos_x(j);
       cvm::real const y2 = group1->pos_y(j);
       cvm::real const z2 = group1->pos_z(j);
       cvm::real &gx2 = group1->grad_x(j);
       cvm::real &gy2 = group1->grad_y(j);
       cvm::real &gz2 = group1->grad_z(j);
-
+      cvm::real partial = 0;
       bool const within =
         ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
         !(flags & ef_use_pairlist);
-
-      cvm::real const partial = within ?
-        compute_pair_coordnum<flags, n, m>(
-          inv_r0_vec, inv_r0sq_vec,
-          x1, y1, z1, x2, y2, z2,
+      if (within) {
+        cvm::rvector diff{0, 0, 0};
+        if (flags & ef_use_internal_pbc) {
+          if (boundaries_type == colvarproxy_system::Boundaries_type::boundaries_non_periodic) {
+            diff = cvm::rvector{x2, y2, z2} - cvm::rvector{x1, y1, z1};
+          } else {
+            diff = colvarproxy_system::position_distance_kernel(
+              cvm::rvector{x1, y1, z1}, cvm::rvector{x2, y2, z2},
+              unit_cell_x, unit_cell_y, unit_cell_z,
+              reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z,
+              true, true, true);
+          }
+        } else {
+          diff = cvm::main()->proxy->position_distance(cvm::rvector{x1, y1, z1}, cvm::rvector{x2, y2, z2});
+        }
+        partial = compute_pair_coordnum<flags, n, m>(
+          inv_r0_vec, inv_r0sq_vec, diff,
           g1.x, g1.y, g1.z, gx2, gy2, gz2,
-          tolerance, tolerance_l2_max) : 0;
+          tolerance, tolerance_l2_max);
+      }
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
         *pairlist_elem = partial > 0.0 ? true : false;
@@ -636,150 +664,151 @@ namespace {
 colvar::selfcoordnum::selfcoordnum()
 {
   set_function_type("selfCoordNum");
-  set_func<1, 1>();
-  set_func<1, 2>();
-  set_func<1, 3>();
-  set_func<1, 4>();
-  set_func<1, 5>();
-  set_func<1, 6>();
-  set_func<1, 7>();
-  set_func<1, 8>();
-  set_func<1, 9>();
-  set_func<1, 10>();
-  set_func<1, 11>();
-  set_func<1, 12>();
-  set_func<2, 1>();
-  set_func<2, 2>();
-  set_func<2, 3>();
-  set_func<2, 4>();
-  set_func<2, 5>();
-  set_func<2, 6>();
-  set_func<2, 7>();
-  set_func<2, 8>();
-  set_func<2, 9>();
-  set_func<2, 10>();
-  set_func<2, 11>();
-  set_func<2, 12>();
-  set_func<3, 1>();
-  set_func<3, 2>();
-  set_func<3, 3>();
-  set_func<3, 4>();
-  set_func<3, 5>();
-  set_func<3, 6>();
-  set_func<3, 7>();
-  set_func<3, 8>();
-  set_func<3, 9>();
-  set_func<3, 10>();
-  set_func<3, 11>();
-  set_func<3, 12>();
-  set_func<4, 1>();
-  set_func<4, 2>();
-  set_func<4, 3>();
-  set_func<4, 4>();
-  set_func<4, 5>();
-  set_func<4, 6>();
-  set_func<4, 7>();
-  set_func<4, 8>();
-  set_func<4, 9>();
-  set_func<4, 10>();
-  set_func<4, 11>();
-  set_func<4, 12>();
-  set_func<5, 1>();
-  set_func<5, 2>();
-  set_func<5, 3>();
-  set_func<5, 4>();
-  set_func<5, 5>();
-  set_func<5, 6>();
-  set_func<5, 7>();
-  set_func<5, 8>();
-  set_func<5, 9>();
-  set_func<5, 10>();
-  set_func<5, 11>();
-  set_func<5, 12>();
-  set_func<6, 1>();
-  set_func<6, 2>();
-  set_func<6, 3>();
-  set_func<6, 4>();
-  set_func<6, 5>();
-  set_func<6, 6>();
-  set_func<6, 7>();
-  set_func<6, 8>();
-  set_func<6, 9>();
-  set_func<6, 10>();
-  set_func<6, 11>();
+  // NOTE: I only enable the most commonly used template since enabling too many of them would slow down the compilation...
+  // set_func<1, 1>();
+  // set_func<1, 2>();
+  // set_func<1, 3>();
+  // set_func<1, 4>();
+  // set_func<1, 5>();
+  // set_func<1, 6>();
+  // set_func<1, 7>();
+  // set_func<1, 8>();
+  // set_func<1, 9>();
+  // set_func<1, 10>();
+  // set_func<1, 11>();
+  // set_func<1, 12>();
+  // set_func<2, 1>();
+  // set_func<2, 2>();
+  // set_func<2, 3>();
+  // set_func<2, 4>();
+  // set_func<2, 5>();
+  // set_func<2, 6>();
+  // set_func<2, 7>();
+  // set_func<2, 8>();
+  // set_func<2, 9>();
+  // set_func<2, 10>();
+  // set_func<2, 11>();
+  // set_func<2, 12>();
+  // set_func<3, 1>();
+  // set_func<3, 2>();
+  // set_func<3, 3>();
+  // set_func<3, 4>();
+  // set_func<3, 5>();
+  // set_func<3, 6>();
+  // set_func<3, 7>();
+  // set_func<3, 8>();
+  // set_func<3, 9>();
+  // set_func<3, 10>();
+  // set_func<3, 11>();
+  // set_func<3, 12>();
+  // set_func<4, 1>();
+  // set_func<4, 2>();
+  // set_func<4, 3>();
+  // set_func<4, 4>();
+  // set_func<4, 5>();
+  // set_func<4, 6>();
+  // set_func<4, 7>();
+  // set_func<4, 8>();
+  // set_func<4, 9>();
+  // set_func<4, 10>();
+  // set_func<4, 11>();
+  // set_func<4, 12>();
+  // set_func<5, 1>();
+  // set_func<5, 2>();
+  // set_func<5, 3>();
+  // set_func<5, 4>();
+  // set_func<5, 5>();
+  // set_func<5, 6>();
+  // set_func<5, 7>();
+  // set_func<5, 8>();
+  // set_func<5, 9>();
+  // set_func<5, 10>();
+  // set_func<5, 11>();
+  // set_func<5, 12>();
+  // set_func<6, 1>();
+  // set_func<6, 2>();
+  // set_func<6, 3>();
+  // set_func<6, 4>();
+  // set_func<6, 5>();
+  // set_func<6, 6>();
+  // set_func<6, 7>();
+  // set_func<6, 8>();
+  // set_func<6, 9>();
+  // set_func<6, 10>();
+  // set_func<6, 11>();
   set_func<6, 12>();
-  set_func<7, 1>();
-  set_func<7, 2>();
-  set_func<7, 3>();
-  set_func<7, 4>();
-  set_func<7, 5>();
-  set_func<7, 6>();
-  set_func<7, 7>();
-  set_func<7, 8>();
-  set_func<7, 9>();
-  set_func<7, 10>();
-  set_func<7, 11>();
-  set_func<7, 12>();
-  set_func<8, 1>();
-  set_func<8, 2>();
-  set_func<8, 3>();
-  set_func<8, 4>();
-  set_func<8, 5>();
-  set_func<8, 6>();
-  set_func<8, 7>();
-  set_func<8, 8>();
-  set_func<8, 9>();
-  set_func<8, 10>();
-  set_func<8, 11>();
-  set_func<8, 12>();
-  set_func<9, 1>();
-  set_func<9, 2>();
-  set_func<9, 3>();
-  set_func<9, 4>();
-  set_func<9, 5>();
-  set_func<9, 6>();
-  set_func<9, 7>();
-  set_func<9, 8>();
-  set_func<9, 9>();
-  set_func<9, 10>();
-  set_func<9, 11>();
-  set_func<9, 12>();
-  set_func<10, 1>();
-  set_func<10, 2>();
-  set_func<10, 3>();
-  set_func<10, 4>();
-  set_func<10, 5>();
-  set_func<10, 6>();
-  set_func<10, 7>();
-  set_func<10, 8>();
-  set_func<10, 9>();
-  set_func<10, 10>();
-  set_func<10, 11>();
-  set_func<10, 12>();
-  set_func<11, 1>();
-  set_func<11, 2>();
-  set_func<11, 3>();
-  set_func<11, 4>();
-  set_func<11, 5>();
-  set_func<11, 6>();
-  set_func<11, 7>();
-  set_func<11, 8>();
-  set_func<11, 9>();
-  set_func<11, 10>();
-  set_func<11, 11>();
-  set_func<11, 12>();
-  set_func<12, 1>();
-  set_func<12, 2>();
-  set_func<12, 3>();
-  set_func<12, 4>();
-  set_func<12, 5>();
-  set_func<12, 6>();
-  set_func<12, 7>();
-  set_func<12, 8>();
-  set_func<12, 9>();
-  set_func<12, 10>();
-  set_func<12, 11>();
-  set_func<12, 12>();
+  // set_func<7, 1>();
+  // set_func<7, 2>();
+  // set_func<7, 3>();
+  // set_func<7, 4>();
+  // set_func<7, 5>();
+  // set_func<7, 6>();
+  // set_func<7, 7>();
+  // set_func<7, 8>();
+  // set_func<7, 9>();
+  // set_func<7, 10>();
+  // set_func<7, 11>();
+  // set_func<7, 12>();
+  // set_func<8, 1>();
+  // set_func<8, 2>();
+  // set_func<8, 3>();
+  // set_func<8, 4>();
+  // set_func<8, 5>();
+  // set_func<8, 6>();
+  // set_func<8, 7>();
+  // set_func<8, 8>();
+  // set_func<8, 9>();
+  // set_func<8, 10>();
+  // set_func<8, 11>();
+  // set_func<8, 12>();
+  // set_func<9, 1>();
+  // set_func<9, 2>();
+  // set_func<9, 3>();
+  // set_func<9, 4>();
+  // set_func<9, 5>();
+  // set_func<9, 6>();
+  // set_func<9, 7>();
+  // set_func<9, 8>();
+  // set_func<9, 9>();
+  // set_func<9, 10>();
+  // set_func<9, 11>();
+  // set_func<9, 12>();
+  // set_func<10, 1>();
+  // set_func<10, 2>();
+  // set_func<10, 3>();
+  // set_func<10, 4>();
+  // set_func<10, 5>();
+  // set_func<10, 6>();
+  // set_func<10, 7>();
+  // set_func<10, 8>();
+  // set_func<10, 9>();
+  // set_func<10, 10>();
+  // set_func<10, 11>();
+  // set_func<10, 12>();
+  // set_func<11, 1>();
+  // set_func<11, 2>();
+  // set_func<11, 3>();
+  // set_func<11, 4>();
+  // set_func<11, 5>();
+  // set_func<11, 6>();
+  // set_func<11, 7>();
+  // set_func<11, 8>();
+  // set_func<11, 9>();
+  // set_func<11, 10>();
+  // set_func<11, 11>();
+  // set_func<11, 12>();
+  // set_func<12, 1>();
+  // set_func<12, 2>();
+  // set_func<12, 3>();
+  // set_func<12, 4>();
+  // set_func<12, 5>();
+  // set_func<12, 6>();
+  // set_func<12, 7>();
+  // set_func<12, 8>();
+  // set_func<12, 9>();
+  // set_func<12, 10>();
+  // set_func<12, 11>();
+  // set_func<12, 12>();
 }
 
 
