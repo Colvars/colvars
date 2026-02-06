@@ -3,7 +3,7 @@
 # TODO check later for headers in the dependencies; conditional compilation
 # may give false results
 
-echo "Checking Colvars build recipes for NAMD and VMD, which do not use CMake"
+echo "Checking Colvars build recipes for VMD"
 
 pushd $(git rev-parse --show-toplevel) 1> /dev/null
 retcode=0
@@ -13,15 +13,9 @@ for f in src/colvar*.cpp src/colvar*.h ; do
     if [ ${extension} = 'cpp' ] ; then
         prefix=${f%.cpp}
         vmd_source=${prefix}.C
-        if ! grep -q "obj/${prefix}.o" namd/colvars/Make.depends ; then
-            echo "Warning: obj/${prefix}.o missing from namd/colvars/Make.depends" >&2
-        fi
     else
         prefix=${f%.h}
         vmd_source=${f}
-        if ! grep -q "colvars/src/${f}" namd/colvars/Make.depends ; then
-            echo "Warning: colvars/src/${f} missing from namd/colvars/Make.depends" >&2
-        fi
     fi
     if ! grep -q ${vmd_source} vmd/src/colvars_files.pl ; then
         echo "Error: ${vmd_source} missing from vmd/src/colvars_files.pl" >&2
