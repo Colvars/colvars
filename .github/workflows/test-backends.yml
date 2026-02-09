@@ -26,8 +26,8 @@ jobs:
     with:
       runner_name: ubuntu-latest
       backend_name: LAMMPS
-      backend_repo: lammps/lammps
-      backend_repo_ref: develop
+      backend_repo: alphataubio/lammps-alphataubio
+      backend_repo_ref: alphataubio-colvars
       container_name: CentOS9-devel
       path_compile_script: devel-tools/compile-lammps.sh
       test_lib_directory: lammps/tests/library

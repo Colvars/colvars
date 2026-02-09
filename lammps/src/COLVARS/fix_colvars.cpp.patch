@@ -1,29 +1,27 @@
 diff --git a/src/COLVARS/fix_colvars.cpp b/src/COLVARS/fix_colvars.cpp
-index 3063b13368..a61ebfa41e 100644
+index b6fe927939..ca74c4a539 100644
 --- a/src/COLVARS/fix_colvars.cpp
 +++ b/src/COLVARS/fix_colvars.cpp
-@@ -485,7 +485,6 @@ void FixColvars::setup(int vflag)
- 
+@@ -396,14 +396,13 @@ void FixColvars::setup(int vflag)
+   if (me == 0) {
      std::vector<int>           &tp = *(proxy->modify_atom_types());
      std::vector<cvm::atom_pos> &cd = *(proxy->modify_atom_positions());
 -    std::vector<cvm::rvector>  &of = *(proxy->modify_atom_total_forces());
      std::vector<cvm::real>     &m  = *(proxy->modify_atom_masses());
      std::vector<cvm::real>     &q  = *(proxy->modify_atom_charges());
- 
-@@ -496,8 +495,6 @@ void FixColvars::setup(int vflag)
+     // store coordinate data in holding array, clear old forces
+     for (i=0; i<num_coords; ++i) {
        const tagint k = atom->map(taglist[i]);
        if ((k >= 0) && (k < nlocal)) {
- 
 -        of[i].x = of[i].y = of[i].z = 0.0;
--
++
          if (unwrap_flag) {
            const int ix = (image[k] & IMGMASK) - IMGMAX;
            const int iy = (image[k] >> IMGBITS & IMGMASK) - IMGMAX;
-@@ -545,11 +542,14 @@ void FixColvars::setup(int vflag)
- 
+@@ -439,10 +438,14 @@ void FixColvars::setup(int vflag)
+           cd[j].z = comm_buf[k].z;
            m[j] = comm_buf[k].m;
            q[j] = comm_buf[k].q;
--
 -          of[j].x = of[j].y = of[j].z = 0.0;
          }
        }
@@ -34,24 +32,25 @@ index 3063b13368..a61ebfa41e 100644
 +    }
 +
    } else { // me != 0
- 
      // copy coordinate data into communication buffer
-@@ -849,6 +849,10 @@ void FixColvars::end_of_step()
+     nme = 0;
+@@ -688,6 +691,11 @@ void FixColvars::end_of_step()
+           }
          }
        }
- 
++
 +      if (proxy->total_forces_enabled()) {
 +        proxy->set_total_forces_valid();
 +      }
 +
      } else { // me != 0
-       /* copy total force data into communication buffer */
+       // copy total force data into communication buffer
        nme = 0;
-@@ -866,6 +870,7 @@ void FixColvars::end_of_step()
+@@ -705,6 +713,7 @@ void FixColvars::end_of_step()
        MPI_Recv(&tmp, 0, MPI_INT, 0, 0, world, MPI_STATUS_IGNORE);
        MPI_Rsend(comm_buf, nme*size_one, MPI_BYTE, 0, 0, world);
      }
 +
    }
  }
- 
+
