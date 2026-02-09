@@ -273,8 +273,7 @@ then
   for src in \
     ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} \
     ${source}/lammps/src/COLVARS/fix_colvars.{cpp,h} \
-    ${source}/lammps/src/COLVARS/inthash.{cpp,h}
-  do \
+  ; do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/COLVARS/${tgt}"
   done
