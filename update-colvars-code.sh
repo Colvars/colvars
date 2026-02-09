@@ -270,16 +270,17 @@ then
     condcopy "${src}" "${target}/lib/colvars/cuda/${tgt}"
   done
 
-  for src in \
-    ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} \
-    ${source}/lammps/src/COLVARS/fix_colvars.{cpp,h} \
-  ; do \
+  for src in ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} ; do
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/COLVARS/${tgt}"
   done
 
-  if [ -f ${source}/lammps/COLVARS.cmake.patch ] ; then
+  for src in ${source}/lammps/src/COLVARS/*.patch ; do
     # Do not exit if the patch fails - already applied in development branch
+    patch ${PATCH_OPTS} -d ${target} < ${src} || true
+  done
+
+  if [ -f ${source}/lammps/COLVARS.cmake.patch ] ; then
     patch ${PATCH_OPTS} -d ${target} < ${source}/lammps/COLVARS.cmake.patch || true
   fi
 
