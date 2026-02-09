@@ -823,7 +823,7 @@ public:
 
   inline COLVARS_HOST_DEVICE cvm::real norm() const
   {
-#if (!defined(__HIP_DEVICE_COMPILE__)) || (!defined (__CUDA_ARCH__))
+#if (defined(__HIP_DEVICE_COMPILE__)) || (defined (__CUDA_ARCH__))
 #define COLVARS_MATH_SQRT ::sqrt
 #else
 #define COLVARS_MATH_SQRT cvm::sqrt
@@ -1082,7 +1082,7 @@ public:
   /// Norm of the quaternion
   inline COLVARS_HOST_DEVICE cvm::real norm() const
   {
-#if (!defined(__HIP_DEVICE_COMPILE__)) || (!defined (__CUDA_ARCH__))
+#if (defined(__HIP_DEVICE_COMPILE__)) || (defined (__CUDA_ARCH__))
 #define COLVARS_MATH_SQRT ::sqrt
 #else
 #define COLVARS_MATH_SQRT cvm::sqrt
@@ -1276,7 +1276,7 @@ public:
   {
     cvm::real const cos_omega = this->q0*Q2.q0 + this->q1*Q2.q1 +
       this->q2*Q2.q2 + this->q3*Q2.q3;
-#if (!defined(__HIP_DEVICE_COMPILE__)) || (!defined (__CUDA_ARCH__))
+#if (defined(__HIP_DEVICE_COMPILE__)) || (defined (__CUDA_ARCH__))
 #define COLVARS_MATH_ACOS ::acos
 #else
 #define COLVARS_MATH_ACOS cvm::acos
@@ -1296,7 +1296,7 @@ public:
   /// to that provided by slerp
   inline COLVARS_HOST_DEVICE cvm::quaternion dist2_grad(cvm::quaternion const &Q2) const
   {
-#if (!defined(__HIP_DEVICE_COMPILE__)) || (!defined (__CUDA_ARCH__))
+#if (defined(__HIP_DEVICE_COMPILE__)) || (defined (__CUDA_ARCH__))
 #define COLVARS_MATH_ACOS ::acos
 #define COLVARS_MATH_SIN ::sin
 #define COLVARS_MATH_FABS ::fabs
