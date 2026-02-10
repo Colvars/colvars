@@ -556,8 +556,10 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
 }
 
 namespace {
+  constexpr const int max_n = 10;
+  constexpr const int max_m = 20;
   typedef void (colvar::selfcoordnum::*compute_pair_coordnum_type)();
-  compute_pair_coordnum_type funcs_[16][12][12];
+  compute_pair_coordnum_type funcs_[16][max_n][max_m];
 
   template <int flags>
   inline constexpr int select() {
@@ -568,17 +570,19 @@ namespace {
   inline compute_pair_coordnum_type get_func(int n, int m) {
     if (n <= 0) return nullptr;
     else if (m <= 0) return nullptr;
-    else if (n > 12) return nullptr;
-    else if (m > 12) return nullptr;
+    else if (n > max_n) return nullptr;
+    else if (m > max_m) return nullptr;
     else return funcs_[select<flags>()][n-1][m-1];
   }
 
   void init_funcs_to_nullptr() {
-    std::memset(funcs_, 0, sizeof(compute_pair_coordnum_type)*16*12*12);
+    std::memset(funcs_, 0, sizeof(compute_pair_coordnum_type)*16*max_n*max_m);
   }
 
   template <int n, int m>
   void set_func() {
+    static_assert(n <= max_n, "n is larger than max_n!");
+    static_assert(m <= max_m, "m is larger than max_m!");
     funcs_[select<colvar::coordnum::ef_gradients>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<colvar::coordnum::ef_gradients, n, m>;
     funcs_[select<colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
@@ -804,6 +808,7 @@ colvar::selfcoordnum::selfcoordnum()
   // set_func<12, 10>();
   // set_func<12, 11>();
   // set_func<12, 12>();
+  set_func<10, 20>();
 }
 
 
