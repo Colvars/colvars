@@ -109,6 +109,16 @@ private:
   std::shared_ptr<colvar_grid_count>    samples;
   /// n-dim grid of sampling weights for smoothed ABF
   std::shared_ptr<colvar_grid_scalar>    weights;
+  bool variance_based_kernel_size;
+  std::shared_ptr<colvar_grid_scalar>    variances = nullptr;
+  std::shared_ptr<colvar_grid_scalar>    z_variances = nullptr;
+  // current running variance
+  std::vector<cvm::real> S_m;
+  std::vector<cvm::real> s_m;
+  std::vector<cvm::real> z_S_m;
+  std::vector<cvm::real> z_s_m;
+  int step;
+  int z_step;
   /// n-dim grid of pmf (dimension 1 to 3)
   std::shared_ptr<colvargrid_integrate>  pmf;
   /// n-dim grid: average force on "real" coordinate for eABF z-based estimator
@@ -123,6 +133,8 @@ private:
   std::shared_ptr<colvargrid_integrate>  czar_pmf;
   /// use kernel grid version of ABF ?
   cvm::real smoothing;
+
+  cvm::real kernel_reduction_speed = 1.;
 
   /// save history files in the .dx format
   bool history_saved_as_dx;

@@ -183,12 +183,20 @@ int colvarbias_abf::init(std::string const &conf)
     /// Optional custom configuration string for grid parameters
     std::string grid_conf;
     key_lookup(conf, "grid", &grid_conf);
+    get_keyval(conf, "KernelReductionSpeed", kernel_reduction_speed, 1.);
+    get_keyval(conf, "VarianceBasedKernelSize", variance_based_kernel_size, false);
     if (get_keyval(conf, "smoothing", smoothing) && smoothing > 0.0) {
       // Doing smoothed ABF
       cvm::log("Kernel version of abf is in use");
       weights.reset(new colvar_grid_scalar(colvars, grid_conf));
       gradients.reset(new colvar_grid_gradient(colvars, weights));
       weights->has_parent_data = true;
+      if (variance_based_kernel_size) {
+        variances.reset(new colvar_grid_scalar(colvars, grid_conf));
+        step = 0;
+        s_m = std::vector<cvm::real>(gradients->nd,0);
+        S_m= std::vector<cvm::real>(gradients->nd,0); ;
+      }
     } else {
       smoothing = 0;
       // Doing standard discretized ABF
@@ -231,6 +239,12 @@ int colvarbias_abf::init(std::string const &conf)
       z_weights.reset(new colvar_grid_scalar(colvars, weights));
       z_gradients.reset(new colvar_grid_gradient(colvars, z_weights));
       z_weights->request_actual_value();
+      if (variance_based_kernel_size) {
+        z_variances.reset(new colvar_grid_scalar(colvars, z_variances));
+        z_s_m = std::vector<cvm::real>(gradients->nd,0);
+        z_S_m= std::vector<cvm::real>(gradients->nd,0);
+        z_step =0;
+      }
     }
     else {
       z_samples.reset(new colvar_grid_count(colvars, samples));
@@ -423,7 +437,7 @@ int colvarbias_abf::update()
         // Only if requested and within bounds of the grid...
         // get total force and subtract previous ABF force if necessary
         update_system_force();
-        gradients->acc_force(force_position, force_bin, system_force, smoothing);
+        gradients->acc_force(force_position, force_bin, system_force, smoothing, kernel_reduction_speed, variances, &s_m, &S_m, &step);
         if ( b_integrate ) {
           pmf->update_div_neighbors(force_bin);
         }
@@ -446,7 +460,8 @@ int colvarbias_abf::update()
           // If we are outside the range of z, the force has not been obtained above
           // the function is just an accessor, so cheap to call again anyway
           update_system_force();
-          z_gradients->acc_force(z_position, z_bin, system_force, smoothing);
+          cvm::log("Le problème arrive en extended");
+          z_gradients->acc_force(z_position, z_bin, system_force, smoothing, kernel_reduction_speed, z_variances, &z_s_m, &z_S_m, &z_step);
         }
       }
 

@@ -1610,18 +1610,52 @@ public:
   inline void acc_force(std::vector<cvm::real> const &cv_value,
                       std::vector<int> const &bin_value,
                       cvm::real const *force,
-                      cvm::real smoothing = 0) {
+                      cvm::real smoothing = 0, cvm::real kernel_reduction_speed = 1.,
+                      std::shared_ptr<colvar_grid_scalar> variances = nullptr,
+                      std::vector<cvm::real>  *s_m = nullptr,
+                      std::vector<cvm::real> *S_m = nullptr,
+                      int *step = nullptr) {
+  if (smoothing && weights->value(bin_value) < full_samples) {
+    cvm::real bandwidth;
+    cvm::real initial_bandwidth = smoothing;
+    if (variances){
+      cvm::real weight = weights->value(bin_value);
+      if (weight < min_samples) {
+        cvm::real min_displacement = MAXFLOAT;
+        if (*step >= 2) {
+          for (int i =0; i < nd; i++) {
+            cvm::real temp =(cv_value[i] - (*s_m)[i]);
+            (*s_m)[i] = (*s_m)[i] + temp / 10.;
+            (*S_m)[i] = (*S_m)[i] + temp*(cv_value[i] - (*s_m)[i]);
+            if (std::abs((*S_m)[i]) < min_displacement) {
+              min_displacement = (*S_m)[i];
+            }
+          }
+        }
+        if (*step >= 20) {variances->data[variances->address(bin_value)] = min_displacement / *step; //variances->acc_value(bin_value,min_displacement / min_samples);
+          initial_bandwidth = std::min(cvm::sqrt(variances->data[variances->address(bin_value)] *cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) ), smoothing);
+          cvm::log("variance squared:" + cvm::to_str(variances->data[variances->address(bin_value)]));
+          cvm::log("initial_bandwidth : " + cvm::to_str(cvm::sqrt(variances->data[variances->address(bin_value)] *cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) )));
+        }
+      }
+        (*step)++;
+        //TODO: rename variances into kernel_bandwidths or find a way to calculate variance properly
+      }
 
-  if (smoothing && weights->value(bin_value) < full_samples * 0.1) {
-    if (smoothing < 0)
-      cvm::error("kernel parameter for kernel grid ABF is set inferior to 0", COLVARS_INPUT_ERROR);
-
-    cvm::real bandwidth = smoothing * (1 - (std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples))*10);
+      // if (weight > min_samples / kernel_reduction_speed * 0.5) {
+      //   initial_bandwidth = std::min(cvm::sqrt(variances->data[variances->address(bin_value)] )*
+      //     cvm::pow(0.25, 1./(static_cast<cvm::real>(nd + 4))) / cvm::sqrt(300.), smoothing);
+      //   cvm::log("initial_bandwidth : " + cvm::to_str(cvm::sqrt(variances->data[variances->address(bin_value)] / (weight * 300) )*
+      //     cvm::pow(0.25, 1./(static_cast<cvm::real>(nd + 4))) / cvm::sqrt(300.)));
+      // }
+    bandwidth = initial_bandwidth * (1 -
+      (std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples)) * kernel_reduction_speed);
     cvm::real inv_squared_smooth = 1.0 / (std::max(bandwidth * bandwidth, 1e-5));
     int cutoff = static_cast<int>(cvm::floor(cutoff_factor * bandwidth));
+    cvm::log("cutoff : " + cvm::to_str(cutoff));
     if (cutoff > 0) {
       for (size_t i = 0; i < nd; i++) {
-        cutoff = std::min(cutoff, nx[i] / 2);
+        cutoff = std::min(cutoff, nx[i] / 2 - 1);
       }
       //TODO : make those class members and init them to max size i.e. nd, ceil(cutoff_factor * smoothing)
       std::vector<std::vector<cvm::real>> w_1d(nd);
@@ -1664,7 +1698,6 @@ public:
       std::vector<int> current_ix(nd, 0);
       std::vector<int> wrapped_ix(nd);
       bool done = false;
-
       while (!done) {
         cvm::real combined_weight = inv_total_sum;
         for (size_t i = 0; i < nd; i++) {
