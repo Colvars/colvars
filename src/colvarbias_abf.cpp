@@ -447,11 +447,11 @@ int colvarbias_abf::update()
         for (i = 0; i < num_variables(); i++) {
           if (smoothing) {
             z_bin[i] = z_weights->current_bin_scalar(i);
-            z_position[i] = (z_weights->use_actual_value[i] ? z_weights->cv[i] -> actual_value().real_value : z_weights->cv[i]->value().real_value - z_weights->lower_boundaries[i].real_value)/ z_weights->widths[i];
+            z_position[i] = ((z_weights->use_actual_value[i] ? z_weights->cv[i] -> actual_value().real_value : z_weights->cv[i]->value().real_value) - z_weights->lower_boundaries[i].real_value)/ z_weights->widths[i];
           }
           else {
             z_bin[i] = z_samples->current_bin_scalar(i);
-            z_position[i] = (z_samples->use_actual_value[i] ? z_samples->cv[i] -> actual_value().real_value : z_samples->cv[i]->value().real_value - z_samples->lower_boundaries[i].real_value)/z_samples->widths[i];
+            z_position[i] = ((z_samples->use_actual_value[i] ? z_samples->cv[i] -> actual_value().real_value : z_samples->cv[i]->value().real_value) - z_samples->lower_boundaries[i].real_value)/z_samples->widths[i];
           }
         }
         bool is_ok = (z_samples ? z_samples->index_ok(z_bin) : false) ||
@@ -460,7 +460,6 @@ int colvarbias_abf::update()
           // If we are outside the range of z, the force has not been obtained above
           // the function is just an accessor, so cheap to call again anyway
           update_system_force();
-          cvm::log("Le problème arrive en extended");
           z_gradients->acc_force(z_position, z_bin, system_force, smoothing, kernel_reduction_speed, z_variances, &z_s_m, &z_S_m, &z_step);
         }
       }

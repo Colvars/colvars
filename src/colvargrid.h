@@ -1634,8 +1634,8 @@ public:
         }
         if (*step >= 20) {variances->data[variances->address(bin_value)] = min_displacement / *step; //variances->acc_value(bin_value,min_displacement / min_samples);
           initial_bandwidth = std::min(cvm::sqrt(variances->data[variances->address(bin_value)] *cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) ), smoothing);
-          cvm::log("variance squared:" + cvm::to_str(variances->data[variances->address(bin_value)]));
-          cvm::log("initial_bandwidth : " + cvm::to_str(cvm::sqrt(variances->data[variances->address(bin_value)] *cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) )));
+          // cvm::log("variance squared:" + cvm::to_str(variances->data[variances->address(bin_value)]));
+          // cvm::log("initial_bandwidth : " + cvm::to_str(cvm::sqrt(variances->data[variances->address(bin_value)] *cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) )));
         }
       }
         (*step)++;
@@ -1649,10 +1649,10 @@ public:
       //     cvm::pow(0.25, 1./(static_cast<cvm::real>(nd + 4))) / cvm::sqrt(300.)));
       // }
     bandwidth = initial_bandwidth * (1 -
-      (std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples)) * kernel_reduction_speed);
+      (std::max(0., weights->value(bin_value)) / (full_samples)) * kernel_reduction_speed);
     cvm::real inv_squared_smooth = 1.0 / (std::max(bandwidth * bandwidth, 1e-5));
     int cutoff = static_cast<int>(cvm::floor(cutoff_factor * bandwidth));
-    cvm::log("cutoff : " + cvm::to_str(cutoff));
+    // cvm::log("cutoff : " + cvm::to_str(cutoff));
     if (cutoff > 0) {
       for (size_t i = 0; i < nd; i++) {
         cutoff = std::min(cutoff, nx[i] / 2 - 1);
