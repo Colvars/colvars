@@ -110,8 +110,8 @@ private:
   /// n-dim grid of sampling weights for smoothed ABF
   std::shared_ptr<colvar_grid_scalar>    weights;
   bool variance_based_kernel_size;
-  std::shared_ptr<colvar_grid_scalar>    variances = nullptr;
-  std::shared_ptr<colvar_grid_scalar>    z_variances = nullptr;
+  std::vector<cvm::real>   variances;
+  std::vector<cvm::real>    z_variances;
   // current running variance
   std::vector<cvm::real> S_m;
   std::vector<cvm::real> s_m;
