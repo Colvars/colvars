@@ -228,6 +228,7 @@ colvars:   # outputFreq = 5
 colvars:   # applyBias = on [default]
 colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
+colvars:   # DXhistory = off [default]
 colvars:   # fullSamples = 1
 colvars:   # minSamples = 0.5 [default]
 colvars:   # inputPrefix =  [default]
@@ -235,6 +236,8 @@ colvars:   # historyFreq = 5
 colvars:   # shared = off [default]
 colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
+colvars:   # KernelReductionSpeed = 1 [default]
+colvars:   # VarianceBasedKernelSize = off [default]
 colvars:   # smoothing = 0.5
 colvars:   Kernel version of abf is in use
 colvars:   # integrate = on [default]
@@ -294,8 +297,12 @@ colvars: Re-initialized atom group for variable "dihedral":0/0. 1 atoms: total m
 colvars: Re-initialized atom group for variable "dihedral":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
-colvars:   Integrated in 105 steps, error: 9.66343e-07
-colvars:   Integrated in 1 steps, error: 6.84236e-07
-colvars:   Integrated in 105 steps, error: 9.1115e-07
-colvars:   Integrated in 1 steps, error: 6.0663e-07
+colvars:   cutoff : 1
+colvars:   cutoff : 0
+colvars:   Integrated in 99 steps, error: 8.16284e-07
+colvars:   Integrated in 1 steps, error: 6.26573e-07
+colvars:   cutoff : 1
+colvars:   cutoff : 0
+colvars:   Integrated in 105 steps, error: 9.07504e-07
+colvars:   Integrated in 1 steps, error: 5.90425e-07
 colvars: Saving collective variables state to "test.colvars.state".
