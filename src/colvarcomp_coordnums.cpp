@@ -176,7 +176,7 @@ void colvar::coordnum::compute_tolerance_l2_max()
   size_t i;
   // Find the value of l2 such that F(l2) = 0 using the Newton method
   for (i = 0; i < num_iters_max; i++) {
-    F = switching_function<ef_use_pairlist | ef_gradients>(l2, dFdl2, en, ed, tolerance);
+    F = switching_function<ef_use_pairlist | ef_gradients, 0, 0>(l2, dFdl2, en, ed, tolerance);
     if ((std::fabs(F) < result_tol) || (std::fabs(dFdl2) < dF_tol)) {
       break;
     }
@@ -532,7 +532,7 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
           diff = cvm::main()->proxy->position_distance(cvm::rvector{x1, y1, z1}, cvm::rvector{x2, y2, z2});
         }
         partial = compute_pair_coordnum<flags, n, m>(
-          inv_r0_vec, inv_r0sq_vec, diff,
+          inv_r0_vec, inv_r0sq_vec, diff, n, m,
           g1.x, g1.y, g1.z, gx2, gy2, gz2,
           tolerance, tolerance_l2_max);
       }
