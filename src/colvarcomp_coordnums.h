@@ -43,9 +43,6 @@ public:
   /// @param en Numerator exponent
   /// @param ed Denominator exponent
   /// @param pairlist_tol Pairlist tolerance
-  template <int flags>
-  static cvm::real switching_function(cvm::real const &l2, cvm::real &dFdl2, int en, int ed,
-                                      cvm::real pairlist_tol);
 
   /// Main kernel for the coordination number
   template <int flags>
@@ -53,6 +50,20 @@ public:
                                          cvm::rvector const &inv_r0sq_vec, int en, int ed,
                                          const cvm::real a1x, const cvm::real a1y, const cvm::real a1z,
                                          const cvm::real a2x, const cvm::real a2y, const cvm::real a2z,
+                                         cvm::real &g1x, cvm::real &g1y, cvm::real &g1z,
+                                         cvm::real &g2x, cvm::real &g2y, cvm::real &g2z,
+                                         cvm::real pairlist_tol, cvm::real pairlist_tol_l2_max);
+
+  template <int flags, int t_en, int t_ed>
+  static cvm::real switching_function(cvm::real const &l2, cvm::real &dFdl2,
+                                      int en, int ed,
+                                      cvm::real pairlist_tol);
+
+  template <int flags, int t_en, int t_ed>
+  static cvm::real compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
+                                         cvm::rvector const &inv_r0sq_vec,
+                                         const cvm::rvector& diff,
+                                         int en, int ed,
                                          cvm::real &g1x, cvm::real &g1y, cvm::real &g1z,
                                          cvm::real &g2x, cvm::real &g2y, cvm::real &g2z,
                                          cvm::real pairlist_tol, cvm::real pairlist_tol_l2_max);
@@ -128,6 +139,8 @@ public:
   /// Workhorse function
   template <int flags> void selfcoordnum_sequential_loop();
 
+  template <int flags, int n, int m> void selfcoordnum_sequential_loop();
+
   /// Main workhorse function
   template <int flags> int compute_selfcoordnum();
 };
@@ -168,17 +181,15 @@ protected:
 };
 
 
-template <int flags>
-inline cvm::real colvar::coordnum::switching_function(cvm::real const &l2, cvm::real &dFdl2,
-                                               int en, int ed,
-                                               cvm::real pairlist_tol)
+template <int flags, int t_en, int t_ed>
+inline cvm::real colvar::coordnum::switching_function(
+  cvm::real const &l2, cvm::real &dFdl2, int en, int ed, cvm::real pairlist_tol)
 {
   // Assume en and ed are even integers, and avoid sqrt in the following
-  int const en2 = en/2;
-  int const ed2 = ed/2;
-
-  cvm::real const xn = cvm::integer_power(l2, en2);
-  cvm::real const xd = cvm::integer_power(l2, ed2);
+  const int en2 = t_en != 0 ? t_en / 2 : en / 2;
+  const int ed2 = t_ed != 0 ? t_ed / 2 : ed / 2;
+  cvm::real const xn = t_en != 0 ? cvm::integer_power<t_en / 2>(l2) : cvm::integer_power(l2, en2);
+  cvm::real const xd = t_ed != 0 ? cvm::integer_power<t_ed / 2>(l2) : cvm::integer_power(l2, ed2);
   cvm::real const eps_l2 = 1.0e-7;
   cvm::real const h = l2 - 1.0;
   cvm::real const en2_r = (cvm::real) en2;
@@ -226,7 +237,6 @@ inline cvm::real colvar::coordnum::switching_function(cvm::real const &l2, cvm::
   return func;
 }
 
-
 template<int flags>
 inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
                                                          cvm::rvector const &inv_r0sq_vec,
@@ -253,6 +263,26 @@ inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv
                                 ? cvm::main()->proxy->position_distance_internal(pos1, pos2)
                                 : cvm::main()->proxy->position_distance(pos1, pos2);
 
+  return compute_pair_coordnum<flags, 0, 0>(
+    inv_r0_vec, inv_r0sq_vec, diff, en, ed,
+    g1x, g1y, g1z, g2x, g2y, g2z,
+    pairlist_tol, pairlist_tol_l2_max);
+}
+
+template<int flags, int t_en, int t_ed>
+inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
+                                                         cvm::rvector const &inv_r0sq_vec,
+                                                         const cvm::rvector& diff,
+                                                         int en, int ed,
+                                                         cvm::real& g1x,
+                                                         cvm::real& g1y,
+                                                         cvm::real& g1z,
+                                                         cvm::real& g2x,
+                                                         cvm::real& g2y,
+                                                         cvm::real& g2z,
+                                                         cvm::real pairlist_tol,
+                                                         cvm::real pairlist_tol_l2_max)
+{
   cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
                                diff.y * inv_r0_vec.y,
                                diff.z * inv_r0_vec.z);
@@ -265,7 +295,7 @@ inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv
   }
 
   cvm::real dFdl2 = 0.0;
-  cvm::real F = switching_function<flags>(l2, dFdl2, en, ed, pairlist_tol);
+  const cvm::real F = switching_function<flags, t_en, t_ed>(l2, dFdl2, en, ed, pairlist_tol);
 
   if ((flags & ef_gradients) && (F > 0.0)) {
     cvm::rvector const dl2dx((2.0 * inv_r0sq_vec.x) * diff.x,
@@ -283,5 +313,6 @@ inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv
 
   return F;
 }
+
 
 #endif // COLVARCOMP_COORDNUM_H
