@@ -52,13 +52,14 @@ colvarproxy_stub::~colvarproxy_stub()
 
 int colvarproxy_stub::setup()
 {
-  boundaries_type = boundaries_non_periodic;
-  reset_pbc_lattice();
-  cvmodule->it = cvmodule->it_restart = 0;
+  // Set system boundaries as the default (non-periodic)
+  boundaries_.reset();
 
   if (cvmodule) {
+    cvmodule->it = cvmodule->it_restart = 0;
     return cvmodule->update_engine_parameters();
   }
+
   return COLVARS_OK;
 }
 
