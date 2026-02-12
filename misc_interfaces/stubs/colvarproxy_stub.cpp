@@ -52,8 +52,6 @@ colvarproxy_stub::~colvarproxy_stub()
 
 int colvarproxy_stub::setup()
 {
-  boundaries_type = boundaries_non_periodic;
-  reset_pbc_lattice();
   colvars->it = colvars->it_restart = 0;
 
   if (colvars) {
