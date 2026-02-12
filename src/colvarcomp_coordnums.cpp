@@ -203,6 +203,8 @@ void inline colvar::coordnum::main_loop()
 
   bool *pairlist_elem = pairlist.get();
 
+  auto const &boundary_conditions = cvm::main()->proxy->get_system_boundaries();
+
   for (size_t i = 0; i < group1_num_coords; ++i) {
 
     cvm::real const x1 = use_group1_com ? group1_com.x : group1->pos_x(i);
@@ -233,12 +235,12 @@ void inline colvar::coordnum::main_loop()
                                                             x1, y1, z1, x2, y2, z2,
                                                             gx1, gy1, gz1, gx2, gy2, gz2,
                                                             tolerance, tolerance_l2_max,
-                                                            cvmodule) :
+                                                            boundary_conditions) :
          compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                       x1, y1, z1, x2, y2, z2,
                                       gx1, gy1, gz1, gx2, gy2, gz2,
                                       tolerance, tolerance_l2_max,
-                                      cvmodule) ) :
+                                      boundary_conditions) ) :
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
@@ -447,7 +449,7 @@ void colvar::h_bond::calc_value()
                                                         atom_groups[0]->grad_y(1),
                                                         atom_groups[0]->grad_z(1),
                                                         0.0, 1.0e20,
-                                                        cvmodule);
+                                                        cvm::main()->proxy->get_system_boundaries());
   // Skip the gradient
 }
 
@@ -479,7 +481,7 @@ void colvar::h_bond::calc_gradients()
                                          atom_groups[0]->grad_y(1),
                                          atom_groups[0]->grad_z(1),
                                          0.0, 1.0e20,
-                                         cvmodule);
+                                         cvm::main()->proxy->get_system_boundaries());
 }
 
 
@@ -493,6 +495,7 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
 {
   size_t const n = group1->size();
   bool *pairlist_elem = pairlist.get();
+  auto const &boundary_conditions = cvm::main()->proxy->get_system_boundaries();
 
   for (size_t i = 0; i < n - 1; i++) {
 
@@ -522,12 +525,12 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
                                                             x1, y1, z1, x2, y2, z2,
                                                             gx1, gy1, gz1, gx2, gy2, gz2,
                                                             tolerance, tolerance_l2_max,
-                                                            cvmodule) :
+                                                            boundary_conditions) :
          compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                       x1, y1, z1, x2, y2, z2,
                                       gx1, gy1, gz1, gx2, gy2, gz2,
                                       tolerance, tolerance_l2_max,
-                                      cvmodule) ) :
+                                      boundary_conditions) ) :
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
