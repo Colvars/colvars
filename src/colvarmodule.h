@@ -227,6 +227,7 @@ static inline real acos(real const &x)
   template <class T> class matrix2d;
   class quaternion;
   class rotation;
+  class system_boundary_conditions;
 
   class usage;
   class memory_stream;

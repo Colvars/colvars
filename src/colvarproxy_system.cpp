@@ -22,12 +22,10 @@ colvarproxy_system::colvarproxy_system()
   timestep_ = 1.0;
   target_temperature_ = 0.0;
   boltzmann_ = 0.001987191; // Default: kcal/mol/K
-  boundaries_type = boundaries_unsupported;
   total_force_requested = false;
   indirect_lambda_biasing_force = 0.0;
   cached_alch_lambda_changed = false;
   cached_alch_lambda = -1.0;
-  reset_pbc_lattice();
 }
 
 
@@ -90,47 +88,10 @@ bool colvarproxy_system::total_forces_same_step() const
 }
 
 
-void colvarproxy_system::update_pbc_lattice()
-{
-  // Periodicity is assumed in all directions
-
-  if (boundaries_type == boundaries_unsupported ||
-      boundaries_type == boundaries_non_periodic) {
-    cvm::error("Error: setting PBC lattice with unsupported boundaries.\n",
-               COLVARS_BUG_ERROR);
-    return;
-  }
-
-  {
-    cvm::rvector const v = cvm::rvector::outer(unit_cell_y, unit_cell_z);
-    reciprocal_cell_x = v/(v*unit_cell_x);
-  }
-  {
-    cvm::rvector const v = cvm::rvector::outer(unit_cell_z, unit_cell_x);
-    reciprocal_cell_y = v/(v*unit_cell_y);
-  }
-  {
-    cvm::rvector const v = cvm::rvector::outer(unit_cell_x, unit_cell_y);
-    reciprocal_cell_z = v/(v*unit_cell_z);
-  }
-}
-
-
-void colvarproxy_system::reset_pbc_lattice()
-{
-  unit_cell_x.reset();
-  unit_cell_y.reset();
-  unit_cell_z.reset();
-  reciprocal_cell_x.reset();
-  reciprocal_cell_y.reset();
-  reciprocal_cell_z.reset();
-}
-
-
 cvm::rvector colvarproxy_system::position_distance(cvm::atom_pos const &pos1,
                                                    cvm::atom_pos const &pos2) const
 {
-  return position_distance_internal(pos1, pos2);
+  return boundaries_.position_distance(pos1, pos2);
 }
 
 
