@@ -388,29 +388,10 @@ void colvarproxy_namd::calculate()
   if (accelMDOn) update_accelMD_info();
 
   auto *lattice = globalmaster->get_lattice();
-
-  {
-    Vector const a = lattice->a();
-    Vector const b = lattice->b();
-    Vector const c = lattice->c();
-    unit_cell_x.set(a.x, a.y, a.z);
-    unit_cell_y.set(b.x, b.y, b.z);
-    unit_cell_z.set(c.x, c.y, c.z);
-  }
-
-  if (!lattice->a_p() && !lattice->b_p() && !lattice->c_p()) {
-    boundaries_type = boundaries_non_periodic;
-    reset_pbc_lattice();
-  } else if (lattice->a_p() && lattice->b_p() && lattice->c_p()) {
-    if (lattice->orthogonal()) {
-      boundaries_type = boundaries_pbc_ortho;
-    } else {
-      boundaries_type = boundaries_pbc_triclinic;
-    }
-    colvarproxy_system::update_pbc_lattice();
-  } else {
-    boundaries_type = boundaries_unsupported;
-  }
+  boundaries_.set_boundaries(lattice->a_p(), lattice->b_p(), lattice->c_p(),
+                             cvm::rvector{lattice->a().x, lattice->a().y, lattice->a().z},
+                             cvm::rvector{lattice->b().x, lattice->b().y, lattice->b().z},
+                             cvm::rvector{lattice->c().x, lattice->c().y, lattice->c().z});
 
   if (cvm::debug()) {
     cvm::log(std::string(cvm::line_marker)+
