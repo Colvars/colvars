@@ -5862,6 +5862,27 @@ Other parameters to control the ABF runtime can be set in the ABF configuration 
   }
 \end{itemize}
 
+\cvsubsubsec{Kernel grid ABF}
+ABF stores energy gradient sums and counts on two separate grids in order to estimate the free energy gradient. If the
+grids are big, whether for accuracy or because of the dimensionality curse filling them will be long. In order to reduce
+this time we use kernel grid to leverage the free energy function regularity. At each time step $t$ : the system is in
+the state $(x(t), \xi(t), \nabla U(x(t))$, with $x(t)$ the atomic coordinate, $\xi(t)$ the value of the collective
+variables, $\nabla U(x(t))$ the value of the energy of the system. With kernel grid, instead of updating only the cell of
+each grid corresponding to $\xi(t)$ we'll also update the surrounding cells with a weight based on their distance (kernel)
+to $\xi(t)$. Now in order to estimate the free energy gradient at a bin, the bin averaging will actually corresponds to a
+weighted average of the energy gradients of nearby datapoints seen during simulation.
+
+The weights are calculated using a kernel of the form
+\begin{equation}
+  K(\tilde{\xi}, \tilde{\xi_{cell}}) = \frac{1}{Z}e^{\frac{||\tilde{\xi} - \tilde{\xi_{cell}}||^2}{\sigma}}
+\end{equation}
+Where \tilde{\xi} is the coordinate of the collective variable in the grid. i.e.
+\begin{equation}
+  \tilde{\xi^i} = \frac{\xi^i - boundary_{lower}^i}{boundary_{upper}^i - boundary_{lower}^i}
+\end{equation}
+In order to activate kernel grid \refkey{smoothing}{abf|smoothing} must be set to a number > 0. This set the value of
+the kernel's bandwith $\sigma$.
+
 \cvsubsubsec{Multiple-walker ABF}{sec:colvarbias_abf_shared}
 \label{sec:mw-ABF}
 
