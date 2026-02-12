@@ -805,7 +805,7 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
   cvm::atom_pos const origin(0.0, 0.0, 0.0);
   for (; i < atoms->size(); ++i) {
     // Wrap around the origin
-    cvm::rvector const wrapped_pos = position_distance(
+    cvm::rvector const wrapped_pos = boundaries_.position_distance(
       origin, cvm::atom_pos(atoms->pos_x(i), atoms->pos_y(i), atoms->pos_z(i)));
     coord[0] = internal_to_angstrom(wrapped_pos.x);
     coord[1] = internal_to_angstrom(wrapped_pos.y);
