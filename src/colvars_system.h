@@ -34,6 +34,9 @@ public:
   /// Compute the distance between two positions
   cvm::rvector position_distance(cvm::atom_pos const &pos1, cvm::atom_pos const &pos2) const;
 
+  /// Compute a shift vector that accounts for tilt factors up to 0.5
+  cvm::rvector get_triclinic_shift(cvm::rvector const &diff) const;
+
   /// Reset to defaults (non-periodic)
   inline COLVARS_HOST_DEVICE void reset() {
     periodic_x = periodic_y = periodic_z = false;
@@ -154,7 +157,41 @@ cvm::rvector cvm::system_boundary_conditions::position_distance(cvm::atom_pos co
     diff.z -= x_shift * unit_cell_x.z + y_shift * unit_cell_y.z + z_shift * unit_cell_z.z;
   }
 
+  if (type() != types::pbc_orthogonal) {
+    // Matches both "mixed" and "pbc_triclinic", because reciprocal cell vectors are not used
+    diff += get_triclinic_shift(diff);
+  }
+
   return diff;
 }
+
+
+inline COLVARS_HOST_DEVICE cvm::rvector
+cvm::system_boundary_conditions::get_triclinic_shift(cvm::rvector const &diff) const
+{
+  cvm::real min_dist2 = diff.norm2();
+  cvm::rvector result{0.0, 0.0, 0.0};
+
+  int const nx = periodic_x ? 1 : 0;
+  int const ny = periodic_y ? 1 : 0;
+  int const nz = periodic_z ? 1 : 0;
+
+  // Loop over neighboring cells to find a shorter distance
+  for (int ix = -nx; ix <= nx; ix++) {
+    for (int iy = -ny; iy <= ny; iy++) {
+      for (int iz = -nz; iz <= nz; iz++) {
+        cvm::rvector const shift = ix * unit_cell_x + iy * unit_cell_y + iz * unit_cell_z;
+        cvm::real const this_dist2 = (diff + shift).norm2();
+        if (this_dist2 < min_dist2) {
+          result = shift;
+          min_dist2 = this_dist2;
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
 
 #endif
