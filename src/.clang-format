@@ -1,14 +1,16 @@
 ---
-Language: Cpp
+AccessModifierOffset: -2
+BinPackParameters: false
+BreakBeforeBraces: WebKit
 ColumnLimit: 100
-UseTab: Never
-TabWidth: 2
+EmptyLineAfterAccessModifier: Leave
 IndentWidth: 2
+Language: Cpp
+MaxEmptyLinesToKeep: 2
+NamespaceIndentation: None
 ObjCBlockIndentWidth: 2
 PenaltyBreakAssignment: 2
-AccessModifierOffset: -2
-BreakBeforeBraces: WebKit
-EmptyLineAfterAccessModifier: Leave
-NamespaceIndentation: None
-MaxEmptyLinesToKeep: 2
+PenaltyReturnTypeOnItsOwnLine: 10000
+TabWidth: 2
+UseTab: Never
 ...
