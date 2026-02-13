@@ -494,7 +494,12 @@ then
     condcopy "${src}" "${target}/src/${tgt}"
   done
 
-  condcopy "${source}/vmd/src/colvars_files.pl" "${target}/src/colvars_files.pl"
+  bash "${source}/devel-tools/generate-vmd-makefile.sh" \
+       "${source}/src/"*.cpp \
+       "${source}/src/"*.h \
+       "${source}/vmd/src/"*.C \
+       "${source}/vmd/src/"*.h \
+       > "${target}/src/colvars_files.pl"
 
   echo ' done.'
 
