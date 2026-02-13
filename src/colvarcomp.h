@@ -347,6 +347,9 @@ protected:
 
   /// \brief CVC-specific default colvar width (default: not provided)
   cvm::real width = 0.0;
+
+  /// Boundary conditions for the system, copied from the engine when needed
+  cvm::system_boundary_conditions boundary_conditions;
 };
 
 

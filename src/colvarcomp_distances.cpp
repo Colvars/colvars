@@ -54,8 +54,7 @@ void colvar::distance::calc_value()
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
     dist_v = group2->center_of_mass() - group1->center_of_mass();
   } else {
-    dist_v = cvm::position_distance(group1->center_of_mass(),
-                                    group2->center_of_mass());
+    dist_v = boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
   }
   x.real_value = dist_v.norm();
 }
@@ -101,8 +100,8 @@ void colvar::distance_vec::calc_value()
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
     x.rvector_value = group2->center_of_mass() - group1->center_of_mass();
   } else {
-    x.rvector_value = cvm::position_distance(group1->center_of_mass(),
-                                             group2->center_of_mass());
+    x.rvector_value =
+        boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
   }
 }
 
@@ -127,7 +126,7 @@ void colvar::distance_vec::apply_force(colvarvalue const &force)
 cvm::real colvar::distance_vec::dist2(colvarvalue const &x1, colvarvalue const &x2) const
 {
   if (is_enabled(f_cvc_pbc_minimum_image)) {
-    return (cvm::position_distance(x1.rvector_value, x2.rvector_value)).norm2();
+    return (boundary_conditions.position_distance(x1.rvector_value, x2.rvector_value)).norm2();
   }
   return (x2.rvector_value - x1.rvector_value).norm2();
 }
@@ -136,7 +135,7 @@ cvm::real colvar::distance_vec::dist2(colvarvalue const &x1, colvarvalue const &
 colvarvalue colvar::distance_vec::dist2_lgrad(colvarvalue const &x1, colvarvalue const &x2) const
 {
   if (is_enabled(f_cvc_pbc_minimum_image)) {
-    return 2.0 * cvm::position_distance(x2.rvector_value, x1.rvector_value);
+    return 2.0 * boundary_conditions.position_distance(x2.rvector_value, x1.rvector_value);
   }
   return 2.0 * (x2.rvector_value - x1.rvector_value);
 }
@@ -203,7 +202,7 @@ void colvar::distance_z::calc_value()
     if (!is_enabled(f_cvc_pbc_minimum_image)) {
       dist_v = M - R1;
     } else {
-      dist_v = cvm::position_distance(R1, M);
+      dist_v = boundary_conditions.position_distance(R1, M);
     }
   } else {
     cvm::rvector const R2 = ref2->center_of_mass();
@@ -212,8 +211,8 @@ void colvar::distance_z::calc_value()
       dist_v = M - C;
       axis = R2 - R1;
     } else {
-      dist_v = cvm::position_distance(C, M);
-      axis = cvm::position_distance(R1, R2);
+      dist_v = boundary_conditions.position_distance(C, M);
+      axis = boundary_conditions.position_distance(R1, R2);
     }
     axis_norm = axis.norm();
     axis = axis.unit();
@@ -275,15 +274,13 @@ void colvar::distance_xy::calc_value()
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
     dist_v = main->center_of_mass() - ref1->center_of_mass();
   } else {
-    dist_v = cvm::position_distance(ref1->center_of_mass(),
-                                    main->center_of_mass());
+    dist_v = boundary_conditions.position_distance(ref1->center_of_mass(), main->center_of_mass());
   }
   if (!fixed_axis) {
     if (!is_enabled(f_cvc_pbc_minimum_image)) {
       v12 = ref2->center_of_mass() - ref1->center_of_mass();
     } else {
-      v12 = cvm::position_distance(ref1->center_of_mass(),
-                                   ref2->center_of_mass());
+      v12 = boundary_conditions.position_distance(ref1->center_of_mass(), ref2->center_of_mass());
     }
     axis_norm = v12.norm();
     axis = v12.unit();
@@ -311,8 +308,7 @@ void colvar::distance_xy::calc_gradients()
     if (!is_enabled(f_cvc_pbc_minimum_image)) {
       v13 = main->center_of_mass() - ref1->center_of_mass();
     } else {
-      v13 = cvm::position_distance(ref1->center_of_mass(),
-                                   main->center_of_mass());
+      v13 = boundary_conditions.position_distance(ref1->center_of_mass(), main->center_of_mass());
     }
     A = (dist_v * axis) / axis_norm;
 
@@ -357,8 +353,8 @@ void colvar::distance_dir::calc_value()
   if (!is_enabled(f_cvc_pbc_minimum_image)) {
     dist_v = group2->center_of_mass() - group1->center_of_mass();
   } else {
-    dist_v = cvm::position_distance(group1->center_of_mass(),
-                                    group2->center_of_mass());
+    dist_v =
+        boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
   }
   x.rvector_value = dist_v.unit();
 }
@@ -465,7 +461,7 @@ void colvar::distance_inv::calc_value()
                                group2->pos_z(j));      \
       cvm::rvector dv;                                 \
       if (USE_PBC_MINIMUM_IMAGE) {                     \
-        dv = cvm::position_distance(pos1, pos2);       \
+        dv = boundary_conditions.position_distance(pos1, pos2);       \
       } else {                                         \
         dv = pos2 - pos1;                              \
       }                                                \
@@ -548,7 +544,7 @@ void colvar::distance_pairs::calc_value()
                                group2->pos_y(i2),                  \
                                group2->pos_z(i2));                 \
       const cvm::rvector dv = USE_PBC_MINIMUM_IMAGE ?              \
-                              cvm::position_distance(pos1, pos2) : \
+                              boundary_conditions.position_distance(pos1, pos2) : \
                               pos2 - pos1;                         \
       cvm::real const d = dv.norm();                               \
       x.vector1d_value[i1*group2->size() + i2] = d;                \
@@ -593,7 +589,7 @@ void colvar::distance_pairs::apply_force(colvarvalue const &force)
                                group2->pos_y(i2),                       \
                                group2->pos_z(i2));                      \
       const cvm::rvector dv = USE_PBC_MINIMUM_IMAGE ?                   \
-                              cvm::position_distance(pos1, pos2) :      \
+                              boundary_conditions.position_distance(pos1, pos2) :      \
                               pos2 - pos1;                              \
       cvm::real const d = dv.norm();                                    \
       x.vector1d_value[i1*group2->size() + i2] = d;                     \
