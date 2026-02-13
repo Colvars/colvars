@@ -1,9 +1,11 @@
 #!/bin/bash
 
+set -e
+
 # Generate a file suitable for inclusion by the NAMD Makefile
 
 if [ -f "${2}" ] ; then
-    echo "Usage: ${0} <sources_var_name> <sources_path> <objs_var_name> <obj_path> [... source files ...]" >& 1
+    echo "Usage: ${0} <sources_var_name> <sources_path> <objs_var_name> <obj_path> [... source files ...]" >& 2
     exit 1
 fi
 

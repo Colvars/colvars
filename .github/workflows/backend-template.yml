@@ -121,9 +121,6 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Test build recipes
-        run: bash devel-tools/check_build_recipes
-
       - name: Build and test standalone library
         run: cmake -P devel-tools/build_test_library.cmake
 

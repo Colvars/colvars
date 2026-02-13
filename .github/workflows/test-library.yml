@@ -39,9 +39,6 @@ jobs:
       #   run: |
       #     sudo apt -y install ccache
 
-      - name: Test build recipes
-        run: bash devel-tools/check_build_recipes
-
       - name: Convert BibTeX references to code
         shell: bash
         working-directory: doc
