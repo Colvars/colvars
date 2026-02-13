@@ -64,11 +64,11 @@ void colvar::angle::calc_value()
   cvm::atom_pos const g3_pos = group3->center_of_mass();
 
   r21  = is_enabled(f_cvc_pbc_minimum_image) ?
-    cvm::position_distance(g2_pos, g1_pos) :
+    boundary_conditions.position_distance(g2_pos, g1_pos) :
     g1_pos - g2_pos;
   r21l = r21.norm();
   r23  = is_enabled(f_cvc_pbc_minimum_image) ?
-    cvm::position_distance(g2_pos, g3_pos) :
+    boundary_conditions.position_distance(g2_pos, g3_pos) :
     g3_pos - g2_pos;
   r23l = r23.norm();
 
@@ -159,7 +159,7 @@ void colvar::dipole_angle::calc_value()
   r21 = group1->dipole();
   r21l = r21.norm();
   r23  = is_enabled(f_cvc_pbc_minimum_image) ?
-    cvm::position_distance(g2_pos, g3_pos) :
+    boundary_conditions.position_distance(g2_pos, g3_pos) :
     g3_pos - g2_pos;
   r23l = r23.norm();
 
@@ -282,13 +282,13 @@ void colvar::dihedral::calc_value()
 
   // Usual sign convention: r12 = r2 - r1
   r12 = is_enabled(f_cvc_pbc_minimum_image) ?
-    cvm::position_distance(g1_pos, g2_pos) :
+    boundary_conditions.position_distance(g1_pos, g2_pos) :
     g2_pos - g1_pos;
   r23 = is_enabled(f_cvc_pbc_minimum_image) ?
-    cvm::position_distance(g2_pos, g3_pos) :
+    boundary_conditions.position_distance(g2_pos, g3_pos) :
     g3_pos - g2_pos;
   r34 = is_enabled(f_cvc_pbc_minimum_image) ?
-    cvm::position_distance(g3_pos, g4_pos) :
+    boundary_conditions.position_distance(g3_pos, g4_pos) :
     g4_pos - g3_pos;
 
   cvm::rvector const n1 = cvm::rvector::outer(r12, r23);

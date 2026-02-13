@@ -2484,13 +2484,6 @@ void cvm::request_total_force()
 }
 
 
-cvm::rvector cvm::position_distance(cvm::atom_pos const &pos1,
-                                    cvm::atom_pos const &pos2)
-{
-  return proxy->position_distance(pos1, pos2);
-}
-
-
 cvm::real cvm::rand_gaussian(void)
 {
   return proxy->rand_gaussian();
