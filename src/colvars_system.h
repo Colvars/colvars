@@ -25,6 +25,12 @@ public:
     unsupported     /// Unsupported boundary conditions
   };
 
+  /// Default constructor
+  inline COLVARS_HOST_DEVICE system_boundary_conditions() { reset(); }
+
+  /// Copy constructor
+  system_boundary_conditions(system_boundary_conditions const &) = default;
+
   /// Type of boundary conditions in the current computation
   inline COLVARS_HOST_DEVICE types type() const { return type_; }
 
