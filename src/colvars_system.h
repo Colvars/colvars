@@ -50,8 +50,12 @@ public:
   }
 
   /// Set from explicit boundary configuration
-  void set_boundaries(bool periodic_x_in, bool periodic_y_in, bool periodic_z_in,
-                      cvm::rvector const &A, cvm::rvector const &B, cvm::rvector const &C);
+  void set_boundaries(bool periodic_x_in,
+                      bool periodic_y_in,
+                      bool periodic_z_in,
+                      cvm::rvector const &A,
+                      cvm::rvector const &B,
+                      cvm::rvector const &C);
 
 protected:
 
@@ -70,10 +74,13 @@ protected:
 
 
 /// Set from explicit boundary configuration
-inline COLVARS_HOST_DEVICE void
-cvm::system_boundary_conditions::set_boundaries(bool periodic_x_in, bool periodic_y_in,
-                                                bool periodic_z_in, cvm::rvector const &A,
-                                                cvm::rvector const &B, cvm::rvector const &C)
+inline COLVARS_HOST_DEVICE void cvm::system_boundary_conditions::set_boundaries(
+    bool periodic_x_in,
+    bool periodic_y_in,
+    bool periodic_z_in,
+    cvm::rvector const &A,
+    cvm::rvector const &B,
+    cvm::rvector const &C)
 {
   constexpr double diagonal_tol2 = 1.0e-10;
 
@@ -131,9 +138,8 @@ cvm::system_boundary_conditions::set_boundaries(bool periodic_x_in, bool periodi
 }
 
 
-inline COLVARS_HOST_DEVICE
-cvm::rvector cvm::system_boundary_conditions::position_distance(cvm::atom_pos const &pos1,
-                                                                cvm::atom_pos const &pos2) const
+inline COLVARS_HOST_DEVICE cvm::rvector cvm::system_boundary_conditions::position_distance(
+    cvm::atom_pos const &pos1, cvm::atom_pos const &pos2) const
 {
   cvm::rvector diff = (pos2 - pos1);
 
@@ -166,8 +172,8 @@ cvm::rvector cvm::system_boundary_conditions::position_distance(cvm::atom_pos co
 }
 
 
-inline COLVARS_HOST_DEVICE cvm::rvector
-cvm::system_boundary_conditions::get_triclinic_shift(cvm::rvector const &diff) const
+inline COLVARS_HOST_DEVICE cvm::rvector cvm::system_boundary_conditions::get_triclinic_shift(
+    cvm::rvector const &diff) const
 {
   cvm::real min_dist2 = diff.norm2();
   cvm::rvector result{0.0, 0.0, 0.0};
