@@ -56,7 +56,7 @@ public:
                                          cvm::real &g1x, cvm::real &g1y, cvm::real &g1z,
                                          cvm::real &g2x, cvm::real &g2y, cvm::real &g2z,
                                          cvm::real pairlist_tol, cvm::real pairlist_tol_l2_max,
-                                         cvm::system_boundary_conditions const &boundary_conditions);
+                                         cvm::system_boundary_conditions const &bc);
 
   /// Workhorse function
   template <bool use_group1_com, bool use_group2_com, int flags> int compute_coordnum();
@@ -247,12 +247,12 @@ inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv
                                                          cvm::real& g2z,
                                                          cvm::real pairlist_tol,
                                                          cvm::real pairlist_tol_l2_max,
-                                                         cvm::system_boundary_conditions const &boundary_conditions)
+                                                         cvm::system_boundary_conditions const &bc)
 {
   const cvm::atom_pos pos1{a1x, a1y, a1z};
   const cvm::atom_pos pos2{a2x, a2y, a2z};
   cvm::rvector const diff = (flags & ef_use_internal_pbc)
-                                ? boundary_conditions.position_distance(pos1, pos2)
+                                ? bc.position_distance(pos1, pos2)
                                 : cvm::main()->proxy->position_distance(pos1, pos2);
 
   cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
