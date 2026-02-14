@@ -13,6 +13,7 @@
 #include "colvarvalue.h"
 #include "colvar.h"
 #include "colvarcomp.h"
+#include "colvarcomp_coordnums.h"
 
 
 colvar::alpha_angles::alpha_angles()
