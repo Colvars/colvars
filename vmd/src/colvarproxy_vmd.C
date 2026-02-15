@@ -80,6 +80,9 @@ colvarproxy_vmd::colvarproxy_vmd(Tcl_Interp *interp, VMDApp *v, int molid)
 {
   engine_name_ = "VMD";
   version_int = get_version_from_string(COLVARPROXY_VERSION);
+
+  use_internal_pbc_ = true;
+
   b_simulation_running = false;
 
   // both fields are taken from data structures already available
@@ -221,36 +224,18 @@ int colvarproxy_vmd::update_input()
                                        angstrom_to_internal(vmdpos[atoms_ids[i]*3+2]));
   }
 
-
   Timestep const *ts = vmdmol->get_frame(vmdmol_frame);
-  {
-    // Get lattice vectors
-    float A[3];
-    float B[3];
-    float C[3];
-    ts->get_transform_vectors(A, B, C);
-    unit_cell_x.set(angstrom_to_internal(A[0]), angstrom_to_internal(A[1]), angstrom_to_internal(A[2]));
-    unit_cell_y.set(angstrom_to_internal(B[0]), angstrom_to_internal(B[1]), angstrom_to_internal(B[2]));
-    unit_cell_z.set(angstrom_to_internal(C[0]), angstrom_to_internal(C[1]), angstrom_to_internal(C[2]));
-  }
 
-  if (ts->a_length + ts->b_length + ts->c_length < 1.0e-6) {
-    boundaries_type = boundaries_non_periodic;
-    reset_pbc_lattice();
-  } else if ((ts->a_length > 1.0e-6) &&
-             (ts->b_length > 1.0e-6) &&
-             (ts->c_length > 1.0e-6)) {
-    if (((ts->alpha-90.0)*(ts->alpha-90.0)) +
-        ((ts->beta-90.0)*(ts->beta-90.0)) +
-        ((ts->gamma-90.0)*(ts->gamma-90.0)) < 1.0e-6) {
-      boundaries_type = boundaries_pbc_ortho;
-    } else {
-      boundaries_type = boundaries_pbc_triclinic;
-    }
-    colvarproxy_system::update_pbc_lattice();
-  } else {
-    boundaries_type = boundaries_unsupported;
-  }
+  float A[3];
+  float B[3];
+  float C[3];
+  ts->get_transform_vectors(A, B, C);
+  boundaries_.set_boundaries((ts->a_length > 0.0),
+                             (ts->b_length > 0.0),
+                             (ts->c_length > 0.0),
+                             cvm::rvector{A[0], A[1], A[2]},
+                             cvm::rvector{B[0], B[1], B[2]},
+                             cvm::rvector{C[0], C[1], C[2]});
 
   return error_code;
 }

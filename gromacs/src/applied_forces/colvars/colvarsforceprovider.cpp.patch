@@ -1,0 +1,50 @@
+diff --git a/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp b/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp
+index 5860eed790..6cd085eb0e 100644
+--- a/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp
++++ b/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp
+@@ -337,15 +337,42 @@ void ColvarsForceProvider::calculateForces(const ForceProviderInput& forceProvid
+                                            ForceProviderOutput*      forceProviderOutput)
+ {
+
+-    // Construct t_pbc struct
+-    set_pbc(&gmxPbc_, pbcType_, forceProviderInput.box_);
++    auto const& box = forceProviderInput.box_;
++
++    // Set PBC struct for use in ColvarProxyGromacs::position_distance()
++    set_pbc(&gmxPbc_, pbcType_, box);
++
++    // Share PBCs with the library as well
++    bool periodic_x = false, periodic_y = false, periodic_z = false;
++    switch (pbcType_)
++    {
++        case PbcType::Unset:
++            GMX_RELEASE_ASSERT(false, "PBC type not set when being used by ColvarsForceProvider.");
++            break;
++        case PbcType::XY: periodic_x = periodic_y = true; [[fallthrough]];
++        case PbcType::Xyz:
++            periodic_x = periodic_y = periodic_z = true;
++            boundaries_.set_boundaries(periodic_x,
++                                       periodic_y,
++                                       periodic_z,
++                                       cvm::rvector{ box[0][0], box[0][1], box[0][2] },
++                                       cvm::rvector{ box[1][0], box[1][1], box[1][2] },
++                                       cvm::rvector{ box[2][0], box[2][1], box[2][2] });
++            break;
++        case PbcType::Screw:
++            boundaries_.reset();
++            boundaries_.set_type(cvm::system_boundary_conditions::types::unsupported);
++            break;
++        case PbcType::No: boundaries_.reset(); break;
++        default:
++            GMX_RELEASE_ASSERT(false, "Invalid pbcType in ColvarsForceProvider::calculateForces");
++    }
+
+     const MpiComm& mpiComm = forceProviderInput.mpiComm_;
+     // Local atom coords
+     const gmx::ArrayRef<const gmx::RVec> x = forceProviderInput.x_;
+     // Local atom coords (coerced into into old gmx type)
+     const rvec* xPointer = &(x.data()->as_vec());
+-    const auto& box      = forceProviderInput.box_;
+
+     colvars->it = forceProviderInput.step_;
+

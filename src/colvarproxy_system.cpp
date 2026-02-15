@@ -22,12 +22,10 @@ colvarproxy_system::colvarproxy_system()
   timestep_ = 1.0;
   target_temperature_ = 0.0;
   boltzmann_ = 0.001987191; // Default: kcal/mol/K
-  boundaries_type = boundaries_unsupported;
   total_force_requested = false;
   indirect_lambda_biasing_force = 0.0;
   cached_alch_lambda_changed = false;
   cached_alch_lambda = -1.0;
-  reset_pbc_lattice();
 }
 
 
@@ -90,73 +88,10 @@ bool colvarproxy_system::total_forces_same_step() const
 }
 
 
-inline int round_to_integer(cvm::real x)
-{
-  return int(cvm::floor(x+0.5));
-}
-
-
-void colvarproxy_system::update_pbc_lattice()
-{
-  // Periodicity is assumed in all directions
-
-  if (boundaries_type == boundaries_unsupported ||
-      boundaries_type == boundaries_non_periodic) {
-    cvm::error("Error: setting PBC lattice with unsupported boundaries.\n",
-               COLVARS_BUG_ERROR);
-    return;
-  }
-
-  {
-    cvm::rvector const v = cvm::rvector::outer(unit_cell_y, unit_cell_z);
-    reciprocal_cell_x = v/(v*unit_cell_x);
-  }
-  {
-    cvm::rvector const v = cvm::rvector::outer(unit_cell_z, unit_cell_x);
-    reciprocal_cell_y = v/(v*unit_cell_y);
-  }
-  {
-    cvm::rvector const v = cvm::rvector::outer(unit_cell_x, unit_cell_y);
-    reciprocal_cell_z = v/(v*unit_cell_z);
-  }
-}
-
-
-void colvarproxy_system::reset_pbc_lattice()
-{
-  unit_cell_x.reset();
-  unit_cell_y.reset();
-  unit_cell_z.reset();
-  reciprocal_cell_x.reset();
-  reciprocal_cell_y.reset();
-  reciprocal_cell_z.reset();
-}
-
-
 cvm::rvector colvarproxy_system::position_distance(cvm::atom_pos const &pos1,
-                                                   cvm::atom_pos const &pos2)
-  const
+                                                   cvm::atom_pos const &pos2) const
 {
-  if (boundaries_type == boundaries_unsupported) {
-    cvm::error("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
-  }
-
-  cvm::rvector diff = (pos2 - pos1);
-
-  if (boundaries_type == boundaries_non_periodic) return diff;
-
-  cvm::real const x_shift = round_to_integer(reciprocal_cell_x*diff);
-  cvm::real const y_shift = round_to_integer(reciprocal_cell_y*diff);
-  cvm::real const z_shift = round_to_integer(reciprocal_cell_z*diff);
-
-  diff.x -= x_shift*unit_cell_x.x + y_shift*unit_cell_y.x +
-    z_shift*unit_cell_z.x;
-  diff.y -= x_shift*unit_cell_x.y + y_shift*unit_cell_y.y +
-    z_shift*unit_cell_z.y;
-  diff.z -= x_shift*unit_cell_x.z + y_shift*unit_cell_y.z +
-    z_shift*unit_cell_z.z;
-
-  return diff;
+  return boundaries_.position_distance(pos1, pos2);
 }
 
 

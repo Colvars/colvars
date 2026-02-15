@@ -446,6 +446,8 @@ int colvar::cvc::set_param(std::string const &param_name,
 
 void colvar::cvc::read_data()
 {
+  boundary_conditions = cvm::main()->proxy->get_system_boundaries();
+
   if (is_enabled(f_cvc_explicit_atom_groups)) {
     for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
       auto &atoms = *(*agi);
