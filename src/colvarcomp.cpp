@@ -233,9 +233,9 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
 int colvar::cvc::init_dependencies() {
   size_t i;
   // Initialize static array once and for all
-  if (features().size() == 0) {
+  if (cvc::features().size() == 0) {
     for (i = 0; i < colvardeps::f_cvc_ntot; i++) {
-      modify_features().push_back(new feature);
+      cvc::modify_features().push_back(new feature);
     }
 
     init_feature(f_cvc_active, "active", f_type_dynamic);

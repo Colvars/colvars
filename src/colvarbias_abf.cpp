@@ -925,7 +925,7 @@ template <typename OST> OST & colvarbias_abf::write_state_data_template_(OST &os
 {
   auto flags = os.flags();
 
-  os.setf(std::ios::fmtflags(0), std::ios::floatfield); // default floating-point format
+  os.setf(std::ios::fmtflags(std::ios::dec), std::ios::floatfield); // default floating-point format
 
   write_state_data_key(os, "samples");
   samples->write_raw(os, 8);
@@ -941,7 +941,7 @@ template <typename OST> OST & colvarbias_abf::write_state_data_template_(OST &os
   }
 
   if (b_CZAR_estimator) {
-    os.setf(std::ios::fmtflags(0), std::ios::floatfield); // default floating-point format
+    os.setf(std::ios::fmtflags(std::ios::dec), std::ios::floatfield); // default floating-point format
     write_state_data_key(os, "z_samples");
     z_samples->write_raw(os, 8);
     write_state_data_key(os, "z_gradient");

@@ -186,9 +186,9 @@ int cvm::atom_group::init()
 int cvm::atom_group::init_dependencies() {
   size_t i;
   // Initialize static array once and for all
-  if (features().size() == 0) {
+  if (atom_group::features().size() == 0) {
     for (i = 0; i < f_ag_ntot; i++) {
-      modify_features().push_back(new feature);
+      atom_group::modify_features().push_back(new feature);
     }
 
     init_feature(f_ag_active, "active", f_type_dynamic);
