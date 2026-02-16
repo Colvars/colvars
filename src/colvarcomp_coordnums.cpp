@@ -131,10 +131,6 @@ int colvar::coordnum::init(std::string const &conf)
                              COLVARS_INPUT_ERROR);
   }
 
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    cvm::log("Warning: only minimum-image distances are used by this variable.\n");
-  }
-
   if (function_type() != "groupCoord") {
     // All coordNum variables may benefit from a pairlist, except groupCoord
     get_keyval(conf, "tolerance", tolerance, tolerance);
