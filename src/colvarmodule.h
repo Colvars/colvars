@@ -374,9 +374,13 @@ public:
   std::vector<colvarbias *> *biases_active();
 
   /// \brief Whether debug output should be enabled (compile-time option)
-  static inline bool debug()
+  static inline bool constexpr debug()
   {
+#if (defined(__HIP_DEVICE_COMPILE__)) || (defined(__CUDA_ARCH__))
+    return false;
+#else
     return COLVARS_DEBUG;
+#endif
   }
 
   /// How many objects (variables and biases) are configured yet?
