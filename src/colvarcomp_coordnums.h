@@ -32,7 +32,6 @@ public:
   enum {
     ef_null = 0,
     ef_gradients = 1,
-    ef_use_internal_pbc = (1 << 8),
     ef_use_pairlist = (1 << 9),
     ef_rebuild_pairlist = (1 << 10)
   };
@@ -95,9 +94,6 @@ protected:
 
   /// If true, group2 will be treated as a single atom
   bool b_group2_center_only = false;
-
-  /// Use the PBC functions from the Colvars library (as opposed to MD engine)
-  bool b_use_internal_pbc = false;
 
   /// Tolerance for the pair list
   cvm::real tolerance = 0.0;
@@ -251,9 +247,7 @@ inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv
 {
   const cvm::atom_pos pos1{a1x, a1y, a1z};
   const cvm::atom_pos pos2{a2x, a2y, a2z};
-  cvm::rvector const diff = (flags & ef_use_internal_pbc)
-                                ? bc.position_distance(pos1, pos2)
-                                : cvm::main()->proxy->position_distance(pos1, pos2);
+  cvm::rvector const diff = bc.position_distance(pos1, pos2);
 
   cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
                                diff.y * inv_r0_vec.y,

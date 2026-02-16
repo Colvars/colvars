@@ -2012,18 +2012,6 @@ function is summed over all pairs of atoms in \texttt{group1} and
     100}{This controls the pairlist feature, dictating how many steps are taken between regenerating pair  lists if the tolerance is greater than 0.
   }
 
-\item %
-  \labelkey{colvar|coordNum|useInternalPBC}%
-  \keydef{useInternalPBC}{%
-    \texttt{coordNum}}{%
-    Use the PBC functions from the Colvars library (as opposed to MD engine)}{%
-    boolean}{%
-    engine-dependent}{%
-    If this keyword is set to \texttt{yes}, Colvars will use internal code to compute mininum-image distances, instead of calling the function used by \MDENGINE{}: enabling this flag may speed up computation.
-    \cvvmdonly{In VMD, the default value of this flag is true.} 
-    \cvlammpsonly{Please note that, unlike the LAMMPS function, the current internal code is not robust against large tilt factors: use this feature only for unit cells near an orthogonal shape.}
-    }
-
 \end{cvcoptions}
 
 This component returns a dimensionless number, which ranges from 0 (all interatomic distances are much larger than the cutoff) to $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$ (all possible pairwise distances are much smaller than the cutoff).
