@@ -154,7 +154,7 @@ inline COLVARS_HOST_DEVICE void cvm::system_boundary_conditions::set_boundaries(
     reciprocal_cell_z = v_xy / (v_xy * unit_cell_z);
   }
 
-  if (true) {
+  if (cvm::debug()) {
     cvm::log("periodic_x = " + cvm::to_str(periodic_x));
     cvm::log("periodic_y = " + cvm::to_str(periodic_y));
     cvm::log("periodic_z = " + cvm::to_str(periodic_z));
