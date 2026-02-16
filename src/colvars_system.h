@@ -106,7 +106,8 @@ cvm::system_boundary_conditions::set_boundaries(bool periodic_x_in, bool periodi
       reciprocal_cell_x = unit_cell_x/unit_cell_x.norm2();
     }
   } else {
-    unit_cell_x = {0.0, 0.0, 0.0};
+    unit_cell_x.reset();
+    reciprocal_cell_x.reset();
   }
 
   if (periodic_y) {
@@ -117,7 +118,8 @@ cvm::system_boundary_conditions::set_boundaries(bool periodic_x_in, bool periodi
       reciprocal_cell_y = unit_cell_y/unit_cell_y.norm2();
     }
   } else {
-    unit_cell_y = {0.0, 0.0, 0.0};
+    unit_cell_y.reset();
+    reciprocal_cell_y.reset();
   }
 
   if (periodic_z) {
@@ -128,7 +130,8 @@ cvm::system_boundary_conditions::set_boundaries(bool periodic_x_in, bool periodi
       reciprocal_cell_z = unit_cell_z/unit_cell_z.norm2();
     }
   } else {
-    unit_cell_z = {0.0, 0.0, 0.0};
+    unit_cell_z.reset();
+    reciprocal_cell_z.reset();
   }
 
   if (type() == types::pbc_orthogonal && off_diagonal) {
@@ -160,17 +163,9 @@ cvm::rvector cvm::system_boundary_conditions::position_distance(cvm::atom_pos co
   cvm::real const y_shift = ::floor(reciprocal_cell_y * diff + 0.5);
   cvm::real const z_shift = ::floor(reciprocal_cell_z * diff + 0.5);
 
-  if (periodic_x) {
-    diff.x -= x_shift * unit_cell_x.x + y_shift * unit_cell_y.x + z_shift * unit_cell_z.x;
-  }
-
-  if (periodic_y) {
-    diff.y -= x_shift * unit_cell_x.y + y_shift * unit_cell_y.y + z_shift * unit_cell_z.y;
-  }
-
-  if (periodic_z) {
-    diff.z -= x_shift * unit_cell_x.z + y_shift * unit_cell_y.z + z_shift * unit_cell_z.z;
-  }
+  diff.x -= x_shift * unit_cell_x.x + y_shift * unit_cell_y.x + z_shift * unit_cell_z.x;
+  diff.y -= x_shift * unit_cell_x.y + y_shift * unit_cell_y.y + z_shift * unit_cell_z.y;
+  diff.z -= x_shift * unit_cell_x.z + y_shift * unit_cell_y.z + z_shift * unit_cell_z.z;
 
   return diff;
 }
