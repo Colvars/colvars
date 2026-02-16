@@ -1495,15 +1495,16 @@ The very few keywords that are available for all types of components are listed 
 
 \cvsubsec{Treatment of periodic boundary conditions}{sec:cvc_pbcs}
 
-In all colvar components described below, the following rules apply concerning periodic boundary
-conditions (PBCs):
+When copying over atomic coordinates from \MDENGINE, Colvars also copies its boundary conditions and unit cell vectors.  Periodic or non-periodic boundary conditions are supported for each direction independently, thus allowing for mixed-periodicity conditions if \MDENGINE{} allows them.  When using triclinic unit cells, tilt factors up to 1/2 are supported by looping over one additional layer of adjacent periodic images around the simulation cell to find the minimum image.  The use of tilt factors beyond 1/2 is \emph{not recommended}, and may lead to slower performance\cvlammpsonly{ (LAMMPS will also print warnings to that sense)}.
+
+For all colvar components implemented by Colvars internal code, the following rules apply:
 \begin{enumerate}
 \item Distance vectors between two coordinates
   $\mathbf{d}_{i,j} = \left(\mathbf{x}_1 - \mathbf{x}_2\right)$, are calculated following the
   minimum-image convention by default, unless \refkey{forceNoPBC}{colvar|cvc|forceNoPBC} is enabled.
   ($\mathbf{x}_1$ and $\mathbf{x}_2$ may be either individual atomic coordinates, or centers of mass
   of two groups.)
-\item For all other functions of individual atomic coordinates,
+\item For all other functions of multiple atomic coordinates,
   $f\left(\mathbf{x}_1, \mathbf{x}_2, \ldots\right)$, it is assumed that all atoms that are part of
   the same group are in the same periodic unit cell (see \ref{sec:colvar_atom_groups_wrapping}).
 \end{enumerate}
@@ -8210,6 +8211,9 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 \item \textbf{Colvars version 2020-11-09 or later.}\\
   The legacy keyword \texttt{disableForces} for atom groups is now deprecated and will be discontinued in a future release.
   Atom groups now have an automated way to save computation if forces are not used, and enabling this option otherwise would lead to incorrect behavior.
+
+\item \textbf{Colvars version 2026-XX-XX or later.}\\
+  Periodic boundary conditions are handled internally, rather than using code by \MDENGINE{} to compute the minimum-image convention (see \ref{sec:cvc_pbcs}).
 
 \end{itemize}
 
