@@ -203,8 +203,8 @@ public:
 
   void update_atom_properties(int index);
 
-  cvm::rvector position_distance(cvm::atom_pos const &pos1,
-                                 cvm::atom_pos const &pos2) const;
+  cvm::rvector position_distance_engine(cvm::atom_pos const &pos1,
+                                        cvm::atom_pos const &pos2) const override;
 
   int load_atoms_pdb(char const *filename,
                      cvm::atom_group &atoms,

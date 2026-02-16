@@ -1,0 +1,15 @@
+diff --git a/src/gromacs/applied_forces/colvars/colvarproxygromacs.h b/src/gromacs/applied_forces/colvars/colvarproxygromacs.h
+index 32b1e8d0d7..3c0a0dee9a 100644
+--- a/src/gromacs/applied_forces/colvars/colvarproxygromacs.h
++++ b/src/gromacs/applied_forces/colvars/colvarproxygromacs.h
+@@ -146,8 +146,8 @@ public:
+      */
+     int check_atom_id(int atomNumber) override;
+ 
+-    //! Compute the minimum distance with respect to the PBC between 2 atoms.
+-    cvm::rvector position_distance(cvm::atom_pos const& pos1, cvm::atom_pos const& pos2) const override;
++    //! Compute the minimum distance with respect to the PBCs between 2 positions using GROMACS code
++    cvm::rvector position_distance_engine(cvm::atom_pos const& pos1, cvm::atom_pos const& pos2) const override;
+ };
+ 
+ } // namespace gmx

@@ -88,8 +88,8 @@ bool colvarproxy_system::total_forces_same_step() const
 }
 
 
-cvm::rvector colvarproxy_system::position_distance(cvm::atom_pos const &pos1,
-                                                   cvm::atom_pos const &pos2) const
+cvm::rvector colvarproxy_system::position_distance_engine(cvm::atom_pos const &pos1,
+                                                          cvm::atom_pos const &pos2) const
 {
   return boundaries_.position_distance(pos1, pos2);
 }

@@ -870,17 +870,15 @@ void colvarproxy_namd::update_atom_properties(int index)
 }
 
 
-cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
-                                                 cvm::atom_pos const &pos2)
-  const
+cvm::rvector colvarproxy_namd::position_distance_engine(cvm::atom_pos const &pos1,
+                                                        cvm::atom_pos const &pos2) const
 {
-  Position const p1(pos1.x, pos1.y, pos1.z);
-  Position const p2(pos2.x, pos2.y, pos2.z);
+  Position const p1{pos1.x, pos1.y, pos1.z};
+  Position const p2{pos2.x, pos2.y, pos2.z};
   // return p2 - p1
   Vector const d = globalmaster->get_lattice()->delta(p2, p1);
-  return cvm::rvector(d.x, d.y, d.z);
+  return {d.x, d.y, d.z};
 }
-
 
 
 enum e_pdb_field {
