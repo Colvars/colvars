@@ -47,7 +47,7 @@ then
 fi
 
 # Assume forward patching
-PATCH_OPTS="-p1 --forward -s"
+PATCH_OPTS="-p1 --forward -s -r -"
 
 # Undocumented flag
 reverse=0
@@ -475,7 +475,7 @@ then
     condcopy "${src}" "${target}/src/cuda/${tgt}"
   done
 
-  if [ -f ${source}/vmd/src/tcl_commands.C.patch ] ; then
+  if [ -s ${source}/vmd/src/tcl_commands.C.patch ] ; then
     # Do not exit if the patch fails - already applied in development branch
     patch ${PATCH_OPTS} -d ${target} < ${source}/vmd/src/tcl_commands.C.patch || true
   fi
