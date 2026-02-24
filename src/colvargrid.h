@@ -1469,7 +1469,6 @@ public:
   /// Parameters for smoothing data with low sampling
   cvm::real full_samples;
   cvm::real min_samples;
-  // TODO: maybe make those class members
   cvm::real const cutoff_factor = 3.72;
 
   /// Write the current grid parameters to a string
@@ -1619,7 +1618,7 @@ public:
     std::vector<cvm::real> bandwidth(nd,0);
     std::vector<cvm::real> initial_bandwidth(nd,smoothing);
     std::vector<cvm::real> inv_squared_smooth(nd);
-    if (variances){
+    if (!variances->empty()){
       cvm::real weight = weights->value(bin_value);
       if (weight < min_samples) {
         cvm::real min_displacement = MAXFLOAT;
@@ -1628,73 +1627,78 @@ public:
             cvm::real temp =(cv_value[i] - (*s_m)[i]);
             (*s_m)[i] = (*s_m)[i] + temp / 10.;
             (*S_m)[i] = (*S_m)[i] + temp*(cv_value[i] - (*s_m)[i]);
+            if ((*variances).size() == data.size())
+              if ((*S_m)[i] < min_displacement) {
+                min_displacement = (*S_m)[i];
+              }
           }
         }
         // wait until variance estimation starts to get a bit good
         if (*step >= 20) {
           for (int i =0; i < nd; i++) {
-            (*variances)[address(bin_value) + i] = (*S_m)[i] / *step; // TODO: maybe make an average of the variance --> means we need another grid
-            initial_bandwidth[i] = std::min(cvm::sqrt((*variances)[address(bin_value) + i] * cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) ), smoothing);
+            if ((*variances).size() == data.size()) {
+              //TODO: rename variances into kernel_bandwidths or find a way to calculate variance properly
+              (*variances)[address(bin_value) + i] = (*S_m)[i] / *step; // TODO: maybe make an average of the variance --> means we need another grid
+              initial_bandwidth[i] = std::min(cvm::sqrt((*variances)[address(bin_value) + i] * cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) ), smoothing);
+            }
+            else if ((*variances).size() == data.size()/nd){
+              size_t address_variance = address(bin_value) / nd;
+              (*variances)[address_variance] = min_displacement / *step; // TODO: maybe make an average of the variance --> means we need another grid
+              initial_bandwidth[i] = std::min(cvm::sqrt((*variances)[address_variance] * cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) ), smoothing);
+            }
           }
-          // cvm::log("variance squared:" + cvm::to_str(variances->data[variances->address(bin_value)]));
-          // cvm::log("initial_bandwidth : " + cvm::to_str(cvm::sqrt(variances->data[variances->address(bin_value)] *cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) )));
+          // cvm::log("variance based bandwidth = " + cvm::to_str(initial_bandwidth));
         }
       }
         (*step)++;
-        //TODO: rename variances into kernel_bandwidths or find a way to calculate variance properly
-      }
-      // logs
-      // if (weight > min_samples / kernel_reduction_speed * 0.5) {
-      //   initial_bandwidth = std::min(cvm::sqrt(variances->data[variances->address(bin_value)] )*
-      //     cvm::pow(0.25, 1./(static_cast<cvm::real>(nd + 4))) / cvm::sqrt(300.), smoothing);
-      //   cvm::log("initial_bandwidth : " + cvm::to_str(cvm::sqrt(variances->data[variances->address(bin_value)] / (weight * 300) )*
-      //     cvm::pow(0.25, 1./(static_cast<cvm::real>(nd + 4))) / cvm::sqrt(300.)));
-      // }
-
-    std::vector<int> cutoff(nd);
+    }
+    std::vector<cvm::real> cutoff(nd);
     for (size_t i = 0; i < nd; i++) {
       bandwidth[i] = initial_bandwidth[i] * (1 -
-      (std::max(0., weights->value(bin_value)) / (full_samples)) * kernel_reduction_speed);
+      (weights->value(bin_value) / (full_samples)) * kernel_reduction_speed);
       inv_squared_smooth[i] = 1.0 / (std::max(bandwidth[i] * bandwidth[i], 1e-5));
-      cutoff[i] = static_cast<int>(cvm::floor(cutoff_factor * bandwidth[i]));
-      if (cutoff[i] <= 0) {
-        acc_force(bin_value, force);
-        return;
-      }
+      cutoff[i] = cutoff_factor * bandwidth[i];
     }
 
     // cvm::log("cutoff : " + cvm::to_str(cutoff));
+    // cvm::log("original smoothing cutoff : " + cvm::to_str(cutoff_factor * smoothing));
 
     //TODO : make those class members and init them to max size i.e. nd, ceil(cutoff_factor * smoothing)
     std::vector<std::vector<cvm::real>> w_1d(nd);
     std::vector<std::vector<int>> idx_1d(nd);
     cvm::real total_sum = 1.0;
-
     for (size_t i = 0; i < nd; i++) {
+      cvm::real dim_sum = 0.0;
+      if (cutoff[i] <= 0.5) {
+        dim_sum += 1;
+        w_1d[i].resize(1);
+        w_1d[i][0] = 1;
+        idx_1d[i].push_back(bin_value[i]);
+      }
+      else {
       // can be negative or > nx[i] to allow for distance calculation
-      int i_min = static_cast<int>(std::floor(cv_value[i] - cutoff[i]));
-      int i_max = static_cast<int>(std::ceil(cv_value[i] + cutoff[i]));
-
-      if (!periodic[i]) {
+        int i_min = static_cast<int>(std::floor(cv_value[i] - cutoff[i]));
+        int i_max = static_cast<int>(std::ceil(cv_value[i] + cutoff[i]));
+        if (!periodic[i]) {
           if (i_min < 0) i_min = 0;
           if (i_max >= nx[i]) i_max = nx[i] - 1;
       }
       w_1d[i].resize(i_max - i_min + 1);
-      cvm::real dim_sum = 0.0;
       int counter = 0;
       for (int ix = i_min; ix <= i_max; ix++) {
         // Calculate 1D Gaussian component
         cvm::real diff = (static_cast<cvm::real>(ix) + 0.5) - cv_value[i];
         cvm::real weight = cvm::exp(-diff * diff * inv_squared_smooth[i]);
 
-        w_1d[i][counter++] = weight;
-        dim_sum += weight;
+          w_1d[i][counter++] = weight;
+          dim_sum += weight;
 
-        if (periodic[i]) {
-          // Safe modulo for negative numbers
-          idx_1d[i].push_back((ix % nx[i] + nx[i]) % nx[i]);
-        } else {
-          idx_1d[i].push_back(ix);
+          if (periodic[i]) {
+            // Safe modulo for negative numbers
+            idx_1d[i].push_back((ix % nx[i] + nx[i]) % nx[i]);
+          } else {
+            idx_1d[i].push_back(ix);
+          }
         }
       }
       // The N-D sum is the product of the 1D sums
@@ -1713,9 +1717,7 @@ public:
         combined_weight *= w_1d[i][local_pos];
         wrapped_ix[i] = idx_1d[i][local_pos];
       }
-
       acc_force(wrapped_ix, force, combined_weight);
-
       // iterates through the kernel support
       for (int i = nd - 1; i >= 0; i--) {
         // TODO: change a create a vector with the sizes
