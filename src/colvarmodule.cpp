@@ -1276,10 +1276,7 @@ int colvarmodule::write_restart_file(std::string const &out_name)
   std::ostream &restart_out_os = proxy->output_stream(out_name, "state file");
   if (!restart_out_os) return COLVARS_FILE_ERROR;
   if (binary_restart) {
-    cvm::log("so binary restart");
     cvm::memory_stream mem_os;
-    cvm::log("mem_os ??");
-
     if (!write_state(mem_os)) {
       return cvm::error("Error: in writing binary state information to file.\n", COLVARS_ERROR);
     }
