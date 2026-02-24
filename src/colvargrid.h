@@ -1623,7 +1623,7 @@ public:
       if (weight < min_samples) {
         cvm::real min_displacement = MAXFLOAT;
         if (*step >= 2) {
-          for (int i =0; i < nd; i++) {
+          for (size_t i =0; i < nd; i++) {
             cvm::real temp =(cv_value[i] - (*s_m)[i]);
             (*s_m)[i] = (*s_m)[i] + temp / 10.;
             (*S_m)[i] = (*S_m)[i] + temp*(cv_value[i] - (*s_m)[i]);
@@ -1635,7 +1635,7 @@ public:
         }
         // wait until variance estimation starts to get a bit good
         if (*step >= 20) {
-          for (int i =0; i < nd; i++) {
+          for (size_t i =0; i < nd; i++) {
             if ((*variances).size() == data.size()) {
               //TODO: rename variances into kernel_bandwidths or find a way to calculate variance properly
               (*variances)[address(bin_value) + i] = (*S_m)[i] / *step; // TODO: maybe make an average of the variance --> means we need another grid
