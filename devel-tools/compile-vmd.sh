@@ -201,10 +201,13 @@ compile_vmd_target() {
     export VMDPLUGINDIR=${VMDINSTALLBINDIR}/plugins
 
     local VMDPLUGINSRCDIR
-    if [ -d ../plugins/${VMD_VERSION} ] ; then
+    if [ -f ../plugins/Make-arch ] ; then
+        # vmd2prototype-like location
+        VMDPLUGINSRCDIR=../plugins
+    elif [ -f ../plugins/${VMD_VERSION}/Make-arch ] ; then
         VMDPLUGINSRCDIR=../plugins/${VMD_VERSION}
-    fi
-    if [ -d ../vmd-plugins-source ] ; then
+    elif [ -f ../vmd-plugins-source/Make-arch ] ; then
+        # Location used in CI tests
         VMDPLUGINSRCDIR=../vmd-plugins-source
     fi
 
