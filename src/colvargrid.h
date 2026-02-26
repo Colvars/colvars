@@ -10,7 +10,6 @@
 #ifndef COLVARGRID_H
 #define COLVARGRID_H
 
-#include <algorithm>
 #include <iosfwd>
 #include <memory>
 
@@ -1565,15 +1564,6 @@ public:
     }
   }
 
-  inline cvm::real adapt_kernel(int adaptation, cvm::real smoothing, std::vector<int> const &bin_value)
-  {
-    switch (adaptation) {
-      case 0:
-        return smoothing * (1 - (std::max(0., weights->value(bin_value) - min_samples) / (full_samples - min_samples))*10);
-      default:
-        return 0;
-    }
-  }
 
   /// \brief Accumulate the value
   inline void acc_value(std::vector<int> const &ix, std::vector<colvarvalue> const &values) {

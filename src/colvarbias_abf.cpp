@@ -708,7 +708,6 @@ int colvarbias_abf::replica_share() {
         last_samples->raw_data_in((size_t*)(&msg_data[samp_start]));
         samples->add_grid(*last_samples);
       }
-
     }
 
     // Now we must send the combined gradient to the other replicas.
@@ -785,7 +784,6 @@ int colvarbias_abf::replica_share_CZAR() {
   cvm::log("shared eABF: Gathering CZAR gradient and samples from replicas at step "+cvm::to_str(cvm::step_absolute()) );
 
   // Count of data items.
-  // TODO: here with b_smoothed ?
   size_t samples_n;
   if (smoothing)
     samples_n = z_weights->raw_data_num();

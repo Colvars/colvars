@@ -18,7 +18,6 @@
 #include "colvars_memstream.h"
 
 
-
 colvarbias::colvarbias(char const *key)
 {
   time_step_factor = cvm::proxy->time_step_factor();
