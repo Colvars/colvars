@@ -88,6 +88,7 @@ jobs:
   namd-main-arm64:
     name: NAMD (main ARM64)
     uses: ./.github/workflows/backend-template.yml
+    if: ${{ !github.event.repository.private }}  # ARM64 runners only work for public repos
     with:
       runner_name: ubuntu-24.04-arm
       backend_name: NAMD
