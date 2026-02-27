@@ -227,6 +227,7 @@ static inline real acos(real const &x)
   template <class T> class matrix2d;
   class quaternion;
   class rotation;
+  class system_boundary_conditions;
 
   class usage;
   class memory_stream;
@@ -373,9 +374,13 @@ public:
   std::vector<colvarbias *> *biases_active();
 
   /// \brief Whether debug output should be enabled (compile-time option)
-  static inline bool debug()
+  static inline bool constexpr debug()
   {
+#if (defined(__HIP_DEVICE_COMPILE__)) || (defined(__CUDA_ARCH__))
+    return false;
+#else
     return COLVARS_DEBUG;
+#endif
   }
 
   /// How many objects (variables and biases) are configured yet?
@@ -792,11 +797,6 @@ public:
   {
     return 5;
   }
-
-  /// \brief Get the distance between two atomic positions with pbcs handled
-  /// correctly
-  static rvector position_distance(atom_pos const &pos1,
-                                   atom_pos const &pos2);
 
   /// \brief Names of .ndx files that have been loaded
   std::vector<std::string> index_file_names;

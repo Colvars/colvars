@@ -51,12 +51,7 @@ int colvar::distance::init(std::string const &conf)
 
 void colvar::distance::calc_value()
 {
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    dist_v = group2->center_of_mass() - group1->center_of_mass();
-  } else {
-    dist_v = cvm::position_distance(group1->center_of_mass(),
-                                    group2->center_of_mass());
-  }
+  dist_v = boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
   x.real_value = dist_v.norm();
 }
 
@@ -98,12 +93,8 @@ colvar::distance_vec::distance_vec()
 
 void colvar::distance_vec::calc_value()
 {
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    x.rvector_value = group2->center_of_mass() - group1->center_of_mass();
-  } else {
-    x.rvector_value = cvm::position_distance(group1->center_of_mass(),
-                                             group2->center_of_mass());
-  }
+  x.rvector_value =
+      boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
 }
 
 
@@ -126,19 +117,13 @@ void colvar::distance_vec::apply_force(colvarvalue const &force)
 
 cvm::real colvar::distance_vec::dist2(colvarvalue const &x1, colvarvalue const &x2) const
 {
-  if (is_enabled(f_cvc_pbc_minimum_image)) {
-    return (cvm::position_distance(x1.rvector_value, x2.rvector_value)).norm2();
-  }
-  return (x2.rvector_value - x1.rvector_value).norm2();
+  return (boundary_conditions.position_distance(x1.rvector_value, x2.rvector_value)).norm2();
 }
 
 
 colvarvalue colvar::distance_vec::dist2_lgrad(colvarvalue const &x1, colvarvalue const &x2) const
 {
-  if (is_enabled(f_cvc_pbc_minimum_image)) {
-    return 2.0 * cvm::position_distance(x2.rvector_value, x1.rvector_value);
-  }
-  return 2.0 * (x2.rvector_value - x1.rvector_value);
+  return 2.0 * boundary_conditions.position_distance(x2.rvector_value, x1.rvector_value);
 }
 
 
@@ -200,21 +185,12 @@ void colvar::distance_z::calc_value()
   cvm::rvector const M = main->center_of_mass();
   cvm::rvector const R1 = ref1->center_of_mass();
   if (fixed_axis) {
-    if (!is_enabled(f_cvc_pbc_minimum_image)) {
-      dist_v = M - R1;
-    } else {
-      dist_v = cvm::position_distance(R1, M);
-    }
+    dist_v = boundary_conditions.position_distance(R1, M);
   } else {
     cvm::rvector const R2 = ref2->center_of_mass();
     cvm::rvector const C = 0.5 * (R1 + R2);
-    if (!is_enabled(f_cvc_pbc_minimum_image)) {
-      dist_v = M - C;
-      axis = R2 - R1;
-    } else {
-      dist_v = cvm::position_distance(C, M);
-      axis = cvm::position_distance(R1, R2);
-    }
+    dist_v = boundary_conditions.position_distance(C, M);
+    axis = boundary_conditions.position_distance(R1, R2);
     axis_norm = axis.norm();
     axis = axis.unit();
   }
@@ -272,19 +248,9 @@ colvar::distance_xy::distance_xy()
 
 void colvar::distance_xy::calc_value()
 {
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    dist_v = main->center_of_mass() - ref1->center_of_mass();
-  } else {
-    dist_v = cvm::position_distance(ref1->center_of_mass(),
-                                    main->center_of_mass());
-  }
+  dist_v = boundary_conditions.position_distance(ref1->center_of_mass(), main->center_of_mass());
   if (!fixed_axis) {
-    if (!is_enabled(f_cvc_pbc_minimum_image)) {
-      v12 = ref2->center_of_mass() - ref1->center_of_mass();
-    } else {
-      v12 = cvm::position_distance(ref1->center_of_mass(),
-                                   ref2->center_of_mass());
-    }
+    v12 = boundary_conditions.position_distance(ref1->center_of_mass(), ref2->center_of_mass());
     axis_norm = v12.norm();
     axis = v12.unit();
   }
@@ -308,12 +274,7 @@ void colvar::distance_xy::calc_gradients()
     ref1->set_weighted_gradient(-1.0 * x_inv * dist_v_ortho);
     main->set_weighted_gradient(       x_inv * dist_v_ortho);
   } else {
-    if (!is_enabled(f_cvc_pbc_minimum_image)) {
-      v13 = main->center_of_mass() - ref1->center_of_mass();
-    } else {
-      v13 = cvm::position_distance(ref1->center_of_mass(),
-                                   main->center_of_mass());
-    }
+    v13 = boundary_conditions.position_distance(ref1->center_of_mass(), main->center_of_mass());
     A = (dist_v * axis) / axis_norm;
 
     ref1->set_weighted_gradient( (A - 1.0) * x_inv * dist_v_ortho);
@@ -354,12 +315,8 @@ colvar::distance_dir::distance_dir()
 
 void colvar::distance_dir::calc_value()
 {
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    dist_v = group2->center_of_mass() - group1->center_of_mass();
-  } else {
-    dist_v = cvm::position_distance(group1->center_of_mass(),
-                                    group2->center_of_mass());
-  }
+  dist_v =
+      boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
   x.rvector_value = dist_v.unit();
 }
 
@@ -452,7 +409,7 @@ int colvar::distance_inv::init(std::string const &conf)
 
 void colvar::distance_inv::calc_value()
 {
-#define CALL_KERNEL(USE_PBC_MINIMUM_IMAGE) do {        \
+#define CALL_KERNEL() do {                             \
   const int factor = -1*(exponent/2);                  \
   for (size_t i = 0; i < group1->size(); ++i) {        \
     const cvm::atom_pos pos1(group1->pos_x(i),         \
@@ -464,11 +421,7 @@ void colvar::distance_inv::calc_value()
                                group2->pos_y(j),       \
                                group2->pos_z(j));      \
       cvm::rvector dv;                                 \
-      if (USE_PBC_MINIMUM_IMAGE) {                     \
-        dv = cvm::position_distance(pos1, pos2);       \
-      } else {                                         \
-        dv = pos2 - pos1;                              \
-      }                                                \
+      dv = boundary_conditions.position_distance(pos1, pos2); \
       cvm::real const d2 = dv.norm2();                                      \
       cvm::real const dinv = cvm::integer_power(d2, factor);                \
       x.real_value += dinv;                                                 \
@@ -484,11 +437,7 @@ void colvar::distance_inv::calc_value()
   }                            \
 } while (0);
   x.real_value = 0.0;
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    CALL_KERNEL(false);
-  } else {
-    CALL_KERNEL(true);
-  }
+  CALL_KERNEL();
 
   x.real_value *= 1.0 / cvm::real(group1->size() * group2->size());
   x.real_value = cvm::pow(x.real_value, -1.0/cvm::real(exponent));
@@ -537,7 +486,7 @@ int colvar::distance_pairs::init(std::string const &conf)
 void colvar::distance_pairs::calc_value()
 {
   x.vector1d_value.resize(group1->size() * group2->size());
-#define CALL_KERNEL(USE_PBC_MINIMUM_IMAGE) do {                    \
+#define CALL_KERNEL() do {                                         \
   for (size_t i1 = 0; i1 < group1->size(); ++i1) {                 \
     const cvm::atom_pos pos1(group1->pos_x(i1),                    \
                              group1->pos_y(i1),                    \
@@ -547,9 +496,7 @@ void colvar::distance_pairs::calc_value()
       const cvm::atom_pos pos2(group2->pos_x(i2),                  \
                                group2->pos_y(i2),                  \
                                group2->pos_z(i2));                 \
-      const cvm::rvector dv = USE_PBC_MINIMUM_IMAGE ?              \
-                              cvm::position_distance(pos1, pos2) : \
-                              pos2 - pos1;                         \
+      const cvm::rvector dv = boundary_conditions.position_distance(pos1, pos2); \
       cvm::real const d = dv.norm();                               \
       x.vector1d_value[i1*group2->size() + i2] = d;                \
       const cvm::rvector g2 = dv.unit();                           \
@@ -563,11 +510,7 @@ void colvar::distance_pairs::calc_value()
     group1->grad_z(i1) += g1.z;*/                                    \
   }                                                                \
 } while (0);
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    CALL_KERNEL(false);
-  } else {
-    CALL_KERNEL(true);
-  }
+  CALL_KERNEL();
 #undef CALL_KERNEL
 }
 
@@ -580,7 +523,7 @@ void colvar::distance_pairs::calc_gradients()
 
 void colvar::distance_pairs::apply_force(colvarvalue const &force)
 {
-#define CALL_KERNEL(USE_PBC_MINIMUM_IMAGE) do {                         \
+#define CALL_KERNEL() do {                                              \
   auto group1_force_obj = group1->get_group_force_object();             \
   auto group2_force_obj = group2->get_group_force_object();             \
   for (size_t i1 = 0; i1 < group1->size(); i1++) {                      \
@@ -592,9 +535,7 @@ void colvar::distance_pairs::apply_force(colvarvalue const &force)
       const cvm::atom_pos pos2(group2->pos_x(i2),                       \
                                group2->pos_y(i2),                       \
                                group2->pos_z(i2));                      \
-      const cvm::rvector dv = USE_PBC_MINIMUM_IMAGE ?                   \
-                              cvm::position_distance(pos1, pos2) :      \
-                              pos2 - pos1;                              \
+      const cvm::rvector dv = boundary_conditions.position_distance(pos1, pos2); \
       cvm::real const d = dv.norm();                                    \
       x.vector1d_value[i1*group2->size() + i2] = d;                     \
       const cvm::rvector f2 = force[i1*group2->size() + i2] * dv.unit();\
@@ -604,11 +545,7 @@ void colvar::distance_pairs::apply_force(colvarvalue const &force)
     group1_force_obj.add_atom_force(i1, f1);                            \
   }                                                                     \
 } while (0);
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    CALL_KERNEL(false);
-  } else {
-    CALL_KERNEL(true);
-  }
+  CALL_KERNEL();
 #undef CALL_KERNEL
 }
 

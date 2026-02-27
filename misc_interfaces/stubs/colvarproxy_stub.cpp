@@ -24,6 +24,9 @@
 colvarproxy_stub::colvarproxy_stub()
 {
   version_int = get_version_from_string(COLVARPROXY_VERSION);
+
+  use_internal_pbc_ = true;
+
   b_simulation_running = false;
 
   // both fields are taken from data structures already available
@@ -49,8 +52,6 @@ colvarproxy_stub::~colvarproxy_stub()
 
 int colvarproxy_stub::setup()
 {
-  boundaries_type = boundaries_non_periodic;
-  reset_pbc_lattice();
   colvars->it = colvars->it_restart = 0;
 
   if (colvars) {

@@ -388,29 +388,10 @@ void colvarproxy_namd::calculate()
   if (accelMDOn) update_accelMD_info();
 
   auto *lattice = globalmaster->get_lattice();
-
-  {
-    Vector const a = lattice->a();
-    Vector const b = lattice->b();
-    Vector const c = lattice->c();
-    unit_cell_x.set(a.x, a.y, a.z);
-    unit_cell_y.set(b.x, b.y, b.z);
-    unit_cell_z.set(c.x, c.y, c.z);
-  }
-
-  if (!lattice->a_p() && !lattice->b_p() && !lattice->c_p()) {
-    boundaries_type = boundaries_non_periodic;
-    reset_pbc_lattice();
-  } else if (lattice->a_p() && lattice->b_p() && lattice->c_p()) {
-    if (lattice->orthogonal()) {
-      boundaries_type = boundaries_pbc_ortho;
-    } else {
-      boundaries_type = boundaries_pbc_triclinic;
-    }
-    colvarproxy_system::update_pbc_lattice();
-  } else {
-    boundaries_type = boundaries_unsupported;
-  }
+  boundaries_.set_boundaries(lattice->a_p(), lattice->b_p(), lattice->c_p(),
+                             cvm::rvector{lattice->a().x, lattice->a().y, lattice->a().z},
+                             cvm::rvector{lattice->b().x, lattice->b().y, lattice->b().z},
+                             cvm::rvector{lattice->c().x, lattice->c().y, lattice->c().z});
 
   if (cvm::debug()) {
     cvm::log(std::string(cvm::line_marker)+
@@ -889,17 +870,15 @@ void colvarproxy_namd::update_atom_properties(int index)
 }
 
 
-cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
-                                                 cvm::atom_pos const &pos2)
-  const
+cvm::rvector colvarproxy_namd::position_distance_engine(cvm::atom_pos const &pos1,
+                                                        cvm::atom_pos const &pos2) const
 {
-  Position const p1(pos1.x, pos1.y, pos1.z);
-  Position const p2(pos2.x, pos2.y, pos2.z);
+  Position const p1{pos1.x, pos1.y, pos1.z};
+  Position const p2{pos2.x, pos2.y, pos2.z};
   // return p2 - p1
   Vector const d = globalmaster->get_lattice()->delta(p2, p1);
-  return cvm::rvector(d.x, d.y, d.z);
+  return {d.x, d.y, d.z};
 }
-
 
 
 enum e_pdb_field {

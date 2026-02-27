@@ -1,4 +1,3 @@
-// clang-format off
 // -*- c++ -*-
 
 // This file is part of the Collective Variables module (Colvars).
@@ -133,24 +132,12 @@ double colvarproxy_lammps::compute()
   }
   previous_step = _lmp->update->ntimestep;
 
-  unit_cell_x.set(_lmp->domain->xprd, 0.0, 0.0);
-  unit_cell_y.set(0.0, _lmp->domain->yprd, 0.0);
-  unit_cell_z.set(0.0, 0.0, _lmp->domain->zprd);
-
-  if (_lmp->domain->xperiodic == 0 && _lmp->domain->yperiodic == 0 &&
-      _lmp->domain->zperiodic == 0) {
-    boundaries_type = boundaries_non_periodic;
-    reset_pbc_lattice();
-  } else if ((_lmp->domain->nonperiodic == 0) &&
-             (_lmp->domain->dimension == 3) &&
-             (_lmp->domain->triclinic == 0)) {
-    // Orthogonal unit cell
-    boundaries_type = boundaries_pbc_ortho;
-    colvarproxy_system::update_pbc_lattice();
-    // It is safer to let LAMMPS deal with high-tilt triclinic boxes
-  } else {
-    boundaries_type = boundaries_unsupported;
-  }
+  boundaries_.set_boundaries(_lmp->domain->xperiodic,
+                             _lmp->domain->yperiodic,
+                             _lmp->domain->zperiodic,
+                             cvm::rvector{_lmp->domain->xprd, 0.0, 0.0},
+                             cvm::rvector{_lmp->domain->xy, _lmp->domain->yprd, 0.0},
+                             cvm::rvector{_lmp->domain->xz, _lmp->domain->yz, _lmp->domain->zprd});
 
   if (cvm::debug()) {
     cvm::log(std::string(cvm::line_marker) +
@@ -187,14 +174,13 @@ double colvarproxy_lammps::compute()
 
 /* ---------------------------------------------------------------------- */
 
-cvm::rvector colvarproxy_lammps::position_distance(cvm::atom_pos const &pos1,
-                                                   cvm::atom_pos const &pos2)
-  const
+cvm::rvector colvarproxy_lammps::position_distance_engine(cvm::atom_pos const &pos1,
+                                                          cvm::atom_pos const &pos2) const
 {
   double xtmp = pos2.x - pos1.x;
   double ytmp = pos2.y - pos1.y;
   double ztmp = pos2.z - pos1.z;
-  _lmp->domain->minimum_image_big(FLERR, xtmp,ytmp,ztmp);
+  _lmp->domain->minimum_image_big(FLERR, xtmp, ytmp, ztmp);
   return {xtmp, ytmp, ztmp};
 }
 

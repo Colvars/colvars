@@ -79,8 +79,8 @@ class colvarproxy_lammps : public colvarproxy {
   void log(std::string const &message) override;
   void error(std::string const &message) override;
 
-  [[nodiscard]] cvm::rvector position_distance(cvm::atom_pos const &pos1,
-                                 cvm::atom_pos const &pos2) const override;
+  [[nodiscard]] cvm::rvector position_distance_engine(cvm::atom_pos const &pos1,
+                                                      cvm::atom_pos const &pos2) const override;
 
   cvm::real rand_gaussian() override;
 

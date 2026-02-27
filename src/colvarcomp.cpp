@@ -446,6 +446,14 @@ int colvar::cvc::set_param(std::string const &param_name,
 
 void colvar::cvc::read_data()
 {
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    // Copy boundary conditions from the proxy
+    boundary_conditions = cvm::main()->proxy->get_system_boundaries();
+  } else {
+    // Set as non-periodic boundary conditions (default) for this CVC
+    boundary_conditions.reset();
+  }
+
   if (is_enabled(f_cvc_explicit_atom_groups)) {
     for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
       auto &atoms = *(*agi);
