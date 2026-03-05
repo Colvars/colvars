@@ -1825,7 +1825,7 @@ std::istream & colvarmodule::read_objects_state(std::istream &is)
       std::string conf;
       is >> colvarparse::read_block(word, &conf);
       std::string name;
-      colvarparse parse_tmp;
+      colvarparse parse_tmp(this);
       if (parse_tmp.key_lookup(conf, "name", &name)) {
         cvm::log("Warning: input state file contains unknown " + word + " object \"" + name + "\", discarding.\n");
       } else {

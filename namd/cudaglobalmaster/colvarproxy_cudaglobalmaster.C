@@ -88,7 +88,7 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
   }
 
   if (pdb_field == e_pdb_none) {
-    cvm::error("Error: unsupported PDB field, \""+
+    cvmodule->error("Error: unsupported PDB field, \""+
                pdb_field_str+"\".\n", COLVARS_INPUT_ERROR);
   }
 
@@ -421,7 +421,7 @@ int colvarproxy_impl::check_atom_id(int atom_number) {
     log("Adding atom "+cvm::to_str(atom_number)+
         " for collective variables calculation.\n");
   if ((aid < 0) || (aid >= molecule->numAtoms)) {
-    cvm::error("Error: invalid atom number specified, "+
+    cvmodule->error("Error: invalid atom number specified, "+
                cvm::to_str(atom_number)+"\n", COLVARS_INPUT_ERROR);
     return COLVARS_INPUT_ERROR;
   }
@@ -432,7 +432,7 @@ int colvarproxy_impl::check_atom_id(int atom_number) {
 int colvarproxy_impl::set_unit_system(std::string const &units_in, bool /*check_only*/) {
   cvm::log("units_in = " + units_in + "\n");
   if (units_in != "real") {
-    cvm::error("Error: Specified unit system \"" + units_in + "\" is unsupported in NAMD. Supported units are \"real\" (A, kcal/mol).\n");
+    cvmodule->error("Error: Specified unit system \"" + units_in + "\" is unsupported in NAMD. Supported units are \"real\" (A, kcal/mol).\n");
     return COLVARS_ERROR;
   }
   return COLVARS_OK;
@@ -476,7 +476,7 @@ int colvarproxy_impl::load_coords_pdb(char const *pdb_filename,
                                       double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0 && indices.size() == 0) {
-    cvm::error("Bug alert: either PDB field should be defined or list of "
+    cvmodule->error("Bug alert: either PDB field should be defined or list of "
                "atom IDs should be available when loading atom coordinates!\n", COLVARS_BUG_ERROR);
   }
 
@@ -543,7 +543,7 @@ int colvarproxy_impl::load_coords_pdb(char const *pdb_filename,
       if (!pos_allocated) {
         pos.push_back(cvm::atom_pos(0.0, 0.0, 0.0));
       } else if (ipos >= pos.size()) {
-        cvm::error("Error: the PDB file \""+
+        cvmodule->error("Error: the PDB file \""+
                    std::string(pdb_filename)+
                    "\" contains coordinates for "
                    "more atoms than needed.\n", COLVARS_BUG_ERROR);
@@ -559,7 +559,7 @@ int colvarproxy_impl::load_coords_pdb(char const *pdb_filename,
 
     if (ipos < pos.size() || (!use_pdb_field && current_index != indices.end())) {
       size_t n_requested = use_pdb_field ? pos.size() : indices.size();
-      cvm::error("Error: number of matching records in the PDB file \""+
+      cvmodule->error("Error: number of matching records in the PDB file \""+
                  std::string(pdb_filename)+"\" ("+cvm::to_str(ipos)+
                  ") does not match the number of requested coordinates ("+
                  cvm::to_str(n_requested)+").\n", COLVARS_INPUT_ERROR);
@@ -587,7 +587,7 @@ int colvarproxy_impl::load_atoms_pdb(char const *pdb_filename,
                                      double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0)
-    cvm::error("Error: must define which PDB field to use "
+    cvmodule->error("Error: must define which PDB field to use "
                "in order to define atoms from a PDB file.\n", COLVARS_INPUT_ERROR);
 
   PDB *pdb = new PDB(pdb_filename);
@@ -831,7 +831,7 @@ void colvarproxy_impl::calculate() {
     print_input_atomic_data();
   }
   if (colvars->calc() != COLVARS_OK) {
-    cvm::error("Error in the collective variables module.\n", COLVARS_ERROR);
+    cvmodule->error("Error in the collective variables module.\n", COLVARS_ERROR);
   }
   if (cvm::debug()) {
     print_output_atomic_data();
@@ -877,7 +877,7 @@ std::ostream & colvarproxy_impl::output_stream(std::string const &output_name,
   }
 
   if (!io_available()) {
-    cvm::error("Error: trying to access an output file/channel "
+    cvmodule->error("Error: trying to access an output file/channel "
                "from the wrong thread.\n", COLVARS_BUG_ERROR);
     return *output_stream_error_;
   }
@@ -890,7 +890,7 @@ std::ostream & colvarproxy_impl::output_stream(std::string const &output_name,
 
   output_streams_[output_name] = new ofstream_namd(output_name.c_str(), std::ios::binary);
   if (! output_streams_[output_name]->good()) {
-    cvm::error("Error: cannot write to "+description+" \""+output_name+"\".\n",
+    cvmodule->error("Error: cannot write to "+description+" \""+output_name+"\".\n",
                COLVARS_FILE_ERROR);
   }
 
@@ -909,7 +909,7 @@ int colvarproxy_impl::flush_output_stream(std::string const &output_name)
     return COLVARS_OK;
   }
 
-  return cvm::error("Error: trying to flush an output file/channel "
+  return cvmodule->error("Error: trying to flush an output file/channel "
                     "that wasn't open.\n", COLVARS_BUG_ERROR);
 }
 
@@ -933,7 +933,7 @@ int colvarproxy_impl::flush_output_streams()
 int colvarproxy_impl::close_output_stream(std::string const &output_name)
 {
   if (!io_available()) {
-    return cvm::error("Error: trying to access an output file/channel "
+    return cvmodule->error("Error: trying to access an output file/channel "
                       "from the wrong thread.\n", COLVARS_BUG_ERROR);
   }
 

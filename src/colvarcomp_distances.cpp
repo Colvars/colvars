@@ -1258,7 +1258,7 @@ int colvar::rmsd::add_calc_Jacobian_derivative_node(
   auto* rot_deriv = atoms->get_gpu_atom_group()->get_rot_deriv_gpu();
   if (atoms->is_enabled(f_ag_rotate)) {
     if (rot_deriv == nullptr) {
-      return cvm::error("BUG: rot_deriv is null.\n");
+      return cvmodule->error("BUG: rot_deriv is null.\n");
     }
     error_code |= rot_deriv->add_prepare_derivative_nodes(
       rotation_derivative_dldq::use_dq, graph, nodes_map);

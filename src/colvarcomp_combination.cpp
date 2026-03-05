@@ -31,7 +31,7 @@ int colvar::linearCombination::init(std::string const &conf)
                 cv.back()->init(*(it_sub_cvc_conf));
                 if (cv.back()->has_gpu_implementation()) {
                     // TODO: GPU support for nested CVs
-                    return cvm::error(
+                    return cvmodule->error(
                         "Nested CV " + cv.back()->name +
                         " has GPU implementation but this is not supported in " +
                         this->name + ". Please consider using \"smp off\" ");
