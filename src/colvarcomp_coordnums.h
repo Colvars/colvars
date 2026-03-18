@@ -186,56 +186,79 @@ template <int flags, int t_en, int t_ed>
 inline cvm::real colvar::coordnum::switching_function(
   cvm::real const &l2, cvm::real &dFdl2, int en, int ed, cvm::real pairlist_tol)
 {
-  // Assume en and ed are even integers, and avoid sqrt in the following
-  const int en2 = t_en != 0 ? t_en / 2 : en / 2;
-  const int ed2 = t_ed != 0 ? t_ed / 2 : ed / 2;
-  cvm::real const xn = t_en != 0 ? cvm::integer_power<t_en / 2>(l2) : cvm::integer_power(l2, en2);
-  cvm::real const xd = t_ed != 0 ? cvm::integer_power<t_ed / 2>(l2) : cvm::integer_power(l2, ed2);
-  cvm::real const eps_l2 = 1.0e-7;
-  cvm::real const h = l2 - 1.0;
-  cvm::real const en2_r = (cvm::real) en2;
-  cvm::real const ed2_r = (cvm::real) ed2;
-  cvm::real func_no_pairlist;
-
-  if (std::abs(h) < eps_l2) {
-    // Order-2 Taylor expansion: c0 + c1*h + c2*h^2
-    cvm::real const c0 = en2_r / ed2_r;
-    cvm::real const c1 = (en2_r * (en2_r - ed2_r)) / (2.0 * ed2_r);
-    cvm::real const c2 = (en2_r * (en2_r - ed2_r) * (2.0 * en2_r - ed2_r - 3.0)) / (12.0 * ed2_r);
-    func_no_pairlist = c0 + h * (c1 + h * c2);
-  } else {
-    func_no_pairlist = (1.0 - xn) / (1.0 - xd);
-  }
-
-  cvm::real func, inv_one_pairlist_tol;
-  if (flags & ef_use_pairlist) {
-    inv_one_pairlist_tol = 1 / (1.0-pairlist_tol);
-    func = (func_no_pairlist - pairlist_tol) * inv_one_pairlist_tol;
-  } else {
-    func = func_no_pairlist;
-  }
-
-  // If the value is too small and we are correcting for the tolerance, the result is negative
-  // and we need to exclude it rather than let it contribute to the sum or the gradients.
-  if (func < 0)
-    return 0;
-
-  if (flags & ef_gradients) {
-    // Logarithmic derivative: 1st-order Taylor expansion around l2 = 1
-    cvm::real log_deriv;
-    if (std::abs(h) < eps_l2) {
-      cvm::real const g0 = 0.5 * (en2_r - ed2_r);
-      cvm::real const g1 = ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0)) / 12.0;
-      log_deriv = g0 + h * g1;
+  constexpr bool ed_two_en = (t_ed == 2 * t_en);
+  if (ed_two_en && t_en != 0) {
+    cvm::real func_no_pairlist, func, inv_one_pairlist_tol;
+    cvm::real xn = cvm::integer_power<t_en/2>(l2);
+    func_no_pairlist = 1.0 / (1.0 + xn);
+    if (flags & ef_use_pairlist) {
+      inv_one_pairlist_tol = 1 / (1.0-pairlist_tol);
+      func = (func_no_pairlist - pairlist_tol) * inv_one_pairlist_tol;
     } else {
-      log_deriv = (ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2));
+      func = func_no_pairlist;
     }
-    dFdl2 = (flags & ef_use_pairlist) ?
-      func_no_pairlist * inv_one_pairlist_tol * log_deriv :
-      func * log_deriv;
-  }
+    if (func < 0)
+      return 0;
+    if (flags & ef_gradients) {
+      if (flags & ef_use_pairlist) {
+        dFdl2 = -0.5 * (func_no_pairlist * func_no_pairlist) * t_en * xn / l2 * (inv_one_pairlist_tol);
+      } else {
+        dFdl2 = -0.5 * (func_no_pairlist * func_no_pairlist) * t_en * xn / l2;
+      }
+    }
+    return func;
+  } else {
+    // Assume en and ed are even integers, and avoid sqrt in the following
+    const int en2 = t_en != 0 ? t_en / 2 : en / 2;
+    const int ed2 = t_ed != 0 ? t_ed / 2 : ed / 2;
+    cvm::real const xn = t_en != 0 ? cvm::integer_power<t_en / 2>(l2) : cvm::integer_power(l2, en2);
+    cvm::real const xd = t_ed != 0 ? cvm::integer_power<t_ed / 2>(l2) : cvm::integer_power(l2, ed2);
+    cvm::real const eps_l2 = 1.0e-7;
+    cvm::real const h = l2 - 1.0;
+    cvm::real const en2_r = (cvm::real) en2;
+    cvm::real const ed2_r = (cvm::real) ed2;
+    cvm::real func_no_pairlist;
 
-  return func;
+    if (std::abs(h) < eps_l2) {
+      // Order-2 Taylor expansion: c0 + c1*h + c2*h^2
+      cvm::real const c0 = en2_r / ed2_r;
+      cvm::real const c1 = (en2_r * (en2_r - ed2_r)) / (2.0 * ed2_r);
+      cvm::real const c2 = (en2_r * (en2_r - ed2_r) * (2.0 * en2_r - ed2_r - 3.0)) / (12.0 * ed2_r);
+      func_no_pairlist = c0 + h * (c1 + h * c2);
+    } else {
+      func_no_pairlist = (1.0 - xn) / (1.0 - xd);
+    }
+
+    cvm::real func, inv_one_pairlist_tol;
+    if (flags & ef_use_pairlist) {
+      inv_one_pairlist_tol = 1 / (1.0-pairlist_tol);
+      func = (func_no_pairlist - pairlist_tol) * inv_one_pairlist_tol;
+    } else {
+      func = func_no_pairlist;
+    }
+
+    // If the value is too small and we are correcting for the tolerance, the result is negative
+    // and we need to exclude it rather than let it contribute to the sum or the gradients.
+    if (func < 0)
+      return 0;
+
+    if (flags & ef_gradients) {
+      // Logarithmic derivative: 1st-order Taylor expansion around l2 = 1
+      cvm::real log_deriv;
+      if (std::abs(h) < eps_l2) {
+        cvm::real const g0 = 0.5 * (en2_r - ed2_r);
+        cvm::real const g1 = ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0)) / 12.0;
+        log_deriv = g0 + h * g1;
+      } else {
+        log_deriv = (ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2));
+      }
+      dFdl2 = (flags & ef_use_pairlist) ?
+        func_no_pairlist * inv_one_pairlist_tol * log_deriv :
+        func * log_deriv;
+    }
+
+    return func;
+  }
 }
 
 template<int flags>
