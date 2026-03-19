@@ -378,6 +378,15 @@ jobs:
         run: |
           bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-gcc-clang-
 
+      - name: Save failed library test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-library-test-output
+          path: |
+            ${{ github.workspace }}/build*/Testing/Temporary/*.log
+            ${{ github.workspace }}/build*/Testing/Temporary/*.log
+
 
   build-linux-x86_64-intel:
     name: Linux x86_64 (Intel oneAPI)
@@ -442,7 +451,7 @@ jobs:
         with:
           name: failed-library-test-output-intel-oneAPI
           path: |
-            ${{ github.workspace }}/build/Testing/Temporary/*.log
+            ${{ github.workspace }}/build*/Testing/Temporary/*.log
 
       - name: Keep only one cache besides the one from this job
         shell: bash
@@ -541,5 +550,5 @@ jobs:
         with:
           name: failed-library-test-output-ARM64
           path: |
-            ${{ github.workspace }}/build_C++20/Testing/Temporary/*.log
-            ${{ github.workspace }}/build_g++11_C++20/Testing/Temporary/*.log
+            ${{ github.workspace }}/build*/Testing/Temporary/*.log
+            ${{ github.workspace }}/build*/Testing/Temporary/*.log
