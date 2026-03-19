@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 source $(dirname $0)/load-recent-git.sh
 
 source $(dirname $0)/set-ccache.sh
@@ -10,19 +12,7 @@ if [ -n "${CCACHE_HOME}" ] ; then
 fi
 
 detect_os() {
-
-    # TODO This only works for RedHat-style Linux environments
-
-    # if ! hash lsb_release ; then
-    #     echo "Error: lsb_release is not installed." >&2
-    #     if [ -n "$BASH_SOURCE" ] ; then
-    #         return 1
-    #     fi
-    # fi
-
-    # DIST_NAME=$(lsb_release -is)
-    # DIST_VERSION=$(lsb_release -sr | sed -e 's/\..*//')
-
+    # TODO Install dependencies for non RedHat-style OSs?
     if ! declare -f need_rpm 2> /dev/null ; then
         if [ -e /etc/redhat-release ] ; then
             need_rpm() {
@@ -55,13 +45,6 @@ check_vmd_dependencies() {
         [ -f /usr/lib/x86_64-linux-gnu/libtcl8.6.so ] ; then
         export TCL_VERSION=8.6
     fi
-}
-
-
-get_first_word() {
-    local line="$*"
-    line=$(echo ${line})
-    echo $(echo ${line} | cut -d' ' -f 1)
 }
 
 
@@ -227,13 +210,6 @@ compile_vmd_target() {
             make clean
         fi
         popd
-    fi
-
-    if [ $retcode = 0 ] ; then
-        rm -f plugins
-        unset TCL_LIBRARY_DIR TCL_INCLUDE_DIR PYTHON_LIB \
-            PYTHON_NAME PYTHON_INCLUDE_DIR PYTHON_LIBRARY_DIR PYTHON_PACKAGES_DIR \
-            NUMPY_INCLUDE_DIR NUMPY_LIBRARY_DIR
     fi
 
     popd
