@@ -72,6 +72,19 @@ fix_vmd_configure() {
 
     # Also use this to append the flag to nvcc
     sed -i 's/$arch_opt_flag .= " -std=c++11"/$arch_opt_flag .= " -std=c++17"; $arch_nvccflags .= " -std=c++17"/' ${configure}
+
+    # We shouldn't have to install tcsh just for this
+    sed -i -e 's/if \[ ! -x "\/bin\/csh/if \[ ! -x "\/bin\/csh-skip-it/' ${configure}
+
+    # VMD2 fixes
+    sed -i 's/lfltk_jpeg/ljpeg/' ${configure}
+    sed -i 's/lfltk_png/lpng/' ${configure}
+    sed -i 's/lfltk_z/lz/' ${configure}
+
+    # Remove ancient CUDA architectures
+    sed -i 's/"-gencode arch=compute_30,code=compute_30 "/""/' ${configure}
+    sed -i 's/"-gencode arch=compute_30,code=sm_35 "/""/' ${configure}
+    sed -i 's/"-gencode arch=compute_30,code=sm_37 "/""/' ${configure}
 }
 
 
@@ -79,9 +92,16 @@ compile_vmd_target() {
 
     check_vmd_dependencies
 
+    local VMD2PROTOTYPE="no"
+
     local VMDSRCDIR="${PWD}"
     if [ -f "${1}/src/VMDApp.h" ] ; then
         VMDSRCDIR=$(realpath "${1}")
+        shift
+    fi
+    if [ -f "${1}/vmd/src/VMDApp.h" ] ; then
+        VMD2PROTOTYPE="yes"
+        VMDSRCDIR=$(realpath "${1}/vmd")
         shift
     fi
     pushd "${VMDSRCDIR}"
@@ -95,7 +115,11 @@ compile_vmd_target() {
 
     export VMDINSTALLBINDIR=${1}
     if [ -z "${VMDINSTALLBINDIR}" ] ; then
-        export VMDINSTALLBINDIR="${VMDSRCDIR}/install"
+        if [ "${VMD2PROTOTYPE}" == "yes" ] ; then
+            export VMDINSTALLBINDIR="${VMDSRCDIR%/vmd}/install"
+        else
+            export VMDINSTALLBINDIR="${VMDSRCDIR}/install"
+        fi
     fi
 
     mkdir -p "${VMDINSTALLBINDIR}"
@@ -179,16 +203,11 @@ compile_vmd_target() {
         return 1
     fi
 
-    if { ! grep -q csh-skip-it configure ; } ; then
-        # We should't have to install tcsh just for this
-        sed -i -e 's/if \[ ! -x "\/bin\/csh/if \[ ! -x "\/bin\/csh-skip-it/' configure
-    fi
-
     if [ -n "${CUDA_HOME}" ] && [ -d ${CUDA_HOME} ] ; then
-        sed -i -e "s/\/usr\/local\/cuda-10.2/${CUDA_HOME////\/}/" configure
+        sed -i 's/\/usr\/local\/cuda-10.2/$ENV{CUDA_HOME}/' configure
         VMD_OPTS+=(CUDA)
-        if [ -n "${CUDA_HOME}" ] && [ -d ${CUDA_HOME} ] ; then
-            sed -i -e "s/\/usr\/local\/encap\/NVIDIA-OptiX/${OPTIX_HOME////\/}/" configure
+        if [ -n "${OPTIX_HOME}" ] && [ -d ${OPTIX_HOME} ] ; then
+            sed -i 's/"\/usr\/local\/encap\/NVIDIA-OptiX-SDK-6.5.0-linux64"/$ENV{OPTIX_HOME}/' configure
             VMD_OPTS+=(LIBOPTIX)
         fi
     fi
