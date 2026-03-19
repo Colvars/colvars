@@ -65,63 +65,36 @@ get_first_word() {
 }
 
 
-fix_vmd_recipe() {
-    local file=$1
+fix_vmd_configure() {
 
-    if [ -z "${1}" ] || [ ! -f "${1}" ] ; then
-        echo "Error: need a path to a VMD configure script"
+    local configure=$1
+
+    if [ -z "${configure}" ] || [ ! -f "${configure}" ] ; then
+        echo "Error: need a path to a VMD configure script" >& 2
         return 1
     fi
 
-    if ! grep -q fno-for-scope $1 ; then
-        echo '
-diff --git a/configure b/configure
-index 70fba19bf..84b31fcc8 100755
---- a/configure
-+++ b/configure
-@@ -202,7 +202,7 @@ $config_actc            = 0;  # ACTC
- $config_avx512          = 0;  # AVX512
- $config_cpudispatch     = 0;  # CPUDISPATCH
- $config_cuda            = 0;  # CUDA
--$config_cxx11           = 0;  # Require C++11 or greater
-+$config_cxx11           = 1;  # Require C++11 or greater
- $config_opencl          = 0;  # OpenCL
- $config_openhmd         = 0;  # OpenHMD driver for Oculus Rift
- $config_imd             = 0;  # interactive MD sockets code etc.
-@@ -2277,7 +2277,7 @@ if ($config_arch eq "FREEBSD") {
-     $arch_shcppopts   = "-fPIC";
-     $arch_shldopts    = "-L/usr/local/lib";
-
--    $arch_opt_flag    = "-m32 -fno-for-scope -Wno-deprecated -Wall -Wno-unknown-pragmas -O3";
-+    $arch_opt_flag    = "-m32 -Wno-deprecated -Wall -Wno-unknown-pragmas -O3";
-     $arch_copts       = "-m32 -Wall -Wno-unknown-pragmas -O3";
-
-     if ($config_static) {
-@@ -2411,7 +2411,7 @@ if ($config_arch eq "LINUX") {
-       $arch_shlibname   = "so";
-       $arch_shcppopts   = "-fPIC";
-       $arch_shldopts    = "";
--      $arch_opt_flag    = "-m32 -fno-for-scope -Wno-deprecated -Wall -Wno-unknown-pragmas -O3";
-+      $arch_opt_flag    = "-m32 -Wno-deprecated -Wall -Wno-unknown-pragmas -O3";
-       $arch_copts       = "-m32 -Wall -Wno-unknown-pragmas -O3";
-
-       if ($config_static) {
-@@ -2537,6 +2537,9 @@ if ($config_arch eq "LINUXAMD64") {
-
-     if ($config_cxx11) {
-       $arch_opt_flag .= " -std=c++11"
-+      if ($config_cuda) {
-+        $arch_nvccflags .= " -std=c++11"
-+      }
-     }
-
-     if ($config_cuda) {
-' | patch -p1 $1
+    if [ -z "${TCL_VERSION}" ] ; then
+        echo "Error: TCL_VERSION could not be defined automatically" >& 2
+        return 1
     fi
+
+    sed -i "s/-ltcl8.5/-ltcl${TCL_VERSION}/" ${configure}
+    sed -i "s/-ltk8.5/-ltk${TCL_VERSION}/" ${configure}
+
+    sed -i 's/CXX11/CXX17/' ${configure}
+    sed -i 's/config_cxx11/config_cxx17/' ${configure}
+    sed -i 's/$config_cxx17           = 0/$config_cxx17           = 1/' ${configure}
+    sed -i 's/ -fno-for-scope//' ${configure}
+
+    # Also use this to append the flag to nvcc
+    sed -i 's/$arch_opt_flag .= " -std=c++11"/$arch_opt_flag .= " -std=c++17"; $arch_nvccflags .= " -std=c++17"/' ${configure}
 }
 
 
 compile_vmd_target() {
+
+    check_vmd_dependencies
 
     local VMDSRCDIR="${PWD}"
     if [ -f "${1}/src/VMDApp.h" ] ; then
@@ -130,7 +103,7 @@ compile_vmd_target() {
     fi
     pushd "${VMDSRCDIR}"
 
-    fix_vmd_recipe configure
+    fix_vmd_configure configure
 
     local label="${1:-multicore}"
     local ret_code
@@ -144,19 +117,14 @@ compile_vmd_target() {
 
     mkdir -p "${VMDINSTALLBINDIR}"
 
-    check_vmd_dependencies
-
     local VMDINSTALLLIBRARYDIR=${VMDINSTALLBINDIR}
 
     local -a VMD_OPTS=(TCL TK FLTK OPENGL PTHREADS COLVARS NETCDF)
 
-    VMD_OPTS+=(CXX11)
+    VMD_OPTS+=(CXX17)
 
     export TCL_LIBRARY_DIR=${TCL_LIBRARY_DIR:-/usr/lib64}
     export TCL_INCLUDE_DIR=${TCL_INCLUDE_DIR:-/usr/include}
-
-    sed -i "s/-ltcl8.5/-ltcl${TCL_VERSION}/" configure
-    sed -i "s/-ltk8.5/-ltk${TCL_VERSION}/" configure
 
     export PYTHON_NAME=$(basename $(which python3))
 
