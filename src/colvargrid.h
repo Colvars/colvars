@@ -210,6 +210,7 @@ public:
 
 
   /// Default constructor
+  // This constructor depends on a static cvm pointer and is deprecated
   colvar_grid() : colvarparse(cvm::main()), has_data(false)
   {
     nd = nt = 0;
@@ -225,6 +226,7 @@ public:
   /// \brief "Almost copy-constructor": only copies configuration
   /// parameters from another grid, but doesn't reallocate stuff;
   /// setup() must be called after that;
+  // This constructor depends on a static cvm pointer and is deprecated
   colvar_grid(colvar_grid<T> const &g) : colvar_grid_params(colvar_grid_params(g)),
                                          colvarparse(cvm::main()),
                                          mult(g.mult),

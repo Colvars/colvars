@@ -624,7 +624,7 @@ void colvarproxy::set_total_forces_valid()
 
 void colvarproxy::print_input_atomic_data()
 {
-  cvmodule->log(cvmodule->line_marker);
+  cvmodule->log(cvm::line_marker);
 
   cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atoms_ids[size = "+cvm::to_str(atoms_ids.size())+
@@ -655,7 +655,7 @@ void colvarproxy::print_input_atomic_data()
                               cvmodule->cv_width,
                               cvmodule->cv_prec)+"\n");
 
-  cvmodule->log(cvmodule->line_marker);
+  cvmodule->log(cvm::line_marker);
 
   cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atom_groups_ids[size = "+cvm::to_str(atom_groups_ids.size())+
@@ -690,7 +690,7 @@ void colvarproxy::print_input_atomic_data()
                               cvmodule->cv_width,
                               cvmodule->cv_prec)+"\n");
 
-  cvmodule->log(cvmodule->line_marker);
+  cvmodule->log(cvm::line_marker);
 
   cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "volmaps_ids[size = "+cvm::to_str(volmaps_ids.size())+
@@ -700,18 +700,18 @@ void colvarproxy::print_input_atomic_data()
            "volmaps_values[size = "+cvm::to_str(volmaps_values.size())+
            "] = "+cvm::to_str(volmaps_values)+"\n");
 
-  cvmodule->log(cvmodule->line_marker);
+  cvmodule->log(cvm::line_marker);
 }
 
 
 void colvarproxy::print_output_atomic_data()
 {
-  cvmodule->log(cvmodule->line_marker);
+  cvmodule->log(cvm::line_marker);
   cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atoms_new_colvar_forces = "+cvm::to_str(atoms_new_colvar_forces,
                                                     cvmodule->cv_width,
                                                     cvmodule->cv_prec)+"\n");
-  cvmodule->log(cvmodule->line_marker);
+  cvmodule->log(cvm::line_marker);
 
   cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "atom_groups_new_colvar_forces = "+
@@ -719,13 +719,13 @@ void colvarproxy::print_output_atomic_data()
                        cvmodule->cv_width,
                        cvmodule->cv_prec)+"\n");
 
-  cvmodule->log(cvmodule->line_marker);
+  cvmodule->log(cvm::line_marker);
 
   cvmodule->log("Step "+cvm::to_str(cvmodule->step_absolute())+", "+
            "volmaps_new_colvar_forces = "+
            cvm::to_str(volmaps_new_colvar_forces)+"\n");
 
-  cvmodule->log(cvmodule->line_marker);
+  cvmodule->log(cvm::line_marker);
 }
 
 
