@@ -126,7 +126,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   parse = new colvarparse(this); // Parsing object for global options
   version_int = proxy->get_version_from_string(COLVARS_VERSION);
 
-  this->log(this->line_marker);
+  this->log(line_marker);
   this->log(
       "Initializing the collective variables module, version " + version() +
       (patch_version_number() ? (" (patch " + this->to_str(patch_version_number()) + ")") : "") +
@@ -266,7 +266,7 @@ void colvarmodule::set_initial_step(step_number it_in)
 
 int colvarmodule::read_config_file(char const  *config_filename)
 {
-  this->log(this->line_marker);
+  this->log(line_marker);
   this->log("Reading new configuration from file \""+
            std::string(config_filename)+"\":\n");
 
@@ -295,7 +295,7 @@ int colvarmodule::read_config_file(char const  *config_filename)
 
 int colvarmodule::read_config_string(std::string const &config_str)
 {
-  this->log(this->line_marker);
+  this->log(line_marker);
   this->log("Reading new configuration:\n");
   std::istringstream new_config_s(config_str);
 
@@ -376,9 +376,9 @@ int colvarmodule::parse_config(std::string &conf)
     if (get_error() != COLVARS_OK) return get_error();
   }
 
-  this->log(this->line_marker);
+  this->log(line_marker);
   this->log("Collective variables module (re)initialized.\n");
-  this->log(this->line_marker);
+  this->log(line_marker);
 
   if (source_Tcl_script.size() > 0) {
     run_tcl_script(source_Tcl_script);
@@ -591,7 +591,7 @@ int colvarmodule::parse_colvars(std::string const &conf)
   while (parse->key_lookup(conf, "colvar", &colvar_conf, &pos)) {
 
     if (colvar_conf.size()) {
-      this->log(this->line_marker);
+      this->log(line_marker);
       this->increase_depth();
       colvars.push_back(new colvar(this));
       if (((colvars.back())->init(colvar_conf) != COLVARS_OK) ||
@@ -621,7 +621,7 @@ int colvarmodule::parse_colvars(std::string const &conf)
   }
 
   if (colvars.size())
-    this->log(this->line_marker);
+    this->log(line_marker);
   this->log("Collective variables initialized, "+
            this->to_str(colvars.size())+
            " in total.\n");
@@ -662,7 +662,7 @@ int colvarmodule::parse_biases_type(std::string const &conf,
   size_t conf_saved_pos = 0;
   while (parse->key_lookup(conf, keyword, &bias_conf, &conf_saved_pos)) {
     if (bias_conf.size()) {
-      this->log(this->line_marker);
+      this->log(line_marker);
       this->increase_depth();
       int &bias_count = (*num_biases_types_used)[type_keyword];
       biases.push_back(new bias_type(this, type_keyword.c_str()));
@@ -727,7 +727,7 @@ int colvarmodule::parse_biases(std::string const &conf)
   parse_biases_type<colvarbias_opes>(conf, "opes_metad");
 
   if (use_scripted_forces) {
-    this->log(this->line_marker);
+    this->log(line_marker);
     this->increase_depth();
     this->log("User forces script will be run at each bias update.\n");
     this->decrease_depth();
@@ -742,7 +742,7 @@ int colvarmodule::parse_biases(std::string const &conf)
   }
 
   if (num_biases() || use_scripted_forces) {
-    this->log(this->line_marker);
+    this->log(line_marker);
     this->log("Collective variables biases initialized, "+
              this->to_str(num_biases())+" in total.\n");
   } else {
@@ -944,7 +944,7 @@ int colvarmodule::calc()
   int error_code = COLVARS_OK;
 
   if (this->debug()) {
-    this->log(this->line_marker);
+    this->log(line_marker);
     this->log("Collective variables module, step no. "+
              this->to_str(this->step_absolute())+"\n");
   }
@@ -1521,7 +1521,7 @@ int colvarmodule::setup_input()
     // will not be executed twice
     proxy->set_input_prefix("");
 
-    this->log(this->line_marker);
+    this->log(line_marker);
 
     input_is->seekg(0, std::ios::end);
     size_t const file_size = input_is->tellg();
@@ -1560,7 +1560,7 @@ int colvarmodule::setup_input()
       this->log("Loading state from text file \"" + restart_in_name + "\".\n");
       read_state(*input_is);
     }
-    this->log(this->line_marker);
+    this->log(line_marker);
 
     // Now that an explicit state file was read, we shall ignore any other restart info
     if (proxy->input_stream_exists("input state string")) {
@@ -1579,20 +1579,20 @@ int colvarmodule::setup_input()
                         COLVARS_BUG_ERROR);
     }
 
-    this->log(this->line_marker);
+    this->log(line_marker);
     this->log("Loading state from formatted string.\n");
     read_state(proxy->input_stream("input state string"));
-    this->log(this->line_marker);
+    this->log(line_marker);
 
     proxy->delete_input_stream("input state string");
   }
 
   if (!input_state_buffer_.empty()) {
-    this->log(this->line_marker);
+    this->log(line_marker);
     this->log("Loading state from unformatted memory.\n");
     cvm::memory_stream ms(input_state_buffer_.size(), input_state_buffer_.data());
     read_state(ms);
-    this->log(this->line_marker);
+    this->log(line_marker);
 
     input_state_buffer_.clear();
   }
@@ -1862,7 +1862,7 @@ cvm::memory_stream &colvarmodule::read_objects_state(cvm::memory_stream &is)
 int colvarmodule::print_total_forces_errning(bool warn_total_forces)
 {
   if (warn_total_forces) {
-    this->log(this->line_marker);
+    this->log(line_marker);
     this->log("WARNING: The definition of system forces has changed.  Please see:\n");
     this->log("  https://colvars.github.io/README-totalforce.html\n");
     // update this ahead of time in this special case

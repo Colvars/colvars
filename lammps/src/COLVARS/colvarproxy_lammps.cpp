@@ -107,7 +107,7 @@ int colvarproxy_lammps::setup()
 double colvarproxy_lammps::compute()
 {
   if (cvmodule->debug()) {
-    cvmodule->log(std::string(cvmodule->line_marker) +
+    cvmodule->log(std::string(cvm::line_marker) +
         "colvarproxy_lammps step no. " +
         cvm::to_str(_lmp->update->ntimestep) + " [first - last = " +
         cvm::to_str(_lmp->update->beginstep) + " - " +
@@ -153,7 +153,7 @@ double colvarproxy_lammps::compute()
   }
 
   if (cvmodule->debug()) {
-    cvmodule->log(std::string(cvmodule->line_marker) +
+    cvmodule->log(std::string(cvm::line_marker) +
              "colvarproxy_lammps, step no. " + cvm::to_str(cvmodule->it) + "\n" +
              "Updating internal data.\n");
   }
