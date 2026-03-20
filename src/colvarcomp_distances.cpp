@@ -1231,7 +1231,7 @@ int colvar::rmsd::add_calc_force_invgrads_node(
   // with the Jacobian derivative calculation, and left
   // gpu_buffer.d_atoms_total_force unchanged.
   cudaGraphNode_t calc_force_invgrads;
-  colvarproxy *p = cvm::main()->proxy;
+  colvarproxy *p = cvmodule->proxy;
   const auto& rot = atoms->get_gpu_atom_group()->get_rot_gpu();
   error_code |= colvars_gpu::calc_force_invgrads_rmsd(
     atoms->is_enabled(f_ag_rotate),

@@ -718,17 +718,17 @@ public:
   // i/o constants
 
   /// Number of characters to represent a time step
-  size_t const it_width = 12;
+  static constexpr size_t it_width = 12;
   /// Number of digits to represent a collective variables value(s)
-  size_t const cv_prec = 14;
+  static constexpr size_t cv_prec = 14;
   /// Number of characters to represent a collective variables value(s)
-  size_t const cv_width = 21;
+  static constexpr size_t cv_width = 21;
   /// Number of digits to represent the collective variables energy
-  size_t const en_prec = 14;
+  static constexpr size_t en_prec = 14;
   /// Number of characters to represent the collective variables energy
-  size_t const en_width = 21;
+  static constexpr size_t en_width = 21;
   /// Line separator in the log output
-  const char * const line_marker = (const char *)
+  static constexpr const char line_marker[] =
     "----------------------------------------------------------------------\n";
 
   // proxy functions

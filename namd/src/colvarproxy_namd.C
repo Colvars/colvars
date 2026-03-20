@@ -413,7 +413,7 @@ void colvarproxy_namd::calculate()
   }
 
   if (cvm::debug()) {
-    cvmodule->log(std::string(cvmodule->line_marker)+
+    cvmodule->log(std::string(cvm::line_marker)+
              "colvarproxy_namd, step no. "+cvm::to_str(cvmodule->it)+"\n"+
              "Updating atomic data arrays.\n");
   }

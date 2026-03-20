@@ -24,12 +24,12 @@ colvar::map_total::map_total()
 int colvar::map_total::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
-  colvarproxy *proxy = cvm::main()->proxy;
+  colvarproxy *proxy = cvmodule->proxy;
   get_keyval(conf, "mapName", volmap_name, volmap_name);
   get_keyval(conf, "mapID", volmap_id, volmap_id);
   register_param("mapID", reinterpret_cast<void *>(&volmap_id));
 
-  cvm::main()->cite_feature("Volumetric map-based collective variables");
+  cvmodule->cite_feature("Volumetric map-based collective variables");
 
   if ((volmap_name.size() > 0) && (volmap_id >= 0)) {
     error_code |=
@@ -86,7 +86,7 @@ int colvar::map_total::init(std::string const &conf)
 
 void colvar::map_total::calc_value()
 {
-  colvarproxy *proxy = cvm::main()->proxy;
+  colvarproxy *proxy = cvmodule->proxy;
   int flags = is_enabled(f_cvc_gradient) ? colvarproxy::volmap_flag_gradients :
     colvarproxy::volmap_flag_null;
 
@@ -119,7 +119,7 @@ void colvar::map_total::apply_force(colvarvalue const &force)
   if (atoms) {
     cvc::apply_force(force);
   } else {
-    colvarproxy *proxy = cvm::main()->proxy;
+    colvarproxy *proxy = cvmodule->proxy;
     proxy->apply_volmap_force(volmap_index, force.real_value);
   }
 }

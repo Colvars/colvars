@@ -13,7 +13,7 @@
 #include "colvardeps.h"
 
 
-// Temporary cheat using global static pointer
+// This constructor depends on a static cvm pointer and is deprecated
 colvardeps::colvardeps()
   : colvarparse(cvm::main())
 {}

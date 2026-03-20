@@ -18,7 +18,7 @@
 #include "colvarcomp.h"
 
 
-
+// This constructor depends on a static cvm pointer and is deprecated
 colvar::cvc::cvc()
  : colvardeps(cvm::main())
 {
@@ -859,7 +859,7 @@ int colvar::cvc::debug_gradients_gpu(
   // since atom coordinates are modified only within the current group
 
   cvm::log("Debugging GPU gradients for " + description);
-  colvarproxy *p = cvm::main()->proxy;
+  colvarproxy *p = cvmodule->proxy;
   cudaStream_t stream = p->get_default_stream();
   error_code |= checkGPUError(cudaStreamSynchronize(stream));
 
@@ -1009,7 +1009,7 @@ int colvar::cvc::debug_gradients_gpu(
         cvm::real const num_diff = 0.5 * (x_1 - x_2);
         cvm::real const dx_pred = cvm::debug_gradients_step_size * g[id];
         cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
-        cvm::main()->record_gradient_error(rel_error);
+        cvmodule->record_gradient_error(rel_error);
 
         cvm::log("Atom "+cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
                   ", comp. " + cvm::to_str(id) + ":" + \
@@ -1073,7 +1073,7 @@ int colvar::cvc::debug_gradients_gpu(
           cvm::real const num_diff = 0.5 * (x_1 - x_2);
           cvm::real const dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
           cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
-          cvm::main()->record_gradient_error(rel_error);
+          cvmodule->record_gradient_error(rel_error);
 
           cvm::log("fittingGroup atom " + cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
                     ", comp. " + cvm::to_str(id) + ":" + \
