@@ -133,44 +133,52 @@ compile_vmd_target() {
     export TCL_LIBRARY_DIR=${TCL_LIBRARY_DIR:-/usr/lib64}
     export TCL_INCLUDE_DIR=${TCL_INCLUDE_DIR:-/usr/include}
 
-    export PYTHON_NAME=$(basename $(which python3))
+    export PYTHON_VERSION=$(python3 --version | cut -d' ' -f 2)
+    export PYTHON_NAME=python${PYTHON_VERSION%.*}
 
     if hash python3-config ; then
-        export PYTHON_LIB="$(python3-config --libs | cut -d' ' -f1)"
+
         export PYTHON_NAME="${PYTHON_NAME}$(python3-config --abiflags)"
 
-        if [ -z "${PYTHON_INCLUDE_DIR}" ] ; then
-            export PYTHON_INCLUDE_DIR="$(python3-config --includes | cut -d' ' -f1)"
-            export PYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR#-I}
-            export PYTHON_LIBRARY_DIR="$(python3-config --ldflags | cut -d' ' -f1)"
-            export PYTHON_LIBRARY_DIR=${PYTHON_LIBRARY_DIR#-L}
+        export PYTHON_INCLUDE_DIR="$(python3-config --includes | cut -d' ' -f1)"
+        export PYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR#-I}
+
+        export PYTHON_LIB="$(python3-config --libs | cut -d' ' -f1)"
+        if [ -z "${PYTHON_LIB}" ] || { echo "${PYTHON_LIB}" | grep -vq lpython; } ; then
+            # Not detected, try generating from the Python executable name
+            export PYTHON_LIB=-l${PYTHON_NAME}
         fi
-    else
-        export PYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR:-/usr/include/${PYTHON_NAME}}
-        export PYTHON_LIBRARY_DIR=${PYTHON_LIBRARY_DIR:-/usr/lib64}
+
+        export PYTHON_LIBRARY_DIR="$(python3-config --ldflags | cut -d' ' -f1)"
+        export PYTHON_LIBRARY_DIR=${PYTHON_LIBRARY_DIR#-L}
+        if [ -z "${PYTHON_LIBRARY_DIR}" ] && [ -d "/usr/lib64" ] ; then
+            # Fix for when it's reported empty
+            export PYTHON_LIBRARY_DIR="/usr/lib64"
+        fi
     fi
 
-    export PYTHON_PACKAGES_DIR=${PYTHON_LIBRARY_DIR}/${PYTHON_NAME}/site-packages
-    if [ ! -d "${PYTHON_PACKAGES_DIR}" ] ; then
-        export PYTHON_PACKAGES_DIR=${PYTHON_LIBRARY_DIR}/${PYTHON_NAME%m}/site-packages
-    fi
+    if [ -n "${PYTHON_LIBRARY_DIR}" ] && [ -n "${PYTHON_INCLUDE_DIR}" ] && [ -f "${PYTHON_INCLUDE_DIR}/Python.h" ] ; then
 
-    # NumPy variables
-    if [ -n "${VIRTUAL_ENV}" ] ; then
-        # Get NumPy from the virtualenv if defined
-        export NUMPY_LIBRARY_DIR=${VIRTUAL_ENV}/lib/${PYTHON_NAME}/site-packages/numpy/core
-    else
-        export NUMPY_LIBRARY_DIR=${NUMPY_LIBRARY_DIR:-${PYTHON_PACKAGES_DIR}/numpy/core}
-    fi
-    export NUMPY_INCLUDE_DIR=${NUMPY_LIBRARY_DIR}/include
-
-    if [ -n "${PYTHON_LIBRARY_DIR}" ] && [ -d "${PYTHON_LIBRARY_DIR}" ] ; then
         VMD_OPTS+=(PYTHON)
         sed -i "s/-lpython2.5/${PYTHON_LIB}/" configure
-    fi
 
-    if [ -n "${NUMPY_LIBRARY_DIR}" ] && [ -d "${NUMPY_LIBRARY_DIR}" ] ; then
-        VMD_OPTS+=(NUMPY)
+        export PYTHON_PACKAGES_DIR=${PYTHON_LIBRARY_DIR}/${PYTHON_NAME}/site-packages
+        if [ ! -d "${PYTHON_PACKAGES_DIR}" ] ; then
+            export PYTHON_PACKAGES_DIR=${PYTHON_LIBRARY_DIR}/${PYTHON_NAME%m}/site-packages
+        fi
+
+        # NumPy variables
+        if [ -n "${VIRTUAL_ENV}" ] ; then
+            # Get NumPy from the virtualenv if defined
+            export NUMPY_LIBRARY_DIR=${VIRTUAL_ENV}/lib/${PYTHON_NAME}/site-packages/numpy/core
+        else
+            export NUMPY_LIBRARY_DIR=${NUMPY_LIBRARY_DIR:-${PYTHON_PACKAGES_DIR}/numpy/core}
+        fi
+        export NUMPY_INCLUDE_DIR=${NUMPY_LIBRARY_DIR}/include
+
+        if [ -n "${NUMPY_LIBRARY_DIR}" ] && [ -d "${NUMPY_LIBRARY_DIR}" ] ; then
+            VMD_OPTS+=(NUMPY)
+        fi
     fi
 
     export VMDPLUGINDIR=${VMDINSTALLBINDIR}/plugins
