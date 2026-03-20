@@ -858,7 +858,7 @@ int colvar::cvc::debug_gradients_gpu(
   // NOTE: this assumes that groups for this cvc are non-overlapping,
   // since atom coordinates are modified only within the current group
 
-  cvm::log("Debugging GPU gradients for " + description);
+  cvmodule->log("Debugging GPU gradients for " + description);
   colvarproxy *p = cvmodule->proxy;
   cudaStream_t stream = p->get_default_stream();
   error_code |= checkGPUError(cudaStreamSynchronize(stream));
@@ -940,7 +940,7 @@ int colvar::cvc::debug_gradients_gpu(
         rot.to_cpu(rot_cpu);
         const auto rot_0 = rot_cpu.matrix();
         // fit_gradients are in the simulation frame: we should print them in the rotated frame
-        cvm::log("Fit gradients for group " + group->key + ":\n");
+        cvmodule->log("Fit gradients for group " + group->key + ":\n");
         // Synchronized copy the fit gradients from GPU
         cvm::ag_vector_real_t h_fit_gradients(3 * group_for_fit->size());
         error_code |= p->copy_DtoH(
@@ -954,7 +954,7 @@ int colvar::cvc::debug_gradients_gpu(
             h_fit_gradients_x[j],
             h_fit_gradients_y[j],
             h_fit_gradients_z[j]);
-          cvm::log((group->fitting_group ? std::string("fittingGroup") : group->key) +
+          cvmodule->log((group->fitting_group ? std::string("fittingGroup") : group->key) +
               "[" + cvm::to_str(j) + "] = " +
               (group->is_enabled(f_ag_rotate) ?
                 cvm::to_str(rot_0 * (fit_grad)) :
@@ -963,7 +963,7 @@ int colvar::cvc::debug_gradients_gpu(
       }
     }
 
-    cvm::log("Gradients for group " + group->key + ":\n");
+    cvmodule->log("Gradients for group " + group->key + ":\n");
     const auto gradients_x = ag_gradients.at(group)[0].begin();
     const auto gradients_y = gradients_x + group->size();
     const auto gradients_z = gradients_y + group->size();
@@ -1011,7 +1011,7 @@ int colvar::cvc::debug_gradients_gpu(
         cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
         cvmodule->record_gradient_error(rel_error);
 
-        cvm::log("Atom "+cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
+        cvmodule->log("Atom "+cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
                   ", comp. " + cvm::to_str(id) + ":" + \
                   "  dx(actual) = " + cvm::to_str (num_diff, 19, 12) + \
                   "  dx(interp) = " + cvm::to_str (dx_pred, 19, 12) + \
@@ -1075,7 +1075,7 @@ int colvar::cvc::debug_gradients_gpu(
           cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
           cvmodule->record_gradient_error(rel_error);
 
-          cvm::log("fittingGroup atom " + cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
+          cvmodule->log("fittingGroup atom " + cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
                     ", comp. " + cvm::to_str(id) + ":" + \
                     "  dx(actual) = " + cvm::to_str (num_diff, 19, 12) + \
                     "  dx(interp) = " + cvm::to_str (dx_pred, 19, 12) + \
@@ -1084,7 +1084,7 @@ int colvar::cvc::debug_gradients_gpu(
 
       }
     }
-    cvm::log("Gradient sum: " +  cvm::to_str(gradient_sum) +
+    cvmodule->log("Gradient sum: " +  cvm::to_str(gradient_sum) +
           "  Fit gradient sum: " + cvm::to_str(fit_gradient_sum) +
           "  Total " + cvm::to_str(gradient_sum + fit_gradient_sum));
   }

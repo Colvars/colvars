@@ -71,7 +71,7 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
   if (cvmodule->debug()) {
     if (g.graph_exec_initialized) {
       // Debug graph
-      const std::string filename = cvm::output_prefix() + "_calc_total_force.dot";
+      const std::string filename = cvmodule->output_prefix() + "_calc_total_force.dot";
       cvmodule->log("Writing calc_total_force graph to " + filename);
       g.dump_graph(filename.c_str());
     }
@@ -293,7 +293,7 @@ int colvarmodule_gpu_calc::cvc_calc_value(
   if (cvmodule->debug()) {
     if (g.graph_exec_initialized) {
       // Debug graph
-      const std::string filename = cvm::output_prefix() + "_calc_value.dot";
+      const std::string filename = cvmodule->output_prefix() + "_calc_value.dot";
       cvmodule->log("Writing calc_value graph to " + filename);
       g.dump_graph(filename.c_str());
     }
@@ -380,7 +380,7 @@ int colvarmodule_gpu_calc::cvc_calc_gradients(
   if (cvmodule->debug()) {
     if (g.graph_exec_initialized) {
       // Debug graph
-      const std::string filename = cvm::output_prefix() + "_calc_gradients.dot";
+      const std::string filename = cvmodule->output_prefix() + "_calc_gradients.dot";
       cvmodule->log("Writing calc_gradients graph to " + filename);
       g.dump_graph(filename.c_str());
     }
@@ -571,7 +571,7 @@ int colvarmodule_gpu_calc::cvc_calc_Jacobian_derivative(
   if (cvmodule->debug()) {
     if (g.graph_exec_initialized) {
       // Debug graph
-      const std::string filename = cvm::output_prefix() + "_calc_Jacobian_derivative.dot";
+      const std::string filename = cvmodule->output_prefix() + "_calc_Jacobian_derivative.dot";
       cvmodule->log("Writing calc_Jacobian_derivative graph to " + filename);
       g.dump_graph(filename.c_str());
     }

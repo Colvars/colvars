@@ -843,7 +843,7 @@ colvar::rmsd::rmsd()
 
 colvar::rmsd::~rmsd() {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  colvarproxy* p = cvm::proxy;
+  colvarproxy* p = cvmodule->proxy;
   if (colvar::rmsd::has_gpu_implementation()) {
     p->deallocate_device(&d_ref_pos_soa);
     p->deallocate_device(&d_permutation_msds);
@@ -862,7 +862,7 @@ colvar::rmsd::~rmsd() {
 
 bool colvar::rmsd::has_gpu_implementation() const {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  const colvarproxy* p = cvm::proxy;
+  const colvarproxy* p = cvmodule->proxy;
   if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu){
     return true;
   } else {
@@ -971,7 +971,7 @@ int colvar::rmsd::init(std::string const &conf)
   ref_pos_soa = cvm::atom_group::pos_aos_to_soa(ref_pos);
   if (has_gpu_implementation()) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_GPU)
-    colvarproxy* p = cvm::proxy;
+    colvarproxy* p = cvmodule->proxy;
     error_code |= p->reallocate_device(&d_ref_pos_soa, 3 * num_ref_pos);
     error_code |= p->copy_HtoD(ref_pos_soa.data(), d_ref_pos_soa, 3 * num_ref_pos);
     error_code |= p->reallocate_device(&d_permutation_msds, n_permutations);
