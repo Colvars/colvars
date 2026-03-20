@@ -341,32 +341,32 @@ jobs:
           scl enable gcc-toolset-${CXX_VERSION} -- \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: Clang 20, C++17 (CentOS 9)
+      - name: Clang 21, C++17 (CentOS 9)
         env:
-          CXX_STANDARD: 20
-          CXX: clang++-20
-          CXX_VERSION: 17
-          CC: clang-20
+          CXX_STANDARD: 17
+          CXX: clang++-21
+          CXX_VERSION: 21
+          CC: clang-21
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: Clang 20, C++20 (CentOS 9)
+      - name: Clang 21, C++20 (CentOS 9)
         env:
           CXX_STANDARD: 20
-          CXX: clang++-20
-          CXX_VERSION: 20
-          CC: clang-20
+          CXX: clang++-21
+          CXX_VERSION: 21
+          CC: clang-21
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: Clang 20, C++20, check floating-point exceptions, Debug build (CentOS 9)
+      - name: Clang 21, C++20, check floating-point exceptions, Debug build (CentOS 9)
         env:
           CXX_STANDARD: 20
-          CXX: clang++-20
-          CXX_VERSION: 20
-          CC: clang-20
+          CXX: clang++-21
+          CXX_VERSION: 21
+          CC: clang-21
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -D TRAP_FPE=ON -D CMAKE_CXX_FLAGS="-ffp-model=strict" -P devel-tools/build_test_library.cmake
