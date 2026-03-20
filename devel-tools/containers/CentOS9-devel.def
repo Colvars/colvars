@@ -20,8 +20,8 @@ From: quay.io/centos/centos:stream9
         "@Development Tools" \
         gcc gcc-c++ gcc-gfortran \
         gcc-toolset-{12,13,14} \
-        clang clang-tools-extra clang-analyzer \
-        cppcheck \
+        clang clang-tools-extra clang-analyzer clang-devel \
+        cppcheck libasan \
         autoconf automake cvs git subversion mercurial \
         cmake ccache ninja-build mold \
         Lmod openmpi-devel tbb-devel fftw-devel tcl-devel \
@@ -30,7 +30,7 @@ From: quay.io/centos/centos:stream9
         rlwrap \
         tk-devel fltk-devel \
         mesa-dri-drivers mesa-libGL-devel libglvnd-devel \
-        libXi-devel libXinerama-devel libpng-devel \
+        libXi-devel libXcursor-devel libXinerama-devel libpng-devel \
         netcdf-devel hdf5-devel sqlite-devel expat-devel \
         doxygen \
         texlive-latex texlive-epstopdf texlive-pdftex texlive-tex4ht \
@@ -38,7 +38,10 @@ From: quay.io/centos/centos:stream9
         texlive-collection-fontsrecommended \
         latexmk latex2html \
         inkscape gimp wget \
-	squashfs-tools
+        squashfs-tools
+
+    # The Clang package installs environment-modules, which conflicts with Lmod
+    alternatives --set modules.sh /usr/share/lmod/lmod/init/profile
 
     source /etc/profile
     module load mpi
@@ -69,14 +72,8 @@ From: quay.io/centos/centos:stream9
     curl -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.4.1%2Bcpu.zip
     unzip /tmp/libtorch.zip -d /opt
 
-    # Install GitHub CLI
-    dnf -y config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-    dnf -y install gh --repo gh-cli
-
-    # Download pre-built recent CMake (mostly for GROMACS)
+    # Download pre-built executable of recent CMake (mostly for GROMACS)
     rm -fr /opt/cmake
     mkdir -p /opt/cmake
-    # export GH_TOKEN=xxxxx (will needs this to run gh even on public repos)
-    # gh release download v3.30.5 --repo https://github.com/Kitware/CMake --clobber --pattern '*linux-x86_64.sh'
-    wget https://github.com/Kitware/CMake/releases/download/v3.31.5/cmake-3.31.5-linux-x86_64.sh
-    bash cmake-3.31.5-linux-x86_64.sh  --skip-license --prefix=/opt/cmake
+    wget https://github.com/Kitware/CMake/releases/download/v4.1.2/cmake-4.1.2-linux-x86_64.sh
+    bash cmake-4.1.2-linux-x86_64.sh --skip-license --prefix=/opt/cmake
