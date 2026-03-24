@@ -1613,6 +1613,8 @@ private:
   cvm::real* h_S;
   cvm::real* h_S_eigval;
   cvm::real* h_S_eigvec;
+  /// \brief Colvar module object for debugging and logging
+  colvarmodule* cvmodule;
 public:
   /// Constructor
   rotation_gpu();
@@ -1621,7 +1623,7 @@ public:
   /// Check if the object is initialized
   bool initialized() const {return b_initialized;}
   /// Initialize member data
-  int init(/*const cudaStream_t& stream_in*/);
+  int init(colvarmodule* cvmodule_in/*const cudaStream_t& stream_in*/);
   /// \brief Calculate the optimal rotation and store the
   /// corresponding eigenvalue and eigenvector in the arguments l0 and
   /// q0; if the gradients have been previously requested, calculate

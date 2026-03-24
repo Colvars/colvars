@@ -39,7 +39,7 @@ protected:
     // record the initial index of of sub-cvcs in input_tensor
     std::vector<int> cvc_indices;
 public:
-    torchANN();
+    torchANN(colvarmodule* cvmodule_in);
     virtual ~torchANN();
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -53,7 +53,7 @@ class colvar::torchANN
   : public colvar::cvc
 {
 public:
-    torchANN();
+    torchANN(colvarmodule* cvmodule_in);
     virtual ~torchANN();
     virtual int init(std::string const &conf);
     virtual void calc_value();

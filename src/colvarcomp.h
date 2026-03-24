@@ -95,7 +95,7 @@ public:
   cvm::real wrap_center = 0.0;
 
   /// Constructor
-  cvc();
+  // cvc();
 
   cvc(colvarmodule *cvmodule_in);
 
@@ -385,7 +385,7 @@ protected:
   /// Vector distance, cached to be recycled
   cvm::rvector     dist_v;
 public:
-  distance();
+  distance(colvarmodule* cvmodule_in);
   virtual ~distance() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -403,7 +403,7 @@ class colvar::distance_vec
   : public colvar::distance
 {
 public:
-  distance_vec();
+  distance_vec(colvarmodule* cvmodule_in);
   virtual ~distance_vec() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -426,7 +426,7 @@ class colvar::distance_dir
   : public colvar::distance
 {
 public:
-  distance_dir();
+  distance_dir(colvarmodule* cvmodule_in);
   virtual ~distance_dir() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -464,7 +464,7 @@ protected:
   /// Flag: using a fixed axis vector?
   bool fixed_axis = true;
 public:
-  distance_z();
+  distance_z(colvarmodule* cvmodule_in);
   virtual ~distance_z() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -486,7 +486,7 @@ protected:
   /// Vector distances
   cvm::rvector v12, v13;
 public:
-  distance_xy();
+  distance_xy(colvarmodule* cvmodule_in);
   virtual ~distance_xy() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -505,7 +505,7 @@ protected:
   cvm::real r, theta, phi;
 
 public:
-  polar_phi();
+  polar_phi(colvarmodule* cvmodule_in);
   virtual ~polar_phi() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -519,7 +519,7 @@ class colvar::polar_theta
   : public colvar::cvc
 {
 public:
-  polar_theta();
+  polar_theta(colvarmodule* cvmodule_in);
   virtual ~polar_theta() {}
   virtual int init(std::string const &conf);
 protected:
@@ -544,7 +544,7 @@ protected:
   /// Components of the distance vector orthogonal to the axis
   int exponent = 6;
 public:
-  distance_inv();
+  distance_inv(colvarmodule* cvmodule_in);
   virtual ~distance_inv() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -564,7 +564,7 @@ protected:
   /// Second atom group
   cvm::atom_group  *group2 = nullptr;
 public:
-  distance_pairs();
+  distance_pairs(colvarmodule* cvmodule_in);
   virtual ~distance_pairs() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -590,7 +590,7 @@ protected:
   cvm::atom_group *atoms = nullptr;
   cvm::atom_pos dipoleV;
 public:
-  dipole_magnitude();
+  dipole_magnitude(colvarmodule* cvmodule_in);
   virtual ~dipole_magnitude() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -608,7 +608,7 @@ protected:
   /// Atoms involved
   cvm::atom_group *atoms = nullptr;
 public:
-  gyration();
+  gyration(colvarmodule* cvmodule_in);
   virtual ~gyration() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -625,7 +625,7 @@ class colvar::inertia
   : public colvar::gyration
 {
 public:
-  inertia();
+  inertia(colvarmodule* cvmodule_in);
   virtual ~inertia() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -642,7 +642,7 @@ protected:
   /// Vector on which the inertia tensor is projected
   cvm::rvector axis;
 public:
-  inertia_z();
+  inertia_z(colvarmodule* cvmodule_in);
   virtual ~inertia_z() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -672,7 +672,7 @@ protected:
 
 public:
 
-  eigenvector();
+  eigenvector(colvarmodule* cvmodule_in);
   virtual ~eigenvector() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -708,11 +708,12 @@ protected:
   bool b_1site_force = false;
 public:
 
-  angle();
+  angle(colvarmodule* cvmodule_in);
   /// \brief Initialize the three groups after three atoms
   angle(cvm::atom_group::simple_atom const &a1,
         cvm::atom_group::simple_atom const &a2,
-        cvm::atom_group::simple_atom const &a3);
+        cvm::atom_group::simple_atom const &a3,
+        colvarmodule* cvmodule_in);
   virtual ~angle() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -749,7 +750,7 @@ protected:
   bool b_1site_force = false;
 public:
 
-  dipole_angle();
+  dipole_angle(colvarmodule* cvmodule_in);
   virtual ~dipole_angle() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -786,8 +787,9 @@ public:
   dihedral(cvm::atom_group::simple_atom const &a1,
            cvm::atom_group::simple_atom const &a2,
            cvm::atom_group::simple_atom const &a3,
-           cvm::atom_group::simple_atom const &a4);
-  dihedral();
+           cvm::atom_group::simple_atom const &a4,
+           colvarmodule* cvmodule_in);
+  dihedral(colvarmodule* cvmodule_in);
   virtual ~dihedral() {}
   virtual int init(std::string  const &conf);
   virtual void calc_value();
@@ -832,7 +834,7 @@ protected:
 
 public:
 
-  alpha_angles();
+  alpha_angles(colvarmodule* cvmodule_in);
   virtual ~alpha_angles();
   virtual int init(std::string const &conf);
   void calc_value();
@@ -858,7 +860,7 @@ protected:
 
 public:
 
-  dihedPC();
+  dihedPC(colvarmodule* cvmodule_in);
   virtual ~dihedPC();
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -904,7 +906,7 @@ protected:
 
 public:
 
-  orientation();
+  orientation(colvarmodule* cvmodule_in);
   virtual ~orientation();
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -929,7 +931,7 @@ class colvar::orientation_angle
 {
 public:
 
-  orientation_angle();
+  orientation_angle(colvarmodule* cvmodule_in);
   virtual ~orientation_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -954,7 +956,7 @@ class colvar::orientation_proj
 {
 public:
 
-  orientation_proj();
+  orientation_proj(colvarmodule* cvmodule_in);
   virtual ~orientation_proj() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -973,7 +975,7 @@ protected:
 
 public:
 
-  tilt();
+  tilt(colvarmodule* cvmodule_in);
   virtual ~tilt() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -989,7 +991,7 @@ class colvar::spin_angle
 {
 public:
 
-  spin_angle();
+  spin_angle(colvarmodule* cvmodule_in);
   virtual ~spin_angle() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1000,7 +1002,7 @@ class colvar::euler_phi
   : public colvar::orientation_angle
 {
 public:
-  euler_phi();
+  euler_phi(colvarmodule* cvmodule_in);
   virtual ~euler_phi() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1011,7 +1013,7 @@ class colvar::euler_psi
   : public colvar::orientation_angle
 {
 public:
-  euler_psi();
+  euler_psi(colvarmodule* cvmodule_in);
   virtual ~euler_psi() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1022,7 +1024,7 @@ class colvar::euler_theta
   : public colvar::orientation_angle
 {
 public:
-  euler_theta();
+  euler_theta(colvarmodule* cvmodule_in);
   virtual ~euler_theta() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1072,7 +1074,7 @@ protected:
   int init_permutation(std::vector<cvm::atom_pos>& ref_pos, std::string const &conf);
 
 public:
-  rmsd();
+  rmsd(colvarmodule* cvmodule_in);
   bool has_gpu_implementation() const override;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   int add_calc_value_node(
@@ -1112,7 +1114,7 @@ protected:
   /// Which Cartesian coordinates to include
   std::vector<size_t> axes;
 public:
-  cartesian();
+  cartesian(colvarmodule* cvmodule_in);
   virtual ~cartesian() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();
@@ -1140,7 +1142,7 @@ class colvar::alch_lambda
 protected:
   // No atom groups needed
 public:
-  alch_lambda();
+  alch_lambda(colvarmodule* cvmodule_in);
   int init_alchemy(int time_step_factor);
   virtual ~alch_lambda() {}
   virtual void calc_value();
@@ -1158,7 +1160,7 @@ class colvar::alch_Flambda
 protected:
   // No atom groups needed
 public:
-  alch_Flambda();
+  alch_Flambda(colvarmodule* cvmodule_in);
   virtual ~alch_Flambda() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -1184,7 +1186,7 @@ protected:
     /// Total number of reference frames
     size_t total_reference_frames = 0;
 public:
-    CartesianBasedPath();
+    CartesianBasedPath(colvarmodule* cvmodule_in);
     virtual ~CartesianBasedPath();
     virtual int init(std::string const &conf);
     virtual void calc_value() = 0;
@@ -1205,7 +1207,7 @@ protected:
     virtual void prepareVectors();
     virtual void updateDistanceToReferenceFrames();
 public:
-    gspath();
+    gspath(colvarmodule* cvmodule_in);
     virtual ~gspath() {}
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1228,7 +1230,7 @@ protected:
     virtual void prepareVectors();
     virtual void updateDistanceToReferenceFrames();
 public:
-    gzpath();
+    gzpath(colvarmodule* cvmodule_in);
     virtual ~gzpath() {}
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1248,7 +1250,7 @@ protected:
 protected:
     cvm::real getPolynomialFactorOfCVGradient(size_t i_cv) const;
 public:
-    linearCombination();
+    linearCombination(colvarmodule* cvmodule_in);
     virtual ~linearCombination();
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1286,7 +1288,7 @@ protected:
     double dev_null = 0.0;
 #endif
 public:
-    customColvar();
+    customColvar(colvarmodule* cvmodule_in);
     virtual ~customColvar();
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1313,7 +1315,7 @@ protected:
     virtual void computeDistanceBetweenReferenceFrames(std::vector<cvm::real>& result) const;
     cvm::real getPolynomialFactorOfCVGradient(size_t i_cv) const;
 public:
-    CVBasedPath();
+    CVBasedPath(colvarmodule* cvmodule_in);
     virtual ~CVBasedPath();
     virtual int init(std::string const &conf);
     virtual void calc_value() = 0;
@@ -1341,7 +1343,7 @@ protected:
     virtual void updateDistanceToReferenceFrames();
     virtual void prepareVectors();
 public:
-    gspathCV();
+    gspathCV(colvarmodule* cvmodule_in);
     virtual ~gspathCV();
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1358,7 +1360,7 @@ protected:
     virtual void updateDistanceToReferenceFrames();
     virtual void prepareVectors();
 public:
-    gzpathCV();
+    gzpathCV(colvarmodule* cvmodule_in);
     virtual ~gzpathCV();
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1375,7 +1377,7 @@ private:
     std::unique_ptr<ArithmeticPathImpl> impl_;
     friend struct ArithmeticPathImpl;
 public:
-    aspath();
+    aspath(colvarmodule* cvmodule_in);
     virtual ~aspath();
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1390,7 +1392,7 @@ private:
     std::unique_ptr<ArithmeticPathImpl> impl_;
     friend struct ArithmeticPathImpl;
 public:
-    azpath();
+    azpath(colvarmodule* cvmodule_in);
     virtual ~azpath();
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1405,7 +1407,7 @@ private:
     std::unique_ptr<ArithmeticPathImpl> impl_;
     friend struct ArithmeticPathImpl;
 public:
-    aspathCV();
+    aspathCV(colvarmodule* cvmodule_in);
     virtual ~aspathCV();
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1421,7 +1423,7 @@ private:
     std::unique_ptr<ArithmeticPathImpl> impl_;
     friend struct ArithmeticPathImpl;
 public:
-    azpathCV();
+    azpathCV(colvarmodule* cvmodule_in);
     virtual ~azpathCV();
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1444,7 +1446,7 @@ protected:
     /// the index of nn output components
     size_t m_output_index = 0;
 public:
-    neuralNetwork();
+    neuralNetwork(colvarmodule* cvmodule_in);
     virtual ~neuralNetwork();
     virtual int init(std::string const &conf);
     virtual void calc_value();
@@ -1471,7 +1473,7 @@ class colvar::map_total
 {
 public:
 
-  map_total();
+  map_total(colvarmodule* cvmodule_in);
   virtual ~map_total() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();

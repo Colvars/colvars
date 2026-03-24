@@ -25,7 +25,7 @@ public:
 };
 
 
-colvar::orientation::orientation()
+colvar::orientation::orientation(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("orientation");
   disable(f_cvc_explicit_gradient);
@@ -179,7 +179,7 @@ void colvar::orientation::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 
-colvar::orientation_angle::orientation_angle()
+colvar::orientation_angle::orientation_angle(colvarmodule* cvmodule_in): colvar::orientation(cvmodule_in)
 {
   set_function_type("orientationAngle");
   init_as_angle();
@@ -250,7 +250,7 @@ void colvar::orientation_angle::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 
-colvar::orientation_proj::orientation_proj()
+colvar::orientation_proj::orientation_proj(colvarmodule* cvmodule_in): colvar::orientation_angle(cvmodule_in)
 {
   set_function_type("orientationProj");
   enable(f_cvc_explicit_gradient);
@@ -283,7 +283,7 @@ void colvar::orientation_proj::calc_gradients()
 
 
 
-colvar::tilt::tilt()
+colvar::tilt::tilt(colvarmodule* cvmodule_in): colvar::orientation_proj(cvmodule_in)
 {
   set_function_type("tilt");
   x.type(colvarvalue::type_scalar);
@@ -333,7 +333,7 @@ void colvar::tilt::calc_gradients()
 
 
 
-colvar::spin_angle::spin_angle()
+colvar::spin_angle::spin_angle(colvarmodule* cvmodule_in): colvar::tilt(cvmodule_in)
 {
   set_function_type("spinAngle");
   init_as_periodic_angle();
@@ -369,7 +369,7 @@ void colvar::spin_angle::calc_gradients()
 
 
 
-colvar::euler_phi::euler_phi()
+colvar::euler_phi::euler_phi(colvarmodule* cvmodule_in): colvar::orientation_angle(cvmodule_in)
 {
   set_function_type("eulerPhi");
   init_as_periodic_angle();
@@ -416,7 +416,7 @@ void colvar::euler_phi::calc_gradients()
 
 
 
-colvar::euler_psi::euler_psi()
+colvar::euler_psi::euler_psi(colvarmodule* cvmodule_in): colvar::orientation_angle(cvmodule_in)
 {
   set_function_type("eulerPsi");
   init_as_periodic_angle();
@@ -463,7 +463,7 @@ void colvar::euler_psi::calc_gradients()
 
 
 
-colvar::euler_theta::euler_theta()
+colvar::euler_theta::euler_theta(colvarmodule* cvmodule_in): colvar::orientation_angle(cvmodule_in)
 {
   set_function_type("eulerTheta");
   init_as_angle();
