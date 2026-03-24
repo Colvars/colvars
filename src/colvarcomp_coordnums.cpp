@@ -388,7 +388,7 @@ public:
 #endif
 
 
-colvar::coordnum::coordnum()
+colvar::coordnum::coordnum(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("coordNum");
   x.type(colvarvalue::type_scalar);
@@ -748,7 +748,7 @@ int colvar::coordnum::calc_value_after_gpu() {
 
 // h_bond member functions
 
-colvar::h_bond::h_bond()
+colvar::h_bond::h_bond(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(3.3);
   r0_vec = {r0, r0, r0};
@@ -810,8 +810,8 @@ int colvar::h_bond::init(std::string const &conf)
 
 colvar::h_bond::h_bond(cvm::atom_group::simple_atom const &acceptor,
                        cvm::atom_group::simple_atom const &donor,
-                       cvm::real r0_i, int en_i, int ed_i)
-  : h_bond()
+                       cvm::real r0_i, int en_i, int ed_i, colvarmodule* cvmodule_in)
+  : h_bond(cvmodule_in)
 {
   r0_vec = {r0_i, r0_i, r0_i};
   en = en_i;
@@ -895,7 +895,12 @@ void colvar::h_bond::calc_gradients()
 }
 
 
-colvar::selfcoordnum::selfcoordnum()
+// <<<<<<< HEAD
+// colvar::selfcoordnum::selfcoordnum()
+// =======
+
+colvar::selfcoordnum::selfcoordnum(colvarmodule* cvmodule_in): colvar::coordnum(cvmodule_in)
+// >>>>>>> bdf8c50d (refactor: reduce the use of cvm::main())
 {
   set_function_type("selfCoordNum");
 }
@@ -987,7 +992,7 @@ void colvar::selfcoordnum::calc_gradients()
 }
 
 
-colvar::groupcoordnum::groupcoordnum() { set_function_type("groupCoord"); }
+colvar::groupcoordnum::groupcoordnum(colvarmodule* cvmodule_in): colvar::coordnum(cvmodule_in) { set_function_type("groupCoord"); }
 
 
 void colvar::groupcoordnum::calc_value()

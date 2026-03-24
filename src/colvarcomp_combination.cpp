@@ -10,7 +10,7 @@
 #include "colvarcomp.h"
 
 
-colvar::linearCombination::linearCombination()
+colvar::linearCombination::linearCombination(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
     set_function_type("linearCombination");
 }
@@ -170,7 +170,7 @@ void colvar::linearCombination::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 
-colvar::customColvar::customColvar()
+colvar::customColvar::customColvar(colvarmodule* cvmodule_in): colvar::linearCombination(cvmodule_in)
 {
     set_function_type("customColvar");
 }

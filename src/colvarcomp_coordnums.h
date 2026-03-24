@@ -23,7 +23,7 @@
 class colvar::coordnum : public colvar::cvc {
 public:
 
-  coordnum();
+  coordnum(colvarmodule* cvmodule_in);
   virtual ~coordnum();
   virtual int init(std::string const &conf) override;
   virtual void calc_value() override;
@@ -135,7 +135,7 @@ protected:
 class colvar::selfcoordnum : public colvar::coordnum {
 public:
 
-  selfcoordnum();
+  selfcoordnum(colvarmodule* cvmodule_in);
   virtual void calc_value();
   virtual void calc_gradients();
 
@@ -151,7 +151,7 @@ public:
 /// (colvarvalue::type_scalar type, range [0:1])
 class colvar::groupcoordnum : public colvar::coordnum {
 public:
-  groupcoordnum();
+  groupcoordnum(colvarmodule* cvmodule_in);
   virtual ~groupcoordnum() {}
   virtual void calc_value();
   virtual void calc_gradients();
@@ -165,8 +165,8 @@ class colvar::h_bond : public colvar::cvc {
 public:
   /// Constructor for atoms already allocated
   h_bond(cvm::atom_group::simple_atom const &acceptor, cvm::atom_group::simple_atom const &donor,
-         cvm::real r0, int en, int ed);
-  h_bond();
+         cvm::real r0, int en, int ed, colvarmodule* cvmodule_in);
+  h_bond(colvarmodule* cvmodule_in);
   virtual ~h_bond() {}
   virtual int init(std::string const &conf);
   virtual void calc_value();

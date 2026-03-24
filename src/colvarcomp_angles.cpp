@@ -12,7 +12,7 @@
 #include "colvarcomp.h"
 
 
-colvar::angle::angle()
+colvar::angle::angle(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("angle");
   init_as_angle();
@@ -38,7 +38,8 @@ int colvar::angle::init(std::string const &conf)
 
 colvar::angle::angle(cvm::atom_group::simple_atom const &a1,
                      cvm::atom_group::simple_atom const &a2,
-                     cvm::atom_group::simple_atom const &a3) : angle()
+                     cvm::atom_group::simple_atom const &a3,
+                     colvarmodule* cvmodule_in) : angle(cvmodule_in)
 {
   group1 = new cvm::atom_group();
   group2 = new cvm::atom_group();
@@ -124,7 +125,7 @@ void colvar::angle::calc_Jacobian_derivative()
 
 
 
-colvar::dipole_angle::dipole_angle()
+colvar::dipole_angle::dipole_angle(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("dipoleAngle");
   init_as_angle();
@@ -216,7 +217,7 @@ void colvar::dipole_angle::calc_gradients()
 
 
 
-colvar::dihedral::dihedral()
+colvar::dihedral::dihedral(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("dihedral");
   init_as_periodic_angle();
@@ -242,8 +243,9 @@ int colvar::dihedral::init(std::string const &conf)
 colvar::dihedral::dihedral(cvm::atom_group::simple_atom const &a1,
                            cvm::atom_group::simple_atom const &a2,
                            cvm::atom_group::simple_atom const &a3,
-                           cvm::atom_group::simple_atom const &a4)
-  : dihedral()
+                           cvm::atom_group::simple_atom const &a4,
+                           colvarmodule* cvmodule_in)
+  : dihedral(cvmodule_in)
 {
   b_1site_force = false;
 
@@ -351,7 +353,7 @@ void colvar::dihedral::calc_Jacobian_derivative()
 
 
 
-colvar::polar_theta::polar_theta()
+colvar::polar_theta::polar_theta(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   r = theta = phi = 0.0;
   set_function_type("polarTheta");
@@ -393,7 +395,7 @@ void colvar::polar_theta::calc_gradients()
 
 
 
-colvar::polar_phi::polar_phi()
+colvar::polar_phi::polar_phi(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   r = theta = phi = 0.0;
   set_function_type("polarPhi");
