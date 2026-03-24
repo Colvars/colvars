@@ -11,6 +11,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <cstdio>
 
 #include "colvarmodule.h"
 #include "colvar_gpu_support.h"
@@ -1941,20 +1942,18 @@ int colvarmodule::read_traj(char const *traj_filename,
       if ( (it < traj_read_begin) ) {
 
         if ((it % 1000) == 0)
-          std::cerr << "Skipping trajectory step " << it
-                    << "                    \r";
+          std::fprintf(stderr, "Skipping trajectory step %lld                    \r", (long long)it);
 
         continue;
 
       } else {
 
         if ((it % 1000) == 0)
-          std::cerr << "Reading from trajectory, step = " << it
-                    << "                    \r";
+          std::fprintf(stderr, "Reading from trajectory, step = %lld                    \r", (long long)it);
 
         if ( (traj_read_end > traj_read_begin) &&
              (it > traj_read_end) ) {
-          std::cerr << "\n";
+          std::fprintf(stderr, "\n");
           this->error("Reached the end of the trajectory, "
                      "read_end = "+this->to_str(traj_read_end)+"\n",
                      COLVARS_FILE_ERROR);
@@ -2116,7 +2115,8 @@ void colvarmodule::log(std::string const &message, int min_log_level)
       proxy->log(message + trailing_newline);
     }
   } else { // Safe without a proxy pointer
-    std::cout << message + trailing_newline;
+    // std::cout << message + trailing_newline;
+    std::printf("%s%s", message.c_str(), trailing_newline.c_str());
   }
 }
 
@@ -2207,7 +2207,7 @@ int colvarmodule::error(std::string const &message, int code)
     return get_error();
 
   } else { // Safe without a proxy pointer
-    std::cerr << prefix + message + trailing_newline;
+    std::fprintf(stderr, "%s%s%s", prefix.c_str(), message.c_str(), trailing_newline.c_str());
     return code;
   }
 }

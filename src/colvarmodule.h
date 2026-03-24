@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <memory>
+#include <cstdio>
 
 #include "colvars_version.h"
 #include "colvar_gpu_calc.h"
@@ -756,7 +757,7 @@ public:
     if (colvarmodule::main()) {
       colvarmodule::main()->log(message);
     } else {
-      std::cout << "colvars: " << message << std::endl;
+      std::printf("colvars: %s\n", message.c_str());
     }
   }
 
