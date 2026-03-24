@@ -349,30 +349,30 @@ void colvarvalue::set_elem(int const icv, colvarvalue const &x)
 }
 
 
-void colvarvalue::set_random()
+void colvarvalue::set_random(colvarmodule* cvmodule)
 {
   size_t ic;
   switch (this->type()) {
   case colvarvalue::type_scalar:
-    this->real_value = cvm::main()->rand_gaussian();
+    this->real_value = cvmodule->rand_gaussian();
     break;
   case colvarvalue::type_3vector:
   case colvarvalue::type_unit3vector:
   case colvarvalue::type_unit3vectorderiv:
-    this->rvector_value.x = cvm::main()->rand_gaussian();
-    this->rvector_value.y = cvm::main()->rand_gaussian();
-    this->rvector_value.z = cvm::main()->rand_gaussian();
+    this->rvector_value.x = cvmodule->rand_gaussian();
+    this->rvector_value.y = cvmodule->rand_gaussian();
+    this->rvector_value.z = cvmodule->rand_gaussian();
     break;
   case colvarvalue::type_quaternion:
   case colvarvalue::type_quaternionderiv:
-    this->quaternion_value.q0 = cvm::main()->rand_gaussian();
-    this->quaternion_value.q1 = cvm::main()->rand_gaussian();
-    this->quaternion_value.q2 = cvm::main()->rand_gaussian();
-    this->quaternion_value.q3 = cvm::main()->rand_gaussian();
+    this->quaternion_value.q0 = cvmodule->rand_gaussian();
+    this->quaternion_value.q1 = cvmodule->rand_gaussian();
+    this->quaternion_value.q2 = cvmodule->rand_gaussian();
+    this->quaternion_value.q3 = cvmodule->rand_gaussian();
     break;
   case colvarvalue::type_vector:
     for (ic = 0; ic < this->vector1d_value.size(); ic++) {
-      this->vector1d_value[ic] = cvm::main()->rand_gaussian();
+      this->vector1d_value[ic] = cvmodule->rand_gaussian();
     }
     break;
   case colvarvalue::type_notset:
@@ -745,7 +745,7 @@ std::string colvarvalue::to_simple_string() const
 {
   switch (type()) {
   case colvarvalue::type_scalar:
-    return cvm::to_str(real_value, 0, cvm::main()->cv_prec);
+    return cvm::to_str(real_value, 0, cvm::cv_prec);
     break;
   case colvarvalue::type_3vector:
   case colvarvalue::type_unit3vector:
