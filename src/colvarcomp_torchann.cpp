@@ -18,7 +18,7 @@
 
 #ifdef COLVARS_TORCH
 
-colvar::torchANN::torchANN()
+colvar::torchANN::torchANN(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("torchANN");
   provide(f_cvc_periodic);
@@ -213,7 +213,7 @@ void colvar::torchANN::apply_force(colvarvalue const &force) {
 
 #else
 
-colvar::torchANN::torchANN()
+colvar::torchANN::torchANN(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("torchANN");
 }

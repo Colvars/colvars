@@ -20,7 +20,7 @@
 
 
 
-colvar::CartesianBasedPath::CartesianBasedPath()
+colvar::CartesianBasedPath::CartesianBasedPath(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
     x.type(colvarvalue::type_scalar);
     // Don't use implicit gradient
@@ -178,7 +178,7 @@ void colvar::CartesianBasedPath::apply_force(colvarvalue const &force)
 
 
 
-colvar::gspath::gspath()
+colvar::gspath::gspath(colvarmodule* cvmodule_in): colvar::CartesianBasedPath(cvmodule_in)
 {
     set_function_type("gspath");
 }
@@ -342,7 +342,7 @@ void colvar::gspath::apply_force(colvarvalue const &force) {
 }
 
 
-colvar::gzpath::gzpath()
+colvar::gzpath::gzpath(colvarmodule* cvmodule_in): colvar::CartesianBasedPath(cvmodule_in)
 {
     set_function_type("gzpath");
 }
@@ -496,7 +496,7 @@ void colvar::gzpath::apply_force(colvarvalue const &force) {
 }
 
 
-colvar::CVBasedPath::CVBasedPath()
+colvar::CVBasedPath::CVBasedPath(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
     set_function_type("gspathCV");
     x.type(colvarvalue::type_scalar);
@@ -699,7 +699,7 @@ void colvar::CVBasedPath::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 
-colvar::gspathCV::gspathCV()
+colvar::gspathCV::gspathCV(colvarmodule* cvmodule_in): colvar::CVBasedPath(cvmodule_in)
 {
     set_function_type("gspathCV");
     x.type(colvarvalue::type_scalar);
@@ -837,7 +837,7 @@ void colvar::gspathCV::apply_force(colvarvalue const &force) {
     }
 }
 
-colvar::gzpathCV::gzpathCV()
+colvar::gzpathCV::gzpathCV(colvarmodule* cvmodule_in): colvar::CVBasedPath(cvmodule_in)
 {
     set_function_type("gzpathCV");
 }

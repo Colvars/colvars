@@ -277,7 +277,7 @@ public:
   void set_elem(int const i_begin, int const i_end, colvarvalue const &x);
 
   /// Make each element a random number in N(0,1)
-  void set_random();
+  void set_random(colvarmodule* cvmodule);
 
   /// Make each element equal to the given argument
   void set_ones(cvm::real assigned_value = 1.0);

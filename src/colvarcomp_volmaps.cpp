@@ -14,7 +14,7 @@
 
 
 
-colvar::map_total::map_total()
+colvar::map_total::map_total(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("mapTotal");
   x.type(colvarvalue::type_scalar);

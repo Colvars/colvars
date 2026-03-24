@@ -821,8 +821,8 @@ template <typename def_class_name>
 void colvar::add_component_type(char const *def_description, char const *def_config_key)
 {
   if (global_cvc_map.count(def_config_key) == 0) {
-    global_cvc_map[def_config_key] = []() {
-      return new def_class_name();
+    global_cvc_map[def_config_key] = [&]() {
+      return new def_class_name(cvmodule);
     };
     global_cvc_desc_map[def_config_key] = std::string(def_description);
   }
@@ -1990,7 +1990,7 @@ void colvar::update_extended_Lagrangian()
   // [O] leap to v_(i+1/2) (10c)
   if (is_enabled(f_cv_Langevin)) {
     colvarvalue rnd(x);
-    rnd.set_random();
+    rnd.set_random(this->cvmodule);
     // ext_sigma has been computed at init time according to (10c)
     v_ext = cvm::exp(- 1.0 * dt * ext_gamma) * v_ext + ext_sigma * rnd / ext_mass;
   }

@@ -936,7 +936,7 @@ void colvaratoms_gpu::do_feature_side_effects_gpu(
       break;
     }
     case colvardeps::f_ag_rotate: {
-      rot_gpu.init();
+      rot_gpu.init(this->cvmodule);
       break;
     }
   }
@@ -948,7 +948,7 @@ int colvaratoms_gpu::setup_rotation(const cvm::atom_group* cpu_atoms) {
   error_code |= p->reallocate_device(&gpu_buffers.d_ref_pos, cpu_atoms->ref_pos.size());
   error_code |=p->copy_HtoD(cpu_atoms->ref_pos.data(), gpu_buffers.d_ref_pos, cpu_atoms->ref_pos.size());
   error_code |=p->copy_HtoD(&cpu_atoms->ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
-  rot_gpu.init();
+  rot_gpu.init(this->cvmodule);
   return error_code;
 }
 

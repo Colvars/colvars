@@ -19,12 +19,12 @@
 
 
 // This constructor depends on a static cvm pointer and is deprecated
-colvar::cvc::cvc()
- : colvardeps(cvm::main())
-{
-  description = "uninitialized colvar component";
-  cvc::init_dependencies();
-}
+// colvar::cvc::cvc()
+//  : colvardeps(cvm::main())
+// {
+//   description = "uninitialized colvar component";
+//   cvc::init_dependencies();
+// }
 
 
 colvar::cvc::cvc(colvarmodule *cvmodule_in)

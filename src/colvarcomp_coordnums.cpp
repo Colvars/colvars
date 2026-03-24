@@ -122,7 +122,7 @@ cvm::real colvar::coordnum::switching_function(cvm::real const &r0,
 }
 
 
-colvar::coordnum::coordnum()
+colvar::coordnum::coordnum(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("coordNum");
   x.type(colvarvalue::type_scalar);
@@ -357,7 +357,7 @@ void colvar::coordnum::calc_gradients()
 
 // h_bond member functions
 
-colvar::h_bond::h_bond()
+colvar::h_bond::h_bond(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   colvarproxy *proxy = cvmodule->proxy;
   r0 = proxy->angstrom_to_internal(3.3);
@@ -415,8 +415,8 @@ int colvar::h_bond::init(std::string const &conf)
 
 colvar::h_bond::h_bond(cvm::atom_group::simple_atom const &acceptor,
                        cvm::atom_group::simple_atom const &donor,
-                       cvm::real r0_i, int en_i, int ed_i)
-  : h_bond()
+                       cvm::real r0_i, int en_i, int ed_i, colvarmodule* cvmodule_in)
+  : h_bond(cvmodule_in)
 {
   r0 = r0_i;
   en = en_i;
@@ -496,7 +496,7 @@ void colvar::h_bond::calc_gradients()
 
 
 
-colvar::selfcoordnum::selfcoordnum()
+colvar::selfcoordnum::selfcoordnum(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("selfCoordNum");
   x.type(colvarvalue::type_scalar);
@@ -639,7 +639,7 @@ void colvar::selfcoordnum::calc_gradients()
 
 
 
-colvar::groupcoordnum::groupcoordnum()
+colvar::groupcoordnum::groupcoordnum(colvarmodule* cvmodule_in): colvar::distance(cvmodule_in)
 {
   set_function_type("groupCoord");
   x.type(colvarvalue::type_scalar);

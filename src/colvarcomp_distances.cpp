@@ -21,7 +21,7 @@
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 
-colvar::distance::distance()
+colvar::distance::distance(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("distance");
   init_as_distance();
@@ -88,7 +88,7 @@ void colvar::distance::calc_Jacobian_derivative()
 
 
 
-colvar::distance_vec::distance_vec()
+colvar::distance_vec::distance_vec(colvarmodule* cvmodule_in): colvar::distance(cvmodule_in)
 {
   set_function_type("distanceVec");
   disable(f_cvc_explicit_gradient);
@@ -151,7 +151,7 @@ colvarvalue colvar::distance_vec::dist2_rgrad(colvarvalue const &x1, colvarvalue
 void colvar::distance_vec::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
-colvar::distance_z::distance_z()
+colvar::distance_z::distance_z(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("distanceZ");
   provide(f_cvc_inv_gradient);
@@ -262,7 +262,7 @@ void colvar::distance_z::calc_Jacobian_derivative()
 
 
 
-colvar::distance_xy::distance_xy()
+colvar::distance_xy::distance_xy(colvarmodule* cvmodule_in): colvar::distance_z(cvmodule_in)
 {
   set_function_type("distanceXY");
   provide(f_cvc_periodic, false); // Disable inherited distance_z flag
@@ -343,7 +343,7 @@ void colvar::distance_xy::calc_Jacobian_derivative()
 
 
 
-colvar::distance_dir::distance_dir()
+colvar::distance_dir::distance_dir(colvarmodule* cvmodule_in): colvar::distance(cvmodule_in)
 {
   set_function_type("distanceDir");
   enable(f_cvc_com_based);
@@ -411,7 +411,7 @@ void colvar::distance_dir::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 
-colvar::distance_inv::distance_inv()
+colvar::distance_inv::distance_inv(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("distanceInv");
   init_as_distance();
@@ -514,7 +514,7 @@ void colvar::distance_inv::calc_gradients()
 
 
 
-colvar::distance_pairs::distance_pairs()
+colvar::distance_pairs::distance_pairs(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("distancePairs");
   disable(f_cvc_explicit_gradient);
@@ -635,7 +635,7 @@ void colvar::distance_pairs::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 
-colvar::dipole_magnitude::dipole_magnitude()
+colvar::dipole_magnitude::dipole_magnitude(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("dipoleMagnitude");
   x.type(colvarvalue::type_scalar);
@@ -674,7 +674,7 @@ void colvar::dipole_magnitude::calc_gradients()
 
 
 
-colvar::gyration::gyration()
+colvar::gyration::gyration(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("gyration");
   provide(f_cvc_inv_gradient);
@@ -744,7 +744,7 @@ void colvar::gyration::calc_Jacobian_derivative()
 
 
 
-colvar::inertia::inertia()
+colvar::inertia::inertia(colvarmodule* cvmodule_in): colvar::gyration(cvmodule_in)
 {
   set_function_type("inertia");
 }
@@ -770,7 +770,7 @@ void colvar::inertia::calc_gradients()
 
 
 
-colvar::inertia_z::inertia_z()
+colvar::inertia_z::inertia_z(colvarmodule* cvmodule_in): colvar::inertia(cvmodule_in)
 {
   set_function_type("inertiaZ");
 }
@@ -821,7 +821,7 @@ void colvar::inertia_z::calc_gradients()
 
 
 
-colvar::rmsd::rmsd()
+colvar::rmsd::rmsd(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("rmsd");
   init_as_distance();
@@ -1285,7 +1285,7 @@ int colvar::rmsd::calc_Jacobian_derivative_after_gpu() {
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 
-colvar::eigenvector::eigenvector()
+colvar::eigenvector::eigenvector(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("eigenvector");
   provide(f_cvc_inv_gradient);
@@ -1577,7 +1577,7 @@ void colvar::eigenvector::calc_Jacobian_derivative()
 
 
 
-colvar::cartesian::cartesian()
+colvar::cartesian::cartesian(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("cartesian");
   x.type(colvarvalue::type_vector);
