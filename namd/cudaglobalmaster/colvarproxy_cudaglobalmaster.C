@@ -58,7 +58,7 @@ enum e_pdb_field {
 };
 
 // Copied from colvarproxy_namd.C
-e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
+e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str, colvarmodule* cvmodule)
 {
   e_pdb_field pdb_field = e_pdb_none;
 
@@ -258,7 +258,8 @@ colvarproxy_impl::colvarproxy_impl(
   mAtomsChanged(false),
   first_timestep(true), previous_NAMD_step(0),
   simParams(s), molecule(m), mScriptTcl(t) {
-  colvars = nullptr;
+  // colvars = nullptr;
+  cvmodule = nullptr;
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   mEventAttrib.version = NVTX_VERSION;
   mEventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
@@ -288,7 +289,7 @@ int colvarproxy_impl::reset() {
 int colvarproxy_impl::setup() {
   colvarproxy::parse_module_config();
   int error_code = colvarproxy::setup();
-  if (colvars->size() == 0) {
+  if (cvmodule->size() == 0) {
     // Module is empty, nothing to do
     return COLVARS_OK;
   }
@@ -300,11 +301,11 @@ int colvarproxy_impl::setup() {
   set_integration_timestep(simParams->dt);
   log("updating target temperature (T = "+
       cvm::to_str(target_temperature())+" K).\n");
-  error_code |= colvars->update_engine_parameters();
-  error_code |= colvars->setup_input();
-  error_code |= colvars->setup_output();
+  error_code |= cvmodule->update_engine_parameters();
+  error_code |= cvmodule->setup_input();
+  error_code |= cvmodule->setup_output();
   if (has_gpu_support()) {
-    cvm::log("Warning: the GPU support in Colvars is still experimental!\n");
+    cvmodule->log("Warning: the GPU support in Colvars is still experimental!\n");
   }
   return error_code;
 }
@@ -333,20 +334,22 @@ void colvarproxy_impl::initialize_from_cudagm(
   updated_masses_ = updated_charges_ = true;
   engine_name_ = "NAMD_CUDAGLOBALMASTER";
   // if (colvars != nullptr) delete colvars;
-  if (colvars == nullptr) {
-    colvars = new colvarmodule(this);
+  if (cvmodule == nullptr) {
+    // std::cerr << "Creating cvmodule" << std::endl;
+    // printf("Creating cvmodule\n");
+    cvmodule = new colvarmodule(this);
   }
-  cvm::log("Using " + engine_name_ + " interface, version "+
+  cvmodule->log("Using " + engine_name_ + " interface, version "+
            cvm::to_str(0)+".\n");
-  colvars->cite_feature("NAMD engine");
-  colvars->cite_feature("Colvars-NAMD interface");
+  cvmodule->cite_feature("NAMD engine");
+  cvmodule->cite_feature("Colvars-NAMD interface");
   for (auto it = mConfigFiles.begin(); it != mConfigFiles.end(); ++it) {
     add_config("configfile", *it);
   }
   update_target_temperature();
   setup();
   if (simParams->firstTimestep != 0) {
-    colvars->set_initial_step(static_cast<cvm::step_number>(simParams->firstTimestep));
+    cvmodule->set_initial_step(static_cast<cvm::step_number>(simParams->firstTimestep));
   }
   colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
   colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
@@ -430,7 +433,7 @@ int colvarproxy_impl::check_atom_id(int atom_number) {
 
 // Copied from colvarproxy_namd.C
 int colvarproxy_impl::set_unit_system(std::string const &units_in, bool /*check_only*/) {
-  cvm::log("units_in = " + units_in + "\n");
+  cvmodule->log("units_in = " + units_in + "\n");
   if (units_in != "real") {
     cvmodule->error("Error: Specified unit system \"" + units_in + "\" is unsupported in NAMD. Supported units are \"real\" (A, kcal/mol).\n");
     return COLVARS_ERROR;
@@ -451,7 +454,7 @@ void colvarproxy_impl::log(std::string const &message) {
 void colvarproxy_impl::error(std::string const &message)
 {
   log(message);
-  switch (cvm::get_error()) {
+  switch (cvmodule->get_error()) {
   case COLVARS_FILE_ERROR:
     errno = EIO; break;
   case COLVARS_NOT_IMPLEMENTED:
@@ -483,7 +486,7 @@ int colvarproxy_impl::load_coords_pdb(char const *pdb_filename,
   e_pdb_field pdb_field_index;
   bool const use_pdb_field = (pdb_field_str.size() > 0);
   if (use_pdb_field) {
-    pdb_field_index = pdb_field_str2enum(pdb_field_str);
+    pdb_field_index = pdb_field_str2enum(pdb_field_str, this->cvmodule);
   }
 
   // next index to be looked up in PDB file (if list is supplied)
@@ -593,7 +596,7 @@ int colvarproxy_impl::load_atoms_pdb(char const *pdb_filename,
   PDB *pdb = new PDB(pdb_filename);
   size_t const pdb_natoms = pdb->num_atoms();
 
-  e_pdb_field pdb_field_index = pdb_field_str2enum(pdb_field_str);
+  e_pdb_field pdb_field_index = pdb_field_str2enum(pdb_field_str, cvmodule);
   auto modify_atoms = atoms.get_atom_modifier();
   for (size_t ipdb = 0; ipdb < pdb_natoms; ipdb++) {
 
@@ -634,7 +637,7 @@ int colvarproxy_impl::load_atoms_pdb(char const *pdb_filename,
   }
 
   delete pdb;
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return (cvmodule->get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 void colvarproxy_impl::allocateDeviceArrays() {
@@ -795,13 +798,13 @@ void colvarproxy_impl::calculate() {
   if (first_timestep) {
     // setup();
     update_target_temperature();
-    colvars->update_engine_parameters();
-    colvars->setup_input();
-    colvars->setup_output();
+    cvmodule->update_engine_parameters();
+    cvmodule->setup_input();
+    cvmodule->setup_output();
     first_timestep = false;
   } else {
     if ( step - previous_NAMD_step == 1 ) {
-      colvars->it++;
+      cvmodule->it++;
       b_simulation_continuing = false;
     } else {
       // Cases covered by this condition:
@@ -814,7 +817,7 @@ void colvarproxy_impl::calculate() {
       colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
       colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
       colvarproxy_io::set_default_restart_frequency(simParams->restartFrequency);
-      colvars->setup_output();
+      cvmodule->setup_output();
     }
   }
   previous_NAMD_step = step;
@@ -830,7 +833,7 @@ void colvarproxy_impl::calculate() {
   if (cvm::debug()) {
     print_input_atomic_data();
   }
-  if (colvars->calc() != COLVARS_OK) {
+  if (cvmodule->calc() != COLVARS_OK) {
     cvmodule->error("Error in the collective variables module.\n", COLVARS_ERROR);
   }
   if (cvm::debug()) {
@@ -873,7 +876,7 @@ std::ostream & colvarproxy_impl::output_stream(std::string const &output_name,
                                                std::string const description)
 {
   if (cvm::debug()) {
-    cvm::log("Using colvarproxy_namd::output_stream()\n");
+    cvmodule->log("Using colvarproxy_namd::output_stream()\n");
   }
 
   if (!io_available()) {

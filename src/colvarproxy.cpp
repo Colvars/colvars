@@ -731,7 +731,7 @@ void colvarproxy::print_output_atomic_data()
 
 void colvarproxy::log(std::string const &message)
 {
-  fprintf(stdout, "colvars: %s", message.c_str());
+  std::fprintf(stdout, "colvars: %s", message.c_str());
 }
 
 

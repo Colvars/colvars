@@ -1,7 +1,6 @@
 #include "colvargrid_integrate.h"
 
-#include <iostream>
-#include <iomanip>
+#include <cstdio>
 
 
 colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
@@ -677,8 +676,9 @@ void colvargrid_integrate::nr_linbcg_sym(const std::vector<cvm::real> &b, std::v
     }
 //     asolve(r,z);  // precon
     err = l2norm(r)/bnrm;
-    if (cvm::debug())
-      std::cout << "iter=" << std::setw(4) << iter+1 << std::setw(12) << err << std::endl;
+    if (cvm::debug()) {
+      std::printf("iter=%4d %12lf\n", iter+1, err);
+    }
     if (err <= tol)
       break;
   }
