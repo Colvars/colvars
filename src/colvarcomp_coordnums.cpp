@@ -232,11 +232,13 @@ void inline colvar::coordnum::main_loop()
          compute_pair_coordnum<flags | ef_use_internal_pbc>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                                             x1, y1, z1, x2, y2, z2,
                                                             gx1, gy1, gz1, gx2, gy2, gz2,
-                                                            tolerance, tolerance_l2_max) :
+                                                            tolerance, tolerance_l2_max,
+                                                            cvmodule) :
          compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                       x1, y1, z1, x2, y2, z2,
                                       gx1, gy1, gz1, gx2, gy2, gz2,
-                                      tolerance, tolerance_l2_max) ) :
+                                      tolerance, tolerance_l2_max,
+                                      cvmodule) ) :
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
@@ -444,7 +446,8 @@ void colvar::h_bond::calc_value()
                                                         atom_groups[0]->grad_x(1),
                                                         atom_groups[0]->grad_y(1),
                                                         atom_groups[0]->grad_z(1),
-                                                        0.0, 1.0e20);
+                                                        0.0, 1.0e20,
+                                                        cvmodule);
   // Skip the gradient
 }
 
@@ -475,7 +478,8 @@ void colvar::h_bond::calc_gradients()
                                          atom_groups[0]->grad_x(1),
                                          atom_groups[0]->grad_y(1),
                                          atom_groups[0]->grad_z(1),
-                                         0.0, 1.0e20);
+                                         0.0, 1.0e20,
+                                         cvmodule);
 }
 
 
@@ -517,11 +521,13 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
          compute_pair_coordnum<flags | ef_use_internal_pbc>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                                             x1, y1, z1, x2, y2, z2,
                                                             gx1, gy1, gz1, gx2, gy2, gz2,
-                                                            tolerance, tolerance_l2_max) :
+                                                            tolerance, tolerance_l2_max,
+                                                            cvmodule) :
          compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
                                       x1, y1, z1, x2, y2, z2,
                                       gx1, gy1, gz1, gx2, gy2, gz2,
-                                      tolerance, tolerance_l2_max) ) :
+                                      tolerance, tolerance_l2_max,
+                                      cvmodule) ) :
         0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
