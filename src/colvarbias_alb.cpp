@@ -31,7 +31,7 @@ double fmin(double A, double B) { return ( A < B ? A : B ); }
  */
 
 colvarbias_alb::colvarbias_alb(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key), update_calls(0), b_equilibration(true)
+  : colvardeps(cvmodule_in), colvarbias(cvmodule_in, key), update_calls(0), b_equilibration(true)
 {
 }
 

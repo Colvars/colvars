@@ -278,8 +278,8 @@ int colvarbias::reset()
 }
 
 
-colvarbias::colvarbias()
-  : has_data(false)
+colvarbias::colvarbias(colvarmodule* cvmodule_in)
+  : colvardeps(cvmodule_in), has_data(false)
 {}
 
 
@@ -810,7 +810,7 @@ std::ostream & colvarbias::write_traj(std::ostream &os)
 }
 
 
-colvarbias_ti::colvarbias_ti(char const *key)
+colvarbias_ti::colvarbias_ti(colvarmodule* cvmodule_in, char const *key): colvardeps(cvmodule_in), colvarbias(cvmodule_in)
 {
   colvarproxy *proxy = cvmodule->proxy;
   provide(f_cvb_calc_ti_samples);

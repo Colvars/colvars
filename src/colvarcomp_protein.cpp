@@ -34,7 +34,7 @@ int colvar::alpha_angles::init(std::string const &conf)
   std::vector<int> residues;
 
   bool b_use_index_groups = false;
-  cvm::atom_group group_CA, group_N, group_O;
+  cvm::atom_group group_CA(cvmodule), group_N(cvmodule), group_O(cvmodule);
 
   std::string residues_conf = "";
   std::string prefix;
@@ -361,7 +361,7 @@ int colvar::dihedPC::init(std::string const &conf)
   size_t n_residues;
   std::string residues_conf = "";
   std::string prefix;
-  cvm::atom_group group_CA, group_N, group_C;
+  cvm::atom_group group_CA(cvmodule), group_N(cvmodule), group_C(cvmodule);
 
   // residueRange is mandatory for the topology-based case
   if (key_lookup(conf, "residueRange", &residues_conf)) {

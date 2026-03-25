@@ -12,7 +12,7 @@
 #include "colvars_memstream.h"
 
 colvarbias_reweightaMD::colvarbias_reweightaMD(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias_histogram(cvmodule_in, key) {}
+  : colvardeps(cvmodule_in), colvarbias_histogram(cvmodule_in, key) {}
 
 colvarbias_reweightaMD::~colvarbias_reweightaMD() {}
 

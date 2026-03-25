@@ -41,9 +41,9 @@ colvar::angle::angle(cvm::atom_group::simple_atom const &a1,
                      cvm::atom_group::simple_atom const &a3,
                      colvarmodule* cvmodule_in) : angle(cvmodule_in)
 {
-  group1 = new cvm::atom_group();
-  group2 = new cvm::atom_group();
-  group3 = new cvm::atom_group();
+  group1 = new cvm::atom_group(cvmodule);
+  group2 = new cvm::atom_group(cvmodule);
+  group3 = new cvm::atom_group(cvmodule);
   {
     auto modify_group1 = group1->get_atom_modifier();
     auto modify_group2 = group2->get_atom_modifier();
@@ -255,10 +255,10 @@ colvar::dihedral::dihedral(cvm::atom_group::simple_atom const &a1,
 {
   b_1site_force = false;
 
-  group1 = new cvm::atom_group();
-  group2 = new cvm::atom_group();
-  group3 = new cvm::atom_group();
-  group4 = new cvm::atom_group();
+  group1 = new cvm::atom_group(cvmodule);
+  group2 = new cvm::atom_group(cvmodule);
+  group3 = new cvm::atom_group(cvmodule);
+  group4 = new cvm::atom_group(cvmodule);
   {
     auto modify_group1 = group1->get_atom_modifier();
     auto modify_group2 = group2->get_atom_modifier();

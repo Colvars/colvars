@@ -44,7 +44,7 @@
 
 
 colvarbias_opes::colvarbias_opes(colvarmodule *cvmodule_in, char const *key):
-  colvarbias(cvmodule_in, key), m_kbt(0), m_barrier(0), m_biasfactor(0),
+  colvardeps(cvmodule_in), colvarbias(cvmodule_in, key), m_kbt(0), m_barrier(0), m_biasfactor(0),
   m_bias_prefactor(0), m_temperature(0),
   m_pace(0), m_adaptive_sigma_stride(0),
   m_adaptive_counter(0), m_counter(1),
