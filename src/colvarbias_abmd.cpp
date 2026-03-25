@@ -14,9 +14,8 @@
 
 
 colvarbias_abmd::colvarbias_abmd(colvarmodule *cvmodule_in, char const *key)
-  : colvardeps(colvardeps::object_t::colvarbias),
-    colvarbias(cvmodule_in, key),
-    colvarbias_ti(key)
+  : colvardeps(colvardeps::object_t::colvarbias, cvmodule_in), colvarbias(cvmodule_in, key),
+    colvarbias_ti(cvmodule_in, key)
 {
 }
 

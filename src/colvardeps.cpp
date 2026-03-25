@@ -13,16 +13,6 @@
 #include "colvardeps.h"
 
 
-// This constructor depends on a static cvm pointer and is deprecated
-colvardeps::colvardeps(object_t type_in)
-  : colvarparse(cvm::main()), my_type(type_in)
-{
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  init_gpu();
-#endif
-}
-
-
 colvardeps::colvardeps(object_t type_in, colvarmodule *cvmodulein)
   : colvarparse(cvmodulein), my_type(type_in)
 {
