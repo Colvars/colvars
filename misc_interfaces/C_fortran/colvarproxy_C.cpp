@@ -10,8 +10,8 @@ static colvarproxy* unique_colvarproxy_object;
 colvarproxy_C::colvarproxy_C()
 {
     std::cerr << "This is the colvarproxy_C constructor at address " << this << std::endl;
-    colvars = new colvarmodule(this);
-    cvmodule->log("This is the Module speaking.");
+    cvmodule = new colvarmodule(this);
+    cvmodule->log_static("This is the Module speaking.");
 }
 
 colvarproxy_C::~colvarproxy_C()

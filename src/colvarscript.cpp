@@ -616,8 +616,10 @@ int colvarscript::clear_str_result()
 
 
 extern "C"
-int run_colvarscript_command(colvarscript *script, int objc, unsigned char *const objv[])
+int run_colvarscript_command(void* proxy_in, int objc, unsigned char *const objv[])
 {
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  colvarscript* script = proxy->script;
   if (!script) {
     cvm::error_static("Called run_colvarscript_command without a script object.\n",
                COLVARS_BUG_ERROR);
@@ -629,9 +631,10 @@ int run_colvarscript_command(colvarscript *script, int objc, unsigned char *cons
 
 
 extern "C"
-const char * get_colvarscript_result()
+const char * get_colvarscript_result(void* proxy_in)
 {
-  colvarscript *script = colvarscript_obj();
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  colvarscript* script = proxy->script;
   if (!script) {
     cvm::error_static("Called get_colvarscript_result without a script object.\n");
     return NULL;
