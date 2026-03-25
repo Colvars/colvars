@@ -5,10 +5,11 @@
 #include <iomanip>
 #include <iostream>
 
-colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
+colvargrid_integrate::colvargrid_integrate(colvarmodule* cvmodule_in,
+    std::vector<colvar *> &colvars,
     std::shared_ptr<colvar_grid_gradient> gradients_in,
     bool weighted_in)
-  : colvar_grid_scalar(colvars, gradients_in, true),
+  : colvar_grid_scalar(cvmodule_in, colvars, gradients_in, true),
     b_smoothed(false),
     weighted(weighted_in),
     gradients(gradients_in)
@@ -25,9 +26,11 @@ colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
 }
 
 
-colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients_in,
+colvargrid_integrate::colvargrid_integrate(colvarmodule* cvmodule_in,
+    std::shared_ptr<colvar_grid_gradient> gradients_in,
     bool weighted_in)
-  : b_smoothed(false),
+  : colvar_grid_scalar(cvmodule_in),
+    b_smoothed(false),
     weighted(weighted_in),
     gradients(gradients_in)
 {
@@ -1294,7 +1297,7 @@ int colvargrid_integrate::init_Poisson_computation()
   if (!need_to_extrapolate_solution) {
     computation_grid = this;
   } else {
-    computation_grid = new colvar_grid_scalar();
+    computation_grid = new colvar_grid_scalar(cvmodule);
     computation_grid->periodic = periodic;
     computation_grid->setup(computation_nx);
   }
