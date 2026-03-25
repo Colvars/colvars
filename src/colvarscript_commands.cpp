@@ -26,57 +26,50 @@ int cvscript_n_commands()
 
 
 extern "C"
-char const **cvscript_command_names()
+char const **cvscript_command_names(colvarscript *script)
 {
-  colvarscript *script = colvarscript_obj();
   return script->get_command_names();
 }
 
 
 extern "C"
-char const *cvscript_command_help(char const *c)
+char const *cvscript_command_help(colvarscript *script, char const *c)
 {
-  colvarscript *script = colvarscript_obj();
   return script->get_command_help(c);
 }
 
 
 extern "C"
-char const *cvscript_command_rethelp(char const *c)
+char const *cvscript_command_rethelp(colvarscript *script, char const *c)
 {
-  colvarscript *script = colvarscript_obj();
   return script->get_command_rethelp(c);
 }
 
 
 extern "C"
-char const *cvscript_command_arghelp(char const *c, int i)
+char const *cvscript_command_arghelp(colvarscript *script, char const *c, int i)
 {
-  colvarscript *script = colvarscript_obj();
   return script->get_command_arghelp(c, i);
 }
 
 
 extern "C"
-char const *cvscript_command_full_help(char const *c)
+char const *cvscript_command_full_help(colvarscript *script, char const *c)
 {
-  colvarscript *script = colvarscript_obj();
   return script->get_command_full_help(c);
 }
 
 
 extern "C"
-int cvscript_command_n_args_min(char const *c)
+int cvscript_command_n_args_min(colvarscript *script, char const *c)
 {
-  colvarscript *script = colvarscript_obj();
   return script->get_command_n_args_min(c);
 }
 
 
 extern "C"
-int cvscript_command_n_args_max(char const *c)
+int cvscript_command_n_args_max(colvarscript *script, char const *c)
 {
-  colvarscript *script = colvarscript_obj();
   return script->get_command_n_args_max(c);
 }
 
