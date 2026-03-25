@@ -27,7 +27,7 @@ int colvar::linearCombination::init(std::string const &conf)
             std::vector<std::string> sub_cvc_confs;
             get_key_string_multi_value(conf, it_cv_map->first.c_str(), sub_cvc_confs);
             for (auto it_sub_cvc_conf = sub_cvc_confs.begin(); it_sub_cvc_conf != sub_cvc_confs.end(); ++it_sub_cvc_conf) {
-                cv.push_back((it_cv_map->second)());
+                cv.push_back((it_cv_map->second)(cvmodule));
                 cv.back()->init(*(it_sub_cvc_conf));
                 if (cv.back()->has_gpu_implementation()) {
                     // TODO: GPU support for nested CVs
