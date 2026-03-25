@@ -18,7 +18,7 @@
 
 #ifdef COLVARS_TORCH
 
-colvar::torchANN::torchANN(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
+colvar::torchANN::torchANN(colvarmodule* cvmodule_in): colvar::linearCombination(cvmodule_in)
 {
   set_function_type("torchANN");
   provide(f_cvc_periodic);
