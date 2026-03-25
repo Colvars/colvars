@@ -365,7 +365,7 @@ int colvar::h_bond::init(std::string const &conf)
     error_code |= cvmodule->error("Error: either acceptor or donor undefined.\n", COLVARS_INPUT_ERROR);
   }
 
-  register_atom_group(new cvm::atom_group);
+  register_atom_group(new cvm::atom_group(cvmodule));
   {
     colvarproxy* const p = cvmodule->proxy;
     auto modify_atom = atom_groups[0]->get_atom_modifier();
@@ -404,7 +404,7 @@ colvar::h_bond::h_bond(cvm::atom_group::simple_atom const &acceptor,
   r0_vec = {r0_i, r0_i, r0_i};
   en = en_i;
   ed = ed_i;
-  register_atom_group(new cvm::atom_group);
+  register_atom_group(new cvm::atom_group(cvmodule));
   auto modify_atom = atom_groups[0]->get_atom_modifier();
   modify_atom.add_atom(acceptor);
   modify_atom.add_atom(donor);

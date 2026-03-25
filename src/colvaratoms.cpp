@@ -93,7 +93,8 @@ cvm::atom_group::simple_atom cvm::atom_group::init_atom_from_proxy(
     /*.grad = */{0, 0, 0}};
 }
 
-cvm::atom_group::atom_group():
+cvm::atom_group::atom_group(colvarmodule* cvmodule_in):
+  colvardeps(cvmodule_in),
   b_dummy(false),
   fitting_group(nullptr),
   noforce(false), b_user_defined_fit(false),
@@ -108,7 +109,7 @@ cvm::atom_group::atom_group():
   init();
 }
 
-cvm::atom_group::atom_group(char const *key_in): atom_group() {
+cvm::atom_group::atom_group(char const *key_in, colvarmodule* cvmodule_in): atom_group(cvmodule_in) {
   key = std::string(key_in);
   init();
 }
@@ -837,7 +838,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf) {
         return COLVARS_INPUT_ERROR;
       }
       cvmodule->log("Within atom group \""+key+"\":\n");
-      fitting_group = new atom_group("fittingGroup");
+      fitting_group = new atom_group("fittingGroup", cvmodule);
       if (fitting_group->parse(fitting_group_conf) == COLVARS_OK) {
         fitting_group->check_keywords(fitting_group_conf, "fittingGroup");
         if (cvmodule->get_error()) {

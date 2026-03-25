@@ -124,7 +124,7 @@ public:
 protected:
 
   /// Default constructor
-  colvarbias();
+  colvarbias(colvarmodule* cvmodule_in);
 
   /// Copy constructor
   colvarbias(colvarbias &);
@@ -336,7 +336,7 @@ class colvar_grid_count;
 class colvarbias_ti : public virtual colvarbias {
 public:
 
-  colvarbias_ti(char const *key);
+  colvarbias_ti(colvarmodule* cvmodule_in, char const *key);
   virtual ~colvarbias_ti();
 
   virtual int init(std::string const &conf);

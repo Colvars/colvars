@@ -17,7 +17,7 @@
 
 
 colvarbias_histogram::colvarbias_histogram(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key),
+  : colvardeps(cvmodule_in), colvarbias(cvmodule_in, key),
     grid(NULL), out_name("")
 {
   provide(f_cvb_bypass_ext_lagrangian); // Allow histograms of actual cv for extended-Lagrangian

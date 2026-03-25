@@ -184,7 +184,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
   std::string group_conf;
 
   if (key_lookup(conf, group_key, &group_conf)) {
-    group = new cvm::atom_group(group_key);
+    group = new cvm::atom_group(group_key, cvmodule);
 
     if (b_try_scalable) {
       if (is_available(f_cvc_scalable_com)
