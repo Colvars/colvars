@@ -59,38 +59,40 @@
 // Utility functions used to query the command database
 extern "C" {
 
+  class colvarscript;
+
   /// Get the number of colvarscript commands
   int cvscript_n_commands();
 
   /// Get the names of all commands (array of strings)
-  char const ** cvscript_command_names();
+  char const ** cvscript_command_names(colvarscript *script);
 
   /// Get the help summary of the given command
   /// \param cmd Name of the command's function (e.g. "cv_units")
-  char const *cvscript_command_help(char const *cmd);
+  char const *cvscript_command_help(colvarscript *script, char const *cmd);
 
   /// Get description of the return value of a command
   /// \param cmd Name of the command's function (e.g. "cv_units")
-  char const *cvscript_command_rethelp(char const *cmd);
+  char const *cvscript_command_rethelp(colvarscript *script, char const *cmd);
 
   /// Get description of the arguments of a command (excluding prefix)
   /// \param cmd Name of the command's function (e.g. "cv_units")
   /// \param i Index of the argument; 0 is the first argument after the
   /// prefix, e.g. "value" has an index of 0 in the array of arguments:
   /// { "cv", "colvar", "xi", "value" }
-  char const *cvscript_command_arghelp(char const *cmd, int i);
+  char const *cvscript_command_arghelp(colvarscript *script, char const *cmd, int i);
 
   /// Get the full help string of a command
   /// \param cmd Name of the command's function (e.g. "cv_units")
-  char const *cvscript_command_full_help(char const *cmd);
+  char const *cvscript_command_full_help(colvarscript *script, char const *cmd);
 
   /// Get number of required arguments (excluding prefix)
   /// \param cmd Name of the command's function (e.g. "cv_units")
-  int cvscript_command_n_args_min(char const *cmd);
+  int cvscript_command_n_args_min(colvarscript *script, char const *cmd);
 
   /// Get number of total arguments (excluding prefix)
   /// \param cmd Name of the command's function (e.g. "cv_units")
-  int cvscript_command_n_args_max(char const *cmd);
+  int cvscript_command_n_args_max(colvarscript *script, char const *cmd);
 
 }
 
@@ -439,7 +441,7 @@ CVSCRIPT(cv_listcommands,
          0, 0,
          "",
          int const n_commands = cvscript_n_commands();
-         char const **command_names = cvscript_command_names();
+         char const **command_names = cvscript_command_names(script);
          std::string result;
          for (int i = 0; i < n_commands; i++) {
            if (i > 0) result.append(1, ' ');
