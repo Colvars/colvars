@@ -3,9 +3,9 @@
 #include <cstdio>
 
 
-colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
+colvargrid_integrate::colvargrid_integrate(colvarmodule* cvmodule_in, std::vector<colvar *> &colvars,
                                          std::shared_ptr<colvar_grid_gradient> gradients)
-  : colvar_grid_scalar(colvars, gradients, true),
+  : colvar_grid_scalar(cvmodule_in, colvars, gradients, true),
     b_smoothed(false),
     gradients(gradients)
 {
@@ -35,8 +35,9 @@ colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
 }
 
 
-colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients)
-  : b_smoothed(false),
+colvargrid_integrate::colvargrid_integrate(colvarmodule* cvmodule_in, std::shared_ptr<colvar_grid_gradient> gradients)
+  : colvar_grid_scalar(cvmodule_in),
+    b_smoothed(false),
     gradients(gradients)
 {
   nd = gradients->num_variables();

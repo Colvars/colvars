@@ -282,8 +282,8 @@ int colvarbias_opes::init(const std::string& conf) {
       }
     }
     key_lookup(conf, "grid", &grid_conf);
-    m_reweight_grid.reset(new colvar_grid_scalar(m_pmf_cvs, nullptr, false, grid_conf));
-    m_pmf_grid.reset(new colvar_grid_scalar(m_pmf_cvs, m_reweight_grid));
+    m_reweight_grid.reset(new colvar_grid_scalar(cvmodule, m_pmf_cvs, nullptr, false, grid_conf));
+    m_pmf_grid.reset(new colvar_grid_scalar(cvmodule, m_pmf_cvs, m_reweight_grid));
     get_keyval(conf, "pmfHistoryFrequency", m_pmf_hist_freq, output_freq);
     if ((m_pmf_hist_freq % output_freq) != 0) {
       error_code |= cvmodule->error("Error: pmfHistoryFrequency must be a multiple of outputFreq.\n",
@@ -292,8 +292,8 @@ int colvarbias_opes::init(const std::string& conf) {
     if (comm == multiple_replicas) {
       get_keyval(conf, "pmfShared", m_pmf_shared, true);
       if (m_pmf_shared) {
-        m_global_reweight_grid.reset(new colvar_grid_scalar(m_pmf_cvs, m_reweight_grid));
-        m_global_pmf_grid.reset(new colvar_grid_scalar(m_pmf_cvs, m_reweight_grid));
+        m_global_reweight_grid.reset(new colvar_grid_scalar(cvmodule, m_pmf_cvs, m_reweight_grid));
+        m_global_pmf_grid.reset(new colvar_grid_scalar(cvmodule, m_pmf_cvs, m_reweight_grid));
       }
     }
   }
