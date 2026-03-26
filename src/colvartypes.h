@@ -1382,6 +1382,9 @@ private:
   /// Used for debugging gradients
   cvm::real S_backup[4][4];
 
+  /// For logging
+  colvarmodule* cvmodule;
+
 public:
   /// \brief Perform gradient tests
   bool b_debug_gradients;
@@ -1434,13 +1437,13 @@ public:
   int init();
 
   /// Default constructor
-  rotation();
+  rotation(colvarmodule* cvmodule_in);
 
   /// Constructor after a quaternion
-  rotation(cvm::quaternion const &qi);
+  rotation(colvarmodule* cvmodule_in, cvm::quaternion const &qi);
 
   /// Constructor after an axis of rotation and an angle (in radians)
-  rotation(cvm::real angle, cvm::rvector const &axis);
+  rotation(colvarmodule* cvmodule_in, cvm::real angle, cvm::rvector const &axis);
 
   /// Destructor
   ~rotation();
@@ -1454,7 +1457,7 @@ public:
   /// Return the inverse of this rotation
   inline cvm::rotation inverse() const
   {
-    return cvm::rotation(this->q.conjugate());
+    return cvm::rotation(cvmodule, this->q.conjugate());
   }
 
   /// Return the associated 3x3 matrix
@@ -1617,13 +1620,13 @@ private:
   colvarmodule* cvmodule;
 public:
   /// Constructor
-  rotation_gpu();
+  rotation_gpu(colvarmodule* cvmodule_in);
   /// Destructor
   ~rotation_gpu();
   /// Check if the object is initialized
   bool initialized() const {return b_initialized;}
   /// Initialize member data
-  int init(colvarmodule* cvmodule_in/*const cudaStream_t& stream_in*/);
+  int init(/*const cudaStream_t& stream_in*/);
   /// \brief Calculate the optimal rotation and store the
   /// corresponding eigenvalue and eigenvector in the arguments l0 and
   /// q0; if the gradients have been previously requested, calculate

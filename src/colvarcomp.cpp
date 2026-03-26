@@ -881,7 +881,7 @@ int colvar::cvc::debug_gradients_gpu(
         fit_gradients.data(), 3 * group_for_fit->size());
     }
     if (group->is_enabled(f_ag_rotate)) {
-      cvm::rotation rot_cpu;
+      cvm::rotation rot_cpu(cvmodule);
       rot.to_cpu(rot_cpu);
       const auto rot_inv = rot_cpu.inverse().matrix();
       auto grad_x = gradients[0].begin();
@@ -927,7 +927,7 @@ int colvar::cvc::debug_gradients_gpu(
         const auto& rot = group->get_gpu_atom_group()->get_rot_gpu();
         auto& group_for_fit_gpu = group_for_fit->get_gpu_atom_group();
         // Obtain the rotation matrix from GPU
-        cvm::rotation rot_cpu;
+        cvm::rotation rot_cpu(cvmodule);
         rot.to_cpu(rot_cpu);
         const auto rot_0 = rot_cpu.matrix();
         // fit_gradients are in the simulation frame: we should print them in the rotated frame

@@ -96,7 +96,7 @@ cvm::atom_group::simple_atom cvm::atom_group::init_atom_from_proxy(
 cvm::atom_group::atom_group(colvarmodule* cvmodule_in):
   colvardeps(cvmodule_in),
   b_dummy(false),
-  fitting_group(nullptr),
+  fitting_group(nullptr), rot(cvmodule_in),
   noforce(false), b_user_defined_fit(false),
   rot_deriv(nullptr), num_atoms(0), index(-1),
   num_ref_pos(0)

@@ -154,12 +154,14 @@ int colvarmodule::rotation::init()
 {
   b_debug_gradients = false;
   // lambda = 0.0;
-  cvm::main()->cite_feature("Optimal rotation via flexible fitting");
+  if (cvmodule) {
+    cvmodule->cite_feature("Optimal rotation via flexible fitting");
+  }
   return COLVARS_OK;
 }
 
 
-colvarmodule::rotation::rotation()
+colvarmodule::rotation::rotation(colvarmodule* cvmodule_in): cvmodule(cvmodule_in)
 {
   init();
 #ifdef COLVARS_LAMMPS
@@ -170,8 +172,8 @@ colvarmodule::rotation::rotation()
 }
 
 
-colvarmodule::rotation::rotation(cvm::quaternion const &qi)
-  : q(qi)
+colvarmodule::rotation::rotation(colvarmodule* cvmodule_in, cvm::quaternion const &qi)
+  : cvmodule(cvmodule_in), q(qi)
 {
   init();
 #ifdef COLVARS_LAMMPS
@@ -182,7 +184,7 @@ colvarmodule::rotation::rotation(cvm::quaternion const &qi)
 }
 
 
-colvarmodule::rotation::rotation(cvm::real angle, cvm::rvector const &axis)
+colvarmodule::rotation::rotation(colvarmodule* cvmodule_in, cvm::real angle, cvm::rvector const &axis): cvmodule(cvmodule_in)
 {
   init();
   cvm::rvector const axis_n = axis.unit();
@@ -490,14 +492,14 @@ void colvarmodule::rotation::calc_optimal_rotation_impl() {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 namespace colvars_gpu {
 
-rotation_gpu::rotation_gpu():
+rotation_gpu::rotation_gpu(colvarmodule* cvmodule_in):
   d_S(nullptr), d_S_eigval(nullptr),
   d_S_eigvec(nullptr), tbcount(nullptr),
   d_q(nullptr), d_q_old(nullptr),
   discontinuous_rotation(nullptr),
   max_iteration_reached(nullptr), b_initialized(false),
   h_C(nullptr), h_S(nullptr), h_S_eigval(nullptr),
-  h_S_eigvec(nullptr), cvmodule(nullptr)
+  h_S_eigvec(nullptr), cvmodule(cvmodule_in)
 {}
 
 rotation_gpu::~rotation_gpu() {
@@ -519,10 +521,9 @@ rotation_gpu::~rotation_gpu() {
   }
 }
 
-int rotation_gpu::init(colvarmodule* cvmodule_in/*const cudaStream_t& stream_in*/) {
+int rotation_gpu::init(/*const cudaStream_t& stream_in*/) {
   int error_code = COLVARS_OK;
   // stream = stream_in;
-  cvmodule = cvmodule_in;
   if (cvmodule == nullptr) {
     return cvm::error_static("cvmodule is NULL.\n", COLVARS_ERROR);
   }

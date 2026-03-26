@@ -10,7 +10,7 @@ namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
 colvaratoms_gpu::colvaratoms_gpu(colvarmodule *cvmodule_in)
-  : cvmodule(cvmodule_in) {
+  : rot_gpu(cvmodule_in), cvmodule(cvmodule_in) {
   std::memset(&gpu_buffers, 0, sizeof(gpu_buffers));
   std::memset(&debug_graphs, 0, sizeof(debug_graphs));
   std::memset(&calc_fit_gradients_gpu_info, 0, sizeof(calc_fit_gradients_gpu_info));
@@ -936,7 +936,7 @@ void colvaratoms_gpu::do_feature_side_effects_gpu(
       break;
     }
     case colvardeps::f_ag_rotate: {
-      rot_gpu.init(this->cvmodule);
+      rot_gpu.init();
       break;
     }
   }
@@ -948,7 +948,7 @@ int colvaratoms_gpu::setup_rotation(const cvm::atom_group* cpu_atoms) {
   error_code |= p->reallocate_device(&gpu_buffers.d_ref_pos, cpu_atoms->ref_pos.size());
   error_code |=p->copy_HtoD(cpu_atoms->ref_pos.data(), gpu_buffers.d_ref_pos, cpu_atoms->ref_pos.size());
   error_code |=p->copy_HtoD(&cpu_atoms->ref_pos_cog, gpu_buffers.d_ref_pos_cog, 1);
-  rot_gpu.init(this->cvmodule);
+  rot_gpu.init();
   return error_code;
 }
 

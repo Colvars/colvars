@@ -2712,7 +2712,7 @@ int colvarmodule::usage::cite_feature(std::string const &feature)
     feature_count_[feature] += 1;
     return cite_paper(feature_paper_map_[feature]);
   }
-  cvmodule->log("Warning: cannot cite unknown feature \""+feature+"\"\n");
+  cvmodule->log_static("Warning: cannot cite unknown feature \""+feature+"\"\n");
   return COLVARS_OK;
 }
 
@@ -2722,7 +2722,7 @@ int colvarmodule::usage::cite_paper(std::string const &paper)
     paper_count_[paper] += 1;
     return COLVARS_OK;
   }
-  cvmodule->log("Warning: cannot cite unknown paper \""+paper+"\"\n");
+  cvmodule->log_static("Warning: cannot cite unknown paper \""+paper+"\"\n");
   return COLVARS_OK;
 }
 
