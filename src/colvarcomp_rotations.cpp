@@ -25,7 +25,7 @@ public:
 };
 
 
-colvar::orientation::orientation(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
+colvar::orientation::orientation(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in), rot(cvmodule_in)
 {
   set_function_type("orientation");
   disable(f_cvc_explicit_gradient);

@@ -156,7 +156,7 @@ void colvar::CartesianBasedPath::computeDistanceBetweenReferenceFrames(std::vect
             this_frame_atom_pos[i_atom] = reference_frames[this_index][i_atom] - reference_cog_this;
             next_frame_atom_pos[i_atom] = reference_frames[next_index][i_atom] - reference_cog_next;
         }
-        cvm::rotation rot_this_to_next;
+        cvm::rotation rot_this_to_next(cvmodule);
         // compute the optimal rotation
         rot_this_to_next.calc_optimal_rotation(this_frame_atom_pos, next_frame_atom_pos);
         // compute rmsd between reference frames
@@ -178,7 +178,7 @@ void colvar::CartesianBasedPath::apply_force(colvarvalue const &force)
 
 
 
-colvar::gspath::gspath(colvarmodule* cvmodule_in): colvar::CartesianBasedPath(cvmodule_in)
+colvar::gspath::gspath(colvarmodule* cvmodule_in): colvar::CartesianBasedPath(cvmodule_in), rot_v3(cvmodule_in)
 {
     set_function_type("gspath");
 }
@@ -342,7 +342,7 @@ void colvar::gspath::apply_force(colvarvalue const &force) {
 }
 
 
-colvar::gzpath::gzpath(colvarmodule* cvmodule_in): colvar::CartesianBasedPath(cvmodule_in)
+colvar::gzpath::gzpath(colvarmodule* cvmodule_in): colvar::CartesianBasedPath(cvmodule_in), rot_v3(cvmodule_in), rot_v4(cvmodule_in)
 {
     set_function_type("gzpath");
 }
