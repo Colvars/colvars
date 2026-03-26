@@ -312,9 +312,11 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/doc/src/PDF/${tgt}"
   done
-  condcopy "${source}/lammps/doc/src/fix_colvars.rst" \
-           "${target}/doc/src/fix_colvars.rst"
-  rm -f "${target}/doc/src/fix_colvars.txt"
+
+  if [ -s "${source}/lammps/doc/src/fix_colvars.rst" ] ; then
+    condcopy "${source}/lammps/doc/src/fix_colvars.rst" \
+             "${target}/doc/src/fix_colvars.rst"
+  fi
 
   echo ' done.'
   if [ ${downloaded_pdf} = 1 ] ; then
