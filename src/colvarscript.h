@@ -343,11 +343,6 @@ inline static colvarscript *colvarscript_obj(void *pobj)
   return reinterpret_cast<colvarscript *>(pobj);
 }
 
-/// Get a pointer to the main colvarscript object
-// inline static colvarscript *colvarscript_obj()
-// {
-//   return cvm::main()->proxy->script;
-// }
 
 /// Get a pointer to the colvar object pointed to by pobj
 inline static colvar *colvar_obj(void *pobj)
