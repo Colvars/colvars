@@ -394,8 +394,6 @@ public:
   virtual void calc_Jacobian_derivative();
 };
 
-
-
 // \brief Colvar component: distance vector between centers of mass
 // of two groups (\link colvarvalue::type_3vector \endlink type,
 // range (-*:*)x(-*:*)x(-*:*))
