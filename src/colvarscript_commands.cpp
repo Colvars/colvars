@@ -26,51 +26,93 @@ int cvscript_n_commands()
 
 
 extern "C"
-char const **cvscript_command_names(colvarscript *script)
+char const **cvscript_command_names(void *proxy_in)
 {
-  return script->get_command_names();
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  if (proxy) {
+    if (proxy->script) {
+      return proxy->script->get_command_names();
+    }
+  }
+  return nullptr;
 }
 
 
 extern "C"
-char const *cvscript_command_help(colvarscript *script, char const *c)
+char const *cvscript_command_help(void *proxy_in, char const *c)
 {
-  return script->get_command_help(c);
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  if (proxy) {
+    if (proxy->script) {
+      return proxy->script->get_command_help(c);
+    }
+  }
+  return nullptr;
 }
 
 
 extern "C"
-char const *cvscript_command_rethelp(colvarscript *script, char const *c)
+char const *cvscript_command_rethelp(void *proxy_in, char const *c)
 {
-  return script->get_command_rethelp(c);
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  if (proxy) {
+    if (proxy->script) {
+      return proxy->script->get_command_rethelp(c);
+    }
+  }
+  return nullptr;
 }
 
 
 extern "C"
-char const *cvscript_command_arghelp(colvarscript *script, char const *c, int i)
+char const *cvscript_command_arghelp(void *proxy_in, char const *c, int i)
 {
-  return script->get_command_arghelp(c, i);
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  if (proxy) {
+    if (proxy->script) {
+      return proxy->script->get_command_arghelp(c, i);
+    }
+  }
+  return nullptr;
 }
 
 
 extern "C"
-char const *cvscript_command_full_help(colvarscript *script, char const *c)
+char const *cvscript_command_full_help(void *proxy_in, char const *c)
 {
-  return script->get_command_full_help(c);
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  if (proxy) {
+    if (proxy->script) {
+      return proxy->script->get_command_full_help(c);
+    }
+  }
+  return nullptr;
 }
 
 
 extern "C"
-int cvscript_command_n_args_min(colvarscript *script, char const *c)
+int cvscript_command_n_args_min(void *proxy_in, char const *c)
 {
-  return script->get_command_n_args_min(c);
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  if (proxy) {
+    if (proxy->script) {
+      return proxy->script->get_command_n_args_min(c);
+    }
+  }
+  return -1;
 }
 
 
 extern "C"
-int cvscript_command_n_args_max(colvarscript *script, char const *c)
+int cvscript_command_n_args_max(void *proxy_in, char const *c)
 {
-  return script->get_command_n_args_max(c);
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  if (proxy) {
+    if (proxy->script) {
+      return proxy->script->get_command_n_args_max(c);
+    }
+  }
+  return -1;
 }
 
 
