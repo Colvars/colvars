@@ -88,7 +88,7 @@ int colvar::init(std::string const &conf)
   this->description = "colvar " + this->name;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 #if defined (COLVARS_NVTX_PROFILING)
-  if (cvm::debug() && cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+  if (cvm::debug() && cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
     nvtxNameCudaStreamA(get_stream(), this->description.c_str());
   }
 #endif
@@ -1499,7 +1499,7 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
   int error_code = COLVARS_OK;
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
-  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
+  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu;
 
   // calculate the value of the colvar
 
@@ -1626,7 +1626,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
   int error_code = COLVARS_OK;
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
-  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
+  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu;
 
   if (cvm::debug())
     cvmodule->log("Calculating gradients of colvar \""+this->name+"\".\n");
@@ -1736,7 +1736,7 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
 
-  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
+  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu;
   if (is_enabled(f_cv_total_force_calc)) {
     if (cvm::debug())
       cvmodule->log("Calculating total force of colvar \""+this->name+"\".\n");
@@ -1755,7 +1755,7 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
       }
     }
 
-    const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
+    const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu;
     if (use_gpu) {
       // Allow an additional "collect" step for the GPU code path. In most cases,
       // it is just updating the value in (cvcs[i])->total_force() by CPU, since
@@ -1821,7 +1821,7 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
 {
   int error_code = COLVARS_OK;
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
-  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
+  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu;
 
   if (is_enabled(f_cv_Jacobian)) {
     cvmodule->increase_depth();
@@ -1838,7 +1838,7 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
       }
     }
 
-    const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
+    const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu;
     if (use_gpu) {
       for (i = first_cvc, cvc_count = 0;
          (i < cvcs.size()) && (cvc_count < cvc_max_count);

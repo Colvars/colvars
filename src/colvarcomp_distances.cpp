@@ -820,6 +820,7 @@ public:
     std::vector<cudaGraphNode_t> calc_value_rmsd(rmsd_cpu->n_permutations, nullptr);
     auto& gpu_buffers = rmsd_cpu->atoms->get_gpu_atom_group()->get_gpu_buffers();
     error_code |= colvars_gpu::calc_value_rmsd(
+      cvmodule,
       d_ref_pos_soa, gpu_buffers.d_atoms_pos,
       d_permutation_msds, rmsd_cpu->permutation_msds.data(),
       rmsd_cpu->atoms->size(), rmsd_cpu->n_permutations, rmsd_cpu->num_ref_pos,
@@ -837,6 +838,7 @@ public:
     auto& gpu_buffers = rmsd_cpu->atoms->get_gpu_atom_group()->get_gpu_buffers();
     cudaGraphNode_t calc_gradients_rmsd;
     error_code |= colvars_gpu::calc_gradients_rmsd(
+      cvmodule,
       h_rmsd, h_best_perm_index, d_ref_pos_soa,
       gpu_buffers.d_atoms_pos, gpu_buffers.d_atoms_grad,
       rmsd_cpu->atoms->size(), rmsd_cpu->num_ref_pos, calc_gradients_rmsd, graph, {});
@@ -858,6 +860,7 @@ public:
     colvarproxy *p = rmsd_cpu->cvmodule->proxy;
     const auto& rot = rmsd_cpu->atoms->get_gpu_atom_group()->get_rot_gpu();
     error_code |= colvars_gpu::calc_force_invgrads_rmsd(
+      cvmodule,
       rmsd_cpu->atoms->is_enabled(f_ag_rotate),
       gpu_buffers.d_atoms_index,
       p->proxy_atoms_total_forces_gpu(),
@@ -885,9 +888,11 @@ public:
     std::vector<cudaGraphNode_t> dependencies;
     if (rmsd_cpu->atoms->is_enabled(f_ag_rotate)) {
       error_code |= colvars_gpu::prepare_dependencies(
+        cvmodule,
         {{"prepare_rotation_derivative", true}}, dependencies, nodes_map);
     }
     error_code |= colvars_gpu::calc_Jacobian_derivative_rmsd(
+      cvmodule,
       rmsd_cpu->atoms->is_enabled(f_ag_center), rmsd_cpu->atoms->is_enabled(f_ag_rotate),
       h_best_perm_index, d_ref_pos_soa, rot.get_q(),
       rot_deriv, h_rmsd, d_jd, h_jd, rmsd_cpu->atoms->size(),
@@ -1020,7 +1025,7 @@ int colvar::rmsd::init(std::string const &conf)
   num_ref_pos = ref_pos.size();
   ref_pos_soa = cvm::atom_group::pos_aos_to_soa(ref_pos);
   colvarproxy* p = cvmodule->proxy;
-  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+  if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
     enable(f_cvc_support_gpu);
     disable(f_cvc_require_cpu_buffers);

@@ -187,7 +187,7 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
   error_code |= copy_HtoD_async(m_positions_soa.data(), d_mPositions, 3 * numAtoms, stream);
   error_code |= clear_device_array_async(d_mAppliedForces, 3 * numAtoms, stream);
   error_code |= clear_device_array_async(d_mTotalForces, 3 * numAtoms, stream);
-  error_code |= checkGPUError(cudaEventRecord(get_event(colvarproxy_gpu::event_type::copy_atoms), stream));
+  error_code |= checkGPUError(cudaEventRecord(get_event(colvarproxy::event_type::copy_atoms), stream));
   std::string force_filename;
   if (write_force_file) {
     force_filename = cvmodule->output_prefix() + ".forces.xyz";

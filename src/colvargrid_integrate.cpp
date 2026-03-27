@@ -1269,7 +1269,7 @@ int colvargrid_integrate::init_Poisson_computation()
     return COLVARS_OK;
   }
 
-  cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
+  cvmodule->cite_feature("Poisson integration of 2D/3D free energy surfaces");
   computation_nx.resize(nd);
   computation_nt = 1;
   computation_nxc.resize(nd);

@@ -507,7 +507,7 @@ int colvar::cvc::read_data_gpu() {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   colvarproxy* proxy = cvmodule->proxy;
-  if ((proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) && is_enabled(f_cvc_explicit_atom_groups)) {
+  if ((proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu) && is_enabled(f_cvc_explicit_atom_groups)) {
     if (is_enabled(colvardeps::f_cvc_require_cpu_buffers)) {
       // We need to reset the atom group data if it requires CPU buffers
       for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
@@ -688,7 +688,7 @@ void colvar::cvc::debug_gradients()
     auto *group_for_fit = group->fitting_group ? group->fitting_group : group;
     const bool add_fit_gradients_to_main = group->is_enabled(f_ag_fit_gradients) && group_for_fit == group;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+    if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
       // Wait for the fit gradients events
       checkGPUError(cudaEventSynchronize(
         group->get_gpu_atom_group()->get_event(colvars_gpu::colvaratoms_gpu::event_type::calc_fit_gradients)));
@@ -777,7 +777,7 @@ void colvar::cvc::debug_gradients()
 
       auto const this_atom = (*group)[ia];
       for (size_t id = 0; id < 3; id++) {
-        if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+        if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
           group->get_gpu_atom_group()->read_positions_gpu_debug(
             group, false, ia, id, to_cpu, 1, group->get_stream());
@@ -800,7 +800,7 @@ void colvar::cvc::debug_gradients()
         cvm::real x_1 = x.real_value;
         if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_1 = x[0];
 
-        if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+        if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
           group->get_gpu_atom_group()->read_positions_gpu_debug(group, false, ia, id, to_cpu, -1, group->get_stream());
           group->get_gpu_atom_group()->calc_required_properties_gpu_debug(group, to_cpu, group->get_stream());
@@ -836,7 +836,7 @@ void colvar::cvc::debug_gradients()
 
     if ((group->is_enabled(f_ag_fit_gradients)) && (group->fitting_group != NULL)) {
       auto *ref_group = group->fitting_group;
-      if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+      if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
         group->get_gpu_atom_group()->read_positions_gpu_debug(
           group, false, 0, -1, to_cpu, 1.0, group->get_stream());
@@ -859,7 +859,7 @@ void colvar::cvc::debug_gradients()
 
         for (size_t id = 0; id < 3; id++) {
           // (re)read original positions
-          if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+          if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
             group->get_gpu_atom_group()->read_positions_gpu_debug(
               group, true, ia, id, to_cpu, 1.0, group->get_stream());
@@ -882,7 +882,7 @@ void colvar::cvc::debug_gradients()
           cvm::real const x_1 = x.real_value;
 
           // (re)read original positions
-          if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+          if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
             group->get_gpu_atom_group()->read_positions_gpu_debug(
               group, true, ia, id, to_cpu, -1.0, group->get_stream());
@@ -935,7 +935,7 @@ void colvar::cvc::debug_gradients()
       group->grad_z(ia) = 0;
     }
     // (re)read original positions
-    if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+    if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
       group->get_gpu_atom_group()->read_positions_gpu_debug(
         group, false, 0, -1, to_cpu, -1.0, group->get_stream());
@@ -1313,7 +1313,7 @@ int colvar::cvc::begin_apply_force_from_cpu_to_gpu() {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   colvarproxy* proxy = cvmodule->proxy;
-  if ((proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu)) {
+  if ((proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu)) {
     for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
       error_code |= (*agi)->get_gpu_atom_group()->begin_apply_force_gpu();
     }
