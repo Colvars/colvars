@@ -863,7 +863,7 @@ colvar::rmsd::~rmsd() {
 bool colvar::rmsd::has_gpu_implementation() const {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   const colvarproxy* p = cvmodule->proxy;
-  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu){
+  if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu){
     return true;
   } else {
     return false;
@@ -1182,7 +1182,7 @@ int colvar::rmsd::add_calc_value_node(
   std::vector<cudaGraphNode_t> calc_value_rmsd(n_permutations, nullptr);
   auto& gpu_buffers = atoms->get_gpu_atom_group()->get_gpu_buffers();
   error_code |= colvars_gpu::calc_value_rmsd(
-    d_ref_pos_soa, gpu_buffers.d_atoms_pos,
+    cvmodule, d_ref_pos_soa, gpu_buffers.d_atoms_pos,
     d_permutation_msds, permutation_msds.data(),
     atoms->size(), n_permutations, num_ref_pos,
     d_tbcounts, calc_value_rmsd, graph, {});
@@ -1212,7 +1212,7 @@ int colvar::rmsd::add_calc_gradients_node(
   auto& gpu_buffers = atoms->get_gpu_atom_group()->get_gpu_buffers();
   cudaGraphNode_t calc_gradients_rmsd;
   error_code |= colvars_gpu::calc_gradients_rmsd(
-    h_rmsd, h_best_perm_index, d_ref_pos_soa,
+    cvmodule, h_rmsd, h_best_perm_index, d_ref_pos_soa,
     gpu_buffers.d_atoms_pos, gpu_buffers.d_atoms_grad,
     atoms->size(), num_ref_pos, calc_gradients_rmsd, graph, {});
   const std::string node_name = name + "_calc_gradients";
@@ -1234,7 +1234,7 @@ int colvar::rmsd::add_calc_force_invgrads_node(
   colvarproxy *p = cvmodule->proxy;
   const auto& rot = atoms->get_gpu_atom_group()->get_rot_gpu();
   error_code |= colvars_gpu::calc_force_invgrads_rmsd(
-    atoms->is_enabled(f_ag_rotate),
+    cvmodule, atoms->is_enabled(f_ag_rotate),
     gpu_buffers.d_atoms_index,
     p->proxy_atoms_total_forces_gpu(),
     rot.get_q(), gpu_buffers.d_atoms_grad, d_ft, h_ft,
@@ -1267,10 +1267,10 @@ int colvar::rmsd::add_calc_Jacobian_derivative_node(
   std::vector<cudaGraphNode_t> dependencies;
   if (atoms->is_enabled(f_ag_rotate)) {
     error_code |= colvars_gpu::prepare_dependencies(
-      {{"prepare_rotation_derivative", true}}, dependencies, nodes_map);
+      cvmodule, {{"prepare_rotation_derivative", true}}, dependencies, nodes_map);
   }
   error_code |= colvars_gpu::calc_Jacobian_derivative_rmsd(
-    atoms->is_enabled(f_ag_center), atoms->is_enabled(f_ag_rotate),
+    cvmodule, atoms->is_enabled(f_ag_center), atoms->is_enabled(f_ag_rotate),
     h_best_perm_index, d_ref_pos_soa, rot.get_q(),
     rot_deriv, h_rmsd, d_jd, h_jd, atoms->size(),
     num_ref_pos, d_tbcount_jd, calc_Jacobian_derivative,

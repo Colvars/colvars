@@ -11,92 +11,78 @@
 
 #include "colvarmodule.h"
 #include "colvartypes.h"
-#include "colvarproxy_system.h"
+#include "colvarproxy.h"
 
 
-
-colvarproxy_system::colvarproxy_system()
-{
-  angstrom_value_ = 0.0;
-  kcal_mol_value_ = 0.0;
-  timestep_ = 1.0;
-  target_temperature_ = 0.0;
-  boltzmann_ = 0.001987191; // Default: kcal/mol/K
-  boundaries_type = boundaries_unsupported;
-  total_force_requested = false;
-  indirect_lambda_biasing_force = 0.0;
-  cached_alch_lambda_changed = false;
-  cached_alch_lambda = -1.0;
-  reset_pbc_lattice();
-}
-
-
-colvarproxy_system::~colvarproxy_system() {}
-
-
-int colvarproxy_system::set_unit_system(std::string const & /* units */,
+int colvarproxy::set_unit_system(std::string const & /* units */,
                                         bool /* check_only */)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_system::set_target_temperature(cvm::real T)
+int colvarproxy::set_target_temperature(cvm::real T)
 {
   target_temperature_ = T;
   return COLVARS_OK;
 }
 
 
-int colvarproxy_system::set_integration_timestep(cvm::real dt)
+int colvarproxy::set_integration_timestep(cvm::real dt)
 {
   timestep_ = dt;
   return COLVARS_OK;
 }
 
-int colvarproxy_system::set_time_step_factor(int fact)
+int colvarproxy::set_time_step_factor(int fact)
 {
   time_step_factor_ = fact;
   return COLVARS_OK;
 }
 
-cvm::real colvarproxy_system::rand_gaussian()
+cvm::real colvarproxy::rand_gaussian()
 {
   // TODO define, document and implement a user method to set the value of this
   return 0.0;
 }
 
 
-void colvarproxy_system::add_energy(cvm::real /* energy */) {}
+void colvarproxy::add_energy(cvm::real /* energy */) {}
 
 
-void colvarproxy_system::request_total_force(bool yesno)
+void colvarproxy::request_total_force(bool yesno)
 {
   if (yesno == true)
-    cvm::error_static("Error: total forces are currently not implemented.\n",
+    cvm::error_static(cvmodule, "Error: total forces are currently not implemented.\n",
                COLVARS_NOT_IMPLEMENTED);
 }
 
 
-bool colvarproxy_system::total_forces_enabled() const
+bool colvarproxy::total_forces_enabled() const
 {
   return false;
 }
 
 
-bool colvarproxy_system::total_forces_same_step() const
+bool colvarproxy::total_forces_same_step() const
 {
   return false;
 }
 
 
-void colvarproxy_system::update_pbc_lattice()
+inline int round_to_integer(cvm::real x)
+{
+  return int(cvm::floor(x+0.5));
+}
+
+
+void colvarproxy::update_pbc_lattice()
 {
   // Periodicity is assumed in all directions
 
   if (boundaries_type == boundaries_unsupported ||
       boundaries_type == boundaries_non_periodic) {
-    cvm::error_static("Error: setting PBC lattice with unsupported boundaries.\n",
+    cvm::error_static(cvmodule, "Error: setting PBC lattice with unsupported boundaries.\n",
                COLVARS_BUG_ERROR);
     return;
   }
@@ -116,7 +102,7 @@ void colvarproxy_system::update_pbc_lattice()
 }
 
 
-void colvarproxy_system::reset_pbc_lattice()
+void colvarproxy::reset_pbc_lattice()
 {
   unit_cell_x.reset();
   unit_cell_y.reset();
@@ -127,58 +113,58 @@ void colvarproxy_system::reset_pbc_lattice()
 }
 
 
-cvm::rvector colvarproxy_system::position_distance(cvm::atom_pos const &pos1,
+cvm::rvector colvarproxy::position_distance(cvm::atom_pos const &pos1,
                                                    cvm::atom_pos const &pos2) const
 {
   return position_distance_internal(pos1, pos2);
 }
 
 
-int colvarproxy_system::get_molid(int &)
+int colvarproxy::get_molid(int &)
 {
-  cvm::error_static("Error: only VMD allows the use of multiple \"molecules\", "
+  cvm::error_static(cvmodule, "Error: only VMD allows the use of multiple \"molecules\", "
              "i.e. multiple molecular systems.", COLVARS_NOT_IMPLEMENTED);
   return -1;
 }
 
 
-int colvarproxy_system::get_alch_lambda(cvm::real * /* lambda */)
+int colvarproxy::get_alch_lambda(cvm::real * /* lambda */)
 {
-  return cvm::error_static("Error in get_alch_lambda: alchemical lambda dynamics is not supported by this build.",
+  return cvm::error_static(cvmodule, "Error in get_alch_lambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
 
-void colvarproxy_system::set_alch_lambda(cvm::real lambda)
+void colvarproxy::set_alch_lambda(cvm::real lambda)
 {
   cached_alch_lambda = lambda;
   cached_alch_lambda_changed = true;
 }
 
 
-int colvarproxy_system::send_alch_lambda()
+int colvarproxy::send_alch_lambda()
 {
-  return cvm::error_static("Error in set_alch_lambda: alchemical lambda dynamics is not supported by this build.",
+  return cvm::error_static(cvmodule, "Error in set_alch_lambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
 
-int colvarproxy_system::get_dE_dlambda(cvm::real * /* force */)
+int colvarproxy::get_dE_dlambda(cvm::real * /* force */)
 {
-  return cvm::error_static("Error in get_dE_dlambda: alchemical lambda dynamics is not supported by this build.",
+  return cvm::error_static(cvmodule, "Error in get_dE_dlambda: alchemical lambda dynamics is not supported by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
 
-int colvarproxy_system::apply_force_dE_dlambda(cvm::real* /* force */)
+int colvarproxy::apply_force_dE_dlambda(cvm::real* /* force */)
 {
-  return cvm::error_static("Error in apply_force_dE_dlambda: function is not implemented by this build.",
+  return cvm::error_static(cvmodule, "Error in apply_force_dE_dlambda: function is not implemented by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }
 
 
-int colvarproxy_system::get_d2E_dlambda2(cvm::real*)
+int colvarproxy::get_d2E_dlambda2(cvm::real*)
 {
-  return cvm::error_static("Error in get_d2E_dlambda2: function is not implemented by this build.",
+  return cvm::error_static(cvmodule, "Error in get_d2E_dlambda2: function is not implemented by this build.",
     COLVARS_NOT_IMPLEMENTED);
 }

@@ -82,7 +82,7 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
 
   // find the input state file
   StringList *input_restart = Node::Object()->configList->find("colvarsInput");
-  colvarproxy_io::set_input_prefix(input_restart ? input_restart->data : "");
+  colvarproxy::set_input_prefix(input_restart ? input_restart->data : "");
 
   update_target_temperature();
   set_integration_timestep(simparams->dt);
@@ -94,9 +94,9 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   updated_masses_ = updated_charges_ = true;
 
   // Take the output prefixes from the NAMD input
-  colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
-  colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
-  colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
+  colvarproxy::set_output_prefix(std::string(simparams->outputFilename));
+  colvarproxy::set_restart_output_prefix(std::string(simparams->restartFilename));
+  colvarproxy::set_default_restart_frequency(simparams->restartFrequency);
 
   if (simparams->accelMDOn) {
     accelMDOn = true;
@@ -376,9 +376,9 @@ void colvarproxy_namd::calculate()
       b_simulation_continuing = true;
 
       // Update NAMD output and restart prefixes
-      colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
-      colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
-      colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
+      colvarproxy::set_output_prefix(std::string(simparams->outputFilename));
+      colvarproxy::set_restart_output_prefix(std::string(simparams->restartFilename));
+      colvarproxy::set_default_restart_frequency(simparams->restartFrequency);
       cvmodule->setup_output();
 
     }
@@ -407,7 +407,7 @@ void colvarproxy_namd::calculate()
     } else {
       boundaries_type = boundaries_pbc_triclinic;
     }
-    colvarproxy_system::update_pbc_lattice();
+    colvarproxy::update_pbc_lattice();
   } else {
     boundaries_type = boundaries_unsupported;
   }

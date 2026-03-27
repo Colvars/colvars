@@ -178,7 +178,7 @@ public:
     nt = mult;
     for (int i = nd-1; i >= 0; i--) {
       if (nx[i] <= 0) {
-        cvm::error_static("Error: providing an invalid number of grid points, "+
+        cvm::error_static(cvmodule, "Error: providing an invalid number of grid points, "+
                    cvm::to_str(nx[i])+".\n", COLVARS_BUG_ERROR);
         return COLVARS_ERROR;
       }
@@ -298,7 +298,7 @@ public:
 
     for (i =  0; i < nd; i++) {
       if (cv[i]->value().type() != colvarvalue::type_scalar) {
-        cvm::error_static("Colvar grids can only be automatically "
+        cvm::error_static(cvmodule, "Colvar grids can only be automatically "
                    "constructed for scalar variables.  "
                    "ABF and histogram can not be used; metadynamics "
                    "can be used with useGrids disabled.\n", COLVARS_INPUT_ERROR);
@@ -306,7 +306,7 @@ public:
       }
 
       if (cv[i]->width <= 0.0) {
-        cvm::error_static("Tried to initialize a grid on a "
+        cvm::error_static(cvmodule, "Tried to initialize a grid on a "
                    "variable with negative or zero width.\n", COLVARS_INPUT_ERROR);
         return COLVARS_ERROR;
       }
@@ -336,14 +336,14 @@ public:
       this->check_keywords(config, "grid");
 
       if (params) {
-        cvm::error_static("Error: init_from_colvars was passed both a grid config and a template grid.", COLVARS_BUG_ERROR);
+        cvm::error_static(cvmodule, "Error: init_from_colvars was passed both a grid config and a template grid.", COLVARS_BUG_ERROR);
         return COLVARS_BUG_ERROR;
       }
     } else if (params) {
       // Match grid sizes with template
 
       if (params->nd != nd) {
-        cvm::error_static("Trying to initialize grid from template with wrong dimension (" +
+        cvm::error_static(cvmodule, "Trying to initialize grid from template with wrong dimension (" +
                     cvm::to_str(params->nd) + " instead of " +
                     cvm::to_str(this->nd) + ").");
         return COLVARS_ERROR;
@@ -427,7 +427,7 @@ public:
         ix[i] = (ix[i] + nx[i]) % nx[i]; // Avoid modulo with negative operands (implementation-defined)
       } else {
         if (ix[i] < 0 || ix[i] >= nx[i]) {
-          cvm::error_static("Trying to wrap illegal index vector (non-PBC) for a grid point: "
+          cvm::error_static(cvmodule, "Trying to wrap illegal index vector (non-PBC) for a grid point: "
                      + cvm::to_str(ix), COLVARS_BUG_ERROR);
           return;
         }
@@ -591,13 +591,13 @@ public:
   {
 
     if (other_grid.multiplicity() != this->multiplicity()) {
-      cvm::error_static("Error: trying to subtract two grids with "
+      cvm::error_static(cvmodule, "Error: trying to subtract two grids with "
                  "different multiplicity.\n");
       return;
     }
 
     if (other_grid.data.size() != this->data.size()) {
-      cvm::error_static("Error: trying to subtract two grids with "
+      cvm::error_static(cvmodule, "Error: trying to subtract two grids with "
                  "different size.\n");
       return;
     }
@@ -615,13 +615,13 @@ public:
   void copy_grid(colvar_grid<T> const &other_grid)
   {
     if (other_grid.multiplicity() != this->multiplicity()) {
-      cvm::error_static("Error: trying to copy two grids with "
+      cvm::error_static(cvmodule, "Error: trying to copy two grids with "
                  "different multiplicity.\n");
       return;
     }
 
     if (other_grid.data.size() != this->data.size()) {
-      cvm::error_static("Error: trying to copy two grids with "
+      cvm::error_static(cvmodule, "Error: trying to copy two grids with "
                  "different size.\n");
       return;
     }
@@ -764,7 +764,7 @@ public:
   void map_grid(colvar_grid<T> const &other_grid)
   {
     if (other_grid.multiplicity() != this->multiplicity()) {
-      cvm::error_static("Error: trying to merge two grids with values of "
+      cvm::error_static(cvmodule, "Error: trying to merge two grids with values of "
                  "different multiplicity.\n");
       return;
     }
@@ -808,7 +808,7 @@ public:
                 cvm::real scale_factor = 1.0)
   {
     if (other_grid.multiplicity() != this->multiplicity()) {
-      cvm::error_static("Error: trying to sum togetehr two grids with values of "
+      cvm::error_static(cvmodule, "Error: trying to sum togetehr two grids with values of "
                  "different multiplicity.\n");
       return;
     }
@@ -917,7 +917,7 @@ public:
                                    upper_boundaries[i])) > 1.0E-10) ||
            (cvm::sqrt(cv[i]->dist2(cv[i]->width,
                                    widths[i])) > 1.0E-10) ) {
-        cvm::error_static("Error: restart information for a grid is "
+        cvm::error_static(cvmodule, "Error: restart information for a grid is "
                    "inconsistent with that of its colvars.\n");
         return;
       }
@@ -940,7 +940,7 @@ public:
            (cvm::fabs(other_grid.widths[i] -
                       widths[i]) > 1.0E-10) ||
            (data.size() != other_grid.data.size()) ) {
-        cvm::error_static("Error: inconsistency between "
+        cvm::error_static(cvmodule, "Error: inconsistency between "
                    "two grids that are supposed to be equal, "
                    "aside from the data stored.\n");
         return;
@@ -1186,7 +1186,7 @@ public:
       }
       break;
     default:
-      cvm::error_static("Error: local_sample_count is not implemented for grids of dimension > 3", COLVARS_NOT_IMPLEMENTED);
+      cvm::error_static(cvmodule, "Error: local_sample_count is not implemented for grids of dimension > 3", COLVARS_NOT_IMPLEMENTED);
       break;
     }
 
@@ -1442,7 +1442,7 @@ public:
       //                  001    011     101   111      000    010   100    110
       grad[2] = 0.25 * ((p[1] + p[3] + p[5] + p[7]) - (p[0] + p[2] + p[4] + p[6])) / widths[2];
     } else {
-      cvm::error_static("Finite differences available in dimension 2 and 3 only.");
+      cvm::error_static(cvmodule, "Finite differences available in dimension 2 and 3 only.");
     }
   }
 
@@ -1550,7 +1550,7 @@ public:
   {
     int s;
     if (imult > 0) {
-      cvm::error_static("Error: trying to access a component "
+      cvm::error_static(cvmodule, "Error: trying to access a component "
                  "larger than 1 in a scalar data grid.\n");
       return 0.;
     }
@@ -1570,7 +1570,7 @@ public:
                            bool add = false) override
   {
     if (imult > 0) {
-      cvm::error_static("Error: trying to access a component "
+      cvm::error_static(cvmodule, "Error: trying to access a component "
                  "larger than 1 in a scalar data grid.\n");
       return;
     }

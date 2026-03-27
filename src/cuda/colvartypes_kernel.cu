@@ -126,6 +126,7 @@ __global__ void build_overlapping_matrix_kernel(
 }
 
 int build_overlapping_matrix(
+  colvarmodule* cvmodule,
   const cvm::real* pos1_x,
   const cvm::real* pos1_y,
   const cvm::real* pos1_z,
@@ -157,7 +158,7 @@ int build_overlapping_matrix(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -406,6 +407,7 @@ __global__ void jacobi_4x4_kernel(
 #undef JACOBI_TOLERANCE
 
 int jacobi_4x4(
+  colvarmodule* cvmodule,
   double* S_eigvec,
   double* S_eigval,
   int* max_reached,
@@ -430,7 +432,7 @@ int jacobi_4x4(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),

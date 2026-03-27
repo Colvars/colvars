@@ -7,6 +7,19 @@
 // If you wish to distribute your changes, please submit them to the
 // Colvars repository at GitHub.
 
+
+
+#include <cerrno>
+#include <cstdio>
+
+#include <list>
+#include <map>
+#include <sstream>
+#include <fstream>
+
+#include "colvarmodule.h"
+#include "colvarproxy.h"
+
 #if defined(__cplusplus) && __cplusplus >= 202002L
 #include <version>
 #endif
@@ -32,56 +45,19 @@
 #include <unistd.h>
 #endif
 
-#include <cerrno>
-#include <cstdio>
-
-#include <list>
-#include <map>
-#include <sstream>
-#include <fstream>
-
-#include "colvarmodule.h"
-#include "colvarproxy_io.h"
-
-
-colvarproxy_io::colvarproxy_io()
-{
-  restart_frequency_engine = 0;
-  input_stream_error_ = new std::istringstream();
-  input_stream_error_->setstate(std::ios::badbit);
-  output_stream_error_ = new std::ostringstream();
-  output_stream_error_->setstate(std::ios::badbit);
-}
-
-
-colvarproxy_io::~colvarproxy_io()
-{
-  delete input_stream_error_;
-  close_input_streams();
-  delete output_stream_error_;
-  close_output_streams();
-}
-
-
-bool colvarproxy_io::io_available()
-{
-  return false;
-}
-
-
-int colvarproxy_io::get_frame(long int&)
+int colvarproxy::get_frame(long int&)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_io::set_frame(long int)
+int colvarproxy::set_frame(long int)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-std::string colvarproxy_io::get_current_work_dir() const
+std::string colvarproxy::get_current_work_dir() const
 {
 #ifdef __cpp_lib_filesystem
 
@@ -109,7 +85,7 @@ std::string colvarproxy_io::get_current_work_dir() const
 }
 
 
-std::string colvarproxy_io::join_paths(std::string const &path1, std::string const &path2) const
+std::string colvarproxy::join_paths(std::string const &path1, std::string const &path2) const
 {
 #ifdef __cpp_lib_filesystem
 
@@ -128,7 +104,7 @@ std::string colvarproxy_io::join_paths(std::string const &path1, std::string con
 }
 
 
-int colvarproxy_io::backup_file(char const *filename)
+int colvarproxy::backup_file(char const *filename)
 {
   // Simplified version of NAMD_file_exists()
   int exit_code;
@@ -145,7 +121,7 @@ int colvarproxy_io::backup_file(char const *filename)
       // File does not exist
       return COLVARS_OK;
     } else {
-      return cvm::error_static("Unknown error while checking if file \""+
+      return cvm::error_static(cvmodule, "Unknown error while checking if file \""+
                         std::string(filename)+"\" exists.\n", COLVARS_ERROR);
     }
   }
@@ -160,7 +136,7 @@ int colvarproxy_io::backup_file(char const *filename)
 }
 
 
-int colvarproxy_io::remove_file(char const *filename)
+int colvarproxy::remove_file(char const *filename)
 {
   int error_code = COLVARS_OK;
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -185,7 +161,7 @@ int colvarproxy_io::remove_file(char const *filename)
   }
 #endif
   if (error_code != COLVARS_OK) {
-    return cvm::error_static("Error: in removing file \""+std::string(filename)+
+    return cvm::error_static(cvmodule, "Error: in removing file \""+std::string(filename)+
                       "\".\n.",
                       error_code);
   }
@@ -193,7 +169,7 @@ int colvarproxy_io::remove_file(char const *filename)
 }
 
 
-int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
+int colvarproxy::rename_file(char const *filename, char const *newfilename)
 {
   int error_code = COLVARS_OK;
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -202,11 +178,12 @@ int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
     error_code |= remove_file(newfilename);
   }
 #endif
+  if (!cvmodule) return COLVARS_BUG_ERROR;
   int rename_exit_code = 0;
   while ((rename_exit_code = std::rename(filename, newfilename)) != 0) {
     if (errno == EINTR) continue;
     // Call log() instead of error to allow the next try
-    cvm::main()->log("Error: in renaming file \""+std::string(filename)+"\" to \""+
+    cvmodule->log("Error: in renaming file \""+std::string(filename)+"\" to \""+
              std::string(newfilename)+"\".\n.");
     error_code |= COLVARS_FILE_ERROR;
     if (errno == EXDEV) continue;
@@ -216,7 +193,7 @@ int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
 }
 
 
-int colvarproxy_io::set_input_prefix(std::string const &prefix)
+int colvarproxy::set_input_prefix(std::string const &prefix)
 {
   // set input restart name and strip the extension, if present
   input_prefix_str = prefix;
@@ -228,7 +205,7 @@ int colvarproxy_io::set_input_prefix(std::string const &prefix)
 }
 
 
-int colvarproxy_io::set_output_prefix(std::string const &prefix)
+int colvarproxy::set_output_prefix(std::string const &prefix)
 {
   // set input restart name and strip the extension, if present
   output_prefix_str = prefix;
@@ -240,7 +217,7 @@ int colvarproxy_io::set_output_prefix(std::string const &prefix)
 }
 
 
-int colvarproxy_io::set_restart_output_prefix(std::string const &prefix)
+int colvarproxy::set_restart_output_prefix(std::string const &prefix)
 {
   // set input restart name and strip the extension, if present
   restart_output_prefix_str = prefix;
@@ -252,7 +229,7 @@ int colvarproxy_io::set_restart_output_prefix(std::string const &prefix)
 }
 
 
-int colvarproxy_io::set_default_restart_frequency(int freq)
+int colvarproxy::set_default_restart_frequency(int freq)
 {
   // TODO check for compatibility with colvarsRestartFrequency
   restart_frequency_engine = freq;
@@ -261,17 +238,17 @@ int colvarproxy_io::set_default_restart_frequency(int freq)
 
 
 
-std::istream &colvarproxy_io::input_stream(std::string const &input_name,
+std::istream &colvarproxy::input_stream(std::string const &input_name,
                                            std::string const description,
                                            bool error_on_fail)
 {
   if (!io_available()) {
-    cvm::error_static("Error: trying to access an input file/channel "
+    cvm::error_static(cvmodule, "Error: trying to access an input file/channel "
                "from the wrong thread.\n", COLVARS_BUG_ERROR);
     return *input_stream_error_;
   }
 
-  if (colvarproxy_io::input_stream_exists(input_name)) {
+  if (colvarproxy::input_stream_exists(input_name)) {
     std::ifstream *ifs =
       dynamic_cast<std::ifstream *>(input_streams_[input_name]);
     if (ifs && !ifs->is_open()) {
@@ -286,7 +263,7 @@ std::istream &colvarproxy_io::input_stream(std::string const &input_name,
   }
 
   if (input_streams_[input_name]->fail() && error_on_fail) {
-    cvm::error_static("Error: cannot open "+description+" \""+input_name+"\".\n",
+    cvm::error_static(cvmodule, "Error: cannot open "+description+" \""+input_name+"\".\n",
                COLVARS_FILE_ERROR);
   }
 
@@ -295,17 +272,17 @@ std::istream &colvarproxy_io::input_stream(std::string const &input_name,
 
 
 std::istream &
-colvarproxy_io::input_stream_from_string(std::string const &input_name,
+colvarproxy::input_stream_from_string(std::string const &input_name,
                                          std::string const &content,
                                          std::string const description)
 {
   if (!io_available()) {
-    cvm::error_static("Error: trying to access an input file/channel "
+    cvm::error_static(cvmodule, "Error: trying to access an input file/channel "
                "from the wrong thread.\n", COLVARS_BUG_ERROR);
     return *input_stream_error_;
   }
 
-  if (colvarproxy_io::input_stream_exists(input_name)) {
+  if (colvarproxy::input_stream_exists(input_name)) {
 
     std::istringstream *iss =
       dynamic_cast<std::istringstream *>(input_streams_[input_name]);
@@ -329,15 +306,15 @@ colvarproxy_io::input_stream_from_string(std::string const &input_name,
 }
 
 
-bool colvarproxy_io::input_stream_exists(std::string const &input_name)
+bool colvarproxy::input_stream_exists(std::string const &input_name)
 {
   return (input_streams_.count(input_name) > 0);
 }
 
 
-int colvarproxy_io::close_input_stream(std::string const &input_name)
+int colvarproxy::close_input_stream(std::string const &input_name)
 {
-  if (colvarproxy_io::input_stream_exists(input_name)) {
+  if (colvarproxy::input_stream_exists(input_name)) {
     std::ifstream *ifs = dynamic_cast<std::ifstream *>(input_streams_[input_name]);
     if (ifs) {
       if (ifs->is_open()) {
@@ -353,14 +330,14 @@ int colvarproxy_io::close_input_stream(std::string const &input_name)
     }
     return COLVARS_OK;
   }
-  return cvm::error_static("Error: input file/channel \""+input_name+
+  return cvm::error_static(cvmodule, "Error: input file/channel \""+input_name+
                     "\" does not exist.\n", COLVARS_FILE_ERROR);
 }
 
 
-int colvarproxy_io::delete_input_stream(std::string const &input_name)
+int colvarproxy::delete_input_stream(std::string const &input_name)
 {
-  if (colvarproxy_io::close_input_stream(input_name) == COLVARS_OK) {
+  if (colvarproxy::close_input_stream(input_name) == COLVARS_OK) {
     std::ifstream *ifs = dynamic_cast<std::ifstream *>(input_streams_[input_name]);
     if (ifs) {
       delete ifs;
@@ -373,12 +350,12 @@ int colvarproxy_io::delete_input_stream(std::string const &input_name)
     input_streams_.erase(input_name);
     return COLVARS_OK;
   }
-  return cvm::error_static("Error: input file/channel \""+input_name+
+  return cvm::error_static(cvmodule, "Error: input file/channel \""+input_name+
                     "\" does not exist.\n", COLVARS_FILE_ERROR);
 }
 
 
-int colvarproxy_io::close_input_streams()
+int colvarproxy::close_input_streams()
 {
   for (std::map<std::string,
          std::istream *>::iterator ii = input_streams_.begin();
@@ -391,7 +368,7 @@ int colvarproxy_io::close_input_streams()
 }
 
 
-std::list<std::string> colvarproxy_io::list_input_stream_names() const
+std::list<std::string> colvarproxy::list_input_stream_names() const
 {
   std::list<std::string> result;
   for (std::map<std::string,
@@ -404,20 +381,20 @@ std::list<std::string> colvarproxy_io::list_input_stream_names() const
 }
 
 
-std::ostream & colvarproxy_io::output_stream(std::string const &output_name,
+std::ostream & colvarproxy::output_stream(std::string const &output_name,
                                              std::string const description)
 {
   if (cvm::debug()) {
-    cvm::main()->log("Using colvarproxy_io::output_stream()\n");
+    cvm::log_static(cvmodule, "Using colvarproxy_io::output_stream()\n");
   }
 
   if (!io_available()) {
-    cvm::error_static("Error: trying to access an output file/channel "
+    cvm::error_static(cvmodule, "Error: trying to access an output file/channel "
                "from the wrong thread.\n", COLVARS_BUG_ERROR);
     return *output_stream_error_;
   }
 
-  if (colvarproxy_io::output_stream_exists(output_name)) {
+  if (colvarproxy::output_stream_exists(output_name)) {
     return *(output_streams_[output_name]);
   }
 
@@ -425,7 +402,7 @@ std::ostream & colvarproxy_io::output_stream(std::string const &output_name,
 
   output_streams_[output_name] = new std::ofstream(output_name.c_str(), std::ios::binary);
   if (!*(output_streams_[output_name])) {
-    cvm::error_static("Error: cannot write to "+description+" \""+output_name+"\".\n",
+    cvm::error_static(cvmodule, "Error: cannot write to "+description+" \""+output_name+"\".\n",
                COLVARS_FILE_ERROR);
   }
 
@@ -433,20 +410,20 @@ std::ostream & colvarproxy_io::output_stream(std::string const &output_name,
 }
 
 
-bool colvarproxy_io::output_stream_exists(std::string const &output_name)
+bool colvarproxy::output_stream_exists(std::string const &output_name)
 {
   return (output_streams_.count(output_name) > 0);
 }
 
 
-int colvarproxy_io::flush_output_stream(std::string const &output_name)
+int colvarproxy::flush_output_stream(std::string const &output_name)
 {
   if (!io_available()) {
     // No-op
     return COLVARS_OK;
   }
 
-  if (colvarproxy_io::output_stream_exists(output_name)) {
+  if (colvarproxy::output_stream_exists(output_name)) {
     (dynamic_cast<std::ofstream *>(output_streams_[output_name]))->flush();
     return COLVARS_OK;
   }
@@ -455,7 +432,7 @@ int colvarproxy_io::flush_output_stream(std::string const &output_name)
 }
 
 
-int colvarproxy_io::flush_output_streams()
+int colvarproxy::flush_output_streams()
 {
   if (!io_available()) {
     return COLVARS_OK;
@@ -471,14 +448,14 @@ int colvarproxy_io::flush_output_streams()
 }
 
 
-int colvarproxy_io::close_output_stream(std::string const &output_name)
+int colvarproxy::close_output_stream(std::string const &output_name)
 {
   if (!io_available()) {
-    return cvm::error_static("Error: trying to access an output file/channel "
+    return cvm::error_static(cvmodule, "Error: trying to access an output file/channel "
                       "from the wrong thread.\n", COLVARS_BUG_ERROR);
   }
 
-  if (colvarproxy_io::output_stream_exists(output_name)) {
+  if (colvarproxy::output_stream_exists(output_name)) {
     (dynamic_cast<std::ofstream *>(output_streams_[output_name]))->close();
     delete output_streams_[output_name];
     output_streams_.erase(output_name);
@@ -488,7 +465,7 @@ int colvarproxy_io::close_output_stream(std::string const &output_name)
 }
 
 
-int colvarproxy_io::close_output_streams()
+int colvarproxy::close_output_streams()
 {
   if (! io_available()) {
     return COLVARS_OK;

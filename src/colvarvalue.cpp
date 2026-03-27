@@ -74,9 +74,11 @@ colvarvalue::colvarvalue(cvm::vector1d<cvm::real> const &v,
   : real_value(0.0)
 {
   if ((vti != type_vector) && (v.size() != num_dimensions(vti))) {
-    cvm::error_static("Error: trying to initialize a variable of type \""+type_desc(vti)+
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: trying to initialize a variable of type \""+type_desc(vti)+
                "\" using a vector of size "+cvm::to_str(v.size())+
                ".\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     value_type = type_notset;
   } else {
     value_type = vti;
@@ -291,7 +293,9 @@ void colvarvalue::is_derivative()
 void colvarvalue::add_elem(colvarvalue const &x)
 {
   if (this->value_type != type_vector) {
-    cvm::error_static("Error: trying to set an element for a variable that is not set to be a vector.\n");
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: trying to set an element for a variable that is not set to be a vector.\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     return;
   }
   size_t const n = vector1d_value.size();
@@ -310,7 +314,9 @@ colvarvalue const colvarvalue::get_elem(int const i_begin, int const i_end, Type
     cvm::vector1d<cvm::real> const v(vector1d_value.slice(i_begin, i_end));
     return colvarvalue(v, vt);
   } else {
-    cvm::error_static("Error: trying to get an element from a variable that is not a vector.\n");
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: trying to get an element from a variable that is not a vector.\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     return colvarvalue(type_notset);
   }
 }
@@ -321,7 +327,9 @@ void colvarvalue::set_elem(int const i_begin, int const i_end, colvarvalue const
   if (vector1d_value.size() > 0) {
     vector1d_value.sliceassign(i_begin, i_end, x.as_vector());
   } else {
-    cvm::error_static("Error: trying to set an element for a variable that is not a vector.\n");
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: trying to set an element for a variable that is not a vector.\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
   }
 }
 
@@ -332,7 +340,9 @@ colvarvalue const colvarvalue::get_elem(int const icv) const
     return get_elem(elem_indices[icv], elem_indices[icv] + elem_sizes[icv],
                     elem_types[icv]);
   } else {
-    cvm::error_static("Error: trying to get a colvarvalue element from a vector colvarvalue that was initialized as a plain array.\n");
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: trying to get a colvarvalue element from a vector colvarvalue that was initialized as a plain array.\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     return colvarvalue(type_notset);
   }
 }
@@ -344,7 +354,9 @@ void colvarvalue::set_elem(int const icv, colvarvalue const &x)
     check_types_assign(elem_types[icv], x.value_type);
     set_elem(elem_indices[icv], elem_indices[icv] + elem_sizes[icv], x);
   } else {
-    cvm::error_static("Error: trying to set a colvarvalue element for a colvarvalue that was initialized as a plain array.\n");
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: trying to set a colvarvalue element for a colvarvalue that was initialized as a plain array.\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
   }
 }
 
@@ -419,8 +431,10 @@ void colvarvalue::set_ones(cvm::real assigned_value)
 
 void colvarvalue::undef_op() const
 {
-  cvm::error_static("Error: Undefined operation on a colvar of type \""+
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+  cvm::error_static(nullptr, "Error: Undefined operation on a colvar of type \""+
              type_desc(this->type())+"\".\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
 }
 
 
@@ -646,9 +660,11 @@ cvm::real colvarvalue::dist2(colvarvalue const &x2) const
     return (this->vector1d_value - x2.vector1d_value).norm2();
   case colvarvalue::type_unit3vectorderiv:
   case colvarvalue::type_quaternionderiv:
-    cvm::error_static("Error: computing a squared-distance between two variables of type \"" +
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: computing a squared-distance between two variables of type \"" +
                    type_desc(this->type()) + "\", for which it is not defined.\n",
                COLVARS_BUG_ERROR);
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
   case colvarvalue::type_notset:
   default:
     this->undef_op();
@@ -684,9 +700,11 @@ colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
     break;
   case colvarvalue::type_unit3vectorderiv:
   case colvarvalue::type_quaternionderiv:
-    cvm::error_static("Error: computing a squared-distance gradient between two variables of type \"" +
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: computing a squared-distance gradient between two variables of type \"" +
                    type_desc(this->type()) + "\", for which it is not defined.\n",
                COLVARS_BUG_ERROR);
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
   case colvarvalue::type_notset:
   default:
     this->undef_op();
@@ -706,8 +724,10 @@ colvarvalue const colvarvalue::interpolate(colvarvalue const &x1,
   colvarvalue::check_types(x1, x2);
 
   if ((lambda < 0.0) || (lambda > 1.0)) {
-    cvm::error_static("Error: trying to interpolate between two colvarvalues with a "
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: trying to interpolate between two colvarvalues with a "
                "lamdba outside [0:1].\n", COLVARS_BUG_ERROR);
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
   }
 
   colvarvalue interp = ((1.0-lambda)*x1 + lambda*x2);
@@ -724,10 +744,12 @@ colvarvalue const colvarvalue::interpolate(colvarvalue const &x1,
   case colvarvalue::type_unit3vector:
   case colvarvalue::type_quaternion:
     if (interp.norm()/cvm::sqrt(d2) < 1.0e-6) {
-      cvm::error_static("Error: interpolation between "+cvm::to_str(x1)+" and "+
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+      cvm::error_static(nullptr, "Error: interpolation between "+cvm::to_str(x1)+" and "+
                  cvm::to_str(x2)+" with lambda = "+cvm::to_str(lambda)+
                  " is undefined: result = "+cvm::to_str(interp)+"\n",
                  COLVARS_INPUT_ERROR);
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     }
     interp.apply_constraints();
     return interp;
@@ -849,8 +871,10 @@ std::ostream & operator << (std::ostream &os, std::vector<colvarvalue> const &v)
 template <typename IST> void colvarvalue::read_from_stream_template_(IST &is)
 {
   if (type() == colvarvalue::type_notset) {
-    cvm::error_static("Trying to read from a stream a colvarvalue, "
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Trying to read from a stream a colvarvalue, "
                "which has not yet been assigned a data type.\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
   }
 
   switch (type()) {
@@ -1012,8 +1036,10 @@ void colvarvalue::p2leg_opt(colvarvalue const                        &x,
 
   switch (x.value_type) {
   case colvarvalue::type_scalar:
-    cvm::error_static("Error: cannot calculate Legendre polynomials "
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: cannot calculate Legendre polynomials "
                "for scalar variables.\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     return;
     break;
   case colvarvalue::type_3vector:
@@ -1067,8 +1093,10 @@ void colvarvalue::p2leg_opt(colvarvalue const                        &x,
 
   switch (x.value_type) {
   case colvarvalue::type_scalar:
-    cvm::error_static("Error: cannot calculate Legendre polynomials "
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: cannot calculate Legendre polynomials "
                "for scalar variables.\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     break;
   case colvarvalue::type_3vector:
     while (xvi != xv_end) {

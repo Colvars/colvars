@@ -54,7 +54,7 @@ public:
   class compute_gpu_graph_t {
   public:
     /// \brief Constructor
-    compute_gpu_graph_t();
+    compute_gpu_graph_t(colvarmodule* cvmodule_in);
     /// \brief (Re)initialize the CUDA graph
     int init();
     /// \brief Destructor
@@ -69,11 +69,13 @@ public:
     cudaGraphExec_t graph_exec;
     /// \brief List of compute nodes
     std::vector<compute_node_t> nodes;
+    /// \brief colvarmodule object for logging and debugging
+    colvarmodule* cvmodule;
   };
   /**
    * @brief Constructor
    */
-  colvarmodule_gpu_calc();
+  colvarmodule_gpu_calc(colvarmodule* cvmodule_in);
   /**
    * @brief Destructor
    */
@@ -104,10 +106,9 @@ public:
    * launched for "atom_group_read_data_gpu" and "atom_group_calc_fit_gradients".
    *
    * @param[in] colvars A vector of all colvar objects
-   * @param[in] cvmodule The main colvarmodule object
    * @return COLVARS_OK if succeeded
    */
-  int calc_cvs(const std::vector<colvar*>& colvars, colvarmodule* cvmodule);
+  int calc_cvs(const std::vector<colvar*>& colvars);
   /**
    * @brief Apply the forces to the atom groups from the CVCs
    *
@@ -115,10 +116,9 @@ public:
    * instantiated. On subsequent calls, the existing CUDA graph will be launched.
    *
    * @param[in] colvars A vector of all colvar objects
-   * @param[in] cvmodule The main colvarmodule object
    * @return COLVARS_OK if succeeded
    */
-  int apply_forces(const std::vector<colvar*>& colvars, colvarmodule* cvmodule);
+  int apply_forces(const std::vector<colvar*>& colvars);
 private:
   /// \brief CUDA graph for reading data to GPU and calculating required properties
   compute_gpu_graph_t read_data_compute;
@@ -162,35 +162,29 @@ private:
   int cvc_calc_total_force(
     const std::vector<colvar*>& colvars,
     colvarmodule_gpu_calc::compute_gpu_graph_t& g,
-    colvarmodule* cvmodule,
     bool use_current_step = false);
   int atom_group_read_data_gpu(
     const std::vector<colvar*>& colvars,
-    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
-    colvarmodule* cvmodule);
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g);
   int cvc_calc_value(
     const std::vector<colvar*>& colvars,
-    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
-    colvarmodule* cvmodule);
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g);
   int cvc_calc_gradients(
     const std::vector<colvar*>& colvars,
-    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
-    colvarmodule* cvmodule);
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g);
   int atom_group_calc_fit_gradients(
     const std::vector<colvar*>& colvars,
-    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
-    colvarmodule* cvmodule);
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g);
   int cvc_debug_gradients(
-    const std::vector<colvar*>& colvars,
-    colvarmodule* cvmodule);
+    const std::vector<colvar*>& colvars);
   int cvc_calc_Jacobian_derivative(
     const std::vector<colvar*>& colvars,
-    colvarmodule_gpu_calc::compute_gpu_graph_t& g,
-    colvarmodule* cvmodule);
+    colvarmodule_gpu_calc::compute_gpu_graph_t& g);
   int cv_collect_cvc_data(
-    const std::vector<colvar*>& colvars,
-    colvarmodule* cvmodule);
+    const std::vector<colvar*>& colvars);
   /// @}
+  /// \brief colvarmodule object for logging and debugging
+  colvarmodule* cvmodule;
 };
 }
 

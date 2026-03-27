@@ -65,7 +65,7 @@ colvarbias_opes::colvarbias_opes(colvarmodule *cvmodule_in, char const *key):
   m_explore(false), m_inf_biasfactor(false)
 {
 #ifdef OPES_THREADING
-  provide(f_cvb_smp, cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::inner_loop);
+  provide(f_cvb_smp, cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::inner_loop);
   if (is_available(f_cvb_smp)){
     enable(f_cvb_smp); // Enabled by default
   }

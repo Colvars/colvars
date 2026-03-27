@@ -21,7 +21,7 @@ colvar::coordnum::coordnum(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
   x.type(colvarvalue::type_scalar);
   cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(4.0);
   update_cutoffs({r0, r0, r0});
-  b_use_internal_pbc = cvm::main()->proxy->use_internal_pbc();
+  b_use_internal_pbc = cvmodule->proxy->use_internal_pbc();
   // Boundaries will be set later, when the number of pairs is known
 }
 
