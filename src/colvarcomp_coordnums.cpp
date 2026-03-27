@@ -91,7 +91,7 @@ public:
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
     // error_code |= checkGPUError(cudaStreamWaitEvent(
-    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
@@ -129,7 +129,7 @@ public:
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
     // error_code |= checkGPUError(cudaStreamWaitEvent(
-    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
@@ -166,7 +166,7 @@ public:
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
     // error_code |= checkGPUError(cudaStreamWaitEvent(
-    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
@@ -202,7 +202,7 @@ public:
         cvc->group1->size(), cvc->b_enable_pairlist, gpu_warp_size, cvc->get_stream());
     }
     error_code |= checkGPUError(cudaStreamWaitEvent(
-      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
@@ -522,7 +522,7 @@ int colvar::coordnum::init(std::string const &conf)
       }
       b_enable_pairlist = true;
       // To save the memory, we don't allocate the CPU pairlist buffer when GPU is used.
-      if (cvmodule->proxy->get_smp_mode() != colvarproxy_smp::smp_mode_t::gpu) {
+      if (cvmodule->proxy->get_smp_mode() != colvarproxy::smp_mode_t::gpu) {
         pairlist.reset(new bool[num_pairs]);
         auto *pairlist_elem = pairlist.get();
         for (size_t ip = 0; ip < num_pairs; ip++, pairlist_elem++) {
@@ -532,7 +532,7 @@ int colvar::coordnum::init(std::string const &conf)
     }
   }
 
-  if (cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+  if (cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
     enable(f_cvc_support_gpu);
     disable(f_cvc_require_cpu_buffers);
@@ -895,12 +895,7 @@ void colvar::h_bond::calc_gradients()
 }
 
 
-// <<<<<<< HEAD
-// colvar::selfcoordnum::selfcoordnum()
-// =======
-
 colvar::selfcoordnum::selfcoordnum(colvarmodule* cvmodule_in): colvar::coordnum(cvmodule_in)
-// >>>>>>> bdf8c50d (refactor: reduce the use of cvm::main())
 {
   set_function_type("selfCoordNum");
 }

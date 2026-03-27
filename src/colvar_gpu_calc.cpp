@@ -27,7 +27,7 @@ int colvarcomp_gpu_graph::calc_value_gpu(bool requires_lattice) {
   if (graph_calc_value.graph_exec_initialized) {
     if (requires_lattice) {
       error_code |= checkGPUError(cudaStreamWaitEvent(
-        cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+        cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::update_lattice)));
     }
     auto children = cvc->get_children();
     for (auto it = children.begin(); it != children.end(); ++it) {
@@ -101,7 +101,7 @@ int colvarcomp_gpu_graph::calc_Jacobian_derivative_gpu(bool requires_lattice) {
   }
   if (graph_calc_Jacobian_derivative.graph_exec_initialized) {
     error_code |= checkGPUError(cudaStreamWaitEvent(
-      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::copy_atoms)));
+      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::copy_atoms)));
     error_code |= checkGPUError(cudaGraphLaunch(graph_calc_Jacobian_derivative.graph_exec, cvc->get_stream()));
     error_code |= checkGPUError(cudaEventRecord(cvc->get_event(colvar::cvc::event_type::calc_Jacobian_derivative), cvc->get_stream()));
   }
@@ -129,7 +129,7 @@ int colvarcomp_gpu_graph::calc_force_invgrads_gpu(bool requires_lattice) {
     // and calc_cvc_total_force, as long as these operations are using the same
     // m_stream.
     error_code |= checkGPUError(cudaStreamWaitEvent(
-      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::copy_atoms)));
+      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::copy_atoms)));
     // Push the graph to stream
     error_code |= checkGPUError(cudaGraphLaunch(graph_total_force.graph_exec, cvc->get_stream()));
     // Record the event

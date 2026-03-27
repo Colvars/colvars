@@ -23,7 +23,7 @@ colvardeps::colvardeps(object_t type_in, colvarmodule *cvmodulein)
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 void colvardeps::init_gpu() {
-  if (cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+  if (cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
     if (m_stream != 0) {
       checkGPUError(cudaStreamDestroy(m_stream));
     }

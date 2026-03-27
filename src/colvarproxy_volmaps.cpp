@@ -8,32 +8,23 @@
 // Colvars repository at GitHub.
 
 #include "colvarmodule.h"
-#include "colvarproxy_volmaps.h"
+#include "colvarproxy.h"
 #include "colvarmodule_utils.h"
 
 
-colvarproxy_volmaps::colvarproxy_volmaps()
-{
-  volmaps_rms_applied_force_ = volmaps_max_applied_force_ = 0.0;
-}
-
-
-colvarproxy_volmaps::~colvarproxy_volmaps() {}
-
-
-int colvarproxy_volmaps::check_volmaps_available()
+int colvarproxy::check_volmaps_available()
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_volmaps::check_engine_volmaps_available()
+int colvarproxy::check_engine_volmaps_available()
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_volmaps::reset()
+int colvarproxy::reset_volmaps()
 {
   int error_code = COLVARS_OK;
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
@@ -48,7 +39,7 @@ int colvarproxy_volmaps::reset()
 }
 
 
-int colvarproxy_volmaps::add_volmap_slot(int volmap_id)
+int colvarproxy::add_volmap_slot(int volmap_id)
 {
   volmaps_ids.push_back(volmap_id);
   volmaps_refcount.push_back(1);
@@ -59,37 +50,37 @@ int colvarproxy_volmaps::add_volmap_slot(int volmap_id)
 }
 
 
-int colvarproxy_volmaps::request_engine_volmap_by_id(int /* volmap_id */)
+int colvarproxy::request_engine_volmap_by_id(int /* volmap_id */)
 {
   return -1;
 }
 
 
-int colvarproxy_volmaps::request_engine_volmap_by_name(std::string const & /* volmap_name */)
+int colvarproxy::request_engine_volmap_by_name(std::string const & /* volmap_name */)
 {
   return -1;
 }
 
 
-int colvarproxy_volmaps::init_internal_volmap_by_id(int /* volmap_id */)
+int colvarproxy::init_internal_volmap_by_id(int /* volmap_id */)
 {
   return -1;
 }
 
 
-int colvarproxy_volmaps::init_internal_volmap_by_name(std::string const & /* volmap_name */)
+int colvarproxy::init_internal_volmap_by_name(std::string const & /* volmap_name */)
 {
   return -1;
 }
 
 
-int colvarproxy_volmaps::load_internal_volmap_from_file(std::string const & /* volmap_filename */)
+int colvarproxy::load_internal_volmap_from_file(std::string const & /* volmap_filename */)
 {
   return -1;
 }
 
 
-int colvarproxy_volmaps::clear_volmap(int index)
+int colvarproxy::clear_volmap(int index)
 {
   if (index < 0 || ((size_t) index) >= volmaps_ids.size()) {
     return COLVARS_INPUT_ERROR;
@@ -104,7 +95,7 @@ int colvarproxy_volmaps::clear_volmap(int index)
 }
 
 
-int colvarproxy_volmaps::compute_volmap(int /* flags */,
+int colvarproxy::compute_volmap(int /* flags */,
                                         int /* volmap_id */,
                                         cvm::atom_group* ag,
                                         cvm::real * /* value */,
@@ -114,14 +105,14 @@ int colvarproxy_volmaps::compute_volmap(int /* flags */,
 }
 
 
-void colvarproxy_volmaps::compute_rms_volmaps_applied_force()
+void colvarproxy::compute_rms_volmaps_applied_force()
 {
   volmaps_rms_applied_force_ =
     compute_norm2_stats<decltype(volmaps_new_colvar_forces), 0, false>(volmaps_new_colvar_forces);
 }
 
 
-void colvarproxy_volmaps::compute_max_volmaps_applied_force()
+void colvarproxy::compute_max_volmaps_applied_force()
 {
   volmaps_max_applied_force_ =
     compute_norm2_stats<decltype(volmaps_new_colvar_forces), 1, false>(volmaps_new_colvar_forces);

@@ -307,6 +307,8 @@ class colvarmodule;
 
 #endif // defined(COLVARS_HIP)
 
+class colvarmodule;
+
 namespace colvars_gpu {
 
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
@@ -399,7 +401,7 @@ public:
  * @param line The line number in the source file
  * @return COLVARS_OK if no error, otherwise the COLVARS_ERROR
  */
-int gpuAssert(cudaError_t code, const char *file, int line);
+int gpuAssert(colvarmodule* cvmodule, cudaError_t code, const char *file, int line);
 #endif
 
 } // namespace colvars_gpu
@@ -407,7 +409,7 @@ int gpuAssert(cudaError_t code, const char *file, int line);
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 /// \define checkGPUError(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 /// \brief Macro to check for CUDA errors
-#define checkGPUError(ans) colvars_gpu::gpuAssert((ans), __FILE__, __LINE__);
+#define checkGPUError(ans) colvars_gpu::gpuAssert(cvmodule, (ans), __FILE__, __LINE__);
 #endif
 
 namespace colvars_gpu {
@@ -442,6 +444,7 @@ public:
  * @brief Add a CUDA graph node to clear an array to zero (used by add_clear_array_node)
  */
 int add_clear_array_node_impl(
+  colvarmodule* cvmodule,
   void* dst, const size_t num_elements, const size_t sizeofT,
   cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
@@ -450,6 +453,7 @@ int add_clear_array_node_impl(
  * @brief Add a CUDA graph node to copy an array (used by add_copy_node)
  */
 int add_copy_node_impl(
+  colvarmodule* cvmodule,
   const void* src, void* dst, const size_t num_elements, const size_t sizeofT,
   cudaMemcpyKind kind, cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
@@ -467,11 +471,12 @@ int add_copy_node_impl(
  */
 template <typename T>
 int add_clear_array_node(
+  colvarmodule* cvmodule,
   T* dst, const size_t num_elements,
   cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
   return add_clear_array_node_impl(
-    dst, num_elements, sizeof(T), node_out, graph, dependencies);
+    cvmodule, dst, num_elements, sizeof(T), node_out, graph, dependencies);
 }
 
 /**
@@ -489,10 +494,11 @@ int add_clear_array_node(
  */
 template <typename T>
 int add_copy_node(
+  colvarmodule* cvmodule,
   const T* src, T* dst, size_t num_elements,
   cudaMemcpyKind kind, cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
-  return add_copy_node_impl(src, dst, num_elements, sizeof(T),
+  return add_copy_node_impl(cvmodule, src, dst, num_elements, sizeof(T),
                             kind, node_out, graph, dependencies);
 }
 
@@ -510,6 +516,7 @@ int add_copy_node(
  * @return COLVARS_OK if all required nodes are found, otherwise COLVARS_ERROR
  */
 int prepare_dependencies(
+  colvarmodule* cvmodule,
   const std::vector<std::pair<std::string, bool>>& node_names,
   std::vector<cudaGraphNode_t>& dependencies,
   const std::unordered_map<std::string, cudaGraphNode_t>& map,

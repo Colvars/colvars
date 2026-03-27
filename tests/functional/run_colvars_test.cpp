@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
 
   colvarproxy_stub *proxy = new colvarproxy_stub();
   colvarmodule *cvmodule = proxy->cvmodule;
+  fprintf(stderr, "proxy = %p, cvmodule = %p\n", (void*)proxy, (void*)cvmodule);
   // Initialize simple unit system to test file input
   err |= proxy->set_unit_system("real", false);
 
