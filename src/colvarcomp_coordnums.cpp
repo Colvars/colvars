@@ -21,7 +21,7 @@ colvar::coordnum::coordnum()
   x.type(colvarvalue::type_scalar);
   cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(4.0);
   update_cutoffs({r0, r0, r0});
-  b_use_internal_pbc = cvm::main()->proxy->use_internal_pbc();
+  b_use_internal_pbc = cvmodule->proxy->use_internal_pbc();
   // Boundaries will be set later, when the number of pairs is known
 }
 
@@ -493,11 +493,11 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
   cvm::rvector reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z;
 
   if (flags & ef_use_internal_pbc) {
-    cvm::main()->proxy->get_lattice(
+    cvmodule->proxy->get_lattice(
       unit_cell_x, unit_cell_y, unit_cell_z,
       reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z);
   }
-  colvarproxy_system::Boundaries_type boundaries_type = cvm::main()->proxy->get_boundary_type();
+  colvarproxy_system::Boundaries_type boundaries_type = cvmodule->proxy->get_boundary_type();
   if (flags & ef_use_internal_pbc) {
     if (boundaries_type == colvarproxy_system::Boundaries_type::boundaries_unsupported) {
       cvmodule->error("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
@@ -535,7 +535,7 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
               true, true, true);
           }
         } else {
-          diff = cvm::main()->proxy->position_distance(cvm::rvector{x1, y1, z1}, cvm::rvector{x2, y2, z2});
+          diff = cvmodule->proxy->position_distance(cvm::rvector{x1, y1, z1}, cvm::rvector{x2, y2, z2});
         }
         partial = compute_pair_coordnum<flags, n, m>(
           inv_r0_vec, inv_r0sq_vec, diff, n, m,
@@ -561,11 +561,12 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
   }
 }
 
-namespace {
-  constexpr const int max_n = 10;
-  constexpr const int max_m = 20;
+class colvar::selfcoordnum::static_function_table_impl {
+public:
+  inline constexpr static const int max_n = 10;
+  inline constexpr static const int max_m = 20;
+  inline constexpr static const int num_ef_combinations = 16;
   typedef void (colvar::selfcoordnum::*compute_pair_coordnum_type)();
-  compute_pair_coordnum_type funcs_[16][max_n][max_m];
 
   template <int flags>
   inline constexpr int select() {
@@ -578,11 +579,15 @@ namespace {
     else if (m <= 0) return nullptr;
     else if (n > max_n) return nullptr;
     else if (m > max_m) return nullptr;
-    else return funcs_[select<flags>()][n-1][m-1];
+    else return select<flags>() < num_ef_combinations ? funcs_[select<flags>()][n-1][m-1] : nullptr;
   }
 
-  void init_funcs_to_nullptr() {
-    std::memset(funcs_, 0, sizeof(compute_pair_coordnum_type)*16*max_n*max_m);
+  static_function_table_impl() {
+    init();
+  }
+
+  void init() {
+    std::memset(funcs_, 0, sizeof(compute_pair_coordnum_type)*num_ef_combinations*max_n*max_m);
   }
 
   template <int n, int m>
@@ -662,14 +667,17 @@ namespace {
       colvar::coordnum::ef_use_pairlist |
       colvar::coordnum::ef_rebuild_pairlist, n, m>;
   }
-}
-
+private:
+  compute_pair_coordnum_type funcs_[num_ef_combinations][max_n][max_m];
+};
 
 colvar::selfcoordnum::selfcoordnum()
 {
   set_function_type("selfCoordNum");
   // NOTE: I only enable the most commonly used template since enabling too many of them would slow down the compilation...
-  init_funcs_to_nullptr();
+  // init_funcs_to_nullptr();
+  static_function_table = std::make_unique<static_function_table_impl>();
+  // Enable some commonly used combinations of (n,m)
   // set_func<1, 1>();
   // set_func<1, 2>();
   // set_func<1, 3>();
@@ -741,7 +749,7 @@ colvar::selfcoordnum::selfcoordnum()
   // set_func<6, 9>();
   // set_func<6, 10>();
   // set_func<6, 11>();
-  set_func<6, 12>();
+  static_function_table->set_func<6, 12>();
   // set_func<7, 1>();
   // set_func<7, 2>();
   // set_func<7, 3>();
@@ -814,7 +822,7 @@ colvar::selfcoordnum::selfcoordnum()
   // set_func<12, 10>();
   // set_func<12, 11>();
   // set_func<12, 12>();
-  set_func<10, 20>();
+  static_function_table->set_func<10, 20>();
 }
 
 
@@ -882,7 +890,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
     if (rebuild_pairlist) {
       if (b_use_internal_pbc) {
         int constexpr flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist | ef_use_internal_pbc;
-        auto kernel = get_func<flags>(en, ed);
+        auto kernel = static_function_table->get_func<flags>(en, ed);
         if (kernel) {
           ((*this).*kernel)();
         } else {
@@ -890,7 +898,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
         }
       } else {
         int constexpr flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
-        auto kernel = get_func<flags>(en, ed);
+        auto kernel = static_function_table->get_func<flags>(en, ed);
         if (kernel) {
           ((*this).*kernel)();
         } else {
@@ -900,7 +908,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
     } else {
       if (b_use_internal_pbc) {
         int constexpr flags = compute_flags | ef_use_pairlist | ef_use_internal_pbc;
-        auto kernel = get_func<flags>(en, ed);
+        auto kernel = static_function_table->get_func<flags>(en, ed);
         if (kernel) {
           ((*this).*kernel)();
         } else {
@@ -908,7 +916,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
         }
       } else {
         int constexpr flags = compute_flags | ef_use_pairlist;
-        auto kernel = get_func<flags>(en, ed);
+        auto kernel = static_function_table->get_func<flags>(en, ed);
         if (kernel) {
           ((*this).*kernel)();
         } else {
@@ -919,7 +927,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
   } else {
     if (b_use_internal_pbc) {
       int constexpr flags = compute_flags | ef_null | ef_use_internal_pbc;
-      auto kernel = get_func<flags>(en, ed);
+      auto kernel = static_function_table->get_func<flags>(en, ed);
       if (kernel) {
         ((*this).*kernel)();
       } else {
@@ -927,7 +935,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
       }
     } else {
       int constexpr flags = compute_flags | ef_null;
-      auto kernel = get_func<flags>(en, ed);
+      auto kernel = static_function_table->get_func<flags>(en, ed);
       if (kernel) {
         ((*this).*kernel)();
       } else {
