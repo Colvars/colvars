@@ -255,10 +255,8 @@ int colvarbias_abf::init(std::string const &conf)
 
     z_gradients->request_actual_value();
     if (smoothing) {
-      std::shared_ptr<colvar_grid_scalar> nullpointer = nullptr;
       czar_gradients.reset(new colvar_grid_gradient(colvars, z_weights));
     } else {
-      std::shared_ptr<colvar_grid_count> nullpointer = nullptr;
       czar_gradients.reset(new colvar_grid_gradient(colvars, z_samples));
     }
   }
@@ -294,11 +292,11 @@ int colvarbias_abf::init(std::string const &conf)
     if (smoothing) {
       global_z_weights.reset(new colvar_grid_scalar(colvars, weights));
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_weights));
-      global_czar_gradients.reset(new colvar_grid_gradient(colvars, z_weights));
+      global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_weights));
     } else {
       global_z_samples.reset(new colvar_grid_count(colvars, samples));
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-      global_czar_gradients.reset(new colvar_grid_gradient(colvars, z_samples));
+      global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
     }
     global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
   } else {
@@ -806,12 +804,13 @@ int colvarbias_abf::replica_share_CZAR() {
       if (smoothing) {
         global_z_weights.reset(new colvar_grid_scalar(colvars, weights));
         global_z_gradients = std::make_shared<colvar_grid_gradient>(colvars, global_z_weights);
-        global_czar_gradients.reset(new colvar_grid_gradient(colvars, weights));
-      }
-      else {
-        global_czar_gradients.reset(new colvar_grid_gradient(colvars, samples));
+        global_czar_gradients.reset(new colvar_grid_gradient(colvars,global_z_weights));
+        //TODO: ask Jérôme if this is the right way, also show that czar_gradients have a weight if needed that is
+        // updated later on
+      } else {
         global_z_samples.reset(new colvar_grid_count(colvars, samples));
         global_z_gradients = std::make_shared<colvar_grid_gradient>(colvars, global_z_samples);
+        global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
       }
       global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
     }
@@ -984,7 +983,7 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
     // Write eABF CZAR-related quantities
     if (smoothing && z_weights_out != nullptr)
       write_grid_to_file<colvar_grid_scalar>(z_weights_out, prefix + ".zcount", close, write_dx);
-    else if (smoothing && z_samples_out != nullptr)
+    else
       write_grid_to_file<colvar_grid_count>(z_samples_out, prefix + ".zcount", close, write_dx);
     if (b_czar_window_file) {
       write_grid_to_file<colvar_grid_gradient>(z_gradients_out, prefix + ".zgrad", close, write_dx);
@@ -995,19 +994,20 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
       for (std::vector<int> iz_bin = czar_gradients_out->new_index();
             czar_gradients_out->index_ok(iz_bin); czar_gradients_out->incr(iz_bin)) {
         if (smoothing && z_weights_out != nullptr) {
+          // TODO: ask Jérôme about this update
           cvm::real weight = z_weights_out->value_output(iz_bin);
-          czar_gradients_out->weights->set_value(iz_bin, weight);
-
           for (size_t n = 0; n < czar_gradients_out->multiplicity(); n++) {
-            czar_gradients_out->set_value(iz_bin, z_gradients_out->value_output(iz_bin, n)
-            - proxy->target_temperature() * proxy->boltzmann() * z_weights_out->log_gradient_finite_diff(iz_bin, n) * weight, n);
+            czar_gradients_out->set_value(iz_bin,(z_gradients_out->value_output(iz_bin, n)
+            - proxy->target_temperature() * proxy->boltzmann() * z_weights_out->log_gradient_finite_diff(iz_bin, n)) *
+            weight, n);
           }
         }
         else {
           unsigned long count = z_samples_out->value_output(iz_bin);
           for (size_t n = 0; n < czar_gradients_out->multiplicity(); n++) {
-            czar_gradients_out->set_value(iz_bin, z_gradients_out->value_output(iz_bin, n)
-              - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n)* static_cast<cvm::real>(count), n);
+            czar_gradients_out->set_value(iz_bin, (z_gradients_out->value_output(iz_bin, n)
+              - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n)) *
+              static_cast<cvm::real>(count), n);
           }
         }
       }

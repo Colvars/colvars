@@ -1644,8 +1644,8 @@ public:
     }
     std::vector<cvm::real> cutoff(nd);
     for (size_t i = 0; i < nd; i++) {
-      bandwidth[i] = initial_bandwidth[i] * (1 -
-      (weights->value(bin_value) / (full_samples)) * kernel_reduction_speed);
+      bandwidth[i] = initial_bandwidth[i]
+      * (1 -(weights->value(bin_value) / (full_samples)) * kernel_reduction_speed);
       inv_squared_smooth[i] = 1.0 / (std::max(bandwidth[i] * bandwidth[i], 1e-5));
       cutoff[i] = cutoff_factor * bandwidth[i];
     }
@@ -1707,7 +1707,8 @@ public:
         combined_weight *= w_1d[i][local_pos];
         wrapped_ix[i] = idx_1d[i][local_pos];
       }
-      acc_force(wrapped_ix, force, combined_weight);
+      if (weights -> value(wrapped_ix) < full_samples)
+        acc_force(wrapped_ix, force, combined_weight);
       // iterates through the kernel support
       for (int i = nd - 1; i >= 0; i--) {
         // TODO: change a create a vector with the sizes
