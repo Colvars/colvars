@@ -500,7 +500,7 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
   colvarproxy_system::Boundaries_type boundaries_type = cvm::main()->proxy->get_boundary_type();
   if (flags & ef_use_internal_pbc) {
     if (boundaries_type == colvarproxy_system::Boundaries_type::boundaries_unsupported) {
-      cvm::error("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
+      cvmodule->error("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
     }
   }
 
