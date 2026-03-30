@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     bool debug = false;
     int itmax = 1000;
     cvm::real err;
-    cvm::real tol = 2e-3;
+    cvm::real tol = 1e-3;
 
     std::string gradfile;
     std::string countfile;
