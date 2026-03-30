@@ -29,7 +29,7 @@ public:
   virtual void calc_value();
   virtual void calc_gradients();
 
-  enum {
+  enum coordnum_options {
     ef_null = 0,
     ef_gradients = 1,
     ef_use_internal_pbc = (1 << 8),
@@ -131,6 +131,9 @@ protected:
 /// \brief Colvar component: self-coordination number within a group
 /// (colvarvalue::type_scalar type, range [0:N*(N-1)/2])
 class colvar::selfcoordnum : public colvar::coordnum {
+private:
+  class static_function_table_impl;
+  std::unique_ptr<static_function_table_impl> static_function_table;
 public:
 
   selfcoordnum();
@@ -188,6 +191,7 @@ inline cvm::real colvar::coordnum::switching_function(
 {
   constexpr bool ed_two_en = (t_ed == 2 * t_en);
   if (ed_two_en && t_en != 0) {
+    static_assert(t_en % 2 == 0, "Unsupported instantiation of N (N % 2 != 0) in colvar::coordnum::switching_function.");
     cvm::real func_no_pairlist, func, inv_one_pairlist_tol;
     cvm::real xn = cvm::integer_power<t_en/2>(l2);
     func_no_pairlist = 1.0 / (1.0 + xn);
