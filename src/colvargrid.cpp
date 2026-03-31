@@ -301,7 +301,7 @@ cvm::real colvar_grid_scalar::entropy() const
 cvm::real colvar_grid_scalar::grid_rmsd(colvar_grid_scalar const &other_grid) const
 {
   if (other_grid.data.size() != this->data.size()) {
-    cvm::error("Error: trying to subtract two grids with "
+    cvmodule->error("Error: trying to subtract two grids with "
                "different size.\n");
     return -1.;
   }
@@ -502,13 +502,13 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
 cvm::real colvar_grid_gradient::grid_rmsd(colvar_grid_gradient const &other_grid) const
 {
   if (other_grid.multiplicity() != this->multiplicity()) {
-    cvm::error("Error: trying to subtract two grids with "
+    cvmodule->error("Error: trying to subtract two grids with "
                "different multiplicity.\n");
     return -1.;
   }
 
   if (other_grid.data.size() != this->data.size()) {
-    cvm::error("Error: trying to subtract two grids with "
+    cvmodule->error("Error: trying to subtract two grids with "
                "different size.\n");
     return -1.;
   }

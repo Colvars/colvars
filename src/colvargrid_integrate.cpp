@@ -78,7 +78,7 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
       divergence.resize(computation_nt);
         if (weighted || nd > 3) {
       if (weighted && !gradients->samples)
-        cvm::error("Error: Trying to perform weighted Poisson integration without a samples grid.", COLVARS_BUG_ERROR);
+        cvmodule->error("Error: Trying to perform weighted Poisson integration without a samples grid.", COLVARS_BUG_ERROR);
             prepare_calculations();
       // extrapolate_data(); // Potential enhancement, needs testing
       set_weighted_div();
@@ -109,7 +109,7 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
 
         if (weighted || nd > 3) {
             if (nd > 3) {
-        cvm::log("WARNING: Integration of potential of dimension higher than 3 requires a lot "
+        cvmodule->log("WARNING: Integration of potential of dimension higher than 3 requires a lot "
                      "of memory.");
             }
             nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
@@ -903,9 +903,8 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A,
             (this->*linewise_laplacian_weighted)(A, LA, static_cast<size_t>(grid_address_int));
         }
 #else
-    cvm::error(
-        "multiple threads required in weighted poisson integration, but this binary is not linked "
-                   "with a supported threading library.\n");
+    cvmodule->error("multiple threads required in weighted poisson integration, but this binary "
+                    "is not linked with a supported threading library.\n");
 #endif
     }
 }
@@ -986,7 +985,7 @@ void colvargrid_integrate::prepare_calculations()
         precompute = gigabytes < 2;
     std::string print_precompute = precompute ? "precomputed; precomputing will use "
                                               : "computed on the fly, as precomputing would use ";
-    cvm::log("Laplacian computation will be " + print_precompute + cvm::to_str(gigabytes)
+    cvmodule->log("Laplacian computation will be " + print_precompute + cvm::to_str(gigabytes)
               + " GB of memory.");
         if (precompute) {
     laplacian_coefficients.clear();
@@ -1294,18 +1293,18 @@ cvm::real colvargrid_integrate::l2norm(const std::vector<cvm::real> &x)
       computation_grid->periodic = periodic;
       computation_grid->setup(computation_nx);
     }
-    cvm::log(cvm::to_str(nx[0]) + " " + "computation : " + cvm::to_str(computation_nx[0]));
+    cvmodule->log(cvm::to_str(nx[0]) + " " + "computation : " + cvm::to_str(computation_nx[0]));
 
 #ifdef _OPENMP
-    m_num_threads = cvm::proxy->smp_num_threads();
+    m_num_threads = cvmodule->proxy->smp_num_threads();
 #else
     if (m_num_threads > 1) {
-      return cvm::error("Multi-threading requested in weighted integrator, which is not supported "
+      return cvmodule->error("Multi-threading requested in weighted integrator, which is not supported "
                         "by this build.\n");
     }
 #endif
     if (weighted) {
-      cvm::log("Will perform weighted Poisson integrator using " + cvm::to_str(m_num_threads) + " threads.");
+      cvmodule->log("Will perform weighted Poisson integrator using " + cvm::to_str(m_num_threads) + " threads.");
     }
     return COLVARS_OK;
   }
