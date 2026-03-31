@@ -44,7 +44,7 @@ public:
 
   void set_weighted_div();
 
-  void set_div(){
+  void set_div() {
     if (!is_calculations_prepared)
       prepare_calculations();
     if (weighted) set_weighted_div();
@@ -160,14 +160,14 @@ protected:
   /// appropriate line in r. Uses the coefficients that must be precomputed.
   template <bool initialize_div_supplement>
   void linewise_laplacian_weighted_precomputed(const std::vector<cvm::real> &x,
-                                               std::vector<cvm::real> &r, size_t grid_address);
+      std::vector<cvm::real> &r, size_t grid_address);
   /// Computes the line result of the weighted laplacian matrix multiplied by x and stores it in the
   /// appropriate line in r. Calculates laplacian coefficients on the fly.
   template <bool initialize_div_supplement>
   void linewise_laplacian_weighted_otf(const std::vector<cvm::real> &x, std::vector<cvm::real> &r,
                                        size_t grid_address);
   typedef void (colvargrid_integrate::*func_pointer)(const std::vector<cvm::real> &,
-                                                     std::vector<cvm::real> &, size_t);
+      std::vector<cvm::real> &, size_t);
   func_pointer linewise_laplacian_weighted;
 
   std::vector<int> convert_base_two(int n, size_t length);
@@ -178,7 +178,7 @@ protected:
 
   template <typename T>
   typename std::vector<T>::iterator insert_into_sorted_list(std::vector<T> &sortedList,
-                                                            const T &value);
+      const T &value);
 
   /// From the smaller resolution grid, use order-1 Taylor expansion to find the value on a grid with
   /// 2 more cell in each dimension. This means, we assigned the ghost points values which are the
