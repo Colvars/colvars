@@ -14,6 +14,243 @@
 #include "colvarcomp.h"
 #include "colvarcomp_coordnums.h"
 
+template <bool use_group1_com, bool use_group2_com, int flags, int n, int m>
+void inline colvar::coordnum::main_loop()
+{
+  size_t const group1_num_coords = use_group1_com ? 1 : group1->size();
+  size_t const group2_num_coords = use_group2_com ? 1 : group2->size();
+
+  cvm::atom_pos const group1_com = group1->center_of_mass();
+  cvm::atom_pos const group2_com = group2->center_of_mass();
+  cvm::rvector group1_com_grad, group2_com_grad;
+
+  bool *pairlist_elem = pairlist.get();
+
+  /// Bravais lattice vectors
+  cvm::rvector unit_cell_x, unit_cell_y, unit_cell_z;
+  /// Reciprocal lattice vectors
+  cvm::rvector reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z;
+
+  if (flags & ef_use_internal_pbc) {
+    cvmodule->proxy->get_lattice(
+      unit_cell_x, unit_cell_y, unit_cell_z,
+      reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z);
+  }
+  colvarproxy_system::Boundaries_type boundaries_type = cvmodule->proxy->get_boundary_type();
+  if (flags & ef_use_internal_pbc) {
+    if (boundaries_type == colvarproxy_system::Boundaries_type::boundaries_unsupported) {
+      cvmodule->error("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
+    }
+  }
+
+  for (size_t i = 0; i < group1_num_coords; ++i) {
+
+    cvm::real const x1 = use_group1_com ? group1_com.x : group1->pos_x(i);
+    cvm::real const y1 = use_group1_com ? group1_com.y : group1->pos_y(i);
+    cvm::real const z1 = use_group1_com ? group1_com.z : group1->pos_z(i);
+    cvm::rvector g1{0, 0, 0};
+
+    for (size_t j = 0; j < group2_num_coords; ++j) {
+
+      cvm::real const x2 = use_group2_com ? group2_com.x : group2->pos_x(j);
+      cvm::real const y2 = use_group2_com ? group2_com.y : group2->pos_y(j);
+      cvm::real const z2 = use_group2_com ? group2_com.z : group2->pos_z(j);
+
+      cvm::real &gx2 = use_group2_com ? group2_com_grad.x : group2->grad_x(j);
+      cvm::real &gy2 = use_group2_com ? group2_com_grad.y : group2->grad_y(j);
+      cvm::real &gz2 = use_group2_com ? group2_com_grad.z : group2->grad_z(j);
+
+      cvm::real partial = 0;
+
+      bool const within =
+          ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
+          !(flags & ef_use_pairlist);
+
+      if (within) {
+        cvm::rvector diff{0, 0, 0};
+        if (flags & ef_use_internal_pbc) {
+          if (boundaries_type == colvarproxy_system::Boundaries_type::boundaries_non_periodic) {
+            diff = cvm::rvector{x2, y2, z2} - cvm::rvector{x1, y1, z1};
+          } else {
+            diff = colvarproxy_system::position_distance_kernel(
+              cvm::rvector{x1, y1, z1}, cvm::rvector{x2, y2, z2},
+              unit_cell_x, unit_cell_y, unit_cell_z,
+              reciprocal_cell_x, reciprocal_cell_y, reciprocal_cell_z,
+              true, true, true);
+          }
+        } else {
+          diff = cvmodule->proxy->position_distance(cvm::rvector{x1, y1, z1}, cvm::rvector{x2, y2, z2});
+        }
+        partial = compute_pair_coordnum_restrict<flags, n, m>(
+          inv_r0_vec, inv_r0sq_vec, diff, n, m,
+          g1.x, g1.y, g1.z, gx2, gy2, gz2,
+          tolerance, tolerance_l2_max);
+      }
+
+      if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+        *pairlist_elem = partial > 0.0 ? true : false;
+      }
+
+      x.real_value += partial;
+
+      if (flags & ef_use_pairlist) {
+        pairlist_elem++;
+      }
+    }
+    if (flags & ef_gradients) {
+      if (!use_group1_com) {
+        group1->grad_x(i) += g1.x;
+        group1->grad_y(i) += g1.y;
+        group1->grad_z(i) += g1.z;
+      } else {
+        group1_com_grad += g1;
+      }
+    }
+  }
+
+  if (use_group1_com) {
+    group1->set_weighted_gradient(group1_com_grad);
+  }
+  if (use_group2_com) {
+    group2->set_weighted_gradient(group2_com_grad);
+  }
+}
+
+template <int t_num_tables, typename T>
+class static_function_table_impl_base {
+public:
+  inline constexpr static const int max_n = 10;
+  inline constexpr static const int max_m = 20;
+  inline constexpr static const int num_ef_combinations = 16;
+  inline constexpr static const int num_tables = t_num_tables;
+  typedef void (T::*compute_pair_coordnum_type)();
+
+  template <int flags>
+  inline constexpr const int select() const {
+    return int(bool(flags & colvar::coordnum::ef_gradients)) + \
+          (int(bool(flags & colvar::coordnum::ef_use_internal_pbc)) << 1) + \
+          (int(bool(flags & colvar::coordnum::ef_use_pairlist)) << 2) + \
+          (int(bool(flags & colvar::coordnum::ef_rebuild_pairlist)) << 3);
+  }
+
+  template <int table_index, int flags>
+  inline constexpr compute_pair_coordnum_type get_func(int n, int m) {
+    if (n <= 0) return nullptr;
+    else if (m <= 0) return nullptr;
+    else if (n > max_n) return nullptr;
+    else if (m > max_m) return nullptr;
+    else return select<flags>() < num_ef_combinations ? funcs_[table_index][select<flags>()][n-1][m-1] : nullptr;
+  }
+
+  static_function_table_impl_base() {
+    init();
+  }
+
+  void init() {
+    std::memset(funcs_, 0, sizeof(compute_pair_coordnum_type)*t_num_tables*num_ef_combinations*max_n*max_m);
+  }
+protected:
+  compute_pair_coordnum_type funcs_[t_num_tables][num_ef_combinations][max_n][max_m];
+};
+
+class colvar::coordnum::static_function_table_impl:
+  public static_function_table_impl_base<4, colvar::coordnum> {
+private:
+  template <int table_index, int n, int m>
+  void set_func() {
+    constexpr bool use_group1_com = table_index & 1;
+    constexpr bool use_group2_com = (table_index >> 1) & 1;
+    funcs_[table_index][select<0>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com, 0, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_gradients>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com, colvar::coordnum::ef_gradients, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com, colvar::coordnum::ef_use_internal_pbc, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com, colvar::coordnum::ef_use_pairlist, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com, colvar::coordnum::ef_rebuild_pairlist, n, m>;
+
+    funcs_[table_index][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_use_internal_pbc |
+                  colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_use_internal_pbc |
+      colvar::coordnum::ef_use_pairlist, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_use_internal_pbc |
+                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_use_internal_pbc |
+      colvar::coordnum::ef_rebuild_pairlist, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_use_pairlist |
+                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_use_pairlist |
+      colvar::coordnum::ef_rebuild_pairlist, n, m>;
+
+    funcs_[table_index][select<colvar::coordnum::ef_gradients        |
+                  colvar::coordnum::ef_use_internal_pbc |
+                  colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_gradients        |
+      colvar::coordnum::ef_use_internal_pbc |
+      colvar::coordnum::ef_use_pairlist, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_gradients        |
+                  colvar::coordnum::ef_use_internal_pbc |
+                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_gradients        |
+      colvar::coordnum::ef_use_internal_pbc |
+      colvar::coordnum::ef_rebuild_pairlist, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_gradients        |
+                  colvar::coordnum::ef_use_pairlist |
+                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_gradients        |
+      colvar::coordnum::ef_use_pairlist |
+      colvar::coordnum::ef_rebuild_pairlist, n, m>;
+    funcs_[table_index][select<colvar::coordnum::ef_use_internal_pbc        |
+                  colvar::coordnum::ef_use_pairlist |
+                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_use_internal_pbc        |
+      colvar::coordnum::ef_use_pairlist |
+      colvar::coordnum::ef_rebuild_pairlist, n, m>;
+
+    funcs_[table_index][select<colvar::coordnum::ef_gradients        |
+                  colvar::coordnum::ef_use_internal_pbc        |
+                  colvar::coordnum::ef_use_pairlist |
+                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
+      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
+      colvar::coordnum::ef_gradients        |
+      colvar::coordnum::ef_use_internal_pbc        |
+      colvar::coordnum::ef_use_pairlist |
+      colvar::coordnum::ef_rebuild_pairlist, n, m>;
+  }
+public:
+  template <bool use_group1_com, bool use_group2_com>
+  static inline constexpr int get_table_index() {
+    return int(use_group1_com) + (int(use_group2_com) << 1);
+  }
+
+  template <int n, int m>
+  void set_func() {
+    static_assert(n <= max_n, "n is larger than max_n!");
+    static_assert(m <= max_m, "m is larger than max_m!");
+    set_func<0, n, m>();
+    set_func<1, n, m>();
+    set_func<2, n, m>();
+    set_func<3, n, m>();
+  }
+};
 
 colvar::coordnum::coordnum()
 {
@@ -23,6 +260,15 @@ colvar::coordnum::coordnum()
   update_cutoffs({r0, r0, r0});
   b_use_internal_pbc = cvmodule->proxy->use_internal_pbc();
   // Boundaries will be set later, when the number of pairs is known
+  static_function_table = std::make_unique<static_function_table_impl>();
+#ifdef COLVARS_COORDNUM_ENABLE_MORE_STATIC_TEMPLATE
+  // Enable some commonly used combinations of (n,m)
+  static_function_table->set_func<2, 4>();
+  static_function_table->set_func<4, 8>();
+  static_function_table->set_func<8, 16>();
+  static_function_table->set_func<10, 20>();
+#endif // COLVARS_COORDNUM_ENABLE_MORE_STATIC_TEMPLATE
+  static_function_table->set_func<6, 12>();
 }
 
 
@@ -288,42 +534,54 @@ int colvar::coordnum::compute_coordnum()
 void colvar::coordnum::calc_value()
 {
   x.real_value = 0.0;
-  if (is_enabled(f_cvc_gradient)) {
-
-    constexpr int flags = ef_gradients;
-
-    if (b_group1_center_only) {
-      if (b_group2_center_only) {
-        compute_coordnum<true, true, flags>();
-      } else {
-        compute_coordnum<true, false, flags>();
-      }
-    } else {
-      if (b_group2_center_only) {
-        compute_coordnum<false, true, flags>();
-      } else {
-        compute_coordnum<false, false, flags>();
-      }
-    }
-
-  } else {
-
-    constexpr int flags = ef_null;
-
-    if (b_group1_center_only) {
-      if (b_group2_center_only) {
-        compute_coordnum<true, true, flags>();
-      } else {
-        compute_coordnum<true, false, flags>();
-      }
-    } else {
-      if (b_group2_center_only) {
-        compute_coordnum<false, true, flags>();
-      } else {
-        compute_coordnum<false, false, flags>();
-      }
+  bool const use_pairlist = pairlist.get();
+  bool const rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
+  const bool gradients = is_enabled(f_cvc_gradient);
+  const int options = \
+    int(gradients) + \
+    (int(b_use_internal_pbc) << 8) + \
+    (int(use_pairlist) << 9) + \
+    (int(rebuild_pairlist) << 10);
+#define CALL_KERNEL(G1C, G2C, N) do { \
+  constexpr auto const table_i = \
+    colvar::coordnum::static_function_table_impl::get_table_index<G1C, G2C>(); \
+  auto kernel = static_function_table->get_func<table_i, N>(en, ed); \
+  if (kernel) { /*printf("kernel = %p\n", (void*&)kernel);*/ ((*this).*kernel)(); } \
+  else {main_loop<G1C, G2C, N>();} \
+} while (0);
+#define CASE(N) \
+  case N: { \
+    if (b_group1_center_only) { \
+      if (b_group2_center_only) {CALL_KERNEL(true, true, N);}\
+      else {CALL_KERNEL(true, false, N);}  \
+    } else { \
+      if (b_group2_center_only) {CALL_KERNEL(false, true, N);}\
+      else {CALL_KERNEL(false, false, N);}  \
+    } break; }
+  switch (options) {
+    CASE(0);
+    CASE(1);
+    CASE(0 + (1 << 8));
+    CASE(1 + (1 << 8));
+    CASE(0 + (1 << 9));
+    CASE(1 + (1 << 9));
+    CASE(0 + (1 << 8) + (1 << 9));
+    CASE(1 + (1 << 8) + (1 << 9));
+    CASE(0 + (1 << 10));
+    CASE(1 + (1 << 10));
+    CASE(0 + (1 << 8) + (1 << 10));
+    CASE(1 + (1 << 8) + (1 << 10));
+    CASE(0 + (1 << 9) + (1 << 10));
+    CASE(1 + (1 << 9) + (1 << 10));
+    CASE(0 + (1 << 8) + (1 << 9) + (1 << 10));
+    CASE(1 + (1 << 8) + (1 << 9) + (1 << 10));
+    default: {
+      cvmodule->error("Unknown kernel call in colvar::coordnum::calc_value\n",
+                      COLVARS_BUG_ERROR);
     }
   }
+#undef CASE
+#undef CALL_KERNEL
 }
 
 
@@ -561,95 +819,71 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
   }
 }
 
-class colvar::selfcoordnum::static_function_table_impl {
+class colvar::selfcoordnum::static_function_table_impl:
+  public static_function_table_impl_base<1, colvar::selfcoordnum> {
 public:
-  inline constexpr static const int max_n = 10;
-  inline constexpr static const int max_m = 20;
-  inline constexpr static const int num_ef_combinations = 16;
-  typedef void (colvar::selfcoordnum::*compute_pair_coordnum_type)();
-
-  template <int flags>
-  inline constexpr int select() {
-    return int(bool(flags & colvar::coordnum::ef_gradients)) + (int(bool(flags & colvar::coordnum::ef_use_internal_pbc)) << 1) + (int(bool(flags & colvar::coordnum::ef_use_pairlist)) << 2) + (int(bool(flags & colvar::coordnum::ef_rebuild_pairlist)) << 3);
-  }
-
-  template <int flags>
-  inline compute_pair_coordnum_type get_func(int n, int m) {
-    if (n <= 0) return nullptr;
-    else if (m <= 0) return nullptr;
-    else if (n > max_n) return nullptr;
-    else if (m > max_m) return nullptr;
-    else return select<flags>() < num_ef_combinations ? funcs_[select<flags>()][n-1][m-1] : nullptr;
-  }
-
-  static_function_table_impl() {
-    init();
-  }
-
-  void init() {
-    std::memset(funcs_, 0, sizeof(compute_pair_coordnum_type)*num_ef_combinations*max_n*max_m);
-  }
-
   template <int n, int m>
   void set_func() {
     static_assert(n <= max_n, "n is larger than max_n!");
     static_assert(m <= max_m, "m is larger than max_m!");
-    funcs_[select<colvar::coordnum::ef_gradients>()][n-1][m-1] =
+    funcs_[0][select<0>()][n-1][m-1] =
+      &colvar::selfcoordnum::selfcoordnum_sequential_loop<0, n, m>;
+    funcs_[0][select<colvar::coordnum::ef_gradients>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<colvar::coordnum::ef_gradients, n, m>;
-    funcs_[select<colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
+    funcs_[0][select<colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<colvar::coordnum::ef_use_internal_pbc, n, m>;
-    funcs_[select<colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
+    funcs_[0][select<colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[select<colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
+    funcs_[0][select<colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<colvar::coordnum::ef_rebuild_pairlist, n, m>;
 
-    funcs_[select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
+    funcs_[0][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<
       colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc, n, m>;
-    funcs_[select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
+    funcs_[0][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<
       colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
+    funcs_[0][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<
       colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[select<colvar::coordnum::ef_use_internal_pbc |
+    funcs_[0][select<colvar::coordnum::ef_use_internal_pbc |
                   colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<
       colvar::coordnum::ef_use_internal_pbc |
       colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[select<colvar::coordnum::ef_use_internal_pbc |
+    funcs_[0][select<colvar::coordnum::ef_use_internal_pbc |
                   colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<
       colvar::coordnum::ef_use_internal_pbc |
       colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[select<colvar::coordnum::ef_use_pairlist |
+    funcs_[0][select<colvar::coordnum::ef_use_pairlist |
                   colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<
       colvar::coordnum::ef_use_pairlist |
       colvar::coordnum::ef_rebuild_pairlist, n, m>;
 
-    funcs_[select<colvar::coordnum::ef_gradients        |
+    funcs_[0][select<colvar::coordnum::ef_gradients        |
                   colvar::coordnum::ef_use_internal_pbc |
                   colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<
       colvar::coordnum::ef_gradients        |
       colvar::coordnum::ef_use_internal_pbc |
       colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[select<colvar::coordnum::ef_gradients        |
+    funcs_[0][select<colvar::coordnum::ef_gradients        |
                   colvar::coordnum::ef_use_internal_pbc |
                   colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<
       colvar::coordnum::ef_gradients        |
       colvar::coordnum::ef_use_internal_pbc |
       colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[select<colvar::coordnum::ef_gradients        |
+    funcs_[0][select<colvar::coordnum::ef_gradients        |
                   colvar::coordnum::ef_use_pairlist |
                   colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<
       colvar::coordnum::ef_gradients        |
       colvar::coordnum::ef_use_pairlist |
       colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[select<colvar::coordnum::ef_use_internal_pbc        |
+    funcs_[0][select<colvar::coordnum::ef_use_internal_pbc        |
                   colvar::coordnum::ef_use_pairlist |
                   colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
       &colvar::selfcoordnum::selfcoordnum_sequential_loop<
@@ -657,7 +891,7 @@ public:
       colvar::coordnum::ef_use_pairlist |
       colvar::coordnum::ef_rebuild_pairlist, n, m>;
 
-    funcs_[select<colvar::coordnum::ef_gradients        |
+    funcs_[0][select<colvar::coordnum::ef_gradients        |
                   colvar::coordnum::ef_use_internal_pbc        |
                   colvar::coordnum::ef_use_pairlist |
                   colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
@@ -667,8 +901,6 @@ public:
       colvar::coordnum::ef_use_pairlist |
       colvar::coordnum::ef_rebuild_pairlist, n, m>;
   }
-private:
-  compute_pair_coordnum_type funcs_[num_ef_combinations][max_n][max_m];
 };
 
 colvar::selfcoordnum::selfcoordnum()
@@ -750,7 +982,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
     if (rebuild_pairlist) {
       if (b_use_internal_pbc) {
         int constexpr flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist | ef_use_internal_pbc;
-        auto kernel = static_function_table->get_func<flags>(en, ed);
+        auto kernel = static_function_table->get_func<0, flags>(en, ed);
         if (kernel) {
           ((*this).*kernel)();
         } else {
@@ -758,7 +990,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
         }
       } else {
         int constexpr flags = compute_flags | ef_use_pairlist | ef_rebuild_pairlist;
-        auto kernel = static_function_table->get_func<flags>(en, ed);
+        auto kernel = static_function_table->get_func<0, flags>(en, ed);
         if (kernel) {
           ((*this).*kernel)();
         } else {
@@ -768,7 +1000,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
     } else {
       if (b_use_internal_pbc) {
         int constexpr flags = compute_flags | ef_use_pairlist | ef_use_internal_pbc;
-        auto kernel = static_function_table->get_func<flags>(en, ed);
+        auto kernel = static_function_table->get_func<0, flags>(en, ed);
         if (kernel) {
           ((*this).*kernel)();
         } else {
@@ -776,7 +1008,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
         }
       } else {
         int constexpr flags = compute_flags | ef_use_pairlist;
-        auto kernel = static_function_table->get_func<flags>(en, ed);
+        auto kernel = static_function_table->get_func<0, flags>(en, ed);
         if (kernel) {
           ((*this).*kernel)();
         } else {
@@ -787,7 +1019,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
   } else {
     if (b_use_internal_pbc) {
       int constexpr flags = compute_flags | ef_null | ef_use_internal_pbc;
-      auto kernel = static_function_table->get_func<flags>(en, ed);
+      auto kernel = static_function_table->get_func<0, flags>(en, ed);
       if (kernel) {
         ((*this).*kernel)();
       } else {
@@ -795,7 +1027,7 @@ template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
       }
     } else {
       int constexpr flags = compute_flags | ef_null;
-      auto kernel = static_function_table->get_func<flags>(en, ed);
+      auto kernel = static_function_table->get_func<0, flags>(en, ed);
       if (kernel) {
         ((*this).*kernel)();
       } else {

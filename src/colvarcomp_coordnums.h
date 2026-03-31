@@ -29,7 +29,7 @@ public:
   virtual void calc_value();
   virtual void calc_gradients();
 
-  enum coordnum_options {
+  enum {
     ef_null = 0,
     ef_gradients = 1,
     ef_use_internal_pbc = (1 << 8),
@@ -46,7 +46,7 @@ public:
 
   /// Main kernel for the coordination number
   template <int flags>
-  static cvm::real compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
+  inline static cvm::real compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
                                          cvm::rvector const &inv_r0sq_vec, int en, int ed,
                                          const cvm::real a1x, const cvm::real a1y, const cvm::real a1z,
                                          const cvm::real a2x, const cvm::real a2y, const cvm::real a2z,
@@ -56,12 +56,12 @@ public:
                                          colvarmodule *cvmodule);
 
   template <int flags, int t_en, int t_ed>
-  static cvm::real switching_function(cvm::real const &l2, cvm::real &dFdl2,
+  inline static cvm::real switching_function(cvm::real const &l2, cvm::real &dFdl2,
                                       int en, int ed,
                                       cvm::real pairlist_tol);
 
   template <int flags, int t_en, int t_ed>
-  static cvm::real compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
+  inline static cvm::real compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
                                          cvm::rvector const &inv_r0sq_vec,
                                          const cvm::rvector& diff,
                                          int en, int ed,
@@ -69,11 +69,24 @@ public:
                                          cvm::real &g2x, cvm::real &g2y, cvm::real &g2z,
                                          cvm::real pairlist_tol, cvm::real pairlist_tol_l2_max);
 
+  template <int flags, int t_en, int t_ed>
+  inline static cvm::real compute_pair_coordnum_restrict(
+    cvm::rvector const& __restrict inv_r0_vec,
+    cvm::rvector const& __restrict inv_r0sq_vec,
+    const cvm::rvector& __restrict diff,
+    int en, int ed,
+    cvm::real& __restrict g1x, cvm::real& __restrict g1y, cvm::real& __restrict g1z,
+    cvm::real& __restrict g2x, cvm::real& __restrict g2y, cvm::real& __restrict g2z,
+    cvm::real pairlist_tol, cvm::real pairlist_tol_l2_max);
+
   /// Workhorse function
   template <bool use_group1_com, bool use_group2_com, int flags> int compute_coordnum();
 
   /// Workhorse function
   template <bool use_group1_com, bool use_group2_com, int flags> void main_loop();
+
+  /// Workhorse function
+  template <bool use_group1_com, bool use_group2_com, int flags, int n, int m> void main_loop();
 
 protected:
   /// First atom group
@@ -125,6 +138,9 @@ protected:
   /// Pair list
   std::unique_ptr<bool []> pairlist;
 
+private:
+  class static_function_table_impl;
+  std::unique_ptr<static_function_table_impl> static_function_table;
 };
 
 
@@ -311,6 +327,52 @@ inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv
                                                          cvm::real& g2z,
                                                          cvm::real pairlist_tol,
                                                          cvm::real pairlist_tol_l2_max)
+{
+  cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
+                               diff.y * inv_r0_vec.y,
+                               diff.z * inv_r0_vec.z);
+  cvm::real const l2 = scal_diff.norm2();
+  if (flags & ef_use_pairlist) {
+    if (l2 > pairlist_tol_l2_max) {
+      // Exit if the distance is such that F(l2) < pairlist_tol
+      return 0.0;
+    }
+  }
+
+  cvm::real dFdl2 = 0.0;
+  const cvm::real F = switching_function<flags, t_en, t_ed>(l2, dFdl2, en, ed, pairlist_tol);
+
+  if ((flags & ef_gradients) && (F > 0.0)) {
+    cvm::rvector const dl2dx((2.0 * inv_r0sq_vec.x) * diff.x,
+                             (2.0 * inv_r0sq_vec.y) * diff.y,
+                             (2.0 * inv_r0sq_vec.z) * diff.z);
+
+    const cvm::rvector G = dFdl2*dl2dx;
+    g1x += -1.0*G.x;
+    g1y += -1.0*G.y;
+    g1z += -1.0*G.z;
+    g2x +=      G.x;
+    g2y +=      G.y;
+    g2z +=      G.z;
+  }
+
+  return F;
+}
+
+template<int flags, int t_en, int t_ed>
+inline cvm::real colvar::coordnum::compute_pair_coordnum_restrict(
+  cvm::rvector const& __restrict inv_r0_vec,
+  cvm::rvector const& __restrict inv_r0sq_vec,
+  const cvm::rvector& __restrict diff,
+  int en, int ed,
+  cvm::real& __restrict g1x,
+  cvm::real& __restrict g1y,
+  cvm::real& __restrict g1z,
+  cvm::real& __restrict g2x,
+  cvm::real& __restrict g2y,
+  cvm::real& __restrict g2z,
+  cvm::real pairlist_tol,
+  cvm::real pairlist_tol_l2_max)
 {
   cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
                                diff.y * inv_r0_vec.y,
