@@ -81,7 +81,7 @@ void inline colvar::coordnum::main_loop()
         } else {
           diff = cvmodule->proxy->position_distance(cvm::rvector{x1, y1, z1}, cvm::rvector{x2, y2, z2});
         }
-        partial = compute_pair_coordnum_restrict<flags, n, m>(
+        partial = compute_pair_coordnum<flags, n, m>(
           inv_r0_vec, inv_r0sq_vec, diff, n, m,
           g1.x, g1.y, g1.z, gx2, gy2, gz2,
           tolerance, tolerance_l2_max);
