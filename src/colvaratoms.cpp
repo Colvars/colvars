@@ -1475,7 +1475,6 @@ void cvm::atom_group::calc_fit_forces_impl(
   // temporary variables for computing and summing derivatives
   std::array<cvm::real, 4> sum_dxdq;
   cvm::real C[3][3] = {{0}};
-  std::array<cvm::rvector, 4> dq0_1;
   // loop 1: iterate over the current atom group
   for (size_t i = 0; i < size(); i++) {
     cvm::rvector const main_vec = accessor_main(i);
