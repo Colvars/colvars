@@ -26,7 +26,7 @@ if(COLVARS_TCL)
 endif()
 
 add_custom_command(
-        TARGET link_files
+        TARGET link_files POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E create_symlink
                 ${CMAKE_CURRENT_SOURCE_DIR}/index.ndx
                 ${CMAKE_CURRENT_BINARY_DIR}/index.ndx
