@@ -188,6 +188,25 @@ static unsigned int default_reduce_max_num_blocks = 64;
 #define COLVARS_DEVICE
 #endif
 
+// HIP does not have cuda::std::array since libhipcxx is not a part of the ROCm distribution,
+// so reinvent the wheel...
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+template <typename T, unsigned long N>
+class array1d {
+public:
+  T m_data[N];
+  using value_type = T;
+  using size_type = decltype(N);
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using pointer = T*;
+  using const_pointer = const T*;
+  COLVARS_HOST_DEVICE constexpr size_type size() const {return N;}
+  COLVARS_HOST_DEVICE reference operator[](size_type pos) {return m_data[pos];}
+  COLVARS_HOST_DEVICE const_reference operator[](size_type pos) const {return m_data[pos];}
+};
+#endif
+
 // TODO: What about SYCL?
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
 /**

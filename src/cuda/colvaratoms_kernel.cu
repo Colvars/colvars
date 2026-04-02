@@ -4,13 +4,10 @@
 
 #if defined(COLVARS_CUDA)
 #include <cub/block/block_reduce.cuh>
-#include <cuda/std/array>
 #endif
 
 #if defined (COLVARS_HIP)
 #include <hipcub/block/block_reduce.hpp>
-// Require libhipcxx
-#include <cuda/std/array>
 #endif
 
 namespace colvars_gpu {
@@ -635,7 +632,7 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   }
   if (threadIdx.x == 0) {
     if (B_ag_rotate) {
-      cuda::std::array<cvm::real, 4> partial_dxdq;
+      colvars_gpu::array1d<cvm::real, 4> partial_dxdq;
       partial_dxdq =
         q->derivative_element_wise_product_sum<decltype(partial_dxdq)>(C);
       atomicAdd(&(sum_dxdq[0]), partial_dxdq[0]);
