@@ -904,8 +904,14 @@ int colvaratoms_gpu::calc_required_properties_gpu_debug(
       error_code |= add_update_cpu_buffers_nodes(
         cpu_atoms, debug_graphs.graph_calc_required_properties, nodes_map);
     }
-    error_code |= checkGPUError(cudaGraphInstantiate(
-      &debug_graphs.graph_exec_calc_required_properties, debug_graphs.graph_calc_required_properties));
+    cudaGraphInstantiateParams params{0};
+    params.flags = cudaGraphInstantiateFlagUpload;
+    params.uploadStream = stream;
+    error_code |= checkGPUError(cudaGraphInstantiateWithParams(
+      &debug_graphs.graph_exec_calc_required_properties, debug_graphs.graph_calc_required_properties, &params));
+    if (params.result_out != cudaGraphInstantiateSuccess) {
+      error_code |= cvmodule->error("Failed to instantiate CUDA graph!", COLVARS_ERROR);
+    }
     debug_graphs.initialized = true;
   }
   error_code |= checkGPUError(cudaGraphLaunch(
