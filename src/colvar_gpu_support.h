@@ -72,6 +72,22 @@
 #define cudaGraphInstantiate hipGraphInstantiate
 #endif // cudaGraphInstantiate
 
+#ifndef cudaGraphInstantiateWithParams
+#define cudaGraphInstantiateWithParams hipGraphInstantiateWithParams
+#endif // cudaGraphInstantiateWithParams
+
+#ifndef cudaGraphInstantiateParams
+#define cudaGraphInstantiateParams hipGraphInstantiateParams
+#endif // cudaGraphInstantiateParams
+
+#ifndef cudaGraphInstantiateFlagUpload
+#define cudaGraphInstantiateFlagUpload hipGraphInstantiateFlagUpload
+#endif // cudaGraphInstantiateFlagUpload
+
+#ifndef cudaGraphInstantiateSuccess
+#define cudaGraphInstantiateSuccess hipGraphInstantiateSuccess
+#endif // cudaGraphInstantiateSuccess
+
 #ifndef cudaGraphLaunch
 #define cudaGraphLaunch hipGraphLaunch
 #endif // cudaGraphLaunch
