@@ -64,7 +64,13 @@ int colvarmodule_gpu_calc::cvc_calc_total_force(
       }
     }
     if (!g.nodes.empty()) {
-      error_code |= checkGPUError(cudaGraphInstantiate(&g.graph_exec, g.graph));
+      cudaGraphInstantiateParams params{0};
+      params.flags = cudaGraphInstantiateFlagUpload;
+      params.uploadStream = stream;
+      error_code |= checkGPUError(cudaGraphInstantiateWithParams(&g.graph_exec, g.graph, &params));
+      if (params.result_out != cudaGraphInstantiateSuccess) {
+        error_code |= cvmodule->error("Failed to instantiate CUDA graph!", COLVARS_ERROR);
+      }
       g.graph_exec_initialized = true;
     }
   }
@@ -213,7 +219,13 @@ int colvarmodule_gpu_calc::atom_group_read_data_gpu(
       if (error_code != COLVARS_OK) return error_code;
       g.nodes.push_back({*ag, child_graph_node, require_cpu_buffers});
     }
-    error_code |= checkGPUError(cudaGraphInstantiate(&g.graph_exec, g.graph));
+    cudaGraphInstantiateParams params{0};
+    params.flags = cudaGraphInstantiateFlagUpload;
+    params.uploadStream = stream;
+    error_code |= checkGPUError(cudaGraphInstantiateWithParams(&g.graph_exec, g.graph, &params));
+    if (params.result_out != cudaGraphInstantiateSuccess) {
+      error_code |= cvmodule->error("Failed to instantiate CUDA graph!", COLVARS_ERROR);
+    }
     if (error_code != COLVARS_OK) return error_code;
     g.graph_exec_initialized = true;
     if (cvmodule->debug()) {
@@ -286,7 +298,13 @@ int colvarmodule_gpu_calc::cvc_calc_value(
       }
     }
     if (!g.nodes.empty()) {
-      error_code |= checkGPUError(cudaGraphInstantiate(&g.graph_exec, g.graph));
+      cudaGraphInstantiateParams params{0};
+      params.flags = cudaGraphInstantiateFlagUpload;
+      params.uploadStream = stream;
+      error_code |= checkGPUError(cudaGraphInstantiateWithParams(&g.graph_exec, g.graph, &params));
+      if (params.result_out != cudaGraphInstantiateSuccess) {
+        error_code |= cvmodule->error("Failed to instantiate CUDA graph!", COLVARS_ERROR);
+      }
       g.graph_exec_initialized = true;
     }
   }
@@ -373,7 +391,13 @@ int colvarmodule_gpu_calc::cvc_calc_gradients(
       }
     }
     if (!g.nodes.empty()) {
-      error_code |= checkGPUError(cudaGraphInstantiate(&g.graph_exec, g.graph));
+      cudaGraphInstantiateParams params{0};
+      params.flags = cudaGraphInstantiateFlagUpload;
+      params.uploadStream = stream;
+      error_code |= checkGPUError(cudaGraphInstantiateWithParams(&g.graph_exec, g.graph, &params));
+      if (params.result_out != cudaGraphInstantiateSuccess) {
+        error_code |= cvmodule->error("Failed to instantiate CUDA graph!", COLVARS_ERROR);
+      }
       g.graph_exec_initialized = true;
     }
   }
@@ -484,7 +508,13 @@ int colvarmodule_gpu_calc::atom_group_calc_fit_gradients(
       if (error_code != COLVARS_OK) return error_code;
       g.nodes.push_back({*ag, child_graph_node, require_cpu_buffers});
     }
-    error_code |= checkGPUError(cudaGraphInstantiate(&g.graph_exec, g.graph));
+    cudaGraphInstantiateParams params{0};
+    params.flags = cudaGraphInstantiateFlagUpload;
+    params.uploadStream = stream;
+    error_code |= checkGPUError(cudaGraphInstantiateWithParams(&g.graph_exec, g.graph, &params));
+    if (params.result_out != cudaGraphInstantiateSuccess) {
+      error_code |= cvmodule->error("Failed to instantiate CUDA graph!", COLVARS_ERROR);
+    }
     if (error_code != COLVARS_OK) return error_code;
     g.graph_exec_initialized = true;
     if (cvmodule->debug()) {
@@ -564,7 +594,13 @@ int colvarmodule_gpu_calc::cvc_calc_Jacobian_derivative(
       }
     }
     if (!g.nodes.empty()) {
-      error_code |= checkGPUError(cudaGraphInstantiate(&g.graph_exec, g.graph));
+      cudaGraphInstantiateParams params{0};
+      params.flags = cudaGraphInstantiateFlagUpload;
+      params.uploadStream = stream;
+      error_code |= checkGPUError(cudaGraphInstantiateWithParams(&g.graph_exec, g.graph, &params));
+      if (params.result_out != cudaGraphInstantiateSuccess) {
+        error_code |= cvmodule->error("Failed to instantiate CUDA graph!", COLVARS_ERROR);
+      }
       g.graph_exec_initialized = true;
     }
   }
@@ -743,6 +779,7 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
   if (error_code != COLVARS_OK) return error_code;\
 } while (0);
   colvarproxy* p = cvmodule->proxy;
+  cudaStream_t stream = p->get_default_stream();
   if (!apply_forces_compute.graph_exec_initialized) {
     forced_atom_groups.clear();
     // Find all unique atom groups requiring forces
@@ -810,7 +847,13 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
         &child_graph_node, apply_forces_compute.graph, NULL, 0, ag_graph)));
       checkColvarsError(checkGPUError(cudaGraphDestroy(ag_graph)));
     }
-    checkColvarsError(checkGPUError(cudaGraphInstantiate(&apply_forces_compute.graph_exec, apply_forces_compute.graph)));
+    cudaGraphInstantiateParams params{0};
+    params.flags = cudaGraphInstantiateFlagUpload;
+    params.uploadStream = stream;
+    checkColvarsError(checkGPUError(cudaGraphInstantiateWithParams(&apply_forces_compute.graph_exec, apply_forces_compute.graph, &params)));
+    if (params.result_out != cudaGraphInstantiateSuccess) {
+      error_code |= cvmodule->error("Failed to instantiate CUDA graph!", COLVARS_ERROR);
+    }
     apply_forces_compute.graph_exec_initialized = true;
     // Debug graph
     if (cvmodule->debug()) {
@@ -832,7 +875,6 @@ int colvarmodule_gpu_calc::apply_forces(const std::vector<colvar*>& colvars, col
       }
     }
   }
-  cudaStream_t stream = p->get_default_stream();
 #if defined (COLVARS_NVTX_PROFILING)
   apply_forces_prof.start();
 #endif
