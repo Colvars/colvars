@@ -8,6 +8,7 @@
 
 #if defined (COLVARS_HIP)
 #include <hipcub/block/block_reduce.hpp>
+#define cub hipcub
 #endif
 
 namespace colvars_gpu {
