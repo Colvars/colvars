@@ -25,57 +25,63 @@
 template <class T>
 colvar_grid<T>::colvar_grid(std::string const &filename, size_t mult_i)
 {
-std::istream &is = cvm::main()->proxy->input_stream(filename, "multicol grid file");
-if (!is) {
-  return;
-}
-
-// Data in the header: nColvars, then for each
-// xiMin, dXi, nPoints, periodic flag
-
-std::string  hash;
-size_t i;
-
-if ( !(is >> hash) || (hash != "#") ) {
-  cvm::error("Error reading grid at position "+
-              cvm::to_str(static_cast<size_t>(is.tellg()))+
-              " in stream(read \"" + hash + "\")\n");
-  return;
-}
-
-is >> nd;
-mult = (mult_i == 0) ? nd : mult_i;
-
-std::vector<cvm::real> lower_in(nd), widths_in(nd);
-std::vector<int>       nx_in(nd);
-std::vector<int>       periodic_in(nd);
-
-for (i = 0; i < nd; i++ ) {
-  if ( !(is >> hash) || (hash != "#") ) {
-    cvm::error("Error reading grid at position "+
-                cvm::to_str(static_cast<size_t>(is.tellg()))+
-                " in stream(read \"" + hash + "\")\n");
+  std::istream &is = cvm::main()->proxy->input_stream(filename, "multicol grid file");
+  if (!is) {
     return;
   }
 
-  is >> lower_in[i] >> widths_in[i] >> nx_in[i] >> periodic_in[i];
-}
+  std::string suffix = ".dx";
+  if (filename.compare(filename.length() - suffix.length(),
+                              suffix.length(),
+                              suffix) == 0) {
+    this->mult = mult_i;
+    this->read_opendx(is);
+  }
+  else {
+    std::string  hash;
+    size_t i;
 
-this->setup(nx_in, 0., mult);
+    if ( !(is >> hash) || (hash != "#") ) {
+      cvm::error("Error reading grid at position "+
+                  cvm::to_str(static_cast<size_t>(is.tellg()))+
+                  " in stream(read \"" + hash + "\")\n");
+      return;
+    }
 
-widths = widths_in;
+    is >> nd;
+    mult = (mult_i == 0) ? nd : mult_i;
 
-for (i = 0; i < nd; i++ ) {
-  lower_boundaries.push_back(colvarvalue(lower_in[i]));
-  periodic.push_back(static_cast<bool>(periodic_in[i]));
-}
+    std::vector<cvm::real> lower_in(nd), widths_in(nd);
+    std::vector<int>       nx_in(nd);
+    std::vector<int>       periodic_in(nd);
 
-// Reset the istream for read_multicol, which expects the whole file
-is.clear();
-is.seekg(0);
-read_multicol(is);
-cvm::main()->proxy->close_input_stream(filename);
-}
+    for (i = 0; i < nd; i++ ) {
+      if ( !(is >> hash) || (hash != "#") ) {
+        cvm::error("Error reading grid at position "+
+                    cvm::to_str(static_cast<size_t>(is.tellg()))+
+                    " in stream(read \"" + hash + "\")\n");
+        return;
+      }
+
+      is >> lower_in[i] >> widths_in[i] >> nx_in[i] >> periodic_in[i];
+    }
+
+    this->setup(nx_in, 0., mult);
+
+    widths = widths_in;
+
+    for (i = 0; i < nd; i++ ) {
+      lower_boundaries.push_back(colvarvalue(lower_in[i]));
+      periodic.push_back(static_cast<bool>(periodic_in[i]));
+    }
+
+    // Reset the istream for read_multicol, which expects the whole file
+    is.clear();
+    is.seekg(0);
+    read_multicol(is);
+  }
+  cvm::main()->proxy->close_input_stream(filename);
+  }
 
 
 template <class T, class IST> IST &read_restart_template_(colvar_grid<T> &g, IST &is)
@@ -476,6 +482,158 @@ std::ostream & colvar_grid<T>::write_multicol(std::ostream &os) const
   return os;
 }
 
+template <class T>
+std::istream & colvar_grid<T>::read_opendx(std::istream &is, bool add)
+{
+  std::string   line, token;
+  std::vector<int> nx_read;
+  std::vector<cvm::real> lower_in, widths_in;
+  size_t        total_points = 1;
+  size_t        num_items = 0;
+  size_t        shape = 1;
+  size_t        nd_read = 0;
+
+  // 1. Parse OpenDX Header
+  while (std::getline(is, line)) {
+    if (line.empty() || line[0] == '#') continue;
+
+    std::istringstream iss(line);
+    iss >> token;
+
+    if (token == "object") {
+      iss >> token; // ID
+      iss >> token; // "class"
+      iss >> token; // class name
+
+      if (token == "gridpositions") {
+        iss >> token; // "counts"
+        int n;
+        while (iss >> n) {
+          nx_read.push_back(n);
+          total_points *= n;
+        }
+        nd_read = nx_read.size();
+      }
+      else if (token == "array") {
+        while (iss >> token) {
+          if (token == "shape") iss >> shape;
+          if (token == "items") iss >> num_items;
+          if (token == "data")  break;
+        }
+        num_items *= shape;
+        break;
+      }
+    }
+    else if (token == "origin") {
+      cvm::real val;
+      while (iss >> val) lower_in.push_back(val);
+    }
+    else if (token == "delta") {
+      cvm::real val;
+      std::vector<cvm::real> deltas;
+      while (iss >> val) deltas.push_back(val);
+
+      if (widths_in.size() < deltas.size()) {
+        widths_in.push_back(deltas[widths_in.size()]);
+      }
+    }
+  }
+
+  if (nx_read.empty() || total_points == 0) {
+    cvm::error("Error: invalid or empty OpenDX header.\n", COLVARS_INPUT_ERROR);
+    return is;
+  }
+
+  size_t mult_read = num_items / total_points;
+  if (mult_read == 0) mult_read = 1;
+
+  bool remap = false;
+
+  // 2. Setup the Grid OR Check Compatibility
+  if (this->nx.empty()) {
+    this->nd = nd_read;
+    if (this->mult == 0) {
+      this->mult = mult_read;
+    }
+    this->setup(nx_read, 0., this->mult);
+
+    this->widths = widths_in;
+    for (size_t i = 0; i < this->nd; i++) {
+      // FIX: OpenDX origin is the center of the first bin.
+      // colvar_grid lower_boundaries represents the lower edge of the first bin.
+      // We subtract half the width to convert from node-centered to edge-centered.
+      this->lower_boundaries.push_back(colvarvalue(lower_in[i] - 0.5 * widths_in[i]));
+      this->periodic.push_back(false); // TODO: change that so it's not hard coded
+    }
+  } else {
+    if (this->nd != nd_read) {
+      cvm::error("Error reading OpenDX grid: wrong number of dimensions.\n");
+      return is;
+    }
+    for (size_t i = 0; i < this->nd; i++) {
+      // Reconstruct the expected OpenDX origin to accurately test compatibility
+      cvm::real expected_dx_origin = this->lower_boundaries[i].real_value + 0.5 * this->widths[i];
+      if ( (cvm::fabs(lower_in[i] - expected_dx_origin) > 1.0e-10) ||
+           (cvm::fabs(widths_in[i] - this->widths[i]) > 1.0e-10) ||
+           (nx_read[i] != this->nx[i]) ) {
+        cvm::log("Warning: reading from different OpenDX grid definition; remapping data on new grid.\n");
+        remap = true;
+      }
+    }
+  }
+
+  if (this->has_parent_data && add) {
+    this->new_data.resize(this->data.size());
+  }
+
+  // 3. Read The Data Array
+  std::vector<T> new_value(mult_read);
+  std::vector<int> bin(this->nd);
+
+  if (remap) {
+    for (size_t pt = 0; pt < total_points; pt++) {
+      std::vector<int> ix(this->nd, 0);
+      size_t remainder = pt;
+
+      for (int i = this->nd - 1; i >= 0; i--) {
+        ix[i] = remainder % nx_read[i];
+        remainder /= nx_read[i];
+      }
+
+      for (size_t imult = 0; imult < mult_read; imult++) {
+        is >> new_value[imult];
+      }
+
+      for (size_t i = 0; i < this->nd; i++) {
+        // lower_in holds the origin (bin center), mapping physically coordinates precisely
+        cvm::real x = lower_in[i] + ix[i] * widths_in[i];
+        bin[i] = this->value_to_bin_scalar(x, i);
+      }
+      this->wrap_detect_edge(bin);
+
+      if (this->index_ok(bin)) {
+        for (size_t imult = 0; imult < this->mult; imult++) {
+          if (imult < mult_read) {
+            this->value_input(bin, new_value[imult], imult, add);
+          }
+        }
+      }
+    }
+  } else {
+    for (std::vector<int> ix = this->new_index(); this->index_ok(ix); this->incr(ix)) {
+      for (size_t imult = 0; imult < mult_read; imult++) {
+        is >> new_value[imult];
+
+        if (imult < this->mult) {
+          this->value_input(ix, new_value[imult], imult, add);
+        }
+      }
+    }
+  }
+
+  this->has_data = true;
+  return is;
+}
 
 template <class T>
 int colvar_grid<T>::write_multicol(std::string const &filename,

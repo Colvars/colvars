@@ -982,6 +982,8 @@ public:
   /// Read a grid written by write_multicol(), incrementing if add is true
   std::istream & read_multicol(std::istream &is, bool add = false);
 
+  std::istream & read_opendx(std::istream &is, bool add = false );
+
   /// Read a grid written by write_multicol(), incrementing if add is true
   int read_multicol(std::string const &filename,
                     std::string description = "grid file",
