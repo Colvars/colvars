@@ -650,30 +650,27 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   __syncthreads();
   if (isLastBlockDone) {
     // Compute dxdC in a single warp
-#if defined (COLVARS_CUDA)
-    const unsigned int warpID = threadIdx.x / 32;
-#elif defined (COLVARS_HIP)
-    const unsigned int warpID = threadIdx.x / 64;
-#endif
+    const unsigned int warpID = threadIdx.x / warpSize;
     if (warpID == 0) {
       const unsigned int tid = threadIdx.x;
+      constexpr const int valid_items = 4;
       cvm::rmatrix dxdq_dqdC;
       dxdq_dqdC.reset();
-      if (tid < 4) {
+      if (tid < valid_items) {
         dxdq_dqdC += rot_deriv->project_force_to_C_from_dxdqi(tid, sum_dxdq[tid]);
       }
       __syncwarp();
-      using WarpReduce = cub::WarpReduce<cvm::real, 4>;
+      using WarpReduce = cub::WarpReduce<cvm::real, valid_items>;
       __shared__ typename WarpReduce::TempStorage warp_temp_storage;
-      dxdq_dqdC.xx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xx); __syncwarp();
-      dxdq_dqdC.xy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xy); __syncwarp();
-      dxdq_dqdC.xz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xz); __syncwarp();
-      dxdq_dqdC.yx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yx); __syncwarp();
-      dxdq_dqdC.yy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yy); __syncwarp();
-      dxdq_dqdC.yz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yz); __syncwarp();
-      dxdq_dqdC.zx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zx); __syncwarp();
-      dxdq_dqdC.zy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zy); __syncwarp();
-      dxdq_dqdC.zz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zz); __syncwarp();
+      dxdq_dqdC.xx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xx, valid_items); __syncwarp();
+      dxdq_dqdC.xy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xy, valid_items); __syncwarp();
+      dxdq_dqdC.xz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xz, valid_items); __syncwarp();
+      dxdq_dqdC.yx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yx, valid_items); __syncwarp();
+      dxdq_dqdC.yy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yy, valid_items); __syncwarp();
+      dxdq_dqdC.yz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yz, valid_items); __syncwarp();
+      dxdq_dqdC.zx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zx, valid_items); __syncwarp();
+      dxdq_dqdC.zy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zy, valid_items); __syncwarp();
+      dxdq_dqdC.zz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zz, valid_items); __syncwarp();
       if (tid == 0) {
         dxdC->xx = dxdq_dqdC.xx;
         dxdC->xy = dxdq_dqdC.xy;
