@@ -283,25 +283,22 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
     if ((ix0[0] == 0 || ix0[0] == computation_nx[0] - 1) && !periodic[0]) {
       cvm::real coefficient = (ix[0] == 0) ? 1.0 : -1.0;
       supplement_coefficient *= 0.5;
-      supplement = coefficient *
-                   (g100[0] + g000[0] + g101[0] + g001[0] + g110[0] + g010[0] + g111[0] + g011[0]) *
-                   0.125 * 2 * widths[0];
+      supplement += coefficient * (g100[0] + g000[0] + g101[0] + g001[0] + g110[0] + g010[0] + g111[0] + g011[0]) *
+        0.125 * 2 / widths[0];
     }
     if ((ix0[1] == 0 || ix0[1] == computation_nx[1] - 1) && !periodic[1]) {
       cvm::real coefficient = (ix[1] == 0) ? 1.0 : -1.0;
       supplement_coefficient *= 0.5;
       supplement +=
         coefficient *
-        (g010[1] + g000[1] + g011[1] + g001[1] + g110[1] + g100[1] + g111[1] + g101[1]) *
-        widths[1] * 2 * 0.125;
+        (g010[1] + g000[1] + g011[1] + g001[1] + g110[1] + g100[1] + g111[1] + g101[1]) * 2 * 0.125 / widths[1] ;
     }
     if ((ix0[2] == 0 || ix0[2] == computation_nx[2] - 1) && !periodic[2]) {
       cvm::real coefficient = (ix[2] == 0) ? 1.0 : -1.0;
       supplement_coefficient *= 0.5;
       supplement +=
         coefficient *
-        (g001[2] - g000[2] + g011[2] - g010[2] + g101[2] - g100[2] + g111[2] - g110[2]) * 0.125 *
-        2 * widths[2];
+        (g001[2] + g000[2] + g011[2] + g010[2] + g101[2] + g100[2] + g111[2] + g110[2]) * 0.125 * 2 / widths[2];
     }
     divergence[linear_index] += supplement;
     divergence[linear_index] *= supplement_coefficient;
