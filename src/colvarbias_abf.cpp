@@ -277,12 +277,12 @@ int colvarbias_abf::init(std::string const &conf)
     get_keyval(conf, "pABFintegrateMaxIterations", pabf_integrate_iterations, 100, colvarparse::parse_silent);
     get_keyval(conf, "pABFintegrateTol", pabf_integrate_tol, 1e-4, colvarparse::parse_silent);
 
-    pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted));
+    pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted, full_samples, min_samples));
     if (b_CZAR_estimator) {
-      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients, integrate_weighted));
+      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients, integrate_weighted, full_samples, min_samples));
     }
     if (shared_on) {
-      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted));
+      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted, full_samples, min_samples));
     }
   }
 
@@ -298,7 +298,7 @@ int colvarbias_abf::init(std::string const &conf)
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
       global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
     }
-    global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
+    global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients, full_samples, min_samples));
   } else {
     // otherwise they are just aliases for the local CZAR grids
     global_z_samples = z_samples;
@@ -654,12 +654,12 @@ int colvarbias_abf::replica_share() {
     if (smoothing) {
       local_samples.reset(new colvar_grid_count(colvars, weights));
       local_gradients.reset(new colvar_grid_gradient(colvars, local_weights));
-      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
+      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, full_samples, min_samples));
     }
     else {
       local_samples.reset(new colvar_grid_count(colvars, samples));
       local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
-      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients));
+      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, full_samples, min_samples));
     }
   }
   // Calculate the delta gradient and count for the local replica
@@ -812,7 +812,7 @@ int colvarbias_abf::replica_share_CZAR() {
         global_z_gradients = std::make_shared<colvar_grid_gradient>(colvars, global_z_samples);
         global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
       }
-      global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
+      global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients, full_samples, min_samples));
     }
 
     // Start with data from replica 0

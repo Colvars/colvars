@@ -20,10 +20,12 @@ public:
 
   /// Constructor from a vector of colvars + gradient grid
   colvargrid_integrate(std::vector<colvar *> &colvars,
-                       std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false);
+                       std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false, cvm::real upper_threshold = 0,
+                       cvm::real lower_threshold = 0);
 
   /// Constructor from a gradient grid (for processing grid files without a Colvars config)
-  colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false);
+  colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false,
+                        cvm::real upper_threshold = 0, cvm::real lower_threshold = 0);
 
   /// \brief Calculate potential from divergence (in 2D); return number of steps
   int integrate(const int itmax, const cvm::real &tol, cvm::real &err, bool verbose = true);

@@ -5,11 +5,14 @@
 
 colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
                                            std::shared_ptr<colvar_grid_gradient> gradients_in,
-                                           bool weighted_in)
+                                           bool weighted_in, cvm::real upper_threshold,
+                       cvm::real lower_threshold)
     : colvar_grid_scalar(colvars, gradients_in, true),
       b_smoothed(false),
       weighted(weighted_in),
-      gradients(gradients_in)
+      gradients(gradients_in),
+      upper_threshold_count(upper_threshold),
+      lower_threshold_count(lower_threshold)
 
 {
   // parent class colvar_grid_scalar is constructed with add_extra_bin option set to true
@@ -20,10 +23,13 @@ colvargrid_integrate::colvargrid_integrate(std::vector<colvar *> &colvars,
 
 
 colvargrid_integrate::colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients_in,
-                                           bool weighted_in)
+                                            bool weighted_in, cvm::real upper_threshold,
+                                            cvm::real lower_threshold)
     : b_smoothed(false),
       weighted(weighted_in),
-      gradients(gradients_in)
+      gradients(gradients_in),
+      upper_threshold_count(upper_threshold),
+      lower_threshold_count(lower_threshold)
 {
   nd = gradients->num_variables();
   nx = gradients->number_of_points_vec();
@@ -951,31 +957,33 @@ void colvargrid_integrate::prepare_calculations()
     std::vector<int> min_position;
     sorted_counts = {};
 
-    for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
-         gradients->incr(ix)) {
-      cvm::real count;
-      if (gradients-> samples) {
-        count = gradients->samples->value(ix);
-      }
-      else if (gradients->weights) {
-        count = gradients->weights->value(ix);
-      }
-      else {
-        count = 1;
-      }
-      if (count > 0) {
-        insert_into_sorted_list<cvm::real>(sorted_counts, count);
-      }
-    }
+    if (lower_threshold_count ==1 && upper_threshold_count==1) {
+      for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
+          gradients->incr(ix)) {
+        cvm::real count;
+        if (gradients-> samples) {
+          count = gradients->samples->value(ix);
+        }
+        else if (gradients->weights) {
+          count = gradients->weights->value(ix);
+        }
+        else {
+          count = 1;
+        }
+        if (count > 0) {
+          insert_into_sorted_list<cvm::real>(sorted_counts, count);
+        }
+          }
 
-    if (sorted_counts.size()) {
-      lower_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * lambda_min)];
-      upper_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * (1 - lambda_max))];
-    } else {
-      lower_threshold_count = 1;
-      upper_threshold_count = 1;
+      if (sorted_counts.size()) {
+        lower_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * lambda_min)];
+        upper_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * (1 - lambda_max))];
+      } else {
+        lower_threshold_count = 1;
+        upper_threshold_count = 1;
+      }
+      sorted_counts.clear();
     }
-    sorted_counts.clear();
     regularized_weights.resize(gradients->nt);
     for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
          gradients->incr(ix)) {
