@@ -124,6 +124,10 @@
 #define cudaHostAllocMapped hipHostAllocMapped
 #endif // cudaHostAllocMapped
 
+#ifndef cudaHostAllocDefault
+#define cudaHostAllocDefault hipHostAllocDefault
+#endif // cudaHostAllocDefault
+
 #ifndef cudaHostAlloc
 #define cudaHostAlloc hipHostAlloc
 #endif // cudaHostAlloc
@@ -294,7 +298,7 @@ public:
     return ptr;
   }
   void deallocate(T* ptr, size_t n) noexcept {
-    cudaFreeHost(ptr);
+    (void)cudaFreeHost(ptr);
   }
   template<typename U, typename... Args>
   void construct(U* p, Args&&... args) {
