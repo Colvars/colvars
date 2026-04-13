@@ -6,7 +6,7 @@ using namespace colvars_gpu;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (COLVARS_SYCL)
 int colvarproxy_gpu::allocate_host_T(void **pp, const size_t len, const size_t sizeofT) {
   int error_code = COLVARS_OK;
-  error_code |= checkGPUError(cudaMallocHost(pp, sizeofT*len));
+  error_code |= checkGPUError(cudaHostAlloc(pp, sizeofT*len, cudaHostAllocDefault));
   return error_code;
 }
 
