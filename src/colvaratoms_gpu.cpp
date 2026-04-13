@@ -886,8 +886,8 @@ int colvaratoms_gpu::read_positions_gpu_debug(
         cpu_atoms->fitting_group->atoms_pos.data(),
         3 * cpu_atoms->fitting_group->num_atoms, stream);
     }
-    error_code |= checkGPUError(cudaStreamSynchronize(stream));
   }
+  error_code |= checkGPUError(cudaStreamSynchronize(stream));
   return error_code;
 }
 
