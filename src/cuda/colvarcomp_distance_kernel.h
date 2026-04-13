@@ -4,7 +4,7 @@
 #include "colvarmodule.h"
 #include "colvar_gpu_support.h"
 
-#if defined(COLVARS_CUDA) || defined(COVLARS_HIP)
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
 namespace colvars_gpu {
 
@@ -68,5 +68,5 @@ int calc_Jacobian_derivative_rmsd(
   const std::vector<cudaGraphNode_t>& dependencies);
 }
 
-#endif // defined(COLVARS_CUDA) || defined(COVLARS_HIP)
+#endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 #endif // COLVARCOMP_DISTANCE_KERNEL_H
