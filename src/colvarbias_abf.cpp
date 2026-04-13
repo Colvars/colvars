@@ -67,6 +67,8 @@ int colvarbias_abf::init(std::string const &conf)
   if (min_samples >= full_samples) {
     return cvm::error("Error: minSamples must be lower than fullSamples\n");
   }
+  effective_full_samples = full_samples;
+  effective_min_samples = min_samples;
 
   get_keyval(conf, "inputPrefix",  input_prefix, std::vector<std::string>());
 
@@ -200,6 +202,46 @@ int colvarbias_abf::init(std::string const &conf)
         s_m = std::vector<cvm::real>(gradients->nd,0);
         S_m= std::vector<cvm::real>(gradients->nd,0); ;
       }
+      cvm::real cutoff = 3.72 * smoothing;
+
+      int i_min = std::floor(-cutoff);
+      int i_max = std::ceil(cutoff);
+      int window_size = i_max - i_min + 1;
+
+      std::vector<std::vector<cvm::real>> w_1d(weights->nd, std::vector<cvm::real>(window_size));
+      std::vector<std::vector<int>> idx_1d(weights->nd, std::vector<int>(window_size)); // Assuming you use this later
+
+      cvm::real total_sum = 1.0;
+      cvm::real total_squared_sum = 1.0;
+
+      // First pass: Calculate 1D weights and total_sum
+      for (size_t i = 0; i < weights->nd; i++) {
+        cvm::real dim_sum = 0.0;
+        int counter = 0;
+        for (int ix = i_min; ix <= i_max; ix++) {
+          cvm::real weight = cvm::exp(-ix * ix * (1.0 / (smoothing * smoothing)));
+          w_1d[i][counter] = weight;
+          dim_sum += weight;
+          counter++;
+        }
+        // The N-D sum is the product of the 1D sums
+        total_sum *= dim_sum;
+      }
+
+      // Second pass: Calculate sum of squared normalized weights
+      for (size_t i = 0; i < weights->nd; i++) {
+        cvm::real dim_sq_sum = 0.0;
+        int counter = 0;
+        for (int ix = i_min; ix <= i_max; ix++) {
+          // Sum the squares of the unnormalized 1D components
+          dim_sq_sum += w_1d[i][counter] * w_1d[i][counter];
+          counter++;
+        }
+        total_squared_sum *= dim_sq_sum;
+      }
+      total_squared_sum /= (total_sum * total_sum);
+      effective_full_samples = full_samples * total_squared_sum;
+      effective_min_samples = min_samples * total_squared_sum;
     } else {
       smoothing = 0;
       // Doing standard discretized ABF
@@ -259,6 +301,8 @@ int colvarbias_abf::init(std::string const &conf)
     } else {
       czar_gradients.reset(new colvar_grid_gradient(colvars, z_samples));
     }
+    z_gradients->full_samples = full_samples;
+    z_gradients->min_samples = min_samples;
   }
 
   get_keyval(conf, "integrate", b_integrate, num_variables() <= 3); // Integrate for output if d<=3
@@ -277,12 +321,12 @@ int colvarbias_abf::init(std::string const &conf)
     get_keyval(conf, "pABFintegrateMaxIterations", pabf_integrate_iterations, 100, colvarparse::parse_silent);
     get_keyval(conf, "pABFintegrateTol", pabf_integrate_tol, 1e-4, colvarparse::parse_silent);
 
-    pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted, full_samples, min_samples));
+    pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted, effective_full_samples, effective_min_samples));
     if (b_CZAR_estimator) {
-      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients, integrate_weighted, full_samples, min_samples));
+      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients, integrate_weighted, effective_full_samples, effective_min_samples));
     }
     if (shared_on) {
-      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted, full_samples, min_samples));
+      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted, effective_full_samples, effective_min_samples));
     }
   }
 
@@ -298,7 +342,7 @@ int colvarbias_abf::init(std::string const &conf)
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
       global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
     }
-    global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients, full_samples, min_samples));
+    global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients, integrate_weighted, effective_full_samples, effective_min_samples));
   } else {
     // otherwise they are just aliases for the local CZAR grids
     global_z_samples = z_samples;
@@ -435,7 +479,7 @@ int colvarbias_abf::update()
         // Only if requested and within bounds of the grid...
         // get total force and subtract previous ABF force if necessary
         update_system_force();
-        gradients->acc_force(force_position, force_bin, system_force, smoothing, kernel_reduction_speed, &variances, &s_m, &S_m, &step);
+        gradients->acc_force(force_position, force_bin, system_force, smoothing, kernel_reduction_speed, effective_full_samples,effective_min_samples,&variances, &s_m, &S_m, &step);
         if ( b_integrate ) {
           pmf->update_div_neighbors(force_bin);
         }
@@ -459,13 +503,13 @@ int colvarbias_abf::update()
           // If we are outside the range of z, the force has not been obtained above
           // the function is just an accessor, so cheap to call again anyway
           update_system_force();
-          z_gradients->acc_force(z_position, z_bin, system_force, smoothing, kernel_reduction_speed, &z_variances, &z_s_m, &z_S_m, &z_step);
+          z_gradients->acc_force(z_position, z_bin, system_force, smoothing, kernel_reduction_speed, effective_full_samples,
+            effective_min_samples, &z_variances, &z_s_m, &z_S_m, &z_step);
         }
       }
 
       if ( pabf_freq && cvm::step_relative() % pabf_freq == 0 ) {
         cvm::real err;
-        std::vector<int> ix_test = {16,29};
         int iter = pmf->integrate(integrate_iterations, integrate_tol, err);
         if ( iter == integrate_iterations ) {
           cvm::log("Warning: PMF integration did not converge to " + cvm::to_str(integrate_tol)
@@ -570,11 +614,11 @@ int colvarbias_abf::update_system_force()
 cvm::real colvarbias_abf::smoothing_factor(cvm::real weight)
 {
   cvm::real fact = 1.0;
-  if ( weight < full_samples ) {
-    if ( weight < min_samples) {
+  if ( weight < effective_full_samples ) {
+    if ( weight < effective_min_samples) {
       fact = 0.0;
     } else {
-      fact = (weight - min_samples) / cvm::real(full_samples - min_samples);
+      fact = (weight - effective_min_samples) / cvm::real(effective_full_samples - effective_min_samples);
     }
   }
   return fact;
@@ -654,12 +698,12 @@ int colvarbias_abf::replica_share() {
     if (smoothing) {
       local_samples.reset(new colvar_grid_count(colvars, weights));
       local_gradients.reset(new colvar_grid_gradient(colvars, local_weights));
-      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, full_samples, min_samples));
+      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted, effective_full_samples, effective_min_samples));
     }
     else {
       local_samples.reset(new colvar_grid_count(colvars, samples));
       local_gradients.reset(new colvar_grid_gradient(colvars, local_samples));
-      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, full_samples, min_samples));
+      local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted, effective_full_samples, effective_min_samples));
     }
   }
   // Calculate the delta gradient and count for the local replica
@@ -812,7 +856,7 @@ int colvarbias_abf::replica_share_CZAR() {
         global_z_gradients = std::make_shared<colvar_grid_gradient>(colvars, global_z_samples);
         global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
       }
-      global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients, full_samples, min_samples));
+      global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients,integrate_weighted, effective_full_samples, effective_min_samples));
     }
 
     // Start with data from replica 0

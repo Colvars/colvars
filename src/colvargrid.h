@@ -1602,17 +1602,18 @@ public:
                       std::vector<int> const &bin_value,
                       cvm::real const *force,
                       cvm::real smoothing = 0, cvm::real kernel_reduction_speed = 1.,
+                      cvm::real effective_full_samples = 0, cvm::real effective_min_samples =0.,
                       std::vector<cvm::real>  *variances = nullptr,
                       std::vector<cvm::real>  *s_m = nullptr,
                       std::vector<cvm::real> *S_m = nullptr,
                       int *step = nullptr) {
-  if (smoothing && weights->value(bin_value) < full_samples) {
+  if (smoothing && weights->value(bin_value) < effective_full_samples) {
     std::vector<cvm::real> bandwidth(nd,0);
     std::vector<cvm::real> initial_bandwidth(nd,smoothing);
     std::vector<cvm::real> inv_squared_smooth(nd);
     if (!variances->empty()){
       cvm::real weight = weights->value(bin_value);
-      if (weight < min_samples) {
+      if (weight < effective_min_samples) {
         cvm::real min_displacement = MAXFLOAT;
         if (*step >= 2) {
           for (size_t i =0; i < nd; i++) {
@@ -1647,7 +1648,7 @@ public:
     std::vector<cvm::real> cutoff(nd);
     for (size_t i = 0; i < nd; i++) {
       bandwidth[i] = initial_bandwidth[i]
-      * (1 -(weights->value(bin_value) / (full_samples)) * kernel_reduction_speed);
+      * (1 -(std::max(0., weights->value(bin_value) - effective_min_samples) / (effective_full_samples)) * kernel_reduction_speed);
       inv_squared_smooth[i] = 1.0 / (std::max(bandwidth[i] * bandwidth[i], 1e-5));
       cutoff[i] = cutoff_factor * bandwidth[i];
     }
@@ -1709,8 +1710,9 @@ public:
         combined_weight *= w_1d[i][local_pos];
         wrapped_ix[i] = idx_1d[i][local_pos];
       }
-      if (weights -> value(wrapped_ix) < full_samples)
-        acc_force(wrapped_ix, force, combined_weight);
+      // if we want to make sure not to bias well known estimates
+      // if (weights -> value(wrapped_ix) < effective_full_samples)
+      acc_force(wrapped_ix, force, combined_weight);
       // iterates through the kernel support
       for (int i = nd - 1; i >= 0; i--) {
         // TODO: change a create a vector with the sizes

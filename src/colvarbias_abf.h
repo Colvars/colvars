@@ -56,6 +56,10 @@ private:
   cvm::real  full_samples;
   /// Number of samples per bin before applying a scaled-down biasing force
   cvm::real  min_samples;
+  /// Number of samples per bin before applying the full biasing force when using kernel grids
+  cvm::real  effective_full_samples;
+  /// Number of samples per bin before applying a scaled-down biasing force when using kernel grids
+  cvm::real  effective_min_samples;
   /// Latest absolute time step at which history files were written
   cvm::step_number history_last_step;
   /// Write CZAR output file for stratified eABF (.zgrad)
