@@ -4,10 +4,12 @@
 
 #if defined(COLVARS_CUDA)
 #include <cub/block/block_reduce.cuh>
+#include <cub/warp/warp_reduce.cuh>
 #endif
 
 #if defined (COLVARS_HIP)
 #include <hipcub/block/block_reduce.hpp>
+#include <hipcub/warp/warp_reduce.hpp>
 #define cub hipcub
 #endif
 
