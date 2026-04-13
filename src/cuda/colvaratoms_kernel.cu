@@ -445,7 +445,10 @@ __global__ void apply_colvar_force_to_proxy_kernel(
   unsigned int num_atoms) {
   const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   const cvm::real force = (*force_ptr);
-  const cvm::rmatrix rot_inv = q->conjugate().rotation_matrix();
+  cvm::rmatrix rot_inv;
+  if (ag_rotate) {
+    rot_inv = q->conjugate().rotation_matrix();
+  }
   if (i < num_atoms) {
     const unsigned int proxy_index = atoms_proxy_index[i];
     cvm::real fx, fy, fz;
