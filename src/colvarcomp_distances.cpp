@@ -970,7 +970,7 @@ int colvar::rmsd::init(std::string const &conf)
   num_ref_pos = ref_pos.size();
   ref_pos_soa = cvm::atom_group::pos_aos_to_soa(ref_pos);
   if (has_gpu_implementation()) {
-#if defined (COLVARS_CUDA) || defined (COLVARS_GPU)
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
     colvarproxy* p = cvmodule->proxy;
     error_code |= p->reallocate_device(&d_ref_pos_soa, 3 * num_ref_pos);
     error_code |= p->copy_HtoD(ref_pos_soa.data(), d_ref_pos_soa, 3 * num_ref_pos);
