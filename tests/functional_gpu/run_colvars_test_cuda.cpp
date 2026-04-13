@@ -274,7 +274,7 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
 #endif
 
 int main(int argc, char *argv[]) {
-#if defined (COLVARS_CUDA)
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   CLI::App app{"Colvars stub interface for testing"};
   argv = app.ensure_utf8(argv);
   std::string configuration_file;

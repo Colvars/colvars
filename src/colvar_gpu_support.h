@@ -16,6 +16,10 @@
 #endif // defined(COLVARS_CUDA)
 
 #if defined(COLVARS_HIP)
+#include <hip/hip_runtime.h>
+#endif // defined(COLVARS_HIP)
+
+#if defined(COLVARS_HIP)
 #ifndef cudaError_t
 #define cudaError_t hipError_t
 #endif // cudaError_t
@@ -27,6 +31,10 @@
 #ifndef cudaFreeHost
 #define cudaFreeHost hipFreeHost
 #endif // cudaFreeHost
+
+#ifndef cudaFreeAsync
+#define cudaFreeAsync hipFreeAsync
+#endif // cudaFreeAsync
 
 #ifndef cudaGetErrorString
 #define cudaGetErrorString hipGetErrorString
@@ -100,9 +108,29 @@
 #define cudaGraph_t hipGraph_t
 #endif // cudaGraph_t
 
+#ifndef cudaGraphDebugDotPrint
+#define cudaGraphDebugDotPrint hipGraphDebugDotPrint
+#endif // cudaGraphDebugDotPrint
+
+#ifndef cudaGraphDebugDotFlags
+#define cudaGraphDebugDotFlags hipGraphDebugDotFlags
+#endif // cudaGraphDebugDotFlags
+
+#ifndef cudaGraphDebugDotFlagsVerbose
+#define cudaGraphDebugDotFlagsVerbose hipGraphDebugDotFlagsVerbose
+#endif // cudaGraphDebugDotFlagsVerbose
+
 #ifndef cudaHostAllocMapped
 #define cudaHostAllocMapped hipHostAllocMapped
 #endif // cudaHostAllocMapped
+
+#ifndef cudaHostAlloc
+#define cudaHostAlloc hipHostAlloc
+#endif // cudaHostAlloc
+
+#ifndef cudaLaunchKernel
+#define cudaLaunchKernel hipLaunchKernel
+#endif // cudaLaunchKernel
 
 #ifndef cudaKernelNodeParams
 #define cudaKernelNodeParams hipKernelNodeParams
@@ -112,9 +140,17 @@
 #define cudaMalloc hipMalloc
 #endif // cudaMalloc
 
+#ifndef cudaMallocAsync
+#define cudaMallocAsync hipMallocAsync
+#endif // cudaMallocAsync
+
 #ifndef cudaMallocHost
 #define cudaMallocHost hipMallocHost
 #endif // cudaMallocHost
+
+#ifndef cudaGraphAddMemcpyNode1D
+#define cudaGraphAddMemcpyNode1D hipGraphAddMemcpyNode1D
+#endif
 
 #ifndef cudaMemcpy
 #define cudaMemcpy hipMemcpy
@@ -147,6 +183,10 @@
 #ifndef cudaMemset
 #define cudaMemset hipMemset
 #endif // cudaMemset
+
+#ifndef cudaMemsetParams
+#define cudaMemsetParams hipMemsetParams
+#endif // cudaMemsetParams
 
 #ifndef cudaMemsetAsync
 #define cudaMemsetAsync hipMemsetAsync

@@ -44,7 +44,7 @@ else()
   include(CheckLanguage)
   check_language(HIP)
   enable_language(HIP)
-  find_package(libhipcxx)
+  # find_package(libhipcxx)
 endif()
 
 if(NOT EXISTS ${COLVARS_SOURCE_DIR})
