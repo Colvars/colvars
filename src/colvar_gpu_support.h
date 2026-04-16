@@ -13,10 +13,12 @@
 #ifdef COLVARS_NVTX_PROFILING
 #include <nvtx3/nvToolsExt.h>
 #endif
+#define COLVARS_SYNC_WARP __syncwarp()
 #endif // defined(COLVARS_CUDA)
 
 #if defined(COLVARS_HIP)
 #include <hip/hip_runtime.h>
+#define COLVARS_SYNC_WARP
 #endif // defined(COLVARS_HIP)
 
 #if defined(COLVARS_HIP)
