@@ -278,17 +278,17 @@ __global__ void jacobi_4x4_kernel(
       const double a_qq = A[q*4+q];
       compute_c_s(a_pq, a_pp, a_qq, c, s, c2, s2, cs);
     }
-    __syncwarp();
+    COLVARS_SYNC_WARP;
     if (idx == 0 && rotate) {
       apply_jacobi<0, 1>(A, c, s, c2, s2, cs);
       multiply_jacobi<0, 1>(V, c, s);
     }
-    __syncwarp();
+    COLVARS_SYNC_WARP;
     if (idx == 1 && rotate) {
       apply_jacobi<2, 3>(A, c, s, c2, s2, cs);
       multiply_jacobi<2, 3>(V, c, s);
     }
-    __syncwarp();
+    COLVARS_SYNC_WARP;
     rotate = false;
     p = p_ids[idx+2];
     q = q_ids[idx+2];
@@ -299,17 +299,17 @@ __global__ void jacobi_4x4_kernel(
       const double a_qq = A[q*4+q];
       compute_c_s(a_pq, a_pp, a_qq, c, s, c2, s2, cs);
     }
-    __syncwarp();
+    COLVARS_SYNC_WARP;
     if (idx == 0 && rotate) {
       apply_jacobi<0, 2>(A, c, s, c2, s2, cs);
       multiply_jacobi<0, 2>(V, c, s);
     }
-    __syncwarp();
+    COLVARS_SYNC_WARP;
     if (idx == 1 && rotate) {
       apply_jacobi<1, 3>(A, c, s, c2, s2, cs);
       multiply_jacobi<1, 3>(V, c, s);
     }
-    __syncwarp();
+    COLVARS_SYNC_WARP;
     rotate = false;
     p = p_ids[idx+4];
     q = q_ids[idx+4];
@@ -320,17 +320,17 @@ __global__ void jacobi_4x4_kernel(
       const double a_qq = A[q*4+q];
       compute_c_s(a_pq, a_pp, a_qq, c, s, c2, s2, cs);
     }
-    __syncwarp();
+    COLVARS_SYNC_WARP;
     if (idx == 0 && rotate) {
       apply_jacobi<0, 3>(A, c, s, c2, s2, cs);
       multiply_jacobi<0, 3>(V, c, s);
     }
-    __syncwarp();
+    COLVARS_SYNC_WARP;
     if (idx == 1 && rotate) {
       apply_jacobi<1, 2>(A, c, s, c2, s2, cs);
       multiply_jacobi<1, 2>(V, c, s);
     }
-    __syncwarp();
+    COLVARS_SYNC_WARP;
     off_diag_sum =
       fabs(A[0*4+1]) + fabs(A[0*4+2]) + fabs(A[0*4+3]) +
       fabs(A[1*4+2]) + fabs(A[1*4+3]) +
