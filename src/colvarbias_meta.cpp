@@ -587,12 +587,11 @@ int colvarbias_meta::update_bias()
     if (well_tempered) {
 
       cvm::real hills_energy_sum_here = 0.0;
+      std::vector<int> curr_bin = use_grids ? hills_energy->get_colvars_index() : std::vector<int>();
+      const bool index_ok = use_grids ? hills_energy->index_ok(curr_bin) : false;
 
       for (size_t ir = 0; ir < replicas.size(); ir++) {
         if (use_grids) {
-          std::vector<int> curr_bin = hills_energy->get_colvars_index();
-          const bool index_ok = hills_energy->index_ok(curr_bin);
-
           if (index_ok) {
             hills_energy_sum_here += replicas[ir]->hills_energy->value(curr_bin);
           } else {
