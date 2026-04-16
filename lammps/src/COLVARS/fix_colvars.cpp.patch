@@ -1,5 +1,5 @@
 diff --git a/src/COLVARS/fix_colvars.cpp b/src/COLVARS/fix_colvars.cpp
-index 1c9eb966c4..be688b5eaa 100644
+index 0716128515..97e7f820c8 100644
 --- a/src/COLVARS/fix_colvars.cpp
 +++ b/src/COLVARS/fix_colvars.cpp
 @@ -443,7 +443,6 @@ void FixColvars::setup(int vflag)
@@ -35,7 +35,7 @@ index 1c9eb966c4..be688b5eaa 100644
    } else { // me != 0
      // copy coordinate data into communication buffer
      nme = 0;
-@@ -755,6 +758,11 @@ void FixColvars::end_of_step()
+@@ -757,6 +760,11 @@ void FixColvars::end_of_step()
            }
          }
        }
@@ -47,7 +47,7 @@ index 1c9eb966c4..be688b5eaa 100644
      } else { // me != 0
        /* copy total force data into communication buffer */
        nme = 0;
-@@ -772,6 +780,7 @@ void FixColvars::end_of_step()
+@@ -774,6 +782,7 @@ void FixColvars::end_of_step()
        MPI_Recv(&tmp, 0, MPI_INT, 0, 0, world, MPI_STATUS_IGNORE);
        MPI_Rsend(comm_buf, nme*size_one, MPI_BYTE, 0, 0, world);
      }
@@ -55,7 +55,7 @@ index 1c9eb966c4..be688b5eaa 100644
    }
  }
 
-@@ -781,7 +790,7 @@ void FixColvars::write_restart(FILE *fp)
+@@ -783,7 +792,7 @@ void FixColvars::write_restart(FILE *fp)
  {
    if (comm->me == 0) {
      cvm::memory_stream ms;
@@ -64,7 +64,7 @@ index 1c9eb966c4..be688b5eaa 100644
        int len_cv_state = ms.length();
        // Will write the buffer's length twice, so that the fix can read it later, too
        int len = len_cv_state + sizeof(int);
-@@ -800,7 +809,7 @@ void FixColvars::restart(char *buf)
+@@ -802,7 +811,7 @@ void FixColvars::restart(char *buf)
      // Read the buffer's length, then load it into Colvars starting right past that location
      int length = *(reinterpret_cast<int *>(buf));
      auto *colvars_state_buffer = reinterpret_cast<unsigned char *>(buf + sizeof(int));
@@ -73,7 +73,7 @@ index 1c9eb966c4..be688b5eaa 100644
        error->all(FLERR, "Failed to set the Colvars input state from string buffer");
    }
  }
-@@ -811,7 +820,7 @@ void FixColvars::post_run()
+@@ -813,7 +822,7 @@ void FixColvars::post_run()
  {
    if (comm->me == 0) {
      proxy->post_run();
@@ -82,7 +82,7 @@ index 1c9eb966c4..be688b5eaa 100644
    }
  }
 
-@@ -829,7 +838,7 @@ void FixColvars::setup_colvars()
+@@ -831,7 +840,7 @@ void FixColvars::setup_colvars()
    int sizes_array[2];
    if (comm->me == 0) {
      proxy->parse_module_config();
@@ -91,12 +91,12 @@ index 1c9eb966c4..be688b5eaa 100644
      size_array_rows = variables.size();
      size_array_cols = 0;
      for ( int m=0 ; m<size_array_rows; m++ ) {
-@@ -851,7 +860,7 @@ double FixColvars::compute_array(int m, int n)
+@@ -853,7 +862,7 @@ double FixColvars::compute_array(int m, int n)
  {
    double value = 0.0;
    if (comm->me == 0) {
 -    const auto& variables = *proxy->colvars->variables();
 +    const auto& variables = *proxy->cvmodule->variables();
-     if (m >= variables.size()) {
+     if (m >= (int)variables.size()) {
        error->all(FLERR, Error::NOLASTLINE, "f_{}[{}][{}] out-of-bounds: {} collective variables "
                   "available.", id, m+1, n+1, variables.size());
