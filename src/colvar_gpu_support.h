@@ -18,7 +18,7 @@
 
 #if defined(COLVARS_HIP)
 #include <hip/hip_runtime.h>
-#define COLVARS_SYNC_WARP
+#define COLVARS_SYNC_WARP __threadfence()
 #endif // defined(COLVARS_HIP)
 
 #if defined(COLVARS_HIP)
