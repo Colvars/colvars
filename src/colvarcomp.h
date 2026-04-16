@@ -333,6 +333,26 @@ inline colvarvalue const & colvar::cvc::Jacobian_derivative() const
 }
 
 
+/// Colvar component: center of mass or geometry of an atom group
+class colvar::center : public colvar::cvc
+{
+public:
+
+  center();
+  ~center() override {}
+  int init(std::string const &conf) override;
+  void calc_value() override;
+  void calc_gradients() override;
+
+protected:
+
+  /// Atom group
+  cvm::atom_group *atoms_ = nullptr;
+
+  /// The center itself
+  cvm::atom_pos center_pos_;
+};
+
 
 /// \brief Colvar component: distance between the centers of mass of
 /// two groups (colvarvalue::type_scalar type, range [0:*))
