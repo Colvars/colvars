@@ -33,9 +33,6 @@ struct ArithmeticPathImpl: public ArithmeticPathCV::ArithmeticPathBase<cvm::real
     }
     template <typename T>
     void updateCVDistanceToReferenceFrames(T* obj) {
-        for (size_t i_cv = 0; i_cv < obj->cv.size(); ++i_cv) {
-            obj->cv[i_cv]->calc_value();
-        }
         for (size_t i_frame = 0; i_frame < obj->ref_cv.size(); ++i_frame) {
             for (size_t i_cv = 0; i_cv < obj->cv.size(); ++i_cv) {
                 colvarvalue ref_cv_value(obj->ref_cv[i_frame][i_cv]);
@@ -258,16 +255,12 @@ int colvar::aspathCV::init(std::string const &conf)
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     std::vector<cvm::real> p_weights(cv.size(), 1.0);
     get_keyval(conf, "weights", p_weights, std::vector<cvm::real>(cv.size(), 1.0));
-    use_explicit_gradients = true;
     cvm::real p_lambda;
     get_keyval(conf, "lambda", p_lambda, -1.0);
     if (impl_) impl_.reset();
     impl_ = std::unique_ptr<ArithmeticPathImpl>(new ArithmeticPathImpl(cv.size(), total_reference_frames, p_lambda, p_weights));
     cvm::log(std::string("Lambda is ") + cvm::to_str(impl_->get_lambda()) + std::string("\n"));
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            use_explicit_gradients = false;
-        }
         cvm::log(std::string("The weight of CV ") + cvm::to_str(i_cv) + std::string(" is ") + cvm::to_str(p_weights[i_cv]) + std::string("\n"));
     }
     return error_code;
@@ -276,6 +269,11 @@ int colvar::aspathCV::init(std::string const &conf)
 colvar::aspathCV::~aspathCV() {}
 
 void colvar::aspathCV::calc_value() {
+    if (compatibility_mode) {
+        for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+            cv[i_cv]->calc_value();
+        }
+    }
     if (impl_->get_lambda() < 0) {
         // this implies that the user may not set a valid lambda value
         // so recompute it by the suggested value in Parrinello's paper
@@ -293,59 +291,38 @@ void colvar::aspathCV::calc_value() {
 void colvar::aspathCV::calc_gradients() {
     impl_->compute_s_derivatives();
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        cv[i_cv]->calc_gradients();
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            // compute the gradient (grad) with respect to the i-th CV
-            colvarvalue grad(cv[i_cv]->value().type());
-            // sum up derivatives with respect to all frames
-            for (size_t m_frame = 0; m_frame < impl_->dsdx.size(); ++m_frame) {
-                // dsdx is the derivative of s with respect to the m-th frame
-                grad += impl_->dsdx[m_frame][i_cv];
-            }
-            for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
-                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                    for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
-                        (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = grad[j_elem] * factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
-                    }
-                }
-            }
+        if (compatibility_mode) {
+            cv[i_cv]->calc_gradients();
         }
     }
 }
 
 void colvar::aspathCV::apply_force(colvarvalue const &force) {
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
-            }
-        } else {
-            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            // compute the gradient (grad) with respect to the i-th CV
-            colvarvalue grad(cv[i_cv]->value().type());
+        cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+        // compute the gradient (grad) with respect to the i-th CV
+        colvarvalue grad(cv[i_cv]->value().type());
+        for (size_t m_frame = 0; m_frame < impl_->dsdx.size(); ++m_frame) {
+            // dsdx is the derivative of s with respect to the m-th frame
+            grad += impl_->dsdx[m_frame][i_cv];
+        }
+        grad *= factor_polynomial;
+        cv[i_cv]->apply_force(force.real_value * grad);
+        // try my best to debug gradients even if the sub-CVs do not have explicit gradients
+        if (is_enabled(f_cvc_debug_gradient)) {
+            cvm::log("Debugging gradients for " + description +
+                        " with respect to sub-CV " + cv[i_cv]->description +
+                        ", which has no explicit gradient with respect to its own input(s)");
+            colvarvalue analytical_grad(cv[i_cv]->value().type());
             for (size_t m_frame = 0; m_frame < impl_->dsdx.size(); ++m_frame) {
-                // dsdx is the derivative of s with respect to the m-th frame
-                grad += impl_->dsdx[m_frame][i_cv];
+                analytical_grad += impl_->compute_s_analytical_derivative_ij(
+                    m_frame, i_cv, cvm::debug_gradients_step_size, this);
             }
-            grad *= factor_polynomial;
-            cv[i_cv]->apply_force(force.real_value * grad);
-            // try my best to debug gradients even if the sub-CVs do not have explicit gradients
-            if (is_enabled(f_cvc_debug_gradient)) {
-                cvm::log("Debugging gradients for " + description +
-                         " with respect to sub-CV " + cv[i_cv]->description +
-                         ", which has no explicit gradient with respect to its own input(s)");
-                colvarvalue analytical_grad(cv[i_cv]->value().type());
-                for (size_t m_frame = 0; m_frame < impl_->dsdx.size(); ++m_frame) {
-                    analytical_grad += impl_->compute_s_analytical_derivative_ij(
-                        m_frame, i_cv, cvm::debug_gradients_step_size, this);
-                }
-                cvm::log("dx(actual) = "+cvm::to_str(analytical_grad, 21, 14)+"\n");
-                cvm::log("dx(interp) = "+cvm::to_str(grad, 21, 14)+"\n");
-                cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
-                  cvm::to_str((analytical_grad - grad).norm() /
-                              (analytical_grad).norm(), 12, 5)+"\n");
-            }
+            cvm::log("dx(actual) = "+cvm::to_str(analytical_grad, 21, 14)+"\n");
+            cvm::log("dx(interp) = "+cvm::to_str(grad, 21, 14)+"\n");
+            cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
+                cvm::to_str((analytical_grad - grad).norm() /
+                            (analytical_grad).norm(), 12, 5)+"\n");
         }
     }
 }
@@ -363,22 +340,23 @@ int colvar::azpathCV::init(std::string const &conf)
     cvm::log(std::string("Total number of frames: ") + cvm::to_str(total_reference_frames) + std::string("\n"));
     std::vector<cvm::real> p_weights(cv.size(), 1.0);
     get_keyval(conf, "weights", p_weights, std::vector<cvm::real>(cv.size(), 1.0));
-    use_explicit_gradients = true;
     cvm::real p_lambda;
     get_keyval(conf, "lambda", p_lambda, -1.0);
     if (impl_) impl_.reset();
     impl_ = std::unique_ptr<ArithmeticPathImpl>(new ArithmeticPathImpl(cv.size(), total_reference_frames, p_lambda, p_weights));
     cvm::log(std::string("Lambda is ") + cvm::to_str(impl_->get_lambda()) + std::string("\n"));
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (!cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            use_explicit_gradients = false;
-        }
         cvm::log(std::string("The weight of CV ") + cvm::to_str(i_cv) + std::string(" is ") + cvm::to_str(p_weights[i_cv]) + std::string("\n"));
     }
     return error_code;
 }
 
 void colvar::azpathCV::calc_value() {
+    if (compatibility_mode) {
+        for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
+            cv[i_cv]->calc_value();
+        }
+    }
     if (impl_->get_lambda() < 0) {
         // this implies that the user may not set a valid lambda value
         // so recompute it by the suggested value in Parrinello's paper
@@ -396,23 +374,8 @@ void colvar::azpathCV::calc_value() {
 void colvar::azpathCV::calc_gradients() {
     impl_->compute_z_derivatives();
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        cv[i_cv]->calc_gradients();
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            // compute the gradient (grad) with respect to the i-th CV
-            colvarvalue grad(cv[i_cv]->value().type());
-            // sum up derivatives with respect to all frames
-            for (size_t m_frame = 0; m_frame < impl_->dzdx.size(); ++m_frame) {
-                // dzdx is the derivative of z with respect to the m-th frame
-                grad += impl_->dzdx[m_frame][i_cv];
-            }
-            for (size_t j_elem = 0; j_elem < cv[i_cv]->value().size(); ++j_elem) {
-                for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                    for (size_t l_atom = 0; l_atom < (cv[i_cv]->atom_groups)[k_ag]->size(); ++l_atom) {
-                        (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad = grad[j_elem] * factor_polynomial * (*(cv[i_cv]->atom_groups)[k_ag])[l_atom].grad;
-                    }
-                }
-            }
+        if (compatibility_mode) {
+            cv[i_cv]->calc_gradients();
         }
     }
 }
@@ -420,36 +383,30 @@ void colvar::azpathCV::calc_gradients() {
 void colvar::azpathCV::apply_force(colvarvalue const &force) {
     // the PCV component itself is a scalar, so force should be scalar
     for (size_t i_cv = 0; i_cv < cv.size(); ++i_cv) {
-        if (cv[i_cv]->is_enabled(f_cvc_explicit_gradient)) {
-            for (size_t k_ag = 0 ; k_ag < cv[i_cv]->atom_groups.size(); ++k_ag) {
-                (cv[i_cv]->atom_groups)[k_ag]->apply_colvar_force(force.real_value);
-            }
-        } else {
-            const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
-            // compute the gradient (grad) with respect to the i-th CV
-            colvarvalue grad(cv[i_cv]->value().type());
+        const cvm::real factor_polynomial = getPolynomialFactorOfCVGradient(i_cv);
+        // compute the gradient (grad) with respect to the i-th CV
+        colvarvalue grad(cv[i_cv]->value().type());
+        for (size_t m_frame = 0; m_frame < impl_->dzdx.size(); ++m_frame) {
+            // dzdx is the derivative of z with respect to the m-th frame
+            grad += impl_->dzdx[m_frame][i_cv];
+        }
+        grad *= factor_polynomial;
+        cv[i_cv]->apply_force(force.real_value * grad);
+        // try my best to debug gradients even if the sub-CVs do not have explicit gradients
+        if (is_enabled(f_cvc_debug_gradient)) {
+            cvm::log("Debugging gradients for " + description +
+                        " with respect to sub-CV " + cv[i_cv]->description +
+                        ", which has no explicit gradient with respect to its own input(s)");
+            colvarvalue analytical_grad(cv[i_cv]->value().type());
             for (size_t m_frame = 0; m_frame < impl_->dzdx.size(); ++m_frame) {
-                // dzdx is the derivative of z with respect to the m-th frame
-                grad += impl_->dzdx[m_frame][i_cv];
+                analytical_grad += impl_->compute_z_analytical_derivative_ij(
+                    m_frame, i_cv, cvm::debug_gradients_step_size, this);
             }
-            grad *= factor_polynomial;
-            cv[i_cv]->apply_force(force.real_value * grad);
-            // try my best to debug gradients even if the sub-CVs do not have explicit gradients
-            if (is_enabled(f_cvc_debug_gradient)) {
-                cvm::log("Debugging gradients for " + description +
-                         " with respect to sub-CV " + cv[i_cv]->description +
-                         ", which has no explicit gradient with respect to its own input(s)");
-                colvarvalue analytical_grad(cv[i_cv]->value().type());
-                for (size_t m_frame = 0; m_frame < impl_->dzdx.size(); ++m_frame) {
-                    analytical_grad += impl_->compute_z_analytical_derivative_ij(
-                        m_frame, i_cv, cvm::debug_gradients_step_size, this);
-                }
-                cvm::log("dx(actual) = "+cvm::to_str(analytical_grad, 21, 14)+"\n");
-                cvm::log("dx(interp) = "+cvm::to_str(grad, 21, 14)+"\n");
-                cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
-                  cvm::to_str((analytical_grad - grad).norm() /
-                              (analytical_grad).norm(), 12, 5)+"\n");
-            }
+            cvm::log("dx(actual) = "+cvm::to_str(analytical_grad, 21, 14)+"\n");
+            cvm::log("dx(interp) = "+cvm::to_str(grad, 21, 14)+"\n");
+            cvm::log("|dx(actual) - dx(interp)|/|dx(actual)| = "+
+                cvm::to_str((analytical_grad - grad).norm() /
+                            (analytical_grad).norm(), 12, 5)+"\n");
         }
     }
 }

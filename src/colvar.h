@@ -652,6 +652,7 @@ public:
 
   /// \brief function for sorting cvcs by their names
   static bool compare_cvc(const colvar::cvc* const i, const colvar::cvc* const j);
+  static bool compare_cvc_names(const std::string& i, const std::string& j);
 
 protected:
 
@@ -712,6 +713,13 @@ public:
   /// Volmap numeric IDs, one for each CVC (-1 if not available)
   std::vector<int> const &get_volmap_ids();
 
+  using IteratorCVC = decltype(cvcs)::iterator;
+  inline IteratorCVC cvcs_begin() {
+    return cvcs.begin();
+  }
+  inline IteratorCVC cvcs_end() {
+    return cvcs.end();
+  }
 };
 
 

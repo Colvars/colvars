@@ -53,7 +53,11 @@ colvar::colvar()
 /// Used to sort CVC array in scripted coordinates
 bool colvar::compare_cvc(const colvar::cvc* const i, const colvar::cvc* const j)
 {
-  return i->name < j->name;
+  return compare_cvc_names(i->name, j->name);
+}
+
+bool colvar::compare_cvc_names(const std::string& i, const std::string& j) {
+  return i < j;
 }
 
 
@@ -788,6 +792,16 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
                             "\".\n",
                         COLVARS_MEMORY_ERROR);
     }
+    // Set the name at first
+    // Give a default name if one wasn't defined
+    if (cvcp->name.empty()) {
+      std::ostringstream s;
+      // Pad cvc number for correct ordering when sorting by name
+      s << def_config_key << std::setfill('0') << std::setw(4) << ++def_count;
+      cvcp->name = s.str();
+    }
+    // Record the name of the parent colvar to make it globally searchable
+    cvcp->set_parent_name(name);
     cvcs.push_back(std::shared_ptr<colvar::cvc>(cvcp));
 
     cvm::increase_depth();
@@ -805,16 +819,6 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
           cvm::error("Error: in setting up component \"" + std::string(def_config_key) + "\".\n",
                      COLVARS_INPUT_ERROR);
     }
-
-    // Give a default name if one wasn't defined
-    if (cvcp->name.empty()) {
-      std::ostringstream s;
-      // Pad cvc number for correct ordering when sorting by name
-      s << def_config_key << std::setfill('0') << std::setw(4) << ++def_count;
-      cvcp->name = s.str();
-    }
-    // Record the name of the parent colvar to make it globally searchable
-    cvcp->set_parent_name(name);
 
     // Add to the global register
     cvm::main()->register_component(cvcs.back()->qualified_name(), cvcs.back());
@@ -1548,7 +1552,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
       (cvcs[i])->calc_gradients();
       // if requested, propagate (via chain rule) the gradients above
       // to the atoms used to define the roto-translation
-     (cvcs[i])->calc_fit_gradients();
+      (cvcs[i])->calc_fit_gradients();
       if ((cvcs[i])->is_enabled(f_cvc_debug_gradient))
         (cvcs[i])->debug_gradients();
     }
@@ -2026,7 +2030,10 @@ void colvar::communicate_forces()
   } else if (x.type() == colvarvalue::type_scalar) {
 
     for (i = 0; i < cvcs.size(); i++) {
-      if (!cvcs[i]->is_enabled()) continue;
+      if (!cvcs[i]->is_enabled()) {
+        cvm::log("CVC " + cvcs[i]->name + " is not enabled. Continue.");
+        continue;
+      }
       (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff *
                              cvm::real((cvcs[i])->sup_np) *
                              (cvm::integer_power((cvcs[i])->value().real_value,

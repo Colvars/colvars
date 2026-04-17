@@ -295,7 +295,7 @@ public:
 
   /// Get a pointer to a colvar component (individual function)
   /// TODO Use a different base class after it's possible to forward declare colvar::cvc
-  colvardeps *get_component_by_name(std::string const &name);
+  std::shared_ptr<colvardeps> get_component_by_name(std::string const &name);
 
   /// Add a new colvar component to the internal registry
   void register_component(std::string const &name, std::shared_ptr<colvardeps> ptr);

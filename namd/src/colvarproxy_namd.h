@@ -123,6 +123,7 @@ public:
   int check_smp_enabled() override;
 
   int smp_colvars_loop() override;
+  int smp_colvars_loop2() override;
 
   int smp_biases_loop();
 
@@ -150,18 +151,25 @@ public:
 
   int smp_lock()
   {
-    charm_lock_state = CmiCreateLock();
+    CmiLock(charm_lock_state);
+    // TODO: Why does the old code create lock instead of holding the existing lock???
+    // charm_lock_state = CmiCreateLock();
     return COLVARS_OK;
   }
 
   int smp_trylock()
   {
-    return COLVARS_NOT_IMPLEMENTED;
+    const int ret = CmiTryLock(charm_lock_state);
+    if (ret == 0) return COLVARS_OK;
+    else return COLVARS_ERROR;
+    // return COLVARS_NOT_IMPLEMENTED;
   }
 
   int smp_unlock()
   {
-    CmiDestroyLock(charm_lock_state);
+    // NOTE: It seems the smp locking was never implemented correctly. No matter I got so many mysterious crashes with it!
+    // CmiDestroyLock(charm_lock_state);
+    CmiUnlock(charm_lock_state);
     return COLVARS_OK;
   }
 

@@ -41,10 +41,19 @@
 #include "colvarproxy.h"
 #include "colvarproxy_namd.h"
 #include "colvarscript.h"
+#include "colvarcomp.h"
+
+#ifdef USE_CKLOOP
+#include "CkLambda.h"
+#endif
+
 
 
 colvarproxy_namd::colvarproxy_namd()
 {
+#if defined(CMK_SMP)
+  charm_lock_state = CmiCreateLock();
+#endif
   engine_name_ = "NAMD";
 
   version_int = get_version_from_string(COLVARPROXY_VERSION);
@@ -151,6 +160,9 @@ colvarproxy_namd::colvarproxy_namd()
 
 colvarproxy_namd::~colvarproxy_namd()
 {
+#if defined(CMK_SMP)
+  CmiDestroyLock(charm_lock_state);
+#endif
   delete reduction;
 }
 
@@ -1536,6 +1548,143 @@ int colvarproxy_namd::smp_colvars_loop()
   CkLoop_Parallelize(calc_colvars_items_smp, 1, this,
                      cv->variables_active_smp()->size(),
                      0, cv->variables_active_smp()->size()-1);
+  return cvm::get_error();
+}
+
+struct cvc_info {
+  bool enabled;
+  bool parent_colvar_total_force_calc;
+  bool parent_colvar_Jacobian;
+  std::shared_ptr<colvar::cvc> cvc_ptr;
+};
+
+// TODO: Too bad! We have to traverse the AST twice!
+void cvc_max_depth(
+  const std::vector<std::shared_ptr<colvar::cvc>>& cvcs,
+  std::unordered_map<std::shared_ptr<colvar::cvc>, int>& cvc_depth_map,
+  int current_level = 0) {
+  for (auto it = cvcs.begin(); it != cvcs.end(); ++it) {
+    auto map_it = cvc_depth_map.find(*it);
+    if (map_it == cvc_depth_map.end()) {
+      cvc_depth_map.insert({*it, current_level});
+    } else {
+      if (map_it->second < current_level) {
+        map_it->second = current_level;
+      }
+    }
+    cvc_max_depth((*it)->children_cvcs(), cvc_depth_map, current_level+1);
+  }
+}
+
+void flatten_all_cvc_tree(
+  std::shared_ptr<colvar::cvc>& parent,
+  std::unordered_map<std::shared_ptr<colvar::cvc>, cvc_info>& cvc_info_map,
+  bool parent_colvar_total_force_calc,
+  bool parent_colvar_Jacobian) {
+  auto children = parent->children_cvcs();
+  for (auto it = children.begin(); it != children.end(); ++it) {
+    flatten_all_cvc_tree(*it, cvc_info_map, parent_colvar_total_force_calc, parent_colvar_Jacobian);
+  }
+  auto it_find = cvc_info_map.find(parent);
+  if (it_find == cvc_info_map.end()) {
+    cvc_info_map.insert({parent, cvc_info{
+      // TODO: Here calc_cvc_values calls cvcs[i]->is_enabled() , which is is_enabled(int f = f_cv_active)
+      //       I know both f_cv_active and f_cvc_active are 0 but are they the same option??
+      parent->is_enabled(colvardeps::features_cvc::f_cvc_active),
+      parent_colvar_total_force_calc, parent_colvar_Jacobian,
+      parent
+    }});
+  }
+}
+
+int colvarproxy_namd::smp_colvars_loop2() {
+  colvarmodule *cv = this->colvars;
+  // Bypass the colvar objects and find all CVC objects
+  std::vector<std::shared_ptr<colvar::cvc>> all_cvcs;
+  std::unordered_map<std::shared_ptr<colvar::cvc>, cvc_info> cvc_info_map;
+  for (auto it = cv->variables_active()->begin();
+       it != cv->variables_active()->end(); ++it) {
+    // TODO: Bad design! What will happen if CVC a is in a "colvar" block
+    // that does not support total_force_calc, but is then reused in
+    // another block that requires total_force_calc even if it supports Jacobian itself???
+    const bool total_force_on = (*it)->is_enabled(colvardeps::features_colvar::f_cv_total_force_calc);
+    const bool Jacobian_on = (*it)->is_enabled(colvardeps::features_colvar::f_cv_Jacobian);
+    // use_total_forces.push_back(total_force_on);
+    for (auto it_cvc = (*it)->cvcs_begin();
+         it_cvc != (*it)->cvcs_end(); ++it_cvc) {
+      std::shared_ptr<colvar::cvc> p = *it_cvc;
+      flatten_all_cvc_tree(p, cvc_info_map, total_force_on, Jacobian_on);
+      all_cvcs.push_back(p);
+    }
+  }
+  // Since some CVCs may depend on others, the CVCs constitutes a directed acyclic graph.
+  // Walk through the graph, and determine the maximum depth of each CVC.
+  std::unordered_map<std::shared_ptr<colvar::cvc>, int> cvc_depth_map;
+  cvc_max_depth(all_cvcs, cvc_depth_map, 0);
+  // Determine the max depth of the graph
+  int max_depth = 0;
+  for (auto it = cvc_depth_map.begin(); it != cvc_depth_map.end(); ++it) {
+    if (it->second > max_depth) max_depth = it->second;
+  }
+  // Group the CVCs according to their max depths
+  // TODO: Can we save this vector since the CVCs are less likely changed over time?
+  //       But what should I do if the user changes the Colvars config dynamically? I wish there is a signal/slot...
+  std::vector<std::vector<cvc_info>> sorted_cvcs(max_depth+1);
+  for (auto it = cvc_depth_map.begin(); it != cvc_depth_map.end(); ++it) {
+    sorted_cvcs[it->second].push_back(cvc_info_map[it->first]);
+  }
+  const bool tf_switch_1 = (cvm::step_relative() > 0) && (!total_forces_same_step());
+  const bool tf_switch_2 = total_forces_same_step();
+  // Calculate the CVCs in parallel. The high-depth ones should be calculated at first.
+  cvm::increase_depth();
+  for (auto it = sorted_cvcs.rbegin(); it != sorted_cvcs.rend(); ++it) {
+    const int numChunks = it->size();
+    const int lowerRange = 0;
+    const int upperRange = numChunks - 1;
+    cvc_info* data = it->data();
+    auto lambda_fn = [data, tf_switch_1, tf_switch_2](int start, int end, void* unused){
+      for (int i = start; i <= end; i++) {
+        std::shared_ptr<colvar::cvc>& cvc_ptr = data[i].cvc_ptr;
+        if (data[i].enabled) {
+          // Follow the order of colvar::calc_cvcs:
+          // 1. calc_cvc_total_force
+          if (data[i].parent_colvar_total_force_calc && tf_switch_1) {
+            cvc_ptr->calc_force_invgrads();
+          }
+          // 2. calc_cvc_values
+          // TODO: Oops! read_data() clears the gradients!
+          //       CVC a has a sub-CVC b, and we run b->calc_gradients at
+          //       first and followed by a->read_data, then the previous gradients are cleared!!
+          //       Without major refactoring, it seems the only way to avoid the problem is
+          //       not to register the atom groups of sub-CVCs to the parent CVC.
+          //       Then I have to rely on modify_children_cvcs_atom_gradients to do backward propagation.
+          //       PLUMED has PLMD::ActionAtomistic and PLMD::ActionWithValue but Colvars has none.
+          cvc_ptr->read_data();
+          cvc_ptr->calc_value();
+          // 3. calc_cvc_gradients
+          if (cvc_ptr->is_enabled(colvardeps::features_cvc::f_cvc_gradient)) {
+            cvc_ptr->calc_gradients();
+            cvc_ptr->calc_fit_gradients();
+            // TODO: Implement debug_gradients for CVC of sub-CVCs
+            if (cvc_ptr->is_enabled(colvardeps::features_cvc::f_cvc_debug_gradient)) {
+              cvc_ptr->debug_gradients();
+            }
+          }
+          // 4. calc_cvc_Jacobians
+          if (data[i].parent_colvar_Jacobian) {
+            cvc_ptr->calc_Jacobian_derivative();
+          }
+          // 5. calc_cvc_total_force
+          if (data[i].parent_colvar_total_force_calc && tf_switch_2) {
+            cvc_ptr->calc_force_invgrads();
+          }
+        }
+      }
+    };
+    CkLoop_Parallelize(numChunks, lowerRange, upperRange,
+                       lambda_fn, NULL, CKLOOP_NONE, NULL);
+  }
+  cvm::decrease_depth();
   return cvm::get_error();
 }
 
