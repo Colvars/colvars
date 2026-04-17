@@ -13,12 +13,6 @@
 #include "colvardeps.h"
 
 
-// This constructor depends on a static cvm pointer and is deprecated
-colvardeps::colvardeps()
-  : colvarparse(cvm::main())
-{}
-
-
 colvardeps::colvardeps(colvarmodule *cvmodulein)
   : colvarparse(cvmodulein)
 {}

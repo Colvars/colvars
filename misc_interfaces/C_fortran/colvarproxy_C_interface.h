@@ -15,8 +15,8 @@ void call_proxy_member(void *proxy);
 // Functions of this type should define a complete interface
 // This could be based on colvarscript
 
-int run_colvarscript_command(int objc, unsigned char *const objv[]);
-const char * get_colvarscript_result();
+int run_colvarscript_command(void *proxy_in, int objc, unsigned char *const objv[]);
+const char * get_colvarscript_result(void *proxy_in);
 
 #ifdef __cplusplus
 }

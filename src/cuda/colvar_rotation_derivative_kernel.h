@@ -10,6 +10,7 @@
 namespace colvars_gpu {
 
 int prepare_derivative(
+  colvarmodule* cvmodule,
   rotation_derivative_dldq dldq,
   const cvm::real* S_eigval,
   const cvm::real* S_eigvec,

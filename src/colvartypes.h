@@ -122,10 +122,12 @@ public:
 
   inline static void check_sizes(vector1d<T> const &v1, vector1d<T> const &v2)
   {
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
     if (v1.size() != v2.size()) {
-      cvm::error_static("Error: trying to perform an operation between vectors of different sizes, "+
+      cvm::error_static(nullptr, "Error: trying to perform an operation between vectors of different sizes, "+
                  cvm::to_str(v1.size())+" and "+cvm::to_str(v2.size())+".\n");
     }
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
   }
 
   inline void operator += (vector1d<T> const &v)
@@ -252,9 +254,11 @@ public:
   /// Slicing
   inline vector1d<T> const slice(size_t const i1, size_t const i2) const
   {
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
     if ((i2 < i1) || (i2 >= this->size())) {
-      cvm::error_static("Error: trying to slice a vector using incorrect boundaries.\n");
+      cvm::error_static(nullptr, "Error: trying to slice a vector using incorrect boundaries.\n");
     }
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     vector1d<T> result(i2 - i1);
     size_t i;
     for (i = 0; i < (i2 - i1); i++) {
@@ -267,9 +271,11 @@ public:
   inline void sliceassign(size_t const i1, size_t const i2,
                           vector1d<T> const &v)
   {
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
     if ((i2 < i1) || (i2 >= this->size())) {
-      cvm::error_static("Error: trying to slice a vector using incorrect boundaries.\n");
+      cvm::error_static(nullptr, "Error: trying to slice a vector using incorrect boundaries.\n");
     }
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     size_t i;
     for (i = 0; i < (i2 - i1); i++) {
       (*this)[i1+i] = v[i];
@@ -401,10 +407,12 @@ protected:
     }
     inline int set(cvm::vector1d<T> const &v) const
     {
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
       if (v.size() != length) {
-        return cvm::error_static("Error: setting a matrix row from a vector of "
+        return cvm::error_static(nullptr, "Error: setting a matrix row from a vector of "
                           "incompatible size.\n", COLVARS_BUG_ERROR);
       }
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
       for (size_t i = 0; i < length; i++) data[i] = v[i];
       return COLVARS_OK;
     }
@@ -550,15 +558,17 @@ public:
 
   inline static void check_sizes(matrix2d<T> const &m1, matrix2d<T> const &m2)
   {
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
     if ((m1.outer_length != m2.outer_length) ||
         (m1.inner_length != m2.inner_length)) {
-      cvm::error_static("Error: trying to perform an operation between "
+      cvm::error_static(nullptr, "Error: trying to perform an operation between "
                  "matrices of different sizes, "+
                  cvm::to_str(m1.outer_length)+"x"+
                  cvm::to_str(m1.inner_length)+" and "+
                  cvm::to_str(m2.outer_length)+"x"+
                  cvm::to_str(m2.inner_length)+".\n");
     }
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
   }
 
   inline void operator += (matrix2d<T> const &m)
@@ -650,11 +660,13 @@ public:
   {
     vector1d<T> result(m.inner_length);
     if (m.outer_length != v.size()) {
-      cvm::error_static("Error: trying to multiply a vector and a matrix "
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+      cvm::error_static(nullptr, "Error: trying to multiply a vector and a matrix "
                  "of incompatible sizes, "+
                   cvm::to_str(v.size()) + " and " +
                  cvm::to_str(m.outer_length)+"x"+cvm::to_str(m.inner_length) +
                  ".\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     } else {
       size_t i, k;
       for (i = 0; i < m.inner_length; i++) {
@@ -1039,7 +1051,9 @@ public:
       return this->q3;
     default:
 #if !(defined(__NVCC__) || defined(__HIPCC__))
-      cvm::error_static("Error: incorrect quaternion component.\n");
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+      cvm::error_static(nullptr, "Error: incorrect quaternion component.\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
 #endif
       return q0;
     }
@@ -1058,8 +1072,10 @@ public:
       return this->q3;
     default:
 #if !(defined(__NVCC__) || defined(__HIPCC__))
-      cvm::error_static("Error: trying to access a quaternion "
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+      cvm::error_static(nullptr, "Error: trying to access a quaternion "
                  "component which is not between 0 and 3.\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
 #endif
       return 0.0;
     }
@@ -1382,6 +1398,9 @@ private:
   /// Used for debugging gradients
   cvm::real S_backup[4][4];
 
+  /// For logging
+  colvarmodule* cvmodule;
+
 public:
   /// \brief Perform gradient tests
   bool b_debug_gradients;
@@ -1434,13 +1453,13 @@ public:
   int init();
 
   /// Default constructor
-  rotation();
+  rotation(colvarmodule* cvmodule_in);
 
   /// Constructor after a quaternion
-  rotation(cvm::quaternion const &qi);
+  rotation(colvarmodule* cvmodule_in, cvm::quaternion const &qi);
 
   /// Constructor after an axis of rotation and an angle (in radians)
-  rotation(cvm::real angle, cvm::rvector const &axis);
+  rotation(colvarmodule* cvmodule_in, cvm::real angle, cvm::rvector const &axis);
 
   /// Destructor
   ~rotation();
@@ -1454,7 +1473,7 @@ public:
   /// Return the inverse of this rotation
   inline cvm::rotation inverse() const
   {
-    return cvm::rotation(this->q.conjugate());
+    return cvm::rotation(cvmodule, this->q.conjugate());
   }
 
   /// Return the associated 3x3 matrix
@@ -1613,9 +1632,11 @@ private:
   cvm::real* h_S;
   cvm::real* h_S_eigval;
   cvm::real* h_S_eigvec;
+  /// \brief Colvar module object for debugging and logging
+  colvarmodule* cvmodule;
 public:
   /// Constructor
-  rotation_gpu();
+  rotation_gpu(colvarmodule* cvmodule_in);
   /// Destructor
   ~rotation_gpu();
   /// Check if the object is initialized

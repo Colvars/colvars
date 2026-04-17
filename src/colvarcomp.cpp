@@ -18,15 +18,6 @@
 #include "colvarcomp.h"
 
 
-// This constructor depends on a static cvm pointer and is deprecated
-colvar::cvc::cvc()
- : colvardeps(cvm::main())
-{
-  description = "uninitialized colvar component";
-  cvc::init_dependencies();
-}
-
-
 colvar::cvc::cvc(colvarmodule *cvmodule_in)
   : colvardeps(cvmodule_in)
 {
@@ -184,7 +175,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
   std::string group_conf;
 
   if (key_lookup(conf, group_key, &group_conf)) {
-    group = new cvm::atom_group(group_key);
+    group = new cvm::atom_group(group_key, cvmodule);
 
     if (b_try_scalable) {
       if (is_available(f_cvc_scalable_com)
@@ -663,7 +654,7 @@ void colvar::cvc::debug_gradients()
 
       auto const this_atom = (*group)[ia];
       for (size_t id = 0; id < 3; id++) {
-        if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+        if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
           group->get_gpu_atom_group()->read_positions_gpu_debug(
             group, false, ia, id, to_cpu, 1, stream);
@@ -687,7 +678,7 @@ void colvar::cvc::debug_gradients()
         cvm::real x_1 = x.real_value;
         if ((x.type() == colvarvalue::type_vector) && (x.size() == 1)) x_1 = x[0];
 
-        if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+        if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
           group->get_gpu_atom_group()->read_positions_gpu_debug(group, false, ia, id, to_cpu, -1, stream);
           group->get_gpu_atom_group()->calc_required_properties_gpu_debug(group, to_cpu, stream);
@@ -726,7 +717,7 @@ void colvar::cvc::debug_gradients()
 
     if ((group->is_enabled(f_ag_fit_gradients)) && (group->fitting_group != NULL)) {
       auto *ref_group = group->fitting_group;
-      if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+      if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
         group->get_gpu_atom_group()->read_positions_gpu_debug(
           group, false, 0, -1, to_cpu, 1.0, stream);
@@ -750,7 +741,7 @@ void colvar::cvc::debug_gradients()
 
         for (size_t id = 0; id < 3; id++) {
           // (re)read original positions
-          if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+          if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
             group->get_gpu_atom_group()->read_positions_gpu_debug(
               group, true, ia, id, to_cpu, 1.0, stream);
@@ -774,7 +765,7 @@ void colvar::cvc::debug_gradients()
           cvm::real const x_1 = x.real_value;
 
           // (re)read original positions
-          if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+          if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
             group->get_gpu_atom_group()->read_positions_gpu_debug(
               group, true, ia, id, to_cpu, -1.0, stream);
@@ -828,7 +819,7 @@ void colvar::cvc::debug_gradients()
       group->grad_z(ia) = 0;
     }
     // (re)read original positions
-    if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+    if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
       group->get_gpu_atom_group()->read_positions_gpu_debug(
         group, false, 0, -1, to_cpu, -1.0, stream);
@@ -890,7 +881,7 @@ int colvar::cvc::debug_gradients_gpu(
         fit_gradients.data(), 3 * group_for_fit->size());
     }
     if (group->is_enabled(f_ag_rotate)) {
-      cvm::rotation rot_cpu;
+      cvm::rotation rot_cpu(cvmodule);
       rot.to_cpu(rot_cpu);
       const auto rot_inv = rot_cpu.inverse().matrix();
       auto grad_x = gradients[0].begin();
@@ -936,7 +927,7 @@ int colvar::cvc::debug_gradients_gpu(
         const auto& rot = group->get_gpu_atom_group()->get_rot_gpu();
         auto& group_for_fit_gpu = group_for_fit->get_gpu_atom_group();
         // Obtain the rotation matrix from GPU
-        cvm::rotation rot_cpu;
+        cvm::rotation rot_cpu(cvmodule);
         rot.to_cpu(rot_cpu);
         const auto rot_0 = rot_cpu.matrix();
         // fit_gradients are in the simulation frame: we should print them in the rotated frame

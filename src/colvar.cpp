@@ -23,8 +23,8 @@
 #include "colvarcomp_torchann.h"
 #include "colvarcomp_coordnums.h"
 
-std::map<std::string, std::function<colvar::cvc *()>> colvar::global_cvc_map =
-    std::map<std::string, std::function<colvar::cvc *()>>();
+std::map<std::string, std::function<colvar::cvc *(colvarmodule *cvmodule_in)>> colvar::global_cvc_map =
+    std::map<std::string, std::function<colvar::cvc *(colvarmodule *cvmodule_in)>>();
 
 std::map<std::string, std::string> colvar::global_cvc_desc_map =
     std::map<std::string, std::string>();
@@ -822,8 +822,8 @@ template <typename def_class_name>
 void colvar::add_component_type(char const *def_description, char const *def_config_key)
 {
   if (global_cvc_map.count(def_config_key) == 0) {
-    global_cvc_map[def_config_key] = []() {
-      return new def_class_name();
+    global_cvc_map[def_config_key] = [](colvarmodule *cvmodule_in) {
+      return new def_class_name(cvmodule_in);
     };
     global_cvc_desc_map[def_config_key] = std::string(def_description);
   }
@@ -845,7 +845,7 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
              "a new \""+std::string(def_config_key)+"\" component"+
              (cvm::debug() ? ", with configuration:\n"+def_conf
               : ".\n"));
-    cvc *cvcp = global_cvc_map[def_config_key]();
+    cvc *cvcp = global_cvc_map[def_config_key](cvmodule);
     if (!cvcp) {
       return cvmodule->error("Error: in creating object of type \"" + std::string(def_config_key) +
                             "\".\n",
@@ -1991,7 +1991,7 @@ void colvar::update_extended_Lagrangian()
   // [O] leap to v_(i+1/2) (10c)
   if (is_enabled(f_cv_Langevin)) {
     colvarvalue rnd(x);
-    rnd.set_random();
+    rnd.set_random(this->cvmodule);
     // ext_sigma has been computed at init time according to (10c)
     v_ext = cvm::exp(- 1.0 * dt * ext_gamma) * v_ext + ext_sigma * rnd / ext_mass;
   }

@@ -30,6 +30,7 @@ __global__ void atoms_pos_from_proxy_kernel(
 }
 
 int atoms_pos_from_proxy(
+  colvarmodule* cvmodule,
   const int* atoms_proxy_index,
   const cvm::real* atoms_pos_proxy,
   cvm::real* atoms_pos_ag,
@@ -63,7 +64,7 @@ int atoms_pos_from_proxy(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add atoms_pos_from_proxy node.\n");
+    cvmodule->log("Add atoms_pos_from_proxy node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -71,6 +72,7 @@ int atoms_pos_from_proxy(
 }
 
 int atoms_pos_from_proxy(
+  colvarmodule* cvmodule,
   const int* atoms_proxy_index,
   const cvm::real* atoms_pos_proxy,
   cvm::real* atoms_pos_ag,
@@ -95,7 +97,7 @@ int atoms_pos_from_proxy(
      &atoms_pos_z_ag,
      &num_atoms};
   if (cvm::debug()) {
-    cvm::log_static("Run atoms_pos_from_proxy.\n");
+    cvmodule->log("Run atoms_pos_from_proxy.\n");
   }
   return checkGPUError(cudaLaunchKernel((void*)atoms_pos_from_proxy_kernel,
     num_blocks, block_size, args, 0, stream));
@@ -111,6 +113,7 @@ __global__ void change_one_coordinate_kernel(
 }
 
 int change_one_coordinate(
+  colvarmodule* cvmodule,
   cvm::real* atoms_pos_ag, size_t atom_id_in_group, int xyz,
   cvm::real step_size, unsigned int num_atoms, cudaStream_t stream) {
   int error_code = COLVARS_OK;
@@ -118,7 +121,7 @@ int change_one_coordinate(
     size_t array_id = num_atoms * xyz + atom_id_in_group;
     void* args[] = {&atoms_pos_ag, &array_id, &step_size};
     if (cvm::debug()) {
-      cvm::log_static("Run change_one_coordinate.\n");
+      cvmodule->log("Run change_one_coordinate.\n");
     }
     error_code |= checkGPUError(cudaLaunchKernel(
       (void*)change_one_coordinate_kernel,
@@ -239,6 +242,7 @@ __global__ void atoms_calc_cog_com_kernel(
 }
 
 int atoms_calc_cog_com(
+  colvarmodule* cvmodule,
   const cvm::real* atoms_pos_ag,
   const cvm::real* atoms_mass,
   unsigned int num_atoms,
@@ -289,7 +293,7 @@ int atoms_calc_cog_com(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -297,6 +301,7 @@ int atoms_calc_cog_com(
 }
 
 int atoms_calc_cog(
+  colvarmodule* cvmodule,
   const cvm::real* atoms_pos_ag,
   unsigned int num_atoms,
   cvm::rvector* d_cog_tmp,
@@ -345,7 +350,7 @@ int atoms_calc_cog(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -386,6 +391,7 @@ __global__ void atoms_total_force_from_proxy_kernel(
 }
 
 int atoms_total_force_from_proxy(
+  colvarmodule* cvmodule,
   const int* atoms_proxy_index,
   const cvm::real* atoms_total_force_proxy,
   cvm::real* atoms_total_force_ag,
@@ -414,7 +420,7 @@ int atoms_total_force_from_proxy(
      &q,
      &num_atoms};
   if (cvm::debug()) {
-    cvm::log_static("Run " + cvm::to_str(__func__) + " kernel.\n");
+    cvmodule->log("Run " + cvm::to_str(__func__) + " kernel.\n");
   }
   if (rotate) {
     return checkGPUError(cudaLaunchKernel(
@@ -467,6 +473,7 @@ __global__ void apply_colvar_force_to_proxy_kernel(
 }
 
 int apply_main_colvar_force_to_proxy(
+  colvarmodule* cvmodule,
   const int* atoms_proxy_index,
   cvm::real* atoms_applied_force_proxy,
   const cvm::real* atoms_grad_ag,
@@ -505,7 +512,7 @@ int apply_main_colvar_force_to_proxy(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   if (rotate) {
     kernelNodeParams.func = (void*)apply_colvar_force_to_proxy_kernel<true>;
@@ -518,6 +525,7 @@ int apply_main_colvar_force_to_proxy(
 }
 
 int apply_fitting_colvar_force_to_proxy(
+  colvarmodule* cvmodule,
   const int* atoms_proxy_index,
   cvm::real* atoms_applied_force_proxy,
   const cvm::real* atoms_grad_ag,
@@ -554,7 +562,7 @@ int apply_fitting_colvar_force_to_proxy(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   kernelNodeParams.func = (void*)apply_colvar_force_to_proxy_kernel<false>;
   return checkGPUError(cudaGraphAddKernelNode(
@@ -718,6 +726,7 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
 }
 
 int calc_fit_gradients_impl_loop1(
+  colvarmodule* cvmodule,
   const cvm::real* pos_unrotated,
   cvm::real* main_grad,
   const colvars_gpu::rotation_derivative_gpu* rot_deriv,
@@ -769,7 +778,7 @@ int calc_fit_gradients_impl_loop1(
     return COLVARS_OK;
   }
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -821,6 +830,7 @@ __global__ void calc_fit_forces_impl_loop2_kernel(
 }
 
 int calc_fit_gradients_impl_loop2(
+  colvarmodule* cvmodule,
   cvm::real* fit_grad,
   const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* atom_grad,
@@ -869,7 +879,7 @@ int calc_fit_gradients_impl_loop2(
     return COLVARS_OK;
   }
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -892,6 +902,7 @@ __global__ void apply_translation_kernel(
 }
 
 int apply_translation(
+  colvarmodule* cvmodule,
   cvm::real* atoms_pos_ag,
   cvm::real translation_vector_factor,
   const cvm::rvector* translation_vector,
@@ -919,13 +930,13 @@ int apply_translation(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
-    cvm::log_static("x_ptr = " + cvm::to_str((void*)atoms_pos_x_ag) + "\n");
-    cvm::log_static("y_ptr = " + cvm::to_str((void*)atoms_pos_y_ag) + "\n");
-    cvm::log_static("z_ptr = " + cvm::to_str((void*)atoms_pos_z_ag) + "\n");
-    cvm::log_static("pos = " + cvm::to_str((void*)translation_vector) + "\n");
-    cvm::log_static("factor = " + cvm::to_str(translation_vector_factor) + "\n");
-    cvm::log_static("num_atoms = " + cvm::to_str((int)num_atoms) + "\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
+    // cvmodule->log("x_ptr = " + cvm::to_str((void*)atoms_pos_x_ag) + "\n");
+    // cvmodule->log("y_ptr = " + cvm::to_str((void*)atoms_pos_y_ag) + "\n");
+    // cvmodule->log("z_ptr = " + cvm::to_str((void*)atoms_pos_z_ag) + "\n");
+    // cvmodule->log("pos = " + cvm::to_str((void*)translation_vector) + "\n");
+    // cvmodule->log("factor = " + cvm::to_str(translation_vector_factor) + "\n");
+    // cvmodule->log("num_atoms = " + cvm::to_str((int)num_atoms) + "\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -959,6 +970,7 @@ __global__ void rotate_with_quaternion_kernel(
 }
 
 int rotate_with_quaternion(
+  colvarmodule* cvmodule,
   cvm::real* atoms_pos_ag,
   const cvm::quaternion* q,
   unsigned int num_atoms,
@@ -983,7 +995,7 @@ int rotate_with_quaternion(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -1009,6 +1021,7 @@ __global__ void accumulate_cpu_force_kernel(
 }
 
 int accumulate_cpu_force(
+  colvarmodule* cvmodule,
   const cvm::real* h_atoms_force,
   cvm::real* d_atoms_force,
   unsigned int num_atoms,
@@ -1039,7 +1052,7 @@ int accumulate_cpu_force(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -1078,6 +1091,7 @@ __global__ void apply_force_with_inverse_rotation_kernel(
 }
 
 int apply_force_with_inverse_rotation(
+  colvarmodule* cvmodule,
   const cvm::real* atoms_force,
   const cvm::quaternion* q,
   const int* atoms_proxy_index,
@@ -1113,7 +1127,7 @@ int apply_force_with_inverse_rotation(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -1139,6 +1153,7 @@ __global__ void apply_force_kernel(
 }
 
 int apply_force(
+  colvarmodule* cvmodule,
   const cvm::real* atoms_force,
   const int* atoms_proxy_index,
   cvm::real* proxy_new_force,
@@ -1172,7 +1187,7 @@ int apply_force(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -1180,6 +1195,7 @@ int apply_force(
 }
 
 int calc_fit_forces_impl_loop1(
+  colvarmodule* cvmodule,
   const cvm::real* pos_unrotated,
   cvm::real* main_force,
   const colvars_gpu::rotation_derivative_gpu* rot_deriv,
@@ -1195,15 +1211,16 @@ int calc_fit_forces_impl_loop1(
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return calc_fit_gradients_impl_loop1(
-    pos_unrotated, main_force, rot_deriv, q, num_atoms_main,
+    cvmodule, pos_unrotated, main_force, rot_deriv, q, num_atoms_main,
     num_atoms_fitting, atom_grad, sum_dxdq, dxdC, tbcount,
     ag_center, ag_rotate, node, graph, dependencies);
 }
 
 int calc_fit_forces_impl_loop2(
+  colvarmodule* cvmodule,
   const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* atom_grad,
   const cvm::rmatrix* dxdC,
@@ -1253,9 +1270,9 @@ int calc_fit_forces_impl_loop2(
     return COLVARS_OK;
   }
   // cvmodule pointer not available here
-  // if (cvmodule->debug()) {
-  //   cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
-  // }
+  if (cvm::debug()) {
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
+  }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
     dependencies.size(), &kernelNodeParams));

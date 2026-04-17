@@ -13,7 +13,7 @@
 
 namespace colvars_gpu {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-int gpuAssert(cudaError_t code, const char *file, int line)
+int gpuAssert(colvarmodule* cvmodule, cudaError_t code, const char *file, int line)
 {
   if (code != cudaSuccess) {
     std::string error =
@@ -24,12 +24,13 @@ int gpuAssert(cudaError_t code, const char *file, int line)
       error += "\nBacktrace:\n" + std::to_string(std::stacktrace::current()) + "\n";
 #endif
 #endif
-    return cvm::error_static(error, COLVARS_ERROR);
+    return cvm::error_static(cvmodule, error, COLVARS_ERROR);
   }
   return COLVARS_OK;
 }
 
 int add_clear_array_node_impl(
+  colvarmodule* cvmodule,
   void* dst, const size_t num_elements, const size_t sizeofT,
   cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
@@ -46,6 +47,7 @@ int add_clear_array_node_impl(
   memsetParams.height      = 1;
   if (cvm::debug()) {
     cvm::log_static(
+      cvmodule,
       "Add a memset clear node: ptr = " + cvm::to_str(dst) +
       " width = " + cvm::to_str(width) + " elementSize = " +
       cvm::to_str(elementSize) + "\n");
@@ -56,11 +58,12 @@ int add_clear_array_node_impl(
 }
 
 int add_copy_node_impl(
+  colvarmodule* cvmodule,
   const void* src, void* dst, const size_t num_elements, const size_t sizeofT,
   cudaMemcpyKind kind, cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
   if (cvm::debug()) {
-    cvm::log_static(
+    cvm::log_static(cvmodule,
       "Add a memcpy node: src = " + cvm::to_str(src) +
       " dst = " + cvm::to_str(dst) + " num_elements = " +
       cvm::to_str(num_elements) + "\n");
@@ -71,6 +74,7 @@ int add_copy_node_impl(
 }
 
 int prepare_dependencies(
+  colvarmodule* cvmodule,
   const std::vector<std::pair<std::string, bool>>& node_names,
   std::vector<cudaGraphNode_t>& dependencies,
   const std::unordered_map<std::string, cudaGraphNode_t>& map,
@@ -82,15 +86,15 @@ int prepare_dependencies(
     if (auto search = map.find(node_name); search != map.end()) {
       dependencies.push_back(search->second);
       if (cvm::debug()) {
-        cvm::log_static("Operation " + caller_operation_name +
+        cvm::log_static(cvmodule, "Operation " + caller_operation_name +
                 " depends on node\" " + node_name + "\"\n");
       }
     } else {
       if (!allow_not_found) {
-        error_code |= cvm::error_static("BUG: cannot find node " + node_name + "\n");
+        error_code |= cvm::error_static(cvmodule, "BUG: cannot find node " + node_name + "\n");
       } else {
         if (cvm::debug()) {
-          cvm::log_static("Operation " + caller_operation_name +
+          cvm::log_static(cvmodule, "Operation " + caller_operation_name +
                   " cannot depend on node\" " + node_name + "\"\n");
         }
       }

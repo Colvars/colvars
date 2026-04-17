@@ -12,7 +12,7 @@
 #include "colvars_memstream.h"
 
 colvarbias_reweightaMD::colvarbias_reweightaMD(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias_histogram(cvmodule_in, key) {}
+  : colvardeps(cvmodule_in), colvarbias_histogram(cvmodule_in, key) {}
 
 colvarbias_reweightaMD::~colvarbias_reweightaMD() {}
 
@@ -31,21 +31,21 @@ int colvarbias_reweightaMD::init(std::string const &conf) {
         cvmodule->error("Error: historyFreq must be a multiple of outputFreq.\n", COLVARS_INPUT_ERROR);
   }
   b_history_files = (history_freq > 0);
-  grid_count.reset(new colvar_grid_scalar(colvars, nullptr, false, grid_conf));
+  grid_count.reset(new colvar_grid_scalar(cvmodule, colvars, nullptr, false, grid_conf));
   grid_count->request_actual_value();
   grid->request_actual_value();
-  pmf_grid_exp_avg.reset(new colvar_grid_scalar(colvars, grid_count));
+  pmf_grid_exp_avg.reset(new colvar_grid_scalar(cvmodule, colvars, grid_count));
   if (b_write_gradients) {
-    grad_grid_exp_avg.reset(new colvar_grid_gradient(colvars, nullptr, grid_count));
+    grad_grid_exp_avg.reset(new colvar_grid_gradient(cvmodule, colvars, nullptr, grid_count));
   }
   if (b_use_cumulant_expansion) {
-    grid_dV.reset(new colvar_grid_scalar(colvars, grid_count));
-    grid_dV_square.reset(new colvar_grid_scalar(colvars, grid_count));
-    pmf_grid_cumulant.reset(new colvar_grid_scalar(colvars, grid_count));
+    grid_dV.reset(new colvar_grid_scalar(cvmodule, colvars, grid_count));
+    grid_dV_square.reset(new colvar_grid_scalar(cvmodule, colvars, grid_count));
+    pmf_grid_cumulant.reset(new colvar_grid_scalar(cvmodule, colvars, grid_count));
     grid_dV->request_actual_value();
     grid_dV_square->request_actual_value();
     if (b_write_gradients) {
-      grad_grid_cumulant.reset(new colvar_grid_gradient(colvars, nullptr, grid_count));
+      grad_grid_cumulant.reset(new colvar_grid_gradient(cvmodule, colvars, nullptr, grid_count));
     }
   }
   previous_bin.assign(num_variables(), -1);

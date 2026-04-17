@@ -58,6 +58,7 @@ __global__ void calc_value_rmsd_kernel(
 }
 
 int calc_value_rmsd(
+  colvarmodule* cvmodule,
   const cvm::real* ref_pos,
   const cvm::real* ag_pos,
   cvm::real* d_permutation_msds,
@@ -138,6 +139,7 @@ __global__ void calc_gradients_rmsd_kernel(
 }
 
 int calc_gradients_rmsd(
+  colvarmodule* cvmodule,
   const cvm::real* h_rmsd,
   const size_t* h_best_perm_index,
   const cvm::real* ref_pos,
@@ -249,6 +251,7 @@ __global__ void calc_force_invgrads_rmsd_kernel(
 }
 
 int calc_force_invgrads_rmsd(
+  colvarmodule* cvmodule,
   const bool rotate,
   const int* atoms_proxy_index,
   const cvm::real* atoms_total_force_proxy,
@@ -399,6 +402,7 @@ __global__ void calc_Jacobian_derivative_rmsd_kernel(
 }
 
 int calc_Jacobian_derivative_rmsd(
+  colvarmodule* cvmodule,
   const bool center,
   const bool rotate,
   const size_t* h_best_perm_index,

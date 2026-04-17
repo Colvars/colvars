@@ -42,7 +42,7 @@ public:
     return smp_mode_t::gpu;
   }
   std::vector<smp_mode_t> get_available_smp_modes() const override {
-    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
+    std::vector<colvarproxy::smp_mode_t> available_modes{
       smp_mode_t::gpu
     };
     return available_modes;
@@ -225,7 +225,7 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
   std::vector<cvm::rvector> positions(atoms_ids.size());
   int err = cvmodule->load_coords_xyz(filename, &positions, nullptr, true);
   // Convert to SOA and copy to GPU
-  colvarproxy_atoms::atom_buffer_real_t positions_soa;
+  colvarproxy::atom_buffer_real_t positions_soa;
   const size_t numAtoms = positions.size();
   // if (numAtoms != positions.size()) {
   //   return cvmodule->error("Number of atoms mismatch!\n", COLVARS_ERROR);
@@ -253,7 +253,7 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
   if ( !err ) {
     cvmodule->calc();
     cvmodule->it++;
-    colvarproxy_atoms::atom_buffer_real_t h_applied_forces(3 * numAtoms);
+    colvarproxy::atom_buffer_real_t h_applied_forces(3 * numAtoms);
     copy_DtoH(d_mAppliedForces, h_applied_forces.data(), 3 * numAtoms);
     if (write_force_file) {
       std::ofstream ofs(force_filename);
@@ -343,8 +343,8 @@ int main(int argc, char *argv[]) {
   unsigned char * args[2] = {
     (unsigned char *) "cv",
     (unsigned char *) "listinputfiles" };
-  err |= run_colvarscript_command(proxy->script, 2, args);
-  cvmodule->log("  " + std::string(get_colvarscript_result()));
+  err |= run_colvarscript_command(proxy, 2, args);
+  cvmodule->log("  " + std::string(get_colvarscript_result(proxy)));
 
   double const max_gradient_error = proxy->cvmodule->get_max_gradient_error();
   if (max_gradient_error > 0.) {

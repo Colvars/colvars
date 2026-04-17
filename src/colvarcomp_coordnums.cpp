@@ -15,13 +15,13 @@
 #include "colvarcomp_coordnums.h"
 
 
-colvar::coordnum::coordnum()
+colvar::coordnum::coordnum(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("coordNum");
   x.type(colvarvalue::type_scalar);
   cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(4.0);
   update_cutoffs({r0, r0, r0});
-  b_use_internal_pbc = cvm::main()->proxy->use_internal_pbc();
+  b_use_internal_pbc = cvmodule->proxy->use_internal_pbc();
   // Boundaries will be set later, when the number of pairs is known
 }
 
@@ -336,7 +336,7 @@ void colvar::coordnum::calc_gradients()
 
 // h_bond member functions
 
-colvar::h_bond::h_bond()
+colvar::h_bond::h_bond(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(3.3);
   r0_vec = {r0, r0, r0};
@@ -365,7 +365,7 @@ int colvar::h_bond::init(std::string const &conf)
     error_code |= cvmodule->error("Error: either acceptor or donor undefined.\n", COLVARS_INPUT_ERROR);
   }
 
-  register_atom_group(new cvm::atom_group);
+  register_atom_group(new cvm::atom_group(cvmodule));
   {
     colvarproxy* const p = cvmodule->proxy;
     auto modify_atom = atom_groups[0]->get_atom_modifier();
@@ -398,13 +398,13 @@ int colvar::h_bond::init(std::string const &conf)
 
 colvar::h_bond::h_bond(cvm::atom_group::simple_atom const &acceptor,
                        cvm::atom_group::simple_atom const &donor,
-                       cvm::real r0_i, int en_i, int ed_i)
-  : h_bond()
+                       cvm::real r0_i, int en_i, int ed_i, colvarmodule* cvmodule_in)
+  : h_bond(cvmodule_in)
 {
   r0_vec = {r0_i, r0_i, r0_i};
   en = en_i;
   ed = ed_i;
-  register_atom_group(new cvm::atom_group);
+  register_atom_group(new cvm::atom_group(cvmodule));
   auto modify_atom = atom_groups[0]->get_atom_modifier();
   modify_atom.add_atom(acceptor);
   modify_atom.add_atom(donor);
@@ -483,7 +483,12 @@ void colvar::h_bond::calc_gradients()
 }
 
 
-colvar::selfcoordnum::selfcoordnum()
+// <<<<<<< HEAD
+// colvar::selfcoordnum::selfcoordnum()
+// =======
+
+colvar::selfcoordnum::selfcoordnum(colvarmodule* cvmodule_in): colvar::coordnum(cvmodule_in)
+// >>>>>>> bdf8c50d (refactor: reduce the use of cvm::main())
 {
   set_function_type("selfCoordNum");
 }
@@ -582,7 +587,7 @@ void colvar::selfcoordnum::calc_gradients()
 }
 
 
-colvar::groupcoordnum::groupcoordnum() { set_function_type("groupCoord"); }
+colvar::groupcoordnum::groupcoordnum(colvarmodule* cvmodule_in): colvar::coordnum(cvmodule_in) { set_function_type("groupCoord"); }
 
 
 void colvar::groupcoordnum::calc_value()
