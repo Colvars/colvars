@@ -51,9 +51,12 @@ int colvar::map_total::init(std::string const &conf)
     // Using internal atom selection
     if (volmap_filename.size() > 0) {
       volmap_index = proxy->load_internal_volmap_from_file(volmap_filename);
+    } else if (volmap_id >= 0) {
+      // Maps loaded by VMD may be used as internally-loaded ones
+      volmap_index = proxy->init_internal_volmap_by_id(volmap_id);
     } else {
       error_code |= cvmodule->error(
-          "Error: when using only atom selections internal to Colvars, mapFile must be defined.\n",
+          "Error: when using only atom selections internal to Colvars, mapFile should be used to load the map directly.\n",
           COLVARS_INPUT_ERROR);
     }
 
