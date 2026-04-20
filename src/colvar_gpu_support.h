@@ -18,7 +18,17 @@
 
 #if defined(COLVARS_HIP)
 #include <hip/hip_runtime.h>
-#define COLVARS_SYNC_WARP __threadfence()
+#if defined(__HIP_PLATFORM_AMD__)
+  #if HIP_VERSION_MAJOR >= 7
+    #define COLVARS_SYNC_WARP __syncwarp()
+  #else
+    #define COLVARS_SYNC_WARP __threadfence_block()
+  #endif
+#elif defined(__HIP_PLATFORM_NVIDIA__)
+  #define COLVARS_SYNC_WARP __syncwarp()
+#else
+  #error "Unknown HIP platform"
+#endif
 #endif // defined(COLVARS_HIP)
 
 #if defined(COLVARS_HIP)
