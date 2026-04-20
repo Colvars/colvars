@@ -259,8 +259,8 @@ __global__ void jacobi_4x4_kernel(
     A[15] = A_in[15];
   }
   __syncthreads();
-  const int p_ids[] = {0, 2, 0, 1, 0, 1};
-  const int q_ids[] = {1, 3, 2, 3, 3, 2};
+  constexpr int p_ids[] = {0, 2, 0, 1, 0, 1};
+  constexpr int q_ids[] = {1, 3, 2, 3, 3, 2};
   double off_diag_sum =
     fabs(A[0*4+1]) + fabs(A[0*4+2]) + fabs(A[0*4+3]) +
     fabs(A[1*4+2]) + fabs(A[1*4+3]) +
