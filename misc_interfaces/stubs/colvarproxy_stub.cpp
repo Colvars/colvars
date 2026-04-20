@@ -77,7 +77,7 @@ bool colvarproxy_stub::total_forces_enabled() const
 
 bool colvarproxy_stub::total_forces_same_step() const
 {
-  return total_force_requested;
+  return true;
 }
 
 
