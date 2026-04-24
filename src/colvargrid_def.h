@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <utility>
 
 #include "colvarmodule.h"
 #include "colvarproxy.h"
@@ -83,6 +84,12 @@ colvar_grid<T>::colvar_grid(std::string const &filename, size_t mult_i)
   cvm::main()->proxy->close_input_stream(filename);
   }
 
+template <class T>
+colvar_grid<T>::colvar_grid(std::string const &filename, std::vector<bool> periodic_in ,size_t mult_i):
+colvar_grid(filename,  mult_i)
+{
+  this->periodic = std::move(periodic_in);
+}
 
 template <class T, class IST> IST &read_restart_template_(colvar_grid<T> &g, IST &is)
 {
@@ -563,7 +570,7 @@ std::istream & colvar_grid<T>::read_opendx(std::istream &is, bool add)
       // colvar_grid lower_boundaries represents the lower edge of the first bin.
       // We subtract half the width to convert from node-centered to edge-centered.
       this->lower_boundaries.push_back(colvarvalue(lower_in[i] - 0.5 * widths_in[i]));
-      this->periodic.push_back(false); // TODO: change that so it's not hard coded
+      this->periodic.push_back(true); // TODO: change that so it's not hard coded
     }
   } else {
     if (this->nd != nd_read) {

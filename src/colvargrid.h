@@ -278,6 +278,11 @@ public:
   /// \param multi_i multiplicity of the data - if 0, assume gradient multiplicity (mult = nd)
   colvar_grid(std::string const &filename, size_t mult_i = 1);
 
+  /// \brief Constructor from a dx file
+  /// \param filename multicol file containing data to be read
+  /// \param multi_i multiplicity of the data - if 0, assume gradient multiplicity (mult = nd)
+  colvar_grid(std::string const &filename, std::vector<bool> periodic_in, size_t mult_i = 1);
+
   int init_from_colvars(std::vector<colvar *> const &colvars,
                         size_t mult_i = 1,
                         bool add_extra_bin = false,

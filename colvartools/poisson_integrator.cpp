@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[])
 {
-    bool weighted = false;
+    bool weighted = true;
     bool debug = false;
     int itmax = 1000;
     cvm::real err;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 
     if (debug) grad_ptr->write_multicol("gradient_in.dat");
 
-    colvargrid_integrate fes(grad_ptr, weighted);
+    colvargrid_integrate fes(grad_ptr, weighted, 200, 25);
     fes.integrate(itmax, tol, err, true);
     fes.set_zero_minimum();
     if (fes.num_variables() < 3)
