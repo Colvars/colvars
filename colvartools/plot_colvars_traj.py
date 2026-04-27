@@ -93,7 +93,7 @@ class Colvars_traj(object):
     """Trajectories of collective variables, as read from a list of
     colvars.traj files.
     Can be accessed as a dictionary using a variable's name as key; each
-    variable's trajectory is an instance of colvars_traj"""
+    variable's trajectory is an instance of Colvar_traj"""
 
     def __init__(self, filenames=None, first=0, last=None, every=1):
         """
