@@ -2,6 +2,18 @@ set(COLVARS_STUBS_DIR ${COLVARS_SOURCE_DIR}/misc_interfaces/stubs/)
 
 add_custom_target(link_files)
 
+# Unit tests that only require the core colvars library (no proxy stubs needed)
+foreach(CMD
+    colvartypes_vectors
+    colvartypes_quaternion
+    colvarvalue_all_types
+  )
+  add_executable(${CMD} ${CMD}.cpp)
+  target_link_libraries(${CMD} PRIVATE colvars)
+  target_include_directories(${CMD} PRIVATE ${COLVARS_SOURCE_DIR}/src)
+  add_test(NAME ${CMD} COMMAND ${CMD})
+endforeach()
+
 foreach(CMD
     colvarvalue_unit3vector
     file_io
