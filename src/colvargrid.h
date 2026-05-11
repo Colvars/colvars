@@ -1619,7 +1619,7 @@ public:
     if (!variances->empty()){
       cvm::real weight = weights->value(bin_value);
       if (weight < effective_min_samples) {
-        cvm::real min_displacement = MAXFLOAT;
+        cvm::real min_displacement = 100000000.;
         if (*step >= 2) {
           for (size_t i =0; i < nd; i++) {
             cvm::real temp =(cv_value[i] - (*s_m)[i]);
