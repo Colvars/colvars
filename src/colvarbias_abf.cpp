@@ -236,7 +236,7 @@ int colvarbias_abf::init(std::string const &conf)
 
     pmf.reset(new colvargrid_integrate(colvars, gradients, integrate_weighted));
     if (b_CZAR_estimator) {
-      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients));
+      czar_pmf.reset(new colvargrid_integrate(colvars, czar_gradients, integrate_weighted));
     }
     if (shared_on) {
       local_pmf.reset(new colvargrid_integrate(colvars, local_gradients, integrate_weighted));
@@ -249,7 +249,7 @@ int colvarbias_abf::init(std::string const &conf)
     global_z_samples.reset(new colvar_grid_count(colvars, samples));
     global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
     global_czar_gradients.reset(new colvar_grid_gradient(colvars, z_samples, samples));
-    global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
+    global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients, integrate_weighted));
   } else {
     // otherwise they are just aliases for the local CZAR grids
     global_z_samples = z_samples;
@@ -685,7 +685,7 @@ int colvarbias_abf::replica_share_CZAR() {
       global_z_samples.reset(new colvar_grid_count(colvars, samples));
       global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
       global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-      global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients));
+      global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients, integrate_weighted));
     }
 
     // Start with data from replica 0
@@ -838,7 +838,8 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
         unsigned long count = z_samples_out->value_output(iz_bin);
         for (size_t n = 0; n < czar_gradients_out->multiplicity(); n++) {
           czar_gradients_out->set_value(iz_bin, (z_gradients_out->value_output(iz_bin, n)
-            - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n)) * static_cast<cvm::real>(count), n);
+            - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n)) *
+            static_cast<cvm::real>(count), n);
         }
       }
     }
