@@ -211,35 +211,35 @@ int colvarbias_abf::init(std::string const &conf)
       std::vector<std::vector<cvm::real>> w_1d(weights->nd, std::vector<cvm::real>(window_size));
       std::vector<std::vector<int>> idx_1d(weights->nd, std::vector<int>(window_size)); // Assuming you use this later
 
-      cvm::real total_sum = 1.0;
-      cvm::real total_squared_sum = 1.0;
-
-      // First pass: Calculate 1D weights and total_sum
-      for (size_t i = 0; i < weights->nd; i++) {
-        cvm::real dim_sum = 0.0;
-        int counter = 0;
-        for (int ix = i_min; ix <= i_max; ix++) {
-          cvm::real weight = cvm::exp(-ix * ix * (1.0 / (smoothing * smoothing)));
-          w_1d[i][counter] = weight;
-          dim_sum += weight;
-          counter++;
-        }
-        // The N-D sum is the product of the 1D sums
-        total_sum *= dim_sum;
-      }
-
-      // Second pass: Calculate sum of squared normalized weights
-      for (size_t i = 0; i < weights->nd; i++) {
-        cvm::real dim_sq_sum = 0.0;
-        int counter = 0;
-        for (int ix = i_min; ix <= i_max; ix++) {
-          // Sum the squares of the unnormalized 1D components
-          dim_sq_sum += w_1d[i][counter] * w_1d[i][counter];
-          counter++;
-        }
-        total_squared_sum *= dim_sq_sum;
-      }
-      total_squared_sum /= (total_sum * total_sum);
+      // cvm::real total_sum = 1.0;
+      // cvm::real total_squared_sum = 1.0;
+      //
+      // // First pass: Calculate 1D weights and total_sum
+      // for (size_t i = 0; i < weights->nd; i++) {
+      //   cvm::real dim_sum = 0.0;
+      //   int counter = 0;
+      //   for (int ix = i_min; ix <= i_max; ix++) {
+      //     cvm::real weight = cvm::exp(-ix * ix * (1.0 / (smoothing * smoothing)));
+      //     w_1d[i][counter] = weight;
+      //     dim_sum += weight;
+      //     counter++;
+      //   }
+      //   // The N-D sum is the product of the 1D sums
+      //   total_sum *= dim_sum;
+      // }
+      //
+      // // Second pass: Calculate sum of squared normalized weights
+      // for (size_t i = 0; i < weights->nd; i++) {
+      //   cvm::real dim_sq_sum = 0.0;
+      //   int counter = 0;
+      //   for (int ix = i_min; ix <= i_max; ix++) {
+      //     // Sum the squares of the unnormalized 1D components
+      //     dim_sq_sum += w_1d[i][counter] * w_1d[i][counter];
+      //     counter++;
+      //   }
+      //   total_squared_sum *= dim_sq_sum;
+      // }
+      // total_squared_sum /= (total_sum * total_sum);
       effective_full_samples = full_samples; // * total_squared_sum;
       effective_min_samples = min_samples; // * total_squared_sum;
     } else {
