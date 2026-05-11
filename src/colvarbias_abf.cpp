@@ -837,8 +837,8 @@ void colvarbias_abf::write_gradients_samples(const std::string &prefix, bool clo
             czar_gradients_out->index_ok(iz_bin); czar_gradients_out->incr(iz_bin)) {
         unsigned long count = z_samples_out->value_output(iz_bin);
         for (size_t n = 0; n < czar_gradients_out->multiplicity(); n++) {
-          czar_gradients_out->set_value(iz_bin, z_gradients_out->value_output(iz_bin, n)
-            - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n) * static_cast<cvm::real>(count), n);
+          czar_gradients_out->set_value(iz_bin, (z_gradients_out->value_output(iz_bin, n)
+            - proxy->target_temperature() * proxy->boltzmann() * z_samples_out->log_gradient_finite_diff(iz_bin, n)) * static_cast<cvm::real>(count), n);
         }
       }
     }
