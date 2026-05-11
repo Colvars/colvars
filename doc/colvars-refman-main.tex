@@ -1998,15 +1998,24 @@ If \texttt{group2} is a \texttt{dummyAtom}, this option is set to \texttt{yes} b
     positive integer}{%
     100}{This controls the pairlist feature, dictating how many steps are taken between regenerating pair  lists if the tolerance is greater than 0.
   }
+
+\item %
+  \labelkey{colvar|coordNum|useInternalPBC}%
+  \keydef{useInternalPBC}{%
+    \texttt{coordNum}}{%
+    Use the PBC functions from the Colvars library (as opposed to MD engine)}{%
+    boolean}{%
+    engine-dependent}{%
+    If this keyword is set to \texttt{yes}, Colvars will use internal code to compute mininum-image distances, instead of calling the function used by \MDENGINE{}: enabling this flag may speed up computation.
+    \cvvmdonly{In VMD, the default value of this flag is true.}
+    \cvlammpsonly{Please note that, unlike the LAMMPS function, the current internal code is not robust against large tilt factors: use this feature only for unit cells near an orthogonal shape.}
+    }
+
 \end{cvcoptions}
 
-This component returns a dimensionless number, which ranges from
-approximately 0 (all interatomic distances are much larger than the
-cutoff) to $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$ (all distances
-are less than the cutoff), or $N_{\mathtt{group1}}$ if
-\texttt{group2CenterOnly} is used.  For performance reasons, at least
-one of \texttt{group1} and \texttt{group2} should be of limited size or \texttt{group2CenterOnly} should be used: the cost of the loop over all pairs grows as $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$.
-Setting $\mathtt{tolerance} > 0$ ameliorates this to some degree, although every pair is still checked to regenerate the pair  list.
+This component returns a dimensionless number, which ranges from 0 (all interatomic distances are much larger than the cutoff) to $N_{\mathtt{group1}} \times N_{\mathtt{group2}}$ (all possible pairwise distances are much smaller than the cutoff).
+The computational cost also grows with the number of pairwise distances calculated, unless either \texttt{group1CenterOnly} or \texttt{group2CenterOnly} are used.
+Setting $\mathtt{tolerance} > 0$ could mitigate this by looping over pairs less frequently than every step.
 
 
 
@@ -5864,8 +5873,8 @@ Other parameters to control the ABF runtime can be set in the ABF configuration 
 
 \cvsubsubsec{Kernel grid ABF}
 ABF stores energy gradient sums and counts on two separate grids in order to estimate the free energy gradient. If the
-grids are big, whether for accuracy or because of the dimensionality curse filling them will be long. In order to reduce
-this time we use kernel grid to leverage the free energy function regularity. At each time step $t$ : the system is in
+grids are big, whether for accuracy or because of the dimensionality curse filling them accurately will be long. In order to reduce
+the time taken, we use kernel grid to leverage the free energy function regularity. At each time step $t$ : the system is in
 the state $(x(t), \xi(t), \nabla U(x(t))$, with $x(t)$ the atomic coordinate, $\xi(t)$ the value of the collective
 variables, $\nabla U(x(t))$ the value of the energy of the system. With kernel grid, instead of updating only the cell of
 each grid corresponding to $\xi(t)$ we'll also update the surrounding cells with a weight based on their distance (kernel)
@@ -5876,12 +5885,12 @@ The weights are calculated using a kernel of the form
 \begin{equation}
   K(\tilde{\xi}, \tilde{\xi_{cell}}) = \frac{1}{Z}e^{\frac{||\tilde{\xi} - \tilde{\xi_{cell}}||^2}{\sigma}}
 \end{equation}
-Where \tilde{\xi} is the coordinate of the collective variable in the grid. i.e.
+Where $\tilde{\xi}$ is the coordinate of the collective variable in the grid. i.e.
 \begin{equation}
   \tilde{\xi^i} = \frac{\xi^i - boundary_{lower}^i}{boundary_{upper}^i - boundary_{lower}^i}
 \end{equation}
 In order to activate kernel grid \refkey{smoothing}{abf|smoothing} to set the value of
-the kernel's bandwith $\sigma$ to a value, if the value is > 0 kernel grid is in use.
+the kernel's bandwidth $\sigma$ to a value, if the value is > 0 kernel grid is in use.
 
 \cvsubsubsec{Multiple-walker ABF}{sec:colvarbias_abf_shared}
 \label{sec:mw-ABF}
