@@ -238,8 +238,8 @@ colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
 colvars:   # KernelReductionSpeed = 1 [default]
 colvars:   # VarianceBasedKernelSize = off [default]
+colvars:   # VarianceDirectional = off [default]
 colvars:   # smoothing = 0.5
-colvars:   Kernel version of abf is in use
 colvars:   # integrate = on [default]
 colvars:   Finished ABF setup.
 colvars: ----------------------------------------------------------------------
@@ -297,12 +297,8 @@ colvars: Re-initialized atom group for variable "dihedral":0/0. 1 atoms: total m
 colvars: Re-initialized atom group for variable "dihedral":0/1. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
-colvars:   cutoff : 1
-colvars:   cutoff : 0
-colvars:   Integrated in 99 steps, error: 8.16284e-07
-colvars:   Integrated in 1 steps, error: 6.26573e-07
-colvars:   cutoff : 1
-colvars:   cutoff : 0
-colvars:   Integrated in 105 steps, error: 9.07504e-07
-colvars:   Integrated in 1 steps, error: 5.90425e-07
+colvars:   Integrated in 103 steps, error: 9.75679e-07
+colvars:   Integrated in 1 steps, error: 6.50868e-07
+colvars:   Integrated in 101 steps, error: 8.92744e-07
+colvars:   Integrated in 1 steps, error: 6.09763e-07
 colvars: Saving collective variables state to "test.colvars.state".
