@@ -240,8 +240,8 @@ int colvarbias_abf::init(std::string const &conf)
         total_squared_sum *= dim_sq_sum;
       }
       total_squared_sum /= (total_sum * total_sum);
-      effective_full_samples = full_samples * total_squared_sum;
-      effective_min_samples = min_samples * total_squared_sum;
+      effective_full_samples = full_samples; // * total_squared_sum;
+      effective_min_samples = min_samples; // * total_squared_sum;
     } else {
       smoothing = 0;
       // Doing standard discretized ABF
