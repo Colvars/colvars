@@ -29,7 +29,7 @@
     __builtin_amdgcn_fence(__ATOMIC_RELEASE, "wavefront"); \
     __builtin_amdgcn_wave_barrier(); \
     __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "wavefront"); \
-  } while (0);
+  } while (0)
 #elif defined(__HIP_PLATFORM_NVIDIA__)
   #define COLVARS_SYNC_WARP __syncwarp()
 #else
