@@ -19,11 +19,17 @@
 #if defined(COLVARS_HIP)
 #include <hip/hip_runtime.h>
 #if defined(__HIP_PLATFORM_AMD__)
-  #if HIP_VERSION_MAJOR >= 7
-    #define COLVARS_SYNC_WARP __syncwarp()
-  #else
-    #define COLVARS_SYNC_WARP __threadfence_block()
-  #endif
+  /**
+   * @note
+   * The following macro is from
+   * https://github.com/ROCm/clr/blob/29f513cc028f8c1f727dc6e1a731dbee63609f60/hipamd/include/hip/amd_detail/amd_warp_sync_functions.h#L161-L165
+   * It is used for ensuring (i) the memory fence and (ii) the synchronization of threads inside a wavefront.
+   */
+  #define COLVARS_SYNC_WARP do {\
+    __builtin_amdgcn_fence(__ATOMIC_RELEASE, "wavefront"); \
+    __builtin_amdgcn_wave_barrier(); \
+    __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "wavefront"); \
+  } while (0);
 #elif defined(__HIP_PLATFORM_NVIDIA__)
   #define COLVARS_SYNC_WARP __syncwarp()
 #else
