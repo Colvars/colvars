@@ -37,13 +37,6 @@ public:
     ef_rebuild_pairlist = (1 << 10)
   };
 
-  /// Compute the switching function (1-l2**(en/2))/(1-l2**(ed/2)) for a given squared scaled distance
-  /// @param[in] l2 Square norm of (Dx/r0x, Dy/r0y, Dz/r0z)
-  /// @param[out] dFdl2 Derivative of the result with respect to l2
-  /// @param en Numerator exponent
-  /// @param ed Denominator exponent
-  /// @param pairlist_tol Pairlist tolerance
-
   /// Main kernel for the coordination number
   template <int flags>
   inline static cvm::real compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
@@ -55,6 +48,12 @@ public:
                                          cvm::real pairlist_tol, cvm::real pairlist_tol_l2_max,
                                          colvarmodule *cvmodule);
 
+  /// Compute the switching function (1-l2**(en/2))/(1-l2**(ed/2)) for a given squared scaled distance
+  /// @param[in] l2 Square norm of (Dx/r0x, Dy/r0y, Dz/r0z)
+  /// @param[out] dFdl2 Derivative of the result with respect to l2
+  /// @param en Numerator exponent
+  /// @param ed Denominator exponent
+  /// @param pairlist_tol Pairlist tolerance
   template <int flags, int t_en, int t_ed>
   inline static cvm::real switching_function(cvm::real const &l2, cvm::real &dFdl2,
                                       int en, int ed,
@@ -71,9 +70,6 @@ public:
 
   /// Workhorse function
   template <bool use_group1_com, bool use_group2_com, int flags> int compute_coordnum();
-
-  /// Workhorse function
-  template <bool use_group1_com, bool use_group2_com, int flags> void main_loop();
 
   /// Workhorse function
   template <bool use_group1_com, bool use_group2_com, int flags, int n, int m> void main_loop();
@@ -147,8 +143,6 @@ public:
   virtual void calc_gradients();
 
   /// Workhorse function
-  template <int flags> void selfcoordnum_sequential_loop();
-
   template <int flags, int n, int m> void selfcoordnum_sequential_loop();
 
   /// Main workhorse function
@@ -196,7 +190,7 @@ inline cvm::real colvar::coordnum::switching_function(
   cvm::real const &l2, cvm::real &dFdl2, int en, int ed, cvm::real pairlist_tol)
 {
   constexpr bool ed_two_en = (t_ed == 2 * t_en);
-  if (ed_two_en && t_en != 0) {
+  if constexpr (ed_two_en && t_en != 0) {
     static_assert(t_en % 2 == 0, "Unsupported instantiation of N (N % 2 != 0) in colvar::coordnum::switching_function.");
     cvm::real func_no_pairlist, func, inv_one_pairlist_tol;
     cvm::real xn = cvm::integer_power<t_en/2>(l2);
