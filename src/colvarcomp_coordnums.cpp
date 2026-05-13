@@ -17,8 +17,8 @@
 template <bool use_group1_com, bool use_group2_com, int flags, int n, int m>
 void inline colvar::coordnum::main_loop()
 {
-  constexpr bool use_pairlist = flags & ef_use_pairlist;
-  constexpr bool rebuild_pairlist = flags & ef_rebuild_pairlist;
+  constexpr bool use_pairlist = bool(flags & ef_use_pairlist);
+  constexpr bool rebuild_pairlist = bool(flags & ef_rebuild_pairlist);
   if constexpr (rebuild_pairlist) {
     static_assert(use_pairlist, "rebuild_pairlist requires use_pairlist.");
   }
@@ -393,8 +393,8 @@ void colvar::coordnum::compute_tolerance_l2_max()
 template <bool use_group1_com, bool use_group2_com, int flags>
 void inline colvar::coordnum::main_loop()
 {
-  constexpr bool use_pairlist = flags & ef_use_pairlist;
-  constexpr bool rebuild_pairlist = flags & ef_rebuild_pairlist;
+  constexpr bool use_pairlist = bool(flags & ef_use_pairlist);
+  constexpr bool rebuild_pairlist = bool(flags & ef_rebuild_pairlist);
   if constexpr (rebuild_pairlist) {
     static_assert(use_pairlist, "rebuild_pairlist requires use_pairlist.");
   }
@@ -699,8 +699,8 @@ void colvar::h_bond::calc_gradients()
 
 template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnum_sequential_loop()
 {
-  constexpr bool use_pairlist = flags & ef_use_pairlist;
-  constexpr bool rebuild_pairlist = flags & ef_rebuild_pairlist;
+  constexpr bool use_pairlist = bool(flags & ef_use_pairlist);
+  constexpr bool rebuild_pairlist = bool(flags & ef_rebuild_pairlist);
   if constexpr (rebuild_pairlist) {
     static_assert(use_pairlist, "rebuild_pairlist requires use_pairlist.");
   }
@@ -828,8 +828,8 @@ colvar::selfcoordnum::selfcoordnum()
 
 template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_loop()
 {
-  constexpr bool use_pairlist = flags & ef_use_pairlist;
-  constexpr bool rebuild_pairlist = flags & ef_rebuild_pairlist;
+  constexpr bool use_pairlist = bool(flags & ef_use_pairlist);
+  constexpr bool rebuild_pairlist = bool(flags & ef_rebuild_pairlist);
   if constexpr (rebuild_pairlist) {
     static_assert(use_pairlist, "rebuild_pairlist requires use_pairlist.");
   }
