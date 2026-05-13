@@ -17,6 +17,11 @@
 template <bool use_group1_com, bool use_group2_com, int flags, int n, int m>
 void inline colvar::coordnum::main_loop()
 {
+  constexpr bool use_pairlist = flags & ef_use_pairlist;
+  constexpr bool rebuild_pairlist = flags & ef_rebuild_pairlist;
+  if constexpr (rebuild_pairlist) {
+    static_assert(use_pairlist, "rebuild_pairlist requires use_pairlist.");
+  }
   size_t const group1_num_coords = use_group1_com ? 1 : group1->size();
   size_t const group2_num_coords = use_group2_com ? 1 : group2->size();
 
@@ -160,80 +165,28 @@ private:
   void set_func() {
     constexpr bool use_group1_com = table_index & 1;
     constexpr bool use_group2_com = (table_index >> 1) & 1;
-    funcs_[table_index][select<0>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com, 0, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_gradients>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com, colvar::coordnum::ef_gradients, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com, colvar::coordnum::ef_use_internal_pbc, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com, colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com, colvar::coordnum::ef_rebuild_pairlist, n, m>;
+#define SET_FUNC(FLAG)                                                                \
+    do {                                                                              \
+      funcs_[table_index][select<FLAG>()][n-1][m-1] =                                 \
+        &colvar::coordnum::main_loop<use_group1_com, use_group2_com, FLAG, n, m>;     \
+    } while (0)
 
-    funcs_[table_index][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_use_internal_pbc |
-                  colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_use_internal_pbc |
-      colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_use_internal_pbc |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_use_internal_pbc |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_use_pairlist |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_use_pairlist |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
-
-    funcs_[table_index][select<colvar::coordnum::ef_gradients        |
-                  colvar::coordnum::ef_use_internal_pbc |
-                  colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_gradients        |
-      colvar::coordnum::ef_use_internal_pbc |
-      colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_gradients        |
-                  colvar::coordnum::ef_use_internal_pbc |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_gradients        |
-      colvar::coordnum::ef_use_internal_pbc |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_gradients        |
-                  colvar::coordnum::ef_use_pairlist |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_gradients        |
-      colvar::coordnum::ef_use_pairlist |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[table_index][select<colvar::coordnum::ef_use_internal_pbc        |
-                  colvar::coordnum::ef_use_pairlist |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_use_internal_pbc        |
-      colvar::coordnum::ef_use_pairlist |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
-
-    funcs_[table_index][select<colvar::coordnum::ef_gradients        |
-                  colvar::coordnum::ef_use_internal_pbc        |
-                  colvar::coordnum::ef_use_pairlist |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::coordnum::main_loop<use_group1_com, use_group2_com,
-      colvar::coordnum::ef_gradients        |
-      colvar::coordnum::ef_use_internal_pbc        |
-      colvar::coordnum::ef_use_pairlist |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
+    SET_FUNC(colvar::coordnum::ef_null);
+    SET_FUNC(colvar::coordnum::ef_gradients);
+    SET_FUNC(colvar::coordnum::ef_use_internal_pbc);
+    SET_FUNC(colvar::coordnum::ef_use_pairlist);
+    // SET_FUNC(colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc);
+    SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist);
+    // SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_use_pairlist);
+    // SET_FUNC(colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_use_pairlist | colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_use_pairlist);
+    // SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist | colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_use_pairlist | colvar::coordnum::ef_rebuild_pairlist);
+#undef SET_FUNC
   }
 public:
   template <bool use_group1_com, bool use_group2_com>
@@ -440,6 +393,11 @@ void colvar::coordnum::compute_tolerance_l2_max()
 template <bool use_group1_com, bool use_group2_com, int flags>
 void inline colvar::coordnum::main_loop()
 {
+  constexpr bool use_pairlist = flags & ef_use_pairlist;
+  constexpr bool rebuild_pairlist = flags & ef_rebuild_pairlist;
+  if constexpr (rebuild_pairlist) {
+    static_assert(use_pairlist, "rebuild_pairlist requires use_pairlist.");
+  }
   size_t const group1_num_coords = use_group1_com ? 1 : group1->size();
   size_t const group2_num_coords = use_group2_com ? 1 : group2->size();
 
@@ -559,22 +517,21 @@ void colvar::coordnum::calc_value()
       else {CALL_KERNEL(false, false, N);}  \
     } break; }
   switch (options) {
-    CASE(0);
-    CASE(1);
-    CASE(0 + (1 << 8));
-    CASE(1 + (1 << 8));
-    CASE(0 + (1 << 9));
-    CASE(1 + (1 << 9));
-    CASE(0 + (1 << 8) + (1 << 9));
-    CASE(1 + (1 << 8) + (1 << 9));
-    CASE(0 + (1 << 10));
-    CASE(1 + (1 << 10));
-    CASE(0 + (1 << 8) + (1 << 10));
-    CASE(1 + (1 << 8) + (1 << 10));
-    CASE(0 + (1 << 9) + (1 << 10));
-    CASE(1 + (1 << 9) + (1 << 10));
-    CASE(0 + (1 << 8) + (1 << 9) + (1 << 10));
-    CASE(1 + (1 << 8) + (1 << 9) + (1 << 10));
+    CASE(colvar::coordnum::ef_null);
+    CASE(colvar::coordnum::ef_gradients);
+    CASE(colvar::coordnum::ef_use_internal_pbc);
+    CASE(colvar::coordnum::ef_use_pairlist);
+    // CASE(colvar::coordnum::ef_rebuild_pairlist);
+    CASE(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc);
+    CASE(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist);
+    // CASE(colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist);
+    CASE(colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_use_pairlist);
+    // CASE(colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_rebuild_pairlist);
+    CASE(colvar::coordnum::ef_use_pairlist | colvar::coordnum::ef_rebuild_pairlist);
+    CASE(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_use_pairlist);
+    // CASE(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_rebuild_pairlist);
+    CASE(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist | colvar::coordnum::ef_rebuild_pairlist);
+    CASE(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_use_pairlist | colvar::coordnum::ef_rebuild_pairlist);
     default: {
       cvmodule->error("Unknown kernel call in colvar::coordnum::calc_value\n",
                       COLVARS_BUG_ERROR);
@@ -742,6 +699,11 @@ void colvar::h_bond::calc_gradients()
 
 template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnum_sequential_loop()
 {
+  constexpr bool use_pairlist = flags & ef_use_pairlist;
+  constexpr bool rebuild_pairlist = flags & ef_rebuild_pairlist;
+  if constexpr (rebuild_pairlist) {
+    static_assert(use_pairlist, "rebuild_pairlist requires use_pairlist.");
+  }
   size_t const natoms = group1->size();
   bool *pairlist_elem = pairlist.get();
 
@@ -782,7 +744,7 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
         !(flags & ef_use_pairlist);
       if (within) {
         cvm::rvector diff{0, 0, 0};
-        if (flags & ef_use_internal_pbc) {
+        if constexpr (flags & ef_use_internal_pbc) {
           if (boundaries_type == colvarproxy_system::Boundaries_type::boundaries_non_periodic) {
             diff = cvm::rvector{x2, y2, z2} - cvm::rvector{x1, y1, z1};
           } else {
@@ -801,17 +763,17 @@ template <int flags, int n, int m> inline void colvar::selfcoordnum::selfcoordnu
           tolerance, tolerance_l2_max);
       }
 
-      if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+      if constexpr ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
         *pairlist_elem = partial > 0.0 ? true : false;
       }
 
       x.real_value += partial;
 
-      if (flags & ef_use_pairlist) {
+      if constexpr (flags & ef_use_pairlist) {
         pairlist_elem++;
       }
     }
-    if (flags & ef_gradients) {
+    if constexpr (flags & ef_gradients) {
       group1->grad_x(i) += g1.x;
       group1->grad_y(i) += g1.y;
       group1->grad_z(i) += g1.z;
@@ -826,80 +788,26 @@ public:
   void set_func() {
     static_assert(n <= max_n, "n is larger than max_n!");
     static_assert(m <= max_m, "m is larger than max_m!");
-    funcs_[0][select<0>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<0, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_gradients>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<colvar::coordnum::ef_gradients, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<colvar::coordnum::ef_use_internal_pbc, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<colvar::coordnum::ef_rebuild_pairlist, n, m>;
-
-    funcs_[0][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_use_internal_pbc |
-                  colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_use_internal_pbc |
-      colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_use_internal_pbc |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_use_internal_pbc |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_use_pairlist |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_use_pairlist |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
-
-    funcs_[0][select<colvar::coordnum::ef_gradients        |
-                  colvar::coordnum::ef_use_internal_pbc |
-                  colvar::coordnum::ef_use_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_gradients        |
-      colvar::coordnum::ef_use_internal_pbc |
-      colvar::coordnum::ef_use_pairlist, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_gradients        |
-                  colvar::coordnum::ef_use_internal_pbc |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_gradients        |
-      colvar::coordnum::ef_use_internal_pbc |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_gradients        |
-                  colvar::coordnum::ef_use_pairlist |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_gradients        |
-      colvar::coordnum::ef_use_pairlist |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
-    funcs_[0][select<colvar::coordnum::ef_use_internal_pbc        |
-                  colvar::coordnum::ef_use_pairlist |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_use_internal_pbc        |
-      colvar::coordnum::ef_use_pairlist |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
-
-    funcs_[0][select<colvar::coordnum::ef_gradients        |
-                  colvar::coordnum::ef_use_internal_pbc        |
-                  colvar::coordnum::ef_use_pairlist |
-                  colvar::coordnum::ef_rebuild_pairlist>()][n-1][m-1] =
-      &colvar::selfcoordnum::selfcoordnum_sequential_loop<
-      colvar::coordnum::ef_gradients        |
-      colvar::coordnum::ef_use_internal_pbc        |
-      colvar::coordnum::ef_use_pairlist |
-      colvar::coordnum::ef_rebuild_pairlist, n, m>;
+#define SET_FUNC(FLAG) \
+    do { \
+      funcs_[0][select<FLAG>()][n-1][m-1] = &colvar::selfcoordnum::selfcoordnum_sequential_loop<FLAG, n, m>;\
+    } while (0)
+    SET_FUNC(colvar::coordnum::ef_null);
+    SET_FUNC(colvar::coordnum::ef_gradients);
+    SET_FUNC(colvar::coordnum::ef_use_internal_pbc);
+    SET_FUNC(colvar::coordnum::ef_use_pairlist);
+    // SET_FUNC(colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc);
+    SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist);
+    // SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_use_pairlist);
+    // SET_FUNC(colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_use_pairlist | colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_use_pairlist);
+    // SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_pairlist | colvar::coordnum::ef_rebuild_pairlist);
+    SET_FUNC(colvar::coordnum::ef_gradients | colvar::coordnum::ef_use_internal_pbc | colvar::coordnum::ef_use_pairlist | colvar::coordnum::ef_rebuild_pairlist);
+#undef SET_FUNC
   }
 };
 
@@ -920,6 +828,11 @@ colvar::selfcoordnum::selfcoordnum()
 
 template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_loop()
 {
+  constexpr bool use_pairlist = flags & ef_use_pairlist;
+  constexpr bool rebuild_pairlist = flags & ef_rebuild_pairlist;
+  if constexpr (rebuild_pairlist) {
+    static_assert(use_pairlist, "rebuild_pairlist requires use_pairlist.");
+  }
   size_t const n = group1->size();
   bool *pairlist_elem = pairlist.get();
 
