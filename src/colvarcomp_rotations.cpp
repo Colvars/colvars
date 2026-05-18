@@ -117,7 +117,7 @@ int colvar::orientation::init(std::string const &conf)
 void colvar::orientation::calc_value()
 {
   atoms_cog = atoms->center_of_geometry();
-  shifted_pos_soa = atoms->positions_shifted(-1.0 * atoms_cog);
+  (void)atoms->positions_shifted(-1.0 * atoms_cog, shifted_pos_soa);
   rot.calc_optimal_rotation_soa(ref_pos_soa, shifted_pos_soa, num_ref_pos, atoms->size());
 
   if ((rot.q).inner(ref_quat) >= 0.0) {
@@ -190,7 +190,7 @@ colvar::orientation_angle::orientation_angle()
 void colvar::orientation_angle::calc_value()
 {
   atoms_cog = atoms->center_of_geometry();
-  shifted_pos_soa = atoms->positions_shifted(-1.0 * atoms_cog);
+  (void)atoms->positions_shifted(-1.0 * atoms_cog, shifted_pos_soa);
   rot.calc_optimal_rotation_soa(ref_pos_soa, shifted_pos_soa, num_ref_pos, atoms->size());
 
   if ((rot.q).q0 >= 0.0) {
@@ -262,7 +262,7 @@ colvar::orientation_proj::orientation_proj()
 void colvar::orientation_proj::calc_value()
 {
   atoms_cog = atoms->center_of_geometry();
-  shifted_pos_soa = atoms->positions_shifted(-1.0 * atoms_cog);
+  (void)atoms->positions_shifted(-1.0 * atoms_cog, shifted_pos_soa);
   rot.calc_optimal_rotation_soa(ref_pos_soa, shifted_pos_soa, num_ref_pos, atoms->size());
   x.real_value = 2.0 * (rot.q).q0 * (rot.q).q0 - 1.0;
 }
@@ -310,7 +310,7 @@ void colvar::tilt::calc_value()
 {
   atoms_cog = atoms->center_of_geometry();
 
-  shifted_pos_soa = atoms->positions_shifted(-1.0 * atoms_cog);
+  (void)atoms->positions_shifted(-1.0 * atoms_cog, shifted_pos_soa);
   rot.calc_optimal_rotation_soa(ref_pos_soa, shifted_pos_soa, num_ref_pos, atoms->size());
 
   x.real_value = rot.cos_theta(axis);
@@ -345,7 +345,7 @@ void colvar::spin_angle::calc_value()
 {
   atoms_cog = atoms->center_of_geometry();
 
-  shifted_pos_soa = atoms->positions_shifted(-1.0 * atoms_cog);
+  (void)atoms->positions_shifted(-1.0 * atoms_cog, shifted_pos_soa);
   rot.calc_optimal_rotation_soa(ref_pos_soa, shifted_pos_soa, num_ref_pos, atoms->size());
 
   x.real_value = rot.spin_angle(axis);
@@ -380,7 +380,7 @@ colvar::euler_phi::euler_phi()
 void colvar::euler_phi::calc_value()
 {
   atoms_cog = atoms->center_of_geometry();
-  shifted_pos_soa = atoms->positions_shifted(-1.0 * atoms_cog);
+  (void)atoms->positions_shifted(-1.0 * atoms_cog, shifted_pos_soa);
   rot.calc_optimal_rotation_soa(ref_pos_soa, shifted_pos_soa, num_ref_pos, atoms->size());
 
   const cvm::real& q0 = rot.q.q0;
@@ -427,7 +427,7 @@ colvar::euler_psi::euler_psi()
 void colvar::euler_psi::calc_value()
 {
   atoms_cog = atoms->center_of_geometry();
-  shifted_pos_soa = atoms->positions_shifted(-1.0 * atoms_cog);
+  (void)atoms->positions_shifted(-1.0 * atoms_cog, shifted_pos_soa);
   rot.calc_optimal_rotation_soa(ref_pos_soa, shifted_pos_soa, num_ref_pos, atoms->size());
 
   const cvm::real& q0 = rot.q.q0;
@@ -474,7 +474,7 @@ colvar::euler_theta::euler_theta()
 void colvar::euler_theta::calc_value()
 {
   atoms_cog = atoms->center_of_geometry();
-  shifted_pos_soa = atoms->positions_shifted(-1.0 * atoms_cog);
+  (void)atoms->positions_shifted(-1.0 * atoms_cog, shifted_pos_soa);
   rot.calc_optimal_rotation_soa(ref_pos_soa, shifted_pos_soa, num_ref_pos, atoms->size());
 
   const cvm::real& q0 = rot.q.q0;

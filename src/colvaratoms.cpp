@@ -1562,32 +1562,30 @@ cvm::ag_vector_real_t cvm::atom_group::positions() const
   return atoms_pos;
 }
 
-cvm::ag_vector_real_t cvm::atom_group::positions_shifted(cvm::rvector const &shift) const
+int cvm::atom_group::positions_shifted(cvm::rvector const &shift, cvm::ag_vector_real_t& out_soa) const
 {
   if (b_dummy) {
-    cvmodule->error("Error: positions are not available "
+    return cvmodule->error("Error: positions are not available "
                "from a dummy atom group.\n", COLVARS_INPUT_ERROR);
   }
 
   if (is_enabled(f_ag_scalable)) {
-    cvmodule->error("Error: atomic positions are not available "
+    return cvmodule->error("Error: atomic positions are not available "
                "from a scalable atom group.\n", COLVARS_INPUT_ERROR);
   }
 
-  // std::vector<cvm::atom_pos> x(this->size(), 0.0);
-  // cvmodule->atom_const_iter ai = this->begin();
-  // std::vector<cvm::atom_pos>::iterator xi = x.begin();
-  // for ( ; ai != this->end(); ++xi, ++ai) {
-  //   *xi = (ai->pos + shift);
-  // }
-  // return x;
-  cvm::ag_vector_real_t shifted = atoms_pos;
-  for (size_t i = 0; i < num_atoms; ++i) {
-    shifted[i]             += shift.x;
-    shifted[i+num_atoms]   += shift.y;
-    shifted[i+2*num_atoms] += shift.z;
+  if (out_soa.size() != 3 * num_atoms) {
+    out_soa.resize(3 * num_atoms);
   }
-  return shifted;
+  auto* out_x = out_soa.data();
+  auto* out_y = out_x + num_atoms;
+  auto* out_z = out_y + num_atoms;
+  for (size_t i = 0; i < num_atoms; ++i) {
+    out_x[i] = pos_x(i) + shift.x;
+    out_y[i] = pos_y(i) + shift.y;
+    out_z[i] = pos_z(i) + shift.z;
+  }
+  return COLVARS_OK;
 }
 
 std::vector<cvm::real> cvm::atom_group::velocities() const {
