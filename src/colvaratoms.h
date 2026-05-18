@@ -404,7 +404,7 @@ public:
   /**
    * @brief Return a copy of the current atom positions, shifted by a constant vector
    */
-  cvm::ag_vector_real_t positions_shifted(cvm::rvector const &shift) const;
+  int positions_shifted(cvm::rvector const &shift, cvm::ag_vector_real_t& out) const;
   /**
    * @brief Return a copy of the current atom velocities
    */
