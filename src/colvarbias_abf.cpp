@@ -126,15 +126,18 @@ int colvarbias_abf::init(std::string const &conf)
       // If any colvar does not have current-step total force, then
       // we can't do step 0 data
       provide(f_cvb_step_zero_data, false);
-      // This ABF implementation assumes that the total force available at one time step (where ABF runs)
-      // is that from the previous timestep where ABF ran
-      // So we cannot do MTS with a larger factor than the global proxy MTS factor
-      // (That would require the colvar to update its total force at a time step where it doesn't run
-      // or to remember its value from the timestep when the total force is collected)
+      // This ABF implementation assumes that the total force available at one time step (where ABF
+      // runs) is that from the previous timestep where ABF ran So we cannot do MTS with a different
+      // factor than the global proxy MTS factor (That would require the colvar to update its total
+      // force at a time step where it doesn't run or to remember its value from the timestep when
+      // the total force is collected)
       if (time_step_factor != cvmodule->proxy->time_step_factor()) {
-        return cvmodule->error("Error: ABF cannot use timeStepFactor > 1 because " +
-          colvars[i]->description +
-          " does not provide total force estimates for the current timestep.\n");
+        return cvmodule->error(
+            "ABF cannot use timeStepFactor == " + cvm::to_str(time_step_factor) +
+            " because the MD engine is sharing total forces every " +
+            cvm::to_str(cvmodule->proxy->time_step_factor()) + " steps; therefore, the colvar " +
+            colvars[i]->description +
+            " cannot provide total-force estimates for the timestep when ABF runs");
       }
     }
 
