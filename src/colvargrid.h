@@ -1607,53 +1607,35 @@ public:
                       std::vector<int> const &bin_value,
                       cvm::real const *force,
                       cvm::real smoothing = 0, cvm::real kernel_reduction_speed = 1.,
-                      cvm::real effective_full_samples = 0, cvm::real effective_min_samples =0.,
-                      std::vector<cvm::real>  *variances = nullptr,
+                      cvm::real effective_full_samples = 0, cvm::real effective_min_samples =0., cvm::real timestep = 0.,
                       std::vector<cvm::real>  *s_m = nullptr,
                       std::vector<cvm::real> *S_m = nullptr,
                       int *step = nullptr) {
+  if (s_m && S_m && step && smoothing && !s_m->empty() && !S_m->empty()) {
+    if (*step >= 2) {
+      for (size_t i =0; i < nd; i++) {
+        cvm::real temp =(force[i] - (*s_m)[i]);
+        (*s_m)[i] = (*s_m)[i] + temp / 10.;
+        (*S_m)[i] = (*S_m)[i] * 0.9 + temp *(force[i] - (*s_m)[i]) * 0.1;
+      }
+    }
+    (*step)++;
+  }
   if (smoothing && weights->value(bin_value) < effective_full_samples) {
     std::vector<cvm::real> bandwidth(nd,0);
     std::vector<cvm::real> initial_bandwidth(nd,smoothing);
     std::vector<cvm::real> inv_squared_smooth(nd);
-    if (!variances->empty()){
-      cvm::real weight = weights->value(bin_value);
-      if (weight < effective_min_samples) {
-        cvm::real min_displacement = 100000000.;
-        if (*step >= 2) {
-          for (size_t i =0; i < nd; i++) {
-            cvm::real temp =(cv_value[i] - (*s_m)[i]);
-            (*s_m)[i] = (*s_m)[i] + temp / 10.;
-            (*S_m)[i] = (*S_m)[i] + temp*(cv_value[i] - (*s_m)[i]);
-            if ((*variances).size() == data.size())
-              if ((*S_m)[i] < min_displacement) {
-                min_displacement = (*S_m)[i];
-              }
-          }
-        }
-        // wait until variance estimation starts to get a bit good
-        if (*step >= 20) {
-          for (size_t i =0; i < nd; i++) {
-            if ((*variances).size() == data.size()) {
-              //TODO: rename variances into kernel_bandwidths or find a way to calculate variance properly
-              (*variances)[address(bin_value) + i] = (*S_m)[i] / *step; // TODO: maybe make an average of the variance --> means we need another grid
-              initial_bandwidth[i] = std::min(cvm::sqrt((*variances)[address(bin_value) + i] * cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) ), smoothing);
-            }
-            else if ((*variances).size() == data.size()/nd){
-              size_t address_variance = address(bin_value) / nd;
-              (*variances)[address_variance] = min_displacement / *step; // TODO: maybe make an average of the variance --> means we need another grid
-              initial_bandwidth[i] = std::min(cvm::sqrt((*variances)[address_variance] * cvm::pow(*step*(nd+2) * 0.25,1/(nd+4)) ), smoothing);
-            }
-          }
-          // cvm::log("variance based bandwidth = " + cvm::to_str(initial_bandwidth));
+    std::vector<cvm::real> cutoff(nd);
+    if (s_m != nullptr) {
+      if (*step >= 20) {
+        for (size_t i =0; i < nd; i++) {
+          initial_bandwidth[i] = std::min(cvm::sqrt((*S_m)[i] / * step * timestep * timestep), smoothing);
         }
       }
-        (*step)++;
     }
-    std::vector<cvm::real> cutoff(nd);
     for (size_t i = 0; i < nd; i++) {
       bandwidth[i] = initial_bandwidth[i]
-      * (1 -(std::max(0., weights->value(bin_value) - effective_min_samples) / (effective_full_samples)) * kernel_reduction_speed);
+      * std::max(0.,(1 -(std::max(0., weights->value(bin_value) - effective_min_samples) / (effective_full_samples)) * kernel_reduction_speed));
       inv_squared_smooth[i] = 1.0 / (std::max(bandwidth[i] * bandwidth[i], 1e-5));
       cutoff[i] = cutoff_factor * bandwidth[i];
     }
@@ -1675,8 +1657,8 @@ public:
       }
       else {
       // can be negative or > nx[i] to allow for distance calculation
-        int i_min = static_cast<int>(std::floor(cv_value[i] - cutoff[i]));
-        int i_max = static_cast<int>(std::ceil(cv_value[i] + cutoff[i]));
+        int i_min = static_cast<int>(std::floor(cv_value[i] - cutoff[i] - 0.5));
+        int i_max = static_cast<int>(std::ceil(cv_value[i] + cutoff[i] + 0.5));
         if (!periodic[i]) {
           if (i_min < 0) i_min = 0;
           if (i_max >= nx[i]) i_max = nx[i] - 1;
@@ -1687,10 +1669,8 @@ public:
         // Calculate 1D Gaussian component
         cvm::real diff = (static_cast<cvm::real>(ix) + 0.5) - cv_value[i];
         cvm::real weight = cvm::exp(-diff * diff * inv_squared_smooth[i]);
-
           w_1d[i][counter++] = weight;
           dim_sum += weight;
-
           if (periodic[i]) {
             // Safe modulo for negative numbers
             idx_1d[i].push_back((ix % nx[i] + nx[i]) % nx[i]);
