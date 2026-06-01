@@ -591,6 +591,10 @@ int colvarproxy::end_of_step()
     send_alch_lambda();
     cached_alch_lambda_changed = false;
   }
+  if (cached_tabf_alpha_changed) {
+    send_tabf_alpha();
+    cached_tabf_alpha_changed = false;
+  }
   return COLVARS_OK;
 }
 
@@ -772,5 +776,4 @@ int colvarproxy::get_version_from_string(char const *version_string)
   is >> newint;
   return newint;
 }
-
 

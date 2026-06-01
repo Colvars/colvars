@@ -624,6 +624,7 @@ public:
   class dihedPC;
   class alch_lambda;
   class alch_Flambda;
+  class tabf_alpha;
   class CartesianBasedPath;
   class aspath;
   class azpath;

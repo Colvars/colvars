@@ -85,6 +85,18 @@ void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
 }
 
 
+int colvar::alch_lambda::set_external_value(bool now)
+{
+  // Cache value to be communicated to back-end between time steps
+  cvmodule->proxy->set_alch_lambda(x.real_value);
+  if (now) {
+    // If requested (e.g. upon restarting), sync to back-end
+    return cvmodule->proxy->send_alch_lambda();
+  }
+  return COLVARS_OK;
+}
+
+
 colvar::alch_Flambda::alch_Flambda()
 {
   set_function_type("alch_Flambda");
@@ -127,3 +139,70 @@ void colvar::alch_Flambda::apply_force(colvarvalue const &force)
   cvmodule->proxy->indirect_lambda_biasing_force += d2E_dlambda2 * f;
 }
 
+
+colvar::tabf_alpha::tabf_alpha()
+{
+  set_function_type("tabfAlpha");
+
+  provide(f_cvc_explicit_gradient, false);
+  provide(f_cvc_gradient, false); // Cannot apply forces on this CVC
+  provide(f_cvc_collect_atom_ids, false);
+
+  provide(f_cvc_inv_gradient); // Projected force is the alpha derivative
+  provide(f_cvc_Jacobian);     // Zero
+
+  x.type(colvarvalue::type_scalar);
+
+  // Query initial value from back-end; will be overwritten if restarting from a state file
+  cvmodule->proxy->get_tabf_alpha(&x.real_value);
+}
+
+
+int colvar::tabf_alpha::init_tabf(int factor)
+{
+  if (factor != 1) {
+    return cvmodule->error("Error: timeStepFactor > 1 is not yet supported for TABF alpha variables.");
+  }
+  cvmodule->proxy->request_tabf_energy_freq(factor);
+
+  return COLVARS_OK;
+}
+
+
+void colvar::tabf_alpha::calc_value()
+{
+  // By default, follow external parameter
+  // This might get overwritten by driving extended dynamics
+  cvmodule->proxy->get_tabf_alpha(&x.real_value);
+
+  cvmodule->proxy->get_dE_dtabf_alpha(&ft.real_value);
+  ft.real_value *= -1.0; // Convert energy derivative to force
+}
+
+
+void colvar::tabf_alpha::calc_force_invgrads()
+{
+  // All the work is done in calc_value()
+}
+
+
+void colvar::tabf_alpha::calc_Jacobian_derivative()
+{
+  jd = 0.0;
+}
+
+
+void colvar::tabf_alpha::apply_force(colvarvalue const & /* force */)
+{
+  // Forces, if any, are applied in colvar::update_extended_Lagrangian()
+}
+
+
+int colvar::tabf_alpha::set_external_value(bool now)
+{
+  cvmodule->proxy->set_tabf_alpha(x.real_value);
+  if (now) {
+    return cvmodule->proxy->send_tabf_alpha();
+  }
+  return COLVARS_OK;
+}

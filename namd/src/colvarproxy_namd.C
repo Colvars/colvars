@@ -1721,3 +1721,45 @@ int colvarproxy_namd::get_dE_dlambda(cvm::real* dE_dlambda) {
   }
   return COLVARS_OK;
 }
+
+
+/// Request TABF energy computation every freq steps
+int colvarproxy_namd::request_tabf_energy_freq(int const freq) {
+  if (freq != 1) {
+    cvmodule->error("TABF alpha dynamics currently requires timeStepFactor 1.\n");
+    return COLVARS_INPUT_ERROR;
+  }
+  if (!simparams->tabfOn) {
+    cvmodule->error("tabf must be enabled for TABF alpha dynamics.\n");
+    return COLVARS_INPUT_ERROR;
+  }
+  return COLVARS_OK;
+}
+
+
+/// Get value of TABF alpha parameter from back-end
+int colvarproxy_namd::get_tabf_alpha(cvm::real* alpha) {
+  *alpha = simparams->tabfAlpha;
+  return COLVARS_OK;
+}
+
+
+/// Set value of TABF alpha parameter in back-end
+int colvarproxy_namd::send_tabf_alpha(void) {
+  cvm::real alpha = cached_tabf_alpha;
+  if (alpha < simparams->tabfAlphaMin) alpha = simparams->tabfAlphaMin;
+  if (alpha > simparams->tabfAlphaMax) alpha = simparams->tabfAlphaMax;
+  simparams->tabfAlpha = alpha;
+  return COLVARS_OK;
+}
+
+
+/// Get energy derivative with respect to TABF alpha
+int colvarproxy_namd::get_dE_dtabf_alpha(cvm::real* dE_dalpha) {
+  if (cvmodule->step_relative() > 0) {
+    *dE_dalpha = controller->tabfDEdAlpha;
+  } else {
+    *dE_dalpha = 0.0;
+  }
+  return COLVARS_OK;
+}

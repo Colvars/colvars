@@ -319,11 +319,16 @@ int colvar::init(std::string const &conf)
 
   error_code |= init_grid_parameters(conf);
 
-  // Detect if we have a single component that is an alchemical lambda
+  // Detect if we have a single component that is an external back-end parameter
   if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "alchLambda") {
     enable(f_cv_external);
 
-    static_cast<colvar::alch_lambda *>(cvcs[0].get())->init_alchemy(time_step_factor);
+    error_code |= static_cast<colvar::alch_lambda *>(cvcs[0].get())->init_alchemy(time_step_factor);
+  }
+  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "tabfAlpha") {
+    enable(f_cv_external);
+
+    error_code |= static_cast<colvar::tabf_alpha *>(cvcs[0].get())->init_tabf(time_step_factor);
   }
 
   // If using scripted biases, any colvar may receive bias forces
@@ -926,6 +931,7 @@ void colvar::define_component_types()
   add_component_type<eigenvector>("eigenvector", "eigenvector");
   add_component_type<alch_lambda>("alchemical coupling parameter", "alchLambda");
   add_component_type<alch_Flambda>("force on alchemical coupling parameter", "alchFLambda");
+  add_component_type<tabf_alpha>("TABF temperature scaling factor", "tabfAlpha");
   add_component_type<aspath>("arithmetic path collective variables (s)", "aspath");
   add_component_type<azpath>("arithmetic path collective variables (z)", "azpath");
   add_component_type<gspath>("geometrical path collective variables (s)", "gspath");

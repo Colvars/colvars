@@ -168,6 +168,23 @@ public:
   /// Force to be applied onto alch. lambda, propagated from biasing forces on dE_dlambda
   cvm::real indirect_lambda_biasing_force;
 
+  /// Get value of TABF alpha parameter from back-end (if available)
+  virtual int get_tabf_alpha(cvm::real* alpha);
+
+  /// Set value of TABF alpha parameter to be sent to back-end at end of timestep
+  void set_tabf_alpha(cvm::real alpha);
+
+  /// Send cached value of TABF alpha parameter to back-end (if available)
+  virtual int send_tabf_alpha();
+
+  /// Request TABF energy computation every freq steps (necessary for some back-ends)
+  virtual int request_tabf_energy_freq(int const /* freq */) {
+    return COLVARS_OK;
+  }
+
+  /// Get energy derivative with respect to TABF alpha (if available)
+  virtual int get_dE_dtabf_alpha(cvm::real* dE_dalpha);
+
   /// Get weight factor from accelMD
   virtual cvm::real get_accelMD_factor() const {
     cvm::error_static("Error: accessing the reweighting factor of accelerated MD  "
@@ -186,6 +203,12 @@ protected:
 
   /// Whether lambda has been set and needs to be updated in backend
   bool cached_alch_lambda_changed;
+
+  /// Next value of TABF alpha to be sent to back-end
+  cvm::real cached_tabf_alpha;
+
+  /// Whether TABF alpha has been set and needs to be updated in backend
+  bool cached_tabf_alpha_changed;
 
   /// Boltzmann constant in internal Colvars units
   cvm::real boltzmann_;

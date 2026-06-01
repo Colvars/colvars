@@ -284,13 +284,11 @@ public:
   /// eg. lambda dynamics
   inline void set_value(colvarvalue const &new_value, bool now=false) {
     x = new_value;
-    // Cache value to be communicated to back-end between time steps
-    cvmodule->proxy->set_alch_lambda(x.real_value);
-    if (now) {
-      // If requested (e.g. upon restarting), sync to back-end
-      cvmodule->proxy->send_alch_lambda();
-    }
+    set_external_value(now);
   }
+
+  /// Communicate an externally driven CVC value to the back-end
+  virtual int set_external_value(bool now=false) { return COLVARS_OK; }
 
 protected:
 
@@ -1147,6 +1145,7 @@ public:
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
   virtual void apply_force(colvarvalue const &force);
+  virtual int set_external_value(bool now=false);
 };
 
 
@@ -1163,6 +1162,25 @@ public:
   virtual void calc_value();
   virtual void calc_gradients();
   virtual void apply_force(colvarvalue const &force);
+};
+
+
+// \brief Colvar component: tabf_alpha
+// To communicate value with back-end in TABF alpha dynamics
+class colvar::tabf_alpha
+  : public colvar::cvc
+{
+protected:
+  // No atom groups needed
+public:
+  tabf_alpha();
+  int init_tabf(int time_step_factor);
+  virtual ~tabf_alpha() {}
+  virtual void calc_value();
+  virtual void calc_force_invgrads();
+  virtual void calc_Jacobian_derivative();
+  virtual void apply_force(colvarvalue const &force);
+  virtual int set_external_value(bool now=false);
 };
 
 
