@@ -1030,6 +1030,7 @@ void colvargrid_integrate::prepare_calculations()
   is_calculations_prepared = true;
 }
 
+
 cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix)
 {
   cvm::real regularized_weight;
@@ -1043,6 +1044,7 @@ cvm::real colvargrid_integrate::get_regularized_weight(std::vector<int> &ix)
   }
   return regularized_weight;
 }
+
 
 void colvargrid_integrate::get_regularized_grad(std::vector<cvm::real> &F, std::vector<int> &ix)
 {
@@ -1058,14 +1060,18 @@ void colvargrid_integrate::get_regularized_grad(std::vector<cvm::real> &F, std::
     F[i] = multiplier * F[i];
   }
 }
-// TODO: check if there's not a more optimized version avoiding push_back calls
+
+
 std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_gradient(
   std::vector<int> ghost_point_coordinates)
 {
-  std::vector<int> reference_point_coordinates(nd, 0); // Initialize with correct size
+  std::vector<int> reference_point_coordinates(nd, 0);
   gradients->wrap_to_edge(ghost_point_coordinates, reference_point_coordinates);
+
   std::vector<int> directions_to_average_along;
+  directions_to_average_along.reserve(nd);           // at most nd entries
   std::vector<bool> normal_directions(nd);
+
   for (size_t i = 0; i < nd; i++) {
     if ((0 <= ghost_point_coordinates[i] && ghost_point_coordinates[i] < computation_nx[i]) ||
         periodic[i]) {
@@ -1075,52 +1081,53 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
       normal_directions[i] = true;
     }
   }
-  // Find the positions of the gradients to average
-  const int nb_averaged_gradients = static_cast<int>(cvm::integer_power(2, static_cast<int>(directions_to_average_along.size())));
-  std::vector<std::vector<int>> gradients_to_average_relative_positions;
-  if (directions_to_average_along.size() == 0) {
-    std::vector<int> zero_vector(nd, 0);
-    gradients_to_average_relative_positions.push_back(zero_vector);
-  } else {
-    for (int i = 0; i < nb_averaged_gradients; i++) {
-      std::vector<int> gradient_to_average_relative_position(nd, 0);
-      std::vector<int> binary = convert_base_two(i, directions_to_average_along.size());
-      for (size_t bit_position = 0; bit_position < directions_to_average_along.size();
-           bit_position++) {
-        gradient_to_average_relative_position[directions_to_average_along[bit_position]] =
-          binary[bit_position];
-      }
-      gradients_to_average_relative_positions.push_back(gradient_to_average_relative_position);
-    }
-  }
 
-  // compute the averaged border normal gradient
+  const int nb_averaged_gradients =
+    static_cast<int>(cvm::integer_power(2, static_cast<int>(directions_to_average_along.size())));
+
+  std::vector<std::vector<int>> gradients_to_average_relative_positions;
+  gradients_to_average_relative_positions.reserve(nb_averaged_gradients); // known size
+
+  // The i=0 case (all bits zero) produces an all-zero vector regardless of
+  // directions_to_average_along
+  const size_t n_dims_to_average = directions_to_average_along.size();
+  for (int i = 0; i < nb_averaged_gradients; i++) {
+    std::vector<int> pos(nd, 0);
+    for (size_t bit = 0; bit < n_dims_to_average; bit++) {
+      pos[directions_to_average_along[bit]] = (i >> bit) & 1;
+    }
+    gradients_to_average_relative_positions.push_back(std::move(pos));
+  }
+  const size_t nb_averaged = gradients_to_average_relative_positions.size();
+  const cvm::real inv_nb_averaged = cvm::real(1) / static_cast<cvm::real>(nb_averaged);
+
   std::vector<cvm::real> averaged_border_normal_gradient(nd, 0);
-  // averaging the gradients
-  for (size_t i = 0; i < gradients_to_average_relative_positions.size(); i++) {
-    std::vector<int> gradient_position(reference_point_coordinates);
+  std::vector<int>       gradient_position(nd);
+  std::vector<cvm::real> gradient(nd);
+
+  for (size_t i = 0; i < nb_averaged; i++) {
+    const auto& relative_pos = gradients_to_average_relative_positions[i];
     for (size_t j = 0; j < nd; j++) {
-      gradient_position[j] += gradients_to_average_relative_positions[i][j];
+      gradient_position[j] = reference_point_coordinates[j] + relative_pos[j];
     }
     wrap_detect_edge(gradient_position);
-    std::vector<cvm::real> gradient(nd);
+
     if (weighted) {
       get_regularized_grad(gradient, gradient_position);
     } else {
       get_grad(gradient, gradient_position);
     }
+
     for (size_t j = 0; j < nd; j++) {
       averaged_border_normal_gradient[j] += gradient[j];
     }
   }
-  // only keep the normal directions and average
-  for (size_t j = 0; j < nd; j++) {
-    if (!normal_directions[j]) {
-      averaged_border_normal_gradient[j] = 0;
-    }
-    averaged_border_normal_gradient[j] /= gradients_to_average_relative_positions.size();
-  }
 
+  for (size_t j = 0; j < nd; j++) {
+    averaged_border_normal_gradient[j] = normal_directions[j]
+      ? averaged_border_normal_gradient[j] * inv_nb_averaged
+      : cvm::real(0);
+  }
   return averaged_border_normal_gradient;
 }
 
