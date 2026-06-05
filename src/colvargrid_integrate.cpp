@@ -309,7 +309,7 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
 void colvargrid_integrate::prepare_divergence_stencils()
 {
   surrounding_points_relative_positions.clear();
-  size_t n_combinations = pow(2, nd);
+  size_t n_combinations = cvm::integer_power(2, nd);
   for (size_t i = 0; i < n_combinations; i++) {
     surrounding_points_relative_positions.push_back(convert_base_two(i, nd));
   }
@@ -337,7 +337,7 @@ void colvargrid_integrate::update_weighted_div_local(const std::vector<int> &ix0
                        gradient_at_surrounding_point[i] * weight / widths[i];
     }
   }
-  divergence[linear_index] = div_at_point / pow(2, nd - 1);
+  divergence[linear_index] = div_at_point / cvm::integer_power(2, nd - 1);
 }
 
 /// Multiplication by sparse matrix representing Laplacian
@@ -911,6 +911,7 @@ void colvargrid_integrate::prepare_laplacian_stencils()
   laplacian_stencil.resize(2 * nd + 1);
   weight_stencil.resize(2 * nd);
   weight_counts.resize(2 * nd);
+  size_t const stencil_size = cvm::integer_power(2, nd - 1);
 
   for (size_t dim = 0; dim < nd; dim++) {
     std::vector<int> relative_position_left(nd, 0);
@@ -919,13 +920,13 @@ void colvargrid_integrate::prepare_laplacian_stencils()
     relative_position_right[dim] = 1;
     laplacian_stencil[2 * dim] = relative_position_left;
     laplacian_stencil[2 * dim + 1] = relative_position_right;
-    weight_counts[2 * dim] = 1 / (widths[dim] * widths[dim]) * (1 / std::pow(2, nd - 1));
-    weight_counts[2 * dim + 1] = 1 / (widths[dim] * widths[dim]) * (1 / std::pow(2, nd - 1));
-    weight_stencil[2 * dim].resize(std::pow(2, nd - 1));
-    weight_stencil[2 * dim + 1].resize(std::pow(2, nd - 1));
+    weight_counts[2 * dim] = 1. / (widths[dim] * widths[dim]) * (1. / stencil_size);
+    weight_counts[2 * dim + 1] = 1. / (widths[dim] * widths[dim]) * (1. / stencil_size);
+    weight_stencil[2 * dim].resize(stencil_size);
+    weight_stencil[2 * dim + 1].resize(stencil_size);
 
     for (int weights_to_average_relative_pos = 0;
-         weights_to_average_relative_pos < std::pow(2, nd - 1); weights_to_average_relative_pos++) {
+         weights_to_average_relative_pos < static_cast<int>(stencil_size); weights_to_average_relative_pos++) {
       std::vector<int> binary = convert_base_two(weights_to_average_relative_pos, nd - 1);
       weight_stencil[2 * dim][weights_to_average_relative_pos].resize(nd);
       weight_stencil[2 * dim + 1][weights_to_average_relative_pos].resize(nd);
