@@ -9,7 +9,11 @@
 # Contact: giacomo.fiorin@gmail.com
 
 
-import os, sys, tempfile
+import os
+import sys
+import tempfile
+
+import argparse
 
 import numpy as np
 
@@ -22,7 +26,7 @@ except ImportError:
     raise ImportError("Error: module gridData not found, please install MDAnalysis.")
 
 
-__version__ = '2024-10-24'
+__version__ = '2026-06-10'
 
 
 def format_array(a, fmt="%.3f"):
@@ -840,17 +844,25 @@ set mmcv_intercept %.6f
        args.mmcv_slope, args.mmcv_intercept)
 
 
+class MultiMapHelpFormatter(argparse.RawTextHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
+    pass
+
 
 def parse_cmdline_args(namespace=None):
     """Parse command-line arguments with argparse, return args object."""
 
-    import argparse
 
-    parser = \
-        argparse.ArgumentParser(description='''
-Generate input files for Multi-Map computations with VMD and NAMD.  Reference article: https://doi.org/10.1002/jcc.26075''',
-                                usage='%(prog)s [options] (see -h or --help)',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description='''
+Generate input files for Multi-Map computations with VMD and NAMD.
+   Reference article: https://doi.org/10.1002/jcc.26075
+   Tutorial: https://colvars.github.io/multi-map/multi-map.html
+
+When using multiple maps, this script assumes that the atoms being biased are lipid
+molecules arranged as a periodic bilayer that runs parallel to the X and Y axes.
+''',
+        usage='%(prog)s [options] (see -h or --help)',
+        formatter_class=MultiMapHelpFormatter)
 
     group = parser.add_argument_group(title='General options')
     group.add_argument('--input-labels',
@@ -1019,19 +1031,25 @@ Generate input files for Multi-Map computations with VMD and NAMD.  Reference ar
     group.add_argument('--load-maps-internally',
                        action='store_true',
                        help="When true, Colvars will load the maps internally using "
-                       "\"mapFile\" and the loop over atoms is done inside Colvars "
+                       "\"mapFile\" and the atoms are processed diretly by Colvars "
                        "instead of NAMD; "
-                       "does not have an effect in VMD",
+                       "this option has no effect in VMD",
                        default=False)
     group.add_argument('--define-single-maps',
                        action='store_true',
-                       help='Define single-map variables in addition to Multi-Map',
+                       help="Define additional variables in addition to the Multi-Map variable; "
+                       "use this option when troubleshooting a Multi-Map variable",
                        default=False)
+
+    group = parser.add_argument_group(title='Additional restraints')
     group.add_argument('--com-restraint',
                        action='store_true',
-                       help='Add the definition of a center-of-mass restraint '
-                       'to the NAMD input',
-                       default=True)
+                       help="Add the definition of a center-of-mass restraint, "
+                       "as is generally required")
+    group.add_argument('--no-com-restraint',
+                       help="Do not add a center-of-mass restraint
+                       action='store_false')
+    group.set_defaults(com_restraint=True)
     group.add_argument('--com-restraint-pdb-file',
                        type=str,
                        help="PDB file-based selection for the COM restraint")
@@ -1415,7 +1433,7 @@ cv molid top
 """)
             script.write(vmd_load_map_cmds)
 
-        write_colvars_script(script, map_labels, pdb_files, map_norms, map_files, pdb_file_cache, args, 
+        write_colvars_script(script, map_labels, pdb_files, map_norms, map_files, pdb_file_cache, args,
                              indices=range(len(map_labels)))
 
 
