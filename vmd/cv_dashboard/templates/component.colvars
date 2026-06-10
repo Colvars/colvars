@@ -180,13 +180,47 @@
         }
     }
 
-#_mapTotal
+#_mapTotal (single map)
     mapTotal {
-        mapID 0
+        mapFile map.dx
         atoms {
             atomNumbers 1 2 3
         }
     }
+
+#_mapTotal (Multi-Map variable)
+    # For illustration purposes: see also the gen_multimap.py script
+    mapTotal {
+        # Volumetric map for first shape
+        mapFile map1.dx
+        componentCoeff -3.0
+        atoms {
+            name phosphates
+            atomNumbers 11 22 33
+        }
+    }
+    mapTotal {
+        mapFile map2.dx
+        componentCoeff -1.0
+        atoms {
+            atomsOfGroup phosphates
+        }
+    }
+    mapTotal {
+        mapFile map3.dx
+        componentCoeff 1.0
+        atoms {
+            atomsOfGroup phosphates
+        }
+    }
+    mapTotal {
+        mapFile map4.dx
+        componentCoeff 3.0
+        atoms {
+            atomsOfGroup phosphates
+        }
+    }
+
 #_orientation
     orientation {
         atoms {
