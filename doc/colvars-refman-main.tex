@@ -3966,6 +3966,7 @@ The \texttt{mapTotal} components takes the following options:
     string}{%
     The value of this option specifies the label of the volumetric map to use for this collective variable component.
     This label must identify a map already loaded in NAMD via \texttt{mGridForcePotFile}, and the corresponding value of \texttt{mGridForceScale} must be set to (0, 0, 0), so that its collective force is computed dynamically.
+    \emph{This option is currently only supported in NAMD: when enabled, Colvars-based atom selections may not be used.}
   }
 }
 
@@ -3976,9 +3977,10 @@ The \texttt{mapTotal} components takes the following options:
     \texttt{mapTotal}}{%
     Specify the numeric index of the volumetric map to use as a colvar}{%
     non-negative integer}{%
-    The value of this option specifies the numeric index of the volumetric map to use for this collective variable component.
-    The map referred to must be already loaded before using this option.
-    \cvnamdonly{This option is mutually exclusive with \refkey{mapName}{colvar|mapTotal|mapName}: if the latter is given, the numeric ID is obtained internally from NAMD.}
+    \emph{This option is supported both in NAMD or VMD:}
+    its vaslue specifies the numeric index of the volumetric map to use for this collective variable component.
+    The selected map must have already been loaded in \MDENGINE{}.
+    \cvnamdonly{This keyword is mutually exclusive with \refkey{mapName}{colvar|mapTotal|mapName}: if the latter is given, the numeric ID is obtained implicitly from NAMD.}
   }
 
 \item %
@@ -3988,8 +3990,8 @@ The \texttt{mapTotal} components takes the following options:
     \texttt{mapTotal}}{%
     Name of file to load the map from}{%
     filename}{%
-    This option is mutually exclusive with \refkey{mapID}{colvar|mapTotal|mapID}\cvnamdonly{and \refkey{mapName}{colvar|mapTotal|mapName}}.
-    \cvnamdonly{Additionally, because the file specified by this option is loaded internally within Colvars, atom selections must be specified using the \refkey{mapName}{colvar|mapTotal|atoms} keyword.}
+    This option is mutually exclusive with \refkey{mapID}{colvar|mapTotal|mapID}\cvnamdonly{and \refkey{mapName}{colvar|mapTotal|mapName}}; if given, the map will be loaded internally in Colvars, and a Colvars-based atom selections should be given with \refkey{mapName}{colvar|mapTotal|atoms}.
+    \cvnamdonly{When this option is enabled in NAMD, the \texttt{MGridForceFile} keyword may not be used to select atoms.}
   }
 
 \item %
@@ -4001,7 +4003,7 @@ The \texttt{mapTotal} components takes the following options:
     \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     This option defines the set of atoms to be aligned onto the volumetric map following the syntax described in section \ref{sec:colvar_atom_groups}.
     \cvvmdonly{In VMD, this definition is \emph{required}, otherwise the \texttt{mapTotal} value is identically zero.}
-    \cvnamdonly{In NAMD, this keyword is optional, because atoms may also be selected via the \href{https://www.ks.uiuc.edu/Research/namd/2.14/ug/node43.html}{MGridForceFile} keyword.
+    \cvnamdonly{In NAMD, this keyword is optional when maps are loaded using the \href{https://www.ks.uiuc.edu/Research/namd/2.14/ug/node43.html}{MGridForcePotFile} keyword.
       The two approaches are equivalent for the purpose of selecting atoms: however, the former is needed when combining \texttt{mapTotal} with other Colvars features such as a moving frame of reference (see \ref{sec:colvar_atom_groups_ref_frame}), or when running NAMD in GPU-resident mode.
       Instead, the latter (when available) is more efficient because it offloads most of the computation of the volmap to NAMD in a scalable manner.}
     }
