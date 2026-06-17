@@ -1733,6 +1733,18 @@ int colvarproxy_namd::request_tabf_energy_freq(int const freq) {
     cvmodule->error("tabf must be enabled for TABF alpha dynamics.\n");
     return COLVARS_INPUT_ERROR;
   }
+  if (simparams->nonbondedFrequency != 1) {
+    cvmodule->error("TABF alpha dynamics requires nonbondedFrequency 1.\n");
+    return COLVARS_INPUT_ERROR;
+  }
+  if (simparams->fullElectFrequency != 1) {
+    cvmodule->error("TABF alpha dynamics requires fullElectFrequency 1.\n");
+    return COLVARS_INPUT_ERROR;
+  }
+  if (simparams->globalMasterFrequency != 1) {
+    cvmodule->error("TABF alpha dynamics requires globalMasterFrequency 1.\n");
+    return COLVARS_INPUT_ERROR;
+  }
   return COLVARS_OK;
 }
 
