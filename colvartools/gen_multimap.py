@@ -1047,7 +1047,7 @@ molecules arranged as a periodic bilayer that runs parallel to the X and Y axes.
                        help="Add the definition of a center-of-mass restraint, "
                        "as is generally required")
     group.add_argument('--no-com-restraint',
-                       help="Do not add a center-of-mass restraint
+                       help="Do not add a center-of-mass restraint",
                        action='store_false')
     group.set_defaults(com_restraint=True)
     group.add_argument('--com-restraint-pdb-file',
@@ -1423,8 +1423,10 @@ foreach pdb_file { %s } {
 """ % ' '.join(set(unique_files)))
 
         script.write("""
-# Attach Colvars to the top molecule
-cv molid top
+if { [info commands atomselect] == "atomselect" } {
+    # When using VMD, attach Colvars to the top molecule
+    cv molid top
+}
 """)
         if not args.load_maps_internally:
             script.write("""
