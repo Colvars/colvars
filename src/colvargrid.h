@@ -1614,25 +1614,35 @@ public:
   if (s_m && S_m && step && smoothing && !s_m->empty() && !S_m->empty()) {
     if (*step >= 2) {
       for (size_t i =0; i < nd; i++) {
-        cvm::real temp =(force[i] - (*s_m)[i]);
+        cvm::real temp =
+          ((force[i] - data[address(bin_value) + i]/weights->value(weights->address(bin_value))) - (*s_m)[i]);
         (*s_m)[i] = (*s_m)[i] + temp / 10.;
-        (*S_m)[i] = (*S_m)[i] * 0.9 + temp *(force[i] - (*s_m)[i]) * 0.1;
+        (*S_m)[i] = (*S_m)[i] + temp * (cv_value[i] - (*s_m)[i]);
       }
     }
     (*step)++;
+    if (*step % 10000 == 0) {
+      std::vector<cvm::real> inital_bandwidth(nd,smoothing);
+      for (size_t i =0; i < nd; i++) {
+        inital_bandwidth[i] = cvm::sqrt((*S_m)[i] / *step / widths[i] / widths[i]);
+      }
+      cvm::log( "initial bandwidth : " + cvm::to_str(inital_bandwidth));
+    }
   }
+
   if (smoothing && weights->value(bin_value) < effective_full_samples) {
     std::vector<cvm::real> bandwidth(nd,0);
     std::vector<cvm::real> initial_bandwidth(nd,smoothing);
     std::vector<cvm::real> inv_squared_smooth(nd);
     std::vector<cvm::real> cutoff(nd);
     if (s_m != nullptr) {
-      if (*step >= 20) {
+      if (*step >= 2000) {
         for (size_t i =0; i < nd; i++) {
-          initial_bandwidth[i] = std::min(cvm::sqrt((*S_m)[i] / * step * timestep * timestep), smoothing);
+          initial_bandwidth[i] = std::min(cvm::sqrt((*S_m)[i] / (*step) / widths[i] / widths[i]), smoothing);
         }
       }
     }
+
     for (size_t i = 0; i < nd; i++) {
       bandwidth[i] = initial_bandwidth[i]
       * std::max(0.,(1 -(std::max(0., weights->value(bin_value) - effective_min_samples) / (effective_full_samples)) * kernel_reduction_speed));
