@@ -1,0 +1,20 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    distance {
+        group1 {
+            atomNumbers {57979}
+        }
+        group2 {
+            atomNumbers {80863}
+        }
+    }
+} 
