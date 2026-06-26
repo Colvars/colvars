@@ -115,7 +115,7 @@ int colvarbias_meta::init(std::string const &conf)
 
   get_keyval(conf, "useGrids", use_grids, use_grids);
 
-  if (use_grids) {
+  if (use_grids && (colvar_sigmas.size() == num_variables())) {
 
     if (grids_freq == 0) {
       // Set default grid frequency
