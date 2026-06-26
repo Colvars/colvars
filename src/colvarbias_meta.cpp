@@ -88,18 +88,18 @@ int colvarbias_meta::init(std::string const &conf)
   if (hill_width > 0.0) {
     colvar_sigmas.resize(num_variables());
     // Print the calculated sigma parameters
-    cvmodule->log("Half-widths of the Gaussian hills (sigma's):\n");
+    cvmodule->log("Half-widths of the Gaussian hills (sigma's) for each colvar:\n");
     for (i = 0; i < num_variables(); i++) {
       colvar_sigmas[i] = variables(i)->width * hill_width / 2.0;
-      cvmodule->log(variables(i)->name+std::string(": ")+
-               cvm::to_str(colvar_sigmas[i]));
+      cvmodule->log(std::string("  ") + variables(i)->name + std::string(": ") +
+                    cvm::to_str(colvar_sigmas[i]));
     }
   }
 
   if (colvar_sigmas.size() == 0) {
-    error_code |= cvmodule->error("Error: positive values are required for "
-                             "either hillWidth or gaussianSigmas.",
-                             COLVARS_INPUT_ERROR);
+    error_code |= cvmodule->error(
+        "either hillWidth or gaussianSigmas must be set to positive values.",
+        COLVARS_INPUT_ERROR);
   }
 
   {
@@ -107,7 +107,7 @@ int colvarbias_meta::init(std::string const &conf)
     get_keyval(conf, "multipleReplicas", b_replicas, false);
     if (b_replicas) {
       cvmodule->cite_feature("Multiple-walker metadynamics colvar bias implementation");
-  comm = multiple_replicas;
+      comm = multiple_replicas;
     } else {
       comm = single_replica;
     }
