@@ -497,7 +497,7 @@ rotation_gpu::rotation_gpu():
   discontinuous_rotation(nullptr),
   max_iteration_reached(nullptr), b_initialized(false),
   h_C(nullptr), h_S(nullptr), h_S_eigval(nullptr),
-  h_S_eigvec(nullptr)
+  h_S_eigvec(nullptr), jacobi_done(nullptr)
 {}
 
 rotation_gpu::~rotation_gpu() {
@@ -514,6 +514,10 @@ rotation_gpu::~rotation_gpu() {
   p->deallocate_host(&h_S);
   p->deallocate_host(&h_S_eigval);
   p->deallocate_host(&h_S_eigvec);
+  if (jacobi_done) {
+    (void)cudaEventDestroy(jacobi_done);
+    jacobi_done = nullptr;
+  }
   b_initialized = false;
 }
 
@@ -535,6 +539,7 @@ int rotation_gpu::init(/*const cudaStream_t& stream_in*/) {
     error_code |= p->allocate_host(&h_S_eigval, 4);
     error_code |= p->allocate_host(&h_S_eigvec, 4 * 4);
     error_code |= p->clear_device_array(tbcount, 1);
+    error_code |= checkGPUError(cudaEventCreate(&jacobi_done));
     max_iteration_reached[0] = 0;
     discontinuous_rotation[0] = 0;
     if (colvarmodule::rotation::monitor_crossings) {
@@ -611,10 +616,18 @@ int rotation_gpu::add_optimal_rotation_nodes(
     cudaMemcpyDeviceToHost, copy_DtoH_S_eigval_node,
     graph, {Jacobi4x4Node});
   nodes_map["copy_DtoH_S_eigval"] = copy_DtoH_S_eigval_node;
+  // Add a node to check if jacobi_4x4 is completed
+  cudaGraphNode_t jacobi_done_node;
+  dependencies.clear();
+  dependencies.push_back(Jacobi4x4Node);
+  error_code |= checkGPUError(cudaGraphAddEventRecordNode(
+    &jacobi_done_node, graph, dependencies.data(), dependencies.size(), jacobi_done));
+  nodes_map["jacobi_done"] = jacobi_done_node;
   return error_code;
 }
 
-void rotation_gpu::after_sync_check() const {
+void rotation_gpu::check_error() const {
+  checkGPUError(cudaEventSynchronize(jacobi_done));
   if (max_iteration_reached[0]) {
     cvm::error_static("Too many iterations in jacobi diagonalization.\n"
                "This is usually the result of an ill-defined set of atoms for "

@@ -97,11 +97,72 @@ int colvarproxy_gpu::copy_DtoD_T_async(const void *d_src, void *d_dst, size_t ar
   return error_code;
 }
 
-int colvarproxy_gpu::wait_for_extra_info_ready() {
-  return COLVARS_OK;
+int colvarproxy_gpu::init_gpu() {
+  int error_code = COLVARS_OK;
+  for (auto& e: events) {
+    if (e) {
+      error_code |= checkGPUError(cudaEventSynchronize(e));
+      error_code |= checkGPUError(cudaEventDestroy(e));
+    }
+    error_code |= checkGPUError(cudaEventCreate(&e));
+  }
+  return error_code;
 }
 
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 colvarproxy_gpu::~colvarproxy_gpu() {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  for (auto& e: events) {
+    if (e) {
+      checkGPUError(cudaEventSynchronize(e));
+      checkGPUError(cudaEventDestroy(e));
+      e = nullptr;
+    }
+  }
+#endif
+}
+
+int colvarproxy_gpu::gpu_device_id() const {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  int deviceID = 0;
+  checkGPUError(cudaGetDevice(&deviceID));
+  return deviceID;
+#else
+  return -1;
+#endif
+}
+
+std::string colvarproxy_gpu::gpu_name() const {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  const int deviceID = gpu_device_id();
+  cudaDeviceProp props = {{0}};
+  checkGPUError(cudaGetDeviceProperties(&props, deviceID));
+  return std::string{props.name};
+#else
+  return std::string{""};
+#endif
+}
+
+std::string colvarproxy_gpu::gpu_bus_id() const {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  const int deviceID = gpu_device_id();
+  char busID[256];
+  checkGPUError(cudaDeviceGetPCIBusId(busID, 256, deviceID));
+  return std::string{busID};
+#else
+  return std::string{""};
+#endif
+}
+
+std::string colvarproxy_gpu::gpu_platform() const {
+#if defined (COLVARS_CUDA)
+  return "CUDA";
+#elif defined (COLVARS_HIP)
+  return "HIP";
+#elif defined (COLVARS_SYCL)
+  return "SYCL";
+#else
+  return "CPU";
+#endif
 }
