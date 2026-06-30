@@ -1613,6 +1613,8 @@ private:
   cvm::real* h_S;
   cvm::real* h_S_eigval;
   cvm::real* h_S_eigvec;
+  /// \brief CUDA event for checking if max iterations are reached
+  cudaEvent_t jacobi_done;
 public:
   /// Constructor
   rotation_gpu();
@@ -1641,7 +1643,7 @@ public:
     std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
   /// \brief Checking after synchronization (
   /// eigendecomposition iterations and max crossing)
-  void after_sync_check() const;
+  void check_error() const;
 
   friend struct rotation_derivative_gpu;
   cvm::real* get_S() const {return d_S;}

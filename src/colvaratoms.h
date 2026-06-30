@@ -90,6 +90,10 @@ public:
    * @brief Initialize dependency tree
    */
   int init_dependencies() override;
+  /**
+   * @brief Reset the GPU graphs when the GPU buffers in proxy are re-allocated.
+   */
+  int proxy_buffers_reallocated() override;
   /// \brief Implementation of the feature list accessor for atom group
   virtual const std::vector<feature *> &features() const override { return ag_features; }
   std::vector<feature *> &modify_features() override { return ag_features; }

@@ -1194,6 +1194,8 @@ int colvar::rmsd::add_calc_value_node(
 }
 
 int colvar::rmsd::calc_value_after_gpu() {
+  int error_code = COLVARS_OK;
+  error_code |= checkGPUError(cudaEventSynchronize(get_event(cvc::event_type::calc_value)));
   best_perm_index = std::min_element(
     permutation_msds.begin(), permutation_msds.end()) - permutation_msds.begin();
   x.real_value = permutation_msds[best_perm_index];
@@ -1202,7 +1204,7 @@ int colvar::rmsd::calc_value_after_gpu() {
   // Save the results to host-pinned memory for further gradients calculation
   *h_best_perm_index = best_perm_index;
   *h_rmsd = x.real_value;
-  return COLVARS_OK;
+  return error_code;
 }
 
 int colvar::rmsd::add_calc_gradients_node(
@@ -1246,8 +1248,10 @@ int colvar::rmsd::add_calc_force_invgrads_node(
 }
 
 int colvar::rmsd::calc_force_invgrads_after_gpu() {
+  int error_code = COLVARS_OK;
+  error_code |= checkGPUError(cudaEventSynchronize(get_event(cvc::event_type::calc_force_invgrads)));
   ft.real_value = *h_ft;
-  return COLVARS_OK;
+  return error_code;
 }
 
 int colvar::rmsd::add_calc_Jacobian_derivative_node(
@@ -1279,8 +1283,14 @@ int colvar::rmsd::add_calc_Jacobian_derivative_node(
 }
 
 int colvar::rmsd::calc_Jacobian_derivative_after_gpu() {
+  int error_code = COLVARS_OK;
+  error_code |= checkGPUError(cudaEventSynchronize(get_event(cvc::event_type::calc_Jacobian_derivative)));
   jd.real_value = *h_jd;
-  return COLVARS_OK;
+  return error_code;
+}
+
+int colvar::rmsd::proxy_buffers_reallocated() {
+  return graph_total_force.reset();
 }
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 

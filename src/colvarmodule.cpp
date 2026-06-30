@@ -196,9 +196,6 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
   // Removes the need for proxy specializations to create this
   proxy->script = new colvarscript(proxy, this);
 
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  gpu_calc = nullptr;
-#endif
 }
 
 
@@ -449,13 +446,11 @@ int colvarmodule::parse_global_params(std::string const &conf)
         this->error("GPU parallelism is not implemented.\n");
         return COLVARS_INPUT_ERROR;
       } else {
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-        gpu_calc = std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc>(
-          new colvars_gpu::colvarmodule_gpu_calc);
-        gpu_calc->init();
-        this->log("EXPERIMENTAL GPU parallelism will be applied inside:\n");
-        this->log("   - atom groups\n");
-#endif
+        this->log("EXPERIMENTAL GPU parallelism will be used. GPU information:\n");
+        this->log("  - Platform: " + proxy->gpu_platform() + "\n");
+        this->log("  - Name: " + proxy->gpu_name() + "\n");
+        this->log("  - Device ID: " + cvm::to_str(proxy->gpu_device_id()) + "\n");
+        this->log("  - PCI Bus ID: " + proxy->gpu_bus_id() + "\n");
       }
     } else {
       proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::none);
@@ -501,13 +496,11 @@ int colvarmodule::parse_global_params(std::string const &conf)
         break;
       }
       case colvarproxy_smp::smp_mode_t::gpu: {
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-        gpu_calc = std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc>(
-          new colvars_gpu::colvarmodule_gpu_calc);
-        gpu_calc->init();
-#endif
-        this->log("EXPERIMENTAL GPU parallelism will be applied inside:\n");
-        this->log("   - atom groups\n");
+        this->log("EXPERIMENTAL GPU parallelism will be used. GPU information:\n");
+        this->log("  - Platform: " + proxy->gpu_platform() + "\n");
+        this->log("  - Name: " + proxy->gpu_name() + "\n");
+        this->log("  - Device ID: " + cvm::to_str(proxy->gpu_device_id()) + "\n");
+        this->log("  - PCI Bus ID: " + proxy->gpu_bus_id() + "\n");
         break;
       }
       case colvarproxy_smp::smp_mode_t::none: {
@@ -1088,14 +1081,6 @@ int colvarmodule::calc_colvars()
     }
     this->decrease_depth();
 
-  } else if (proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
-    this->increase_depth();
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    error_code |= gpu_calc->calc_cvs(*variables_active(), this);
-#else
-    return this->error("GPU calculation is not implemented.\n");
-#endif
-    this->decrease_depth();
   } else {
     this->increase_depth();
     // calculate colvars one at a time
@@ -1234,22 +1219,72 @@ int colvarmodule::update_colvar_forces()
   if (this->debug())
     this->log("Communicating forces from the colvars to the atoms.\n");
   this->increase_depth();
+
+  // For the time being, CVC forces are still applied through CPU code, while
+  // atom groups can be calculated on GPU, so I have to intercept the CPU
+  // force values (done in cvm::atom_group::apply_force and apply_colvar_force)
+  // into host-pinned buffers. But before that, I still need to clear these
+  // buffers of all atom groups that may have forces applied on.
+  // TODO: How can I avoid constructing forced_atom_groups every step?
+  std::vector<atom_group *> forced_atom_groups;
   if (proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    error_code |= gpu_calc->apply_forces(*variables_active(), this);
-#endif
-  } else {
     for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
       if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
-        (*cvi)->communicate_forces();
-        if (this->get_error()) {
-          return COLVARS_ERROR;
+        auto& cvcs = (*cvi)->get_cvcs();
+        for (size_t i = 0; i < cvcs.size(); i++) {
+          if (!cvcs[i]->is_enabled()) continue;
+          std::vector<atom_group *>& ags = (cvcs[i])->atom_groups;
+          for (auto ag = ags.begin(); ag != ags.end(); ++ag) {
+            if ((*ag)->size() > 0) {
+              forced_atom_groups.push_back(*ag);
+            }
+          }
         }
       }
     }
+    // Since atom groups can be shared, I have to sort and deduplicate the array.
+    std::sort(forced_atom_groups.begin(), forced_atom_groups.end());
+    auto last = std::unique(forced_atom_groups.begin(), forced_atom_groups.end());
+    forced_atom_groups.erase(last, forced_atom_groups.end());
+    // Clear the host-pinned buffers
+    for (auto ag = forced_atom_groups.begin(); ag != forced_atom_groups.end(); ++ag) {
+      error_code |= (*ag)->get_gpu_atom_group()->begin_apply_force_gpu();
+    }
+#endif
   }
+
+  for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
+    if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
+      (*cvi)->communicate_forces();
+      if (this->get_error()) {
+        return COLVARS_ERROR;
+      }
+    }
+  }
+
+  if (proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    // NOTE: Because add_force_to_proxy_gpu is called by each atom group with its
+    // own stream, the CUDA kernel/Graph for adding forces are always pushed after the
+    // CUDA graph for fit gradients. As a result, we don't need to synchronize the
+    // fit gradients event.
+    for (auto ag = forced_atom_groups.begin(); ag != forced_atom_groups.end(); ++ag) {
+      (*ag)->get_gpu_atom_group()->add_force_to_proxy_gpu((*ag));
+    }
+#endif
+  }
+
   this->decrease_depth();
 
+  return error_code;
+}
+
+int colvarmodule::proxy_buffers_reallocated_done() {
+  int error_code = COLVARS_OK;
+  for (auto it = variables()->begin(); it != variables()->end(); ++it){
+    error_code |= (*it)->proxy_buffers_reallocated();
+  }
   return error_code;
 }
 
