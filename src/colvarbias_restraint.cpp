@@ -694,7 +694,7 @@ std::ostream & colvarbias_restraint_k_moving::write_traj(std::ostream &os)
 
 
 colvarbias_restraint_harmonic::colvarbias_restraint_harmonic(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key),
+  : colvardeps(colvardeps::object_t::colvarbias), colvarbias(cvmodule_in, key),
     colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_centers(key),
@@ -836,7 +836,7 @@ cvm::real colvarbias_restraint_harmonic::energy_difference(std::string const &co
 
 
 colvarbias_restraint_harmonic_walls::colvarbias_restraint_harmonic_walls(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key),
+  : colvardeps(colvardeps::object_t::colvarbias), colvarbias(cvmodule_in, key),
     colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_k(key),
@@ -1298,7 +1298,7 @@ std::ostream & colvarbias_restraint_harmonic_walls::write_traj(std::ostream &os)
 
 
 colvarbias_restraint_linear::colvarbias_restraint_linear(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key),
+  : colvardeps(colvardeps::object_t::colvarbias), colvarbias(cvmodule_in, key),
     colvarbias_ti(key),
     colvarbias_restraint(key),
     colvarbias_restraint_centers(key),
@@ -1444,7 +1444,7 @@ std::ostream & colvarbias_restraint_linear::write_traj(std::ostream &os)
 
 
 colvarbias_restraint_histogram::colvarbias_restraint_histogram(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key)
+  : colvardeps(colvardeps::object_t::colvarbias), colvarbias(cvmodule_in, key)
 {
   lower_boundary = 0.0;
   upper_boundary = 0.0;

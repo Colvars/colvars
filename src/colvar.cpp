@@ -22,6 +22,7 @@
 #include "colvars_memstream.h"
 #include "colvarcomp_torchann.h"
 #include "colvarcomp_coordnums.h"
+#include "colvar_gpu_support.h"
 
 std::map<std::string, std::function<colvar::cvc *()>> colvar::global_cvc_map =
     std::map<std::string, std::function<colvar::cvc *()>>();
@@ -32,7 +33,7 @@ std::map<std::string, std::string> colvar::global_cvc_desc_map =
 
 
 colvar::colvar(colvarmodule *cvmodule_in)
-  : colvardeps(cvmodule_in)
+  : colvardeps(colvardeps::object_t::colvar, cvmodule_in)
 {
   time_step_factor = cvmodule->proxy->time_step_factor();
 
@@ -85,6 +86,13 @@ int colvar::init(std::string const &conf)
   // Could be a function defined in a different source file, for space?
 
   this->description = "colvar " + this->name;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+#if defined (COLVARS_NVTX_PROFILING)
+  if (cvm::debug() && cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+    nvtxNameCudaStreamA(get_stream(), this->description.c_str());
+  }
+#endif
+#endif
 
   error_code |= init_components(conf);
   if (error_code != COLVARS_OK) {
@@ -1488,8 +1496,10 @@ int colvar::check_cvc_range(int first_cvc, size_t /* num_cvcs */)
 
 int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
 {
+  int error_code = COLVARS_OK;
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
+  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
 
   // calculate the value of the colvar
 
@@ -1503,22 +1513,43 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
        i++) {
     if (!cvcs[i]->is_enabled()) continue;
     cvc_count++;
-    (cvcs[i])->read_data();
-    (cvcs[i])->calc_value();
+    if (use_gpu) {
+      (cvcs[i])->read_data_gpu();
+    } else {
+      (cvcs[i])->read_data();
+    }
+    if (use_gpu && cvcs[i]->has_gpu_implementation()) {
+      (cvcs[i])->calc_value_gpu();
+    } else {
+      (cvcs[i])->calc_value();
+    }
     if (cvm::debug())
       cvmodule->log("Colvar component no. "+cvm::to_str(i+1)+
                 " within colvar \""+this->name+"\" has value "+
                 cvm::to_str((cvcs[i])->value(),
                 cvmodule->cv_width, cvmodule->cv_prec)+".\n");
   }
+
+  if (use_gpu) {
+    // Allow an additional CPU step for updating x from GPU
+    for (i = first_cvc, cvc_count = 0; (i < cvcs.size()) && (cvc_count < cvc_max_count); i++) {
+      if (!cvcs[i]->is_enabled()) continue;
+      cvc_count++;
+      if (cvcs[i]->has_gpu_implementation()) {
+        error_code |= cvcs[i]->calc_value_after_gpu();
+      }
+    }
+  }
+
   cvmodule->decrease_depth();
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
 int colvar::collect_cvc_values()
 {
+  int error_code = COLVARS_OK;
   x.reset();
 
   // combine them appropriately, using either a scripted function or a polynomial
@@ -1586,14 +1617,16 @@ int colvar::collect_cvc_values()
     }
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
 int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
 {
+  int error_code = COLVARS_OK;
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
+  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
 
   if (cvm::debug())
     cvmodule->log("Calculating gradients of colvar \""+this->name+"\".\n");
@@ -1607,27 +1640,77 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
     cvc_count++;
 
     if ((cvcs[i])->is_enabled(f_cvc_gradient)) {
-      (cvcs[i])->calc_gradients();
-      // if requested, propagate (via chain rule) the gradients above
-      // to the atoms used to define the roto-translation
-      (cvcs[i])->calc_fit_gradients();
-      if ((cvcs[i])->is_enabled(f_cvc_debug_gradient))
-        (cvcs[i])->debug_gradients();
+      if (use_gpu && cvcs[i]->has_gpu_implementation()) {
+        error_code |= (cvcs[i])->calc_gradients_gpu();
+      } else {
+        (cvcs[i])->calc_gradients();
+      }
     }
 
     if (cvm::debug())
       cvmodule->log("Done calculating gradients of colvar \""+this->name+"\".\n");
   }
 
+  // Fit gradients of atom groups.
+  // TODO: Ideally, this loop should loop over all atom groups from colvarmodule,
+  // since it is possible to share the same atom group over multiple different
+  // CVCs and different colvar {...}, but this is how Colvars designed...
+  for (i = first_cvc, cvc_count = 0;
+      (i < cvcs.size()) && (cvc_count < cvc_max_count);
+      i++) {
+    if (!cvcs[i]->is_enabled()) continue;
+    cvc_count++;
+    if ((cvcs[i])->is_enabled(f_cvc_gradient)) {
+      if (use_gpu) {
+        error_code |= (cvcs[i])->calc_fit_gradients_gpu();
+      } else {
+        // if requested, propagate (via chain rule) the gradients above
+        // to the atoms used to define the roto-translation
+        (cvcs[i])->calc_fit_gradients();
+      }
+    }
+  }
+
+  if (use_gpu) {
+    for (i = first_cvc, cvc_count = 0;
+        (i < cvcs.size()) && (cvc_count < cvc_max_count);
+        i++) {
+      if (!cvcs[i]->is_enabled()) continue;
+      cvc_count++;
+      if (!(cvcs[i])->is_enabled(f_cvc_gradient)) continue;
+      if (cvcs[i]->has_gpu_implementation()) {
+        // The fit gradients events (if have) should be synchronized in calc_gradients_after_gpu
+        error_code |= cvcs[i]->calc_gradients_after_gpu();
+      }
+    }
+  }
+
+  // Debug gradients
+  for (i = first_cvc, cvc_count = 0;
+      (i < cvcs.size()) && (cvc_count < cvc_max_count);
+      i++) {
+    if (!cvcs[i]->is_enabled()) continue;
+    cvc_count++;
+    if ((cvcs[i])->is_enabled(f_cvc_debug_gradient)) {
+      if (use_gpu && cvcs[i]->has_gpu_implementation()) {
+        error_code |= (cvcs[i])->debug_gradients_gpu();
+      } else {
+        (cvcs[i])->debug_gradients();
+      }
+    }
+  }
+
   cvmodule->decrease_depth();
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
 int colvar::collect_cvc_gradients()
 {
+  int error_code = COLVARS_OK;
   size_t i;
+
   if (is_enabled(f_cv_collect_gradient)) {
     // Collect the atomic gradients inside colvar object
     for (unsigned int a = 0; a < atomic_gradients.size(); a++) {
@@ -1638,20 +1721,22 @@ int colvar::collect_cvc_gradients()
       cvcs[i]->collect_gradients(atom_ids, atomic_gradients);
     }
   }
-  return COLVARS_OK;
+  return error_code;
 }
 
 
 int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
 {
+  int error_code = COLVARS_OK;
   if (!cvmodule->proxy->total_forces_valid()) {
     // This is not a step when valid total forces are available
-    return COLVARS_OK;
+    return error_code;
   }
 
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
   size_t i, cvc_count;
 
+  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
   if (is_enabled(f_cv_total_force_calc)) {
     if (cvm::debug())
       cvmodule->log("Calculating total force of colvar \""+this->name+"\".\n");
@@ -1663,25 +1748,44 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
         i++) {
       if (!cvcs[i]->is_enabled()) continue;
       cvc_count++;
-      (cvcs[i])->calc_force_invgrads();
+      if (use_gpu && cvcs[i]->has_gpu_implementation()) {
+        (cvcs[i])->calc_force_invgrads_gpu();
+      } else {
+        (cvcs[i])->calc_force_invgrads();
+      }
     }
-    cvmodule->decrease_depth();
 
+    const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
+    if (use_gpu) {
+      // Allow an additional "collect" step for the GPU code path. In most cases,
+      // it is just updating the value in (cvcs[i])->total_force() by CPU, since
+      // usually the GPU code runs asynchronously have no access to (cvcs[i])->total_force().
+      for (i = first_cvc, cvc_count = 0;
+        (i < cvcs.size()) && (cvc_count < cvc_max_count);
+        i++) {
+        if (!cvcs[i]->is_enabled()) continue;
+        cvc_count++;
+        if (cvcs[i]->has_gpu_implementation()) {
+          error_code |= cvcs[i]->calc_force_invgrads_after_gpu();
+        }
+      }
+    }
+
+    cvmodule->decrease_depth();
 
     if (cvm::debug())
       cvmodule->log("Done calculating total force of colvar \""+this->name+"\".\n");
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
 int colvar::collect_cvc_total_forces()
 {
+  int error_code = COLVARS_OK;
   if (is_enabled(f_cv_total_force_calc)) {
-
     ft.reset();
-
     if (cvmodule->proxy->total_forces_valid()) {
       for (size_t i = 0; i < cvcs.size();  i++) {
         if (!cvcs[i]->is_enabled()) continue;
@@ -1709,13 +1813,15 @@ int colvar::collect_cvc_total_forces()
    // Report total force value without waiting for calc_colvar_properties()
     ft_reported = ft;
   }
-  return COLVARS_OK;
+  return error_code;
 }
 
 
 int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
 {
+  int error_code = COLVARS_OK;
   size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
+  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
 
   if (is_enabled(f_cv_Jacobian)) {
     cvmodule->increase_depth();
@@ -1725,17 +1831,36 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
          i++) {
       if (!cvcs[i]->is_enabled()) continue;
       cvc_count++;
-      (cvcs[i])->calc_Jacobian_derivative();
+      if (use_gpu && cvcs[i]->has_gpu_implementation()) {
+        cvcs[i]->calc_Jacobian_derivative_gpu();
+      } else {
+        (cvcs[i])->calc_Jacobian_derivative();
+      }
     }
+
+    const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
+    if (use_gpu) {
+      for (i = first_cvc, cvc_count = 0;
+         (i < cvcs.size()) && (cvc_count < cvc_max_count);
+         i++) {
+        if (!cvcs[i]->is_enabled()) continue;
+        cvc_count++;
+        if (cvcs[i]->has_gpu_implementation()) {
+          error_code |= cvcs[i]->calc_Jacobian_derivative_after_gpu();
+        }
+      }
+    }
+
     cvmodule->decrease_depth();
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
 int colvar::collect_cvc_Jacobians()
 {
+  int error_code = COLVARS_OK;
   colvarproxy *proxy = cvmodule->proxy;
   if (is_enabled(f_cv_Jacobian)) {
     fj.reset();
@@ -1752,7 +1877,7 @@ int colvar::collect_cvc_Jacobians()
     fj *= proxy->boltzmann() * proxy->target_temperature();
   }
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
@@ -2072,8 +2197,8 @@ void colvar::communicate_forces()
       if (!cvcs[i]->is_enabled()) continue;
       // cvc force is colvar force times colvar/cvc Jacobian
       // (vector-matrix product)
-      (cvcs[i])->apply_force(colvarvalue(f.as_vector() * func_grads[grad_index++],
-                             cvcs[i]->value().type()));
+      (cvcs[i])->apply_force(colvarvalue(
+        f.as_vector() * func_grads[grad_index++], cvcs[i]->value().type()));
     }
 
 #ifdef LEPTON
@@ -2110,7 +2235,7 @@ void colvar::communicate_forces()
       (cvcs[i])->apply_force(f * (cvcs[i])->sup_coeff *
                              cvm::real((cvcs[i])->sup_np) *
                              (cvm::integer_power((cvcs[i])->value().real_value,
-                                                 (cvcs[i])->sup_np-1)) );
+                                                 (cvcs[i])->sup_np-1)));
     }
 
   } else {

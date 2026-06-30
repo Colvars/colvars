@@ -16,7 +16,6 @@
 #include <cstdio>
 
 #include "colvars_version.h"
-#include "colvar_gpu_calc.h"
 
 #ifndef COLVARS_DEBUG
 #define COLVARS_DEBUG false
@@ -610,6 +609,9 @@ public:
   /// Integrate bias and restraint forces, send colvar forces to atoms
   int update_colvar_forces();
 
+  /// \brief Called from proxy when it completes buffers reallocation
+  int proxy_buffers_reallocated_done();
+
   /// Perform analysis
   int analyze();
 
@@ -970,9 +972,6 @@ public:
 #endif
   using ag_vector_real_t = std::vector<real, allocator_type<real>>;
 
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc> gpu_calc;
-#endif
 };
 
 /// Shorthand for the frequently used type prefix

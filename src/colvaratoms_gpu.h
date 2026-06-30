@@ -78,22 +78,16 @@ struct colvaratoms_gpu_calc_fit_info_t {
 };
 
 /**
- * @brief  A struct for the graph for debug gradients
- */
-struct colvaratoms_gpu_debug_graph_t {
-  /// \brief Flag to describe whether the graph has been initialized
-  bool initialized;
-  /// \brief CUDA Graph of calc_required_properties
-  cudaGraph_t graph_calc_required_properties;
-  /// \brief CUDA Graph execution instance of calc_required_properties
-  cudaGraphExec_t graph_exec_calc_required_properties;
-};
-
-/**
  * @brief The main class for calculating the atom group properties on GPU
  */
 class colvaratoms_gpu {
 public:
+  enum class event_type {
+    read_and_calculate = 0,
+    calc_fit_gradients,
+    apply_force,
+    num_event_types,
+  };
   /**
    * @brief Constructor
    *
@@ -122,6 +116,18 @@ public:
    * @return COLVARS_OK if succeeded
    */
   int destroy_gpu();
+  /**
+   * @brief Reset the CUDA graphs. This is used when proxy_buffers_reallocated() is called.
+   */
+  int reset_gpu_graphs();
+  /**
+   * @brief Read the data of atom group on GPU and calculate the required properties
+   */
+  int read_data_gpu(cvm::atom_group* cpu_atoms);
+  /**
+   * @brief Calculate the fit gradients on GPU
+   */
+  int calc_fit_gradients_gpu(cvm::atom_group* cpu_atoms);
   /**
    * @brief Synchronize atom-wise data fields from the CPU buffers
    *
@@ -210,11 +216,9 @@ public:
    *
    * @param[in] cpu_atoms CPU atom group class
    * @param[in] copy_to_cpu If true, copy the COM, COG and rotation object to CPU buffers
-   * @param[in] stream CUDA stream to be synchronized
    * @return COLVARS_OK if succeeded
    */
-  int after_read_data_sync(
-    cvm::atom_group* cpu_atoms, bool copy_to_cpu, cudaStream_t stream);
+  int after_read_data_sync(cvm::atom_group* cpu_atoms, bool copy_to_cpu);
   /**
    * @brief Clear the CPU force buffer for scalar components before applying forces on GPU
    */
@@ -344,6 +348,16 @@ public:
    */
   colvars_gpu::rotation_derivative_gpu* get_rot_deriv_gpu() { return rot_deriv_gpu; }
   const colvars_gpu::rotation_derivative_gpu* get_rot_deriv_gpu() const { return rot_deriv_gpu; }
+  /**
+   * @brief Getter of a specific CUDA event
+   */
+  const cudaEvent_t& get_event(event_type type) const {
+    return events[static_cast<int>(type)];
+  }
+  /**
+   * @brief Add forces to proxy after being communicated from colvarmodule
+   */
+  int add_force_to_proxy_gpu(cvm::atom_group* cpu_atoms);
 private:
   colvaratoms_gpu_buffer_t gpu_buffers;
   /// \brief Temporary variables for calc_fit_gradients GPU kernel
@@ -351,7 +365,7 @@ private:
   /// \brief Temporary variables for calc_fit_forces (or "calc_fit_gradients" for vector CVCs) GPU kernel
   colvaratoms_gpu_calc_fit_info_t calc_fit_forces_gpu_info;
   /// \brief Separate CUDA graphs for supporting debug gradients
-  colvaratoms_gpu_debug_graph_t debug_graphs;
+  gpu_graph_t graph_debug;
   /// \brief For intercepting the forces applied from the CPU interface
   cvm::real* h_sum_applied_colvar_force;
   /// \brief If the CPU code path use apply_colvar_force(),
@@ -366,6 +380,14 @@ private:
   colvars_gpu::rotation_derivative_gpu* rot_deriv_gpu;
   /// \brief Pointer to the parent colvarmodule
   colvarmodule *cvmodule;
+  /// \brief CUDA graph for reading atoms and compute required properties
+  gpu_graph_t graph_read_compute;
+  /// \brief CUDA graph for calculating fit gradients
+  gpu_graph_t graph_calc_fit_gradients;
+  /// \brief CUDA graph for applying forces
+  gpu_graph_t graph_apply_force;
+  /// \brief CUDA events
+  std::array<cudaEvent_t, static_cast<int>(event_type::num_event_types)> events = {};
 };
 
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
