@@ -94,7 +94,7 @@ cvm::atom_group::simple_atom cvm::atom_group::init_atom_from_proxy(
 }
 
 cvm::atom_group::atom_group():
-  b_dummy(false),
+  colvardeps(colvardeps::object_t::atom_group), b_dummy(false),
   fitting_group(nullptr),
   noforce(false), b_user_defined_fit(false),
   rot_deriv(nullptr), num_atoms(0), index(-1),
@@ -176,6 +176,11 @@ int cvm::atom_group::init()
 
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
   error_code |= gpu_atom_group->init_gpu();
+  if (cvmodule->debug()) {
+#if defined (COLVARS_NVTX_PROFILING)
+    nvtxNameCudaStreamA(get_stream(), name.c_str());
+#endif
+  }
 #elif defined (COLVARS_SYCL)
   // TODO
 #endif
@@ -241,6 +246,14 @@ int cvm::atom_group::init_dependencies() {
   feature_states[f_ag_collect_atom_ids].available = true;
 
   return COLVARS_OK;
+}
+
+int cvm::atom_group::proxy_buffers_reallocated() {
+  int error_code = COLVARS_OK;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  error_code |= get_gpu_atom_group()->reset_gpu_graphs();
+#endif
+  return error_code;
 }
 
 int cvm::atom_group::setup() {

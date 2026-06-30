@@ -20,7 +20,7 @@
 
 
 colvarbias_meta::colvarbias_meta(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key), colvarbias_ti(key)
+  : colvardeps(colvardeps::object_t::colvarbias), colvarbias(cvmodule_in, key), colvarbias_ti(key)
 {
   new_hills_begin = hills.end();
 
