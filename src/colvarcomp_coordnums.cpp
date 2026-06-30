@@ -21,7 +21,6 @@ colvar::coordnum::coordnum()
   x.type(colvarvalue::type_scalar);
   cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(4.0);
   update_cutoffs({r0, r0, r0});
-  b_use_internal_pbc = cvm::main()->proxy->use_internal_pbc();
   // Boundaries will be set later, when the number of pairs is known
 }
 
@@ -47,8 +46,6 @@ void colvar::coordnum::update_cutoffs(cvm::rvector const &r0_vec_i)
 int colvar::coordnum::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
-
-  get_keyval(conf, "useInternalPBC", b_use_internal_pbc, b_use_internal_pbc);
 
   group1 = parse_group(conf, "group1");
 
@@ -133,10 +130,6 @@ int colvar::coordnum::init(std::string const &conf)
   if ( (en <= 0) || (ed <= 0) ) {
     error_code |= cvmodule->error("Error: negative exponent(s) provided.\n",
                              COLVARS_INPUT_ERROR);
-  }
-
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    cvmodule->log("Warning: only minimum-image distances are used by this variable.\n");
   }
 
   if (function_type() != "groupCoord") {
@@ -227,19 +220,12 @@ void inline colvar::coordnum::main_loop()
           ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
           !(flags & ef_use_pairlist);
 
-      cvm::real const partial = within ?
-        (b_use_internal_pbc ?
-         compute_pair_coordnum<flags | ef_use_internal_pbc>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                                            x1, y1, z1, x2, y2, z2,
-                                                            gx1, gy1, gz1, gx2, gy2, gz2,
-                                                            tolerance, tolerance_l2_max,
-                                                            cvmodule) :
-         compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                      x1, y1, z1, x2, y2, z2,
-                                      gx1, gy1, gz1, gx2, gy2, gz2,
-                                      tolerance, tolerance_l2_max,
-                                      cvmodule) ) :
-        0.0;
+      cvm::real const partial =
+          within ? compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                                x1, y1, z1, x2, y2, z2,
+                                                gx1, gy1, gz1, gx2, gy2, gz2,
+                                                tolerance, tolerance_l2_max, boundary_conditions)
+                 : 0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
         *pairlist_elem = partial > 0.0 ? true : false;
@@ -447,7 +433,7 @@ void colvar::h_bond::calc_value()
                                                         atom_groups[0]->grad_y(1),
                                                         atom_groups[0]->grad_z(1),
                                                         0.0, 1.0e20,
-                                                        cvmodule);
+                                                        boundary_conditions);
   // Skip the gradient
 }
 
@@ -479,7 +465,7 @@ void colvar::h_bond::calc_gradients()
                                          atom_groups[0]->grad_y(1),
                                          atom_groups[0]->grad_z(1),
                                          0.0, 1.0e20,
-                                         cvmodule);
+                                         boundary_conditions);
 }
 
 
@@ -513,22 +499,15 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
       cvm::real &gz2 = group1->grad_z(j);
 
       bool const within =
-        ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
-        !(flags & ef_use_pairlist);
+          ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
+          !(flags & ef_use_pairlist);
 
-      cvm::real const partial = within ?
-        (b_use_internal_pbc ?
-         compute_pair_coordnum<flags | ef_use_internal_pbc>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                                            x1, y1, z1, x2, y2, z2,
-                                                            gx1, gy1, gz1, gx2, gy2, gz2,
-                                                            tolerance, tolerance_l2_max,
-                                                            cvmodule) :
-         compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                      x1, y1, z1, x2, y2, z2,
-                                      gx1, gy1, gz1, gx2, gy2, gz2,
-                                      tolerance, tolerance_l2_max,
-                                      cvmodule) ) :
-        0.0;
+      cvm::real const partial =
+          within ? compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                                x1, y1, z1, x2, y2, z2,
+                                                gx1, gy1, gz1, gx2, gy2, gz2,
+                                                tolerance, tolerance_l2_max, boundary_conditions)
+                 : 0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
         *pairlist_elem = partial > 0.0 ? true : false;
