@@ -1,0 +1,46 @@
+structure               triclinic_waterbox.psf
+coordinates             triclinic_waterbox.pdb
+bincoordinates          test.coor
+temperature             300.0
+
+cellBasisVector1     35 0 0
+cellBasisVector2     -3.922 44.8288 0
+cellBasisVector3     17.101 10.2117 45.8615
+cellOrigin           0.0 0.0 0.0
+
+# FORCE FIELD
+paraTypeCharmm          on
+parameters              toppar_water_ions_namd.str
+
+# VDW PARAMETERS
+exclude                 scaled1-4
+1-4scaling          1.0
+switching               on
+switchdist              10.0
+cutoff                  12.0
+pairlistdist            14.0
+
+# SHAKE
+rigidBonds              all
+rigidtolerance          10e-9
+rigiditerations         100
+
+# PME
+#PME                     yes
+#PMEGridSpacing          1.0
+#PMETolerance            10e-6
+#PMEInterpOrder          4
+
+outputEnergies          1
+outputname              test.restart
+
+seed 1
+
+timestep                1
+
+colvars             on
+colvarsConfig       test.in
+colvarsInput        test.colvars.state
+
+firsttimestep       20
+run 20
