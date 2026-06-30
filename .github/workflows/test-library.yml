@@ -217,6 +217,55 @@ jobs:
           path: warnings_analyzer.log
 
 
+  build-linux-x86_64-clang-tidy:
+    name: Linux x86_64 (Clang tidy)
+    runs-on: ubuntu-latest
+    needs: basicchecks
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout OpenMM (for Lepton library)
+        uses: actions/checkout@v4
+        with:
+          repository: 'openmm/openmm'
+          ref: 'master'
+          path: 'openmm-source'
+
+      - name: Install build dependencies, clang-tidy and bash for library
+        shell: bash
+        run: |
+          sudo apt -y install bash ccache tcl8.6-dev clang-20 clang-tidy-20
+
+      - name: Configure and build the library (but do not run tests)
+        env:
+          CMAKE_BUILD_DIR: build
+          CXX: clang++-20
+          CC: clang-20
+        run: cmake -DBUILD_TARGETS=OFF -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
+
+      - name: Run "run_clang_tidy.sh" in the "build" folder
+        env:
+          CLANG_TIDY: clang-tidy-20
+        working-directory: build
+        run: bash ${{ github.workspace }}/devel-tools/run_clang_tidy.sh &> clang-tidy.log
+
+      - name: Print clang-tidy errors to screen
+        if: failure()
+        working-directory: build
+        shell: bash
+        run: |
+          cat clang-tidy.log >&2
+          exit 1
+
+      - name: Archive warnings artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: clang_tidy_log
+          path: build/clang-tidy.log
+
+
   address-sanitizer:
     name: Linux x86_64 (Clang address sanitizer)
     runs-on: ubuntu-latest

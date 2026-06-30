@@ -1141,9 +1141,9 @@ int colvar::parse_analysis(std::string const &conf)
 
 int colvar::init_dependencies() {
   size_t i;
-  if (features().size() == 0) {
+  if (colvar::features().size() == 0) {
     for (i = 0; i < f_cv_ntot; i++) {
-      modify_features().push_back(new feature);
+      colvar::modify_features().push_back(new feature);
     }
 
     init_feature(f_cv_active, "active", f_type_dynamic);
