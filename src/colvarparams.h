@@ -14,6 +14,7 @@
 
 /// \file colvarparams.h Functions to handle scalar parameters used in objects
 
+class colvarmodule;
 
 class colvarparams {
 
@@ -40,10 +41,12 @@ class colvarparams {
   /// Set the named parameter to the given value
   virtual int set_param(std::string const &param_name, void const *new_value);
 
- protected:
+protected:
+
+  colvarmodule *cvmodule = nullptr;
 
   /// Default constructor
-  colvarparams();
+  colvarparams(colvarmodule *cvmodule_in);
 
   /// Default destructor
   virtual ~colvarparams();

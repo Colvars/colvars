@@ -133,7 +133,7 @@ int colvarbias::init(std::string const &conf)
     std::string biasing_force_scaling_factors_in_filename;
     get_keyval(conf, "scaledBiasingForceFactorsGrid",
                biasing_force_scaling_factors_in_filename, std::string());
-    biasing_force_scaling_factors = new colvar_grid_scalar(colvars);
+    biasing_force_scaling_factors = new colvar_grid_scalar(cvmodule, colvars);
     error_code |= biasing_force_scaling_factors->read_multicol(biasing_force_scaling_factors_in_filename,
                                                                "grid file");
     biasing_force_scaling_factors_bin.assign(num_variables(), 0);
@@ -278,8 +278,8 @@ int colvarbias::reset()
 }
 
 
-colvarbias::colvarbias()
-  : has_data(false)
+colvarbias::colvarbias(colvarmodule* cvmodule_in)
+  : colvardeps(cvmodule_in), has_data(false)
 {}
 
 
@@ -810,7 +810,7 @@ std::ostream & colvarbias::write_traj(std::ostream &os)
 }
 
 
-colvarbias_ti::colvarbias_ti(char const *key)
+colvarbias_ti::colvarbias_ti(colvarmodule* cvmodule_in, char const *key): colvardeps(cvmodule_in), colvarbias(cvmodule_in)
 {
   colvarproxy *proxy = cvmodule->proxy;
   provide(f_cvb_calc_ti_samples);
@@ -891,8 +891,8 @@ int colvarbias_ti::init_grids()
         ti_system_forces[icv].is_derivative();
         ti_system_forces[icv].reset();
       }
-      ti_count.reset(new colvar_grid_count(colvars, grid_conf));
-      ti_avg_forces.reset(new colvar_grid_gradient(colvars, ti_count));
+      ti_count.reset(new colvar_grid_count(cvmodule, colvars, grid_conf));
+      ti_avg_forces.reset(new colvar_grid_gradient(cvmodule, colvars, ti_count));
     }
   }
 

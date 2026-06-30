@@ -9,6 +9,7 @@
 namespace colvars_gpu {
 
 int build_overlapping_matrix(
+  colvarmodule* cvmodule,
   const cvm::real* pos1_x,
   const cvm::real* pos1_y,
   const cvm::real* pos1_z,
@@ -25,6 +26,7 @@ int build_overlapping_matrix(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int jacobi_4x4(
+  colvarmodule* cvmodule,
   double* S_eigvec,
   double* S_eigval,
   int* max_reached,

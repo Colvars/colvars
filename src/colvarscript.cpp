@@ -42,7 +42,7 @@ colvarscript::colvarscript(colvarproxy *p, colvarmodule *m)
   // TODO put this in backend functions so we don't have to delete
   Tcl_Interp *const interp = proxy()->get_tcl_interp();
   if (interp == NULL) {
-    cvm::error_static("Error: trying to construct colvarscript without a Tcl interpreter.\n");
+    cvm::error_static(cvmodule, "Error: trying to construct colvarscript without a Tcl interpreter.\n");
     return;
   }
   bool deleted = (Tcl_DeleteCommand(interp, "cv") == TCL_OK);
@@ -133,7 +133,7 @@ int colvarscript::init_command(colvarscript::command const &comm,
     std::string line;
     for (int iarg = 0; iarg < n_args_max; iarg++) {
       if (! std::getline(is, line)) {
-        return cvm::error_static("Error: could not initialize help string for scripting "
+        return cvm::error_static(cvmodule, "Error: could not initialize help string for scripting "
                           "command \""+std::string(name)+"\".\n", COLVARS_BUG_ERROR);
       }
       cmd_arghelp[comm].push_back(line);
@@ -178,7 +178,7 @@ std::string colvarscript::get_cmd_prefix(colvarscript::Object_type t)
   case use_bias:
     return std::string("bias_"); break;
   default:
-    cvm::error_static("Error: undefined colvarscript object type.", COLVARS_BUG_ERROR);
+    cvm::error_static(cvmodule, "Error: undefined colvarscript object type.", COLVARS_BUG_ERROR);
     return std::string("");
   }
 }
@@ -191,7 +191,7 @@ char const *colvarscript::get_command_help(char const *cmd)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_help[c].c_str();
   }
-  cvm::error_static("Error: command "+std::string(cmd)+
+  cvm::error_static(cvmodule, "Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
@@ -203,7 +203,7 @@ char const *colvarscript::get_command_rethelp(char const *cmd)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_rethelp[c].c_str();
   }
-  cvm::error_static("Error: command "+std::string(cmd)+
+  cvm::error_static(cvmodule, "Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
@@ -215,7 +215,7 @@ char const *colvarscript::get_command_arghelp(char const *cmd, int i)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_arghelp[c][i].c_str();
   }
-  cvm::error_static("Error: command "+std::string(cmd)+
+  cvm::error_static(cvmodule, "Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
@@ -227,7 +227,7 @@ int colvarscript::get_command_n_args_min(char const *cmd)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_n_args_min[c];
   }
-  cvm::error_static("Error: command "+std::string(cmd)+
+  cvm::error_static(cvmodule, "Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return -1;
 }
@@ -239,7 +239,7 @@ int colvarscript::get_command_n_args_max(char const *cmd)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_n_args_max[c];
   }
-  cvm::error_static("Error: command "+std::string(cmd)+
+  cvm::error_static(cvmodule, "Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return -1;
 }
@@ -251,7 +251,7 @@ char const *colvarscript::get_command_full_help(char const *cmd)
     colvarscript::command const c = cmd_str_map[std::string(cmd)];
     return cmd_full_help[c].c_str();
   }
-  cvm::error_static("Error: command "+std::string(cmd)+
+  cvm::error_static(cvmodule, "Error: command "+std::string(cmd)+
              " is not implemented.\n", COLVARS_INPUT_ERROR);
   return NULL;
 }
@@ -482,7 +482,7 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
     if (c == '\"') {
       i++;
       if (i >= str.length()) {
-        cvm::error_static("Error: could not split the following string:\n"+
+        cvm::error_static(cvmodule, "Error: could not split the following string:\n"+
                    str+"\n", COLVARS_INPUT_ERROR);
         break;
       }
@@ -490,7 +490,7 @@ std::vector<std::string> colvarscript::obj_to_str_vector(unsigned char *obj)
       while (str[i] != '\"') {
         new_result.back().append(1, str[i]);
         if (i >= str.length()) {
-          cvm::error_static("Error: could not split the following string:\n"+
+          cvm::error_static(cvmodule, "Error: could not split the following string:\n"+
                      str+"\n", COLVARS_INPUT_ERROR);
           break;
         } else {
@@ -581,7 +581,7 @@ int colvarscript::proc_features(colvardeps *obj,
 
 int colvarscript::unsupported_op()
 {
-  return cvm::error_static("Error: unsupported script operation.\n",
+  return cvm::error_static(cvmodule, "Error: unsupported script operation.\n",
                     COLVARS_NOT_IMPLEMENTED);
 }
 
@@ -616,10 +616,12 @@ int colvarscript::clear_str_result()
 
 
 extern "C"
-int run_colvarscript_command(colvarscript *script, int objc, unsigned char *const objv[])
+int run_colvarscript_command(void* proxy_in, int objc, unsigned char *const objv[])
 {
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  colvarscript* script = proxy->script;
   if (!script) {
-    cvm::error_static("Called run_colvarscript_command without a script object.\n",
+    cvm::error_static(proxy->cvmodule, "Called run_colvarscript_command without a script object.\n",
                COLVARS_BUG_ERROR);
     return -1;
   }
@@ -629,11 +631,12 @@ int run_colvarscript_command(colvarscript *script, int objc, unsigned char *cons
 
 
 extern "C"
-const char * get_colvarscript_result()
+const char * get_colvarscript_result(void* proxy_in)
 {
-  colvarscript *script = colvarscript_obj();
+  colvarproxy* proxy = (colvarproxy*)proxy_in;
+  colvarscript* script = proxy->script;
   if (!script) {
-    cvm::error_static("Called get_colvarscript_result without a script object.\n");
+    cvm::error_static(proxy->cvmodule, "Called get_colvarscript_result without a script object.\n");
     return NULL;
   }
   return script->str_result().c_str();

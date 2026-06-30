@@ -8,26 +8,17 @@
 // Colvars repository at GitHub.
 
 #include "colvarmodule.h"
-#include "colvarproxy_volmaps.h"
+#include "colvarproxy.h"
 #include "colvarmodule_utils.h"
 
 
-colvarproxy_volmaps::colvarproxy_volmaps()
-{
-  volmaps_rms_applied_force_ = volmaps_max_applied_force_ = 0.0;
-}
-
-
-colvarproxy_volmaps::~colvarproxy_volmaps() {}
-
-
-int colvarproxy_volmaps::check_volmaps_available()
+int colvarproxy::check_volmaps_available()
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_volmaps::reset()
+int colvarproxy::reset_volmaps()
 {
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
     clear_volmap(i);
@@ -40,7 +31,7 @@ int colvarproxy_volmaps::reset()
 }
 
 
-int colvarproxy_volmaps::add_volmap_slot(int volmap_id)
+int colvarproxy::add_volmap_slot(int volmap_id)
 {
   volmaps_ids.push_back(volmap_id);
   volmaps_refcount.push_back(1);
@@ -50,48 +41,48 @@ int colvarproxy_volmaps::add_volmap_slot(int volmap_id)
 }
 
 
-int colvarproxy_volmaps::check_volmap_by_id(int /* volmap_id */)
+int colvarproxy::check_volmap_by_id(int /* volmap_id */)
 {
-  return cvm::error_static("Error: selecting volumetric maps is not available.\n",
+  return cvm::error_static(cvmodule, "Error: selecting volumetric maps is not available.\n",
                     COLVARS_NOT_IMPLEMENTED);
 }
 
 
-int colvarproxy_volmaps::check_volmap_by_name(const char * /* volmap_name */)
+int colvarproxy::check_volmap_by_name(const char * /* volmap_name */)
 {
-  return cvm::error_static("Error: selecting volumetric maps by name is not "
+  return cvm::error_static(cvmodule, "Error: selecting volumetric maps by name is not "
                     "available.\n", COLVARS_NOT_IMPLEMENTED);
 }
 
 
-int colvarproxy_volmaps::init_volmap_by_name(char const * /* volmap_name */)
+int colvarproxy::init_volmap_by_name(char const * /* volmap_name */)
 {
   return -1;
 }
 
 
-int colvarproxy_volmaps::init_volmap_by_id(int /* volmap_id */)
+int colvarproxy::init_volmap_by_id(int /* volmap_id */)
 {
   return -1;
 }
 
 
-int colvarproxy_volmaps::init_volmap_by_name(std::string const &volmap_name)
+int colvarproxy::init_volmap_by_name(std::string const &volmap_name)
 {
   return init_volmap_by_name(volmap_name.c_str());
 }
 
 
-int colvarproxy_volmaps::check_volmap_by_name(std::string const &volmap_name)
+int colvarproxy::check_volmap_by_name(std::string const &volmap_name)
 {
   return check_volmap_by_name(volmap_name.c_str());
 }
 
 
-void colvarproxy_volmaps::clear_volmap(int index)
+void colvarproxy::clear_volmap(int index)
 {
   if (((size_t) index) >= volmaps_ids.size()) {
-    cvm::error_static("Error: trying to unrequest a volumetric map that was not "
+    cvm::error_static(cvmodule, "Error: trying to unrequest a volumetric map that was not "
                "previously requested.\n", COLVARS_INPUT_ERROR);
   }
 
@@ -101,14 +92,14 @@ void colvarproxy_volmaps::clear_volmap(int index)
 }
 
 
-int colvarproxy_volmaps::get_volmap_id_from_name(char const *volmap_name)
+int colvarproxy::get_volmap_id_from_name(char const *volmap_name)
 {
   // Raise error
-  colvarproxy_volmaps::check_volmap_by_name(volmap_name);
+  check_volmap_by_name(volmap_name);
   return -1;
 }
 
-int colvarproxy_volmaps::compute_volmap(int /* flags */,
+int colvarproxy::compute_volmap(int /* flags */,
                                         int /* volmap_id */,
                                         cvm::atom_group* ag,
                                         cvm::real * /* value */,
@@ -118,14 +109,14 @@ int colvarproxy_volmaps::compute_volmap(int /* flags */,
 }
 
 
-void colvarproxy_volmaps::compute_rms_volmaps_applied_force()
+void colvarproxy::compute_rms_volmaps_applied_force()
 {
   volmaps_rms_applied_force_ =
     compute_norm2_stats<decltype(volmaps_new_colvar_forces), 0, false>(volmaps_new_colvar_forces);
 }
 
 
-void colvarproxy_volmaps::compute_max_volmaps_applied_force()
+void colvarproxy::compute_max_volmaps_applied_force()
 {
   volmaps_max_applied_force_ =
     compute_norm2_stats<decltype(volmaps_new_colvar_forces), 1, false>(volmaps_new_colvar_forces);

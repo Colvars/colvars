@@ -253,7 +253,7 @@ int colvarproxy_vmd::update_input()
     } else {
       boundaries_type = boundaries_pbc_triclinic;
     }
-    colvarproxy_system::update_pbc_lattice();
+    colvarproxy::update_pbc_lattice();
   } else {
     boundaries_type = boundaries_unsupported;
   }

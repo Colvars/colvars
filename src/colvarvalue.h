@@ -214,36 +214,42 @@ public:
   // Cast to scalar
   inline operator cvm::real() const
   {
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
     if (value_type != type_scalar) {
-      cvm::error_static("Error: trying to use a variable of type \""+
+      cvm::error_static(nullptr, "Error: trying to use a variable of type \""+
                  type_desc(value_type)+"\" as one of type \""+
                  type_desc(type_scalar)+"\".\n");
     }
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     return real_value;
   }
 
   // Cast to 3-vector
   inline operator cvm::rvector() const
   {
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
     if ((value_type != type_3vector) &&
         (value_type != type_unit3vector) &&
         (value_type != type_unit3vectorderiv)) {
-      cvm::error_static("Error: trying to use a variable of type \""+
+      cvm::error_static(nullptr, "Error: trying to use a variable of type \""+
                  type_desc(value_type)+"\" as one of type \""+
                  type_desc(type_3vector)+"\".\n");
     }
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     return rvector_value;
   }
 
   // Cast to quaternion
   inline operator cvm::quaternion() const
   {
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
     if ((value_type != type_quaternion) &&
         (value_type != type_quaternionderiv)) {
-      cvm::error_static("Error: trying to use a variable of type \""+
+      cvm::error_static(nullptr, "Error: trying to use a variable of type \""+
                  type_desc(value_type)+"\" as one of type \""+
                  type_desc(type_quaternion)+"\".\n");
     }
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     return quaternion_value;
   }
 
@@ -277,7 +283,7 @@ public:
   void set_elem(int const i_begin, int const i_end, colvarvalue const &x);
 
   /// Make each element a random number in N(0,1)
-  void set_random();
+  void set_random(colvarmodule* cvmodule);
 
   /// Make each element equal to the given argument
   void set_ones(cvm::real assigned_value = 1.0);
@@ -396,8 +402,10 @@ inline cvm::real colvarvalue::operator [] (int const i) const
   switch (value_type) {
   case colvarvalue::type_notset:
   default:
-    cvm::error_static("Error: trying to access a colvar value "
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: trying to access a colvar value "
                "that is not initialized.\n", COLVARS_BUG_ERROR);
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     return 0.0; break;
   case colvarvalue::type_scalar:
     return real_value; break;
@@ -419,8 +427,10 @@ inline cvm::real & colvarvalue::operator [] (int const i)
   switch (value_type) {
   case colvarvalue::type_notset:
   default:
-    cvm::error_static("Error: trying to access a colvar value "
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+    cvm::error_static(nullptr, "Error: trying to access a colvar value "
                "that is not initialized.\n", COLVARS_BUG_ERROR);
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     return real_value; break;
   case colvarvalue::type_scalar:
     return real_value; break;
@@ -455,24 +465,28 @@ inline int colvarvalue::check_types(colvarvalue const &x1,
          (x1.type() == type_quaternionderiv))) {
       return COLVARS_OK;
     } else {
-      cvm::error_static("Trying to perform an operation between two colvar "
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+      cvm::error_static(nullptr, "Trying to perform an operation between two colvar "
                  "values with different types, \""+
                  colvarvalue::type_desc(x1.type())+
                  "\" and \""+
                  colvarvalue::type_desc(x2.type())+
                  "\".\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
       return COLVARS_ERROR;
     }
   }
 
   if (x1.type() == type_vector) {
     if (x1.vector1d_value.size() != x2.vector1d_value.size()) {
-      cvm::error_static("Trying to perform an operation between two vector colvar "
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+      cvm::error_static(nullptr, "Trying to perform an operation between two vector colvar "
                  "values with different sizes, "+
                  cvm::to_str(x1.vector1d_value.size())+
                  " and "+
                  cvm::to_str(x2.vector1d_value.size())+
                  ".\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
       return COLVARS_ERROR;
     }
   }
@@ -499,9 +513,11 @@ inline int colvarvalue::check_types_assign(colvarvalue::Type const &vt1,
       return COLVARS_OK;
     } else {
       if (vt1 != vt2) {
-        cvm::error_static("Trying to assign a colvar value with type \""+
+#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
+        cvm::error_static(nullptr, "Trying to assign a colvar value with type \""+
                    type_desc(vt2)+"\" to one with type \""+
                    type_desc(vt1)+"\".\n");
+#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
         return COLVARS_ERROR;
       }
     }

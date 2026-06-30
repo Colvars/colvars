@@ -20,22 +20,11 @@
 
 #include <algorithm>
 
-colvarproxy_atoms::colvarproxy_atoms()
-{
-  atoms_rms_applied_force_ = atoms_max_applied_force_ = 0.0;
-  atoms_max_applied_force_id_ = -1;
-  modified_atom_list_ = false;
-  updated_masses_ = updated_charges_ = false;
-}
+#ifdef COLVARS_TCL
+#include <tcl.h>
+#endif
 
-
-colvarproxy_atoms::~colvarproxy_atoms()
-{
-  reset();
-}
-
-
-int colvarproxy_atoms::reset()
+int colvarproxy::reset_atoms()
 {
   atoms_ids.clear();
   atoms_refcount.clear();
@@ -48,7 +37,7 @@ int colvarproxy_atoms::reset()
 }
 
 
-int colvarproxy_atoms::add_atom_slot(int atom_id)
+int colvarproxy::add_atom_slot(int atom_id)
 {
   atoms_ids.push_back(atom_id);
   atoms_refcount.push_back(1);
@@ -62,47 +51,47 @@ int colvarproxy_atoms::add_atom_slot(int atom_id)
 }
 
 
-int colvarproxy_atoms::init_atom(int /* atom_number */)
+int colvarproxy::init_atom(int /* atom_number */)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_atoms::check_atom_id(int /* atom_number */)
+int colvarproxy::check_atom_id(int /* atom_number */)
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_atoms::check_atom_name_selections_available()
+int colvarproxy::check_atom_name_selections_available()
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_atoms::init_atom(cvm::residue_id const & /* residue */,
+int colvarproxy::init_atom(cvm::residue_id const & /* residue */,
                                  std::string const     & /* atom_name */,
                                  std::string const     & /* segment_id */)
 {
-  cvm::error_static("Error: initializing an atom by name and residue number is currently not supported.\n",
+  cvm::error_static(cvmodule, "Error: initializing an atom by name and residue number is currently not supported.\n",
              COLVARS_NOT_IMPLEMENTED);
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_atoms::check_atom_id(cvm::residue_id const &residue,
+int colvarproxy::check_atom_id(cvm::residue_id const &residue,
                                      std::string const     &atom_name,
                                      std::string const     &segment_id)
 {
-  colvarproxy_atoms::init_atom(residue, atom_name, segment_id);
+  init_atom(residue, atom_name, segment_id);
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-void colvarproxy_atoms::clear_atom(int index)
+void colvarproxy::clear_atom(int index)
 {
   if (((size_t) index) >= atoms_ids.size()) {
-    cvm::error_static("Error: trying to disable an atom that was not previously requested.\n",
+    cvm::error_static(cvmodule, "Error: trying to disable an atom that was not previously requested.\n",
                COLVARS_INPUT_ERROR);
   }
   if (atoms_refcount[index] > 0) {
@@ -111,7 +100,7 @@ void colvarproxy_atoms::clear_atom(int index)
 }
 
 
-size_t colvarproxy_atoms::get_num_active_atoms() const
+size_t colvarproxy::get_num_active_atoms() const
 {
   size_t result = 0;
   for (size_t i = 0; i < atoms_refcount.size(); i++) {
@@ -121,14 +110,14 @@ size_t colvarproxy_atoms::get_num_active_atoms() const
 }
 
 
-void colvarproxy_atoms::compute_rms_atoms_applied_force()
+void colvarproxy::compute_rms_atoms_applied_force()
 {
   atoms_rms_applied_force_ =
     compute_norm2_stats<decltype(atoms_new_colvar_forces), 0, false>(atoms_new_colvar_forces);
 }
 
 
-void colvarproxy_atoms::compute_max_atoms_applied_force()
+void colvarproxy::compute_max_atoms_applied_force()
 {
   int minmax_index = -1;
   size_t const n_atoms_ids = atoms_ids.size();
@@ -149,20 +138,7 @@ void colvarproxy_atoms::compute_max_atoms_applied_force()
 }
 
 
-
-colvarproxy_atom_groups::colvarproxy_atom_groups()
-{
-  atom_groups_rms_applied_force_ = atom_groups_max_applied_force_ = 0.0;
-}
-
-
-colvarproxy_atom_groups::~colvarproxy_atom_groups()
-{
-  reset();
-}
-
-
-int colvarproxy_atom_groups::reset()
+int colvarproxy::reset_atom_groups()
 {
   atom_groups_ids.clear();
   atom_groups_refcount.clear();
@@ -175,7 +151,7 @@ int colvarproxy_atom_groups::reset()
 }
 
 
-int colvarproxy_atom_groups::add_atom_group_slot(int atom_group_id)
+int colvarproxy::add_atom_group_slot(int atom_group_id)
 {
   atom_groups_ids.push_back(atom_group_id);
   atom_groups_refcount.push_back(1);
@@ -188,25 +164,25 @@ int colvarproxy_atom_groups::add_atom_group_slot(int atom_group_id)
 }
 
 
-int colvarproxy_atom_groups::scalable_group_coms()
+int colvarproxy::scalable_group_coms()
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_atom_groups::init_atom_group(std::vector<int> const & /* atoms_ids */)
+int colvarproxy::init_atom_group(std::vector<int> const & /* atoms_ids */)
 {
-  cvm::error_static("Error: initializing a group outside of the Colvars module "
+  cvm::error_static(cvmodule, "Error: initializing a group outside of the Colvars module "
              "is currently not supported.\n",
              COLVARS_NOT_IMPLEMENTED);
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-void colvarproxy_atom_groups::clear_atom_group(int index)
+void colvarproxy::clear_atom_group(int index)
 {
   if (((size_t) index) >= atom_groups_ids.size()) {
-    cvm::error_static("Error: trying to disable an atom group "
+    cvm::error_static(cvmodule, "Error: trying to disable an atom group "
                "that was not previously requested.\n",
                COLVARS_INPUT_ERROR);
   }
@@ -216,7 +192,7 @@ void colvarproxy_atom_groups::clear_atom_group(int index)
 }
 
 
-size_t colvarproxy_atom_groups::get_num_active_atom_groups() const
+size_t colvarproxy::get_num_active_atom_groups() const
 {
   size_t result = 0;
   for (size_t i = 0; i < atom_groups_refcount.size(); i++) {
@@ -226,14 +202,14 @@ size_t colvarproxy_atom_groups::get_num_active_atom_groups() const
 }
 
 
-void colvarproxy_atom_groups::compute_rms_atom_groups_applied_force()
+void colvarproxy::compute_rms_atom_groups_applied_force()
 {
   atom_groups_rms_applied_force_ =
     compute_norm2_stats<decltype(atom_groups_new_colvar_forces), 0, false>(atom_groups_new_colvar_forces);
 }
 
 
-void colvarproxy_atom_groups::compute_max_atom_groups_applied_force()
+void colvarproxy::compute_max_atom_groups_applied_force()
 {
   atom_groups_max_applied_force_ =
     compute_norm2_stats<decltype(atom_groups_new_colvar_forces), 1, false>(atom_groups_new_colvar_forces);
@@ -241,51 +217,26 @@ void colvarproxy_atom_groups::compute_max_atom_groups_applied_force()
 
 
 
-colvarproxy_smp::colvarproxy_smp()
-{
-  smp_mode = smp_mode_t::none; // May be disabled by user option
-  omp_lock_state = NULL;
-#if defined(_OPENMP)
-  smp_mode = smp_mode_t::cvcs;
-  if (omp_get_thread_num() == 0) {
-    omp_lock_state = new omp_lock_t;
-    omp_init_lock(omp_lock_state);
-  }
-#endif
-}
-
-
-colvarproxy_smp::~colvarproxy_smp()
-{
-#if defined(_OPENMP)
-  if (omp_get_thread_num() == 0) {
-    if (omp_lock_state) {
-      delete omp_lock_state;
-    }
-  }
-#endif
-}
-
-colvarproxy::smp_mode_t colvarproxy_smp::get_smp_mode() const {
+colvarproxy::smp_mode_t colvarproxy::get_smp_mode() const {
   return smp_mode;
 }
 
-std::vector<colvarproxy_smp::smp_mode_t> colvarproxy_smp::get_available_smp_modes() const {
-  std::vector<colvarproxy_smp::smp_mode_t> modes;
+std::vector<colvarproxy::smp_mode_t> colvarproxy::get_available_smp_modes() const {
+  std::vector<colvarproxy::smp_mode_t> modes;
 #if defined(_OPENMP)
-  modes.push_back(colvarproxy_smp::smp_mode_t::cvcs);
-  modes.push_back(colvarproxy_smp::smp_mode_t::inner_loop);
+  modes.push_back(colvarproxy::smp_mode_t::cvcs);
+  modes.push_back(colvarproxy::smp_mode_t::inner_loop);
 #endif
-  modes.push_back(colvarproxy_smp::smp_mode_t::none);
+  modes.push_back(colvarproxy::smp_mode_t::none);
   return modes;
 }
 
-colvarproxy_smp::smp_mode_t colvarproxy_smp::get_preferred_smp_mode() const {
+colvarproxy::smp_mode_t colvarproxy::get_preferred_smp_mode() const {
   return get_available_smp_modes()[0];
 }
 
-int colvarproxy_smp::set_smp_mode(smp_mode_t mode) {
-  std::vector<colvarproxy_smp::smp_mode_t> available_modes = get_available_smp_modes();
+int colvarproxy::set_smp_mode(smp_mode_t mode) {
+  std::vector<colvarproxy::smp_mode_t> available_modes = get_available_smp_modes();
   auto it = std::find(available_modes.begin(), available_modes.end(), mode);
   if (it != available_modes.end()) {
     smp_mode = *it;
@@ -296,18 +247,18 @@ int colvarproxy_smp::set_smp_mode(smp_mode_t mode) {
 }
 
 
-int colvarproxy_smp::smp_loop(int n_items, std::function<int (int)> const &worker)
+int colvarproxy::smp_loop(int n_items, std::function<int (int)> const &worker)
 {
   int error_code = COLVARS_OK;
 #if defined(_OPENMP)
-  cvm::main()->increase_depth();
+  if (cvmodule) cvmodule->increase_depth();
 #pragma omp parallel for
   for (int i = 0; i < n_items; i++) {
     int const retcode = worker(i);
 #pragma omp atomic
     error_code |= retcode;
   }
-  cvm::main()->decrease_depth();
+  if (cvmodule) cvmodule->decrease_depth();
 #else
   error_code |= COLVARS_NOT_IMPLEMENTED;
 #endif
@@ -315,57 +266,56 @@ int colvarproxy_smp::smp_loop(int n_items, std::function<int (int)> const &worke
 }
 
 
-int colvarproxy_smp::smp_biases_loop()
+int colvarproxy::smp_biases_loop()
 {
+  if (!cvmodule) return COLVARS_BUG_ERROR;
 #if defined(_OPENMP)
 #pragma omp parallel
   {
 #pragma omp for
-    for (int i = 0; i < static_cast<int>(cvm::main()->biases_active()->size()); i++) {
-      colvarbias *b = (*(cvm::main()->biases_active()))[i];
-      if (cvm::main()->debug()) {
-        cvm::main()->log("Calculating bias \""+b->name+"\" on thread "+
+    for (int i = 0; i < static_cast<int>(cvmodule->biases_active()->size()); i++) {
+      colvarbias *b = (*(cvmodule->biases_active()))[i];
+      if (cvmodule->debug()) {
+        cvmodule->log("Calculating bias \""+b->name+"\" on thread "+
                  cvm::to_str(smp_thread_id())+"\n");
       }
       b->update();
     }
   }
-  return cvm::main()->get_error();
+  return cvmodule->get_error();
 #else
   return COLVARS_NOT_IMPLEMENTED;
 #endif
 }
 
 
-int colvarproxy_smp::smp_biases_script_loop()
+int colvarproxy::smp_biases_script_loop()
 {
 #if defined(_OPENMP)
+  if (!cvmodule) return COLVARS_BUG_ERROR;
 #pragma omp parallel
   {
 #pragma omp single nowait
     {
-      cvm::main()->calc_scripted_forces();
+      cvmodule->calc_scripted_forces();
     }
 #pragma omp for
-    for (int i = 0; i < static_cast<int>(cvm::main()->biases_active()->size()); i++) {
-      colvarbias *b = (*(cvm::main()->biases_active()))[i];
-      if (cvm::main()->debug()) {
-        cvm::main()->log("Calculating bias \""+b->name+"\" on thread "+
+    for (int i = 0; i < static_cast<int>(cvmodule->biases_active()->size()); i++) {
+      colvarbias *b = (*(cvmodule->biases_active()))[i];
+      if (cvmodule->debug()) {
+        cvmodule->log("Calculating bias \""+b->name+"\" on thread "+
                  cvm::to_str(smp_thread_id())+"\n");
       }
       b->update();
     }
   }
-  return cvm::main()->get_error();
+  return cvmodule->get_error();
 #else
   return COLVARS_NOT_IMPLEMENTED;
 #endif
 }
 
-
-
-
-int colvarproxy_smp::smp_thread_id()
+int colvarproxy::smp_thread_id()
 {
 #if defined(_OPENMP)
   return omp_get_thread_num();
@@ -375,7 +325,7 @@ int colvarproxy_smp::smp_thread_id()
 }
 
 
-int colvarproxy_smp::smp_num_threads()
+int colvarproxy::smp_num_threads()
 {
 #if defined(_OPENMP)
   return omp_get_max_threads();
@@ -385,7 +335,7 @@ int colvarproxy_smp::smp_num_threads()
 }
 
 
-int colvarproxy_smp::smp_lock()
+int colvarproxy::smp_lock()
 {
 #if defined(_OPENMP)
   omp_set_lock(omp_lock_state);
@@ -394,7 +344,7 @@ int colvarproxy_smp::smp_lock()
 }
 
 
-int colvarproxy_smp::smp_trylock()
+int colvarproxy::smp_trylock()
 {
 #if defined(_OPENMP)
   return omp_test_lock(omp_lock_state) ? COLVARS_OK : COLVARS_ERROR;
@@ -404,7 +354,7 @@ int colvarproxy_smp::smp_trylock()
 }
 
 
-int colvarproxy_smp::smp_unlock()
+int colvarproxy::smp_unlock()
 {
 #if defined(_OPENMP)
   omp_unset_lock(omp_lock_state);
@@ -414,25 +364,14 @@ int colvarproxy_smp::smp_unlock()
 
 
 
-colvarproxy_script::colvarproxy_script() {}
 
-
-colvarproxy_script::~colvarproxy_script()
-{
-  if (script) {
-    delete script;
-    script = nullptr;
-  }
-}
-
-
-int colvarproxy_script::run_force_callback()
+int colvarproxy::run_force_callback()
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
 
 
-int colvarproxy_script::run_colvar_callback(std::string const & /* name */,
+int colvarproxy::run_colvar_callback(std::string const & /* name */,
                                             std::vector<const colvarvalue *> const & /* cvcs */,
                                             colvarvalue & /* value */)
 {
@@ -440,7 +379,7 @@ int colvarproxy_script::run_colvar_callback(std::string const & /* name */,
 }
 
 
-int colvarproxy_script::run_colvar_gradient_callback(std::string const & /* name */,
+int colvarproxy::run_colvar_gradient_callback(std::string const & /* name */,
                                                      std::vector<const colvarvalue *> const & /* cvcs */,
                                                      std::vector<cvm::matrix2d<cvm::real> > & /* gradient */)
 {
@@ -452,6 +391,51 @@ int colvarproxy_script::run_colvar_gradient_callback(std::string const & /* name
 colvarproxy::colvarproxy()
 {
   cvmodule = NULL;
+  // colvarproxy_system
+  angstrom_value_ = 0.0;
+  kcal_mol_value_ = 0.0;
+  timestep_ = 1.0;
+  target_temperature_ = 0.0;
+  boltzmann_ = 0.001987191; // Default: kcal/mol/K
+  boundaries_type = boundaries_unsupported;
+  total_force_requested = false;
+  indirect_lambda_biasing_force = 0.0;
+  cached_alch_lambda_changed = false;
+  cached_alch_lambda = -1.0;
+  reset_pbc_lattice();
+  // colvarproxy_atoms
+  atoms_rms_applied_force_ = atoms_max_applied_force_ = 0.0;
+  atoms_max_applied_force_id_ = -1;
+  modified_atom_list_ = false;
+  updated_masses_ = updated_charges_ = false;
+  // colvarproxy_atom_groups
+  atom_groups_rms_applied_force_ = atom_groups_max_applied_force_ = 0.0;
+  // colvarproxy_volmaps
+  volmaps_rms_applied_force_ = volmaps_max_applied_force_ = 0.0;
+  // colvarproxy_smp
+  smp_mode = smp_mode_t::none; // May be disabled by user option
+  omp_lock_state = NULL;
+#if defined(_OPENMP)
+  smp_mode = smp_mode_t::cvcs;
+  if (omp_get_thread_num() == 0) {
+    omp_lock_state = new omp_lock_t;
+    omp_init_lock(omp_lock_state);
+  }
+#endif
+  // colvarproxy_replicas
+#ifdef COLVARS_MPI
+  replicas_mpi_comm = MPI_COMM_NULL;
+#endif
+  // colvarproxy_tcl
+  tcl_interp_ = nullptr;
+  // colvarproxy_io
+  restart_frequency_engine = 0;
+  input_stream_error_ = new std::istringstream();
+  input_stream_error_->setstate(std::ios::badbit);
+  output_stream_error_ = new std::ostringstream();
+  output_stream_error_->setstate(std::ios::badbit);
+  // colvarproxy_gpu
+  support_gpu = false;
   // By default, simulation engines allow to immediately request atoms
   engine_ready_ = true;
   b_simulation_running = true;
@@ -465,12 +449,40 @@ colvarproxy::colvarproxy()
 
 colvarproxy::~colvarproxy()
 {
-  close_output_streams();
-  if (cvmodule != NULL) {
+  // Destruct colvarproxy_script
+  if (script) {
+    delete script;
+    script = nullptr;
+  }
+  // The following dtor will be called by cvm::reset from the dtor of colvarmodule??
+  // // Destruct colvarproxy_volmaps
+  // reset_volmaps();
+  // // Destruct colvarproxy_atom_groups
+  // reset_atom_groups();
+  // // Destruct colvarproxy_atoms
+  // reset_atoms();
+  if (cvmodule) {
     delete cvmodule;
-    cvmodule = NULL;
+    cvmodule = nullptr;
+  }
+  // TODO: I guess that "delete cvmodule" will need to flush the streams, so close them after destructing cvmodule.
+  // Destruct colvarproxy_io
+  close_input_streams();
+  close_output_streams();
+  if (input_stream_error_) {
+    delete input_stream_error_;
+  }
+  if (output_stream_error_) {
+    delete output_stream_error_;
   }
   delete reinterpret_cast<std::list<std::pair<std::string, std::string> > *>(config_queue_);
+#if defined(_OPENMP)
+  if (omp_get_thread_num() == 0) {
+    if (omp_lock_state) {
+      delete omp_lock_state;
+    }
+  }
+#endif
 }
 
 
@@ -488,9 +500,9 @@ int colvarproxy::reset()
     cvmodule->log("colvarproxy::reset()\n");
   }
   int error_code = COLVARS_OK;
-  error_code |= colvarproxy_atoms::reset();
-  error_code |= colvarproxy_atom_groups::reset();
-  error_code |= colvarproxy_volmaps::reset();
+  error_code |= reset_atoms();
+  error_code |= reset_atom_groups();
+  error_code |= reset_volmaps();
   total_force_requested = false;
   return error_code;
 }

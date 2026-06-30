@@ -63,11 +63,11 @@ public:
    * @attention Will call \p init_dependencies() to initialize the
    *            dependency tree.
    */
-  atom_group();
+  atom_group(colvarmodule* cvmodule_in);
   /**
    * @brief Create a group object, assign a name to it
    */
-  atom_group(char const *key_in);
+  atom_group(char const *key_in, colvarmodule* cvmodule_in);
   /**
    * @brief Destructor
    *
