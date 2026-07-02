@@ -163,9 +163,7 @@ int colvar::tabf_alpha::init_tabf(int factor)
   if (factor != 1) {
     return cvmodule->error("Error: timeStepFactor > 1 is not yet supported for TABF alpha variables.");
   }
-  cvmodule->proxy->request_tabf_energy_freq(factor);
-
-  return COLVARS_OK;
+  return cvmodule->proxy->request_tabf_energy_freq(factor);
 }
 
 
