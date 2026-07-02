@@ -170,6 +170,7 @@ public:
     allocateDeviceArrays();
     deallocateDeviceTransposeArrays();
     allocateDeviceTransposeArrays();
+    cvmodule->proxy_buffers_reallocated_done();
   }
   smp_mode_t get_preferred_smp_mode() const override {
     return smp_mode_t::none;
@@ -206,7 +207,6 @@ public:
   cvm::real* proxy_atoms_new_colvar_forces_gpu() override {return d_mAppliedForces;}
   cudaStream_t get_default_stream() override {return mStream;}
   void set_lattice();
-  int wait_for_extra_info_ready() override;
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
@@ -785,9 +785,15 @@ void colvarproxy_impl::calculate() {
       auto &colvars_charge  = *(modify_atom_charges());
       ::copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
     }
+    if (has_gpu_support()) {
+      cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::copy_atoms), mStream));
+    }
   }
   if (mClient->requestUpdateLattice()) {
     ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+    if (has_gpu_support()) {
+      cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::update_lattice), mStream));
+    }
   }
   // NOTE: I think the implementation in Colvars will syncrhonize the stream before
   // calculating CVCs anyway, so I can skip it here.
@@ -1022,14 +1028,6 @@ void colvarproxy_impl::set_lattice() {
   } else {
     boundaries_type = boundaries_unsupported;
   }
-}
-
-int colvarproxy_impl::wait_for_extra_info_ready() {
-  int error_code = COLVARS_OK;
-  if (mClient->requestUpdateLattice()) {
-    set_lattice();
-  }
-  return error_code;
 }
 
 CudaGlobalMasterColvars::CudaGlobalMasterColvars():
