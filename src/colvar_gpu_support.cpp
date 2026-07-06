@@ -146,24 +146,5 @@ int gpu_graph_t::dump_graph(const std::string& filename) {
   cudaGraphDebugDotFlags dotFlags = cudaGraphDebugDotFlagsVerbose;
   return checkGPUError(cudaGraphDebugDotPrint(graph, filename.c_str(), dotFlags));
 }
-
-#if defined (COLVARS_NVTX_PROFILING)
-colvar_nvtx_prof::colvar_nvtx_prof(): nvtx_event_name("Colvars") {
-  std::memset(&nvtx_event_attr, 0, sizeof(nvtx_event_attr));
-  nvtx_event_attr.version = NVTX_VERSION;
-  nvtx_event_attr.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
-  nvtx_event_attr.colorType = NVTX_COLOR_ARGB;
-  nvtx_event_attr.color = 0xFF880000;
-  nvtx_event_attr.messageType = NVTX_MESSAGE_TYPE_ASCII;
-  nvtx_event_attr.message.ascii = nvtx_event_name.c_str();
-}
-
-void colvar_nvtx_prof::set_name_color(
-  const std::string& name_in, const uint32_t color_in) {
-  nvtx_event_name = name_in;
-  nvtx_event_attr.color = color_in;
-  nvtx_event_attr.message.ascii = nvtx_event_name.c_str();
-}
-#endif // defined (COLVARS_NVTX_PROFILING)
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }

@@ -503,30 +503,6 @@ int prepare_dependencies(
   const std::unordered_map<std::string, cudaGraphNode_t>& map,
   const std::string& caller_operation_name = "");
 
-// NVTX Profiling
-#if defined (COLVARS_NVTX_PROFILING)
-/**
- * @brief Class for managing NVTX profiling ranges
- *
- * This class encapsulates the functionality to create and manage NVTX
- * profiling ranges. It allows setting a name and color for the range,
- * and provides methods to start and stop the profiling range.
- */
-class colvar_nvtx_prof {
-public:
-  colvar_nvtx_prof();
-  void set_name_color(const std::string& name_in, const uint32_t color_in);
-  inline void start() {
-    nvtxRangePushEx(&nvtx_event_attr);
-  }
-  inline void stop() {
-    nvtxRangePop();
-  }
-private:
-  std::string nvtx_event_name;
-  nvtxEventAttributes_t nvtx_event_attr;
-};
-#endif // defined (COLVARS_NVTX_PROFILING)
 #endif // defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
