@@ -768,6 +768,15 @@ void colvarproxy_impl::calculate() {
   cudaCheck(cudaSetDevice(m_device_id));
   // The following memcpy operations are supposed to be overlapped with the NB kernel
   if (numAtoms > 0) {
+#if CUDAGM_VERSION >= 3
+    if (mClient->requestUpdateAtomTotalForces()) {
+      if (mClient->isStartupStep()) {
+        set_total_forces_invalid();
+      } else {
+        set_total_forces_valid();
+      }
+    }
+#endif
     if (!has_gpu_support()) {
       // Transform the arrays for Colvars
       auto &colvars_pos = *(modify_atom_positions());
@@ -1079,8 +1088,13 @@ bool CudaGlobalMasterColvars::requestUpdateCharges() {
   return mImpl->atomsChanged();
 }
 
+#if CUDAGM_VERSION >= 3
+void CudaGlobalMasterColvars::setStep(int64_t step, int startup, int doMigration) {
+  CudaGlobalMasterClient::setStep(step, startup, doMigration);
+#else
 void CudaGlobalMasterColvars::setStep(int64_t step) {
   CudaGlobalMasterClient::setStep(step);
+#endif
   if (mImpl->atomsChanged()) {
     mImpl->reallocate();
   }
