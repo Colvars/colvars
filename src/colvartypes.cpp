@@ -539,7 +539,7 @@ int rotation_gpu::init(/*const cudaStream_t& stream_in*/) {
     error_code |= p->allocate_host(&h_S_eigval, 4);
     error_code |= p->allocate_host(&h_S_eigvec, 4 * 4);
     error_code |= p->clear_device_array(tbcount, 1);
-    error_code |= checkGPUError(cudaEventCreate(&jacobi_done));
+    error_code |= checkGPUError(cudaEventCreateWithFlags(&jacobi_done, cudaEventDisableTiming));
     max_iteration_reached[0] = 0;
     discontinuous_rotation[0] = 0;
     if (colvarmodule::rotation::monitor_crossings) {

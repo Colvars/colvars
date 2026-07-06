@@ -253,9 +253,13 @@ class colvarmodule;
 #define cudaEvent_t hipEvent_t
 #endif // cudaEvent_t
 
-#ifndef cudaEventCreate
-#define cudaEventCreate hipEventCreate
+#ifndef cudaEventCreateWithFlags
+#define cudaEventCreateWithFlags hipEventCreateWithFlags
 #endif // cudaEventCreate
+
+#ifndef cudaEventDisableTiming
+#define cudaEventDisableTiming hipEventDisableTiming
+#endif // cudaEventDisableTiming
 
 #ifndef cudaEventDestroy
 #define cudaEventDestroy hipEventDestroy

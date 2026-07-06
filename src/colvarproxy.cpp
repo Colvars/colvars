@@ -520,7 +520,7 @@ int colvarproxy::setup()
         error_code |= checkGPUError(cudaEventSynchronize(e));
         error_code |= checkGPUError(cudaEventDestroy(e));
       }
-      error_code |= checkGPUError(cudaEventCreate(&e));
+      error_code |= checkGPUError(cudaEventCreateWithFlags(&e, cudaEventDisableTiming));
     }
   }
 #endif

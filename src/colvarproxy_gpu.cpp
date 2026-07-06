@@ -104,7 +104,7 @@ int colvarproxy_gpu::init_gpu() {
       error_code |= checkGPUError(cudaEventSynchronize(e));
       error_code |= checkGPUError(cudaEventDestroy(e));
     }
-    error_code |= checkGPUError(cudaEventCreate(&e));
+    error_code |= checkGPUError(cudaEventCreateWithFlags(&e, cudaEventDisableTiming));
   }
   return error_code;
 }
