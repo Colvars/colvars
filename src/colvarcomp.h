@@ -180,10 +180,6 @@ public:
   /// \brief Calculate finite-difference gradients alongside the analytical ones, for each Cartesian component on GPU
   virtual int debug_gradients_gpu();
 
-  // TODO: Maybe this should be a feature in colvarsdep but I am still constantly confused by colvarsdep
-  /// \brief Check the GPU availability
-  virtual bool has_gpu_implementation() const { return false; }
-
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   enum class event_type {
     calc_value = 0,
@@ -1103,7 +1099,6 @@ protected:
 
 public:
   rmsd();
-  bool has_gpu_implementation() const override;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   int add_calc_value_node(
     cudaGraph_t& graph,
