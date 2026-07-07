@@ -105,6 +105,10 @@ cleanup_files() {
     rm -f *.ndx *.xyz
     rm -f ${base}.dat
   done
+  # if cleanup.sh exists, run it to clean up any additional files
+  if [ -f cleanup.sh ]; then
+    ./cleanup.sh
+  fi
 }
 
 
@@ -112,6 +116,13 @@ for dir in ${DIRLIST} ; do
 
   dir="${dir%/}" # Remove trailing / if present
   if [ -f ${dir}/disabled ] ; then
+    echo "Skipping disabled test $dir"
+    continue
+  fi
+
+  # Skip MPI tests if the binary is not an MPI build
+  if [ $MPI_BUILD = no ] && echo ${dir} | grep -q MPI ; then
+    echo "Skipping $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) (MPI test, but not an MPI build)"
     continue
   fi
 
