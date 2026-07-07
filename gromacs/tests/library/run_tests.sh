@@ -181,13 +181,29 @@ for dir in ${DIRLIST} ; do
 
       # Try running the test
 
+      structure_file="../Common/da.pdb"
+      topology_file="../Common/da.top"
+      initial_trajectory_file="../Common/da.trr"
+      if [ -f get_structure_file.sh ] ; then
+        structure_file=$(./get_structure_file.sh)
+      fi
+      if [ -f get_topology_file.sh ] ; then
+        topology_file=$(./get_topology_file.sh)
+      fi
+      if [ -f get_initial_trajectory_file.sh ] ; then
+        initial_trajectory_file=$(./get_initial_trajectory_file.sh)
+      fi
       if [ "${basename%.restart}" == "${basename}" ] ; then
         # Initial run
         MDP=../Common/test.mdp
         if [ -f ${basename}.mdp ] ; then
           MDP=${basename}.mdp
         fi
-        ${BINARY} grompp -f ${MDP} -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+        if [[ -z "$initial_trajectory_file" ]] ; then
+          ${BINARY} grompp -f ${MDP} -c $structure_file -p $topology_file -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+        else
+          ${BINARY} grompp -f ${MDP} -c $structure_file -p $topology_file -t $initial_trajectory_file -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+        fi
         ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} 2> ${basename}.err 1> ${basename}.out
         RETVAL=$?
       fi
@@ -210,7 +226,7 @@ for dir in ${DIRLIST} ; do
           # Mimic the initial step of a job restarted from checkpoint, to be
           # consistent with reference outputs
           echo "init-step = 20" >> ${NEW_MDP}
-          ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+          ${BINARY} grompp -f ${NEW_MDP} -c $structure_file -p $topology_file -t ${basename%.restart}.cpt -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
           rm -f ${NEW_MDP} ${NEW_CVCONF}
           ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend 2> ${basename}.err 1> ${basename}.out
           RETVAL=$?
