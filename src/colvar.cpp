@@ -1518,7 +1518,7 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
     } else {
       (cvcs[i])->read_data();
     }
-    if (use_gpu && cvcs[i]->has_gpu_implementation()) {
+    if (use_gpu && cvcs[i]->is_enabled(f_cvc_support_gpu)) {
       (cvcs[i])->calc_value_gpu();
     } else {
       (cvcs[i])->calc_value();
@@ -1535,7 +1535,7 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
     for (i = first_cvc, cvc_count = 0; (i < cvcs.size()) && (cvc_count < cvc_max_count); i++) {
       if (!cvcs[i]->is_enabled()) continue;
       cvc_count++;
-      if (cvcs[i]->has_gpu_implementation()) {
+      if (cvcs[i]->is_enabled(f_cvc_support_gpu)) {
         error_code |= cvcs[i]->calc_value_after_gpu();
       }
     }
@@ -1640,7 +1640,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
     cvc_count++;
 
     if ((cvcs[i])->is_enabled(f_cvc_gradient)) {
-      if (use_gpu && cvcs[i]->has_gpu_implementation()) {
+      if (use_gpu && cvcs[i]->is_enabled(f_cvc_support_gpu)) {
         error_code |= (cvcs[i])->calc_gradients_gpu();
       } else {
         (cvcs[i])->calc_gradients();
@@ -1678,7 +1678,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
       if (!cvcs[i]->is_enabled()) continue;
       cvc_count++;
       if (!(cvcs[i])->is_enabled(f_cvc_gradient)) continue;
-      if (cvcs[i]->has_gpu_implementation()) {
+      if (cvcs[i]->is_enabled(f_cvc_support_gpu)) {
         // The fit gradients events (if have) should be synchronized in calc_gradients_after_gpu
         error_code |= cvcs[i]->calc_gradients_after_gpu();
       }
@@ -1692,7 +1692,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
     if (!cvcs[i]->is_enabled()) continue;
     cvc_count++;
     if ((cvcs[i])->is_enabled(f_cvc_debug_gradient)) {
-      if (use_gpu && cvcs[i]->has_gpu_implementation()) {
+      if (use_gpu && cvcs[i]->is_enabled(f_cvc_support_gpu)) {
         error_code |= (cvcs[i])->debug_gradients_gpu();
       } else {
         (cvcs[i])->debug_gradients();
@@ -1748,7 +1748,7 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
         i++) {
       if (!cvcs[i]->is_enabled()) continue;
       cvc_count++;
-      if (use_gpu && cvcs[i]->has_gpu_implementation()) {
+      if (use_gpu && cvcs[i]->is_enabled(f_cvc_support_gpu)) {
         (cvcs[i])->calc_force_invgrads_gpu();
       } else {
         (cvcs[i])->calc_force_invgrads();
@@ -1765,7 +1765,7 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
         i++) {
         if (!cvcs[i]->is_enabled()) continue;
         cvc_count++;
-        if (cvcs[i]->has_gpu_implementation()) {
+        if (cvcs[i]->is_enabled(f_cvc_support_gpu)) {
           error_code |= cvcs[i]->calc_force_invgrads_after_gpu();
         }
       }
@@ -1831,7 +1831,7 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
          i++) {
       if (!cvcs[i]->is_enabled()) continue;
       cvc_count++;
-      if (use_gpu && cvcs[i]->has_gpu_implementation()) {
+      if (use_gpu && cvcs[i]->is_enabled(f_cvc_support_gpu)) {
         cvcs[i]->calc_Jacobian_derivative_gpu();
       } else {
         (cvcs[i])->calc_Jacobian_derivative();
@@ -1845,7 +1845,7 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
          i++) {
         if (!cvcs[i]->is_enabled()) continue;
         cvc_count++;
-        if (cvcs[i]->has_gpu_implementation()) {
+        if (cvcs[i]->is_enabled(f_cvc_support_gpu)) {
           error_code |= cvcs[i]->calc_Jacobian_derivative_after_gpu();
         }
       }
