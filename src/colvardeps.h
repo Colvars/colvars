@@ -122,7 +122,7 @@ public:
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   /// \brief Get the GPU stream
-  cudaStream_t get_stream() const {return m_stream;}
+  const cudaStream_t& get_stream() const {return m_stream;}
 #elif defined (COLVARS_SYCL)
 #endif
 
