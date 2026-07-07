@@ -149,7 +149,7 @@ int colvar::cvc::init(std::string const &conf)
 int colvar::cvc::init_gpu() {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  if ((cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) && has_gpu_implementation()) {
+  if (is_available(f_cvc_support_gpu)) {
     // Reset graphs
     error_code |= graph_calc_value.reset();
     error_code |= graph_total_force.reset();
@@ -332,6 +332,7 @@ int colvar::cvc::init_dependencies() {
     // require_feature_children(f_cvc_scalable, f_ag_scalable);
     // require_feature_children(f_cvc_scalable_com, f_ag_scalable_com);
 
+    init_feature(f_cvc_support_gpu, "support_gpu", f_type_static);
     init_feature(f_cvc_require_cpu_buffers, "require_cpu_buffers", f_type_static);
 
     // check that everything is initialized
@@ -370,6 +371,9 @@ int colvar::cvc::init_dependencies() {
 
   // Use CPU buffers by default
   enable(f_cvc_require_cpu_buffers);
+
+  // Disable GPU support by default
+  disable(f_cvc_support_gpu);
 
   // Features that are implemented by default if their requirements are
   feature_states[f_cvc_one_site_total_force].available = true;
@@ -605,7 +609,7 @@ int colvar::cvc::calc_force_invgrads_gpu()
 {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  if (has_gpu_implementation()) {
+  if (is_enabled(f_cvc_support_gpu)) {
     if (!graph_total_force.graph_exec_initialized) {
       error_code |= checkGPUError(cudaGraphCreate(&graph_total_force.graph, 0));
       error_code |= add_calc_force_invgrads_node(graph_total_force.graph, graph_total_force.nodes);
@@ -1330,7 +1334,7 @@ int colvar::cvc::calc_value_gpu() {
 int colvar::cvc::calc_gradients_gpu() {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  if (has_gpu_implementation()) {
+  if (is_enabled(f_cvc_support_gpu)) {
     if (!graph_calc_gradients.graph_exec_initialized) {
       error_code |= checkGPUError(cudaGraphCreate(&graph_calc_gradients.graph, 0));
       error_code |= add_calc_gradients_node(graph_calc_gradients.graph, graph_calc_gradients.nodes);
@@ -1362,7 +1366,7 @@ int colvar::cvc::calc_gradients_gpu() {
 int colvar::cvc::calc_Jacobian_derivative_gpu() {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  if (has_gpu_implementation()) {
+  if (is_enabled(f_cvc_support_gpu)) {
     if (!graph_calc_Jacobian_derivative.graph_exec_initialized) {
       error_code |= checkGPUError(cudaGraphCreate(&graph_calc_Jacobian_derivative.graph, 0));
       error_code |= add_calc_Jacobian_derivative_node(graph_calc_Jacobian_derivative.graph, graph_calc_Jacobian_derivative.nodes);

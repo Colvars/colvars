@@ -827,6 +827,7 @@ colvar::rmsd::rmsd()
   init_as_distance();
   provide(f_cvc_inv_gradient);
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  provide(f_cvc_support_gpu);
   d_ref_pos_soa = nullptr;
   d_permutation_msds = nullptr;
   d_tbcounts = nullptr;
@@ -844,7 +845,7 @@ colvar::rmsd::rmsd()
 colvar::rmsd::~rmsd() {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   colvarproxy* p = cvmodule->proxy;
-  if (colvar::rmsd::has_gpu_implementation()) {
+  if (is_enabled(f_cvc_support_gpu)) {
     p->deallocate_device(&d_ref_pos_soa);
     p->deallocate_device(&d_permutation_msds);
     p->deallocate_device(&d_tbcounts);
@@ -857,19 +858,6 @@ colvar::rmsd::~rmsd() {
     p->deallocate_device(&d_tbcount_ft);
     p->deallocate_device(&d_tbcount_jd);
   }
-#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-}
-
-bool colvar::rmsd::has_gpu_implementation() const {
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  const colvarproxy* p = cvmodule->proxy;
-  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu){
-    return true;
-  } else {
-    return false;
-  }
-#else
-  return false;
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
@@ -969,9 +957,11 @@ int colvar::rmsd::init(std::string const &conf)
 
   num_ref_pos = ref_pos.size();
   ref_pos_soa = cvm::atom_group::pos_aos_to_soa(ref_pos);
-  if (has_gpu_implementation()) {
+  colvarproxy* p = cvmodule->proxy;
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    colvarproxy* p = cvmodule->proxy;
+    enable(f_cvc_support_gpu);
+    disable(f_cvc_require_cpu_buffers);
     error_code |= p->reallocate_device(&d_ref_pos_soa, 3 * num_ref_pos);
     error_code |= p->copy_HtoD(ref_pos_soa.data(), d_ref_pos_soa, 3 * num_ref_pos);
     error_code |= p->reallocate_device(&d_permutation_msds, n_permutations);
@@ -990,7 +980,6 @@ int colvar::rmsd::init(std::string const &conf)
     error_code |= p->allocate_device(&d_tbcount_jd, 1);
     error_code |= p->clear_device_array(d_tbcount_ft, 1);
     error_code |= p->clear_device_array(d_tbcount_jd, 1);
-    disable(f_cvc_require_cpu_buffers);
 #endif // (COLVARS_CUDA) || defined (COLVARS_GPU)
   }
   return error_code;
