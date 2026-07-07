@@ -456,7 +456,7 @@ int colvar::cvc::set_param(std::string const &param_name,
 
 void colvar::cvc::read_data()
 {
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+  if (is_enabled(f_cvc_pbc_minimum_image)) {
     // Copy boundary conditions from the proxy
     boundary_conditions = cvm::main()->proxy->get_system_boundaries();
   } else {
