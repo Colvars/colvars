@@ -150,10 +150,6 @@ int colvar::cvc::init_gpu() {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   if (is_available(f_cvc_support_gpu)) {
-    // Reset graphs
-    error_code |= graph_calc_value.reset();
-    error_code |= graph_total_force.reset();
-    error_code |= graph_calc_gradients.reset();
     // Reset and initialize events
     for (auto& e: events) {
       if (e) {
@@ -604,49 +600,6 @@ void colvar::cvc::calc_force_invgrads()
             COLVARS_NOT_IMPLEMENTED);
 }
 
-
-int colvar::cvc::calc_force_invgrads_gpu()
-{
-  int error_code = COLVARS_OK;
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  if (is_enabled(f_cvc_support_gpu)) {
-    if (!graph_total_force.graph_exec_initialized) {
-      error_code |= checkGPUError(cudaGraphCreate(&graph_total_force.graph, 0));
-      error_code |= add_calc_force_invgrads_node(graph_total_force.graph, graph_total_force.nodes);
-      error_code |= graph_total_force.init_graph_exec(cvmodule, get_stream());
-      if (cvmodule->debug()) {
-        const std::string filename = cvmodule->output_prefix() + "_" + name + "_calc_force_invgrads.dot";
-        error_code |= graph_total_force.dump_graph(filename);
-      }
-    }
-    if (graph_total_force.graph_exec_initialized) {
-      // In case of "cvmodule->proxy->total_forces_valid() && (!is_enabled(f_cv_total_force_current_step))",
-      // calc_cvc_total_force could be called at the first step, so we need
-      // to wait for the default event. Even if it is not the case, it is always OK
-      // to wait. If total forces have to be calculated after gradients and atom
-      // positions, the CUDA graphs/kernels execution order is implicitly gauranteed
-      // by the calling order of calc_cvc_values, calc_cvc_gradients, calc_cvc_Jacobians
-      // and calc_cvc_total_force, as long as these operations are using the same
-      // m_stream.
-      error_code |= checkGPUError(cudaStreamWaitEvent(
-        get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::copy_atoms)));
-      // Push the graph to stream
-      error_code |= checkGPUError(cudaGraphLaunch(graph_total_force.graph_exec, get_stream()));
-      // Record the event
-      error_code |= checkGPUError(cudaEventRecord(get_event(event_type::calc_force_invgrads), get_stream()));
-    }
-  } else {
-    return cvmodule->error("Error: calculation of inverse gradients is not implemented "
-            "for colvar components of type \""+function_type()+"\" on GPU.\n",
-            COLVARS_NOT_IMPLEMENTED);
-  }
-#elif defined (COLVARS_SYCL)
-  return cvmodule->error("Error: calculation of inverse gradients is not implemented "
-            "for colvar components of type \""+function_type()+"\" on SYCL platform.\n",
-            COLVARS_NOT_IMPLEMENTED);
-#endif
-  return error_code;
-}
 
 void colvar::cvc::calc_Jacobian_derivative()
 {
@@ -1284,108 +1237,6 @@ void colvar::cvc::wrap(colvarvalue &x_unwrapped) const
   }
 }
 
-int colvar::cvc::calc_value_gpu() {
-  int error_code = COLVARS_OK;
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  if (!graph_calc_value.graph_exec_initialized) {
-    error_code |= checkGPUError(cudaGraphCreate(&graph_calc_value.graph, 0));
-    error_code |= add_calc_value_node(graph_calc_value.graph, graph_calc_value.nodes);
-    error_code |= graph_calc_value.init_graph_exec(cvmodule, get_stream());
-    if (cvmodule->debug()) {
-      const std::string filename = cvmodule->output_prefix() + "_" + name + "_calc_value.dot";
-      error_code |= graph_calc_value.dump_graph(filename);
-    }
-  }
-  if (graph_calc_value.graph_exec_initialized) {
-    error_code |= checkGPUError(cudaStreamWaitEvent(
-      get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
-    auto children = get_children();
-    for (auto it = children.begin(); it != children.end(); ++it) {
-      switch ((*it)->get_object_type()) {
-        case colvardeps::object_t::colvarcomp: {
-          // This branch is for future use, since for the time being Colvars doesn't
-          // support nested CVCs as children.
-          colvar::cvc* child = dynamic_cast<colvar::cvc*>(*it);
-          error_code |= checkGPUError(cudaStreamWaitEvent(get_stream(), child->get_event(event_type::calc_value)));
-          break;
-        }
-        case colvardeps::object_t::atom_group: {
-          cvm::atom_group* child = dynamic_cast<cvm::atom_group*>(*it);
-          // Wait for the atom group GPU calculations
-          error_code |= checkGPUError(cudaStreamWaitEvent(
-            get_stream(), child->get_gpu_atom_group()->get_event(
-              colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
-          break;
-        }
-        default: {
-          return cvmodule->error("Unsupported colvardeps type in calc_value_gpu", COLVARS_BUG_ERROR);
-        }
-      }
-    }
-    // Launch the graph
-    error_code |= checkGPUError(cudaGraphLaunch(graph_calc_value.graph_exec, get_stream()));
-    // Record the event
-    error_code |= checkGPUError(cudaEventRecord(get_event(event_type::calc_value), get_stream()));
-  }
-#endif
-  return error_code;
-}
-
-int colvar::cvc::calc_gradients_gpu() {
-  int error_code = COLVARS_OK;
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  if (is_enabled(f_cvc_support_gpu)) {
-    if (!graph_calc_gradients.graph_exec_initialized) {
-      error_code |= checkGPUError(cudaGraphCreate(&graph_calc_gradients.graph, 0));
-      error_code |= add_calc_gradients_node(graph_calc_gradients.graph, graph_calc_gradients.nodes);
-      error_code |= graph_calc_gradients.init_graph_exec(cvmodule, get_stream());
-      if (cvmodule->debug()) {
-        const std::string filename = cvmodule->output_prefix() + "_" + name + "_calc_gradients.dot";
-        error_code |= graph_calc_gradients.dump_graph(filename);
-      }
-    }
-    if (graph_calc_gradients.graph_exec_initialized) {
-      // We can assume that the calc_value_gpu() has been called, so we can directly
-      // push the graph into the stream.
-      error_code |= checkGPUError(cudaGraphLaunch(graph_calc_gradients.graph_exec, get_stream()));
-      // Record the event
-      error_code |= checkGPUError(cudaEventRecord(get_event(event_type::calc_gradients), get_stream()));
-      // NOTE: Because gradients are stored in atom groups if f_cvc_explicit_gradient,
-      // graph_calc_gradients may changed the d_atoms_grad, so I have to make the
-      // atom groups streams wait for calc_gradients before any successive apply_force.
-      for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
-        error_code |= checkGPUError(cudaStreamWaitEvent(
-          (*agi)->get_stream(), get_event(event_type::calc_gradients)));
-      }
-    }
-  }
-#endif
-  return error_code;
-}
-
-int colvar::cvc::calc_Jacobian_derivative_gpu() {
-  int error_code = COLVARS_OK;
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  if (is_enabled(f_cvc_support_gpu)) {
-    if (!graph_calc_Jacobian_derivative.graph_exec_initialized) {
-      error_code |= checkGPUError(cudaGraphCreate(&graph_calc_Jacobian_derivative.graph, 0));
-      error_code |= add_calc_Jacobian_derivative_node(graph_calc_Jacobian_derivative.graph, graph_calc_Jacobian_derivative.nodes);
-      error_code |= graph_calc_Jacobian_derivative.init_graph_exec(cvmodule, get_stream());
-      if (cvmodule->debug()) {
-        const std::string filename = cvmodule->output_prefix() + "_" + name + "_calc_Jacobian_derivative.dot";
-        error_code |= graph_calc_Jacobian_derivative.dump_graph(filename);
-      }
-    }
-    if (graph_calc_Jacobian_derivative.graph_exec_initialized) {
-      error_code |= checkGPUError(cudaStreamWaitEvent(
-        get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::copy_atoms)));
-      error_code |= checkGPUError(cudaGraphLaunch(graph_calc_Jacobian_derivative.graph_exec, get_stream()));
-      error_code |= checkGPUError(cudaEventRecord(get_event(event_type::calc_Jacobian_derivative), get_stream()));
-    }
-  }
-#endif
-  return error_code;
-}
 
 int colvar::cvc::calc_fit_gradients_gpu() {
   int error_code = COLVARS_OK;
