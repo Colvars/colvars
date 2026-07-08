@@ -106,6 +106,11 @@ int colvarproxy_gpu::init_gpu() {
     }
     error_code |= checkGPUError(cudaEventCreateWithFlags(&e, cudaEventDisableTiming));
   }
+  if (warp_size == 0) {
+    int deviceID = gpu_device_id();
+    error_code |= checkGPUError(cudaDeviceGetAttribute(
+      &warp_size, cudaDevAttrWarpSize, deviceID));
+  }
   return error_code;
 }
 

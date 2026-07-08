@@ -29,6 +29,13 @@ public:
   virtual void calc_value();
   virtual void calc_gradients();
 
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  virtual int calc_value_gpu() override;
+  virtual int calc_value_after_gpu() override;
+  virtual int calc_gradients_gpu() override {return COLVARS_OK;}
+  virtual int calc_gradients_after_gpu() override {return COLVARS_OK;}
+#endif
+
   enum {
     ef_null = 0,
     ef_gradients = 1,
@@ -113,6 +120,11 @@ protected:
 
   /// Pair list
   std::unique_ptr<bool []> pairlist;
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  class coordnum_gpu_impl_t;
+  std::unique_ptr<coordnum_gpu_impl_t> coordnum_gpu_impl;
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 };
 

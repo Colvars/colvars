@@ -358,6 +358,15 @@ public:
    * @brief Add forces to proxy after being communicated from colvarmodule
    */
   int add_force_to_proxy_gpu(cvm::atom_group* cpu_atoms);
+  /**
+   * @brief Shorthand: save the specified gradient on each atom to the GPU buffer,
+   * weighting with the atom mass (mostly used in combination with
+   * \p cvm::atom_group::center_of_mass() )
+   */
+  static int set_weighted_gradient_gpu(
+    cvm::atom_group* cpu_atoms,
+    const cvm::rvector* d_com_grad,
+    cudaStream_t stream);
 private:
   colvaratoms_gpu_buffer_t gpu_buffers;
   /// \brief Temporary variables for calc_fit_gradients GPU kernel
