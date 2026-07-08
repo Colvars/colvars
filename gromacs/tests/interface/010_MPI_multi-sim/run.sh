@@ -5,7 +5,7 @@
 # It's best to have Gromacs compiled in double precision
 # Reference files have been generated with Gromacs version 2024-dev
 
-echo -n "Running $(basename $PWD)..."
+echo -n "Running $(basename $PWD) ..."
 
 set -e
 
