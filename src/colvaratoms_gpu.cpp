@@ -1128,5 +1128,15 @@ int colvaratoms_gpu::add_force_to_proxy_gpu(cvm::atom_group* cpu_atoms) {
   return error_code;
 }
 
+int colvaratoms_gpu::set_weighted_gradient_gpu(
+  cvm::atom_group* cpu_atoms,
+  const cvm::rvector* d_com_grad,
+  cudaStream_t stream) {
+  auto& buf = cpu_atoms->get_gpu_atom_group()->gpu_buffers;
+  return colvars_gpu::set_weighted_gradients(
+    d_com_grad, buf.d_atoms_weight, buf.d_atoms_grad,
+    cpu_atoms->size(), stream, cpu_atoms->cvmodule);
+}
+
 #endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 }

@@ -1265,6 +1265,47 @@ int calc_fit_forces_impl_loop2(
     dependencies.size(), &kernelNodeParams));
 }
 
+__global__ void set_weighted_gradients_kernel(
+  const cvm::rvector* __restrict com_grad,
+  const cvm::real* __restrict atoms_weight,
+  cvm::real* __restrict grad_x,
+  cvm::real* __restrict grad_y,
+  cvm::real* __restrict grad_z,
+  unsigned int num_atoms) {
+  const cvm::real gx = com_grad->x;
+  const cvm::real gy = com_grad->y;
+  const cvm::real gz = com_grad->z;
+  for (unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+       i < num_atoms; i += blockDim.x * gridDim.x) {
+    grad_x[i] = gx * atoms_weight[i];
+    grad_y[i] = gy * atoms_weight[i];
+    grad_z[i] = gz * atoms_weight[i];
+  }
+}
+
+int set_weighted_gradients(
+  const cvm::rvector* d_com_grad,
+  const cvm::real* d_atoms_weight,
+  cvm::real* d_atoms_grad,
+  unsigned int num_atoms,
+  cudaStream_t stream,
+  colvarmodule* cvmodule) {
+  int error_code = COLVARS_OK;
+  cvm::real* grad_x = d_atoms_grad;
+  cvm::real* grad_y = grad_x + num_atoms;
+  cvm::real* grad_z = grad_y + num_atoms;
+  void* args[] = {
+    &d_com_grad, &d_atoms_weight,
+    &grad_x, &grad_y, &grad_z,
+    &num_atoms};
+  const unsigned int num_blocks = (
+    num_atoms + default_block_size - 1) / default_block_size;
+  error_code |= checkGPUError(cudaLaunchKernel(
+    (void*)set_weighted_gradients_kernel, dim3(num_blocks, 1, 1),
+    dim3(default_block_size, 1, 1), args, 0, stream));
+  return error_code;
+}
+
 #elif defined(COLVARS_SYCL)
 #endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 };
