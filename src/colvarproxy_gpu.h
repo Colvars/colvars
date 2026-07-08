@@ -16,7 +16,7 @@
 class colvarproxy_gpu {
 public:
   /// \brief Constructor
-  colvarproxy_gpu(): support_gpu(false) {}
+  colvarproxy_gpu(): support_gpu(false), warp_size(0) {}
   /// \brief Whether the proxy supports GPU
   bool has_gpu_support() const {
     return support_gpu;
@@ -30,6 +30,8 @@ public:
   /// \brief Get the GPU platform (CUDA, HIP or SYCL)
   std::string gpu_platform() const;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (COLVARS_SYCL)
+  /// \brief CUDA warp size or HIP wave front size
+  int gpu_warp_size() const {return warp_size;}
   /// \brief Get the default CUDA stream from the proxy
   virtual cudaStream_t get_default_stream() {return (cudaStream_t)0;}
   /// \brief Initialize the GPU data (called by colvarproxy::setup)
@@ -289,6 +291,8 @@ public:
 protected:
   /// \brief Whether the proxy supports GPU
   bool support_gpu;
+  /// \brief Warp size
+  int warp_size;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   std::array<cudaEvent_t, static_cast<int>(event_type::num_event_types)> events = {};
 #endif

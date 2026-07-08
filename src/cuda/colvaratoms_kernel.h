@@ -201,6 +201,14 @@ int calc_fit_forces_impl_loop2(
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
 
+int set_weighted_gradients(
+  const cvm::rvector* d_com_grad,
+  const cvm::real* d_atoms_weight,
+  cvm::real* d_atoms_grad,
+  unsigned int num_atoms,
+  cudaStream_t stream,
+  colvarmodule* cvmodule);
+
 }
 
 #elif defined(COLVARS_SYCL)
