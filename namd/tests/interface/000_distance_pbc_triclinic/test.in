@@ -1,0 +1,26 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+
+colvar {
+
+    name one
+
+    width 0.5
+    outputAppliedForce on
+
+    distance {
+        group1 {
+            atomNumbers {430}
+        }
+        group2 {
+            atomNumbers {2488}
+        }
+    }
+}
+
+harmonic {
+  colvars one
+  centers 10.7
+  forceConstant 0.1
+  outputEnergy on
+}

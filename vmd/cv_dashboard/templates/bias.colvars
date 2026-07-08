@@ -9,7 +9,9 @@ abf {
 metadynamics {
     colvars        <names>
     hillWeight     0.001
-    writeTIPMF     yes
+    hillWidth      2.0
+    # # The writeTIPMF keyword is not supported by all variables
+    # writeTIPMF     yes
 }
 #_harmonic bias
 harmonic {
