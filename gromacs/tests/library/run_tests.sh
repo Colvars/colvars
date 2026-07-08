@@ -5,33 +5,50 @@
 # It's best to have Gromacs compiled in double precsision
 # Reference files have been generated with Gromacs version 2020.3
 
-gen_ref_output=''
 TMPDIR=/tmp
 DIRLIST=''
 BINARY=gmx_d
 SPIFF=spiff
 
+cleanup='true'
+verbose='false'
+gen_ref_output='false'
 
 while [ $# -ge 1 ]; do
   if { echo $1 | grep -q gmx ; }; then
-    echo "Using GROMACS executable from $1"
     BINARY=$1
   elif [ "x$1" = 'x-g' ]; then
-    gen_ref_output='yes'
+    gen_ref_output='true'
     echo "Generating reference output"
+  elif [ "x$1" = 'x-v' ]; then
+    verbose='true'
+  elif [ "x$1" = 'x-k' ]; then
+    cleanup='false'
   elif [ "x$1" = 'x-h' ]; then
-    echo "Usage: ./run_tests.sh [-h] [-g] [path_to_gmx] [testdir1 [testdir2 ...]]"  >& 2
-    echo "    The -g option (re)generates reference outputs in the given directories" >& 2
-    echo "    If no executable is given, \"gmx_d\" is used" >& 2
-    echo "    If no directories are given, all matches of [0-9][0-9][0-9]_* are used" >& 2
-    echo "    This script relies on the executable spiff to be available, and will try to " >& 2
-    echo "    download and build it into $TMPDIR if needed." >& 2
+    echo "Usage: ./run_tests.sh [-h] [-g] [-v] [-k] [path_to_gmx] [testdir1 [testdir2 ...]]"  >& 2
+    echo >& 2
+    echo "        If no gmx executable is given, \"gmx_d\" is used" >& 2
+    echo >& 2
+    echo "        If no directories are given, all matches of [0-9][0-9][0-9]_* are used" >& 2
+    echo >& 2
+    echo "        This script relies on the executable spiff to be available, and will try to " >& 2
+    echo "        download and build it into $TMPDIR if needed." >& 2
+    echo >& 2
+    echo "  -g    (re)generate reference outputs in the given directories" >& 2
+    echo >& 2
+    echo "  -k    keep the output files after a successful test, otherwise they are deleted." >& 2
+    echo "  -v    enable verbose output." >& 2
     exit 0
   else
     DIRLIST=`echo ${DIRLIST} $1`
   fi
   shift
 done
+
+echo "Using GROMACS executable: ${BINARY}"
+if $verbose ; then
+  echo "Will run tests in the following directories: ${DIRLIST}"
+fi
 
 TOPDIR=$(git rev-parse --show-toplevel)
 if [ ! -d ${TOPDIR} ] ; then
@@ -42,7 +59,7 @@ else
       echo "Error: could not be downloaded/built." >& 2
       echo "Using standard `spiff` command" >& 2
   else
-      echo "Using spiff executable from $SPIFF"
+      echo "Using spiff executable: $SPIFF"
       hash -p ${SPIFF} spiff
   fi
 fi
@@ -116,7 +133,9 @@ for dir in ${DIRLIST} ; do
 
   dir="${dir%/}" # Remove trailing / if present
   if [ -f ${dir}/disabled ] ; then
-    echo "Skipping disabled test $dir"
+    if $verbose ; then
+      echo "Skipping disabled test $dir"
+    fi
     continue
   fi
 
@@ -126,7 +145,7 @@ for dir in ${DIRLIST} ; do
     continue
   fi
 
-  echo -ne "Entering $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) ..."
+  echo -ne "Entering $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) ... "
   cd $dir
 
   if [ ! -d AutoDiff ] ; then
@@ -137,7 +156,7 @@ for dir in ${DIRLIST} ; do
     continue
   else
 
-    if [ "x${gen_ref_output}" != 'xyes' ]; then
+    if $gen_ref_output; then
 
       if ! { ls AutoDiff/ | grep -q test ; } then
         echo ""
@@ -158,7 +177,9 @@ for dir in ${DIRLIST} ; do
     fi
   fi
 
-  cleanup_files
+  if $cleanup; then
+    cleanup_files
+  fi
 
   simulations=(test test.restart)
   if [ "${dir##*/}" = "000_multiple_walkers_mtd" ] ; then
@@ -168,9 +189,27 @@ for dir in ${DIRLIST} ; do
   # Run simulation(s)
   if [ -f run.sh ]
   then
-      # Special run script e.g. for interface tests
-      ./run.sh $BINARY
-      RETVAL=$?
+    # Special run script e.g. for interface tests
+    ./run.sh $BINARY
+    RETVAL=$?
+
+    # For multi-replica simulations, copy output from first replica
+    if [ -d a ] && echo ${dir} | grep -q MPI; then
+      basename=test
+      logfile=a/${basename}.log
+      # Filter out the version numbers to allow comparisons
+      grep "^colvars:" ${logfile} \
+        | grep -v 'Initializing the collective variables module' \
+        | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
+
+      if [ -s a/${basename}.colvars.state ] ; then
+        grep -sv 'version' a/${basename}.colvars.state \
+            > ${TMPDIR}/${basename}.colvars.state.stripped && \
+          mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
+      fi
+
+      cp a/${basename}.colvars.traj .
+    fi
   else
     for basename in ${simulations[@]} ; do
 
@@ -267,7 +306,7 @@ for dir in ${DIRLIST} ; do
       fi
 
       # If this test is used to generate the reference output files, copy them
-      if [ "x${gen_ref_output}" = 'xyes' ]; then
+      if $gen_ref_output; then
         grep ':-) GROMACS -' ${basename}.out | head -n 1 > gromacs-version.txt
         grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> gromacs-version.txt
         grep 'Using GROMACS interface, version' ${basename}.out | head -n 1 >> gromacs-version.txt
@@ -300,6 +339,9 @@ for dir in ${DIRLIST} ; do
   for f in AutoDiff/*
   do
     base=`basename $f`
+    if $verbose ; then
+      echo -ne "  Comparing $(${TPUT_BLUE})$base$(${TPUT_CLEAR}) ..."
+    fi
 
     if [ "${base%.state.stripped}" != "${base}" ] && [ -n "${COLVARS_BINARY_RESTART}" ] ; then
       # Do not try comparing binary state files, they will never match anyway
@@ -347,18 +389,24 @@ for dir in ${DIRLIST} ; do
         else
           echo " --> Fails at minimum tested precision 1e-${LOW_PREC}"
         fi
+      elif $verbose ; then
+        echo -e "Skipping comparison for file $(${TPUT_BLUE})$base$(${TPUT_CLEAR}) (stdout log)"
       fi
+    elif $verbose ; then
+      echo -e "Successful comparison for file $(${TPUT_GREEN})$base$(${TPUT_CLEAR})"
     fi
    done
 
   if [ $SUCCESS -eq 1 ]
   then
-    if [ "x${gen_ref_output}" == 'xyes' ]; then
+    if $gen_ref_output; then
       echo "Reference files copied successfully."
     else
       echo " $(${TPUT_GREEN})Success!$(${TPUT_CLEAR})"
     fi
-    cleanup_files ${simulations[@]}
+    if $cleanup; then
+      cleanup_files ${simulations[@]}
+    fi
   fi
 
   # # TODO: at this point, we may use the diff file to update the reference tests for harmless changes
