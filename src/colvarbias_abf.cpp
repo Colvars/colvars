@@ -117,12 +117,8 @@ int colvarbias_abf::init(std::string const &conf)
       colvars[i]->enable(f_cv_hide_Jacobian);
     }
 
-    for (auto const &cvc : colvars[i]->get_cvcs()) {
-      if (cvc->function_type() == "tabfAlpha") {
-        uses_tabf_alpha = true;
-        break;
-      }
-    }
+    uses_tabf_alpha = uses_tabf_alpha ||
+      colvars[i]->has_component_type("tabfAlpha");
 
     // If any colvar is extended-system (restrained, not driven external param), we are running eABF
     if (colvars[i]->is_enabled(f_cv_extended_Lagrangian)

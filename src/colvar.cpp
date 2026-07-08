@@ -834,6 +834,16 @@ void colvar::add_component_type(char const *def_description, char const *def_con
   }
 }
 
+bool colvar::has_component_type(std::string const &type) const
+{
+  for (auto const &cvc : cvcs) {
+    if (cvc->function_type() == type) {
+      return true;
+    }
+  }
+  return false;
+}
+
 
 int colvar::init_components_type(const std::string& conf, const char* def_config_key) {
   size_t def_count = 0;

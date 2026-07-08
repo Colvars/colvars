@@ -671,6 +671,9 @@ public:
     return cvcs;
   }
 
+  /// Whether this colvar has a component of the given function type
+  bool has_component_type(std::string const &type) const;
+
 protected:
 
   /// Array of components objects
