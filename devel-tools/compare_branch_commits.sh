@@ -3,8 +3,8 @@
 # Iterates over the commits in the first argument (ideally: "master...branch1") and prints out
 # those whose subject lines are not found in the second argument (ideally: "master...branch2")
 
-source_branch="$1"
-target_branch="$2"
+source_branch="${1:?Usage: $0 <source_range> <target_range>}"
+target_branch="${2:?Usage: $0 <source_range> <target_range>}"
 
 mapfile -t target_branch_messages < <(git log --format=%s "${target_branch}")
 mapfile -t target_branch_hashes < <(git log --format=%h "${target_branch}")
@@ -27,6 +27,6 @@ while IFS= read -r msg; do
         fi
     done
     if [ ${found} == 0 ] ; then
-        git log --format="%h %s" "${source_branch}" | grep "${msg}"
+        git log --format="%h %s" "${source_branch}" | grep -F -- "${msg}"
     fi
 done < <(git log --format=%s "${source_branch}")
