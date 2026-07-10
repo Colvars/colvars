@@ -360,6 +360,11 @@ public:
   /// \brief Integrate equations of motion of extended Lagrangian coordinate if needed
   void update_extended_Lagrangian();
 
+  /// Map a scalar extended coordinate into its reflecting boundaries
+  int reflect_extended_coordinate(colvarvalue &position,
+                                  bool &reflected,
+                                  bool &odd_reflections);
+
   /// \brief Communicate forces (previously calculated in
   /// colvar::update()) to the external degrees of freedom
   void communicate_forces();

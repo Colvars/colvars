@@ -171,6 +171,9 @@ public:
   /// Get value of TABF alpha parameter from back-end (if available)
   virtual int get_tabf_alpha(cvm::real* alpha);
 
+  /// Get authoritative TABF alpha boundaries from back-end (if available)
+  virtual int get_tabf_alpha_boundaries(cvm::real* lower, cvm::real* upper);
+
   /// Set value of TABF alpha parameter to be sent to back-end at end of timestep
   void set_tabf_alpha(cvm::real alpha);
 

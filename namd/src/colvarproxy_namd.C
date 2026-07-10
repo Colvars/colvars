@@ -1756,6 +1756,14 @@ int colvarproxy_namd::get_tabf_alpha(cvm::real* alpha) {
 }
 
 
+int colvarproxy_namd::get_tabf_alpha_boundaries(cvm::real* lower,
+                                                 cvm::real* upper) {
+  *lower = simparams->tabfAlphaMin;
+  *upper = simparams->tabfAlphaMax;
+  return COLVARS_OK;
+}
+
+
 /// Set value of TABF alpha parameter in back-end
 int colvarproxy_namd::send_tabf_alpha(void) {
   cvm::real alpha = cached_tabf_alpha;

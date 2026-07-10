@@ -10,6 +10,7 @@
 #include <list>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 
@@ -319,13 +320,41 @@ int colvar::init(std::string const &conf)
 
   error_code |= init_grid_parameters(conf);
 
+  const bool is_tabf_alpha =
+    is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "tabfAlpha";
+  if (is_tabf_alpha) {
+    cvm::real tabf_lower = 0.0;
+    cvm::real tabf_upper = 0.0;
+    error_code |= cvmodule->proxy->get_tabf_alpha_boundaries(&tabf_lower, &tabf_upper);
+    const bool lower_was_set = key_lookup(conf, "lowerBoundary");
+    const bool upper_was_set = key_lookup(conf, "upperBoundary");
+    if (lower_was_set && cvm::fabs(lower_boundary.real_value - tabf_lower) >
+                           colvar_boundaries_tol * width) {
+      error_code |= cvmodule->error(
+        "Error: tabfAlpha lowerBoundary " + cvm::to_str(lower_boundary) +
+        " conflicts with back-end TABF alpha minimum " + cvm::to_str(tabf_lower) + ".\n",
+        COLVARS_INPUT_ERROR);
+    }
+    if (upper_was_set && cvm::fabs(upper_boundary.real_value - tabf_upper) >
+                           colvar_boundaries_tol * width) {
+      error_code |= cvmodule->error(
+        "Error: tabfAlpha upperBoundary " + cvm::to_str(upper_boundary) +
+        " conflicts with back-end TABF alpha maximum " + cvm::to_str(tabf_upper) + ".\n",
+        COLVARS_INPUT_ERROR);
+    }
+    lower_boundary.real_value = tabf_lower;
+    upper_boundary.real_value = tabf_upper;
+    enable(f_cv_lower_boundary);
+    enable(f_cv_upper_boundary);
+  }
+
   // Detect if we have a single component that is an external back-end parameter
   if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "alchLambda") {
     enable(f_cv_external);
 
     error_code |= static_cast<colvar::alch_lambda *>(cvcs[0].get())->init_alchemy(time_step_factor);
   }
-  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "tabfAlpha") {
+  if (is_tabf_alpha) {
     enable(f_cv_external);
 
     error_code |= static_cast<colvar::tabf_alpha *>(cvcs[0].get())->init_tabf(time_step_factor);
@@ -780,8 +809,23 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
       ext_sigma = 0.0;
     }
 
-    get_keyval_feature(this, conf, "reflectingLowerBoundary", f_cv_reflecting_lower_boundary, false);
-    get_keyval_feature(this, conf, "reflectingUpperBoundary", f_cv_reflecting_upper_boundary, false);
+    const bool is_tabf_alpha =
+      is_enabled(f_cv_external) && is_enabled(f_cv_single_cvc) &&
+      cvcs[0]->function_type() == "tabfAlpha";
+    bool reflect_lower = is_tabf_alpha;
+    bool reflect_upper = is_tabf_alpha;
+    const bool reflect_lower_set =
+      get_keyval(conf, "reflectingLowerBoundary", reflect_lower, reflect_lower);
+    const bool reflect_upper_set =
+      get_keyval(conf, "reflectingUpperBoundary", reflect_upper, reflect_upper);
+    if (is_tabf_alpha && ((reflect_lower_set && !reflect_lower) ||
+                          (reflect_upper_set && !reflect_upper))) {
+      return cvmodule->error(
+        "Error: tabfAlpha requires reflectingLowerBoundary and reflectingUpperBoundary to be enabled.\n",
+        COLVARS_INPUT_ERROR);
+    }
+    if (reflect_lower) enable(f_cv_reflecting_lower_boundary);
+    if (reflect_upper) enable(f_cv_reflecting_upper_boundary);
   }
 
   return COLVARS_OK;
@@ -1898,6 +1942,73 @@ cvm::real colvar::update_forces_energy()
 }
 
 
+int colvar::reflect_extended_coordinate(colvarvalue &position,
+                                        bool &reflected,
+                                        bool &odd_reflections)
+{
+  reflected = false;
+  odd_reflections = false;
+
+  const bool reflect_lower = is_enabled(f_cv_reflecting_lower_boundary);
+  const bool reflect_upper = is_enabled(f_cv_reflecting_upper_boundary);
+  if (!reflect_lower && !reflect_upper) return COLVARS_OK;
+
+  const cvm::real value = position.real_value;
+  if (!std::isfinite(value)) {
+    return cvmodule->error("Error: extended coordinate is non-finite and cannot be reflected.\n",
+                           COLVARS_INPUT_ERROR);
+  }
+
+  if (reflect_lower && reflect_upper) {
+    const cvm::real lower = lower_boundary.real_value;
+    const cvm::real upper = upper_boundary.real_value;
+    const cvm::real boundary_width = upper - lower;
+    const cvm::real reflection_period = 2.0 * boundary_width;
+    if (!std::isfinite(lower) || !std::isfinite(upper) ||
+        !(boundary_width > 0.0) || !std::isfinite(reflection_period)) {
+      return cvmodule->error("Error: reflecting boundaries do not define a finite, positive interval.\n",
+                             COLVARS_INPUT_ERROR);
+    }
+    if (value >= lower && value <= upper) return COLVARS_OK;
+
+    const cvm::real shifted_value = value - lower;
+    if (!std::isfinite(shifted_value)) {
+      return cvmodule->error("Error: extended coordinate overflow while applying reflecting boundaries.\n",
+                             COLVARS_INPUT_ERROR);
+    }
+    cvm::real folded_value = std::fmod(shifted_value, reflection_period);
+    if (folded_value < 0.0) folded_value += reflection_period;
+
+    if (folded_value == 0.0) {
+      odd_reflections = shifted_value > 0.0;
+    } else if (folded_value == boundary_width) {
+      odd_reflections = shifted_value < 0.0;
+    } else {
+      odd_reflections = folded_value > boundary_width;
+    }
+    position.real_value = folded_value > boundary_width ?
+      upper - (folded_value - boundary_width) : lower + folded_value;
+    reflected = true;
+    return COLVARS_OK;
+  }
+
+  if (reflect_lower && value < lower_boundary.real_value) {
+    position.real_value = 2.0 * lower_boundary.real_value - value;
+    reflected = true;
+    odd_reflections = true;
+  } else if (reflect_upper && value > upper_boundary.real_value) {
+    position.real_value = 2.0 * upper_boundary.real_value - value;
+    reflected = true;
+    odd_reflections = true;
+  }
+  if (!std::isfinite(position.real_value)) {
+    return cvmodule->error("Error: extended coordinate overflow while applying reflecting boundary.\n",
+                           COLVARS_INPUT_ERROR);
+  }
+  return COLVARS_OK;
+}
+
+
 void colvar::update_extended_Lagrangian()
 {
   if (cvm::debug()) {
@@ -2014,17 +2125,14 @@ void colvar::update_extended_Lagrangian()
   // [A] Second half step in position (10d)
   x_ext  += dt * v_ext / 2.0;
 
-  cvm::real delta = 0; // Length of overshoot past either reflecting boundary
-  if ((is_enabled(f_cv_reflecting_lower_boundary) && (delta = x_ext - lower_boundary) < 0) ||
-      (is_enabled(f_cv_reflecting_upper_boundary) && (delta = x_ext - upper_boundary) > 0)) {
-    // Reflect arrival position
-    x_ext -= 2.0 * delta;
-    // Bounce happened on average at t+1/2 -> reflect velocity at t+1/2
-    v_ext = -0.5 * (prev_v_ext + v_ext);
-    if ((is_enabled(f_cv_reflecting_lower_boundary) && (x_ext - lower_boundary) < 0.0) ||
-        (is_enabled(f_cv_reflecting_upper_boundary) && (x_ext - upper_boundary) > 0.0)) {
-      cvmodule->error("Error: extended coordinate value " + cvm::to_str(x_ext) + " is still outside boundaries after reflection.\n");
-    }
+  bool reflected = false;
+  bool odd_reflections = false;
+  if (reflect_extended_coordinate(x_ext, reflected, odd_reflections) != COLVARS_OK) return;
+  if (reflected) {
+    // A bounce happens on average at t+1/2; preserve the existing half-step
+    // velocity convention and use reflection parity for multiple crossings.
+    v_ext = 0.5 * (prev_v_ext + v_ext);
+    if (odd_reflections) v_ext = -1.0 * v_ext;
   }
 
   x_ext.apply_constraints();
@@ -2446,11 +2554,6 @@ int colvar::set_state_params(std::string const &conf)
              cvm::to_str(x)+"\n");
     x_restart = x;
     after_restart = true;
-    // Externally driven cv (e.g. alchemical lambda) is imposed by restart value
-    if (is_enabled(f_cv_external) && is_enabled(f_cv_extended_Lagrangian)) {
-      // Request immediate sync of driven parameter to back-end code
-      cvcs[0]->set_value(x, true);
-    }
   }
 
   if (is_enabled(f_cv_extended_Lagrangian)) {
@@ -2464,6 +2567,22 @@ int colvar::set_state_params(std::string const &conf)
                                COLVARS_INPUT_ERROR);
     }
     x_reported = x_ext;
+    if (is_enabled(f_cv_external)) {
+      // Reflect legacy or hand-edited restart states before synchronizing the
+      // authoritative extended coordinate to the back-end.
+      bool reflected = false;
+      bool odd_reflections = false;
+      const int reflection_error =
+        reflect_extended_coordinate(x_ext, reflected, odd_reflections);
+      error_code |= reflection_error;
+      if (reflection_error == COLVARS_OK) {
+        if (reflected && odd_reflections) v_ext = -1.0 * v_ext;
+        x = x_ext;
+        x_restart = x_ext;
+        x_reported = x_ext;
+        cvcs[0]->set_value(x_ext, true);
+      }
+    }
   } else {
     x_reported = x;
   }

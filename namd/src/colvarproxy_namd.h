@@ -306,6 +306,9 @@ public:
   /// Get value of TABF alpha parameter from back-end
   int get_tabf_alpha(cvm::real* alpha);
 
+  /// Get authoritative TABF alpha boundaries from NAMD
+  int get_tabf_alpha_boundaries(cvm::real* lower, cvm::real* upper);
+
   /// Set value of TABF alpha parameter in back-end
   int send_tabf_alpha(void);
 

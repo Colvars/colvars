@@ -193,6 +193,14 @@ int colvarproxy_system::get_tabf_alpha(cvm::real * /* alpha */)
 }
 
 
+int colvarproxy_system::get_tabf_alpha_boundaries(cvm::real * /* lower */,
+                                                   cvm::real * /* upper */)
+{
+  return cvm::error_static("Error in get_tabf_alpha_boundaries: TABF alpha dynamics is not supported by this build.",
+    COLVARS_NOT_IMPLEMENTED);
+}
+
+
 void colvarproxy_system::set_tabf_alpha(cvm::real alpha)
 {
   cached_tabf_alpha = alpha;
