@@ -46,7 +46,7 @@ compile_gromacs_target() {
         if [ "${1,,}" = "debug" ]; then
             GMX_BUILD_TYPE=Debug
             GMX_BUILD_OPTS+=(-DCMAKE_VERBOSE_MAKEFILE=yes)
-            GMX_BUILD_OPTS+=(-DCMAKE_CXX_FLAGS="-DCOLVARS_DEBUG=1")
+            GMX_BUILD_OPTS+=(-DCMAKE_CXX_FLAGS_INIT="-DCOLVARS_DEBUG=1")
         else
             GMX_INSTALL_DIR=${1}
         fi
