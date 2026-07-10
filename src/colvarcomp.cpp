@@ -458,7 +458,7 @@ void colvar::cvc::read_data()
 {
   if (is_enabled(f_cvc_pbc_minimum_image)) {
     // Copy boundary conditions from the proxy
-    boundary_conditions = cvm::main()->proxy->get_system_boundaries();
+    boundary_conditions = cvmodule->proxy->get_system_boundaries();
   } else {
     // Set as non-periodic boundary conditions (default) for this CVC
     boundary_conditions.reset();
