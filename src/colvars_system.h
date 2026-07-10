@@ -38,10 +38,11 @@ public:
   inline COLVARS_HOST_DEVICE void set_type(types t) { type_ = t; }
 
   /// Compute the distance between two positions
-  cvm::rvector position_distance(cvm::atom_pos const &pos1, cvm::atom_pos const &pos2) const;
+  inline COLVARS_HOST_DEVICE cvm::rvector position_distance(cvm::atom_pos const &pos1,
+                                                           cvm::atom_pos const &pos2) const;
 
   /// Compute a shift vector that accounts for tilt factors up to 0.5
-  cvm::rvector get_triclinic_shift(cvm::rvector const &diff) const;
+  inline COLVARS_HOST_DEVICE cvm::rvector get_triclinic_shift(cvm::rvector const &diff) const;
 
   /// Reset to defaults (non-periodic)
   inline COLVARS_HOST_DEVICE void reset() {
@@ -56,9 +57,9 @@ public:
   }
 
   /// Set from explicit boundary configuration
-  void set_boundaries(bool periodic_x_in, bool periodic_y_in, bool periodic_z_in,
-                      cvm::rvector const &A, cvm::rvector const &B, cvm::rvector const &C);
-
+  inline COLVARS_HOST_DEVICE void set_boundaries(bool periodic_x_in, bool periodic_y_in,
+                                                bool periodic_z_in, cvm::rvector const &A,
+                                                cvm::rvector const &B, cvm::rvector const &C);
 protected:
 
   /// Type of boundary conditions in the current computation
@@ -87,12 +88,16 @@ cvm::system_boundary_conditions::set_boundaries(bool periodic_x_in, bool periodi
   periodic_y = periodic_y_in;
   periodic_z = periodic_z_in;
 
+  // Avoid using stale reciprocal vectors when switching boundary types (especially for mixed periodicity)
+  reciprocal_cell_x.reset();
+  reciprocal_cell_y.reset();
+  reciprocal_cell_z.reset();
   if ((periodic_x == periodic_y) && (periodic_x == periodic_z)) {
     if (periodic_x) {
       // Temporarily set as fully-periodic & orthogonal; will check below for triclinic
       set_type(types::pbc_orthogonal);
     } else {
-      set_type(types::non_periodic);
+      reset();
       return;
     }
   } else {
@@ -158,7 +163,14 @@ cvm::rvector cvm::system_boundary_conditions::position_distance(cvm::atom_pos co
 {
   cvm::rvector diff = (pos2 - pos1);
 
-  if (type() == types::non_periodic || type() == types::unsupported) {
+  if (type() == types::non_periodic) {
+    return diff;
+  }
+
+  if (type() == types::unsupported) {
+#if !(defined(__HIP_DEVICE_COMPILE__)) && !(defined(__CUDA_ARCH__))
+    cvm::error_static("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
+#endif
     return diff;
   }
 

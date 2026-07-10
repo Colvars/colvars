@@ -233,12 +233,12 @@ int colvarproxy_vmd::update_input()
   float B[3];
   float C[3];
   ts->get_transform_vectors(A, B, C);
-  boundaries_.set_boundaries((ts->a_length > 0.0),
-                             (ts->b_length > 0.0),
-                             (ts->c_length > 0.0),
-                             cvm::rvector{A[0], A[1], A[2]},
-                             cvm::rvector{B[0], B[1], B[2]},
-                             cvm::rvector{C[0], C[1], C[2]});
+  boundaries_.set_boundaries((ts->a_length > 1.0e-6f),
+                             (ts->b_length > 1.0e-6f),
+                             (ts->c_length > 1.0e-6f),
+                             cvm::rvector{angstrom_to_internal(A[0]), angstrom_to_internal(A[1]), angstrom_to_internal(A[2])},
+                             cvm::rvector{angstrom_to_internal(B[0]), angstrom_to_internal(B[1]), angstrom_to_internal(B[2])},
+                             cvm::rvector{angstrom_to_internal(C[0]), angstrom_to_internal(C[1]), angstrom_to_internal(C[2])});
 
   return error_code;
 }

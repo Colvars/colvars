@@ -89,10 +89,9 @@ public:
   /// Account for system boundaries within the Colvars library (as opposed to using the MD engine)
   inline bool & use_internal_pbc() { return use_internal_pbc_; }
 
-  /// Get the PBC-aware distance vector between two positions (using the MD engine's convention)
+  /// Get the PBC-aware distance vector between two positions (using Colvars internal boundary handling)
   virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                          cvm::atom_pos const &pos2) const;
-
   /// Get the current system boundary conditions
   inline cvm::system_boundary_conditions const &get_system_boundaries() const {
     return boundaries_;
