@@ -17,7 +17,6 @@ colvar {
 
             centerToReference yes
             rotateToReference yes
-            enableFitGradients no # Not available because gradients are implicit
             refPositionsFile ../Common/da-flags.pdb
             refPositionsCol B
             refPositionsColValue 1
@@ -29,7 +28,6 @@ colvar {
 
             centerToReference yes
             rotateToReference yes
-            enableFitGradients no # Not available because gradients are implicit
             refPositionsFile ../Common/da-flags.pdb
             refPositionsCol B
             refPositionsColValue 2
@@ -53,7 +51,6 @@ colvar {
 
             centerToReference yes
             rotateToReference yes
-            enableFitGradients no # Not available because gradients are implicit
             refPositionsFile ../Common/da-partial.pdb
         }
         group2 {
@@ -63,7 +60,6 @@ colvar {
 
             centerToReference yes
             rotateToReference yes
-            enableFitGradients no # Not available because gradients are implicit
             refPositionsFile ../Common/da-flags.pdb
             refPositionsCol B
             refPositionsColValue 2
