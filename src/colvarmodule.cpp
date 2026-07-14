@@ -1270,7 +1270,7 @@ int colvarmodule::update_colvar_forces()
     // CUDA graph for fit gradients. As a result, we don't need to synchronize the
     // fit gradients event.
     for (auto ag = forced_atom_groups.begin(); ag != forced_atom_groups.end(); ++ag) {
-      (*ag)->get_gpu_atom_group()->add_force_to_proxy_gpu((*ag));
+      error_code |= (*ag)->get_gpu_atom_group()->add_force_to_proxy_gpu((*ag));
     }
 #endif
   }

@@ -138,7 +138,7 @@ public:
 
   /// \brief Obtain data needed for the calculation for the backend
   virtual void read_data();
-  virtual void read_data_gpu();
+  virtual int read_data_gpu();
 
   /// \brief Calculate the variable
   virtual void calc_value() = 0;

@@ -1086,7 +1086,7 @@ int colvar::rmsd::init(std::string const &conf)
     enable(f_cvc_support_gpu);
     disable(f_cvc_require_cpu_buffers);
     rmsd_gpu_impl = std::unique_ptr<rmsd_gpu_impl_t>(new rmsd_gpu_impl_t(this));
-    rmsd_gpu_impl->init();
+    error_code |= rmsd_gpu_impl->init();
 #endif // (COLVARS_CUDA) || defined (COLVARS_GPU)
   }
   return error_code;
