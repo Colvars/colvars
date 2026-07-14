@@ -147,7 +147,7 @@ std::string colvarproxy_gpu::gpu_name() const {
 std::string colvarproxy_gpu::gpu_bus_id() const {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   const int deviceID = gpu_device_id();
-  char busID[256];
+  char busID[256] = {};
   checkGPUError(cudaDeviceGetPCIBusId(busID, 256, deviceID));
   return std::string{busID};
 #else
