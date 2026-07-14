@@ -1514,12 +1514,12 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
     if (!cvcs[i]->is_enabled()) continue;
     cvc_count++;
     if (use_gpu) {
-      (cvcs[i])->read_data_gpu();
+      error_code |= (cvcs[i])->read_data_gpu();
     } else {
       (cvcs[i])->read_data();
     }
     if (use_gpu && cvcs[i]->is_enabled(f_cvc_support_gpu)) {
-      (cvcs[i])->calc_value_gpu();
+      error_code |= (cvcs[i])->calc_value_gpu();
     } else {
       (cvcs[i])->calc_value();
     }
@@ -1749,7 +1749,7 @@ int colvar::calc_cvc_total_force(int first_cvc, size_t num_cvcs)
       if (!cvcs[i]->is_enabled()) continue;
       cvc_count++;
       if (use_gpu && cvcs[i]->is_enabled(f_cvc_support_gpu)) {
-        (cvcs[i])->calc_force_invgrads_gpu();
+        error_code |= (cvcs[i])->calc_force_invgrads_gpu();
       } else {
         (cvcs[i])->calc_force_invgrads();
       }
@@ -1832,7 +1832,7 @@ int colvar::calc_cvc_Jacobians(int first_cvc, size_t num_cvcs)
       if (!cvcs[i]->is_enabled()) continue;
       cvc_count++;
       if (use_gpu && cvcs[i]->is_enabled(f_cvc_support_gpu)) {
-        cvcs[i]->calc_Jacobian_derivative_gpu();
+        error_code |= cvcs[i]->calc_Jacobian_derivative_gpu();
       } else {
         (cvcs[i])->calc_Jacobian_derivative();
       }
