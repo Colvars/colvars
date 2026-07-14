@@ -503,7 +503,8 @@ void colvar::cvc::read_data()
   }
 }
 
-void colvar::cvc::read_data_gpu() {
+int colvar::cvc::read_data_gpu() {
+  int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   colvarproxy* proxy = cvmodule->proxy;
   if ((proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) && is_enabled(f_cvc_explicit_atom_groups)) {
@@ -514,7 +515,7 @@ void colvar::cvc::read_data_gpu() {
       }
     }
     for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
-      (*agi)->get_gpu_atom_group()->read_data_gpu(*agi);
+      error_code |= (*agi)->get_gpu_atom_group()->read_data_gpu(*agi);
     }
     // NOTE: In after_read_data_sync, there are calls to synchronize the
     // CUDA events for checking if the eigendecompositions are failed, so
@@ -522,11 +523,12 @@ void colvar::cvc::read_data_gpu() {
     // better parallelization.
     for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
       // Synchronize the results to CPU if necessary
-      (*agi)->get_gpu_atom_group()->after_read_data_sync(
+      error_code |= (*agi)->get_gpu_atom_group()->after_read_data_sync(
         *agi, is_enabled(colvardeps::f_cvc_require_cpu_buffers));
     }
   }
 #endif
+  return error_code;
 }
 
 
