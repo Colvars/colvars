@@ -1318,7 +1318,11 @@ int colvar::rmsd::calc_Jacobian_derivative_after_gpu() {
 }
 
 int colvar::rmsd::proxy_buffers_reallocated() {
-  return rmsd_gpu_impl->reset_graphs();
+  int error_code = colvardeps::proxy_buffers_reallocated();
+  if (rmsd_gpu_impl) {
+    error_code |= rmsd_gpu_impl->reset_graphs();
+  }
+  return error_code;
 }
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
