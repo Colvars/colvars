@@ -105,12 +105,10 @@ int colvarbias_abmd::set_state_params(std::string const &conf)
     colvarparse::parse_restart | colvarparse::parse_required);
   ref_initialized = true;
 
-  get_keyval(conf, "forceConstant", k, k,
-    colvarparse::parse_restart | colvarparse::parse_required);
-  get_keyval(conf, "decreasing", decreasing, decreasing,
-    colvarparse::parse_restart | colvarparse::parse_required);
+  get_keyval(conf, "forceConstant", k, k, colvarparse::parse_required_restart);
+  get_keyval(conf, "decreasing", decreasing, decreasing, colvarparse::parse_required_restart);
   get_keyval(conf, "stoppingValue", stopping_val, stopping_val,
-    colvarparse::parse_restart | colvarparse::parse_required);
+             colvarparse::parse_required_restart);
 
   return COLVARS_OK;
 }
