@@ -1184,7 +1184,7 @@ int colvar::cvc::debug_gradients_gpu() {
       group, false, 0, -1, false, -1.0, group->get_stream());
     error_code |= group->get_gpu_atom_group()->calc_required_properties_gpu_debug(
       group, false, group->get_stream());
-    error_code |= checkGPUError(cudaEventRecord(ag_event));
+    error_code |= checkGPUError(cudaEventRecord(ag_event, group->get_stream()));
     // Wait for the atom group
     error_code |= checkGPUError(cudaStreamWaitEvent(get_stream(), ag_event));
     error_code |= group->get_gpu_atom_group()->after_read_data_sync(
