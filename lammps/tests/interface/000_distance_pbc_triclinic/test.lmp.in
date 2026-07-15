@@ -1,0 +1,20 @@
+# -*- lammps -*-
+
+include ../common/tip3p.lmp.in
+
+read_data ../common/triclinic_water.lmp.data
+
+include ../common/fixes.lmp.in
+
+# Using 0 as a frequency to trigger an immediate update of the unitcell
+fix deform_cell all deform 0 x erate -0.0001 y erate -0.0002 z erate -0.0003 yz erate 0.003 xz erate 0.002 xy erate 0.001
+
+dump DCD all dcd 1 test.dcd
+
+log test.out
+
+fix Colvars all colvars ${colvars_config} output test seed 54321
+
+include ../common/md.lmp.in
+
+write_data test.lmp.data
