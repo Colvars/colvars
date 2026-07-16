@@ -4,11 +4,12 @@
 #include <cstring>
 
 #if defined(__has_include)
+#if __cplusplus >= 202302L
 # if __has_include(<stacktrace>)
 #  define use_cpp_stacktrace
 #  include <stacktrace>
 # endif
-
+#endif
 #endif
 
 namespace colvars_gpu {
