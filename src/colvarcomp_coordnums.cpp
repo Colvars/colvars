@@ -187,19 +187,40 @@ public:
     tileListsLen.resize(numTiles, 0);
     tileListsStart.resize(numTiles, 0);
     tileLists.resize(tileListsSize);
+    /**
+      for (unsigned int i = 0; i < numTiles; ++i) {
+        tileListsStart[i] = i * maxNumInteractionsPerTile;
+        const unsigned int jStart = i + 1;
+        const unsigned int jEnd = std::min(numTiles, jStart + maxNumInteractionsPerTile);
+        for (unsigned int j = jStart; j < jEnd; ++j) {
+          const unsigned int offset = tileListsLen[i]++;
+          const unsigned int pos = i * maxNumInteractionsPerTile;
+          tileLists[pos+offset] = j;
+        }
+        for (unsigned int j = jEnd; j < numTiles; ++j) {
+          const unsigned int offset = tileListsLen[j]++;
+          const unsigned int pos = j * maxNumInteractionsPerTile;
+          tileLists[pos+offset] = i;
+        }
+      }
+      * @note The following loop is a more refined version of the loop above
+    */
     for (unsigned int i = 0; i < numTiles; ++i) {
-      tileListsStart[i] = i * maxNumInteractionsPerTile;
       const unsigned int jStart = i + 1;
       const unsigned int jEnd = std::min(numTiles, jStart + maxNumInteractionsPerTile);
+      const unsigned int posStart = i * maxNumInteractionsPerTile;
+      tileListsLen[i] += jEnd - jStart;
+      tileListsStart[i] = posStart;
       for (unsigned int j = jStart; j < jEnd; ++j) {
-        const unsigned int offset = tileListsLen[i]++;
-        const unsigned int pos = i * maxNumInteractionsPerTile;
-        tileLists[pos+offset] = j;
+        const unsigned int offset = j - jStart;
+        tileLists[posStart+offset] = j;
       }
-      for (unsigned int j = jEnd; j < numTiles; ++j) {
-        const unsigned int offset = tileListsLen[j]++;
-        const unsigned int pos = j * maxNumInteractionsPerTile;
-        tileLists[pos+offset] = i;
+      if (i > maxNumInteractionsPerTile) {
+        tileListsLen[i] += i - maxNumInteractionsPerTile;
+        for (unsigned int k = 0; k < i - maxNumInteractionsPerTile; ++k) {
+          const unsigned int offset = jEnd - jStart + k;
+          tileLists[posStart+offset] = k;
+        }
       }
     }
 #if 0
