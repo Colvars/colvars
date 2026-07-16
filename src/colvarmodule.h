@@ -115,6 +115,21 @@ public:
     return (n > 0) ? yy : 1.0/yy;
   }
 
+  template <int n>
+  static inline real integer_power(real const &x)
+  {
+    static_assert(n != 0, "n cannot be zero in integer_power");
+    // Original code: math_special.h in LAMMPS
+    double yy, ww;
+    // if (x == 0.0) return 0.0;
+    int nn = (n > 0) ? n : -n;
+    ww = x;
+    for (yy = 1.0; nn != 0; nn >>= 1, ww *=ww) {
+      if (nn & 1) yy *= ww;
+    }
+    return (n > 0) ? yy : 1.0/yy;
+  }
+
   /// Reimplemented to work around MS compiler issues
   static inline real pow(real const &x, real const &y)
   {
