@@ -1,0 +1,21 @@
+units real
+
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+
+colvar {
+    name one
+
+    distancePairs {
+        group1 {
+            # oxygen atoms
+            atomNumbers 16 19 22 25 28
+        }
+        group2 {
+            # oxygen atoms
+            atomNumbers 1 4 7 10 13
+        }
+    }
+}
+
+
