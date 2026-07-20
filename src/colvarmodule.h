@@ -753,9 +753,9 @@ public:
 
   /// Print a message to stderr
   /// Used in lightweight objects that do not have access to cvmodule
-  static void log_static(std::string const &message) {
-    if (colvarmodule::main()) {
-      colvarmodule::main()->log(message);
+  static void log_static(colvarmodule* cvmodule, std::string const &message) {
+    if (cvmodule) {
+      cvmodule->log(message);
     } else {
       std::printf("colvars: %s\n", message.c_str());
     }
@@ -767,11 +767,11 @@ public:
   /// Print an error message to stderr
   /// Used in lightweight objects that do not have access to cvmodule
   /// Typically fatal errors that reflect bugs, so hopefully rare
-  static int error_static(std::string const &message, int code = -1) {
-    if (colvarmodule::main()) {
-      code = colvarmodule::main()->error(message, code);
+  static int error_static(colvarmodule* cvmodule, std::string const &message, int code = -1) {
+    if (cvmodule) {
+      code = cvmodule->error(message, code);
     } else {
-      std::cerr << "colvars: " << message << std::endl;
+      std::fprintf(stderr, "%s%s\n", "colvars: ", message.c_str());
       exit(-1);
     }
     return code;
@@ -955,11 +955,6 @@ public:
   /// \brief Pointer to the proxy object, used to retrieve atomic data
   /// from the hosting program
   colvarproxy *proxy = nullptr;
-  /// Temporary static pointer to unique proxy object
-  static colvarproxy *proxy_static;
-
-  /// \brief Access the main instance of the Colvars module
-  static colvarmodule *main();
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   template <typename T>

@@ -16,7 +16,7 @@
 using namespace neuralnetworkCV;
 
 
-colvar::neuralNetwork::neuralNetwork()
+colvar::neuralNetwork::neuralNetwork(colvarmodule* cvmodule_in): colvar::linearCombination(cvmodule_in)
 {
     set_function_type("neuralNetwork");
 }

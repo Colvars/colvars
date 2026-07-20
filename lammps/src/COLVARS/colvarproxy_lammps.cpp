@@ -146,7 +146,7 @@ double colvarproxy_lammps::compute()
              (_lmp->domain->triclinic == 0)) {
     // Orthogonal unit cell
     boundaries_type = boundaries_pbc_ortho;
-    colvarproxy_system::update_pbc_lattice();
+    colvarproxy::update_pbc_lattice();
     // It is safer to let LAMMPS deal with high-tilt triclinic boxes
   } else {
     boundaries_type = boundaries_unsupported;

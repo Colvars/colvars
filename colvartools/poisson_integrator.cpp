@@ -17,14 +17,14 @@ int main (int argc, char *argv[]) {
   proxy->cvmodule = new colvarmodule(proxy); // This could be omitted if we used the colvarproxy_stub class
 
   std::string gradfile (argv[1]);
-  std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(gradfile);
+  std::shared_ptr<colvar_grid_gradient> grad_ptr = std::make_shared<colvar_grid_gradient>(proxy->cvmodule, gradfile);
   if (proxy->cvmodule->get_error()) { return -1; }
 
   int itmax = 10000;
   cvm::real err;
   cvm::real tol = 1e-8;
 
-  colvargrid_integrate fes(grad_ptr);
+  colvargrid_integrate fes(proxy->cvmodule, grad_ptr);
   fes.set_div();
   fes.integrate(itmax, tol, err);
   fes.set_zero_minimum();

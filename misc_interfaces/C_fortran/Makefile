@@ -7,7 +7,7 @@ COLVARS_LIB = ../../src/libcolvars.a
 COLVARS_SRC_DIR = ../../src
 IF_OBJ = colvarproxy_C.o
 
-CXXFLAGS := -std=c++11 -pedantic -g -O2 -fPIC
+CXXFLAGS := -std=c++17 -pedantic -g -O2 -fPIC
 
 .PHONY: default $(COLVARS_LIB)
 

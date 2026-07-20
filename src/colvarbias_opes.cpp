@@ -44,7 +44,7 @@
 
 
 colvarbias_opes::colvarbias_opes(colvarmodule *cvmodule_in, char const *key):
-  colvarbias(cvmodule_in, key), m_kbt(0), m_barrier(0), m_biasfactor(0),
+  colvardeps(cvmodule_in), colvarbias(cvmodule_in, key), m_kbt(0), m_barrier(0), m_biasfactor(0),
   m_bias_prefactor(0), m_temperature(0),
   m_pace(0), m_adaptive_sigma_stride(0),
   m_adaptive_counter(0), m_counter(1),
@@ -65,7 +65,7 @@ colvarbias_opes::colvarbias_opes(colvarmodule *cvmodule_in, char const *key):
   m_explore(false), m_inf_biasfactor(false)
 {
 #ifdef OPES_THREADING
-  provide(f_cvb_smp, cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::inner_loop);
+  provide(f_cvb_smp, cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::inner_loop);
   if (is_available(f_cvb_smp)){
     enable(f_cvb_smp); // Enabled by default
   }
@@ -282,8 +282,8 @@ int colvarbias_opes::init(const std::string& conf) {
       }
     }
     key_lookup(conf, "grid", &grid_conf);
-    m_reweight_grid.reset(new colvar_grid_scalar(m_pmf_cvs, nullptr, false, grid_conf));
-    m_pmf_grid.reset(new colvar_grid_scalar(m_pmf_cvs, m_reweight_grid));
+    m_reweight_grid.reset(new colvar_grid_scalar(cvmodule, m_pmf_cvs, nullptr, false, grid_conf));
+    m_pmf_grid.reset(new colvar_grid_scalar(cvmodule, m_pmf_cvs, m_reweight_grid));
     get_keyval(conf, "pmfHistoryFrequency", m_pmf_hist_freq, output_freq);
     if ((m_pmf_hist_freq % output_freq) != 0) {
       error_code |= cvmodule->error("Error: pmfHistoryFrequency must be a multiple of outputFreq.\n",
@@ -292,8 +292,8 @@ int colvarbias_opes::init(const std::string& conf) {
     if (comm == multiple_replicas) {
       get_keyval(conf, "pmfShared", m_pmf_shared, true);
       if (m_pmf_shared) {
-        m_global_reweight_grid.reset(new colvar_grid_scalar(m_pmf_cvs, m_reweight_grid));
-        m_global_pmf_grid.reset(new colvar_grid_scalar(m_pmf_cvs, m_reweight_grid));
+        m_global_reweight_grid.reset(new colvar_grid_scalar(cvmodule, m_pmf_cvs, m_reweight_grid));
+        m_global_pmf_grid.reset(new colvar_grid_scalar(cvmodule, m_pmf_cvs, m_reweight_grid));
       }
     }
   }

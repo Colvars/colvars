@@ -23,35 +23,20 @@
 
 
 template <class T>
-colvar_grid<T>::colvar_grid(std::string const &filename, size_t mult_i)
-  : colvarparse(cvm::main())
+colvar_grid<T>::colvar_grid(colvarmodule* cvmodule_in, std::string const &filename, size_t mult_i)
+  : colvarparse(cvmodule_in)
 {
-std::istream &is = cvm::main()->proxy->input_stream(filename, "multicol grid file");
-if (!is) {
-  return;
-}
+  std::istream &is = cvmodule_in->proxy->input_stream(filename, "multicol grid file");
+  if (!is) {
+    return;
+  }
 
-// Data in the header: nColvars, then for each
-// xiMin, dXi, nPoints, periodic flag
+  // Data in the header: nColvars, then for each
+  // xiMin, dXi, nPoints, periodic flag
 
-std::string  hash;
-size_t i;
+  std::string  hash;
+  size_t i;
 
-if ( !(is >> hash) || (hash != "#") ) {
-  cvmodule->error("Error reading grid at position "+
-              cvm::to_str(static_cast<size_t>(is.tellg()))+
-              " in stream(read \"" + hash + "\")\n");
-  return;
-}
-
-is >> nd;
-mult = (mult_i == 0) ? nd : mult_i;
-
-std::vector<cvm::real> lower_in(nd), widths_in(nd);
-std::vector<int>       nx_in(nd);
-std::vector<int>       periodic_in(nd);
-
-for (i = 0; i < nd; i++ ) {
   if ( !(is >> hash) || (hash != "#") ) {
     cvmodule->error("Error reading grid at position "+
                 cvm::to_str(static_cast<size_t>(is.tellg()))+
@@ -59,23 +44,38 @@ for (i = 0; i < nd; i++ ) {
     return;
   }
 
-  is >> lower_in[i] >> widths_in[i] >> nx_in[i] >> periodic_in[i];
-}
+  is >> nd;
+  mult = (mult_i == 0) ? nd : mult_i;
 
-this->setup(nx_in, 0., mult);
+  std::vector<cvm::real> lower_in(nd), widths_in(nd);
+  std::vector<int>       nx_in(nd);
+  std::vector<int>       periodic_in(nd);
 
-widths = widths_in;
+  for (i = 0; i < nd; i++ ) {
+    if ( !(is >> hash) || (hash != "#") ) {
+      cvmodule->error("Error reading grid at position "+
+                  cvm::to_str(static_cast<size_t>(is.tellg()))+
+                  " in stream(read \"" + hash + "\")\n");
+      return;
+    }
 
-for (i = 0; i < nd; i++ ) {
-  lower_boundaries.push_back(colvarvalue(lower_in[i]));
-  periodic.push_back(static_cast<bool>(periodic_in[i]));
-}
+    is >> lower_in[i] >> widths_in[i] >> nx_in[i] >> periodic_in[i];
+  }
 
-// Reset the istream for read_multicol, which expects the whole file
-is.clear();
-is.seekg(0);
-read_multicol(is);
-cvm::main()->proxy->close_input_stream(filename);
+  this->setup(nx_in, 0., mult);
+
+  widths = widths_in;
+
+  for (i = 0; i < nd; i++ ) {
+    lower_boundaries.push_back(colvarvalue(lower_in[i]));
+    periodic.push_back(static_cast<bool>(periodic_in[i]));
+  }
+
+  // Reset the istream for read_multicol, which expects the whole file
+  is.clear();
+  is.seekg(0);
+  read_multicol(is);
+  cvmodule->proxy->close_input_stream(filename);
 }
 
 
@@ -414,12 +414,12 @@ int colvar_grid<T>::read_multicol(std::string const &filename,
                                   std::string description,
                                   bool add)
 {
-  std::istream &is = cvm::main()->proxy->input_stream(filename, description);
+  std::istream &is = cvmodule->proxy->input_stream(filename, description);
   if (!is) {
     return COLVARS_FILE_ERROR;
   }
   if (colvar_grid<T>::read_multicol(is, add)) {
-    cvm::main()->proxy->close_input_stream(filename);
+    cvmodule->proxy->close_input_stream(filename);
     return COLVARS_OK;
   }
   return COLVARS_FILE_ERROR;
@@ -479,13 +479,13 @@ int colvar_grid<T>::write_multicol(std::string const &filename,
                                    std::string description) const
 {
   int error_code = COLVARS_OK;
-  std::ostream &os = cvm::main()->proxy->output_stream(filename, description);
+  std::ostream &os = cvmodule->proxy->output_stream(filename, description);
   if (!os) {
     return COLVARS_FILE_ERROR;
   }
   error_code |= colvar_grid<T>::write_multicol(os) ? COLVARS_OK :
     COLVARS_FILE_ERROR;
-  cvm::main()->proxy->close_output_stream(filename);
+  cvmodule->proxy->close_output_stream(filename);
   return error_code;
 }
 
@@ -537,13 +537,13 @@ int colvar_grid<T>::write_opendx(std::string const &filename,
                                  std::string description) const
 {
   int error_code = COLVARS_OK;
-  std::ostream &os = cvm::main()->proxy->output_stream(filename, description);
+  std::ostream &os = cvmodule->proxy->output_stream(filename, description);
   if (!os) {
     return COLVARS_FILE_ERROR;
   }
   error_code |= colvar_grid<T>::write_opendx(os) ? COLVARS_OK :
     COLVARS_FILE_ERROR;
-  cvm::main()->proxy->close_output_stream(filename);
+  cvmodule->proxy->close_output_stream(filename);
   return error_code;
 }
 

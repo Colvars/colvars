@@ -16,7 +16,7 @@
 #include "colvarcomp.h"
 
 
-colvar::alch_lambda::alch_lambda()
+colvar::alch_lambda::alch_lambda(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("alchLambda");
 
@@ -85,7 +85,7 @@ void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
 }
 
 
-colvar::alch_Flambda::alch_Flambda()
+colvar::alch_Flambda::alch_Flambda(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("alch_Flambda");
 

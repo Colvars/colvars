@@ -128,7 +128,7 @@ public:
     return smp_mode_t::cvcs;
   }
   std::vector<smp_mode_t> get_available_smp_modes() const override {
-    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
+    std::vector<colvarproxy::smp_mode_t> available_modes{
       smp_mode_t::cvcs,
       smp_mode_t::inner_loop,
       smp_mode_t::none

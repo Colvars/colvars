@@ -42,7 +42,7 @@ public:
   virtual std::ostream & write_traj(std::ostream &os);
 
   /// \brief Constructor
-  colvarbias_restraint(char const *key);
+  colvarbias_restraint(colvarmodule* cvmodule_in, char const *key);
 
   virtual int init(std::string const &conf);
   virtual ~colvarbias_restraint();
@@ -67,7 +67,7 @@ class colvarbias_restraint_centers
 {
 public:
 
-  colvarbias_restraint_centers(char const *key);
+  colvarbias_restraint_centers(colvarmodule* cvmodule_in, char const *key);
   virtual int init(std::string const &conf);
   virtual int change_configuration(std::string const &conf);
 
@@ -84,7 +84,7 @@ class colvarbias_restraint_k
 {
 public:
 
-  colvarbias_restraint_k(char const *key);
+  colvarbias_restraint_k(colvarmodule* cvmodule_in, char const *key);
   virtual int init(std::string const &conf);
   virtual int change_configuration(std::string const &conf);
 
@@ -104,9 +104,9 @@ class colvarbias_restraint_moving
     public virtual colvardeps {
 public:
 
-  colvarbias_restraint_moving(char const *key)
-    : colvarbias_ti(key),
-      colvarbias_restraint(key) {}
+  colvarbias_restraint_moving(colvarmodule* cvmodule_in, char const *key)
+    : colvardeps(cvmodule_in), colvarbias_ti(cvmodule_in, key),
+      colvarbias_restraint(cvmodule_in, key) {}
   // Note: despite the diamond inheritance, most of this function gets only executed once
   virtual int init(std::string const &conf) override;
   virtual int update() override;
@@ -192,7 +192,7 @@ class colvarbias_restraint_centers_moving
 {
 public:
 
-  colvarbias_restraint_centers_moving(char const *key);
+  colvarbias_restraint_centers_moving(colvarmodule* cvmodule_in, char const *key);
   virtual int init(std::string const &conf) override;
   virtual int change_configuration(std::string const & /* conf */) override { return COLVARS_NOT_IMPLEMENTED; }
 
@@ -234,7 +234,7 @@ class colvarbias_restraint_k_moving
 public:
   // Do not initialize colvarbias here to avoid diamond inheritance issues
   // because this is an intermediate class
-  colvarbias_restraint_k_moving(char const *key);
+  colvarbias_restraint_k_moving(colvarmodule* cvmodule_in, char const *key);
   virtual int init(std::string const &conf) override;
   virtual int change_configuration(std::string const & /* conf */) override { return COLVARS_NOT_IMPLEMENTED; }
 

@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
 
   colvarproxy_stub *proxy = new colvarproxy_stub();
   colvarmodule *cvmodule = proxy->cvmodule;
+  fprintf(stderr, "proxy = %p, cvmodule = %p\n", (void*)proxy, (void*)cvmodule);
   // Initialize simple unit system to test file input
   err |= proxy->set_unit_system("real", false);
 
@@ -82,8 +83,8 @@ int main(int argc, char *argv[]) {
   unsigned char * args[2] = {
     (unsigned char *) "cv",
     (unsigned char *) "listinputfiles" };
-  err |= run_colvarscript_command(proxy->script, 2, args);
-  cvmodule->log("  " + std::string(get_colvarscript_result()));
+  err |= run_colvarscript_command(proxy, 2, args);
+  cvmodule->log("  " + std::string(get_colvarscript_result(proxy)));
 
   double const max_gradient_error = proxy->cvmodule->get_max_gradient_error();
   if (max_gradient_error > 0.) {

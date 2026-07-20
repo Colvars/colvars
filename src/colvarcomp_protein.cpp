@@ -16,7 +16,7 @@
 #include "colvarcomp_coordnums.h"
 
 
-colvar::alpha_angles::alpha_angles()
+colvar::alpha_angles::alpha_angles(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("alpha");
   enable(f_cvc_explicit_gradient);
@@ -35,7 +35,7 @@ int colvar::alpha_angles::init(std::string const &conf)
   std::vector<int> residues;
 
   bool b_use_index_groups = false;
-  cvm::atom_group group_CA, group_N, group_O;
+  cvm::atom_group group_CA(cvmodule), group_N(cvmodule), group_O(cvmodule);
 
   std::string residues_conf = "";
   std::string prefix;
@@ -113,7 +113,7 @@ int colvar::alpha_angles::init(std::string const &conf)
         // Note: the angle constructor constructs copies of the atom objects
         theta.push_back(new colvar::angle(group_CA[i],
                                           group_CA[i+1],
-                                          group_CA[i+2]));
+                                          group_CA[i+2], cvmodule));
         register_atom_group(theta.back()->atom_groups[0]);
         register_atom_group(theta.back()->atom_groups[1]);
         register_atom_group(theta.back()->atom_groups[2]);
@@ -125,7 +125,8 @@ int colvar::alpha_angles::init(std::string const &conf)
           new colvar::angle(
             cvm::atom_group::init_atom_from_proxy(p, r[i  ], "CA", sid),
             cvm::atom_group::init_atom_from_proxy(p, r[i+1], "CA", sid),
-            cvm::atom_group::init_atom_from_proxy(p, r[i+2], "CA", sid)));
+            cvm::atom_group::init_atom_from_proxy(p, r[i+2], "CA", sid),
+            cvmodule));
         register_atom_group(theta.back()->atom_groups[0]);
         register_atom_group(theta.back()->atom_groups[1]);
         register_atom_group(theta.back()->atom_groups[2]);
@@ -154,7 +155,7 @@ int colvar::alpha_angles::init(std::string const &conf)
           hb.push_back(
             new colvar::h_bond(cvm::atom_group::init_atom_from_proxy(p,group_O[i]),
                                cvm::atom_group::init_atom_from_proxy(p,group_N[i+4]),
-                               r0, en, ed));
+                               r0, en, ed, cvmodule));
           register_atom_group(hb.back()->atom_groups[0]);
         }
       } else {
@@ -162,7 +163,7 @@ int colvar::alpha_angles::init(std::string const &conf)
           hb.push_back(
             new colvar::h_bond(cvm::atom_group::init_atom_from_proxy(p,r[i  ], "O",  sid),
                                cvm::atom_group::init_atom_from_proxy(p,r[i+4], "N",  sid),
-                               r0, en, ed));
+                               r0, en, ed, cvmodule));
           register_atom_group(hb.back()->atom_groups[0]);
         }
       }
@@ -339,7 +340,7 @@ void colvar::alpha_angles::apply_force(colvarvalue const &force)
 // dihedral principal component
 //////////////////////////////////////////////////////////////////////
 
-colvar::dihedPC::dihedPC()
+colvar::dihedPC::dihedPC(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("dihedPC");
   // Supported through references to atom groups of children cvcs
@@ -361,7 +362,7 @@ int colvar::dihedPC::init(std::string const &conf)
   size_t n_residues;
   std::string residues_conf = "";
   std::string prefix;
-  cvm::atom_group group_CA, group_N, group_C;
+  cvm::atom_group group_CA(cvmodule), group_N(cvmodule), group_C(cvmodule);
 
   // residueRange is mandatory for the topology-based case
   if (key_lookup(conf, "residueRange", &residues_conf)) {
@@ -481,14 +482,14 @@ int colvar::dihedPC::init(std::string const &conf)
       theta.push_back(new colvar::dihedral( group_N[i],
                                             group_CA[i],
                                             group_C[i],
-                                            group_N[i+1]));
+                                            group_N[i+1], cvmodule));
     } else {
       theta.push_back(
         new colvar::dihedral(
           cvm::atom_group::init_atom_from_proxy(p,r[i  ], "N", sid),
           cvm::atom_group::init_atom_from_proxy(p,r[i  ], "CA", sid),
           cvm::atom_group::init_atom_from_proxy(p,r[i  ], "C", sid),
-          cvm::atom_group::init_atom_from_proxy(p,r[i+1], "N", sid)));
+          cvm::atom_group::init_atom_from_proxy(p,r[i+1], "N", sid), cvmodule));
     }
     if (cvmodule->get_error()) {
       return cvmodule->get_error();
@@ -502,13 +503,13 @@ int colvar::dihedPC::init(std::string const &conf)
       theta.push_back(new colvar::dihedral(group_C[i],
                                            group_N[i+1],
                                            group_CA[i+1],
-                                           group_C[i+1]));
+                                           group_C[i+1], cvmodule));
     } else {
       theta.push_back(
         new colvar::dihedral(cvm::atom_group::init_atom_from_proxy(p,r[i  ], "C", sid),
                              cvm::atom_group::init_atom_from_proxy(p,r[i+1], "N", sid),
                              cvm::atom_group::init_atom_from_proxy(p,r[i+1], "CA", sid),
-                             cvm::atom_group::init_atom_from_proxy(p,r[i+1], "C", sid)));
+                             cvm::atom_group::init_atom_from_proxy(p,r[i+1], "C", sid), cvmodule));
     }
     if (cvmodule->get_error()) {
       return cvmodule->get_error();

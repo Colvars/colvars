@@ -68,6 +68,7 @@ __global__ void prepare_derivative_kernel(
 }
 
 int prepare_derivative(
+  colvarmodule* cvmodule,
   rotation_derivative_dldq dldq,
   const cvm::real* S_eigval,
   const cvm::real* S_eigvec,
@@ -92,7 +93,7 @@ int prepare_derivative(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),

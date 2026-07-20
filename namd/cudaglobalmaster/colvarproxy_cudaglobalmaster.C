@@ -175,7 +175,7 @@ public:
     return smp_mode_t::none;
   }
   std::vector<smp_mode_t> get_available_smp_modes() const override {
-    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
+    std::vector<colvarproxy::smp_mode_t> available_modes{
       smp_mode_t::none,
       smp_mode_t::gpu
     };
@@ -351,9 +351,9 @@ void colvarproxy_impl::initialize_from_cudagm(
   if (simParams->firstTimestep != 0) {
     cvmodule->set_initial_step(static_cast<cvm::step_number>(simParams->firstTimestep));
   }
-  colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
-  colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
-  colvarproxy_io::set_default_restart_frequency(simParams->restartFrequency);
+  colvarproxy::set_output_prefix(std::string(simParams->outputFilename));
+  colvarproxy::set_restart_output_prefix(std::string(simParams->restartFilename));
+  colvarproxy::set_default_restart_frequency(simParams->restartFrequency);
 }
 
 // Copied from colvarproxy_namd.C
@@ -814,9 +814,9 @@ void colvarproxy_impl::calculate() {
       // aware of this via the following flag
       b_simulation_continuing = true;
       // Update NAMD output and restart prefixes
-      colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
-      colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
-      colvarproxy_io::set_default_restart_frequency(simParams->restartFrequency);
+      colvarproxy::set_output_prefix(std::string(simParams->outputFilename));
+      colvarproxy::set_restart_output_prefix(std::string(simParams->restartFilename));
+      colvarproxy::set_default_restart_frequency(simParams->restartFrequency);
       cvmodule->setup_output();
     }
   }
@@ -1018,7 +1018,7 @@ void colvarproxy_impl::set_lattice() {
     } else {
       boundaries_type = boundaries_pbc_triclinic;
     }
-    colvarproxy_system::update_pbc_lattice();
+    colvarproxy::update_pbc_lattice();
   } else {
     boundaries_type = boundaries_unsupported;
   }

@@ -41,7 +41,7 @@ namespace {
 
 
 colvarparse::colvarparse(colvarmodule *cvmodule_in)
-  : cvmodule(cvmodule_in),
+  : colvarparams(cvmodule_in),
     keyword_delimiters_left("\n"+std::string(white_space)+"}"),
     keyword_delimiters_right("\n"+std::string(white_space)+"{")
 {}

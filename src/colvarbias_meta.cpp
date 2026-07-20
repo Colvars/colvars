@@ -20,7 +20,7 @@
 
 
 colvarbias_meta::colvarbias_meta(colvarmodule *cvmodule_in, char const *key)
-  : colvarbias(cvmodule_in, key), colvarbias_ti(key)
+  : colvardeps(cvmodule_in), colvarbias(cvmodule_in, key), colvarbias_ti(cvmodule_in, key)
 {
   new_hills_begin = hills.end();
 
@@ -157,8 +157,8 @@ int colvarbias_meta::init(std::string const &conf)
     get_keyval(conf, "keepFreeEnergyFiles", dump_fes_save, dump_fes_save);
 
     if (!hills_energy) {
-      hills_energy.reset(new colvar_grid_scalar(colvars, nullptr, false, grid_conf));
-      hills_energy_gradients.reset(new colvar_grid_gradient(colvars, nullptr, hills_energy));
+      hills_energy.reset(new colvar_grid_scalar(cvmodule, colvars, nullptr, false, grid_conf));
+      hills_energy_gradients.reset(new colvar_grid_gradient(cvmodule, colvars, nullptr, hills_energy));
     }
 
   } else {
@@ -285,7 +285,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
                                "targetDistFile accordingly.\n",
                                COLVARS_INPUT_ERROR);
     }
-    target_dist.reset(new colvar_grid_scalar());
+    target_dist.reset(new colvar_grid_scalar(cvmodule));
     error_code |= target_dist->init_from_colvars(colvars);
     std::string target_dist_file;
     get_keyval(conf, "targetDistFile", target_dist_file);
@@ -1104,10 +1104,10 @@ int colvarbias_meta::update_replicas_registry()
 
         if (use_grids) {
           (replicas.back())
-              ->hills_energy.reset(new colvar_grid_scalar(colvars, hills_energy));
+              ->hills_energy.reset(new colvar_grid_scalar(cvmodule, colvars, hills_energy));
           (replicas.back())
               ->hills_energy_gradients.reset(
-                  new colvar_grid_gradient(colvars, nullptr, hills_energy));
+                  new colvar_grid_gradient(cvmodule, colvars, nullptr, hills_energy));
         }
 
         if (is_enabled(f_cvb_calc_ti_samples)) {
@@ -1383,8 +1383,8 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 
       hills_energy_backup = std::move(hills_energy);
       hills_energy_gradients_backup = std::move(hills_energy_gradients);
-      hills_energy.reset(new colvar_grid_scalar(colvars, hills_energy));
-      hills_energy_gradients.reset(new colvar_grid_gradient(colvars, nullptr, hills_energy));
+      hills_energy.reset(new colvar_grid_scalar(cvmodule, colvars, hills_energy));
+      hills_energy_gradients.reset(new colvar_grid_gradient(cvmodule, colvars, nullptr, hills_energy));
     }
 
     read_grid_data_template_<IST, colvar_grid_scalar>(is, "hills_energy", hills_energy.get(),
@@ -1495,9 +1495,9 @@ void colvarbias_meta::rebin_grids_after_restart()
     // Create new grids based on the configuration parameters, because reading from the state
     // file automatically sets the old parameters
     std::shared_ptr<colvar_grid_scalar> new_hills_energy(
-        new colvar_grid_scalar(colvars, nullptr, false, grid_conf));
+        new colvar_grid_scalar(cvmodule, colvars, nullptr, false, grid_conf));
     std::shared_ptr<colvar_grid_gradient> new_hills_energy_gradients(
-        new colvar_grid_gradient(colvars, nullptr, new_hills_energy));
+        new colvar_grid_gradient(cvmodule, colvars, nullptr, new_hills_energy));
 
     if (cvm::debug()) {
       std::ostringstream tmp_os;

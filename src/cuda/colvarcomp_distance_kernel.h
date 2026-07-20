@@ -9,6 +9,7 @@
 namespace colvars_gpu {
 
 int calc_value_rmsd(
+  colvarmodule* cvmodule,
   const cvm::real* ref_pos,
   const cvm::real* ag_pos,
   cvm::real* d_permutation_msds,
@@ -22,6 +23,7 @@ int calc_value_rmsd(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int calc_gradients_rmsd(
+  colvarmodule* cvmodule,
   const cvm::real* h_rmsd,
   const size_t* h_best_perm_index,
   const cvm::real* ref_pos,
@@ -34,6 +36,7 @@ int calc_gradients_rmsd(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int calc_force_invgrads_rmsd(
+  colvarmodule* cvmodule,
   const bool rotate,
   const int* atoms_proxy_index,
   const cvm::real* atoms_total_force_proxy,
@@ -51,6 +54,7 @@ int calc_force_invgrads_rmsd(
 class rotation_derivative_gpu;
 
 int calc_Jacobian_derivative_rmsd(
+  colvarmodule* cvmodule,
   const bool center,
   const bool rotate,
   const size_t* h_best_perm_index,

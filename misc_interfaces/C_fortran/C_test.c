@@ -11,8 +11,8 @@ int main() {
 
     // Cannot yet call colvarscript without language interface
     unsigned char cmd[][256] = {"", "version" };
-    run_colvarscript_command(1, (unsigned char **)(cmd));
-    const char *res = get_colvarscript_result();
+    run_colvarscript_command(proxy, 1, (unsigned char **)(cmd));
+    const char *res = get_colvarscript_result(proxy);
     printf("Colvarscript claims it runs version %s\n", res);
     return 0;
 }
