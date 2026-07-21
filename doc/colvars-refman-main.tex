@@ -2694,7 +2694,26 @@ sub-rotation is defined by this expression \cite{Daniilidis1999,Hu2006}:
 The component \texttt{spinAngle} returns an angle (in degrees) within the periodic interval $[-180:180]$.
 Its value is a continuous function almost everywhere, with the exception of configurations with the corresponding ``tilt'' angle is near 180$^\circ$ (i.e.~the \texttt{tilt} component is near $-1$).
 
-\textbf{Note:} the value of \texttt{spinAngle} is a continuous function almost everywhere, with the exception of configurations with the corresponding ``tilt'' angle equal to 180$^\circ$ (i.e.~the \texttt{tilt} component is equal to $-1$): in those cases, \texttt{spinAngle} is undefined.  If such configurations are expected, consider defining a \texttt{tilt} colvar using the same axis \textbf{e}, and restraining it with a lower wall away from $-1$.
+\paragraph*{Example: stopping the rotation of a membrane protein around the Z-axis.}  To prevent a membrane protein from ``spinning'' around the membrane normal (such rotations are usually irrelevant when the membrane is homogeneous and periodic), the restraint shown in the following example may be used.
+This restraint allows its internal motions and changes in tilt angle, which are physically meaningful.
+\cvnamdonly{In NAMD, the user should also take care that the protein is composed by a single chain, or disable \texttt{wrapAll} otherwise.}
+
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~p\_spin\\
+\-~~spinAngle~\{\\
+\-~~~~atoms~\{~(your~selection~here)~\}\\
+\-~~~~refPositionsFile~reference.pdb\\
+\-~~~~axis~(0.0,~0.0,~1.0)~~~\#~This~is~also~the~default\\
+\-~~\}\\
+\-\}\\
+\-\\
+\-harmonic~\{~~~~~~~~~~~~~~~~~\#~Define~a~harmonic~restraint\\
+\-~~colvars~p\_spin~~~~~~~~~~~\#~acting~on~colvar~"spin"\\
+\-~~centers~0.0\\
+\-~~forceConstant~10.0~~~~~~~\#~unit:~energy/degrees**2\\
+\-\}\\
+\end{cvexampleinput}
 
 
 \cvsubsubsec{\texttt{tilt}: cosine of the rotation orthogonal to a given axis.}{sec:cvc_tilt}
@@ -2728,6 +2747,29 @@ The component \texttt{tilt} relies on the same options as \texttt{spinAngle}, in
 \item %
   \dupkey{axis}{\texttt{tilt}}{colvar|spinAngle|axis}{\texttt{spinAngle} component}
 \end{cvcoptions}
+
+The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value $1$ represents an orientation fully parallel to \textbf{e} (tilt angle $\omega = 0^\circ$), and the value $-1$ represents an anti-parallel orientation (tilt angle $\omega = 180^\circ$).
+
+\paragraph*{Example: keeping a macromole orientation within 60$^\circ$ from a chosen axis.}  To prevent a molecule to lose orientation with respect to an axis, while allowing its internal motions and rotations around that axis unperturbed, the following example may be used.
+The lower wall of 0.5 for the variable ``\texttt{mol\_tilt}'' represents an upper wall on the tilt angle $\omega$ at 60$^\circ$.
+\cvnamdonly{In NAMD, the user should also take care that the protein is composed by a single chain, or disable \texttt{wrapAll} otherwise.}
+
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~mol\_tilt\\
+\-~~tilt~\{\\
+\-~~~~atoms~\{~(your~selection~here)~\}\\
+\-~~~~refPositionsFile~reference.pdb\\
+\-~~~~axis~(0.0,~0.0,~1.0)~~~\#~This~is~also~the~default\\
+\-~~\}\\
+\-\}\\
+\-\\
+\-harmonicWalls~\{~~~~~~~~~~~~\#~Define~a~harmonic~wall\\
+\-~~colvars~mol\_tilt~~~~~~~~~\#~acting~on~colvar~"t"\\
+\-~~lowerWalls~0.5\\
+\-~~forceConstant~100.0~~~~~~\#~unit:~energy~(tilt~is~dimensionless)\\
+\-\}\\
+\end{cvexampleinput}
 
 
 \cvsubsubsec{\texttt{eulerPhi}: Roll angle from 
