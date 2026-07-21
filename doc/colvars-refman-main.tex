@@ -2637,8 +2637,36 @@ The range of values is [-1:1].
 \cvsubsubsec{\texttt{spinAngle}: angle of rotation around a given axis.}{sec:cvc_spinAngle}
 \labelkey{colvar|spinAngle}
 
-The complete rotation described by \texttt{orientation} can optionally be decomposed into two sub-rotations: one is a ``\emph{spin}'' rotation around \textbf{e}, and the other a ``\emph{tilt}'' rotation around an axis orthogonal to \textbf{e}.
-The component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation around \textbf{e}.
+The full rotation from the current coordinates $\left\{\mathbf{x}_{i}\left(t\right)\right\}$ and the
+reference coordinates $\left\{\mathbf{x}_{i}^{\mathrm{(ref)}}\right\}$, can be decomposed into two sub-rotations:
+\begin{itemize}
+\item a ``\emph{spin}'' rotation of angle $\eta$ around \textbf{e}
+\item a ``\emph{tilt}'' rotation of angle $\omega$ around an axis orthogonal to \textbf{e}.
+\end{itemize}
+The schematic below, adapted from ref.\ \citealp{Fiorin2024}, illustrates the use of the two angles to model the rotations of a membrane protein:
+\begin{center}
+\ifdefined\HCode
+\includegraphics{spin-tilt-scheme-512px.png}
+\else
+\includegraphics[width=\textwidth]{spin-tilt-scheme.pdf}
+\fi
+\end{center}
+If the axis \texttt{e} is the Cartesian Z-axis, $\eta$ can be thought of as combining the effect of the two Euler angles $\phi$ and $\psi$, $\omega$ has a similar role to the Euler angle $\theta$, and the axis orthogonal to \texttt{e} is the line of nodes.
+Compared to the Euler angles, the spin angle $\eta$ is well defined even if the current coordinates are near the reference coordinates ($\mathbf{x}_{i}\left(t\right) \approx \mathbf{x}_{i}^{\mathrm{(ref)}}$), or more broadly, $\omega \approx 0$: at that condition, the spin angle $\eta$ is preferable to the Euler angles to avoid a ``\href{https://en.wikipedia.org/wiki/Gimbal_lock}{gimbal lock}''.
+
+Note that numerical issues may still arise in the diametrically opposite configuration where $\omega \approx 180^{\circ}$ (see the expression for $\nabla_{\mathbf{X}}\phi$ in Table~A5 in ref.\ \citealp{Fiorin2013} when ${q_{0}}^{2} \approx 0$ and $\left({\mathbf{q}}\cdot\mathbf{e}\right)^{2} \approx 0$).
+Under that scenario, neither the spin angle nor the Euler angles are suitable collective variables.
+
+\textbf{Tip:} To avoid such configurations altogether, consider defining a colvar of type \refkey{tilt}{colvar|tilt} using the same axis \textbf{e}, and restraining it to gave only positive values, i.e.\ $\cos(\omega) > 0$.
+
+The colvar component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation around the chosen axis \textbf{e}.
+For a quaternion $\mathsf{q} = (q_0, q_1, q_2, q_3) = (q_0, \mathbf{q})$ that represents the full
+rotation, the spin angle $\eta$ of the
+sub-rotation is defined by this expression \cite{Daniilidis1999,Hu2006}:
+\begin{equation}
+  \label{eq:cvc_spinAngle}
+  \eta \left(\mathbf{e}, \mathsf{q}\right) = 2 \tan^{-1}\left(\dfrac{\mathbf{e} \cdot \mathbf{q}}{q_0}\right)
+\end{equation}
 
 \begin{cvcoptions}
 \item %
@@ -2664,6 +2692,7 @@ The component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation
     The three components of this vector define (when normalized) the special rotation axis used to calculate the \texttt{tilt} and \texttt{spinAngle} components.}
 \end{cvcoptions}
 The component \texttt{spinAngle} returns an angle (in degrees) within the periodic interval $[-180:180]$.
+Its value is a continuous function almost everywhere, with the exception of configurations with the corresponding ``tilt'' angle is near 180$^\circ$ (i.e.~the \texttt{tilt} component is near $-1$).
 
 \textbf{Note:} the value of \texttt{spinAngle} is a continuous function almost everywhere, with the exception of configurations with the corresponding ``tilt'' angle equal to 180$^\circ$ (i.e.~the \texttt{tilt} component is equal to $-1$): in those cases, \texttt{spinAngle} is undefined.  If such configurations are expected, consider defining a \texttt{tilt} colvar using the same axis \textbf{e}, and restraining it with a lower wall away from $-1$.
 
@@ -2671,10 +2700,17 @@ The component \texttt{spinAngle} returns an angle (in degrees) within the period
 \cvsubsubsec{\texttt{tilt}: cosine of the rotation orthogonal to a given axis.}{sec:cvc_tilt}
 \labelkey{colvar|tilt}
 
-The component \texttt{tilt} measures the cosine of the angle of the ``tilt'' sub-rotation, which combined with the ``spin'' sub-rotation provides the complete rotation of a group of atoms.
-The cosine of the tilt angle rather than the tilt angle itself is implemented, because the latter is unevenly distributed even for an isotropic system: consider as an analogy the angle $\theta$ in the spherical coordinate system.
+The component \texttt{tilt} measures the cosine of the angle $\omega$ of the ``tilt'' sub-rotation away from a chosen axis $\mathbf{e}$ (see also \refkey{spinAngle}{colvar|spinAngle}).
+
+For a quaternion $\mathsf{q} = (q_0, q_1, q_2, q_3) = (q_0, \mathbf{q})$ that represents the full rotation, a chosen axis $\mathbf{e}$ and the spin angle $\eta$ around that axis (keyword \refkey{spinAngle}{colvar|spinAngle}), the cosine of the tilt angle $\omega$ is defined as \cite{Daniilidis1999,Hu2006}:
+\begin{equation}
+  \label{eq:cvc_tilt}
+  t\left(\mathbf{e}, \mathsf{q}\right) = \cos\left(\omega\left(\mathbf{e}, \mathsf{q}\right)\right) = 2 \left(\dfrac{q_0}{\cos\left(\eta/2\right)}\right)^2 - 1
+\end{equation}
+where the function is extended by continuity for at $q_0 = \cos\left(\eta/2\right) = 0$ (full rotation of $\pm 180^{\circ}$ around $\mathbf{e}$).
+Notably, the cosine of the tilt angle $\cos\left(\omega\right)$ is here provided, rather than the angle itself, because the latter is unevenly distributed even for an isotropic system: consider as an analogy the angle $\theta$ in the spherical coordinate system.
+
 The component \texttt{tilt} relies on the same options as \texttt{spinAngle}, including the definition of the axis \textbf{e}.
-The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value $1$ represents an orientation fully parallel to \textbf{e} (tilt angle = 0$^\circ$), and the value $-1$ represents an anti-parallel orientation.
 
 \begin{cvcoptions}
 \item %
