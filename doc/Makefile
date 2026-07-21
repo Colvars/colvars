@@ -45,7 +45,7 @@ endif
 PDF = $(foreach _,${ENGINES},colvars-refman-$_.pdf)
 HTML = $(foreach _,${ENGINES},colvars-refman-$_.html)
 
-IMAGES = cover-512px.jpg eulerangles-512px.png
+IMAGES = cover-512px.jpg eulerangles-512px.png spin-tilt-scheme-512px.png
 
 CSS = $(HTML:.html=.css)
 BIBTEX = colvars-refman.bib
@@ -77,6 +77,9 @@ HTLATEX_OPTS = "html5mjlatex.cfg, charset=utf-8" " -cunihtf -utf8"
 	@echo "Building $@ with release label \"${COLVARS_RELEASE}\"" ; \
 	$(HTLATEX) $(notdir $<) $(HTLATEX_OPTS); \
 	bash postprocess_html.sh $@
+
+spin-tilt-scheme-512px.png: spin-tilt-scheme.pdf
+	convert -flatten -resize 512x300 $^ $@
 
 eulerangles-512px.png: eulerangles.pdf
 	convert -flatten -resize 512x576 $^ $@
