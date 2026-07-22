@@ -34,7 +34,12 @@ public:
   int updateFromTCLCommand(const std::vector<std::string>& arguments) override;
   void onBuffersUpdated() override;
   void calculate() override;
+#if CUDAGM_VERSION >= 3
+  void setStep(int64_t step, int startup, int doMigration) override;
+  int isStartupStep() const {return m_is_startup_step;}
+#else
   void setStep(int64_t step) override;
+#endif
   cudaStream_t getStream() override;
   bool requestedAtomsChanged() override;
   bool requestedForcedAtomsChanged() override { return requestedAtomsChanged(); }

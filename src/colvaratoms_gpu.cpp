@@ -12,13 +12,15 @@ namespace colvars_gpu {
 colvaratoms_gpu::colvaratoms_gpu(colvarmodule *cvmodule_in)
   : cvmodule(cvmodule_in) {
   std::memset(&gpu_buffers, 0, sizeof(gpu_buffers));
-  std::memset(&debug_graphs, 0, sizeof(debug_graphs));
   std::memset(&calc_fit_gradients_gpu_info, 0, sizeof(calc_fit_gradients_gpu_info));
   std::memset(&calc_fit_forces_gpu_info, 0, sizeof(calc_fit_forces_gpu_info));
   h_sum_applied_colvar_force = nullptr;
   rot_deriv_gpu = nullptr;
   use_group_force = false;
   use_apply_colvar_force = false;
+  for (auto& e: events) {
+    e = nullptr;
+  }
 }
 
 colvaratoms_gpu::~colvaratoms_gpu() {
@@ -61,17 +63,14 @@ int colvaratoms_gpu::init_gpu() {
   h_sum_applied_colvar_force[0] = 0;
   use_apply_colvar_force = false;
   use_group_force = false;
-  if (debug_graphs.graph_calc_required_properties) {
-    error_code |= checkGPUError(cudaGraphDestroy(
-      debug_graphs.graph_calc_required_properties));
-    debug_graphs.graph_calc_required_properties = nullptr;
+  error_code |= reset_gpu_graphs();
+  for (auto& e: events) {
+    if (e) {
+      error_code |= checkGPUError(cudaEventSynchronize(e));
+      error_code |= checkGPUError(cudaEventDestroy(e));
+    }
+    error_code |= checkGPUError(cudaEventCreateWithFlags(&e, cudaEventDisableTiming));
   }
-  if (debug_graphs.graph_exec_calc_required_properties) {
-    error_code |= checkGPUError(cudaGraphExecDestroy(
-      debug_graphs.graph_exec_calc_required_properties));
-    debug_graphs.graph_exec_calc_required_properties = nullptr;
-  }
-  debug_graphs.initialized = false;
   return error_code;
 }
 
@@ -113,17 +112,126 @@ int colvaratoms_gpu::destroy_gpu() {
   error_code |= p->deallocate_host(&gpu_buffers.h_com);
   error_code |= p->deallocate_host(&gpu_buffers.h_cog);
   error_code |= p->deallocate_host(&gpu_buffers.h_cog_orig);
-  if (debug_graphs.graph_calc_required_properties) {
-    error_code |= checkGPUError(cudaGraphDestroy(
-      debug_graphs.graph_calc_required_properties));
-    debug_graphs.graph_calc_required_properties = nullptr;
+  for (auto& e: events) {
+    if (e) {
+      error_code |= checkGPUError(cudaEventSynchronize(e));
+      error_code |= checkGPUError(cudaEventDestroy(e));
+      e = nullptr;
+    }
   }
-  if (debug_graphs.graph_exec_calc_required_properties) {
-    error_code |= checkGPUError(cudaGraphExecDestroy(
-      debug_graphs.graph_exec_calc_required_properties));
-    debug_graphs.graph_exec_calc_required_properties = nullptr;
+  error_code |= reset_gpu_graphs();
+  return error_code;
+}
+
+int colvaratoms_gpu::reset_gpu_graphs() {
+  int error_code = COLVARS_OK;
+  error_code |= graph_debug.reset();
+  error_code |= graph_read_compute.reset();
+  error_code |= graph_calc_fit_gradients.reset();
+  error_code |= graph_apply_force.reset();
+  return error_code;
+}
+
+int colvaratoms_gpu::read_data_gpu(cvm::atom_group* cpu_atoms) {
+  int error_code = COLVARS_OK;
+  colvarproxy* p = cvmodule->proxy;
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (!p->has_gpu_support()) {
+    return cvmodule->error("Calling colvaratoms_gpu::read_data_gpu without GPU support!", COLVARS_BUG_ERROR);
   }
-  debug_graphs.initialized = false;
+  // If the graph execution object is not initialized, then start to build
+  // the graph.
+  if (!graph_read_compute.graph_exec_initialized) {
+    cvmodule->log("Initialize CUDA graph for atom group " + cpu_atoms->name + "\n");
+    // First, we need to know if any of parents require CPU buffers.
+    std::vector<colvardeps*> ag_parents = cpu_atoms->get_parents();
+    bool require_cpu_buffers = false;
+    for (auto it = ag_parents.begin(); it != ag_parents.end(); ++it) {
+      switch ((*it)->get_object_type()) {
+        case colvardeps::object_t::colvarcomp: {
+          colvar::cvc* p = dynamic_cast<colvar::cvc*>((*it));
+          if (p->is_enabled(colvardeps::f_cvc_require_cpu_buffers)) {
+            require_cpu_buffers = true;
+          }
+          break;
+        }
+        default:;
+      }
+    }
+    error_code |= checkGPUError(cudaGraphCreate(&graph_read_compute.graph, 0));
+    if (error_code != COLVARS_OK) return error_code;
+    error_code |= add_reset_atoms_data_nodes(cpu_atoms, graph_read_compute.graph, graph_read_compute.nodes);
+    if (error_code != COLVARS_OK) return error_code;
+    error_code |= add_read_positions_nodes(cpu_atoms, graph_read_compute.graph, graph_read_compute.nodes);
+    if (error_code != COLVARS_OK) return error_code;
+    error_code |= add_calc_required_properties_nodes(cpu_atoms, graph_read_compute.graph, graph_read_compute.nodes);
+    if (error_code != COLVARS_OK) return error_code;
+    if (require_cpu_buffers) {
+      error_code |= add_update_cpu_buffers_nodes(cpu_atoms, graph_read_compute.graph, graph_read_compute.nodes);
+      if (error_code != COLVARS_OK) return error_code;
+    }
+    error_code |= graph_read_compute.init_graph_exec(cvmodule, cpu_atoms->get_stream());
+    if (cvmodule->debug()) {
+      // Debug graph
+      const std::string filename = cvmodule->output_prefix() + "_" + cpu_atoms->name + "_read_data.dot";
+      graph_read_compute.dump_graph(filename);
+    }
+  } // !graph_exec_initialized
+  if (graph_read_compute.graph_exec_initialized) {
+    // Make the atom group stream wait for the proxy event
+    error_code |= checkGPUError(cudaStreamWaitEvent(
+      cpu_atoms->get_stream(), p->get_event(colvarproxy_gpu::event_type::copy_atoms)));
+    if (error_code != COLVARS_OK) return error_code;
+    // Launch the CUDA graph of the atom group in the stream
+    error_code |= checkGPUError(cudaGraphLaunch(graph_read_compute.graph_exec, cpu_atoms->get_stream()));
+    if (error_code != COLVARS_OK) return error_code;
+    // Record the event for notifying parents
+    error_code |= checkGPUError(cudaEventRecord(get_event(event_type::read_and_calculate), cpu_atoms->get_stream()));
+  }
+#endif
+  return error_code;
+}
+
+int colvaratoms_gpu::calc_fit_gradients_gpu(cvm::atom_group* cpu_atoms) {
+  int error_code = COLVARS_OK;
+  colvarproxy* p = cvmodule->proxy;
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (!p->has_gpu_support()) {
+    return cvmodule->error("Calling colvaratoms_gpu::calc_fit_gradients_gpu without GPU support!", COLVARS_BUG_ERROR);
+  }
+  std::vector<colvardeps*> ag_parents = cpu_atoms->get_parents();
+  if (!graph_calc_fit_gradients.graph_exec_initialized) {
+    // First, we need to know if any of parents require CPU buffers.
+    bool require_cpu_buffers = false;
+    for (auto it = ag_parents.begin(); it != ag_parents.end(); ++it) {
+      switch ((*it)->get_object_type()) {
+        case colvardeps::object_t::colvarcomp: {
+          colvar::cvc* cvc = dynamic_cast<colvar::cvc*>((*it));
+          if (cvc->is_enabled(colvardeps::f_cvc_require_cpu_buffers)) {
+            require_cpu_buffers = true;
+          }
+          break;
+        }
+        default:;
+      }
+    }
+    error_code |= checkGPUError(cudaGraphCreate(&graph_calc_fit_gradients.graph, 0));
+    if (error_code != COLVARS_OK) return error_code;
+    error_code |= add_calc_fit_gradients_nodes(
+      cpu_atoms, graph_calc_fit_gradients.graph, graph_calc_fit_gradients.nodes, require_cpu_buffers);
+    if (error_code != COLVARS_OK) return error_code;
+    error_code |= graph_calc_fit_gradients.init_graph_exec(cvmodule, cpu_atoms->get_stream());
+    if (cvmodule->debug()) {
+      const std::string filename = cvmodule->output_prefix() + "_" + cpu_atoms->name + "_calc_fit_gradients.dot";
+      graph_calc_fit_gradients.dump_graph(filename);
+    }
+  }
+  if (graph_calc_fit_gradients.graph_exec_initialized) {
+    error_code |= checkGPUError(cudaGraphLaunch(graph_calc_fit_gradients.graph_exec, cpu_atoms->get_stream()));
+    // Record the event
+    error_code |= checkGPUError(cudaEventRecord(get_event(event_type::calc_fit_gradients), cpu_atoms->get_stream()));
+  }
+#endif
   return error_code;
 }
 
@@ -524,10 +632,11 @@ int colvaratoms_gpu::add_update_cpu_buffers_nodes(
   return error_code;
 }
 
-int colvaratoms_gpu::after_read_data_sync(
-  cvm::atom_group* cpu_atoms, bool copy_to_cpu, cudaStream_t stream) {
+int colvaratoms_gpu::after_read_data_sync(cvm::atom_group* cpu_atoms, bool copy_to_cpu) {
   int error_code = COLVARS_OK;
-  error_code |= checkGPUError(cudaStreamSynchronize(stream));
+  if (copy_to_cpu) {
+    error_code |= checkGPUError(cudaEventSynchronize(get_event(event_type::read_and_calculate)));
+  }
   // Update the COM
   if (cpu_atoms->b_dummy) {
     cpu_atoms->com = cpu_atoms->dummy_atom_pos;
@@ -577,7 +686,8 @@ int colvaratoms_gpu::after_read_data_sync(
 
       if (cpu_atoms->is_enabled(colvardeps::f_ag_rotate)) {
         if (copy_to_cpu) rot_gpu.to_cpu(cpu_atoms->rot);
-        rot_gpu.after_sync_check();
+        // TODO: Is it possible to skip checking?
+        rot_gpu.check_error();
       }
     }
   }
@@ -697,10 +807,12 @@ int colvaratoms_gpu::add_apply_force_nodes(
   std::vector<colvar::cvc*> parent_components;
   // Cast the parents to colvarcomp objects if possible
   for (size_t i = 0; i < parents.size(); ++i) {
-    try {
-      parent_components.push_back(dynamic_cast<colvar::cvc*>(parents[i]));
-    } catch (const std::bad_cast& exception) {
-      // Ignore the bad cast
+    switch (parents[i]->get_object_type()) {
+      case colvardeps::object_t::colvarcomp: {
+        parent_components.push_back(dynamic_cast<colvar::cvc*>(parents[i]));
+        break;
+      }
+      default:;
     }
   }
   auto check_cvc_cpu_buffers = [](const colvar::cvc* obj){return obj->is_enabled(colvardeps::f_cvc_require_cpu_buffers);};
@@ -854,6 +966,7 @@ int colvaratoms_gpu::read_positions_gpu_debug(
   bool to_cpu, double sign, cudaStream_t stream) {
   int error_code = COLVARS_OK;
   colvarproxy *p = cvmodule->proxy;
+  error_code |= checkGPUError(cudaStreamWaitEvent(stream, p->get_event(colvarproxy_gpu::event_type::copy_atoms)));
   error_code |= colvars_gpu::atoms_pos_from_proxy(
     gpu_buffers.d_atoms_index, p->proxy_atoms_positions_gpu(),
     gpu_buffers.d_atoms_pos, cpu_atoms->num_atoms, p->get_atom_ids()->size(),
@@ -887,35 +1000,25 @@ int colvaratoms_gpu::read_positions_gpu_debug(
         3 * cpu_atoms->fitting_group->num_atoms, stream);
     }
   }
-  error_code |= checkGPUError(cudaStreamSynchronize(stream));
+  // NOTE: I don't know why this is required to avoid HIP issue
+  error_code |= checkGPUError(cudaEventRecord(get_event(event_type::read_and_calculate), stream));
   return error_code;
 }
 
 int colvaratoms_gpu::calc_required_properties_gpu_debug(
   cvm::atom_group* cpu_atoms, bool to_cpu, cudaStream_t stream) {
   int error_code = COLVARS_OK;
-  if (!debug_graphs.initialized) {
+  if (!graph_debug.graph_exec_initialized) {
     // Create the debug graph
-    error_code |= checkGPUError(cudaGraphCreate(&debug_graphs.graph_calc_required_properties, 0));
-    std::unordered_map<std::string, cudaGraphNode_t> nodes_map;
-    error_code |= add_calc_required_properties_nodes(
-      cpu_atoms, debug_graphs.graph_calc_required_properties, nodes_map);
+    error_code |= checkGPUError(cudaGraphCreate(&graph_debug.graph, 0));
+    error_code |= add_calc_required_properties_nodes(cpu_atoms, graph_debug.graph, graph_debug.nodes);
     if (to_cpu) {
-      error_code |= add_update_cpu_buffers_nodes(
-        cpu_atoms, debug_graphs.graph_calc_required_properties, nodes_map);
+      error_code |= add_update_cpu_buffers_nodes(cpu_atoms, graph_debug.graph, graph_debug.nodes);
     }
-    cudaGraphInstantiateParams params{0};
-    params.flags = cudaGraphInstantiateFlagUpload;
-    params.uploadStream = stream;
-    error_code |= checkGPUError(cudaGraphInstantiateWithParams(
-      &debug_graphs.graph_exec_calc_required_properties, debug_graphs.graph_calc_required_properties, &params));
-    if (params.result_out != cudaGraphInstantiateSuccess) {
-      error_code |= cvmodule->error("Failed to instantiate CUDA graph!", COLVARS_ERROR);
-    }
-    debug_graphs.initialized = true;
+    graph_debug.init_graph_exec(cvmodule, stream);
   }
-  error_code |= checkGPUError(cudaGraphLaunch(
-    debug_graphs.graph_exec_calc_required_properties, stream));
+  error_code |= checkGPUError(cudaGraphLaunch(graph_debug.graph_exec, stream));
+  error_code |= checkGPUError(cudaEventRecord(get_event(event_type::read_and_calculate), stream));
   return error_code;
 }
 
@@ -998,6 +1101,31 @@ int colvaratoms_gpu::read_total_forces(cvm::atom_group* cpu_atoms) {
 void colvaratoms_gpu::apply_colvar_force_from_cpu(cvm::real const& cpu_force) {
   use_apply_colvar_force = true;
   h_sum_applied_colvar_force[0] += cpu_force;
+}
+
+int colvaratoms_gpu::add_force_to_proxy_gpu(cvm::atom_group* cpu_atoms) {
+  int error_code = COLVARS_OK;
+  if (!graph_apply_force.graph_exec_initialized) {
+    // Create the graph if not initialized
+    error_code |= checkGPUError(cudaGraphCreate(&graph_apply_force.graph, 0));
+    // Add nodes
+    error_code |= add_apply_force_nodes(cpu_atoms, graph_apply_force.graph, graph_apply_force.nodes);
+    // Intialize the graph
+    error_code |= graph_apply_force.init_graph_exec(cvmodule, cpu_atoms->get_stream());
+    if (cvmodule->debug()) {
+      const std::string filename = cpu_atoms->name + "_apply_forces.dot";
+      error_code |= graph_apply_force.dump_graph(filename);
+    }
+  }
+  if (graph_apply_force.graph_exec_initialized) {
+    // Launch the graph in the atom group stream
+    error_code |= checkGPUError(cudaGraphLaunch(graph_apply_force.graph_exec, cpu_atoms->get_stream()));
+    // Record the event
+    error_code |= checkGPUError(cudaEventRecord(get_event(event_type::apply_force), cpu_atoms->get_stream()));
+    // Make the proxy main stream wait for the event
+    error_code |= checkGPUError(cudaStreamWaitEvent(cvmodule->proxy->get_default_stream(), get_event(event_type::apply_force)));
+  }
+  return error_code;
 }
 
 #endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)

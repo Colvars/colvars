@@ -14,15 +14,42 @@
 
 
 // This constructor depends on a static cvm pointer and is deprecated
-colvardeps::colvardeps()
-  : colvarparse(cvm::main())
-{}
+colvardeps::colvardeps(object_t type_in)
+  : colvarparse(cvm::main()), my_type(type_in)
+{
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  init_gpu();
+#endif
+}
 
 
-colvardeps::colvardeps(colvarmodule *cvmodulein)
-  : colvarparse(cvmodulein)
-{}
+colvardeps::colvardeps(object_t type_in, colvarmodule *cvmodulein)
+  : colvarparse(cvmodulein), my_type(type_in)
+{
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  init_gpu();
+#endif
+}
 
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+void colvardeps::init_gpu() {
+  if (cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+    if (m_stream != 0) {
+      checkGPUError(cudaStreamDestroy(m_stream));
+    }
+    checkGPUError(cudaStreamCreate(&m_stream));
+  }
+}
+#elif defined (COLVARS_SYCL)
+#endif
+
+int colvardeps::proxy_buffers_reallocated() {
+  int error_code = COLVARS_OK;
+  for (auto it = children.begin(); it != children.end(); ++it) {
+    error_code |= (*it)->proxy_buffers_reallocated();
+  }
+  return error_code;
+}
 
 colvardeps::~colvardeps() {
   size_t i;
@@ -42,6 +69,12 @@ colvardeps::~colvardeps() {
 //     }
 
   remove_all_children();
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  if (m_stream != 0) {
+    checkGPUError(cudaStreamDestroy(m_stream));
+  }
+#elif defined (COLVARS_SYCL)
+#endif
 }
 
 

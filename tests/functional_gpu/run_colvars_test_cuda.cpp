@@ -84,6 +84,10 @@ private:
   double* d_mAppliedForces;
   double* d_mTotalForces;
   bool mAtomsChanged;
+  // These buffers are for read_frame_xyz
+  std::vector<cvm::rvector> m_positions;
+  colvarproxy_atoms::atom_buffer_real_t m_positions_soa;
+  colvarproxy_atoms::atom_buffer_real_t m_applied_forces_soa;
 };
 
 colvarproxy_stub_gpu::colvarproxy_stub_gpu():
@@ -107,13 +111,14 @@ colvarproxy_stub_gpu::~colvarproxy_stub_gpu() {
 }
 
 int colvarproxy_stub_gpu::setup() {
+  int error_code = colvarproxy::setup();
   boundaries_type = boundaries_non_periodic;
   reset_pbc_lattice();
-  cvmodule->it = cvmodule->it_restart = 0;
   if (cvmodule) {
-    return cvmodule->update_engine_parameters();
+    cvmodule->it = cvmodule->it_restart = 0;
+    error_code |= cvmodule->update_engine_parameters();
   }
-  return COLVARS_OK;
+  return error_code;
 }
 
 void colvarproxy_stub_gpu::request_total_force(bool yesno)
@@ -222,45 +227,42 @@ void colvarproxy_stub_gpu::clear_atom(int index) {
 
 int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_force_file)
 {
-  std::vector<cvm::rvector> positions(atoms_ids.size());
-  int err = cvmodule->load_coords_xyz(filename, &positions, nullptr, true);
+  // std::vector<cvm::rvector> positions(atoms_ids.size());
+  m_positions.resize(atoms_ids.size());
+  int error_code = cvmodule->load_coords_xyz(filename, &m_positions, nullptr, true);
   // Convert to SOA and copy to GPU
-  colvarproxy_atoms::atom_buffer_real_t positions_soa;
-  const size_t numAtoms = positions.size();
-  // if (numAtoms != positions.size()) {
-  //   return cvmodule->error("Number of atoms mismatch!\n", COLVARS_ERROR);
-  // }
+  const size_t numAtoms = m_positions.size();
+  // cvmodule->log("numAtoms = " + cvm::to_str(numAtoms) + "\n");
   if (mAtomsChanged) {
     this->reallocate();
-    if (cvmodule->gpu_calc) {
-      // Need to rebuild the graph in case of reallocation
-      cvmodule->gpu_calc->init();
-    }
+    error_code |= cvmodule->proxy_buffers_reallocated_done();
   }
-  positions_soa.resize(3 * numAtoms);
+  m_positions_soa.resize(3 * numAtoms);
   for (size_t i = 0; i < numAtoms; ++i) {
-    positions_soa[i] = positions[i].x;
-    positions_soa[i+numAtoms] = positions[i].y;
-    positions_soa[i+2*numAtoms] = positions[i].z;
+    m_positions_soa[i] = m_positions[i].x;
+    m_positions_soa[i+numAtoms] = m_positions[i].y;
+    m_positions_soa[i+2*numAtoms] = m_positions[i].z;
   }
-  copy_HtoD(positions_soa.data(), d_mPositions, 3 * numAtoms);
-  clear_device_array(d_mAppliedForces, 3 * numAtoms);
-  clear_device_array(d_mTotalForces, 3 * numAtoms);
+  error_code |= copy_HtoD_async(m_positions_soa.data(), d_mPositions, 3 * numAtoms, stream);
+  error_code |= clear_device_array_async(d_mAppliedForces, 3 * numAtoms, stream);
+  error_code |= clear_device_array_async(d_mTotalForces, 3 * numAtoms, stream);
+  error_code |= checkGPUError(cudaEventRecord(get_event(colvarproxy_gpu::event_type::copy_atoms), stream));
   std::string force_filename;
   if (write_force_file) {
     force_filename = cvmodule->output_prefix() + "_forces_" + cvm::to_str(cvmodule->it) + ".dat";
   }
-  if ( !err ) {
-    cvmodule->calc();
+  if ( !error_code ) {
+    error_code |= cvmodule->calc();
     cvmodule->it++;
-    colvarproxy_atoms::atom_buffer_real_t h_applied_forces(3 * numAtoms);
-    copy_DtoH(d_mAppliedForces, h_applied_forces.data(), 3 * numAtoms);
+    m_applied_forces_soa.resize(3 * numAtoms);
+    error_code |= copy_DtoH_async(d_mAppliedForces, m_applied_forces_soa.data(), 3 * numAtoms, stream);
+    error_code |= checkGPUError(cudaStreamSynchronize(stream));
     if (write_force_file) {
       std::ofstream ofs(force_filename);
       for (size_t i = 0; i < numAtoms; ++i) {
-        const cvm::real fx = h_applied_forces[i];
-        const cvm::real fy = h_applied_forces[i + numAtoms];
-        const cvm::real fz = h_applied_forces[i + 2 * numAtoms];
+        const cvm::real fx = m_applied_forces_soa[i];
+        const cvm::real fy = m_applied_forces_soa[i + numAtoms];
+        const cvm::real fz = m_applied_forces_soa[i + 2 * numAtoms];
         ofs << std::scientific << std::setprecision(12) << std::setw(20) << fx << std::setw(0) << " ";
         ofs << std::scientific << std::setprecision(12) << std::setw(20) << fy << std::setw(0) << " ";
         ofs << std::scientific << std::setprecision(12) << std::setw(20) << fz << std::setw(0) << " ";
@@ -269,7 +271,7 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
     }
   }
   mAtomsChanged = false;
-  return err;
+  return error_code;
 }
 #endif
 

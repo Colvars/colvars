@@ -5,6 +5,8 @@
 #include <iostream>
 #include <unordered_map>
 
+class colvarmodule;
+
 #define COLVARS_STRINGIFY(s) STRINGIFY_HELPER(s)
 #define STRINGIFY_HELPER(s) #s
 
@@ -12,6 +14,7 @@
 #include <cuda_runtime.h>
 #ifdef COLVARS_NVTX_PROFILING
 #include <nvtx3/nvToolsExt.h>
+#include <nvtx3/nvToolsExtCudaRt.h>
 #endif
 #define COLVARS_SYNC_WARP __syncwarp()
 #endif // defined(COLVARS_CUDA)
@@ -246,6 +249,54 @@
 #define make_cudaPos make_hipPos
 #endif // make_cudaPos
 
+#ifndef cudaEvent_t
+#define cudaEvent_t hipEvent_t
+#endif // cudaEvent_t
+
+#ifndef cudaEventCreateWithFlags
+#define cudaEventCreateWithFlags hipEventCreateWithFlags
+#endif // cudaEventCreate
+
+#ifndef cudaEventDisableTiming
+#define cudaEventDisableTiming hipEventDisableTiming
+#endif // cudaEventDisableTiming
+
+#ifndef cudaEventDestroy
+#define cudaEventDestroy hipEventDestroy
+#endif // cudaEventDestroy
+
+#ifndef cudaEventRecord
+#define cudaEventRecord hipEventRecord
+#endif // cudaEventRecord
+
+#ifndef cudaEventSynchronize
+#define cudaEventSynchronize hipEventSynchronize
+#endif // cudaEventSynchronize
+
+#ifndef cudaStreamWaitEvent
+#define cudaStreamWaitEvent hipStreamWaitEvent
+#endif // cudaStreamWaitEvent
+
+#ifndef cudaGraphAddEventRecordNode
+#define cudaGraphAddEventRecordNode hipGraphAddEventRecordNode
+#endif // cudaGraphAddEventRecordNode
+
+#ifndef cudaGetDevice
+#define cudaGetDevice hipGetDevice
+#endif // cudaGetDevice
+
+#ifndef cudaDeviceProp
+#define cudaDeviceProp hipDeviceProp_t
+#endif // cudaDeviceProp
+
+#ifndef cudaDeviceGetPCIBusId
+#define cudaDeviceGetPCIBusId hipDeviceGetPCIBusId
+#endif // cudaDeviceGetPCIBusId
+
+#ifndef cudaGetDeviceProperties
+#define cudaGetDeviceProperties hipGetDeviceProperties
+#endif // cudaGetDeviceProperties
+
 #endif // defined(COLVARS_HIP)
 
 namespace colvars_gpu {
@@ -355,6 +406,31 @@ namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 
 /**
+ * @brief A struct for holding a CUDA graph and its execution object
+ */
+class gpu_graph_t {
+public:
+  /// \brief Constructor
+  gpu_graph_t() {}
+  /// \brief Reset the CUDA graph
+  int reset();
+  /// \brief Destructor
+  ~gpu_graph_t();
+  /// \brief Dump the CUDA graph to a dot file for debugging
+  int dump_graph(const std::string& filename);
+  /// \brief Initialize CUDA graph execution instance
+  int init_graph_exec(colvarmodule* cvmodule, cudaStream_t stream);
+  /// \brief Flag to describe whether the graph execution instance has been initialized
+  bool graph_exec_initialized = false;
+  /// \brief CUDA graph object
+  cudaGraph_t graph = nullptr;
+  /// \brief CUDA graph execution instance object
+  cudaGraphExec_t graph_exec = nullptr;
+  /// \brief List of compute nodes
+  std::unordered_map<std::string, cudaGraphNode_t> nodes = {};
+};
+
+/**
  * @brief Add a CUDA graph node to clear an array to zero (used by add_clear_array_node)
  */
 int add_clear_array_node_impl(
@@ -431,30 +507,6 @@ int prepare_dependencies(
   const std::unordered_map<std::string, cudaGraphNode_t>& map,
   const std::string& caller_operation_name = "");
 
-// NVTX Profiling
-#if defined (COLVARS_NVTX_PROFILING)
-/**
- * @brief Class for managing NVTX profiling ranges
- *
- * This class encapsulates the functionality to create and manage NVTX
- * profiling ranges. It allows setting a name and color for the range,
- * and provides methods to start and stop the profiling range.
- */
-class colvar_nvtx_prof {
-public:
-  colvar_nvtx_prof();
-  void set_name_color(const std::string& name_in, const uint32_t color_in);
-  inline void start() {
-    nvtxRangePushEx(&nvtx_event_attr);
-  }
-  inline void stop() {
-    nvtxRangePop();
-  }
-private:
-  std::string nvtx_event_name;
-  nvtxEventAttributes_t nvtx_event_attr;
-};
-#endif // defined (COLVARS_NVTX_PROFILING)
 #endif // defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
