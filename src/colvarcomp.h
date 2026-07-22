@@ -27,7 +27,6 @@
 #include "colvar_geometricpath.h"
 #include "colvaratoms.h"
 #include "colvarproxy.h"
-#include "colvar_gpu_calc.h"
 
 /// \brief Colvar component (base class for collective variables)
 ///
@@ -107,6 +106,9 @@ public:
   /// cvc \endlink
   virtual int init(std::string const &conf);
 
+  /// \brief Initialize GPU data
+  virtual int init_gpu();
+
   /// \brief Initialize dependency tree
   int init_dependencies() override;
 
@@ -136,16 +138,24 @@ public:
 
   /// \brief Obtain data needed for the calculation for the backend
   virtual void read_data();
+  virtual int read_data_gpu();
 
   /// \brief Calculate the variable
   virtual void calc_value() = 0;
+  virtual int calc_value_gpu() { return COLVARS_NOT_IMPLEMENTED; }
+  /// \brief CPU-side calculation after the graph in add_calc_value_node is done on GPU
+  virtual int calc_value_after_gpu() { return COLVARS_OK; }
 
   /// \brief Calculate the atomic gradients, to be reused later in
   /// order to apply forces
   virtual void calc_gradients() {}
+  virtual int calc_gradients_gpu() { return COLVARS_NOT_IMPLEMENTED; }
+  /// \brief CPU-side calculation after the graph in add_calc_gradients_node is done on GPU
+  virtual int calc_gradients_after_gpu() { return COLVARS_OK; }
 
   /// \brief Calculate the atomic fit gradients
   void calc_fit_gradients();
+  int calc_fit_gradients_gpu();
 
   /// \brief Calculate finite-difference gradients alongside the analytical ones, for each Cartesian component
   virtual void debug_gradients();
@@ -157,54 +167,33 @@ public:
   /// \brief Calculate the total force from the system using the
   /// inverse atomic gradients
   virtual void calc_force_invgrads();
-
-  /// \brief Calculate the divergence of the inverse atomic gradients
-  virtual void calc_Jacobian_derivative();
-
-  // TODO: Maybe this should be a feature in colvarsdep but I am still constantly confused by colvarsdep
-  /// \brief Check the GPU availability
-  virtual bool has_gpu_implementation() const { return false; }
-
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  /// \brief Calculate the variable on GPU
-  virtual int add_calc_value_node(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map)
-  { return COLVARS_NOT_IMPLEMENTED; }
-
-  /// \brief CPU-side calculation after the graph in add_calc_value_node is done on GPU
-  virtual int calc_value_after_gpu() { return COLVARS_OK; }
-
-  /// \brief Calculate the atomic gradients, to be reused later in
-  /// order to apply forces on GPU
-  virtual int add_calc_gradients_node(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map)
-  { return COLVARS_NOT_IMPLEMENTED; }
-
-  /// \brief Calculate the total force from the system using the
-  /// inverse atomic gradients on GPU
-  virtual int add_calc_force_invgrads_node(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map)
-  { return COLVARS_NOT_IMPLEMENTED; }
-
+  virtual int calc_force_invgrads_gpu() { return COLVARS_NOT_IMPLEMENTED; }
   /// \brief CPU-side calculation after the graph in add_calc_force_invgrads_node is done on GPU
   virtual int calc_force_invgrads_after_gpu() { return COLVARS_OK; }
 
-  /// \brief Calculate the divergence of the inverse atomic gradients on GPU
-  virtual int add_calc_Jacobian_derivative_node(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map)
-  { return COLVARS_NOT_IMPLEMENTED; }
-
+  /// \brief Calculate the divergence of the inverse atomic gradients
+  virtual void calc_Jacobian_derivative();
+  virtual int calc_Jacobian_derivative_gpu() { return COLVARS_NOT_IMPLEMENTED; }
   /// \brief CPU-side calculation after the graph in add_calc_Jacobian_derivative_node is done on GPU
   virtual int calc_Jacobian_derivative_after_gpu() { return COLVARS_OK; }
 
   /// \brief Calculate finite-difference gradients alongside the analytical ones, for each Cartesian component on GPU
-  virtual int debug_gradients_gpu(
-    colvars_gpu::colvarmodule_gpu_calc::compute_gpu_graph_t& calc_value_graph,
-    colvars_gpu::colvarmodule_gpu_calc::compute_gpu_graph_t& calc_gradients_graph);
+  virtual int debug_gradients_gpu();
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  enum class event_type {
+    calc_value = 0,
+    calc_gradients,
+    calc_force_invgrads,
+    calc_Jacobian_derivative,
+    num_event_types,
+  };
+  /**
+   * @brief Getter of a specific CUDA event
+   */
+  const cudaEvent_t& get_event(event_type type) const {
+    return events[static_cast<int>(type)];
+  }
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
   /// \brief Return the previously calculated value
@@ -227,6 +216,9 @@ public:
   /// eventually manipulated by the parent \link colvar \endlink
   /// object
   virtual void apply_force(colvarvalue const &cvforce);
+
+  /// \brief Function to clean the staged atom group forces
+  virtual int begin_apply_force_from_cpu_to_gpu();
 
   /// Square distance between x1 and x2 (can be redefined to transparently
   /// implement metrics in multi-dimensional spaces with or without
@@ -349,6 +341,10 @@ protected:
 
   /// \brief CVC-specific default colvar width (default: not provided)
   cvm::real width = 0.0;
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  std::array<cudaEvent_t, static_cast<int>(event_type::num_event_types)> events = {};
+#endif
 };
 
 
@@ -1048,17 +1044,8 @@ protected:
   cvm::ag_vector_real_t  ref_pos_soa;
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  cvm::real* d_ref_pos_soa;
-  cvm::real* d_permutation_msds;
-  unsigned int* d_tbcounts;
-  cvm::real* h_rmsd;
-  size_t* h_best_perm_index;
-  cvm::real* d_ft;
-  cvm::real* h_ft;
-  cvm::real* d_jd;
-  cvm::real* h_jd;
-  unsigned int* d_tbcount_ft;
-  unsigned int* d_tbcount_jd;
+  class rmsd_gpu_impl_t;
+  std::unique_ptr<rmsd_gpu_impl_t> rmsd_gpu_impl;
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
   /// Number of permutations of symmetry-related atoms
@@ -1073,23 +1060,15 @@ protected:
 
 public:
   rmsd();
-  bool has_gpu_implementation() const override;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  int add_calc_value_node(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) override;
+  int calc_value_gpu() override;
   int calc_value_after_gpu() override;
-  int add_calc_gradients_node(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) override;
-  int add_calc_force_invgrads_node(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) override;
+  int calc_gradients_gpu() override;
+  int calc_force_invgrads_gpu() override;
   int calc_force_invgrads_after_gpu() override;
-  int add_calc_Jacobian_derivative_node(
-    cudaGraph_t& graph,
-    std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) override;
+  int calc_Jacobian_derivative_gpu() override;
   int calc_Jacobian_derivative_after_gpu() override;
+  int proxy_buffers_reallocated() override;
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   virtual ~rmsd();
   virtual int init(std::string const &conf) override;

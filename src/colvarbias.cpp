@@ -19,7 +19,7 @@
 
 
 colvarbias::colvarbias(colvarmodule *cvmodule_in, char const *key)
-  : colvardeps(cvmodule_in)
+  : colvardeps(colvardeps::object_t::colvarbias, cvmodule_in)
 {
   time_step_factor = cvmodule->proxy->time_step_factor();
 
@@ -279,7 +279,7 @@ int colvarbias::reset()
 
 
 colvarbias::colvarbias()
-  : has_data(false)
+  : colvardeps(colvardeps::object_t::colvarbias), has_data(false)
 {}
 
 
@@ -810,7 +810,7 @@ std::ostream & colvarbias::write_traj(std::ostream &os)
 }
 
 
-colvarbias_ti::colvarbias_ti(char const *key)
+colvarbias_ti::colvarbias_ti(char const *key): colvardeps(colvardeps::object_t::colvarbias)
 {
   colvarproxy *proxy = cvmodule->proxy;
   provide(f_cvb_calc_ti_samples);

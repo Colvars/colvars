@@ -3,6 +3,7 @@
 
 #include "colvar_gpu_support.h"
 #include "colvarmodule.h"
+#include <array>
 
 /**
  * @file colvarproxy_gpu.h
@@ -15,14 +16,34 @@
 class colvarproxy_gpu {
 public:
   /// \brief Constructor
-  colvarproxy_gpu(): support_gpu(false) {}
+  colvarproxy_gpu(): support_gpu(false), warp_size(0) {}
   /// \brief Whether the proxy supports GPU
   bool has_gpu_support() const {
     return support_gpu;
   }
+  /// \brief Get the GPU name
+  std::string gpu_name() const;
+  /// \brief Get the GPU PCI bus ID
+  std::string gpu_bus_id() const;
+  /// \brief Get the GPU device number
+  int gpu_device_id() const;
+  /// \brief Get the GPU platform (CUDA, HIP or SYCL)
+  std::string gpu_platform() const;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (COLVARS_SYCL)
+  /// \brief CUDA warp size or HIP wave front size
+  int gpu_warp_size() const {return warp_size;}
   /// \brief Get the default CUDA stream from the proxy
   virtual cudaStream_t get_default_stream() {return (cudaStream_t)0;}
+  /// \brief Initialize the GPU data (called by colvarproxy::setup)
+  int init_gpu();
+  /// \brief Available CUDA event types
+  enum class event_type {
+    copy_atoms,
+    update_lattice,
+    num_event_types,
+  };
+  /// \brief Get the default CUDA event from the proxy
+  cudaEvent_t get_event(event_type type) {return events[static_cast<int>(type)];}
   /**
    * @brief Template function to allocate host-pinned memory
    *
@@ -264,20 +285,17 @@ public:
   virtual cvm::real* proxy_atoms_total_forces_gpu() {return nullptr;}
   virtual cvm::real* proxy_atoms_new_colvar_forces_gpu() {return nullptr;}
   /// @}
-  /**
-   * @brief This function will be called after atom groups are calculated on GPU.
-   *
-   * This function is useful when additional information is needed to transfer 
-   * from the proxy. For example, the proxy can copy the lattice vectors in a 
-   * separate stream, and this function can wait for that stream to complete.
-   */
-  virtual int wait_for_extra_info_ready();
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   /// \brief Destructor
   virtual ~colvarproxy_gpu();
 protected:
   /// \brief Whether the proxy supports GPU
   bool support_gpu;
+  /// \brief Warp size
+  int warp_size;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  std::array<cudaEvent_t, static_cast<int>(event_type::num_event_types)> events = {};
+#endif
 };
 
 #endif // COLVARPROXY_GPU_H
