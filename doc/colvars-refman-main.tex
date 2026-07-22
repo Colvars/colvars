@@ -33,7 +33,7 @@ The module is designed to perform multiple tasks concurrently during or after a 
 
 \cvvmdonly{\textbf{Note:} although restraints and PMF algorithms are primarily used during simulations, they are also available in VMD to test a new input for a simulation, or to evaluate the relative free energy of a new structure based on data from a previous calculation.  \emph{Options that only have an effect during a simulation are also included for compatibility purposes.}}
 
-Detailed explanations of the design of the Colvars module are provided in reference~\cite{Fiorin2013}.  Please cite this reference whenever publishing work that makes use of this module, alongside any other publications for specific features being, according to the usage summary printed when running a Colvars-enabled MD simulation or analysis.
+Detailed explanations of the design of the Colvars module are provided in ref.\ \citealp{Fiorin2013}.  Please cite this reference whenever publishing work that makes use of this module, alongside any other publications for specific features being, according to the usage summary printed when running a Colvars-enabled MD simulation or analysis.
 
 
 \cvvmdonly{
@@ -2144,7 +2144,7 @@ displacement is then defined as:
 The optimal rotation
 $U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$
 is calculated within the formalism developed in
-reference~\cite{Coutsias2004}, which guarantees a continuous
+ref.\ \citealp{Coutsias2004}, which guarantees a continuous
 dependence of
 $U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$
 with respect to $\{\mathbf{x}_{i}(t)\}$.
@@ -2232,7 +2232,7 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     Note that this does not affect the least-squares roto-translational fit.
     Therefore, this feature is mostly useful when using custom fitting parameters within the
     atom group, such as \refkey{fittingGroup}{atom-group|fittingGroup}, or when fitting
-    is disabled altogether. For details, see reference~\cite{Ebrahimi2022}.
+    is disabled altogether. For details, see ref.\ \citealp{Ebrahimi2022}.
   }
 \end{cvcoptions}
 This component returns a positive real number (in \lengthunit).
@@ -2476,7 +2476,7 @@ define the atom group, and returns a positive number, expressed in
 
 The variables discussed in this section quantify the rotations of macromolecules (or other quasi-rigid objects) from a given set of reference coordinates to the current coordinates.
 Such rotations are computed following the same method used for best-fit RMSDs (see \refkey{rmsd}{colvar|rmsd} and \refkey{fittingGroup}{atom-group|fittingGroup}).
-The underlying mathematical formalism is described in reference~\cite{Coutsias2004}, and the implementation in reference~\cite{Fiorin2013}.
+The underlying mathematical formalism is described in refs.\ \citealp{Coutsias2004,Daniilidis1999,Hu2006}, and the implementation in ref.\ \citealp{Fiorin2013}.
 
 The first of the functions described is the \refkey{orientation}{colvar|orientation}, which describes the full rotation as a unit quaternion $\mathsf{q} = (q_0, q_1, q_2, q_3)$, i.e.{} 4 numbers with one constraint (3 degrees of freedom).
 The quaternion $\mathsf{q}$ is \emph{one of only two representations that are both complete and accurate}, the other being a $3\times{}3$ unit matrix with 3 independent parameters.
@@ -2512,7 +2512,7 @@ component returns a four dimensional vector $\mathsf{q} = (q_0, q_1,
 q_2, q_3)$, with $\sum_{i} q_{i}^{2} = 1$; this \emph{quaternion}
 expresses the optimal rotation $\{\mathbf{x}_{i}(t)\} \rightarrow
 \{\mathbf{x}_{i}^{\mathrm{(ref)}}\}$ according to the formalism in
-reference~\cite{Coutsias2004}.
+ref.\ \citealp{Coutsias2004}.
 The quaternion $(q_0, q_1, q_2, q_3)$
 can also be written as $\left(\cos(\theta/2), \,
   \sin(\theta/2)\mathbf{u}\right)$, where $\theta$ is the angle and
@@ -2804,7 +2804,7 @@ the \textit{P} axis to the \textit{Z} axis, and
 Although Euler angles are more straightforward to use than quaternions, they are also potentially subject to the ``gimbal lock'' problem:\\
 \url{https://en.wikipedia.org/wiki/Gimbal_lock}\\
 \noindent{}which arises whenever $\theta \simeq \pm 90^\circ$, including the common case when \emph{the simulated coordinates are near the reference coordinates}.
-Therefore, a safe use of Euler angles as collective variables requires the use of restraints to avoid such singularities, such as done in reference~\cite{Fu2017} and in the \href{http://www.ks.uiuc.edu/Training/Tutorials/namd/PLB/tutorial-protein-ligand.pdf}{protein-ligand binding NAMD tutorial}.
+Therefore, a safe use of Euler angles as collective variables requires the use of restraints to avoid such singularities, such as done in ref.\ \citealp{Fu2017} and in the \href{http://www.ks.uiuc.edu/Training/Tutorials/namd/PLB/tutorial-protein-ligand.pdf}{protein-ligand binding NAMD tutorial}.
 
 The \texttt{eulerPhi} component accepts exactly the same options as \texttt{orientation}, and 
 measures the rotation angle from the \textit{x} axis to the \textit{N} axis. This 
@@ -5690,7 +5690,7 @@ In adaptive biasing force (ABF) (\ref{sec:colvarbias_abf}) the above keywords ar
 \cvsubsec{Adaptive Biasing Force}{sec:colvarbias_abf}
 
 For a full description of the Adaptive Biasing Force method, see
-reference~\cite{Darve2008}. For details about this implementation,
+ref.\ \citealp{Darve2008}. For details about this implementation,
 see references~\cite{Henin2004} and \cite{Henin2010}. \textbf{When
 publishing research that makes use of this functionality, please cite
 references~\cite{Darve2008} and \cite{Henin2010}.}
@@ -6155,7 +6155,7 @@ $\lambda$ that evolves dynamically according to Newtonian or Langevin dynamics.
 Such an extended coordinate is enabled for a given colvar using the
 \texttt{extendedLagrangian} and associated keywords (\ref{sec:colvar_extended}).
 The theory of eABF and the present implementation are documented in detail
-in reference~\cite{Lesage2017}.
+in ref.\ \citealp{Lesage2017}.
 
 Defining an ABF bias on a colvar wherein the \texttt{extendedLagrangian} option
 is active will perform eABF automatically; there is no dedicated option.
@@ -6195,7 +6195,7 @@ estimator\cvnamdonly{ or the Zheng/Yang estimator}.
 \cvsubsubsec{CZAR estimator of the free energy}{sec:colvarbias_ti_ext_czar}
 
 The \emph{corrected z-averaged restraint} (CZAR) estimator
-is described in detail in reference~\cite{Lesage2017}.
+is described in detail in ref.\ \citealp{Lesage2017}.
 It is computed automatically in eABF simulations,
 regardless of the number of colvars involved.
 Note that ABF may also be applied on a combination of extended and non-extended
