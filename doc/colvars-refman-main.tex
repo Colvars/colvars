@@ -2480,14 +2480,14 @@ The underlying mathematical formalism is described in reference~\cite{Coutsias20
 
 The first of the functions described is the \refkey{orientation}{colvar|orientation}, which describes the full rotation as a unit quaternion $\mathsf{q} = (q_0, q_1, q_2, q_3)$, i.e.{} 4 numbers with one constraint (3 degrees of freedom).
 The quaternion $\mathsf{q}$ is \emph{one of only two representations that are both complete and accurate}, the other being a $3\times{}3$ unit matrix with 3 independent parameters.
-Although $\mathsf{q}$ is used internally in the Colvars module for features such as the \refkey{rmsd}{colvar|rmsd} function and the \refkey{fittingGroup}{atom-group|fittingGroup} option, its direct use as a collective variable is more difficult, and mostly limited to fixed or moving restraints.
+Although $\mathsf{q}$ is used internally in the Colvars module for features such as the \refkey{rmsd}{colvar|rmsd} function and the \refkey{fittingGroup}{atom-group|fittingGroup} option, its direct use as a collective variable is mostly limited to fixed or moving restraints.
 
 The two functions \refkey{orientationAngle}{colvar|orientationAngle} and \refkey{orientationProj}{colvar|orientationProj}, with the latter being the cosine of the former, represent the amplitude of the full rotation described by $\mathsf{q}$, regardless of the direction of its axis.
 As one-dimensional scalar variables, both \refkey{orientationAngle}{colvar|orientationAngle} and \refkey{orientationProj}{colvar|orientationProj} are a much reduced simplification of the full rotation.
 However, they can be used in a variety of methods including both restraints and PMF computations.
 
 A slightly more complete parametrization is achieved by decomposing the full rotation into the two parameters, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle}.
-These quantify the amplitudes of two independent sub-rotations away from a certain axis $\mathbf{e}$, and around the same axis $\mathbf{e}$, respectively.
+These quantify the amplitudes of two independent sub-rotations away from a certain axis $\mathbf{e}$, and around that axis $\mathbf{e}$, respectively.
 The axis $\mathbf{e}$ is chosen by the user, and is by default the Z axis:
 under that choice, \refkey{tilt}{colvar|tilt} is equivalent to the sine of the Euler ``pitch'' angle $\theta$, and \refkey{spinAngle}{colvar|spinAngle} to the sum of the other two angles, $(\phi + \psi)$.
 This parameterization is mathematically well defined for almost all full rotations, including small ones when the current coordinates are almost completely aligned with the reference ones.
@@ -2512,12 +2512,15 @@ component returns a four dimensional vector $\mathsf{q} = (q_0, q_1,
 q_2, q_3)$, with $\sum_{i} q_{i}^{2} = 1$; this \emph{quaternion}
 expresses the optimal rotation $\{\mathbf{x}_{i}(t)\} \rightarrow
 \{\mathbf{x}_{i}^{\mathrm{(ref)}}\}$ according to the formalism in
-reference~\cite{Coutsias2004}.  The quaternion $(q_0, q_1, q_2, q_3)$
+reference~\cite{Coutsias2004}.
+The quaternion $(q_0, q_1, q_2, q_3)$
 can also be written as $\left(\cos(\theta/2), \,
   \sin(\theta/2)\mathbf{u}\right)$, where $\theta$ is the angle and
 $\mathbf{u}$ the normalized axis of rotation; for example, a rotation
 of 90$^{\circ}$ around the $z$ axis is expressed as
-``\texttt{(0.707, 0.0, 0.0, 0.707)}''.  The script
+``\texttt{(0.707, 0.0, 0.0, 0.707)}''.
+For any quaternion $q$, $q$ and $-q$ represent the same rotation. Therefore, by convention, \texttt{orientation} always returns a quaternion verifying $q_0 \ge 0$. This ensures that \texttt{orientation} is a unique and continuously-varying function of Cartesian coordinates.
+The script
 \href{https://raw.githubusercontent.com/Colvars/colvars/master/colvartools/quaternion2rmatrix.tcl}{\texttt{quaternion2rmatrix.tcl}} provides Tcl functions for converting
 to and from a $4\times{}4$ rotation matrix in a format suitable for
 usage in VMD.
