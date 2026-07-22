@@ -1,7 +1,6 @@
 configuration {
   step           20
   dt 1.000000e+00
-  version 2026-05-22
 }
 
 colvar {
