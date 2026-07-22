@@ -766,8 +766,16 @@ proc ::cv_dashboard::cvs_from_labels {} {
 # loading the precomputed values
 
 proc ::cv_dashboard::cvs_from_traj {} {
+  global tcl_platform
+  if { $tcl_platform(os) == "Darwin"} {
+    # work around Tk bug in MacOS
+    # https://core.tcl-lang.org/tk/tktview/080a28104e25e054f8f5869d9333aa57c221b896
+    set extension ".traj"
+  } else {
+    set extension ".colvars.traj"
+  }
   set files [tk_getOpenFile -title "Input colvars trajectory files for the complete trajectory" \
-       -multiple true -filetypes {{"Colvars traj" .colvars.traj} {"All files" *}}]
+       -multiple true -filetypes [list [list "Colvars traj" $extension] {"All files" *}]]
     # -initialdir $::cv_dashboard::config_dir]
   if {[llength $files] > 0 } {
     ::cv_dashboard::load_cv_traj $files
