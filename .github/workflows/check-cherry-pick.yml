@@ -74,6 +74,9 @@ jobs:
 
   check-cherry-pick-devel:
     name: "Cherry-pick onto ${{ matrix.branch }}"
+    # TODO either remove this condition below, or merge with the job above if we decide to only
+    # update these “engine” branches only after PRs have been merged in the engines' repos
+    if: contains(github.event.pull_request.labels.*.name, 'bugfix')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
