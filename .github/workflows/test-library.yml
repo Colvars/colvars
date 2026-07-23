@@ -11,8 +11,6 @@ jobs:
 
     name: Basic checks
     runs-on: ubuntu-latest
-    outputs:
-      hassecrets: ${{ steps.checksecrets.outputs.hassecrets }}
     # env:
     #   CCACHE: ccache
     #   CCACHE_DIR: ${{ github.workspace }}/ccache
