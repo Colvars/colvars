@@ -1,0 +1,127 @@
+name: "Check cherry-pick compatibility"
+
+# Triggered on newly opened PRs and on subsequent pushes; checks whether
+# the PR commits can be cleanly cherry-picked onto a set of long-lived branches.
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled]
+
+jobs:
+
+  # ── Development branches: checked for every PR ─────────────────────────
+
+  check-cherry-pick-devel:
+    name: "Cherry-pick onto ${{ matrix.branch }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false          # report all failures, not just the first one
+      matrix:
+        branch:
+          - master
+          - gromacs-2025
+          - gromacs-2026
+          - namd-3.0
+          - lammps-stable_22Jul2025
+
+    steps:
+      - name: Checkout repository with full history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0        # need the full graph for cherry-pick
+
+      - name: Configure git identity
+        run: |
+          git config user.email "noreply@github.com"
+          git config user.name "CI runner"
+
+      - name: Fetch all remote branches
+        run: git fetch origin
+
+      - name: Collect commits introduced by this PR
+        id: commits
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          COMMITS=$(git log --reverse --format="%H" "${BASE_SHA}..${HEAD_SHA}")
+          if [[ -z "$COMMITS" ]]; then
+            echo "No commits found between ${BASE_SHA} and ${HEAD_SHA}; nothing to cherry-pick."
+            echo "empty=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Commits to cherry-pick:"
+            echo "$COMMITS"
+            # Store as a single space-separated string for use in the next step
+            echo "list=$(echo $COMMITS | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+            echo "empty=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Try cherry-pick onto ${{ matrix.branch }}
+        if: steps.commits.outputs.empty == 'false'
+        run: |
+          git checkout -b test-cherry-pick "origin/${{ matrix.branch }}"
+          if git cherry-pick ${{ steps.commits.outputs.list }}; then
+            echo "Cherry-pick onto ${{ matrix.branch }} succeeded."
+          else
+            git cherry-pick --abort 2>/dev/null || true
+            echo "::error::Cherry-pick onto ${{ matrix.branch }} failed." \
+              "The PR commits may need to be adapted before they can be" \
+              "applied to that branch."
+            exit 1
+          fi
+
+  # ── Maintenance branches: checked only for PRs labelled "bugfix" ───────
+
+  check-cherry-pick-maint:
+    name: "Cherry-pick onto ${{ matrix.branch }} (maintenance)"
+    if: contains(github.event.pull_request.labels.*.name, 'bugfix')
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        branch:
+          - gromacs-2024
+          - namd-2.14
+
+    steps:
+      - name: Checkout repository with full history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.email "noreply@github.com"
+          git config user.name "CI runner"
+
+      - name: Fetch all remote branches
+        run: git fetch origin
+
+      - name: Collect commits introduced by this PR
+        id: commits
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          COMMITS=$(git log --reverse --format="%H" "${BASE_SHA}..${HEAD_SHA}")
+          if [[ -z "$COMMITS" ]]; then
+            echo "No commits found between ${BASE_SHA} and ${HEAD_SHA}; nothing to cherry-pick."
+            echo "empty=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Commits to cherry-pick:"
+            echo "$COMMITS"
+            echo "list=$(echo $COMMITS | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+            echo "empty=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Try cherry-pick onto ${{ matrix.branch }}
+        if: steps.commits.outputs.empty == 'false'
+        run: |
+          git checkout -b test-cherry-pick "origin/${{ matrix.branch }}"
+          if git cherry-pick ${{ steps.commits.outputs.list }}; then
+            echo "Cherry-pick onto ${{ matrix.branch }} succeeded."
+          else
+            git cherry-pick --abort 2>/dev/null || true
+            echo "::error::Cherry-pick onto ${{ matrix.branch }} failed." \
+              "The PR commits may need to be adapted before they can be" \
+              "applied to that branch."
+            exit 1
+          fi
