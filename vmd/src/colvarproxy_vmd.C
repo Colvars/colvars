@@ -227,36 +227,18 @@ int colvarproxy_vmd::update_input()
                                        angstrom_to_internal(vmdpos[atoms_ids[i]*3+2]));
   }
 
-
   Timestep const *ts = vmdmol->get_frame(vmdmol_frame);
-  {
-    // Get lattice vectors
-    float A[3];
-    float B[3];
-    float C[3];
-    ts->get_transform_vectors(A, B, C);
-    unit_cell_x.set(angstrom_to_internal(A[0]), angstrom_to_internal(A[1]), angstrom_to_internal(A[2]));
-    unit_cell_y.set(angstrom_to_internal(B[0]), angstrom_to_internal(B[1]), angstrom_to_internal(B[2]));
-    unit_cell_z.set(angstrom_to_internal(C[0]), angstrom_to_internal(C[1]), angstrom_to_internal(C[2]));
-  }
 
-  if (ts->a_length + ts->b_length + ts->c_length < 1.0e-6) {
-    boundaries_type = boundaries_non_periodic;
-    reset_pbc_lattice();
-  } else if ((ts->a_length > 1.0e-6) &&
-             (ts->b_length > 1.0e-6) &&
-             (ts->c_length > 1.0e-6)) {
-    if (((ts->alpha-90.0)*(ts->alpha-90.0)) +
-        ((ts->beta-90.0)*(ts->beta-90.0)) +
-        ((ts->gamma-90.0)*(ts->gamma-90.0)) < 1.0e-6) {
-      boundaries_type = boundaries_pbc_ortho;
-    } else {
-      boundaries_type = boundaries_pbc_triclinic;
-    }
-    colvarproxy_system::update_pbc_lattice();
-  } else {
-    boundaries_type = boundaries_unsupported;
-  }
+  float A[3];
+  float B[3];
+  float C[3];
+  ts->get_transform_vectors(A, B, C);
+  boundaries_.set_boundaries((ts->a_length > 1.0e-6f),
+                             (ts->b_length > 1.0e-6f),
+                             (ts->c_length > 1.0e-6f),
+                             cvm::rvector{angstrom_to_internal(A[0]), angstrom_to_internal(A[1]), angstrom_to_internal(A[2])},
+                             cvm::rvector{angstrom_to_internal(B[0]), angstrom_to_internal(B[1]), angstrom_to_internal(B[2])},
+                             cvm::rvector{angstrom_to_internal(C[0]), angstrom_to_internal(C[1]), angstrom_to_internal(C[2])});
 
   return error_code;
 }
@@ -805,7 +787,7 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
   cvm::atom_pos const origin(0.0, 0.0, 0.0);
   for (; i < atoms->size(); ++i) {
     // Wrap around the origin
-    cvm::rvector const wrapped_pos = position_distance(
+    cvm::rvector const wrapped_pos = boundaries_.position_distance(
       origin, cvm::atom_pos(atoms->pos_x(i), atoms->pos_y(i), atoms->pos_z(i)));
     coord[0] = internal_to_angstrom(wrapped_pos.x);
     coord[1] = internal_to_angstrom(wrapped_pos.y);
