@@ -1,4 +1,4 @@
-name: "Check cherry-pick compatibility"
+name: "Check cherry-pick"
 
 # Triggered on newly opened PRs and on subsequent pushes; checks whether
 # the PR's commits can be cleanly cherry-picked onto a set of long-lived branches.
@@ -13,7 +13,7 @@ jobs:
   # Check against maintenance branches for PRs with the label "bugfix"
 
   check-cherry-pick-maint:
-    name: "Cherry-pick onto ${{ matrix.branch }} (bugfixes only)"
+    name: "Cherry-pick onto ${{ matrix.branch }} (bugfixes-only branch)"
     if: contains(github.event.pull_request.labels.*.name, 'bugfix')
     runs-on: ubuntu-latest
     strategy:
