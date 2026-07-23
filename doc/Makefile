@@ -1,5 +1,5 @@
 .PHONY: all pdf html doxygen webpage webpage-legacy images \
-	install clean clean-all \
+	install install-images clean clean-all \
 	update-code-refs update-cvscript-cmdline-doc updates update-version-list
 
 ifeq ($(COLVARS_RELEASE),)
@@ -121,6 +121,9 @@ else
 # Note: to produce the documentation for a specific release of a MD engine,
 # check out the branch or tag corresponding to that version, clean and rebuild.
 ifeq ($(COLVARS_RELEASE),master)
+
+install-images:
+	cp -p -f $(IMAGES) $(COLVARS_WEBSITE_TREE)/images/
 
 webpage: all doxygen
 	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \
