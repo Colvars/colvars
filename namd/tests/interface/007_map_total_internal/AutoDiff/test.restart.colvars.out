@@ -4,7 +4,7 @@ colvars:   https://doi.org/10.1080/00268976.2013.813594
 colvars: as well as all other papers listed below for individual features used.
 colvars: This version was built with the C++11 standard or higher.
 colvars: Summary of compile-time features available in this build:
-colvars:   - SMP parallelism: enabled (num. threads = 4)
+colvars:   - SMP parallelism: not available
 colvars:   - Lepton custom functions: available
 colvars:   - Tcl interpreter: available
 colvars: Redefining the Tcl "cv" command to the new script interface.
@@ -235,9 +235,9 @@ colvars:
 colvars: updating target temperature (T = 0 K).
 colvars: ----------------------------------------------------------------------
 colvars: Loading state from text file "test.colvars.state".
-colvars:   Restarting collective variable "numatoms" from value: 50.6629
-colvars:   Restarting collective variable "numatoms_rot" from value: 19.9558
-colvars:   Restarting collective variable "numatoms_ref" from value: 50.6629
+colvars:   Restarting collective variable "numatoms" from value: 50.6627
+colvars:   Restarting collective variable "numatoms_rot" from value: 19.9852
+colvars:   Restarting collective variable "numatoms_ref" from value: 50.6627
 colvars:   Restarted harmonic bias "harmonic1" with step number 20.
 colvars: ----------------------------------------------------------------------
 colvars: Updating NAMD interface:
