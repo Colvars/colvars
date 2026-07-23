@@ -1,34 +1,33 @@
 name: "Check cherry-pick compatibility"
 
 # Triggered on newly opened PRs and on subsequent pushes; checks whether
-# the PR commits can be cleanly cherry-picked onto a set of long-lived branches.
+# the PR's commits can be cleanly cherry-picked onto a set of long-lived branches.
 
 on:
   pull_request:
     types: [opened, synchronize, labeled]
+    branches: [master]
 
 jobs:
 
-  # ── Development branches: checked for every PR ─────────────────────────
+  # Check against maintenance branches for PRs with the label "bugfix"
 
-  check-cherry-pick-devel:
-    name: "Cherry-pick onto ${{ matrix.branch }}"
+  check-cherry-pick-maint:
+    name: "Cherry-pick onto ${{ matrix.branch }} (bugfixes only)"
+    if: contains(github.event.pull_request.labels.*.name, 'bugfix')
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false          # report all failures, not just the first one
+      fail-fast: false
       matrix:
         branch:
-          - master
-          - gromacs-2025
           - gromacs-2026
           - namd-3.0
-          - lammps-stable_22Jul2025
 
     steps:
       - name: Checkout repository with full history
         uses: actions/checkout@v7
         with:
-          fetch-depth: 0        # need the full graph for cherry-pick
+          fetch-depth: 0
 
       - name: Configure git identity
         run: |
@@ -69,18 +68,20 @@ jobs:
             exit 1
           fi
 
-  # ── Maintenance branches: checked only for PRs labelled "bugfix" ───────
 
-  check-cherry-pick-maint:
-    name: "Cherry-pick onto ${{ matrix.branch }} (maintenance)"
-    if: contains(github.event.pull_request.labels.*.name, 'bugfix')
+  # Check against development branches on every PR: ideally we'll fast forward everything, but
+  # some of these branches may later become "maintenance" ones
+
+  check-cherry-pick-devel:
+    name: "Cherry-pick onto ${{ matrix.branch }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         branch:
-          - gromacs-2024
-          - namd-2.14
+          - gromacs-2027
+          - lammps-develop
+          - namd-3.1
 
     steps:
       - name: Checkout repository with full history
