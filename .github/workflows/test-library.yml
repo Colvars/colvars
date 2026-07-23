@@ -19,17 +19,17 @@ jobs:
 
     steps:
       - name: Checkout Colvars
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # - name: Load compiler cache
-      #   uses: actions/cache@v4
+      #   uses: actions/cache@v6
       #   with:
       #     path: ${{ github.workspace }}/ccache
       #     key: ${{ runner.os }}-build-basic-${{ github.sha }}
       #     restore-keys: ${{ runner.os }}-build-basic-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -79,7 +79,7 @@ jobs:
     needs: basicchecks
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Apptainer
         shell: bash
@@ -92,7 +92,7 @@ jobs:
         run: devel-tools/get_container texlive
 
       - name: Checkout website repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ssh-key: ${{ secrets.PULL_PUSH_COLVARS_GITHUB_IO }}
           repository: 'Colvars/colvars.github.io'
@@ -133,17 +133,17 @@ jobs:
     if: ${{ ! github.event.repository.private }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
           path: 'devel-tools/packages'
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -168,10 +168,10 @@ jobs:
     needs: basicchecks
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -226,10 +226,10 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -272,17 +272,17 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Load compiler ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/ccache
           key: ${{ runner.os }}-build-gcc-clang-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-gcc-clang-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -397,17 +397,17 @@ jobs:
       CMAKE_GENERATOR: Ninja
       CCACHE_DIR: ${{ github.workspace }}/ccache
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Load compiler ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/ccache
           key: ${{ runner.os }}-build-oneapi-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-oneapi-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -468,10 +468,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -489,10 +489,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -512,7 +512,7 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Apptainer
         shell: bash

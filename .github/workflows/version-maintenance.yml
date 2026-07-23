@@ -14,12 +14,12 @@ jobs:
     steps:
 
       - name: Checkout Colvars repo in full
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Checkout Wiki repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/colvars.wiki'
           path: 'wiki'
