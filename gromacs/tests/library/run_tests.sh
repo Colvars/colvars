@@ -5,6 +5,8 @@
 # It's best to have Gromacs compiled in double precsision
 # Reference files have been generated with Gromacs version 2020.3
 
+shopt -s nullglob
+
 TMPDIR=/tmp
 DIRLIST=''
 BINARY=gmx_d
@@ -161,8 +163,8 @@ for dir in ${DIRLIST} ; do
       if ! { ls AutoDiff/ | grep -q test ; } then
         echo ""
         echo "  Warning: directory AutoDiff empty!"
-        cd $BASEDIR
-        continue
+        # cd $BASEDIR
+        # continue
       fi
 
       # first, remove target files from work directory
@@ -310,9 +312,11 @@ for dir in ${DIRLIST} ; do
         grep ':-) GROMACS -' ${basename}.out | head -n 1 > gromacs-version.txt
         grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> gromacs-version.txt
         grep 'Using GROMACS interface, version' ${basename}.out | head -n 1 >> gromacs-version.txt
-        cp ${basename}.colvars.state.stripped AutoDiff/
-        cp ${basename}.colvars.traj           AutoDiff/
-        cp ${basename}.colvars.out            AutoDiff/
+        [ -f ${basename}.colvars.state.stripped ] && cp ${basename}.colvars.state.stripped AutoDiff/
+        [ -f ${basename}.colvars.traj ] && cp ${basename}.colvars.traj           AutoDiff/
+        [ -f ${basename}.colvars.out ] && cp ${basename}.colvars.out            AutoDiff/
+        [ -f ${basename}.part0002.colvars.state.stripped ] && cp ${basename}.part0002.colvars.state.stripped AutoDiff/${basename}.colvars.state.stripped
+        [ -f ${basename}.part0002.colvars.traj ] && cp ${basename}.part0002.colvars.traj AutoDiff/${basename}.colvars.traj
         if [ -f ${basename}.histogram1.dat ] ; then
           cp -f ${basename}.histogram1.dat AutoDiff/
         fi
