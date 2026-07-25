@@ -152,46 +152,41 @@ for dir in ${DIRLIST} ; do
 
   if [ ! -d AutoDiff ] ; then
     echo ""
-    echo "  Creating directory AutoDiff, use -g to fill it."
+    echo "  Creating directory AutoDiff"
     mkdir AutoDiff
-    cd $BASEDIR
-    continue
-  else
+    # Still run the tests to check for successful completion
+  fi
 
-    if $gen_ref_output; then
+  if $gen_ref_output; then
 
-      if ! { ls AutoDiff/ | grep -q test ; } then
-        echo ""
-        echo "  Warning: directory AutoDiff empty!"
-        # cd $BASEDIR
-        # continue
-      fi
-
-      # first, remove target files from work directory
-      for f in AutoDiff/*
-      do
-        base=`basename $f`
-        if [ -f $base ]
-        then
-          mv $base $base.backup
-        fi
-      done
+    if ! { ls AutoDiff/ | grep -q test ; } then
+      echo "  Directory AutoDiff is empty, populating..."
     fi
+
+    # first, remove target files from work directory
+    for f in AutoDiff/*
+    do
+      base=`basename $f`
+      if [ -f $base ]
+      then
+        mv $base $base.backup
+      fi
+    done
   fi
 
   if $cleanup; then
     cleanup_files
   fi
 
-  simulations=(test test.restart)
-  if [ "${dir##*/}" = "000_multiple_walkers_mtd" ] ; then
-    simulations=(test{.rep1,.rep2} test{.rep1,.rep2}.restart)
-  fi
 
   # Run simulation(s)
   if [ -f run.sh ]
   then
     # Special run script e.g. for interface tests
+    if $verbose ; then
+      echo "Running simulation with special script: $(${TPUT_BLUE})run.sh$(${TPUT_CLEAR})"
+    fi
+
     ./run.sh $BINARY
     RETVAL=$?
 
@@ -213,7 +208,15 @@ for dir in ${DIRLIST} ; do
       cp a/${basename}.colvars.traj .
     fi
   else
+    simulations=(test test.restart)
+    if [ "${dir##*/}" = "000_multiple_walkers_mtd" ] ; then
+      simulations=(test{.rep1,.rep2} test{.rep1,.rep2}.restart)
+    fi
+
     for basename in ${simulations[@]} ; do
+      if $verbose ; then
+        echo "Running simulation with basename: $(${TPUT_BLUE})${basename}$(${TPUT_CLEAR})"
+      fi
 
       # Create symlinks to the Colvars config file, index file, and xyz file
       if [ -f ${basename}.in ] ; then
