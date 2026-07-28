@@ -571,6 +571,14 @@ __global__ void computeCoordinationNumberGroupTwoCOMsKernel(
         (*h_coordnum_out) = f;
       }
     }
+    if constexpr (gradients) {
+      com1_grad_out->x = com1_grad_x;
+      com1_grad_out->y = com1_grad_y;
+      com1_grad_out->z = com1_grad_z;
+      com2_grad_out->x = com2_grad_x;
+      com2_grad_out->y = com2_grad_y;
+      com2_grad_out->z = com2_grad_z;
+    }
   }
 }
 
