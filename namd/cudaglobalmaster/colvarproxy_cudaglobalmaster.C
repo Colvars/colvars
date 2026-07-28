@@ -207,6 +207,15 @@ public:
   cvm::real* proxy_atoms_new_colvar_forces_gpu() override {return d_mAppliedForces;}
   cudaStream_t get_default_stream() override {return mStream;}
   void set_lattice();
+  cvm::system_boundary_conditions get_system_boundaries()  override {
+    if (mClient->requestUpdateLattice()) {
+      if (has_gpu_support()) {
+        cudaCheck(cudaEventSynchronize(get_event(colvarproxy_gpu::event_type::update_lattice)));
+      }
+      set_lattice();
+    }
+    return boundaries_;
+  };
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
@@ -836,11 +845,6 @@ void colvarproxy_impl::calculate() {
     }
   }
   previous_NAMD_step = step;
-  if (!has_gpu_support()) {
-    if (mClient->requestUpdateLattice()) {
-      set_lattice();
-    }
-  }
   // Run Colvars
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxRangePushEx(&mEventAttrib);
