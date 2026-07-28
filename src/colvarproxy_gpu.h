@@ -29,9 +29,9 @@ public:
   int gpu_device_id() const;
   /// \brief Get the GPU platform (CUDA, HIP or SYCL)
   std::string gpu_platform() const;
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (COLVARS_SYCL)
   /// \brief CUDA warp size or HIP wave front size
   int gpu_warp_size();
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (COLVARS_SYCL)
   /// \brief Get the default CUDA stream from the proxy
   virtual cudaStream_t get_default_stream() {return (cudaStream_t)0;}
   /// \brief Initialize the GPU data (called by colvarproxy::setup)
