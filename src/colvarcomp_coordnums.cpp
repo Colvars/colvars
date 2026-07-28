@@ -86,10 +86,7 @@ public:
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
       cvc->group2->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
       cvc->group1->size(), cvc->group2->size(), cvc->en, cvc->ed,
-      cvc->inv_r0_vec, cvc->inv_r0sq_vec,
-#if 0
-      // TODO: Wait for https://github.com/Colvars/colvars/pull/919
-#endif
+      cvc->inv_r0_vec, cvc->inv_r0sq_vec, cvc->boundary_conditions,
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       cvc->group2->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       cvc->tolerance, cvc->tolerance_l2_max, d_pairlist, d_tbcount,
@@ -123,7 +120,7 @@ public:
       group->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
       group_com->get_gpu_atom_group()->get_gpu_buffers().d_com,
       cvc->group1->size(), cvc->en, cvc->ed, cvc->inv_r0_vec,
-      cvc->inv_r0sq_vec,
+      cvc->inv_r0sq_vec, cvc->boundary_conditions,
       group->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       cvc->tolerance, cvc->tolerance_l2_max, d_pairlist, d_tbcount,
       d_com_grad_tmp[0], d_com_grad_out[0], d_coordnum, h_coordnum,
@@ -158,6 +155,7 @@ public:
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_com,
       cvc->group2->get_gpu_atom_group()->get_gpu_buffers().d_com,
       cvc->en, cvc->ed, cvc->inv_r0_vec, cvc->inv_r0sq_vec,
+      cvc->boundary_conditions,
       cvc->tolerance, cvc->tolerance_l2_max, d_pairlist,
       d_com_grad_out[0], d_com_grad_out[1], h_coordnum, flags, cvc->get_stream(), cvmodule);
     error_code |= checkGPUError(cudaEventRecord(
@@ -268,6 +266,7 @@ public:
     error_code |= colvars_gpu::calc_value_coordnum_self_group(
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
       cvc->group1->size(), cvc->en, cvc->ed, cvc->inv_r0_vec, cvc->inv_r0sq_vec,
+      cvc->boundary_conditions,
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       d_tileLists, d_tileListsStart, d_tileListsLen,
       cvc->tolerance, cvc->tolerance_l2_max, d_pairlist,

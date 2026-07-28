@@ -101,7 +101,7 @@ public:
   // Math functions
 
   /// Override the STL pow() with a product for n integer
-  static inline real integer_power(real const &x, int const n)
+  static COLVARS_HOST_DEVICE inline real integer_power(real const &x, int const n)
   {
     // Original code: math_special.h in LAMMPS
     double yy, ww;
