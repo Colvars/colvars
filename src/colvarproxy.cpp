@@ -512,7 +512,13 @@ void colvarproxy::add_config(std::string const &cmd, std::string const &conf)
 
 int colvarproxy::setup()
 {
-  return COLVARS_OK;
+  int error_code = COLVARS_OK;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  if (has_gpu_support()) {
+    error_code |= init_gpu();
+  }
+#endif
+  return error_code;
 }
 
 

@@ -100,23 +100,51 @@ int prepare_dependencies(
   return error_code;
 }
 
-#if defined (COLVARS_NVTX_PROFILING)
-colvar_nvtx_prof::colvar_nvtx_prof(): nvtx_event_name("Colvars") {
-  std::memset(&nvtx_event_attr, 0, sizeof(nvtx_event_attr));
-  nvtx_event_attr.version = NVTX_VERSION;
-  nvtx_event_attr.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
-  nvtx_event_attr.colorType = NVTX_COLOR_ARGB;
-  nvtx_event_attr.color = 0xFF880000;
-  nvtx_event_attr.messageType = NVTX_MESSAGE_TYPE_ASCII;
-  nvtx_event_attr.message.ascii = nvtx_event_name.c_str();
+gpu_graph_t::~gpu_graph_t() {
+  (void)reset();
 }
 
-void colvar_nvtx_prof::set_name_color(
-  const std::string& name_in, const uint32_t color_in) {
-  nvtx_event_name = name_in;
-  nvtx_event_attr.color = color_in;
-  nvtx_event_attr.message.ascii = nvtx_event_name.c_str();
+int gpu_graph_t::reset() {
+  int error_code = COLVARS_OK;
+  if (graph) {
+    error_code |= checkGPUError(cudaGraphDestroy(graph));
+    graph = nullptr;
+  }
+  if (graph_exec) {
+    error_code |= checkGPUError(cudaGraphExecDestroy(graph_exec));
+    graph_exec = nullptr;
+  }
+  nodes.clear();
+  graph_exec_initialized = false;
+  return error_code;
 }
-#endif // defined (COLVARS_NVTX_PROFILING)
+
+int gpu_graph_t::init_graph_exec(colvarmodule* cvmodule, cudaStream_t stream) {
+  int error_code = COLVARS_OK;
+  if (graph_exec_initialized) return error_code;
+  if (!nodes.empty()) {
+    cudaGraphInstantiateParams params{0};
+    params.flags = cudaGraphInstantiateFlagUpload;
+    params.uploadStream = stream;
+    error_code |= checkGPUError(cudaGraphInstantiateWithParams(&graph_exec, graph, &params));
+    if (params.result_out == cudaGraphInstantiateSuccess) {
+      graph_exec_initialized = true;
+    } else {
+      // Search for the error node
+      for (const auto& node: nodes) {
+        if (params.errNode_out == node.second) {
+          cvmodule->log("Error on initialize node \"" + node.first + "\".\n");
+        }
+      }
+      error_code |= cvmodule->error("Failed to instantiate CUDA graph.", COLVARS_BUG_ERROR);
+    }
+  }
+  return error_code;
+}
+
+int gpu_graph_t::dump_graph(const std::string& filename) {
+  cudaGraphDebugDotFlags dotFlags = cudaGraphDebugDotFlagsVerbose;
+  return checkGPUError(cudaGraphDebugDotPrint(graph, filename.c_str(), dotFlags));
+}
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }

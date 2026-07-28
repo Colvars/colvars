@@ -16,7 +16,6 @@
 #include <cstdio>
 
 #include "colvars_version.h"
-#include "colvar_gpu_calc.h"
 
 #ifndef COLVARS_DEBUG
 #define COLVARS_DEBUG false
@@ -102,7 +101,7 @@ public:
   // Math functions
 
   /// Override the STL pow() with a product for n integer
-  static inline real integer_power(real const &x, int const n)
+  static COLVARS_HOST_DEVICE inline real integer_power(real const &x, int const n)
   {
     // Original code: math_special.h in LAMMPS
     double yy, ww;
@@ -322,12 +321,12 @@ private:
   std::vector<int> colvars_smp_items;
 
   /// Array of named atom groups
-  std::vector<atom_group *> named_atom_groups_soa;
+  std::vector<atom_group *> named_atom_groups;
 
 public:
 
-  void register_named_atom_group_soa(atom_group *ag);
-  void unregister_named_atom_group_soa(atom_group *ag);
+  void register_named_atom_group(atom_group *ag);
+  void unregister_named_atom_group(atom_group *ag);
 
   /// Array of collective variables
   std::vector<colvar *> *variables();
@@ -585,7 +584,7 @@ public:
   colvar * colvar_by_name(std::string const &name);
 
   /// Look up a named atom group by name; returns NULL if not found
-  atom_group * atom_group_soa_by_name(std::string const& name);
+  atom_group * atom_group_by_name(std::string const& name);
 
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
@@ -609,6 +608,9 @@ public:
 
   /// Integrate bias and restraint forces, send colvar forces to atoms
   int update_colvar_forces();
+
+  /// \brief Called from proxy when it completes buffers reallocation
+  int proxy_buffers_reallocated_done();
 
   /// Perform analysis
   int analyze();
@@ -970,9 +972,6 @@ public:
 #endif
   using ag_vector_real_t = std::vector<real, allocator_type<real>>;
 
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc> gpu_calc;
-#endif
 };
 
 /// Shorthand for the frequently used type prefix

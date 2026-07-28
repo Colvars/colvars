@@ -94,7 +94,7 @@ cvm::atom_group::simple_atom cvm::atom_group::init_atom_from_proxy(
 }
 
 cvm::atom_group::atom_group():
-  b_dummy(false),
+  colvardeps(colvardeps::object_t::atom_group), b_dummy(false),
   fitting_group(nullptr),
   noforce(false), b_user_defined_fit(false),
   rot_deriv(nullptr), num_atoms(0), index(-1),
@@ -176,6 +176,11 @@ int cvm::atom_group::init()
 
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
   error_code |= gpu_atom_group->init_gpu();
+  if (cvmodule->debug()) {
+#if defined (COLVARS_NVTX_PROFILING)
+    nvtxNameCudaStreamA(get_stream(), name.c_str());
+#endif
+  }
 #elif defined (COLVARS_SYCL)
   // TODO
 #endif
@@ -241,6 +246,14 @@ int cvm::atom_group::init_dependencies() {
   feature_states[f_ag_collect_atom_ids].available = true;
 
   return COLVARS_OK;
+}
+
+int cvm::atom_group::proxy_buffers_reallocated() {
+  int error_code = COLVARS_OK;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  error_code |= get_gpu_atom_group()->reset_gpu_graphs();
+#endif
+  return error_code;
 }
 
 int cvm::atom_group::setup() {
@@ -601,14 +614,14 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
   // Optional group name will let other groups reuse atom definition
   if (get_keyval(group_conf, "name", name)) {
-    if ((cvmodule->atom_group_soa_by_name(this->name) != NULL) &&
-        (cvmodule->atom_group_soa_by_name(this->name) != this)) {
+    if ((cvmodule->atom_group_by_name(this->name) != NULL) &&
+        (cvmodule->atom_group_by_name(this->name) != this)) {
       cvmodule->error("Error: this atom group cannot have the same name, \""+this->name+
                         "\", as another atom group.\n",
                 COLVARS_INPUT_ERROR);
       return COLVARS_INPUT_ERROR;
     }
-    cvmodule->register_named_atom_group_soa(this);
+    cvmodule->register_named_atom_group(this);
     description = "atom group " + name;
   }
 
@@ -642,7 +655,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
   {
     std::string atoms_of = "";
     if (get_keyval(group_conf, "atomsOfGroup", atoms_of)) {
-      atom_group * ag = cvmodule->atom_group_soa_by_name(atoms_of);
+      atom_group * ag = cvmodule->atom_group_by_name(atoms_of);
       if (ag == NULL) {
         cvmodule->error("Error: cannot find atom group with name " + atoms_of + ".\n");
         return COLVARS_ERROR;
