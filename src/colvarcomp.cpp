@@ -536,6 +536,13 @@ int colvar::cvc::read_data_gpu() {
     }
   }
 #endif
+  if (is_enabled(f_cvc_pbc_minimum_image)) {
+    // Copy boundary conditions from the proxy
+    boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  } else {
+    // Set as non-periodic boundary conditions (default) for this CVC
+    boundary_conditions.reset();
+  }
   return error_code;
 }
 
