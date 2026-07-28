@@ -297,6 +297,14 @@ class colvarmodule;
 #define cudaGetDeviceProperties hipGetDeviceProperties
 #endif // cudaGetDeviceProperties
 
+#ifndef cudaDeviceGetAttribute
+#define cudaDeviceGetAttribute hipDeviceGetAttribute
+#endif // cudaDeviceGetAttribute
+
+#ifndef cudaDevAttrWarpSize
+#define cudaDevAttrWarpSize hipDeviceAttributeWarpSize
+#endif // cudaDevAttrWarpSize
+
 #endif // defined(COLVARS_HIP)
 
 namespace colvars_gpu {

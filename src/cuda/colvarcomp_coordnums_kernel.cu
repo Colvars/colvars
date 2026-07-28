@@ -28,10 +28,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   const int en, const int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real* __restrict gx1,
   cvm::real* __restrict gy1,
   cvm::real* __restrict gz1,
@@ -113,10 +110,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
           const cvm::real x2 = shPosition[jid].x;
           const cvm::real y2 = shPosition[jid].y;
           const cvm::real z2 = shPosition[jid].z;
-#if 0
-          // TODO: Wait for https://github.com/Colvars/colvars/pull/919
           if constexpr (!(use_pairlist)) {
-            ei += compute_pair_coordnum<flags>(
+            ei += colvar::coordnum::compute_pair_coordnum<flags>(
               inv_r0_vec, inv_r0sq_vec, en, ed,
               x1, y1, z1, x2, y2, z2,
               iGrad.x, iGrad.y, iGrad.z,
@@ -128,7 +123,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
             if constexpr (!(rebuild_pairlist)) {
               const bool within = shPairlist[group2BatchID][jid][threadIdx.x];
               if (within) {
-                ei += compute_pair_coordnum<flags>(
+                ei += colvar::coordnum::compute_pair_coordnum<flags>(
                   inv_r0_vec, inv_r0sq_vec, en, ed,
                   x1, y1, z1, x2, y2, z2,
                   iGrad.x, iGrad.y, iGrad.z,
@@ -138,7 +133,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
                   pairlist_tol, pairlist_tol_l2_max, bc);
               }
             } else {
-              const double f = compute_pair_coordnum<flags>(
+              const double f = colvar::coordnum::compute_pair_coordnum<flags>(
                   inv_r0_vec, inv_r0sq_vec, en, ed,
                   x1, y1, z1, x2, y2, z2,
                   iGrad.x, iGrad.y, iGrad.z,
@@ -150,7 +145,6 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
               ei += f;
             }
           }
-#endif
         }
         __syncthreads();
       }
@@ -223,10 +217,7 @@ int calc_value_coordnum_two_groups(
   int en, int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real* group1_grad, cvm::real* group2_grad,
   cvm::real pairlist_tol,
   cvm::real pairlist_tol_l2_max,
@@ -241,11 +232,7 @@ int calc_value_coordnum_two_groups(
   if (numAtoms1 < numAtoms2) {
     return calc_value_coordnum_two_groups(
       group2_pos, group1_pos, numAtoms2, numAtoms1,
-      en, ed, inv_r0_vec, inv_r0sq_vec,
-#if 0
-      // TODO: Wait for https://github.com/Colvars/colvars/pull/919
-      const cvm::system_boundary_conditions bc,
-#endif
+      en, ed, inv_r0_vec, inv_r0sq_vec, bc,
       group2_grad, group1_grad,
       pairlist_tol, pairlist_tol_l2_max,
       d_pairlist, d_tbcount, d_coordnum_tmp,
@@ -270,10 +257,7 @@ int calc_value_coordnum_two_groups(
     &numAtoms1, &numAtoms2, &en, &ed,
     const_cast<cvm::rvector*>(&inv_r0_vec),
     const_cast<cvm::rvector*>(&inv_r0sq_vec),
-#if 0
-    // TODO: Wait for https://github.com/Colvars/colvars/pull/919
     const_cast<cvm::system_boundary_conditions*>(&bc),
-#endif
     &grad1x, &grad1y, &grad1z,
     &grad2x, &grad2y, &grad2z,
     &pairlist_tol, &pairlist_tol_l2_max,
@@ -328,10 +312,7 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
   const int en, const int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real* __restrict gx1,
   cvm::real* __restrict gy1,
   cvm::real* __restrict gz1,
@@ -376,10 +357,8 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
     const cvm::real x1 = posx[i];
     const cvm::real y1 = posy[i];
     const cvm::real z1 = posz[i];
-#if 0
-// TODO: Wait for https://github.com/Colvars/colvars/pull/919
     if constexpr (!use_pairlist) {
-      ei += compute_pair_coordnum<flags>(
+      ei += colvar::coordnum::compute_pair_coordnum<flags>(
         inv_r0_vec, inv_r0sq_vec, en, ed,
         x1, y1, z1, x2, y2, z2,
         grad_x, grad_y, grad_z,
@@ -391,7 +370,7 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
       if constexpr (!rebuild_pairlist) {
         const bool within = pairlist[i];
         if (within) {
-          ei += compute_pair_coordnum<flags>(
+          ei += colvar::coordnum::compute_pair_coordnum<flags>(
             inv_r0_vec, inv_r0sq_vec, en, ed,
             x1, y1, z1, x2, y2, z2,
             grad_x, grad_y, grad_z,
@@ -401,7 +380,7 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
             pairlist_tol, pairlist_tol_l2_max, bc);
         }
       } else {
-        const double f = compute_pair_coordnum<flags>(
+        const double f = colvar::coordnum::compute_pair_coordnum<flags>(
           inv_r0_vec, inv_r0sq_vec, en, ed,
           x1, y1, z1, x2, y2, z2,
           grad_x, grad_y, grad_z,
@@ -413,7 +392,6 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
         ei += f;
       }
     }
-#endif
     if constexpr (gradients) {
       atomicAdd(&gx1[i], grad_x);
       atomicAdd(&gy1[i], grad_y);
@@ -457,10 +435,7 @@ int calc_value_coordnum_group_to_com(
   int en, int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real* group_grad,
   cvm::real pairlist_tol,
   cvm::real pairlist_tol_l2_max,
@@ -485,10 +460,7 @@ int calc_value_coordnum_group_to_com(
     &com, &numAtoms, &en, &ed,
     const_cast<cvm::rvector*>(&inv_r0_vec),
     const_cast<cvm::rvector*>(&inv_r0sq_vec),
-#if 0
-    // TODO: Wait for https://github.com/Colvars/colvars/pull/919
     const_cast<cvm::system_boundary_conditions*>(&bc),
-#endif
     &gradx, &grady, &gradz,
     &pairlist_tol, &pairlist_tol_l2_max,
     &d_pairlist, &d_tbcount,
@@ -529,16 +501,13 @@ int calc_value_coordnum_group_to_com(
 }
 
 template <int N, int M, int flags>
-void computeCoordinationNumberGroupTwoCOMsKernel(
+__global__ void computeCoordinationNumberGroupTwoCOMsKernel(
   const cvm::rvector* __restrict com1,
   const cvm::rvector* __restrict com2,
   int en, int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real pairlist_tol,
   cvm::real pairlist_tol_l2_max,
   bool* __restrict pairlist,
@@ -573,10 +542,8 @@ void computeCoordinationNumberGroupTwoCOMsKernel(
       com2_grad_y = 0;
       com2_grad_z = 0;
     }
-#if 0
-// TODO: Wait for https://github.com/Colvars/colvars/pull/919
     if constexpr (!use_pairlist) {
-      (*h_coordnum_out) = compute_pair_coordnum<flags>(
+      (*h_coordnum_out) = colvar::coordnum::compute_pair_coordnum<flags>(
         inv_r0_vec, inv_r0sq_vec, en, ed,
         x1, y1, z1, x2, y2, z2,
         com1_grad_x, com1_grad_y, com1_grad_z,
@@ -586,7 +553,7 @@ void computeCoordinationNumberGroupTwoCOMsKernel(
       if constexpr (!rebuild_pairlist) {
         const bool within = pairlist[i];
         if (within) {
-          (*h_coordnum_out) = compute_pair_coordnum<flags>(
+          (*h_coordnum_out) = colvar::coordnum::compute_pair_coordnum<flags>(
             inv_r0_vec, inv_r0sq_vec, en, ed,
             x1, y1, z1, x2, y2, z2,
             com1_grad_x, com1_grad_y, com1_grad_z,
@@ -594,7 +561,7 @@ void computeCoordinationNumberGroupTwoCOMsKernel(
             pairlist_tol, pairlist_tol_l2_max, bc);
         }
       } else {
-        const double f = compute_pair_coordnum<flags>(
+        const double f = colvar::coordnum::compute_pair_coordnum<flags>(
             inv_r0_vec, inv_r0sq_vec, en, ed,
             x1, y1, z1, x2, y2, z2,
             com1_grad_x, com1_grad_y, com1_grad_z,
@@ -604,7 +571,6 @@ void computeCoordinationNumberGroupTwoCOMsKernel(
         (*h_coordnum_out) = f;
       }
     }
-#endif
   }
 }
 
@@ -614,10 +580,7 @@ int calc_value_coordnum_com_to_com(
   int en, int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real pairlist_tol,
   cvm::real pairlist_tol_l2_max,
   bool* d_pairlist,
@@ -632,10 +595,7 @@ int calc_value_coordnum_com_to_com(
     &d_com1, &d_com2, &en, &ed,
     const_cast<cvm::rvector*>(&inv_r0_vec),
     const_cast<cvm::rvector*>(&inv_r0sq_vec),
-#if 0
-    // TODO: Wait for https://github.com/Colvars/colvars/pull/919
     const_cast<cvm::system_boundary_conditions*>(&bc),
-#endif
     &pairlist_tol, &pairlist_tol_l2_max,
     &d_pairlist,
     &d_com1_grad_out,
@@ -691,10 +651,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   const int en, const int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real* __restrict gx1,
   cvm::real* __restrict gy1,
   cvm::real* __restrict gz1,
@@ -771,9 +728,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
           if constexpr (use_pairlist && !rebuild_pairlist) {
             pairlist_elem = pairlist[pairlistID];
           }
-#if 0
-          // TODO: Wait for https://github.com/Colvars/colvars/pull/919
-          const auto partial = compute_pair_coordnum<flags>(
+          const auto partial = colvar::coordnum::compute_pair_coordnum<flags>(
             inv_r0_vec, inv_r0sq_vec, en, ed,
             x1, y1, z1, x2, y2, z2,
             iGrad.x, iGrad.y, iGrad.z,
@@ -785,7 +740,6 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
           if constexpr (use_pairlist && rebuild_pairlist) {
             pairlist_elem = partial > 0.0 ? true : false;
           }
-#endif
           if constexpr (use_pairlist && rebuild_pairlist) {
             pairlist[pairlistID] = pairlist_elem;
           }
@@ -810,9 +764,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
             if constexpr (use_pairlist && !rebuild_pairlist) {
               pairlist_elem = pairlist[pairlistID];
             }
-#if 0
-            // TODO: Wait for https://github.com/Colvars/colvars/pull/919
-            const auto partial = compute_pair_coordnum<flags>(
+            const auto partial = colvar::coordnum::compute_pair_coordnum<flags>(
               inv_r0_vec, inv_r0sq_vec, en, ed,
               x1, y1, z1, x2, y2, z2,
               iGrad.x, iGrad.y, iGrad.z,
@@ -824,7 +776,6 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
             if constexpr (use_pairlist && rebuild_pairlist) {
               pairlist_elem = partial > 0.0 ? true : false;
             }
-#endif
             if constexpr (use_pairlist && rebuild_pairlist) {
               pairlist[pairlistID] = pairlist_elem;
             }
@@ -832,10 +783,12 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
         }
         tilePartition.sync();
       }
-      if (mask_i) {
-        atomicAdd(&gx1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].x);
-        atomicAdd(&gy1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].y);
-        atomicAdd(&gz1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].z);
+      if constexpr (gradients) {
+        if (mask_i) {
+          atomicAdd(&gx1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].x);
+          atomicAdd(&gy1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].y);
+          atomicAdd(&gz1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].z);
+        }
       }
       // Iterate over other tiles
       const unsigned int jTileStart = tilesListStart[iTileIndexInGrid];
@@ -874,9 +827,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
             if constexpr (use_pairlist && !rebuild_pairlist) {
               pairlist_elem = pairlist[pairlistID];
             }
-#if 0
-            // TODO: Wait for https://github.com/Colvars/colvars/pull/919
-            const auto partial = compute_pair_coordnum<flags>(
+            const auto partial = colvar::coordnum::compute_pair_coordnum<flags>(
               inv_r0_vec, inv_r0sq_vec, en, ed,
               x1, y1, z1, x2, y2, z2,
               iGrad.x, iGrad.y, iGrad.z,
@@ -888,23 +839,26 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
             if constexpr (use_pairlist && rebuild_pairlist) {
               pairlist_elem = partial > 0.0 ? true : false;
             }
-#endif
             if constexpr (use_pairlist && rebuild_pairlist) {
               pairlist[pairlistID] = pairlist_elem;
             }
           }
           tilePartition.sync();
         }
-        if (mask_j) {
-          atomicAdd(&gx1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].x);
-          atomicAdd(&gy1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].y);
-          atomicAdd(&gz1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].z);
+        if constexpr (gradients) {
+          if (mask_j) {
+            atomicAdd(&gx1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].x);
+            atomicAdd(&gy1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].y);
+            atomicAdd(&gz1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].z);
+          }
         }
       }
-      if (mask_i) {
-        atomicAdd(&gx1[tid], iGrad.x);
-        atomicAdd(&gy1[tid], iGrad.y);
-        atomicAdd(&gz1[tid], iGrad.z);
+      if constexpr (gradients) {
+        if (mask_i) {
+          atomicAdd(&gx1[tid], iGrad.x);
+          atomicAdd(&gy1[tid], iGrad.y);
+          atomicAdd(&gz1[tid], iGrad.z);
+        }
       }
     }
   }
@@ -938,10 +892,7 @@ int calc_value_coordnum_self_group(
   int en, int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real* group_grad,
   const unsigned int* d_tilesList,
   const unsigned int* d_tilesListStart,
@@ -967,10 +918,7 @@ int calc_value_coordnum_self_group(
     &numAtoms, &en, &ed,
     const_cast<cvm::rvector*>(&inv_r0_vec),
     const_cast<cvm::rvector*>(&inv_r0sq_vec),
-#if 0
-    // TODO: Wait for https://github.com/Colvars/colvars/pull/919
     const_cast<cvm::system_boundary_conditions*>(&bc),
-#endif
     &gradx, &grady, &gradz,
     const_cast<unsigned int**>(&d_tilesList),
     const_cast<unsigned int**>(&d_tilesListStart),

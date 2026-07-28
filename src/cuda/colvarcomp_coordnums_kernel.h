@@ -13,10 +13,7 @@ int calc_value_coordnum_two_groups(
   int en, int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real* group1_grad, cvm::real* group2_grad,
   cvm::real pairlist_tol,
   cvm::real pairlist_tol_l2_max,
@@ -35,10 +32,7 @@ int calc_value_coordnum_group_to_com(
   int en, int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real* group_grad,
   cvm::real pairlist_tol,
   cvm::real pairlist_tol_l2_max,
@@ -58,10 +52,7 @@ int calc_value_coordnum_com_to_com(
   int en, int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real pairlist_tol,
   cvm::real pairlist_tol_l2_max,
   bool* d_pairlist,
@@ -78,10 +69,7 @@ int calc_value_coordnum_self_group(
   int en, int ed,
   const cvm::rvector inv_r0_vec,
   const cvm::rvector inv_r0sq_vec,
-#if 0
-  // TODO: Wait for https://github.com/Colvars/colvars/pull/919
   const cvm::system_boundary_conditions bc,
-#endif
   cvm::real* group_grad,
   const unsigned int* d_tilesList,
   const unsigned int* d_tilesListStart,
