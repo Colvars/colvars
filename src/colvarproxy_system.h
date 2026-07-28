@@ -93,7 +93,7 @@ public:
   virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                          cvm::atom_pos const &pos2) const;
   /// Get the current system boundary conditions
-  inline cvm::system_boundary_conditions const &get_system_boundaries() const {
+  virtual cvm::system_boundary_conditions get_system_boundaries() {
     return boundaries_;
   }
 

@@ -43,7 +43,7 @@ public:
     num_event_types,
   };
   /// \brief Get the default CUDA event from the proxy
-  cudaEvent_t get_event(event_type type) {return events[static_cast<int>(type)];}
+  cudaEvent_t get_event(event_type type) const {return events[static_cast<int>(type)];}
   /**
    * @brief Template function to allocate host-pinned memory
    *
