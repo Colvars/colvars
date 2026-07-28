@@ -315,6 +315,9 @@ colvar::coordnum::coordnum()
   cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(4.0);
   update_cutoffs({r0, r0, r0});
   // Boundaries will be set later, when the number of pairs is known
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  provide(f_cvc_support_gpu);
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
 
@@ -447,6 +450,8 @@ int colvar::coordnum::init(std::string const &conf)
 
   if (cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    enable(f_cvc_support_gpu);
+    disable(f_cvc_require_cpu_buffers);
     coordnum_gpu_impl = std::unique_ptr<coordnum_gpu_impl_t>(new coordnum_gpu_impl_t(this));
     error_code |= coordnum_gpu_impl->init();
 #endif
