@@ -515,13 +515,7 @@ int colvarproxy::setup()
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   if (has_gpu_support()) {
-    for (auto& e: events) {
-      if (e) {
-        error_code |= checkGPUError(cudaEventSynchronize(e));
-        error_code |= checkGPUError(cudaEventDestroy(e));
-      }
-      error_code |= checkGPUError(cudaEventCreateWithFlags(&e, cudaEventDisableTiming));
-    }
+    error_code |= init_gpu();
   }
 #endif
   return error_code;
