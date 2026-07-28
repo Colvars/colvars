@@ -450,6 +450,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
         this->log("  - Platform: " + proxy->gpu_platform() + "\n");
         this->log("  - Name: " + proxy->gpu_name() + "\n");
         this->log("  - Device ID: " + cvm::to_str(proxy->gpu_device_id()) + "\n");
+        this->log("  - Warp/Wavefront size: " + cvm::to_str(proxy->gpu_warp_size()) + "\n");
         this->log("  - PCI Bus ID: " + proxy->gpu_bus_id() + "\n");
       }
     } else {
@@ -500,6 +501,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
         this->log("  - Platform: " + proxy->gpu_platform() + "\n");
         this->log("  - Name: " + proxy->gpu_name() + "\n");
         this->log("  - Device ID: " + cvm::to_str(proxy->gpu_device_id()) + "\n");
+        this->log("  - Warp/Wavefront size: " + cvm::to_str(proxy->gpu_warp_size()) + "\n");
         this->log("  - PCI Bus ID: " + proxy->gpu_bus_id() + "\n");
         break;
       }
