@@ -106,12 +106,15 @@ int colvarproxy_gpu::init_gpu() {
     }
     error_code |= checkGPUError(cudaEventCreateWithFlags(&e, cudaEventDisableTiming));
   }
+  return error_code;
+}
+
+int colvarproxy_gpu::gpu_warp_size() {
   if (warp_size == 0) {
     int deviceID = gpu_device_id();
-    error_code |= checkGPUError(cudaDeviceGetAttribute(
-      &warp_size, cudaDevAttrWarpSize, deviceID));
+    checkGPUError(cudaDeviceGetAttribute(&warp_size, cudaDevAttrWarpSize, deviceID));
   }
-  return error_code;
+  return warp_size;
 }
 
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)

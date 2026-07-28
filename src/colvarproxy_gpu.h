@@ -31,7 +31,7 @@ public:
   std::string gpu_platform() const;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (COLVARS_SYCL)
   /// \brief CUDA warp size or HIP wave front size
-  int gpu_warp_size() const {return warp_size;}
+  int gpu_warp_size();
   /// \brief Get the default CUDA stream from the proxy
   virtual cudaStream_t get_default_stream() {return (cudaStream_t)0;}
   /// \brief Initialize the GPU data (called by colvarproxy::setup)
