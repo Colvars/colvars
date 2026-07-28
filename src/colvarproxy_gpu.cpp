@@ -109,14 +109,6 @@ int colvarproxy_gpu::init_gpu() {
   return error_code;
 }
 
-int colvarproxy_gpu::gpu_warp_size() {
-  if (warp_size == 0) {
-    int deviceID = gpu_device_id();
-    checkGPUError(cudaDeviceGetAttribute(&warp_size, cudaDevAttrWarpSize, deviceID));
-  }
-  return warp_size;
-}
-
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 colvarproxy_gpu::~colvarproxy_gpu() {
@@ -173,4 +165,14 @@ std::string colvarproxy_gpu::gpu_platform() const {
 #else
   return "CPU";
 #endif
+}
+
+int colvarproxy_gpu::gpu_warp_size() {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  if (warp_size == 0) {
+    int deviceID = gpu_device_id();
+    checkGPUError(cudaDeviceGetAttribute(&warp_size, cudaDevAttrWarpSize, deviceID));
+  }
+#endif
+  return warp_size;
 }
