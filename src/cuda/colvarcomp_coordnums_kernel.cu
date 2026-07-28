@@ -51,8 +51,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   constexpr const bool use_pairlist = flags & colvar::coordnum::ef_use_pairlist;
   constexpr const bool rebuild_pairlist = flags & colvar::coordnum::ef_rebuild_pairlist;
   constexpr const bool gradients = flags & colvar::coordnum::ef_gradients;
-  constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
-  static_assert(use_internal_pbc == true, "The CUDA kernel requires internal PBC.");
+  // constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
+  // static_assert(use_internal_pbc == true, "The CUDA kernel requires internal PBC.");
   static_assert(blockSize == group2BatchSize * numGroup2BatchesPerBlock, "blockSize != group2BatchSize * numGroup2BatchesPerBlock");
   // Shared memory buffers for atoms in group2
   __shared__ double3 shPosition[group2BatchSize];
@@ -289,21 +289,21 @@ int calc_value_coordnum_two_groups(
     0, 0, default_block_size, group2WorkSize, numGroup2BatchesPerBlock, N>; break
   switch (flags) {
     CASE(colvar::coordnum::ef_gradients +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
 
-    CASE(colvar::coordnum::ef_use_internal_pbc);
+    CASE(colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     default: {
       return cvmodule->error("Unimplemented flags in calc_value_coordnum_two_groups: " +
         cvm::to_str(flags) + "\n");
@@ -346,8 +346,8 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
   constexpr const bool use_pairlist = flags & colvar::coordnum::ef_use_pairlist;
   constexpr const bool rebuild_pairlist = flags & colvar::coordnum::ef_rebuild_pairlist;
   constexpr const bool gradients = flags & colvar::coordnum::ef_gradients;
-  constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
-  static_assert(use_internal_pbc == true, "The CUDA kernel requires internal PBC.");
+  // constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
+  // static_assert(use_internal_pbc == true, "The CUDA kernel requires internal PBC.");
   __shared__ bool isLastBlockDone;
   if (threadIdx.x == 0) {
     isLastBlockDone = false;
@@ -501,21 +501,21 @@ int calc_value_coordnum_group_to_com(
     0, 0, default_block_size, N>; break
   switch (flags) {
     CASE(colvar::coordnum::ef_gradients +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
 
-    CASE(colvar::coordnum::ef_use_internal_pbc);
+    CASE(colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     default: {
       return cvmodule->error("Unimplemented flags in calc_value_coordnum_group_to_com: " +
         cvm::to_str(flags) + "\n");
@@ -548,8 +548,8 @@ void computeCoordinationNumberGroupTwoCOMsKernel(
   constexpr const bool use_pairlist = flags & colvar::coordnum::ef_use_pairlist;
   constexpr const bool rebuild_pairlist = flags & colvar::coordnum::ef_rebuild_pairlist;
   constexpr const bool gradients = flags & colvar::coordnum::ef_gradients;
-  constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
-  static_assert(use_internal_pbc == true, "The CUDA kernel requires internal PBC.");
+  // constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
+  // static_assert(use_internal_pbc == true, "The CUDA kernel requires internal PBC.");
   unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   // Use only 1 thread
   if (i < 1) {
@@ -647,21 +647,21 @@ int calc_value_coordnum_com_to_com(
     0, 0, N>; break
   switch (flags) {
     CASE(colvar::coordnum::ef_gradients +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
 
-    CASE(colvar::coordnum::ef_use_internal_pbc);
+    CASE(colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     default: {
       return cvmodule->error("Unimplemented flags in calc_value_coordnum_com_to_com: " +
         cvm::to_str(flags) + "\n");
@@ -714,7 +714,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   constexpr const bool use_pairlist = flags & colvar::coordnum::ef_use_pairlist;
   constexpr const bool rebuild_pairlist = flags & colvar::coordnum::ef_rebuild_pairlist;
   constexpr const bool gradients = flags & colvar::coordnum::ef_gradients;
-  constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
+  // constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
   constexpr unsigned int numTilesPerBlock = blockSize / tileSize;
   __shared__ double3 shJGrad[numTilesPerBlock][tileSize];
   extern __shared__ unsigned int globalJIDs_buffer[];
@@ -1002,21 +1002,21 @@ int calc_value_coordnum_self_group(
 #endif
   switch (flags) {
     CASE(colvar::coordnum::ef_gradients +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
 
-    CASE(colvar::coordnum::ef_use_internal_pbc);
+    CASE(colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     CASE(colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_use_internal_pbc);
+         colvar::coordnum::ef_null);
     default: {
       return cvmodule->error("Unimplemented flags in calc_value_coordnum_self_group: " +
         cvm::to_str(flags) + "\n");
