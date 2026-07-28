@@ -614,14 +614,14 @@ int cvm::atom_group::parse(std::string const &group_conf)
 
   // Optional group name will let other groups reuse atom definition
   if (get_keyval(group_conf, "name", name)) {
-    if ((cvmodule->atom_group_soa_by_name(this->name) != NULL) &&
-        (cvmodule->atom_group_soa_by_name(this->name) != this)) {
+    if ((cvmodule->atom_group_by_name(this->name) != NULL) &&
+        (cvmodule->atom_group_by_name(this->name) != this)) {
       cvmodule->error("Error: this atom group cannot have the same name, \""+this->name+
                         "\", as another atom group.\n",
                 COLVARS_INPUT_ERROR);
       return COLVARS_INPUT_ERROR;
     }
-    cvmodule->register_named_atom_group_soa(this);
+    cvmodule->register_named_atom_group(this);
     description = "atom group " + name;
   }
 
@@ -655,7 +655,7 @@ int cvm::atom_group::parse(std::string const &group_conf)
   {
     std::string atoms_of = "";
     if (get_keyval(group_conf, "atomsOfGroup", atoms_of)) {
-      atom_group * ag = cvmodule->atom_group_soa_by_name(atoms_of);
+      atom_group * ag = cvmodule->atom_group_by_name(atoms_of);
       if (ag == NULL) {
         cvmodule->error("Error: cannot find atom group with name " + atoms_of + ".\n");
         return COLVARS_ERROR;

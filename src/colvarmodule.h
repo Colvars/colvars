@@ -321,12 +321,12 @@ private:
   std::vector<int> colvars_smp_items;
 
   /// Array of named atom groups
-  std::vector<atom_group *> named_atom_groups_soa;
+  std::vector<atom_group *> named_atom_groups;
 
 public:
 
-  void register_named_atom_group_soa(atom_group *ag);
-  void unregister_named_atom_group_soa(atom_group *ag);
+  void register_named_atom_group(atom_group *ag);
+  void unregister_named_atom_group(atom_group *ag);
 
   /// Array of collective variables
   std::vector<colvar *> *variables();
@@ -584,7 +584,7 @@ public:
   colvar * colvar_by_name(std::string const &name);
 
   /// Look up a named atom group by name; returns NULL if not found
-  atom_group * atom_group_soa_by_name(std::string const& name);
+  atom_group * atom_group_by_name(std::string const& name);
 
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
