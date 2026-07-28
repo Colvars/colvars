@@ -303,9 +303,9 @@ namespace colvars_gpu {
 
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 /// \brief Default block size for CUDA kernels
-constexpr unsigned int default_block_size = 128;
+constexpr static unsigned int default_block_size = 128;
 /// \brief Default maximum number of blocks for reduction kernels
-static unsigned int default_reduce_max_num_blocks = 64;
+constexpr static unsigned int default_reduce_max_num_blocks = 64;
 // static unsigned int default_atom_wise_num_blocks = 64;
 #endif
 
