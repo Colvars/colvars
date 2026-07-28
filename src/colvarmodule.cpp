@@ -856,9 +856,9 @@ colvar *colvarmodule::colvar_by_name(std::string const &name)
   return NULL;
 }
 
-cvm::atom_group *colvarmodule::atom_group_soa_by_name(std::string const& name) {
-  for (std::vector<cvm::atom_group *>::iterator agi = this->named_atom_groups_soa.begin();
-       agi != this->named_atom_groups_soa.end();
+cvm::atom_group *colvarmodule::atom_group_by_name(std::string const& name) {
+  for (std::vector<cvm::atom_group *>::iterator agi = this->named_atom_groups.begin();
+       agi != this->named_atom_groups.end();
        agi++) {
     if ((*agi)->name == name) {
       return (*agi);
@@ -867,16 +867,16 @@ cvm::atom_group *colvarmodule::atom_group_soa_by_name(std::string const& name) {
   return nullptr;
 }
 
-void colvarmodule::register_named_atom_group_soa(atom_group *ag) {
-  named_atom_groups_soa.push_back(ag);
+void colvarmodule::register_named_atom_group(atom_group *ag) {
+  named_atom_groups.push_back(ag);
 }
 
-void colvarmodule::unregister_named_atom_group_soa(atom_group *ag) {
-  for (std::vector<cvm::atom_group *>::iterator agi = named_atom_groups_soa.begin();
-       agi != named_atom_groups_soa.end();
+void colvarmodule::unregister_named_atom_group(atom_group *ag) {
+  for (std::vector<cvm::atom_group *>::iterator agi = named_atom_groups.begin();
+       agi != named_atom_groups.end();
        agi++) {
     if (*agi == ag) {
-      named_atom_groups_soa.erase(agi);
+      named_atom_groups.erase(agi);
       break;
     }
   }
