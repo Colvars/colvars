@@ -1610,8 +1610,16 @@ proc ::cv_dashboard::createRotationMenu { row } {
 # Open file dialog to choose file name, then save colvars trajectory
 
 proc ::cv_dashboard::save_traj_dialog {} {
+  global tcl_platform
+  if { $tcl_platform(os) == "Darwin"} {
+    # work around Tk bug in MacOS
+    # https://core.tcl-lang.org/tk/tktview/080a28104e25e054f8f5869d9333aa57c221b896
+    set extension ".traj"
+  } else {
+    set extension ".colvars.traj"
+  }
   set file [tk_getSaveFile -title "Colvars trajectory file to be written" \
-      -filetypes {{"Colvars traj" .colvars.traj} {"All files" *}}]
+      -filetypes [list [list "Colvars traj" $extension] {"All files" *}]]
   if {[llength $file] > 0 } {
     ::cv_dashboard::save_traj_file $file
   }
