@@ -169,12 +169,12 @@ CVSCRIPT(bias_writeoutput,
          1, 1,
          "prefix : string - Prefix for the output files of this bias",
          std::string const prefix =
-          cvm::state_file_prefix(script->obj_to_str(script->get_bias_cmd_arg(0, objc, objv)));
-         std::string prefix_bak = cvm::output_prefix();
-         cvm::proxy->set_output_prefix(prefix);
+           cvmodule->state_file_prefix(script->obj_to_str(script->get_bias_cmd_arg(0, objc, objv)));
+         std::string prefix_bak = script->module()->output_prefix();
+         script->proxy()->set_output_prefix(prefix);
          this_bias->setup_output();
          int error_code = this_bias->write_output_files();
-         cvm::proxy->set_output_prefix(prefix_bak);
+         script->proxy()->set_output_prefix(prefix_bak);
          this_bias->setup_output();
          return error_code;
          )

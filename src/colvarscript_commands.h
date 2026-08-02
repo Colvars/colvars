@@ -603,13 +603,14 @@ CVSCRIPT(cv_outputprefix,
          char const *argstr =
            script->obj_to_str(script->get_module_cmd_arg(0, objc, objv));
          if (argstr) {
-           std::string const prefix = cvm::state_file_prefix(argstr);
-           cvm::log("Setting output prefix to " + prefix);
-           int error = cvm::proxy->set_output_prefix(prefix);
+           std::string const prefix = script->module()->state_file_prefix(argstr);
+
+           script->module()->log("Setting output prefix to " + prefix);
+           int error = script->proxy()->set_output_prefix(prefix);
            error |= script->module()->setup_output();
            return error;
          } else {
-           script->set_result_str(cvm::output_prefix());
+           script->set_result_str(script->module()->output_prefix());
            return COLVARS_OK;
          }
          )
