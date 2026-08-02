@@ -376,6 +376,9 @@ void colvarproxy_namd::calculate()
       b_simulation_continuing = true;
 
       // Update NAMD output and restart prefixes
+      // FIXME: this overrides any change done via cv scripting
+      // should the cv outputprefix be disabled in NAMD?
+      // Should we detect a manual setting?
       colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
       colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
       colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
