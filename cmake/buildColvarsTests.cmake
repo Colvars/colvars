@@ -40,7 +40,7 @@ if(BUILD_TESTS)
       endforeach()
 
       # Copy input files (coordinates, index files, etc)
-      add_custom_command(TARGET copy_test_files
+      add_custom_command(TARGET copy_test_files POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
           ${COLVARS_SOURCE_DIR}/tests/input_files
           ${CMAKE_BINARY_DIR}/tests/functional
