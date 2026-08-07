@@ -146,6 +146,7 @@ execute_process(
   -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
   -D WARNINGS_ARE_ERRORS=ON
   -D CMAKE_VERBOSE_MAKEFILE=ON
+  -D CMAKE_EXPORT_COMPILE_COMMANDS=ON
   -D CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
   -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
   ${DEFINE_CXX_COMPILER}
@@ -160,7 +161,6 @@ execute_process(
   ${DEFINE_TRAP_FPE}
   -D COLVARS_LEPTON=${COLVARS_LEPTON}
   -D LEPTON_DIR=${LEPTON_DIR}
-  -D CMAKE_PREFIX_PATH="/opt/libtorch/share/cmake"
   RESULT_VARIABLE result
   )
 
@@ -168,12 +168,16 @@ if(NOT result EQUAL 0)
   message(FATAL_ERROR "Error generating CMake buildsystem.")
 endif()
 
-execute_process(
-  COMMAND ${CMAKE_COMMAND}
-  --build ${BUILD_DIR}
-  --parallel
-  RESULT_VARIABLE result
+option(BUILD_TARGETS "Build library and related tools" ON)
+
+if(BUILD_TARGETS)
+  execute_process(
+    COMMAND ${CMAKE_COMMAND}
+    --build ${BUILD_DIR}
+    --parallel
+    RESULT_VARIABLE result
   )
+endif()
 
 option(RUN_TESTS "Run library tests" ON)
 
