@@ -9,7 +9,7 @@ foreach pdbfile [list da.pdb da-rotated.pdb] {
         density \
         ${sel} \
         -weight [${sel} get atomicnumber] \
-        -minmax { { -10.0 -10.0 -10.0} {  10.0  10.0  10.0} } \
+        -minmax { { -15.0 -15.0 -15.0} {  15.0  15.0  15.0} } \
         -res 1.0 \
         -allframes \
         -combine avg \
@@ -20,7 +20,7 @@ foreach pdbfile [list da.pdb da-rotated.pdb] {
 }
 
 mol delete top
-mol new test.pdb
+mol new origin.pdb
 set sel [atomselect top "(all)"]
 ${sel} set radius 2.0
 volmap \
