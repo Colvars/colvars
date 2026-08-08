@@ -175,19 +175,6 @@ double colvarproxy_lammps::compute()
 
 /* ---------------------------------------------------------------------- */
 
-cvm::rvector colvarproxy_lammps::position_distance(cvm::atom_pos const &pos1,
-                                                   cvm::atom_pos const &pos2)
-  const
-{
-  double xtmp = pos2.x - pos1.x;
-  double ytmp = pos2.y - pos1.y;
-  double ztmp = pos2.z - pos1.z;
-  _lmp->domain->minimum_image_big(FLERR, xtmp,ytmp,ztmp);
-  return {xtmp, ytmp, ztmp};
-}
-
-/* ---------------------------------------------------------------------- */
-
 void colvarproxy_lammps::log(std::string const &message)
 {
   LAMMPS_NS::utils::logmesg(_lmp, message);
