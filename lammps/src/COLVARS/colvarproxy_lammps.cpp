@@ -9,7 +9,7 @@
 // Colvars repository at GitHub.
 
 #include "colvarproxy_lammps.h"
-#include "colvarproxy_lammps_version.h"    // IWYU pragma: export
+#include "colvarproxy_lammps_version.h"
 
 #include "domain.h"
 #include "error.h"
