@@ -203,9 +203,6 @@ public:
 
   void update_atom_properties(int index);
 
-  cvm::rvector position_distance(cvm::atom_pos const &pos1,
-                                 cvm::atom_pos const &pos2) const;
-
   enum e_pdb_field {
     e_pdb_none,
     e_pdb_occ,

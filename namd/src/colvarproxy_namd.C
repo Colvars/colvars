@@ -870,19 +870,6 @@ void colvarproxy_namd::update_atom_properties(int index)
 }
 
 
-cvm::rvector colvarproxy_namd::position_distance(cvm::atom_pos const &pos1,
-                                                 cvm::atom_pos const &pos2) const
-{
-  Position const p1(pos1.x, pos1.y, pos1.z);
-  Position const p2(pos2.x, pos2.y, pos2.z);
-  Lattice const *lattice = globalmaster->get_lattice();
-  // For triclinic cells, use Lattice::wrap_nearest_delta instead (computes the shift vector)
-  Vector const d = lattice->orthogonal() ? lattice->delta(p2, p1)
-                                         : ((p2 - p1) + lattice->wrap_nearest_delta(p2 - p1));
-  return cvm::rvector(d.x, d.y, d.z);
-}
-
-
 colvarproxy_namd::e_pdb_field colvarproxy_namd::pdb_field_str2enum(std::string const &pdb_field_str)
 {
   colvarproxy_namd::e_pdb_field pdb_field = e_pdb_none;
