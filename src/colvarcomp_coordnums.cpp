@@ -454,6 +454,9 @@ int colvar::coordnum::init(std::string const &conf)
     disable(f_cvc_require_cpu_buffers);
     coordnum_gpu_impl = std::unique_ptr<coordnum_gpu_impl_t>(new coordnum_gpu_impl_t(this));
     error_code |= coordnum_gpu_impl->init();
+    if (error_code == COLVARS_OK) {
+      cvmodule->log("This CV \"" + name + "\" of type \"" + function_type() + "\" will be calculated on GPU.\n");
+    }
 #endif
   }
   return error_code;

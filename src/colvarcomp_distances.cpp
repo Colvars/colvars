@@ -1024,6 +1024,9 @@ int colvar::rmsd::init(std::string const &conf)
     disable(f_cvc_require_cpu_buffers);
     rmsd_gpu_impl = std::unique_ptr<rmsd_gpu_impl_t>(new rmsd_gpu_impl_t(this));
     error_code |= rmsd_gpu_impl->init();
+    if (error_code == COLVARS_OK) {
+      cvmodule->log("This CV \"" + name + "\" of type \"" + function_type() + "\" will be calculated on GPU.\n");
+    }
 #endif // (COLVARS_CUDA) || defined (COLVARS_GPU)
   }
   return error_code;
