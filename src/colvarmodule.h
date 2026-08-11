@@ -610,7 +610,7 @@ public:
   int update_colvar_forces();
 
   /// \brief Called from proxy when it completes buffers reallocation
-  int proxy_buffers_reallocated_done();
+  int proxy_gpu_buffers_reallocated_done();
 
   /// Perform analysis
   int analyze();

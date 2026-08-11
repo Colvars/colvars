@@ -43,10 +43,10 @@ void colvardeps::init_gpu() {
 #elif defined (COLVARS_SYCL)
 #endif
 
-int colvardeps::proxy_buffers_reallocated() {
+int colvardeps::proxy_gpu_buffers_reallocated() {
   int error_code = COLVARS_OK;
   for (auto it = children.begin(); it != children.end(); ++it) {
-    error_code |= (*it)->proxy_buffers_reallocated();
+    error_code |= (*it)->proxy_gpu_buffers_reallocated();
   }
   return error_code;
 }

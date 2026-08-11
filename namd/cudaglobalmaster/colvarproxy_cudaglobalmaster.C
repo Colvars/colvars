@@ -170,7 +170,7 @@ public:
     allocateDeviceArrays();
     deallocateDeviceTransposeArrays();
     allocateDeviceTransposeArrays();
-    cvmodule->proxy_buffers_reallocated_done();
+    cvmodule->proxy_gpu_buffers_reallocated_done();
   }
   smp_mode_t get_preferred_smp_mode() const override {
     return smp_mode_t::none;

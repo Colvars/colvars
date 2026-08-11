@@ -1254,8 +1254,8 @@ int colvar::rmsd::calc_Jacobian_derivative_after_gpu() {
   return error_code;
 }
 
-int colvar::rmsd::proxy_buffers_reallocated() {
-  int error_code = colvardeps::proxy_buffers_reallocated();
+int colvar::rmsd::proxy_gpu_buffers_reallocated() {
+  int error_code = colvardeps::proxy_gpu_buffers_reallocated();
   if (rmsd_gpu_impl) {
     error_code |= rmsd_gpu_impl->reset_graphs();
   }

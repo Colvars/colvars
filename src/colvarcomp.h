@@ -1071,7 +1071,7 @@ public:
   int calc_force_invgrads_after_gpu() override;
   int calc_Jacobian_derivative_gpu() override;
   int calc_Jacobian_derivative_after_gpu() override;
-  int proxy_buffers_reallocated() override;
+  int proxy_gpu_buffers_reallocated() override;
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   virtual ~rmsd();
   virtual int init(std::string const &conf) override;

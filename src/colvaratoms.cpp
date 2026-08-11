@@ -248,7 +248,7 @@ int cvm::atom_group::init_dependencies() {
   return COLVARS_OK;
 }
 
-int cvm::atom_group::proxy_buffers_reallocated() {
+int cvm::atom_group::proxy_gpu_buffers_reallocated() {
   int error_code = COLVARS_OK;
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   error_code |= get_gpu_atom_group()->reset_gpu_graphs();

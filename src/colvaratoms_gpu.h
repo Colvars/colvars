@@ -117,7 +117,7 @@ public:
    */
   int destroy_gpu();
   /**
-   * @brief Reset the CUDA graphs. This is used when proxy_buffers_reallocated() is called.
+   * @brief Reset the CUDA graphs. This is used when proxy_gpu_buffers_reallocated() is called.
    */
   int reset_gpu_graphs();
   /**

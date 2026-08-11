@@ -1280,10 +1280,10 @@ int colvarmodule::update_colvar_forces()
   return error_code;
 }
 
-int colvarmodule::proxy_buffers_reallocated_done() {
+int colvarmodule::proxy_gpu_buffers_reallocated_done() {
   int error_code = COLVARS_OK;
   for (auto it = variables()->begin(); it != variables()->end(); ++it){
-    error_code |= (*it)->proxy_buffers_reallocated();
+    error_code |= (*it)->proxy_gpu_buffers_reallocated();
   }
   return error_code;
 }

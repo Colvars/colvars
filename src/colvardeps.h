@@ -54,7 +54,7 @@ public:
 #elif defined (COLVARS_SYCL)
 #endif
   /// \brief Function to call when proxy buffer pointers are changed (re-allocated)
-  virtual int proxy_buffers_reallocated();
+  virtual int proxy_gpu_buffers_reallocated();
 
   // Subclasses should initialize the following members:
 

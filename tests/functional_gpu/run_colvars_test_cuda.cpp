@@ -235,7 +235,7 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
   // cvmodule->log("numAtoms = " + cvm::to_str(numAtoms) + "\n");
   if (mAtomsChanged) {
     this->reallocate();
-    error_code |= cvmodule->proxy_buffers_reallocated_done();
+    error_code |= cvmodule->proxy_gpu_buffers_reallocated_done();
   }
   m_positions_soa.resize(3 * numAtoms);
   for (size_t i = 0; i < numAtoms; ++i) {
