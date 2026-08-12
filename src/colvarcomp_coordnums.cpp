@@ -293,6 +293,7 @@ private:
   cvm::rvector* d_com_grad_tmp[2];
   cvm::rvector* d_com_grad_out[2];
   unsigned int* d_tbcount;
+  // pairlist_transposed is for debugging (if you want to see if the GPU pairlist matches the CPU result you need to check this flag).
   bool pairlist_transposed;
   /**
    * @name Tile lists for self coordnum

@@ -516,6 +516,11 @@ int colvarproxy::setup()
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   if (has_gpu_support()) {
     error_code |= init_gpu();
+    this->log("GPU Platform: " + gpu_platform() + "\n");
+    this->log("GPU Name: " + gpu_name() + "\n");
+    this->log("GPU Device ID: " + cvm::to_str(gpu_device_id()) + "\n");
+    this->log("GPU Warp/Wavefront size: " + cvm::to_str(gpu_warp_size()) + "\n");
+    this->log("GPU PCI Bus ID: " + gpu_bus_id() + "\n");
   }
 #endif
   return error_code;
