@@ -61,6 +61,8 @@ struct colvaratoms_gpu_buffer_t {
   cvm::rvector* h_cog_orig;
   /// \brief GPU center of geometry of the reference coordinates
   cvm::rvector* d_ref_pos_cog;
+  /// \brief Dummy atom position
+  cvm::rvector* h_dummy_atom_pos;
 };
 
 /**

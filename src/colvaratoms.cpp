@@ -993,14 +993,24 @@ int cvm::atom_group::set_dummy()
 }
 
 int cvm::atom_group::set_dummy_pos(cvm::atom_pos const &pos) {
+  int error_code = COLVARS_OK;
   if (b_dummy) {
     dummy_atom_pos = pos;
+#if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
+    // Update the GPU dummy group position
+    colvarproxy* p = cvmodule->proxy;
+    *(gpu_atom_group->get_gpu_buffers().h_dummy_atom_pos) = pos;
+    error_code |= p->copy_HtoD(gpu_atom_group->get_gpu_buffers().h_dummy_atom_pos,
+                               gpu_atom_group->get_gpu_buffers().d_com, 1);
+    error_code |= p->copy_HtoD(gpu_atom_group->get_gpu_buffers().h_dummy_atom_pos,
+                               gpu_atom_group->get_gpu_buffers().d_cog, 1);
+#endif
   } else {
     return cvmodule->error("Error: setting dummy position for group with keyword \""+
                       key+"\" and name \""+name+
                       "\", but it is not dummy.\n", COLVARS_INPUT_ERROR);
   }
-  return COLVARS_OK;
+  return error_code;
 }
 
 void cvm::atom_group::update_total_mass() {

@@ -44,6 +44,7 @@ int colvaratoms_gpu::init_gpu() {
   error_code |= p->reallocate_host(&gpu_buffers.h_com, 1);
   error_code |= p->reallocate_host(&gpu_buffers.h_cog, 1);
   error_code |= p->reallocate_host(&gpu_buffers.h_cog_orig, 1);
+  error_code |= p->reallocate_host(&gpu_buffers.h_dummy_atom_pos, 1);
   rot_deriv_gpu = nullptr;
   // error_code |= checkGPUError(cudaStreamCreate(&stream_ag_force));
   // std::memset(&calc_fit_gradients_info, 0, sizeof(calc_fit_gradients_info));
@@ -112,6 +113,7 @@ int colvaratoms_gpu::destroy_gpu() {
   error_code |= p->deallocate_host(&gpu_buffers.h_com);
   error_code |= p->deallocate_host(&gpu_buffers.h_cog);
   error_code |= p->deallocate_host(&gpu_buffers.h_cog_orig);
+  error_code |= p->deallocate_host(&gpu_buffers.h_dummy_atom_pos);
   for (auto& e: events) {
     if (e) {
       error_code |= checkGPUError(cudaEventSynchronize(e));
