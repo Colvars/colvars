@@ -182,9 +182,9 @@ public:
     const unsigned int maxNumInteractionsPerTile =
       (numTileInteractions + numTiles - 1) / numTiles;
     tileListsSize = numTiles * maxNumInteractionsPerTile;
-    tileListsLen.resize(numTiles, 0);
-    tileListsStart.resize(numTiles, 0);
-    tileLists.resize(tileListsSize);
+    tileListsLen.assign(numTiles, 0);
+    tileListsStart.assign(numTiles, 0);
+    tileLists.assign(tileListsSize, 0);
     /**
       for (unsigned int i = 0; i < numTiles; ++i) {
         tileListsStart[i] = i * maxNumInteractionsPerTile;
@@ -253,7 +253,7 @@ public:
   }
   int calc_value_self_group(int flags) {
     int error_code = COLVARS_OK;
-    if (d_tileLists == nullptr) {
+    if (d_tileListsStart == nullptr) {
       colvarproxy* p = cvmodule->proxy;
       const unsigned int gpu_warp_size = p->gpu_warp_size();
       error_code |= buildTileLists(gpu_warp_size, cvc->get_stream());
