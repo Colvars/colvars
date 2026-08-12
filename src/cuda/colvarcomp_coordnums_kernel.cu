@@ -657,7 +657,7 @@ int calc_value_coordnum_com_to_com(
 #undef CASE
   const unsigned int sharedMemBytes = 0;
   error_code |= checkGPUError(cudaLaunchKernel(
-    kernel, dim3(1, 1, 1), dim3(default_block_size, 1, 1), args, sharedMemBytes, stream));
+    kernel, dim3(1, 1, 1), dim3(cvmodule->proxy->gpu_warp_size(), 1, 1), args, sharedMemBytes, stream));
   return error_code;
 }
 
