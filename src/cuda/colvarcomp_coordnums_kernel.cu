@@ -83,6 +83,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
     const cvm::real z1 = mask_i ? pos1z[tid] : 0;
     double3 iGrad{0, 0, 0};
     // Load atom j from group2
+    #pragma unroll
     for (unsigned int k = 0; k < group2WorkSize; k += group2BatchSize) {
       const unsigned int j = k + group2LaneID;
       const bool mask_j = j < numAtoms2;
@@ -110,6 +111,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
         }
       }
       __syncthreads();
+      #pragma unroll
       for (unsigned int t = 0; t < group2BatchSize; ++t) {
         const unsigned int jid = t ^ group2LaneID;
         const bool mask_jid = shJMask[jid];
