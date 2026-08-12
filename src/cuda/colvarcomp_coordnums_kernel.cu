@@ -51,12 +51,18 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   // constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
   // static_assert(use_internal_pbc == true, "The CUDA kernel requires internal PBC.");
   static_assert(blockSize == group2BatchSize * numGroup2BatchesPerBlock, "blockSize != group2BatchSize * numGroup2BatchesPerBlock");
+  static_assert(group2BatchSize <= 64,
+                "group2BatchSize should be no greater than 64 in computeCoordinationNumberTwoGroupsCUDAKernel1");
   // Shared memory buffers for atoms in group2
   __shared__ double3 shPosition[group2BatchSize];
   __shared__ double3 shJGrad[numGroup2BatchesPerBlock][group2BatchSize];
-  extern __shared__ bool shPairlist_buffer[];
-  bool (&shPairlist)[numGroup2BatchesPerBlock][group2BatchSize][blockSize] =
-    *reinterpret_cast<bool (*)[numGroup2BatchesPerBlock][group2BatchSize][blockSize]>(shPairlist_buffer);
+  // extern __shared__ bool shPairlist_buffer[];
+  // bool (&shPairlist)[numGroup2BatchesPerBlock][group2BatchSize][blockSize] =
+  //   *reinterpret_cast<bool (*)[numGroup2BatchesPerBlock][group2BatchSize][blockSize]>(shPairlist_buffer);
+  uint64_t pairmask;
+  if constexpr (use_pairlist) {
+    pairmask = 0ull;
+  }
   __shared__ bool shJMask[group2BatchSize];
   __shared__ bool isLastBlockDone;
   // Total coordnum
@@ -96,10 +102,11 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
       if (use_pairlist && !(rebuild_pairlist)) {
         #pragma unroll
         for (unsigned int t = 0; t < group2BatchSize; ++t) {
-          const int jid = k + t;
+          const unsigned int jid = k + t;
           const bool mask_jid = jid < numAtoms2;
-          shPairlist[group2BatchID][t][threadIdx.x] =
+          const bool b =
             (mask_i && mask_jid) ? pairlist[tid+jid*numAtoms1] : false;
+          pairmask |= (uint64_t)b << t;
         }
       }
       __syncthreads();
@@ -121,7 +128,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
               pairlist_tol, pairlist_tol_l2_max, bc);
           } else {
             if constexpr (!(rebuild_pairlist)) {
-              const bool within = shPairlist[group2BatchID][jid][threadIdx.x];
+              // const bool within = shPairlist[group2BatchID][jid][threadIdx.x];
+              bool within = (pairmask >> jid) & 1ull;
               if (within) {
                 ei += colvar::coordnum::compute_pair_coordnum<flags>(
                   inv_r0_vec, inv_r0sq_vec, en, ed,
@@ -141,7 +149,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
                   shJGrad[group2BatchID][jid].y,
                   shJGrad[group2BatchID][jid].z,
                   pairlist_tol, pairlist_tol_l2_max, bc);
-              shPairlist[group2BatchID][jid][threadIdx.x] = f > 0.0;
+              // shPairlist[group2BatchID][jid][threadIdx.x] = f > 0.0;
+              pairmask = (pairmask & ~(1ull << jid)) | ((uint64_t)(f > 0.0) << jid);
               ei += f;
             }
           }
@@ -151,10 +160,10 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
       if constexpr (use_pairlist && rebuild_pairlist) {
         #pragma unroll
         for (unsigned int t = 0; t < group2BatchSize; ++t) {
-          const int jid = k + t;
+          const unsigned int jid = k + t;
           const bool mask_jid = jid < numAtoms2;
           if (mask_i && mask_jid) {
-            pairlist[tid+jid*numAtoms1] = shPairlist[group2BatchID][t][threadIdx.x];
+            pairlist[tid+jid*numAtoms1] = ((pairmask >> t) & 1ull) != 0ull;
           }
         }
       }
@@ -294,9 +303,7 @@ int calc_value_coordnum_two_groups(
     }
   }
 #undef CASE
-  const unsigned int sharedMemBytes =
-    (flags & colvar::coordnum::ef_use_pairlist) ?
-    default_block_size * default_block_size * sizeof(bool) : 0;
+  const unsigned int sharedMemBytes = 0;
   error_code |= checkGPUError(cudaLaunchKernel(
     kernel, dim3(numBlocks, 1, 1), dim3(default_block_size, 1, 1), args, sharedMemBytes, stream));
   return error_code;
