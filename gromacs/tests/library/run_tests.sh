@@ -312,6 +312,9 @@ for dir in ${DIRLIST} ; do
 
       # If this test is used to generate the reference output files, copy them
       if $gen_ref_output; then
+echo "****"
+ls -l
+
         grep ':-) GROMACS -' ${basename}.out | head -n 1 > gromacs-version.txt
         grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> gromacs-version.txt
         grep 'Using GROMACS interface, version' ${basename}.out | head -n 1 >> gromacs-version.txt
