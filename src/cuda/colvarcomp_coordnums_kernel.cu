@@ -733,7 +733,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
         const unsigned int jid = (t + threadIndexInTile) & (tileSize - 1);
         const bool mask_t = tilePartition.shfl(mask_i, jid);
         unsigned int pairlistID;
-        bool pairlist_elem;
+        bool pairlist_elem = true;
         unsigned int jid_global;
         const cvm::real x2 = tilePartition.shfl(x1, jid);
         const cvm::real y2 = tilePartition.shfl(y1, jid);
@@ -746,15 +746,18 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
           if constexpr (use_pairlist && !rebuild_pairlist) {
             pairlist_elem = pairlist[pairlistID];
           }
-          const auto partial = colvar::coordnum::compute_pair_coordnum<flags>(
-            inv_r0_vec, inv_r0sq_vec, en, ed,
-            x1, y1, z1, x2, y2, z2,
-            iGrad.x, iGrad.y, iGrad.z,
-            shJGrad[tileIndexInBlock][jid].x,
-            shJGrad[tileIndexInBlock][jid].y,
-            shJGrad[tileIndexInBlock][jid].z,
-            pairlist_tol, pairlist_tol_l2_max, bc);
-          coordnum_tb += partial;
+          cvm::real partial = 0;
+          if (pairlist_elem) {
+            partial = colvar::coordnum::compute_pair_coordnum<flags>(
+              inv_r0_vec, inv_r0sq_vec, en, ed,
+              x1, y1, z1, x2, y2, z2,
+              iGrad.x, iGrad.y, iGrad.z,
+              shJGrad[tileIndexInBlock][jid].x,
+              shJGrad[tileIndexInBlock][jid].y,
+              shJGrad[tileIndexInBlock][jid].z,
+              pairlist_tol, pairlist_tol_l2_max, bc);
+            coordnum_tb += partial;
+          }
           if constexpr (use_pairlist && rebuild_pairlist) {
             pairlist_elem = partial > 0.0 ? true : false;
           }
