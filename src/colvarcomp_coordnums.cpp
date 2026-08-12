@@ -74,8 +74,10 @@ public:
   }
   int calc_value_two_groups(int flags) {
     int error_code = COLVARS_OK;
-    error_code |= checkGPUError(cudaStreamWaitEvent(
-      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
+    // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
+    // error_code |= checkGPUError(cudaStreamWaitEvent(
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
@@ -108,8 +110,10 @@ public:
     int error_code = COLVARS_OK;
     auto group = cvc->b_group1_center_only ? cvc->group2 : cvc->group1;
     auto group_com = cvc->b_group1_center_only ? cvc->group1 : cvc->group2;
-    error_code |= checkGPUError(cudaStreamWaitEvent(
-      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
+    // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
+    // error_code |= checkGPUError(cudaStreamWaitEvent(
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
@@ -143,8 +147,10 @@ public:
                              COLVARS_BUG_ERROR);
     }
     int error_code = COLVARS_OK;
-    error_code |= checkGPUError(cudaStreamWaitEvent(
-      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
+    // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
+    // error_code |= checkGPUError(cudaStreamWaitEvent(
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));

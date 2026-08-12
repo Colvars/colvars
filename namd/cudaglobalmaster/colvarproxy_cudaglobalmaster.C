@@ -775,6 +775,12 @@ void colvarproxy_impl::calculate() {
   int savedDevice;
   cudaCheck(cudaGetDevice(&savedDevice));
   cudaCheck(cudaSetDevice(m_device_id));
+  if (mClient->requestUpdateLattice()) {
+    ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+    if (has_gpu_support()) {
+      cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::update_lattice), mStream));
+    }
+  }
   // The following memcpy operations are supposed to be overlapped with the NB kernel
   if (numAtoms > 0) {
 #if CUDAGM_VERSION >= 3
@@ -805,12 +811,6 @@ void colvarproxy_impl::calculate() {
     }
     if (has_gpu_support()) {
       cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::copy_atoms), mStream));
-    }
-  }
-  if (mClient->requestUpdateLattice()) {
-    ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
-    if (has_gpu_support()) {
-      cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::update_lattice), mStream));
     }
   }
   // NOTE: I think the implementation in Colvars will syncrhonize the stream before
