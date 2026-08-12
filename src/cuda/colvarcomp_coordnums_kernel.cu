@@ -402,14 +402,18 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
   typedef cub::BlockReduce<cvm::real, blockSize> BlockReduce;
   __shared__ typename BlockReduce::TempStorage temp_storage;
   const cvm::real total_e = BlockReduce(temp_storage).Sum(ei); __syncthreads();
-  const cvm::real total_com_grad_x = BlockReduce(temp_storage).Sum(com_grad_x); __syncthreads();
-  const cvm::real total_com_grad_y = BlockReduce(temp_storage).Sum(com_grad_y); __syncthreads();
-  const cvm::real total_com_grad_z = BlockReduce(temp_storage).Sum(com_grad_z); __syncthreads();
+  if constexpr (gradients) {
+    com_grad_x = BlockReduce(temp_storage).Sum(com_grad_x); __syncthreads();
+    com_grad_y = BlockReduce(temp_storage).Sum(com_grad_y); __syncthreads();
+    com_grad_z = BlockReduce(temp_storage).Sum(com_grad_z); __syncthreads();
+  }
   if (threadIdx.x == 0) {
     atomicAdd(coordnum_tmp, total_e);
-    atomicAdd(&com_grad_tmp->x, total_com_grad_x);
-    atomicAdd(&com_grad_tmp->y, total_com_grad_y);
-    atomicAdd(&com_grad_tmp->z, total_com_grad_z);
+    if constexpr (gradients) {
+      atomicAdd(&com_grad_tmp->x, com_grad_x);
+      atomicAdd(&com_grad_tmp->y, com_grad_y);
+      atomicAdd(&com_grad_tmp->z, com_grad_z);
+    }
     __threadfence();
     unsigned int value = atomicInc(tbcount, gridDim.x);
     isLastBlockDone = (value == (gridDim.x - 1));
@@ -418,11 +422,15 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
   if (isLastBlockDone) {
     if (threadIdx.x == 0) {
       *coordnum_out = *coordnum_tmp;
-      *com_grad_out = *com_grad_tmp;
+      if constexpr (gradients) {
+        *com_grad_out = *com_grad_tmp;
+      }
       *coordnum_tmp = 0;
-      com_grad_tmp->x = 0;
-      com_grad_tmp->y = 0;
-      com_grad_tmp->z = 0;
+      if constexpr (gradients) {
+        com_grad_tmp->x = 0;
+        com_grad_tmp->y = 0;
+        com_grad_tmp->z = 0;
+      }
       tbcount[0] = 0;
     }
   }
