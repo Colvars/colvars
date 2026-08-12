@@ -559,6 +559,8 @@ __global__ void computeCoordinationNumberGroupTwoCOMsKernel(
             com1_grad_x, com1_grad_y, com1_grad_z,
             com2_grad_x, com2_grad_y, com2_grad_z,
             pairlist_tol, pairlist_tol_l2_max, bc);
+        } else {
+          (*h_coordnum_out) = 0;
         }
       } else {
         const double f = colvar::coordnum::compute_pair_coordnum<flags>(
