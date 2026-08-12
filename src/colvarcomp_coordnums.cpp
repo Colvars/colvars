@@ -119,7 +119,7 @@ public:
     error_code |= colvars_gpu::calc_value_coordnum_group_to_com(
       group->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
       group_com->get_gpu_atom_group()->get_gpu_buffers().d_com,
-      cvc->group1->size(), cvc->en, cvc->ed, cvc->inv_r0_vec,
+      group->size(), cvc->en, cvc->ed, cvc->inv_r0_vec,
       cvc->inv_r0sq_vec, cvc->boundary_conditions,
       group->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       cvc->tolerance, cvc->tolerance_l2_max, d_pairlist, d_tbcount,
