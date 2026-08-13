@@ -60,9 +60,6 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   // bool (&shPairlist)[numGroup2BatchesPerBlock][group2BatchSize][blockSize] =
   //   *reinterpret_cast<bool (*)[numGroup2BatchesPerBlock][group2BatchSize][blockSize]>(shPairlist_buffer);
   uint64_t pairmask;
-  if constexpr (use_pairlist) {
-    pairmask = 0ull;
-  }
   __shared__ bool shJMask[group2BatchSize];
   __shared__ bool isLastBlockDone;
   // Total coordnum
@@ -87,6 +84,9 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
     for (unsigned int k = 0; k < group2WorkSize; k += group2BatchSize) {
       const unsigned int j = k + group2LaneID;
       const bool mask_j = j < numAtoms2;
+      if constexpr (use_pairlist) {
+        pairmask = uint64_t(0);
+      }
       if (group2BatchID == 0) {
         if (mask_j) {
           shPosition[group2LaneID].x = pos2x[j];
@@ -100,7 +100,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
         shJGrad[group2BatchID][group2LaneID].y = 0;
         shJGrad[group2BatchID][group2LaneID].z = 0;
       }
-      if (use_pairlist && !(rebuild_pairlist)) {
+      if constexpr (use_pairlist && !(rebuild_pairlist)) {
         #pragma unroll
         for (unsigned int t = 0; t < group2BatchSize; ++t) {
           const unsigned int jid = k + t;
