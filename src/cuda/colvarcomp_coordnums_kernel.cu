@@ -104,8 +104,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
         for (unsigned int t = 0; t < group2BatchSize; ++t) {
           const unsigned int jid = k + t;
           const bool mask_jid = jid < numAtoms2;
-          const bool b =
-            (mask_i && mask_jid) ? pairlist[tid+jid*numAtoms1] : false;
+          const size_t pairlistID = (size_t)tid + (size_t)jid * (size_t)numAtoms1;
+          const bool b = (mask_i && mask_jid) ? pairlist[pairlistID] : false;
           pairmask |= (uint64_t)b << t;
         }
       }
@@ -163,7 +163,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
           const unsigned int jid = k + t;
           const bool mask_jid = jid < numAtoms2;
           if (mask_i && mask_jid) {
-            pairlist[tid+jid*numAtoms1] = ((pairmask >> t) & 1ull) != 0ull;
+            const size_t pairlistID = (size_t)tid + (size_t)jid * (size_t)numAtoms1;
+            pairlist[pairlistID] = ((pairmask >> t) & 1ull) != 0ull;
           }
         }
       }
@@ -739,7 +740,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
         // NAMD/OpenMM style swizzling
         const unsigned int jid = (t + threadIndexInTile) & (tileSize - 1);
         const bool mask_t = tilePartition.shfl(mask_i, jid);
-        unsigned int pairlistID;
+        size_t pairlistID;
         bool pairlist_elem = true;
         unsigned int jid_global;
         const cvm::real x2 = tilePartition.shfl(x1, jid);
@@ -777,7 +778,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
       // Last loop: t == block_size / 2
       {
         const unsigned int jid = (half_tile_size + threadIndexInTile) & (tileSize - 1);
-        unsigned int pairlistID;
+        size_t pairlistID;
         bool pairlist_elem = true;
         const bool mask_t = tilePartition.shfl(mask_i, jid);
         const cvm::real x2 = tilePartition.shfl(x1, jid);
@@ -845,7 +846,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
         for (unsigned int t = 0; t < tileSize; ++t) {
           const unsigned int jid = t ^ threadIndexInTile;
           const bool mask_t = tilePartition.shfl(mask_j, jid);
-          unsigned int pairlistID;
+          size_t pairlistID;
           bool pairlist_elem = true;
           const cvm::real x2 = tilePartition.shfl(jx2, jid);
           const cvm::real y2 = tilePartition.shfl(jy2, jid);
