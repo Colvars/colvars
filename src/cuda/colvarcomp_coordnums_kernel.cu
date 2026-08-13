@@ -80,7 +80,6 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
     const cvm::real z1 = mask_i ? pos1z[tid] : 0;
     double3 iGrad{0, 0, 0};
     // Load atom j from group2
-    #pragma unroll
     for (unsigned int k = 0; k < group2WorkSize; k += group2BatchSize) {
       const unsigned int j = k + group2LaneID;
       const bool mask_j = j < numAtoms2;
@@ -111,7 +110,6 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
         }
       }
       __syncthreads();
-      #pragma unroll
       for (unsigned int t = 0; t < group2BatchSize; ++t) {
         const unsigned int jid = t ^ group2LaneID;
         const bool mask_jid = shJMask[jid];
@@ -780,7 +778,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
       {
         const unsigned int jid = (half_tile_size + threadIndexInTile) & (tileSize - 1);
         unsigned int pairlistID;
-        bool pairlist_elem;
+        bool pairlist_elem = true;
         const bool mask_t = tilePartition.shfl(mask_i, jid);
         const cvm::real x2 = tilePartition.shfl(x1, jid);
         const cvm::real y2 = tilePartition.shfl(y1, jid);
@@ -794,14 +792,17 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
             if constexpr (use_pairlist && !rebuild_pairlist) {
               pairlist_elem = pairlist[pairlistID];
             }
-            const auto partial = colvar::coordnum::compute_pair_coordnum<flags>(
-              inv_r0_vec, inv_r0sq_vec, en, ed,
-              x1, y1, z1, x2, y2, z2,
-              iGrad.x, iGrad.y, iGrad.z,
-              shJGrad[tileIndexInBlock][jid].x,
-              shJGrad[tileIndexInBlock][jid].y,
-              shJGrad[tileIndexInBlock][jid].z,
-              pairlist_tol, pairlist_tol_l2_max, bc);
+            cvm::real partial = 0;
+            if (pairlist_elem) {
+              partial = colvar::coordnum::compute_pair_coordnum<flags>(
+                inv_r0_vec, inv_r0sq_vec, en, ed,
+                x1, y1, z1, x2, y2, z2,
+                iGrad.x, iGrad.y, iGrad.z,
+                shJGrad[tileIndexInBlock][jid].x,
+                shJGrad[tileIndexInBlock][jid].y,
+                shJGrad[tileIndexInBlock][jid].z,
+                pairlist_tol, pairlist_tol_l2_max, bc);
+            }
             coordnum_tb += partial;
             if constexpr (use_pairlist && rebuild_pairlist) {
               pairlist_elem = partial > 0.0 ? true : false;
@@ -845,7 +846,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
           const unsigned int jid = t ^ threadIndexInTile;
           const bool mask_t = tilePartition.shfl(mask_j, jid);
           unsigned int pairlistID;
-          bool pairlist_elem;
+          bool pairlist_elem = true;
           const cvm::real x2 = tilePartition.shfl(jx2, jid);
           const cvm::real y2 = tilePartition.shfl(jy2, jid);
           const cvm::real z2 = tilePartition.shfl(jz2, jid);
@@ -857,14 +858,17 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
             if constexpr (use_pairlist && !rebuild_pairlist) {
               pairlist_elem = pairlist[pairlistID];
             }
-            const auto partial = colvar::coordnum::compute_pair_coordnum<flags>(
-              inv_r0_vec, inv_r0sq_vec, en, ed,
-              x1, y1, z1, x2, y2, z2,
-              iGrad.x, iGrad.y, iGrad.z,
-              shJGrad[tileIndexInBlock][jid].x,
-              shJGrad[tileIndexInBlock][jid].y,
-              shJGrad[tileIndexInBlock][jid].z,
-              pairlist_tol, pairlist_tol_l2_max, bc);
+            cvm::real partial = 0;
+            if (pairlist_elem) {
+              partial = colvar::coordnum::compute_pair_coordnum<flags>(
+                inv_r0_vec, inv_r0sq_vec, en, ed,
+                x1, y1, z1, x2, y2, z2,
+                iGrad.x, iGrad.y, iGrad.z,
+                shJGrad[tileIndexInBlock][jid].x,
+                shJGrad[tileIndexInBlock][jid].y,
+                shJGrad[tileIndexInBlock][jid].z,
+                pairlist_tol, pairlist_tol_l2_max, bc);
+            }
             coordnum_tb += partial;
             if constexpr (use_pairlist && rebuild_pairlist) {
               pairlist_elem = partial > 0.0 ? true : false;
