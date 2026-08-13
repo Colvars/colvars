@@ -1513,11 +1513,6 @@ int colvar::calc_cvc_values(int first_cvc, size_t num_cvcs)
        i++) {
     if (!cvcs[i]->is_enabled()) continue;
     cvc_count++;
-    if (use_gpu) {
-      error_code |= (cvcs[i])->read_data_gpu();
-    } else {
-      (cvcs[i])->read_data();
-    }
     if (use_gpu && cvcs[i]->is_enabled(f_cvc_support_gpu)) {
       error_code |= (cvcs[i])->calc_value_gpu();
     } else {
@@ -1651,26 +1646,6 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
       cvmodule->log("Done calculating gradients of colvar \""+this->name+"\".\n");
   }
 
-  // Fit gradients of atom groups.
-  // TODO: Ideally, this loop should loop over all atom groups from colvarmodule,
-  // since it is possible to share the same atom group over multiple different
-  // CVCs and different colvar {...}, but this is how Colvars designed...
-  for (i = first_cvc, cvc_count = 0;
-      (i < cvcs.size()) && (cvc_count < cvc_max_count);
-      i++) {
-    if (!cvcs[i]->is_enabled()) continue;
-    cvc_count++;
-    if ((cvcs[i])->is_enabled(f_cvc_gradient)) {
-      if (use_gpu) {
-        error_code |= (cvcs[i])->calc_fit_gradients_gpu();
-      } else {
-        // if requested, propagate (via chain rule) the gradients above
-        // to the atoms used to define the roto-translation
-        (cvcs[i])->calc_fit_gradients();
-      }
-    }
-  }
-
   if (use_gpu) {
     for (i = first_cvc, cvc_count = 0;
         (i < cvcs.size()) && (cvc_count < cvc_max_count);
@@ -1685,6 +1660,17 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
     }
   }
 
+  cvmodule->decrease_depth();
+
+  return error_code;
+}
+
+int colvar::debug_cvc_gradients(int first_cvc, size_t num_cvcs) {
+  cvmodule->increase_depth();
+  int error_code = COLVARS_OK;
+  size_t const cvc_max_count = num_cvcs ? num_cvcs : num_active_cvcs();
+  size_t i, cvc_count;
+  const bool use_gpu = cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
   // Debug gradients
   for (i = first_cvc, cvc_count = 0;
       (i < cvcs.size()) && (cvc_count < cvc_max_count);
@@ -1699,9 +1685,7 @@ int colvar::calc_cvc_gradients(int first_cvc, size_t num_cvcs)
       }
     }
   }
-
   cvmodule->decrease_depth();
-
   return error_code;
 }
 

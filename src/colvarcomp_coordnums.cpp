@@ -86,6 +86,7 @@ public:
         }
       }
     }
+    auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
     // error_code |= checkGPUError(cudaStreamWaitEvent(
@@ -100,7 +101,7 @@ public:
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
       cvc->group2->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
       cvc->group1->size(), cvc->group2->size(), cvc->en, cvc->ed,
-      cvc->inv_r0_vec, cvc->inv_r0sq_vec, cvc->boundary_conditions,
+      cvc->inv_r0_vec, cvc->inv_r0sq_vec, boundary_conditions,
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       cvc->group2->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       cvc->tolerance, cvc->tolerance_l2_max,
@@ -121,6 +122,7 @@ public:
       return cvmodule->error("calc_value_group_to_com is called incorrectly.\n",
                              COLVARS_BUG_ERROR);
     }
+    auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
     int error_code = COLVARS_OK;
     auto group = cvc->b_group1_center_only ? cvc->group2 : cvc->group1;
     auto group_com = cvc->b_group1_center_only ? cvc->group1 : cvc->group2;
@@ -138,7 +140,7 @@ public:
       group->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
       group_com->get_gpu_atom_group()->get_gpu_buffers().d_com,
       group->size(), cvc->en, cvc->ed, cvc->inv_r0_vec,
-      cvc->inv_r0sq_vec, cvc->boundary_conditions,
+      cvc->inv_r0sq_vec, boundary_conditions,
       group->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       cvc->tolerance, cvc->tolerance_l2_max, d_pairlist, d_tbcount,
       d_com_grad_tmp[0], d_com_grad_out[0], d_coordnum, h_coordnum,
@@ -160,6 +162,7 @@ public:
       return cvmodule->error("calc_value_two_coms is called incorrectly.\n",
                              COLVARS_BUG_ERROR);
     }
+    auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
     int error_code = COLVARS_OK;
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
@@ -175,7 +178,7 @@ public:
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_com,
       cvc->group2->get_gpu_atom_group()->get_gpu_buffers().d_com,
       cvc->en, cvc->ed, cvc->inv_r0_vec, cvc->inv_r0sq_vec,
-      cvc->boundary_conditions,
+      boundary_conditions,
       cvc->tolerance, cvc->tolerance_l2_max, d_pairlist,
       d_com_grad_out[0], d_com_grad_out[1], h_coordnum, flags, cvc->get_stream(), cvmodule);
     error_code |= checkGPUError(cudaEventRecord(
@@ -199,6 +202,7 @@ public:
       error_code |= selfCoordNumTileList.buildTileLists(
         cvc->group1->size(), cvc->b_enable_pairlist, gpu_warp_size, cvc->get_stream());
     }
+    auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
@@ -207,7 +211,7 @@ public:
     error_code |= colvars_gpu::calc_value_coordnum_self_group(
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
       cvc->group1->size(), cvc->en, cvc->ed, cvc->inv_r0_vec, cvc->inv_r0sq_vec,
-      cvc->boundary_conditions,
+      boundary_conditions,
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       selfCoordNumTileList.d_tileLists, selfCoordNumTileList.d_tileListsStart, selfCoordNumTileList.d_tileListsLen,
       cvc->tolerance, cvc->tolerance_l2_max, d_pairlist,
@@ -582,6 +586,7 @@ void inline colvar::coordnum::main_loop()
   cvm::atom_pos const group1_com = group1->center_of_mass();
   cvm::atom_pos const group2_com = group2->center_of_mass();
   cvm::rvector group1_com_grad, group2_com_grad;
+  auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
 
   bool *pairlist_elem = pairlist.get();
 
@@ -824,6 +829,7 @@ colvar::h_bond::h_bond(cvm::atom_group::simple_atom const &acceptor,
 void colvar::h_bond::calc_value()
 {
   constexpr int flags = coordnum::ef_null;
+  auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
   cvm::rvector G1, G2;
   const cvm::atom_pos A1{atom_groups[0]->pos_x(0),
                          atom_groups[0]->pos_y(0),
@@ -865,6 +871,7 @@ void colvar::h_bond::calc_value()
 void colvar::h_bond::calc_gradients()
 {
   int constexpr flags = coordnum::ef_gradients;
+  auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
   const cvm::rvector inv_r0_vec{
     1.0 / r0_vec.x,
     1.0 / r0_vec.y,
@@ -903,6 +910,7 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
 {
   size_t const n = group1->size();
   bool *pairlist_elem = pairlist.get();
+  auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
 
   for (size_t i = 0; i < n - 1; i++) {
 

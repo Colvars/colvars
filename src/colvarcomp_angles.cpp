@@ -59,6 +59,7 @@ colvar::angle::angle(cvm::atom_group::simple_atom const &a1,
 
 void colvar::angle::calc_value()
 {
+  auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
   cvm::atom_pos const g1_pos = group1->center_of_mass();
   cvm::atom_pos const g2_pos = group2->center_of_mass();
   cvm::atom_pos const g3_pos = group3->center_of_mass();
@@ -146,6 +147,7 @@ int colvar::dipole_angle::init(std::string const &conf)
 
 void colvar::dipole_angle::calc_value()
 {
+  auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
   cvm::atom_pos const g1_pos = group1->center_of_mass();
   cvm::atom_pos const g2_pos = group2->center_of_mass();
   cvm::atom_pos const g3_pos = group3->center_of_mass();
@@ -269,6 +271,7 @@ colvar::dihedral::dihedral(cvm::atom_group::simple_atom const &a1,
 
 void colvar::dihedral::calc_value()
 {
+  auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
   cvm::atom_pos const g1_pos = group1->center_of_mass();
   cvm::atom_pos const g2_pos = group2->center_of_mass();
   cvm::atom_pos const g3_pos = group3->center_of_mass();

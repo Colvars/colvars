@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include <memory>
 #include <cstdio>
+#include <atomic>
+#include <mutex>
 
 #include "colvars_version.h"
 
@@ -334,10 +336,17 @@ private:
   /// Array of named atom groups
   std::vector<atom_group *> named_atom_groups;
 
+  /// Array of all registered atom groups from CVCs
+  std::unordered_map<atom_group *, std::atomic<int>> registered_atom_groups;
+  std::mutex registered_atom_groups_mutex;
+
 public:
 
   void register_named_atom_group(atom_group *ag);
   void unregister_named_atom_group(atom_group *ag);
+
+  void register_atom_group_from_cvc(atom_group *ag);
+  void unregister_atom_group_from_cvc(atom_group *ag);
 
   /// Array of collective variables
   std::vector<colvar *> *variables();
