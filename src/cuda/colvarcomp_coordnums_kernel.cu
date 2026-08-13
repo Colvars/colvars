@@ -734,7 +734,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
       shJGrad[tileIndexInBlock][threadIndexInTile].z = 0;
       tilePartition.sync();
       // Self tiles
-      #pragma unroll
+      #pragma unroll 4
       for (unsigned int t = 1; t < half_tile_size; ++t) {
         // NAMD/OpenMM style swizzling
         const unsigned int jid = (t + threadIndexInTile) & (tileSize - 1);
@@ -841,7 +841,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
           globalJIDs[tileIndexInBlock][threadIndexInTile] = jid_global;
         }
         tilePartition.sync();
-        #pragma unroll
+        #pragma unroll 4
         for (unsigned int t = 0; t < tileSize; ++t) {
           const unsigned int jid = t ^ threadIndexInTile;
           const bool mask_t = tilePartition.shfl(mask_j, jid);
