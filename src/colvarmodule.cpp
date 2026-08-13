@@ -874,6 +874,24 @@ void colvarmodule::unregister_named_atom_group(atom_group *ag) {
   }
 }
 
+void colvarmodule::register_atom_group_from_cvc(atom_group *ag) {
+  std::lock_guard<std::mutex> lock(registered_atom_groups_mutex);
+  registered_atom_groups[ag].fetch_add(1, std::memory_order_relaxed);
+}
+
+void colvarmodule::unregister_atom_group_from_cvc(atom_group* ag) {
+  std::lock_guard<std::mutex> lock(registered_atom_groups_mutex);
+  auto it = registered_atom_groups.find(ag);
+  if (it != registered_atom_groups.end()) {
+    const int old_count = it->second.fetch_sub(1);
+    if (old_count == 1) {
+      registered_atom_groups.erase(it);
+    }
+  } else {
+    return;
+  }
+}
+
 int colvarmodule::change_configuration(std::string const &bias_name,
                                        std::string const &conf)
 {
@@ -935,7 +953,62 @@ int colvarmodule::calc()
              this->to_str(this->step_absolute())+"\n");
   }
 
+  const bool use_gpu = proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
+  increase_depth();
+  // Read atom groups
+  if (use_gpu) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    for (auto it = registered_atom_groups.begin(); it != registered_atom_groups.end(); ++it) {
+      auto parent_cvcs = it->first->get_parents();
+      bool use_cpu_buffers = false;
+      for (auto c = parent_cvcs.begin(); c != parent_cvcs.end(); ++c) {
+        if ((*c)->get_object_type() == colvardeps::object_t::colvarcomp) {
+          auto cvc = dynamic_cast<colvar::cvc*>(*c);
+          use_cpu_buffers |= cvc->is_enabled(colvardeps::f_cvc_require_cpu_buffers);
+        }
+      }
+      if (use_cpu_buffers) {
+        it->first->reset_atoms_data();
+      }
+      error_code |= it->first->get_gpu_atom_group()->read_data_gpu(it->first);
+      error_code |= it->first->get_gpu_atom_group()->after_read_data_sync(it->first, use_cpu_buffers);
+    }
+#endif
+  } else {
+    // TODO: Maybe we can calculate the atom groups in parallel in case of SMP
+    for (auto it = registered_atom_groups.begin(); it != registered_atom_groups.end(); ++it) {
+      it->first->reset_atoms_data();
+      it->first->read_positions();
+      it->first->calc_required_properties();
+    }
+  }
+  error_code |= proxy->update_system_boundaries();
+  decrease_depth();
   error_code |= calc_colvars();
+  increase_depth();
+  // Calculate atom group fit gradients
+  if (use_gpu) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    for (auto it = registered_atom_groups.begin(); it != registered_atom_groups.end(); ++it) {
+      if (it->first->is_enabled(colvardeps::f_ag_fit_gradients)) {
+        error_code |= (it->first)->get_gpu_atom_group()->calc_fit_gradients_gpu(it->first);
+      }
+    }
+#endif
+  } else {
+    for (auto it = registered_atom_groups.begin(); it != registered_atom_groups.end(); ++it) {
+      if (it->first->is_enabled(colvardeps::f_ag_fit_gradients)) {
+        it->first->calc_fit_gradients();
+      }
+    }
+  }
+  // Debug gradients
+  for (auto cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
+    if ((*cvi)->is_enabled(colvardeps::f_cv_active)) {
+      error_code |= (*cvi)->debug_cvc_gradients();
+    }
+  }
+  decrease_depth();
   error_code |= calc_biases();
   error_code |= update_colvar_forces();
 
@@ -1217,31 +1290,11 @@ int colvarmodule::update_colvar_forces()
   // force values (done in cvm::atom_group::apply_force and apply_colvar_force)
   // into host-pinned buffers. But before that, I still need to clear these
   // buffers of all atom groups that may have forces applied on.
-  // TODO: How can I avoid constructing forced_atom_groups every step?
-  std::vector<atom_group *> forced_atom_groups;
   if (proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
-      if ((*cvi)->is_enabled(colvardeps::f_cv_apply_force)) {
-        auto& cvcs = (*cvi)->get_cvcs();
-        for (size_t i = 0; i < cvcs.size(); i++) {
-          if (!cvcs[i]->is_enabled()) continue;
-          std::vector<atom_group *>& ags = (cvcs[i])->atom_groups;
-          for (auto ag = ags.begin(); ag != ags.end(); ++ag) {
-            if ((*ag)->size() > 0) {
-              forced_atom_groups.push_back(*ag);
-            }
-          }
-        }
-      }
-    }
-    // Since atom groups can be shared, I have to sort and deduplicate the array.
-    std::sort(forced_atom_groups.begin(), forced_atom_groups.end());
-    auto last = std::unique(forced_atom_groups.begin(), forced_atom_groups.end());
-    forced_atom_groups.erase(last, forced_atom_groups.end());
     // Clear the host-pinned buffers
-    for (auto ag = forced_atom_groups.begin(); ag != forced_atom_groups.end(); ++ag) {
-      error_code |= (*ag)->get_gpu_atom_group()->begin_apply_force_gpu();
+    for (auto ag = registered_atom_groups.begin(); ag != registered_atom_groups.end(); ++ag) {
+      error_code |= ag->first->get_gpu_atom_group()->begin_apply_force_gpu();
     }
 #endif
   }
@@ -1261,8 +1314,8 @@ int colvarmodule::update_colvar_forces()
     // own stream, the CUDA kernel/Graph for adding forces are always pushed after the
     // CUDA graph for fit gradients. As a result, we don't need to synchronize the
     // fit gradients event.
-    for (auto ag = forced_atom_groups.begin(); ag != forced_atom_groups.end(); ++ag) {
-      error_code |= (*ag)->get_gpu_atom_group()->add_force_to_proxy_gpu((*ag));
+    for (auto ag = registered_atom_groups.begin(); ag != registered_atom_groups.end(); ++ag) {
+      error_code |= ag->first->get_gpu_atom_group()->add_force_to_proxy_gpu(ag->first);
     }
 #endif
   }
