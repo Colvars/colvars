@@ -14,8 +14,7 @@
 
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 namespace colvars_gpu {
-template <int N, int M, int blockSize, int group2BatchSize,
-          int numGroup2BatchesPerBlock, int flags>
+template <int N, int M, int blockSize, int tileSize, int flags>
 __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   const cvm::real* __restrict pos1x,
   const cvm::real* __restrict pos1y,
@@ -45,34 +44,31 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   // TODO: Optimize for static en and ed. Wait for https://github.com/Colvars/colvars/pull/926.
   constexpr const bool static_exponents = (N > 0) && (M > 0);
 #endif
+  static_assert((blockSize % tileSize) == 0, "blockSize must be some multiples of tileSize");
   constexpr const bool use_pairlist = flags & colvar::coordnum::ef_use_pairlist;
   constexpr const bool rebuild_pairlist = flags & colvar::coordnum::ef_rebuild_pairlist;
   constexpr const bool gradients = flags & colvar::coordnum::ef_gradients;
-  // constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
-  // static_assert(use_internal_pbc == true, "The CUDA kernel requires internal PBC.");
-  static_assert(blockSize == group2BatchSize * numGroup2BatchesPerBlock, "blockSize != group2BatchSize * numGroup2BatchesPerBlock");
-  static_assert(group2BatchSize <= 64,
-                "group2BatchSize should be no greater than 64 in computeCoordinationNumberTwoGroupsCUDAKernel1");
   // Shared memory buffers for atoms in group2
-  __shared__ double3 shPosition[group2BatchSize];
-  __shared__ double3 shJGrad[numGroup2BatchesPerBlock][group2BatchSize];
-  // extern __shared__ bool shPairlist_buffer[];
-  // bool (&shPairlist)[numGroup2BatchesPerBlock][group2BatchSize][blockSize] =
-  //   *reinterpret_cast<bool (*)[numGroup2BatchesPerBlock][group2BatchSize][blockSize]>(shPairlist_buffer);
+  namespace cg = cooperative_groups;
+  const cg::thread_block thb = cg::this_thread_block();
+  const auto tilePartition = cg::tiled_partition<tileSize>(thb);
+  constexpr unsigned int numTilesPerBlock = blockSize / tileSize;
+  // Shared memory buffers for atoms in group2
+  __shared__ double3 shJGrad[numTilesPerBlock][tileSize];
   uint64_t pairmask;
-  __shared__ bool shJMask[group2BatchSize];
   __shared__ bool isLastBlockDone;
   // Total coordnum
   cvm::real ei = 0;
-  // Number of blocks required to iterate over group1
-  const unsigned int numBlocksInGroup1 = (numAtoms1 + blockSize - 1) / blockSize;
-  // Number of blocks required to iterate over group2
-  const unsigned int numBatchesInGroup2 = (numAtoms2 + group2BatchSize - 1) / group2BatchSize;
-  const unsigned int group2WorkSize = numBatchesInGroup2 * group2BatchSize;
-  const unsigned int group2BatchID = threadIdx.x / group2BatchSize;
-  const unsigned int group2LaneID = threadIdx.x % group2BatchSize;
-  for (unsigned int i = blockIdx.x; i < numBlocksInGroup1; i += gridDim.x) {
-    const unsigned int tid = i * blockDim.x + threadIdx.x;
+  // Number of batches required to iterate over group1
+  const unsigned int numTilesInGroup1 = (numAtoms1 + tileSize - 1) / tileSize;
+  // Number of batches required to iterate over group2
+  const unsigned int numTilesInGroup2 = (numAtoms2 + tileSize - 1) / tileSize;
+  const unsigned int tileIndexInBlock = tilePartition.meta_group_rank();
+  // The thread id in a tile
+  const unsigned int threadIndexInTile = tilePartition.thread_rank();
+  for (unsigned int iTile = blockIdx.x * numTilesPerBlock + tileIndexInBlock;
+       iTile < numTilesInGroup1; iTile += numTilesPerBlock * gridDim.x) {
+    const unsigned int tid = iTile * tileSize + threadIndexInTile;
     // Load the atom i from group1
     const bool mask_i = tid < numAtoms1;
     const cvm::real x1 = mask_i ? pos1x[tid] : 0;
@@ -80,51 +76,58 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
     const cvm::real z1 = mask_i ? pos1z[tid] : 0;
     double3 iGrad{0, 0, 0};
     // Load atom j from group2
-    for (unsigned int k = 0; k < group2WorkSize; k += group2BatchSize) {
-      const unsigned int j = k + group2LaneID;
-      const bool mask_j = j < numAtoms2;
+    // TODO: In the future, we may build neighbor list of tiles.
+    //       We can sort the atoms in group1 and group2 spatially,
+    //       and then build a neighbor list of interacting tiles
+    //       by comparing the distances between tile bounding boxes
+    //       with a cutoff. However, currently it is unclear to me
+    //       wether Colvars developer would accept the idea of
+    //       allowing re-sorting atoms dynamically in atom groups.
+    for (unsigned int jTileIndex = 0; jTileIndex < numTilesInGroup2; ++jTileIndex) {
+      const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
+      const bool mask_j = jid_global < numAtoms2;
+      const double jx2 = mask_j ? pos2x[jid_global] : 0;
+      const double jy2 = mask_j ? pos2y[jid_global] : 0;
+      const double jz2 = mask_j ? pos2z[jid_global] : 0;
       if constexpr (use_pairlist) {
         pairmask = uint64_t(0);
       }
-      if (group2BatchID == 0) {
-        if (mask_j) {
-          shPosition[group2LaneID].x = pos2x[j];
-          shPosition[group2LaneID].y = pos2y[j];
-          shPosition[group2LaneID].z = pos2z[j];
-        }
-        shJMask[group2LaneID] = mask_j;
-      }
       if constexpr (gradients) {
-        shJGrad[group2BatchID][group2LaneID].x = 0;
-        shJGrad[group2BatchID][group2LaneID].y = 0;
-        shJGrad[group2BatchID][group2LaneID].z = 0;
+        shJGrad[tileIndexInBlock][threadIndexInTile].x = 0;
+        shJGrad[tileIndexInBlock][threadIndexInTile].y = 0;
+        shJGrad[tileIndexInBlock][threadIndexInTile].z = 0;
       }
       if constexpr (use_pairlist && !(rebuild_pairlist)) {
+        // TODO: Optimize the d_pairlist by using a bit array
         #pragma unroll
-        for (unsigned int t = 0; t < group2BatchSize; ++t) {
-          const unsigned int jid = k + t;
+        for (unsigned int t = 0; t < tileSize; ++t) {
+          const unsigned int jid = jTileIndex * tileSize + t;
           const bool mask_jid = jid < numAtoms2;
           const size_t pairlistID = (size_t)tid + (size_t)jid * (size_t)numAtoms1;
           const bool b = (mask_i && mask_jid) ? pairlist[pairlistID] : false;
           pairmask |= (uint64_t)b << t;
         }
       }
-      __syncthreads();
-      for (unsigned int t = 0; t < group2BatchSize; ++t) {
-        const unsigned int jid = t ^ group2LaneID;
-        const bool mask_jid = shJMask[jid];
+      tilePartition.sync();
+      #pragma unroll 4
+      for (unsigned int t = 0; t < tileSize; ++t) {
+        const unsigned int jid = t ^ threadIndexInTile;
+        const bool mask_jid = tilePartition.shfl(mask_j, jid);
+        const double x2 = tilePartition.shfl(jx2, jid);
+        const double y2 = tilePartition.shfl(jy2, jid);
+        const double z2 = tilePartition.shfl(jz2, jid);
+        // TODO: I would like to use shfl_xor to sum the j-atom gradients
+        // but after testing I have found that actually makes the code
+        // slower, but I don't know why.
         if (mask_i && mask_jid) {
-          const cvm::real x2 = shPosition[jid].x;
-          const cvm::real y2 = shPosition[jid].y;
-          const cvm::real z2 = shPosition[jid].z;
           if constexpr (!(use_pairlist)) {
             ei += colvar::coordnum::compute_pair_coordnum<flags>(
               inv_r0_vec, inv_r0sq_vec, en, ed,
               x1, y1, z1, x2, y2, z2,
               iGrad.x, iGrad.y, iGrad.z,
-              shJGrad[group2BatchID][jid].x,
-              shJGrad[group2BatchID][jid].y,
-              shJGrad[group2BatchID][jid].z,
+              shJGrad[tileIndexInBlock][jid].x,
+              shJGrad[tileIndexInBlock][jid].y,
+              shJGrad[tileIndexInBlock][jid].z,
               pairlist_tol, pairlist_tol_l2_max, bc);
           } else {
             if constexpr (!(rebuild_pairlist)) {
@@ -135,9 +138,9 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
                   inv_r0_vec, inv_r0sq_vec, en, ed,
                   x1, y1, z1, x2, y2, z2,
                   iGrad.x, iGrad.y, iGrad.z,
-                  shJGrad[group2BatchID][jid].x,
-                  shJGrad[group2BatchID][jid].y,
-                  shJGrad[group2BatchID][jid].z,
+                  shJGrad[tileIndexInBlock][jid].x,
+                  shJGrad[tileIndexInBlock][jid].y,
+                  shJGrad[tileIndexInBlock][jid].z,
                   pairlist_tol, pairlist_tol_l2_max, bc);
               }
             } else {
@@ -145,22 +148,21 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
                   inv_r0_vec, inv_r0sq_vec, en, ed,
                   x1, y1, z1, x2, y2, z2,
                   iGrad.x, iGrad.y, iGrad.z,
-                  shJGrad[group2BatchID][jid].x,
-                  shJGrad[group2BatchID][jid].y,
-                  shJGrad[group2BatchID][jid].z,
+                  shJGrad[tileIndexInBlock][jid].x,
+                  shJGrad[tileIndexInBlock][jid].y,
+                  shJGrad[tileIndexInBlock][jid].z,
                   pairlist_tol, pairlist_tol_l2_max, bc);
-              // shPairlist[group2BatchID][jid][threadIdx.x] = f > 0.0;
               pairmask = (pairmask & ~(1ull << jid)) | ((uint64_t)(f > 0.0) << jid);
               ei += f;
             }
           }
         }
-        __syncthreads();
+        tilePartition.sync();
       }
       if constexpr (use_pairlist && rebuild_pairlist) {
         #pragma unroll
-        for (unsigned int t = 0; t < group2BatchSize; ++t) {
-          const unsigned int jid = k + t;
+        for (unsigned int t = 0; t < tileSize; ++t) {
+          const unsigned int jid = jTileIndex * tileSize + t;
           const bool mask_jid = jid < numAtoms2;
           if (mask_i && mask_jid) {
             const size_t pairlistID = (size_t)tid + (size_t)jid * (size_t)numAtoms1;
@@ -169,25 +171,11 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
         }
       }
       if constexpr (gradients) {
-        // Reduction over the shared memory
-        #pragma unroll
-        for (unsigned int l = numGroup2BatchesPerBlock / 2; l > 0; l >>= 1) {
-          if (group2BatchID < l) {
-            shJGrad[group2BatchID][group2LaneID].x += shJGrad[group2BatchID + l][group2LaneID].x;
-            shJGrad[group2BatchID][group2LaneID].y += shJGrad[group2BatchID + l][group2LaneID].y;
-            shJGrad[group2BatchID][group2LaneID].z += shJGrad[group2BatchID + l][group2LaneID].z;
-          }
-          __syncthreads();
-        }
-        if (group2BatchID == 0) {
-          if (shJMask[group2LaneID]) {
-            atomicAdd(&gx2[j], shJGrad[0][group2LaneID].x);
-            atomicAdd(&gy2[j], shJGrad[0][group2LaneID].y);
-            atomicAdd(&gz2[j], shJGrad[0][group2LaneID].z);
-          }
-        }
+        atomicAdd(&gx2[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].x);
+        atomicAdd(&gy2[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].y);
+        atomicAdd(&gz2[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].z);
       }
-      __syncthreads();
+      tilePartition.sync();
     }
     if constexpr (gradients) {
       if (mask_i) {
@@ -274,13 +262,16 @@ int calc_value_coordnum_two_groups(
     &d_pairlist, &d_tbcount,
     &d_coordnum_tmp, &h_coordnum_out
   };
-  constexpr int numGroup2BatchesPerBlock = 2;
-  constexpr int group2WorkSize = default_block_size / numGroup2BatchesPerBlock;
+  const int group2WorkSize = cvmodule->proxy->gpu_warp_size();
   const unsigned int numBlocks = (numAtoms1 + default_block_size - 1) / default_block_size;
   void* kernel = nullptr;
-#define CASE(N) case N: kernel = \
-  (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
-    0, 0, default_block_size, group2WorkSize, numGroup2BatchesPerBlock, N>; break
+#define CASE(N) case N: { switch (group2WorkSize) { \
+    case 32: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
+      0, 0, default_block_size, 32, N>; break;} \
+    case 64: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
+      0, 0, default_block_size, 64, N>; break;} \
+    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(group2WorkSize));} \
+  } break
   switch (flags) {
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_null);
