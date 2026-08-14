@@ -44,6 +44,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   // TODO: Optimize for static en and ed. Wait for https://github.com/Colvars/colvars/pull/926.
   constexpr const bool static_exponents = (N > 0) && (M > 0);
 #endif
+  static_assert(tileSize <= 64, "The tileSize must be no greater than 64 for pairmask.");
   static_assert((blockSize % tileSize) == 0, "blockSize must be some multiples of tileSize");
   constexpr const bool use_pairlist = flags & colvar::coordnum::ef_use_pairlist;
   constexpr const bool rebuild_pairlist = flags & colvar::coordnum::ef_rebuild_pairlist;
@@ -171,11 +172,13 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
         }
       }
       if constexpr (gradients) {
-        atomicAdd(&gx2[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].x);
-        atomicAdd(&gy2[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].y);
-        atomicAdd(&gz2[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].z);
+        if (mask_j) {
+          atomicAdd(&gx2[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].x);
+          atomicAdd(&gy2[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].y);
+          atomicAdd(&gz2[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].z);
+        }
       }
-      tilePartition.sync();
+      // tilePartition.sync();
     }
     if constexpr (gradients) {
       if (mask_i) {
@@ -262,16 +265,24 @@ int calc_value_coordnum_two_groups(
     &d_pairlist, &d_tbcount,
     &d_coordnum_tmp, &h_coordnum_out
   };
-  const int group2WorkSize = cvmodule->proxy->gpu_warp_size();
+  const int warpSize = cvmodule->proxy->gpu_warp_size();
   const unsigned int numBlocks = (numAtoms1 + default_block_size - 1) / default_block_size;
   void* kernel = nullptr;
-#define CASE(N) case N: { switch (group2WorkSize) { \
+#if defined (COLVARS_CUDA)
+#define CASE(N) case N: { switch (warpSize) { \
+    case 32: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
+      0, 0, default_block_size, 32, N>; break;} \
+    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(warpSize));} \
+  } break
+#elif defined (COLVARS_HIP)
+#define CASE(N) case N: { switch (warpSize) { \
     case 32: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
       0, 0, default_block_size, 32, N>; break;} \
     case 64: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
       0, 0, default_block_size, 64, N>; break;} \
-    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(group2WorkSize));} \
+    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(warpSize));} \
   } break
+#endif
   switch (flags) {
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_null);
