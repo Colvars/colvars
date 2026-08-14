@@ -56,7 +56,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   constexpr unsigned int numTilesPerBlock = blockSize / tileSize;
   // Shared memory buffers for atoms in group2
   __shared__ double3 shJGrad[numTilesPerBlock][tileSize];
-  uint64_t pairmask;
+  using pairmask_t = std::conditional_t<(tileSize <= 32), uint32_t, uint64_t>;
+  pairmask_t pairmask;
   __shared__ bool isLastBlockDone;
   // Total coordnum
   cvm::real ei = 0;
@@ -91,7 +92,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
       const double jy2 = mask_j ? pos2y[jid_global] : 0;
       const double jz2 = mask_j ? pos2z[jid_global] : 0;
       if constexpr (use_pairlist) {
-        pairmask = uint64_t(0);
+        pairmask = pairmask_t(0);
       }
       if constexpr (gradients) {
         shJGrad[tileIndexInBlock][threadIndexInTile].x = 0;
@@ -106,7 +107,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
           const bool mask_jid = jid < numAtoms2;
           const size_t pairlistID = (size_t)tid + (size_t)jid * (size_t)numAtoms1;
           const bool b = (mask_i && mask_jid) ? pairlist[pairlistID] : false;
-          pairmask |= (uint64_t)b << t;
+          pairmask |= (pairmask_t)b << t;
         }
       }
       tilePartition.sync();
@@ -117,9 +118,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
         const double x2 = tilePartition.shfl(jx2, jid);
         const double y2 = tilePartition.shfl(jy2, jid);
         const double z2 = tilePartition.shfl(jz2, jid);
-        // TODO: I would like to use shfl_xor to sum the j-atom gradients
-        // but after testing I have found that actually makes the code
-        // slower, but I don't know why.
+        // NOTE: Using shfl_xor to sum the j-atom gradients
+        // may be slower.
         if (mask_i && mask_jid) {
           if constexpr (!(use_pairlist)) {
             ei += colvar::coordnum::compute_pair_coordnum<flags>(
@@ -132,8 +132,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
               pairlist_tol, pairlist_tol_l2_max, bc);
           } else {
             if constexpr (!(rebuild_pairlist)) {
-              // const bool within = shPairlist[group2BatchID][jid][threadIdx.x];
-              bool within = (pairmask >> jid) & 1ull;
+              bool within = (pairmask >> jid) & pairmask_t(1);
               if (within) {
                 ei += colvar::coordnum::compute_pair_coordnum<flags>(
                   inv_r0_vec, inv_r0sq_vec, en, ed,
@@ -153,7 +152,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
                   shJGrad[tileIndexInBlock][jid].y,
                   shJGrad[tileIndexInBlock][jid].z,
                   pairlist_tol, pairlist_tol_l2_max, bc);
-              pairmask = (pairmask & ~(1ull << jid)) | ((uint64_t)(f > 0.0) << jid);
+              pairmask = (pairmask & ~(pairmask_t(1) << jid)) | ((pairmask_t)(f > 0.0) << jid);
               ei += f;
             }
           }
@@ -167,7 +166,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
           const bool mask_jid = jid < numAtoms2;
           if (mask_i && mask_jid) {
             const size_t pairlistID = (size_t)tid + (size_t)jid * (size_t)numAtoms1;
-            pairlist[pairlistID] = ((pairmask >> t) & 1ull) != 0ull;
+            pairlist[pairlistID] = ((pairmask >> t) & pairmask_t(1)) != 0;
           }
         }
       }
@@ -178,7 +177,6 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
           atomicAdd(&gz2[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].z);
         }
       }
-      // tilePartition.sync();
     }
     if constexpr (gradients) {
       if (mask_i) {
