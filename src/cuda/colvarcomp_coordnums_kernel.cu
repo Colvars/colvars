@@ -88,9 +88,9 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
     for (unsigned int jTileIndex = 0; jTileIndex < numTilesInGroup2; ++jTileIndex) {
       const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
       const bool mask_j = jid_global < numAtoms2;
-      const double jx2 = mask_j ? pos2x[jid_global] : 0;
-      const double jy2 = mask_j ? pos2y[jid_global] : 0;
-      const double jz2 = mask_j ? pos2z[jid_global] : 0;
+      const cvm::real jx2 = mask_j ? pos2x[jid_global] : 0;
+      const cvm::real jy2 = mask_j ? pos2y[jid_global] : 0;
+      const cvm::real jz2 = mask_j ? pos2z[jid_global] : 0;
       if constexpr (use_pairlist) {
         pairmask = pairmask_t(0);
       }
@@ -115,9 +115,9 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
       for (unsigned int t = 0; t < tileSize; ++t) {
         const unsigned int jid = t ^ threadIndexInTile;
         const bool mask_jid = tilePartition.shfl(mask_j, jid);
-        const double x2 = tilePartition.shfl(jx2, jid);
-        const double y2 = tilePartition.shfl(jy2, jid);
-        const double z2 = tilePartition.shfl(jz2, jid);
+        const cvm::real x2 = tilePartition.shfl(jx2, jid);
+        const cvm::real y2 = tilePartition.shfl(jy2, jid);
+        const cvm::real z2 = tilePartition.shfl(jz2, jid);
         // NOTE: Using shfl_xor to sum the j-atom gradients
         // may be slower.
         if (mask_i && mask_jid) {
@@ -144,7 +144,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
                   pairlist_tol, pairlist_tol_l2_max, bc);
               }
             } else {
-              const double f = colvar::coordnum::compute_pair_coordnum<flags>(
+              const auto f = colvar::coordnum::compute_pair_coordnum<flags>(
                   inv_r0_vec, inv_r0sq_vec, en, ed,
                   x1, y1, z1, x2, y2, z2,
                   iGrad.x, iGrad.y, iGrad.z,
@@ -388,7 +388,7 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
             pairlist_tol, pairlist_tol_l2_max, bc);
         }
       } else {
-        const double f = colvar::coordnum::compute_pair_coordnum<flags>(
+        const auto f = colvar::coordnum::compute_pair_coordnum<flags>(
           inv_r0_vec, inv_r0sq_vec, en, ed,
           x1, y1, z1, x2, y2, z2,
           grad_x, grad_y, grad_z,
@@ -579,7 +579,7 @@ __global__ void computeCoordinationNumberGroupTwoCOMsKernel(
           (*h_coordnum_out) = 0;
         }
       } else {
-        const double f = colvar::coordnum::compute_pair_coordnum<flags>(
+        const auto f = colvar::coordnum::compute_pair_coordnum<flags>(
             inv_r0_vec, inv_r0sq_vec, en, ed,
             x1, y1, z1, x2, y2, z2,
             com1_grad_x, com1_grad_y, com1_grad_z,
@@ -707,7 +707,6 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   cvm::real coordnum_tb = 0;
   static constexpr const unsigned int half_tile_size = tileSize / 2;
   // Number of blocks required to iterate over group1
-  const unsigned int numBlocksInGroup1 = (numAtoms1 + blockSize - 1) / blockSize;
   const unsigned int numTilesInGroup1 = (numAtoms1 + tileSize - 1) / tileSize;
   namespace cg = cooperative_groups;
   const cg::thread_block thb = cg::this_thread_block();
@@ -716,39 +715,76 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   const unsigned int tileIndexInBlock = tilePartition.meta_group_rank();
   // The thread id in a tile
   const unsigned int threadIndexInTile = tilePartition.thread_rank();
-  for (unsigned int i = blockIdx.x; i < numBlocksInGroup1; i += gridDim.x) {
-    unsigned int iTileIndexInGrid = i * numTilesPerBlock + tileIndexInBlock;
-    const bool isItileValid = iTileIndexInGrid < numTilesInGroup1;
-    if (isItileValid) {
-      const unsigned int tid = i * blockDim.x + threadIdx.x;
-      const bool mask_i = tid < numAtoms1;
-      const cvm::real x1 = mask_i ? pos1x[tid] : 0;
-      const cvm::real y1 = mask_i ? pos1y[tid] : 0;
-      const cvm::real z1 = mask_i ? pos1z[tid] : 0;
-      double3 iGrad{0, 0, 0};
-      if constexpr (use_pairlist) {
-        globalJIDs[tileIndexInBlock][threadIndexInTile] = tid;
+  for (unsigned int iTile = blockIdx.x * numTilesPerBlock + tileIndexInBlock;
+       iTile < numTilesInGroup1; iTile += numTilesPerBlock * gridDim.x) {
+    const unsigned int tid = iTile * tileSize + threadIndexInTile;
+    const bool mask_i = tid < numAtoms1;
+    const cvm::real x1 = mask_i ? pos1x[tid] : 0;
+    const cvm::real y1 = mask_i ? pos1y[tid] : 0;
+    const cvm::real z1 = mask_i ? pos1z[tid] : 0;
+    double3 iGrad{0, 0, 0};
+    if constexpr (use_pairlist) {
+      globalJIDs[tileIndexInBlock][threadIndexInTile] = tid;
+    }
+    // Self tile
+    shJGrad[tileIndexInBlock][threadIndexInTile].x = 0;
+    shJGrad[tileIndexInBlock][threadIndexInTile].y = 0;
+    shJGrad[tileIndexInBlock][threadIndexInTile].z = 0;
+    tilePartition.sync();
+    // Self tiles
+    #pragma unroll 4
+    for (unsigned int t = 1; t < half_tile_size; ++t) {
+      // NAMD/OpenMM style swizzling
+      const unsigned int jid = (t + threadIndexInTile) & (tileSize - 1);
+      const bool mask_t = tilePartition.shfl(mask_i, jid);
+      size_t pairlistID;
+      bool pairlist_elem = true;
+      unsigned int jid_global;
+      const cvm::real x2 = tilePartition.shfl(x1, jid);
+      const cvm::real y2 = tilePartition.shfl(y1, jid);
+      const cvm::real z2 = tilePartition.shfl(z1, jid);
+      if (mask_i && mask_t) {
+        if constexpr (use_pairlist) {
+          jid_global = globalJIDs[tileIndexInBlock][jid];
+          pairlistID = computeGlobalPairlistIDSelfGroup(tid, jid_global, numAtoms1);
+        }
+        if constexpr (use_pairlist && !rebuild_pairlist) {
+          pairlist_elem = pairlist[pairlistID];
+        }
+        cvm::real partial = 0;
+        if (pairlist_elem) {
+          partial = colvar::coordnum::compute_pair_coordnum<flags>(
+            inv_r0_vec, inv_r0sq_vec, en, ed,
+            x1, y1, z1, x2, y2, z2,
+            iGrad.x, iGrad.y, iGrad.z,
+            shJGrad[tileIndexInBlock][jid].x,
+            shJGrad[tileIndexInBlock][jid].y,
+            shJGrad[tileIndexInBlock][jid].z,
+            pairlist_tol, pairlist_tol_l2_max, bc);
+          coordnum_tb += partial;
+        }
+        if constexpr (use_pairlist && rebuild_pairlist) {
+          pairlist_elem = partial > 0.0 ? true : false;
+        }
+        if constexpr (use_pairlist && rebuild_pairlist) {
+          pairlist[pairlistID] = pairlist_elem;
+        }
       }
-      // Self tile
-      shJGrad[tileIndexInBlock][threadIndexInTile].x = 0;
-      shJGrad[tileIndexInBlock][threadIndexInTile].y = 0;
-      shJGrad[tileIndexInBlock][threadIndexInTile].z = 0;
       tilePartition.sync();
-      // Self tiles
-      #pragma unroll 4
-      for (unsigned int t = 1; t < half_tile_size; ++t) {
-        // NAMD/OpenMM style swizzling
-        const unsigned int jid = (t + threadIndexInTile) & (tileSize - 1);
-        const bool mask_t = tilePartition.shfl(mask_i, jid);
-        size_t pairlistID;
-        bool pairlist_elem = true;
-        unsigned int jid_global;
-        const cvm::real x2 = tilePartition.shfl(x1, jid);
-        const cvm::real y2 = tilePartition.shfl(y1, jid);
-        const cvm::real z2 = tilePartition.shfl(z1, jid);
+    }
+    // Last loop: t == block_size / 2
+    {
+      const unsigned int jid = (half_tile_size + threadIndexInTile) & (tileSize - 1);
+      size_t pairlistID;
+      bool pairlist_elem = true;
+      const bool mask_t = tilePartition.shfl(mask_i, jid);
+      const cvm::real x2 = tilePartition.shfl(x1, jid);
+      const cvm::real y2 = tilePartition.shfl(y1, jid);
+      const cvm::real z2 = tilePartition.shfl(z1, jid);
+      if (jid > threadIndexInTile) {
         if (mask_i && mask_t) {
           if constexpr (use_pairlist) {
-            jid_global = globalJIDs[tileIndexInBlock][jid];
+            const unsigned int jid_global = globalJIDs[tileIndexInBlock][jid];
             pairlistID = computeGlobalPairlistIDSelfGroup(tid, jid_global, numAtoms1);
           }
           if constexpr (use_pairlist && !rebuild_pairlist) {
@@ -764,8 +800,74 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
               shJGrad[tileIndexInBlock][jid].y,
               shJGrad[tileIndexInBlock][jid].z,
               pairlist_tol, pairlist_tol_l2_max, bc);
-            coordnum_tb += partial;
           }
+          coordnum_tb += partial;
+          if constexpr (use_pairlist && rebuild_pairlist) {
+            pairlist_elem = partial > 0.0 ? true : false;
+          }
+          if constexpr (use_pairlist && rebuild_pairlist) {
+            pairlist[pairlistID] = pairlist_elem;
+          }
+        }
+      }
+      tilePartition.sync();
+    }
+    if constexpr (gradients) {
+      if (mask_i) {
+        atomicAdd(&gx1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].x);
+        atomicAdd(&gy1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].y);
+        atomicAdd(&gz1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].z);
+      }
+    }
+    // Iterate over other tiles
+    const unsigned int jTileStart = tilesListStart[iTile];
+    const unsigned int numJTiles = tilesListSizes[iTile];
+    const unsigned int jTileEnd = jTileStart + numJTiles;
+    for (unsigned int l = jTileStart; l < jTileEnd; ++l) {
+      const unsigned int jTileIndex = tilesList[l];
+      // Fetch atom j from i-tile
+      const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
+      const bool mask_j = jid_global < numAtoms1;
+      const cvm::real jx2 = mask_j ? pos1x[jid_global] : 0;
+      const cvm::real jy2 = mask_j ? pos1y[jid_global] : 0;
+      const cvm::real jz2 = mask_j ? pos1z[jid_global] : 0;
+      // Reset the gradients
+      shJGrad[tileIndexInBlock][threadIndexInTile].x = 0;
+      shJGrad[tileIndexInBlock][threadIndexInTile].y = 0;
+      shJGrad[tileIndexInBlock][threadIndexInTile].z = 0;
+      if constexpr (use_pairlist) {
+        globalJIDs[tileIndexInBlock][threadIndexInTile] = jid_global;
+      }
+      tilePartition.sync();
+      #pragma unroll 4
+      for (unsigned int t = 0; t < tileSize; ++t) {
+        const unsigned int jid = t ^ threadIndexInTile;
+        const bool mask_t = tilePartition.shfl(mask_j, jid);
+        size_t pairlistID;
+        bool pairlist_elem = true;
+        const cvm::real x2 = tilePartition.shfl(jx2, jid);
+        const cvm::real y2 = tilePartition.shfl(jy2, jid);
+        const cvm::real z2 = tilePartition.shfl(jz2, jid);
+        if (mask_i && mask_t) {
+          if constexpr (use_pairlist) {
+            pairlistID = computeGlobalPairlistIDSelfGroup(
+              tid, globalJIDs[tileIndexInBlock][jid], numAtoms1);
+          }
+          if constexpr (use_pairlist && !rebuild_pairlist) {
+            pairlist_elem = pairlist[pairlistID];
+          }
+          cvm::real partial = 0;
+          if (pairlist_elem) {
+            partial = colvar::coordnum::compute_pair_coordnum<flags>(
+              inv_r0_vec, inv_r0sq_vec, en, ed,
+              x1, y1, z1, x2, y2, z2,
+              iGrad.x, iGrad.y, iGrad.z,
+              shJGrad[tileIndexInBlock][jid].x,
+              shJGrad[tileIndexInBlock][jid].y,
+              shJGrad[tileIndexInBlock][jid].z,
+              pairlist_tol, pairlist_tol_l2_max, bc);
+          }
+          coordnum_tb += partial;
           if constexpr (use_pairlist && rebuild_pairlist) {
             pairlist_elem = partial > 0.0 ? true : false;
           }
@@ -775,125 +877,19 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
         }
         tilePartition.sync();
       }
-      // Last loop: t == block_size / 2
-      {
-        const unsigned int jid = (half_tile_size + threadIndexInTile) & (tileSize - 1);
-        size_t pairlistID;
-        bool pairlist_elem = true;
-        const bool mask_t = tilePartition.shfl(mask_i, jid);
-        const cvm::real x2 = tilePartition.shfl(x1, jid);
-        const cvm::real y2 = tilePartition.shfl(y1, jid);
-        const cvm::real z2 = tilePartition.shfl(z1, jid);
-        if (jid > threadIndexInTile) {
-          if (mask_i && mask_t) {
-            if constexpr (use_pairlist) {
-              const unsigned int jid_global = globalJIDs[tileIndexInBlock][jid];
-              pairlistID = computeGlobalPairlistIDSelfGroup(tid, jid_global, numAtoms1);
-            }
-            if constexpr (use_pairlist && !rebuild_pairlist) {
-              pairlist_elem = pairlist[pairlistID];
-            }
-            cvm::real partial = 0;
-            if (pairlist_elem) {
-              partial = colvar::coordnum::compute_pair_coordnum<flags>(
-                inv_r0_vec, inv_r0sq_vec, en, ed,
-                x1, y1, z1, x2, y2, z2,
-                iGrad.x, iGrad.y, iGrad.z,
-                shJGrad[tileIndexInBlock][jid].x,
-                shJGrad[tileIndexInBlock][jid].y,
-                shJGrad[tileIndexInBlock][jid].z,
-                pairlist_tol, pairlist_tol_l2_max, bc);
-            }
-            coordnum_tb += partial;
-            if constexpr (use_pairlist && rebuild_pairlist) {
-              pairlist_elem = partial > 0.0 ? true : false;
-            }
-            if constexpr (use_pairlist && rebuild_pairlist) {
-              pairlist[pairlistID] = pairlist_elem;
-            }
-          }
-        }
-        tilePartition.sync();
-      }
       if constexpr (gradients) {
-        if (mask_i) {
-          atomicAdd(&gx1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].x);
-          atomicAdd(&gy1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].y);
-          atomicAdd(&gz1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].z);
+        if (mask_j) {
+          atomicAdd(&gx1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].x);
+          atomicAdd(&gy1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].y);
+          atomicAdd(&gz1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].z);
         }
       }
-      // Iterate over other tiles
-      const unsigned int jTileStart = tilesListStart[iTileIndexInGrid];
-      const unsigned int numJTiles = tilesListSizes[iTileIndexInGrid];
-      const unsigned int jTileEnd = jTileStart + numJTiles;
-      for (unsigned int l = jTileStart; l < jTileEnd; ++l) {
-        const unsigned int jTileIndex = tilesList[l];
-        // Fetch atom j from i-tile
-        const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
-        const bool mask_j = jid_global < numAtoms1;
-        const cvm::real jx2 = mask_j ? pos1x[jid_global] : 0;
-        const cvm::real jy2 = mask_j ? pos1y[jid_global] : 0;
-        const cvm::real jz2 = mask_j ? pos1z[jid_global] : 0;
-        // Reset the gradients
-        shJGrad[tileIndexInBlock][threadIndexInTile].x = 0;
-        shJGrad[tileIndexInBlock][threadIndexInTile].y = 0;
-        shJGrad[tileIndexInBlock][threadIndexInTile].z = 0;
-        if constexpr (use_pairlist) {
-          globalJIDs[tileIndexInBlock][threadIndexInTile] = jid_global;
-        }
-        tilePartition.sync();
-        #pragma unroll 4
-        for (unsigned int t = 0; t < tileSize; ++t) {
-          const unsigned int jid = t ^ threadIndexInTile;
-          const bool mask_t = tilePartition.shfl(mask_j, jid);
-          size_t pairlistID;
-          bool pairlist_elem = true;
-          const cvm::real x2 = tilePartition.shfl(jx2, jid);
-          const cvm::real y2 = tilePartition.shfl(jy2, jid);
-          const cvm::real z2 = tilePartition.shfl(jz2, jid);
-          if (mask_i && mask_t) {
-            if constexpr (use_pairlist) {
-              pairlistID = computeGlobalPairlistIDSelfGroup(
-                tid, globalJIDs[tileIndexInBlock][jid], numAtoms1);
-            }
-            if constexpr (use_pairlist && !rebuild_pairlist) {
-              pairlist_elem = pairlist[pairlistID];
-            }
-            cvm::real partial = 0;
-            if (pairlist_elem) {
-              partial = colvar::coordnum::compute_pair_coordnum<flags>(
-                inv_r0_vec, inv_r0sq_vec, en, ed,
-                x1, y1, z1, x2, y2, z2,
-                iGrad.x, iGrad.y, iGrad.z,
-                shJGrad[tileIndexInBlock][jid].x,
-                shJGrad[tileIndexInBlock][jid].y,
-                shJGrad[tileIndexInBlock][jid].z,
-                pairlist_tol, pairlist_tol_l2_max, bc);
-            }
-            coordnum_tb += partial;
-            if constexpr (use_pairlist && rebuild_pairlist) {
-              pairlist_elem = partial > 0.0 ? true : false;
-            }
-            if constexpr (use_pairlist && rebuild_pairlist) {
-              pairlist[pairlistID] = pairlist_elem;
-            }
-          }
-          tilePartition.sync();
-        }
-        if constexpr (gradients) {
-          if (mask_j) {
-            atomicAdd(&gx1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].x);
-            atomicAdd(&gy1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].y);
-            atomicAdd(&gz1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].z);
-          }
-        }
-      }
-      if constexpr (gradients) {
-        if (mask_i) {
-          atomicAdd(&gx1[tid], iGrad.x);
-          atomicAdd(&gy1[tid], iGrad.y);
-          atomicAdd(&gz1[tid], iGrad.z);
-        }
+    }
+    if constexpr (gradients) {
+      if (mask_i) {
+        atomicAdd(&gx1[tid], iGrad.x);
+        atomicAdd(&gy1[tid], iGrad.y);
+        atomicAdd(&gz1[tid], iGrad.z);
       }
     }
   }
