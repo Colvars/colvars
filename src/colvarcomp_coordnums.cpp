@@ -265,13 +265,15 @@ public:
     error_code |= p->copy_HtoD_async(tileListsStart.data(), d_tileListsStart, numTiles, stream);
     error_code |= p->copy_HtoD_async(tileListsLen.data(), d_tileListsLen, numTiles, stream);
     // Allocate tilePairLists
-    if (cvc->pairlist != nullptr && cvc->num_pairs > 0) {
+    if (cvc->pairlist != nullptr) {
       switch (tileSize) {
         case 32: {
           error_code |= p->deallocate_device_async(&d_tilePairListSelf_32, stream);
           error_code |= p->deallocate_device_async(&d_tilePairList_32, stream);
           error_code |= p->allocate_device_async(&d_tilePairListSelf_32, numTiles, stream);
           error_code |= p->allocate_device_async(&d_tilePairList_32, tileListsSize, stream);
+          error_code |= p->clear_device_array_async(d_tilePairListSelf_32, numTiles, stream);
+          error_code |= p->clear_device_array_async(d_tilePairList_32, tileListsSize, stream);
           break;
         }
         case 64: {
@@ -279,6 +281,8 @@ public:
           error_code |= p->deallocate_device_async(&d_tilePairList_64, stream);
           error_code |= p->allocate_device_async(&d_tilePairListSelf_64, numTiles, stream);
           error_code |= p->allocate_device_async(&d_tilePairList_64, tileListsSize, stream);
+          error_code |= p->clear_device_array_async(d_tilePairListSelf_64, numTiles, stream);
+          error_code |= p->clear_device_array_async(d_tilePairList_64, tileListsSize, stream);
           break;
         }
         default: {

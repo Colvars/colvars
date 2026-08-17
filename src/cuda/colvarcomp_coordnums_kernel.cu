@@ -721,7 +721,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
     double3 iGrad{0, 0, 0};
     using PairMaskT = typename TilePairMask<tileSize>::PairMaskT;
     PairMaskT pairMaskSelf;
-    if constexpr (use_pairlist) {
+    if constexpr (use_pairlist && !rebuild_pairlist) {
       pairMaskSelf = tlPairListSelf[iTile].pairMask[threadIndexInTile];
     }
     // Self tile
@@ -819,13 +819,15 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
     const unsigned int numJTiles = tilesListSizes[iTile];
     const unsigned int jTileEnd = jTileStart + numJTiles;
     for (unsigned int l = jTileStart; l < jTileEnd; ++l) {
+      PairMaskT pairMask;
+      if constexpr (use_pairlist && !rebuild_pairlist) {
+        pairMask = tlPairList[l].pairMask[threadIndexInTile];
+        // Skip the entire tile if there is no interaction
+        if (!tilePartition.any(pairMask != PairMaskT(0))) continue;
+      }
       const unsigned int jTileIndex = tilesList[l];
       // Fetch atom j from i-tile
       const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
-      PairMaskT pairMask;
-      if constexpr (use_pairlist) {
-        pairMask = tlPairList[l].pairMask[threadIndexInTile];
-      }
       const bool mask_j = jid_global < numAtoms1;
       const cvm::real jx2 = mask_j ? pos1x[jid_global] : 0;
       const cvm::real jy2 = mask_j ? pos1y[jid_global] : 0;
@@ -878,20 +880,6 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
       }
       if constexpr (use_pairlist && rebuild_pairlist) {
         tlPairList[l].pairMask[threadIndexInTile] = pairMask;
-        // TODO: Here possibly I should do a ballot of pairMask to check if the
-        // whole tlPairList[l] is all zeros. If they are all zeros, then we need
-        // another kernel to compact and refine the tilesList, excluding the tiles that
-        // have no interaction at all. However, since it is unclear to me whether
-        // the Colvars developers accept the idea to allow (re)-sorting the atoms
-        // in an atom group, non-interacting and interacting atom pairs are likely
-        // scattered in all tiles, so I have little motivation to do such optimization
-        // for the time being.
-#if 0
-        const bool isInteracting = tilePartition.ballot(pairMask != PairMaskT(0));
-        if (threadIndexInTile == 0) {
-          interactingTiles[l] = int(isInteracting);
-        }
-#endif
       }
     }
     if constexpr (gradients) {
