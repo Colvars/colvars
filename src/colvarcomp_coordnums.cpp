@@ -60,8 +60,10 @@ public:
     error_code |= p->reallocate_device(&d_tbcount, 1);
     error_code |= p->reallocate_host(&h_coordnum, 1);
     if (cvc->pairlist != nullptr && cvc->num_pairs > 0) {
-      error_code |= p->reallocate_device(&d_pairlist, cvc->num_pairs);
-      error_code |= p->clear_device_array(d_pairlist, cvc->num_pairs);
+      if (cvc->function_type() != "selfCoordNum") {
+        error_code |= p->reallocate_device(&d_pairlist, cvc->num_pairs);
+        error_code |= p->clear_device_array(d_pairlist, cvc->num_pairs);
+      }
     }
     error_code |= p->clear_device_array(d_coordnum, 1);
     error_code |= p->clear_device_array(d_tbcount, 1);
