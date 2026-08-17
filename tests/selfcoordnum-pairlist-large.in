@@ -1,0 +1,17 @@
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    selfCoordNum {
+        debugGradients on
+        group1 {
+            indexGroup Protein
+        }
+        pairListFrequency 2
+        tolerance 0.01
+    }
+} 

@@ -248,7 +248,7 @@ for colvar in \
     "eigenvector-normalized" \
     "tilt" \
     "spinangle" \
-    "selfcoordnum" "selfcoordnum-pairlist" \
+    "selfcoordnum" "selfcoordnum-pairlist" "selfcoordnum-pairlist-large" \
     "torchann-dihedral" \
     "orientationangle" "orientationproj" \
     "polar" \
