@@ -667,7 +667,6 @@ __inline__ __device__ size_t computeGlobalPairlistIDSelfGroup(
   return iid * (2 * numAtoms - 1 - iid) / 2 + (jid - iid - 1);
 }
 
-// WARNING: To match the CPU data layout, the GPU pairlist implementation is very inefficient!
 template <int N, int M, int blockSize, int tileSize, int flags>
 __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   const cvm::real* __restrict pos1x,
@@ -686,7 +685,8 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   const unsigned int* __restrict tilesListSizes,
   const cvm::real pairlist_tol,
   const cvm::real pairlist_tol_l2_max,
-  bool* __restrict pairlist,
+  TilePairMask<tileSize>* __restrict tlPairListSelf,
+  TilePairMask<tileSize>* __restrict tlPairList,
   unsigned int* __restrict tbcount,
   cvm::real* __restrict coordnum_tmp,
   cvm::real* __restrict coordnum_out) {
@@ -697,12 +697,8 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   constexpr const bool use_pairlist = flags & colvar::coordnum::ef_use_pairlist;
   constexpr const bool rebuild_pairlist = flags & colvar::coordnum::ef_rebuild_pairlist;
   constexpr const bool gradients = flags & colvar::coordnum::ef_gradients;
-  // constexpr const bool use_internal_pbc = flags & colvar::coordnum::ef_use_internal_pbc;
   constexpr unsigned int numTilesPerBlock = blockSize / tileSize;
   __shared__ double3 shJGrad[numTilesPerBlock][tileSize];
-  extern __shared__ unsigned int globalJIDs_buffer[];
-  unsigned int (&globalJIDs)[numTilesPerBlock][tileSize] =
-    *reinterpret_cast<unsigned int (*)[numTilesPerBlock][tileSize]>(globalJIDs_buffer);
   __shared__ bool isLastBlockDone;
   cvm::real coordnum_tb = 0;
   static constexpr const unsigned int half_tile_size = tileSize / 2;
@@ -723,8 +719,10 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
     const cvm::real y1 = mask_i ? pos1y[tid] : 0;
     const cvm::real z1 = mask_i ? pos1z[tid] : 0;
     double3 iGrad{0, 0, 0};
+    using PairMaskT = typename TilePairMask<tileSize>::PairMaskT;
+    PairMaskT pairMaskSelf;
     if constexpr (use_pairlist) {
-      globalJIDs[tileIndexInBlock][threadIndexInTile] = tid;
+      pairMaskSelf = tlPairListSelf[iTile].pairMask[threadIndexInTile];
     }
     // Self tile
     shJGrad[tileIndexInBlock][threadIndexInTile].x = 0;
@@ -737,19 +735,15 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
       // NAMD/OpenMM style swizzling
       const unsigned int jid = (t + threadIndexInTile) & (tileSize - 1);
       const bool mask_t = tilePartition.shfl(mask_i, jid);
-      size_t pairlistID;
+      // size_t pairlistID;
       bool pairlist_elem = true;
-      unsigned int jid_global;
+      // unsigned int jid_global;
       const cvm::real x2 = tilePartition.shfl(x1, jid);
       const cvm::real y2 = tilePartition.shfl(y1, jid);
       const cvm::real z2 = tilePartition.shfl(z1, jid);
       if (mask_i && mask_t) {
-        if constexpr (use_pairlist) {
-          jid_global = globalJIDs[tileIndexInBlock][jid];
-          pairlistID = computeGlobalPairlistIDSelfGroup(tid, jid_global, numAtoms1);
-        }
         if constexpr (use_pairlist && !rebuild_pairlist) {
-          pairlist_elem = pairlist[pairlistID];
+          pairlist_elem = (pairMaskSelf >> jid) & PairMaskT(1);
         }
         cvm::real partial = 0;
         if (pairlist_elem) {
@@ -767,7 +761,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
           pairlist_elem = partial > 0.0 ? true : false;
         }
         if constexpr (use_pairlist && rebuild_pairlist) {
-          pairlist[pairlistID] = pairlist_elem;
+          pairMaskSelf = (pairMaskSelf & ~(PairMaskT(1) << jid)) | ((PairMaskT)(pairlist_elem) << jid);
         }
       }
       tilePartition.sync();
@@ -775,7 +769,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
     // Last loop: t == block_size / 2
     {
       const unsigned int jid = (half_tile_size + threadIndexInTile) & (tileSize - 1);
-      size_t pairlistID;
+      // size_t pairlistID;
       bool pairlist_elem = true;
       const bool mask_t = tilePartition.shfl(mask_i, jid);
       const cvm::real x2 = tilePartition.shfl(x1, jid);
@@ -783,12 +777,9 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
       const cvm::real z2 = tilePartition.shfl(z1, jid);
       if (jid > threadIndexInTile) {
         if (mask_i && mask_t) {
-          if constexpr (use_pairlist) {
-            const unsigned int jid_global = globalJIDs[tileIndexInBlock][jid];
-            pairlistID = computeGlobalPairlistIDSelfGroup(tid, jid_global, numAtoms1);
-          }
           if constexpr (use_pairlist && !rebuild_pairlist) {
-            pairlist_elem = pairlist[pairlistID];
+            // pairlist_elem = pairlist[pairlistID];
+            pairlist_elem = (pairMaskSelf >> jid) & PairMaskT(1);
           }
           cvm::real partial = 0;
           if (pairlist_elem) {
@@ -806,7 +797,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
             pairlist_elem = partial > 0.0 ? true : false;
           }
           if constexpr (use_pairlist && rebuild_pairlist) {
-            pairlist[pairlistID] = pairlist_elem;
+            pairMaskSelf = (pairMaskSelf & ~(PairMaskT(1) << jid)) | ((PairMaskT)(pairlist_elem) << jid);
           }
         }
       }
@@ -819,6 +810,10 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
         atomicAdd(&gz1[tid], shJGrad[tileIndexInBlock][threadIndexInTile].z);
       }
     }
+    if constexpr (use_pairlist && rebuild_pairlist) {
+      // printf("Save pairMaskSelf = %X\n", pairMaskSelf);
+      tlPairListSelf[iTile].pairMask[threadIndexInTile] = pairMaskSelf;
+    }
     // Iterate over other tiles
     const unsigned int jTileStart = tilesListStart[iTile];
     const unsigned int numJTiles = tilesListSizes[iTile];
@@ -827,6 +822,10 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
       const unsigned int jTileIndex = tilesList[l];
       // Fetch atom j from i-tile
       const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
+      PairMaskT pairMask;
+      if constexpr (use_pairlist) {
+        pairMask = tlPairList[l].pairMask[threadIndexInTile];
+      }
       const bool mask_j = jid_global < numAtoms1;
       const cvm::real jx2 = mask_j ? pos1x[jid_global] : 0;
       const cvm::real jy2 = mask_j ? pos1y[jid_global] : 0;
@@ -835,26 +834,19 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
       shJGrad[tileIndexInBlock][threadIndexInTile].x = 0;
       shJGrad[tileIndexInBlock][threadIndexInTile].y = 0;
       shJGrad[tileIndexInBlock][threadIndexInTile].z = 0;
-      if constexpr (use_pairlist) {
-        globalJIDs[tileIndexInBlock][threadIndexInTile] = jid_global;
-      }
       tilePartition.sync();
       #pragma unroll 4
       for (unsigned int t = 0; t < tileSize; ++t) {
         const unsigned int jid = t ^ threadIndexInTile;
         const bool mask_t = tilePartition.shfl(mask_j, jid);
-        size_t pairlistID;
+        // size_t pairlistID;
         bool pairlist_elem = true;
         const cvm::real x2 = tilePartition.shfl(jx2, jid);
         const cvm::real y2 = tilePartition.shfl(jy2, jid);
         const cvm::real z2 = tilePartition.shfl(jz2, jid);
         if (mask_i && mask_t) {
-          if constexpr (use_pairlist) {
-            pairlistID = computeGlobalPairlistIDSelfGroup(
-              tid, globalJIDs[tileIndexInBlock][jid], numAtoms1);
-          }
           if constexpr (use_pairlist && !rebuild_pairlist) {
-            pairlist_elem = pairlist[pairlistID];
+            pairlist_elem = (pairMask >> jid) & PairMaskT(1);
           }
           cvm::real partial = 0;
           if (pairlist_elem) {
@@ -872,7 +864,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
             pairlist_elem = partial > 0.0 ? true : false;
           }
           if constexpr (use_pairlist && rebuild_pairlist) {
-            pairlist[pairlistID] = pairlist_elem;
+            pairMask = (pairMask & ~(PairMaskT(1) << jid)) | ((PairMaskT)(pairlist_elem) << jid);
           }
         }
         tilePartition.sync();
@@ -883,6 +875,23 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
           atomicAdd(&gy1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].y);
           atomicAdd(&gz1[jid_global], shJGrad[tileIndexInBlock][threadIndexInTile].z);
         }
+      }
+      if constexpr (use_pairlist && rebuild_pairlist) {
+        tlPairList[l].pairMask[threadIndexInTile] = pairMask;
+        // TODO: Here possibly I should do a ballot of pairMask to check if the
+        // whole tlPairList[l] is all zeros. If they are all zeros, then we need
+        // another kernel to compact and refine the tilesList, excluding the tiles that
+        // have no interaction at all. However, since it is unclear to me whether
+        // the Colvars developers accept the idea to allow (re)-sorting the atoms
+        // in an atom group, non-interacting and interacting atom pairs are likely
+        // scattered in all tiles, so I have little motivation to do such optimization
+        // for the time being.
+#if 0
+        const bool isInteracting = tilePartition.ballot(pairMask != PairMaskT(0));
+        if (threadIndexInTile == 0) {
+          interactingTiles[l] = int(isInteracting);
+        }
+#endif
       }
     }
     if constexpr (gradients) {
@@ -917,6 +926,97 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   }
 }
 
+// For debug only
+#if 0
+template <int blockSize, int tileSize>
+__global__ void pairlistToHostKernel(
+  const unsigned int numAtoms1,
+  const unsigned int* __restrict tilesList,
+  const unsigned int* __restrict tilesListStart,
+  const unsigned int* __restrict tilesListSizes,
+  TilePairMask<tileSize>* __restrict tlPairListSelf,
+  TilePairMask<tileSize>* __restrict tlPairList,
+  bool* __restrict pairlist) {
+  constexpr unsigned int numTilesPerBlock = blockSize / tileSize;
+  constexpr const unsigned int half_tile_size = tileSize / 2;
+  const unsigned int numTilesInGroup1 = (numAtoms1 + tileSize - 1) / tileSize;
+  namespace cg = cooperative_groups;
+  const cg::thread_block thb = cg::this_thread_block();
+  const auto tilePartition = cg::tiled_partition<tileSize>(thb);
+  extern __shared__ unsigned int globalJIDs_buffer[];
+  unsigned int (&globalJIDs)[numTilesPerBlock][tileSize] =
+    *reinterpret_cast<unsigned int (*)[numTilesPerBlock][tileSize]>(globalJIDs_buffer);
+  // Which tile is the current thread working on?
+  const unsigned int tileIndexInBlock = tilePartition.meta_group_rank();
+  // The thread id in a tile
+  const unsigned int threadIndexInTile = tilePartition.thread_rank();
+  for (unsigned int iTile = blockIdx.x * numTilesPerBlock + tileIndexInBlock;
+       iTile < numTilesInGroup1; iTile += numTilesPerBlock * gridDim.x) {
+    const unsigned int tid = iTile * tileSize + threadIndexInTile;
+    const bool mask_i = tid < numAtoms1;
+    using PairMaskT = TilePairMask<tileSize>::PairMaskT;
+    PairMaskT pairMaskSelf;
+    globalJIDs[tileIndexInBlock][threadIndexInTile] = tid;
+    pairMaskSelf = tlPairListSelf[iTile].pairMask[threadIndexInTile];
+    tilePartition.sync();
+    // Self tiles
+    #pragma unroll
+    for (unsigned int t = 1; t < half_tile_size; ++t) {
+      // NAMD/OpenMM style swizzling
+      const unsigned int jid = (t + threadIndexInTile) & (tileSize - 1);
+      const bool mask_t = tilePartition.shfl(mask_i, jid);
+      if (mask_i && mask_t) {
+        unsigned int jid_global = globalJIDs[tileIndexInBlock][jid];
+        size_t pairlistID = computeGlobalPairlistIDSelfGroup(tid, jid_global, numAtoms1);
+        const bool pairlist_elem = (pairMaskSelf >> jid) & PairMaskT(1);
+        pairlist[pairlistID] = pairlist_elem;
+      }
+    }
+    // Last loop: t == block_size / 2
+    {
+      // NAMD/OpenMM style swizzling
+      const unsigned int jid = (half_tile_size + threadIndexInTile) & (tileSize - 1);
+      const bool mask_t = tilePartition.shfl(mask_i, jid);
+      if (jid > threadIndexInTile) {
+        if (mask_i && mask_t) {
+          const unsigned int jid_global = globalJIDs[tileIndexInBlock][jid];
+          size_t pairlistID = computeGlobalPairlistIDSelfGroup(tid, jid_global, numAtoms1);
+          const bool pairlist_elem = (pairMaskSelf >> jid) & PairMaskT(1);
+          pairlist[pairlistID] = pairlist_elem;
+        }
+      }
+    }
+    tilePartition.sync();
+    // Iterate over other tiles
+    const unsigned int jTileStart = tilesListStart[iTile];
+    const unsigned int numJTiles = tilesListSizes[iTile];
+    const unsigned int jTileEnd = jTileStart + numJTiles;
+    for (unsigned int l = jTileStart; l < jTileEnd; ++l) {
+      const unsigned int jTileIndex = tilesList[l];
+      const auto& tilePairMask = tlPairList[l];
+      PairMaskT pairmask = tilePairMask.pairMask[threadIndexInTile];
+      const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
+      const bool mask_j = jid_global < numAtoms1;
+      globalJIDs[tileIndexInBlock][threadIndexInTile] = jid_global;
+      tilePartition.sync();
+      #pragma unroll
+      for (unsigned int t = 0; t < tileSize; ++t) {
+        const unsigned int jid = t ^ threadIndexInTile;
+        const bool mask_t = tilePartition.shfl(mask_j, jid);
+        // unsigned int pairlistID;
+        if (mask_i && mask_t) {
+          const unsigned int pairlistID = computeGlobalPairlistIDSelfGroup(
+            tid, globalJIDs[tileIndexInBlock][jid], numAtoms1);
+          const bool pairlist_elem = (pairmask >> jid) & PairMaskT(1);
+          pairlist[pairlistID] = pairlist_elem;
+        }
+      }
+      tilePartition.sync();
+    }
+  }
+}
+#endif
+
 int calc_value_coordnum_self_group(
   const cvm::real* group_pos,
   unsigned int numAtoms,
@@ -931,6 +1031,10 @@ int calc_value_coordnum_self_group(
   cvm::real pairlist_tol,
   cvm::real pairlist_tol_l2_max,
   bool* d_pairlist,
+  TilePairMask<32>* d_tlPairListSelf_32,
+  TilePairMask<32>* d_tlPairList_32,
+  TilePairMask<64>* d_tlPairListSelf_64,
+  TilePairMask<64>* d_tlPairList_64,
   unsigned int* d_tbcount,
   cvm::real* d_coordnum_tmp,
   cvm::real* h_coordnum_out,
@@ -944,6 +1048,26 @@ int calc_value_coordnum_self_group(
   cvm::real* gradx = group_grad;
   cvm::real* grady = gradx + numAtoms;
   cvm::real* gradz = grady + numAtoms;
+  const unsigned int numBlocks = (numAtoms + default_block_size - 1) / default_block_size;
+  void* kernel = nullptr;
+  const int gpu_warp_size = cvmodule->proxy->gpu_warp_size();
+  void* d_tlPairListSelf = nullptr;
+  void* d_tlPairList = nullptr;
+  switch (gpu_warp_size) {
+    case 32: {
+      d_tlPairListSelf = (void*)d_tlPairListSelf_32;
+      d_tlPairList = (void*)d_tlPairList_32;
+      break;
+    }
+    case 64: {
+      d_tlPairListSelf = (void*)d_tlPairListSelf_64;
+      d_tlPairList = (void*)d_tlPairList_64;
+      break;
+    }
+    default: {
+      return cvmodule->error("Unsupported warp size: " + cvm::to_str(gpu_warp_size) + "\n");
+    }
+  }
   void* args[] = {
     &posx, &posy, &posz,
     &numAtoms, &en, &ed,
@@ -955,12 +1079,9 @@ int calc_value_coordnum_self_group(
     const_cast<unsigned int**>(&d_tilesListStart),
     const_cast<unsigned int**>(&d_tilesListSizes),
     &pairlist_tol, &pairlist_tol_l2_max,
-    &d_pairlist, &d_tbcount,
+    &d_tlPairListSelf, &d_tlPairList, &d_tbcount,
     &d_coordnum_tmp, &h_coordnum_out
   };
-  const unsigned int numBlocks = (numAtoms + default_block_size - 1) / default_block_size;
-  void* kernel = nullptr;
-  const int gpu_warp_size = cvmodule->proxy->gpu_warp_size();
   // NOTE: For CUDA, we only support 32 as a warp size, but for HIP,
   // there could be two different warp sizes (32 and 64).
 #if defined (COLVARS_CUDA)
@@ -1002,9 +1123,13 @@ int calc_value_coordnum_self_group(
     }
   }
 #undef CASE
-  const unsigned int sharedMemBytes = (flags & colvar::coordnum::ef_use_pairlist) ? default_block_size * sizeof(unsigned int) : 0;
+  // const unsigned int sharedMemBytes = (flags & colvar::coordnum::ef_use_pairlist) ? default_block_size * sizeof(unsigned int) : 0;
+  const unsigned int sharedMemBytes = 0;
   error_code |= checkGPUError(cudaLaunchKernel(
     kernel, dim3(numBlocks, 1, 1), dim3(default_block_size, 1, 1), args, sharedMemBytes, stream));
+  if (flags & colvar::coordnum::ef_rebuild_pairlist) {
+    // TODO: Compact and refine the tiles list
+  }
   return error_code;
 }
 

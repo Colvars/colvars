@@ -29,7 +29,12 @@ public:
     d_tbcount(nullptr), pairlist_transposed(false),
     numTiles(0), tileListsSize(0),
     d_tileLists(nullptr), d_tileListsStart(nullptr),
-    d_tileListsLen(nullptr), h_coordnum(nullptr) {}
+    d_tileListsLen(nullptr),
+    d_tilePairList_32(nullptr),
+    d_tilePairListSelf_32(nullptr),
+    d_tilePairList_64(nullptr),
+    d_tilePairListSelf_64(nullptr),
+    h_coordnum(nullptr) {}
   ~coordnum_gpu_impl_t() {
     colvarproxy* p = cvmodule->proxy;
     p->deallocate_device(&d_pairlist);
@@ -43,6 +48,10 @@ public:
     p->deallocate_device(&d_tileLists);
     p->deallocate_device(&d_tileListsStart);
     p->deallocate_device(&d_tileListsLen);
+    p->deallocate_device(&d_tilePairList_32);
+    p->deallocate_device(&d_tilePairListSelf_32);
+    p->deallocate_device(&d_tilePairList_64);
+    p->deallocate_device(&d_tilePairListSelf_64);
   }
   int init() {
     int error_code = COLVARS_OK;
@@ -255,6 +264,28 @@ public:
     error_code |= p->copy_HtoD_async(tileLists.data(), d_tileLists, tileListsSize, stream);
     error_code |= p->copy_HtoD_async(tileListsStart.data(), d_tileListsStart, numTiles, stream);
     error_code |= p->copy_HtoD_async(tileListsLen.data(), d_tileListsLen, numTiles, stream);
+    // Allocate tilePairLists
+    if (cvc->pairlist != nullptr && cvc->num_pairs > 0) {
+      switch (tileSize) {
+        case 32: {
+          error_code |= p->deallocate_device_async(&d_tilePairListSelf_32, stream);
+          error_code |= p->deallocate_device_async(&d_tilePairList_32, stream);
+          error_code |= p->allocate_device_async(&d_tilePairListSelf_32, numTiles, stream);
+          error_code |= p->allocate_device_async(&d_tilePairList_32, tileListsSize, stream);
+          break;
+        }
+        case 64: {
+          error_code |= p->deallocate_device_async(&d_tilePairListSelf_64, stream);
+          error_code |= p->deallocate_device_async(&d_tilePairList_64, stream);
+          error_code |= p->allocate_device_async(&d_tilePairListSelf_64, numTiles, stream);
+          error_code |= p->allocate_device_async(&d_tilePairList_64, tileListsSize, stream);
+          break;
+        }
+        default: {
+          error_code |= cvmodule->error("Unsupported tileSize (" + cvm::to_str((int)tileSize) + ") in buildTileLists.\n");
+        }
+      }
+    }
     return error_code;
   }
   int calc_value_self_group(int flags) {
@@ -276,6 +307,8 @@ public:
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       d_tileLists, d_tileListsStart, d_tileListsLen,
       cvc->tolerance, cvc->tolerance_l2_max, d_pairlist,
+      d_tilePairListSelf_32, d_tilePairList_32,
+      d_tilePairListSelf_64, d_tilePairList_64,
       d_tbcount, d_coordnum, h_coordnum, flags, cvc->get_stream(), cvmodule);
     error_code |= checkGPUError(cudaEventRecord(
       cvc->get_event(cvc::event_type::calc_value), cvc->get_stream()));
@@ -308,6 +341,10 @@ private:
   unsigned int* d_tileLists;
   unsigned int* d_tileListsStart;
   unsigned int* d_tileListsLen;
+  colvars_gpu::TilePairMask<32>* d_tilePairList_32;
+  colvars_gpu::TilePairMask<32>* d_tilePairListSelf_32;
+  colvars_gpu::TilePairMask<64>* d_tilePairList_64;
+  colvars_gpu::TilePairMask<64>* d_tilePairListSelf_64;
   ///@]
 public:
   cvm::real* h_coordnum;

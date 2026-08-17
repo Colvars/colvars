@@ -7,6 +7,13 @@
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
 namespace colvars_gpu {
+
+template <int tileSize>
+struct TilePairMask {
+  using PairMaskT = std::conditional_t<(tileSize <= 32), uint32_t, uint64_t>;
+  PairMaskT pairMask[tileSize];
+};
+
 int calc_value_coordnum_two_groups(
   const cvm::real* group1_pos, const cvm::real* group2_pos,
   unsigned int numAtoms1, unsigned int numAtoms2,
@@ -77,6 +84,10 @@ int calc_value_coordnum_self_group(
   cvm::real pairlist_tol,
   cvm::real pairlist_tol_l2_max,
   bool* d_pairlist,
+  TilePairMask<32>* d_tlPairListSelf_32,
+  TilePairMask<32>* d_tlPairList_32,
+  TilePairMask<64>* d_tlPairListSelf_64,
+  TilePairMask<64>* d_tlPairList_64,
   unsigned int* d_tbcount,
   cvm::real* d_coordnum_tmp,
   cvm::real* h_coordnum_out,
