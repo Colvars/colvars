@@ -83,7 +83,15 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
         const unsigned int l = iTile * numTilesInGroup2 + jTileIndex;
         pairMask = tlPairList[l].pairMask[threadIndexInTile];
         // Skip the entire tile if there is no interaction
+#if defined (COLVARS_HIP)
+        // For ROCm 6.x, there is no __any_sync, so I have to use this workaround.
+        const bool tileHasNoInteraction = !(__any(pairMask != PairMaskT(0)));
+        COLVARS_SYNC_WARP;
+        if (tileHasNoInteraction) continue;
+#else
+        // For other platforms, I assume that they have cooperative groups properly supported.
         if (!tilePartition.any(pairMask != PairMaskT(0))) continue;
+#endif
       }
       const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
       const bool mask_j = jid_global < numAtoms2;
