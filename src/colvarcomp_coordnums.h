@@ -25,9 +25,9 @@ public:
 
   coordnum();
   virtual ~coordnum();
-  virtual int init(std::string const &conf);
-  virtual void calc_value();
-  virtual void calc_gradients();
+  virtual int init(std::string const &conf) override;
+  virtual void calc_value() override;
+  virtual void calc_gradients() override;
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   virtual int calc_value_gpu() override;
