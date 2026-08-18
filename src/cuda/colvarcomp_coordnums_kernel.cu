@@ -36,7 +36,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   cvm::real* __restrict gz2,
   const cvm::real pairlist_tol,
   const cvm::real pairlist_tol_l2_max,
-  bool* __restrict pairlist,
+  // bool* __restrict pairlist,
+  TilePairMask<tileSize>* __restrict tlPairList,
   unsigned int* __restrict tbcount,
   cvm::real* __restrict coordnum_tmp,
   cvm::real* __restrict coordnum_out) {
@@ -56,8 +57,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   constexpr unsigned int numTilesPerBlock = blockSize / tileSize;
   // Shared memory buffers for atoms in group2
   __shared__ double3 shJGrad[numTilesPerBlock][tileSize];
-  using pairmask_t = std::conditional_t<(tileSize <= 32), uint32_t, uint64_t>;
-  pairmask_t pairmask;
+  using PairMaskT = typename TilePairMask<tileSize>::PairMaskT;
+  PairMaskT pairMask;
   __shared__ bool isLastBlockDone;
   // Total coordnum
   cvm::real ei = 0;
@@ -78,37 +79,22 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
     const cvm::real z1 = mask_i ? pos1z[tid] : 0;
     double3 iGrad{0, 0, 0};
     // Load atom j from group2
-    // TODO: In the future, we may build neighbor list of tiles.
-    //       We can sort the atoms in group1 and group2 spatially,
-    //       and then build a neighbor list of interacting tiles
-    //       by comparing the distances between tile bounding boxes
-    //       with a cutoff. However, currently it is unclear to me
-      //       whether Colvars developers would accept the idea of
-    //       allowing re-sorting atoms dynamically in atom groups.
     for (unsigned int jTileIndex = 0; jTileIndex < numTilesInGroup2; ++jTileIndex) {
+      if constexpr (use_pairlist && !rebuild_pairlist) {
+        const unsigned int l = iTile * numTilesInGroup2 + jTileIndex;
+        pairMask = tlPairList[l].pairMask[threadIndexInTile];
+        // Skip the entire tile if there is no interaction
+        if (!tilePartition.any(pairMask != PairMaskT(0))) continue;
+      }
       const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
       const bool mask_j = jid_global < numAtoms2;
       const cvm::real jx2 = mask_j ? pos2x[jid_global] : 0;
       const cvm::real jy2 = mask_j ? pos2y[jid_global] : 0;
       const cvm::real jz2 = mask_j ? pos2z[jid_global] : 0;
-      if constexpr (use_pairlist) {
-        pairmask = pairmask_t(0);
-      }
       if constexpr (gradients) {
         shJGrad[tileIndexInBlock][threadIndexInTile].x = 0;
         shJGrad[tileIndexInBlock][threadIndexInTile].y = 0;
         shJGrad[tileIndexInBlock][threadIndexInTile].z = 0;
-      }
-      if constexpr (use_pairlist && !(rebuild_pairlist)) {
-        // TODO: Optimize the d_pairlist by using a bit array
-        #pragma unroll
-        for (unsigned int t = 0; t < tileSize; ++t) {
-          const unsigned int jid = jTileIndex * tileSize + t;
-          const bool mask_jid = jid < numAtoms2;
-          const size_t pairlistID = (size_t)tid + (size_t)jid * (size_t)numAtoms1;
-          const bool b = (mask_i && mask_jid) ? pairlist[pairlistID] : false;
-          pairmask |= (pairmask_t)b << t;
-        }
       }
       tilePartition.sync();
       #pragma unroll 4
@@ -132,7 +118,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
               pairlist_tol, pairlist_tol_l2_max, bc);
           } else {
             if constexpr (!(rebuild_pairlist)) {
-              bool within = (pairmask >> jid) & pairmask_t(1);
+              bool within = (pairMask >> jid) & PairMaskT(1);
               if (within) {
                 ei += colvar::coordnum::compute_pair_coordnum<flags>(
                   inv_r0_vec, inv_r0sq_vec, en, ed,
@@ -152,7 +138,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
                   shJGrad[tileIndexInBlock][jid].y,
                   shJGrad[tileIndexInBlock][jid].z,
                   pairlist_tol, pairlist_tol_l2_max, bc);
-              pairmask = (pairmask & ~(pairmask_t(1) << jid)) | ((pairmask_t)(f > 0.0) << jid);
+              pairMask = (pairMask & ~(PairMaskT(1) << jid)) | ((PairMaskT)(f > 0.0) << jid);
               ei += f;
             }
           }
@@ -160,15 +146,8 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
         tilePartition.sync();
       }
       if constexpr (use_pairlist && rebuild_pairlist) {
-        #pragma unroll
-        for (unsigned int t = 0; t < tileSize; ++t) {
-          const unsigned int jid = jTileIndex * tileSize + t;
-          const bool mask_jid = jid < numAtoms2;
-          if (mask_i && mask_jid) {
-            const size_t pairlistID = (size_t)tid + (size_t)jid * (size_t)numAtoms1;
-            pairlist[pairlistID] = ((pairmask >> t) & pairmask_t(1)) != 0;
-          }
-        }
+        const unsigned int l = iTile * numTilesInGroup2 + jTileIndex;
+        tlPairList[l].pairMask[threadIndexInTile] = pairMask;
       }
       if constexpr (gradients) {
         if (mask_j) {
@@ -220,7 +199,8 @@ int calc_value_coordnum_two_groups(
   cvm::real* group1_grad, cvm::real* group2_grad,
   cvm::real pairlist_tol,
   cvm::real pairlist_tol_l2_max,
-  bool* d_pairlist,
+  TilePairMask<32>* d_tlPairList_32,
+  TilePairMask<64>* d_tlPairList_64,
   unsigned int* d_tbcount,
   cvm::real* d_coordnum_tmp,
   cvm::real* h_coordnum_out,
@@ -234,7 +214,8 @@ int calc_value_coordnum_two_groups(
       en, ed, inv_r0_vec, inv_r0sq_vec, bc,
       group2_grad, group1_grad,
       pairlist_tol, pairlist_tol_l2_max,
-      d_pairlist, d_tbcount, d_coordnum_tmp,
+      d_tlPairList_32, d_tlPairList_64,
+      d_tbcount, d_coordnum_tmp,
       h_coordnum_out, flags, stream, cvmodule
     );
   }
@@ -250,6 +231,21 @@ int calc_value_coordnum_two_groups(
   cvm::real* grad2x = group2_grad;
   cvm::real* grad2y = grad2x + numAtoms2;
   cvm::real* grad2z = grad2y + numAtoms2;
+  const int gpu_warp_size = cvmodule->proxy->gpu_warp_size();
+  void* d_tlPairList = nullptr;
+  switch (gpu_warp_size) {
+    case 32: {
+      d_tlPairList = (void*)d_tlPairList_32;
+      break;
+    }
+    case 64: {
+      d_tlPairList = (void*)d_tlPairList_64;
+      break;
+    }
+    default: {
+      return cvmodule->error("Unsupported warp size: " + cvm::to_str(gpu_warp_size) + "\n");
+    }
+  }
   void* args[] = {
     &pos1x, &pos1y, &pos1z,
     &pos2x, &pos2y, &pos2z,
@@ -260,25 +256,24 @@ int calc_value_coordnum_two_groups(
     &grad1x, &grad1y, &grad1z,
     &grad2x, &grad2y, &grad2z,
     &pairlist_tol, &pairlist_tol_l2_max,
-    &d_pairlist, &d_tbcount,
+    &d_tlPairList, &d_tbcount,
     &d_coordnum_tmp, &h_coordnum_out
   };
-  const int warpSize = cvmodule->proxy->gpu_warp_size();
   const unsigned int numBlocks = (numAtoms1 + default_block_size - 1) / default_block_size;
   void* kernel = nullptr;
 #if defined (COLVARS_CUDA)
-#define CASE(N) case N: { switch (warpSize) { \
+#define CASE(N) case N: { switch (gpu_warp_size) { \
     case 32: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
       0, 0, default_block_size, 32, N>; break;} \
-    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(warpSize));} \
+    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(gpu_warp_size));} \
   } break
 #elif defined (COLVARS_HIP)
-#define CASE(N) case N: { switch (warpSize) { \
+#define CASE(N) case N: { switch (gpu_warp_size) { \
     case 32: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
       0, 0, default_block_size, 32, N>; break;} \
     case 64: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
       0, 0, default_block_size, 64, N>; break;} \
-    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(warpSize));} \
+    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(gpu_warp_size));} \
   } break
 #endif
   switch (flags) {
@@ -660,12 +655,15 @@ int calc_value_coordnum_com_to_com(
   return error_code;
 }
 
+// NOTE: The following function is only used for debugging if necessary.
+#if 0
 __inline__ __device__ size_t computeGlobalPairlistIDSelfGroup(
   size_t iid_global, size_t jid_global, size_t numAtoms) {
   const size_t iid = min(iid_global, jid_global);
   const size_t jid = max(iid_global, jid_global);
   return iid * (2 * numAtoms - 1 - iid) / 2 + (jid - iid - 1);
 }
+#endif
 
 template <int N, int M, int blockSize, int tileSize, int flags>
 __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(

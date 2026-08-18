@@ -26,14 +26,9 @@ public:
     d_pairlist(nullptr), d_coordnum(nullptr),
     d_com_grad_tmp{nullptr, nullptr},
     d_com_grad_out{nullptr, nullptr},
-    d_tbcount(nullptr), pairlist_transposed(false),
-    numTiles(0), tileListsSize(0),
-    d_tileLists(nullptr), d_tileListsStart(nullptr),
-    d_tileListsLen(nullptr),
-    d_tilePairList_32(nullptr),
-    d_tilePairListSelf_32(nullptr),
-    d_tilePairList_64(nullptr),
-    d_tilePairListSelf_64(nullptr),
+    d_tbcount(nullptr), /*pairlist_transposed(false),*/
+    coordNumPairList(cpu_coordnum_in->cvmodule),
+    selfCoordNumTileList(cpu_coordnum_in->cvmodule),
     h_coordnum(nullptr) {}
   ~coordnum_gpu_impl_t() {
     colvarproxy* p = cvmodule->proxy;
@@ -45,13 +40,6 @@ public:
     p->deallocate_device(&d_com_grad_tmp[1]);
     p->deallocate_device(&d_com_grad_out[0]);
     p->deallocate_device(&d_com_grad_out[1]);
-    p->deallocate_device(&d_tileLists);
-    p->deallocate_device(&d_tileListsStart);
-    p->deallocate_device(&d_tileListsLen);
-    p->deallocate_device(&d_tilePairList_32);
-    p->deallocate_device(&d_tilePairListSelf_32);
-    p->deallocate_device(&d_tilePairList_64);
-    p->deallocate_device(&d_tilePairListSelf_64);
   }
   int init() {
     int error_code = COLVARS_OK;
@@ -59,8 +47,9 @@ public:
     error_code |= p->reallocate_device(&d_coordnum, 1);
     error_code |= p->reallocate_device(&d_tbcount, 1);
     error_code |= p->reallocate_host(&h_coordnum, 1);
+    const std::string function_type = cvc->function_type();
     if (cvc->b_enable_pairlist) {
-      if (cvc->function_type() != "selfCoordNum") {
+      if ((function_type != "selfCoordNum") && (function_type != "coordNum")) {
         error_code |= p->reallocate_device(&d_pairlist, cvc->num_pairs);
         error_code |= p->clear_device_array(d_pairlist, cvc->num_pairs);
       }
@@ -68,7 +57,7 @@ public:
     error_code |= p->clear_device_array(d_coordnum, 1);
     error_code |= p->clear_device_array(d_tbcount, 1);
     h_coordnum[0] = 0;
-    if (cvc->function_type() != "selfCoordNum") {
+    if (function_type != "selfCoordNum") {
       if (cvc->b_group1_center_only || cvc->b_group2_center_only) {
         error_code |= p->reallocate_device(&d_com_grad_tmp[0], 1);
         error_code |= p->reallocate_device(&d_com_grad_tmp[1], 1);
@@ -79,12 +68,20 @@ public:
         error_code |= p->clear_device_array(d_com_grad_out[0], 1);
         error_code |= p->clear_device_array(d_com_grad_out[1], 1);
       }
-      pairlist_transposed = cvc->group1->size() > cvc->group2->size();
+      // pairlist_transposed = cvc->group1->size() > cvc->group2->size();
     }
     return error_code;
   }
   int calc_value_two_groups(int flags) {
     int error_code = COLVARS_OK;
+    if (cvc->b_enable_pairlist) {
+      if (!coordNumPairList.intialized) {
+        colvarproxy* p = cvmodule->proxy;
+        const unsigned int gpu_warp_size = p->gpu_warp_size();
+        coordNumPairList.preparePairList(
+          cvc->group1->size(), cvc->group2->size(), gpu_warp_size, cvc->get_stream());
+      }
+    }
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
     // error_code |= checkGPUError(cudaStreamWaitEvent(
@@ -102,7 +99,9 @@ public:
       cvc->inv_r0_vec, cvc->inv_r0sq_vec, cvc->boundary_conditions,
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
       cvc->group2->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
-      cvc->tolerance, cvc->tolerance_l2_max, d_pairlist, d_tbcount,
+      cvc->tolerance, cvc->tolerance_l2_max,
+      coordNumPairList.d_tilePairList_32,
+      coordNumPairList.d_tilePairList_64, d_tbcount,
       d_coordnum, h_coordnum, flags, cvc->get_stream(), cvmodule);
     error_code |= checkGPUError(cudaEventRecord(
       cvc->get_event(cvc::event_type::calc_value), cvc->get_stream()));
@@ -188,118 +187,13 @@ public:
     }
     return error_code;
   }
-  // NOTE: Maybe it is better to build tile lists on GPU if we
-  // want to exclude non-interacting tiles periodically like NAMD.
-  int buildTileLists(const unsigned int tileSize, cudaStream_t stream) {
-    int error_code = COLVARS_OK;
-    colvarproxy* p = cvmodule->proxy;
-    const unsigned int numAtoms = cvc->group1->size();
-    numTiles = (numAtoms + tileSize - 1) / tileSize;
-    const unsigned int numTileInteractions = numTiles * (numTiles - 1) / 2;
-    const unsigned int maxNumInteractionsPerTile =
-      (numTileInteractions + numTiles - 1) / numTiles;
-    tileListsSize = numTiles * maxNumInteractionsPerTile;
-    tileListsLen.assign(numTiles, 0);
-    tileListsStart.assign(numTiles, 0);
-    tileLists.assign(tileListsSize, 0);
-    /**
-      for (unsigned int i = 0; i < numTiles; ++i) {
-        tileListsStart[i] = i * maxNumInteractionsPerTile;
-        const unsigned int jStart = i + 1;
-        const unsigned int jEnd = std::min(numTiles, jStart + maxNumInteractionsPerTile);
-        for (unsigned int j = jStart; j < jEnd; ++j) {
-          const unsigned int offset = tileListsLen[i]++;
-          const unsigned int pos = i * maxNumInteractionsPerTile;
-          tileLists[pos+offset] = j;
-        }
-        for (unsigned int j = jEnd; j < numTiles; ++j) {
-          const unsigned int offset = tileListsLen[j]++;
-          const unsigned int pos = j * maxNumInteractionsPerTile;
-          tileLists[pos+offset] = i;
-        }
-      }
-      * @note The following loop is a more refined version of the loop above
-    */
-    for (unsigned int i = 0; i < numTiles; ++i) {
-      const unsigned int jStart = i + 1;
-      const unsigned int jEnd = std::min(numTiles, jStart + maxNumInteractionsPerTile);
-      const unsigned int posStart = i * maxNumInteractionsPerTile;
-      tileListsLen[i] += jEnd - jStart;
-      tileListsStart[i] = posStart;
-      for (unsigned int j = jStart; j < jEnd; ++j) {
-        const unsigned int offset = j - jStart;
-        tileLists[posStart+offset] = j;
-      }
-      if (i > maxNumInteractionsPerTile) {
-        tileListsLen[i] += i - maxNumInteractionsPerTile;
-        for (unsigned int k = 0; k < i - maxNumInteractionsPerTile; ++k) {
-          const unsigned int offset = jEnd - jStart + k;
-          tileLists[posStart+offset] = k;
-        }
-      }
-    }
-#if 0
-    if constexpr (cvm::debug()) {
-      for (unsigned int i = 0; i < numTiles; ++i) {
-        const unsigned int pos = tileListsStart[i];
-        const unsigned int len = tileListsLen[i];
-        const auto begin = tileLists.begin() + pos;
-        const auto end = begin + len;
-        std::string s = "Tilelist[" + cvm::to_str(int(i)) + "], start = " +
-                        cvm::to_str(int(pos)) + " size = " + cvm::to_str(int(len)) +
-                        ", data = [";
-        for (auto it = begin; it != end; ++it) {
-          const unsigned int tile = *it;
-          s += " " + cvm::to_str((int)tile);
-        }
-        s += "]\n";
-        cvmodule->log(s);
-      }
-    }
-#endif
-    error_code |= p->deallocate_device_async(&d_tileLists, stream);
-    error_code |= p->deallocate_device_async(&d_tileListsStart, stream);
-    error_code |= p->deallocate_device_async(&d_tileListsLen, stream);
-    error_code |= p->allocate_device_async(&d_tileLists, tileListsSize, stream);
-    error_code |= p->allocate_device_async(&d_tileListsStart, numTiles, stream);
-    error_code |= p->allocate_device_async(&d_tileListsLen, numTiles, stream);
-    error_code |= p->copy_HtoD_async(tileLists.data(), d_tileLists, tileListsSize, stream);
-    error_code |= p->copy_HtoD_async(tileListsStart.data(), d_tileListsStart, numTiles, stream);
-    error_code |= p->copy_HtoD_async(tileListsLen.data(), d_tileListsLen, numTiles, stream);
-    // Allocate tilePairLists
-    if (cvc->b_enable_pairlist) {
-      switch (tileSize) {
-        case 32: {
-          error_code |= p->deallocate_device_async(&d_tilePairListSelf_32, stream);
-          error_code |= p->deallocate_device_async(&d_tilePairList_32, stream);
-          error_code |= p->allocate_device_async(&d_tilePairListSelf_32, numTiles, stream);
-          error_code |= p->allocate_device_async(&d_tilePairList_32, tileListsSize, stream);
-          error_code |= p->clear_device_array_async(d_tilePairListSelf_32, numTiles, stream);
-          error_code |= p->clear_device_array_async(d_tilePairList_32, tileListsSize, stream);
-          break;
-        }
-        case 64: {
-          error_code |= p->deallocate_device_async(&d_tilePairListSelf_64, stream);
-          error_code |= p->deallocate_device_async(&d_tilePairList_64, stream);
-          error_code |= p->allocate_device_async(&d_tilePairListSelf_64, numTiles, stream);
-          error_code |= p->allocate_device_async(&d_tilePairList_64, tileListsSize, stream);
-          error_code |= p->clear_device_array_async(d_tilePairListSelf_64, numTiles, stream);
-          error_code |= p->clear_device_array_async(d_tilePairList_64, tileListsSize, stream);
-          break;
-        }
-        default: {
-          error_code |= cvmodule->error("Unsupported tileSize (" + cvm::to_str((int)tileSize) + ") in buildTileLists.\n");
-        }
-      }
-    }
-    return error_code;
-  }
   int calc_value_self_group(int flags) {
     int error_code = COLVARS_OK;
-    if (d_tileListsStart == nullptr) {
+    if (selfCoordNumTileList.d_tileListsStart == nullptr) {
       colvarproxy* p = cvmodule->proxy;
       const unsigned int gpu_warp_size = p->gpu_warp_size();
-      error_code |= buildTileLists(gpu_warp_size, cvc->get_stream());
+      error_code |= selfCoordNumTileList.buildTileLists(
+        cvc->group1->size(), cvc->b_enable_pairlist, gpu_warp_size, cvc->get_stream());
     }
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
@@ -311,10 +205,10 @@ public:
       cvc->group1->size(), cvc->en, cvc->ed, cvc->inv_r0_vec, cvc->inv_r0sq_vec,
       cvc->boundary_conditions,
       cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
-      d_tileLists, d_tileListsStart, d_tileListsLen,
+      selfCoordNumTileList.d_tileLists, selfCoordNumTileList.d_tileListsStart, selfCoordNumTileList.d_tileListsLen,
       cvc->tolerance, cvc->tolerance_l2_max, d_pairlist,
-      d_tilePairListSelf_32, d_tilePairList_32,
-      d_tilePairListSelf_64, d_tilePairList_64,
+      selfCoordNumTileList.d_tilePairListSelf_32, selfCoordNumTileList.d_tilePairList_32,
+      selfCoordNumTileList.d_tilePairListSelf_64, selfCoordNumTileList.d_tilePairList_64,
       d_tbcount, d_coordnum, h_coordnum, flags, cvc->get_stream(), cvmodule);
     error_code |= checkGPUError(cudaEventRecord(
       cvc->get_event(cvc::event_type::calc_value), cvc->get_stream()));
@@ -332,26 +226,156 @@ private:
   cvm::rvector* d_com_grad_tmp[2];
   cvm::rvector* d_com_grad_out[2];
   unsigned int* d_tbcount;
-  // pairlist_transposed is for debugging (if you want to see if the GPU pairlist matches the CPU result you need to check this flag).
-  bool pairlist_transposed;
-  /**
-   * @name Tile lists for self coordnum
-   */
-  ///@[
-  using tl_vec_t = std::vector<unsigned int, colvars_gpu::CudaHostAllocator<unsigned int>>;
-  tl_vec_t tileListsLen;
-  tl_vec_t tileListsStart;
-  tl_vec_t tileLists;
-  unsigned int numTiles;
-  unsigned int tileListsSize;
-  unsigned int* d_tileLists;
-  unsigned int* d_tileListsStart;
-  unsigned int* d_tileListsLen;
-  colvars_gpu::TilePairMask<32>* d_tilePairList_32;
-  colvars_gpu::TilePairMask<32>* d_tilePairListSelf_32;
-  colvars_gpu::TilePairMask<64>* d_tilePairList_64;
-  colvars_gpu::TilePairMask<64>* d_tilePairListSelf_64;
-  ///@]
+  struct coordNumPairListT {
+    /**
+     * @name Tile-based pairlist for two-group coordnum
+     */
+    ///@[
+    colvars_gpu::TilePairMask<32>* d_tilePairList_32 = nullptr;
+    colvars_gpu::TilePairMask<64>* d_tilePairList_64 = nullptr;
+    ///@]
+    bool intialized = false;
+    colvarmodule* cvmodule;
+    coordNumPairListT(colvarmodule* cvmodule_in): cvmodule(cvmodule_in) {}
+    ~coordNumPairListT() {
+      colvarproxy* p = cvmodule->proxy;
+      p->deallocate_device(&d_tilePairList_32);
+      p->deallocate_device(&d_tilePairList_64);
+    }
+    int preparePairList(const unsigned int numAtoms1,
+                        const unsigned int numAtoms2,
+                        const unsigned int tileSize,
+                        cudaStream_t stream) {
+      int error_code = COLVARS_OK;
+      const unsigned int numAtomsInLargeGroup = numAtoms1 < numAtoms2 ? numAtoms2 : numAtoms1;
+      const unsigned int numAtomsInSmallGroup = numAtoms1 < numAtoms2 ? numAtoms1 : numAtoms2;
+      const unsigned int numTilesInGroup1 = (numAtomsInLargeGroup + tileSize - 1) / tileSize;
+      const unsigned int numTilesInGroup2 = (numAtomsInSmallGroup + tileSize - 1) / tileSize;
+      const size_t tileListsSize = (size_t)numTilesInGroup1 * (size_t)numTilesInGroup2;
+      colvarproxy* p = cvmodule->proxy;
+      switch (tileSize) {
+        case 32: {
+          error_code |= p->deallocate_device_async(&d_tilePairList_32, stream);
+          error_code |= p->allocate_device_async(&d_tilePairList_32, tileListsSize, stream);
+          error_code |= p->clear_device_array_async(d_tilePairList_32, tileListsSize, stream);
+          break;
+        }
+        case 64: {
+          error_code |= p->deallocate_device_async(&d_tilePairList_64, stream);
+          error_code |= p->allocate_device_async(&d_tilePairList_64, tileListsSize, stream);
+          error_code |= p->clear_device_array_async(d_tilePairList_64, tileListsSize, stream);
+          break;
+        }
+        default: {
+          error_code |= cvmodule->error("Unsupported tileSize (" + cvm::to_str((int)tileSize) + ") in buildTileLists.\n");
+        }
+      };
+      intialized = true;
+      return error_code;
+    }
+  } coordNumPairList;
+  struct selfCoordNumTileListT {
+    /**
+    * @name Tile lists for self coordnum
+    */
+    ///@[
+    using tl_vec_t = std::vector<unsigned int, colvars_gpu::CudaHostAllocator<unsigned int>>;
+    tl_vec_t tileListsLen;
+    tl_vec_t tileListsStart;
+    tl_vec_t tileLists;
+    unsigned int numTiles = 0;
+    unsigned int tileListsSize = 0;
+    unsigned int* d_tileLists = nullptr;
+    unsigned int* d_tileListsStart  = nullptr;
+    unsigned int* d_tileListsLen  = nullptr;
+    colvars_gpu::TilePairMask<32>* d_tilePairList_32 = nullptr;
+    colvars_gpu::TilePairMask<32>* d_tilePairListSelf_32 = nullptr;
+    colvars_gpu::TilePairMask<64>* d_tilePairList_64 = nullptr;
+    colvars_gpu::TilePairMask<64>* d_tilePairListSelf_64 = nullptr;
+    ///@]
+    colvarmodule* cvmodule;
+    selfCoordNumTileListT(colvarmodule* cvmodule_in): cvmodule(cvmodule_in) {}
+    ~selfCoordNumTileListT() {
+      colvarproxy* p = cvmodule->proxy;
+      p->deallocate_device(&d_tileLists);
+      p->deallocate_device(&d_tileListsStart);
+      p->deallocate_device(&d_tileListsLen);
+      p->deallocate_device(&d_tilePairList_32);
+      p->deallocate_device(&d_tilePairListSelf_32);
+      p->deallocate_device(&d_tilePairList_64);
+      p->deallocate_device(&d_tilePairListSelf_64);
+    }
+    int buildTileLists(const unsigned int numAtoms,
+                       const bool b_enable_pairlist,
+                       const unsigned int tileSize,
+                       cudaStream_t stream) {
+      int error_code = COLVARS_OK;
+      colvarproxy* p = cvmodule->proxy;
+      // const unsigned int numAtoms = cvc->group1->size();
+      numTiles = (numAtoms + tileSize - 1) / tileSize;
+      const unsigned int numTileInteractions = numTiles * (numTiles - 1) / 2;
+      const unsigned int maxNumInteractionsPerTile =
+        (numTileInteractions + numTiles - 1) / numTiles;
+      tileListsSize = numTiles * maxNumInteractionsPerTile;
+      tileListsLen.assign(numTiles, 0);
+      tileListsStart.assign(numTiles, 0);
+      tileLists.assign(tileListsSize, 0);
+      for (unsigned int i = 0; i < numTiles; ++i) {
+        const unsigned int jStart = i + 1;
+        const unsigned int jEnd = std::min(numTiles, jStart + maxNumInteractionsPerTile);
+        const unsigned int posStart = i * maxNumInteractionsPerTile;
+        tileListsLen[i] += jEnd - jStart;
+        tileListsStart[i] = posStart;
+        for (unsigned int j = jStart; j < jEnd; ++j) {
+          const unsigned int offset = j - jStart;
+          tileLists[posStart+offset] = j;
+        }
+        if (i > maxNumInteractionsPerTile) {
+          tileListsLen[i] += i - maxNumInteractionsPerTile;
+          for (unsigned int k = 0; k < i - maxNumInteractionsPerTile; ++k) {
+            const unsigned int offset = jEnd - jStart + k;
+            tileLists[posStart+offset] = k;
+          }
+        }
+      }
+      error_code |= p->deallocate_device_async(&d_tileLists, stream);
+      error_code |= p->deallocate_device_async(&d_tileListsStart, stream);
+      error_code |= p->deallocate_device_async(&d_tileListsLen, stream);
+      error_code |= p->allocate_device_async(&d_tileLists, tileListsSize, stream);
+      error_code |= p->allocate_device_async(&d_tileListsStart, numTiles, stream);
+      error_code |= p->allocate_device_async(&d_tileListsLen, numTiles, stream);
+      error_code |= p->copy_HtoD_async(tileLists.data(), d_tileLists, tileListsSize, stream);
+      error_code |= p->copy_HtoD_async(tileListsStart.data(), d_tileListsStart, numTiles, stream);
+      error_code |= p->copy_HtoD_async(tileListsLen.data(), d_tileListsLen, numTiles, stream);
+      // Allocate tilePairLists
+      if (b_enable_pairlist) {
+        switch (tileSize) {
+          case 32: {
+            error_code |= p->deallocate_device_async(&d_tilePairListSelf_32, stream);
+            error_code |= p->deallocate_device_async(&d_tilePairList_32, stream);
+            error_code |= p->allocate_device_async(&d_tilePairListSelf_32, numTiles, stream);
+            error_code |= p->allocate_device_async(&d_tilePairList_32, tileListsSize, stream);
+            error_code |= p->clear_device_array_async(d_tilePairListSelf_32, numTiles, stream);
+            error_code |= p->clear_device_array_async(d_tilePairList_32, tileListsSize, stream);
+            break;
+          }
+          case 64: {
+            error_code |= p->deallocate_device_async(&d_tilePairListSelf_64, stream);
+            error_code |= p->deallocate_device_async(&d_tilePairList_64, stream);
+            error_code |= p->allocate_device_async(&d_tilePairListSelf_64, numTiles, stream);
+            error_code |= p->allocate_device_async(&d_tilePairList_64, tileListsSize, stream);
+            error_code |= p->clear_device_array_async(d_tilePairListSelf_64, numTiles, stream);
+            error_code |= p->clear_device_array_async(d_tilePairList_64, tileListsSize, stream);
+            break;
+          }
+          default: {
+            error_code |= cvmodule->error("Unsupported tileSize (" + cvm::to_str((int)tileSize) + ") in buildTileLists.\n");
+          }
+        }
+      }
+      return error_code;
+    }
+  } selfCoordNumTileList;
 public:
   cvm::real* h_coordnum;
 };
