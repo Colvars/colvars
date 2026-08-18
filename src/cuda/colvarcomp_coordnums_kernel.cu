@@ -36,7 +36,6 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   cvm::real* __restrict gz2,
   const cvm::real pairlist_tol,
   const cvm::real pairlist_tol_l2_max,
-  // bool* __restrict pairlist,
   TilePairMask<tileSize>* __restrict tlPairList,
   unsigned int* __restrict tbcount,
   cvm::real* __restrict coordnum_tmp,

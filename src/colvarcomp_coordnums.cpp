@@ -26,7 +26,7 @@ public:
     d_pairlist(nullptr), d_coordnum(nullptr),
     d_com_grad_tmp{nullptr, nullptr},
     d_com_grad_out{nullptr, nullptr},
-    d_tbcount(nullptr), /*pairlist_transposed(false),*/
+    d_tbcount(nullptr),
     coordNumPairList(cpu_coordnum_in->cvmodule),
     selfCoordNumTileList(cpu_coordnum_in->cvmodule),
     h_coordnum(nullptr) {}
@@ -68,7 +68,6 @@ public:
         error_code |= p->clear_device_array(d_com_grad_out[0], 1);
         error_code |= p->clear_device_array(d_com_grad_out[1], 1);
       }
-      // pairlist_transposed = cvc->group1->size() > cvc->group2->size();
     }
     return error_code;
   }
