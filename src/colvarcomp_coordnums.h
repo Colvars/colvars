@@ -104,6 +104,9 @@ protected:
   /// If true, group2 will be treated as a single atom
   bool b_group2_center_only = false;
 
+  /// If true, then pairlist is enabled
+  bool b_enable_pairlist = false;
+
   /// Tolerance for the pair list
   cvm::real tolerance = 0.0;
 

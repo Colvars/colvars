@@ -59,7 +59,7 @@ public:
     error_code |= p->reallocate_device(&d_coordnum, 1);
     error_code |= p->reallocate_device(&d_tbcount, 1);
     error_code |= p->reallocate_host(&h_coordnum, 1);
-    if (cvc->pairlist != nullptr && cvc->num_pairs > 0) {
+    if (cvc->b_enable_pairlist) {
       if (cvc->function_type() != "selfCoordNum") {
         error_code |= p->reallocate_device(&d_pairlist, cvc->num_pairs);
         error_code |= p->clear_device_array(d_pairlist, cvc->num_pairs);
@@ -267,7 +267,7 @@ public:
     error_code |= p->copy_HtoD_async(tileListsStart.data(), d_tileListsStart, numTiles, stream);
     error_code |= p->copy_HtoD_async(tileListsLen.data(), d_tileListsLen, numTiles, stream);
     // Allocate tilePairLists
-    if (cvc->pairlist != nullptr) {
+    if (cvc->b_enable_pairlist) {
       switch (tileSize) {
         case 32: {
           error_code |= p->deallocate_device_async(&d_tilePairListSelf_32, stream);
@@ -490,10 +490,14 @@ int colvar::coordnum::init(std::string const &conf)
                                COLVARS_INPUT_ERROR);
         // return and do not allocate the pairlists below
       }
-      pairlist.reset(new bool[num_pairs]);
-      auto *pairlist_elem = pairlist.get();
-      for (size_t ip = 0; ip < num_pairs; ip++, pairlist_elem++) {
-        *pairlist_elem = true;
+      b_enable_pairlist = true;
+      // To save the memory, we don't allocate the CPU pairlist buffer when GPU is used.
+      if (cvmodule->proxy->get_smp_mode() != colvarproxy_smp::smp_mode_t::gpu) {
+        pairlist.reset(new bool[num_pairs]);
+        auto *pairlist_elem = pairlist.get();
+        for (size_t ip = 0; ip < num_pairs; ip++, pairlist_elem++) {
+          *pairlist_elem = true;
+        }
       }
     }
   }
@@ -678,7 +682,7 @@ void colvar::coordnum::calc_gradients()
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 int colvar::coordnum::calc_value_gpu() {
   int error_code = COLVARS_OK;
-  const bool use_pairlist = pairlist.get();
+  const bool use_pairlist = b_enable_pairlist;
   const bool rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
   const bool gradients = is_enabled(f_cvc_gradient);
   const int flags = (use_pairlist ? ef_use_pairlist : 0) +
