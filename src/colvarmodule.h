@@ -114,6 +114,18 @@ public:
     return (n > 0) ? yy : 1.0/yy;
   }
 
+  template <int n>
+  static COLVARS_HOST_DEVICE inline real
+  positive_integer_power(real const& x) {
+    static_assert(n > 0, "n must be greater than zero in positive_integer_power.");
+    real y = 1.0;
+    #pragma unroll
+    for (int i = 0; i < n; ++i) {
+      y *= x;
+    }
+    return y;
+  }
+
   /// Reimplemented to work around MS compiler issues
   static inline real pow(real const &x, real const &y)
   {
