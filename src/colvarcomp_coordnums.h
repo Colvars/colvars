@@ -49,13 +49,13 @@ public:
   /// @param en Numerator exponent
   /// @param ed Denominator exponent
   /// @param pairlist_tol Pairlist tolerance
-  template <int flags>
+  template <int flags, int static_en = 0, int static_ed = 0>
   inline COLVARS_HOST_DEVICE static cvm::real switching_function(
     cvm::real const &l2, cvm::real &dFdl2, int en, int ed,
     cvm::real pairlist_tol);
 
   /// Main kernel for the coordination number
-  template <int flags>
+  template <int flags, int static_en = 0, int static_ed = 0>
   inline COLVARS_HOST_DEVICE static cvm::real compute_pair_coordnum(
     cvm::rvector const &inv_r0_vec,
     cvm::rvector const &inv_r0sq_vec, int en, int ed,
@@ -182,22 +182,35 @@ protected:
 };
 
 
-template <int flags>
+template <int flags, int static_en, int static_ed>
 inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::switching_function(
   cvm::real const &l2, cvm::real &dFdl2,
   int en, int ed,
   cvm::real pairlist_tol)
 {
+  if constexpr ((static_en > 0) && (static_ed > 0)) {
+    // Assume en and ed are even integers, and avoid sqrt in the following
+    static_assert(std::integral_constant<int, static_en>::value % 2 == 0, "static_en must be an even positive integer.");
+    static_assert(std::integral_constant<int, static_ed>::value % 2 == 0, "static_ed must be an even positive integer.");
+  }
   // Assume en and ed are even integers, and avoid sqrt in the following
-  int const en2 = en/2;
-  int const ed2 = ed/2;
+  cvm::real xn, xd, en2_r, ed2_r;
+  if constexpr ((static_en > 0) && (static_ed > 0)) {
+    xn = cvm::positive_integer_power<static_en / 2>(l2);
+    xd = cvm::positive_integer_power<static_ed / 2>(l2);
+    en2_r = (cvm::real)static_en / 2;
+    ed2_r = (cvm::real)static_ed / 2;
+  } else {
+    int const en2 = en/2;
+    int const ed2 = ed/2;
+    xn = cvm::integer_power(l2, en2);
+    xd = cvm::integer_power(l2, ed2);
+    en2_r = (cvm::real) en2;
+    ed2_r = (cvm::real) ed2;
+  }
 
-  cvm::real const xn = cvm::integer_power(l2, en2);
-  cvm::real const xd = cvm::integer_power(l2, ed2);
   cvm::real const eps_l2 = 1.0e-7;
   cvm::real const h = l2 - 1.0;
-  cvm::real const en2_r = (cvm::real) en2;
-  cvm::real const ed2_r = (cvm::real) ed2;
   cvm::real func_no_pairlist;
 
   if (std::abs(h) < eps_l2) {
@@ -242,7 +255,7 @@ inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::switching_function(
 }
 
 
-template<int flags>
+template<int flags, int static_en, int static_ed>
 inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::compute_pair_coordnum(
   cvm::rvector const &inv_r0_vec,
   cvm::rvector const &inv_r0sq_vec,
@@ -280,7 +293,7 @@ inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::compute_pair_coordnum(
   }
 
   cvm::real dFdl2 = 0.0;
-  cvm::real F = switching_function<flags>(l2, dFdl2, en, ed, pairlist_tol);
+  cvm::real F = switching_function<flags, static_en, static_ed>(l2, dFdl2, en, ed, pairlist_tol);
 
   if ((flags & ef_gradients) && (F > 0.0)) {
     cvm::rvector const dl2dx((2.0 * inv_r0sq_vec.x) * diff.x,
