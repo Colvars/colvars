@@ -188,18 +188,26 @@ inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::switching_function(
   int en, int ed,
   cvm::real pairlist_tol)
 {
+  constexpr bool static_ed_is_2en = (static_en > 0) && (static_ed > 0) && (static_ed == 2 * static_en);
   if constexpr ((static_en > 0) && (static_ed > 0)) {
     // Assume en and ed are even integers, and avoid sqrt in the following
     static_assert(std::integral_constant<int, static_en>::value % 2 == 0, "static_en must be an even positive integer.");
     static_assert(std::integral_constant<int, static_ed>::value % 2 == 0, "static_ed must be an even positive integer.");
   }
   // Assume en and ed are even integers, and avoid sqrt in the following
-  cvm::real xn, xd, en2_r, ed2_r;
+  cvm::real xn, xn_1, xd, en2_r, ed2_r;
   if constexpr ((static_en > 0) && (static_ed > 0)) {
-    xn = cvm::positive_integer_power<static_en / 2>(l2);
-    xd = cvm::positive_integer_power<static_ed / 2>(l2);
-    en2_r = (cvm::real)static_en / 2;
-    ed2_r = (cvm::real)static_ed / 2;
+    if constexpr (static_ed_is_2en) {
+      // xn = cvm::positive_integer_power<static_en / 2>(l2);
+      xn_1 = cvm::positive_integer_power<static_en / 2 - 1>(l2);
+      xn = xn_1 * l2;
+      en2_r = (cvm::real)static_en / 2;
+    } else {
+      xn = cvm::positive_integer_power<static_en / 2>(l2);
+      xd = cvm::positive_integer_power<static_ed / 2>(l2);
+      en2_r = (cvm::real)static_en / 2;
+      ed2_r = (cvm::real)static_ed / 2;
+    }
   } else {
     int const en2 = en/2;
     int const ed2 = ed/2;
@@ -213,14 +221,18 @@ inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::switching_function(
   cvm::real const h = l2 - 1.0;
   cvm::real func_no_pairlist;
 
-  if (std::abs(h) < eps_l2) {
-    // Order-2 Taylor expansion: c0 + c1*h + c2*h^2
-    cvm::real const c0 = en2_r / ed2_r;
-    cvm::real const c1 = (en2_r * (en2_r - ed2_r)) / (2.0 * ed2_r);
-    cvm::real const c2 = (en2_r * (en2_r - ed2_r) * (2.0 * en2_r - ed2_r - 3.0)) / (12.0 * ed2_r);
-    func_no_pairlist = c0 + h * (c1 + h * c2);
+  if constexpr (static_ed_is_2en) {
+    func_no_pairlist = 1.0 / (1.0 + xn);
   } else {
-    func_no_pairlist = (1.0 - xn) / (1.0 - xd);
+    if (std::abs(h) < eps_l2) {
+      // Order-2 Taylor expansion: c0 + c1*h + c2*h^2
+      cvm::real const c0 = en2_r / ed2_r;
+      cvm::real const c1 = (en2_r * (en2_r - ed2_r)) / (2.0 * ed2_r);
+      cvm::real const c2 = (en2_r * (en2_r - ed2_r) * (2.0 * en2_r - ed2_r - 3.0)) / (12.0 * ed2_r);
+      func_no_pairlist = c0 + h * (c1 + h * c2);
+    } else {
+      func_no_pairlist = (1.0 - xn) / (1.0 - xd);
+    }
   }
 
   cvm::real func, inv_one_pairlist_tol;
@@ -237,18 +249,23 @@ inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::switching_function(
     return 0;
 
   if (flags & ef_gradients) {
-    // Logarithmic derivative: 1st-order Taylor expansion around l2 = 1
-    cvm::real log_deriv;
-    if (std::abs(h) < eps_l2) {
-      cvm::real const g0 = 0.5 * (en2_r - ed2_r);
-      cvm::real const g1 = ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0)) / 12.0;
-      log_deriv = g0 + h * g1;
+    if constexpr (static_ed_is_2en) {
+      const cvm::real deriv = -func_no_pairlist * func_no_pairlist * en2_r * xn_1;
+      dFdl2 = (flags & ef_use_pairlist) ? inv_one_pairlist_tol * deriv : deriv;
     } else {
-      log_deriv = (ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2));
+      // Logarithmic derivative: 1st-order Taylor expansion around l2 = 1
+      cvm::real log_deriv;
+      if (std::abs(h) < eps_l2) {
+        cvm::real const g0 = 0.5 * (en2_r - ed2_r);
+        cvm::real const g1 = ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0)) / 12.0;
+        log_deriv = g0 + h * g1;
+      } else {
+        log_deriv = (ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2));
+      }
+      dFdl2 = (flags & ef_use_pairlist) ?
+        func_no_pairlist * inv_one_pairlist_tol * log_deriv :
+        func * log_deriv;
     }
-    dFdl2 = (flags & ef_use_pairlist) ?
-      func_no_pairlist * inv_one_pairlist_tol * log_deriv :
-      func * log_deriv;
   }
 
   return func;
