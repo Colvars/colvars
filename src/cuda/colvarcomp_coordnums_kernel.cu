@@ -14,6 +14,13 @@
 
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 namespace colvars_gpu {
+
+namespace{
+constexpr uint64_t join(const uint32_t hi, const uint32_t lo) {
+    return ((uint64_t)hi << 32) | lo;
+}
+}
+
 template <int static_en, int static_ed, int blockSize, int tileSize, int flags>
 __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   const cvm::real* __restrict pos1x,
@@ -256,38 +263,61 @@ int calc_value_coordnum_two_groups(
   };
   const unsigned int numBlocks = (numAtoms1 + default_block_size - 1) / default_block_size;
   void* kernel = nullptr;
+  // Encode en and ed in a single integer
+  const uint64_t ened = join(en, ed);
 #if defined (COLVARS_CUDA)
-#define CASE(N) case N: { switch (gpu_warp_size) { \
-    case 32: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
-      0, 0, default_block_size, 32, N>; break;} \
-    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(gpu_warp_size));} \
+#define CASE(N, ENED) case N: { switch (gpu_warp_size) {                                                                           \
+    case 32: {                                                                                                                     \
+      switch (ENED) {                                                                                                              \
+        case join(4, 8):  kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1<4,  8, default_block_size, 32, N>;  break; \
+        case join(6, 12): kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1<6, 12, default_block_size, 32, N>;  break; \
+        default:          kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1<0,  0, default_block_size, 32, N>;  break; \
+      }                                                                                                                            \
+      break; }                                                                                                                     \
+    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(gpu_warp_size), COLVARS_BUG_ERROR);}                 \
   } break
 #elif defined (COLVARS_HIP)
-#define CASE(N) case N: { switch (gpu_warp_size) { \
-    case 32: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
-      0, 0, default_block_size, 32, N>; break;} \
-    case 64: {kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1< \
-      0, 0, default_block_size, 64, N>; break;} \
-    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(gpu_warp_size));} \
+#define CASE(N, ENED) case N: { switch (gpu_warp_size) {                                                                            \
+    case 32: {                                                                                                                      \
+      switch (ENED) {                                                                                                               \
+        case join(4, 8):  kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1<4,  8, default_block_size, 32, N>;  break;  \
+        case join(6, 12): kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1<6, 12, default_block_size, 32, N>;  break;  \
+        default:          kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1<0,  0, default_block_size, 32, N>;  break;  \
+      }                                                                                                                             \
+      break; }                                                                                                                      \
+    case 64: {                                                                                                                      \
+      switch (ENED) {                                                                                                               \
+        case join(4, 8):  kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1<4,  8, default_block_size, 64, N>;  break;  \
+        case join(6, 12): kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1<6, 12, default_block_size, 64, N>;  break;  \
+        default:          kernel = (void*)computeCoordinationNumberTwoGroupsCUDAKernel1<0,  0, default_block_size, 64, N>;  break;  \
+      }                                                                                                                             \
+      break; }                                                                                                                      \
+    default: return cvmodule->error("Unimplemented warp size: " + cvm::to_str(gpu_warp_size), COLVARS_BUG_ERROR);}                  \
   } break
 #endif
   switch (flags) {
     CASE(colvar::coordnum::ef_gradients +
-         colvar::coordnum::ef_null);
+         colvar::coordnum::ef_null,
+         ened);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_null);
+         colvar::coordnum::ef_null,
+         ened);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_null);
+         colvar::coordnum::ef_null,
+         ened);
 
-    CASE(colvar::coordnum::ef_null);
+    CASE(colvar::coordnum::ef_null,
+         ened);
     CASE(colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_null);
+         colvar::coordnum::ef_null,
+         ened);
     CASE(colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_null);
+         colvar::coordnum::ef_null,
+         ened);
     default: {
       return cvmodule->error("Unimplemented flags in calc_value_coordnum_two_groups: " +
         cvm::to_str(flags) + "\n");
@@ -968,41 +998,63 @@ int calc_value_coordnum_self_group(
     &d_tlPairListSelf, &d_tlPairList, &d_tbcount,
     &d_coordnum_tmp, &h_coordnum_out
   };
+  // Encode en and ed in a single integer
+  const uint64_t ened = join(en, ed);
   // NOTE: For CUDA, we only support 32 as a warp size, but for HIP,
   // there could be two different warp sizes (32 and 64).
 #if defined (COLVARS_CUDA)
-#define CASE(N) case N: { \
-  switch (gpu_warp_size) { \
-    case 32: kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<0, 0, default_block_size, 32, N>; break;\
-    default: return cvmodule->error("Unsupported warp size in calc_value_coordnum_self_group: " + cvm::to_str(gpu_warp_size) + "\n", COLVARS_BUG_ERROR);\
-  } \
+#define CASE(N, ENED) case N: { switch (gpu_warp_size) {                                                                          \
+    case 32: {                                                                                                                    \
+      switch (ENED) {                                                                                                             \
+        case join(4, 8):  kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<4,  8, default_block_size, 32, N>; break; \
+        case join(6, 12): kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<6, 12, default_block_size, 32, N>; break; \
+        default:          kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<0,  0, default_block_size, 32, N>; break; \
+      }                                                                                                                           \
+      break; }                                                                                                                    \
+    default: return cvmodule->error("Unsupported warp size in: " + cvm::to_str(gpu_warp_size) + "\n", COLVARS_BUG_ERROR);}        \
   } break
 #elif defined (COLVARS_HIP)
-#define CASE(N) case N: { \
-  switch (gpu_warp_size) { \
-    case 32: kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<0, 0, default_block_size, 32, N>; break;\
-    case 64: kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<0, 0, default_block_size, 64, N>; break;\
-    default: return cvmodule->error("Unsupported warp size in calc_value_coordnum_self_group: " + cvm::to_str(gpu_warp_size) + "\n", COLVARS_BUG_ERROR);\
-  } \
+#define CASE(N, ENED) case N: { switch (gpu_warp_size) {                                                                          \
+    case 32: {                                                                                                                    \
+      switch (ENED) {                                                                                                             \
+        case join(4, 8):  kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<4,  8, default_block_size, 32, N>; break; \
+        case join(6, 12): kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<6, 12, default_block_size, 32, N>; break; \
+        default:          kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<0,  0, default_block_size, 32, N>; break; \
+      }                                                                                                                           \
+      break; }                                                                                                                    \
+    case 64: {                                                                                                                    \
+      switch (ENED) {                                                                                                             \
+        case join(4, 8):  kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<4,  8, default_block_size, 64, N>; break; \
+        case join(6, 12): kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<6, 12, default_block_size, 64, N>; break; \
+        default:          kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<0,  0, default_block_size, 64, N>; break; \
+      }                                                                                                                           \
+      break; }                                                                                                                    \
+    default: return cvmodule->error("Unsupported warp size in: " + cvm::to_str(gpu_warp_size) + "\n", COLVARS_BUG_ERROR);}        \
   } break
 #endif
   switch (flags) {
     CASE(colvar::coordnum::ef_gradients +
-         colvar::coordnum::ef_null);
+         colvar::coordnum::ef_null,
+         ened);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_null);
+         colvar::coordnum::ef_null,
+         ened);
     CASE(colvar::coordnum::ef_gradients +
          colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_null);
+         colvar::coordnum::ef_null,
+         ened);
 
-    CASE(colvar::coordnum::ef_null);
+    CASE(colvar::coordnum::ef_null,
+         ened);
     CASE(colvar::coordnum::ef_use_pairlist +
-         colvar::coordnum::ef_null);
+         colvar::coordnum::ef_null,
+         ened);
     CASE(colvar::coordnum::ef_use_pairlist +
          colvar::coordnum::ef_rebuild_pairlist +
-         colvar::coordnum::ef_null);
+         colvar::coordnum::ef_null,
+         ened);
     default: {
       return cvmodule->error("Unimplemented flags in calc_value_coordnum_self_group: " +
         cvm::to_str(flags) + "\n");
