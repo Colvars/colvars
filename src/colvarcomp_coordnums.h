@@ -191,8 +191,8 @@ inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::switching_function(
   constexpr bool static_ed_is_2en = (static_en > 0) && (static_ed > 0) && (static_ed == 2 * static_en);
   if constexpr ((static_en > 0) && (static_ed > 0)) {
     // Assume en and ed are even integers, and avoid sqrt in the following
-    static_assert(std::integral_constant<int, static_en>::value % 2 == 0, "static_en must be an even positive integer.");
-    static_assert(std::integral_constant<int, static_ed>::value % 2 == 0, "static_ed must be an even positive integer.");
+    static_assert(static_en % 2 == 0, "static_en must be an even positive integer.");
+    static_assert(static_ed % 2 == 0, "static_ed must be an even positive integer.");
   }
   // Assume en and ed are even integers, and avoid sqrt in the following
   cvm::real xn, xn_1, xd, en2_r, ed2_r;
