@@ -119,7 +119,6 @@ public:
   positive_integer_power(real const& x) {
     static_assert(n > 0, "n must be greater than zero in positive_integer_power.");
     real y = 1.0;
-    #pragma unroll
     for (int i = 0; i < n; ++i) {
       y *= x;
     }
