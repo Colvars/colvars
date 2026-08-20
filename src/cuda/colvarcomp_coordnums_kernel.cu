@@ -14,7 +14,7 @@
 
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 namespace colvars_gpu {
-template <int N, int M, int blockSize, int tileSize, int flags>
+template <int static_en, int static_ed, int blockSize, int tileSize, int flags>
 __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   const cvm::real* __restrict pos1x,
   const cvm::real* __restrict pos1y,
@@ -123,7 +123,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
           }
           cvm::real partial = 0;
           if (pairlist_elem) {
-            partial = colvar::coordnum::compute_pair_coordnum<flags>(
+            partial = colvar::coordnum::compute_pair_coordnum<flags, static_en, static_ed>(
               inv_r0_vec, inv_r0sq_vec, en, ed,
               x1, y1, z1, x2, y2, z2,
               iGrad.x, iGrad.y, iGrad.z,
@@ -300,7 +300,7 @@ int calc_value_coordnum_two_groups(
   return error_code;
 }
 
-template <int N, int M, int blockSize, int flags>
+template <int static_en, int static_ed, int blockSize, int flags>
 __global__ void computeCoordinationNumberGroupToCenterKernel(
   const cvm::real* __restrict posx,
   const cvm::real* __restrict posy,
@@ -356,7 +356,7 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
     const cvm::real y1 = posy[i];
     const cvm::real z1 = posz[i];
     if constexpr (!use_pairlist) {
-      ei += colvar::coordnum::compute_pair_coordnum<flags>(
+      ei += colvar::coordnum::compute_pair_coordnum<flags, static_en, static_ed>(
         inv_r0_vec, inv_r0sq_vec, en, ed,
         x1, y1, z1, x2, y2, z2,
         grad_x, grad_y, grad_z,
@@ -368,7 +368,7 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
       if constexpr (!rebuild_pairlist) {
         const bool within = pairlist[i];
         if (within) {
-          ei += colvar::coordnum::compute_pair_coordnum<flags>(
+          ei += colvar::coordnum::compute_pair_coordnum<flags, static_en, static_ed>(
             inv_r0_vec, inv_r0sq_vec, en, ed,
             x1, y1, z1, x2, y2, z2,
             grad_x, grad_y, grad_z,
@@ -378,7 +378,7 @@ __global__ void computeCoordinationNumberGroupToCenterKernel(
             pairlist_tol, pairlist_tol_l2_max, bc);
         }
       } else {
-        const auto f = colvar::coordnum::compute_pair_coordnum<flags>(
+        const auto f = colvar::coordnum::compute_pair_coordnum<flags, static_en, static_ed>(
           inv_r0_vec, inv_r0sq_vec, en, ed,
           x1, y1, z1, x2, y2, z2,
           grad_x, grad_y, grad_z,
@@ -506,7 +506,7 @@ int calc_value_coordnum_group_to_com(
   return error_code;
 }
 
-template <int N, int M, int flags>
+template <int static_en, int static_ed, int flags>
 __global__ void computeCoordinationNumberGroupTwoCOMsKernel(
   const cvm::rvector* __restrict com1,
   const cvm::rvector* __restrict com2,
@@ -549,7 +549,7 @@ __global__ void computeCoordinationNumberGroupTwoCOMsKernel(
       com2_grad_z = 0;
     }
     if constexpr (!use_pairlist) {
-      (*h_coordnum_out) = colvar::coordnum::compute_pair_coordnum<flags>(
+      (*h_coordnum_out) = colvar::coordnum::compute_pair_coordnum<flags, static_en, static_ed>(
         inv_r0_vec, inv_r0sq_vec, en, ed,
         x1, y1, z1, x2, y2, z2,
         com1_grad_x, com1_grad_y, com1_grad_z,
@@ -559,7 +559,7 @@ __global__ void computeCoordinationNumberGroupTwoCOMsKernel(
       if constexpr (!rebuild_pairlist) {
         const bool within = pairlist[i];
         if (within) {
-          (*h_coordnum_out) = colvar::coordnum::compute_pair_coordnum<flags>(
+          (*h_coordnum_out) = colvar::coordnum::compute_pair_coordnum<flags, static_en, static_ed>(
             inv_r0_vec, inv_r0sq_vec, en, ed,
             x1, y1, z1, x2, y2, z2,
             com1_grad_x, com1_grad_y, com1_grad_z,
@@ -569,7 +569,7 @@ __global__ void computeCoordinationNumberGroupTwoCOMsKernel(
           (*h_coordnum_out) = 0;
         }
       } else {
-        const auto f = colvar::coordnum::compute_pair_coordnum<flags>(
+        const auto f = colvar::coordnum::compute_pair_coordnum<flags, static_en, static_ed>(
             inv_r0_vec, inv_r0sq_vec, en, ed,
             x1, y1, z1, x2, y2, z2,
             com1_grad_x, com1_grad_y, com1_grad_z,
@@ -650,7 +650,7 @@ int calc_value_coordnum_com_to_com(
   return error_code;
 }
 
-template <int N, int M, int blockSize, int tileSize, int flags>
+template <int static_en, int static_ed, int blockSize, int tileSize, int flags>
 __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   const cvm::real* __restrict pos1x,
   const cvm::real* __restrict pos1y,
@@ -731,7 +731,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
         }
         cvm::real partial = 0;
         if (pairlist_elem) {
-          partial = colvar::coordnum::compute_pair_coordnum<flags>(
+          partial = colvar::coordnum::compute_pair_coordnum<flags, static_en, static_ed>(
             inv_r0_vec, inv_r0sq_vec, en, ed,
             x1, y1, z1, x2, y2, z2,
             iGrad.x, iGrad.y, iGrad.z,
@@ -764,7 +764,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
           }
           cvm::real partial = 0;
           if (pairlist_elem) {
-            partial = colvar::coordnum::compute_pair_coordnum<flags>(
+            partial = colvar::coordnum::compute_pair_coordnum<flags, static_en, static_ed>(
               inv_r0_vec, inv_r0sq_vec, en, ed,
               x1, y1, z1, x2, y2, z2,
               iGrad.x, iGrad.y, iGrad.z,
@@ -841,7 +841,7 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
           }
           cvm::real partial = 0;
           if (pairlist_elem) {
-            partial = colvar::coordnum::compute_pair_coordnum<flags>(
+            partial = colvar::coordnum::compute_pair_coordnum<flags, static_en, static_ed>(
               inv_r0_vec, inv_r0sq_vec, en, ed,
               x1, y1, z1, x2, y2, z2,
               iGrad.x, iGrad.y, iGrad.z,
