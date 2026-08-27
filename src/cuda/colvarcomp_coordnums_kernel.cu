@@ -83,7 +83,7 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
     //       and then build a neighbor list of interacting tiles
     //       by comparing the distances between tile bounding boxes
     //       with a cutoff. However, currently it is unclear to me
-    //       wether Colvars developer would accept the idea of
+      //       whether Colvars developers would accept the idea of
     //       allowing re-sorting atoms dynamically in atom groups.
     for (unsigned int jTileIndex = 0; jTileIndex < numTilesInGroup2; ++jTileIndex) {
       const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
