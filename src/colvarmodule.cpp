@@ -446,7 +446,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
         this->error("GPU parallelism is not implemented.\n");
         return COLVARS_INPUT_ERROR;
       } else {
-        this->log("EXPERIMENTAL GPU parallelism will be used. GPU information:\n");
+        this->log("EXPERIMENTAL GPU parallelism will be used.\n");
       }
     } else {
       proxy->set_smp_mode(colvarproxy_smp::smp_mode_t::none);
@@ -492,7 +492,7 @@ int colvarmodule::parse_global_params(std::string const &conf)
         break;
       }
       case colvarproxy_smp::smp_mode_t::gpu: {
-        this->log("EXPERIMENTAL GPU parallelism will be used. GPU information:\n");
+        this->log("EXPERIMENTAL GPU parallelism will be used.\n");
         break;
       }
       case colvarproxy_smp::smp_mode_t::none: {
