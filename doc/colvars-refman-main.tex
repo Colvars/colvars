@@ -4060,7 +4060,7 @@ The \texttt{mapTotal} components takes the following options:
     \texttt{mapTotal}}{%
     Name of file to load the map from}{%
     filename}{%
-    This option is mutually exclusive with \refkey{mapID}{colvar|mapTotal|mapID}\cvnamdonly{and \refkey{mapName}{colvar|mapTotal|mapName}}; if given, the map will be loaded internally in Colvars, and a Colvars-based atom selections should be given with \refkey{mapName}{colvar|mapTotal|atoms}.
+    This option is mutually exclusive with \refkey{mapID}{colvar|mapTotal|mapID}\cvnamdonly{and \refkey{mapName}{colvar|mapTotal|mapName}}; if given, the map will be loaded internally in Colvars, and a Colvars-based atom selection should be provided with \refkey{atoms}{colvar|mapTotal|atoms}.
     \cvnamdonly{When this option is enabled in NAMD, the \texttt{MGridForceFile} keyword may not be used to select atoms.}
   }
 
@@ -4072,7 +4072,7 @@ The \texttt{mapTotal} components takes the following options:
     Group of atoms defining this function}{%
     \hyperref[sec:colvar_atom_groups]{Atom group}}{%
     This option defines the set of atoms to be aligned onto the volumetric map following the syntax described in section \ref{sec:colvar_atom_groups}.
-    \cvvmdonly{In VMD, this definition is \emph{required}, otherwise the \texttt{mapTotal} value is identically zero.}
+    \cvvmdonly{In VMD, this definition is \emph{required}.}
     \cvnamdonly{In NAMD, this keyword is optional when maps are loaded using the \href{https://www.ks.uiuc.edu/Research/namd/2.14/ug/node43.html}{MGridForcePotFile} keyword.
       The two approaches are equivalent for the purpose of selecting atoms: however, the former is needed when combining \texttt{mapTotal} with other Colvars features such as a moving frame of reference (see \ref{sec:colvar_atom_groups_ref_frame}), or when running NAMD in GPU-resident mode.
       Instead, the latter (when available) is more efficient because it offloads most of the computation of the volmap to NAMD in a scalable manner.}
