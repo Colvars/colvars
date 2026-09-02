@@ -1434,19 +1434,10 @@ int colvar::calc_cvcs(int first_cvc, size_t num_cvcs)
     return error_code;
   }
 
-  if (cvmodule->proxy->total_forces_valid() && (!is_enabled(f_cv_total_force_current_step))) {
-    // Use Jacobian derivative computed at previous timestep and the total forces from the same
-    // step, collected just now from the engine
-    error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
-  }
   // atom coordinates are updated by the next line
   error_code |= calc_cvc_values(first_cvc, num_cvcs);
   error_code |= calc_cvc_gradients(first_cvc, num_cvcs);
   error_code |= calc_cvc_Jacobians(first_cvc, num_cvcs);
-  if (is_enabled(f_cv_total_force_current_step)){
-    // Use Jacobian derivative from this timestep
-    error_code |= calc_cvc_total_force(first_cvc, num_cvcs);
-  }
 
   if (cvm::debug())
     cvmodule->log("Done calculating colvar \""+this->name+"\".\n");

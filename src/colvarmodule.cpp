@@ -955,6 +955,21 @@ int colvarmodule::calc()
 
   const bool use_gpu = proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu;
   increase_depth();
+  // TODO: This is a hack which does not fix the underlying design issue of Colvars.
+  // If two CVCs use the same atom group, clearly they cannot compute total forces
+  // at the same time because both of them would call read_total_forces() from the
+  // same atom group. The atom gradients are also problematic, since they could
+  // be (i) cleared after reset_atoms_data(), (ii) modified from the two CVCs
+  // at the same time if the atom group is shared. This hack only sacrifices SMP
+  // to solve (i). It is better to re-design the overall Colvars hierarchy to
+  // solve (ii). See also https://github.com/Colvars/colvars/discussions/655.
+  if (proxy->total_forces_valid()) {
+    for (auto cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
+      if (!(*cvi)->is_enabled(colvardeps::f_cv_total_force_current_step)) {
+        error_code |= (*cvi)->calc_cvc_total_force(0, (*cvi)->num_cvcs());
+      }
+    }
+  }
   // Read atom groups
   if (use_gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
@@ -1006,6 +1021,9 @@ int colvarmodule::calc()
   for (auto cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
     if ((*cvi)->is_enabled(colvardeps::f_cv_active)) {
       error_code |= (*cvi)->debug_cvc_gradients();
+    }
+    if ((*cvi)->is_enabled(colvardeps::f_cv_total_force_current_step)) {
+      error_code |= (*cvi)->calc_cvc_total_force(0, (*cvi)->num_cvcs());
     }
   }
   decrease_depth();
