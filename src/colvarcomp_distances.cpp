@@ -53,6 +53,9 @@ int colvar::distance::init(std::string const &conf)
 void colvar::distance::calc_value()
 {
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   dist_v = boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
   x.real_value = dist_v.norm();
 }
@@ -96,6 +99,9 @@ colvar::distance_vec::distance_vec()
 void colvar::distance_vec::calc_value()
 {
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   x.rvector_value =
       boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
 }
@@ -121,6 +127,9 @@ void colvar::distance_vec::apply_force(colvarvalue const &force)
 cvm::real colvar::distance_vec::dist2(colvarvalue const &x1, colvarvalue const &x2) const
 {
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   return (boundary_conditions.position_distance(x1.rvector_value, x2.rvector_value)).norm2();
 }
 
@@ -128,6 +137,9 @@ cvm::real colvar::distance_vec::dist2(colvarvalue const &x1, colvarvalue const &
 colvarvalue colvar::distance_vec::dist2_lgrad(colvarvalue const &x1, colvarvalue const &x2) const
 {
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   return 2.0 * boundary_conditions.position_distance(x2.rvector_value, x1.rvector_value);
 }
 
@@ -190,6 +202,9 @@ void colvar::distance_z::calc_value()
   cvm::rvector const M = main->center_of_mass();
   cvm::rvector const R1 = ref1->center_of_mass();
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   if (fixed_axis) {
     dist_v = boundary_conditions.position_distance(R1, M);
   } else {
@@ -255,6 +270,9 @@ colvar::distance_xy::distance_xy()
 void colvar::distance_xy::calc_value()
 {
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   dist_v = boundary_conditions.position_distance(ref1->center_of_mass(), main->center_of_mass());
   if (!fixed_axis) {
     v12 = boundary_conditions.position_distance(ref1->center_of_mass(), ref2->center_of_mass());
@@ -282,6 +300,9 @@ void colvar::distance_xy::calc_gradients()
     main->set_weighted_gradient(       x_inv * dist_v_ortho);
   } else {
     auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+    if (!is_enabled(f_cvc_pbc_minimum_image)) {
+      boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+    }
     v13 = boundary_conditions.position_distance(ref1->center_of_mass(), main->center_of_mass());
     A = (dist_v * axis) / axis_norm;
 
@@ -324,6 +345,9 @@ colvar::distance_dir::distance_dir()
 void colvar::distance_dir::calc_value()
 {
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   dist_v =
       boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
   x.rvector_value = dist_v.unit();
@@ -446,6 +470,9 @@ void colvar::distance_inv::calc_value()
   }                            \
 } while (0);
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   x.real_value = 0.0;
   CALL_KERNEL();
 
@@ -521,6 +548,9 @@ void colvar::distance_pairs::calc_value()
   }                                                                \
 } while (0);
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   CALL_KERNEL();
 #undef CALL_KERNEL
 }
@@ -557,6 +587,9 @@ void colvar::distance_pairs::apply_force(colvarvalue const &force)
   }                                                                     \
 } while (0);
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   CALL_KERNEL();
 #undef CALL_KERNEL
 }

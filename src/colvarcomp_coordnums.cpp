@@ -87,6 +87,9 @@ public:
       }
     }
     auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+    if (!cvc->is_enabled(f_cvc_pbc_minimum_image)) {
+      boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+    }
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
     // error_code |= checkGPUError(cudaStreamWaitEvent(
@@ -123,6 +126,9 @@ public:
                              COLVARS_BUG_ERROR);
     }
     auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+    if (!cvc->is_enabled(f_cvc_pbc_minimum_image)) {
+      boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+    }
     int error_code = COLVARS_OK;
     auto group = cvc->b_group1_center_only ? cvc->group2 : cvc->group1;
     auto group_com = cvc->b_group1_center_only ? cvc->group1 : cvc->group2;
@@ -163,6 +169,9 @@ public:
                              COLVARS_BUG_ERROR);
     }
     auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+    if (!cvc->is_enabled(f_cvc_pbc_minimum_image)) {
+      boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+    }
     int error_code = COLVARS_OK;
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
@@ -203,6 +212,9 @@ public:
         cvc->group1->size(), cvc->b_enable_pairlist, gpu_warp_size, cvc->get_stream());
     }
     auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+    if (!cvc->is_enabled(f_cvc_pbc_minimum_image)) {
+      boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+    }
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
@@ -587,6 +599,9 @@ void inline colvar::coordnum::main_loop()
   cvm::atom_pos const group2_com = group2->center_of_mass();
   cvm::rvector group1_com_grad, group2_com_grad;
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
 
   bool *pairlist_elem = pairlist.get();
 
@@ -830,6 +845,9 @@ void colvar::h_bond::calc_value()
 {
   constexpr int flags = coordnum::ef_null;
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   cvm::rvector G1, G2;
   const cvm::atom_pos A1{atom_groups[0]->pos_x(0),
                          atom_groups[0]->pos_y(0),
@@ -872,6 +890,9 @@ void colvar::h_bond::calc_gradients()
 {
   int constexpr flags = coordnum::ef_gradients;
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
   const cvm::rvector inv_r0_vec{
     1.0 / r0_vec.x,
     1.0 / r0_vec.y,
@@ -911,6 +932,9 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
   size_t const n = group1->size();
   bool *pairlist_elem = pairlist.get();
   auto boundary_conditions = cvmodule->proxy->get_system_boundaries();
+  if (!is_enabled(f_cvc_pbc_minimum_image)) {
+    boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
+  }
 
   for (size_t i = 0; i < n - 1; i++) {
 
