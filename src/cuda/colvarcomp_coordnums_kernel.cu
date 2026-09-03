@@ -79,6 +79,9 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
     double3 iGrad{0, 0, 0};
     // Load atom j from group2
     for (unsigned int jTileIndex = 0; jTileIndex < numTilesInGroup2; ++jTileIndex) {
+      if constexpr (use_pairlist && rebuild_pairlist) {
+        pairMask = PairMaskT(0);
+      }
       if constexpr (use_pairlist && !rebuild_pairlist) {
         const unsigned int l = iTile * numTilesInGroup2 + jTileIndex;
         pairMask = tlPairList[l].pairMask[threadIndexInTile];
