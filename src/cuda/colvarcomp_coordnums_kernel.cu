@@ -650,16 +650,6 @@ int calc_value_coordnum_com_to_com(
   return error_code;
 }
 
-// NOTE: The following function is only used for debugging if necessary.
-#if 0
-__inline__ __device__ size_t computeGlobalPairlistIDSelfGroup(
-  size_t iid_global, size_t jid_global, size_t numAtoms) {
-  const size_t iid = min(iid_global, jid_global);
-  const size_t jid = max(iid_global, jid_global);
-  return iid * (2 * numAtoms - 1 - iid) / 2 + (jid - iid - 1);
-}
-#endif
-
 template <int N, int M, int blockSize, int tileSize, int flags>
 __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   const cvm::real* __restrict pos1x,
@@ -907,97 +897,6 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
     }
   }
 }
-
-// For debug only
-#if 0
-template <int blockSize, int tileSize>
-__global__ void pairlistToHostKernel(
-  const unsigned int numAtoms1,
-  const unsigned int* __restrict tilesList,
-  const unsigned int* __restrict tilesListStart,
-  const unsigned int* __restrict tilesListSizes,
-  TilePairMask<tileSize>* __restrict tlPairListSelf,
-  TilePairMask<tileSize>* __restrict tlPairList,
-  bool* __restrict pairlist) {
-  constexpr unsigned int numTilesPerBlock = blockSize / tileSize;
-  constexpr const unsigned int half_tile_size = tileSize / 2;
-  const unsigned int numTilesInGroup1 = (numAtoms1 + tileSize - 1) / tileSize;
-  namespace cg = cooperative_groups;
-  const cg::thread_block thb = cg::this_thread_block();
-  const auto tilePartition = cg::tiled_partition<tileSize>(thb);
-  extern __shared__ unsigned int globalJIDs_buffer[];
-  unsigned int (&globalJIDs)[numTilesPerBlock][tileSize] =
-    *reinterpret_cast<unsigned int (*)[numTilesPerBlock][tileSize]>(globalJIDs_buffer);
-  // Which tile is the current thread working on?
-  const unsigned int tileIndexInBlock = tilePartition.meta_group_rank();
-  // The thread id in a tile
-  const unsigned int threadIndexInTile = tilePartition.thread_rank();
-  for (unsigned int iTile = blockIdx.x * numTilesPerBlock + tileIndexInBlock;
-       iTile < numTilesInGroup1; iTile += numTilesPerBlock * gridDim.x) {
-    const unsigned int tid = iTile * tileSize + threadIndexInTile;
-    const bool mask_i = tid < numAtoms1;
-    using PairMaskT = TilePairMask<tileSize>::PairMaskT;
-    PairMaskT pairMaskSelf;
-    globalJIDs[tileIndexInBlock][threadIndexInTile] = tid;
-    pairMaskSelf = tlPairListSelf[iTile].pairMask[threadIndexInTile];
-    tilePartition.sync();
-    // Self tiles
-    #pragma unroll
-    for (unsigned int t = 1; t < half_tile_size; ++t) {
-      // NAMD/OpenMM style swizzling
-      const unsigned int jid = (t + threadIndexInTile) & (tileSize - 1);
-      const bool mask_t = tilePartition.shfl(mask_i, jid);
-      if (mask_i && mask_t) {
-        unsigned int jid_global = globalJIDs[tileIndexInBlock][jid];
-        size_t pairlistID = computeGlobalPairlistIDSelfGroup(tid, jid_global, numAtoms1);
-        const bool pairlist_elem = (pairMaskSelf >> jid) & PairMaskT(1);
-        pairlist[pairlistID] = pairlist_elem;
-      }
-    }
-    // Last loop: t == block_size / 2
-    {
-      // NAMD/OpenMM style swizzling
-      const unsigned int jid = (half_tile_size + threadIndexInTile) & (tileSize - 1);
-      const bool mask_t = tilePartition.shfl(mask_i, jid);
-      if (jid > threadIndexInTile) {
-        if (mask_i && mask_t) {
-          const unsigned int jid_global = globalJIDs[tileIndexInBlock][jid];
-          size_t pairlistID = computeGlobalPairlistIDSelfGroup(tid, jid_global, numAtoms1);
-          const bool pairlist_elem = (pairMaskSelf >> jid) & PairMaskT(1);
-          pairlist[pairlistID] = pairlist_elem;
-        }
-      }
-    }
-    tilePartition.sync();
-    // Iterate over other tiles
-    const unsigned int jTileStart = tilesListStart[iTile];
-    const unsigned int numJTiles = tilesListSizes[iTile];
-    const unsigned int jTileEnd = jTileStart + numJTiles;
-    for (unsigned int l = jTileStart; l < jTileEnd; ++l) {
-      const unsigned int jTileIndex = tilesList[l];
-      const auto& tilePairMask = tlPairList[l];
-      PairMaskT pairmask = tilePairMask.pairMask[threadIndexInTile];
-      const unsigned int jid_global = jTileIndex * tileSize + threadIndexInTile;
-      const bool mask_j = jid_global < numAtoms1;
-      globalJIDs[tileIndexInBlock][threadIndexInTile] = jid_global;
-      tilePartition.sync();
-      #pragma unroll
-      for (unsigned int t = 0; t < tileSize; ++t) {
-        const unsigned int jid = t ^ threadIndexInTile;
-        const bool mask_t = tilePartition.shfl(mask_j, jid);
-        // unsigned int pairlistID;
-        if (mask_i && mask_t) {
-          const unsigned int pairlistID = computeGlobalPairlistIDSelfGroup(
-            tid, globalJIDs[tileIndexInBlock][jid], numAtoms1);
-          const bool pairlist_elem = (pairmask >> jid) & PairMaskT(1);
-          pairlist[pairlistID] = pairlist_elem;
-        }
-      }
-      tilePartition.sync();
-    }
-  }
-}
-#endif
 
 int calc_value_coordnum_self_group(
   const cvm::real* group_pos,
