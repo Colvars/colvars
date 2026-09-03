@@ -853,6 +853,8 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
           coordnum_tb += partial;
           if constexpr (use_pairlist && rebuild_pairlist) {
             pairlist_elem = partial > 0.0 ? true : false;
+            // pairMask & ~(PairMaskT(1) << jid): clear the bit at jid
+            // Set jid bit to 1 if pairlist_elem is true, and keep 0 otherwise.
             pairMask = (pairMask & ~(PairMaskT(1) << jid)) | ((PairMaskT)(pairlist_elem) << jid);
           }
         }
