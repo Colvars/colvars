@@ -74,7 +74,7 @@ public:
   int calc_value_two_groups(int flags) {
     int error_code = COLVARS_OK;
     if (cvc->b_enable_pairlist) {
-      if (!coordNumPairList.intialized) {
+      if (!coordNumPairList.initialized) {
         colvarproxy* p = cvmodule->proxy;
         const unsigned int gpu_warp_size = p->gpu_warp_size();
         coordNumPairList.preparePairList(
@@ -233,7 +233,7 @@ private:
     colvars_gpu::TilePairMask<32>* d_tilePairList_32 = nullptr;
     colvars_gpu::TilePairMask<64>* d_tilePairList_64 = nullptr;
     ///@]
-    bool intialized = false;
+    bool initialized = false;
     colvarmodule* cvmodule;
     coordNumPairListT(colvarmodule* cvmodule_in): cvmodule(cvmodule_in) {}
     ~coordNumPairListT() {
@@ -269,7 +269,7 @@ private:
           error_code |= cvmodule->error("Unsupported tileSize (" + cvm::to_str((int)tileSize) + ") in buildTileLists.\n");
         }
       };
-      intialized = true;
+      initialized = true;
       return error_code;
     }
   } coordNumPairList;
