@@ -721,6 +721,9 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
     double3 iGrad{0, 0, 0};
     using PairMaskT = typename TilePairMask<tileSize>::PairMaskT;
     PairMaskT pairMaskSelf;
+    if constexpr (use_pairlist && rebuild_pairlist) {
+      pairMaskSelf = PairMaskT(0);
+    }
     if constexpr (use_pairlist && !rebuild_pairlist) {
       pairMaskSelf = tlPairListSelf[iTile].pairMask[threadIndexInTile];
     }
