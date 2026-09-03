@@ -799,6 +799,9 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
     const unsigned int jTileEnd = jTileStart + numJTiles;
     for (unsigned int l = jTileStart; l < jTileEnd; ++l) {
       PairMaskT pairMask;
+      if constexpr (use_pairlist && rebuild_pairlist) {
+        pairMask = PairMaskT(0);
+      }
       if constexpr (use_pairlist && !rebuild_pairlist) {
         pairMask = tlPairList[l].pairMask[threadIndexInTile];
         // Skip the entire tile if there is no interaction
