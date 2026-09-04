@@ -199,7 +199,11 @@ inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::switching_function(
   if constexpr ((static_en > 0) && (static_ed > 0)) {
     if constexpr (static_ed_is_2en) {
       // xn = cvm::positive_integer_power<static_en / 2>(l2);
-      xn_1 = cvm::positive_integer_power<static_en / 2 - 1>(l2);
+      if constexpr (static_en == 2) {
+        xn_1 = 1.0;
+      } else {
+        xn_1 = cvm::positive_integer_power<static_en / 2 - 1>(l2);
+      }
       xn = xn_1 * l2;
       en2_r = (cvm::real)static_en / 2;
     } else {
