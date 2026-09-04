@@ -49,7 +49,9 @@ public:
     error_code |= p->reallocate_host(&h_coordnum, 1);
     const std::string function_type = cvc->function_type();
     if (cvc->b_enable_pairlist) {
-      if ((function_type != "selfCoordNum") && (function_type != "coordNum")) {
+      if ((function_type != "selfCoordNum") &&
+          ((function_type != "coordNum") || cvc->b_group1_center_only ||
+           cvc->b_group2_center_only)) {
         error_code |= p->reallocate_device(&d_pairlist, cvc->num_pairs);
         error_code |= p->clear_device_array(d_pairlist, cvc->num_pairs);
       }
@@ -77,8 +79,11 @@ public:
       if (!coordNumPairList.initialized) {
         colvarproxy* p = cvmodule->proxy;
         const unsigned int gpu_warp_size = p->gpu_warp_size();
-        coordNumPairList.preparePairList(
+        error_code |= coordNumPairList.preparePairList(
           cvc->group1->size(), cvc->group2->size(), gpu_warp_size, cvc->get_stream());
+        if (error_code != COLVARS_OK) {
+          return error_code;
+        }
       }
     }
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
@@ -266,7 +271,7 @@ private:
           break;
         }
         default: {
-          error_code |= cvmodule->error("Unsupported tileSize (" + cvm::to_str((int)tileSize) + ") in buildTileLists.\n");
+          error_code |= cvmodule->error("Unsupported tileSize (" + cvm::to_str((int)tileSize) + ") in preparePairList.\n");
         }
       };
       initialized = true;
