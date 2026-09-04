@@ -327,7 +327,6 @@ int colvarproxy_namd::reset()
 
   globalmaster->reset();
 
-  // atoms_map.clear();
   // TODO: There's no other way to re-initialize the atoms_map after
   // clearing and then reloading a new configuration file, so we just
   // assume that the number of atoms is unchanged, and reset the atoms_map
@@ -335,8 +334,9 @@ int colvarproxy_namd::reset()
   // reload a new system with different number of atoms in the future.
   std::fill(atoms_map.begin(), atoms_map.end(), -1);
 
-  // Clear internal atomic data
+  // Clear internal atomic data (atoms, groups and volmaps)
   error_code |= colvarproxy::reset();
+  internal_gridforce_grids_.clear();
 
   return error_code;
 }
