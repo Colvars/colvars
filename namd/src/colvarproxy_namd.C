@@ -1438,9 +1438,9 @@ int colvarproxy_namd::load_internal_volmap_from_file(std::string const &filename
 }
 
 
-void colvarproxy_namd::clear_volmap(int index)
+int colvarproxy_namd::clear_volmap(int index)
 {
-  colvarproxy::clear_volmap(index);
+  int error_code = colvarproxy::clear_volmap(index);
   if (volmaps_refcount[index] == 0) {
     int const volmap_id = volmaps_ids[index];
     if (volmap_id >= 0) {
@@ -1454,6 +1454,8 @@ void colvarproxy_namd::clear_volmap(int index)
       internal_gridforce_grids_[index].reset(nullptr);
     }
   }
+
+  return error_code;
 }
 
 
