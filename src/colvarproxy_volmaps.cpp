@@ -29,15 +29,16 @@ int colvarproxy_volmaps::check_volmaps_available()
 
 int colvarproxy_volmaps::reset()
 {
+  int error_code = COLVARS_OK;
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
-    clear_volmap(i);
+    error_code |= clear_volmap(i);
   }
   volmaps_ids.clear();
   volmaps_refcount.clear();
   volmaps_values.clear();
   volmaps_new_colvar_forces.clear();
   volmaps_filenames.clear();
-  return COLVARS_OK;
+  return error_code;
 }
 
 
@@ -82,17 +83,18 @@ int colvarproxy_volmaps::load_internal_volmap_from_file(std::string const & /* v
 }
 
 
-void colvarproxy_volmaps::clear_volmap(int index)
+int colvarproxy_volmaps::clear_volmap(int index)
 {
-  if (((size_t) index) >= volmaps_ids.size()) {
-    cvm::error_static("Error: trying to unrequest a volumetric map that was not "
-               "previously requested.\n", COLVARS_INPUT_ERROR);
+  if (index < 0 || ((size_t) index) >= volmaps_ids.size()) {
+    return COLVARS_INPUT_ERROR;
   }
   volmaps_filenames[index].clear();
 
   if (volmaps_refcount[index] > 0) {
     volmaps_refcount[index] -= 1;
   }
+
+  return COLVARS_OK;
 }
 
 
