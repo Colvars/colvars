@@ -791,9 +791,9 @@ int colvarproxy_vmd::load_internal_volmap_from_file(std::string const &filename)
 }
 
 
-void colvarproxy_vmd::clear_volmap(int index)
+int colvarproxy_vmd::clear_volmap(int index)
 {
-  colvarproxy::clear_volmap(index);
+  return colvarproxy::clear_volmap(index);
 }
 
 

@@ -52,7 +52,7 @@ public:
   virtual int load_internal_volmap_from_file(std::string const &filename);
 
   /// Used by the CVC destructors
-  virtual void clear_volmap(int index);
+  virtual int clear_volmap(int index);
 
   /// Get the numeric ID of the given volumetric map (for the MD program)
   inline int get_volmap_id(int index) const

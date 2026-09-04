@@ -259,7 +259,7 @@ public:
   /// Load a map internally independent from MGridForces
   int load_internal_volmap_from_file(std::string const &filename) override;
 
-  void clear_volmap(int index) override;
+  int clear_volmap(int index) override;
 
   int compute_volmap(int flags,
                      int index,
