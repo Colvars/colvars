@@ -775,7 +775,13 @@ int colvarproxy_vmd::load_internal_volmap_from_file(std::string const &filename)
   // Load a new map
   FileSpec tmpspec;
   tmpspec.autobonds = 0;
+  int const num_volmaps_before = vmdmol->num_volume_data();
   int tmpmolid = vmd->molecule_load(vmdmolid, filename.c_str(), "dx", &tmpspec);
+  if ((tmpmolid < 0) || (vmdmol->num_volume_data() <= num_volmaps_before)) {
+    cvmodule->error("Error: VMD could not read volumetric map file \"" + filename + "\".\n",
+                    COLVARS_FILE_ERROR);
+    return -1;
+  }
   int volmap_id = vmdmol->num_volume_data() - 1;
 
   int index = add_volmap_slot(volmap_id);
