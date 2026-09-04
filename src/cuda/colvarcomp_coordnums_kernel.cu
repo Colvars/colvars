@@ -1011,7 +1011,7 @@ int calc_value_coordnum_self_group(
         default:          kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<0,  0, default_block_size, 32, N>; break; \
       }                                                                                                                           \
       break; }                                                                                                                    \
-    default: return cvmodule->error("Unsupported warp size in: " + cvm::to_str(gpu_warp_size) + "\n", COLVARS_BUG_ERROR);}        \
+    default: return cvmodule->error("Unsupported warp size in calc_value_coordnum_self_group: " + cvm::to_str(gpu_warp_size) + "\n", COLVARS_BUG_ERROR);}        \
   } break
 #elif defined (COLVARS_HIP)
 #define CASE(N, ENED) case N: { switch (gpu_warp_size) {                                                                          \
@@ -1029,7 +1029,7 @@ int calc_value_coordnum_self_group(
         default:          kernel = (void*)computeCoordinationNumberSelfGroupCUDAKernel1<0,  0, default_block_size, 64, N>; break; \
       }                                                                                                                           \
       break; }                                                                                                                    \
-    default: return cvmodule->error("Unsupported warp size in: " + cvm::to_str(gpu_warp_size) + "\n", COLVARS_BUG_ERROR);}        \
+    default: return cvmodule->error("Unsupported warp size in calc_value_coordnum_self_group: " + cvm::to_str(gpu_warp_size) + "\n", COLVARS_BUG_ERROR);}        \
   } break
 #endif
   switch (flags) {
