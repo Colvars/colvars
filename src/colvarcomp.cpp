@@ -1332,10 +1332,10 @@ int colvar::cvc::begin_apply_force_from_cpu_to_gpu() {
 
 int colvar::cvc::register_precomputed_cvc(std::string const &id, std::string const &cvc_name)
 {
-  auto *base_ptr = cvmodule->get_component_by_name(cvc_name);
-  cvc *cvc_ptr = dynamic_cast<cvc *>(base_ptr);
+  auto base_ptr = cvmodule->get_component_by_name(cvc_name);
+  auto cvc_ptr = std::dynamic_pointer_cast<cvc>(base_ptr);
   if (cvc_ptr) {
-    precomputed_cvcs[id] = std::shared_ptr<cvc>(dynamic_cast<cvc *>(cvc_ptr));
+    precomputed_cvcs[id] = cvc_ptr;
     return COLVARS_OK;
   }
   if (base_ptr) {
