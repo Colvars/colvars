@@ -874,10 +874,10 @@ cvm::atom_group *colvarmodule::atom_group_by_name(std::string const& name) {
 }
 
 
-colvardeps *colvarmodule::get_component_by_name(std::string const &name)
+std::shared_ptr<colvardeps> colvarmodule::get_component_by_name(std::string const &name)
 {
   if (colvar_components_.count(name) > 0) {
-    return colvar_components_[name].get();
+    return colvar_components_[name];
   }
   return nullptr;
 }
