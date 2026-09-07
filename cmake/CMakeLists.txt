@@ -45,6 +45,19 @@ option(COLVARS_LEPTON "Build and link the Lepton library" ${COLVARS_LEPTON_DEFAU
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
 add_library(colvars ${COLVARS_SOURCES})
+# Copilot suggestion:
+# Multi-config generators on Windows (Visual Studio) may otherwise place the
+# import/static library in a target-specific subdirectory, while the generated
+# test/tool projects link against the conventional build-root Debug/Release
+# locations. Keep the output layout stable so dependent targets can find
+# colvars.lib consistently.
+if(MSVC)
+  set_target_properties(colvars PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>"
+  )
+endif()
 if(BUILD_SHARED_LIBS)
   if(WIN32)
     set_target_properties(colvars PROPERTIES
