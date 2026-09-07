@@ -46,6 +46,11 @@ file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
 add_library(colvars ${COLVARS_SOURCES})
 if(BUILD_SHARED_LIBS)
+  if(WIN32)
+    set_target_properties(colvars PROPERTIES
+      WINDOWS_EXPORT_ALL_SYMBOLS ON
+    )
+  endif()
   set_property(TARGET colvars PROPERTY POSITION_INDEPENDENT_CODE 1)
 endif()
 
