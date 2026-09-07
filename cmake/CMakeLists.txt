@@ -150,12 +150,6 @@ endif()
 option(BUILD_TOOLS "Build standalone tools" ON)
 
 option(BUILD_TESTS "Build tests" ON)
- 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  # TODO fix linkage errors with Visual Studio...
-  set(BUILD_TOOLS OFF)
-  set(BUILD_TESTS OFF)
-endif()
 
 option(BUILD_UNITTESTS "Build unit tests" ${BUILD_TESTS})
 
