@@ -167,7 +167,7 @@ void colvar::orientation::apply_force(colvarvalue const &force)
   } else {
 
     if (!atoms->noforce) {
-      const cvm::real sign = (rot.q).inner(ref_quat) >= 0.0 ? 1.0 : -1.0;
+      const cvm::real sign = q.inner(ref_quat) >= 0.0 ? 1.0 : -1.0;
       rot_deriv_impl->prepare_derivative(rotation_derivative_dldq::use_dq);
       const cvm::rmatrix dxdC = rot_deriv_impl->project_force_to_C_from_dxdq(FQ);
       auto ag_force = atoms->get_group_force_object();
@@ -268,11 +268,9 @@ void colvar::orientation_angle::calc_value()
 
 void colvar::orientation_angle::calc_gradients()
 {
-  const cvm::real sign = (rot.q).q0 >= 0.0 ? 1.0 : -1.0;
+  const cvm::real sign = q.q0 >= 0.0 ? 1.0 : -1.0;
   cvm::real const dx_dq0 =
-    sign * ( ((rot.q).q0 * (rot.q).q0 < 1.0) ?
-      ((180.0 / PI) * (-2.0) / cvm::sqrt(1.0 - ((rot.q).q0 * (rot.q).q0))) :
-      0.0 );
+      sign * ((q.q0 * q.q0 < 1.0) ? ((180.0 / PI) * (-2.0) / cvm::sqrt(1.0 - (q.q0 * q.q0))) : 0.0);
   dx_dq = cvm::quaternion(dx_dq0, 0.0, 0.0, 0.0);
 
   if (!has_precomputed_cvc("orientation")) {
