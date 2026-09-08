@@ -1344,6 +1344,9 @@ int colvar::cvc::register_precomputed_cvc(std::string const &id, std::string con
   auto cvc_ptr = std::dynamic_pointer_cast<cvc>(base_ptr);
   if (cvc_ptr) {
     precomputed_cvcs[id] = cvc_ptr;
+    disable(f_cvc_explicit_atom_groups);
+    disable(f_cvc_explicit_gradient);
+    enable(f_cvc_reusing_cvcs);
     return COLVARS_OK;
   }
   if (base_ptr) {
