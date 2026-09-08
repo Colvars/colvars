@@ -1522,12 +1522,15 @@ int colvarmodule::reset()
   biases_active_.clear();
   num_biases_types_used_.clear();
 
-  // Clear the global map first, after which each colvar takes down its own CVCs
+  // Clear additional references to CVCs, after which each colvar takes down its own
+  for (auto cvi = colvars.begin(); cvi != colvars.end(); cvi++) {
+    (*cvi)->dereference_objects();
+  }
   colvar_components_.clear();
 
   // Iterate backwards because we are deleting the elements as we go
   while (!colvars.empty()) {
-    colvar* cvi = colvars.back();
+    colvar *cvi = colvars.back();
     delete cvi; // the colvar destructor updates the colvars array
   };
   colvars.clear();

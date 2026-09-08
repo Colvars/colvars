@@ -440,6 +440,7 @@ int colvar::cvc::setup()
 
 colvar::cvc::~cvc()
 {
+  precomputed_cvcs.clear();
   free_children_deps();
   remove_all_children();
   for (size_t i = 0; i < atom_groups.size(); i++) {
@@ -454,6 +455,13 @@ colvar::cvc::~cvc()
     }
   }
 #endif
+}
+
+
+int colvar::cvc::dereference_precomputed_cvcs()
+{
+  precomputed_cvcs.clear();
+  return COLVARS_OK;
 }
 
 

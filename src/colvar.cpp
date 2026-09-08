@@ -1408,6 +1408,15 @@ colvar::~colvar()
 }
 
 
+int colvar::dereference_objects()
+{
+  int error_code = COLVARS_OK;
+  for (auto ci = cvcs.begin(); ci != cvcs.end(); ++ci) {
+    error_code |= (*ci)->dereference_precomputed_cvcs();
+  }
+  return error_code;
+}
+
 
 // ******************** CALC FUNCTIONS ********************
 
