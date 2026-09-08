@@ -410,6 +410,12 @@ int colvar::cvc::setup()
 {
   int error_code = COLVARS_OK;
   if (is_enabled(f_cvc_reusing_cvcs)) {
+    if (cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::cvcs) {
+      error_code |= cvmodule->error(
+          "reusable components are currently not compatible with SMP object-based parallelism"
+          "(\"smp on\" or \"smp cvcs\"); please use \"smp off\" or other value",
+         COLVARS_INPUT_ERROR);
+    }
     for (auto ci = precomputed_cvcs.begin(); ci != precomputed_cvcs.end(); ci++) {
       if (ci->first != ci->second->function_type()) {
         error_code |=

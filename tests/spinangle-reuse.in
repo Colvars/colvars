@@ -1,3 +1,5 @@
+smp off
+
 colvar {
 
     name ori
