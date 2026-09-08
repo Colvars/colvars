@@ -1,6 +1,7 @@
 colvarsTrajFrequency 1
 colvarsRestartFrequency 10
 indexFile index.ndx
+smp off
 
 colvar {
 
