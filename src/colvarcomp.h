@@ -104,6 +104,9 @@ public:
   /// Destructor
   virtual ~cvc();
 
+  /// Remove references to precomputed CVCs
+  int dereference_precomputed_cvcs();
+
   /// An init function should be defined for every class inheriting from cvc
   /// \param conf Contents of the configuration file pertaining to this \link
   /// cvc \endlink
