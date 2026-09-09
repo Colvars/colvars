@@ -916,7 +916,7 @@ protected:
 
   /// \brief This is used to remove jumps in the sign of the
   /// quaternion, which may be annoying in the colvars trajectory
-  cvm::quaternion            ref_quat;
+  cvm::quaternion            ref_quat {1.0, 0.0, 0.0, 0.0};
 
   /// Rotation derivative
   struct rotation_derivative_impl_;
