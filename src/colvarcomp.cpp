@@ -59,12 +59,25 @@ std::string colvar::cvc::function_type() const
 int colvar::cvc::set_function_type(std::string const &type)
 {
   function_types.push_back(type);
-  update_description();
+  int error_code = update_description();
   cvmodule->cite_feature(function_types[0]+" colvar component");
   for (size_t i = function_types.size()-1; i > 0; i--) {
     cvmodule->cite_feature(function_types[i]+" colvar component"+
                               " (derived from "+function_types[i-1]+")");
   }
+  return error_code;
+}
+
+
+std::string colvar::cvc::qualified_name() const
+{
+  return parent_name_ + "/" + name;
+}
+
+
+int colvar::cvc::set_parent_name(std::string const &cv_name)
+{
+  parent_name_ = cv_name;
   return COLVARS_OK;
 }
 
@@ -324,6 +337,13 @@ int colvar::cvc::init_dependencies() {
     require_feature_children(f_cvc_collect_atom_ids, f_ag_collect_atom_ids);
     require_feature_self(f_cvc_collect_atom_ids, f_cvc_explicit_atom_groups);
 
+    init_feature(f_cvc_reusing_cvcs, "reusing_cvcs", f_type_static);
+    // When reusing computation from another CVC, individual atoms are inaccessible
+    exclude_feature_self(f_cvc_reusing_cvcs, f_cvc_explicit_atom_groups);
+    exclude_feature_self(f_cvc_reusing_cvcs, f_cvc_explicit_gradient);
+
+    init_feature(f_cvc_reusable, "reusable", f_type_static);
+
     // TODO only enable this when f_ag_scalable can be turned on for a pre-initialized group
     // require_feature_children(f_cvc_scalable, f_ag_scalable);
     // require_feature_children(f_cvc_scalable_com, f_ag_scalable_com);
@@ -356,6 +376,10 @@ int colvar::cvc::init_dependencies() {
 
   feature_states[f_cvc_periodic].available = false;
 
+  // Few CVCs are able so far to reuse another CVC or be reused
+  feature_states[f_cvc_reusable].available = false;
+  feature_states[f_cvc_reusing_cvcs].available = false;
+
   // CVCs are enabled from the start - get disabled based on flags
   enable(f_cvc_active);
 
@@ -384,13 +408,45 @@ int colvar::cvc::init_dependencies() {
 
 int colvar::cvc::setup()
 {
-  update_description();
-  return COLVARS_OK;
+  int error_code = COLVARS_OK;
+  if (is_enabled(f_cvc_reusing_cvcs)) {
+    if (cvmodule->proxy->get_smp_mode() != colvarproxy_smp::smp_mode_t::none) {
+      error_code |= cvmodule->error(
+          "reusable components are currently not compatible with SMP object-based parallelism"
+          "(\"smp on\" or \"smp cvcs\"); please disable it by using \"smp off\" as a global "
+          "keyword",
+          COLVARS_INPUT_ERROR);
+    }
+    for (auto ci = precomputed_cvcs.begin(); ci != precomputed_cvcs.end(); ci++) {
+      if (ci->first != ci->second->function_type()) {
+        error_code |=
+            cvmodule->error("Error: component \"" + name + "\" is trying to reuse component \"" +
+                                ci->second->qualified_name() + "\", which is of type \"" +
+                                ci->second->function_type() + "\", but it should be of type \"" +
+                                ci->first + "\".\n",
+                            COLVARS_INPUT_ERROR);
+      }
+      if (ci->second->is_enabled(f_cvc_reusing_cvcs)) {
+        error_code |= cvmodule->error(
+            "Error: component \"" + name + "\" is trying to reuse component \"" +
+                ci->second->qualified_name() +
+                "\", which is in turn reusing other components; only one indirection is allowed.\n",
+            COLVARS_INPUT_ERROR);
+      }
+      // TODO Handle this from the dependency system
+      if (is_enabled(f_cvc_gradient)) {
+        ci->second->enable(f_cvc_gradient);
+      }
+    }
+  }
+  error_code |= update_description();
+  return error_code;
 }
 
 
 colvar::cvc::~cvc()
 {
+  precomputed_cvcs.clear();
   free_children_deps();
   remove_all_children();
   for (size_t i = 0; i < atom_groups.size(); i++) {
@@ -405,6 +461,13 @@ colvar::cvc::~cvc()
     }
   }
 #endif
+}
+
+
+int colvar::cvc::dereference_precomputed_cvcs()
+{
+  precomputed_cvcs.clear();
+  return COLVARS_OK;
 }
 
 
@@ -1280,6 +1343,27 @@ int colvar::cvc::begin_apply_force_from_cpu_to_gpu() {
 #endif
   return error_code;
 }
+
+
+int colvar::cvc::register_precomputed_cvc(std::string const &id, std::string const &cvc_name)
+{
+  auto base_ptr = cvmodule->get_component_by_name(cvc_name);
+  auto cvc_ptr = std::dynamic_pointer_cast<cvc>(base_ptr);
+  if (cvc_ptr) {
+    precomputed_cvcs[id] = cvc_ptr;
+    disable(f_cvc_explicit_atom_groups);
+    disable(f_cvc_explicit_gradient);
+    enable(f_cvc_reusing_cvcs);
+    return COLVARS_OK;
+  }
+  if (base_ptr) {
+    return cvmodule->error("Error: object named \"" + cvc_name + "\" is not a colvar component.\n",
+                           COLVARS_INPUT_ERROR);
+  }
+  return cvmodule->error("Error: cannot find a component named \"" + cvc_name + "\".\n",
+                         COLVARS_INPUT_ERROR);
+}
+
 
 // Static members
 
