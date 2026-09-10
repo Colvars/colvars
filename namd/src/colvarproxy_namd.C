@@ -1470,8 +1470,7 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
   Vector dV(0.0);
   for (size_t i = 0; i < ag->size(); ++i) {
 
-    if ((flags & volmap_flag_use_atomlist) &&
-        !(flags & volmap_flag_rebuild_atomlist)) {
+    if constexpr ((flags & volmap_flag_use_atomlist) && !(flags & volmap_flag_rebuild_atomlist)) {
       if (inside[i] == 0) {
         // Skip atom according to precomputed list
         continue;
@@ -1482,20 +1481,20 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
 
     if (g->compute_VdV(Position(ag->pos_x(i), ag->pos_y(i), ag->pos_z(i)), V, dV)) {
       // out-of-bounds atom
-      if (flags & volmap_flag_rebuild_atomlist) {
+      if constexpr (flags & volmap_flag_rebuild_atomlist) {
         inside[i] = 0;
       }
       V = 0.0f;
       dV = 0.0;
     } else {
 
-      if (flags & volmap_flag_rebuild_atomlist) {
+      if constexpr (flags & volmap_flag_rebuild_atomlist) {
         inside[i] = 1;
       }
 
-      if (flags & volmap_flag_use_atom_field) {
+      if constexpr (flags & volmap_flag_use_atom_field) {
         *value += V * atom_field[i];
-        if (flags & volmap_flag_gradients) {
+        if constexpr (flags & volmap_flag_gradients) {
           const cvm::rvector grad = atom_field[i] * cvm::rvector(dV.x, dV.y, dV.z);
           ag->grad_x(i) += grad.x;
           ag->grad_y(i) += grad.y;
@@ -1503,7 +1502,7 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
         }
       } else {
         *value += V;
-        if (flags & volmap_flag_gradients) {
+        if constexpr (flags & volmap_flag_gradients) {
           ag->grad_x(i) += dV.x;
           ag->grad_y(i) += dV.y;
           ag->grad_z(i) += dV.z;
