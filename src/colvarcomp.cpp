@@ -394,6 +394,9 @@ colvar::cvc::~cvc()
   free_children_deps();
   remove_all_children();
   for (size_t i = 0; i < atom_groups.size(); i++) {
+    cvmodule->unregister_atom_group_from_cvc(atom_groups[i]);
+  }
+  for (size_t i = 0; i < atom_groups.size(); i++) {
     if (atom_groups[i] != NULL) delete atom_groups[i];
   }
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
@@ -453,6 +456,7 @@ void colvar::cvc::register_atom_group(cvm::atom_group *ag)
   atom_groups.push_back(ag);
   add_child(ag);
   enable(f_cvc_explicit_atom_groups);
+  cvmodule->register_atom_group_from_cvc(ag);
 }
 
 
@@ -487,63 +491,6 @@ int colvar::cvc::set_param(std::string const &param_name,
   }
 
   return colvarparams::set_param(param_name, new_value);
-}
-
-
-void colvar::cvc::read_data()
-{
-  if (is_enabled(f_cvc_pbc_minimum_image)) {
-    // Copy boundary conditions from the proxy
-    boundary_conditions = cvmodule->proxy->get_system_boundaries();
-  } else {
-    // Set as non-periodic boundary conditions (default) for this CVC
-    boundary_conditions.reset();
-  }
-
-  if (is_enabled(f_cvc_explicit_atom_groups)) {
-    for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
-      auto &atoms = *(*agi);
-      atoms.reset_atoms_data();
-      atoms.read_positions();
-      atoms.calc_required_properties();
-      // each atom group will take care of its own fitting_group, if defined
-    }
-  }
-}
-
-int colvar::cvc::read_data_gpu() {
-  int error_code = COLVARS_OK;
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  colvarproxy* proxy = cvmodule->proxy;
-  if ((proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) && is_enabled(f_cvc_explicit_atom_groups)) {
-    if (is_enabled(colvardeps::f_cvc_require_cpu_buffers)) {
-      // We need to reset the atom group data if it requires CPU buffers
-      for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
-        (*agi)->reset_atoms_data();
-      }
-    }
-    for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
-      error_code |= (*agi)->get_gpu_atom_group()->read_data_gpu(*agi);
-    }
-    // NOTE: In after_read_data_sync, there are calls to synchronize the
-    // CUDA events for checking if the eigendecompositions are failed, so
-    // I separate read_data_gpu and after_read_data_sync into two loops for possibly
-    // better parallelization.
-    for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
-      // Synchronize the results to CPU if necessary
-      error_code |= (*agi)->get_gpu_atom_group()->after_read_data_sync(
-        *agi, is_enabled(colvardeps::f_cvc_require_cpu_buffers));
-    }
-  }
-#endif
-  if (is_enabled(f_cvc_pbc_minimum_image)) {
-    // Copy boundary conditions from the proxy
-    boundary_conditions = cvmodule->proxy->get_system_boundaries();
-  } else {
-    // Set as non-periodic boundary conditions (default) for this CVC
-    boundary_conditions.reset();
-  }
-  return error_code;
 }
 
 
@@ -623,16 +570,6 @@ void colvar::cvc::calc_Jacobian_derivative()
   cvmodule->error("Error: calculation of Jacobian derivatives is not implemented "
              "for colvar components of type \""+function_type()+"\".\n",
              COLVARS_NOT_IMPLEMENTED);
-}
-
-
-void colvar::cvc::calc_fit_gradients()
-{
-  if (is_enabled(f_cvc_explicit_gradient)) {
-    for (size_t ig = 0; ig < atom_groups.size(); ig++) {
-      atom_groups[ig]->calc_fit_gradients();
-    }
-  }
 }
 
 
@@ -1252,19 +1189,6 @@ void colvar::cvc::wrap(colvarvalue &x_unwrapped) const
     cvm::real const shift = cvm::floor((x_unwrapped.real_value - wrap_center) / period + 0.5);
     x_unwrapped.real_value -= shift * period;
   }
-}
-
-
-int colvar::cvc::calc_fit_gradients_gpu() {
-  int error_code = COLVARS_OK;
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  if (is_enabled(f_cvc_explicit_gradient)) {
-    for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
-      error_code |= (*agi)->get_gpu_atom_group()->calc_fit_gradients_gpu(*agi);
-    }
-  }
-#endif
-  return error_code;
 }
 
 
