@@ -136,8 +136,27 @@ int colvar::cvc::init(std::string const &conf)
     enable(f_cvc_pbc_minimum_image);
   }
 
-  // Attempt scalable calculations when in parallel? (By default yes, if available)
-  get_keyval(conf, "scalable", b_try_scalable, b_try_scalable);
+  if (is_available(f_cvc_scalable)) {
+    // Attempt scalable calculations when in parallel? (By default yes)
+    get_keyval(conf, "scalable", b_try_scalable, b_try_scalable);
+  }
+
+  if (is_available(f_cvc_dynamic_atom_list)) {
+    if (get_keyval(conf, "atomListFrequency", atom_list_freq, atom_list_freq)) {
+      if (atom_list_freq < 1) {
+        error_code |= cvmodule->error("The value of atomListFrequency must be 1 or larger.",
+                                      COLVARS_INPUT_ERROR);
+      }
+    }
+    if (atom_list_freq > 1) {
+      enable(f_cvc_dynamic_atom_list);
+      // Set the atom list frequency for this CVC and its dependencies (mostly, the proxy)
+      error_code |= set_atom_list_frequency(atom_list_freq);
+    } else {
+      // atomListFrequency == 1 means no dynamic list
+      disable(f_cvc_dynamic_atom_list);
+    }
+  }
 
   if (cvm::debug())
     cvmodule->log("Done initializing cvc base object.\n");
@@ -165,6 +184,59 @@ int colvar::cvc::init_gpu() {
 #endif
   }
 #endif
+  return error_code;
+}
+
+
+int colvar::cvc::set_atom_list_frequency(int new_frequency)
+{
+  if (atom_list_freq > 0) {
+    if (atom_list_freq != new_frequency) {
+      return cvmodule->error("Error: cannot redefine atomListFrequency once it is provided.\n",
+                             COLVARS_INPUT_ERROR);
+    }
+  }
+  atom_list_freq = new_frequency;
+  return cvmodule->proxy->set_atom_list_frequency(atom_list_freq);
+}
+
+
+int colvar::cvc::update_requested_atoms(cvm::atom_group *dyn_atoms)
+{
+  int error_code = COLVARS_OK;
+  colvarproxy *proxy = cvmodule->proxy;
+
+  if (atom_list_freq > 0) {
+
+    // Reenable all atoms for the next step
+    if (((cvmodule->step_absolute()+1) % atom_list_freq) == 0) {
+      for (size_t i = 0; i < dyn_atoms->size(); i++) {
+        proxy->increase_refcount((*dyn_atoms)[i].proxy_index);
+      }
+    }
+
+    if (!is_enabled(f_cvc_dynamic_atom_list)) {
+      // If the CVC is not enabling/disabling atoms on its own, then disable
+      // them all for the next step
+      if (((cvmodule->step_absolute()) % atom_list_freq) == 0) {
+        for (size_t i = 0; i < dyn_atoms->size(); i++) {
+          proxy->decrease_refcount((*dyn_atoms)[i].proxy_index);
+        }
+      }
+    }
+  }
+
+  return error_code;
+}
+
+
+int colvar::cvc::update_all_requested_atoms()
+{
+  int error_code = COLVARS_OK;
+  for (std::vector<cvm::atom_group *>::iterator agi = atom_groups.begin();
+       agi != atom_groups.end(); agi++) {
+    error_code |= update_requested_atoms(*agi);
+  }
   return error_code;
 }
 
@@ -306,6 +378,8 @@ int colvar::cvc::init_dependencies() {
     init_feature(f_cvc_one_site_total_force, "total_force_from_one_group", f_type_user);
     require_feature_self(f_cvc_one_site_total_force, f_cvc_com_based);
 
+    init_feature(f_cvc_dynamic_atom_list, "dynamic_atom_list", f_type_dynamic);
+
     init_feature(f_cvc_com_based, "function_of_centers_of_mass", f_type_static);
 
     init_feature(f_cvc_pbc_minimum_image, "use_minimum-image_with_PBCs", f_type_user);
@@ -373,6 +447,9 @@ int colvar::cvc::init_dependencies() {
 
   // Features that are implemented by default if their requirements are
   feature_states[f_cvc_one_site_total_force].available = true;
+
+  // By default the list of atoms contributing to the CVC is fixed
+  feature_states[f_cvc_dynamic_atom_list].available = false;
 
   // Features That are implemented only for certain simulation engine configurations
   feature_states[f_cvc_scalable_com].available = (cvmodule->proxy->scalable_group_coms() == COLVARS_OK);

@@ -88,6 +88,7 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   update_target_temperature();
   set_integration_timestep(simparams->dt);
   set_time_step_factor(simparams->globalMasterFrequency);
+  set_atom_list_frequency(simparams->globalMasterFrequency);
 
   random.reset(new Random(simparams->randomSeed));
 
@@ -204,6 +205,10 @@ int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
     init_atoms_map();
   }
 
+  if (cvm::debug()) {
+    cvmodule->log("Updating atoms_map for "+cvm::to_str(begin - end)+" atoms.\n");
+  }
+
   for (AtomIDList::const_iterator a_i = begin; a_i != end; a_i++) {
 
     if (atoms_map[*a_i] >= 0) continue;
@@ -217,7 +222,7 @@ int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
 
     if (atoms_map[*a_i] < 0) {
       // this atom is probably managed by another GlobalMaster:
-      // add it here anyway to avoid having to test for array boundaries at each step
+      // add it here anyway so that Colvars can ensure it is requested
       int const index = add_atom_slot(*a_i);
       atoms_map[*a_i] = index;
       globalmaster->modifyRequestedAtomsPublic().add(*a_i);
@@ -567,11 +572,14 @@ void colvarproxy_namd::calculate()
     print_output_atomic_data();
   }
 
-  // communicate all forces to the MD integrator
+  // communicate all forces to NAMD
   for (size_t i = 0; i < atoms_ids.size(); i++) {
-    cvm::rvector const &f = atoms_new_colvar_forces[i];
-    globalmaster->modifyForcedAtomsPublic().add(atoms_ids[i]);
-    globalmaster->modifyAppliedForcesPublic().add(Vector(f.x, f.y, f.z));
+    if (atoms_refcount[i] > 0) {
+      // Add a force only if the atom is currently used
+      cvm::rvector const &f = atoms_new_colvar_forces[i];
+      globalmaster->modifyForcedAtomsPublic().add(atoms_ids[i]);
+      globalmaster->modifyAppliedForcesPublic().add(Vector(f.x, f.y, f.z));
+    }
   }
 
   if (atom_groups_new_colvar_forces.size() > 0) {
@@ -613,6 +621,17 @@ void colvarproxy_namd::calculate()
   #endif
   #endif
 
+  if (atom_list_frequency() > 1) {
+    if (((cvmodule->step_relative()+1) % atom_list_frequency()) == 0) {
+      // Before all-atom evaluation
+      update_requested_atoms();
+    }
+    if ((cvmodule->step_relative() % atom_list_frequency()) == 0) {
+      // After all-atom computation
+      update_requested_atoms();
+    }
+  }
+
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
   if (step == simparams->N) {
@@ -622,6 +641,29 @@ void colvarproxy_namd::calculate()
 
 
 cvm::real colvarproxy_namd::rand_gaussian() { return random->gaussian(); }
+
+
+int colvarproxy_namd::update_requested_atoms()
+{
+  int error_code = COLVARS_OK;
+  if (cvm::debug()) {
+    cvmodule->log("Updating list of requested atoms from NAMD.\n");
+    cvmodule->log("Before: " + cvm::to_str(globalmaster->modifyRequestedAtomsPublic().size()) +
+                  " elements.\n");
+  }
+  globalmaster->modifyRequestedAtomsPublic().clear();
+  for (size_t i = 0; i < atoms_ids.size(); i++) {
+    if (atoms_refcount[i] > 0) {
+      globalmaster->modifyRequestedAtomsPublic().add(atoms_ids[i]);
+    }
+  }
+  if (cvm::debug()) {
+    cvmodule->log("After: " + cvm::to_str(globalmaster->modifyRequestedAtomsPublic().size()) +
+                  " elements.\n");
+  }
+
+  return COLVARS_OK;
+}
 
 
 void colvarproxy_namd::update_accelMD_info() {
@@ -848,10 +890,20 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
 }
 
 
-void colvarproxy_namd::clear_atom(int index)
+int colvarproxy_namd::clear_atom(int index)
 {
-  colvarproxy::clear_atom(index);
-  // TODO remove it from GlobalMaster arrays?
+  int error_code = colvarproxy::clear_atom(index);
+  if (error_code == COLVARS_OK) {
+    if (atoms_refcount[index] == 0) {
+      // Clear this atom entry from the requested atoms
+      int aid = atoms_ids[index];
+      int const aid_index_in_gm = globalmaster->modifyRequestedAtomsPublic().find(aid);
+      if (aid_index_in_gm >= 0) {
+        globalmaster->modifyRequestedAtomsPublic().del(aid_index_in_gm, 1);
+      }
+    }
+  }
+  return error_code;
 }
 
 
@@ -1463,19 +1515,39 @@ template<class T, int flags>
 void colvarproxy_namd::GridForceGridLoop(T const *g,
                                          cvm::atom_group* ag,
                                          cvm::real *value,
-                                         cvm::real *atom_field)
+                                         cvm::real *atom_field,
+                                         int *inside)
 {
   float V = 0.0f;
   Vector dV(0.0);
   for (size_t i = 0; i < ag->size(); ++i) {
+
+    if constexpr ((flags & volmap_flag_use_atomlist) && !(flags & volmap_flag_rebuild_atomlist)) {
+      if (inside[i] == 0) {
+        // Skip atom according to precomputed list
+        continue;
+      }
+    }
+
+    // TODO look into compute_V() to skip gradient computation
+
     if (g->compute_VdV(Position(ag->pos_x(i), ag->pos_y(i), ag->pos_z(i)), V, dV)) {
       // out-of-bounds atom
+      if constexpr (flags & volmap_flag_rebuild_atomlist) {
+        inside[i] = 0;
+        decrease_refcount((*ag)[i].proxy_index);
+      }
       V = 0.0f;
       dV = 0.0;
     } else {
-      if (flags & volmap_flag_use_atom_field) {
+
+      if constexpr (flags & volmap_flag_rebuild_atomlist) {
+        inside[i] = 1;
+      }
+
+      if constexpr (flags & volmap_flag_use_atom_field) {
         *value += V * atom_field[i];
-        if (flags & volmap_flag_gradients) {
+        if constexpr (flags & volmap_flag_gradients) {
           const cvm::rvector grad = atom_field[i] * cvm::rvector(dV.x, dV.y, dV.z);
           ag->grad_x(i) += grad.x;
           ag->grad_y(i) += grad.y;
@@ -1483,7 +1555,7 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
         }
       } else {
         *value += V;
-        if (flags & volmap_flag_gradients) {
+        if constexpr (flags & volmap_flag_gradients) {
           ag->grad_x(i) += dV.x;
           ag->grad_y(i) += dV.y;
           ag->grad_z(i) += dV.z;
@@ -1499,22 +1571,53 @@ void colvarproxy_namd::getGridForceGridValue(int flags,
                                              T const *g,
                                              cvm::atom_group* ag,
                                              cvm::real *value,
-                                             cvm::real *atom_field)
+                                             cvm::real *atom_field,
+                                             int *inside)
 {
+  // The GridForceGrid function we're calling now computes them anyway
+  int const new_base_flags = volmap_flag_gradients;
   if (flags & volmap_flag_use_atom_field) {
-    int const new_flags = volmap_flag_use_atom_field | volmap_flag_gradients;
-    GridForceGridLoop<T, new_flags>(g, ag, value, atom_field);
+
+    if (flags & volmap_flag_use_atomlist) {
+      if (flags & volmap_flag_rebuild_atomlist) {
+        int const new_flags = new_base_flags | volmap_flag_use_atom_field |
+          volmap_flag_use_atomlist | volmap_flag_rebuild_atomlist;
+        GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+      } else {
+        int const new_flags = new_base_flags | volmap_flag_use_atom_field |
+          volmap_flag_use_atomlist;
+        GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+      }
+    } else {
+      int const new_flags = new_base_flags | volmap_flag_use_atom_field;
+      GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+    }
+
   } else {
-    int const new_flags = volmap_flag_gradients;
-    GridForceGridLoop<T, new_flags>(g, ag, value, atom_field);
+
+    if (flags & volmap_flag_use_atomlist) {
+      if (flags & volmap_flag_rebuild_atomlist) {
+        int const new_flags = new_base_flags | volmap_flag_use_atomlist |
+          volmap_flag_rebuild_atomlist;
+        GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+      } else {
+        int const new_flags = new_base_flags | volmap_flag_use_atomlist;
+        GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+      }
+    } else {
+      int const new_flags = new_base_flags;
+      GridForceGridLoop<T, new_flags>(g, ag, value, atom_field, inside);
+    }
   }
 }
+
 
 int colvarproxy_namd::compute_volmap(int flags,
                                      int index,
                                      cvm::atom_group* ag,
                                      cvm::real *value,
-                                     cvm::real *atom_field)
+                                     cvm::real *atom_field,
+                                     int *inside)
 {
   Molecule *mol = Node::Object()->molecule;
   // Pointer to NAMD_managed object if volmap_id >= 0, internal object otherwise
@@ -1524,12 +1627,10 @@ int colvarproxy_namd::compute_volmap(int flags,
   // Inheritance is not possible with GridForceGrid's design
   if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeFull) {
     GridforceFullMainGrid *g = dynamic_cast<GridforceFullMainGrid *>(grid);
-    getGridForceGridValue<GridforceFullMainGrid>(flags, g, ag,
-                                                 value, atom_field);
+    getGridForceGridValue<GridforceFullMainGrid>(flags, g, ag, value, atom_field, inside);
   } else if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeLite) {
     GridforceLiteGrid *g = dynamic_cast<GridforceLiteGrid *>(grid);
-    getGridForceGridValue<GridforceLiteGrid>(flags, g, ag,
-                                             value, atom_field);
+    getGridForceGridValue<GridforceLiteGrid>(flags, g, ag, value, atom_field, inside);
   }
   return COLVARS_OK;
 }
