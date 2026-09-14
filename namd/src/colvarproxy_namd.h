@@ -121,10 +121,6 @@ public:
   bool accelMD_enabled() const override;
 
 #if CMK_SMP && USE_CKLOOP
-  colvarproxy::smp_mode_t get_smp_mode() const override;
-
-  int set_smp_mode(smp_mode_t mode) override;
-
   smp_mode_t get_preferred_smp_mode() const override {
     return smp_mode_t::cvcs;
   }
