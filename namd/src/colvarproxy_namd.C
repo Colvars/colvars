@@ -1538,16 +1538,6 @@ int colvarproxy_namd::compute_volmap(int flags,
 
 #if CMK_SMP && USE_CKLOOP // SMP only
 
-colvarproxy::smp_mode_t colvarproxy_namd::get_smp_mode() const {
-  return smp_mode;
-}
-
-int colvarproxy_namd::set_smp_mode(smp_mode_t mode) {
-  smp_mode = mode;
-  return COLVARS_OK;
-}
-
-
 int colvarproxy_namd::smp_loop(int n_items, std::function<int (int)> const &worker)
 {
   auto cmkWorker = [&](int start, int end, void * /* result */) {
