@@ -60,6 +60,8 @@ LEPTONSHAREDOBJSRAW = \
 COLVARSPLUGINCUDAOBJSRAW = \
 	$(COLVARSCUDAGMPLUGINDSTDIR)/colvaratoms_kernel.o \
 	$(COLVARSCUDAGMPLUGINDSTDIR)/colvar_rotation_derivative_kernel.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_distance_kernel.o \
+	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarcomp_coordnums_kernel.o \
 	$(COLVARSCUDAGMPLUGINDSTDIR)/colvartypes_kernel.o
 COLVARSCUDAGMPLUGINOBJSRAW = \
 	$(COLVARSCUDAGMPLUGINDSTDIR)/colvarproxy_cudaglobalmaster.o
