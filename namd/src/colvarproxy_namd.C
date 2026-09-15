@@ -622,7 +622,7 @@ void colvarproxy_namd::calculate()
   #endif
 
   if (atom_list_frequency() > 1) {
-    if (((cvmodule->step_relative()+1) % atom_list_frequency()) == 0) {
+    if (((cvmodule->step_relative() + this->time_step_factor()) % atom_list_frequency()) == 0) {
       // Before all-atom evaluation
       update_requested_atoms();
     }

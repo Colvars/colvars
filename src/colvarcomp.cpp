@@ -209,7 +209,7 @@ int colvar::cvc::update_requested_atoms(cvm::atom_group *dyn_atoms)
   if (atom_list_freq > 0) {
 
     // Reenable all atoms for the next step
-    if (((cvmodule->step_absolute()+1) % atom_list_freq) == 0) {
+    if (((cvmodule->step_relative() + proxy->time_step_factor()) % atom_list_freq) == 0) {
       for (size_t i = 0; i < dyn_atoms->size(); i++) {
         proxy->increase_refcount((*dyn_atoms)[i].proxy_index);
       }
@@ -218,7 +218,7 @@ int colvar::cvc::update_requested_atoms(cvm::atom_group *dyn_atoms)
     if (!is_enabled(f_cvc_dynamic_atom_list)) {
       // If the CVC is not enabling/disabling atoms on its own, then disable
       // them all for the next step
-      if (((cvmodule->step_absolute()) % atom_list_freq) == 0) {
+      if (((cvmodule->step_relative()) % atom_list_freq) == 0) {
         for (size_t i = 0; i < dyn_atoms->size(); i++) {
           proxy->decrease_refcount((*dyn_atoms)[i].proxy_index);
         }
