@@ -87,8 +87,10 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
 
   update_target_temperature();
   set_integration_timestep(simparams->dt);
-  set_time_step_factor(simparams->globalMasterFrequency);
-  set_atom_list_frequency(simparams->globalMasterFrequency);
+  if (simparams->globalMasterFrequency > 1) {
+    set_time_step_factor(simparams->globalMasterFrequency);
+    set_atom_list_frequency(simparams->globalMasterFrequency);
+  }
 
   random.reset(new Random(simparams->randomSeed));
 
