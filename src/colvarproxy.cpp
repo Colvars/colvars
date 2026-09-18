@@ -99,15 +99,18 @@ int colvarproxy_atoms::check_atom_id(cvm::residue_id const &residue,
 }
 
 
-void colvarproxy_atoms::clear_atom(int index)
+int colvarproxy_atoms::clear_atom(int index)
 {
-  if (((size_t) index) >= atoms_ids.size()) {
-    cvm::error_static("Error: trying to disable an atom that was not previously requested.\n",
-               COLVARS_INPUT_ERROR);
+  if (static_cast<size_t>(index) >= atoms_ids.size()) {
+    return cvm::error_static(
+        "Error: trying to unrequest an atom that was not previously requested.\n",
+        COLVARS_BUG_ERROR);
   }
-  if (atoms_refcount[index] > 0) {
-    atoms_refcount[index] -= 1;
+  if (index < 0) {
+    return cvm::error_static("Error: invalid argument to clear_atom().\n", COLVARS_BUG_ERROR);
   }
+  decrease_refcount(index);
+  return COLVARS_OK;
 }
 
 
@@ -118,6 +121,34 @@ size_t colvarproxy_atoms::get_num_active_atoms() const
     if (atoms_refcount[i] > 0) result++;
   }
   return result;
+}
+
+
+int colvarproxy_atoms::set_atom_list_frequency(int atom_list_freq)
+{
+  int const proxy_freq = atom_list_frequency();
+  if (proxy_freq > 0) {
+    std::string const error_msg(
+        "a frequency of " + cvm::to_str(atom_list_freq) +
+        " steps was provided for atom list update; it should be commensurate with "
+        "the frequency currently set in the interface (currently, " +
+        cvm::to_str(proxy_freq) + " steps).\n");
+    if (atom_list_freq < proxy_freq) {
+      // Use the shortest number of steps among all variables
+      if ((proxy_freq % atom_list_freq) != 0) {
+        return cvm::error_static(error_msg, COLVARS_INPUT_ERROR);
+      } else {
+        atom_list_frequency() = atom_list_freq;
+      }
+    } else {
+      if ((atom_list_freq % proxy_freq) != 0) {
+        return cvm::error_static(error_msg, COLVARS_INPUT_ERROR);
+      }
+    }
+  } else {
+    atom_list_frequency() = atom_list_freq;
+  }
+  return COLVARS_OK;
 }
 
 

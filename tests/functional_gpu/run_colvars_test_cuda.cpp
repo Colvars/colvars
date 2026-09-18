@@ -26,7 +26,7 @@ public:
   int set_unit_system(std::string const &units_in, bool check_only) override;
   int init_atom(int atom_number) override;
   int check_atom_id(int atom_number) override;
-  void clear_atom(int index) override;
+  int clear_atom(int index) override;
   int read_frame_xyz(const char *filename, const bool write_force_file = false);
   void reallocate() {
     deallocateDeviceArrays();
@@ -220,9 +220,10 @@ int colvarproxy_stub_gpu::init_atom(int atom_number)
   return index;
 }
 
-void colvarproxy_stub_gpu::clear_atom(int index) {
-  colvarproxy::clear_atom(index);
+int colvarproxy_stub_gpu::clear_atom(int index) {
+  int error_code = colvarproxy::clear_atom(index);
   mAtomsChanged = true;
+  return error_code;
 }
 
 int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_force_file)
