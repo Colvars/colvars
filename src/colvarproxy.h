@@ -309,7 +309,7 @@ protected:
   bool updated_masses_, updated_charges_;
 
   /// Request/unrequest atoms at this frequency
-  int atom_list_freq_;
+  int atom_list_freq_ = 0;
 
   /// Used by all init_atom() functions: create a slot for an atom not
   /// requested yet; returns the index in the arrays
