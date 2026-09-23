@@ -265,6 +265,9 @@ int colvarbias_opes::init(const std::string& conf) {
   if (m_pmf_grid_on) {
     std::vector<std::string> pmf_cv_name;
     get_keyval(conf, "pmfColvars", pmf_cv_name);
+    if (pmf_cv_name.empty()) {
+      return cvmodule->error("pmfColvars cannot be empty when \"pmf\" is on\n");
+    }
     for (auto it = pmf_cv_name.begin(); it != pmf_cv_name.end(); ++it) {
       bool found = false;
       for (size_t i = 0; i < num_variables(); ++i) {
