@@ -128,16 +128,13 @@ public:
                              int index,
                              cvm::atom_group* atoms,
                              cvm::real *value,
-                             cvm::real *atom_field,
-                             int *inside);
+                             cvm::real *atom_field);
 
-  /// Implements loops (does not support yet atom lists)
   template<int flags>
   void compute_voldata(VolumetricData const *voldata,
                        cvm::atom_group* atoms,
                        cvm::real *value,
-                       cvm::real *atom_field,
-                       int *inside);
+                       cvm::real *atom_field);
 
   /// Get value of alchemical lambda parameter from back-end (stub)
   int get_alch_lambda(cvm::real* lambda) {

@@ -264,8 +264,7 @@ public:
                      int index,
                      cvm::atom_group* ag,
                      cvm::real *value,
-                     cvm::real *atom_field,
-                     int *inside) override;
+                     cvm::real *atom_field) override;
 
   /// Abstraction of the two types of NAMD volumetric maps
   template<class T>
@@ -273,16 +272,14 @@ public:
                              T const *grid,
                              cvm::atom_group* ag,
                              cvm::real *value,
-                             cvm::real *atom_field,
-                             int *inside);
+                             cvm::real *atom_field);
 
   /// Implementation of inner loop; allows for atom list computation and use
   template<class T, int flags>
   void GridForceGridLoop(T const *g,
                          cvm::atom_group* ag,
                          cvm::real *value,
-                         cvm::real *atom_field,
-                         int *inside);
+                         cvm::real *atom_field);
 
 #endif
 

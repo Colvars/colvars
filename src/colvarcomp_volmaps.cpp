@@ -106,19 +106,17 @@ void colvar::map_total::calc_value()
   int flags = is_enabled(f_cvc_gradient) ? colvarproxy::volmap_flag_gradients :
     colvarproxy::volmap_flag_null;
 
-  if (atom_list_freq > 0) {
-    flags |= colvarproxy::volmap_flag_use_atomlist;
-    if (cvmodule->step_relative() % atom_list_freq == 0) {
-      flags |= colvarproxy::volmap_flag_rebuild_atomlist;
-    }
-  }
-
   if (atoms) {
     // Compute the map inside Colvars
     x.real_value = 0.0;
 
-    if ((flags & colvarproxy::volmap_flag_use_atomlist) && (atoms_inside.size() != atoms->size())) {
-      atoms_inside.resize(atoms->size());
+    if (is_enabled(f_cvc_dynamic_atom_list)) {
+      flags |= colvarproxy::volmap_flag_use_atomlist;
+      if (cvmodule->step_relative() % atom_list_freq == 0) {
+        // Clear all active flags, so that they are selectively enabled during this step
+        flags |= colvarproxy::volmap_flag_rebuild_atomlist;
+        atoms->set_all_inactive();
+      }
     }
 
     cvm::real *w = nullptr;
@@ -128,7 +126,7 @@ void colvar::map_total::calc_value()
     }
 
     // Note: this function also updates the list of requested atoms
-    proxy->compute_volmap(flags, volmap_index, atoms, &(x.real_value), w, atoms_inside.data());
+    proxy->compute_volmap(flags, volmap_index, atoms, &(x.real_value), w);
 
   } else {
     // Get the externally computed value

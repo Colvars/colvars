@@ -206,21 +206,36 @@ int colvar::cvc::update_requested_atoms(cvm::atom_group *dyn_atoms)
   int error_code = COLVARS_OK;
   colvarproxy *proxy = cvmodule->proxy;
 
-  if (atom_list_freq > 0) {
+  if (atom_list_freq > proxy->time_step_factor()) {
 
-    // Reenable all atoms for the next step
+    // Increase the refcount of all inactive atoms in anticipation of the next step, then the
+    // active flag will be updated
     if (((cvmodule->step_relative() + proxy->time_step_factor()) % atom_list_freq) == 0) {
-      for (size_t i = 0; i < dyn_atoms->size(); i++) {
-        proxy->increase_refcount((*dyn_atoms)[i].proxy_index);
+      if (is_enabled(f_cvc_dynamic_atom_list)) {
+        for (size_t i = 0; i < dyn_atoms->size(); i++) {
+          if (!dyn_atoms->active(i)) {
+            proxy->increase_refcount(dyn_atoms->proxy_index(i));
+          }
+        }
+      } else {
+        // If the CVC is not updating the atom list itself, then the whole group is alternatively
+        // requested/unrequested (e.g. MTS setting from the parent colvar)
+        for (size_t i = 0; i < dyn_atoms->size(); i++) {
+          proxy->increase_refcount(dyn_atoms->proxy_index(i));
+        }
       }
     }
 
-    if (!is_enabled(f_cvc_dynamic_atom_list)) {
-      // If the CVC is not enabling/disabling atoms on its own, then disable
-      // them all for the next step
-      if (((cvmodule->step_relative()) % atom_list_freq) == 0) {
+    if (((cvmodule->step_relative()) % atom_list_freq) == 0) {
+      if (is_enabled(f_cvc_dynamic_atom_list)) {
         for (size_t i = 0; i < dyn_atoms->size(); i++) {
-          proxy->decrease_refcount((*dyn_atoms)[i].proxy_index);
+          if (!dyn_atoms->active(i)) {
+            proxy->decrease_refcount(dyn_atoms->proxy_index(i));
+          }
+        }
+      } else {
+        for (size_t i = 0; i < dyn_atoms->size(); i++) {
+          proxy->decrease_refcount(dyn_atoms->proxy_index(i));
         }
       }
     }

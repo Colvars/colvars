@@ -982,6 +982,7 @@ public:
   using allocator_type = std::allocator<T>;
 #endif
   using ag_vector_real_t = std::vector<real, allocator_type<real>>;
+  using ag_vector_int32_t = std::vector<int32_t, allocator_type<int32_t>>;
 
 };
 

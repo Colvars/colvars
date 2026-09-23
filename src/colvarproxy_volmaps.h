@@ -79,13 +79,11 @@ public:
   /// \param ag Pointer to the SOA atom group
   /// \param value Pointer to location of total to increment
   /// \param atom_field Array of atomic field values (if NULL, ones are used)
-  /// \param inside Array of flags (1 = inside map, 0 = outside)
   virtual int compute_volmap(int flags,
                              int volmap_index,
                              cvm::atom_group* ag,
                              cvm::real *value,
-                             cvm::real *atom_field,
-                             int *inside);
+                             cvm::real *atom_field);
 
   /// Flags controlling what computation is done on the map
   enum {
