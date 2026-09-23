@@ -1,0 +1,66 @@
+colvarsTrajFrequency    1
+
+indexFile ../Common/da.ndx
+
+
+colvar {
+    name angle
+
+    outputTotalForce on
+    outputAppliedForce on
+    width 6.0 
+
+    lowerBoundary    0.0
+    upperBoundary  180.0
+    extendedLagrangian      on
+    extendedFluctuation     0.1
+    extendedTimeConstant    200.0
+    extendedTemp            500.0
+    extendedLangevinDamping 0.0 # suppress random friction term
+    angle {
+        group1 {
+            indexGroup Protein_C-alpha_1
+        }
+        group2 {
+            indexGroup Protein_C-alpha_2
+        }
+        group3 {
+            indexGroup Protein_C-alpha_3
+        }
+    }
+} 
+
+
+colvar {
+    name dihedral
+
+    outputTotalForce on
+    outputAppliedForce on
+    width 6.0 
+
+    lowerBoundary    0.0
+    upperBoundary  180.0
+
+    dihedral {
+        group1 {
+            indexGroup Protein_C-alpha_4
+        }
+        group2 {
+            indexGroup Protein_C-alpha_5
+        }
+        group3 {
+            indexGroup Protein_C-alpha_6
+        }
+        group4 {
+            indexGroup Protein_C-alpha_7
+        }
+    }
+} 
+
+
+abf {
+    colvars angle dihedral
+    fullSamples 1
+    outputFreq 5
+    historyFreq 5
+}

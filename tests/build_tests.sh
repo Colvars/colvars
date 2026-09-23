@@ -304,6 +304,16 @@ bias="harmonic-ddir-fixed"
 create_test_dir ${colvar}-fitgroup_${bias}
 write_colvars_config ${colvar}-fitgroup ${bias}
 
+colvar="eulerangles_ext"
+bias="abf2d_euler"
+create_test_dir ${colvar}_${bias}
+write_colvars_config ${colvar} ${bias}
+
+colvar="eulerangles_ext"
+bias="abf2d_euler_weighted"
+create_test_dir ${colvar}_${bias}
+write_colvars_config ${colvar} ${bias}
+
 
 # Variables that are not available in functional tests
 # dihedralPC is covered by protein_cvs
