@@ -266,7 +266,8 @@ int colvarbias_opes::init(const std::string& conf) {
     std::vector<std::string> pmf_cv_name;
     get_keyval(conf, "pmfColvars", pmf_cv_name);
     if (pmf_cv_name.empty()) {
-      return cvmodule->error("pmfColvars cannot be empty when \"pmf\" is on\n");
+      return cvmodule->error("pmfColvars cannot be empty when \"pmf\" is on\n",
+                             COLVARS_INPUT_ERROR);
     }
     for (auto it = pmf_cv_name.begin(); it != pmf_cv_name.end(); ++it) {
       bool found = false;
@@ -281,7 +282,7 @@ int colvarbias_opes::init(const std::string& conf) {
         }
       }
       if (!found) {
-        return cvmodule->error("CV " + (*it) + " not found\n");
+        return cvmodule->error("CV " + (*it) + " not found\n", COLVARS_INPUT_ERROR);
       }
     }
     key_lookup(conf, "grid", &grid_conf);
