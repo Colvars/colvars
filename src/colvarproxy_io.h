@@ -171,6 +171,9 @@ protected:
   /// Default prefix to be used for all output files (final configuration)
   std::string output_prefix_str;
 
+  /// The output prefix obtained from the backend was overridden manually via scripting
+  bool b_override_output_prefix = false;
+
   /// Prefix of the restart (checkpoint) file to be written next
   std::string restart_output_prefix_str;
 
