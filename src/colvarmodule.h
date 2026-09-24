@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <memory>
 #include <cstdio>
+#include <atomic>
 
 #include "colvars_version.h"
 
@@ -915,7 +916,7 @@ protected:
 
   /// Records the maximum gradient discrepancy evaluated by debugGradients
   /// see cvc::debug_gradients()
-  real max_gradient_error = 0.;
+  std::atomic<real> max_gradient_error{0.};
 
 public:
 
@@ -958,7 +959,10 @@ public:
   /// in this instance of colvarmodule
   /// see cvc::debug_gradients()
   void record_gradient_error(real error) {
-    if (error > max_gradient_error) max_gradient_error = error;
+    real current = max_gradient_error.load(std::memory_order_relaxed);
+    while (error > current &&
+          !max_gradient_error.compare_exchange_weak(current, error, std::memory_order_relaxed)) {
+    }
   }
 
   real get_max_gradient_error() {
