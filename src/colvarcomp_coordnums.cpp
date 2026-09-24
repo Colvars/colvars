@@ -520,6 +520,7 @@ int colvar::coordnum::init(std::string const &conf)
         // return and do not allocate the pairlists below
       }
       b_enable_pairlist = true;
+      error_code |= set_atom_list_frequency(pairlist_freq);
       enable(f_cvc_dynamic_atom_list);
       // To save the memory, we don't allocate the CPU pairlist buffer when GPU is used.
       if (cvmodule->proxy->get_smp_mode() != colvarproxy_smp::smp_mode_t::gpu) {
