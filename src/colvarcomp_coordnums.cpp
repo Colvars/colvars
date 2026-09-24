@@ -955,6 +955,7 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
         *pairlist_elem = partial > 0.0 ? true : false;
         if (*pairlist_elem) {
           group1->set_active(i);
+          group1->set_active(j);
         }
       }
 
