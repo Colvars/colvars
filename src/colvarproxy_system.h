@@ -71,14 +71,11 @@ public:
   /// Set the current integration timestep of the simulation (fs units)
   virtual int set_integration_timestep(cvm::real dt);
 
-  /// Time step of the simulation (fs units)
+  /// Multiplier of the simulation time step at which Colvars is being called
   inline int time_step_factor() const
   {
     return time_step_factor_;
   }
-
-  /// Set the current integration timestep of the simulation (fs units)
-  virtual int set_time_step_factor(int fact);
 
   /// \brief Pseudo-random number with Gaussian distribution
   virtual cvm::real rand_gaussian(void);
@@ -150,6 +147,9 @@ public:
   }
 
 protected:
+
+  /// Set the multiplier of the simulation time step based on MD engine configuration
+  virtual int set_time_step_factor(int fact);
 
   /// Next value of lambda to be sent to back-end
   cvm::real cached_alch_lambda;
