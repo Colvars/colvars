@@ -115,7 +115,7 @@ void colvar::map_total::calc_value()
       if (cvmodule->step_relative() % atom_list_freq == 0) {
         // Clear all active flags, so that they are selectively enabled during this step
         flags |= colvarproxy::volmap_flag_rebuild_atomlist;
-        atoms->set_all_inactive();
+        atoms->clear_active_flags();
       }
     }
 

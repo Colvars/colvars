@@ -564,10 +564,11 @@ public:
    */
   ///@{
   inline int32_t &active(size_t i) { return atoms_active[i]; }
-  inline const int32_t &active(size_t i) const { return atoms_active[i]; }
-  inline void set_all_active() { atoms_active.assign(size(), 1); }
-  inline void set_all_inactive() { atoms_active.assign(size(), 0); }
+  inline const int32_t &set_active(size_t i) { return atoms_active[i] = 1; }
+  inline const int32_t &set_inactive(size_t i) { return atoms_active[i] = 0; }
   ///@}
+  /// Clear all atoms' active flags, used by CVCs that selectively enable some atoms
+  inline void clear_active_flags() { atoms_active.assign(size(), 0); }
   /**
    * @name Accessors to positions
    */

@@ -1525,7 +1525,7 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
   for (size_t i = 0; i < ag->size(); ++i) {
 
     if constexpr ((flags & volmap_flag_use_atomlist) && !(flags & volmap_flag_rebuild_atomlist)) {
-      if (ag->active(i) == 0) {
+      if (!ag->active(i)) {
         // Skip atom according to precomputed list
         continue;
       }
@@ -1536,14 +1536,14 @@ void colvarproxy_namd::GridForceGridLoop(T const *g,
     if (g->compute_VdV(Position(ag->pos_x(i), ag->pos_y(i), ag->pos_z(i)), V, dV)) {
       // out-of-bounds atom
       if constexpr (flags & volmap_flag_rebuild_atomlist) {
-        ag->active(i) = 0;
+        ag->set_inactive(i);
       }
       V = 0.0f;
       dV = 0.0;
     } else {
 
       if constexpr (flags & volmap_flag_rebuild_atomlist) {
-        ag->active(i) = 1;
+        ag->set_active(i);
       }
 
       if constexpr (flags & volmap_flag_use_atom_field) {
