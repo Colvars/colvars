@@ -558,6 +558,14 @@ int colvarproxy::setup()
 }
 
 
+int colvarproxy::set_time_step_factor(int f)
+{
+  time_step_factor_ = f;
+  set_atom_list_frequency(f);
+  return COLVARS_OK;
+}
+
+
 int colvarproxy::parse_module_config()
 {
   int error_code = COLVARS_OK;

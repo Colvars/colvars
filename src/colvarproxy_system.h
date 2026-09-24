@@ -148,9 +148,6 @@ public:
 
 protected:
 
-  /// Set the multiplier of the simulation time step based on MD engine configuration
-  virtual int set_time_step_factor(int fact);
-
   /// Next value of lambda to be sent to back-end
   cvm::real cached_alch_lambda;
 

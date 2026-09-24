@@ -719,6 +719,9 @@ public:
 
 protected:
 
+  /// Set the multiplier of the simulation time step based on MD engine configuration
+  virtual int set_time_step_factor(int fact);
+
   /// Whether the engine allows to fully initialize Colvars immediately
   bool engine_ready_;
 
