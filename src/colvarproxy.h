@@ -86,9 +86,6 @@ public:
   /// Used by the atom class destructor: set atoms_refcount entry to zero
   virtual int clear_atom(int index);
 
-  /// Check that all calls use multiples of the same, use that number
-  virtual int set_atom_list_frequency(int atom_list_freq);
-
   /// Clear atomic data
   int reset();
 
@@ -610,6 +607,9 @@ public:
 
   /// \brief Reset proxy state, e.g. requested atoms
   virtual int reset();
+
+  /// Check that all calls use multiples of the same, use that number
+  virtual int set_atom_list_frequency(int atom_list_freq);
 
   /// (Re)initialize the module
   virtual int parse_module_config();
