@@ -629,6 +629,9 @@ public:
   /// Carry out operations needed before next step is run
   int end_of_step();
 
+  /// Update the reference counters for atoms in the proxy
+  int update_requested_atoms();
+
   /// \brief Read a collective variable trajectory (post-processing
   /// only, not called at runtime)
   int read_traj(char const *traj_filename,
