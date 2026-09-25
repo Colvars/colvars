@@ -52,12 +52,6 @@ int colvarproxy_system::set_integration_timestep(cvm::real dt)
   return COLVARS_OK;
 }
 
-int colvarproxy_system::set_time_step_factor(int fact)
-{
-  time_step_factor_ = fact;
-  return COLVARS_OK;
-}
-
 cvm::real colvarproxy_system::rand_gaussian()
 {
   // TODO define, document and implement a user method to set the value of this

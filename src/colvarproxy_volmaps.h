@@ -89,7 +89,9 @@ public:
   enum {
     volmap_flag_null = 0,
     volmap_flag_gradients = 1,
-    volmap_flag_use_atom_field = (1<<8)
+    volmap_flag_use_atom_field = (1<<8),
+    volmap_flag_use_atomlist = (1<<9),
+    volmap_flag_rebuild_atomlist = (1<<10)
   };
 
   /// Compute the root-mean-square of the applied forces

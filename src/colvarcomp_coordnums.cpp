@@ -390,6 +390,7 @@ colvar::coordnum::coordnum()
 {
   set_function_type("coordNum");
   x.type(colvarvalue::type_scalar);
+  provide(f_cvc_dynamic_atom_list);
   cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(4.0);
   update_cutoffs({r0, r0, r0});
   // Boundaries will be set later, when the number of pairs is known
@@ -519,6 +520,8 @@ int colvar::coordnum::init(std::string const &conf)
         // return and do not allocate the pairlists below
       }
       b_enable_pairlist = true;
+      error_code |= set_atom_list_frequency(pairlist_freq);
+      enable(f_cvc_dynamic_atom_list);
       // To save the memory, we don't allocate the CPU pairlist buffer when GPU is used.
       if (cvmodule->proxy->get_smp_mode() != colvarproxy_smp::smp_mode_t::gpu) {
         pairlist.reset(new bool[num_pairs]);
@@ -585,6 +588,11 @@ void inline colvar::coordnum::main_loop()
 
   bool *pairlist_elem = pairlist.get();
 
+  if constexpr ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+    if constexpr (!use_group1_com) group1->clear_active_flags();
+    if constexpr (!use_group2_com) group2->clear_active_flags();
+  }
+
   for (size_t i = 0; i < group1_num_coords; ++i) {
 
     cvm::real const x1 = use_group1_com ? group1_com.x : group1->pos_x(i);
@@ -594,6 +602,8 @@ void inline colvar::coordnum::main_loop()
     cvm::real &gx1 = use_group1_com ? group1_com_grad.x : group1->grad_x(i);
     cvm::real &gy1 = use_group1_com ? group1_com_grad.y : group1->grad_y(i);
     cvm::real &gz1 = use_group1_com ? group1_com_grad.z : group1->grad_z(i);
+
+    bool atom_i_active = false;
 
     for (size_t j = 0; j < group2_num_coords; ++j) {
 
@@ -618,12 +628,26 @@ void inline colvar::coordnum::main_loop()
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
         *pairlist_elem = partial > 0.0 ? true : false;
+        if (*pairlist_elem) {
+          if constexpr (!use_group1_com) {
+            atom_i_active = true;
+          }
+          if constexpr (!use_group2_com) {
+            group2->set_active(j);
+          }
+        }
       }
 
       x.real_value += partial;
 
       if (flags & ef_use_pairlist) {
         pairlist_elem++;
+      }
+    }
+
+    if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+      if constexpr (!use_group1_com) {
+        if (atom_i_active) group1->set_active(i);
       }
     }
   }
@@ -640,7 +664,7 @@ void inline colvar::coordnum::main_loop()
 template <bool use_group1_com, bool use_group2_com, int compute_flags>
 int colvar::coordnum::compute_coordnum()
 {
-  bool const use_pairlist = pairlist.get();
+  bool const use_pairlist = b_enable_pairlist;
   bool const rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
 
   if (use_pairlist) {
@@ -904,6 +928,10 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
   size_t const n = group1->size();
   bool *pairlist_elem = pairlist.get();
 
+  if constexpr ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+    group1->clear_active_flags();
+  }
+
   for (size_t i = 0; i < n - 1; i++) {
 
     cvm::real const x1 = group1->pos_x(i);
@@ -912,6 +940,8 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
     cvm::real &gx1 = group1->grad_x(i);
     cvm::real &gy1 = group1->grad_y(i);
     cvm::real &gz1 = group1->grad_z(i);
+
+    bool atom_i_active = false;
 
     for (size_t j = i + 1; j < n; j++) {
 
@@ -933,15 +963,23 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
                                                 tolerance, tolerance_l2_max, boundary_conditions)
                  : 0.0;
 
-      if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+      if constexpr ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
         *pairlist_elem = partial > 0.0 ? true : false;
+        if (*pairlist_elem) {
+          atom_i_active = true;
+          group1->set_active(j);
+        }
       }
 
       x.real_value += partial;
 
-      if (flags & ef_use_pairlist) {
+      if constexpr (flags & ef_use_pairlist) {
         pairlist_elem++;
       }
+    }
+
+    if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+      if (atom_i_active) group1->set_active(i);
     }
   }
 }
@@ -949,7 +987,7 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
 
 template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
 {
-  bool const use_pairlist = pairlist.get();
+  bool const use_pairlist = b_enable_pairlist;
   bool const rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
 
   if (use_pairlist) {

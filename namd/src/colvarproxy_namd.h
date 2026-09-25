@@ -89,7 +89,10 @@ public:
   /// Allocate an atoms map with the same size as the NAMD topology
   void init_atoms_map();
 
-  // synchronize the local arrays with requested or forced atoms
+  /// Rebuild the list of requested atoms based on Colvars-internal refcounts
+  int update_requested_atoms();
+
+  /// Synchronize the local arrays with requested or forced atoms
   int update_atoms_map(AtomIDList::const_iterator begin,
                        AtomIDList::const_iterator end);
 
@@ -196,7 +199,7 @@ public:
   int check_atom_id(cvm::residue_id const &residue,
                     std::string const     &atom_name,
                     std::string const     &segment_id) override;
-  void clear_atom(int index) override;
+  int clear_atom(int index) override;
 
   void update_atom_properties(int index);
 
