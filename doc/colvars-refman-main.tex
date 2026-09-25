@@ -4880,7 +4880,7 @@ upon collision, the particle is reflected with opposite momentum.}
       \texttt{colvar}}{%
       Compute this colvar once in a certain number of timesteps}{%
       positive integer}{%
-      \texttt{1}}{%
+      \texttt{1} or engine-specific}{%
       Instructs this colvar to activate at a time interval equal to the base (MD)
       timestep times \texttt{timeStepFactor}.\cite{Ferrarotti2015}
       At other time steps, the value of the
@@ -4888,7 +4888,11 @@ upon collision, the particle is reflected with opposite momentum.}
       Any forces exerted by biases are accumulated over the given time interval,
       then applied as an impulse at the next update.
       }
+
 \end{itemize}
+
+\cvnamdonly{\textbf{Note:} in NAMD, the default value of this keyword is given by the \texttt{globalMasterFrequency} keyword, which also sets the lowest possible value.}
+
 
 \cvsubsec{Backward-compatibility}{sec:colvar_compatibility}
 
