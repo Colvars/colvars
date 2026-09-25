@@ -626,11 +626,13 @@ void inline colvar::coordnum::main_loop()
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
         *pairlist_elem = partial > 0.0 ? true : false;
-        if constexpr (!use_group1_com) {
-          group1->set_active(i);
-        }
-        if constexpr (!use_group2_com) {
-          group2->set_active(j);
+        if (*pairlist_elem) {
+          if constexpr (!use_group1_com) {
+            group1->set_active(i);
+          }
+          if constexpr (!use_group2_com) {
+            group2->set_active(j);
+          }
         }
       }
 
