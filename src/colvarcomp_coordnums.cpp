@@ -603,6 +603,8 @@ void inline colvar::coordnum::main_loop()
     cvm::real &gy1 = use_group1_com ? group1_com_grad.y : group1->grad_y(i);
     cvm::real &gz1 = use_group1_com ? group1_com_grad.z : group1->grad_z(i);
 
+    bool atom_i_active = false;
+
     for (size_t j = 0; j < group2_num_coords; ++j) {
 
       cvm::real const x2 = use_group2_com ? group2_com.x : group2->pos_x(j);
@@ -628,7 +630,7 @@ void inline colvar::coordnum::main_loop()
         *pairlist_elem = partial > 0.0 ? true : false;
         if (*pairlist_elem) {
           if constexpr (!use_group1_com) {
-            group1->set_active(i);
+            atom_i_active = true;
           }
           if constexpr (!use_group2_com) {
             group2->set_active(j);
@@ -640,6 +642,12 @@ void inline colvar::coordnum::main_loop()
 
       if (flags & ef_use_pairlist) {
         pairlist_elem++;
+      }
+    }
+
+    if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+      if constexpr (!use_group1_com) {
+        if (atom_i_active) group1->set_active(i);
       }
     }
   }
@@ -933,6 +941,8 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
     cvm::real &gy1 = group1->grad_y(i);
     cvm::real &gz1 = group1->grad_z(i);
 
+    bool atom_i_active = false;
+
     for (size_t j = i + 1; j < n; j++) {
 
       cvm::real const x2 = group1->pos_x(j);
@@ -956,7 +966,7 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
       if constexpr ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
         *pairlist_elem = partial > 0.0 ? true : false;
         if (*pairlist_elem) {
-          group1->set_active(i);
+          atom_i_active = true;
           group1->set_active(j);
         }
       }
@@ -966,6 +976,10 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
       if constexpr (flags & ef_use_pairlist) {
         pairlist_elem++;
       }
+    }
+
+    if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
+      if (atom_i_active) group1->set_active(i);
     }
   }
 }
