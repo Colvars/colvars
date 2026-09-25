@@ -1701,6 +1701,17 @@ template <typename IST> IST & colvarmodule::read_state_template_(IST &is)
       parse->get_keyval(restart_conf, "step",
                         it_restart, static_cast<step_number>(0),
                         colvarparse::parse_restart);
+
+      if (it_restart % proxy->time_step_factor() != 0) {
+        error("the step number contained in the state file is not divisible by the "
+              "global Colvars timestep multiplier (" +
+                  cvm::to_str(proxy->time_step_factor()) + "); please change the " +
+                  proxy->engine_name() +
+                  " configuration to use a different multiplier, or start a new "
+                  "simulation altogether.\n",
+              COLVARS_INPUT_ERROR);
+      }
+
       it = it_restart;
 
       restart_version_str.clear();
