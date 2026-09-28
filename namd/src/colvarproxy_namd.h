@@ -109,6 +109,8 @@ public:
     return total_force_requested;
   }
 
+  int set_atom_list_frequency(int atom_list_freq) override;
+
   int run_force_callback() override;
   int run_colvar_callback(std::string const &name,
                           std::vector<const colvarvalue *> const &cvcs,

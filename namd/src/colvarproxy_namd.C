@@ -89,7 +89,9 @@ colvarproxy_namd::colvarproxy_namd(GlobalMasterColvars *gm)
   set_integration_timestep(simparams->dt);
   if (simparams->globalMasterFrequency > 1) {
     set_time_step_factor(simparams->globalMasterFrequency);
-    set_atom_list_frequency(simparams->globalMasterFrequency);
+    if (!simparams->GPUresidentMode) {
+      set_atom_list_frequency(simparams->globalMasterFrequency);
+    }
   }
 
   random.reset(new Random(simparams->randomSeed));
@@ -237,6 +239,16 @@ int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
   }
 
   return COLVARS_OK;
+}
+
+
+
+int colvarproxy_namd::set_atom_list_frequency(int atom_list_freq)
+{
+  if (simparams->GPUresidentMode) {
+    log("Warning: atom buffers will not be changed, because NAMD is running with GPUresident on.");
+  }
+  return colvarproxy::set_atom_list_frequency(simparams->globalMasterFrequency);
 }
 
 
@@ -624,14 +636,16 @@ void colvarproxy_namd::calculate()
   #endif
   #endif
 
-  if (atom_list_frequency() > time_step_factor()) {
-    if (((cvmodule->step_relative() + time_step_factor()) % atom_list_frequency()) == 0) {
-      // Before all-atom evaluation
-      update_requested_atoms();
-    }
-    if ((cvmodule->step_relative() % atom_list_frequency()) == 0) {
-      // After all-atom computation
-      update_requested_atoms();
+  if (!simparams->GPUresidentMode) {
+    if (atom_list_frequency() > time_step_factor()) {
+      if (((cvmodule->step_relative() + time_step_factor()) % atom_list_frequency()) == 0) {
+        // Before all-atom evaluation
+        update_requested_atoms();
+      }
+      if ((cvmodule->step_relative() % atom_list_frequency()) == 0) {
+        // After all-atom computation
+        update_requested_atoms();
+      }
     }
   }
 
