@@ -73,7 +73,11 @@ COMmotion               no
 # incompatible with CUDASOAIntegrate as of 09/2023
 #zeroMomentum            yes
 
-timestep                1.0
+if { [info exists timestep] > 0 } {
+    timestep            ${timestep}
+} else {
+    timestep            1.0
+}
 
 outputName              ${output_name}
 restartName             ${output_name}.tmp

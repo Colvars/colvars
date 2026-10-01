@@ -1436,6 +1436,10 @@ int colvarmodule::end_of_step()
     this->decrease_depth();
   }
 
+  if (!proxy->simulation_continuing()) {
+    update_requested_atoms();
+  }
+
   return (this->get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
@@ -1485,6 +1489,17 @@ colvarmodule::~colvarmodule()
     // The proxy object will be deallocated last (if at all)
     proxy = NULL;
   }
+}
+
+
+int colvarmodule::update_requested_atoms()
+{
+  int error_code = COLVARS_OK;
+  // Update requested atoms for variables that support it (no-op otherwise)
+  for (auto cvi = variables()->begin(); cvi != variables()->end(); cvi++) {
+    error_code |= (*cvi)->update_requested_atoms();
+  }
+  return error_code;
 }
 
 

@@ -103,7 +103,7 @@ public:
   void log(std::string const &message) override;
   void error(std::string const &message) override;
   int init_atom(int atom_number) override;
-  void clear_atom(int index) override;
+  int clear_atom(int index) override;
   int check_atom_id(int atom_number) override;
   void request_total_force(bool yesno) override {total_force_requested = yesno;}
   bool total_forces_enabled() const override { return total_force_requested; };
@@ -421,9 +421,10 @@ void colvarproxy_impl::update_atom_properties(int index)
   atoms_charges[index] = molecule->atomcharge(atoms_ids[index]);
 }
 
-void colvarproxy_impl::clear_atom(int index) {
-  colvarproxy::clear_atom(index);
+int colvarproxy_impl::clear_atom(int index) {
+  int error_code = colvarproxy::clear_atom(index);
   mAtomsChanged = true;
+  return error_code;
 }
 
 // Copied from colvarproxy_namd.C

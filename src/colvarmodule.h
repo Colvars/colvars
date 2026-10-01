@@ -630,6 +630,9 @@ public:
   /// Carry out operations needed before next step is run
   int end_of_step();
 
+  /// Update the reference counters for atoms in the proxy
+  int update_requested_atoms();
+
   /// \brief Read a collective variable trajectory (post-processing
   /// only, not called at runtime)
   int read_traj(char const *traj_filename,
@@ -986,6 +989,7 @@ public:
   using allocator_type = std::allocator<T>;
 #endif
   using ag_vector_real_t = std::vector<real, allocator_type<real>>;
+  using ag_vector_int32_t = std::vector<int32_t, allocator_type<int32_t>>;
 
 };
 

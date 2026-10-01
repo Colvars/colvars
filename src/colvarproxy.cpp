@@ -99,15 +99,18 @@ int colvarproxy_atoms::check_atom_id(cvm::residue_id const &residue,
 }
 
 
-void colvarproxy_atoms::clear_atom(int index)
+int colvarproxy_atoms::clear_atom(int index)
 {
-  if (((size_t) index) >= atoms_ids.size()) {
-    cvm::error_static("Error: trying to disable an atom that was not previously requested.\n",
-               COLVARS_INPUT_ERROR);
+  if (static_cast<size_t>(index) >= atoms_ids.size()) {
+    return cvm::error_static(
+        "Error: trying to unrequest an atom that was not previously requested.\n",
+        COLVARS_BUG_ERROR);
   }
-  if (atoms_refcount[index] > 0) {
-    atoms_refcount[index] -= 1;
+  if (index < 0) {
+    return cvm::error_static("Error: invalid argument to clear_atom().\n", COLVARS_BUG_ERROR);
   }
+  decrease_refcount(index);
+  return COLVARS_OK;
 }
 
 
@@ -524,6 +527,63 @@ int colvarproxy::setup()
   }
 #endif
   return error_code;
+}
+
+
+int colvarproxy::set_atom_list_frequency(int atom_list_freq)
+{
+  int const current_atom_list_freq = atom_list_frequency();
+
+  // Check against engine's time step factor
+  if ((atom_list_freq % time_step_factor()) != 0) {
+    return cvmodule->error("the requested atom list frequency (" + cvm::to_str(atom_list_freq) +
+                               ") must be a multiple of the interface time step factor (" +
+                               cvm::to_str(time_step_factor()) + ")",
+                           COLVARS_INPUT_ERROR);
+  }
+
+  if (atom_list_freq < time_step_factor()) {
+    return cvmodule->error("the requested atom list frequency (" + cvm::to_str(atom_list_freq) +
+                               ") cannot be lower than the interface time step factor (" +
+                               cvm::to_str(time_step_factor()) + ")",
+                           COLVARS_INPUT_ERROR);
+  }
+
+  if (current_atom_list_freq > 0) {
+
+    std::string const error_msg(
+        "a new atom list update frequency of " + cvm::to_str(atom_list_freq) +
+        " steps was provided; it should be commensurate with "
+        "the frequency previously set in the interface (currently, " +
+        cvm::to_str(current_atom_list_freq) + " steps).\n");
+
+    if (atom_list_freq < current_atom_list_freq) {
+      // Use the shortest number of steps among all variables
+      if ((current_atom_list_freq % atom_list_freq) != 0) {
+        return cvmodule->error(error_msg, COLVARS_INPUT_ERROR);
+      } else {
+        atom_list_frequency() = atom_list_freq;
+      }
+    } else {
+      if ((atom_list_freq % current_atom_list_freq) != 0) {
+        return cvmodule->error(error_msg, COLVARS_INPUT_ERROR);
+      }
+    }
+
+  } else {
+
+    atom_list_frequency() = atom_list_freq;
+  }
+
+  return COLVARS_OK;
+}
+
+
+int colvarproxy::set_time_step_factor(int f)
+{
+  time_step_factor_ = f;
+  set_atom_list_frequency(f);
+  return COLVARS_OK;
 }
 
 

@@ -1,0 +1,17 @@
+configuration {
+  step           40
+  dt 2.500000e-01
+}
+
+colvar {
+  name one
+  x      0.60723460255678
+}
+
+restraint {
+  configuration {
+    step 40
+    name harmonic1
+  }
+}
+
