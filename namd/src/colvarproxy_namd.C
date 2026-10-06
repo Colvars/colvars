@@ -222,6 +222,18 @@ void colvarproxy_namd::init_gm_atoms_map()
 }
 
 
+void colvarproxy_namd::request_gm_atom_by_id(int aid, int index)
+{
+  globalmaster->modifyRequestedAtomsPublic().add(aid);
+  if (gm_atoms_map.empty() || (gm_atoms_map.size() <= aid)) {
+    cvmodule->error(
+        "Bug: gm_atoms_map is empty or insufficiently sized in colvarproxy_namd::init_atom",
+        COLVARS_BUG_ERROR);
+  }
+  gm_atoms_map[aid] = index;
+}
+
+
 int colvarproxy_namd::update_gm_atoms_map(AtomIDList::const_iterator begin,
                                           AtomIDList::const_iterator end)
 {
@@ -244,8 +256,7 @@ int colvarproxy_namd::update_gm_atoms_map(AtomIDList::const_iterator begin,
       // this atom is probably managed by another GlobalMaster:
       // add it here anyway to avoid having to test for array boundaries at each step
       int const index = add_atom_slot(*a_i);
-      gm_atoms_map[*a_i] = index;
-      globalmaster->modifyRequestedAtomsPublic().add(*a_i);
+      request_gm_atom_by_id(*a_i, index);
       update_atom_properties(index);
     }
   }
@@ -841,8 +852,7 @@ int colvarproxy_namd::init_atom(int atom_number)
   }
 
   int const index = add_atom_slot(aid);
-  gm_atoms_map[aid] = index;
-  globalmaster->modifyRequestedAtomsPublic().add(aid);
+  if (globalmaster) request_gm_atom_by_id(aid, index);
   update_atom_properties(index);
   return index;
 }
@@ -903,11 +913,7 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
         ") for collective variables calculation.\n");
 
   int const index = add_atom_slot(aid);
-  if (gm_atoms_map.empty()) {
-    cvmodule->error("Bug: gm_atoms_map is empty in colvarproxy_namd::init_atom!", COLVARS_BUG_ERROR);
-  }
-  gm_atoms_map[aid] = index;
-  globalmaster->modifyRequestedAtomsPublic().add(aid);
+  if (globalmaster) request_gm_atom_by_id(aid, index);
   update_atom_properties(index);
   return index;
 }
