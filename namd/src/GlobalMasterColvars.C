@@ -30,10 +30,8 @@ void GlobalMasterColvars::reset()
   modifyRequestedGroups().clear();
   modifyGroupForces().clear();
 
-#if NAMD_VERSION_NUMBER >= 34471681
   modifyRequestedGridObjects().clear();
   modifyGridObjForces().clear();
-#endif
 
   requestTotalForce(false);
 }
