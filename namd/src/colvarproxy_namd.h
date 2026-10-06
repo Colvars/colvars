@@ -60,10 +60,10 @@ public:
   int update_target_temperature();
 
   /// Create map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
-  void init_atoms_map();
+  void init_gm_atoms_map();
 
   /// Update map to reflect other requested atoms, including other GlobalMaster objects
-  int update_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);
+  int update_gm_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);
 
   /// Create and zero out data buffers for atoms requested through GlobalMaster
   int setup_gm_atom_buffers();
@@ -86,7 +86,7 @@ protected:
   GlobalMasterColvars *globalmaster = nullptr;
 
   /// Map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
-  std::vector<int> atoms_map;
+  std::vector<int> gm_atoms_map;
 
   /// Pointer to the NAMD simulation input object
   SimParameters *simparams = nullptr;
