@@ -1367,6 +1367,14 @@ int colvarproxy_namd::check_volmaps_available()
 }
 
 
+int colvarproxy_namd::check_engine_volmaps_available()
+{
+  // Only GlobalMaster supports offloaded computation of volumetric maps
+  if (globalmaster) return COLVARS_OK;
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+
 int colvarproxy_namd::request_engine_volmap_by_id(int volmap_id)
 {
   int const index = init_internal_volmap_by_id(volmap_id);
@@ -1374,7 +1382,13 @@ int colvarproxy_namd::request_engine_volmap_by_id(int volmap_id)
   if (index >= 0) {
     // Request the map from GlobalMaster
     // may have been already flagged for internal use without being requested
-    request_globalmaster_volmap(volmap_id);
+    if (globalmaster) {
+      request_globalmaster_volmap(volmap_id);
+    } else {
+      cvmodule->error(
+          "Offloading computation of volumetric maps to NAMD is currently not available.",
+          COLVARS_INPUT_ERROR);
+    }
     cvmodule->cite_feature("GridForces volumetric map implementation for NAMD");
   }
 
@@ -1391,7 +1405,13 @@ int colvarproxy_namd::request_engine_volmap_by_name(std::string const &volmap_na
   int index = init_internal_volmap_by_name(volmap_name);
 
   if (index >= 0) {
-    request_globalmaster_volmap(volmaps_ids[index]);
+    if (globalmaster) {
+      request_globalmaster_volmap(volmaps_ids[index]);
+    } else {
+      cvmodule->error(
+          "Offloading computation of volumetric maps to NAMD is currently not available.",
+          COLVARS_INPUT_ERROR);
+    }
     cvmodule->cite_feature("GridForces volumetric map implementation for NAMD");
   }
 
