@@ -374,8 +374,9 @@ int colvar::cvc::init_dependencies() {
   // Features that are implemented by default if their requirements are
   feature_states[f_cvc_one_site_total_force].available = true;
 
-  // Features That are implemented only for certain simulation engine configurations
-  feature_states[f_cvc_scalable_com].available = (cvmodule->proxy->scalable_group_coms() == COLVARS_OK);
+  // Features that are implemented only for certain simulation engine configurations
+  feature_states[f_cvc_scalable_com].available =
+      (cvmodule->proxy->check_scalable_group_coms() == COLVARS_OK);
   feature_states[f_cvc_scalable].available = feature_states[f_cvc_scalable_com].available;
 
   return COLVARS_OK;
