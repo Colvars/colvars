@@ -364,13 +364,11 @@ int colvarproxy_namd::setup_gm_volmap_buffers()
 {
   int error_code = COLVARS_OK;
 
-#if NAMD_VERSION_NUMBER >= 34471681
   log("updating grid object data ("+cvm::to_str(volmaps_ids.size())+
       " grid objects in total).\n");
   for (int imap = 0; imap < globalmaster->getRequestedGridObjects().size(); imap++) {
     volmaps_new_colvar_forces[imap] = 0.0;
   }
-#endif
 
   return error_code;
 }
@@ -539,11 +537,9 @@ void colvarproxy_namd::read_gm_atom_buffers()
     atom_groups_new_colvar_forces[i] = cvm::rvector(0.0, 0.0, 0.0);
   }
 
-#if NAMD_VERSION_NUMBER >= 34471681
   for (int imap = 0; imap < volmaps_ids.size(); imap++) {
     volmaps_new_colvar_forces[imap] = 0.0;
   }
-#endif
 
   {
     if (cvm::debug()) {
@@ -633,7 +629,6 @@ void colvarproxy_namd::read_gm_atom_buffers()
     }
   }
 
-#if NAMD_VERSION_NUMBER >= 34471681
   {
     if (cvm::debug()) {
       log("Updating grid objects.\n");
@@ -654,7 +649,6 @@ void colvarproxy_namd::read_gm_atom_buffers()
       }
     }
   }
-#endif
 }
 
 
@@ -676,7 +670,6 @@ void colvarproxy_namd::send_gm_atom_forces()
     }
   }
 
-#if NAMD_VERSION_NUMBER >= 34471681
   if (volmaps_new_colvar_forces.size() > 0) {
     globalmaster->modifyGridObjForcesPublic().resize(globalmaster->requestedGridObjs().size());
     globalmaster->modifyGridObjForcesPublic().setall(0.0);
@@ -691,7 +684,6 @@ void colvarproxy_namd::send_gm_atom_forces()
       }
     }
   }
-#endif
 }
 
 
@@ -1358,9 +1350,6 @@ int colvarproxy_namd::set_unit_system(std::string const &units_in, bool /*check_
 }
 
 
-#if NAMD_VERSION_NUMBER >= 34471681
-
-
 int colvarproxy_namd::check_volmaps_available()
 {
   return COLVARS_OK;
@@ -1592,8 +1581,6 @@ int colvarproxy_namd::compute_volmap(int flags,
   }
   return COLVARS_OK;
 }
-
-#endif
 
 #if CMK_SMP && USE_CKLOOP // SMP only
 
