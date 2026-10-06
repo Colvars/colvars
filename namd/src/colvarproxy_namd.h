@@ -261,6 +261,9 @@ public:
 
   int check_volmaps_available() override;
 
+  int check_engine_volmaps_available() override;
+
+
   /// Select a MGridForces map for computation by NAMD
   int request_engine_volmap_by_id(int volmap_id) override;
 
