@@ -319,8 +319,8 @@ public:
   /// Clear atom group data
   int reset();
 
-  /// \brief Whether this proxy implementation has capability for scalable groups
-  virtual int scalable_group_coms();
+  /// Check if this proxy supports offloaded computation of centers of mass (outside Colvars)
+  virtual int check_scalable_group_coms();
 
   /// Prepare this group for collective variables calculation, selecting atoms by internal ids (0-based)
   virtual int init_atom_group(std::vector<int> const &atoms_ids);

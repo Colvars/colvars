@@ -200,7 +200,7 @@ int colvarproxy_atom_groups::add_atom_group_slot(int atom_group_id)
 }
 
 
-int colvarproxy_atom_groups::scalable_group_coms()
+int colvarproxy_atom_groups::check_scalable_group_coms()
 {
   return COLVARS_NOT_IMPLEMENTED;
 }

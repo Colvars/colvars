@@ -248,10 +248,8 @@ public:
                       double const pdb_field_value) override;
 
 
-  int scalable_group_coms() override
-  {
-    return COLVARS_OK;
-  }
+  int check_scalable_group_coms() override;
+
   int init_atom_group(std::vector<int> const &atoms_ids) override;
   void clear_atom_group(int index) override;
 
