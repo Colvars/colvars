@@ -297,6 +297,10 @@ protected:
   /// requested yet; returns the index in the arrays
   int add_atom_slot(int atom_id);
 
+  /// \brief Find the index of an atom by its ID
+  /// \param atom_id Atom ID to search for
+  /// \return Index of the atom in the arrays, or -1 if not found
+  int find_atom_by_id(int atom_id);
 };
 
 
