@@ -62,6 +62,11 @@ public:
   /// Create map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
   void init_gm_atoms_map();
 
+  /// Request the given atom through the GlobalMaster object
+  /// \param aid Atom ID to request
+  /// \param index Index in the colvarproxy array
+  void request_gm_atom_by_id(int aid, int index);
+
   /// Update map to reflect other requested atoms, including other GlobalMaster objects
   int update_gm_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);
 
