@@ -382,14 +382,16 @@ int colvarproxy_namd::reset()
 
   int error_code = COLVARS_OK;
 
-  globalmaster->reset();
+  if (globalmaster) {
+    globalmaster->reset();
 
-  // TODO: There's no other way to re-initialize the gm_atoms_map after
-  // clearing and then reloading a new configuration file, so we just
-  // assume that the number of atoms is unchanged, and reset the gm_atoms_map
-  // to -1. However, this might be problematic if NAMD supports to
-  // reload a new system with different number of atoms in the future.
-  std::fill(gm_atoms_map.begin(), gm_atoms_map.end(), -1);
+    // TODO: There's no other way to re-initialize gm_atoms_map after
+    // clearing and then reloading a new configuration file, so we just
+    // assume that the number of atoms is unchanged, and reset gm_atoms_map
+    // to -1. However, this might be problematic if NAMD supports
+    // reloading a new system with different number of atoms in the future.
+    std::fill(gm_atoms_map.begin(), gm_atoms_map.end(), -1);
+  }
 
   // Clear internal atomic data (atoms, groups and volmaps)
   error_code |= colvarproxy::reset();
@@ -403,7 +405,7 @@ void colvarproxy_namd::calculate()
 {
   errno = 0;
 
-  auto const step = globalmaster->step;
+  if (globalmaster) NAMD_step = globalmaster->step;
 
   if (first_timestep) {
 
@@ -421,9 +423,11 @@ void colvarproxy_namd::calculate()
   } else {
 
     // Use the time step number inherited from GlobalMaster
-    if ( step - previous_NAMD_step == time_step_factor() ) {
+    if (NAMD_step - previous_NAMD_step == time_step_factor()) {
+
       cvmodule->it += time_step_factor();
       b_simulation_continuing = false;
+
     } else {
 
       // Cases covered by this condition:
@@ -438,11 +442,10 @@ void colvarproxy_namd::calculate()
       colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
       colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
       cvmodule->setup_output();
-
     }
   }
 
-  previous_NAMD_step = step;
+  previous_NAMD_step = NAMD_step;
 
   if (accelMDOn) update_accelMD_info();
 
@@ -491,7 +494,7 @@ void colvarproxy_namd::calculate()
 
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
-  if (step == simparams->N) {
+  if (NAMD_step == simparams->N) {
     post_run();
   }
 
@@ -1748,9 +1751,10 @@ int colvarproxy_namd::request_alch_energy_freq(int const freq) {
 }
 
 
-/// Get value of alchemical lambda parameter from back-end
-int colvarproxy_namd::get_alch_lambda(cvm::real* lambda) {
-  *lambda = simparams->getCurrentLambda(globalmaster->step);
+/// Get value of alchemical lambda parameter from NAMD
+int colvarproxy_namd::get_alch_lambda(cvm::real *lambda)
+{
+  *lambda = simparams->getCurrentLambda(NAMD_step);
   return COLVARS_OK;
 }
 
