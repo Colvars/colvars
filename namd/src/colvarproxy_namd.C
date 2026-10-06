@@ -833,25 +833,20 @@ int colvarproxy_namd::check_atom_name_selections_available()
 
 int colvarproxy_namd::init_atom(int atom_number)
 {
-  // save time by checking first whether this atom has been requested before
-  // (this is more common than a non-valid atom number)
-  int aid = (atom_number-1);
-
-  for (size_t i = 0; i < atoms_ids.size(); i++) {
-    if (atoms_ids[i] == aid) {
-      // this atom id was already recorded
-      atoms_refcount[i] += 1;
-      return i;
-    }
-  }
-
-  aid = check_atom_id(atom_number);
+  int aid = check_atom_id(atom_number);
 
   if (aid < 0) {
     return COLVARS_INPUT_ERROR;
   }
 
-  int const index = add_atom_slot(aid);
+  int index = find_atom_by_id(aid);
+
+  if (index >= 0) {
+    increase_refcount(index);
+    return index;
+  }
+
+  index = add_atom_slot(aid);
   if (globalmaster) request_gm_atom_by_id(aid, index);
   update_atom_properties(index);
   return index;
@@ -897,12 +892,14 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
 {
   int const aid = check_atom_id(residue, atom_name, segment_id);
 
-  for (size_t i = 0; i < atoms_ids.size(); i++) {
-    if (atoms_ids[i] == aid) {
-      // this atom id was already recorded
-      atoms_refcount[i] += 1;
-      return i;
-    }
+  if (aid < 0) {
+    return COLVARS_INPUT_ERROR;
+  }
+
+  int index = find_atom_by_id(aid);
+  if (index >= 0) {
+    increase_refcount(index);
+    return index;
   }
 
   if (cvm::debug())
@@ -912,7 +909,7 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
         " (index "+cvm::to_str(aid)+
         ") for collective variables calculation.\n");
 
-  int const index = add_atom_slot(aid);
+  index = add_atom_slot(aid);
   if (globalmaster) request_gm_atom_by_id(aid, index);
   update_atom_properties(index);
   return index;

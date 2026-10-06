@@ -388,19 +388,19 @@ int colvarproxy_impl::update_target_temperature()
 }
 
 int colvarproxy_impl::init_atom(int atom_number) {
-  int aid = atom_number - 1;
-  for (size_t i = 0; i < atoms_ids.size(); i++) {
-    if (atoms_ids[i] == aid) {
-      // this atom id was already recorded
-      atoms_refcount[i] += 1;
-      return i;
-    }
-  }
-  aid = check_atom_id(atom_number);
+  int aid = check_atom_id(atom_number);
+
   if (aid < 0) {
     return COLVARS_INPUT_ERROR;
   }
-  int const index = colvarproxy::add_atom_slot(aid);
+
+  int index = find_atom_by_id(aid);
+
+  if (index >= 0) {
+    return index;
+  }
+
+  index = add_atom_slot(aid);
   update_atom_properties(index);
   mAtomsChanged = true;
   return index;
