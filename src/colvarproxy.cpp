@@ -62,6 +62,18 @@ int colvarproxy_atoms::add_atom_slot(int atom_id)
 }
 
 
+int colvarproxy_atoms::find_atom_by_id(int atom_id)
+{
+  auto it = std::find(atoms_ids.begin(), atoms_ids.end(), atom_id);
+  if (it != atoms_ids.end()) {
+    // this atom id was already recorded
+    size_t i = std::distance(atoms_ids.begin(), it);
+    return i;
+  }
+  return -1;
+}
+
+
 int colvarproxy_atoms::init_atom(int /* atom_number */)
 {
   return COLVARS_NOT_IMPLEMENTED;
