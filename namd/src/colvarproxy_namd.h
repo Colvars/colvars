@@ -10,11 +10,6 @@
 #ifndef COLVARPROXY_NAMD_H
 #define COLVARPROXY_NAMD_H
 
-#ifndef NAMD_VERSION_NUMBER
-// Assume 2.14b1 for now until the NAMD macro is merged
-#define NAMD_VERSION_NUMBER 34471681
-#endif
-
 #include <memory>
 
 #include "colvarproxy_namd_version.h"
@@ -262,8 +257,6 @@ public:
 
   int update_group_properties(int index);
 
-#if NAMD_VERSION_NUMBER >= 34471681
-
   int check_volmaps_available() override;
 
   /// Select a MGridForces map for computation by NAMD
@@ -306,8 +299,6 @@ public:
                          cvm::atom_group* ag,
                          cvm::real *value,
                          cvm::real *atom_field);
-
-#endif
 
   std::ostream &output_stream(std::string const &output_name,
                               std::string const description) override;
