@@ -44,8 +44,9 @@ int colvar::map_total::init(std::string const &conf)
                                   COLVARS_INPUT_ERROR);
   }
 
-  // Parse optional group
-  atoms = parse_group(conf, "atoms", true);
+  // Parse atom group; this is optional if the engine supports offloaded computation of the
+  // volmap (e.g. GridForces), in which case the atom group will be defined through the engine
+  atoms = parse_group(conf, "atoms", (proxy->check_engine_volmaps_available() == COLVARS_OK));
   if (atoms) {
 
     // Using internal atom selection
