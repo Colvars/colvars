@@ -100,6 +100,10 @@ protected:
   /// Use to distinguish between "run 0" and actual runs
   bool first_timestep = true;
 
+  /// Current NAMD simulation step (promoted from int)
+  cvm::step_number NAMD_step = 0L;
+
+  /// Previous NAMD simulation step; used to test if the simulation is advancing
   cvm::step_number previous_NAMD_step = 0L;
 
   /// Used to submit restraint energy as MISC
