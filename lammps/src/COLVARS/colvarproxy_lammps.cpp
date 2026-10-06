@@ -243,22 +243,22 @@ int colvarproxy_lammps::check_atom_id(int atom_number)
 
 int colvarproxy_lammps::init_atom(int atom_number)
 {
-  int aid = atom_number;
+  int aid = check_atom_id(atom_number);
 
-  for (size_t i = 0; i < atoms_ids.size(); i++) {
-    if (atoms_ids[i] == aid) {
-      // this atom id was already recorded
-      atoms_refcount[i] += 1;
-      return i;
-    }
+  if (aid < 0) {
+    return COLVARS_INPUT_ERROR;
   }
 
-  aid = check_atom_id(atom_number);
-  if (aid < 0) return aid;
+  int index = find_atom_by_id(aid);
 
-  int const index = colvarproxy::add_atom_slot(aid);
-  // add entries for the LAMMPS-specific fields
+  if (index >= 0) {
+    increase_refcount(index);
+    return index;
+  }
+
+  index = add_atom_slot(aid);
   atoms_types.push_back(0);
+  // Atom properties will be updated later, as part of the setup() function
 
   return index;
 }
