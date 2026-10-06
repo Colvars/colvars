@@ -132,7 +132,7 @@ int colvarproxy_namd::init()
 
   if (globalmaster) {
     set_time_step_factor(simparams->globalMasterFrequency);
-    init_atoms_map();
+    init_gm_atoms_map();
   }
 
   return COLVARS_OK;
@@ -215,43 +215,43 @@ int colvarproxy_namd::update_target_temperature()
 
 
 
-void colvarproxy_namd::init_atoms_map()
+void colvarproxy_namd::init_gm_atoms_map()
 {
   size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
-  atoms_map.assign(n_all_atoms, -1);
+  gm_atoms_map.assign(n_all_atoms, -1);
 }
 
 
-int colvarproxy_namd::update_atoms_map(AtomIDList::const_iterator begin,
-                                       AtomIDList::const_iterator end)
+int colvarproxy_namd::update_gm_atoms_map(AtomIDList::const_iterator begin,
+                                          AtomIDList::const_iterator end)
 {
-  if (atoms_map.size() != Node::Object()->molecule->numAtoms) {
-    init_atoms_map();
+  if (gm_atoms_map.size() != Node::Object()->molecule->numAtoms) {
+    init_gm_atoms_map();
   }
 
   for (AtomIDList::const_iterator a_i = begin; a_i != end; a_i++) {
 
-    if (atoms_map[*a_i] >= 0) continue;
+    if (gm_atoms_map[*a_i] >= 0) continue;
 
     for (size_t i = 0; i < atoms_ids.size(); i++) {
       if (atoms_ids[i] == *a_i) {
-        atoms_map[*a_i] = i;
+        gm_atoms_map[*a_i] = i;
         break;
       }
     }
 
-    if (atoms_map[*a_i] < 0) {
+    if (gm_atoms_map[*a_i] < 0) {
       // this atom is probably managed by another GlobalMaster:
       // add it here anyway to avoid having to test for array boundaries at each step
       int const index = add_atom_slot(*a_i);
-      atoms_map[*a_i] = index;
+      gm_atoms_map[*a_i] = index;
       globalmaster->modifyRequestedAtomsPublic().add(*a_i);
       update_atom_properties(index);
     }
   }
 
   if (cvm::debug()) {
-    cvmodule->log("atoms_map = "+cvm::to_str(atoms_map)+".\n");
+    cvmodule->log("gm_atoms_map = "+cvm::to_str(gm_atoms_map)+".\n");
   }
 
   return COLVARS_OK;
@@ -375,12 +375,12 @@ int colvarproxy_namd::reset()
 
   globalmaster->reset();
 
-  // TODO: There's no other way to re-initialize the atoms_map after
+  // TODO: There's no other way to re-initialize the gm_atoms_map after
   // clearing and then reloading a new configuration file, so we just
-  // assume that the number of atoms is unchanged, and reset the atoms_map
+  // assume that the number of atoms is unchanged, and reset the gm_atoms_map
   // to -1. However, this might be problematic if NAMD supports to
   // reload a new system with different number of atoms in the future.
-  std::fill(atoms_map.begin(), atoms_map.end(), -1);
+  std::fill(gm_atoms_map.begin(), gm_atoms_map.end(), -1);
 
   // Clear internal atomic data (atoms, groups and volmaps)
   error_code |= colvarproxy::reset();
@@ -506,13 +506,13 @@ void colvarproxy_namd::read_gm_atom_buffers()
   // GlobalMaster objects, add these to the atom map as well
   size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
   if (modified_atom_list() ||               /* Colvars just requested new atoms */
-      (atoms_map.size() != n_all_atoms) ||  /* The system topology has changed */
+      (gm_atoms_map.size() != n_all_atoms) ||  /* The system topology has changed */
       (int(atoms_ids.size()) <              /* Another GlobalMaster requested new atoms */
        (globalmaster->getAtomIdEndPublic() - globalmaster->getAtomIdBeginPublic())) ||
       (int(atoms_ids.size()) <              /* Another GlobalMaster requested new total forces */
        (globalmaster->getForceIdEndPublic() - globalmaster->getForceIdBeginPublic()))) {
-    update_atoms_map(globalmaster->getAtomIdBeginPublic(), globalmaster->getAtomIdEndPublic());
-    update_atoms_map(globalmaster->getForceIdBeginPublic(), globalmaster->getForceIdEndPublic());
+    update_gm_atoms_map(globalmaster->getAtomIdBeginPublic(), globalmaster->getAtomIdEndPublic());
+    update_gm_atoms_map(globalmaster->getForceIdBeginPublic(), globalmaster->getForceIdEndPublic());
     reset_modified_atom_list(); // reset the flag as needed
   }
 
@@ -544,7 +544,7 @@ void colvarproxy_namd::read_gm_atom_buffers()
     PositionList::const_iterator p_i = globalmaster->getAtomPositionBeginPublic();
 
     for ( ; a_i != a_e; ++a_i, ++p_i ) {
-      atoms_positions[atoms_map[*a_i]] = cvm::rvector((*p_i).x, (*p_i).y, (*p_i).z);
+      atoms_positions[gm_atoms_map[*a_i]] = cvm::rvector((*p_i).x, (*p_i).y, (*p_i).z);
       n_positions++;
     }
 
@@ -569,11 +569,11 @@ void colvarproxy_namd::read_gm_atom_buffers()
       ForceList::const_iterator f_i = globalmaster->getTotalForcePublic();
 
       for ( ; a_i != a_e; ++a_i, ++f_i ) {
-        if (atoms_map[*a_i] < 0) {
-          cvmodule->error("Bug: atoms_map at " + cvm::to_str(*a_i) + " is less than zero!\n",
+        if (gm_atoms_map[*a_i] < 0) {
+          cvmodule->error("Bug: gm_atoms_map at " + cvm::to_str(*a_i) + " is less than zero!\n",
                      COLVARS_BUG_ERROR);
         }
-        atoms_total_forces[atoms_map[*a_i]] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
+        atoms_total_forces[gm_atoms_map[*a_i]] = cvm::rvector((*f_i).x, (*f_i).y, (*f_i).z);
         n_total_forces++;
       }
 
@@ -841,7 +841,7 @@ int colvarproxy_namd::init_atom(int atom_number)
   }
 
   int const index = add_atom_slot(aid);
-  atoms_map[aid] = index;
+  gm_atoms_map[aid] = index;
   globalmaster->modifyRequestedAtomsPublic().add(aid);
   update_atom_properties(index);
   return index;
@@ -903,10 +903,10 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
         ") for collective variables calculation.\n");
 
   int const index = add_atom_slot(aid);
-  if (atoms_map.empty()) {
-    cvmodule->error("Bug: atoms_map is empty in colvarproxy_namd::init_atom!", COLVARS_BUG_ERROR);
+  if (gm_atoms_map.empty()) {
+    cvmodule->error("Bug: gm_atoms_map is empty in colvarproxy_namd::init_atom!", COLVARS_BUG_ERROR);
   }
-  atoms_map[aid] = index;
+  gm_atoms_map[aid] = index;
   globalmaster->modifyRequestedAtomsPublic().add(aid);
   update_atom_properties(index);
   return index;
