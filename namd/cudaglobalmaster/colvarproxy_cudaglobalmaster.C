@@ -656,7 +656,7 @@ void colvarproxy_impl::allocateDeviceArrays() {
   cudaCheck(cudaSetDevice(m_device_id));
   allocate_device<double>(&d_mPositions, 3*numAtoms);
   allocate_device<double>(&d_mAppliedForces, 3*numAtoms);
-  if (mClient->requestedTotalForcesAtomsChanged()) {
+  if (total_force_requested) {
     allocate_device<double>(&d_mTotalForces, 3*numAtoms);
   }
   allocate_device<float>(&d_mMass, numAtoms);
@@ -670,9 +670,7 @@ void colvarproxy_impl::deallocateDeviceArrays() {
   cudaCheck(cudaSetDevice(m_device_id));
   deallocate_device<double>(&d_mPositions);
   deallocate_device<double>(&d_mAppliedForces);
-  if (mClient->requestedTotalForcesAtomsChanged()) {
-    deallocate_device<double>(&d_mTotalForces);
-  }
+  deallocate_device<double>(&d_mTotalForces);
   deallocate_device<float>(&d_mMass);
   deallocate_device<float>(&d_mCharges);
   cudaCheck(cudaSetDevice(savedDevice));
@@ -682,7 +680,7 @@ void colvarproxy_impl::allocateDeviceTransposeArrays() {
   const int numAtoms = atoms_ids.size();
   allocate_device<cvm::rvector>(&d_trans_mPositions, numAtoms);
   allocate_device<cvm::rvector>(&d_trans_mAppliedForces, numAtoms);
-  if (mClient->requestedTotalForcesAtomsChanged()) {
+  if (total_force_requested) {
     allocate_device<cvm::rvector>(&d_trans_mTotalForces, numAtoms);
   }
   allocate_device<cvm::real>(&d_trans_mMass, numAtoms);
@@ -692,9 +690,7 @@ void colvarproxy_impl::allocateDeviceTransposeArrays() {
 void colvarproxy_impl::deallocateDeviceTransposeArrays() {
   deallocate_device<cvm::rvector>(&d_trans_mPositions);
   deallocate_device<cvm::rvector>(&d_trans_mAppliedForces);
-  if (mClient->requestedTotalForcesAtomsChanged()) {
-    deallocate_device<cvm::rvector>(&d_trans_mTotalForces);
-  }
+  deallocate_device<cvm::rvector>(&d_trans_mTotalForces);
   deallocate_device<cvm::real>(&d_trans_mMass);
   deallocate_device<cvm::real>(&d_trans_mCharges);
 }
