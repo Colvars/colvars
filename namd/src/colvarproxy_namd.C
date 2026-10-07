@@ -48,6 +48,49 @@
 #include "colvarproxy_namd.h"
 #include "colvarproxy_namd_version.h"
 
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+#if !defined(NAMD_CUDA) && !defined(NAMD_HIP)
+#error "The CUDA GlobalMaster interface requires NAMD_CUDA or NAMD_HIP"
+#endif
+#include "../cudaglobalmaster/colvarproxy_cudaglobalmaster.h"
+#include "../cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.h"
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+#include <nvtx3/nvToolsExt.h>
+#endif
+
+namespace {
+int namd_colvars_gpu_check(cudaError_t status)
+{
+  // checkGPUError is a statement macro, not usable in conditional expressions.
+  return colvars_gpu::gpuAssert(status, __FILE__, __LINE__);
+}
+
+// All Colvars allocations, events and kernels belong to the client's device,
+// not necessarily the device currently selected by the calling thread.
+class namd_colvars_device_guard {
+public:
+  explicit namd_colvars_device_guard(int device) : active(device >= 0)
+  {
+    if (active) {
+      if (namd_colvars_gpu_check(cudaGetDevice(&saved_device)) != COLVARS_OK ||
+          namd_colvars_gpu_check(cudaSetDevice(device)) != COLVARS_OK) {
+        NAMD_die("Cannot select the Colvars CUDA GlobalMaster device.");
+      }
+    }
+  }
+  ~namd_colvars_device_guard()
+  {
+    if (active) namd_colvars_gpu_check(cudaSetDevice(saved_device));
+  }
+  namd_colvars_device_guard(namd_colvars_device_guard const &) = delete;
+  namd_colvars_device_guard &operator=(namd_colvars_device_guard const &) = delete;
+private:
+  bool active;
+  int saved_device = -1;
+};
+}
+#endif
+
 
 colvarproxy_namd::colvarproxy_namd()
   : colvarproxy()
@@ -70,6 +113,10 @@ colvarproxy_namd::colvarproxy_namd()
 
 void colvarproxy_namd::set_gm_object(GlobalMasterColvars *gm)
 {
+  if (gm && has_cudagm_client()) {
+    error("Error: a Colvars proxy cannot use both GlobalMaster backends.\n");
+    return;
+  }
   globalmaster = gm;
 }
 
@@ -77,23 +124,26 @@ void colvarproxy_namd::set_gm_object(GlobalMasterColvars *gm)
 int colvarproxy_namd::init()
 {
 #if CMK_SMP && USE_CKLOOP
-  charm_lock_state = CmiCreateLock();
+  if (!has_cudagm_client() && !charm_lock_initialized) {
+    charm_lock_state = CmiCreateLock();
+    charm_lock_initialized = true;
+  }
 #endif
 
 #if CMK_TRACE_ENABLED
-  if ( 0 == CkMyPe() ) {
+  if (!has_cudagm_client() && 0 == CkMyPe()) {
     traceRegisterUserEvent("GM COLVAR item", GLOBAL_MASTER_CKLOOP_CALC_ITEM);
     traceRegisterUserEvent("GM COLVAR bias", GLOBAL_MASTER_CKLOOP_CALC_BIASES );
     traceRegisterUserEvent("GM COLVAR scripted bias", GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES );
   }
 #endif
 
-  simparams = Node::Object()->simParameters;
+  if (!has_cudagm_client()) simparams = Node::Object()->simParameters;
 
   update_target_temperature();
   set_integration_timestep(simparams->dt);
 
-  if (simparams->accelMDOn) {
+  if (!has_cudagm_client() && simparams->accelMDOn) {
     accelMDOn = true;
   } else {
     accelMDOn = false;
@@ -103,19 +153,25 @@ int colvarproxy_namd::init()
   random.reset(new Random(simparams->randomSeed));
 
 #if !defined (NAMD_UNIFIED_REDUCTION)
-  reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
+  if (!has_cudagm_client()) {
+    reduction = ReductionMgr::Object()->willSubmit(REDUCTIONS_BASIC);
+  }
 #endif
 
 #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
-  CProxy_PatchData cpdata(CkpvAccess(BOCclass_group).patchData);
-  PatchData *patchData = cpdata.ckLocalBranch();
-  nodeReduction = patchData->reduction;
+  if (!has_cudagm_client()) {
+    CProxy_PatchData cpdata(CkpvAccess(BOCclass_group).patchData);
+    PatchData *patchData = cpdata.ckLocalBranch();
+    nodeReduction = patchData->reduction;
+  }
 #endif
 
   // If an input state file was provided for Colvars via NAMD script, record its name
-  auto *input_state_from_namd = Node::Object()->configList->find("colvarsInput");
-  if (input_state_from_namd) {
-    colvarproxy_io::set_input_prefix(input_state_from_namd->data);
+  if (!has_cudagm_client()) {
+    auto *input_state_from_namd = Node::Object()->configList->find("colvarsInput");
+    if (input_state_from_namd) {
+      colvarproxy_io::set_input_prefix(input_state_from_namd->data);
+    }
   }
 
   // Take the default output prefixes from the NAMD script
@@ -142,17 +198,21 @@ int colvarproxy_namd::init()
 int colvarproxy_namd::init_module()
 {
   int error_code = COLVARS_OK;
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  namd_colvars_device_guard device_guard(m_device_id);
+#endif
 
   if (! cvmodule) {
     // initialize module: this object will be the communication proxy
     cvmodule = new colvarmodule(this);
 
-    cvmodule->log("Using NAMD interface, version " + cvm::to_str(COLVARPROXY_VERSION) + ".\n");
+    cvmodule->log("Using " + engine_name_ + " interface, version " +
+            cvm::to_str(COLVARPROXY_VERSION) + ".\n");
     cvmodule->cite_feature("NAMD engine");
     cvmodule->cite_feature("Colvars-NAMD interface");
 
     // save to Node for Tcl script access
-    Node::Object()->colvars = cvmodule;
+    if (!has_cudagm_client()) Node::Object()->colvars = cvmodule;
 
     if (simparams->firstTimestep != 0) {
       cvmodule->set_initial_step(static_cast<cvm::step_number>(simparams->firstTimestep));
@@ -164,10 +224,12 @@ int colvarproxy_namd::init_module()
   }
 
   // find the configuration file, if provided
-  StringList *config = Node::Object()->configList->find("colvarsConfig");
   errno = 0;
-  for ( ; config; config = config->next ) {
-    add_config("configfile", config->data);
+  if (!has_cudagm_client()) {
+    StringList *config = Node::Object()->configList->find("colvarsConfig");
+    for ( ; config; config = config->next ) {
+      add_config("configfile", config->data);
+    }
   }
 
   // Trigger immediate initialization of the module
@@ -177,20 +239,333 @@ int colvarproxy_namd::init_module()
   error_code |= cvmodule->setup_input();
   error_code |= cvmodule->setup_output();
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
 colvarproxy_namd::~colvarproxy_namd()
 {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (has_cudagm_client()) {
+    namd_colvars_device_guard device_guard(m_device_id);
+    namd_colvars_gpu_check(cudaStreamSynchronize(mStream));
+    // Delete the module here so its GPU objects are freed on the correct device,
+    // before the device guard ends and the base destructors run.
+    close_output_streams();
+    delete cvmodule;
+    cvmodule = nullptr;
+    deallocateDeviceArrays();
+    deallocateDeviceTransposeArrays();
+    deallocate_device(&d_mLattice);
+    deallocate_host(&h_mLattice);
+    for (auto &event : events) {
+      if (event) {
+        namd_colvars_gpu_check(cudaEventSynchronize(event));
+        namd_colvars_gpu_check(cudaEventDestroy(event));
+        event = nullptr;
+      }
+    }
+  }
+#endif
 #if CMK_SMP && USE_CKLOOP
-  CmiDestroyLock(charm_lock_state);
+  if (charm_lock_initialized) CmiDestroyLock(charm_lock_state);
 #endif
 #if !defined (NAMD_UNIFIED_REDUCTION)
   delete reduction;
 #endif
 }
 
+Molecule *colvarproxy_namd::get_molecule() const
+{
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (has_cudagm_client()) return mMolecule;
+#endif
+  return Node::Object()->molecule;
+}
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+int colvarproxy_namd::initialize_from_cudagm(
+    CudaGlobalMasterColvars *client, std::vector<std::string> const &arguments,
+    int deviceID, cudaStream_t stream, SimParameters const *parameters,
+    Molecule const *molecule, ScriptTcl *script)
+{
+  if (!client || !parameters || !molecule || deviceID < 0 ||
+      arguments.size() < 3 || globalmaster || mClient || cvmodule) {
+    log("Error: invalid or repeated CUDA GlobalMaster initialization.\n");
+    return COLVARS_INPUT_ERROR;
+  }
+
+  mClient = client;
+  m_device_id = deviceID;
+  mStream = stream;
+  // The client exposes read-only views of NAMD's mutable engine objects.
+  // Keep the traditional SimParameters API (including send_alch_lambda()).
+  simparams = const_cast<SimParameters *>(parameters);
+  mMolecule = const_cast<Molecule *>(molecule);
+  mScriptTcl = script;
+  engine_name_ = "NAMD_CUDAGLOBALMASTER";
+  namd_colvars_device_guard device_guard(m_device_id);
+
+  int error_code = allocate_device(&d_mLattice, 12);
+  error_code |= allocate_host(&h_mLattice, 12);
+  if (error_code != COLVARS_OK) return error_code;
+  std::fill(h_mLattice, h_mLattice + 12, 0.0);
+  error_code |= clear_device_array_async(d_mLattice, 12, mStream);
+
+  // Output prefixes, the initial step and all configuration arguments must be
+  // established before parsing configurations and setting up input/output.
+  for (auto it = arguments.begin() + 2; it != arguments.end(); ++it) {
+    add_config("configfile", *it);
+  }
+  error_code |= init();
+  if (error_code != COLVARS_OK) return error_code;
+  error_code |= init_module();
+  return error_code;
+}
+
+int colvarproxy_namd::allocateDeviceArrays()
+{
+  size_t const n = atoms_ids.size();
+  if (n == 0) return COLVARS_OK;
+  int error_code = allocate_device(&d_mPositions, 3 * n);
+  error_code |= allocate_device(&d_mAppliedForces, 3 * n);
+  if (total_force_requested) error_code |= allocate_device(&d_mTotalForces, 3 * n);
+  error_code |= allocate_device(&d_mMass, n);
+  error_code |= allocate_device(&d_mCharges, n);
+  return error_code;
+}
+
+int colvarproxy_namd::deallocateDeviceArrays()
+{
+  int error_code = deallocate_device(&d_mPositions);
+  error_code |= deallocate_device(&d_mAppliedForces);
+  // Free unconditionally: the request may already have been switched off.
+  error_code |= deallocate_device(&d_mTotalForces);
+  error_code |= deallocate_device(&d_mMass);
+  error_code |= deallocate_device(&d_mCharges);
+  allocated_atoms = 0;
+  return error_code;
+}
+
+int colvarproxy_namd::allocateDeviceTransposeArrays()
+{
+  size_t const n = atoms_ids.size();
+  if (n == 0) return COLVARS_OK;
+  int error_code = allocate_device(&d_trans_mPositions, n);
+  error_code |= allocate_device(&d_trans_mAppliedForces, n);
+  if (total_force_requested) error_code |= allocate_device(&d_trans_mTotalForces, n);
+  error_code |= allocate_device(&d_trans_mMass, n);
+  error_code |= allocate_device(&d_trans_mCharges, n);
+  return error_code;
+}
+
+int colvarproxy_namd::deallocateDeviceTransposeArrays()
+{
+  int error_code = deallocate_device(&d_trans_mPositions);
+  error_code |= deallocate_device(&d_trans_mAppliedForces);
+  error_code |= deallocate_device(&d_trans_mTotalForces);
+  error_code |= deallocate_device(&d_trans_mMass);
+  error_code |= deallocate_device(&d_trans_mCharges);
+  return error_code;
+}
+
+void colvarproxy_namd::reallocate()
+{
+  if (!mClient) return;
+  namd_colvars_device_guard device_guard(m_device_id);
+  int error_code = namd_colvars_gpu_check(cudaStreamSynchronize(mStream));
+  error_code |= deallocateDeviceArrays();
+  error_code |= deallocateDeviceTransposeArrays();
+  error_code |= allocateDeviceArrays();
+  error_code |= allocateDeviceTransposeArrays();
+  if (error_code != COLVARS_OK) {
+    cvmodule->error("Error allocating CUDA GlobalMaster Colvars buffers.\n", COLVARS_MEMORY_ERROR);
+    return;
+  }
+  allocated_atoms = atoms_ids.size();
+  if (allocated_atoms != 0) {
+    error_code |= clear_device_array_async(d_mAppliedForces, 3 * allocated_atoms, mStream);
+    if (d_mTotalForces) {
+      error_code |= clear_device_array_async(d_mTotalForces, 3 * allocated_atoms, mStream);
+    }
+  }
+  if (error_code != COLVARS_OK) {
+    cvmodule->error("Error clearing CUDA GlobalMaster Colvars buffers.\n", COLVARS_ERROR);
+    return;
+  }
+  set_total_forces_invalid();
+  // Keep modified_atom_list() set until the server has populated these buffers.
+  cvmodule->proxy_gpu_buffers_reallocated_done();
+}
+
+void colvarproxy_namd::onBuffersUpdated()
+{
+  if (!mClient) return;
+  namd_colvars_device_guard device_guard(m_device_id);
+  size_t const n = allocated_atoms;
+  mBiasEnergy = 0.0;
+  std::fill(atoms_new_colvar_forces.begin(), atoms_new_colvar_forces.end(), cvm::rvector(0.0));
+  int error_code = COLVARS_OK;
+  bool staging_work = false;
+  if (n != 0) {
+    error_code |= clear_device_array_async(d_mAppliedForces, 3 * n, mStream);
+    if (!has_gpu_support()) {
+      transpose_to_host_rvector(d_mPositions, d_trans_mPositions, n, mStream);
+      if (mClient->requestUpdateAtomTotalForces() && d_mTotalForces) {
+        transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, n, mStream);
+      }
+      staging_work = true;
+    }
+    if (mClient->requestUpdateMasses()) {
+      copy_float_to_host_double(d_mMass, d_trans_mMass, n, mStream);
+      staging_work = true;
+    }
+    if (mClient->requestUpdateCharges()) {
+      copy_float_to_host_double(d_mCharges, d_trans_mCharges, n, mStream);
+      staging_work = true;
+    }
+  }
+  if (staging_work) {
+    error_code |= namd_colvars_gpu_check(cudaGetLastError());
+    // Finish staging before NAMD launches overlapping nonbonded work.
+    error_code |= namd_colvars_gpu_check(cudaStreamSynchronize(mStream));
+  }
+  if (error_code != COLVARS_OK) {
+    cvmodule->error("Error staging CUDA GlobalMaster Colvars buffers.\n", COLVARS_ERROR);
+  }
+}
+
+void colvarproxy_namd::read_cudagm_buffers()
+{
+  size_t const n = allocated_atoms;
+  int error_code = COLVARS_OK;
+  if (mClient->requestUpdateLattice()) {
+    error_code |= copy_DtoH_async(d_mLattice, h_mLattice, 12, mStream);
+    lattice_copy_pending = true;
+    if (has_gpu_support()) {
+      error_code |= namd_colvars_gpu_check(
+          cudaEventRecord(get_event(event_type::update_lattice), mStream));
+    }
+  }
+  bool const update_mass = mClient->requestUpdateMasses();
+  bool const update_charge = mClient->requestUpdateCharges();
+  bool const update_forces = mClient->requestUpdateAtomTotalForces() && d_mTotalForces;
+  if (update_forces) {
+#if CUDAGM_VERSION >= 3
+    if (mClient->isStartupStep()) set_total_forces_invalid();
+    else set_total_forces_valid();
+#else
+    if (cvmodule->step_relative() > 0) set_total_forces_valid();
+    else set_total_forces_invalid();
+#endif
+  } else {
+    set_total_forces_invalid();
+  }
+  if (n != 0) {
+    if (!has_gpu_support()) {
+      error_code |= copy_DtoH_async(d_trans_mPositions, atoms_positions.data(), n, mStream);
+      if (update_forces) {
+        error_code |= copy_DtoH_async(d_trans_mTotalForces, atoms_total_forces.data(), n, mStream);
+      }
+    }
+    if (update_mass) error_code |= copy_DtoH_async(d_trans_mMass, atoms_masses.data(), n, mStream);
+    if (update_charge) error_code |= copy_DtoH_async(d_trans_mCharges, atoms_charges.data(), n, mStream);
+  }
+  if (has_gpu_support()) {
+    error_code |= namd_colvars_gpu_check(cudaEventRecord(get_event(event_type::copy_atoms), mStream));
+  }
+  // CPU computations and host-side group properties must never see pending copies.
+  if (!has_gpu_support() || update_mass || update_charge) {
+    error_code |= namd_colvars_gpu_check(cudaStreamSynchronize(mStream));
+  }
+  updated_masses_ = update_mass;
+  updated_charges_ = update_charge;
+  if (!has_gpu_support() && lattice_copy_pending) {
+    set_lattice();
+    lattice_copy_pending = false;
+  }
+  if (error_code != COLVARS_OK) {
+    cvmodule->error("Error reading CUDA GlobalMaster Colvars buffers.\n", COLVARS_ERROR);
+  }
+}
+
+void colvarproxy_namd::send_cudagm_forces()
+{
+  if (!has_gpu_support() && allocated_atoms != 0) {
+    int error_code = copy_HtoD_async(atoms_new_colvar_forces.data(),
+                                     d_trans_mAppliedForces, allocated_atoms, mStream);
+    transpose_from_host_rvector(d_mAppliedForces, d_trans_mAppliedForces, allocated_atoms, mStream);
+    error_code |= namd_colvars_gpu_check(cudaGetLastError());
+    // The integrator consumes these forces on the same stream.  Host storage
+    // must nevertheless remain stable until the asynchronous upload completes.
+    error_code |= namd_colvars_gpu_check(cudaStreamSynchronize(mStream));
+    if (error_code != COLVARS_OK) {
+      cvmodule->error("Error returning CUDA GlobalMaster Colvars forces.\n", COLVARS_ERROR);
+    }
+  }
+}
+
+void colvarproxy_namd::set_lattice()
+{
+  cvm::rvector const a(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
+  cvm::rvector const b(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
+  cvm::rvector const c(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
+  boundaries_.set_boundaries(a.norm2() != 0.0, b.norm2() != 0.0, c.norm2() != 0.0, a, b, c);
+}
+
+cvm::system_boundary_conditions colvarproxy_namd::get_system_boundaries()
+{
+  if (mClient && lattice_copy_pending) {
+    namd_colvars_device_guard device_guard(m_device_id);
+    int const error_code = namd_colvars_gpu_check(has_gpu_support() ?
+        cudaEventSynchronize(get_event(event_type::update_lattice)) :
+        cudaStreamSynchronize(mStream));
+    if (error_code != COLVARS_OK) {
+      cvmodule->error("Error updating CUDA GlobalMaster lattice.\n", COLVARS_ERROR);
+    }
+    set_lattice();
+    lattice_copy_pending = false;
+  }
+  return boundaries_;
+}
+#endif
+
+colvarproxy_namd::smp_mode_t colvarproxy_namd::get_preferred_smp_mode() const
+{
+  if (has_cudagm_client()) return smp_mode_t::none;
+#if CMK_SMP && USE_CKLOOP
+  return smp_mode_t::cvcs;
+#else
+  return colvarproxy_smp::get_preferred_smp_mode();
+#endif
+}
+
+std::vector<colvarproxy_namd::smp_mode_t> colvarproxy_namd::get_available_smp_modes() const
+{
+  if (has_cudagm_client()) return {smp_mode_t::none, smp_mode_t::gpu};
+#if CMK_SMP && USE_CKLOOP
+  return {smp_mode_t::cvcs, smp_mode_t::inner_loop, smp_mode_t::none};
+#else
+  return colvarproxy_smp::get_available_smp_modes();
+#endif
+}
+
+int colvarproxy_namd::set_smp_mode(smp_mode_t mode)
+{
+  int const error_code = colvarproxy_smp::set_smp_mode(mode);
+  if (error_code != COLVARS_OK) return error_code;
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (mClient) {
+    namd_colvars_device_guard device_guard(m_device_id);
+    int gpu_error = namd_colvars_gpu_check(cudaStreamSynchronize(mStream));
+    support_gpu = (mode == smp_mode_t::gpu);
+    if (support_gpu) gpu_error |= init_gpu();
+    return gpu_error;
+  }
+#endif
+  support_gpu = false;
+  return error_code;
+}
 
 int colvarproxy_namd::update_target_temperature()
 {
@@ -217,7 +592,7 @@ int colvarproxy_namd::update_target_temperature()
 
 void colvarproxy_namd::init_gm_atoms_map()
 {
-  size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
+  size_t const n_all_atoms = get_molecule()->numAtoms;
   gm_atoms_map.assign(n_all_atoms, -1);
 }
 
@@ -237,7 +612,7 @@ void colvarproxy_namd::request_gm_atom_by_id(int aid, int index)
 int colvarproxy_namd::update_gm_atoms_map(AtomIDList::const_iterator begin,
                                           AtomIDList::const_iterator end)
 {
-  if (gm_atoms_map.size() != Node::Object()->molecule->numAtoms) {
+  if (gm_atoms_map.size() != get_molecule()->numAtoms) {
     init_gm_atoms_map();
   }
 
@@ -271,6 +646,9 @@ int colvarproxy_namd::update_gm_atoms_map(AtomIDList::const_iterator begin,
 
 int colvarproxy_namd::setup()
 {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  namd_colvars_device_guard device_guard(m_device_id);
+#endif
   if (cvmodule->size() == 0) {
     // Module is empty, nothing to do
     return COLVARS_OK;
@@ -338,6 +716,7 @@ int colvarproxy_namd::setup_gm_atom_buffers()
 
 int colvarproxy_namd::setup_gm_atom_group_buffers()
 {
+  if (!globalmaster) return COLVARS_NOT_IMPLEMENTED;
   size_t n_group_atoms = 0;
   for (int ig = 0; ig < globalmaster->getRequestedGroups().size(); ig++) {
     n_group_atoms += globalmaster->getRequestedGroups()[ig].size();
@@ -362,6 +741,7 @@ int colvarproxy_namd::setup_gm_atom_group_buffers()
 
 int colvarproxy_namd::setup_gm_volmap_buffers()
 {
+  if (!globalmaster) return COLVARS_NOT_IMPLEMENTED;
   int error_code = COLVARS_OK;
 
   log("updating grid object data ("+cvm::to_str(volmaps_ids.size())+
@@ -376,11 +756,24 @@ int colvarproxy_namd::setup_gm_volmap_buffers()
 
 int colvarproxy_namd::reset()
 {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  namd_colvars_device_guard device_guard(m_device_id);
+#endif
   if (cvm::debug()) {
     cvmodule->log("colvarproxy_namd::reset()\n");
   }
 
   int error_code = COLVARS_OK;
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (has_cudagm_client()) {
+    error_code |= namd_colvars_gpu_check(cudaStreamSynchronize(mStream));
+    error_code |= deallocateDeviceArrays();
+    error_code |= deallocateDeviceTransposeArrays();
+    mBiasEnergy = 0.0;
+    set_total_forces_invalid();
+  }
+#endif
 
   if (globalmaster) {
     globalmaster->reset();
@@ -396,6 +789,7 @@ int colvarproxy_namd::reset()
   // Clear internal atomic data (atoms, groups and volmaps)
   error_code |= colvarproxy::reset();
   internal_gridforce_grids_.clear();
+  if (has_cudagm_client()) modified_atom_list_ = true;
 
   return error_code;
 }
@@ -403,9 +797,22 @@ int colvarproxy_namd::reset()
 
 void colvarproxy_namd::calculate()
 {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  namd_colvars_device_guard device_guard(m_device_id);
+  if (mClient) NAMD_step = mClient->getStep();
+#endif
   errno = 0;
 
   if (globalmaster) NAMD_step = globalmaster->step;
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (mClient) {
+    read_cudagm_buffers();
+    // Consume only the changes whose buffers the server has already supplied.
+    // Setup and scripted callbacks may request new buffers for the next step.
+    reset_modified_atom_list();
+  }
+#endif
 
   if (first_timestep) {
 
@@ -416,7 +823,7 @@ void colvarproxy_namd::calculate()
     cvmodule->setup_input();
     cvmodule->setup_output();
     // Controller is only available after full startup phase, so now
-    controller = &Node::Object()->state->getController();
+    if (!has_cudagm_client()) controller = &Node::Object()->state->getController();
 
     first_timestep = false;
 
@@ -457,16 +864,21 @@ void colvarproxy_namd::calculate()
                                cvm::rvector{lattice->c().x, lattice->c().y, lattice->c().z});
     read_gm_atom_buffers();
   }
-
   if (cvm::debug()) {
     print_input_atomic_data();
   }
   // call the collective variable module
+#if (defined(COLVARS_CUDA) || defined(COLVARS_HIP)) && defined(CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING)
+  if (mClient) nvtxRangePushA(has_gpu_support() ? "Colvars GPU" : "Colvars CPU");
+#endif
   if (cvmodule->calc() != COLVARS_OK) {
     error("Error in the collective variables module.\n");
   }
+#if (defined(COLVARS_CUDA) || defined(COLVARS_HIP)) && defined(CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING)
+  if (mClient) nvtxRangePop();
+#endif
 
-  if (total_force_requested) {
+  if (!has_cudagm_client() && total_force_requested) {
     // Total forces will be valid at the next step (this function is only called once)
     set_total_forces_valid();
   }
@@ -478,24 +890,31 @@ void colvarproxy_namd::calculate()
   if (globalmaster) {
     send_gm_atom_forces();
   }
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (mClient) send_cudagm_forces();
+#endif
 
   // send MISC energy
-  #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
-  if(!simparams->CUDASOAintegrate) {
+  if (!has_cudagm_client()) {
+#if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
+    if (!simparams->CUDASOAintegrate) {
+      reduction->submit();
+    }
+#elif !defined(NAMD_UNIFIED_REDUCTION)
     reduction->submit();
+#endif
   }
-  #else
-  #if !defined(NAMD_UNIFIED_REDUCTION)
-  reduction->submit();
-  #else
-  // submitReduction();
-  #endif
-  #endif
 
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
   if (NAMD_step == simparams->N) {
+#if (defined(COLVARS_CUDA) || defined(COLVARS_HIP)) && defined(CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING)
+    if (mClient) nvtxRangePushA(has_gpu_support() ? "Colvars GPU" : "Colvars CPU");
+#endif
     post_run();
+#if (defined(COLVARS_CUDA) || defined(COLVARS_HIP)) && defined(CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING)
+    if (mClient) nvtxRangePop();
+#endif
   }
 
 }
@@ -516,7 +935,7 @@ void colvarproxy_namd::read_gm_atom_buffers()
 
   // If new atomic positions or forces have been requested by other
   // GlobalMaster objects, add these to the atom map as well
-  size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
+  size_t const n_all_atoms = get_molecule()->numAtoms;
   if (modified_atom_list() ||               /* Colvars just requested new atoms */
       (gm_atoms_map.size() != n_all_atoms) ||  /* The system topology has changed */
       (int(atoms_ids.size()) <              /* Another GlobalMaster requested new atoms */
@@ -707,6 +1126,11 @@ bool colvarproxy_namd::accelMD_enabled() const { return accelMDOn; }
 
 void colvarproxy_namd::init_tcl_pointers()
 {
+  if (has_cudagm_client()) {
+    // The NAMD Tcl interpreter belongs to another thread.
+    colvarproxy::init_tcl_pointers();
+    return;
+  }
 #ifdef NAMD_TCL
   // Store pointer to NAMD's Tcl interpreter
   set_tcl_interp(Node::Object()->getScript()->interp);
@@ -740,6 +1164,12 @@ int colvarproxy_namd::run_colvar_gradient_callback(
 
 void colvarproxy_namd::add_energy(cvm::real energy)
 {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (mClient) {
+    mBiasEnergy += energy;
+    return;
+  }
+#endif
   #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
   if (simparams->CUDASOAintegrate) {
     nodeReduction->item(REDUCTION_MISC_ENERGY) += energy;
@@ -762,6 +1192,10 @@ void colvarproxy_namd::request_total_force(bool yesno)
   if (cvm::debug()) {
     cvmodule->log("colvarproxy_namd::request_total_force()\n");
   }
+  if (has_cudagm_client() && total_force_requested != yesno) {
+    modified_atom_list_ = true;
+    set_total_forces_invalid();
+  }
   total_force_requested = yesno;
   if (globalmaster) globalmaster->requestTotalForcePublic(total_force_requested);
   if (cvm::debug()) {
@@ -783,7 +1217,7 @@ void colvarproxy_namd::log(std::string const &message)
 void colvarproxy_namd::error(std::string const &message)
 {
   log(message);
-  switch (cvmodule->get_error()) {
+  switch (cvmodule ? cvmodule->get_error() : COLVARS_ERROR) {
   case COLVARS_FILE_ERROR:
     errno = EIO; break;
   case COLVARS_NOT_IMPLEMENTED:
@@ -810,7 +1244,7 @@ int colvarproxy_namd::check_atom_id(int atom_number)
     cvmodule->log("Adding atom "+cvm::to_str(atom_number)+
         " for collective variables calculation.\n");
 
-  if ( (aid < 0) || (aid >= Node::Object()->molecule->numAtoms) ) {
+  if ( (aid < 0) || (aid >= get_molecule()->numAtoms) ) {
     cvmodule->error("Error: invalid atom number specified, "+
                cvm::to_str(atom_number)+"\n", COLVARS_INPUT_ERROR);
     return COLVARS_INPUT_ERROR;
@@ -854,10 +1288,10 @@ int colvarproxy_namd::check_atom_id(cvm::residue_id const &residue,
 {
   int const aid =
     (segment_id.size() ?
-     Node::Object()->molecule->get_atom_from_name(segment_id.c_str(),
+    get_molecule()->get_atom_from_name(segment_id.c_str(),
                                                   residue,
                                                   atom_name.c_str()) :
-     Node::Object()->molecule->get_atom_from_name("MAIN",
+    get_molecule()->get_atom_from_name("MAIN",
                                                   residue,
                                                   atom_name.c_str()));
 
@@ -914,13 +1348,14 @@ int colvarproxy_namd::init_atom(cvm::residue_id const &residue,
 void colvarproxy_namd::clear_atom(int index)
 {
   colvarproxy::clear_atom(index);
+  if (has_cudagm_client()) modified_atom_list_ = true;
   // TODO remove it from GlobalMaster arrays?
 }
 
 
 void colvarproxy_namd::update_atom_properties(int index)
 {
-  Molecule *mol = Node::Object()->molecule;
+  Molecule *mol = get_molecule();
   // update mass
   double const mass = mol->atommass(atoms_ids[index]);
   if (mass <= 0.001) {
@@ -1247,6 +1682,7 @@ int colvarproxy_namd::check_scalable_group_coms()
 
 int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
 {
+  if (!globalmaster) return COLVARS_NOT_IMPLEMENTED;
   if (cvm::debug())
     cvmodule->log("Requesting from NAMD a group of size "+cvm::to_str(atoms_ids.size())+
         " for collective variables calculation.\n");
@@ -1291,7 +1727,7 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
   // globalmaster->modifyGroupForces().resize(atom_groups_ids.size());
   AtomIDList &namd_group = globalmaster->modifyRequestedGroupsPublic()[index];
   namd_group.resize(atoms_ids.size());
-  int const n_all_atoms = Node::Object()->molecule->numAtoms;
+  int const n_all_atoms = get_molecule()->numAtoms;
   for (size_t ia = 0; ia < atoms_ids.size(); ia++) {
     int const aid = atoms_ids[ia];
     if (cvm::debug())
@@ -1326,6 +1762,7 @@ void colvarproxy_namd::clear_atom_group(int index)
 
 int colvarproxy_namd::update_group_properties(int index)
 {
+  if (!globalmaster) return COLVARS_NOT_IMPLEMENTED;
   AtomIDList const &namd_group = globalmaster->modifyRequestedGroupsPublic()[index];
   if (cvm::debug()) {
     cvmodule->log("Re-calculating total mass and charge for scalable group no. "+cvm::to_str(index+1)+" ("+
@@ -1335,8 +1772,8 @@ int colvarproxy_namd::update_group_properties(int index)
   cvm::real total_mass = 0.0;
   cvm::real total_charge = 0.0;
   for (int i = 0; i < namd_group.size(); i++) {
-    total_mass += Node::Object()->molecule->atommass(namd_group[i]);
-    total_charge += Node::Object()->molecule->atomcharge(namd_group[i]);
+    total_mass += get_molecule()->atommass(namd_group[i]);
+    total_charge += get_molecule()->atomcharge(namd_group[i]);
   }
   atom_groups_masses[index] = total_mass;
   atom_groups_charges[index] = total_charge;
@@ -1377,6 +1814,7 @@ int colvarproxy_namd::check_engine_volmaps_available()
 
 int colvarproxy_namd::request_engine_volmap_by_id(int volmap_id)
 {
+  if (!globalmaster) return COLVARS_NOT_IMPLEMENTED;
   int const index = init_internal_volmap_by_id(volmap_id);
 
   if (index >= 0) {
@@ -1398,6 +1836,7 @@ int colvarproxy_namd::request_engine_volmap_by_id(int volmap_id)
 
 int colvarproxy_namd::request_engine_volmap_by_name(std::string const &volmap_name)
 {
+  if (!globalmaster) return COLVARS_NOT_IMPLEMENTED;
   if (volmap_name.empty()) {
     return cvmodule->error("Error: no map name provided.", COLVARS_INPUT_ERROR);
   }
@@ -1421,6 +1860,11 @@ int colvarproxy_namd::request_engine_volmap_by_name(std::string const &volmap_na
 
 void colvarproxy_namd::request_globalmaster_volmap(int volmap_id)
 {
+  if (!globalmaster) {
+    cvmodule->error("GlobalMaster volumetric maps are unavailable on this backend.\n",
+                    COLVARS_NOT_IMPLEMENTED);
+    return;
+  }
   for (auto goi_i = globalmaster->getGridObjIndexBeginPublic();
        goi_i != globalmaster->getGridObjIndexEndPublic(); goi_i++) {
     if (*goi_i == volmap_id) {
@@ -1430,7 +1874,7 @@ void colvarproxy_namd::request_globalmaster_volmap(int volmap_id)
   }
 
   // Check that the scale factor is correctly set to zero (ComputeGlobal relies on that)x
-  Molecule *mol = Node::Object()->molecule;
+  Molecule *mol = get_molecule();
   Vector const gfScale = mol->get_gridfrc_grid(volmap_id)->get_scale();
   if ((gfScale.x != 0.0) || (gfScale.y != 0.0) || (gfScale.z != 0.0)) {
     cvmodule->error("Error: GridForce map with numeric ID "+cvm::to_str(volmap_id)+
@@ -1443,7 +1887,7 @@ void colvarproxy_namd::request_globalmaster_volmap(int volmap_id)
 
 int colvarproxy_namd::init_internal_volmap_by_id(int volmap_id)
 {
-  Molecule *mol = Node::Object()->molecule;
+  Molecule *mol = get_molecule();
   int index = -1;
   if ((volmap_id < 0) || (volmap_id >= mol->numGridforceGrids)) {
     cvmodule->error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+") for MGridForces map.\n",
@@ -1522,13 +1966,13 @@ int colvarproxy_namd::clear_volmap(int index)
   int error_code = colvarproxy::clear_volmap(index);
   if (volmaps_refcount[index] == 0) {
     int const volmap_id = volmaps_ids[index];
-    if (volmap_id >= 0) {
+    if (volmap_id >= 0 && globalmaster) {
       // Remove map from GlobalMaster
       int const id_index_in_gm = globalmaster->modifyRequestedGridObjectsPublic().find(volmap_id);
       if (id_index_in_gm >= 0) {
         globalmaster->modifyRequestedGridObjectsPublic().del(id_index_in_gm, 1);
       }
-    } else {
+    } else if (volmap_id < 0) {
       // Delete internal map
       internal_gridforce_grids_[index].reset(nullptr);
     }
@@ -1595,7 +2039,7 @@ int colvarproxy_namd::compute_volmap(int flags,
                                      cvm::real *value,
                                      cvm::real *atom_field)
 {
-  Molecule *mol = Node::Object()->molecule;
+  Molecule *mol = get_molecule();
   // Pointer to NAMD_managed object if volmap_id >= 0, internal object otherwise
   GridforceGrid *grid = volmaps_ids[index] >= 0 ?
     mol->get_gridfrc_grid(volmaps_ids[index]) :
@@ -1706,6 +2150,9 @@ int colvarproxy_namd::smp_biases_script_loop()
 
 
 int colvarproxy_namd::check_replicas_enabled() {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (mClient) return mClient->replica_enabled() ? COLVARS_OK : COLVARS_NOT_IMPLEMENTED;
+#endif
 #if CMK_HAS_PARTITION
   return COLVARS_OK;
 #else
@@ -1715,22 +2162,37 @@ int colvarproxy_namd::check_replicas_enabled() {
 
 
 int colvarproxy_namd::replica_index() {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (mClient) return mClient->replica_index();
+#endif
   return CmiMyPartition();
 }
 
 
 int colvarproxy_namd::num_replicas() {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (mClient) return mClient->num_replicas();
+#endif
   return CmiNumPartitions();
 }
 
 
 void colvarproxy_namd::replica_comm_barrier() {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (mClient) {
+    mClient->replica_comm_barrier();
+    return;
+  }
+#endif
   replica_barrier();
 }
 
 
 int colvarproxy_namd::replica_comm_recv(char* msg_data, int buf_len,
                                         int src_rep) {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (mClient) return mClient->replica_comm_recv(msg_data, buf_len, src_rep);
+#endif
   DataMessage *recvMsg = NULL;
   replica_recv(&recvMsg, src_rep, CkMyPe());
   CmiAssert(recvMsg != NULL);
@@ -1747,6 +2209,9 @@ int colvarproxy_namd::replica_comm_recv(char* msg_data, int buf_len,
 
 int colvarproxy_namd::replica_comm_send(char* msg_data, int msg_len,
                                         int dest_rep) {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  if (mClient) return mClient->replica_comm_send(msg_data, msg_len, dest_rep);
+#endif
   replica_send(msg_data, msg_len, dest_rep, CkMyPe());
   return msg_len;
 }
@@ -1795,6 +2260,7 @@ int colvarproxy_namd::send_alch_lambda(void) {
 
 /// Get energy derivative with respect to lambda
 int colvarproxy_namd::get_dE_dlambda(cvm::real* dE_dlambda) {
+  if (has_cudagm_client() || !controller) return COLVARS_NOT_IMPLEMENTED;
   // Force data at step zero is garbage in NAMD3, zero in NAMD2
   if (cvmodule->step_relative() > 0) {
     *dE_dlambda = controller->getTIderivative();

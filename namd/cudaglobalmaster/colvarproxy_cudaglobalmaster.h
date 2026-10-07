@@ -21,7 +21,7 @@
 
 class Lattice;
 
-class colvarproxy_impl;
+class colvarproxy_namd;
 
 using CudaGlobalMasterClient = CudaGlobalMaster::CudaGlobalMasterClient;
 
@@ -83,7 +83,8 @@ public:
   int64_t getStep() const {return m_step;}
   std::string getTCLUpdateResult() override {return mTCLResult;}
 private:
-  std::unique_ptr<colvarproxy_impl> mImpl;
+  std::unique_ptr<colvarproxy_namd> mImpl;
+  int mDeviceID = -1;
   std::vector<AtomID> mEmpty;
   std::string mTCLResult;
 };
