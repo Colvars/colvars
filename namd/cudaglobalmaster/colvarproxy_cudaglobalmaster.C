@@ -166,11 +166,23 @@ public:
     std::vector<cvm::matrix2d<cvm::real> > &gradient) override;
   int reset() override;
   void reallocate() {
+    int savedDevice;
+    cudaCheck(cudaGetDevice(&savedDevice));
+    cudaCheck(cudaSetDevice(m_device_id));
+    cudaCheck(cudaStreamSynchronize(mStream));
     deallocateDeviceArrays();
-    allocateDeviceArrays();
     deallocateDeviceTransposeArrays();
+    allocateDeviceArrays();
     allocateDeviceTransposeArrays();
+    if (!atoms_ids.empty()) {
+      clear_device_array_async(d_mAppliedForces, 3 * atoms_ids.size(), mStream);
+      if (d_mTotalForces) {
+        clear_device_array_async(d_mTotalForces, 3 * atoms_ids.size(), mStream);
+      }
+    }
+    set_total_forces_invalid();
     cvmodule->proxy_gpu_buffers_reallocated_done();
+    cudaCheck(cudaSetDevice(savedDevice));
   }
   smp_mode_t get_preferred_smp_mode() const override {
     return smp_mode_t::none;
@@ -323,19 +335,19 @@ void colvarproxy_impl::initialize_from_cudagm(
   CudaGlobalMasterColvars* client,
   const std::vector<std::string>& arguments,
   const int deviceID, cudaStream_t stream) {
+  if (arguments.size() < 3) {
+    const std::string error = "Wrong number of arguments of CudaGlobalMasterColvars.";
+    NAMD_die(error.c_str());
+  }
   mClient = client;
   mStream = stream;
   m_device_id = deviceID;
   int savedDevice;
   cudaCheck(cudaGetDevice(&savedDevice));
   cudaCheck(cudaSetDevice(m_device_id));
-  allocate_device<double>(&d_mLattice, sizeof(double)*4*3);
-  allocate_host<double>(&h_mLattice, sizeof(double)*4*3);
+  allocate_device<double>(&d_mLattice, 12);
+  allocate_host<double>(&h_mLattice, 12);
   cudaCheck(cudaSetDevice(savedDevice));
-  if (arguments.size() < 3) {
-    const std::string error = "Wrong number of arguments of CudaGlobalMasterColvars.";
-    NAMD_die(error.c_str());
-  }
   mConfigFiles.clear();
   mConfigFiles.insert(mConfigFiles.end(), arguments.begin()+2, arguments.end());
   // const int64_t step = mClient->getStep();
@@ -355,14 +367,14 @@ void colvarproxy_impl::initialize_from_cudagm(
   for (auto it = mConfigFiles.begin(); it != mConfigFiles.end(); ++it) {
     add_config("configfile", *it);
   }
-  update_target_temperature();
-  setup();
   if (simParams->firstTimestep != 0) {
     cvmodule->set_initial_step(static_cast<cvm::step_number>(simParams->firstTimestep));
   }
   colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
   colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
   colvarproxy_io::set_default_restart_frequency(simParams->restartFrequency);
+  update_target_temperature();
+  setup();
 }
 
 // Copied from colvarproxy_namd.C
@@ -725,14 +737,11 @@ void colvarproxy_impl::onBuffersUpdated() {
   int savedDevice;
   cudaCheck(cudaGetDevice(&savedDevice));
   cudaCheck(cudaSetDevice(m_device_id));
-  if (!has_gpu_support()) {
-    // Clear the previous applied forces
-    auto &colvars_applied_force = *(modify_atom_applied_forces());
-    // TODO: Why do I need to clean the applied forces manually?
-    std::fill(colvars_applied_force.begin(),
-              colvars_applied_force.end(),
-              cvm::rvector(0, 0, 0));
-  } else {
+  auto &colvars_applied_force = *(modify_atom_applied_forces());
+  std::fill(colvars_applied_force.begin(),
+            colvars_applied_force.end(),
+            cvm::rvector(0, 0, 0));
+  if (numAtoms > 0) {
     cudaCheck(cudaMemsetAsync(proxy_atoms_new_colvar_forces_gpu(), 0, 3 * numAtoms * sizeof(double), mStream));
   }
   // Clear the previous bias energy
@@ -741,7 +750,7 @@ void colvarproxy_impl::onBuffersUpdated() {
   if (numAtoms > 0) {
     if (!has_gpu_support()) {
       transpose_to_host_rvector(d_mPositions, d_trans_mPositions, numAtoms, mStream);
-      if (mClient->requestUpdateAtomTotalForces()) {
+      if (mClient->requestUpdateAtomTotalForces() && d_mTotalForces) {
         transpose_to_host_rvector(d_mTotalForces, d_trans_mTotalForces, numAtoms, mStream);
       }
       sync = true;
@@ -777,22 +786,24 @@ void colvarproxy_impl::calculate() {
       cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::update_lattice), mStream));
     }
   }
+  if (mClient->requestUpdateAtomTotalForces() && d_mTotalForces) {
+#if CUDAGM_VERSION >= 3
+    if (mClient->isStartupStep()) set_total_forces_invalid();
+    else set_total_forces_valid();
+#else
+    if (cvmodule->step_relative() > 0) set_total_forces_valid();
+    else set_total_forces_invalid();
+#endif
+  } else {
+    set_total_forces_invalid();
+  }
   // The following memcpy operations are supposed to be overlapped with the NB kernel
   if (numAtoms > 0) {
-#if CUDAGM_VERSION >= 3
-    if (mClient->requestUpdateAtomTotalForces()) {
-      if (mClient->isStartupStep()) {
-        set_total_forces_invalid();
-      } else {
-        set_total_forces_valid();
-      }
-    }
-#endif
     if (!has_gpu_support()) {
       // Transform the arrays for Colvars
       auto &colvars_pos = *(modify_atom_positions());
       ::copy_DtoH(d_trans_mPositions, colvars_pos.data(), numAtoms, mStream);
-      if (mClient->requestUpdateAtomTotalForces()) {
+      if (mClient->requestUpdateAtomTotalForces() && d_mTotalForces) {
         auto &colvars_total_force = *(modify_atom_total_forces());
         ::copy_DtoH(d_trans_mTotalForces, colvars_total_force.data(), numAtoms, mStream);
       }
@@ -809,9 +820,7 @@ void colvarproxy_impl::calculate() {
       cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::copy_atoms), mStream));
     }
   }
-  // NOTE: I think the implementation in Colvars will syncrhonize the stream before
-  // calculating CVCs anyway, so I can skip it here.
-  if (!has_gpu_support()) {
+  if (!has_gpu_support() || mClient->requestUpdateMasses() || mClient->requestUpdateCharges()) {
     // Synchronize the stream to make sure the host buffers are ready
     cudaCheck(cudaStreamSynchronize(mStream));
   }
@@ -865,6 +874,7 @@ void colvarproxy_impl::calculate() {
       transpose_from_host_rvector(
         d_mAppliedForces, d_trans_mAppliedForces,
         numAtoms, mStream);
+      cudaCheck(cudaStreamSynchronize(mStream));
     }
   }
   // NOTE: I think I can skip the syncrhonization here because this client
