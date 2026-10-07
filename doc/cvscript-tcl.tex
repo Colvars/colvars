@@ -335,11 +335,11 @@
 \begin{mdexampleinput}{}
 \texttt{\textbf{cv save <prefix>}}
 \\
-\-~~~~\texttt{Change the prefix of all output files and save them}
+\-~~~~\texttt{Save the current state to a restart file with the given prefix}
 \\
 \-~~~~\texttt{\textbf{Parameters}}
 \\
-\-~~~~\texttt{prefix : string - Output prefix with trailing ".colvars.state" gets removed)}
+\-~~~~\texttt{prefix : string - Output prefix (trailing ".colvars.state" gets removed)}
 \end{mdexampleinput}
 \begin{mdexampleinput}{}
 \texttt{\textbf{cv savetostring}}
@@ -349,6 +349,15 @@
 \-~~~~\texttt{\textbf{Returns}}
 \\
 \-~~~~\texttt{state : string - The saved state}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv outputprefix [prefix]}}
+\\
+\-~~~~\texttt{Get/set the prefix for all output files}
+\\
+\-~~~~\texttt{\textbf{Parameters}}
+\\
+\-~~~~\texttt{prefix : string - Output prefix (trailing ".colvars.state" gets removed) (optional)}
 \end{mdexampleinput}
 \begin{mdexampleinput}{}
 \texttt{\textbf{cv targettemperature [T]}}
@@ -725,6 +734,15 @@
 \-~~~~\texttt{\textbf{Returns}}
 \\
 \-~~~~\texttt{state : string - The bias state}
+\end{mdexampleinput}
+\begin{mdexampleinput}{}
+\texttt{\textbf{cv bias name writeoutput <prefix>}}
+\\
+\-~~~~\texttt{Write output data into files with the given prefix}
+\\
+\-~~~~\texttt{\textbf{Parameters}}
+\\
+\-~~~~\texttt{prefix : string - Prefix for the output files of this bias}
 \end{mdexampleinput}
 \begin{mdexampleinput}{}
 \texttt{\textbf{cv bias name set <feature> <value>}}
