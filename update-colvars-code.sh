@@ -374,8 +374,9 @@ then
 
   # Update NAMD interface files
   for src in \
-      ${source}/namd/src/*.h \
-      ${source}/namd/src/*.C
+      ${source}/namd/src/*.{C,h} \
+      ${source}/namd/cudaglobalmaster/*.{C,h,cu} \
+      ;
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/${tgt}"

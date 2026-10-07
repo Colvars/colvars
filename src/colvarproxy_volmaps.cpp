@@ -27,6 +27,12 @@ int colvarproxy_volmaps::check_volmaps_available()
 }
 
 
+int colvarproxy_volmaps::check_engine_volmaps_available()
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+
 int colvarproxy_volmaps::reset()
 {
   int error_code = COLVARS_OK;

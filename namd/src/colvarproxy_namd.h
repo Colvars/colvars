@@ -10,11 +10,6 @@
 #ifndef COLVARPROXY_NAMD_H
 #define COLVARPROXY_NAMD_H
 
-#ifndef NAMD_VERSION_NUMBER
-// Assume 2.14b1 for now until the NAMD macro is merged
-#define NAMD_VERSION_NUMBER 34471681
-#endif
-
 #include <memory>
 
 #include "colvarproxy_namd_version.h"
@@ -34,64 +29,175 @@ class GlobalMasterColvars;
 class GridforceFullMainGrid;
 class Random;
 class SimParameters;
+class Molecule;
+class ScriptTcl;
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+class CudaGlobalMasterColvars;
+#endif
 
 
 /// Communication between colvars and NAMD (implementation of \link colvarproxy \endlink)
 class colvarproxy_namd : public colvarproxy {
-
-protected:
-
-  /// Pointer to the parent GlobalMaster object
-  GlobalMasterColvars *globalmaster = nullptr;
-
-  /// \brief Array of atom indices (relative to the colvarproxy arrays),
-  /// usedfor faster copy of atomic data
-  std::vector<int> atoms_map;
-
-  /// Pointer to the NAMD simulation input object
-  SimParameters *simparams;
-
-  /// Pointer to Controller object
-  Controller const *controller;
-
-  /// NAMD-style PRNG object
-  std::unique_ptr<Random> random;
-
-  bool first_timestep;
-  cvm::step_number previous_NAMD_step;
-
-  /// Used to submit restraint energy as MISC
-#if !defined (NAMD_UNIFIED_REDUCTION)
-  SubmitReduction *reduction;
-#endif
-#if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
-  NodeReduction *nodeReduction;
-#endif
-
-  /// Accelerated MD reweighting factor
-  bool accelMDOn;
-  cvm::real amd_weight_factor;
-  void update_accelMD_info();
-
 public:
 
-  void init_tcl_pointers() override;
-
-  colvarproxy_namd(GlobalMasterColvars *gm);
+  colvarproxy_namd();
   ~colvarproxy_namd();
 
+  /// Tell the proxy that it will be using the GlobalMaster interface
+  void set_gm_object(GlobalMasterColvars *gm);
+
+  /// Initialize proxy data based on the chosen interface
+  int init(); // no override
+
+  /// Initialize the module
+  int init_module(); // no override
+
+  void init_tcl_pointers() override;
   int setup() override;
   int reset() override;
 
   /// Get the target temperature from the NAMD thermostats supported so far
   int update_target_temperature();
 
-  /// Allocate an atoms map with the same size as the NAMD topology
-  void init_atoms_map();
+  /// Create map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
+  void init_gm_atoms_map();
 
-  // synchronize the local arrays with requested or forced atoms
-  int update_atoms_map(AtomIDList::const_iterator begin,
-                       AtomIDList::const_iterator end);
+  /// Request the given atom through the GlobalMaster object
+  /// \param aid Atom ID to request
+  /// \param index Index in the colvarproxy array
+  void request_gm_atom_by_id(int aid, int index);
+
+  /// Update map to reflect other requested atoms, including other GlobalMaster objects
+  int update_gm_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);
+
+  /// Create and zero out data buffers for atoms requested through GlobalMaster
+  int setup_gm_atom_buffers();
+
+  /// Create and zero out data buffers for atom groups requested through GlobalMaster
+  int setup_gm_atom_group_buffers();
+
+  /// Create and zero out data buffers for grid objects requested through GlobalMaster
+  int setup_gm_volmap_buffers();
+
+  /// Read the current coordinates and total forces
+  void read_gm_atom_buffers();
+
+  /// Send Colvars forces to GlobalMaster
+  void send_gm_atom_forces();
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  /// Initialize on the CUDA worker, using engine objects supplied by the client.
+  int initialize_from_cudagm(CudaGlobalMasterColvars *client,
+                             std::vector<std::string> const &arguments,
+                             int deviceID, cudaStream_t stream,
+                             SimParameters const *parameters,
+                             Molecule const *molecule, ScriptTcl *script);
+  bool atomsChanged() const { return modified_atom_list(); }
+  void reallocate();
+  void onBuffersUpdated();
+
+  cudaStream_t getStream() const { return mStream; }
+  double getEnergy() const { return mBiasEnergy; }
+  double *getPositions() const { return d_mPositions; }
+  double *getAppliedForces() const { return d_mAppliedForces; }
+  double *getTotalForces() const { return d_mTotalForces; }
+  float *getMasses() const { return d_mMass; }
+  float *getCharges() const { return d_mCharges; }
+  double *getLattice() const { return d_mLattice; }
+
+  cudaStream_t get_default_stream() override { return mStream; }
+  float *proxy_atoms_masses_gpu_float() override { return d_mMass; }
+  float *proxy_atoms_charges_gpu_float() override { return d_mCharges; }
+  cvm::real *proxy_atoms_positions_gpu() override { return d_mPositions; }
+  cvm::real *proxy_atoms_total_forces_gpu() override { return d_mTotalForces; }
+  cvm::real *proxy_atoms_new_colvar_forces_gpu() override { return d_mAppliedForces; }
+  cvm::system_boundary_conditions get_system_boundaries() override;
+
+  friend class CudaGlobalMasterColvars;
+#endif
+
+protected:
+
+  bool has_cudagm_client() const
+  {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+    return mClient != nullptr;
+#else
+    return false;
+#endif
+  }
+  /// CUDA workers must not resolve engine data through Node::Object().
+  Molecule *get_molecule() const;
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  int allocateDeviceArrays();
+  int deallocateDeviceArrays();
+  int allocateDeviceTransposeArrays();
+  int deallocateDeviceTransposeArrays();
+  void read_cudagm_buffers();
+  void send_cudagm_forces();
+  void set_lattice();
+
+  CudaGlobalMasterColvars *mClient = nullptr;
+  Molecule *mMolecule = nullptr;
+  ScriptTcl *mScriptTcl = nullptr;
+  int m_device_id = -1;
+  cudaStream_t mStream = nullptr;
+  double mBiasEnergy = 0.0;
+  double *d_mPositions = nullptr;
+  double *d_mAppliedForces = nullptr;
+  double *d_mTotalForces = nullptr;
+  float *d_mMass = nullptr;
+  float *d_mCharges = nullptr;
+  double *d_mLattice = nullptr;
+  double *h_mLattice = nullptr;
+  cvm::rvector *d_trans_mPositions = nullptr;
+  cvm::rvector *d_trans_mAppliedForces = nullptr;
+  cvm::rvector *d_trans_mTotalForces = nullptr;
+  cvm::real *d_trans_mMass = nullptr;
+  cvm::real *d_trans_mCharges = nullptr;
+  size_t allocated_atoms = 0;
+  bool lattice_copy_pending = false;
+#endif
+
+  /// Pointer to the parent GlobalMaster object
+  GlobalMasterColvars *globalmaster = nullptr;
+
+  /// Map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
+  std::vector<int> gm_atoms_map;
+
+  /// Pointer to the NAMD simulation input object
+  SimParameters *simparams = nullptr;
+
+  /// Pointer to Controller object
+  Controller const *controller = nullptr;
+
+  /// NAMD-style PRNG object
+  std::unique_ptr<Random> random;
+
+  /// Use to distinguish between "run 0" and actual runs
+  bool first_timestep = true;
+
+  /// Current NAMD simulation step (promoted from int)
+  cvm::step_number NAMD_step = 0L;
+
+  /// Previous NAMD simulation step; used to test if the simulation is advancing
+  cvm::step_number previous_NAMD_step = 0L;
+
+  /// Used to submit restraint energy as MISC
+#if !defined (NAMD_UNIFIED_REDUCTION)
+  SubmitReduction *reduction = nullptr;
+#endif
+#if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
+  NodeReduction *nodeReduction = nullptr;
+#endif
+
+  /// Accelerated MD reweighting factor
+  bool accelMDOn = false;
+  cvm::real amd_weight_factor = 1.0;
+  void update_accelMD_info();
+
+public:
 
   void calculate();
 
@@ -120,19 +226,11 @@ public:
 
   bool accelMD_enabled() const override;
 
-#if CMK_SMP && USE_CKLOOP
-  smp_mode_t get_preferred_smp_mode() const override {
-    return smp_mode_t::cvcs;
-  }
-  std::vector<smp_mode_t> get_available_smp_modes() const override {
-    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
-      smp_mode_t::cvcs,
-      smp_mode_t::inner_loop,
-      smp_mode_t::none
-    };
-    return available_modes;
-  }
+  smp_mode_t get_preferred_smp_mode() const override;
+  std::vector<smp_mode_t> get_available_smp_modes() const override;
+  int set_smp_mode(smp_mode_t mode) override;
 
+#if CMK_SMP && USE_CKLOOP
   int smp_loop(int n_items, std::function<int (int)> const &worker) override;
 
   int smp_biases_loop() override;
@@ -145,36 +243,37 @@ public:
 
   int smp_thread_id()
   {
-    return CkMyRank();
+    return has_cudagm_client() ? 0 : CkMyRank();
   }
 
   int smp_num_threads()
   {
-    return CkMyNodeSize();
+    return has_cudagm_client() ? 1 : CkMyNodeSize();
   }
 
 protected:
 
   CmiNodeLock charm_lock_state;
+  bool charm_lock_initialized = false;
 
 public:
 
   int smp_lock()
   {
-    CmiLock(charm_lock_state);
+    if (charm_lock_initialized) CmiLock(charm_lock_state);
     return COLVARS_OK;
   }
 
   int smp_trylock()
   {
-    const int ret = CmiTryLock(charm_lock_state);
+    const int ret = charm_lock_initialized ? CmiTryLock(charm_lock_state) : 0;
     if (ret == 0) return COLVARS_OK;
     else return COLVARS_ERROR;
   }
 
   int smp_unlock()
   {
-    CmiUnlock(charm_lock_state);
+    if (charm_lock_initialized) CmiUnlock(charm_lock_state);
     return COLVARS_OK;
   }
 
@@ -200,14 +299,14 @@ public:
 
   void update_atom_properties(int index);
 
-  enum e_pdb_field {
-    e_pdb_none,
-    e_pdb_occ,
-    e_pdb_beta,
-    e_pdb_x,
-    e_pdb_y,
-    e_pdb_z,
-    e_pdb_ntot
+  enum class e_pdb_field {
+    none,
+    occ,
+    beta,
+    x,
+    y,
+    z,
+    ntot
   };
 
   e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str);
@@ -224,18 +323,17 @@ public:
                       double const pdb_field_value) override;
 
 
-  int scalable_group_coms() override
-  {
-    return COLVARS_OK;
-  }
+  int check_scalable_group_coms() override;
+
   int init_atom_group(std::vector<int> const &atoms_ids) override;
   void clear_atom_group(int index) override;
 
   int update_group_properties(int index);
 
-#if NAMD_VERSION_NUMBER >= 34471681
-
   int check_volmaps_available() override;
+
+  int check_engine_volmaps_available() override;
+
 
   /// Select a MGridForces map for computation by NAMD
   int request_engine_volmap_by_id(int volmap_id) override;
@@ -277,8 +375,6 @@ public:
                          cvm::atom_group* ag,
                          cvm::real *value,
                          cvm::real *atom_field);
-
-#endif
 
   std::ostream &output_stream(std::string const &output_name,
                               std::string const description) override;
