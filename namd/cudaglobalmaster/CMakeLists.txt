@@ -92,7 +92,7 @@ endif()
 
 if(NAMD_TCL)
   message(STATUS "add -DNAMD_TCL to compiler flags")
-  add_definitions(-DCOLVARS_TCL)
+  add_definitions(-DNAMD_TCL -DCOLVARS_TCL)
   if(NOT EXISTS ${NAMD_TCL_INCLUDE_DIR})
     message(WARNING "-DNAMD_TCL is enabled but TCL headers are not found in ${NAMD_TCL_INCLUDE_DIR}")
     message(WARNING "Trying to find TCL from the system")
@@ -123,6 +123,8 @@ add_library(
   cudaglobalmastercolvars SHARED
   colvarproxy_cudaglobalmaster.h
   colvarproxy_cudaglobalmaster.C
+  ../src/colvarproxy_namd.h
+  ../src/colvarproxy_namd.C
   colvarproxy_cudaglobalmaster_kernel.h
   colvarproxy_cudaglobalmaster_kernel.cu
   ${LEPTON_SOURCES}
@@ -131,6 +133,7 @@ add_library(
   ${COLVARS_CUDA_SOURCE})
 target_include_directories(cudaglobalmastercolvars
   PUBLIC "${COLVARS_SOURCE_DIR}"
+  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../src"
   PUBLIC "${NAMD_HEADER_DIR}"
   PUBLIC "${CHARM_HEADER_DIR}"
   PUBLIC "${MOLFILE_PLUGIN_HEADER_DIR}"
@@ -155,6 +158,8 @@ if(USE_HIP)
   set_source_files_properties(${LEPTON_SOURCES} PROPERTIES LANGUAGE CXX)
   set_source_files_properties(colvarproxy_cudaglobalmaster.h PROPERTIES LANGUAGE CXX)
   set_source_files_properties(colvarproxy_cudaglobalmaster.C PROPERTIES LANGUAGE CXX)
+  set_source_files_properties(../src/colvarproxy_namd.h PROPERTIES LANGUAGE CXX)
+  set_source_files_properties(../src/colvarproxy_namd.C PROPERTIES LANGUAGE CXX)
   set_source_files_properties(colvarproxy_cudaglobalmaster_kernel.cu PROPERTIES LANGUAGE HIP)
   set_source_files_properties(colvarproxy_cudaglobalmaster_kernel.h PROPERTIES LANGUAGE HIP)
   set_source_files_properties(${COLVARS_CUDA_HEADER} PROPERTIES LANGUAGE HIP)
