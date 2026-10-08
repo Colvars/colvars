@@ -1607,41 +1607,13 @@ public:
                       std::vector<int> const &bin_value,
                       cvm::real const *force,
                       cvm::real smoothing = 0, cvm::real kernel_reduction_speed = 1.,
-                      cvm::real effective_full_samples = 0, cvm::real effective_min_samples =0., cvm::real timestep = 0.,
-                      std::vector<cvm::real>  *s_m = nullptr,
-                      std::vector<cvm::real> *S_m = nullptr,
-                      int *step = nullptr) {
-  if (s_m && S_m && step && smoothing && !s_m->empty() && !S_m->empty()) {
-    if (*step >= 2) {
-      for (size_t i =0; i < nd; i++) {
-        cvm::real temp =
-          ((force[i] - data[address(bin_value) + i]/weights->value(weights->address(bin_value))) - (*s_m)[i]);
-        (*s_m)[i] = (*s_m)[i] + temp / 10.;
-        (*S_m)[i] = (*S_m)[i] + temp * (cv_value[i] - (*s_m)[i]);
-      }
-    }
-    (*step)++;
-    if (*step % 10000 == 0) {
-      std::vector<cvm::real> inital_bandwidth(nd,smoothing);
-      for (size_t i =0; i < nd; i++) {
-        inital_bandwidth[i] = cvm::sqrt((*S_m)[i] / *step / widths[i] / widths[i]);
-      }
-      cvm::log( "initial bandwidth : " + cvm::to_str(inital_bandwidth));
-    }
-  }
+                      cvm::real effective_full_samples = 0, cvm::real effective_min_samples =0.) {
 
   if (smoothing && weights->value(bin_value) < effective_full_samples) {
     std::vector<cvm::real> bandwidth(nd,0);
     std::vector<cvm::real> initial_bandwidth(nd,smoothing);
     std::vector<cvm::real> inv_squared_smooth(nd);
     std::vector<cvm::real> cutoff(nd);
-    if (s_m != nullptr) {
-      if (*step >= 2000) {
-        for (size_t i =0; i < nd; i++) {
-          initial_bandwidth[i] = std::min(cvm::sqrt((*S_m)[i] / (*step) / widths[i] / widths[i]), smoothing);
-        }
-      }
-    }
 
     for (size_t i = 0; i < nd; i++) {
       bandwidth[i] = initial_bandwidth[i]
