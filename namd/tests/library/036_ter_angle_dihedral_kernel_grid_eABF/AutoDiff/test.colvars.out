@@ -247,8 +247,6 @@ colvars:   # shared = off [default]
 colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
 colvars:   # KernelReductionSpeed = 1 [default]
-colvars:   # VarianceBasedKernelSize = off [default]
-colvars:   # VarianceDirectional = off [default]
 colvars:   # smoothing = 2
 colvars:   # CZARestimator = on [default]
 colvars:   # integrate = on [default]
@@ -313,12 +311,12 @@ colvars: Re-initialized atom group for variable "dihedral":0/1. 1 atoms: total m
 colvars: Re-initialized atom group for variable "dihedral":0/2. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars: Re-initialized atom group for variable "dihedral":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars:   Initializing extended coordinate to colvar value.
-colvars:   Integrated in 114 steps, error: 8.34441e-07
-colvars:   Integrated in 107 steps, error: 7.38589e-07
-colvars:   Integrated in 1 steps, error: 5.45281e-07
-colvars:   Integrated in 1 steps, error: 5.11711e-07
-colvars:   Integrated in 105 steps, error: 8.55967e-07
-colvars:   Integrated in 104 steps, error: 7.76634e-07
-colvars:   Integrated in 1 steps, error: 5.63832e-07
-colvars:   Integrated in 1 steps, error: 5.5444e-07
+colvars:   Integrated in 114 steps, error: 7.65137e-07
+colvars:   Integrated in 107 steps, error: 8.46452e-07
+colvars:   Integrated in 1 steps, error: 5.10571e-07
+colvars:   Integrated in 1 steps, error: 6.70293e-07
+colvars:   Integrated in 105 steps, error: 8.59271e-07
+colvars:   Integrated in 103 steps, error: 9.71568e-07
+colvars:   Integrated in 1 steps, error: 5.66009e-07
+colvars:   Integrated in 1 steps, error: 6.51711e-07
 colvars: Saving collective variables state to "test.colvars.state".
