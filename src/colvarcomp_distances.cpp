@@ -17,9 +17,11 @@
 #include "colvar_rotation_derivative.h"
 #include "colvar_gpu_calc.h"
 
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+// Checking NAMD_VERSION is a temporary fix to ensure that Make.depends
+// remains the same.
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
 #include "cuda/colvarcomp_distance_kernel.h"
-#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
 
 
 colvar::distance::distance()
