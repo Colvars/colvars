@@ -1392,12 +1392,12 @@ public:
   friend struct rotation_derivative;
   friend class cvm::atom_group;
 
-  cvm::real* get_S() {return (cvm::real*)S;}
-  cvm::real* get_eigenvectors() {return (cvm::real*)S_eigvec;}
-  cvm::real* get_eigenvalues() {return S_eigval;}
-  cvm::quaternion* get_q() {return &q;}
-  cvm::real* get_S_backup() {return (cvm::real*)S_backup;}
-  cvm::rmatrix* get_C() {return &C;}
+  cvm::real *get_S() { return reinterpret_cast<cvm::real *>(S); }
+  cvm::real *get_eigenvectors() { return reinterpret_cast<cvm::real *>(S_eigvec); }
+  cvm::real *get_eigenvalues() { return S_eigval; }
+  cvm::quaternion *get_q() { return &q; }
+  cvm::real *get_S_backup() { return reinterpret_cast<cvm::real *>(S_backup); }
+  cvm::rmatrix *get_C() { return &C; }
 
   /*! @brief  Function for debugging gradients
    *  @param[in]  pos1  Atom positions of group 1 in SOA (in xxxyyyzzz order)
