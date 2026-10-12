@@ -1,6 +1,11 @@
 #include "colvar_rotation_derivative.h"
 #include "colvarproxy.h"
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
+// Checking NAMD_VERSION is a temporary fix to ensure that Make.depends
+// remains the same.
 #include "cuda/colvar_rotation_derivative_kernel.h"
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
 
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
