@@ -4,7 +4,12 @@
 #include "colvarproxy.h"
 #include "colvarmodule.h"
 #include "colvarcomp.h"
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
+// Checking NAMD_VERSION is a temporary fix to ensure that Make.depends
+// remains the same.
 #include "cuda/colvaratoms_kernel.h"
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
 
 namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)

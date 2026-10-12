@@ -13,7 +13,12 @@
 #include "colvaratoms.h"
 #include "colvar_rotation_derivative.h"
 #include "colvarproxy.h"
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
+// Checking NAMD_VERSION is a temporary fix to ensure that Make.depends
+// remains the same.
 #include "cuda/colvartypes_kernel.h"
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
 
 #ifdef COLVARS_LAMMPS
 // Use open-source Jacobi implementation
