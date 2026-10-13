@@ -2,16 +2,24 @@ colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars:   https://doi.org/10.1080/00268976.2013.813594
 colvars: as well as all other papers listed below for individual features used.
-colvars: This version was built with the C++11 standard or higher.
 colvars: Summary of compile-time features available in this build:
-colvars:   - SMP parallelism: enabled (num. threads = 4)
+colvars:   - C++ language version: 201703
+colvars:   - Multiple replicas: enabled (replica number 1 of 1)
 colvars:   - Lepton custom functions: available
 colvars:   - Tcl interpreter: available
 colvars: Redefining the Tcl "cv" command to the new script interface.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration from file "opes.restart.in":
 colvars: # units = "" [default]
-colvars: # smp = on [default]
+colvars: # smp = "" [default]
+colvars: SMP parallelism is not set.
+colvars: Available SMP parallelism modes of this proxy are:
+colvars:    - cvcs
+colvars:    - inner_loop
+colvars:    - none
+colvars: Set SMP parallelism to the preferred (default) mode to the proxy.
+colvars: SMP parallelism will be applied to Colvars components.
+colvars:   - SMP parallelism: enabled (num. threads = 4)
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 10
 colvars: # scriptedColvarForces = off [default]
@@ -20,7 +28,7 @@ colvars: # sourceTclFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "phi1"
-colvars:   Initializing a new "dihedral" component.
+colvars:     Initializing a new "dihedral" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -105,7 +113,7 @@ colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "phi2"
-colvars:   Initializing a new "dihedral" component.
+colvars:     Initializing a new "dihedral" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -176,8 +184,8 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 5
 colvars:   # lowerBoundary = -180
 colvars:   # upperBoundary = 180
-colvars:   # hardLowerBoundary = off [default]
-colvars:   # hardUpperBoundary = off [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = on [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -190,7 +198,7 @@ colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "phi3"
-colvars:   Initializing a new "dihedral" component.
+colvars:     Initializing a new "dihedral" component.
 colvars:     # name = "003"
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -261,8 +269,8 @@ colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 5
 colvars:   # lowerBoundary = -180
 colvars:   # upperBoundary = 180
-colvars:   # hardLowerBoundary = off [default]
-colvars:   # hardUpperBoundary = off [default]
+colvars:   # hardLowerBoundary = on [default]
+colvars:   # hardUpperBoundary = on [default]
 colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
@@ -279,9 +287,9 @@ colvars:   Initializing a new "opes_metad" instance.
 colvars:   # name = "opes_metad1" [default]
 colvars:   # colvars = { phi1, phi2, phi3 }
 colvars:   # stepZeroData = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # outputEnergy = on
 colvars:   # outputFreq = 10 [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # applyBias = on [default]
 colvars:   # newHillFrequency = 5
 colvars:   # barrier = 5
@@ -302,10 +310,11 @@ colvars:   # fixedGaussianSigma = off [default]
 colvars:   # recursiveMerge = on [default]
 colvars:   # calcWork = off [default]
 colvars:   # multipleReplicas = off [default]
+colvars:   # smp = off [default]
 colvars:   # serial = off [default]
 colvars:   # pmf = on
 colvars:   # pmfColvars = { phi2, phi3 }
-colvars:   # pmfHistoryFrequency = 0 [default]
+colvars:   # pmfHistoryFrequency = 10 [default]
 colvars:   # printTrajectoryFrequency = 1
 colvars:   opes_metad1: temperature = 300
 colvars:   opes_metad1: beta = 1.67741
@@ -365,9 +374,9 @@ colvars: Re-initialized atom group for variable "phi3":0/2. 1 atoms: total mass 
 colvars: Re-initialized atom group for variable "phi3":0/3. 1 atoms: total mass = 12.01, total charge = 0.5973.
 colvars: ----------------------------------------------------------------------
 colvars: Loading state from text file "test.colvars.state".
-colvars:   Restarting collective variable "phi1" from value: -52.3213
-colvars:   Restarting collective variable "phi2" from value: -33.6182
-colvars:   Restarting collective variable "phi3" from value: -34.3475
+colvars:   Restarting collective variable "phi1" from value: -52.3208
+colvars:   Restarting collective variable "phi2" from value: -33.6208
+colvars:   Restarting collective variable "phi3" from value: -34.3481
 colvars:   WARNING: previous bias factor was 16.7741 while now it is 8.38705 (the new one is used).
 colvars:   WARNING: previous epsilon was 1.79174e-08 while now it is 7.31923e-05 (the new one is used).
 colvars:   WARNING: previous cutoff was 5.97285 while now it is 4.36404 (the new one is used).
