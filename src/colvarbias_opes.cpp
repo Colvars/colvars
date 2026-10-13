@@ -413,12 +413,12 @@ cvm::real colvarbias_opes::evaluateKernel(
       return 0;
     }
   }
-  const cvm::real val = G.m_height * (cvm::exp(-0.5 * norm2) - m_val_at_cutoff);
-  // The derivative of norm2 with respect to x
+  const cvm::real gaussian = G.m_height * std::exp(-0.5*norm2);
   for (size_t i = 0; i < num_variables(); ++i) {
-    accumulated_derivative[i] -= val * dist[i] / G.m_sigma[i];
+    // The cutoff shift is constant and does not contribute to the derivative.
+    accumulated_derivative[i] -= dist[i] / G.m_sigma[i] * gaussian;
   }
-  return val;
+  return gaussian - G.m_height * m_val_at_cutoff;
 }
 
 cvm::real colvarbias_opes::getProbAndDerivatives(
@@ -1543,11 +1543,16 @@ void colvarbias_opes::mergeKernels(kernel& k1, const kernel& k2) const {
     if (isPeriodic_i) {
       k1.m_center[i] = k2.m_center[i] + 0.5 * variables(i)->dist2_lgrad(k1.m_center[i], k2.m_center[i]).real_value;
     }
-    const cvm::real c_i = (k1.m_height * k1.m_center[i] +
-                           k2.m_height * k2.m_center[i]) / h;
-    const cvm::real ss_k1_part = k1.m_height * (k1.m_sigma[i] * k1.m_sigma[i] + k1.m_center[i] * k1.m_center[i]);
-    const cvm::real ss_k2_part = k2.m_height * (k2.m_sigma[i] * k2.m_sigma[i] + k2.m_center[i] * k2.m_center[i]);
-    const cvm::real ss_i = (ss_k1_part + ss_k2_part) / h - c_i * c_i;
+    const cvm::real w1 = k1.m_height / h;
+    const cvm::real w2 = k2.m_height / h;
+    const cvm::real delta = k2.m_center[i] - k1.m_center[i];
+    const cvm::real c_i = k1.m_center[i] + w2 * delta;
+    // Merge centered second moments. Subtracting E[x]^2 from E[x^2]
+    // loses the width for narrow kernels far from the CV origin and can
+    // produce zero or negative variance from entirely finite input.
+    const cvm::real ss_i = w1 * k1.m_sigma[i] * k1.m_sigma[i] +
+                           w2 * k2.m_sigma[i] * k2.m_sigma[i] +
+                           w1 * w2 * delta * delta;
     if (isPeriodic_i) {
       colvarvalue tmp(c_i);
       variables(i)->wrap(tmp);
