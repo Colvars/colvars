@@ -149,14 +149,15 @@ if(USE_CUDA)
 endif()
 
 if(USE_HIP)
-  target_link_libraries(cudaglobalmastercolvars hip::device hip::host)
+  # Only hip::host: hip::device adds --offload-arch options from ROCm's
+  # GPU_TARGETS (by default the GPUs of the build machine), which would
+  # override CMAKE_HIP_ARCHITECTURES. The kernels are compiled as HIP sources,
+  # which get CMAKE_HIP_ARCHITECTURES, and the other sources are host code.
+  target_link_libraries(cudaglobalmastercolvars hip::host)
   set_property(TARGET cudaglobalmastercolvars PROPERTY LANGUAGE HIP)
   set_source_files_properties(${COLVARS_SOURCES} PROPERTIES LANGUAGE CXX)
   set_source_files_properties(${LEPTON_SOURCES} PROPERTIES LANGUAGE CXX)
-  set_source_files_properties(colvarproxy_cudaglobalmaster.h PROPERTIES LANGUAGE CXX)
   set_source_files_properties(colvarproxy_cudaglobalmaster.C PROPERTIES LANGUAGE CXX)
   set_source_files_properties(colvarproxy_cudaglobalmaster_kernel.cu PROPERTIES LANGUAGE HIP)
-  set_source_files_properties(colvarproxy_cudaglobalmaster_kernel.h PROPERTIES LANGUAGE HIP)
-  set_source_files_properties(${COLVARS_CUDA_HEADER} PROPERTIES LANGUAGE HIP)
   set_source_files_properties(${COLVARS_CUDA_SOURCE} PROPERTIES LANGUAGE HIP)
 endif()
