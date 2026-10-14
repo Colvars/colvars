@@ -295,6 +295,8 @@ public:
   /// Destructor
   ~colvar();
 
+  /// Remove references to precomputed CVCs
+  int dereference_objects();
 
   /// \brief Calculate the colvar's value and related quantities
   int calc();
