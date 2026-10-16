@@ -37,6 +37,7 @@ class colvarproxy_lammps : public colvarproxy {
   bool first_timestep;
   bool do_exit;
 
+  /// Track the type of each atom to retrieve atom properties during setup
   std::vector<int> atoms_types;
 
  public:
