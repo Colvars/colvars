@@ -1,6 +1,12 @@
 ## Colvars development tools and scripts
 
 
+### Git commit hooks
+
+Type `make` in this folder to install a pre-commit hook, which will remove
+all trailing whitespace from the staged changes.
+
+
 ### Automatically updating the version strings (`master` branch only)
 
 The functions defined in `version_functions.sh` allow to keep the `COLVARS_VERSION` macro and
@@ -29,7 +35,7 @@ pull request.
 
 ### Making updates to other packages
 
-Colvars is primarily distributed as part of other packages.  To make an update, one should first
+Colvars is primarily distributed together with other packages.  To make an update, one should first
 merge all recent commits from the `master` branch into a branch dedicated to the upcoming release
 of that package.  There should be no additional commits in the latter branch compared to
 `master`, allowing a fast-forward update.  After that, the `update-colvars-code.sh` script could
