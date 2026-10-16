@@ -397,6 +397,7 @@ int colvarproxy_impl::init_atom(int atom_number) {
   int index = find_atom_by_id(aid);
 
   if (index >= 0) {
+    increase_refcount(index);
     return index;
   }
 
