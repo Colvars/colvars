@@ -4,13 +4,44 @@ on:
   push:
     branches:
       - master
+  pull_request_target:
+    types:
+      - closed
+    branches:
+      - master
 
 jobs:
+
+  update-versions:
+    name: Update version strings
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'Colvars/colvars' && github.event_name == 'pull_request_target' && github.event.pull_request.merged == true }}
+    concurrency:
+      group: update-version-strings-master
+      cancel-in-progress: false
+    steps:
+
+      - name: Checkout Colvars repo in full
+        uses: actions/checkout@v7
+        with:
+          ref: master
+          fetch-depth: 0
+          ssh-key: ${{ secrets.PULL_PUSH_COLVARS_KEY }}
+
+      - name: Update version strings
+        env:
+          LAST_COMMIT_BEFORE_MERGE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git config user.email "noreply@github.com"
+          git config user.name "CI runner"
+          source devel-tools/version_functions.sh
+          update_all_versions "${LAST_COMMIT_BEFORE_MERGE}"
+          git push origin master
 
   update-wiki:
     name: Update Wiki repo
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'Colvars/colvars' }}
+    if: ${{ github.repository == 'Colvars/colvars' && github.event_name == 'push' }}
     steps:
 
       - name: Checkout Colvars repo in full
