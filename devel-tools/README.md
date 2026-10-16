@@ -10,11 +10,21 @@ source devel-tools/version_functions.sh
 update_all_versions <last_commit_before_change>
 ```
 The argument of the `update_all_versions` function is the hash of a commit that *preceded* the
-changes added since the last time that the macros were updated.  A Git commit is auto-generated,
-and its message will also trigger a doc rebuild when it is pushed to GitHub.
+changes added since the last time the macros were updated.  In most cases, this commit is the
+`master` branch itself and this task is run by a CI job when a pull request is merged.
 
-Note that the CI job that updates the website will create a folder named as the current branch;
-this means that direct-push access to `master` is required for updating the main doc.
+The Git commit message describing the version update also contains the tag that triggers a doc
+rebuild (see next section).
+
+
+### Rebuilding the documentation
+
+If a Git commit message contains `[update-doc]`, it will trigger a doc rebuild by a CI job when
+when the commit is pushed to GitHub.
+
+The CI job will place the documentation in a branch with the same name as the current branch:
+this makes it useful to e.g. automatically build the documentation for the sake of reviewing a
+pull request.
 
 
 ### Making updates to other packages
@@ -76,9 +86,3 @@ The value of `COLVARS_VERSION` should remain unchanged, because no features have
 
 From then on, follow the update procedure is then the same as in the previous section, and submit
 a change request to the other package into their stable release branch.
-
-
-### Git commit hooks
-
-Type `make` in this folder to install a pre-commit hook, which will remove
-all trailing whitespace from the staged changes.
