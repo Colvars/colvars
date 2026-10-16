@@ -17,6 +17,7 @@
 colvar::map_total::map_total()
 {
   set_function_type("mapTotal");
+  provide(f_cvc_dynamic_atom_list);
   x.type(colvarvalue::type_scalar);
 }
 
@@ -101,19 +102,32 @@ int colvar::map_total::init(std::string const &conf)
 void colvar::map_total::calc_value()
 {
   colvarproxy *proxy = cvmodule->proxy;
+
   int flags = is_enabled(f_cvc_gradient) ? colvarproxy::volmap_flag_gradients :
     colvarproxy::volmap_flag_null;
 
-  if (atoms != NULL) {
+  if (atoms) {
     // Compute the map inside Colvars
     x.real_value = 0.0;
 
-    cvm::real *w = NULL;
+    if (is_enabled(f_cvc_dynamic_atom_list)) {
+      flags |= colvarproxy::volmap_flag_use_atomlist;
+      if (cvmodule->step_relative() % atom_list_freq == 0) {
+        // Clear all active flags, so that they are selectively enabled during this step
+        flags |= colvarproxy::volmap_flag_rebuild_atomlist;
+        atoms->clear_active_flags();
+      }
+    }
+
+    cvm::real *w = nullptr;
     if (atom_weights.size() > 0) {
       flags |= colvarproxy::volmap_flag_use_atom_field;
-      w = &(atom_weights[0]);
+      w = atom_weights.data();
     }
+
+    // Note: this function also updates the list of requested atoms
     proxy->compute_volmap(flags, volmap_index, atoms, &(x.real_value), w);
+
   } else {
     // Get the externally computed value
     x.real_value = proxy->get_engine_volmap_value(volmap_index);

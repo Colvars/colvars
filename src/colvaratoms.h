@@ -554,6 +554,22 @@ public:
   inline const int& id(size_t i) const {return atoms_ids[i];}
   ///@}
   /**
+   * @name Accessor to indices in the proxy object's buffers
+   */
+  ///@{
+  inline const int &proxy_index(size_t i) const { return atoms_index[i]; }
+  ///@}
+  /**
+   * @name Accessors to atom active flags
+   */
+  ///@{
+  inline int32_t &active(size_t i) { return atoms_active[i]; }
+  inline const int32_t &set_active(size_t i) { return atoms_active[i] = 1; }
+  inline const int32_t &set_inactive(size_t i) { return atoms_active[i] = 0; }
+  ///@}
+  /// Clear all atoms' active flags, used by CVCs that selectively enable some atoms
+  inline void clear_active_flags() { atoms_active.assign(size(), 0); }
+  /**
    * @name Accessors to positions
    */
   ///@{
@@ -775,6 +791,8 @@ private:
   size_t num_atoms;
   /// \brief SOA atom proxy indices (size: num_atoms)
   std::vector<int> atoms_index;
+  /// \brief SOA atom active flags (size: num_atoms)
+  cvm::ag_vector_int32_t atoms_active;
   /// \brief SOA atom positions (size: 3 * num_atoms)
   cvm::ag_vector_real_t atoms_pos;
   /// \brief SOA atom charges (size: num_atoms)

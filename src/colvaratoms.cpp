@@ -263,6 +263,8 @@ int cvm::atom_group::setup() {
   // }
   // Update masses and charges
   const colvarproxy *p = cvmodule->proxy;
+  atoms_active.resize(size());
+  atoms_active.assign(size(), 1); // All atoms are active by default
   if (!b_dummy && !is_enabled(f_ag_scalable)) {
     atoms_charge.resize(size());
     atoms_mass.resize(size());
