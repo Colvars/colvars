@@ -177,7 +177,7 @@ int colvarproxy_namd::init_module()
   error_code |= cvmodule->setup_input();
   error_code |= cvmodule->setup_output();
 
-  return COLVARS_OK;
+  return error_code;
 }
 
 
