@@ -1522,7 +1522,7 @@ int colvarproxy_namd::clear_volmap(int index)
   int error_code = colvarproxy::clear_volmap(index);
   if (volmaps_refcount[index] == 0) {
     int const volmap_id = volmaps_ids[index];
-    if (volmap_id >= 0) {
+    if (volmap_id >= 0 && globalmaster) {
       // Remove map from GlobalMaster
       int const id_index_in_gm = globalmaster->modifyRequestedGridObjectsPublic().find(volmap_id);
       if (id_index_in_gm >= 0) {
