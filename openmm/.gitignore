@@ -1,0 +1,47 @@
+# Build products
+/build*/
+/dist/
+*.egg-info/
+
+# Local dependency source trees
+/tests_dependence_src/*
+!/tests_dependence_src/.gitkeep
+
+# Python cache and tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# CMake and compiled artifacts
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.pyd
+*.obj
+*.o
+
+# IDE and local assistant settings
+/.kilo/
+/.agents/
+/.vscode/
+/.idea/
+*.code-workspace
+/ChinFo_cpp_vibe_coding_guide.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# pixi environments
+.pixi/*
+!.pixi/config.toml
