@@ -144,7 +144,8 @@ jobs:
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
         env:
-          OPENMM_SOURCE: ${GITHUB_WORKSPACE}/openmm-source
+          OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
+          LEPTON_DIR: ${{ github.workspace }}/openmm-source/libraries/lepton
           CMAKE_GENERATOR: Ninja
         run: |
           ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
