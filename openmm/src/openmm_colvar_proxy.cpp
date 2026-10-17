@@ -1119,9 +1119,8 @@ void OpenMMColvarProxy::updateAtomIndexMap()
 void OpenMMColvarProxy::updatePbc(ContextImpl& context)
 {
     if (!shouldUsePbc(context)) {
-        if (boundaries_type != boundaries_non_periodic || pbcLatticeInitialized_) {
-            boundaries_type = boundaries_non_periodic;
-            reset_pbc_lattice();
+        if (boundaries_.type() != cvm::system_boundary_conditions::types::non_periodic || pbcLatticeInitialized_) {
+            boundaries_.reset();
             pbcLatticeInitialized_ = false;
         }
         return;
@@ -1131,25 +1130,24 @@ void OpenMMColvarProxy::updatePbc(ContextImpl& context)
     Vec3 b_nm;
     Vec3 c_nm;
     context.getPeriodicBoxVectors(a_nm, b_nm, c_nm);
-    const Boundaries_type newBoundariesType = is_orthorhombic(a_nm, b_nm, c_nm) ? boundaries_pbc_ortho
-                                                                                : boundaries_pbc_triclinic;
-    if (pbcLatticeInitialized_ && boundaries_type == newBoundariesType &&
+    if (pbcLatticeInitialized_ &&
         !pbcBoxChanged(a_nm, b_nm, c_nm)) {
         return;
     }
+    const cvm::rvector a1(colvars_units::nm_to_angstrom(a_nm[0]),
+                          colvars_units::nm_to_angstrom(a_nm[1]),
+                          colvars_units::nm_to_angstrom(a_nm[2]));
+    const cvm::rvector a2(colvars_units::nm_to_angstrom(b_nm[0]),
+                          colvars_units::nm_to_angstrom(b_nm[1]),
+                          colvars_units::nm_to_angstrom(b_nm[2]));
+    const cvm::rvector a3(colvars_units::nm_to_angstrom(c_nm[0]),
+                          colvars_units::nm_to_angstrom(c_nm[1]),
+                          colvars_units::nm_to_angstrom(c_nm[2]));
+    const int p1 = ( a1.norm2() ? 1 : 0 );
+    const int p2 = ( a2.norm2() ? 1 : 0 );
+    const int p3 = ( a3.norm2() ? 1 : 0 );
+    boundaries_.set_boundaries(p1, p2, p3, a1, a2, a3);
 
-    unit_cell_x.set(colvars_units::nm_to_angstrom(a_nm[0]),
-                    colvars_units::nm_to_angstrom(a_nm[1]),
-                    colvars_units::nm_to_angstrom(a_nm[2]));
-    unit_cell_y.set(colvars_units::nm_to_angstrom(b_nm[0]),
-                    colvars_units::nm_to_angstrom(b_nm[1]),
-                    colvars_units::nm_to_angstrom(b_nm[2]));
-    unit_cell_z.set(colvars_units::nm_to_angstrom(c_nm[0]),
-                    colvars_units::nm_to_angstrom(c_nm[1]),
-                    colvars_units::nm_to_angstrom(c_nm[2]));
-
-    boundaries_type = newBoundariesType;
-    colvarproxy_system::update_pbc_lattice();
     lastPbcA_nm_ = a_nm;
     lastPbcB_nm_ = b_nm;
     lastPbcC_nm_ = c_nm;
