@@ -1,7 +1,5 @@
 #include "openmm/internal/OpenMMColvarProxy.h"
 
-#include "colvars_units.h"
-
 #include "openmm/Context.h"
 #include "openmm/CustomIntegrator.h"
 #include "openmm/Force.h"
@@ -393,7 +391,7 @@ OpenMMColvarProxy::OpenMMColvarProxy(const ColvarsForce& owner, const System& sy
     : owner_(owner),
       system_(system),
       currentContext_(nullptr),
-      biasEnergyKcalPerMol_(0.0),
+      biasEnergy_(0.0),
       isInitialized_(false),
       autoPbcResolved_(false),
       cachedAutoPbc_(false),
@@ -410,7 +408,7 @@ OpenMMColvarProxy::OpenMMColvarProxy(const ColvarsForce& owner, const System& sy
       gaussianRngHasSpare_(false),
       gaussianRngSpare_(0.0),
       currentLambdaDerivativeValid_(false),
-      currentLambdaDerivativeKJPerMol_(0.0),
+      currentLambdaDerivative_(0.0),
       tabfAlphaBoundariesValid_(false),
       tabfAlphaLowerBoundary_(0.0),
       tabfAlphaUpperBoundary_(0.0),
@@ -419,7 +417,7 @@ OpenMMColvarProxy::OpenMMColvarProxy(const ColvarsForce& owner, const System& sy
       cachedUsesPbc_(false),
       cachedLambdaValue_(0.0),
       cachedTabfAlphaValue_(1.0),
-      cachedBiasEnergyKJPerMol_(0.0)
+      cachedBiasEnergy_(0.0)
 {
     tabfAlphaBoundariesValid_ = config_tabf_alpha_boundaries(
         owner_config_text(owner_), tabfAlphaLowerBoundary_, tabfAlphaUpperBoundary_);
@@ -537,7 +535,7 @@ bool OpenMMColvarProxy::total_forces_same_step() const
 int OpenMMColvarProxy::set_unit_system(std::string const& unitsIn, bool checkOnly)
 {
     if (checkOnly) {
-        if ((units != "" && unitsIn != units) || (units == "" && unitsIn != "real")) {
+        if ((units != "" && unitsIn != units) || (units == "" && unitsIn != "gromacs")) {
             cvmodule->error("Specified unit system \"" + unitsIn +
                             "\" is incompatible with the OpenMM Colvars interface.\n",
                             COLVARS_INPUT_ERROR);
@@ -546,23 +544,23 @@ int OpenMMColvarProxy::set_unit_system(std::string const& unitsIn, bool checkOnl
         return COLVARS_OK;
     }
 
-    if (unitsIn != "real") {
+    if (unitsIn != "gromacs") {
         cvmodule->error("Error: the OpenMM Colvars v1 interface currently supports only "
-                        "\"real\" units (A, kcal/mol).\n",
+                        "\"gromacs\" units (nm, kJ/mol).\n",
                         COLVARS_INPUT_ERROR);
         return COLVARS_ERROR;
     }
 
     units = unitsIn;
-    angstrom_value_ = 1.0;
-    kcal_mol_value_ = 1.0;
-    boltzmann_ = 0.001987191;
+    angstrom_value_ = 0.1;
+    kcal_mol_value_ = 4.184;
+    boltzmann_ = 0.001987191 * 4.184; // kJ/mol/K
     return COLVARS_OK;
 }
 
 void OpenMMColvarProxy::add_energy(cvm::real energy)
 {
-    biasEnergyKcalPerMol_ += energy;
+    biasEnergy_ += energy;
 }
 
 void OpenMMColvarProxy::log(std::string const& message)
@@ -662,15 +660,15 @@ int OpenMMColvarProxy::get_dE_dlambda(cvm::real* dEdLambda)
         return COLVARS_OK;
     }
 
-    double derivative_kj_per_mol = currentLambdaDerivativeKJPerMol_;
+    double derivative = currentLambdaDerivative_;
     if (!currentLambdaDerivativeValid_) {
         std::map<std::string, double> derivatives;
         currentContext_->getEnergyParameterDerivatives(derivatives);
-        const auto derivative = derivatives.find(owner_.getLambdaParameterName());
-        if (derivative != derivatives.end()) {
-            derivative_kj_per_mol = derivative->second;
+        const auto derivative_found = derivatives.find(owner_.getLambdaParameterName());
+        if (derivative_found != derivatives.end()) {
+            derivative = derivative_found->second;
         } else {
-            derivative_kj_per_mol =
+            derivative =
                 contextParameter(*currentContext_, owner_.getLambdaDerivativeParameterName(), 0.0);
         }
     }
@@ -680,9 +678,9 @@ int OpenMMColvarProxy::get_dE_dlambda(cvm::real* dEdLambda)
             return cvmodule->error("Error: TABF alpha must be positive when scaling dE/dlambda.\n",
                                    COLVARS_ERROR);
         }
-        derivative_kj_per_mol /= alpha;
+        derivative /= alpha;
     }
-    *dEdLambda = colvars_units::kj_per_mol_to_kcal_per_mol(derivative_kj_per_mol);
+    *dEdLambda = derivative;
     return COLVARS_OK;
 }
 
@@ -778,14 +776,14 @@ int OpenMMColvarProxy::get_dE_dtabf_alpha(cvm::real* dEdAlpha)
         return COLVARS_OK;
     }
 
-    double derivative_kj_per_mol =
+    double derivative =
         integratorGlobal(*currentContext_, owner_.getTabfAlphaDerivativeParameterName(),
                          std::numeric_limits<double>::quiet_NaN());
-    if (std::isnan(derivative_kj_per_mol)) {
-        derivative_kj_per_mol =
+    if (std::isnan(derivative)) {
+        derivative =
             contextParameter(*currentContext_, owner_.getTabfAlphaDerivativeParameterName(), 0.0);
     }
-    *dEdAlpha = colvars_units::kj_per_mol_to_kcal_per_mol(derivative_kj_per_mol);
+    *dEdAlpha = derivative;
     return COLVARS_OK;
 }
 #endif
@@ -957,7 +955,7 @@ int OpenMMColvarProxy::run_colvar_gradient_callback(std::string const&,
 int OpenMMColvarProxy::updateInput(ContextImpl& context, const std::vector<Vec3>& positions)
 {
     currentContext_ = &context;
-    biasEnergyKcalPerMol_ = 0.0;
+    biasEnergy_ = 0.0;
 
     updateColvarsStep(context);
     const double timestepFs = 1000.0 * context.getIntegrator().getStepSize();
@@ -989,34 +987,34 @@ double OpenMMColvarProxy::calculate(ContextImpl& context, const std::vector<Vec3
 
     long long openmmStep = 0;
     bool usesPbc = false;
-    Vec3 boxA_nm;
-    Vec3 boxB_nm;
-    Vec3 boxC_nm;
+    Vec3 boxA;
+    Vec3 boxB;
+    Vec3 boxC;
     double lambdaValue = 0.0;
     double tabfAlphaValue = 1.0;
-    std::vector<Vec3> requestedPositions_nm;
+    std::vector<Vec3> requestedPositions;
     const bool canUseCache = buildCacheKey(context,
                                            positions,
                                            openmmStep,
                                            usesPbc,
-                                           boxA_nm,
-                                           boxB_nm,
-                                           boxC_nm,
+                                           boxA,
+                                           boxB,
+                                           boxC,
                                            lambdaValue,
                                            tabfAlphaValue,
-                                           requestedPositions_nm);
+                                           requestedPositions);
     if (canUseCache && cacheMatches(openmmStep,
                                     usesPbc,
-                                    boxA_nm,
-                                    boxB_nm,
-                                    boxC_nm,
+                                    boxA,
+                                    boxB,
+                                    boxC,
                                     lambdaValue,
                                     tabfAlphaValue,
-                                    requestedPositions_nm)) {
-        biasEnergyKcalPerMol_ = colvars_units::kj_per_mol_to_kcal_per_mol(cachedBiasEnergyKJPerMol_);
+                                    requestedPositions)) {
+        biasEnergy_ = cachedBiasEnergy_;
         auto& appliedForces = *(modify_atom_applied_forces());
         appliedForces = cachedAppliedForces_;
-        return cachedBiasEnergyKJPerMol_;
+        return cachedBiasEnergy_;
     }
 
     int errorCode = updateInput(context, positions);
@@ -1040,7 +1038,7 @@ double OpenMMColvarProxy::calculate(ContextImpl& context, const std::vector<Vec3
     if (errorCode != COLVARS_OK || cvmodule->get_error() != COLVARS_OK) {
         throw OpenMMException(format_colvars_error(get_error_msgs()));
     }
-    const double energyKJPerMol = biasEnergyKJPerMol();
+    const double energy = biasEnergy();
     if (canUseCache) {
         double cacheLambdaValue = lambdaValue;
         if (owner_.getAlchemyEnabled()) {
@@ -1050,27 +1048,27 @@ double OpenMMColvarProxy::calculate(ContextImpl& context, const std::vector<Vec3
         if (owner_.getTabfEnabled()) {
             cacheTabfAlphaValue = tabfAlpha(context);
         }
-        requestedPositions_nm.clear();
-        requestedPositions_nm.reserve(atoms_ids.size());
+        requestedPositions.clear();
+        requestedPositions.reserve(atoms_ids.size());
         for (int atomIndex : atoms_ids) {
             if (atomIndex < 0 || atomIndex >= static_cast<int>(positions.size())) {
                 invalidateCache();
-                return energyKJPerMol;
+                return energy;
             }
-            requestedPositions_nm.push_back(positions[atomIndex]);
+            requestedPositions.push_back(positions[atomIndex]);
         }
-        cachedRequestedPositions_nm_ = std::move(requestedPositions_nm);
+        cachedRequestedPositions_ = std::move(requestedPositions);
         storeCache(openmmStep,
                    usesPbc,
-                   boxA_nm,
-                   boxB_nm,
-                   boxC_nm,
+                   boxA,
+                   boxB,
+                   boxC,
                    cacheLambdaValue,
                    cacheTabfAlphaValue);
     } else {
         invalidateCache();
     }
-    return energyKJPerMol;
+    return energy;
 }
 
 void OpenMMColvarProxy::addForcesToOpenMM(std::vector<Vec3>& forces) const
@@ -1082,22 +1080,17 @@ void OpenMMColvarProxy::addForcesToOpenMM(std::vector<Vec3>& forces) const
     previousForceAtoms_.reserve(atoms_ids.size());
     for (size_t proxyIndex = 0; proxyIndex < atoms_ids.size(); ++proxyIndex) {
         const int openmmAtomIndex = atoms_ids[proxyIndex];
-        const cvm::rvector& force_kcal_per_mol_angstrom = appliedForces[proxyIndex];
-        constexpr double kForceKcalPerMolAngstromToKJPerMolNm =
-            colvars_units::kKJPerKcal * colvars_units::kAngstromsPerNm;
-        forces[openmmAtomIndex][0] = force_kcal_per_mol_angstrom.x *
-                                     kForceKcalPerMolAngstromToKJPerMolNm;
-        forces[openmmAtomIndex][1] = force_kcal_per_mol_angstrom.y *
-                                     kForceKcalPerMolAngstromToKJPerMolNm;
-        forces[openmmAtomIndex][2] = force_kcal_per_mol_angstrom.z *
-                                     kForceKcalPerMolAngstromToKJPerMolNm;
+        const cvm::rvector& force = appliedForces[proxyIndex];
+        forces[openmmAtomIndex][0] = force.x;
+        forces[openmmAtomIndex][1] = force.y;
+        forces[openmmAtomIndex][2] = force.z;
         previousForceAtoms_.push_back(openmmAtomIndex);
     }
 }
 
-double OpenMMColvarProxy::biasEnergyKJPerMol() const
+double OpenMMColvarProxy::biasEnergy() const
 {
-    return colvars_units::kcal_per_mol_to_kj_per_mol(biasEnergyKcalPerMol_);
+    return biasEnergy_;
 }
 
 void OpenMMColvarProxy::updateAtomProperties(int proxyIndex)
@@ -1126,31 +1119,25 @@ void OpenMMColvarProxy::updatePbc(ContextImpl& context)
         return;
     }
 
-    Vec3 a_nm;
-    Vec3 b_nm;
-    Vec3 c_nm;
-    context.getPeriodicBoxVectors(a_nm, b_nm, c_nm);
+    Vec3 a;
+    Vec3 b;
+    Vec3 c;
+    context.getPeriodicBoxVectors(a, b, c);
     if (pbcLatticeInitialized_ &&
-        !pbcBoxChanged(a_nm, b_nm, c_nm)) {
+        !pbcBoxChanged(a, b, c)) {
         return;
     }
-    const cvm::rvector a1(colvars_units::nm_to_angstrom(a_nm[0]),
-                          colvars_units::nm_to_angstrom(a_nm[1]),
-                          colvars_units::nm_to_angstrom(a_nm[2]));
-    const cvm::rvector a2(colvars_units::nm_to_angstrom(b_nm[0]),
-                          colvars_units::nm_to_angstrom(b_nm[1]),
-                          colvars_units::nm_to_angstrom(b_nm[2]));
-    const cvm::rvector a3(colvars_units::nm_to_angstrom(c_nm[0]),
-                          colvars_units::nm_to_angstrom(c_nm[1]),
-                          colvars_units::nm_to_angstrom(c_nm[2]));
+    const cvm::rvector a1(a[0], a[1], a[2]);
+    const cvm::rvector a2(b[0], b[1], b[2]);
+    const cvm::rvector a3(c[0], c[1], c[2]);
     const int p1 = ( a1.norm2() ? 1 : 0 );
     const int p2 = ( a2.norm2() ? 1 : 0 );
     const int p3 = ( a3.norm2() ? 1 : 0 );
     boundaries_.set_boundaries(p1, p2, p3, a1, a2, a3);
 
-    lastPbcA_nm_ = a_nm;
-    lastPbcB_nm_ = b_nm;
-    lastPbcC_nm_ = c_nm;
+    lastPbcA_ = a;
+    lastPbcB_ = b;
+    lastPbcC_ = c;
     pbcLatticeInitialized_ = true;
 }
 
@@ -1189,32 +1176,32 @@ bool OpenMMColvarProxy::resolveAutoPbcMode() const
     return false;
 }
 
-bool OpenMMColvarProxy::pbcBoxChanged(const Vec3& a_nm, const Vec3& b_nm, const Vec3& c_nm) const
+bool OpenMMColvarProxy::pbcBoxChanged(const Vec3& a, const Vec3& b, const Vec3& c) const
 {
-    return !same_vec3(a_nm, lastPbcA_nm_) ||
-           !same_vec3(b_nm, lastPbcB_nm_) ||
-           !same_vec3(c_nm, lastPbcC_nm_);
+    return !same_vec3(a, lastPbcA_) ||
+           !same_vec3(b, lastPbcB_) ||
+           !same_vec3(c, lastPbcC_);
 }
 
 bool OpenMMColvarProxy::buildCacheKey(ContextImpl& context,
                                       const std::vector<Vec3>& positions,
                                       long long& openmmStep,
                                       bool& usesPbc,
-                                      Vec3& boxA_nm,
-                                      Vec3& boxB_nm,
-                                      Vec3& boxC_nm,
+                                      Vec3& boxA,
+                                      Vec3& boxB,
+                                      Vec3& boxC,
                                       double& lambdaValue,
                                       double& tabfAlphaValue,
-                                      std::vector<Vec3>& requestedPositions_nm) const
+                                      std::vector<Vec3>& requestedPositions) const
 {
     openmmStep = context.getOwner().getStepCount();
     usesPbc = shouldUsePbc(context);
     if (usesPbc) {
-        context.getPeriodicBoxVectors(boxA_nm, boxB_nm, boxC_nm);
+        context.getPeriodicBoxVectors(boxA, boxB, boxC);
     } else {
-        boxA_nm = Vec3();
-        boxB_nm = Vec3();
-        boxC_nm = Vec3();
+        boxA = Vec3();
+        boxB = Vec3();
+        boxC = Vec3();
     }
 
     lambdaValue = 0.0;
@@ -1223,25 +1210,25 @@ bool OpenMMColvarProxy::buildCacheKey(ContextImpl& context,
     }
     tabfAlphaValue = owner_.getTabfEnabled() ? tabfAlpha(context) : 1.0;
 
-    requestedPositions_nm.clear();
-    requestedPositions_nm.reserve(atoms_ids.size());
+    requestedPositions.clear();
+    requestedPositions.reserve(atoms_ids.size());
     for (int atomIndex : atoms_ids) {
         if (atomIndex < 0 || atomIndex >= static_cast<int>(positions.size())) {
             return false;
         }
-        requestedPositions_nm.push_back(positions[atomIndex]);
+        requestedPositions.push_back(positions[atomIndex]);
     }
     return true;
 }
 
 bool OpenMMColvarProxy::cacheMatches(long long openmmStep,
                                      bool usesPbc,
-                                     const Vec3& boxA_nm,
-                                     const Vec3& boxB_nm,
-                                     const Vec3& boxC_nm,
+                                     const Vec3& boxA,
+                                     const Vec3& boxB,
+                                     const Vec3& boxC,
                                      double lambdaValue,
                                      double tabfAlphaValue,
-                                     const std::vector<Vec3>& requestedPositions_nm) const
+                                     const std::vector<Vec3>& requestedPositions) const
 {
     if (!cacheValid_ || cachedUsesPbc_ != usesPbc) {
         return false;
@@ -1261,16 +1248,16 @@ bool OpenMMColvarProxy::cacheMatches(long long openmmStep,
         return false;
     }
     if (usesPbc &&
-        (!same_vec3(cachedPbcA_nm_, boxA_nm) ||
-         !same_vec3(cachedPbcB_nm_, boxB_nm) ||
-         !same_vec3(cachedPbcC_nm_, boxC_nm))) {
+        (!same_vec3(cachedPbcA_, boxA) ||
+         !same_vec3(cachedPbcB_, boxB) ||
+         !same_vec3(cachedPbcC_, boxC))) {
         return false;
     }
-    if (requestedPositions_nm.size() != cachedRequestedPositions_nm_.size()) {
+    if (requestedPositions.size() != cachedRequestedPositions_.size()) {
         return false;
     }
-    for (size_t index = 0; index < requestedPositions_nm.size(); ++index) {
-        if (!same_position(requestedPositions_nm[index], cachedRequestedPositions_nm_[index])) {
+    for (size_t index = 0; index < requestedPositions.size(); ++index) {
+        if (!same_position(requestedPositions[index], cachedRequestedPositions_[index])) {
             return false;
         }
     }
@@ -1279,20 +1266,20 @@ bool OpenMMColvarProxy::cacheMatches(long long openmmStep,
 
 void OpenMMColvarProxy::storeCache(long long openmmStep,
                                    bool usesPbc,
-                                   const Vec3& boxA_nm,
-                                   const Vec3& boxB_nm,
-                                   const Vec3& boxC_nm,
+                                   const Vec3& boxA,
+                                   const Vec3& boxB,
+                                   const Vec3& boxC,
                                    double lambdaValue,
                                    double tabfAlphaValue)
 {
     cachedOpenmmStep_ = openmmStep;
     cachedUsesPbc_ = usesPbc;
-    cachedPbcA_nm_ = boxA_nm;
-    cachedPbcB_nm_ = boxB_nm;
-    cachedPbcC_nm_ = boxC_nm;
+    cachedPbcA_ = boxA;
+    cachedPbcB_ = boxB;
+    cachedPbcC_ = boxC;
     cachedLambdaValue_ = lambdaValue;
     cachedTabfAlphaValue_ = tabfAlphaValue;
-    cachedBiasEnergyKJPerMol_ = biasEnergyKJPerMol();
+    cachedBiasEnergy_ = biasEnergy();
     cachedAtomIds_ = atoms_ids;
     cachedAppliedForces_ = *(get_atom_applied_forces());
     cacheValid_ = true;
@@ -1302,7 +1289,7 @@ void OpenMMColvarProxy::invalidateCache()
 {
     cacheValid_ = false;
     cachedAtomIds_.clear();
-    cachedRequestedPositions_nm_.clear();
+    cachedRequestedPositions_.clear();
     cachedAppliedForces_.clear();
 }
 
@@ -1326,13 +1313,12 @@ void OpenMMColvarProxy::updateColvarsStep(ContextImpl& context)
 void OpenMMColvarProxy::updatePositions(const std::vector<Vec3>& positions)
 {
     auto& colvarsPositions = *(modify_atom_positions());
-    constexpr double kNmToAngstrom = colvars_units::kAngstromsPerNm;
     for (size_t proxyIndex = 0; proxyIndex < atoms_ids.size(); ++proxyIndex) {
-        const Vec3& position_nm = positions[atoms_ids[proxyIndex]];
+        const Vec3& position = positions[atoms_ids[proxyIndex]];
         colvarsPositions[proxyIndex] = cvm::rvector(
-            position_nm[0] * kNmToAngstrom,
-            position_nm[1] * kNmToAngstrom,
-            position_nm[2] * kNmToAngstrom);
+            position[0],
+            position[1],
+            position[2]);
     }
 }
 
@@ -1351,14 +1337,12 @@ void OpenMMColvarProxy::updateTotalForces(ContextImpl& context)
     }
 
     auto& totalForces = *(modify_atom_total_forces());
-    constexpr double kKJPerMolNmToKcalPerMolAngstrom =
-        1.0 / (colvars_units::kKJPerKcal * colvars_units::kAngstromsPerNm);
     for (size_t proxyIndex = 0; proxyIndex < atoms_ids.size(); ++proxyIndex) {
-        const Vec3& force_kj_per_mol_nm = systemForceBuffer_[atoms_ids[proxyIndex]];
+        const Vec3& force = systemForceBuffer_[atoms_ids[proxyIndex]];
         totalForces[proxyIndex] = cvm::rvector(
-            force_kj_per_mol_nm[0] * kKJPerMolNmToKcalPerMolAngstrom,
-            force_kj_per_mol_nm[1] * kKJPerMolNmToKcalPerMolAngstrom,
-            force_kj_per_mol_nm[2] * kKJPerMolNmToKcalPerMolAngstrom);
+            force[0],
+            force[1],
+            force[2]);
     }
     set_total_forces_valid();
 }
@@ -1378,23 +1362,23 @@ void OpenMMColvarProxy::clearPreviousOpenMMForces(std::vector<Vec3>& forces) con
 void OpenMMColvarProxy::captureLambdaDerivative(ContextImpl& context)
 {
     currentLambdaDerivativeValid_ = false;
-    currentLambdaDerivativeKJPerMol_ = 0.0;
+    currentLambdaDerivative_ = 0.0;
     if (!owner_.getAlchemyEnabled()) {
         return;
     }
 
     std::map<std::string, double> derivatives;
     context.getEnergyParameterDerivatives(derivatives);
-    const auto derivative = derivatives.find(owner_.getLambdaParameterName());
-    if (derivative != derivatives.end()) {
-        currentLambdaDerivativeKJPerMol_ = derivative->second;
+    const auto derivative_found = derivatives.find(owner_.getLambdaParameterName());
+    if (derivative_found != derivatives.end()) {
+        currentLambdaDerivative_ = derivative_found->second;
         currentLambdaDerivativeValid_ = true;
         return;
     }
 
     const auto& parameters = context.getParameters();
     if (parameters.find(owner_.getLambdaDerivativeParameterName()) != parameters.end()) {
-        currentLambdaDerivativeKJPerMol_ =
+        currentLambdaDerivative_ =
             contextParameter(context, owner_.getLambdaDerivativeParameterName(), 0.0);
         currentLambdaDerivativeValid_ = true;
     }

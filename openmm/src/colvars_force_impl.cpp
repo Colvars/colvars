@@ -296,9 +296,9 @@ double ColvarsForceImpl::computeForce(ContextImpl& context,
         proxy_ = std::make_unique<OpenMMColvarProxy>(owner_, context.getSystem());
     }
 
-    const double energy_kj_per_mol = proxy_->calculate(context, positions);
+    const double energy = proxy_->calculate(context, positions);
     proxy_->addForcesToOpenMM(forces);
-    return energy_kj_per_mol;
+    return energy;
 }
 
 std::map<std::string, double> ColvarsForceImpl::getDefaultParameters()

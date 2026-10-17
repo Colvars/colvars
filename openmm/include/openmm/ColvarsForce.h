@@ -12,9 +12,9 @@ class ColvarsForceImpl;
 
 /// OpenMM Force wrapper for the Colvars collective variable module.
 ///
-/// The Colvars configuration uses the NAMD/Colvars "real" unit system by
-/// default: Angstrom for length and kcal/mol for energy. OpenMM positions,
-/// energies, and forces are converted at the boundary.
+/// The Colvars configuration uses the native OpenMM/GROMACS unit system by
+/// default: nanometers for length and kJ/mol for energy. OpenMM positions,
+/// energies, and forces are passed through without a custom conversion layer.
 class ColvarsForce : public Force {
 public:
     enum class ConfigSource {
