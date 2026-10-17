@@ -55,14 +55,6 @@ on:
         description: "Relative path of the compiled executable"
         required: true
         type: string
-      container_image:
-        description: "Optional container image to use instead of the standard Apptainer workflow"
-        required: false
-        type: string
-      setup_script:
-        description: "Optional script to run before the backend build when using a custom container environment"
-        required: false
-        type: string
     secrets:
       private_key:
          description: "secret key to access the private repository"
@@ -74,7 +66,6 @@ on:
 jobs:
   test_backends:
     runs-on: ${{ inputs.runner_name }}
-    container: ${{ inputs.container_image != '' && inputs.container_image || null }}
     env:
       CCACHE_DIR: ~/ccache_${{ inputs.container_name }}
       # OpenMPI transport settings suitable for GH VMs
@@ -133,26 +124,10 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Install backend environment
-        if: ${{ inputs.setup_script != '' }}
-        shell: bash
-        run: ${{ inputs.setup_script }}
-
       - name: Build and test standalone library
-        if: ${{ inputs.setup_script == '' }}
         run: cmake -P devel-tools/build_test_library.cmake
 
-      - name: Build and test standalone library in custom environment
-        if: ${{ inputs.setup_script != '' }}
-        shell: bash
-        env:
-          CMAKE_GENERATOR: Ninja
-        run: |
-          pixi run --manifest-path openmm/pixi.toml \
-            cmake -P devel-tools/build_test_library.cmake
-
       - name: Install Apptainer
-        if: ${{ inputs.setup_script == '' }}
         shell: bash
         run: |
           sudo add-apt-repository -y ppa:apptainer/ppa
@@ -160,28 +135,20 @@ jobs:
           sudo apt install -y apptainer-suid
 
       - name: Get container images for build dependencies
-        if: ${{ inputs.setup_script == '' }}
         run: devel-tools/get_container ${{ inputs.container_name }}
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
         env:
           OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
-          OPENMM_SOURCE_DIR: ${{ github.workspace }}/openmm-source
           LEPTON_DIR: ${{ github.workspace }}/openmm-source/libraries/lepton
           CMAKE_GENERATOR: Ninja
         run: |
-          if [ -n "${{ inputs.setup_script }}" ]; then
-            pixi run --manifest-path openmm/pixi.toml \
-              env CMAKE_GENERATOR=Ninja \
-              bash ${{ inputs.path_compile_script }}
-          else
-            apptainer exec devel-tools/${{ inputs.container_name }}.sif \
-                ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
-            mkdir -p ${CCACHE_DIR}
-            apptainer exec devel-tools/${{ inputs.container_name }}.sif \
-                bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
-          fi
+          apptainer exec devel-tools/${{ inputs.container_name }}.sif \
+              ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
+          mkdir -p ${CCACHE_DIR}
+          apptainer exec devel-tools/${{ inputs.container_name }}.sif \
+              bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
 
       - name: Save compiler cache
         uses: actions/cache/save@v6
