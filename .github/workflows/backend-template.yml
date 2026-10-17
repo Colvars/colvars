@@ -138,6 +138,7 @@ jobs:
         shell: bash
         env:
           OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
+          LEPTON_DIR: ${{ github.workspace }}/openmm-source/libraries/lepton
           CMAKE_GENERATOR: Ninja
         run: |
           apptainer exec devel-tools/${{ inputs.container_name }}.sif \
