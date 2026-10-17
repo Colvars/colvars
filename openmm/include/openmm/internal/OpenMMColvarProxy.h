@@ -87,7 +87,7 @@ public:
     double calculate(ContextImpl& context, const std::vector<Vec3>& positions);
     void addForcesToOpenMM(std::vector<Vec3>& forces) const;
 
-    double biasEnergyKJPerMol() const;
+    double biasEnergy() const;
 
 private:
     void initializeColvars();
@@ -96,30 +96,30 @@ private:
     void updatePbc(ContextImpl& context);
     bool shouldUsePbc(ContextImpl& context) const;
     bool resolveAutoPbcMode() const;
-    bool pbcBoxChanged(const Vec3& a_nm, const Vec3& b_nm, const Vec3& c_nm) const;
+    bool pbcBoxChanged(const Vec3& a, const Vec3& b, const Vec3& c) const;
     bool buildCacheKey(ContextImpl& context,
                        const std::vector<Vec3>& positions,
                        long long& openmmStep,
                        bool& usesPbc,
-                       Vec3& boxA_nm,
-                       Vec3& boxB_nm,
-                       Vec3& boxC_nm,
+                       Vec3& boxA,
+                       Vec3& boxB,
+                       Vec3& boxC,
                        double& lambdaValue,
                        double& tabfAlphaValue,
-                       std::vector<Vec3>& requestedPositions_nm) const;
+                       std::vector<Vec3>& requestedPositions) const;
     bool cacheMatches(long long openmmStep,
                       bool usesPbc,
-                      const Vec3& boxA_nm,
-                      const Vec3& boxB_nm,
-                      const Vec3& boxC_nm,
+                      const Vec3& boxA,
+                      const Vec3& boxB,
+                      const Vec3& boxC,
                       double lambdaValue,
                       double tabfAlphaValue,
-                      const std::vector<Vec3>& requestedPositions_nm) const;
+                      const std::vector<Vec3>& requestedPositions) const;
     void storeCache(long long openmmStep,
                     bool usesPbc,
-                    const Vec3& boxA_nm,
-                    const Vec3& boxB_nm,
-                    const Vec3& boxC_nm,
+                    const Vec3& boxA,
+                    const Vec3& boxB,
+                    const Vec3& boxC,
                     double lambdaValue,
                     double tabfAlphaValue);
     void invalidateCache();
@@ -138,7 +138,7 @@ private:
     const ColvarsForce& owner_;
     const System& system_;
     ContextImpl* currentContext_;
-    double biasEnergyKcalPerMol_;
+    double biasEnergy_;
     bool isInitialized_;
     mutable bool autoPbcResolved_;
     mutable bool cachedAutoPbc_;
@@ -150,9 +150,9 @@ private:
     cvm::step_number colvarsInitialStep_;
     long long lastLambdaWritebackStep_;
     long long lastTabfAlphaWritebackStep_;
-    Vec3 lastPbcA_nm_;
-    Vec3 lastPbcB_nm_;
-    Vec3 lastPbcC_nm_;
+    Vec3 lastPbcA_;
+    Vec3 lastPbcB_;
+    Vec3 lastPbcC_;
     double lastIntegrationTimestepFs_;
     std::unordered_map<int, int> atomIndexById_;
     mutable std::vector<int> previousForceAtoms_;
@@ -161,7 +161,7 @@ private:
     bool gaussianRngHasSpare_;
     cvm::real gaussianRngSpare_;
     bool currentLambdaDerivativeValid_;
-    double currentLambdaDerivativeKJPerMol_;
+    double currentLambdaDerivative_;
     bool tabfAlphaBoundariesValid_;
     cvm::real tabfAlphaLowerBoundary_;
     cvm::real tabfAlphaUpperBoundary_;
@@ -169,14 +169,14 @@ private:
     bool cacheValid_;
     long long cachedOpenmmStep_;
     bool cachedUsesPbc_;
-    Vec3 cachedPbcA_nm_;
-    Vec3 cachedPbcB_nm_;
-    Vec3 cachedPbcC_nm_;
+    Vec3 cachedPbcA_;
+    Vec3 cachedPbcB_;
+    Vec3 cachedPbcC_;
     double cachedLambdaValue_;
     double cachedTabfAlphaValue_;
-    double cachedBiasEnergyKJPerMol_;
+    double cachedBiasEnergy_;
     std::vector<int> cachedAtomIds_;
-    std::vector<Vec3> cachedRequestedPositions_nm_;
+    std::vector<Vec3> cachedRequestedPositions_;
     std::vector<cvm::rvector> cachedAppliedForces_;
 };
 

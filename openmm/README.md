@@ -401,7 +401,7 @@ def simulation_factory(prepared_system):
 run_fep(prepared, simulation_factory)
 ```
 
-### Implemented NAMD semantics
+### Implemented NAMD alchemy semantics
 
 - `alchFile` is parsed as a PDB-like file. By default, beta values of `-1`, `1`,
   and `0` mean vanish, grow, and unchanged.
@@ -420,16 +420,9 @@ run_fep(prepared, simulation_factory)
 
 ## Units
 
-Colvars uses the NAMD/Colvars `real` unit system:
+Colvars/OpenMM uses the OpenMM unit system: nm, kJ/mol.
 
-| Quantity | Colvars | OpenMM |
-| --- | --- | --- |
-| Length | Å | nm |
-| Energy | kcal/mol | kJ/mol |
-| Force | kcal/mol/Å | kJ/mol/nm |
-
-The interface converts positions, energies, forces, and parameter derivatives at
-the OpenMM/Colvars boundary.
+## Periodic boundary conditions
 
 Periodic boundary conditions default to `PbcMode::Auto`: Colvars PBC is enabled
 only when another force in the same OpenMM `System` declares periodic boundary
