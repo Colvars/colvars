@@ -89,12 +89,15 @@ jobs:
           restore-keys: |
             Backends_${{ inputs.backend_name }}_${{ inputs.container_name }}
 
-      - name: Checkout OpenMM (for Lepton library)
+      - name: Checkout OpenMM Lepton subtree
         uses: actions/checkout@v7
         with:
           repository: 'openmm/openmm'
           ref: 'master'
           path: 'openmm-source'
+          sparse-checkout: |
+            libraries/lepton
+          sparse-checkout-cone-mode: false
 
       - name: Checkout ${{ inputs.backend_name }}
         uses: actions/checkout@v7

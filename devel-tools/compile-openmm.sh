@@ -11,7 +11,7 @@ if [[ -z "${CONDA_PREFIX:-}" ]]; then
     exit 1
 fi
 
-openmm_source_dir="${OPENMM_SOURCE_DIR:-${OPENMM_SOURCE:-}}"
+openmm_source_dir="${OPENMM_SOURCE:-}"
 if [[ -z "${openmm_source_dir}" && -d "${repo_root}/openmm-source" ]]; then
     openmm_source_dir="${repo_root}/openmm-source"
 fi
