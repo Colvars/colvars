@@ -94,12 +94,15 @@ jobs:
       - name: Limit ccache size
         run: ccache --max-size=200MB
 
-      - name: Checkout OpenMM (for Lepton library)
+      - name: Checkout OpenMM Lepton subtree
         uses: actions/checkout@v7
         with:
           repository: 'openmm/openmm'
           ref: 'master'
           path: 'openmm-source'
+          sparse-checkout: |
+            libraries/lepton
+          sparse-checkout-cone-mode: false
 
       - name: Generate app token for Colvars private repos
         id: private-repos-token
