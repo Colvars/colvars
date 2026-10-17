@@ -86,54 +86,19 @@ jobs:
       rpath_exe: install/bin/gmx_mpi_d
 
   openmm-main:
-    name: OpenMM (pixi)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Colvars
-        uses: actions/checkout@v7
-
-      - name: Checkout OpenMM Lepton subtree
-        uses: actions/checkout@v7
-        with:
-          repository: 'openmm/openmm'
-          ref: 'master'
-          path: 'openmm-source'
-          sparse-checkout: |
-            libraries/lepton
-          sparse-checkout-cone-mode: false
-
-      - name: Set up pixi
-        uses: prefix-dev/setup-pixi@v0.8.10
-        with:
-          manifest-path: openmm/pixi.toml
-          cache: true
-
-      - name: Build OpenMM Colvars interface
-        shell: bash
-        env:
-          CMAKE_BUILD_PARALLEL_LEVEL: 4
-          OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
-          LEPTON_DIR: ${{ github.workspace }}/openmm-source/libraries/lepton
-        run: |
-          pixi run --manifest-path openmm/pixi.toml \
-            bash devel-tools/compile-openmm.sh
-
-      - name: Smoke test OpenMM Python API
-        shell: bash
-        run: |
-          pixi run --manifest-path openmm/pixi.toml python - <<'PY'
-          import openmm
-          from openmm import Platform, System
-          from openmm_colvars import ColvarsForce
-          print("OpenMM", openmm.__version__)
-          system = System()
-          system.addParticle(1.0)
-          system.addParticle(1.0)
-          force = ColvarsForce.fromConfigString("colvarsTrajFrequency 0\n", "colvars_ci")
-          system.addForce(force)
-          print(type(force).__name__)
-          print([Platform.getPlatform(i).getName() for i in range(Platform.getNumPlatforms())])
-          PY
+    name: OpenMM (pixi in container)
+    uses: ./.github/workflows/backend-template.yml
+    with:
+      runner_name: ubuntu-latest
+      backend_name: OpenMM-main
+      backend_repo: openmm/openmm
+      backend_repo_ref: master
+      container_name: pixi-openmm
+      container_image: ghcr.io/prefix-dev/pixi:latest
+      setup_script: |
+        pixi install --manifest-path openmm/pixi.toml
+      path_compile_script: devel-tools/compile-openmm.sh
+      rpath_exe: ""
 
   namd-main-arm64:
     name: NAMD (main ARM64)
