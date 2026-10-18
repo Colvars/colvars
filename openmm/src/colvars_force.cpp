@@ -228,7 +228,7 @@ void ColvarsForce::setRandomSeed(int seed)
 
 const std::string& ColvarsForce::getUnitSystem() const
 {
-    static const std::string unitSystem{"real"};
+    static const std::string unitSystem{"gromacs"};
     return unitSystem;
 }
 
