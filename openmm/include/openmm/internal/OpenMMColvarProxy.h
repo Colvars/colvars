@@ -91,12 +91,10 @@ public:
 
 private:
     void initializeColvars();
-    void updateAtomProperties(int proxyIndex);
     void updateAtomIndexMap();
     void updatePbc(ContextImpl& context);
     bool shouldUsePbc(ContextImpl& context) const;
     bool resolveAutoPbcMode() const;
-    bool pbcBoxChanged(const Vec3& a, const Vec3& b, const Vec3& c) const;
     bool buildCacheKey(ContextImpl& context,
                        const std::vector<Vec3>& positions,
                        long long& openmmStep,
@@ -142,7 +140,6 @@ private:
     bool isInitialized_;
     mutable bool autoPbcResolved_;
     mutable bool cachedAutoPbc_;
-    bool pbcLatticeInitialized_;
     bool reportedRepeatedExtendedCoordinate_;
     bool totalForcesSameStep_;
     bool stepMappingInitialized_;
@@ -154,7 +151,6 @@ private:
     Vec3 lastPbcB_;
     Vec3 lastPbcC_;
     double lastIntegrationTimestepFs_;
-    std::unordered_map<int, int> atomIndexById_;
     mutable std::vector<int> previousForceAtoms_;
     std::vector<Vec3> systemForceBuffer_;
     std::uint64_t gaussianRngState_;

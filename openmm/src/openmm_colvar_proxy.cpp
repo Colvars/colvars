@@ -395,7 +395,6 @@ OpenMMColvarProxy::OpenMMColvarProxy(const ColvarsForce& owner, const System& sy
       isInitialized_(false),
       autoPbcResolved_(false),
       cachedAutoPbc_(false),
-      pbcLatticeInitialized_(false),
       reportedRepeatedExtendedCoordinate_(false),
       totalForcesSameStep_(true),
       stepMappingInitialized_(false),
@@ -424,12 +423,6 @@ OpenMMColvarProxy::OpenMMColvarProxy(const ColvarsForce& owner, const System& sy
 
     version_int = get_version_from_string(COLVARS_VERSION);
     engine_name_ = "OpenMM";
-    engine_ready_ = true;
-    b_simulation_running = true;
-    b_simulation_continuing = false;
-    use_internal_pbc_ = true;
-    updated_masses_ = true;
-    updated_charges_ = true;
 
     cvmodule = new colvarmodule(this);
     cvmodule->log("Using OpenMM interface.\n");
@@ -481,10 +474,13 @@ int OpenMMColvarProxy::setup()
 int OpenMMColvarProxy::init_atom(int atomNumber)
 {
     int atomId = atomNumber - 1;
-    const auto cachedIndex = atomIndexById_.find(atomId);
-    if (cachedIndex != atomIndexById_.end()) {
-        atoms_refcount[cachedIndex->second] += 1;
-        return cachedIndex->second;
+
+    // Check if atom already exists
+    auto it = std::find(atoms_ids.begin(), atoms_ids.end(), atomId);
+    if (it != atoms_ids.end()) {
+        size_t index = std::distance(atoms_ids.begin(), it);
+        atoms_refcount[index] += 1;
+        return static_cast<int>(index);
     }
 
     atomId = check_atom_id(atomNumber);
@@ -493,8 +489,10 @@ int OpenMMColvarProxy::init_atom(int atomNumber)
     }
 
     const int proxyIndex = add_atom_slot(atomId);
-    atomIndexById_[atomId] = proxyIndex;
-    updateAtomProperties(proxyIndex);
+    // Update mass and charge from OpenMM system
+    atoms_masses[proxyIndex] = system_.getParticleMass(atomId);
+    atoms_charges[proxyIndex] = owner_.getParticleCharge(atomId);
+
     invalidateCache();
     return proxyIndex;
 }
@@ -502,7 +500,6 @@ int OpenMMColvarProxy::init_atom(int atomNumber)
 void OpenMMColvarProxy::clear_atom(int index)
 {
     colvarproxy::clear_atom(index);
-    updateAtomIndexMap();
     invalidateCache();
 }
 
@@ -534,26 +531,22 @@ bool OpenMMColvarProxy::total_forces_same_step() const
 
 int OpenMMColvarProxy::set_unit_system(std::string const& unitsIn, bool checkOnly)
 {
+    // OpenMM uses gromacs units (nm, kJ/mol)
+    static constexpr std::string_view kSupportedUnits = "gromacs";
+
     if (checkOnly) {
-        if ((units != "" && unitsIn != units) || (units == "" && unitsIn != "gromacs")) {
-            cvmodule->error("Specified unit system \"" + unitsIn +
-                            "\" is incompatible with the OpenMM Colvars interface.\n",
-                            COLVARS_INPUT_ERROR);
-            return COLVARS_ERROR;
-        }
-        return COLVARS_OK;
+        return (unitsIn == kSupportedUnits || unitsIn == units) ? COLVARS_OK : COLVARS_ERROR;
     }
 
-    if (unitsIn != "gromacs") {
-        cvmodule->error("Error: the OpenMM Colvars v1 interface currently supports only "
-                        "\"gromacs\" units (nm, kJ/mol).\n",
+    if (unitsIn != kSupportedUnits) {
+        cvmodule->error("Error: the OpenMM Colvars interface only supports \"gromacs\" units (nm, kJ/mol).\n",
                         COLVARS_INPUT_ERROR);
         return COLVARS_ERROR;
     }
 
-    units = unitsIn;
-    angstrom_value_ = 0.1;
-    kcal_mol_value_ = 4.184;
+    units = kSupportedUnits;
+    angstrom_value_ = 0.1;      // 1 Angstrom = 0.1 nm
+    kcal_mol_value_ = 4.184;   // 1 kcal/mol = 4.184 kJ/mol
     boltzmann_ = 0.001987191 * 4.184; // kJ/mol/K
     return COLVARS_OK;
 }
@@ -1093,28 +1086,11 @@ double OpenMMColvarProxy::biasEnergy() const
     return biasEnergy_;
 }
 
-void OpenMMColvarProxy::updateAtomProperties(int proxyIndex)
-{
-    const int openmmAtomIndex = atoms_ids[proxyIndex];
-    atoms_masses[proxyIndex] = system_.getParticleMass(openmmAtomIndex);
-    atoms_charges[proxyIndex] = owner_.getParticleCharge(openmmAtomIndex);
-}
-
-void OpenMMColvarProxy::updateAtomIndexMap()
-{
-    atomIndexById_.clear();
-    atomIndexById_.reserve(atoms_ids.size());
-    for (size_t index = 0; index < atoms_ids.size(); ++index) {
-        atomIndexById_[atoms_ids[index]] = static_cast<int>(index);
-    }
-}
-
 void OpenMMColvarProxy::updatePbc(ContextImpl& context)
 {
     if (!shouldUsePbc(context)) {
-        if (boundaries_.type() != cvm::system_boundary_conditions::types::non_periodic || pbcLatticeInitialized_) {
+        if (boundaries_.type() != cvm::system_boundary_conditions::types::non_periodic) {
             boundaries_.reset();
-            pbcLatticeInitialized_ = false;
         }
         return;
     }
@@ -1123,8 +1099,9 @@ void OpenMMColvarProxy::updatePbc(ContextImpl& context)
     Vec3 b;
     Vec3 c;
     context.getPeriodicBoxVectors(a, b, c);
-    if (pbcLatticeInitialized_ &&
-        !pbcBoxChanged(a, b, c)) {
+    if (same_vec3(a, lastPbcA_) &&
+        same_vec3(b, lastPbcB_) &&
+        same_vec3(c, lastPbcC_)) {
         return;
     }
     const cvm::rvector a1(a[0], a[1], a[2]);
@@ -1138,7 +1115,6 @@ void OpenMMColvarProxy::updatePbc(ContextImpl& context)
     lastPbcA_ = a;
     lastPbcB_ = b;
     lastPbcC_ = c;
-    pbcLatticeInitialized_ = true;
 }
 
 bool OpenMMColvarProxy::shouldUsePbc(ContextImpl&) const
@@ -1174,13 +1150,6 @@ bool OpenMMColvarProxy::resolveAutoPbcMode() const
         }
     }
     return false;
-}
-
-bool OpenMMColvarProxy::pbcBoxChanged(const Vec3& a, const Vec3& b, const Vec3& c) const
-{
-    return !same_vec3(a, lastPbcA_) ||
-           !same_vec3(b, lastPbcB_) ||
-           !same_vec3(c, lastPbcC_);
 }
 
 bool OpenMMColvarProxy::buildCacheKey(ContextImpl& context,
