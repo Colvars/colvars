@@ -135,49 +135,7 @@ else()
     message(STATUS "Colvars TABF alpha backend hooks not detected; building OpenMM-Colvars without TABF proxy overrides")
 endif()
 
-set(COLVARS_SOURCES
-    "${COLVARS_CORE_DIR}/colvar.cpp"
-    "${COLVARS_CORE_DIR}/colvaratoms.cpp"
-    "${COLVARS_CORE_DIR}/colvarbias.cpp"
-    "${COLVARS_CORE_DIR}/colvarbias_abf.cpp"
-    "${COLVARS_CORE_DIR}/colvarbias_abmd.cpp"
-    "${COLVARS_CORE_DIR}/colvarbias_alb.cpp"
-    "${COLVARS_CORE_DIR}/colvarbias_histogram.cpp"
-    "${COLVARS_CORE_DIR}/colvarbias_histogram_reweight_amd.cpp"
-    "${COLVARS_CORE_DIR}/colvarbias_meta.cpp"
-    "${COLVARS_CORE_DIR}/colvarbias_opes.cpp"
-    "${COLVARS_CORE_DIR}/colvarbias_restraint.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_alchlambda.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_angles.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_apath.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_combination.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_coordnums.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_distances.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_gpath.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_neuralnetwork.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_protein.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_rotations.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_torchann.cpp"
-    "${COLVARS_CORE_DIR}/colvarcomp_volmaps.cpp"
-    "${COLVARS_CORE_DIR}/colvardeps.cpp"
-    "${COLVARS_CORE_DIR}/colvargrid.cpp"
-    "${COLVARS_CORE_DIR}/colvargrid_integrate.cpp"
-    "${COLVARS_CORE_DIR}/colvarmodule.cpp"
-    "${COLVARS_CORE_DIR}/colvarparams.cpp"
-    "${COLVARS_CORE_DIR}/colvarparse.cpp"
-    "${COLVARS_CORE_DIR}/colvarproxy.cpp"
-    "${COLVARS_CORE_DIR}/colvarproxy_gpu.cpp"
-    "${COLVARS_CORE_DIR}/colvarproxy_io.cpp"
-    "${COLVARS_CORE_DIR}/colvarproxy_replicas.cpp"
-    "${COLVARS_CORE_DIR}/colvarproxy_system.cpp"
-    "${COLVARS_CORE_DIR}/colvarproxy_volmaps.cpp"
-    "${COLVARS_CORE_DIR}/colvars_memstream.cpp"
-    "${COLVARS_CORE_DIR}/colvartypes.cpp"
-    "${COLVARS_CORE_DIR}/colvarvalue.cpp"
-    "${COLVARS_CORE_DIR}/colvar_neuralnetworkcompute.cpp"
-    "${COLVARS_CORE_DIR}/colvar_rotation_derivative.cpp"
-    "${COLVARS_CORE_DIR}/nr_jacobi.cpp")
+file(GLOB COLVARS_SOURCES CONFIGURE_DEPENDS "${COLVARS_CORE_DIR}/[^.]*.cpp")
 
 set(LEPTON_DIR "" CACHE PATH "Optional Lepton source tree containing include/Lepton.h and src/*.cpp")
 if (NOT LEPTON_DIR AND OPENMM_SOURCE_DIR AND EXISTS "${OPENMM_SOURCE_DIR}/libraries/lepton/include/Lepton.h")
@@ -322,10 +280,10 @@ if (NOT OPENMM_COLVARS_REFERENCE_PME_SOURCES AND
         "openmm/reference/ReferencePME.h.")
 endif()
 
-add_library(OpenMMColvars STATIC
+# Conditionally include CUDA kernel source
+set(OPENMM_COLVARS_SOURCES
     src/alchemical_pme_force.cpp
     src/alchemical_pme_force_impl.cpp
-    src/cuda_alchemical_pme_kernel.cpp
     src/reference_alchemical_pme_kernel.cpp
     src/colvars_force.cpp
     src/colvars_force_impl.cpp
@@ -336,6 +294,12 @@ add_library(OpenMMColvars STATIC
     ${OPENMM_COLVARS_REFERENCE_PME_SOURCES}
     ${OPENMM_COLVARS_LEPTON_OBJECTS}
     ${COLVARS_SOURCES})
+
+if(OPENMM_COLVARS_ENABLE_CUDA_KERNELS)
+    list(APPEND OPENMM_COLVARS_SOURCES src/cuda_alchemical_pme_kernel.cpp)
+endif()
+
+add_library(OpenMMColvars STATIC ${OPENMM_COLVARS_SOURCES})
 
 set_target_properties(OpenMMColvars PROPERTIES POSITION_INDEPENDENT_CODE ON)
 

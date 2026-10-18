@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-build_dir="${OPENMM_COLVARS_BUILD_DIR:-${repo_root}/build}"
+# Colvars repo root directory
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+build_dir="${OPENMM_COLVARS_BUILD_DIR:-${repo_root}/openmm/build}"
 
 if [[ -z "${CONDA_PREFIX:-}" ]]; then
-    echo "CONDA_PREFIX is not set. Activate your micromamba/conda OpenMM environment first." >&2
+    echo "CONDA_PREFIX is not set. Activate your pixi/micromamba/conda OpenMM environment first." >&2
     exit 1
 fi
 
-colvars_source_dir="${COLVARS_SOURCE_DIR:-${repo_root}/tests_dependence_src/colvars}"
-openmm_source_dir="${OPENMM_SOURCE_DIR:-${repo_root}/tests_dependence_src/openmm}"
+colvars_source_dir="${repo_root}"
+openmm_source_dir="${OPENMM_SOURCE_DIR:-${repo_root}/openmm/tests_dependence_src/openmm}"
 lepton_dir="${LEPTON_DIR:-${openmm_source_dir}/libraries/lepton}"
 enable_cuda="${OPENMM_COLVARS_ENABLE_CUDA_KERNELS:-ON}"
 
@@ -20,59 +21,65 @@ if [[ ! -f "${colvars_source_dir}/src/colvarmodule.cpp" ]]; then
     exit 1
 fi
 
+# CUDA kernel support is optional; try to enable it if requested, but fall back gracefully
 if [[ "${enable_cuda}" == "ON" || "${enable_cuda}" == "1" || "${enable_cuda}" == "TRUE" ]]; then
+    # Check for OpenMM CUDA internal headers
     if [[ ! -f "${openmm_source_dir}/platforms/cuda/include/CudaContext.h" ]]; then
         echo "OpenMM CUDA internal headers not found at ${openmm_source_dir}." >&2
-        echo "Set OPENMM_SOURCE_DIR to an OpenMM source tree, or set OPENMM_COLVARS_ENABLE_CUDA_KERNELS=OFF for CPU/Reference builds." >&2
-        exit 1
-    fi
-
-    if [[ -z "${OPENMM_CUDA_LIBRARY:-}" ]]; then
-        openmm_cuda_library=""
-        for candidate in \
-            "${CONDA_PREFIX}/lib/plugins/libOpenMMCUDA.so" \
-            "${CONDA_PREFIX}/lib/libOpenMMCUDA.so" \
-            "${CONDA_PREFIX}/Library/lib/plugins/OpenMMCUDA.lib" \
-            "${CONDA_PREFIX}/Library/lib/OpenMMCUDA.lib"; do
-            if [[ -f "${candidate}" ]]; then
-                openmm_cuda_library="${candidate}"
-                break
-            fi
-        done
-        if [[ -z "${openmm_cuda_library}" ]]; then
-            echo "OpenMM CUDA library was not found under CONDA_PREFIX=${CONDA_PREFIX}." >&2
-            echo "Set OPENMM_CUDA_LIBRARY to libOpenMMCUDA.so/OpenMMCUDA.lib." >&2
-            exit 1
-        fi
+        echo "Building without CUDA kernel support."
+        enable_cuda="OFF"
     else
-        openmm_cuda_library="${OPENMM_CUDA_LIBRARY}"
-    fi
-
-    if [[ -z "${OPENMM_COLVARS_CUDA_TOOLKIT_INCLUDE_DIR:-}" ]]; then
-        cuda_include_dir=""
-        for candidate in \
-            "${CONDA_PREFIX}/include" \
-            "${CONDA_PREFIX}/targets/x86_64-linux/include" \
-            "${CUDA_HOME:-}/include" \
-            "${CUDA_PATH:-}/include" \
-            "/usr/local/cuda/include"; do
-            if [[ -n "${candidate}" && -f "${candidate}/cuda.h" && -f "${candidate}/builtin_types.h" ]]; then
-                cuda_include_dir="${candidate}"
-                break
+        # Check for OpenMM CUDA library
+        if [[ -z "${OPENMM_CUDA_LIBRARY:-}" ]]; then
+            openmm_cuda_library=""
+            for candidate in \
+                "${CONDA_PREFIX}/lib/plugins/libOpenMMCUDA.so" \
+                "${CONDA_PREFIX}/lib/libOpenMMCUDA.so" \
+                "${CONDA_PREFIX}/Library/lib/plugins/OpenMMCUDA.lib" \
+                "${CONDA_PREFIX}/Library/lib/OpenMMCUDA.lib"; do
+                if [[ -f "${candidate}" ]]; then
+                    openmm_cuda_library="${candidate}"
+                    break
+                fi
+            done
+            if [[ -z "${openmm_cuda_library}" ]]; then
+                echo "OpenMM CUDA library was not found under CONDA_PREFIX=${CONDA_PREFIX}." >&2
+                echo "Building without CUDA kernel support."
+                enable_cuda="OFF"
             fi
-        done
-        if [[ -z "${cuda_include_dir}" ]]; then
-            echo "CUDA driver headers cuda.h and builtin_types.h were not found." >&2
-            echo "Install CUDA development headers in the active environment, or set OPENMM_COLVARS_CUDA_TOOLKIT_INCLUDE_DIR." >&2
-            exit 1
+        else
+            openmm_cuda_library="${OPENMM_CUDA_LIBRARY}"
         fi
-    else
-        cuda_include_dir="${OPENMM_COLVARS_CUDA_TOOLKIT_INCLUDE_DIR}"
+
+        # Check for CUDA toolkit headers
+        if [[ "${enable_cuda}" == "ON" || "${enable_cuda}" == "1" || "${enable_cuda}" == "TRUE" ]]; then
+            if [[ -z "${OPENMM_COLVARS_CUDA_TOOLKIT_INCLUDE_DIR:-}" ]]; then
+                cuda_include_dir=""
+                for candidate in \
+                    "${CONDA_PREFIX}/include" \
+                    "${CONDA_PREFIX}/targets/x86_64-linux/include" \
+                    "${CUDA_HOME:-}/include" \
+                    "${CUDA_PATH:-}/include" \
+                    "/usr/local/cuda/include"; do
+                    if [[ -n "${candidate}" && -f "${candidate}/cuda.h" && -f "${candidate}/builtin_types.h" ]]; then
+                        cuda_include_dir="${candidate}"
+                        break
+                    fi
+                done
+                if [[ -z "${cuda_include_dir}" ]]; then
+                    echo "CUDA driver headers cuda.h and builtin_types.h were not found." >&2
+                    echo "Building without CUDA kernel support."
+                    enable_cuda="OFF"
+                fi
+            else
+                cuda_include_dir="${OPENMM_COLVARS_CUDA_TOOLKIT_INCLUDE_DIR}"
+            fi
+        fi
     fi
 fi
 
 cmake_args=(
-    -S "${repo_root}"
+    -S "${repo_root}/openmm"
     -B "${build_dir}"
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_PREFIX_PATH="${CONDA_PREFIX}"
