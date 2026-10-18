@@ -344,9 +344,11 @@ void OpenMM::registerAlchemicalPMEKernelFactories()
             platform.registerKernelFactory(CalcAlchemicalPMEForceKernel::Name(),
                                            new ReferenceAlchemicalPMEKernelFactory());
         }
+#ifdef OPENMM_COLVARS_ENABLE_CUDA_KERNELS
         if (platform.getName() == "CUDA" &&
             !platform.supportsKernels({CalcAlchemicalPMEForceKernel::Name()})) {
             registerCudaAlchemicalPMEKernelFactory(platform);
         }
+#endif
     }
 }

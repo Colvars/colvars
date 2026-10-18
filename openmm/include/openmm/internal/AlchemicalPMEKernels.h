@@ -23,7 +23,9 @@ public:
 };
 
 void registerAlchemicalPMEKernelFactories();
+#ifdef OPENMM_COLVARS_ENABLE_CUDA_KERNELS
 void registerCudaAlchemicalPMEKernelFactory(Platform& platform);
+#endif
 
 } // namespace OpenMM
 
