@@ -4,6 +4,9 @@ project(OpenMMColvars
     VERSION 0.1.0
     LANGUAGES CXX)
 
+# Export compile commands for IDEs and tools like clangd or VSCode
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 option(OPENMM_COLVARS_BUILD_PYTHON "Build Python bindings for OpenMM-Colvars" ON)
 option(OPENMM_COLVARS_ENABLE_CUDA_KERNELS
     "Build CUDA-platform host/device kernels for AlchemicalPMEForce when OpenMM CUDA internal headers are available"
