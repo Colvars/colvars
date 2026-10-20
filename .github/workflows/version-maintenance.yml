@@ -50,7 +50,6 @@ jobs:
     name: Update Wiki repo
     runs-on: ubuntu-latest
     if: ${{ github.repository == 'Colvars/colvars' && ((github.event_name == 'pull_request_target' && github.event.pull_request.merged == true) || (github.event_name == 'push')) }}
- }}
     steps:
 
       - name: Checkout Colvars repo in full
