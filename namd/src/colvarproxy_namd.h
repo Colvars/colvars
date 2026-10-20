@@ -31,6 +31,7 @@
 
 class Controller;
 class GlobalMasterColvars;
+class GridforceFullMainGrid;
 class Random;
 class SimParameters;
 
@@ -120,10 +121,6 @@ public:
   bool accelMD_enabled() const override;
 
 #if CMK_SMP && USE_CKLOOP
-  colvarproxy::smp_mode_t get_smp_mode() const override;
-
-  int set_smp_mode(smp_mode_t mode) override;
-
   smp_mode_t get_preferred_smp_mode() const override {
     return smp_mode_t::cvcs;
   }
@@ -203,8 +200,17 @@ public:
 
   void update_atom_properties(int index);
 
-  cvm::rvector position_distance(cvm::atom_pos const &pos1,
-                                 cvm::atom_pos const &pos2) const;
+  enum e_pdb_field {
+    e_pdb_none,
+    e_pdb_occ,
+    e_pdb_beta,
+    e_pdb_x,
+    e_pdb_y,
+    e_pdb_z,
+    e_pdb_ntot
+  };
+
+  e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str);
 
   int load_atoms_pdb(char const *filename,
                      cvm::atom_group &atoms,
@@ -231,20 +237,28 @@ public:
 
   int check_volmaps_available() override;
 
-  int init_volmap_by_id(int volmap_id) override;
+  /// Select a MGridForces map for computation by NAMD
+  int request_engine_volmap_by_id(int volmap_id) override;
 
-  int init_volmap_by_name(const char *volmap_name) override;
+  /// Select a MGridForces map for computation by NAMD
+  int request_engine_volmap_by_name(std::string const &volmap_name) override;
 
-  int check_volmap_by_id(int volmap_id) override;
+  /// Add map to GlobalMaster client (if not already in them)
+  void request_globalmaster_volmap(int volmap_id);
 
-  int check_volmap_by_name(char const *volmap_name) override;
+  /// Select a MGridForces map for internal computation (frontend)
+  int init_internal_volmap_by_id(int volmap_id) override;
 
-  int get_volmap_id_from_name(char const *volmap_name) override;
+  /// Select a MGridForces map for internal computation (frontend)
+  int init_internal_volmap_by_name(std::string const &volmap_name) override;
 
-  void clear_volmap(int index) override;
+  /// Load a map internally independent from MGridForces
+  int load_internal_volmap_from_file(std::string const &filename) override;
+
+  int clear_volmap(int index) override;
 
   int compute_volmap(int flags,
-                     int volmap_id,
+                     int index,
                      cvm::atom_group* ag,
                      cvm::real *value,
                      cvm::real *atom_field) override;
@@ -291,6 +305,10 @@ public:
   /// Get energy derivative with respect to lambda
   int get_dE_dlambda(cvm::real* dE_dlambda);
 
+protected:
+
+  /// Pointers to internally managed maps (set to nullptr for maps loaded by NAMD)
+  std::vector<std::unique_ptr<GridforceFullMainGrid>> internal_gridforce_grids_;
 };
 
 

@@ -3,8 +3,6 @@ obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster.o: \
 	colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster.C \
 	colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster.h \
 	colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.h \
-	colvars/src/colvar_gpu_calc.h \
-	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -13,8 +11,6 @@ obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster.o: \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarparams.h \
 	colvars/src/colvarparse.h \
-	colvars/src/colvarparse.h \
-	colvars/src/colvarproxy.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarproxy_gpu.h \
 	colvars/src/colvarproxy_io.h \
@@ -22,12 +18,12 @@ obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarscript_commands.h \
 	colvars/src/colvarscript_commands_bias.h \
 	colvars/src/colvarscript_commands_colvar.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	plugins/include/molfile_plugin.h \
@@ -35,11 +31,9 @@ obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster.o: \
 	src/CudaGlobalMasterClient.h \
 	src/CudaRecord.h \
 	src/CudaUtils.h \
-	src/CudaUtils.h \
 	src/GridForceGrid.h \
 	src/GromacsTopFile.h \
 	src/GroupRestraintsParam.h \
-	src/HipDefines.h \
 	src/HipDefines.h \
 	src/Hydrogen.h \
 	src/InfoStream.h \
@@ -71,13 +65,13 @@ obj/libcudaglobalmastercolvars/colvar.o: \
 	colvars/src/colvar.cpp \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvaratoms_gpu.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_coordnums.h \
 	colvars/src/colvarcomp_torchann.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarmodule.h \
@@ -91,16 +85,15 @@ obj/libcudaglobalmastercolvars/colvar.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -109,7 +102,6 @@ obj/libcudaglobalmastercolvars/colvar.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvar.o $(COPTC) colvars/src/colvar.cpp
 obj/libcudaglobalmastercolvars/colvaratoms.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.cpp \
@@ -126,6 +118,7 @@ obj/libcudaglobalmastercolvars/colvaratoms.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h
@@ -134,16 +127,13 @@ obj/libcudaglobalmastercolvars/colvaratoms_gpu.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
-	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvaratoms_gpu.cpp \
 	colvars/src/colvaratoms_gpu.h \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvardeps.h \
-	colvars/src/colvarmodule.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarparams.h \
 	colvars/src/colvarparse.h \
@@ -154,18 +144,16 @@ obj/libcudaglobalmastercolvars/colvaratoms_gpu.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	colvars/src/cuda/colvaratoms_kernel.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -175,7 +163,6 @@ obj/libcudaglobalmastercolvars/colvaratoms_gpu.o: \
 obj/libcudaglobalmastercolvars/colvarbias.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.cpp \
 	colvars/src/colvarbias.h \
@@ -192,16 +179,15 @@ obj/libcudaglobalmastercolvars/colvarbias.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -212,7 +198,6 @@ obj/libcudaglobalmastercolvars/colvarbias_abf.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_UIestimator.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarbias_abf.cpp \
@@ -231,16 +216,15 @@ obj/libcudaglobalmastercolvars/colvarbias_abf.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -250,7 +234,6 @@ obj/libcudaglobalmastercolvars/colvarbias_abf.o: \
 obj/libcudaglobalmastercolvars/colvarbias_abmd.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarbias_abmd.cpp \
@@ -267,16 +250,15 @@ obj/libcudaglobalmastercolvars/colvarbias_abmd.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -286,7 +268,6 @@ obj/libcudaglobalmastercolvars/colvarbias_abmd.o: \
 obj/libcudaglobalmastercolvars/colvarbias_alb.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarbias_alb.cpp \
@@ -302,16 +283,15 @@ obj/libcudaglobalmastercolvars/colvarbias_alb.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -321,7 +301,6 @@ obj/libcudaglobalmastercolvars/colvarbias_alb.o: \
 obj/libcudaglobalmastercolvars/colvarbias_histogram.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarbias_histogram.cpp \
@@ -339,16 +318,15 @@ obj/libcudaglobalmastercolvars/colvarbias_histogram.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -358,7 +336,6 @@ obj/libcudaglobalmastercolvars/colvarbias_histogram.o: \
 obj/libcudaglobalmastercolvars/colvarbias_histogram_reweight_amd.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarbias_histogram.h \
@@ -377,16 +354,15 @@ obj/libcudaglobalmastercolvars/colvarbias_histogram_reweight_amd.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -396,7 +372,6 @@ obj/libcudaglobalmastercolvars/colvarbias_histogram_reweight_amd.o: \
 obj/libcudaglobalmastercolvars/colvarbias_meta.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarbias_meta.cpp \
@@ -414,16 +389,15 @@ obj/libcudaglobalmastercolvars/colvarbias_meta.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -433,7 +407,6 @@ obj/libcudaglobalmastercolvars/colvarbias_meta.o: \
 obj/libcudaglobalmastercolvars/colvarbias_restraint.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarbias_restraint.cpp \
@@ -449,16 +422,15 @@ obj/libcudaglobalmastercolvars/colvarbias_restraint.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -468,7 +440,6 @@ obj/libcudaglobalmastercolvars/colvarbias_restraint.o: \
 obj/libcudaglobalmastercolvars/colvarbias_opes.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvarbias_opes.cpp \
@@ -486,16 +457,15 @@ obj/libcudaglobalmastercolvars/colvarbias_opes.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -506,7 +476,6 @@ obj/libcudaglobalmastercolvars/colvarcomp.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -524,16 +493,15 @@ obj/libcudaglobalmastercolvars/colvarcomp.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -544,7 +512,6 @@ obj/libcudaglobalmastercolvars/colvarcomp_angles.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -562,16 +529,15 @@ obj/libcudaglobalmastercolvars/colvarcomp_angles.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -582,7 +548,6 @@ obj/libcudaglobalmastercolvars/colvarcomp_alchlambda.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -600,16 +565,15 @@ obj/libcudaglobalmastercolvars/colvarcomp_alchlambda.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -621,7 +585,6 @@ obj/libcudaglobalmastercolvars/colvarcomp_apath.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvar_arithmeticpath.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -639,16 +602,15 @@ obj/libcudaglobalmastercolvars/colvarcomp_apath.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -659,13 +621,13 @@ obj/libcudaglobalmastercolvars/colvarcomp_coordnums.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvaratoms_gpu.h \
 	colvars/src/colvarcomp.h \
 	colvars/src/colvarcomp_coordnums.cpp \
+	colvars/src/colvarcomp_coordnums.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarparams.h \
@@ -677,16 +639,16 @@ obj/libcudaglobalmastercolvars/colvarcomp_coordnums.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/cuda/colvarcomp_coordnums_kernel.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -715,16 +677,16 @@ obj/libcudaglobalmastercolvars/colvarcomp_distances.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
+	colvars/src/cuda/colvarcomp_distance_kernel.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -735,7 +697,6 @@ obj/libcudaglobalmastercolvars/colvarcomp_gpath.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -753,16 +714,15 @@ obj/libcudaglobalmastercolvars/colvarcomp_gpath.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -773,12 +733,12 @@ obj/libcudaglobalmastercolvars/colvarcomp_protein.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvaratoms_gpu.h \
 	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_coordnums.h \
 	colvars/src/colvarcomp_protein.cpp \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarmodule.h \
@@ -791,16 +751,15 @@ obj/libcudaglobalmastercolvars/colvarcomp_protein.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -811,7 +770,6 @@ obj/libcudaglobalmastercolvars/colvarcomp_rotations.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -829,16 +787,15 @@ obj/libcudaglobalmastercolvars/colvarcomp_rotations.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -849,7 +806,6 @@ obj/libcudaglobalmastercolvars/colvarcomp_volmaps.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -867,16 +823,15 @@ obj/libcudaglobalmastercolvars/colvarcomp_volmaps.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -887,7 +842,6 @@ obj/libcudaglobalmastercolvars/colvarcomp_combination.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -905,16 +859,15 @@ obj/libcudaglobalmastercolvars/colvarcomp_combination.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -925,7 +878,6 @@ obj/libcudaglobalmastercolvars/colvarcomp_neuralnetwork.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_neuralnetworkcompute.h \
 	colvars/src/colvar_rotation_derivative.h \
@@ -944,16 +896,15 @@ obj/libcudaglobalmastercolvars/colvarcomp_neuralnetwork.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -964,7 +915,6 @@ obj/libcudaglobalmastercolvars/colvarcomp_torchann.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -983,16 +933,15 @@ obj/libcudaglobalmastercolvars/colvarcomp_torchann.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -1001,7 +950,6 @@ obj/libcudaglobalmastercolvars/colvarcomp_torchann.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_torchann.o $(COPTC) colvars/src/colvarcomp_torchann.cpp
 obj/libcudaglobalmastercolvars/colvar_neuralnetworkcompute.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_neuralnetworkcompute.cpp \
 	colvars/src/colvar_neuralnetworkcompute.h \
@@ -1015,16 +963,15 @@ obj/libcudaglobalmastercolvars/colvar_neuralnetworkcompute.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -1033,7 +980,6 @@ obj/libcudaglobalmastercolvars/colvar_neuralnetworkcompute.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_neuralnetworkcompute.o $(COPTC) colvars/src/colvar_neuralnetworkcompute.cpp
 obj/libcudaglobalmastercolvars/colvardeps.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvardeps.cpp \
 	colvars/src/colvardeps.h \
@@ -1047,6 +993,7 @@ obj/libcudaglobalmastercolvars/colvardeps.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h
@@ -1054,7 +1001,6 @@ obj/libcudaglobalmastercolvars/colvardeps.o: \
 obj/libcudaglobalmastercolvars/colvargrid.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvargrid.cpp \
@@ -1071,16 +1017,15 @@ obj/libcudaglobalmastercolvars/colvargrid.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -1090,7 +1035,6 @@ obj/libcudaglobalmastercolvars/colvargrid.o: \
 obj/libcudaglobalmastercolvars/colvargrid_integrate.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvargrid.h \
@@ -1105,10 +1049,8 @@ obj/libcudaglobalmastercolvars/colvargrid_integrate.o: \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -1120,7 +1062,6 @@ obj/libcudaglobalmastercolvars/colvarmodule.o: \
 	colvars/src/colvar.h \
 	colvars/src/colvar_UIestimator.h \
 	colvars/src/colvar_geometricpath.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -1151,6 +1092,7 @@ obj/libcudaglobalmastercolvars/colvarmodule.o: \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
 	colvars/src/colvars_memstream.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarscript_commands.h \
@@ -1161,10 +1103,8 @@ obj/libcudaglobalmastercolvars/colvarmodule.o: \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -1173,7 +1113,6 @@ obj/libcudaglobalmastercolvars/colvarmodule.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarmodule.o $(COPTC) colvars/src/colvarmodule.cpp
 obj/libcudaglobalmastercolvars/colvarparams.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarparams.cpp \
@@ -1184,7 +1123,6 @@ obj/libcudaglobalmastercolvars/colvarparams.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarparams.o $(COPTC) colvars/src/colvarparams.cpp
 obj/libcudaglobalmastercolvars/colvarparse.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarparams.h \
@@ -1198,7 +1136,6 @@ obj/libcudaglobalmastercolvars/colvarparse.o: \
 obj/libcudaglobalmastercolvars/colvarproxy.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvardeps.h \
@@ -1214,6 +1151,7 @@ obj/libcudaglobalmastercolvars/colvarproxy.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarscript_commands.h \
@@ -1224,10 +1162,8 @@ obj/libcudaglobalmastercolvars/colvarproxy.o: \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -1236,7 +1172,6 @@ obj/libcudaglobalmastercolvars/colvarproxy.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy.o $(COPTC) colvars/src/colvarproxy.cpp
 obj/libcudaglobalmastercolvars/colvarproxy_io.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarproxy_io.cpp \
@@ -1245,7 +1180,6 @@ obj/libcudaglobalmastercolvars/colvarproxy_io.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_io.o $(COPTC) colvars/src/colvarproxy_io.cpp
 obj/libcudaglobalmastercolvars/colvarproxy_replicas.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarproxy_replicas.cpp \
@@ -1254,17 +1188,16 @@ obj/libcudaglobalmastercolvars/colvarproxy_replicas.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_replicas.o $(COPTC) colvars/src/colvarproxy_replicas.cpp
 obj/libcudaglobalmastercolvars/colvarproxy_system.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarproxy_system.cpp \
 	colvars/src/colvarproxy_system.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_system.o $(COPTC) colvars/src/colvarproxy_system.cpp
 obj/libcudaglobalmastercolvars/colvarproxy_tcl.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
@@ -1281,13 +1214,13 @@ obj/libcudaglobalmastercolvars/colvarproxy_tcl.o: \
 	colvars/src/colvarproxy_tcl.cpp \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_tcl.o $(COPTC) colvars/src/colvarproxy_tcl.cpp
 obj/libcudaglobalmastercolvars/colvarproxy_gpu.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarproxy_gpu.cpp \
@@ -1296,7 +1229,6 @@ obj/libcudaglobalmastercolvars/colvarproxy_gpu.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_gpu.o $(COPTC) colvars/src/colvarproxy_gpu.cpp
 obj/libcudaglobalmastercolvars/colvarproxy_volmaps.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarmodule_utils.h \
@@ -1306,7 +1238,6 @@ obj/libcudaglobalmastercolvars/colvarproxy_volmaps.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_volmaps.o $(COPTC) colvars/src/colvarproxy_volmaps.cpp
 obj/libcudaglobalmastercolvars/colvarscript.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarmodule.h \
@@ -1319,6 +1250,7 @@ obj/libcudaglobalmastercolvars/colvarscript.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvarscript.cpp \
 	colvars/src/colvarscript.h \
@@ -1331,7 +1263,6 @@ obj/libcudaglobalmastercolvars/colvarscript.o: \
 obj/libcudaglobalmastercolvars/colvarscript_commands.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvardeps.h \
@@ -1345,6 +1276,7 @@ obj/libcudaglobalmastercolvars/colvarscript_commands.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarscript_commands.cpp \
@@ -1356,10 +1288,8 @@ obj/libcudaglobalmastercolvars/colvarscript_commands.o: \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -1369,7 +1299,6 @@ obj/libcudaglobalmastercolvars/colvarscript_commands.o: \
 obj/libcudaglobalmastercolvars/colvarscript_commands_bias.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarbias.h \
 	colvars/src/colvardeps.h \
@@ -1383,6 +1312,7 @@ obj/libcudaglobalmastercolvars/colvarscript_commands_bias.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarscript_commands.h \
@@ -1394,10 +1324,8 @@ obj/libcudaglobalmastercolvars/colvarscript_commands_bias.o: \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -1407,7 +1335,6 @@ obj/libcudaglobalmastercolvars/colvarscript_commands_bias.o: \
 obj/libcudaglobalmastercolvars/colvarscript_commands_colvar.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/src/colvar.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvardeps.h \
 	colvars/src/colvarmodule.h \
@@ -1420,6 +1347,7 @@ obj/libcudaglobalmastercolvars/colvarscript_commands_colvar.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvarscript.h \
 	colvars/src/colvarscript_commands.h \
@@ -1431,10 +1359,8 @@ obj/libcudaglobalmastercolvars/colvarscript_commands_colvar.o: \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -1443,7 +1369,6 @@ obj/libcudaglobalmastercolvars/colvarscript_commands_colvar.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarscript_commands_colvar.o $(COPTC) colvars/src/colvarscript_commands_colvar.cpp
 obj/libcudaglobalmastercolvars/colvars_memstream.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_memstream.cpp \
@@ -1454,14 +1379,11 @@ obj/libcudaglobalmastercolvars/colvars_memstream.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvars_memstream.o $(COPTC) colvars/src/colvars_memstream.cpp
 obj/libcudaglobalmastercolvars/colvartypes.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
-	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvaratoms.h \
 	colvars/src/colvaratoms_gpu.h \
 	colvars/src/colvardeps.h \
-	colvars/src/colvarmodule.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarparams.h \
 	colvars/src/colvarparse.h \
@@ -1472,6 +1394,7 @@ obj/libcudaglobalmastercolvars/colvartypes.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.cpp \
 	colvars/src/colvartypes.h \
@@ -1481,7 +1404,6 @@ obj/libcudaglobalmastercolvars/colvartypes.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvartypes.o $(COPTC) colvars/src/colvartypes.cpp
 obj/libcudaglobalmastercolvars/colvarvalue.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_memstream.h \
@@ -1492,7 +1414,6 @@ obj/libcudaglobalmastercolvars/colvarvalue.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvarvalue.o $(COPTC) colvars/src/colvarvalue.cpp
 obj/libcudaglobalmastercolvars/colvar_gpu_support.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.cpp \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
@@ -1520,16 +1441,15 @@ obj/libcudaglobalmastercolvars/colvar_gpu_calc.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/colvarvalue.h \
 	lepton/include/Lepton.h \
 	lepton/include/lepton/CompiledExpression.h \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionProgram.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \
@@ -1538,13 +1458,9 @@ obj/libcudaglobalmastercolvars/colvar_gpu_calc.o: \
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_gpu_calc.o $(COPTC) colvars/src/colvar_gpu_calc.cpp
 obj/libcudaglobalmastercolvars/colvar_rotation_derivative.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
-	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.cpp \
 	colvars/src/colvar_rotation_derivative.h \
-	colvars/src/colvar_rotation_derivative.h \
-	colvars/src/colvarmodule.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvarproxy.h \
 	colvars/src/colvarproxy_gpu.h \
@@ -1553,13 +1469,13 @@ obj/libcudaglobalmastercolvars/colvar_rotation_derivative.o: \
 	colvars/src/colvarproxy_system.h \
 	colvars/src/colvarproxy_tcl.h \
 	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/cuda/colvar_rotation_derivative_kernel.h
 	$(CXX) $(COLVARSCUDAGMPLUGINCXXFLAGS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_rotation_derivative.o $(COPTC) colvars/src/colvar_rotation_derivative.cpp
 obj/libcudaglobalmastercolvars/nr_jacobi.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
@@ -1571,7 +1487,6 @@ obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster_kernel.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.cu \
 	colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.h \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
@@ -1580,37 +1495,75 @@ obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster_kernel.o: \
 	$(CUDACC) $(COLVARSCUDAGMPLUGINCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvarproxy_cudaglobalmaster_kernel.o $(COPTC) colvars/namd/cudaglobalmaster/colvarproxy_cudaglobalmaster_kernel.cu
 obj/libcudaglobalmastercolvars/colvaratoms_kernel.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
-	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
 	colvars/src/colvarmodule.h \
-	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
-	colvars/src/colvartypes.h \
 	colvars/src/colvartypes.h \
 	colvars/src/cuda/colvaratoms_kernel.cu \
 	colvars/src/cuda/colvaratoms_kernel.h
 	$(CUDACC) $(COLVARSCUDAGMPLUGINCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvaratoms_kernel.o $(COPTC) colvars/src/cuda/colvaratoms_kernel.cu
 obj/libcudaglobalmastercolvars/colvar_rotation_derivative_kernel.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
-	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_gpu_support.h \
 	colvars/src/colvar_rotation_derivative.h \
-	colvars/src/colvarmodule.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
 	colvars/src/cuda/colvar_rotation_derivative_kernel.cu \
 	colvars/src/cuda/colvar_rotation_derivative_kernel.h
 	$(CUDACC) $(COLVARSCUDAGMPLUGINCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvar_rotation_derivative_kernel.o $(COPTC) colvars/src/cuda/colvar_rotation_derivative_kernel.cu
+obj/libcudaglobalmastercolvars/colvarcomp_distance_kernel.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/cuda/colvarcomp_distance_kernel.cu \
+	colvars/src/cuda/colvarcomp_distance_kernel.h
+	$(CUDACC) $(COLVARSCUDAGMPLUGINCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_distance_kernel.o $(COPTC) colvars/src/cuda/colvarcomp_distance_kernel.cu
+obj/libcudaglobalmastercolvars/colvarcomp_coordnums_kernel.o: \
+	obj/libcudaglobalmastercolvars/.exists \
+	colvars/src/colvar.h \
+	colvars/src/colvar_geometricpath.h \
+	colvars/src/colvar_gpu_support.h \
+	colvars/src/colvar_rotation_derivative.h \
+	colvars/src/colvaratoms.h \
+	colvars/src/colvaratoms_gpu.h \
+	colvars/src/colvarcomp.h \
+	colvars/src/colvarcomp_coordnums.h \
+	colvars/src/colvardeps.h \
+	colvars/src/colvarmodule.h \
+	colvars/src/colvarparams.h \
+	colvars/src/colvarparse.h \
+	colvars/src/colvarproxy.h \
+	colvars/src/colvarproxy_gpu.h \
+	colvars/src/colvarproxy_io.h \
+	colvars/src/colvarproxy_replicas.h \
+	colvars/src/colvarproxy_system.h \
+	colvars/src/colvarproxy_tcl.h \
+	colvars/src/colvarproxy_volmaps.h \
+	colvars/src/colvars_system.h \
+	colvars/src/colvars_version.h \
+	colvars/src/colvartypes.h \
+	colvars/src/colvarvalue.h \
+	colvars/src/cuda/colvarcomp_coordnums_kernel.cu \
+	colvars/src/cuda/colvarcomp_coordnums_kernel.h \
+	lepton/include/Lepton.h \
+	lepton/include/lepton/CompiledExpression.h \
+	lepton/include/lepton/CustomFunction.h \
+	lepton/include/lepton/Exception.h \
+	lepton/include/lepton/ExpressionProgram.h \
+	lepton/include/lepton/ExpressionTreeNode.h \
+	lepton/include/lepton/Operation.h \
+	lepton/include/lepton/ParsedExpression.h \
+	lepton/include/lepton/Parser.h \
+	lepton/include/lepton/windowsIncludes.h
+	$(CUDACC) $(COLVARSCUDAGMPLUGINCUDAFLAGS) $(CUDACCOPTS) $(COPTO)obj/libcudaglobalmastercolvars/colvarcomp_coordnums_kernel.o $(COPTC) colvars/src/cuda/colvarcomp_coordnums_kernel.cu
 obj/libcudaglobalmastercolvars/colvartypes_kernel.o: \
 	obj/libcudaglobalmastercolvars/.exists \
-	colvars/src/colvar_gpu_calc.h \
 	colvars/src/colvar_gpu_support.h \
-	colvars/src/colvar_gpu_support.h \
-	colvars/src/colvarmodule.h \
 	colvars/src/colvarmodule.h \
 	colvars/src/colvars_version.h \
 	colvars/src/colvartypes.h \
@@ -1654,7 +1607,6 @@ obj/libcudaglobalmastercolvars/ExpressionTreeNode.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
-	lepton/include/lepton/Exception.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/windowsIncludes.h \
@@ -1686,10 +1638,7 @@ obj/libcudaglobalmastercolvars/ParsedExpression.o: \
 obj/libcudaglobalmastercolvars/Parser.o: \
 	obj/libcudaglobalmastercolvars/.exists \
 	lepton/include/lepton/CustomFunction.h \
-	lepton/include/lepton/CustomFunction.h \
 	lepton/include/lepton/Exception.h \
-	lepton/include/lepton/Exception.h \
-	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/ExpressionTreeNode.h \
 	lepton/include/lepton/Operation.h \
 	lepton/include/lepton/ParsedExpression.h \

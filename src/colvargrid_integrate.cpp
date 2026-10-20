@@ -78,7 +78,7 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
     divergence.resize(computation_nt);
     if (weighted || nd > 3) {
       if (weighted && !gradients->samples && !gradients->weights)
-        cvm::error("Error: Trying to perform weighted Poisson integration without a samples grid.", COLVARS_BUG_ERROR);
+        cvmodule->error("Error: Trying to perform weighted Poisson integration without a samples grid.", COLVARS_BUG_ERROR);
       prepare_calculations();
       // extrapolate_data(); // Potential enhancement, needs testing
       set_weighted_div();
@@ -109,19 +109,15 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
 
     if (weighted || nd > 3) {
       if (nd > 3) {
-        cvm::log("WARNING: Integration of potential of dimension higher than 3 requires a lot "
-                     "of memory.");
+        cvmodule->log("WARNING: Integration of potential of dimension higher than 3 requires a lot "
+                      "of memory.");
       }
       nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
     } else
       nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
     if (verbose)
-      cvm::log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
-    if (need_to_extrapolate_solution) {
-      extrapolate_potential();
-    }
+      cvmodule->log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
   }
-
   return iter;
 }
 
@@ -238,36 +234,36 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
     std::vector<cvm::real> g100(3, 0.0), g101(3, 0.0), g110(3, 0.0), g111(3, 0.0);
 
     // Fill the 8 corners, shifting with +1
-    get_grad(g000, ix); // (0,0,0)
+    get_grad(g000, ix);            // (0,0,0)
     ix[2] = ix0[2] + 1;
     wrap_detect_edge(ix);
-    get_grad(g001, ix); // (0,0,1)
+    get_grad(g001, ix);            // (0,0,1)
 
     ix[1] = ix0[1] + 1;
     wrap_detect_edge(ix);
-    get_grad(g011, ix); // (0,1,1)
+    get_grad(g011, ix);            // (0,1,1)
 
     ix[2] = ix0[2];
     wrap_detect_edge(ix);
-    get_grad(g010, ix); // (0,1,0)
+    get_grad(g010, ix);            // (0,1,0)
 
     ix[0] = ix0[0] + 1;
     ix[1] = ix0[1];
     ix[2] = ix0[2];
     wrap_detect_edge(ix);
-    get_grad(g100, ix); // (1,0,0)
+    get_grad(g100, ix);            // (1,0,0)
 
     ix[2] = ix0[2] + 1;
     wrap_detect_edge(ix);
-    get_grad(g101, ix); // (1,0,1)
+    get_grad(g101, ix);            // (1,0,1)
 
     ix[1] = ix0[1] + 1;
     wrap_detect_edge(ix);
-    get_grad(g111, ix); // (1,1,1)
+    get_grad(g111, ix);            // (1,1,1)
 
     ix[2] = ix0[2];
     wrap_detect_edge(ix);
-    get_grad(g110, ix); // (1,1,0)
+    get_grad(g110, ix);            // (1,1,0)
     divergence[linear_index] =
       ((g100[0] - g000[0] + g101[0] - g001[0] + g110[0] - g010[0] + g111[0] - g011[0]) /
        widths[0] +
@@ -309,7 +305,7 @@ void colvargrid_integrate::update_div_local(const std::vector<int> &ix0)
 void colvargrid_integrate::prepare_divergence_stencils()
 {
   surrounding_points_relative_positions.clear();
-  size_t n_combinations = pow(2, nd);
+  size_t n_combinations = cvm::integer_power(2, nd);
   for (size_t i = 0; i < n_combinations; i++) {
     surrounding_points_relative_positions.push_back(convert_base_two(i, nd));
   }
@@ -334,10 +330,10 @@ void colvargrid_integrate::update_weighted_div_local(const std::vector<int> &ix0
 
     for (size_t i = 0; i < nd; i++) {
       div_at_point +=  (((surrounding_point_relative_position[i] & 1) << 1) - 1) *
-                      gradient_at_surrounding_point[i] * weight / widths[i];
+                       gradient_at_surrounding_point[i] * weight / widths[i];
     }
   }
-  divergence[linear_index] = div_at_point / pow(2, nd - 1);
+  divergence[linear_index] = div_at_point / cvm::integer_power(2, nd - 1);
 }
 
 /// Multiplication by sparse matrix representing Laplacian
@@ -387,42 +383,42 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       li++;
     }
     // Edges along x (x components only)
-    li = 0L;                              // Follows left edge
+    li = 0L; // Follows left edge
     li2 = h * static_cast<size_t>(w - 1); // Follows right edge
     if (periodic[0]) {
       xm = h * (w - 1);
       xp = h;
       fact = periodic[1] ? 1.0 : 0.5;
-      LA[li] = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
+      LA[li]  = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
       LA[li2] = fact * ffx * (A[li2 - xp] + A[li2 - xm] - 2.0 * A[li2]);
       li++;
       li2++;
       for (j = 1; j < h - 1; j++) {
-        LA[li] = ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
+        LA[li]  = ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
         LA[li2] = ffx * (A[li2 - xp] + A[li2 - xm] - 2.0 * A[li2]);
         li++;
         li2++;
       }
-      LA[li] = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
+      LA[li]  = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
       LA[li2] = fact * ffx * (A[li2 - xp] + A[li2 - xm] - 2.0 * A[li2]);
     } else {
       xm = -h;
       xp = h;
       fact = periodic[1] ? 1.0 : 0.5; // Halve in corners in full PBC only
       // lower corner, "j == 0"
-      LA[li] = fact * ffx * (A[li + xp] - A[li]);
+      LA[li]  = fact * ffx * (A[li + xp] - A[li]);
       LA[li2] = fact * ffx * (A[li2 + xm] - A[li2]);
       li++;
       li2++;
       for (j = 1; j < h - 1; j++) {
         // x gradient (+ y term of laplacian, calculated below)
-        LA[li] = ffx * (A[li + xp] - A[li]);
+        LA[li]  = ffx * (A[li + xp] - A[li]);
         LA[li2] = ffx * (A[li2 + xm] - A[li2]);
         li++;
         li2++;
       }
       // upper corner, j == h-1
-      LA[li] = fact * ffx * (A[li + xp] - A[li]);
+      LA[li]  = fact * ffx * (A[li + xp] - A[li]);
       LA[li2] = fact * ffx * (A[li2 + xm] - A[li2]);
     }
 
@@ -444,42 +440,42 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       li += 2; // skip the edges and move to next column
     }
     // Edges along y (y components only)
-    li = 0L;     // Follows bottom edge
+    li = 0L; // Follows bottom edge
     li2 = h - 1; // Follows top edge
     if (periodic[1]) {
       fact = periodic[0] ? 1.0 : 0.5;
       ym = h - 1;
       yp = 1;
-      LA[li] += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
+      LA[li]  += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
       LA[li2] += fact * ffy * (A[li2 - yp] + A[li2 - ym] - 2.0 * A[li2]);
-      li += h;
+      li  += h;
       li2 += h;
       for (i = 1; i < w - 1; i++) {
-        LA[li] += ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
+        LA[li]  += ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
         LA[li2] += ffy * (A[li2 - yp] + A[li2 - ym] - 2.0 * A[li2]);
-        li += h;
+        li  += h;
         li2 += h;
       }
-      LA[li] += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
+      LA[li]  += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
       LA[li2] += fact * ffy * (A[li2 - yp] + A[li2 - ym] - 2.0 * A[li2]);
     } else {
       ym = -1;
       yp = 1;
       fact = periodic[0] ? 1.0 : 0.5; // Halve in corners in full PBC only
       // Left corner
-      LA[li] += fact * ffy * (A[li + yp] - A[li]);
+      LA[li]  += fact * ffy * (A[li + yp] - A[li]);
       LA[li2] += fact * ffy * (A[li2 + ym] - A[li2]);
-      li += h;
+      li  += h;
       li2 += h;
       for (i = 1; i < w - 1; i++) {
         // y gradient (+ x term of laplacian, calculated above)
-        LA[li] += ffy * (A[li + yp] - A[li]);
+        LA[li]  += ffy * (A[li + yp] - A[li]);
         LA[li2] += ffy * (A[li2 + ym] - A[li2]);
-        li += h;
+        li  += h;
         li2 += h;
       }
       // Right corner
-      LA[li] += fact * ffy * (A[li + yp] - A[li]);
+      LA[li]  += fact * ffy * (A[li + yp] - A[li]);
       LA[li2] += fact * ffy * (A[li2 + ym] - A[li2]);
     }
   } else if (nd == 3) {
@@ -533,7 +529,7 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       }
     }
     // Edges along x (x components only)
-    li = 0L;                                    // Follows left slab
+    li = 0L; // Follows left slab
     li2 = static_cast<size_t>(d) * h * (w - 1); // Follows right slab
     if (periodic[0]) {
       xm = d * h * (w - 1);
@@ -544,19 +540,19 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
           fact *= ifacty;
         if (j == d - 1)
           fact *= facty;
-        LA[li] = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
+        LA[li]  = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
         LA[li2] = fact * ffx * (A[li2 - xp] + A[li2 - xm] - 2.0 * A[li2]);
         li++;
         li2++;
         fact *= ifactz;
         for (k = 1; k < h - 1; k++) {
-          LA[li] = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
+          LA[li]  = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
           LA[li2] = fact * ffx * (A[li2 - xp] + A[li2 - xm] - 2.0 * A[li2]);
           li++;
           li2++;
         }
         fact *= factz;
-        LA[li] = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
+        LA[li]  = fact * ffx * (A[li + xm] + A[li + xp] - 2.0 * A[li]);
         LA[li2] = fact * ffx * (A[li2 - xp] + A[li2 - xm] - 2.0 * A[li2]);
         li++;
         li2++;
@@ -570,20 +566,20 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
           fact *= ifacty;
         if (j == d - 1)
           fact *= facty;
-        LA[li] = fact * ffx * (A[li + xp] - A[li]);
+        LA[li]  = fact * ffx * (A[li + xp] - A[li]);
         LA[li2] = fact * ffx * (A[li2 + xm] - A[li2]);
         li++;
         li2++;
         fact *= ifactz;
         for (k = 1; k < h - 1; k++) {
           // x gradient (+ y, z terms of laplacian, calculated below)
-          LA[li] = fact * ffx * (A[li + xp] - A[li]);
+          LA[li]  = fact * ffx * (A[li + xp] - A[li]);
           LA[li2] = fact * ffx * (A[li2 + xm] - A[li2]);
           li++;
           li2++;
         }
         fact *= factz;
-        LA[li] = fact * ffx * (A[li + xp] - A[li]);
+        LA[li]  = fact * ffx * (A[li + xp] - A[li]);
         LA[li2] = fact * ffx * (A[li2 + xm] - A[li2]);
         li++;
         li2++;
@@ -615,7 +611,7 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       li += 2 * h; // skip columns in front and back slabs
     }
     // Edges along y (y components only)
-    li = 0L;                              // Follows front slab
+    li = 0L; // Follows front slab
     li2 = h * static_cast<size_t>(d - 1); // Follows back slab
     if (periodic[1]) {
       ym = h * (d - 1);
@@ -626,23 +622,23 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
           fact *= ifactx;
         if (i == w - 1)
           fact *= factx;
-        LA[li] += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
+        LA[li]  += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
         LA[li2] += fact * ffy * (A[li2 - yp] + A[li2 - ym] - 2.0 * A[li2]);
         li++;
         li2++;
         fact *= ifactz;
         for (k = 1; k < h - 1; k++) {
-          LA[li] += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
+          LA[li]  += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
           LA[li2] += fact * ffy * (A[li2 - yp] + A[li2 - ym] - 2.0 * A[li2]);
           li++;
           li2++;
         }
         fact *= factz;
-        LA[li] += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
+        LA[li]  += fact * ffy * (A[li + ym] + A[li + yp] - 2.0 * A[li]);
         LA[li2] += fact * ffy * (A[li2 - yp] + A[li2 - ym] - 2.0 * A[li2]);
         li++;
         li2++;
-        li += h * static_cast<size_t>(d - 1);
+        li  += h * static_cast<size_t>(d - 1);
         li2 += h * static_cast<size_t>(d - 1);
       }
     } else {
@@ -654,24 +650,24 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
           fact *= ifactx;
         if (i == w - 1)
           fact *= factx;
-        LA[li] += fact * ffy * (A[li + yp] - A[li]);
+        LA[li]  += fact * ffy * (A[li + yp] - A[li]);
         LA[li2] += fact * ffy * (A[li2 + ym] - A[li2]);
         li++;
         li2++;
         fact *= ifactz;
         for (k = 1; k < h - 1; k++) {
           // y gradient (+ x, z terms of laplacian, calculated above and below)
-          LA[li] += fact * ffy * (A[li + yp] - A[li]);
+          LA[li]  += fact * ffy * (A[li + yp] - A[li]);
           LA[li2] += fact * ffy * (A[li2 + ym] - A[li2]);
           li++;
           li2++;
         }
         fact *= factz;
-        LA[li] += fact * ffy * (A[li + yp] - A[li]);
+        LA[li]  += fact * ffy * (A[li + yp] - A[li]);
         LA[li2] += fact * ffy * (A[li2 + ym] - A[li2]);
         li++;
         li2++;
-        li += h * static_cast<size_t>(d - 1);
+        li  += h * static_cast<size_t>(d - 1);
         li2 += h * static_cast<size_t>(d - 1);
       }
     }
@@ -708,7 +704,7 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
       li += 2; // skip edge slabs
     }
     // Edges along z (z components onlz)
-    li = 0;      // Follows bottom slab
+    li = 0; // Follows bottom slab
     li2 = h - 1; // Follows top slab
     if (periodic[2]) {
       zm = h - 1;
@@ -719,21 +715,21 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
           fact *= ifactx;
         if (i == w - 1)
           fact *= factx;
-        LA[li] += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
+        LA[li]  += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
         LA[li2] += fact * ffz * (A[li2 - zp] + A[li2 - zm] - 2.0 * A[li2]);
-        li += h;
+        li  += h;
         li2 += h;
         fact *= ifacty;
         for (j = 1; j < d - 1; j++) {
-          LA[li] += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
+          LA[li]  += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
           LA[li2] += fact * ffz * (A[li2 - zp] + A[li2 - zm] - 2.0 * A[li2]);
-          li += h;
+          li  += h;
           li2 += h;
         }
         fact *= facty;
-        LA[li] += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
+        LA[li]  += fact * ffz * (A[li + zm] + A[li + zp] - 2.0 * A[li]);
         LA[li2] += fact * ffz * (A[li2 - zp] + A[li2 - zm] - 2.0 * A[li2]);
-        li += h;
+        li  += h;
         li2 += h;
       }
     } else {
@@ -745,22 +741,22 @@ void colvargrid_integrate::laplacian(const std::vector<cvm::real> &A, std::vecto
           fact *= ifactx;
         if (i == w - 1)
           fact *= factx;
-        LA[li] += fact * ffz * (A[li + zp] - A[li]);
+        LA[li]  += fact * ffz * (A[li + zp] - A[li]);
         LA[li2] += fact * ffz * (A[li2 + zm] - A[li2]);
-        li += h;
+        li  += h;
         li2 += h;
         fact *= ifacty;
         for (j = 1; j < d - 1; j++) {
           // z gradient (+ x, y terms of laplacian, calculated above)
-          LA[li] += fact * ffz * (A[li + zp] - A[li]);
+          LA[li]  += fact * ffz * (A[li + zp] - A[li]);
           LA[li2] += fact * ffz * (A[li2 + zm] - A[li2]);
-          li += h;
+          li  += h;
           li2 += h;
         }
         fact *= facty;
-        LA[li] += fact * ffz * (A[li + zp] - A[li]);
+        LA[li]  += fact * ffz * (A[li + zp] - A[li]);
         LA[li2] += fact * ffz * (A[li2 + zm] - A[li2]);
-        li += h;
+        li  += h;
         li2 += h;
       }
     }
@@ -801,7 +797,7 @@ void colvargrid_integrate::linewise_laplacian_weighted_precomputed(const std::ve
         averaged_normal_vector = compute_averaged_border_normal_gradient(neighbor_coordinate);
         for (size_t dim = 0; dim < nd; dim++) {
           div_supplement_term +=
-              averaged_normal_vector[dim] * neighbor_relative_position[dim] * widths[dim];
+            averaged_normal_vector[dim] * neighbor_relative_position[dim] * widths[dim];
         }
         div_border_supplement[grid_address] -= div_supplement_term * coefficient;
       }
@@ -859,7 +855,7 @@ void colvargrid_integrate::linewise_laplacian_weighted_otf(const std::vector<cvm
         averaged_normal_vector = compute_averaged_border_normal_gradient(neighbor_coordinate);
         for (size_t dim = 0; dim < nd; dim++) {
           div_supplement_term +=
-              averaged_normal_vector[dim] * neighbor_relative_position[dim] * widths[dim];
+            averaged_normal_vector[dim] * neighbor_relative_position[dim] * widths[dim];
         }
         div_border_supplement[grid_address] -= div_supplement_term * coefficient;
       }
@@ -900,9 +896,8 @@ void colvargrid_integrate::laplacian_weighted(const std::vector<cvm::real> &A,
       (this->*linewise_laplacian_weighted)(A, LA, static_cast<size_t>(grid_address_int));
     }
 #else
-    cvm::error(
-        "multiple threads required in weighted poisson integration, but this binary is not linked "
-        "with a supported threading library.\n");
+    cvmodule->error("multiple threads required in weighted poisson integration, but this binary "
+                    "is not linked with a supported threading library.\n");
 #endif
   }
 }
@@ -912,6 +907,7 @@ void colvargrid_integrate::prepare_laplacian_stencils()
   laplacian_stencil.resize(2 * nd + 1);
   weight_stencil.resize(2 * nd);
   weight_counts.resize(2 * nd);
+  size_t const stencil_size = cvm::integer_power(2, nd - 1);
 
   for (size_t dim = 0; dim < nd; dim++) {
     std::vector<int> relative_position_left(nd, 0);
@@ -920,13 +916,13 @@ void colvargrid_integrate::prepare_laplacian_stencils()
     relative_position_right[dim] = 1;
     laplacian_stencil[2 * dim] = relative_position_left;
     laplacian_stencil[2 * dim + 1] = relative_position_right;
-    weight_counts[2 * dim] = 1 / (widths[dim] * widths[dim]) * (1 / std::pow(2, nd - 1));
-    weight_counts[2 * dim + 1] = 1 / (widths[dim] * widths[dim]) * (1 / std::pow(2, nd - 1));
-    weight_stencil[2 * dim].resize(std::pow(2, nd - 1));
-    weight_stencil[2 * dim + 1].resize(std::pow(2, nd - 1));
+    weight_counts[2 * dim] = 1. / (widths[dim] * widths[dim]) * (1. / stencil_size);
+    weight_counts[2 * dim + 1] = 1. / (widths[dim] * widths[dim]) * (1. / stencil_size);
+    weight_stencil[2 * dim].resize(stencil_size);
+    weight_stencil[2 * dim + 1].resize(stencil_size);
 
     for (int weights_to_average_relative_pos = 0;
-         weights_to_average_relative_pos < std::pow(2, nd - 1); weights_to_average_relative_pos++) {
+         weights_to_average_relative_pos < static_cast<int>(stencil_size); weights_to_average_relative_pos++) {
       std::vector<int> binary = convert_base_two(weights_to_average_relative_pos, nd - 1);
       weight_stencil[2 * dim][weights_to_average_relative_pos].resize(nd);
       weight_stencil[2 * dim + 1][weights_to_average_relative_pos].resize(nd);
@@ -935,7 +931,7 @@ void colvargrid_integrate::prepare_laplacian_stencils()
         if (k != dim) {
           weight_stencil[2 * dim][weights_to_average_relative_pos][k] = binary[k + offset];
           weight_stencil[2 * dim + 1][weights_to_average_relative_pos][k] =
-              binary[k + offset];
+            binary[k + offset];
         } else {
           offset = -1;
           weight_stencil[2 * dim][weights_to_average_relative_pos][dim] = 0;
@@ -955,35 +951,7 @@ void colvargrid_integrate::prepare_calculations()
   if (weighted) {
     std::vector<int> max_position;
     std::vector<int> min_position;
-    sorted_counts = {};
 
-    if (lower_threshold_count ==1 && upper_threshold_count==1) {
-      for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
-          gradients->incr(ix)) {
-        cvm::real count;
-        if (gradients-> samples) {
-          count = gradients->samples->value(ix);
-        }
-        else if (gradients->weights) {
-          count = gradients->weights->value(ix);
-        }
-        else {
-          count = 1;
-        }
-        if (count > 0) {
-          insert_into_sorted_list<cvm::real>(sorted_counts, count);
-        }
-          }
-
-      if (sorted_counts.size()) {
-        lower_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * lambda_min)];
-        upper_threshold_count = sorted_counts[static_cast<int>(sorted_counts.size() * (1 - lambda_max))];
-      } else {
-        lower_threshold_count = 1;
-        upper_threshold_count = 1;
-      }
-      sorted_counts.clear();
-    }
     regularized_weights.resize(gradients->nt);
     for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
          gradients->incr(ix)) {
@@ -993,9 +961,9 @@ void colvargrid_integrate::prepare_calculations()
     double gigabytes = required / (1024.0 * 1024.0 * 1024.0);
     precompute = gigabytes < 2;
     std::string print_precompute = precompute ? "precomputed; precomputing will use "
-                                              : "computed on the fly, as precomputing would use ";
-    cvm::log("Laplacian computation will be " + print_precompute + cvm::to_str(gigabytes)
-              + " GB of memory.");
+                                   : "computed on the fly, as precomputing would use ";
+    cvmodule->log("Laplacian computation will be " + print_precompute + cvm::to_str(gigabytes)
+                  + " GB of memory.");
     if (precompute) {
       laplacian_coefficients.clear();
       laplacian_coefficients.resize(computation_grid->data.size() * laplacian_stencil.size(), 0);
@@ -1034,7 +1002,7 @@ void colvargrid_integrate::prepare_calculations()
           diagonal_coeff += coefficient;
         }
         laplacian_coefficients[coeff_address + (2 * nd)] +=
-            -diagonal_coeff;
+          -diagonal_coeff;
       }
     }
   }
@@ -1082,14 +1050,18 @@ void colvargrid_integrate::get_regularized_grad(std::vector<cvm::real> &F, std::
     F[i] = multiplier * F[i];
   }
 }
-// TODO: check if there's not a more optimized version avoiding push_back calls
+
+
 std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_gradient(
-    std::vector<int> ghost_point_coordinates)
+  std::vector<int> ghost_point_coordinates)
 {
-  std::vector<int> reference_point_coordinates(nd, 0); // Initialize with correct size
+  std::vector<int> reference_point_coordinates(nd, 0);
   gradients->wrap_to_edge(ghost_point_coordinates, reference_point_coordinates);
+
   std::vector<int> directions_to_average_along;
+  directions_to_average_along.reserve(nd);           // at most nd entries
   std::vector<bool> normal_directions(nd);
+
   for (size_t i = 0; i < nd; i++) {
     if ((0 <= ghost_point_coordinates[i] && ghost_point_coordinates[i] < computation_nx[i]) ||
         periodic[i]) {
@@ -1099,35 +1071,37 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
       normal_directions[i] = true;
     }
   }
-  // Find the positions of the gradients to average
-  const int nb_averaged_gradients = static_cast<int>(cvm::integer_power(2, static_cast<int>(directions_to_average_along.size())));
-  std::vector<std::vector<int>> gradients_to_average_relative_positions;
-  if (directions_to_average_along.size() == 0) {
-    std::vector<int> zero_vector(nd, 0);
-    gradients_to_average_relative_positions.push_back(zero_vector);
-  } else {
-    for (int i = 0; i < nb_averaged_gradients; i++) {
-      std::vector<int> gradient_to_average_relative_position(nd, 0);
-      std::vector<int> binary = convert_base_two(i, directions_to_average_along.size());
-      for (size_t bit_position = 0; bit_position < directions_to_average_along.size();
-           bit_position++) {
-        gradient_to_average_relative_position[directions_to_average_along[bit_position]] =
-            binary[bit_position];
-      }
-      gradients_to_average_relative_positions.push_back(gradient_to_average_relative_position);
-    }
-  }
 
-  // compute the averaged border normal gradient
+  const int nb_averaged_gradients =
+    static_cast<int>(cvm::integer_power(2, static_cast<int>(directions_to_average_along.size())));
+
+  std::vector<std::vector<int>> gradients_to_average_relative_positions;
+  gradients_to_average_relative_positions.reserve(nb_averaged_gradients); // known size
+
+  // The i=0 case (all bits zero) produces an all-zero vector regardless of
+  // directions_to_average_along
+  const size_t n_dims_to_average = directions_to_average_along.size();
+  for (int i = 0; i < nb_averaged_gradients; i++) {
+    std::vector<int> pos(nd, 0);
+    for (size_t bit = 0; bit < n_dims_to_average; bit++) {
+      pos[directions_to_average_along[bit]] = (i >> bit) & 1;
+    }
+    gradients_to_average_relative_positions.push_back(std::move(pos));
+  }
+  const size_t nb_averaged = gradients_to_average_relative_positions.size();
+  const cvm::real inv_nb_averaged = cvm::real(1) / static_cast<cvm::real>(nb_averaged);
+
   std::vector<cvm::real> averaged_border_normal_gradient(nd, 0);
-  // averaging the gradients
-  for (size_t i = 0; i < gradients_to_average_relative_positions.size(); i++) {
-    std::vector<int> gradient_position(reference_point_coordinates);
+  std::vector<int>       gradient_position(nd);
+  std::vector<cvm::real> gradient(nd);
+
+  for (size_t i = 0; i < nb_averaged; i++) {
+    const auto& relative_pos = gradients_to_average_relative_positions[i];
     for (size_t j = 0; j < nd; j++) {
-      gradient_position[j] += gradients_to_average_relative_positions[i][j];
+      gradient_position[j] = reference_point_coordinates[j] + relative_pos[j];
     }
     wrap_detect_edge(gradient_position);
-    std::vector<cvm::real> gradient(nd);
+
     if (weighted) {
       get_regularized_grad(gradient, gradient_position);
     } else {
@@ -1137,14 +1111,12 @@ std::vector<cvm::real> colvargrid_integrate::compute_averaged_border_normal_grad
       averaged_border_normal_gradient[j] += gradient[j];
     }
   }
-  // only keep the normal directions and average
-  for (size_t j = 0; j < nd; j++) {
-    if (!normal_directions[j]) {
-      averaged_border_normal_gradient[j] = 0;
-    }
-    averaged_border_normal_gradient[j] /= gradients_to_average_relative_positions.size();
-  }
 
+  for (size_t j = 0; j < nd; j++) {
+    averaged_border_normal_gradient[j] = normal_directions[j]
+      ? averaged_border_normal_gradient[j] * inv_nb_averaged
+      : cvm::real(0);
+  }
   return averaged_border_normal_gradient;
 }
 
@@ -1197,7 +1169,7 @@ void colvargrid_integrate::nr_linbcg_sym(const bool weighted, const std::vector<
     }
     if (iter == 1) {
       for (j = 0; j < int(computation_nt); j++) {
-        p[j] = r[j]; // precon: p[j] = z[j]
+        p[j] = r[j];  // precon: p[j] = z[j]
       }
     } else {
       bk = bknum / bkden;
@@ -1243,10 +1215,10 @@ void colvargrid_integrate::extrapolate_potential()
     if (need_to_extrapolate) {
       for (size_t i = 0; i < nd; i++) {
         relative_position[i] =
-            std::min(corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i], 1);
+          std::min(corresponding_index_in_small_grid[i] - reference_index_in_small_grid[i], 1);
       }
       std::vector<cvm::real> averaged_normal_vector =
-          compute_averaged_border_normal_gradient(corresponding_index_in_small_grid);
+        compute_averaged_border_normal_gradient(corresponding_index_in_small_grid);
       for (size_t i = 0; i < nd; i++) {
         potential_value += averaged_normal_vector[i] * relative_position[i] * widths[i];
       }
@@ -1277,58 +1249,58 @@ cvm::real colvargrid_integrate::l2norm(const std::vector<cvm::real> &x)
 }
 
 
-  int colvargrid_integrate::init_Poisson_computation()
-  {
-    if (nd == 1 && !weighted) {
-      return COLVARS_OK;
-    }
-
-    cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
-    computation_nx.resize(nd);
-    computation_nt = 1;
-    computation_nxc.resize(nd);
-    for (size_t i = 0; i < nd; i++) {
-      if (periodic[i]) {
-        computation_nx[i] = nx[i];
-      } else {
-        computation_nx[i] = nx[i] - 2; // One point less than data size for non-periodic dimensions
-      }
-      computation_nt *= computation_nx[i];
-      computation_nxc[i] = computation_nt;
-    }
-    divergence.resize(computation_nt);
-
-    if (weighted) {
-      div_border_supplement.resize(computation_nt);
-      prepare_divergence_stencils();
-      prepare_laplacian_stencils();
-    }
-    need_to_extrapolate_solution = false;
-    for (size_t i = 0; i < nd; i++) {
-      if (!periodic[i])
-        need_to_extrapolate_solution = true;
-    }
-    if (!need_to_extrapolate_solution) {
-      computation_grid = this;
-    } else {
-      computation_grid = new colvar_grid_scalar();
-      computation_grid->periodic = periodic;
-      computation_grid->setup(computation_nx);
-    }
-
-#ifdef _OPENMP
-    m_num_threads = cvm::proxy->smp_num_threads();
-#else
-    if (m_num_threads > 1) {
-      return cvm::error("Multi-threading requested in weighted integrator, which is not supported "
-                        "by this build.\n");
-    }
-#endif
-    if (weighted) {
-      cvm::log("Will perform weighted Poisson integrator using " + cvm::to_str(m_num_threads) + " threads.");
-    }
+int colvargrid_integrate::init_Poisson_computation()
+{
+  if (nd == 1 && !weighted) {
     return COLVARS_OK;
   }
+
+  cvm::main()->cite_feature("Poisson integration of 2D/3D free energy surfaces");
+  computation_nx.resize(nd);
+  computation_nt = 1;
+  computation_nxc.resize(nd);
+  for (size_t i = 0; i < nd; i++) {
+    if (periodic[i]) {
+      computation_nx[i] = nx[i];
+    } else {
+      computation_nx[i] = nx[i] - 2; // One point less than data size for non-periodic dimensions
+    }
+    computation_nt *= computation_nx[i];
+    computation_nxc[i] = computation_nt;
+  }
+  divergence.resize(computation_nt);
+
+  if (weighted) {
+    div_border_supplement.resize(computation_nt);
+    prepare_divergence_stencils();
+    prepare_laplacian_stencils();
+  }
+  need_to_extrapolate_solution = false;
+  for (size_t i = 0; i < nd; i++) {
+    if (!periodic[i])
+      need_to_extrapolate_solution = true;
+  }
+  if (!need_to_extrapolate_solution) {
+    computation_grid = this;
+  } else {
+    computation_grid = new colvar_grid_scalar();
+    computation_grid->periodic = periodic;
+    computation_grid->setup(computation_nx);
+  }
+
+#ifdef _OPENMP
+  m_num_threads = cvmodule->proxy->smp_num_threads();
+#else
+  if (m_num_threads > 1) {
+    return cvmodule->error("Multi-threading requested in weighted integrator, which is not supported "
+                           "by this build.\n");
+  }
+#endif
+  if (weighted) {
+    cvmodule->log("Will perform weighted Poisson integrator using " + cvm::to_str(m_num_threads) + " threads.");
+  }
+  return COLVARS_OK;
+}
 
 // Potential enhancement, needs testing
 // void colvargrid_integrate::extrapolate_data()

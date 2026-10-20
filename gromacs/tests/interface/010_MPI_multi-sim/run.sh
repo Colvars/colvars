@@ -5,7 +5,7 @@
 # It's best to have Gromacs compiled in double precision
 # Reference files have been generated with Gromacs version 2024-dev
 
-echo -n "Running $(basename $PWD)..."
+echo -n "Running $(basename $PWD) ..."
 
 set -e
 
@@ -17,7 +17,7 @@ else
     BINARY="gmx_mpi_d"
 fi
 
-mpirun -np 16 -oversubscribe $BINARY mdrun -multidir a b c d -s test.tpr -deffnm test -replex 10 -reseed 376 >& test.out
+mpirun -np 16 -oversubscribe $BINARY mdrun -reprod -multidir a b c d -s test.tpr -deffnm test -replex 10 -reseed 376 >& test.out
 
 labels=(a b c d)
 for number in $(seq 1 ${#labels[@]}) ; do

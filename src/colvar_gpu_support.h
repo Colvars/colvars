@@ -5,6 +5,8 @@
 #include <iostream>
 #include <unordered_map>
 
+class colvarmodule;
+
 #define COLVARS_STRINGIFY(s) STRINGIFY_HELPER(s)
 #define STRINGIFY_HELPER(s) #s
 
@@ -12,8 +14,31 @@
 #include <cuda_runtime.h>
 #ifdef COLVARS_NVTX_PROFILING
 #include <nvtx3/nvToolsExt.h>
+#include <nvtx3/nvToolsExtCudaRt.h>
 #endif
+#define COLVARS_SYNC_WARP __syncwarp()
 #endif // defined(COLVARS_CUDA)
+
+#if defined(COLVARS_HIP)
+#include <hip/hip_runtime.h>
+#if defined(__HIP_PLATFORM_AMD__)
+  /**
+   * @note
+   * The following macro is from
+   * https://github.com/ROCm/clr/blob/29f513cc028f8c1f727dc6e1a731dbee63609f60/hipamd/include/hip/amd_detail/amd_warp_sync_functions.h#L161-L165
+   * It is used for ensuring (i) the memory fence and (ii) the synchronization of threads inside a wavefront.
+   */
+  #define COLVARS_SYNC_WARP do {\
+    __builtin_amdgcn_fence(__ATOMIC_RELEASE, "wavefront"); \
+    __builtin_amdgcn_wave_barrier(); \
+    __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "wavefront"); \
+  } while (0)
+#elif defined(__HIP_PLATFORM_NVIDIA__)
+  #define COLVARS_SYNC_WARP __syncwarp()
+#else
+  #error "Unknown HIP platform"
+#endif
+#endif // defined(COLVARS_HIP)
 
 #if defined(COLVARS_HIP)
 #ifndef cudaError_t
@@ -27,6 +52,10 @@
 #ifndef cudaFreeHost
 #define cudaFreeHost hipFreeHost
 #endif // cudaFreeHost
+
+#ifndef cudaFreeAsync
+#define cudaFreeAsync hipFreeAsync
+#endif // cudaFreeAsync
 
 #ifndef cudaGetErrorString
 #define cudaGetErrorString hipGetErrorString
@@ -72,6 +101,22 @@
 #define cudaGraphInstantiate hipGraphInstantiate
 #endif // cudaGraphInstantiate
 
+#ifndef cudaGraphInstantiateWithParams
+#define cudaGraphInstantiateWithParams hipGraphInstantiateWithParams
+#endif // cudaGraphInstantiateWithParams
+
+#ifndef cudaGraphInstantiateParams
+#define cudaGraphInstantiateParams hipGraphInstantiateParams
+#endif // cudaGraphInstantiateParams
+
+#ifndef cudaGraphInstantiateFlagUpload
+#define cudaGraphInstantiateFlagUpload hipGraphInstantiateFlagUpload
+#endif // cudaGraphInstantiateFlagUpload
+
+#ifndef cudaGraphInstantiateSuccess
+#define cudaGraphInstantiateSuccess hipGraphInstantiateSuccess
+#endif // cudaGraphInstantiateSuccess
+
 #ifndef cudaGraphLaunch
 #define cudaGraphLaunch hipGraphLaunch
 #endif // cudaGraphLaunch
@@ -84,9 +129,33 @@
 #define cudaGraph_t hipGraph_t
 #endif // cudaGraph_t
 
+#ifndef cudaGraphDebugDotPrint
+#define cudaGraphDebugDotPrint hipGraphDebugDotPrint
+#endif // cudaGraphDebugDotPrint
+
+#ifndef cudaGraphDebugDotFlags
+#define cudaGraphDebugDotFlags hipGraphDebugDotFlags
+#endif // cudaGraphDebugDotFlags
+
+#ifndef cudaGraphDebugDotFlagsVerbose
+#define cudaGraphDebugDotFlagsVerbose hipGraphDebugDotFlagsVerbose
+#endif // cudaGraphDebugDotFlagsVerbose
+
 #ifndef cudaHostAllocMapped
 #define cudaHostAllocMapped hipHostAllocMapped
 #endif // cudaHostAllocMapped
+
+#ifndef cudaHostAllocDefault
+#define cudaHostAllocDefault hipHostAllocDefault
+#endif // cudaHostAllocDefault
+
+#ifndef cudaHostAlloc
+#define cudaHostAlloc hipHostAlloc
+#endif // cudaHostAlloc
+
+#ifndef cudaLaunchKernel
+#define cudaLaunchKernel hipLaunchKernel
+#endif // cudaLaunchKernel
 
 #ifndef cudaKernelNodeParams
 #define cudaKernelNodeParams hipKernelNodeParams
@@ -96,9 +165,17 @@
 #define cudaMalloc hipMalloc
 #endif // cudaMalloc
 
+#ifndef cudaMallocAsync
+#define cudaMallocAsync hipMallocAsync
+#endif // cudaMallocAsync
+
 #ifndef cudaMallocHost
 #define cudaMallocHost hipMallocHost
 #endif // cudaMallocHost
+
+#ifndef cudaGraphAddMemcpyNode1D
+#define cudaGraphAddMemcpyNode1D hipGraphAddMemcpyNode1D
+#endif
 
 #ifndef cudaMemcpy
 #define cudaMemcpy hipMemcpy
@@ -131,6 +208,10 @@
 #ifndef cudaMemset
 #define cudaMemset hipMemset
 #endif // cudaMemset
+
+#ifndef cudaMemsetParams
+#define cudaMemsetParams hipMemsetParams
+#endif // cudaMemsetParams
 
 #ifndef cudaMemsetAsync
 #define cudaMemsetAsync hipMemsetAsync
@@ -168,15 +249,71 @@
 #define make_cudaPos make_hipPos
 #endif // make_cudaPos
 
+#ifndef cudaEvent_t
+#define cudaEvent_t hipEvent_t
+#endif // cudaEvent_t
+
+#ifndef cudaEventCreateWithFlags
+#define cudaEventCreateWithFlags hipEventCreateWithFlags
+#endif // cudaEventCreate
+
+#ifndef cudaEventDisableTiming
+#define cudaEventDisableTiming hipEventDisableTiming
+#endif // cudaEventDisableTiming
+
+#ifndef cudaEventDestroy
+#define cudaEventDestroy hipEventDestroy
+#endif // cudaEventDestroy
+
+#ifndef cudaEventRecord
+#define cudaEventRecord hipEventRecord
+#endif // cudaEventRecord
+
+#ifndef cudaEventSynchronize
+#define cudaEventSynchronize hipEventSynchronize
+#endif // cudaEventSynchronize
+
+#ifndef cudaStreamWaitEvent
+#define cudaStreamWaitEvent hipStreamWaitEvent
+#endif // cudaStreamWaitEvent
+
+#ifndef cudaGraphAddEventRecordNode
+#define cudaGraphAddEventRecordNode hipGraphAddEventRecordNode
+#endif // cudaGraphAddEventRecordNode
+
+#ifndef cudaGetDevice
+#define cudaGetDevice hipGetDevice
+#endif // cudaGetDevice
+
+#ifndef cudaDeviceProp
+#define cudaDeviceProp hipDeviceProp_t
+#endif // cudaDeviceProp
+
+#ifndef cudaDeviceGetPCIBusId
+#define cudaDeviceGetPCIBusId hipDeviceGetPCIBusId
+#endif // cudaDeviceGetPCIBusId
+
+#ifndef cudaGetDeviceProperties
+#define cudaGetDeviceProperties hipGetDeviceProperties
+#endif // cudaGetDeviceProperties
+
+#ifndef cudaDeviceGetAttribute
+#define cudaDeviceGetAttribute hipDeviceGetAttribute
+#endif // cudaDeviceGetAttribute
+
+#ifndef cudaDevAttrWarpSize
+#define cudaDevAttrWarpSize hipDeviceAttributeWarpSize
+#endif // cudaDevAttrWarpSize
+
 #endif // defined(COLVARS_HIP)
 
 namespace colvars_gpu {
 
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 /// \brief Default block size for CUDA kernels
-constexpr unsigned int default_block_size = 128;
+constexpr static unsigned int default_block_size = 128;
 /// \brief Default maximum number of blocks for reduction kernels
-static unsigned int default_reduce_max_num_blocks = 64;
+constexpr static unsigned int default_reduce_max_num_blocks = 64;
 // static unsigned int default_atom_wise_num_blocks = 64;
 #endif
 
@@ -186,6 +323,25 @@ static unsigned int default_reduce_max_num_blocks = 64;
 #else
 #define COLVARS_HOST_DEVICE
 #define COLVARS_DEVICE
+#endif
+
+// HIP does not have cuda::std::array since libhipcxx is not a part of the ROCm distribution,
+// so reinvent the wheel...
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+template <typename T, unsigned long N>
+class array1d {
+public:
+  T m_data[N];
+  using value_type = T;
+  using size_type = decltype(N);
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using pointer = T*;
+  using const_pointer = const T*;
+  COLVARS_HOST_DEVICE constexpr size_type size() const {return N;}
+  COLVARS_HOST_DEVICE reference operator[](size_type pos) {return m_data[pos];}
+  COLVARS_HOST_DEVICE const_reference operator[](size_type pos) const {return m_data[pos];}
+};
 #endif
 
 // TODO: What about SYCL?
@@ -219,7 +375,7 @@ public:
     return ptr;
   }
   void deallocate(T* ptr, size_t n) noexcept {
-    cudaFreeHost(ptr);
+    (void)cudaFreeHost(ptr);
   }
   template<typename U, typename... Args>
   void construct(U* p, Args&&... args) {
@@ -256,6 +412,31 @@ int gpuAssert(cudaError_t code, const char *file, int line);
 
 namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined (COLVARS_HIP)
+
+/**
+ * @brief A struct for holding a CUDA graph and its execution object
+ */
+class gpu_graph_t {
+public:
+  /// \brief Constructor
+  gpu_graph_t() {}
+  /// \brief Reset the CUDA graph
+  int reset();
+  /// \brief Destructor
+  ~gpu_graph_t();
+  /// \brief Dump the CUDA graph to a dot file for debugging
+  int dump_graph(const std::string& filename);
+  /// \brief Initialize CUDA graph execution instance
+  int init_graph_exec(colvarmodule* cvmodule, cudaStream_t stream);
+  /// \brief Flag to describe whether the graph execution instance has been initialized
+  bool graph_exec_initialized = false;
+  /// \brief CUDA graph object
+  cudaGraph_t graph = nullptr;
+  /// \brief CUDA graph execution instance object
+  cudaGraphExec_t graph_exec = nullptr;
+  /// \brief List of compute nodes
+  std::unordered_map<std::string, cudaGraphNode_t> nodes = {};
+};
 
 /**
  * @brief Add a CUDA graph node to clear an array to zero (used by add_clear_array_node)
@@ -334,30 +515,6 @@ int prepare_dependencies(
   const std::unordered_map<std::string, cudaGraphNode_t>& map,
   const std::string& caller_operation_name = "");
 
-// NVTX Profiling
-#if defined (COLVARS_NVTX_PROFILING)
-/**
- * @brief Class for managing NVTX profiling ranges
- *
- * This class encapsulates the functionality to create and manage NVTX
- * profiling ranges. It allows setting a name and color for the range,
- * and provides methods to start and stop the profiling range.
- */
-class colvar_nvtx_prof {
-public:
-  colvar_nvtx_prof();
-  void set_name_color(const std::string& name_in, const uint32_t color_in);
-  inline void start() {
-    nvtxRangePushEx(&nvtx_event_attr);
-  }
-  inline void stop() {
-    nvtxRangePop();
-  }
-private:
-  std::string nvtx_event_name;
-  nvtxEventAttributes_t nvtx_event_attr;
-};
-#endif // defined (COLVARS_NVTX_PROFILING)
 #endif // defined(COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 

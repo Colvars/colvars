@@ -228,7 +228,7 @@ m4 -Daxis -DdistanceZ=distanceXY < distancez.in.m4 > distancexy-axis.in
 for colvar in \
     "angle" \
     "dihedral" \
-    "coordnum" "coordnum-group2centeronly" "coordnum-pairlist" \
+    "coordnum" "coordnum-group2centeronly" "coordnum-pairlist" "coordnum-pairlist-large" \
     "coordnum-aniso" "coordnum-aniso-pairlist" \
     "groupcoord" "groupcoord-aniso" \
     "dipoleangle" "dipolemagnitude" \
@@ -248,7 +248,7 @@ for colvar in \
     "eigenvector-normalized" \
     "tilt" \
     "spinangle" \
-    "selfcoordnum" "selfcoordnum-pairlist" \
+    "selfcoordnum" "selfcoordnum-pairlist" "selfcoordnum-pairlist-large" \
     "torchann-dihedral" \
     "orientationangle" "orientationproj" \
     "polar" \

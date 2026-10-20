@@ -78,6 +78,18 @@ public:
                                            std::vector<const colvarvalue *> const &cvc_values,
                                            std::vector<cvm::matrix2d<cvm::real> > &gradient);
 
+  enum e_pdb_field {
+    e_pdb_none,
+    e_pdb_occ,
+    e_pdb_beta,
+    e_pdb_x,
+    e_pdb_y,
+    e_pdb_z,
+    e_pdb_ntot
+  };
+
+  e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str);
+
   virtual int load_atoms_pdb(char const *filename,
                              cvm::atom_group &atoms,
                              std::string const &pdb_field,
@@ -106,14 +118,14 @@ public:
 
   virtual int check_volmaps_available();
 
-  virtual int init_volmap_by_id(int volmap_id);
+  virtual int init_internal_volmap_by_id(int volmap_id);
 
-  virtual int check_volmap_by_id(int volmap_id);
+  virtual int load_internal_volmap_from_file(std::string const &filename);
 
-  virtual void clear_volmap(int index);
+  virtual int clear_volmap(int index);
 
   virtual int compute_volmap(int flags,
-                             int volmap_id,
+                             int index,
                              cvm::atom_group* atoms,
                              cvm::real *value,
                              cvm::real *atom_field);

@@ -58,7 +58,7 @@ enum e_pdb_field {
 };
 
 // Copied from colvarproxy_namd.C
-e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
+e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str, colvarmodule* cvmodule)
 {
   e_pdb_field pdb_field = e_pdb_none;
 
@@ -88,7 +88,7 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str)
   }
 
   if (pdb_field == e_pdb_none) {
-    cvm::error("Error: unsupported PDB field, \""+
+    cvmodule->error("Error: unsupported PDB field, \""+
                pdb_field_str+"\".\n", COLVARS_INPUT_ERROR);
   }
 
@@ -170,6 +170,7 @@ public:
     allocateDeviceArrays();
     deallocateDeviceTransposeArrays();
     allocateDeviceTransposeArrays();
+    cvmodule->proxy_gpu_buffers_reallocated_done();
   }
   smp_mode_t get_preferred_smp_mode() const override {
     return smp_mode_t::none;
@@ -206,7 +207,15 @@ public:
   cvm::real* proxy_atoms_new_colvar_forces_gpu() override {return d_mAppliedForces;}
   cudaStream_t get_default_stream() override {return mStream;}
   void set_lattice();
-  int wait_for_extra_info_ready() override;
+  cvm::system_boundary_conditions get_system_boundaries()  override {
+    if (mClient->requestUpdateLattice()) {
+      if (has_gpu_support()) {
+        cudaCheck(cudaEventSynchronize(get_event(colvarproxy_gpu::event_type::update_lattice)));
+      }
+      set_lattice();
+    }
+    return boundaries_;
+  };
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
@@ -258,7 +267,8 @@ colvarproxy_impl::colvarproxy_impl(
   mAtomsChanged(false),
   first_timestep(true), previous_NAMD_step(0),
   simParams(s), molecule(m), mScriptTcl(t) {
-  colvars = nullptr;
+  // colvars = nullptr;
+  cvmodule = nullptr;
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   mEventAttrib.version = NVTX_VERSION;
   mEventAttrib.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
@@ -288,7 +298,7 @@ int colvarproxy_impl::reset() {
 int colvarproxy_impl::setup() {
   colvarproxy::parse_module_config();
   int error_code = colvarproxy::setup();
-  if (colvars->size() == 0) {
+  if (cvmodule->size() == 0) {
     // Module is empty, nothing to do
     return COLVARS_OK;
   }
@@ -300,11 +310,11 @@ int colvarproxy_impl::setup() {
   set_integration_timestep(simParams->dt);
   log("updating target temperature (T = "+
       cvm::to_str(target_temperature())+" K).\n");
-  error_code |= colvars->update_engine_parameters();
-  error_code |= colvars->setup_input();
-  error_code |= colvars->setup_output();
+  error_code |= cvmodule->update_engine_parameters();
+  error_code |= cvmodule->setup_input();
+  error_code |= cvmodule->setup_output();
   if (has_gpu_support()) {
-    cvm::log("Warning: the GPU support in Colvars is still experimental!\n");
+    cvmodule->log("Warning: the GPU support in Colvars is still experimental!\n");
   }
   return error_code;
 }
@@ -333,20 +343,22 @@ void colvarproxy_impl::initialize_from_cudagm(
   updated_masses_ = updated_charges_ = true;
   engine_name_ = "NAMD_CUDAGLOBALMASTER";
   // if (colvars != nullptr) delete colvars;
-  if (colvars == nullptr) {
-    colvars = new colvarmodule(this);
+  if (cvmodule == nullptr) {
+    // std::cerr << "Creating cvmodule" << std::endl;
+    // printf("Creating cvmodule\n");
+    cvmodule = new colvarmodule(this);
   }
-  cvm::log("Using " + engine_name_ + " interface, version "+
+  cvmodule->log("Using " + engine_name_ + " interface, version "+
            cvm::to_str(0)+".\n");
-  colvars->cite_feature("NAMD engine");
-  colvars->cite_feature("Colvars-NAMD interface");
+  cvmodule->cite_feature("NAMD engine");
+  cvmodule->cite_feature("Colvars-NAMD interface");
   for (auto it = mConfigFiles.begin(); it != mConfigFiles.end(); ++it) {
     add_config("configfile", *it);
   }
   update_target_temperature();
   setup();
   if (simParams->firstTimestep != 0) {
-    colvars->set_initial_step(static_cast<cvm::step_number>(simParams->firstTimestep));
+    cvmodule->set_initial_step(static_cast<cvm::step_number>(simParams->firstTimestep));
   }
   colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
   colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
@@ -421,7 +433,7 @@ int colvarproxy_impl::check_atom_id(int atom_number) {
     log("Adding atom "+cvm::to_str(atom_number)+
         " for collective variables calculation.\n");
   if ((aid < 0) || (aid >= molecule->numAtoms)) {
-    cvm::error("Error: invalid atom number specified, "+
+    cvmodule->error("Error: invalid atom number specified, "+
                cvm::to_str(atom_number)+"\n", COLVARS_INPUT_ERROR);
     return COLVARS_INPUT_ERROR;
   }
@@ -430,9 +442,9 @@ int colvarproxy_impl::check_atom_id(int atom_number) {
 
 // Copied from colvarproxy_namd.C
 int colvarproxy_impl::set_unit_system(std::string const &units_in, bool /*check_only*/) {
-  cvm::log("units_in = " + units_in + "\n");
+  cvmodule->log("units_in = " + units_in + "\n");
   if (units_in != "real") {
-    cvm::error("Error: Specified unit system \"" + units_in + "\" is unsupported in NAMD. Supported units are \"real\" (A, kcal/mol).\n");
+    cvmodule->error("Error: Specified unit system \"" + units_in + "\" is unsupported in NAMD. Supported units are \"real\" (A, kcal/mol).\n");
     return COLVARS_ERROR;
   }
   return COLVARS_OK;
@@ -451,7 +463,7 @@ void colvarproxy_impl::log(std::string const &message) {
 void colvarproxy_impl::error(std::string const &message)
 {
   log(message);
-  switch (cvm::get_error()) {
+  switch (cvmodule->get_error()) {
   case COLVARS_FILE_ERROR:
     errno = EIO; break;
   case COLVARS_NOT_IMPLEMENTED:
@@ -476,14 +488,14 @@ int colvarproxy_impl::load_coords_pdb(char const *pdb_filename,
                                       double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0 && indices.size() == 0) {
-    cvm::error("Bug alert: either PDB field should be defined or list of "
+    cvmodule->error("Bug alert: either PDB field should be defined or list of "
                "atom IDs should be available when loading atom coordinates!\n", COLVARS_BUG_ERROR);
   }
 
   e_pdb_field pdb_field_index;
   bool const use_pdb_field = (pdb_field_str.size() > 0);
   if (use_pdb_field) {
-    pdb_field_index = pdb_field_str2enum(pdb_field_str);
+    pdb_field_index = pdb_field_str2enum(pdb_field_str, this->cvmodule);
   }
 
   // next index to be looked up in PDB file (if list is supplied)
@@ -543,7 +555,7 @@ int colvarproxy_impl::load_coords_pdb(char const *pdb_filename,
       if (!pos_allocated) {
         pos.push_back(cvm::atom_pos(0.0, 0.0, 0.0));
       } else if (ipos >= pos.size()) {
-        cvm::error("Error: the PDB file \""+
+        cvmodule->error("Error: the PDB file \""+
                    std::string(pdb_filename)+
                    "\" contains coordinates for "
                    "more atoms than needed.\n", COLVARS_BUG_ERROR);
@@ -559,7 +571,7 @@ int colvarproxy_impl::load_coords_pdb(char const *pdb_filename,
 
     if (ipos < pos.size() || (!use_pdb_field && current_index != indices.end())) {
       size_t n_requested = use_pdb_field ? pos.size() : indices.size();
-      cvm::error("Error: number of matching records in the PDB file \""+
+      cvmodule->error("Error: number of matching records in the PDB file \""+
                  std::string(pdb_filename)+"\" ("+cvm::to_str(ipos)+
                  ") does not match the number of requested coordinates ("+
                  cvm::to_str(n_requested)+").\n", COLVARS_INPUT_ERROR);
@@ -587,13 +599,13 @@ int colvarproxy_impl::load_atoms_pdb(char const *pdb_filename,
                                      double const pdb_field_value)
 {
   if (pdb_field_str.size() == 0)
-    cvm::error("Error: must define which PDB field to use "
+    cvmodule->error("Error: must define which PDB field to use "
                "in order to define atoms from a PDB file.\n", COLVARS_INPUT_ERROR);
 
   PDB *pdb = new PDB(pdb_filename);
   size_t const pdb_natoms = pdb->num_atoms();
 
-  e_pdb_field pdb_field_index = pdb_field_str2enum(pdb_field_str);
+  e_pdb_field pdb_field_index = pdb_field_str2enum(pdb_field_str, cvmodule);
   auto modify_atoms = atoms.get_atom_modifier();
   for (size_t ipdb = 0; ipdb < pdb_natoms; ipdb++) {
 
@@ -634,7 +646,7 @@ int colvarproxy_impl::load_atoms_pdb(char const *pdb_filename,
   }
 
   delete pdb;
-  return (cvm::get_error() ? COLVARS_ERROR : COLVARS_OK);
+  return (cvmodule->get_error() ? COLVARS_ERROR : COLVARS_OK);
 }
 
 void colvarproxy_impl::allocateDeviceArrays() {
@@ -763,8 +775,23 @@ void colvarproxy_impl::calculate() {
   int savedDevice;
   cudaCheck(cudaGetDevice(&savedDevice));
   cudaCheck(cudaSetDevice(m_device_id));
+  if (mClient->requestUpdateLattice()) {
+    ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+    if (has_gpu_support()) {
+      cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::update_lattice), mStream));
+    }
+  }
   // The following memcpy operations are supposed to be overlapped with the NB kernel
   if (numAtoms > 0) {
+#if CUDAGM_VERSION >= 3
+    if (mClient->requestUpdateAtomTotalForces()) {
+      if (mClient->isStartupStep()) {
+        set_total_forces_invalid();
+      } else {
+        set_total_forces_valid();
+      }
+    }
+#endif
     if (!has_gpu_support()) {
       // Transform the arrays for Colvars
       auto &colvars_pos = *(modify_atom_positions());
@@ -782,9 +809,9 @@ void colvarproxy_impl::calculate() {
       auto &colvars_charge  = *(modify_atom_charges());
       ::copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
     }
-  }
-  if (mClient->requestUpdateLattice()) {
-    ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+    if (has_gpu_support()) {
+      cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::copy_atoms), mStream));
+    }
   }
   // NOTE: I think the implementation in Colvars will syncrhonize the stream before
   // calculating CVCs anyway, so I can skip it here.
@@ -795,13 +822,13 @@ void colvarproxy_impl::calculate() {
   if (first_timestep) {
     // setup();
     update_target_temperature();
-    colvars->update_engine_parameters();
-    colvars->setup_input();
-    colvars->setup_output();
+    cvmodule->update_engine_parameters();
+    cvmodule->setup_input();
+    cvmodule->setup_output();
     first_timestep = false;
   } else {
     if ( step - previous_NAMD_step == 1 ) {
-      colvars->it++;
+      cvmodule->it++;
       b_simulation_continuing = false;
     } else {
       // Cases covered by this condition:
@@ -814,15 +841,10 @@ void colvarproxy_impl::calculate() {
       colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
       colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
       colvarproxy_io::set_default_restart_frequency(simParams->restartFrequency);
-      colvars->setup_output();
+      cvmodule->setup_output();
     }
   }
   previous_NAMD_step = step;
-  if (!has_gpu_support()) {
-    if (mClient->requestUpdateLattice()) {
-      set_lattice();
-    }
-  }
   // Run Colvars
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxRangePushEx(&mEventAttrib);
@@ -830,8 +852,8 @@ void colvarproxy_impl::calculate() {
   if (cvm::debug()) {
     print_input_atomic_data();
   }
-  if (colvars->calc() != COLVARS_OK) {
-    cvm::error("Error in the collective variables module.\n", COLVARS_ERROR);
+  if (cvmodule->calc() != COLVARS_OK) {
+    cvmodule->error("Error in the collective variables module.\n", COLVARS_ERROR);
   }
   if (cvm::debug()) {
     print_output_atomic_data();
@@ -873,11 +895,11 @@ std::ostream & colvarproxy_impl::output_stream(std::string const &output_name,
                                                std::string const description)
 {
   if (cvm::debug()) {
-    cvm::log("Using colvarproxy_namd::output_stream()\n");
+    cvmodule->log("Using colvarproxy_namd::output_stream()\n");
   }
 
   if (!io_available()) {
-    cvm::error("Error: trying to access an output file/channel "
+    cvmodule->error("Error: trying to access an output file/channel "
                "from the wrong thread.\n", COLVARS_BUG_ERROR);
     return *output_stream_error_;
   }
@@ -890,7 +912,7 @@ std::ostream & colvarproxy_impl::output_stream(std::string const &output_name,
 
   output_streams_[output_name] = new ofstream_namd(output_name.c_str(), std::ios::binary);
   if (! output_streams_[output_name]->good()) {
-    cvm::error("Error: cannot write to "+description+" \""+output_name+"\".\n",
+    cvmodule->error("Error: cannot write to "+description+" \""+output_name+"\".\n",
                COLVARS_FILE_ERROR);
   }
 
@@ -909,7 +931,7 @@ int colvarproxy_impl::flush_output_stream(std::string const &output_name)
     return COLVARS_OK;
   }
 
-  return cvm::error("Error: trying to flush an output file/channel "
+  return cvmodule->error("Error: trying to flush an output file/channel "
                     "that wasn't open.\n", COLVARS_BUG_ERROR);
 }
 
@@ -933,7 +955,7 @@ int colvarproxy_impl::flush_output_streams()
 int colvarproxy_impl::close_output_stream(std::string const &output_name)
 {
   if (!io_available()) {
-    return cvm::error("Error: trying to access an output file/channel "
+    return cvmodule->error("Error: trying to access an output file/channel "
                       "from the wrong thread.\n", COLVARS_BUG_ERROR);
   }
 
@@ -997,36 +1019,13 @@ int colvarproxy_impl::run_colvar_gradient_callback(
 }
 
 void colvarproxy_impl::set_lattice() {
-  unit_cell_x.set(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
-  unit_cell_y.set(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
-  unit_cell_z.set(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
-  const Vector a1(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
-  const Vector a2(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
-  const Vector a3(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
-  const int p1 = ( a1.length2() ? 1 : 0 );
-  const int p2 = ( a2.length2() ? 1 : 0 );
-  const int p3 = ( a3.length2() ? 1 : 0 );
-  if (!p1 && !p2 && !p3) {
-    boundaries_type = boundaries_non_periodic;
-    reset_pbc_lattice();
-  } else if (p1 && p2 && p3) {
-    if (( ! ( a1.y || a1.z || a2.x || a2.z || a3.x || a3.y ) )) {
-      boundaries_type = boundaries_pbc_ortho;
-    } else {
-      boundaries_type = boundaries_pbc_triclinic;
-    }
-    colvarproxy_system::update_pbc_lattice();
-  } else {
-    boundaries_type = boundaries_unsupported;
-  }
-}
-
-int colvarproxy_impl::wait_for_extra_info_ready() {
-  int error_code = COLVARS_OK;
-  if (mClient->requestUpdateLattice()) {
-    set_lattice();
-  }
-  return error_code;
+  const cvm::rvector a1(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
+  const cvm::rvector a2(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
+  const cvm::rvector a3(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
+  const int p1 = ( a1.norm2() ? 1 : 0 );
+  const int p2 = ( a2.norm2() ? 1 : 0 );
+  const int p3 = ( a3.norm2() ? 1 : 0 );
+  boundaries_.set_boundaries(p1, p2, p3, a1, a2, a3);
 }
 
 CudaGlobalMasterColvars::CudaGlobalMasterColvars():
@@ -1078,8 +1077,13 @@ bool CudaGlobalMasterColvars::requestUpdateCharges() {
   return mImpl->atomsChanged();
 }
 
+#if CUDAGM_VERSION >= 3
+void CudaGlobalMasterColvars::setStep(int64_t step, int startup, int doMigration) {
+  CudaGlobalMasterClient::setStep(step, startup, doMigration);
+#else
 void CudaGlobalMasterColvars::setStep(int64_t step) {
   CudaGlobalMasterClient::setStep(step);
+#endif
   if (mImpl->atomsChanged()) {
     mImpl->reallocate();
   }

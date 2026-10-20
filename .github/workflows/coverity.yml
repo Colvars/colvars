@@ -19,7 +19,7 @@ jobs:
     steps:
 
       - name: Checkout Colvars
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Install build dependencies for library
         run: |
@@ -30,7 +30,7 @@ jobs:
 
       - name: Cache Coverity
         id: cache-coverity
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ./download/
           key: Coverity-download-${{ hashFiles('**/coverity_tool.*') }}

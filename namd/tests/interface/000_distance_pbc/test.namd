@@ -1,0 +1,44 @@
+seed 74269
+timestep            0.5
+
+coordinates         ../Common/apoa1.pdb
+structure           ../Common/apoa1.psf
+parameters          ../Common/par_all22_prot_lipid.xplor
+parameters          ../Common/par_all22_popc.xplor
+outputname          test
+
+cellBasisVector1     108.8612 0.0 0.0
+cellBasisVector2     0.0 108.8612 0.0
+cellBasisVector3     0.0 0.0 77.758
+cellOrigin           0.0 0.0 0.0
+exclude              scaled1-4
+1-4scaling           1.0
+
+temperature         300
+
+switching            on
+switchdist           10
+cutoff               12
+pairlistdist         13.5
+margin               0
+stepspercycle        20
+
+fullElectFrequency   4
+
+PME                  off
+#PMEGridSizeX         108
+#PMEGridSizeY         108
+#PMEGridSizeZ         80
+
+outputEnergies       1
+outputPressure       1
+
+colvars             on
+colvarsConfig       test.in
+
+langevin            on
+langevinDamping     10.0
+langevinTemp        300.0
+
+firsttimestep       0
+run                 20

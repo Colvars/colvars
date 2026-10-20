@@ -270,17 +270,17 @@ then
     condcopy "${src}" "${target}/lib/colvars/cuda/${tgt}"
   done
 
-  for src in \
-    ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} \
-    ${source}/lammps/src/COLVARS/fix_colvars.{cpp,h} \
-    ${source}/lammps/src/COLVARS/inthash.{cpp,h}
-  do \
+  for src in ${source}/lammps/src/COLVARS/colvarproxy_lammps{.cpp,.h,_version.h} ; do
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/src/COLVARS/${tgt}"
   done
 
-  if [ -f ${source}/lammps/COLVARS.cmake.patch ] ; then
+  for src in ${source}/lammps/src/COLVARS/*.patch ; do
     # Do not exit if the patch fails - already applied in development branch
+    patch ${PATCH_OPTS} -d ${target} < ${src} || true
+  done
+
+  if [ -f ${source}/lammps/COLVARS.cmake.patch ] ; then
     patch ${PATCH_OPTS} -d ${target} < ${source}/lammps/COLVARS.cmake.patch || true
   fi
 
@@ -312,9 +312,11 @@ then
     tgt=$(basename ${src})
     condcopy "${src}" "${target}/doc/src/PDF/${tgt}"
   done
-  condcopy "${source}/lammps/doc/src/fix_colvars.rst" \
-           "${target}/doc/src/fix_colvars.rst"
-  rm -f "${target}/doc/src/fix_colvars.txt"
+
+  if [ -s "${source}/lammps/doc/src/fix_colvars.rst" ] ; then
+    condcopy "${source}/lammps/doc/src/fix_colvars.rst" \
+             "${target}/doc/src/fix_colvars.rst"
+  fi
 
   echo ' done.'
   if [ ${downloaded_pdf} = 1 ] ; then
@@ -534,30 +536,28 @@ fi
 if [ ${code} = "GROMACS" ]
 then
 
-  target_folder=${target}/src/external/colvars
+  target_folder=${target}/src/external/colvars/colvars
 
   mkdir -p ${target_folder}
 
-  # Copy library files and proxy files to the "src/external/colvars" folder
+  # Copy library files
   for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/${tgt}"
   done
 
-  # Update the Colvars CUDA source files
+  # Copy the Colvars CUDA source files
   mkdir -p "${target_folder}/cuda"
   for src in ${source}/src/cuda/*.h ${source}/src/cuda/*.cu
   do
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/cuda/${tgt}"
   done
+
   echo ""
 
   # Patch CMake build recipes when applicable
-  if [ -s ${source}/gromacs/gmxManageColvars.cmake.patch ] ; then
-    patch ${PATCH_OPTS} -d ${target} < ${source}/gromacs/gmxManageColvars.cmake.patch || true
-  fi
   if [ -s ${source}/gromacs/CMakeLists.txt.patch ] ; then
     patch ${PATCH_OPTS} -d ${target} < ${source}/gromacs/CMakeLists.txt.patch || true
   fi

@@ -12,7 +12,7 @@
 
 #define COLVARPROXY_VERSION COLVARS_VERSION
 
-#if defined (COLVARS_CUDA)
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 class colvarproxy_stub_gpu : public colvarproxy {
 public:
   colvarproxy_stub_gpu();
@@ -55,15 +55,15 @@ public:
     return COLVARS_NOT_IMPLEMENTED;
   }
   void init_cvm() {
-    colvars = new colvarmodule(this);
-    cvm::log("Using minimal CUDA testing interface.\n");
+    cvmodule = new colvarmodule(this);
+    cvmodule->log("Using minimal CUDA testing interface.\n");
 
-    colvars->cv_traj_freq = 0; // I/O will be handled explicitly
-    colvars->restart_out_freq = 0;
+    cvmodule->cv_traj_freq = 0; // I/O will be handled explicitly
+    cvmodule->restart_out_freq = 0;
     cvm::rotation::monitor_crossings = false; // Avoid unnecessary error messages
 
-    colvars->setup_input();
-    colvars->setup_output();
+    cvmodule->setup_input();
+    cvmodule->setup_output();
 
     colvarproxy_stub_gpu::setup();
   }
@@ -84,6 +84,10 @@ private:
   double* d_mAppliedForces;
   double* d_mTotalForces;
   bool mAtomsChanged;
+  // These buffers are for read_frame_xyz
+  std::vector<cvm::rvector> m_positions;
+  colvarproxy_atoms::atom_buffer_real_t m_positions_soa;
+  colvarproxy_atoms::atom_buffer_real_t m_applied_forces_soa;
 };
 
 colvarproxy_stub_gpu::colvarproxy_stub_gpu():
@@ -107,13 +111,14 @@ colvarproxy_stub_gpu::~colvarproxy_stub_gpu() {
 }
 
 int colvarproxy_stub_gpu::setup() {
-  boundaries_type = boundaries_non_periodic;
-  reset_pbc_lattice();
-  colvars->it = colvars->it_restart = 0;
-  if (colvars) {
-    return colvars->update_engine_parameters();
+  int error_code = colvarproxy::setup();
+  // Set system boundaries as the default (non-periodic)
+  boundaries_.reset();
+  if (cvmodule) {
+    cvmodule->it = cvmodule->it_restart = 0;
+    return cvmodule->update_engine_parameters();
   }
-  return COLVARS_OK;
+  return error_code;
 }
 
 void colvarproxy_stub_gpu::request_total_force(bool yesno)
@@ -139,7 +144,7 @@ int colvarproxy_stub_gpu::set_unit_system(std::string const &units_in,
   // colvarmodule sets this flag if new units are requested while colvars are already defined
   if (check_only) {
     if ((units != "" && units_in != units) || (units == "" && units_in != "real")) {
-      cvm::error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
+      cvmodule->error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
                   + units + "\".\nReset the Colvars Module or delete all variables to change the unit.\n");
       return COLVARS_ERROR;
     } else {
@@ -161,7 +166,7 @@ int colvarproxy_stub_gpu::set_unit_system(std::string const &units_in,
     angstrom_value_ = 0.1;    // nm
     kcal_mol_value_ = 4.184;  // kJ/mol
   } else {
-    cvm::error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
+    cvmodule->error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
     return COLVARS_ERROR;
   }
 
@@ -222,45 +227,42 @@ void colvarproxy_stub_gpu::clear_atom(int index) {
 
 int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_force_file)
 {
-  std::vector<cvm::rvector> positions(atoms_ids.size());
-  int err = colvars->load_coords_xyz(filename, &positions, nullptr, true);
+  // std::vector<cvm::rvector> positions(atoms_ids.size());
+  m_positions.resize(atoms_ids.size());
+  int error_code = cvmodule->load_coords_xyz(filename, &m_positions, nullptr, true);
   // Convert to SOA and copy to GPU
-  colvarproxy_atoms::atom_buffer_real_t positions_soa;
-  const size_t numAtoms = positions.size();
-  // if (numAtoms != positions.size()) {
-  //   return cvm::error("Number of atoms mismatch!\n", COLVARS_ERROR);
-  // }
+  const size_t numAtoms = m_positions.size();
+  // cvmodule->log("numAtoms = " + cvm::to_str(numAtoms) + "\n");
   if (mAtomsChanged) {
     this->reallocate();
-    if (colvars->gpu_calc) {
-      // Need to rebuild the graph in case of reallocation
-      colvars->gpu_calc->init();
-    }
+    error_code |= cvmodule->proxy_gpu_buffers_reallocated_done();
   }
-  positions_soa.resize(3 * numAtoms);
+  m_positions_soa.resize(3 * numAtoms);
   for (size_t i = 0; i < numAtoms; ++i) {
-    positions_soa[i] = positions[i].x;
-    positions_soa[i+numAtoms] = positions[i].y;
-    positions_soa[i+2*numAtoms] = positions[i].z;
+    m_positions_soa[i] = m_positions[i].x;
+    m_positions_soa[i+numAtoms] = m_positions[i].y;
+    m_positions_soa[i+2*numAtoms] = m_positions[i].z;
   }
-  copy_HtoD(positions_soa.data(), d_mPositions, 3 * numAtoms);
-  clear_device_array(d_mAppliedForces, 3 * numAtoms);
-  clear_device_array(d_mTotalForces, 3 * numAtoms);
+  error_code |= copy_HtoD_async(m_positions_soa.data(), d_mPositions, 3 * numAtoms, stream);
+  error_code |= clear_device_array_async(d_mAppliedForces, 3 * numAtoms, stream);
+  error_code |= clear_device_array_async(d_mTotalForces, 3 * numAtoms, stream);
+  error_code |= checkGPUError(cudaEventRecord(get_event(colvarproxy_gpu::event_type::copy_atoms), stream));
   std::string force_filename;
   if (write_force_file) {
-    force_filename = colvars->output_prefix() + "_forces_" + cvm::to_str(colvars->it) + ".dat";
+    force_filename = cvmodule->output_prefix() + "_forces_" + cvm::to_str(cvmodule->it) + ".dat";
   }
-  if ( !err ) {
-    colvars->calc();
-    colvars->it++;
-    colvarproxy_atoms::atom_buffer_real_t h_applied_forces(3 * numAtoms);
-    copy_DtoH(d_mAppliedForces, h_applied_forces.data(), 3 * numAtoms);
+  if ( !error_code ) {
+    error_code |= cvmodule->calc();
+    cvmodule->it++;
+    m_applied_forces_soa.resize(3 * numAtoms);
+    error_code |= copy_DtoH_async(d_mAppliedForces, m_applied_forces_soa.data(), 3 * numAtoms, stream);
+    error_code |= checkGPUError(cudaStreamSynchronize(stream));
     if (write_force_file) {
       std::ofstream ofs(force_filename);
       for (size_t i = 0; i < numAtoms; ++i) {
-        const cvm::real fx = h_applied_forces[i];
-        const cvm::real fy = h_applied_forces[i + numAtoms];
-        const cvm::real fz = h_applied_forces[i + 2 * numAtoms];
+        const cvm::real fx = m_applied_forces_soa[i];
+        const cvm::real fy = m_applied_forces_soa[i + numAtoms];
+        const cvm::real fz = m_applied_forces_soa[i + 2 * numAtoms];
         ofs << std::scientific << std::setprecision(12) << std::setw(20) << fx << std::setw(0) << " ";
         ofs << std::scientific << std::setprecision(12) << std::setw(20) << fy << std::setw(0) << " ";
         ofs << std::scientific << std::setprecision(12) << std::setw(20) << fz << std::setw(0) << " ";
@@ -269,12 +271,12 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
     }
   }
   mAtomsChanged = false;
-  return err;
+  return error_code;
 }
 #endif
 
 int main(int argc, char *argv[]) {
-#if defined (COLVARS_CUDA)
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   CLI::App app{"Colvars stub interface for testing"};
   argv = app.ensure_utf8(argv);
   std::string configuration_file;
@@ -291,6 +293,7 @@ int main(int argc, char *argv[]) {
   int err = COLVARS_OK;
   colvarproxy_stub_gpu *proxy = new colvarproxy_stub_gpu();
   proxy->init_cvm();
+  colvarmodule* const cvmodule = proxy->cvmodule;
   // Initialize simple unit system to test file input
   err |= proxy->set_unit_system("real", false);
   // Initialize simple unit system to test file input
@@ -299,11 +302,11 @@ int main(int argc, char *argv[]) {
   if (argc > 3) {
     err |= proxy->set_output_prefix(output_prefix);
   }
-  err |= proxy->colvars->setup_input();
-  err |= proxy->colvars->setup_output();
-  err |= proxy->colvars->read_config_file(configuration_file.c_str());
+  err |= proxy->cvmodule->setup_input();
+  err |= proxy->cvmodule->setup_output();
+  err |= proxy->cvmodule->read_config_file(configuration_file.c_str());
   if (err != COLVARS_OK) {
-    cvm::log("Error occurred!\n");
+    cvmodule->log("Error occurred!\n");
   }
 
   if (argc > 2) {
@@ -312,47 +315,47 @@ int main(int argc, char *argv[]) {
     int natoms;
     ifs >> natoms;
     ifs.close();
-    cvm::log("Reading trajectory for " + cvm::to_str(natoms)
+    cvmodule->log("Reading trajectory for " + cvm::to_str(natoms)
               + " atoms from XYZ file " + trajectory_file);
     for (int ai = 0; ai < natoms; ai++) {
       proxy->init_atom(ai+1);
     }
-    err = cvm::get_error();
+    err = cvmodule->get_error();
     if (err != COLVARS_OK) {
-      cvm::log("Error occurred!\n");
+      cvmodule->log("Error occurred!\n");
     }
     int io_err = 0;
     while (!io_err) {
       io_err = proxy->read_frame_xyz(trajectory_file.c_str(), output_force);
-      err = cvm::get_error();
+      err = cvmodule->get_error();
       if (err != COLVARS_OK) {
-        cvm::log("Error occurred!\n");
+        cvmodule->log("Error occurred!\n");
       }
-      if (!io_err) cvm::log("Frame " + cvm::to_str(cvm::step_absolute()));
+      if (!io_err) cvmodule->log("Frame " + cvm::to_str(cvmodule->step_absolute()));
     }
     proxy->post_run();
-    cvm::log("Done");
-    err = cvm::get_error();
+    cvmodule->log("Done");
+    err = cvmodule->get_error();
     if (err != COLVARS_OK) {
-      cvm::log("Error occurred!\n");
+      cvmodule->log("Error occurred!\n");
     }
   }
 
-  cvm::log("Input files read during this test:");
+  cvmodule->log("Input files read during this test:");
   unsigned char * args[2] = {
     (unsigned char *) "cv",
     (unsigned char *) "listinputfiles" };
-  err |= run_colvarscript_command(2, args);
-  cvm::log("  " + std::string(get_colvarscript_result()));
+  err |= run_colvarscript_command(proxy->script, 2, args);
+  cvmodule->log("  " + std::string(get_colvarscript_result()));
 
-  double const max_gradient_error = proxy->colvars->get_max_gradient_error();
+  double const max_gradient_error = proxy->cvmodule->get_max_gradient_error();
   if (max_gradient_error > 0.) {
-    cvm::log("Max gradient error (debugGradients): " + cvm::to_str(max_gradient_error));
+    cvmodule->log("Max gradient error (debugGradients): " + cvm::to_str(max_gradient_error));
 
     double threshold = 1e-3;
     // Fail test if error is above threshold
     if (max_gradient_error > threshold) {
-      cvm::log("Error: gradient inaccuracy is above threshold (" + cvm::to_str(threshold) + ")");
+      cvmodule->log("Error: gradient inaccuracy is above threshold (" + cvm::to_str(threshold) + ")");
       err = 1;
     }
   }
@@ -362,5 +365,5 @@ int main(int argc, char *argv[]) {
 #else
   std::cout << "This program requires CUDA to test." << std::endl;
   return 1;
-#endif // defined (COLVARS_CUDA)
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }

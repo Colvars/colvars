@@ -54,6 +54,7 @@ opes_metad {
   printTrajectoryFrequency 1000
   pmf on
   pmfColvars phi psi
+  outputFreq 1000
   pmfHistoryFrequency 1000
   outputEnergy on
 }

@@ -33,7 +33,7 @@ The module is designed to perform multiple tasks concurrently during or after a 
 
 \cvvmdonly{\textbf{Note:} although restraints and PMF algorithms are primarily used during simulations, they are also available in VMD to test a new input for a simulation, or to evaluate the relative free energy of a new structure based on data from a previous calculation.  \emph{Options that only have an effect during a simulation are also included for compatibility purposes.}}
 
-Detailed explanations of the design of the Colvars module are provided in reference~\cite{Fiorin2013}.  Please cite this reference whenever publishing work that makes use of this module, alongside any other publications for specific features being, according to the usage summary printed when running a Colvars-enabled MD simulation or analysis.
+Detailed explanations of the design of the Colvars module are provided in ref.\ \citealp{Fiorin2013}.  Please cite this reference whenever publishing work that makes use of this module, alongside any other publications for specific features being, according to the usage summary printed when running a Colvars-enabled MD simulation or analysis.
 
 
 \cvvmdonly{
@@ -1495,15 +1495,16 @@ The very few keywords that are available for all types of components are listed 
 
 \cvsubsec{Treatment of periodic boundary conditions}{sec:cvc_pbcs}
 
-In all colvar components described below, the following rules apply concerning periodic boundary
-conditions (PBCs):
+When copying over atomic coordinates from \MDENGINE, Colvars also copies its boundary conditions and unit cell vectors.  Periodic or non-periodic boundary conditions are supported for each direction independently, thus allowing for mixed-periodicity conditions if \MDENGINE{} allows them.  When using triclinic unit cells, tilt factors up to 1/2 are supported by looping over one additional layer of adjacent periodic images around the simulation cell to find the minimum image.  The use of tilt factors beyond 1/2 is \emph{not recommended}, and may lead to slower performance\cvlammpsonly{ (LAMMPS will also print warnings to that sense)}.
+
+For all colvar components implemented by Colvars internal code, the following rules apply:
 \begin{enumerate}
 \item Distance vectors between two coordinates
   $\mathbf{d}_{i,j} = \left(\mathbf{x}_1 - \mathbf{x}_2\right)$, are calculated following the
   minimum-image convention by default, unless \refkey{forceNoPBC}{colvar|cvc|forceNoPBC} is enabled.
   ($\mathbf{x}_1$ and $\mathbf{x}_2$ may be either individual atomic coordinates, or centers of mass
   of two groups.)
-\item For all other functions of individual atomic coordinates,
+\item For all other functions of multiple atomic coordinates,
   $f\left(\mathbf{x}_1, \mathbf{x}_2, \ldots\right)$, it is assumed that all atoms that are part of
   the same group are in the same periodic unit cell (see \ref{sec:colvar_atom_groups_wrapping}).
 \end{enumerate}
@@ -1967,6 +1968,19 @@ function is summed over all pairs of atoms in \texttt{group1} and
     This number defines the $m$ exponent for the switching function.}
 
 \item %
+  \labelkey{colvar|coordNum|group1CenterOnly}
+  \keydef
+    {group1CenterOnly}{%
+    \texttt{coordNum}}{%
+    Use only \texttt{group1}'s center of
+    mass}{%
+    boolean}{%
+    \texttt{off}}{%
+    If this option is \texttt{on}, only contacts between the center of mass of \texttt{group1} and atoms of \texttt{group2} are calculated (by default, the sum extends over all pairs of atoms in \texttt{group1} and \texttt{group2}).
+    If \texttt{group1} is a \texttt{dummyAtom}, this option is set to \texttt{yes} by default.
+}
+
+\item %
   \labelkey{colvar|coordNum|group2CenterOnly}
   \keydef
     {group2CenterOnly}{%
@@ -1976,7 +1990,7 @@ function is summed over all pairs of atoms in \texttt{group1} and
     boolean}{%
     \texttt{off}}{%
     If this option is \texttt{on}, only contacts between each atoms in \texttt{group1} and the center of mass of     \texttt{group2} are calculated (by default, the sum extends over all pairs of atoms in \texttt{group1} and \texttt{group2}).
-If \texttt{group2} is a \texttt{dummyAtom}, this option is set to \texttt{yes} by default.
+    If \texttt{group2} is a \texttt{dummyAtom}, this option is set to \texttt{yes} by default.
 }
 
 \item %
@@ -2131,7 +2145,7 @@ displacement is then defined as:
 The optimal rotation
 $U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$
 is calculated within the formalism developed in
-reference~\cite{Coutsias2004}, which guarantees a continuous
+ref.\ \citealp{Coutsias2004}, which guarantees a continuous
 dependence of
 $U^{\{\mathbf{x}_{i}(t)\}\rightarrow\{\mathbf{x}_{i}^{\mathrm{(ref)}}\}}$
 with respect to $\{\mathbf{x}_{i}(t)\}$.
@@ -2219,7 +2233,7 @@ with respect to $\{\mathbf{x}_{i}(t)\}$.
     Note that this does not affect the least-squares roto-translational fit.
     Therefore, this feature is mostly useful when using custom fitting parameters within the
     atom group, such as \refkey{fittingGroup}{atom-group|fittingGroup}, or when fitting
-    is disabled altogether. For details, see reference~\cite{Ebrahimi2022}.
+    is disabled altogether. For details, see ref.\ \citealp{Ebrahimi2022}.
   }
 \end{cvcoptions}
 This component returns a positive real number (in \lengthunit).
@@ -2463,24 +2477,24 @@ define the atom group, and returns a positive number, expressed in
 
 The variables discussed in this section quantify the rotations of macromolecules (or other quasi-rigid objects) from a given set of reference coordinates to the current coordinates.
 Such rotations are computed following the same method used for best-fit RMSDs (see \refkey{rmsd}{colvar|rmsd} and \refkey{fittingGroup}{atom-group|fittingGroup}).
-The underlying mathematical formalism is described in reference~\cite{Coutsias2004}, and the implementation in reference~\cite{Fiorin2013}.
+The underlying mathematical formalism is described in refs.\ \citealp{Coutsias2004,Daniilidis1999,Hu2006}, and the implementation in ref.\ \citealp{Fiorin2013}.
 
 The first of the functions described is the \refkey{orientation}{colvar|orientation}, which describes the full rotation as a unit quaternion $\mathsf{q} = (q_0, q_1, q_2, q_3)$, i.e.{} 4 numbers with one constraint (3 degrees of freedom).
 The quaternion $\mathsf{q}$ is \emph{one of only two representations that are both complete and accurate}, the other being a $3\times{}3$ unit matrix with 3 independent parameters.
-Although $\mathsf{q}$ is used internally in the Colvars module for features such as the \refkey{rmsd}{colvar|rmsd} function and the \refkey{fittingGroup}{atom-group|fittingGroup} option, its direct use as a collective variable is more difficult, and mostly limited to fixed or moving restraints.
+Although $\mathsf{q}$ is used internally in the Colvars module for features such as the \refkey{rmsd}{colvar|rmsd} function and the \refkey{fittingGroup}{atom-group|fittingGroup} option, its direct use as a collective variable is mostly limited to fixed or moving restraints.
 
 The two functions \refkey{orientationAngle}{colvar|orientationAngle} and \refkey{orientationProj}{colvar|orientationProj}, with the latter being the cosine of the former, represent the amplitude of the full rotation described by $\mathsf{q}$, regardless of the direction of its axis.
 As one-dimensional scalar variables, both \refkey{orientationAngle}{colvar|orientationAngle} and \refkey{orientationProj}{colvar|orientationProj} are a much reduced simplification of the full rotation.
 However, they can be used in a variety of methods including both restraints and PMF computations.
 
 A slightly more complete parametrization is achieved by decomposing the full rotation into the two parameters, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle}.
-These quantify the amplitudes of two independent sub-rotations away from a certain axis $\mathbf{e}$, and around the same axis $\mathbf{e}$, respectively.
+These quantify the amplitudes of two independent sub-rotations away from a certain axis $\mathbf{e}$, and around that axis $\mathbf{e}$, respectively.
 The axis $\mathbf{e}$ is chosen by the user, and is by default the Z axis:
-under that choice, \refkey{tilt}{colvar|tilt} is equivalent to the sine of the Euler ``pitch'' angle $\theta$, and \refkey{spinAngle}{colvar|spinAngle} to the sum of the other two angles, $(\phi + \psi)$.
-This parameterization is mathematically well defined for almost all full rotations, including small ones when the current coordinates are almost completely aligned with the reference ones.
-However, a mathematical singularity prevents using the \refkey{spinAngle}{colvar|spinAngle} function near configurations where the value of tilt \refkey{tilt}{colvar|tilt} is -1 (i.e.{} a -180$^\circ$ rotation around an axis orthogonal to $\mathbf{e}$).
-For these reasons, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle} are useful when the allowed rotations are known to have approximately the same axis, and differ only in the magnitude of the corresponding angle.
-In this use case, \refkey{spinAngle}{colvar|spinAngle} measures the angle of the sub-rotation around the chosen axis $\mathbf{e}$, whereas \refkey{tilt}{colvar|tilt} measures the dot product between $\mathbf{e}$ and the actual axis of the full rotation.
+under that choice, \refkey{tilt}{colvar|tilt} is equivalent to the sine of the Euler ``pitch'' angle $\theta$, and \refkey{spinAngle}{colvar|spinAngle} to the combined effect of the other two angles $\phi$ and $\psi$.
+This parameterization is mathematically well defined for most orientations, including when the current coordinates are almost completely aligned with the reference ones.
+However, a mathematical singularity affects the \refkey{spinAngle}{colvar|spinAngle} function near configurations where the value of the corresponding \refkey{tilt}{colvar|tilt} is -1 (i.e.\ a $180^\circ$ rotation around an axis orthogonal to $\mathbf{e}$).
+Therefore, \refkey{tilt}{colvar|tilt} and \refkey{spinAngle}{colvar|spinAngle} are most useful together when it is known that the range of possible orientations are somewhat limited.
+For example, a membrane protein that is unable to fully flip around the membrane plane, or a molecule whose \refkey{tilt}{colvar|tilt} has a wall restraint applied to it; example inputs for each case are provided below.
 
 Lastly, the traditional Euler angles are also available as the functions \refkey{eulerPhi}{colvar|eulerPhi}, \refkey{eulerTheta}{colvar|eulerTheta} and \refkey{eulerPsi}{colvar|eulerPsi}.
 Altogether, these are sufficient to represent all three degrees of freedom of a full rotation.
@@ -2499,12 +2513,15 @@ component returns a four dimensional vector $\mathsf{q} = (q_0, q_1,
 q_2, q_3)$, with $\sum_{i} q_{i}^{2} = 1$; this \emph{quaternion}
 expresses the optimal rotation $\{\mathbf{x}_{i}(t)\} \rightarrow
 \{\mathbf{x}_{i}^{\mathrm{(ref)}}\}$ according to the formalism in
-reference~\cite{Coutsias2004}.  The quaternion $(q_0, q_1, q_2, q_3)$
+ref.\ \citealp{Coutsias2004}.
+The quaternion $(q_0, q_1, q_2, q_3)$
 can also be written as $\left(\cos(\theta/2), \,
   \sin(\theta/2)\mathbf{u}\right)$, where $\theta$ is the angle and
 $\mathbf{u}$ the normalized axis of rotation; for example, a rotation
 of 90$^{\circ}$ around the $z$ axis is expressed as
-``\texttt{(0.707, 0.0, 0.0, 0.707)}''.  The script
+``\texttt{(0.707, 0.0, 0.0, 0.707)}''.
+For any quaternion $q$, $q$ and $-q$ represent the same rotation. Therefore, by convention, \texttt{orientation} always returns a quaternion verifying $q_0 \ge 0$. This ensures that \texttt{orientation} is a unique and continuously-varying function of Cartesian coordinates.
+The script
 \href{https://raw.githubusercontent.com/Colvars/colvars/master/colvartools/quaternion2rmatrix.tcl}{\texttt{quaternion2rmatrix.tcl}} provides Tcl functions for converting
 to and from a $4\times{}4$ rotation matrix in a format suitable for
 usage in VMD.
@@ -2624,8 +2641,36 @@ The range of values is [-1:1].
 \cvsubsubsec{\texttt{spinAngle}: angle of rotation around a given axis.}{sec:cvc_spinAngle}
 \labelkey{colvar|spinAngle}
 
-The complete rotation described by \texttt{orientation} can optionally be decomposed into two sub-rotations: one is a ``\emph{spin}'' rotation around \textbf{e}, and the other a ``\emph{tilt}'' rotation around an axis orthogonal to \textbf{e}.
-The component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation around \textbf{e}.
+The full rotation from the current coordinates $\left\{\mathbf{x}_{i}\left(t\right)\right\}$ and the
+reference coordinates $\left\{\mathbf{x}_{i}^{\mathrm{(ref)}}\right\}$, can be decomposed into two sub-rotations:
+\begin{itemize}
+\item a ``\emph{spin}'' rotation of angle $\eta$ around \textbf{e}
+\item a ``\emph{tilt}'' rotation of angle $\omega$ around an axis orthogonal to \textbf{e}.
+\end{itemize}
+The schematic below, adapted from ref.\ \citealp{Fiorin2024}, illustrates the use of the two angles to model the rotations of a membrane protein:
+\begin{center}
+\ifdefined\HCode
+\includegraphics{spin-tilt-scheme-512px.png}
+\else
+\includegraphics[width=\textwidth]{spin-tilt-scheme.pdf}
+\fi
+\end{center}
+If the axis \texttt{e} is the Cartesian Z-axis, $\eta$ can be thought of as combining the effect of the two Euler angles $\phi$ and $\psi$, $\omega$ has a similar role to the Euler angle $\theta$, and the axis orthogonal to \texttt{e} is the line of nodes.
+Compared to the Euler angles, the spin angle $\eta$ is well defined even if the current coordinates are near the reference coordinates ($\mathbf{x}_{i}\left(t\right) \approx \mathbf{x}_{i}^{\mathrm{(ref)}}$), or more broadly, $\omega \approx 0$: at that condition, the spin angle $\eta$ is preferable to the Euler angles to avoid a ``\href{https://en.wikipedia.org/wiki/Gimbal_lock}{gimbal lock}''.
+
+Note that numerical issues may still arise in the diametrically opposite configuration where $\omega \approx 180^{\circ}$ (see the expression for $\nabla_{\mathbf{X}}\phi$ in Table~A5 in ref.\ \citealp{Fiorin2013} when ${q_{0}}^{2} \approx 0$ and $\left({\mathbf{q}}\cdot\mathbf{e}\right)^{2} \approx 0$).
+Under that scenario, neither the spin angle nor the Euler angles are suitable collective variables.
+
+\textbf{Tip:} To avoid such configurations altogether, consider defining a colvar of type \refkey{tilt}{colvar|tilt} using the same axis \textbf{e}, and restraining it to gave only positive values, i.e.\ $\cos(\omega) > 0$.
+
+The colvar component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation around the chosen axis \textbf{e}.
+For a quaternion $\mathsf{q} = (q_0, q_1, q_2, q_3) = (q_0, \mathbf{q})$ that represents the full
+rotation, the spin angle $\eta$ of the
+sub-rotation is defined by this expression \cite{Daniilidis1999,Hu2006}:
+\begin{equation}
+  \label{eq:cvc_spinAngle}
+  \eta \left(\mathbf{e}, \mathsf{q}\right) = 2 \tan^{-1}\left(\dfrac{\mathbf{e} \cdot \mathbf{q}}{q_0}\right)
+\end{equation}
 
 \begin{cvcoptions}
 \item %
@@ -2651,17 +2696,44 @@ The component \texttt{spinAngle} measures the angle of the ``spin'' sub-rotation
     The three components of this vector define (when normalized) the special rotation axis used to calculate the \texttt{tilt} and \texttt{spinAngle} components.}
 \end{cvcoptions}
 The component \texttt{spinAngle} returns an angle (in degrees) within the periodic interval $[-180:180]$.
+Its value is a continuous function almost everywhere, with the exception of configurations with the corresponding ``tilt'' angle is near 180$^\circ$ (i.e.~the \texttt{tilt} component is near $-1$).
 
-\textbf{Note:} the value of \texttt{spinAngle} is a continuous function almost everywhere, with the exception of configurations with the corresponding ``tilt'' angle equal to 180$^\circ$ (i.e.~the \texttt{tilt} component is equal to $-1$): in those cases, \texttt{spinAngle} is undefined.  If such configurations are expected, consider defining a \texttt{tilt} colvar using the same axis \textbf{e}, and restraining it with a lower wall away from $-1$.
+\paragraph*{Example: stopping the rotation of a membrane protein around the Z-axis.}  To prevent a membrane protein from ``spinning'' around the membrane normal (such rotations are usually irrelevant when the membrane is homogeneous and periodic), the restraint shown in the following example may be used.
+This restraint allows its internal motions and changes in tilt angle, which are physically meaningful.
+\cvnamdonly{In NAMD, the user should also take care that the protein is composed by a single chain, or disable \texttt{wrapAll} otherwise.}
+
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~p\_spin\\
+\-~~spinAngle~\{\\
+\-~~~~atoms~\{~(your~selection~here)~\}\\
+\-~~~~refPositionsFile~reference.pdb\\
+\-~~~~axis~(0.0,~0.0,~1.0)~~~\#~This~is~also~the~default\\
+\-~~\}\\
+\-\}\\
+\-\\
+\-harmonic~\{~~~~~~~~~~~~~~~~~\#~Define~a~harmonic~restraint\\
+\-~~colvars~p\_spin~~~~~~~~~~~\#~acting~on~colvar~"spin"\\
+\-~~centers~0.0\\
+\-~~forceConstant~10.0~~~~~~~\#~unit:~energy/degrees**2\\
+\-\}\\
+\end{cvexampleinput}
 
 
 \cvsubsubsec{\texttt{tilt}: cosine of the rotation orthogonal to a given axis.}{sec:cvc_tilt}
 \labelkey{colvar|tilt}
 
-The component \texttt{tilt} measures the cosine of the angle of the ``tilt'' sub-rotation, which combined with the ``spin'' sub-rotation provides the complete rotation of a group of atoms.
-The cosine of the tilt angle rather than the tilt angle itself is implemented, because the latter is unevenly distributed even for an isotropic system: consider as an analogy the angle $\theta$ in the spherical coordinate system.
+The component \texttt{tilt} measures the cosine of the angle $\omega$ of the ``tilt'' sub-rotation away from a chosen axis $\mathbf{e}$ (see also \refkey{spinAngle}{colvar|spinAngle}).
+
+For a quaternion $\mathsf{q} = (q_0, q_1, q_2, q_3) = (q_0, \mathbf{q})$ that represents the full rotation, a chosen axis $\mathbf{e}$ and the spin angle $\eta$ around that axis (keyword \refkey{spinAngle}{colvar|spinAngle}), the cosine of the tilt angle $\omega$ is defined as \cite{Daniilidis1999,Hu2006}:
+\begin{equation}
+  \label{eq:cvc_tilt}
+  t\left(\mathbf{e}, \mathsf{q}\right) = \cos\left(\omega\left(\mathbf{e}, \mathsf{q}\right)\right) = 2 \left(\dfrac{q_0}{\cos\left(\eta/2\right)}\right)^2 - 1
+\end{equation}
+where the function is extended by continuity for at $q_0 = \cos\left(\eta/2\right) = 0$ (full rotation of $\pm 180^{\circ}$ around $\mathbf{e}$).
+Notably, the cosine of the tilt angle $\cos\left(\omega\right)$ is here provided, rather than the angle itself, because the latter is unevenly distributed even for an isotropic system: consider as an analogy the angle $\theta$ in the spherical coordinate system.
+
 The component \texttt{tilt} relies on the same options as \texttt{spinAngle}, including the definition of the axis \textbf{e}.
-The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value $1$ represents an orientation fully parallel to \textbf{e} (tilt angle = 0$^\circ$), and the value $-1$ represents an anti-parallel orientation.
 
 \begin{cvcoptions}
 \item %
@@ -2679,6 +2751,29 @@ The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value
 \item %
   \dupkey{axis}{\texttt{tilt}}{colvar|spinAngle|axis}{\texttt{spinAngle} component}
 \end{cvcoptions}
+
+The values of \texttt{tilt} are real numbers in the interval $[-1:1]$: the value $1$ represents an orientation fully parallel to \textbf{e} (tilt angle $\omega = 0^\circ$), and the value $-1$ represents an anti-parallel orientation (tilt angle $\omega = 180^\circ$).
+
+\paragraph*{Example: keeping a macromole orientation within 60$^\circ$ from a chosen axis.}  To prevent a molecule to lose orientation with respect to an axis, while allowing its internal motions and rotations around that axis unperturbed, the following example may be used.
+The lower wall of 0.5 for the variable ``\texttt{mol\_tilt}'' represents an upper wall on the tilt angle $\omega$ at 60$^\circ$.
+\cvnamdonly{In NAMD, the user should also take care that the protein is composed by a single chain, or disable \texttt{wrapAll} otherwise.}
+
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~mol\_tilt\\
+\-~~tilt~\{\\
+\-~~~~atoms~\{~(your~selection~here)~\}\\
+\-~~~~refPositionsFile~reference.pdb\\
+\-~~~~axis~(0.0,~0.0,~1.0)~~~\#~This~is~also~the~default\\
+\-~~\}\\
+\-\}\\
+\-\\
+\-harmonicWalls~\{~~~~~~~~~~~~\#~Define~a~harmonic~wall\\
+\-~~colvars~mol\_tilt~~~~~~~~~\#~acting~on~colvar~"t"\\
+\-~~lowerWalls~0.5\\
+\-~~forceConstant~100.0~~~~~~\#~unit:~energy~(tilt~is~dimensionless)\\
+\-\}\\
+\end{cvexampleinput}
 
 
 \cvsubsubsec{\texttt{eulerPhi}: Roll angle from 
@@ -2710,7 +2805,7 @@ the \textit{P} axis to the \textit{Z} axis, and
 Although Euler angles are more straightforward to use than quaternions, they are also potentially subject to the ``gimbal lock'' problem:\\
 \url{https://en.wikipedia.org/wiki/Gimbal_lock}\\
 \noindent{}which arises whenever $\theta \simeq \pm 90^\circ$, including the common case when \emph{the simulated coordinates are near the reference coordinates}.
-Therefore, a safe use of Euler angles as collective variables requires the use of restraints to avoid such singularities, such as done in reference~\cite{Fu2017} and in the \href{http://www.ks.uiuc.edu/Training/Tutorials/namd/PLB/tutorial-protein-ligand.pdf}{protein-ligand binding NAMD tutorial}.
+Therefore, a safe use of Euler angles as collective variables requires the use of restraints to avoid such singularities, such as done in ref.\ \citealp{Fu2017} and in the \href{http://www.ks.uiuc.edu/Training/Tutorials/namd/PLB/tutorial-protein-ligand.pdf}{protein-ligand binding NAMD tutorial}.
 
 The \texttt{eulerPhi} component accepts exactly the same options as \texttt{orientation}, and 
 measures the rotation angle from the \textit{x} axis to the \textit{N} axis. This 
@@ -3939,7 +4034,8 @@ Given a function of the Cartesian coordinates $\phi(\mathbf{x}) = \phi(x, y, z)$
 \noindent{}where $w_i$ are weights assigned to each variable (1 by default).
 This formulation allows, for example, to ``count'' the number of atoms within a region of space by using a positive-valued function $\phi\left(\mathbf{x}\right)$, such as for example the number of water molecules in a hydrophobic cavity \cite{Fiorin2020}.\\
 
-Because the volumetric map itself and the atoms affected by it are defined externally to Colvars, this component has a very limited number of keywords.
+
+The \texttt{mapTotal} components takes the following options:
 
 \begin{cvcoptions}
 \cvnamdonly{
@@ -3952,6 +4048,7 @@ Because the volumetric map itself and the atoms affected by it are defined exter
     string}{%
     The value of this option specifies the label of the volumetric map to use for this collective variable component.
     This label must identify a map already loaded in NAMD via \texttt{mGridForcePotFile}, and the corresponding value of \texttt{mGridForceScale} must be set to (0, 0, 0), so that its collective force is computed dynamically.
+    \emph{This option is currently only supported in NAMD: when enabled, Colvars-based atom selections may not be used.}
   }
 }
 
@@ -3962,9 +4059,21 @@ Because the volumetric map itself and the atoms affected by it are defined exter
     \texttt{mapTotal}}{%
     Specify the numeric index of the volumetric map to use as a colvar}{%
     non-negative integer}{%
-    The value of this option specifies the numeric index of the volumetric map to use for this collective variable component.
-    The map referred to must be already loaded before using this option.
-    \cvnamdonly{This option is mutually exclusive with \refkey{mapName}{colvar|mapTotal|mapName}; if the latter is given, the numeric ID is obtained internally from \MDENGINE{}.}
+    \emph{This option is supported both in NAMD or VMD:}
+    its vaslue specifies the numeric index of the volumetric map to use for this collective variable component.
+    The selected map must have already been loaded in \MDENGINE{}.
+    \cvnamdonly{This keyword is mutually exclusive with \refkey{mapName}{colvar|mapTotal|mapName}: if the latter is given, the numeric ID is obtained implicitly from NAMD.}
+  }
+
+\item %
+  \labelkey{colvar|mapTotal|mapFile}
+  \key
+    {mapFile}{%
+    \texttt{mapTotal}}{%
+    Name of file to load the map from}{%
+    filename}{%
+    This option is mutually exclusive with \refkey{mapID}{colvar|mapTotal|mapID}\cvnamdonly{and \refkey{mapName}{colvar|mapTotal|mapName}}; if given, the map will be loaded internally in Colvars, and a Colvars-based atom selection should be provided with \refkey{atoms}{colvar|mapTotal|atoms}.
+    \cvnamdonly{When this option is enabled in NAMD, the \texttt{MGridForceFile} keyword may not be used to select atoms.}
   }
 
 \item %
@@ -3974,10 +4083,11 @@ Because the volumetric map itself and the atoms affected by it are defined exter
     \texttt{mapTotal}}{%
     Group of atoms defining this function}{%
     \hyperref[sec:colvar_atom_groups]{Atom group}}{%
-    If defined, this option allows defining the set of atoms to be aligned onto the volumetric map following the syntax described in section \ref{sec:colvar_atom_groups}.
-    This also allows, for instance, to express the volumetric map in a rotated frame of reference (see \ref{sec:colvar_atom_groups_ref_frame}).
-    \cvvmdonly{In VMD, this definition is required, otherwise the \texttt{mapTotal} value is identically zero.}
-    \cvnamdonly{In NAMD, this keyword is optional; unless a frame of reference other than the laboratory is needed, it is computationally much more efficient to select atoms via \href{https://www.ks.uiuc.edu/Research/namd/2.14/ug/node43.html}{GridForces} keywords.}
+    This option defines the set of atoms to be aligned onto the volumetric map following the syntax described in section \ref{sec:colvar_atom_groups}.
+    \cvvmdonly{In VMD, this definition is \emph{required}.}
+    \cvnamdonly{In NAMD, this keyword is optional when maps are loaded using the \href{https://www.ks.uiuc.edu/Research/namd/2.14/ug/node43.html}{MGridForcePotFile} keyword.
+      The two approaches are equivalent for the purpose of selecting atoms: however, the former is needed when combining \texttt{mapTotal} with other Colvars features such as a moving frame of reference (see \ref{sec:colvar_atom_groups_ref_frame}), or when running NAMD in GPU-resident mode.
+      Instead, the latter (when available) is more efficient because it offloads most of the computation of the volmap to NAMD in a scalable manner.}
     }
 
 \item %
@@ -3989,13 +4099,13 @@ Because the volumetric map itself and the atoms affected by it are defined exter
     list of space-separated decimals}{%
     all weights equal to 1}{%
     If defined, the value of this option assigns weights $w_i$ to the individual atoms in a \texttt{mapTotal} variable.
-    This option requires defining \texttt{atoms} explicitly, and the number of weights must match the number of atoms.
+    This option requires defining using the \refkey{mapName}{colvar|mapTotal|atoms} keyword to select atoms, and the number of weights must match the number of atoms.
     }
 
 \end{cvcoptions}
 
 \cvnamdonly{
-\noindent\textbf{Example: biasing the number of molecules inside a cavity using a volumetric map.}
+\noindent\textbf{Example: number of molecules inside a cavity using a volumetric map (NAMD offload version).}
 
 Firstly, a volumetric map that has a value of 1 inside the cavity and 0 outside should be prepared.
 A reasonable starting point may be obtained, for example, with VMD: using an existing trajectory where the cavity is occupied by solvent and a spatial selection that identifies all the molecules within the cavity, \texttt{volmap occupancy -allframes -combine max} computes the occupancy map as a step function (values 1 or 0), and \texttt{volutil -smooth \ldots} makes it a continuous map, suitable for use as a MD simulation bias.
@@ -4003,12 +4113,12 @@ A PDB file defining the selection (for example, where all water oxygens and ions
 Both the map file and the atom selection file are then loaded via the \texttt{mGridForcePotFile} and related NAMD commands:
 
 \begin{mdexampleinput}
-  \-mGridForce yes\\
-  \-mGridForcePotFile Cavity cavity.dx~~~\# OpenDX map file\\
-  \-mGridForceFile Cavity water-sel.pdb~~\# PDB file used for atom selection\\
-  \-mGridForceCol Cavity O~~~~~~~~~~~~~~~\# Use the occupancy column of the PDB file\\
-  \-mGridForceChargeCol Cavity B~~~~~~~~~\# Use beta as ``charge'' (default: electric charge)\\
-  \-mGridForceScale Cavity 0.0 0.0 0.0~~~\# Do not use GridForces for this map\\
+  \-mGridForce~yes\\
+  \-mGridForcePotFile~Cavity~cavity.dx~~~\#~OpenDX~map~file\\
+  \-mGridForceFile~Cavity~water-sel.pdb~~\#~PDB~file~used~for~atom~selection\\
+  \-mGridForceCol~Cavity~O~~~~~~~~~~~~~~~\#~Use~the~occupancy~column~of~the~PDB~file\\
+  \-mGridForceChargeCol~Cavity~B~~~~~~~~~\#~Use~beta~as~``charge''\\
+  \-mGridForceScale~Cavity~0.0~0.0~0.0~~~\#~Do~not~use~GridForces~as~a~bias
 \end{mdexampleinput}
 
 The value of \texttt{mGridForceScale} is particularly important, because it determines the GridForces force constant for the ``Cavity'' map.
@@ -4031,51 +4141,72 @@ The variable ``\texttt{n\_waters}'' may then be used with any of the enhanced sa
 } % \cvnamdonly{}
 
 
-\cvsubsubsec{Multiple volumetric maps collective variables}{sec:cvc_multimap}
+\noindent\textbf{Example: number of molecules inside a cavity using a volumetric map (internal version).}
+
+This example makes use of the \refkey{mapFile}{colvar|mapTotal|mapFile} keyword to load a volumetric map inside Colvars itself; additionally, a moving frame of reference is defined based on the protein's C$_\alpha$ atoms.
+
+\begin{cvexampleinput}
+  \-colvar~\{\\
+  \-~~name~n\_waters\\
+  \-~~mapTotal~\{\\
+  \-~~~~mapFile~cavity.dx\\
+  \-~~~~fittingGroup~\{\\
+  \-~~~~~~psfSegID~~~~~~~~~~~~~~PROT\\
+  \-~~~~~~atomNameResidueRange~~CA~1-100\\
+  \-~~~~\}~\\
+  \-~~\}\\
+  \-\}
+\end{cvexampleinput}
+
+The variable ``\texttt{n\_waters}'' may then be used with any of the enhanced sampling methods available (\ref{sec:colvarbias}): new forces applied to it at each simulation step will be transmitted to the corresponding atoms within the same step.
+
+
+\cvsubsubsec{Multi-Map collective variables}{sec:cvc_multimap}
 
 To study processes that involve changes in shape of a macromolecular aggregate (for example, deformations of lipid membranes) it is useful to define collective variables based on more than one volumetric map at a time, measuring the relative similarity with each map while still achieving correct thermodynamic sampling of each state.
 
 This is achieved by combining multiple \texttt{mapTotal} components, each based on a differently-shaped volumetric map, into a single collective variable $\xi$.
 To track transitions between states, the contribution of each map to $\xi$ should be discriminated from the others, for example by assigning to it a different weight.
+
 The ``Multi-Map'' progress variable \cite{Fiorin2020} uses a weight sum of these components, using linearly-increasing weights:
 \begin{equation}
   \label{eq:cvc_multi_map}
     \xi\left(\mathbf{X}\right) = \sum_{k=1}^{K} k \Phi_{k}\left(\mathbf{X}\right) = \sum_{k=1}^{K} k \sum_{i=1}^{N}\phi_{k}\left(\mathbf{x}_{i}\right)
 \end{equation}
-\noindent{}where $K$ is the number of maps employed and each $\Phi_k$ is a \texttt{mapTotal} component.
+\noindent{}where $K$ is the number of maps employed, each $\Phi_k$ is a \texttt{mapTotal} component and the coefficients $k$ are defined using \refkey{componentCoeff}{sec:cvc_superp}.
 
-Here is a link to the \textbf{Multi-Map tutorial} page: \url{https://colvars.github.io/multi-map/multi-map.html}\\
-An example configuration for illustration purposes is also included below.
+Here is a link to the \textbf{Multi-Map tutorial} page:\\
+\url{https://colvars.github.io/multi-map/multi-map.html}\\
+An example configuration is also included below.
 
 \noindent\textbf{Example: transitions between macromolecular shapes using volumetric maps.}\\
 A series of map files, each representing a different shape, is loaded into NAMD:\\
 \begin{mdexampleinput}
-  \-mGridForce yes\\
-  \-for \{ set k 1 \} \{ \$k <= \$K \} \{ incr k \} \{\\
-  \-~~mGridForcePotFile Shape\_\$k map\_\$k.dx~~~\# Density map of the k-th state\\
-  \-~~mGridForceFile Shape\_\$k atoms.pdb~~~\# PDB file used for atom selection\\
-  \-~~mGridForceCol Shape\_\$k O~~~\# Use the occupancy column of the PDB file atoms.pdb\\
-  \-~~mGridForceChargeCol Shape\_\$k B~~~\# Use beta as ``charge'' (default: electric charge)\\
-  \-~~mGridForceScale Shape\_\$k 0.0 0.0 0.0~~\# Do not use GridForces for this map\\
+  \-mGridForce~yes\\
+  \-for~\{~set~k~1~\}~\{~\$k~<=~\$K~\}~\{~incr~k~\}~\{\\
+  \-~~mGridForcePotFile~Shape\_\$k~map\_\$k.dx~~~\#~Density~map~of~the~k-th~state\\
+  \-~~mGridForceFile~Shape\_\$k~atoms.pdb~~~\#~PDB~file~used~for~atom~selection\\
+  \-~~mGridForceCol~Shape\_\$k~O~~~\#~Use~the~occupancy~column~of~the~PDB~file~atoms.pdb\\
+  \-~~mGridForceChargeCol~Shape\_\$k~B~~~\#~Use~beta~as~``charge''\\
+  \-~~mGridForceScale~Shape\_\$k~0.0~0.0~0.0~~\#~Do~not~use~GridForces~as~a~bias\\
   \-\}
 \end{mdexampleinput}
 
 The GridForces maps thus loaded are then used to define the Multi-Map collective variable, with coefficients $\xi_k = k$ \cite{Fiorin2020}:\\
 \begin{mdexampleinput}
-  \-\# Collect the definition of all components into one string\\
-  \-set components "\\
-  \-for \{ set k 1 \} \{ \$k <= \$K \} \{ incr k \} \{\\
-  \-~~set components "\$\{components\}\\
-  \-~~mapTotal \{\\
-  \-~~~~mapName Shape\_\$k\\
-  \-~~~~componentCoeff \$k\\
-  \-~~\}\\
+  \-\#~Collect~the~definition~of~all~components~into~a~Tcl~string\\
+  \-set~components~""\\
+  \-for~\{~set~k~1~\}~\{~\$k~<=~\$K~\}~\{~incr~k~\}~\{\\
+  \-~~set~components~"\$\{components\}\\
+  \-~~mapTotal~\{\\
+  \-~~~~mapName~Shape\_\$k\\
+  \-~~~~componentCoeff~\$k\\
+  \-~~\}"\\
   \-\}\\
-  \-"\\
-  \-\# Use this string to define the variable\\
-  \-cv config "\\
-  \-colvar \{\\
-  \-\-~~name shapes\\
+  \-\#~Use~this~string~to~define~the~variable\\
+  \-cv~config~"\\
+  \-colvar~\{\\
+  \-\-~~name~shapes\\
   \-\-~~\$\{components\}\\
   \-\}"
 \end{mdexampleinput}
@@ -4761,7 +4892,7 @@ upon collision, the particle is reflected with opposite momentum.}
       \texttt{colvar}}{%
       Compute this colvar once in a certain number of timesteps}{%
       positive integer}{%
-      \texttt{1}}{%
+      \texttt{1} or engine-specific}{%
       Instructs this colvar to activate at a time interval equal to the base (MD)
       timestep times \texttt{timeStepFactor}.\cite{Ferrarotti2015}
       At other time steps, the value of the
@@ -4769,7 +4900,11 @@ upon collision, the particle is reflected with opposite momentum.}
       Any forces exerted by biases are accumulated over the given time interval,
       then applied as an impulse at the next update.
       }
+
 \end{itemize}
+
+\cvnamdonly{\textbf{Note:} in NAMD, the default value of this keyword is given by the \texttt{globalMasterFrequency} keyword, which also sets the lowest possible value.}
+
 
 \cvsubsec{Backward-compatibility}{sec:colvar_compatibility}
 
@@ -5228,7 +5363,6 @@ Be careful when using these options in ABF simulations or when using total force
     This atom group itself}{%
     If either \texttt{centerToReference} or \texttt{rotateToReference} is defined, this keyword defines an alternate atom group to calculate the optimal roto-translation.
     Use this option to define a continuous rotation if the structure of the group involved changes significantly (a typical symptom would be the message ``Warning: discontinuous rotation!'').
-    \textbf{Performance considerations:} note that enabling this option will result in projecting each of the atomic gradients of the colvar (e.g.{} the RMSD) onto each the gradients of the roto-translation, which may be a computationally expensive operation: see the closely related \refkey{enableFitGradients}{atom-group|enableFitGradients} for details.%
 }
 
 \end{itemize}
@@ -5262,34 +5396,22 @@ atoms~\{\\
 \end{cvexampleinput}
 }
 
-The following options have default values appropriate for the vast majority of applications, and are only provided to support rare, special cases.
-\begin{itemize}
 
-\item %
-  \labelkey{atom-group|enableFitGradients} %
-  \keydef%
-    {enableFitGradients}{%
-    atom group}{%
-    Include the roto-translational contribution to colvar gradients}{%
-    boolean}{%
-    \texttt{on}}{%
-    When either \texttt{centerToReference} or \texttt{rotateToReference} is on,
-    the gradients of some colvars include terms proportional to
-    $\partial{}R/\partial\mathbf{x}_{i}$ (rotational gradients) and
-    $\partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$ (translational gradients).
-    In practice, these terms are calculated as follows,\newline
-    $\begin{aligned}
+\cvsubsubsec{Note on fit gradients}{sec:fit_gradients}
+
+When either \texttt{centerToReference} or \texttt{rotateToReference} is on,
+the gradients of some colvars include terms proportional to
+$\partial{}R/\partial\mathbf{x}_{i}$ (rotational gradients) and
+$\partial\mathbf{x}^{\mathrm{C}}/\partial\mathbf{x}_{i}$ (translational gradients).
+In practice, these terms are calculated as follows,\newline
+$\begin{aligned}
 \nabla_k \zeta(\mathbf{X})&=\sum_{l,\rm main}\left[\nabla_l f \cdot \nabla_k R\left(\mathbf{x}_l-\mathbf{\bar{x}}^{\rm (fit)}\right) - \frac{1}{n^{\rm (fit)}} \nabla_l f \cdot R \mathbbm{1}\right] \\
 &=\left(\sum_{l,\rm main}\nabla_l f \cdot\frac{\partial R}{\partial q_0}\left(\mathbf{x}_l-\mathbf{\bar{x}}^{\rm (fit)}\right), \sum_{l,\rm main}\nabla_l f \cdot\frac{\partial R}{\partial q_1}\left(\mathbf{x}_l-\mathbf{\bar{x}}^{\rm (fit)}\right), \sum_{l,\rm main}\nabla_l f \cdot\frac{\partial R}{\partial q_2}\left(\mathbf{x}_l-\mathbf{\bar{x}}^{\rm (fit)}\right), \right.\\
 &\left.\sum_{l,\rm main}\nabla_l f \cdot\frac{\partial R}{\partial q_3}\left(\mathbf{x}_l-\mathbf{\bar{x}}^{\rm (fit)}\right)\right) \cdot \left(\nabla_k q_0, \nabla_k q_1, \nabla_k q_2, \nabla_k q_3\right)-\frac{1}{n^{\rm (fit)}} R^{\intercal}\sum_{l,\rm main}{\nabla_l f}
 \end{aligned}$\newline
-    By default, these terms are calculated and included in the total gradients;
-    if this option is set to \texttt{off}, they are neglected.
-    In the case of a minimum RMSD component, this flag is automatically disabled because the contributions of those derivatives to the gradients cancel out; other types of variable will require projecting each of the gradients of the variable onto each of the gradients of the roto-translation.
-    When \refkey{fittingGroup}{atom-group|fittingGroup} is enabled, the computation is a $O(n^{(\rm fit)}+n^{(\rm main)})$ loop for all variables, including RMSDs.
-}
 
-\end{itemize}
+In the case of a minimum RMSD component, the contributions of those derivatives to the gradients cancel out, so this term is not computed. Other types of variable require projecting each of the gradients of the variable onto each of the gradients of the roto-translation.
+When \refkey{fittingGroup}{atom-group|fittingGroup} is enabled, the computation is a $O(n^{(\rm fit)}+n^{(\rm main)})$ loop -- that is, linear in both atom group sizes, for all variables including RMSDs.
 
 
 \cvsubsec{Treatment of periodic boundary conditions.}{sec:colvar_atom_groups_wrapping}
@@ -5596,7 +5718,7 @@ In adaptive biasing force (ABF) (\ref{sec:colvarbias_abf}) the above keywords ar
 \cvsubsec{Adaptive Biasing Force}{sec:colvarbias_abf}
 
 For a full description of the Adaptive Biasing Force method, see
-reference~\cite{Darve2008}. For details about this implementation,
+ref.\ \citealp{Darve2008}. For details about this implementation,
 see references~\cite{Henin2004} and \cite{Henin2010}. \textbf{When
 publishing research that makes use of this functionality, please cite
 references~\cite{Darve2008} and \cite{Henin2010}.}
@@ -6098,7 +6220,7 @@ $\lambda$ that evolves dynamically according to Newtonian or Langevin dynamics.
 Such an extended coordinate is enabled for a given colvar using the
 \texttt{extendedLagrangian} and associated keywords (\ref{sec:colvar_extended}).
 The theory of eABF and the present implementation are documented in detail
-in reference~\cite{Lesage2017}.
+in ref.\ \citealp{Lesage2017}.
 
 Defining an ABF bias on a colvar wherein the \texttt{extendedLagrangian} option
 is active will perform eABF automatically; there is no dedicated option.
@@ -6138,7 +6260,7 @@ estimator\cvnamdonly{ or the Zheng/Yang estimator}.
 \cvsubsubsec{CZAR estimator of the free energy}{sec:colvarbias_ti_ext_czar}
 
 The \emph{corrected z-averaged restraint} (CZAR) estimator
-is described in detail in reference~\cite{Lesage2017}.
+is described in detail in ref.\ \citealp{Lesage2017}.
 It is computed automatically in eABF simulations,
 regardless of the number of colvars involved.
 Note that ABF may also be applied on a combination of extended and non-extended
@@ -8246,6 +8368,9 @@ please be aware that \emph{several of these tutorials are not actively maintaine
 \item \textbf{Colvars version 2020-11-09 or later.}\\
   The legacy keyword \texttt{disableForces} for atom groups is now deprecated and will be discontinued in a future release.
   Atom groups now have an automated way to save computation if forces are not used, and enabling this option otherwise would lead to incorrect behavior.
+
+\item \textbf{Colvars version 2026-XX-XX or later.}\\
+  Periodic boundary conditions are handled internally, rather than using code by \MDENGINE{} to compute the minimum-image convention (see \ref{sec:cvc_pbcs}).
 
 \end{itemize}
 

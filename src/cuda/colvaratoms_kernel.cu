@@ -4,10 +4,14 @@
 
 #if defined(COLVARS_CUDA)
 #include <cub/block/block_reduce.cuh>
-#include <cuda/std/array>
+#include <cub/warp/warp_reduce.cuh>
 #endif
 
-// TODO: HIP CUB
+#if defined (COLVARS_HIP)
+#include <hipcub/block/block_reduce.hpp>
+#include <hipcub/warp/warp_reduce.hpp>
+#define cub hipcub
+#endif
 
 namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
@@ -63,7 +67,7 @@ int atoms_pos_from_proxy(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log("Add atoms_pos_from_proxy node.\n");
+    cvm::log_static("Add atoms_pos_from_proxy node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -95,7 +99,7 @@ int atoms_pos_from_proxy(
      &atoms_pos_z_ag,
      &num_atoms};
   if (cvm::debug()) {
-    cvm::log("Run atoms_pos_from_proxy.\n");
+    cvm::log_static("Run atoms_pos_from_proxy.\n");
   }
   return checkGPUError(cudaLaunchKernel((void*)atoms_pos_from_proxy_kernel,
     num_blocks, block_size, args, 0, stream));
@@ -118,7 +122,7 @@ int change_one_coordinate(
     size_t array_id = num_atoms * xyz + atom_id_in_group;
     void* args[] = {&atoms_pos_ag, &array_id, &step_size};
     if (cvm::debug()) {
-      cvm::log("Run change_one_coordinate.\n");
+      cvm::log_static("Run change_one_coordinate.\n");
     }
     error_code |= checkGPUError(cudaLaunchKernel(
       (void*)change_one_coordinate_kernel,
@@ -289,7 +293,7 @@ int atoms_calc_cog_com(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -345,7 +349,7 @@ int atoms_calc_cog(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -414,7 +418,7 @@ int atoms_total_force_from_proxy(
      &q,
      &num_atoms};
   if (cvm::debug()) {
-    cvm::log("Run " + cvm::to_str(__func__) + " kernel.\n");
+    cvm::log_static("Run " + cvm::to_str(__func__) + " kernel.\n");
   }
   if (rotate) {
     return checkGPUError(cudaLaunchKernel(
@@ -441,7 +445,10 @@ __global__ void apply_colvar_force_to_proxy_kernel(
   unsigned int num_atoms) {
   const unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
   const cvm::real force = (*force_ptr);
-  const cvm::rmatrix rot_inv = q->conjugate().rotation_matrix();
+  cvm::rmatrix rot_inv;
+  if (ag_rotate) {
+    rot_inv = q->conjugate().rotation_matrix();
+  }
   if (i < num_atoms) {
     const unsigned int proxy_index = atoms_proxy_index[i];
     cvm::real fx, fy, fz;
@@ -505,7 +512,7 @@ int apply_main_colvar_force_to_proxy(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   if (rotate) {
     kernelNodeParams.func = (void*)apply_colvar_force_to_proxy_kernel<true>;
@@ -554,7 +561,7 @@ int apply_fitting_colvar_force_to_proxy(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   kernelNodeParams.func = (void*)apply_colvar_force_to_proxy_kernel<false>;
   return checkGPUError(cudaGraphAddKernelNode(
@@ -631,7 +638,7 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   }
   if (threadIdx.x == 0) {
     if (B_ag_rotate) {
-      cuda::std::array<cvm::real, 4> partial_dxdq;
+      colvars_gpu::array1d<cvm::real, 4> partial_dxdq;
       partial_dxdq =
         q->derivative_element_wise_product_sum<decltype(partial_dxdq)>(C);
       atomicAdd(&(sum_dxdq[0]), partial_dxdq[0]);
@@ -649,30 +656,27 @@ __global__ void calc_fit_forces_impl_loop1_kernel(
   __syncthreads();
   if (isLastBlockDone) {
     // Compute dxdC in a single warp
-#if defined (COLVARS_CUDA)
-    const unsigned int warpID = threadIdx.x / 32;
-#elif defined (COLVARS_HIP)
-    const unsigned int warpID = threadIdx.x / 64;
-#endif
+    const unsigned int warpID = threadIdx.x / warpSize;
     if (warpID == 0) {
       const unsigned int tid = threadIdx.x;
+      constexpr const int valid_items = 4;
       cvm::rmatrix dxdq_dqdC;
       dxdq_dqdC.reset();
-      if (tid < 4) {
+      if (tid < valid_items) {
         dxdq_dqdC += rot_deriv->project_force_to_C_from_dxdqi(tid, sum_dxdq[tid]);
       }
-      __syncwarp();
-      using WarpReduce = cub::WarpReduce<cvm::real, 4>;
+      COLVARS_SYNC_WARP;
+      using WarpReduce = cub::WarpReduce<cvm::real, valid_items>;
       __shared__ typename WarpReduce::TempStorage warp_temp_storage;
-      dxdq_dqdC.xx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xx); __syncwarp();
-      dxdq_dqdC.xy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xy); __syncwarp();
-      dxdq_dqdC.xz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xz); __syncwarp();
-      dxdq_dqdC.yx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yx); __syncwarp();
-      dxdq_dqdC.yy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yy); __syncwarp();
-      dxdq_dqdC.yz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yz); __syncwarp();
-      dxdq_dqdC.zx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zx); __syncwarp();
-      dxdq_dqdC.zy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zy); __syncwarp();
-      dxdq_dqdC.zz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zz); __syncwarp();
+      dxdq_dqdC.xx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xx, valid_items); COLVARS_SYNC_WARP;
+      dxdq_dqdC.xy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xy, valid_items); COLVARS_SYNC_WARP;
+      dxdq_dqdC.xz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.xz, valid_items); COLVARS_SYNC_WARP;
+      dxdq_dqdC.yx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yx, valid_items); COLVARS_SYNC_WARP;
+      dxdq_dqdC.yy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yy, valid_items); COLVARS_SYNC_WARP;
+      dxdq_dqdC.yz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.yz, valid_items); COLVARS_SYNC_WARP;
+      dxdq_dqdC.zx = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zx, valid_items); COLVARS_SYNC_WARP;
+      dxdq_dqdC.zy = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zy, valid_items); COLVARS_SYNC_WARP;
+      dxdq_dqdC.zz = WarpReduce(warp_temp_storage).Sum(dxdq_dqdC.zz, valid_items); COLVARS_SYNC_WARP;
       if (tid == 0) {
         dxdC->xx = dxdq_dqdC.xx;
         dxdC->xy = dxdq_dqdC.xy;
@@ -769,7 +773,7 @@ int calc_fit_gradients_impl_loop1(
     return COLVARS_OK;
   }
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -869,7 +873,7 @@ int calc_fit_gradients_impl_loop2(
     return COLVARS_OK;
   }
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -919,13 +923,13 @@ int apply_translation(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
-    cvm::log("x_ptr = " + cvm::to_str((void*)atoms_pos_x_ag) + "\n");
-    cvm::log("y_ptr = " + cvm::to_str((void*)atoms_pos_y_ag) + "\n");
-    cvm::log("z_ptr = " + cvm::to_str((void*)atoms_pos_z_ag) + "\n");
-    cvm::log("pos = " + cvm::to_str((void*)translation_vector) + "\n");
-    cvm::log("factor = " + cvm::to_str(translation_vector_factor) + "\n");
-    cvm::log("num_atoms = " + cvm::to_str((int)num_atoms) + "\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("x_ptr = " + cvm::to_str((void*)atoms_pos_x_ag) + "\n");
+    cvm::log_static("y_ptr = " + cvm::to_str((void*)atoms_pos_y_ag) + "\n");
+    cvm::log_static("z_ptr = " + cvm::to_str((void*)atoms_pos_z_ag) + "\n");
+    cvm::log_static("pos = " + cvm::to_str((void*)translation_vector) + "\n");
+    cvm::log_static("factor = " + cvm::to_str(translation_vector_factor) + "\n");
+    cvm::log_static("num_atoms = " + cvm::to_str((int)num_atoms) + "\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -983,7 +987,7 @@ int rotate_with_quaternion(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -1039,7 +1043,7 @@ int accumulate_cpu_force(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -1113,7 +1117,7 @@ int apply_force_with_inverse_rotation(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -1172,7 +1176,7 @@ int apply_force(
   kernelNodeParams.kernelParams   = args;
   kernelNodeParams.extra          = NULL;
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
@@ -1195,7 +1199,7 @@ int calc_fit_forces_impl_loop1(
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
   if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
+    cvm::log_static("Add " + cvm::to_str(__func__) + " node.\n");
   }
   return calc_fit_gradients_impl_loop1(
     pos_unrotated, main_force, rot_deriv, q, num_atoms_main,
@@ -1252,12 +1256,54 @@ int calc_fit_forces_impl_loop2(
   if (!ag_center && !ag_rotate) {
     return COLVARS_OK;
   }
-  if (cvm::debug()) {
-    cvm::log("Add " + cvm::to_str(__func__) + " node.\n");
-  }
+  // cvmodule pointer not available here
+  // if (cvmodule->debug()) {
+  //   cvmodule->log("Add " + cvm::to_str(__func__) + " node.\n");
+  // }
   return checkGPUError(cudaGraphAddKernelNode(
     &node, graph, dependencies.data(),
     dependencies.size(), &kernelNodeParams));
+}
+
+__global__ void set_weighted_gradients_kernel(
+  const cvm::rvector* __restrict com_grad,
+  const cvm::real* __restrict atoms_weight,
+  cvm::real* __restrict grad_x,
+  cvm::real* __restrict grad_y,
+  cvm::real* __restrict grad_z,
+  unsigned int num_atoms) {
+  const cvm::real gx = com_grad->x;
+  const cvm::real gy = com_grad->y;
+  const cvm::real gz = com_grad->z;
+  for (unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+       i < num_atoms; i += blockDim.x * gridDim.x) {
+    grad_x[i] = gx * atoms_weight[i];
+    grad_y[i] = gy * atoms_weight[i];
+    grad_z[i] = gz * atoms_weight[i];
+  }
+}
+
+int set_weighted_gradients(
+  const cvm::rvector* d_com_grad,
+  const cvm::real* d_atoms_weight,
+  cvm::real* d_atoms_grad,
+  unsigned int num_atoms,
+  cudaStream_t stream,
+  colvarmodule* cvmodule) {
+  int error_code = COLVARS_OK;
+  cvm::real* grad_x = d_atoms_grad;
+  cvm::real* grad_y = grad_x + num_atoms;
+  cvm::real* grad_z = grad_y + num_atoms;
+  void* args[] = {
+    &d_com_grad, &d_atoms_weight,
+    &grad_x, &grad_y, &grad_z,
+    &num_atoms};
+  const unsigned int num_blocks = (
+    num_atoms + default_block_size - 1) / default_block_size;
+  error_code |= checkGPUError(cudaLaunchKernel(
+    (void*)set_weighted_gradients_kernel, dim3(num_blocks, 1, 1),
+    dim3(default_block_size, 1, 1), args, 0, stream));
+  return error_code;
 }
 
 #elif defined(COLVARS_SYCL)

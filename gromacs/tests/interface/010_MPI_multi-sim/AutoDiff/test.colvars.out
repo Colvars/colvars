@@ -2,21 +2,34 @@ colvars: ----------------------------------------------------------------------
 colvars: Please cite Fiorin et al, Mol Phys 2013:
 colvars:   https://doi.org/10.1080/00268976.2013.813594
 colvars: as well as all other papers listed below for individual features used.
-colvars: This version was built with the C++11 standard or higher.
+colvars: Summary of compile-time features available in this build:
+colvars:   - C++ language version: 201703
+colvars:   - Multiple replicas: available, but not (yet) enabled
+colvars:   - Lepton custom functions: available
+colvars:   - Tcl interpreter: not available
 colvars: ----------------------------------------------------------------------
 colvars: Start colvars Initialization.
 colvars: ----------------------------------------------------------------------
 colvars: Reading new configuration:
 colvars: # units = "gromacs"
-colvars: # smp = on [default]
+colvars: # smp = "" [default]
+colvars: SMP parallelism is not set.
+colvars: Available SMP parallelism modes of this proxy are:
+colvars:    - cvcs
+colvars:    - inner_loop
+colvars:    - none
+colvars: Set SMP parallelism to the preferred (default) mode to the proxy.
+colvars: SMP parallelism will be applied to Colvars components.
+colvars:   - SMP parallelism: enabled (num. threads = 1)
 colvars: # colvarsTrajFrequency = 1
 colvars: # colvarsRestartFrequency = 0 [default]
 colvars: # scriptedColvarForces = off [default]
 colvars: # scriptingAfterBiases = off [default]
+colvars: # defaultInputStateFile = "" [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "d_atoms"
-colvars:   Initializing a new "distance" component.
+colvars:     Initializing a new "distance" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -71,7 +84,7 @@ colvars:   # corrFunc = off [default]
 colvars: ----------------------------------------------------------------------
 colvars:   Initializing a new collective variable.
 colvars:   # name = "coords_OW_337"
-colvars:   Initializing a new "cartesian" component.
+colvars:     Initializing a new "cartesian" component.
 colvars:     # name = "" [default]
 colvars:     # componentCoeff = 1 [default]
 colvars:     # componentExp = 1 [default]
@@ -98,9 +111,6 @@ colvars:     # useZ = on [default]
 colvars:   All components initialized.
 colvars:   # timeStepFactor = 1 [default]
 colvars:   # width = 1 [default]
-colvars:   # hardLowerBoundary = off [default]
-colvars:   # hardUpperBoundary = off [default]
-colvars:   # expandBoundaries = off [default]
 colvars:   # extendedLagrangian = off [default]
 colvars:   # outputValue = on [default]
 colvars:   # outputVelocity = off [default]
@@ -116,9 +126,9 @@ colvars:   Initializing a new "harmonic" instance.
 colvars:   # name = "harmonic1" [default]
 colvars:   # colvars = { d_atoms }
 colvars:   # stepZeroData = off [default]
+colvars:   # timeStepFactor = 1 [default]
 colvars:   # outputEnergy = on
 colvars:   # outputFreq = 0 [default]
-colvars:   # timeStepFactor = 1 [default]
 colvars:   # writeTISamples = off [default]
 colvars:   # writeTIPMF = off [default]
 colvars:   # centers = { 2.5 }
@@ -152,10 +162,10 @@ colvars: - distance colvar component:
 colvars:   Fiorin2013 https://doi.org/10.1080/00268976.2013.813594
 colvars: 
 colvars: - Colvars-GROMACS interface:
-colvars:   n/a 
+colvars:   Fiorin2024 https://doi.org/10.1021/acs.jpcb.4c05604
 colvars: 
-colvars: Setting initial step number from MD engine: 0
 colvars: The final output state file will be "test.colvars.state".
+colvars: Enabling multiple replicas: this is replica number 1 of 4.
 colvars: ----------------------------------------------------------------------
 colvars: End colvars Initialization.
 colvars: 

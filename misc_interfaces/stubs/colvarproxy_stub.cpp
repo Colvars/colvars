@@ -24,20 +24,23 @@
 colvarproxy_stub::colvarproxy_stub()
 {
   version_int = get_version_from_string(COLVARPROXY_VERSION);
+
+  use_internal_pbc_ = true;
+
   b_simulation_running = false;
 
   // both fields are taken from data structures already available
   updated_masses_ = updated_charges_ = true;
 
-  colvars = new colvarmodule(this);
-  cvm::log("Using minimal testing interface.\n");
+  cvmodule = new colvarmodule(this);
+  cvmodule->log("Using minimal testing interface.\n");
 
-  colvars->cv_traj_freq = 0; // I/O will be handled explicitly
-  colvars->restart_out_freq = 0;
+  cvmodule->cv_traj_freq = 0; // I/O will be handled explicitly
+  cvmodule->restart_out_freq = 0;
   cvm::rotation::monitor_crossings = false; // Avoid unnecessary error messages
 
-  colvars->setup_input();
-  colvars->setup_output();
+  cvmodule->setup_input();
+  cvmodule->setup_output();
 
   colvarproxy_stub::setup();
 }
@@ -49,13 +52,14 @@ colvarproxy_stub::~colvarproxy_stub()
 
 int colvarproxy_stub::setup()
 {
-  boundaries_type = boundaries_non_periodic;
-  reset_pbc_lattice();
-  colvars->it = colvars->it_restart = 0;
+  // Set system boundaries as the default (non-periodic)
+  boundaries_.reset();
 
-  if (colvars) {
-    return colvars->update_engine_parameters();
+  if (cvmodule) {
+    cvmodule->it = cvmodule->it_restart = 0;
+    return cvmodule->update_engine_parameters();
   }
+
   return COLVARS_OK;
 }
 
@@ -85,7 +89,7 @@ int colvarproxy_stub::set_unit_system(std::string const &units_in,
   // colvarmodule sets this flag if new units are requested while colvars are already defined
   if (check_only) {
     if ((units != "" && units_in != units) || (units == "" && units_in != "real")) {
-      cvm::error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
+      cvmodule->error("Specified unit system \"" + units_in + "\" is incompatible with previous setting \""
                   + units + "\".\nReset the Colvars Module or delete all variables to change the unit.\n");
       return COLVARS_ERROR;
     } else {
@@ -107,7 +111,7 @@ int colvarproxy_stub::set_unit_system(std::string const &units_in,
     angstrom_value_ = 0.1;    // nm
     kcal_mol_value_ = 4.184;  // kJ/mol
   } else {
-    cvm::error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
+    cvmodule->error("Unknown unit system specified: \"" + units_in + "\". Supported are real, metal, electron, and gromacs.\n");
     return COLVARS_ERROR;
   }
 
@@ -163,16 +167,16 @@ int colvarproxy_stub::init_atom(int atom_number)
 
 int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_force_file)
 {
-  int err = colvars->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
+  int err = cvmodule->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
   std::string force_filename;
   if (write_force_file) {
-    force_filename = colvars->output_prefix() + "_forces_" + cvm::to_str(colvars->it) + ".dat";
+    force_filename = cvmodule->output_prefix() + "_forces_" + cvm::to_str(cvmodule->it) + ".dat";
   }
   if ( !err ) {
     auto& new_forces = *(modify_atom_applied_forces());
     std::fill(new_forces.begin(), new_forces.end(), cvm::rvector{0, 0, 0});
-    colvars->calc();
-    colvars->it++;
+    cvmodule->calc();
+    cvmodule->it++;
     if (write_force_file) {
       const size_t numAtoms = modify_atom_positions()->size();
       std::ofstream ofs(force_filename);

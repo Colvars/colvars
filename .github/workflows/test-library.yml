@@ -11,25 +11,23 @@ jobs:
 
     name: Basic checks
     runs-on: ubuntu-latest
-    outputs:
-      hassecrets: ${{ steps.checksecrets.outputs.hassecrets }}
     # env:
     #   CCACHE: ccache
     #   CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
       - name: Checkout Colvars
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # - name: Load compiler cache
-      #   uses: actions/cache@v4
+      #   uses: actions/cache@v6
       #   with:
       #     path: ${{ github.workspace }}/ccache
       #     key: ${{ runner.os }}-build-basic-${{ github.sha }}
       #     restore-keys: ${{ runner.os }}-build-basic-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -79,7 +77,7 @@ jobs:
     needs: basicchecks
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Apptainer
         shell: bash
@@ -92,7 +90,7 @@ jobs:
         run: devel-tools/get_container texlive
 
       - name: Checkout website repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ssh-key: ${{ secrets.PULL_PUSH_COLVARS_GITHUB_IO }}
           repository: 'Colvars/colvars.github.io'
@@ -133,24 +131,24 @@ jobs:
     if: ${{ ! github.event.repository.private }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
           path: 'devel-tools/packages'
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'openmm/openmm'
           ref: 'master'
           path: 'openmm-source'
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: cpp
           build-mode: manual
@@ -159,7 +157,7 @@ jobs:
         run: cmake -DRUN_TESTS=OFF -P devel-tools/build_test_library.cmake
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
 
 
   build-linux-x86_64-clang-analyzer:
@@ -168,10 +166,10 @@ jobs:
     needs: basicchecks
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -226,10 +224,10 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Checkout OpenMM (for Lepton library)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'openmm/openmm'
           ref: 'master'
@@ -272,17 +270,17 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Load compiler ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/ccache
           key: ${{ runner.os }}-build-gcc-clang-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-gcc-clang-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -297,16 +295,6 @@ jobs:
 
       - name: Get container images for build dependencies
         run: devel-tools/get_container CentOS9-devel
-
-      - name: GCC 11, C++11 (CentOS 9)
-        env:
-          CXX_STANDARD: 11
-          CXX: g++
-          CXX_VERSION: 11
-          CC: gcc
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
-          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: GCC 11, C++17 (CentOS 9)
         env:
@@ -351,42 +339,32 @@ jobs:
           scl enable gcc-toolset-${CXX_VERSION} -- \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: Clang 20, C++11 (CentOS 9)
+      - name: Clang 21, C++17 (CentOS 9)
         env:
-          CXX_STANDARD: 11
-          CXX: clang++-20
-          CXX_VERSION: 20
-          CC: clang-20
+          CXX_STANDARD: 17
+          CXX: clang++-21
+          CXX_VERSION: 21
+          CC: clang-21
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: Clang 20, C++17 (CentOS 9)
+      - name: Clang 21, C++20 (CentOS 9)
         env:
           CXX_STANDARD: 20
-          CXX: clang++-20
-          CXX_VERSION: 17
-          CC: clang-20
+          CXX: clang++-21
+          CXX_VERSION: 21
+          CC: clang-21
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: Clang 20, C++20 (CentOS 9)
+      - name: Clang 21, C++20, check floating-point exceptions, Debug build (CentOS 9)
         env:
           CXX_STANDARD: 20
-          CXX: clang++-20
-          CXX_VERSION: 20
-          CC: clang-20
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
-          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
-
-      - name: Clang 20, C++20, check floating-point exceptions, Debug build (CentOS 9)
-        env:
-          CXX_STANDARD: 20
-          CXX: clang++-20
-          CXX_VERSION: 20
-          CC: clang-20
+          CXX: clang++-21
+          CXX_VERSION: 21
+          CC: clang-21
         run: |
           apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -D TRAP_FPE=ON -D CMAKE_CXX_FLAGS="-ffp-model=strict" -P devel-tools/build_test_library.cmake
@@ -398,6 +376,15 @@ jobs:
         run: |
           bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-gcc-clang-
 
+      - name: Save failed library test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-library-test-output
+          path: |
+            ${{ github.workspace }}/build*/Testing/Temporary/*.log
+            ${{ github.workspace }}/build*/Testing/Temporary/*.log
+
 
   build-linux-x86_64-intel:
     name: Linux x86_64 (Intel oneAPI)
@@ -408,17 +395,17 @@ jobs:
       CMAKE_GENERATOR: Ninja
       CCACHE_DIR: ${{ github.workspace }}/ccache
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Load compiler ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/ccache
           key: ${{ runner.os }}-build-oneapi-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-oneapi-
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -433,28 +420,6 @@ jobs:
 
       - name: Get container images for build dependencies
         run: devel-tools/get_container CentOS9-oneAPI
-
-      - name: Intel oneAPI 2024.2, C++11
-        shell: bash
-        env:
-          CC: icx
-          CXX: icpx
-          CXX_STANDARD: 11
-          BASH_ENV: "/etc/profile.d/oneapi.sh"
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
-          bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
-
-      - name: Intel oneAPI 2024.2, C++14
-        shell: bash
-        env:
-          CC: icx
-          CXX: icpx
-          CXX_STANDARD: 14
-          BASH_ENV: "/etc/profile.d/oneapi.sh"
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
-          bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
 
       - name: Intel oneAPI 2024.2, C++17
         shell: bash
@@ -484,7 +449,7 @@ jobs:
         with:
           name: failed-library-test-output-intel-oneAPI
           path: |
-            ${{ github.workspace }}/build/Testing/Temporary/*.log
+            ${{ github.workspace }}/build*/Testing/Temporary/*.log
 
       - name: Keep only one cache besides the one from this job
         shell: bash
@@ -501,10 +466,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -522,10 +487,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get small downloadable packages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/build-tools-packages'
           ref: 'master'
@@ -545,7 +510,7 @@ jobs:
       CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Apptainer
         shell: bash
@@ -583,5 +548,5 @@ jobs:
         with:
           name: failed-library-test-output-ARM64
           path: |
-            ${{ github.workspace }}/build_C++20/Testing/Temporary/*.log
-            ${{ github.workspace }}/build_g++11_C++20/Testing/Temporary/*.log
+            ${{ github.workspace }}/build*/Testing/Temporary/*.log
+            ${{ github.workspace }}/build*/Testing/Temporary/*.log

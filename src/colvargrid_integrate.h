@@ -7,7 +7,6 @@
 /// Integrate (1D, 2D or 3D) gradients
 class colvargrid_integrate : public colvar_grid_scalar {
 public:
-
   colvargrid_integrate() {};
 
   virtual ~colvargrid_integrate()
@@ -47,7 +46,7 @@ public:
 
   void set_weighted_div();
 
-  void set_div(){
+  void set_div() {
     if (!is_calculations_prepared)
       prepare_calculations();
     if (weighted) set_weighted_div();
@@ -77,7 +76,7 @@ protected:
   bool weighted = false;
   bool precompute = true;
 
-  colvar_grid_scalar* computation_grid;
+  colvar_grid_scalar* computation_grid = nullptr;
   std::vector<cvm::real> div_border_supplement;
 
   std::vector<int> computation_nx;
@@ -95,7 +94,6 @@ protected:
   std::vector<cvm::real> weights;
   std::vector<cvm::real> regularized_weights;
   std::vector<cvm::real> laplacian_coefficients;
-  std::vector<cvm::real> sorted_counts;
 
   /// Tunable parameters for weighted integration
   /// max and min count to regularize F, see user documentation

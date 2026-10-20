@@ -49,7 +49,7 @@
  *    a group never changes.
  *
  */
-class cvm::atom_group: public colvarparse, public colvardeps {
+class cvm::atom_group: public colvardeps {
 public:
   /**
    *  @brief A helper function to re-arrange the a vector of
@@ -90,8 +90,12 @@ public:
    * @brief Initialize dependency tree
    */
   int init_dependencies() override;
+  /**
+   * @brief Reset the GPU graphs when the GPU buffers in proxy are re-allocated.
+   */
+  int proxy_gpu_buffers_reallocated() override;
   /// \brief Implementation of the feature list accessor for atom group
-  const std::vector<feature *> &features() const override { return ag_features; }
+  virtual const std::vector<feature *> &features() const override { return ag_features; }
   std::vector<feature *> &modify_features() override { return ag_features; }
   static void delete_features()
   {
@@ -404,7 +408,7 @@ public:
   /**
    * @brief Return a copy of the current atom positions, shifted by a constant vector
    */
-  cvm::ag_vector_real_t positions_shifted(cvm::rvector const &shift) const;
+  int positions_shifted(cvm::rvector const &shift, cvm::ag_vector_real_t& out) const;
   /**
    * @brief Return a copy of the current atom velocities
    */

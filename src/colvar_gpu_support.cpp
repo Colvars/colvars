@@ -4,11 +4,12 @@
 #include <cstring>
 
 #if defined(__has_include)
+#if __cplusplus >= 202302L
 # if __has_include(<stacktrace>)
 #  define use_cpp_stacktrace
 #  include <stacktrace>
 # endif
-
+#endif
 #endif
 
 namespace colvars_gpu {
@@ -24,7 +25,7 @@ int gpuAssert(cudaError_t code, const char *file, int line)
       error += "\nBacktrace:\n" + std::to_string(std::stacktrace::current()) + "\n";
 #endif
 #endif
-    return cvm::error(error, COLVARS_ERROR);
+    return cvm::error_static(error, COLVARS_ERROR);
   }
   return COLVARS_OK;
 }
@@ -45,7 +46,7 @@ int add_clear_array_node_impl(
   memsetParams.width       = width;
   memsetParams.height      = 1;
   if (cvm::debug()) {
-    cvm::log(
+    cvm::log_static(
       "Add a memset clear node: ptr = " + cvm::to_str(dst) +
       " width = " + cvm::to_str(width) + " elementSize = " +
       cvm::to_str(elementSize) + "\n");
@@ -60,7 +61,7 @@ int add_copy_node_impl(
   cudaMemcpyKind kind, cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
   if (cvm::debug()) {
-    cvm::log(
+    cvm::log_static(
       "Add a memcpy node: src = " + cvm::to_str(src) +
       " dst = " + cvm::to_str(dst) + " num_elements = " +
       cvm::to_str(num_elements) + "\n");
@@ -82,15 +83,15 @@ int prepare_dependencies(
     if (auto search = map.find(node_name); search != map.end()) {
       dependencies.push_back(search->second);
       if (cvm::debug()) {
-        cvm::log("Operation " + caller_operation_name +
+        cvm::log_static("Operation " + caller_operation_name +
                 " depends on node\" " + node_name + "\"\n");
       }
     } else {
       if (!allow_not_found) {
-        error_code |= cvm::error("BUG: cannot find node " + node_name + "\n");
+        error_code |= cvm::error_static("BUG: cannot find node " + node_name + "\n");
       } else {
         if (cvm::debug()) {
-          cvm::log("Operation " + caller_operation_name +
+          cvm::log_static("Operation " + caller_operation_name +
                   " cannot depend on node\" " + node_name + "\"\n");
         }
       }
@@ -99,23 +100,51 @@ int prepare_dependencies(
   return error_code;
 }
 
-#if defined (COLVARS_NVTX_PROFILING)
-colvar_nvtx_prof::colvar_nvtx_prof(): nvtx_event_name("Colvars") {
-  std::memset(&nvtx_event_attr, 0, sizeof(nvtx_event_attr));
-  nvtx_event_attr.version = NVTX_VERSION;
-  nvtx_event_attr.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
-  nvtx_event_attr.colorType = NVTX_COLOR_ARGB;
-  nvtx_event_attr.color = 0xFF880000;
-  nvtx_event_attr.messageType = NVTX_MESSAGE_TYPE_ASCII;
-  nvtx_event_attr.message.ascii = nvtx_event_name.c_str();
+gpu_graph_t::~gpu_graph_t() {
+  (void)reset();
 }
 
-void colvar_nvtx_prof::set_name_color(
-  const std::string& name_in, const uint32_t color_in) {
-  nvtx_event_name = name_in;
-  nvtx_event_attr.color = color_in;
-  nvtx_event_attr.message.ascii = nvtx_event_name.c_str();
+int gpu_graph_t::reset() {
+  int error_code = COLVARS_OK;
+  if (graph) {
+    error_code |= checkGPUError(cudaGraphDestroy(graph));
+    graph = nullptr;
+  }
+  if (graph_exec) {
+    error_code |= checkGPUError(cudaGraphExecDestroy(graph_exec));
+    graph_exec = nullptr;
+  }
+  nodes.clear();
+  graph_exec_initialized = false;
+  return error_code;
 }
-#endif // defined (COLVARS_NVTX_PROFILING)
+
+int gpu_graph_t::init_graph_exec(colvarmodule* cvmodule, cudaStream_t stream) {
+  int error_code = COLVARS_OK;
+  if (graph_exec_initialized) return error_code;
+  if (!nodes.empty()) {
+    cudaGraphInstantiateParams params{0};
+    params.flags = cudaGraphInstantiateFlagUpload;
+    params.uploadStream = stream;
+    error_code |= checkGPUError(cudaGraphInstantiateWithParams(&graph_exec, graph, &params));
+    if (params.result_out == cudaGraphInstantiateSuccess) {
+      graph_exec_initialized = true;
+    } else {
+      // Search for the error node
+      for (const auto& node: nodes) {
+        if (params.errNode_out == node.second) {
+          cvmodule->log("Error on initialize node \"" + node.first + "\".\n");
+        }
+      }
+      error_code |= cvmodule->error("Failed to instantiate CUDA graph.", COLVARS_BUG_ERROR);
+    }
+  }
+  return error_code;
+}
+
+int gpu_graph_t::dump_graph(const std::string& filename) {
+  cudaGraphDebugDotFlags dotFlags = cudaGraphDebugDotFlagsVerbose;
+  return checkGPUError(cudaGraphDebugDotPrint(graph, filename.c_str(), dotFlags));
+}
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }

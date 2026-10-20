@@ -7,8 +7,13 @@
 #include <cub/block/block_reduce.cuh>
 #endif
 
+#if defined (COLVARS_HIP)
+#include <hipcub/block/block_reduce.hpp>
+#define cub hipcub
+#endif
+
 namespace colvars_gpu {
-#if defined(COLVARS_CUDA) || defined(COVLARS_HIP)
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
 template <int BLOCK_SIZE>
 __global__ void calc_value_rmsd_kernel(
@@ -461,5 +466,5 @@ int calc_Jacobian_derivative_rmsd(
     dependencies.size(), &kernelNodeParams));
   return error_code;
 }
-#endif // defined(COLVARS_CUDA) || defined(COVLARS_HIP)
+#endif // defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 }

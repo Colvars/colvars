@@ -28,7 +28,7 @@ if(TRAP_FPE)
 endif()
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 if(NOT DEFINED BUILD_SHARED_LIBS)
@@ -182,7 +182,7 @@ if(NOT result EQUAL 0)
 else()
   if(RUN_TESTS)
     execute_process(
-      COMMAND ${CMAKE_CTEST_COMMAND}
+      COMMAND ${CMAKE_CTEST_COMMAND} --build-config ${CMAKE_BUILD_TYPE}
       WORKING_DIRECTORY ${BUILD_DIR}
       RESULT_VARIABLE result
     )

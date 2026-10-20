@@ -1,11 +1,17 @@
 #include "colvar_rotation_derivative.h"
 #include "colvarproxy.h"
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
+// Checking NAMD_VERSION is a temporary fix to ensure that Make.depends
+// remains the same.
 #include "cuda/colvar_rotation_derivative_kernel.h"
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
 
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
 namespace colvars_gpu {
-rotation_derivative_gpu::rotation_derivative_gpu():
+rotation_derivative_gpu::rotation_derivative_gpu(colvarmodule* cvmodule_in):
+  cvmodule(cvmodule_in),
   m_rot(nullptr),
   d_pos1x(nullptr), d_pos1y(nullptr), d_pos1z(nullptr),
   d_pos2x(nullptr), d_pos2y(nullptr), d_pos2z(nullptr),
@@ -30,14 +36,14 @@ int rotation_derivative_gpu::init(
   d_pos2z = d_pos2y + num_atoms_pos2;
   m_num_atoms_pos1 = num_atoms_pos1;
   m_num_atoms_pos2 = num_atoms_pos2;
-  colvarproxy* p = cvm::main()->proxy;
+  colvarproxy* p = cvmodule->proxy;
   error_code |= p->reallocate_device(&tmp_Q0Q0, 4 * 4);
   error_code |= p->reallocate_device(&tmp_Q0Q0_L, 4 * 4 * 4);
   return error_code;
 }
 
 rotation_derivative_gpu::~rotation_derivative_gpu() {
-  colvarproxy* p = cvm::main()->proxy;
+  colvarproxy* p = cvmodule->proxy;
   p->deallocate_device(&tmp_Q0Q0);
   p->deallocate_device(&tmp_Q0Q0_L);
   tmp_Q0Q0 = nullptr;
