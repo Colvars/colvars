@@ -1443,7 +1443,7 @@ The following components implement functions with a scalar value (i.e.{} a real 
 \item \refkey{eulerTheta}{colvar|eulerTheta}: Pitch angle of rotation from references coordinates;
 \item \refkey{eulerPsi}{colvar|eulerPsi}: Yaw angle of rotation from references coordinates;
 \item \refkey{coordNum}{colvar|coordNum}: coordination number between atoms in two groups;
-\item \refkey{groupCoordNum}{colvar|groupCoordNum}: coordination number between the centers of two groups of atoms;
+\item \refkey{groupCoord}{colvar|groupCoord}: coordination number between the centers of two groups of atoms;
 \item \refkey{selfCoordNum}{colvar|selfCoordNum}: coordination number of atoms within a group;
 \item \refkey{hBond}{colvar|hBond}: hydrogen bond between two atoms;
 \item \refkey{rmsd}{colvar|rmsd}: root mean square deviation (RMSD) from a set of
@@ -2020,14 +2020,15 @@ The computational cost also grows with the number of pairwise distances calculat
 Setting $\mathtt{tolerance} > 0$ could mitigate this by looping over pairs less frequently than every step.
 
 
-\cvsubsubsec{\texttt{groupCoordNum}: coordination number between two groups.}{sec:cvc_groupCoordNum}
-\labelkey{colvar|groupCoordNum}
+\cvsubsubsec{\texttt{groupCoord}: coordination number between two groups.}{sec:cvc_groupCoord}
+\labelkey{colvar|groupCoord}
 
-The \texttt{groupCoordNum \{...\}} block defines
-a coordination number similarly to the component \texttt{coordNum}, based solely on the
-centers of mass of \texttt{group1} and \texttt{group2}.
+The \texttt{groupCoord \{...\}} block defines
+a coordination number between virtual particles located at the centers of mass of
+\texttt{group1} and \texttt{group2}. Its value is between 0 and 1.
 It is a essentially shorthand for \texttt{coordNum}
 with the options \texttt{group1CenterOnly yes} and \texttt{group2CenterOnly yes}.
+It takes the same parameters as \texttt{coordNum}.
 
 
 \cvsubsubsec{\texttt{selfCoordNum}: coordination number between atoms within a group.}{sec:cvc_selfCoordNum}
