@@ -48,6 +48,10 @@ except Exception:
 #define SWIG_FILE_WITH_INIT
 #include <exception>
 #include "openmm/AlchemicalPMEForce.h"
+#include "openmm/ColvarsCollectiveVariable.h"
+#include "openmm/serialization/XmlSerializer.h"
+#include <memory>
+#include <sstream>
 #include "openmm/ColvarsForce.h"
 #include "openmm/ColvarsTABFIntegrator.h"
 
@@ -205,6 +209,48 @@ public:
     PbcMode getPbcMode() const;
     void setPbcMode(PbcMode mode);
 };
+
+class ColvarsCollectiveVariable : public Force {
+public:
+    ColvarsCollectiveVariable(const std::string& configString, const std::string& colvarName);
+    ColvarsCollectiveVariable(const ColvarsCollectiveVariable& other);
+
+    const std::string& getConfigString() const;
+    const std::string& getColvarName() const;
+
+    bool usesPeriodicBoundaryConditions() const;
+    void setUsesPeriodicBoundaryConditions(bool usesPbc);
+};
+
+%newobject OpenMM::ColvarsCollectiveVariable::_deserialize;
+%extend ColvarsCollectiveVariable {
+    // XmlSerializer.deserialize returns a plain Force wrapper for plugin types, so
+    // unpickling needs a typed object
+    static ColvarsCollectiveVariable* _deserialize(const std::string& xml) {
+        std::istringstream stream(xml);
+        std::unique_ptr<OpenMM::Force> force(OpenMM::XmlSerializer::deserialize<OpenMM::Force>(stream));
+        auto* cv = dynamic_cast<OpenMM::ColvarsCollectiveVariable*>(force.get());
+        if (cv == nullptr) {
+            throw OpenMM::OpenMMException("The XML does not describe a ColvarsCollectiveVariable");
+        }
+        force.release();
+        return cv;
+    }
+
+    %pythoncode %{
+    def __copy__(self):
+        return ColvarsCollectiveVariable(self)
+
+    def __deepcopy__(self, memo):
+        return ColvarsCollectiveVariable(self)
+
+    def __getstate__(self):
+        return _openmm_colvars_openmm.XmlSerializer.serialize(self)
+
+    def __setstate__(self, state):
+        self.this = ColvarsCollectiveVariable._deserialize(state).this
+    %}
+}
 
 class ColvarsTABFIntegrator : public CustomIntegrator {
 public:
