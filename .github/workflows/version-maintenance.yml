@@ -52,29 +52,31 @@ jobs:
     if: ${{ github.repository == 'Colvars/colvars' && ((github.event_name == 'pull_request_target' && github.event.pull_request.merged == true) || (github.event_name == 'push')) }}
     steps:
 
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_VERSIONS_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_VERSIONS_PRIVATE_KEY }}
+
       - name: Checkout Colvars repo in full
         uses: actions/checkout@v7
         with:
+          ref: master
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Checkout Wiki repo
         uses: actions/checkout@v7
         with:
           repository: 'Colvars/colvars.wiki'
           path: 'wiki'
-
-      - name: Cache the SSH key for the runner
-        env: 
-          SSH_KEY: ${{ secrets.PULL_PUSH_COLVARS_KEY }}
-        run: |
-          mkdir -p -m 700 ~/.ssh
-          echo "${SSH_KEY}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          git config --global user.email "noreply@github.com"
-          git config --global user.name "CI runner"
+          token: ${{ steps.app-token.outputs.token }}
           
       - name: Update Wiki page that lists Colvars versions
         run: |
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "CI runner"
           git fetch --all
           bash doc/print_engine_versions.sh > wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
           if ! git -C wiki diff --quiet ; then
