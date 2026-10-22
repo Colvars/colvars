@@ -647,6 +647,30 @@ void colvar::cvc::apply_force(colvarvalue const &cvforce)
   }
 }
 
+
+namespace {
+
+/// Fraction of the largest change predicted by the gradients of a CVC, used as the
+/// smallest scale against which the error of each gradient component is measured
+constexpr cvm::real debug_gradients_min_scale = 1.0e-3;
+
+/// @brief Relative discrepancy between the finite-difference and analytic changes
+/// of a CVC along one coordinate.  Components much smaller than the largest one of the
+/// CVC are measured against a fraction of the latter, because their finite differences
+/// are dominated by the rounding errors of the CVC values.
+/// @param num_diff Change computed by finite differences
+/// @param dx_pred Change predicted by the analytic gradient
+/// @param dx_pred_max Largest change predicted by any gradient component of the CVC
+cvm::real debug_gradients_error(cvm::real num_diff, cvm::real dx_pred, cvm::real dx_pred_max)
+{
+  cvm::real const norm = std::max({cvm::fabs(num_diff) + cvm::fabs(dx_pred),
+                                   debug_gradients_min_scale * dx_pred_max, 1.0e-14});
+  return cvm::fabs(num_diff - dx_pred) / norm;
+}
+
+}
+
+
 void colvar::cvc::debug_gradients()
 {
   // this function should work for any scalar cvc:
@@ -704,6 +728,20 @@ void colvar::cvc::debug_gradients()
     }
     ag_gradients[group] = gradients;
   }
+
+  // Largest change predicted by any gradient component, to measure the errors of small ones
+  cvm::real dx_pred_max = 0.0;
+  for (auto const &ag_grad : ag_gradients) {
+    for (auto const &grads : ag_grad.second) {
+      for (auto const &g : grads) {
+        dx_pred_max = std::max({dx_pred_max, cvm::fabs(g.x), cvm::fabs(g.y), cvm::fabs(g.z)});
+      }
+    }
+  }
+  dx_pred_max *= cvmodule->debug_gradients_step_size;
+  cvmodule->log("Largest predicted change: " + cvm::to_str(dx_pred_max, 19, 12) +
+                "; errors are relative to at least " + cvm::to_str(debug_gradients_min_scale) +
+                " times this value.\n");
 
   for (size_t ig = 0; ig < atom_groups.size(); ig++) {
     auto *group = atom_groups[ig];
@@ -793,10 +831,7 @@ void colvar::cvc::debug_gradients()
 
         cvm::real const num_diff = 0.5 * (x_1 - x_2);
         cvm::real const dx_pred = cvmodule->debug_gradients_step_size * gradients[ia][id];
-        cvm::real norm = (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
-        cvm::real const eps = 1.e-14;
-        if (norm < eps) norm = eps;
-        cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / norm;
+        cvm::real const rel_error = debug_gradients_error(num_diff, dx_pred, dx_pred_max);
         cvmodule->record_gradient_error(rel_error);
 
         cvmodule->log("Atom "+cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
@@ -879,7 +914,7 @@ void colvar::cvc::debug_gradients()
 
           cvm::real const num_diff = 0.5 * (x_1 - x_2);
           cvm::real const dx_pred = cvmodule->debug_gradients_step_size * atom_grad[id];
-          cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
+          cvm::real const rel_error = debug_gradients_error(num_diff, dx_pred, dx_pred_max);
           cvmodule->record_gradient_error(rel_error);
 
           cvmodule->log("fittingGroup atom " + cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
@@ -1001,6 +1036,20 @@ int colvar::cvc::debug_gradients_gpu() {
     ag_gradients[group] = gradients;
   }
 
+  // Largest change predicted by any gradient component, to measure the errors of small ones
+  cvm::real dx_pred_max = 0.0;
+  for (auto const &ag_grad : ag_gradients) {
+    for (auto const &grads : ag_grad.second) {
+      for (auto const g : grads) {
+        dx_pred_max = std::max(dx_pred_max, cvm::fabs(g));
+      }
+    }
+  }
+  dx_pred_max *= cvm::debug_gradients_step_size;
+  cvmodule->log("Largest predicted change: " + cvm::to_str(dx_pred_max, 19, 12) +
+                "; errors are relative to at least " + cvm::to_str(debug_gradients_min_scale) +
+                " times this value.\n");
+
   for (size_t ig = 0; ig < atom_groups.size(); ig++) {
     auto *group = atom_groups[ig];
     if (group->b_dummy) continue;
@@ -1095,7 +1144,7 @@ int colvar::cvc::debug_gradients_gpu() {
 
         cvm::real const num_diff = 0.5 * (x_1 - x_2);
         cvm::real const dx_pred = cvm::debug_gradients_step_size * g[id];
-        cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
+        cvm::real const rel_error = debug_gradients_error(num_diff, dx_pred, dx_pred_max);
         cvmodule->record_gradient_error(rel_error);
 
         cvmodule->log("Atom "+cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
@@ -1167,7 +1216,7 @@ int colvar::cvc::debug_gradients_gpu() {
 
           cvm::real const num_diff = 0.5 * (x_1 - x_2);
           cvm::real const dx_pred = cvm::debug_gradients_step_size * atom_grad[id];
-          cvm::real rel_error = cvm::fabs (num_diff - dx_pred) / (cvm::fabs (num_diff) + cvm::fabs(dx_pred));
+          cvm::real const rel_error = debug_gradients_error(num_diff, dx_pred, dx_pred_max);
           cvmodule->record_gradient_error(rel_error);
 
           cvmodule->log("fittingGroup atom " + cvm::to_str(ia) + ", ID " + cvm::to_str(this_atom.id) + \
