@@ -39,6 +39,7 @@ jobs:
         with:
           repository: 'Colvars/namd'
           path: 'namd'
+          ref: 'main'
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Fetch commits from upstream repo
