@@ -1,18 +1,18 @@
 configuration {
   step            5
   dt 1.000000e+00
-  version 2025-08-30
+  version 2026-10-16
   units real
 }
 
 colvar {
   name one
-  x     -0.25923276777781
+  x      0.20441823146646
 }
 
 colvar {
   name two
-  x       2.0383813264052
+  x       3.3718609198972
 }
 
 restraint {

@@ -167,23 +167,35 @@ int colvarproxy_stub::init_atom(int atom_number)
 
 int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_force_file)
 {
-  int err = cvmodule->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
+  // The XYZ file lists atoms by increasing ID, but atom slots follow the order in which the
+  // atoms were requested: read all positions first, then copy them into their slots
+  auto &positions = *(modify_atom_positions());
+  const size_t numAtoms = positions.size();
+  xyz_positions_.resize(numAtoms);
+  int err = cvmodule->load_coords_xyz(filename, &xyz_positions_, nullptr, true);
   std::string force_filename;
   if (write_force_file) {
     force_filename = cvmodule->output_prefix() + "_forces_" + cvm::to_str(cvmodule->it) + ".dat";
   }
   if ( !err ) {
+    for (size_t i = 0; i < numAtoms; ++i) {
+      positions[i] = xyz_positions_[atoms_ids[i]];
+    }
     auto& new_forces = *(modify_atom_applied_forces());
     std::fill(new_forces.begin(), new_forces.end(), cvm::rvector{0, 0, 0});
     cvmodule->calc();
     cvmodule->it++;
     if (write_force_file) {
-      const size_t numAtoms = modify_atom_positions()->size();
+      // Write the forces by increasing atom ID
+      forces_by_id_.resize(numAtoms);
+      for (size_t i = 0; i < numAtoms; ++i) {
+        forces_by_id_[atoms_ids[i]] = new_forces[i];
+      }
       std::ofstream ofs(force_filename);
       for (size_t i = 0; i < numAtoms; ++i) {
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].x << std::setw(0) << " ";
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].y << std::setw(0) << " ";
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].z << std::setw(0) << " ";
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << forces_by_id_[i].x << std::setw(0) << " ";
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << forces_by_id_[i].y << std::setw(0) << " ";
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << forces_by_id_[i].z << std::setw(0) << " ";
         ofs << std::endl;
       }
     }
