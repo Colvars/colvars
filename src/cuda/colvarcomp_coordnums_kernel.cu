@@ -47,10 +47,6 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   unsigned int* __restrict tbcount,
   cvm::real* __restrict coordnum_tmp,
   cvm::real* __restrict coordnum_out) {
-#if 0
-  // TODO: Optimize for static en and ed. Wait for https://github.com/Colvars/colvars/pull/926.
-  constexpr const bool static_exponents = (N > 0) && (M > 0);
-#endif
   static_assert(tileSize <= 64, "The tileSize must be no greater than 64 for pairmask.");
   static_assert((blockSize % tileSize) == 0, "blockSize must be some multiples of tileSize");
   constexpr const bool use_pairlist = flags & colvar::coordnum::ef_use_pairlist;
@@ -59,7 +55,20 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
   // Shared memory buffers for atoms in group2
   namespace cg = cooperative_groups;
   const cg::thread_block thb = cg::this_thread_block();
+#if defined (COLVARS_CUDA)
   const auto tilePartition = cg::tiled_partition<tileSize>(thb);
+#elif defined (COLVARS_HIP)
+#if HIP_VERSION_MAJOR >= 7
+  const auto tilePartition = cg::tiled_partition<tileSize>(thb);
+#else
+  constexpr unsigned int actualTileSize =
+    (tileSize > __AMDGCN_WAVEFRONT_SIZE__) ?
+    __AMDGCN_WAVEFRONT_SIZE__ : tileSize;
+  const auto tilePartition = cg::tiled_partition<actualTileSize>(thb);
+#endif // HIP_VERSION_MAJOR >= 7
+#else
+#error "Unknown GPU target"
+#endif
   constexpr unsigned int numTilesPerBlock = blockSize / tileSize;
   // Shared memory buffers for atoms in group2
   __shared__ double3 shJGrad[numTilesPerBlock][tileSize];
@@ -703,10 +712,6 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   unsigned int* __restrict tbcount,
   cvm::real* __restrict coordnum_tmp,
   cvm::real* __restrict coordnum_out) {
-#if 0
-  // TODO: Optimize for static en and ed. Wait for https://github.com/Colvars/colvars/pull/926.
-  constexpr const bool static_exponents = (N > 0) && (M > 0);
-#endif
   constexpr const bool use_pairlist = flags & colvar::coordnum::ef_use_pairlist;
   constexpr const bool rebuild_pairlist = flags & colvar::coordnum::ef_rebuild_pairlist;
   constexpr const bool gradients = flags & colvar::coordnum::ef_gradients;
@@ -719,7 +724,20 @@ __global__ void computeCoordinationNumberSelfGroupCUDAKernel1(
   const unsigned int numTilesInGroup1 = (numAtoms1 + tileSize - 1) / tileSize;
   namespace cg = cooperative_groups;
   const cg::thread_block thb = cg::this_thread_block();
+#if defined (COLVARS_CUDA)
   const auto tilePartition = cg::tiled_partition<tileSize>(thb);
+#elif defined (COLVARS_HIP)
+#if HIP_VERSION_MAJOR >= 7
+  const auto tilePartition = cg::tiled_partition<tileSize>(thb);
+#else
+  constexpr unsigned int actualTileSize =
+    (tileSize > __AMDGCN_WAVEFRONT_SIZE__) ?
+    __AMDGCN_WAVEFRONT_SIZE__ : tileSize;
+  const auto tilePartition = cg::tiled_partition<actualTileSize>(thb);
+#endif // HIP_VERSION_MAJOR >= 7
+#else
+#error "Unknown GPU target"
+#endif
   // Which tile is the current thread working on?
   const unsigned int tileIndexInBlock = tilePartition.meta_group_rank();
   // The thread id in a tile
