@@ -88,6 +88,7 @@ private:
   std::vector<cvm::rvector> m_positions;
   colvarproxy_atoms::atom_buffer_real_t m_positions_soa;
   colvarproxy_atoms::atom_buffer_real_t m_applied_forces_soa;
+  std::vector<cvm::rvector> m_forces_by_id;
 };
 
 colvarproxy_stub_gpu::colvarproxy_stub_gpu():
@@ -237,11 +238,13 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
     this->reallocate();
     error_code |= cvmodule->proxy_gpu_buffers_reallocated_done();
   }
+  // The XYZ file lists atoms by increasing ID, but atom slots follow the order
+  // in which the atoms were requested
   m_positions_soa.resize(3 * numAtoms);
   for (size_t i = 0; i < numAtoms; ++i) {
-    m_positions_soa[i] = m_positions[i].x;
-    m_positions_soa[i+numAtoms] = m_positions[i].y;
-    m_positions_soa[i+2*numAtoms] = m_positions[i].z;
+    m_positions_soa[i] = m_positions[atoms_ids[i]].x;
+    m_positions_soa[i+numAtoms] = m_positions[atoms_ids[i]].y;
+    m_positions_soa[i+2*numAtoms] = m_positions[atoms_ids[i]].z;
   }
   error_code |= copy_HtoD_async(m_positions_soa.data(), d_mPositions, 3 * numAtoms, stream);
   error_code |= clear_device_array_async(d_mAppliedForces, 3 * numAtoms, stream);
@@ -258,14 +261,18 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
     error_code |= copy_DtoH_async(d_mAppliedForces, m_applied_forces_soa.data(), 3 * numAtoms, stream);
     error_code |= checkGPUError(cudaStreamSynchronize(stream));
     if (write_force_file) {
+      // Write the forces by increasing atom ID
+      m_forces_by_id.resize(numAtoms);
+      for (size_t i = 0; i < numAtoms; ++i) {
+        m_forces_by_id[atoms_ids[i]] = cvm::rvector(m_applied_forces_soa[i],
+                                                    m_applied_forces_soa[i + numAtoms],
+                                                    m_applied_forces_soa[i + 2 * numAtoms]);
+      }
       std::ofstream ofs(force_filename);
       for (size_t i = 0; i < numAtoms; ++i) {
-        const cvm::real fx = m_applied_forces_soa[i];
-        const cvm::real fy = m_applied_forces_soa[i + numAtoms];
-        const cvm::real fz = m_applied_forces_soa[i + 2 * numAtoms];
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << fx << std::setw(0) << " ";
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << fy << std::setw(0) << " ";
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << fz << std::setw(0) << " ";
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << m_forces_by_id[i].x << std::setw(0) << " ";
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << m_forces_by_id[i].y << std::setw(0) << " ";
+        ofs << std::scientific << std::setprecision(12) << std::setw(20) << m_forces_by_id[i].z << std::setw(0) << " ";
         ofs << std::endl;
       }
     }

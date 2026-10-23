@@ -44,6 +44,14 @@ public:
   /// @param write_force_file Write the applied forces to files
   /// @return Error code
   int read_frame_xyz(const char *filename, const bool write_force_file = false);
+
+protected:
+
+  /// Positions of the current XYZ frame, ordered by atom ID
+  std::vector<cvm::rvector> xyz_positions_;
+
+  /// Applied forces of the current frame, ordered by atom ID
+  std::vector<cvm::rvector> forces_by_id_;
 };
 
 

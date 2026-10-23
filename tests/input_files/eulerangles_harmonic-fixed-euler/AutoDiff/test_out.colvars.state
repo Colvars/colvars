@@ -1,23 +1,23 @@
 configuration {
   step            5
   dt 1.000000e+00
-  version 2025-08-30
+  version 2026-10-16
   units real
 }
 
 colvar {
   name eulerTheta
-  x      -20.587024005692
+  x      -2.2375322593288
 }
 
 colvar {
   name eulerPhi
-  x      -62.806284843099
+  x      -3.1898108910624
 }
 
 colvar {
   name eulerPsi
-  x       81.719481064284
+  x      -14.700900687424
 }
 
 restraint {

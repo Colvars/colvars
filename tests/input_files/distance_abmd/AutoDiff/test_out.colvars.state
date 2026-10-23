@@ -1,13 +1,13 @@
 configuration {
   step            5
   dt 1.000000e+00
-  version 2025-08-30
+  version 2026-10-16
   units real
 }
 
 colvar {
   name one
-  x        2.209909667263
+  x        3.570218367726
 }
 
 abmd {
