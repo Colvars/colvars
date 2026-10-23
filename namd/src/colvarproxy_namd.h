@@ -29,6 +29,11 @@ class GlobalMasterColvars;
 class GridforceFullMainGrid;
 class Random;
 class SimParameters;
+class Molecule;
+class ScriptTcl;
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+class CudaGlobalMasterColvars;
+#endif
 
 
 /// Communication between colvars and NAMD (implementation of \link colvarproxy \endlink)
@@ -80,7 +85,80 @@ public:
   /// Send Colvars forces to GlobalMaster
   void send_gm_atom_forces();
 
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  /// Initialize on the CUDA worker, using engine objects supplied by the client.
+  int initialize_from_cudagm(CudaGlobalMasterColvars *client,
+                             std::vector<std::string> const &arguments,
+                             int deviceID, cudaStream_t stream,
+                             SimParameters const *parameters,
+                             Molecule const *molecule, ScriptTcl *script);
+  bool atomsChanged() const { return modified_atom_list(); }
+  void reallocate();
+  void onBuffersUpdated();
+
+  cudaStream_t getStream() const { return mStream; }
+  double getEnergy() const { return mBiasEnergy; }
+  double *getPositions() const { return d_mPositions; }
+  double *getAppliedForces() const { return d_mAppliedForces; }
+  double *getTotalForces() const { return d_mTotalForces; }
+  float *getMasses() const { return d_mMass; }
+  float *getCharges() const { return d_mCharges; }
+  double *getLattice() const { return d_mLattice; }
+
+  cudaStream_t get_default_stream() override { return mStream; }
+  float *proxy_atoms_masses_gpu_float() override { return d_mMass; }
+  float *proxy_atoms_charges_gpu_float() override { return d_mCharges; }
+  cvm::real *proxy_atoms_positions_gpu() override { return d_mPositions; }
+  cvm::real *proxy_atoms_total_forces_gpu() override { return d_mTotalForces; }
+  cvm::real *proxy_atoms_new_colvar_forces_gpu() override { return d_mAppliedForces; }
+  cvm::system_boundary_conditions get_system_boundaries() override;
+
+  friend class CudaGlobalMasterColvars;
+#endif
+
 protected:
+
+  bool has_cudagm_client() const
+  {
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+    return mClient != nullptr;
+#else
+    return false;
+#endif
+  }
+  /// CUDA workers must not resolve engine data through Node::Object().
+  Molecule *get_molecule() const;
+
+#if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
+  int allocateDeviceArrays();
+  int deallocateDeviceArrays();
+  int allocateDeviceTransposeArrays();
+  int deallocateDeviceTransposeArrays();
+  void read_cudagm_buffers();
+  void send_cudagm_forces();
+  void set_lattice();
+
+  CudaGlobalMasterColvars *mClient = nullptr;
+  Molecule *mMolecule = nullptr;
+  ScriptTcl *mScriptTcl = nullptr;
+  int m_device_id = -1;
+  cudaStream_t mStream = nullptr;
+  double mBiasEnergy = 0.0;
+  double *d_mPositions = nullptr;
+  double *d_mAppliedForces = nullptr;
+  double *d_mTotalForces = nullptr;
+  float *d_mMass = nullptr;
+  float *d_mCharges = nullptr;
+  double *d_mLattice = nullptr;
+  double *h_mLattice = nullptr;
+  cvm::rvector *d_trans_mPositions = nullptr;
+  cvm::rvector *d_trans_mAppliedForces = nullptr;
+  cvm::rvector *d_trans_mTotalForces = nullptr;
+  cvm::real *d_trans_mMass = nullptr;
+  cvm::real *d_trans_mCharges = nullptr;
+  size_t allocated_atoms = 0;
+  bool lattice_copy_pending = false;
+#endif
 
   /// Pointer to the parent GlobalMaster object
   GlobalMasterColvars *globalmaster = nullptr;
@@ -108,15 +186,15 @@ protected:
 
   /// Used to submit restraint energy as MISC
 #if !defined (NAMD_UNIFIED_REDUCTION)
-  SubmitReduction *reduction;
+  SubmitReduction *reduction = nullptr;
 #endif
 #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
-  NodeReduction *nodeReduction;
+  NodeReduction *nodeReduction = nullptr;
 #endif
 
   /// Accelerated MD reweighting factor
-  bool accelMDOn;
-  cvm::real amd_weight_factor;
+  bool accelMDOn = false;
+  cvm::real amd_weight_factor = 1.0;
   void update_accelMD_info();
 
 public:
@@ -148,19 +226,11 @@ public:
 
   bool accelMD_enabled() const override;
 
-#if CMK_SMP && USE_CKLOOP
-  smp_mode_t get_preferred_smp_mode() const override {
-    return smp_mode_t::cvcs;
-  }
-  std::vector<smp_mode_t> get_available_smp_modes() const override {
-    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
-      smp_mode_t::cvcs,
-      smp_mode_t::inner_loop,
-      smp_mode_t::none
-    };
-    return available_modes;
-  }
+  smp_mode_t get_preferred_smp_mode() const override;
+  std::vector<smp_mode_t> get_available_smp_modes() const override;
+  int set_smp_mode(smp_mode_t mode) override;
 
+#if CMK_SMP && USE_CKLOOP
   int smp_loop(int n_items, std::function<int (int)> const &worker) override;
 
   int smp_biases_loop() override;
@@ -173,36 +243,37 @@ public:
 
   int smp_thread_id()
   {
-    return CkMyRank();
+    return has_cudagm_client() ? 0 : CkMyRank();
   }
 
   int smp_num_threads()
   {
-    return CkMyNodeSize();
+    return has_cudagm_client() ? 1 : CkMyNodeSize();
   }
 
 protected:
 
   CmiNodeLock charm_lock_state;
+  bool charm_lock_initialized = false;
 
 public:
 
   int smp_lock()
   {
-    CmiLock(charm_lock_state);
+    if (charm_lock_initialized) CmiLock(charm_lock_state);
     return COLVARS_OK;
   }
 
   int smp_trylock()
   {
-    const int ret = CmiTryLock(charm_lock_state);
+    const int ret = charm_lock_initialized ? CmiTryLock(charm_lock_state) : 0;
     if (ret == 0) return COLVARS_OK;
     else return COLVARS_ERROR;
   }
 
   int smp_unlock()
   {
-    CmiUnlock(charm_lock_state);
+    if (charm_lock_initialized) CmiUnlock(charm_lock_state);
     return COLVARS_OK;
   }
 
