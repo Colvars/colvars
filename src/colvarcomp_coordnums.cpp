@@ -14,6 +14,379 @@
 #include "colvarcomp.h"
 #include "colvarcomp_coordnums.h"
 
+// Checking NAMD_VERSION is a temporary fix to ensure that Make.depends
+// remains the same.
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
+#include "cuda/colvarcomp_coordnums_kernel.h"
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+class colvar::coordnum::coordnum_gpu_impl_t {
+public:
+  coordnum_gpu_impl_t(colvar::coordnum* cpu_coordnum_in):
+    cvmodule(cpu_coordnum_in->cvmodule), cvc(cpu_coordnum_in),
+    d_pairlist(nullptr), d_coordnum(nullptr),
+    d_com_grad_tmp{nullptr, nullptr},
+    d_com_grad_out{nullptr, nullptr},
+    d_tbcount(nullptr),
+    coordNumPairList(cpu_coordnum_in->cvmodule),
+    selfCoordNumTileList(cpu_coordnum_in->cvmodule),
+    h_coordnum(nullptr) {}
+  ~coordnum_gpu_impl_t() {
+    colvarproxy* p = cvmodule->proxy;
+    p->deallocate_device(&d_pairlist);
+    p->deallocate_device(&d_coordnum);
+    p->deallocate_device(&d_tbcount);
+    p->deallocate_host(&h_coordnum);
+    p->deallocate_device(&d_com_grad_tmp[0]);
+    p->deallocate_device(&d_com_grad_tmp[1]);
+    p->deallocate_device(&d_com_grad_out[0]);
+    p->deallocate_device(&d_com_grad_out[1]);
+  }
+  int init() {
+    int error_code = COLVARS_OK;
+    colvarproxy* p = cvmodule->proxy;
+    error_code |= p->reallocate_device(&d_coordnum, 1);
+    error_code |= p->reallocate_device(&d_tbcount, 1);
+    error_code |= p->reallocate_host(&h_coordnum, 1);
+    const std::string function_type = cvc->function_type();
+    if (cvc->b_enable_pairlist) {
+      if ((function_type != "selfCoordNum") &&
+          ((function_type != "coordNum") || cvc->b_group1_center_only ||
+           cvc->b_group2_center_only)) {
+        error_code |= p->reallocate_device(&d_pairlist, cvc->num_pairs);
+        error_code |= p->clear_device_array(d_pairlist, cvc->num_pairs);
+      }
+    }
+    error_code |= p->clear_device_array(d_coordnum, 1);
+    error_code |= p->clear_device_array(d_tbcount, 1);
+    h_coordnum[0] = 0;
+    if (function_type != "selfCoordNum") {
+      if (cvc->b_group1_center_only || cvc->b_group2_center_only) {
+        error_code |= p->reallocate_device(&d_com_grad_tmp[0], 1);
+        error_code |= p->reallocate_device(&d_com_grad_tmp[1], 1);
+        error_code |= p->reallocate_device(&d_com_grad_out[0], 1);
+        error_code |= p->reallocate_device(&d_com_grad_out[1], 1);
+        error_code |= p->clear_device_array(d_com_grad_tmp[0], 1);
+        error_code |= p->clear_device_array(d_com_grad_tmp[1], 1);
+        error_code |= p->clear_device_array(d_com_grad_out[0], 1);
+        error_code |= p->clear_device_array(d_com_grad_out[1], 1);
+      }
+    }
+    return error_code;
+  }
+  int calc_value_two_groups(int flags) {
+    int error_code = COLVARS_OK;
+    if (cvc->b_enable_pairlist) {
+      if (!coordNumPairList.initialized) {
+        colvarproxy* p = cvmodule->proxy;
+        const unsigned int gpu_warp_size = p->gpu_warp_size();
+        error_code |= coordNumPairList.preparePairList(
+          cvc->group1->size(), cvc->group2->size(), gpu_warp_size, cvc->get_stream());
+        if (error_code != COLVARS_OK) {
+          return error_code;
+        }
+      }
+    }
+    // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
+    // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
+    // error_code |= checkGPUError(cudaStreamWaitEvent(
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    error_code |= checkGPUError(cudaStreamWaitEvent(
+      cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
+        colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
+    error_code |= checkGPUError(cudaStreamWaitEvent(
+      cvc->get_stream(), cvc->group2->get_gpu_atom_group()->get_event(
+        colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
+    error_code |= colvars_gpu::calc_value_coordnum_two_groups(
+      cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
+      cvc->group2->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
+      cvc->group1->size(), cvc->group2->size(), cvc->en, cvc->ed,
+      cvc->inv_r0_vec, cvc->inv_r0sq_vec, cvc->boundary_conditions,
+      cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
+      cvc->group2->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
+      cvc->tolerance, cvc->tolerance_l2_max,
+      coordNumPairList.d_tilePairList_32,
+      coordNumPairList.d_tilePairList_64, d_tbcount,
+      d_coordnum, h_coordnum, flags, cvc->get_stream(), cvmodule);
+    error_code |= checkGPUError(cudaEventRecord(
+      cvc->get_event(cvc::event_type::calc_value), cvc->get_stream()));
+    if (flags & colvar::coordnum::ef_gradients) {
+      error_code |= checkGPUError(cudaEventRecord(
+      cvc->get_event(cvc::event_type::calc_gradients), cvc->get_stream()));
+    }
+    return error_code;
+  }
+  int calc_value_group_to_com(int flags) {
+    // Requires b_group1_center_only != b_group2_center_only
+    if (cvc->b_group1_center_only == cvc->b_group2_center_only) {
+      return cvmodule->error("calc_value_group_to_com is called incorrectly.\n",
+                             COLVARS_BUG_ERROR);
+    }
+    int error_code = COLVARS_OK;
+    auto group = cvc->b_group1_center_only ? cvc->group2 : cvc->group1;
+    auto group_com = cvc->b_group1_center_only ? cvc->group1 : cvc->group2;
+    // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
+    // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
+    // error_code |= checkGPUError(cudaStreamWaitEvent(
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    error_code |= checkGPUError(cudaStreamWaitEvent(
+      cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
+        colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
+    error_code |= checkGPUError(cudaStreamWaitEvent(
+      cvc->get_stream(), cvc->group2->get_gpu_atom_group()->get_event(
+        colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
+    error_code |= colvars_gpu::calc_value_coordnum_group_to_com(
+      group->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
+      group_com->get_gpu_atom_group()->get_gpu_buffers().d_com,
+      group->size(), cvc->en, cvc->ed, cvc->inv_r0_vec,
+      cvc->inv_r0sq_vec, cvc->boundary_conditions,
+      group->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
+      cvc->tolerance, cvc->tolerance_l2_max, d_pairlist, d_tbcount,
+      d_com_grad_tmp[0], d_com_grad_out[0], d_coordnum, h_coordnum,
+      flags, cvc->get_stream(), cvmodule);
+    error_code |= checkGPUError(cudaEventRecord(
+      cvc->get_event(cvc::event_type::calc_value), cvc->get_stream()));
+    if (flags & colvar::coordnum::ef_gradients) {
+      // Set weighted gradients
+      error_code |= colvars_gpu::colvaratoms_gpu::set_weighted_gradient_gpu(
+        group_com, d_com_grad_out[0], cvc->get_stream());
+      error_code |= checkGPUError(cudaEventRecord(
+        cvc->get_event(cvc::event_type::calc_gradients), cvc->get_stream()));
+    }
+    return error_code;
+  }
+  int calc_value_two_coms(int flags) {
+    const bool check = (cvc->b_group1_center_only == true) && (cvc->b_group2_center_only == true);
+    if (!check) {
+      return cvmodule->error("calc_value_two_coms is called incorrectly.\n",
+                             COLVARS_BUG_ERROR);
+    }
+    int error_code = COLVARS_OK;
+    // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
+    // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
+    // error_code |= checkGPUError(cudaStreamWaitEvent(
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    error_code |= checkGPUError(cudaStreamWaitEvent(
+      cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
+        colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
+    error_code |= checkGPUError(cudaStreamWaitEvent(
+      cvc->get_stream(), cvc->group2->get_gpu_atom_group()->get_event(
+        colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
+    error_code |= colvars_gpu::calc_value_coordnum_com_to_com(
+      cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_com,
+      cvc->group2->get_gpu_atom_group()->get_gpu_buffers().d_com,
+      cvc->en, cvc->ed, cvc->inv_r0_vec, cvc->inv_r0sq_vec,
+      cvc->boundary_conditions,
+      cvc->tolerance, cvc->tolerance_l2_max, d_pairlist,
+      d_com_grad_out[0], d_com_grad_out[1], h_coordnum, flags, cvc->get_stream(), cvmodule);
+    error_code |= checkGPUError(cudaEventRecord(
+      cvc->get_event(cvc::event_type::calc_value), cvc->get_stream()));
+    if (flags & colvar::coordnum::ef_gradients) {
+      // Set weighted gradients
+      error_code |= colvars_gpu::colvaratoms_gpu::set_weighted_gradient_gpu(
+        cvc->group1, d_com_grad_out[0], cvc->get_stream());
+      error_code |= colvars_gpu::colvaratoms_gpu::set_weighted_gradient_gpu(
+        cvc->group2, d_com_grad_out[1], cvc->get_stream());
+      error_code |= checkGPUError(cudaEventRecord(
+        cvc->get_event(cvc::event_type::calc_gradients), cvc->get_stream()));
+    }
+    return error_code;
+  }
+  int calc_value_self_group(int flags) {
+    int error_code = COLVARS_OK;
+    if (selfCoordNumTileList.d_tileListsStart == nullptr) {
+      colvarproxy* p = cvmodule->proxy;
+      const unsigned int gpu_warp_size = p->gpu_warp_size();
+      error_code |= selfCoordNumTileList.buildTileLists(
+        cvc->group1->size(), cvc->b_enable_pairlist, gpu_warp_size, cvc->get_stream());
+    }
+    error_code |= checkGPUError(cudaStreamWaitEvent(
+      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    error_code |= checkGPUError(cudaStreamWaitEvent(
+      cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
+        colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
+    error_code |= colvars_gpu::calc_value_coordnum_self_group(
+      cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_pos,
+      cvc->group1->size(), cvc->en, cvc->ed, cvc->inv_r0_vec, cvc->inv_r0sq_vec,
+      cvc->boundary_conditions,
+      cvc->group1->get_gpu_atom_group()->get_gpu_buffers().d_atoms_grad,
+      selfCoordNumTileList.d_tileLists, selfCoordNumTileList.d_tileListsStart, selfCoordNumTileList.d_tileListsLen,
+      cvc->tolerance, cvc->tolerance_l2_max, d_pairlist,
+      selfCoordNumTileList.d_tilePairListSelf_32, selfCoordNumTileList.d_tilePairList_32,
+      selfCoordNumTileList.d_tilePairListSelf_64, selfCoordNumTileList.d_tilePairList_64,
+      d_tbcount, d_coordnum, h_coordnum, flags, cvc->get_stream(), cvmodule);
+    error_code |= checkGPUError(cudaEventRecord(
+      cvc->get_event(cvc::event_type::calc_value), cvc->get_stream()));
+    if (flags & colvar::coordnum::ef_gradients) {
+      error_code |= checkGPUError(cudaEventRecord(
+        cvc->get_event(cvc::event_type::calc_gradients), cvc->get_stream()));
+    }
+    return error_code;
+  }
+private:
+  colvarmodule* cvmodule;
+  colvar::coordnum* cvc;
+  bool* d_pairlist;
+  cvm::real* d_coordnum;
+  cvm::rvector* d_com_grad_tmp[2];
+  cvm::rvector* d_com_grad_out[2];
+  unsigned int* d_tbcount;
+  struct coordNumPairListT {
+    /**
+     * @name Tile-based pairlist for two-group coordnum
+     */
+    ///@[
+    colvars_gpu::TilePairMask<32>* d_tilePairList_32 = nullptr;
+    colvars_gpu::TilePairMask<64>* d_tilePairList_64 = nullptr;
+    ///@]
+    bool initialized = false;
+    colvarmodule* cvmodule;
+    coordNumPairListT(colvarmodule* cvmodule_in): cvmodule(cvmodule_in) {}
+    ~coordNumPairListT() {
+      colvarproxy* p = cvmodule->proxy;
+      p->deallocate_device(&d_tilePairList_32);
+      p->deallocate_device(&d_tilePairList_64);
+    }
+    int preparePairList(const unsigned int numAtoms1,
+                        const unsigned int numAtoms2,
+                        const unsigned int tileSize,
+                        cudaStream_t stream) {
+      int error_code = COLVARS_OK;
+      const unsigned int numAtomsInLargeGroup = numAtoms1 < numAtoms2 ? numAtoms2 : numAtoms1;
+      const unsigned int numAtomsInSmallGroup = numAtoms1 < numAtoms2 ? numAtoms1 : numAtoms2;
+      const unsigned int numTilesInGroup1 = (numAtomsInLargeGroup + tileSize - 1) / tileSize;
+      const unsigned int numTilesInGroup2 = (numAtomsInSmallGroup + tileSize - 1) / tileSize;
+      const size_t tileListsSize = (size_t)numTilesInGroup1 * (size_t)numTilesInGroup2;
+      colvarproxy* p = cvmodule->proxy;
+      switch (tileSize) {
+        case 32: {
+          error_code |= p->deallocate_device_async(&d_tilePairList_32, stream);
+          error_code |= p->allocate_device_async(&d_tilePairList_32, tileListsSize, stream);
+          error_code |= p->clear_device_array_async(d_tilePairList_32, tileListsSize, stream);
+          break;
+        }
+        case 64: {
+          error_code |= p->deallocate_device_async(&d_tilePairList_64, stream);
+          error_code |= p->allocate_device_async(&d_tilePairList_64, tileListsSize, stream);
+          error_code |= p->clear_device_array_async(d_tilePairList_64, tileListsSize, stream);
+          break;
+        }
+        default: {
+          error_code |= cvmodule->error("Unsupported tileSize (" + cvm::to_str((int)tileSize) + ") in preparePairList.\n");
+        }
+      };
+      initialized = true;
+      return error_code;
+    }
+  } coordNumPairList;
+  struct selfCoordNumTileListT {
+    /**
+    * @name Tile lists for self coordnum
+    */
+    ///@[
+    using tl_vec_t = std::vector<unsigned int, colvars_gpu::CudaHostAllocator<unsigned int>>;
+    tl_vec_t tileListsLen;
+    tl_vec_t tileListsStart;
+    tl_vec_t tileLists;
+    unsigned int numTiles = 0;
+    unsigned int tileListsSize = 0;
+    unsigned int* d_tileLists = nullptr;
+    unsigned int* d_tileListsStart  = nullptr;
+    unsigned int* d_tileListsLen  = nullptr;
+    colvars_gpu::TilePairMask<32>* d_tilePairList_32 = nullptr;
+    colvars_gpu::TilePairMask<32>* d_tilePairListSelf_32 = nullptr;
+    colvars_gpu::TilePairMask<64>* d_tilePairList_64 = nullptr;
+    colvars_gpu::TilePairMask<64>* d_tilePairListSelf_64 = nullptr;
+    ///@]
+    colvarmodule* cvmodule;
+    selfCoordNumTileListT(colvarmodule* cvmodule_in): cvmodule(cvmodule_in) {}
+    ~selfCoordNumTileListT() {
+      colvarproxy* p = cvmodule->proxy;
+      p->deallocate_device(&d_tileLists);
+      p->deallocate_device(&d_tileListsStart);
+      p->deallocate_device(&d_tileListsLen);
+      p->deallocate_device(&d_tilePairList_32);
+      p->deallocate_device(&d_tilePairListSelf_32);
+      p->deallocate_device(&d_tilePairList_64);
+      p->deallocate_device(&d_tilePairListSelf_64);
+    }
+    int buildTileLists(const unsigned int numAtoms,
+                       const bool b_enable_pairlist,
+                       const unsigned int tileSize,
+                       cudaStream_t stream) {
+      int error_code = COLVARS_OK;
+      colvarproxy* p = cvmodule->proxy;
+      // const unsigned int numAtoms = cvc->group1->size();
+      numTiles = (numAtoms + tileSize - 1) / tileSize;
+      const unsigned int numTileInteractions = numTiles * (numTiles - 1) / 2;
+      const unsigned int maxNumInteractionsPerTile =
+        (numTileInteractions + numTiles - 1) / numTiles;
+      tileListsSize = numTiles * maxNumInteractionsPerTile;
+      tileListsLen.assign(numTiles, 0);
+      tileListsStart.assign(numTiles, 0);
+      tileLists.assign(tileListsSize, 0);
+      for (unsigned int i = 0; i < numTiles; ++i) {
+        const unsigned int jStart = i + 1;
+        const unsigned int jEnd = std::min(numTiles, jStart + maxNumInteractionsPerTile);
+        const unsigned int posStart = i * maxNumInteractionsPerTile;
+        tileListsLen[i] += jEnd - jStart;
+        tileListsStart[i] = posStart;
+        for (unsigned int j = jStart; j < jEnd; ++j) {
+          const unsigned int offset = j - jStart;
+          tileLists[posStart+offset] = j;
+        }
+        if (i > maxNumInteractionsPerTile) {
+          tileListsLen[i] += i - maxNumInteractionsPerTile;
+          for (unsigned int k = 0; k < i - maxNumInteractionsPerTile; ++k) {
+            const unsigned int offset = jEnd - jStart + k;
+            tileLists[posStart+offset] = k;
+          }
+        }
+      }
+      error_code |= p->deallocate_device_async(&d_tileLists, stream);
+      error_code |= p->deallocate_device_async(&d_tileListsStart, stream);
+      error_code |= p->deallocate_device_async(&d_tileListsLen, stream);
+      error_code |= p->allocate_device_async(&d_tileLists, tileListsSize, stream);
+      error_code |= p->allocate_device_async(&d_tileListsStart, numTiles, stream);
+      error_code |= p->allocate_device_async(&d_tileListsLen, numTiles, stream);
+      error_code |= p->copy_HtoD_async(tileLists.data(), d_tileLists, tileListsSize, stream);
+      error_code |= p->copy_HtoD_async(tileListsStart.data(), d_tileListsStart, numTiles, stream);
+      error_code |= p->copy_HtoD_async(tileListsLen.data(), d_tileListsLen, numTiles, stream);
+      // Allocate tilePairLists
+      if (b_enable_pairlist) {
+        switch (tileSize) {
+          case 32: {
+            error_code |= p->deallocate_device_async(&d_tilePairListSelf_32, stream);
+            error_code |= p->deallocate_device_async(&d_tilePairList_32, stream);
+            error_code |= p->allocate_device_async(&d_tilePairListSelf_32, numTiles, stream);
+            error_code |= p->allocate_device_async(&d_tilePairList_32, tileListsSize, stream);
+            error_code |= p->clear_device_array_async(d_tilePairListSelf_32, numTiles, stream);
+            error_code |= p->clear_device_array_async(d_tilePairList_32, tileListsSize, stream);
+            break;
+          }
+          case 64: {
+            error_code |= p->deallocate_device_async(&d_tilePairListSelf_64, stream);
+            error_code |= p->deallocate_device_async(&d_tilePairList_64, stream);
+            error_code |= p->allocate_device_async(&d_tilePairListSelf_64, numTiles, stream);
+            error_code |= p->allocate_device_async(&d_tilePairList_64, tileListsSize, stream);
+            error_code |= p->clear_device_array_async(d_tilePairListSelf_64, numTiles, stream);
+            error_code |= p->clear_device_array_async(d_tilePairList_64, tileListsSize, stream);
+            break;
+          }
+          default: {
+            error_code |= cvmodule->error("Unsupported tileSize (" + cvm::to_str((int)tileSize) + ") in buildTileLists.\n");
+          }
+        }
+      }
+      return error_code;
+    }
+  } selfCoordNumTileList;
+public:
+  cvm::real* h_coordnum;
+};
+#endif
+
 
 colvar::coordnum::coordnum()
 {
@@ -21,8 +394,10 @@ colvar::coordnum::coordnum()
   x.type(colvarvalue::type_scalar);
   cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(4.0);
   update_cutoffs({r0, r0, r0});
-  b_use_internal_pbc = cvm::main()->proxy->use_internal_pbc();
   // Boundaries will be set later, when the number of pairs is known
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  provide(f_cvc_support_gpu);
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
 
@@ -47,8 +422,6 @@ void colvar::coordnum::update_cutoffs(cvm::rvector const &r0_vec_i)
 int colvar::coordnum::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
-
-  get_keyval(conf, "useInternalPBC", b_use_internal_pbc, b_use_internal_pbc);
 
   group1 = parse_group(conf, "group1");
 
@@ -135,10 +508,6 @@ int colvar::coordnum::init(std::string const &conf)
                              COLVARS_INPUT_ERROR);
   }
 
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    cvmodule->log("Warning: only minimum-image distances are used by this variable.\n");
-  }
-
   if (function_type() != "groupCoord") {
     // All coordNum variables may benefit from a pairlist, except groupCoord
     get_keyval(conf, "tolerance", tolerance, tolerance);
@@ -151,14 +520,29 @@ int colvar::coordnum::init(std::string const &conf)
                                COLVARS_INPUT_ERROR);
         // return and do not allocate the pairlists below
       }
-      pairlist.reset(new bool[num_pairs]);
-      auto *pairlist_elem = pairlist.get();
-      for (size_t ip = 0; ip < num_pairs; ip++, pairlist_elem++) {
-        *pairlist_elem = true;
+      b_enable_pairlist = true;
+      // To save the memory, we don't allocate the CPU pairlist buffer when GPU is used.
+      if (cvmodule->proxy->get_smp_mode() != colvarproxy_smp::smp_mode_t::gpu) {
+        pairlist.reset(new bool[num_pairs]);
+        auto *pairlist_elem = pairlist.get();
+        for (size_t ip = 0; ip < num_pairs; ip++, pairlist_elem++) {
+          *pairlist_elem = true;
+        }
       }
     }
   }
 
+  if (cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+    enable(f_cvc_support_gpu);
+    disable(f_cvc_require_cpu_buffers);
+    coordnum_gpu_impl = std::unique_ptr<coordnum_gpu_impl_t>(new coordnum_gpu_impl_t(this));
+    error_code |= coordnum_gpu_impl->init();
+    if (error_code == COLVARS_OK) {
+      cvmodule->log("This CV \"" + name + "\" of type \"" + function_type() + "\" will be calculated on GPU.\n");
+    }
+#endif
+  }
   return error_code;
 }
 
@@ -227,19 +611,12 @@ void inline colvar::coordnum::main_loop()
           ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
           !(flags & ef_use_pairlist);
 
-      cvm::real const partial = within ?
-        (b_use_internal_pbc ?
-         compute_pair_coordnum<flags | ef_use_internal_pbc>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                                            x1, y1, z1, x2, y2, z2,
-                                                            gx1, gy1, gz1, gx2, gy2, gz2,
-                                                            tolerance, tolerance_l2_max,
-                                                            cvmodule) :
-         compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                      x1, y1, z1, x2, y2, z2,
-                                      gx1, gy1, gz1, gx2, gy2, gz2,
-                                      tolerance, tolerance_l2_max,
-                                      cvmodule) ) :
-        0.0;
+      cvm::real const partial =
+          within ? compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                                x1, y1, z1, x2, y2, z2,
+                                                gx1, gy1, gz1, gx2, gy2, gz2,
+                                                tolerance, tolerance_l2_max, boundary_conditions)
+                 : 0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
         *pairlist_elem = partial > 0.0 ? true : false;
@@ -332,7 +709,42 @@ void colvar::coordnum::calc_gradients()
   // Gradients are computed by calc_value() if f_cvc_gradients is enabled
 }
 
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+int colvar::coordnum::calc_value_gpu() {
+  int error_code = COLVARS_OK;
+  const bool use_pairlist = b_enable_pairlist;
+  const bool rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
+  const bool gradients = is_enabled(f_cvc_gradient);
+  const int flags = (use_pairlist ? ef_use_pairlist : 0) +
+                    (rebuild_pairlist ? ef_rebuild_pairlist : 0) +
+                    (gradients ? ef_gradients : 0);
+  if (function_type() != "selfCoordNum") {
+    if (!b_group1_center_only && !b_group2_center_only) {
+      // Compute coordnum between two different sets of atoms
+      error_code |= coordnum_gpu_impl->calc_value_two_groups(flags);
+    } else {
+      if (b_group1_center_only != b_group2_center_only) {
+        // Compute coordnum between a group of atoms and the COM of another group
+        error_code |= coordnum_gpu_impl->calc_value_group_to_com(flags);
+      } else {
+        // Compute coordnum between two COMs
+        error_code |= coordnum_gpu_impl->calc_value_two_coms(flags);
+      }
+    }
+  } else {
+    // Compute coordnum within a group
+    error_code |= coordnum_gpu_impl->calc_value_self_group(flags);
+  }
+  return error_code;
+}
 
+int colvar::coordnum::calc_value_after_gpu() {
+  int error_code = COLVARS_OK;
+  error_code |= checkGPUError(cudaEventSynchronize(get_event(cvc::event_type::calc_value)));
+  x.real_value = *coordnum_gpu_impl->h_coordnum;
+  return error_code;
+}
+#endif
 
 // h_bond member functions
 
@@ -447,7 +859,7 @@ void colvar::h_bond::calc_value()
                                                         atom_groups[0]->grad_y(1),
                                                         atom_groups[0]->grad_z(1),
                                                         0.0, 1.0e20,
-                                                        cvmodule);
+                                                        boundary_conditions);
   // Skip the gradient
 }
 
@@ -479,7 +891,7 @@ void colvar::h_bond::calc_gradients()
                                          atom_groups[0]->grad_y(1),
                                          atom_groups[0]->grad_z(1),
                                          0.0, 1.0e20,
-                                         cvmodule);
+                                         boundary_conditions);
 }
 
 
@@ -513,22 +925,15 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
       cvm::real &gz2 = group1->grad_z(j);
 
       bool const within =
-        ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
-        !(flags & ef_use_pairlist);
+          ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
+          !(flags & ef_use_pairlist);
 
-      cvm::real const partial = within ?
-        (b_use_internal_pbc ?
-         compute_pair_coordnum<flags | ef_use_internal_pbc>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                                            x1, y1, z1, x2, y2, z2,
-                                                            gx1, gy1, gz1, gx2, gy2, gz2,
-                                                            tolerance, tolerance_l2_max,
-                                                            cvmodule) :
-         compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
-                                      x1, y1, z1, x2, y2, z2,
-                                      gx1, gy1, gz1, gx2, gy2, gz2,
-                                      tolerance, tolerance_l2_max,
-                                      cvmodule) ) :
-        0.0;
+      cvm::real const partial =
+          within ? compute_pair_coordnum<flags>(inv_r0_vec, inv_r0sq_vec, en, ed,
+                                                x1, y1, z1, x2, y2, z2,
+                                                gx1, gy1, gz1, gx2, gy2, gz2,
+                                                tolerance, tolerance_l2_max, boundary_conditions)
+                 : 0.0;
 
       if ((flags & ef_use_pairlist) && (flags & ef_rebuild_pairlist)) {
         *pairlist_elem = partial > 0.0 ? true : false;

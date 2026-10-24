@@ -37,6 +37,7 @@ class colvarproxy_lammps : public colvarproxy {
   bool first_timestep;
   bool do_exit;
 
+  /// Track the type of each atom to retrieve atom properties during setup
   std::vector<int> atoms_types;
 
  public:
@@ -78,9 +79,6 @@ class colvarproxy_lammps : public colvarproxy {
 
   void log(std::string const &message) override;
   void error(std::string const &message) override;
-
-  [[nodiscard]] cvm::rvector position_distance(cvm::atom_pos const &pos1,
-                                 cvm::atom_pos const &pos2) const override;
 
   cvm::real rand_gaussian() override;
 

@@ -65,6 +65,8 @@ fix_vmd_configure() {
     sed -i "s/-ltcl8.5/-ltcl${TCL_VERSION}/" ${configure}
     sed -i "s/-ltk8.5/-ltk${TCL_VERSION}/" ${configure}
 
+    sed -i 's/-Wall/-g -Wall/' ${configure}
+
     sed -i 's/CXX11/CXX17/' ${configure}
     sed -i 's/config_cxx11/config_cxx17/' ${configure}
     sed -i 's/$config_cxx17           = 0/$config_cxx17           = 1/' ${configure}

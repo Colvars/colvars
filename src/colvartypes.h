@@ -1392,12 +1392,12 @@ public:
   friend struct rotation_derivative;
   friend class cvm::atom_group;
 
-  cvm::real* get_S() {return (cvm::real*)S;}
-  cvm::real* get_eigenvectors() {return (cvm::real*)S_eigvec;}
-  cvm::real* get_eigenvalues() {return S_eigval;}
-  cvm::quaternion* get_q() {return &q;}
-  cvm::real* get_S_backup() {return (cvm::real*)S_backup;}
-  cvm::rmatrix* get_C() {return &C;}
+  cvm::real *get_S() { return reinterpret_cast<cvm::real *>(S); }
+  cvm::real *get_eigenvectors() { return reinterpret_cast<cvm::real *>(S_eigvec); }
+  cvm::real *get_eigenvalues() { return S_eigval; }
+  cvm::quaternion *get_q() { return &q; }
+  cvm::real *get_S_backup() { return reinterpret_cast<cvm::real *>(S_backup); }
+  cvm::rmatrix *get_C() { return &C; }
 
   /*! @brief  Function for debugging gradients
    *  @param[in]  pos1  Atom positions of group 1 in SOA (in xxxyyyzzz order)
@@ -1613,6 +1613,8 @@ private:
   cvm::real* h_S;
   cvm::real* h_S_eigval;
   cvm::real* h_S_eigvec;
+  /// \brief CUDA event for checking if max iterations are reached
+  cudaEvent_t jacobi_done;
 public:
   /// Constructor
   rotation_gpu();
@@ -1641,7 +1643,7 @@ public:
     std::unordered_map<std::string, cudaGraphNode_t>& nodes_map);
   /// \brief Checking after synchronization (
   /// eigendecomposition iterations and max crossing)
-  void after_sync_check() const;
+  void check_error() const;
 
   friend struct rotation_derivative_gpu;
   cvm::real* get_S() const {return d_S;}

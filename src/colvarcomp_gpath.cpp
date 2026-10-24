@@ -516,7 +516,7 @@ int colvar::CVBasedPath::init(std::string const &conf)
             for (auto it_sub_cvc_conf = sub_cvc_confs.begin(); it_sub_cvc_conf != sub_cvc_confs.end(); ++it_sub_cvc_conf) {
                 cv.push_back((it_cv_map->second)());
                 cv.back()->init(*(it_sub_cvc_conf));
-                if (cv.back()->has_gpu_implementation()) {
+                if (cv.back()->is_enabled(f_cvc_support_gpu)) {
                     // TODO: GPU support for nested CVs
                     return cvmodule->error(
                         "Nested CV " + cv.back()->name +

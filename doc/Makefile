@@ -1,5 +1,5 @@
 .PHONY: all pdf html doxygen webpage webpage-legacy images \
-	install clean clean-all \
+	install install-images clean clean-all \
 	update-code-refs update-cvscript-cmdline-doc updates update-version-list
 
 ifeq ($(COLVARS_RELEASE),)
@@ -45,7 +45,7 @@ endif
 PDF = $(foreach _,${ENGINES},colvars-refman-$_.pdf)
 HTML = $(foreach _,${ENGINES},colvars-refman-$_.html)
 
-IMAGES = cover-512px.jpg eulerangles-512px.png
+IMAGES = cover-512px.jpg eulerangles-512px.png spin-tilt-scheme-512px.png
 
 CSS = $(HTML:.html=.css)
 BIBTEX = colvars-refman.bib
@@ -77,6 +77,9 @@ HTLATEX_OPTS = "html5mjlatex.cfg, charset=utf-8" " -cunihtf -utf8"
 	@echo "Building $@ with release label \"${COLVARS_RELEASE}\"" ; \
 	$(HTLATEX) $(notdir $<) $(HTLATEX_OPTS); \
 	bash postprocess_html.sh $@
+
+spin-tilt-scheme-512px.png: spin-tilt-scheme.pdf
+	convert -flatten -resize 512x300 $^ $@
 
 eulerangles-512px.png: eulerangles.pdf
 	convert -flatten -resize 512x576 $^ $@
@@ -118,6 +121,9 @@ else
 # Note: to produce the documentation for a specific release of a MD engine,
 # check out the branch or tag corresponding to that version, clean and rebuild.
 ifeq ($(COLVARS_RELEASE),master)
+
+install-images:
+	cp -p -f $(IMAGES) $(COLVARS_WEBSITE_TREE)/images/
 
 webpage: all doxygen
 	mkdir -p $(COLVARS_WEBSITE_TREE)/$(COLVARS_RELEASE) ; \

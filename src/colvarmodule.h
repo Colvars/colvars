@@ -14,9 +14,9 @@
 #include <unordered_map>
 #include <memory>
 #include <cstdio>
+#include <atomic>
 
 #include "colvars_version.h"
-#include "colvar_gpu_calc.h"
 
 #ifndef COLVARS_DEBUG
 #define COLVARS_DEBUG false
@@ -102,7 +102,7 @@ public:
   // Math functions
 
   /// Override the STL pow() with a product for n integer
-  static inline real integer_power(real const &x, int const n)
+  static COLVARS_HOST_DEVICE inline real integer_power(real const &x, int const n)
   {
     // Original code: math_special.h in LAMMPS
     double yy, ww;
@@ -113,6 +113,17 @@ public:
       if (nn & 1) yy *= ww;
     }
     return (n > 0) ? yy : 1.0/yy;
+  }
+
+  template <int n>
+  static COLVARS_HOST_DEVICE inline real
+  positive_integer_power(real const& x) {
+    static_assert(n > 0, "n must be greater than zero in positive_integer_power.");
+    real y = 1.0;
+    for (int i = 0; i < n; ++i) {
+      y *= x;
+    }
+    return y;
   }
 
   /// Reimplemented to work around MS compiler issues
@@ -228,6 +239,7 @@ static inline real acos(real const &x)
   template <class T> class matrix2d;
   class quaternion;
   class rotation;
+  class system_boundary_conditions;
 
   class usage;
   class memory_stream;
@@ -321,12 +333,12 @@ private:
   std::vector<int> colvars_smp_items;
 
   /// Array of named atom groups
-  std::vector<atom_group *> named_atom_groups_soa;
+  std::vector<atom_group *> named_atom_groups;
 
 public:
 
-  void register_named_atom_group_soa(atom_group *ag);
-  void unregister_named_atom_group_soa(atom_group *ag);
+  void register_named_atom_group(atom_group *ag);
+  void unregister_named_atom_group(atom_group *ag);
 
   /// Array of collective variables
   std::vector<colvar *> *variables();
@@ -373,9 +385,13 @@ public:
   std::vector<colvarbias *> *biases_active();
 
   /// \brief Whether debug output should be enabled (compile-time option)
-  static inline bool debug()
+  static inline bool constexpr debug()
   {
+#if (defined(__HIP_DEVICE_COMPILE__)) || (defined(__CUDA_ARCH__))
+    return false;
+#else
     return COLVARS_DEBUG;
+#endif
   }
 
   /// How many objects (variables and biases) are configured yet?
@@ -580,7 +596,7 @@ public:
   colvar * colvar_by_name(std::string const &name);
 
   /// Look up a named atom group by name; returns NULL if not found
-  atom_group * atom_group_soa_by_name(std::string const& name);
+  atom_group * atom_group_by_name(std::string const& name);
 
   /// Load new configuration for the given bias -
   /// currently works for harmonic (force constant and/or centers)
@@ -604,6 +620,9 @@ public:
 
   /// Integrate bias and restraint forces, send colvar forces to atoms
   int update_colvar_forces();
+
+  /// \brief Called from proxy when it completes buffers reallocation
+  int proxy_gpu_buffers_reallocated_done();
 
   /// Perform analysis
   int analyze();
@@ -820,11 +839,6 @@ public:
     return 5;
   }
 
-  /// \brief Get the distance between two atomic positions with pbcs handled
-  /// correctly
-  rvector position_distance(atom_pos const &pos1,
-                                   atom_pos const &pos2);
-
   /// \brief Names of .ndx files that have been loaded
   std::vector<std::string> index_file_names;
 
@@ -902,7 +916,7 @@ protected:
 
   /// Records the maximum gradient discrepancy evaluated by debugGradients
   /// see cvc::debug_gradients()
-  real max_gradient_error = 0.;
+  std::atomic<real> max_gradient_error{0.};
 
 public:
 
@@ -945,7 +959,10 @@ public:
   /// in this instance of colvarmodule
   /// see cvc::debug_gradients()
   void record_gradient_error(real error) {
-    if (error > max_gradient_error) max_gradient_error = error;
+    real current = max_gradient_error.load(std::memory_order_relaxed);
+    while (error > current &&
+          !max_gradient_error.compare_exchange_weak(current, error, std::memory_order_relaxed)) {
+    }
   }
 
   real get_max_gradient_error() {
@@ -970,9 +987,6 @@ public:
 #endif
   using ag_vector_real_t = std::vector<real, allocator_type<real>>;
 
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  std::unique_ptr<colvars_gpu::colvarmodule_gpu_calc> gpu_calc;
-#endif
 };
 
 /// Shorthand for the frequently used type prefix

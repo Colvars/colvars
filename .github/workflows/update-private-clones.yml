@@ -1,0 +1,55 @@
+name: "Update the private copy of NAMD"
+
+on:
+
+  schedule:
+    - cron: "23 1 * * *"
+
+  workflow_dispatch:
+
+jobs:
+
+  update-namd:
+    name: Sync the Colvars/namd private repo with NAMD GitLab
+    if: ${{ github.repository == 'Colvars/colvars' }}
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Generate app token for Colvars/namd repo
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_NAMD_VMD_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_NAMD_VMD_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: namd
+          permission-contents: write
+
+      - name: Configure SSH for GitLab access
+        env:
+          SSH_KEY: ${{ secrets.PULL_NAMD_KEY }}
+        run: |
+          mkdir -p -m 700 ~/.ssh
+          echo "${SSH_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+
+      - name: Checkout Colvars/namd private repo
+        uses: actions/checkout@v7
+        with:
+          repository: 'Colvars/namd'
+          path: 'namd'
+          ref: 'main'
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Fetch commits from upstream repo
+        working-directory: namd
+        run: |
+          git remote add upstream git@gitlab.com:tcbgUIUC/namd.git
+          git pull --ff-only upstream main
+
+      - name: Push upstream commits to private repo
+        working-directory: namd
+        run: |
+          git push origin main

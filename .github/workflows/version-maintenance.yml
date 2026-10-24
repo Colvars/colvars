@@ -7,35 +7,69 @@ on:
 
 jobs:
 
+  update-versions:
+    name: Update version strings
+    runs-on: ubuntu-latest
+    concurrency:
+      group: update-version-strings-master
+      cancel-in-progress: false
+    steps:
+
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_VERSIONS_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_VERSIONS_PRIVATE_KEY }}
+
+      - name: Checkout Colvars repo in full
+        uses: actions/checkout@v7
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Update version strings
+        env:
+          LAST_COMMIT_BEFORE_PUSH: ${{ github.event.before }}
+        run: |
+          git config user.email "noreply@github.com"
+          git config user.name "CI runner"
+          source devel-tools/version_functions.sh
+          update_all_versions "${LAST_COMMIT_BEFORE_PUSH}"
+          git push origin master
+
+
   update-wiki:
     name: Update Wiki repo
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'Colvars/colvars' }}
     steps:
 
-      - name: Checkout Colvars repo in full
-        uses: actions/checkout@v5
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
         with:
+          client-id: ${{ vars.UPDATE_VERSIONS_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_VERSIONS_PRIVATE_KEY }}
+
+      - name: Checkout Colvars repo in full
+        uses: actions/checkout@v7
+        with:
+          ref: master
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Checkout Wiki repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: 'Colvars/colvars.wiki'
           path: 'wiki'
-
-      - name: Cache the SSH key for the runner
-        env: 
-          SSH_KEY: ${{ secrets.PULL_PUSH_COLVARS_KEY }}
-        run: |
-          mkdir -p -m 700 ~/.ssh
-          echo "${SSH_KEY}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          git config --global user.email "noreply@github.com"
-          git config --global user.name "CI runner"
+          token: ${{ steps.app-token.outputs.token }}
           
       - name: Update Wiki page that lists Colvars versions
         run: |
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "CI runner"
           git fetch --all
           bash doc/print_engine_versions.sh > wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
           if ! git -C wiki diff --quiet ; then

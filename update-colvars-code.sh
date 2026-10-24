@@ -536,30 +536,28 @@ fi
 if [ ${code} = "GROMACS" ]
 then
 
-  target_folder=${target}/src/external/colvars
+  target_folder=${target}/src/external/colvars/colvars
 
   mkdir -p ${target_folder}
 
-  # Copy library files and proxy files to the "src/external/colvars" folder
+  # Copy library files
   for src in ${source}/src/*.h ${source}/src/*.cpp
   do \
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/${tgt}"
   done
 
-  # Update the Colvars CUDA source files
+  # Copy the Colvars CUDA source files
   mkdir -p "${target_folder}/cuda"
   for src in ${source}/src/cuda/*.h ${source}/src/cuda/*.cu
   do
     tgt=$(basename ${src})
     condcopy "${src}" "${target_folder}/cuda/${tgt}"
   done
+
   echo ""
 
   # Patch CMake build recipes when applicable
-  if [ -s ${source}/gromacs/gmxManageColvars.cmake.patch ] ; then
-    patch ${PATCH_OPTS} -d ${target} < ${source}/gromacs/gmxManageColvars.cmake.patch || true
-  fi
   if [ -s ${source}/gromacs/CMakeLists.txt.patch ] ; then
     patch ${PATCH_OPTS} -d ${target} < ${source}/gromacs/CMakeLists.txt.patch || true
   fi

@@ -62,6 +62,18 @@ int colvarproxy_atoms::add_atom_slot(int atom_id)
 }
 
 
+int colvarproxy_atoms::find_atom_by_id(int atom_id)
+{
+  auto it = std::find(atoms_ids.begin(), atoms_ids.end(), atom_id);
+  if (it != atoms_ids.end()) {
+    // this atom id was already recorded
+    size_t i = std::distance(atoms_ids.begin(), it);
+    return i;
+  }
+  return -1;
+}
+
+
 int colvarproxy_atoms::init_atom(int /* atom_number */)
 {
   return COLVARS_NOT_IMPLEMENTED;
@@ -188,7 +200,7 @@ int colvarproxy_atom_groups::add_atom_group_slot(int atom_group_id)
 }
 
 
-int colvarproxy_atom_groups::scalable_group_coms()
+int colvarproxy_atom_groups::check_scalable_group_coms()
 {
   return COLVARS_NOT_IMPLEMENTED;
 }
@@ -512,7 +524,18 @@ void colvarproxy::add_config(std::string const &cmd, std::string const &conf)
 
 int colvarproxy::setup()
 {
-  return COLVARS_OK;
+  int error_code = COLVARS_OK;
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  if (has_gpu_support()) {
+    error_code |= init_gpu();
+    this->log("GPU Platform: " + gpu_platform() + "\n");
+    this->log("GPU Name: " + gpu_name() + "\n");
+    this->log("GPU Device ID: " + cvm::to_str(gpu_device_id()) + "\n");
+    this->log("GPU Warp/Wavefront size: " + cvm::to_str(gpu_warp_size()) + "\n");
+    this->log("GPU PCI Bus ID: " + gpu_bus_id() + "\n");
+  }
+#endif
+  return error_code;
 }
 
 

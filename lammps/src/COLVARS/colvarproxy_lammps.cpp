@@ -9,7 +9,7 @@
 // Colvars repository at GitHub.
 
 #include "colvarproxy_lammps.h"
-#include "colvarproxy_lammps_version.h"    // IWYU pragma: export
+#include "colvarproxy_lammps_version.h"
 
 #include "domain.h"
 #include "error.h"
@@ -133,24 +133,12 @@ double colvarproxy_lammps::compute()
   }
   previous_step = _lmp->update->ntimestep;
 
-  unit_cell_x.set(_lmp->domain->xprd, 0.0, 0.0);
-  unit_cell_y.set(0.0, _lmp->domain->yprd, 0.0);
-  unit_cell_z.set(0.0, 0.0, _lmp->domain->zprd);
-
-  if (_lmp->domain->xperiodic == 0 && _lmp->domain->yperiodic == 0 &&
-      _lmp->domain->zperiodic == 0) {
-    boundaries_type = boundaries_non_periodic;
-    reset_pbc_lattice();
-  } else if ((_lmp->domain->nonperiodic == 0) &&
-             (_lmp->domain->dimension == 3) &&
-             (_lmp->domain->triclinic == 0)) {
-    // Orthogonal unit cell
-    boundaries_type = boundaries_pbc_ortho;
-    colvarproxy_system::update_pbc_lattice();
-    // It is safer to let LAMMPS deal with high-tilt triclinic boxes
-  } else {
-    boundaries_type = boundaries_unsupported;
-  }
+  boundaries_.set_boundaries(_lmp->domain->xperiodic,
+                             _lmp->domain->yperiodic,
+                             _lmp->domain->zperiodic,
+                             cvm::rvector{_lmp->domain->xprd, 0.0, 0.0},
+                             cvm::rvector{_lmp->domain->xy, _lmp->domain->yprd, 0.0},
+                             cvm::rvector{_lmp->domain->xz, _lmp->domain->yz, _lmp->domain->zprd});
 
   if (cvmodule->debug()) {
     cvmodule->log(std::string(cvm::line_marker) +
@@ -183,19 +171,6 @@ double colvarproxy_lammps::compute()
   }
 
   return bias_energy;
-}
-
-/* ---------------------------------------------------------------------- */
-
-cvm::rvector colvarproxy_lammps::position_distance(cvm::atom_pos const &pos1,
-                                                   cvm::atom_pos const &pos2)
-  const
-{
-  double xtmp = pos2.x - pos1.x;
-  double ytmp = pos2.y - pos1.y;
-  double ztmp = pos2.z - pos1.z;
-  _lmp->domain->minimum_image_big(FLERR, xtmp,ytmp,ztmp);
-  return {xtmp, ytmp, ztmp};
 }
 
 /* ---------------------------------------------------------------------- */
@@ -268,22 +243,22 @@ int colvarproxy_lammps::check_atom_id(int atom_number)
 
 int colvarproxy_lammps::init_atom(int atom_number)
 {
-  int aid = atom_number;
+  int aid = check_atom_id(atom_number);
 
-  for (size_t i = 0; i < atoms_ids.size(); i++) {
-    if (atoms_ids[i] == aid) {
-      // this atom id was already recorded
-      atoms_refcount[i] += 1;
-      return i;
-    }
+  if (aid < 0) {
+    return COLVARS_INPUT_ERROR;
   }
 
-  aid = check_atom_id(atom_number);
-  if (aid < 0) return aid;
+  int index = find_atom_by_id(aid);
 
-  int const index = colvarproxy::add_atom_slot(aid);
-  // add entries for the LAMMPS-specific fields
+  if (index >= 0) {
+    increase_refcount(index);
+    return index;
+  }
+
+  index = add_atom_slot(aid);
   atoms_types.push_back(0);
+  // Atom properties will be updated later, as part of the setup() function
 
   return index;
 }

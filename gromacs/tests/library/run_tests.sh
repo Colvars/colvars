@@ -5,33 +5,52 @@
 # It's best to have Gromacs compiled in double precsision
 # Reference files have been generated with Gromacs version 2020.3
 
-gen_ref_output=''
+shopt -s nullglob
+
 TMPDIR=/tmp
 DIRLIST=''
 BINARY=gmx_d
 SPIFF=spiff
 
+cleanup='true'
+verbose='false'
+gen_ref_output='false'
 
 while [ $# -ge 1 ]; do
   if { echo $1 | grep -q gmx ; }; then
-    echo "Using GROMACS executable from $1"
     BINARY=$1
   elif [ "x$1" = 'x-g' ]; then
-    gen_ref_output='yes'
+    gen_ref_output='true'
     echo "Generating reference output"
+  elif [ "x$1" = 'x-v' ]; then
+    verbose='true'
+  elif [ "x$1" = 'x-k' ]; then
+    cleanup='false'
   elif [ "x$1" = 'x-h' ]; then
-    echo "Usage: ./run_tests.sh [-h] [-g] [path_to_gmx] [testdir1 [testdir2 ...]]"  >& 2
-    echo "    The -g option (re)generates reference outputs in the given directories" >& 2
-    echo "    If no executable is given, \"gmx_d\" is used" >& 2
-    echo "    If no directories are given, all matches of [0-9][0-9][0-9]_* are used" >& 2
-    echo "    This script relies on the executable spiff to be available, and will try to " >& 2
-    echo "    download and build it into $TMPDIR if needed." >& 2
+    echo "Usage: ./run_tests.sh [-h] [-g] [-v] [-k] [path_to_gmx] [testdir1 [testdir2 ...]]"  >& 2
+    echo >& 2
+    echo "        If no gmx executable is given, \"gmx_d\" is used" >& 2
+    echo >& 2
+    echo "        If no directories are given, all matches of [0-9][0-9][0-9]_* are used" >& 2
+    echo >& 2
+    echo "        This script relies on the executable spiff to be available, and will try to " >& 2
+    echo "        download and build it into $TMPDIR if needed." >& 2
+    echo >& 2
+    echo "  -g    (re)generate reference outputs in the given directories" >& 2
+    echo >& 2
+    echo "  -k    keep the output files after a successful test, otherwise they are deleted." >& 2
+    echo "  -v    enable verbose output." >& 2
     exit 0
   else
     DIRLIST=`echo ${DIRLIST} $1`
   fi
   shift
 done
+
+echo "Using GROMACS executable: ${BINARY}"
+if $verbose ; then
+  echo "Will run tests in the following directories: ${DIRLIST}"
+fi
 
 TOPDIR=$(git rev-parse --show-toplevel)
 if [ ! -d ${TOPDIR} ] ; then
@@ -42,7 +61,7 @@ else
       echo "Error: could not be downloaded/built." >& 2
       echo "Using standard `spiff` command" >& 2
   else
-      echo "Using spiff executable from $SPIFF"
+      echo "Using spiff executable: $SPIFF"
       hash -p ${SPIFF} spiff
   fi
 fi
@@ -105,6 +124,10 @@ cleanup_files() {
     rm -f *.ndx *.xyz
     rm -f ${base}.dat
   done
+  # if cleanup.sh exists, run it to clean up any additional files
+  if [ -f cleanup.sh ]; then
+    ./cleanup.sh
+  fi
 }
 
 
@@ -112,56 +135,88 @@ for dir in ${DIRLIST} ; do
 
   dir="${dir%/}" # Remove trailing / if present
   if [ -f ${dir}/disabled ] ; then
+    if $verbose ; then
+      echo "Skipping disabled test $dir"
+    fi
     continue
   fi
 
-  echo -ne "Entering $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) ..."
+  # Skip MPI tests if the binary is not an MPI build
+  if [ $MPI_BUILD = no ] && echo ${dir} | grep -q MPI ; then
+    echo "Skipping $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) (MPI test, but not an MPI build)"
+    continue
+  fi
+
+  echo -ne "Entering $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) ... "
   cd $dir
 
   if [ ! -d AutoDiff ] ; then
     echo ""
-    echo "  Creating directory AutoDiff, use -g to fill it."
+    echo "  Creating directory AutoDiff"
     mkdir AutoDiff
-    cd $BASEDIR
-    continue
-  else
+    # Still run the tests to check for successful completion
+  fi
 
-    if [ "x${gen_ref_output}" != 'xyes' ]; then
+  if $gen_ref_output; then
 
-      if ! { ls AutoDiff/ | grep -q test ; } then
-        echo ""
-        echo "  Warning: directory AutoDiff empty!"
-        cd $BASEDIR
-        continue
-      fi
-
-      # first, remove target files from work directory
-      for f in AutoDiff/*
-      do
-        base=`basename $f`
-        if [ -f $base ]
-        then
-          mv $base $base.backup
-        fi
-      done
+    if ! { ls AutoDiff/ | grep -q test ; } then
+      echo "  Directory AutoDiff is empty, populating..."
     fi
+
+    # first, remove target files from work directory
+    for f in AutoDiff/*
+    do
+      base=`basename $f`
+      if [ -f $base ]
+      then
+        mv $base $base.backup
+      fi
+    done
   fi
 
-  cleanup_files
-
-  simulations=(test test.restart)
-  if [ "${dir##*/}" = "000_multiple_walkers_mtd" ] ; then
-    simulations=(test{.rep1,.rep2} test{.rep1,.rep2}.restart)
+  if $cleanup; then
+    cleanup_files
   fi
+
 
   # Run simulation(s)
   if [ -f run.sh ]
   then
-      # Special run script e.g. for interface tests
-      ./run.sh $BINARY
-      RETVAL=$?
+    # Special run script e.g. for interface tests
+    if $verbose ; then
+      echo "Running simulation with special script: $(${TPUT_BLUE})run.sh$(${TPUT_CLEAR})"
+    fi
+
+    ./run.sh $BINARY
+    RETVAL=$?
+
+    # For multi-replica simulations, copy output from first replica
+    if [ -d a ] && echo ${dir} | grep -q MPI; then
+      basename=test
+      logfile=a/${basename}.log
+      # Filter out the version numbers to allow comparisons
+      grep "^colvars:" ${logfile} \
+        | grep -v 'Initializing the collective variables module' \
+        | grep -v 'Using GROMACS interface, version' > ${basename}.colvars.out
+
+      if [ -s a/${basename}.colvars.state ] ; then
+        grep -sv 'version' a/${basename}.colvars.state \
+            > ${TMPDIR}/${basename}.colvars.state.stripped && \
+          mv -f ${TMPDIR}/${basename}.colvars.state.stripped ${basename}.colvars.state.stripped
+      fi
+
+      cp a/${basename}.colvars.traj .
+    fi
   else
+    simulations=(test test.restart)
+    if [ "${dir##*/}" = "000_multiple_walkers_mtd" ] ; then
+      simulations=(test{.rep1,.rep2} test{.rep1,.rep2}.restart)
+    fi
+
     for basename in ${simulations[@]} ; do
+      if $verbose ; then
+        echo "Running simulation with basename: $(${TPUT_BLUE})${basename}$(${TPUT_CLEAR})"
+      fi
 
       # Create symlinks to the Colvars config file, index file, and xyz file
       if [ -f ${basename}.in ] ; then
@@ -181,13 +236,29 @@ for dir in ${DIRLIST} ; do
 
       # Try running the test
 
+      structure_file="../Common/da.pdb"
+      topology_file="../Common/da.top"
+      initial_trajectory_file="../Common/da.trr"
+      if [ -f get_structure_file.sh ] ; then
+        structure_file=$(./get_structure_file.sh)
+      fi
+      if [ -f get_topology_file.sh ] ; then
+        topology_file=$(./get_topology_file.sh)
+      fi
+      if [ -f get_initial_trajectory_file.sh ] ; then
+        initial_trajectory_file=$(./get_initial_trajectory_file.sh)
+      fi
       if [ "${basename%.restart}" == "${basename}" ] ; then
         # Initial run
         MDP=../Common/test.mdp
         if [ -f ${basename}.mdp ] ; then
           MDP=${basename}.mdp
         fi
-        ${BINARY} grompp -f ${MDP} -c ../Common/da.pdb -p ../Common/da.top -t ../Common/da.trr -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+        if [[ -z "$initial_trajectory_file" ]] ; then
+          ${BINARY} grompp -f ${MDP} -c $structure_file -p $topology_file -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+        else
+          ${BINARY} grompp -f ${MDP} -c $structure_file -p $topology_file -t $initial_trajectory_file -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+        fi
         ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} 2> ${basename}.err 1> ${basename}.out
         RETVAL=$?
       fi
@@ -210,7 +281,7 @@ for dir in ${DIRLIST} ; do
           # Mimic the initial step of a job restarted from checkpoint, to be
           # consistent with reference outputs
           echo "init-step = 20" >> ${NEW_MDP}
-          ${BINARY} grompp -f ${NEW_MDP} -c ../Common/da.pdb -p ../Common/da.top -t ${basename%.restart}.cpt -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
+          ${BINARY} grompp -f ${NEW_MDP} -c $structure_file -p $topology_file -t ${basename%.restart}.cpt -o ${basename}.tpr 2> ${basename}.grompp.err 1> ${basename}.grompp.out
           rm -f ${NEW_MDP} ${NEW_CVCONF}
           ${MPIRUN_CMD} ${BINARY} mdrun ${TMPI_TASKS} -s ${basename}.tpr -ntomp ${NUM_THREADS} -deffnm ${basename} -noappend 2> ${basename}.err 1> ${basename}.out
           RETVAL=$?
@@ -240,13 +311,18 @@ for dir in ${DIRLIST} ; do
       fi
 
       # If this test is used to generate the reference output files, copy them
-      if [ "x${gen_ref_output}" = 'xyes' ]; then
+      if $gen_ref_output; then
+echo "****"
+ls -l
+
         grep ':-) GROMACS -' ${basename}.out | head -n 1 > gromacs-version.txt
         grep 'Initializing the collective variables module, version' ${basename}.out | head -n 1 >> gromacs-version.txt
         grep 'Using GROMACS interface, version' ${basename}.out | head -n 1 >> gromacs-version.txt
-        cp ${basename}.colvars.state.stripped AutoDiff/
-        cp ${basename}.colvars.traj           AutoDiff/
-        cp ${basename}.colvars.out            AutoDiff/
+        [ -f ${basename}.colvars.state.stripped ] && cp ${basename}.colvars.state.stripped AutoDiff/
+        [ -f ${basename}.colvars.traj ] && cp ${basename}.colvars.traj           AutoDiff/
+        [ -f ${basename}.colvars.out ] && cp ${basename}.colvars.out            AutoDiff/
+        [ -f ${basename}.part0002.colvars.state.stripped ] && cp ${basename}.part0002.colvars.state.stripped AutoDiff/${basename}.colvars.state.stripped
+        [ -f ${basename}.part0002.colvars.traj ] && cp ${basename}.part0002.colvars.traj AutoDiff/${basename}.colvars.traj
         if [ -f ${basename}.histogram1.dat ] ; then
           cp -f ${basename}.histogram1.dat AutoDiff/
         fi
@@ -273,6 +349,9 @@ for dir in ${DIRLIST} ; do
   for f in AutoDiff/*
   do
     base=`basename $f`
+    if $verbose ; then
+      echo -ne "  Comparing $(${TPUT_BLUE})$base$(${TPUT_CLEAR}) ..."
+    fi
 
     if [ "${base%.state.stripped}" != "${base}" ] && [ -n "${COLVARS_BINARY_RESTART}" ] ; then
       # Do not try comparing binary state files, they will never match anyway
@@ -320,18 +399,24 @@ for dir in ${DIRLIST} ; do
         else
           echo " --> Fails at minimum tested precision 1e-${LOW_PREC}"
         fi
+      elif $verbose ; then
+        echo -e "Skipping comparison for file $(${TPUT_BLUE})$base$(${TPUT_CLEAR}) (stdout log)"
       fi
+    elif $verbose ; then
+      echo -e "Successful comparison for file $(${TPUT_GREEN})$base$(${TPUT_CLEAR})"
     fi
    done
 
   if [ $SUCCESS -eq 1 ]
   then
-    if [ "x${gen_ref_output}" == 'xyes' ]; then
+    if $gen_ref_output; then
       echo "Reference files copied successfully."
     else
       echo " $(${TPUT_GREEN})Success!$(${TPUT_CLEAR})"
     fi
-    cleanup_files ${simulations[@]}
+    if $cleanup; then
+      cleanup_files ${simulations[@]}
+    fi
   fi
 
   # # TODO: at this point, we may use the diff file to update the reference tests for harmless changes

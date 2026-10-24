@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 include(CheckIncludeFile)
 project(cudaglobalmastercolvars LANGUAGES CXX)
 
@@ -54,11 +54,13 @@ file(GLOB LEPTON_SOURCES ${NAMD_LEPTON_SOURCE_DIR}/[^.]*.cpp)
 set(COLVARS_CUDA_HEADER ${COLVARS_SOURCE_DIR}/cuda/colvaratoms_kernel.h
                         ${COLVARS_SOURCE_DIR}/cuda/colvar_rotation_derivative_kernel.h
                         ${COLVARS_SOURCE_DIR}/cuda/colvartypes_kernel.h
-                        ${COLVARS_SOURCE_DIR}/cuda/colvarcomp_distance_kernel.h)
+                        ${COLVARS_SOURCE_DIR}/cuda/colvarcomp_distance_kernel.h
+                        ${COLVARS_SOURCE_DIR}/cuda/colvarcomp_coordnums_kernel.h)
 set(COLVARS_CUDA_SOURCE ${COLVARS_SOURCE_DIR}/cuda/colvaratoms_kernel.cu
                         ${COLVARS_SOURCE_DIR}/cuda/colvar_rotation_derivative_kernel.cu
                         ${COLVARS_SOURCE_DIR}/cuda/colvartypes_kernel.cu
-                        ${COLVARS_SOURCE_DIR}/cuda/colvarcomp_distance_kernel.cu)
+                        ${COLVARS_SOURCE_DIR}/cuda/colvarcomp_distance_kernel.cu
+                        ${COLVARS_SOURCE_DIR}/cuda/colvarcomp_coordnums_kernel.cu)
 
 if(USE_CUDA)
   if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
@@ -147,14 +149,15 @@ if(USE_CUDA)
 endif()
 
 if(USE_HIP)
-  target_link_libraries(cudaglobalmastercolvars hip::device hip::host)
+  # Only hip::host: hip::device adds --offload-arch options from ROCm's
+  # GPU_TARGETS (by default the GPUs of the build machine), which would
+  # override CMAKE_HIP_ARCHITECTURES. The kernels are compiled as HIP sources,
+  # which get CMAKE_HIP_ARCHITECTURES, and the other sources are host code.
+  target_link_libraries(cudaglobalmastercolvars hip::host)
   set_property(TARGET cudaglobalmastercolvars PROPERTY LANGUAGE HIP)
   set_source_files_properties(${COLVARS_SOURCES} PROPERTIES LANGUAGE CXX)
   set_source_files_properties(${LEPTON_SOURCES} PROPERTIES LANGUAGE CXX)
-  set_source_files_properties(colvarproxy_cudaglobalmaster.h PROPERTIES LANGUAGE CXX)
   set_source_files_properties(colvarproxy_cudaglobalmaster.C PROPERTIES LANGUAGE CXX)
   set_source_files_properties(colvarproxy_cudaglobalmaster_kernel.cu PROPERTIES LANGUAGE HIP)
-  set_source_files_properties(colvarproxy_cudaglobalmaster_kernel.h PROPERTIES LANGUAGE HIP)
-  set_source_files_properties(${COLVARS_CUDA_HEADER} PROPERTIES LANGUAGE HIP)
   set_source_files_properties(${COLVARS_CUDA_SOURCE} PROPERTIES LANGUAGE HIP)
 endif()

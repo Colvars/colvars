@@ -1,0 +1,30 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    coordNum {
+        debugGradients on
+        group1 {
+            indexGroup group11
+        }
+        group2 {
+            indexGroup group12
+        }
+        tolerance 0.001
+        pairListFrequency 2
+    }
+} 
+
+harmonic {
+    colvars        one
+    centers        0.1
+    forceConstant  0.001
+}

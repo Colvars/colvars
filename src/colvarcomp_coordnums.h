@@ -25,14 +25,20 @@ public:
 
   coordnum();
   virtual ~coordnum();
-  virtual int init(std::string const &conf);
-  virtual void calc_value();
-  virtual void calc_gradients();
+  virtual int init(std::string const &conf) override;
+  virtual void calc_value() override;
+  virtual void calc_gradients() override;
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  virtual int calc_value_gpu() override;
+  virtual int calc_value_after_gpu() override;
+  virtual int calc_gradients_gpu() override {return COLVARS_OK;}
+  virtual int calc_gradients_after_gpu() override {return COLVARS_OK;}
+#endif
 
   enum {
     ef_null = 0,
     ef_gradients = 1,
-    ef_use_internal_pbc = (1 << 8),
     ef_use_pairlist = (1 << 9),
     ef_rebuild_pairlist = (1 << 10)
   };
@@ -43,20 +49,22 @@ public:
   /// @param en Numerator exponent
   /// @param ed Denominator exponent
   /// @param pairlist_tol Pairlist tolerance
-  template <int flags>
-  static cvm::real switching_function(cvm::real const &l2, cvm::real &dFdl2, int en, int ed,
-                                      cvm::real pairlist_tol);
+  template <int flags, int static_en = 0, int static_ed = 0>
+  inline COLVARS_HOST_DEVICE static cvm::real switching_function(
+    cvm::real const &l2, cvm::real &dFdl2, int en, int ed,
+    cvm::real pairlist_tol);
 
   /// Main kernel for the coordination number
-  template <int flags>
-  static cvm::real compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
-                                         cvm::rvector const &inv_r0sq_vec, int en, int ed,
-                                         const cvm::real a1x, const cvm::real a1y, const cvm::real a1z,
-                                         const cvm::real a2x, const cvm::real a2y, const cvm::real a2z,
-                                         cvm::real &g1x, cvm::real &g1y, cvm::real &g1z,
-                                         cvm::real &g2x, cvm::real &g2y, cvm::real &g2z,
-                                         cvm::real pairlist_tol, cvm::real pairlist_tol_l2_max,
-                                         colvarmodule *cvmodule);
+  template <int flags, int static_en = 0, int static_ed = 0>
+  inline COLVARS_HOST_DEVICE static cvm::real compute_pair_coordnum(
+    cvm::rvector const &inv_r0_vec,
+    cvm::rvector const &inv_r0sq_vec, int en, int ed,
+    const cvm::real a1x, const cvm::real a1y, const cvm::real a1z,
+    const cvm::real a2x, const cvm::real a2y, const cvm::real a2z,
+    cvm::real &g1x, cvm::real &g1y, cvm::real &g1z,
+    cvm::real &g2x, cvm::real &g2y, cvm::real &g2z,
+    cvm::real pairlist_tol, cvm::real pairlist_tol_l2_max,
+    cvm::system_boundary_conditions const &bc);
 
   /// Workhorse function
   template <bool use_group1_com, bool use_group2_com, int flags> int compute_coordnum();
@@ -96,8 +104,8 @@ protected:
   /// If true, group2 will be treated as a single atom
   bool b_group2_center_only = false;
 
-  /// Use the PBC functions from the Colvars library (as opposed to MD engine)
-  bool b_use_internal_pbc = false;
+  /// If true, then pairlist is enabled
+  bool b_enable_pairlist = false;
 
   /// Tolerance for the pair list
   cvm::real tolerance = 0.0;
@@ -113,6 +121,11 @@ protected:
 
   /// Pair list
   std::unique_ptr<bool []> pairlist;
+
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+  class coordnum_gpu_impl_t;
+  std::unique_ptr<coordnum_gpu_impl_t> coordnum_gpu_impl;
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 };
 
@@ -134,8 +147,8 @@ public:
 };
 
 
-/// \brief Colvar component: coordination number between two groups
-/// (colvarvalue::type_scalar type, range [0:N1*N2])
+/// \brief Colvar component: coordination number between centers of two groups
+/// (colvarvalue::type_scalar type, range [0:1])
 class colvar::groupcoordnum : public colvar::coordnum {
 public:
   groupcoordnum();
@@ -169,31 +182,61 @@ protected:
 };
 
 
-template <int flags>
-inline cvm::real colvar::coordnum::switching_function(cvm::real const &l2, cvm::real &dFdl2,
-                                               int en, int ed,
-                                               cvm::real pairlist_tol)
+template <int flags, int static_en, int static_ed>
+inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::switching_function(
+  cvm::real const &l2, cvm::real &dFdl2,
+  int en, int ed,
+  cvm::real pairlist_tol)
 {
+  constexpr bool static_ed_is_2en = (static_en > 0) && (static_ed > 0) && (static_ed == 2 * static_en);
+  if constexpr ((static_en > 0) && (static_ed > 0)) {
+    // Assume en and ed are even integers, and avoid sqrt in the following
+    static_assert(static_en % 2 == 0, "static_en must be an even positive integer.");
+    static_assert(static_ed % 2 == 0, "static_ed must be an even positive integer.");
+  }
   // Assume en and ed are even integers, and avoid sqrt in the following
-  int const en2 = en/2;
-  int const ed2 = ed/2;
+  cvm::real xn, xn_1, xd, en2_r, ed2_r;
+  if constexpr ((static_en > 0) && (static_ed > 0)) {
+    if constexpr (static_ed_is_2en) {
+      // xn = cvm::positive_integer_power<static_en / 2>(l2);
+      if constexpr (static_en == 2) {
+        xn_1 = 1.0;
+      } else {
+        xn_1 = cvm::positive_integer_power<static_en / 2 - 1>(l2);
+      }
+      xn = xn_1 * l2;
+      en2_r = (cvm::real)static_en / 2;
+    } else {
+      xn = cvm::positive_integer_power<static_en / 2>(l2);
+      xd = cvm::positive_integer_power<static_ed / 2>(l2);
+      en2_r = (cvm::real)static_en / 2;
+      ed2_r = (cvm::real)static_ed / 2;
+    }
+  } else {
+    int const en2 = en/2;
+    int const ed2 = ed/2;
+    xn = cvm::integer_power(l2, en2);
+    xd = cvm::integer_power(l2, ed2);
+    en2_r = (cvm::real) en2;
+    ed2_r = (cvm::real) ed2;
+  }
 
-  cvm::real const xn = cvm::integer_power(l2, en2);
-  cvm::real const xd = cvm::integer_power(l2, ed2);
   cvm::real const eps_l2 = 1.0e-7;
   cvm::real const h = l2 - 1.0;
-  cvm::real const en2_r = (cvm::real) en2;
-  cvm::real const ed2_r = (cvm::real) ed2;
   cvm::real func_no_pairlist;
 
-  if (std::abs(h) < eps_l2) {
-    // Order-2 Taylor expansion: c0 + c1*h + c2*h^2
-    cvm::real const c0 = en2_r / ed2_r;
-    cvm::real const c1 = (en2_r * (en2_r - ed2_r)) / (2.0 * ed2_r);
-    cvm::real const c2 = (en2_r * (en2_r - ed2_r) * (2.0 * en2_r - ed2_r - 3.0)) / (12.0 * ed2_r);
-    func_no_pairlist = c0 + h * (c1 + h * c2);
+  if constexpr (static_ed_is_2en) {
+    func_no_pairlist = 1.0 / (1.0 + xn);
   } else {
-    func_no_pairlist = (1.0 - xn) / (1.0 - xd);
+    if (std::abs(h) < eps_l2) {
+      // Order-2 Taylor expansion: c0 + c1*h + c2*h^2
+      cvm::real const c0 = en2_r / ed2_r;
+      cvm::real const c1 = (en2_r * (en2_r - ed2_r)) / (2.0 * ed2_r);
+      cvm::real const c2 = (en2_r * (en2_r - ed2_r) * (2.0 * en2_r - ed2_r - 3.0)) / (12.0 * ed2_r);
+      func_no_pairlist = c0 + h * (c1 + h * c2);
+    } else {
+      func_no_pairlist = (1.0 - xn) / (1.0 - xd);
+    }
   }
 
   cvm::real func, inv_one_pairlist_tol;
@@ -210,51 +253,55 @@ inline cvm::real colvar::coordnum::switching_function(cvm::real const &l2, cvm::
     return 0;
 
   if (flags & ef_gradients) {
-    // Logarithmic derivative: 1st-order Taylor expansion around l2 = 1
-    cvm::real log_deriv;
-    if (std::abs(h) < eps_l2) {
-      cvm::real const g0 = 0.5 * (en2_r - ed2_r);
-      cvm::real const g1 = ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0)) / 12.0;
-      log_deriv = g0 + h * g1;
+    if constexpr (static_ed_is_2en) {
+      const cvm::real deriv = -func_no_pairlist * func_no_pairlist * en2_r * xn_1;
+      dFdl2 = (flags & ef_use_pairlist) ? inv_one_pairlist_tol * deriv : deriv;
     } else {
-      log_deriv = (ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2));
+      // Logarithmic derivative: 1st-order Taylor expansion around l2 = 1
+      cvm::real log_deriv;
+      if (std::abs(h) < eps_l2) {
+        cvm::real const g0 = 0.5 * (en2_r - ed2_r);
+        cvm::real const g1 = ((en2_r - ed2_r) * (en2_r + ed2_r - 6.0)) / 12.0;
+        log_deriv = g0 + h * g1;
+      } else {
+        log_deriv = (ed2_r * xd / ((1.0 - xd) * l2)) - (en2_r * xn / ((1.0 - xn) * l2));
+      }
+      dFdl2 = (flags & ef_use_pairlist) ?
+        func_no_pairlist * inv_one_pairlist_tol * log_deriv :
+        func * log_deriv;
     }
-    dFdl2 = (flags & ef_use_pairlist) ?
-      func_no_pairlist * inv_one_pairlist_tol * log_deriv :
-      func * log_deriv;
   }
 
   return func;
 }
 
 
-template<int flags>
-inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv_r0_vec,
-                                                         cvm::rvector const &inv_r0sq_vec,
-                                                         int en,
-                                                         int ed,
-                                                         const cvm::real a1x,
-                                                         const cvm::real a1y,
-                                                         const cvm::real a1z,
-                                                         const cvm::real a2x,
-                                                         const cvm::real a2y,
-                                                         const cvm::real a2z,
-                                                         cvm::real& g1x,
-                                                         cvm::real& g1y,
-                                                         cvm::real& g1z,
-                                                         cvm::real& g2x,
-                                                         cvm::real& g2y,
-                                                         cvm::real& g2z,
-                                                         cvm::real pairlist_tol,
-                                                         cvm::real pairlist_tol_l2_max,
-                                                         colvarmodule *cvmodule_in)
+template<int flags, int static_en, int static_ed>
+inline COLVARS_HOST_DEVICE cvm::real colvar::coordnum::compute_pair_coordnum(
+  cvm::rvector const &inv_r0_vec,
+  cvm::rvector const &inv_r0sq_vec,
+  int en,
+  int ed,
+  const cvm::real a1x,
+  const cvm::real a1y,
+  const cvm::real a1z,
+  const cvm::real a2x,
+  const cvm::real a2y,
+  const cvm::real a2z,
+  cvm::real& g1x,
+  cvm::real& g1y,
+  cvm::real& g1z,
+  cvm::real& g2x,
+  cvm::real& g2y,
+  cvm::real& g2z,
+  cvm::real pairlist_tol,
+  cvm::real pairlist_tol_l2_max,
+  cvm::system_boundary_conditions const &bc)
 {
   const cvm::atom_pos pos1{a1x, a1y, a1z};
   const cvm::atom_pos pos2{a2x, a2y, a2z};
-  cvm::rvector const diff = (flags & ef_use_internal_pbc)
-                                ? cvmodule_in->proxy->position_distance_internal(pos1, pos2)
-                                : cvmodule_in->proxy->position_distance(pos1, pos2);
 
+  cvm::rvector const diff = bc.position_distance(pos1, pos2);
   cvm::rvector const scal_diff(diff.x * inv_r0_vec.x,
                                diff.y * inv_r0_vec.y,
                                diff.z * inv_r0_vec.z);
@@ -267,7 +314,7 @@ inline cvm::real colvar::coordnum::compute_pair_coordnum(cvm::rvector const &inv
   }
 
   cvm::real dFdl2 = 0.0;
-  cvm::real F = switching_function<flags>(l2, dFdl2, en, ed, pairlist_tol);
+  cvm::real F = switching_function<flags, static_en, static_ed>(l2, dFdl2, en, ed, pairlist_tol);
 
   if ((flags & ef_gradients) && (F > 0.0)) {
     cvm::rvector const dl2dx((2.0 * inv_r0sq_vec.x) * diff.x,

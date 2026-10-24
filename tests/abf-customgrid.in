@@ -5,6 +5,6 @@ abf {
     grid {
         width 0.2
         lowerBoundary 1.0
-        upperBoundary 5.0
+        upperBoundary 6.0
     }
 }

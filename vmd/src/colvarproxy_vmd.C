@@ -227,36 +227,18 @@ int colvarproxy_vmd::update_input()
                                        angstrom_to_internal(vmdpos[atoms_ids[i]*3+2]));
   }
 
-
   Timestep const *ts = vmdmol->get_frame(vmdmol_frame);
-  {
-    // Get lattice vectors
-    float A[3];
-    float B[3];
-    float C[3];
-    ts->get_transform_vectors(A, B, C);
-    unit_cell_x.set(angstrom_to_internal(A[0]), angstrom_to_internal(A[1]), angstrom_to_internal(A[2]));
-    unit_cell_y.set(angstrom_to_internal(B[0]), angstrom_to_internal(B[1]), angstrom_to_internal(B[2]));
-    unit_cell_z.set(angstrom_to_internal(C[0]), angstrom_to_internal(C[1]), angstrom_to_internal(C[2]));
-  }
 
-  if (ts->a_length + ts->b_length + ts->c_length < 1.0e-6) {
-    boundaries_type = boundaries_non_periodic;
-    reset_pbc_lattice();
-  } else if ((ts->a_length > 1.0e-6) &&
-             (ts->b_length > 1.0e-6) &&
-             (ts->c_length > 1.0e-6)) {
-    if (((ts->alpha-90.0)*(ts->alpha-90.0)) +
-        ((ts->beta-90.0)*(ts->beta-90.0)) +
-        ((ts->gamma-90.0)*(ts->gamma-90.0)) < 1.0e-6) {
-      boundaries_type = boundaries_pbc_ortho;
-    } else {
-      boundaries_type = boundaries_pbc_triclinic;
-    }
-    colvarproxy_system::update_pbc_lattice();
-  } else {
-    boundaries_type = boundaries_unsupported;
-  }
+  float A[3];
+  float B[3];
+  float C[3];
+  ts->get_transform_vectors(A, B, C);
+  boundaries_.set_boundaries((ts->a_length > 1.0e-6f),
+                             (ts->b_length > 1.0e-6f),
+                             (ts->c_length > 1.0e-6f),
+                             cvm::rvector{angstrom_to_internal(A[0]), angstrom_to_internal(A[1]), angstrom_to_internal(A[2])},
+                             cvm::rvector{angstrom_to_internal(B[0]), angstrom_to_internal(B[1]), angstrom_to_internal(B[2])},
+                             cvm::rvector{angstrom_to_internal(C[0]), angstrom_to_internal(C[1]), angstrom_to_internal(C[2])});
 
   return error_code;
 }
@@ -452,10 +434,9 @@ int colvarproxy_vmd::load_coords_pdb(char const *pdb_filename,
   // next index to be looked up in PDB file (if list is supplied)
   std::vector<int>::const_iterator current_index = indices.begin();
 
-  FileSpec *tmpspec = new FileSpec();
-  tmpspec->autobonds = 0;
-  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", tmpspec);
-  delete tmpspec;
+  FileSpec tmpspec;
+  tmpspec.autobonds = 0;
+  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", &tmpspec);
   if (tmpmolid < 0) {
     cvmodule->error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
                COLVARS_FILE_ERROR);
@@ -568,10 +549,9 @@ int colvarproxy_vmd::load_atoms_pdb(char const *pdb_filename,
     return COLVARS_ERROR;
   }
 
-  FileSpec *tmpspec = new FileSpec();
-  tmpspec->autobonds = 0;
-  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", tmpspec);
-  delete tmpspec;
+  FileSpec tmpspec;
+  tmpspec.autobonds = 0;
+  int tmpmolid = vmd->molecule_load(-1, pdb_filename, "pdb", &tmpspec);
 
   if (tmpmolid < 0) {
     cvmodule->error("Error: VMD could not read file \""+std::string(pdb_filename)+"\".\n",
@@ -756,7 +736,7 @@ int colvarproxy_vmd::check_volmaps_available()
 }
 
 
-int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
+int colvarproxy_vmd::init_internal_volmap_by_id(int volmap_id)
 {
   for (size_t i = 0; i < volmaps_ids.size(); i++) {
     if (volmaps_ids[i] == volmap_id) {
@@ -768,8 +748,10 @@ int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
 
   int index = -1;
 
-  int error_code = check_volmap_by_id(volmap_id);
-  if (error_code == COLVARS_OK) {
+  if ((volmap_id < 0) || (volmap_id >= vmdmol->num_volume_data())) {
+    cvmodule->error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
+                    ") for map.\n", COLVARS_INPUT_ERROR);
+  } else {
     index = add_volmap_slot(volmap_id);
   }
 
@@ -777,19 +759,41 @@ int colvarproxy_vmd::init_volmap_by_id(int volmap_id)
 }
 
 
-int colvarproxy_vmd::check_volmap_by_id(int volmap_id)
+int colvarproxy_vmd::load_internal_volmap_from_file(std::string const &filename)
 {
-  if ((volmap_id < 0) || (volmap_id >= vmdmol->num_volume_data())) {
-    return cvmodule->error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
-                      ") for map.\n", COLVARS_INPUT_ERROR);
+  // For simplicity, we do not make distinctions between maps loaded using
+  // VMD commands vs. using Colvars input: both kinds of maps are loaded and
+  // managed by the Molecule object
+  for (size_t i = 0; i < volmaps_ids.size(); i++) {
+    if (volmaps_filenames[i] == filename) {
+      // this map has already been loaded
+      volmaps_refcount[i] += 1;
+      return i;
+    }
   }
-  return COLVARS_OK;
+
+  // Load a new map
+  FileSpec tmpspec;
+  tmpspec.autobonds = 0;
+  int const num_volmaps_before = vmdmol->num_volume_data();
+  int tmpmolid = vmd->molecule_load(vmdmolid, filename.c_str(), "dx", &tmpspec);
+  if ((tmpmolid < 0) || (vmdmol->num_volume_data() <= num_volmaps_before)) {
+    cvmodule->error("Error: VMD could not read volumetric map file \"" + filename + "\".\n",
+                    COLVARS_FILE_ERROR);
+    return -1;
+  }
+  int volmap_id = vmdmol->num_volume_data() - 1;
+
+  int index = add_volmap_slot(volmap_id);
+  volmaps_filenames[index] = filename;
+
+  return index;
 }
 
 
-void colvarproxy_vmd::clear_volmap(int index)
+int colvarproxy_vmd::clear_volmap(int index)
 {
-  colvarproxy::clear_volmap(index);
+  return colvarproxy::clear_volmap(index);
 }
 
 
@@ -805,7 +809,7 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
   cvm::atom_pos const origin(0.0, 0.0, 0.0);
   for (; i < atoms->size(); ++i) {
     // Wrap around the origin
-    cvm::rvector const wrapped_pos = position_distance(
+    cvm::rvector const wrapped_pos = boundaries_.position_distance(
       origin, cvm::atom_pos(atoms->pos_x(i), atoms->pos_y(i), atoms->pos_z(i)));
     coord[0] = internal_to_angstrom(wrapped_pos.x);
     coord[1] = internal_to_angstrom(wrapped_pos.y);
@@ -860,13 +864,14 @@ void colvarproxy_vmd::compute_voldata(VolumetricData const *voldata,
 
 
 int colvarproxy_vmd::compute_volmap(int flags,
-                                    int volmap_id,
+                                    int index,
                                     cvm::atom_group* atoms,
                                     cvm::real *value,
                                     cvm::real *atom_field)
 {
   int error_code = COLVARS_OK;
-  VolumetricData const *voldata = vmdmol->get_volume_data(volmap_id);
+  int const volmap_id = volmaps_ids[index];
+  auto const *voldata = vmdmol->get_volume_data(volmap_id);
   if (voldata != NULL) {
 
     if (flags & volmap_flag_gradients) {
@@ -896,8 +901,8 @@ int colvarproxy_vmd::compute_volmap(int flags,
     }
   } else {
     // Error message
-    error_code |=
-      const_cast<colvarproxy_vmd *>(this)->check_volmap_by_id(volmap_id);
+    error_code |= cvmodule->error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+
+                                  ") for map.\n", COLVARS_INPUT_ERROR);
   }
   return error_code;
 }

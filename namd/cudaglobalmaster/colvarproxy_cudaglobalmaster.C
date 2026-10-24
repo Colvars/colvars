@@ -170,6 +170,7 @@ public:
     allocateDeviceArrays();
     deallocateDeviceTransposeArrays();
     allocateDeviceTransposeArrays();
+    cvmodule->proxy_gpu_buffers_reallocated_done();
   }
   smp_mode_t get_preferred_smp_mode() const override {
     return smp_mode_t::none;
@@ -206,7 +207,15 @@ public:
   cvm::real* proxy_atoms_new_colvar_forces_gpu() override {return d_mAppliedForces;}
   cudaStream_t get_default_stream() override {return mStream;}
   void set_lattice();
-  int wait_for_extra_info_ready() override;
+  cvm::system_boundary_conditions get_system_boundaries()  override {
+    if (mClient->requestUpdateLattice()) {
+      if (has_gpu_support()) {
+        cudaCheck(cudaEventSynchronize(get_event(colvarproxy_gpu::event_type::update_lattice)));
+      }
+      set_lattice();
+    }
+    return boundaries_;
+  };
   friend class CudaGlobalMasterColvars;
 private:
   void allocateDeviceArrays();
@@ -379,19 +388,20 @@ int colvarproxy_impl::update_target_temperature()
 }
 
 int colvarproxy_impl::init_atom(int atom_number) {
-  int aid = atom_number - 1;
-  for (size_t i = 0; i < atoms_ids.size(); i++) {
-    if (atoms_ids[i] == aid) {
-      // this atom id was already recorded
-      atoms_refcount[i] += 1;
-      return i;
-    }
-  }
-  aid = check_atom_id(atom_number);
+  int aid = check_atom_id(atom_number);
+
   if (aid < 0) {
     return COLVARS_INPUT_ERROR;
   }
-  int const index = colvarproxy::add_atom_slot(aid);
+
+  int index = find_atom_by_id(aid);
+
+  if (index >= 0) {
+    increase_refcount(index);
+    return index;
+  }
+
+  index = add_atom_slot(aid);
   update_atom_properties(index);
   mAtomsChanged = true;
   return index;
@@ -766,8 +776,23 @@ void colvarproxy_impl::calculate() {
   int savedDevice;
   cudaCheck(cudaGetDevice(&savedDevice));
   cudaCheck(cudaSetDevice(m_device_id));
+  if (mClient->requestUpdateLattice()) {
+    ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+    if (has_gpu_support()) {
+      cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::update_lattice), mStream));
+    }
+  }
   // The following memcpy operations are supposed to be overlapped with the NB kernel
   if (numAtoms > 0) {
+#if CUDAGM_VERSION >= 3
+    if (mClient->requestUpdateAtomTotalForces()) {
+      if (mClient->isStartupStep()) {
+        set_total_forces_invalid();
+      } else {
+        set_total_forces_valid();
+      }
+    }
+#endif
     if (!has_gpu_support()) {
       // Transform the arrays for Colvars
       auto &colvars_pos = *(modify_atom_positions());
@@ -785,9 +810,9 @@ void colvarproxy_impl::calculate() {
       auto &colvars_charge  = *(modify_atom_charges());
       ::copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
     }
-  }
-  if (mClient->requestUpdateLattice()) {
-    ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
+    if (has_gpu_support()) {
+      cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::copy_atoms), mStream));
+    }
   }
   // NOTE: I think the implementation in Colvars will syncrhonize the stream before
   // calculating CVCs anyway, so I can skip it here.
@@ -821,11 +846,6 @@ void colvarproxy_impl::calculate() {
     }
   }
   previous_NAMD_step = step;
-  if (!has_gpu_support()) {
-    if (mClient->requestUpdateLattice()) {
-      set_lattice();
-    }
-  }
   // Run Colvars
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxRangePushEx(&mEventAttrib);
@@ -1000,36 +1020,13 @@ int colvarproxy_impl::run_colvar_gradient_callback(
 }
 
 void colvarproxy_impl::set_lattice() {
-  unit_cell_x.set(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
-  unit_cell_y.set(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
-  unit_cell_z.set(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
-  const Vector a1(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
-  const Vector a2(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
-  const Vector a3(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
-  const int p1 = ( a1.length2() ? 1 : 0 );
-  const int p2 = ( a2.length2() ? 1 : 0 );
-  const int p3 = ( a3.length2() ? 1 : 0 );
-  if (!p1 && !p2 && !p3) {
-    boundaries_type = boundaries_non_periodic;
-    reset_pbc_lattice();
-  } else if (p1 && p2 && p3) {
-    if (( ! ( a1.y || a1.z || a2.x || a2.z || a3.x || a3.y ) )) {
-      boundaries_type = boundaries_pbc_ortho;
-    } else {
-      boundaries_type = boundaries_pbc_triclinic;
-    }
-    colvarproxy_system::update_pbc_lattice();
-  } else {
-    boundaries_type = boundaries_unsupported;
-  }
-}
-
-int colvarproxy_impl::wait_for_extra_info_ready() {
-  int error_code = COLVARS_OK;
-  if (mClient->requestUpdateLattice()) {
-    set_lattice();
-  }
-  return error_code;
+  const cvm::rvector a1(h_mLattice[0], h_mLattice[1], h_mLattice[2]);
+  const cvm::rvector a2(h_mLattice[3], h_mLattice[4], h_mLattice[5]);
+  const cvm::rvector a3(h_mLattice[6], h_mLattice[7], h_mLattice[8]);
+  const int p1 = ( a1.norm2() ? 1 : 0 );
+  const int p2 = ( a2.norm2() ? 1 : 0 );
+  const int p3 = ( a3.norm2() ? 1 : 0 );
+  boundaries_.set_boundaries(p1, p2, p3, a1, a2, a3);
 }
 
 CudaGlobalMasterColvars::CudaGlobalMasterColvars():
@@ -1081,8 +1078,13 @@ bool CudaGlobalMasterColvars::requestUpdateCharges() {
   return mImpl->atomsChanged();
 }
 
+#if CUDAGM_VERSION >= 3
+void CudaGlobalMasterColvars::setStep(int64_t step, int startup, int doMigration) {
+  CudaGlobalMasterClient::setStep(step, startup, doMigration);
+#else
 void CudaGlobalMasterColvars::setStep(int64_t step) {
   CudaGlobalMasterClient::setStep(step);
+#endif
   if (mImpl->atomsChanged()) {
     mImpl->reallocate();
   }

@@ -5,9 +5,17 @@
 #include "colvarproxy_namd.h"
 
 
-GlobalMasterColvars::GlobalMasterColvars() : proxy(new colvarproxy_namd(this)) {}
+GlobalMasterColvars::GlobalMasterColvars()
+{
+  proxy.reset(new colvarproxy_namd());
+  proxy->set_gm_object(this);
+  proxy->init();
+  proxy->init_module();
+}
+
 
 GlobalMasterColvars::~GlobalMasterColvars() { reset(); }
+
 
 void GlobalMasterColvars::calculate() { proxy->calculate(); }
 
@@ -22,10 +30,8 @@ void GlobalMasterColvars::reset()
   modifyRequestedGroups().clear();
   modifyGroupForces().clear();
 
-#if NAMD_VERSION_NUMBER >= 34471681
   modifyRequestedGridObjects().clear();
   modifyGridObjForces().clear();
-#endif
 
   requestTotalForce(false);
 }

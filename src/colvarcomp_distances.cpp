@@ -15,10 +15,13 @@
 #include "colvar.h"
 #include "colvarcomp.h"
 #include "colvar_rotation_derivative.h"
+#include "colvar_gpu_calc.h"
 
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+// Checking NAMD_VERSION is a temporary fix to ensure that Make.depends
+// remains the same.
+#if defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
 #include "cuda/colvarcomp_distance_kernel.h"
-#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
+#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
 
 
 colvar::distance::distance()
@@ -51,12 +54,7 @@ int colvar::distance::init(std::string const &conf)
 
 void colvar::distance::calc_value()
 {
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    dist_v = group2->center_of_mass() - group1->center_of_mass();
-  } else {
-    dist_v = cvmodule->position_distance(group1->center_of_mass(),
-                                    group2->center_of_mass());
-  }
+  dist_v = boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
   x.real_value = dist_v.norm();
 }
 
@@ -98,12 +96,8 @@ colvar::distance_vec::distance_vec()
 
 void colvar::distance_vec::calc_value()
 {
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    x.rvector_value = group2->center_of_mass() - group1->center_of_mass();
-  } else {
-    x.rvector_value = cvmodule->position_distance(group1->center_of_mass(),
-                                             group2->center_of_mass());
-  }
+  x.rvector_value =
+      boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
 }
 
 
@@ -126,19 +120,13 @@ void colvar::distance_vec::apply_force(colvarvalue const &force)
 
 cvm::real colvar::distance_vec::dist2(colvarvalue const &x1, colvarvalue const &x2) const
 {
-  if (is_enabled(f_cvc_pbc_minimum_image)) {
-    return (cvmodule->position_distance(x1.rvector_value, x2.rvector_value)).norm2();
-  }
-  return (x2.rvector_value - x1.rvector_value).norm2();
+  return (boundary_conditions.position_distance(x1.rvector_value, x2.rvector_value)).norm2();
 }
 
 
 colvarvalue colvar::distance_vec::dist2_lgrad(colvarvalue const &x1, colvarvalue const &x2) const
 {
-  if (is_enabled(f_cvc_pbc_minimum_image)) {
-    return 2.0 * cvmodule->position_distance(x2.rvector_value, x1.rvector_value);
-  }
-  return 2.0 * (x2.rvector_value - x1.rvector_value);
+  return 2.0 * boundary_conditions.position_distance(x2.rvector_value, x1.rvector_value);
 }
 
 
@@ -200,21 +188,12 @@ void colvar::distance_z::calc_value()
   cvm::rvector const M = main->center_of_mass();
   cvm::rvector const R1 = ref1->center_of_mass();
   if (fixed_axis) {
-    if (!is_enabled(f_cvc_pbc_minimum_image)) {
-      dist_v = M - R1;
-    } else {
-      dist_v = cvmodule->position_distance(R1, M);
-    }
+    dist_v = boundary_conditions.position_distance(R1, M);
   } else {
     cvm::rvector const R2 = ref2->center_of_mass();
     cvm::rvector const C = 0.5 * (R1 + R2);
-    if (!is_enabled(f_cvc_pbc_minimum_image)) {
-      dist_v = M - C;
-      axis = R2 - R1;
-    } else {
-      dist_v = cvmodule->position_distance(C, M);
-      axis = cvmodule->position_distance(R1, R2);
-    }
+    dist_v = boundary_conditions.position_distance(C, M);
+    axis = boundary_conditions.position_distance(R1, R2);
     axis_norm = axis.norm();
     axis = axis.unit();
   }
@@ -272,19 +251,9 @@ colvar::distance_xy::distance_xy()
 
 void colvar::distance_xy::calc_value()
 {
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    dist_v = main->center_of_mass() - ref1->center_of_mass();
-  } else {
-    dist_v = cvmodule->position_distance(ref1->center_of_mass(),
-                                    main->center_of_mass());
-  }
+  dist_v = boundary_conditions.position_distance(ref1->center_of_mass(), main->center_of_mass());
   if (!fixed_axis) {
-    if (!is_enabled(f_cvc_pbc_minimum_image)) {
-      v12 = ref2->center_of_mass() - ref1->center_of_mass();
-    } else {
-      v12 = cvmodule->position_distance(ref1->center_of_mass(),
-                                   ref2->center_of_mass());
-    }
+    v12 = boundary_conditions.position_distance(ref1->center_of_mass(), ref2->center_of_mass());
     axis_norm = v12.norm();
     axis = v12.unit();
   }
@@ -308,12 +277,7 @@ void colvar::distance_xy::calc_gradients()
     ref1->set_weighted_gradient(-1.0 * x_inv * dist_v_ortho);
     main->set_weighted_gradient(       x_inv * dist_v_ortho);
   } else {
-    if (!is_enabled(f_cvc_pbc_minimum_image)) {
-      v13 = main->center_of_mass() - ref1->center_of_mass();
-    } else {
-      v13 = cvmodule->position_distance(ref1->center_of_mass(),
-                                   main->center_of_mass());
-    }
+    v13 = boundary_conditions.position_distance(ref1->center_of_mass(), main->center_of_mass());
     A = (dist_v * axis) / axis_norm;
 
     ref1->set_weighted_gradient( (A - 1.0) * x_inv * dist_v_ortho);
@@ -354,12 +318,8 @@ colvar::distance_dir::distance_dir()
 
 void colvar::distance_dir::calc_value()
 {
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    dist_v = group2->center_of_mass() - group1->center_of_mass();
-  } else {
-    dist_v = cvmodule->position_distance(group1->center_of_mass(),
-                                    group2->center_of_mass());
-  }
+  dist_v =
+      boundary_conditions.position_distance(group1->center_of_mass(), group2->center_of_mass());
   x.rvector_value = dist_v.unit();
 }
 
@@ -452,7 +412,7 @@ int colvar::distance_inv::init(std::string const &conf)
 
 void colvar::distance_inv::calc_value()
 {
-#define CALL_KERNEL(USE_PBC_MINIMUM_IMAGE) do {        \
+#define CALL_KERNEL() do {                             \
   const int factor = -1*(exponent/2);                  \
   for (size_t i = 0; i < group1->size(); ++i) {        \
     const cvm::atom_pos pos1(group1->pos_x(i),         \
@@ -464,11 +424,7 @@ void colvar::distance_inv::calc_value()
                                group2->pos_y(j),       \
                                group2->pos_z(j));      \
       cvm::rvector dv;                                 \
-      if (USE_PBC_MINIMUM_IMAGE) {                     \
-        dv = cvmodule->position_distance(pos1, pos2);       \
-      } else {                                         \
-        dv = pos2 - pos1;                              \
-      }                                                \
+      dv = boundary_conditions.position_distance(pos1, pos2); \
       cvm::real const d2 = dv.norm2();                                      \
       cvm::real const dinv = cvm::integer_power(d2, factor);                \
       x.real_value += dinv;                                                 \
@@ -484,11 +440,7 @@ void colvar::distance_inv::calc_value()
   }                            \
 } while (0);
   x.real_value = 0.0;
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    CALL_KERNEL(false);
-  } else {
-    CALL_KERNEL(true);
-  }
+  CALL_KERNEL();
 
   x.real_value *= 1.0 / cvm::real(group1->size() * group2->size());
   x.real_value = cvm::pow(x.real_value, -1.0/cvm::real(exponent));
@@ -537,7 +489,7 @@ int colvar::distance_pairs::init(std::string const &conf)
 void colvar::distance_pairs::calc_value()
 {
   x.vector1d_value.resize(group1->size() * group2->size());
-#define CALL_KERNEL(USE_PBC_MINIMUM_IMAGE) do {                    \
+#define CALL_KERNEL() do {                                         \
   for (size_t i1 = 0; i1 < group1->size(); ++i1) {                 \
     const cvm::atom_pos pos1(group1->pos_x(i1),                    \
                              group1->pos_y(i1),                    \
@@ -547,9 +499,7 @@ void colvar::distance_pairs::calc_value()
       const cvm::atom_pos pos2(group2->pos_x(i2),                  \
                                group2->pos_y(i2),                  \
                                group2->pos_z(i2));                 \
-      const cvm::rvector dv = USE_PBC_MINIMUM_IMAGE ?              \
-                              cvmodule->position_distance(pos1, pos2) : \
-                              pos2 - pos1;                         \
+      const cvm::rvector dv = boundary_conditions.position_distance(pos1, pos2); \
       cvm::real const d = dv.norm();                               \
       x.vector1d_value[i1*group2->size() + i2] = d;                \
       const cvm::rvector g2 = dv.unit();                           \
@@ -563,11 +513,7 @@ void colvar::distance_pairs::calc_value()
     group1->grad_z(i1) += g1.z;*/                                    \
   }                                                                \
 } while (0);
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    CALL_KERNEL(false);
-  } else {
-    CALL_KERNEL(true);
-  }
+  CALL_KERNEL();
 #undef CALL_KERNEL
 }
 
@@ -580,7 +526,7 @@ void colvar::distance_pairs::calc_gradients()
 
 void colvar::distance_pairs::apply_force(colvarvalue const &force)
 {
-#define CALL_KERNEL(USE_PBC_MINIMUM_IMAGE) do {                         \
+#define CALL_KERNEL() do {                                              \
   auto group1_force_obj = group1->get_group_force_object();             \
   auto group2_force_obj = group2->get_group_force_object();             \
   for (size_t i1 = 0; i1 < group1->size(); i1++) {                      \
@@ -592,9 +538,7 @@ void colvar::distance_pairs::apply_force(colvarvalue const &force)
       const cvm::atom_pos pos2(group2->pos_x(i2),                       \
                                group2->pos_y(i2),                       \
                                group2->pos_z(i2));                      \
-      const cvm::rvector dv = USE_PBC_MINIMUM_IMAGE ?                   \
-                              cvmodule->position_distance(pos1, pos2) :      \
-                              pos2 - pos1;                              \
+      const cvm::rvector dv = boundary_conditions.position_distance(pos1, pos2); \
       cvm::real const d = dv.norm();                                    \
       x.vector1d_value[i1*group2->size() + i2] = d;                     \
       const cvm::rvector f2 = force[i1*group2->size() + i2] * dv.unit();\
@@ -604,11 +548,7 @@ void colvar::distance_pairs::apply_force(colvarvalue const &force)
     group1_force_obj.add_atom_force(i1, f1);                            \
   }                                                                     \
 } while (0);
-  if (!is_enabled(f_cvc_pbc_minimum_image)) {
-    CALL_KERNEL(false);
-  } else {
-    CALL_KERNEL(true);
-  }
+  CALL_KERNEL();
 #undef CALL_KERNEL
 }
 
@@ -819,32 +759,144 @@ void colvar::inertia_z::calc_gradients()
   }
 }
 
-
-
-colvar::rmsd::rmsd()
-{
-  set_function_type("rmsd");
-  init_as_distance();
-  provide(f_cvc_inv_gradient);
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  d_ref_pos_soa = nullptr;
-  d_permutation_msds = nullptr;
-  d_tbcounts = nullptr;
-  h_rmsd = nullptr;
-  h_best_perm_index = nullptr;
-  d_ft = nullptr;
-  h_ft = nullptr;
-  d_jd = nullptr;
-  h_jd = nullptr;
-  d_tbcount_ft = nullptr;
-  d_tbcount_jd = nullptr;
-#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-}
-
-colvar::rmsd::~rmsd() {
-#if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  colvarproxy* p = cvmodule->proxy;
-  if (colvar::rmsd::has_gpu_implementation()) {
+class colvar::rmsd::rmsd_gpu_impl_t:
+  public colvars_gpu::colvarcomp_gpu_graph {
+private:
+  colvar::rmsd* rmsd_cpu;
+  cvm::real* d_ref_pos_soa;
+  cvm::real* d_permutation_msds;
+  unsigned int* d_tbcounts;
+  cvm::real* d_ft;
+  cvm::real* d_jd;
+  unsigned int* d_tbcount_ft;
+  unsigned int* d_tbcount_jd;
+public:
+  cvm::real* h_rmsd;
+  cvm::real* h_ft;
+  cvm::real* h_jd;
+  size_t* h_best_perm_index;
+  rmsd_gpu_impl_t(colvar::rmsd* rmsd_cpu_in): colvarcomp_gpu_graph(rmsd_cpu_in, rmsd_cpu_in->cvmodule), rmsd_cpu(rmsd_cpu_in) {
+    d_ref_pos_soa = nullptr;
+    d_permutation_msds = nullptr;
+    d_tbcounts = nullptr;
+    h_rmsd = nullptr;
+    h_best_perm_index = nullptr;
+    d_ft = nullptr;
+    h_ft = nullptr;
+    d_jd = nullptr;
+    h_jd = nullptr;
+    d_tbcount_ft = nullptr;
+    d_tbcount_jd = nullptr;
+  }
+  int init() {
+    colvarproxy* p = rmsd_cpu->cvmodule->proxy;
+    int error_code = COLVARS_OK;
+    error_code |= p->reallocate_device(&d_ref_pos_soa, 3 * rmsd_cpu->num_ref_pos);
+    error_code |= p->copy_HtoD(rmsd_cpu->ref_pos_soa.data(), d_ref_pos_soa, 3 * rmsd_cpu->num_ref_pos);
+    error_code |= p->reallocate_device(&d_permutation_msds, rmsd_cpu->n_permutations);
+    error_code |= p->reallocate_device(&d_tbcounts, rmsd_cpu->n_permutations);
+    error_code |= p->reallocate_host(&h_rmsd, 1);
+    error_code |= p->reallocate_host(&h_best_perm_index, 1);
+    *h_best_perm_index = 0;
+    error_code |= p->clear_device_array(d_permutation_msds, rmsd_cpu->n_permutations);
+    error_code |= p->clear_device_array(d_tbcounts, rmsd_cpu->n_permutations);
+    error_code |= p->reallocate_device(&d_ft, 1);
+    error_code |= p->clear_device_array(d_ft, 1);
+    error_code |= p->reallocate_device(&d_jd, 1);
+    error_code |= p->clear_device_array(d_jd, 1);
+    error_code |= p->reallocate_host(&h_ft, 1);
+    error_code |= p->reallocate_host(&h_jd, 1);
+    error_code |= p->allocate_device(&d_tbcount_ft, 1);
+    error_code |= p->allocate_device(&d_tbcount_jd, 1);
+    error_code |= p->clear_device_array(d_tbcount_ft, 1);
+    error_code |= p->clear_device_array(d_tbcount_jd, 1);
+    return error_code;
+  }
+  int add_calc_value_node() override {
+    int error_code = COLVARS_OK;
+    auto& graph = graph_calc_value.graph;
+    auto& nodes_map = graph_calc_value.nodes;
+    std::vector<cudaGraphNode_t> calc_value_rmsd(rmsd_cpu->n_permutations, nullptr);
+    auto& gpu_buffers = rmsd_cpu->atoms->get_gpu_atom_group()->get_gpu_buffers();
+    error_code |= colvars_gpu::calc_value_rmsd(
+      d_ref_pos_soa, gpu_buffers.d_atoms_pos,
+      d_permutation_msds, rmsd_cpu->permutation_msds.data(),
+      rmsd_cpu->atoms->size(), rmsd_cpu->n_permutations, rmsd_cpu->num_ref_pos,
+      d_tbcounts, calc_value_rmsd, graph, {});
+    for (int i = 0; i < rmsd_cpu->n_permutations; ++i) {
+      const std::string node_name = rmsd_cpu->name + "_calc_value_permute_" + cvm::to_str(i);
+      nodes_map[node_name] = calc_value_rmsd[i];
+    }
+    return error_code;
+  }
+  int add_calc_gradients_node() override {
+    int error_code = COLVARS_OK;
+    auto& graph = graph_calc_gradients.graph;
+    auto& nodes_map = graph_calc_gradients.nodes;
+    auto& gpu_buffers = rmsd_cpu->atoms->get_gpu_atom_group()->get_gpu_buffers();
+    cudaGraphNode_t calc_gradients_rmsd;
+    error_code |= colvars_gpu::calc_gradients_rmsd(
+      h_rmsd, h_best_perm_index, d_ref_pos_soa,
+      gpu_buffers.d_atoms_pos, gpu_buffers.d_atoms_grad,
+      rmsd_cpu->atoms->size(), rmsd_cpu->num_ref_pos, calc_gradients_rmsd, graph, {});
+    const std::string node_name = rmsd_cpu->name + "_calc_gradients";
+    nodes_map[node_name] = calc_gradients_rmsd;
+    return error_code;
+  }
+  int add_calc_force_invgrads_node() override {
+    int error_code = COLVARS_OK;
+    auto& graph = graph_total_force.graph;
+    auto& nodes_map = graph_total_force.nodes;
+    auto& gpu_buffers = rmsd_cpu->atoms->get_gpu_atom_group()->get_gpu_buffers();
+    // If I explicitly read the total force to gpu_buffer.d_atoms_total_force
+    // there would be a race condition if the underlyding atom group is used
+    // by multiple other CVCs, so I have to fuse the reading of total force
+    // with the Jacobian derivative calculation, and left
+    // gpu_buffer.d_atoms_total_force unchanged.
+    cudaGraphNode_t calc_force_invgrads;
+    colvarproxy *p = rmsd_cpu->cvmodule->proxy;
+    const auto& rot = rmsd_cpu->atoms->get_gpu_atom_group()->get_rot_gpu();
+    error_code |= colvars_gpu::calc_force_invgrads_rmsd(
+      rmsd_cpu->atoms->is_enabled(f_ag_rotate),
+      gpu_buffers.d_atoms_index,
+      p->proxy_atoms_total_forces_gpu(),
+      rot.get_q(), gpu_buffers.d_atoms_grad, d_ft, h_ft,
+      rmsd_cpu->atoms->size(), p->get_atom_ids()->size(), d_tbcount_ft,
+      calc_force_invgrads, graph, {});
+    const std::string node_name = rmsd_cpu->name + "_calc_force_invgrads";
+    nodes_map[node_name] = calc_force_invgrads;
+    return error_code;
+  }
+  int add_calc_Jacobian_derivative_node() override {
+    int error_code = COLVARS_OK;
+    auto& graph = graph_calc_Jacobian_derivative.graph;
+    auto& nodes_map = graph_calc_Jacobian_derivative.nodes;
+    const auto& rot = rmsd_cpu->atoms->get_gpu_atom_group()->get_rot_gpu();
+    auto* rot_deriv = rmsd_cpu->atoms->get_gpu_atom_group()->get_rot_deriv_gpu();
+    if (rmsd_cpu->atoms->is_enabled(f_ag_rotate)) {
+      if (rot_deriv == nullptr) {
+        return rmsd_cpu->cvmodule->error("BUG: rot_deriv is null.\n");
+      }
+      error_code |= rot_deriv->add_prepare_derivative_nodes(
+        rotation_derivative_dldq::use_dq, graph, nodes_map);
+    }
+    cudaGraphNode_t calc_Jacobian_derivative;
+    std::vector<cudaGraphNode_t> dependencies;
+    if (rmsd_cpu->atoms->is_enabled(f_ag_rotate)) {
+      error_code |= colvars_gpu::prepare_dependencies(
+        {{"prepare_rotation_derivative", true}}, dependencies, nodes_map);
+    }
+    error_code |= colvars_gpu::calc_Jacobian_derivative_rmsd(
+      rmsd_cpu->atoms->is_enabled(f_ag_center), rmsd_cpu->atoms->is_enabled(f_ag_rotate),
+      h_best_perm_index, d_ref_pos_soa, rot.get_q(),
+      rot_deriv, h_rmsd, d_jd, h_jd, rmsd_cpu->atoms->size(),
+      rmsd_cpu->num_ref_pos, d_tbcount_jd, calc_Jacobian_derivative,
+      graph, dependencies);
+    return error_code;
+  }
+  virtual ~rmsd_gpu_impl_t() {
+    colvarproxy* p = rmsd_cpu->cvmodule->proxy;
     p->deallocate_device(&d_ref_pos_soa);
     p->deallocate_device(&d_permutation_msds);
     p->deallocate_device(&d_tbcounts);
@@ -857,22 +909,20 @@ colvar::rmsd::~rmsd() {
     p->deallocate_device(&d_tbcount_ft);
     p->deallocate_device(&d_tbcount_jd);
   }
-#endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-}
+};
+#endif
 
-bool colvar::rmsd::has_gpu_implementation() const {
+colvar::rmsd::rmsd()
+{
+  set_function_type("rmsd");
+  init_as_distance();
+  provide(f_cvc_inv_gradient);
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-  const colvarproxy* p = cvmodule->proxy;
-  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu){
-    return true;
-  } else {
-    return false;
-  }
-#else
-  return false;
+  provide(f_cvc_support_gpu);
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 }
 
+colvar::rmsd::~rmsd() {}
 
 int colvar::rmsd::init(std::string const &conf)
 {
@@ -969,28 +1019,16 @@ int colvar::rmsd::init(std::string const &conf)
 
   num_ref_pos = ref_pos.size();
   ref_pos_soa = cvm::atom_group::pos_aos_to_soa(ref_pos);
-  if (has_gpu_implementation()) {
+  colvarproxy* p = cvmodule->proxy;
+  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-    colvarproxy* p = cvmodule->proxy;
-    error_code |= p->reallocate_device(&d_ref_pos_soa, 3 * num_ref_pos);
-    error_code |= p->copy_HtoD(ref_pos_soa.data(), d_ref_pos_soa, 3 * num_ref_pos);
-    error_code |= p->reallocate_device(&d_permutation_msds, n_permutations);
-    error_code |= p->reallocate_device(&d_tbcounts, n_permutations);
-    error_code |= p->reallocate_host(&h_rmsd, 1);
-    error_code |= p->reallocate_host(&h_best_perm_index, 1);
-    error_code |= p->clear_device_array(d_permutation_msds, n_permutations);
-    error_code |= p->clear_device_array(d_tbcounts, n_permutations);
-    error_code |= p->reallocate_device(&d_ft, 1);
-    error_code |= p->clear_device_array(d_ft, 1);
-    error_code |= p->reallocate_device(&d_jd, 1);
-    error_code |= p->clear_device_array(d_jd, 1);
-    error_code |= p->reallocate_host(&h_ft, 1);
-    error_code |= p->reallocate_host(&h_jd, 1);
-    error_code |= p->allocate_device(&d_tbcount_ft, 1);
-    error_code |= p->allocate_device(&d_tbcount_jd, 1);
-    error_code |= p->clear_device_array(d_tbcount_ft, 1);
-    error_code |= p->clear_device_array(d_tbcount_jd, 1);
+    enable(f_cvc_support_gpu);
     disable(f_cvc_require_cpu_buffers);
+    rmsd_gpu_impl = std::unique_ptr<rmsd_gpu_impl_t>(new rmsd_gpu_impl_t(this));
+    error_code |= rmsd_gpu_impl->init();
+    if (error_code == COLVARS_OK) {
+      cvmodule->log("This CV \"" + name + "\" of type \"" + function_type() + "\" will be calculated on GPU.\n");
+    }
 #endif // (COLVARS_CUDA) || defined (COLVARS_GPU)
   }
   return error_code;
@@ -1175,112 +1213,58 @@ void colvar::rmsd::calc_Jacobian_derivative()
 }
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-int colvar::rmsd::add_calc_value_node(
-  cudaGraph_t& graph,
-  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
-  int error_code = COLVARS_OK;
-  std::vector<cudaGraphNode_t> calc_value_rmsd(n_permutations, nullptr);
-  auto& gpu_buffers = atoms->get_gpu_atom_group()->get_gpu_buffers();
-  error_code |= colvars_gpu::calc_value_rmsd(
-    d_ref_pos_soa, gpu_buffers.d_atoms_pos,
-    d_permutation_msds, permutation_msds.data(),
-    atoms->size(), n_permutations, num_ref_pos,
-    d_tbcounts, calc_value_rmsd, graph, {});
-  for (int i = 0; i < n_permutations; ++i) {
-    const std::string node_name = name + "_calc_value_permute_" + cvm::to_str(i);
-    nodes_map[node_name] = calc_value_rmsd[i];
-  }
-  return error_code;
+int colvar::rmsd::calc_value_gpu() {
+  return rmsd_gpu_impl->calc_value_gpu(false);
 }
 
 int colvar::rmsd::calc_value_after_gpu() {
-  best_perm_index = std::min_element(
-    permutation_msds.begin(), permutation_msds.end()) - permutation_msds.begin();
+  int error_code = COLVARS_OK;
+  error_code |= checkGPUError(cudaEventSynchronize(get_event(cvc::event_type::calc_value)));
+  if (n_permutations > 1) {
+    best_perm_index = std::min_element(
+      permutation_msds.begin(), permutation_msds.end()) - permutation_msds.begin();
+    *(rmsd_gpu_impl->h_best_perm_index) = best_perm_index;
+  }
   x.real_value = permutation_msds[best_perm_index];
   x.real_value /= cvm::real(atoms->size()); // MSD
   x.real_value = cvm::sqrt(x.real_value);
   // Save the results to host-pinned memory for further gradients calculation
-  *h_best_perm_index = best_perm_index;
-  *h_rmsd = x.real_value;
-  return COLVARS_OK;
-}
-
-int colvar::rmsd::add_calc_gradients_node(
-  cudaGraph_t& graph,
-  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
-  int error_code = COLVARS_OK;
-  auto& gpu_buffers = atoms->get_gpu_atom_group()->get_gpu_buffers();
-  cudaGraphNode_t calc_gradients_rmsd;
-  error_code |= colvars_gpu::calc_gradients_rmsd(
-    h_rmsd, h_best_perm_index, d_ref_pos_soa,
-    gpu_buffers.d_atoms_pos, gpu_buffers.d_atoms_grad,
-    atoms->size(), num_ref_pos, calc_gradients_rmsd, graph, {});
-  const std::string node_name = name + "_calc_gradients";
-  nodes_map[node_name] = calc_gradients_rmsd;
+  *(rmsd_gpu_impl->h_rmsd) = x.real_value;
   return error_code;
 }
 
-int colvar::rmsd::add_calc_force_invgrads_node(
-  cudaGraph_t& graph,
-  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
-  int error_code = COLVARS_OK;
-  auto& gpu_buffers = atoms->get_gpu_atom_group()->get_gpu_buffers();
-  // If I explicitly read the total force to gpu_buffer.d_atoms_total_force
-  // there would be a race condition if the underlyding atom group is used
-  // by multiple other CVCs, so I have to fuse the reading of total force
-  // with the Jacobian derivative calculation, and left
-  // gpu_buffer.d_atoms_total_force unchanged.
-  cudaGraphNode_t calc_force_invgrads;
-  colvarproxy *p = cvmodule->proxy;
-  const auto& rot = atoms->get_gpu_atom_group()->get_rot_gpu();
-  error_code |= colvars_gpu::calc_force_invgrads_rmsd(
-    atoms->is_enabled(f_ag_rotate),
-    gpu_buffers.d_atoms_index,
-    p->proxy_atoms_total_forces_gpu(),
-    rot.get_q(), gpu_buffers.d_atoms_grad, d_ft, h_ft,
-    atoms->size(), p->get_atom_ids()->size(), d_tbcount_ft,
-    calc_force_invgrads, graph, {});
-  const std::string node_name = name + "_calc_force_invgrads";
-  nodes_map[node_name] = calc_force_invgrads;
-  return error_code;
+int colvar::rmsd::calc_gradients_gpu() {
+  return rmsd_gpu_impl->calc_gradients_gpu(false);
+}
+
+int colvar::rmsd::calc_force_invgrads_gpu() {
+  return rmsd_gpu_impl->calc_force_invgrads_gpu(false);
 }
 
 int colvar::rmsd::calc_force_invgrads_after_gpu() {
-  ft.real_value = *h_ft;
-  return COLVARS_OK;
-}
-
-int colvar::rmsd::add_calc_Jacobian_derivative_node(
-  cudaGraph_t& graph,
-  std::unordered_map<std::string, cudaGraphNode_t>& nodes_map) {
   int error_code = COLVARS_OK;
-  const auto& rot = atoms->get_gpu_atom_group()->get_rot_gpu();
-  auto* rot_deriv = atoms->get_gpu_atom_group()->get_rot_deriv_gpu();
-  if (atoms->is_enabled(f_ag_rotate)) {
-    if (rot_deriv == nullptr) {
-      return cvmodule->error("BUG: rot_deriv is null.\n");
-    }
-    error_code |= rot_deriv->add_prepare_derivative_nodes(
-      rotation_derivative_dldq::use_dq, graph, nodes_map);
-  }
-  cudaGraphNode_t calc_Jacobian_derivative;
-  std::vector<cudaGraphNode_t> dependencies;
-  if (atoms->is_enabled(f_ag_rotate)) {
-    error_code |= colvars_gpu::prepare_dependencies(
-      {{"prepare_rotation_derivative", true}}, dependencies, nodes_map);
-  }
-  error_code |= colvars_gpu::calc_Jacobian_derivative_rmsd(
-    atoms->is_enabled(f_ag_center), atoms->is_enabled(f_ag_rotate),
-    h_best_perm_index, d_ref_pos_soa, rot.get_q(),
-    rot_deriv, h_rmsd, d_jd, h_jd, atoms->size(),
-    num_ref_pos, d_tbcount_jd, calc_Jacobian_derivative,
-    graph, dependencies);
+  error_code |= checkGPUError(cudaEventSynchronize(get_event(cvc::event_type::calc_force_invgrads)));
+  ft.real_value = *(rmsd_gpu_impl->h_ft);
   return error_code;
 }
 
+int colvar::rmsd::calc_Jacobian_derivative_gpu() {
+  return rmsd_gpu_impl->calc_Jacobian_derivative_gpu(false);
+}
+
 int colvar::rmsd::calc_Jacobian_derivative_after_gpu() {
-  jd.real_value = *h_jd;
-  return COLVARS_OK;
+  int error_code = COLVARS_OK;
+  error_code |= checkGPUError(cudaEventSynchronize(get_event(cvc::event_type::calc_Jacobian_derivative)));
+  jd.real_value = *(rmsd_gpu_impl->h_jd);
+  return error_code;
+}
+
+int colvar::rmsd::proxy_gpu_buffers_reallocated() {
+  int error_code = colvardeps::proxy_gpu_buffers_reallocated();
+  if (rmsd_gpu_impl) {
+    error_code |= rmsd_gpu_impl->reset_graphs();
+  }
+  return error_code;
 }
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 

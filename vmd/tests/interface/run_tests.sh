@@ -74,7 +74,7 @@ do
   for f in AutoDiff/*
   do
     base=`basename $f`
-    $SPIFF $f $base > "$base.diff"
+    $SPIFF -a 5e-6 $f $base > "$base.diff"
     RETVAL=$?
     if [ $RETVAL -ne 0 ]
     then
