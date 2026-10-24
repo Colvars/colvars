@@ -170,15 +170,16 @@ int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_forc
   // The XYZ file lists atoms by increasing ID, but atom slots follow the order in which the
   // atoms were requested: read all positions first, then copy them into their slots
   auto &positions = *(modify_atom_positions());
-  const size_t numAtoms = positions.size();
-  xyz_positions_.resize(numAtoms);
+  const size_t numColvarsAtoms = positions.size();
+  // xyz_positions_ is empty on the first call, and resized to the total number of atoms on
+  // subsequent calls - this will read all positions in both cases
   int err = cvmodule->load_coords_xyz(filename, &xyz_positions_, nullptr, true);
   std::string force_filename;
   if (write_force_file) {
-    force_filename = cvmodule->output_prefix() + "_forces_" + cvm::to_str(cvmodule->it) + ".dat";
+    force_filename = cvmodule->output_prefix() + "_forces.xyz";
   }
   if ( !err ) {
-    for (size_t i = 0; i < numAtoms; ++i) {
+    for (size_t i = 0; i < numColvarsAtoms; ++i) {
       positions[i] = xyz_positions_[atoms_ids[i]];
     }
     auto& new_forces = *(modify_atom_applied_forces());
@@ -186,17 +187,25 @@ int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_forc
     cvmodule->calc();
     cvmodule->it++;
     if (write_force_file) {
-      // Write the forces by increasing atom ID
-      forces_by_id_.resize(numAtoms);
-      for (size_t i = 0; i < numAtoms; ++i) {
+      // Write the forces in XYZ trajectory format
+      // forces_by_id_ is indexed by atom ID, so we need to cover all atoms
+      size_t const numAtomsFile = xyz_positions_.size();
+      forces_by_id_.resize(numAtomsFile);
+      // Initialize all forces to zero, then fill in the relevant ones by atom ID
+      std::fill(forces_by_id_.begin(), forces_by_id_.end(), cvm::rvector{0, 0, 0});
+      for (size_t i = 0; i < numColvarsAtoms; ++i) {
         forces_by_id_[atoms_ids[i]] = new_forces[i];
       }
-      std::ofstream ofs(force_filename);
-      for (size_t i = 0; i < numAtoms; ++i) {
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << forces_by_id_[i].x << std::setw(0) << " ";
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << forces_by_id_[i].y << std::setw(0) << " ";
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << forces_by_id_[i].z << std::setw(0) << " ";
-        ofs << std::endl;
+      // Create XYZ trajectory: overwrite on first frame, append on subsequent frames
+      std::ios::openmode mode = (cvmodule->it == 1) ? std::ios::out : std::ios::app;
+      std::ofstream ofs(force_filename, mode);
+      ofs << numAtomsFile << std::endl;
+      ofs << std::endl;
+      for (size_t i = 0; i < numAtomsFile; ++i) {
+        ofs << std::setw(7) << (i+1) << " "  // Atom ID (1-based)
+            << std::scientific << std::setprecision(8) << std::setw(16) << forces_by_id_[i].x << std::setw(0) << " "
+            << std::scientific << std::setprecision(8) << std::setw(16) << forces_by_id_[i].y << std::setw(0) << " "
+            << std::scientific << std::setprecision(8) << std::setw(16) << forces_by_id_[i].z << std::endl;
       }
     }
   }

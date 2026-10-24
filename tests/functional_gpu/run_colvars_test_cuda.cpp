@@ -316,21 +316,7 @@ int main(int argc, char *argv[]) {
     cvmodule->log("Error occurred!\n");
   }
 
-  if (argc > 2) {
-    // Read number of atoms from XYZ header
-    std::ifstream ifs(trajectory_file);
-    int natoms;
-    ifs >> natoms;
-    ifs.close();
-    cvmodule->log("Reading trajectory for " + cvm::to_str(natoms)
-              + " atoms from XYZ file " + trajectory_file);
-    for (int ai = 0; ai < natoms; ai++) {
-      proxy->init_atom(ai+1);
-    }
-    err = cvmodule->get_error();
-    if (err != COLVARS_OK) {
-      cvmodule->log("Error occurred!\n");
-    }
+  if (trajectory_file.size() > 0) {
     int io_err = 0;
     while (!io_err) {
       io_err = proxy->read_frame_xyz(trajectory_file.c_str(), output_force);

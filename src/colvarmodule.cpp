@@ -2435,8 +2435,14 @@ int colvarmodule::load_coords_xyz(char const *filename,
       + ") than expected (" + this->to_str(pos->size()) + ").", COLVARS_INPUT_ERROR);
   }
 
-  std::vector<atom_pos>::iterator pos_i = pos->begin();
-  size_t xyz_natoms = 0;
+  // If no atom group is provided and pos is empty, read all positions from the file
+  if (pos->size() == 0 && !atoms) {
+    pos->resize(natoms);
+  }
+
+std::vector<atom_pos>::iterator pos_i = pos->begin();
+size_t xyz_natoms_read = 0;
+
   if (pos->size() < natoms) { // Use specified indices
     int next = 0; // indices are zero-based
     if (!atoms) {
@@ -2466,7 +2472,7 @@ int colvarmodule::load_coords_xyz(char const *filename,
         (*pos_i)[0] = proxy->angstrom_to_internal(x);
         (*pos_i)[1] = proxy->angstrom_to_internal(y);
         (*pos_i)[2] = proxy->angstrom_to_internal(z);
-        xyz_natoms++;
+        xyz_natoms_read++;
       } else {
         proxy->close_input_stream(filename);
         return this->error(error_msg, COLVARS_INPUT_ERROR);
@@ -2482,7 +2488,7 @@ int colvarmodule::load_coords_xyz(char const *filename,
         (*pos_i)[0] = proxy->angstrom_to_internal(x);
         (*pos_i)[1] = proxy->angstrom_to_internal(y);
         (*pos_i)[2] = proxy->angstrom_to_internal(z);
-        xyz_natoms++;
+        xyz_natoms_read++;
       } else {
         proxy->close_input_stream(filename);
         return this->error(error_msg, COLVARS_INPUT_ERROR);
@@ -2490,11 +2496,11 @@ int colvarmodule::load_coords_xyz(char const *filename,
     }
   }
 
-  if (xyz_natoms != pos->size()) {
+  if (xyz_natoms_read != pos->size()) {
     proxy->close_input_stream(filename);
     return this->error("Error: The number of positions read from file \""+
                       std::string(filename)+"\" does not match the number of "+
-                      "positions required: "+this->to_str(xyz_natoms)+" vs. "+
+                      "positions required: "+this->to_str(xyz_natoms_read)+" vs. "+
                       this->to_str(pos->size())+".\n", COLVARS_INPUT_ERROR);
   }
 
