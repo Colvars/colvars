@@ -66,6 +66,8 @@ set(COLVARS_CUDA_SOURCE ${COLVARS_CUDA_DIR}/colvaratoms_kernel.cu
 
 file(GLOB COLVARS_SOURCES ${COLVARS_SOURCE_DIR}/src/[^.]*.cpp)
 
+set(COLVARS_STUBS_DIR ${COLVARS_SOURCE_DIR}/misc_interfaces/stubs/)
+
 # Build Lepton
 if(COLVARS_LEPTON)
   if(NOT DEFINED LEPTON_DIR)
@@ -112,9 +114,19 @@ add_executable(
   ${COLVARS_CUDA_SOURCE})
 target_include_directories(run_colvars_test_cuda
   PUBLIC "${COLVARS_SOURCE_DIR}/src"
+  PUBLIC "${COLVARS_STUBS_DIR}"
   PUBLIC "${COLVARS_CUDA_DIR}"
   PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}"
   PUBLIC $<$<BOOL:${COLVARS_LEPTON}>:${LEPTON_DIR}/include>)
+
+
+add_library(colvars_stubs_gpu OBJECT ${COLVARS_STUBS_DIR}/colvarproxy_stub_gpu.cpp)
+target_include_directories(colvars_stubs_gpu
+  PRIVATE "${COLVARS_SOURCE_DIR}/src"
+  PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
+
+target_link_libraries(run_colvars_test_cuda PRIVATE colvars_stubs_gpu)
+target_include_directories(run_colvars_test_cuda PRIVATE ${COLVARS_STUBS_DIR})
 
 if(GPU_TYPE STREQUAL "CUDA")
   set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE CUDA)
