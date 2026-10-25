@@ -2418,6 +2418,8 @@ int colvarmodule::load_coords_xyz(char const *filename,
   if (xyz_reader_use_count < 2) {
     this->log("Warning: beginning from 2019-11-26 the XYZ file reader assumes Angstrom units.\n");
   }
+  cvm::log("Reading XYZ file \"" + std::string(filename) + "\" with " +
+           this->to_str(natoms) + " atoms; pos array has " + this->to_str(pos->size()) + " atoms.\n");
 
   if (xyz_is.good()) {
     // skip comment line
@@ -2437,6 +2439,7 @@ int colvarmodule::load_coords_xyz(char const *filename,
 
   // If no atom group is provided and pos is empty, read all positions from the file
   if (pos->size() == 0 && !atoms) {
+    cvm::log("Warning: no atom group provided and pos is empty, reading all positions from the file.\n");
     pos->resize(natoms);
   }
 
