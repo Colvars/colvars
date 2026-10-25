@@ -42,8 +42,14 @@ public:
   /// @brief Read next frame from XYZ file and call cvmodule->calc()
   /// @param filename Input XYZ file
   /// @param write_force_file Write the applied forces to files
+  /// @param num_trial_evaluations Before calc(), call calc_trial() this many
+  ///        times on scaled copies of the coordinates (skipped on the first frame)
+  /// @param check_trial_consistency Before calc(), call calc_trial() on the
+  ///        unmodified coordinates and require identical atomic forces
   /// @return Error code
-  int read_frame_xyz(const char *filename, const bool write_force_file = false);
+  int read_frame_xyz(const char *filename, const bool write_force_file = false,
+                     int num_trial_evaluations = 0,
+                     bool check_trial_consistency = false);
 };
 
 

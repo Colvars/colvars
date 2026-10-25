@@ -1,0 +1,39 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    distance {
+        debugGradients on
+        group1 {
+            indexGroup group1
+        }
+        group2 {
+            indexGroup group2
+        }
+    }
+} 
+
+harmonic {
+    colvars one
+    centers 2.1574686273835049
+    forceConstant 10.0
+}
+harmonicWalls {
+    colvars one
+    lowerWalls 2.0994902435376877
+    upperWalls 2.2154470112293225
+    forceConstant 10.0
+}
+linear {
+    colvars one
+    centers 2.1574686273835049
+    forceConstant 1.0
+}

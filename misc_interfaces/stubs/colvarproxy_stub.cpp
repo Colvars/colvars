@@ -10,6 +10,9 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <cmath>
+#include <vector>
+#include <algorithm>
 
 #include "colvarmodule.h"
 #include "colvarscript.h"
@@ -165,7 +168,9 @@ int colvarproxy_stub::init_atom(int atom_number)
 }
 
 
-int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_force_file)
+int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_force_file,
+                                     int num_trial_evaluations,
+                                     bool check_trial_consistency)
 {
   int err = cvmodule->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
   std::string force_filename;
@@ -174,8 +179,49 @@ int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_forc
   }
   if ( !err ) {
     auto& new_forces = *(modify_atom_applied_forces());
+
+    // The first frame must be a regular (committed) evaluation
+    bool const trials_allowed = (cvmodule->step_relative() > 0);
+
+    if (trials_allowed && (num_trial_evaluations > 0)) {
+      std::vector<cvm::atom_pos> const saved_positions = *(modify_atom_positions());
+      for (int k = 0; k < num_trial_evaluations; k++) {
+        cvm::real const scale = 1.0 + 0.002 * cvm::real(k + 1);
+        auto &positions = *(modify_atom_positions());
+        for (size_t i = 0; i < positions.size(); i++) {
+          positions[i] = saved_positions[i] * scale;
+        }
+        std::fill(new_forces.begin(), new_forces.end(), cvm::rvector{0, 0, 0});
+        int const trial_err = cvmodule->calc_trial();
+        if (trial_err != COLVARS_OK) return trial_err;
+      }
+      *(modify_atom_positions()) = saved_positions;
+    }
+
+    std::vector<cvm::rvector> trial_forces;
+    if (trials_allowed && check_trial_consistency) {
+      std::fill(new_forces.begin(), new_forces.end(), cvm::rvector{0, 0, 0});
+      int const trial_err = cvmodule->calc_trial();
+      if (trial_err != COLVARS_OK) return trial_err;
+      trial_forces = new_forces;
+    }
+
     std::fill(new_forces.begin(), new_forces.end(), cvm::rvector{0, 0, 0});
     cvmodule->calc();
+
+    if (!trial_forces.empty()) {
+      for (size_t i = 0; i < new_forces.size(); i++) {
+        cvm::rvector const d = new_forces[i] - trial_forces[i];
+        cvm::real const tol = 1.0e-10 * std::max(1.0, new_forces[i].norm());
+        if (d.norm() > tol) {
+          cvmodule->error("Error: trial and committed forces differ for atom " +
+                          cvm::to_str(i) + ": " + cvm::to_str(trial_forces[i]) +
+                          " vs. " + cvm::to_str(new_forces[i]) + "\n", COLVARS_BUG_ERROR);
+          return COLVARS_BUG_ERROR;
+        }
+      }
+    }
+
     cvmodule->it++;
     if (write_force_file) {
       const size_t numAtoms = modify_atom_positions()->size();

@@ -37,7 +37,24 @@ if(BUILD_TESTS)
           COMMAND bash compare_test.sh ${TEST_NAME}
           WORKING_DIRECTORY
           ${CMAKE_CURRENT_BINARY_DIR}/tests/functional)
+        set_tests_properties("${TEST_NAME}_spiff" PROPERTIES DEPENDS "${TEST_NAME}")
+        add_test(NAME "${TEST_NAME}_trial"
+          COMMAND run_colvars_test --configuration_file ${TEST_NAME}/test.in --trajectory_file trajectory.xyz --output_prefix "${TEST_NAME}/test_out" --force --trial-evaluations 2
+          WORKING_DIRECTORY
+          ${CMAKE_CURRENT_BINARY_DIR}/tests/functional_trial)
+        set_tests_properties("${TEST_NAME}_trial" PROPERTIES SKIP_RETURN_CODE 77)
+        add_test(NAME "${TEST_NAME}_trial_spiff"
+          COMMAND bash compare_test.sh ${TEST_NAME}
+          WORKING_DIRECTORY
+          ${CMAKE_CURRENT_BINARY_DIR}/tests/functional_trial)
+        set_tests_properties("${TEST_NAME}_trial_spiff" PROPERTIES DEPENDS "${TEST_NAME}_trial")
       endforeach()
+
+      add_test(NAME trial_consistency
+        COMMAND run_colvars_test --configuration_file trial-consistency_harmonic-walls-linear/test.in --trajectory_file trajectory.xyz --output_prefix "trial-consistency_harmonic-walls-linear/test_out_consistency" --trial-consistency
+        WORKING_DIRECTORY
+        ${CMAKE_CURRENT_BINARY_DIR}/tests/functional)
+
 
       # Copy input files (coordinates, index files, etc)
       add_custom_command(TARGET copy_test_files POST_BUILD
@@ -45,6 +62,12 @@ if(BUILD_TESTS)
           ${COLVARS_SOURCE_DIR}/tests/input_files
           ${CMAKE_BINARY_DIR}/tests/functional
         COMMENT "Copying test input files"
+      )
+      add_custom_command(TARGET copy_test_files POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+          ${COLVARS_SOURCE_DIR}/tests/input_files
+          ${CMAKE_BINARY_DIR}/tests/functional_trial
+        COMMENT "Copying test input files for trial-evaluation tests"
       )
 
       # Make the main target depend on the copy target

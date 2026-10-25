@@ -37,11 +37,17 @@ int main(int argc, char *argv[]) {
   std::string output_prefix;
   std::string trajectory_file;
   bool output_force = false;
+  int trial_evaluations = 0;
+  bool trial_consistency = false;
   app.add_option("-c,--configuration_file", configuration_file, "Input Colvars configuration file")->required(true);
   app.add_option("-t,--trajectory_file", trajectory_file, "Input trajectory file")->required(true);
   const auto output_prefix_option =
     app.add_option("-o,--output_prefix", output_prefix, "Output file prefix")->required(false);
   app.add_flag("--force,!--no-force", output_force, "Write the force files")->needs(output_prefix_option);
+  app.add_option("--trial-evaluations", trial_evaluations,
+                  "Call calc_trial() this many times on scaled coordinates before each calc()");
+  app.add_flag("--trial-consistency", trial_consistency,
+                "Require calc_trial() and calc() forces to match on the same coordinates");
   CLI11_PARSE(app, argc, argv);
 
   int err = 0;
@@ -69,9 +75,22 @@ int main(int argc, char *argv[]) {
     for (int ai = 0; ai < natoms; ai++) {
       proxy->init_atom(ai+1);
     }
+    if ((trial_evaluations > 0) || trial_consistency) {
+      std::string reasons;
+      if (cvmodule->check_trial_support(reasons) != COLVARS_OK) {
+        cvmodule->log("Trial evaluations are not supported by this configuration:\n" + reasons);
+        // Tell compare_test.sh to skip this directory
+        std::string const dir = output_prefix.substr(0, output_prefix.find_last_of('/'));
+        std::ofstream(dir + "/disabled").close();
+        delete proxy;
+        return 77;
+      }
+    }
     int io_err = 0;
     while (!io_err) {
-      io_err = proxy->read_frame_xyz(trajectory_file.c_str(), output_force);
+      io_err = proxy->read_frame_xyz(trajectory_file.c_str(), output_force,
+                                    trial_evaluations, trial_consistency);
+      if (cvmodule->get_error() != COLVARS_OK) { err |= cvmodule->get_error(); break; }
       if (!io_err) cvmodule->log("Frame " + cvm::to_str(cvmodule->step_absolute()));
     }
     proxy->post_run();
