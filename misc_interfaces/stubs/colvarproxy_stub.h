@@ -36,10 +36,10 @@ public:
 protected:
 
   /// Positions of the current XYZ frame, ordered by atom ID
-  std::vector<cvm::rvector> xyz_positions_;
+  std::vector<cvm::rvector> xyz_positions;
 
   /// Applied forces of the current frame, ordered by atom ID
-  std::vector<cvm::rvector> forces_by_id_;
+  std::vector<cvm::rvector> forces_by_id;
 };
 
 
