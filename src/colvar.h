@@ -360,6 +360,26 @@ public:
   /// \brief Integrate equations of motion of extended Lagrangian coordinate if needed
   void update_extended_Lagrangian();
 
+  /// \brief Trial evaluation (see colvarmodule::calc_trial()): compute the
+  /// values and gradients of the active CVCs and the colvar value
+  int calc_trial_value();
+
+  /// \brief Trial evaluation: set the force f to be applied to the atoms and
+  /// return the colvar energy, without integrating the extended coordinate
+  cvm::real calc_trial_force_energy();
+
+  /// Freeze the initial auxiliary state without integrating or reading total forces
+  int prepare_initial_trial_state();
+
+  /// Discard the initialization snapshot after a successful real evaluation
+  void clear_initial_trial_state() { initial_trial_state_ready_ = false; }
+
+  /// Save the members overwritten by a trial evaluation
+  void save_trial_state();
+
+  /// Restore the members saved by save_trial_state()
+  void restore_trial_state();
+
   /// \brief Communicate forces (previously calculated in
   /// colvar::update()) to the external degrees of freedom
   void communicate_forces();
@@ -498,6 +518,23 @@ protected:
 
   /// Value read from the most recent state file (if any)
   colvarvalue            x_restart;
+
+  /// Copies of members overwritten by a trial evaluation
+  colvarvalue trial_saved_x_;
+  colvarvalue trial_saved_x_reported_;
+  colvarvalue trial_saved_f_;
+  colvarvalue trial_saved_fb_;
+  colvarvalue trial_saved_fb_actual_;
+  colvarvalue trial_saved_x_ext_;
+  colvarvalue trial_saved_v_ext_;
+  colvarvalue trial_saved_v_reported_;
+  cvm::real trial_saved_kinetic_energy_ = 0.0;
+  cvm::real trial_saved_potential_energy_ = 0.0;
+
+  /// Immutable initial condition shared by pre-first-step trial configurations
+  bool initial_trial_state_ready_ = false;
+  colvarvalue initial_trial_x_ext_;
+  colvarvalue initial_trial_v_ext_;
 
   /// True if a state file was just read
   bool                   after_restart;

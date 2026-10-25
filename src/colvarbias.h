@@ -77,6 +77,33 @@ public:
   /// Send forces to the collective variables
   int communicate_forces();
 
+  /// How colvarmodule::calc_trial() handles this bias
+  enum trial_mode_t {
+    trial_skip,        ///< Applies no forces: ignored
+    trial_const,       ///< Acts only on extended/external DOFs: energy is constant
+    trial_evaluate,    ///< Re-evaluated with calc_trial_energy_forces()
+    trial_unsupported  ///< Cannot be evaluated without side effects
+  };
+
+  /// Classify this bias for colvarmodule::calc_trial()
+  trial_mode_t trial_mode() const;
+
+  /// Whether calc_trial_energy_forces() is implemented
+  virtual bool supports_trial_evaluation() const { return false; }
+
+  /// \brief Compute bias_energy and colvar_forces from the current colvar
+  /// values without updating any history-dependent data
+  virtual int calc_trial_energy_forces() { return COLVARS_NOT_IMPLEMENTED; }
+
+  /// Same as communicate_forces(), but leaves previous_colvar_forces unchanged
+  int communicate_trial_forces();
+
+  /// Save the members overwritten by a trial evaluation
+  void save_trial_state();
+
+  /// Restore the members saved by save_trial_state()
+  void restore_trial_state();
+
   /// Carry out operations needed before next step is run
   virtual int end_of_step();
 
@@ -315,6 +342,14 @@ protected:
   /// \brief Whether this bias has already accumulated information
   /// (for history-dependent biases)
   bool                     has_data;
+
+  /// Implementation of communicate_forces() and communicate_trial_forces()
+  int apply_colvar_forces(bool store_previous_forces);
+
+  /// Copies of members overwritten by a trial evaluation
+  cvm::real trial_saved_bias_energy_ = 0.0;
+  std::vector<colvarvalue> trial_saved_colvar_forces_;
+  std::vector<colvarvalue> trial_saved_colvar_values_;
 
   /// \brief Step number read from the last state file
   cvm::step_number         state_file_step;

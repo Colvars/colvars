@@ -67,6 +67,21 @@ int colvarbias_restraint::update()
 }
 
 
+int colvarbias_restraint::calc_trial_energy_forces()
+{
+  // Same as the loop in update(), without colvarbias::update() (which sets
+  // has_data and colvar_values), moving-restraint updates, work or TI
+  bias_energy = 0.0;
+  for (size_t i = 0; i < num_variables(); i++) {
+    bias_energy += restraint_potential(i);
+    colvar_forces[i].type(variables(i)->value());
+    colvar_forces[i].is_derivative();
+    colvar_forces[i] = restraint_force(i);
+  }
+  return COLVARS_OK;
+}
+
+
 colvarbias_restraint::~colvarbias_restraint()
 {
 }

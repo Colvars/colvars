@@ -621,6 +621,29 @@ public:
   /// Integrate bias and restraint forces, send colvar forces to atoms
   int update_colvar_forces();
 
+  /// \brief Side-effect-free evaluation of the bias energy and atomic forces
+  /// at the current atomic coordinates and box, using the state committed by
+  /// the most recent call to calc().  Does not modify any persistent state of
+  /// the module, colvars or biases, and writes no files. Before the first
+  /// calc(), call prepare_initial_trial_state() to define the initial state.
+  /// As for calc(), the caller must reset applied forces and energy beforehand.
+  int calc_trial();
+
+  /// Freeze the initial auxiliary state at the first observed coordinates.
+  /// This initializes bookkeeping only: no dynamics, sampling, RNG or output.
+  int prepare_initial_trial_state();
+
+  /// Called only after a successful first real evaluation
+  void clear_initial_trial_state();
+
+  /// True only while calc_trial() is running
+  inline bool in_trial() const { return in_trial_; }
+
+  /// \brief Check whether calc_trial() supports the current configuration
+  /// \param reasons Cleared, then filled with one line per unsupported item
+  /// \return COLVARS_OK or COLVARS_NOT_IMPLEMENTED; never calls error()
+  int check_trial_support(std::string &reasons);
+
   /// \brief Called from proxy when it completes buffers reallocation
   int proxy_gpu_buffers_reallocated_done();
 
@@ -800,6 +823,18 @@ private:
 
   /// Level of logging requested by the user
   int log_level_ = 10;
+
+  /// Flag set while calc_trial() is running
+  bool in_trial_ = false;
+  /// Use trial-local enabled objects until the first real calculation succeeds
+  bool initial_trial_state_ready_ = false;
+  /// Objects whose state was saved by begin_trial_evaluation()
+  std::vector<colvar *> trial_saved_colvars_;
+  std::vector<colvarbias *> trial_saved_biases_;
+  /// Save the members that calc_trial() overwrites, set in_trial_
+  void begin_trial_evaluation(bool initial = false);
+  /// Restore what begin_trial_evaluation() saved, clear in_trial_
+  void end_trial_evaluation();
 
 public:
 

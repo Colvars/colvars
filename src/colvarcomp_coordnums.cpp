@@ -607,7 +607,9 @@ void inline colvar::coordnum::main_loop()
       cvm::real &gy2 = use_group2_com ? group2_com_grad.y : group2->grad_y(j);
       cvm::real &gz2 = use_group2_com ? group2_com_grad.z : group2->grad_z(j);
 
-      bool const within =
+      // Trials include newly entering pairs without rebuilding the list.
+      // Keep ef_use_pairlist so the configured tolerance correction is unchanged.
+      bool const within = cvmodule->in_trial() ||
           ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
           !(flags & ef_use_pairlist);
 
@@ -643,7 +645,8 @@ template <bool use_group1_com, bool use_group2_com, int compute_flags>
 int colvar::coordnum::compute_coordnum()
 {
   bool const use_pairlist = pairlist.get();
-  bool const rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
+  bool const rebuild_pairlist = use_pairlist && !cvmodule->in_trial() &&
+    (cvmodule->step_relative() % pairlist_freq == 0);
 
   if (use_pairlist) {
     if (rebuild_pairlist) {
@@ -713,7 +716,8 @@ void colvar::coordnum::calc_gradients()
 int colvar::coordnum::calc_value_gpu() {
   int error_code = COLVARS_OK;
   const bool use_pairlist = b_enable_pairlist;
-  const bool rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
+  const bool rebuild_pairlist = use_pairlist && !cvmodule->in_trial() &&
+    (cvmodule->step_relative() % pairlist_freq == 0);
   const bool gradients = is_enabled(f_cvc_gradient);
   const int flags = (use_pairlist ? ef_use_pairlist : 0) +
                     (rebuild_pairlist ? ef_rebuild_pairlist : 0) +
@@ -924,7 +928,9 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
       cvm::real &gy2 = group1->grad_y(j);
       cvm::real &gz2 = group1->grad_z(j);
 
-      bool const within =
+      // Trials include newly entering pairs without rebuilding the list.
+      // Keep ef_use_pairlist so the configured tolerance correction is unchanged.
+      bool const within = cvmodule->in_trial() ||
           ((flags & ef_use_pairlist) && (*pairlist_elem || (flags & ef_rebuild_pairlist))) ||
           !(flags & ef_use_pairlist);
 
@@ -952,7 +958,8 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
 template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
 {
   bool const use_pairlist = pairlist.get();
-  bool const rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
+  bool const rebuild_pairlist = use_pairlist && !cvmodule->in_trial() &&
+    (cvmodule->step_relative() % pairlist_freq == 0);
 
   if (use_pairlist) {
     if (rebuild_pairlist) {

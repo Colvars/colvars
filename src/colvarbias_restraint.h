@@ -30,6 +30,8 @@ public:
   /// Retrieve colvar values and calculate their biasing forces
   virtual int update();
 
+  int calc_trial_energy_forces() override;
+
   /// Load new configuration - force constant and/or centers only
   virtual int change_configuration(std::string const & /* conf */) { return COLVARS_NOT_IMPLEMENTED; }
 
@@ -276,6 +278,7 @@ class colvarbias_restraint_harmonic
     public colvarbias_restraint_k_moving
 {
 public:
+  bool supports_trial_evaluation() const override { return true; }
   colvarbias_restraint_harmonic(colvarmodule *cvmodule_in, char const *key);
   virtual int init(std::string const &conf);
   virtual int update();
@@ -301,6 +304,7 @@ class colvarbias_restraint_harmonic_walls
 {
 public:
 
+  bool supports_trial_evaluation() const override { return true; }
   colvarbias_restraint_harmonic_walls(colvarmodule *cvmodule_in, char const *key);
   virtual int init(std::string const &conf) override;
   virtual int update() override;
@@ -368,6 +372,7 @@ class colvarbias_restraint_linear
 {
 
 public:
+  bool supports_trial_evaluation() const override { return true; }
   colvarbias_restraint_linear(colvarmodule *cvmodule_in, char const *key);
   virtual int init(std::string const &conf);
   virtual int update();

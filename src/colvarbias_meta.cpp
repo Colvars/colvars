@@ -803,6 +803,24 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
 
 
 
+int colvarbias_meta::calc_trial_energy_forces()
+{
+  if (comm != single_replica) {
+    return COLVARS_NOT_IMPLEMENTED;
+  }
+  // calc_hills() reads colvar_values when called with values == NULL
+  for (size_t i = 0; i < num_variables(); i++) {
+    colvar_values[i] = variables(i)->value();
+  }
+  // Read-only use of the existing hills and grids: no update_grid_params(),
+  // update_bias(), update_grid_data() or replica_share()
+  bias_energy = 0.0;
+  int error_code = calc_energy(NULL);
+  error_code |= calc_forces(NULL);
+  return error_code;
+}
+
+
 void colvarbias_meta::calc_hills(colvarbias_meta::hill_iter      h_first,
                                  colvarbias_meta::hill_iter      h_last,
                                  cvm::real                      &energy,

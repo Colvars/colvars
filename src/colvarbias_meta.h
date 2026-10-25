@@ -62,6 +62,9 @@ public:
   int calc_energy(std::vector<colvarvalue> const *values) override;
   int calc_forces(std::vector<colvarvalue> const *values) override;
 
+  bool supports_trial_evaluation() const override { return comm == single_replica; }
+  int calc_trial_energy_forces() override;
+
   std::string const get_state_params() const override;
   int set_state_params(std::string const &state_conf) override;
 

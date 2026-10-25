@@ -417,7 +417,7 @@ int colvarbias::calc_forces(std::vector<colvarvalue> const *)
 }
 
 
-int colvarbias::communicate_forces()
+int colvarbias::apply_colvar_forces(bool store_previous_forces)
 {
   int error_code = COLVARS_OK;
   if (! is_enabled(f_cvb_apply_force)) {
@@ -448,9 +448,81 @@ int colvarbias::communicate_forces()
     } else {
       variables(i)->add_bias_force(cvm::real(time_step_factor) * colvar_forces[i] * biasing_force_factor);
     }
-    previous_colvar_forces[i] = colvar_forces[i];
+    if (store_previous_forces) {
+      previous_colvar_forces[i] = colvar_forces[i];
+    }
   }
   return error_code;
+}
+
+
+int colvarbias::communicate_forces()
+{
+  return apply_colvar_forces(true);
+}
+
+
+int colvarbias::communicate_trial_forces()
+{
+  return apply_colvar_forces(false);
+}
+
+
+colvarbias::trial_mode_t colvarbias::trial_mode() const
+{
+  if (!is_enabled(f_cvb_apply_force)) {
+    return trial_skip;
+  }
+  if (!is_enabled(f_cvb_bypass_ext_lagrangian) && (num_variables() > 0)) {
+    bool all_extended = true;
+    for (size_t i = 0; i < num_variables(); i++) {
+      colvar const *cv = variables(i);
+      if (!cv->is_enabled(colvardeps::f_cv_extended_Lagrangian) &&
+          !cv->is_enabled(colvardeps::f_cv_external)) {
+        all_extended = false;
+        break;
+      }
+    }
+    if (all_extended) {
+      return trial_const;
+    }
+  }
+  return supports_trial_evaluation() ? trial_evaluate : trial_unsupported;
+}
+
+
+namespace {
+inline void copy_bias_colvarvalue(colvarvalue &dst, colvarvalue const &src)
+{
+  dst.type(src);
+  dst = src;
+}
+}
+
+
+void colvarbias::save_trial_state()
+{
+  trial_saved_bias_energy_ = bias_energy;
+  trial_saved_colvar_forces_.resize(colvar_forces.size());
+  for (size_t i = 0; i < colvar_forces.size(); i++) {
+    copy_bias_colvarvalue(trial_saved_colvar_forces_[i], colvar_forces[i]);
+  }
+  trial_saved_colvar_values_.resize(colvar_values.size());
+  for (size_t i = 0; i < colvar_values.size(); i++) {
+    copy_bias_colvarvalue(trial_saved_colvar_values_[i], colvar_values[i]);
+  }
+}
+
+
+void colvarbias::restore_trial_state()
+{
+  bias_energy = trial_saved_bias_energy_;
+  for (size_t i = 0; i < colvar_forces.size() && i < trial_saved_colvar_forces_.size(); i++) {
+    copy_bias_colvarvalue(colvar_forces[i], trial_saved_colvar_forces_[i]);
+  }
+  for (size_t i = 0; i < colvar_values.size() && i < trial_saved_colvar_values_.size(); i++) {
+    copy_bias_colvarvalue(colvar_values[i], trial_saved_colvar_values_[i]);
+  }
 }
 
 

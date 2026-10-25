@@ -1601,7 +1601,7 @@ int colvar::collect_cvc_values()
     cvmodule->log("Colvar \""+this->name+"\" has value "+
               cvm::to_str(x, cvmodule->cv_width, cvmodule->cv_prec)+".\n");
 
-  if (after_restart) {
+  if (after_restart && !cvmodule->in_trial()) {
     x_old = x_restart;
     if (cvmodule->proxy->simulation_running()) {
       cvm::real const jump2 = dist2(x, x_restart) / (width*width);
@@ -1900,18 +1900,25 @@ int colvar::calc_colvar_properties()
     // just calculated from the cvcs
     // Do the same if no simulation is running (eg. VMD postprocessing)
     if ((cvmodule->step_relative() == 0 && !after_restart) || x_ext.type() == colvarvalue::type_notset || !cvmodule->proxy->simulation_running()) {
-      x_ext = x;
-      cvmodule->log("Initializing extended coordinate to colvar value.\n");
-      if (is_enabled(f_cv_reflecting_lower_boundary) && x_ext < lower_boundary) {
-        cvmodule->log("Warning: initializing extended coordinate to reflective lower boundary, as colvar value is below.\n");
-        x_ext = lower_boundary;
-      }
-      if (is_enabled(f_cv_reflecting_upper_boundary) && x_ext > upper_boundary) {
-        cvmodule->log("Warning: initializing extended coordinate to reflective upper boundary, as colvar value is above.\n");
-        x_ext = upper_boundary;
-      }
+      if (initial_trial_state_ready_) {
+        // Opt-in initial condition frozen before a Monte Carlo trial move.
+        // Do not recenter on the accepted spatial coordinates.
+        x_ext = initial_trial_x_ext_;
+        v_ext = initial_trial_v_ext_;
+      } else {
+        x_ext = x;
+        cvmodule->log("Initializing extended coordinate to colvar value.\n");
+        if (is_enabled(f_cv_reflecting_lower_boundary) && x_ext < lower_boundary) {
+          cvmodule->log("Warning: initializing extended coordinate to reflective lower boundary, as colvar value is below.\n");
+          x_ext = lower_boundary;
+        }
+        if (is_enabled(f_cv_reflecting_upper_boundary) && x_ext > upper_boundary) {
+          cvmodule->log("Warning: initializing extended coordinate to reflective upper boundary, as colvar value is above.\n");
+          x_ext = upper_boundary;
+        }
 
-      v_ext.reset(); // (already 0; added for clarity)
+        v_ext.reset(); // (already 0; added for clarity)
+      }
     }
 
     // Special case of a repeated timestep (eg. multiple NAMD "run" statements)
@@ -2144,6 +2151,147 @@ void colvar::update_extended_Lagrangian()
     x = x_ext;
     cvcs[0]->set_value(x_ext);
   }
+}
+
+
+namespace {
+// Assignment that also works when the destination has a different type
+inline void copy_colvarvalue(colvarvalue &dst, colvarvalue const &src)
+{
+  dst.type(src);
+  // An uninitialized extended coordinate has no value to assign.
+  if (src.type() != colvarvalue::type_notset) dst = src;
+}
+}
+
+
+int colvar::prepare_initial_trial_state()
+{
+  if (initial_trial_state_ready_ || !is_enabled(f_cv_extended_Lagrangian)) {
+    return COLVARS_OK;
+  }
+
+  if (after_restart && x_ext.type() != colvarvalue::type_notset) {
+    copy_colvarvalue(initial_trial_x_ext_, x_ext);
+    copy_colvarvalue(initial_trial_v_ext_, v_ext);
+  } else {
+    int error_code = COLVARS_OK;
+    if (is_enabled(f_cv_external)) {
+      // alchLambda is the only external CV. Its calc_value() also reads
+      // derivatives and clears indirect forces, so query only the parameter.
+      error_code |= cvmodule->proxy->get_alch_lambda(&x.real_value);
+    } else {
+      error_code |= calc_cvc_values(0, 0);
+      error_code |= collect_cvc_values();
+    }
+    if (error_code != COLVARS_OK || cvmodule->get_error()) return COLVARS_ERROR;
+    copy_colvarvalue(initial_trial_x_ext_, x);
+    if (is_enabled(f_cv_reflecting_lower_boundary) && initial_trial_x_ext_ < lower_boundary) {
+      initial_trial_x_ext_ = lower_boundary;
+    }
+    if (is_enabled(f_cv_reflecting_upper_boundary) && initial_trial_x_ext_ > upper_boundary) {
+      initial_trial_x_ext_ = upper_boundary;
+    }
+    initial_trial_v_ext_.type(v_ext);
+    initial_trial_v_ext_.reset();
+  }
+  initial_trial_state_ready_ = true;
+  return COLVARS_OK;
+}
+
+
+void colvar::save_trial_state()
+{
+  copy_colvarvalue(trial_saved_x_, x);
+  copy_colvarvalue(trial_saved_x_reported_, x_reported);
+  copy_colvarvalue(trial_saved_f_, f);
+  copy_colvarvalue(trial_saved_fb_, fb);
+  copy_colvarvalue(trial_saved_fb_actual_, fb_actual);
+  copy_colvarvalue(trial_saved_x_ext_, x_ext);
+  copy_colvarvalue(trial_saved_v_ext_, v_ext);
+  copy_colvarvalue(trial_saved_v_reported_, v_reported);
+  trial_saved_kinetic_energy_ = kinetic_energy;
+  trial_saved_potential_energy_ = potential_energy;
+}
+
+
+void colvar::restore_trial_state()
+{
+  copy_colvarvalue(x, trial_saved_x_);
+  copy_colvarvalue(x_reported, trial_saved_x_reported_);
+  copy_colvarvalue(f, trial_saved_f_);
+  copy_colvarvalue(fb, trial_saved_fb_);
+  copy_colvarvalue(fb_actual, trial_saved_fb_actual_);
+  copy_colvarvalue(x_ext, trial_saved_x_ext_);
+  copy_colvarvalue(v_ext, trial_saved_v_ext_);
+  copy_colvarvalue(v_reported, trial_saved_v_reported_);
+  kinetic_energy = trial_saved_kinetic_energy_;
+  potential_energy = trial_saved_potential_energy_;
+}
+
+
+int colvar::calc_trial_value()
+{
+  if (!is_enabled(f_cv_active)) return COLVARS_OK;
+  if (initial_trial_state_ready_) {
+    copy_colvarvalue(x_ext, initial_trial_x_ext_);
+    copy_colvarvalue(v_ext, initial_trial_v_ext_);
+    x_reported = x_ext;
+    v_reported = v_ext;
+    kinetic_energy = 0.5 * ext_mass * (v_ext * v_ext);
+  }
+  // External parameters do not depend on atomic coordinates. Do not call the
+  // CVC's calc_value(), which also reads derivatives and clears indirect forces.
+  if (is_enabled(f_cv_external)) {
+    if (initial_trial_state_ready_) {
+      x = x_ext;
+    }
+    return COLVARS_OK;
+  }
+
+  int error_code = COLVARS_OK;
+  // No total forces, no Jacobians, no calc_colvar_properties():
+  // those belong to the committed step only
+  error_code |= calc_cvc_values(0, 0);
+  error_code |= calc_cvc_gradients(0, 0);
+  if (error_code != COLVARS_OK) return error_code;
+  error_code |= collect_cvc_values();
+  error_code |= collect_cvc_gradients();
+
+  if (!is_enabled(f_cv_extended_Lagrangian)) {
+    // Biases read value(), which is x_reported
+    x_reported = x;
+  }
+  // For extended-Lagrangian colvars, x_reported stays equal to x_ext
+  return error_code;
+}
+
+
+cvm::real colvar::calc_trial_force_energy()
+{
+  f.type(value());
+  f.reset();
+
+  if (!is_enabled(f_cv_active)) return 0.0;
+  if (is_enabled(f_cv_external)) {
+    // Constant during the trial evaluation
+    return potential_energy + kinetic_energy;
+  }
+
+  cvm::real energy = 0.0;
+  if (is_enabled(f_cv_extended_Lagrangian) && cvmodule->proxy->simulation_running()) {
+    // Same expressions as in update_extended_Lagrangian(), without integration
+    colvarvalue const f_system = (-0.5 * ext_force_k) * this->dist2_lgrad(x_ext, x);
+    f = -1.0 * f_system;
+    f *= cvm::real(time_step_factor);
+    energy = 0.5 * ext_force_k * this->dist2(x_ext, x) + kinetic_energy;
+  } else {
+    // Forces from trial_evaluate biases (trial_const biases add nothing here)
+    f += fb;
+  }
+  // Biases that bypass the extended Lagrangian (e.g. harmonicWalls default)
+  f += fb_actual;
+  return energy;
 }
 
 

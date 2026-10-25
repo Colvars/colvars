@@ -1272,6 +1272,209 @@ int colvarmodule::update_colvar_forces()
   return error_code;
 }
 
+int colvarmodule::check_trial_support(std::string &reasons)
+{
+  reasons.clear();
+
+  if (proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+    reasons += "- GPU-resident Colvars computation is not supported\n";
+  }
+  if (use_scripted_forces) {
+    reasons += "- scriptedColvarForces is not supported\n";
+  }
+  if (colvarmodule::rotation::monitor_crossings) {
+    reasons += "- monitorEigenvalueCrossing is not supported\n";
+  }
+
+  for (colvar *cv : *variables()) {
+    std::string const prefix = "- colvar \"" + cv->name + "\": ";
+    if (cv->get_time_step_factor() > 1) {
+      reasons += prefix + "timeStepFactor > 1 is not supported\n";
+    }
+    if (cv->is_enabled(colvardeps::f_cv_scripted)) {
+      reasons += prefix + "scripted functions are not supported\n";
+    }
+    if (cv->is_enabled(colvardeps::f_cv_total_force_calc) &&
+        !cv->is_enabled(colvardeps::f_cv_total_force_current_step)) {
+      reasons += prefix + "total forces from the previous step are not supported\n";
+    }
+    if (!cv->is_enabled(colvardeps::f_cv_extended_Lagrangian) &&
+        cv->is_enabled(colvardeps::f_cv_hide_Jacobian)) {
+      reasons += prefix + "hideJacobian on a non-extended variable is not supported\n";
+    }
+    for (auto const &cvc : cv->get_cvcs()) {
+      if (cvc->function_type() == "mapTotal") {
+        reasons += prefix + "mapTotal components are not supported\n";
+      }
+    }
+  }
+
+  for (colvarbias *b : biases) {
+    std::string const prefix = "- bias \"" + b->name + "\" (" + b->bias_type + "): ";
+    if (b->get_time_step_factor() > 1) {
+      reasons += prefix + "timeStepFactor > 1 is not supported\n";
+    }
+    if (b->trial_mode() == colvarbias::trial_unsupported) {
+      reasons += prefix + "cannot be evaluated on trial configurations "
+        "(for ABF, enable extendedLagrangian on its variables, i.e. use eABF)\n";
+    }
+  }
+
+  return reasons.empty() ? COLVARS_OK : COLVARS_NOT_IMPLEMENTED;
+}
+
+
+int colvarmodule::prepare_initial_trial_state()
+{
+  if (initial_trial_state_ready_) return COLVARS_OK;
+  if (in_trial_) {
+    return error("Error: nested initial trial preparation.\n", COLVARS_BUG_ERROR);
+  }
+  std::string reasons;
+  if (check_trial_support(reasons) != COLVARS_OK) {
+    return error("Error: the current configuration does not support initial trial "
+                 "preparation:\n" + reasons, COLVARS_NOT_IMPLEMENTED);
+  }
+  begin_trial_evaluation(true);
+  struct restore_initial_on_exit {
+    colvarmodule *m;
+    bool success = false;
+    ~restore_initial_on_exit() {
+      if (!success) m->clear_initial_trial_state();
+      m->end_trial_evaluation();
+    }
+  } guard{this};
+  for (colvar *cv : trial_saved_colvars_) {
+    int const result = cv->prepare_initial_trial_state();
+    if (result != COLVARS_OK || get_error()) return COLVARS_ERROR;
+  }
+  initial_trial_state_ready_ = true;
+  guard.success = true;
+  return COLVARS_OK;
+}
+
+
+void colvarmodule::clear_initial_trial_state()
+{
+  for (colvar *cv : *variables()) cv->clear_initial_trial_state();
+  initial_trial_state_ready_ = false;
+}
+
+
+void colvarmodule::begin_trial_evaluation(bool initial)
+{
+  if (initial || initial_trial_state_ready_) {
+    // The normal active lists are populated by calc(), not configuration.
+    // Select locally without committing a fictitious first calculation.
+    trial_saved_colvars_.clear();
+    trial_saved_biases_.clear();
+    for (colvar *cv : *variables()) {
+      if (cv->is_enabled()) trial_saved_colvars_.push_back(cv);
+    }
+    for (colvarbias *b : biases) {
+      if (b->is_enabled()) trial_saved_biases_.push_back(b);
+    }
+  } else {
+    trial_saved_colvars_ = *variables_active();
+    trial_saved_biases_ = *biases_active();
+  }
+  for (colvar *cv : trial_saved_colvars_) {
+    cv->save_trial_state();
+  }
+  for (colvarbias *b : trial_saved_biases_) {
+    b->save_trial_state();
+  }
+  in_trial_ = true;
+}
+
+
+void colvarmodule::end_trial_evaluation()
+{
+  for (colvar *cv : trial_saved_colvars_) {
+    cv->restore_trial_state();
+  }
+  for (colvarbias *b : trial_saved_biases_) {
+    b->restore_trial_state();
+  }
+  trial_saved_colvars_.clear();
+  trial_saved_biases_.clear();
+  in_trial_ = false;
+}
+
+
+int colvarmodule::calc_trial()
+{
+  if (in_trial_) {
+    return error("Error: nested call to colvarmodule::calc_trial().\n", COLVARS_BUG_ERROR);
+  }
+
+  std::string reasons;
+  if (check_trial_support(reasons) != COLVARS_OK) {
+    return error("Error: the current configuration does not support trial "
+                 "evaluations:\n" + reasons, COLVARS_NOT_IMPLEMENTED);
+  }
+
+  begin_trial_evaluation();
+  // Restore all saved members on every exit path, including exceptions
+  // thrown by proxy->error() in some back-ends
+  struct end_trial_on_exit {
+    colvarmodule *m;
+    ~end_trial_on_exit() { m->end_trial_evaluation(); }
+  } guard{this};
+
+  int error_code = COLVARS_OK;
+
+  // 1. Values and gradients of the selected colvars
+  for (colvar *cv : trial_saved_colvars_) {
+    error_code |= cv->calc_trial_value();
+    if (get_error()) return COLVARS_ERROR;
+  }
+
+  // 2. Biases
+  for (colvar *cv : trial_saved_colvars_) {
+    cv->reset_bias_force();
+  }
+  cvm::real trial_bias_energy = 0.0;
+  for (colvarbias *b : trial_saved_biases_) {
+    switch (b->trial_mode()) {
+    case colvarbias::trial_skip:
+      break;
+    case colvarbias::trial_const:
+      trial_bias_energy += b->get_energy();
+      break;
+    case colvarbias::trial_evaluate:
+      error_code |= b->calc_trial_energy_forces();
+      trial_bias_energy += b->get_energy();
+      error_code |= b->communicate_trial_forces();
+      break;
+    default:
+      return error("Error: bias \"" + b->name + "\" does not support trial evaluations.\n",
+                   COLVARS_BUG_ERROR);
+    }
+    if (get_error()) return COLVARS_ERROR;
+  }
+  proxy->add_energy(trial_bias_energy);
+
+  // 3. Forces and energies of the colvars (no extended-Lagrangian integration)
+  cvm::real trial_colvar_energy = 0.0;
+  for (colvar *cv : trial_saved_colvars_) {
+    trial_colvar_energy += cv->calc_trial_force_energy();
+  }
+  proxy->add_energy(trial_colvar_energy);
+
+  // 4. Atomic forces
+  for (colvar *cv : trial_saved_colvars_) {
+    if (cv->is_enabled(colvardeps::f_cv_apply_force) &&
+        !cv->is_enabled(colvardeps::f_cv_external)) {
+      cv->communicate_forces();
+      if (get_error()) return COLVARS_ERROR;
+    }
+  }
+
+  return error_code | get_error();
+}
+
+
 int colvarmodule::proxy_gpu_buffers_reallocated_done() {
   int error_code = COLVARS_OK;
   for (auto it = variables()->begin(); it != variables()->end(); ++it){
