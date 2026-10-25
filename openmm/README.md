@@ -428,6 +428,82 @@ Periodic boundary conditions default to `PbcMode::Auto`: Colvars PBC is enabled
 only when another force in the same OpenMM `System` declares periodic boundary
 conditions. Use `PbcMode::Enabled` or `PbcMode::Disabled` to override this.
 
+## Monte Carlo barostats
+
+`MonteCarloBarostat`, `MonteCarloAnisotropicBarostat`,
+`MonteCarloMembraneBarostat`, and `MonteCarloFlexibleBarostat` can be used with
+Colvars when the plugin is built against a Colvars version providing trial
+evaluations (`colvarmodule::calc_trial()`). Older core versions are rejected
+when a Monte Carlo barostat is present.
+
+**Add every barostat to the `System` before adding `ColvarsForce`.** Context
+creation fails if this order is reversed. Colvars commits its state at the first
+force evaluation after its `updateContextState()` call: ABF sampling, hill
+deposition, extended-Lagrangian integration, and trajectory output happen only
+there. Other energy/force queries, including barostat trial moves and reporters'
+`getState()` calls, evaluate the bias at the requested coordinates and box
+without advancing that state, reading total forces, or writing output. Systems
+without Monte Carlo barostats retain the original evaluation path. Trial queries
+recompute energy and forces from the current committed auxiliary state; they do
+not reuse or update the real-step cache.
+
+Supported biases on ordinary, non-extended variables are `harmonic`,
+`harmonicWalls`, `linear` (including their current moving-restraint stage), and
+single-replica `metadynamics`. Biases acting only on extended-Lagrangian or
+external variables without `bypassExtendedLagrangian`, such as eABF and
+meta-eABF, have constant bias energies during trials; extended spatial variables
+still contribute their coordinate-dependent spring energy and atomic forces.
+Biases that apply no forces, such as a histogram, are not updated by trials.
+Plain-variable ABF, OPES, ALB, ABMD, `histogramRestraint`, and multiple-replica
+metadynamics cannot otherwise be trial-evaluated and are rejected at startup.
+Use eABF instead of plain ABF with a Monte Carlo barostat.
+
+Also rejected are `timeStepFactor > 1`, scripted colvars or forces, `mapTotal`,
+`monitorEigenvalueCrossing`, previous-step total-force calculations, and
+`hideJacobian` on non-extended variables. `CompoundIntegrator` is not supported
+with a Monte Carlo barostat. A `CustomIntegrator` must call
+`addUpdateContextState()`; its first subsequent Colvars evaluation is the commit
+point, so place that operation before the intended force evaluation. MC contexts
+invalidate OpenMM's force buffers at this point so a `CustomIntegrator` cannot
+skip the commit by reusing old forces. Trial calculations are serial; coordination
+numbers examine all atom pairs without changing their saved pairlists, retaining
+the configured tolerance correction. GPU-resident Colvars kernels are not supported.
+These checks do not remove the platform-specific total-force limitations below.
+
+### Initial query and restart semantics
+
+Before the first committed evaluation, the first energy/force query freezes an
+initial auxiliary-coordinate/velocity snapshot. For a new run, its center is
+computed from the **first observed coordinates**, with the usual reflecting-
+boundary clamping and zero initial auxiliary velocity. Both old and proposed
+barostat configurations use this same snapshot, and the first committed step
+uses it even if the move is accepted. Preparing it does not integrate, sample,
+consume random numbers, or write output. A restart instead retains the loaded
+auxiliary coordinates and velocities, and normal restart validation still runs
+at the first committed evaluation.
+
+For a normal first barostat move, the first query is the old-energy evaluation,
+before scaling. If you manually scale coordinates and query energy **before the
+first MD step**, however, those scaled coordinates define the initial auxiliary
+center; restoring the coordinates does not redefine that snapshot. Arbitrary
+first-query edits are therefore not invisible to initialization. Set the desired
+initial coordinates before requesting the first energy or forces.
+
+Energy minimization (`LocalEnergyMinimizer`, `Simulation.minimizeEnergy()`) does
+not run integrator steps, so all of its evaluations are such pre-step queries:
+the snapshot is taken from the coordinates *before* minimization, and the
+minimizer feels the extended-Lagrangian spring anchored there. Without a Monte
+Carlo barostat, the auxiliary coordinates would instead start from the
+minimized coordinates. To obtain that behavior, minimize in a separate Context
+without the barostat and set the minimized positions in a newly created
+production Context.
+
+Trial energies for biases acting on extended variables are taken from the last
+committed evaluation (before any commit, from the configured/restarted state).
+Their constant contribution cancels in the barostat acceptance test, but reported
+bias energies may lag by one step. Values read from Colvars after a trial remain
+the restored committed values, not the temporary trial values.
+
 ## Limitations
 
 - Scripted Colvars functions and scripted forces are not supported.

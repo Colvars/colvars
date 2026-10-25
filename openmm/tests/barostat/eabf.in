@@ -1,0 +1,31 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 50
+indexFile ../Common/index.ndx
+
+colvar {
+  name d
+  width 0.01
+  lowerBoundary 0.20
+  upperBoundary 0.50
+  extendedLagrangian on
+  extendedFluctuation 0.01
+  extendedTimeConstant 100
+  extendedLangevinDamping 1.0
+  distance {
+    group1 { indexGroup group1 }
+    group2 { indexGroup group2 }
+  }
+}
+
+abf {
+  colvars d
+  fullSamples 0
+  outputFreq 10
+}
+
+harmonicWalls {
+  colvars d
+  lowerWalls 0.22
+  upperWalls 0.48
+  forceConstant 1000.0
+}

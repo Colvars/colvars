@@ -1,0 +1,13 @@
+colvarsTrajFrequency 1
+colvar {
+  name d
+  distance {
+    group1 { atomNumbers 1 }
+    group2 { atomNumbers 5 }
+  }
+}
+harmonic {
+  colvars d
+  centers 0.30
+  forceConstant 1000.0
+}
