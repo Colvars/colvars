@@ -26,6 +26,7 @@ public:
     double computeForce(ContextImpl& context,
                         const std::vector<Vec3>& positions,
                         std::vector<Vec3>& forces) override;
+    void updateContextState(ContextImpl& context, bool& forcesInvalid) override;
     std::map<std::string, double> getDefaultParameters() override;
 
 private:

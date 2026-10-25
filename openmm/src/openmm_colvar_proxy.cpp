@@ -416,7 +416,10 @@ OpenMMColvarProxy::OpenMMColvarProxy(const ColvarsForce& owner, const System& sy
       cachedUsesPbc_(false),
       cachedLambdaValue_(0.0),
       cachedTabfAlphaValue_(1.0),
-      cachedBiasEnergy_(0.0)
+      cachedBiasEnergy_(0.0),
+      trialEvaluationsEnabled_(false),
+      hasRealEvaluation_(false),
+      armedStep_(kNoArmedStep)
 {
     tabfAlphaBoundariesValid_ = config_tabf_alpha_boundaries(
         owner_config_text(owner_), tabfAlphaLowerBoundary_, tabfAlphaUpperBoundary_);
@@ -945,7 +948,8 @@ int OpenMMColvarProxy::run_colvar_gradient_callback(std::string const&,
                            COLVARS_NOT_IMPLEMENTED);
 }
 
-int OpenMMColvarProxy::updateInput(ContextImpl& context, const std::vector<Vec3>& positions)
+int OpenMMColvarProxy::updateInput(ContextImpl& context, const std::vector<Vec3>& positions,
+                                  bool realEvaluation)
 {
     currentContext_ = &context;
     biasEnergy_ = 0.0;
@@ -958,12 +962,57 @@ int OpenMMColvarProxy::updateInput(ContextImpl& context, const std::vector<Vec3>
     }
     updatePbc(context);
     updatePositions(positions);
-    captureLambdaDerivative(context);
-    updateTotalForces(context);
+    if (realEvaluation) {
+        // Lambda derivatives and total forces belong to the committed step only
+        captureLambdaDerivative(context);
+        updateTotalForces(context);
+    }
 
     auto& appliedForces = *(modify_atom_applied_forces());
     std::fill(appliedForces.begin(), appliedForces.end(), cvm::rvector(0.0, 0.0, 0.0));
     return COLVARS_OK;
+}
+
+void OpenMMColvarProxy::enableTrialEvaluations()
+{
+#ifdef OPENMM_COLVARS_HAS_TRIAL_EVALUATION
+    std::string reasons;
+    if (cvmodule->check_trial_support(reasons) != COLVARS_OK) {
+        throw OpenMMException(
+            "This Colvars configuration cannot be used together with a Monte Carlo barostat. "
+            "The barostat evaluates the energy of trial configurations, and the following "
+            "Colvars features cannot be evaluated without side effects:\n" + reasons);
+    }
+    trialEvaluationsEnabled_ = true;
+#else
+    throw OpenMMException(
+        "This OpenMM-Colvars plugin was built against a Colvars version without trial "
+        "evaluations (colvarmodule::calc_trial()), so Monte Carlo barostats are not supported. "
+        "Rebuild the plugin against a newer Colvars source tree.");
+#endif
+}
+
+bool OpenMMColvarProxy::trialEvaluationsEnabled() const
+{
+    return trialEvaluationsEnabled_;
+}
+
+void OpenMMColvarProxy::armRealEvaluation(long long openmmStep)
+{
+    if (trialEvaluationsEnabled_) {
+        armedStep_ = openmmStep;
+    }
+}
+
+bool OpenMMColvarProxy::isRealEvaluation(long long openmmStep) const
+{
+    return !trialEvaluationsEnabled_ || armedStep_ == openmmStep;
+}
+
+void OpenMMColvarProxy::markRealEvaluationDone()
+{
+    hasRealEvaluation_ = true;
+    armedStep_ = kNoArmedStep;
 }
 
 double OpenMMColvarProxy::calculate(ContextImpl& context, const std::vector<Vec3>& positions)
@@ -996,21 +1045,54 @@ double OpenMMColvarProxy::calculate(ContextImpl& context, const std::vector<Vec3
                                            lambdaValue,
                                            tabfAlphaValue,
                                            requestedPositions);
-    if (canUseCache && cacheMatches(openmmStep,
-                                    usesPbc,
-                                    boxA,
-                                    boxB,
-                                    boxC,
-                                    lambdaValue,
-                                    tabfAlphaValue,
-                                    requestedPositions)) {
+    const bool realEvaluation = isRealEvaluation(openmmStep);
+    // Real-step energies/forces precede auxiliary integration. MC trials must
+    // instead use the current committed auxiliary state, even at identical inputs.
+    bool cacheHit = canUseCache && (!trialEvaluationsEnabled_ || realEvaluation) &&
+                    cacheMatches(openmmStep,
+                                                usesPbc,
+                                                boxA,
+                                                boxB,
+                                                boxC,
+                                                lambdaValue,
+                                                tabfAlphaValue,
+                                                requestedPositions);
+    if (cacheHit && trialEvaluationsEnabled_ && realEvaluation &&
+        cachedOpenmmStep_ != openmmStep) {
+        // A committed evaluation for this step has not happened yet: do not
+        // reuse a cached result from a previous step
+        cacheHit = false;
+    }
+    if (cacheHit) {
+        if (realEvaluation) {
+            // This step was already committed with identical inputs
+            markRealEvaluationDone();
+        }
         biasEnergy_ = cachedBiasEnergy_;
         auto& appliedForces = *(modify_atom_applied_forces());
         appliedForces = cachedAppliedForces_;
         return cachedBiasEnergy_;
     }
 
-    int errorCode = updateInput(context, positions);
+    if (!realEvaluation) {
+        // Trial evaluation (Monte Carlo barostat move, reporter query, ...):
+        // no Colvars state is updated, nothing is cached or written back
+        int trialErrorCode = updateInput(context, positions, false);
+#ifdef OPENMM_COLVARS_HAS_TRIAL_EVALUATION
+        if (!hasRealEvaluation_) {
+            trialErrorCode |= cvmodule->prepare_initial_trial_state();
+        }
+        if (trialErrorCode == COLVARS_OK) {
+            trialErrorCode |= cvmodule->calc_trial();
+        }
+#endif
+        if (trialErrorCode != COLVARS_OK || cvmodule->get_error() != COLVARS_OK) {
+            throw OpenMMException(format_colvars_error(get_error_msgs()));
+        }
+        return biasEnergy();
+    }
+
+    int errorCode = updateInput(context, positions, true);
     errorCode |= cvmodule->calc();
     // OpenMM can re-evaluate forces within a single integrator step.
     // Publish lambda back to the Context only on the first evaluation of that step.
@@ -1031,6 +1113,12 @@ double OpenMMColvarProxy::calculate(ContextImpl& context, const std::vector<Vec3
     if (errorCode != COLVARS_OK || cvmodule->get_error() != COLVARS_OK) {
         throw OpenMMException(format_colvars_error(get_error_msgs()));
     }
+#ifdef OPENMM_COLVARS_HAS_TRIAL_EVALUATION
+    if (trialEvaluationsEnabled_ && !hasRealEvaluation_) {
+        cvmodule->clear_initial_trial_state();
+    }
+#endif
+    markRealEvaluationDone();
     const double energy = biasEnergy();
     if (canUseCache) {
         double cacheLambdaValue = lambdaValue;

@@ -7,6 +7,14 @@
 #include <algorithm>
 #include <cstdint>
 
+#include "openmm/CompoundIntegrator.h"
+#include "openmm/CustomIntegrator.h"
+#include "openmm/MonteCarloAnisotropicBarostat.h"
+#include "openmm/MonteCarloBarostat.h"
+#include "openmm/MonteCarloFlexibleBarostat.h"
+#include "openmm/MonteCarloMembraneBarostat.h"
+#include <string>
+
 #ifdef OPENMM_COLVARS_ENABLE_CUDA_KERNELS
 #include "openmm/common/ComputeContext.h"
 #include "openmm/common/ContextSelector.h"
@@ -240,6 +248,67 @@ void validateNonDeferredForceGroup(const ColvarsForce& owner)
     }
 }
 
+bool isMonteCarloBarostat(const Force& force)
+{
+    return dynamic_cast<const MonteCarloBarostat*>(&force) != nullptr ||
+           dynamic_cast<const MonteCarloAnisotropicBarostat*>(&force) != nullptr ||
+           dynamic_cast<const MonteCarloMembraneBarostat*>(&force) != nullptr ||
+           dynamic_cast<const MonteCarloFlexibleBarostat*>(&force) != nullptr;
+}
+
+void configureTrialEvaluations(ContextImpl& context,
+                               const ColvarsForce& owner,
+                               OpenMMColvarProxy& proxy)
+{
+    const System& system = context.getSystem();
+    int ownerIndex = -1;
+    int lastBarostatIndex = -1;
+    for (int forceIndex = 0; forceIndex < system.getNumForces(); ++forceIndex) {
+        const Force& force = system.getForce(forceIndex);
+        if (&force == &owner) {
+            ownerIndex = forceIndex;
+        }
+        if (isMonteCarloBarostat(force)) {
+            lastBarostatIndex = forceIndex;
+        }
+    }
+    if (lastBarostatIndex < 0) {
+        return;  // No Monte Carlo barostat: behavior is unchanged
+    }
+    if (ownerIndex < lastBarostatIndex) {
+        throw OpenMMException(
+            "ColvarsForce must be added to the System after every Monte Carlo barostat. "
+            "Call System.addForce() for the barostat before adding ColvarsForce.");
+    }
+
+    const Integrator& integrator = context.getIntegrator();
+    if (dynamic_cast<const CompoundIntegrator*>(&integrator) != nullptr) {
+        throw OpenMMException(
+            "ColvarsForce does not support CompoundIntegrator together with a Monte Carlo barostat.");
+    }
+    const auto* custom = dynamic_cast<const CustomIntegrator*>(&integrator);
+    if (custom != nullptr) {
+        bool hasUpdateContextState = false;
+        for (int step = 0; step < custom->getNumComputations(); ++step) {
+            CustomIntegrator::ComputationType type;
+            std::string variable;
+            std::string expression;
+            custom->getComputationStep(step, type, variable, expression);
+            if (type == CustomIntegrator::UpdateContextState) {
+                hasUpdateContextState = true;
+                break;
+            }
+        }
+        if (!hasUpdateContextState) {
+            throw OpenMMException(
+                "With a Monte Carlo barostat, a CustomIntegrator used with ColvarsForce must "
+                "call addUpdateContextState().");
+        }
+    }
+
+    proxy.enableTrialEvaluations();
+}
+
 } // namespace
 
 const ColvarsForce& ColvarsForceImpl::getOwner() const
@@ -259,6 +328,7 @@ void ColvarsForceImpl::initialize(ContextImpl& context)
         }
         proxy_ = std::make_unique<OpenMMColvarProxy>(owner_, context.getSystem());
         validateTotalForceConfiguration(context, owner_, *proxy_, true);
+        configureTrialEvaluations(context, owner_, *proxy_);
         CudaContext& computeContext = *data->contexts[0];
         auto* deferred =
             new DeferredCudaColvarsComputation(context, computeContext, *this);
@@ -273,6 +343,7 @@ void ColvarsForceImpl::initialize(ContextImpl& context)
     CustomCPPForceImpl::initialize(context);
     proxy_ = std::make_unique<OpenMMColvarProxy>(owner_, context.getSystem());
     validateTotalForceConfiguration(context, owner_, *proxy_, false);
+    configureTrialEvaluations(context, owner_, *proxy_);
 }
 
 double ColvarsForceImpl::calcForcesAndEnergy(ContextImpl& context,
@@ -299,6 +370,22 @@ double ColvarsForceImpl::computeForce(ContextImpl& context,
     const double energy = proxy_->calculate(context, positions);
     proxy_->addForcesToOpenMM(forces);
     return energy;
+}
+
+void ColvarsForceImpl::updateContextState(ContextImpl& context, bool& forcesInvalid)
+{
+    CustomCPPForceImpl::updateContextState(context, forcesInvalid);
+    // Called once at the beginning of each integrator step, after the
+    // updateContextState() of every Force added before this one (including
+    // Monte Carlo barostats, see configureTrialEvaluations())
+    if (proxy_ != nullptr) {
+        proxy_->armRealEvaluation(context.getStepCount());
+        if (proxy_->trialEvaluationsEnabled()) {
+            // CustomIntegrator may otherwise reuse forces and never consume
+            // the armed real evaluation for this step.
+            forcesInvalid = true;
+        }
+    }
 }
 
 std::map<std::string, double> ColvarsForceImpl::getDefaultParameters()

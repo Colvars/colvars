@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <limits>
 
 namespace OpenMM {
 
@@ -83,11 +84,20 @@ public:
                                      std::vector<const colvarvalue*> const& cvcs,
                                      std::vector<cvm::matrix2d<cvm::real>>& gradient) override;
 
-    int updateInput(ContextImpl& context, const std::vector<Vec3>& positions);
+    int updateInput(ContextImpl& context, const std::vector<Vec3>& positions,
+                    bool realEvaluation = true);
     double calculate(ContextImpl& context, const std::vector<Vec3>& positions);
     void addForcesToOpenMM(std::vector<Vec3>& forces) const;
 
     double biasEnergy() const;
+
+    /// Enable trial evaluations (the System contains a Monte Carlo barostat).
+    /// Throws OpenMMException if the Colvars configuration does not support them.
+    void enableTrialEvaluations();
+    bool trialEvaluationsEnabled() const;
+    /// Called from ColvarsForceImpl::updateContextState(): the next evaluation
+    /// at this step is the integrator's force evaluation
+    void armRealEvaluation(long long openmmStep);
 
 private:
     void initializeColvars();
@@ -133,6 +143,9 @@ private:
     bool setIntegratorGlobal(ContextImpl& context, const std::string& name, double value) const;
     double tabfAlpha(ContextImpl& context) const;
 
+    bool isRealEvaluation(long long openmmStep) const;
+    void markRealEvaluationDone();
+
     const ColvarsForce& owner_;
     const System& system_;
     ContextImpl* currentContext_;
@@ -174,6 +187,11 @@ private:
     std::vector<int> cachedAtomIds_;
     std::vector<Vec3> cachedRequestedPositions_;
     std::vector<cvm::rvector> cachedAppliedForces_;
+
+    static constexpr long long kNoArmedStep = std::numeric_limits<long long>::min();
+    bool trialEvaluationsEnabled_;
+    bool hasRealEvaluation_;
+    long long armedStep_;
 };
 
 } // namespace OpenMM
