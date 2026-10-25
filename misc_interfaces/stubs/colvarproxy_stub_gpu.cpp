@@ -160,12 +160,13 @@ void colvarproxy_stub_gpu::clear_atom(int index) {
 
 int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_force_file)
 {
-  // std::vector<cvm::rvector> positions(atoms_ids.size());
-  m_positions.resize(atoms_ids.size());
-  int error_code = cvmodule->load_coords_xyz(filename, &m_positions, nullptr, true);
-  // Convert to SOA and copy to GPU
-  const size_t numAtoms = m_positions.size();
-  // cvmodule->log("numAtoms = " + cvm::to_str(numAtoms) + "\n");
+  // The XYZ file lists atoms by increasing ID, but atom slots follow the order in which the
+  // atoms were requested: read all positions first, then copy them into their slots
+  const size_t numAtoms = atoms_ids.size();
+  // xyz_positions is empty on the first call, and resized to the total number of atoms on
+  // subsequent calls - this will read all positions in both cases
+  int error_code = cvmodule->load_coords_xyz(filename, &xyz_positions, nullptr, true);
+
   if (mAtomsChanged) {
     this->reallocate();
     error_code |= cvmodule->proxy_gpu_buffers_reallocated_done();
@@ -174,9 +175,9 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
   // in which the atoms were requested
   m_positions_soa.resize(3 * numAtoms);
   for (size_t i = 0; i < numAtoms; ++i) {
-    m_positions_soa[i] = m_positions[atoms_ids[i]].x;
-    m_positions_soa[i+numAtoms] = m_positions[atoms_ids[i]].y;
-    m_positions_soa[i+2*numAtoms] = m_positions[atoms_ids[i]].z;
+    m_positions_soa[i] = xyz_positions[atoms_ids[i]].x;
+    m_positions_soa[i+numAtoms] = xyz_positions[atoms_ids[i]].y;
+    m_positions_soa[i+2*numAtoms] = xyz_positions[atoms_ids[i]].z;
   }
   error_code |= copy_HtoD_async(m_positions_soa.data(), d_mPositions, 3 * numAtoms, stream);
   error_code |= clear_device_array_async(d_mAppliedForces, 3 * numAtoms, stream);
@@ -184,7 +185,7 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
   error_code |= checkGPUError(cudaEventRecord(get_event(colvarproxy_gpu::event_type::copy_atoms), stream));
   std::string force_filename;
   if (write_force_file) {
-    force_filename = cvmodule->output_prefix() + "_forces_" + cvm::to_str(cvmodule->it) + ".dat";
+    force_filename = cvmodule->output_prefix() + ".forces.xyz";
   }
   if ( !error_code ) {
     error_code |= cvmodule->calc();
@@ -193,19 +194,27 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
     error_code |= copy_DtoH_async(d_mAppliedForces, m_applied_forces_soa.data(), 3 * numAtoms, stream);
     error_code |= checkGPUError(cudaStreamSynchronize(stream));
     if (write_force_file) {
-      // Write the forces by increasing atom ID
-      m_forces_by_id.resize(numAtoms);
+      // Write the forces in XYZ trajectory format
+      // forces_by_id is indexed by atom ID, so we need to cover all atoms
+      size_t const numAtoms_total = xyz_positions.size();
+      forces_by_id.resize(numAtoms_total);
+      // Initialize all forces to zero, then fill in the relevant ones by atom ID
+      std::fill(forces_by_id.begin(), forces_by_id.end(), cvm::rvector{0, 0, 0});
       for (size_t i = 0; i < numAtoms; ++i) {
-        m_forces_by_id[atoms_ids[i]] = cvm::rvector(m_applied_forces_soa[i],
+        forces_by_id[atoms_ids[i]] = cvm::rvector(m_applied_forces_soa[i],
                                                     m_applied_forces_soa[i + numAtoms],
                                                     m_applied_forces_soa[i + 2 * numAtoms]);
       }
-      std::ofstream ofs(force_filename);
-      for (size_t i = 0; i < numAtoms; ++i) {
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << m_forces_by_id[i].x << std::setw(0) << " ";
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << m_forces_by_id[i].y << std::setw(0) << " ";
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << m_forces_by_id[i].z << std::setw(0) << " ";
-        ofs << std::endl;
+      // Create XYZ trajectory: overwrite on first frame, append on subsequent frames
+      std::ios::openmode mode = (cvmodule->it == 1) ? std::ios::out : std::ios::app;
+      std::ofstream ofs(force_filename, mode);
+      ofs << numAtoms_total << std::endl;
+      ofs << std::endl;
+      for (size_t i = 0; i < numAtoms_total; ++i) {
+        ofs << std::setw(7) << (i+1) << " "  // Atom ID (1-based)
+            << std::scientific << std::setprecision(8) << std::setw(16) << forces_by_id[i].x << std::setw(0) << " "
+            << std::scientific << std::setprecision(8) << std::setw(16) << forces_by_id[i].y << std::setw(0) << " "
+            << std::scientific << std::setprecision(8) << std::setw(16) << forces_by_id[i].z << std::endl;
       }
     }
   }

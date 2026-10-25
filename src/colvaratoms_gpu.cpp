@@ -149,7 +149,9 @@ int colvaratoms_gpu::read_data_gpu(cvm::atom_group* cpu_atoms) {
   // If the graph execution object is not initialized, then start to build
   // the graph.
   if (!graph_read_compute.graph_exec_initialized) {
-    cvmodule->log("Initialize CUDA graph for atom group " + cpu_atoms->name + "\n");
+    if (cvm::debug()) {
+      cvmodule->log("Initialize CUDA graph for atom group " + cpu_atoms->name + "\n");
+    }
     // First, we need to know if any of parents require CPU buffers.
     std::vector<colvardeps*> ag_parents = cpu_atoms->get_parents();
     bool require_cpu_buffers = false;

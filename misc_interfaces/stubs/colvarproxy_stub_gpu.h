@@ -83,11 +83,12 @@ private:
   double* d_mAppliedForces;
   double* d_mTotalForces;
   bool mAtomsChanged;
+
   // These buffers are for read_frame_xyz
-  std::vector<cvm::rvector> m_positions;
+  std::vector<cvm::rvector> xyz_positions;
   colvarproxy_atoms::atom_buffer_real_t m_positions_soa;
   colvarproxy_atoms::atom_buffer_real_t m_applied_forces_soa;
-  std::vector<cvm::rvector> m_forces_by_id;
+  std::vector<cvm::rvector> forces_by_id;
 };
 
 #endif
