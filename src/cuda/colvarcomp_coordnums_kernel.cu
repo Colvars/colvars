@@ -61,9 +61,13 @@ __global__ void computeCoordinationNumberTwoGroupsCUDAKernel1(
 #if HIP_VERSION_MAJOR >= 7
   const auto tilePartition = cg::tiled_partition<tileSize>(thb);
 #else
+#if defined(__AMDGCN_WAVEFRONT_SIZE__)
   constexpr unsigned int actualTileSize =
     (tileSize > __AMDGCN_WAVEFRONT_SIZE__) ?
     __AMDGCN_WAVEFRONT_SIZE__ : tileSize;
+#else
+  constexpr unsigned int actualTileSize = tileSize;
+#endif
   const auto tilePartition = cg::tiled_partition<actualTileSize>(thb);
 #endif // HIP_VERSION_MAJOR >= 7
 #else
