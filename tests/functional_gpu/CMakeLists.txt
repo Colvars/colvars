@@ -116,20 +116,16 @@ target_include_directories(run_colvars_test_cuda
   PUBLIC "${COLVARS_SOURCE_DIR}/src"
   PUBLIC "${COLVARS_STUBS_DIR}"
   PUBLIC "${COLVARS_CUDA_DIR}"
-  PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}"
   PUBLIC $<$<BOOL:${COLVARS_LEPTON}>:${LEPTON_DIR}/include>)
 
 
 add_library(colvars_stubs_gpu OBJECT ${COLVARS_STUBS_DIR}/colvarproxy_stub_gpu.cpp)
 target_include_directories(colvars_stubs_gpu
-  PRIVATE "${COLVARS_SOURCE_DIR}/src"
-  PRIVATE "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
-
-target_link_libraries(run_colvars_test_cuda PRIVATE colvars_stubs_gpu)
-target_include_directories(run_colvars_test_cuda PRIVATE ${COLVARS_STUBS_DIR})
+  PRIVATE "${COLVARS_SOURCE_DIR}/src")
 
 if(GPU_TYPE STREQUAL "CUDA")
   set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE CUDA)
+  target_link_libraries(colvars_stubs_gpu PRIVATE CUDA::cudart)
   if(CUDAToolkit_VERSION_MAJOR GREATER_EQUAL 10)
     target_link_libraries(run_colvars_test_cuda PRIVATE CUDA::cudart PRIVATE CUDA::nvtx3)
   else()
@@ -137,12 +133,16 @@ if(GPU_TYPE STREQUAL "CUDA")
   endif()
 else()
   target_link_libraries(run_colvars_test_cuda PRIVATE hip::host)
+  target_link_libraries(colvars_stubs_gpu PRIVATE hip::host)
   set_property(TARGET run_colvars_test_cuda PROPERTY LANGUAGE HIP)
   set_source_files_properties(${COLVARS_SOURCES} PROPERTIES LANGUAGE CXX)
   set_source_files_properties(${LEPTON_SOURCES} PROPERTIES LANGUAGE CXX)
   set_source_files_properties(run_colvars_test_cuda.cpp PROPERTIES LANGUAGE CXX)
   set_source_files_properties(${COLVARS_CUDA_SOURCE} PROPERTIES LANGUAGE HIP)
 endif()
+
+target_link_libraries(run_colvars_test_cuda PRIVATE colvars_stubs_gpu)
+target_include_directories(run_colvars_test_cuda PRIVATE ${COLVARS_STUBS_DIR})
 
 if(COLVARS_LEPTON)
   target_link_libraries(run_colvars_test_cuda PUBLIC lepton)
