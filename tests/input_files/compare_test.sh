@@ -66,7 +66,7 @@ MIN_PREC=1
 
 # Match only the trajectory file and force files
 trajFileNamePattern="*.colvars.traj"
-forceFileNamePattern="*_forces_*.dat"
+forceFileNamePattern="*.forces.xyz"
 
 SUCCESS=1
 for f in "AutoDiff"/*
