@@ -174,10 +174,15 @@ int colvarproxy_stub_gpu::read_frame_xyz(const char *filename, const bool write_
   // The XYZ file lists atoms by increasing ID, but atom slots follow the order
   // in which the atoms were requested
   m_positions_soa.resize(3 * numAtoms);
+  bool atom_id_invalid = false;
   for (size_t i = 0; i < numAtoms; ++i) {
-    m_positions_soa[i] = xyz_positions[atoms_ids[i]].x;
-    m_positions_soa[i+numAtoms] = xyz_positions[atoms_ids[i]].y;
-    m_positions_soa[i+2*numAtoms] = xyz_positions[atoms_ids[i]].z;
+    atom_id_invalid = atom_id_invalid || !(static_cast<size_t>(atoms_ids[i]) < xyz_positions.size());
+    m_positions_soa[i] = !atom_id_invalid ? xyz_positions[atoms_ids[i]].x : 0;
+    m_positions_soa[i+numAtoms] = !atom_id_invalid ? xyz_positions[atoms_ids[i]].y : 0;
+    m_positions_soa[i+2*numAtoms] = !atom_id_invalid ? xyz_positions[atoms_ids[i]].z : 0;
+  }
+  if (atom_id_invalid) {
+    return cvmodule->error("Invalid atom ID.\n", COLVARS_INPUT_ERROR);
   }
   error_code |= copy_HtoD_async(m_positions_soa.data(), d_mPositions, 3 * numAtoms, stream);
   error_code |= clear_device_array_async(d_mAppliedForces, 3 * numAtoms, stream);
