@@ -330,6 +330,21 @@ public:
   /// Get energy derivative with respect to lambda
   int get_dE_dlambda(cvm::real* dE_dlambda);
 
+  /// Get value of TABF alpha parameter from back-end
+  int get_tabf_alpha(cvm::real* alpha);
+
+  /// Get authoritative TABF alpha boundaries from NAMD
+  int get_tabf_alpha_boundaries(cvm::real* lower, cvm::real* upper);
+
+  /// Set value of TABF alpha parameter in back-end
+  int send_tabf_alpha(void);
+
+  /// Request TABF energy computation every freq steps
+  int request_tabf_energy_freq(int const freq);
+
+  /// Get energy derivative with respect to TABF alpha
+  int get_dE_dtabf_alpha(cvm::real* dE_dalpha);
+
 protected:
 
   /// Pointers to internally managed maps (set to nullptr for maps loaded by NAMD)

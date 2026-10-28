@@ -715,25 +715,36 @@ namespace UIestimator {
                 }
 
                 for (j = 0; j < size; j++) {
-                    do {
-                        for (k = 0; k < dimension; k++) {
-                            count_file >> position_temp[k];
-                            grad_file >> nothing;
-                        }
-
-                        for (l = 0; l < dimension; l++) {
-                            grad_file >> grad_temp[l];
-                        }
-                        count_file >> count_temp;
+                    for (k = 0; k < dimension; k++) {
+                        count_file >> position_temp[k];
+                        grad_file >> nothing;
                     }
-                    while (position_temp[i] < lowerboundary[i] - EPSILON || position_temp[i] > upperboundary[i] + EPSILON);
 
-                    if (count_temp == 0) {
+                    for (l = 0; l < dimension; l++) {
+                        grad_file >> grad_temp[l];
+                    }
+                    count_file >> count_temp;
+
+                    if (!count_file || !grad_file) {
+                        break;
+                    }
+
+                    bool in_bounds = true;
+                    for (k = 0; k < dimension; k++) {
+                        if (position_temp[k] < lowerboundary[k] - EPSILON ||
+                            position_temp[k] > upperboundary[k] - EPSILON) {
+                            in_bounds = false;
+                            break;
+                        }
+                    }
+
+                    if (!in_bounds || count_temp == 0) {
                         continue;
                     }
 
+                    int old_count = input_count.get_value(position_temp);
                     for (m = 0; m < dimension; m++) {
-                        grad_temp[m] = (grad_temp[m] * count_temp + input_grad.get_value(position_temp)[m] * input_count.get_value(position_temp)) / (count_temp + input_count.get_value(position_temp));
+                        grad_temp[m] = (grad_temp[m] * count_temp + input_grad.get_value(position_temp)[m] * old_count) / (count_temp + old_count);
                     }
                     input_grad.set_value(position_temp, grad_temp);
                     input_count.increase_value(position_temp, count_temp);
