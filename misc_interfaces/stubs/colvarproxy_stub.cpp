@@ -179,8 +179,13 @@ int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_forc
     force_filename = cvmodule->output_prefix() + ".forces.xyz";
   }
   if ( !err ) {
+    bool atom_id_invalid = false;
     for (size_t i = 0; i < numAtoms; ++i) {
-      positions[i] = xyz_positions[atoms_ids[i]];
+      atom_id_invalid = atom_id_invalid || !(static_cast<size_t>(atoms_ids[i]) < xyz_positions.size());
+      positions[i] = !atom_id_invalid ? xyz_positions[atoms_ids[i]] : cvm::rvector();
+    }
+    if (atom_id_invalid) {
+      return cvmodule->error("Invalid atom ID.\n", COLVARS_INPUT_ERROR);
     }
     auto& new_forces = *(modify_atom_applied_forces());
     std::fill(new_forces.begin(), new_forces.end(), cvm::rvector{0, 0, 0});
