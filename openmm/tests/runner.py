@@ -21,6 +21,15 @@ system.addForce(colvars)
 #integrator = LangevinMiddleIntegrator(300*kelvin, 1/picosecond, 0.001*picoseconds)
 integrator = VerletIntegrator(0.001*picoseconds)
 simulation = Simulation(psf.topology, system, integrator)
+
+# OpenMM silently falls back to the next platform when one fails; print the
+# platform used (selected with the OPENMM_DEFAULT_PLATFORM environment variable)
+platform = simulation.context.getPlatform()
+details = ["%s: %s" % (name, platform.getPropertyValue(simulation.context, name))
+           for name in ("Precision", "Threads", "DeviceName")
+           if name in platform.getPropertyNames()]
+print("OpenMM platform: " + platform.getName() +
+      (" (%s)" % ", ".join(details) if details else ""), flush=True)
 simulation.context.setPositions(pos_pdb.positions)
 simulation.context.setVelocities(vel_pdb.positions * 0.1 * (nanometer/angstrom/picosecond))
 
