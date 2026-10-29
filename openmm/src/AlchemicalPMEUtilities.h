@@ -1,7 +1,7 @@
-#ifndef OPENMM_INTERNAL_ALCHEMICAL_PME_UTILITIES_H
-#define OPENMM_INTERNAL_ALCHEMICAL_PME_UTILITIES_H
+#ifndef OPENMM_ALCHEMICAL_PME_UTILITIES_H
+#define OPENMM_ALCHEMICAL_PME_UTILITIES_H
 
-#include "openmm/AlchemicalPMEForce.h"
+#include "AlchemicalPMEForce.h"
 #include "openmm/Vec3.h"
 
 #include <algorithm>

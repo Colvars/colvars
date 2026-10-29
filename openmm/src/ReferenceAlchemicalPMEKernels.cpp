@@ -1,11 +1,11 @@
-#include "openmm/internal/AlchemicalPMEKernels.h"
+#include "AlchemicalPMEKernels.h"
 
 #include "ReferencePME.h"
 #include "ReferencePlatform.h"
 #include "openmm/KernelFactory.h"
 #include "openmm/OpenMMException.h"
 #include "openmm/Platform.h"
-#include "openmm/internal/AlchemicalPMEUtilities.h"
+#include "AlchemicalPMEUtilities.h"
 #include "openmm/internal/ContextImpl.h"
 
 #include <algorithm>

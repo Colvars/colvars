@@ -1,5 +1,5 @@
-#include "openmm/internal/ColvarsForceImpl.h"
-#include "openmm/internal/OpenMMColvarProxy.h"
+#include "ColvarsForceImpl.h"
+#include "colvarproxy_openmm.h"
 
 #include "openmm/CustomExternalForce.h"
 #include "openmm/internal/ContextImpl.h"
@@ -184,7 +184,7 @@ bool hasOnlySafeForcesAfterOwner(const System& system, const Force& owner)
 
 void validateTotalForceOrdering(const ContextImpl& context,
                                 const ColvarsForce& owner,
-                                const OpenMMColvarProxy& proxy)
+                                const colvarproxy_openmm& proxy)
 {
     if (!proxy.total_forces_enabled() || isOwnerLastForce(context.getSystem(), owner) ||
         hasOnlySafeForcesAfterOwner(context.getSystem(), owner)) {
@@ -198,7 +198,7 @@ void validateTotalForceOrdering(const ContextImpl& context,
 
 void validateTotalForceConfiguration(ContextImpl& context,
                                      const ColvarsForce& owner,
-                                     const OpenMMColvarProxy& proxy,
+                                     const colvarproxy_openmm& proxy,
                                      bool usesDeferredCudaComputation)
 {
     if (!proxy.total_forces_enabled()) {
@@ -257,7 +257,7 @@ void ColvarsForceImpl::initialize(ContextImpl& context)
             throw OpenMMException(
                 "CUDA ColvarsForce currently supports a single CUDA context only");
         }
-        proxy_ = std::make_unique<OpenMMColvarProxy>(owner_, context.getSystem());
+        proxy_ = std::make_unique<colvarproxy_openmm>(owner_, context.getSystem());
         validateTotalForceConfiguration(context, owner_, *proxy_, true);
         CudaContext& computeContext = *data->contexts[0];
         auto* deferred =
@@ -271,7 +271,7 @@ void ColvarsForceImpl::initialize(ContextImpl& context)
 #endif
     validateNonDeferredForceGroup(owner_);
     CustomCPPForceImpl::initialize(context);
-    proxy_ = std::make_unique<OpenMMColvarProxy>(owner_, context.getSystem());
+    proxy_ = std::make_unique<colvarproxy_openmm>(owner_, context.getSystem());
     validateTotalForceConfiguration(context, owner_, *proxy_, false);
 }
 
@@ -293,7 +293,7 @@ double ColvarsForceImpl::computeForce(ContextImpl& context,
 {
     std::fill(forces.begin(), forces.end(), Vec3());
     if (proxy_ == nullptr) {
-        proxy_ = std::make_unique<OpenMMColvarProxy>(owner_, context.getSystem());
+        proxy_ = std::make_unique<colvarproxy_openmm>(owner_, context.getSystem());
     }
 
     const double energy = proxy_->calculate(context, positions);

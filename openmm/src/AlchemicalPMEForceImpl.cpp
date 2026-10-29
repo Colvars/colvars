@@ -1,6 +1,6 @@
-#include "openmm/internal/AlchemicalPMEForceImpl.h"
+#include "AlchemicalPMEForceImpl.h"
 
-#include "openmm/internal/AlchemicalPMEKernels.h"
+#include "AlchemicalPMEKernels.h"
 #include "openmm/internal/ContextImpl.h"
 
 #include <cstdint>

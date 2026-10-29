@@ -1,5 +1,5 @@
-#include "openmm/AlchemicalPMEForce.h"
-#include "openmm/internal/AlchemicalPMEForceImpl.h"
+#include "AlchemicalPMEForce.h"
+#include "AlchemicalPMEForceImpl.h"
 
 #include "openmm/OpenMMException.h"
 

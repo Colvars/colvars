@@ -1,7 +1,7 @@
-#ifndef OPENMM_INTERNAL_ALCHEMICAL_PME_KERNELS_H
-#define OPENMM_INTERNAL_ALCHEMICAL_PME_KERNELS_H
+#ifndef OPENMM_ALCHEMICAL_PME_KERNELS_H
+#define OPENMM_ALCHEMICAL_PME_KERNELS_H
 
-#include "openmm/AlchemicalPMEForce.h"
+#include "AlchemicalPMEForce.h"
 #include "openmm/KernelImpl.h"
 
 namespace OpenMM {

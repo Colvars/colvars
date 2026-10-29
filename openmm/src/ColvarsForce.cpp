@@ -1,5 +1,5 @@
-#include "openmm/ColvarsForce.h"
-#include "openmm/internal/ColvarsForceImpl.h"
+#include "ColvarsForce.h"
+#include "ColvarsForceImpl.h"
 
 #include "openmm/OpenMMException.h"
 

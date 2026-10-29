@@ -1,4 +1,4 @@
-#include "openmm/ColvarsTABFIntegrator.h"
+#include "ColvarsTABFIntegrator.h"
 
 #include "openmm/OpenMMException.h"
 

@@ -1,7 +1,7 @@
-#ifndef OPENMM_INTERNAL_COLVARS_FORCE_IMPL_H
-#define OPENMM_INTERNAL_COLVARS_FORCE_IMPL_H
+#ifndef OPENMM_COLVARS_FORCE_IMPL_H
+#define OPENMM_COLVARS_FORCE_IMPL_H
 
-#include "openmm/ColvarsForce.h"
+#include "ColvarsForce.h"
 #include "openmm/internal/CustomCPPForceImpl.h"
 
 #include <memory>
@@ -10,7 +10,7 @@
 
 namespace OpenMM {
 
-class OpenMMColvarProxy;
+class colvarproxy_openmm;
 
 class ColvarsForceImpl final : public CustomCPPForceImpl {
 public:
@@ -30,7 +30,7 @@ public:
 
 private:
     const ColvarsForce& owner_;
-    std::unique_ptr<OpenMMColvarProxy> proxy_;
+    std::unique_ptr<colvarproxy_openmm> proxy_;
     bool usesDeferredCudaComputation_;
 };
 
