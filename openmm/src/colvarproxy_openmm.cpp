@@ -10,7 +10,7 @@
 
 #include "colvaratoms.h"
 #include "colvarmodule.h"
-#include "colvars_version.h"
+#include "colvarproxy_openmm_version.h"
 
 #include <algorithm>
 #include <cctype>
@@ -421,11 +421,12 @@ colvarproxy_openmm::colvarproxy_openmm(const ColvarsForce& owner, const System& 
     tabfAlphaBoundariesValid_ = config_tabf_alpha_boundaries(
         owner_config_text(owner_), tabfAlphaLowerBoundary_, tabfAlphaUpperBoundary_);
 
-    version_int = get_version_from_string(COLVARS_VERSION);
+    version_int = get_version_from_string(COLVARPROXY_VERSION);
     engine_name_ = "OpenMM";
 
     cvmodule = new colvarmodule(this);
-    cvmodule->log("Using OpenMM interface.\n");
+    cvmodule->log("Using OpenMM interface, version " +
+                  cvm::to_str(COLVARPROXY_VERSION) + ".\n");
     totalForcesSameStep_ = inferTotalForcesSameStep();
 
     colvarproxy_io::set_output_prefix(owner_.getOutputPrefix());
