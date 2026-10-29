@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace OpenMM {
+namespace ColvarsPlugin {
 
 /// Langevin-middle style integrator for Colvars TABF simulations.
 ///
@@ -14,7 +14,7 @@ namespace OpenMM {
 /// Colvars owns the alpha extended-variable dynamics through tabfAlpha; this
 /// integrator publishes d(U/alpha)/dalpha = -U/alpha^2 from the physical force
 /// group for Colvars to consume.
-class ColvarsTABFIntegrator : public CustomIntegrator {
+class ColvarsTABFIntegrator : public OpenMM::CustomIntegrator {
 public:
     ColvarsTABFIntegrator(double stepSize,
                           double temperature,
@@ -37,6 +37,6 @@ private:
     std::string alphaDerivativeVariableName_;
 };
 
-} // namespace OpenMM
+} // namespace ColvarsPlugin
 
 #endif

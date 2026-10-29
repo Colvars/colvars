@@ -6,6 +6,7 @@
 #include <cstdint>
 
 using namespace OpenMM;
+using namespace ColvarsPlugin;
 
 AlchemicalPMEForceImpl::AlchemicalPMEForceImpl(const AlchemicalPMEForce& owner)
     : owner_(owner)

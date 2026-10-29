@@ -13,9 +13,14 @@
 #include <vector>
 
 namespace OpenMM {
-
 class ContextImpl;
 class System;
+}
+
+using OpenMM::ContextImpl;
+using OpenMM::System;
+using OpenMM::Vec3;
+using ColvarsPlugin::ColvarsForce;
 
 /// Colvars proxy implementation backed by an OpenMM Context.
 ///
@@ -175,7 +180,5 @@ private:
     std::vector<Vec3> cachedRequestedPositions_;
     std::vector<cvm::rvector> cachedAppliedForces_;
 };
-
-} // namespace OpenMM
 
 #endif

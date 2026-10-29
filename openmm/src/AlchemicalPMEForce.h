@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace OpenMM {
+namespace ColvarsPlugin {
 
 class AlchemicalPMEForceImpl;
 
@@ -18,7 +18,7 @@ class AlchemicalPMEForceImpl;
  * NAMD/OpenMM-FEP style parameter model and computes an analytic dU/dlambda
  * companion context parameter for Colvars alchLambda/eABF.
  */
-class AlchemicalPMEForce : public Force {
+class AlchemicalPMEForce : public OpenMM::Force {
 public:
     enum NonbondedMethod {
         NoCutoff = 0,
@@ -83,7 +83,7 @@ public:
     bool usesPeriodicBoundaryConditions() const override;
 
 protected:
-    ForceImpl* createImpl() const override;
+    OpenMM::ForceImpl* createImpl() const override;
 
 private:
     struct ParticleInfo {
@@ -121,6 +121,6 @@ private:
     int pmeInterpolationOrder_;
 };
 
-} // namespace OpenMM
+} // namespace ColvarsPlugin
 
 #endif
