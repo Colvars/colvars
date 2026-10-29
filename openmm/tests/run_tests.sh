@@ -83,7 +83,11 @@ cleanup_files() {
 for dir in $DIRLIST; do
 
   echo -ne "Entering $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) ... "
-  cd $dir
+  if ! cd "$dir"; then
+    FAILED_TESTS="$FAILED_TESTS $dir "
+    ALL_SUCCESS=0
+    continue
+  fi
 
   if [ ! -d AutoDiff ] ; then
     echo ""
@@ -122,6 +126,7 @@ for dir in $DIRLIST; do
     FAILED_TESTS="$FAILED_TESTS $dir "
     SUCCESS=0
     ALL_SUCCESS=0
+    cd "$BASEDIR"
     continue
   else
     SUCCESS=1
@@ -229,8 +234,10 @@ for dir in $DIRLIST; do
     if $cleanup; then
       cleanup_files
     fi
+  else
+    FAILED_TESTS="$FAILED_TESTS $dir "
   fi
-  cd ..
+  cd "$BASEDIR"
 done
 
 if [ -n "$FAILED_TESTS" ]; then
