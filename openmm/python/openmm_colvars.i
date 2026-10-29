@@ -72,9 +72,9 @@ namespace std {
     %template(vector_double) vector<double>;
 }
 
-namespace OpenMM {
+namespace ColvarsPlugin {
 
-class AlchemicalPMEForce : public Force {
+class AlchemicalPMEForce : public OpenMM::Force {
 public:
     enum NonbondedMethod {
         NoCutoff = 0,
@@ -130,7 +130,7 @@ public:
     bool usesPeriodicBoundaryConditions() const;
 };
 
-class ColvarsForce : public Force {
+class ColvarsForce : public OpenMM::Force {
 public:
     enum class ConfigSource {
         File,
@@ -206,7 +206,7 @@ public:
     void setPbcMode(PbcMode mode);
 };
 
-class ColvarsTABFIntegrator : public CustomIntegrator {
+class ColvarsTABFIntegrator : public OpenMM::CustomIntegrator {
 public:
     ColvarsTABFIntegrator(double stepSize,
                           double temperature,
@@ -223,4 +223,4 @@ public:
     const std::string& getAlphaDerivativeVariableName() const;
 };
 
-} // namespace OpenMM
+} // namespace ColvarsPlugin

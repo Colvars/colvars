@@ -18,6 +18,7 @@
 #include <vector>
 
 using namespace OpenMM;
+using namespace ColvarsPlugin;
 
 namespace {
 
@@ -334,7 +335,7 @@ std::mutex registerFactoriesMutex;
 
 } // namespace
 
-void OpenMM::registerAlchemicalPMEKernelFactories()
+void ColvarsPlugin::registerAlchemicalPMEKernelFactories()
 {
     std::lock_guard<std::mutex> lock(registerFactoriesMutex);
     for (int i = 0; i < Platform::getNumPlatforms(); ++i) {

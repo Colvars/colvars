@@ -5,28 +5,30 @@
 #include "openmm/KernelImpl.h"
 
 namespace OpenMM {
-
 class ContextImpl;
+}
 
-class CalcAlchemicalPMEForceKernel : public KernelImpl {
+namespace ColvarsPlugin {
+
+class CalcAlchemicalPMEForceKernel : public OpenMM::KernelImpl {
 public:
     static std::string Name() {
-        return "CalcAlchemicalPMEForce";
+        return "ColvarsCalcAlchemicalPMEForce";
     }
 
-    CalcAlchemicalPMEForceKernel(std::string name, const Platform& platform)
-        : KernelImpl(name, platform) {
+    CalcAlchemicalPMEForceKernel(std::string name, const OpenMM::Platform& platform)
+        : OpenMM::KernelImpl(name, platform) {
     }
 
-    virtual void initialize(ContextImpl& context, const AlchemicalPMEForce& force) = 0;
-    virtual double execute(ContextImpl& context, bool includeForces, bool includeEnergy) = 0;
+    virtual void initialize(OpenMM::ContextImpl& context, const AlchemicalPMEForce& force) = 0;
+    virtual double execute(OpenMM::ContextImpl& context, bool includeForces, bool includeEnergy) = 0;
 };
 
 void registerAlchemicalPMEKernelFactories();
 #ifdef OPENMM_COLVARS_ENABLE_CUDA_KERNELS
-void registerCudaAlchemicalPMEKernelFactory(Platform& platform);
+void registerCudaAlchemicalPMEKernelFactory(OpenMM::Platform& platform);
 #endif
 
-} // namespace OpenMM
+} // namespace ColvarsPlugin
 
 #endif

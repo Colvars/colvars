@@ -6,6 +6,7 @@
 #include <cmath>
 
 using namespace OpenMM;
+using namespace ColvarsPlugin;
 
 namespace {
 

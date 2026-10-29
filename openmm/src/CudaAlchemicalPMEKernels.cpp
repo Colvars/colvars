@@ -37,6 +37,7 @@
 #endif
 
 using namespace OpenMM;
+using namespace ColvarsPlugin;
 
 namespace {
 
@@ -166,7 +167,7 @@ DEVICE void saveForce(int atom, double3 force, GLOBAL mm_ulong* RESTRICT forceBu
     ATOMIC_ADD(&forceBuffers[atom+2*PADDED_NUM_ATOMS], (mm_ulong) realToFixedPoint((real) force.z));
 }
 
-)"; 
+)";
 
 const char* AlchemicalPMECudaSourcePart2 = R"(
 KERNEL void findAlchemicalPMEAtomGridIndex(
@@ -1566,7 +1567,7 @@ public:
 
 } // namespace
 
-void OpenMM::registerCudaAlchemicalPMEKernelFactory(Platform& platform)
+void ColvarsPlugin::registerCudaAlchemicalPMEKernelFactory(Platform& platform)
 {
     platform.registerKernelFactory(CalcAlchemicalPMEForceKernel::Name(),
                                    new CudaAlchemicalPMEKernelFactory());

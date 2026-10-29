@@ -8,24 +8,24 @@
 #include <map>
 #include <vector>
 
-namespace OpenMM {
+namespace ColvarsPlugin {
 
-class AlchemicalPMEForceImpl final : public ForceImpl {
+class AlchemicalPMEForceImpl final : public OpenMM::ForceImpl {
 public:
     explicit AlchemicalPMEForceImpl(const AlchemicalPMEForce& owner);
 
     const AlchemicalPMEForce& getOwner() const;
-    void initialize(ContextImpl& context) override;
-    void updateContextState(ContextImpl& context, bool& forcesInvalid) override;
-    double calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups) override;
+    void initialize(OpenMM::ContextImpl& context) override;
+    void updateContextState(OpenMM::ContextImpl& context, bool& forcesInvalid) override;
+    double calcForcesAndEnergy(OpenMM::ContextImpl& context, bool includeForces, bool includeEnergy, int groups) override;
     std::map<std::string, double> getDefaultParameters() override;
     std::vector<std::string> getKernelNames() override;
 
 private:
     const AlchemicalPMEForce& owner_;
-    Kernel kernel_;
+    OpenMM::Kernel kernel_;
 };
 
-} // namespace OpenMM
+} // namespace ColvarsPlugin
 
 #endif

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace OpenMM {
+namespace ColvarsPlugin {
 
 class ColvarsForceImpl;
 
@@ -15,7 +15,7 @@ class ColvarsForceImpl;
 /// The Colvars configuration uses the native OpenMM/GROMACS unit system by
 /// default: nanometers for length and kJ/mol for energy. OpenMM positions,
 /// energies, and forces are passed through without a custom conversion layer.
-class ColvarsForce : public Force {
+class ColvarsForce : public OpenMM::Force {
 public:
     enum class ConfigSource {
         File,
@@ -96,7 +96,7 @@ public:
     void setPbcMode(PbcMode mode);
 
 protected:
-    ForceImpl* createImpl() const override;
+    OpenMM::ForceImpl* createImpl() const override;
 
 private:
     ConfigSource configSource_;
@@ -118,6 +118,6 @@ private:
     std::vector<double> particleCharges_;
 };
 
-} // namespace OpenMM
+} // namespace ColvarsPlugin
 
 #endif

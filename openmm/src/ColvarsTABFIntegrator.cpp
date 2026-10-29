@@ -7,6 +7,7 @@
 #include <set>
 
 using namespace OpenMM;
+using namespace ColvarsPlugin;
 
 namespace {
 

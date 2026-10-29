@@ -8,24 +8,24 @@
 #include <map>
 #include <vector>
 
-namespace OpenMM {
-
 class colvarproxy_openmm;
 
-class ColvarsForceImpl final : public CustomCPPForceImpl {
+namespace ColvarsPlugin {
+
+class ColvarsForceImpl final : public OpenMM::CustomCPPForceImpl {
 public:
     explicit ColvarsForceImpl(const ColvarsForce& owner);
 
     const ColvarsForce& getOwner() const;
 
-    void initialize(ContextImpl& context) override;
-    double calcForcesAndEnergy(ContextImpl& context,
+    void initialize(OpenMM::ContextImpl& context) override;
+    double calcForcesAndEnergy(OpenMM::ContextImpl& context,
                                bool includeForces,
                                bool includeEnergy,
                                int groups) override;
-    double computeForce(ContextImpl& context,
-                        const std::vector<Vec3>& positions,
-                        std::vector<Vec3>& forces) override;
+    double computeForce(OpenMM::ContextImpl& context,
+                        const std::vector<OpenMM::Vec3>& positions,
+                        std::vector<OpenMM::Vec3>& forces) override;
     std::map<std::string, double> getDefaultParameters() override;
 
 private:
@@ -34,6 +34,6 @@ private:
     bool usesDeferredCudaComputation_;
 };
 
-} // namespace OpenMM
+} // namespace ColvarsPlugin
 
 #endif
