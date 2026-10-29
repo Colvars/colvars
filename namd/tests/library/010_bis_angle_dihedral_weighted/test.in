@@ -56,7 +56,7 @@ colvar {
 
 abf {
     colvars angle dihedral
-    fullSamples 1
+    fullSamples 1.5
     outputFreq 5
     historyFreq 5
     integrateWeighted yes
