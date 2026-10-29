@@ -1,7 +1,7 @@
-#ifndef OPENMM_INTERNAL_ALCHEMICAL_PME_FORCE_IMPL_H
-#define OPENMM_INTERNAL_ALCHEMICAL_PME_FORCE_IMPL_H
+#ifndef OPENMM_ALCHEMICAL_PME_FORCE_IMPL_H
+#define OPENMM_ALCHEMICAL_PME_FORCE_IMPL_H
 
-#include "openmm/AlchemicalPMEForce.h"
+#include "AlchemicalPMEForce.h"
 #include "openmm/Kernel.h"
 #include "openmm/internal/ForceImpl.h"
 
