@@ -954,7 +954,9 @@ void colvargrid_integrate::prepare_calculations()
   if (weighted) {
     std::vector<int> max_position;
     std::vector<int> min_position;
-
+    if (lower_threshold_count == 0) {
+      lower_threshold_count = 1;
+    }
     regularized_weights.resize(gradients->nt);
     for (std::vector<int> ix = gradients->new_index(); gradients->index_ok(ix);
          gradients->incr(ix)) {

@@ -103,7 +103,7 @@ protected:
   float lambda_max = 0.5f;
   float lambda_min = 0.1f;
   cvm::real upper_threshold_count = 1;
-  cvm::real lower_threshold_count = 1;
+  cvm::real lower_threshold_count = 0;
 
   /// Number of threads for weighted integration
   /// sets itself to number of available OpenMP threads
