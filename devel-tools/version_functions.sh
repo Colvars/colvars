@@ -52,6 +52,12 @@ get_colvarproxy_vmd_version() {
                       vmd/src/colvarproxy_vmd.h
 }
 
+get_colvarproxy_openmm_version() {
+    local commit=$1
+    get_colvars_macro "${commit}" COLVARPROXY_VERSION \
+                      openmm/src/colvarproxy_openmm_version.h
+}
+
 get_cv_dashboard_version() {
     local commit="${1}:"
     if [ "${commit}" = ":" ] ; then
@@ -181,6 +187,7 @@ get_all_versions() {
     get_colvarproxy_lammps_version "${commit}"
     get_colvarproxy_namd_version "${commit}"
     get_colvarproxy_vmd_version "${commit}"
+    get_colvarproxy_openmm_version "${commit}"
 }
 
 
@@ -219,6 +226,13 @@ update_all_versions() {
                           get_colvarproxy_vmd_version \
                           COLVARPROXY_VERSION \
                           vmd/src/colvarproxy_vmd_version.h \
+                          ${branch} \
+        && \
+    update_version_string "OpenMM interface" \
+                          '^openmm/src/\|^src/colvarproxy' \
+                          get_colvarproxy_openmm_version \
+                          COLVARPROXY_VERSION \
+                          openmm/src/colvarproxy_openmm_version.h \
                           ${branch} \
         && \
     update_version_string "Colvars Dashboard" \
