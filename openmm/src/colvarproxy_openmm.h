@@ -1,7 +1,7 @@
-#ifndef OPENMM_INTERNAL_OPENMM_COLVAR_PROXY_H
-#define OPENMM_INTERNAL_OPENMM_COLVAR_PROXY_H
+#ifndef COLVARPROXY_OPENMM_H
+#define COLVARPROXY_OPENMM_H
 
-#include "openmm/ColvarsForce.h"
+#include "ColvarsForce.h"
 #include "openmm/Vec3.h"
 
 #include "colvarproxy.h"
@@ -21,10 +21,10 @@ class System;
 ///
 /// The proxy owns no OpenMM objects. Context and position pointers are valid
 /// only during the current computeForce() call.
-class OpenMMColvarProxy final : public colvarproxy {
+class colvarproxy_openmm final : public colvarproxy {
 public:
-    OpenMMColvarProxy(const ColvarsForce& owner, const System& system);
-    ~OpenMMColvarProxy() override;
+    colvarproxy_openmm(const ColvarsForce& owner, const System& system);
+    ~colvarproxy_openmm() override;
 
     int setup() override;
 
