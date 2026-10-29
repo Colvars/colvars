@@ -25,6 +25,7 @@
 #include <sstream>
 
 using namespace OpenMM;
+using namespace ColvarsPlugin;
 
 namespace {
 

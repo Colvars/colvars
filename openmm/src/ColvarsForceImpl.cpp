@@ -15,6 +15,7 @@
 #endif
 
 using namespace OpenMM;
+using namespace ColvarsPlugin;
 
 #ifdef OPENMM_COLVARS_ENABLE_CUDA_KERNELS
 namespace {

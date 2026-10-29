@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-namespace OpenMM {
+namespace ColvarsPlugin {
 namespace AlchemicalPME {
 
 constexpr double CoulombConstant = 138.935456;
@@ -119,14 +119,14 @@ inline void interpolateElectrostaticEndpoint(double value0,
     dValue = derivative(value0, value1);
 }
 
-inline double dot(const Vec3& a, const Vec3& b)
+inline double dot(const OpenMM::Vec3& a, const OpenMM::Vec3& b)
 {
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
 }
 
-inline Vec3 cross(const Vec3& a, const Vec3& b)
+inline OpenMM::Vec3 cross(const OpenMM::Vec3& a, const OpenMM::Vec3& b)
 {
-    return Vec3(a[1]*b[2] - a[2]*b[1],
+    return OpenMM::Vec3(a[1]*b[2] - a[2]*b[1],
                 a[2]*b[0] - a[0]*b[2],
                 a[0]*b[1] - a[1]*b[0]);
 }
@@ -229,6 +229,6 @@ inline void buildExceptionDeviceParameters(const AlchemicalPMEForce& force,
 }
 
 } // namespace AlchemicalPME
-} // namespace OpenMM
+} // namespace ColvarsPlugin
 
 #endif
