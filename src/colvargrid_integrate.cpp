@@ -117,6 +117,9 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
       nr_linbcg_sym(weighted, divergence, computation_grid->data, tol, itmax, iter, err);
     if (verbose)
       cvmodule->log("Integrated in " + cvm::to_str(iter) + " steps, error: " + cvm::to_str(err));
+    if (need_to_extrapolate_solution) {
+      extrapolate_potential();
+    }
   }
   return iter;
 }
