@@ -114,6 +114,7 @@ def configured_cv():
     cv.setForceGroup(7)
     cv.setName("phi_colvars")
     cv.setUsesPeriodicBoundaryConditions(True)
+    cv.setParticleCharges([0.5, -0.5, 0.25])
     return cv
 
 
@@ -144,10 +145,25 @@ class TestColvarsCollectiveVariable(unittest.TestCase):
         )
         self.assertEqual(copy_.getForceGroup(), original.getForceGroup())
         self.assertEqual(copy_.getName(), original.getName())
+        self.assertEqual(
+            [copy_.getParticleCharge(i) for i in range(copy_.getNumParticleCharges())],
+            [original.getParticleCharge(i) for i in range(original.getNumParticleCharges())],
+        )
 
     def test_distance_value_and_forces(self):
         # Colvars reports distances in nm, as OpenMM does
         cv = ColvarsCollectiveVariable(colvar_config("d", DISTANCE), "d")
+        reference = openmm.CustomBondForce("r")
+        reference.addBond(0, 1, [])
+        context = make_context(make_system(2, cv, reference), make_positions(2))
+        self.assert_matches(context)
+
+    def test_dipole_magnitude_uses_particle_charges(self):
+        # With charges +1 and -1 and equal masses, the dipole is r0 - r1, so its
+        # magnitude (in e nm) and its gradient are those of the distance
+        dipole = "dipoleMagnitude {\n    atoms { atomNumbers " + atoms(0, 1) + " }\n  }"
+        cv = ColvarsCollectiveVariable(colvar_config("mu", dipole), "mu")
+        cv.setParticleCharges([1.0, -1.0])
         reference = openmm.CustomBondForce("r")
         reference.addBond(0, 1, [])
         context = make_context(make_system(2, cv, reference), make_positions(2))
@@ -289,6 +305,33 @@ class TestColvarsCollectiveVariable(unittest.TestCase):
                 ),
                 "d",
                 "extended Lagrangian",
+            ),
+            "extended Lagrangian on another colvar": (
+                colvar_config("d", DISTANCE)
+                + colvar_config(
+                    "e",
+                    DISTANCE,
+                    "  extendedLagrangian on\n  extendedFluctuation 0.01\n"
+                    "  extendedTimeConstant 200\n",
+                ),
+                "d",
+                "extended Lagrangian",
+            ),
+            "timeStepFactor": (
+                colvar_config("d", DISTANCE, "  timeStepFactor 2\n"),
+                "d",
+                "timeStepFactor",
+            ),
+            "runAve": (
+                colvar_config("d", DISTANCE)
+                + colvar_config("e", DISTANCE, "  runAve on\n  runAveLength 2\n"),
+                "d",
+                "runAve or corrFunc",
+            ),
+            "corrFunc": (
+                colvar_config("d", DISTANCE, "  corrFunc on\n"),
+                "d",
+                "runAve or corrFunc",
             ),
             "vector": (
                 colvar_config("v", DISTANCE.replace("distance {", "distanceVec {")),

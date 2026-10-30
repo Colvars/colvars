@@ -410,8 +410,11 @@ wrapped into its period, as Colvars computes it, so the force using it must
 account for the periodicity.
 
 The configuration may define other colvars, for example as components of a
-`customFunction`, but it must not define biases, and the reported colvar must be
-a scalar without an extended Lagrangian. `ColvarsCollectiveVariable` writes no
+`customFunction`, but it must not define biases, colvars with an extended
+Lagrangian, or colvars with `runAve` or `corrFunc`. The reported colvar must be
+a scalar with a `timeStepFactor` of 1. Charge-dependent components such as
+`dipoleMagnitude` use the charges set with `setParticleCharges()`, in elementary
+charges. `ColvarsCollectiveVariable` writes no
 Colvars output files, and its `logLevel` defaults to 0, which silences most of
 the Colvars log. Set `logLevel` in the configuration for a more detailed log.
 

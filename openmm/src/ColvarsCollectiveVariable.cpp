@@ -8,6 +8,7 @@
 #include "openmm/serialization/SerializationProxy.h"
 
 #include <algorithm>
+#include <cmath>
 #include <regex>
 #include <typeinfo>
 
@@ -39,6 +40,10 @@ ColvarsForce make_settings(const ColvarsCollectiveVariable& owner)
         with_default_log_level(owner.getConfigString()), "colvars");
     settings.setAlchemyEnabled(false);
     settings.setUsesPeriodicBoundaryConditions(owner.usesPeriodicBoundaryConditions());
+    // Read by the proxy for charge-dependent components
+    for (int i = 0; i < owner.getNumParticleCharges(); ++i) {
+        settings.setParticleCharge(i, owner.getParticleCharge(i));
+    }
     return settings;
 }
 
@@ -55,6 +60,10 @@ public:
         node.setStringProperty("configString", force.getConfigString());
         node.setStringProperty("colvarName", force.getColvarName());
         node.setBoolProperty("usesPeriodic", force.usesPeriodicBoundaryConditions());
+        SerializationNode& charges = node.createChildNode("ParticleCharges");
+        for (int i = 0; i < force.getNumParticleCharges(); ++i) {
+            charges.createChildNode("Charge").setDoubleProperty("q", force.getParticleCharge(i));
+        }
     }
 
     void* deserialize(const SerializationNode& node) const override
@@ -67,6 +76,15 @@ public:
         force->setForceGroup(node.getIntProperty("forceGroup", 0));
         force->setName(node.getStringProperty("name", force->getName()));
         force->setUsesPeriodicBoundaryConditions(node.getBoolProperty("usesPeriodic", false));
+        for (const SerializationNode& child : node.getChildren()) {
+            if (child.getName() == "ParticleCharges") {
+                std::vector<double> charges;
+                for (const SerializationNode& charge : child.getChildren()) {
+                    charges.push_back(charge.getDoubleProperty("q"));
+                }
+                force->setParticleCharges(charges);
+            }
+        }
         return force;
     }
 };
@@ -97,6 +115,43 @@ const std::string& ColvarsCollectiveVariable::getConfigString() const
 const std::string& ColvarsCollectiveVariable::getColvarName() const
 {
     return colvarName_;
+}
+
+int ColvarsCollectiveVariable::getNumParticleCharges() const
+{
+    return static_cast<int>(particleCharges_.size());
+}
+
+double ColvarsCollectiveVariable::getParticleCharge(int particleIndex) const
+{
+    if (particleIndex < 0 || particleIndex >= static_cast<int>(particleCharges_.size())) {
+        return 0.0;
+    }
+    return particleCharges_[particleIndex];
+}
+
+void ColvarsCollectiveVariable::setParticleCharge(int particleIndex, double chargeElementary)
+{
+    if (particleIndex < 0) {
+        throw OpenMMException("particleIndex must be non-negative");
+    }
+    if (!std::isfinite(chargeElementary)) {
+        throw OpenMMException("chargeElementary must be finite");
+    }
+    if (particleIndex >= static_cast<int>(particleCharges_.size())) {
+        particleCharges_.resize(static_cast<size_t>(particleIndex) + 1, 0.0);
+    }
+    particleCharges_[particleIndex] = chargeElementary;
+}
+
+void ColvarsCollectiveVariable::setParticleCharges(const std::vector<double>& chargesElementary)
+{
+    for (double charge : chargesElementary) {
+        if (!std::isfinite(charge)) {
+            throw OpenMMException("particle charges must be finite");
+        }
+    }
+    particleCharges_ = chargesElementary;
 }
 
 bool ColvarsCollectiveVariable::usesPeriodicBoundaryConditions() const

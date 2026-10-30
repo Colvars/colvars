@@ -218,6 +218,11 @@ public:
     const std::string& getConfigString() const;
     const std::string& getColvarName() const;
 
+    int getNumParticleCharges() const;
+    double getParticleCharge(int particleIndex) const;
+    void setParticleCharge(int particleIndex, double chargeElementary);
+    void setParticleCharges(const std::vector<double>& chargesElementary);
+
     bool usesPeriodicBoundaryConditions() const;
     void setUsesPeriodicBoundaryConditions(bool usesPbc);
 };

@@ -478,9 +478,21 @@ void colvarproxy_openmm::validateReportedColvar()
     if (reportedColvar_->value().type() != colvarvalue::type_scalar) {
         throw OpenMMException(prefix + "colvar \"" + reportedColvarName_ + "\" is not a scalar");
     }
-    if (reportedColvar_->is_enabled(colvardeps::f_cv_extended_Lagrangian)) {
+    if (reportedColvar_->get_time_step_factor() != 1) {
+        // The colvar would not be computed at every evaluation
         throw OpenMMException(prefix + "colvar \"" + reportedColvarName_ +
-                              "\" must not have an extended Lagrangian");
+                              "\" must have a timeStepFactor of 1");
+    }
+    // Extended-Lagrangian colvars add their own energy and forces
+    if (cvmodule->num_variables_feature(colvardeps::f_cv_extended_Lagrangian) > 0) {
+        throw OpenMMException(prefix + "the configuration must not define colvars with "
+                              "an extended Lagrangian");
+    }
+    // These write output files, named after the (empty) output prefix by default
+    if (cvmodule->num_variables_feature(colvardeps::f_cv_runave) > 0 ||
+        cvmodule->num_variables_feature(colvardeps::f_cv_corrfunc) > 0) {
+        throw OpenMMException(prefix + "the configuration must not define colvars with "
+                              "runAve or corrFunc");
     }
     if (!cvmodule->scripted_forces()) {
         throw OpenMMException(prefix + "the configuration must not set scriptedColvarForces off");

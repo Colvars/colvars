@@ -4,6 +4,7 @@
 #include "openmm/Force.h"
 
 #include <string>
+#include <vector>
 
 namespace ColvarsPlugin {
 
@@ -18,9 +19,13 @@ namespace ColvarsPlugin {
 /// such as a CustomCVForce, which handles the periodicity.
 ///
 /// The configuration may define other colvars, for example to combine them in a
-/// customFunction, but no biases, and the reported colvar must be a scalar without
-/// an extended Lagrangian. No Colvars output files are written, and logLevel
+/// customFunction, but no biases, no colvars with an extended Lagrangian, and no
+/// colvars with runAve or corrFunc. The reported colvar must be a scalar with a
+/// timeStepFactor of 1. No Colvars output files are written, and logLevel
 /// defaults to 0.
+///
+/// Charge-dependent components (e.g. dipoleMagnitude) use the particle charges
+/// set with setParticleCharges(), in elementary charges; unset charges are zero.
 ///
 /// Unlike ColvarsForce, this force can be serialized, so it can be copied and used
 /// inside a CustomCVForce.
@@ -31,6 +36,11 @@ public:
     const std::string& getConfigString() const;
     const std::string& getColvarName() const;
 
+    int getNumParticleCharges() const;
+    double getParticleCharge(int particleIndex) const;
+    void setParticleCharge(int particleIndex, double chargeElementary);
+    void setParticleCharges(const std::vector<double>& chargesElementary);
+
     bool usesPeriodicBoundaryConditions() const override;
     void setUsesPeriodicBoundaryConditions(bool usesPbc);
 
@@ -40,6 +50,7 @@ protected:
 private:
     std::string configString_;
     std::string colvarName_;
+    std::vector<double> particleCharges_;
     bool usesPbc_;
 };
 
