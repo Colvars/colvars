@@ -31,6 +31,9 @@ while [ $# -ge 1 ]; do
     echo >& 2
     echo "  -k    keep the output files after a successful test, otherwise they are deleted." >& 2
     echo "  -v    enable verbose output." >& 2
+    echo >& 2
+    echo "        The OpenMM platform is chosen by OpenMM, and can be set with the" >& 2
+    echo "        environment variable OPENMM_DEFAULT_PLATFORM (e.g. Reference, CPU, CUDA)." >& 2
     exit 0
   else
     DIRLIST=`echo ${DIRLIST} $1`
@@ -80,7 +83,11 @@ cleanup_files() {
 for dir in $DIRLIST; do
 
   echo -ne "Entering $(${TPUT_BLUE})${dir}$(${TPUT_CLEAR}) ... "
-  cd $dir
+  if ! cd "$dir"; then
+    FAILED_TESTS="$FAILED_TESTS $dir "
+    ALL_SUCCESS=0
+    continue
+  fi
 
   if [ ! -d AutoDiff ] ; then
     echo ""
@@ -119,16 +126,20 @@ for dir in $DIRLIST; do
     FAILED_TESTS="$FAILED_TESTS $dir "
     SUCCESS=0
     ALL_SUCCESS=0
+    cd "$BASEDIR"
     continue
   else
     SUCCESS=1
   fi
 
   logfile=${basename}.log
+  # Printed by runner.py; may be interleaved with the Colvars output
+  echo -n "[$(grep -m 1 -o 'OpenMM platform: .*' ${logfile} | sed 's/^OpenMM platform: //')] "
   # Filter out the version numbers to allow comparisons
   grep "^colvars:" ${logfile} \
   | grep -v 'Initializing the collective variables module' \
-  | grep -v 'Using OpenMM interface' > ${basename}.colvars.out
+  | grep -v 'Using OpenMM interface' \
+  | grep -v 'OpenMM platform:' > ${basename}.colvars.out
 
   if [ -s ${logfile%.log}.colvars.state ] ; then
     grep -sv 'version' ${logfile%.log}.colvars.state \
@@ -223,8 +234,10 @@ for dir in $DIRLIST; do
     if $cleanup; then
       cleanup_files
     fi
+  else
+    FAILED_TESTS="$FAILED_TESTS $dir "
   fi
-  cd ..
+  cd "$BASEDIR"
 done
 
 if [ -n "$FAILED_TESTS" ]; then

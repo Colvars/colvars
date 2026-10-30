@@ -11,7 +11,7 @@
 #include "colvar.h"
 #include "colvaratoms.h"
 #include "colvarmodule.h"
-#include "colvars_version.h"
+#include "colvarproxy_openmm_version.h"
 
 #include <algorithm>
 #include <cctype>
@@ -26,6 +26,7 @@
 #include <sstream>
 
 using namespace OpenMM;
+using namespace ColvarsPlugin;
 
 namespace {
 
@@ -426,7 +427,7 @@ colvarproxy_openmm::colvarproxy_openmm(const ColvarsForce& owner,
     tabfAlphaBoundariesValid_ = config_tabf_alpha_boundaries(
         owner_config_text(owner_), tabfAlphaLowerBoundary_, tabfAlphaUpperBoundary_);
 
-    version_int = get_version_from_string(COLVARS_VERSION);
+    version_int = get_version_from_string(COLVARPROXY_VERSION);
     engine_name_ = "OpenMM";
 
     cvmodule = new colvarmodule(this);
@@ -434,7 +435,8 @@ colvarproxy_openmm::colvarproxy_openmm(const ColvarsForce& owner,
         // Lets every colvar receive forces and makes Colvars call run_force_callback()
         cvmodule->use_scripted_forces = true;
     }
-    cvmodule->log("Using OpenMM interface.\n");
+    cvmodule->log("Using OpenMM interface, version " +
+                  cvm::to_str(COLVARPROXY_VERSION) + ".\n");
     totalForcesSameStep_ = inferTotalForcesSameStep();
 
     if (reportedColvarName_.empty()) {

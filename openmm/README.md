@@ -331,7 +331,7 @@ ABF/eABF total-force collection.
 ```cpp
 #include "ColvarsForce.h"
 
-OpenMM::ColvarsForce colvars("colvars.in", "output/colvars");
+ColvarsPlugin::ColvarsForce colvars("colvars.in", "output/colvars");
 colvars.setLambdaParameterName("lambda");
 system.addForce(&colvars);
 ```
@@ -339,7 +339,7 @@ system.addForce(&colvars);
 To construct a force from an in-memory configuration:
 
 ```cpp
-auto colvars = OpenMM::ColvarsForce::fromConfigString(configText, "colvars");
+auto colvars = ColvarsPlugin::ColvarsForce::fromConfigString(configText, "colvars");
 ```
 
 ### Alchemical lambda
