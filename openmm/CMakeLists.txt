@@ -288,7 +288,7 @@ set(OPENMM_COLVARS_SOURCES
     src/AlchemicalPMEForce.cpp
     src/AlchemicalPMEForceImpl.cpp
     src/ReferenceAlchemicalPMEKernels.cpp
-    src/colvars_collective_variable.cpp
+    src/ColvarsCollectiveVariable.cpp
     src/ColvarsForce.cpp
     src/ColvarsForceImpl.cpp
     src/ColvarsTABFIntegrator.cpp

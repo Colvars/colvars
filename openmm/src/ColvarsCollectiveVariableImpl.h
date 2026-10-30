@@ -10,20 +10,20 @@
 #include <string>
 #include <vector>
 
-namespace OpenMM {
-
 class colvarproxy_openmm;
 
-class ColvarsCollectiveVariableImpl final : public CustomCPPForceImpl {
+namespace ColvarsPlugin {
+
+class ColvarsCollectiveVariableImpl final : public OpenMM::CustomCPPForceImpl {
 public:
     explicit ColvarsCollectiveVariableImpl(const ColvarsCollectiveVariable& owner);
     ~ColvarsCollectiveVariableImpl() override;
 
-    const Force& getOwner() const override;
-    void initialize(ContextImpl& context) override;
-    double computeForce(ContextImpl& context,
-                        const std::vector<Vec3>& positions,
-                        std::vector<Vec3>& forces) override;
+    const OpenMM::Force& getOwner() const override;
+    void initialize(OpenMM::ContextImpl& context) override;
+    double computeForce(OpenMM::ContextImpl& context,
+                        const std::vector<OpenMM::Vec3>& positions,
+                        std::vector<OpenMM::Vec3>& forces) override;
     std::map<std::string, double> getDefaultParameters() override;
 
 private:
@@ -34,6 +34,6 @@ private:
     std::unique_ptr<colvarproxy_openmm> proxy_;
 };
 
-} // namespace OpenMM
+} // namespace ColvarsPlugin
 
 #endif

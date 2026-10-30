@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace OpenMM {
+namespace ColvarsPlugin {
 
 /// OpenMM Force whose energy is the value of one Colvars collective variable.
 ///
@@ -24,7 +24,7 @@ namespace OpenMM {
 ///
 /// Unlike ColvarsForce, this force can be serialized, so it can be copied and used
 /// inside a CustomCVForce.
-class ColvarsCollectiveVariable : public Force {
+class ColvarsCollectiveVariable : public OpenMM::Force {
 public:
     ColvarsCollectiveVariable(const std::string& configString, const std::string& colvarName);
 
@@ -35,7 +35,7 @@ public:
     void setUsesPeriodicBoundaryConditions(bool usesPbc);
 
 protected:
-    ForceImpl* createImpl() const override;
+    OpenMM::ForceImpl* createImpl() const override;
 
 private:
     std::string configString_;
@@ -43,6 +43,6 @@ private:
     bool usesPbc_;
 };
 
-} // namespace OpenMM
+} // namespace ColvarsPlugin
 
 #endif

@@ -210,7 +210,7 @@ public:
     void setPbcMode(PbcMode mode);
 };
 
-class ColvarsCollectiveVariable : public Force {
+class ColvarsCollectiveVariable : public OpenMM::Force {
 public:
     ColvarsCollectiveVariable(const std::string& configString, const std::string& colvarName);
     ColvarsCollectiveVariable(const ColvarsCollectiveVariable& other);
@@ -222,14 +222,14 @@ public:
     void setUsesPeriodicBoundaryConditions(bool usesPbc);
 };
 
-%newobject OpenMM::ColvarsCollectiveVariable::_deserialize;
+%newobject ColvarsPlugin::ColvarsCollectiveVariable::_deserialize;
 %extend ColvarsCollectiveVariable {
     // XmlSerializer.deserialize returns a plain Force wrapper for plugin types, so
     // unpickling needs a typed object
     static ColvarsCollectiveVariable* _deserialize(const std::string& xml) {
         std::istringstream stream(xml);
         std::unique_ptr<OpenMM::Force> force(OpenMM::XmlSerializer::deserialize<OpenMM::Force>(stream));
-        auto* cv = dynamic_cast<OpenMM::ColvarsCollectiveVariable*>(force.get());
+        auto* cv = dynamic_cast<ColvarsPlugin::ColvarsCollectiveVariable*>(force.get());
         if (cv == nullptr) {
             throw OpenMM::OpenMMException("The XML does not describe a ColvarsCollectiveVariable");
         }

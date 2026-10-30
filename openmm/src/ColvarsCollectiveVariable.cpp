@@ -12,6 +12,7 @@
 #include <typeinfo>
 
 using namespace OpenMM;
+using namespace ColvarsPlugin;
 
 namespace {
 
