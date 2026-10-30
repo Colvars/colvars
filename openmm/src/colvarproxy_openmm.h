@@ -28,7 +28,13 @@ using ColvarsPlugin::ColvarsForce;
 /// only during the current computeForce() call.
 class colvarproxy_openmm final : public colvarproxy {
 public:
-    colvarproxy_openmm(const ColvarsForce& owner, const System& system);
+    /// With an empty reportedColvar, the proxy applies the biases of the Colvars
+    /// configuration and reports their energy. Otherwise, it reports the value of the
+    /// named colvar as the energy, applies the corresponding forces,
+    /// and writes no output files.
+    colvarproxy_openmm(const ColvarsForce& owner,
+                      const System& system,
+                      const std::string& reportedColvar = "");
     ~colvarproxy_openmm() override;
 
     int setup() override;
@@ -96,6 +102,7 @@ public:
 
 private:
     void initializeColvars();
+    void validateReportedColvar();
     void updateAtomIndexMap();
     void updatePbc(ContextImpl& context);
     bool shouldUsePbc(ContextImpl& context) const;
@@ -140,6 +147,8 @@ private:
 
     const ColvarsForce& owner_;
     const System& system_;
+    std::string reportedColvarName_;
+    colvar* reportedColvar_;
     ContextImpl* currentContext_;
     double biasEnergy_;
     bool isInitialized_;

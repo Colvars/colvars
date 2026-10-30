@@ -288,6 +288,7 @@ set(OPENMM_COLVARS_SOURCES
     src/AlchemicalPMEForce.cpp
     src/AlchemicalPMEForceImpl.cpp
     src/ReferenceAlchemicalPMEKernels.cpp
+    src/ColvarsCollectiveVariable.cpp
     src/ColvarsForce.cpp
     src/ColvarsForceImpl.cpp
     src/ColvarsTABFIntegrator.cpp
@@ -396,6 +397,7 @@ if (OPENMM_COLVARS_BUILD_PYTHON)
             DEPENDS
                 "${CMAKE_CURRENT_SOURCE_DIR}/python/openmm_colvars.i"
                 "${CMAKE_CURRENT_SOURCE_DIR}/python/openmm_colvars_openmm_import.i"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/ColvarsCollectiveVariable.h"
                 "${CMAKE_CURRENT_SOURCE_DIR}/src/ColvarsForce.h"
                 "${CMAKE_CURRENT_SOURCE_DIR}/src/ColvarsTABFIntegrator.h"
                 "${CMAKE_CURRENT_SOURCE_DIR}/src/AlchemicalPMEForce.h"
