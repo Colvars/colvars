@@ -285,22 +285,22 @@ endif()
 
 # Conditionally include CUDA kernel source
 set(OPENMM_COLVARS_SOURCES
-    src/alchemical_pme_force.cpp
-    src/alchemical_pme_force_impl.cpp
-    src/reference_alchemical_pme_kernel.cpp
+    src/AlchemicalPMEForce.cpp
+    src/AlchemicalPMEForceImpl.cpp
+    src/ReferenceAlchemicalPMEKernels.cpp
     src/colvars_collective_variable.cpp
-    src/colvars_force.cpp
-    src/colvars_force_impl.cpp
-    src/colvars_tabf_integrator.cpp
+    src/ColvarsForce.cpp
+    src/ColvarsForceImpl.cpp
+    src/ColvarsTABFIntegrator.cpp
     src/colvarproxy_tcl_stub.cpp
     src/colvarscript_stub.cpp
-    src/openmm_colvar_proxy.cpp
+    src/colvarproxy_openmm.cpp
     ${OPENMM_COLVARS_REFERENCE_PME_SOURCES}
     ${OPENMM_COLVARS_LEPTON_OBJECTS}
     ${COLVARS_SOURCES})
 
 if(OPENMM_COLVARS_ENABLE_CUDA_KERNELS)
-    list(APPEND OPENMM_COLVARS_SOURCES src/cuda_alchemical_pme_kernel.cpp)
+    list(APPEND OPENMM_COLVARS_SOURCES src/CudaAlchemicalPMEKernels.cpp)
 endif()
 
 add_library(OpenMMColvars STATIC ${OPENMM_COLVARS_SOURCES})
@@ -309,7 +309,7 @@ set_target_properties(OpenMMColvars PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(OpenMMColvars
     PUBLIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src"
         ${OPENMM_COLVARS_OPENMM_SOURCE_INCLUDES}
         ${OPENMM_COLVARS_CUDA_INCLUDES}
     PRIVATE
@@ -364,7 +364,7 @@ if (OPENMM_COLVARS_BUILD_PYTHON)
 
         set(OPENMM_COLVARS_SWIG_INCLUDE_DIRS
             "${CMAKE_CURRENT_SOURCE_DIR}/python"
-            "${CMAKE_CURRENT_SOURCE_DIR}/include"
+            "${CMAKE_CURRENT_SOURCE_DIR}/src"
             "${COLVARS_CORE_DIR}"
             ${OPENMM_COLVARS_OPENMM_SOURCE_INCLUDES})
         if (OPENMM_INCLUDE_DIR)
@@ -397,10 +397,10 @@ if (OPENMM_COLVARS_BUILD_PYTHON)
             DEPENDS
                 "${CMAKE_CURRENT_SOURCE_DIR}/python/openmm_colvars.i"
                 "${CMAKE_CURRENT_SOURCE_DIR}/python/openmm_colvars_openmm_import.i"
-                "${CMAKE_CURRENT_SOURCE_DIR}/include/openmm/ColvarsCollectiveVariable.h"
-                "${CMAKE_CURRENT_SOURCE_DIR}/include/openmm/ColvarsForce.h"
-                "${CMAKE_CURRENT_SOURCE_DIR}/include/openmm/ColvarsTABFIntegrator.h"
-                "${CMAKE_CURRENT_SOURCE_DIR}/include/openmm/AlchemicalPMEForce.h"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/ColvarsCollectiveVariable.h"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/ColvarsForce.h"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/ColvarsTABFIntegrator.h"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src/AlchemicalPMEForce.h"
             VERBATIM)
 
         Python_add_library(_openmm_colvars MODULE "${OPENMM_COLVARS_SWIG_WRAPPER}")
@@ -411,7 +411,7 @@ if (OPENMM_COLVARS_BUILD_PYTHON)
             OUTPUT_NAME "_openmm_colvars")
         target_include_directories(_openmm_colvars
             PRIVATE
-                "${CMAKE_CURRENT_SOURCE_DIR}/include"
+                "${CMAKE_CURRENT_SOURCE_DIR}/src"
                 ${OPENMM_COLVARS_OPENMM_SOURCE_INCLUDES}
                 "${OPENMM_COLVARS_PYTHON_DIR}")
         target_link_libraries(_openmm_colvars PRIVATE OpenMMColvars Python::Module)

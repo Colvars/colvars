@@ -1,4 +1,4 @@
-#include "openmm/internal/OpenMMColvarProxy.h"
+#include "colvarproxy_openmm.h"
 
 #include "openmm/Context.h"
 #include "openmm/CustomIntegrator.h"
@@ -388,7 +388,7 @@ bool config_tabf_alpha_boundaries(const std::string& configText,
 
 } // namespace
 
-OpenMMColvarProxy::OpenMMColvarProxy(const ColvarsForce& owner,
+colvarproxy_openmm::colvarproxy_openmm(const ColvarsForce& owner,
                                      const System& system,
                                      const std::string& reportedColvar)
     : owner_(owner),
@@ -462,7 +462,7 @@ OpenMMColvarProxy::OpenMMColvarProxy(const ColvarsForce& owner,
     }
 }
 
-void OpenMMColvarProxy::validateReportedColvar()
+void colvarproxy_openmm::validateReportedColvar()
 {
     const std::string prefix = "ColvarsCollectiveVariable: ";
     reportedColvar_ = cvmodule->colvar_by_name(reportedColvarName_);
@@ -485,12 +485,12 @@ void OpenMMColvarProxy::validateReportedColvar()
     }
 }
 
-OpenMMColvarProxy::~OpenMMColvarProxy()
+colvarproxy_openmm::~colvarproxy_openmm()
 {
     close_output_streams();
 }
 
-void OpenMMColvarProxy::initializeColvars()
+void colvarproxy_openmm::initializeColvars()
 {
     int errorCode = COLVARS_OK;
     errorCode |= set_unit_system(owner_.getUnitSystem(), false);
@@ -505,14 +505,14 @@ void OpenMMColvarProxy::initializeColvars()
     isInitialized_ = true;
 }
 
-int OpenMMColvarProxy::setup()
+int colvarproxy_openmm::setup()
 {
     int errorCode = colvarproxy::setup();
     errorCode |= cvmodule->update_engine_parameters();
     return errorCode;
 }
 
-int OpenMMColvarProxy::init_atom(int atomNumber)
+int colvarproxy_openmm::init_atom(int atomNumber)
 {
     int atomId = atomNumber - 1;
 
@@ -538,13 +538,13 @@ int OpenMMColvarProxy::init_atom(int atomNumber)
     return proxyIndex;
 }
 
-void OpenMMColvarProxy::clear_atom(int index)
+void colvarproxy_openmm::clear_atom(int index)
 {
     colvarproxy::clear_atom(index);
     invalidateCache();
 }
 
-int OpenMMColvarProxy::check_atom_id(int atomNumber)
+int colvarproxy_openmm::check_atom_id(int atomNumber)
 {
     const int atomId = atomNumber - 1;
     if (atomId < 0 || atomId >= system_.getNumParticles()) {
@@ -555,22 +555,22 @@ int OpenMMColvarProxy::check_atom_id(int atomNumber)
     return atomId;
 }
 
-void OpenMMColvarProxy::request_total_force(bool yesno)
+void colvarproxy_openmm::request_total_force(bool yesno)
 {
     total_force_requested = yesno;
 }
 
-bool OpenMMColvarProxy::total_forces_enabled() const
+bool colvarproxy_openmm::total_forces_enabled() const
 {
     return total_force_requested;
 }
 
-bool OpenMMColvarProxy::total_forces_same_step() const
+bool colvarproxy_openmm::total_forces_same_step() const
 {
     return totalForcesSameStep_;
 }
 
-int OpenMMColvarProxy::set_unit_system(std::string const& unitsIn, bool checkOnly)
+int colvarproxy_openmm::set_unit_system(std::string const& unitsIn, bool checkOnly)
 {
     // OpenMM uses gromacs units (nm, kJ/mol)
     static constexpr std::string_view kSupportedUnits = "gromacs";
@@ -592,12 +592,12 @@ int OpenMMColvarProxy::set_unit_system(std::string const& unitsIn, bool checkOnl
     return COLVARS_OK;
 }
 
-void OpenMMColvarProxy::add_energy(cvm::real energy)
+void colvarproxy_openmm::add_energy(cvm::real energy)
 {
     biasEnergy_ += energy;
 }
 
-void OpenMMColvarProxy::log(std::string const& message)
+void colvarproxy_openmm::log(std::string const& message)
 {
     std::istringstream lines(message);
     std::string line;
@@ -614,13 +614,13 @@ void OpenMMColvarProxy::log(std::string const& message)
     }
 }
 
-void OpenMMColvarProxy::error(std::string const& message)
+void colvarproxy_openmm::error(std::string const& message)
 {
     add_error_msg(message);
     throw OpenMMException(format_colvars_error(message));
 }
 
-cvm::real OpenMMColvarProxy::rand_gaussian()
+cvm::real colvarproxy_openmm::rand_gaussian()
 {
     if (gaussianRngHasSpare_) {
         gaussianRngHasSpare_ = false;
@@ -637,7 +637,7 @@ cvm::real OpenMMColvarProxy::rand_gaussian()
     return radius * std::cos(angle);
 }
 
-int OpenMMColvarProxy::get_alch_lambda(cvm::real* lambda)
+int colvarproxy_openmm::get_alch_lambda(cvm::real* lambda)
 {
     if (!owner_.getAlchemyEnabled()) {
         return cvmodule->error("Error: alchemical lambda support is disabled for this ColvarsForce.\n",
@@ -654,7 +654,7 @@ int OpenMMColvarProxy::get_alch_lambda(cvm::real* lambda)
     return COLVARS_OK;
 }
 
-int OpenMMColvarProxy::send_alch_lambda()
+int colvarproxy_openmm::send_alch_lambda()
 {
     if (!owner_.getAlchemyEnabled()) {
         return cvmodule->error("Error: alchemical lambda support is disabled for this ColvarsForce.\n",
@@ -667,7 +667,7 @@ int OpenMMColvarProxy::send_alch_lambda()
     return COLVARS_OK;
 }
 
-int OpenMMColvarProxy::request_alch_energy_freq(int freq)
+int colvarproxy_openmm::request_alch_energy_freq(int freq)
 {
     if (!owner_.getAlchemyEnabled()) {
         return cvmodule->error("Error: alchemical lambda support is disabled for this ColvarsForce.\n",
@@ -680,7 +680,7 @@ int OpenMMColvarProxy::request_alch_energy_freq(int freq)
     return COLVARS_OK;
 }
 
-int OpenMMColvarProxy::get_dE_dlambda(cvm::real* dEdLambda)
+int colvarproxy_openmm::get_dE_dlambda(cvm::real* dEdLambda)
 {
     if (!owner_.getAlchemyEnabled()) {
         return cvmodule->error("Error: alchemical lambda support is disabled for this ColvarsForce.\n",
@@ -719,7 +719,7 @@ int OpenMMColvarProxy::get_dE_dlambda(cvm::real* dEdLambda)
 }
 
 #ifdef OPENMM_COLVARS_HAS_TABF_ALPHA
-int OpenMMColvarProxy::get_tabf_alpha(cvm::real* alpha)
+int colvarproxy_openmm::get_tabf_alpha(cvm::real* alpha)
 {
     if (!owner_.getTabfEnabled()) {
         return cvmodule->error("Error: TABF alpha support is disabled for this ColvarsForce.\n",
@@ -737,7 +737,7 @@ int OpenMMColvarProxy::get_tabf_alpha(cvm::real* alpha)
 }
 
 #ifdef OPENMM_COLVARS_HAS_TABF_ALPHA_BOUNDARIES
-int OpenMMColvarProxy::get_tabf_alpha_boundaries(cvm::real* lower, cvm::real* upper)
+int colvarproxy_openmm::get_tabf_alpha_boundaries(cvm::real* lower, cvm::real* upper)
 {
     if (!owner_.getTabfEnabled()) {
         return cvmodule->error("Error: TABF alpha support is disabled for this ColvarsForce.\n",
@@ -758,7 +758,7 @@ int OpenMMColvarProxy::get_tabf_alpha_boundaries(cvm::real* lower, cvm::real* up
 }
 #endif
 
-int OpenMMColvarProxy::send_tabf_alpha()
+int colvarproxy_openmm::send_tabf_alpha()
 {
     if (!owner_.getTabfEnabled()) {
         return cvmodule->error("Error: TABF alpha support is disabled for this ColvarsForce.\n",
@@ -783,7 +783,7 @@ int OpenMMColvarProxy::send_tabf_alpha()
     return COLVARS_OK;
 }
 
-int OpenMMColvarProxy::request_tabf_energy_freq(int freq)
+int colvarproxy_openmm::request_tabf_energy_freq(int freq)
 {
     if (!owner_.getTabfEnabled()) {
         return cvmodule->error("Error: TABF alpha support is disabled for this ColvarsForce.\n",
@@ -796,7 +796,7 @@ int OpenMMColvarProxy::request_tabf_energy_freq(int freq)
     return COLVARS_OK;
 }
 
-int OpenMMColvarProxy::get_dE_dtabf_alpha(cvm::real* dEdAlpha)
+int colvarproxy_openmm::get_dE_dtabf_alpha(cvm::real* dEdAlpha)
 {
     if (!owner_.getTabfEnabled()) {
         return cvmodule->error("Error: TABF alpha support is disabled for this ColvarsForce.\n",
@@ -822,7 +822,7 @@ int OpenMMColvarProxy::get_dE_dtabf_alpha(cvm::real* dEdAlpha)
 }
 #endif
 
-int OpenMMColvarProxy::load_atoms_pdb(char const* filename,
+int colvarproxy_openmm::load_atoms_pdb(char const* filename,
                                       cvm::atom_group& atoms,
                                       std::string const& pdbField,
                                       double pdbFieldValue)
@@ -866,7 +866,7 @@ int OpenMMColvarProxy::load_atoms_pdb(char const* filename,
     return cvmodule->get_error() ? COLVARS_ERROR : COLVARS_OK;
 }
 
-int OpenMMColvarProxy::load_coords_pdb(char const* filename,
+int colvarproxy_openmm::load_coords_pdb(char const* filename,
                                        std::vector<cvm::atom_pos>& positions,
                                        std::vector<int> const& sortedIds,
                                        std::string const& pdbField,
@@ -935,36 +935,36 @@ int OpenMMColvarProxy::load_coords_pdb(char const* filename,
     return COLVARS_OK;
 }
 
-int OpenMMColvarProxy::check_replicas_enabled()
+int colvarproxy_openmm::check_replicas_enabled()
 {
     return COLVARS_NOT_IMPLEMENTED;
 }
 
-int OpenMMColvarProxy::replica_index()
+int colvarproxy_openmm::replica_index()
 {
     return 0;
 }
 
-int OpenMMColvarProxy::num_replicas()
+int colvarproxy_openmm::num_replicas()
 {
     return 1;
 }
 
-void OpenMMColvarProxy::replica_comm_barrier()
+void colvarproxy_openmm::replica_comm_barrier()
 {
 }
 
-int OpenMMColvarProxy::replica_comm_recv(char*, int, int)
-{
-    return COLVARS_NOT_IMPLEMENTED;
-}
-
-int OpenMMColvarProxy::replica_comm_send(char*, int, int)
+int colvarproxy_openmm::replica_comm_recv(char*, int, int)
 {
     return COLVARS_NOT_IMPLEMENTED;
 }
 
-int OpenMMColvarProxy::run_force_callback()
+int colvarproxy_openmm::replica_comm_send(char*, int, int)
+{
+    return COLVARS_NOT_IMPLEMENTED;
+}
+
+int colvarproxy_openmm::run_force_callback()
 {
     if (reportedColvar_ != nullptr) {
         // Energy x and generalized force -1 on the colvar, in kJ/mol per colvar unit
@@ -976,7 +976,7 @@ int OpenMMColvarProxy::run_force_callback()
                            COLVARS_NOT_IMPLEMENTED);
 }
 
-int OpenMMColvarProxy::run_colvar_callback(std::string const&,
+int colvarproxy_openmm::run_colvar_callback(std::string const&,
                                            std::vector<const colvarvalue*> const&,
                                            colvarvalue&)
 {
@@ -984,7 +984,7 @@ int OpenMMColvarProxy::run_colvar_callback(std::string const&,
                            COLVARS_NOT_IMPLEMENTED);
 }
 
-int OpenMMColvarProxy::run_colvar_gradient_callback(std::string const&,
+int colvarproxy_openmm::run_colvar_gradient_callback(std::string const&,
                                                     std::vector<const colvarvalue*> const&,
                                                     std::vector<cvm::matrix2d<cvm::real>>&)
 {
@@ -992,7 +992,7 @@ int OpenMMColvarProxy::run_colvar_gradient_callback(std::string const&,
                            COLVARS_NOT_IMPLEMENTED);
 }
 
-int OpenMMColvarProxy::updateInput(ContextImpl& context, const std::vector<Vec3>& positions)
+int colvarproxy_openmm::updateInput(ContextImpl& context, const std::vector<Vec3>& positions)
 {
     currentContext_ = &context;
     biasEnergy_ = 0.0;
@@ -1013,7 +1013,7 @@ int OpenMMColvarProxy::updateInput(ContextImpl& context, const std::vector<Vec3>
     return COLVARS_OK;
 }
 
-double OpenMMColvarProxy::calculate(ContextImpl& context, const std::vector<Vec3>& positions)
+double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec3>& positions)
 {
     if (!isInitialized_) {
         initializeColvars();
@@ -1111,7 +1111,7 @@ double OpenMMColvarProxy::calculate(ContextImpl& context, const std::vector<Vec3
     return energy;
 }
 
-void OpenMMColvarProxy::addForcesToOpenMM(std::vector<Vec3>& forces) const
+void colvarproxy_openmm::addForcesToOpenMM(std::vector<Vec3>& forces) const
 {
     clearPreviousOpenMMForces(forces);
 
@@ -1128,12 +1128,12 @@ void OpenMMColvarProxy::addForcesToOpenMM(std::vector<Vec3>& forces) const
     }
 }
 
-double OpenMMColvarProxy::biasEnergy() const
+double colvarproxy_openmm::biasEnergy() const
 {
     return biasEnergy_;
 }
 
-void OpenMMColvarProxy::updatePbc(ContextImpl& context)
+void colvarproxy_openmm::updatePbc(ContextImpl& context)
 {
     if (!shouldUsePbc(context)) {
         if (boundaries_.type() != cvm::system_boundary_conditions::types::non_periodic) {
@@ -1164,7 +1164,7 @@ void OpenMMColvarProxy::updatePbc(ContextImpl& context)
     lastPbcC_ = c;
 }
 
-bool OpenMMColvarProxy::shouldUsePbc(ContextImpl&) const
+bool colvarproxy_openmm::shouldUsePbc(ContextImpl&) const
 {
     switch (owner_.getPbcMode()) {
         case ColvarsForce::PbcMode::Enabled:
@@ -1181,7 +1181,7 @@ bool OpenMMColvarProxy::shouldUsePbc(ContextImpl&) const
     return false;
 }
 
-bool OpenMMColvarProxy::resolveAutoPbcMode() const
+bool colvarproxy_openmm::resolveAutoPbcMode() const
 {
     for (int forceIndex = 0; forceIndex < system_.getNumForces(); ++forceIndex) {
         const Force& force = system_.getForce(forceIndex);
@@ -1199,7 +1199,7 @@ bool OpenMMColvarProxy::resolveAutoPbcMode() const
     return false;
 }
 
-bool OpenMMColvarProxy::buildCacheKey(ContextImpl& context,
+bool colvarproxy_openmm::buildCacheKey(ContextImpl& context,
                                       const std::vector<Vec3>& positions,
                                       long long& openmmStep,
                                       bool& usesPbc,
@@ -1237,7 +1237,7 @@ bool OpenMMColvarProxy::buildCacheKey(ContextImpl& context,
     return true;
 }
 
-bool OpenMMColvarProxy::cacheMatches(long long openmmStep,
+bool colvarproxy_openmm::cacheMatches(long long openmmStep,
                                      bool usesPbc,
                                      const Vec3& boxA,
                                      const Vec3& boxB,
@@ -1280,7 +1280,7 @@ bool OpenMMColvarProxy::cacheMatches(long long openmmStep,
     return cachedAppliedForces_.size() == atoms_ids.size();
 }
 
-void OpenMMColvarProxy::storeCache(long long openmmStep,
+void colvarproxy_openmm::storeCache(long long openmmStep,
                                    bool usesPbc,
                                    const Vec3& boxA,
                                    const Vec3& boxB,
@@ -1301,7 +1301,7 @@ void OpenMMColvarProxy::storeCache(long long openmmStep,
     cacheValid_ = true;
 }
 
-void OpenMMColvarProxy::invalidateCache()
+void colvarproxy_openmm::invalidateCache()
 {
     cacheValid_ = false;
     cachedAtomIds_.clear();
@@ -1309,7 +1309,7 @@ void OpenMMColvarProxy::invalidateCache()
     cachedAppliedForces_.clear();
 }
 
-void OpenMMColvarProxy::updateColvarsStep(ContextImpl& context)
+void colvarproxy_openmm::updateColvarsStep(ContextImpl& context)
 {
     const long long openmmStep = context.getOwner().getStepCount();
     if (!stepMappingInitialized_) {
@@ -1326,7 +1326,7 @@ void OpenMMColvarProxy::updateColvarsStep(ContextImpl& context)
     cvmodule->it = colvarsInitialStep_ + static_cast<cvm::step_number>(openmmStepDelta);
 }
 
-void OpenMMColvarProxy::updatePositions(const std::vector<Vec3>& positions)
+void colvarproxy_openmm::updatePositions(const std::vector<Vec3>& positions)
 {
     auto& colvarsPositions = *(modify_atom_positions());
     for (size_t proxyIndex = 0; proxyIndex < atoms_ids.size(); ++proxyIndex) {
@@ -1338,7 +1338,7 @@ void OpenMMColvarProxy::updatePositions(const std::vector<Vec3>& positions)
     }
 }
 
-void OpenMMColvarProxy::updateTotalForces(ContextImpl& context)
+void colvarproxy_openmm::updateTotalForces(ContextImpl& context)
 {
     if (!total_force_requested) {
         return;
@@ -1363,19 +1363,19 @@ void OpenMMColvarProxy::updateTotalForces(ContextImpl& context)
     set_total_forces_valid();
 }
 
-bool OpenMMColvarProxy::inferTotalForcesSameStep() const
+bool colvarproxy_openmm::inferTotalForcesSameStep() const
 {
     return !config_has_geometrical_eabf(owner_config_text(owner_));
 }
 
-void OpenMMColvarProxy::clearPreviousOpenMMForces(std::vector<Vec3>& forces) const
+void colvarproxy_openmm::clearPreviousOpenMMForces(std::vector<Vec3>& forces) const
 {
     for (int atomIndex : previousForceAtoms_) {
         forces[atomIndex] = Vec3();
     }
 }
 
-void OpenMMColvarProxy::captureLambdaDerivative(ContextImpl& context)
+void colvarproxy_openmm::captureLambdaDerivative(ContextImpl& context)
 {
     currentLambdaDerivativeValid_ = false;
     currentLambdaDerivative_ = 0.0;
@@ -1400,7 +1400,7 @@ void OpenMMColvarProxy::captureLambdaDerivative(ContextImpl& context)
     }
 }
 
-double OpenMMColvarProxy::contextParameter(ContextImpl& context,
+double colvarproxy_openmm::contextParameter(ContextImpl& context,
                                            const std::string& name,
                                            double defaultValue) const
 {
@@ -1411,7 +1411,7 @@ double OpenMMColvarProxy::contextParameter(ContextImpl& context,
     }
 }
 
-void OpenMMColvarProxy::setContextParameter(ContextImpl& context,
+void colvarproxy_openmm::setContextParameter(ContextImpl& context,
                                             const std::string& name,
                                             double value) const
 {
@@ -1423,7 +1423,7 @@ void OpenMMColvarProxy::setContextParameter(ContextImpl& context,
     }
 }
 
-double OpenMMColvarProxy::integratorGlobal(ContextImpl& context,
+double colvarproxy_openmm::integratorGlobal(ContextImpl& context,
                                            const std::string& name,
                                            double defaultValue) const
 {
@@ -1438,7 +1438,7 @@ double OpenMMColvarProxy::integratorGlobal(ContextImpl& context,
     }
 }
 
-bool OpenMMColvarProxy::setIntegratorGlobal(ContextImpl& context,
+bool colvarproxy_openmm::setIntegratorGlobal(ContextImpl& context,
                                             const std::string& name,
                                             double value) const
 {
@@ -1454,7 +1454,7 @@ bool OpenMMColvarProxy::setIntegratorGlobal(ContextImpl& context,
     }
 }
 
-double OpenMMColvarProxy::tabfAlpha(ContextImpl& context) const
+double colvarproxy_openmm::tabfAlpha(ContextImpl& context) const
 {
     return integratorGlobal(context,
                             owner_.getTabfAlphaParameterName(),

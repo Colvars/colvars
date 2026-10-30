@@ -1,6 +1,6 @@
-#include "openmm/ColvarsCollectiveVariable.h"
-#include "openmm/internal/ColvarsCollectiveVariableImpl.h"
-#include "openmm/internal/OpenMMColvarProxy.h"
+#include "ColvarsCollectiveVariable.h"
+#include "ColvarsCollectiveVariableImpl.h"
+#include "colvarproxy_openmm.h"
 
 #include "openmm/OpenMMException.h"
 #include "openmm/internal/ContextImpl.h"
@@ -136,7 +136,7 @@ void ColvarsCollectiveVariableImpl::initialize(ContextImpl& context)
             "dependency uses a signed force-group shift. Use group 0-30.");
     }
     CustomCPPForceImpl::initialize(context);
-    proxy_ = std::make_unique<OpenMMColvarProxy>(
+    proxy_ = std::make_unique<colvarproxy_openmm>(
         settings_, context.getSystem(), owner_.getColvarName());
 }
 

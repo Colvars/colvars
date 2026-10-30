@@ -329,7 +329,7 @@ ABF/eABF total-force collection.
 ### C++
 
 ```cpp
-#include "openmm/ColvarsForce.h"
+#include "ColvarsForce.h"
 
 OpenMM::ColvarsForce colvars("colvars.in", "output/colvars");
 colvars.setLambdaParameterName("lambda");

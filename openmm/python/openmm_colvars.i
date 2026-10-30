@@ -47,13 +47,13 @@ except Exception:
 %{
 #define SWIG_FILE_WITH_INIT
 #include <exception>
-#include "openmm/AlchemicalPMEForce.h"
-#include "openmm/ColvarsCollectiveVariable.h"
+#include "AlchemicalPMEForce.h"
+#include "ColvarsCollectiveVariable.h"
 #include "openmm/serialization/XmlSerializer.h"
 #include <memory>
 #include <sstream>
-#include "openmm/ColvarsForce.h"
-#include "openmm/ColvarsTABFIntegrator.h"
+#include "ColvarsForce.h"
+#include "ColvarsTABFIntegrator.h"
 
 static void OpenMMColvars_SetPythonException(const char* message) {
     PyObject* module = PyImport_ImportModule("openmm");

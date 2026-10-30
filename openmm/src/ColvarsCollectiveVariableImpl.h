@@ -1,8 +1,8 @@
-#ifndef OPENMM_INTERNAL_COLVARS_COLLECTIVE_VARIABLE_IMPL_H
-#define OPENMM_INTERNAL_COLVARS_COLLECTIVE_VARIABLE_IMPL_H
+#ifndef OPENMM_COLVARS_COLLECTIVE_VARIABLE_IMPL_H
+#define OPENMM_COLVARS_COLLECTIVE_VARIABLE_IMPL_H
 
-#include "openmm/ColvarsCollectiveVariable.h"
-#include "openmm/ColvarsForce.h"
+#include "ColvarsCollectiveVariable.h"
+#include "ColvarsForce.h"
 #include "openmm/internal/CustomCPPForceImpl.h"
 
 #include <map>
@@ -12,7 +12,7 @@
 
 namespace OpenMM {
 
-class OpenMMColvarProxy;
+class colvarproxy_openmm;
 
 class ColvarsCollectiveVariableImpl final : public CustomCPPForceImpl {
 public:
@@ -28,10 +28,10 @@ public:
 
 private:
     const ColvarsCollectiveVariable& owner_;
-    // Holds the Colvars settings that OpenMMColvarProxy reads; it is never
+    // Holds the Colvars settings that colvarproxy_openmm reads; it is never
     // added to a System
     ColvarsForce settings_;
-    std::unique_ptr<OpenMMColvarProxy> proxy_;
+    std::unique_ptr<colvarproxy_openmm> proxy_;
 };
 
 } // namespace OpenMM

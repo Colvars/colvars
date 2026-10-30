@@ -1,7 +1,7 @@
-#ifndef OPENMM_INTERNAL_OPENMM_COLVAR_PROXY_H
-#define OPENMM_INTERNAL_OPENMM_COLVAR_PROXY_H
+#ifndef COLVARPROXY_OPENMM_H
+#define COLVARPROXY_OPENMM_H
 
-#include "openmm/ColvarsForce.h"
+#include "ColvarsForce.h"
 #include "openmm/Vec3.h"
 
 #include "colvarproxy.h"
@@ -21,16 +21,16 @@ class System;
 ///
 /// The proxy owns no OpenMM objects. Context and position pointers are valid
 /// only during the current computeForce() call.
-class OpenMMColvarProxy final : public colvarproxy {
+class colvarproxy_openmm final : public colvarproxy {
 public:
     /// With an empty reportedColvar, the proxy applies the biases of the Colvars
     /// configuration and reports their energy. Otherwise, it reports the value of the
     /// named colvar as the energy, applies the corresponding forces,
     /// and writes no output files.
-    OpenMMColvarProxy(const ColvarsForce& owner,
+    colvarproxy_openmm(const ColvarsForce& owner,
                       const System& system,
                       const std::string& reportedColvar = "");
-    ~OpenMMColvarProxy() override;
+    ~colvarproxy_openmm() override;
 
     int setup() override;
 
