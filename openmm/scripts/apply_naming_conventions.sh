@@ -35,6 +35,13 @@
 # wherever my_branch edits lines next to a renamed name.) Merge exactly the
 # RENAMES commit this way, never a later commit of openmm_proxy.
 #
+# On openmm_proxy, RENAMES is f443853f (and RENAMES~1 is f84a08aa).
+#
+# A pull request updated with this recipe must be landed with "Squash and
+# merge": "Rebase and merge" replays its commits one by one without the merge
+# commits, so its commits written before the renames conflict with the new
+# layout, and GitHub reports that the branch cannot be rebased.
+#
 # See the RENAMES commit message for the complete list of changes.
 
 set -e
