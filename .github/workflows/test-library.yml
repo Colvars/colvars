@@ -84,7 +84,7 @@ jobs:
         run: |
           sudo add-apt-repository -y ppa:apptainer/ppa
           sudo apt update
-          sudo apt install -y apptainer-suid
+          sudo apt install -y apptainer
 
       - name: Get container image
         run: devel-tools/get_container texlive
@@ -180,7 +180,7 @@ jobs:
         run: |
           sudo add-apt-repository -y ppa:apptainer/ppa
           sudo apt update
-          sudo apt install -y apptainer-suid
+          sudo apt install -y apptainer
 
       - name: Get container images for build dependencies
         run: devel-tools/get_container CentOS9-devel
@@ -238,7 +238,7 @@ jobs:
         run: |
           sudo add-apt-repository -y ppa:apptainer/ppa
           sudo apt update
-          sudo apt install -y apptainer-suid
+          sudo apt install -y apptainer
 
       - name: Get container images for build dependencies
         run: devel-tools/get_container CentOS9-devel
@@ -291,7 +291,7 @@ jobs:
         run: |
           sudo add-apt-repository -y ppa:apptainer/ppa
           sudo apt update
-          sudo apt install -y apptainer-suid
+          sudo apt install -y apptainer
 
       - name: Get container images for build dependencies
         run: devel-tools/get_container CentOS9-devel
@@ -416,7 +416,7 @@ jobs:
         run: |
           sudo add-apt-repository -y ppa:apptainer/ppa
           sudo apt update
-          sudo apt install -y apptainer-suid
+          sudo apt install -y apptainer
 
       - name: Get container images for build dependencies
         run: devel-tools/get_container CentOS9-oneAPI
@@ -517,7 +517,7 @@ jobs:
         run: |
           sudo add-apt-repository -y ppa:apptainer/ppa
           sudo apt update
-          sudo apt install -y apptainer-suid
+          sudo apt install -y apptainer
 
       - name: Get container images for build dependencies
         run: devel-tools/get_container CentOS9-devel-arm64
