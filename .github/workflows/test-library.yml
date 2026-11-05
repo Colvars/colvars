@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: basicchecks
     container:
-      image: ghcr.io/colvars/devel-containers:texlive
+      image: ghcr.io/colvars/devel-containers:Fedora45-devel-x86_64
     defaults:
       run:
         shell: bash
