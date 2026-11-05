@@ -1,8 +1,8 @@
 FROM quay.io/centos/centos:stream9
 
-LABEL org.opencontainers.image.description="Development environment for CentOS Stream Linux 9"
+LABEL org.opencontainers.image.title="CentOS Stream 9 development environment (x86_64 architecture)"
 
-# Bash is needed for brace expansion, "source" and Lmod's "module" command
+# Ensure Bash is used in the commands below
 SHELL ["/bin/bash", "-c"]
 
 RUN dnf -y update && \
@@ -15,8 +15,8 @@ RUN dnf -y update && \
         bc man-db vim emacs tcsh which bash-completion rsync screen tmux \
         "@Development Tools" \
         gcc gcc-c++ gcc-gfortran \
-        gcc-toolset-{12,13,14} \
-        clang clang-tools-extra clang-analyzer clang-devel \
+        gcc-toolset-{12,13,14,15} \
+        clang{,19,20,21}{,-devel,-analyzer,-tools-extra} \
         cppcheck libasan \
         autoconf automake cvs git subversion mercurial \
         cmake ccache ninja-build mold \
@@ -58,13 +58,13 @@ RUN git clone https://github.com/Colvars/spiff /tmp/spiff && \
     rm -fr /tmp/spiff
 
 # Download pre-built libTorch
-RUN curl -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.4.1%2Bcpu.zip && \
+RUN curl -L -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.15.0%2Bcpu.zip && \
     unzip /tmp/libtorch.zip -d /opt && \
     rm -f /tmp/libtorch.zip
 
-# Download pre-built executable of recent CMake (mostly for GROMACS)
+# Download pre-built executable of recent CMake
 RUN mkdir -p /opt/cmake && \
-    wget -O /tmp/cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.1.2/cmake-4.1.2-linux-x86_64.sh && \
+    curl -L -o /tmp/cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.4.5/cmake-4.4.5-linux-x86_64.sh && \
     bash /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake && \
     rm -f /tmp/cmake-install.sh
 
