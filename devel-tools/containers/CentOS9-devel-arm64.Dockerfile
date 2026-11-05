@@ -1,8 +1,8 @@
 FROM --platform=linux/arm64 quay.io/centos/centos:stream9
 
-LABEL org.opencontainers.image.description="Development environment for CentOS Stream Linux 9"
+LABEL org.opencontainers.image.title="CentOS Stream 9 development environment (arm64 architecture)"
 
-# Bash is needed for brace expansion, "source" and Lmod's "module" command
+# Ensure Bash is used in the commands below
 SHELL ["/bin/bash", "-c"]
 
 RUN dnf -y update && \
@@ -14,8 +14,10 @@ RUN dnf -y update && \
     dnf -y install \
         bc man-db vim emacs tcsh which bash-completion rsync screen tmux \
         "@Development Tools" \
-        gcc gcc-c++ gcc-gfortran cppcheck \
-        gcc-toolset-{12,13} clang clang-tools-extra \
+        gcc gcc-c++ gcc-gfortran \
+        gcc-toolset-{12,13,14,15} \
+        clang{,19,20,21}{,-devel,-analyzer,-tools-extra} \
+        cppcheck libasan \
         autoconf automake cvs git subversion mercurial \
         cmake ccache ninja-build mold \
         Lmod openmpi-devel tbb-devel fftw-devel tcl-devel \
@@ -24,16 +26,19 @@ RUN dnf -y update && \
         rlwrap \
         tk-devel fltk-devel \
         mesa-dri-drivers mesa-libGL-devel libglvnd-devel \
-        libXi-devel libXinerama-devel libpng-devel \
+        libXi-devel libXcursor-devel libXinerama-devel libpng-devel \
         netcdf-devel hdf5-devel sqlite-devel expat-devel \
         doxygen \
         texlive-latex texlive-epstopdf texlive-pdftex texlive-tex4ht \
         texlive-graphics texlive-metafont texlive-collection-latexrecommended \
         texlive-collection-fontsrecommended \
         latexmk latex2html \
-        inkscape gimp wget \
+        inkscape gimp wget unzip \
         squashfs-tools && \
     dnf clean all
+
+# The Clang package installs environment-modules, which conflicts with Lmod
+RUN alternatives --set modules.sh /usr/share/lmod/lmod/init/profile
 
 # Build Charm++
 RUN umask 022 && \
@@ -52,16 +57,14 @@ RUN git clone https://github.com/Colvars/spiff /tmp/spiff && \
     install /tmp/spiff/spiff /usr/local/bin/ && \
     rm -fr /tmp/spiff
 
-# TODO: there is no pre-built libtorch for arm64
+# Download pre-built libTorch
+RUN curl -L -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.15.0%2Bcpu.zip && \
+    unzip /tmp/libtorch.zip -d /opt && \
+    rm -f /tmp/libtorch.zip
 
-# Install GitHub CLI
-RUN dnf -y config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo && \
-    dnf -y install gh --repo gh-cli && \
-    dnf clean all
-
-# Download pre-built recent CMake (mostly for GROMACS)
+# Download pre-built executable of recent CMake
 RUN mkdir -p /opt/cmake && \
-    wget -O /tmp/cmake-install.sh https://github.com/Kitware/CMake/releases/download/v3.31.5/cmake-3.31.5-linux-aarch64.sh && \
+    curl -L -o /tmp/cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.4.5/cmake-4.4.5-linux-x86_64.sh && \
     bash /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake && \
     rm -f /tmp/cmake-install.sh
 
