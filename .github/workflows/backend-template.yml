@@ -72,6 +72,12 @@ jobs:
       OMPI_MCA_mtl: "^ofi"
       OMPI_MCA_btl: "vader,self"
 
+    container:
+      image: ghcr.io/colvars/devel-containers:${{ inputs.container_name }}
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: Checkout Colvars
         uses: actions/checkout@v7
@@ -124,29 +130,15 @@ jobs:
       - name: Build and test standalone library
         run: cmake -P devel-tools/build_test_library.cmake
 
-      - name: Install Apptainer
-        shell: bash
-        run: |
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          sudo apt update
-          sudo apt install -y apptainer squashfuse
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-
-      - name: Get container images for build dependencies
-        run: devel-tools/get_container ${{ inputs.container_name }}
-
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
         env:
           OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
           CMAKE_GENERATOR: Ninja
         run: |
-          apptainer exec devel-tools/${{ inputs.container_name }}.sif \
-              ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
+          ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
           mkdir -p ${CCACHE_DIR}
-          apptainer exec devel-tools/${{ inputs.container_name }}.sif \
-              bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
+          bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
 
       - name: Save compiler cache
         uses: actions/cache/save@v6
@@ -175,7 +167,6 @@ jobs:
         env:
           VMDNORLWRAP: 1
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
 
       - name: Save failed library test artifact
@@ -196,7 +187,6 @@ jobs:
         env:
           VMDNORLWRAP: 1
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}
 
       - name: Save failed interface test artifact
@@ -218,5 +208,4 @@ jobs:
         env:
           COLVARS_BINARY_RESTART: 1
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
           ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*

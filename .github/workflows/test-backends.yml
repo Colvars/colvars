@@ -28,7 +28,7 @@ jobs:
       backend_name: LAMMPS
       backend_repo: lammps/lammps
       backend_repo_ref: develop
-      container_name: CentOS9-devel
+      container_name: CentOS9-devel-x86_64
       path_compile_script: devel-tools/compile-lammps.sh
       test_lib_directory: lammps/tests/library
       test_interface_directory: lammps/tests/interface
@@ -46,7 +46,7 @@ jobs:
       test_lib_directory: namd/tests/library
       test_interface_directory: namd/tests/interface
       rpath_exe: Linux-x86_64-g++.mpi/namd3
-      container_name: CentOS9-devel
+      container_name: CentOS9-devel-x86_64
     secrets:
       # Choice of license by UIUC prevents sharing the code, hence the secret
       private_key: ${{ secrets.PULL_NAMD_KEY }}
@@ -59,7 +59,7 @@ jobs:
       backend_name: VMD
       backend_repo: Colvars/vmd
       backend_repo_ref: master
-      container_name: CentOS9-devel
+      container_name: CentOS9-devel-x86_64
       # Special variable for VMD test case since it's the only one
       # which needs to checkout 2 repos
       vmd_plugins_repo: Colvars/vmd-plugins
@@ -79,7 +79,7 @@ jobs:
       backend_name: GROMACS-main
       backend_repo: gromacs/gromacs
       backend_repo_ref: main
-      container_name: CentOS9-devel
+      container_name: CentOS9-devel-x86_64
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
       test_interface_directory: gromacs/tests/interface
