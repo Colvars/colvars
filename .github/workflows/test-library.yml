@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: basicchecks
     container:
-      image: colvars/texlive:latest
+      image: ghcr.io/colvars/devel-containers:texlive
     defaults:
       run:
         shell: bash
@@ -159,6 +159,11 @@ jobs:
     name: Linux x86_64 (Clang analyzer)
     runs-on: ubuntu-latest
     needs: basicchecks
+    container:
+      image: ghcr.io/colvars/devel-containers:CentOS9-devel-x86_64
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - uses: actions/checkout@v7
@@ -170,24 +175,11 @@ jobs:
           ref: 'master'
           path: 'openmm-source'
 
-      - name: Install Apptainer
-        shell: bash
-        run: |
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          sudo apt update
-          sudo apt install -y apptainer squashfuse
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-
-      - name: Get container images for build dependencies
-        run: devel-tools/get_container CentOS9-devel
-
       - name: Run build with Clang static analyser
         env:
           CXX: clang++
           CC: clang
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           scan-build --use-cc=clang --use-c++=clang++ cmake -P devel-tools/build_test_library.cmake 2>&1 | tee build_analyzer.log
           grep "error:" build_analyzer.log > build_errors.log || true
           if [ -s build_errors.log ] ; then
@@ -217,7 +209,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: basicchecks
     container:
-      image: colvars/centos9-devel:latest
+      image: ghcr.io/colvars/devel-containers:CentOS9-devel-x86_64
     defaults:
       run:
         shell: bash
@@ -256,7 +248,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: basicchecks
     container:
-      image: colvars/centos9-devel:latest
+      image: ghcr.io/colvars/devel-containers:CentOS9-devel-x86_64
     defaults:
       run:
         shell: bash
@@ -370,7 +362,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: basicchecks
     container:
-      image: colvars/centos9-oneapi:latest
+      image: ghcr.io/colvars/devel-containers:CentOS9-devel-oneAPI
     defaults:
       run:
         shell: bash
@@ -477,7 +469,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     needs: basicchecks
     container:
-      image: colvars/centos9-devel-arm64:latest
+      image: ghcr.io/colvars/devel-containers:CentOS9-devel-arm64
     defaults:
       run:
         shell: bash
