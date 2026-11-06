@@ -75,21 +75,15 @@ jobs:
     name: Build documentation
     runs-on: ubuntu-latest
     needs: basicchecks
+    container:
+      image: ghcr.io/colvars/devel-containers:Fedora45-devel-x86_64
+      options: --user 1001:1001
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - uses: actions/checkout@v7
-
-      - name: Install Apptainer
-        shell: bash
-        run: |
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          sudo apt update
-          sudo apt install -y apptainer squashfuse
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-
-      - name: Get container image
-        run: devel-tools/get_container texlive
 
       - name: Checkout website repository
         uses: actions/checkout@v7
@@ -102,7 +96,7 @@ jobs:
         working-directory: doc
         run: |
           make clean-all
-          apptainer exec ${{ github.workspace }}/devel-tools/texlive.sif make
+          make
 
       - name: Install SSH key for access to website repository
         if: contains(github.event.head_commit.message, '[update-doc]')
@@ -119,7 +113,7 @@ jobs:
         env:
           COLVARS_WEBSITE_TREE: ${{ github.workspace }}/website
         run: |
-          apptainer exec ${{ github.workspace }}/devel-tools/texlive.sif make install
+          make install
           export GIT_SSH="ssh -i ~/.ssh/website"
           git config --global user.email "noreply@github.com"
           git config --global user.name "CI runner"
@@ -166,6 +160,12 @@ jobs:
     name: Linux x86_64 (Clang analyzer)
     runs-on: ubuntu-latest
     needs: basicchecks
+    container:
+      image: ghcr.io/colvars/devel-containers:CentOS9-devel-x86_64
+      options: --user 1001:1001
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - uses: actions/checkout@v7
@@ -177,24 +177,11 @@ jobs:
           ref: 'master'
           path: 'openmm-source'
 
-      - name: Install Apptainer
-        shell: bash
-        run: |
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          sudo apt update
-          sudo apt install -y apptainer squashfuse
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-
-      - name: Get container images for build dependencies
-        run: devel-tools/get_container CentOS9-devel
-
       - name: Run build with Clang static analyser
         env:
           CXX: clang++
           CC: clang
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           scan-build --use-cc=clang --use-c++=clang++ cmake -P devel-tools/build_test_library.cmake 2>&1 | tee build_analyzer.log
           grep "error:" build_analyzer.log > build_errors.log || true
           if [ -s build_errors.log ] ; then
@@ -223,6 +210,12 @@ jobs:
     name: Linux x86_64 (Clang address sanitizer)
     runs-on: ubuntu-latest
     needs: basicchecks
+    container:
+      image: ghcr.io/colvars/devel-containers:CentOS9-devel-x86_64
+      options: --user 1001:1001
+    defaults:
+      run:
+        shell: bash
     env:
       CCACHE: ccache
       CCACHE_DIR: ${{ github.workspace }}/ccache
@@ -237,25 +230,12 @@ jobs:
           ref: 'master'
           path: 'openmm-source'
 
-      - name: Install Apptainer
-        shell: bash
-        run: |
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          sudo apt update
-          sudo apt install -y apptainer squashfuse
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-
-      - name: Get container images for build dependencies
-        run: devel-tools/get_container CentOS9-devel
-
       - name: Build with Clang and address sanitizer
         env:
           CXX: clang++
           CC: clang
           CMAKE_ADDRESS_SANITIZER: ON
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -P devel-tools/build_test_library.cmake
 
       - name: Archive warnings artifacts
@@ -270,6 +250,12 @@ jobs:
     name: Linux x86_64 (GCC, Clang)
     runs-on: ubuntu-latest
     needs: basicchecks
+    container:
+      image: ghcr.io/colvars/devel-containers:CentOS9-devel-x86_64
+      options: --user 1001:1001
+    defaults:
+      run:
+        shell: bash
     env:
       CCACHE: ccache
       CMAKE_GENERATOR: Ninja
@@ -292,18 +278,6 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Install Apptainer
-        shell: bash
-        run: |
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          sudo apt update
-          sudo apt install -y apptainer squashfuse
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-
-      - name: Get container images for build dependencies
-        run: devel-tools/get_container CentOS9-devel
-
       - name: GCC 11, C++17 (CentOS 9)
         env:
           CXX_STANDARD: 20
@@ -311,7 +285,6 @@ jobs:
           CXX_VERSION: 11
           CC: gcc
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: GCC 12, C++20 (CentOS 9)
@@ -321,7 +294,6 @@ jobs:
           CXX_VERSION: 12
           CC: gcc
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           scl enable gcc-toolset-${CXX_VERSION} -- \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -332,7 +304,6 @@ jobs:
           CXX_VERSION: 13
           CC: gcc
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           scl enable gcc-toolset-${CXX_VERSION} -- \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
@@ -343,38 +314,34 @@ jobs:
           CXX_VERSION: 14
           CC: gcc
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           scl enable gcc-toolset-${CXX_VERSION} -- \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: Clang 21, C++17 (CentOS 9)
         env:
           CXX_STANDARD: 17
-          CXX: clang++-21
+          CXX: clang++
           CXX_VERSION: 21
-          CC: clang-21
+          CC: clang
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: Clang 21, C++20 (CentOS 9)
         env:
           CXX_STANDARD: 20
-          CXX: clang++-21
+          CXX: clang++
           CXX_VERSION: 21
-          CC: clang-21
+          CC: clang
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: Clang 21, C++20, check floating-point exceptions, Debug build (CentOS 9)
         env:
           CXX_STANDARD: 20
-          CXX: clang++-21
+          CXX: clang++
           CXX_VERSION: 21
-          CC: clang-21
+          CC: clang
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -D TRAP_FPE=ON -D CMAKE_CXX_FLAGS="-ffp-model=strict" -P devel-tools/build_test_library.cmake
 
       - name: Keep only one cache besides the one from this job
@@ -382,7 +349,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-gcc-clang-
+          bash devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-gcc-clang-
 
       - name: Save failed library test artifact
         if: ${{ failure() }}
@@ -398,6 +365,12 @@ jobs:
     name: Linux x86_64 (Intel oneAPI)
     runs-on: ubuntu-latest
     needs: basicchecks
+    container:
+      image: ghcr.io/colvars/devel-containers:CentOS9-oneAPI-x86_64
+      options: --user 1001:1001
+    defaults:
+      run:
+        shell: bash
     env:
       CCACHE: ccache
       CMAKE_GENERATOR: Ninja
@@ -419,18 +392,6 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Install Apptainer
-        shell: bash
-        run: |
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          sudo apt update
-          sudo apt install -y apptainer squashfuse
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-
-      - name: Get container images for build dependencies
-        run: devel-tools/get_container CentOS9-oneAPI
-
       - name: Intel oneAPI 2024.2, C++17
         shell: bash
         env:
@@ -439,8 +400,7 @@ jobs:
           CXX_STANDARD: 17
           BASH_ENV: "/etc/profile.d/oneapi.sh"
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
-          bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: Intel oneAPI 2024.2, C++20
         shell: bash
@@ -450,8 +410,7 @@ jobs:
           CXX_STANDARD: 20
           BASH_ENV: "/etc/profile.d/oneapi.sh"
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-oneAPI.sif \
-          bash -c "cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake"
+          cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: Save failed library test artifact
         if: ${{ failure() }}
@@ -466,7 +425,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-oneapi-
+          bash devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-oneapi-
 
 
   build-windows-x86_64-msvc:
@@ -514,6 +473,12 @@ jobs:
     name: Linux ARM64 (GCC, Clang)
     runs-on: ubuntu-24.04-arm
     needs: basicchecks
+    container:
+      image: ghcr.io/colvars/devel-containers:CentOS9-devel-arm64
+      options: --user 1001:1001
+    defaults:
+      run:
+        shell: bash
     env:
       CCACHE: ccache
       CMAKE_GENERATOR: Ninja
@@ -522,18 +487,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install Apptainer
-        shell: bash
-        run: |
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          sudo apt update
-          sudo apt install -y apptainer squashfuse
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_unconfined=0
-
-      - name: Get container images for build dependencies
-        run: devel-tools/get_container CentOS9-devel-arm64
-
       - name: GCC 11, C++20 (CentOS 9)
         env:
           CXX_STANDARD: 20
@@ -541,7 +494,6 @@ jobs:
           CXX_VERSION: 11
           CC: gcc
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel-arm64.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: Clang 16, C++20 (CentOS 9)
@@ -551,7 +503,6 @@ jobs:
           CXX_VERSION: 16
           CC: clang
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/CentOS9-devel-arm64.sif \
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
       - name: Save failed library test artifact
