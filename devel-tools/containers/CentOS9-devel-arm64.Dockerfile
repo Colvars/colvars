@@ -28,13 +28,7 @@ RUN dnf -y update && \
         mesa-dri-drivers mesa-libGL-devel libglvnd-devel \
         libXi-devel libXcursor-devel libXinerama-devel libpng-devel \
         netcdf-devel hdf5-devel sqlite-devel expat-devel \
-        doxygen \
-        texlive-latex texlive-epstopdf texlive-pdftex texlive-tex4ht \
-        texlive-graphics texlive-metafont texlive-collection-latexrecommended \
-        texlive-collection-fontsrecommended \
-        latexmk latex2html \
-        inkscape gimp wget unzip \
-        squashfs-tools && \
+        squashfs-tools wget unzip && \
     dnf clean all
 
 # The Clang package installs environment-modules, which conflicts with Lmod
@@ -61,9 +55,9 @@ RUN git clone https://github.com/Colvars/spiff /tmp/spiff && \
     rm -fr /tmp/spiff
 
 # Download pre-built libTorch
-RUN curl -L -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.15.0%2Bcpu.zip && \
-    unzip /tmp/libtorch.zip -d /opt && \
-    rm -f /tmp/libtorch.zip
+# RUN curl -L -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.15.0%2Bcpu.zip && \
+#     unzip /tmp/libtorch.zip -d /opt && \
+#     rm -f /tmp/libtorch.zip
 
 # Download pre-built executable of recent CMake
 RUN mkdir -p /opt/cmake && \
