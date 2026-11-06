@@ -38,4 +38,13 @@ RUN printf '%s\n' \
         'fi' > /etc/profile.d/oneapi.sh && \
     chmod 644 /etc/profile.d/oneapi.sh
 
+# Install GitHub CLI
+RUN dnf -y config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo && dnf -y install gh --repo gh-cli
+
+# Build and install spiff
+RUN git clone https://github.com/Colvars/spiff /tmp/spiff && \
+    make -C /tmp/spiff && \
+    install /tmp/spiff/spiff /usr/local/bin/ && \
+    rm -fr /tmp/spiff
+
 CMD ["/bin/bash", "-l"]
