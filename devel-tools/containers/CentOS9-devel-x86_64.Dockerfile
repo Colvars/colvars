@@ -58,7 +58,7 @@ RUN git clone https://github.com/Colvars/spiff /tmp/spiff && \
     rm -fr /tmp/spiff
 
 # Download pre-built libTorch
-RUN curl -L -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.15.0%2Bcpu.zip && \
+RUN curl -L -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.4.1%2Bcpu.zip && \
     unzip /tmp/libtorch.zip -d /opt && \
     rm -f /tmp/libtorch.zip
 
