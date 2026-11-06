@@ -40,6 +40,9 @@ RUN dnf -y update && \
 # The Clang package installs environment-modules, which conflicts with Lmod
 RUN alternatives --set modules.sh /usr/share/lmod/lmod/init/profile
 
+# Install GitHub CLI
+RUN dnf -y config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo && dnf -y install gh --repo gh-cli
+
 # Build Charm++
 RUN umask 022 && \
     source /etc/profile && \
