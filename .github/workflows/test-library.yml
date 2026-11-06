@@ -345,7 +345,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-gcc-clang-
+          bash devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-gcc-clang-
 
       - name: Save failed library test artifact
         if: ${{ failure() }}
@@ -420,7 +420,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-oneapi-
+          bash devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-oneapi-
 
 
   build-windows-x86_64-msvc:
