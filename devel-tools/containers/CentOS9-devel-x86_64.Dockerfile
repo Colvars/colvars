@@ -16,7 +16,7 @@ RUN dnf -y update && \
         "@Development Tools" \
         gcc gcc-c++ gcc-gfortran \
         gcc-toolset-{12,13,14,15} \
-        clang{,19,20,21}{,-devel,-analyzer,-tools-extra} \
+        clang{,19,20}{,-devel,-analyzer,-tools-extra} \
         cppcheck libasan \
         autoconf automake cvs git subversion mercurial \
         cmake ccache ninja-build mold \
