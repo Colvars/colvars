@@ -71,9 +71,9 @@ jobs:
       # OpenMPI transport settings suitable for GH VMs
       OMPI_MCA_mtl: "^ofi"
       OMPI_MCA_btl: "vader,self"
-
     container:
       image: ghcr.io/colvars/devel-containers:${{ inputs.container_name }}
+      options: --user 1001:1001
     defaults:
       run:
         shell: bash
