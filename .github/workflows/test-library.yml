@@ -362,7 +362,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: basicchecks
     container:
-      image: ghcr.io/colvars/devel-containers:CentOS9-devel-oneAPI
+      image: ghcr.io/colvars/devel-containers:CentOS9-oneAPI-x86_64
     defaults:
       run:
         shell: bash
