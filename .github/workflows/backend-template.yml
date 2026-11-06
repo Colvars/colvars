@@ -154,7 +154,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-${{ inputs.backend_name }}-
+          bash devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-${{ inputs.backend_name }}-
 
       # 2 types of tests can be performed with the MD engine: library & interface
       # It depends on the working directory
