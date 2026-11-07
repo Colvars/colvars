@@ -1,0 +1,29 @@
+# -*- mode: Perl -*-
+# LaTeXML binding for catchfile, limited to what the Colvars manual uses:
+#   \CatchFileEdef{\cs}{|kpsewhich -var-value=VAR}{setup}
+# reads environment variable VAR (shell-escape is not available in LaTeXML).
+# A plain filename as the second argument reads that file's contents.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+sub colvars_catchfile {
+  my ($cs, $source) = @_;
+  my $src   = ToString($source);
+  my $value = '';
+  if ($src =~ /^\|\s*kpsewhich\s+-var-value=(\S+)/) {
+    $value = $ENV{$1} // ''; }
+  elsif (my $path = FindFile($src)) {
+    if (open(my $fh, '<', $path)) {
+      local $/ = undef;
+      $value = <$fh>;
+      close($fh); } }
+  $value =~ s/\s+$//;
+  DefMacroI(T_CS(ToString($cs)), undef, Tokens(Explode($value)));
+  return; }
+
+DefMacro('\CatchFileEdef{}{}{}', sub { colvars_catchfile($_[1], $_[2]); });
+DefMacro('\CatchFileDef{}{}{}',  sub { colvars_catchfile($_[1], $_[2]); });
+
+1;

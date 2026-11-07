@@ -1,0 +1,116 @@
+# -*- mode: Perl -*-
+# LaTeXML implementation of the Colvars manual macros.
+#
+# Preloaded by latexmlc (--preload=colvars-latexml.sty); the corresponding
+# LaTeX definitions in colvars-refman.tex are skipped when \iflatexml is true.
+# Keep the argument lists in sync with those LaTeX definitions.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+RequirePackage('latexml');
+
+#======================================================================
+# Sectioning: plain sections (no anchors wrapped around headings), so that
+# LaTeXML recognizes the document structure and can split pages on it.
+# \cvsec{title}{label}
+DefMacro('\cvsec{}{}',       '\section{#1}\label{#2}');
+DefMacro('\cvsubsec{}{}',    '\subsection{#1}\label{#2}');
+DefMacro('\cvsubsubsec{}{}', '\subsubsection{#1}\label{#2}');
+DefMacro('\pagetoplink',     '');
+
+#======================================================================
+# Keyword documentation.
+# \labelkey{id} labels the enclosing item (or section); \refkey{text}{id}
+# links to it.  The keyword headers get CSS classes for styling.
+DefMacro('\labelkey{}',  '\label{#1}');
+DefMacro('\refkey{}{}',  '\lxRef{#2}{\texttt{#1}}');
+
+# Inline text with a CSS class
+DefConstructor('\cv@span Semiverbatim {}', "<ltx:text class='#1'>#2</ltx:text>");
+
+DefMacro('\cv@keyname{}{}',
+  '\index{#2!\texttt{#1}}\cv@span{cv_keyword}{\texttt{#1}}');
+
+# \key{name}{context}{description}{type}{body}
+DefMacro('\key{}{}{}{}{}',
+  '\cv@keyname{#1}{#2} --- \emph{#3}\\\\'
+    . '\cv@span{cv_keymeta}{[~#4, context: #2~]}\par #5');
+
+# \keydef{name}{context}{description}{type}{default}{body}
+DefMacro('\keydef{}{}{}{}{}{}',
+  '\cv@keyname{#1}{#2} --- \emph{#3}\\\\'
+    . '\cv@span{cv_keymeta}{Default: #5\ [~#4, context: #2~]}\par #6');
+
+# \dupkey{name}{context}{target id}{where}
+DefMacro('\dupkey{}{}{}{}',
+  '\cv@keyname{#1}{#2} --- same definition as \lxRef{#3}{\texttt{#1}} (#4)');
+
+# \simkey{name}{context}{other}
+DefMacro('\simkey{}{}{}',
+  '\cv@keyname{#1}{#2} --- analogous to \texttt{#3}');
+
+# List of options common to all components
+DefMacro('\cvcoptions',
+  '\noindent\textbf{List of keywords} (see also \ref{sec:cvc_pbcs}, \ref{sec:cvc_common}, '
+    . '\ref{sec:cvc_periodic} and \ref{sec:cvc_superp} for additional options):'
+    . '\begin{itemize}');
+DefMacro('\endcvcoptions',
+  '\item \cv@span{cv_keyword}{\texttt{forceNoPBC}} --- '
+    . '\emph{Use absolute rather than minimum-image distances?} '
+    . '(see \lxRef{colvar|cvc|forceNoPBC}{description})\\\\ '
+    . 'Default: \texttt{no}'
+    . '\end{itemize}');
+
+#======================================================================
+# Example input blocks -> <pre>.
+# In the sources, lines end with \\ and indentation uses ~; map these to
+# a literal newline and a plain space, so that copy-pasting from the HTML
+# gives a valid input file (no non-breaking spaces).
+DefConstructor('\cv@newlinechar', sub { $_[0]->absorb("\n"); });
+DefConstructor('\cv@spacechar',   sub { $_[0]->absorb(" "); });
+
+# Placeholders such as $<$option$>$ become literal < and > (not MathML);
+# any other $...$ is still typeset as math.  This rebinds the meaning of
+# the $ token (not its catcode), so it also works when the example is
+# inside a macro argument, e.g. the body of \keydef.
+DefMacroI('\cv@dollar', undef, sub {
+    my ($gullet) = @_;
+    my $t1 = $gullet->readToken;
+    my $t2 = $gullet->readToken;
+    if ($t1 && $t2 && ($t1->getString =~ /^[<>]$/) && $t2->defined_as(T_MATH)) {
+      return T_OTHER($t1->getString); }
+    $gullet->unread(grep { defined } $t1, $t2);
+    return T_CS('\@dollar@in@normalmode'); });
+
+# LaTeXML turns ' and ` into curly quotes even in typewriter font; restore
+# the ASCII characters, e.g. for Python strings (math is left untouched).
+sub cv_example_straight_quotes {
+  my ($document) = @_;
+  my $pre = $document->getNode->lastChild or return;
+  foreach my $text ($document->findnodes('descendant::text()[not(ancestor::ltx:Math)]', $pre)) {
+    my $s = $text->data;
+    if ($s =~ tr/\x{2018}\x{2019}\x{201C}\x{201D}/`'""/) {
+      $text->setData($s); } }
+  return; }
+
+sub cv_example_env {
+  my ($name, $class) = @_;
+  DefEnvironment("{$name}",
+    "<ltx:verbatim class='cv_example $class' font='#font'>#body</ltx:verbatim>",
+    font => { family => 'typewriter', series => 'medium', shape => 'upright' },
+    afterConstruct => \&cv_example_straight_quotes,
+    beforeDigest => sub {
+      DefMacroI('\\\\', undef, '\cv@newlinechar\ignorespaces');
+      DefMacroI(T_ACTIVE('~'), undef, '\cv@spacechar');
+      Let(T_MATH, '\cv@dollar');
+      DefMacroI('\par', undef, '');
+      DefMacroI('\-',   undef, ''); });
+  return; }
+
+cv_example_env('cvexampleinput',  'cv_example_colvars');
+cv_example_env('mdexampleinput',  'cv_example_engine');
+cv_example_env('datafileexample', 'cv_example_datafile');
+
+1;

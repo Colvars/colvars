@@ -1,0 +1,19 @@
+# -*- mode: Perl -*-
+# Stub babel binding: the Colvars manual is English-only, and recent babel
+# releases (e.g. v26.x) break LaTeXML's own babel binding, which still loads
+# the raw babel.sty.  Provide only the user-level commands.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+DeclareOption(undef, sub { });
+ProcessOptions();
+
+DefMacro('\selectlanguage{}',      '');
+DefMacro('\foreignlanguage{}{}',   '#2');
+DefMacro('\languagename',          'english');
+DefEnvironment('{otherlanguage}{}',  '#body');
+DefEnvironment('{otherlanguage*}{}', '#body');
+
+1;
