@@ -1,4 +1,4 @@
-.PHONY: all pdf html doxygen webpage webpage-legacy images \
+.PHONY: all pdf html latexml doxygen webpage webpage-legacy images \
 	install install-images clean clean-all \
 	update-code-refs update-cvscript-cmdline-doc updates update-version-list
 
@@ -78,6 +78,38 @@ HTLATEX_OPTS = "html5mjlatex.cfg, charset=utf-8" " -cunihtf -utf8"
 	$(HTLATEX) $(notdir $<) $(HTLATEX_OPTS); \
 	bash postprocess_html.sh $@
 
+# Multi-page HTML built with LaTeXML (replacement for the htlatex build, in
+# progress: see latexml/README.md).  Output: html-<engine>/index.html
+LATEXMLC = latexmlc
+# Set LATEXML_MATHJAX to anything but "yes" to use the browser's native
+# MathML rendering (no JavaScript)
+LATEXML_MATHJAX = yes
+MATHJAX_URL = https://cdn.jsdelivr.net/npm/mathjax@3/es5/mml-chtml.js
+# One page per "section" or per "subsection" (the menu expands level by level)
+LATEXML_SPLITAT = section
+# "file": links include index.html, so pages can be browsed locally;
+# "server": links to folders (e.g. sec_colvar/), only through a web server
+LATEXML_URLSTYLE = file
+LATEXML_OPTS = --path=latexml --preload=colvars-latexml.sty \
+	--css=latexml/colvars-refman.css \
+	$(if $(filter yes,$(LATEXML_MATHJAX)),--javascript=$(MATHJAX_URL)) \
+	--format=html5 --split --splitat=$(LATEXML_SPLITAT) \
+	--splitnaming=labelrelative --urlstyle=$(LATEXML_URLSTYLE) \
+	--navigationtoc=context
+LATEXML_HTML = $(foreach _,${ENGINES},html-$_/index.html)
+
+latexml: images $(LATEXML_HTML)
+
+html-%/index.html: colvars-refman-%.tex colvars-refman-main.tex colvars-refman.tex \
+		$(BIBTEX) colvars-code-refs.bib $(IMAGES) $(wildcard latexml/*) Makefile
+	@echo "Building $@ with release label \"${COLVARS_RELEASE}\""
+	rm -rf html-$* ; mkdir -p html-$*
+	$(LATEXMLC) $(LATEXML_OPTS) --log=html-$*/latexml.log --destination=$@ $< \
+		> html-$*/latexml.out 2>&1 || (tail -20 html-$*/latexml.out; false)
+	python3 latexml/fix_index.py html-$*/idx.html
+	@echo "$@: $$(grep -cE '^(Error|Fatal):' html-$*/latexml.log) errors," \
+		"$$(grep -cE '^Warning:' html-$*/latexml.log) warnings (see html-$*/latexml.log)"
+
 spin-tilt-scheme-512px.png: spin-tilt-scheme.pdf
 	convert -flatten -resize 512x300 $^ $@
 
@@ -89,6 +121,7 @@ clean:
 
 clean-all: clean
 	rm -f $(PDF) $(HTML) $(CSS)
+	rm -rf $(LATEXML_HTML:/index.html=)
 	rm -fr doxygen/html
 	@echo
 	@echo "Note: only removed files that this branch is set to build."
