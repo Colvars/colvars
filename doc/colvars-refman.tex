@@ -6,6 +6,17 @@
 % Colvars repository at GitHub.
 
 \documentclass[11pt]{article}
+
+% \iflatexml is true only when building HTML with LaTeXML, which preloads
+% latexml/colvars-latexml.sty.ltxml (LaTeXML versions of the macros below)
+\ifdefined\iflatexml\else
+  \expandafter\newif\csname iflatexml\endcsname
+\fi
+
+% \ifcvhtml is true for any HTML output (LaTeXML or tex4ht)
+\newif\ifcvhtml
+\iflatexml\cvhtmltrue\fi
+\ifdefined\HCode\cvhtmltrue\fi
 \usepackage[margin=1in]{geometry}
 
 \usepackage[english]{babel}
@@ -36,6 +47,7 @@
 \usepackage{xcolor} % Needed for HTML version
 \usepackage{mdframed}
 
+\iflatexml\else % Example environments: see colvars-latexml.sty.ltxml
 \definecolor{cvexample-border-color}{rgb}{0.5,0.0,0.5}
 \definecolor{cvexample-background-color}{rgb}{1.0,0.95,1.0}
 \definecolor{cvkeyword-background-color}{rgb}{0.95,0.8,0.95}
@@ -70,6 +82,7 @@
   \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
   \end{mdframed}
 }
+\fi % \iflatexml
 
 % Note: the Python version is currently not built yet
 \newcommand{\cvscriptexampleinputcv}[2]{%
@@ -138,6 +151,37 @@ cv.#1(#2)
 }
 \fi
 
+% Links to the manuals for all engines.  LaTeXML: relative links between
+% the html-<engine>/ folders, which sit next to the PDFs (both in doc/ and in
+% the release folder of the website)
+\iflatexml
+\newcommand{\cvmanualurl}[1]{../html-#1/index.html}
+\newcommand{\cvmanualpdfurl}{../colvars-refman-\mdengine.pdf}
+\else
+\ifcvhtml\def\cvmanualext{html}\else\def\cvmanualext{pdf}\fi
+\newcommand{\cvmanualurl}[1]{%
+  https://colvars.github.io/\cvreleaselabel/colvars-refman-#1.\cvmanualext}
+\fi
+\newcommand{\cvmanuallinks}{%
+  Updated versions of this manual:
+  [\href{\cvmanualurl{gromacs}}{GROMACS}]
+  [\href{\cvmanualurl{lammps}}{LAMMPS}]
+  [\href{\cvmanualurl{namd}}{NAMD}]
+  [\href{\cvmanualurl{tinkerhp}}{Tinker-HP}]
+  [\href{\cvmanualurl{vmd}}{VMD}]}
+\newcommand{\cvmanualauthors}{Alejandro Bernardin, Haochuan Chen, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Hubert Santuz, Joshua V.{} Vermaas, Andrew D.{} White, Wei Zhang}
+
+\iflatexml
+\title{Collective Variables Module\\Reference manual for \MDENGINE{}}
+\author{\cvmanualauthors}
+\date{Code version: \cvversion}
+\maketitle
+\begin{center}
+\includegraphics{cover-512px.jpg}
+\end{center}
+\noindent\cvmanuallinks\\
+(\href{\cvmanualpdfurl}{PDF version})
+\else
 \begin{titlepage}
 
   \noindent\colorbox{background-color}{
@@ -151,33 +195,7 @@ cv.#1(#2)
 
         \noindent\textsf{\\Code version: \cvversion\\}
 
-        \noindent\textsf{Updated versions of this manual:
-          \ifdefined\HCode
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-gromacs.html}{GROMACS}]
-          \else
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-gromacs.pdf}{GROMACS}]
-          \fi
-          \ifdefined\HCode
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-lammps.html}{LAMMPS}]
-          \else
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-lammps.pdf}{LAMMPS}]
-          \fi
-          \ifdefined\HCode
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-namd.html}{NAMD}]
-          \else
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-namd.pdf}{NAMD}]
-          \fi
-          \ifdefined\HCode
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-tinkerhp.html}{Tinker-HP}]
-          \else
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-tinkerhp.pdf}{Tinker-HP}]
-          \fi
-          \ifdefined\HCode
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-vmd.html}{VMD}]
-          \else
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-vmd.pdf}{VMD}]
-          \fi
-        }
+        \noindent\textsf{\cvmanuallinks}
 
       \end{minipage}}
 %  \noindent\rule{\textwidth}{2pt}
@@ -188,7 +206,7 @@ cv.#1(#2)
   \else
   \includegraphics[width=0.9\textwidth]{cover.jpg}\\
   \fi
-  \textsf{\large Alejandro Bernardin, Haochuan Chen, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Hubert Santuz, Joshua V.{} Vermaas, Andrew D.{} White, Wei Zhang}
+  \textsf{\large \cvmanualauthors}
 
 \ifdefined\HCode
 \noindent{}(\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-\mdengine.pdf}{PDF version})
@@ -200,16 +218,22 @@ cv.#1(#2)
 
 
 \end{titlepage}
+\fi % \iflatexml
 
 
 \newpage
-\label{sec:toc}%
+\iflatexml\else\label{sec:toc}\fi%
 \ifdefined\HCode\HCode{<selfref>}\ref{sec:toc}\HCode{</selfref>}\fi%
 \tableofcontents
 \newpage
 
 % compiling the standalone reference manual
 
+\newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}
+\newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
+\newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
+
+\iflatexml\else % Keyword and sectioning macros: see colvars-latexml.sty.ltxml
 % use macros with context field to document keywords
 \newcommand{\key}[5]{%
   \colorbox{cvkeyword-background-color}{\index{#2!\texttt{#1}}\texttt{#1}} --- \emph{#3}\vspace{1ex}\\%
@@ -230,9 +254,6 @@ cv.#1(#2)
   \colorbox{cvkeyword-background-color}{\index{#2!\texttt{#1}}\texttt{#1}} --- analogous to \texttt{#3}%
 }
 
-\newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}
-\newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
-\newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
 
 \newenvironment{cvcoptions}{%
   \noindent\textbf{List of keywords} (see also \ref{sec:cvc_pbcs}, \ref{sec:cvc_common}, \ref{sec:cvc_periodic} and \ref{sec:cvc_superp} for additional options):
@@ -299,6 +320,8 @@ cv.#1(#2)
   \fi
 }
 
+
+\fi % \iflatexml
 \input{colvars-engine-flags}
 
 \input{colvars-refman-main}
