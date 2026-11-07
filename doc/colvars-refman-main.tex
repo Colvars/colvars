@@ -861,7 +861,7 @@ For example, a variable ``\texttt{DeltaZ}'' made of a single ``\texttt{distanceZ
 If the variable is computed using many components, it is possible to selectively turn some of them on or off:
 \cvscriptexampleinputcolvar{cvcflags}{$<$flags$>$}{"$<$name$>$"}
 \noindent{}where ``\texttt{$<$flags$>$}'' is a list of 0/1 values, one per component.
-\ifdefined\cvscriptcallbacks{This is useful for example when script-based path collective variables in Cartesian coordinates (\ref{sec:apath_scripted}) are used, to minimize computational cost by disabling the computation of terms that are very close to zero.}\fi
+\ifdefined\cvvmdornamd{This is useful for example when script-based path collective variables in Cartesian coordinates (\ref{sec:apath_scripted}) are used, to minimize computational cost by disabling the computation of terms that are very close to zero.}\fi
 
 \textbf{Important:} None of the changes enacted by the ``\texttt{modifycvcs}'' or ``\texttt{cvcflags}'' methods will be saved to state files, and will be lost when restarting a simulation, deleting the corresponding collective variable, or resetting the module with the \cvvmdonly{``\texttt{delete}'' or} ``\texttt{reset}'' method\cvvmdonly{s}.
 
@@ -1268,7 +1268,7 @@ Such files are produced by ABF (\ref{sec:colvarbias_abf}), metadynamics (\ref{se
 In some cases, these files may also be read as input of a new simulation.
 Suitable input files for this purpose are typically generated as output files of previous simulations, or directly by the user in the specific case of ensemble-biased metadynamics (\ref{sec:colvarbias_ebmeta}).
 This section explains the ``multicolumn'' format used by these files.
-For a multidimensional function $f(\xi_{1}$, $\xi_{2}$, \ldots $)$ the multicolumn grid format is defined as follows:\\
+For a multidimensional function $f(\xi_{1}, \xi_{2}, \ldots)$ the multicolumn grid format is defined as follows:\\
 
 \begin{tabular}{l l l l l l l}
 \# & $N_{\mathrm{cv}}$ & & & & \\
@@ -1300,7 +1300,7 @@ In these cases, it is free-energy gradients that are accumulated on an \texttt{(
 Therefore, the grid's outer edges extend by $\mathtt{width}(\xi_{i})/2$ above and below the specified boundaries, so that for instance $\mathtt{min}(\xi_{i})$ in the header appears to be shifted back by $\mathtt{width}(\xi_{i})/2$ compared to what would be expected.  \emph{Please keep this difference in mind when comparing PMFs computed by different methods.}
 
 After the header, the rest of the file contains values of the tabulated function
-$f(\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}})$, one for each line.
+$f(\xi_{1}, \xi_{2}, \ldots, \xi_{N_{\mathrm{cv}}})$, one for each line.
 The first $N_{\mathrm{cv}}$ columns contain values of $\xi_{1}$, $\xi_{2}$, \ldots $\xi_{N_{\mathrm{cv}}}$ and the last column contains the value of the function $f$.
 Points are sorted in ascending order with the fastest-changing values at the right (``C-style'' order).
 Each sweep of the right-most variable $\xi_{N_{\mathrm{cv}}}$ is terminated by an empty line.
@@ -3875,7 +3875,7 @@ where $f_{k}$ is the activation function of the $k$-th layer, $w_{(k,j),(k-1,i)}
    \texttt{select(step(x), alpha*(exp(x)-1), x)}.
    For details of the expression syntax, see \refkey{customFunction}{colvar|customFunction}.
    This option is mutually exclusive with
-   \refkey{colvar|NeuralNetwork|layeri\_activation}.}
+   \refkey{layer$i$\_activation}{colvar|NeuralNetwork|layeri_activation}.}
 
 \end{cvcoptions}
 
@@ -4115,7 +4115,7 @@ Both the map file and the atom selection file are then loaded via the \texttt{mG
   \-mGridForcePotFile~Cavity~cavity.dx~~~\#~OpenDX~map~file\\
   \-mGridForceFile~Cavity~water-sel.pdb~~\#~PDB~file~used~for~atom~selection\\
   \-mGridForceCol~Cavity~O~~~~~~~~~~~~~~~\#~Use~the~occupancy~column~of~the~PDB~file\\
-  \-mGridForceChargeCol~Cavity~B~~~~~~~~~\#~Use~beta~as~``charge''\\
+  \-mGridForceChargeCol~Cavity~B~~~~~~~~~\#~Use~beta~as~"charge"\\
   \-mGridForceScale~Cavity~0.0~0.0~0.0~~~\#~Do~not~use~GridForces~as~a~bias
 \end{mdexampleinput}
 
@@ -4185,7 +4185,7 @@ A series of map files, each representing a different shape, is loaded into NAMD:
   \-~~mGridForcePotFile~Shape\_\$k~map\_\$k.dx~~~\#~Density~map~of~the~k-th~state\\
   \-~~mGridForceFile~Shape\_\$k~atoms.pdb~~~\#~PDB~file~used~for~atom~selection\\
   \-~~mGridForceCol~Shape\_\$k~O~~~\#~Use~the~occupancy~column~of~the~PDB~file~atoms.pdb\\
-  \-~~mGridForceChargeCol~Shape\_\$k~B~~~\#~Use~beta~as~``charge''\\
+  \-~~mGridForceChargeCol~Shape\_\$k~B~~~\#~Use~beta~as~"charge"\\
   \-~~mGridForceScale~Shape\_\$k~0.0~0.0~0.0~~\#~Do~not~use~GridForces~as~a~bias\\
   \-\}
 \end{mdexampleinput}
@@ -4515,9 +4515,11 @@ A scalar-valued scripted variable may be manually defined as periodic by providi
 the keyword \texttt{period}, and the optional keyword \texttt{wrapAround}, with the
 same meaning as in periodic components (see \ref{sec:cvc_periodic} for details).
 
+\ifdefined\cvvmdornamd{
 An example of elaborate scripted colvar is given in example 10, in the
 form of path-based collective variables as defined by Branduardi et al\cite{Branduardi2007}
 (Section~\ref{sec:apath_scripted}).
+}\fi
 
 \begin{itemize}
  \item %
@@ -4972,7 +4974,7 @@ For run-time computation of histograms, please see the histogram bias (\ref{sec:
     between scalar or vector values, whereas for quaternions it is the
     cosine between the two corresponding rotation axes.  With
     \texttt{coordinate\_p2}, the second order Legendre polynomial,
-    $(3\cos(\theta)^{2}-1)/2$, is used instead of the cosine.}
+    $(3\cos^{2}\theta-1)/2$, is used instead of the cosine.}
 
 \item %
   \keydef
@@ -5606,7 +5608,7 @@ All biasing and analysis methods implemented recognize the following options:
 
 \cvsubsec{Defining grids for biasing and analysis methods}{sec:colvarbias_grid}
 
-Several methods (\hyperlink{sec:colvarbias_histogram}{histograms}, \hyperlink{sec:colvarbias_abf}{ABF} and \hyperlink{sec:colvarbias_abf_extended}{eABF}, optionally \hyperlink{sec:colvarbias_metadynamics}{metadynamics}) rely on discretizing colvars on regular grids to represent functions such as probability distributions or free energy surfaces.
+Several methods (\hyperref[sec:colvarbias_histogram]{histograms}, \hyperref[sec:colvarbias_abf]{ABF} and \hyperref[sec:colvarbias_abf_extended]{eABF}, optionally \hyperref[sec:colvarbias_meta]{metadynamics}) rely on discretizing colvars on regular grids to represent functions such as probability distributions or free energy surfaces.
 
 Grid parameters are specific to each variable, and some of them may even be defined automatically: for instance, periodic angles have default boundaries of -180$^\circ$ and 180$^\circ$.
 When not given by default, boundaries may be also specified when defining the collective variable itself (\ref{sec:colvar_grid_params}).
@@ -8020,18 +8022,20 @@ The accumulated histogram is written in the Colvars state file, allowing for its
     This file is written by default if the dimension is 3 or more (you cannot visualize it easily for dimensions 4 and above, but the DX format is still more compact than the multicolumn format).
     If \texttt{outputFileDX} is set to \texttt{none}, the file is not written.
 }
+\end{itemize}
 
 \cvsubsubsec{Histogramming vector variables}{sec:colvarbias_histogram_vectors}
 
+\begin{itemize}
 \item %
   \keydef{%
     gatherVectorColvars}{%
     \texttt{histogram}}{%
     Treat vector variables as multiple observations of a scalar variable?}{%
-    UNIX filename}{%
+    boolean}{%
     \texttt{off}}{%
     When this is set to \texttt{on}, the components of a multi-dimensional colvar (e.g.~one based on \texttt{cartesian}, \texttt{distancePairs}\ifdefined\cvscriptcallbacks{, or a vector of scalar numbers given by \texttt{scriptedFunction}}\fi) are treated as multiple observations of a scalar variable.
-    This results in the histogram being accumulated multiple times for each simulation step\cvvmdonly{ or iteration of \texttt{cv update}}).
+    This results in the histogram being accumulated multiple times for each simulation step\cvvmdonly{ or iteration of \texttt{cv update}}.
     When multiple vector variables are included in \texttt{histogram}, these must have the same length because their components are accumulated together.
     For example, if $\xi$, $\lambda$ and $\tau$ are three variables of dimensions 5, 5 and 1, respectively, for each iteration 5 triplets $(\xi_{i},\lambda_{i},\tau)$ ($i = 1, \ldots 5$) are accumulated into a 3-dimensional histogram.
   }
