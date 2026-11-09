@@ -184,10 +184,10 @@ jobs:
         with:
           name: failed_library_test_output_${{ inputs.backend_name }}_${{ inputs.backend_repo_ref }}_${{ inputs.container_name }}
           path: |
-            ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.diff
-            ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.err
-            ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.log
-            ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.out
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.diff
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.err
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.log
+            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.out
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }}
         if: ${{ inputs.test_lib_directory }}
