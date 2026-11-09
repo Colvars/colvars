@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ -z "${COLVARS_WEBSITE_REPO}" ] ; then
+    export COLVARS_WEBSITE_REPO=git@github.com:Colvars/colvars.github.io
+fi
+
 COLVARS_WEBSITE_TREE=${1}
 if [ -z "${COLVARS_WEBSITE_TREE}" ] ; then
     echo "Error: need the full path to the website repository as argument." >&2
@@ -34,7 +38,7 @@ if make install && pushd ${COLVARS_WEBSITE_TREE} ; then
     fi
     git commit -m "Update doc for version \"${COLVARS_RELEASE}\""
     # Hard-code the website repository
-    git pull --rebase git@github.com:Colvars/colvars.github.io master
-    git push git@github.com:Colvars/colvars.github.io master
+    git pull --rebase ${COLVARS_WEBSITE_REPO} master
+    git push ${COLVARS_WEBSITE_REPO} master
     popd
 fi

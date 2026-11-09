@@ -133,6 +133,7 @@ jobs:
         working-directory: doc
         env:
           COLVARS_WEBSITE_TREE: ${{ github.workspace }}/website
+          COLVARS_WEBSITE_REPO: https://github.com/Colvars/colvars.github.io
         run: |
           make install
           export GIT_SSH="ssh -i ~/.ssh/website"
