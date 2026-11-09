@@ -87,6 +87,9 @@ jobs:
           restore-keys: |
             Backends_${{ inputs.backend_name }}_${{ inputs.container_name }}
 
+      - name: Limit ccache size
+        run: ccache --max-size=200MB
+
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v7
         with:
