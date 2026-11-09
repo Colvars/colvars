@@ -15,6 +15,7 @@ compile_gromacs_target() {
         export GROMACS_BUILD_TESTS=1
     fi
 
+    # GROMACS requires a recent CMake; check for one packaged in the Colvars devel containers
     local CMAKE=cmake CTEST=ctest
     if [ -e /opt/cmake/bin/cmake ] ; then
         CMAKE=/opt/cmake/bin/cmake
@@ -35,10 +36,8 @@ compile_gromacs_target() {
     local GMX_BUILD_TYPE=Release
     local GMX_INSTALL_DIR="${GMX_SRC_DIR}/install"
 
-    if [ -n "${GITHUB_ACTION}" ] ; then
-        # We don't want to let the "dirty" flag constantly invalidate the cache
-        GMX_BUILD_OPTS+=("-DGMX_GIT_VERSION_INFO=OFF")
-    fi
+    # We don't want to let the "dirty" flag constantly invalidate the cache
+    GMX_BUILD_OPTS+=("-DGMX_GIT_VERSION_INFO=OFF")
 
     GMX_BUILD_OPTS+=("-DGMX_DOUBLE=ON")
 

@@ -194,13 +194,6 @@ then
 
   echo "Detected GROMACS version ${GMX_VERSION}."
 
-  if [ -z "${GITHUB_ACTION}" ] ; then
-    # Only set version outside CI to avoid invalidating the compiler cache
-    if grep -q 'set(GMX_VERSION_STRING_OF_FORK ""' ${GMX_VERSION_INFO} ; then
-      sed -i "s/set(GMX_VERSION_STRING_OF_FORK \"\"/set(GMX_VERSION_STRING_OF_FORK \"Colvars-${COLVARS_VERSION}\"/" ${GMX_VERSION_INFO}
-    fi
-  fi
-
 fi
 
 echo -n "Updating ..."
