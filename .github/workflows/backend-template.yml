@@ -55,13 +55,6 @@ on:
         description: "Relative path of the compiled executable"
         required: true
         type: string
-    secrets:
-      private_key:
-         description: "secret key to access the private repository"
-         required: false
-      private_key_vmd_plugins:
-         description: "secret key to access the VMD plugins private repository"
-         required: false
 
 jobs:
   test_backends:
@@ -102,23 +95,35 @@ jobs:
           ref: 'master'
           path: 'openmm-source'
 
-      - name: Checkout ${{ inputs.backend_name }}
+      - name: Generate app token for Colvars private repos
+        id: private-repos-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_NAMD_VMD_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_NAMD_VMD_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            namd
+            vmd
+            vmd-plugins
+          permission-contents: read
+
+      - name: Checkout ${{ inputs.backend_name }} from the repo ${{ inputs.backend_repo }}
         uses: actions/checkout@v7
         with:
           repository: ${{ inputs.backend_repo }}
           ref: ${{ inputs.backend_repo_ref }}
           path: '${{ inputs.backend_name }}-source'
-          ssh-key: ${{ secrets.private_key }}
+          token: ${{ steps.private-repos-token.outputs.token }}
 
-      # Only used for VMD test case
-      - name: Checkout VMD plugins
+      - name: Checkout VMD plugins if we are building VMD
         if: ${{ inputs.backend_name == 'VMD' }}
         uses: actions/checkout@v7
         with:
           repository: ${{ inputs.vmd_plugins_repo }}
           ref: master
           path: 'vmd-plugins-source'
-          ssh-key: ${{ secrets.private_key_vmd_plugins }}
+          token: ${{ steps.private-repos-token.outputs.token }}
 
       - name: Get small downloadable packages
         uses: actions/checkout@v7
@@ -127,7 +132,7 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Build and test standalone library
+      - name: Build and test standalone library (to catch errors early)
         run: cmake -P devel-tools/build_test_library.cmake
 
       - name: Update and build ${{ inputs.backend_name }}
