@@ -60,7 +60,7 @@ jobs:
   test_backends:
     runs-on: ${{ inputs.runner_name }}
     env:
-      CCACHE_DIR: ~/ccache_${{ inputs.container_name }}
+      CCACHE_DIR: ${{ github.workspace }}/ccache_${{ inputs.container_name }}
       # OpenMPI transport settings suitable for GH VMs
       OMPI_MCA_mtl: "^ofi"
       OMPI_MCA_btl: "vader,self"
@@ -82,8 +82,7 @@ jobs:
         uses: actions/cache/restore@v6
         id: compiler-cache-restore
         with:
-          path: |
-            ~/ccache_${{ inputs.container_name }}
+          path: ${{ env.CCACHE_DIR }}
           key: Backends_${{ inputs.backend_name }}_${{ inputs.container_name }}_${{ github.sha }}
           restore-keys: |
             Backends_${{ inputs.backend_name }}_${{ inputs.container_name }}
@@ -138,20 +137,22 @@ jobs:
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
         env:
-          OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
+          OPENMM_SOURCE: ${GITHUB_WORKSPACE}/openmm-source
           CMAKE_GENERATOR: Ninja
         run: |
           ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
           mkdir -p ${CCACHE_DIR}
           bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
 
+      - name: Print ccache statistics
+        run: ccache -sv
+
       - name: Save compiler cache
         uses: actions/cache/save@v6
         id: compiler-cache-save
         if: always() && steps.compiler-cache-restore.outputs.cache-hit != 'true'
         with:
-          path: |
-            ~/ccache_${{ inputs.container_name }}
+          path: ${{ env.CCACHE_DIR }}
           key: ${{ runner.os }}-build-${{ inputs.backend_name }}-${{ github.sha }}
 
       - name: Keep only one cache besides the one from this job
@@ -172,7 +173,7 @@ jobs:
         env:
           VMDNORLWRAP: 1
         run: |
-          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
+          ./run_tests.sh ${GITHUB_WORKSPACE}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
 
       - name: Save failed library test artifact
         if: ${{ failure() }}
@@ -180,10 +181,10 @@ jobs:
         with:
           name: failed_library_test_output_${{ inputs.backend_name }}_${{ inputs.backend_repo_ref }}_${{ inputs.container_name }}
           path: |
-            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.diff
-            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.err
-            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.log
-            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.out
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.diff
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.err
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.log
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.out
 
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
         if: ${{ inputs.test_interface_directory }}
@@ -192,7 +193,7 @@ jobs:
         env:
           VMDNORLWRAP: 1
         run: |
-          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}
+          ./run_tests.sh ${GITHUB_WORKSPACE}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}
 
       - name: Save failed interface test artifact
         if: ${{ failure() }}
@@ -200,10 +201,10 @@ jobs:
         with:
           name: failed_library_test_output_${{ inputs.backend_name }}_${{ inputs.backend_repo_ref }}_${{ inputs.container_name }}
           path: |
-            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.diff
-            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.err
-            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.log
-            ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.out
+            ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.diff
+            ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.err
+            ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.log
+            ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.out
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }} (binary restarts)
         # Skipping GROMACS, because its restarts are always binary anyway
@@ -213,4 +214,4 @@ jobs:
         env:
           COLVARS_BINARY_RESTART: 1
         run: |
-          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
+          ./run_tests.sh ${GITHUB_WORKSPACE}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
