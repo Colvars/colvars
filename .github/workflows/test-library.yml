@@ -68,7 +68,7 @@ jobs:
       #   env:
       #     GH_TOKEN: ${{ github.token }}
       #   run: |
-      #     bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-basic-
+      #     bash ${GITHUB_WORKSPACE}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-basic-
 
 
   build-doc:
@@ -188,9 +188,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      CCACHE: ccache
-      CCACHE_DIR: ${{ github.workspace }}/ccache
 
     steps:
       - uses: actions/checkout@v7
@@ -215,7 +212,7 @@ jobs:
         if: failure()
         with:
           name: Clang_address_sanitizer_output
-          path: ${{github.workspace}}/build/Testing/Temporary/LastTest.log
+          path: ${GITHUB_WORKSPACE}/build/Testing/Temporary/LastTest.log
 
 
   build-linux-x86_64-gcc-clang:
@@ -239,9 +236,12 @@ jobs:
       - name: Load compiler ccache
         uses: actions/cache@v6
         with:
-          path: ${{ github.workspace }}/ccache
-          key: ${{ runner.os }}-build-gcc-clang-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-gcc-clang-
+          path: ${GITHUB_WORKSPACE}/ccache
+          key: ${{ runner.os }}-build-gcc-clang-x86_64-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-gcc-clang-x86_64-
+
+      - name: Limit ccache size
+        run: ccache --max-size=200MB
 
       - name: Get small downloadable packages
         uses: actions/checkout@v7
@@ -321,7 +321,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-gcc-clang-
+          bash devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-gcc-clang-x86_64-
 
       - name: Save failed library test artifact
         if: ${{ failure() }}
@@ -329,8 +329,8 @@ jobs:
         with:
           name: failed-library-test-output
           path: |
-            ${{ github.workspace }}/build*/Testing/Temporary/*.log
-            ${{ github.workspace }}/build*/Testing/Temporary/*.log
+            ${GITHUB_WORKSPACE}/build*/Testing/Temporary/*.log
+            ${GITHUB_WORKSPACE}/build*/Testing/Temporary/*.log
 
 
   build-linux-x86_64-intel:
@@ -346,16 +346,19 @@ jobs:
     env:
       CCACHE: ccache
       CMAKE_GENERATOR: Ninja
-      CCACHE_DIR: ${{ github.workspace }}/ccache
+      CCACHE_DIR: ${GITHUB_WORKSPACE}/ccache
     steps:
       - uses: actions/checkout@v7
 
       - name: Load compiler ccache
         uses: actions/cache@v6
         with:
-          path: ${{ github.workspace }}/ccache
+          path: ${GITHUB_WORKSPACE}/ccache
           key: ${{ runner.os }}-build-oneapi-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-oneapi-
+
+      - name: Limit ccache size
+        run: ccache --max-size=100MB
 
       - name: Get small downloadable packages
         uses: actions/checkout@v7
@@ -390,7 +393,7 @@ jobs:
         with:
           name: failed-library-test-output-intel-oneAPI
           path: |
-            ${{ github.workspace }}/build*/Testing/Temporary/*.log
+            ${GITHUB_WORKSPACE}/build*/Testing/Temporary/*.log
 
       - name: Keep only one cache besides the one from this job
         shell: bash
@@ -441,6 +444,7 @@ jobs:
         # We need to set CMAKE_SYSTEM_NAME manually in script mode
         run: cmake -D CMAKE_SYSTEM_NAME=Darwin -P devel-tools/build_test_library.cmake
 
+
   build-linux-ARM64-gcc:
     name: Linux ARM64 (GCC, Clang)
     runs-on: ubuntu-24.04-arm
@@ -458,6 +462,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+
+      - name: Load compiler ccache
+        uses: actions/cache@v6
+        with:
+          path: ${GITHUB_WORKSPACE}/ccache
+          key: ${{ runner.os }}-build-gcc-clang-arm64-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-gcc-clang-arm64-
+
+      - name: Limit ccache size
+        run: ccache --max-size=200MB
 
       - name: GCC 11, C++20 (CentOS 9)
         env:
@@ -483,5 +497,12 @@ jobs:
         with:
           name: failed-library-test-output-ARM64
           path: |
-            ${{ github.workspace }}/build*/Testing/Temporary/*.log
-            ${{ github.workspace }}/build*/Testing/Temporary/*.log
+            ${GITHUB_WORKSPACE}/build*/Testing/Temporary/*.log
+            ${GITHUB_WORKSPACE}/build*/Testing/Temporary/*.log
+
+      - name: Keep only one cache besides the one from this job
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-gcc-clang-arm64-
