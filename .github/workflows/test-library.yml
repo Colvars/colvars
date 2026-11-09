@@ -236,7 +236,7 @@ jobs:
       - name: Load compiler ccache
         uses: actions/cache@v6
         with:
-          path: ${GITHUB_WORKSPACE}/ccache
+          path: ${{ github.workspace }}/ccache
           key: ${{ runner.os }}-build-gcc-clang-x86_64-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-gcc-clang-x86_64-
 
