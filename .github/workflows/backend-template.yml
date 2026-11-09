@@ -169,26 +169,6 @@ jobs:
       # It depends on the working directory
       # Note to be run, test_lib_directory or test_interface_directory must be set by the caller workflow
 
-      - name: Run regression tests for library code with ${{ inputs.backend_name }}
-        if: ${{ inputs.test_lib_directory }}
-        shell: bash
-        working-directory: ${{ inputs.test_lib_directory }}
-        env:
-          VMDNORLWRAP: 1
-        run: |
-          ./run_tests.sh ${GITHUB_WORKSPACE}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
-
-      - name: Save failed library test artifact
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: failed_library_test_output_${{ inputs.backend_name }}_${{ inputs.backend_repo_ref }}_${{ inputs.container_name }}
-          path: |
-            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.diff
-            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.err
-            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.log
-            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.out
-
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
         if: ${{ inputs.test_interface_directory }}
         shell: bash
@@ -208,6 +188,26 @@ jobs:
             ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.err
             ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.log
             ${GITHUB_WORKSPACE}/${{ inputs.test_interface_directory }}/*/*.out
+
+      - name: Run regression tests for library code with ${{ inputs.backend_name }}
+        if: ${{ inputs.test_lib_directory }}
+        shell: bash
+        working-directory: ${{ inputs.test_lib_directory }}
+        env:
+          VMDNORLWRAP: 1
+        run: |
+          ./run_tests.sh ${GITHUB_WORKSPACE}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
+
+      - name: Save failed library test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed_library_test_output_${{ inputs.backend_name }}_${{ inputs.backend_repo_ref }}_${{ inputs.container_name }}
+          path: |
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.diff
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.err
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.log
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.out
 
       - name: Run regression tests for library code with ${{ inputs.backend_name }} (binary restarts)
         # Skipping GROMACS, because its restarts are always binary anyway
