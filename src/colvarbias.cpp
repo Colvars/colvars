@@ -791,7 +791,6 @@ cvm::memory_stream & colvarbias::read_state_data_key(cvm::memory_stream &is, std
 
 std::ostream & colvarbias::write_traj_label(std::ostream &os)
 {
-  os << " ";
   if (b_output_energy)
     os << " E_"
        << cvmodule->wrap_string(this->name, cvmodule->en_width-2);
@@ -799,9 +798,8 @@ std::ostream & colvarbias::write_traj_label(std::ostream &os)
 }
 
 
-std::ostream & colvarbias::write_traj(std::ostream &os)
+std::ostream &colvarbias::write_traj(std::ostream &os)
 {
-  os << " ";
   if (b_output_energy)
     os << " "
        << std::setprecision(cvmodule->en_prec) << std::setw(cvmodule->en_width)
