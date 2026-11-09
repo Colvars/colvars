@@ -91,3 +91,48 @@ jobs:
               git -C wiki commit -m "Update Colvars release notes"
               git -C wiki push origin master
           fi
+
+
+  update-doc:
+    name: Update documentation
+    if: contains(github.event.head_commit.message, '[update-doc]')
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/colvars/devel-containers:Fedora45-devel-x86_64
+      options: --user 1001:1001
+
+    steps:
+
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_VERSIONS_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_VERSIONS_PRIVATE_KEY }}
+
+      - name: Checkout Colvars repo
+        uses: actions/checkout@v7
+
+      - name: Checkout website repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          repository: 'Colvars/colvars.github.io'
+          path: 'website'
+
+      - name: Build documentation
+        working-directory: doc
+        run: |
+          make clean-all
+          make
+
+      - name: Push updated doc to website repository
+        working-directory: doc
+        env:
+          COLVARS_WEBSITE_TREE: ${{ github.workspace }}/website
+        run: |
+          make install
+          export GIT_SSH="ssh -i ~/.ssh/website"
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "CI runner"
+          bash update_website.sh ${{ github.workspace }}/website
