@@ -364,7 +364,7 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Intel oneAPI 2024.2, C++17
+      - name: Intel oneAPI, C++17
         shell: bash
         env:
           CC: icx
@@ -374,7 +374,7 @@ jobs:
         run: |
           cmake -D CMAKE_CXX_STANDARD=${CXX_STANDARD} -P devel-tools/build_test_library.cmake
 
-      - name: Intel oneAPI 2024.2, C++20
+      - name: Intel oneAPI, C++20
         shell: bash
         env:
           CC: icx
