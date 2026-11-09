@@ -73,8 +73,8 @@ jobs:
     with:
       runner_name: ubuntu-latest
       backend_name: GROMACS-main
-      backend_repo: gromacs/gromacs
-      backend_repo_ref: main
+      backend_repo: Colvars/gromacs
+      backend_repo_ref: add-lepton-library
       container_name: CentOS9-devel-x86_64
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
