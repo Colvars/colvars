@@ -125,8 +125,11 @@ def main():
             output = repaired.encode(args.encoding)
             if args.in_place:
                 backup = path.with_name(path.name + ".bak")
-                with backup.open("xb") as stream:
-                    stream.write(original)
+                try:
+                    with backup.open("xb") as stream:
+                        stream.write(original)
+                except FileExistsError:
+                    pass  # Preserve the first backup while allowing another repair.
                 path.write_bytes(output)
                 destination = path
             else:

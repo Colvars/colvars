@@ -61,7 +61,7 @@ RUN git clone https://github.com/Colvars/spiff /tmp/spiff && \
 
 # Download pre-built executable of recent CMake
 RUN mkdir -p /opt/cmake && \
-    curl -L -o /tmp/cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.4.5/cmake-4.4.5-linux-x86_64.sh && \
+    curl -L -o /tmp/cmake-install.sh https://github.com/Kitware/CMake/releases/download/v4.4.5/cmake-4.4.5-linux-aarch64.sh && \
     bash /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake && \
     rm -f /tmp/cmake-install.sh
 

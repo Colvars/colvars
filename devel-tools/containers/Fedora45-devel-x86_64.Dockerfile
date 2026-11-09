@@ -36,7 +36,9 @@ RUN dnf -y update && \
 RUN alternatives --set modules.sh /usr/share/lmod/lmod/init/profile
 
 # Install GitHub CLI
-RUN dnf -y config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo && dnf -y install gh --repo gh-cli
+RUN dnf -y install dnf5-plugins && \
+    dnf -y config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo && \
+    dnf -y install gh --repo gh-cli
 
 # Build Charm++
 RUN umask 022 && \
