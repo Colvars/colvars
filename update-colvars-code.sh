@@ -571,7 +571,6 @@ then
     if [ -s ${source}/gromacs/CMakeLists.txt.Lepton.patch ] ; then
       patch ${PATCH_OPTS} -d ${target} < ${source}/gromacs/CMakeLists.txt.Lepton.patch || true
     fi
-    condcopy ${source}/gromacs/cmake/gmxManageLepton.cmake "${target}/cmake/gmxManageLepton.cmake"
   fi
 
   echo
