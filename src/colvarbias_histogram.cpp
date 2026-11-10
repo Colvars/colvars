@@ -216,7 +216,7 @@ cvm::memory_stream & colvarbias_histogram::read_state_data(cvm::memory_stream& i
 std::ostream & colvarbias_histogram::write_state_data(std::ostream& os)
 {
   std::ios::fmtflags flags(os.flags());
-  os.setf(std::ios::fmtflags(0), std::ios::floatfield);
+  os.setf(std::ios::fmtflags(std::ios::dec), std::ios::floatfield);
   write_state_data_key(os, "grid");
   grid->write_raw(os, 8);
   os.flags(flags);

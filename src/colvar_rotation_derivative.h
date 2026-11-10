@@ -22,7 +22,9 @@ enum class rotation_derivative_dldq {
   /// Require the derivative of the leading eigenvalue with respect to the atom coordinates
   use_dl = 1 << 0,
   /// Require the derivative of the leading eigenvector with respect to the atom coordinates
-  use_dq = 1 << 1
+  use_dq = 1 << 1,
+  /// Require the derivative of both L and Q
+  use_all = (use_dl) + (use_dq)
 };
 
 inline COLVARS_HOST_DEVICE constexpr rotation_derivative_dldq operator|(rotation_derivative_dldq Lhs, rotation_derivative_dldq Rhs) {

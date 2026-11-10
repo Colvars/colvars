@@ -106,16 +106,16 @@ public:
   inline memory_stream & seekg(size_t pos) { read_pos_ = pos; return *this; }
 
   /// Ignore formatting operators
-  inline void setf(decltype(std::ios::fmtflags(0)), decltype(std::ios::floatfield)) {}
+  inline void setf(decltype(std::ios::fmtflags(std::ios::unitbuf)), decltype(std::ios::floatfield)) {}
 
   /// Ignore formatting operators
-  inline void setf(decltype(std::ios::fmtflags(0))) {}
+  inline void setf(decltype(std::ios::fmtflags(std::ios::unitbuf))) {}
 
   /// Ignore formatting operators
-  inline void flags(decltype(std::ios::fmtflags(0))) {}
+  inline void flags(decltype(std::ios::fmtflags(std::ios::unitbuf))) {}
 
-  /// Get the current formatting flags (i.e. none because this stream is unformatted)
-  inline decltype(std::ios::fmtflags(0)) flags() const { return std::ios::fmtflags(0); }
+  /// Get the current formatting flags (throw a useless result because this stream is unformatted)
+  inline decltype(std::ios::fmtflags(std::ios::unitbuf)) flags() const { return std::ios::fmtflags(std::ios::unitbuf); }
 
   /// Get the error code
   inline std::ios::iostate rdstate() const { return state_; }
