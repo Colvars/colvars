@@ -4,7 +4,7 @@ if [ -z "${COLVARS_WEBSITE_REPO}" ] ; then
     export COLVARS_WEBSITE_REPO=git@github.com:Colvars/colvars.github.io
 fi
 
-COLVARS_WEBSITE_TREE=${1}
+COLVARS_WEBSITE_TREE=${COLVARS_WEBSITE_TREE:-${1}}
 if [ -z "${COLVARS_WEBSITE_TREE}" ] ; then
     echo "Error: need the full path to the website repository as argument." >&2
     exit 1
