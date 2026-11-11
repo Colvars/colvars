@@ -145,4 +145,4 @@ jobs:
           export GIT_SSH="ssh -i ~/.ssh/website"
           git config --global user.email "noreply@github.com"
           git config --global user.name "CI runner"
-          bash update_website.sh ${{ github.workspace }}/website
+          bash update_website.sh ${COLVARS_WEBSITE_TREE}
