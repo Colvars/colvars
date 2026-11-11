@@ -7,35 +7,69 @@ on:
 
 jobs:
 
-  update-wiki:
-    name: Update Wiki repo
+  update-versions:
+    name: Update version strings
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'Colvars/colvars' }}
+    concurrency:
+      group: update-version-strings-master
+      cancel-in-progress: false
     steps:
+
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_VERSIONS_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_VERSIONS_PRIVATE_KEY }}
 
       - name: Checkout Colvars repo in full
         uses: actions/checkout@v7
         with:
+          ref: master
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Update version strings
+        env:
+          LAST_COMMIT_BEFORE_PUSH: ${{ github.event.before }}
+        run: |
+          git config user.email "noreply@github.com"
+          git config user.name "CI runner"
+          source devel-tools/version_functions.sh
+          update_all_versions "${LAST_COMMIT_BEFORE_PUSH}"
+          git push origin master
+
+
+  update-wiki:
+    name: Update Wiki repo
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_VERSIONS_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_VERSIONS_PRIVATE_KEY }}
+
+      - name: Checkout Colvars repo in full
+        uses: actions/checkout@v7
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Checkout Wiki repo
         uses: actions/checkout@v7
         with:
           repository: 'Colvars/colvars.wiki'
           path: 'wiki'
-
-      - name: Cache the SSH key for the runner
-        env: 
-          SSH_KEY: ${{ secrets.PULL_PUSH_COLVARS_KEY }}
-        run: |
-          mkdir -p -m 700 ~/.ssh
-          echo "${SSH_KEY}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          git config --global user.email "noreply@github.com"
-          git config --global user.name "CI runner"
+          token: ${{ steps.app-token.outputs.token }}
           
       - name: Update Wiki page that lists Colvars versions
         run: |
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "CI runner"
           git fetch --all
           bash doc/print_engine_versions.sh > wiki/List-of-Colvars-versions-included-in-simulation-and-analysis-packages.md
           if ! git -C wiki diff --quiet ; then
@@ -57,3 +91,52 @@ jobs:
               git -C wiki commit -m "Update Colvars release notes"
               git -C wiki push origin master
           fi
+
+
+  update-doc:
+    name: Update documentation
+    if: contains(github.event.head_commit.message, '[update-doc]')
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/colvars/devel-containers:Fedora45-devel-x86_64
+      options: --user 1001:1001
+
+    steps:
+
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_VERSIONS_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_VERSIONS_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: colvars.github.io
+          permission-contents: write
+
+      - name: Checkout Colvars repo
+        uses: actions/checkout@v7
+
+      - name: Checkout website repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          repository: 'Colvars/colvars.github.io'
+          path: 'website'
+
+      - name: Build documentation
+        working-directory: doc
+        run: |
+          make clean-all
+          make
+
+      - name: Push updated doc to website repository
+        working-directory: doc
+        env:
+          COLVARS_WEBSITE_TREE: ${{ github.workspace }}/website
+          COLVARS_WEBSITE_REPO: https://github.com/Colvars/colvars.github.io
+        run: |
+          make install
+          export GIT_SSH="ssh -i ~/.ssh/website"
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "CI runner"
+          bash update_website.sh ${{ github.workspace }}/website

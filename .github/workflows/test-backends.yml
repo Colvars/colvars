@@ -20,16 +20,17 @@ env:
 
 jobs:
 
-  gromacs-main:
-    name: GROMACS (main)
+  gromacs-2027:
+    name: GROMACS 2027
     uses: ./.github/workflows/backend-template.yml
     with:
       runner_name: ubuntu-latest
       backend_name: GROMACS-main
-      backend_repo: gromacs/gromacs
-      backend_repo_ref: release-2026
-      container_name: CentOS9-devel
+      backend_repo: Colvars/gromacs
+      backend_repo_ref: add-lepton-library
+      container_name: CentOS9-devel-x86_64
       path_compile_script: devel-tools/compile-gromacs.sh
       test_lib_directory: gromacs/tests/library
       test_interface_directory: gromacs/tests/interface
       rpath_exe: install/bin/gmx_mpi_d
+    secrets: inherit
