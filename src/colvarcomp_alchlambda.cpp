@@ -158,6 +158,22 @@ colvar::tabf_alpha::tabf_alpha()
 }
 
 
+int colvar::tabf_alpha::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
+  if (error_code != COLVARS_OK) return error_code;
+
+  cvm::real lower = 0.0;
+  cvm::real upper = 0.0;
+  error_code = cvmodule->proxy->get_tabf_alpha_boundaries(&lower, &upper);
+  if (error_code != COLVARS_OK) return error_code;
+
+  // Supply intrinsic defaults before the parent colvar parses grid parameters.
+  init_scalar_boundaries(lower, upper);
+  return COLVARS_OK;
+}
+
+
 int colvar::tabf_alpha::init_tabf(int factor)
 {
   if (factor != 1) {

@@ -1156,6 +1156,7 @@ protected:
   // No atom groups needed
 public:
   tabf_alpha();
+  virtual int init(std::string const &conf);
   int init_tabf(int time_step_factor);
   virtual ~tabf_alpha() {}
   virtual void calc_value();
