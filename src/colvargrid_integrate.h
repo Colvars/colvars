@@ -19,10 +19,12 @@ public:
 
   /// Constructor from a vector of colvars + gradient grid
   colvargrid_integrate(std::vector<colvar *> &colvars,
-                       std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false);
+                       std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false, cvm::real upper_threshold = 0,
+                       cvm::real lower_threshold = 0);
 
   /// Constructor from a gradient grid (for processing grid files without a Colvars config)
-  colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false);
+  colvargrid_integrate(std::shared_ptr<colvar_grid_gradient> gradients, bool is_weighted = false,
+                        cvm::real upper_threshold = 0, cvm::real lower_threshold = 0);
 
   /// \brief Calculate potential from divergence (in 2D); return number of steps
   int integrate(const int itmax, const cvm::real &tol, cvm::real &err, bool verbose = true);
@@ -92,7 +94,6 @@ protected:
   std::vector<cvm::real> weights;
   std::vector<cvm::real> regularized_weights;
   std::vector<cvm::real> laplacian_coefficients;
-  std::vector<size_t> sorted_counts;
 
   /// Tunable parameters for weighted integration
   /// max and min count to regularize F, see user documentation
@@ -101,8 +102,8 @@ protected:
   /// max and min count to regularize the weights, see user documentation
   float lambda_max = 0.5f;
   float lambda_min = 0.1f;
-  size_t upper_threshold_count = 1;
-  size_t lower_threshold_count = 1;
+  cvm::real upper_threshold_count = 1;
+  cvm::real lower_threshold_count = 0;
 
   /// Number of threads for weighted integration
   /// sets itself to number of available OpenMP threads
@@ -160,14 +161,14 @@ protected:
   /// appropriate line in r. Uses the coefficients that must be precomputed.
   template <bool initialize_div_supplement>
   void linewise_laplacian_weighted_precomputed(const std::vector<cvm::real> &x,
-      std::vector<cvm::real> &r, size_t grid_address);
+                                               std::vector<cvm::real> &r, size_t grid_address);
   /// Computes the line result of the weighted laplacian matrix multiplied by x and stores it in the
   /// appropriate line in r. Calculates laplacian coefficients on the fly.
   template <bool initialize_div_supplement>
   void linewise_laplacian_weighted_otf(const std::vector<cvm::real> &x, std::vector<cvm::real> &r,
                                        size_t grid_address);
   typedef void (colvargrid_integrate::*func_pointer)(const std::vector<cvm::real> &,
-      std::vector<cvm::real> &, size_t);
+                                                     std::vector<cvm::real> &, size_t);
   func_pointer linewise_laplacian_weighted;
 
   std::vector<int> convert_base_two(int n, size_t length);
@@ -178,7 +179,7 @@ protected:
 
   template <typename T>
   typename std::vector<T>::iterator insert_into_sorted_list(std::vector<T> &sortedList,
-      const T &value);
+                                                            const T &value);
 
   /// From the smaller resolution grid, use order-1 Taylor expansion to find the value on a grid with
   /// 2 more cell in each dimension. This means, we assigned the ghost points values which are the

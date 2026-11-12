@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   // (Moved after parsing so we don't allocate memory if help/error is printed)
   colvarproxy *proxy = new colvarproxy();
   proxy->cvmodule = new colvarmodule(proxy);
-  std::shared_ptr < colvar_grid_count > count_ptr;
+  std::shared_ptr<colvar_grid_scalar> count_ptr;
 
   // Deduce countfile if not provided by user
   if (countfile.empty()) {
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     struct stat buffer;
     if (stat(countfile.c_str(), &buffer) == 0) {
       std::cout << "Found associated count file " << countfile << ", reading...\n";
-      count_ptr.reset(new colvar_grid_count(countfile));
+      count_ptr.reset(new colvar_grid_scalar(countfile));
       if (!count_ptr || count_ptr->nd == 0) {
         // catch constructor failure
         proxy->cvmodule->error("Error reading count grid.");
