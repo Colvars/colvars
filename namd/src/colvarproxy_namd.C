@@ -1820,8 +1820,11 @@ int colvarproxy_namd::request_tabf_energy_freq(int const freq) {
     cvmodule->error("TABF alpha dynamics requires nonbondedFrequency 1.\n");
     return COLVARS_INPUT_ERROR;
   }
-  if (simparams->fullElectFrequency != 1) {
-    cvmodule->error("TABF alpha dynamics requires fullElectFrequency 1.\n");
+  // NAMD uses zero when the full-electrostatics schedule is inactive.
+  // An active schedule must run every step for TABF alpha dynamics.
+  if (simparams->fullElectFrequency != 0 &&
+      simparams->fullElectFrequency != 1) {
+    cvmodule->error("TABF alpha dynamics requires fullElectFrequency 1 when the full-electrostatics schedule is active.\n");
     return COLVARS_INPUT_ERROR;
   }
   if (simparams->globalMasterFrequency != 1) {
