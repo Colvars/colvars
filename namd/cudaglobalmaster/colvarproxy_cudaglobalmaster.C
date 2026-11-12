@@ -207,14 +207,15 @@ public:
   cvm::real* proxy_atoms_new_colvar_forces_gpu() override {return d_mAppliedForces;}
   cudaStream_t get_default_stream() override {return mStream;}
   void set_lattice();
-  cvm::system_boundary_conditions get_system_boundaries()  override {
+  int update_system_boundaries()  override {
+    int error_code = COLVARS_OK;
     if (mClient->requestUpdateLattice()) {
       if (has_gpu_support()) {
-        cudaCheck(cudaEventSynchronize(get_event(colvarproxy_gpu::event_type::update_lattice)));
+        error_code |= checkGPUError(cudaEventSynchronize(get_event(colvarproxy_gpu::event_type::update_lattice)));
       }
       set_lattice();
     }
-    return boundaries_;
+    return error_code;
   };
   friend class CudaGlobalMasterColvars;
 private:

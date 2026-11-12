@@ -60,7 +60,7 @@ public:
   inline COLVARS_HOST_DEVICE void set_boundaries(bool periodic_x_in, bool periodic_y_in,
                                                 bool periodic_z_in, cvm::rvector const &A,
                                                 cvm::rvector const &B, cvm::rvector const &C);
-protected:
+public:
 
   /// Type of boundary conditions in the current computation
   types type_ = types::non_periodic;
@@ -167,12 +167,13 @@ cvm::rvector cvm::system_boundary_conditions::position_distance(cvm::atom_pos co
     return diff;
   }
 
-  if (type() == types::unsupported) {
-#if !(defined(__HIP_DEVICE_COMPILE__)) && !(defined(__CUDA_ARCH__))
-    cvm::error_static("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
-#endif
-    return diff;
-  }
+
+//   if (type() == types::unsupported) {
+// #if !(defined(__HIP_DEVICE_COMPILE__)) && !(defined(__CUDA_ARCH__))
+//     cvm::error_static("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
+// #endif
+//     return diff;
+//   }
 
   cvm::real const x_shift = ::floor(reciprocal_cell_x * diff + 0.5);
   cvm::real const y_shift = ::floor(reciprocal_cell_y * diff + 0.5);
