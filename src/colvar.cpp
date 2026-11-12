@@ -11,6 +11,9 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <cstring>
+#include <limits>
 #include <iostream>
 #include <iomanip>
 
@@ -2067,6 +2070,33 @@ cvm::real colvar::update_forces_energy()
 }
 
 
+namespace {
+// Floating-point classification may be folded to true under -ffast-math.
+// Inspect the IEEE binary64 exponent instead, without type-punning.  Supported
+// targets use the same byte order for double and uint64_t (including x86/ARM);
+// mixed-endian floating-point representations are not supported by this helper.
+bool reflection_is_finite(cvm::real value)
+{
+#if defined(__FLOAT_WORD_ORDER__) && defined(__BYTE_ORDER__)
+  static_assert(__FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
+                "Reflection does not support mixed-endian floating point");
+#endif
+  static_assert(sizeof(cvm::real) == sizeof(std::uint64_t) &&
+                std::numeric_limits<cvm::real>::is_iec559 &&
+                std::numeric_limits<cvm::real>::radix == 2 &&
+                std::numeric_limits<cvm::real>::digits == 53 &&
+                std::numeric_limits<cvm::real>::max_exponent == 1024,
+                "Reflection requires IEEE 754 binary64 cvm::real");
+  std::uint64_t bits;
+  std::memcpy(&bits, &value, sizeof(bits));
+  // LLVM can recognize even memcpy + exponent masking as floating-point
+  // classification and fold it under finite-math assumptions.  Observe the
+  // representation through a volatile integer to prevent that transformation.
+  volatile std::uint64_t observed_bits = bits;
+  return (observed_bits & UINT64_C(0x7ff0000000000000)) != UINT64_C(0x7ff0000000000000);
+}
+}
+
 int colvar::reflect_extended_coordinate(colvarvalue &position,
                                         bool &reflected,
                                         bool &odd_reflections)
@@ -2079,7 +2109,7 @@ int colvar::reflect_extended_coordinate(colvarvalue &position,
   if (!reflect_lower && !reflect_upper) return COLVARS_OK;
 
   const cvm::real value = position.real_value;
-  if (!std::isfinite(value)) {
+  if (!reflection_is_finite(value)) {
     return cvmodule->error("Error: extended coordinate is non-finite and cannot be reflected.\n",
                            COLVARS_INPUT_ERROR);
   }
@@ -2089,15 +2119,15 @@ int colvar::reflect_extended_coordinate(colvarvalue &position,
     const cvm::real upper = upper_boundary.real_value;
     const cvm::real boundary_width = upper - lower;
     const cvm::real reflection_period = 2.0 * boundary_width;
-    if (!std::isfinite(lower) || !std::isfinite(upper) ||
-        !(boundary_width > 0.0) || !std::isfinite(reflection_period)) {
+    if (!reflection_is_finite(lower) || !reflection_is_finite(upper) ||
+        !(boundary_width > 0.0) || !reflection_is_finite(reflection_period)) {
       return cvmodule->error("Error: reflecting boundaries do not define a finite, positive interval.\n",
                              COLVARS_INPUT_ERROR);
     }
     if (value >= lower && value <= upper) return COLVARS_OK;
 
     const cvm::real shifted_value = value - lower;
-    if (!std::isfinite(shifted_value)) {
+    if (!reflection_is_finite(shifted_value)) {
       return cvmodule->error("Error: extended coordinate overflow while applying reflecting boundaries.\n",
                              COLVARS_INPUT_ERROR);
     }
@@ -2126,7 +2156,7 @@ int colvar::reflect_extended_coordinate(colvarvalue &position,
     reflected = true;
     odd_reflections = true;
   }
-  if (!std::isfinite(position.real_value)) {
+  if (!reflection_is_finite(position.real_value)) {
     return cvmodule->error("Error: extended coordinate overflow while applying reflecting boundary.\n",
                            COLVARS_INPUT_ERROR);
   }

@@ -9,6 +9,8 @@ foreach(CMD
     read_xyz_traj
     parse_error
     tabf_boundaries
+    reflection
+    ui_estimator
   )
   add_executable(${CMD} ${CMD}.cpp)
   target_link_libraries(${CMD} PRIVATE colvars)
@@ -18,6 +20,31 @@ foreach(CMD
   add_test(NAME ${CMD} COMMAND ${CMD})
   add_dependencies(${CMD} link_files)
 endforeach()
+
+# colvar has optional-feature members (e.g. LEPTON); match the library's
+# private build settings so the stack-allocated test object has the same layout.
+# Some feature macros are compile options rather than compile definitions.
+target_include_directories(reflection PRIVATE
+  $<TARGET_PROPERTY:colvars,INCLUDE_DIRECTORIES>)
+target_compile_definitions(reflection PRIVATE
+  $<TARGET_PROPERTY:colvars,COMPILE_DEFINITIONS>)
+target_compile_options(reflection PRIVATE
+  $<TARGET_PROPERTY:colvars,COMPILE_OPTIONS>)
+
+# Recompile the production reflection implementation, not merely its caller,
+# under finite-math assumptions.  Keep the regular reflection test as well.
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$" AND NOT BUILD_SHARED_LIBS)
+  add_executable(reflection_fast_math reflection.cpp ${COLVARS_SOURCE_DIR}/src/colvar.cpp)
+  target_include_directories(reflection_fast_math PRIVATE
+    ${COLVARS_SOURCE_DIR}/src ${COLVARS_STUBS_DIR}
+    $<TARGET_PROPERTY:colvars,INCLUDE_DIRECTORIES>)
+  target_compile_definitions(reflection_fast_math PRIVATE
+    $<TARGET_PROPERTY:colvars,COMPILE_DEFINITIONS>)
+  target_compile_options(reflection_fast_math PRIVATE
+    $<TARGET_PROPERTY:colvars,COMPILE_OPTIONS> -ffast-math)
+  target_link_libraries(reflection_fast_math PRIVATE colvars colvars_stubs)
+  add_test(NAME reflection_fast_math COMMAND reflection_fast_math)
+endif()
 
 if(COLVARS_TCL)
   add_executable(embedded_tcl embedded_tcl.cpp)

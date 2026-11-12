@@ -1831,7 +1831,7 @@ int colvarproxy_namd::request_tabf_energy_freq(int const freq) {
   return COLVARS_OK;
 #else
   (void)freq;
-  return cvm::error_static(
+  return cvmodule->error(
     "Error in request_tabf_energy_freq: TABF alpha dynamics is not supported by this NAMD build.",
     COLVARS_NOT_IMPLEMENTED);
 #endif
@@ -1845,7 +1845,7 @@ int colvarproxy_namd::get_tabf_alpha(cvm::real* alpha) {
   return COLVARS_OK;
 #else
   (void)alpha;
-  return cvm::error_static(
+  return cvmodule->error(
     "Error in get_tabf_alpha: TABF alpha dynamics is not supported by this NAMD build.",
     COLVARS_NOT_IMPLEMENTED);
 #endif
@@ -1861,7 +1861,7 @@ int colvarproxy_namd::get_tabf_alpha_boundaries(cvm::real* lower,
 #else
   (void)lower;
   (void)upper;
-  return cvm::error_static(
+  return cvmodule->error(
     "Error in get_tabf_alpha_boundaries: TABF alpha dynamics is not supported by this NAMD build.",
     COLVARS_NOT_IMPLEMENTED);
 #endif
@@ -1877,7 +1877,7 @@ int colvarproxy_namd::send_tabf_alpha(void) {
   simparams->tabfAlpha = alpha;
   return COLVARS_OK;
 #else
-  return cvm::error_static(
+  return cvmodule->error(
     "Error in send_tabf_alpha: TABF alpha dynamics is not supported by this NAMD build.",
     COLVARS_NOT_IMPLEMENTED);
 #endif
@@ -1895,7 +1895,7 @@ int colvarproxy_namd::get_dE_dtabf_alpha(cvm::real* dE_dalpha) {
   return COLVARS_OK;
 #else
   (void)dE_dalpha;
-  return cvm::error_static(
+  return cvmodule->error(
     "Error in get_dE_dtabf_alpha: TABF alpha dynamics is not supported by this NAMD build.",
     COLVARS_NOT_IMPLEMENTED);
 #endif
