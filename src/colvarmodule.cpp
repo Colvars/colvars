@@ -877,6 +877,7 @@ void colvarmodule::unregister_named_atom_group(atom_group *ag) {
 void colvarmodule::register_atom_group_from_cvc(atom_group *ag) {
   std::lock_guard<std::mutex> lock(registered_atom_groups_mutex);
   registered_atom_groups[ag].fetch_add(1, std::memory_order_relaxed);
+  registered_atom_groups_changed = true;
 }
 
 void colvarmodule::unregister_atom_group_from_cvc(atom_group* ag) {
@@ -887,6 +888,7 @@ void colvarmodule::unregister_atom_group_from_cvc(atom_group* ag) {
     if (old_count == 1) {
       registered_atom_groups.erase(it);
     }
+    registered_atom_groups_changed = true;
   } else {
     return;
   }
@@ -990,11 +992,29 @@ int colvarmodule::calc()
     }
 #endif
   } else {
-    // TODO: Maybe we can calculate the atom groups in parallel in case of SMP
-    for (auto it = registered_atom_groups.begin(); it != registered_atom_groups.end(); ++it) {
-      it->first->reset_atoms_data();
-      it->first->read_positions();
-      it->first->calc_required_properties();
+    // If SMP over CVCs is used, then we distribute atom group calculations among threads.
+    if (proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::cvcs) {
+      // Flatten the registered_atom_groups map into array
+      if (registered_atom_groups_changed) {
+        registered_atom_groups_flattened.clear();
+        for (auto it = registered_atom_groups.begin(); it != registered_atom_groups.end(); ++it) {
+          registered_atom_groups_flattened.push_back(it->first);
+        }
+        registered_atom_groups_changed = false;
+      }
+      // Calculate atom groups in parallel
+      error_code |= proxy->smp_loop(registered_atom_groups_flattened.size(), [this](int i){
+        registered_atom_groups_flattened[i]->reset_atoms_data();
+        registered_atom_groups_flattened[i]->read_positions();
+        registered_atom_groups_flattened[i]->calc_required_properties();
+        return COLVARS_OK;
+      });
+    } else {
+      for (auto it = registered_atom_groups.begin(); it != registered_atom_groups.end(); ++it) {
+        it->first->reset_atoms_data();
+        it->first->read_positions();
+        it->first->calc_required_properties();
+      }
     }
   }
   error_code |= proxy->update_system_boundaries();

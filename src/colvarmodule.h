@@ -339,6 +339,8 @@ private:
   /// Array of all registered atom groups from CVCs
   std::unordered_map<atom_group *, std::atomic<int>> registered_atom_groups;
   std::mutex registered_atom_groups_mutex;
+  bool registered_atom_groups_changed = false;
+  std::vector<atom_group *> registered_atom_groups_flattened;
 
 public:
 
