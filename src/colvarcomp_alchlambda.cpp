@@ -28,6 +28,7 @@ colvar::alch_lambda::alch_lambda()
   provide(f_cvc_Jacobian);     // Zero
 
   x.type(colvarvalue::type_scalar);
+  init_scalar_boundaries(0.0, 1.0);
 
   // Query initial value from back-end; will be overwritten if restarting from a state file
   cvmodule->proxy->get_alch_lambda(&x.real_value);
