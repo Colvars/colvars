@@ -165,6 +165,17 @@ namespace UIestimator {
             temp.resize(dimension);
         }
 
+        // Input coordinates near an edge must also map to allocated bins.
+        // Use the same padded origin and index bias as convert_x(), checking
+        // each dimension before flattening (an invalid index can alias a bin).
+        bool is_in_bounds(const std::vector<double> & x) const {
+            for (int i = 0; i < dimension; i++) {
+                double index = (x[i] - lowerboundary[i]) / width[i] + EPSILON;
+                if (!(index >= 0.0 && index < x_size[i])) return false;
+            }
+            return true;
+        }
+
         T & get_value(const std::vector<double> & x) {
             return vector[convert_x(x)];
         }
@@ -715,25 +726,45 @@ namespace UIestimator {
                 }
 
                 for (j = 0; j < size; j++) {
-                    do {
-                        for (k = 0; k < dimension; k++) {
-                            count_file >> position_temp[k];
-                            grad_file >> nothing;
-                        }
-
-                        for (l = 0; l < dimension; l++) {
-                            grad_file >> grad_temp[l];
-                        }
-                        count_file >> count_temp;
+                    for (k = 0; k < dimension; k++) {
+                        count_file >> position_temp[k];
+                        grad_file >> nothing;
                     }
-                    while (position_temp[i] < lowerboundary[i] - EPSILON || position_temp[i] > upperboundary[i] + EPSILON);
 
-                    if (count_temp == 0) {
+                    for (l = 0; l < dimension; l++) {
+                        grad_file >> grad_temp[l];
+                    }
+                    count_file >> count_temp;
+
+                    // Never merge a partially extracted record or retry a failed
+                    // stream: retain complete earlier records and stop this pair.
+                    if (!count_file || !grad_file) {
+                        break;
+                    }
+
+                    // i indexes input files, not coordinates.  Every dimension
+                    // must be checked before the unchecked n_vector indexing.
+                    // The upper edge is excluded: there are (upper-lower)/width
+                    // bins, written at their centers, not a bin at upper.
+                    bool in_bounds = true;
+                    for (k = 0; k < dimension; k++) {
+                        if (position_temp[k] < lowerboundary[k] - EPSILON ||
+                            position_temp[k] > upperboundary[k] - EPSILON) {
+                            in_bounds = false;
+                            break;
+                        }
+                    }
+
+                    // The physical EPSILON margin alone is insufficient at
+                    // upper-EPSILON: n_vector's own padding/bias can yield bin N.
+                    if (!in_bounds || count_temp == 0 || !input_count.is_in_bounds(position_temp)) {
                         continue;
                     }
 
+                    // Merge duplicate bins/files by sample count, not by file.
+                    int old_count = input_count.get_value(position_temp);
                     for (m = 0; m < dimension; m++) {
-                        grad_temp[m] = (grad_temp[m] * count_temp + input_grad.get_value(position_temp)[m] * input_count.get_value(position_temp)) / (count_temp + input_count.get_value(position_temp));
+                        grad_temp[m] = (grad_temp[m] * count_temp + input_grad.get_value(position_temp)[m] * old_count) / (count_temp + old_count);
                     }
                     input_grad.set_value(position_temp, grad_temp);
                     input_count.increase_value(position_temp, count_temp);
