@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+      - gromacs-2027
+      - namd-3.1
 
 jobs:
 
@@ -29,7 +31,8 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Update version strings
+      - name: Update version strings only in the master branch
+        if: ${{ github.ref == 'refs/heads/master' }}
         env:
           LAST_COMMIT_BEFORE_PUSH: ${{ github.event.before }}
         run: |
@@ -43,6 +46,8 @@ jobs:
   update-wiki:
     name: Update Wiki repo
     runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs: update-versions
     steps:
 
       - name: Generate app token
@@ -91,3 +96,53 @@ jobs:
               git -C wiki commit -m "Update Colvars release notes"
               git -C wiki push origin master
           fi
+
+
+  update-doc:
+    name: Update documentation
+    if: contains(github.event.head_commit.message, '[update-doc]')
+    runs-on: ubuntu-latest
+    needs: update-versions
+    container:
+      image: ghcr.io/colvars/devel-containers:Fedora45-devel-x86_64
+      options: --user 1001:1001
+
+    steps:
+
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_VERSIONS_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_VERSIONS_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: colvars.github.io
+          permission-contents: write
+
+      - name: Checkout Colvars repo
+        uses: actions/checkout@v7
+
+      - name: Checkout website repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          repository: 'Colvars/colvars.github.io'
+          path: 'website'
+
+      - name: Build documentation
+        working-directory: doc
+        run: |
+          make clean-all
+          make
+
+      - name: Push updated doc to website repository
+        working-directory: doc
+        env:
+          COLVARS_WEBSITE_TREE: ${{ github.workspace }}/website
+          COLVARS_WEBSITE_REPO: https://github.com/Colvars/colvars.github.io
+        run: |
+          make install
+          export GIT_SSH="ssh -i ~/.ssh/website"
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "CI runner"
+          bash update_website.sh ${COLVARS_WEBSITE_TREE}

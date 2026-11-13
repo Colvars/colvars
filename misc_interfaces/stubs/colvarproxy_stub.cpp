@@ -167,24 +167,50 @@ int colvarproxy_stub::init_atom(int atom_number)
 
 int colvarproxy_stub::read_frame_xyz(const char *filename, const bool write_force_file)
 {
-  int err = cvmodule->load_coords_xyz(filename, modify_atom_positions(), nullptr, true);
+  // The XYZ file lists atoms by increasing ID, but atom slots follow the order in which the
+  // atoms were requested: read all positions first, then copy them into their slots
+  auto &positions = *(modify_atom_positions());
+  const size_t numAtoms = positions.size();
+  // xyz_positions is empty on the first call, and resized to the total number of atoms on
+  // subsequent calls - this will read all positions in both cases
+  int err = cvmodule->load_coords_xyz(filename, &xyz_positions, nullptr, true);
   std::string force_filename;
   if (write_force_file) {
-    force_filename = cvmodule->output_prefix() + "_forces_" + cvm::to_str(cvmodule->it) + ".dat";
+    force_filename = cvmodule->output_prefix() + ".forces.xyz";
   }
   if ( !err ) {
+    bool atom_id_invalid = false;
+    for (size_t i = 0; i < numAtoms; ++i) {
+      atom_id_invalid = atom_id_invalid || !(static_cast<size_t>(atoms_ids[i]) < xyz_positions.size());
+      positions[i] = !atom_id_invalid ? xyz_positions[atoms_ids[i]] : cvm::rvector();
+    }
+    if (atom_id_invalid) {
+      return cvmodule->error("Invalid atom ID.\n", COLVARS_INPUT_ERROR);
+    }
     auto& new_forces = *(modify_atom_applied_forces());
     std::fill(new_forces.begin(), new_forces.end(), cvm::rvector{0, 0, 0});
     cvmodule->calc();
     cvmodule->it++;
     if (write_force_file) {
-      const size_t numAtoms = modify_atom_positions()->size();
-      std::ofstream ofs(force_filename);
+      // Write the forces in XYZ trajectory format
+      // forces_by_id is indexed by atom ID, so we need to cover all atoms
+      size_t const numAtoms_total = xyz_positions.size();
+      forces_by_id.resize(numAtoms_total);
+      // Initialize all forces to zero, then fill in the relevant ones by atom ID
+      std::fill(forces_by_id.begin(), forces_by_id.end(), cvm::rvector{0, 0, 0});
       for (size_t i = 0; i < numAtoms; ++i) {
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].x << std::setw(0) << " ";
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].y << std::setw(0) << " ";
-        ofs << std::scientific << std::setprecision(12) << std::setw(20) << new_forces[i].z << std::setw(0) << " ";
-        ofs << std::endl;
+        forces_by_id[atoms_ids[i]] = new_forces[i];
+      }
+      // Create XYZ trajectory: overwrite on first frame, append on subsequent frames
+      std::ios::openmode mode = (cvmodule->it == 1) ? std::ios::out : std::ios::app;
+      std::ofstream ofs(force_filename, mode);
+      ofs << numAtoms_total << std::endl;
+      ofs << std::endl;
+      for (size_t i = 0; i < numAtoms_total; ++i) {
+        ofs << std::setw(7) << (i+1) << " "  // Atom ID (1-based)
+            << std::scientific << std::setprecision(8) << std::setw(16) << forces_by_id[i].x << std::setw(0) << " "
+            << std::scientific << std::setprecision(8) << std::setw(16) << forces_by_id[i].y << std::setw(0) << " "
+            << std::scientific << std::setprecision(8) << std::setw(16) << forces_by_id[i].z << std::endl;
       }
     }
   }

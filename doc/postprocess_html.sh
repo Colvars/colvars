@@ -23,6 +23,9 @@ do
   # will only generate those for elements that are linked explicitly)
   python3 remove_htmltags.py $i selfref
 
+  # Fix MathJax issues
+  python3 fix_mathml.py --in-place "$i"
+  
   # Remove ligatures
   # https://orbythebeach.wordpress.com/2014/09/23/removing-ligatures-in-html-files-generated-from-latex-files/
   sed -i 's/\xef\xac\x80/ff/g' $i

@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
                 dA += data.bias[newoffset] - data.bias[offset];
             }
 
-            if ( data.allowed (newoffset) && (((float) rand()) / RAND_MAX < exp(mbeta * dA)) )  {
+            if ( data.allowed (newoffset) && (((double) rand()) / RAND_MAX < exp(mbeta * dA)) )  {
                 // Accept move
                 for (int i = 0; i < data.Nvars; i++) {
                     pos[i] = newpos[i];
