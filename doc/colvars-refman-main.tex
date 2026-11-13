@@ -3184,7 +3184,7 @@ should be set to \texttt{TI}.}
 The current lambda value is obtained from the back-end at the beginning of a simulation, and
 synchronized from Colvars to \MDENGINE{} at every following time step.
 This enables lambda-dynamics simulations as documented in detail in \cite{Lagardere2023}.
-The \texttt{alchLambda} keyword itself takes no parameters.
+The \texttt{alchLambda} keyword itself takes no parameters; its value is a dimensionless number in the $[0, 1]$ interval.
 
 To run lambda-dynamics, the enclosing \texttt{colvar} block should contain extended-system
 parameters (\ref{sec:colvar_extended}) as in the following example:
@@ -3196,8 +3196,6 @@ parameters (\ref{sec:colvar_extended}) as in the following example:
 \-~~extendedMass~150000\\
 \-~~extendedLangevinDamping~1000\\
 \\
-\-~~lowerBoundary~0\\
-\-~~upperBoundary~1\\
 \-~~reflectingLowerBoundary\\
 \-~~reflectingUpperBoundary\\
 \\
