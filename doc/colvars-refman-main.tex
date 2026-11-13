@@ -2647,7 +2647,7 @@ reference coordinates $\left\{\mathbf{x}_{i}^{\mathrm{(ref)}}\right\}$, can be d
 \end{itemize}
 The schematic below, adapted from ref.\ \citealp{Fiorin2024}, illustrates the use of the two angles to model the rotations of a membrane protein:
 \begin{center}
-\ifdefined\HCode
+\ifcvhtml
 \includegraphics{spin-tilt-scheme-512px.png}
 \else
 \includegraphics[width=\textwidth]{spin-tilt-scheme.pdf}
@@ -2793,7 +2793,7 @@ the \textit{P} axis to the \textit{Z} axis, and
 \end{itemize}
 
 \begin{center}
-\ifdefined\HCode
+\ifcvhtml
 \includegraphics{eulerangles-512px.png}
 \else
 \includegraphics[width=0.5\textwidth]{eulerangles.pdf}
@@ -3784,7 +3784,6 @@ The usage of \texttt{azpath} and \texttt{aspath} is illustrated below:
 \end{cvexampleinput}
 
 \cvsubsec{Dense neural network in CV space (MLCV)}{sec:cvc_neuralNetwork}
-\labelkey{colvar|NeuralNetwork}
 
 This colvar component computes a non-linear combination of other scalar colvar components, where the transformation is defined by a dense neural network.\cite{Chen2022}
 The network can be optimized using any framework, and its parameters are provided to Colvars in plain text files, as detailed below.
