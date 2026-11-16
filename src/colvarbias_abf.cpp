@@ -248,7 +248,7 @@ int colvarbias_abf::init(std::string const &conf)
     // Allocate grids for collected global data, on replica 0 only
     global_z_samples.reset(new colvar_grid_count(colvars, samples));
     global_z_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
-    global_czar_gradients.reset(new colvar_grid_gradient(colvars, z_samples, samples));
+    global_czar_gradients.reset(new colvar_grid_gradient(colvars, global_z_samples));
     global_czar_pmf.reset(new colvargrid_integrate(colvars, global_czar_gradients, integrate_weighted));
   } else {
     // otherwise they are just aliases for the local CZAR grids
