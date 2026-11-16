@@ -79,22 +79,24 @@ EOF
 
     if [ "${label}" = "multicore-cuda" ] ; then
         cmd+=(--charm-arch multicore-linux-${charm_arch_string})
-        if ! hash nvcc >& /dev/null ; then
-            if [ -x /usr/local/cuda/bin/nvcc ] ; then
-                export PATH=/usr/local/cuda/bin:${PATH}
+        if [ -z "${CUDA_HOME}" ] ; then
+            if hash nvcc >& /dev/null ; then
+                CUDA_HOME=$(which nvcc)
+                CUDA_HOME="${CUDA_HOME%/bin/nvcc}"
+            else
+                CUDA_HOME="/usr/local/cuda"
             fi
         fi
-        if hash nvcc >& /dev/null ; then
-            CUDA_HOME=$(which nvcc)
-            export CUDA_HOME=${CUDA_HOME%/bin/nvcc}
-            cmd+=(--with-cuda --cuda-prefix ${CUDA_HOME})
-            if [ -f src/SequencerCUDA.C ] ; then
-                # NAMD >= 3.0
-                cmd+=(--with-single-node-cuda)
-            fi
+        if [ -x "${CUDA_HOME}/bin/nvcc" ] ; then
+            export PATH="${CUDA_HOME}/bin:${PATH}"
         else
-            echo "Error: Missing CUDA compiler." >& 2
+            "Error: no CUDA compiler found under directory ${CUDA_HOME}/bin" >& 2
             return 1
+        fi
+        cmd+=(--with-cuda --cuda-prefix ${CUDA_HOME})
+        if [ -f src/SequencerCUDA.C ] ; then
+            # NAMD >= 3.0
+            cmd+=(--with-single-node-cuda)
         fi
     fi
 
