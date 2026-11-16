@@ -55,22 +55,21 @@ on:
         description: "Relative path of the compiled executable"
         required: true
         type: string
-    secrets:
-      private_key:
-         description: "secret key to access the private repository"
-         required: false
-      private_key_vmd_plugins:
-         description: "secret key to access the VMD plugins private repository"
-         required: false
 
 jobs:
   test_backends:
     runs-on: ${{ inputs.runner_name }}
     env:
-      CCACHE_DIR: ~/ccache_${{ inputs.container_name }}
+      CCACHE_DIR: ${{ github.workspace }}/ccache_${{ inputs.container_name }}
       # OpenMPI transport settings suitable for GH VMs
       OMPI_MCA_mtl: "^ofi"
       OMPI_MCA_btl: "vader,self"
+    container:
+      image: ghcr.io/colvars/devel-containers:${{ inputs.container_name }}
+      options: --user 1001:1001
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout Colvars
@@ -83,11 +82,13 @@ jobs:
         uses: actions/cache/restore@v6
         id: compiler-cache-restore
         with:
-          path: |
-            ~/ccache_${{ inputs.container_name }}
+          path: ${{ env.CCACHE_DIR }}
           key: Backends_${{ inputs.backend_name }}_${{ inputs.container_name }}_${{ github.sha }}
           restore-keys: |
             Backends_${{ inputs.backend_name }}_${{ inputs.container_name }}
+
+      - name: Limit ccache size
+        run: ccache --max-size=200MB
 
       - name: Checkout OpenMM (for Lepton library)
         uses: actions/checkout@v7
@@ -96,23 +97,35 @@ jobs:
           ref: 'master'
           path: 'openmm-source'
 
-      - name: Checkout ${{ inputs.backend_name }}
+      - name: Generate app token for Colvars private repos
+        id: private-repos-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_NAMD_VMD_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_NAMD_VMD_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            namd
+            vmd
+            vmd-plugins
+          permission-contents: read
+
+      - name: Checkout ${{ inputs.backend_name }} from the repo ${{ inputs.backend_repo }}
         uses: actions/checkout@v7
         with:
           repository: ${{ inputs.backend_repo }}
           ref: ${{ inputs.backend_repo_ref }}
           path: '${{ inputs.backend_name }}-source'
-          ssh-key: ${{ secrets.private_key }}
+          token: ${{ steps.private-repos-token.outputs.token }}
 
-      # Only used for VMD test case
-      - name: Checkout VMD plugins
+      - name: Checkout VMD plugins if we are building VMD
         if: ${{ inputs.backend_name == 'VMD' }}
         uses: actions/checkout@v7
         with:
           repository: ${{ inputs.vmd_plugins_repo }}
           ref: master
           path: 'vmd-plugins-source'
-          ssh-key: ${{ secrets.private_key_vmd_plugins }}
+          token: ${{ steps.private-repos-token.outputs.token }}
 
       - name: Get small downloadable packages
         uses: actions/checkout@v7
@@ -121,71 +134,40 @@ jobs:
           ref: 'master'
           path: 'devel-tools/packages'
 
-      - name: Build and test standalone library
+      - name: Build and test standalone library (to catch errors early)
         run: cmake -P devel-tools/build_test_library.cmake
-
-      - name: Install Apptainer
-        shell: bash
-        run: |
-          sudo add-apt-repository -y ppa:apptainer/ppa
-          sudo apt update
-          sudo apt install -y apptainer-suid
-
-      - name: Get container images for build dependencies
-        run: devel-tools/get_container ${{ inputs.container_name }}
 
       - name: Update and build ${{ inputs.backend_name }}
         shell: bash
         env:
-          OPENMM_SOURCE: ${{ github.workspace }}/openmm-source
+          OPENMM_SOURCE: ${GITHUB_WORKSPACE}/openmm-source
           CMAKE_GENERATOR: Ninja
         run: |
-          apptainer exec devel-tools/${{ inputs.container_name }}.sif \
-              ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
+          ./update-colvars-code.sh -f ${{ inputs.backend_name }}-source
           mkdir -p ${CCACHE_DIR}
-          apptainer exec devel-tools/${{ inputs.container_name }}.sif \
-              bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
+          bash ${{ inputs.path_compile_script }} ${{ inputs.backend_name }}-source
+
+      - name: Print ccache statistics
+        run: ccache -sv
 
       - name: Save compiler cache
         uses: actions/cache/save@v6
         id: compiler-cache-save
         if: always() && steps.compiler-cache-restore.outputs.cache-hit != 'true'
         with:
-          path: |
-            ~/ccache_${{ inputs.container_name }}
-          key: ${{ runner.os }}-build-${{ inputs.backend_name }}-${{ github.sha }}
+          path: ${{ env.CCACHE_DIR }}
+          key: Backends_${{ inputs.backend_name }}_${{ inputs.container_name }}_${{ github.sha }}
 
       - name: Keep only one cache besides the one from this job
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash ${{ github.workspace }}/devel-tools/cleanup-gh-cache.sh ${{ runner.os }}-build-${{ inputs.backend_name }}-
+          bash devel-tools/cleanup-gh-cache.sh Backends_${{ inputs.backend_name }}_${{ inputs.container_name }}_
 
       # 2 types of tests can be performed with the MD engine: library & interface
       # It depends on the working directory
       # Note to be run, test_lib_directory or test_interface_directory must be set by the caller workflow
-
-      - name: Run regression tests for library code with ${{ inputs.backend_name }}
-        if: ${{ inputs.test_lib_directory }}
-        shell: bash
-        working-directory: ${{ inputs.test_lib_directory }}
-        env:
-          VMDNORLWRAP: 1
-        run: |
-          apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
-          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
-
-      - name: Save failed library test artifact
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: failed_library_test_output_${{ inputs.backend_name }}_${{ inputs.backend_repo_ref }}_${{ inputs.container_name }}
-          path: |
-            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.diff
-            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.err
-            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.log
-            ${{ github.workspace }}/${{ inputs.test_lib_directory }}/*/*.out
 
       - name: Run regression tests for ${{ inputs.backend_name }} interface code
         if: ${{ inputs.test_interface_directory }}
@@ -194,8 +176,7 @@ jobs:
         env:
           VMDNORLWRAP: 1
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
-          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}
+          ./run_tests.sh ${GITHUB_WORKSPACE}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }}
 
       - name: Save failed interface test artifact
         if: ${{ failure() }}
@@ -208,6 +189,26 @@ jobs:
             ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.log
             ${{ github.workspace }}/${{ inputs.test_interface_directory }}/*/*.out
 
+      - name: Run regression tests for library code with ${{ inputs.backend_name }}
+        if: ${{ inputs.test_lib_directory }}
+        shell: bash
+        working-directory: ${{ inputs.test_lib_directory }}
+        env:
+          VMDNORLWRAP: 1
+        run: |
+          ./run_tests.sh ${GITHUB_WORKSPACE}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
+
+      - name: Save failed library test artifact
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed_library_test_output_${{ inputs.backend_name }}_${{ inputs.backend_repo_ref }}_${{ inputs.container_name }}
+          path: |
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.diff
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.err
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.log
+            ${GITHUB_WORKSPACE}/${{ inputs.test_lib_directory }}/*/*.out
+
       - name: Run regression tests for library code with ${{ inputs.backend_name }} (binary restarts)
         # Skipping GROMACS, because its restarts are always binary anyway
         if: inputs.test_lib_directory != '' && inputs.backend_name != 'GROMACS-main'
@@ -216,5 +217,4 @@ jobs:
         env:
           COLVARS_BINARY_RESTART: 1
         run: |
-          apptainer exec ${{github.workspace}}/devel-tools/${{ inputs.container_name }}.sif \
-          ./run_tests.sh ${{github.workspace}}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*
+          ./run_tests.sh ${GITHUB_WORKSPACE}/${{ inputs.backend_name }}-source/${{ inputs.rpath_exe }} 0??_*

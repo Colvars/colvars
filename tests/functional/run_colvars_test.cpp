@@ -58,24 +58,22 @@ int main(int argc, char *argv[]) {
   err |= cvmodule->setup_output();
   err |= cvmodule->read_config_file(configuration_file.c_str());
 
-  if (argc > 2) {
-    // Read number of atoms from XYZ header
-    std::ifstream ifs(trajectory_file);
-    int natoms;
-    ifs >> natoms;
-    ifs.close();
-    cvmodule->log("Reading trajectory for " + cvm::to_str(natoms)
-              + " atoms from XYZ file " + trajectory_file);
-    for (int ai = 0; ai < natoms; ai++) {
-      proxy->init_atom(ai+1);
-    }
+  if (trajectory_file.size() > 0) {
     int io_err = 0;
     while (!io_err) {
       io_err = proxy->read_frame_xyz(trajectory_file.c_str(), output_force);
+      err = cvmodule->get_error();
+      if (err != COLVARS_OK) {
+        cvmodule->log("Error occurred!\n");
+      }
       if (!io_err) cvmodule->log("Frame " + cvm::to_str(cvmodule->step_absolute()));
     }
     proxy->post_run();
     cvmodule->log("Done");
+    err = cvmodule->get_error();
+    if (err != COLVARS_OK) {
+      cvmodule->log("Error occurred!\n");
+    }
   }
 
   cvmodule->log("Input files read during this test:");

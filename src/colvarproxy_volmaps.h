@@ -20,8 +20,11 @@ public:
   /// Clear volumetric map data
   int reset();
 
-  /// Test whether this implementation can use volumetric maps as CVs
+  /// Test whether the engine provides code to load volumetric maps as CVs
   virtual int check_volmaps_available();
+
+  /// Test whether the engine supports offloaded computation of volumetric maps
+  virtual int check_engine_volmaps_available();
 
   /// Create a slot for a volumetric map not requested yet
   int add_volmap_slot(int volmap_id);

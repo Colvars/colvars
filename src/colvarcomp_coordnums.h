@@ -147,8 +147,8 @@ public:
 };
 
 
-/// \brief Colvar component: coordination number between two groups
-/// (colvarvalue::type_scalar type, range [0:N1*N2])
+/// \brief Colvar component: coordination number between centers of two groups
+/// (colvarvalue::type_scalar type, range [0:1])
 class colvar::groupcoordnum : public colvar::coordnum {
 public:
   groupcoordnum();

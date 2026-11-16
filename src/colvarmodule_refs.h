@@ -107,7 +107,7 @@
     "  volume = {111},\n"
     "  number = {22-23},\n"
     "  pages = {3345--3362},\n"
-    "  publisher = {Taylor & Francis},\n"
+    "  publisher = {Taylor \\& Francis},\n"
     "  doi = {10.1080/00268976.2013.813594},\n"
     "  url = {https://doi.org/10.1080/00268976.2013.813594}\n"
     "}\n";

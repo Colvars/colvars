@@ -10,11 +10,6 @@
 #ifndef COLVARPROXY_NAMD_H
 #define COLVARPROXY_NAMD_H
 
-#ifndef NAMD_VERSION_NUMBER
-// Assume 2.14b1 for now until the NAMD macro is merged
-#define NAMD_VERSION_NUMBER 34471681
-#endif
-
 #include <memory>
 
 #include "colvarproxy_namd_version.h"
@@ -38,27 +33,78 @@ class SimParameters;
 
 /// Communication between colvars and NAMD (implementation of \link colvarproxy \endlink)
 class colvarproxy_namd : public colvarproxy {
+public:
+
+  colvarproxy_namd();
+  ~colvarproxy_namd();
+
+  /// Tell the proxy that it will be using the GlobalMaster interface
+  void set_gm_object(GlobalMasterColvars *gm);
+
+  /// Initialize proxy data based on the chosen interface
+  int init(); // no override
+
+  /// Initialize the module
+  int init_module(); // no override
+
+  void init_tcl_pointers() override;
+  int setup() override;
+  int reset() override;
+
+  /// Get the target temperature from the NAMD thermostats supported so far
+  int update_target_temperature();
+
+  /// Create map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
+  void init_gm_atoms_map();
+
+  /// Request the given atom through the GlobalMaster object
+  /// \param aid Atom ID to request
+  /// \param index Index in the colvarproxy array
+  void request_gm_atom_by_id(int aid, int index);
+
+  /// Update map to reflect other requested atoms, including other GlobalMaster objects
+  int update_gm_atoms_map(AtomIDList::const_iterator begin, AtomIDList::const_iterator end);
+
+  /// Create and zero out data buffers for atoms requested through GlobalMaster
+  int setup_gm_atom_buffers();
+
+  /// Create and zero out data buffers for atom groups requested through GlobalMaster
+  int setup_gm_atom_group_buffers();
+
+  /// Create and zero out data buffers for grid objects requested through GlobalMaster
+  int setup_gm_volmap_buffers();
+
+  /// Read the current coordinates and total forces
+  void read_gm_atom_buffers();
+
+  /// Send Colvars forces to GlobalMaster
+  void send_gm_atom_forces();
 
 protected:
 
   /// Pointer to the parent GlobalMaster object
   GlobalMasterColvars *globalmaster = nullptr;
 
-  /// \brief Array of atom indices (relative to the colvarproxy arrays),
-  /// usedfor faster copy of atomic data
-  std::vector<int> atoms_map;
+  /// Map from NAMD atom indices to colvarproxy array indices (used by GlobalMaster)
+  std::vector<int> gm_atoms_map;
 
   /// Pointer to the NAMD simulation input object
-  SimParameters *simparams;
+  SimParameters *simparams = nullptr;
 
   /// Pointer to Controller object
-  Controller const *controller;
+  Controller const *controller = nullptr;
 
   /// NAMD-style PRNG object
   std::unique_ptr<Random> random;
 
-  bool first_timestep;
-  cvm::step_number previous_NAMD_step;
+  /// Use to distinguish between "run 0" and actual runs
+  bool first_timestep = true;
+
+  /// Current NAMD simulation step (promoted from int)
+  cvm::step_number NAMD_step = 0L;
+
+  /// Previous NAMD simulation step; used to test if the simulation is advancing
+  cvm::step_number previous_NAMD_step = 0L;
 
   /// Used to submit restraint energy as MISC
 #if !defined (NAMD_UNIFIED_REDUCTION)
@@ -74,24 +120,6 @@ protected:
   void update_accelMD_info();
 
 public:
-
-  void init_tcl_pointers() override;
-
-  colvarproxy_namd(GlobalMasterColvars *gm);
-  ~colvarproxy_namd();
-
-  int setup() override;
-  int reset() override;
-
-  /// Get the target temperature from the NAMD thermostats supported so far
-  int update_target_temperature();
-
-  /// Allocate an atoms map with the same size as the NAMD topology
-  void init_atoms_map();
-
-  // synchronize the local arrays with requested or forced atoms
-  int update_atoms_map(AtomIDList::const_iterator begin,
-                       AtomIDList::const_iterator end);
 
   void calculate();
 
@@ -200,14 +228,14 @@ public:
 
   void update_atom_properties(int index);
 
-  enum e_pdb_field {
-    e_pdb_none,
-    e_pdb_occ,
-    e_pdb_beta,
-    e_pdb_x,
-    e_pdb_y,
-    e_pdb_z,
-    e_pdb_ntot
+  enum class e_pdb_field {
+    none,
+    occ,
+    beta,
+    x,
+    y,
+    z,
+    ntot
   };
 
   e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str);
@@ -224,18 +252,17 @@ public:
                       double const pdb_field_value) override;
 
 
-  int scalable_group_coms() override
-  {
-    return COLVARS_OK;
-  }
+  int check_scalable_group_coms() override;
+
   int init_atom_group(std::vector<int> const &atoms_ids) override;
   void clear_atom_group(int index) override;
 
   int update_group_properties(int index);
 
-#if NAMD_VERSION_NUMBER >= 34471681
-
   int check_volmaps_available() override;
+
+  int check_engine_volmaps_available() override;
+
 
   /// Select a MGridForces map for computation by NAMD
   int request_engine_volmap_by_id(int volmap_id) override;
@@ -277,8 +304,6 @@ public:
                          cvm::atom_group* ag,
                          cvm::real *value,
                          cvm::real *atom_field);
-
-#endif
 
   std::ostream &output_stream(std::string const &output_name,
                               std::string const description) override;

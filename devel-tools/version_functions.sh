@@ -194,7 +194,7 @@ update_all_versions() {
                           ${branch} \
         && \
     update_version_string "GROMACS interface" \
-                          '^src/colvarproxy' \
+                          '^gromacs/src/colvarproxy\|^src/colvarproxy' \
                           get_colvarproxy_gromacs_version \
                           COLVARPROXY_VERSION \
                           gromacs/src/colvarproxy_gromacs_version.h \

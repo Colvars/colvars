@@ -8,6 +8,10 @@ if [ -z "${key}" ] ; then
 fi
 
 gh actions-cache --help >& /dev/null || gh extension install actions/gh-actions-cache
+retval=$?
+if [ ${retval} != 0 ] ; then
+    exit ${retval}
+fi
 
 # Keep at most one cache for each branch
 branches=$(gh actions-cache list --key ${key} | cut -f 3 | uniq)
@@ -16,6 +20,8 @@ for branch in ${branches} ; do
     i=${#caches[@]}
     while [ ${i} -ge 1 ] ; do
         if [ -n "${caches[${i}]}" ] ; then
+            # Ignoring errors caused by sporadic race conditions; deleting the cache should not
+            # be a blocking step
             gh actions-cache delete --confirm "${caches[${i}]}" || true
         fi
         i=$((${i} - 1))
