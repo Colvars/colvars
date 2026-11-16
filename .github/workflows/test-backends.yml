@@ -62,6 +62,7 @@ jobs:
       # Special variable for VMD test case since it's the only one
       # which needs to checkout 2 repos
       vmd_plugins_repo: Colvars/vmd-plugins
+      vmd_plugins_repo_ref: develop
       path_compile_script: devel-tools/compile-vmd.sh
       test_interface_directory: vmd/tests/interface
       rpath_exe: install/vmd
