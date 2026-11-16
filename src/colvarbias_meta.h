@@ -16,8 +16,8 @@
 #include <vector>
 
 #include "colvarbias.h"
+#include "colvargrid.h"
 
-class colvar_grid_scalar;
 class colvar_grid_gradient;
 
 
