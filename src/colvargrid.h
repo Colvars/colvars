@@ -280,6 +280,11 @@ public:
   /// \param multi_i multiplicity of the data - if 0, assume gradient multiplicity (mult = nd)
   colvar_grid(std::string const &filename, size_t mult_i = 1);
 
+  /// \brief Constructor from a dx file
+  /// \param filename multicol file containing data to be read
+  /// \param multi_i multiplicity of the data - if 0, assume gradient multiplicity (mult = nd)
+  colvar_grid(std::string const &filename, std::vector<bool> periodic_in, size_t mult_i = 1);
+
   int init_from_colvars(std::vector<colvar *> const &colvars,
                         size_t mult_i = 1,
                         bool add_extra_bin = false,
@@ -994,6 +999,8 @@ public:
   /// Read a grid written by write_multicol(), incrementing if add is true
   std::istream & read_multicol(std::istream &is, bool add = false);
 
+  std::istream & read_opendx(std::istream &is, bool add = false );
+
   /// Read a grid written by write_multicol(), incrementing if add is true
   int read_multicol(std::string const &filename,
                     std::string description = "grid file",
@@ -1447,7 +1454,8 @@ public:
   /// \brief Provide the sample count by which each binned value
   /// should be divided
   std::shared_ptr<colvar_grid_count> samples;
-
+  /// Continuous weights instead of samples, eg. for smoothed ABF
+  std::shared_ptr<colvar_grid_scalar> weights;
   /// Default constructor
   colvar_grid_gradient();
 
@@ -1463,17 +1471,36 @@ public:
   //                      std::string config = std::string());
 
   /// Constructor from a multicol file
-  colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in = nullptr);
+  explicit colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in = nullptr);
+  explicit colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_scalar> weights_in= nullptr);
 
-  /// Constructor from a vector of colvars and a pointer to the count grid, with extra params
-  colvar_grid_gradient(std::vector<colvar *> &colvars,
+
+  /// Constructor from a vector of colvars and a pointer to the count grid
+  explicit colvar_grid_gradient(std::vector<colvar *> &colvars,
                        std::shared_ptr<colvar_grid_count> samples_in = nullptr,
                        std::shared_ptr<const colvar_grid_params> params = nullptr,
                        std::string config = std::string());
+  explicit  colvar_grid_gradient(std::vector<colvar *> &colvars,
+                       std::shared_ptr<colvar_grid_scalar> weights_in,
+                       std::shared_ptr<const colvar_grid_params> params = nullptr,
+                       std::string config = std::string());
+
 
   /// Parameters for smoothing data with low sampling
-  int full_samples;
-  int min_samples;
+  cvm::real full_samples;
+  cvm::real min_samples;
+  cvm::real const cutoff_factor = 3.72;
+
+protected:
+
+  /// Scratch buffers for kernel accumulation in acc_force(), kept as members
+  /// to avoid heap allocations at every step
+  std::vector<std::vector<cvm::real>> kernel_w_1d;
+  std::vector<std::vector<int>> kernel_idx_1d;
+  std::vector<int> kernel_current_ix;
+  std::vector<int> kernel_wrapped_ix;
+
+public:
 
   /// Write the current grid parameters to a string
   std::string get_state_params() const override;
@@ -1536,10 +1563,24 @@ public:
   inline void vector_value(std::vector<int> const &ix, std::vector<cvm::real> &v) const
   {
     cvm::real const * p = &value(ix);
+
     if (samples) {
       int count = samples->value(ix);
       if (count) {
         cvm::real invcount = 1.0 / count;
+        for (size_t i = 0; i < mult; i++) {
+          v[i] = invcount * p[i];
+        }
+      } else {
+        for (size_t i = 0; i < mult; i++) {
+          v[i] = 0.0;
+        }
+      }
+    }
+    else if (weights) {
+      cvm::real weight = weights->value(ix);
+      if (weight > 0) {
+        cvm::real invcount = 1.0 / weight;
         for (size_t i = 0; i < mult; i++) {
           v[i] = invcount * p[i];
         }
@@ -1561,33 +1602,127 @@ public:
     for (size_t imult = 0; imult < mult; imult++) {
       data[address(ix) + imult] += values[imult].real_value;
     }
-    if (samples)
-      samples->increase(ix, 1);
+    if (samples) {
+      samples->increase(ix,1);
+    }
+    else if (weights) {
+      cvmodule->error("acc_value is only in use for ti bias and shouldn't be used with non-integer weights", COLVARS_ERROR);
+    }
   }
 
   /// \brief Accumulate the gradient based on the force (i.e. sums the
   /// opposite of the force)
-  inline void acc_force(std::vector<int> const &ix, cvm::real const *forces) {
+  inline void acc_force(std::vector<int> const &ix, cvm::real const *forces,
+                              cvm::real fact = 1.0) {
     for (size_t imult = 0; imult < mult; imult++) {
-      data[address(ix) + imult] -= forces[imult];
+      data[address(ix) + imult] -= forces[imult] * fact;
     }
-    if (samples)
+    if (samples) {
       samples->increase(ix, 1);
+    }
+    else if (weights) {
+      weights->increase(ix,fact);
+    }
   }
 
+  /// \brief Accumulate the gradient based on the force (i.e. sums the
+  /// opposite of the force)
+  /// cv_value corresponds to the grid coordinates i.e. (3.5,6.2) inside the grid of dimension nx
+  inline void acc_force(std::vector<cvm::real> const &cv_value,
+                      std::vector<int> const &bin_value,
+                      cvm::real const *force,
+                      cvm::real smoothing = 0, cvm::real kernel_reduction_speed = 1.) {
+
+  cvm::real const weight_here = smoothing ? weights->value(bin_value) : 0.0;
+  if (smoothing && weight_here < full_samples) {
+    // Kernel bandwidth shrinks as the bin accumulates samples
+    cvm::real const bandwidth = smoothing
+      * std::max(0., (1 - (std::max(0., weight_here - min_samples) / full_samples) * kernel_reduction_speed));
+    cvm::real const inv_squared_smooth = 1.0 / (std::max(bandwidth * bandwidth, 1e-5));
+    cvm::real const cutoff = cutoff_factor * bandwidth;
+
+    // Resizing is a no-op after the first call; clear() keeps the capacity
+    kernel_w_1d.resize(nd);
+    kernel_idx_1d.resize(nd);
+    kernel_current_ix.assign(nd, 0);
+    kernel_wrapped_ix.resize(nd);
+
+    cvm::real total_sum = 1.0;
+    for (size_t i = 0; i < nd; i++) {
+      std::vector<cvm::real> &w_1d = kernel_w_1d[i];
+      std::vector<int> &idx_1d = kernel_idx_1d[i];
+      w_1d.clear();
+      idx_1d.clear();
+      cvm::real dim_sum = 0.0;
+      if (cutoff <= 0.5) {
+        dim_sum += 1;
+        w_1d.push_back(1);
+        idx_1d.push_back(bin_value[i]);
+      } else {
+        // can be negative or > nx[i] to allow for distance calculation
+        int i_min = static_cast<int>(std::floor(cv_value[i] - cutoff - 0.5));
+        int i_max = static_cast<int>(std::ceil(cv_value[i] + cutoff + 0.5));
+        if (!periodic[i]) {
+          if (i_min < 0) i_min = 0;
+          if (i_max >= nx[i]) i_max = nx[i] - 1;
+        }
+        for (int ix = i_min; ix <= i_max; ix++) {
+          // Calculate 1D Gaussian component
+          cvm::real diff = (static_cast<cvm::real>(ix) + 0.5) - cv_value[i];
+          cvm::real weight = cvm::exp(-diff * diff * inv_squared_smooth);
+          w_1d.push_back(weight);
+          dim_sum += weight;
+          if (periodic[i]) {
+            // Safe modulo for negative numbers
+            idx_1d.push_back((ix % nx[i] + nx[i]) % nx[i]);
+          } else {
+            idx_1d.push_back(ix);
+          }
+        }
+      }
+      // The N-D sum is the product of the 1D sums
+      total_sum *= dim_sum;
+    }
+
+    cvm::real inv_total_sum = 1.0 / total_sum;
+
+    bool done = false;
+    while (!done) {
+      cvm::real combined_weight = inv_total_sum;
+      for (size_t i = 0; i < nd; i++) {
+        int local_pos = kernel_current_ix[i];
+        combined_weight *= kernel_w_1d[i][local_pos];
+        kernel_wrapped_ix[i] = kernel_idx_1d[i][local_pos];
+      }
+      acc_force(kernel_wrapped_ix, force, combined_weight);
+      // iterates through the kernel support
+      for (int i = nd - 1; i >= 0; i--) {
+        if (++kernel_current_ix[i] >= static_cast<int>(kernel_w_1d[i].size())) {
+          if (i == 0) {
+            done = true;
+            break;
+          }
+          kernel_current_ix[i] = 0;
+        } else {
+          break;
+        }
+      }
+    }
+  } else {
+    acc_force(bin_value, force);
+  }
+}
   /// \brief Return the value of the function at ix divided by its
   /// number of samples (if the count grid is defined)
   virtual cvm::real value_output(std::vector<int> const &ix,
                                  size_t const &imult = 0) const override
   {
-    int s;
-    if (samples) {
-      return ( (s = samples->value(ix)) > 0) ?
-        (data[address(ix) + imult] / cvm::real(s)) :
-        0.0;
-    } else {
-      return data[address(ix) + imult];
+    cvm::real s;
+    if (samples || weights) {
+      s = samples ? static_cast<cvm::real>(samples->value(ix)) : weights->value(ix);
+      return s > 0 ?(data[address(ix) + imult] / s) : 0.0;
     }
+    return data[address(ix) + imult];
   }
 
   /// Compute the inverse weight corresponding to smoothing factor as in ABF
@@ -1614,8 +1749,8 @@ public:
   {
     cvm::real weight, fact;
 
-    if (samples) {
-      weight = cvm::real(samples->value(ix));
+    if (samples || weights) {
+      weight = samples ? cvm::real(samples->value(ix)) : weights->value(ix);
     } else {
       weight = 1.;
     }
@@ -1638,11 +1773,12 @@ public:
     cvm::real weight, fact;
 
     if (samples) {
-      weight = cvm::real(samples->value(ix));
+      weight = static_cast<cvm::real>(samples->value(ix));
+    } else if (weights) {
+      weight = weights->value(ix);
     } else {
       weight = 1.;
     }
-
     if (smoothed) {
       fact = smooth_inverse_weight(weight);
     } else {
@@ -1664,13 +1800,14 @@ public:
                            bool add = false) override
   {
     if (add) {
-      if (samples)
-        data[address(ix) + imult] += new_value * samples->new_value(ix);
+      if (samples || weights) {
+        data[address(ix) + imult] += new_value * (samples ? samples->new_value(ix) : weights->new_value(ix));
+      }
       else
         data[address(ix) + imult] += new_value;
     } else {
-      if (samples)
-        data[address(ix) + imult] = new_value * samples->value(ix);
+      if (samples || weights)
+        data[address(ix) + imult] = new_value * (samples ? samples->value(ix) : weights->value(ix));
       else
         data[address(ix) + imult] = new_value;
     }

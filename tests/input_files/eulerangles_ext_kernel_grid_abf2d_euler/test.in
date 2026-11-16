@@ -1,0 +1,68 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+    name eulerTheta
+    outputAppliedForce on
+
+    extendedLagrangian      on
+    extendedFluctuation     0.1
+    extendedTimeConstant    200.0
+    extendedTemp            500.0
+    extendedLangevinDamping 0.0 # suppress random friction term
+
+    eulerTheta {
+        debugGradients on
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+}
+
+colvar {
+    name eulerPhi
+    outputAppliedForce on
+
+    extendedLagrangian      on
+    extendedFluctuation     0.1
+    extendedTimeConstant    200.0
+    extendedTemp            500.0
+    extendedLangevinDamping 0.0 # suppress random friction term
+
+    eulerPhi {
+        debugGradients on
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+}
+
+colvar {
+    name eulerPsi
+
+    extendedLagrangian      on
+    extendedFluctuation     0.1
+    extendedTimeConstant    200.0
+    extendedTemp            500.0
+    extendedLangevinDamping 0.0 # suppress random friction term
+
+    outputAppliedForce on
+    eulerPsi {
+        debugGradients on
+        atoms {
+            indexGroup RMSD_atoms
+        }
+        refPositionsFile rmsd_atoms_refpos.xyz
+    }
+}
+
+abf {
+    colvars        eulerPhi eulerTheta
+    smoothing 2.0
+    grid {
+        widths 5 5
+    }
+}

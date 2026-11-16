@@ -238,18 +238,19 @@ colvars:   # outputFreq = 5
 colvars:   # applyBias = on [default]
 colvars:   # hideJacobian = off [default]
 colvars:   Jacobian (geometric) forces will be included in reported free energy gradients.
-colvars:   # fullSamples = 1
-colvars:   # minSamples = 0 [default]
+colvars:   # DXhistory = off [default]
+colvars:   # fullSamples = 2
+colvars:   # minSamples = 1 [default]
 colvars:   # inputPrefix =  [default]
 colvars:   # historyFreq = 5
 colvars:   # shared = off [default]
 colvars:   # updateBias = on [default]
 colvars:   # maxForce =  [default]
+colvars:   # KernelReductionSpeed = 1 [default]
+colvars:   # smoothing = 0 [default]
 colvars:   # CZARestimator = on [default]
 colvars:   # integrate = on [default]
-colvars:   31 computation : 29
 colvars:   Will perform weighted Poisson integrator using 1 threads.
-colvars:   31 computation : 29
 colvars:   Will perform weighted Poisson integrator using 1 threads.
 colvars:   # UIestimator = off [default]
 colvars:   Finished ABF setup.
@@ -313,19 +314,19 @@ colvars: Re-initialized atom group for variable "dihedral":0/2. 1 atoms: total m
 colvars: Re-initialized atom group for variable "dihedral":0/3. 1 atoms: total mass = 12.011, total charge = 0.07.
 colvars:   Initializing extended coordinate to colvar value.
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 98 steps, error: 8.91766e-07
+colvars:   Integrated in 97 steps, error: 9.14893e-07
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 98 steps, error: 8.91766e-07
+colvars:   Integrated in 97 steps, error: 9.14893e-07
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 1 steps, error: 5.94781e-07
+colvars:   Integrated in 1 steps, error: 6.2633e-07
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 1 steps, error: 5.94781e-07
+colvars:   Integrated in 1 steps, error: 6.2633e-07
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 97 steps, error: 9.67162e-07
+colvars:   Integrated in 99 steps, error: 7.75713e-07
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 97 steps, error: 8.26587e-07
+colvars:   Integrated in 98 steps, error: 9.06861e-07
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 1 steps, error: 6.47535e-07
+colvars:   Integrated in 1 steps, error: 5.39732e-07
 colvars:   Laplacian computation will be precomputed; precomputing will use 4.38616e-05 GB of memory.
-colvars:   Integrated in 1 steps, error: 5.71488e-07
+colvars:   Integrated in 1 steps, error: 5.7796e-07
 colvars: Saving collective variables state to "test.colvars.state".

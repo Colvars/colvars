@@ -17,7 +17,7 @@
 #include "colvargrid_def.h"
 
 colvar_grid_gradient::colvar_grid_gradient()
-  : colvar_grid<cvm::real>(), samples(NULL)
+  : colvar_grid<cvm::real>(), samples(NULL), weights(NULL)
 {}
 
 
@@ -25,15 +25,26 @@ colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars,
                                            std::shared_ptr<colvar_grid_count> samples_in,
                                            std::shared_ptr<const colvar_grid_params> params,
                                            std::string config)
-  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params ? params : samples_in, config), samples(samples_in)
+  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params ? params : samples_in, config), samples(samples_in), weights(NULL)
 {
   if (samples_in)
     samples_in->has_parent_data = true;
 }
 
+colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars,
+                                           std::shared_ptr<colvar_grid_scalar> weights_in,
+                                           std::shared_ptr<const colvar_grid_params> params,
+                                           std::string config)
+  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params ? params : weights_in, config), samples(NULL), weights(weights_in)
+{
+  if (weights_in)
+    weights_in->has_parent_data = true;
+}
+
+
 colvar_grid_gradient::colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in)
   : colvar_grid<cvm::real>(filename, 0),
-    samples(samples_in)
+    samples(samples_in), weights(NULL)
 {
   // We have called the colvar_grid constructor, which doesn't know about samples
   if (samples) {
@@ -41,6 +52,21 @@ colvar_grid_gradient::colvar_grid_gradient(std::string const &filename, std::sha
     for (size_t i = 0; i < samples->data.size(); i++) {
       for (size_t a = 0; a < nd; a++) {
         data[i*nd+a] *= samples->data[i];
+      }
+    }
+  }
+}
+
+colvar_grid_gradient::colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_scalar> weights_in)
+  : colvar_grid<cvm::real>(filename, 0),
+    samples(NULL), weights(weights_in)
+{
+  // We have called the colvar_grid constructor, which doesn't know about samples
+  if (weights) {
+    // Need to multiply by weights
+    for (size_t i = 0; i < weights->data.size(); i++) {
+      for (size_t a = 0; a < nd; a++) {
+        data[i*nd+a] *= weights->data[i];
       }
     }
   }
@@ -163,6 +189,10 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
       size_t const samples_here = samples->value(ix);
       if (samples_here)
         integral += (value(ix) / cvm::real(samples_here) - corr) * cv[0]->width;
+    } else if (weights) {
+      cvm::real const weights_here = weights->value(ix);
+      if (weights_here > 0.0)
+        integral += (value(ix) / weights_here - corr) * cv[0]->width;
     } else {
       integral += (value(ix) - corr) * cv[0]->width;
     }
