@@ -123,16 +123,38 @@ int gpu_graph_t::init_graph_exec(colvarmodule* cvmodule, cudaStream_t stream) {
   int error_code = COLVARS_OK;
   if (graph_exec_initialized) return error_code;
   if (!nodes.empty()) {
+    bool success = false;
+    cudaGraphNode_t error_node = nullptr;
+#if defined(COLVARS_HIP) || (CUDART_VERSION >= 12000)
+    // cudaGraphInstantiateWithParams and cudaGraphInstantiateFlagUpload
+    // are available since CUDA 12.0
     cudaGraphInstantiateParams params{0};
     params.flags = cudaGraphInstantiateFlagUpload;
     params.uploadStream = stream;
     error_code |= checkGPUError(cudaGraphInstantiateWithParams(&graph_exec, graph, &params));
-    if (params.result_out == cudaGraphInstantiateSuccess) {
+    success = (params.result_out == cudaGraphInstantiateSuccess);
+    error_node = params.errNode_out;
+#else
+    // CUDA < 12.0: use the legacy signature of cudaGraphInstantiate, which
+    // reports the failing node and a log message, then upload the executable
+    // graph to the device explicitly (cudaGraphUpload is available since 11.1)
+    char log_buffer[1024] = {0};
+    const cudaError_t instantiate_result = cudaGraphInstantiate(
+      &graph_exec, graph, &error_node, log_buffer, sizeof(log_buffer));
+    error_code |= checkGPUError(instantiate_result);
+    success = (instantiate_result == cudaSuccess);
+    if (success) {
+      error_code |= checkGPUError(cudaGraphUpload(graph_exec, stream));
+    } else if (log_buffer[0] != '\0') {
+      cvmodule->log("CUDA graph instantiation log: " + std::string(log_buffer) + "\n");
+    }
+#endif
+    if (success) {
       graph_exec_initialized = true;
     } else {
       // Search for the error node
       for (const auto& node: nodes) {
-        if (params.errNode_out == node.second) {
+        if (error_node == node.second) {
           cvmodule->log("Error on initialize node \"" + node.first + "\".\n");
         }
       }
