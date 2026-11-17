@@ -18,7 +18,7 @@ int colvarcomp_gpu_graph::calc_value_gpu(bool requires_lattice) {
   if (!graph_calc_value.graph_exec_initialized) {
     error_code |= checkGPUError(cudaGraphCreate(&graph_calc_value.graph, 0));
     error_code |= add_calc_value_node();
-    error_code |= graph_calc_value.init_graph_exec(cvmodule, cvc->get_stream());
+    error_code |= graph_calc_value.init_graph_exec(cvc->get_stream());
     if (cvmodule->debug()) {
       const std::string filename = cvmodule->output_prefix() + "_" + cvc->name + "_calc_value.dot";
       error_code |= graph_calc_value.dump_graph(filename);
@@ -65,7 +65,7 @@ int colvarcomp_gpu_graph::calc_gradients_gpu(bool requires_lattice) {
   if (!graph_calc_gradients.graph_exec_initialized) {
     error_code |= checkGPUError(cudaGraphCreate(&graph_calc_gradients.graph, 0));
     error_code |= add_calc_gradients_node();
-    error_code |= graph_calc_gradients.init_graph_exec(cvmodule, cvc->get_stream());
+    error_code |= graph_calc_gradients.init_graph_exec(cvc->get_stream());
     if (cvmodule->debug()) {
       const std::string filename = cvmodule->output_prefix() + "_" + cvc->name + "_calc_gradients.dot";
       error_code |= graph_calc_gradients.dump_graph(filename);
@@ -93,7 +93,7 @@ int colvarcomp_gpu_graph::calc_Jacobian_derivative_gpu(bool requires_lattice) {
   if (!graph_calc_Jacobian_derivative.graph_exec_initialized) {
     error_code |= checkGPUError(cudaGraphCreate(&graph_calc_Jacobian_derivative.graph, 0));
     error_code |= add_calc_Jacobian_derivative_node();
-    error_code |= graph_calc_Jacobian_derivative.init_graph_exec(cvmodule, cvc->get_stream());
+    error_code |= graph_calc_Jacobian_derivative.init_graph_exec(cvc->get_stream());
     if (cvmodule->debug()) {
       const std::string filename = cvmodule->output_prefix() + "_" + cvc->name + "_calc_Jacobian_derivative.dot";
       error_code |= graph_calc_Jacobian_derivative.dump_graph(filename);
@@ -113,7 +113,7 @@ int colvarcomp_gpu_graph::calc_force_invgrads_gpu(bool requires_lattice) {
   if (!graph_total_force.graph_exec_initialized) {
     error_code |= checkGPUError(cudaGraphCreate(&graph_total_force.graph, 0));
     error_code |= add_calc_force_invgrads_node();
-    error_code |= graph_total_force.init_graph_exec(cvmodule, cvc->get_stream());
+    error_code |= graph_total_force.init_graph_exec(cvc->get_stream());
     if (cvmodule->debug()) {
       const std::string filename = cvmodule->output_prefix() + "_" + cvc->name + "_calc_force_invgrads.dot";
       error_code |= graph_total_force.dump_graph(filename);

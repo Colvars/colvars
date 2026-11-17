@@ -15,7 +15,9 @@ namespace colvars_gpu {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
 
 colvaratoms_gpu::colvaratoms_gpu(colvarmodule *cvmodule_in)
-  : rot_gpu(cvmodule_in), cvmodule(cvmodule_in) {
+  : cvmodule(cvmodule_in), graph_debug(cvmodule), rot_gpu(cvmodule),
+  graph_read_compute(cvmodule), graph_calc_fit_gradients(cvmodule),
+  graph_apply_force(cvmodule) {
   std::memset(&gpu_buffers, 0, sizeof(gpu_buffers));
   std::memset(&calc_fit_gradients_gpu_info, 0, sizeof(calc_fit_gradients_gpu_info));
   std::memset(&calc_fit_forces_gpu_info, 0, sizeof(calc_fit_forces_gpu_info));
@@ -179,7 +181,7 @@ int colvaratoms_gpu::read_data_gpu(cvm::atom_group* cpu_atoms) {
       error_code |= add_update_cpu_buffers_nodes(cpu_atoms, graph_read_compute.graph, graph_read_compute.nodes);
       if (error_code != COLVARS_OK) return error_code;
     }
-    error_code |= graph_read_compute.init_graph_exec(cvmodule, cpu_atoms->get_stream());
+    error_code |= graph_read_compute.init_graph_exec(cpu_atoms->get_stream());
     if (cvmodule->debug()) {
       // Debug graph
       const std::string filename = cvmodule->output_prefix() + "_" + cpu_atoms->name + "_read_data.dot";
@@ -229,7 +231,7 @@ int colvaratoms_gpu::calc_fit_gradients_gpu(cvm::atom_group* cpu_atoms) {
     error_code |= add_calc_fit_gradients_nodes(
       cpu_atoms, graph_calc_fit_gradients.graph, graph_calc_fit_gradients.nodes, require_cpu_buffers);
     if (error_code != COLVARS_OK) return error_code;
-    error_code |= graph_calc_fit_gradients.init_graph_exec(cvmodule, cpu_atoms->get_stream());
+    error_code |= graph_calc_fit_gradients.init_graph_exec(cpu_atoms->get_stream());
     if (cvmodule->debug()) {
       const std::string filename = cvmodule->output_prefix() + "_" + cpu_atoms->name + "_calc_fit_gradients.dot";
       graph_calc_fit_gradients.dump_graph(filename);
@@ -1024,7 +1026,7 @@ int colvaratoms_gpu::calc_required_properties_gpu_debug(
     if (to_cpu) {
       error_code |= add_update_cpu_buffers_nodes(cpu_atoms, graph_debug.graph, graph_debug.nodes);
     }
-    graph_debug.init_graph_exec(cvmodule, stream);
+    graph_debug.init_graph_exec(stream);
   }
   error_code |= checkGPUError(cudaGraphLaunch(graph_debug.graph_exec, stream));
   error_code |= checkGPUError(cudaEventRecord(get_event(event_type::read_and_calculate), stream));
@@ -1120,7 +1122,7 @@ int colvaratoms_gpu::add_force_to_proxy_gpu(cvm::atom_group* cpu_atoms) {
     // Add nodes
     error_code |= add_apply_force_nodes(cpu_atoms, graph_apply_force.graph, graph_apply_force.nodes);
     // Intialize the graph
-    error_code |= graph_apply_force.init_graph_exec(cvmodule, cpu_atoms->get_stream());
+    error_code |= graph_apply_force.init_graph_exec(cpu_atoms->get_stream());
     if (cvmodule->debug()) {
       const std::string filename = cpu_atoms->name + "_apply_forces.dot";
       error_code |= graph_apply_force.dump_graph(filename);
