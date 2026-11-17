@@ -1482,63 +1482,6 @@ public:
   int full_samples;
   int min_samples;
 
-  /// Write the current grid parameters to a string
-  std::string get_state_params() const;
-
-  /// Read new grid parameters from a string
-  int parse_params(std::string const &conf,
-                   colvarparse::Parse_Mode const parse_mode = colvarparse::parse_normal);
-
-  /// Read all grid parameters and data from a formatted stream
-  std::istream & read_restart(std::istream &is);
-
-  /// Read all grid parameters and data from an unformatted stream
-  cvm::memory_stream & read_restart(cvm::memory_stream &is);
-
-  /// Write all grid parameters and data to a formatted stream
-  std::ostream & write_restart(std::ostream &os);
-
-  /// Write all grid parameters and data to an unformatted stream
-  cvm::memory_stream & write_restart(cvm::memory_stream &os);
-
-  /// Read all grid parameters and data from a formatted stream
-  std::istream &read_raw(std::istream &is);
-
-  /// Read all grid parameters and data from an unformatted stream
-  cvm::memory_stream &read_raw(cvm::memory_stream &is);
-
-  /// Write all grid data to a formatted stream (without labels, as they are represented in memory)
-  /// \param[in,out] os Stream object
-  /// \param[in] buf_size Number of values per line
-  std::ostream &write_raw(std::ostream &os, size_t const buf_size = 3) const;
-
-  /// Write all grid data to an unformatted stream
-  /// \param[in,out] os Stream object
-  /// \param[in] buf_size Number of values per line (note: ignored because there is no formatting)
-  cvm::memory_stream &write_raw(cvm::memory_stream &os, size_t const buf_size = 3) const;
-
-  /// Read a grid written by write_multicol(), incrementin if data is true
-  std::istream & read_multicol(std::istream &is, bool add = false);
-
-  /// Read a grid written by write_multicol(), incrementin if data is true
-  int read_multicol(std::string const &filename,
-                            std::string description = "grid file",
-                            bool add = false);
-
-  /// Write grid in a format which is both human-readable and gnuplot-friendly
-  std::ostream & write_multicol(std::ostream &os) const;
-
-  /// Write grid in a format which is both human-readable and gnuplot-friendly
-  int write_multicol(std::string const &filename,
-                             std::string description = "grid file") const;
-
-  /// Write the grid data without labels, as they are represented in memory
-  std::ostream & write_opendx(std::ostream &os) const;
-
-  /// Write the grid data without labels, as they are represented in memory
-  int write_opendx(std::string const &filename,
-                           std::string description = "grid file") const;
-
   /// \brief Get a vector with the binned value(s) indexed by ix, normalized if applicable
   inline void vector_value(std::vector<int> const &ix, std::vector<cvm::real> &v) const
   {
