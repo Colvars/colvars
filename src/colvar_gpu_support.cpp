@@ -25,7 +25,12 @@ int gpuAssert(colvarmodule* cvmodule, cudaError_t code, const char *file, int li
       error += "\nBacktrace:\n" + std::to_string(std::stacktrace::current()) + "\n";
 #endif
 #endif
-    return cvm::error_static(cvmodule, error, COLVARS_ERROR);
+    if (cvmodule) {
+      return cvmodule->error(error, COLVARS_ERROR);
+    } else {
+      std::fprintf(stderr, "%s\n", error.c_str());
+      return COLVARS_ERROR;
+    }
   }
   return COLVARS_OK;
 }
@@ -110,7 +115,6 @@ gpu_graph_t::~gpu_graph_t() {
 
 int gpu_graph_t::reset() {
   // gpu_graph_t has no module pointer (checkGPUError needs one in scope)
-  colvarmodule *cvmodule = nullptr;
   int error_code = COLVARS_OK;
   if (graph) {
     error_code |= checkGPUError(cudaGraphDestroy(graph));
@@ -125,7 +129,7 @@ int gpu_graph_t::reset() {
   return error_code;
 }
 
-int gpu_graph_t::init_graph_exec(colvarmodule* cvmodule, cudaStream_t stream) {
+int gpu_graph_t::init_graph_exec(cudaStream_t stream) {
   int error_code = COLVARS_OK;
   if (graph_exec_initialized) return error_code;
   if (!nodes.empty()) {
@@ -172,7 +176,6 @@ int gpu_graph_t::init_graph_exec(colvarmodule* cvmodule, cudaStream_t stream) {
 
 int gpu_graph_t::dump_graph(const std::string& filename) {
   // gpu_graph_t has no module pointer (checkGPUError needs one in scope)
-  colvarmodule *cvmodule = nullptr;
   cudaGraphDebugDotFlags dotFlags = cudaGraphDebugDotFlagsVerbose;
   return checkGPUError(cudaGraphDebugDotPrint(graph, filename.c_str(), dotFlags));
 }

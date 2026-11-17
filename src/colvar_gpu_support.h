@@ -421,7 +421,7 @@ namespace colvars_gpu {
 class gpu_graph_t {
 public:
   /// \brief Constructor
-  gpu_graph_t() {}
+  gpu_graph_t(colvarmodule* cvmodule_in): cvmodule(cvmodule_in) {}
   /// \brief Reset the CUDA graph
   int reset();
   /// \brief Destructor
@@ -429,7 +429,7 @@ public:
   /// \brief Dump the CUDA graph to a dot file for debugging
   int dump_graph(const std::string& filename);
   /// \brief Initialize CUDA graph execution instance
-  int init_graph_exec(colvarmodule* cvmodule, cudaStream_t stream);
+  int init_graph_exec(cudaStream_t stream);
   /// \brief Flag to describe whether the graph execution instance has been initialized
   bool graph_exec_initialized = false;
   /// \brief CUDA graph object
@@ -438,6 +438,8 @@ public:
   cudaGraphExec_t graph_exec = nullptr;
   /// \brief List of compute nodes
   std::unordered_map<std::string, cudaGraphNode_t> nodes = {};
+private:
+  colvarmodule* cvmodule;
 };
 
 /**
