@@ -163,14 +163,7 @@ cvm::rvector cvm::system_boundary_conditions::position_distance(cvm::atom_pos co
 {
   cvm::rvector diff = (pos2 - pos1);
 
-  if (type() == types::non_periodic) {
-    return diff;
-  }
-
-  if (type() == types::unsupported) {
-#if !(defined(__HIP_DEVICE_COMPILE__)) && !(defined(__CUDA_ARCH__))
-    cvm::error_static("Error: unsupported boundary conditions.\n", COLVARS_INPUT_ERROR);
-#endif
+  if (type() == types::non_periodic || type() == types::unsupported) {
     return diff;
   }
 
