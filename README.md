@@ -1,4 +1,4 @@
-# Collective variables module (Colvars)
+# Collective variables module  colvars
 
 ![Colvars logo](doc/logo/colvars-logo.svg)
 
