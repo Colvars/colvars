@@ -149,16 +149,14 @@ int colvarproxy_system::get_d2E_dlambda2(cvm::real*)
 
 int colvarproxy_system::get_tabf_alpha(cvm::real * /* alpha */)
 {
-  return cvm::error_static("Error in get_tabf_alpha: TABF alpha dynamics is not supported by this build.",
-    COLVARS_NOT_IMPLEMENTED);
+  return COLVARS_NOT_IMPLEMENTED;
 }
 
 
 int colvarproxy_system::get_tabf_alpha_boundaries(cvm::real * /* lower */,
                                                    cvm::real * /* upper */)
 {
-  return cvm::error_static("Error in get_tabf_alpha_boundaries: TABF alpha dynamics is not supported by this build.",
-    COLVARS_NOT_IMPLEMENTED);
+  return COLVARS_NOT_IMPLEMENTED;
 }
 
 
@@ -171,13 +169,11 @@ void colvarproxy_system::set_tabf_alpha(cvm::real alpha)
 
 int colvarproxy_system::send_tabf_alpha()
 {
-  return cvm::error_static("Error in set_tabf_alpha: TABF alpha dynamics is not supported by this build.",
-    COLVARS_NOT_IMPLEMENTED);
+  return COLVARS_NOT_IMPLEMENTED;
 }
 
 
 int colvarproxy_system::get_dE_dtabf_alpha(cvm::real * /* dE_dalpha */)
 {
-  return cvm::error_static("Error in get_dE_dtabf_alpha: TABF alpha dynamics is not supported by this build.",
-    COLVARS_NOT_IMPLEMENTED);
+  return COLVARS_NOT_IMPLEMENTED;
 }

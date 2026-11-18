@@ -331,44 +331,15 @@ int colvar::init(std::string const &conf)
 
   error_code |= init_grid_parameters(conf);
 
-  const bool is_tabf_alpha =
-    is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "tabfAlpha";
-  if (is_tabf_alpha) {
-    cvm::real tabf_lower = 0.0;
-    cvm::real tabf_upper = 0.0;
-    error_code |= cvmodule->proxy->get_tabf_alpha_boundaries(&tabf_lower, &tabf_upper);
-    const bool lower_was_set = key_lookup(conf, "lowerBoundary");
-    const bool upper_was_set = key_lookup(conf, "upperBoundary");
-    if (lower_was_set && cvm::fabs(lower_boundary.real_value - tabf_lower) >
-                           colvar_boundaries_tol * width) {
-      error_code |= cvmodule->error(
-        "Error: tabfAlpha lowerBoundary " + cvm::to_str(lower_boundary) +
-        " conflicts with back-end TABF alpha minimum " + cvm::to_str(tabf_lower) + ".\n",
-        COLVARS_INPUT_ERROR);
-    }
-    if (upper_was_set && cvm::fabs(upper_boundary.real_value - tabf_upper) >
-                           colvar_boundaries_tol * width) {
-      error_code |= cvmodule->error(
-        "Error: tabfAlpha upperBoundary " + cvm::to_str(upper_boundary) +
-        " conflicts with back-end TABF alpha maximum " + cvm::to_str(tabf_upper) + ".\n",
-        COLVARS_INPUT_ERROR);
-    }
-    lower_boundary.real_value = tabf_lower;
-    upper_boundary.real_value = tabf_upper;
-    enable(f_cv_lower_boundary);
-    enable(f_cv_upper_boundary);
-  }
-
   // Detect if we have a single component that is an external back-end parameter
   if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "alchLambda") {
     enable(f_cv_external);
 
     error_code |= static_cast<colvar::alch_lambda *>(cvcs[0].get())->init_alchemy(time_step_factor);
   }
-  if (is_tabf_alpha) {
-    enable(f_cv_external);
-
-    error_code |= static_cast<colvar::tabf_alpha *>(cvcs[0].get())->init_tabf(time_step_factor);
+  if (is_enabled(f_cv_single_cvc) && cvcs[0]->function_type() == "tabfAlpha") {
+    error_code |= static_cast<colvar::tabf_alpha *>(cvcs[0].get())->init_tabf(*this);
+    if (error_code != COLVARS_OK) return error_code;
   }
 
   // If using scripted biases, any colvar may receive bias forces
@@ -1477,6 +1448,8 @@ int colvar::calc()
     error_code |= update_cvc_flags();
     if (error_code != COLVARS_OK) return error_code;
     error_code |= calc_cvcs();
+    // CPU components report failures through the module (calc_value() is void).
+    error_code |= cvmodule->get_error();
     if (error_code != COLVARS_OK) return error_code;
     error_code |= collect_cvc_data();
   }
@@ -2735,7 +2708,7 @@ int colvar::set_state_params(std::string const &conf)
         x = x_ext;
         x_restart = x_ext;
         x_reported = x_ext;
-        cvcs[0]->set_value(x_ext, true);
+        error_code |= cvcs[0]->set_value(x_ext, true);
       }
     }
   } else {

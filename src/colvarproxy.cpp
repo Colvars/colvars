@@ -614,11 +614,31 @@ int colvarproxy::end_of_step()
     send_alch_lambda();
     cached_alch_lambda_changed = false;
   }
-  if (cached_tabf_alpha_changed) {
-    send_tabf_alpha();
-    cached_tabf_alpha_changed = false;
-  }
+  return flush_tabf_alpha();
+}
+
+
+int colvarproxy::flush_tabf_alpha()
+{
+  if (!cached_tabf_alpha_changed) return COLVARS_OK;
+  int const rc = send_tabf_alpha();
+  if (rc != COLVARS_OK) return report_tabf_error(rc, "send_tabf_alpha");
+  cached_tabf_alpha_changed = false;
   return COLVARS_OK;
+}
+
+
+int colvarproxy::report_tabf_error(int code, char const *operation)
+{
+  // A bare NOT_IMPLEMENTED is the status-only response from a missing hook.
+  // Other failures are diagnosed by the back-end (e.g. NAMD's energy schedule).
+  if (code == COLVARS_NOT_IMPLEMENTED) {
+    cvmodule->error(std::string("Error: ") + operation +
+                    ": TABF alpha dynamics requires a NAMD build with TABF support.", code);
+  } else {
+    cvmodule->set_error_bits(code);
+  }
+  return code;
 }
 
 

@@ -936,6 +936,7 @@ int colvarmodule::calc()
   }
 
   error_code |= calc_colvars();
+  if (error_code != COLVARS_OK) return error_code; // Do not bias or integrate invalid values.
   error_code |= calc_biases();
   error_code |= update_colvar_forces();
 
@@ -1066,6 +1067,8 @@ int colvarmodule::calc_colvars()
     error_code |= proxy->smp_loop(variables_active_smp()->size(), [this](int i) {
         return this->calc_component_smp(i);
       });
+    error_code |= this->get_error();
+    if (error_code != COLVARS_OK) return error_code;
 
     this->increase_depth();
     for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
@@ -1078,9 +1081,7 @@ int colvarmodule::calc_colvars()
     // calculate colvars one at a time
     for (cvi = variables_active()->begin(); cvi != variables_active()->end(); cvi++) {
       error_code |= (*cvi)->calc();
-      if (this->get_error()) {
-        return COLVARS_ERROR;
-      }
+      if (this->get_error()) break;
     }
     this->decrease_depth();
   }

@@ -138,6 +138,8 @@ public:
   /// Force to be applied onto alch. lambda, propagated from biasing forces on dE_dlambda
   cvm::real indirect_lambda_biasing_force;
 
+  /// TABF hooks return bare COLVARS_NOT_IMPLEMENTED for missing functionality.
+  /// Back-ends diagnose other failures before returning their status.
   /// Get value of TABF alpha parameter from back-end (if available)
   virtual int get_tabf_alpha(cvm::real* alpha);
 

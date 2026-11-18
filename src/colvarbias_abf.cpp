@@ -149,17 +149,16 @@ int colvarbias_abf::init(std::string const &conf)
     // and make it just a warning if some parameter is set?
   }
 
-  if (uses_tabf_alpha) {
-    bool requested_UI_estimator = false;
-    get_keyval(conf, "UIestimator", requested_UI_estimator, false, colvarparse::parse_silent);
-    if (requested_UI_estimator) {
+  // TABF must reject unsupported requests even when no variable enables eABF.
+  if (is_enabled(f_cvb_extended) || uses_tabf_alpha) {
+    get_keyval(conf, "UIestimator", b_UI_estimator, false);
+    get_keyval(conf, "CZARestimator", b_CZAR_estimator, is_enabled(f_cvb_extended));
+    if (uses_tabf_alpha && b_UI_estimator) {
       return cvmodule->error("Error: UIestimator cannot be used together with a tABF alpha variable.\n",
                              COLVARS_INPUT_ERROR);
     }
 
-    bool requested_CZAR_estimator = false;
-    get_keyval(conf, "CZARestimator", requested_CZAR_estimator, false, colvarparse::parse_silent);
-    if (requested_CZAR_estimator) {
+    if (uses_tabf_alpha && b_CZAR_estimator) {
       return cvmodule->error("Error: CZARestimator cannot be used together with a tABF alpha variable.\n",
                              COLVARS_INPUT_ERROR);
     }
@@ -222,11 +221,6 @@ int colvarbias_abf::init(std::string const &conf)
 
   // Data for eABF z-based estimator
   if (is_enabled(f_cvb_extended)) {
-    get_keyval(conf, "CZARestimator", b_CZAR_estimator, true);
-    if (uses_tabf_alpha && b_CZAR_estimator) {
-      return cvmodule->error("Error: CZARestimator cannot be used together with a tABF alpha variable.\n",
-                             COLVARS_INPUT_ERROR);
-    }
     if ( b_CZAR_estimator ) {
       cvmodule->cite_feature("CZAR eABF estimator");
     }
@@ -303,15 +297,7 @@ int colvarbias_abf::init(std::string const &conf)
 
   // if extendedLangrangian is on, then call UI estimator
   if (is_enabled(f_cvb_extended)) {
-    get_keyval(conf, "UIestimator", b_UI_estimator, false);
-
     if (b_UI_estimator) {
-      if (uses_tabf_alpha) {
-        cvmodule->error("Error: UIestimator cannot be used together with a tABF alpha variable.\n",
-                        COLVARS_INPUT_ERROR);
-        b_UI_estimator = false;
-        return COLVARS_ERROR;
-      }
       if (shared_on) {
         cvmodule->error("Error: UI estimator is not available for multiple-walker (shared) ABF.\n");
         b_UI_estimator = false;

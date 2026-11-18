@@ -235,7 +235,8 @@ CVSCRIPT(colvar_update,
          "value : float or array - Current value; matches the colvar dimensionality",
          0, 0,
          "",
-         this_colvar->calc();
+         int const rc = this_colvar->calc();
+         if (rc != COLVARS_OK) return rc;
          this_colvar->update_forces_energy();
          script->set_result_colvarvalue(this_colvar->value());
          return COLVARS_OK;

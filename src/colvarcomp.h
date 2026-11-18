@@ -274,13 +274,13 @@ public:
 
   /// Forcibly set value of CVC - useful for driving an external coordinate,
   /// eg. lambda dynamics
-  inline void set_value(colvarvalue const &new_value, bool now=false) {
+  inline int set_value(colvarvalue const &new_value, bool now=false) {
     x = new_value;
-    set_external_value(now);
+    return set_external_value(now);
   }
 
   /// Communicate an externally driven CVC value to the back-end
-  virtual int set_external_value(bool now=false) { return COLVARS_OK; }
+  virtual int set_external_value(bool /* now */) { return COLVARS_OK; }
 
 protected:
 
@@ -1127,7 +1127,7 @@ public:
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
   virtual void apply_force(colvarvalue const &force);
-  virtual int set_external_value(bool now=false);
+  int set_external_value(bool now) override;
 };
 
 
@@ -1157,13 +1157,13 @@ protected:
 public:
   tabf_alpha();
   virtual int init(std::string const &conf);
-  int init_tabf(int time_step_factor);
+  int init_tabf(colvar &cv);
   virtual ~tabf_alpha() {}
   virtual void calc_value();
   virtual void calc_force_invgrads();
   virtual void calc_Jacobian_derivative();
   virtual void apply_force(colvarvalue const &force);
-  virtual int set_external_value(bool now=false);
+  int set_external_value(bool now) override;
 };
 
 
