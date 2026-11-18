@@ -1,6 +1,7 @@
 """Local OpenMM regression selection; no remote or CI execution is involved."""
 
 from dataclasses import dataclass
+from functools import lru_cache
 
 import openmm as mm
 import pytest
@@ -14,6 +15,15 @@ def pytest_addoption(parser):
                     default="mixed", help="CUDA precision (Reference uses double)")
     group.addoption("--require-cuda", action="store_true",
                     help="Fail rather than skip if a requested CUDA device is unavailable")
+    group.addoption("--results-json", metavar="FILE",
+                    help="Save per-test outcomes and numerical comparisons")
+
+
+def pytest_configure(config):
+    path = config.getoption("--results-json")
+    if path:
+        from numerical_results import NumericalResults
+        config.pluginmanager.register(NumericalResults(path))
 
 
 @dataclass(frozen=True)
@@ -56,27 +66,30 @@ def pytest_generate_tests(metafunc):
     metafunc.parametrize("engine", params, indirect=True)
 
 
+@lru_cache(maxsize=None)
+def platform_error(name, precision):
+    """Probe bare OpenMM once for each platform and precision in this run."""
+    try:
+        platform = mm.Platform.getPlatformByName(name)
+        if name == "CUDA":
+            system = mm.System()
+            system.addParticle(1.0)
+            integrator = mm.VerletIntegrator(0.001)
+            context = mm.Context(system, integrator, platform,
+                                 {"Precision": precision, "DeterministicForces": "true"})
+            del context
+    except mm.OpenMMException as exc:
+        return str(exc)
+    return None
+
+
 @pytest.fixture
 def engine(request):
     spec = request.param
-    try:
-        platform = mm.Platform.getPlatformByName(spec.platform)
-    except mm.OpenMMException as exc:
+    error = platform_error(spec.platform, spec.precision)
+    if error is not None:
+        message = f"Bare OpenMM {spec.platform} ({spec.precision}) unavailable: {error}"
         if spec.platform != "CUDA" or request.config.getoption("--require-cuda"):
-            pytest.fail(f"Requested OpenMM platform {spec.platform} unavailable: {exc}")
-        pytest.skip(f"CUDA platform unavailable: {exc}")
-    if spec.platform == "CUDA":
-        # Probe bare OpenMM separately, so a broken Colvars CUDA implementation
-        # cannot be misreported as a missing GPU and silently skipped.
-        system = mm.System()
-        system.addParticle(1.0)
-        integrator = mm.VerletIntegrator(0.001)
-        try:
-            context = mm.Context(system, integrator, platform, spec.properties)
-        except mm.OpenMMException as exc:
-            if request.config.getoption("--require-cuda"):
-                pytest.fail(f"Bare OpenMM CUDA context unavailable: {exc}")
-            pytest.skip(f"Bare OpenMM CUDA context unavailable: {exc}")
-        else:
-            del context
+            pytest.fail(message)
+        pytest.skip(message)
     return spec

@@ -12,6 +12,7 @@
 #include <iomanip>
 
 #include "colvarmodule.h"
+#include "colvarfile.h"
 #include "colvarproxy.h"
 #include "colvar.h"
 #include "colvargrid.h"
@@ -1869,7 +1870,7 @@ int colvarbias_meta::setup_output()
 
     // finally, add a new record for this replica to the registry
     if (! registered_replica) {
-      std::ofstream reg_os(replicas_registry_file.c_str(), std::ios::app);
+      std::ofstream reg_os(colvars_file_path(replicas_registry_file.c_str()), std::ios::app);
       if (reg_os) {
         reg_os << replica_id << " " << replica_list_file << "\n";
       } else {

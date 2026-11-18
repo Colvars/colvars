@@ -53,3 +53,17 @@ def test_flush_requires_an_evaluated_state(engine, tmp_path):
         force.flushOutputs(context)
     evaluate(context, 0.65)
     force.flushOutputs(context)
+
+
+def test_failed_backup_preserves_previous_state(engine, tmp_path):
+    prefix = tmp_path / "saved"
+    context, integrator, force = make_context(engine, prefix, configuration(grids=False))
+    evaluate(context, 0.65)
+    force.flushOutputs(context)
+    state_file = Path(str(prefix) + ".colvars.state")
+    saved = state_file.read_bytes()
+    Path(str(state_file) + ".old").mkdir()
+    evaluate(context, 0.7, 1)
+    with pytest.raises(Exception, match="Cannot back up output file"):
+        force.flushOutputs(context)
+    assert state_file.read_bytes() == saved

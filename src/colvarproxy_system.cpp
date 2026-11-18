@@ -8,12 +8,60 @@
 // Colvars repository at GitHub.
 
 #include <algorithm>
+#include <cmath>
 
 #include "colvarmodule.h"
 #include "colvartypes.h"
 #include "colvarproxy_system.h"
 
-
+bool cvm::system_boundary_conditions::set_triclinic_minimum_image(cvm::rvector const &A,
+                                                                 cvm::rvector const &B,
+                                                                 cvm::rvector const &C)
+{
+  set_boundaries(true, true, true, A, B, C);
+  if (type() == types::pbc_triclinic) {
+    // The point initially lies in the centered fractional unit cell. Its
+    // radius is bounded by the farthest corner. Any shorter image has each
+    // fractional coordinate bounded by that radius times the dual norm.
+    // A lattice shift outside the legacy 27 neighbors needs at least 1.5.
+    const double radius2 = 0.25 * std::max({(A+B+C).norm2(), (A+B-C).norm2(),
+                                           (A-B+C).norm2(), (A-B-C).norm2()});
+    const double dual2 = std::max({reciprocal_cell_x.norm2(), reciprocal_cell_y.norm2(),
+                                   reciprocal_cell_z.norm2()});
+    if (radius2 * dual2 < 2.25) return true;
+  }
+  // Three-dimensional LLL reduction (delta=3/4). Integer column operations
+  // preserve the lattice, including for long, strongly tilted cells.
+  cvm::rvector basis[3] = {A, B, C}, orth[3], dual[3];
+  int k = 1;
+  for (int iteration = 0; iteration < 256; ++iteration) {
+    for (int i = 0; i < 3; ++i) {
+      orth[i] = basis[i];
+      for (int j = 0; j < i; ++j)
+        orth[i] -= (orth[i] * dual[j]) * orth[j];
+      const double norm2 = orth[i].norm2();
+      if (!(norm2 > 0.0) || !std::isfinite(norm2)) return false;
+      dual[i] = orth[i] / norm2;
+    }
+    if (k == 3) {
+      unit_cell_x = basis[0]; unit_cell_y = basis[1]; unit_cell_z = basis[2];
+      reciprocal_cell_x = dual[0]; reciprocal_cell_y = dual[1]; reciprocal_cell_z = dual[2];
+      periodic_x = periodic_y = periodic_z = true;
+      set_type(types::pbc_reduced);
+      return true;
+    }
+    for (int j = k-1; j >= 0; --j)
+      basis[k] -= std::round(basis[k] * dual[j]) * basis[j];
+    const double mu = basis[k] * dual[k-1];
+    if (orth[k].norm2() >= (0.75 - mu*mu) * orth[k-1].norm2()) {
+      ++k;
+    } else {
+      std::swap(basis[k], basis[k-1]);
+      k = std::max(1, k-1);
+    }
+  }
+  return false; // Numerically singular or insufficient precision for reduction.
+}
 
 colvarproxy_system::colvarproxy_system()
 {

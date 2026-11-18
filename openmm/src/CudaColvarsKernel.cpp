@@ -76,9 +76,9 @@ KERNEL void addColvarsForces(GLOBAL const double* RESTRICT forces,
 
 class CudaProxy final : public colvarproxy_openmm {
 public:
-    CudaProxy(const ColvarsForce& owner, const System& system, CudaContext& cuda)
-        : colvarproxy_openmm(owner, system), cuda_(cuda), allowGpu_(owner.getUseGpu()) {
-        initializeColvars();
+    CudaProxy(const ColvarsForce& owner, ContextImpl& context, CudaContext& cuda)
+        : colvarproxy_openmm(owner, context.getSystem()), cuda_(cuda), allowGpu_(owner.getUseGpu()) {
+        initializeColvars(context);
     }
     smp_mode_t get_preferred_smp_mode() const override {
         return allowGpu_ ? smp_mode_t::gpu : smp_mode_t::none;
@@ -142,7 +142,7 @@ public:
         OpenMMColvarsLock lock;
         ContextSelector selector(cuda_);
         try {
-            proxy_ = std::make_unique<CudaProxy>(owner, context.getSystem(), cuda_);
+            proxy_ = std::make_unique<CudaProxy>(owner, context, cuda_);
             selectedCount_ = static_cast<int>(proxy_->requestedAtoms().size());
             const size_t size = std::max(1, selectedCount_);
             positions_.initialize<double>(cuda_, 3*size, "colvarsSelectedPositions");

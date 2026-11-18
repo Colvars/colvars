@@ -98,7 +98,8 @@ def harmonic_oracle(positions, box=None):
     return distance, energy, forces
 
 
-def make_context(engine, tmp_path, config=None, box=None, group=1, from_file=False, extra_forces=()):
+def make_context(engine, tmp_path, config=None, box=None, group=1, from_file=False, extra_forces=(),
+                 integrator=None):
     system = mm.System()
     for mass in MASSES:
         system.addParticle(float(mass))
@@ -118,7 +119,8 @@ def make_context(engine, tmp_path, config=None, box=None, group=1, from_file=Fal
     force.setUsesPeriodicBoundaryConditions(box is not None)
     force.setForceGroup(group)
     system.addForce(force)
-    integrator = mm.VerletIntegrator(DT)
+    if integrator is None:
+        integrator = mm.VerletIntegrator(DT)
     context = mm.Context(system, integrator,
                          mm.Platform.getPlatformByName(engine.platform), engine.properties)
     context.setVelocities(np.zeros((len(MASSES), 3)))
@@ -136,18 +138,25 @@ def assert_analytical(context, force, engine, positions, box=None):
     energy, forces = state_values(context)
     cv = force.getColvarValue(context, "d")
     cv_tol, energy_tol, force_tol = engine.tolerances
+    force_error = float(np.max(np.abs(forces - expected_forces)))
+    passed = (abs(cv - expected_cv) <= cv_tol and abs(energy - expected_energy) <= energy_tol
+              and force_error <= force_tol and np.max(np.abs(forces.sum(axis=0))) <= force_tol
+              and np.all(forces[[1, 4]] == 0.0))
+    print(json.dumps({"case": "mass-weighted harmonic", "status": "PASS" if passed else "FAIL",
+                      "platform": engine.platform, "gpu": engine.use_gpu, "box_nm": np.asarray(box).tolist(),
+                      "positions_nm": positions.tolist(),
+                      "precision": engine.precision, "backend": force.getBackend(context),
+                      "cv_nm": cv, "expected_cv_nm": expected_cv, "absolute_cv_error_nm": abs(cv - expected_cv),
+                      "energy_kj_mol": energy, "expected_energy_kj_mol": expected_energy,
+                      "absolute_energy_error_kj_mol": abs(energy - expected_energy),
+                      "max_force_error_kj_mol_nm": force_error, "forces_kj_mol_nm": forces.tolist(),
+                      "expected_forces_kj_mol_nm": expected_forces.tolist(),
+                      "absolute_tolerances": [cv_tol, energy_tol, force_tol]}))
     np.testing.assert_allclose(cv, expected_cv, rtol=0, atol=cv_tol)
     np.testing.assert_allclose(energy, expected_energy, rtol=0, atol=energy_tol)
     np.testing.assert_allclose(forces, expected_forces, rtol=0, atol=force_tol)
     np.testing.assert_allclose(forces.sum(axis=0), 0.0, rtol=0, atol=force_tol)
     np.testing.assert_array_equal(forces[[1, 4]], 0.0)
-    print(json.dumps({"platform": engine.platform, "gpu": engine.use_gpu,
-                      "precision": engine.precision, "backend": force.getBackend(context),
-                      "cv_nm": cv, "expected_cv_nm": expected_cv,
-                      "energy_kj_mol": energy, "expected_energy_kj_mol": expected_energy,
-                      "max_force_error_kj_mol_nm": float(np.max(np.abs(forces - expected_forces))),
-                      "forces_kj_mol_nm": forces.tolist(),
-                      "absolute_tolerances": [cv_tol, energy_tol, force_tol]}))
     return energy, forces
 
 
@@ -155,7 +164,9 @@ def assert_analytical(context, force, engine, positions, box=None):
     ([0.7, 0.2, -0.1], None),
     ([1.8, 0.1, 0.0], [[2., 0, 0], [0, 2.2, 0], [0, 0, 2.4]]),
     ([1.8, 2.0, 0.1], [[2., 0, 0], [0.4, 2.2, 0], [-0.2, 0.3, 2.4]]),
-], ids=("nonperiodic", "orthorhombic-boundary", "triclinic-boundary"))
+    ([40., 0., 0.], [[100., 0, 0], [20., 1., 0], [0, 0, 2.]]),
+    ([0.2, 1.95, 0.], [[2., 0, 0], [0.000005, 2., 0], [0, 0, 2.]]),
+], ids=("nonperiodic", "orthorhombic-boundary", "triclinic-boundary", "elongated-tilted", "tiny-tilt"))
 def test_distance_harmonic_analytical(engine, tmp_path, displacement, box):
     context, integrator, force = make_context(engine, tmp_path, box=box, from_file=True)
     positions = geometry(displacement)
@@ -209,8 +220,6 @@ def test_repeated_queries_refresh_positions_and_box(engine, tmp_path):
 
 
 def test_tiny_coordinate_change_is_not_cached_away(engine, tmp_path):
-    if engine.platform == "CUDA" and engine.precision == "single":
-        pytest.skip("Sub-float-ulp displacement is not representable in CUDA single precision")
     context, integrator, force = make_context(engine, tmp_path)
     positions = geometry([0.7, 0.2, -0.1])
     context.setPositions(positions)
@@ -220,6 +229,31 @@ def test_tiny_coordinate_change_is_not_cached_away(engine, tmp_path):
     second, _ = assert_analytical(context, force, engine, positions)
     assert second != first
     del context, integrator
+
+
+@pytest.mark.parametrize("tilt", (0.0, 0.1))
+def test_failed_box_update_preserves_previous_boundary(engine, tmp_path, tilt):
+    if engine.platform == "CUDA":
+        pytest.skip("Degenerate box probes OpenMM host double precision")
+    box = np.diag([2., 2.2, 2.4])
+    context, integrator, force = make_context(engine, tmp_path, box=box,
+                                              config=distance_config("metadynamics"))
+    positions = geometry([1.8, 0.1, 0.0])
+    context.setPositions(positions)
+    expected_distance = displacement_and_distance(positions, box)[1]
+    assert state_values(context)[0] == pytest.approx(2.0)
+    snapshot = force.getBiasState(context)
+    # OpenMM accepts positive heights, including one whose square underflows.
+    context.setStepCount(1)
+    context.setPeriodicBoxVectors(mm.Vec3(2, 0, 0), mm.Vec3(tilt, 1e-180, 0), mm.Vec3(0, 0, 2))
+    with pytest.raises(mm.OpenMMException, match="Cannot represent Colvars cell height"):
+        context.getState(getForces=True)
+    assert force.getBiasUpdateCount(context) == 1
+    assert force.getBiasState(context) == snapshot
+    context.setPeriodicBoxVectors(*(mm.Vec3(*v) for v in box))
+    assert state_values(context)[0] == pytest.approx(4.0, abs=engine.tolerances[1], rel=0)
+    assert force.getColvarValue(context, "d") == pytest.approx(expected_distance, abs=engine.tolerances[0], rel=0)
+    assert force.getBiasUpdateCount(context) == 2
 
 
 def test_force_group_queries_do_not_advance_bias(engine, tmp_path):
@@ -269,11 +303,19 @@ def test_metadynamics_same_step_is_read_only(engine, tmp_path):
     del context, integrator
 
 
-@pytest.mark.parametrize("bad_index", (0, 7, -1))
+@pytest.mark.parametrize("bad_index", (0, 7, -1, -2147483648))
 def test_invalid_atom_index_rejected(engine, tmp_path, bad_index):
     config = distance_config().replace("atomNumbers 1 4", f"atomNumbers {bad_index}")
     with pytest.raises(Exception, match="(?i)atom|index|particle"):
         make_context(engine, tmp_path, config=config)
+
+
+def test_duplicate_atom_in_same_group_counts_once(engine, tmp_path):
+    config = distance_config().replace("atomNumbers 1 4", "atomNumbers 1 4 1")
+    context, integrator, force = make_context(engine, tmp_path, config=config)
+    positions = geometry([0.7, 0.2, -0.1])
+    context.setPositions(positions)
+    assert_analytical(context, force, engine, positions)
 
 
 def test_unit_mismatch_rejected(engine, tmp_path):

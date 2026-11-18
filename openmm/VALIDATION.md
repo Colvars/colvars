@@ -1,4 +1,137 @@
-# Local validation record — 2026-11-18
+# Local validation
+
+## Windows hardware run, 2026-11-19
+
+Starting revision `8379ea411672171af23544e3186cac2507c413d2`. Local Windows x64
+builds used Python 3.11.18, OpenMM 8.6.1, MSVC 14.44, SDK 10.0.22621,
+SWIG 4.5.1, Ninja 1.13.2, CMake 4.5.0 and NVCC 12.9.86. The CUDA device was
+an NVIDIA GeForce RTX 5070 Ti (sm_120), driver 610.88. The OpenMM C++ headers,
+import libraries, Python module and CUDA plugin came from the same conda
+installation. Lepton came from OpenMM tag 8.6.1.
+
+| Status | Check | Observation |
+| --- | --- | --- |
+| PASS | Separate CPU-only and CUDA builds and installs | Both compiled, linked, and imported from clean temporary installation directories in new Python processes. |
+| PASS | Reference and CPU plugin suite | 190 passed. Includes real accepted and rejected MC proposals, adaptive/barostat exclusion, transactional box rejection, Unicode paths and protection of existing state after a failed backup. |
+| PASS | CUDA plugin, GPU groups and compact CPU fallback | 186 passed in each of single, mixed and double. Includes device RMSD versus Kabsch/finite-difference forces, coordination numbers, restart and multiple force instances. |
+| SKIP | Pathologically thin box | Four CUDA entries per precision (two box shapes × two backends). A height of 1e-180 nm exercises error handling on the host; successful rejection and byte-for-byte adaptive history preservation were checked on Reference and CPU. |
+| PASS | Two-particle Reference and CPU example | Initial distance 0.65 nm, bias 1.1250000000000002 kJ/mol and x forces +15 and −15 kJ/mol/nm. Final distance after 1,000 steps 0.36159136586640184 nm. |
+| PASS | Two-particle CUDA mixed integration | CUDA/ColvarsGPU reported GPU groups with CPU distance component. Initial bias 1.125000000000005 kJ/mol, x forces +15 and −15. Final distance 0.3615913658655028 nm, 1,001 updates including step zero. Trajectory and state written. |
+| PASS | Adapter buffers on device | NVRTC-compiled gather and scatter ran on the GPU in single, mixed and double. Reordered indices, triclinic cell offsets, mixed corrections and accumulation into prefilled padded force arrays matched the oracle. Details in [adapter results](validation/rtx5070ti-adapter.json). |
+| PASS | Colvars core with Lepton, GCC 16.2.0 (MinGW) | Six CTest unit tests and 108 functional executions. The new nearest-image test checked 5,000 displacements against an independent lattice enumeration (maximum error 1.65e-14 nm, tolerance 1e-12). |
+| PASS | Golden outputs | 103 cases, 206 files, each compared with Spiff at relative tolerance 1e-6. |
+| SKIP | Five functional comparisons | One disabled comparison and four cases without comparison files. All five functional executables ran successfully. Names are in the previous record below. |
+| NOT TESTED | Distributed replica communication, multi-device simulations and full NAMD/GROMACS engine runs | File-based replica tests and shared-core tests were run locally. |
+| NOT TESTED | Compute Sanitizer memcheck | The Windows driver debugger interface was disabled. The tool exited 77. The ordinary CUDA tests and two-context thread check ran. |
+
+The first Windows replica run had 12 failures on missing temporary files.
+After fixing file removal and replacement, all 12 passed and the full host
+suite was rerun. The first CUDA link failed on the RMSD helper's mismatched
+forward declaration. Both statuses above refer to the repaired builds.
+
+The final plugin suites recorded 748 PASS, 12 SKIP and 0 FAIL. For the five
+mass-weighted harmonic geometries (nonperiodic, orthogonal, general triclinic,
+elongated tilted and tiny tilt), maximum absolute errors over both CUDA
+backends were:
+
+| Platform/precision | Distance (nm) | Bias energy (kJ/mol) | Atomic force (kJ/mol/nm) |
+| --- | ---: | ---: | ---: |
+| Reference or CPU | 0 | 0 | 1.42e-14 |
+| CUDA single | 5.44e-8 | 2.12e-6 | 1.26e-4 |
+| CUDA mixed | 4.44e-16 | 2.49e-14 | 2.33e-10 |
+| CUDA double | 0 | 0 | 2.33e-10 |
+
+The [oracle measurements](validation/hardware-oracles.json) include the
+two-particle integration, PBC cases, MC acceptance/rejection and RMSD errors.
+The [per-test results](validation/pytest-results.json) include the outcome and
+platform for each case. For NumPy numerical assertions the table retains the
+worst absolute discrepancy per source line and tolerance, the corresponding
+actual and expected scalar, and the number of calls. Exception, state-text
+and lifecycle assertions carry their test outcome.
+
+Both plugin configurations used `cmake -S openmm -G Ninja`, Release,
+`-DPython_EXECUTABLE=<env>/python.exe`, `-DOPENMM_ROOT=<env>/Library`, and
+`-DOPENMM_SOURCE_DIR=<OpenMM 8.6.1 checkout>`. The CUDA build also used
+`-DOPENMM_COLVARS_ENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=120`. Commands
+after setting `PYTHONPATH` to the respective build's `python` directory:
+
+```powershell
+python -m pytest -q -s openmm/tests --openmm-platform Reference,CPU
+foreach ($precision in 'single','mixed','double') {
+    python -m pytest -q -s openmm/tests --openmm-platform CUDA --openmm-precision $precision --require-cuda --results-json "results-$precision.json"
+}
+python openmm/examples/minimal.py --platform CUDA --precision mixed --colvars-mode gpu --steps 1000
+```
+
+Core configuration used `cmake -S cmake -G Ninja` with
+`-DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ -DCMAKE_BUILD_TYPE=Release
+-DBUILD_TOOLS=OFF -DBUILD_TESTS=ON -DBUILD_UNITTESTS=ON -DCOLVARS_OPENMP=OFF
+-DCOLVARS_LEPTON=ON -DLEPTON_DIR=<OpenMM source>/libraries/lepton`.
+After `cmake --build`, `ctest --output-on-failure` ran the six Windows
+unit tests. The repository registers functional tests with CTest on Linux.
+On Windows we copied `tests/input_files` to a temporary directory and ran
+the same executable from that directory once for every non-Torch case:
+
+```text
+run_colvars_test --configuration_file CASE/test.in --trajectory_file trajectory.xyz --output_prefix CASE/test_out --force
+spiff -r 1e-6 CASE/AutoDiff/FILE CASE/FILE
+```
+
+### RTX 5070 Ti throughput and transfer profile
+
+One device, mixed precision, 32,768 particles, a 1 fs Verlet step and two
+128-atom groups. Each mode used the same Lennard-Jones system, starting
+positions, velocities, precision and reporting interval. The biased modes
+added the same distance restraint. After 1,000 warmup steps, each timing
+run measured three successive blocks of 10,000 steps. Overhead uses the
+ratio of mean elapsed times. Profiling was a separate run.
+
+| Mode | Mean steps/s before | Mean steps/s after | After range | After ns/day | After overhead |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| OpenMM CUDA | 4,886.13 | 4,883.48 | 4,867.35–4,899.53 | 421.93 | 0% |
+| CUDA/ColvarsGPU | 2,222.58 | 2,415.13 | 2,413.70–2,416.39 | 208.67 | +102.20% |
+| CUDA/ColvarsCPU | 3,267.19 | 3,305.82 | 3,290.31–3,322.45 | 285.62 | +47.72% |
+
+The device group reduction already supplies its center to a CPU distance
+component. Omitting the redundant coordinate download increased GPU-mode
+throughput by 8.66% on this system. Host bias evaluation, per-atom gradient
+uploads and synchronization are still present. The compact CPU path completes
+this particular distance workload faster. No throughput comparison was made
+for RMSD or coordination numbers. See the [before timings](validation/rtx5070ti-before.json)
+and [after timings](validation/rtx5070ti-after.json).
+
+A separate three-mode run on the final installed DLL (after file I/O and
+rejected-box repairs) measured **4,985.92 / 2,414.63 / 3,313.56 steps/s**
+for baseline / GPU / compact CPU, or **430.78 / 208.62 / 286.29 ns/day**.
+Overheads in that run were 106.49% and 50.47%. The records identify the
+extension by SHA-256; the source checkout SHA identifies the parent of the
+working changes. [Final timing samples](validation/rtx5070ti-release.json)
+
+| Final trace, per integrated step | H2D bytes | D2H bytes | Executed kernels | Explicit host sync calls | Device alloc/free |
+| --- | ---: | ---: | ---: | ---: | --- |
+| OpenMM CUDA | 8,912.90 | 8,396.67 | 9.0010 | 1.0081 | 0 / 0 |
+| CUDA/ColvarsGPU | 15,077.99 | 8,396.67 | 17.0018 | 3.0192 | 0 / 0 |
+| CUDA/ColvarsCPU | 15,077.99 | 14,541.28 | 11.0012 | 2.0127 | 0 / 0 |
+
+Nsight Systems 2026.5.2 captured the NVTX `integrate` range including the
+final energy fence. Counts include OpenMM's periodic atom reorders. H2D and
+D2H count explicit copy operations. GPU writes to mapped pinned host
+memory (including group centers) do not appear as memcpy bytes. GPU-mode
+D2H fell from 14,541.28 to 8,396.67 bytes/step. The difference is the selected
+256 × 3 doubles plus the extra endpoint evaluation averaged across the run.
+The JSON includes individual CUDA APIs, copy directions and kernel names.
+[Before trace counts](validation/rtx5070ti-profile-before.json) ·
+[After trace counts](validation/rtx5070ti-profile-after.json)
+
+```powershell
+python openmm/examples/benchmark.py --platform CUDA --precision mixed --device 0 --particles 32768 --group-size 128 --warmup 1000 --steps 10000 --repeats 3 --report-interval 0 --json timings.json
+$env:NSYS_NVTX_PROFILER_REGISTER_ONLY = '0'
+foreach ($mode in 'baseline','gpu','cpu') {
+    nsys profile --trace=cuda,nvtx --cuda-graph-trace=node --sample=none --cpuctxsw=none --export=sqlite --capture-range=nvtx --capture-range-end=stop --nvtx-capture=integrate@openmm-colvars-benchmark -o "trace-$mode" python openmm/examples/benchmark.py --platform CUDA --precision mixed --device 0 --particles 32768 --group-size 128 --warmup 1000 --steps 10000 --repeats 1 --modes $mode --profile-range --json "profile-$mode.json"
+}
+```
+
+## Previous local validation record, 2026-11-18
 
 All builds and tests ran locally. GitHub Actions and other GitHub CI were not
 used. Starting chinfo commit: 5b79a08438ad39413a0816ad5654fbd8f5ca57f8.

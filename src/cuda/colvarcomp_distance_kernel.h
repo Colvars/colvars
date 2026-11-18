@@ -48,7 +48,7 @@ int calc_force_invgrads_rmsd(
   cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies);
 
-class rotation_derivative_gpu;
+struct rotation_derivative_gpu;
 
 int calc_Jacobian_derivative_rmsd(
   const bool center,

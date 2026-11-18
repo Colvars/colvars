@@ -5,6 +5,7 @@
 #include "ColvarsForce.h"
 #include "colvarproxy.h"
 #include "openmm/Vec3.h"
+#include <array>
 #include <random>
 #include <mutex>
 #include <string>
@@ -28,7 +29,7 @@ class colvarproxy_openmm : public colvarproxy {
 public:
     colvarproxy_openmm(const ColvarsPlugin::ColvarsForce&, const OpenMM::System&);
     ~colvarproxy_openmm() override;
-    void initializeColvars();
+    void initializeColvars(OpenMM::ContextImpl& context);
     int setup() override;
     int init_atom(int atomNumber) override;
     int request_atom_charges() override;
@@ -64,6 +65,7 @@ protected:
     double biasEnergy_ = 0.0;
     bool initialized_ = false;
     bool usesPbc_ = false;
+    std::array<OpenMM::Vec3, 3> lastBox_{};
     bool haveStep_ = false;
     bool restartPending_ = false;
     long long currentStep_ = 0, lastUpdatedStep_ = 0, initialOpenmmStep_ = 0;

@@ -40,7 +40,14 @@ target_include_directories(OpenMMColvars PUBLIC
     PRIVATE "${COLVARS_CORE_DIR}")
 target_include_directories(OpenMMColvars SYSTEM PUBLIC "${OPENMM_INCLUDE_DIR}")
 target_link_libraries(OpenMMColvars PUBLIC "${OPENMM_LIBRARY}")
-target_compile_options(OpenMMColvars PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wall>)
+if(WIN32 AND NOT CYGWIN)
+    target_compile_definitions(OpenMMColvars PRIVATE COLVARS_UTF8_WINDOWS_PATHS)
+endif()
+if(MSVC)
+    target_compile_options(OpenMMColvars PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus;/utf-8>")
+else()
+    target_compile_options(OpenMMColvars PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-Wall>)
+endif()
 
 # Reuse the matching OpenMM source's Lepton implementation when supplied.
 set(LEPTON_DIR "" CACHE PATH "Optional explicit Lepton source directory")

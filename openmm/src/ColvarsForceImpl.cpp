@@ -33,7 +33,7 @@ void ColvarsForceImpl::initialize(ContextImpl& context) {
         throw OpenMMException("Colvars force group 31 requires CUDA; use a group from 0 through 30 on CPU/Reference");
     CustomCPPForceImpl::initialize(context);
     proxy_ = std::make_unique<colvarproxy_openmm>(owner_, context.getSystem());
-    proxy_->initializeColvars();
+    proxy_->initializeColvars(context);
 }
 double ColvarsForceImpl::calcForcesAndEnergy(ContextImpl& c, bool forces, bool energy, int groups) {
     OpenMMColvarsLock lock(&proxy());

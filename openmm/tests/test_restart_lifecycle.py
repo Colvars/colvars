@@ -69,7 +69,7 @@ def test_restored_step_is_not_deposited_twice(engine, tmp_path, load_source):
         original.setStepCount(step)
         expected = state_values(original)
     np.testing.assert_allclose(expected[0], 6.0, rtol=0, atol=engine.tolerances[1])
-    state_file = tmp_path / "saved.colvars.state"
+    state_file = tmp_path / "续算-Δ.colvars.state"
     state_file.write_text(force.getBiasState(original))
 
     restored, restored_integrator, restored_force = context_with_restart(

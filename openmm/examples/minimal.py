@@ -57,7 +57,8 @@ def main():
     print("Final potential energy:", state.getPotentialEnergy())
     print("Final positions:", state.getPositions())
     force.flushOutputs(context)
-    print("Final Colvars state:", args.output / "colvars.colvars.state")
+    print("Colvars trajectory:", (args.output / "colvars.colvars.traj").resolve())
+    print("Final Colvars state:", (args.output / "colvars.colvars.state").resolve())
 
 
 if __name__ == "__main__":

@@ -52,6 +52,20 @@ The convenience script `openmm/scripts/build_install.sh` runs configuration,
 build, and installation. It accepts extra CMake arguments and uses
 `OPENMM_COLVARS_ENABLE_CUDA`, `OPENMM_COLVARS_BUILD_DIR`, and `BUILD_JOBS`.
 
+On Windows, start an x64 Visual Studio 2022 developer shell with the Windows
+SDK installed. Pass filenames as Python strings. The C++ interface accepts
+UTF-8 path strings for configuration, references, output and restart files.
+The local environment used the following conda packages:
+
+```powershell
+conda create -n colvars-validation -c conda-forge --override-channels python=3.11 openmm=8.6.1 cuda-version=12.9 cuda-nvcc cuda-cudart-dev cuda-nvtx-dev cmake ninja swig pytest
+conda activate colvars-validation
+cmake -S openmm -B openmm/build-cuda -G Ninja -DCMAKE_BUILD_TYPE=Release -DOPENMM_COLVARS_ENABLE_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=native
+cmake --build openmm/build-cuda --parallel 4
+$env:PYTHONPATH = (Resolve-Path openmm/build-cuda/python).Path
+python openmm/examples/minimal.py --platform CUDA --precision mixed --colvars-mode gpu --steps 1000
+```
+
 ### CUDA build
 
 CUDA requires all of the following on the machine that will run the simulation:
@@ -109,7 +123,7 @@ or downloaded force-field files. The relevant configuration is:
 
 ```text
 units gromacs
-colvarsTrajFrequency 0
+colvarsTrajFrequency 100
 colvarsRestartFrequency 0
 
 colvar {
@@ -236,6 +250,13 @@ periodic boundary conditions. An isolated biased system can explicitly call
 does not select periodic behavior in Auto mode. Each evaluation reads the
 current box from the context, including box changes within one OpenMM step.
 Both orthorhombic and OpenMM reduced triclinic boxes are covered by tests.
+The Colvars distance uses the shortest Cartesian displacement over the lattice.
+For an elongated tilted box, an equivalent reduced lattice basis can be
+necessary to find that image. The proxy prepares it when the box changes.
+OpenMM's own bonded displacement convention can select a different image for
+long displacements in these cells. For example, in a box with vectors
+`(100,0,0), (20,1,0), (0,0,2)` nm, the shortest image of `(40,0,0)` nm
+is `(0,-2,0)` nm.
 
 The CUDA bridge handles OpenMM's reordered particle indices, mixed-precision
 position correction, and periodic cell offsets. It reconstructs the selected
@@ -253,6 +274,15 @@ only at the first evaluation for each OpenMM step count. Later evaluations
 apply the same bias state to the current CV. They do not deposit additional
 metadynamics hills, advance a moving restraint, or duplicate trajectory output.
 Force-group queries that exclude `ColvarsForce` do not update it.
+
+Built-in Monte Carlo barostats can evaluate a trial box and then discard it.
+Use fixed-center, fixed-strength restraints or static walls with these
+barostats. Context creation rejects metadynamics (including well-tempered
+metadynamics), moving restraint parameters and TI sampling with a detected
+MC barostat. A force callback has no notification that a trial was accepted.
+This detection uses the OpenMM MC barostat kernel; a custom integrator or
+third-party trial-move implementation can also evaluate a disposable geometry.
+Use a static bias for such moves.
 
 `getColvarValue(context, name)`, `getBackend(context)`,
 `getBiasUpdateCount(context)`, and `getBiasState(context)` are diagnostics.
@@ -338,7 +368,7 @@ with events linking the existing Colvars per-group streams.
 | --- | --- |
 | CUDA with Colvars GPU atom groups / supported GPU CVs | Selected coordinates are gathered device-to-device; group/CV results required by the host bias are copied to host; small bias force coefficients return to the device. Atomic bias forces are accumulated on-device. |
 | A CPU CV component within a GPU-enabled configuration | Existing Colvars fallback may copy that component's atom-group coordinates/gradients between host and device. The backend diagnostic lists CPU components. This is not an all-device CV calculation. |
-| Distance CV in the minimal example and benchmark | Uses that existing CPU CV fallback with GPU atom groups; it is not a native GPU distance kernel. Native RMSD and coordination-number kernels in this branch use the device CV path. |
+| Distance CV in the minimal example and benchmark | The CPU distance component reads the GPU-computed group centers. For unfitted COM components the bridge omits the extra per-atom position download. CPU-computed gradients still travel to the device. Native RMSD and coordination-number kernels in this branch use the device CV path. |
 | CUDA with `setUseGpu(False)` | Downloads `3*M*sizeof(double) = 24*M` bytes of selected positions; force requests upload `24*M` bytes of selected forces. Energy-only requests do not upload atomic forces. |
 | Bias algorithms | Bias state and bias energy/force coefficients are currently evaluated on the CPU, including harmonic restraints and metadynamics. |
 
@@ -388,9 +418,8 @@ maximum force error as JSON when run with `-s`.
 | CUDA single | 2e-6 | 2e-4 | 2e-3 |
 
 These are absolute tolerances; CPU/Reference test precision is double for the
-Colvars values and force calculations. GPU tolerances are test acceptance
-criteria, not measured GPU errors. See [VALIDATION.md](VALIDATION.md) for what was
-actually executed on the implementation machine.
+Colvars values and force calculations. See [VALIDATION.md](VALIDATION.md) for
+measured errors, throughput and profiling results on the validation machine.
 
 ## 7. GPU throughput and profiling
 
@@ -418,6 +447,13 @@ This microbenchmark does not predict throughput for a solvated protein or a
 different CV. It deliberately fails if CUDA is unavailable.
 
 Profile the modes separately, keeping all other arguments unchanged:
+
+For steady-state counts, install the Python `nvtx` package, add
+`--profile-range` to the benchmark, and add `--capture-range=nvtx`,
+`--cuda-graph-trace=node` and `--nvtx-capture=integrate@openmm-colvars-benchmark`
+to `nsys profile`. Node-level tracing includes copies and kernels inside graphs.
+This brackets the timed integration and its final synchronization. Run
+baseline, gpu and cpu with exactly one profiled repeat each.
 
 ```bash
 nsys profile --trace=cuda,nvtx,osrt --sample=none -o colvars-gpu \

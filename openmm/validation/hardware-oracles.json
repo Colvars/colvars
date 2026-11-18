@@ -1,0 +1,7155 @@
+{
+ "openmm_version": "8.6.1",
+ "device": "NVIDIA GeForce RTX 5070 Ti",
+ "units": {
+  "distance": "nm",
+  "energy": "kJ/mol",
+  "force": "kJ/mol/nm"
+ },
+ "measurements": [
+  {
+   "platform": "Reference",
+   "precision": "double",
+   "gpu": false,
+   "accepted_volume_trials": 1,
+   "rejected_volume_trials": 1,
+   "case": "static restraint with MC barostat",
+   "status": "PASS"
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CPU",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     0.4,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     0.4,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "cv_nm": 0.22360679774997916,
+   "expected_cv_nm": 0.22360679774997916,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 1.5975241575014667,
+   "expected_energy_kj_mol": 1.5975241575014667,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 3.552713678800501e-15,
+   "forces_kj_mol_nm": [
+    [
+     5.652475842498518,
+     -2.826237921249259,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.53663445666469,
+     3.768317228332345,
+     0.0
+    ],
+    [
+     16.957427527495557,
+     -8.478713763747779,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07326891332938,
+     7.53663445666469,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     5.652475842498518,
+     -2.826237921249259,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.53663445666469,
+     3.768317228332345,
+     0.0
+    ],
+    [
+     16.957427527495554,
+     -8.478713763747777,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07326891332938,
+     7.53663445666469,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "platform": "CPU",
+   "precision": "double",
+   "gpu": false,
+   "accepted_volume_trials": 1,
+   "rejected_volume_trials": 5,
+   "case": "static restraint with MC barostat",
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded energy (kJ/mol)",
+   "platform": "Reference",
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "actual": 0.0,
+   "expected": 0.0,
+   "absolute_error": 0.0,
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded forces (kJ/mol/nm)",
+   "platform": "Reference",
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "actual": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "distance (nm)",
+   "platform": "Reference",
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "actual": 0.65,
+   "expected": 0.65,
+   "absolute_error": 0.0,
+   "tolerance": 1e-12,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "energy (kJ/mol)",
+   "platform": "Reference",
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "actual": 1.1250000000000002,
+   "expected": 1.125,
+   "absolute_error": 2.220446049250313e-16,
+   "tolerance": 1e-09,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "forces (kJ/mol/nm)",
+   "platform": "Reference",
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "actual": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 1e-08,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "net force (kJ/mol/nm)",
+   "platform": "Reference",
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "actual": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "expected": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "absolute_error": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tolerance": 1e-08,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "positions after one step (nm)",
+   "platform": "Reference",
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "actual": [
+    [
+     1.25e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     2.117582368135751e-22,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 2e-10,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded energy (kJ/mol)",
+   "platform": "CPU",
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "actual": 0.0,
+   "expected": 0.0,
+   "absolute_error": 0.0,
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded forces (kJ/mol/nm)",
+   "platform": "CPU",
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "actual": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "distance (nm)",
+   "platform": "CPU",
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "actual": 0.65,
+   "expected": 0.65,
+   "absolute_error": 0.0,
+   "tolerance": 1e-12,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "energy (kJ/mol)",
+   "platform": "CPU",
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "actual": 1.1250000000000002,
+   "expected": 1.125,
+   "absolute_error": 2.220446049250313e-16,
+   "tolerance": 1e-09,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "forces (kJ/mol/nm)",
+   "platform": "CPU",
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "actual": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 1e-08,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "net force (kJ/mol/nm)",
+   "platform": "CPU",
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "actual": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "expected": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "absolute_error": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tolerance": 1e-08,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "positions after one step (nm)",
+   "platform": "CPU",
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "actual": [
+    [
+     1.25e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     2.117582368135751e-22,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 2e-10,
+   "status": "PASS"
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "Reference",
+   "gpu": false,
+   "box_nm": null,
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.8649999999999999,
+     0.5,
+     0.3
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.9549999999999998,
+     0.5,
+     0.3
+    ]
+   ],
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "cv_nm": 0.7348469228349533,
+   "expected_cv_nm": 0.7348469228349533,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 14.810715401553251,
+   "expected_energy_kj_mol": 14.810715401553251,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 1.4210854715202004e-14,
+   "forces_kj_mol_nm": [
+    [
+     18.329861472725586,
+     5.237103277921597,
+     -2.618551638960801
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.43981529696745,
+     -6.982804370562129,
+     3.4914021852810673
+    ],
+    [
+     54.989584418176754,
+     15.711309833764792,
+     -7.855654916882402
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.8796305939349,
+     -13.965608741124258,
+     6.9828043705621345
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     18.32986147272559,
+     5.237103277921596,
+     -2.618551638960801
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296967453,
+     -6.982804370562128,
+     3.4914021852810677
+    ],
+    [
+     54.98958441817677,
+     15.711309833764789,
+     -7.855654916882402
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.879630593934905,
+     -13.965608741124257,
+     6.982804370562135
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "Reference",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.2,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     0.4,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     0.4,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "cv_nm": 0.22360679774997916,
+   "expected_cv_nm": 0.22360679774997916,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 1.5975241575014667,
+   "expected_energy_kj_mol": 1.5975241575014667,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 3.552713678800501e-15,
+   "forces_kj_mol_nm": [
+    [
+     5.652475842498518,
+     -2.826237921249259,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.53663445666469,
+     3.768317228332345,
+     0.0
+    ],
+    [
+     16.957427527495557,
+     -8.478713763747779,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07326891332938,
+     7.53663445666469,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     5.652475842498518,
+     -2.826237921249259,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.53663445666469,
+     3.768317228332345,
+     0.0
+    ],
+    [
+     16.957427527495554,
+     -8.478713763747777,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07326891332938,
+     7.53663445666469,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "Reference",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.4,
+     2.2,
+     0.0
+    ],
+    [
+     -0.2,
+     0.3,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     2.3,
+     0.5
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     2.3,
+     0.5
+    ]
+   ],
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "cv_nm": 0.6403124237432851,
+   "expected_cv_nm": 0.6403124237432851,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 8.428130337970073,
+   "expected_energy_kj_mol": 8.428130337970073,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 1.7763568394002505e-15,
+   "forces_kj_mol_nm": [
+    [
+     -13.60175500169637,
+     -4.533918333898799,
+     2.266959166949393
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333559516,
+     6.045224445198398,
+     -3.0226122225991907
+    ],
+    [
+     -40.80526500508911,
+     -13.601755001696397,
+     6.800877500848179
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.27134667119032,
+     12.090448890396797,
+     -6.045224445198381
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -13.601755001696372,
+     -4.533918333898799,
+     2.2669591669493934
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333559516,
+     6.045224445198398,
+     -3.022612222599191
+    ],
+    [
+     -40.80526500508911,
+     -13.601755001696397,
+     6.8008775008481805
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.27134667119032,
+     12.090448890396797,
+     -6.045224445198382
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "Reference",
+   "gpu": false,
+   "box_nm": [
+    [
+     100.0,
+     0.0,
+     0.0
+    ],
+    [
+     20.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     40.165000000000006,
+     0.3,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     40.255,
+     0.3,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "cv_nm": 2.0,
+   "expected_cv_nm": 2.0,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 272.24999999999994,
+   "expected_energy_kj_mol": 272.24999999999994,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 0.0,
+   "forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999999999,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     109.99999999999997,
+     0.0
+    ],
+    [
+     0.0,
+     -247.49999999999994,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     219.99999999999994,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999999999,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     109.99999999999997,
+     -0.0
+    ],
+    [
+     0.0,
+     -247.49999999999994,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     219.99999999999994,
+     -0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "Reference",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     5e-06,
+     2.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.365,
+     2.25,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.455,
+     2.25,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "Reference/Colvars CPU",
+   "cv_nm": 0.20615043057194912,
+   "expected_cv_nm": 0.20615043057194912,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 2.069269862463562,
+   "expected_energy_kj_mol": 2.069269862463562,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 3.552713678800501e-15,
+   "forces_kj_mol_nm": [
+    [
+     -6.977718784759515,
+     1.7444733080225803,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.30362504634602,
+     -2.3259644106967734,
+     0.0
+    ],
+    [
+     -20.933156354278545,
+     5.233419924067741,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.60725009269204,
+     -4.651928821393547,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -6.977718784759515,
+     1.7444733080225805,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046346019,
+     -2.325964410696774,
+     0.0
+    ],
+    [
+     -20.933156354278545,
+     5.233419924067741,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092692038,
+     -4.651928821393548,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CPU",
+   "gpu": false,
+   "box_nm": null,
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.8649999999999999,
+     0.5,
+     0.3
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.9549999999999998,
+     0.5,
+     0.3
+    ]
+   ],
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "cv_nm": 0.7348469228349533,
+   "expected_cv_nm": 0.7348469228349533,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 14.810715401553251,
+   "expected_energy_kj_mol": 14.810715401553251,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 1.4210854715202004e-14,
+   "forces_kj_mol_nm": [
+    [
+     18.329861472725586,
+     5.237103277921597,
+     -2.618551638960801
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.43981529696745,
+     -6.982804370562129,
+     3.4914021852810673
+    ],
+    [
+     54.989584418176754,
+     15.711309833764792,
+     -7.855654916882402
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.8796305939349,
+     -13.965608741124258,
+     6.9828043705621345
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     18.32986147272559,
+     5.237103277921596,
+     -2.618551638960801
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296967453,
+     -6.982804370562128,
+     3.4914021852810677
+    ],
+    [
+     54.98958441817677,
+     15.711309833764789,
+     -7.855654916882402
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.879630593934905,
+     -13.965608741124257,
+     6.982804370562135
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CPU",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.4,
+     2.2,
+     0.0
+    ],
+    [
+     -0.2,
+     0.3,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     2.3,
+     0.5
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     2.3,
+     0.5
+    ]
+   ],
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "cv_nm": 0.6403124237432851,
+   "expected_cv_nm": 0.6403124237432851,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 8.428130337970073,
+   "expected_energy_kj_mol": 8.428130337970073,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 1.7763568394002505e-15,
+   "forces_kj_mol_nm": [
+    [
+     -13.60175500169637,
+     -4.533918333898799,
+     2.266959166949393
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333559516,
+     6.045224445198398,
+     -3.0226122225991907
+    ],
+    [
+     -40.80526500508911,
+     -13.601755001696397,
+     6.800877500848179
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.27134667119032,
+     12.090448890396797,
+     -6.045224445198381
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -13.601755001696372,
+     -4.533918333898799,
+     2.2669591669493934
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333559516,
+     6.045224445198398,
+     -3.022612222599191
+    ],
+    [
+     -40.80526500508911,
+     -13.601755001696397,
+     6.8008775008481805
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.27134667119032,
+     12.090448890396797,
+     -6.045224445198382
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CPU",
+   "gpu": false,
+   "box_nm": [
+    [
+     100.0,
+     0.0,
+     0.0
+    ],
+    [
+     20.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     40.165000000000006,
+     0.3,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     40.255,
+     0.3,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "cv_nm": 2.0,
+   "expected_cv_nm": 2.0,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 272.24999999999994,
+   "expected_energy_kj_mol": 272.24999999999994,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 0.0,
+   "forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999999999,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     109.99999999999997,
+     0.0
+    ],
+    [
+     0.0,
+     -247.49999999999994,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     219.99999999999994,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999999999,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     109.99999999999997,
+     -0.0
+    ],
+    [
+     0.0,
+     -247.49999999999994,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     219.99999999999994,
+     -0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CPU",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     5e-06,
+     2.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.365,
+     2.25,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.455,
+     2.25,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "CPU/Colvars CPU",
+   "cv_nm": 0.20615043057194912,
+   "expected_cv_nm": 0.20615043057194912,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 2.069269862463562,
+   "expected_energy_kj_mol": 2.069269862463562,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 3.552713678800501e-15,
+   "forces_kj_mol_nm": [
+    [
+     -6.977718784759515,
+     1.7444733080225803,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.30362504634602,
+     -2.3259644106967734,
+     0.0
+    ],
+    [
+     -20.933156354278545,
+     5.233419924067741,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.60725009269204,
+     -4.651928821393547,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -6.977718784759515,
+     1.7444733080225805,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046346019,
+     -2.325964410696774,
+     0.0
+    ],
+    [
+     -20.933156354278545,
+     5.233419924067741,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092692038,
+     -4.651928821393548,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "platform": "Reference",
+   "gpu": false,
+   "precision": "double",
+   "explicit_fit": false,
+   "backend": "Reference/Colvars CPU",
+   "maximum_absolute_errors": [
+    1.249000902703301e-16,
+    4.996003610813204e-16,
+    1.5197731961791305e-10
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "Reference",
+   "gpu": false,
+   "precision": "double",
+   "explicit_fit": true,
+   "backend": "Reference/Colvars CPU",
+   "maximum_absolute_errors": [
+    1.1102230246251565e-16,
+    6.661338147750939e-16,
+    1.2692591422336363e-10
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CPU",
+   "gpu": false,
+   "precision": "double",
+   "explicit_fit": false,
+   "backend": "CPU/Colvars CPU",
+   "maximum_absolute_errors": [
+    1.249000902703301e-16,
+    4.996003610813204e-16,
+    1.5197731961791305e-10
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CPU",
+   "gpu": false,
+   "precision": "double",
+   "explicit_fit": true,
+   "backend": "CPU/Colvars CPU",
+   "maximum_absolute_errors": [
+    1.1102230246251565e-16,
+    6.661338147750939e-16,
+    1.2692591422336363e-10
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "precision": "single",
+   "gpu": true,
+   "accepted_volume_trials": 5,
+   "rejected_volume_trials": 1,
+   "case": "static restraint with MC barostat",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "precision": "single",
+   "gpu": false,
+   "accepted_volume_trials": 2,
+   "rejected_volume_trials": 1,
+   "case": "static restraint with MC barostat",
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": 0.0,
+   "expected": 0.0,
+   "absolute_error": 0.0,
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "distance (nm)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": 0.6499999761581421,
+   "expected": 0.65,
+   "absolute_error": 2.384185793236071e-08,
+   "tolerance": 2e-06,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": 1.1249996423721595,
+   "expected": 1.125,
+   "absolute_error": 3.576278404526789e-07,
+   "tolerance": 0.0002,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    [
+     14.999997615581378,
+     0.0,
+     0.0
+    ],
+    [
+     -14.999997615581378,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     2.384418621659279e-06,
+     0.0,
+     0.0
+    ],
+    [
+     2.384418621659279e-06,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 0.002,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "net force (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "expected": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "absolute_error": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tolerance": 0.002,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "positions after one step (nm)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    [
+     1.249999968422344e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.6499993801116943,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     3.157765593605165e-14,
+     0.0,
+     0.0
+    ],
+    [
+     5.111694290071966e-09,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 2e-07,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=single; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": 0.0,
+   "expected": 0.0,
+   "absolute_error": 0.0,
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=single; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "distance (nm)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=single; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": 0.6499999761581421,
+   "expected": 0.65,
+   "absolute_error": 2.384185793236071e-08,
+   "tolerance": 2e-06,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=single; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": 1.1249996423721595,
+   "expected": 1.125,
+   "absolute_error": 3.576278404526789e-07,
+   "tolerance": 0.0002,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=single; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    [
+     14.999997615581378,
+     0.0,
+     0.0
+    ],
+    [
+     -14.999997615581378,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     2.384418621659279e-06,
+     0.0,
+     0.0
+    ],
+    [
+     2.384418621659279e-06,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 0.002,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "net force (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=single; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "expected": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "absolute_error": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tolerance": 0.002,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "positions after one step (nm)",
+   "platform": "CUDA",
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=single; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    [
+     1.249999968422344e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.6499993801116943,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     3.157765593605165e-14,
+     0.0,
+     0.0
+    ],
+    [
+     5.111694290071966e-09,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 2e-07,
+   "status": "PASS"
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": null,
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.8649999999999999,
+     0.5,
+     0.3
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.9549999999999998,
+     0.5,
+     0.3
+    ]
+   ],
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.7348469133381313,
+   "expected_cv_nm": 0.7348469228349533,
+   "absolute_cv_error_nm": 9.496821995469418e-09,
+   "energy_kj_mol": 14.810714670588718,
+   "expected_energy_kj_mol": 14.810715401553251,
+   "absolute_energy_error_kj_mol": 7.309645333464232e-07,
+   "max_force_error_kj_mol_nm": 1.1211594017623838e-06,
+   "forces_kj_mol_nm": [
+    [
+     18.32986110751517,
+     5.237102904124185,
+     -2.6185514519456774
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.43981481017545,
+     -6.98280387208797,
+     3.49140193592757
+    ],
+    [
+     54.989583323011175,
+     15.711308712605387,
+     -7.8556543563026935
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.8796296203509,
+     -13.965607744408771,
+     6.98280387208797
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     18.32986147272559,
+     5.237103277921596,
+     -2.618551638960801
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296967453,
+     -6.982804370562128,
+     3.4914021852810677
+    ],
+    [
+     54.98958441817677,
+     15.711309833764789,
+     -7.855654916882402
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.879630593934905,
+     -13.965608741124257,
+     6.982804370562135
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.2,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     0.4,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     0.4,
+     0.4
+    ]
+   ],
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.2236067433272978,
+   "expected_cv_nm": 0.22360679774997916,
+   "absolute_cv_error_nm": 5.4422681361465663e-08,
+   "energy_kj_mol": 1.5975255332331575,
+   "expected_energy_kj_mol": 1.5975241575014667,
+   "absolute_energy_error_kj_mol": 1.3757316907891948e-06,
+   "max_force_error_kj_mol_nm": 6.5223119349866465e-06,
+   "forces_kj_mol_nm": [
+    [
+     5.652478016447276,
+     -2.8262396573554724,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.536637355340645,
+     3.76831954321824,
+     0.0
+    ],
+    [
+     16.95743404980749,
+     -8.478718972532079,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07327471091412,
+     7.536639086669311,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     5.652475842498518,
+     -2.826237921249259,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.53663445666469,
+     3.768317228332345,
+     0.0
+    ],
+    [
+     16.957427527495554,
+     -8.478713763747777,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07326891332938,
+     7.53663445666469,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.4,
+     2.2,
+     0.0
+    ],
+    [
+     -0.2,
+     0.3,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     2.3,
+     0.5
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     2.3,
+     0.5
+    ]
+   ],
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.6403123872067138,
+   "expected_cv_nm": 0.6403124237432851,
+   "absolute_cv_error_nm": 3.653657132396404e-08,
+   "energy_kj_mol": 8.428128216566092,
+   "expected_energy_kj_mol": 8.428130337970073,
+   "absolute_energy_error_kj_mol": 2.121403980481773e-06,
+   "max_force_error_kj_mol_nm": 6.742652274738248e-06,
+   "forces_kj_mol_nm": [
+    [
+     -13.601752754068002,
+     -4.533919373061508,
+     2.2669588758144528
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.135670338757336,
+     6.045225830748677,
+     -3.02261183434166
+    ],
+    [
+     -40.80525826243684,
+     -13.601758119417354,
+     6.800876627443358
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.2713406777475,
+     12.090451661730185,
+     -6.045223668916151
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -13.601755001696372,
+     -4.533918333898799,
+     2.2669591669493934
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333559516,
+     6.045224445198398,
+     -3.022612222599191
+    ],
+    [
+     -40.80526500508911,
+     -13.601755001696397,
+     6.8008775008481805
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.27134667119032,
+     12.090448890396797,
+     -6.045224445198382
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     100.0,
+     0.0,
+     0.0
+    ],
+    [
+     20.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     40.165000000000006,
+     0.3,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     40.255,
+     0.3,
+     0.4
+    ]
+   ],
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 2.00000000000026,
+   "expected_cv_nm": 2.0,
+   "absolute_cv_error_nm": 2.5979218776228663e-13,
+   "energy_kj_mol": 272.25000000008566,
+   "expected_energy_kj_mol": 272.24999999999994,
+   "absolute_energy_error_kj_mol": 8.571987564209849e-11,
+   "max_force_error_kj_mol_nm": 0.00012616137973964214,
+   "forces_kj_mol_nm": [
+    [
+     4.205363802611828e-05,
+     -82.5,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -5.607167258858681e-05,
+     110.0,
+     0.0
+    ],
+    [
+     0.00012616137973964214,
+     -247.5,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.00011214357800781727,
+     220.0,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999999999,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     109.99999999999997,
+     -0.0
+    ],
+    [
+     0.0,
+     -247.49999999999994,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     219.99999999999994,
+     -0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     5e-06,
+     2.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.365,
+     2.25,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.455,
+     2.25,
+     0.4
+    ]
+   ],
+   "precision": "single",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.20615044719668432,
+   "expected_cv_nm": 0.20615043057194912,
+   "absolute_cv_error_nm": 1.6624735199588514e-08,
+   "energy_kj_mol": 2.0692693841713896,
+   "expected_energy_kj_mol": 2.069269862463562,
+   "absolute_energy_error_kj_mol": 4.78292172534367e-07,
+   "max_force_error_kj_mol_nm": 2.625789711885318e-06,
+   "forces_kj_mol_nm": [
+    [
+     -6.977717909496278,
+     1.744473381433636,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.30362387932837,
+     -2.325964508811012,
+     0.0
+    ],
+    [
+     -20.933153728488833,
+     5.233420144766569,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.60724775865674,
+     -4.651929017622024,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -6.977718784759515,
+     1.7444733080225805,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046346019,
+     -2.325964410696774,
+     0.0
+    ],
+    [
+     -20.933156354278545,
+     5.233419924067741,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092692038,
+     -4.651928821393548,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": null,
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.8649999999999999,
+     0.5,
+     0.3
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.9549999999999998,
+     0.5,
+     0.3
+    ]
+   ],
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=single; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.7348469133381313,
+   "expected_cv_nm": 0.7348469228349533,
+   "absolute_cv_error_nm": 9.496821995469418e-09,
+   "energy_kj_mol": 14.810714670588718,
+   "expected_energy_kj_mol": 14.810715401553251,
+   "absolute_energy_error_kj_mol": 7.309645333464232e-07,
+   "max_force_error_kj_mol_nm": 1.1211594017623838e-06,
+   "forces_kj_mol_nm": [
+    [
+     18.32986110751517,
+     5.237102904124185,
+     -2.6185514519456774
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.43981481017545,
+     -6.98280387208797,
+     3.49140193592757
+    ],
+    [
+     54.989583323011175,
+     15.711308712605387,
+     -7.8556543563026935
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.8796296203509,
+     -13.965607744408771,
+     6.98280387208797
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     18.32986147272559,
+     5.237103277921596,
+     -2.618551638960801
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296967453,
+     -6.982804370562128,
+     3.4914021852810677
+    ],
+    [
+     54.98958441817677,
+     15.711309833764789,
+     -7.855654916882402
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.879630593934905,
+     -13.965608741124257,
+     6.982804370562135
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.2,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     0.4,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     0.4,
+     0.4
+    ]
+   ],
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=single; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.2236067433272978,
+   "expected_cv_nm": 0.22360679774997916,
+   "absolute_cv_error_nm": 5.4422681361465663e-08,
+   "energy_kj_mol": 1.5975255332331575,
+   "expected_energy_kj_mol": 1.5975241575014667,
+   "absolute_energy_error_kj_mol": 1.3757316907891948e-06,
+   "max_force_error_kj_mol_nm": 6.5223119349866465e-06,
+   "forces_kj_mol_nm": [
+    [
+     5.652478016447276,
+     -2.8262396573554724,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.536637355340645,
+     3.76831954321824,
+     0.0
+    ],
+    [
+     16.95743404980749,
+     -8.478718972532079,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07327471091412,
+     7.536639086669311,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     5.652475842498518,
+     -2.826237921249259,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.53663445666469,
+     3.768317228332345,
+     0.0
+    ],
+    [
+     16.957427527495554,
+     -8.478713763747777,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07326891332938,
+     7.53663445666469,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.4,
+     2.2,
+     0.0
+    ],
+    [
+     -0.2,
+     0.3,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     2.3,
+     0.5
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     2.3,
+     0.5
+    ]
+   ],
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=single; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.6403123872067138,
+   "expected_cv_nm": 0.6403124237432851,
+   "absolute_cv_error_nm": 3.653657132396404e-08,
+   "energy_kj_mol": 8.428128216566092,
+   "expected_energy_kj_mol": 8.428130337970073,
+   "absolute_energy_error_kj_mol": 2.121403980481773e-06,
+   "max_force_error_kj_mol_nm": 6.742652274738248e-06,
+   "forces_kj_mol_nm": [
+    [
+     -13.601752754068002,
+     -4.533919373061508,
+     2.2669588758144528
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.135670338757336,
+     6.045225830748677,
+     -3.02261183434166
+    ],
+    [
+     -40.80525826243684,
+     -13.601758119417354,
+     6.800876627443358
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.2713406777475,
+     12.090451661730185,
+     -6.045223668916151
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -13.601755001696372,
+     -4.533918333898799,
+     2.2669591669493934
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333559516,
+     6.045224445198398,
+     -3.022612222599191
+    ],
+    [
+     -40.80526500508911,
+     -13.601755001696397,
+     6.8008775008481805
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.27134667119032,
+     12.090448890396797,
+     -6.045224445198382
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     100.0,
+     0.0,
+     0.0
+    ],
+    [
+     20.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     40.165000000000006,
+     0.3,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     40.255,
+     0.3,
+     0.4
+    ]
+   ],
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=single; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 2.00000000000026,
+   "expected_cv_nm": 2.0,
+   "absolute_cv_error_nm": 2.5979218776228663e-13,
+   "energy_kj_mol": 272.25000000008566,
+   "expected_energy_kj_mol": 272.24999999999994,
+   "absolute_energy_error_kj_mol": 8.571987564209849e-11,
+   "max_force_error_kj_mol_nm": 0.00012616137973964214,
+   "forces_kj_mol_nm": [
+    [
+     4.205363802611828e-05,
+     -82.5,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -5.607167258858681e-05,
+     110.0,
+     0.0
+    ],
+    [
+     0.00012616137973964214,
+     -247.5,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.00011214357800781727,
+     220.0,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999999999,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     109.99999999999997,
+     -0.0
+    ],
+    [
+     0.0,
+     -247.49999999999994,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     219.99999999999994,
+     -0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     5e-06,
+     2.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.365,
+     2.25,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.455,
+     2.25,
+     0.4
+    ]
+   ],
+   "precision": "single",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=single; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.20615044719668432,
+   "expected_cv_nm": 0.20615043057194912,
+   "absolute_cv_error_nm": 1.6624735199588514e-08,
+   "energy_kj_mol": 2.0692693841713896,
+   "expected_energy_kj_mol": 2.069269862463562,
+   "absolute_energy_error_kj_mol": 4.78292172534367e-07,
+   "max_force_error_kj_mol_nm": 2.625789711885318e-06,
+   "forces_kj_mol_nm": [
+    [
+     -6.977717909496278,
+     1.744473381433636,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.30362387932837,
+     -2.325964508811012,
+     0.0
+    ],
+    [
+     -20.933153728488833,
+     5.233420144766569,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.60724775865674,
+     -4.651929017622024,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -6.977718784759515,
+     1.7444733080225805,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046346019,
+     -2.325964410696774,
+     0.0
+    ],
+    [
+     -20.933156354278545,
+     5.233419924067741,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092692038,
+     -4.651928821393548,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ]
+  },
+  {
+   "platform": "CUDA",
+   "gpu": true,
+   "precision": "single",
+   "explicit_fit": false,
+   "backend": "CUDA/ColvarsGPU; selected atoms=5; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=none",
+   "maximum_absolute_errors": [
+    1.1442148464824164e-08,
+    2.7575820467362622e-08,
+    6.15535542314305e-07
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "gpu": true,
+   "precision": "single",
+   "explicit_fit": true,
+   "backend": "CUDA/ColvarsGPU; selected atoms=5; precision=single; GPU atom groups; CPU bias updates; CPU CVCs=none",
+   "maximum_absolute_errors": [
+    9.96839984862552e-09,
+    3.175279181255597e-08,
+    6.290787746277005e-07
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "gpu": false,
+   "precision": "single",
+   "explicit_fit": false,
+   "backend": "CUDA/ColvarsCPU; selected atoms=5; precision=single; per force evaluation D2H=120 bytes positions, H2D=120 bytes forces",
+   "maximum_absolute_errors": [
+    1.1442148423190801e-08,
+    2.7575820370218107e-08,
+    6.153027116706511e-07
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "gpu": false,
+   "precision": "single",
+   "explicit_fit": true,
+   "backend": "CUDA/ColvarsCPU; selected atoms=5; precision=single; per force evaluation D2H=120 bytes positions, H2D=120 bytes forces",
+   "maximum_absolute_errors": [
+    9.96839984862552e-09,
+    3.175279181255597e-08,
+    6.290787746277005e-07
+   ],
+   "absolute_tolerances": [
+    2e-06,
+    0.0002,
+    0.002
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "precision": "mixed",
+   "gpu": true,
+   "accepted_volume_trials": 1,
+   "rejected_volume_trials": 1,
+   "case": "static restraint with MC barostat",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "precision": "mixed",
+   "gpu": false,
+   "accepted_volume_trials": 4,
+   "rejected_volume_trials": 1,
+   "case": "static restraint with MC barostat",
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": 0.0,
+   "expected": 0.0,
+   "absolute_error": 0.0,
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "distance (nm)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": 0.6500000000000004,
+   "expected": 0.65,
+   "absolute_error": 3.3306690738754696e-16,
+   "tolerance": 2e-08,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": 1.125000000000005,
+   "expected": 1.125,
+   "absolute_error": 5.10702591327572e-15,
+   "tolerance": 2e-06,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 2e-05,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "net force (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "expected": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "absolute_error": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tolerance": 2e-05,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "positions after one step (nm)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.6499993750000002,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     1.1102230246251565e-16,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 2e-10,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=mixed; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": 0.0,
+   "expected": 0.0,
+   "absolute_error": 0.0,
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=mixed; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "distance (nm)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=mixed; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": 0.6500000000000004,
+   "expected": 0.65,
+   "absolute_error": 3.3306690738754696e-16,
+   "tolerance": 2e-08,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=mixed; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": 1.125000000000005,
+   "expected": 1.125,
+   "absolute_error": 5.10702591327572e-15,
+   "tolerance": 2e-06,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=mixed; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 2e-05,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "net force (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=mixed; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "expected": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "absolute_error": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tolerance": 2e-05,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "positions after one step (nm)",
+   "platform": "CUDA",
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=mixed; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.6499993750000002,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     1.1102230246251565e-16,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 2e-10,
+   "status": "PASS"
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": null,
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.8649999999999999,
+     0.5,
+     0.3
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.9549999999999998,
+     0.5,
+     0.3
+    ]
+   ],
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.7348469228349535,
+   "expected_cv_nm": 0.7348469228349533,
+   "absolute_cv_error_nm": 1.1102230246251565e-16,
+   "energy_kj_mol": 14.81071540155326,
+   "expected_energy_kj_mol": 14.810715401553251,
+   "absolute_energy_error_kj_mol": 8.881784197001252e-15,
+   "max_force_error_kj_mol_nm": 2.2470914018413168e-10,
+   "forces_kj_mol_nm": [
+    [
+     18.32986147259362,
+     5.2371032778173685,
+     -2.6185516389086843
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296791494,
+     -6.982804370345548,
+     3.4914021850563586
+    ],
+    [
+     54.98958441801369,
+     15.711309833684936,
+     -7.855654916726053
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.87963059381582,
+     -13.965608740923926,
+     6.982804370345548
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     18.32986147272559,
+     5.237103277921596,
+     -2.618551638960801
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296967453,
+     -6.982804370562128,
+     3.4914021852810677
+    ],
+    [
+     54.98958441817677,
+     15.711309833764789,
+     -7.855654916882402
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.879630593934905,
+     -13.965608741124257,
+     6.982804370562135
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.2,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     0.4,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     0.4,
+     0.4
+    ]
+   ],
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.22360679774997916,
+   "expected_cv_nm": 0.22360679774997916,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 1.5975241575014667,
+   "expected_energy_kj_mol": 1.5975241575014667,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 2.2379254005500115e-10,
+   "forces_kj_mol_nm": [
+    [
+     5.652475842274725,
+     -2.8262379211373627,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.536634456599131,
+     3.7683172281831503,
+     0.0
+    ],
+    [
+     16.957427527289838,
+     -8.478713763644919,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.073268913198262,
+     7.536634456599131,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     5.652475842498518,
+     -2.826237921249259,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.53663445666469,
+     3.768317228332345,
+     0.0
+    ],
+    [
+     16.957427527495554,
+     -8.478713763747777,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07326891332938,
+     7.53663445666469,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.4,
+     2.2,
+     0.0
+    ],
+    [
+     -0.2,
+     0.3,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     2.3,
+     0.5
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     2.3,
+     0.5
+    ]
+   ],
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.6403124237432847,
+   "expected_cv_nm": 0.6403124237432851,
+   "absolute_cv_error_nm": 4.440892098500626e-16,
+   "energy_kj_mol": 8.428130337970048,
+   "expected_energy_kj_mol": 8.428130337970073,
+   "absolute_energy_error_kj_mol": 2.4868995751603507e-14,
+   "max_force_error_kj_mol_nm": 1.9328449951672155e-10,
+   "forces_kj_mol_nm": [
+    [
+     -13.601755001582205,
+     -4.533918333705515,
+     2.2669591668527573
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333552055,
+     6.045224445173517,
+     -3.022612222470343
+    ],
+    [
+     -40.80526500497945,
+     -13.601755001582205,
+     6.800877500791103
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.2713466710411,
+     12.090448890347034,
+     -6.045224445173517
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -13.601755001696372,
+     -4.533918333898799,
+     2.2669591669493934
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333559516,
+     6.045224445198398,
+     -3.022612222599191
+    ],
+    [
+     -40.80526500508911,
+     -13.601755001696397,
+     6.8008775008481805
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.27134667119032,
+     12.090448890396797,
+     -6.045224445198382
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     100.0,
+     0.0,
+     0.0
+    ],
+    [
+     20.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     40.165000000000006,
+     0.3,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     40.255,
+     0.3,
+     0.4
+    ]
+   ],
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 2.0,
+   "expected_cv_nm": 2.0,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 272.24999999999994,
+   "expected_energy_kj_mol": 272.24999999999994,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 2.3281643279915443e-10,
+   "forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     109.99999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     -247.49999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     219.99999999976717,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999999999,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     109.99999999999997,
+     -0.0
+    ],
+    [
+     0.0,
+     -247.49999999999994,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     219.99999999999994,
+     -0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     5e-06,
+     2.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.365,
+     2.25,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.455,
+     2.25,
+     0.4
+    ]
+   ],
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.20615043057194893,
+   "expected_cv_nm": 0.20615043057194912,
+   "absolute_cv_error_nm": 1.942890293094024e-16,
+   "energy_kj_mol": 2.0692698624635675,
+   "expected_energy_kj_mol": 2.069269862463562,
+   "absolute_energy_error_kj_mol": 5.329070518200751e-15,
+   "max_force_error_kj_mol_nm": 1.63427937849292e-10,
+   "forces_kj_mol_nm": [
+    [
+     -6.977718784706667,
+     1.7444733078591526,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046275556,
+     -2.3259644105564803,
+     0.0
+    ],
+    [
+     -20.93315635412,
+     5.233419924043119,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092551112,
+     -4.651928821345791,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -6.977718784759515,
+     1.7444733080225805,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046346019,
+     -2.325964410696774,
+     0.0
+    ],
+    [
+     -20.933156354278545,
+     5.233419924067741,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092692038,
+     -4.651928821393548,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": null,
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.8649999999999999,
+     0.5,
+     0.3
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.9549999999999998,
+     0.5,
+     0.3
+    ]
+   ],
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=mixed; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.7348469228349535,
+   "expected_cv_nm": 0.7348469228349533,
+   "absolute_cv_error_nm": 1.1102230246251565e-16,
+   "energy_kj_mol": 14.81071540155326,
+   "expected_energy_kj_mol": 14.810715401553251,
+   "absolute_energy_error_kj_mol": 8.881784197001252e-15,
+   "max_force_error_kj_mol_nm": 2.2470914018413168e-10,
+   "forces_kj_mol_nm": [
+    [
+     18.32986147259362,
+     5.2371032778173685,
+     -2.6185516389086843
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296791494,
+     -6.982804370345548,
+     3.4914021850563586
+    ],
+    [
+     54.98958441801369,
+     15.711309833684936,
+     -7.855654916726053
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.87963059381582,
+     -13.965608740923926,
+     6.982804370345548
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     18.32986147272559,
+     5.237103277921596,
+     -2.618551638960801
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296967453,
+     -6.982804370562128,
+     3.4914021852810677
+    ],
+    [
+     54.98958441817677,
+     15.711309833764789,
+     -7.855654916882402
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.879630593934905,
+     -13.965608741124257,
+     6.982804370562135
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.2,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     0.4,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     0.4,
+     0.4
+    ]
+   ],
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=mixed; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.22360679774997916,
+   "expected_cv_nm": 0.22360679774997916,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 1.5975241575014667,
+   "expected_energy_kj_mol": 1.5975241575014667,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 2.2379254005500115e-10,
+   "forces_kj_mol_nm": [
+    [
+     5.652475842274725,
+     -2.8262379211373627,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.536634456599131,
+     3.7683172281831503,
+     0.0
+    ],
+    [
+     16.957427527289838,
+     -8.478713763644919,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.073268913198262,
+     7.536634456599131,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     5.652475842498518,
+     -2.826237921249259,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.53663445666469,
+     3.768317228332345,
+     0.0
+    ],
+    [
+     16.957427527495554,
+     -8.478713763747777,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07326891332938,
+     7.53663445666469,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.4,
+     2.2,
+     0.0
+    ],
+    [
+     -0.2,
+     0.3,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     2.3,
+     0.5
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     2.3,
+     0.5
+    ]
+   ],
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=mixed; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.6403124237432847,
+   "expected_cv_nm": 0.6403124237432851,
+   "absolute_cv_error_nm": 4.440892098500626e-16,
+   "energy_kj_mol": 8.428130337970048,
+   "expected_energy_kj_mol": 8.428130337970073,
+   "absolute_energy_error_kj_mol": 2.4868995751603507e-14,
+   "max_force_error_kj_mol_nm": 1.9328449951672155e-10,
+   "forces_kj_mol_nm": [
+    [
+     -13.601755001582205,
+     -4.533918333705515,
+     2.2669591668527573
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333552055,
+     6.045224445173517,
+     -3.022612222470343
+    ],
+    [
+     -40.80526500497945,
+     -13.601755001582205,
+     6.800877500791103
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.2713466710411,
+     12.090448890347034,
+     -6.045224445173517
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -13.601755001696372,
+     -4.533918333898799,
+     2.2669591669493934
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333559516,
+     6.045224445198398,
+     -3.022612222599191
+    ],
+    [
+     -40.80526500508911,
+     -13.601755001696397,
+     6.8008775008481805
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.27134667119032,
+     12.090448890396797,
+     -6.045224445198382
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     100.0,
+     0.0,
+     0.0
+    ],
+    [
+     20.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     40.165000000000006,
+     0.3,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     40.255,
+     0.3,
+     0.4
+    ]
+   ],
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=mixed; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 2.0,
+   "expected_cv_nm": 2.0,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 272.24999999999994,
+   "expected_energy_kj_mol": 272.24999999999994,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 2.3281643279915443e-10,
+   "forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     109.99999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     -247.49999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     219.99999999976717,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999999999,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     109.99999999999997,
+     -0.0
+    ],
+    [
+     0.0,
+     -247.49999999999994,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     219.99999999999994,
+     -0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     5e-06,
+     2.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.365,
+     2.25,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.455,
+     2.25,
+     0.4
+    ]
+   ],
+   "precision": "mixed",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=mixed; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.20615043057194893,
+   "expected_cv_nm": 0.20615043057194912,
+   "absolute_cv_error_nm": 1.942890293094024e-16,
+   "energy_kj_mol": 2.0692698624635675,
+   "expected_energy_kj_mol": 2.069269862463562,
+   "absolute_energy_error_kj_mol": 5.329070518200751e-15,
+   "max_force_error_kj_mol_nm": 1.63427937849292e-10,
+   "forces_kj_mol_nm": [
+    [
+     -6.977718784706667,
+     1.7444733078591526,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046275556,
+     -2.3259644105564803,
+     0.0
+    ],
+    [
+     -20.93315635412,
+     5.233419924043119,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092551112,
+     -4.651928821345791,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -6.977718784759515,
+     1.7444733080225805,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046346019,
+     -2.325964410696774,
+     0.0
+    ],
+    [
+     -20.933156354278545,
+     5.233419924067741,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092692038,
+     -4.651928821393548,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ]
+  },
+  {
+   "platform": "CUDA",
+   "gpu": true,
+   "precision": "mixed",
+   "explicit_fit": false,
+   "backend": "CUDA/ColvarsGPU; selected atoms=5; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=none",
+   "maximum_absolute_errors": [
+    3.7470027081099033e-16,
+    1.9984014443252818e-15,
+    2.9932687439782057e-09
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "gpu": true,
+   "precision": "mixed",
+   "explicit_fit": true,
+   "backend": "CUDA/ColvarsGPU; selected atoms=5; precision=mixed; GPU atom groups; CPU bias updates; CPU CVCs=none",
+   "maximum_absolute_errors": [
+    2.2620794126737565e-15,
+    1.329492071988625e-14,
+    2.4603619142027355e-10
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "gpu": false,
+   "precision": "mixed",
+   "explicit_fit": false,
+   "backend": "CUDA/ColvarsCPU; selected atoms=5; precision=mixed; per force evaluation D2H=120 bytes positions, H2D=120 bytes forces",
+   "maximum_absolute_errors": [
+    3.469446951953614e-16,
+    1.8596235662471372e-15,
+    2.6778546047268037e-10
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "gpu": false,
+   "precision": "mixed",
+   "explicit_fit": true,
+   "backend": "CUDA/ColvarsCPU; selected atoms=5; precision=mixed; per force evaluation D2H=120 bytes positions, H2D=120 bytes forces",
+   "maximum_absolute_errors": [
+    2.220446049250313e-16,
+    1.304512053934559e-15,
+    2.4603619142027355e-10
+   ],
+   "absolute_tolerances": [
+    2e-08,
+    2e-06,
+    2e-05
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     0.4,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     0.4,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.22360679774997916,
+   "expected_cv_nm": 0.22360679774997916,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 1.5975241575014667,
+   "expected_energy_kj_mol": 1.5975241575014667,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 2.2379254005500115e-10,
+   "forces_kj_mol_nm": [
+    [
+     5.652475842274725,
+     -2.8262379211373627,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.536634456599131,
+     3.7683172281831503,
+     0.0
+    ],
+    [
+     16.957427527289838,
+     -8.478713763644919,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.073268913198262,
+     7.536634456599131,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     5.652475842498518,
+     -2.826237921249259,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.53663445666469,
+     3.768317228332345,
+     0.0
+    ],
+    [
+     16.957427527495554,
+     -8.478713763747777,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07326891332938,
+     7.53663445666469,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "platform": "CUDA",
+   "precision": "double",
+   "gpu": true,
+   "accepted_volume_trials": 1,
+   "rejected_volume_trials": 2,
+   "case": "static restraint with MC barostat",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "precision": "double",
+   "gpu": false,
+   "accepted_volume_trials": 3,
+   "rejected_volume_trials": 1,
+   "case": "static restraint with MC barostat",
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": 0.0,
+   "expected": 0.0,
+   "absolute_error": 0.0,
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "distance (nm)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": 0.65,
+   "expected": 0.65,
+   "absolute_error": 0.0,
+   "tolerance": 1e-12,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": 1.1250000000000002,
+   "expected": 1.125,
+   "absolute_error": 2.220446049250313e-16,
+   "tolerance": 1e-09,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 1e-08,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "net force (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "expected": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "absolute_error": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tolerance": 1e-08,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "positions after one step (nm)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=2; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=distance/distance",
+   "actual": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 2e-10,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=double; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": 0.0,
+   "expected": 0.0,
+   "absolute_error": 0.0,
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "excluded forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=double; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 0.0,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "distance (nm)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=double; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": 0.65,
+   "expected": 0.65,
+   "absolute_error": 0.0,
+   "tolerance": 1e-12,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "energy (kJ/mol)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=double; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": 1.1250000000000002,
+   "expected": 1.125,
+   "absolute_error": 2.220446049250313e-16,
+   "tolerance": 1e-09,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "forces (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=double; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     15.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 1e-08,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "net force (kJ/mol/nm)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=double; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "expected": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "absolute_error": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "tolerance": 1e-08,
+   "status": "PASS"
+  },
+  {
+   "case": "two-particle harmonic",
+   "quantity": "positions after one step (nm)",
+   "platform": "CUDA",
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=2; precision=double; per force evaluation D2H=48 bytes positions, H2D=48 bytes forces",
+   "actual": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "expected": [
+    [
+     1.2499999999999999e-06,
+     0.0,
+     0.0
+    ],
+    [
+     0.649999375,
+     0.0,
+     0.0
+    ]
+   ],
+   "absolute_error": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ]
+   ],
+   "tolerance": 2e-10,
+   "status": "PASS"
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": null,
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.8649999999999999,
+     0.5,
+     0.3
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.9549999999999998,
+     0.5,
+     0.3
+    ]
+   ],
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.7348469228349533,
+   "expected_cv_nm": 0.7348469228349533,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 14.810715401553251,
+   "expected_energy_kj_mol": 14.810715401553251,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 2.2470914018413168e-10,
+   "forces_kj_mol_nm": [
+    [
+     18.32986147259362,
+     5.2371032778173685,
+     -2.6185516389086843
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296791494,
+     -6.982804370345548,
+     3.4914021850563586
+    ],
+    [
+     54.98958441801369,
+     15.711309833684936,
+     -7.855654916726053
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.87963059381582,
+     -13.965608740923926,
+     6.982804370345548
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     18.32986147272559,
+     5.237103277921596,
+     -2.618551638960801
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296967453,
+     -6.982804370562128,
+     3.4914021852810677
+    ],
+    [
+     54.98958441817677,
+     15.711309833764789,
+     -7.855654916882402
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.879630593934905,
+     -13.965608741124257,
+     6.982804370562135
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.4,
+     2.2,
+     0.0
+    ],
+    [
+     -0.2,
+     0.3,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     2.3,
+     0.5
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     2.3,
+     0.5
+    ]
+   ],
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.6403124237432851,
+   "expected_cv_nm": 0.6403124237432851,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 8.428130337970073,
+   "expected_energy_kj_mol": 8.428130337970073,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 1.9328449951672155e-10,
+   "forces_kj_mol_nm": [
+    [
+     -13.601755001582205,
+     -4.533918333705515,
+     2.2669591668527573
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333552055,
+     6.045224445173517,
+     -3.022612222470343
+    ],
+    [
+     -40.80526500497945,
+     -13.601755001582205,
+     6.800877500791103
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.2713466710411,
+     12.090448890347034,
+     -6.045224445173517
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -13.601755001696372,
+     -4.533918333898799,
+     2.2669591669493934
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333559516,
+     6.045224445198398,
+     -3.022612222599191
+    ],
+    [
+     -40.80526500508911,
+     -13.601755001696397,
+     6.8008775008481805
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.27134667119032,
+     12.090448890396797,
+     -6.045224445198382
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     100.0,
+     0.0,
+     0.0
+    ],
+    [
+     20.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     40.165000000000006,
+     0.3,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     40.255,
+     0.3,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 2.0,
+   "expected_cv_nm": 2.0,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 272.24999999999994,
+   "expected_energy_kj_mol": 272.24999999999994,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 2.3281643279915443e-10,
+   "forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     109.99999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     -247.49999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     219.99999999976717,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999999999,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     109.99999999999997,
+     -0.0
+    ],
+    [
+     0.0,
+     -247.49999999999994,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     219.99999999999994,
+     -0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": true,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     5e-06,
+     2.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.365,
+     2.25,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.455,
+     2.25,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "CUDA/ColvarsGPU; selected atoms=4; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=d/distance",
+   "cv_nm": 0.20615043057194912,
+   "expected_cv_nm": 0.20615043057194912,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 2.069269862463562,
+   "expected_energy_kj_mol": 2.069269862463562,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 1.63427937849292e-10,
+   "forces_kj_mol_nm": [
+    [
+     -6.977718784706667,
+     1.7444733078591526,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046275556,
+     -2.3259644105564803,
+     0.0
+    ],
+    [
+     -20.93315635412,
+     5.233419924043119,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092551112,
+     -4.651928821345791,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -6.977718784759515,
+     1.7444733080225805,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046346019,
+     -2.325964410696774,
+     0.0
+    ],
+    [
+     -20.933156354278545,
+     5.233419924067741,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092692038,
+     -4.651928821393548,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": null,
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.8649999999999999,
+     0.5,
+     0.3
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.9549999999999998,
+     0.5,
+     0.3
+    ]
+   ],
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=double; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.7348469228349533,
+   "expected_cv_nm": 0.7348469228349533,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 14.810715401553251,
+   "expected_energy_kj_mol": 14.810715401553251,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 2.2470914018413168e-10,
+   "forces_kj_mol_nm": [
+    [
+     18.32986147259362,
+     5.2371032778173685,
+     -2.6185516389086843
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296791494,
+     -6.982804370345548,
+     3.4914021850563586
+    ],
+    [
+     54.98958441801369,
+     15.711309833684936,
+     -7.855654916726053
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.87963059381582,
+     -13.965608740923926,
+     6.982804370345548
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     18.32986147272559,
+     5.237103277921596,
+     -2.618551638960801
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -24.439815296967453,
+     -6.982804370562128,
+     3.4914021852810677
+    ],
+    [
+     54.98958441817677,
+     15.711309833764789,
+     -7.855654916882402
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -48.879630593934905,
+     -13.965608741124257,
+     6.982804370562135
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     2.2,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     0.4,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     0.4,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=double; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.22360679774997916,
+   "expected_cv_nm": 0.22360679774997916,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 1.5975241575014667,
+   "expected_energy_kj_mol": 1.5975241575014667,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 2.2379254005500115e-10,
+   "forces_kj_mol_nm": [
+    [
+     5.652475842274725,
+     -2.8262379211373627,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.536634456599131,
+     3.7683172281831503,
+     0.0
+    ],
+    [
+     16.957427527289838,
+     -8.478713763644919,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.073268913198262,
+     7.536634456599131,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     5.652475842498518,
+     -2.826237921249259,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -7.53663445666469,
+     3.768317228332345,
+     0.0
+    ],
+    [
+     16.957427527495554,
+     -8.478713763747777,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -15.07326891332938,
+     7.53663445666469,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.4,
+     2.2,
+     0.0
+    ],
+    [
+     -0.2,
+     0.3,
+     2.4
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     1.9649999999999999,
+     2.3,
+     0.5
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     2.0549999999999997,
+     2.3,
+     0.5
+    ]
+   ],
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=double; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.6403124237432851,
+   "expected_cv_nm": 0.6403124237432851,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 8.428130337970073,
+   "expected_energy_kj_mol": 8.428130337970073,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 1.9328449951672155e-10,
+   "forces_kj_mol_nm": [
+    [
+     -13.601755001582205,
+     -4.533918333705515,
+     2.2669591668527573
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333552055,
+     6.045224445173517,
+     -3.022612222470343
+    ],
+    [
+     -40.80526500497945,
+     -13.601755001582205,
+     6.800877500791103
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.2713466710411,
+     12.090448890347034,
+     -6.045224445173517
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -13.601755001696372,
+     -4.533918333898799,
+     2.2669591669493934
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.13567333559516,
+     6.045224445198398,
+     -3.022612222599191
+    ],
+    [
+     -40.80526500508911,
+     -13.601755001696397,
+     6.8008775008481805
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     36.27134667119032,
+     12.090448890396797,
+     -6.045224445198382
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     100.0,
+     0.0,
+     0.0
+    ],
+    [
+     20.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     40.165000000000006,
+     0.3,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     40.255,
+     0.3,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=double; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 2.0,
+   "expected_cv_nm": 2.0,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 272.24999999999994,
+   "expected_energy_kj_mol": 272.24999999999994,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 2.3281643279915443e-10,
+   "forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     109.99999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     -247.49999999976717,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     219.99999999976717,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     0.0,
+     -82.49999999999999,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     109.99999999999997,
+     -0.0
+    ],
+    [
+     0.0,
+     -247.49999999999994,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     -0.0,
+     219.99999999999994,
+     -0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "case": "mass-weighted harmonic",
+   "status": "PASS",
+   "platform": "CUDA",
+   "gpu": false,
+   "box_nm": [
+    [
+     2.0,
+     0.0,
+     0.0
+    ],
+    [
+     5e-06,
+     2.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     2.0
+    ]
+   ],
+   "positions_nm": [
+    [
+     0.18,
+     0.3,
+     0.4
+    ],
+    [
+     1.3,
+     0.8,
+     0.6
+    ],
+    [
+     0.365,
+     2.25,
+     0.4
+    ],
+    [
+     0.24,
+     0.3,
+     0.4
+    ],
+    [
+     0.6,
+     0.5,
+     0.9
+    ],
+    [
+     0.455,
+     2.25,
+     0.4
+    ]
+   ],
+   "precision": "double",
+   "backend": "CUDA/ColvarsCPU; selected atoms=4; precision=double; per force evaluation D2H=96 bytes positions, H2D=96 bytes forces",
+   "cv_nm": 0.20615043057194912,
+   "expected_cv_nm": 0.20615043057194912,
+   "absolute_cv_error_nm": 0.0,
+   "energy_kj_mol": 2.069269862463562,
+   "expected_energy_kj_mol": 2.069269862463562,
+   "absolute_energy_error_kj_mol": 0.0,
+   "max_force_error_kj_mol_nm": 1.63427937849292e-10,
+   "forces_kj_mol_nm": [
+    [
+     -6.977718784706667,
+     1.7444733078591526,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046275556,
+     -2.3259644105564803,
+     0.0
+    ],
+    [
+     -20.93315635412,
+     5.233419924043119,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092551112,
+     -4.651928821345791,
+     0.0
+    ]
+   ],
+   "expected_forces_kj_mol_nm": [
+    [
+     -6.977718784759515,
+     1.7444733080225805,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     9.303625046346019,
+     -2.325964410696774,
+     0.0
+    ],
+    [
+     -20.933156354278545,
+     5.233419924067741,
+     -0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    [
+     18.607250092692038,
+     -4.651928821393548,
+     0.0
+    ]
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ]
+  },
+  {
+   "platform": "CUDA",
+   "gpu": true,
+   "precision": "double",
+   "explicit_fit": false,
+   "backend": "CUDA/ColvarsGPU; selected atoms=5; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=none",
+   "maximum_absolute_errors": [
+    1.1796119636642288e-16,
+    6.106226635438361e-16,
+    2.9932687439782057e-09
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "gpu": true,
+   "precision": "double",
+   "explicit_fit": true,
+   "backend": "CUDA/ColvarsGPU; selected atoms=5; precision=double; GPU atom groups; CPU bias updates; CPU CVCs=none",
+   "maximum_absolute_errors": [
+    2.5118795932144167e-15,
+    1.4738210651898953e-14,
+    2.4603619142027355e-10
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "gpu": false,
+   "precision": "double",
+   "explicit_fit": false,
+   "backend": "CUDA/ColvarsCPU; selected atoms=5; precision=double; per force evaluation D2H=120 bytes positions, H2D=120 bytes forces",
+   "maximum_absolute_errors": [
+    1.249000902703301e-16,
+    4.996003610813204e-16,
+    2.6778546047268037e-10
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  },
+  {
+   "platform": "CUDA",
+   "gpu": false,
+   "precision": "double",
+   "explicit_fit": true,
+   "backend": "CUDA/ColvarsCPU; selected atoms=5; precision=double; per force evaluation D2H=120 bytes positions, H2D=120 bytes forces",
+   "maximum_absolute_errors": [
+    1.1102230246251565e-16,
+    6.661338147750939e-16,
+    2.4603619142027355e-10
+   ],
+   "absolute_tolerances": [
+    1e-12,
+    1e-09,
+    1e-08
+   ],
+   "finite_difference_step_nm": 1e-05,
+   "case": "Kabsch RMSD",
+   "status": "PASS"
+  }
+ ]
+}

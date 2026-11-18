@@ -115,6 +115,8 @@ public:
   virtual int update() override;
   virtual int change_configuration(std::string const & /* conf */) override { return COLVARS_NOT_IMPLEMENTED; }
 
+  bool has_moving_parameters() const { return b_chg_centers || b_chg_force_k || b_chg_walls; }
+
   virtual std::string const get_state_params() const override;
   virtual int set_state_params(std::string const &conf) override;
 

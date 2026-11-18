@@ -162,21 +162,18 @@ int colvaratoms_gpu::read_data_gpu(cvm::atom_group* cpu_atoms) {
     if (cvm::debug()) {
       cvmodule->log("Initialize CUDA graph for atom group " + cpu_atoms->name + "\n");
     }
-    // First, we need to know if any of parents require CPU buffers.
-    std::vector<colvardeps*> ag_parents = cpu_atoms->get_parents();
-    bool require_cpu_buffers = false;
-    for (auto it = ag_parents.begin(); it != ag_parents.end(); ++it) {
-      switch ((*it)->get_object_type()) {
-        case colvardeps::object_t::colvarcomp: {
-          colvar::cvc* p = dynamic_cast<colvar::cvc*>((*it));
-          if (p->is_enabled(colvardeps::f_cvc_require_cpu_buffers)) {
-            require_cpu_buffers = true;
-          }
-          break;
-        }
-        default:;
-      }
-    }
+    // A COM-based component can consume the pinned center written by the
+    // group reduction. Fitting and gradient debugging also use atom positions.
+    const bool fitted = cpu_atoms->fitting_group ||
+                        cpu_atoms->is_enabled(colvardeps::f_ag_center) ||
+                        cpu_atoms->is_enabled(colvardeps::f_ag_rotate);
+    const auto& parents = cpu_atoms->get_parents();
+    const bool copy_positions = std::any_of(parents.begin(), parents.end(), [fitted](const colvardeps* p) {
+      return p->get_object_type() == colvardeps::object_t::colvarcomp &&
+             p->is_enabled(colvardeps::f_cvc_require_cpu_buffers) &&
+             (fitted || !p->is_enabled(colvardeps::f_cvc_com_based) ||
+              p->is_enabled(colvardeps::f_cvc_debug_gradient));
+    });
     error_code |= checkGPUError(cudaGraphCreate(&graph_read_compute.graph, 0));
     if (error_code != COLVARS_OK) return error_code;
     error_code |= add_reset_atoms_data_nodes(cpu_atoms, graph_read_compute.graph, graph_read_compute.nodes);
@@ -185,7 +182,7 @@ int colvaratoms_gpu::read_data_gpu(cvm::atom_group* cpu_atoms) {
     if (error_code != COLVARS_OK) return error_code;
     error_code |= add_calc_required_properties_nodes(cpu_atoms, graph_read_compute.graph, graph_read_compute.nodes);
     if (error_code != COLVARS_OK) return error_code;
-    if (require_cpu_buffers) {
+    if (copy_positions) {
       error_code |= add_update_cpu_buffers_nodes(cpu_atoms, graph_read_compute.graph, graph_read_compute.nodes);
       if (error_code != COLVARS_OK) return error_code;
     }

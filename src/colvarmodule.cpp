@@ -13,6 +13,7 @@
 #include <vector>
 #include <cstdio>
 #include <atomic>
+#include "colvarfile.h"
 
 #include "colvarmodule.h"
 #include "colvar_gpu_support.h"
@@ -2020,7 +2021,7 @@ int colvarmodule::read_traj(char const *traj_filename,
   // NB: this function is not currently used, but when it will it should
   // retain the ability for direct file-based access (in case traj files
   // exceed memory)
-  std::ifstream traj_is(traj_filename);
+  std::ifstream traj_is(colvars_file_path(traj_filename));
 
   while (true) {
     while (true) {

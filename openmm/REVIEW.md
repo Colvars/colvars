@@ -1,5 +1,73 @@
 # Independent review and repair record
 
+## 2026-11-19 review on Windows and NVIDIA hardware
+
+The comparison base was `8379ea411672171af23544e3186cac2507c413d2`. Reviewers
+read the current working-tree diff and new files, including the shared core,
+CUDA adapter, SWIG/build path, examples, oracle tests and hardware records.
+
+### Round 1 · numerical correctness and state
+
+| Location | Severity and reproduction | Repair and verification |
+| --- | --- | --- |
+| `openmm/src/colvarproxy_openmm.cpp:152` | High. A first evaluation at a new step can mutate bias history when invoked on an MC trial. | Inspect the barostat kernel requested by the ForceImpls and reject history-dependent biases at initialization. The renamed-barostat guard and real accepted/rejected static-restraint tests pass on Reference and CPU. |
+| `src/colvarproxy_system.cpp:17` and `src/colvars_system.h:174` | High. A 27-image search missed the shortest image in a long tilted cell. The original case returned about 20.025 nm for a true distance of 2 nm. Very small, nonzero tilt could also be classified as orthogonal. | Prepare an equivalent reduced basis when the existing neighbor search cannot be certified. A direct enumeration oracle passed 5,000 random cases and the plugin tests check both extreme examples. |
+| `openmm/src/colvarproxy_openmm.cpp:244` | High. After a failed box update, restoring the previous valid box gave 0.1 nm instead of 0.223606797749979 nm. | Commit the box and boundary object together after successful validation. The failed-box regression passes on Reference and CPU. |
+| `openmm/src/colvarproxy_openmm.cpp:193` | Medium. Subtraction from the smallest signed integer could overflow before the range check. | Validate the one-based atom number before conversion. The tests include the minimum integer and the existing invalid and duplicate ID cases. |
+| `src/colvarproxy_io.cpp:179` and `:196` | High. Missing temporary replica files caused 12 Windows failures. Removing a destination before a failed rename could also lose an existing snapshot. | Make missing-file removal idempotent and replace a destination in one Windows rename operation. All 12 replica tests pass. The core file I/O test verifies survival of the destination after a failed rename. |
+
+The reviewer rechecked units, mass-weighted force signs, current box and
+coordinates, restart step mapping, metadynamics, MC proposals and ABF rejection
+after these repairs. Reference and CPU passed 186 cases in the final numerical
+review run.
+
+### Round 2 · CUDA and resources
+
+The device reviewer inspected every component that enables or inherits
+`f_cvc_com_based`, its use of CPU atom positions, the group read and force
+graphs, and their stream/event ordering. Fitting groups, gradient debugging
+and non-COM components retain the per-atom transfer when requested.
+`src/colvaratoms_gpu.cpp:165` removes a redundant copy, measured with
+node-level CUDA graph tracing. The before/after tests include a compact CPU
+fallback on the same device. A two-thread check using two independent CUDA
+contexts recorded 80 updates each, with maximum force error below 2.33e-10
+kJ/mol/nm. A single-precision tiny-displacement test had skipped a representable
+displacement. The reviewer removed the skip and ran both CUDA backends.
+
+### Round 3 · Python, builds and portability
+
+| Location | Severity and reproduction | Repair and verification |
+| --- | --- | --- |
+| `src/cuda/colvarcomp_distance_kernel.h:51` | High. Linking the Windows CUDA Python module failed with LNK2019 for the RMSD Jacobian helper. The host and NVCC objects disagreed on the MSVC decorated type name. | Match the forward declaration to the defining `struct`. The CUDA Python extension linked, loaded, and ran a 1,000-step integration. |
+| `tests/unittests/CMakeLists.txt:27` | Medium. Native Windows denied fixture symlink creation before a unit test could start. | Configure read-only fixture copies that CMake refreshes when the source changes. All six CTest unit cases pass. |
+| `openmm/CMakeLists.txt:47` | Low. The default MSVC source charset on a CP936 host damaged UTF-8 reference strings in the DLL. | Compile C++ source with `/utf-8`. Verify the original bytes in both installed modules. |
+| `src/colvarfile.h:7` and `src/colvarproxy_io.cpp` | Medium. A Unicode config filename passed by Python failed during Context creation. | Convert UTF-8 paths at the native Windows OpenMM file boundary. Host tests include Unicode configuration, output and restart paths. A Unicode-path PDB reference matched the SVD RMSD oracle to 1.32e-16 nm. |
+
+Independent CPU-only and CUDA installations were also imported in separate
+Python processes. Both constructed a force from configuration text. Numerical
+and device results with the same SDK are recorded in [VALIDATION.md](VALIDATION.md).
+
+### Round 4 · full diff and failure recovery
+
+| Location | Severity and reproduction | Repair and verification |
+| --- | --- | --- |
+| `openmm/src/colvarproxy_openmm.cpp:250` | High. An axis-aligned box of height 1e-180 nm returned NaN and advanced the update count. A rejected tilted box could also leave the serialized step one ahead of the last hill. | Validate cell heights and prepare the new boundary before updating Colvars time. The regression checks byte-for-byte state preservation after rejection, correct subsequent hill deposition and the recovered CV. |
+| `src/colvarproxy_io.cpp:432` | High. Blocking the backup destination with a directory made `flushOutputs` overwrite a valid previous checkpoint. | Report the failed backup before opening the destination for writing. The regression checks the exception and the original checkpoint bytes. |
+
+The independent reviewer reread all production changes after the repairs,
+including GPU graph dependencies, the nearest-image proof and restart/backup
+error paths, and found no additional confirmed defect. Hardware coverage and
+the bounds of the memory-safety checks are in [VALIDATION.md](VALIDATION.md).
+
+The final complete review also checked the optional pytest reporter and its
+exported data: 760 outcomes, 1,904 numerical comparison summaries (9,064
+assertion calls) and 120 hardware-oracle records. The reviewer independently
+recomputed the benchmark means and the per-step Nsight counts. The final
+matrix had 748 passes, 12 intentional skips and zero failures. No new
+confirmed issue remained in the reviewed diff.
+
+## Earlier review of the initial integration
+
 Review baseline: `5b79a08438ad39413a0816ad5654fbd8f5ca57f8` on `chinfo`.
 Each numbered round reviews the complete current changes against that baseline,
 including the OpenMM interface, core changes, build, examples, tests and docs.

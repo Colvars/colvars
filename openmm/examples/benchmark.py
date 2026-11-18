@@ -6,6 +6,7 @@ any protein system. CUDA is required by default; no silent CPU substitution.
 """
 
 import argparse
+from contextlib import nullcontext
 import json
 import math
 from pathlib import Path
@@ -17,7 +18,6 @@ import time
 import numpy as np
 import openmm as mm
 from openmm import unit
-from openmm_colvars import ColvarsForce
 
 
 def make_system(n, group_size):
@@ -96,6 +96,8 @@ def advance(integrator, context, steps, report_interval):
 def device_metadata(platform, context):
     result = {"platform": platform.getName()}
     for name in platform.getPropertyNames():
+        if name in ("TempDirectory", "CudaCompiler", "CudaHostCompiler"):
+            continue
         try:
             result[name] = platform.getPropertyValue(context, name)
         except mm.OpenMMException:
@@ -103,7 +105,7 @@ def device_metadata(platform, context):
     if platform.getName() == "CUDA":
         try:
             result["nvidia_smi"] = subprocess.check_output([
-                "nvidia-smi", "--query-gpu=index,name,uuid,driver_version,memory.total",
+                "nvidia-smi", "--query-gpu=index,name,driver_version,memory.total",
                 "--format=csv,noheader"], text=True, timeout=15).strip().splitlines()
         except (OSError, subprocess.SubprocessError) as exc:
             result["nvidia_smi_unavailable"] = str(exc)
@@ -114,6 +116,8 @@ def run_mode(args, mode, output_dir):
     system, positions, velocities, config = make_system(args.particles, args.group_size)
     force = None
     if mode != "baseline":
+        from openmm_colvars import ColvarsForce
+
         force = ColvarsForce.fromConfigString(config, str(output_dir / mode))
         force.setUseGpu(mode == "gpu")
         force.setUsesPeriodicBoundaryConditions(True)
@@ -139,19 +143,29 @@ def run_mode(args, mode, output_dir):
     result = {"mode": mode, "backend": backend, "device": device_metadata(platform, context),
               "colvars_config": config if force else None,
               "samples_seconds": [], "samples_steps_per_second": []}
+    sample_range = nullcontext()
+    if args.profile_range:
+        import nvtx
+        sample_range = nvtx.annotate("integrate", domain="openmm-colvars-benchmark")
     for repeat in range(args.repeats):
         # Warmup has already happened. Endpoint fences are included equally for
         # all modes; no coordinate or force downloads occur unless Colvars needs
         # them internally. Report frequency is identical across modes.
         synchronize(context, True)
-        start = time.perf_counter()
-        advance(integrator, context, args.steps, args.report_interval)
-        synchronize(context, True)
-        elapsed = time.perf_counter() - start
+        with sample_range:
+            start = time.perf_counter()
+            advance(integrator, context, args.steps, args.report_interval)
+            synchronize(context, True)
+            elapsed = time.perf_counter() - start
         result["samples_seconds"].append(elapsed)
         result["samples_steps_per_second"].append(args.steps / elapsed)
     result["median_steps_per_second"] = statistics.median(result["samples_steps_per_second"])
     result["median_ns_per_day"] = result["median_steps_per_second"] * args.timestep * 86.4
+    rates = result["samples_steps_per_second"]
+    result["mean_seconds"] = statistics.mean(result["samples_seconds"])
+    result["mean_steps_per_second"] = statistics.mean(rates)
+    result["range_steps_per_second"] = [min(rates), max(rates)]
+    result["mean_ns_per_day"] = result["mean_steps_per_second"] * args.timestep * 86.4
     if force:
         result["bias_state_updates"] = force.getBiasUpdateCount(context)
         result["final_distance_nm"] = force.getColvarValue(context, "distance")
@@ -173,6 +187,8 @@ def main():
     parser.add_argument("--steps", type=int, default=10000, help="Timed steps per repeat")
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--report-interval", type=int, default=0, help="Energy read interval; 0 means endpoints only")
+    parser.add_argument("--profile-range", action="store_true",
+                        help="Mark timed samples for Nsight using the optional Python nvtx package")
     parser.add_argument("--device", default=None, help="CUDA device index (single GPU)")
     parser.add_argument("--cpu-threads", type=int, default=1)
     parser.add_argument("--json", type=Path, default=Path("benchmark.json"))
@@ -182,6 +198,8 @@ def main():
         parser.error("--modes must contain baseline,gpu,cpu")
     if args.platform != "CUDA" and "gpu" in modes:
         parser.error("--modes gpu requires --platform CUDA; CPU smoke test: --modes baseline,cpu")
+    if args.profile_range and args.platform != "CUDA":
+        parser.error("--profile-range requires --platform CUDA")
     if min(args.particles, args.group_size, args.steps, args.repeats, args.cpu_threads) <= 0 or args.timestep <= 0:
         parser.error("Particle/group sizes, steps/repeats/threads and timestep must be positive")
     if min(args.warmup, args.report_interval) < 0:
@@ -192,17 +210,27 @@ def main():
     report = {"openmm_version": mm.__version__, "numpy_version": np.__version__,
               "system": "periodic Lennard-Jones, 39.948 Da, sigma 0.34 nm, epsilon 0.997 kJ/mol, cutoff 1.0 nm",
               "integrator": "VerletIntegrator", "initial_velocity_seed": 20261118,
+              "selected_atoms_in_biased_modes": 2 * args.group_size,
+              "cv_type": "distance", "bias_type": "harmonic",
               "configuration": {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()},
               "results": []}
+    try:
+        report["source_checkout_commit"] = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).resolve().parent,
+            text=True, stderr=subprocess.DEVNULL).strip()
+    except (OSError, subprocess.SubprocessError):
+        report["source_checkout_commit"] = None
     with tempfile.TemporaryDirectory(prefix="colvars-openmm-benchmark-") as output:
         for mode in modes:
             result = run_mode(args, mode, Path(output))
             report["results"].append(result)
             print(json.dumps(result, indent=2), flush=True)
-    baseline = next((r["median_steps_per_second"] for r in report["results"] if r["mode"] == "baseline"), None)
+    baseline = next((r for r in report["results"] if r["mode"] == "baseline"), None)
     if baseline:
         for result in report["results"]:
-            result["throughput_relative_to_baseline"] = result["median_steps_per_second"] / baseline
+            result["throughput_relative_to_baseline"] = (
+                result["median_steps_per_second"] / baseline["median_steps_per_second"])
+            result["overhead_percent"] = 100 * (result["mean_seconds"] / baseline["mean_seconds"] - 1)
     args.json.parent.mkdir(parents=True, exist_ok=True)
     args.json.write_text(json.dumps(report, indent=2) + "\n")
     print("Saved", args.json)

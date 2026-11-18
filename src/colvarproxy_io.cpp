@@ -42,7 +42,11 @@
 
 #include "colvarmodule.h"
 #include "colvarproxy_io.h"
+#include "colvarfile.h"
 
+#if defined(_WIN32) && !defined(__CYGWIN__)
+#include <windows.h>
+#endif
 
 colvarproxy_io::colvarproxy_io()
 {
@@ -85,7 +89,11 @@ std::string colvarproxy_io::get_current_work_dir() const
 {
 #ifdef __cpp_lib_filesystem
 
+#ifdef COLVARS_UTF8_WINDOWS_PATHS
+  return std::filesystem::current_path().u8string();
+#else
   return std::filesystem::current_path().string();
+#endif
 
 #else
 
@@ -113,7 +121,11 @@ std::string colvarproxy_io::join_paths(std::string const &path1, std::string con
 {
 #ifdef __cpp_lib_filesystem
 
+#ifdef COLVARS_UTF8_WINDOWS_PATHS
+  return (colvars_file_path(path1.c_str()) / colvars_file_path(path2.c_str())).u8string();
+#else
   return (std::filesystem::path(path1) / std::filesystem::path(path2)).string();
+#endif
 
 #else
 
@@ -135,7 +147,11 @@ int colvarproxy_io::backup_file(char const *filename)
   do {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     // We could use _access_s here, but it is probably too new
+#ifdef COLVARS_UTF8_WINDOWS_PATHS
+    exit_code = _waccess(colvars_file_path(filename).c_str(), 00);
+#else
     exit_code = _access(filename, 00);
+#endif
 #else
     exit_code = access(filename, F_OK);
 #endif
@@ -162,32 +178,16 @@ int colvarproxy_io::backup_file(char const *filename)
 
 int colvarproxy_io::remove_file(char const *filename)
 {
-  int error_code = COLVARS_OK;
-#if defined(_WIN32) && !defined(__CYGWIN__)
-  // Because the file may be open by other processes, rename it to filename.old
-  std::string const renamed_file(std::string(filename)+".old");
-  // It may still be there from an interrupted run, so remove it to be safe
-  std::remove(renamed_file.c_str());
-  int rename_exit_code = 0;
-  while ((rename_exit_code = std::rename(filename,
-                                         renamed_file.c_str())) != 0) {
-    if (errno == EINTR) continue;
-    error_code |= COLVARS_FILE_ERROR;
-    break;
-  }
-  // Ask to remove filename.old, but ignore any errors raised
-  std::remove(renamed_file.c_str());
+#ifdef COLVARS_UTF8_WINDOWS_PATHS
+  auto const path = colvars_file_path(filename);
+  while (_wremove(path.c_str()) != 0) {
 #else
-  if (std::remove(filename)) {
-    if (errno != ENOENT) {
-      error_code |= COLVARS_FILE_ERROR;
-    }
-  }
+  while (std::remove(filename) != 0) {
 #endif
-  if (error_code != COLVARS_OK) {
-    return cvm::error_static("Error: in removing file \""+std::string(filename)+
-                      "\".\n.",
-                      error_code);
+    if (errno == ENOENT) return COLVARS_OK;
+    if (errno != EINTR)
+      return cvm::error_static("Error removing file \"" + std::string(filename) + "\".\n",
+                               COLVARS_FILE_ERROR);
   }
   return COLVARS_OK;
 }
@@ -195,13 +195,21 @@ int colvarproxy_io::remove_file(char const *filename)
 
 int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
 {
-  int error_code = COLVARS_OK;
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  // On straight Windows, must remove the destination before renaming it
-  if (_access(newfilename, 00) == 0) {
-    error_code |= remove_file(newfilename);
-  }
+  // A replica reader can see the old or new snapshot during replacement.
+  // Deleting the destination first would lose it if the rename then failed.
+#ifdef COLVARS_UTF8_WINDOWS_PATHS
+  if (MoveFileExW(colvars_file_path(filename).c_str(), colvars_file_path(newfilename).c_str(),
+                  MOVEFILE_REPLACE_EXISTING)) return COLVARS_OK;
+#else
+  if (MoveFileExA(filename, newfilename, MOVEFILE_REPLACE_EXISTING)) return COLVARS_OK;
 #endif
+  const DWORD error = GetLastError();
+  cvm::main()->log("Error renaming \"" + std::string(filename) + "\" to \"" + newfilename +
+                   "\" (Windows error " + std::to_string(error) + ").\n");
+  return COLVARS_FILE_ERROR;
+#else
+  int error_code = COLVARS_OK;
   int rename_exit_code = 0;
   while ((rename_exit_code = std::rename(filename, newfilename)) != 0) {
     if (errno == EINTR) continue;
@@ -209,10 +217,10 @@ int colvarproxy_io::rename_file(char const *filename, char const *newfilename)
     cvm::main()->log("Error: in renaming file \""+std::string(filename)+"\" to \""+
              std::string(newfilename)+"\".\n.");
     error_code |= COLVARS_FILE_ERROR;
-    if (errno == EXDEV) continue;
     break;
   }
   return rename_exit_code ? error_code : COLVARS_OK;
+#endif
 }
 
 
@@ -278,10 +286,10 @@ std::istream &colvarproxy_io::input_stream(std::string const &input_name,
       // This file was opened before, re-open it.  Using std::ios::binary to
       // work around differences in line termination conventions
       // See https://github.com/Colvars/colvars/commit/8236879f7de4
-      ifs->open(input_name.c_str(), std::ios::binary);
+      ifs->open(colvars_file_path(input_name.c_str()), std::ios::binary);
     }
   } else {
-    input_streams_[input_name] = new std::ifstream(input_name.c_str(),
+    input_streams_[input_name] = new std::ifstream(colvars_file_path(input_name.c_str()),
                                                    std::ios::binary);
   }
 
@@ -421,9 +429,12 @@ std::ostream & colvarproxy_io::output_stream(std::string const &output_name,
     return *(output_streams_[output_name]);
   }
 
-  backup_file(output_name.c_str());
+  if (backup_file(output_name.c_str()) != COLVARS_OK) {
+    cvm::error_static("Cannot back up output file \"" + output_name + "\".\n", COLVARS_FILE_ERROR);
+    return *output_stream_error_;
+  }
 
-  output_streams_[output_name] = new std::ofstream(output_name.c_str(), std::ios::binary);
+  output_streams_[output_name] = new std::ofstream(colvars_file_path(output_name.c_str()), std::ios::binary);
   if (!*(output_streams_[output_name])) {
     cvm::error_static("Error: cannot write to "+description+" \""+output_name+"\".\n",
                COLVARS_FILE_ERROR);

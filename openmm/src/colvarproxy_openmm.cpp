@@ -1,13 +1,17 @@
 // Adapted from Colvars PR 979. See ../UPSTREAM.md and ../LICENSE.
 #include "colvarproxy_openmm.h"
+#include "colvarfile.h"
 #include "colvaratoms.h"
 #include "colvar.h"
 #include "colvarbias.h"
+#include "colvarbias_restraint.h"
 #include "openmm/Context.h"
 #include "openmm/Integrator.h"
 #include "openmm/OpenMMException.h"
 #include "openmm/System.h"
 #include "openmm/internal/ContextImpl.h"
+#include "openmm/internal/ForceImpl.h"
+#include "openmm/kernels.h"
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -17,6 +21,17 @@
 using namespace OpenMM;
 using namespace ColvarsPlugin;
 namespace {
+bool hasMonteCarloBarostat(const ContextImpl& context) {
+    // All built-in MC barostats, including the RPMD plugin, request this
+    // kernel. ForceImpls exist before OpenMM initializes any individual force.
+    for (auto* impl : context.getForceImpls()) {
+        const auto kernels = impl->getKernelNames();
+        if (std::find(kernels.begin(), kernels.end(), ApplyMonteCarloBarostatKernel::Name()) != kernels.end())
+            return true;
+    }
+    return false;
+}
+
 std::recursive_mutex& colvarsMutex() {
     // Keep the mutex valid during Python/shared-library teardown.
     static auto* mutex = new std::recursive_mutex;
@@ -115,7 +130,7 @@ colvarproxy_openmm::~colvarproxy_openmm() {
     cvmodule = nullptr;
 }
 
-void colvarproxy_openmm::initializeColvars() {
+void colvarproxy_openmm::initializeColvars(ContextImpl& context) {
     OpenMMColvarsLock lock(this);
     if (initialized_) return;
     if (owner_.getNumParticleCharges() != 0 && owner_.getNumParticleCharges() != system_.getNumParticles())
@@ -124,8 +139,6 @@ void colvarproxy_openmm::initializeColvars() {
     result |= set_target_temperature(owner_.getTargetTemperature());
     result |= parse_module_config();
     result |= setup();
-    result |= cvmodule->setup_input();
-    result |= cvmodule->setup_output();
     if (result || cvmodule->get_error()) throw OpenMMException("Colvars initialization: " + get_error_msgs());
     // State mutation and fresh force evaluation must be separable for OpenMM.
     for (auto* cv : *cvmodule->variables()) {
@@ -136,12 +149,22 @@ void colvarproxy_openmm::initializeColvars() {
     }
     if (cvmodule->scripted_forces())
         throw OpenMMException("OpenMM Colvars does not support scripted forces");
+    const bool barostat = hasMonteCarloBarostat(context);
     for (auto* bias : cvmodule->biases) {
         if (bias->get_time_step_factor() != 1)
             throw OpenMMException("OpenMM Colvars requires timeStepFactor 1 on every bias; use OpenMM integrator force groups for multiple time stepping");
         if (!bias->supports_state_free_evaluation())
             throw OpenMMException("OpenMM Colvars bias does not support repeat-safe evaluation: " + bias->bias_type);
+        if (barostat) {
+            const auto* restraint = dynamic_cast<const colvarbias_restraint_moving*>(bias);
+            if (!restraint || restraint->has_moving_parameters() || bias->is_enabled(colvardeps::f_cvb_calc_ti_samples))
+                throw OpenMMException("OpenMM Colvars supports only static restraints with a Monte Carlo barostat: "
+                                      "trial evaluations cannot commit adaptive history for bias " + bias->name);
+        }
     }
+    result = cvmodule->setup_input();
+    result |= cvmodule->setup_output();
+    if (result || cvmodule->get_error()) throw OpenMMException("Colvars initialization: " + get_error_msgs());
     restartPending_ = cvmodule->has_loaded_state();
     initialized_ = true;
 }
@@ -168,10 +191,9 @@ int colvarproxy_openmm::init_atom(int atomNumber) {
 }
 
 int colvarproxy_openmm::check_atom_id(int atomNumber) {
-    const int id = atomNumber - 1;
-    if (id < 0 || id >= system_.getNumParticles())
+    if (atomNumber <= 0 || atomNumber > system_.getNumParticles())
         throw OpenMMException("Colvars atomNumbers are one-based: invalid atom " + std::to_string(atomNumber));
-    return id;
+    return atomNumber - 1;
 }
 
 int colvarproxy_openmm::request_atom_charges() {
@@ -216,6 +238,27 @@ void colvarproxy_openmm::beginEvaluation(ContextImpl& context) {
     currentStep_ = context.getOwner().getStepCount();
     if (haveStep_ && currentStep_ < lastUpdatedStep_)
         throw OpenMMException("OpenMM Colvars cannot move backwards in step count; recreate Context and load a Colvars restart");
+    if (usesPbc_) {
+        std::array<Vec3, 3> box;
+        context.getPeriodicBoxVectors(box[0], box[1], box[2]);
+        if (box != lastBox_) {
+            const cvm::rvector a(box[0][0], 0.0, 0.0), b(box[1][0], box[1][1], 0.0);
+            const cvm::rvector c(box[2][0], box[2][1], box[2][2]);
+            // The reciprocal-cell calculation uses squared lengths. Reject
+            // unrepresentable box heights before changing the saved bias.
+            for (double height : {a.x, b.y, c.z}) {
+                if (!(height > 0.0) || !std::isnormal(height * height))
+                    throw OpenMMException("Cannot represent Colvars cell height at double precision");
+            }
+            cvm::system_boundary_conditions updated;
+            if (b.x == 0.0 && c.x == 0.0 && c.y == 0.0)
+                updated.set_boundaries(true, true, true, a, b, c);
+            else if (!updated.set_triclinic_minimum_image(a, b, c))
+                throw OpenMMException("Cannot reduce triclinic Colvars cell at double precision");
+            boundaries_ = updated;
+            lastBox_ = box;
+        }
+    }
     if (!haveStep_) {
         initialOpenmmStep_ = currentStep_;
         initialColvarsStep_ = restartPending_ ? cvmodule->it_restart : currentStep_;
@@ -228,13 +271,6 @@ void colvarproxy_openmm::beginEvaluation(ContextImpl& context) {
             throw OpenMMException("Colvars could not update the integration timestep");
         lastTimestepFs_ = timestepFs;
     }
-    if (usesPbc_) {
-        Vec3 a,b,c;
-        context.getPeriodicBoxVectors(a,b,c);
-        boundaries_.set_boundaries(1,1,1, cvm::rvector(a[0],a[1],a[2]),
-                                    cvm::rvector(b[0],b[1],b[2]),
-                                    cvm::rvector(c[0],c[1],c[2]));
-    } else boundaries_.reset();
     biasEnergy_ = 0.0;
     auto& forces = *modify_atom_applied_forces();
     std::fill(forces.begin(), forces.end(), cvm::rvector(0.0,0.0,0.0));
@@ -311,7 +347,7 @@ int colvarproxy_openmm::load_atoms_pdb(char const* filename,
     }
 
     const std::string filenameString = filename == nullptr ? std::string() : std::string(filename);
-    std::ifstream input(filenameString);
+    std::ifstream input(colvars_file_path(filenameString.c_str()));
     if (!input) {
         return cvmodule->error("Error: cannot open PDB file \"" + filenameString + "\".\n",
                                COLVARS_FILE_ERROR);
@@ -368,7 +404,7 @@ int colvarproxy_openmm::load_coords_pdb(char const* filename,
         previousId = atomId;
     }
 
-    std::ifstream input(filenameString);
+    std::ifstream input(colvars_file_path(filenameString.c_str()));
     if (!input) {
         return cvmodule->error("Error: cannot open PDB file \"" + filenameString + "\".\n",
                                COLVARS_FILE_ERROR);

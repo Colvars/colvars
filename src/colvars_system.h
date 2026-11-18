@@ -22,7 +22,8 @@ public:
     mixed,          /// Some dimensions are periodic, but others are not
     pbc_orthogonal, /// All three dimensions are periodic, lattice vectors are orthogonal
     pbc_triclinic,  /// All three dimensions are periodic, lattice vectors are *not* orthogonal
-    unsupported     /// Unsupported boundary conditions
+    unsupported,    /// Unsupported boundary conditions
+    pbc_reduced     /// Triclinic lattice with reduced basis and Gram-Schmidt dual vectors
   };
 
   /// Default constructor
@@ -60,6 +61,9 @@ public:
   inline COLVARS_HOST_DEVICE void set_boundaries(bool periodic_x_in, bool periodic_y_in,
                                                 bool periodic_z_in, cvm::rvector const &A,
                                                 cvm::rvector const &B, cvm::rvector const &C);
+
+  /// Prepare a fully periodic triclinic cell for an exact, fixed-size closest-image search.
+  bool set_triclinic_minimum_image(cvm::rvector const &A, cvm::rvector const &B, cvm::rvector const &C);
 protected:
 
   /// Type of boundary conditions in the current computation
@@ -165,6 +169,27 @@ cvm::rvector cvm::system_boundary_conditions::position_distance(cvm::atom_pos co
 
   if (type() == types::non_periodic || type() == types::unsupported) {
     return diff;
+  }
+
+  if (type() == types::pbc_reduced) {
+    // With Gram-Schmidt lengths d0,d1,d2, nearest-plane rounding gives
+    // squared error <= (d0^2+d1^2+d2^2)/4. Reduction ensures d0^2 <= 2*d1^2
+    // and d1^2 <= 2*d2^2. A third-coordinate choice beyond the nearest +/-1
+    // costs at least (1.5*d2)^2, greater than that bound. After subtracting
+    // the third-coordinate cost, at most (d0^2+d1^2)/4 remains. The same
+    // argument bounds the second-coordinate choices; the first is rounded.
+    diff -= ::floor(reciprocal_cell_z * diff + 0.5) * unit_cell_z;
+    cvm::rvector best = diff;
+    for (int k = -1; k <= 1; ++k) {
+      cvm::rvector plane = diff - k * unit_cell_z;
+      plane -= ::floor(reciprocal_cell_y * plane + 0.5) * unit_cell_y;
+      for (int j = -1; j <= 1; ++j) {
+        cvm::rvector image = plane - j * unit_cell_y;
+        image -= ::floor(reciprocal_cell_x * image + 0.5) * unit_cell_x;
+        if (image.norm2() < best.norm2()) best = image;
+      }
+    }
+    return best;
   }
 
   cvm::real const x_shift = ::floor(reciprocal_cell_x * diff + 0.5);

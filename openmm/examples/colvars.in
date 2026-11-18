@@ -1,7 +1,7 @@
 # Native OpenMM units: length nm, energy kJ/mol, time fs in Colvars.
 # OpenMM particle 0 is Colvars atomNumber 1.
 units gromacs
-colvarsTrajFrequency 0
+colvarsTrajFrequency 100
 colvarsRestartFrequency 0
 
 colvar {
