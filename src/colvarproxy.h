@@ -45,6 +45,11 @@ class colvarproxy_atoms {
 
 public:
 
+  /// Require meaningful atomic charges for a charge-dependent component.
+  /// Engines that cannot provide them by default should reject the request
+  /// until an explicit charge model has been supplied.
+  virtual int request_atom_charges() { return COLVARS_OK; }
+
 #if ( defined(COLVARS_CUDA) || defined(COLVARS_HIP) )
   template <typename T>
   using allocator_type = colvars_gpu::CudaHostAllocator<T>;

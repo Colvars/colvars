@@ -5,6 +5,9 @@
 .*.swp
 
 # Compiled code
+/build-openmm*/
+/openmm/build*/
+/openmm/.pytest_cache/
 *.o
 *.so
 *.a

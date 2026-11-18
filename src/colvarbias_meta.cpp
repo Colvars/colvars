@@ -23,14 +23,19 @@ colvarbias_meta::colvarbias_meta(colvarmodule *cvmodule_in, char const *key)
   : colvardeps(colvardeps::object_t::colvarbias), colvarbias(cvmodule_in, key), colvarbias_ti(key)
 {
   new_hills_begin = hills.end();
+  new_hills_off_grid_begin = hills_off_grid.end();
+  last_hill_step = -1;
+  state_file_hill_step = -1;
 
   hill_weight = 0.0;
   hill_width = 0.0;
 
   new_hill_freq = 1000;
 
+  comm = single_replica;
   use_grids = true;
   rebin_grids = false;
+  expand_grids = false;
 
   dump_fes = true;
   keep_hills = false;
@@ -40,9 +45,16 @@ colvarbias_meta::colvarbias_meta(colvarmodule *cvmodule_in, char const *key)
 
   b_hills_traj = false;
 
+  well_tempered = false;
+  bias_temperature = -1.0;
+  ebmeta = false;
   ebmeta_equil_steps = 0L;
+  safely_read_restart = false;
 
   replica_id.clear();
+  replica_state_file_in_sync = false;
+  update_status = 0;
+  replica_hills_file_pos = 0;
 }
 
 
@@ -347,6 +359,10 @@ int colvarbias_meta::clear_state_data()
 {
   hills.clear();
   hills_off_grid.clear();
+  new_hills_begin = hills.end();
+  new_hills_off_grid_begin = hills_off_grid.end();
+  last_hill_step = -1;
+  state_file_hill_step = -1;
   return COLVARS_OK;
 }
 
@@ -358,6 +374,7 @@ int colvarbias_meta::clear_state_data()
 std::list<colvarbias_meta::hill>::const_iterator
 colvarbias_meta::add_hill(colvarbias_meta::hill const &h)
 {
+  last_hill_step = std::max(last_hill_step, h.it);
   hill_iter const hills_end = hills.end();
   hills.push_back(h);
   if (new_hills_begin == hills_end) {
@@ -373,7 +390,9 @@ colvarbias_meta::add_hill(colvarbias_meta::hill const &h)
     // off-grid
     cvm::real const min_dist = hills_energy->bin_distance_from_boundaries(h.centers, true);
     if (min_dist < (3.0 * cvm::floor(hill_width)) + 1.0) {
+      bool const first_new_off_grid = (new_hills_off_grid_begin == hills_off_grid.end());
       hills_off_grid.push_back(h);
+      if (first_new_off_grid) new_hills_off_grid_begin = std::prev(hills_off_grid.end());
     }
   }
 
@@ -404,6 +423,7 @@ colvarbias_meta::delete_hill(hill_iter &h)
     for (hill_iter hoff = hills_off_grid.begin();
          hoff != hills_off_grid.end(); hoff++) {
       if (*h == *hoff) {
+        if (hoff == new_hills_off_grid_begin) ++new_hills_off_grid_begin;
         hills_off_grid.erase(hoff);
         break;
       }
@@ -451,6 +471,14 @@ int colvarbias_meta::update()
   error_code |= calc_forces(NULL);
 
   return error_code;
+}
+
+
+int colvarbias_meta::evaluate()
+{
+  // Refresh colvar_values and call the virtual energy/force evaluators only.
+  // No hills, grid expansion, replica exchange or TI samples are added here.
+  return colvarbias::update();
 }
 
 
@@ -586,36 +614,11 @@ int colvarbias_meta::update_bias()
 
     if (well_tempered) {
 
-      cvm::real hills_energy_sum_here = 0.0;
-      std::vector<int> curr_bin = use_grids ? hills_energy->get_colvars_index() : std::vector<int>();
-      const bool index_ok = use_grids ? hills_energy->index_ok(curr_bin) : false;
-
-      for (size_t ir = 0; ir < replicas.size(); ir++) {
-        if (use_grids) {
-          if (index_ok) {
-            hills_energy_sum_here += replicas[ir]->hills_energy->value(curr_bin);
-          } else {
-            if (!keep_hills) {
-              calc_hills(replicas[ir]->hills_off_grid.begin(), replicas[ir]->hills_off_grid.end(),
-                         hills_energy_sum_here, &colvar_values);
-            } else {
-              // TODO: Is it better to compute the energy from all historic hills
-              //       when keepHills is on?
-              calc_hills(replicas[ir]->hills.begin(), replicas[ir]->hills.end(),
-                         hills_energy_sum_here, &colvar_values);
-            }
-            // cvm::log("WARNING: computing bias factor for off-grid hills. Hills energy: " +
-            // cvm::to_str(hills_energy_sum_here) + "\n");
-          }
-          // cvmodule->log("WARNING: computing bias factor for off-grid hills. Hills energy: " + cvm::to_str(hills_energy_sum_here) + "\n");
-        } else {
-          calc_hills(replicas[ir]->hills.begin(), replicas[ir]->hills.end(), hills_energy_sum_here,
-                     nullptr);
-        }
-      }
-
-      hills_scale *=
-          cvm::exp(-1.0 * hills_energy_sum_here / (bias_temperature * proxy->boltzmann()));
+      // Use the potential that actually acts on the system, including hills
+      // not yet projected onto a grid. Reading only the grid makes hill heights
+      // depend incorrectly on gridsUpdateFrequency.
+      error_code |= calc_energy(&colvar_values);
+      hills_scale *= cvm::exp(-bias_energy / (bias_temperature * proxy->boltzmann()));
     }
 
 
@@ -710,7 +713,7 @@ int colvarbias_meta::calc_energy(std::vector<colvarvalue> const *values)
     // off the grid: compute analytically only the hills at the grid's edges
     for (ir = 0; ir < replicas.size(); ir++) {
       calc_hills(replicas[ir]->hills_off_grid.begin(),
-                 replicas[ir]->hills_off_grid.end(),
+                 replicas[ir]->new_hills_off_grid_begin,
                  bias_energy,
                  values);
     }
@@ -769,7 +772,7 @@ int colvarbias_meta::calc_forces(std::vector<colvarvalue> const *values)
       for (ic = 0; ic < num_variables(); ic++) {
         calc_hills_force(ic,
                          replicas[ir]->hills_off_grid.begin(),
-                         replicas[ir]->hills_off_grid.end(),
+                         replicas[ir]->new_hills_off_grid_begin,
                          colvar_forces,
                          values);
       }
@@ -983,6 +986,10 @@ void colvarbias_meta::project_hills(colvarbias_meta::hill_iter  h_first,
   if (! keep_hills) {
     hills.erase(hills.begin(), hills.end());
   }
+  // The supplied range always ends at hills.end(): pending hills are now
+  // represented on the grid. Boundary copies remain for off-grid evaluation.
+  new_hills_begin = hills.end();
+  new_hills_off_grid_begin = hills_off_grid.end();
 }
 
 
@@ -990,11 +997,16 @@ void colvarbias_meta::recount_hills_off_grid(colvarbias_meta::hill_iter  h_first
                                              colvarbias_meta::hill_iter  h_last)
 {
   hills_off_grid.clear();
+  new_hills_off_grid_begin = hills_off_grid.end();
+  bool pending = false;
 
   for (hill_iter h = h_first; h != h_last; h++) {
+    if (h == new_hills_begin) pending = true;
     cvm::real const min_dist = hills_energy->bin_distance_from_boundaries(h->centers, true);
     if (min_dist < (3.0 * cvm::floor(hill_width)) + 1.0) {
+      bool const first_new_off_grid = pending && (new_hills_off_grid_begin == hills_off_grid.end());
       hills_off_grid.push_back(*h);
+      if (first_new_off_grid) new_hills_off_grid_begin = std::prev(hills_off_grid.end());
     }
   }
 }
@@ -1247,12 +1259,19 @@ int colvarbias_meta::read_replica_files()
                    cvm::to_str(replica_update_freq)+" steps.\n");
         } else {
 
-          while ((replicas[ir])->read_hill(is)) {
-            cvmodule->log("Metadynamics bias \""+this->name+"\""+
-                     ": received a hill from replica \""+
-                     (replicas[ir])->replica_id+
-                     "\" at step "+
-                     cvm::to_str(((replicas[ir])->hills.back()).it)+".\n");
+          while (is) {
+            auto const previous_size = replicas[ir]->hills.size();
+            if (!replicas[ir]->read_hill(is)) break;
+            // A successfully parsed record can be an old hill already covered
+            // by the state file. Do not report an append or dereference back()
+            // when it was skipped (the list can legitimately be empty).
+            if (replicas[ir]->hills.size() > previous_size) {
+              cvmodule->log("Metadynamics bias \""+this->name+"\""+
+                       ": received a hill from replica \""+
+                       (replicas[ir])->replica_id+
+                       "\" at step "+
+                       cvm::to_str(((replicas[ir])->hills.back()).it)+".\n");
+            }
           }
           is.clear();
           // store the position for the next read
@@ -1309,6 +1328,14 @@ int colvarbias_meta::set_state_params(std::string const &state_conf)
 
   colvarparse::get_keyval(state_conf, "keepHills", restart_keep_hills, false,
                           colvarparse::parse_restart);
+  colvarparse::get_keyval(state_conf, "unprojectedHills", restart_unprojected_hills, size_t(0),
+                          colvarparse::parse_restart);
+  // Legacy snapshots did not distinguish an initial empty state from a state
+  // already covering a step-zero hill. Retain their established step watermark
+  // behavior; new snapshots always record the exact latest included hill.
+  colvarparse::get_keyval(state_conf, "lastHillStep", state_file_hill_step, state_file_step,
+                          colvarparse::parse_restart);
+  last_hill_step = state_file_hill_step;
 
   if ((!restart_keep_hills) && (cvmodule->restart_version_number() < 20210604)) {
     if (keep_hills) {
@@ -1413,15 +1440,14 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
   // be cleared if hills are read successfully from the stream
   bool const existing_hills = !hills.empty();
   size_t const old_hills_size = hills.size();
-  hill_iter old_hills_end = hills.end();
-  hill_iter old_hills_off_grid_end = hills_off_grid.end();
+  size_t const old_hills_off_grid_size = hills_off_grid.size();
   if (cvm::debug()) {
     cvmodule->log("Before reading hills from the state file, there are "+
              cvm::to_str(hills.size())+" hills in memory.\n");
   }
 
   // Read any hills following the grid data (if any)
-  while (read_hill(is)) {
+  while (read_hill_template_(is, cvmodule, true)) {
     if (cvm::debug()) {
       cvmodule->log("Read a previously saved hill under the "
                "metadynamics bias \"" +
@@ -1432,19 +1458,32 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 
   is.clear();
 
-  new_hills_begin = hills.end();
   cvmodule->log("  successfully read "+cvm::to_str(hills.size() - old_hills_size)+
            " explicit hills from state.\n");
 
   if (existing_hills) {
     // Prune any hills that pre-existed those just read
-    hills.erase(hills.begin(), old_hills_end);
-    hills_off_grid.erase(hills_off_grid.begin(), old_hills_off_grid_end);
+    // std::list::end() remains the same sentinel after appending, so saving
+    // end() before reading would accidentally erase the newly read hills too.
+    hills.erase(hills.begin(), std::next(hills.begin(), old_hills_size));
+    hills_off_grid.erase(hills_off_grid.begin(),
+                         std::next(hills_off_grid.begin(), old_hills_off_grid_size));
     if (cvm::debug()) {
       cvmodule->log("After pruning the old hills, there are now "+
                cvm::to_str(hills.size())+" hills in memory.\n");
     }
   }
+
+  if (restart_unprojected_hills > hills.size()) {
+    is.setstate(std::ios::failbit);
+    cvmodule->error("Invalid unprojectedHills count in metadynamics state.\n", COLVARS_INPUT_ERROR);
+    return is;
+  }
+  // Without grids every explicit hill remains active analytically. With grids,
+  // only the saved tail is pending; old state files have no tail count.
+  new_hills_begin = use_grids ? std::next(hills.begin(), hills.size() - restart_unprojected_hills)
+                             : hills.begin();
+  if (use_grids) recount_hills_off_grid(hills.begin(), hills.end());
 
   // If rebinGrids is set, rebin the grids based on the current information
   rebin_grids_after_restart();
@@ -1621,7 +1660,8 @@ template <typename IST> IST &hill_stream_error(IST &is, size_t start_pos, std::s
 }
 
 
-template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colvarmodule *cvmodule_in)
+template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colvarmodule *cvmodule_in,
+                                                                bool from_state)
 {
   if (!is)
     return is; // do nothing if failbit is set
@@ -1703,7 +1743,12 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colva
     }
   }
 
-  if ((h_it <= state_file_step) && !restart_keep_hills) {
+  // The age check is only for the incremental replica buffer: embedded state
+  // hills are required data (including analytic and grid-boundary hills).
+  // The producer replaces its state before truncating its old buffer, so a
+  // reader may observe both. keepHills describes state contents, not whether
+  // old buffer records are new: they must always be excluded here.
+  if (!from_state && (h_it <= state_file_hill_step)) {
     if (cvm::debug())
       cvmodule->log("Skipping a hill older than the state file for metadynamics bias \"" + this->name +
                "\"" + ((comm != single_replica) ? ", replica \"" + replica_id + "\"" : "") + "\n");
@@ -1712,6 +1757,7 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colva
 
   hill_iter const hills_end = hills.end();
   hills.push_back(hill(cvmodule, h_it, h_weight, h_centers, h_sigmas, h_replica));
+  last_hill_step = std::max(last_hill_step, h_it);
   if (new_hills_begin == hills_end) {
     // if new_hills_begin is unset, set it for the first time
     new_hills_begin = hills.end();
@@ -1724,7 +1770,9 @@ template <typename IST> IST &colvarbias_meta::read_hill_template_(IST &is, colva
     cvm::real const min_dist =
         hills_energy->bin_distance_from_boundaries((hills.back()).centers, true);
     if (min_dist < (3.0 * cvm::floor(hill_width)) + 1.0) {
+      bool const first_new_off_grid = (new_hills_off_grid_begin == hills_off_grid.end());
       hills_off_grid.push_back(hills.back());
+      if (first_new_off_grid) new_hills_off_grid_begin = std::prev(hills_off_grid.end());
     }
   }
 
@@ -1856,8 +1904,13 @@ std::string const colvarbias_meta::hills_traj_file_name() const
 std::string const colvarbias_meta::get_state_params() const
 {
   std::ostringstream os;
-  if (keep_hills) {
+  os << "lastHillStep " << last_hill_step << "\n";
+  if (keep_hills || !use_grids) {
     os << "keepHills on" << "\n";
+  }
+  if (use_grids && new_hills_begin != hills.end()) {
+    auto const pending = std::distance(std::list<hill>::const_iterator(new_hills_begin), hills.cend());
+    os << "unprojectedHills " << pending << "\n";
   }
   if (this->comm != single_replica) {
     os << "replicaID " << this->replica_id << "\n";
@@ -1870,12 +1923,9 @@ template <typename OST> OST &colvarbias_meta::write_state_data_template_(OST &os
 {
   if (use_grids) {
 
-    // this is a very good time to project hills, if you haven't done
-    // it already!
-    project_hills(new_hills_begin, hills.end(), hills_energy.get(), hills_energy_gradients.get());
-    new_hills_begin = hills.end();
-
-    // write down the grids to the restart file
+    // Serialization must not project pending analytic hills, discard them, or
+    // change forces by replacing their exact values with grid approximations.
+    // Save the existing grids and the explicit pending tail independently.
     write_state_data_key(os, "hills_energy");
     hills_energy->write_restart(os);
     write_state_data_key(os, "hills_energy_gradients");
@@ -1888,9 +1938,13 @@ template <typename OST> OST &colvarbias_meta::write_state_data_template_(OST &os
       write_hill(os, *h);
     }
   } else {
-    // write just those that are near the grid boundaries
+    // Projected edge hills are needed outside the grid. Pending edge hills
+    // occur in the tail below, so do not duplicate them in this prefix.
     for (std::list<hill>::const_iterator h = this->hills_off_grid.begin();
-         h != this->hills_off_grid.end(); h++) {
+         h != this->new_hills_off_grid_begin; h++) {
+      write_hill(os, *h);
+    }
+    for (auto h = new_hills_begin; h != hills.end(); ++h) {
       write_hill(os, *h);
     }
   }
@@ -1957,6 +2011,7 @@ void colvarbias_meta::write_pmf()
     // output the PMF from this instance or replica
     pmf->reset();
     pmf->add_grid(*hills_energy);
+    add_unprojected_hills_to_output_grid(*pmf);
 
     if (ebmeta) {
       int nt_points=pmf->number_of_points();
@@ -1994,6 +2049,7 @@ void colvarbias_meta::write_pmf()
     // current replica already included in the pools of replicas
     for (size_t ir = 0; ir < replicas.size(); ir++) {
       pmf->add_grid(*(replicas[ir]->hills_energy));
+      replicas[ir]->add_unprojected_hills_to_output_grid(*pmf);
     }
 
     if (ebmeta) {
@@ -2024,6 +2080,24 @@ void colvarbias_meta::write_pmf()
   }
 
   delete pmf;
+}
+
+
+void colvarbias_meta::add_unprojected_hills_to_output_grid(colvar_grid_scalar &grid)
+{
+  if (new_hills_begin == hills.end()) return;
+
+  // calc_hills caches Gaussian values on each hill. Work on copies so output
+  // cannot overwrite even those caches, let alone advance the bias history.
+  std::list<hill> pending_hills(new_hills_begin, hills.end());
+  std::vector<colvarvalue> values(num_variables());
+  for (auto index = grid.new_index(); grid.index_ok(index); grid.incr(index)) {
+    for (size_t i = 0; i < num_variables(); ++i)
+      values[i] = grid.bin_to_value_scalar(index[i], i);
+    cvm::real energy = 0.0;
+    calc_hills(pending_hills.begin(), pending_hills.end(), energy, &values);
+    grid.acc_value(index, energy);
+  }
 }
 
 

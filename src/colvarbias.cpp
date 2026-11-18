@@ -401,6 +401,14 @@ bool colvarbias::can_accumulate_data()
 }
 
 
+int colvarbias::evaluate()
+{
+  return cvmodule->error("Bias \"" + name + "\" (" + bias_type +
+                         ") does not support evaluation without a state update.\n",
+                         COLVARS_NOT_IMPLEMENTED);
+}
+
+
 int colvarbias::calc_energy(std::vector<colvarvalue> const *)
 {
   bias_energy = 0.0;

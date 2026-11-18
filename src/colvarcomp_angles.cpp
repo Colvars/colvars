@@ -134,6 +134,7 @@ colvar::dipole_angle::dipole_angle()
 int colvar::dipole_angle::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
+  error_code |= cvmodule->proxy->request_atom_charges();
 
   group1 = parse_group(conf, "group1");
   group2 = parse_group(conf, "group2");

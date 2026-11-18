@@ -585,6 +585,7 @@ colvar::dipole_magnitude::dipole_magnitude()
 int colvar::dipole_magnitude::init(std::string const &conf)
 {
   int error_code = cvc::init(conf);
+  error_code |= cvmodule->proxy->request_atom_charges();
   atoms = parse_group(conf, "atoms");
   if (!atoms) error_code |= COLVARS_INPUT_ERROR;
   return error_code;

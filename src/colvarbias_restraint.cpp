@@ -72,6 +72,15 @@ colvarbias_restraint::~colvarbias_restraint()
 }
 
 
+int colvarbias_restraint::evaluate()
+{
+  // Bypass the derived update(): moving restraints also update their centers,
+  // force constants, work and TI statistics there.  The base implementation
+  // computes only the potential and forces at the already established values.
+  return colvarbias_restraint::update();
+}
+
+
 std::string const colvarbias_restraint::get_state_params() const
 {
   return colvarbias::get_state_params();
@@ -297,10 +306,18 @@ std::string const colvarbias_restraint_moving::get_state_params() const
 {
   std::ostringstream os;
   os.setf(std::ios::scientific, std::ios::floatfield);
-  if (b_chg_centers || b_chg_force_k) {
+  if (b_chg_centers || b_chg_force_k || b_chg_walls) {
     os << "firstStep " << std::setw(cvmodule->it_width) << first_step << "\n";
     if (target_nstages) {
       os << "stage " << std::setw(cvmodule->it_width) << stage << "\n";
+      // A restart within a stage must preserve the samples accumulated before
+      // the next stage boundary, independently of the current force constant.
+      os << "dAdLambda " << std::setprecision(cvmodule->en_prec)
+         << std::setw(cvmodule->en_width) << dA_dlambda << "\n";
+    }
+    if (is_enabled(f_cvb_output_acc_work)) {
+      os << "accumulatedWork " << std::setprecision(cvmodule->en_prec)
+         << std::setw(cvmodule->en_width) << acc_work << "\n";
     }
   }
   return os.str();
@@ -309,15 +326,43 @@ std::string const colvarbias_restraint_moving::get_state_params() const
 
 int colvarbias_restraint_moving::set_state_params(std::string const &conf)
 {
-  if (b_chg_centers || b_chg_force_k) {
+  if (b_chg_centers || b_chg_force_k || b_chg_walls) {
     auto first_step_flags = colvarparse::parse_restart;
-    if (cvmodule->restart_version_number() > 20230906) {
+    if (!b_chg_walls && cvmodule->restart_version_number() > 20230906) {
       // Only require the first step when the code could produce it
       first_step_flags = colvarparse::parse_restart | colvarparse::parse_required;
     }
-    get_keyval(conf, "firstStep", first_step, first_step, first_step_flags);
+    bool const has_first_step =
+      get_keyval(conf, "firstStep", first_step, first_step, first_step_flags);
+    if (b_chg_walls && !has_first_step) {
+      // Older moving-wall states omitted both the start step and current wall
+      // positions. Inferring a start at step zero would silently change forces
+      // for a bias created later in a simulation.
+      return cvmodule->error("Moving harmonicWalls restart is missing firstStep; "
+                             "this legacy state does not contain enough information "
+                             "to restore the moving-wall schedule safely.\n",
+                             COLVARS_INPUT_ERROR);
+    }
     if (target_nstages) {
       get_keyval(conf, "stage", stage, stage,
+                 colvarparse::parse_restart | colvarparse::parse_required);
+      if (stage < 0 || stage > target_nstages) {
+        return cvmodule->error("Invalid stage in moving-restraint restart.\n", COLVARS_INPUT_ERROR);
+      }
+      if (!get_keyval(conf, "dAdLambda", dA_dlambda, cvm::real(0.0),
+                      colvarparse::parse_restart)) {
+        // Historical state files do not contain the partial-stage TI sum.
+        // It is known to be zero immediately after a stage transition only.
+        if ((state_file_step - first_step) % target_nsteps != 0) {
+          return cvmodule->error("Moving-restraint restart within a stage is missing "
+                                 "dAdLambda; its accumulated stage data cannot be recovered.\n",
+                                 COLVARS_INPUT_ERROR);
+        }
+        dA_dlambda = 0.0;
+      }
+    }
+    if (is_enabled(f_cvb_output_acc_work)) {
+      get_keyval(conf, "accumulatedWork", acc_work, acc_work,
                  colvarparse::parse_restart | colvarparse::parse_required);
     }
   }
@@ -457,11 +502,6 @@ std::string const colvarbias_restraint_centers_moving::get_state_params() const
     }
     os << "\n";
 
-    if (is_enabled(f_cvb_output_acc_work)) {
-      os << "accumulatedWork "
-         << std::setprecision(cvmodule->en_prec) << std::setw(cvmodule->en_width)
-         << acc_work << "\n";
-    }
   }
 
   return os.str();
@@ -474,11 +514,6 @@ int colvarbias_restraint_centers_moving::set_state_params(std::string const &con
 
   if (b_chg_centers) {
     get_keyval(conf, "centers", colvar_centers, colvar_centers,
-               colvarparse::parse_restart | colvarparse::parse_required);
-  }
-
-  if (is_enabled(f_cvb_output_acc_work)) {
-    get_keyval(conf, "accumulatedWork", acc_work, acc_work,
                colvarparse::parse_restart | colvarparse::parse_required);
   }
 
@@ -643,11 +678,6 @@ std::string const colvarbias_restraint_k_moving::get_state_params() const
        << std::setprecision(cvmodule->en_prec)
        << std::setw(cvmodule->en_width) << force_k << "\n";
 
-    if (is_enabled(f_cvb_output_acc_work)) {
-      os << "accumulatedWork "
-         << std::setprecision(cvmodule->en_prec) << std::setw(cvmodule->en_width)
-         << acc_work << "\n";
-    }
   }
   return os.str();
 }
@@ -659,11 +689,6 @@ int colvarbias_restraint_k_moving::set_state_params(std::string const &conf)
 
   if (b_chg_force_k) {
     get_keyval(conf, "forceConstant", force_k, force_k,
-               colvarparse::parse_restart | colvarparse::parse_required);
-  }
-
-  if (is_enabled(f_cvb_output_acc_work)) {
-    get_keyval(conf, "accumulatedWork", acc_work, acc_work,
                colvarparse::parse_restart | colvarparse::parse_required);
   }
 
@@ -1146,10 +1171,14 @@ cvm::real colvarbias_restraint_harmonic_walls::dU_dlambda_walls() const {
   cvm::real dU_dwall = 0.0;
   for (size_t i = 0; i < num_variables(); i++) {
     cvm::real const dist = colvar_distance(i);
-    if (dist > 0.0) {
-        dU_dwall += force_k * upper_wall_k * dist/(variables(i)->width);
-    } else{
-        dU_dwall += force_k * lower_wall_k * dist/(variables(i)->width);
+    // dU/dwall equals the bias force on the scalar CV. Apply the chain rule
+    // with the actual wall displacement per unit lambda, including width^2
+    // scaling and the sign already present in restraint_force(). A wall that
+    // does not move contributes no derivative, even if it exerts a force.
+    if (dist > 0.0 && !target_upper_walls.empty()) {
+      dU_dwall += restraint_force(i) * (target_upper_walls[i] - initial_upper_walls[i]);
+    } else if (dist < 0.0 && !target_lower_walls.empty()) {
+      dU_dwall += restraint_force(i) * (target_lower_walls[i] - initial_lower_walls[i]);
     }
   }
   return dU_dwall;
@@ -1183,9 +1212,9 @@ int colvarbias_restraint_harmonic_walls::update_acc_work()
         (cvmodule->step_absolute() - first_step <= target_nsteps)) {
       for (size_t i = 0; i < num_variables(); i++) {
         cvm::real const dist = colvar_distance(i);
-        if (dist > 0.0) {
+        if (dist > 0.0 && !upper_walls_incr.empty()) {
           acc_work += colvar_forces[i] * upper_walls_incr[i];
-        } else{
+        } else if (dist < 0.0 && !lower_walls_incr.empty()) {
           acc_work += colvar_forces[i] * lower_walls_incr[i];
         }
       }
@@ -1259,9 +1288,32 @@ cvm::real colvarbias_restraint_harmonic_walls::d_restraint_potential_dk(size_t i
 
 std::string const colvarbias_restraint_harmonic_walls::get_state_params() const
 {
-  return colvarbias_restraint::get_state_params() +
-    colvarbias_restraint_moving::get_state_params() +
-    colvarbias_restraint_k_moving::get_state_params();
+  std::ostringstream os;
+  os.setf(std::ios::scientific, std::ios::floatfield);
+  os << colvarbias_restraint::get_state_params()
+     << colvarbias_restraint_moving::get_state_params()
+     << colvarbias_restraint_k_moving::get_state_params();
+  if (b_chg_walls) {
+    // A repeat-safe evaluation after loading does not call update_walls(), so
+    // the instantaneous potential must be restored along with its schedule.
+    if (!lower_walls.empty()) {
+      os << "lowerWalls";
+      for (auto const &wall : lower_walls) {
+        os << " " << std::setprecision(cvmodule->cv_prec)
+           << std::setw(cvmodule->cv_width) << wall;
+      }
+      os << "\n";
+    }
+    if (!upper_walls.empty()) {
+      os << "upperWalls";
+      for (auto const &wall : upper_walls) {
+        os << " " << std::setprecision(cvmodule->cv_prec)
+           << std::setw(cvmodule->cv_width) << wall;
+      }
+      os << "\n";
+    }
+  }
+  return os.str();
 }
 
 
@@ -1271,6 +1323,29 @@ int colvarbias_restraint_harmonic_walls::set_state_params(std::string const &con
   error_code |= colvarbias_restraint::set_state_params(conf);
   error_code |= colvarbias_restraint_moving::set_state_params(conf);
   error_code |= colvarbias_restraint_k_moving::set_state_params(conf);
+  if (b_chg_walls && error_code == COLVARS_OK && cvmodule->get_error() == COLVARS_OK) {
+    // States with a known start step and stage can reconstruct missing wall
+    // positions from the unchanged input schedule (including completed ramps).
+    // This also covers older simultaneous wall/force-constant ramps, which did
+    // serialize firstStep but not the moving walls themselves.
+    update_walls(current_lambda());
+    if (!lower_walls.empty()) {
+      get_keyval(conf, "lowerWalls", lower_walls, lower_walls, colvarparse::parse_restart);
+      if (lower_walls.size() != num_variables()) {
+        return cvmodule->error("Invalid lowerWalls in moving-wall restart.\n", COLVARS_INPUT_ERROR);
+      }
+    }
+    if (!upper_walls.empty()) {
+      get_keyval(conf, "upperWalls", upper_walls, upper_walls, colvarparse::parse_restart);
+      if (upper_walls.size() != num_variables()) {
+        return cvmodule->error("Invalid upperWalls in moving-wall restart.\n", COLVARS_INPUT_ERROR);
+      }
+    }
+    // The loaded frame must not contribute work again. The next real update
+    // computes new increments from the restored wall positions.
+    for (auto &increment : lower_walls_incr) increment.reset();
+    for (auto &increment : upper_walls_incr) increment.reset();
+  }
   return error_code;
 }
 

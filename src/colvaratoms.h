@@ -540,8 +540,9 @@ public:
   size_t size() const {return num_atoms;}
   /**
    * @brief Clear the atom positions, velocities, gradients and total forces
+   * @param reset_positions Set false to keep positions just copied from a GPU.
    */
-  void reset_atoms_data();
+  void reset_atoms_data(bool reset_positions = true);
   /**
    * @brief Setup reference positions from AOS
    */

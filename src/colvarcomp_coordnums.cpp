@@ -643,7 +643,8 @@ template <bool use_group1_com, bool use_group2_com, int compute_flags>
 int colvar::coordnum::compute_coordnum()
 {
   bool const use_pairlist = pairlist.get();
-  bool const rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
+  bool const rebuild_pairlist = use_pairlist &&
+    (!cvmodule->proxy->can_reuse_atom_pairlists() || cvmodule->step_relative() % pairlist_freq == 0);
 
   if (use_pairlist) {
     if (rebuild_pairlist) {
@@ -713,7 +714,8 @@ void colvar::coordnum::calc_gradients()
 int colvar::coordnum::calc_value_gpu() {
   int error_code = COLVARS_OK;
   const bool use_pairlist = b_enable_pairlist;
-  const bool rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
+  const bool rebuild_pairlist = use_pairlist &&
+    (!cvmodule->proxy->can_reuse_atom_pairlists() || cvmodule->step_relative() % pairlist_freq == 0);
   const bool gradients = is_enabled(f_cvc_gradient);
   const int flags = (use_pairlist ? ef_use_pairlist : 0) +
                     (rebuild_pairlist ? ef_rebuild_pairlist : 0) +
@@ -952,7 +954,8 @@ template <int flags> inline void colvar::selfcoordnum::selfcoordnum_sequential_l
 template<int compute_flags> int colvar::selfcoordnum::compute_selfcoordnum()
 {
   bool const use_pairlist = pairlist.get();
-  bool const rebuild_pairlist = use_pairlist && (cvmodule->step_relative() % pairlist_freq == 0);
+  bool const rebuild_pairlist = use_pairlist &&
+    (!cvmodule->proxy->can_reuse_atom_pairlists() || cvmodule->step_relative() % pairlist_freq == 0);
 
   if (use_pairlist) {
     if (rebuild_pairlist) {

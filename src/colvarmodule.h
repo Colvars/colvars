@@ -379,6 +379,9 @@ private:
   /// Array of active collective variable biases
   std::vector<colvarbias *> biases_active_;
 
+  /// True only while recomputing forces without an MD state update.
+  bool evaluating_current_state_ = false;
+
 public:
 
   /// Array of active collective variable biases
@@ -515,6 +518,9 @@ public:
   /// (Re)initialize and (re)read the input state file calling read_restart()
   int setup_input();
 
+  /// Whether a restart state was loaded, including defaultInputStateFile.
+  bool has_loaded_state() const { return state_loaded_; }
+
   /// (Re)initialize the output trajectory and state file (does not write it yet)
   int setup_output();
 
@@ -524,6 +530,8 @@ private:
 
   /// Default input state file; if given, it is read unless the MD engine provides it
   std::string default_input_state_file_;
+
+  bool state_loaded_ = false;
 
   /// Internal state buffer, to be read as an unformatted stream
   std::vector<unsigned char> input_state_buffer_;
@@ -611,6 +619,14 @@ public:
 
   /// Main worker function
   int calc();
+
+  /// Recompute CVs, energies and forces from the current input coordinates.
+  /// With update_state=false, freeze supported biases and omit statistics,
+  /// trajectory/restart output and end-of-step bookkeeping.  Extended-system
+  /// integration and scripted forces are not supported by this evaluation mode.
+  int calc(bool update_state);
+
+  bool evaluating_current_state() const { return evaluating_current_state_; }
 
   /// Calculate collective variables
   int calc_colvars();

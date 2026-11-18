@@ -146,6 +146,16 @@ int colvaratoms_gpu::read_data_gpu(cvm::atom_group* cpu_atoms) {
   if (!p->has_gpu_support()) {
     return cvmodule->error("Calling colvaratoms_gpu::read_data_gpu without GPU support!", COLVARS_BUG_ERROR);
   }
+  if (cpu_atoms->b_dummy) {
+    // A dummy group's COM/COG were uploaded by set_dummy_pos(); it has no
+    // atomic arrays to clear or gather.  Zero-width graph memset nodes are
+    // invalid.  Still signal completion for GPU CVCs that depend on this group.
+    error_code |= checkGPUError(cudaStreamWaitEvent(
+      cpu_atoms->get_stream(), p->get_event(colvarproxy_gpu::event_type::copy_atoms)));
+    error_code |= checkGPUError(cudaEventRecord(
+      get_event(event_type::read_and_calculate), cpu_atoms->get_stream()));
+    return error_code;
+  }
   // If the graph execution object is not initialized, then start to build
   // the graph.
   if (!graph_read_compute.graph_exec_initialized) {
@@ -207,6 +217,11 @@ int colvaratoms_gpu::calc_fit_gradients_gpu(cvm::atom_group* cpu_atoms) {
 #if defined(COLVARS_CUDA) || defined(COLVARS_HIP)
   if (!p->has_gpu_support()) {
     return cvmodule->error("Calling colvaratoms_gpu::calc_fit_gradients_gpu without GPU support!", COLVARS_BUG_ERROR);
+  }
+  // An empty graph is never instantiated, so creating one here would leak a
+  // graph on every evaluation.  These groups have no fitting derivatives.
+  if (cpu_atoms->b_dummy || !cpu_atoms->is_enabled(colvardeps::f_ag_fit_gradients)) {
+    return error_code;
   }
   std::vector<colvardeps*> ag_parents = cpu_atoms->get_parents();
   if (!graph_calc_fit_gradients.graph_exec_initialized) {
@@ -1114,6 +1129,11 @@ void colvaratoms_gpu::apply_colvar_force_from_cpu(cvm::real const& cpu_force) {
 
 int colvaratoms_gpu::add_force_to_proxy_gpu(cvm::atom_group* cpu_atoms) {
   int error_code = COLVARS_OK;
+  // No nodes would be added in these cases.  Empty graphs are not
+  // instantiated, so rebuilding one every step would also leak its handle.
+  if (cpu_atoms->b_dummy || (!use_apply_colvar_force && !use_group_force)) {
+    return error_code;
+  }
   if (!graph_apply_force.graph_exec_initialized) {
     // Create the graph if not initialized
     error_code |= checkGPUError(cudaGraphCreate(&graph_apply_force.graph, 0));

@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 #include <cstdio>
+#include <atomic>
 
 #include "colvarmodule.h"
 #include "colvar_gpu_support.h"
@@ -94,6 +95,9 @@ protected:
 
 namespace {
   constexpr uint32_t colvars_magic_number = 2013813594;
+  // Feature definitions are shared by every module in this process.  In
+  // particular, OpenMM can own several live Contexts (or Forces) at once.
+  std::atomic<size_t> live_modules{0};
 }
 
 
@@ -195,7 +199,7 @@ colvarmodule::colvarmodule(colvarproxy *proxy_in)
 
   // Removes the need for proxy specializations to create this
   proxy->script = new colvarscript(proxy, this);
-
+  ++live_modules;
 }
 
 
@@ -546,7 +550,8 @@ int colvarmodule::parse_global_params(std::string const &conf)
   parse->get_keyval(conf, "sourceTclFile", source_Tcl_script);
 #endif
 
-  if (proxy->engine_name() == "GROMACS" && proxy->version_number() >= 20231003) {
+  if ((proxy->engine_name() == "GROMACS" && proxy->version_number() >= 20231003) ||
+      proxy->engine_name() == "OpenMM") {
     parse->get_keyval(conf, "defaultInputStateFile", default_input_state_file_,
                       default_input_state_file_);
   }
@@ -927,7 +932,43 @@ cvm::real colvarmodule::energy_difference(std::string const &bias_name,
 
 int colvarmodule::calc()
 {
+  return calc(true);
+}
+
+
+int colvarmodule::calc(bool update_state)
+{
+  // Legacy utility functions still access the current proxy through main().
+  // Backends evaluating several instances must serialize calls into Colvars.
+  proxy_static = proxy;
   int error_code = COLVARS_OK;
+
+  // Keep this flag scoped even when an engine's error handler throws.
+  struct evaluation_scope {
+    bool &flag;
+    bool saved;
+    evaluation_scope(bool &flag_in, bool value) : flag(flag_in), saved(flag_in) { flag = value; }
+    ~evaluation_scope() { flag = saved; }
+  } scope(evaluating_current_state_, !update_state);
+
+  if (!update_state) {
+    if (use_scripted_forces) {
+      return error("Scripted forces do not support state-free evaluation.\n",
+                   COLVARS_NOT_IMPLEMENTED);
+    }
+    for (auto *cv : colvars) {
+      if (cv->is_enabled(colvardeps::f_cv_extended_Lagrangian)) {
+        return error("Extended-Lagrangian colvars do not support state-free evaluation.\n",
+                     COLVARS_NOT_IMPLEMENTED);
+      }
+    }
+    for (auto *bias : biases) {
+      if (!bias->supports_state_free_evaluation()) {
+        return error("Bias \"" + bias->name + "\" does not support state-free evaluation.\n",
+                     COLVARS_NOT_IMPLEMENTED);
+      }
+    }
+  }
 
   if (this->debug()) {
     this->log(line_marker);
@@ -936,8 +977,12 @@ int colvarmodule::calc()
   }
 
   error_code |= calc_colvars();
+  if (error_code != COLVARS_OK) return error_code;
   error_code |= calc_biases();
+  if (error_code != COLVARS_OK) return error_code;
   error_code |= update_colvar_forces();
+
+  if (!update_state || error_code != COLVARS_OK) return error_code;
 
   error_code |= analyze();
 
@@ -1128,7 +1173,14 @@ int colvarmodule::calc_biases()
   }
 
   // If SMP support is available, split up the work (unless biases need to use main thread's memory)
-  if (proxy->get_smp_mode() == colvarproxy::smp_mode_t::cvcs && !biases_need_main_thread) {
+  if (evaluating_current_state()) {
+    // Do not use the parallel update loop: it calls update(), which may add
+    // hills or samples even when the coordinates alone have changed.
+    for (auto *bias : *biases_active()) {
+      error_code |= bias->evaluate();
+      if (error_code != COLVARS_OK || get_error() != COLVARS_OK) return error_code | get_error();
+    }
+  } else if (proxy->get_smp_mode() == colvarproxy::smp_mode_t::cvcs && !biases_need_main_thread) {
 
     if (use_scripted_forces && !scripting_after_biases) {
       // calculate biases and scripted forces in parallel
@@ -1464,13 +1516,17 @@ colvarmodule::~colvarmodule()
   if ((proxy->smp_thread_id() < 0) ||  // not using threads
       (proxy->smp_thread_id() == 0)) { // or this is thread 0
 
+    proxy_static = proxy;
     reset();
 
-    // Delete contents of static arrays
-    colvarbias::delete_features();
-    colvar::delete_features();
-    colvar::cvc::delete_features();
-    atom_group::delete_features();
+    // Other live modules still use these tables while evaluating and while
+    // tearing down their dependency trees.  Release only after the last reset.
+    if (--live_modules == 0) {
+      colvarbias::delete_features();
+      colvar::delete_features();
+      colvar::cvc::delete_features();
+      atom_group::delete_features();
+    }
 
     delete
       reinterpret_cast<std::map<std::string, int> *>(num_biases_types_used_);
@@ -1483,6 +1539,7 @@ colvarmodule::~colvarmodule()
     usage_ = NULL;
 
     // The proxy object will be deallocated last (if at all)
+    if (proxy_static == proxy) proxy_static = nullptr;
     proxy = NULL;
   }
 }
@@ -1511,6 +1568,8 @@ int colvarmodule::reset()
   colvars.clear();
 
   reset_index_groups();
+
+  state_loaded_ = false;
 
   proxy->flush_output_streams();
   proxy->reset();
@@ -1760,6 +1819,10 @@ template <typename IST> IST & colvarmodule::read_state_template_(IST &is)
   print_total_forces_errning(warn_total_forces);
 
   read_objects_state(is);
+
+  if (get_error() == COLVARS_OK && (is || (is.rdstate() & std::ios::eofbit))) {
+    state_loaded_ = true;
+  }
 
   return is;
 }

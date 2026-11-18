@@ -97,6 +97,11 @@ public:
     return boundaries_;
   }
 
+  /// Whether a step-count-based neighbor list may be reused.  Engines that
+  /// allow arbitrary coordinate/box edits between force evaluations must
+  /// return false unless they provide a separate displacement validity check.
+  virtual bool can_reuse_atom_pairlists() const { return true; }
+
   /// \brief Tell the proxy whether total forces are needed (they may not
   /// always be available)
   virtual void request_total_force(bool yesno);

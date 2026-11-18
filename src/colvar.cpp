@@ -1883,6 +1883,19 @@ int colvar::collect_cvc_Jacobians()
 
 int colvar::calc_colvar_properties()
 {
+  if (cvmodule->evaluating_current_state()) {
+    // The geometry and gradients are fresh, but velocity/history bookkeeping
+    // still refers to the one accepted evaluation of this MD step.
+    // calc(false) rejects extended-Lagrangian CVs before reaching this point.
+    x_reported = x;
+    ft_reported = ft;
+    // A loaded step is first evaluated without advancing its bias history.
+    // collect_cvc_values() has already validated the restored geometry, so
+    // later same-step coordinate queries must not repeat that restart check.
+    after_restart = false;
+    return COLVARS_OK;
+  }
+
   if (is_enabled(f_cv_fdiff_velocity)) {
     // calculate the velocity by finite differences
     if (cvmodule->step_relative() == 0) {

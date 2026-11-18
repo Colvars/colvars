@@ -517,12 +517,6 @@ int colvar::cvc::read_data_gpu() {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   colvarproxy* proxy = cvmodule->proxy;
   if ((proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) && is_enabled(f_cvc_explicit_atom_groups)) {
-    if (is_enabled(colvardeps::f_cvc_require_cpu_buffers)) {
-      // We need to reset the atom group data if it requires CPU buffers
-      for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
-        (*agi)->reset_atoms_data();
-      }
-    }
     for (auto agi = atom_groups.begin(); agi != atom_groups.end(); agi++) {
       error_code |= (*agi)->get_gpu_atom_group()->read_data_gpu(*agi);
     }
@@ -534,6 +528,13 @@ int colvar::cvc::read_data_gpu() {
       // Synchronize the results to CPU if necessary
       error_code |= (*agi)->get_gpu_atom_group()->after_read_data_sync(
         *agi, is_enabled(colvardeps::f_cvc_require_cpu_buffers));
+      if (is_enabled(colvardeps::f_cvc_require_cpu_buffers)) {
+        // The previous apply-force graph can still be reading pinned CPU
+        // gradients until this group's stream reaches read_and_calculate.
+        // Reset them after the existing wait, keeping the just-copied positions.
+        // This avoids a host/device data race without adding another barrier.
+        (*agi)->reset_atoms_data(false);
+      }
     }
   }
 #endif

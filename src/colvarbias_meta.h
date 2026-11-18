@@ -52,6 +52,8 @@ public:
   int clear_state_data() override;
 
   int update() override;
+  bool supports_state_free_evaluation() const override { return true; }
+  int evaluate() override;
   int update_grid_params();
   int update_bias();
   int update_grid_data();
@@ -138,7 +140,8 @@ protected:
   /// Write a hill to an unformatted stream
   cvm::memory_stream &write_hill(cvm::memory_stream &os, hill const &h);
 
-  template <typename IST> IST &read_hill_template_(IST &is, colvarmodule *cvmodule_in);
+  template <typename IST> IST &read_hill_template_(IST &is, colvarmodule *cvmodule_in,
+                                                 bool from_state = false);
 
   /// Read a new hill from a formatted stream
   std::istream & read_hill(std::istream &is);
@@ -194,6 +197,18 @@ protected:
   /// value of keepHills saved in the most recent restart file
   bool restart_keep_hills;
 
+  /// Explicit hills at the end of a state that have not been projected onto
+  /// its grids. Absent in legacy states, which always stored projected grids.
+  size_t restart_unprojected_hills = 0;
+
+  /// Latest local hill represented by this instance, including pending hills.
+  /// -1 distinguishes an initial empty snapshot from a snapshot after step 0.
+  cvm::step_number last_hill_step = -1;
+
+  /// Hill watermark covered by the last replica snapshot. Incremental reads
+  /// must not advance this value: it describes the snapshot, not the buffer.
+  cvm::step_number state_file_hill_step = -1;
+
   /// \brief Dump the free energy surface (.pmf file) every restartFrequency
   bool       dump_fes;
 
@@ -235,6 +250,10 @@ protected:
   /// Project the selected hills onto grids
   void project_hills(hill_iter h_first, hill_iter h_last, colvar_grid_scalar *ge,
                      colvar_grid_gradient *gf, bool print_progress = false);
+
+  /// Add pending hill energies to an output grid, without changing live grids,
+  /// hill caches, or the pending/projected partition of the simulation state.
+  void add_unprojected_hills_to_output_grid(colvar_grid_scalar &grid);
 
 
   // Multiple Replicas variables and functions

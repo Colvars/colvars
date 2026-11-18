@@ -60,6 +60,15 @@ public:
   /// Some implementations may use calc_energy() and calc_forces()
   virtual int update();
 
+  /// Whether evaluate() can recompute this bias without advancing its history.
+  /// Backends that request forces several times per MD step must check this
+  /// capability; the default deliberately does not call update().
+  virtual bool supports_state_free_evaluation() const { return false; }
+
+  /// Recompute energy and forces at the current CV values, holding all adaptive
+  /// parameters, accumulated work and sampling statistics fixed.
+  virtual int evaluate();
+
   /// Returns true if the current step represent a valid increment, whose data
   /// can be recorded (as opposed to e.g. a continuation step from a restart)
   virtual bool can_accumulate_data();

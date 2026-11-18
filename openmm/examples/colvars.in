@@ -1,0 +1,23 @@
+# Native OpenMM units: length nm, energy kJ/mol, time fs in Colvars.
+# OpenMM particle 0 is Colvars atomNumber 1.
+units gromacs
+colvarsTrajFrequency 0
+colvarsRestartFrequency 0
+
+colvar {
+  name distance
+  width 0.1
+  distance {
+    group1 { atomNumbers 1 }
+    group2 { atomNumbers 2 }
+  }
+}
+
+harmonic {
+  name restraint
+  colvars distance
+  centers 0.5
+  # Colvars divides forceConstant by width^2:
+  # 1.0 / 0.1^2 = 100 kJ/mol/nm^2.
+  forceConstant 1.0
+}

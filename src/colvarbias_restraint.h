@@ -30,6 +30,9 @@ public:
   /// Retrieve colvar values and calculate their biasing forces
   virtual int update();
 
+  bool supports_state_free_evaluation() const override { return true; }
+  int evaluate() override;
+
   /// Load new configuration - force constant and/or centers only
   virtual int change_configuration(std::string const & /* conf */) { return COLVARS_NOT_IMPLEMENTED; }
 
