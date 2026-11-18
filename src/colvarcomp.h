@@ -1122,11 +1122,11 @@ protected:
 public:
   alch_lambda();
   int init_alchemy(int time_step_factor);
-  virtual ~alch_lambda() {}
-  virtual void calc_value();
-  virtual void calc_force_invgrads();
-  virtual void calc_Jacobian_derivative();
-  virtual void apply_force(colvarvalue const &force);
+  ~alch_lambda() override {}
+  void calc_value() override;
+  void calc_force_invgrads() override;
+  void calc_Jacobian_derivative() override;
+  void apply_force(colvarvalue const &force) override;
   int set_external_value(bool now) override;
 };
 
@@ -1156,13 +1156,13 @@ protected:
   // No atom groups needed
 public:
   tabf_alpha();
-  virtual int init(std::string const &conf);
+  int init(std::string const &conf) override;
   int init_tabf(colvar &cv);
-  virtual ~tabf_alpha() {}
-  virtual void calc_value();
-  virtual void calc_force_invgrads();
-  virtual void calc_Jacobian_derivative();
-  virtual void apply_force(colvarvalue const &force);
+  ~tabf_alpha() override {}
+  void calc_value() override;
+  void calc_force_invgrads() override;
+  void calc_Jacobian_derivative() override;
+  void apply_force(colvarvalue const &force) override;
   int set_external_value(bool now) override;
 };
 
