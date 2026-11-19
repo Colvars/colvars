@@ -50,18 +50,19 @@ jobs:
       container_name: CentOS9-devel-x86_64
     secrets: inherit
 
-  vmd-cvs:
+  vmd-develop:
     name: VMD
     uses: ./.github/workflows/backend-template.yml
     with:
       runner_name: ubuntu-latest
       backend_name: VMD
       backend_repo: Colvars/vmd
-      backend_repo_ref: master
+      backend_repo_ref: develop
       container_name: CentOS9-devel-x86_64
       # Special variable for VMD test case since it's the only one
       # which needs to checkout 2 repos
       vmd_plugins_repo: Colvars/vmd-plugins
+      vmd_plugins_repo_ref: develop
       path_compile_script: devel-tools/compile-vmd.sh
       test_interface_directory: vmd/tests/interface
       rpath_exe: install/vmd

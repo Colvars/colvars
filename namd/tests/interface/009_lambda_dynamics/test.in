@@ -6,8 +6,6 @@ colvar {
   extendedLagrangian on
   extendedMass 150000
 
-  lowerBoundary 0
-  upperBoundary 1
   reflectingLowerBoundary
   reflectingUpperBoundary
 
