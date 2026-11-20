@@ -71,6 +71,8 @@ colvarproxy_namd::colvarproxy_namd()
 void colvarproxy_namd::set_gm_object(GlobalMasterColvars *gm)
 {
   globalmaster = gm;
+  simparams = Node::Object()->simParameters;
+  molecule = Node::Object()->molecule;
 }
 
 
@@ -87,8 +89,6 @@ int colvarproxy_namd::init()
     traceRegisterUserEvent("GM COLVAR scripted bias", GLOBAL_MASTER_CKLOOP_CALC_SCRIPTED_BIASES );
   }
 #endif
-
-  simparams = Node::Object()->simParameters;
 
   update_target_temperature();
   set_integration_timestep(simparams->dt);
@@ -217,7 +217,7 @@ int colvarproxy_namd::update_target_temperature()
 
 void colvarproxy_namd::init_gm_atoms_map()
 {
-  size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
+  size_t const n_all_atoms = molecule->numAtoms;
   gm_atoms_map.assign(n_all_atoms, -1);
 }
 
@@ -237,7 +237,7 @@ void colvarproxy_namd::request_gm_atom_by_id(int aid, int index)
 int colvarproxy_namd::update_gm_atoms_map(AtomIDList::const_iterator begin,
                                           AtomIDList::const_iterator end)
 {
-  if (gm_atoms_map.size() != Node::Object()->molecule->numAtoms) {
+  if (gm_atoms_map.size() != molecule->numAtoms) {
     init_gm_atoms_map();
   }
 
@@ -405,7 +405,9 @@ void colvarproxy_namd::calculate()
 {
   errno = 0;
 
-  if (globalmaster) NAMD_step = globalmaster->step;
+  if (globalmaster) {
+    NAMD_step = globalmaster->step;
+  }
 
   if (first_timestep) {
 
@@ -415,8 +417,10 @@ void colvarproxy_namd::calculate()
     cvmodule->update_engine_parameters();
     cvmodule->setup_input();
     cvmodule->setup_output();
-    // Controller is only available after full startup phase, so now
-    controller = &Node::Object()->state->getController();
+    if (globalmaster) {
+      // Controller is only available after full startup phase, so now
+      controller = &Node::Object()->state->getController();
+    }
 
     first_timestep = false;
 
@@ -516,7 +520,7 @@ void colvarproxy_namd::read_gm_atom_buffers()
 
   // If new atomic positions or forces have been requested by other
   // GlobalMaster objects, add these to the atom map as well
-  size_t const n_all_atoms = Node::Object()->molecule->numAtoms;
+  size_t const n_all_atoms = molecule->numAtoms;
   if (modified_atom_list() ||               /* Colvars just requested new atoms */
       (gm_atoms_map.size() != n_all_atoms) ||  /* The system topology has changed */
       (int(atoms_ids.size()) <              /* Another GlobalMaster requested new atoms */
@@ -810,7 +814,7 @@ int colvarproxy_namd::check_atom_id(int atom_number)
     cvmodule->log("Adding atom "+cvm::to_str(atom_number)+
         " for collective variables calculation.\n");
 
-  if ( (aid < 0) || (aid >= Node::Object()->molecule->numAtoms) ) {
+  if ( (aid < 0) || (aid >= molecule->numAtoms) ) {
     cvmodule->error("Error: invalid atom number specified, "+
                cvm::to_str(atom_number)+"\n", COLVARS_INPUT_ERROR);
     return COLVARS_INPUT_ERROR;
@@ -849,17 +853,13 @@ int colvarproxy_namd::init_atom(int atom_number)
 
 
 int colvarproxy_namd::check_atom_id(cvm::residue_id const &residue,
-                                    std::string const     &atom_name,
-                                    std::string const     &segment_id)
+                                    std::string const &atom_name,
+                                    std::string const &segment_id)
 {
   int const aid =
-    (segment_id.size() ?
-     Node::Object()->molecule->get_atom_from_name(segment_id.c_str(),
-                                                  residue,
-                                                  atom_name.c_str()) :
-     Node::Object()->molecule->get_atom_from_name("MAIN",
-                                                  residue,
-                                                  atom_name.c_str()));
+      (segment_id.empty()
+           ? molecule->get_atom_from_name("MAIN", residue, atom_name.c_str())
+           : molecule->get_atom_from_name(segment_id.c_str(), residue, atom_name.c_str()));
 
   if (aid < 0) {
     // get_atom_from_name() has returned an error value
@@ -875,7 +875,6 @@ int colvarproxy_namd::check_atom_id(cvm::residue_id const &residue,
 
   return aid;
 }
-
 
 
 /// For AMBER topologies, the segment id is automatically set to
@@ -1291,7 +1290,7 @@ int colvarproxy_namd::init_atom_group(std::vector<int> const &atoms_ids)
   // globalmaster->modifyGroupForces().resize(atom_groups_ids.size());
   AtomIDList &namd_group = globalmaster->modifyRequestedGroupsPublic()[index];
   namd_group.resize(atoms_ids.size());
-  int const n_all_atoms = Node::Object()->molecule->numAtoms;
+  int const n_all_atoms = molecule->numAtoms;
   for (size_t ia = 0; ia < atoms_ids.size(); ia++) {
     int const aid = atoms_ids[ia];
     if (cvm::debug())
@@ -1335,8 +1334,8 @@ int colvarproxy_namd::update_group_properties(int index)
   cvm::real total_mass = 0.0;
   cvm::real total_charge = 0.0;
   for (int i = 0; i < namd_group.size(); i++) {
-    total_mass += Node::Object()->molecule->atommass(namd_group[i]);
-    total_charge += Node::Object()->molecule->atomcharge(namd_group[i]);
+    total_mass += molecule->atommass(namd_group[i]);
+    total_charge += molecule->atomcharge(namd_group[i]);
   }
   atom_groups_masses[index] = total_mass;
   atom_groups_charges[index] = total_charge;

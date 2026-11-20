@@ -91,6 +91,9 @@ protected:
   /// Pointer to the NAMD simulation input object
   SimParameters *simparams = nullptr;
 
+  /// Pointer to the NAMD Molecule object
+  Molecule *molecule = nullptr;
+
   /// Pointer to Controller object
   Controller const *controller = nullptr;
 
