@@ -93,9 +93,12 @@ public:
   virtual cvm::rvector position_distance(cvm::atom_pos const &pos1,
                                          cvm::atom_pos const &pos2) const;
   /// Get the current system boundary conditions
-  virtual cvm::system_boundary_conditions get_system_boundaries() {
+  const cvm::system_boundary_conditions& get_system_boundaries() const {
     return boundaries_;
   }
+
+  /// Routine to update the system boundaries implemented by proxy
+  virtual int update_system_boundaries() { return COLVARS_OK; }
 
   /// \brief Tell the proxy whether total forces are needed (they may not
   /// always be available)

@@ -136,10 +136,6 @@ public:
   /// \brief Get vector of vectors of atom IDs for all atom groups
   virtual std::vector<std::vector<int> > get_atom_lists();
 
-  /// \brief Obtain data needed for the calculation for the backend
-  virtual void read_data();
-  virtual int read_data_gpu();
-
   /// \brief Calculate the variable
   virtual void calc_value() = 0;
   virtual int calc_value_gpu() { return COLVARS_NOT_IMPLEMENTED; }
@@ -152,10 +148,6 @@ public:
   virtual int calc_gradients_gpu() { return COLVARS_NOT_IMPLEMENTED; }
   /// \brief CPU-side calculation after the graph in add_calc_gradients_node is done on GPU
   virtual int calc_gradients_after_gpu() { return COLVARS_OK; }
-
-  /// \brief Calculate the atomic fit gradients
-  void calc_fit_gradients();
-  int calc_fit_gradients_gpu();
 
   /// \brief Calculate finite-difference gradients alongside the analytical ones, for each Cartesian component
   virtual void debug_gradients();
@@ -343,7 +335,7 @@ protected:
   cvm::real width = 0.0;
 
   /// Boundary conditions for the system, copied from the engine when needed
-  cvm::system_boundary_conditions boundary_conditions;
+  // cvm::system_boundary_conditions boundary_conditions;
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   std::array<cudaEvent_t, static_cast<int>(event_type::num_event_types)> events = {};

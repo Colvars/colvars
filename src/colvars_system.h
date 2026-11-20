@@ -60,7 +60,7 @@ public:
   inline COLVARS_HOST_DEVICE void set_boundaries(bool periodic_x_in, bool periodic_y_in,
                                                 bool periodic_z_in, cvm::rvector const &A,
                                                 cvm::rvector const &B, cvm::rvector const &C);
-protected:
+public:
 
   /// Type of boundary conditions in the current computation
   types type_ = types::non_periodic;
