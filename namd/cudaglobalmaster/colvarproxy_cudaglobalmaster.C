@@ -8,6 +8,7 @@
 #include "fstream_namd.h"
 #include "CudaUtils.h"
 #include "PDB.h"
+#include "Random.h"
 #include "colvarparse.h"
 #include "colvaratoms.h"
 #include "ScriptTcl.h"
@@ -97,9 +98,10 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str, colvarmodule* c
 
 class colvarproxy_impl: public colvarproxy {
 public:
-  colvarproxy_impl(const SimParameters* s, const Molecule* m);
+  colvarproxy_impl();
   virtual ~colvarproxy_impl();
   void add_energy(cvm::real energy) override { mBiasEnergy += energy; }
+  cvm::real rand_gaussian() override { return random->gaussian(); }
   void log(std::string const &message) override;
   void error(std::string const &message) override;
   int init_atom(int atom_number) override;
@@ -110,6 +112,8 @@ public:
   bool total_forces_same_step() const override { return false; };
   int setup() override;
   int set_unit_system(std::string const &units_in, bool check_only) override;
+  /// Volumetric maps are not yet supported by this interface
+  int check_volmaps_available() override { return COLVARS_NOT_IMPLEMENTED; }
   int check_replicas_enabled() override;
   int replica_index() override;
   int num_replicas() override;
@@ -125,11 +129,11 @@ public:
   int backup_file(char const *filename) override;
   void initialize_from_cudagm(
     CudaGlobalMasterColvars *client,
-    const SimParameters *s,
-    const Molecule *m,
+    SimParameters *s,
+    Molecule *m,
     const std::vector<std::string> &arguments,
     const int deviceID, cudaStream_t stream);
-  const bool atomsChanged() const { return mAtomsChanged; }
+  const bool atomsChanged() const { return modified_atom_list(); }
   int load_atoms_pdb(char const *filename,
                      cvm::atom_group& atoms,
                      std::string const &pdb_field,
@@ -146,19 +150,9 @@ public:
   void update_atom_properties(int index);
   // FIXME: This interface does not run Colvars on the same thread as ScriptTcl,
   //        so it is buggy to use the same interpreter as NAMD.
-//   void init_tcl_pointers() override {
-// #ifdef NAMD_TCL
-//     // Store pointer to NAMD's Tcl interpreter
-//     iout << "mScriptTcl = " << mScriptTcl << "\n" << endi;
-//     if (mScriptTcl != nullptr) {
-//       set_tcl_interp(mScriptTcl->get_tcl_interp());
-//     } else {
-//       colvarproxy::init_tcl_pointers();
-//     }
-// #else
-//     colvarproxy::init_tcl_pointers(); // Create dedicated interpreter
-// #endif
-//   }
+  void init_tcl_pointers() override {
+    colvarproxy::init_tcl_pointers(); // Create dedicated interpreter
+  }
   int run_force_callback() override;
   int run_colvar_callback(
     std::string const &name,
@@ -242,15 +236,14 @@ private:
   double* h_mLattice;
   double mBiasEnergy;
   cudaStream_t mStream;
-  bool mAtomsChanged;
   bool first_timestep = true;
   cvm::step_number NAMD_step = 0L;
   cvm::step_number previous_NAMD_step = 0L;
   std::vector<std::string> mConfigFiles;
-  const SimParameters* simParams;
-  const Molecule* molecule;
+  SimParameters *simparams = nullptr;
+  Molecule *molecule = nullptr;
+  std::unique_ptr<Random> random;
   CudaGlobalMasterColvars* mClient;
-  ScriptTcl* mScriptTcl;
   int m_device_id;
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxEventAttributes_t mEventAttrib;
@@ -258,8 +251,7 @@ private:
 };
 
 
-colvarproxy_impl::colvarproxy_impl(
-  const SimParameters* s, const Molecule* m): colvarproxy(),
+colvarproxy_impl::colvarproxy_impl(): colvarproxy(),
   d_mPositions(nullptr), d_mAppliedForces(nullptr),
   d_mTotalForces(nullptr), d_mLattice(nullptr),
   d_mMass(nullptr), d_mCharges(nullptr),
@@ -270,9 +262,7 @@ colvarproxy_impl::colvarproxy_impl(
   d_trans_mCharges(nullptr),
   h_mLattice(nullptr),
   mBiasEnergy(0), mStream(0),
-  mAtomsChanged(false),
-  first_timestep(true), previous_NAMD_step(0),
-  simParams(s), molecule(m) {
+  first_timestep(true), previous_NAMD_step(0) {
   // colvars = nullptr;
   cvmodule = nullptr;
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
@@ -298,7 +288,7 @@ int colvarproxy_impl::reset() {
   int error_code = COLVARS_OK;
   deallocateDeviceArrays();
   deallocateDeviceTransposeArrays();
-  mAtomsChanged = true;
+  modified_atom_list_ = true;
   error_code |= colvarproxy::reset();
   return error_code;
 }
@@ -310,12 +300,12 @@ int colvarproxy_impl::setup() {
     // Module is empty, nothing to do
     return COLVARS_OK;
   }
-  if (simParams->wrapAll) {
+  if (simparams->wrapAll) {
     log("Warning: enabling wrapAll can lead to inconsistent results "
         "for Colvars calculations: please disable wrapAll, "
         "as is the default option in NAMD.\n");
   }
-  set_integration_timestep(simParams->dt);
+  set_integration_timestep(simparams->dt);
   log("updating target temperature (T = "+
       cvm::to_str(target_temperature())+" K).\n");
   error_code |= cvmodule->update_engine_parameters();
@@ -329,11 +319,14 @@ int colvarproxy_impl::setup() {
 
 void colvarproxy_impl::initialize_from_cudagm(
   CudaGlobalMasterColvars* client,
-  const SimParameters* s,
-  const Molecule* m,
+  SimParameters* s,
+  Molecule* m,
   const std::vector<std::string>& arguments,
   const int deviceID, cudaStream_t stream) {
   mClient = client;
+  simparams = s;
+  molecule = m;
+  random.reset(new Random(simparams->randomSeed));
   mStream = stream;
   m_device_id = deviceID;
   int savedDevice;
@@ -367,30 +360,30 @@ void colvarproxy_impl::initialize_from_cudagm(
   }
   update_target_temperature();
   setup();
-  if (simParams->firstTimestep != 0) {
-    cvmodule->set_initial_step(static_cast<cvm::step_number>(simParams->firstTimestep));
+  if (simparams->firstTimestep != 0) {
+    cvmodule->set_initial_step(static_cast<cvm::step_number>(simparams->firstTimestep));
   }
-  colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
-  colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
-  colvarproxy_io::set_default_restart_frequency(simParams->restartFrequency);
+  colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
+  colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
+  colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
 }
 
 // Copied from colvarproxy_namd.C
 int colvarproxy_impl::update_target_temperature()
 {
   int error_code = COLVARS_OK;
-  if (simParams->rescaleFreq > 0) {
-    error_code |= set_target_temperature(simParams->rescaleTemp);
-  } else if (simParams->reassignFreq > 0) {
-    error_code |= set_target_temperature(simParams->reassignTemp);
-  } else if (simParams->langevinOn) {
-    error_code |= set_target_temperature(simParams->langevinTemp);
-  } else if (simParams->tCoupleOn) {
-    error_code |= set_target_temperature(simParams->tCoupleTemp);
-  } else if (simParams->loweAndersenOn) {
-    error_code |= set_target_temperature(simParams->loweAndersenTemp);
-  } else if (simParams->stochRescaleOn) {
-    error_code |= set_target_temperature(simParams->stochRescaleTemp);
+  if (simparams->rescaleFreq > 0) {
+    error_code |= set_target_temperature(simparams->rescaleTemp);
+  } else if (simparams->reassignFreq > 0) {
+    error_code |= set_target_temperature(simparams->reassignTemp);
+  } else if (simparams->langevinOn) {
+    error_code |= set_target_temperature(simparams->langevinTemp);
+  } else if (simparams->tCoupleOn) {
+    error_code |= set_target_temperature(simparams->tCoupleTemp);
+  } else if (simparams->loweAndersenOn) {
+    error_code |= set_target_temperature(simparams->loweAndersenTemp);
+  } else if (simparams->stochRescaleOn) {
+    error_code |= set_target_temperature(simparams->stochRescaleTemp);
   } else {
     error_code |= set_target_temperature(0.0);
   }
@@ -413,7 +406,6 @@ int colvarproxy_impl::init_atom(int atom_number) {
 
   index = add_atom_slot(aid);
   update_atom_properties(index);
-  mAtomsChanged = true;
   return index;
 }
 
@@ -434,7 +426,7 @@ void colvarproxy_impl::update_atom_properties(int index)
 
 void colvarproxy_impl::clear_atom(int index) {
   colvarproxy::clear_atom(index);
-  mAtomsChanged = true;
+  modified_atom_list_ = true;
 }
 
 // Copied from colvarproxy_namd.C
@@ -853,9 +845,9 @@ void colvarproxy_impl::calculate() {
       // aware of this via the following flag
       b_simulation_continuing = true;
       // Update NAMD output and restart prefixes
-      colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
-      colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
-      colvarproxy_io::set_default_restart_frequency(simParams->restartFrequency);
+      colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
+      colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
+      colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
       cvmodule->setup_output();
     }
   }
@@ -883,7 +875,7 @@ void colvarproxy_impl::calculate() {
 
   // NAMD does not destruct GlobalMaster objects, so we must remember
   // to write all output files at the end of a run
-  if (NAMD_step == simParams->N) {
+  if (NAMD_step == simparams->N) {
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxRangePushEx(&mEventAttrib);
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
@@ -894,8 +886,8 @@ void colvarproxy_impl::calculate() {
   }
   // Restore the GPU device
   cudaCheck(cudaSetDevice(savedDevice));
-  // Update the mAtomsChanged flag
-  mAtomsChanged = false;
+  // Reset the modified atom list flag
+  reset_modified_atom_list();
 }
 
 void colvarproxy_impl::copy_cudagm_data_to_device()
@@ -1059,9 +1051,7 @@ CudaGlobalMasterColvars::CudaGlobalMasterColvars():
   if (CudaGlobalMasterClient::getSimParameters()->colvarsOn) {
     NAMD_die("This plugin is incompatible with the Colvars bundled with NAMD.");
   }
-  mImpl = std::make_unique<colvarproxy_impl>(
-    CudaGlobalMasterClient::getSimParameters(),
-    CudaGlobalMasterClient::getMolecule());
+  mImpl = std::make_unique<colvarproxy_impl>();
 }
 
 CudaGlobalMasterColvars::~CudaGlobalMasterColvars() {}
