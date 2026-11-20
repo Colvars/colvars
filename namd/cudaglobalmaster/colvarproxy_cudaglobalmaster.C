@@ -124,10 +124,12 @@ public:
   int close_output_streams() override;
   int backup_file(char const *filename) override;
   void initialize_from_cudagm(
-    CudaGlobalMasterColvars* client,
-    const std::vector<std::string>& arguments,
+    CudaGlobalMasterColvars *client,
+    const SimParameters *s,
+    const Molecule *m,
+    const std::vector<std::string> &arguments,
     const int deviceID, cudaStream_t stream);
-  const bool atomsChanged() const {return mAtomsChanged;}
+  const bool atomsChanged() const { return mAtomsChanged; }
   int load_atoms_pdb(char const *filename,
                      cvm::atom_group& atoms,
                      std::string const &pdb_field,
@@ -138,6 +140,8 @@ public:
                       std::string const &pdb_field,
                       double const pdb_field_value) override;
   void calculate();
+  void copy_cudagm_data_from_device();
+  void copy_cudagm_data_to_device();
   void onBuffersUpdated();
   void update_atom_properties(int index);
   // FIXME: This interface does not run Colvars on the same thread as ScriptTcl,
@@ -239,8 +243,9 @@ private:
   double mBiasEnergy;
   cudaStream_t mStream;
   bool mAtomsChanged;
-  bool first_timestep;
-  cvm::step_number previous_NAMD_step;
+  bool first_timestep = true;
+  cvm::step_number NAMD_step = 0L;
+  cvm::step_number previous_NAMD_step = 0L;
   std::vector<std::string> mConfigFiles;
   const SimParameters* simParams;
   const Molecule* molecule;
@@ -280,6 +285,8 @@ colvarproxy_impl::colvarproxy_impl(
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   boltzmann_ = 0.001987191;
   angstrom_value_ = 1.;
+  // In NAMD, masses and charges are already available when initializing Colvars
+  updated_masses_ = updated_charges_ = true;
 }
 
 colvarproxy_impl::~colvarproxy_impl() {
@@ -322,6 +329,8 @@ int colvarproxy_impl::setup() {
 
 void colvarproxy_impl::initialize_from_cudagm(
   CudaGlobalMasterColvars* client,
+  const SimParameters* s,
+  const Molecule* m,
   const std::vector<std::string>& arguments,
   const int deviceID, cudaStream_t stream) {
   mClient = client;
@@ -771,11 +780,9 @@ void colvarproxy_impl::onBuffersUpdated() {
   cudaCheck(cudaSetDevice(savedDevice));
 }
 
-void colvarproxy_impl::calculate() {
-  const int64_t step = mClient->getStep();
-  const size_t numAtoms = atoms_ids.size();
-  int savedDevice;
-  cudaCheck(cudaGetDevice(&savedDevice));
+
+void colvarproxy_impl::copy_cudagm_data_from_device() {
+  const size_t & numAtoms = atoms_ids.size();
   cudaCheck(cudaSetDevice(m_device_id));
   if (mClient->requestUpdateLattice()) {
     ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
@@ -821,6 +828,12 @@ void colvarproxy_impl::calculate() {
     // Synchronize the stream to make sure the host buffers are ready
     cudaCheck(cudaStreamSynchronize(mStream));
   }
+}
+
+void colvarproxy_impl::calculate() {
+  NAMD_step = mClient->getStep();
+  int savedDevice;
+  cudaCheck(cudaGetDevice(&savedDevice));
   if (first_timestep) {
     // setup();
     update_target_temperature();
@@ -829,7 +842,7 @@ void colvarproxy_impl::calculate() {
     cvmodule->setup_output();
     first_timestep = false;
   } else {
-    if ( step - previous_NAMD_step == 1 ) {
+    if ( NAMD_step - previous_NAMD_step == 1 ) {
       cvmodule->it++;
       b_simulation_continuing = false;
     } else {
@@ -846,7 +859,9 @@ void colvarproxy_impl::calculate() {
       cvmodule->setup_output();
     }
   }
-  previous_NAMD_step = step;
+  previous_NAMD_step = NAMD_step;
+  copy_cudagm_data_from_device();
+
   // Run Colvars
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxRangePushEx(&mEventAttrib);
@@ -863,6 +878,29 @@ void colvarproxy_impl::calculate() {
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
   nvtxRangePop();
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+
+  copy_cudagm_data_to_device();
+
+  // NAMD does not destruct GlobalMaster objects, so we must remember
+  // to write all output files at the end of a run
+  if (NAMD_step == simParams->N) {
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  nvtxRangePushEx(&mEventAttrib);
+#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+    post_run();
+#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  nvtxRangePop();
+#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
+  }
+  // Restore the GPU device
+  cudaCheck(cudaSetDevice(savedDevice));
+  // Update the mAtomsChanged flag
+  mAtomsChanged = false;
+}
+
+void colvarproxy_impl::copy_cudagm_data_to_device()
+{
+  const size_t & numAtoms = atoms_ids.size();
   // Update applied forces
   if (!has_gpu_support()) {
     auto &colvars_applied_force = *(modify_atom_applied_forces());
@@ -876,21 +914,6 @@ void colvarproxy_impl::calculate() {
   // NOTE: I think I can skip the syncrhonization here because this client
   //       share the same stream as the CudaGlobalMasterServer object
   // cudaCheck(cudaStreamSynchronize(mStream));
-  // NAMD does not destruct GlobalMaster objects, so we must remember
-  // to write all output files at the end of a run
-  if (step == simParams->N) {
-#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
-  nvtxRangePushEx(&mEventAttrib);
-#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
-    post_run();
-#ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
-  nvtxRangePop();
-#endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
-  }
-  // Restore the GPU device
-  cudaCheck(cudaSetDevice(savedDevice));
-  // Update the mAtomsChanged flag
-  mAtomsChanged = false;
 }
 
 std::ostream & colvarproxy_impl::output_stream(std::string const &output_name,
@@ -1047,7 +1070,10 @@ void CudaGlobalMasterColvars::initialize(
   const std::vector<std::string>& arguments,
   int deviceID, cudaStream_t stream) {
   CudaGlobalMasterClient::initialize(arguments, deviceID, stream);
-  mImpl->initialize_from_cudagm(this, arguments, deviceID, stream);
+  mImpl->initialize_from_cudagm(this,
+                                CudaGlobalMasterClient::getSimParameters(),
+                                CudaGlobalMasterClient::getMolecule(),
+                                arguments, deviceID, stream);
 }
 
 bool CudaGlobalMasterColvars::requestedAtomsChanged()  {
