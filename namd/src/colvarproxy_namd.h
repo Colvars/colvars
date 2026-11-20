@@ -91,6 +91,9 @@ protected:
   /// Pointer to the NAMD simulation input object
   SimParameters *simparams = nullptr;
 
+  /// Pointer to the NAMD Molecule object
+  Molecule *molecule = nullptr;
+
   /// Pointer to Controller object
   Controller const *controller = nullptr;
 
@@ -108,20 +111,20 @@ protected:
 
   /// Used to submit restraint energy as MISC
 #if !defined (NAMD_UNIFIED_REDUCTION)
-  SubmitReduction *reduction;
+  SubmitReduction *reduction = nullptr;
 #endif
 #if defined(NODEGROUP_FORCE_REGISTER) && !defined(NAMD_UNIFIED_REDUCTION)
-  NodeReduction *nodeReduction;
+  NodeReduction *nodeReduction = nullptr;
 #endif
 
   /// Accelerated MD reweighting factor
-  bool accelMDOn;
-  cvm::real amd_weight_factor;
+  bool accelMDOn = false;
+  cvm::real amd_weight_factor = 1.0;
   void update_accelMD_info();
 
 public:
 
-  void calculate();
+  virtual void calculate();
 
   void log(std::string const &message) override;
   void error(std::string const &message) override;
