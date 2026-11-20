@@ -55,6 +55,10 @@ colvarproxy_namd::colvarproxy_namd()
   if (cvm::debug())
     iout << "colvars: initializing colvarproxy_namd object.\n" << endi;
 
+#if CMK_SMP && USE_CKLOOP
+  charm_lock_state = CmiCreateLock();
+#endif
+
   engine_name_ = "NAMD";
 
   version_int = get_version_from_string(COLVARPROXY_VERSION);
@@ -78,10 +82,6 @@ void colvarproxy_namd::set_gm_object(GlobalMasterColvars *gm)
 
 int colvarproxy_namd::init()
 {
-#if CMK_SMP && USE_CKLOOP
-  charm_lock_state = CmiCreateLock();
-#endif
-
 #if CMK_TRACE_ENABLED
   if ( 0 == CkMyPe() ) {
     traceRegisterUserEvent("GM COLVAR item", GLOBAL_MASTER_CKLOOP_CALC_ITEM);
@@ -919,9 +919,8 @@ void colvarproxy_namd::clear_atom(int index)
 
 void colvarproxy_namd::update_atom_properties(int index)
 {
-  Molecule *mol = Node::Object()->molecule;
   // update mass
-  double const mass = mol->atommass(atoms_ids[index]);
+  double const mass = molecule->atommass(atoms_ids[index]);
   if (mass <= 0.001) {
     this->log("Warning: near-zero mass for atom "+
               cvm::to_str(atoms_ids[index]+1)+
@@ -929,7 +928,7 @@ void colvarproxy_namd::update_atom_properties(int index)
   }
   atoms_masses[index] = mass;
   // update charge
-  atoms_charges[index] = mol->atomcharge(atoms_ids[index]);
+  atoms_charges[index] = molecule->atomcharge(atoms_ids[index]);
 }
 
 
@@ -1429,8 +1428,7 @@ void colvarproxy_namd::request_globalmaster_volmap(int volmap_id)
   }
 
   // Check that the scale factor is correctly set to zero (ComputeGlobal relies on that)x
-  Molecule *mol = Node::Object()->molecule;
-  Vector const gfScale = mol->get_gridfrc_grid(volmap_id)->get_scale();
+  Vector const gfScale = molecule->get_gridfrc_grid(volmap_id)->get_scale();
   if ((gfScale.x != 0.0) || (gfScale.y != 0.0) || (gfScale.z != 0.0)) {
     cvmodule->error("Error: GridForce map with numeric ID "+cvm::to_str(volmap_id)+
                     " has non-zero scale factors.\n", COLVARS_INPUT_ERROR);
@@ -1442,9 +1440,8 @@ void colvarproxy_namd::request_globalmaster_volmap(int volmap_id)
 
 int colvarproxy_namd::init_internal_volmap_by_id(int volmap_id)
 {
-  Molecule *mol = Node::Object()->molecule;
   int index = -1;
-  if ((volmap_id < 0) || (volmap_id >= mol->numGridforceGrids)) {
+  if ((volmap_id < 0) || (volmap_id >= molecule->numGridforceGrids)) {
     cvmodule->error("Error: invalid numeric ID ("+cvm::to_str(volmap_id)+") for MGridForces map.\n",
                     COLVARS_INPUT_ERROR);
     return -1;
@@ -1594,10 +1591,9 @@ int colvarproxy_namd::compute_volmap(int flags,
                                      cvm::real *value,
                                      cvm::real *atom_field)
 {
-  Molecule *mol = Node::Object()->molecule;
   // Pointer to NAMD_managed object if volmap_id >= 0, internal object otherwise
   GridforceGrid *grid = volmaps_ids[index] >= 0 ?
-    mol->get_gridfrc_grid(volmaps_ids[index]) :
+    molecule->get_gridfrc_grid(volmaps_ids[index]) :
     internal_gridforce_grids_[index].get();
   // Inheritance is not possible with GridForceGrid's design
   if (grid->get_grid_type() == GridforceGrid::GridforceGridTypeFull) {
@@ -1796,6 +1792,11 @@ int colvarproxy_namd::send_alch_lambda(void) {
 int colvarproxy_namd::get_dE_dlambda(cvm::real* dE_dlambda) {
   // Force data at step zero is garbage in NAMD3, zero in NAMD2
   if (cvmodule->step_relative() > 0) {
+    if (!controller) {
+      return cvmodule->error("Error: the derivative of the energy with respect to lambda "
+                             "is not available from this NAMD interface.\n",
+                             COLVARS_NOT_IMPLEMENTED);
+    }
     *dE_dlambda = controller->getTIderivative();
   } else {
     *dE_dlambda = 0.0;
