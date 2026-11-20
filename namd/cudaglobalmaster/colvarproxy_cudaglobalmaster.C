@@ -97,7 +97,7 @@ e_pdb_field pdb_field_str2enum(std::string const &pdb_field_str, colvarmodule* c
 
 class colvarproxy_impl: public colvarproxy {
 public:
-  colvarproxy_impl(const SimParameters* s, const Molecule* m, ScriptTcl* t);
+  colvarproxy_impl(const SimParameters* s, const Molecule* m);
   virtual ~colvarproxy_impl();
   void add_energy(cvm::real energy) override { mBiasEnergy += energy; }
   void log(std::string const &message) override;
@@ -252,8 +252,9 @@ private:
 #endif // CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
 };
 
+
 colvarproxy_impl::colvarproxy_impl(
-  const SimParameters* s, const Molecule* m, ScriptTcl* t): colvarproxy(),
+  const SimParameters* s, const Molecule* m): colvarproxy(),
   d_mPositions(nullptr), d_mAppliedForces(nullptr),
   d_mTotalForces(nullptr), d_mLattice(nullptr),
   d_mMass(nullptr), d_mCharges(nullptr),
@@ -266,7 +267,7 @@ colvarproxy_impl::colvarproxy_impl(
   mBiasEnergy(0), mStream(0),
   mAtomsChanged(false),
   first_timestep(true), previous_NAMD_step(0),
-  simParams(s), molecule(m), mScriptTcl(t) {
+  simParams(s), molecule(m) {
   // colvars = nullptr;
   cvmodule = nullptr;
 #ifdef CUDAGLOBALMASTERCOLVARS_CUDA_PROFILING
@@ -1037,8 +1038,7 @@ CudaGlobalMasterColvars::CudaGlobalMasterColvars():
   }
   mImpl = std::make_unique<colvarproxy_impl>(
     CudaGlobalMasterClient::getSimParameters(),
-    CudaGlobalMasterClient::getMolecule(),
-    CudaGlobalMasterClient::getScript());
+    CudaGlobalMasterClient::getMolecule());
 }
 
 CudaGlobalMasterColvars::~CudaGlobalMasterColvars() {}
