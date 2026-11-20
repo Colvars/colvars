@@ -1,0 +1,28 @@
+colvarsTrajFrequency 1
+colvarsRestartFrequency 10
+indexFile index.ndx
+
+colvar {
+
+    name one
+
+    outputAppliedForce on
+
+    width 0.5
+
+    distance {
+        group1 {
+            atomNumbers 1 2
+        }
+        group2 {
+            atomNumbers 3
+        }
+    }
+} 
+
+colvar {
+    name c1
+    cartesian {
+        atoms { atomNumbers 1 2 3 }
+    }
+}
