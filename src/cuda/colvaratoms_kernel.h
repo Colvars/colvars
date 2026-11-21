@@ -11,6 +11,7 @@
 namespace colvars_gpu {
 
 int atoms_pos_from_proxy(
+  colvarmodule* cvmodule,
   const int* atoms_proxy_index,
   const cvm::real* atoms_pos_proxy,
   cvm::real* atoms_pos_ag,
@@ -22,6 +23,7 @@ int atoms_pos_from_proxy(
 
 // For debug gradients
 int atoms_pos_from_proxy(
+  colvarmodule* cvmodule,
   const int* atoms_proxy_index,
   const cvm::real* atoms_pos_proxy,
   cvm::real* atoms_pos_ag,
@@ -30,6 +32,7 @@ int atoms_pos_from_proxy(
   cudaStream_t stream);
 
 int change_one_coordinate(
+  colvarmodule* cvmodule,
   cvm::real* atoms_pos_ag,
   size_t atom_id_in_group, int xyz,
   cvm::real step_size,
@@ -37,6 +40,7 @@ int change_one_coordinate(
   cudaStream_t stream);
 
 int atoms_calc_cog_com(
+  colvarmodule* cvmodule,
   const cvm::real* atoms_pos_ag,
   const cvm::real* atoms_mass,
   unsigned int num_atoms,
@@ -54,6 +58,7 @@ int atoms_calc_cog_com(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int atoms_calc_cog(
+  colvarmodule* cvmodule,
   const cvm::real* atoms_pos_ag,
   unsigned int num_atoms,
   cvm::rvector* d_cog_tmp,
@@ -66,6 +71,7 @@ int atoms_calc_cog(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int atoms_total_force_from_proxy(
+  colvarmodule* cvmodule,
   const int* atoms_proxy_index,
   const cvm::real* atoms_total_force_proxy,
   cvm::real* atoms_total_force_ag,
@@ -76,6 +82,7 @@ int atoms_total_force_from_proxy(
   cudaStream_t stream);
 
 int apply_main_colvar_force_to_proxy(
+  colvarmodule* cvmodule,
   const int* atoms_proxy_index,
   cvm::real* atoms_applied_force_proxy,
   const cvm::real* atoms_grad_ag,
@@ -89,6 +96,7 @@ int apply_main_colvar_force_to_proxy(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int apply_fitting_colvar_force_to_proxy(
+  colvarmodule* cvmodule,
   const int* atoms_proxy_index,
   cvm::real* atoms_applied_force_proxy,
   const cvm::real* atoms_grad_ag,
@@ -100,6 +108,7 @@ int apply_fitting_colvar_force_to_proxy(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int accumulate_cpu_force(
+  colvarmodule* cvmodule,
   const cvm::real* h_atoms_force,
   cvm::real* d_atoms_force,
   unsigned int num_atoms,
@@ -108,6 +117,7 @@ int accumulate_cpu_force(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int calc_fit_gradients_impl_loop1(
+  colvarmodule* cvmodule,
   const cvm::real* pos_unrotated,
   cvm::real* main_grad,
   const colvars_gpu::rotation_derivative_gpu* rot_deriv,
@@ -124,6 +134,7 @@ int calc_fit_gradients_impl_loop1(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int calc_fit_gradients_impl_loop2(
+  colvarmodule* cvmodule,
   cvm::real* fit_grad,
   const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* atom_grad,
@@ -135,6 +146,7 @@ int calc_fit_gradients_impl_loop2(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int apply_translation(
+  colvarmodule* cvmodule,
   cvm::real* atoms_pos_ag,
   cvm::real translation_vector_factor,
   const cvm::rvector* translation_vector,
@@ -144,6 +156,7 @@ int apply_translation(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int rotate_with_quaternion(
+  colvarmodule* cvmodule,
   cvm::real* atoms_pos_ag,
   const cvm::quaternion* q,
   unsigned int num_atoms,
@@ -152,6 +165,7 @@ int rotate_with_quaternion(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int apply_force_with_inverse_rotation(
+  colvarmodule* cvmodule,
   const cvm::real* atoms_force,
   const cvm::quaternion* q,
   const int* atoms_proxy_index,
@@ -163,6 +177,7 @@ int apply_force_with_inverse_rotation(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int apply_force(
+  colvarmodule* cvmodule,
   const cvm::real* atoms_force,
   const int* atoms_proxy_index,
   cvm::real* proxy_new_force,
@@ -173,6 +188,7 @@ int apply_force(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int calc_fit_forces_impl_loop1(
+  colvarmodule* cvmodule,
   const cvm::real* pos_unrotated,
   cvm::real* main_force,
   const colvars_gpu::rotation_derivative_gpu* rot_deriv,
@@ -189,6 +205,7 @@ int calc_fit_forces_impl_loop1(
   const std::vector<cudaGraphNode_t>& dependencies);
 
 int calc_fit_forces_impl_loop2(
+  colvarmodule* cvmodule,
   const colvars_gpu::rotation_derivative_gpu* rot_deriv,
   const double3* atom_grad,
   const cvm::rmatrix* dxdC,

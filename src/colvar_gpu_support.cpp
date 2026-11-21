@@ -14,7 +14,7 @@
 
 namespace colvars_gpu {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
-int gpuAssert(cudaError_t code, const char *file, int line)
+int gpuAssert(colvarmodule* cvmodule, cudaError_t code, const char *file, int line)
 {
   if (code != cudaSuccess) {
     std::string error =
@@ -25,12 +25,18 @@ int gpuAssert(cudaError_t code, const char *file, int line)
       error += "\nBacktrace:\n" + std::to_string(std::stacktrace::current()) + "\n";
 #endif
 #endif
-    return cvm::error_static(error, COLVARS_ERROR);
+    if (cvmodule) {
+      return cvmodule->error(error, COLVARS_ERROR);
+    } else {
+      std::fprintf(stderr, "%s\n", error.c_str());
+      return COLVARS_ERROR;
+    }
   }
   return COLVARS_OK;
 }
 
 int add_clear_array_node_impl(
+  colvarmodule* cvmodule,
   void* dst, const size_t num_elements, const size_t sizeofT,
   cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
@@ -47,6 +53,7 @@ int add_clear_array_node_impl(
   memsetParams.height      = 1;
   if (cvm::debug()) {
     cvm::log_static(
+      cvmodule,
       "Add a memset clear node: ptr = " + cvm::to_str(dst) +
       " width = " + cvm::to_str(width) + " elementSize = " +
       cvm::to_str(elementSize) + "\n");
@@ -57,11 +64,12 @@ int add_clear_array_node_impl(
 }
 
 int add_copy_node_impl(
+  colvarmodule* cvmodule,
   const void* src, void* dst, const size_t num_elements, const size_t sizeofT,
   cudaMemcpyKind kind, cudaGraphNode_t& node_out, cudaGraph_t& graph,
   const std::vector<cudaGraphNode_t>& dependencies) {
   if (cvm::debug()) {
-    cvm::log_static(
+    cvm::log_static(cvmodule,
       "Add a memcpy node: src = " + cvm::to_str(src) +
       " dst = " + cvm::to_str(dst) + " num_elements = " +
       cvm::to_str(num_elements) + "\n");
@@ -72,6 +80,7 @@ int add_copy_node_impl(
 }
 
 int prepare_dependencies(
+  colvarmodule* cvmodule,
   const std::vector<std::pair<std::string, bool>>& node_names,
   std::vector<cudaGraphNode_t>& dependencies,
   const std::unordered_map<std::string, cudaGraphNode_t>& map,
@@ -83,15 +92,15 @@ int prepare_dependencies(
     if (auto search = map.find(node_name); search != map.end()) {
       dependencies.push_back(search->second);
       if (cvm::debug()) {
-        cvm::log_static("Operation " + caller_operation_name +
+        cvm::log_static(cvmodule, "Operation " + caller_operation_name +
                 " depends on node\" " + node_name + "\"\n");
       }
     } else {
       if (!allow_not_found) {
-        error_code |= cvm::error_static("BUG: cannot find node " + node_name + "\n");
+        error_code |= cvm::error_static(cvmodule, "BUG: cannot find node " + node_name + "\n");
       } else {
         if (cvm::debug()) {
-          cvm::log_static("Operation " + caller_operation_name +
+          cvm::log_static(cvmodule, "Operation " + caller_operation_name +
                   " cannot depend on node\" " + node_name + "\"\n");
         }
       }
@@ -105,6 +114,7 @@ gpu_graph_t::~gpu_graph_t() {
 }
 
 int gpu_graph_t::reset() {
+  // gpu_graph_t has no module pointer (checkGPUError needs one in scope)
   int error_code = COLVARS_OK;
   if (graph) {
     error_code |= checkGPUError(cudaGraphDestroy(graph));
@@ -119,7 +129,7 @@ int gpu_graph_t::reset() {
   return error_code;
 }
 
-int gpu_graph_t::init_graph_exec(colvarmodule* cvmodule, cudaStream_t stream) {
+int gpu_graph_t::init_graph_exec(cudaStream_t stream) {
   int error_code = COLVARS_OK;
   if (graph_exec_initialized) return error_code;
   if (!nodes.empty()) {
@@ -165,6 +175,7 @@ int gpu_graph_t::init_graph_exec(colvarmodule* cvmodule, cudaStream_t stream) {
 }
 
 int gpu_graph_t::dump_graph(const std::string& filename) {
+  // gpu_graph_t has no module pointer (checkGPUError needs one in scope)
   cudaGraphDebugDotFlags dotFlags = cudaGraphDebugDotFlagsVerbose;
   return checkGPUError(cudaGraphDebugDotPrint(graph, filename.c_str(), dotFlags));
 }

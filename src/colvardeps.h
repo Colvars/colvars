@@ -44,7 +44,6 @@ public:
   // This is used for inspecting the type of children and parents
   object_t my_type = object_t::undefined;
 
-  colvardeps (object_t type_in);
   colvardeps(object_t type_in, colvarmodule *cvmodule_in);
   virtual ~colvardeps();
   object_t get_object_type() const {return my_type;}

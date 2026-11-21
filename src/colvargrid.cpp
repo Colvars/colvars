@@ -16,18 +16,28 @@
 #include "colvargrid.h"
 #include "colvargrid_def.h"
 
-colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
+
+
+colvar_grid_count::colvar_grid_count(colvarmodule* cvmodule_in)
+  : colvar_grid<size_t>(cvmodule_in)
+{
+  mult = 1;
+}
+
+colvar_grid_count::colvar_grid_count(colvarmodule* cvmodule_in,
+                                     std::vector<colvar *>  &colvars,
                                      std::string config)
-  : colvar_grid<size_t>(colvars, 0, 1, false, nullptr, config)
+  : colvar_grid<size_t>(cvmodule_in, colvars, 0, 1, false, nullptr, config)
 {}
 
-colvar_grid_count::colvar_grid_count(std::vector<colvar *>  &colvars,
+colvar_grid_count::colvar_grid_count(colvarmodule* cvmodule_in,
+                                     std::vector<colvar *>  &colvars,
                                      std::shared_ptr<const colvar_grid_params> params)
-  : colvar_grid<size_t>(colvars, 0, 1, false, params)
+  : colvar_grid<size_t>(cvmodule_in, colvars, 0, 1, false, params)
 {}
 
-colvar_grid_count::colvar_grid_count(std::string &filename)
-: colvar_grid<size_t>(filename, 1)
+colvar_grid_count::colvar_grid_count(colvarmodule* cvmodule_in, std::string &filename)
+: colvar_grid<size_t>(cvmodule_in, filename, 1)
 {}
 
 std::string colvar_grid_count::get_state_params() const
@@ -118,25 +128,26 @@ int colvar_grid_count::write_opendx(std::string const &filename,
 
 
 
-colvar_grid_scalar::colvar_grid_scalar()
-  : colvar_grid<cvm::real>(), samples(NULL)
+colvar_grid_scalar::colvar_grid_scalar(colvarmodule* cvmodule_in)
+  : colvar_grid<cvm::real>(cvmodule_in), samples(NULL)
 {}
 
-colvar_grid_scalar::colvar_grid_scalar(colvar_grid_scalar const &g)
+colvar_grid_scalar::colvar_grid_scalar(colvarmodule* cvmodule_in, colvar_grid_scalar const &g)
   : colvar_grid<cvm::real>(g), samples(NULL)
 {
 }
 
-colvar_grid_scalar::colvar_grid_scalar(std::vector<colvar *> &colvars,
+colvar_grid_scalar::colvar_grid_scalar(colvarmodule* cvmodule_in,
+                                       std::vector<colvar *> &colvars,
                                        std::shared_ptr<const colvar_grid_params> params,
                                        bool add_extra_bin,
                                        std::string config)
-  : colvar_grid<cvm::real>(colvars, 0.0, 1, add_extra_bin, params, config), samples(NULL)
+  : colvar_grid<cvm::real>(cvmodule_in, colvars, 0.0, 1, add_extra_bin, params, config), samples(NULL)
 {
 }
 
-colvar_grid_scalar::colvar_grid_scalar(std::string const &filename)
-  : colvar_grid<cvm::real>(filename, 1),
+colvar_grid_scalar::colvar_grid_scalar(colvarmodule* cvmodule_in, std::string const &filename)
+  : colvar_grid<cvm::real>(cvmodule_in, filename, 1),
     samples(nullptr)
 {
 }
@@ -328,23 +339,24 @@ cvm::real colvar_grid_scalar::grid_rmsd(colvar_grid_scalar const &other_grid) co
 }
 
 
-colvar_grid_gradient::colvar_grid_gradient()
-  : colvar_grid<cvm::real>(), samples(NULL)
+colvar_grid_gradient::colvar_grid_gradient(colvarmodule* cvmodule_in)
+  : colvar_grid<cvm::real>(cvmodule_in), samples(NULL)
 {}
 
 
-colvar_grid_gradient::colvar_grid_gradient(std::vector<colvar *> &colvars,
+colvar_grid_gradient::colvar_grid_gradient(colvarmodule* cvmodule_in,
+                                           std::vector<colvar *> &colvars,
                                            std::shared_ptr<colvar_grid_count> samples_in,
                                            std::shared_ptr<const colvar_grid_params> params,
                                            std::string config)
-  : colvar_grid<cvm::real>(colvars, 0.0, colvars.size(), false, params ? params : samples_in, config), samples(samples_in)
+  : colvar_grid<cvm::real>(cvmodule_in, colvars, 0.0, colvars.size(), false, params ? params : samples_in, config), samples(samples_in)
 {
   if (samples_in)
     samples_in->has_parent_data = true;
 }
 
-colvar_grid_gradient::colvar_grid_gradient(std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in)
-  : colvar_grid<cvm::real>(filename, 0),
+colvar_grid_gradient::colvar_grid_gradient(colvarmodule* cvmodule_in, std::string const &filename, std::shared_ptr<colvar_grid_count> samples_in)
+  : colvar_grid<cvm::real>(cvmodule_in, filename, 0),
     samples(samples_in)
 {
   // We have called the colvar_grid constructor, which doesn't know about samples
@@ -453,7 +465,7 @@ void colvar_grid_gradient::write_1D_integral(std::ostream &os)
   os << "#       xi            A(xi)\n";
 
   if (cv.size() != 1) {
-    cvm::error_static("Cannot write integral for multi-dimensional gradient grids.");
+    cvm::error_static(cvmodule, "Cannot write integral for multi-dimensional gradient grids.");
     return;
   }
 
