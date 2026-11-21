@@ -406,7 +406,7 @@ int colvar::dihedPC::init(std::string const &conf)
     n_residues = nn;
   }
   if (n_residues < 2) {
-    error_code |=
+    return error_code |
       cvmodule->error("Error: dihedralPC requires at least two residues.\n", COLVARS_INPUT_ERROR);
   }
 
@@ -418,7 +418,7 @@ int colvar::dihedPC::init(std::string const &conf)
     int vecNumber;
     get_keyval(conf, "vectorNumber", vecNumber, 0);
     if (vecNumber < 1) {
-      error_code |=
+      return error_code |
           cvmodule->error("A positive value of vectorNumber is required.", COLVARS_INPUT_ERROR);
     }
 
@@ -469,7 +469,7 @@ int colvar::dihedPC::init(std::string const &conf)
   }
 
   if ( coeffs.size() != 4 * (n_residues - 1)) {
-    error_code |= cvmodule->error("Error: wrong number of coefficients: " + cvm::to_str(coeffs.size()) +
+    return error_code | cvmodule->error("Error: wrong number of coefficients: " + cvm::to_str(coeffs.size()) +
                              ". Expected " + cvm::to_str(4 * (n_residues - 1)) +
                              " (4 coeffs per residue, minus one residue).\n",
                              COLVARS_INPUT_ERROR);

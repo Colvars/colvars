@@ -956,12 +956,12 @@ bool b_null_target_lower_walls = false;
   }
 
   if (target_upper_walls.size() > upper_walls.size()) {
-    cvmodule->error("At least 1 target wall was provided with no initial wall!.\n",
+    return cvmodule->error("At least 1 target wall was provided with no initial wall!.\n",
       COLVARS_INPUT_ERROR);
   }
 
     if (target_lower_walls.size() > lower_walls.size()) {
-    cvmodule->error("At least 1 target wall was provided with no initial wall!.\n",
+    return cvmodule->error("At least 1 target wall was provided with no initial wall!.\n",
       COLVARS_INPUT_ERROR);
   }
 

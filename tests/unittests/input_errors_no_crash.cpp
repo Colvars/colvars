@@ -61,6 +61,47 @@ abf {
   maxForce 1.0
 }
 )" },
+  { "eigenvector with the wrong number of reference positions",
+    R"(
+colvar {
+  name e
+  eigenvector {
+    atoms {
+      atomNumbers 1 2 3 4
+    }
+    refPositions (0.0, 0.0, 0.0) (1.0, 0.0, 0.0) (0.0, 1.0, 0.0)
+    vector (1.0, 0.0, 0.0) (1.0, 0.0, 0.0) (1.0, 0.0, 0.0) (1.0, 0.0, 0.0)
+  }
+}
+)" },
+  { "rmsd with the wrong number of reference positions",
+    R"(
+colvar {
+  name r
+  rmsd {
+    atoms {
+      atomNumbers 1 2 3 4
+    }
+    refPositions (0.0, 0.0, 0.0) (1.0, 0.0, 0.0) (0.0, 1.0, 0.0)
+  }
+}
+)" },
+  { "rotational fit with the wrong number of reference positions",
+    R"(
+colvar {
+  name g
+  distance {
+    group1 {
+      atomNumbers 1 2 3 4
+      rotateToReference yes
+      refPositions (0.0, 0.0, 0.0) (1.0, 0.0, 0.0) (0.0, 1.0, 0.0)
+    }
+    group2 {
+      atomNumbers 5 6
+    }
+  }
+}
+)" },
 };
 
 } // namespace

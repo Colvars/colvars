@@ -869,7 +869,7 @@ int colvar::init_components_type(const std::string& conf, const char* def_config
     }
     cvmodule->decrease_depth();
     if (error_code_this != COLVARS_OK) {
-      error_code |=
+      return error_code |
           cvmodule->error("Error: in setting up component \"" + std::string(def_config_key) + "\".\n",
                      COLVARS_INPUT_ERROR);
     }
@@ -2919,7 +2919,7 @@ int colvar::calc_acf()
     // first-step operations
 
     if (colvarvalue::check_types(cfcv->value(), value())) {
-      cvmodule->error("Error: correlation function between \""+cfcv->name+
+      return cvmodule->error("Error: correlation function between \""+cfcv->name+
                  "\" and \""+this->name+"\" cannot be calculated, "
                  "because their value types are different.\n",
                  COLVARS_INPUT_ERROR);
