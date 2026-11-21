@@ -749,7 +749,7 @@ namespace UIestimator {
                     bool in_bounds = true;
                     for (k = 0; k < dimension; k++) {
                         if (position_temp[k] < lowerboundary[k] - EPSILON ||
-                            position_temp[k] > upperboundary[k] - EPSILON) {
+                            position_temp[k] >= upperboundary[k]) {
                             in_bounds = false;
                             break;
                         }
