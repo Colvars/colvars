@@ -26,6 +26,8 @@ colvarproxy_system::colvarproxy_system()
   indirect_lambda_biasing_force = 0.0;
   cached_alch_lambda_changed = false;
   cached_alch_lambda = -1.0;
+  cached_tabf_alpha_changed = false;
+  cached_tabf_alpha = 1.0;
 }
 
 
@@ -142,4 +144,36 @@ int colvarproxy_system::get_d2E_dlambda2(cvm::real*)
 {
   return cvm::error_static("Error in get_d2E_dlambda2: function is not implemented by this build.",
     COLVARS_NOT_IMPLEMENTED);
+}
+
+
+int colvarproxy_system::get_tabf_alpha(cvm::real * /* alpha */)
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+
+int colvarproxy_system::get_tabf_alpha_boundaries(cvm::real * /* lower */,
+                                                   cvm::real * /* upper */)
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+
+void colvarproxy_system::set_tabf_alpha(cvm::real alpha)
+{
+  cached_tabf_alpha = alpha;
+  cached_tabf_alpha_changed = true;
+}
+
+
+int colvarproxy_system::send_tabf_alpha()
+{
+  return COLVARS_NOT_IMPLEMENTED;
+}
+
+
+int colvarproxy_system::get_dE_dtabf_alpha(cvm::real * /* dE_dalpha */)
+{
+  return COLVARS_NOT_IMPLEMENTED;
 }

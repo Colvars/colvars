@@ -86,6 +86,18 @@ void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
 }
 
 
+int colvar::alch_lambda::set_external_value(bool now)
+{
+  // Cache value to be communicated to back-end between time steps
+  cvmodule->proxy->set_alch_lambda(x.real_value);
+  if (now) {
+    // If requested (e.g. upon restarting), sync to back-end
+    return cvmodule->proxy->send_alch_lambda();
+  }
+  return COLVARS_OK;
+}
+
+
 colvar::alch_Flambda::alch_Flambda()
 {
   set_function_type("alch_Flambda");
@@ -128,3 +140,117 @@ void colvar::alch_Flambda::apply_force(colvarvalue const &force)
   cvmodule->proxy->indirect_lambda_biasing_force += d2E_dlambda2 * f;
 }
 
+
+colvar::tabf_alpha::tabf_alpha()
+{
+  set_function_type("tabfAlpha");
+
+  provide(f_cvc_explicit_gradient, false);
+  provide(f_cvc_gradient, false); // Cannot apply forces on this CVC
+  provide(f_cvc_collect_atom_ids, false);
+
+  provide(f_cvc_inv_gradient); // Projected force is the alpha derivative
+  provide(f_cvc_Jacobian);     // Zero
+
+  x.type(colvarvalue::type_scalar);
+}
+
+
+int colvar::tabf_alpha::init(std::string const &conf)
+{
+  int error_code = cvc::init(conf);
+  if (error_code != COLVARS_OK) return error_code;
+
+  // Use the back-end value until a restart supplies one.
+  auto *proxy = cvmodule->proxy;
+  error_code = proxy->get_tabf_alpha(&x.real_value);
+  if (error_code != COLVARS_OK) return proxy->report_tabf_error(error_code, "get_tabf_alpha");
+
+  cvm::real lower = 0.0;
+  cvm::real upper = 0.0;
+  error_code = proxy->get_tabf_alpha_boundaries(&lower, &upper);
+  if (error_code != COLVARS_OK) return proxy->report_tabf_error(error_code, "get_tabf_alpha_boundaries");
+
+  // Supply intrinsic defaults before the parent colvar parses grid parameters.
+  init_scalar_boundaries(lower, upper);
+  return COLVARS_OK;
+}
+
+
+int colvar::tabf_alpha::init_tabf(colvar &cv)
+{
+  // Grid parsing has already inherited the intrinsic boundaries unless overridden.
+  // Even a matching user value (within tolerance) must use the exact back-end limit.
+  int error_code = COLVARS_OK;
+  if (cv.is_enabled(f_cv_lower_boundary) &&
+      cvm::fabs(cv.lower_boundary.real_value - lower_boundary.real_value) > colvar_boundaries_tol * cv.width) {
+    error_code |= cvmodule->error(
+      "Error: tabfAlpha lowerBoundary " + cvm::to_str(cv.lower_boundary) +
+      " conflicts with back-end TABF alpha minimum " + cvm::to_str(lower_boundary) + ".\n", COLVARS_INPUT_ERROR);
+  }
+  if (cv.is_enabled(f_cv_upper_boundary) &&
+      cvm::fabs(cv.upper_boundary.real_value - upper_boundary.real_value) > colvar_boundaries_tol * cv.width) {
+    error_code |= cvmodule->error(
+      "Error: tabfAlpha upperBoundary " + cvm::to_str(cv.upper_boundary) +
+      " conflicts with back-end TABF alpha maximum " + cvm::to_str(upper_boundary) + ".\n", COLVARS_INPUT_ERROR);
+  }
+  if (error_code != COLVARS_OK) return error_code;
+  cv.lower_boundary = lower_boundary;
+  cv.upper_boundary = upper_boundary;
+  cv.enable(f_cv_external);
+
+  int const factor = cv.get_time_step_factor();
+  if (factor != 1) {
+    return cvmodule->error("Error: timeStepFactor > 1 is not yet supported for TABF alpha variables.");
+  }
+  error_code = cvmodule->proxy->request_tabf_energy_freq(factor);
+  if (error_code != COLVARS_OK) return cvmodule->proxy->report_tabf_error(error_code, "request_tabf_energy_freq");
+  return COLVARS_OK;
+}
+
+
+void colvar::tabf_alpha::calc_value()
+{
+  // By default, follow external parameter
+  // This might get overwritten by driving extended dynamics
+  auto *proxy = cvmodule->proxy;
+  int error_code = proxy->get_tabf_alpha(&x.real_value);
+  if (error_code != COLVARS_OK) {
+    proxy->report_tabf_error(error_code, "get_tabf_alpha");
+    return;
+  }
+  error_code = proxy->get_dE_dtabf_alpha(&ft.real_value);
+  if (error_code != COLVARS_OK) {
+    proxy->report_tabf_error(error_code, "get_dE_dtabf_alpha");
+    return;
+  }
+  ft.real_value *= -1.0; // Convert energy derivative to force
+}
+
+
+void colvar::tabf_alpha::calc_force_invgrads()
+{
+  // All the work is done in calc_value()
+}
+
+
+void colvar::tabf_alpha::calc_Jacobian_derivative()
+{
+  jd = 0.0;
+}
+
+
+void colvar::tabf_alpha::apply_force(colvarvalue const & /* force */)
+{
+  // Forces, if any, are applied in colvar::update_extended_Lagrangian()
+}
+
+
+int colvar::tabf_alpha::set_external_value(bool now)
+{
+  cvmodule->proxy->set_tabf_alpha(x.real_value);
+  if (now) {
+    return cvmodule->proxy->flush_tabf_alpha();
+  }
+  return COLVARS_OK;
+}

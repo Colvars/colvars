@@ -106,6 +106,7 @@ int colvarbias_abf::init(std::string const &conf)
   }
 
   size_t i;
+  bool uses_tabf_alpha = false;
   for (i = 0; i < num_variables(); i++) {
 
     if (colvars[i]->value().type() != colvarvalue::type_scalar) {
@@ -115,6 +116,9 @@ int colvarbias_abf::init(std::string const &conf)
     if (hide_Jacobian) {
       colvars[i]->enable(f_cv_hide_Jacobian);
     }
+
+    uses_tabf_alpha = uses_tabf_alpha ||
+      colvars[i]->has_component_type("tabfAlpha");
 
     // If any colvar is extended-system (restrained, not driven external param), we are running eABF
     if (colvars[i]->is_enabled(f_cv_extended_Lagrangian)
@@ -143,6 +147,21 @@ int colvarbias_abf::init(std::string const &conf)
 
     // Here we could check for orthogonality of the Cartesian coordinates
     // and make it just a warning if some parameter is set?
+  }
+
+  // TABF must reject unsupported requests even when no variable enables eABF.
+  if (is_enabled(f_cvb_extended) || uses_tabf_alpha) {
+    get_keyval(conf, "UIestimator", b_UI_estimator, false);
+    get_keyval(conf, "CZARestimator", b_CZAR_estimator, is_enabled(f_cvb_extended));
+    if (uses_tabf_alpha && b_UI_estimator) {
+      return cvmodule->error("Error: UIestimator cannot be used together with a tABF alpha variable.\n",
+                             COLVARS_INPUT_ERROR);
+    }
+
+    if (uses_tabf_alpha && b_CZAR_estimator) {
+      return cvmodule->error("Error: CZARestimator cannot be used together with a tABF alpha variable.\n",
+                             COLVARS_INPUT_ERROR);
+    }
   }
 
   get_keyval(conf, "updateBias",  update_bias, true);
@@ -202,7 +221,6 @@ int colvarbias_abf::init(std::string const &conf)
 
   // Data for eABF z-based estimator
   if (is_enabled(f_cvb_extended)) {
-    get_keyval(conf, "CZARestimator", b_CZAR_estimator, true);
     if ( b_CZAR_estimator ) {
       cvmodule->cite_feature("CZAR eABF estimator");
     }
@@ -279,8 +297,6 @@ int colvarbias_abf::init(std::string const &conf)
 
   // if extendedLangrangian is on, then call UI estimator
   if (is_enabled(f_cvb_extended)) {
-    get_keyval(conf, "UIestimator", b_UI_estimator, false);
-
     if (b_UI_estimator) {
       if (shared_on) {
         cvmodule->error("Error: UI estimator is not available for multiple-walker (shared) ABF.\n");

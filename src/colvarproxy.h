@@ -656,6 +656,12 @@ public:
   /// Carry out operations needed before next simulation step is run
   int end_of_step();
 
+  /// Synchronize a pending TABF alpha update (at restart or end of step).
+  int flush_tabf_alpha();
+
+  /// Record a failed TABF operation unless the back-end already diagnosed it.
+  int report_tabf_error(int code, char const *operation);
+
   /// Print a message to the main log
   virtual void log(std::string const &message);
 
