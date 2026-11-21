@@ -133,6 +133,13 @@ jobs:
           print([Platform.getPlatform(i).getName() for i in range(Platform.getNumPlatforms())])
           PY
 
+      - name: Check OpenMM ABF force snapshots
+        env:
+          OPENMM_COLVARS_TEST_PLATFORMS: Reference CPU
+        run: |
+          pixi run --manifest-path openmm/pixi.toml \
+            python openmm/tests/test_abf_virtual_sites.py -v
+
   namd-main-arm64:
     name: NAMD (main ARM64)
     uses: ./.github/workflows/backend-template.yml

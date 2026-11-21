@@ -939,6 +939,11 @@ int colvarmodule::calc()
   error_code |= calc_biases();
   error_code |= update_colvar_forces();
 
+  // An energy probe may evaluate the biases without supplying an MD sample.
+  if (!proxy->bias_accumulation_enabled()) {
+    return error_code;
+  }
+
   error_code |= analyze();
 
   // write trajectory files, if needed

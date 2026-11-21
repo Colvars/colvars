@@ -4,9 +4,14 @@
 #include "openmm/CustomIntegrator.h"
 #include "openmm/Force.h"
 #include "openmm/Integrator.h"
+#include "openmm/NonbondedForce.h"
 #include "openmm/OpenMMException.h"
 #include "openmm/System.h"
 #include "openmm/internal/ContextImpl.h"
+#include "ReferenceVirtualSites.h"
+#ifdef OPENMM_COLVARS_HAVE_CPU_FORCE_BUFFERS
+#include "CpuPlatform.h"
+#endif
 
 #include "colvaratoms.h"
 #include "colvarmodule.h"
@@ -444,6 +449,29 @@ colvarproxy_openmm::colvarproxy_openmm(const ColvarsForce& owner, const System& 
     }
 
     initializeColvars();
+    if (total_forces_enabled()) {
+        for (int i = 0; i < system_.getNumForces(); ++i) {
+            const auto& force = system_.getForce(i);
+            if (&force == &owner_) {
+                continue;
+            }
+            physicalForceGroups_ |= std::uint32_t{1} << force.getForceGroup();
+            const auto* nonbonded = dynamic_cast<const NonbondedForce*>(&force);
+            if (nonbonded && nonbonded->getReciprocalSpaceForceGroup() >= 0) {
+                const auto method = nonbonded->getNonbondedMethod();
+                if (method == NonbondedForce::Ewald || method == NonbondedForce::PME ||
+                    method == NonbondedForce::LJPME) {
+                    physicalForceGroups_ |= std::uint32_t{1} << nonbonded->getReciprocalSpaceForceGroup();
+                }
+            }
+        }
+        for (int i = 0; i < system_.getNumParticles(); ++i) {
+            if (system_.isVirtualSite(i)) {
+                virtualSites_ = std::make_unique<ReferenceVirtualSites>(system_);
+                break;
+            }
+        }
+    }
 }
 
 colvarproxy_openmm::~colvarproxy_openmm()
@@ -947,7 +975,8 @@ int colvarproxy_openmm::run_colvar_gradient_callback(std::string const&,
                            COLVARS_NOT_IMPLEMENTED);
 }
 
-int colvarproxy_openmm::updateInput(ContextImpl& context, const std::vector<Vec3>& positions)
+int colvarproxy_openmm::updateInput(ContextImpl& context, const std::vector<Vec3>& positions, bool includeForces,
+                                  const std::vector<Vec3>* forceSnapshot)
 {
     currentContext_ = &context;
     biasEnergy_ = 0.0;
@@ -961,14 +990,15 @@ int colvarproxy_openmm::updateInput(ContextImpl& context, const std::vector<Vec3
     updatePbc(context);
     updatePositions(positions);
     captureLambdaDerivative(context);
-    updateTotalForces(context);
+    updateTotalForces(context, positions, includeForces, forceSnapshot);
 
     auto& appliedForces = *(modify_atom_applied_forces());
     std::fill(appliedForces.begin(), appliedForces.end(), cvm::rvector(0.0, 0.0, 0.0));
     return COLVARS_OK;
 }
 
-double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec3>& positions)
+double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec3>& positions, bool includeForces,
+                                    const std::vector<Vec3>* forceSnapshot)
 {
     if (!isInitialized_) {
         initializeColvars();
@@ -998,7 +1028,13 @@ double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec
                                            lambdaValue,
                                            tabfAlphaValue,
                                            requestedPositions);
-    if (canUseCache && cacheMatches(openmmStep,
+    const bool samplesCurrentForces = total_force_requested && totalForcesSameStep_;
+    const auto integrationGroups = physicalForceGroups_ &
+        static_cast<std::uint32_t>(context.getIntegrator().getIntegrationForceGroups());
+    const auto evaluatedGroups = physicalForceGroups_ &
+        static_cast<std::uint32_t>(context.getLastForceGroups());
+    if (canUseCache && (!samplesCurrentForces || cachedPhysicalForceGroups_ == integrationGroups) &&
+        cacheMatches(openmmStep,
                                     usesPbc,
                                     boxA,
                                     boxB,
@@ -1012,18 +1048,27 @@ double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec
         return cachedBiasEnergy_;
     }
 
-    int errorCode = updateInput(context, positions);
-    errorCode |= cvmodule->calc();
+    const bool isProbe = samplesCurrentForces && (!includeForces || evaluatedGroups != integrationGroups);
+    int errorCode;
+    biasAccumulationEnabled_ = !isProbe;
+    try {
+        errorCode = updateInput(context, positions, includeForces && !isProbe, forceSnapshot);
+        errorCode |= cvmodule->calc();
+    } catch (...) {
+        biasAccumulationEnabled_ = true;
+        throw;
+    }
+    biasAccumulationEnabled_ = true;
     // OpenMM can re-evaluate forces within a single integrator step.
     // Publish lambda back to the Context only on the first evaluation of that step.
-    if (owner_.getAlchemyEnabled() && lastLambdaWritebackStep_ != openmmStep) {
+    if (!isProbe && owner_.getAlchemyEnabled() && lastLambdaWritebackStep_ != openmmStep) {
         errorCode |= send_alch_lambda();
         if (errorCode == COLVARS_OK && cvmodule->get_error() == COLVARS_OK) {
             lastLambdaWritebackStep_ = openmmStep;
         }
     }
 #ifdef OPENMM_COLVARS_HAS_TABF_ALPHA
-    if (owner_.getTabfEnabled() && lastTabfAlphaWritebackStep_ != openmmStep) {
+    if (!isProbe && owner_.getTabfEnabled() && lastTabfAlphaWritebackStep_ != openmmStep) {
         errorCode |= send_tabf_alpha();
         if (errorCode == COLVARS_OK && cvmodule->get_error() == COLVARS_OK) {
             lastTabfAlphaWritebackStep_ = openmmStep;
@@ -1034,6 +1079,11 @@ double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec
         throw OpenMMException(format_colvars_error(get_error_msgs()));
     }
     const double energy = biasEnergy();
+    // Energy and partial-group probes can reuse a complete result, but must not
+    // replace it or prevent actual force sampling on the same step.
+    if (isProbe) {
+        return energy;
+    }
     if (canUseCache) {
         double cacheLambdaValue = lambdaValue;
         if (owner_.getAlchemyEnabled()) {
@@ -1053,6 +1103,7 @@ double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec
             requestedPositions.push_back(positions[atomIndex]);
         }
         cachedRequestedPositions_ = std::move(requestedPositions);
+        cachedPhysicalForceGroups_ = evaluatedGroups;
         storeCache(openmmStep,
                    usesPbc,
                    boxA,
@@ -1273,7 +1324,7 @@ void colvarproxy_openmm::updateColvarsStep(ContextImpl& context)
             cvmodule->it_restart :
             static_cast<cvm::step_number>(openmmStep);
         cvmodule->it = colvarsInitialStep_;
-        stepMappingInitialized_ = true;
+        stepMappingInitialized_ = biasAccumulationEnabled_;
         return;
     }
 
@@ -1293,23 +1344,56 @@ void colvarproxy_openmm::updatePositions(const std::vector<Vec3>& positions)
     }
 }
 
-void colvarproxy_openmm::updateTotalForces(ContextImpl& context)
+void colvarproxy_openmm::updateTotalForces(ContextImpl& context, const std::vector<Vec3>& positions, bool includeForces,
+                                         const std::vector<Vec3>* forceSnapshot)
 {
     if (!total_force_requested) {
         return;
     }
+    if (!includeForces) {
+        set_total_forces_invalid();
+        return;
+    }
 
-    context.getForces(systemForceBuffer_);
-    if (systemForceBuffer_.size() != static_cast<size_t>(system_.getNumParticles())) {
+    const bool needsCompletion = forceSnapshot == nullptr;
+    if (needsCompletion) {
+        context.getForces(systemForceBuffer_);
+        forceSnapshot = &systemForceBuffer_;
+    }
+    if (forceSnapshot->size() != static_cast<size_t>(system_.getNumParticles())) {
         set_total_forces_invalid();
         cvmodule->error("Error: OpenMM did not provide total forces required by ABF.\n",
                         COLVARS_ERROR);
         return;
     }
 
+    if (needsCompletion) {
+#ifdef OPENMM_COLVARS_HAVE_CPU_FORCE_BUFFERS
+        if (context.getPlatform().getName() == "CPU") {
+            // Match the CPU finish kernel's float sum, without modifying its buffers.
+            const auto& threadForces = CpuPlatform::getPlatformData(context).threadForce;
+            for (size_t i = 0; i < systemForceBuffer_.size(); ++i) {
+                float local[3] = {};
+                for (const auto& threadForce : threadForces) {
+                    for (int axis = 0; axis < 3; ++axis) {
+                        local[axis] += threadForce[4 * i + axis];
+                    }
+                }
+                systemForceBuffer_[i] += Vec3(local[0], local[1], local[2]);
+            }
+        }
+#endif
+        if (virtualSites_) {
+            Vec3 boxVectors[3];
+            context.getPeriodicBoxVectors(boxVectors[0], boxVectors[1], boxVectors[2]);
+            // Only redistribute the force snapshot. OpenMM still finishes its own buffer.
+            virtualSites_->distributeForces(system_, positions, systemForceBuffer_, boxVectors);
+        }
+    }
+
     auto& totalForces = *(modify_atom_total_forces());
     for (size_t proxyIndex = 0; proxyIndex < atoms_ids.size(); ++proxyIndex) {
-        const Vec3& force = systemForceBuffer_[atoms_ids[proxyIndex]];
+        const Vec3& force = (*forceSnapshot)[atoms_ids[proxyIndex]];
         totalForces[proxyIndex] = cvm::rvector(
             force[0],
             force[1],

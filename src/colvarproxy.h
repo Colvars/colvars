@@ -685,6 +685,9 @@ public:
     return b_simulation_continuing;
   }
 
+  /// Whether this evaluation may add samples to history-dependent biases.
+  virtual bool bias_accumulation_enabled() const { return true; }
+
   /// Called at the end of a simulation segment (i.e. "run" command)
   int post_run();
 

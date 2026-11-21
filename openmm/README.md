@@ -37,15 +37,26 @@ deferred device path for ABF-family total-force sampling.
 
 | OpenMM platform | Geometry biases | ABF/eABF total forces | Build setting |
 | --- | --- | --- | --- |
-| CPU | Supported | Supported | `OPENMM_COLVARS_ENABLE_CUDA_KERNELS=OFF` |
+| CPU | Supported | Supported with matching OpenMM CPU headers and library at build time | `OPENMM_COLVARS_ENABLE_CUDA_KERNELS=OFF` |
 | Reference | Supported | Supported | `OPENMM_COLVARS_ENABLE_CUDA_KERNELS=OFF` |
 | CUDA | Supported | Supported with the deferred CUDA path | `OPENMM_COLVARS_ENABLE_CUDA_KERNELS=ON` |
 | OpenCL / HIP | Supported for ordinary geometry biases | Not supported for same-step total-force sampling | CUDA path unavailable |
 
 For CPU and Reference, add `ColvarsForce` after all physical forces that should
-contribute to ABF, ideally as the final force in the `System`. CUDA ABF/eABF
-requires both OpenMM's CUDA internal headers and the `OpenMMCUDA` library from
-the same OpenMM installation.
+contribute to ABF, ideally as the final force in the `System`. For CPU total-force
+sampling, the build must find `openmm/cpu/CpuPlatform.h` and `OpenMMCPU` from the
+same OpenMM installation as the core library. Without them, use Reference for
+ABF. CUDA ABF/eABF requires both OpenMM's CUDA internal headers and the
+`OpenMMCUDA` library from the same OpenMM installation.
+
+The force snapshot used by ABF includes the forces transferred from virtual
+sites to their parent particles. On CUDA the snapshot uses OpenMM's native
+virtual-site kernel and device precision. OpenMM still redistributes the
+forces in its own buffer at the end of the force evaluation.
+
+For same-step total-force sampling, energy-only calls and force queries with a
+different set of physical force groups from the integrator do not add ABF
+samples. They can still return a bias energy or force.
 
 Ordinary geometry biases do not require the deferred CUDA path. On platforms
 without that path, use force groups 0-30 for `ColvarsForce`; force group 31 is

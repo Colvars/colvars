@@ -26,12 +26,18 @@ public:
     double computeForce(OpenMM::ContextImpl& context,
                         const std::vector<OpenMM::Vec3>& positions,
                         std::vector<OpenMM::Vec3>& forces) override;
+    double computeForce(OpenMM::ContextImpl& context,
+                        const std::vector<OpenMM::Vec3>& positions,
+                        std::vector<OpenMM::Vec3>& forces,
+                        bool includeForces,
+                        const std::vector<OpenMM::Vec3>* forceSnapshot = nullptr);
     std::map<std::string, double> getDefaultParameters() override;
 
 private:
     const ColvarsForce& owner_;
     std::unique_ptr<colvarproxy_openmm> proxy_;
     bool usesDeferredCudaComputation_;
+    bool includeForces_ = false;
 };
 
 } // namespace ColvarsPlugin
