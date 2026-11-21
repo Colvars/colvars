@@ -424,6 +424,23 @@
     "	pages = {3988--3996},\n"
     "}\n";
 
+  paper_count_[std::string("Zhou2026")] = 0;
+  paper_url_[std::string("Zhou2026")] = "https://doi.org/10.1021/acs.accounts.5c00666";
+  paper_bibtex_[std::string("Zhou2026")] =
+    "\n"
+    "@article{Zhou2026,\n"
+    "  author  = {Zhou, Mengchen and Liu, Xuyang and Shao, Xueguang and\n"
+    "             Chipot, Christophe and Cai, Wensheng and Fu, Haohao},\n"
+    "  title   = {One for All, All for One: A Unified Framework for Free-Energy Calculations},\n"
+    "  journal = {Accounts of Chemical Research},\n"
+    "  year    = {2026},\n"
+    "  volume  = {59},\n"
+    "  number  = {1},\n"
+    "  pages   = {90--102},\n"
+    "  doi     = {10.1021/acs.accounts.5c00666},\n"
+    "  url     = {https://doi.org/10.1021/acs.accounts.5c00666}\n"
+    "}\n";
+
   paper_count_[std::string("n/a")] = 0;
   paper_url_[std::string("n/a")] = "";
   paper_bibtex_[std::string("n/a")] = "";
@@ -688,6 +705,9 @@
 
   feature_count_[std::string("OPES explore or adaptive kernels")] = 0;
   feature_paper_map_[std::string("OPES explore or adaptive kernels")] = "Invernizzi2022";
+
+  feature_count_[std::string("tabfAlpha colvar component")] = 0;
+  feature_paper_map_[std::string("tabfAlpha colvar component")] = "Zhou2026";
 
   feature_count_[std::string("coordNum pairlist")] = 0;
   feature_paper_map_[std::string("coordNum pairlist")] = "n/a";

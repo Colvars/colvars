@@ -1467,6 +1467,9 @@ The following components implement functions with a scalar value (i.e.{} a real 
 \item \refkey{alchLambda}{colvar|alchLambda}: alchemical lambda parameter (for controlling the back-end).
 \item \refkey{alchFlambda}{colvar|alchFlambda}: force along alchLambda.
 }
+\cvnamdonly{
+\item \refkey{tabfAlpha}{colvar|tabfAlpha}: temperature scaling factor.
+}
 \end{itemize}
 
 Some components do not return scalar, but vector values:
@@ -3250,6 +3253,75 @@ The \texttt{alchFlambda} block itself takes no parameters, it should be left emp
 } % end of \cvalchlambdaonly
 
 
+\cvnamdonly{
+\cvsubsec{\texttt{tabfAlpha}: Temperature scaling factor}{sec:cvc_tabfalpha}
+\labelkey{colvar|tabfAlpha}
+
+The \texttt{tabfAlpha~\{\}} block defines a scalar component that returns the
+dimensionless temperature scaling factor $\alpha$.
+At a fixed $\alpha$, NAMD scales the physical forces by the reciprocal of
+$\alpha$. This is equivalent to sampling the unscaled potential at a temperature
+equal to $\alpha$ times the thermostat temperature.
+
+This component requires a NAMD build with TABF support and \texttt{tabf~on}
+in the NAMD configuration. The \texttt{tabfAlpha~\{\}} block takes no parameters.
+Use it as the only component in its \texttt{colvar} block. To let $\alpha$ evolve,
+set \texttt{extendedLagrangian~on} and specify
+\refkey{extendedMass}{colvar|extendedMass}.
+Colvars integrates $\alpha$ and passes the updated value to NAMD.
+
+You can bias $\alpha$ with an \texttt{abf} bias, a \texttt{metadynamics} bias,
+or both. Use \texttt{abf} for temperature-accelerated adaptive biasing force
+(TABF) and \texttt{metadynamics} for temperature metadynamics (T-MtD).
+For WTM-TABF, apply both biases to $\alpha$ and set \texttt{wellTempered~on}
+in the \texttt{metadynamics} block~\cite{Zhou2026}.
+
+Colvars takes the lower and upper boundaries from \texttt{tabfAlphaMin} and
+\texttt{tabfAlphaMax} in the NAMD configuration. When \texttt{extendedLagrangian}
+is enabled, both boundaries are reflecting and cannot be turned off.
+Leave the CV's \texttt{timeStepFactor} at \texttt{1}.
+The ABF options \texttt{UIestimator} and \texttt{CZARestimator} are not supported
+for \texttt{tabfAlpha}.
+
+\paragraph{Example: TABF with ABF.}
+In this example, $\alpha$ starts at \texttt{1.0} and varies between \texttt{1.0}
+and \texttt{1.5}. Add the following settings to your NAMD configuration:
+
+\begin{cvexampleinput}
+colvars~~~~~~~~~~~~~~~~on\\
+colvarsConfig~~~~~~~~~~tabf.colvars\\
+\\
+tabf~~~~~~~~~~~~~~~~~~~on\\
+tabfAlphaStart~~~~~~~~~1.0\\
+tabfAlphaMin~~~~~~~~~~~1.0\\
+tabfAlphaMax~~~~~~~~~~~1.5\\
+\\
+nonbondedFrequency~~~~~1\\
+globalMasterFrequency~~1
+\end{cvexampleinput}
+
+If full electrostatics is active, also set \texttt{fullElectFrequency} to
+\texttt{1}. See the \emph{Temperature-accelerated adaptive biasing force}
+section of the NAMD User Guide for the remaining NAMD options and restrictions.
+
+A minimal Colvars configuration for TABF looks like this.
+
+\begin{cvexampleinput}
+\-colvar~\{\\
+\-~~name~alpha\\
+\-~~width~0.01\\
+\-~~extendedLagrangian~on\\
+\-~~extendedMass~1500000\\
+\-~~extendedLangevinDamping~1000\\
+\-~~tabfAlpha~\{\}\\
+\-\}\\
+\\
+\-abf~\{\\
+\-~~colvars~alpha\\
+\-\}
+\end{cvexampleinput}
+} % end of \cvnamdonly
+
 
 \cvsubsec{Raw data: building blocks for custom functions}{sec:cvc_raw}
 
@@ -4817,10 +4889,12 @@ coordinates and act directly on the actual colvars.
   \key
     {extendedMass}{%
     \texttt{colvar}}{%
-    Fictitious mass of the alchemical particle ([E]$\times$fs$^2$)}{%
+    Fictitious mass of the extended degree of freedom ([E]$\times$fs$^2$)}{%
     positive decimal}{%
-    This parameter specifies the fictitious mass in the case of an alchemical
-    variable used in lambda-dynamics (\refkey{alchLambda}{colvar|alchLambda}).
+    This parameter specifies the fictitious mass for an alchemical variable used
+    in lambda-dynamics (\refkey{alchLambda}{colvar|alchLambda}).
+    \cvnamdonly{It also sets the fictitious mass of the temperature scaling factor
+    (\refkey{tabfAlpha}{colvar|tabfAlpha}).}
     Note that the dimension is not that of a usual mass: its unit is the energy unit
     (\ref{sec:units}) times fs$^2$.
     }
