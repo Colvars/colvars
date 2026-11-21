@@ -347,6 +347,19 @@ std::string colvarscript::get_command_cmdline_help(colvarscript::Object_type t,
 
 int colvarscript::run(int objc, unsigned char *const objv[])
 {
+  try {
+    return run_impl(objc, objv);
+  } catch (colvars_fatal_error const &e) {
+    if (!cvmodule) {
+      throw;
+    }
+    return cvmodule->error(e.what(), COLVARS_BUG_ERROR);
+  }
+}
+
+
+int colvarscript::run_impl(int objc, unsigned char *const objv[])
+{
   clear_str_result();
 
   if (cvm::debug()) {

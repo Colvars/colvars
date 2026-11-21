@@ -326,6 +326,16 @@ std::istream & colvarmodule::getline(std::istream &is, std::string &line)
 
 int colvarmodule::parse_config(std::string &conf)
 {
+  try {
+    return parse_config_impl(conf);
+  } catch (colvars_fatal_error const &e) {
+    return error(e.what(), COLVARS_BUG_ERROR);
+  }
+}
+
+
+int colvarmodule::parse_config_impl(std::string &conf)
+{
   // Auto-generated additional configuration
   extra_conf.clear();
 
@@ -920,6 +930,16 @@ cvm::real colvarmodule::energy_difference(std::string const &bias_name,
 
 
 int colvarmodule::calc()
+{
+  try {
+    return calc_impl();
+  } catch (colvars_fatal_error const &e) {
+    return error(e.what(), COLVARS_BUG_ERROR);
+  }
+}
+
+
+int colvarmodule::calc_impl()
 {
   int error_code = COLVARS_OK;
 
@@ -1516,6 +1536,16 @@ int colvarmodule::reset()
 
 
 int colvarmodule::setup_input()
+{
+  try {
+    return setup_input_impl();
+  } catch (colvars_fatal_error const &e) {
+    return error(e.what(), COLVARS_BUG_ERROR);
+  }
+}
+
+
+int colvarmodule::setup_input_impl()
 {
   if (proxy->input_prefix().empty() && (!proxy->input_stream_exists("input state string")) &&
       input_state_buffer_.empty()) {
