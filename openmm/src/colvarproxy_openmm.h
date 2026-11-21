@@ -14,6 +14,7 @@
 
 namespace OpenMM {
 class ContextImpl;
+class ReferenceVirtualSites;
 class System;
 }
 
@@ -40,6 +41,7 @@ public:
     void request_total_force(bool yesno) override;
     bool total_forces_enabled() const override;
     bool total_forces_same_step() const override;
+    bool bias_accumulation_enabled() const override { return biasAccumulationEnabled_; }
 
     int set_unit_system(std::string const& unitsIn, bool checkOnly) override;
 
@@ -88,13 +90,16 @@ public:
                                      std::vector<const colvarvalue*> const& cvcs,
                                      std::vector<cvm::matrix2d<cvm::real>>& gradient) override;
 
-    int updateInput(ContextImpl& context, const std::vector<Vec3>& positions);
-    double calculate(ContextImpl& context, const std::vector<Vec3>& positions);
+    double calculate(ContextImpl& context, const std::vector<Vec3>& positions, bool includeForces,
+                     const std::vector<Vec3>* forceSnapshot);
+    bool redistributesVirtualSiteForces() const { return virtualSites_ != nullptr; }
     void addForcesToOpenMM(std::vector<Vec3>& forces) const;
 
     double biasEnergy() const;
 
 private:
+    int updateInput(ContextImpl& context, const std::vector<Vec3>& positions, bool includeForces,
+                    const std::vector<Vec3>* forceSnapshot);
     void initializeColvars();
     void updateAtomIndexMap();
     void updatePbc(ContextImpl& context);
@@ -128,7 +133,8 @@ private:
     void invalidateCache();
     void updateColvarsStep(ContextImpl& context);
     void updatePositions(const std::vector<Vec3>& positions);
-    void updateTotalForces(ContextImpl& context);
+    void updateTotalForces(ContextImpl& context, const std::vector<Vec3>& positions, bool includeForces,
+                           const std::vector<Vec3>* forceSnapshot);
     bool inferTotalForcesSameStep() const;
     void clearPreviousOpenMMForces(std::vector<Vec3>& forces) const;
     void captureLambdaDerivative(ContextImpl& context);
@@ -147,6 +153,8 @@ private:
     mutable bool cachedAutoPbc_;
     bool reportedRepeatedExtendedCoordinate_;
     bool totalForcesSameStep_;
+    bool biasAccumulationEnabled_ = true;
+    std::uint32_t physicalForceGroups_ = 0;
     bool stepMappingInitialized_;
     long long openmmInitialStep_;
     cvm::step_number colvarsInitialStep_;
@@ -158,6 +166,7 @@ private:
     double lastIntegrationTimestepFs_;
     mutable std::vector<int> previousForceAtoms_;
     std::vector<Vec3> systemForceBuffer_;
+    std::unique_ptr<OpenMM::ReferenceVirtualSites> virtualSites_;
     std::uint64_t gaussianRngState_;
     bool gaussianRngHasSpare_;
     cvm::real gaussianRngSpare_;
@@ -168,6 +177,7 @@ private:
     cvm::real tabfAlphaUpperBoundary_;
 
     bool cacheValid_;
+    std::uint32_t cachedPhysicalForceGroups_ = 0;
     long long cachedOpenmmStep_;
     bool cachedUsesPbc_;
     Vec3 cachedPbcA_;

@@ -205,6 +205,30 @@ if (OPENMM_COLVARS_USING_OPENMM_SOURCE_BUILD AND
 endif()
 list(REMOVE_DUPLICATES OPENMM_COLVARS_OPENMM_SOURCE_INCLUDES)
 
+# CPU accumulates some physical forces in thread-local buffers until finishComputation().
+# Use the CPU headers and library from the same installation as the OpenMM core.
+if (NOT OPENMM_COLVARS_USING_OPENMM_SOURCE_BUILD)
+    find_path(OPENMM_COLVARS_CPU_INCLUDE_DIR CpuPlatform.h
+        HINTS ${OPENMM_COLVARS_OPENMM_INCLUDE_HINTS}
+        PATH_SUFFIXES openmm/cpu NO_DEFAULT_PATH)
+    get_target_property(_openmm_cpu_core_library OpenMM::OpenMM IMPORTED_LOCATION)
+    if (NOT _openmm_cpu_core_library)
+        get_target_property(_openmm_cpu_configs OpenMM::OpenMM IMPORTED_CONFIGURATIONS)
+        foreach(_config IN LISTS _openmm_cpu_configs)
+            get_target_property(_openmm_cpu_core_library OpenMM::OpenMM "IMPORTED_LOCATION_${_config}")
+            if (_openmm_cpu_core_library)
+                break()
+            endif()
+        endforeach()
+    endif()
+    if (_openmm_cpu_core_library)
+        get_filename_component(_openmm_cpu_lib_dir "${_openmm_cpu_core_library}" DIRECTORY)
+        find_library(OPENMM_CPU_LIBRARY NAMES OpenMMCPU
+            HINTS "${_openmm_cpu_lib_dir}" "${_openmm_cpu_lib_dir}/plugins"
+            NO_DEFAULT_PATH)
+    endif()
+endif()
+
 set(OPENMM_COLVARS_CUDA_INCLUDES)
 set(OPENMM_COLVARS_CUDA_DEFINITIONS)
 if (OPENMM_COLVARS_ENABLE_CUDA_KERNELS)
@@ -318,6 +342,12 @@ target_include_directories(OpenMMColvars
 
 target_link_libraries(OpenMMColvars PUBLIC OpenMM::OpenMM)
 target_link_libraries(OpenMMColvars PRIVATE ${OPENMM_COLVARS_LEPTON_LIBRARIES})
+if (NOT OPENMM_COLVARS_USING_OPENMM_SOURCE_BUILD AND
+    OPENMM_COLVARS_CPU_INCLUDE_DIR AND OPENMM_CPU_LIBRARY)
+    target_include_directories(OpenMMColvars PRIVATE "${OPENMM_COLVARS_CPU_INCLUDE_DIR}")
+    target_compile_definitions(OpenMMColvars PRIVATE OPENMM_COLVARS_HAVE_CPU_FORCE_BUFFERS=1)
+    target_link_libraries(OpenMMColvars PRIVATE "${OPENMM_CPU_LIBRARY}")
+endif()
 if (OPENMM_COLVARS_ENABLE_CUDA_KERNELS)
     target_link_libraries(OpenMMColvars PRIVATE "${OPENMM_CUDA_LIBRARY}")
 endif()

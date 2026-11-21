@@ -11,6 +11,7 @@
 #include "openmm/common/ComputeContext.h"
 #include "openmm/common/ContextSelector.h"
 #include "openmm/cuda/CudaContext.h"
+#include "openmm/cuda/CudaIntegrationUtilities.h"
 #include "openmm/cuda/CudaPlatform.h"
 #endif
 
@@ -35,15 +36,35 @@ KERNEL void addForces(GLOBAL const real* RESTRICT forces,
 }
 )";
 
+// The native virtual-site kernel resolves the current force array at launch.
+// Point it at a copy so the live buffer still receives its normal, single redistribution.
+class ScopedCudaForceBufferSwap {
+public:
+    ScopedCudaForceBufferSwap(CudaArray& live, CudaArray& scratch) : live_(live), scratch_(scratch) {
+        std::swap(live_.getDevicePointer(), scratch_.getDevicePointer());
+    }
+    ~ScopedCudaForceBufferSwap() {
+        std::swap(live_.getDevicePointer(), scratch_.getDevicePointer());
+    }
+    ScopedCudaForceBufferSwap(const ScopedCudaForceBufferSwap&) = delete;
+    ScopedCudaForceBufferSwap& operator=(const ScopedCudaForceBufferSwap&) = delete;
+
+private:
+    CudaArray& live_;
+    CudaArray& scratch_;
+};
+
 class DeferredCudaColvarsComputation final : public ComputeContext::ForcePostComputation {
 public:
     DeferredCudaColvarsComputation(ContextImpl& context,
                                    CudaContext& computeContext,
-                                   ColvarsForceImpl& force)
+                                   ColvarsForceImpl& force,
+                                   bool snapshotVirtualSiteForces)
         : context_(context),
           computeContext_(computeContext),
           cudaContext_(computeContext),
           force_(force),
+          snapshotVirtualSiteForces_(snapshotVirtualSiteForces),
           forceGroupFlag_(std::uint32_t{1} <<
                           static_cast<unsigned>(force.getOwner().getForceGroup()))
     {
@@ -82,7 +103,20 @@ public:
 
         cudaContext_.flushQueue();
         context_.getPositions(positions_);
-        const double energy = force_.computeForce(context_, positions_, forces_);
+        const std::vector<Vec3>* snapshot = nullptr;
+        if (includeForces && snapshotVirtualSiteForces_) {
+            ContextSelector selector(computeContext_);
+            auto& live = cudaContext_.getLongForceBuffer();
+            if (!scratch_.isInitialized()) {
+                scratch_.initialize(cudaContext_, live.getSize(), live.getElementSize(), "colvarsVirtualSiteForces");
+            }
+            live.copyTo(scratch_);
+            ScopedCudaForceBufferSwap useScratch(live, scratch_);
+            cudaContext_.getIntegrationUtilities().distributeForcesFromVirtualSites();
+            context_.getForces(snapshotForces_);
+            snapshot = &snapshotForces_;
+        }
+        const double energy = force_.computeForce(context_, positions_, forces_, includeForces, snapshot);
         if (!includeForces) {
             return energy;
         }
@@ -107,7 +141,10 @@ private:
     ComputeContext& computeContext_;
     CudaContext& cudaContext_;
     ColvarsForceImpl& force_;
+    bool snapshotVirtualSiteForces_;
     std::uint32_t forceGroupFlag_;
+    CudaArray scratch_;
+    std::vector<Vec3> snapshotForces_;
     ComputeArray forceArray_;
     ComputeKernel addForcesKernel_;
     std::vector<Vec3> positions_;
@@ -228,6 +265,14 @@ void validateTotalForceConfiguration(ContextImpl& context,
             "\" because the completed force buffer is unavailable. Use Reference or CPU, "
             "or build with OPENMM_COLVARS_ENABLE_CUDA_KERNELS=ON and use CUDA.");
     }
+#ifndef OPENMM_COLVARS_HAVE_CPU_FORCE_BUFFERS
+    if (platformName == "CPU") {
+        throw OpenMMException(
+            "Colvars total-force sampling on CPU requires the matching OpenMMCPU "
+            "library and headers at build time to read thread-local forces. Use Reference "
+            "or rebuild with the OpenMM CPU development files available.");
+    }
+#endif
     validateTotalForceOrdering(context, owner, proxy);
 }
 
@@ -262,7 +307,7 @@ void ColvarsForceImpl::initialize(ContextImpl& context)
         validateTotalForceConfiguration(context, owner_, *proxy_, true);
         CudaContext& computeContext = *data->contexts[0];
         auto* deferred =
-            new DeferredCudaColvarsComputation(context, computeContext, *this);
+            new DeferredCudaColvarsComputation(context, computeContext, *this, proxy_->redistributesVirtualSiteForces());
         computeContext.addPostComputation(deferred);
         computeContext.addPreComputation(
             new KeepDeferredColvarsLast(computeContext, deferred));
@@ -284,6 +329,7 @@ double ColvarsForceImpl::calcForcesAndEnergy(ContextImpl& context,
     if (usesDeferredCudaComputation_) {
         return 0.0;
     }
+    includeForces_ = includeForces;
     return CustomCPPForceImpl::calcForcesAndEnergy(
         context, includeForces, includeEnergy, groups);
 }
@@ -292,12 +338,21 @@ double ColvarsForceImpl::computeForce(ContextImpl& context,
                                       const std::vector<Vec3>& positions,
                                       std::vector<Vec3>& forces)
 {
+    return computeForce(context, positions, forces, includeForces_);
+}
+
+double ColvarsForceImpl::computeForce(ContextImpl& context,
+                                      const std::vector<Vec3>& positions,
+                                      std::vector<Vec3>& forces,
+                                      bool includeForces,
+                                      const std::vector<Vec3>* forceSnapshot)
+{
     std::fill(forces.begin(), forces.end(), Vec3());
     if (proxy_ == nullptr) {
         proxy_ = std::make_unique<colvarproxy_openmm>(owner_, context.getSystem());
     }
 
-    const double energy = proxy_->calculate(context, positions);
+    const double energy = proxy_->calculate(context, positions, includeForces, forceSnapshot);
     proxy_->addForcesToOpenMM(forces);
     return energy;
 }

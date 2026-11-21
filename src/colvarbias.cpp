@@ -393,6 +393,9 @@ int colvarbias::update()
 bool colvarbias::can_accumulate_data()
 {
   colvarproxy *proxy = cvmodule->proxy;
+  if (!proxy->bias_accumulation_enabled()) {
+    return false;
+  }
   if (((cvmodule->step_relative() > 0) && !proxy->simulation_continuing()) ||
       is_enabled(f_cvb_step_zero_data)) {
     return true;
