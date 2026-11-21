@@ -62,6 +62,13 @@ public:
   /// Run a script command with space-separated positional arguments (objects)
   int run(int objc, unsigned char *const objv[]);
 
+private:
+
+  /// Implementation of run(); run() catches colvars_fatal_error and reports it
+  int run_impl(int objc, unsigned char *const objv[]);
+
+public:
+
   /// Get the string result of the current scripting call
   inline std::string const &str_result() const
   {

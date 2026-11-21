@@ -15,6 +15,7 @@
 #include <memory>
 #include <cstdio>
 #include <atomic>
+#include <stdexcept>
 
 #include "colvars_version.h"
 
@@ -58,6 +59,20 @@ class colvarbias;
 class colvarproxy;
 class colvarvalue;
 class colvardeps;
+
+
+/// \brief Exception thrown by colvarmodule::error_static() when no module pointer is available.
+///
+/// Colvars normally reports errors through return codes.  This exception is the one
+/// exception to that rule: it lets lightweight objects without a module pointer
+/// (vectors, colvarvalue...) abort the current operation.  It is caught at the
+/// module's entry points (calc(), parse_config(), setup_input(), colvarscript::run()),
+/// which forward it to colvarmodule::error() and thus to the engine's proxy: the
+/// engine then decides whether the error is fatal (MD engines) or not (VMD).
+class colvars_fatal_error : public std::runtime_error {
+public:
+  using std::runtime_error::runtime_error;
+};
 
 
 /// \brief Collective variables module (main class)
@@ -428,6 +443,15 @@ public:
   /// \brief Parse a "clean" config string (no comments)
   int parse_config(std::string &conf);
 
+private:
+
+  /// Implementations of the entry points that catch colvars_fatal_error
+  int parse_config_impl(std::string &conf);
+  int calc_impl();
+  int setup_input_impl();
+
+public:
+
   /// Get the configuration string read so far (includes comments)
   std::string const & get_config() const;
 
@@ -783,17 +807,16 @@ public:
   /// Print a message to the main log and set global error code
   int error(std::string const &message, int code = -1);
 
-  /// Print an error message to stderr
-  /// Used in lightweight objects that do not have access to cvmodule
+  /// Report an error from a lightweight object that may not have access to cvmodule.
+  /// With a module pointer, this is equivalent to cvmodule->error().  Without one, it
+  /// throws colvars_fatal_error, which is caught at the module's entry points and
+  /// forwarded to the proxy.
   /// Typically fatal errors that reflect bugs, so hopefully rare
   static int error_static(colvarmodule* cvmodule, std::string const &message, int code = -1) {
     if (cvmodule) {
-      code = cvmodule->error(message, code);
-    } else {
-      std::fprintf(stderr, "%s%s\n", "colvars: ", message.c_str());
-      exit(-1);
+      return cvmodule->error(message, code);
     }
-    return code;
+    throw colvars_fatal_error(message);
   }
 
 private:
