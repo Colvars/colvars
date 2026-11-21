@@ -990,7 +990,7 @@ int colvar::rmsd::init(std::string const &conf)
   }
 
   if (ref_pos.size() != atoms->size()) {
-    error_code |=
+    return error_code |
         cvmodule->error("Error: found " + cvm::to_str(ref_pos.size()) +
                        " reference positions for RMSD; expected " + cvm::to_str(atoms->size()),
                    COLVARS_INPUT_ERROR);
@@ -1325,14 +1325,14 @@ int colvar::eigenvector::init(std::string const &conf)
   }
 
   if (ref_pos.size() == 0) {
-    error_code |=
+    return error_code |
         cvmodule->error("Error: reference positions were not provided.\n", COLVARS_INPUT_ERROR);
   }
 
   if (ref_pos.size() != atoms->size()) {
-    error_code |= cvmodule->error("Error: reference positions do not "
-                             "match the number of requested atoms.\n",
-                             COLVARS_INPUT_ERROR);
+    return error_code | cvmodule->error("Error: reference positions do not "
+                                        "match the number of requested atoms.\n",
+                                        COLVARS_INPUT_ERROR);
   }
 
   // save for later the geometric center of the provided positions (may not be the origin)

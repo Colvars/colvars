@@ -78,7 +78,7 @@ int colvargrid_integrate::integrate(const int itmax, const cvm::real &tol, cvm::
     divergence.resize(computation_nt);
     if (weighted || nd > 3) {
       if (weighted && !gradients->samples)
-        cvmodule->error("Error: Trying to perform weighted Poisson integration without a samples grid.", COLVARS_BUG_ERROR);
+        return cvmodule->error("Error: Trying to perform weighted Poisson integration without a samples grid.", COLVARS_BUG_ERROR);
       prepare_calculations();
       // extrapolate_data(); // Potential enhancement, needs testing
       set_weighted_div();

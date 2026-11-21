@@ -161,7 +161,8 @@ int colvarbias_abf::init(std::string const &conf)
 
   if (get_keyval(conf, "maxForce", max_force)) {
     if (max_force.size() != num_variables()) {
-      cvmodule->error("Error: Number of parameters to maxForce does not match number of colvars.");
+      return cvmodule->error("Error: Number of parameters to maxForce does not match number of colvars.\n",
+                             COLVARS_INPUT_ERROR);
     }
     for (i = 0; i < num_variables(); i++) {
       if (max_force[i] < 0.0) {

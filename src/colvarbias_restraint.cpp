@@ -347,8 +347,8 @@ int colvarbias_restraint_centers_moving::init(std::string const &conf)
   size_t i;
   if (get_keyval(conf, "targetCenters", target_centers, colvar_centers)) {
     if (target_centers.size() != num_variables()) {
-      cvmodule->error("Error: number of target centers does not match "
-                 "that of collective variables.\n", COLVARS_INPUT_ERROR);
+      return cvmodule->error("Error: number of target centers does not match "
+                             "that of collective variables.\n", COLVARS_INPUT_ERROR);
     }
     b_chg_centers = true;
     for (i = 0; i < target_centers.size(); i++) {
@@ -956,12 +956,12 @@ bool b_null_target_lower_walls = false;
   }
 
   if (target_upper_walls.size() > upper_walls.size()) {
-    cvmodule->error("At least 1 target wall was provided with no initial wall!.\n",
+    return cvmodule->error("At least 1 target wall was provided with no initial wall!.\n",
       COLVARS_INPUT_ERROR);
   }
 
     if (target_lower_walls.size() > lower_walls.size()) {
-    cvmodule->error("At least 1 target wall was provided with no initial wall!.\n",
+    return cvmodule->error("At least 1 target wall was provided with no initial wall!.\n",
       COLVARS_INPUT_ERROR);
   }
 

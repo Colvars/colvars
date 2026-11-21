@@ -896,7 +896,7 @@ int cvm::atom_group::parse_fitting_options(std::string const &group_conf) {
 
       if (is_enabled(f_ag_rotate)) {
         if (ref_pos_aos.size() != group_for_fit->size())
-          cvmodule->error("Error: the number of reference positions provided("+
+          return cvmodule->error("Error: the number of reference positions provided("+
                      cvm::to_str(ref_pos_aos.size())+
                      ") does not match the number of atoms within \""+
                      key+

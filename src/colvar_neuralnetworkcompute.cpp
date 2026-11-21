@@ -76,24 +76,28 @@ void customActivationFunction::setExpression(const std::string& expression_strin
         parsed_expression = Lepton::Parser::parse(expression);
     } catch (...) {
         cvmodule->error("Error parsing or compiling expression \"" + expression + "\".\n", COLVARS_INPUT_ERROR);
+        return;
     }
     // compile the expression
     try {
         value_evaluator = std::unique_ptr<Lepton::CompiledExpression>(new Lepton::CompiledExpression(parsed_expression.createCompiledExpression()));
     } catch (...) {
         cvmodule->error("Error compiling expression \"" + expression + "\".\n", COLVARS_INPUT_ERROR);
+        return;
     }
     // create a compiled expression for the derivative
     try {
         gradient_evaluator = std::unique_ptr<Lepton::CompiledExpression>(new Lepton::CompiledExpression(parsed_expression.differentiate(activation_input_variable).createCompiledExpression()));
     } catch (...) {
         cvmodule->error("Error creating compiled expression for variable \"" + activation_input_variable + "\".\n", COLVARS_INPUT_ERROR);
+        return;
     }
     // get the reference to the input variable in the compiled expression
     try {
         input_reference = &(value_evaluator->getVariableReference(activation_input_variable));
     } catch (...) {
         cvmodule->error("Error on getting the reference to variable \"" + activation_input_variable + "\" in the compiled expression.\n", COLVARS_INPUT_ERROR);
+        return;
     }
     // get the reference to the input variable in the compiled derivative expression
     try {
