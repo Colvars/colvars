@@ -40,10 +40,22 @@ The PDF is still built by pdflatex (`latexmk`) from the same sources.
     copied to `latexml/` in the output). On screens 50em or wider, the
     navigation menu is a sticky sidebar on the left that scrolls on its own;
     on narrower screens it stays above the content and lists only the
-    top-level entries. Colors and boxes follow the PDF (section headings,
-    keyword names, the three kinds of example blocks), plus the sans-serif
-    font and keyword-item spacing of the former tex4ht CSS. The index is laid out in columns, and
-    the "Contents" heading of the front page is styled like the sections.
+    top-level entries. The menu (20rem wide, muted colors, highlighted
+    current page, the Colvars logo above the title link, only two levels:
+    sections and subsections), the headings (semibold,
+    dark blue, muted numbers, a rule under section titles, no frames) and the
+    links (dark blue, underlined only under the cursor) follow the HTML
+    version of the NAMD User's Guide; the colors are CSS variables at the top
+    of the file. Keyword names and the three kinds of example blocks keep the
+    colors and frames of the PDF. The index has up to 4 columns (its page is
+    wider), and the "Contents", "Index" and "References" headings are styled
+    like the sections. On the front page, whose menu has no title link, the
+    logo is next to the title instead.
+  - Logo: the compact `doc/logo/colvars-logo-compact.svg` (more legible when
+    small) is the favicon (`--icon`); LaTeXML labels any favicon as PNG or
+    ICO, so the Makefile fixes its type. The full `doc/logo/colvars-logo.svg`,
+    used by the stylesheet, is copied to `logo/` in the output by the
+    Makefile.
   - `fix_index.py`: post-processing of the index (see below).
   - `make_redirect.pl`: writes the redirect pages that replace the former
     single-page manuals (see "Publishing").
@@ -80,8 +92,9 @@ locally and on a web server; `server` is used for the website.
 Pages are split at sections (or subsections) and named after their labels
 (`--splitnaming=labelrelative`, e.g. `sec_colvar.html`);
 with `--navigationtoc=context`, the menu shows the top level plus the
-ancestors, siblings and children of the current page, so it expands level by
-level as in the LaTeXML manual (these options are taken from LaTeXML's
+ancestors, siblings and children of the current page (down to subsections:
+the stylesheet hides deeper levels), so it expands level by level as in the
+LaTeXML manual (these options are taken from LaTeXML's
 `doc/makemanual`). Section labels must therefore not be duplicated by
 keyword labels (`\labelkey`) on the same heading, or the page is named after
 the keyword.

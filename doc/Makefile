@@ -85,8 +85,12 @@ LATEXML_SPLITAT = section
 # "server": links to folders (e.g. sec_colvar/), only through a web server
 # (used for the website, see "webpage" below)
 LATEXML_URLSTYLE = file
+# Colvars logo: the compact version is the favicon; the full one is shown
+# above the menu and next to the title of the front page (see the CSS)
+LATEXML_LOGO = logo/colvars-logo.svg
+LATEXML_ICON = logo/colvars-logo-compact.svg
 LATEXML_OPTS = --path=latexml --preload=colvars-latexml.sty \
-	--css=latexml/colvars-refman.css \
+	--css=latexml/colvars-refman.css --icon=$(LATEXML_ICON) \
 	$(if $(filter yes,$(LATEXML_MATHJAX)),--javascript=$(MATHJAX_URL)) \
 	--format=html5 --split --splitat=$(LATEXML_SPLITAT) \
 	--splitnaming=labelrelative --urlstyle=$(LATEXML_URLSTYLE) \
@@ -103,13 +107,17 @@ $(LATEXML_OPTS_STAMP): FORCE
 # that replace the former single-page manual (latexml/make_redirect.pl)
 html-%/index.html: colvars-refman-%.tex colvars-refman-main.tex colvars-refman.tex \
 		$(BIBTEX) colvars-code-refs.bib $(IMAGES) $(wildcard latexml/*) \
-		$(LATEXML_OPTS_STAMP) Makefile
+		$(LATEXML_LOGO) $(LATEXML_ICON) $(LATEXML_OPTS_STAMP) Makefile
 	@echo "Building $@ with release label \"${COLVARS_RELEASE}\""
 	rm -rf html-$* ; mkdir -p html-$*
 	$(LATEXMLC) $(LATEXML_OPTS) --log=html-$*/latexml.log \
 		--dbfile=html-$*/LaTeXML.db --destination=$@ $< \
 		> html-$*/latexml.out 2>&1 || (tail -20 html-$*/latexml.out; rm -f $@; false)
 	python3 latexml/fix_index.py html-$*/idx.html
+	mkdir -p html-$*/logo && cp -p $(LATEXML_LOGO) html-$*/logo/
+	@# LaTeXML labels any favicon as PNG or ICO; this one is SVG
+	find html-$* -name '*.html' -exec sed -i \
+		's|\(rel="shortcut icon" href="[^"]*\.svg" type="\)[^"]*"|\1image/svg+xml"|' {} +
 	@errors=$$(grep -cE '^(Error|Fatal):' html-$*/latexml.log) ; \
 	echo "$@: $${errors} errors," \
 		"$$(grep -cE '^Warning:' html-$*/latexml.log) warnings (see html-$*/latexml.log)" ; \
