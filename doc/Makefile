@@ -50,7 +50,10 @@ HTML = $(addsuffix /index.html,$(HTML_DIRS))
 
 IMAGES = cover-512px.jpg eulerangles-512px.png spin-tilt-scheme-512px.png
 
-BIBTEX = colvars-refman.bib
+BIBTEX = colvars-refman.bib colvars-code-refs.bib
+# Files read by colvars-refman-<engine>.tex (\input), for both PDF and HTML
+TEX_INPUTS = colvars-refman.tex colvars-refman-main.tex \
+	colvars-engine-flags.tex cv_version.tex cvscript-tcl.tex cvscript-fix-modify.tex
 
 ifeq ($(COLVARS_RELEASE),"master")
 all: pdf html doxygen
@@ -63,7 +66,7 @@ html: images $(HTML)
 latexml: html
 images: $(IMAGES)
 
-%.pdf: %.tex $(BIBTEX) colvars-refman-main.tex colvars-refman.tex Makefile
+%.pdf: %.tex $(TEX_INPUTS) $(BIBTEX) Makefile
 	@echo "Building $@ with release label \"${COLVARS_RELEASE}\"" ; \
 	latexmk -pdf $<
 ## Use the lines below if latexmk is not available (better install latexmk!)
@@ -105,8 +108,8 @@ $(LATEXML_OPTS_STAMP): FORCE
 # The build fails if LaTeXML reports errors (warnings are only counted).
 # LaTeXML.db (--dbfile) maps the LaTeX labels to pages, for the redirect pages
 # that replace the former single-page manual (latexml/make_redirect.pl)
-html-%/index.html: colvars-refman-%.tex colvars-refman-main.tex colvars-refman.tex \
-		$(BIBTEX) colvars-code-refs.bib $(IMAGES) $(wildcard latexml/*) \
+html-%/index.html: colvars-refman-%.tex $(TEX_INPUTS) \
+		$(BIBTEX) $(IMAGES) $(wildcard latexml/*) \
 		$(LATEXML_LOGO) $(LATEXML_ICON) $(LATEXML_OPTS_STAMP) Makefile
 	@echo "Building $@ with release label \"${COLVARS_RELEASE}\""
 	rm -rf html-$* ; mkdir -p html-$*
