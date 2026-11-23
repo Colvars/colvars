@@ -13,10 +13,6 @@
   \expandafter\newif\csname iflatexml\endcsname
 \fi
 
-% \ifcvhtml is true for any HTML output (LaTeXML or tex4ht)
-\newif\ifcvhtml
-\iflatexml\cvhtmltrue\fi
-\ifdefined\HCode\cvhtmltrue\fi
 \usepackage[margin=1in]{geometry}
 
 \usepackage[english]{babel}
@@ -44,7 +40,7 @@
 \usepackage{transparent}
 
 % Example code blocks
-\usepackage{xcolor} % Needed for HTML version
+\usepackage{xcolor}
 \usepackage{mdframed}
 
 \iflatexml\else % Example environments: see colvars-latexml.sty.ltxml
@@ -56,8 +52,8 @@
   \begin{mdframed}[%
       linecolor=cvexample-border-color,linewidth=2pt,%
       backgroundcolor=cvexample-background-color]
-  \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
-  \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
+  \begin{ttfamily}}{%
+  \end{ttfamily}%
   \end{mdframed}
 }
 
@@ -67,8 +63,8 @@
   \begin{mdframed}[%
       linecolor=mdexample-border-color,linewidth=2pt,%
       backgroundcolor=mdexample-background-color]
-  \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
-  \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
+  \begin{ttfamily}}{%
+  \end{ttfamily}%
   \end{mdframed}
 }
 
@@ -78,8 +74,8 @@
   \begin{mdframed}[%
       linecolor=datafileexample-border-color,linewidth=2pt,%
       backgroundcolor=datafileexample-background-color]
-  \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
-  \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
+  \begin{ttfamily}}{%
+  \end{ttfamily}%
   \end{mdframed}
 }
 \fi % \iflatexml
@@ -139,17 +135,7 @@ cv.#1(#2)
 
 \begin{document}
 
-\ifdefined\HCode
-\input{colvars-refman-css.tex}
-\fi
-
 \input{cv_version.tex}
-
-\ifdefined\HCode
-\HCode{<div id="container">
-<div class="inner">
-}
-\fi
 
 % Links to the manuals for all engines.  LaTeXML: relative links between
 % the html-<engine>/ folders, which sit next to the PDFs (both in doc/ and in
@@ -158,9 +144,8 @@ cv.#1(#2)
 \newcommand{\cvmanualurl}[1]{../html-#1/index.html}
 \newcommand{\cvmanualpdfurl}{../colvars-refman-\mdengine.pdf}
 \else
-\ifcvhtml\def\cvmanualext{html}\else\def\cvmanualext{pdf}\fi
 \newcommand{\cvmanualurl}[1]{%
-  https://colvars.github.io/\cvreleaselabel/colvars-refman-#1.\cvmanualext}
+  https://colvars.github.io/\cvreleaselabel/colvars-refman-#1.pdf}
 \fi
 \newcommand{\cvmanuallinks}{%
   Updated versions of this manual:
@@ -200,20 +185,11 @@ cv.#1(#2)
       \end{minipage}}
 %  \noindent\rule{\textwidth}{2pt}
 
-  \ifdefined\HCode
-  \HCode{<img class="cover_picture" src="cover-512px.jpg" alt="Colvars logo">}
-  \\
-  \else
   \includegraphics[width=0.9\textwidth]{cover.jpg}\\
-  \fi
   \textsf{\large \cvmanualauthors}
 
-\ifdefined\HCode
-\noindent{}(\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-\mdengine.pdf}{PDF version})
-\else
 \par
-\noindent{}(\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-\mdengine.html}{HTML version})
-\fi
+\noindent{}(\href{https://colvars.github.io/\cvreleaselabel/html-\mdengine/}{HTML version})
 
 
 
@@ -222,8 +198,6 @@ cv.#1(#2)
 
 
 \newpage
-\iflatexml\else\label{sec:toc}\fi%
-\ifdefined\HCode\HCode{<selfref>}\ref{sec:toc}\HCode{</selfref>}\fi%
 \tableofcontents
 \newpage
 
@@ -265,59 +239,23 @@ cv.#1(#2)
   \end{itemize}
 }
 
-\newcommand{\pagetoplink}{\ifdefined\HCode
-  \begin{flushright}
-    \HCode{<a href="\#sec:toc" style="text-decoration: none; background-color: white;  color: gray;">(Go to Contents)</a><br>}
-  \end{flushright}
-  \fi}
-
 \newcommand{\cvsec}[2]{%
   \newpage
-  \ifdefined\HCode
-  \pagetoplink
-  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
-  \HCode{<div class="heading">} % Use CSS, mdframed won't work for this
-  \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
-  \fi
   \hypertarget{#2}{\section{#1}}\label{#2}
-  \ifdefined\HCode
-  \HCode{</div>}
-  \else
   \end{mdframed}
-  \fi
 }
 
 \newcommand{\cvsubsec}[2]{%
-  \ifdefined\HCode
-  \pagetoplink
-  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
-  \HCode{<div class="heading">}
-  \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
-  \fi
   \hypertarget{#2}{\subsection{#1}}\label{#2}
-  \ifdefined\HCode
-  \HCode{</div>}
-  \else
   \end{mdframed}
-  \fi
 }
 
 \newcommand{\cvsubsubsec}[2]{%
-  \ifdefined\HCode
-  \pagetoplink
-  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
-  \HCode{<div class="heading">}
-  \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
-  \fi
   \hypertarget{#2}{\subsubsection{#1}}\label{#2}
-  \ifdefined\HCode
-  \HCode{</div>}
-  \else
   \end{mdframed}
-  \fi
 }
 
 
@@ -326,22 +264,13 @@ cv.#1(#2)
 
 \input{colvars-refman-main}
 
-\ifdefined\HCode
-\else
 \newpage
 \printindex
-\fi
 
 \newpage
 %\addtocontents{toc}{\contentsline {section}{References}{\thepage}}
 \bibliographystyle{unsrt}
 \bibliography{colvars-refman,colvars-code-refs}
-
-\ifdefined\HCode
-\HCode{</div>
-</div>
-}
-\fi
 
 
 \end{document}

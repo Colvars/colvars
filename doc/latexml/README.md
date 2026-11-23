@@ -1,9 +1,10 @@
-# LaTeXML-based HTML build of the Colvars manual (work in progress)
+# LaTeXML-based HTML build of the Colvars manual
 
 ## Goal
 
-Replace the tex4ht (`htlatex`) HTML build of `doc/colvars-refman-<engine>.tex`
-with [LaTeXML](https://math.nist.gov/~BMiller/LaTeXML), producing:
+The HTML manual of each engine is built from `doc/colvars-refman-<engine>.tex`
+with [LaTeXML](https://math.nist.gov/~BMiller/LaTeXML), which replaced the
+former single-page tex4ht (`htlatex`) build, producing:
 
 - **multiple pages**, split per section, instead of one large page;
 - **MathML** output (rendered natively by all major browsers since 2023);
@@ -11,8 +12,7 @@ with [LaTeXML](https://math.nist.gov/~BMiller/LaTeXML), producing:
   turned off;
 - clean semantic HTML5 that is styled with CSS.
 
-The PDF build (pdflatex) and the existing tex4ht build must keep working
-during the transition.
+The PDF is still built by pdflatex (`latexmk`) from the same sources.
 
 ## Design
 
@@ -42,40 +42,43 @@ during the transition.
     on narrower screens it stays above the content and lists only the
     top-level entries. Colors and boxes follow the PDF (section headings,
     keyword names, the three kinds of example blocks), plus the sans-serif
-    font and keyword-item spacing of the tex4ht CSS (`colvars-refman-css.tex`
-    and the `html_doc_pages` branch).
+    font and keyword-item spacing of the former tex4ht CSS. The index is laid out in columns, and
+    the "Contents" heading of the front page is styled like the sections.
+  - `fix_index.py`: post-processing of the index (see below).
+  - `make_redirect.pl`: writes the redirect pages that replace the former
+    single-page manuals (see "Publishing").
   - `mdframed.sty.ltxml`: a minimal stub. Without it, LaTeXML loads the raw
     package, which pulls in xparse and the whole expl3 kernel and hits the
     600 s timeout.
-- **`colvars-refman.tex`** defines two conditionals near the top:
-  - `\iflatexml`: true only under LaTeXML. The LaTeX definitions of the
-    macros above are wrapped in `\iflatexml\else ... \fi`. **Keep the
-    argument lists in sync with `colvars-latexml.sty.ltxml`.**
-  - `\ifcvhtml`: true for any HTML output (LaTeXML or tex4ht), for example
-    to choose PNG instead of PDF figures and `.html` instead of `.pdf` links.
-    Use `\ifdefined\HCode` only for tex4ht-specific raw-HTML code.
+- **`colvars-refman.tex`** defines the conditional `\iflatexml` near the
+  top, true only under LaTeXML:
+  - The LaTeX definitions of the macros above are wrapped in
+    `\iflatexml\else ... \fi`. **Keep the argument lists in sync with
+    `colvars-latexml.sty.ltxml`.**
+  - It also selects HTML-specific content, e.g. PNG instead of PDF figures
+    (`*-512px.png`) and relative links between the HTML manuals.
   - Under LaTeXML, the title page is replaced by `\title`/`\author`/
     `\maketitle`. The links to the other engines' manuals were factored into
-    `\cvmanuallinks` (shared by all builds).
+    `\cvmanuallinks` (shared by the PDF and the HTML).
 
 ## Building
 
-From `doc/`:
+From `doc/`, `make` builds the PDFs and the HTML; for the HTML only:
 
 ```
-make latexml                          # all engines (or RELEASE_ENGINE=namd)
-make latexml LATEXML_MATHJAX=no       # native MathML, no JavaScript
-make latexml LATEXML_SPLITAT=subsection  # more, shorter pages (default: section)
-make latexml LATEXML_URLSTYLE=server  # links to folders (web server only)
+make html                          # all engines (or RELEASE_ENGINE=namd)
+make html LATEXML_MATHJAX=no       # native MathML, no JavaScript
+make html LATEXML_SPLITAT=subsection  # more, shorter pages (default: section)
+make html LATEXML_URLSTYLE=server  # links to folders (web server only)
 ```
 
-Changing these variables does not trigger a rebuild: delete `html-<engine>`
-first. The default `LATEXML_URLSTYLE=file` (links include `index.html`) works
-both locally and on a web server; LaTeXML's own default, `server`, does not
-work for local browsing.
+(`make latexml` is an alias of `make html`.) The LaTeXML options are saved in
+`latexml-options.txt`, so changing these variables rebuilds the HTML. The
+default `LATEXML_URLSTYLE=file` (links include `index.html`) works both
+locally and on a web server; `server` is used for the website.
 
 Pages are split at sections (or subsections) and named after their labels
-(`--splitnaming=labelrelative`, e.g. `sec_colvar/sec_cvc_distances.html`);
+(`--splitnaming=labelrelative`, e.g. `sec_colvar.html`);
 with `--navigationtoc=context`, the menu shows the top level plus the
 ancestors, siblings and children of the current page, so it expands level by
 level as in the LaTeXML manual (these options are taken from LaTeXML's
@@ -85,28 +88,74 @@ the keyword.
 
 Output goes to `html-<engine>/index.html`, with the LaTeXML log in
 `html-<engine>/latexml.log`; the build prints its count of errors and
-warnings. A build takes about 80 s per engine, mostly spent processing
-the `.bib` files. After LaTeXML, `fix_index.py` rewrites `idx.html` so that
-each index entry links to its keyword directly, instead of to the
+warnings, and **fails if there are errors** (so that CI catches them).
+`html-<engine>/LaTeXML.db` (`--dbfile`) records where each LaTeX label ended
+up, for the redirect pages. After LaTeXML, `fix_index.py` rewrites `idx.html`
+so that each index entry links to its keyword directly, instead of to the
 "Nth item" label that LaTeXML generates.
 
-With `LATEXML_MATHJAX=yes` (the default), every page loads MathJax
+A build takes about 80 s per engine (`make -j` builds the engines in
+parallel): about 30 s to digest the TeX sources, 25 s to build the document,
+9 s to parse the math and 7 s to write the pages. The bibliography is not the
+bottleneck: reading BibTeX's `.bbl` instead of the `.bib` files saves only
+about 4 s.
+
+With `LATEXML_MATHJAX=yes` (the default), every page loads MathJax 3.2.2
 (MathML input) from the jsDelivr CDN. MathJax re-typesets LaTeXML's MathML
 with better spacing and fonts than the browsers' native MathML rendering.
 Without it, the pages need no JavaScript and the math is shown immediately.
+The version is pinned in `MATHJAX_URL`, so that published pages don't change
+on their own.
 
-## Status (2026-11-07)
+## Publishing
 
-- Last run (NAMD manual): **0 errors, 2 warnings**, both from the
-  multi-line `aligned` equation near line 5407 of `colvars-refman-main.tex`
-  (`\left.`/`\right.` split across lines; it still renders). Run time is
-  about 80 s.
-- pdflatex builds correctly (169 pages, no undefined references).
-  htlatex stops at natbib's "Bibliography not compatible with author-year
-  citations" prompt when run non-interactively. The committed (HEAD)
-  sources do the same, so this is not a regression.
-- Output (NAMD): 71 pages, split at subsections; the largest content page
-  is ~120 kB (rotation components).
+`make install` (with `COLVARS_WEBSITE_TREE` set, see `doc/README.md`)
+rebuilds the HTML with `LATEXML_URLSTYLE=server` if needed, then for each
+engine:
+
+- copies `html-<engine>/` to the release folder of the website
+  (`<release>/html-<engine>/`, next to the PDFs, as expected by the relative
+  links of `\cvmanuallinks`), after removing the previous copy (page names
+  follow the section labels, so pages can disappear), and without LaTeXML's
+  cache, database and logs;
+- replaces the former single-page manual `<release>/colvars-refman-<engine>.html`
+  with a redirect page, and removes its CSS. On `master`, the same is done for
+  the legacy `colvars-refman-<engine>/colvars-refman-<engine>.html` pages,
+  which redirect to `master/html-<engine>/`.
+
+The redirect pages keep old links working, such as
+`colvars-refman-vmd.html#sec:dashboard`, which are hard-coded in
+`vmd/cv_dashboard/*.tcl`, `vmd/cv_dashboard/README.md`,
+`colvartools/README.md`, and in released NAMD and VMD manuals
+(`namd/ug/ug_colvars.tex`, `vmd/doc/ug_colvars.tex`). `make_redirect.pl`
+reads `LaTeXML.db` and writes a page with a map from each LaTeX label to its
+page and fragment, and a few lines of JavaScript that redirect according to
+`location.hash`; links without a fragment, or with an unknown one, go to the
+front page (also without JavaScript). LaTeXML's ids are not always the labels:
+e.g. `sec:cvc_distance` and `colvar|distance` label the same heading, whose
+id is `colvar|distance`. Of the 363 labels of the former NAMD manual, 360
+redirect to their exact location; the other 3 no longer exist (`sec:toc`,
+the label removed below, and a tex4ht artifact).
+
+The release folders of older branches (e.g. `namd-3.0`) keep their
+single-page manuals until their documentation is rebuilt.
+
+## Status (2026-11-23)
+
+- All engines: **0 errors, 2 warnings**, both from the multi-line `aligned`
+  equation near line 5407 of `colvars-refman-main.tex` (`\left.`/`\right.`
+  split across lines; it still renders). No broken internal links (checked
+  with a link checker over all pages). Engine-specific sections are present
+  (command-line interface for LAMMPS/NAMD/VMD, dashboard for VMD).
+- pdflatex builds correctly (169 pages, no undefined references). The PDF's
+  "HTML version" link points to `<release>/html-<engine>/`.
+- Output (NAMD): 12 pages, split at sections. The largest are
+  `sec_colvar.html` (~600 kB) and `sec_colvarbias.html` (~450 kB); this is
+  fine (`LATEXML_SPLITAT=subsection` gives shorter pages).
+- The index (488 entries for NAMD) links each keyword to its description;
+  the bibliography has the same 55 entries as the PDF. Citations are
+  author-year ("Coutsias et al. (2004)"), with "Cited by" back-links in the
+  bibliography; the PDF is numeric (`unsrt`).
 - Source fixes made along the way (they also apply to the PDF):
   - closed the `itemize` before `\cvsubsubsec{Histogramming vector
     variables}`, which was opened before it and closed only after it;
@@ -125,46 +174,22 @@ Without it, the pages need no JavaScript and the math is shown immediately.
   (see `\cv@dollar` in the binding); other math inside examples is kept.
   Curly quotes are turned back into ASCII quotes
   (`cv_example_straight_quotes`), e.g. for the Python example.
-- The fixes in `postprocess_html.sh` (ligatures, `¡`/`¿`, `∖`) are not
-  needed with LaTeXML: none of these characters appear in the output.
+- The tex4ht build was removed with its post-processing scripts
+  (`postprocess_html.sh`, `fix_mathml.py`, `remove_htmltags.py`,
+  `html5mjlatex.cfg`): their fixes (ligatures, `¡`/`¿`, `∖`) are not needed
+  with LaTeXML. The tex4ht-specific code was also removed from the sources
+  (`\HCode` blocks, `\ifcvhtml`, `colvars-refman-css.tex`, `\pagetoplink`).
+- CI: the doc jobs (`build-doc` in `.github/workflows/test-library.yml`,
+  `update-doc` in `version-maintenance.yml`) run in
+  `ghcr.io/colvars/devel-containers:CentOS9-doc-x86_64`
+  (`devel-tools/containers/CentOS9-doc-x86_64.Dockerfile`): CentOS Stream 9
+  like the test containers, TeX Live 2025 (frozen) with a curated list of
+  packages, LaTeXML 0.8.8.
 
 ## Remaining work
 
-1. Check the rest of the output (index `idx.html`, bibliography
-   `bib.html`, figures) and decide whether S4/S6 should be split further.
-   The Makefile target must depend on `images` (`*-512px.png`).
-2. Stylesheet: done for layout, headings, keywords and examples. Still to
-   check: index and bibliography pages, title page/cover image, tables.
-   Citations come out author-year ("Phillips et al. (2020)") while the PDF
-   is numeric (`unsrt`).
-3. **Keep old URLs working.** Fragment links such as
-   `colvars-refman-vmd.html#sec:dashboard` or `...#sec:colvar` are hard-coded
-   in `vmd/cv_dashboard/*.tcl`, `vmd/cv_dashboard/README.md`,
-   `colvartools/README.md`, and in the already released NAMD and VMD
-   manuals (`namd/ug/ug_colvars.tex`, `vmd/doc/ug_colvars.tex`). Plan: keep
-   a small `colvars-refman-<engine>.html` page with a generated JSON map from
-   label to `page#id`, and a few lines of JS that redirect according to
-   `location.hash`. LaTeXML generates its own ids (`S3.SS2`, ...) and
-   sanitizes labels (`:` and `|` are not valid in XML ids), so the map must
-   be built from LaTeXML's output (its intermediate XML keeps the
-   `labels="LABEL:..."` attributes). Page file names already come from the
-   section labels (`--splitnaming=labelrelative`), which helps.
-4. Makefile: the `latexml` target exists. Still to do: replace the `html`
-   (htlatex) target and `postprocess_html.sh` with it, and update
-   `webpage`/`install` / `update_website.sh` (don't copy `LaTeXML.cache`,
-   `latexml.log`, `latexml.out`).
-5. Possibly speed up the bibliography step (e.g. pass a pre-converted
-   bibliography, or only the cited entries).
-6. All engines build (`make -j5 latexml`, ~90 s): 0 errors, the same 2 math
-   warnings, and no broken internal links (checked with a link checker
-   over all pages). Engine-specific sections are present (command-line
-   interface for LAMMPS/NAMD/VMD, dashboard for VMD). The links to the other
-   engines' manuals (`\cvmanuallinks`) are relative under LaTeXML:
-   `../html-<engine>/index.html`, and `../colvars-refman-<engine>.pdf` for
-   the PDF. They work in `doc/` and on the website if the `html-<engine>/`
-   folders are installed next to the PDFs in the release folder. The PDF's
-   own "HTML version" link (and the tex4ht build) still use the old
-   single-page URLs: switch them when publishing (item 4).
+1. Push the `CentOS9-doc-x86_64` image to GHCR and check the `build-doc` job
+   on a PR; after the merge, remove the `Fedora45-devel-x86_64` image tag.
 
 ## LaTeXML 0.8.8 pitfalls found so far
 
@@ -182,6 +207,9 @@ Without it, the pages need no JavaScript and the math is shown immediately.
 
 ## Installing LaTeXML
 
+The simplest is to use the CI container (see `doc/README.md`), which has
+LaTeXML and the TeX Live packages needed by the manual. Otherwise:
+
 - Debian/Ubuntu/Mint: `sudo apt install latexml`. If that version is older
   than 0.8.8, install it as a user instead:
   `cpanm -l ~/perl5 LaTeXML` (get `cpanm` from https://cpanmin.us). Install
@@ -190,6 +218,5 @@ Without it, the pages need no JavaScript and the math is shown immediately.
   `libimage-magick-perl`. Then put
   `eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib=$HOME/perl5)"` in
   `~/.bashrc`.
-- Mageia does not package LaTeXML; the user-level cpanm install works, with
-  `perl-JSON-XS`, `perl-Text-Unidecode` and `perl-Image-Magick` from urpmi
-  (`perl-devel` is missing headers, so JSON::XS can't be built from CPAN).
+- CentOS/RHEL 9: see `devel-tools/containers/CentOS9-doc-x86_64.Dockerfile`
+  (compiled dependencies from EPEL/CRB, LaTeXML from CPAN).
