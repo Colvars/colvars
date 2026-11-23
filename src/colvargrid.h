@@ -1124,10 +1124,22 @@ public:
   }
 
 
-  /// \brief Return the log-gradient from finite differences
-  /// on the *same* grid for dimension n
-  /// Order-1 centered difference, or order-2 difference on grid edges.
-  /// Returns zero if the central bin or either neighbor is zero (gap).
+  /// \brief Return the log-gradient d ln(A + offset) / dx_n from finite
+  /// differences on the *same* grid for dimension n
+  ///
+  /// Uses the centered difference (ln A(+1) - ln A(-1)) / (2 width) in
+  /// periodic dimensions and interior bins, and a one-sided second-order
+  /// difference over bins 0, +1, +2 (or 0, -1, -2) at non-periodic edges.
+  ///
+  /// Returns zero if any of the three bins of the stencil is zero, i.e.
+  /// it never differentiates across a gap. This includes the central bin
+  /// even though its value does not enter the centered formula.
+  /// Note: before the scalar and count grids were unified, the scalar-grid
+  /// version only checked the two neighbors in the centered case; this
+  /// made no difference to callers, which multiply the result by the
+  /// central-bin value (e.g. the CZAR estimator in colvarbias_abf).
+  /// The zero test is exact: with real-valued data, a product of very
+  /// small values that underflows to zero is also treated as a gap.
   inline cvm::real log_gradient_finite_diff(const std::vector<int> &ix0,
                                             int n = 0, int offset = 0)
   {
