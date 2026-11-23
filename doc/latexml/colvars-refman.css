@@ -173,3 +173,41 @@ pre.cv_example_datafile {
 .ltx_page_footer a[rel~="index"] {
   margin: 0 0.75em;
 }
+
+/*======================================================================
+  Front page: table of contents */
+
+/* No vertical space for \newpage/\clearpage (e.g. before the contents) */
+.ltx_pagination.ltx_role_newpage {
+  display: none;
+}
+
+/* "Contents" heading, styled like the section headings */
+.ltx_title_contents {
+  font-size: 1.5em;
+  margin: 1em 0 0.5em 0;
+  background-color: rgb(214, 214, 214);
+  border: 2px solid #000;
+  padding: 0.25em 0.5em;
+}
+
+/*======================================================================
+  Index */
+
+/* Keyword names (monospace) as large as plain-text entries: browsers
+   shrink the generic "monospace" font unless it is given twice */
+.ltx_index .ltx_font_typewriter {
+  font-family: monospace, monospace;
+  font-size: 0.9em;
+}
+
+/* Several columns on wide screens; keep each entry with its sub-entries */
+.ltx_index > .ltx_indexlist {
+  columns: 18em;
+  column-gap: 2em;
+  padding-left: 0;
+}
+
+.ltx_index > .ltx_indexlist > .ltx_indexentry {
+  break-inside: avoid;
+}
