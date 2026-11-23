@@ -17,7 +17,6 @@
 
 #include "colvarbias.h"
 
-class colvar_grid_scalar;
 class colvar_grid_gradient;
 
 
