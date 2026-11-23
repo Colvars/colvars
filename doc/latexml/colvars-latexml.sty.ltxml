@@ -18,7 +18,6 @@ RequirePackage('latexml');
 DefMacro('\cvsec{}{}',       '\section{#1}\label{#2}');
 DefMacro('\cvsubsec{}{}',    '\subsection{#1}\label{#2}');
 DefMacro('\cvsubsubsec{}{}', '\subsubsection{#1}\label{#2}');
-DefMacro('\pagetoplink',     '');
 
 #======================================================================
 # Keyword documentation.
