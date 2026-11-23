@@ -133,6 +133,11 @@ jobs:
           print([Platform.getPlatform(i).getName() for i in range(Platform.getNumPlatforms())])
           PY
 
+      - name: Test OpenMM coordinate units and integration timestep
+        run: |
+          pixi run --manifest-path openmm/pixi.toml \
+            python openmm/tests/test_units_and_timestep.py
+
   namd-main-arm64:
     name: NAMD (main ARM64)
     uses: ./.github/workflows/backend-template.yml

@@ -188,8 +188,19 @@ protected:
   cvm::real ext_force_k = 0.0;
   /// Friction coefficient for Langevin extended dynamics
   cvm::real ext_gamma = 0.0;
+  /// Equilibrium momentum variance (mass times kBT)
+  cvm::real ext_momentum_variance = 0.0;
+  /// Effective time step for the cached Langevin coefficients
+  cvm::real ext_langevin_dt = 0.0;
+  /// Velocity decay factor for Langevin extended dynamics
+  cvm::real ext_langevin_decay = 1.0;
   /// Amplitude of Gaussian white noise for Langevin extended dynamics
   cvm::real ext_sigma = 0.0;
+  /// Force and Gaussian deviate used in the most recent extended step (scalar DOF).
+  cvm::real ext_step_force = 0.0;
+  cvm::real ext_step_noise = 0.0;
+
+  void integrate_extended_Lagrangian(cvm::real dt);
 
   /// \brief Applied force on extended DOF, for output (unscaled if using MTS)
   colvarvalue fr;
@@ -359,6 +370,10 @@ public:
 
   /// \brief Integrate equations of motion of extended Lagrangian coordinate if needed
   void update_extended_Lagrangian();
+
+  /// \brief Repeat the last geometric extended step after a backend timestep change.
+  /// Call only for a step whose forces and biases are still valid. Returns the energy correction.
+  cvm::real retime_extended_Lagrangian();
 
   /// \brief Communicate forces (previously calculated in
   /// colvar::update()) to the external degrees of freedom

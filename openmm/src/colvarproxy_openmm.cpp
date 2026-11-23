@@ -1,13 +1,17 @@
 #include "colvarproxy_openmm.h"
 
+#include "openmm/CompoundIntegrator.h"
 #include "openmm/Context.h"
 #include "openmm/CustomIntegrator.h"
 #include "openmm/Force.h"
 #include "openmm/Integrator.h"
 #include "openmm/OpenMMException.h"
 #include "openmm/System.h"
+#include "openmm/VariableLangevinIntegrator.h"
+#include "openmm/VariableVerletIntegrator.h"
 #include "openmm/internal/ContextImpl.h"
 
+#include "colvar.h"
 #include "colvaratoms.h"
 #include "colvarmodule.h"
 #include "colvarproxy_openmm_version.h"
@@ -876,7 +880,10 @@ int colvarproxy_openmm::load_coords_pdb(char const* filename,
         }
 
         if (useThisAtom) {
-            selectedPositions.push_back(pdb_position_angstrom(line));
+            const auto pos = pdb_position_angstrom(line);
+            selectedPositions.emplace_back(angstrom_to_internal(pos.x),
+                                           angstrom_to_internal(pos.y),
+                                           angstrom_to_internal(pos.z));
         }
         ++pdbAtomIndex;
     }
@@ -973,6 +980,26 @@ double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec
     if (!isInitialized_) {
         initializeColvars();
     }
+    if (cvmodule->get_error() != COLVARS_OK) {
+        throw OpenMMException(format_colvars_error(get_error_msgs()));
+    }
+
+    // A CompoundIntegrator can switch to an adaptive integrator between calls.
+    const Integrator* integrator = &context.getIntegrator();
+    while (const auto* compound = dynamic_cast<const CompoundIntegrator*>(integrator)) {
+        integrator = &compound->getIntegrator(compound->getCurrentIntegrator());
+    }
+    if (dynamic_cast<const VariableLangevinIntegrator*>(integrator) != nullptr ||
+        dynamic_cast<const VariableVerletIntegrator*>(integrator) != nullptr) {
+        // These integrators determine the new step size only after computing forces.
+        const auto& colvars = *cvmodule->variables();
+        if (std::any_of(colvars.begin(), colvars.end(), [](const colvar* cv) {
+                return cv->is_enabled(colvardeps::f_cv_extended_Lagrangian);
+            })) {
+            throw OpenMMException("Colvars extended-Lagrangian dynamics require a step size known "
+                                  "at force evaluation. OpenMM adaptive integrators are not supported.");
+        }
+    }
 
     if (currentContext_ != &context) {
         lastLambdaWritebackStep_ = -1;
@@ -998,14 +1025,52 @@ double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec
                                            lambdaValue,
                                            tabfAlphaValue,
                                            requestedPositions);
-    if (canUseCache && cacheMatches(openmmStep,
-                                    usesPbc,
-                                    boxA,
-                                    boxB,
-                                    boxC,
-                                    lambdaValue,
-                                    tabfAlphaValue,
-                                    requestedPositions)) {
+    const bool cacheHit = canUseCache && cacheMatches(openmmStep, usesPbc, boxA, boxB, boxC,
+                                                     lambdaValue, tabfAlphaValue, requestedPositions);
+    const double timestepFs = 1000.0 * integrator->getStepSize();
+    const bool sameEvaluatedStep = stepMappingInitialized_ &&
+        openmmStep - openmmInitialStep_ == cvmodule->step_absolute() - colvarsInitialStep_;
+    if (sameEvaluatedStep && timestepFs != lastIntegrationTimestepFs_) {
+        // Check independently of cache equality: changed positions can cause a miss.
+        // A TABF readback of the preceding step must never replay that completed step.
+        const bool canReplay = cacheHit && cachedOpenmmStep_ == openmmStep;
+        const auto& colvars = *cvmodule->variables();
+        bool hasActiveExtendedCoordinate = false;
+        for (const auto* cv : colvars) {
+            if (!cv->is_enabled(colvardeps::f_cv_active) ||
+                !cv->is_enabled(colvardeps::f_cv_extended_Lagrangian)) {
+                continue;
+            }
+            hasActiveExtendedCoordinate = true;
+            if (cv->is_enabled(colvardeps::f_cv_external)) {
+                throw OpenMMException("Cannot change the OpenMM step size after evaluating Colvars "
+                                      "on the same step with an extended external coordinate.");
+            }
+        }
+        if (!canReplay && hasActiveExtendedCoordinate) {
+            throw OpenMMException("Cannot change the OpenMM step size after advancing an extended "
+                                  "coordinate on the same step without reusing the previous force evaluation.");
+        }
+        if (canReplay) {
+            // Reuse the evaluated forces and random draw rather than updating biases again.
+            set_integration_timestep(timestepFs);
+            cvm::real energyCorrection = 0.0;
+            try {
+                for (auto* cv : colvars) {
+                    energyCorrection += cv->retime_extended_Lagrangian();
+                }
+                if (cvmodule->get_error() != COLVARS_OK) {
+                    throw OpenMMException(format_colvars_error(get_error_msgs()));
+                }
+            } catch (...) {
+                invalidateCache();
+                throw;
+            }
+            cachedBiasEnergy_ += energyCorrection;
+            lastIntegrationTimestepFs_ = timestepFs;
+        }
+    }
+    if (cacheHit) {
         biasEnergy_ = cachedBiasEnergy_;
         auto& appliedForces = *(modify_atom_applied_forces());
         appliedForces = cachedAppliedForces_;

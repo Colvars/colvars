@@ -10,6 +10,7 @@
 #include <list>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 
@@ -774,12 +775,11 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     if (ext_gamma != 0.0) {
       enable(f_cv_Langevin);
       cvmodule->cite_feature("BAOA integrator");
-      ext_gamma *= 1.0e-3; // correct as long as input is required in ps-1 and cvmodule->dt() is in fs
-      // Adjust Langevin sigma for slow time step if time_step_factor != 1
-      // Eq. (6a) in https://doi.org/10.1021/acs.jctc.2c00585
-      ext_sigma = cvm::sqrt((1.0 - cvm::exp(-2.0 * ext_gamma * cvmodule->dt() * cvm::real(time_step_factor)))
-                             * ext_mass * proxy->boltzmann() * temp);
-    } else {
+      ext_gamma *= 1.0e-3; // Convert ps^-1 to fs^-1.
+      ext_momentum_variance = ext_mass * proxy->boltzmann() * temp;
+      // Invalidate the cached coefficients if this colvar is reconfigured.
+      ext_langevin_dt = 0.0;
+      ext_langevin_decay = 1.0;
       ext_sigma = 0.0;
     }
 
@@ -2027,9 +2027,6 @@ void colvar::update_extended_Lagrangian()
     }
   }
 
-  // Integrate with slow timestep (if time_step_factor != 1)
-  cvm::real dt = cvmodule->dt() * cvm::real(time_step_factor);
-
   // Force acting on the extended variable
   colvarvalue f_ext(fr.type());
   f_ext.reset();
@@ -2083,11 +2080,41 @@ void colvar::update_extended_Lagrangian()
     // communicated to biases at the next timestep
   }
 
-  // backup in case we need to revert this integration timestep
-  // if the same MD timestep is re-run
+  // Save the inputs to this integration step so it can be replayed without
+  // changing the random stream or accumulating biases again.
   prev_x_ext = x_ext;
   prev_v_ext = v_ext;
+  ext_step_force = f_ext.real_value;
+  if (is_enabled(f_cv_Langevin)) {
+    ext_step_noise = cvmodule->proxy->rand_gaussian();
+  }
+  // Integrate with the slow timestep if time_step_factor != 1.
+  integrate_extended_Lagrangian(cvmodule->dt() * cvm::real(time_step_factor));
 
+  if (is_enabled(f_cv_external)) {
+    // Colvar value is constrained to the extended value
+    x = x_ext;
+    cvcs[0]->set_value(x_ext);
+  }
+}
+
+
+cvm::real colvar::retime_extended_Lagrangian()
+{
+  if (!is_enabled(f_cv_active) || !is_enabled(f_cv_extended_Lagrangian) ||
+      is_enabled(f_cv_external)) {
+    return 0.0;
+  }
+  const cvm::real old_energy = kinetic_energy + potential_energy;
+  x_ext = prev_x_ext;
+  v_ext = prev_v_ext;
+  integrate_extended_Lagrangian(cvmodule->dt() * cvm::real(time_step_factor));
+  return (kinetic_energy + potential_energy) - old_energy;
+}
+
+
+void colvar::integrate_extended_Lagrangian(cvm::real dt)
+{
   // BAOA (GSD) integrator as formulated in https://doi.org/10.1021/acs.jctc.2c00585
   // starting from x_t, f_t, v_(t-1/2)
   // Variation: the velocity step is split in two to estimate the kinetic energy at time t
@@ -2096,7 +2123,8 @@ void colvar::update_extended_Lagrangian()
 
   // [B] Eq. (10a) split into two half-steps
   // would reduce to leapfrog when gamma = 0 if this was the reported velocity
-  v_ext  += 0.5 * dt * f_ext / ext_mass;
+  const cvm::real half_kick = 0.5 * dt * ext_step_force / ext_mass;
+  v_ext += half_kick;
 
   // Kinetic energy at t
   kinetic_energy = 0.5 * ext_mass * v_ext * v_ext;
@@ -2107,7 +2135,7 @@ void colvar::update_extended_Lagrangian()
   // Total energy will lag behind position by one timestep
   // (current kinetic energy is not accessible before the next force calculation)
 
-  v_ext  += 0.5 * dt * f_ext / ext_mass;
+  v_ext += half_kick;
   // Final v_ext lags behind x_ext by half a timestep
 
   // [A] Half step in position (10b)
@@ -2115,10 +2143,15 @@ void colvar::update_extended_Lagrangian()
 
   // [O] leap to v_(i+1/2) (10c)
   if (is_enabled(f_cv_Langevin)) {
-    colvarvalue rnd(x);
-    rnd.set_random();
-    // ext_sigma has been computed at init time according to (10c)
-    v_ext = cvm::exp(- 1.0 * dt * ext_gamma) * v_ext + ext_sigma * rnd / ext_mass;
+    // Use the same effective step as the rest of BAOA, including timeStepFactor.
+    // Some backends only know the actual step after the configuration is read.
+    if (dt != ext_langevin_dt) {
+      const cvm::real exponent = -dt * ext_gamma;
+      ext_langevin_decay = cvm::exp(exponent);
+      ext_sigma = cvm::sqrt(-std::expm1(2.0 * exponent) * ext_momentum_variance);
+      ext_langevin_dt = dt;
+    }
+    v_ext = ext_langevin_decay * v_ext + colvarvalue(ext_sigma * ext_step_noise / ext_mass);
   }
   // [A] Second half step in position (10d)
   x_ext  += dt * v_ext / 2.0;
@@ -2138,12 +2171,6 @@ void colvar::update_extended_Lagrangian()
 
   x_ext.apply_constraints();
   this->wrap(x_ext);
-
-  if (is_enabled(f_cv_external)) {
-    // Colvar value is constrained to the extended value
-    x = x_ext;
-    cvcs[0]->set_value(x_ext);
-  }
 }
 
 
