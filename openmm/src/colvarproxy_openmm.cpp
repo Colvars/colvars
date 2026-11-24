@@ -876,7 +876,10 @@ int colvarproxy_openmm::load_coords_pdb(char const* filename,
         }
 
         if (useThisAtom) {
-            selectedPositions.push_back(pdb_position_angstrom(line));
+            const auto pos = pdb_position_angstrom(line);
+            selectedPositions.emplace_back(angstrom_to_internal(pos.x),
+                                           angstrom_to_internal(pos.y),
+                                           angstrom_to_internal(pos.z));
         }
         ++pdbAtomIndex;
     }
