@@ -583,7 +583,9 @@ int colvarbias_abf::replica_share() {
 
   size_t samp_start = gradients_n * sizeof(cvm::real);
   int msg_total = samples_n * sizeof(size_t) + samp_start;
-  char* msg_data = new char[msg_total];
+  // Freed automatically on all return paths
+  std::vector<char> msg_buffer(msg_total);
+  char *msg_data = msg_buffer.data();
 
   if (cvmodule->proxy->replica_index() == 0) {
     int p;
@@ -641,7 +643,6 @@ int colvarbias_abf::replica_share() {
   // share 2 when other replicas haven't finished share 1.
   proxy->replica_comm_barrier();
   // Done syncing the replicas.
-  delete[] msg_data;
 
   // Copy the current gradient and count values into last.
   last_gradients->copy_grid(*gradients);
@@ -675,7 +676,9 @@ int colvarbias_abf::replica_share_CZAR() {
 
   size_t samp_start = gradients_n*sizeof(cvm::real);
   int msg_total = samples_n*sizeof(size_t) + samp_start;
-  char* msg_data = new char[msg_total];
+  // Freed automatically on all return paths
+  std::vector<char> msg_buffer(msg_total);
+  char *msg_data = msg_buffer.data();
 
   if (cvmodule->proxy->replica_index() == 0) {
      if (!global_z_samples) {
@@ -724,7 +727,6 @@ int colvarbias_abf::replica_share_CZAR() {
   // share 2 when other replicas haven't finished share 1.
   proxy->replica_comm_barrier();
   // Done syncing the replicas.
-  delete[] msg_data;
 
   return COLVARS_OK;
 }
