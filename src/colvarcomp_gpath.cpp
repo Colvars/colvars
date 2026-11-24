@@ -80,7 +80,9 @@ int colvar::CartesianBasedPath::init(std::string const &conf)
         } else {
             // parse a group of atoms for fitting
             std::string fitting_group_name = std::string("fittingAtoms") + cvm::to_str(i_frame);
-            cvm::atom_group* tmp_fitting_atoms = new cvm::atom_group(fitting_group_name.c_str(), cvmodule);
+            // Owned here until handed to tmp_atoms, so that it is freed if parsing throws
+            std::unique_ptr<cvm::atom_group> tmp_fitting_atoms(
+                new cvm::atom_group(fitting_group_name.c_str(), cvmodule));
             tmp_fitting_atoms->parse(fitting_conf);
             tmp_fitting_atoms->disable(f_ag_scalable);
             tmp_fitting_atoms->fit_gradients.assign(3 * tmp_fitting_atoms->size(), 0);
@@ -88,7 +90,7 @@ int colvar::CartesianBasedPath::init(std::string const &conf)
             std::string reference_position_filename;
             get_keyval(conf, reference_position_file_lookup.c_str(), reference_position_filename, std::string(""));
             std::vector<cvm::atom_pos> reference_fitting_position(tmp_fitting_atoms->size());
-            cvmodule->load_coords(reference_position_filename.c_str(), &reference_fitting_position, tmp_fitting_atoms, reference_column, reference_column_value);
+            cvmodule->load_coords(reference_position_filename.c_str(), &reference_fitting_position, tmp_fitting_atoms.get(), reference_column, reference_column_value);
             // setup the atom group for calculating
             tmp_atoms->enable(f_ag_center);
             tmp_atoms->enable(f_ag_rotate);
@@ -98,7 +100,7 @@ int colvar::CartesianBasedPath::init(std::string const &conf)
             tmp_atoms->center_ref_pos();
             tmp_atoms->enable(f_ag_fit_gradients);
             tmp_atoms->enable(f_ag_fitting_group);
-            tmp_atoms->fitting_group = tmp_fitting_atoms;
+            tmp_atoms->fitting_group = tmp_fitting_atoms.release();
             reference_fitting_frames.push_back(reference_fitting_position);
         }
         tmp_atoms->setup_rotation_derivative();
