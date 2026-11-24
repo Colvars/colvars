@@ -133,7 +133,7 @@ colvar_grid_scalar::colvar_grid_scalar(colvarmodule* cvmodule_in)
 {}
 
 colvar_grid_scalar::colvar_grid_scalar(colvarmodule* cvmodule_in, colvar_grid_scalar const &g)
-  : colvar_grid<cvm::real>(g), samples(NULL)
+   : colvar_grid<cvm::real>(cvmodule_in, g), samples(NULL)
 {
 }
 
