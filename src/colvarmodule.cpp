@@ -2282,7 +2282,7 @@ int colvarmodule::read_index_file(char const *filename)
   if (!is) {
     return COLVARS_FILE_ERROR;
   } else {
-    index_file_names.push_back(std::string(filename));
+    index_file_names.emplace_back(filename);
   }
 
   while (is.good()) {

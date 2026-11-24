@@ -1149,9 +1149,9 @@ int colvar::parse_analysis(std::string const &conf)
 
 int colvar::init_dependencies() {
   size_t i;
-  if (features().size() == 0) {
+  if (colvar::features().size() == 0) {
     for (i = 0; i < f_cv_ntot; i++) {
-      modify_features().push_back(new feature);
+      colvar::modify_features().push_back(new feature);
     }
 
     init_feature(f_cv_active, "active", f_type_dynamic);
@@ -1290,7 +1290,7 @@ int colvar::init_dependencies() {
   // Initialize feature_states for each instance
   feature_states.reserve(f_cv_ntot);
   for (i = feature_states.size(); i < f_cv_ntot; i++) {
-    feature_states.push_back(feature_state(true, false));
+    feature_states.emplace_back(true, false);
     // Most features are available, so we set them so
     // and list exceptions below
    }
@@ -2178,8 +2178,8 @@ void colvar::communicate_forces()
     func_grads.reserve(cvcs.size());
     for (i = 0; i < cvcs.size(); i++) {
       if (!cvcs[i]->is_enabled()) continue;
-      func_grads.push_back(cvm::matrix2d<cvm::real> (x.size(),
-                                                     cvcs[i]->value().size()));
+      func_grads.emplace_back(x.size(),
+                                                     cvcs[i]->value().size());
     }
     int res = cvmodule->proxy->run_colvar_gradient_callback(scripted_function, sorted_cvc_values, func_grads);
 
@@ -2938,7 +2938,7 @@ int colvar::calc_acf()
     case acf_vel:
       // allocate space for the velocities history
       for (i = 0; i < acf_stride; i++) {
-        acf_v_history.push_back(std::list<colvarvalue>());
+        acf_v_history.emplace_back();
       }
       acf_v_history_p = acf_v_history.begin();
       break;
@@ -2947,7 +2947,7 @@ int colvar::calc_acf()
     case acf_p2coor:
       // allocate space for the coordinates history
       for (i = 0; i < acf_stride; i++) {
-        acf_x_history.push_back(std::list<colvarvalue>());
+        acf_x_history.emplace_back();
       }
       acf_x_history_p = acf_x_history.begin();
       break;
@@ -3138,7 +3138,7 @@ int colvar::calc_runave()
 
     acf_nframes = 0;
 
-    x_history.push_back(std::list<colvarvalue>());
+    x_history.emplace_back();
     x_history_p = x_history.begin();
 
   } else {
