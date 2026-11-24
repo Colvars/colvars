@@ -137,9 +137,10 @@ cvm::atom_group::atom_modifier::atom_modifier(cvm::atom_group* ag): m_ag(ag)
   if (m_ag->modify_lock.try_lock()) {
     update_from_soa();
   } else {
-    throw m_ag->cvmodule->error(
-      "You are trying to modify the SOA atom group more than once at the same time",
-      COLVARS_BUG_ERROR);
+    // Thrown as colvars_fatal_error so that it is caught at the module's entry points
+    // and reported there (throwing the int error code would terminate the program)
+    throw colvars_fatal_error("Error: trying to modify the SOA atom group \"" + m_ag->key +
+                              "\" more than once at the same time.\n");
   }
 }
 
