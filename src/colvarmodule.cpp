@@ -1594,9 +1594,9 @@ int colvarmodule::setup_input_impl()
     if (binary_state_file) {
       this->log("Loading state from binary file \"" + restart_in_name + "\".\n");
       // TODO integrate istream.read() into memory_stream to avoid copying
-      auto *buf = new unsigned char[file_size];
-      if (input_is->read(reinterpret_cast<char *>(buf), file_size)) {
-        cvm::memory_stream mem_is(file_size, buf);
+      std::vector<unsigned char> buf(file_size);
+      if (input_is->read(reinterpret_cast<char *>(buf.data()), file_size)) {
+        cvm::memory_stream mem_is(file_size, buf.data());
         if (!read_state(mem_is)) {
           input_is->setstate(std::ios::failbit);
           this->error("Error: cannot interpret contents of binary file \"" + restart_in_name +
@@ -1607,7 +1607,6 @@ int colvarmodule::setup_input_impl()
         this->error("Error: cannot read from binary file \"" + restart_in_name + "\".\n",
                    COLVARS_INPUT_ERROR);
       }
-      delete[] buf;
     } else {
       this->log("Loading state from text file \"" + restart_in_name + "\".\n");
       read_state(*input_is);
