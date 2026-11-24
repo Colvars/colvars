@@ -134,7 +134,7 @@ struct ArithmeticPathImpl: public ArithmeticPathCV::ArithmeticPathBase<cvm::real
     }
 };
 
-colvar::aspath::aspath()
+colvar::aspath::aspath(colvarmodule* cvmodule_in): colvar::CartesianBasedPath(cvmodule_in)
 {
     set_function_type("aspath");
     x.type(colvarvalue::type_scalar);
@@ -192,7 +192,7 @@ void colvar::aspath::apply_force(colvarvalue const &force) {
     }
 }
 
-colvar::azpath::azpath()
+colvar::azpath::azpath(colvarmodule* cvmodule_in): colvar::CartesianBasedPath(cvmodule_in)
 {
     set_function_type("azpath");
     x.type(colvarvalue::type_scalar);
@@ -249,7 +249,7 @@ void colvar::azpath::apply_force(colvarvalue const &force) {
     }
 }
 
-colvar::aspathCV::aspathCV()
+colvar::aspathCV::aspathCV(colvarmodule* cvmodule_in): colvar::CVBasedPath(cvmodule_in)
 {
     set_function_type("aspathCV");
     x.type(colvarvalue::type_scalar);
@@ -358,7 +358,7 @@ void colvar::aspathCV::apply_force(colvarvalue const &force) {
     }
 }
 
-colvar::azpathCV::azpathCV()
+colvar::azpathCV::azpathCV(colvarmodule* cvmodule_in): colvar::CVBasedPath(cvmodule_in)
 {
     set_function_type("azpathCV");
     x.type(colvarvalue::type_scalar);

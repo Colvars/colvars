@@ -1,0 +1,23 @@
+# -*- mode: Perl -*-
+# Minimal LaTeXML binding for mdframed: avoids loading the raw package (which
+# drags in the whole expl3 kernel).  Renders a block with a CSS class; the
+# styling is left to the stylesheet.
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+DefKeyVal('mdf', 'linecolor',       '');
+DefKeyVal('mdf', 'backgroundcolor', '');
+DefKeyVal('mdf', 'linewidth',       '');
+
+DefEnvironment('{mdframed} OptionalKeyVals:mdf', sub {
+    my ($document, $kv, %props) = @_;
+    $document->maybeCloseElement('ltx:p');
+    insertBlock($document, $props{body}, class => 'cv_mdframed'); });
+
+DefMacro('\mdfsetup{}',         '');
+DefMacro('\newmdenv[]{}',       '');
+DefMacro('\surroundwithmdframed[]{}', '');
+
+1;

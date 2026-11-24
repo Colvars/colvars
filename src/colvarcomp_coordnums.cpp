@@ -95,7 +95,7 @@ public:
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
     // error_code |= checkGPUError(cudaStreamWaitEvent(
-    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
@@ -137,7 +137,7 @@ public:
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
     // error_code |= checkGPUError(cudaStreamWaitEvent(
-    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
@@ -178,7 +178,7 @@ public:
     // NOTE: We pass boundary_conditions as a function argument from CPU, so this is not necessary
     // for the time being, but it may be useful if the boundary_conditions is GPU-resident.
     // error_code |= checkGPUError(cudaStreamWaitEvent(
-    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+    //   cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
@@ -218,7 +218,7 @@ public:
       boundary_conditions.set_type(colvarmodule::system_boundary_conditions::types::non_periodic);
     }
     error_code |= checkGPUError(cudaStreamWaitEvent(
-      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy_gpu::event_type::update_lattice)));
+      cvc->get_stream(), cvmodule->proxy->get_event(colvarproxy::event_type::update_lattice)));
     error_code |= checkGPUError(cudaStreamWaitEvent(
       cvc->get_stream(), cvc->group1->get_gpu_atom_group()->get_event(
         colvars_gpu::colvaratoms_gpu::event_type::read_and_calculate)));
@@ -404,7 +404,7 @@ public:
 #endif
 
 
-colvar::coordnum::coordnum()
+colvar::coordnum::coordnum(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("coordNum");
   x.type(colvarvalue::type_scalar);
@@ -538,7 +538,7 @@ int colvar::coordnum::init(std::string const &conf)
       }
       b_enable_pairlist = true;
       // To save the memory, we don't allocate the CPU pairlist buffer when GPU is used.
-      if (cvmodule->proxy->get_smp_mode() != colvarproxy_smp::smp_mode_t::gpu) {
+      if (cvmodule->proxy->get_smp_mode() != colvarproxy::smp_mode_t::gpu) {
         pairlist.reset(new bool[num_pairs]);
         auto *pairlist_elem = pairlist.get();
         for (size_t ip = 0; ip < num_pairs; ip++, pairlist_elem++) {
@@ -548,7 +548,7 @@ int colvar::coordnum::init(std::string const &conf)
     }
   }
 
-  if (cvmodule->proxy->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+  if (cvmodule->proxy->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
     enable(f_cvc_support_gpu);
     disable(f_cvc_require_cpu_buffers);
@@ -768,7 +768,7 @@ int colvar::coordnum::calc_value_after_gpu() {
 
 // h_bond member functions
 
-colvar::h_bond::h_bond()
+colvar::h_bond::h_bond(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   cvm::real const r0 = cvmodule->proxy->angstrom_to_internal(3.3);
   r0_vec = {r0, r0, r0};
@@ -797,7 +797,7 @@ int colvar::h_bond::init(std::string const &conf)
     error_code |= cvmodule->error("Error: either acceptor or donor undefined.\n", COLVARS_INPUT_ERROR);
   }
 
-  register_atom_group(new cvm::atom_group);
+  register_atom_group(new cvm::atom_group(cvmodule));
   {
     colvarproxy* const p = cvmodule->proxy;
     auto modify_atom = atom_groups[0]->get_atom_modifier();
@@ -830,13 +830,13 @@ int colvar::h_bond::init(std::string const &conf)
 
 colvar::h_bond::h_bond(cvm::atom_group::simple_atom const &acceptor,
                        cvm::atom_group::simple_atom const &donor,
-                       cvm::real r0_i, int en_i, int ed_i)
-  : h_bond()
+                       cvm::real r0_i, int en_i, int ed_i, colvarmodule* cvmodule_in)
+  : h_bond(cvmodule_in)
 {
   r0_vec = {r0_i, r0_i, r0_i};
   en = en_i;
   ed = ed_i;
-  register_atom_group(new cvm::atom_group);
+  register_atom_group(new cvm::atom_group(cvmodule));
   auto modify_atom = atom_groups[0]->get_atom_modifier();
   modify_atom.add_atom(acceptor);
   modify_atom.add_atom(donor);
@@ -923,7 +923,7 @@ void colvar::h_bond::calc_gradients()
 }
 
 
-colvar::selfcoordnum::selfcoordnum()
+colvar::selfcoordnum::selfcoordnum(colvarmodule* cvmodule_in): colvar::coordnum(cvmodule_in)
 {
   set_function_type("selfCoordNum");
 }
@@ -1019,7 +1019,7 @@ void colvar::selfcoordnum::calc_gradients()
 }
 
 
-colvar::groupcoordnum::groupcoordnum() { set_function_type("groupCoord"); }
+colvar::groupcoordnum::groupcoordnum(colvarmodule* cvmodule_in): colvar::coordnum(cvmodule_in) { set_function_type("groupCoord"); }
 
 
 void colvar::groupcoordnum::calc_value()

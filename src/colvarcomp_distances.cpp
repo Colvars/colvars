@@ -24,7 +24,7 @@
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP) || defined (NAMD_VERSION)
 
 
-colvar::distance::distance()
+colvar::distance::distance(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("distance");
   init_as_distance();
@@ -90,7 +90,7 @@ void colvar::distance::calc_Jacobian_derivative()
 
 
 
-colvar::distance_vec::distance_vec()
+colvar::distance_vec::distance_vec(colvarmodule* cvmodule_in): colvar::distance(cvmodule_in)
 {
   set_function_type("distanceVec");
   disable(f_cvc_explicit_gradient);
@@ -155,7 +155,7 @@ colvarvalue colvar::distance_vec::dist2_rgrad(colvarvalue const &x1, colvarvalue
 void colvar::distance_vec::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
-colvar::distance_z::distance_z()
+colvar::distance_z::distance_z(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("distanceZ");
   provide(f_cvc_inv_gradient);
@@ -261,7 +261,7 @@ void colvar::distance_z::calc_Jacobian_derivative()
 
 
 
-colvar::distance_xy::distance_xy()
+colvar::distance_xy::distance_xy(colvarmodule* cvmodule_in): colvar::distance_z(cvmodule_in)
 {
   set_function_type("distanceXY");
   provide(f_cvc_periodic, false); // Disable inherited distance_z flag
@@ -335,7 +335,7 @@ void colvar::distance_xy::calc_Jacobian_derivative()
 
 
 
-colvar::distance_dir::distance_dir()
+colvar::distance_dir::distance_dir(colvarmodule* cvmodule_in): colvar::distance(cvmodule_in)
 {
   set_function_type("distanceDir");
   enable(f_cvc_com_based);
@@ -403,7 +403,7 @@ void colvar::distance_dir::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 
-colvar::distance_inv::distance_inv()
+colvar::distance_inv::distance_inv(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("distanceInv");
   init_as_distance();
@@ -502,7 +502,7 @@ void colvar::distance_inv::calc_gradients()
 
 
 
-colvar::distance_pairs::distance_pairs()
+colvar::distance_pairs::distance_pairs(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("distancePairs");
   disable(f_cvc_explicit_gradient);
@@ -619,7 +619,7 @@ void colvar::distance_pairs::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 
-colvar::dipole_magnitude::dipole_magnitude()
+colvar::dipole_magnitude::dipole_magnitude(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("dipoleMagnitude");
   x.type(colvarvalue::type_scalar);
@@ -658,7 +658,7 @@ void colvar::dipole_magnitude::calc_gradients()
 
 
 
-colvar::gyration::gyration()
+colvar::gyration::gyration(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("gyration");
   provide(f_cvc_inv_gradient);
@@ -728,7 +728,7 @@ void colvar::gyration::calc_Jacobian_derivative()
 
 
 
-colvar::inertia::inertia()
+colvar::inertia::inertia(colvarmodule* cvmodule_in): colvar::gyration(cvmodule_in)
 {
   set_function_type("inertia");
 }
@@ -754,7 +754,7 @@ void colvar::inertia::calc_gradients()
 
 
 
-colvar::inertia_z::inertia_z()
+colvar::inertia_z::inertia_z(colvarmodule* cvmodule_in): colvar::inertia(cvmodule_in)
 {
   set_function_type("inertiaZ");
 }
@@ -864,6 +864,7 @@ public:
     std::vector<cudaGraphNode_t> calc_value_rmsd(rmsd_cpu->n_permutations, nullptr);
     auto& gpu_buffers = rmsd_cpu->atoms->get_gpu_atom_group()->get_gpu_buffers();
     error_code |= colvars_gpu::calc_value_rmsd(
+      cvmodule,
       d_ref_pos_soa, gpu_buffers.d_atoms_pos,
       d_permutation_msds, rmsd_cpu->permutation_msds.data(),
       rmsd_cpu->atoms->size(), rmsd_cpu->n_permutations, rmsd_cpu->num_ref_pos,
@@ -881,6 +882,7 @@ public:
     auto& gpu_buffers = rmsd_cpu->atoms->get_gpu_atom_group()->get_gpu_buffers();
     cudaGraphNode_t calc_gradients_rmsd;
     error_code |= colvars_gpu::calc_gradients_rmsd(
+      cvmodule,
       h_rmsd, h_best_perm_index, d_ref_pos_soa,
       gpu_buffers.d_atoms_pos, gpu_buffers.d_atoms_grad,
       rmsd_cpu->atoms->size(), rmsd_cpu->num_ref_pos, calc_gradients_rmsd, graph, {});
@@ -902,6 +904,7 @@ public:
     colvarproxy *p = rmsd_cpu->cvmodule->proxy;
     const auto& rot = rmsd_cpu->atoms->get_gpu_atom_group()->get_rot_gpu();
     error_code |= colvars_gpu::calc_force_invgrads_rmsd(
+      cvmodule,
       rmsd_cpu->atoms->is_enabled(f_ag_rotate),
       gpu_buffers.d_atoms_index,
       p->proxy_atoms_total_forces_gpu(),
@@ -929,9 +932,11 @@ public:
     std::vector<cudaGraphNode_t> dependencies;
     if (rmsd_cpu->atoms->is_enabled(f_ag_rotate)) {
       error_code |= colvars_gpu::prepare_dependencies(
+        cvmodule,
         {{"prepare_rotation_derivative", true}}, dependencies, nodes_map);
     }
     error_code |= colvars_gpu::calc_Jacobian_derivative_rmsd(
+      cvmodule,
       rmsd_cpu->atoms->is_enabled(f_ag_center), rmsd_cpu->atoms->is_enabled(f_ag_rotate),
       h_best_perm_index, d_ref_pos_soa, rot.get_q(),
       rot_deriv, h_rmsd, d_jd, h_jd, rmsd_cpu->atoms->size(),
@@ -956,7 +961,7 @@ public:
 };
 #endif
 
-colvar::rmsd::rmsd()
+colvar::rmsd::rmsd(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("rmsd");
   init_as_distance();
@@ -1064,7 +1069,7 @@ int colvar::rmsd::init(std::string const &conf)
   num_ref_pos = ref_pos.size();
   ref_pos_soa = cvm::atom_group::pos_aos_to_soa(ref_pos);
   colvarproxy* p = cvmodule->proxy;
-  if (p->get_smp_mode() == colvarproxy_smp::smp_mode_t::gpu) {
+  if (p->get_smp_mode() == colvarproxy::smp_mode_t::gpu) {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
     enable(f_cvc_support_gpu);
     disable(f_cvc_require_cpu_buffers);
@@ -1313,7 +1318,7 @@ int colvar::rmsd::proxy_gpu_buffers_reallocated() {
 #endif // defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 
 
-colvar::eigenvector::eigenvector()
+colvar::eigenvector::eigenvector(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("eigenvector");
   provide(f_cvc_inv_gradient);
@@ -1605,7 +1610,7 @@ void colvar::eigenvector::calc_Jacobian_derivative()
 
 
 
-colvar::cartesian::cartesian()
+colvar::cartesian::cartesian(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("cartesian");
   x.type(colvarvalue::type_vector);

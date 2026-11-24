@@ -1,0 +1,318 @@
+/* Stylesheet for the LaTeXML HTML build of the Colvars manual.
+   Loaded after LaTeXML.css and ltx-article.css (latexmlc --css=...).
+   The menu and the headings follow the HTML version of the NAMD User's
+   Guide; keywords and examples keep the colors of the PDF. */
+
+:root {
+  --cv-text:          #1f2328;
+  --cv-muted:         #59636e;
+  --cv-rule:          #d8dee4;
+  --cv-accent:        #0b4f8a;
+  --cv-accent-soft:   #e8f0f8;
+  --cv-navbar-bg:     #fbfcfd;
+  --cv-navbar-width:  20rem;
+}
+
+/*======================================================================
+  Page layout: navigation menu (table of contents) on the left.
+  On narrow screens, keep LaTeXML's default (menu above the content). */
+
+@media screen and (min-width: 50em) {
+  body {
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+  }
+
+  .ltx_page_navbar {
+    flex: 0 0 var(--cv-navbar-width);
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 1.25rem 1rem 3rem;
+    border-right: 1px solid var(--cv-rule);
+    background: var(--cv-navbar-bg);
+  }
+
+  .ltx_page_main {
+    flex: 1 1 auto;
+    min-width: 0;          /* lets wide <pre> blocks scroll, not the page */
+    max-width: 60em;
+    margin: 0 auto;
+  }
+}
+
+/* Menu above the content: list only the top-level entries, so the content
+   is not pushed far down the page. */
+@media not screen and (min-width: 50em) {
+  .ltx_page_navbar ol ol {
+    display: none;
+  }
+  .ltx_page_navbar {
+    border-bottom: 1px solid var(--cv-rule);
+    background: var(--cv-navbar-bg);
+    padding-bottom: 0.5em;
+  }
+}
+
+/*======================================================================
+  Navigation menu */
+
+.ltx_page_navbar {
+  font-family: sans-serif;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+/* Entries are blocks with a soft highlight, not underlined links */
+.ltx_page_navbar a,
+.ltx_page_navbar span.ltx_ref {
+  display: block;
+  padding: 0.16rem 0.45rem;
+  border-radius: 4px;
+  color: var(--cv-muted);
+  text-decoration: none;
+  overflow-wrap: break-word;
+}
+.ltx_page_navbar a:hover {
+  background: var(--cv-accent-soft);
+  color: var(--cv-accent);
+}
+
+/* Colvars logo (doc/logo/colvars-logo.svg, copied to logo/ in the output by
+   the Makefile) above the document title, which links to the front page.
+   The front page has no such link in its menu: there, the logo is next to
+   the title of the page instead (see "Front page" below) */
+.ltx_page_navbar > a.ltx_ref::before {
+  content: "";
+  display: block;
+  width: 7rem;
+  height: 7rem;
+  margin: 0 auto 0.6rem;
+  background: url("../logo/colvars-logo.svg") center / contain no-repeat;
+}
+
+/* Document title (link to the front page, absent from the front page) */
+.ltx_page_navbar > a.ltx_ref {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--cv-text);
+  padding: 0 0.45rem 0.6rem;
+  margin-bottom: 0.85rem;
+  border-bottom: 1px solid var(--cv-rule);
+  border-radius: 0;
+}
+.ltx_page_navbar > a.ltx_ref:hover {
+  background: none;
+}
+
+.ltx_page_navbar ol {
+  margin: 0;
+  padding-left: 0;
+}
+.ltx_page_navbar ol ol {
+  padding-left: 0.9rem;
+}
+
+/* Two levels only: sections and subsections */
+.ltx_page_navbar ol ol ol {
+  display: none;
+}
+
+/* Wrap long titles instead of cutting them off */
+.ltx_page_navbar li {
+  white-space: normal;
+  overflow: visible;
+  margin: 0;
+}
+
+/* Top-level entries: darker, slightly bolder */
+.ltx_page_navbar .ltx_tocentry_section > .ltx_ref,
+.ltx_page_navbar .ltx_tocentry_index > .ltx_ref,
+.ltx_page_navbar .ltx_tocentry_bibliography > .ltx_ref {
+  color: var(--cv-text);
+  font-weight: 500;
+}
+
+/* Section numbers */
+.ltx_page_navbar .ltx_tag_ref {
+  color: var(--cv-muted);
+}
+
+/* Current page */
+.ltx_page_navbar span.ltx_ref_self {
+  background: var(--cv-accent-soft);
+  color: var(--cv-accent);
+  font-weight: 600;
+}
+
+/*======================================================================
+  Text and headings.  Colors are those of the PDF (colvars-refman.tex). */
+
+body {
+  font-family: sans-serif;
+}
+
+/* Section headings: plain semibold titles in dark blue with muted numbers;
+   a rule under the section titles */
+.ltx_title_section,
+.ltx_title_subsection,
+.ltx_title_subsubsection,
+.ltx_title_contents,
+.ltx_title_index,
+.ltx_title_bibliography {
+  color: var(--cv-accent);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 2.2rem 0 0.85rem;
+}
+.ltx_title_section,
+.ltx_title_contents,
+.ltx_title_index,
+.ltx_title_bibliography {
+  font-size: 1.7rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--cv-rule);
+}
+.ltx_title_subsection {
+  font-size: 1.32rem;
+}
+.ltx_title_subsubsection {
+  font-size: 1.12rem;
+}
+.ltx_title_section .ltx_tag,
+.ltx_title_subsection .ltx_tag,
+.ltx_title_subsubsection .ltx_tag {
+  color: var(--cv-muted);
+}
+
+/* Links: dark blue, underlined only under the cursor */
+.ltx_page_main a {
+  color: var(--cv-accent);
+  text-decoration: none;
+}
+.ltx_page_main a:hover {
+  text-decoration: underline;
+}
+
+/* Space between keyword descriptions; plain lists stay compact */
+.ltx_page_content li.ltx_item:has(.cv_keyword) {
+  margin-bottom: 1em;
+}
+
+/* Figures shrink to fit narrow screens */
+.ltx_page_content img {
+  max-width: 100%;
+  height: auto;
+}
+
+/*======================================================================
+  Keyword descriptions (\key, \keydef, \dupkey, \simkey) */
+
+.cv_keyword {
+  background-color: rgb(242, 204, 242);        /* cvkeyword-background-color */
+  padding: 0.1em 0.3em;
+}
+
+/*======================================================================
+  Example blocks */
+
+pre.cv_example {
+  border: 2px solid;
+  padding: 0.5em 0.8em;
+  overflow-x: auto;
+  line-height: 1.3;
+}
+
+/* Colvars configuration */
+pre.cv_example_colvars {
+  border-color: rgb(128, 0, 128);              /* cvexample-border-color */
+  background-color: rgb(255, 242, 255);        /* cvexample-background-color */
+}
+
+/* MD engine input or scripts */
+pre.cv_example_engine {
+  border-color: rgb(255, 153, 26);             /* mdexample-border-color */
+  background-color: rgb(255, 245, 230);        /* mdexample-background-color */
+}
+
+/* Data files */
+pre.cv_example_datafile {
+  border-color: rgb(13, 51, 0);                /* datafileexample-border-color */
+  background-color: rgb(242, 255, 204);        /* datafileexample-background-color */
+}
+
+/*======================================================================
+  Header and footer links (previous, up, bibliography, index, next) */
+
+.ltx_page_header a[rel~="bibliography"],
+.ltx_page_header a[rel~="index"],
+.ltx_page_footer a[rel~="bibliography"],
+.ltx_page_footer a[rel~="index"] {
+  margin: 0 0.75em;
+}
+
+/*======================================================================
+  Front page: logo next to the title, table of contents */
+
+.ltx_title_document {
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 7rem;
+  min-height: 5.5rem;
+  background: url("../logo/colvars-logo.svg") left center / 5.5rem no-repeat;
+}
+
+/* Narrow screens: logo above the title */
+@media not screen and (min-width: 40em) {
+  .ltx_title_document {
+    padding-left: 0;
+    padding-top: 6rem;
+    background-position: center top;
+  }
+}
+
+/* No vertical space for \newpage/\clearpage (e.g. before the contents) */
+.ltx_pagination.ltx_role_newpage {
+  display: none;
+}
+
+/* The "Contents" heading is styled like the section headings (above) */
+
+/*======================================================================
+  Index */
+
+/* Keyword names (monospace) as large as plain-text entries: browsers
+   shrink the generic "monospace" font unless it is given twice */
+.ltx_index .ltx_font_typewriter {
+  font-family: monospace, monospace;
+  font-size: 0.9em;
+}
+
+/* Up to 4 columns on wide screens (the index page gets a wider content
+   area); keep each entry with its sub-entries */
+@media screen and (min-width: 50em) {
+  .ltx_page_main:has(.ltx_index) {
+    max-width: 76em;
+  }
+}
+
+.ltx_index > .ltx_indexlist {
+  columns: 4 15em;
+  column-gap: 2em;
+  padding-left: 0;
+}
+
+.ltx_index > .ltx_indexlist > .ltx_indexentry {
+  break-inside: avoid;
+}
+
+/* Long keyword names wrap (last resort) instead of running into the next
+   column */
+.ltx_index .ltx_indexphrase {
+  overflow-wrap: anywhere;
+}

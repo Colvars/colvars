@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <atomic>
 #include <mutex>
+#include <stdexcept>
 
 #include "colvars_version.h"
 
@@ -59,6 +60,20 @@ class colvarbias;
 class colvarproxy;
 class colvarvalue;
 class colvardeps;
+
+
+/// \brief Exception thrown by colvarmodule::error_static() when no module pointer is available.
+///
+/// Colvars normally reports errors through return codes.  This exception is the one
+/// exception to that rule: it lets lightweight objects without a module pointer
+/// (vectors, colvarvalue...) abort the current operation.  It is caught at the
+/// module's entry points (calc(), parse_config(), setup_input(), colvarscript::run()),
+/// which forward it to colvarmodule::error() and thus to the engine's proxy: the
+/// engine then decides whether the error is fatal (MD engines) or not (VMD).
+class colvars_fatal_error : public std::runtime_error {
+public:
+  using std::runtime_error::runtime_error;
+};
 
 
 /// \brief Collective variables module (main class)
@@ -438,6 +453,15 @@ public:
   /// \brief Parse a "clean" config string (no comments)
   int parse_config(std::string &conf);
 
+private:
+
+  /// Implementations of the entry points that catch colvars_fatal_error
+  int parse_config_impl(std::string &conf);
+  int calc_impl();
+  int setup_input_impl();
+
+public:
+
   /// Get the configuration string read so far (includes comments)
   std::string const & get_config() const;
 
@@ -782,9 +806,9 @@ public:
 
   /// Print a message to stderr
   /// Used in lightweight objects that do not have access to cvmodule
-  static void log_static(std::string const &message) {
-    if (colvarmodule::main()) {
-      colvarmodule::main()->log(message);
+  static void log_static(colvarmodule* cvmodule, std::string const &message) {
+    if (cvmodule) {
+      cvmodule->log(message);
     } else {
       std::printf("colvars: %s\n", message.c_str());
     }
@@ -793,17 +817,16 @@ public:
   /// Print a message to the main log and set global error code
   int error(std::string const &message, int code = -1);
 
-  /// Print an error message to stderr
-  /// Used in lightweight objects that do not have access to cvmodule
+  /// Report an error from a lightweight object that may not have access to cvmodule.
+  /// With a module pointer, this is equivalent to cvmodule->error().  Without one, it
+  /// throws colvars_fatal_error, which is caught at the module's entry points and
+  /// forwarded to the proxy.
   /// Typically fatal errors that reflect bugs, so hopefully rare
-  static int error_static(std::string const &message, int code = -1) {
-    if (colvarmodule::main()) {
-      code = colvarmodule::main()->error(message, code);
-    } else {
-      std::cerr << "colvars: " << message << std::endl;
-      exit(-1);
+  static int error_static(colvarmodule* cvmodule, std::string const &message, int code = -1) {
+    if (cvmodule) {
+      return cvmodule->error(message, code);
     }
-    return code;
+    throw colvars_fatal_error(message);
   }
 
 private:
@@ -982,11 +1005,6 @@ public:
   /// \brief Pointer to the proxy object, used to retrieve atomic data
   /// from the hosting program
   colvarproxy *proxy = nullptr;
-  /// Temporary static pointer to unique proxy object
-  static colvarproxy *proxy_static;
-
-  /// \brief Access the main instance of the Colvars module
-  static colvarmodule *main();
 
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
   template <typename T>

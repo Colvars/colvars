@@ -19,3 +19,5 @@
 *.tmp
 *.xref
 *-eps-converted-to.pdf
+html-*/
+latexml-options.txt

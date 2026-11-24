@@ -370,6 +370,8 @@ public:
     const cvm::rvector* d_com_grad,
     cudaStream_t stream);
 private:
+  /// \brief Pointer to the parent colvarmodule
+  colvarmodule *cvmodule;
   colvaratoms_gpu_buffer_t gpu_buffers;
   /// \brief Temporary variables for calc_fit_gradients GPU kernel
   colvaratoms_gpu_calc_fit_info_t calc_fit_gradients_gpu_info;
@@ -389,8 +391,6 @@ private:
   colvars_gpu::rotation_gpu rot_gpu;
   /// \brief GPU Rotation derivative;
   colvars_gpu::rotation_derivative_gpu* rot_deriv_gpu;
-  /// \brief Pointer to the parent colvarmodule
-  colvarmodule *cvmodule;
   /// \brief CUDA graph for reading atoms and compute required properties
   gpu_graph_t graph_read_compute;
   /// \brief CUDA graph for calculating fit gradients

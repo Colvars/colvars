@@ -176,7 +176,7 @@ public:
     return smp_mode_t::none;
   }
   std::vector<smp_mode_t> get_available_smp_modes() const override {
-    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
+    std::vector<colvarproxy::smp_mode_t> available_modes{
       smp_mode_t::none,
       smp_mode_t::gpu
     };
@@ -207,15 +207,14 @@ public:
   cvm::real* proxy_atoms_new_colvar_forces_gpu() override {return d_mAppliedForces;}
   cudaStream_t get_default_stream() override {return mStream;}
   void set_lattice();
-  int update_system_boundaries()  override {
-    int error_code = COLVARS_OK;
+  cvm::system_boundary_conditions get_system_boundaries()  override {
     if (mClient->requestUpdateLattice()) {
       if (has_gpu_support()) {
-        error_code |= checkGPUError(cudaEventSynchronize(get_event(colvarproxy_gpu::event_type::update_lattice)));
+        cudaCheck(cudaEventSynchronize(get_event(colvarproxy::event_type::update_lattice)));
       }
       set_lattice();
     }
-    return error_code;
+    return boundaries_;
   };
   friend class CudaGlobalMasterColvars;
 private:
@@ -361,9 +360,9 @@ void colvarproxy_impl::initialize_from_cudagm(
   if (simParams->firstTimestep != 0) {
     cvmodule->set_initial_step(static_cast<cvm::step_number>(simParams->firstTimestep));
   }
-  colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
-  colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
-  colvarproxy_io::set_default_restart_frequency(simParams->restartFrequency);
+  colvarproxy::set_output_prefix(std::string(simParams->outputFilename));
+  colvarproxy::set_restart_output_prefix(std::string(simParams->restartFilename));
+  colvarproxy::set_default_restart_frequency(simParams->restartFrequency);
 }
 
 // Copied from colvarproxy_namd.C
@@ -780,7 +779,7 @@ void colvarproxy_impl::calculate() {
   if (mClient->requestUpdateLattice()) {
     ::copy_DtoH(d_mLattice, h_mLattice, 3*4, mStream);
     if (has_gpu_support()) {
-      cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::update_lattice), mStream));
+      cudaCheck(cudaEventRecord(get_event(colvarproxy::event_type::update_lattice), mStream));
     }
   }
   // The following memcpy operations are supposed to be overlapped with the NB kernel
@@ -812,7 +811,7 @@ void colvarproxy_impl::calculate() {
       ::copy_DtoH(d_trans_mCharges, colvars_charge.data(), numAtoms, mStream);
     }
     if (has_gpu_support()) {
-      cudaCheck(cudaEventRecord(get_event(colvarproxy_gpu::event_type::copy_atoms), mStream));
+      cudaCheck(cudaEventRecord(get_event(colvarproxy::event_type::copy_atoms), mStream));
     }
   }
   // NOTE: I think the implementation in Colvars will syncrhonize the stream before
@@ -840,9 +839,9 @@ void colvarproxy_impl::calculate() {
       // aware of this via the following flag
       b_simulation_continuing = true;
       // Update NAMD output and restart prefixes
-      colvarproxy_io::set_output_prefix(std::string(simParams->outputFilename));
-      colvarproxy_io::set_restart_output_prefix(std::string(simParams->restartFilename));
-      colvarproxy_io::set_default_restart_frequency(simParams->restartFrequency);
+      colvarproxy::set_output_prefix(std::string(simParams->outputFilename));
+      colvarproxy::set_restart_output_prefix(std::string(simParams->restartFilename));
+      colvarproxy::set_default_restart_frequency(simParams->restartFrequency);
       cvmodule->setup_output();
     }
   }
