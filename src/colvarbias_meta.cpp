@@ -20,7 +20,7 @@
 
 
 colvarbias_meta::colvarbias_meta(colvarmodule *cvmodule_in, char const *key)
-  : colvardeps(colvardeps::object_t::colvarbias), colvarbias(cvmodule_in, key), colvarbias_ti(key)
+  : colvardeps(colvardeps::object_t::colvarbias, cvmodule_in), colvarbias(cvmodule_in, key), colvarbias_ti(cvmodule_in, key)
 {
   new_hills_begin = hills.end();
 
@@ -157,8 +157,8 @@ int colvarbias_meta::init(std::string const &conf)
     get_keyval(conf, "keepFreeEnergyFiles", dump_fes_save, dump_fes_save);
 
     if (!hills_energy) {
-      hills_energy.reset(new colvar_grid_scalar(colvars, nullptr, false, grid_conf));
-      hills_energy_gradients.reset(new colvar_grid_gradient(colvars, nullptr, hills_energy));
+      hills_energy.reset(new colvar_grid_scalar(cvmodule, colvars, nullptr, false, grid_conf));
+      hills_energy_gradients.reset(new colvar_grid_gradient(cvmodule, colvars, nullptr, hills_energy));
     }
 
   } else {
@@ -285,7 +285,7 @@ int colvarbias_meta::init_ebmeta_params(std::string const &conf)
                                "targetDistFile accordingly.\n",
                                COLVARS_INPUT_ERROR);
     }
-    target_dist.reset(new colvar_grid_scalar());
+    target_dist.reset(new colvar_grid_scalar(cvmodule));
     error_code |= target_dist->init_from_colvars(colvars);
     std::string target_dist_file;
     get_keyval(conf, "targetDistFile", target_dist_file);
@@ -525,10 +525,10 @@ int colvarbias_meta::update_grid_params()
 
         // map everything into new grids
 
-        colvar_grid_scalar *new_hills_energy =
-            new colvar_grid_scalar(*hills_energy);
-        colvar_grid_gradient *new_hills_energy_gradients =
-            new colvar_grid_gradient(*hills_energy_gradients);
+        std::unique_ptr<colvar_grid_scalar> new_hills_energy(
+            new colvar_grid_scalar(*hills_energy));
+        std::unique_ptr<colvar_grid_gradient> new_hills_energy_gradients(
+            new colvar_grid_gradient(*hills_energy_gradients));
 
         // supply new boundaries to the new grids
 
@@ -543,8 +543,8 @@ int colvarbias_meta::update_grid_params()
         new_hills_energy->map_grid(*hills_energy);
         new_hills_energy_gradients->map_grid(*hills_energy_gradients);
 
-        hills_energy.reset(new_hills_energy);
-        hills_energy_gradients.reset(new_hills_energy_gradients);
+        hills_energy.reset(new_hills_energy.release());
+        hills_energy_gradients.reset(new_hills_energy_gradients.release());
 
         curr_bin = hills_energy->get_colvars_index();
         if (cvm::debug())
@@ -1104,10 +1104,10 @@ int colvarbias_meta::update_replicas_registry()
 
         if (use_grids) {
           (replicas.back())
-              ->hills_energy.reset(new colvar_grid_scalar(colvars, hills_energy));
+              ->hills_energy.reset(new colvar_grid_scalar(cvmodule, colvars, hills_energy));
           (replicas.back())
               ->hills_energy_gradients.reset(
-                  new colvar_grid_gradient(colvars, nullptr, hills_energy));
+                  new colvar_grid_gradient(cvmodule, colvars, nullptr, hills_energy));
         }
 
         if (is_enabled(f_cvb_calc_ti_samples)) {
@@ -1383,8 +1383,8 @@ template <typename IST> IST &colvarbias_meta::read_state_data_template_(IST &is)
 
       hills_energy_backup = std::move(hills_energy);
       hills_energy_gradients_backup = std::move(hills_energy_gradients);
-      hills_energy.reset(new colvar_grid_scalar(colvars, hills_energy));
-      hills_energy_gradients.reset(new colvar_grid_gradient(colvars, nullptr, hills_energy));
+      hills_energy.reset(new colvar_grid_scalar(cvmodule, colvars, hills_energy));
+      hills_energy_gradients.reset(new colvar_grid_gradient(cvmodule, colvars, nullptr, hills_energy));
     }
 
     read_grid_data_template_<IST, colvar_grid_scalar>(is, "hills_energy", hills_energy.get(),
@@ -1495,9 +1495,9 @@ void colvarbias_meta::rebin_grids_after_restart()
     // Create new grids based on the configuration parameters, because reading from the state
     // file automatically sets the old parameters
     std::shared_ptr<colvar_grid_scalar> new_hills_energy(
-        new colvar_grid_scalar(colvars, nullptr, false, grid_conf));
+        new colvar_grid_scalar(cvmodule, colvars, nullptr, false, grid_conf));
     std::shared_ptr<colvar_grid_gradient> new_hills_energy_gradients(
-        new colvar_grid_gradient(colvars, nullptr, new_hills_energy));
+        new colvar_grid_gradient(cvmodule, colvars, nullptr, new_hills_energy));
 
     if (cvm::debug()) {
       std::ostringstream tmp_os;
@@ -1950,7 +1950,7 @@ void colvarbias_meta::write_pmf()
 {
   colvarproxy *proxy = cvmodule->proxy;
   // allocate a new grid to store the pmf
-  colvar_grid_scalar *pmf = new colvar_grid_scalar(*hills_energy);
+  std::unique_ptr<colvar_grid_scalar> pmf(new colvar_grid_scalar(*hills_energy));
   pmf->setup();
 
   if ((comm == single_replica) || (dump_replica_fes)) {
@@ -2022,8 +2022,6 @@ void colvarbias_meta::write_pmf()
                                     ".pmf");
     pmf->write_multicol(fes_file_name, "partial PMF file");
   }
-
-  delete pmf;
 }
 
 

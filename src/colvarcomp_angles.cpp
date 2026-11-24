@@ -12,7 +12,7 @@
 #include "colvarcomp.h"
 
 
-colvar::angle::angle()
+colvar::angle::angle(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("angle");
   init_as_angle();
@@ -38,21 +38,26 @@ int colvar::angle::init(std::string const &conf)
 
 colvar::angle::angle(cvm::atom_group::simple_atom const &a1,
                      cvm::atom_group::simple_atom const &a2,
-                     cvm::atom_group::simple_atom const &a3) : angle()
+                     cvm::atom_group::simple_atom const &a3,
+                     colvarmodule* cvmodule_in) : angle(cvmodule_in)
 {
-  group1 = new cvm::atom_group();
-  group2 = new cvm::atom_group();
-  group3 = new cvm::atom_group();
+  // Owned here until registered, so that they are freed if adding atoms throws
+  std::unique_ptr<cvm::atom_group> g1(new cvm::atom_group(cvmodule));
+  std::unique_ptr<cvm::atom_group> g2(new cvm::atom_group(cvmodule));
+  std::unique_ptr<cvm::atom_group> g3(new cvm::atom_group(cvmodule));
   {
-    auto modify_group1 = group1->get_atom_modifier();
-    auto modify_group2 = group2->get_atom_modifier();
-    auto modify_group3 = group3->get_atom_modifier();
+    auto modify_group1 = g1->get_atom_modifier();
+    auto modify_group2 = g2->get_atom_modifier();
+    auto modify_group3 = g3->get_atom_modifier();
     modify_group1.add_atom(a1);
     modify_group2.add_atom(a2);
     modify_group3.add_atom(a3);
   }
+  group1 = g1.release();
   register_atom_group(group1);
+  group2 = g2.release();
   register_atom_group(group2);
+  group3 = g3.release();
   register_atom_group(group3);
 }
 
@@ -124,7 +129,7 @@ void colvar::angle::calc_Jacobian_derivative()
 
 
 
-colvar::dipole_angle::dipole_angle()
+colvar::dipole_angle::dipole_angle(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("dipoleAngle");
   init_as_angle();
@@ -216,7 +221,7 @@ void colvar::dipole_angle::calc_gradients()
 
 
 
-colvar::dihedral::dihedral()
+colvar::dihedral::dihedral(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("dihedral");
   init_as_periodic_angle();
@@ -242,28 +247,34 @@ int colvar::dihedral::init(std::string const &conf)
 colvar::dihedral::dihedral(cvm::atom_group::simple_atom const &a1,
                            cvm::atom_group::simple_atom const &a2,
                            cvm::atom_group::simple_atom const &a3,
-                           cvm::atom_group::simple_atom const &a4)
-  : dihedral()
+                           cvm::atom_group::simple_atom const &a4,
+                           colvarmodule* cvmodule_in)
+  : dihedral(cvmodule_in)
 {
   b_1site_force = false;
 
-  group1 = new cvm::atom_group();
-  group2 = new cvm::atom_group();
-  group3 = new cvm::atom_group();
-  group4 = new cvm::atom_group();
+  // Owned here until registered, so that they are freed if adding atoms throws
+  std::unique_ptr<cvm::atom_group> g1(new cvm::atom_group(cvmodule));
+  std::unique_ptr<cvm::atom_group> g2(new cvm::atom_group(cvmodule));
+  std::unique_ptr<cvm::atom_group> g3(new cvm::atom_group(cvmodule));
+  std::unique_ptr<cvm::atom_group> g4(new cvm::atom_group(cvmodule));
   {
-    auto modify_group1 = group1->get_atom_modifier();
-    auto modify_group2 = group2->get_atom_modifier();
-    auto modify_group3 = group3->get_atom_modifier();
-    auto modify_group4 = group4->get_atom_modifier();
+    auto modify_group1 = g1->get_atom_modifier();
+    auto modify_group2 = g2->get_atom_modifier();
+    auto modify_group3 = g3->get_atom_modifier();
+    auto modify_group4 = g4->get_atom_modifier();
     modify_group1.add_atom(a1);
     modify_group2.add_atom(a2);
     modify_group3.add_atom(a3);
     modify_group4.add_atom(a4);
   }
+  group1 = g1.release();
   register_atom_group(group1);
+  group2 = g2.release();
   register_atom_group(group2);
+  group3 = g3.release();
   register_atom_group(group3);
+  group4 = g4.release();
   register_atom_group(group4);
 }
 
@@ -351,7 +362,7 @@ void colvar::dihedral::calc_Jacobian_derivative()
 
 
 
-colvar::polar_theta::polar_theta()
+colvar::polar_theta::polar_theta(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   r = theta = phi = 0.0;
   set_function_type("polarTheta");
@@ -393,7 +404,7 @@ void colvar::polar_theta::calc_gradients()
 
 
 
-colvar::polar_phi::polar_phi()
+colvar::polar_phi::polar_phi(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   r = theta = phi = 0.0;
   set_function_type("polarPhi");

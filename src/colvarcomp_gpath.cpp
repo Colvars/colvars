@@ -20,7 +20,7 @@
 
 
 
-colvar::CartesianBasedPath::CartesianBasedPath()
+colvar::CartesianBasedPath::CartesianBasedPath(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
     x.type(colvarvalue::type_scalar);
     // Don't use implicit gradient
@@ -80,7 +80,9 @@ int colvar::CartesianBasedPath::init(std::string const &conf)
         } else {
             // parse a group of atoms for fitting
             std::string fitting_group_name = std::string("fittingAtoms") + cvm::to_str(i_frame);
-            cvm::atom_group* tmp_fitting_atoms = new cvm::atom_group(fitting_group_name.c_str());
+            // Owned here until handed to tmp_atoms, so that it is freed if parsing throws
+            std::unique_ptr<cvm::atom_group> tmp_fitting_atoms(
+                new cvm::atom_group(fitting_group_name.c_str(), cvmodule));
             tmp_fitting_atoms->parse(fitting_conf);
             tmp_fitting_atoms->disable(f_ag_scalable);
             tmp_fitting_atoms->fit_gradients.assign(3 * tmp_fitting_atoms->size(), 0);
@@ -88,7 +90,7 @@ int colvar::CartesianBasedPath::init(std::string const &conf)
             std::string reference_position_filename;
             get_keyval(conf, reference_position_file_lookup.c_str(), reference_position_filename, std::string(""));
             std::vector<cvm::atom_pos> reference_fitting_position(tmp_fitting_atoms->size());
-            cvmodule->load_coords(reference_position_filename.c_str(), &reference_fitting_position, tmp_fitting_atoms, reference_column, reference_column_value);
+            cvmodule->load_coords(reference_position_filename.c_str(), &reference_fitting_position, tmp_fitting_atoms.get(), reference_column, reference_column_value);
             // setup the atom group for calculating
             tmp_atoms->enable(f_ag_center);
             tmp_atoms->enable(f_ag_rotate);
@@ -98,7 +100,7 @@ int colvar::CartesianBasedPath::init(std::string const &conf)
             tmp_atoms->center_ref_pos();
             tmp_atoms->enable(f_ag_fit_gradients);
             tmp_atoms->enable(f_ag_fitting_group);
-            tmp_atoms->fitting_group = tmp_fitting_atoms;
+            tmp_atoms->fitting_group = tmp_fitting_atoms.release();
             reference_fitting_frames.push_back(reference_fitting_position);
         }
         tmp_atoms->setup_rotation_derivative();
@@ -156,7 +158,7 @@ void colvar::CartesianBasedPath::computeDistanceBetweenReferenceFrames(std::vect
             this_frame_atom_pos[i_atom] = reference_frames[this_index][i_atom] - reference_cog_this;
             next_frame_atom_pos[i_atom] = reference_frames[next_index][i_atom] - reference_cog_next;
         }
-        cvm::rotation rot_this_to_next;
+        cvm::rotation rot_this_to_next(cvmodule);
         // compute the optimal rotation
         rot_this_to_next.calc_optimal_rotation(this_frame_atom_pos, next_frame_atom_pos);
         // compute rmsd between reference frames
@@ -178,7 +180,7 @@ void colvar::CartesianBasedPath::apply_force(colvarvalue const &force)
 
 
 
-colvar::gspath::gspath()
+colvar::gspath::gspath(colvarmodule* cvmodule_in): colvar::CartesianBasedPath(cvmodule_in), rot_v3(cvmodule_in)
 {
     set_function_type("gspath");
 }
@@ -342,7 +344,7 @@ void colvar::gspath::apply_force(colvarvalue const &force) {
 }
 
 
-colvar::gzpath::gzpath()
+colvar::gzpath::gzpath(colvarmodule* cvmodule_in): colvar::CartesianBasedPath(cvmodule_in), rot_v3(cvmodule_in), rot_v4(cvmodule_in)
 {
     set_function_type("gzpath");
 }
@@ -496,7 +498,7 @@ void colvar::gzpath::apply_force(colvarvalue const &force) {
 }
 
 
-colvar::CVBasedPath::CVBasedPath()
+colvar::CVBasedPath::CVBasedPath(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
     set_function_type("gspathCV");
     x.type(colvarvalue::type_scalar);
@@ -514,7 +516,7 @@ int colvar::CVBasedPath::init(std::string const &conf)
             std::vector<std::string> sub_cvc_confs;
             get_key_string_multi_value(conf, it_cv_map->first.c_str(), sub_cvc_confs);
             for (auto it_sub_cvc_conf = sub_cvc_confs.begin(); it_sub_cvc_conf != sub_cvc_confs.end(); ++it_sub_cvc_conf) {
-                cv.push_back((it_cv_map->second)());
+                cv.push_back((it_cv_map->second)(cvmodule));
                 cv.back()->init(*(it_sub_cvc_conf));
                 if (cv.back()->is_enabled(f_cvc_support_gpu)) {
                     // TODO: GPU support for nested CVs
@@ -699,7 +701,7 @@ void colvar::CVBasedPath::wrap(colvarvalue & /* x_unwrapped */) const {}
 
 
 
-colvar::gspathCV::gspathCV()
+colvar::gspathCV::gspathCV(colvarmodule* cvmodule_in): colvar::CVBasedPath(cvmodule_in)
 {
     set_function_type("gspathCV");
     x.type(colvarvalue::type_scalar);
@@ -837,7 +839,7 @@ void colvar::gspathCV::apply_force(colvarvalue const &force) {
     }
 }
 
-colvar::gzpathCV::gzpathCV()
+colvar::gzpathCV::gzpathCV(colvarmodule* cvmodule_in): colvar::CVBasedPath(cvmodule_in)
 {
     set_function_type("gzpathCV");
 }

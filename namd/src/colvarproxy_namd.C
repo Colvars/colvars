@@ -115,13 +115,13 @@ int colvarproxy_namd::init()
   // If an input state file was provided for Colvars via NAMD script, record its name
   auto *input_state_from_namd = Node::Object()->configList->find("colvarsInput");
   if (input_state_from_namd) {
-    colvarproxy_io::set_input_prefix(input_state_from_namd->data);
+    colvarproxy::set_input_prefix(input_state_from_namd->data);
   }
 
   // Take the default output prefixes from the NAMD script
-  colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
-  colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
-  colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
+  colvarproxy::set_output_prefix(std::string(simparams->outputFilename));
+  colvarproxy::set_restart_output_prefix(std::string(simparams->restartFilename));
+  colvarproxy::set_default_restart_frequency(simparams->restartFrequency);
 
   // check if it is possible to save output configuration
   if ((!output_prefix_str.size()) && (!restart_output_prefix_str.size())) {
@@ -438,9 +438,9 @@ void colvarproxy_namd::calculate()
       b_simulation_continuing = true;
 
       // Update NAMD output and restart prefixes
-      colvarproxy_io::set_output_prefix(std::string(simparams->outputFilename));
-      colvarproxy_io::set_restart_output_prefix(std::string(simparams->restartFilename));
-      colvarproxy_io::set_default_restart_frequency(simparams->restartFrequency);
+      colvarproxy::set_output_prefix(std::string(simparams->outputFilename));
+      colvarproxy::set_restart_output_prefix(std::string(simparams->restartFilename));
+      colvarproxy::set_default_restart_frequency(simparams->restartFrequency);
       cvmodule->setup_output();
     }
   }

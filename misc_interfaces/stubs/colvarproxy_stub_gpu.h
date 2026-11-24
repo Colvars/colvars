@@ -41,7 +41,7 @@ public:
     return smp_mode_t::gpu;
   }
   std::vector<smp_mode_t> get_available_smp_modes() const override {
-    std::vector<colvarproxy_smp::smp_mode_t> available_modes{
+    std::vector<colvarproxy::smp_mode_t> available_modes{
       smp_mode_t::gpu
     };
     return available_modes;
@@ -86,8 +86,8 @@ private:
 
   // These buffers are for read_frame_xyz
   std::vector<cvm::rvector> xyz_positions;
-  colvarproxy_atoms::atom_buffer_real_t m_positions_soa;
-  colvarproxy_atoms::atom_buffer_real_t m_applied_forces_soa;
+  colvarproxy::atom_buffer_real_t m_positions_soa;
+  colvarproxy::atom_buffer_real_t m_applied_forces_soa;
   std::vector<cvm::rvector> forces_by_id;
 };
 
