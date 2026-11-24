@@ -128,6 +128,27 @@ class TestUnitsAndTimestep(unittest.TestCase):
                         for force in state.getForces().value_in_unit(unit.kilojoules_per_mole / unit.nanometer):
                             self.assertLess(math.sqrt(sum(component**2 for component in force)), 1e-6)
 
+    def test_eabf_noise_uses_integrator_step_size(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            positions = [(0, 0, 0), (1, 0, 0)]
+            for platform in PLATFORMS:
+                with self.subTest(platform=platform):
+                    first_kick = {}
+                    for dt_fs, damping in [(1, 1), (2, 1), (2, 0)]:
+                        config = EABF_CONFIG.format(damping=damping)
+                        prefix = root / f"{platform}-{dt_fs}fs-{damping}"
+                        _, trajectory = run(config, prefix, platform, positions, dt_fs=dt_fs, steps=1)
+                        # At step zero the extended coordinate is at the physical value and at rest.
+                        # Its step-one velocity is therefore entirely the first random kick.
+                        self.assertEqual(trajectory[0]["vr_d"], 0.0)
+                        first_kick[dt_fs, damping] = trajectory[1]["vr_d"]
+                    self.assertNotEqual(first_kick[1, 1], 0.0)
+                    self.assertEqual(first_kick[2, 0], 0.0)
+                    # The same seed gives the same Gaussian deviate in both runs.
+                    expected_ratio = math.sqrt(math.expm1(-0.004) / math.expm1(-0.002))
+                    self.assertAlmostEqual(first_kick[2, 1] / first_kick[1, 1], expected_ratio, delta=1e-8)
+
 
 if __name__ == "__main__":
     unittest.main()

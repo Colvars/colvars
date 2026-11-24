@@ -188,6 +188,12 @@ protected:
   cvm::real ext_force_k = 0.0;
   /// Friction coefficient for Langevin extended dynamics
   cvm::real ext_gamma = 0.0;
+  /// Equilibrium momentum variance (mass times kBT)
+  cvm::real ext_momentum_variance = 0.0;
+  /// Effective time step for the cached Langevin coefficients
+  cvm::real ext_langevin_dt = 0.0;
+  /// Velocity decay factor for Langevin extended dynamics
+  cvm::real ext_langevin_decay = 1.0;
   /// Amplitude of Gaussian white noise for Langevin extended dynamics
   cvm::real ext_sigma = 0.0;
 

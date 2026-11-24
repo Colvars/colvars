@@ -10,6 +10,7 @@
 #include <list>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 
@@ -774,11 +775,12 @@ int colvar::init_extended_Lagrangian(std::string const &conf)
     if (ext_gamma != 0.0) {
       enable(f_cv_Langevin);
       cvmodule->cite_feature("BAOA integrator");
-      ext_gamma *= 1.0e-3; // correct as long as input is required in ps-1 and cvmodule->dt() is in fs
-      // Adjust Langevin sigma for slow time step if time_step_factor != 1
-      // Eq. (6a) in https://doi.org/10.1021/acs.jctc.2c00585
-      ext_sigma = cvm::sqrt((1.0 - cvm::exp(-2.0 * ext_gamma * cvmodule->dt() * cvm::real(time_step_factor)))
-                             * ext_mass * proxy->boltzmann() * temp);
+      ext_gamma *= 1.0e-3; // Convert ps^-1 to fs^-1 (cvmodule->dt() is in fs)
+      ext_momentum_variance = ext_mass * proxy->boltzmann() * temp;
+      // Langevin coefficients are computed at integration time, when the timestep is known
+      ext_langevin_dt = 0.0;
+      ext_langevin_decay = 1.0;
+      ext_sigma = 0.0;
     } else {
       ext_sigma = 0.0;
     }
@@ -2115,10 +2117,19 @@ void colvar::update_extended_Lagrangian()
 
   // [O] leap to v_(i+1/2) (10c)
   if (is_enabled(f_cv_Langevin)) {
+    // Recompute the coefficients whenever the effective timestep changes
+    // (including timeStepFactor): some backends only know the timestep
+    // after the configuration is read, and it may change between runs.
+    // Eq. (6a) in https://doi.org/10.1021/acs.jctc.2c00585
+    if (dt != ext_langevin_dt) {
+      cvm::real const exponent = -dt * ext_gamma;
+      ext_langevin_decay = cvm::exp(exponent);
+      ext_sigma = cvm::sqrt(-std::expm1(2.0 * exponent) * ext_momentum_variance);
+      ext_langevin_dt = dt;
+    }
     colvarvalue rnd(x);
     rnd.set_random();
-    // ext_sigma has been computed at init time according to (10c)
-    v_ext = cvm::exp(- 1.0 * dt * ext_gamma) * v_ext + ext_sigma * rnd / ext_mass;
+    v_ext = ext_langevin_decay * v_ext + ext_sigma * rnd / ext_mass;
   }
   // [A] Second half step in position (10d)
   x_ext  += dt * v_ext / 2.0;
