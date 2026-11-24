@@ -435,6 +435,9 @@ conditions. Use `PbcMode::Enabled` or `PbcMode::Disabled` to override this.
 - Volumetric map variables and GPU-resident Colvars kernels are not supported.
 - OpenCL, HIP, and CUDA builds without the deferred CUDA path cannot perform
   same-step ABF/eABF total-force sampling.
+- With extended-Lagrangian Colvars, set the integrator step size before the
+  first force evaluation of a step (including `getState()` force queries):
+  changing it afterwards on the same step raises an error.
 - `openmm_fep` expects a standard OpenMM system with exactly one
   `NonbondedForce`.
 - `alch_decouple=True` is not implemented.

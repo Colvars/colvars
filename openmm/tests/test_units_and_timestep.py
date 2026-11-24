@@ -149,6 +149,40 @@ class TestUnitsAndTimestep(unittest.TestCase):
                     expected_ratio = math.sqrt(math.expm1(-0.004) / math.expm1(-0.002))
                     self.assertAlmostEqual(first_kick[2, 1] / first_kick[1, 1], expected_ratio, delta=1e-8)
 
+    def test_step_size_change_after_force_probe_is_rejected(self):
+        config = EABF_CONFIG.format(damping=1)
+        positions = [(0, 0, 0), (1, 0, 0)]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for platform in PLATFORMS:
+                for boundary in (0, 2):
+                    with self.subTest(platform=platform, change_after_steps=boundary):
+                        options = dict(dt_fs=2, steps=4, initial_dt_fs=1, change_after_steps=boundary)
+                        # Changing the step size between steps is supported.
+                        _, trajectory = run(config, root / f"{platform}-{boundary}", platform, positions,
+                                            **options)
+                        self.assertEqual([r["step"] for r in trajectory], list(range(5)))
+                        # After a force query, the cached extended step used the old step size.
+                        with self.assertRaisesRegex(mm.OpenMMException, "Cannot change the OpenMM step size"):
+                            run(config, root / f"{platform}-{boundary}-probe", platform, positions,
+                                probe_before_change=True, **options)
+
+    def test_tabf_post_step_readback_keeps_completed_step(self):
+        config = EABF_CONFIG.format(damping=1)
+        positions = [(0, 0, 0), (1, 0, 0)]
+        with tempfile.TemporaryDirectory() as tmp:
+            for platform in PLATFORMS:
+                with self.subTest(platform=platform):
+                    options = dict(steps=3, initial_dt_fs=1, change_after_steps=3, tabf_readback=True)
+                    prefix = Path(tmp) / platform
+                    baseline, trajectory = run(config, prefix, platform, positions, dt_fs=1, **options)
+                    changed, recorded = run(config, prefix.with_name(platform + "-changed"),
+                                            platform, positions, dt_fs=2, **options)
+                    # TABF permits reusing the preceding step for a readback of the same geometry.
+                    self.assertEqual([r["step"] for r in trajectory], [0, 1, 2])
+                    self.assertEqual(recorded, trajectory)
+                    self.assertEqual(changed.getPotentialEnergy(), baseline.getPotentialEnergy())
+
 
 if __name__ == "__main__":
     unittest.main()

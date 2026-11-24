@@ -8,6 +8,7 @@
 #include "openmm/System.h"
 #include "openmm/internal/ContextImpl.h"
 
+#include "colvar.h"
 #include "colvaratoms.h"
 #include "colvarmodule.h"
 #include "colvarproxy_openmm_version.h"
@@ -384,6 +385,15 @@ bool config_tabf_alpha_boundaries(const std::string& configText,
         }
     }
     return false;
+}
+
+bool has_active_extended_coordinate(colvarmodule* cvmodule)
+{
+    const auto& colvars = *cvmodule->variables();
+    return std::any_of(colvars.begin(), colvars.end(), [](const colvar* cv) {
+        return cv->is_enabled(colvardeps::f_cv_active) &&
+               cv->is_enabled(colvardeps::f_cv_extended_Lagrangian);
+    });
 }
 
 } // namespace
@@ -1009,6 +1019,16 @@ double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec
                                     lambdaValue,
                                     tabfAlphaValue,
                                     requestedPositions)) {
+        // Extended coordinates were already integrated with the previous step size:
+        // reusing the cached result would silently use the wrong timestep.
+        // (A TABF readback of the preceding, completed step is not affected.)
+        if (cachedOpenmmStep_ == openmmStep &&
+            1000.0 * context.getIntegrator().getStepSize() != lastIntegrationTimestepFs_ &&
+            has_active_extended_coordinate(cvmodule)) {
+            throw OpenMMException("Cannot change the OpenMM step size after Colvars forces were "
+                                  "evaluated on the same step with an extended-Lagrangian coordinate. "
+                                  "Set the step size before the first force evaluation of a step.");
+        }
         biasEnergy_ = cachedBiasEnergy_;
         auto& appliedForces = *(modify_atom_applied_forces());
         appliedForces = cachedAppliedForces_;
