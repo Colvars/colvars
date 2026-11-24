@@ -744,12 +744,10 @@ colvarvalue const colvarvalue::interpolate(colvarvalue const &x1,
   case colvarvalue::type_unit3vector:
   case colvarvalue::type_quaternion:
     if (interp.norm()/cvm::sqrt(d2) < 1.0e-6) {
-#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
       cvm::error_static(nullptr, "Error: interpolation between "+cvm::to_str(x1)+" and "+
                  cvm::to_str(x2)+" with lambda = "+cvm::to_str(lambda)+
                  " is undefined: result = "+cvm::to_str(interp)+"\n",
                  COLVARS_INPUT_ERROR);
-#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
     }
     interp.apply_constraints();
     return interp;
