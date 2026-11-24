@@ -1,11 +1,14 @@
 #include "colvarproxy_openmm.h"
 
+#include "openmm/CompoundIntegrator.h"
 #include "openmm/Context.h"
 #include "openmm/CustomIntegrator.h"
 #include "openmm/Force.h"
 #include "openmm/Integrator.h"
 #include "openmm/OpenMMException.h"
 #include "openmm/System.h"
+#include "openmm/VariableLangevinIntegrator.h"
+#include "openmm/VariableVerletIntegrator.h"
 #include "openmm/internal/ContextImpl.h"
 
 #include "colvar.h"
@@ -985,6 +988,19 @@ double colvarproxy_openmm::calculate(ContextImpl& context, const std::vector<Vec
 {
     if (!isInitialized_) {
         initializeColvars();
+    }
+
+    // A CompoundIntegrator can switch to an adaptive integrator between calls.
+    const Integrator* integrator = &context.getIntegrator();
+    while (const auto* compound = dynamic_cast<const CompoundIntegrator*>(integrator)) {
+        integrator = &compound->getIntegrator(compound->getCurrentIntegrator());
+    }
+    if ((dynamic_cast<const VariableLangevinIntegrator*>(integrator) != nullptr ||
+         dynamic_cast<const VariableVerletIntegrator*>(integrator) != nullptr) &&
+        has_active_extended_coordinate(cvmodule)) {
+        // These integrators determine the new step size only after computing forces.
+        throw OpenMMException("Colvars extended-Lagrangian dynamics require a step size known "
+                              "at force evaluation. OpenMM adaptive integrators are not supported.");
     }
 
     if (currentContext_ != &context) {

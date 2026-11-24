@@ -183,6 +183,32 @@ class TestUnitsAndTimestep(unittest.TestCase):
                     self.assertEqual(recorded, trajectory)
                     self.assertEqual(changed.getPotentialEnergy(), baseline.getPotentialEnergy())
 
+    def test_adaptive_steps_are_rejected_for_extended_dynamics(self):
+        config = EABF_CONFIG.format(damping=1)
+        positions = [(0, 0, 0), (1, 0, 0)]
+        with tempfile.TemporaryDirectory() as tmp:
+            for platform in PLATFORMS:
+                for integrator_name in ("VariableVerlet", "VariableLangevin", "Compound"):
+                    with self.subTest(platform=platform, integrator=integrator_name):
+                        if integrator_name == "VariableVerlet":
+                            integrator = mm.VariableVerletIntegrator(0.001)
+                        elif integrator_name == "VariableLangevin":
+                            integrator = mm.VariableLangevinIntegrator(300, 1, 0.001)
+                        else:
+                            integrator = mm.CompoundIntegrator()
+                            integrator.addIntegrator(mm.VerletIntegrator(0.001))
+                            integrator.addIntegrator(mm.VariableVerletIntegrator(0.001))
+                        prefix = Path(tmp) / f"{platform}-{integrator_name}"
+                        system, context = make_context(config, prefix, platform, positions, integrator)
+                        try:
+                            if integrator_name == "Compound":
+                                context.getState(forces=True)
+                                integrator.setCurrentIntegrator(1)
+                            with self.assertRaisesRegex(mm.OpenMMException, "adaptive integrators are not supported"):
+                                context.getState(forces=True)
+                        finally:
+                            del context
+
 
 if __name__ == "__main__":
     unittest.main()
