@@ -194,11 +194,11 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
                                           bool optional)
 {
   int error_code = COLVARS_OK;
-  cvm::atom_group *group = nullptr;
   std::string group_conf;
 
   if (key_lookup(conf, group_key, &group_conf)) {
-    group = new cvm::atom_group(group_key, cvmodule);
+    // Owned here until registered, so that it is freed if parsing throws
+    std::unique_ptr<cvm::atom_group> group(new cvm::atom_group(group_key, cvmodule));
 
     if (b_try_scalable) {
       if (is_available(f_cvc_scalable_com)
@@ -217,11 +217,9 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
     if (group_conf.empty()) {
       error_code |= cvmodule->error("Error: atom group \"" + group->key + "\" has no definition.\n",
                                COLVARS_INPUT_ERROR);
-      delete group;
-      group = nullptr;
       // Silence unused variable warning; TODO stop returning a pointer
       (void) error_code;
-      return group;
+      return nullptr;
     }
 
     cvmodule->increase_depth();
@@ -230,13 +228,14 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
       error_code |=
           cvmodule->error("Error: in definition of atom group \"" + std::string(group_key) + "\".",
                      COLVARS_INPUT_ERROR);
-      delete group;
-      group = nullptr;
-    } else {
-      register_atom_group(group);
-      error_code |= group->check_keywords(group_conf, group_key);
+      cvmodule->decrease_depth();
+      return nullptr;
     }
+    cvm::atom_group *group_ptr = group.release();
+    register_atom_group(group_ptr);
+    error_code |= group_ptr->check_keywords(group_conf, group_key);
     cvmodule->decrease_depth();
+    return group_ptr;
 
   } else {
 
@@ -250,7 +249,7 @@ cvm::atom_group *colvar::cvc::parse_group(std::string const &conf,
   // Silence unused variable warning; TODO stop returning a pointer
   (void) error_code;
 
-  return group;
+  return nullptr;
 }
 
 
