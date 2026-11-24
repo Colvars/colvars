@@ -716,19 +716,12 @@ colvarvalue colvarvalue::dist2_grad(colvarvalue const &x2) const
 
 
 /// Return the midpoint between x1 and x2, optionally weighted by lambda
-/// (which must be between 0.0 and 1.0)
+/// (which is assumet to be between 0.0 and 1.0)
 colvarvalue const colvarvalue::interpolate(colvarvalue const &x1,
                                            colvarvalue const &x2,
                                            cvm::real const lambda)
 {
   colvarvalue::check_types(x1, x2);
-
-  if ((lambda < 0.0) || (lambda > 1.0)) {
-#if defined(COLVARS_DEBUG_SIZE_BOUNDARY_CHECK)
-    cvm::error_static(nullptr, "Error: trying to interpolate between two colvarvalues with a "
-               "lamdba outside [0:1].\n", COLVARS_BUG_ERROR);
-#endif // COLVARS_DEBUG_SIZE_BOUNDARY_CHECK
-  }
 
   colvarvalue interp = ((1.0-lambda)*x1 + lambda*x2);
   cvm::real const d2 = x1.dist2(x2);
