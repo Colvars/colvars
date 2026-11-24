@@ -41,19 +41,23 @@ colvar::angle::angle(cvm::atom_group::simple_atom const &a1,
                      cvm::atom_group::simple_atom const &a3,
                      colvarmodule* cvmodule_in) : angle(cvmodule_in)
 {
-  group1 = new cvm::atom_group(cvmodule);
-  group2 = new cvm::atom_group(cvmodule);
-  group3 = new cvm::atom_group(cvmodule);
+  // Owned here until registered, so that they are freed if adding atoms throws
+  std::unique_ptr<cvm::atom_group> g1(new cvm::atom_group(cvmodule));
+  std::unique_ptr<cvm::atom_group> g2(new cvm::atom_group(cvmodule));
+  std::unique_ptr<cvm::atom_group> g3(new cvm::atom_group(cvmodule));
   {
-    auto modify_group1 = group1->get_atom_modifier();
-    auto modify_group2 = group2->get_atom_modifier();
-    auto modify_group3 = group3->get_atom_modifier();
+    auto modify_group1 = g1->get_atom_modifier();
+    auto modify_group2 = g2->get_atom_modifier();
+    auto modify_group3 = g3->get_atom_modifier();
     modify_group1.add_atom(a1);
     modify_group2.add_atom(a2);
     modify_group3.add_atom(a3);
   }
+  group1 = g1.release();
   register_atom_group(group1);
+  group2 = g2.release();
   register_atom_group(group2);
+  group3 = g3.release();
   register_atom_group(group3);
 }
 
@@ -249,23 +253,28 @@ colvar::dihedral::dihedral(cvm::atom_group::simple_atom const &a1,
 {
   b_1site_force = false;
 
-  group1 = new cvm::atom_group(cvmodule);
-  group2 = new cvm::atom_group(cvmodule);
-  group3 = new cvm::atom_group(cvmodule);
-  group4 = new cvm::atom_group(cvmodule);
+  // Owned here until registered, so that they are freed if adding atoms throws
+  std::unique_ptr<cvm::atom_group> g1(new cvm::atom_group(cvmodule));
+  std::unique_ptr<cvm::atom_group> g2(new cvm::atom_group(cvmodule));
+  std::unique_ptr<cvm::atom_group> g3(new cvm::atom_group(cvmodule));
+  std::unique_ptr<cvm::atom_group> g4(new cvm::atom_group(cvmodule));
   {
-    auto modify_group1 = group1->get_atom_modifier();
-    auto modify_group2 = group2->get_atom_modifier();
-    auto modify_group3 = group3->get_atom_modifier();
-    auto modify_group4 = group4->get_atom_modifier();
+    auto modify_group1 = g1->get_atom_modifier();
+    auto modify_group2 = g2->get_atom_modifier();
+    auto modify_group3 = g3->get_atom_modifier();
+    auto modify_group4 = g4->get_atom_modifier();
     modify_group1.add_atom(a1);
     modify_group2.add_atom(a2);
     modify_group3.add_atom(a3);
     modify_group4.add_atom(a4);
   }
+  group1 = g1.release();
   register_atom_group(group1);
+  group2 = g2.release();
   register_atom_group(group2);
+  group3 = g3.release();
   register_atom_group(group3);
+  group4 = g4.release();
   register_atom_group(group4);
 }
 
