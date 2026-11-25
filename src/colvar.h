@@ -319,6 +319,8 @@ public:
   /// \brief Same as \link colvar::calc_cvc_values \endlink but for Jacobian derivatives/forces
   int calc_cvc_Jacobians(int first, size_t num_cvcs);
 
+  int debug_cvc_gradients(int first = 0, size_t num_cvcs = 0);
+
   /// \brief Collect quantities from CVCs and update aggregated data for the colvar
   int collect_cvc_data();
 
