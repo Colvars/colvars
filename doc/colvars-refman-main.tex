@@ -276,7 +276,7 @@ Vectors representing the gradient are rescaled as indicated by the radio buttons
 \emph{Max. vector norm} rescales gradients so that the largest vector component of each colvar's gradient is represented by an arrow of the specified length, in \AA.
 \emph{Scaling factor} rescales gradients by the specified factor, divided by the colvar's \texttt{width} parameter (1 by default, see~\ref{sec:colvar_grid_params}).
 This use of \texttt{width} makes it easier to compare the gradients of collective variables that are not commensurate.
-The scaling factor has the unit $\AA * L / (cv / width)$, where $L$ is the current length unit, and $cv$ represents the natural unit of the collective variable.
+The scaling factor has the unit $\text{\AA} * L / (cv / width)$, where $L$ is the current length unit, and $cv$ represents the natural unit of the collective variable.
 By default $width$ is unity, but $(cv / width)$ may be seen as dimensionless if $width$ is expressed in cv units.
 
 The Dashboard offers visualizations for specific types of variables:
