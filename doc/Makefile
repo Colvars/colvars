@@ -1,6 +1,7 @@
 .PHONY: all pdf html latexml doxygen webpage webpage-legacy images FORCE \
 	install install-images clean clean-all \
-	update-code-refs update-cvscript-cmdline-doc updates update-version-list
+	update-code-refs update-cvscript-cmdline-doc updates update-version-list \
+	keywords check-keywords
 
 ifeq ($(COLVARS_RELEASE),)
 # Unless defined otherwise, the release label is the name of the branch
@@ -127,6 +128,27 @@ html-%/index.html: colvars-refman-%.tex $(TEX_INPUTS) \
 	if [ $${errors} -gt 0 ] ; then \
 		grep -E -A3 '^(Error|Fatal):' html-$*/latexml.log ; rm -f $@ ; false ; fi
 
+# Keyword references for AI tools and scripts (see keywords/README.md):
+# keywords/colvars-keywords-<engine>.{json,md} from the manual, and
+# keywords/colvars-keywords-src.json from a scan of the library source
+KEYWORDS_DOC = $(foreach _,${ENGINES},keywords/colvars-keywords-$_.json)
+KEYWORDS_SRC = keywords/colvars-keywords-src.json
+keywords: $(KEYWORDS_DOC) $(KEYWORDS_SRC)
+
+keywords/colvars-keywords-%.json: colvars-refman-%.tex colvars-refman-main.tex \
+		colvars-engine-flags.tex cv_version.tex keywords/extract_doc_keywords.py
+	python3 keywords/extract_doc_keywords.py --engines $* --output-dir keywords
+
+$(KEYWORDS_SRC): $(wildcard ../src/*.cpp ../src/*.h) keywords/extract_src_keywords.py
+	python3 keywords/extract_src_keywords.py --output $@
+
+# Report differences between the manual and the code (does not fail)
+check-keywords: keywords keywords/compare_keywords.py
+	python3 keywords/compare_keywords.py --doc-json $(KEYWORDS_DOC) \
+		--src-json $(KEYWORDS_SRC) --output keywords/keywords-report.md
+	@grep '^##' keywords/keywords-report.md
+	@echo "Full report: keywords/keywords-report.md"
+
 spin-tilt-scheme-512px.png: spin-tilt-scheme.pdf
 	convert -flatten -resize 512x300 $^ $@
 
@@ -140,6 +162,7 @@ clean-all: clean
 	rm -f $(PDF) $(LATEXML_OPTS_STAMP)
 	rm -rf $(HTML_DIRS)
 	rm -fr doxygen/html
+	rm -f keywords/colvars-keywords-*.json keywords/colvars-keywords-*.md keywords/keywords-report.md
 	@echo
 	@echo "Note: only removed files that this branch is set to build."
 

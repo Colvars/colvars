@@ -21,3 +21,7 @@
 *-eps-converted-to.pdf
 html-*/
 latexml-options.txt
+keywords/colvars-keywords-*.json
+keywords/colvars-keywords-*.md
+keywords/keywords-report.md
+keywords/__pycache__/
