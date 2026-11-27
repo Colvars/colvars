@@ -116,6 +116,11 @@ jobs:
           pixi run --manifest-path openmm/pixi.toml \
             bash devel-tools/compile-openmm.sh
 
+      - name: Test OpenMM FEP long-range correction
+        run: |
+          pixi run --manifest-path openmm/pixi.toml \
+            python openmm/tests/test_fep_long_range_correction.py
+
       - name: Smoke test OpenMM Python API
         shell: bash
         run: |
