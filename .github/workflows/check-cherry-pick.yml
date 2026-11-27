@@ -21,6 +21,8 @@ jobs:
       matrix:
         branch:
           - gromacs-2026
+          - gromacs-2027
+          - lammps-stable_30Sep2026
           - namd-3.0
 
     steps:

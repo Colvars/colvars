@@ -16,7 +16,7 @@ RUN dnf -y update && \
         "@Development Tools" \
         gcc gcc-c++ gcc-gfortran \
         gcc-toolset-{12,13,14,15} \
-        clang{,19,20,21}{,-devel,-analyzer,-tools-extra} \
+        clang{,19,20}{,-devel,-analyzer,-tools-extra} \
         cppcheck libasan \
         autoconf automake cvs git subversion mercurial \
         cmake ccache ninja-build mold \
@@ -40,6 +40,9 @@ RUN dnf -y update && \
 # The Clang package installs environment-modules, which conflicts with Lmod
 RUN alternatives --set modules.sh /usr/share/lmod/lmod/init/profile
 
+# Install GitHub CLI
+RUN dnf -y config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo && dnf -y install gh --repo gh-cli
+
 # Build Charm++
 RUN umask 022 && \
     source /etc/profile && \
@@ -58,7 +61,7 @@ RUN git clone https://github.com/Colvars/spiff /tmp/spiff && \
     rm -fr /tmp/spiff
 
 # Download pre-built libTorch
-RUN curl -L -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.15.0%2Bcpu.zip && \
+RUN curl -L -o /tmp/libtorch.zip https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.4.1%2Bcpu.zip && \
     unzip /tmp/libtorch.zip -d /opt && \
     rm -f /tmp/libtorch.zip
 

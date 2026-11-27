@@ -132,6 +132,10 @@ EOF
 
     eval ${cmd[@]}
 
+    if ! grep -q RANDOM_USE_DRAND48 < ${dirname}/Make.config ; then
+        echo "CXXOPTS += -DRANDOM_USE_DRAND48" >> ${dirname}/Make.config
+    fi
+
     if pushd ${dirname} ; then
         make -j$(nproc --all)
         ret_code=$?

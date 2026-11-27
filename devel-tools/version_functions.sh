@@ -194,7 +194,7 @@ update_all_versions() {
                           ${branch} \
         && \
     update_version_string "GROMACS interface" \
-                          '^src/colvarproxy' \
+                          '^gromacs/src/colvarproxy\|^src/colvarproxy' \
                           get_colvarproxy_gromacs_version \
                           COLVARPROXY_VERSION \
                           gromacs/src/colvarproxy_gromacs_version.h \
@@ -226,9 +226,16 @@ update_all_versions() {
                           get_cv_dashboard_version \
                           none \
                           vmd/cv_dashboard/VERSION \
-                          ${branch} \
-        && \
-    git commit -m "Update version strings" -m "[update-doc]"
+                          ${branch}
+
+    local retval=$?
+    if [ $retval == 0 ] ; then
+        if ! git diff --cached --quiet ; then
+            git commit -m "Update version strings" -m "[update-doc]"
+        fi
+    else
+        return $retval
+    fi
 }
 
 
