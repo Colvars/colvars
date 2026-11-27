@@ -139,7 +139,7 @@ def _epsilon_value(value) -> float:
     return _quantity_value(value, openmm.unit.kilojoule_per_mole)
 
 
-def _copy_force_settings(source, target) -> None:
+def _copy_force_settings(source, target, *, copy_long_range_correction: bool = True) -> None:
     openmm = _require_openmm()
     method = source.getNonbondedMethod()
     if method == openmm.NonbondedForce.NoCutoff:
@@ -153,7 +153,10 @@ def _copy_force_settings(source, target) -> None:
     if hasattr(source, "getUseSwitchingFunction"):
         target.setUseSwitchingFunction(source.getUseSwitchingFunction())
         target.setSwitchingDistance(source.getSwitchingDistance())
-    if hasattr(source, "getUseLongRangeCorrection"):
+    if not copy_long_range_correction:
+        # The tail integral of a Coulomb 1/r term does not converge.
+        target.setUseLongRangeCorrection(False)
+    elif hasattr(source, "getUseLongRangeCorrection"):
         target.setUseLongRangeCorrection(source.getUseLongRangeCorrection())
     elif hasattr(source, "getUseDispersionCorrection"):
         target.setUseLongRangeCorrection(source.getUseDispersionCorrection())
@@ -361,7 +364,7 @@ def _add_same_partition_electrostatic_correction(
     for atom in range(system.getNumParticles()):
         charge, _sigma, _epsilon = original_particle_params[atom]
         correction.addParticle([charge, 1.0 if atom in grow else 0.0])
-    _copy_force_settings(nbforce, correction)
+    _copy_force_settings(nbforce, correction, copy_long_range_correction=False)
     correction.setForceGroup(group_elec)
     if add_grow_group:
         correction.addInteractionGroup(grow, grow)
@@ -437,7 +440,7 @@ def _add_same_partition_electrostatic_lambda_correction(
     for atom in range(system.getNumParticles()):
         charge, _sigma, _epsilon = original_particle_params[atom]
         correction.addParticle([charge, 1.0 if atom in grow else 0.0])
-    _copy_force_settings(nbforce, correction)
+    _copy_force_settings(nbforce, correction, copy_long_range_correction=False)
     correction.setForceGroup(group_elec)
     if add_grow_group:
         correction.addInteractionGroup(grow, grow)
