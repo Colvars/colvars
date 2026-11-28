@@ -46,6 +46,7 @@ ${indent}${indent}group2 { atomNumbers 3 4 }\n${indent}}\n}\n"
       # If no selection, edit all variables
       set cvs $::cv_dashboard::cvs
     }
+    set cfg ""
     foreach c $cvs {
       append cfg "colvar {[get_cv_config $c]}\n\n"
     }
