@@ -2,6 +2,11 @@
 
 This folder contains build recipes and documentation regarding the containers used in Colvars development, primarily for CI jobs.  When trying to troubleshoot feature regressions, you are encouraged to use the containers documented here to ensure a consistent build environment.
 
+Available recipes (the image tag is the file name without extension):
+- `CentOS9-devel-x86_64`, `CentOS9-devel-arm64`: compilers and libraries to build and test the library and the engines.
+- `CentOS9-oneAPI-x86_64`: same with the Intel oneAPI compilers.
+- `CentOS9-doc-x86_64`: build the documentation in `doc/` (PDF with TeX Live, HTML with LaTeXML, Doxygen).  TeX Live is installed from upstream (frozen snapshot of the year given by `TEXLIVE_YEAR`) with a curated list of packages: when the manual starts using a new LaTeX package, add it to the `tlmgr install` list.
+
 ## Prerequisites
 
 Install Docker (https://docs.docker.com/engine/install/) or Podman (https://podman.io/); with Podman, replace `docker` with `podman` in all the commands below.  Both packages can create containers from a Dockerfile format.

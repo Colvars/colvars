@@ -26,10 +26,6 @@
 /// need to parse input inherit from this
 class colvarparse : public colvarparams {
 
-protected:
-
-  colvarmodule *cvmodule = nullptr;
-
 public:
 
   colvarmodule *get_cvmodule() { return cvmodule; }

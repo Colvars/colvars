@@ -9,7 +9,10 @@ namespace colvars_gpu {
 #if defined (COLVARS_CUDA) || defined (COLVARS_HIP)
 class colvarcomp_gpu_graph {
 public:
-  colvarcomp_gpu_graph(colvar::cvc* cvc_in, colvarmodule* cvmodule_in): cvc(cvc_in), cvmodule(cvmodule_in) {}
+  colvarcomp_gpu_graph(colvar::cvc* cvc_in, colvarmodule* cvmodule_in):
+    cvc(cvc_in), cvmodule(cvmodule_in), graph_total_force(cvmodule),
+    graph_calc_value(cvmodule), graph_calc_gradients(cvmodule),
+    graph_calc_Jacobian_derivative(cvmodule) {}
   virtual ~colvarcomp_gpu_graph() {}
   int reset_graphs();
   int calc_value_gpu(bool requires_lattice);
@@ -17,12 +20,12 @@ public:
   int calc_force_invgrads_gpu(bool requires_lattice);
   int calc_Jacobian_derivative_gpu(bool requires_lattice);
 protected:
+  colvar::cvc* cvc;
+  colvarmodule* cvmodule;
   gpu_graph_t graph_total_force;
   gpu_graph_t graph_calc_value;
   gpu_graph_t graph_calc_gradients;
   gpu_graph_t graph_calc_Jacobian_derivative;
-  colvar::cvc* cvc;
-  colvarmodule* cvmodule;
   /// \brief Calculate the variable on GPU
   virtual int add_calc_value_node() { return COLVARS_NOT_IMPLEMENTED; }
 

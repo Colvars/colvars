@@ -37,6 +37,10 @@ on:
         description: "Name of the VMD plugins repository"
         required: false
         type: string
+      vmd_plugins_repo_ref:
+        description: "Name of the branch of the plugins repository"
+        required: false
+        type: string
       path_compile_script:
         description: "Path of the compilation script of the backend"
         required: true
@@ -123,7 +127,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: ${{ inputs.vmd_plugins_repo }}
-          ref: master
+          ref: ${{ inputs.vmd_plugins_repo_ref }}
           path: 'vmd-plugins-source'
           token: ${{ steps.private-repos-token.outputs.token }}
 

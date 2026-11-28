@@ -6,6 +6,13 @@
 % Colvars repository at GitHub.
 
 \documentclass[11pt]{article}
+
+% \iflatexml is true only when building HTML with LaTeXML, which preloads
+% latexml/colvars-latexml.sty.ltxml (LaTeXML versions of the macros below)
+\ifdefined\iflatexml\else
+  \expandafter\newif\csname iflatexml\endcsname
+\fi
+
 \usepackage[margin=1in]{geometry}
 
 \usepackage[english]{babel}
@@ -28,14 +35,15 @@
 \usepackage{natbib}
 
 \usepackage{graphicx}
-\usepackage{color}
+\usepackage{xcolor}
 \definecolor{background-color}{gray}{0.84}
 \usepackage{transparent}
 
 % Example code blocks
-\usepackage{xcolor} % Needed for HTML version
+\usepackage{xcolor}
 \usepackage{mdframed}
 
+\iflatexml\else % Example environments: see colvars-latexml.sty.ltxml
 \definecolor{cvexample-border-color}{rgb}{0.5,0.0,0.5}
 \definecolor{cvexample-background-color}{rgb}{1.0,0.95,1.0}
 \definecolor{cvkeyword-background-color}{rgb}{0.95,0.8,0.95}
@@ -44,8 +52,8 @@
   \begin{mdframed}[%
       linecolor=cvexample-border-color,linewidth=2pt,%
       backgroundcolor=cvexample-background-color]
-  \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
-  \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
+  \begin{ttfamily}}{%
+  \end{ttfamily}%
   \end{mdframed}
 }
 
@@ -55,8 +63,8 @@
   \begin{mdframed}[%
       linecolor=mdexample-border-color,linewidth=2pt,%
       backgroundcolor=mdexample-background-color]
-  \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
-  \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
+  \begin{ttfamily}}{%
+  \end{ttfamily}%
   \end{mdframed}
 }
 
@@ -66,10 +74,11 @@
   \begin{mdframed}[%
       linecolor=datafileexample-border-color,linewidth=2pt,%
       backgroundcolor=datafileexample-background-color]
-  \ifdefined\HCode\HCode{<pre>}\else\begin{ttfamily}\fi}{%
-  \ifdefined\HCode\HCode{</pre>}\else\end{ttfamily}\fi
+  \begin{ttfamily}}{%
+  \end{ttfamily}%
   \end{mdframed}
 }
+\fi % \iflatexml
 
 % Note: the Python version is currently not built yet
 \newcommand{\cvscriptexampleinputcv}[2]{%
@@ -126,18 +135,38 @@ cv.#1(#2)
 
 \begin{document}
 
-\ifdefined\HCode
-\input{colvars-refman-css.tex}
-\fi
-
 \input{cv_version.tex}
 
-\ifdefined\HCode
-\HCode{<div id="container">
-<div class="inner">
-}
+% Links to the manuals for all engines.  LaTeXML: relative links between
+% the html-<engine>/ folders, which sit next to the PDFs (both in doc/ and in
+% the release folder of the website)
+\iflatexml
+\newcommand{\cvmanualurl}[1]{../html-#1/index.html}
+\newcommand{\cvmanualpdfurl}{../colvars-refman-\mdengine.pdf}
+\else
+\newcommand{\cvmanualurl}[1]{%
+  https://colvars.github.io/\cvreleaselabel/colvars-refman-#1.pdf}
 \fi
+\newcommand{\cvmanuallinks}{%
+  Updated versions of this manual:
+  [\href{\cvmanualurl{gromacs}}{GROMACS}]
+  [\href{\cvmanualurl{lammps}}{LAMMPS}]
+  [\href{\cvmanualurl{namd}}{NAMD}]
+  [\href{\cvmanualurl{tinkerhp}}{Tinker-HP}]
+  [\href{\cvmanualurl{vmd}}{VMD}]}
+\newcommand{\cvmanualauthors}{Alejandro Bernardin, Haochuan Chen, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Hubert Santuz, Joshua V.{} Vermaas, Andrew D.{} White, Wei Zhang}
 
+\iflatexml
+\title{Collective Variables Module\\Reference manual for \MDENGINE{}}
+\author{\cvmanualauthors}
+\date{Code version: \cvversion}
+\maketitle
+\begin{center}
+\includegraphics{cover-512px.jpg}
+\end{center}
+\noindent\cvmanuallinks\\
+(\href{\cvmanualpdfurl}{PDF version})
+\else
 \begin{titlepage}
 
   \noindent\colorbox{background-color}{
@@ -151,65 +180,34 @@ cv.#1(#2)
 
         \noindent\textsf{\\Code version: \cvversion\\}
 
-        \noindent\textsf{Updated versions of this manual:
-          \ifdefined\HCode
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-gromacs.html}{GROMACS}]
-          \else
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-gromacs.pdf}{GROMACS}]
-          \fi
-          \ifdefined\HCode
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-lammps.html}{LAMMPS}]
-          \else
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-lammps.pdf}{LAMMPS}]
-          \fi
-          \ifdefined\HCode
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-namd.html}{NAMD}]
-          \else
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-namd.pdf}{NAMD}]
-          \fi
-          \ifdefined\HCode
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-tinkerhp.html}{Tinker-HP}]
-          \else
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-tinkerhp.pdf}{Tinker-HP}]
-          \fi
-          \ifdefined\HCode
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-vmd.html}{VMD}]
-          \else
-          [\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-vmd.pdf}{VMD}]
-          \fi
-        }
+        \noindent\textsf{\cvmanuallinks}
 
       \end{minipage}}
 %  \noindent\rule{\textwidth}{2pt}
 
-  \ifdefined\HCode
-  \HCode{<img class="cover_picture" src="cover-512px.jpg" alt="Colvars logo">}
-  \\
-  \else
   \includegraphics[width=0.9\textwidth]{cover.jpg}\\
-  \fi
-  \textsf{\large Alejandro Bernardin, Haochuan Chen, Jeffrey R.{} Comer, Giacomo Fiorin, Haohao Fu, J\'er\^ome H\'enin, Axel Kohlmeyer, Fabrizio Marinelli, Hubert Santuz, Joshua V.{} Vermaas, Andrew D.{} White, Wei Zhang}
+  \textsf{\large \cvmanualauthors}
 
-\ifdefined\HCode
-\noindent{}(\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-\mdengine.pdf}{PDF version})
-\else
 \par
-\noindent{}(\href{https://colvars.github.io/\cvreleaselabel/colvars-refman-\mdengine.html}{HTML version})
-\fi
+\noindent{}(\href{https://colvars.github.io/\cvreleaselabel/html-\mdengine/}{HTML version})
 
 
 
 \end{titlepage}
+\fi % \iflatexml
 
 
 \newpage
-\label{sec:toc}%
-\ifdefined\HCode\HCode{<selfref>}\ref{sec:toc}\HCode{</selfref>}\fi%
 \tableofcontents
 \newpage
 
 % compiling the standalone reference manual
 
+\newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}
+\newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
+\newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
+
+\iflatexml\else % Keyword and sectioning macros: see colvars-latexml.sty.ltxml
 % use macros with context field to document keywords
 \newcommand{\key}[5]{%
   \colorbox{cvkeyword-background-color}{\index{#2!\texttt{#1}}\texttt{#1}} --- \emph{#3}\vspace{1ex}\\%
@@ -230,9 +228,6 @@ cv.#1(#2)
   \colorbox{cvkeyword-background-color}{\index{#2!\texttt{#1}}\texttt{#1}} --- analogous to \texttt{#3}%
 }
 
-\newcommand{\gradx}{\mbox{\boldmath$\nabla_{\!\!x}\,$}}
-\newcommand{\vx}{{\mbox{\boldmath{$x$}}}}
-\newcommand{\bm}[1]{{\mbox{\boldmath{$#1$}}}}
 
 \newenvironment{cvcoptions}{%
   \noindent\textbf{List of keywords} (see also \ref{sec:cvc_pbcs}, \ref{sec:cvc_common}, \ref{sec:cvc_periodic} and \ref{sec:cvc_superp} for additional options):
@@ -244,81 +239,38 @@ cv.#1(#2)
   \end{itemize}
 }
 
-\newcommand{\pagetoplink}{\ifdefined\HCode
-  \begin{flushright}
-    \HCode{<a href="\#sec:toc" style="text-decoration: none; background-color: white;  color: gray;">(Go to Contents)</a><br>}
-  \end{flushright}
-  \fi}
-
 \newcommand{\cvsec}[2]{%
   \newpage
-  \ifdefined\HCode
-  \pagetoplink
-  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
-  \HCode{<div class="heading">} % Use CSS, mdframed won't work for this
-  \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
-  \fi
   \hypertarget{#2}{\section{#1}}\label{#2}
-  \ifdefined\HCode
-  \HCode{</div>}
-  \else
   \end{mdframed}
-  \fi
 }
 
 \newcommand{\cvsubsec}[2]{%
-  \ifdefined\HCode
-  \pagetoplink
-  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
-  \HCode{<div class="heading">}
-  \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
-  \fi
   \hypertarget{#2}{\subsection{#1}}\label{#2}
-  \ifdefined\HCode
-  \HCode{</div>}
-  \else
   \end{mdframed}
-  \fi
 }
 
 \newcommand{\cvsubsubsec}[2]{%
-  \ifdefined\HCode
-  \pagetoplink
-  \HCode{<selfref>}\ref{#2}\HCode{</selfref>}
-  \HCode{<div class="heading">}
-  \else
   \begin{mdframed}[backgroundcolor=background-color,linewidth=2pt]
-  \fi
   \hypertarget{#2}{\subsubsection{#1}}\label{#2}
-  \ifdefined\HCode
-  \HCode{</div>}
-  \else
   \end{mdframed}
-  \fi
 }
 
+
+\fi % \iflatexml
 \input{colvars-engine-flags}
 
 \input{colvars-refman-main}
 
-\ifdefined\HCode
-\else
 \newpage
 \printindex
-\fi
 
 \newpage
 %\addtocontents{toc}{\contentsline {section}{References}{\thepage}}
 \bibliographystyle{unsrt}
 \bibliography{colvars-refman,colvars-code-refs}
-
-\ifdefined\HCode
-\HCode{</div>
-</div>
-}
-\fi
 
 
 \end{document}

@@ -16,7 +16,7 @@
 #include "colvarcomp.h"
 
 
-colvar::alch_lambda::alch_lambda()
+colvar::alch_lambda::alch_lambda(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("alchLambda");
 
@@ -28,6 +28,7 @@ colvar::alch_lambda::alch_lambda()
   provide(f_cvc_Jacobian);     // Zero
 
   x.type(colvarvalue::type_scalar);
+  init_scalar_boundaries(0.0, 1.0);
 
   // Query initial value from back-end; will be overwritten if restarting from a state file
   cvmodule->proxy->get_alch_lambda(&x.real_value);
@@ -85,7 +86,7 @@ void colvar::alch_lambda::apply_force(colvarvalue const & /* force */)
 }
 
 
-colvar::alch_Flambda::alch_Flambda()
+colvar::alch_Flambda::alch_Flambda(colvarmodule* cvmodule_in): colvar::cvc(cvmodule_in)
 {
   set_function_type("alch_Flambda");
 

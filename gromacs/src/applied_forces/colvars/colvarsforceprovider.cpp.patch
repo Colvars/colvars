@@ -1,0 +1,17 @@
+diff --git a/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp b/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp
+index 71a179ebe2..24eeabdb48 100644
+--- a/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp
++++ b/src/gromacs/applied_forces/colvars/colvarsforceprovider.cpp
+@@ -366,9 +366,12 @@ void ColvarsForceProvider::calculateForces(const ForceProviderInput& forceProvid
+         case PbcType::Screw:
+             boundaries_.reset();
+             boundaries_.set_type(cvm::system_boundary_conditions::types::unsupported);
++            GMX_RELEASE_ASSERT(false, "Invalid pbcType in ColvarsForceProvider::calculateForces");
+             break;
+         case PbcType::No: boundaries_.reset(); break;
+         default:
++            boundaries_.reset();
++            boundaries_.set_type(cvm::system_boundary_conditions::types::unsupported);
+             GMX_RELEASE_ASSERT(false, "Invalid pbcType in ColvarsForceProvider::calculateForces");
+     }
+
