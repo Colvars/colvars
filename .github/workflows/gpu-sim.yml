@@ -1,0 +1,94 @@
+name: "GPU Simulator"
+
+# Optional, non-required check. The hosted runners have no GPU, so no other
+# workflow builds tests/functional_gpu. This one builds it with HIP for gfx942
+# and runs its ctest cases (each test input, then the spiff comparison with
+# the AutoDiff reference) on a simulated AMD Instinct MI300X
+# (https://github.com/pantheongpu/pantheonsim). A simulator cannot reproduce
+# hardware-specific behavior or timing, so it complements real-GPU testing and
+# does not replace it.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/**"
+      - "misc_interfaces/stubs/**"
+      - "tests/functional_gpu/**"
+      - "tests/input_files/**"
+      - ".github/workflows/gpu-sim.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  functional-gpu-hip:
+    name: "functional_gpu (HIP/ROCm 7.1 and simulated MI300X)"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Checkout OpenMM (for Lepton library)
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: 'openmm/openmm'
+          ref: 'master'
+          path: 'openmm-source'
+          persist-credentials: false
+
+      - name: Set up the simulated GPU and ROCm
+        uses: pantheongpu/pantheonsim@d91a876715890676e77a723797bf97b2426c80ad # v0.2.1
+        with:
+          gpu: amd/mi300x
+          cuda-toolkit: none
+          rocm: "7.1"
+
+      # find_package(hip) needs the amd_comgr CMake config and the HSA runtime,
+      # which the compiler-only ROCm install of the action does not include.
+      - name: Install comgr and the HSA runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y comgr hsa-rocr
+
+      # The kernels in src/cuda include hipCUB. hipCUB and rocPRIM are
+      # header-only; they are unpacked rather than installed because their
+      # packages depend on the real HIP runtime, which would replace the
+      # simulator's.
+      - name: Add hipCUB and rocPRIM headers
+        run: |
+          cd "$RUNNER_TEMP"
+          apt-get download hipcub-dev rocprim-dev
+          for d in hipcub-dev*.deb rocprim-dev*.deb; do sudo dpkg-deb -x "$d" /; done
+          rm -f hipcub-dev*.deb rocprim-dev*.deb
+
+      # Built once up front so that compare_test.sh does not clone and build it
+      # inside every comparison test.
+      - name: Build spiff
+        run: |
+          SPIFF=$(bash devel-tools/get_spiff)
+          dirname "$SPIFF" >> "$GITHUB_PATH"
+
+      # The explicit architecture (gfx942 is the MI300X) keeps CMake from
+      # probing for a GPU.
+      - name: Configure
+        run: cmake -S tests/functional_gpu -B build
+          -DGPU_TYPE=HIP
+          -DCMAKE_HIP_ARCHITECTURES=gfx942
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_PREFIX_PATH=/opt/rocm
+
+      - name: Build
+        run: cmake --build build -j 3
+
+      # Run serially: each <test>_spiff case compares the files written by the
+      # <test> case registered just before it.
+      - name: Run tests
+        run: vgpu run ctest --test-dir build --output-on-failure --no-tests=error
